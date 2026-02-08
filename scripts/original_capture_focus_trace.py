@@ -64,7 +64,35 @@ class FocusTraceReport:
     capture_projectiles: list[dict[str, Any]]
     capture_creatures: list[dict[str, Any]]
     creature_diffs_top: list[dict[str, Any]]
+    creature_capture_only: list[dict[str, Any]]
+    creature_rewrite_only: list[dict[str, Any]]
     projectile_diffs_top: list[dict[str, Any]]
+    projectile_capture_only: list[dict[str, Any]]
+    projectile_rewrite_only: list[dict[str, Any]]
+    rng_alignment: RngAlignmentSummary
+
+
+@dataclass(slots=True)
+class RngAlignmentTailRow:
+    index: int
+    capture_value: int
+    capture_caller_static: str
+    capture_caller: str
+    inferred_rewrite_callsite: str
+
+
+@dataclass(slots=True)
+class RngAlignmentSummary:
+    capture_calls: int
+    capture_head_len: int
+    rewrite_calls: int
+    value_prefix_match: int
+    first_value_mismatch_index: int | None
+    first_value_mismatch_capture: int | None
+    first_value_mismatch_rewrite: int | None
+    missing_native_tail_count: int
+    missing_native_tail_callers_top: list[tuple[str, int]]
+    missing_native_tail_preview: list[RngAlignmentTailRow]
 
 
 def _read_capture_tick(path: Path, tick: int) -> dict[str, Any] | None:
@@ -236,6 +264,169 @@ def _summarize_projectile_diffs(capture_projectiles: list[dict[str, Any]], world
     return rows
 
 
+def _collect_creature_presence_diffs(
+    capture_creatures: list[dict[str, Any]],
+    world: WorldState,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    cap_by_idx: dict[int, dict[str, Any]] = {
+        int(row.get("index")): row for row in capture_creatures if isinstance(row, dict) and row.get("index") is not None
+    }
+    cap_indices = {idx for idx, row in cap_by_idx.items() if bool(int(row.get("active", 0)) != 0)}
+    rewrite_indices = {idx for idx, creature in enumerate(world.creatures.entries) if bool(creature.active)}
+
+    capture_only: list[dict[str, Any]] = []
+    for idx in sorted(cap_indices - rewrite_indices):
+        row = cap_by_idx[int(idx)]
+        pos = row.get("pos") if isinstance(row.get("pos"), dict) else {}
+        capture_only.append(
+            {
+                "index": int(idx),
+                "type_id": int(row.get("type_id", 0)),
+                "hp": float(row.get("hp", 0.0)),
+                "hitbox_size": float(row.get("hitbox_size", 0.0)),
+                "pos": {"x": float(pos.get("x", 0.0)), "y": float(pos.get("y", 0.0))},
+            }
+        )
+
+    rewrite_only: list[dict[str, Any]] = []
+    for idx in sorted(rewrite_indices - cap_indices):
+        creature = world.creatures.entries[int(idx)]
+        rewrite_only.append(
+            {
+                "index": int(idx),
+                "type_id": int(creature.type_id),
+                "hp": float(creature.hp),
+                "hitbox_size": float(creature.hitbox_size),
+                "pos": {"x": float(creature.pos.x), "y": float(creature.pos.y)},
+            }
+        )
+
+    return capture_only, rewrite_only
+
+
+def _collect_projectile_presence_diffs(
+    capture_projectiles: list[dict[str, Any]],
+    world: WorldState,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    cap_by_idx: dict[int, dict[str, Any]] = {
+        int(row.get("index")): row for row in capture_projectiles if isinstance(row, dict) and row.get("index") is not None
+    }
+    cap_indices = {idx for idx, row in cap_by_idx.items() if bool(int(row.get("active", 0)) != 0)}
+    rewrite_indices = {idx for idx, proj in enumerate(world.state.projectiles.entries) if bool(proj.active)}
+
+    capture_only: list[dict[str, Any]] = []
+    for idx in sorted(cap_indices - rewrite_indices):
+        row = cap_by_idx[int(idx)]
+        pos = row.get("pos") if isinstance(row.get("pos"), dict) else {}
+        capture_only.append(
+            {
+                "index": int(idx),
+                "type_id": int(row.get("type_id", 0)),
+                "life_timer": float(row.get("life_timer", 0.0)),
+                "damage_pool": float(row.get("damage_pool", 0.0)),
+                "pos": {"x": float(pos.get("x", 0.0)), "y": float(pos.get("y", 0.0))},
+            }
+        )
+
+    rewrite_only: list[dict[str, Any]] = []
+    for idx in sorted(rewrite_indices - cap_indices):
+        proj = world.state.projectiles.entries[int(idx)]
+        rewrite_only.append(
+            {
+                "index": int(idx),
+                "type_id": int(proj.type_id),
+                "life_timer": float(proj.life_timer),
+                "damage_pool": float(proj.damage_pool),
+                "pos": {"x": float(proj.pos.x), "y": float(proj.pos.y)},
+            }
+        )
+
+    return capture_only, rewrite_only
+
+
+def _summarize_rng_alignment(
+    *,
+    capture_rng_head: list[dict[str, Any]],
+    capture_rng_calls: int,
+    rewrite_rng_values: list[int],
+    rewrite_rng_callsites: list[str],
+    tail_preview_limit: int = 24,
+) -> RngAlignmentSummary:
+    capture_values = [int(row.get("value", 0)) for row in capture_rng_head if isinstance(row, dict)]
+    capture_calls = max(int(capture_rng_calls), len(capture_values))
+    rewrite_calls = len(rewrite_rng_values)
+    min_len = min(len(capture_values), rewrite_calls)
+
+    prefix = 0
+    while prefix < min_len:
+        if int(capture_values[prefix]) != int(rewrite_rng_values[prefix]):
+            break
+        prefix += 1
+
+    mismatch_index: int | None = None
+    mismatch_capture: int | None = None
+    mismatch_rewrite: int | None = None
+    if prefix < min_len:
+        mismatch_index = int(prefix)
+        mismatch_capture = int(capture_values[prefix])
+        mismatch_rewrite = int(rewrite_rng_values[prefix])
+
+    caller_to_rewrite: dict[str, Counter[str]] = {}
+    aligned = min(prefix, len(rewrite_rng_callsites), len(capture_rng_head))
+    for idx in range(aligned):
+        row = capture_rng_head[idx]
+        if not isinstance(row, dict):
+            continue
+        caller_static = str(row.get("caller_static", "")).strip()
+        if not caller_static:
+            continue
+        bucket = caller_to_rewrite.setdefault(caller_static, Counter())
+        bucket[str(rewrite_rng_callsites[idx])] += 1
+
+    caller_best: dict[str, str] = {}
+    for caller_static, counts in caller_to_rewrite.items():
+        top = counts.most_common(1)
+        if not top:
+            continue
+        caller_best[str(caller_static)] = str(top[0][0])
+
+    tail_start = min(rewrite_calls, len(capture_rng_head))
+    tail_rows_raw = capture_rng_head[tail_start:]
+    tail_callers = Counter(
+        str(row.get("caller_static", "")).strip()
+        for row in tail_rows_raw
+        if isinstance(row, dict) and str(row.get("caller_static", "")).strip()
+    )
+    tail_preview: list[RngAlignmentTailRow] = []
+    for offset, row in enumerate(tail_rows_raw[: max(0, int(tail_preview_limit))]):
+        if not isinstance(row, dict):
+            continue
+        caller_static = str(row.get("caller_static", "")).strip()
+        tail_preview.append(
+            RngAlignmentTailRow(
+                index=int(tail_start + offset),
+                capture_value=int(row.get("value", 0)),
+                capture_caller_static=caller_static,
+                capture_caller=str(row.get("caller", "")).strip(),
+                inferred_rewrite_callsite=str(caller_best.get(caller_static, "")),
+            )
+        )
+
+    missing_native_tail_count = max(0, int(capture_calls) - int(rewrite_calls))
+    return RngAlignmentSummary(
+        capture_calls=int(capture_calls),
+        capture_head_len=int(len(capture_values)),
+        rewrite_calls=int(rewrite_calls),
+        value_prefix_match=int(prefix),
+        first_value_mismatch_index=mismatch_index,
+        first_value_mismatch_capture=mismatch_capture,
+        first_value_mismatch_rewrite=mismatch_rewrite,
+        missing_native_tail_count=int(missing_native_tail_count),
+        missing_native_tail_callers_top=[(str(key), int(count)) for key, count in tail_callers.most_common(12)],
+        missing_native_tail_preview=tail_preview,
+    )
+
+
 def trace_focus_tick(
     *,
     capture_path: Path,
@@ -255,6 +446,9 @@ def trace_focus_tick(
     samples = raw_tick.get("samples") if isinstance(raw_tick.get("samples"), dict) else {}
     capture_creatures = samples.get("creatures") if isinstance(samples.get("creatures"), list) else []
     capture_projectiles = samples.get("projectiles") if isinstance(samples.get("projectiles"), list) else []
+    capture_rng = raw_tick.get("rng") if isinstance(raw_tick.get("rng"), dict) else {}
+    capture_rng_head = capture_rng.get("head") if isinstance(capture_rng.get("head"), list) else []
+    capture_rng_calls = int(capture_rng.get("calls", len(capture_rng_head)))
 
     world_size = float(replay.header.world_size)
     world = WorldState.build(
@@ -291,6 +485,8 @@ def trace_focus_tick(
 
     rng_callsites: Counter[str] = Counter()
     rng_head: list[str] = []
+    rng_values: list[int] = []
+    rng_values_callsites: list[str] = []
     collision_hits: list[CollisionRow] = []
     near_misses: list[CollisionRow] = []
     pre_projectiles: list[dict[str, Any]] = []
@@ -346,6 +542,8 @@ def trace_focus_tick(
                     rng_callsites[key] += 1
                     if len(rng_head) < 256:
                         rng_head.append(key)
+                    rng_values.append(int(value))
+                    rng_values_callsites.append(str(key))
                     return value
 
                 def traced_within_native_find_radius(
@@ -435,6 +633,14 @@ def trace_focus_tick(
 
     creature_diffs_top = _summarize_creature_diffs(capture_creatures, world)
     projectile_diffs_top = _summarize_projectile_diffs(capture_projectiles, world)
+    creature_capture_only, creature_rewrite_only = _collect_creature_presence_diffs(capture_creatures, world)
+    projectile_capture_only, projectile_rewrite_only = _collect_projectile_presence_diffs(capture_projectiles, world)
+    rng_alignment = _summarize_rng_alignment(
+        capture_rng_head=[row for row in capture_rng_head if isinstance(row, dict)],
+        capture_rng_calls=int(capture_rng_calls),
+        rewrite_rng_values=rng_values,
+        rewrite_rng_callsites=rng_values_callsites,
+    )
 
     return FocusTraceReport(
         tick=int(tick),
@@ -451,13 +657,50 @@ def trace_focus_tick(
         capture_projectiles=list(capture_projectiles),
         capture_creatures=list(capture_creatures),
         creature_diffs_top=creature_diffs_top,
+        creature_capture_only=creature_capture_only,
+        creature_rewrite_only=creature_rewrite_only,
         projectile_diffs_top=projectile_diffs_top,
+        projectile_capture_only=projectile_capture_only,
+        projectile_rewrite_only=projectile_rewrite_only,
+        rng_alignment=rng_alignment,
     )
 
 
 def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: int, diff_limit: int) -> None:
     print(f"tick={int(report.tick)} hits={int(report.hits)} deaths={int(report.deaths)} sfx={int(report.sfx)}")
     print(f"rand_calls_total={int(report.rand_calls_total)}")
+
+    print("\nrng_value_alignment:")
+    align = report.rng_alignment
+    print(
+        "  "
+        f"capture_calls={int(align.capture_calls)} capture_head_len={int(align.capture_head_len)} "
+        f"rewrite_calls={int(align.rewrite_calls)} prefix_match={int(align.value_prefix_match)}"
+    )
+    if align.first_value_mismatch_index is not None:
+        print(
+            "  "
+            f"first_value_mismatch_idx={int(align.first_value_mismatch_index)} "
+            f"capture={int(align.first_value_mismatch_capture or 0)} "
+            f"rewrite={int(align.first_value_mismatch_rewrite or 0)}"
+        )
+    if int(align.missing_native_tail_count) > 0:
+        print(f"  missing_native_tail={int(align.missing_native_tail_count)}")
+        if align.missing_native_tail_callers_top:
+            print("  missing_native_tail_callers_top:")
+            for caller_static, count in align.missing_native_tail_callers_top:
+                print(f"    {caller_static}: {int(count)}")
+        if align.missing_native_tail_preview:
+            print("  missing_native_tail_preview:")
+            for row in align.missing_native_tail_preview[: max(1, int(diff_limit))]:
+                inferred = str(row.inferred_rewrite_callsite) if str(row.inferred_rewrite_callsite) else "<unknown>"
+                print(
+                    "    "
+                    f"idx={int(row.index)} caller={row.capture_caller_static} value={int(row.capture_value)} "
+                    f"inferred={inferred}"
+                )
+            if len(align.missing_native_tail_preview) > int(diff_limit):
+                print(f"    ... {len(align.missing_native_tail_preview) - int(diff_limit)} more")
 
     print("\nrng_callsites_top:")
     for key, count in report.rng_callsites_top[: max(1, int(top_rng))]:
@@ -490,6 +733,30 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
             f"active={bool(row['active_capture'])}/{bool(row['active_rewrite'])}"
         )
 
+    print("\ncreature_presence_diffs:")
+    if report.creature_capture_only:
+        print("  capture_only_indices:")
+        for row in report.creature_capture_only[: max(1, int(diff_limit))]:
+            print(
+                f"    idx={int(row['index']):3d} type={int(row['type_id'])} "
+                f"hp={float(row['hp']):.6f} hitbox={float(row['hitbox_size']):.6f} "
+                f"pos=({float(row['pos']['x']):.4f},{float(row['pos']['y']):.4f})"
+            )
+        if len(report.creature_capture_only) > int(diff_limit):
+            print(f"    ... {len(report.creature_capture_only) - int(diff_limit)} more")
+    if report.creature_rewrite_only:
+        print("  rewrite_only_indices:")
+        for row in report.creature_rewrite_only[: max(1, int(diff_limit))]:
+            print(
+                f"    idx={int(row['index']):3d} type={int(row['type_id'])} "
+                f"hp={float(row['hp']):.6f} hitbox={float(row['hitbox_size']):.6f} "
+                f"pos=({float(row['pos']['x']):.4f},{float(row['pos']['y']):.4f})"
+            )
+        if len(report.creature_rewrite_only) > int(diff_limit):
+            print(f"    ... {len(report.creature_rewrite_only) - int(diff_limit)} more")
+    if not report.creature_capture_only and not report.creature_rewrite_only:
+        print("  none")
+
     print("\nprojectile_diffs_top:")
     for row in report.projectile_diffs_top[: max(1, int(diff_limit))]:
         print(
@@ -498,6 +765,30 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
             f"x_delta={float(row['x_delta']):+.6f} y_delta={float(row['y_delta']):+.6f} "
             f"active={bool(row['active_capture'])}/{bool(row['active_rewrite'])}"
         )
+
+    print("\nprojectile_presence_diffs:")
+    if report.projectile_capture_only:
+        print("  capture_only_indices:")
+        for row in report.projectile_capture_only[: max(1, int(diff_limit))]:
+            print(
+                f"    idx={int(row['index']):3d} type={int(row['type_id'])} "
+                f"life={float(row['life_timer']):.6f} damage_pool={float(row['damage_pool']):.6f} "
+                f"pos=({float(row['pos']['x']):.4f},{float(row['pos']['y']):.4f})"
+            )
+        if len(report.projectile_capture_only) > int(diff_limit):
+            print(f"    ... {len(report.projectile_capture_only) - int(diff_limit)} more")
+    if report.projectile_rewrite_only:
+        print("  rewrite_only_indices:")
+        for row in report.projectile_rewrite_only[: max(1, int(diff_limit))]:
+            print(
+                f"    idx={int(row['index']):3d} type={int(row['type_id'])} "
+                f"life={float(row['life_timer']):.6f} damage_pool={float(row['damage_pool']):.6f} "
+                f"pos=({float(row['pos']['x']):.4f},{float(row['pos']['y']):.4f})"
+            )
+        if len(report.projectile_rewrite_only) > int(diff_limit):
+            print(f"    ... {len(report.projectile_rewrite_only) - int(diff_limit)} more")
+    if not report.projectile_capture_only and not report.projectile_rewrite_only:
+        print("  none")
 
 
 def _build_arg_parser() -> argparse.ArgumentParser:
@@ -558,7 +849,12 @@ def main() -> int:
             "capture_projectiles": list(report.capture_projectiles),
             "capture_creatures": list(report.capture_creatures),
             "creature_diffs_top": list(report.creature_diffs_top),
+            "creature_capture_only": list(report.creature_capture_only),
+            "creature_rewrite_only": list(report.creature_rewrite_only),
             "projectile_diffs_top": list(report.projectile_diffs_top),
+            "projectile_capture_only": list(report.projectile_capture_only),
+            "projectile_rewrite_only": list(report.projectile_rewrite_only),
+            "rng_alignment": asdict(report.rng_alignment),
         }
         out_path = Path(args.json_out)
         out_path.parent.mkdir(parents=True, exist_ok=True)
