@@ -2667,6 +2667,7 @@ class HighScoresView:
 
         text_scale = 1.0 * scale
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+        separator_color = rl.Color(149, 175, 198, int(255 * 0.7))
 
         name = ""
         try:
@@ -2689,6 +2690,13 @@ class HighScoresView:
             text_scale,
             text_color,
         )
+        rl.draw_line(
+            int(right_top_left.x + 78.0 * scale),
+            int(right_top_left.y + 57.0 * scale),
+            int(right_top_left.x + 117.0 * scale),
+            int(right_top_left.y + 57.0 * scale),
+            separator_color,
+        )
 
         date_text = self._format_score_date(entry)
         if date_text:
@@ -2699,6 +2707,13 @@ class HighScoresView:
                 text_scale,
                 text_color,
             )
+        rl.draw_line(
+            int(right_top_left.x + 74.0 * scale),
+            int(right_top_left.y + 72.0 * scale),
+            int(right_top_left.x + 266.0 * scale),
+            int(right_top_left.y + 72.0 * scale),
+            separator_color,
+        )
 
         draw_small_text(
             font,
@@ -2713,6 +2728,13 @@ class HighScoresView:
             right_top_left + Vec2(HS_LOCAL_TIME_LABEL_X * scale, HS_LOCAL_TIME_LABEL_Y * scale),
             text_scale,
             text_color,
+        )
+        rl.draw_line(
+            int(right_top_left.x + 170.0 * scale),
+            int(right_top_left.y + 90.0 * scale),
+            int(right_top_left.x + 170.0 * scale),
+            int(right_top_left.y + 138.0 * scale),
+            separator_color,
         )
 
         score_value = f"{int(getattr(entry, 'score_xp', 0))}"
@@ -2762,6 +2784,13 @@ class HighScoresView:
             text_scale,
             text_color,
         )
+        rl.draw_line(
+            int(right_top_left.x + 74.0 * scale),
+            int(right_top_left.y + 142.0 * scale),
+            int(right_top_left.x + 266.0 * scale),
+            int(right_top_left.y + 142.0 * scale),
+            separator_color,
+        )
 
         weapon_id = int(getattr(entry, "most_used_weapon_id", 0) or 0)
         weapon_name, icon_index = self._weapon_label_and_icon(weapon_id)
@@ -2777,6 +2806,13 @@ class HighScoresView:
             right_top_left + Vec2(HS_LOCAL_WEAPON_X * scale, HS_LOCAL_WEAPON_Y * scale),
             text_scale,
             text_color,
+        )
+        rl.draw_line(
+            int(right_top_left.x + 74.0 * scale),
+            int(right_top_left.y + 194.0 * scale),
+            int(right_top_left.x + 266.0 * scale),
+            int(right_top_left.y + 194.0 * scale),
+            separator_color,
         )
 
     def _draw_wicon(self, icon_index: int, *, pos: Vec2, scale: float) -> None:
