@@ -185,7 +185,7 @@ zig-run:
 
 # WinDbg
 windbg-server:
-    cdb.exe -server tcp:port=5005,password=secret -logo C:\Crimsonland\windbg.log -pn crimsonland.exe -noio
+    cdb.exe -server tcp:port=5005,password=secret -logo C:\games\crimsonland_1.9.93\windbg.log -pn crimsonland.exe -noio
 
 windbg-client:
     cdb.exe -remote tcp:server=127.0.0.1,port=5005,password=secret -bonc
