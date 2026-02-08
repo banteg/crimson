@@ -25,8 +25,10 @@ def queue_large_hit_decal_streak(
             dist = float(int(rand()) % 0x5A + 10) * 0.1
         if dist > 7.0:
             dist = float(int(rand()) % 0x50 + 0x14) * 0.1
+        # Native `projectile_update` consumes one unconditional draw per loop
+        # before the freeze branch (`crt_rand` @ 0x0042184c).
+        rand()
         fx_queue.add_random(
             pos=hit.target + direction * (dist * 20.0),
             rand=rand,
         )
-
