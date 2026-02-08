@@ -419,3 +419,50 @@ Each entry should capture:
 ### Next probe
 
 - Keep the dead-state parity patch as groundwork, then patch one narrow hit-resolve branch in `src/crimson/projectiles.py` to recover the missing fifth hit at tick `3453` (creature `19`, substep `57`) before iterating on broader movement precision again.
+
+---
+
+## Session 2026-02-08-l
+
+- **Session ID:** `2026-02-08-l`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
+- **Primary commands:**
+  - divergence check:
+    `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch5.json`
+  - focus trace with enhanced diagnostics:
+    `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick3453_precision_patch5b.json`
+  - slot trajectory replay:
+    `uv run python scripts/original_capture_creature_trajectory.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --creature-index 19 --start-tick 2150 --end-tick 3453 --inter-tick-rand-draws 1 --json-out analysis/frida/creature19_trajectory_2150_3453_patch5.json`
+- **First verifier mismatch:** `tick 3504 (players[0].experience, score_xp)` (unchanged)
+
+### Findings
+
+- Earliest divergence points are unchanged:
+  - first pre-focus RNG shortfall still `tick 3453` (`expected_head_len=353`, rewrite `268`, missing `85`),
+  - first checkpoint mismatch still `tick 3504` (`players[0].experience`, `score_xp`, `+35 XP`).
+- Focus trace still shows exact rewrite-vs-native RNG prefix parity (`prefix_match=268`) followed by a native-only tail (`85` draws), so this remains a missing late-tick branch rather than wrong RNG values in shared paths.
+- New inferred-tail buckets identify the missing branch mix more concretely:
+  - dominated by `queue_large_hit_decal_streak` + `fx_queue.add_random` callsites,
+  - plus smaller `spawn_blood_splatter` tail buckets.
+- New per-hit hook rows confirm rewrite currently handles exactly `4` Gauss decal hooks at tick `3453` (`rng_draws=44,44,38,40`), which is consistent with missing additional native hit-resolution presentation work after rewrite stops drawing.
+- Creature slot `19` trajectory remains an accumulated alive-path drift (first drift >= `0.01` at tick `2519`, max `0.138328` at tick `3362`, no AI mode transitions), reinforcing that local trig precision probes did not address the shortfall mechanism.
+
+### Fixes from this session
+
+- Extended `scripts/original_capture_creature_trajectory.py` with richer capture-vs-rewrite state fields (`flags`, `target_player`, `ai_mode`, heading/attack/move-scale fields) and explicit AI/target transition reporting.
+- Extended `scripts/original_capture_focus_trace.py` with:
+  - inferred rewrite callsite buckets for the native-only RNG tail,
+  - per-hit decal hook rows (`handled`, `type_id`, per-hit RNG draw count, target position),
+  - JSON output for these new diagnostics.
+
+### Validation
+
+- `uv run ruff check scripts/original_capture_focus_trace.py scripts/original_capture_creature_trajectory.py`
+- `uv run pytest tests/test_original_capture_divergence_report_rng_calls.py tests/test_original_capture_focus_trace.py`
+
+### Next probe
+
+- Patch one narrow `projectile_update`/post-hit parity slice to recover missing late-tick hit-resolution work at tick `3453`:
+  - compare rewrite hit/decal loop sequencing against the native tail mix (`queue_large_hit_decal_streak`, `fx_queue_add_random`, `spawn_blood_splatter`),
+  - focus first on extra corpse/non-damaging hit resolve branches that can consume RNG without changing sampled world state immediately.
