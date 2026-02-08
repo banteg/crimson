@@ -6,6 +6,7 @@ import random
 from typing import Protocol
 
 import pyray as rl
+from raylib import defines as rd
 
 from grim.audio import AudioState, update_audio
 from grim.assets import PaqTextureCache, load_paq_entries
@@ -335,7 +336,7 @@ class DemoView:
 
         rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
         rl.rl_set_texture(backplasma.id)
-        rl.rl_begin(rl.RL_QUADS)  # ty: ignore[unresolved-attribute]
+        rl.rl_begin(rd.RL_QUADS)
         # TL
         rl.rl_color4ub(c0.r, c0.g, c0.b, c0.a)
         rl.rl_tex_coord2f(0.0, 0.0)

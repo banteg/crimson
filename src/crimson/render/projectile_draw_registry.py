@@ -5,6 +5,7 @@ import math
 from typing import TYPE_CHECKING
 
 import pyray as rl
+from raylib import defines as rd
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -326,7 +327,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
 
             glow_targets: list[CreatureState] = []
             rl.rl_set_texture(texture.id)
-            rl.rl_begin(rl.RL_QUADS)  # ty: ignore[unresolved-attribute]
+            rl.rl_begin(rd.RL_QUADS)
 
             for creature in targets:
                 target_screen = renderer.world_to_screen(creature.pos)
