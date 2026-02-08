@@ -1524,9 +1524,15 @@ class SecondaryProjectilePool:
             for idx, creature in enumerate(creatures):
                 if creature.hp <= 0.0:
                     continue
-                creature_radius = _hit_radius_for(creature)
-                hit_r = 8.0 + creature_radius
-                if Vec2.distance_sq(entry.pos, creature.pos) <= hit_r * hit_r:
+                # Native `creature_find_in_radius` also gates on `hitbox_size > 5.0`.
+                if float(creature.hitbox_size) <= 5.0:
+                    continue
+                if _within_native_find_radius(
+                    origin=entry.pos,
+                    target=creature.pos,
+                    radius=8.0,
+                    target_size=float(creature.size),
+                ):
                     hit_idx = idx
                     break
             if hit_idx is not None:
