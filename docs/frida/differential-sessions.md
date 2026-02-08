@@ -212,3 +212,38 @@ Each entry should capture:
 ### Next probe
 
 - Instrument/compare `projectile_update` hit-loop parity at tick `3453` (Gauss/Fire-Bullets corpse-hit path) to explain the missing pre-focus RNG draws before tick `3504`.
+
+---
+
+## Session 2026-02-08-g
+
+- **Session ID:** `2026-02-08-g`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
+- **Verifier command:** `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 20 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out analysis/frida/divergence_report_latest.json`
+- **First mismatch:** `tick 3504 (players[0].experience, score_xp)`
+
+### Findings
+
+- Tick `3453` is still the first major RNG parity break (`expected rand_calls=353`, rewrite `268`, shortfall `85`).
+- Rewrite hit stream at tick `3453` currently resolves `4` projectile hits (all Gauss) with `2` damage kills; native RNG caller totals imply at least one additional non-damaging hit-resolution branch in `projectile_update` (likely corpse-hit path).
+- Existing capture telemetry does not directly encode native projectile hit-resolve rows, so we cannot conclusively assign that missing branch to a specific creature/index from this recording alone.
+
+### Fixes from this session
+
+- Updated `scripts/frida/gameplay_diff_capture_v2.js` to hook `creature_find_in_radius` when called from `projectile_update` and emit:
+  - `event_counts.projectile_find_hit`,
+  - `event_heads.projectile_find_hit` rows (includes `creature_index`, query radius/pos, caller, and `corpse_hit` flag),
+  - per-tick caller buckets in diagnostics (`top_projectile_find_hit_callers`).
+- Extended `scripts/original_capture_divergence_report.py` to ingest and surface this telemetry:
+  - window table now includes `p_hits(e/a)` (`capture projectile_find_hit` vs rewrite `events.hit_count`),
+  - new lead: `Native projectile hit resolves exceed rewrite hit events`,
+  - focus debug now prints projectile hit-resolve count/head/corpse count.
+- Added regression tests in `tests/test_original_capture_divergence_report_rng_calls.py` for:
+  - projectile hit shortfall helper detection,
+  - lead emission for projectile hit shortfalls.
+- Updated `docs/frida/gameplay-diff-capture-v2.md` with the new projectile hit telemetry semantics.
+
+### Next probe
+
+- Record a new capture with the updated v2 script, then re-run divergence and inspect the first `projectile_find_hit` shortfall tick to isolate the exact missing corpse-hit path in `src/crimson/projectiles.py`.

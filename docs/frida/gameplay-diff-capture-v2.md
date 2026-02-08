@@ -33,6 +33,9 @@ just frida-gameplay-diff-capture-v2
   `replay convert-original-capture`.
 - Captures per-tick command/event summary (`projectile_spawn`, SFX, bonus apply,
   `secondary_projectile_spawn`, weapon assign, damage, creature spawns, state transitions).
+- Captures projectile hit resolves from native `creature_find_in_radius` when called by
+  `projectile_update` (`event_counts.projectile_find_hit` + head rows with `corpse_hit`),
+  so missing corpse-hit RNG branches can be diagnosed directly.
 - Captures both template-level and low-level creature spawn paths
   (`creature_spawn_template`, `creature_spawn`, `survival_spawn_creature`,
   `creature_spawn_tinted`) with caller buckets.
@@ -104,7 +107,9 @@ Both modes can be tuned with `--run-summary-max-rows` and
 The report also infers rewrite-side `rand_calls` from checkpoint RNG marks and
 prints `rand_calls(e/a/d)` in the window table (`expected/actual/delta`), plus
 focus-tick stage attribution (`secondary_projectiles`, `creatures`, etc.) and
-rewrite death ledger head to localize large RNG bursts quickly.
+rewrite death ledger head to localize large RNG bursts quickly. With v2 projectile
+hit telemetry, the window also prints `p_hits(e/a)` (`capture projectile_find_hit`
+vs rewrite `events.hit_count`).
 
 Track each run in `docs/frida/differential-sessions.md`.
 
