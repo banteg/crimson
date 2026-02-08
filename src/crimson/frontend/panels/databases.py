@@ -619,6 +619,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
     _LIST_ROW_HEIGHT = 16.0
     _LIST_TEXT_X = 218.0
     _LIST_TEXT_Y = 128.0
+    _DESC_WRAP_WIDTH_PX = 256.0
 
     def __init__(self, state: GameState) -> None:
         super().__init__(state)
@@ -629,6 +630,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         self._nav_focus_index: int = 0
         self._scroll_drag_active: bool = False
         self._scroll_drag_offset: float = 0.0
+        self._wrapped_desc_cache: dict[tuple[int, int], str] = {}
 
     def open(self) -> None:
         super().open()
@@ -636,6 +638,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         self._hovered_row_index = -1
         self._scroll_drag_active = False
         self._scroll_drag_offset = 0.0
+        self._wrapped_desc_cache.clear()
         if not self._perk_ids:
             self._list_scroll_index = 0
             self._selected_row_index = 0
@@ -656,6 +659,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         text_scale = 1.0 * scale
         text_color = rl.WHITE
         dim_color = rl.Color(255, 255, 255, int(255 * 0.7))
+        fx_toggle = self._fx_toggle()
 
         # state_16 title at (163,244) => relative to left panel (-98,194): (261,50)
         title_pos = left + Vec2(261.0 * scale, 50.0 * scale)
@@ -726,7 +730,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
                 row_alpha = 0.7
             draw_small_text(
                 font,
-                self._perk_name(perk_id),
+                self._perk_name(perk_id, fx_toggle=fx_toggle),
                 list_top_left.offset(dy=float(row) * row_step),
                 text_scale,
                 rl.Color(255, 255, 255, int(255 * row_alpha)),
@@ -766,7 +770,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         if hovered_perk_id is None:
             return
         perk_id = int(hovered_perk_id)
-        perk_name = self._perk_name(perk_id)
+        perk_name = self._perk_name(perk_id, fx_toggle=fx_toggle)
         detail_anchor = right + Vec2(34.0 * scale, 72.0 * scale)
         draw_small_text(
             font,
@@ -790,7 +794,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         )
 
         desc_pos = detail_anchor + Vec2(16.0 * scale, 0.0)
-        prereq_name = self._perk_prereq_name(perk_id)
+        prereq_name = self._perk_prereq_name(perk_id, fx_toggle=fx_toggle)
         if prereq_name:
             draw_small_text(
                 font,
@@ -801,11 +805,9 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             )
             desc_pos = desc_pos.offset(dy=18.0 * scale)
 
-        max_w = float(rl.get_screen_width()) - desc_pos.x - 4.0 * scale
-        desc = self._perk_desc(perk_id)
-        first_line = self._truncate_small_line(font, desc, max_w, scale=text_scale)
-        if first_line:
-            draw_small_text(font, first_line, desc_pos, text_scale, dim_color)
+        wrapped_desc = self._prewrapped_perk_desc(perk_id, font, fx_toggle=fx_toggle)
+        if wrapped_desc:
+            draw_small_text(font, wrapped_desc, desc_pos, text_scale, dim_color)
 
     def _update_content_interaction(self, *, left_top_left: Vec2, scale: float, mouse: rl.Vector2) -> None:
         perk_ids = self._perk_ids
@@ -956,19 +958,19 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         return perk_ids
 
     @staticmethod
-    def _perk_name(perk_id: int) -> str:
+    def _perk_name(perk_id: int, *, fx_toggle: int = 0) -> str:
         from ...perks import perk_display_name
 
-        return perk_display_name(int(perk_id))
+        return perk_display_name(int(perk_id), fx_toggle=int(fx_toggle))
 
     @staticmethod
-    def _perk_desc(perk_id: int) -> str:
+    def _perk_desc(perk_id: int, *, fx_toggle: int = 0) -> str:
         from ...perks import perk_display_description
 
-        return perk_display_description(int(perk_id))
+        return perk_display_description(int(perk_id), fx_toggle=int(fx_toggle))
 
     @staticmethod
-    def _perk_prereq_name(perk_id: int) -> str | None:
+    def _perk_prereq_name(perk_id: int, *, fx_toggle: int = 0) -> str | None:
         from ...perks import PERK_BY_ID, perk_display_name
 
         meta = PERK_BY_ID.get(int(perk_id))
@@ -977,19 +979,57 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         prereq = tuple(getattr(meta, "prereq", ()) or ())
         if not prereq:
             return None
-        return perk_display_name(int(prereq[0]))
+        return perk_display_name(int(prereq[0]), fx_toggle=int(fx_toggle))
+
+    def _fx_toggle(self) -> int:
+        data = getattr(getattr(self._state, "config", None), "data", None)
+        if not isinstance(data, dict):
+            return 0
+        return int(data.get("fx_toggle", 0) or 0)
+
+    def _prewrapped_perk_desc(self, perk_id: int, font: SmallFontData, *, fx_toggle: int) -> str:
+        key = (int(perk_id), int(fx_toggle))
+        cached = self._wrapped_desc_cache.get(key)
+        if cached is not None:
+            return cached
+        desc = self._perk_desc(perk_id, fx_toggle=fx_toggle)
+        wrapped = self._wrap_small_text_native(
+            font,
+            desc,
+            max_width_px=self._DESC_WRAP_WIDTH_PX,
+            scale=1.0,
+        )
+        self._wrapped_desc_cache[key] = wrapped
+        return wrapped
 
     @staticmethod
-    def _truncate_small_line(font: SmallFontData, text: str, max_width: float, *, scale: float) -> str:
-        text = str(text).strip()
-        if not text:
+    def _wrap_small_text_native(font: SmallFontData, text: str, max_width_px: float, *, scale: float) -> str:
+        wrapped = list(str(text))
+        if not wrapped:
             return ""
-        words = text.split()
-        line = ""
-        for word in words:
-            candidate = word if not line else f"{line} {word}"
-            if measure_small_text_width(font, candidate, float(scale)) <= float(max_width):
-                line = candidate
+
+        max_width = float(max_width_px)
+        remaining = max_width
+        i = 0
+        while i < len(wrapped):
+            ch = wrapped[i]
+            if ch == "\r":
+                i += 1
                 continue
-            break
-        return line
+            if ch == "\n":
+                remaining = max_width
+                i += 1
+                continue
+
+            remaining -= measure_small_text_width(font, ch, float(scale))
+            if remaining < 0.0:
+                j = i
+                while j > 0 and wrapped[j] not in {" ", "\n"}:
+                    j -= 1
+                if wrapped[j] == " ":
+                    wrapped[j] = "\n"
+                    i = j
+                remaining = max_width
+            i += 1
+
+        return "".join(wrapped)
