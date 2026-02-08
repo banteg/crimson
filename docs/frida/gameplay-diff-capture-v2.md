@@ -89,6 +89,11 @@ uv run python scripts/original_capture_divergence_report.py \
 (bonus pickups, weapon assignments, perk picks when present, level-ups, and
 state transitions) so divergence debugging has immediate run context.
 
+The report also infers rewrite-side `rand_calls` from checkpoint RNG marks and
+prints `rand_calls(e/a/d)` in the window table (`expected/actual/delta`), plus
+focus-tick stage attribution (`secondary_projectiles`, `creatures`, etc.) and
+rewrite death ledger head to localize large RNG bursts quickly.
+
 Track each run in `docs/frida/differential-sessions.md`.
 
 ## Useful env knobs

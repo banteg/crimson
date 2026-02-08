@@ -57,3 +57,30 @@ Each entry should capture:
 ### Next probe
 
 - Reconcile AI7 timer/link-index progression against native (`creature_update_all` / `creature_alloc_slot` semantics) to eliminate early RNG drift before tick `1794`.
+
+---
+
+## Session 2026-02-08-b
+
+- **Session ID:** `2026-02-08-b`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `a40e7fed4ea7b4658d420bc31f6101307864c8de1b06f926d9ddf7c0010ac2ee`
+- **Verifier command:** `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 12 --lead-lookback 512 --run-summary --json-out analysis/frida/divergence_report_latest.json`
+- **First mismatch:** `tick 1794 (players[0].experience, score_xp)`
+
+### Findings
+
+- Focus tick `1794` has a large rewrite-only RNG burst: native `rand_calls=2`, rewrite consumes `184` draws.
+- Stage attribution isolates almost all rewrite draws to `ws_after_projectiles -> ws_after_secondary_projectiles` (`182` draws), pointing directly at secondary projectile hit/explosion branches.
+- Rewrite resolves a kill at tick `1794` (`creature_index=25`, `type_id=2`, `xp_awarded=41`, owner `-1`) while capture reports zero `creature_damage`/`creature_death` events on the same tick.
+
+### Fixes from this session
+
+- Extended `scripts/original_capture_divergence_report.py` to infer rewrite `rand_calls` from RNG marks and print `rand_calls(e/a/d)` in the divergence window.
+- Added focus-tick rewrite diagnostics (stage-local RNG call breakdown + rewrite death ledger head) to the report output and JSON payload.
+- Added RNG-call inference tests in `tests/test_original_capture_divergence_report_rng_calls.py`.
+
+### Next probe
+
+- Capture a focused run around tick `1794` with entity samples enabled so native projectile/creature positions can be compared directly:
+  `CRIMSON_FRIDA_V2_FOCUS_TICK=1794 CRIMSON_FRIDA_V2_FOCUS_RADIUS=64`.

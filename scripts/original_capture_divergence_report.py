@@ -99,6 +99,22 @@ NATIVE_FUNCTION_TO_PORT_PATHS: dict[str, tuple[str, ...]] = {
     ),
 }
 
+RNG_STAGE_TO_PORT_PATHS: dict[str, tuple[str, ...]] = {
+    "creatures": ("src/crimson/creatures/runtime.py", "src/crimson/creatures/ai.py"),
+    "projectiles": ("src/crimson/projectiles.py", "src/crimson/sim/world_state.py"),
+    "secondary_projectiles": ("src/crimson/projectiles.py", "src/crimson/sim/world_state.py"),
+    "death_sfx_preplan": ("src/crimson/sim/world_state.py", "src/crimson/sim/presentation_step.py"),
+    "world_step_tail": ("src/crimson/sim/world_state.py",),
+    "survival_stage_spawns": ("src/crimson/creatures/spawn.py", "src/crimson/sim/sessions.py"),
+    "survival_wave_spawns": ("src/crimson/creatures/spawn.py", "src/crimson/sim/sessions.py"),
+    "rush_spawns": ("src/crimson/creatures/spawn.py", "src/crimson/sim/sessions.py"),
+}
+
+_CRT_RAND_MULT = 214013
+_CRT_RAND_INC = 2531011
+_CRT_RAND_MASK = 0xFFFFFFFF
+_CRT_RAND_CALL_SEARCH_LIMIT = 4096
+
 
 def _int_or(value: object, default: int = -1) -> int:
     try:
@@ -116,6 +132,16 @@ def _float_or(value: object, default: float = 0.0) -> float:
         return float(value)
     except Exception:
         return float(default)
+
+
+def _fmt_opt_int(value: object, *, width: int = 0, unknown: str = "na") -> str:
+    if value is None:
+        return f"{unknown:>{width}}" if width > 0 else unknown
+    try:
+        ivalue = int(value)
+    except Exception:
+        return f"{unknown:>{width}}" if width > 0 else unknown
+    return f"{ivalue:{width}d}" if width > 0 else str(ivalue)
 
 
 def _allow_one_tick_creature_count_lag(
@@ -647,6 +673,64 @@ def _primary_rng_after(ckpt: ReplayCheckpoint) -> int:
     return -1
 
 
+def _infer_rand_calls_between_states(
+    before_state: int,
+    after_state: int,
+    *,
+    max_calls: int = _CRT_RAND_CALL_SEARCH_LIMIT,
+) -> int | None:
+    before = _int_or(before_state, -1)
+    after = _int_or(after_state, -1)
+    if before < 0 or after < 0:
+        return None
+
+    state = int(before) & _CRT_RAND_MASK
+    target = int(after) & _CRT_RAND_MASK
+    if state == target:
+        return 0
+
+    limit = max(0, int(max_calls))
+    for call_idx in range(1, limit + 1):
+        state = (state * _CRT_RAND_MULT + _CRT_RAND_INC) & _CRT_RAND_MASK
+        if state == target:
+            return int(call_idx)
+    return None
+
+
+def _actual_rand_calls_for_checkpoint(ckpt: ReplayCheckpoint) -> int | None:
+    before = _int_or(ckpt.rng_marks.get("before_world_step"), -1)
+    after = _primary_rng_after(ckpt)
+    return _infer_rand_calls_between_states(before, after)
+
+
+def _actual_rand_stage_calls(ckpt: ReplayCheckpoint) -> dict[str, int]:
+    marks = ckpt.rng_marks
+    stage_pairs: list[tuple[str, str, str]] = [
+        ("before_world_step", "ws_after_creatures", "creatures"),
+        ("ws_after_creatures", "ws_after_projectiles", "projectiles"),
+        ("ws_after_projectiles", "ws_after_secondary_projectiles", "secondary_projectiles"),
+        ("ws_after_secondary_projectiles", "ws_after_death_sfx", "death_sfx_preplan"),
+        ("ws_after_death_sfx", "after_world_step", "world_step_tail"),
+    ]
+
+    if "after_rush_spawns" in marks:
+        stage_pairs.append(("after_world_step", "after_rush_spawns", "rush_spawns"))
+    else:
+        stage_pairs.append(("after_world_step", "after_stage_spawns", "survival_stage_spawns"))
+        stage_pairs.append(("after_stage_spawns", "after_wave_spawns", "survival_wave_spawns"))
+
+    out: dict[str, int] = {}
+    for start_key, end_key, stage_name in stage_pairs:
+        calls = _infer_rand_calls_between_states(
+            _int_or(marks.get(start_key), -1),
+            _int_or(marks.get(end_key), -1),
+        )
+        if calls is None:
+            continue
+        out[str(stage_name)] = int(calls)
+    return out
+
+
 @functools.lru_cache(maxsize=2)
 def _load_native_function_ranges(ghidra_c_path: str) -> tuple[NativeFunctionRange, ...]:
     path = Path(ghidra_c_path)
@@ -1005,6 +1089,84 @@ def _build_investigation_leads(
         float_abs_tol=float(float_abs_tol),
     )
 
+    focus_exp = expected_by_tick.get(int(focus_tick))
+    focus_act = actual_by_tick.get(int(focus_tick))
+    focus_raw = raw_debug_by_tick.get(int(focus_tick), {})
+    if focus_exp is not None and focus_act is not None:
+        expected_rand_calls = _int_or(
+            focus_raw.get("rng_rand_calls"),
+            _int_or(focus_exp.rng_marks.get("rand_calls"), -1),
+        )
+        actual_rand_calls = _actual_rand_calls_for_checkpoint(focus_act)
+        if expected_rand_calls >= 0 and actual_rand_calls is not None:
+            rand_delta = int(actual_rand_calls) - int(expected_rand_calls)
+            if abs(int(rand_delta)) >= 8:
+                stage_calls = _actual_rand_stage_calls(focus_act)
+                top_stages = sorted(
+                    [(name, calls) for name, calls in stage_calls.items() if int(calls) > 0],
+                    key=lambda item: (-int(item[1]), str(item[0])),
+                )
+                evidence = [
+                    (
+                        f"focus tick rand_calls differs: expected={int(expected_rand_calls)} "
+                        f"actual={int(actual_rand_calls)} delta={int(rand_delta):+d}"
+                    ),
+                ]
+                if top_stages:
+                    evidence.append(
+                        "rewrite stage-local rand call totals: "
+                        + ", ".join(f"{name}={calls}" for name, calls in top_stages[:6])
+                    )
+                capture_deaths = _int_or(focus_raw.get("spawn_death_count"), -1)
+                if int(capture_deaths) == 0 and len(focus_act.deaths) > 0:
+                    evidence.append(
+                        "capture has 0 creature_death events at focus tick while rewrite produced "
+                        f"{len(focus_act.deaths)} death ledger entries"
+                    )
+                capture_damage = _int_or(focus_raw.get("creature_damage_count"), -1)
+                if int(capture_damage) == 0 and len(focus_act.deaths) > 0:
+                    evidence.append(
+                        "capture has 0 creature_apply_damage events at focus tick while rewrite resolved a kill branch"
+                    )
+
+                focus_callers = focus_raw.get("rng_callers")
+                if isinstance(focus_callers, list) and focus_callers:
+                    top = sorted(
+                        [
+                            (str(item.get("caller_static")), _int_or(item.get("calls"), 1))
+                            for item in focus_callers
+                            if isinstance(item, dict) and item.get("caller_static") is not None
+                        ],
+                        key=lambda item: (-int(item[1]), str(item[0])),
+                    )[:6]
+                    top_text = ", ".join(f"{addr} x{calls}" for addr, calls in top)
+                    if top_text:
+                        evidence.append(f"native rng_callers at focus tick: {top_text}")
+
+                stage_paths: list[str] = []
+                seen_paths: set[str] = set()
+                for stage_name, _calls in top_stages:
+                    for path in RNG_STAGE_TO_PORT_PATHS.get(str(stage_name), ()):
+                        if path in seen_paths:
+                            continue
+                        seen_paths.add(path)
+                        stage_paths.append(path)
+                if not stage_paths:
+                    stage_paths = list(
+                        _port_paths_for_native_functions(
+                            ("projectile_update", "creature_apply_damage", "creature_update_all")
+                        )
+                    )
+
+                leads.append(
+                    InvestigationLead(
+                        title="Focus tick has a rewrite-only RNG burst",
+                        evidence=tuple(evidence),
+                        native_functions=("projectile_update", "creature_apply_damage", "creature_update_all"),
+                        code_paths=tuple(stage_paths),
+                    )
+                )
+
     rng_zero_ticks = _ticks_rng_zero_but_changed(
         expected_by_tick=expected_by_tick,
         actual_by_tick=actual_by_tick,
@@ -1225,6 +1387,11 @@ def _build_window_rows(
         act_player = act.players[0] if act.players else None
         before = _int_or(act.rng_marks.get("before_world_step"))
         after = _primary_rng_after(act)
+        expected_rand_calls = _int_or(raw.get("rng_rand_calls"), _int_or(exp.rng_marks.get("rand_calls")))
+        actual_rand_calls = _actual_rand_calls_for_checkpoint(act)
+        rand_calls_delta: int | None = None
+        if expected_rand_calls >= 0 and actual_rand_calls is not None:
+            rand_calls_delta = int(actual_rand_calls) - int(expected_rand_calls)
 
         rows.append(
             {
@@ -1239,7 +1406,9 @@ def _build_window_rows(
                 "actual_score": int(act.score_xp),
                 "expected_creatures": int(exp.creature_count),
                 "actual_creatures": int(act.creature_count),
-                "expected_rand_calls": _int_or(raw.get("rng_rand_calls"), _int_or(exp.rng_marks.get("rand_calls"))),
+                "expected_rand_calls": int(expected_rand_calls),
+                "actual_rand_calls": actual_rand_calls,
+                "rand_calls_delta": rand_calls_delta,
                 "actual_ps_draws": _int_or(act.rng_marks.get("ps_draws_total")),
                 "actual_rng_changed": bool(before >= 0 and after >= 0 and before != after),
                 "expected_pickups": int(exp.events.pickup_count),
@@ -1248,6 +1417,7 @@ def _build_window_rows(
                 "actual_sfx": int(act.events.sfx_count),
                 "capture_bonus_spawn_events": _int_or(raw.get("spawn_bonus_count")),
                 "capture_death_events": _int_or(raw.get("spawn_death_count")),
+                "actual_deaths": int(len(act.deaths)),
             }
         )
     return rows
@@ -1257,9 +1427,13 @@ def _print_window(rows: list[dict[str, object]]) -> None:
     print()
     print(
         "tick  w(e/a)   ammo(e/a)  xp(e/a)   score(e/a)  creatures(e/a)"
-        "  rand_calls(e)  ps_draws(a)  rng_changed(a)  bonus_spawn(e)  pickups(e/a)  sfx(e/a)"
+        "  rand_calls(e/a/d)  ps_draws(a)  rng_changed(a)  bonus_spawn(e)  deaths(e/a)  pickups(e/a)  sfx(e/a)"
     )
     for row in rows:
+        expected_rand_calls = _int_or(row.get("expected_rand_calls"), -1)
+        expected_rand_text = _fmt_opt_int(expected_rand_calls if expected_rand_calls >= 0 else None, width=6)
+        actual_rand_text = _fmt_opt_int(row.get("actual_rand_calls"), width=6)
+        rand_delta_text = _fmt_opt_int(row.get("rand_calls_delta"), width=6)
         print(
             f"{int(row['tick']):4d}  "
             f"{int(row['expected_weapon']):2d}/{int(row['actual_weapon']):2d}    "
@@ -1267,10 +1441,11 @@ def _print_window(rows: list[dict[str, object]]) -> None:
             f"{int(row['expected_xp']):5d}/{int(row['actual_xp']):5d}  "
             f"{int(row['expected_score']):6d}/{int(row['actual_score']):6d}  "
             f"{int(row['expected_creatures']):4d}/{int(row['actual_creatures']):4d}    "
-            f"{int(row['expected_rand_calls']):6d}      "
+            f"{expected_rand_text}/{actual_rand_text}/{rand_delta_text}     "
             f"{int(row['actual_ps_draws']):6d}        "
             f"{'Y' if bool(row['actual_rng_changed']) else 'N':>1}           "
             f"{int(row['capture_bonus_spawn_events']):4d}       "
+            f"{int(row['capture_death_events']):3d}/{int(row['actual_deaths']):3d}      "
             f"{int(row['expected_pickups']):3d}/{int(row['actual_pickups']):3d}      "
             f"{int(row['expected_sfx']):3d}/{int(row['actual_sfx']):3d}"
         )
@@ -1435,9 +1610,11 @@ def main() -> int:
     _print_investigation_leads(leads)
 
     focus_raw = raw_debug_by_tick.get(focus_tick, {})
-    if focus_raw:
+    focus_actual_ckpt = actual_by_tick.get(int(focus_tick))
+    if focus_raw or focus_actual_ckpt is not None:
         print()
         print("focus_capture_debug:")
+    if focus_raw:
         print(
             "  "
             f"spawn_bonus_events={_int_or(focus_raw.get('spawn_bonus_count'))} "
@@ -1464,6 +1641,25 @@ def main() -> int:
         player_keys = _extract_player_input_keys(focus_raw, player_index=0)
         if player_keys:
             print(f"  input_player_keys[0]={player_keys!r}")
+    if focus_actual_ckpt is not None:
+        actual_rand_calls = _actual_rand_calls_for_checkpoint(focus_actual_ckpt)
+        stage_calls = _actual_rand_stage_calls(focus_actual_ckpt)
+        print(
+            "  "
+            f"rewrite_rand_calls={actual_rand_calls!r} "
+            f"rewrite_rand_stage_calls={stage_calls!r}"
+        )
+        if focus_actual_ckpt.deaths:
+            death_head = [
+                {
+                    "creature_index": int(item.creature_index),
+                    "type_id": int(item.type_id),
+                    "xp_awarded": int(item.xp_awarded),
+                    "owner_id": int(item.owner_id),
+                }
+                for item in focus_actual_ckpt.deaths[:6]
+            ]
+            print(f"  rewrite_deaths_head={death_head!r}")
 
     zero_rand_consumed = [
         row
@@ -1504,6 +1700,23 @@ def main() -> int:
             "window_rows": rows,
             "investigation_leads": [asdict(lead) for lead in leads],
             "focus_capture_debug": focus_raw,
+            "focus_rewrite_debug": (
+                {
+                    "rand_calls": _actual_rand_calls_for_checkpoint(focus_actual_ckpt),
+                    "rand_stage_calls": _actual_rand_stage_calls(focus_actual_ckpt),
+                    "deaths": [
+                        {
+                            "creature_index": int(item.creature_index),
+                            "type_id": int(item.type_id),
+                            "xp_awarded": int(item.xp_awarded),
+                            "owner_id": int(item.owner_id),
+                        }
+                        for item in (focus_actual_ckpt.deaths[:6] if focus_actual_ckpt.deaths else [])
+                    ],
+                }
+                if focus_actual_ckpt is not None
+                else {}
+            ),
         }
         if bool(args.run_summary):
             payload["run_summary_events"] = [asdict(event) for event in run_summary_events]
