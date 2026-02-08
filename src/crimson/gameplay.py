@@ -55,6 +55,10 @@ class PlayerInput:
     fire_down: bool = False
     fire_pressed: bool = False
     reload_pressed: bool = False
+    move_forward_pressed: bool | None = None
+    move_backward_pressed: bool | None = None
+    turn_left_pressed: bool | None = None
+    turn_right_pressed: bool | None = None
 
 
 PERK_COUNT_SIZE = 0x80
@@ -73,6 +77,7 @@ class PlayerState:
     move_speed: float = 0.0
     move_phase: float = 0.0
     heading: float = 0.0
+    turn_speed: float = 1.0
     death_timer: float = 16.0
     low_health_timer: float = 100.0
 
@@ -1885,8 +1890,7 @@ def _perk_update_man_bomb(
     if player.man_bomb_timer <= state.perk_intervals.man_bomb:
         return
 
-    owner_id = _owner_id_for_player(player.index)
-    projectile_owner_id = _owner_id_for_player_projectiles(state, player.index)
+    owner_id = _owner_id_for_player_projectiles(state, player.index)
     for idx in range(8):
         type_id = ProjectileTypeId.ION_MINIGUN if ((idx & 1) == 0) else ProjectileTypeId.ION_RIFLE
         angle = (float(state.rng.rand() % 50) * 0.01) + float(idx) * (math.pi / 4.0) - 0.25
@@ -1934,8 +1938,7 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
     if player.fire_cough_timer <= state.perk_intervals.fire_cough:
         return
 
-    owner_id = _owner_id_for_player(player.index)
-    projectile_owner_id = _owner_id_for_player_projectiles(state, player.index)
+    owner_id = _owner_id_for_player_projectiles(state, player.index)
     state.sfx_queue.append("sfx_autorifle_fire")
     state.sfx_queue.append("sfx_plasmaminigun_fire")
 
@@ -2430,52 +2433,120 @@ def player_update(
         player.aim_dir = aim_dir
         player.aim_heading = aim_dir.to_heading()
 
-    # Movement.
-    raw_move = input_state.move
-    raw_mag = raw_move.length()
-    # Demo/autoplay uses very small analog magnitudes to represent turn-in-place and
-    # heading alignment slowdown; don't apply a deadzone there.
-    moving_input = raw_mag > (0.0 if state.demo_mode_active else 0.2)
-
-    turn_alignment_scale = 1.0
-    if moving_input:
-        inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0
-        move = raw_move * inv
-        # Native normalizes this heading into [0, 2pi] before calling
-        # `player_heading_approach_target` (see ghidra @ 0x00413fxx).
-        target_heading = _normalize_heading_angle(move.to_heading())
-        angle_diff = _player_heading_approach_target(player, target_heading, dt)
-        move = Vec2.from_heading(player.heading)
-        turn_alignment_scale = max(0.0, (math.pi - angle_diff) / math.pi)
-        if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
-            if player.move_speed < 2.0:
-                player.move_speed = float(player.move_speed + dt * 4.0)
-            player.move_speed = float(player.move_speed + dt)
-            if player.move_speed > 2.8:
-                player.move_speed = 2.8
-        else:
-            player.move_speed = float(player.move_speed + dt * 5.0)
-            if player.move_speed > 2.0:
-                player.move_speed = 2.0
-    else:
-        player.move_speed = float(player.move_speed - dt * 15.0)
-        if player.move_speed < 0.0:
-            player.move_speed = 0.0
-        move = Vec2.from_heading(player.heading)
-
-    if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
-        player.move_speed = 0.8
-
     speed_multiplier = float(player.speed_multiplier)
     if player.speed_bonus_timer > 0.0:
         speed_multiplier += 1.0
 
-    speed = player.move_speed * speed_multiplier * 25.0
-    if moving_input:
-        speed *= min(1.0, raw_mag)
-        speed *= turn_alignment_scale
-    if perk_active(player, PerkId.ALTERNATE_WEAPON):
-        speed *= 0.8
+    # Movement.
+    raw_move = input_state.move
+    raw_mag = raw_move.length()
+    use_digital_move = (
+        input_state.move_forward_pressed is not None
+        and input_state.move_backward_pressed is not None
+        and input_state.turn_left_pressed is not None
+        and input_state.turn_right_pressed is not None
+    )
+    phase_sign = 1.0
+    if use_digital_move:
+        moving_forward = bool(input_state.move_forward_pressed)
+        moving_backward = bool(input_state.move_backward_pressed)
+        turning_left = bool(input_state.turn_left_pressed)
+        turning_right = bool(input_state.turn_right_pressed)
+
+        player.turn_speed = min(7.0, max(1.0, float(player.turn_speed)))
+        turned = False
+        if turning_left and not turning_right:
+            player.turn_speed = float(player.turn_speed + dt * 10.0)
+            turn_delta = float(player.turn_speed) * dt * 0.5
+            player.heading = float(player.heading - turn_delta)
+            player.aim_heading = float(player.aim_heading - turn_delta)
+            turned = True
+        elif turning_right and not turning_left:
+            player.turn_speed = float(player.turn_speed + dt * 10.0)
+            turn_delta = float(player.turn_speed) * dt * 0.5
+            player.heading = float(player.heading + turn_delta)
+            player.aim_heading = float(player.aim_heading + turn_delta)
+            turned = True
+
+        move_sign = 1.0
+        if moving_forward and not moving_backward:
+            if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
+                if player.move_speed < 2.0:
+                    player.move_speed = float(player.move_speed + dt * 4.0)
+                player.move_speed = float(player.move_speed + dt)
+                if player.move_speed > 2.8:
+                    player.move_speed = 2.8
+            else:
+                player.move_speed = float(player.move_speed + dt * 5.0)
+                if player.move_speed > 2.0:
+                    player.move_speed = 2.0
+        elif moving_backward and not moving_forward:
+            if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
+                if player.move_speed < 2.0:
+                    player.move_speed = float(player.move_speed + dt * 4.0)
+                player.move_speed = float(player.move_speed + dt)
+                if player.move_speed > 2.8:
+                    player.move_speed = 2.8
+            else:
+                player.move_speed = float(player.move_speed + dt * 5.0)
+                if player.move_speed > 2.0:
+                    player.move_speed = 2.0
+            move_sign = -1.0
+            phase_sign = -1.0
+        else:
+            if not turned:
+                player.turn_speed = 1.0
+            player.move_speed = float(player.move_speed - dt * 15.0)
+            if player.move_speed < 0.0:
+                player.move_speed = 0.0
+
+        if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
+            player.move_speed = 0.8
+
+        move = Vec2.from_heading(player.heading)
+        speed = player.move_speed * speed_multiplier * 25.0 * move_sign
+        if perk_active(player, PerkId.ALTERNATE_WEAPON):
+            speed *= 0.8
+    else:
+        # Demo/autoplay uses very small analog magnitudes to represent turn-in-place and
+        # heading alignment slowdown; don't apply a deadzone there.
+        moving_input = raw_mag > (0.0 if state.demo_mode_active else 0.2)
+
+        turn_alignment_scale = 1.0
+        if moving_input:
+            inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0
+            move = raw_move * inv
+            # Native normalizes this heading into [0, 2pi] before calling
+            # `player_heading_approach_target` (see ghidra @ 0x00413fxx).
+            target_heading = _normalize_heading_angle(move.to_heading())
+            angle_diff = _player_heading_approach_target(player, target_heading, dt)
+            move = Vec2.from_heading(player.heading)
+            turn_alignment_scale = max(0.0, (math.pi - angle_diff) / math.pi)
+            if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
+                if player.move_speed < 2.0:
+                    player.move_speed = float(player.move_speed + dt * 4.0)
+                player.move_speed = float(player.move_speed + dt)
+                if player.move_speed > 2.8:
+                    player.move_speed = 2.8
+            else:
+                player.move_speed = float(player.move_speed + dt * 5.0)
+                if player.move_speed > 2.0:
+                    player.move_speed = 2.0
+        else:
+            player.move_speed = float(player.move_speed - dt * 15.0)
+            if player.move_speed < 0.0:
+                player.move_speed = 0.0
+            move = Vec2.from_heading(player.heading)
+
+        if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
+            player.move_speed = 0.8
+
+        speed = player.move_speed * speed_multiplier * 25.0
+        if moving_input:
+            speed *= min(1.0, raw_mag)
+            speed *= turn_alignment_scale
+        if perk_active(player, PerkId.ALTERNATE_WEAPON):
+            speed *= 0.8
 
     half_size = max(0.0, float(player.size) * 0.5)
     player.pos = (player.pos + move * (speed * dt)).clamp_rect(
@@ -2485,7 +2556,7 @@ def player_update(
         float(world_size) - half_size,
     )
 
-    player.move_phase += dt * player.move_speed * 19.0
+    player.move_phase += phase_sign * dt * player.move_speed * 19.0
 
     move_delta = player.pos - prev_pos
     stationary = abs(move_delta.x) <= 1e-9 and abs(move_delta.y) <= 1e-9

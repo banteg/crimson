@@ -290,6 +290,50 @@ def test_player_update_w_then_up_left_converges_to_diagonal_heading() -> None:
     assert end_diff < 0.4
 
 
+def test_player_update_digital_turn_only_rotates_without_translation() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, aim_heading=0.0, move_speed=0.0, turn_speed=1.0)
+    input_state = PlayerInput(
+        move=Vec2(1.0, 0.0),
+        aim=Vec2(200.0, 100.0),
+        move_forward_pressed=False,
+        move_backward_pressed=False,
+        turn_left_pressed=False,
+        turn_right_pressed=True,
+    )
+
+    player_update(player, input_state, 0.1, state)
+
+    assert player.heading > 0.0
+    assert player.aim_heading > 0.0
+    assert player.turn_speed > 1.0
+    assert math.isclose(player.pos.x, 100.0, abs_tol=1e-9)
+    assert math.isclose(player.pos.y, 100.0, abs_tol=1e-9)
+    assert math.isclose(player.move_speed, 0.0, abs_tol=1e-9)
+
+
+def test_player_update_digital_forward_turn_moves_in_heading_direction() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, aim_heading=0.0, move_speed=0.0, turn_speed=1.0)
+    input_state = PlayerInput(
+        move=Vec2(-1.0, -1.0),
+        aim=Vec2(200.0, 100.0),
+        move_forward_pressed=True,
+        move_backward_pressed=False,
+        turn_left_pressed=True,
+        turn_right_pressed=False,
+    )
+
+    player_update(player, input_state, 0.1, state)
+
+    assert player.heading < 0.0
+    assert 0.0 < player.aim_heading < (math.pi / 2.0)
+    assert player.turn_speed > 1.0
+    assert player.move_speed > 0.0
+    assert player.pos.x < 100.0
+    assert player.pos.y < 100.0
+
+
 def test_player_update_wraps_negative_target_heading_before_turning() -> None:
     state = GameplayState()
     player = PlayerState(
