@@ -152,9 +152,10 @@ Without any extra env vars, v2 now captures full detail for every tracked tick:
 - Detailed entity samples (`creatures`, `projectiles`, `secondary_projectiles`, `bonuses`) on every tick.
 - Unlimited per-tick sample stream limits (`*_SAMPLE_LIMIT=-1` semantics).
 - Unlimited RNG sample/caller heads (`CRIMSON_FRIDA_V2_RNG_HEAD=-1`, `CRIMSON_FRIDA_V2_RNG_CALLERS=-1`).
+- Full per-roll RNG stream enabled by default (`CRIMSON_FRIDA_V2_RNG_ROLL_LOG=1`, unlimited by default).
 - RNG mirror tracking on by default (`CRIMSON_FRIDA_V2_RNG_STATE_MIRROR=1`).
 - Between-tick RNG rolls retained in tick-local diagnostics
-  (`rng.outside_before_*`, `checkpoint.rng_marks.rand_outside_before_*`).
+  (`rng.outside_before_*`, `checkpoint.rng_marks.rand_outside_before_*`) with unlimited head by default.
 - Unlimited event/phase head + tick event budget (`CRIMSON_FRIDA_V2_MAX_HEAD=-1`, `CRIMSON_FRIDA_V2_MAX_EVENTS_PER_TICK=-1`).
 - Player count resolved from game memory (`config_player_count`) unless manually overridden.
 
@@ -176,15 +177,15 @@ Backtraces remain off by default (`CRIMSON_FRIDA_INCLUDE_BT=0`).
 - `CRIMSON_FRIDA_V2_RNG_HEAD=-1` (per-tick RNG sample head size; default unlimited, `0` disables head samples)
 - `CRIMSON_FRIDA_V2_RNG_CALLERS=-1` (per-tick RNG caller buckets; default unlimited)
 - `CRIMSON_FRIDA_V2_RNG_STATE_MIRROR=0` (disable mirrored CRT state tracking)
-- `CRIMSON_FRIDA_V2_RNG_OUTSIDE_TICK_HEAD=-1` (between-tick RNG roll head size retained on the next tick; `0` disables)
-- `CRIMSON_FRIDA_V2_RNG_ROLL_LOG=1` (emit one `event: "rng_roll"` row per `crt_rand` call with `seq` + mirrored state)
+- `CRIMSON_FRIDA_V2_RNG_OUTSIDE_TICK_HEAD=256` (reduce between-tick RNG roll head retained on the next tick; `0` disables)
+- `CRIMSON_FRIDA_V2_RNG_ROLL_LOG=0` (disable per-call `event: "rng_roll"` rows)
 - `CRIMSON_FRIDA_V2_MAX_RNG_ROLL_LOG_EVENTS=-1` (cap for `rng_roll` row emission; `-1` unlimited)
 - `CRIMSON_FRIDA_PLAYER_COUNT=2` (optional override; default uses `config_player_count` from memory)
 - `CRIMSON_FRIDA_V2_FOCUS_TICK=1234` and `CRIMSON_FRIDA_V2_FOCUS_RADIUS=30` (optional focus tagging for diagnostics; does not gate snapshots/samples)
 
-## Full RNG divergence trace profile
+## RNG-Trace Defaults
 
-For “log every RNG change” capture sessions, use:
+The capture script now defaults to the full RNG divergence-trace profile:
 
 ```text
 CRIMSON_FRIDA_V2_RNG_ROLL_LOG=1
@@ -195,6 +196,4 @@ CRIMSON_FRIDA_V2_RNG_OUTSIDE_TICK_HEAD=-1
 CRIMSON_FRIDA_V2_RNG_STATE_MIRROR=1
 ```
 
-This records each `crt_rand` call as a standalone `rng_roll` event (with
-session-global `seq`) while still preserving full per-tick RNG heads for
-replay-side tooling.
+Set env vars only if you want to reduce or disable this tracing volume.
