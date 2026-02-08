@@ -534,6 +534,10 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
         creature_damage_head_obj = creature_damage_head if isinstance(creature_damage_head, list) else []
         projectile_spawn_head = event_heads_obj.get("projectile_spawn")
         projectile_spawn_head_obj = projectile_spawn_head if isinstance(projectile_spawn_head, list) else []
+        secondary_projectile_spawn_head = event_heads_obj.get("secondary_projectile_spawn")
+        secondary_projectile_spawn_head_obj = (
+            secondary_projectile_spawn_head if isinstance(secondary_projectile_spawn_head, list) else []
+        )
         creature_death_head = event_heads_obj.get("creature_death")
         creature_death_head_obj = creature_death_head if isinstance(creature_death_head, list) else []
         bonus_spawn_head = event_heads_obj.get("bonus_spawn")
@@ -567,6 +571,8 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
             ),
             "creature_damage_head": creature_damage_head_obj,
             "projectile_spawn_head": projectile_spawn_head_obj,
+            "secondary_projectile_spawn_count": _int_or(event_counts_obj.get("secondary_projectile_spawn"), 0),
+            "secondary_projectile_spawn_head": secondary_projectile_spawn_head_obj,
             "creature_death_head": creature_death_head_obj,
             "bonus_spawn_head": bonus_spawn_head_obj,
             "spawn_top_creature_damage_callers": (
@@ -1689,6 +1695,12 @@ def main() -> int:
         damage_head = focus_raw.get("creature_damage_head")
         if isinstance(damage_head, list) and damage_head:
             print(f"  capture_creature_damage_head={damage_head[:6]!r}")
+        secondary_spawn_count = _int_or(focus_raw.get("secondary_projectile_spawn_count"), 0)
+        if secondary_spawn_count > 0:
+            print(f"  capture_secondary_projectile_spawn_count={secondary_spawn_count}")
+        secondary_spawn_head = focus_raw.get("secondary_projectile_spawn_head")
+        if isinstance(secondary_spawn_head, list) and secondary_spawn_head:
+            print(f"  capture_secondary_projectile_spawn_head={secondary_spawn_head[:6]!r}")
         before_player = focus_raw.get("before_player0")
         if isinstance(before_player, dict):
             print(f"  before_player0={before_player!r}")
