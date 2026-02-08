@@ -184,15 +184,12 @@ zig-run:
     cd rewrite && zig build run
 
 # WinDbg
-[windows]
 windbg-server:
-    cdb -server tcp:port=5005,password=secret -logo C:\Crimsonland\windbg.log -pn crimsonland.exe -noio
+    cdb.exe -server tcp:port=5005,password=secret -logo C:\Crimsonland\windbg.log -pn crimsonland.exe -noio
 
-[windows]
 windbg-client:
-    cdb -remote tcp:server=127.0.0.1,port=5005,password=secret -bonc
+    cdb.exe -remote tcp:server=127.0.0.1,port=5005,password=secret -bonc
 
-[windows]
 windbg-tail:
     uv run scripts/windbg_tail.py
 
