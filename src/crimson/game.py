@@ -2398,7 +2398,7 @@ class HighScoresView:
                 dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
                 rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
-        header_color = rl.Color(255, 255, 255, int(255 * 0.85))
+        header_color = rl.Color(255, 255, 255, 255)
         draw_small_text(
             font, "Rank", left_panel_top_left + Vec2(211.0 * scale, 84.0 * scale), 1.0 * scale, header_color
         )
