@@ -247,3 +247,40 @@ Each entry should capture:
 ### Next probe
 
 - Record a new capture with the updated v2 script, then re-run divergence and inspect the first `projectile_find_hit` shortfall tick to isolate the exact missing corpse-hit path in `src/crimson/projectiles.py`.
+
+---
+
+## Session 2026-02-08-h
+
+- **Session ID:** `2026-02-08-h`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
+- **Primary commands:**
+  - `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 20 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 20 --json-out analysis/frida/divergence_report_latest.json`
+  - `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick3453.json`
+  - `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3412 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick3412.json`
+- **First verifier mismatch:** `tick 3504 (players[0].experience, score_xp)`
+
+### Findings
+
+- Focus trace at tick `3453` confirms rewrite RNG draw profile is dominated by Gauss/Fire-Bullets decal streak calls:
+  - `queue_large_hit_decal_streak` + `fx_queue.add_random` callsites account for the bulk of `268` draws.
+  - Collision trace shows `4` resolved hits and two near-miss checks on creature `19` (margins `+0.0888` and `+0.1594`), consistent with a native-only extra corpse/edge hit branch candidate.
+- A stronger upstream drift signal appears earlier than the XP mismatch:
+  - at tick `3412`, indexed sample comparison shows creature slot divergence (`index 22` active in capture but inactive/repurposed in rewrite), with large position/HP deltas.
+  - This indicates hidden per-index world drift before the first checkpoint-field mismatch at tick `3504`.
+
+### Fixes from this session
+
+- Added `scripts/original_capture_focus_trace.py`, a focused per-tick debugger that replays to a target tick and reports:
+  - rewrite RNG callsite distribution (`rand` caller stack buckets),
+  - collision predicate hits and near-miss candidates (`margin` diagnostics from `_within_native_find_radius`),
+  - indexed sample diffs against capture (`creatures`/`projectiles`) to expose slot-level drift.
+- Updated `docs/frida/gameplay-diff-capture-v2.md` with usage for the new focus trace workflow.
+
+### Next probe
+
+- Run the next capture with updated v2 Frida hooks (now including `projectile_find_hit`) and use:
+  - divergence report for the first RNG shortfall tick,
+  - focus trace at that tick and nearby onset tick for slot-index drift,
+  to isolate whether the missing draw path is a pure projectile corpse-hit branch or an earlier creature-slot lifecycle mismatch.
