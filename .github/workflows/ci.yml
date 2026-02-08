@@ -22,6 +22,10 @@ jobs:
             do_sync: true
             command: uv run --no-sync python scripts/check_asset_loader_usage.py
             sync_args: --no-install-project --group dev
+          - task: ty
+            do_sync: true
+            command: uv run --no-sync ty check src
+            sync_args: --group dev
           - task: pytest
             do_sync: true
             command: uv run --no-sync pytest

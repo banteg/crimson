@@ -19,6 +19,15 @@ test *args:
 test-cov *args:
     uv run pytest --cov-report=html --cov-report=xml {{args}}
 
+check *args:
+    uv run ruff format --check .
+    uv run ruff check .
+    uv run ty check src
+    uv run pytest {{args}}
+
+ty:
+    uv run ty check src
+
 # Lint
 lint-imports:
     uv run lint-imports
