@@ -79,19 +79,20 @@ def resolve_live_link(creatures: Sequence[CreatureLinkLike], link_index: int) ->
 
 
 def _distance_f32(a: Vec2, b: Vec2) -> float:
-    dx = f32(float(b.x) - float(a.x))
-    dy = f32(float(b.y) - float(a.y))
+    dx = float(b.x) - float(a.x)
+    dy = float(b.y) - float(a.y)
     return f32(math.sqrt(dx * dx + dy * dy))
 
 
 def _orbit_target_f32(*, player_pos: Vec2, orbit_phase: float, dist: float, scale: float) -> Vec2:
-    orbit_dir = f32_vec2(Vec2.from_angle(float(orbit_phase)))
-    orbit_dist = f32(float(dist) * float(scale))
-    px = f32(player_pos.x)
-    py = f32(player_pos.y)
+    orbit_dist = float(dist) * float(scale)
+    px = float(player_pos.x)
+    py = float(player_pos.y)
+    orbit_x = math.cos(float(orbit_phase))
+    orbit_y = math.sin(float(orbit_phase))
     return Vec2(
-        f32(orbit_dir.x * orbit_dist + px),
-        f32(orbit_dir.y * orbit_dist + py),
+        f32(float(orbit_x) * orbit_dist + px),
+        f32(float(orbit_y) * orbit_dist + py),
     )
 
 
@@ -199,12 +200,11 @@ def creature_ai_update_target(
         if link is None:
             creature.ai_mode = 0
         else:
-            angle = f32(float(creature.orbit_angle) + float(creature.heading))
-            orbit_dir = f32_vec2(Vec2.from_angle(float(angle)))
-            orbit_radius = f32(float(creature.orbit_radius))
+            angle = float(creature.orbit_angle) + float(creature.heading)
+            orbit_radius = float(creature.orbit_radius)
             creature.target = Vec2(
-                f32(orbit_dir.x * orbit_radius + f32(link.pos.x)),
-                f32(orbit_dir.y * orbit_radius + f32(link.pos.y)),
+                f32(math.cos(angle) * orbit_radius + float(link.pos.x)),
+                f32(math.sin(angle) * orbit_radius + float(link.pos.y)),
             )
 
     dist_to_target = _distance_f32(creature.pos, creature.target)

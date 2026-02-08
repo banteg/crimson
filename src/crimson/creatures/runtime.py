@@ -116,23 +116,23 @@ def _angle_approach(current: float, target: float, rate: float, dt: float) -> fl
     while angle > tau:
         angle = f32(angle - tau)
 
-    direct = f32(abs(target - angle))
+    direct = abs(float(target) - float(angle))
     hi = target if angle < target else angle
     lo = target if target < angle else angle
-    wrap = f32(abs((tau - hi) + lo))
+    wrap = abs((float(tau) - float(hi)) + float(lo))
 
     step_scale = direct if direct < wrap else wrap
     if step_scale > 1.0:
         step_scale = 1.0
-    step = f32(f32(dt) * f32(step_scale) * f32(rate))
+    step = float(dt) * float(step_scale) * float(rate)
 
     if direct <= wrap:
         if angle < target:
-            return f32(angle + step)
+            return f32(float(angle) + float(step))
     else:
         if target < angle:
-            return f32(angle + step)
-    return f32(angle - step)
+            return f32(float(angle) + float(step))
+    return f32(float(angle) - float(step))
 
 
 def _movement_delta_from_heading_f32(
@@ -143,15 +143,15 @@ def _movement_delta_from_heading_f32(
     move_speed: float,
 ) -> Vec2:
     direction = heading_to_direction_f32(heading)
-    step_scale = f32(f32(dt) * f32(move_scale) * f32(move_speed) * f32(CREATURE_SPEED_SCALE))
-    return Vec2(f32(direction.x * step_scale), f32(direction.y * step_scale))
+    step_scale = float(dt) * float(move_scale) * float(move_speed) * float(CREATURE_SPEED_SCALE)
+    return Vec2(f32(float(direction.x) * step_scale), f32(float(direction.y) * step_scale))
 
 
 def _velocity_from_delta_f32(delta: Vec2, *, dt: float) -> Vec2:
     if dt <= 0.0:
         return Vec2()
-    inv_dt = f32(1.0 / f32(dt))
-    return Vec2(f32(delta.x * inv_dt), f32(delta.y * inv_dt))
+    inv_dt = 1.0 / float(dt)
+    return Vec2(f32(float(delta.x) * inv_dt), f32(float(delta.y) * inv_dt))
 
 
 def _advance_pos_by_delta_f32(pos: Vec2, delta: Vec2) -> Vec2:

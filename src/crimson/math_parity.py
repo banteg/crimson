@@ -20,11 +20,16 @@ __all__ = [
     "heading_to_direction_f32",
 ]
 
-# Native movement/heading code uses these float literals.
-NATIVE_PI = 3.1415927
-NATIVE_HALF_PI = 1.5707964
-NATIVE_TAU = 6.2831855
-NATIVE_TURN_RATE_SCALE = 1.3333334
+
+def _f32_from_bits(bits: int) -> float:
+    return struct.unpack("<f", struct.pack("<I", int(bits) & 0xFFFFFFFF))[0]
+
+
+# Native movement/heading code uses these exact float32 literals.
+NATIVE_PI = _f32_from_bits(0x40490FDB)
+NATIVE_HALF_PI = _f32_from_bits(0x3FC90FDB)
+NATIVE_TAU = _f32_from_bits(0x40C90FDB)
+NATIVE_TURN_RATE_SCALE = _f32_from_bits(0x3FAAAAAB)
 
 
 def f32(value: float) -> float:
@@ -48,13 +53,13 @@ def atan2_f32(y: float, x: float) -> float:
 
 
 def heading_from_delta_f32(*, dx: float, dy: float) -> float:
-    return f32(atan2_f32(dy, dx) + NATIVE_HALF_PI)
+    return f32(math.atan2(float(dy), float(dx)) + NATIVE_HALF_PI)
 
 
 def heading_add_pi_f32(heading: float) -> float:
-    return f32(f32(heading) + NATIVE_PI)
+    return f32(float(heading) + NATIVE_PI)
 
 
 def heading_to_direction_f32(heading: float) -> Vec2:
-    radians = f32(f32(heading) - NATIVE_HALF_PI)
+    radians = float(f32(heading)) - NATIVE_HALF_PI
     return Vec2(cos_f32(radians), sin_f32(radians))
