@@ -300,12 +300,26 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         text_color = rl.WHITE
 
         # state_15 title at (153,244) => relative to left panel (-98,194): (251,50)
+        title_pos = left + Vec2(251.0 * scale, 50.0 * scale)
+        title_text = "Unlocked Weapons Database"
         draw_small_text(
             font,
-            "Unlocked Weapons Database",
-            left + Vec2(251.0 * scale, 50.0 * scale),
+            title_text,
+            title_pos,
             text_scale,
             rl.Color(255, 255, 255, 255),
+        )
+        title_w = measure_small_text_width(font, title_text, text_scale)
+        # Decompile path draws a 1px outline strip under the title with alpha 0.5.
+        rl.draw_rectangle_lines_ex(
+            rl.Rectangle(
+                title_pos.x,
+                title_pos.y + 13.0 * scale,
+                title_w,
+                max(1.0, 1.0 * scale),
+            ),
+            1.0,
+            rl.Color(255, 255, 255, int(255 * 0.5)),
         )
 
         weapon_ids = self._weapon_ids
@@ -326,17 +340,32 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             text_color,
         )
 
+        # Oracle frame: outer [114,322]-[364,486], inner [115,323]-[363,485].
+        frame_x = left.x + 212.0 * scale
+        frame_y = left.y + 128.0 * scale
+        frame_w = 250.0 * scale
+        frame_h = 164.0 * scale
+        rl.draw_rectangle(int(round(frame_x)), int(round(frame_y)), int(round(frame_w)), int(round(frame_h)), rl.WHITE)
+        rl.draw_rectangle(
+            int(round(frame_x + 1.0 * scale)),
+            int(round(frame_y + 1.0 * scale)),
+            max(0, int(round(frame_w - 2.0 * scale))),
+            max(0, int(round(frame_h - 2.0 * scale))),
+            rl.BLACK,
+        )
+
         # List items (oracle shows 9-row list widget; render the top slice for now).
         list_top_left = left + Vec2(218.0 * scale, 130.0 * scale)
         row_step = 16.0 * scale
         for row, weapon_id in enumerate(weapon_ids[:9]):
             name, _icon = self._weapon_label_and_icon(weapon_id)
+            row_color = text_color if int(weapon_id) == int(self._selected_weapon_id) else dim_color
             draw_small_text(
                 font,
                 name,
                 list_top_left.offset(dy=float(row) * row_step),
                 text_scale,
-                text_color,
+                row_color,
             )
 
         weapon_id = int(self._selected_weapon_id)
