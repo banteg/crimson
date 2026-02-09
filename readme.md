@@ -1,188 +1,129 @@
-# Crimsonland 1.9.93 decompilation + rewrite
+# Crimsonland 1.9.93 — reverse engineering + rewrite
 
-This repository is a **reverse engineering + high‑fidelity reimplementation** of **Crimsonland 1.9.93 (2003)**.
+A high-fidelity reimplementation of [Crimsonland](https://en.wikipedia.org/wiki/Crimsonland) v1.9.93 (2003, GOG "Crimsonland Classic") in Python + raylib, paired with deep reverse engineering of the original Windows binary.
 
-- **Target build:** `v1.9.93` (GOG "Crimsonland Classic") — see [docs/provenance.md](docs/provenance.md) for exact hashes.
-- **Rewrite:** a runnable reference implementation in **Python + raylib** under `src/`.
-- **Analysis:** decompiles, name/type maps, and runtime evidence under `analysis/`.
-- **Docs:** long-form notes and parity tracking under `docs/` (start at [docs/index.md](docs/index.md)).
+The aim of the project is **behavioral parity**: timings, RNG sequences, float32 math, UI layout quirks, asset decoding, and gameplay rules should match the original as closely as practical.
 
-The north star is **behavioral parity** with the original Windows build: timings, RNG, UI/layout quirks, asset decoding, and gameplay rules should match as closely as practical.
+We go great lengths to achieve this goal, including a headless differential testing harness to verify runs recorded in the original game versus our reimplementation.
 
-**[Read the full story](https://banteg.xyz/posts/crimsonland/)** of how this project came together: reverse engineering workflow, custom asset formats, AI-assisted decompilation, and game preservation philosophy.
+**[Read the full story](https://banteg.xyz/posts/crimsonland/)** — reverse engineering workflow, custom asset formats, AI-assisted decompilation, and game preservation philosophy.
 
----
+**[Browse the docs](https://crimson.banteg.xyz/)** — 100+ pages of analysis, struct layouts, format specs, and parity tracking.
+
+## Current state
+
+The rewrite is a playable full game: boot, menus, Survival, Rush, Quests (5 tiers), Tutorial, and Typ-o-Shooter, with full weapon/creature/perk content, terrain/sprite/decal rendering, music, gameplay SFX, and even secrets. The simulation is fully deterministic, supporting seeded runs and headless verifiable replays.
 
 ## Quick start
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) package manager.
-
-### Run the latest packaged build
-
-If you just want to play the rewrite:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
 
 ```bash
 uvx crimsonland@latest
-```
 
-Linux Wayland users: current PyPI `raylib` wheels are still X11-oriented on `x86_64`, so `uvx crimsonland` may require `xwayland` + `libX11` (see [electronstudio/raylib-python-cffi#199](https://github.com/electronstudio/raylib-python-cffi/pull/199)).
-
-### Run from a checkout
-
-```bash
-gh repo clone banteg/crimson
-cd crimson
+# or run from source
+gh repo clone banteg/crimson && cd crimson
 uv run crimson
 ```
 
-### Keep runtime files local to the repo
+**Wayland on Linux:** current PyPI raylib wheels are X11-oriented on x86_64, so you may need `xwayland` + `libX11`. See [electronstudio/raylib-python-cffi#199](https://github.com/electronstudio/raylib-python-cffi/pull/199).
 
-By default, runtime files (e.g. `crimson.cfg`, `game.cfg`, highscores, logs, downloaded PAQs) live in your per-user data dir.
-To keep everything under this checkout:
+### Runtime files
+
+By default, saves, config, logs, and replays live in your per-user data directory. To keep everything local to the checkout:
 
 ```bash
 export CRIMSON_RUNTIME_DIR="$PWD/artifacts/runtime"
-mkdir -p artifacts/runtime
 uv run crimson
 ```
 
----
+## Assets
 
-## Assets + binaries
+The rewrite can load the assets from original PAQ archives (`crimson.paq` et al). No original assets or binaries are included in this repository.
 
-There are two separate “inputs” to this repo:
-
-1. **Runtime assets for the rewrite** (PAQ archives)
-2. **Original Windows binaries for reverse engineering** (`crimsonland.exe`, `grim.dll`, …)
-
-We keep them out of git and expect a local layout like:
-
-```text
-game_bins/
-  crimsonland/
-    1.9.93-gog/
-      crimsonland.exe
-      grim.dll
-      crimson.paq
-      music.paq
-      sfx.paq
-artifacts/
-  runtime/        # optional: where you run the rewrite (cfg/status/paqs)
-  assets/         # optional: extracted PAQs for inspection/tools
-```
-
-### Running the rewrite
-
-The rewrite loads the assets from original archives:
-
-- `crimson.paq`
-- `music.paq`
-- `sfx.paq`
-
-### Extracted assets
-
-For inspection/diffs/tools, you can extract PAQs into a filesystem tree:
+Point to them explicitly if needed:
 
 ```bash
-uv run crimson extract crimsonland_1.9.93 artifacts/assets
+uv run crimson --assets-dir path/to/game_dir
 ```
 
-Same as the original, many loaders can work from either:
+Extract PAQs into a filesystem tree for inspection. JAZ textures are automatically converted to PNG with alpha:
 
-- **PAQ-backed assets** (preferred when available), or
-- the **extracted filesystem layout** under `artifacts/assets/`.
+```bash
+uv run crimson extract path/to/game_dir artifacts/assets
+```
 
----
-
-## CLI cheat sheet
+## CLI
 
 Everything is exposed via the `crimson` CLI (alias: `crimsonland`):
 
+```
+crimson                           run the game (default)
+crimson view <name>               debug views / sandboxes
+crimson quests <level>            print quest spawn script
+crimson config                    inspect crimson.cfg
+crimson extract <src> <dst>       extract PAQ archives
+crimson replay play <file>        play back a recorded demo
+crimson replay verify <file>      headlessly verify score from a replay
+crimson oracle [--seed N]         headless simulation for differential testing
+```
+
+Useful flags: `--seed N` (deterministic runs), `--demo` (shareware teaser), `--no-intro` (skip logos), `--base-dir PATH` / `CRIMSON_RUNTIME_DIR` (runtime file location), `--assets-dir PATH` (PAQ / extracted asset location).
+
+## Project layout
+
+```
+src/
+  crimson/          game logic — modes, weapons, perks, creatures, UI, replay
+  grim/             engine layer — raylib wrapper, PAQ/JAZ decoders, audio, fonts
+analysis/
+  ghidra/           name/type maps (source of truth) and raw decompile exports
+  frida/            runtime capture evidence (state snapshots, RNG traces)
+  windbg/           debugger session logs
+docs/               100+ pages: formats, structs, algorithms, parity tracking
+scripts/            40+ analysis and utility tools
+tests/              200+ tests: gameplay, perks, physics, replay, parity
+```
+
+## Reverse engineering
+
+**Static analysis** is the source of truth. Names and types live in [`analysis/ghidra/maps/`](analysis/ghidra/maps/); raw decompiles in [`analysis/ghidra/raw/`](analysis/ghidra/raw/) are regenerated output.
+
+**Runtime tooling** (Frida, WinDbg) validates ambiguous behavior and captures ground truth. Evidence summaries live under [`analysis/frida/`](analysis/frida/).
+
+**Differential testing** captures original execution via Frida, replays the same inputs through the rewrite's headless oracle, and compares state checkpoints field-by-field.
+
+See [docs/provenance.md](docs/provenance.md) for exact binary hashes of the target build.
+
+## Development
+
 ```bash
-uv run crimson               # run the game (default command)
-uv run crimson view ui       # debug views / sandboxes
-uv run crimson quests 1.1    # print quest spawn script
-uv run crimson config        # inspect crimson.cfg
-uv run crimson extract <game_dir> artifacts/assets
+uv run pytest              # test suite
+uv run ruff check .        # lint
+uv run ty check src        # type check
+just check                 # all of the above
 ```
 
-Useful flags:
+### Docs
 
-- `--base-dir PATH` / `CRIMSON_RUNTIME_DIR=...` — where saves/config/logs live
-- `--assets-dir PATH` — where `.paq` archives (or extracted assets) are loaded from
-- `--seed N` — deterministic runs for parity testing
-- `--demo` — enable shareware/demo paths
-- `--no-intro` — skip logos/intro music
+Docs are authored in `docs/` and built as a static site with [zensical](https://github.com/banteg/zensical):
 
----
-
-## Docs
-
-Docs are authored in `docs/` and built as a static site at https://crimson.banteg.xyz/
-
-For development, it's useful to have a live local build:
-
-```
+```bash
 uv tool install zensical
 zensical serve
 ```
 
----
+## Contributing
 
-## Development
+- Keep changes small and reviewable — one subsystem at a time.
+- Prefer *measured parity* (captures, logs, deterministic tests) over "looks right".
+- Preserve native float32 math behavior in deterministic simulation paths. See [float parity policy](docs/rewrite/float-parity-policy.md).
+- Run `just check` before committing.
 
-### Tests
+## Tech stack
 
-```bash
-uv run pytest
-```
-
-### Lint / checks
-
-```bash
-uv run lint-imports
-uv run python scripts/check_asset_loader_usage.py
-```
-
-### `justfile` shortcuts
-
-If you have `just` installed:
-
-```bash
-just --list
-just test
-just docs-build
-just ghidra-exe
-just ghidra-grim
-```
-
----
-
-## Reverse engineering workflow
-
-High level:
-
-- **Static analysis is the source of truth.**
-  - Update names/types in [analysis/ghidra/maps/](analysis/ghidra/maps/).
-  - Treat [analysis/ghidra/raw/](analysis/ghidra/raw/) as generated output (regenerate; do not hand-edit).
-- **Runtime tooling** (Frida / WinDbg) validates ambiguous behavior and captures ground truth.
-  - Evidence summaries live under [analysis/frida/](analysis/frida/).
-
----
-
-## Contributing notes
-
-- Keep changes small and reviewable (one subsystem/feature at a time).
-- Prefer *measured parity* (captures/logs/deterministic tests) over “looks right”.
-- For deterministic simulation paths, preserve native float32 math behavior
-  (constants, operation order, and store boundaries) even when literals look
-  less readable (e.g. keep `0.6000000238418579` when that matches native behavior).
-  See [rewrite/float parity policy](docs/rewrite/float-parity-policy.md).
-
----
+Python 3.13+ · raylib (pyray) · Construct · msgspec · Typer · Ghidra · Frida · WinDbg · pytest · uv
 
 ## Legal
 
-This project is an independent reverse engineering and reimplementation effort for preservation, research, and compatibility.
-
-No original assets or binaries are included. Use your own legally obtained copy.
+This project is an independent reverse engineering and reimplementation effort for preservation, research, and compatibility. No original assets or binaries are included. Use your own legally obtained copy.
