@@ -3,7 +3,10 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import grim.terrain_render as terrain_render
+import pytest
 from grim.terrain_render import GroundRenderer
+
+pytestmark = pytest.mark.terrain
 
 
 def _renderer() -> GroundRenderer:

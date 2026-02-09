@@ -14,6 +14,8 @@ import pyray as rl
 from grim.assets import TextureAsset, _load_texture_asset_from_bytes, load_paq_entries
 from grim.terrain_render import GroundRenderer
 
+pytestmark = pytest.mark.terrain
+
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "ground"
 CASES_PATH = FIXTURE_DIR / "ground_dump_cases.json"
 PAQ_DIR = Path("game_bins") / "crimsonland" / "1.9.93-gog"

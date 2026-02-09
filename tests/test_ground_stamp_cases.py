@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+pytestmark = pytest.mark.terrain
+
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "ground"
 CASES_PATH = FIXTURE_DIR / "ground_stamp_cases.json"
 
@@ -53,4 +55,3 @@ def test_ground_stamp_cases_match_captured_triplets() -> None:
 
     if failures:
         pytest.fail("\n".join(failures))
-
