@@ -7,7 +7,7 @@ from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawn
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
 from ..gameplay import PlayerInput
-from .step_pipeline import DeterministicStepResult, run_deterministic_step
+from .step_pipeline import DeterministicStepResult, run_deterministic_step, time_scale_reflex_boost_bonus
 from .world_state import WorldState
 
 
@@ -41,19 +41,34 @@ class SurvivalDeterministicSession:
         self,
         *,
         dt_frame: float,
+        dt_frame_ms_i32: int | None = None,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
     ) -> DeterministicSessionTick:
         dt_frame = float(dt_frame)
-        dt_frame_ms = float(dt_frame) * 1000.0
-        elapsed_before_ms = float(self.elapsed_ms)
-
         state = self.world.state
+        dt_sim = time_scale_reflex_boost_bonus(
+            reflex_boost_timer=float(state.bonuses.reflex_boost),
+            time_scale_active=bool(state.time_scale_active),
+            dt=float(dt_frame),
+        )
+        dt_sim_ms = float(dt_sim) * 1000.0
+        if dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
+            # Use captured integer ms for native cadence counters when available,
+            # then apply reflex scaling with integer semantics.
+            base_dt_ms_i32 = int(dt_frame_ms_i32)
+            if bool(state.time_scale_active) and float(dt_frame) > 0.0:
+                scale = float(dt_sim) / float(dt_frame)
+                dt_sim_ms = float(max(0, int(float(base_dt_ms_i32) * float(scale))))
+            else:
+                dt_sim_ms = float(base_dt_ms_i32)
+        elapsed_before_ms = float(self.elapsed_ms)
 
         rng_marks: dict[str, int] = {"before_world_step": int(state.rng.state)}
         step = run_deterministic_step(
             world=self.world,
             dt_frame=float(dt_frame),
+            dt_frame_ms_i32=(int(dt_frame_ms_i32) if dt_frame_ms_i32 is not None else None),
             inputs=inputs,
             world_size=float(self.world_size),
             damage_scale_by_type=self.damage_scale_by_type,
@@ -100,7 +115,7 @@ class SurvivalDeterministicSession:
         player_xp = self.world.players[0].experience if self.world.players else 0
         cooldown, wave_spawns = tick_survival_wave_spawns(
             self.spawn_cooldown_ms,
-            dt_frame_ms,
+            dt_sim_ms,
             state.rng,
             player_count=len(self.world.players),
             survival_elapsed_ms=float(elapsed_before_ms),
@@ -112,7 +127,7 @@ class SurvivalDeterministicSession:
         self.world.creatures.spawn_inits(wave_spawns)
         rng_marks["after_wave_spawns"] = int(state.rng.state)
         self.world.creatures.finalize_post_render_lifecycle()
-        self.elapsed_ms = float(elapsed_before_ms) + float(dt_frame_ms)
+        self.elapsed_ms = float(elapsed_before_ms) + float(dt_sim_ms)
 
         return DeterministicSessionTick(
             step=step,

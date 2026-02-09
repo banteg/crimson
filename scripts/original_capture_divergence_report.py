@@ -18,6 +18,7 @@ from crimson.replay.diff import ReplayFieldDiff, checkpoint_field_diffs
 from crimson.replay.original_capture import (
     OriginalCaptureSidecar,
     build_original_capture_dt_frame_overrides,
+    build_original_capture_dt_frame_ms_i32_overrides,
     convert_original_capture_to_checkpoints,
     convert_original_capture_to_replay,
     load_original_capture_sidecar,
@@ -776,6 +777,7 @@ def _run_actual_checkpoints(
         capture,
         tick_rate=int(replay.header.tick_rate),
     )
+    dt_frame_ms_i32_overrides = build_original_capture_dt_frame_ms_i32_overrides(capture)
     checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected}
     inter_tick_rand_draws_by_tick = {
         int(tick.tick_index): int(tick.rng_outside_before_calls)
@@ -801,6 +803,7 @@ def _run_actual_checkpoints(
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
             dt_frame_overrides=dt_frame_overrides,
+            dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
             inter_tick_rand_draws=int(inter_tick_rand_draws),
             inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
         )

@@ -10,6 +10,7 @@ from grim.geom import Vec2
 
 from .creatures.spawn import CreatureFlags
 from .effects_atlas import EffectId
+from .math_parity import NATIVE_HALF_PI, f32
 from .perks import PerkId
 from .weapons import weapon_entry_for_projectile_type_id
 
@@ -1176,7 +1177,10 @@ class ProjectilePool:
                     if damage_amount > 0.0 and creature.hp > 0.0:
                         remaining = proj.damage_pool - 1.0
                         proj.damage_pool = remaining
-                        impulse = direction * float(proj.speed_scale)
+                        # Native `projectile_update` writes both impulse components from the
+                        # same cosine term (`cos(angle - pi/2) * speed_scale`).
+                        impulse_axis = f32(math.cos(float(proj.angle) - NATIVE_HALF_PI) * float(proj.speed_scale))
+                        impulse = Vec2(float(impulse_axis), float(impulse_axis))
                         damage_type = _damage_type_for()
                         if remaining <= 0.0:
                             _apply_damage_to_creature(
@@ -1201,6 +1205,24 @@ class ProjectilePool:
                                 apply_creature_damage=apply_creature_damage,
                             )
                             proj.damage_pool -= float(creature.hp)
+
+                    # Native `projectile_update` emits an extra freeze-hit shard on
+                    # creature impacts while Freeze is active, then consumes one
+                    # additional hit-SFX variant draw in the same branch.
+                    if (
+                        runtime_state is not None
+                        and float(runtime_state.bonuses.freeze) > 0.0
+                        and effects is not None
+                    ):
+                        shard_angle = float(float(proj.angle) - NATIVE_HALF_PI)
+                        shard_angle += float(int(rng()) % 100) * 0.01
+                        effects.spawn_freeze_shard(
+                            pos=proj.pos,
+                            angle=float(shard_angle),
+                            rand=rng,
+                            detail_preset=int(detail_preset),
+                        )
+                        rng()
 
                     if proj.damage_pool == 1.0 and proj.life_timer != 0.25:
                         proj.damage_pool = 0.0

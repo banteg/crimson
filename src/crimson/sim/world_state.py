@@ -12,6 +12,7 @@ from ..creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
 from ..features.bonuses import emit_bonus_pickup_effects
 from ..features.perks import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
+from ..game_modes import GameMode
 from ..gameplay import (
     BonusPickupEvent,
     GameplayState,
@@ -92,6 +93,7 @@ class WorldState:
         self,
         dt: float,
         *,
+        dt_ms_i32: int | None = None,
         inputs: list[PlayerInput] | None,
         world_size: float,
         damage_scale_by_type: dict[int, float],
@@ -140,6 +142,7 @@ class WorldState:
 
         creature_result = self.creatures.update(
             dt,
+            dt_ms_i32=(int(dt_ms_i32) if dt_ms_i32 is not None else None),
             state=self.state,
             players=self.players,
             detail_preset=detail_preset,
@@ -227,18 +230,27 @@ class WorldState:
                 post_ctx=post_ctx,
                 fx_queue=fx_queue,
             )
-            hit_trigger, keys = plan_hit_sfx_keys(
-                [_hit],
-                game_mode=int(game_mode),
-                demo_mode_active=bool(self.state.demo_mode_active),
-                game_tune_started=bool(hit_audio_game_tune_started),
-                rand=self.state.rng.rand,
-            )
-            if hit_trigger:
-                trigger_game_tune = True
-                hit_audio_game_tune_started = True
-            if keys:
-                hit_sfx.extend(keys)
+            if float(self.state.bonuses.freeze) > 0.0:
+                if (
+                    (not bool(self.state.demo_mode_active))
+                    and int(game_mode) != int(GameMode.RUSH)
+                    and (not bool(hit_audio_game_tune_started))
+                ):
+                    trigger_game_tune = True
+                    hit_audio_game_tune_started = True
+            else:
+                hit_trigger, keys = plan_hit_sfx_keys(
+                    [_hit],
+                    game_mode=int(game_mode),
+                    demo_mode_active=bool(self.state.demo_mode_active),
+                    game_tune_started=bool(hit_audio_game_tune_started),
+                    rand=self.state.rng.rand,
+                )
+                if hit_trigger:
+                    trigger_game_tune = True
+                    hit_audio_game_tune_started = True
+                if keys:
+                    hit_sfx.extend(keys)
 
         hits = self.state.projectiles.update(
             dt,
@@ -346,6 +358,10 @@ class WorldState:
             self._advance_player_anim(dt, prev_positions)
 
         camera_shake_update(self.state, dt)
+        # Native latches `time_scale_active` late in gameplay_update_and_render
+        # (after survival/rush/quest update, before bonus timer decrements). The
+        # next frame's dt scaling uses this latched flag, not the immediate timer.
+        self.state.time_scale_active = float(self.state.bonuses.reflex_boost) > 0.0
         bonus_update_pre_pickup_timers(self.state, dt)
 
         pickups = bonus_update(

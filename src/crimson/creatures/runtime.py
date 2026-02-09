@@ -277,13 +277,6 @@ def _creature_interaction_plaguebearer_spread(ctx: _CreatureInteractionCtx) -> N
 
 def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
     creature = ctx.creature
-    if float(ctx.state.bonuses.energizer) <= 0.0:
-        return
-    if float(creature.max_hp) >= 380.0:
-        return
-    if float(ctx.player.health) <= 0.0:
-        return
-
     creature_pos = creature.pos
     eat_dist_sq = Vec2.distance_sq(creature_pos, ctx.player.pos)
     if eat_dist_sq >= 20.0 * 20.0:
@@ -296,8 +289,15 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
         float(ctx.world_height),
     )
 
+    # Native reverts the just-applied movement whenever a creature gets within
+    # 20 units of the target player, regardless of Energizer.
+    if float(ctx.state.bonuses.energizer) <= 0.0:
+        return
+    if float(creature.max_hp) >= 380.0:
+        return
+
     ctx.state.effects.spawn_burst(
-        pos=creature_pos,
+        pos=creature.pos,
         count=6,
         rand=ctx.rand,
         detail_preset=int(ctx.detail_preset),
@@ -632,6 +632,7 @@ class CreaturePool:
         self,
         dt: float,
         *,
+        dt_ms_i32: int | None = None,
         state: GameplayState,
         players: list[PlayerState],
         rand: Callable[[], int] | None = None,
@@ -665,7 +666,10 @@ class CreaturePool:
         # even when `players` is empty so debug views remain deterministic.
         # Native AI7 timer math uses `frame_dt_ms` integer slots; round-to-nearest
         # keeps parity with captured `frame_dt` values such as 0.0329999998 -> 33.
-        dt_ms = int(round(dt * 1000.0)) if dt > 0.0 else 0
+        if dt_ms_i32 is not None:
+            dt_ms = max(0, int(dt_ms_i32))
+        else:
+            dt_ms = int(round(dt * 1000.0)) if dt > 0.0 else 0
         for idx, creature in enumerate(self._entries):
             if not creature.active:
                 continue

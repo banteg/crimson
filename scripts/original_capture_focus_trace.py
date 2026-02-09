@@ -19,6 +19,7 @@ from crimson.gameplay import PlayerInput
 from crimson.replay.original_capture import (
     ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
     build_original_capture_dt_frame_overrides,
+    build_original_capture_dt_frame_ms_i32_overrides,
     convert_original_capture_to_replay,
     load_original_capture_sidecar,
     original_capture_bootstrap_payload_from_event_payload,
@@ -30,7 +31,12 @@ from crimson.sim.runners.common import (
     reset_players,
     status_from_snapshot,
 )
-from crimson.sim.runners.survival import _apply_tick_events, _decode_digital_move_keys, _resolve_dt_frame
+from crimson.sim.runners.survival import (
+    _apply_tick_events,
+    _decode_digital_move_keys,
+    _partition_tick_events,
+    _resolve_dt_frame,
+)
 from crimson.sim.sessions import SurvivalDeterministicSession
 from crimson.sim.world_state import WorldState
 
@@ -680,12 +686,17 @@ def trace_focus_tick(
 
     events_by_tick, original_capture_replay, digital_move_enabled_by_player = _load_capture_events(replay)
     dt_frame_overrides = build_original_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
+    dt_frame_ms_i32_overrides = build_original_capture_dt_frame_ms_i32_overrides(capture)
     default_dt_frame = 1.0 / float(int(replay.header.tick_rate))
     outside_draws_by_tick = {
         int(item.tick_index): int(item.rng_outside_before_calls)
         for item in capture.ticks
         if int(item.rng_outside_before_calls) >= 0
     }
+    if outside_draws_by_tick:
+        first_tick_index = min(outside_draws_by_tick)
+        # The inferred replay seed already matches the first sampled capture tick.
+        outside_draws_by_tick[int(first_tick_index)] = 0
     use_outside_draws = bool(outside_draws_by_tick)
 
     rng_callsites: Counter[str] = Counter()
@@ -710,6 +721,8 @@ def trace_focus_tick(
 
     try:
         for tick_index in range(int(tick) + 1):
+            world.state.game_mode = int(GameMode.SURVIVAL)
+            world.state.demo_mode_active = False
             if use_outside_draws:
                 draws = outside_draws_by_tick.get(int(tick_index))
                 if draws is None:
@@ -721,8 +734,15 @@ def trace_focus_tick(
                 default_dt_frame=float(default_dt_frame),
                 dt_frame_overrides=dt_frame_overrides,
             )
+            dt_tick_ms_i32 = dt_frame_ms_i32_overrides.get(int(tick_index))
+            tick_events = events_by_tick.get(int(tick_index), [])
+            pre_step_events, post_step_events = _partition_tick_events(
+                tick_events,
+                defer_menu_open=bool(original_capture_replay),
+            )
+
             _apply_tick_events(
-                events_by_tick.get(int(tick_index), []),
+                pre_step_events,
                 tick_index=int(tick_index),
                 dt_frame=float(dt_tick),
                 world=world,
@@ -848,6 +868,7 @@ def trace_focus_tick(
 
             tick_result = session.step_tick(
                 dt_frame=float(dt_tick),
+                dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
                 inputs=player_inputs,
                 trace_rng=False,
             )
@@ -857,6 +878,17 @@ def trace_focus_tick(
                 focus_hits = int(len(tick_result.step.events.hits))
                 focus_deaths = int(len(tick_result.step.events.deaths))
                 focus_sfx = int(len(tick_result.step.events.sfx))
+
+            if post_step_events:
+                _apply_tick_events(
+                    post_step_events,
+                    tick_index=int(tick_index),
+                    dt_frame=float(dt_tick),
+                    world=world,
+                    strict_events=False,
+                )
+
+            if int(tick_index) == int(tick):
                 world.state.rng.rand = orig_rand  # type: ignore[assignment]
                 world.state.particles._rand = orig_particles_rand
                 world.state.sprite_effects._rand = orig_sprite_effects_rand

@@ -79,20 +79,22 @@ def resolve_live_link(creatures: Sequence[CreatureLinkLike], link_index: int) ->
 
 
 def _distance_f32(a: Vec2, b: Vec2) -> float:
-    dx = float(b.x) - float(a.x)
-    dy = float(b.y) - float(a.y)
-    return float(math.sqrt(dx * dx + dy * dy))
+    dx = f32(float(b.x) - float(a.x))
+    dy = f32(float(b.y) - float(a.y))
+    dist_sq = f32(f32(float(dx) * float(dx)) + f32(float(dy) * float(dy)))
+    return f32(math.sqrt(float(dist_sq)))
 
 
 def _orbit_target_f32(*, player_pos: Vec2, orbit_phase: float, dist: float, scale: float) -> Vec2:
-    orbit_dist = float(dist) * float(scale)
-    px = float(player_pos.x)
-    py = float(player_pos.y)
-    orbit_x = math.cos(float(orbit_phase))
-    orbit_y = math.sin(float(orbit_phase))
+    orbit_dist = f32(f32(float(dist)) * f32(float(scale)))
+    phase = f32(float(orbit_phase))
+    px = f32(float(player_pos.x))
+    py = f32(float(player_pos.y))
+    orbit_x = f32(math.cos(float(phase)))
+    orbit_y = f32(math.sin(float(phase)))
     return Vec2(
-        f32(float(orbit_x) * orbit_dist + px),
-        f32(float(orbit_y) * orbit_dist + py),
+        f32(f32(float(orbit_x) * float(orbit_dist)) + px),
+        f32(f32(float(orbit_y) * float(orbit_dist)) + py),
     )
 
 
@@ -121,7 +123,7 @@ def creature_ai_update_target(
     """
 
     dist_to_player = _distance_f32(creature.pos, player_pos)
-    orbit_phase = f32(float(int(creature.phase_seed)) * f32(3.7)) * NATIVE_PI
+    orbit_phase = f32(f32(float(int(creature.phase_seed)) * f32(3.7)) * NATIVE_PI)
     move_scale = 1.0
     self_damage: float | None = None
 
