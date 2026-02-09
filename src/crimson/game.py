@@ -154,6 +154,7 @@ from .frontend.menu import (
     ensure_menu_ground,
 )
 from .frontend.panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from .frontend.panels.alien_zookeeper import AlienZooKeeperView
 from .frontend.panels.controls import ControlsMenuView
 from .frontend.panels.credits import CreditsView
 from .frontend.panels.databases import UnlockedPerksDatabaseView, UnlockedWeaponsDatabaseView
@@ -3049,6 +3050,7 @@ class GameLoopView:
             "open_weapon_database": UnlockedWeaponsDatabaseView(state),
             "open_perk_database": UnlockedPerksDatabaseView(state),
             "open_credits": CreditsView(state),
+            "open_alien_zookeeper": AlienZooKeeperView(state),
             "open_mods": ModsMenuView(state),
             "open_other_games": PanelMenuView(
                 state,

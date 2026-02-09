@@ -543,6 +543,8 @@ class CreditsView:
             ):
                 if self._state.audio is not None:
                     play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+                self._begin_close_transition("open_alien_zookeeper")
+                return
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
