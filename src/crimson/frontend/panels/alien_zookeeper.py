@@ -233,8 +233,9 @@ class AlienZooKeeperView:
     def _layout(self, *, scale: float) -> _AzkLayout:
         layout_offset_x = _LAYOUT_OFFSET_X_SMALL if float(self._state.config.screen_width) < 641.0 else _LAYOUT_OFFSET_X
         slide_x = self._panel_slide_x(scale=scale)
-        board_x = _LAYOUT_POS_X + layout_offset_x + _BOARD_X_OFFSET + slide_x
+        anchor_x = _LAYOUT_POS_X + layout_offset_x + _BOARD_X_OFFSET + slide_x
         title_base_y = _LAYOUT_BASE_Y + _LAYOUT_POS_Y + _TITLE_BASE_Y_OFFSET + self._widescreen_y_shift
+        board_x = anchor_x + (22.0 * scale)
         board_y = title_base_y + (_BOARD_Y_OFFSET * scale)
 
         tile_size = _TILE_SIZE * scale
@@ -248,18 +249,18 @@ class AlienZooKeeperView:
             board_y=board_y,
             tile_size=tile_size,
             board_size=board_size,
-            title_x=board_x,
+            title_x=anchor_x,
             title_y=title_base_y - (14.0 * scale),
-            subtitle_1_x=board_x + (12.0 * scale),
+            subtitle_1_x=anchor_x + (12.0 * scale),
             subtitle_1_y=title_base_y + (10.0 * scale),
-            subtitle_2_x=board_x + (18.0 * scale),
+            subtitle_2_x=anchor_x + (18.0 * scale),
             subtitle_2_y=title_base_y + (23.0 * scale),
             score_x=board_x + (124.0 * scale),
             score_y=board_y - (16.0 * scale),
             game_over_x=board_x + (38.0 * scale),
             game_over_y=board_y + (74.0 * scale),  # 96 - 22
-            reset_pos=Vec2(board_x + (38.0 * scale), title_base_y + (256.0 * scale)),
-            back_pos=Vec2(board_x + (138.0 * scale), title_base_y + (256.0 * scale)),
+            reset_pos=Vec2(anchor_x + (38.0 * scale), title_base_y + (256.0 * scale)),
+            back_pos=Vec2(anchor_x + (138.0 * scale), title_base_y + (256.0 * scale)),
         )
 
     def _fill_empty_cells(self) -> None:
@@ -437,16 +438,16 @@ class AlienZooKeeperView:
             fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
             draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
-        draw_small_text(font, _TITLE, Vec2(layout.title_x, layout.title_y), 0.8 * scale, rl.WHITE)
-        draw_small_text(font, _SUBTITLE_1, Vec2(layout.subtitle_1_x, layout.subtitle_1_y), 0.45 * scale, rl.WHITE)
-        draw_small_text(font, _SUBTITLE_2, Vec2(layout.subtitle_2_x, layout.subtitle_2_y), 0.45 * scale, rl.WHITE)
+        draw_small_text(font, _TITLE, Vec2(layout.title_x, layout.title_y), 1.0 * scale, rl.WHITE)
+        draw_small_text(font, _SUBTITLE_1, Vec2(layout.subtitle_1_x, layout.subtitle_1_y), 1.0 * scale, rl.WHITE)
+        draw_small_text(font, _SUBTITLE_2, Vec2(layout.subtitle_2_x, layout.subtitle_2_y), 1.0 * scale, rl.WHITE)
 
         score_text = _LABEL_SCORE % int(self._score)
         draw_small_text(
             font,
             score_text,
             Vec2(layout.score_x, layout.score_y),
-            0.42 * scale,
+            1.0 * scale,
             _to_color(1.0, 1.0, 1.0, 0.7),
         )
 
