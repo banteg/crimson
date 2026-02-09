@@ -93,7 +93,7 @@ under `docs/crimsonland-exe/`.
   - Code: `src/crimson/sim/sessions.py`
   - Consumers: `src/crimson/modes/survival_mode.py`, `src/crimson/modes/rush_mode.py`, `src/crimson/modes/replay_playback_mode.py`, `src/crimson/sim/runners/*.py`
 - Replay sidecar differential tooling now has a reusable first-divergence comparator and CLI:
-  - Code: `src/crimson/replay/diff.py`
+  - Code: `src/crimson/original/diff.py`
   - Command: `uv run crimson replay diff-checkpoints expected.checkpoints.json.gz actual.checkpoints.json.gz`
 - Oracle headless output now steps through the deterministic session pipeline and emits `command_hash` per frame:
   - Code: `src/crimson/oracle.py`
