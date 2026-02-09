@@ -1,15 +1,15 @@
 "use strict";
 
-// Differential capture v2:
+// Differential gameplay capture:
 // - per-gameplay tick records with stable checkpoint payloads
 // - deterministic command/event summaries for first-divergence debugging
 // - compact before/after snapshots and optional entity samples
 //
 // Attach only:
-//   frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture_v2.js
+//   frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
 //
 // Output:
-//   C:\share\frida\gameplay_diff_capture_v2.jsonl (or CRIMSON_FRIDA_DIR override)
+//   C:\share\frida\gameplay_diff_capture.json (or CRIMSON_FRIDA_DIR override)
 
 const DEFAULT_LOG_DIR = "C:\\share\\frida";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
@@ -90,42 +90,42 @@ function toHex(value, width) {
 const LOG_DIR = getEnv("CRIMSON_FRIDA_DIR") || DEFAULT_LOG_DIR;
 
 const CONFIG = {
-  outPath: joinPath(LOG_DIR, "gameplay_diff_capture_v2.jsonl"),
+  outPath: joinPath(LOG_DIR, "gameplay_diff_capture.json"),
   logMode: getEnv("CRIMSON_FRIDA_APPEND") === "1" ? "append" : "truncate",
   includeCaller: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_CALLER", true),
   includeBacktrace: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_BT", false),
-  includeTickSnapshots: parseBoolEnv("CRIMSON_FRIDA_V2_INCLUDE_TICK_SNAPSHOTS", true),
-  includeRawEvents: parseBoolEnv("CRIMSON_FRIDA_V2_INCLUDE_RAW_EVENTS", false),
-  emitTicksOutsideTrackedStates: parseBoolEnv("CRIMSON_FRIDA_V2_ALL_STATES", false),
-  trackedStates: parseStateSet(getEnv("CRIMSON_FRIDA_V2_STATES"), DEFAULT_TRACKED_STATES),
+  includeTickSnapshots: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_TICK_SNAPSHOTS", true),
+  includeRawEvents: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_RAW_EVENTS", false),
+  emitTicksOutsideTrackedStates: parseBoolEnv("CRIMSON_FRIDA_ALL_STATES", false),
+  trackedStates: parseStateSet(getEnv("CRIMSON_FRIDA_STATES"), DEFAULT_TRACKED_STATES),
   playerCountOverride: parseIntEnv("CRIMSON_FRIDA_PLAYER_COUNT", 0),
-  focusTick: parseIntEnv("CRIMSON_FRIDA_V2_FOCUS_TICK", -1),
-  focusRadius: Math.max(0, parseIntEnv("CRIMSON_FRIDA_V2_FOCUS_RADIUS", 0)),
-  tickDetailsEvery: Math.max(1, parseIntEnv("CRIMSON_FRIDA_V2_TICK_DETAILS_EVERY", 1)),
-  heartbeatMs: Math.max(100, parseIntEnv("CRIMSON_FRIDA_V2_HEARTBEAT_MS", 1000)),
-  maxHeadPerKind: parseLimitEnv("CRIMSON_FRIDA_V2_MAX_HEAD", -1, 0),
-  maxEventsPerTick: parseLimitEnv("CRIMSON_FRIDA_V2_MAX_EVENTS_PER_TICK", -1, 0),
-  maxRngHeadPerTick: parseLimitEnv("CRIMSON_FRIDA_V2_RNG_HEAD", -1, 0),
-  maxRngCallerKinds: parseLimitEnv("CRIMSON_FRIDA_V2_RNG_CALLERS", -1, 1),
-  enableRngRollLog: parseBoolEnv("CRIMSON_FRIDA_V2_RNG_ROLL_LOG", true),
-  maxRngRollLogEvents: parseLimitEnv("CRIMSON_FRIDA_V2_MAX_RNG_ROLL_LOG_EVENTS", -1, 0),
-  maxRngOutsideTickHead: parseLimitEnv("CRIMSON_FRIDA_V2_RNG_OUTSIDE_TICK_HEAD", -1, 0),
-  enableRngStateMirror: parseBoolEnv("CRIMSON_FRIDA_V2_RNG_STATE_MIRROR", true),
-  maxCreatureDeltaIds: Math.max(1, parseIntEnv("CRIMSON_FRIDA_V2_CREATURE_DELTA_IDS", 32)),
-  creatureSampleLimit: parseIntEnv("CRIMSON_FRIDA_V2_CREATURE_SAMPLE_LIMIT", -1),
-  projectileSampleLimit: parseIntEnv("CRIMSON_FRIDA_V2_PROJECTILE_SAMPLE_LIMIT", -1),
-  secondaryProjectileSampleLimit: parseIntEnv("CRIMSON_FRIDA_V2_SECONDARY_PROJECTILE_SAMPLE_LIMIT", -1),
-  bonusSampleLimit: parseIntEnv("CRIMSON_FRIDA_V2_BONUS_SAMPLE_LIMIT", -1),
-  enableInputHooks: parseBoolEnv("CRIMSON_FRIDA_V2_INPUT_HOOKS", true),
-  enableRngHooks: parseBoolEnv("CRIMSON_FRIDA_V2_RNG_HOOKS", true),
-  enableSfxHooks: parseBoolEnv("CRIMSON_FRIDA_V2_SFX", true),
-  enableDamageHooks: parseBoolEnv("CRIMSON_FRIDA_V2_DAMAGE", true),
-  creatureDamageProjectileOnly: parseBoolEnv("CRIMSON_FRIDA_V2_DAMAGE_PROJECTILE_ONLY", true),
-  enableSpawnHooks: parseBoolEnv("CRIMSON_FRIDA_V2_SPAWNS", true),
-  enableCreatureSpawnHook: parseBoolEnv("CRIMSON_FRIDA_V2_CREATURE_SPAWN_HOOK", true),
-  enableCreatureDeathHook: parseBoolEnv("CRIMSON_FRIDA_V2_CREATURE_DEATH_HOOK", true),
-  enableBonusSpawnHook: parseBoolEnv("CRIMSON_FRIDA_V2_BONUS_SPAWN_HOOK", true),
-  enableCreatureLifecycleDigest: parseBoolEnv("CRIMSON_FRIDA_V2_CREATURE_LIFECYCLE", true),
+  focusTick: parseIntEnv("CRIMSON_FRIDA_FOCUS_TICK", -1),
+  focusRadius: Math.max(0, parseIntEnv("CRIMSON_FRIDA_FOCUS_RADIUS", 0)),
+  tickDetailsEvery: Math.max(1, parseIntEnv("CRIMSON_FRIDA_TICK_DETAILS_EVERY", 1)),
+  heartbeatMs: Math.max(100, parseIntEnv("CRIMSON_FRIDA_HEARTBEAT_MS", 1000)),
+  maxHeadPerKind: parseLimitEnv("CRIMSON_FRIDA_MAX_HEAD", -1, 0),
+  maxEventsPerTick: parseLimitEnv("CRIMSON_FRIDA_MAX_EVENTS_PER_TICK", -1, 0),
+  maxRngHeadPerTick: parseLimitEnv("CRIMSON_FRIDA_RNG_HEAD", -1, 0),
+  maxRngCallerKinds: parseLimitEnv("CRIMSON_FRIDA_RNG_CALLERS", -1, 1),
+  enableRngRollLog: parseBoolEnv("CRIMSON_FRIDA_RNG_ROLL_LOG", true),
+  maxRngRollLogEvents: parseLimitEnv("CRIMSON_FRIDA_MAX_RNG_ROLL_LOG_EVENTS", -1, 0),
+  maxRngOutsideTickHead: parseLimitEnv("CRIMSON_FRIDA_RNG_OUTSIDE_TICK_HEAD", -1, 0),
+  enableRngStateMirror: parseBoolEnv("CRIMSON_FRIDA_RNG_STATE_MIRROR", true),
+  maxCreatureDeltaIds: Math.max(1, parseIntEnv("CRIMSON_FRIDA_CREATURE_DELTA_IDS", 32)),
+  creatureSampleLimit: parseIntEnv("CRIMSON_FRIDA_CREATURE_SAMPLE_LIMIT", -1),
+  projectileSampleLimit: parseIntEnv("CRIMSON_FRIDA_PROJECTILE_SAMPLE_LIMIT", -1),
+  secondaryProjectileSampleLimit: parseIntEnv("CRIMSON_FRIDA_SECONDARY_PROJECTILE_SAMPLE_LIMIT", -1),
+  bonusSampleLimit: parseIntEnv("CRIMSON_FRIDA_BONUS_SAMPLE_LIMIT", -1),
+  enableInputHooks: parseBoolEnv("CRIMSON_FRIDA_INPUT_HOOKS", true),
+  enableRngHooks: parseBoolEnv("CRIMSON_FRIDA_RNG_HOOKS", true),
+  enableSfxHooks: parseBoolEnv("CRIMSON_FRIDA_SFX", true),
+  enableDamageHooks: parseBoolEnv("CRIMSON_FRIDA_DAMAGE", true),
+  creatureDamageProjectileOnly: parseBoolEnv("CRIMSON_FRIDA_DAMAGE_PROJECTILE_ONLY", true),
+  enableSpawnHooks: parseBoolEnv("CRIMSON_FRIDA_SPAWNS", true),
+  enableCreatureSpawnHook: parseBoolEnv("CRIMSON_FRIDA_CREATURE_SPAWN_HOOK", true),
+  enableCreatureDeathHook: parseBoolEnv("CRIMSON_FRIDA_CREATURE_DEATH_HOOK", true),
+  enableBonusSpawnHook: parseBoolEnv("CRIMSON_FRIDA_BONUS_SPAWN_HOOK", true),
+  enableCreatureLifecycleDigest: parseBoolEnv("CRIMSON_FRIDA_CREATURE_LIFECYCLE", true),
 };
 
 const FN = {
@@ -306,6 +306,9 @@ const srandContextByTid = {};
 const outState = {
   outFile: null,
   outWarned: false,
+  captureStarted: false,
+  captureClosed: false,
+  captureTickCount: 0,
   gameplayFrame: 0,
   currentStatePrev: null,
   currentStateId: null,
@@ -349,7 +352,7 @@ const UNKNOWN_DEATH = {
 
 function openOutFile() {
   if (outState.outFile) return;
-  const mode = CONFIG.logMode === "append" ? "a" : "w";
+  const mode = "w";
   try {
     outState.outFile = new File(CONFIG.outPath, mode);
   } catch (_) {
@@ -361,24 +364,61 @@ function writeLine(obj) {
   if (!obj) return;
   if (obj.ts_ms == null) obj.ts_ms = nowMs();
   if (obj.ts_iso == null) obj.ts_iso = nowIso();
+  console.log(JSON.stringify(obj));
+}
 
-  const line = JSON.stringify(obj) + "\n";
-  let wrote = false;
+function _captureWrite(text) {
   try {
     openOutFile();
+    if (!outState.outFile) return false;
+    outState.outFile.write(String(text));
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function startCaptureFile(meta) {
+  if (outState.captureStarted) return;
+  const encoded = JSON.stringify(meta);
+  const header =
+    encoded && encoded.endsWith("}") ? encoded.slice(0, -1) + ',\"ticks\":[' : null;
+  const started = header ? _captureWrite(header) : false;
+  outState.captureStarted = started;
+  outState.captureClosed = false;
+  outState.captureTickCount = 0;
+  if (!started && !outState.outWarned) {
+    outState.outWarned = true;
+    console.log("gameplay_diff_capture: file logging unavailable; capture file not writable");
+  }
+}
+
+function writeCaptureTick(tickObj) {
+  if (!outState.captureStarted || outState.captureClosed || !tickObj) return;
+  const prefix = outState.captureTickCount > 0 ? "," : "";
+  const wrote = _captureWrite(prefix + JSON.stringify(tickObj));
+  if (wrote) {
+    outState.captureTickCount += 1;
+    return;
+  }
+  if (!outState.outWarned) {
+    outState.outWarned = true;
+    console.log("gameplay_diff_capture: failed writing tick to capture file");
+  }
+}
+
+function closeCaptureFile() {
+  if (!outState.captureStarted || outState.captureClosed) return;
+  outState.captureClosed = true;
+  try {
     if (outState.outFile) {
-      outState.outFile.write(line);
-      wrote = true;
+      outState.outFile.write("]}");
+      outState.outFile.flush();
+      outState.outFile.close();
     }
   } catch (_) {
-    wrote = false;
   }
-
-  if (!wrote && !outState.outWarned) {
-    outState.outWarned = true;
-    console.log("gameplay_diff_capture_v2: file logging unavailable, using console only");
-  }
-  console.log(line.trim());
+  outState.outFile = null;
 }
 
 function safeReadU8(ptrVal) {
@@ -1485,6 +1525,114 @@ function addPhaseMarker(kind, payload) {
   pushHead(tick.phase_markers, Object.assign({ kind: kind }, payload || {}));
 }
 
+const EVENT_HEAD_ORDER = [
+  "state_transition",
+  "mode_tick",
+  "input_primary_edge",
+  "input_primary_down",
+  "input_any_key",
+  "player_fire",
+  "weapon_assign",
+  "bonus_apply",
+  "bonus_spawn",
+  "secondary_projectile_spawn",
+  "projectile_spawn",
+  "projectile_find_hit",
+  "creature_damage",
+  "player_damage",
+  "creature_death",
+  "creature_spawn",
+  "creature_spawn_low",
+  "perk_apply",
+  "sfx",
+  "perk_delta",
+  "quest_timeline_delta",
+  "creature_lifecycle",
+];
+
+function asObject(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return value;
+}
+
+function toPerkApplyEntry(value) {
+  const row = asObject(value);
+  const backtrace = Array.isArray(row.backtrace)
+    ? row.backtrace.map((item) => String(item))
+    : null;
+  return {
+    perk_id: row.perk_id == null ? null : row.perk_id,
+    pending_before: row.pending_before == null ? null : row.pending_before,
+    pending_after: row.pending_after == null ? null : row.pending_after,
+    caller: row.caller == null ? null : row.caller,
+    caller_static: row.caller_static == null ? null : row.caller_static,
+    backtrace: backtrace,
+  };
+}
+
+function buildCaptureEventHeads(eventHeadsByKind) {
+  const out = [];
+  const byKind = asObject(eventHeadsByKind);
+  for (let i = 0; i < EVENT_HEAD_ORDER.length; i++) {
+    const kind = EVENT_HEAD_ORDER[i];
+    const entries = Array.isArray(byKind[kind]) ? byKind[kind] : [];
+    for (let j = 0; j < entries.length; j++) {
+      const payload = asObject(entries[j]);
+      if (kind === "perk_apply") {
+        out.push(
+          Object.assign(
+            {
+              kind: "perk_apply",
+            },
+            toPerkApplyEntry(payload)
+          )
+        );
+      } else {
+        out.push({
+          kind: kind,
+          data: payload,
+        });
+      }
+    }
+  }
+  return out;
+}
+
+function buildCapturePerkApplyInTick(eventHeadsByKind) {
+  const out = [];
+  const byKind = asObject(eventHeadsByKind);
+  const entries = Array.isArray(byKind.perk_apply) ? byKind.perk_apply : [];
+  for (let i = 0; i < entries.length; i++) {
+    out.push(toPerkApplyEntry(entries[i]));
+  }
+  return out;
+}
+
+function buildCapturePhaseMarkers(markers) {
+  const out = [];
+  if (!Array.isArray(markers)) return out;
+  for (let i = 0; i < markers.length; i++) {
+    const marker = asObject(markers[i]);
+    const kind = String(marker.kind || "");
+    if (!kind) continue;
+    if (kind === "state_enter") {
+      out.push({
+        kind: "state_enter",
+        state_id: marker.state_id == null ? null : marker.state_id,
+        state_pending: marker.state_pending == null ? null : marker.state_pending,
+      });
+      continue;
+    }
+    const data = {};
+    for (const key in marker) {
+      if (key === "kind") continue;
+      data[key] = marker[key];
+    }
+    out.push({ kind: kind, data: data });
+  }
+  return out;
+}
+
 function pushInputContext(threadId, ctx) {
   let stack = inputContextByTid[threadId];
   if (!stack) {
@@ -1598,7 +1746,7 @@ function emitRngRollEvent(rollRow) {
   outState.rngRollLogEmitted += 1;
   writeLine({
     event: "rng_roll",
-    script: "gameplay_diff_capture_v2",
+    script: "gameplay_diff_capture",
     session_id: outState.sessionId,
     seq: rollRow.seq,
     seed_epoch: rollRow.seed_epoch,
@@ -2006,10 +2154,14 @@ function finalizeTick() {
     },
   };
 
+  const frameDtMs =
+    globals.frame_dt_ms_f32 != null
+      ? round4(globals.frame_dt_ms_f32)
+      : globals.frame_dt == null
+        ? null
+        : round4(globals.frame_dt * 1000);
+  const frameDtMsI32 = globals.frame_dt_ms_i32 == null ? null : globals.frame_dt_ms_i32;
   const out = {
-    event: "tick",
-    script: "gameplay_diff_capture_v2",
-    session_id: outState.sessionId,
     tick_index: tick.tick_index,
     gameplay_frame: tick.gameplay_frame,
     focus_tick: focused,
@@ -2017,21 +2169,23 @@ function finalizeTick() {
     state_id_leave: outState.currentStateId,
     state_pending_enter: tick.state_pending_enter,
     state_pending_leave: outState.currentStatePending,
-    mode_hint: tick.mode_hint,
+    mode_hint: tick.mode_hint == null ? "" : String(tick.mode_hint),
+    game_mode_id: globals.config_game_mode == null ? -1 : globals.config_game_mode,
     ts_enter_ms: tick.ts_enter_ms,
     ts_leave_ms: tsLeave,
     duration_ms: tsLeave - tick.ts_enter_ms,
     checkpoint: checkpoint,
     event_counts: tick.event_counts,
     event_overflow: tick.overflow,
-    event_heads: tick.event_heads,
-    phase_markers: tick.phase_markers,
+    event_heads: buildCaptureEventHeads(tick.event_heads),
+    phase_markers: buildCapturePhaseMarkers(tick.phase_markers),
     input_queries: {
       stats: tick.input_queries,
       query_hash: toHex(tick.input_hash_state >>> 0, 8),
     },
     input_player_keys: tick.input_player_keys,
     perk_apply_outside_before: perkApplyOutsideBefore,
+    perk_apply_in_tick: buildCapturePerkApplyInTick(tick.event_heads),
     rng: {
       calls: tick.rng.calls,
       last_value: tick.rng.last_value,
@@ -2058,6 +2212,8 @@ function finalizeTick() {
       creature_lifecycle: creatureLifecycleDiagnostics,
     },
     input_approx: buildInputApprox(afterPlayers, tick),
+    frame_dt_ms: frameDtMs,
+    frame_dt_ms_i32: frameDtMsI32,
   };
   if (creatureLifecycleDiagnostics) {
     out.creature_lifecycle = creatureLifecycleDiagnostics;
@@ -2077,7 +2233,15 @@ function finalizeTick() {
     };
   }
 
-  writeLine(out);
+  writeCaptureTick(out);
+  writeLine({
+    event: "tick",
+    tick_index: out.tick_index,
+    gameplay_frame: out.gameplay_frame,
+    state_id: out.state_id_leave,
+    rng_calls: out.rng.calls,
+    event_total: tick.event_total,
+  });
   if (afterElapsedMs != null) outState.lastTickElapsedMs = afterElapsedMs;
   outState.lastTickGameplayFrame = tick.gameplay_frame;
   outState.currentTick = null;
@@ -3252,48 +3416,44 @@ function main() {
   outState.sessionFingerprint = makeSessionFingerprint(exeModule, ptrs);
   outState.sessionId = outState.sessionFingerprint.session_id;
 
-  writeLine({
-    event: "start",
-    script: "gameplay_diff_capture_v2",
+  const captureConfig = {
+    log_mode: CONFIG.logMode,
+    include_caller: CONFIG.includeCaller,
+    include_backtrace: CONFIG.includeBacktrace,
+    include_tick_snapshots: CONFIG.includeTickSnapshots,
+    emit_ticks_outside_tracked_states: CONFIG.emitTicksOutsideTrackedStates,
+    tracked_states: Array.from(CONFIG.trackedStates.values()),
+    player_count_override: CONFIG.playerCountOverride,
+    focus_tick: CONFIG.focusTick,
+    focus_radius: CONFIG.focusRadius,
+    tick_details_every: CONFIG.tickDetailsEvery,
+    heartbeat_ms: CONFIG.heartbeatMs,
+    max_head_per_kind: CONFIG.maxHeadPerKind,
+    max_events_per_tick: CONFIG.maxEventsPerTick,
+    max_rng_head_per_tick: CONFIG.maxRngHeadPerTick,
+    max_rng_caller_kinds: CONFIG.maxRngCallerKinds,
+    enable_rng_state_mirror: CONFIG.enableRngStateMirror,
+    max_creature_delta_ids: CONFIG.maxCreatureDeltaIds,
+    creature_sample_limit: CONFIG.creatureSampleLimit,
+    projectile_sample_limit: CONFIG.projectileSampleLimit,
+    secondary_projectile_sample_limit: CONFIG.secondaryProjectileSampleLimit,
+    bonus_sample_limit: CONFIG.bonusSampleLimit,
+    enable_input_hooks: CONFIG.enableInputHooks,
+    enable_rng_hooks: CONFIG.enableRngHooks,
+    enable_sfx_hooks: CONFIG.enableSfxHooks,
+    enable_damage_hooks: CONFIG.enableDamageHooks,
+    creature_damage_projectile_only: CONFIG.creatureDamageProjectileOnly,
+    enable_spawn_hooks: CONFIG.enableSpawnHooks,
+    enable_creature_spawn_hook: CONFIG.enableCreatureSpawnHook,
+    enable_creature_death_hook: CONFIG.enableCreatureDeathHook,
+    enable_bonus_spawn_hook: CONFIG.enableBonusSpawnHook,
+    enable_creature_lifecycle_digest: CONFIG.enableCreatureLifecycleDigest,
+  };
+  const captureMeta = {
+    script: "gameplay_diff_capture",
     session_id: outState.sessionId,
     out_path: CONFIG.outPath,
-    config: {
-      log_mode: CONFIG.logMode,
-      include_caller: CONFIG.includeCaller,
-      include_backtrace: CONFIG.includeBacktrace,
-      include_tick_snapshots: CONFIG.includeTickSnapshots,
-      include_raw_events: CONFIG.includeRawEvents,
-      emit_ticks_outside_tracked_states: CONFIG.emitTicksOutsideTrackedStates,
-      tracked_states: Array.from(CONFIG.trackedStates.values()),
-      player_count_override: CONFIG.playerCountOverride,
-      focus_tick: CONFIG.focusTick,
-      focus_radius: CONFIG.focusRadius,
-      tick_details_every: CONFIG.tickDetailsEvery,
-      heartbeat_ms: CONFIG.heartbeatMs,
-      max_head_per_kind: CONFIG.maxHeadPerKind,
-      max_events_per_tick: CONFIG.maxEventsPerTick,
-      max_rng_head_per_tick: CONFIG.maxRngHeadPerTick,
-      max_rng_caller_kinds: CONFIG.maxRngCallerKinds,
-      enable_rng_roll_log: CONFIG.enableRngRollLog,
-      max_rng_roll_log_events: CONFIG.maxRngRollLogEvents,
-      max_rng_outside_tick_head: CONFIG.maxRngOutsideTickHead,
-      enable_rng_state_mirror: CONFIG.enableRngStateMirror,
-      max_creature_delta_ids: CONFIG.maxCreatureDeltaIds,
-      creature_sample_limit: CONFIG.creatureSampleLimit,
-      projectile_sample_limit: CONFIG.projectileSampleLimit,
-      secondary_projectile_sample_limit: CONFIG.secondaryProjectileSampleLimit,
-      bonus_sample_limit: CONFIG.bonusSampleLimit,
-      enable_input_hooks: CONFIG.enableInputHooks,
-      enable_rng_hooks: CONFIG.enableRngHooks,
-      enable_sfx_hooks: CONFIG.enableSfxHooks,
-      enable_damage_hooks: CONFIG.enableDamageHooks,
-      creature_damage_projectile_only: CONFIG.creatureDamageProjectileOnly,
-      enable_spawn_hooks: CONFIG.enableSpawnHooks,
-      enable_creature_spawn_hook: CONFIG.enableCreatureSpawnHook,
-      enable_creature_death_hook: CONFIG.enableCreatureDeathHook,
-      enable_bonus_spawn_hook: CONFIG.enableBonusSpawnHook,
-      enable_creature_lifecycle_digest: CONFIG.enableCreatureLifecycleDigest,
-    },
+    config: captureConfig,
     session_fingerprint: outState.sessionFingerprint,
     process: {
       pid: Process.id,
@@ -3315,13 +3475,36 @@ function main() {
         }
       : null,
     pointers_resolved: ptrs,
+  };
+  startCaptureFile(captureMeta);
+
+  writeLine({
+    event: "start",
+    session_id: outState.sessionId,
+    out_path: CONFIG.outPath,
+    capture_file_started: outState.captureStarted,
+    config: captureConfig,
+    session_fingerprint: outState.sessionFingerprint,
+    process: captureMeta.process,
+    exe: captureMeta.exe,
+    grim: captureMeta.grim,
+    pointers_resolved: ptrs,
   });
 
   installHooks();
   emitHeartbeat();
   startHeartbeat();
 
-  writeLine({ event: "ready", session_id: outState.sessionId });
+  Script.bindWeak(outState, function () {
+    try {
+      finalizeTick();
+    } catch (_) {}
+    try {
+      closeCaptureFile();
+    } catch (_) {}
+  });
+
+  writeLine({ event: "ready", session_id: outState.sessionId, capture_file_started: outState.captureStarted });
 }
 
 main();
