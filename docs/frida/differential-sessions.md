@@ -42,7 +42,7 @@ When the capture SHA is unchanged, append updates to the same session.
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `a40e7fed4ea7b4658d420bc31f6101307864c8de1b06f926d9ddf7c0010ac2ee`
 - **Baseline verifier command:**
-  `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 20 --json-out analysis/frida/divergence_report_latest.json`
+  `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 20 --json-out`
 - **First mismatch:** `tick 1794 (players[0].experience, score_xp)`
 
 ### Key Findings
@@ -73,7 +73,7 @@ When the capture SHA is unchanged, append updates to the same session.
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
 - **Baseline verifier command:**
-  `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_latest.json`
+  `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out`
 - **First mismatch:** `tick 3504 (players[0].experience, score_xp)`
 
 ### Key Findings
@@ -136,7 +136,7 @@ When the capture SHA is unchanged, append updates to the same session.
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `28b8db6eb6b679455dad7376ef76149d26fdd7339dea246518685938cdb48662`
 - **Baseline verifier command:**
-  `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out analysis/frida/divergence_report_latest.json`
+  `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out`
 - **First mismatch progression:**
   - initial: `tick 1069 (players[0].ammo)`
   - after replay/input + movement fixes: `tick 3882 (players[0].experience, score_xp)`
@@ -178,9 +178,9 @@ When the capture SHA is unchanged, append updates to the same session.
 ### Validation
 
 - `uv run pytest tests/test_player_update.py tests/test_original_capture_conversion.py tests/test_replay_perk_menu_open_event.py tests/test_creature_runtime.py`
-- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3624 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick3624_latest.json`
-- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 7336 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick7336_latest.json`
-- `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out analysis/frida/divergence_report_latest.json` *(expected non-zero exit while diverged)*
+- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3624 --near-miss-threshold 0.35 --json-out`
+- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 7336 --near-miss-threshold 0.35 --json-out`
+- `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out` *(expected non-zero exit while diverged)*
 
 ### Outcome / Next Probe
 

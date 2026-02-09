@@ -89,6 +89,5 @@ uv run python scripts/original_capture_divergence_report.py \
   --lead-lookback 1024 \
   --run-summary-short \
   --run-summary-short-max-rows 30 \
-  --json-out analysis/frida/divergence_report_latest.json
+  --json-out
 ```
-

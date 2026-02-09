@@ -31,6 +31,9 @@ from crimson.sim.runners.survival import _apply_tick_events, _decode_digital_mov
 from crimson.sim.sessions import SurvivalDeterministicSession
 from crimson.sim.world_state import WorldState
 
+_JSON_OUT_AUTO = "__AUTO__"
+_DEFAULT_JSON_OUT_DIR = Path("artifacts/frida/reports")
+
 
 @dataclass(slots=True)
 class CreatureTrajectoryRow:
@@ -65,6 +68,22 @@ class CreatureTrajectoryRow:
     dx: float
     dy: float
     drift_mag: float
+
+
+def _resolve_json_out_path(
+    value: str | None,
+    *,
+    creature_index: int,
+    start_tick: int,
+    end_tick: int,
+) -> Path | None:
+    if value is None:
+        return None
+    if str(value) == _JSON_OUT_AUTO:
+        return _DEFAULT_JSON_OUT_DIR / (
+            f"creature{int(creature_index)}_{int(start_tick)}_{int(end_tick)}_latest.json"
+        )
+    return Path(value)
 
 
 def _read_capture_creature_samples(
@@ -368,7 +387,16 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         help="extra rand draws between ticks (native console loop parity)",
     )
     parser.add_argument("--print-every", type=int, default=50, help="print every N ticks in summary")
-    parser.add_argument("--json-out", type=Path, help="optional JSON output path")
+    parser.add_argument(
+        "--json-out",
+        nargs="?",
+        default=None,
+        const=_JSON_OUT_AUTO,
+        help=(
+            "optional JSON output path "
+            "(default when flag is present: artifacts/frida/reports/creature<IDX>_<START>_<END>_latest.json)"
+        ),
+    )
     return parser
 
 
@@ -378,6 +406,12 @@ def main() -> int:
 
     start_tick = max(0, int(args.start_tick))
     end_tick = max(0, int(args.end_tick))
+    json_out_path = _resolve_json_out_path(
+        args.json_out,
+        creature_index=int(args.creature_index),
+        start_tick=int(start_tick),
+        end_tick=int(end_tick),
+    )
     if end_tick < start_tick:
         raise ValueError(f"end_tick must be >= start_tick (got start={start_tick}, end={end_tick})")
 
@@ -390,7 +424,7 @@ def main() -> int:
     )
     _print_summary(rows, print_every=max(1, int(args.print_every)))
 
-    if args.json_out is not None:
+    if json_out_path is not None:
         payload = {
             "capture": str(Path(args.capture)),
             "creature_index": int(args.creature_index),
@@ -399,7 +433,7 @@ def main() -> int:
             "inter_tick_rand_draws": max(0, int(args.inter_tick_rand_draws)),
             "rows": [asdict(row) for row in rows],
         }
-        out_path = Path(args.json_out)
+        out_path = json_out_path
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
         print(f"\njson_report={out_path}")

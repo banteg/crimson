@@ -165,6 +165,16 @@ _FIRE_BULLETS_MIDRANGE_CALLER = "0x00421799"
 _FIRE_BULLETS_FARRANGE_CALLER = "0x004217c6"
 _FIRE_BULLETS_PRE_FREEZE_CALLER = "0x0042184c"
 _FIRE_BULLETS_LOOP_ITERS_PER_HIT = 6
+_JSON_OUT_AUTO = "__AUTO__"
+_DEFAULT_JSON_OUT_DIR = Path("artifacts/frida/reports")
+
+
+def _resolve_json_out_path(value: str | None, *, tick: int) -> Path | None:
+    if value is None:
+        return None
+    if str(value) == _JSON_OUT_AUTO:
+        return _DEFAULT_JSON_OUT_DIR / f"focus_trace_tick{int(tick)}_latest.json"
+    return Path(value)
 
 
 def _read_capture_tick(path: Path, tick: int) -> dict[str, Any] | None:
@@ -1154,13 +1164,23 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         default=1,
         help="extra rand draws between ticks (native console loop parity)",
     )
-    parser.add_argument("--json-out", type=Path, help="optional JSON output path")
+    parser.add_argument(
+        "--json-out",
+        nargs="?",
+        default=None,
+        const=_JSON_OUT_AUTO,
+        help=(
+            "optional JSON output path "
+            "(default when flag is present: artifacts/frida/reports/focus_trace_tick<TICK>_latest.json)"
+        ),
+    )
     return parser
 
 
 def main() -> int:
     parser = _build_arg_parser()
     args = parser.parse_args()
+    json_out_path = _resolve_json_out_path(args.json_out, tick=int(args.tick))
 
     report = trace_focus_tick(
         capture_path=Path(args.capture),
@@ -1175,7 +1195,7 @@ def main() -> int:
         diff_limit=max(1, int(args.diff_limit)),
     )
 
-    if args.json_out is not None:
+    if json_out_path is not None:
         payload = {
             "tick": int(report.tick),
             "hits": int(report.hits),
@@ -1203,7 +1223,7 @@ def main() -> int:
                 asdict(report.fire_bullets_loop_parity) if report.fire_bullets_loop_parity is not None else None
             ),
         }
-        out_path = Path(args.json_out)
+        out_path = json_out_path
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
         print(f"\njson_report={out_path}")

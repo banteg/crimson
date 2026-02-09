@@ -133,6 +133,8 @@ _CRT_RAND_MULT = 214013
 _CRT_RAND_INC = 2531011
 _CRT_RAND_MASK = 0xFFFFFFFF
 _CRT_RAND_CALL_SEARCH_LIMIT = 4096
+_JSON_OUT_AUTO = "__AUTO__"
+_DEFAULT_JSON_OUT_PATH = Path("artifacts/frida/reports/divergence_report_latest.json")
 
 
 def _int_or(value: object, default: int = -1) -> int:
@@ -161,6 +163,14 @@ def _fmt_opt_int(value: object, *, width: int = 0, unknown: str = "na") -> str:
     except Exception:
         return f"{unknown:>{width}}" if width > 0 else unknown
     return f"{ivalue:{width}d}" if width > 0 else str(ivalue)
+
+
+def _resolve_json_out_path(value: str | None) -> Path | None:
+    if value is None:
+        return None
+    if str(value) == _JSON_OUT_AUTO:
+        return Path(_DEFAULT_JSON_OUT_PATH)
+    return Path(value)
 
 
 def _allow_one_tick_creature_count_lag(
@@ -2058,13 +2068,23 @@ def build_parser() -> argparse.ArgumentParser:
         default=24,
         help="max rows to print for --run-summary-short",
     )
-    parser.add_argument("--json-out", type=Path, default=None, help="optional machine-readable report output path")
+    parser.add_argument(
+        "--json-out",
+        nargs="?",
+        default=None,
+        const=_JSON_OUT_AUTO,
+        help=(
+            "optional machine-readable report output path "
+            "(default when flag is present: artifacts/frida/reports/divergence_report_latest.json)"
+        ),
+    )
     return parser
 
 
 def main() -> int:
     args = build_parser().parse_args()
     capture_path = Path(args.capture)
+    json_out_path = _resolve_json_out_path(args.json_out)
 
     capture = load_original_capture_sidecar(capture_path)
     expected, actual, run_result = _run_actual_checkpoints(
@@ -2274,7 +2294,7 @@ def main() -> int:
             + ", ".join(str(int(row["tick"])) for row in zero_rand_consumed[:12])
         )
 
-    if args.json_out is not None:
+    if json_out_path is not None:
         payload = {
             "capture": str(capture_path),
             "summary": {
@@ -2322,10 +2342,10 @@ def main() -> int:
         if bool(args.run_summary) or bool(args.run_summary_short):
             payload["run_summary_events"] = [asdict(event) for event in run_summary_events]
             payload["run_summary_short_events"] = [asdict(event) for event in run_summary_short_events]
-        args.json_out.parent.mkdir(parents=True, exist_ok=True)
-        args.json_out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        json_out_path.parent.mkdir(parents=True, exist_ok=True)
+        json_out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         print()
-        print(f"json_report={args.json_out}")
+        print(f"json_report={json_out_path}")
 
     return 1
 
