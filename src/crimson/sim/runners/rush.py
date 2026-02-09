@@ -15,7 +15,7 @@ from ...replay.original_capture import (
 )
 from ...weapons import WeaponId
 from ..sessions import RushDeterministicSession
-from ..world_state import WorldState
+from ..world_state import WorldEvents, WorldState
 from .common import (
     ReplayRunnerError,
     RunResult,
@@ -85,6 +85,7 @@ def run_rush_replay(
     checkpoint_ticks: set[int] | None = None,
     dt_frame_overrides: dict[int, float] | None = None,
     inter_tick_rand_draws: int = 0,
+    inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.RUSH):
         raise ReplayRunnerError(
@@ -160,12 +161,19 @@ def run_rush_replay(
         state = world.state
         state.game_mode = int(GameMode.RUSH)
         state.demo_mode_active = False
+        if inter_tick_rand_draws_by_tick is not None:
+            draws = inter_tick_rand_draws_by_tick.get(int(tick_index))
+            if draws is None:
+                draws = int(inter_tick_rand_draws)
+            for _ in range(max(0, int(draws))):
+                world.state.rng.rand()
         dt_tick = _resolve_dt_frame(
             tick_index=int(tick_index),
             default_dt_frame=float(dt_frame),
             dt_frame_overrides=dt_frame_overrides,
         )
 
+        rng_before_events = int(state.rng.state)
         for event in events_by_tick.get(int(tick_index), []):
             payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
             if payload is None:
@@ -175,6 +183,7 @@ def run_rush_replay(
                 state=state,
                 players=list(world.players),
             )
+        rng_after_events = int(state.rng.state)
 
         packed_tick = inputs[tick_index]
         player_inputs: list[PlayerInput] = []
@@ -217,6 +226,9 @@ def run_rush_replay(
         events = step.events
 
         if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
+            checkpoint_rng_marks = dict(tick.rng_marks)
+            checkpoint_rng_marks["before_events"] = int(rng_before_events)
+            checkpoint_rng_marks["after_events"] = int(rng_after_events)
             checkpoints_out.append(
                 build_checkpoint(
                     tick_index=int(tick_index),
@@ -225,16 +237,17 @@ def run_rush_replay(
                     creature_count_override=(
                         int(tick.creature_count_world_step) if checkpoint_use_world_step_creature_count else None
                     ),
-                    rng_marks=tick.rng_marks,
+                    rng_marks=checkpoint_rng_marks,
                     deaths=events.deaths,
                     events=events,
                     command_hash=str(step.command_hash),
                 )
             )
 
-        draws = max(0, int(inter_tick_rand_draws))
-        for _ in range(draws):
-            world.state.rng.rand()
+        if inter_tick_rand_draws_by_tick is None:
+            draws = max(0, int(inter_tick_rand_draws))
+            for _ in range(draws):
+                world.state.rng.rand()
 
         if not any(player.health > 0.0 for player in world.players):
             tick_index += 1
@@ -242,6 +255,7 @@ def run_rush_replay(
     else:
         tick_index = tick_limit
 
+    rng_before_events = int(world.state.rng.state)
     for event in events_by_tick.get(int(tick_index), []):
         payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
         if payload is None:
@@ -250,6 +264,20 @@ def run_rush_replay(
             payload,
             state=world.state,
             players=list(world.players),
+        )
+    rng_after_events = int(world.state.rng.state)
+
+    if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
+        checkpoints_out.append(
+            build_checkpoint(
+                tick_index=int(tick_index),
+                world=world,
+                elapsed_ms=float(session.elapsed_ms),
+                rng_marks={"before_events": int(rng_before_events), "after_events": int(rng_after_events)},
+                deaths=[],
+                events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
+                command_hash="",
+            )
         )
 
     shots_fired, shots_hit = player0_shots(world.state)

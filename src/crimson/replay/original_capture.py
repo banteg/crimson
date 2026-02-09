@@ -83,6 +83,7 @@ class OriginalCaptureTick:
     input_approx: list["OriginalCaptureInputApprox"] = field(default_factory=list)
     frame_dt_ms: float | None = None
     rng_head: list[int] = field(default_factory=list)
+    rng_outside_before_calls: int = -1
     status_quest_unlock_index: int = -1
     status_quest_unlock_index_full: int = -1
     status_weapon_usage_counts: tuple[int, ...] = field(default_factory=tuple)
@@ -519,6 +520,16 @@ def _parse_v2_frame_dt_ms(raw: dict[str, object]) -> float | None:
     return None
 
 
+def _parse_v2_rng_outside_before_calls(raw: dict[str, object]) -> int:
+    rng_raw = raw.get("rng")
+    if not isinstance(rng_raw, dict):
+        return -1
+    value = _coerce_int_like(rng_raw.get("outside_before_calls"))
+    if value is None:
+        return -1
+    return int(value)
+
+
 def _parse_v2_input_query_true_calls(raw: dict[str, object], key: str) -> int:
     input_queries = raw.get("input_queries")
     if not isinstance(input_queries, dict):
@@ -828,6 +839,7 @@ def _load_original_capture_v2_ticks(path: Path) -> OriginalCaptureSidecar | None
         mode_hint = str(obj.get("mode_hint", parsed.mode_hint))
         game_mode_id = _parse_v2_game_mode_id(obj)
         frame_dt_ms = _parse_v2_frame_dt_ms(obj)
+        rng_outside_before_calls = _parse_v2_rng_outside_before_calls(obj)
         input_primary_edge_true_calls = _parse_v2_input_query_true_calls(obj, "primary_edge")
         input_primary_down_true_calls = _parse_v2_input_query_true_calls(obj, "primary_down")
         input_approx = _enrich_v2_input_approx(
@@ -865,6 +877,11 @@ def _load_original_capture_v2_ticks(path: Path) -> OriginalCaptureSidecar | None
             input_approx=list(input_approx) if input_approx else list(parsed.input_approx),
             frame_dt_ms=float(frame_dt_ms) if frame_dt_ms is not None else parsed.frame_dt_ms,
             rng_head=list(parsed.rng_head),
+            rng_outside_before_calls=(
+                int(rng_outside_before_calls)
+                if int(rng_outside_before_calls) >= 0
+                else int(parsed.rng_outside_before_calls)
+            ),
             status_quest_unlock_index=int(parsed.status_quest_unlock_index),
             status_quest_unlock_index_full=int(parsed.status_quest_unlock_index_full),
             status_weapon_usage_counts=tuple(parsed.status_weapon_usage_counts),

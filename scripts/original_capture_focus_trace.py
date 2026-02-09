@@ -681,6 +681,12 @@ def trace_focus_tick(
     events_by_tick, original_capture_replay, digital_move_enabled_by_player = _load_capture_events(replay)
     dt_frame_overrides = build_original_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
     default_dt_frame = 1.0 / float(int(replay.header.tick_rate))
+    outside_draws_by_tick = {
+        int(item.tick_index): int(item.rng_outside_before_calls)
+        for item in capture.ticks
+        if int(item.rng_outside_before_calls) >= 0
+    }
+    use_outside_draws = bool(outside_draws_by_tick)
 
     rng_callsites: Counter[str] = Counter()
     rng_head: list[str] = []
@@ -697,11 +703,19 @@ def trace_focus_tick(
 
     root = Path.cwd().resolve()
     orig_rand = world.state.rng.rand
+    orig_particles_rand = world.state.particles._rand
+    orig_sprite_effects_rand = world.state.sprite_effects._rand
     orig_within = projectiles_mod._within_native_find_radius
     orig_run_projectile_decal_hooks = presentation_step_mod.run_projectile_decal_hooks
 
     try:
         for tick_index in range(int(tick) + 1):
+            if use_outside_draws:
+                draws = outside_draws_by_tick.get(int(tick_index))
+                if draws is None:
+                    draws = int(inter_tick_rand_draws)
+                for _ in range(max(0, int(draws))):
+                    world.state.rng.rand()
             dt_tick = _resolve_dt_frame(
                 tick_index=int(tick_index),
                 default_dt_frame=float(default_dt_frame),
@@ -827,6 +841,8 @@ def trace_focus_tick(
                     return bool(handled)
 
                 world.state.rng.rand = traced_rand  # type: ignore[assignment]
+                world.state.particles._rand = traced_rand
+                world.state.sprite_effects._rand = traced_rand
                 projectiles_mod._within_native_find_radius = traced_within_native_find_radius  # type: ignore[assignment]
                 presentation_step_mod.run_projectile_decal_hooks = traced_run_projectile_decal_hooks  # type: ignore[assignment]
 
@@ -842,14 +858,19 @@ def trace_focus_tick(
                 focus_deaths = int(len(tick_result.step.events.deaths))
                 focus_sfx = int(len(tick_result.step.events.sfx))
                 world.state.rng.rand = orig_rand  # type: ignore[assignment]
+                world.state.particles._rand = orig_particles_rand
+                world.state.sprite_effects._rand = orig_sprite_effects_rand
                 projectiles_mod._within_native_find_radius = orig_within  # type: ignore[assignment]
                 presentation_step_mod.run_projectile_decal_hooks = orig_run_projectile_decal_hooks  # type: ignore[assignment]
 
-            draws = max(0, int(inter_tick_rand_draws))
-            for _ in range(draws):
-                world.state.rng.rand()
+            if not use_outside_draws:
+                draws = max(0, int(inter_tick_rand_draws))
+                for _ in range(draws):
+                    world.state.rng.rand()
     finally:
         world.state.rng.rand = orig_rand  # type: ignore[assignment]
+        world.state.particles._rand = orig_particles_rand
+        world.state.sprite_effects._rand = orig_sprite_effects_rand
         projectiles_mod._within_native_find_radius = orig_within  # type: ignore[assignment]
         presentation_step_mod.run_projectile_decal_hooks = orig_run_projectile_decal_hooks  # type: ignore[assignment]
 

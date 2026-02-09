@@ -175,6 +175,7 @@ def run_survival_replay(
     checkpoint_ticks: set[int] | None = None,
     dt_frame_overrides: dict[int, float] | None = None,
     inter_tick_rand_draws: int = 0,
+    inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.SURVIVAL):
         raise ReplayRunnerError(
@@ -245,12 +246,19 @@ def run_survival_replay(
         state = world.state
         state.game_mode = int(GameMode.SURVIVAL)
         state.demo_mode_active = False
+        if inter_tick_rand_draws_by_tick is not None:
+            draws = inter_tick_rand_draws_by_tick.get(int(tick_index))
+            if draws is None:
+                draws = int(inter_tick_rand_draws)
+            for _ in range(max(0, int(draws))):
+                world.state.rng.rand()
         dt_tick = _resolve_dt_frame(
             tick_index=int(tick_index),
             default_dt_frame=float(dt_frame),
             dt_frame_overrides=dt_frame_overrides,
         )
 
+        rng_before_events = int(state.rng.state)
         _apply_tick_events(
             events_by_tick.get(tick_index, []),
             tick_index=tick_index,
@@ -258,6 +266,7 @@ def run_survival_replay(
             world=world,
             strict_events=bool(strict_events),
         )
+        rng_after_events = int(state.rng.state)
 
         packed_tick = inputs[tick_index]
         player_inputs: list[PlayerInput] = []
@@ -300,6 +309,9 @@ def run_survival_replay(
         events = step.events
 
         if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
+            checkpoint_rng_marks = dict(tick.rng_marks)
+            checkpoint_rng_marks["before_events"] = int(rng_before_events)
+            checkpoint_rng_marks["after_events"] = int(rng_after_events)
             checkpoints_out.append(
                 build_checkpoint(
                     tick_index=int(tick_index),
@@ -308,16 +320,17 @@ def run_survival_replay(
                     creature_count_override=(
                         int(tick.creature_count_world_step) if checkpoint_use_world_step_creature_count else None
                     ),
-                    rng_marks=tick.rng_marks,
+                    rng_marks=checkpoint_rng_marks,
                     deaths=events.deaths,
                     events=events,
                     command_hash=str(step.command_hash),
                 )
             )
 
-        draws = max(0, int(inter_tick_rand_draws))
-        for _ in range(draws):
-            world.state.rng.rand()
+        if inter_tick_rand_draws_by_tick is None:
+            draws = max(0, int(inter_tick_rand_draws))
+            for _ in range(draws):
+                world.state.rng.rand()
 
         if not any(player.health > 0.0 for player in world.players):
             tick_index += 1
@@ -333,6 +346,7 @@ def run_survival_replay(
             default_dt_frame=float(dt_frame),
             dt_frame_overrides=dt_frame_overrides,
         )
+        rng_before_events = int(world.state.rng.state)
         _apply_tick_events(
             events_by_tick.get(int(tick_index), []),
             tick_index=int(tick_index),
@@ -340,13 +354,14 @@ def run_survival_replay(
             world=world,
             strict_events=bool(strict_events),
         )
+        rng_after_events = int(world.state.rng.state)
         if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
             checkpoints_out.append(
                 build_checkpoint(
                     tick_index=int(tick_index),
                     world=world,
                     elapsed_ms=float(session.elapsed_ms),
-                    rng_marks={},
+                    rng_marks={"before_events": int(rng_before_events), "after_events": int(rng_after_events)},
                     deaths=[],
                     events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
                     command_hash="",
