@@ -1591,7 +1591,14 @@ def convert_original_capture_to_replay(
                     # - turn: left key wins over right
                     # - move: forward key wins over backward
                     if turn_left and turn_right:
-                        move_x = -1.0
+                        # During reload, some captures can report a transient
+                        # left+right conflict while movement keys remain idle.
+                        # Keep native precedence otherwise, but preserve analog
+                        # turn direction for that artifact shape.
+                        if bool(sample.reload_active) and not move_forward and not move_backward:
+                            move_x = max(-1.0, min(1.0, float(sample.move_dx)))
+                        else:
+                            move_x = -1.0
                     if move_forward and move_backward:
                         move_y = -1.0
                 else:

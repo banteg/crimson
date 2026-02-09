@@ -964,6 +964,76 @@ def test_convert_original_capture_to_replay_v2_resolves_opposite_digital_keys_wi
     assert tick0[1] == -1.0
 
 
+def test_convert_original_capture_to_replay_v2_uses_analog_fallback_for_opposite_turn_keys_with_partial_key_state(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "gameplay_diff_capture_v2_opposite_turn_partial_key_state.jsonl"
+    rows = [
+        {"event": "start"},
+        {
+            "event": "tick",
+            "tick_index": 0,
+            "input_approx": [
+                {
+                    "player_index": 0,
+                    "move_dx": 88.0,
+                    "move_dy": 0.0,
+                    "aim_x": 600.0,
+                    "aim_y": 512.0,
+                    "fired_events": 0,
+                    "reload_active": True,
+                    "weapon_id": 5,
+                }
+            ],
+            "input_player_keys": [
+                {
+                    "player_index": 0,
+                    "move_forward_pressed": False,
+                    "move_backward_pressed": False,
+                    "turn_left_pressed": True,
+                    "turn_right_pressed": True,
+                    "fire_down": None,
+                    "fire_pressed": None,
+                    "reload_pressed": None,
+                }
+            ],
+            "before": {
+                "input_bindings": {
+                    "players": [
+                        {
+                            "player_index": 0,
+                            "move_mode": 1,
+                            "move_forward": 17,
+                            "move_backward": 31,
+                            "turn_left": 30,
+                            "turn_right": 32,
+                            "fire": 18,
+                        }
+                    ]
+                }
+            },
+            "after": {
+                "globals": {"config_game_mode": 1},
+                "players": [{"aim_heading": -0.5}],
+            },
+            "checkpoint": {
+                "tick_index": 0,
+                "state_hash": "h0",
+                "command_hash": "c0",
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 1, "ammo": 10.0}],
+            },
+        },
+    ]
+    path.write_text("\n".join(json.dumps(row, separators=(",", ":"), sort_keys=True) for row in rows) + "\n", encoding="utf-8")
+
+    capture = load_original_capture_sidecar(path)
+    replay = convert_original_capture_to_replay(capture)
+
+    tick0 = replay.inputs[0][0]
+    assert tick0[0] == 1.0
+    assert tick0[1] == 0.0
+
+
 def test_convert_original_capture_to_replay_v2_does_not_override_explicit_fire_down_with_primary_stats(
     tmp_path: Path,
 ) -> None:
