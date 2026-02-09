@@ -11,6 +11,7 @@ from .creatures.spawn import CreatureFlags
 from grim.rand import Crand
 from .effects import EffectPool, FxQueue, ParticlePool, SpriteEffectPool
 from .game_modes import GameMode
+from .math_parity import f32
 from .perks import PerkFlags, PerkId, PERK_BY_ID, PERK_TABLE
 from .projectiles import (
     CreatureDamageApplier,
@@ -2548,13 +2549,26 @@ def player_update(
         if perk_active(player, PerkId.ALTERNATE_WEAPON):
             speed *= 0.8
 
+    # Native movement stores through float32 velocity/delta slots before writing
+    # player position; mirror those store boundaries for replay parity.
+    move_step = f32(float(speed) * float(dt))
+    move_delta = Vec2(
+        f32(float(move.x) * float(move_step)),
+        f32(float(move.y) * float(move_step)),
+    )
+    next_pos = Vec2(
+        f32(float(player.pos.x) + float(move_delta.x)),
+        f32(float(player.pos.y) + float(move_delta.y)),
+    )
+
     half_size = max(0.0, float(player.size) * 0.5)
-    player.pos = (player.pos + move * (speed * dt)).clamp_rect(
+    clamped_pos = next_pos.clamp_rect(
         half_size,
         half_size,
         float(world_size) - half_size,
         float(world_size) - half_size,
     )
+    player.pos = Vec2(f32(float(clamped_pos.x)), f32(float(clamped_pos.y)))
 
     player.move_phase += phase_sign * dt * player.move_speed * 19.0
 

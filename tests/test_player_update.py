@@ -261,8 +261,9 @@ def test_player_update_turns_toward_move_heading_with_turn_slowdown() -> None:
 
     player_update(player, input_state, 0.1, state)
 
-    assert math.isclose(player.pos.x, 103.53553390593274, abs_tol=1e-9)
-    assert math.isclose(player.pos.y, 96.46446609406726, abs_tol=1e-9)
+    # Movement now mirrors native float32 velocity/delta store boundaries.
+    assert math.isclose(player.pos.x, 103.53553771972656, abs_tol=1e-6)
+    assert math.isclose(player.pos.y, 96.46446228027344, abs_tol=1e-6)
     assert math.isclose(player.heading, math.pi / 4.0, abs_tol=1e-9)
 
 
