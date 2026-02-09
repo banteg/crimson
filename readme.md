@@ -25,6 +25,8 @@ If you just want to play the rewrite:
 uvx crimsonland@latest
 ```
 
+Linux Wayland users: current PyPI `raylib` wheels are still X11-oriented on `x86_64`, so `uvx crimsonland` may require `xwayland` + `libX11` (see [electronstudio/raylib-python-cffi#199](https://github.com/electronstudio/raylib-python-cffi/pull/199)).
+
 ### Run from a checkout
 
 ```bash
