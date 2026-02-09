@@ -2574,14 +2574,9 @@ def player_update(
         f32(float(player.pos.y) + float(move_delta.y)),
     )
 
-    half_size = max(0.0, float(player.size) * 0.5)
-    clamped_pos = next_pos.clamp_rect(
-        half_size,
-        half_size,
-        float(world_size) - half_size,
-        float(world_size) - half_size,
-    )
-    player.pos = Vec2(f32(float(clamped_pos.x)), f32(float(clamped_pos.y)))
+    # Native clamps player world bounds at the end of `player_update`, after
+    # firing/reload logic has consumed the in-frame movement position.
+    player.pos = next_pos
 
     player.move_phase += phase_sign * movement_dt * player.move_speed * 19.0
 
@@ -2663,6 +2658,17 @@ def player_update(
         player.move_phase -= 14.0
     while player.move_phase < 0.0:
         player.move_phase += 14.0
+
+    half_size = max(0.0, float(player.size) * 0.5)
+    clamped_pos = player.pos.clamp_rect(
+        half_size,
+        half_size,
+        float(world_size) - half_size,
+        float(world_size) - half_size,
+    )
+    player.pos = Vec2(f32(float(clamped_pos.x)), f32(float(clamped_pos.y)))
+    if player.muzzle_flash_alpha > 0.8:
+        player.muzzle_flash_alpha = 0.8
 
 
 def _player_heading_approach_target(player: PlayerState, target_heading: float, dt: float) -> float:
