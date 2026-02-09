@@ -376,10 +376,8 @@ def apply_world_presentation_step(
     if rand_for is None:
         def rand_for(_label: str) -> Callable[[], int]:
             return rand
-
     if perk_progression_enabled and int(state.perk_selection.pending_count) > int(prev_perk_pending):
         commands.sfx_keys.append("sfx_ui_levelup")
-
     if trigger_game_tune is None and hit_sfx is None:
         if hits:
             queue_projectile_decals(
@@ -408,7 +406,6 @@ def apply_world_presentation_step(
             commands.trigger_game_tune = bool(trigger_game_tune)
         if hit_sfx is not None:
             commands.sfx_keys.extend(str(key) for key in hit_sfx)
-
     for idx, player in enumerate(players):
         if idx >= len(prev_audio):
             continue
@@ -421,13 +418,9 @@ def apply_world_presentation_step(
                 prev_reload_timer=float(prev_reload_timer),
             )
         )
-
     if deaths and not death_sfx_preplanned:
         commands.sfx_keys.extend(plan_death_sfx_keys(deaths, rand=rand_for("death_sfx")))
-
     if pickups:
-        for _ in pickups:
-            commands.sfx_keys.append("sfx_ui_bonus")
-
+        commands.sfx_keys.extend("sfx_ui_bonus" for _ in pickups)
     commands.sfx_keys.extend(str(key) for key in event_sfx[:4])
     return commands

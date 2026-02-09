@@ -121,8 +121,7 @@ class WorldState:
         prev_positions = [(player.pos.x, player.pos.y) for player in self.players]
         prev_health = [float(player.health) for player in self.players]
 
-        # Native runs `perks_update_effects` early in the frame loop and relies on the current aim position.
-        # Our aim is otherwise updated inside `player_update`, so stage it here.
+        # Native runs `perks_update_effects` early and reads current aim, so stage aim before `player_update`.
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
             player.aim = input_state.aim
@@ -358,9 +357,7 @@ class WorldState:
             self._advance_player_anim(dt, prev_positions)
 
         camera_shake_update(self.state, dt)
-        # Native latches `time_scale_active` late in gameplay_update_and_render
-        # (after survival/rush/quest update, before bonus timer decrements). The
-        # next frame's dt scaling uses this latched flag, not the immediate timer.
+        # Native latches `time_scale_active` late (post mode update, pre bonus decrement); next-frame dt uses it.
         self.state.time_scale_active = float(self.state.bonuses.reflex_boost) > 0.0
         bonus_update_pre_pickup_timers(self.state, dt)
 

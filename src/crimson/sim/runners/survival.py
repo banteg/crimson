@@ -43,6 +43,15 @@ from .common import (
 )
 
 
+def _parse_payload_int(value: object) -> int | None:
+    if not isinstance(value, (int, float, str, bytes, bytearray)):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _apply_tick_events(
     events: list[object],
     *,
@@ -108,10 +117,8 @@ def _apply_tick_events(
                     if strict_events:
                         raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}")
                     continue
-                perk_raw = payload.get("perk_id")
-                try:
-                    perk_id = int(perk_raw)
-                except (TypeError, ValueError):
+                perk_id = _parse_payload_int(payload.get("perk_id"))
+                if perk_id is None:
                     if strict_events:
                         raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}")
                     continue
@@ -142,10 +149,8 @@ def _apply_tick_events(
                     if strict_events:
                         raise ReplayRunnerError(f"invalid pending payload at tick={tick_index}")
                     continue
-                pending_raw = payload.get("perk_pending")
-                try:
-                    pending = int(pending_raw)
-                except (TypeError, ValueError):
+                pending = _parse_payload_int(payload.get("perk_pending"))
+                if pending is None:
                     if strict_events:
                         raise ReplayRunnerError(f"invalid pending payload at tick={tick_index}")
                     continue
@@ -206,7 +211,9 @@ def _resolve_dt_frame_ms_i32(
     tick_index: int,
     dt_frame: float,
     dt_frame_ms_i32_overrides: dict[int, int] | None,
-) -> int:
+) -> int | None:
+    if dt_frame_ms_i32_overrides is None:
+        return None
     if dt_frame_ms_i32_overrides:
         override = dt_frame_ms_i32_overrides.get(int(tick_index))
         if override is not None and int(override) > 0:
@@ -387,7 +394,7 @@ def run_survival_replay(
 
         tick = session.step_tick(
             dt_frame=float(dt_tick),
-            dt_frame_ms_i32=int(dt_tick_ms_i32),
+            dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
             inputs=player_inputs,
             trace_rng=bool(trace_rng),
         )
@@ -463,7 +470,7 @@ def run_survival_replay(
                     tick_index=int(tick_index),
                     world=world,
                     elapsed_ms=float(session.elapsed_ms),
-                    rng_marks={"before_events": int(rng_before_events), "after_events": int(rng_after_events)},
+                    rng_marks={},
                     deaths=[],
                     events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
                     command_hash="",
