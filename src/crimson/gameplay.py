@@ -981,9 +981,13 @@ def perk_can_offer(
         return False
 
     flags = meta.flags or PerkFlags(0)
-    if (flags & PerkFlags.MODE_3_ONLY) and int(game_mode) != int(GameMode.QUESTS):
+    # Native `perk_can_offer` treats these metadata bits as allow-lists for
+    # specific runtime modes, not "only in this mode":
+    # - in quest mode, offered perks must have bit 0x1 set
+    # - in two-player mode, offered perks must have bit 0x2 set
+    if int(game_mode) == int(GameMode.QUESTS) and (flags & PerkFlags.MODE_3_ONLY) == 0:
         return False
-    if (flags & PerkFlags.TWO_PLAYER_ONLY) and int(player_count) != 2:
+    if int(player_count) == 2 and (flags & PerkFlags.TWO_PLAYER_ONLY) == 0:
         return False
 
     if meta.prereq and any(perk_count_get(player, req) <= 0 for req in meta.prereq):
