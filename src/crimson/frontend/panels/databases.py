@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import cast
+
 import pyray as rl
 
 from grim.audio import play_sfx, update_audio
@@ -54,6 +57,9 @@ class _DatabaseBaseView:
         self._widescreen_y_shift = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
+        self._closing = False
+        self._close_action: str | None = None
+        self._pending_action: str | None = None
         self._action: str | None = None
 
         self._back_button = UiButtonState("Back", force_wide=False)
@@ -67,6 +73,9 @@ class _DatabaseBaseView:
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
+        self._closing = False
+        self._close_action = None
+        self._pending_action = None
         self._action = None
 
         cache = _ensure_texture_cache(self._state)
@@ -85,9 +94,19 @@ class _DatabaseBaseView:
         self._button_textures = None
         self._assets = None
         self._ground = None
+        self._closing = False
+        self._close_action = None
+        self._pending_action = None
         self._action = None
 
     def take_action(self) -> str | None:
+        if self._pending_action is not None:
+            action = self._pending_action
+            self._pending_action = None
+            self._closing = False
+            self._close_action = None
+            self._timeline_ms = self._timeline_max_ms
+            return action
         action = self._action
         self._action = None
         return action
@@ -104,6 +123,12 @@ class _DatabaseBaseView:
             pos.x + MENU_PANEL_OFFSET_X * scale,
             pos.y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
         )
+
+    def _begin_close_transition(self, action: str) -> None:
+        if self._closing:
+            return
+        self._closing = True
+        self._close_action = action
 
     def _draw_sign(self) -> None:
         assets = self._assets
@@ -147,6 +172,14 @@ class _DatabaseBaseView:
         self._cursor_pulse_time += min(float(dt), 0.1) * 1.1
 
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
+        if self._closing:
+            if dt_ms > 0 and self._pending_action is None:
+                self._timeline_ms -= dt_ms
+                if self._timeline_ms < 0 and self._close_action is not None:
+                    self._pending_action = self._close_action
+                    self._close_action = None
+            return
+
         if dt_ms > 0:
             self._timeline_ms = min(self._timeline_max_ms, int(self._timeline_ms + dt_ms))
 
@@ -155,7 +188,7 @@ class _DatabaseBaseView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-            self._action = "back_to_previous"
+            self._begin_close_transition("back_to_previous")
             return
 
         textures = self._button_textures
@@ -166,12 +199,14 @@ class _DatabaseBaseView:
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
         left_top_left = self._panel_top_left(pos=Vec2(LEFT_PANEL_POS_X, LEFT_PANEL_POS_Y), scale=scale)
+        font = self._ensure_small_font()
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        self._update_content_interaction(left_top_left=left_top_left, scale=scale, mouse=mouse)
 
         back_pos = self._back_button_pos()
-        back_w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
         if button_update(
             self._back_button,
             pos=left_top_left + back_pos * scale,
@@ -182,7 +217,7 @@ class _DatabaseBaseView:
         ):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-            self._action = "back_to_previous"
+            self._begin_close_transition("back_to_previous")
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
@@ -234,6 +269,7 @@ class _DatabaseBaseView:
             dst=rl.Rectangle(right_panel_top_left.x, right_panel_top_left.y, panel_w, RIGHT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
+            flip_x=True,
         )
 
         font = self._ensure_small_font()
@@ -242,7 +278,7 @@ class _DatabaseBaseView:
         textures = self._button_textures
         if textures is not None and (textures.button_md is not None or textures.button_sm is not None):
             back_pos = self._back_button_pos()
-            back_w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+            back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
             button_draw(
                 textures,
                 font,
@@ -268,30 +304,29 @@ class _DatabaseBaseView:
     ) -> None:
         raise NotImplementedError
 
+    def _update_content_interaction(self, *, left_top_left: Vec2, scale: float, mouse: rl.Vector2) -> None:
+        return
+
 
 class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
     def __init__(self, state: GameState) -> None:
         super().__init__(state)
         self._wicons_tex: rl.Texture | None = None
         self._weapon_ids: list[int] = []
-        self._selected_weapon_id: int = 2
+        self._selected_weapon_id: int | None = None
+        self._list_scroll_index: int = 0
 
     def open(self) -> None:
         super().open()
         self._weapon_ids = self._build_weapon_database_ids()
-        self._selected_weapon_id = 2 if 2 in self._weapon_ids else (self._weapon_ids[0] if self._weapon_ids else 2)
-
-        if self._wicons_tex is not None:
-            rl.unload_texture(self._wicons_tex)
-            self._wicons_tex = None
-        wicons_path = self._state.assets_dir / "crimson" / "ui" / "ui_wicons.png"
-        if wicons_path.is_file():
-            self._wicons_tex = rl.load_texture(str(wicons_path))
+        self._selected_weapon_id = None
+        self._list_scroll_index = 0
+        cache = _ensure_texture_cache(self._state)
+        self._wicons_tex = cache.get_or_load("ui_wicons", "ui/ui_wicons.jaz").texture
 
     def close(self) -> None:
-        if self._wicons_tex is not None:
-            rl.unload_texture(self._wicons_tex)
-            self._wicons_tex = None
+        self._wicons_tex = None
+        self._selected_weapon_id = None
         super().close()
 
     def _back_button_pos(self) -> Vec2:
@@ -302,15 +337,30 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         left = left_top_left
         right = right_top_left
         text_scale = 1.0 * scale
-        text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+        dim_color = rl.Color(255, 255, 255, int(255 * 0.7))
+        text_color = rl.WHITE
 
         # state_15 title at (153,244) => relative to left panel (-98,194): (251,50)
+        title_pos = left + Vec2(251.0 * scale, 50.0 * scale)
+        title_text = "Unlocked Weapons Database"
         draw_small_text(
             font,
-            "Unlocked Weapons Database",
-            left + Vec2(251.0 * scale, 50.0 * scale),
+            title_text,
+            title_pos,
             text_scale,
             rl.Color(255, 255, 255, 255),
+        )
+        title_w = measure_small_text_width(font, title_text, text_scale)
+        # Decompile path draws a 1px outline strip under the title with alpha 0.5.
+        rl.draw_rectangle_lines_ex(
+            rl.Rectangle(
+                title_pos.x,
+                title_pos.y + 13.0 * scale,
+                title_w,
+                max(1.0, 1.0 * scale),
+            ),
+            1.0,
+            rl.Color(255, 255, 255, int(255 * 0.5)),
         )
 
         weapon_ids = self._weapon_ids
@@ -321,7 +371,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             f"{count} {weapon_label} in database",
             left + Vec2(210.0 * scale, 80.0 * scale),
             text_scale,
-            text_color,
+            dim_color,
         )
         draw_small_text(
             font,
@@ -331,18 +381,41 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             text_color,
         )
 
-        # List items (oracle shows 9-row list widget; render the top slice for now).
+        # Oracle frame: outer [114,322]-[364,486], inner [115,323]-[363,485].
+        frame_x = left.x + 212.0 * scale
+        frame_y = left.y + 128.0 * scale
+        frame_w = 250.0 * scale
+        frame_h = 164.0 * scale
+        rl.draw_rectangle(int(round(frame_x)), int(round(frame_y)), int(round(frame_w)), int(round(frame_h)), rl.WHITE)
+        rl.draw_rectangle(
+            int(round(frame_x + 1.0 * scale)),
+            int(round(frame_y + 1.0 * scale)),
+            max(0, int(round(frame_w - 2.0 * scale))),
+            max(0, int(round(frame_h - 2.0 * scale))),
+            rl.BLACK,
+        )
+
+        # Oracle list widget is 10 rows tall.
         list_top_left = left + Vec2(218.0 * scale, 130.0 * scale)
         row_step = 16.0 * scale
-        for row, weapon_id in enumerate(weapon_ids[:9]):
+        visible_rows = 10
+        max_scroll = max(0, len(weapon_ids) - visible_rows)
+        start = max(0, min(max_scroll, int(self._list_scroll_index)))
+        end = min(len(weapon_ids), start + visible_rows)
+        visible_weapon_ids = weapon_ids[start:end]
+        for row, weapon_id in enumerate(visible_weapon_ids):
             name, _icon = self._weapon_label_and_icon(weapon_id)
+            row_color = text_color if self._selected_weapon_id is not None and int(weapon_id) == int(self._selected_weapon_id) else dim_color
             draw_small_text(
                 font,
                 name,
                 list_top_left.offset(dy=float(row) * row_step),
                 text_scale,
-                text_color,
+                row_color,
             )
+
+        if self._selected_weapon_id is None:
+            return
 
         weapon_id = int(self._selected_weapon_id)
         name, icon_index = self._weapon_label_and_icon(weapon_id)
@@ -352,7 +425,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             f"wepno #{weapon_id}",
             right + Vec2(240.0 * scale, 32.0 * scale),
             text_scale,
-            text_color,
+            rl.Color(255, 255, 255, int(255 * 0.4)),
         )
         draw_small_text(font, name, right + Vec2(50.0 * scale, 50.0 * scale), text_scale, text_color)
         if icon_index is not None:
@@ -364,18 +437,19 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             clip_raw = getattr(weapon, "clip_size", None)
             reload_time = float(reload_raw) if isinstance(reload_raw, (int, float)) else None
             clip_size = int(clip_raw) if isinstance(clip_raw, (int, float)) else None
-            if rpm is not None:
-                draw_small_text(
-                    font,
-                    f"Firerate: {rpm} rpm",
-                    right + Vec2(66.0 * scale, 128.0 * scale),
-                    text_scale,
-                    text_color,
-                )
+            ammo_class = int(getattr(weapon, "ammo_class", 0) or 0)
+            if ammo_class == 1:
+                firerate_text = "Firerate: n/a"
+            elif rpm is not None:
+                firerate_text = f"Firerate: {rpm} rpm"
+            else:
+                firerate_text = None
+            if firerate_text is not None:
+                draw_small_text(font, firerate_text, right + Vec2(66.0 * scale, 128.0 * scale), text_scale, text_color)
             if reload_time is not None:
                 draw_small_text(
                     font,
-                    f"Reload time: {reload_time:g} secs",
+                    f"Reload time: {reload_time:.1f} secs",
                     right + Vec2(66.0 * scale, 146.0 * scale),
                     text_scale,
                     text_color,
@@ -389,22 +463,99 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
                     text_color,
                 )
 
+    def _update_content_interaction(self, *, left_top_left: Vec2, scale: float, mouse: rl.Vector2) -> None:
+        weapon_ids = self._weapon_ids
+        if not weapon_ids:
+            self._selected_weapon_id = None
+            self._list_scroll_index = 0
+            return
+
+        visible_rows = 10
+        max_scroll = max(0, len(weapon_ids) - visible_rows)
+        mouse_wheel = int(rl.get_mouse_wheel_move())
+        if mouse_wheel:
+            self._list_scroll_index = max(0, min(max_scroll, int(self._list_scroll_index) - mouse_wheel))
+        start = max(0, min(max_scroll, int(self._list_scroll_index)))
+        end = min(len(weapon_ids), start + visible_rows)
+        row_count = end - start
+        if row_count <= 0:
+            self._selected_weapon_id = None
+            return
+
+        row_step = 16.0 * scale
+        list_hit_x = left_top_left.x + 214.0 * scale
+        list_hit_y = left_top_left.y + 128.0 * scale
+        list_hit_w = 246.0 * scale
+        list_hit_h = min(160.0 * scale, row_step * float(row_count))
+        if (
+            list_hit_x <= mouse.x < list_hit_x + list_hit_w
+            and list_hit_y <= mouse.y < list_hit_y + list_hit_h
+        ):
+            list_text_top = left_top_left.y + 130.0 * scale
+            row = int((mouse.y - list_text_top) // row_step)
+            if 0 <= row < row_count:
+                self._selected_weapon_id = int(weapon_ids[start + row])
+                return
+        self._selected_weapon_id = None
+
     def _build_weapon_database_ids(self) -> list[int]:
         try:
-            from ...weapons import WEAPON_TABLE
+            from ...weapons import WEAPON_TABLE, WeaponId
         except Exception:
             return []
+
+        available: list[bool] | None = None
+        weapon_refresh_available: Callable[..., None] | None = None
+        try:
+            from ...gameplay import WEAPON_COUNT_SIZE, weapon_refresh_available as refresh_available
+            weapon_refresh_available = cast(Callable[..., None], refresh_available)
+        except Exception:
+            WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
+
+        if weapon_refresh_available is not None:
+            class _Stub:
+                status: object | None
+                game_mode: int
+                demo_mode_active: bool
+                weapon_available: list[bool]
+                _weapon_available_game_mode: int
+                _weapon_available_unlock_index: int
+                _weapon_available_unlock_index_full: int
+
+            stub = _Stub()
+            stub.status = self._state.status
+            stub.game_mode = int(self._state.config.data.get("game_mode", 1) or 1)
+            stub.demo_mode_active = bool(getattr(self._state, "demo_enabled", False))
+            stub.weapon_available = [False] * int(WEAPON_COUNT_SIZE)
+            stub._weapon_available_game_mode = -1
+            stub._weapon_available_unlock_index = -1
+            stub._weapon_available_unlock_index_full = -1
+            try:
+                weapon_refresh_available(stub)
+                available = stub.weapon_available
+            except Exception:
+                available = None
+
         status = self._state.status
         used: list[int] = []
         for weapon in WEAPON_TABLE:
             if weapon.name is None:
                 continue
             weapon_id = int(weapon.weapon_id)
-            try:
-                if status.weapon_usage_count(weapon_id) != 0:
-                    used.append(weapon_id)
-            except Exception:
-                continue
+            include = False
+            if available is not None:
+                if 0 <= weapon_id < len(available):
+                    include = bool(available[weapon_id])
+            else:
+                if weapon_id == int(WeaponId.PISTOL):
+                    include = True
+                else:
+                    try:
+                        include = bool(status.weapon_usage_count(weapon_id) != 0)
+                    except Exception:
+                        include = False
+            if include:
+                used.append(weapon_id)
         used.sort()
         return used
 
@@ -434,12 +585,14 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         idx = int(icon_index)
         if idx < 0 or idx > 31:
             return
-        cols = 4
-        rows = 8
-        icon_w = float(tex.width) / float(cols)
-        icon_h = float(tex.height) / float(rows)
-        src_x = float(idx % cols) * icon_w
-        src_y = float(idx // cols) * icon_h
+        grid = 8
+        cell_w = float(tex.width) / float(grid)
+        cell_h = float(tex.height) / float(grid)
+        frame = idx * 2
+        src_x = float(frame % grid) * cell_w
+        src_y = float(frame // grid) * cell_h
+        icon_w = cell_w * 2.0
+        icon_h = cell_h
         rl.draw_texture_pro(
             tex,
             rl.Rectangle(src_x, src_y, icon_w, icon_h),
@@ -463,15 +616,42 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
 
 
 class UnlockedPerksDatabaseView(_DatabaseBaseView):
+    _VISIBLE_ROWS = 10
+    _LIST_WIDTH = 250.0
+    _LIST_FRAME_X = 212.0
+    _LIST_FRAME_Y = 126.0
+    _LIST_ROW_HEIGHT = 16.0
+    _LIST_TEXT_X = 218.0
+    _LIST_TEXT_Y = 128.0
+    _DESC_WRAP_WIDTH_PX = 256.0
+
     def __init__(self, state: GameState) -> None:
         super().__init__(state)
         self._perk_ids: list[int] = []
-        self._selected_perk_id: int = 4
+        self._list_scroll_index: int = 0
+        self._selected_row_index: int = 0
+        self._hovered_row_index: int = -1
+        self._nav_focus_index: int = 0
+        self._scroll_drag_active: bool = False
+        self._scroll_drag_offset: float = 0.0
+        self._wrapped_desc_cache: dict[tuple[int, int], str] = {}
 
     def open(self) -> None:
         super().open()
         self._perk_ids = self._build_perk_database_ids()
-        self._selected_perk_id = 4 if 4 in self._perk_ids else (self._perk_ids[0] if self._perk_ids else 4)
+        self._hovered_row_index = -1
+        self._scroll_drag_active = False
+        self._scroll_drag_offset = 0.0
+        self._wrapped_desc_cache.clear()
+        if not self._perk_ids:
+            self._list_scroll_index = 0
+            self._selected_row_index = 0
+            self._nav_focus_index = 0
+            return
+        max_scroll = max(0, len(self._perk_ids) - self._VISIBLE_ROWS)
+        self._list_scroll_index = max(0, min(max_scroll, int(self._list_scroll_index)))
+        self._selected_row_index = max(0, int(self._selected_row_index))
+        self._nav_focus_index = max(0, min(1, int(self._nav_focus_index)))
 
     def _back_button_pos(self) -> Vec2:
         # state_16: ui_buttonSm bbox [258,509]..[340,541] => relative to left panel (-98,194): (356, 315)
@@ -481,15 +661,31 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         left = left_top_left
         right = right_top_left
         text_scale = 1.0 * scale
-        text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+        text_color = rl.WHITE
+        dim_color = rl.Color(255, 255, 255, int(255 * 0.7))
+        fx_toggle = self._fx_toggle()
 
         # state_16 title at (163,244) => relative to left panel (-98,194): (261,50)
+        title_pos = left + Vec2(261.0 * scale, 50.0 * scale)
+        title_text = "Unlocked Perks Database"
         draw_small_text(
             font,
-            "Unlocked Perks Database",
-            left + Vec2(261.0 * scale, 50.0 * scale),
+            title_text,
+            title_pos,
             text_scale,
             rl.Color(255, 255, 255, 255),
+        )
+        title_w = measure_small_text_width(font, title_text, text_scale)
+        # Decompile path draws a 1px outline strip under the title with alpha 0.5.
+        rl.draw_rectangle_lines_ex(
+            rl.Rectangle(
+                title_pos.x,
+                title_pos.y + 13.0 * scale,
+                title_w,
+                max(1.0, 1.0 * scale),
+            ),
+            1.0,
+            rl.Color(255, 255, 255, int(255 * 0.5)),
         )
 
         perk_ids = self._perk_ids
@@ -500,7 +696,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             f"{count} {perk_label} in database",
             left + Vec2(210.0 * scale, 78.0 * scale),
             text_scale,
-            text_color,
+            dim_color,
         )
         draw_small_text(
             font,
@@ -510,40 +706,244 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             text_color,
         )
 
-        list_top_left = left + Vec2(218.0 * scale, 128.0 * scale)
-        row_step = 16.0 * scale
-        for row, perk_id in enumerate(perk_ids[:9]):
+        frame_x = left.x + self._LIST_FRAME_X * scale
+        frame_y = left.y + self._LIST_FRAME_Y * scale
+        frame_w = self._LIST_WIDTH * scale
+        frame_h = (self._VISIBLE_ROWS * self._LIST_ROW_HEIGHT + 4.0) * scale
+        rl.draw_rectangle(int(round(frame_x)), int(round(frame_y)), int(round(frame_w)), int(round(frame_h)), rl.WHITE)
+        rl.draw_rectangle(
+            int(round(frame_x + 1.0 * scale)),
+            int(round(frame_y + 1.0 * scale)),
+            max(0, int(round(frame_w - 2.0 * scale))),
+            max(0, int(round(frame_h - 2.0 * scale))),
+            rl.BLACK,
+        )
+
+        max_scroll = max(0, len(perk_ids) - self._VISIBLE_ROWS)
+        start = max(0, min(max_scroll, int(self._list_scroll_index)))
+        end = min(len(perk_ids), start + self._VISIBLE_ROWS)
+        list_top_left = left + Vec2(self._LIST_TEXT_X * scale, self._LIST_TEXT_Y * scale)
+        row_step = self._LIST_ROW_HEIGHT * scale
+        for row, perk_id in enumerate(perk_ids[start:end], start=0):
+            list_index = start + row
+            if list_index == self._hovered_row_index:
+                row_alpha = 1.0
+            elif list_index == self._selected_row_index:
+                row_alpha = 0.9
+            else:
+                row_alpha = 0.7
             draw_small_text(
                 font,
-                self._perk_name(perk_id),
+                self._perk_name(perk_id, fx_toggle=fx_toggle),
                 list_top_left.offset(dy=float(row) * row_step),
                 text_scale,
-                text_color,
+                rl.Color(255, 255, 255, int(255 * row_alpha)),
             )
 
-        perk_id = int(self._selected_perk_id)
-        perk_name = self._perk_name(perk_id)
+        if count > self._VISIBLE_ROWS:
+            # Native list draws a 1px scrollbar strip + draggable thumb.
+            track_x, track_y, track_h, thumb_top, thumb_h, _scroll_span = self._scrollbar_geometry(
+                left_top_left=left,
+                scale=scale,
+                count=count,
+                start=start,
+            )
+            rl.draw_rectangle(
+                int(round(track_x)),
+                int(round(track_y)),
+                max(1, int(round(1.0 * scale))),
+                int(round(track_h)),
+                rl.WHITE,
+            )
+            rl.draw_rectangle(
+                int(round(track_x + 1.0 * scale)),
+                int(round(thumb_top)),
+                max(1, int(round(8.0 * scale))),
+                max(1, int(round(thumb_h + 1.0 * scale))),
+                rl.Color(255, 255, 255, int(255 * 0.8)),
+            )
+            rl.draw_rectangle(
+                int(round(track_x + 2.0 * scale)),
+                int(round(thumb_top + 1.0 * scale)),
+                max(1, int(round(6.0 * scale))),
+                max(1, int(round(max(1.0, thumb_h - 1.0 * scale)))),
+                rl.Color(51, 204, 255, int(255 * 0.2)),
+            )
+
+        hovered_perk_id = self._hovered_perk_id()
+        if hovered_perk_id is None:
+            return
+        perk_id = int(hovered_perk_id)
+        perk_name = self._perk_name(perk_id, fx_toggle=fx_toggle)
+        detail_anchor = right + Vec2(34.0 * scale, 72.0 * scale)
         draw_small_text(
             font,
             f"perkno #{perk_id}",
-            right + Vec2(224.0 * scale, 32.0 * scale),
+            detail_anchor + Vec2(190.0 * scale, -40.0 * scale),
             text_scale,
-            text_color,
+            rl.Color(255, 255, 255, int(255 * 0.4)),
         )
-        draw_small_text(font, perk_name, right + Vec2(93.0 * scale, 50.0 * scale), text_scale, text_color)
+        name_w = measure_small_text_width(font, perk_name, text_scale)
+        perk_name_pos = Vec2(detail_anchor.x + 128.0 * scale - name_w * 0.5, detail_anchor.y - 22.0 * scale)
+        draw_small_text(font, perk_name, perk_name_pos, text_scale, text_color)
+        rl.draw_rectangle_lines_ex(
+            rl.Rectangle(
+                perk_name_pos.x,
+                perk_name_pos.y + 13.0 * scale,
+                name_w,
+                max(1.0, 1.0 * scale),
+            ),
+            1.0,
+            rl.Color(255, 255, 255, int(255 * 0.5)),
+        )
 
-        desc_pos = right + Vec2(50.0 * scale, 72.0 * scale)
-        max_w = float(rl.get_screen_width()) - desc_pos.x - 4.0 * scale
-        desc = self._perk_desc(perk_id)
-        first_line = self._truncate_small_line(font, desc, max_w, scale=text_scale)
-        if first_line:
-            draw_small_text(font, first_line, desc_pos, text_scale, text_color)
+        desc_pos = detail_anchor + Vec2(16.0 * scale, 0.0)
+        prereq_name = self._perk_prereq_name(perk_id, fx_toggle=fx_toggle)
+        if prereq_name:
+            draw_small_text(
+                font,
+                f"Requires: {prereq_name}",
+                desc_pos,
+                text_scale,
+                rl.Color(255, 204, 204, int(255 * 0.8)),
+            )
+            desc_pos = desc_pos.offset(dy=18.0 * scale)
+
+        wrapped_desc = self._prewrapped_perk_desc(perk_id, font, fx_toggle=fx_toggle)
+        if wrapped_desc:
+            draw_small_text(font, wrapped_desc, desc_pos, text_scale, dim_color)
+
+    def _update_content_interaction(self, *, left_top_left: Vec2, scale: float, mouse: rl.Vector2) -> None:
+        perk_ids = self._perk_ids
+        count = len(perk_ids)
+        self._hovered_row_index = -1
+        if count <= 0:
+            self._list_scroll_index = 0
+            self._selected_row_index = 0
+            self._nav_focus_index = 0
+            self._scroll_drag_active = False
+            return
+
+        max_scroll = max(0, count - self._VISIBLE_ROWS)
+        self._list_scroll_index = max(0, min(max_scroll, int(self._list_scroll_index)))
+        self._selected_row_index = max(0, int(self._selected_row_index))
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
+            self._nav_focus_index = max(0, int(self._nav_focus_index) - 1)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
+            self._nav_focus_index = min(1, int(self._nav_focus_index) + 1)
+
+        if self._nav_focus_index == 1:
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
+                self._list_scroll_index -= 1
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
+                self._list_scroll_index += 1
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_UP):
+                self._list_scroll_index -= self._VISIBLE_ROWS - 1
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN):
+                self._list_scroll_index += self._VISIBLE_ROWS - 1
+
+        list_hit_x = left_top_left.x + self._LIST_FRAME_X * scale
+        list_hit_y = left_top_left.y + self._LIST_FRAME_Y * scale
+        list_hit_w = self._LIST_WIDTH * scale
+        list_hit_h = (self._VISIBLE_ROWS * self._LIST_ROW_HEIGHT + 4.0) * scale
+        mouse_in_list = list_hit_x <= mouse.x < list_hit_x + list_hit_w and list_hit_y <= mouse.y < list_hit_y + list_hit_h
+        if mouse_in_list:
+            self._nav_focus_index = 1
+
+        wheel = int(rl.get_mouse_wheel_move())
+        if wheel and (mouse_in_list or self._nav_focus_index == 1):
+            self._list_scroll_index -= wheel
+
+        if count > self._VISIBLE_ROWS:
+            start = max(0, min(max_scroll, int(self._list_scroll_index)))
+            track_x, track_y, track_h, thumb_top, thumb_h, scroll_span = self._scrollbar_geometry(
+                left_top_left=left_top_left,
+                scale=scale,
+                count=count,
+                start=start,
+            )
+            thumb_x = track_x + 1.0 * scale
+            thumb_w = 8.0 * scale
+            click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+            down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
+            in_track = track_x <= mouse.x < track_x + 10.0 * scale and track_y <= mouse.y < track_y + track_h
+            in_thumb = thumb_x <= mouse.x < thumb_x + thumb_w and thumb_top <= mouse.y < thumb_top + thumb_h + 1.0 * scale
+
+            if click and in_track:
+                self._nav_focus_index = 1
+                if in_thumb:
+                    self._scroll_drag_active = True
+                    self._scroll_drag_offset = float(mouse.y - thumb_top)
+                else:
+                    travel = max(1.0, track_h - 3.0 * scale - thumb_h)
+                    target = float(mouse.y - track_y - 1.0 * scale - thumb_h * 0.5)
+                    target = max(0.0, min(travel, target))
+                    self._list_scroll_index = int(round((target / travel) * float(scroll_span)))
+                    self._scroll_drag_active = True
+                    self._scroll_drag_offset = thumb_h * 0.5
+
+            if self._scroll_drag_active:
+                if down:
+                    travel = max(1.0, track_h - 3.0 * scale - thumb_h)
+                    target = float(mouse.y - track_y - 1.0 * scale - self._scroll_drag_offset)
+                    target = max(0.0, min(travel, target))
+                    self._list_scroll_index = int(round((target / travel) * float(scroll_span)))
+                else:
+                    self._scroll_drag_active = False
+        else:
+            self._scroll_drag_active = False
+
+        self._list_scroll_index = max(0, min(max_scroll, int(self._list_scroll_index)))
+
+        start = max(0, min(max_scroll, int(self._list_scroll_index)))
+        end = min(count, start + self._VISIBLE_ROWS)
+        row_count = end - start
+        if row_count > 0 and mouse_in_list:
+            row_step = self._LIST_ROW_HEIGHT * scale
+            list_text_top = left_top_left.y + self._LIST_TEXT_Y * scale
+            row = int((mouse.y - list_text_top) // row_step)
+            if 0 <= row < row_count:
+                self._hovered_row_index = start + row
+                if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+                    self._selected_row_index = self._hovered_row_index
+
+        if self._nav_focus_index == 0 and (
+            rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
+        ):
+            if self._state.audio is not None:
+                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            self._begin_close_transition("back_to_previous")
+
+    def _hovered_perk_id(self) -> int | None:
+        if 0 <= int(self._hovered_row_index) < len(self._perk_ids):
+            return int(self._perk_ids[int(self._hovered_row_index)])
+        return None
+
+    def _selected_perk_id(self) -> int | None:
+        if 0 <= int(self._selected_row_index) < len(self._perk_ids):
+            return int(self._perk_ids[int(self._selected_row_index)])
+        return None
+
+    def _scrollbar_geometry(
+        self,
+        *,
+        left_top_left: Vec2,
+        scale: float,
+        count: int,
+        start: int,
+    ) -> tuple[float, float, float, float, float, int]:
+        track_x = left_top_left.x + (self._LIST_FRAME_X + 240.0) * scale
+        track_y = left_top_left.y + self._LIST_FRAME_Y * scale
+        track_h = (self._VISIBLE_ROWS * self._LIST_ROW_HEIGHT + 4.0) * scale
+        scroll_span = max(1, int(count) - self._VISIBLE_ROWS)
+        thumb_h = (float(self._VISIBLE_ROWS) / float(count)) * track_h
+        thumb_h = min(thumb_h, track_h - 3.0 * scale)
+        thumb_top = track_y + 1.0 * scale + ((track_h - 3.0 * scale - thumb_h) / float(scroll_span)) * float(start)
+        return track_x, track_y, track_h, thumb_top, thumb_h, scroll_span
 
     def _build_perk_database_ids(self) -> list[int]:
-        try:
-            from ...gameplay import PERK_COUNT_SIZE, perks_rebuild_available
-        except Exception:
-            return []
+        from ...gameplay import PERK_COUNT_SIZE, perks_rebuild_available
 
         # Avoid spinning up a full GameplayState; perks_rebuild_available only needs these fields.
         class _Stub:
@@ -562,34 +962,78 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         return perk_ids
 
     @staticmethod
-    def _perk_name(perk_id: int) -> str:
-        try:
-            from ...perks import perk_display_name
+    def _perk_name(perk_id: int, *, fx_toggle: int = 0) -> str:
+        from ...perks import perk_display_name
 
-            return perk_display_name(int(perk_id))
-        except Exception:
-            return f"Perk {int(perk_id)}"
+        return perk_display_name(int(perk_id), fx_toggle=int(fx_toggle))
 
     @staticmethod
-    def _perk_desc(perk_id: int) -> str:
-        try:
-            from ...perks import perk_display_description
+    def _perk_desc(perk_id: int, *, fx_toggle: int = 0) -> str:
+        from ...perks import perk_display_description
 
-            return perk_display_description(int(perk_id))
-        except Exception:
-            return ""
+        return perk_display_description(int(perk_id), fx_toggle=int(fx_toggle))
 
     @staticmethod
-    def _truncate_small_line(font: SmallFontData, text: str, max_width: float, *, scale: float) -> str:
-        text = str(text).strip()
-        if not text:
+    def _perk_prereq_name(perk_id: int, *, fx_toggle: int = 0) -> str | None:
+        from ...perks import PERK_BY_ID, perk_display_name
+
+        meta = PERK_BY_ID.get(int(perk_id))
+        if meta is None:
+            return None
+        prereq = tuple(getattr(meta, "prereq", ()) or ())
+        if not prereq:
+            return None
+        return perk_display_name(int(prereq[0]), fx_toggle=int(fx_toggle))
+
+    def _fx_toggle(self) -> int:
+        data = getattr(getattr(self._state, "config", None), "data", None)
+        if not isinstance(data, dict):
+            return 0
+        return int(data.get("fx_toggle", 0) or 0)
+
+    def _prewrapped_perk_desc(self, perk_id: int, font: SmallFontData, *, fx_toggle: int) -> str:
+        key = (int(perk_id), int(fx_toggle))
+        cached = self._wrapped_desc_cache.get(key)
+        if cached is not None:
+            return cached
+        desc = self._perk_desc(perk_id, fx_toggle=fx_toggle)
+        wrapped = self._wrap_small_text_native(
+            font,
+            desc,
+            max_width_px=self._DESC_WRAP_WIDTH_PX,
+            scale=1.0,
+        )
+        self._wrapped_desc_cache[key] = wrapped
+        return wrapped
+
+    @staticmethod
+    def _wrap_small_text_native(font: SmallFontData, text: str, max_width_px: float, *, scale: float) -> str:
+        wrapped = list(str(text))
+        if not wrapped:
             return ""
-        words = text.split()
-        line = ""
-        for word in words:
-            candidate = word if not line else f"{line} {word}"
-            if measure_small_text_width(font, candidate, float(scale)) <= float(max_width):
-                line = candidate
+
+        max_width = float(max_width_px)
+        remaining = max_width
+        i = 0
+        while i < len(wrapped):
+            ch = wrapped[i]
+            if ch == "\r":
+                i += 1
                 continue
-            break
-        return line
+            if ch == "\n":
+                remaining = max_width
+                i += 1
+                continue
+
+            remaining -= measure_small_text_width(font, ch, float(scale))
+            if remaining < 0.0:
+                j = i
+                while j > 0 and wrapped[j] not in {" ", "\n"}:
+                    j -= 1
+                if wrapped[j] == " ":
+                    wrapped[j] = "\n"
+                    i = j
+                remaining = max_width
+            i += 1
+
+        return "".join(wrapped)

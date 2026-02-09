@@ -404,3 +404,87 @@ bp 0x0040c1c0 ".printf \"[console] entry 0x0040c1c0\\n\"; kb; u @eip L40; gc"
 
 - The hotkey block (`0x0040c360`) and its callsite (`0x0040c39a`) live inside a larger per‑frame
   input/update function that starts at `0x0040c1c0`.
+
+## Session 7 (2026-02-09) - credits secret / AlienZooKeeper live capture
+
+### Goal
+
+Capture a clean runtime baseline from the live AlienZooKeeper screen to drive a high-fidelity port.
+
+### Captured
+
+**State snapshot (while on AlienZooKeeper):**
+
+- `dd 00487270 L4` -> `0000001a 00000019 00000000 00000000`
+  - current state id = `0x1a` (credits secret), previous = `0x19`.
+- `dd 00472ef0 L1` -> `ffffffff` (`credits_secret_selected_index = -1`)
+- `dd 004824e4 L4` -> `00001bf7 00001600 00000000 00000000`
+  - `timer_ms = 0x1bf7`, `anim_time_ms = 0x1600`, `score = 0`.
+- `dd 00481c10 L4` -> `00000003 ...`
+  - both one-shot button init bits set (Reset + Back).
+
+**Board and button blocks:**
+
+- `dd 004819ec L40` shows 36 board cells in `0..4` plus nearby state.
+- `dd 004819d0 L12` (Reset button block) starts with:
+  - label ptr `0x004730d4` ("Reset")
+  - width/config words populated.
+- `dd 00481bc0 L12` (Back button block) starts with:
+  - label ptr `0x00472e80` ("Back")
+  - width/config words populated.
+
+**Live string addresses used by this flow:**
+
+- `0x004730d4` -> `"Reset"`
+- `0x004730dc` -> `"Game Over"`
+- `0x004730e8` -> `"score: %d"`
+- `0x004730f4` -> `"..or something more?"`
+- `0x0047310c` -> `"a puzzle game unfinished"`
+- `0x00473128` -> `"AlienZooKeeper"`
+- `0x00473148` -> `"%d:%d"`
+- `0x00473150` -> `"%d:0%d"`
+- `0x00472e80` -> `"Back"`
+
+### Disassembly highlights (`credits_secret_alien_zookeeper_update`, `0x0040f4f0`)
+
+- **Timer update and expire sound** (`0x0040f680..0x0040f6cc`):
+  - subtracts frame dt from `0x004824e4`;
+  - on crossing <= 0, plays `0x004c3f0c` sfx via `0x0043d120`;
+  - clamps timer to `0`.
+
+- **Tile/board render geometry:**
+  - tile draw uses `32x32` (`push 42000000h` twice at `0x0040faf7..0x0040fb17`);
+  - board frame uses `192x192` (`push 40C00000h`, `push 43400000h` around `0x0040f884..0x0040f89f`).
+
+- **Tile color mapping path** (`0x0040fa36..0x0040faed`) confirms ids `0..4` map to fixed tint branches.
+
+- **Input/select/swap/match path:**
+  - hit-test call (`0x004034a0`) + click gate (`0x00446030`) at `0x0040fb29..0x0040fb7d`;
+  - swap with selected index at `0x0040fba5..0x0040fbc6`;
+  - match probe call `0x0040f400` at `0x0040fbd8`;
+  - matched cells are written `0xFFFFFFFD` into board/mask arrays at `0x0040fbf3..0x0040fc13`;
+  - on success: score++ (`0x004824ec`) and `timer += 0x7d0` (`+2000ms`) at `0x0040fc1a..0x0040fc45`.
+
+- **Reset button init/update/action:**
+  - one-shot init gated by bit0 of `0x00481c10` at `0x0040fd79..0x0040fdd5`;
+  - `ui_button_update(0x004819d0)` call at `0x0040fde3..0x0040fe09`;
+  - click branch randomizes the whole board (`rand % 5`) and loops `credits_secret_match3_find`
+    until no immediate match (`0x0040fe1d..0x0040fe5e`);
+  - resets `selected_index=-1`, `score=0`, `timer=0x2580` at `0x0040fe60..0x0040fe70`.
+
+- **Back button init/update/action:**
+  - one-shot init gated by bit1 of `0x00481c10` at `0x0040fe7a..0x0040fed6`;
+  - `ui_button_update(0x00481bc0)` call at `0x0040fee8..0x0040ff00`;
+  - click sets transition direction `0` and pending state `4` at `0x0040ff0c..0x0040ff12`.
+
+- **Timer text helper** at `0x0040ff50`:
+  - chooses `"%d:%d"` vs `"%d:0%d"` to zero-pad seconds.
+
+### Interpretation
+
+- The live game behavior still matches the earlier decompile mapping for AlienZooKeeper.
+- Important fidelity points for the port:
+  - selected index uses sentinel `-1`;
+  - Reset enforces a freshly randomized board with no immediate 3-match;
+  - timer is hard-reset to `0x2580` on reset and gains `+2000ms` per match;
+  - Back queues state `4` through the normal pending-state transition path.

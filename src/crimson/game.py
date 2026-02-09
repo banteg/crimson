@@ -57,8 +57,8 @@ from .frontend.high_scores_layout import (
     HS_BUTTON_STEP_Y,
     HS_BUTTON_X,
     HS_BUTTON_Y0,
-    HS_LOCAL_DATE_X,
     HS_LOCAL_DATE_Y,
+    HS_LOCAL_DATE_X,
     HS_LOCAL_FRAGS_X,
     HS_LOCAL_FRAGS_Y,
     HS_LOCAL_HIT_X,
@@ -73,11 +73,12 @@ from .frontend.high_scores_layout import (
     HS_LOCAL_SCORE_LABEL_Y,
     HS_LOCAL_SCORE_VALUE_X,
     HS_LOCAL_SCORE_VALUE_Y,
+    HS_LOCAL_CLOCK_X,
+    HS_LOCAL_CLOCK_Y,
     HS_LOCAL_TIME_LABEL_X,
     HS_LOCAL_TIME_LABEL_Y,
     HS_LOCAL_TIME_VALUE_X,
     HS_LOCAL_TIME_VALUE_Y,
-    HS_LOCAL_WEAPON_X,
     HS_LOCAL_WEAPON_Y,
     HS_LOCAL_WICON_X,
     HS_LOCAL_WICON_Y,
@@ -153,6 +154,7 @@ from .frontend.menu import (
     ensure_menu_ground,
 )
 from .frontend.panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from .frontend.panels.alien_zookeeper import AlienZooKeeperView
 from .frontend.panels.controls import ControlsMenuView
 from .frontend.panels.credits import CreditsView
 from .frontend.panels.databases import UnlockedPerksDatabaseView, UnlockedWeaponsDatabaseView
@@ -2102,6 +2104,8 @@ class HighScoresView:
         self._drop_off: rl.Texture | None = None
         self._arrow_tex: rl.Texture | None = None
         self._wicons_tex: rl.Texture | None = None
+        self._clock_table_tex: rl.Texture | None = None
+        self._clock_pointer_tex: rl.Texture | None = None
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
@@ -2135,13 +2139,9 @@ class HighScoresView:
         self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
         self._drop_off = cache.get_or_load("ui_dropOff", "ui/ui_dropDownOff.jaz").texture
         self._arrow_tex = cache.get_or_load("ui_arrow", "ui/ui_arrow.jaz").texture
-
-        if self._wicons_tex is not None:
-            rl.unload_texture(self._wicons_tex)
-            self._wicons_tex = None
-        wicons_path = self._state.assets_dir / "crimson" / "ui" / "ui_wicons.png"
-        if wicons_path.is_file():
-            self._wicons_tex = rl.load_texture(str(wicons_path))
+        self._wicons_tex = cache.get_or_load("ui_wicons", "ui/ui_wicons.jaz").texture
+        self._clock_table_tex = cache.get_or_load("ui_clockTable", "ui/ui_clockTable.jaz").texture
+        self._clock_pointer_tex = cache.get_or_load("ui_clockPointer", "ui/ui_clockPointer.jaz").texture
 
         request = self._state.pending_high_scores
         self._state.pending_high_scores = None
@@ -2179,9 +2179,9 @@ class HighScoresView:
         if self._small_font is not None:
             rl.unload_texture(self._small_font.texture)
             self._small_font = None
-        if self._wicons_tex is not None:
-            rl.unload_texture(self._wicons_tex)
-            self._wicons_tex = None
+        self._wicons_tex = None
+        self._clock_table_tex = None
+        self._clock_pointer_tex = None
         self._assets = None
         self._button_tex = None
         self._button_textures = None
@@ -2307,7 +2307,6 @@ class HighScoresView:
         )
         quest_major = int(request.quest_stage_major) if request is not None else 0
         quest_minor = int(request.quest_stage_minor) if request is not None else 0
-        highlight_rank = request.highlight_rank if request is not None else None
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
@@ -2400,7 +2399,7 @@ class HighScoresView:
                 dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
                 rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
-        header_color = rl.Color(255, 255, 255, int(255 * 0.85))
+        header_color = rl.Color(255, 255, 255, 255)
         draw_small_text(
             font, "Rank", left_panel_top_left + Vec2(211.0 * scale, 84.0 * scale), 1.0 * scale, header_color
         )
@@ -2430,6 +2429,21 @@ class HighScoresView:
         start = max(0, int(self._scroll_index))
         end = min(len(self._records), start + rows)
         y = left_panel_top_left.y + 103.0 * scale
+        selected_rank = int(request.highlight_rank) if (request is not None and request.highlight_rank is not None) else None
+        mouse = Vec2.from_xy(rl.get_mouse_position())
+        frame_x = left_panel_top_left.x + HS_SCORE_FRAME_X * scale
+        frame_y = left_panel_top_left.y + HS_SCORE_FRAME_Y * scale
+        frame_w = HS_SCORE_FRAME_W * scale
+        frame_h = HS_SCORE_FRAME_H * scale
+        if (
+            frame_x <= mouse.x < frame_x + frame_w
+            and frame_y <= mouse.y < frame_y + frame_h
+            and y <= mouse.y < y + row_step * rows
+        ):
+            row = int((mouse.y - y) // row_step)
+            hovered_idx = start + row
+            if start <= hovered_idx < end:
+                selected_rank = hovered_idx
 
         if start >= end:
             draw_small_text(
@@ -2455,7 +2469,7 @@ class HighScoresView:
                 value = f"{int(getattr(entry, 'score_xp', 0))}"
 
                 color = rl.Color(255, 255, 255, int(255 * 0.7))
-                if highlight_rank is not None and int(highlight_rank) == idx:
+                if selected_rank is not None and int(selected_rank) == idx:
                     color = rl.Color(255, 255, 255, 255)
 
                 draw_small_text(font, f"{idx + 1}", Vec2(left_panel_top_left.x + 216.0 * scale, y), 1.0 * scale, color)
@@ -2492,7 +2506,7 @@ class HighScoresView:
             right_top_left=right_panel_top_left,
             scale=scale,
             mode_id=mode_id,
-            highlight_rank=highlight_rank,
+            highlight_rank=selected_rank,
         )
         self._draw_sign(assets)
         _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
@@ -2506,7 +2520,7 @@ class HighScoresView:
         mode_id: int,
         highlight_rank: int | None,
     ) -> None:
-        if int(mode_id) == 3:
+        if highlight_rank is None:
             self._draw_right_panel_quest_options(font=font, right_top_left=right_top_left, scale=scale)
             return
         self._draw_right_panel_local_score(
@@ -2666,7 +2680,11 @@ class HighScoresView:
         entry = self._records[idx]
 
         text_scale = 1.0 * scale
-        text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+        text_color = rl.Color(int(255 * 0.9), int(255 * 0.9), int(255 * 0.9), int(255 * 0.8))
+        value_color = rl.Color(int(255 * 0.9), int(255 * 0.9), 255, 255)
+        game_time_color = rl.Color(255, 255, 255, int(255 * 0.8))
+        lower_section_color = rl.Color(int(255 * 0.9), int(255 * 0.9), int(255 * 0.9), int(255 * 0.7))
+        separator_color = rl.Color(149, 175, 198, int(255 * 0.7))
 
         name = ""
         try:
@@ -2689,6 +2707,13 @@ class HighScoresView:
             text_scale,
             text_color,
         )
+        rl.draw_line(
+            int(right_top_left.x + 78.0 * scale),
+            int(right_top_left.y + 57.0 * scale),
+            int(right_top_left.x + 117.0 * scale),
+            int(right_top_left.y + 57.0 * scale),
+            separator_color,
+        )
 
         date_text = self._format_score_date(entry)
         if date_text:
@@ -2699,6 +2724,13 @@ class HighScoresView:
                 text_scale,
                 text_color,
             )
+        rl.draw_line(
+            int(right_top_left.x + 74.0 * scale),
+            int(right_top_left.y + 72.0 * scale),
+            int(right_top_left.x + 266.0 * scale),
+            int(right_top_left.y + 72.0 * scale),
+            separator_color,
+        )
 
         draw_small_text(
             font,
@@ -2712,7 +2744,14 @@ class HighScoresView:
             "Game time",
             right_top_left + Vec2(HS_LOCAL_TIME_LABEL_X * scale, HS_LOCAL_TIME_LABEL_Y * scale),
             text_scale,
-            text_color,
+            game_time_color,
+        )
+        rl.draw_line(
+            int(right_top_left.x + 170.0 * scale),
+            int(right_top_left.y + 90.0 * scale),
+            int(right_top_left.x + 170.0 * scale),
+            int(right_top_left.y + 138.0 * scale),
+            separator_color,
         )
 
         score_value = f"{int(getattr(entry, 'score_xp', 0))}"
@@ -2721,16 +2760,21 @@ class HighScoresView:
             score_value,
             right_top_left + Vec2(HS_LOCAL_SCORE_VALUE_X * scale, HS_LOCAL_SCORE_VALUE_Y * scale),
             text_scale,
-            text_color,
+            value_color,
         )
 
         elapsed_ms = int(getattr(entry, "survival_elapsed_ms", 0) or 0)
+        self._draw_clock_gauge(
+            elapsed_ms=elapsed_ms,
+            pos=right_top_left + Vec2(HS_LOCAL_CLOCK_X * scale, HS_LOCAL_CLOCK_Y * scale),
+            scale=scale,
+        )
         draw_small_text(
             font,
             self._format_elapsed_mm_ss(elapsed_ms),
             right_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
             text_scale,
-            text_color,
+            game_time_color,
         )
 
         draw_small_text(
@@ -2742,25 +2786,18 @@ class HighScoresView:
         )
 
         frags = int(getattr(entry, "creature_kill_count", 0) or 0)
-        draw_small_text(
-            font,
-            f"Frags: {frags}",
-            right_top_left + Vec2(HS_LOCAL_FRAGS_X * scale, HS_LOCAL_FRAGS_Y * scale),
-            text_scale,
-            text_color,
-        )
 
         shots_fired = int(getattr(entry, "shots_fired", 0) or 0)
         shots_hit = int(getattr(entry, "shots_hit", 0) or 0)
         hit_pct = 0
         if shots_fired > 0:
             hit_pct = int((shots_hit * 100) // shots_fired)
-        draw_small_text(
-            font,
-            f"Hit %: {hit_pct}%",
-            right_top_left + Vec2(HS_LOCAL_HIT_X * scale, HS_LOCAL_HIT_Y * scale),
-            text_scale,
-            text_color,
+        rl.draw_line(
+            int(right_top_left.x + 74.0 * scale),
+            int(right_top_left.y + 142.0 * scale),
+            int(right_top_left.x + 266.0 * scale),
+            int(right_top_left.y + 142.0 * scale),
+            separator_color,
         )
 
         weapon_id = int(getattr(entry, "most_used_weapon_id", 0) or 0)
@@ -2771,12 +2808,67 @@ class HighScoresView:
                 pos=right_top_left + Vec2(HS_LOCAL_WICON_X * scale, HS_LOCAL_WICON_Y * scale),
                 scale=scale,
             )
+        weapon_name_x = HS_LOCAL_WICON_X * scale + max(
+            0.0,
+            32.0 * scale - measure_small_text_width(font, weapon_name, text_scale) * 0.5,
+        )
         draw_small_text(
             font,
             weapon_name,
-            right_top_left + Vec2(HS_LOCAL_WEAPON_X * scale, HS_LOCAL_WEAPON_Y * scale),
+            right_top_left + Vec2(weapon_name_x, HS_LOCAL_WEAPON_Y * scale),
             text_scale,
-            text_color,
+            lower_section_color,
+        )
+        draw_small_text(
+            font,
+            f"Frags: {frags}",
+            right_top_left + Vec2(HS_LOCAL_FRAGS_X * scale, HS_LOCAL_FRAGS_Y * scale),
+            text_scale,
+            lower_section_color,
+        )
+        draw_small_text(
+            font,
+            f"Hit %: {hit_pct}%",
+            right_top_left + Vec2(HS_LOCAL_HIT_X * scale, HS_LOCAL_HIT_Y * scale),
+            text_scale,
+            lower_section_color,
+        )
+        rl.draw_line(
+            int(right_top_left.x + 74.0 * scale),
+            int(right_top_left.y + 194.0 * scale),
+            int(right_top_left.x + 266.0 * scale),
+            int(right_top_left.y + 194.0 * scale),
+            separator_color,
+        )
+
+    def _draw_clock_gauge(self, *, elapsed_ms: int, pos: Vec2, scale: float) -> None:
+        table_tex = self._clock_table_tex
+        pointer_tex = self._clock_pointer_tex
+        if table_tex is None or pointer_tex is None:
+            return
+        draw_w = 32.0 * scale
+        draw_h = 32.0 * scale
+        dst = rl.Rectangle(pos.x, pos.y, draw_w, draw_h)
+        src_table = rl.Rectangle(0.0, 0.0, float(table_tex.width), float(table_tex.height))
+        src_pointer = rl.Rectangle(0.0, 0.0, float(pointer_tex.width), float(pointer_tex.height))
+        rl.draw_texture_pro(
+            table_tex,
+            src_table,
+            dst,
+            rl.Vector2(0.0, 0.0),
+            0.0,
+            rl.WHITE,
+        )
+        seconds = max(0, int(elapsed_ms) // 1000)
+        rotation_deg = float(seconds) * 6.0
+        center = Vec2(pos.x + draw_w * 0.5, pos.y + draw_h * 0.5)
+        rl.draw_texture_pro(
+            pointer_tex,
+            src_pointer,
+            rl.Rectangle(center.x, center.y, draw_w, draw_h),
+            rl.Vector2(draw_w * 0.5, draw_h * 0.5),
+            rotation_deg,
+            rl.WHITE,
         )
 
     def _draw_wicon(self, icon_index: int, *, pos: Vec2, scale: float) -> None:
@@ -2786,12 +2878,14 @@ class HighScoresView:
         idx = int(icon_index)
         if idx < 0 or idx > 31:
             return
-        cols = 4
-        rows = 8
-        icon_w = float(tex.width) / float(cols)
-        icon_h = float(tex.height) / float(rows)
-        src_x = float(idx % cols) * icon_w
-        src_y = float(idx // cols) * icon_h
+        grid = 8
+        cell_w = float(tex.width) / float(grid)
+        cell_h = float(tex.height) / float(grid)
+        frame = idx * 2
+        src_x = float(frame % grid) * cell_w
+        src_y = float(frame // grid) * cell_h
+        icon_w = cell_w * 2.0
+        icon_h = cell_h
         rl.draw_texture_pro(
             tex,
             rl.Rectangle(src_x, src_y, icon_w, icon_h),
@@ -2956,6 +3050,7 @@ class GameLoopView:
             "open_weapon_database": UnlockedWeaponsDatabaseView(state),
             "open_perk_database": UnlockedPerksDatabaseView(state),
             "open_credits": CreditsView(state),
+            "open_alien_zookeeper": AlienZooKeeperView(state),
             "open_mods": ModsMenuView(state),
             "open_other_games": PanelMenuView(
                 state,
@@ -3026,6 +3121,10 @@ class GameLoopView:
                     self._front_active = self._front_stack.pop()
                     if self._front_active in self._gameplay_views:
                         self._state.pause_background = None
+                    else:
+                        reopen_from_child = getattr(self._front_active, "reopen_from_child", None)
+                        if callable(reopen_from_child):
+                            reopen_from_child()
                     self._active = self._front_active
                     return
                 self._front_active.close()

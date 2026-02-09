@@ -176,6 +176,18 @@ Final decoded message:
   writes to the save file upon reaching a score or matching a specific pattern. The minigame appears
   to be self-contained.
 
+- **Runtime verification (2026-02-09)**: Frida harness `scripts/frida/azk_verify_no_unlock.js`
+  auto-entered AZK (`game_state_set(0x1a)`), reset timer to `0x2580`, then solved to a fully cleared
+  board (`36` cleared cells, score `12`). Final `verdict` in
+  `C:\share\frida\azk_verify_no_unlock.jsonl` reported:
+  - `no_external_effect = true`
+  - `side_effects = []`
+  - unchanged `credits_secret_unlock_flag` (`0x004811c4`)
+  - unchanged quest unlock ids (`0x00482700`, `0x00482704`)
+  - unchanged `weapon_table` unlock hash
+  Later state transitions (`4`, `0`, `10`) were logged after verdict timing and correspond to normal
+  UI navigation, not an AZK-completion trigger.
+
 - **Color mapping (render tint)**: Confirmed via `credits_secret_alien_zookeeper_update` draw calls:
   - `0 = (1.0, 0.5, 0.5)` Red
   - `1 = (0.5, 0.5, 1.0)` Blue

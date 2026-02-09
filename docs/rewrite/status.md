@@ -33,7 +33,8 @@ under `docs/crimsonland-exe/`.
 - **Options panel (state `2`)**: partially implemented.
   - Code: `src/crimson/game.py` (`OptionsMenuView`)
   - Implemented: SFX/music volume sliders, detail preset slider, mouse sensitivity, “UI Info texts”, save-on-exit.
-  - Missing: interactive controls rebinding (Controls screen exists but is currently read-only), video/window mode editing, broader parity of widgets/labels.
+  - Implemented (Controls subpanel): interactive "Configure for" / "Aiming method" / "Moving method" dropdowns, one-open-at-a-time gating, direction-arrow checkbox, and panel-synced content transitions.
+  - Missing: interactive key/axis rebinding on the right panel, video/window mode editing, broader parity of widgets/labels.
 - **Statistics panel (state `4`)**: partially implemented (Summary/Weapons/Quests pages; reads `game.cfg` counters + checksum).
   - Code: `src/crimson/frontend/panels/stats.py` (`StatisticsMenuView`)
 - **Demo / attract mode**: implemented (variant sequencing + upsell + purchase screen flow).
@@ -122,7 +123,7 @@ under `docs/crimsonland-exe/`.
 2) **Multiplayer (2–4 players)**
    - Player spawning is wired, but inputs are mirrored (all players share the same input).
 3) **UI completeness**
-   - Full Options/Controls parity (Controls screen is currently non-interactive).
+   - Full Options/Controls parity (Controls key/axis rebinding is still missing).
 4) **Progression + stats fidelity**
    - Some `game.cfg` counters and stats screen parity are still incomplete.
 5) **Out-of-scope / later**

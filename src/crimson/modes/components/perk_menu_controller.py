@@ -5,7 +5,7 @@ from typing import Callable, Sequence
 
 import pyray as rl
 
-from grim.fonts.small import SmallFontData
+from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.math import clamp
 
 from ...gameplay import (
@@ -28,7 +28,6 @@ from ...ui.perk_menu import (
     button_width,
     draw_menu_item,
     draw_ui_text,
-    draw_wrapped_ui_text_in_rect,
     menu_item_hit_rect,
     perk_menu_compute_layout,
     perk_menu_panel_slide_x,
@@ -62,6 +61,8 @@ class PerkMenuContext:
 
 
 class PerkMenuController:
+    _DESC_WRAP_WIDTH_PX = 256.0
+
     def __init__(
         self,
         *,
@@ -111,6 +112,54 @@ class PerkMenuController:
         self._open = False
         self._selected_index = 0
         self._timeline_ms = 0.0
+        self._wrapped_desc_cache: dict[tuple[int, int], str] = {}
+
+    def _prewrapped_perk_desc(self, perk_id: int, font: SmallFontData, *, fx_toggle: int) -> str:
+        key = (int(perk_id), int(fx_toggle))
+        cached = self._wrapped_desc_cache.get(key)
+        if cached is not None:
+            return cached
+        desc = perk_display_description(int(perk_id), fx_toggle=int(fx_toggle))
+        wrapped = self._wrap_small_text_native(
+            font,
+            desc,
+            max_width_px=self._DESC_WRAP_WIDTH_PX,
+            scale=1.0,
+        )
+        self._wrapped_desc_cache[key] = wrapped
+        return wrapped
+
+    @staticmethod
+    def _wrap_small_text_native(font: SmallFontData, text: str, max_width_px: float, *, scale: float) -> str:
+        wrapped = list(str(text))
+        if not wrapped:
+            return ""
+
+        max_width = float(max_width_px)
+        remaining = max_width
+        i = 0
+        while i < len(wrapped):
+            ch = wrapped[i]
+            if ch == "\r":
+                i += 1
+                continue
+            if ch == "\n":
+                remaining = max_width
+                i += 1
+                continue
+
+            remaining -= measure_small_text_width(font, ch, float(scale))
+            if remaining < 0.0:
+                j = i
+                while j > 0 and wrapped[j] not in {" ", "\n"}:
+                    j -= 1
+                if wrapped[j] == " ":
+                    wrapped[j] = "\n"
+                    i = j
+                remaining = max_width
+            i += 1
+
+        return "".join(wrapped)
 
     def close(self) -> None:
         if not self._open:
@@ -325,11 +374,13 @@ class PerkMenuController:
 
         selected = choices[self._selected_index]
         desc = perk_display_description(int(selected), fx_toggle=int(ctx.fx_toggle))
+        if ctx.font is not None:
+            desc = self._prewrapped_perk_desc(int(selected), ctx.font, fx_toggle=int(ctx.fx_toggle))
         desc_scale = scale * 0.85
-        draw_wrapped_ui_text_in_rect(
+        draw_ui_text(
             ctx.font,
             desc,
-            rect=computed.desc,
+            computed.desc.top_left,
             scale=desc_scale,
             color=UI_TEXT_COLOR,
         )

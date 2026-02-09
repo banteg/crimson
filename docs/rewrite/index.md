@@ -28,7 +28,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Main menu buttons + animations (Play/Options/Stats/Mods/Quit) with panel/back slide animation.
 - Play Game panel (mode select + player count dropdown + tooltips + F1 “times played” overlay).
 - Quest select menu UI (stage icons + hardcore toggle gating + quest list + counts overlay; quest gameplay wired).
-- Options panel (volume/detail/mouse sliders + “UI Info texts”; Controls screen is currently read-only).
+- Options panel (volume/detail/mouse sliders + “UI Info texts”; Controls dropdowns + direction-arrow checkbox are interactive, while key/axis rebinding is still pending).
 - Statistics panel (Summary/Weapons/Quests pages; playtime + weapon usage + quest counters).
 - Menu terrain persists between screens (no regen on Options/Stats/etc navigation).
 - Menu sign shadow pass matches the original when `fx_detail` is enabled.

@@ -184,15 +184,12 @@ zig-run:
     cd rewrite && zig build run
 
 # WinDbg
-[windows]
 windbg-server:
-    cdb -server tcp:port=5005,password=secret -logo C:\Crimsonland\windbg.log -pn crimsonland.exe -noio
+    cdb.exe -server tcp:port=5005,password=secret -logo C:\games\crimsonland_1.9.93\windbg.log -pn crimsonland.exe -noio
 
-[windows]
 windbg-client:
-    cdb -remote tcp:server=127.0.0.1,port=5005,password=secret -bonc
+    cdb.exe -remote tcp:server=127.0.0.1,port=5005,password=secret -bonc
 
-[windows]
 windbg-tail:
     uv run scripts/windbg_tail.py
 
@@ -210,6 +207,12 @@ frida-unlock-secrets:
 [windows]
 frida-quest-spanking-count:
     frida -n crimsonland.exe -l scripts\\frida\\quest_spanking_count.js
+
+[windows]
+frida-azk-verify process="crimsonland.exe":
+    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
+    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
+    frida -n {{process}} -l scripts\\frida\\azk_verify_no_unlock.js
 
 [windows]
 frida-quest-build-dump:
