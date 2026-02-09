@@ -21,8 +21,12 @@ def test_credits_build_lines_sets_expected_core_entries() -> None:
 
     assert line_max_index == 0x7D
     assert secret_base_index == 0x54
-    assert lines[0x01].text == "Crimsonland"
-    assert lines[0x01].flags == _FLAG_HEADING
+    assert lines[0x00].text == "2026 Remake:"
+    assert lines[0x00].flags == _FLAG_HEADING
+    assert lines[0x01].text == "banteg"
+    assert lines[0x01].flags == 0
+    assert lines[0x03].text == "Crimsonland"
+    assert lines[0x03].flags == _FLAG_HEADING
     assert lines[0x57].text == "You can stop watching now."
     assert lines[0x77].text == "Click the ones with the round ones!"
 
