@@ -9,7 +9,7 @@
 //   frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
 //
 // Output:
-//   C:\share\frida\gameplay_diff_capture.json (or CRIMSON_FRIDA_DIR override)
+//   C:\share\frida\gameplay_diff_capture.json.gz (or CRIMSON_FRIDA_DIR override)
 
 const DEFAULT_LOG_DIR = "C:\\share\\frida";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
@@ -90,7 +90,7 @@ function toHex(value, width) {
 const LOG_DIR = getEnv("CRIMSON_FRIDA_DIR") || DEFAULT_LOG_DIR;
 
 const CONFIG = {
-  outPath: joinPath(LOG_DIR, "gameplay_diff_capture.json"),
+  outPath: joinPath(LOG_DIR, "gameplay_diff_capture.json.gz"),
   logMode: getEnv("CRIMSON_FRIDA_APPEND") === "1" ? "append" : "truncate",
   includeCaller: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_CALLER", true),
   includeBacktrace: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_BT", false),
@@ -308,6 +308,9 @@ const outState = {
   outWarned: false,
   captureStarted: false,
   captureClosed: false,
+  captureGzipEnabled: false,
+  captureGzipCrc32: 0xffffffff,
+  captureGzipInputSize: 0,
   captureTickCount: 0,
   gameplayFrame: 0,
   currentStatePrev: null,
@@ -342,6 +345,21 @@ const outState = {
   lastCreatureDigest: null,
 };
 
+const _textEncoder = typeof TextEncoder !== "undefined" ? new TextEncoder() : null;
+const GZIP_HEADER_BYTES = new Uint8Array([0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff]);
+const GZIP_FINAL_EMPTY_BLOCK_BYTES = new Uint8Array([0x01, 0x00, 0x00, 0xff, 0xff]);
+const CRC32_TABLE = (function buildCrc32Table() {
+  const table = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i >>> 0;
+    for (let k = 0; k < 8; k++) {
+      c = (c & 1) ? ((0xedb88320 ^ (c >>> 1)) >>> 0) : (c >>> 1);
+    }
+    table[i] = c >>> 0;
+  }
+  return table;
+})();
+
 const UNKNOWN_DEATH = {
   creature_index: -1,
   type_id: -1,
@@ -352,7 +370,7 @@ const UNKNOWN_DEATH = {
 
 function openOutFile() {
   if (outState.outFile) return;
-  const mode = "w";
+  const mode = "wb";
   try {
     outState.outFile = new File(CONFIG.outPath, mode);
   } catch (_) {
@@ -367,23 +385,112 @@ function writeLine(obj) {
   console.log(JSON.stringify(obj));
 }
 
-function _captureWrite(text) {
+function _toWriteArrayBuffer(bytes) {
+  if (!bytes) return null;
+  if (bytes instanceof ArrayBuffer) return bytes;
+  if (ArrayBuffer.isView(bytes)) {
+    if (bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength) return bytes.buffer;
+    return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+  }
+  return null;
+}
+
+function _captureWriteRaw(data) {
   try {
     openOutFile();
     if (!outState.outFile) return false;
-    outState.outFile.write(String(text));
+    if (typeof data === "string") {
+      outState.outFile.write(String(data));
+      return true;
+    }
+    const buf = _toWriteArrayBuffer(data);
+    if (!buf) return false;
+    outState.outFile.write(buf);
     return true;
   } catch (_) {
     return false;
   }
 }
 
+function _utf8Bytes(text) {
+  const input = String(text);
+  if (_textEncoder) return _textEncoder.encode(input);
+  const escaped = unescape(encodeURIComponent(input));
+  const out = new Uint8Array(escaped.length);
+  for (let i = 0; i < escaped.length; i++) out[i] = escaped.charCodeAt(i) & 0xff;
+  return out;
+}
+
+function _crc32Update(crc, bytes) {
+  let c = crc >>> 0;
+  for (let i = 0; i < bytes.length; i++) c = (CRC32_TABLE[(c ^ bytes[i]) & 0xff] ^ (c >>> 8)) >>> 0;
+  return c >>> 0;
+}
+
+function _u32LeBytes(value) {
+  const v = value >>> 0;
+  const out = new Uint8Array(4);
+  out[0] = v & 0xff;
+  out[1] = (v >>> 8) & 0xff;
+  out[2] = (v >>> 16) & 0xff;
+  out[3] = (v >>> 24) & 0xff;
+  return out;
+}
+
+function _captureWriteGzipBytes(bytes) {
+  if (!bytes || bytes.length <= 0) return true;
+
+  outState.captureGzipCrc32 = _crc32Update(outState.captureGzipCrc32, bytes);
+  outState.captureGzipInputSize = (outState.captureGzipInputSize + bytes.length) >>> 0;
+
+  let offset = 0;
+  while (offset < bytes.length) {
+    const chunkLen = Math.min(0xffff, bytes.length - offset);
+    const nlen = (~chunkLen) & 0xffff;
+    const header = new Uint8Array(5);
+    header[0] = 0x00; // BFINAL=0, BTYPE=stored
+    header[1] = chunkLen & 0xff;
+    header[2] = (chunkLen >>> 8) & 0xff;
+    header[3] = nlen & 0xff;
+    header[4] = (nlen >>> 8) & 0xff;
+
+    if (!_captureWriteRaw(header)) return false;
+    if (!_captureWriteRaw(bytes.subarray(offset, offset + chunkLen))) return false;
+    offset += chunkLen;
+  }
+  return true;
+}
+
+function _captureWriteGzipFinalizer() {
+  if (!_captureWriteRaw(GZIP_FINAL_EMPTY_BLOCK_BYTES)) return false;
+  const trailer = new Uint8Array(8);
+  trailer.set(_u32LeBytes((outState.captureGzipCrc32 ^ 0xffffffff) >>> 0), 0);
+  trailer.set(_u32LeBytes(outState.captureGzipInputSize >>> 0), 4);
+  return _captureWriteRaw(trailer);
+}
+
+function _captureWriteText(text) {
+  if (!outState.captureGzipEnabled) return _captureWriteRaw(String(text));
+  return _captureWriteGzipBytes(_utf8Bytes(text));
+}
+
 function startCaptureFile(meta) {
   if (outState.captureStarted) return;
+  outState.captureGzipEnabled = String(CONFIG.outPath || "").toLowerCase().endsWith(".gz");
+  outState.captureGzipCrc32 = 0xffffffff;
+  outState.captureGzipInputSize = 0;
+
+  let started = false;
   const encoded = JSON.stringify(meta);
   const header =
     encoded && encoded.endsWith("}") ? encoded.slice(0, -1) + ',\"ticks\":[' : null;
-  const started = header ? _captureWrite(header) : false;
+  if (header) {
+    if (outState.captureGzipEnabled) {
+      started = _captureWriteRaw(GZIP_HEADER_BYTES) && _captureWriteText(header);
+    } else {
+      started = _captureWriteText(header);
+    }
+  }
   outState.captureStarted = started;
   outState.captureClosed = false;
   outState.captureTickCount = 0;
@@ -396,7 +503,7 @@ function startCaptureFile(meta) {
 function writeCaptureTick(tickObj) {
   if (!outState.captureStarted || outState.captureClosed || !tickObj) return;
   const prefix = outState.captureTickCount > 0 ? "," : "";
-  const wrote = _captureWrite(prefix + JSON.stringify(tickObj));
+  const wrote = _captureWriteText(prefix + JSON.stringify(tickObj));
   if (wrote) {
     outState.captureTickCount += 1;
     return;
@@ -412,7 +519,8 @@ function closeCaptureFile() {
   outState.captureClosed = true;
   try {
     if (outState.outFile) {
-      outState.outFile.write("]}");
+      _captureWriteText("]}");
+      if (outState.captureGzipEnabled) _captureWriteGzipFinalizer();
       outState.outFile.flush();
       outState.outFile.close();
     }
