@@ -83,7 +83,7 @@ Reference analysis:
 
 ```bash
 uv run crimson original divergence-report \
-  artifacts/frida/share/gameplay_diff_capture.json \
+  artifacts/frida/share/gameplay_diff_capture.json.gz \
   --float-abs-tol 1e-3 \
   --window 24 \
   --lead-lookback 1024 \

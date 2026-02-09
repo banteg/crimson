@@ -29,7 +29,7 @@ When the capture SHA is unchanged, append updates to the same session.
 ## Capture Policy (Current)
 
 - Default to full-detail `gameplay_diff_capture` captures (no focus window, no sample limits).
-- Keep `artifacts/frida/share/gameplay_diff_capture.json` as the canonical artifact and always log SHA256.
+- Keep `artifacts/frida/share/gameplay_diff_capture.json.gz` as the canonical artifact and always log SHA256.
 - Use `--run-summary` or `--run-summary-short` in divergence reports.
 - If any env knobs throttle capture volume, log exact knob/value.
 - If capture SHA is unchanged, update the existing session; do not create a new one.
@@ -39,10 +39,10 @@ When the capture SHA is unchanged, append updates to the same session.
 ## Session 1 (2026-02-08)
 
 - **Legacy IDs:** `2026-02-08-a` .. `2026-02-08-e`
-- **Capture:** `artifacts/frida/share/gameplay_diff_capture.json`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.json.gz`
 - **Capture SHA256:** `a40e7fed4ea7b4658d420bc31f6101307864c8de1b06f926d9ddf7c0010ac2ee`
 - **Baseline verifier command:**
-  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.json --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 20 --json-out`
+  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 20 --json-out`
 - **First mismatch:** `tick 1794 (players[0].experience, score_xp)`
 
 ### Key Findings
@@ -70,10 +70,10 @@ When the capture SHA is unchanged, append updates to the same session.
 ## Session 2 (2026-02-08)
 
 - **Legacy IDs:** `2026-02-08-f` .. `2026-02-08-o`
-- **Capture:** `artifacts/frida/share/gameplay_diff_capture.json`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.json.gz`
 - **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
 - **Baseline verifier command:**
-  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.json --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out`
+  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out`
 - **First mismatch:** `tick 3504 (players[0].experience, score_xp)`
 
 ### Key Findings
@@ -133,10 +133,10 @@ When the capture SHA is unchanged, append updates to the same session.
 ## Session 4 (2026-02-09)
 
 - **Legacy IDs:** `2026-02-09-q`
-- **Capture:** `artifacts/frida/share/gameplay_diff_capture.json`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.json.gz`
 - **Capture SHA256:** `28b8db6eb6b679455dad7376ef76149d26fdd7339dea246518685938cdb48662`
 - **Baseline verifier command:**
-  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.json --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out`
+  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out`
 - **First mismatch progression:**
   - initial: `tick 1069 (players[0].ammo)`
   - after replay/input + movement fixes: `tick 3882 (players[0].experience, score_xp)`
@@ -178,9 +178,9 @@ When the capture SHA is unchanged, append updates to the same session.
 ### Validation
 
 - `uv run pytest tests/test_player_update.py tests/test_original_capture_conversion.py tests/test_replay_perk_menu_open_event.py tests/test_creature_runtime.py`
-- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json --tick 3624 --near-miss-threshold 0.35 --json-out`
-- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json --tick 7336 --near-miss-threshold 0.35 --json-out`
-- `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.json --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out` *(expected non-zero exit while diverged)*
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json.gz --tick 3624 --near-miss-threshold 0.35 --json-out`
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json.gz --tick 7336 --near-miss-threshold 0.35 --json-out`
+- `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out` *(expected non-zero exit while diverged)*
 
 ### Outcome / Next Probe
 

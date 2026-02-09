@@ -9,7 +9,7 @@ tags:
 # Task: Debug Missing Input Capture in `gameplay_diff_capture.js`
 
 ## Problem
-Recent capture (`artifacts/frida/share/gameplay_diff_capture.json`) resolves and hooks input helpers successfully:
+Recent capture (`artifacts/frida/share/gameplay_diff_capture.json.gz`) resolves and hooks input helpers successfully:
 
 - `input_any_key_pressed` (`0x00446000`)
 - `input_primary_just_pressed` (`0x00446030`)
@@ -30,7 +30,7 @@ actionable telemetry during normal play.
 - Backtrace should stay optional/off by default.
 
 ## Evidence to Start From
-- Capture file: `artifacts/frida/share/gameplay_diff_capture.json`
+- Capture file: `artifacts/frida/share/gameplay_diff_capture.json.gz`
 - Summary: `analysis/frida/original_capture_summary.json`
 - Script: `scripts/frida/gameplay_diff_capture.js`
 - Input decompile references:

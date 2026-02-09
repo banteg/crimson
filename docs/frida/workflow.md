@@ -68,7 +68,7 @@ frida -n crimsonland.exe -l C:\share\frida\gameplay_state_capture.js
 ```
 
 Differential gameplay capture (tick-aligned checkpoints + event summaries, JSON object to
-`gameplay_diff_capture.json`):
+`gameplay_diff_capture.json.gz`):
 
 ```text
 frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
@@ -122,7 +122,7 @@ Default logs written by the scripts:
 
 - `C:\share\frida\grim_hits.jsonl`
 - `C:\share\frida\crimsonland_frida_hits.jsonl`
-- `C:\share\frida\gameplay_diff_capture.json` (if you ran `gameplay_diff_capture.js`)
+- `C:\share\frida\gameplay_diff_capture.json.gz` (if you ran `gameplay_diff_capture.js`)
 - `C:\share\frida\creature_anim_trace.jsonl`
 - `C:\share\frida\ui_render_trace.jsonl`
 - `C:\share\frida\demo_trial_overlay_trace.jsonl` (if you ran `demo_trial_overlay_trace.js`)
@@ -138,7 +138,7 @@ mkdir -p analysis/frida/raw
 cp /mnt/c/share/frida/grim_hits.jsonl analysis/frida/raw/
 cp /mnt/c/share/frida/crimsonland_frida_hits.jsonl analysis/frida/raw/
 cp /mnt/c/share/frida/gameplay_state_capture.jsonl analysis/frida/raw/  # optional
-cp /mnt/c/share/frida/gameplay_diff_capture.json analysis/frida/raw/  # optional
+cp /mnt/c/share/frida/gameplay_diff_capture.json.gz analysis/frida/raw/  # optional
 cp /mnt/c/share/frida/demo_trial_overlay_trace.jsonl analysis/frida/raw/  # optional
 cp /mnt/c/share/frida/demo_idle_threshold_trace.jsonl analysis/frida/raw/  # optional
 ```
