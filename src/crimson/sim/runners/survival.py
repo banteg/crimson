@@ -22,12 +22,14 @@ from ...replay import (
     warn_on_game_version_mismatch,
 )
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
-from ...replay.original_capture import (
-    ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
-    ORIGINAL_CAPTURE_PERK_APPLY_EVENT_KIND,
-    ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND,
-    apply_original_capture_bootstrap_payload,
-    original_capture_bootstrap_payload_from_event_payload,
+from ...original.capture import (
+    CAPTURE_BOOTSTRAP_EVENT_KIND,
+    CAPTURE_PERK_APPLY_EVENT_KIND,
+    CAPTURE_PERK_PENDING_EVENT_KIND,
+    apply_capture_bootstrap_payload,
+    capture_bootstrap_payload_from_event_payload,
+    capture_perk_apply_id_from_event_payload,
+    capture_perk_pending_from_event_payload,
 )
 from ..sessions import SurvivalDeterministicSession
 from ..world_state import WorldEvents, WorldState
@@ -41,15 +43,6 @@ from .common import (
     reset_players,
     status_from_snapshot,
 )
-
-
-def _parse_payload_int(value: object) -> int | None:
-    if not isinstance(value, (int, float, str, bytes, bytearray)):
-        return None
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None
 
 
 def _apply_tick_events(
@@ -101,23 +94,18 @@ def _apply_tick_events(
             )
             continue
         if isinstance(event, UnknownEvent):
-            if str(event.kind) == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND:
-                payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+            if str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
+                payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
                 if payload is None:
                     if strict_events:
                         raise ReplayRunnerError(f"invalid bootstrap payload at tick={tick_index}")
                     continue
-                elapsed = apply_original_capture_bootstrap_payload(payload, state=state, players=list(players))
+                elapsed = apply_capture_bootstrap_payload(payload, state=state, players=list(players))
                 if elapsed is not None:
                     bootstrap_elapsed_ms = int(elapsed)
                 continue
-            if str(event.kind) == ORIGINAL_CAPTURE_PERK_APPLY_EVENT_KIND:
-                payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
-                if payload is None:
-                    if strict_events:
-                        raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}")
-                    continue
-                perk_id = _parse_payload_int(payload.get("perk_id"))
+            if str(event.kind) == CAPTURE_PERK_APPLY_EVENT_KIND:
+                perk_id = capture_perk_apply_id_from_event_payload(list(event.payload))
                 if perk_id is None:
                     if strict_events:
                         raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}")
@@ -143,13 +131,8 @@ def _apply_tick_events(
                     creatures=world.creatures.entries,
                 )
                 continue
-            if str(event.kind) == ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND:
-                payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
-                if payload is None:
-                    if strict_events:
-                        raise ReplayRunnerError(f"invalid pending payload at tick={tick_index}")
-                    continue
-                pending = _parse_payload_int(payload.get("perk_pending"))
+            if str(event.kind) == CAPTURE_PERK_PENDING_EVENT_KIND:
+                pending = capture_perk_pending_from_event_payload(list(event.payload))
                 if pending is None:
                     if strict_events:
                         raise ReplayRunnerError(f"invalid pending payload at tick={tick_index}")
@@ -309,9 +292,9 @@ def run_survival_replay(
     original_capture_replay = False
     digital_move_enabled_by_player: set[int] = set()
     for event in replay.events:
-        if isinstance(event, UnknownEvent) and str(event.kind) == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND:
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
             original_capture_replay = True
-            payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+            payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
             if isinstance(payload, dict):
                 enabled_raw = payload.get("digital_move_enabled_by_player")
                 if isinstance(enabled_raw, list):

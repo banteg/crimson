@@ -23,7 +23,9 @@ from .quests.types import QuestContext, QuestDefinition, SpawnEntry
 
 app = typer.Typer(add_completion=False)
 replay_app = typer.Typer(add_completion=False)
+original_app = typer.Typer(add_completion=False)
 app.add_typer(replay_app, name="replay")
+app.add_typer(original_app, name="original")
 
 _QUEST_DEFS: dict[str, QuestDefinition] = {quest.level: quest for quest in all_quests()}
 _QUEST_BUILDERS = {level: quest.builder for level, quest in _QUEST_DEFS.items()}
@@ -274,9 +276,9 @@ def cmd_replay_verify(
     import hashlib
 
     from .game_modes import GameMode
+    from .original.diff import compare_checkpoints
     from .replay import load_replay
     from .replay.checkpoints import default_checkpoints_path, load_checkpoints_file
-    from .replay.diff import compare_checkpoints
     from .sim.runners import ReplayRunnerError, run_rush_replay, run_survival_replay
 
     replay_bytes = Path(replay_file).read_bytes()
@@ -399,7 +401,7 @@ def cmd_replay_diff_checkpoints(
 ) -> None:
     """Compare two checkpoint sidecars and report the first divergence."""
     from .replay.checkpoints import load_checkpoints_file
-    from .replay.diff import compare_checkpoints
+    from .original.diff import compare_checkpoints
 
     expected = load_checkpoints_file(Path(expected_file))
     actual = load_checkpoints_file(Path(actual_file))
@@ -466,11 +468,11 @@ def cmd_replay_diff_checkpoints(
     typer.echo(message)
 
 
-@replay_app.command("verify-original-capture")
-def cmd_replay_verify_original_capture(
+@original_app.command("verify-capture")
+def cmd_replay_verify_capture(
     capture_file: Path = typer.Argument(
         ...,
-        help="original capture sidecar (.json/.json.gz) or raw gameplay trace (.jsonl/.jsonl.gz)",
+        help="capture file (.json/.json.gz)",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full capture)"),
     seed: int | None = typer.Option(
@@ -500,18 +502,18 @@ def cmd_replay_verify_original_capture(
         help="absolute tolerance for float field comparisons",
     ),
 ) -> None:
-    """Verify original-capture ticks directly against rewrite simulation state."""
-    from .replay.original_capture import load_original_capture_sidecar
-    from .replay.original_capture_verify import (
-        OriginalCaptureVerifyError,
-        verify_original_capture,
+    """Verify capture ticks directly against rewrite simulation state."""
+    from .original.capture import load_capture
+    from .original.verify import (
+        CaptureVerifyError,
+        verify_capture,
     )
     from .sim.runners import ReplayRunnerError
 
-    capture = load_original_capture_sidecar(Path(capture_file))
+    capture = load_capture(Path(capture_file))
 
     try:
-        result, run_result = verify_original_capture(
+        result, run_result = verify_capture(
             capture,
             seed=seed,
             max_ticks=max_ticks,
@@ -520,8 +522,8 @@ def cmd_replay_verify_original_capture(
             max_field_diffs=int(max_field_diffs),
             float_abs_tol=float(float_abs_tol),
         )
-    except (ReplayRunnerError, OriginalCaptureVerifyError) as exc:
-        typer.echo(f"original-capture verification failed: {exc}", err=True)
+    except (ReplayRunnerError, CaptureVerifyError) as exc:
+        typer.echo(f"capture verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
     if not result.ok:
@@ -582,11 +584,11 @@ def cmd_replay_verify_original_capture(
     typer.echo(message)
 
 
-@replay_app.command("convert-original-capture")
-def cmd_replay_convert_original_capture(
+@original_app.command("convert-capture")
+def cmd_replay_convert_capture(
     capture_file: Path = typer.Argument(
         ...,
-        help="original capture sidecar (.json/.json.gz) or raw gameplay trace (.jsonl/.jsonl.gz)",
+        help="capture file (.json/.json.gz)",
     ),
     output_file: Path = typer.Argument(..., help="output checkpoints sidecar (.json.gz)"),
     replay_file: Path | None = typer.Option(
@@ -603,28 +605,28 @@ def cmd_replay_convert_original_capture(
         help="seed override for replay reconstruction (default: infer from capture rng telemetry)",
     ),
 ) -> None:
-    """Convert original-capture data into replay + checkpoint artifacts."""
+    """Convert capture data into replay + checkpoint artifacts."""
     import hashlib
 
     from .replay import dump_replay
     from .replay.checkpoints import dump_checkpoints_file
-    from .replay.original_capture import (
-        convert_original_capture_to_checkpoints,
-        convert_original_capture_to_replay,
-        default_original_capture_replay_path,
-        load_original_capture_sidecar,
+    from .original.capture import (
+        convert_capture_to_checkpoints,
+        convert_capture_to_replay,
+        default_capture_replay_path,
+        load_capture,
     )
 
-    capture = load_original_capture_sidecar(Path(capture_file))
-    replay = convert_original_capture_to_replay(capture, seed=seed)
+    capture = load_capture(Path(capture_file))
+    replay = convert_capture_to_replay(capture, seed=seed)
     replay_path = (
-        Path(replay_file) if replay_file is not None else default_original_capture_replay_path(Path(output_file))
+        Path(replay_file) if replay_file is not None else default_capture_replay_path(Path(output_file))
     )
     replay_blob = dump_replay(replay)
     replay_path.write_bytes(replay_blob)
     digest = hashlib.sha256(replay_blob).hexdigest()
 
-    checkpoints = convert_original_capture_to_checkpoints(
+    checkpoints = convert_capture_to_checkpoints(
         capture,
         replay_sha256=str(replay_sha256 or digest),
     )
@@ -632,6 +634,30 @@ def cmd_replay_convert_original_capture(
     typer.echo(f"wrote replay ({len(replay.inputs)} ticks) to {replay_path}")
     typer.echo(f"wrote {len(checkpoints.checkpoints)} checkpoints to {output_file}")
     typer.echo("note: replay uses best-effort input reconstruction; checkpoints remain the authoritative diff target")
+
+
+@original_app.command("divergence-report")
+def cmd_replay_divergence_report() -> None:
+    """Run divergence report against a capture."""
+    from .original import divergence_report
+
+    raise typer.Exit(code=divergence_report.main())
+
+
+@original_app.command("focus-trace")
+def cmd_replay_focus_trace() -> None:
+    """Trace a single focus tick from capture diagnostics."""
+    from .original import focus_trace
+
+    raise typer.Exit(code=focus_trace.main())
+
+
+@original_app.command("creature-trajectory")
+def cmd_replay_creature_trajectory() -> None:
+    """Trace capture-vs-rewrite creature trajectory drift."""
+    from .original import creature_trajectory
+
+    raise typer.Exit(code=creature_trajectory.main())
 
 
 @app.callback(invoke_without_command=True)

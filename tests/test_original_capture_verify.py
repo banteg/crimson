@@ -1,19 +1,25 @@
 from __future__ import annotations
 
-from dataclasses import replace
-
 from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
 from crimson.gameplay import PlayerInput
+from crimson.original.capture import convert_capture_to_replay
+from crimson.original.schema import (
+    CaptureCheckpoint,
+    CaptureDeath,
+    CaptureEventSummary,
+    CaptureFile,
+    CapturePerkSnapshot,
+    CapturePlayerCheckpoint,
+    CaptureRngMarks,
+    CaptureStatusSnapshot,
+    CaptureTick,
+    CaptureVec2,
+)
+from crimson.original.verify import verify_capture
 from crimson.replay import ReplayHeader, ReplayRecorder
 from crimson.replay.checkpoints import ReplayCheckpoint
-from crimson.replay.original_capture import (
-    ORIGINAL_CAPTURE_FORMAT_VERSION,
-    OriginalCaptureSidecar,
-    OriginalCaptureTick,
-)
-from crimson.replay.original_capture_verify import verify_original_capture
 from crimson.sim.runners import run_survival_replay
 
 
@@ -40,9 +46,49 @@ def _single_tick_survival_checkpoint(*, seed: int = 0xBEEF):
     return checkpoints[0]
 
 
-def _capture_from_checkpoint(*, checkpoint: ReplayCheckpoint) -> OriginalCaptureSidecar:
+def _capture_from_checkpoint(*, checkpoint: ReplayCheckpoint) -> CaptureFile:
     ckpt = checkpoint
-    tick = OriginalCaptureTick(
+    capture_players = [
+        CapturePlayerCheckpoint(
+            pos=CaptureVec2(float(player.pos.x), float(player.pos.y)),
+            health=float(player.health),
+            weapon_id=int(player.weapon_id),
+            ammo=float(player.ammo),
+            experience=int(player.experience),
+            level=int(player.level),
+        )
+        for player in ckpt.players
+    ]
+    capture_deaths = [
+        CaptureDeath(
+            creature_index=int(death.creature_index),
+            type_id=int(death.type_id),
+            reward_value=float(death.reward_value),
+            xp_awarded=int(death.xp_awarded),
+            owner_id=int(death.owner_id),
+        )
+        for death in ckpt.deaths
+    ]
+    capture_perk = CapturePerkSnapshot(
+        pending_count=int(ckpt.perk.pending_count),
+        choices_dirty=bool(ckpt.perk.choices_dirty),
+        choices=[int(value) for value in ckpt.perk.choices],
+        player_nonzero_counts=[
+            [[int(pair[0]), int(pair[1])] for pair in pairs if isinstance(pair, (list, tuple)) and len(pair) == 2]
+            for pairs in ckpt.perk.player_nonzero_counts
+        ],
+    )
+    capture_events = CaptureEventSummary(
+        hit_count=int(ckpt.events.hit_count),
+        pickup_count=int(ckpt.events.pickup_count),
+        sfx_count=int(ckpt.events.sfx_count),
+        sfx_head=[str(value) for value in ckpt.events.sfx_head],
+    )
+    rng_marks = CaptureRngMarks(
+        rand_calls=int(ckpt.rng_marks.get("rand_calls", 0)),
+        rand_last=int(ckpt.rng_marks.get("rand_last", 0)) if "rand_last" in ckpt.rng_marks else None,
+    )
+    capture_checkpoint = CaptureCheckpoint(
         tick_index=int(ckpt.tick_index),
         state_hash="orig-state-hash",
         command_hash="orig-command-hash",
@@ -52,28 +98,34 @@ def _capture_from_checkpoint(*, checkpoint: ReplayCheckpoint) -> OriginalCapture
         kills=int(ckpt.kills),
         creature_count=int(ckpt.creature_count),
         perk_pending=int(ckpt.perk_pending),
-        players=list(ckpt.players),
-        bonus_timers=dict(ckpt.bonus_timers),
-        rng_marks=dict(ckpt.rng_marks),
-        deaths=list(ckpt.deaths),
-        perk=ckpt.perk,
-        events=ckpt.events,
-        game_mode_id=int(GameMode.SURVIVAL),
-        mode_hint="survival_update",
-        input_approx=[],
+        players=capture_players,
+        status=CaptureStatusSnapshot(),
+        bonus_timers={str(key): int(value) for key, value in ckpt.bonus_timers.items()},
+        rng_marks=rng_marks,
+        deaths=capture_deaths,
+        perk=capture_perk,
+        events=capture_events,
     )
-    return OriginalCaptureSidecar(
-        version=ORIGINAL_CAPTURE_FORMAT_VERSION,
-        sample_rate=1,
+    tick = CaptureTick(
+        tick_index=int(ckpt.tick_index),
+        gameplay_frame=int(ckpt.tick_index) + 1,
+        mode_hint="survival_update",
+        game_mode_id=int(GameMode.SURVIVAL),
+        checkpoint=capture_checkpoint,
+    )
+    return CaptureFile(
+        script="gameplay_diff_capture",
+        session_id="test-session",
+        out_path="capture.json",
         ticks=[tick],
     )
 
 
-def test_verify_original_capture_matches_state_ignoring_hash_domains() -> None:
+def test_verify_capture_matches_state_ignoring_hash_domains() -> None:
     checkpoint = _single_tick_survival_checkpoint(seed=0xCAFE)
     capture = _capture_from_checkpoint(checkpoint=checkpoint)
 
-    result, run_result = verify_original_capture(
+    result, run_result = verify_capture(
         capture,
         seed=0xCAFE,
         strict_events=True,
@@ -87,12 +139,12 @@ def test_verify_original_capture_matches_state_ignoring_hash_domains() -> None:
     assert run_result.ticks == 1
 
 
-def test_verify_original_capture_accepts_world_step_latched_creature_count() -> None:
+def test_verify_capture_accepts_world_step_latched_creature_count() -> None:
     checkpoint = _single_tick_survival_checkpoint(seed=0xB00B)
     capture = _capture_from_checkpoint(checkpoint=checkpoint)
-    capture = replace(capture, ticks=[replace(capture.ticks[0], creature_count=0)])
+    capture.ticks[0].checkpoint.creature_count = 0
 
-    result, _run_result = verify_original_capture(
+    result, _run_result = verify_capture(
         capture,
         seed=0xB00B,
         strict_events=True,
@@ -102,13 +154,12 @@ def test_verify_original_capture_accepts_world_step_latched_creature_count() -> 
     assert result.failure is None
 
 
-def test_verify_original_capture_surfaces_first_field_mismatch() -> None:
+def test_verify_capture_surfaces_first_field_mismatch() -> None:
     checkpoint = _single_tick_survival_checkpoint(seed=0x1234)
     capture = _capture_from_checkpoint(checkpoint=checkpoint)
-    modified_tick = replace(capture.ticks[0], creature_count=int(capture.ticks[0].creature_count) + 3)
-    capture = replace(capture, ticks=[modified_tick])
+    capture.ticks[0].checkpoint.creature_count = int(capture.ticks[0].checkpoint.creature_count) + 3
 
-    result, _run_result = verify_original_capture(
+    result, _run_result = verify_capture(
         capture,
         seed=0x1234,
         strict_events=True,
@@ -121,7 +172,7 @@ def test_verify_original_capture_surfaces_first_field_mismatch() -> None:
     assert any(diff.field == "creature_count" for diff in result.failure.field_diffs)
 
 
-def test_verify_original_capture_float_tolerance_defaults_to_1e3_abs() -> None:
+def test_verify_capture_float_tolerance_defaults_to_1e3_abs() -> None:
     header = ReplayHeader(
         game_mode_id=int(GameMode.SURVIVAL),
         seed=0xBEEF,
@@ -143,25 +194,18 @@ def test_verify_original_capture_float_tolerance_defaults_to_1e3_abs() -> None:
     )
     assert len(checkpoints) == 2
 
-    capture0 = _capture_from_checkpoint(checkpoint=checkpoints[0]).ticks[0]
-    capture1 = _capture_from_checkpoint(checkpoint=checkpoints[1]).ticks[0]
-    capture = OriginalCaptureSidecar(
-        version=ORIGINAL_CAPTURE_FORMAT_VERSION,
-        sample_rate=1,
-        ticks=[capture0, capture1],
+    adjusted_capture = _capture_from_checkpoint(checkpoint=checkpoints[0])
+    adjusted_capture.ticks.append(_capture_from_checkpoint(checkpoint=checkpoints[1]).ticks[0])
+    adjusted_capture.ticks[1].checkpoint.players[0].health = (
+        float(adjusted_capture.ticks[1].checkpoint.players[0].health) + 0.0005
     )
 
-    player0 = capture.ticks[1].players[0]
-    adjusted_player0 = replace(player0, health=float(player0.health) + 0.0005)
-    adjusted_tick1 = replace(capture.ticks[1], players=[adjusted_player0])
-    adjusted_capture = replace(capture, ticks=[capture.ticks[0], adjusted_tick1])
-
-    relaxed, _ = verify_original_capture(
+    relaxed, _ = verify_capture(
         adjusted_capture,
         seed=0xBEEF,
         strict_events=True,
     )
-    strict, _ = verify_original_capture(
+    strict, _ = verify_capture(
         adjusted_capture,
         seed=0xBEEF,
         strict_events=True,
@@ -172,3 +216,10 @@ def test_verify_original_capture_float_tolerance_defaults_to_1e3_abs() -> None:
     assert strict.ok is False
     assert strict.failure is not None
     assert any(diff.field == "players[0].health" for diff in strict.failure.field_diffs)
+
+
+def test_convert_capture_to_replay_runs_with_minimal_capture() -> None:
+    checkpoint = _single_tick_survival_checkpoint(seed=0xCAFE)
+    capture = _capture_from_checkpoint(checkpoint=checkpoint)
+    replay = convert_capture_to_replay(capture, seed=0xCAFE)
+    assert replay.inputs

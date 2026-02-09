@@ -6,7 +6,7 @@ from grim.geom import Vec2
 from crimson.game_modes import GameMode
 from crimson.gameplay import PlayerInput
 from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder, UnknownEvent
-from crimson.replay.original_capture import ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND
+from crimson.original.capture import CAPTURE_BOOTSTRAP_EVENT_KIND
 from crimson.sim.runners import ReplayRunnerError, run_rush_replay, run_survival_replay
 
 
@@ -208,7 +208,7 @@ def test_survival_runner_applies_original_capture_bootstrap_event() -> None:
     replay.events.append(
         UnknownEvent(
             tick_index=0,
-            kind=ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
+            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
             payload=[
                 {
                     "elapsed_ms": 2000,
@@ -301,7 +301,7 @@ def test_rush_runner_applies_original_capture_bootstrap_event() -> None:
     replay.events.append(
         UnknownEvent(
             tick_index=0,
-            kind=ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
+            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
             payload=[
                 {
                     "elapsed_ms": 3000,

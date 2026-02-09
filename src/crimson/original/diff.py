@@ -6,7 +6,7 @@ import math
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 
-from .checkpoints import ReplayCheckpoint
+from ..replay.checkpoints import ReplayCheckpoint
 
 DEFAULT_RNG_MARK_ORDER: tuple[str, ...] = (
     "before_world_step",

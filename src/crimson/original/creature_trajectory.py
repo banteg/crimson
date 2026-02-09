@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
@@ -8,17 +7,18 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+import msgspec
 from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
 from crimson.gameplay import PlayerInput
-from crimson.replay.original_capture import (
-    ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
-    build_original_capture_dt_frame_overrides,
-    build_original_capture_dt_frame_ms_i32_overrides,
-    convert_original_capture_to_replay,
-    load_original_capture_sidecar,
-    original_capture_bootstrap_payload_from_event_payload,
+from crimson.original.capture import (
+    CAPTURE_BOOTSTRAP_EVENT_KIND,
+    build_capture_dt_frame_overrides,
+    build_capture_dt_frame_ms_i32_overrides,
+    capture_bootstrap_payload_from_event_payload,
+    convert_capture_to_replay,
+    load_capture,
 )
 from crimson.replay.types import UnknownEvent, unpack_input_flags, unpack_packed_player_input
 from crimson.sim.runners.common import (
@@ -88,31 +88,31 @@ def _resolve_json_out_path(
 
 def _read_capture_creature_samples(
     *,
-    capture_path: Path,
+    capture: object,
     creature_index: int,
     start_tick: int,
     end_tick: int,
 ) -> dict[int, dict[str, Any]]:
     out: dict[int, dict[str, Any]] = {}
-    with capture_path.open("r", encoding="utf-8") as fh:
-        for line in fh:
-            if not line.strip():
+    ticks = getattr(capture, "ticks", None)
+    if not isinstance(ticks, list):
+        return out
+    for tick_row in ticks:
+        tick = int(getattr(tick_row, "tick_index", -1))
+        if tick < int(start_tick) or tick > int(end_tick):
+            continue
+        obj = msgspec.to_builtins(tick_row)
+        if not isinstance(obj, dict):
+            continue
+        samples = obj.get("samples") if isinstance(obj.get("samples"), dict) else {}
+        creatures = samples.get("creatures") if isinstance(samples.get("creatures"), list) else []
+        for row in creatures:  # ty:ignore[not-iterable]
+            if not isinstance(row, dict):
                 continue
-            obj = json.loads(line)
-            if obj.get("event") != "tick":
+            if int(row.get("index", -1)) != int(creature_index):
                 continue
-            tick = int(obj.get("tick_index", -1))
-            if tick < int(start_tick) or tick > int(end_tick):
-                continue
-            samples = obj.get("samples") if isinstance(obj.get("samples"), dict) else {}
-            creatures = samples.get("creatures") if isinstance(samples.get("creatures"), list) else []
-            for row in creatures:
-                if not isinstance(row, dict):
-                    continue
-                if int(row.get("index", -1)) != int(creature_index):
-                    continue
-                out[int(tick)] = row
-                break
+            out[int(tick)] = row
+            break
     return out
 
 
@@ -121,9 +121,9 @@ def _load_capture_events(replay: Any) -> tuple[dict[int, list[object]], bool, se
     original_capture_replay = False
     digital_move_enabled_by_player: set[int] = set()
     for event in replay.events:
-        if isinstance(event, UnknownEvent) and str(event.kind) == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND:
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
             original_capture_replay = True
-            payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+            payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
             if isinstance(payload, dict):
                 enabled_raw = payload.get("digital_move_enabled_by_player")
                 if isinstance(enabled_raw, list):
@@ -183,17 +183,16 @@ def trace_creature_trajectory(
     end_tick: int,
     inter_tick_rand_draws: int,
 ) -> list[CreatureTrajectoryRow]:
+    capture = load_capture(capture_path)
     capture_rows = _read_capture_creature_samples(
-        capture_path=capture_path,
+        capture=capture,
         creature_index=int(creature_index),
         start_tick=int(start_tick),
         end_tick=int(end_tick),
     )
     if not capture_rows:
         return []
-
-    capture = load_original_capture_sidecar(capture_path)
-    replay = convert_original_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture)
     mode = int(replay.header.game_mode_id)
     if mode != int(GameMode.SURVIVAL):
         raise ValueError(f"trajectory trace currently supports survival mode only (got mode={mode})")
@@ -228,8 +227,8 @@ def trace_creature_trajectory(
     )
 
     events_by_tick, original_capture_replay, digital_move_enabled_by_player = _load_capture_events(replay)
-    dt_frame_overrides = build_original_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
-    dt_frame_ms_i32_overrides = build_original_capture_dt_frame_ms_i32_overrides(capture)
+    dt_frame_overrides = build_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
+    dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
     default_dt_frame = 1.0 / float(int(replay.header.tick_rate))
 
     out: list[CreatureTrajectoryRow] = []
@@ -266,8 +265,8 @@ def trace_creature_trajectory(
                 break
             creature = world.creatures.entries[int(creature_index)]
             cap_pos = sample.get("pos") if isinstance(sample.get("pos"), dict) else {}
-            cap_x = float(cap_pos.get("x", 0.0))
-            cap_y = float(cap_pos.get("y", 0.0))
+            cap_x = float(cap_pos.get("x", 0.0))  # ty:ignore[possibly-missing-attribute]
+            cap_y = float(cap_pos.get("y", 0.0))  # ty:ignore[possibly-missing-attribute]
             rw_x = float(creature.pos.x)
             rw_y = float(creature.pos.y)
             dx = rw_x - cap_x
@@ -376,7 +375,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Trace one capture creature slot across ticks and compare capture vs rewrite trajectory.",
     )
-    parser.add_argument("capture", type=Path, help="raw gameplay capture (.jsonl/.jsonl.gz)")
+    parser.add_argument("capture", type=Path, help="capture file (.json/.json.gz)")
     parser.add_argument("--creature-index", type=int, required=True, help="capture creature slot index to trace")
     parser.add_argument("--start-tick", type=int, default=0, help="first tick to include in output")
     parser.add_argument("--end-tick", type=int, required=True, help="last tick to simulate/included output")
