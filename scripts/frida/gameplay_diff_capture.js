@@ -386,7 +386,7 @@ function startCaptureFile(meta) {
   if (outState.captureStarted) return;
   const encoded = JSON.stringify(meta);
   const header =
-    encoded && encoded.endsWith("}") ? encoded.slice(0, -1) + ',\"ticks\":[' : null;
+    encoded && encoded.endsWith("}") ? encoded.slice(0, -1) + ',\"ticks\":[\n' : null;
   const started = header ? _captureWrite(header, true) : false;
   outState.captureStarted = started;
   outState.captureClosed = false;
@@ -399,7 +399,7 @@ function startCaptureFile(meta) {
 
 function writeCaptureTick(tickObj) {
   if (!outState.captureStarted || outState.captureClosed || !tickObj) return;
-  const prefix = outState.captureTickCount > 0 ? "," : "";
+  const prefix = outState.captureTickCount > 0 ? ",\n  " : "  ";
   const wrote = _captureWrite(prefix + JSON.stringify(tickObj), true);
   if (wrote) {
     outState.captureTickCount += 1;
@@ -417,7 +417,11 @@ function closeCaptureFile(reason) {
   outState.closeReason = reason || outState.closeReason || "unknown";
   try {
     if (outState.outFile) {
-      outState.outFile.write("]}");
+      if (outState.captureTickCount > 0) {
+        outState.outFile.write("\n]}\n");
+      } else {
+        outState.outFile.write("]}\n");
+      }
       outState.outFile.flush();
       outState.outFile.close();
     }

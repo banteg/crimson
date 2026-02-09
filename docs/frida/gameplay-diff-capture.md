@@ -37,6 +37,7 @@ The capture file is one JSON object:
 Notes:
 
 - The file is streamed incrementally and closed on script shutdown.
+- Tick entries are newline-delimited inside `ticks` (one JSON object per line).
 - If the process/script is terminated before close, the JSON can be truncated.
 - No top-level raw event stream is written; diagnostics stay in per-tick aggregates.
 
