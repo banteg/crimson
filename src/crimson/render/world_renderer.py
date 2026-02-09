@@ -249,9 +249,19 @@ class WorldRenderer:
         return Vec2(screen_w, screen_h)
 
     def _clamp_camera(self, camera: Vec2, screen_size: Vec2) -> Vec2:
+        cam_x = camera.x
+        cam_y = camera.y
+        if cam_x > -1.0:
+            cam_x = -1.0
+        if cam_y > -1.0:
+            cam_y = -1.0
         min_x = screen_size.x - float(self.world_size)
         min_y = screen_size.y - float(self.world_size)
-        return camera.clamp_rect(min_x, min_y, -1.0, -1.0)
+        if cam_x < min_x:
+            cam_x = min_x
+        if cam_y < min_y:
+            cam_y = min_y
+        return Vec2(cam_x, cam_y)
 
     def _world_params(self) -> tuple[Vec2, Vec2]:
         out_size = Vec2(float(rl.get_screen_width()), float(rl.get_screen_height()))

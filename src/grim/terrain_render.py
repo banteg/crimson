@@ -673,9 +673,19 @@ class GroundRenderer:
             )
 
     def _clamp_camera(self, camera: Vec2, screen_w: float, screen_h: float) -> Vec2:
+        cam_x = camera.x
+        cam_y = camera.y
+        if cam_x > -1.0:
+            cam_x = -1.0
+        if cam_y > -1.0:
+            cam_y = -1.0
         min_x = screen_w - float(self.width)
         min_y = screen_h - float(self.height)
-        return camera.clamp_rect(min_x, min_y, -1.0, -1.0)
+        if cam_x < min_x:
+            cam_x = min_x
+        if cam_y < min_y:
+            cam_y = min_y
+        return Vec2(cam_x, cam_y)
 
     def _ensure_render_target(self, render_w: int, render_h: int) -> bool:
         if self.render_target is not None:
@@ -709,14 +719,27 @@ class GroundRenderer:
         return True
 
     def _render_target_size_for(self, scale: float) -> tuple[int, int]:
-        render_w = max(1, int(self.width / scale))
-        render_h = max(1, int(self.height / scale))
+        pixel_scale = 1.0
+        screen_w = int(rl.get_screen_width())
+        screen_h = int(rl.get_screen_height())
+        render_w = int(rl.get_render_width())
+        render_h = int(rl.get_render_height())
+        if render_w == screen_w * 2 and render_h == screen_h * 2:
+            pixel_scale = 2.0
+        render_w = max(1, int((self.width * pixel_scale) / scale))
+        render_h = max(1, int((self.height * pixel_scale) / scale))
         return render_w, render_h
 
     def _normalized_texture_scale(self) -> float:
         scale = self.texture_scale
         if scale < 0.5:
             scale = 0.5
+        screen_w = int(rl.get_screen_width())
+        screen_h = int(rl.get_screen_height())
+        render_w = int(rl.get_render_width())
+        render_h = int(rl.get_render_height())
+        if render_w == screen_w * 2 and render_h == screen_h * 2:
+            scale *= 0.5
         return scale
 
     def _set_stamp_filters(self, *, point: bool) -> None:
