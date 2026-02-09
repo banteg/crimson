@@ -107,13 +107,13 @@ under `docs/crimsonland-exe/`.
   - Code: `src/crimson/sim/input_frame.py`
   - Tests: `tests/test_input_frame_contract.py`
 - Original-capture sidecar schema and conversion into replay checkpoints is now available:
-  - Code: `src/crimson/replay/original_capture.py`
-  - CLI: `uv run crimson replay convert-original-capture <capture> <expected-checkpoints>`
+  - Code: `src/crimson/original/capture.py`
+  - CLI: `uv run crimson original convert-capture <capture> <expected-checkpoints>`
     (also writes `<expected>.crdemo.gz` by default)
   - Tests: `tests/test_original_capture_conversion.py`
 - Capture-native differential verification is now available (without replay playback parity dependency):
-  - Code: `src/crimson/replay/original_capture_verify.py`
-  - CLI: `uv run crimson replay verify-original-capture <capture>`
+  - Code: `src/crimson/original/verify.py`
+  - CLI: `uv run crimson original verify-capture <capture>`
   - Tests: `tests/test_original_capture_verify.py`
 
 ## Biggest remaining parity gaps (vs v1.9.93)

@@ -249,10 +249,10 @@ frida-gameplay-state-capture process="crimsonland.exe":
     frida -n {{process}} -l scripts\\frida\\gameplay_state_capture.js
 
 [windows]
-frida-gameplay-diff-capture-v2 process="crimsonland.exe":
+frida-gameplay-diff-capture process="crimsonland.exe":
     $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
     New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
-    frida -n {{process}} -l scripts\\frida\\gameplay_diff_capture_v2.js
+    frida -n {{process}} -l scripts\\frida\\gameplay_diff_capture.js
 
 [windows]
 ghidra-sync:
@@ -290,7 +290,7 @@ frida-sync-share:
 [unix]
 frida-import-raw:
     mkdir -p analysis/frida/raw
-    for f in grim_hits.jsonl crimsonland_frida_hits.jsonl gameplay_state_capture.jsonl gameplay_diff_capture_v2.jsonl demo_trial_overlay_trace.jsonl demo_idle_threshold_trace.jsonl screen_fade_trace.jsonl ui_render_trace.jsonl game_over_panel_trace.jsonl; do \
+    for f in grim_hits.jsonl crimsonland_frida_hits.jsonl gameplay_state_capture.jsonl gameplay_diff_capture.json demo_trial_overlay_trace.jsonl demo_idle_threshold_trace.jsonl screen_fade_trace.jsonl ui_render_trace.jsonl game_over_panel_trace.jsonl; do \
         [ -e "{{share_dir}}/$f" ] || continue; \
         cp -av "{{share_dir}}/$f" analysis/frida/raw/; \
     done

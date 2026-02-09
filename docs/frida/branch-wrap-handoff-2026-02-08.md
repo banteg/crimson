@@ -82,8 +82,8 @@ Reference analysis:
 ## Practical commands (baseline)
 
 ```bash
-uv run python scripts/original_capture_divergence_report.py \
-  artifacts/frida/share/gameplay_diff_capture_v2.jsonl \
+uv run crimson original divergence-report \
+  artifacts/frida/share/gameplay_diff_capture.json \
   --float-abs-tol 1e-3 \
   --window 24 \
   --lead-lookback 1024 \

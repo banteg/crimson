@@ -24,7 +24,7 @@ just frida-sync-share
 - `scripts/frida/perk_prompt_trace.js`
 - `scripts/frida/ui_render_trace.js`
 - `scripts/frida/gameplay_state_capture.js`
-- `scripts/frida/gameplay_diff_capture_v2.js`
+- `scripts/frida/gameplay_diff_capture.js`
 - `scripts/frida/creature_anim_trace.js`
 - `scripts/frida/creature_render_trace.js`
 - `scripts/frida/fx_queue_render_trace.js`
@@ -67,14 +67,14 @@ Comprehensive gameplay/state capture (automatic snapshots + write tracing, JSONL
 frida -n crimsonland.exe -l C:\share\frida\gameplay_state_capture.js
 ```
 
-Differential gameplay capture v2 (tick-aligned checkpoints + event summaries, JSONL to
-`gameplay_diff_capture_v2.jsonl`):
+Differential gameplay capture (tick-aligned checkpoints + event summaries, JSON object to
+`gameplay_diff_capture.json`):
 
 ```text
-frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture_v2.js
+frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
 ```
 
-Shortcut: `just frida-gameplay-diff-capture-v2`
+Shortcut: `just frida-gameplay-diff-capture`
 
 AlienZooKeeper no-unlock verifier (forces state `0x1a`, resets timer to `0x2580`, auto-solves board,
 and logs a final `verdict` event to `azk_verify_no_unlock.jsonl`):
@@ -122,7 +122,7 @@ Default logs written by the scripts:
 
 - `C:\share\frida\grim_hits.jsonl`
 - `C:\share\frida\crimsonland_frida_hits.jsonl`
-- `C:\share\frida\gameplay_diff_capture_v2.jsonl` (if you ran `gameplay_diff_capture_v2.js`)
+- `C:\share\frida\gameplay_diff_capture.json` (if you ran `gameplay_diff_capture.js`)
 - `C:\share\frida\creature_anim_trace.jsonl`
 - `C:\share\frida\ui_render_trace.jsonl`
 - `C:\share\frida\demo_trial_overlay_trace.jsonl` (if you ran `demo_trial_overlay_trace.js`)
@@ -138,7 +138,7 @@ mkdir -p analysis/frida/raw
 cp /mnt/c/share/frida/grim_hits.jsonl analysis/frida/raw/
 cp /mnt/c/share/frida/crimsonland_frida_hits.jsonl analysis/frida/raw/
 cp /mnt/c/share/frida/gameplay_state_capture.jsonl analysis/frida/raw/  # optional
-cp /mnt/c/share/frida/gameplay_diff_capture_v2.jsonl analysis/frida/raw/  # optional
+cp /mnt/c/share/frida/gameplay_diff_capture.json analysis/frida/raw/  # optional
 cp /mnt/c/share/frida/demo_trial_overlay_trace.jsonl analysis/frida/raw/  # optional
 cp /mnt/c/share/frida/demo_idle_threshold_trace.jsonl analysis/frida/raw/  # optional
 ```
