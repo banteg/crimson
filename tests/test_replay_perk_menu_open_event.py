@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from crimson.game_modes import GameMode
 from crimson.gameplay import perks_rebuild_available, weapon_refresh_available
-from crimson.replay import PerkMenuOpenEvent, PerkPickEvent
+from crimson.replay import PerkMenuOpenEvent, PerkPickEvent, UnknownEvent
+from crimson.replay.original_capture import ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND
 from crimson.sim.runners.common import reset_players
 from crimson.sim.runners.survival import _apply_tick_events
 from crimson.sim.world_state import WorldState
@@ -76,3 +77,38 @@ def test_perk_pick_event_refreshes_choices_for_ui_transition_parity() -> None:
     assert int(state.perk_selection.pending_count) == 0
     assert not bool(state.perk_selection.choices_dirty)
     assert state.perk_selection.choices
+
+
+def test_original_capture_pending_event_sets_pending_without_pick_side_effects() -> None:
+    world = WorldState.build(
+        world_size=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=0,
+        preserve_bugs=False,
+    )
+    reset_players(world.players, world_size=1024.0, player_count=1)
+
+    state = world.state
+    state.game_mode = int(GameMode.SURVIVAL)
+    state.perk_selection.pending_count = 2
+    state.perk_selection.choices_dirty = False
+    before_rng = int(state.rng.state)
+
+    _apply_tick_events(
+        [
+            UnknownEvent(
+                tick_index=5,
+                kind=ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND,
+                payload=[{"perk_pending": 0}],
+            )
+        ],
+        tick_index=5,
+        dt_frame=1.0 / 60.0,
+        world=world,
+        strict_events=True,
+    )
+
+    assert int(state.perk_selection.pending_count) == 0
+    assert bool(state.perk_selection.choices_dirty)
+    assert int(state.rng.state) == before_rng

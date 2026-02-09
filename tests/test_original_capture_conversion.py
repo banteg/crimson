@@ -4,11 +4,12 @@ import gzip
 import json
 from pathlib import Path
 
-from crimson.replay import unpack_input_flags
+from crimson.replay import PerkMenuOpenEvent, UnknownEvent, unpack_input_flags
 from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
 from crimson.replay.original_capture import (
     ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
     ORIGINAL_CAPTURE_FORMAT_VERSION,
+    ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND,
     ORIGINAL_CAPTURE_UNKNOWN_INT,
     OriginalCaptureSidecar,
     OriginalCaptureTick,
@@ -247,6 +248,52 @@ def test_load_original_capture_sidecar_supports_plain_json(tmp_path: Path) -> No
     assert capture.version == ORIGINAL_CAPTURE_FORMAT_VERSION
     assert capture.sample_rate == 1
     assert [tick.tick_index for tick in capture.ticks] == [0]
+
+
+def test_convert_original_capture_to_replay_infers_perk_menu_and_pending_events_from_pending_drop(tmp_path: Path) -> None:
+    capture_obj = {
+        "v": ORIGINAL_CAPTURE_FORMAT_VERSION,
+        "sample_rate": 1,
+        "ticks": [
+            {
+                "tick_index": 20,
+                "state_hash": "h20",
+                "command_hash": "c20",
+                "perk_pending": 2,
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 1, "ammo": 10.0}],
+            },
+            {
+                "tick_index": 21,
+                "state_hash": "h21",
+                "command_hash": "c21",
+                "perk_pending": 0,
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 1, "ammo": 10.0}],
+            },
+        ],
+    }
+    path = tmp_path / "capture_perk_pending_drop.json"
+    path.write_text(json.dumps(capture_obj, separators=(",", ":"), sort_keys=True), encoding="utf-8")
+
+    capture = load_original_capture_sidecar(path)
+    replay = convert_original_capture_to_replay(capture)
+
+    assert len(replay.events) == 4
+    assert replay.events[0].kind == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND
+    assert replay.events[0].tick_index == 20
+
+    assert isinstance(replay.events[1], UnknownEvent)
+    assert replay.events[1].kind == ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND
+    assert replay.events[1].tick_index == 20
+    assert replay.events[1].payload == [{"perk_pending": 2}]
+
+    assert isinstance(replay.events[2], PerkMenuOpenEvent)
+    assert replay.events[2].tick_index == 20
+    assert replay.events[2].player_index == 0
+
+    assert isinstance(replay.events[3], UnknownEvent)
+    assert replay.events[3].kind == ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND
+    assert replay.events[3].tick_index == 21
+    assert replay.events[3].payload == [{"perk_pending": 0}]
 
 
 def test_load_original_capture_sidecar_supports_gameplay_trace_jsonl(tmp_path: Path) -> None:
@@ -550,6 +597,33 @@ def test_build_original_capture_dt_frame_overrides_prefers_explicit_tick_frame_d
     assert overrides[2] == 0.004
 
 
+def test_load_original_capture_v2_prefers_frame_dt_seconds_over_quantized_ms(tmp_path: Path) -> None:
+    path = tmp_path / "gameplay_diff_capture_v2_dt_precision.jsonl"
+    rows = [
+        {"event": "start"},
+        {
+            "event": "tick",
+            "tick_index": 0,
+            "before": {"globals": {"frame_dt": 0.0125, "frame_dt_ms_i32": 12}},
+            "after": {"globals": {"frame_dt": 0.0125, "frame_dt_ms_i32": 12, "config_game_mode": 1}},
+            "checkpoint": {
+                "tick_index": 0,
+                "state_hash": "h0",
+                "command_hash": "c0",
+                "elapsed_ms": 12,
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 1, "ammo": 10.0}],
+            },
+        },
+    ]
+    path.write_text("\n".join(json.dumps(row, separators=(",", ":"), sort_keys=True) for row in rows) + "\n", encoding="utf-8")
+
+    capture = load_original_capture_sidecar(path)
+    overrides = build_original_capture_dt_frame_overrides(capture, tick_rate=60)
+
+    assert 0 in overrides
+    assert overrides[0] == 0.0125
+
+
 def test_convert_original_capture_to_replay_v2_prefers_discrete_input_and_heading(tmp_path: Path) -> None:
     path = tmp_path / "gameplay_diff_capture_v2.jsonl"
     rows = [
@@ -767,6 +841,95 @@ def test_convert_original_capture_to_replay_v2_prefers_input_player_keys_over_an
     tick0 = replay.inputs[0][0]
     assert tick0[0] == 1.0
     assert tick0[1] == 0.0
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(tick0[3]))
+    assert fire_down is False
+    assert fire_pressed is False
+    assert reload_pressed is False
+
+
+def test_convert_original_capture_to_replay_v2_does_not_override_explicit_fire_down_with_primary_stats(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "gameplay_diff_capture_v2_explicit_fire_false.jsonl"
+    rows = [
+        {"event": "start"},
+        {
+            "event": "tick",
+            "tick_index": 0,
+            "input_queries": {"stats": {"primary_down": {"calls": 1, "true_calls": 1}}},
+            "input_approx": [
+                {
+                    "player_index": 0,
+                    "move_dx": 0.0,
+                    "move_dy": 0.0,
+                    "aim_x": 512.0,
+                    "aim_y": 512.0,
+                    "fired_events": 0,
+                }
+            ],
+            "input_player_keys": [
+                {
+                    "player_index": 0,
+                    "fire_down": False,
+                    "fire_pressed": None,
+                }
+            ],
+            "checkpoint": {
+                "tick_index": 0,
+                "state_hash": "h0",
+                "command_hash": "c0",
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 1, "ammo": 10.0}],
+            },
+        },
+    ]
+    path.write_text("\n".join(json.dumps(row, separators=(",", ":"), sort_keys=True) for row in rows) + "\n", encoding="utf-8")
+
+    capture = load_original_capture_sidecar(path)
+    replay = convert_original_capture_to_replay(capture)
+
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(replay.inputs[0][0][3]))
+    assert fire_down is False
+    assert fire_pressed is False
+    assert reload_pressed is False
+
+
+def test_convert_original_capture_to_replay_v2_uses_primary_stats_when_fire_state_missing(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "gameplay_diff_capture_v2_primary_fallback.jsonl"
+    rows = [
+        {"event": "start"},
+        {
+            "event": "tick",
+            "tick_index": 0,
+            "input_queries": {"stats": {"primary_down": {"calls": 1, "true_calls": 1}}},
+            "input_approx": [
+                {
+                    "player_index": 0,
+                    "move_dx": 0.0,
+                    "move_dy": 0.0,
+                    "aim_x": 512.0,
+                    "aim_y": 512.0,
+                    "fired_events": 0,
+                }
+            ],
+            "checkpoint": {
+                "tick_index": 0,
+                "state_hash": "h0",
+                "command_hash": "c0",
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 1, "ammo": 10.0}],
+            },
+        },
+    ]
+    path.write_text("\n".join(json.dumps(row, separators=(",", ":"), sort_keys=True) for row in rows) + "\n", encoding="utf-8")
+
+    capture = load_original_capture_sidecar(path)
+    replay = convert_original_capture_to_replay(capture)
+
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(replay.inputs[0][0][3]))
+    assert fire_down is True
+    assert fire_pressed is True
+    assert reload_pressed is False
 
 
 def test_convert_original_capture_to_replay_v2_ignores_reload_active_edge_with_primary_down(tmp_path: Path) -> None:

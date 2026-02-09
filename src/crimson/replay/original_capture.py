@@ -24,11 +24,20 @@ from .checkpoints import (
     ReplayPerkSnapshot,
     ReplayPlayerCheckpoint,
 )
-from .types import Replay, ReplayHeader, ReplayStatusSnapshot, UnknownEvent, WEAPON_USAGE_COUNT, pack_input_flags
+from .types import (
+    PerkMenuOpenEvent,
+    Replay,
+    ReplayHeader,
+    ReplayStatusSnapshot,
+    UnknownEvent,
+    WEAPON_USAGE_COUNT,
+    pack_input_flags,
+)
 
 ORIGINAL_CAPTURE_FORMAT_VERSION = 1
 ORIGINAL_CAPTURE_UNKNOWN_INT = -1
 ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND = "orig_capture_bootstrap_v1"
+ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND = "orig_capture_perk_pending_v1"
 
 _CRT_RAND_MULT = 214013
 _CRT_RAND_INC = 2531011
@@ -263,6 +272,13 @@ def _coerce_optional_bool(value: object) -> bool | None:
 
 
 def _parse_frame_dt_ms_from_globals(globals_obj: dict[str, object]) -> float | None:
+    dt_seconds = _coerce_float_like(globals_obj.get("frame_dt"))
+    if dt_seconds is not None and math.isfinite(float(dt_seconds)):
+        # Prefer high-fidelity frame_dt (seconds) when present; integer-ms fields
+        # are quantized and can skew cooldown edge timing.
+        if 0.0 < float(dt_seconds) <= 1.0:
+            return float(dt_seconds) * 1000.0
+
     dt_ms_i32 = _coerce_int_like(globals_obj.get("frame_dt_ms_i32"))
     if dt_ms_i32 is not None and int(dt_ms_i32) > 0:
         return float(dt_ms_i32)
@@ -270,10 +286,6 @@ def _parse_frame_dt_ms_from_globals(globals_obj: dict[str, object]) -> float | N
     dt_ms_f32 = _coerce_float_like(globals_obj.get("frame_dt_ms_f32"))
     if dt_ms_f32 is not None and float(dt_ms_f32) > 0.0:
         return float(dt_ms_f32)
-
-    dt_seconds = _coerce_float_like(globals_obj.get("frame_dt"))
-    if dt_seconds is not None and float(dt_seconds) > 0.0:
-        return float(dt_seconds) * 1000.0
 
     return None
 
@@ -1493,10 +1505,17 @@ def convert_original_capture_to_replay(
                 reload_pressed = False
 
             if player_index == 0:
-                fire_down = bool(
-                    fire_down or int(tick.input_primary_down_true_calls) > 0 or int(tick.input_primary_edge_true_calls) > 0
-                )
-                fire_pressed = bool(fire_pressed or int(tick.input_primary_edge_true_calls) > 0)
+                # Treat aggregate primary query counts as a fallback signal only when
+                # per-player fire telemetry is missing for this tick. Explicit
+                # `input_player_keys.fire_down=False` must not be overridden.
+                can_fallback_fire_down = sample is None or sample.fire_down is None
+                can_fallback_fire_pressed = sample is None or sample.fire_pressed is None
+                if can_fallback_fire_down:
+                    fire_down = bool(
+                        fire_down or int(tick.input_primary_down_true_calls) > 0 or int(tick.input_primary_edge_true_calls) > 0
+                    )
+                if can_fallback_fire_pressed:
+                    fire_pressed = bool(fire_pressed or int(tick.input_primary_edge_true_calls) > 0)
 
             if not fire_pressed:
                 fire_pressed = bool(fire_down and not previous_fire_down[player_index])
@@ -1507,8 +1526,8 @@ def convert_original_capture_to_replay(
                 )
                 if player_index == 0 and synth_reload_edge:
                     # Auto-reload after clip empty toggles `reload_active` too; suppress the
-                    # synthetic reload key when primary fire was active on this tick.
-                    if int(tick.input_primary_down_true_calls) > 0 or int(tick.input_primary_edge_true_calls) > 0:
+                    # synthetic reload key when reconstructed primary fire is active.
+                    if bool(fire_down) or bool(fire_pressed):
                         synth_reload_edge = False
                 reload_pressed = bool(synth_reload_edge)
 
@@ -1522,7 +1541,7 @@ def convert_original_capture_to_replay(
             )
             inputs[tick_index][player_index] = [float(move_x), float(move_y), [float(aim_x), float(aim_y)], int(flags)]
 
-    events: list[UnknownEvent] = []
+    events: list[object] = []
     if capture.ticks:
         first_tick = min(capture.ticks, key=lambda item: int(item.tick_index))
         bootstrap_tick = max(0, int(first_tick.tick_index))
@@ -1538,6 +1557,36 @@ def convert_original_capture_to_replay(
                 ],
             )
         )
+
+        sorted_ticks = sorted(capture.ticks, key=lambda item: int(item.tick_index))
+        previous_pending: int | None = None
+        for tick in sorted_ticks:
+            pending = int(tick.perk_pending)
+            if pending < 0:
+                continue
+            if previous_pending is not None and pending < previous_pending:
+                # Raw capture does not include explicit perk UI events. Native
+                # traces show `perk_select_random` RNG work one tick before each
+                # pending-count drop, so synthesize a menu-open at `tick-1`.
+                # Force pending parity on the menu tick first, then at the drop
+                # tick, so stale replay perk state cannot suppress menu RNG work.
+                menu_tick = max(0, int(tick.tick_index) - 1)
+                events.append(
+                    UnknownEvent(
+                        tick_index=int(menu_tick),
+                        kind=ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND,
+                        payload=[{"perk_pending": int(previous_pending)}],
+                    )
+                )
+                events.append(PerkMenuOpenEvent(tick_index=int(menu_tick), player_index=0))
+                events.append(
+                    UnknownEvent(
+                        tick_index=int(tick.tick_index),
+                        kind=ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND,
+                        payload=[{"perk_pending": int(pending)}],
+                    )
+                )
+            previous_pending = pending
 
     return Replay(
         version=FORMAT_VERSION,
