@@ -663,7 +663,9 @@ class CreaturePool:
 
         # Movement + AI. Dead creatures keep updating (death slide + corpse decals)
         # even when `players` is empty so debug views remain deterministic.
-        dt_ms = int(dt * 1000.0) if dt > 0.0 else 0
+        # Native AI7 timer math uses `frame_dt_ms` integer slots; round-to-nearest
+        # keeps parity with captured `frame_dt` values such as 0.0329999998 -> 33.
+        dt_ms = int(round(dt * 1000.0)) if dt > 0.0 else 0
         for idx, creature in enumerate(self._entries):
             if not creature.active:
                 continue
