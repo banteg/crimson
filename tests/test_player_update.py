@@ -62,7 +62,7 @@ def test_player_update_stationary_reloader_tripples_reload_decay() -> None:
 
     player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.1, state)
 
-    assert math.isclose(player.reload_timer, 0.7, abs_tol=1e-9)
+    assert math.isclose(player.reload_timer, 0.7, abs_tol=2e-8)
 
 
 def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
@@ -261,8 +261,9 @@ def test_player_update_turns_toward_move_heading_with_turn_slowdown() -> None:
 
     player_update(player, input_state, 0.1, state)
 
-    assert math.isclose(player.pos.x, 103.53553390593274, abs_tol=1e-9)
-    assert math.isclose(player.pos.y, 96.46446609406726, abs_tol=1e-9)
+    # Movement now mirrors native float32 velocity/delta store boundaries.
+    assert math.isclose(player.pos.x, 103.53553771972656, abs_tol=1e-6)
+    assert math.isclose(player.pos.y, 96.46446228027344, abs_tol=1e-6)
     assert math.isclose(player.heading, math.pi / 4.0, abs_tol=1e-9)
 
 

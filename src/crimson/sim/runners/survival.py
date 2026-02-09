@@ -7,9 +7,11 @@ from grim.geom import Vec2
 from ...game_modes import GameMode
 from ...gameplay import (
     PlayerInput,
+    perk_apply,
     perk_selection_current_choices,
     perk_selection_pick,
 )
+from ...perks import PerkId
 from ...replay import (
     PerkMenuOpenEvent,
     PerkPickEvent,
@@ -22,6 +24,8 @@ from ...replay import (
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from ...replay.original_capture import (
     ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
+    ORIGINAL_CAPTURE_PERK_APPLY_EVENT_KIND,
+    ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND,
     apply_original_capture_bootstrap_payload,
     original_capture_bootstrap_payload_from_event_payload,
 )
@@ -98,12 +102,86 @@ def _apply_tick_events(
                 if elapsed is not None:
                     bootstrap_elapsed_ms = int(elapsed)
                 continue
+            if str(event.kind) == ORIGINAL_CAPTURE_PERK_APPLY_EVENT_KIND:
+                payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+                if payload is None:
+                    if strict_events:
+                        raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}")
+                    continue
+                perk_raw = payload.get("perk_id")
+                try:
+                    perk_id = int(perk_raw)
+                except (TypeError, ValueError):
+                    if strict_events:
+                        raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}")
+                    continue
+                if perk_id <= 0:
+                    if strict_events:
+                        raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}")
+                    continue
+                if not players:
+                    continue
+                try:
+                    perk_enum = PerkId(int(perk_id))
+                except ValueError:
+                    if strict_events:
+                        raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}")
+                    continue
+                perk_apply(
+                    state,
+                    players,
+                    perk_enum,
+                    perk_state=perk_state,
+                    dt=float(dt_frame),
+                    creatures=world.creatures.entries,
+                )
+                continue
+            if str(event.kind) == ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND:
+                payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+                if payload is None:
+                    if strict_events:
+                        raise ReplayRunnerError(f"invalid pending payload at tick={tick_index}")
+                    continue
+                pending_raw = payload.get("perk_pending")
+                try:
+                    pending = int(pending_raw)
+                except (TypeError, ValueError):
+                    if strict_events:
+                        raise ReplayRunnerError(f"invalid pending payload at tick={tick_index}")
+                    continue
+                if pending < 0:
+                    if strict_events:
+                        raise ReplayRunnerError(f"invalid pending payload at tick={tick_index}")
+                    continue
+                perk_state.pending_count = int(pending)
+                perk_state.choices_dirty = True
+                continue
             if strict_events:
                 raise ReplayRunnerError(f"unsupported replay event kind={event.kind!r} at tick={tick_index}")
             continue
         if strict_events:
             raise ReplayRunnerError(f"unsupported replay event type: {type(event).__name__}")
     return bootstrap_elapsed_ms
+
+
+def _partition_tick_events(
+    events: list[object],
+    *,
+    defer_menu_open: bool,
+) -> tuple[list[object], list[object]]:
+    if not defer_menu_open:
+        return list(events), []
+
+    pre_step: list[object] = []
+    post_step: list[object] = []
+    for event in events:
+        if isinstance(event, PerkMenuOpenEvent):
+            # Original-capture traces call perk selection RNG on the transition to
+            # menu state at the tail of the gameplay tick, after survival_update.
+            post_step.append(event)
+            continue
+        pre_step.append(event)
+    return pre_step, post_step
 
 
 def _resolve_dt_frame(
@@ -121,6 +199,22 @@ def _resolve_dt_frame(
     if not math.isfinite(dt_frame) or dt_frame <= 0.0:
         return float(default_dt_frame)
     return float(dt_frame)
+
+
+def _resolve_dt_frame_ms_i32(
+    *,
+    tick_index: int,
+    dt_frame: float,
+    dt_frame_ms_i32_overrides: dict[int, int] | None,
+) -> int:
+    if dt_frame_ms_i32_overrides:
+        override = dt_frame_ms_i32_overrides.get(int(tick_index))
+        if override is not None and int(override) > 0:
+            return int(override)
+    dt_ms_i32 = int(round(float(dt_frame) * 1000.0))
+    if dt_ms_i32 <= 0:
+        return 1
+    return int(dt_ms_i32)
 
 
 def _decode_digital_move_keys(mx: float, my: float) -> tuple[bool, bool, bool, bool] | None:
@@ -153,7 +247,9 @@ def run_survival_replay(
     checkpoints_out: list[ReplayCheckpoint] | None = None,
     checkpoint_ticks: set[int] | None = None,
     dt_frame_overrides: dict[int, float] | None = None,
+    dt_frame_ms_i32_overrides: dict[int, int] | None = None,
     inter_tick_rand_draws: int = 0,
+    inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.SURVIVAL):
         raise ReplayRunnerError(
@@ -224,19 +320,38 @@ def run_survival_replay(
         state = world.state
         state.game_mode = int(GameMode.SURVIVAL)
         state.demo_mode_active = False
+        if inter_tick_rand_draws_by_tick is not None:
+            draws = inter_tick_rand_draws_by_tick.get(int(tick_index))
+            if draws is None:
+                draws = int(inter_tick_rand_draws)
+            for _ in range(max(0, int(draws))):
+                world.state.rng.rand()
         dt_tick = _resolve_dt_frame(
             tick_index=int(tick_index),
             default_dt_frame=float(dt_frame),
             dt_frame_overrides=dt_frame_overrides,
         )
+        dt_tick_ms_i32 = _resolve_dt_frame_ms_i32(
+            tick_index=int(tick_index),
+            dt_frame=float(dt_tick),
+            dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
+        )
 
+        tick_events = events_by_tick.get(tick_index, [])
+        pre_step_events, post_step_events = _partition_tick_events(
+            tick_events,
+            defer_menu_open=bool(original_capture_replay),
+        )
+
+        rng_before_events = int(state.rng.state)
         _apply_tick_events(
-            events_by_tick.get(tick_index, []),
+            pre_step_events,
             tick_index=tick_index,
             dt_frame=float(dt_tick),
             world=world,
             strict_events=bool(strict_events),
         )
+        rng_after_events = int(state.rng.state)
 
         packed_tick = inputs[tick_index]
         player_inputs: list[PlayerInput] = []
@@ -272,13 +387,33 @@ def run_survival_replay(
 
         tick = session.step_tick(
             dt_frame=float(dt_tick),
+            dt_frame_ms_i32=int(dt_tick_ms_i32),
             inputs=player_inputs,
             trace_rng=bool(trace_rng),
         )
         step = tick.step
         events = step.events
 
+        rng_before_post_events = int(state.rng.state)
+        if post_step_events:
+            _apply_tick_events(
+                post_step_events,
+                tick_index=tick_index,
+                dt_frame=float(dt_tick),
+                world=world,
+                strict_events=bool(strict_events),
+            )
+        rng_after_post_events = int(state.rng.state)
+
         if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
+            checkpoint_rng_marks = dict(tick.rng_marks)
+            checkpoint_rng_marks["before_events"] = int(rng_before_events)
+            checkpoint_rng_marks["after_events"] = (
+                int(rng_after_post_events) if post_step_events else int(rng_after_events)
+            )
+            if post_step_events:
+                checkpoint_rng_marks["before_post_events"] = int(rng_before_post_events)
+                checkpoint_rng_marks["after_post_events"] = int(rng_after_post_events)
             checkpoints_out.append(
                 build_checkpoint(
                     tick_index=int(tick_index),
@@ -287,16 +422,17 @@ def run_survival_replay(
                     creature_count_override=(
                         int(tick.creature_count_world_step) if checkpoint_use_world_step_creature_count else None
                     ),
-                    rng_marks=tick.rng_marks,
+                    rng_marks=checkpoint_rng_marks,
                     deaths=events.deaths,
                     events=events,
                     command_hash=str(step.command_hash),
                 )
             )
 
-        draws = max(0, int(inter_tick_rand_draws))
-        for _ in range(draws):
-            world.state.rng.rand()
+        if inter_tick_rand_draws_by_tick is None:
+            draws = max(0, int(inter_tick_rand_draws))
+            for _ in range(draws):
+                world.state.rng.rand()
 
         if not any(player.health > 0.0 for player in world.players):
             tick_index += 1
@@ -312,6 +448,7 @@ def run_survival_replay(
             default_dt_frame=float(dt_frame),
             dt_frame_overrides=dt_frame_overrides,
         )
+        rng_before_events = int(world.state.rng.state)
         _apply_tick_events(
             events_by_tick.get(int(tick_index), []),
             tick_index=int(tick_index),
@@ -319,13 +456,14 @@ def run_survival_replay(
             world=world,
             strict_events=bool(strict_events),
         )
+        rng_after_events = int(world.state.rng.state)
         if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
             checkpoints_out.append(
                 build_checkpoint(
                     tick_index=int(tick_index),
                     world=world,
                     elapsed_ms=float(session.elapsed_ms),
-                    rng_marks={},
+                    rng_marks={"before_events": int(rng_before_events), "after_events": int(rng_after_events)},
                     deaths=[],
                     events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
                     command_hash="",

@@ -6,6 +6,7 @@ import json
 
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import PlayerInput, perks_rebuild_available, weapon_refresh_available
+from ..math_parity import f32
 from .input_frame import normalize_input_frame
 from .presentation_step import PresentationStepCommands, apply_world_presentation_step
 from .world_state import WorldEvents, WorldState
@@ -26,18 +27,25 @@ class DeterministicStepResult:
     presentation_rng_trace: PresentationRngTrace
 
 
-def time_scale_reflex_boost_bonus(*, reflex_boost_timer: float, dt: float) -> float:
-    """Apply Reflex Boost time scaling, matching the classic frame loop."""
+def time_scale_reflex_boost_bonus(
+    *,
+    reflex_boost_timer: float,
+    time_scale_active: bool,
+    dt: float,
+) -> float:
+    """Apply Reflex Boost time scaling, matching the classic frame loop latch semantics."""
 
     if not (float(dt) > 0.0):
         return float(dt)
-    if not (float(reflex_boost_timer) > 0.0):
+    if not bool(time_scale_active):
         return float(dt)
 
-    time_scale_factor = 0.3
-    if float(reflex_boost_timer) < 1.0:
-        time_scale_factor = (1.0 - float(reflex_boost_timer)) * 0.7 + 0.3
-    return float(dt) * float(time_scale_factor)
+    dt_f32 = f32(float(dt))
+    reflex_f32 = f32(float(reflex_boost_timer))
+    time_scale_factor = f32(0.3)
+    if float(reflex_f32) < 1.0:
+        time_scale_factor = f32(f32(f32(1.0) - reflex_f32) * f32(0.7) + f32(0.3))
+    return float(f32(float(dt_f32) * float(time_scale_factor)))
 
 
 def presentation_commands_hash(commands: PresentationStepCommands) -> str:
@@ -54,6 +62,7 @@ def run_deterministic_step(
     *,
     world: WorldState,
     dt_frame: float,
+    dt_frame_ms_i32: int | None = None,
     inputs: list[PlayerInput] | None,
     world_size: float,
     damage_scale_by_type: dict[int, float],
@@ -88,14 +97,27 @@ def run_deterministic_step(
     perks_rebuild_available(state)
     _mark("gw_after_perks_rebuild")
 
-    dt_sim = time_scale_reflex_boost_bonus(reflex_boost_timer=float(state.bonuses.reflex_boost), dt=float(dt_frame))
+    dt_sim = time_scale_reflex_boost_bonus(
+        reflex_boost_timer=float(state.bonuses.reflex_boost),
+        time_scale_active=bool(state.time_scale_active),
+        dt=float(dt_frame),
+    )
     _mark("gw_after_time_scale")
 
     prev_audio = [(player.shot_seq, player.reload_active, player.reload_timer) for player in world.players]
     prev_perk_pending = int(state.perk_selection.pending_count)
 
+    dt_sim_ms_i32: int | None = None
+    if dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
+        if float(dt_frame) > 0.0:
+            scale = float(dt_sim) / float(dt_frame)
+            dt_sim_ms_i32 = max(0, int(float(int(dt_frame_ms_i32)) * float(scale)))
+        else:
+            dt_sim_ms_i32 = int(dt_frame_ms_i32)
+
     events = world.step(
         float(dt_sim),
+        dt_ms_i32=(int(dt_sim_ms_i32) if dt_sim_ms_i32 is not None else None),
         inputs=inputs,
         world_size=float(world_size),
         damage_scale_by_type=damage_scale_by_type,

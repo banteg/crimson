@@ -15,6 +15,7 @@ from crimson.gameplay import PlayerInput
 from crimson.replay.original_capture import (
     ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
     build_original_capture_dt_frame_overrides,
+    build_original_capture_dt_frame_ms_i32_overrides,
     convert_original_capture_to_replay,
     load_original_capture_sidecar,
     original_capture_bootstrap_payload_from_event_payload,
@@ -209,6 +210,7 @@ def trace_creature_trajectory(
 
     events_by_tick, original_capture_replay, digital_move_enabled_by_player = _load_capture_events(replay)
     dt_frame_overrides = build_original_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
+    dt_frame_ms_i32_overrides = build_original_capture_dt_frame_ms_i32_overrides(capture)
     default_dt_frame = 1.0 / float(int(replay.header.tick_rate))
 
     out: list[CreatureTrajectoryRow] = []
@@ -218,6 +220,7 @@ def trace_creature_trajectory(
             default_dt_frame=float(default_dt_frame),
             dt_frame_overrides=dt_frame_overrides,
         )
+        dt_tick_ms_i32 = dt_frame_ms_i32_overrides.get(int(tick_index))
         _apply_tick_events(
             events_by_tick.get(int(tick_index), []),
             tick_index=int(tick_index),
@@ -233,6 +236,7 @@ def trace_creature_trajectory(
         )
         session.step_tick(
             dt_frame=float(dt_tick),
+            dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
             inputs=player_inputs,
             trace_rng=False,
         )

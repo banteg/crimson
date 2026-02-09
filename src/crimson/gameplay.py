@@ -11,6 +11,7 @@ from .creatures.spawn import CreatureFlags
 from grim.rand import Crand
 from .effects import EffectPool, FxQueue, ParticlePool, SpriteEffectPool
 from .game_modes import GameMode
+from .math_parity import f32
 from .perks import PerkFlags, PerkId, PERK_BY_ID, PERK_TABLE
 from .projectiles import (
     CreatureDamageApplier,
@@ -585,6 +586,7 @@ class GameplayState:
     projectiles: ProjectilePool = field(default_factory=ProjectilePool)
     secondary_projectiles: SecondaryProjectilePool = field(default_factory=SecondaryProjectilePool)
     bonuses: BonusTimers = field(default_factory=BonusTimers)
+    time_scale_active: bool = False
     perk_intervals: PerkEffectIntervals = field(default_factory=PerkEffectIntervals)
     lean_mean_exp_timer: float = 0.25
     jinxed_timer: float = 0.0
@@ -2437,6 +2439,18 @@ def player_update(
     if player.speed_bonus_timer > 0.0:
         speed_multiplier += 1.0
 
+    movement_dt = float(dt)
+    if state.time_scale_active:
+        time_scale_factor = 0.3
+        reflex_timer = float(state.bonuses.reflex_boost)
+        if reflex_timer < 1.0:
+            time_scale_factor = (1.0 - reflex_timer) * 0.7 + 0.3
+        if time_scale_factor > 1e-9:
+            # Native `player_update` temporarily rescales frame_dt while applying
+            # movement/heading, then restores the scaled frame_dt for the rest of
+            # gameplay_update_and_render.
+            movement_dt = float(movement_dt * (0.6 / float(time_scale_factor)))
+
     # Movement.
     raw_move = input_state.move
     raw_mag = raw_move.length()
@@ -2456,14 +2470,14 @@ def player_update(
         player.turn_speed = min(7.0, max(1.0, float(player.turn_speed)))
         turned = False
         if turning_left and not turning_right:
-            player.turn_speed = float(player.turn_speed + dt * 10.0)
-            turn_delta = float(player.turn_speed) * dt * 0.5
+            player.turn_speed = float(player.turn_speed + movement_dt * 10.0)
+            turn_delta = float(player.turn_speed) * movement_dt * 0.5
             player.heading = float(player.heading - turn_delta)
             player.aim_heading = float(player.aim_heading - turn_delta)
             turned = True
         elif turning_right and not turning_left:
-            player.turn_speed = float(player.turn_speed + dt * 10.0)
-            turn_delta = float(player.turn_speed) * dt * 0.5
+            player.turn_speed = float(player.turn_speed + movement_dt * 10.0)
+            turn_delta = float(player.turn_speed) * movement_dt * 0.5
             player.heading = float(player.heading + turn_delta)
             player.aim_heading = float(player.aim_heading + turn_delta)
             turned = True
@@ -2472,23 +2486,23 @@ def player_update(
         if moving_forward and not moving_backward:
             if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
                 if player.move_speed < 2.0:
-                    player.move_speed = float(player.move_speed + dt * 4.0)
-                player.move_speed = float(player.move_speed + dt)
+                    player.move_speed = float(player.move_speed + movement_dt * 4.0)
+                player.move_speed = float(player.move_speed + movement_dt)
                 if player.move_speed > 2.8:
                     player.move_speed = 2.8
             else:
-                player.move_speed = float(player.move_speed + dt * 5.0)
+                player.move_speed = float(player.move_speed + movement_dt * 5.0)
                 if player.move_speed > 2.0:
                     player.move_speed = 2.0
         elif moving_backward and not moving_forward:
             if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
                 if player.move_speed < 2.0:
-                    player.move_speed = float(player.move_speed + dt * 4.0)
-                player.move_speed = float(player.move_speed + dt)
+                    player.move_speed = float(player.move_speed + movement_dt * 4.0)
+                player.move_speed = float(player.move_speed + movement_dt)
                 if player.move_speed > 2.8:
                     player.move_speed = 2.8
             else:
-                player.move_speed = float(player.move_speed + dt * 5.0)
+                player.move_speed = float(player.move_speed + movement_dt * 5.0)
                 if player.move_speed > 2.0:
                     player.move_speed = 2.0
             move_sign = -1.0
@@ -2496,7 +2510,7 @@ def player_update(
         else:
             if not turned:
                 player.turn_speed = 1.0
-            player.move_speed = float(player.move_speed - dt * 15.0)
+            player.move_speed = float(player.move_speed - movement_dt * 15.0)
             if player.move_speed < 0.0:
                 player.move_speed = 0.0
 
@@ -2519,21 +2533,21 @@ def player_update(
             # Native normalizes this heading into [0, 2pi] before calling
             # `player_heading_approach_target` (see ghidra @ 0x00413fxx).
             target_heading = _normalize_heading_angle(move.to_heading())
-            angle_diff = _player_heading_approach_target(player, target_heading, dt)
+            angle_diff = _player_heading_approach_target(player, target_heading, movement_dt)
             move = Vec2.from_heading(player.heading)
             turn_alignment_scale = max(0.0, (math.pi - angle_diff) / math.pi)
             if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
                 if player.move_speed < 2.0:
-                    player.move_speed = float(player.move_speed + dt * 4.0)
-                player.move_speed = float(player.move_speed + dt)
+                    player.move_speed = float(player.move_speed + movement_dt * 4.0)
+                player.move_speed = float(player.move_speed + movement_dt)
                 if player.move_speed > 2.8:
                     player.move_speed = 2.8
             else:
-                player.move_speed = float(player.move_speed + dt * 5.0)
+                player.move_speed = float(player.move_speed + movement_dt * 5.0)
                 if player.move_speed > 2.0:
                     player.move_speed = 2.0
         else:
-            player.move_speed = float(player.move_speed - dt * 15.0)
+            player.move_speed = float(player.move_speed - movement_dt * 15.0)
             if player.move_speed < 0.0:
                 player.move_speed = 0.0
             move = Vec2.from_heading(player.heading)
@@ -2548,15 +2562,28 @@ def player_update(
         if perk_active(player, PerkId.ALTERNATE_WEAPON):
             speed *= 0.8
 
+    # Native movement stores through float32 velocity/delta slots before writing
+    # player position; mirror those store boundaries for replay parity.
+    move_step = f32(float(speed) * float(movement_dt))
+    move_delta = Vec2(
+        f32(float(move.x) * float(move_step)),
+        f32(float(move.y) * float(move_step)),
+    )
+    next_pos = Vec2(
+        f32(float(player.pos.x) + float(move_delta.x)),
+        f32(float(player.pos.y) + float(move_delta.y)),
+    )
+
     half_size = max(0.0, float(player.size) * 0.5)
-    player.pos = (player.pos + move * (speed * dt)).clamp_rect(
+    clamped_pos = next_pos.clamp_rect(
         half_size,
         half_size,
         float(world_size) - half_size,
         float(world_size) - half_size,
     )
+    player.pos = Vec2(f32(float(clamped_pos.x)), f32(float(clamped_pos.y)))
 
-    player.move_phase += phase_sign * dt * player.move_speed * 19.0
+    player.move_phase += phase_sign * movement_dt * player.move_speed * 19.0
 
     move_delta = player.pos - prev_pos
     stationary = abs(move_delta.x) <= 1e-9 and abs(move_delta.y) <= 1e-9
@@ -2570,7 +2597,19 @@ def player_update(
 
     # Reload + reload perks.
     if perk_active(player, PerkId.ANXIOUS_LOADER) and input_state.fire_pressed and player.reload_timer > 0.0:
-        player.reload_timer = max(0.0, player.reload_timer - 0.05)
+        anxious_next = f32(float(player.reload_timer) - 0.05)
+        player.reload_timer = float(anxious_next)
+        if float(anxious_next) <= 0.0:
+            # Native restarts the tail of the reload at `frame_dt * 0.8` when
+            # Anxious Loader overcuts the timer.
+            player.reload_timer = float(f32(float(dt) * 0.8))
+
+    # Native preloads ammo one frame before reload timer underflows, using
+    # unscaled `frame_dt` (before Stationary Reloader scale is applied).
+    reload_timer_now = float(f32(float(player.reload_timer)))
+    dt_f32 = float(f32(float(dt)))
+    if player.reload_active and float(f32(reload_timer_now - dt_f32)) < 0.0 and 0.0 <= reload_timer_now:
+        player.ammo = float(player.clip_size)
 
     if player.reload_timer > 0.0:
         if (
@@ -2579,7 +2618,7 @@ def player_update(
             and (player.reload_timer_max * 0.5) < player.reload_timer
         ):
             half = player.reload_timer_max * 0.5
-            next_timer = player.reload_timer - reload_scale * dt
+            next_timer = float(f32(float(player.reload_timer) - float(reload_scale) * float(dt)))
             player.reload_timer = next_timer
             if next_timer <= half:
                 count = 7 + int(player.reload_timer_max * 4.0)
@@ -2596,15 +2635,14 @@ def player_update(
                 state.bonus_spawn_guard = False
                 state.sfx_queue.append("sfx_explosion_small")
         else:
-            player.reload_timer -= reload_scale * dt
+            player.reload_timer = float(f32(float(player.reload_timer) - float(reload_scale) * float(dt)))
 
     if player.reload_timer < 0.0:
         player.reload_timer = 0.0
 
-    if player.reload_active and player.reload_timer <= 0.0 and player.reload_timer_max > 0.0:
-        player.ammo = float(player.clip_size)
+    # Native clears `reload_active` only once the player can shoot again.
+    if player.shot_cooldown <= 0.0 and player.reload_timer == 0.0:
         player.reload_active = False
-        player.reload_timer_max = 0.0
 
     if input_state.reload_pressed:
         if perk_active(player, PerkId.ALTERNATE_WEAPON) and player_swap_alt_weapon(player):
@@ -3204,10 +3242,17 @@ def bonus_update(
     if dt > 0.0:
         # Native `bonus_update` decrements Freeze + Double XP here; other global
         # timers are advanced earlier in the gameplay loop.
-        if float(state.bonuses.double_experience) > 0.0:
-            state.bonuses.double_experience = float(state.bonuses.double_experience) - float(dt)
-        if float(state.bonuses.freeze) > 0.0:
-            state.bonuses.freeze = float(state.bonuses.freeze) - float(dt)
+        double_xp = float(state.bonuses.double_experience)
+        if double_xp <= 0.0:
+            state.bonuses.double_experience = 0.0
+        else:
+            state.bonuses.double_experience = float(f32(float(double_xp) - float(dt)))
+
+        freeze = float(state.bonuses.freeze)
+        if freeze <= 0.0:
+            state.bonuses.freeze = 0.0
+        else:
+            state.bonuses.freeze = float(f32(float(freeze) - float(dt)))
 
     if update_hud:
         bonus_hud_update(state, players, dt=dt)
@@ -3221,8 +3266,8 @@ def bonus_update_pre_pickup_timers(state: GameplayState, dt: float) -> None:
     if dt <= 0.0:
         return
     if float(state.bonuses.weapon_power_up) > 0.0:
-        state.bonuses.weapon_power_up = float(state.bonuses.weapon_power_up) - float(dt)
+        state.bonuses.weapon_power_up = float(f32(float(state.bonuses.weapon_power_up) - float(dt)))
     if float(state.bonuses.energizer) > 0.0:
-        state.bonuses.energizer = float(state.bonuses.energizer) - float(dt)
+        state.bonuses.energizer = float(f32(float(state.bonuses.energizer) - float(dt)))
     if float(state.bonuses.reflex_boost) > 0.0:
-        state.bonuses.reflex_boost = float(state.bonuses.reflex_boost) - float(dt)
+        state.bonuses.reflex_boost = float(f32(float(state.bonuses.reflex_boost) - float(dt)))

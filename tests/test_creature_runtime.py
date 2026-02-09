@@ -390,5 +390,31 @@ def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> 
     )
     assert spawned_idx == 22
 
+
+def test_ai7_link_timer_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None:
+    state = GameplayState(rng=Crand(0xBEEF))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 50.0
+    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.flags = CreatureFlags.AI7_LINK_TIMER
+    creature.ai_mode = 0
+    creature.link_index = -33
+    creature.target_player = 0
+    creature.pos = Vec2(640.0, 512.0)
+    creature.move_speed = 0.0
+    creature.size = 45.0
+
+    # 0.0329999998s is captured as frame_dt_ms_i32=33 in native traces.
+    dt = 0.032999999821186066
+    stub_rand = _StubRand([0x11])
+    pool.update(dt, state=state, players=[player], rand=stub_rand.rand)
+
+    assert creature.ai_mode == 7
+    assert creature.link_index == 517
+
     pool.finalize_post_render_lifecycle()
     assert pool.entries[6].active is False

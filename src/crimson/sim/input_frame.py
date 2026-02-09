@@ -32,4 +32,3 @@ def normalize_input_frame(inputs: Sequence[PlayerInput] | None, *, player_count:
                 reload_pressed=bool(inp.reload_pressed),
             )
     return InputFrame(players=tuple(frame))
-

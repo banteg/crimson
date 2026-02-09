@@ -18,6 +18,7 @@ from crimson.replay.diff import ReplayFieldDiff, checkpoint_field_diffs
 from crimson.replay.original_capture import (
     OriginalCaptureSidecar,
     build_original_capture_dt_frame_overrides,
+    build_original_capture_dt_frame_ms_i32_overrides,
     convert_original_capture_to_checkpoints,
     convert_original_capture_to_replay,
     load_original_capture_sidecar,
@@ -776,7 +777,20 @@ def _run_actual_checkpoints(
         capture,
         tick_rate=int(replay.header.tick_rate),
     )
+    dt_frame_ms_i32_overrides = build_original_capture_dt_frame_ms_i32_overrides(capture)
     checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected}
+    inter_tick_rand_draws_by_tick = {
+        int(tick.tick_index): int(tick.rng_outside_before_calls)
+        for tick in capture.ticks
+        if int(tick.rng_outside_before_calls) >= 0
+    }
+    if inter_tick_rand_draws_by_tick:
+        first_tick_index = min(inter_tick_rand_draws_by_tick)
+        # The inferred replay seed already matches the first sampled tick RNG
+        # entry state, so do not reapply pre-capture bootstrap draws here.
+        inter_tick_rand_draws_by_tick[int(first_tick_index)] = 0
+    if not inter_tick_rand_draws_by_tick:
+        inter_tick_rand_draws_by_tick = None
     actual: list[ReplayCheckpoint] = []
 
     mode = int(replay.header.game_mode_id)
@@ -789,7 +803,9 @@ def _run_actual_checkpoints(
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
             dt_frame_overrides=dt_frame_overrides,
+            dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
             inter_tick_rand_draws=int(inter_tick_rand_draws),
+            inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
         )
     elif mode == int(GameMode.RUSH):
         run_result = run_rush_replay(
@@ -800,6 +816,7 @@ def _run_actual_checkpoints(
             checkpoint_ticks=checkpoint_ticks,
             dt_frame_overrides=dt_frame_overrides,
             inter_tick_rand_draws=int(inter_tick_rand_draws),
+            inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
         )
     else:
         raise ValueError(f"unsupported game mode for original capture verification: {mode}")
@@ -877,6 +894,14 @@ def _primary_rng_after(ckpt: ReplayCheckpoint) -> int:
     return -1
 
 
+def _rng_mark_with_fallback(marks: dict[str, int], key: str) -> int:
+    if key in marks:
+        return _int_or(marks.get(key), -1)
+    if key in {"before_events", "after_events"}:
+        return _int_or(marks.get("before_world_step"), -1)
+    return -1
+
+
 def _infer_rand_calls_between_states(
     before_state: int,
     after_state: int,
@@ -902,7 +927,7 @@ def _infer_rand_calls_between_states(
 
 
 def _actual_rand_calls_for_checkpoint(ckpt: ReplayCheckpoint) -> int | None:
-    before = _int_or(ckpt.rng_marks.get("before_world_step"), -1)
+    before = _rng_mark_with_fallback(ckpt.rng_marks, "before_events")
     after = _primary_rng_after(ckpt)
     return _infer_rand_calls_between_states(before, after)
 
@@ -910,7 +935,8 @@ def _actual_rand_calls_for_checkpoint(ckpt: ReplayCheckpoint) -> int | None:
 def _actual_rand_stage_calls(ckpt: ReplayCheckpoint) -> dict[str, int]:
     marks = ckpt.rng_marks
     stage_pairs: list[tuple[str, str, str]] = [
-        ("before_world_step", "ws_after_creatures", "creatures"),
+        ("before_events", "after_events", "events"),
+        ("after_events", "ws_after_creatures", "creatures"),
         ("ws_after_creatures", "ws_after_projectiles", "projectiles"),
         ("ws_after_projectiles", "ws_after_secondary_projectiles", "secondary_projectiles"),
         ("ws_after_secondary_projectiles", "ws_after_death_sfx", "death_sfx_preplan"),
@@ -926,10 +952,12 @@ def _actual_rand_stage_calls(ckpt: ReplayCheckpoint) -> dict[str, int]:
     out: dict[str, int] = {}
     for start_key, end_key, stage_name in stage_pairs:
         calls = _infer_rand_calls_between_states(
-            _int_or(marks.get(start_key), -1),
-            _int_or(marks.get(end_key), -1),
+            _rng_mark_with_fallback(marks, start_key),
+            _rng_mark_with_fallback(marks, end_key),
         )
         if calls is None:
+            continue
+        if stage_name == "events" and start_key not in marks and end_key not in marks:
             continue
         out[str(stage_name)] = int(calls)
     return out
@@ -992,7 +1020,7 @@ def _resolve_native_function_for_addr(caller_static: object, ranges: tuple[Nativ
 
 
 def _rng_changed(ckpt: ReplayCheckpoint) -> bool:
-    before = _int_or(ckpt.rng_marks.get("before_world_step"))
+    before = _rng_mark_with_fallback(ckpt.rng_marks, "before_events")
     after = _primary_rng_after(ckpt)
     return bool(before >= 0 and after >= 0 and before != after)
 

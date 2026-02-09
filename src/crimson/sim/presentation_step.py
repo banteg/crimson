@@ -391,14 +391,18 @@ def apply_world_presentation_step(
                 detail_preset=int(detail_preset),
                 fx_toggle=int(fx_toggle),
             )
-            commands.trigger_game_tune, planned_hit_sfx = plan_hit_sfx_keys(
-                hits,
-                game_mode=int(game_mode),
-                demo_mode_active=bool(demo_mode_active),
-                game_tune_started=bool(game_tune_started),
-                rand=rand_for("hit_sfx"),
-            )
-            commands.sfx_keys.extend(planned_hit_sfx)
+            if freeze_bonus_active(state=state):
+                if (not bool(demo_mode_active)) and int(game_mode) != int(GameMode.RUSH) and (not bool(game_tune_started)):
+                    commands.trigger_game_tune = True
+            else:
+                commands.trigger_game_tune, planned_hit_sfx = plan_hit_sfx_keys(
+                    hits,
+                    game_mode=int(game_mode),
+                    demo_mode_active=bool(demo_mode_active),
+                    game_tune_started=bool(game_tune_started),
+                    rand=rand_for("hit_sfx"),
+                )
+                commands.sfx_keys.extend(planned_hit_sfx)
     else:
         if trigger_game_tune is not None:
             commands.trigger_game_tune = bool(trigger_game_tune)

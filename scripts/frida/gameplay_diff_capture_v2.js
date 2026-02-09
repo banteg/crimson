@@ -129,6 +129,7 @@ const CONFIG = {
 };
 
 const FN = {
+  perk_apply: 0x004055e0,
   player_update: 0x004136b0,
   gameplay_update_and_render: 0x0040aab0,
   quest_mode_update: 0x004070e0,
@@ -329,6 +330,9 @@ const outState = {
   rngOutsideTickPendingHead: [],
   rngOutsideTickPendingCalls: 0,
   rngOutsideTickPendingDropped: 0,
+  perkApplyOutsideTickPendingHead: [],
+  perkApplyOutsideTickPendingCalls: 0,
+  perkApplyOutsideTickPendingDropped: 0,
   lastSeed: null,
   lastTickElapsedMs: null,
   lastTickGameplayFrame: null,
@@ -1299,6 +1303,7 @@ function makeTickContext() {
   const before = makeCoreSnapshot();
   const creatureDigestBefore = CONFIG.enableCreatureLifecycleDigest ? captureCreatureDigest() : null;
   const outsideRngBefore = takePendingOutsideRngRolls();
+  const outsidePerkApplyBefore = takePendingOutsidePerkApply();
   const tickIndex = Math.max(0, outState.gameplayFrame - 1);
   const playerBindings =
     before && before.input_bindings && Array.isArray(before.input_bindings.players)
@@ -1333,6 +1338,7 @@ function makeTickContext() {
       creature_spawn_low: 0,
       creature_death: 0,
       creature_lifecycle: 0,
+      perk_apply: 0,
       sfx: 0,
       perk_delta: 0,
       quest_timeline_delta: 0,
@@ -1356,6 +1362,7 @@ function makeTickContext() {
       creature_spawn_low: [],
       creature_death: [],
       creature_lifecycle: [],
+      perk_apply: [],
       sfx: [],
       perk_delta: [],
       quest_timeline_delta: [],
@@ -1389,6 +1396,7 @@ function makeTickContext() {
       mirror_mismatch_total_enter: outState.rngMirrorMismatchCount,
       mirror_unknown_total_enter: outState.rngMirrorUnknownCalls,
     },
+    perk_apply_outside_before: outsidePerkApplyBefore,
     phase_markers: [
       {
         kind: "state_enter",
@@ -1545,6 +1553,34 @@ function takePendingOutsideRngRolls() {
   outState.rngOutsideTickPendingHead = [];
   outState.rngOutsideTickPendingCalls = 0;
   outState.rngOutsideTickPendingDropped = 0;
+  return {
+    head: head,
+    calls: calls,
+    dropped: dropped,
+  };
+}
+
+function queueOutsidePerkApply(payload) {
+  outState.perkApplyOutsideTickPendingCalls += 1;
+  const cap = CONFIG.maxHeadPerKind;
+  if (cap === 0) {
+    outState.perkApplyOutsideTickPendingDropped += 1;
+    return;
+  }
+  if (cap > 0 && outState.perkApplyOutsideTickPendingHead.length >= cap) {
+    outState.perkApplyOutsideTickPendingDropped += 1;
+    return;
+  }
+  outState.perkApplyOutsideTickPendingHead.push(payload);
+}
+
+function takePendingOutsidePerkApply() {
+  const head = outState.perkApplyOutsideTickPendingHead;
+  const calls = outState.perkApplyOutsideTickPendingCalls;
+  const dropped = outState.perkApplyOutsideTickPendingDropped;
+  outState.perkApplyOutsideTickPendingHead = [];
+  outState.perkApplyOutsideTickPendingCalls = 0;
+  outState.perkApplyOutsideTickPendingDropped = 0;
   return {
     head: head,
     calls: calls,
@@ -1902,6 +1938,7 @@ function finalizeTick() {
     roll_log_emitted_total: outState.rngRollLogEmitted,
     roll_log_dropped_total: outState.rngRollLogDropped,
   };
+  const perkApplyOutsideBefore = tick.perk_apply_outside_before || { calls: 0, dropped: 0, head: [] };
   const creatureLifecycleDiagnostics = creatureLifecycle || null;
 
   const checkpoint = {
@@ -1957,6 +1994,7 @@ function finalizeTick() {
       timing: timing,
       spawn: spawnDiagnostics,
       rng: rngDiagnostics,
+      perk_apply_outside_before: perkApplyOutsideBefore,
       creature_lifecycle: creatureLifecycleDiagnostics,
       before_players: checkpointPlayersFromCompact(beforePlayers),
       before_status: {
@@ -1993,6 +2031,7 @@ function finalizeTick() {
       query_hash: toHex(tick.input_hash_state >>> 0, 8),
     },
     input_player_keys: tick.input_player_keys,
+    perk_apply_outside_before: perkApplyOutsideBefore,
     rng: {
       calls: tick.rng.calls,
       last_value: tick.rng.last_value,
@@ -2015,6 +2054,7 @@ function finalizeTick() {
       timing: timing,
       spawn: spawnDiagnostics,
       rng: rngDiagnostics,
+      perk_apply_outside_before: perkApplyOutsideBefore,
       creature_lifecycle: creatureLifecycleDiagnostics,
     },
     input_approx: buildInputApprox(afterPlayers, tick),
@@ -3026,6 +3066,48 @@ function installHooks() {
     },
   });
 
+  attachHook("perk_apply", fnPtrs.perk_apply, {
+    onEnter(args) {
+      const callerStatic = runtimeToStatic(this.returnAddress);
+      this._perkApplyCtx = {
+        perk_id: args[0] ? args[0].toInt32() : null,
+        pending_before: readDataI32("perk_pending_count"),
+        caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
+        caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
+        backtrace: maybeBacktrace(this.context),
+      };
+    },
+    onLeave() {
+      const ctx = this._perkApplyCtx;
+      this._perkApplyCtx = null;
+      if (!ctx) return;
+      const payload = {
+        perk_id: ctx.perk_id,
+        pending_before: ctx.pending_before,
+        pending_after: readDataI32("perk_pending_count"),
+        caller: ctx.caller,
+        caller_static: ctx.caller_static,
+        backtrace: ctx.backtrace,
+      };
+      const tick = outState.currentTick;
+      if (tick) {
+        addTickEvent(
+          "perk_apply",
+          payload,
+          "pa:" + (payload.perk_id == null ? -1 : payload.perk_id)
+        );
+      } else {
+        queueOutsidePerkApply(payload);
+      }
+      emitRawEvent(
+        Object.assign({ event: "perk_apply" }, payload, {
+          outside_tick: !tick,
+          tick_index: tick ? tick.tick_index : Math.max(0, outState.gameplayFrame - 1),
+        })
+      );
+    },
+  });
+
   attachHook("quest_spawn_timeline_update", fnPtrs.quest_spawn_timeline_update, {
     onLeave() {
       const compact = {
@@ -3125,6 +3207,8 @@ function emitHeartbeat() {
     rng_roll_log_dropped: outState.rngRollLogDropped,
     rng_outside_pending_calls: outState.rngOutsideTickPendingCalls,
     rng_outside_pending_dropped: outState.rngOutsideTickPendingDropped,
+    perk_apply_outside_pending_calls: outState.perkApplyOutsideTickPendingCalls,
+    perk_apply_outside_pending_dropped: outState.perkApplyOutsideTickPendingDropped,
     globals: readGameplayGlobalsCompact(),
     players: readPlayersCompact(),
   });
