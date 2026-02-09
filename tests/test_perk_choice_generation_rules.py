@@ -16,9 +16,7 @@ class _SeqRng:
         self._idx = 0
 
     def rand(self) -> int:
-        if self._idx >= len(self._values):
-            return int(self._values[-1])
-        value = int(self._values[self._idx])
+        value = int(self._values[self._idx % len(self._values)])
         self._idx += 1
         return value
 
@@ -44,8 +42,8 @@ def test_perks_rebuild_available_unlocks_base_and_quest_perks() -> None:
 
 def test_perk_generate_choices_inserts_monster_vision_on_quest_1_7() -> None:
     # `perk_generate_choices` always fills a 7-entry list; provide enough entropy to avoid
-    # degenerately selecting the same perk forever.
-    state = GameplayState(rng=_SeqRng([0, 1, 2, 3, 4, 5, 6]))
+    # degenerately selecting from a tiny, repeatedly invalid subset.
+    state = GameplayState(rng=_SeqRng(list(range(2048))))
     state.quest_stage_major = 1
     state.quest_stage_minor = 7
     player = PlayerState(index=0, pos=Vec2())
