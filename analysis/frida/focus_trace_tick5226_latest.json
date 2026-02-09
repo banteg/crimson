@@ -1,0 +1,2853 @@
+{
+  "capture_creatures": [
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 55.8288,
+      "index": 0,
+      "pos": {
+        "x": 494.9957,
+        "y": 503.7695
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 56.9313,
+      "index": 1,
+      "pos": {
+        "x": 541.8301,
+        "y": 480.9464
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 42.4107,
+      "index": 2,
+      "pos": {
+        "x": 604.178,
+        "y": 673.7296
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 128,
+      "hitbox_size": 16,
+      "hp": 58.3662,
+      "index": 3,
+      "pos": {
+        "x": 520.1326,
+        "y": 797.0745
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 3
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 65.5263,
+      "index": 4,
+      "pos": {
+        "x": 642.3868,
+        "y": 151.7313
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 128,
+      "hitbox_size": 16,
+      "hp": 58.2863,
+      "index": 5,
+      "pos": {
+        "x": 430.3144,
+        "y": 157.3167
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 3
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 15.6929,
+      "index": 6,
+      "pos": {
+        "x": 405.4985,
+        "y": 652.9888
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 65.1188,
+      "index": 7,
+      "pos": {
+        "x": 453.1402,
+        "y": 861.9955
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 58.135,
+      "index": 8,
+      "pos": {
+        "x": 331.5222,
+        "y": 600.5041
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 28.1437,
+      "index": 9,
+      "pos": {
+        "x": 566.0565,
+        "y": 642.514
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 47.2025,
+      "index": 10,
+      "pos": {
+        "x": 356.3961,
+        "y": 584.8853
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 28.8653,
+      "index": 11,
+      "pos": {
+        "x": 592.3866,
+        "y": 678.8035
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 59.2038,
+      "index": 12,
+      "pos": {
+        "x": 245.4285,
+        "y": 796.298
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 41.2365,
+      "index": 13,
+      "pos": {
+        "x": 336.016,
+        "y": 706.1825
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 66.8288,
+      "index": 14,
+      "pos": {
+        "x": 527.7039,
+        "y": 594.0923
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 59.5488,
+      "index": 15,
+      "pos": {
+        "x": 711.5626,
+        "y": 594.6837
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 43.1464,
+      "index": 16,
+      "pos": {
+        "x": 897.742,
+        "y": 374.9201
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 42.807,
+      "index": 17,
+      "pos": {
+        "x": 457.572,
+        "y": 525.0378
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 58.3838,
+      "index": 18,
+      "pos": {
+        "x": 558.9277,
+        "y": 906.5289
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 60.78,
+      "index": 19,
+      "pos": {
+        "x": 728.3937,
+        "y": 629.0912
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 63.34,
+      "index": 20,
+      "pos": {
+        "x": 910.2798,
+        "y": 718.0265
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 34.2345,
+      "index": 21,
+      "pos": {
+        "x": 448.3424,
+        "y": 581.1771
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 66.0062,
+      "index": 22,
+      "pos": {
+        "x": 630.0142,
+        "y": 263.2192
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 65.4975,
+      "index": 23,
+      "pos": {
+        "x": 640.0825,
+        "y": 724.6066
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 60.7363,
+      "index": 24,
+      "pos": {
+        "x": 283.9861,
+        "y": 692.7094
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 128,
+      "hitbox_size": 16,
+      "hp": 62.5262,
+      "index": 25,
+      "pos": {
+        "x": 95.4941,
+        "y": 822.5881
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 3
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 40.3704,
+      "index": 26,
+      "pos": {
+        "x": 391.7915,
+        "y": 611.8256
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 59.7475,
+      "index": 27,
+      "pos": {
+        "x": 638.2819,
+        "y": 585.851
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 128,
+      "hitbox_size": 16,
+      "hp": 59.0187,
+      "index": 28,
+      "pos": {
+        "x": 556.7095,
+        "y": 894.5405
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 3
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 56.125,
+      "index": 29,
+      "pos": {
+        "x": 447.1168,
+        "y": 576.7642
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 61.9112,
+      "index": 30,
+      "pos": {
+        "x": 1044.632,
+        "y": 870.3323
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 71.675,
+      "index": 31,
+      "pos": {
+        "x": 55.8493,
+        "y": 339.1689
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 68.96,
+      "index": 32,
+      "pos": {
+        "x": 75.3805,
+        "y": 1072.026
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 23.8947,
+      "index": 33,
+      "pos": {
+        "x": 449.9995,
+        "y": 771.7141
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 66.7588,
+      "index": 34,
+      "pos": {
+        "x": 721.4262,
+        "y": 640.3816
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 62.9163,
+      "index": 35,
+      "pos": {
+        "x": 664.7085,
+        "y": 803.243
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 51.746,
+      "index": 36,
+      "pos": {
+        "x": 402.1172,
+        "y": 404.0518
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 43.5886,
+      "index": 37,
+      "pos": {
+        "x": 548.2344,
+        "y": 889.8798
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 85,
+      "index": 38,
+      "pos": {
+        "x": 731.1971,
+        "y": 676.3429
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 58.5988,
+      "index": 39,
+      "pos": {
+        "x": 319.433,
+        "y": 761.2585
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 28.0801,
+      "index": 40,
+      "pos": {
+        "x": 450.6398,
+        "y": 595.5129
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 69.7675,
+      "index": 41,
+      "pos": {
+        "x": 944.6113,
+        "y": 42.8785
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 69.8262,
+      "index": 42,
+      "pos": {
+        "x": 611.4797,
+        "y": 691.8512
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 128,
+      "hitbox_size": 16,
+      "hp": 72.7675,
+      "index": 43,
+      "pos": {
+        "x": 363.9551,
+        "y": 33.7128
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 3
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 57.8425,
+      "index": 44,
+      "pos": {
+        "x": 446.3722,
+        "y": 554.4471
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 60.7363,
+      "index": 45,
+      "pos": {
+        "x": 812.5993,
+        "y": 699.4394
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 68.5262,
+      "index": 46,
+      "pos": {
+        "x": 917.7501,
+        "y": 579.087
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 68.34,
+      "index": 47,
+      "pos": {
+        "x": 877.5278,
+        "y": 418.568
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 61.8262,
+      "index": 48,
+      "pos": {
+        "x": 678.6719,
+        "y": 254.5583
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 59.8262,
+      "index": 49,
+      "pos": {
+        "x": 353.3733,
+        "y": 204.0309
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 60.9313,
+      "index": 50,
+      "pos": {
+        "x": 505.6818,
+        "y": 529.1351
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 128,
+      "hitbox_size": 16,
+      "hp": 49.6269,
+      "index": 51,
+      "pos": {
+        "x": 266.4267,
+        "y": 754.7422
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 3
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 128,
+      "hitbox_size": 16,
+      "hp": 61.8262,
+      "index": 52,
+      "pos": {
+        "x": 390.6577,
+        "y": 922.7504
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 3
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 14.828,
+      "hp": -10.8048,
+      "index": 53,
+      "pos": {
+        "x": 491.3741,
+        "y": 587.0991
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 59.7675,
+      "index": 54,
+      "pos": {
+        "x": 1054.4536,
+        "y": 702.2664
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 43.811,
+      "index": 55,
+      "pos": {
+        "x": 566.3956,
+        "y": 771.7172
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 128,
+      "hitbox_size": 16,
+      "hp": 61.585,
+      "index": 56,
+      "pos": {
+        "x": 600.89,
+        "y": 593.1257
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 3
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 69.96,
+      "index": 57,
+      "pos": {
+        "x": 352.1083,
+        "y": 1075.0184
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 57.8262,
+      "index": 58,
+      "pos": {
+        "x": 295.1389,
+        "y": 726.6327
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 67.96,
+      "index": 59,
+      "pos": {
+        "x": 974.0013,
+        "y": 1060.8356
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 67.0912,
+      "index": 60,
+      "pos": {
+        "x": 667.9888,
+        "y": 568.024
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 33.2537,
+      "index": 61,
+      "pos": {
+        "x": 351.0376,
+        "y": 681.02
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 57.7545,
+      "index": 62,
+      "pos": {
+        "x": 63.9247,
+        "y": 265.59
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 6.45,
+      "hp": -63.8812,
+      "index": 63,
+      "pos": {
+        "x": 501.9265,
+        "y": 675.0463
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 67.4388,
+      "index": 64,
+      "pos": {
+        "x": 529.5959,
+        "y": 743.5361
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 64.7588,
+      "index": 65,
+      "pos": {
+        "x": 648.0346,
+        "y": 723.6736
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 58.0788,
+      "index": 66,
+      "pos": {
+        "x": 400.2862,
+        "y": 534.8063
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 57.0788,
+      "index": 67,
+      "pos": {
+        "x": 543.1222,
+        "y": 390.3935
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 66.3213,
+      "index": 68,
+      "pos": {
+        "x": 662.8229,
+        "y": 415.0388
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 61.0112,
+      "index": 69,
+      "pos": {
+        "x": 36.2939,
+        "y": -39.2815
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 58.9087,
+      "index": 70,
+      "pos": {
+        "x": 136.8235,
+        "y": 307.4267
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 68.9088,
+      "index": 71,
+      "pos": {
+        "x": 62.1692,
+        "y": 567.9438
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 62.9088,
+      "index": 72,
+      "pos": {
+        "x": 444.2862,
+        "y": 812.1124
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 68.0062,
+      "index": 73,
+      "pos": {
+        "x": 331.1387,
+        "y": 840.1211
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 63.2863,
+      "index": 74,
+      "pos": {
+        "x": 861.2791,
+        "y": 180.3185
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 67.5263,
+      "index": 75,
+      "pos": {
+        "x": 983.6829,
+        "y": 857.8264
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 72.5713,
+      "index": 76,
+      "pos": {
+        "x": 849.6812,
+        "y": 1010.2531
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 128,
+      "hitbox_size": 16,
+      "hp": 72.6212,
+      "index": 77,
+      "pos": {
+        "x": 479.1615,
+        "y": 64.4129
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 3
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 60.96,
+      "index": 78,
+      "pos": {
+        "x": 206.6475,
+        "y": 1029.4238
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    }
+  ],
+  "capture_projectiles": [
+    {
+      "active": 1,
+      "angle": 1.2745,
+      "base_damage": 50,
+      "damage_pool": 0,
+      "hit_radius": 1,
+      "index": 0,
+      "life_timer": 0.131,
+      "owner_id": -100,
+      "pos": {
+        "x": 561.6796,
+        "y": 638.4786
+      },
+      "speed_scale": 1,
+      "type_id": 2,
+      "vel": {
+        "x": 0.438,
+        "y": 1.4346
+      }
+    },
+    {
+      "active": 1,
+      "angle": 0.6626,
+      "base_damage": 50,
+      "damage_pool": 0,
+      "hit_radius": 1,
+      "index": 1,
+      "life_timer": 0.21,
+      "owner_id": -100,
+      "pos": {
+        "x": 482.2218,
+        "y": 597.9028
+      },
+      "speed_scale": 1,
+      "type_id": 2,
+      "vel": {
+        "x": 1.1826,
+        "y": 0.9227
+      }
+    },
+    {
+      "active": 1,
+      "angle": -0.3046,
+      "base_damage": 50,
+      "damage_pool": 1,
+      "hit_radius": 1,
+      "index": 2,
+      "life_timer": 0.4,
+      "owner_id": -100,
+      "pos": {
+        "x": 425.2249,
+        "y": 643.4186
+      },
+      "speed_scale": 1,
+      "type_id": 2,
+      "vel": {
+        "x": 1.4309,
+        "y": -0.4499
+      }
+    }
+  ],
+  "collision_hits": [],
+  "collision_near_misses": [],
+  "creature_capture_only": [],
+  "creature_diffs_top": [
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 4.4500500000000045,
+      "index": 69,
+      "x_delta": 519.6415293881188,
+      "y_delta": 737.2013456487545
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -16.674999999999997,
+      "index": 31,
+      "x_delta": 697.3931926757813,
+      "y_delta": -150.07579086914063
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -8.767499999999998,
+      "index": 43,
+      "x_delta": 191.3468371071732,
+      "y_delta": 649.9243663801701
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -5.767499999999998,
+      "index": 41,
+      "x_delta": -358.3199102228306,
+      "y_delta": 630.9434579458793
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -14.018700000000003,
+      "index": 77,
+      "x_delta": 114.60528016220093,
+      "y_delta": 620.0964980147255
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -12.526300000000006,
+      "index": 4,
+      "x_delta": -88.08931533521604,
+      "y_delta": 537.9983577581013
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -3.152000000000001,
+      "index": 62,
+      "x_delta": 534.2565744140625,
+      "y_delta": 416.21859375
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -16.44755,
+      "index": 71,
+      "x_delta": 518.0774428020987,
+      "y_delta": 141.57550427248884
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 2.713700000000003,
+      "index": 5,
+      "x_delta": 150.18446263260591,
+      "y_delta": 513.5211614077314
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -4.549999999999997,
+      "index": 54,
+      "x_delta": -500.1117516266903,
+      "y_delta": -11.42714226353678
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -7.683799999999998,
+      "index": 74,
+      "x_delta": -302.95731829293936,
+      "y_delta": 498.024749542936
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -3.467499999999987,
+      "index": 32,
+      "x_delta": 348.51665576171877,
+      "y_delta": -491.3436879882813
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 0.30630000000000024,
+      "index": 30,
+      "x_delta": -482.5485687267694,
+      "y_delta": -164.26233740000885
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 1.9187999999999903,
+      "index": 25,
+      "x_delta": 481.8017984375,
+      "y_delta": -69.75240664062505
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 0.2687999999999988,
+      "index": 49,
+      "x_delta": 240.09334748700246,
+      "y_delta": 479.20942090435915
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -9.923800000000007,
+      "index": 75,
+      "x_delta": -454.37461142578127,
+      "y_delta": -136.25205917968754
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -3.6949500000000057,
+      "index": 22,
+      "x_delta": -55.454909236634194,
+      "y_delta": 446.9334929475367
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -1.4474500000000035,
+      "index": 70,
+      "x_delta": 420.5673506124283,
+      "y_delta": 372.17386991378794
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 3.1738,
+      "index": 48,
+      "x_delta": -110.62251586898356,
+      "y_delta": 416.35800676649694
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -7.597499999999997,
+      "index": 59,
+      "x_delta": -400.2143934145764,
+      "y_delta": -350.65554293202604
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -7.648749999999993,
+      "index": 57,
+      "x_delta": 216.27823145617958,
+      "y_delta": -365.80523752133297
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 5.744999999999997,
+      "index": 78,
+      "x_delta": 312.43477539062496,
+      "y_delta": -359.6197838867188
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 0.2411999999999992,
+      "index": 12,
+      "x_delta": 343.18345119529044,
+      "y_delta": -91.9480338966323
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -10.977500000000006,
+      "index": 20,
+      "x_delta": -338.0252223632813,
+      "y_delta": -242.88895727539068
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -3.4849499999999978,
+      "index": 46,
+      "x_delta": -326.7370528490818,
+      "y_delta": 99.09349233340413
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 10.266100000000002,
+      "index": 16,
+      "x_delta": -304.1095505864505,
+      "y_delta": 309.02543681880894
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 4.550600000000003,
+      "index": 51,
+      "x_delta": 301.8637570533689,
+      "y_delta": -83.62635649053675
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -6.908799999999992,
+      "index": 68,
+      "x_delta": -93.50255879506176,
+      "y_delta": 294.43721638549783
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -12.078799999999994,
+      "index": 76,
+      "x_delta": -292.6782703125,
+      "y_delta": -263.494066796875
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -12.298750000000005,
+      "index": 47,
+      "x_delta": -289.14903842688466,
+      "y_delta": 256.9900348415051
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 9.333699999999993,
+      "index": 67,
+      "x_delta": 104.82451630859373,
+      "y_delta": 287.85985693359373
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 6.253999999999998,
+      "index": 36,
+      "x_delta": 152.2839264801902,
+      "y_delta": 287.6749598402998
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 1.7087000000000003,
+      "index": 24,
+      "x_delta": 275.18678621802127,
+      "y_delta": 10.458366544283876
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 6.401200000000003,
+      "index": 39,
+      "x_delta": 275.04790339586293,
+      "y_delta": -74.19850693532283
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -3.463700000000003,
+      "index": 58,
+      "x_delta": 262.9569244462329,
+      "y_delta": -48.06683822770162
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 20.7635,
+      "index": 13,
+      "x_delta": 253.7074866152314,
+      "y_delta": -3.0818844872111413
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -4.005000000000003,
+      "index": 23,
+      "x_delta": 192.46858642578127,
+      "y_delta": -241.28344936523433
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 0.07744999999999891,
+      "index": 18,
+      "x_delta": 16.635718335259185,
+      "y_delta": -236.43515556949637
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 1.351300000000002,
+      "index": 52,
+      "x_delta": 203.48419460630657,
+      "y_delta": -236.40327669677424
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -2.7363,
+      "index": 45,
+      "x_delta": -228.4038474254129,
+      "y_delta": -26.824373974334662
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -0.453700000000012,
+      "index": 73,
+      "x_delta": 222.95593277417925,
+      "y_delta": -150.38587444847485
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 18.4114,
+      "index": 37,
+      "x_delta": 14.616258524943305,
+      "y_delta": -216.04387705808176
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -0.6899999999999977,
+      "index": 8,
+      "x_delta": 209.20832978515625,
+      "y_delta": 3.061940039062506
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 1.0686999999999998,
+      "index": 1,
+      "x_delta": 13.403309884362784,
+      "y_delta": 203.7177918926787
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 23.108799999999995,
+      "index": 61,
+      "x_delta": 203.23677004074887,
+      "y_delta": 9.338046569445282
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 10.7975,
+      "index": 10,
+      "x_delta": 202.50672823371718,
+      "y_delta": 92.49198205604387
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -10.118799999999993,
+      "index": 7,
+      "x_delta": 115.37825674146035,
+      "y_delta": -190.97555103733123
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 0.9812999999999974,
+      "index": 28,
+      "x_delta": 28.370059137235785,
+      "y_delta": -187.37359334913094
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 8.171199999999999,
+      "index": 0,
+      "x_delta": 99.49005541310959,
+      "y_delta": 186.43480610188055
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 8.333699999999993,
+      "index": 66,
+      "x_delta": 180.71507253083666,
+      "y_delta": 174.24958294607222
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 24.12210000000001,
+      "index": 26,
+      "x_delta": 179.69086083984377,
+      "y_delta": 21.50667539062499
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 44.4021,
+      "index": 6,
+      "x_delta": 167.29078989534065,
+      "y_delta": 57.361039118804
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -4.4238,
+      "index": 35,
+      "x_delta": 60.70934667968754,
+      "y_delta": -162.0680122070313
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 1.2199999999999989,
+      "index": 19,
+      "x_delta": -159.9872674136667,
+      "y_delta": 41.99642916911398
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -6.5488,
+      "index": 15,
+      "x_delta": -157.10872451950536,
+      "y_delta": 94.916648095587
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -0.6250500000000017,
+      "index": 50,
+      "x_delta": 49.66970131607144,
+      "y_delta": 154.59252856914634
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 20.192999999999998,
+      "index": 17,
+      "x_delta": 133.0740097357858,
+      "y_delta": 153.2905075644477
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 2.157499999999999,
+      "index": 44,
+      "x_delta": 142.2403991597879,
+      "y_delta": 121.51370049821469
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 23.9199,
+      "index": 40,
+      "x_delta": 141.6095718634786,
+      "y_delta": 103.8668150392291
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -32.0,
+      "index": 38,
+      "x_delta": -141.29092989722915,
+      "y_delta": 26.599296704090307
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -3.3562999999999974,
+      "index": 72,
+      "x_delta": 114.05475605447327,
+      "y_delta": -133.77923575435693
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 29.1053,
+      "index": 33,
+      "x_delta": 130.5137877579972,
+      "y_delta": -100.67375125697913
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 9.55,
+      "hp_delta": 130.2437,
+      "index": 63,
+      "x_delta": 61.00462094311314,
+      "y_delta": 31.611048542857475
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -13.758799999999994,
+      "index": 34,
+      "x_delta": -129.4336462890625,
+      "y_delta": 34.56883945312495
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 3.633800000000001,
+      "index": 3,
+      "x_delta": 42.512959494865186,
+      "y_delta": -123.22542314228963
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 22.943000000000005,
+      "index": 21,
+      "x_delta": 111.56935468954771,
+      "y_delta": 123.15607153234464
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -0.7287000000000035,
+      "index": 60,
+      "x_delta": -113.55325394888348,
+      "y_delta": 122.21066897485639
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 1.1720000000000006,
+      "hp_delta": 67.0223,
+      "index": 53,
+      "x_delta": 68.02521985814337,
+      "y_delta": 116.1897684584278
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 3.875,
+      "index": 29,
+      "x_delta": 111.32089410678941,
+      "y_delta": 101.42535744944814
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -6.27375,
+      "index": 56,
+      "x_delta": -43.59581045918799,
+      "y_delta": 107.7146610633398
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -6.206299999999992,
+      "index": 65,
+      "x_delta": -52.906853417968705,
+      "y_delta": -99.92170791015621
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -1.828800000000001,
+      "index": 14,
+      "x_delta": 26.82045195948433,
+      "y_delta": 98.11287615150275
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 9.500250000000001,
+      "index": 55,
+      "x_delta": 19.882235089924052,
+      "y_delta": -97.73619588084
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 5.252499999999998,
+      "index": 27,
+      "x_delta": -57.57140765158442,
+      "y_delta": 85.09367995048024
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -8.076300000000003,
+      "index": 64,
+      "x_delta": 64.83543987415885,
+      "y_delta": -55.03455486314397
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 26.5797,
+      "index": 11,
+      "x_delta": -38.21763767409925,
+      "y_delta": 11.332289375278265
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 17.5893,
+      "index": 2,
+      "x_delta": -16.79534179370694,
+      "y_delta": 31.874839603397163
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 31.8563,
+      "index": 9,
+      "x_delta": 14.5122213364765,
+      "y_delta": 28.339649753148933
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": -12.8262,
+      "index": 42,
+      "x_delta": -18.613789437915102,
+      "y_delta": -9.67341194445487
+    }
+  ],
+  "creature_rewrite_only": [
+    {
+      "hitbox_size": 16.0,
+      "hp": 59.25875,
+      "index": 79,
+      "pos": {
+        "x": 663.4242553710938,
+        "y": 688.0042724609375
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 62.25875,
+      "index": 80,
+      "pos": {
+        "x": 561.9651241592015,
+        "y": 674.2799048777248
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 68.4925,
+      "index": 81,
+      "pos": {
+        "x": 585.7120971679688,
+        "y": 635.718994140625
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 60.4925,
+      "index": 82,
+      "pos": {
+        "x": 500.2269592285156,
+        "y": 408.90606689453125
+      },
+      "type_id": 3
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 68.4925,
+      "index": 83,
+      "pos": {
+        "x": 554.4844673918586,
+        "y": 689.4966679810626
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 58.4925,
+      "index": 84,
+      "pos": {
+        "x": 449.2978820800781,
+        "y": 401.4656677246094
+      },
+      "type_id": 3
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 64.4925,
+      "index": 85,
+      "pos": {
+        "x": 430.767822265625,
+        "y": 419.2144470214844
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 59.4925,
+      "index": 86,
+      "pos": {
+        "x": 402.8490905761719,
+        "y": 634.3851318359375
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 54.4925,
+      "index": 87,
+      "pos": {
+        "x": 564.346923828125,
+        "y": 489.4571838378906
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 63.4925,
+      "index": 88,
+      "pos": {
+        "x": 586.4943237304688,
+        "y": 800.1344604492188
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 60.4925,
+      "index": 89,
+      "pos": {
+        "x": 517.9584350585938,
+        "y": 762.534912109375
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 67.4925,
+      "index": 90,
+      "pos": {
+        "x": 572.8008665648497,
+        "y": 670.1657846069917
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 65.4925,
+      "index": 91,
+      "pos": {
+        "x": 554.4346925352631,
+        "y": 690.4631599356234
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 60.4925,
+      "index": 92,
+      "pos": {
+        "x": 586.3543606257442,
+        "y": 706.2852220006616
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 63.4925,
+      "index": 93,
+      "pos": {
+        "x": 561.1340942382812,
+        "y": 441.7405700683594
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 66.4925,
+      "index": 94,
+      "pos": {
+        "x": 432.8648681640625,
+        "y": 865.3816528320312
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 59.4925,
+      "index": 95,
+      "pos": {
+        "x": 545.7354125976562,
+        "y": 728.5239868164062
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 67.4925,
+      "index": 96,
+      "pos": {
+        "x": 434.888427734375,
+        "y": 693.2672729492188
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 55.4925,
+      "index": 97,
+      "pos": {
+        "x": 523.9457397460938,
+        "y": 397.20465087890625
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 63.4925,
+      "index": 98,
+      "pos": {
+        "x": 980.53125,
+        "y": 566.342041015625
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 56.4925,
+      "index": 99,
+      "pos": {
+        "x": 361.4425354003906,
+        "y": 620.704345703125
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 54.4925,
+      "index": 100,
+      "pos": {
+        "x": 766.0108642578125,
+        "y": 787.0828247070312
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 61.4925,
+      "index": 101,
+      "pos": {
+        "x": 221.9583282470703,
+        "y": 719.6171264648438
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 53.4925,
+      "index": 102,
+      "pos": {
+        "x": 271.0046691894531,
+        "y": 793.0015869140625
+      },
+      "type_id": 3
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 56.4925,
+      "index": 103,
+      "pos": {
+        "x": 716.5859375,
+        "y": 753.8272705078125
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 66.4925,
+      "index": 104,
+      "pos": {
+        "x": 481.5032653808594,
+        "y": 723.2717895507812
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 63.4925,
+      "index": 105,
+      "pos": {
+        "x": 763.2852172851562,
+        "y": 581.9991455078125
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 66.4925,
+      "index": 106,
+      "pos": {
+        "x": 852.393798828125,
+        "y": 719.0626220703125
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 65.4925,
+      "index": 107,
+      "pos": {
+        "x": 822.49365234375,
+        "y": 565.0542602539062
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 53.4925,
+      "index": 108,
+      "pos": {
+        "x": 820.239990234375,
+        "y": 690.1052856445312
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 57.4925,
+      "index": 109,
+      "pos": {
+        "x": 638.7695922851562,
+        "y": 970.4658813476562
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 66.4925,
+      "index": 110,
+      "pos": {
+        "x": 845.2002563476562,
+        "y": 236.40078735351562
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 55.4925,
+      "index": 111,
+      "pos": {
+        "x": 1062.2841796875,
+        "y": 297.8221435546875
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 60.4925,
+      "index": 112,
+      "pos": {
+        "x": 850.0736083984375,
+        "y": 568.1779174804688
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 63.4925,
+      "index": 113,
+      "pos": {
+        "x": 476.5978698730469,
+        "y": 893.2330322265625
+      },
+      "type_id": 3
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 60.4925,
+      "index": 114,
+      "pos": {
+        "x": 819.97216796875,
+        "y": 984.9392700195312
+      },
+      "type_id": 3
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 54.4925,
+      "index": 115,
+      "pos": {
+        "x": 866.4178466796875,
+        "y": 995.89453125
+      },
+      "type_id": 3
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 61.4925,
+      "index": 116,
+      "pos": {
+        "x": 820.5154418945312,
+        "y": 153.13514709472656
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 59.4925,
+      "index": 117,
+      "pos": {
+        "x": 691.5745849609375,
+        "y": 181.72462463378906
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 60.4925,
+      "index": 118,
+      "pos": {
+        "x": 714.9783935546875,
+        "y": 154.08929443359375
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 68.4925,
+      "index": 119,
+      "pos": {
+        "x": 134.97903442382812,
+        "y": 518.2280883789062
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 53.4925,
+      "index": 120,
+      "pos": {
+        "x": 146.76007080078125,
+        "y": 677.12841796875
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 58.4925,
+      "index": 121,
+      "pos": {
+        "x": 304.7020568847656,
+        "y": 965.3858032226562
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 59.4925,
+      "index": 122,
+      "pos": {
+        "x": 200.6881561279297,
+        "y": 1096.27587890625
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 55.4925,
+      "index": 123,
+      "pos": {
+        "x": 686.3004150390625,
+        "y": 108.53375244140625
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 85.0,
+      "index": 124,
+      "pos": {
+        "x": 52.00272750854492,
+        "y": 877.925537109375
+      },
+      "type_id": 3
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 53.4925,
+      "index": 125,
+      "pos": {
+        "x": 483.7075500488281,
+        "y": 63.53596878051758
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 58.4925,
+      "index": 126,
+      "pos": {
+        "x": 1011.0987548828125,
+        "y": 112.63671112060547
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 68.4925,
+      "index": 127,
+      "pos": {
+        "x": 58.47874069213867,
+        "y": 753.275390625
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 58.4925,
+      "index": 128,
+      "pos": {
+        "x": 559.7791137695312,
+        "y": 0.2430005669593811
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 56.4925,
+      "index": 129,
+      "pos": {
+        "x": 1012.17333984375,
+        "y": 659.310546875
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 56.4925,
+      "index": 130,
+      "pos": {
+        "x": 994.1774291992188,
+        "y": -0.07406604290008545
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 59.4925,
+      "index": 131,
+      "pos": {
+        "x": 1047.6214599609375,
+        "y": 159.86569213867188
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 59.4925,
+      "index": 132,
+      "pos": {
+        "x": 704.59765625,
+        "y": 1047.58740234375
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 64.4925,
+      "index": 133,
+      "pos": {
+        "x": -15.18081283569336,
+        "y": 1032.199462890625
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 53.4925,
+      "index": 134,
+      "pos": {
+        "x": 175.0604248046875,
+        "y": -29.699787139892578
+      },
+      "type_id": 2
+    },
+    {
+      "hitbox_size": 16.0,
+      "hp": 62.4925,
+      "index": 135,
+      "pos": {
+        "x": 387.99383544921875,
+        "y": 1060.9447021484375
+      },
+      "type_id": 2
+    }
+  ],
+  "deaths": 0,
+  "decal_hook_rows": [],
+  "fire_bullets_loop_parity": null,
+  "hits": 0,
+  "native_caller_gaps_top": [
+    {
+      "capture_count": 2,
+      "gap": 2,
+      "inferred_rewrite_callsite": "",
+      "native_caller_static": "0x0041fc3e",
+      "native_label": "",
+      "rewrite_count": 0
+    },
+    {
+      "capture_count": 1,
+      "gap": 1,
+      "inferred_rewrite_callsite": "",
+      "native_caller_static": "0x00415a6d",
+      "native_label": "",
+      "rewrite_count": 0
+    },
+    {
+      "capture_count": 1,
+      "gap": 1,
+      "inferred_rewrite_callsite": "",
+      "native_caller_static": "0x00415a8b",
+      "native_label": "",
+      "rewrite_count": 0
+    },
+    {
+      "capture_count": 1,
+      "gap": 1,
+      "inferred_rewrite_callsite": "",
+      "native_caller_static": "0x00415b26",
+      "native_label": "",
+      "rewrite_count": 0
+    },
+    {
+      "capture_count": 1,
+      "gap": 1,
+      "inferred_rewrite_callsite": "",
+      "native_caller_static": "0x00415b79",
+      "native_label": "",
+      "rewrite_count": 0
+    },
+    {
+      "capture_count": 1,
+      "gap": 1,
+      "inferred_rewrite_callsite": "",
+      "native_caller_static": "0x00415c6b",
+      "native_label": "",
+      "rewrite_count": 0
+    },
+    {
+      "capture_count": 1,
+      "gap": 1,
+      "inferred_rewrite_callsite": "",
+      "native_caller_static": "0x00415c87",
+      "native_label": "",
+      "rewrite_count": 0
+    },
+    {
+      "capture_count": 1,
+      "gap": 1,
+      "inferred_rewrite_callsite": "",
+      "native_caller_static": "0x00415f09",
+      "native_label": "",
+      "rewrite_count": 0
+    },
+    {
+      "capture_count": 1,
+      "gap": 1,
+      "inferred_rewrite_callsite": "",
+      "native_caller_static": "0x00426381",
+      "native_label": "",
+      "rewrite_count": 0
+    }
+  ],
+  "post_projectiles": [],
+  "pre_projectiles": [],
+  "projectile_capture_only": [
+    {
+      "damage_pool": 0.0,
+      "index": 0,
+      "life_timer": 0.131,
+      "pos": {
+        "x": 561.6796,
+        "y": 638.4786
+      },
+      "type_id": 2
+    },
+    {
+      "damage_pool": 0.0,
+      "index": 1,
+      "life_timer": 0.21,
+      "pos": {
+        "x": 482.2218,
+        "y": 597.9028
+      },
+      "type_id": 2
+    },
+    {
+      "damage_pool": 1.0,
+      "index": 2,
+      "life_timer": 0.4,
+      "pos": {
+        "x": 425.2249,
+        "y": 643.4186
+      },
+      "type_id": 2
+    }
+  ],
+  "projectile_diffs_top": [
+    {
+      "active_capture": true,
+      "active_rewrite": false,
+      "damage_pool_delta": 3891.0,
+      "index": 1,
+      "life_delta": -0.21150001961737844,
+      "x_delta": -232.64313175633444,
+      "y_delta": -705.6287702835684
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": false,
+      "damage_pool_delta": 531.0,
+      "index": 2,
+      "life_delta": -0.4015000205254178,
+      "x_delta": -546.7889989950363,
+      "y_delta": -654.6189661675355
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": false,
+      "damage_pool_delta": 540.4475,
+      "index": 0,
+      "life_delta": -0.13110001824703021,
+      "x_delta": 538.1549925243515,
+      "y_delta": -517.4326581069605
+    }
+  ],
+  "projectile_rewrite_only": [],
+  "rand_calls_total": 1,
+  "rng_alignment": {
+    "caller_static_to_rewrite_callsite": [],
+    "capture_caller_counts": [
+      [
+        "0x0041fc3e",
+        2
+      ],
+      [
+        "0x00426381",
+        1
+      ],
+      [
+        "0x00415a6d",
+        1
+      ],
+      [
+        "0x00415a8b",
+        1
+      ],
+      [
+        "0x00415b26",
+        1
+      ],
+      [
+        "0x00415b79",
+        1
+      ],
+      [
+        "0x00415c6b",
+        1
+      ],
+      [
+        "0x00415c87",
+        1
+      ],
+      [
+        "0x00415f09",
+        1
+      ]
+    ],
+    "capture_calls": 10,
+    "capture_head_len": 10,
+    "first_value_mismatch_capture": 22179,
+    "first_value_mismatch_index": 0,
+    "first_value_mismatch_rewrite": 18855,
+    "missing_native_tail_callers_top": [
+      [
+        "0x0041fc3e",
+        2
+      ],
+      [
+        "0x00415a6d",
+        1
+      ],
+      [
+        "0x00415a8b",
+        1
+      ],
+      [
+        "0x00415b26",
+        1
+      ],
+      [
+        "0x00415b79",
+        1
+      ],
+      [
+        "0x00415c6b",
+        1
+      ],
+      [
+        "0x00415c87",
+        1
+      ],
+      [
+        "0x00415f09",
+        1
+      ]
+    ],
+    "missing_native_tail_count": 9,
+    "missing_native_tail_inferred_callsites_top": [
+      [
+        "<unknown>",
+        9
+      ]
+    ],
+    "missing_native_tail_preview": [
+      {
+        "capture_caller": "crimsonland.exe+0x15a6d",
+        "capture_caller_static": "0x00415a6d",
+        "capture_value": 19017,
+        "index": 1,
+        "inferred_rewrite_callsite": ""
+      },
+      {
+        "capture_caller": "crimsonland.exe+0x15a8b",
+        "capture_caller_static": "0x00415a8b",
+        "capture_value": 4147,
+        "index": 2,
+        "inferred_rewrite_callsite": ""
+      },
+      {
+        "capture_caller": "crimsonland.exe+0x15b26",
+        "capture_caller_static": "0x00415b26",
+        "capture_value": 23442,
+        "index": 3,
+        "inferred_rewrite_callsite": ""
+      },
+      {
+        "capture_caller": "crimsonland.exe+0x15b79",
+        "capture_caller_static": "0x00415b79",
+        "capture_value": 25361,
+        "index": 4,
+        "inferred_rewrite_callsite": ""
+      },
+      {
+        "capture_caller": "crimsonland.exe+0x15c6b",
+        "capture_caller_static": "0x00415c6b",
+        "capture_value": 3310,
+        "index": 5,
+        "inferred_rewrite_callsite": ""
+      },
+      {
+        "capture_caller": "crimsonland.exe+0x15c87",
+        "capture_caller_static": "0x00415c87",
+        "capture_value": 5824,
+        "index": 6,
+        "inferred_rewrite_callsite": ""
+      },
+      {
+        "capture_caller": "crimsonland.exe+0x15f09",
+        "capture_caller_static": "0x00415f09",
+        "capture_value": 18875,
+        "index": 7,
+        "inferred_rewrite_callsite": ""
+      },
+      {
+        "capture_caller": "crimsonland.exe+0x1fc3e",
+        "capture_caller_static": "0x0041fc3e",
+        "capture_value": 19301,
+        "index": 8,
+        "inferred_rewrite_callsite": ""
+      },
+      {
+        "capture_caller": "crimsonland.exe+0x1fc3e",
+        "capture_caller_static": "0x0041fc3e",
+        "capture_value": 4810,
+        "index": 9,
+        "inferred_rewrite_callsite": ""
+      }
+    ],
+    "rewrite_calls": 1,
+    "rewrite_callsite_counts": [
+      [
+        "src/crimson/creatures/ai.py:creature_ai7_tick_link_timer:67",
+        1
+      ]
+    ],
+    "value_prefix_match": 0
+  },
+  "rng_callsites_head": [
+    "src/crimson/creatures/ai.py:creature_ai7_tick_link_timer:67"
+  ],
+  "rng_callsites_top": [
+    [
+      "src/crimson/creatures/ai.py:creature_ai7_tick_link_timer:67",
+      1
+    ]
+  ],
+  "sfx": 0,
+  "tick": 5226
+}

@@ -1,0 +1,186 @@
+{
+  "capture_creatures": [
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 62,
+      "index": 0,
+      "pos": {
+        "x": 1086.1394,
+        "y": 803.7381
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 60,
+      "index": 1,
+      "pos": {
+        "x": 156.8373,
+        "y": 1029.7119
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 58,
+      "index": 2,
+      "pos": {
+        "x": 2.5017,
+        "y": 833.1804
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 54,
+      "index": 3,
+      "pos": {
+        "x": 1090.2465,
+        "y": 504.3412
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 66,
+      "index": 4,
+      "pos": {
+        "x": 247.593,
+        "y": -37.8464
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    },
+    {
+      "active": 1,
+      "collision_flag": 0,
+      "flags": 0,
+      "hitbox_size": 16,
+      "hp": 57,
+      "index": 5,
+      "pos": {
+        "x": 1065.1261,
+        "y": 866.45
+      },
+      "state_flag": 1,
+      "target_player": 0,
+      "type_id": 2
+    }
+  ],
+  "capture_projectiles": [],
+  "collision_hits": [],
+  "collision_near_misses": [],
+  "creature_capture_only": [],
+  "creature_diffs_top": [
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 0.0,
+      "index": 2,
+      "x_delta": 4.975395202633237e-05,
+      "y_delta": 1.9921875036743586e-05
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 0.0,
+      "index": 5,
+      "x_delta": -1.367187451251084e-06,
+      "y_delta": -4.8828125045474735e-05
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 0.0,
+      "index": 4,
+      "x_delta": -4.345703123931344e-05,
+      "y_delta": 4.837646484645575e-05
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 0.0,
+      "index": 3,
+      "x_delta": -4.003906246907718e-05,
+      "y_delta": -4.3994140639824764e-05
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 0.0,
+      "index": 1,
+      "x_delta": 2.604980468845497e-05,
+      "y_delta": 1.4062499985811883e-05
+    },
+    {
+      "active_capture": true,
+      "active_rewrite": true,
+      "hitbox_delta": 0.0,
+      "hp_delta": 0.0,
+      "index": 0,
+      "x_delta": 4.296874976716936e-06,
+      "y_delta": -1.8554687812866177e-06
+    }
+  ],
+  "creature_rewrite_only": [],
+  "deaths": 0,
+  "decal_hook_rows": [],
+  "fire_bullets_loop_parity": null,
+  "hits": 0,
+  "native_caller_gaps_top": [],
+  "post_projectiles": [],
+  "pre_projectiles": [],
+  "projectile_capture_only": [],
+  "projectile_diffs_top": [],
+  "projectile_rewrite_only": [],
+  "rand_calls_total": 0,
+  "rng_alignment": {
+    "caller_static_to_rewrite_callsite": [],
+    "capture_caller_counts": [],
+    "capture_calls": 0,
+    "capture_head_len": 0,
+    "first_value_mismatch_capture": null,
+    "first_value_mismatch_index": null,
+    "first_value_mismatch_rewrite": null,
+    "missing_native_tail_callers_top": [],
+    "missing_native_tail_count": 0,
+    "missing_native_tail_inferred_callsites_top": [],
+    "missing_native_tail_preview": [],
+    "rewrite_calls": 0,
+    "rewrite_callsite_counts": [],
+    "value_prefix_match": 0
+  },
+  "rng_callsites_head": [],
+  "rng_callsites_top": [],
+  "sfx": 0,
+  "tick": 253
+}
