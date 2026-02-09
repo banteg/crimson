@@ -156,6 +156,17 @@ def _float_or(value: object, default: float = 0.0) -> float:
         return float(default)
 
 
+def _capture_sample_rate(capture: CaptureFile) -> int:
+    ticks = sorted(int(tick.tick_index) for tick in capture.ticks)
+    if len(ticks) < 2:
+        return 1
+    deltas = [next_tick - tick for tick, next_tick in zip(ticks, ticks[1:]) if int(next_tick) > int(tick)]
+    if not deltas:
+        return 1
+    deltas.sort()
+    return max(1, int(deltas[len(deltas) // 2]))
+
+
 def _fmt_opt_int(value: object, *, width: int = 0, unknown: str = "na") -> str:
     if value is None:
         return f"{unknown:>{width}}" if width > 0 else unknown
@@ -2102,6 +2113,7 @@ def main(argv: list[str] | None = None) -> int:
     json_out_path = _resolve_json_out_path(args.json_out)
 
     capture = load_capture(capture_path)
+    sample_rate = _capture_sample_rate(capture)
     expected, actual, run_result = _run_actual_checkpoints(
         capture,
         max_ticks=args.max_ticks,
@@ -2120,7 +2132,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"capture={capture_path}")
     print(
         f"ticks(expected/actual)={len(expected)}/{len(actual)}"
-        f" sample_rate={int(capture.sample_rate)} run_ticks={int(run_result.ticks)}"  # ty:ignore[unresolved-attribute]
+        f" sample_rate={int(sample_rate)} run_ticks={int(run_result.ticks)}"  # ty:ignore[unresolved-attribute]
         f" run_score_xp={int(run_result.score_xp)} run_kills={int(run_result.creature_kill_count)}"  # ty:ignore[unresolved-attribute]
     )
 
@@ -2315,7 +2327,7 @@ def main(argv: list[str] | None = None) -> int:
             "summary": {
                 "expected_count": len(expected),
                 "actual_count": len(actual),
-                "sample_rate": int(capture.sample_rate),  # ty:ignore[unresolved-attribute]
+                "sample_rate": int(sample_rate),
                 "run_ticks": int(run_result.ticks),  # ty:ignore[unresolved-attribute]
                 "run_score_xp": int(run_result.score_xp),  # ty:ignore[unresolved-attribute]
                 "run_kills": int(run_result.creature_kill_count),  # ty:ignore[unresolved-attribute]

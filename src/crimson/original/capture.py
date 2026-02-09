@@ -973,6 +973,72 @@ def _validate_capture_path(path: Path) -> None:
     raise CaptureError(f"capture path must end with .json or .json.gz: {path}")
 
 
+def _decode_capture_canonical(raw: bytes) -> CaptureFile | None:
+    try:
+        return msgspec.json.decode(raw, type=CaptureFile)
+    except (msgspec.DecodeError, msgspec.ValidationError):
+        return None
+
+
+def _decode_capture_stream(raw: bytes, path: Path) -> CaptureFile | None:
+    lines = raw.splitlines()
+    if not lines:
+        return None
+
+    has_terminal_newline = raw.endswith(b"\n") or raw.endswith(b"\r")
+    meta: dict[str, object] | None = None
+    ticks: list[dict[str, object]] = []
+    saw_stream_row = False
+
+    for index, raw_line in enumerate(lines):
+        line = raw_line.strip()
+        if not line:
+            continue
+        try:
+            row = msgspec.json.decode(line)
+        except msgspec.DecodeError as exc:
+            is_last = index == (len(lines) - 1)
+            if is_last and not has_terminal_newline:
+                # Allow a truncated final line and keep all complete prior rows.
+                continue
+            raise CaptureError(f"invalid capture file: {path}") from exc
+
+        if not isinstance(row, dict):
+            continue
+
+        event = row.get("event")
+        if event == "capture_meta":
+            payload = row.get("capture")
+            if isinstance(payload, dict):
+                meta = dict(payload)
+                saw_stream_row = True
+            continue
+
+        if event == "tick":
+            payload = row.get("tick")
+            if isinstance(payload, dict):
+                ticks.append(dict(payload))
+                saw_stream_row = True
+            continue
+
+        # Forward compatibility: permit plain tick objects in stream rows.
+        if event is None and "tick_index" in row and "checkpoint" in row:
+            ticks.append(dict(row))
+            saw_stream_row = True
+            continue
+
+    if not saw_stream_row or meta is None:
+        return None
+
+    envelope = dict(meta)
+    envelope["ticks"] = ticks
+
+    try:
+        return msgspec.json.decode(msgspec.json.encode(envelope), type=CaptureFile)
+    except (msgspec.DecodeError, msgspec.ValidationError) as exc:
+        raise CaptureError(f"invalid capture file: {path}") from exc
+
+
 def load_capture(path: Path) -> CaptureFile:
     path = Path(path)
     _validate_capture_path(path)
@@ -981,12 +1047,15 @@ def load_capture(path: Path) -> CaptureFile:
     if raw.startswith(b"\x1f\x8b"):
         raw = gzip.decompress(raw)
 
-    try:
-        capture = msgspec.json.decode(raw, type=CaptureFile)
-    except (msgspec.DecodeError, msgspec.ValidationError) as exc:
-        raise CaptureError(f"invalid capture file: {path}") from exc
+    canonical = _decode_capture_canonical(raw)
+    if canonical is not None:
+        return canonical
 
-    return capture
+    stream = _decode_capture_stream(raw, path)
+    if stream is not None:
+        return stream
+
+    raise CaptureError(f"invalid capture file: {path}")
 
 
 def dump_capture(path: Path, capture: CaptureFile) -> None:

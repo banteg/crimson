@@ -4,6 +4,7 @@
 // - per-gameplay tick records with stable checkpoint payloads
 // - deterministic command/event summaries for first-divergence debugging
 // - compact before/after snapshots and optional entity samples
+// - JSONL stream output (`capture_meta` + `tick` rows + terminal `capture_end`)
 //
 // Attach only:
 //   frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
@@ -355,7 +356,7 @@ const UNKNOWN_DEATH = {
 
 function openOutFile() {
   if (outState.outFile) return;
-  const mode = "w";
+  const mode = CONFIG.logMode === "append" ? "a" : "w";
   try {
     outState.outFile = new File(CONFIG.outPath, mode);
   } catch (_) {
@@ -382,12 +383,14 @@ function _captureWrite(text, flushNow) {
   }
 }
 
+function _captureWriteJsonLine(obj, flushNow) {
+  if (!obj) return false;
+  return _captureWrite(JSON.stringify(obj) + "\n", flushNow);
+}
+
 function startCaptureFile(meta) {
   if (outState.captureStarted) return;
-  const encoded = JSON.stringify(meta);
-  const header =
-    encoded && encoded.endsWith("}") ? encoded.slice(0, -1) + ',\"ticks\":[\n' : null;
-  const started = header ? _captureWrite(header, true) : false;
+  const started = _captureWriteJsonLine({ event: "capture_meta", capture: meta }, true);
   outState.captureStarted = started;
   outState.captureClosed = false;
   outState.captureTickCount = 0;
@@ -399,8 +402,7 @@ function startCaptureFile(meta) {
 
 function writeCaptureTick(tickObj) {
   if (!outState.captureStarted || outState.captureClosed || !tickObj) return;
-  const prefix = outState.captureTickCount > 0 ? ",\n  " : "  ";
-  const wrote = _captureWrite(prefix + JSON.stringify(tickObj), true);
+  const wrote = _captureWriteJsonLine({ event: "tick", tick: tickObj }, true);
   if (wrote) {
     outState.captureTickCount += 1;
     return;
@@ -413,21 +415,26 @@ function writeCaptureTick(tickObj) {
 
 function closeCaptureFile(reason) {
   if (!outState.captureStarted || outState.captureClosed) return;
-  outState.captureClosed = true;
   outState.closeReason = reason || outState.closeReason || "unknown";
+  let closed = false;
   try {
     if (outState.outFile) {
-      if (outState.captureTickCount > 0) {
-        outState.outFile.write("\n]}\n");
-      } else {
-        outState.outFile.write("]}\n");
-      }
+      _captureWriteJsonLine(
+        {
+          event: "capture_end",
+          reason: outState.closeReason,
+          ticks_written: outState.captureTickCount,
+        },
+        true
+      );
       outState.outFile.flush();
       outState.outFile.close();
+      closed = true;
     }
   } catch (_) {
   }
   outState.outFile = null;
+  outState.captureClosed = closed;
 }
 
 function shutdownCapture(reason) {

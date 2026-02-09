@@ -186,6 +186,21 @@ def _write_capture(path: Path, obj: dict[str, object]) -> None:
         path.write_bytes(encoded)
 
 
+def _write_capture_stream(path: Path, *, meta: dict[str, object], ticks: list[dict[str, object]]) -> None:
+    rows = [json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True)]
+    rows.extend(
+        json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True) for tick in ticks
+    )
+    rows.append(
+        json.dumps(
+            {"event": "capture_end", "reason": "manual_stop", "ticks_written": int(len(ticks))},
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+    )
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+
 def test_capture_event_payload_helpers_parse_msgspec_payloads() -> None:
     assert capture_bootstrap_payload_from_event_payload([{"elapsed_ms": "123"}]) == {"elapsed_ms": "123"}
     assert capture_perk_apply_id_from_event_payload([{"perk_id": "14"}]) == 14
@@ -212,6 +227,39 @@ def test_load_capture_supports_plain_json_and_gz(tmp_path: Path) -> None:
     assert capture_zipped.script == "gameplay_diff_capture"
     assert len(capture_plain.ticks) == 1
     assert len(capture_zipped.ticks) == 1
+
+
+def test_load_capture_supports_jsonl_stream_rows(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    meta = {k: v for k, v in obj.items() if k != "ticks"}
+    _write_capture_stream(path, meta=meta, ticks=[tick])
+
+    capture = load_capture(path)
+
+    assert capture.script == "gameplay_diff_capture"
+    assert len(capture.ticks) == 1
+    assert int(capture.ticks[0].tick_index) == 0
+
+
+def test_load_capture_stream_ignores_truncated_last_line(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    meta = {k: v for k, v in obj.items() if k != "ticks"}
+    rows = [
+        json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True),
+        json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True),
+        '{"event":"capture_end","reason":"manual_stop"',
+    ]
+    path.write_text("\n".join(rows), encoding="utf-8")
+
+    capture = load_capture(path)
+
+    assert capture.script == "gameplay_diff_capture"
+    assert len(capture.ticks) == 1
+    assert int(capture.ticks[0].tick_index) == 0
 
 
 def test_load_capture_rejects_unknown_fields(tmp_path: Path) -> None:

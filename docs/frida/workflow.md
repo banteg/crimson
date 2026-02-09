@@ -67,7 +67,7 @@ Comprehensive gameplay/state capture (automatic snapshots + write tracing, JSONL
 frida -n crimsonland.exe -l C:\share\frida\gameplay_state_capture.js
 ```
 
-Differential gameplay capture (tick-aligned checkpoints + event summaries, JSON object to
+Differential gameplay capture (tick-aligned checkpoints + event summaries, JSONL rows to
 `gameplay_diff_capture.json`):
 
 ```text
