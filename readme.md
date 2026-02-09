@@ -113,6 +113,16 @@ uv tool install zensical
 zensical serve
 ```
 
+## Parity workflow
+
+1. Recover structure and intent from static analysis (`analysis/ghidra/maps/` as source-of-truth maps).
+2. Validate ambiguous behavior with runtime evidence (Frida/WinDbg captures under `analysis/frida/`).
+3. Port behavior into `src/` with deterministic simulation contracts.
+4. Verify against captures/replays with headless differential tools.
+
+For deterministic gameplay code, float behavior is part of the contract.  
+See [`docs/rewrite/float-parity-policy.md`](docs/rewrite/float-parity-policy.md).
+
 ## Contributing
 
 - Keep changes small and reviewable — one subsystem at a time.
