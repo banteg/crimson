@@ -5,12 +5,12 @@ from __future__ import annotations
 """Schema + conversion helpers for original-game differential sidecars."""
 
 import gzip
-import json
 import math
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import msgspec
 from grim.geom import Vec2
 
 from ..bonuses import BonusId
@@ -472,8 +472,8 @@ def _iter_jsonl_objects(path: Path) -> Iterator[dict[str, object]]:
             if not row:
                 continue
             try:
-                obj = json.loads(row)
-            except json.JSONDecodeError:
+                obj = msgspec.json.decode(row)
+            except msgspec.DecodeError:
                 continue
             if isinstance(obj, dict):
                 yield obj
@@ -1471,8 +1471,8 @@ def load_original_capture_sidecar(path: Path) -> OriginalCaptureSidecar:
     if raw.startswith(b"\x1f\x8b"):
         raw = gzip.decompress(raw)
     try:
-        obj = json.loads(raw.decode("utf-8"))
-    except json.JSONDecodeError:
+        obj = msgspec.json.decode(raw)
+    except msgspec.DecodeError:
         # Allow accidental .json extension for line-delimited gameplay traces.
         return _load_original_capture_gameplay_trace(path)
     if not isinstance(obj, dict):
