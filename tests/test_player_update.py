@@ -62,7 +62,7 @@ def test_player_update_stationary_reloader_tripples_reload_decay() -> None:
 
     player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.1, state)
 
-    assert math.isclose(player.reload_timer, 0.7, abs_tol=1e-9)
+    assert math.isclose(player.reload_timer, 0.7, abs_tol=2e-8)
 
 
 def test_player_update_angry_reloader_spawns_ring_at_half() -> None:

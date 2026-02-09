@@ -2584,7 +2584,19 @@ def player_update(
 
     # Reload + reload perks.
     if perk_active(player, PerkId.ANXIOUS_LOADER) and input_state.fire_pressed and player.reload_timer > 0.0:
-        player.reload_timer = max(0.0, player.reload_timer - 0.05)
+        anxious_next = f32(float(player.reload_timer) - 0.05)
+        player.reload_timer = float(anxious_next)
+        if float(anxious_next) <= 0.0:
+            # Native restarts the tail of the reload at `frame_dt * 0.8` when
+            # Anxious Loader overcuts the timer.
+            player.reload_timer = float(f32(float(dt) * 0.8))
+
+    # Native preloads ammo one frame before reload timer underflows, using
+    # unscaled `frame_dt` (before Stationary Reloader scale is applied).
+    reload_timer_now = float(f32(float(player.reload_timer)))
+    dt_f32 = float(f32(float(dt)))
+    if player.reload_active and float(f32(reload_timer_now - dt_f32)) < 0.0 and 0.0 <= reload_timer_now:
+        player.ammo = float(player.clip_size)
 
     if player.reload_timer > 0.0:
         if (
@@ -2593,7 +2605,7 @@ def player_update(
             and (player.reload_timer_max * 0.5) < player.reload_timer
         ):
             half = player.reload_timer_max * 0.5
-            next_timer = player.reload_timer - reload_scale * dt
+            next_timer = float(f32(float(player.reload_timer) - float(reload_scale) * float(dt)))
             player.reload_timer = next_timer
             if next_timer <= half:
                 count = 7 + int(player.reload_timer_max * 4.0)
@@ -2610,15 +2622,14 @@ def player_update(
                 state.bonus_spawn_guard = False
                 state.sfx_queue.append("sfx_explosion_small")
         else:
-            player.reload_timer -= reload_scale * dt
+            player.reload_timer = float(f32(float(player.reload_timer) - float(reload_scale) * float(dt)))
 
     if player.reload_timer < 0.0:
         player.reload_timer = 0.0
 
-    if player.reload_active and player.reload_timer <= 0.0 and player.reload_timer_max > 0.0:
-        player.ammo = float(player.clip_size)
+    # Native clears `reload_active` only once the player can shoot again.
+    if player.shot_cooldown <= 0.0 and player.reload_timer == 0.0:
         player.reload_active = False
-        player.reload_timer_max = 0.0
 
     if input_state.reload_pressed:
         if perk_active(player, PerkId.ALTERNATE_WEAPON) and player_swap_alt_weapon(player):
@@ -3218,10 +3229,17 @@ def bonus_update(
     if dt > 0.0:
         # Native `bonus_update` decrements Freeze + Double XP here; other global
         # timers are advanced earlier in the gameplay loop.
-        if float(state.bonuses.double_experience) > 0.0:
-            state.bonuses.double_experience = float(state.bonuses.double_experience) - float(dt)
-        if float(state.bonuses.freeze) > 0.0:
-            state.bonuses.freeze = float(state.bonuses.freeze) - float(dt)
+        double_xp = float(state.bonuses.double_experience)
+        if double_xp <= 0.0:
+            state.bonuses.double_experience = 0.0
+        else:
+            state.bonuses.double_experience = float(double_xp - float(dt))
+
+        freeze = float(state.bonuses.freeze)
+        if freeze <= 0.0:
+            state.bonuses.freeze = 0.0
+        else:
+            state.bonuses.freeze = float(freeze - float(dt))
 
     if update_hud:
         bonus_hud_update(state, players, dt=dt)
