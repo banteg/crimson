@@ -981,9 +981,13 @@ def perk_can_offer(
         return False
 
     flags = meta.flags or PerkFlags(0)
-    if (flags & PerkFlags.MODE_3_ONLY) and int(game_mode) != int(GameMode.QUESTS):
+    # Native `perk_can_offer` treats these metadata bits as allow-lists for
+    # specific runtime modes, not "only in this mode":
+    # - in quest mode, offered perks must have bit 0x1 set
+    # - in two-player mode, offered perks must have bit 0x2 set
+    if int(game_mode) == int(GameMode.QUESTS) and (flags & PerkFlags.MODE_3_ONLY) == 0:
         return False
-    if (flags & PerkFlags.TWO_PLAYER_ONLY) and int(player_count) != 2:
+    if int(player_count) == 2 and (flags & PerkFlags.TWO_PLAYER_ONLY) == 0:
         return False
 
     if meta.prereq and any(perk_count_get(player, req) <= 0 for req in meta.prereq):
@@ -2469,13 +2473,15 @@ def player_update(
 
         player.turn_speed = min(7.0, max(1.0, float(player.turn_speed)))
         turned = False
-        if turning_left and not turning_right:
+        # Native keyboard mode checks left first, then right (`player_update` mode 1),
+        # so simultaneous turn keys resolve to left turn.
+        if turning_left:
             player.turn_speed = float(player.turn_speed + movement_dt * 10.0)
             turn_delta = float(player.turn_speed) * movement_dt * 0.5
             player.heading = float(player.heading - turn_delta)
             player.aim_heading = float(player.aim_heading - turn_delta)
             turned = True
-        elif turning_right and not turning_left:
+        elif turning_right:
             player.turn_speed = float(player.turn_speed + movement_dt * 10.0)
             turn_delta = float(player.turn_speed) * movement_dt * 0.5
             player.heading = float(player.heading + turn_delta)
@@ -2483,7 +2489,8 @@ def player_update(
             turned = True
 
         move_sign = 1.0
-        if moving_forward and not moving_backward:
+        # Native movement-key precedence is forward before backward.
+        if moving_forward:
             if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
                 if player.move_speed < 2.0:
                     player.move_speed = float(player.move_speed + movement_dt * 4.0)
@@ -2494,7 +2501,7 @@ def player_update(
                 player.move_speed = float(player.move_speed + movement_dt * 5.0)
                 if player.move_speed > 2.0:
                     player.move_speed = 2.0
-        elif moving_backward and not moving_forward:
+        elif moving_backward:
             if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
                 if player.move_speed < 2.0:
                     player.move_speed = float(player.move_speed + movement_dt * 4.0)
@@ -2574,14 +2581,9 @@ def player_update(
         f32(float(player.pos.y) + float(move_delta.y)),
     )
 
-    half_size = max(0.0, float(player.size) * 0.5)
-    clamped_pos = next_pos.clamp_rect(
-        half_size,
-        half_size,
-        float(world_size) - half_size,
-        float(world_size) - half_size,
-    )
-    player.pos = Vec2(f32(float(clamped_pos.x)), f32(float(clamped_pos.y)))
+    # Native clamps player world bounds at the end of `player_update`, after
+    # firing/reload logic has consumed the in-frame movement position.
+    player.pos = next_pos
 
     player.move_phase += phase_sign * movement_dt * player.move_speed * 19.0
 
@@ -2663,6 +2665,17 @@ def player_update(
         player.move_phase -= 14.0
     while player.move_phase < 0.0:
         player.move_phase += 14.0
+
+    half_size = max(0.0, float(player.size) * 0.5)
+    clamped_pos = player.pos.clamp_rect(
+        half_size,
+        half_size,
+        float(world_size) - half_size,
+        float(world_size) - half_size,
+    )
+    player.pos = Vec2(f32(float(clamped_pos.x)), f32(float(clamped_pos.y)))
+    if player.muzzle_flash_alpha > 0.8:
+        player.muzzle_flash_alpha = 0.8
 
 
 def _player_heading_approach_target(player: PlayerState, target_heading: float, dt: float) -> float:

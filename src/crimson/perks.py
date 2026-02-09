@@ -7,8 +7,11 @@ from enum import IntEnum, IntFlag
 
 
 class PerkFlags(IntFlag):
-    MODE_3_ONLY = 0x1  # allow when _DAT_00480360 == 3
-    TWO_PLAYER_ONLY = 0x2  # allow when _DAT_0048035c == 2
+    # `perk_can_offer` uses these bits as mode-specific allow-lists:
+    # - in quest mode, only perks with MODE_3_ONLY are eligible
+    # - in two-player mode, only perks with TWO_PLAYER_ONLY are eligible
+    MODE_3_ONLY = 0x1
+    TWO_PLAYER_ONLY = 0x2
     STACKABLE = 0x4  # can be offered even if already owned
 
 

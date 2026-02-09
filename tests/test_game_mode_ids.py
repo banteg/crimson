@@ -164,11 +164,21 @@ def test_typo_rank_index_inserts_larger_xp_higher() -> None:
     assert rank_index(records_sorted, record) == 2
 
 
-def test_perk_mode_3_only_is_offered_only_in_mode_3() -> None:
+def test_perk_mode_3_flag_allows_perk_in_survival_and_quest_modes() -> None:
     meta = PERK_BY_ID.get(int(PerkId.ALTERNATE_WEAPON))
     assert meta is not None
 
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=int(GameMode.SURVIVAL), player_count=1) is False
+    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=int(GameMode.SURVIVAL), player_count=1) is True
     assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=int(GameMode.QUESTS), player_count=1) is True
+
+
+def test_perk_without_mode_3_flag_is_rejected_in_quest_mode() -> None:
+    meta = PERK_BY_ID.get(int(PerkId.SHARPSHOOTER))
+    assert meta is not None
+
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    assert perk_can_offer(state, player, PerkId.SHARPSHOOTER, game_mode=int(GameMode.SURVIVAL), player_count=1) is True
+    assert perk_can_offer(state, player, PerkId.SHARPSHOOTER, game_mode=int(GameMode.QUESTS), player_count=1) is False

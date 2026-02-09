@@ -5,12 +5,12 @@ from __future__ import annotations
 """Schema + conversion helpers for original-game differential sidecars."""
 
 import gzip
-import json
 import math
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import msgspec
 from grim.geom import Vec2
 
 from ..bonuses import BonusId
@@ -472,8 +472,8 @@ def _iter_jsonl_objects(path: Path) -> Iterator[dict[str, object]]:
             if not row:
                 continue
             try:
-                obj = json.loads(row)
-            except json.JSONDecodeError:
+                obj = msgspec.json.decode(row)
+            except msgspec.DecodeError:
                 continue
             if isinstance(obj, dict):
                 yield obj
@@ -1471,8 +1471,8 @@ def load_original_capture_sidecar(path: Path) -> OriginalCaptureSidecar:
     if raw.startswith(b"\x1f\x8b"):
         raw = gzip.decompress(raw)
     try:
-        obj = json.loads(raw.decode("utf-8"))
-    except json.JSONDecodeError:
+        obj = msgspec.json.decode(raw)
+    except msgspec.DecodeError:
         # Allow accidental .json extension for line-delimited gameplay traces.
         return _load_original_capture_gameplay_trace(path)
     if not isinstance(obj, dict):
@@ -1586,14 +1586,21 @@ def convert_original_capture_to_replay(
                     move_backward = bool(sample.move_backward_pressed)
                     move_x = float(turn_right) - float(turn_left)
                     move_y = float(move_backward) - float(move_forward)
-                    # Rare capture artifacts can report opposite digital keys as
-                    # simultaneously pressed for a frame. When that happens, keep
-                    # deterministic replay moving in the observed analog direction
-                    # instead of collapsing the axis to 0.0.
+                    # Native keyboard mode resolves opposite key conflicts with
+                    # branch order, not axis cancellation:
+                    # - turn: left key wins over right
+                    # - move: forward key wins over backward
                     if turn_left and turn_right:
-                        move_x = max(-1.0, min(1.0, float(sample.move_dx)))
+                        # During reload, some captures can report a transient
+                        # left+right conflict while movement keys remain idle.
+                        # Keep native precedence otherwise, but preserve analog
+                        # turn direction for that artifact shape.
+                        if bool(sample.reload_active) and not move_forward and not move_backward:
+                            move_x = max(-1.0, min(1.0, float(sample.move_dx)))
+                        else:
+                            move_x = -1.0
                     if move_forward and move_backward:
-                        move_y = max(-1.0, min(1.0, float(sample.move_dy)))
+                        move_y = -1.0
                 else:
                     move_x = max(-1.0, min(1.0, float(sample.move_dx)))
                     move_y = max(-1.0, min(1.0, float(sample.move_dy)))
@@ -1747,6 +1754,9 @@ def convert_original_capture_to_replay(
             seed=int(resolved_seed),
             tick_rate=max(1, int(tick_rate)),
             player_count=int(player_count),
+            # Original captures come from native gameplay where legacy quirks are
+            # always active; replay with preserve_bugs for parity investigations.
+            preserve_bugs=True,
             world_size=float(world_size),
             status=status_snapshot,
         ),

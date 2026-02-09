@@ -391,6 +391,7 @@ def _spawn_ion_hit_effects(
     burst = float(burst_scale) * 0.8
     lifetime = min(burst * 0.7, 1.1)
     half = burst * 32.0
+    # Native loop count follows the burst half-size (`__ftol(scale * 0.8 * 32.0)`).
     count = int(half)
     if detail < 3:
         count //= 2
@@ -1003,9 +1004,10 @@ class ProjectilePool:
             behavior = PROJECTILE_BEHAVIOR_BY_TYPE_ID.get(int(proj.type_id), _DEFAULT_BEHAVIOR)
 
             if proj.life_timer <= 0.0:
-                _reset_shock_chain_if_owner(proj_index)
                 proj.active = False
-                continue
+                # Native `projectile_update` clears the active flag but still
+                # runs this tick's life_timer branch, so expired ion projectiles
+                # can apply one final linger AoE pass.
 
             if proj.life_timer < 0.4:
                 if int(proj.type_id) in (int(ProjectileTypeId.ION_RIFLE), int(ProjectileTypeId.ION_MINIGUN)):
