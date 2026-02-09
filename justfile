@@ -209,6 +209,12 @@ frida-quest-spanking-count:
     frida -n crimsonland.exe -l scripts\\frida\\quest_spanking_count.js
 
 [windows]
+frida-azk-verify process="crimsonland.exe":
+    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
+    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
+    frida -n {{process}} -l scripts\\frida\\azk_verify_no_unlock.js
+
+[windows]
 frida-quest-build-dump:
     frida -n crimsonland.exe -l scripts\\frida\\quest_build_dump.js
 

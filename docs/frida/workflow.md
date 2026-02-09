@@ -28,6 +28,7 @@ just frida-sync-share
 - `scripts/frida/creature_anim_trace.js`
 - `scripts/frida/creature_render_trace.js`
 - `scripts/frida/fx_queue_render_trace.js`
+- `scripts/frida/azk_verify_no_unlock.js`
 
 Attach by process name (required; spawn caused empty textures + crash on 2026-01-18):
 
@@ -75,6 +76,15 @@ frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture_v2.js
 
 Shortcut: `just frida-gameplay-diff-capture-v2`
 
+AlienZooKeeper no-unlock verifier (forces state `0x1a`, resets timer to `0x2580`, auto-solves board,
+and logs a final `verdict` event to `azk_verify_no_unlock.jsonl`):
+
+```text
+frida -n crimsonland.exe -l C:\share\frida\azk_verify_no_unlock.js
+```
+
+Shortcut: `just frida-azk-verify`
+
 The UI render trace auto-inserts `auto_mark` events when it detects a screen/panel change.
 You can disable or tune it via:
 
@@ -117,6 +127,7 @@ Default logs written by the scripts:
 - `C:\share\frida\ui_render_trace.jsonl`
 - `C:\share\frida\demo_trial_overlay_trace.jsonl` (if you ran `demo_trial_overlay_trace.js`)
 - `C:\share\frida\demo_idle_threshold_trace.jsonl` (if you ran `demo_idle_threshold_trace.js`)
+- `C:\share\frida\azk_verify_no_unlock.jsonl` (if you ran `azk_verify_no_unlock.js`)
 
 ## 2) Copy logs into the repo
 
