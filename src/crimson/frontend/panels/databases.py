@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import cast
+
 import pyray as rl
 
 from grim.audio import play_sfx, update_audio
@@ -502,11 +505,12 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             return []
 
         available: list[bool] | None = None
+        weapon_refresh_available: Callable[..., None] | None = None
         try:
-            from ...gameplay import WEAPON_COUNT_SIZE, weapon_refresh_available
+            from ...gameplay import WEAPON_COUNT_SIZE, weapon_refresh_available as refresh_available
+            weapon_refresh_available = cast(Callable[..., None], refresh_available)
         except Exception:
             WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
-            weapon_refresh_available = None
 
         if weapon_refresh_available is not None:
             class _Stub:
@@ -527,7 +531,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             stub._weapon_available_unlock_index = -1
             stub._weapon_available_unlock_index_full = -1
             try:
-                weapon_refresh_available(stub)  # type: ignore[arg-type]
+                weapon_refresh_available(stub)
                 available = stub.weapon_available
             except Exception:
                 available = None
