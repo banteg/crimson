@@ -16,6 +16,7 @@ from grim.terrain_render import GroundRenderer
 
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ...debug import debug_enabled
 from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ..menu import (
     MENU_PANEL_OFFSET_X,
@@ -454,6 +455,9 @@ class CreditsView:
         self._secret_unlock = True
         _credits_unlock_secret_lines(self._lines, self._secret_line_base_index)
 
+    def _secret_button_visible(self) -> bool:
+        return self._secret_unlock or debug_enabled()
+
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
             update_audio(self._state.audio, dt)
@@ -522,7 +526,7 @@ class CreditsView:
             self._begin_close_transition("back_to_previous")
             return
 
-        if self._secret_unlock:
+        if self._secret_button_visible():
             secret_w = button_width(
                 font,
                 self._secret_button.label,
@@ -610,7 +614,7 @@ class CreditsView:
                 scale=scale,
             )
 
-            if self._secret_unlock:
+            if self._secret_button_visible():
                 secret_w = button_width(
                     font,
                     self._secret_button.label,

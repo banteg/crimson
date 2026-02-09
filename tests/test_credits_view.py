@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
+import crimson.frontend.panels.credits as credits_panel
 from crimson.frontend.panels.credits import (
     _CREDITS_SECRET_LINES,
     _FLAG_CLICKED,
     _FLAG_HEADING,
+    CreditsView,
     _CreditsLine,
     _credits_all_round_lines_flagged,
     _credits_build_lines,
@@ -64,3 +68,18 @@ def test_credits_unlock_secret_lines_sets_flags_and_text() -> None:
         line = lines[base + idx]
         assert line.text == expected
         assert (line.flags & _FLAG_CLICKED) != 0
+
+
+def test_credits_secret_button_visible_in_debug_or_after_unlock(monkeypatch) -> None:
+    view = CreditsView(SimpleNamespace())  # type: ignore[arg-type]
+
+    view._secret_unlock = False
+    monkeypatch.setattr(credits_panel, "debug_enabled", lambda: False)
+    assert view._secret_button_visible() is False
+
+    monkeypatch.setattr(credits_panel, "debug_enabled", lambda: True)
+    assert view._secret_button_visible() is True
+
+    view._secret_unlock = True
+    monkeypatch.setattr(credits_panel, "debug_enabled", lambda: False)
+    assert view._secret_button_visible() is True
