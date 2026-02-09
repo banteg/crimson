@@ -103,6 +103,7 @@ const CONFIG = {
   focusRadius: Math.max(0, parseIntEnv("CRIMSON_FRIDA_FOCUS_RADIUS", 0)),
   tickDetailsEvery: Math.max(1, parseIntEnv("CRIMSON_FRIDA_TICK_DETAILS_EVERY", 1)),
   heartbeatMs: Math.max(100, parseIntEnv("CRIMSON_FRIDA_HEARTBEAT_MS", 1000)),
+  flushCaptureWrites: parseBoolEnv("CRIMSON_FRIDA_FLUSH_CAPTURE_WRITES", true),
   maxHeadPerKind: parseLimitEnv("CRIMSON_FRIDA_MAX_HEAD", -1, 0),
   maxEventsPerTick: parseLimitEnv("CRIMSON_FRIDA_MAX_EVENTS_PER_TICK", -1, 0),
   maxRngHeadPerTick: parseLimitEnv("CRIMSON_FRIDA_RNG_HEAD", -1, 0),
@@ -309,6 +310,8 @@ const outState = {
   captureStarted: false,
   captureClosed: false,
   captureTickCount: 0,
+  shutdownComplete: false,
+  closeReason: null,
   gameplayFrame: 0,
   currentStatePrev: null,
   currentStateId: null,
@@ -367,11 +370,12 @@ function writeLine(obj) {
   console.log(JSON.stringify(obj));
 }
 
-function _captureWrite(text) {
+function _captureWrite(text, flushNow) {
   try {
     openOutFile();
     if (!outState.outFile) return false;
     outState.outFile.write(String(text));
+    if (flushNow && CONFIG.flushCaptureWrites) outState.outFile.flush();
     return true;
   } catch (_) {
     return false;
@@ -383,7 +387,7 @@ function startCaptureFile(meta) {
   const encoded = JSON.stringify(meta);
   const header =
     encoded && encoded.endsWith("}") ? encoded.slice(0, -1) + ',\"ticks\":[' : null;
-  const started = header ? _captureWrite(header) : false;
+  const started = header ? _captureWrite(header, true) : false;
   outState.captureStarted = started;
   outState.captureClosed = false;
   outState.captureTickCount = 0;
@@ -396,7 +400,7 @@ function startCaptureFile(meta) {
 function writeCaptureTick(tickObj) {
   if (!outState.captureStarted || outState.captureClosed || !tickObj) return;
   const prefix = outState.captureTickCount > 0 ? "," : "";
-  const wrote = _captureWrite(prefix + JSON.stringify(tickObj));
+  const wrote = _captureWrite(prefix + JSON.stringify(tickObj), true);
   if (wrote) {
     outState.captureTickCount += 1;
     return;
@@ -407,9 +411,10 @@ function writeCaptureTick(tickObj) {
   }
 }
 
-function closeCaptureFile() {
+function closeCaptureFile(reason) {
   if (!outState.captureStarted || outState.captureClosed) return;
   outState.captureClosed = true;
+  outState.closeReason = reason || outState.closeReason || "unknown";
   try {
     if (outState.outFile) {
       outState.outFile.write("]}");
@@ -419,6 +424,83 @@ function closeCaptureFile() {
   } catch (_) {
   }
   outState.outFile = null;
+}
+
+function shutdownCapture(reason) {
+  if (outState.shutdownComplete) return;
+  outState.shutdownComplete = true;
+  const why = reason || "shutdown";
+  outState.closeReason = why;
+  try {
+    if (outState.heartbeatTimer) {
+      clearInterval(outState.heartbeatTimer);
+      outState.heartbeatTimer = null;
+    }
+  } catch (_) {}
+  try {
+    finalizeTick();
+  } catch (_) {}
+  try {
+    closeCaptureFile(why);
+  } catch (_) {}
+  try {
+    writeLine({
+      event: "capture_shutdown",
+      reason: why,
+      ticks_written: outState.captureTickCount,
+      capture_started: outState.captureStarted,
+      capture_closed: outState.captureClosed,
+      out_path: CONFIG.outPath,
+    });
+  } catch (_) {}
+}
+
+function installShutdownHooks() {
+  const attached = {};
+
+  function attachExitHook(moduleName, exportName, reasonPrefix, codeArgIndex) {
+    let target = null;
+    try {
+      target = Module.findExportByName(moduleName, exportName);
+    } catch (_) {
+      target = null;
+    }
+    if (!target) return;
+    const key = target.toString();
+    if (attached[key]) return;
+    attached[key] = true;
+    try {
+      Interceptor.attach(target, {
+        onEnter: function (args) {
+          let code = null;
+          if (codeArgIndex >= 0) {
+            try {
+              code = args[codeArgIndex] ? args[codeArgIndex].toInt32() : null;
+            } catch (_) {
+              code = null;
+            }
+          }
+          const reason = code == null ? reasonPrefix : reasonPrefix + ":" + String(code);
+          shutdownCapture(reason);
+        },
+      });
+    } catch (_) {}
+  }
+
+  attachExitHook("kernel32.dll", "ExitProcess", "exit_process", 0);
+  attachExitHook("kernel32.dll", "TerminateProcess", "terminate_process", 1);
+  attachExitHook("ntdll.dll", "RtlExitUserProcess", "rtl_exit_user_process", 0);
+  attachExitHook("msvcrt.dll", "exit", "crt_exit", 0);
+  attachExitHook("msvcrt.dll", "_exit", "crt__exit", 0);
+  attachExitHook("ucrtbase.dll", "exit", "ucrt_exit", 0);
+  attachExitHook("ucrtbase.dll", "_exit", "ucrt__exit", 0);
+
+  try {
+    Process.setExceptionHandler(function () {
+      shutdownCapture("process_exception");
+      return false;
+    });
+  } catch (_) {}
 }
 
 function safeReadU8(ptrVal) {
@@ -3491,17 +3573,18 @@ function main() {
     pointers_resolved: ptrs,
   });
 
+  globalThis.crimsonCaptureStop = function (reason) {
+    shutdownCapture(reason || "manual_stop");
+    return outState.captureTickCount | 0;
+  };
+
+  installShutdownHooks();
   installHooks();
   emitHeartbeat();
   startHeartbeat();
 
   Script.bindWeak(outState, function () {
-    try {
-      finalizeTick();
-    } catch (_) {}
-    try {
-      closeCaptureFile();
-    } catch (_) {}
+    shutdownCapture("script_unload");
   });
 
   writeLine({ event: "ready", session_id: outState.sessionId, capture_file_started: outState.captureStarted });

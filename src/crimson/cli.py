@@ -636,28 +636,37 @@ def cmd_replay_convert_capture(
     typer.echo("note: replay uses best-effort input reconstruction; checkpoints remain the authoritative diff target")
 
 
-@original_app.command("divergence-report")
-def cmd_replay_divergence_report() -> None:
+@original_app.command(
+    "divergence-report",
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True, "help_option_names": []},
+)
+def cmd_replay_divergence_report(ctx: typer.Context) -> None:
     """Run divergence report against a capture."""
     from .original import divergence_report
 
-    raise typer.Exit(code=divergence_report.main())
+    raise typer.Exit(code=divergence_report.main(list(ctx.args)))
 
 
-@original_app.command("focus-trace")
-def cmd_replay_focus_trace() -> None:
+@original_app.command(
+    "focus-trace",
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True, "help_option_names": []},
+)
+def cmd_replay_focus_trace(ctx: typer.Context) -> None:
     """Trace a single focus tick from capture diagnostics."""
     from .original import focus_trace
 
-    raise typer.Exit(code=focus_trace.main())
+    raise typer.Exit(code=focus_trace.main(list(ctx.args)))
 
 
-@original_app.command("creature-trajectory")
-def cmd_replay_creature_trajectory() -> None:
+@original_app.command(
+    "creature-trajectory",
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True, "help_option_names": []},
+)
+def cmd_replay_creature_trajectory(ctx: typer.Context) -> None:
     """Trace capture-vs-rewrite creature trajectory drift."""
     from .original import creature_trajectory
 
-    raise typer.Exit(code=creature_trajectory.main())
+    raise typer.Exit(code=creature_trajectory.main(list(ctx.args)))
 
 
 @app.callback(invoke_without_command=True)

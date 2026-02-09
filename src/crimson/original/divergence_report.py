@@ -799,11 +799,16 @@ def _run_actual_checkpoints(
     )
     dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
     checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected}
-    inter_tick_rand_draws_by_tick = {
-        int(tick.tick_index): int(tick.rng_outside_before_calls)  # ty:ignore[unresolved-attribute]
-        for tick in capture.ticks
-        if int(tick.rng_outside_before_calls) >= 0  # ty:ignore[unresolved-attribute]
-    }
+    inter_tick_rand_draws_by_tick: dict[int, int] | None = {}
+    for tick in capture.ticks:
+        outside_before_calls = getattr(tick, "rng_outside_before_calls", None)
+        if outside_before_calls is None:
+            outside_before_calls = tick.checkpoint.rng_marks.rand_outside_before_calls
+        calls = _int_or(outside_before_calls, -1)
+        if calls < 0:
+            continue
+        assert inter_tick_rand_draws_by_tick is not None
+        inter_tick_rand_draws_by_tick[int(tick.tick_index)] = int(calls)
     if inter_tick_rand_draws_by_tick:
         first_tick_index = min(inter_tick_rand_draws_by_tick)
         # The inferred replay seed already matches the first sampled tick RNG
@@ -2091,8 +2096,8 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> int:
-    args = build_parser().parse_args()
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
     capture_path = Path(args.capture)
     json_out_path = _resolve_json_out_path(args.json_out)
 
