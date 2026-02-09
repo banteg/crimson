@@ -141,6 +141,7 @@ When the capture SHA is unchanged, append updates to the same session.
   - initial: `tick 1069 (players[0].ammo)`
   - after replay/input + movement fixes: `tick 3882 (players[0].experience, score_xp)`
   - after capture-RNG map + timer/reload parity fixes: `tick 4421 (players[0].ammo, players[0].weapon_id)`
+  - after hit/collision + AI float32 parity fixes: `tick 7466 (players[0].experience, score_xp)`
 
 ### Key Findings
 
@@ -149,9 +150,13 @@ When the capture SHA is unchanged, append updates to the same session.
 - Per-tick `rng.outside_before_calls` replay must special-case tick 0 (bootstrap draws already baked into inferred seed).
 - Native `bonus_update` clamps `double_xp/freeze` to `0.0` when timer `<= 0.0`; missing this caused `-8ms` carry and `tick 4311` timer drift.
 - Reload timing is float-boundary sensitive: using float32-style reload math plus native preload ordering moved ammo parity to native at `tick 4396`.
-- Current blocker is now earlier than the old `3882` kill miss:
-  - a weapon bonus spawned at `tick 4150` has a position offset in rewrite (capture `427.1736,548.0906`, rewrite `427.8498,547.4852`),
-  - this shifts pickup timing one frame earlier (`tick 4421` vs native `4422`) and cascades into weapon/ammo state divergence.
+- Strict float32 sequencing in creature AI distance/orbit paths fixed a corpse-hit timing miss at `tick 6958` and moved the frontier to `tick 7466`.
+- The current `tick 7466` XP divergence is downstream of RNG stream drift:
+  - first clear native-only RNG tail is at `tick 7336` (`perk_select_random` shortfall `2` draws),
+  - by `tick 7440` RNG values are already offset at the first draw in `player_fire_weapon`,
+  - rewrite then resolves a kill at `tick 7466` that native does not.
+- Local diagnostic replay with `+2` synthetic draws before `tick 7337` moves first mismatch to `tick 8593`, confirming the `7336` missing-tail branch as the dominant blocker.
+- Existing capture lacks explicit perk-apply IDs, so we cannot faithfully replay native perk selections for this SHA family.
 
 ### Landed Changes
 
@@ -166,15 +171,18 @@ When the capture SHA is unchanged, append updates to the same session.
 - Added v2 parser support for `rng.outside_before_calls` and wired per-tick outside-draw replay.
 - Patched `bonus_update` timer clamp semantics for `double_experience` and `freeze`.
 - Patched reload timing semantics in `player_update` (native preload ordering + float32-style reload timer arithmetic + anxious-loader tail behavior).
+- Added strict float32 AI distance/orbit intermediates in `src/crimson/creatures/ai.py`.
+- Added v2 perk-apply capture telemetry (`perk_apply`, `perk_apply_outside_before`) and replay-side event support (`orig_capture_perk_apply_v1`) so future captures can replay explicit perk picks.
 - `docs(frida): renumber sessions and fold same-sha updates` (`90f5637e`)
 
 ### Validation
 
 - `uv run pytest tests/test_player_update.py tests/test_original_capture_conversion.py tests/test_replay_perk_menu_open_event.py tests/test_creature_runtime.py`
 - `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3624 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick3624_latest.json`
+- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 7336 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick7336_latest.json`
 - `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out analysis/frida/divergence_report_latest.json` *(expected non-zero exit while diverged)*
 
 ### Outcome / Next Probe
 
-- Resolve bonus spawn position parity at `tick 4150` (creature-death position path feeding `BonusPool.try_spawn_on_kill`).
-- Re-run divergence after spawn-position fix to see whether legacy `tick 3882` projectile/XP mismatch still remains or was superseded by the earlier pickup-timing drift.
+- Blocked on missing perk-selection identity in this capture: the replay can observe pending/menu transitions but cannot know which perk native applied at each menu close.
+- Re-record this same SHA with updated v2 script (perk-apply telemetry enabled by default), then verify that replayed `orig_capture_perk_apply_v1` events remove the `tick 7336` RNG tail and push first mismatch beyond `tick 7466`.
