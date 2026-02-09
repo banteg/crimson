@@ -97,10 +97,10 @@ def _credits_build_lines() -> tuple[list[_CreditsLine], int, int]:
         lines[index] = _CreditsLine(text=text, flags=flags)
         line_max_index = index
 
-    _line_set(0x00, "", 0)
-    _line_set(0x01, "Crimsonland", _FLAG_HEADING)
+    _line_set(0x00, "2026 Remake:", _FLAG_HEADING)
+    _line_set(0x01, "banteg", 0)
     _line_set(0x02, "", 0)
-    _line_set(0x03, "", 0)
+    _line_set(0x03, "Crimsonland", _FLAG_HEADING)
     _line_set(0x04, "Game Design:", _FLAG_HEADING)
     _line_set(0x05, "Tero Alatalo", 0)
     _line_set(0x06, "", 0)
@@ -423,8 +423,8 @@ class CreditsView:
 
         for row in range(visible_count):
             index = self._scroll_line_start_index + row
-            if index < 0:
-                index = 0
+            if index < 0 or index >= len(self._lines):
+                continue
             line = self._lines[index]
             text_w = measure_small_text_width(font, line.text, 1.0 * scale)
             x = center_x - (text_w * 0.5)
@@ -587,8 +587,8 @@ class CreditsView:
 
             for row in range(visible_count):
                 index = self._scroll_line_start_index + row
-                if index < 0:
-                    index = 0
+                if index < 0 or index >= len(self._lines):
+                    continue
                 line = self._lines[index]
                 y = base_y + (float(row) * (_TEXT_LINE_HEIGHT * scale)) - frac_px
                 alpha = self._line_alpha(y=y, base_y=base_y, visible_count=visible_count, scale=scale)
