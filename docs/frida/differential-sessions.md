@@ -12,7 +12,8 @@ Each entry should capture:
 
 ## Session template
 
-- **Session ID:** `YYYY-MM-DD-<letter>`
+- **Title:** `Session <N> (YYYY-MM-DD)`
+- **Legacy ID:** `YYYY-MM-DD-<letter>` *(optional, for back-refs)*
 - **Capture:** `<path>`
 - **Capture SHA256:** `<sha256>`
 - **Verifier command:** `<exact command>`
@@ -40,12 +41,13 @@ Each entry should capture:
 - Keep `artifacts/frida/share/gameplay_diff_capture_v2.jsonl` as the source artifact and always log SHA256 per session.
 - Use `--run-summary` or `--run-summary-short` in divergence reports so each session entry includes a native-run narrative.
 - If any env knob is used to throttle capture volume, list the exact knob/value in that session entry.
+- If `Capture SHA256` is unchanged, append to the existing session entry instead of creating a new session.
 
 ---
 
-## Session 2026-02-08-a
+## Session 1 (2026-02-08)
 
-- **Session ID:** `2026-02-08-a`
+- **Legacy ID:** `2026-02-08-a`
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `a40e7fed4ea7b4658d420bc31f6101307864c8de1b06f926d9ddf7c0010ac2ee`
 - **Verifier command:** `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 2e-3 --window 24 --lead-lookback 1024 --run-summary --json-out analysis/frida/divergence_report_latest.json`
@@ -69,9 +71,9 @@ Each entry should capture:
 
 ---
 
-## Session 2026-02-08-b
+## Session 2 (2026-02-08)
 
-- **Session ID:** `2026-02-08-b`
+- **Legacy ID:** `2026-02-08-b`
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `a40e7fed4ea7b4658d420bc31f6101307864c8de1b06f926d9ddf7c0010ac2ee`
 - **Verifier command:** `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 12 --lead-lookback 512 --run-summary --json-out analysis/frida/divergence_report_latest.json`
@@ -96,9 +98,9 @@ Each entry should capture:
 
 ---
 
-## Session 2026-02-08-c
+## Session 3 (2026-02-08)
 
-- **Session ID:** `2026-02-08-c`
+- **Legacy ID:** `2026-02-08-c`
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `a40e7fed4ea7b4658d420bc31f6101307864c8de1b06f926d9ddf7c0010ac2ee`
 - **Verifier command:** `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 16 --lead-lookback 512 --run-summary --json-out analysis/frida/divergence_report_latest.json`
@@ -126,9 +128,9 @@ Each entry should capture:
 
 ---
 
-## Session 2026-02-08-d
+## Session 4 (2026-02-08)
 
-- **Session ID:** `2026-02-08-d`
+- **Legacy ID:** `2026-02-08-d`
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `a40e7fed4ea7b4658d420bc31f6101307864c8de1b06f926d9ddf7c0010ac2ee`
 - **Verifier command:** `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 8 --lead-lookback 256 --run-summary-short --run-summary-short-max-rows 12`
@@ -154,9 +156,9 @@ Each entry should capture:
 
 ---
 
-## Session 2026-02-08-e
+## Session 5 (2026-02-08)
 
-- **Session ID:** `2026-02-08-e`
+- **Legacy ID:** `2026-02-08-e`
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `a40e7fed4ea7b4658d420bc31f6101307864c8de1b06f926d9ddf7c0010ac2ee`
 - **Verifier command:** `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 20 --json-out analysis/frida/divergence_report_latest.json`
@@ -181,9 +183,9 @@ Each entry should capture:
 
 ---
 
-## Session 2026-02-08-f
+## Session 6 (2026-02-08)
 
-- **Session ID:** `2026-02-08-f`
+- **Legacy ID:** `2026-02-08-f`
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
 - **Verifier command:** `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 20 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_latest.json`
@@ -215,9 +217,9 @@ Each entry should capture:
 
 ---
 
-## Session 2026-02-08-g
+## Session 7 (2026-02-08)
 
-- **Session ID:** `2026-02-08-g`
+- **Legacy ID:** `2026-02-08-g`
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
 - **Verifier command:** `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 20 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out analysis/frida/divergence_report_latest.json`
@@ -250,9 +252,9 @@ Each entry should capture:
 
 ---
 
-## Session 2026-02-08-h
+## Session 8 (2026-02-08)
 
-- **Session ID:** `2026-02-08-h`
+- **Legacy ID:** `2026-02-08-h`
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
 - **Primary commands:**
@@ -287,9 +289,9 @@ Each entry should capture:
 
 ---
 
-## Session 2026-02-08-i
+## Session 9 (2026-02-08)
 
-- **Session ID:** `2026-02-08-i`
+- **Legacy ID:** `2026-02-08-i`
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
 - **Primary commands:**
@@ -328,9 +330,9 @@ Each entry should capture:
 
 ---
 
-## Session 2026-02-08-j
+## Session 10 (2026-02-08)
 
-- **Session ID:** `2026-02-08-j`
+- **Legacy ID:** `2026-02-08-j`
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
 - **Primary commands:**
@@ -378,9 +380,9 @@ Each entry should capture:
 
 ---
 
-## Session 2026-02-08-k
+## Session 11 (2026-02-08)
 
-- **Session ID:** `2026-02-08-k`
+- **Legacy ID:** `2026-02-08-k`
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
 - **Primary commands:**
@@ -422,9 +424,9 @@ Each entry should capture:
 
 ---
 
-## Session 2026-02-08-l
+## Session 12 (2026-02-08)
 
-- **Session ID:** `2026-02-08-l`
+- **Legacy ID:** `2026-02-08-l`
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
 - **Primary commands:**
@@ -469,9 +471,9 @@ Each entry should capture:
 
 ---
 
-## Session 2026-02-08-m
+## Session 13 (2026-02-08)
 
-- **Session ID:** `2026-02-08-m`
+- **Legacy ID:** `2026-02-08-m`
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
 - **Primary commands:**
@@ -518,9 +520,9 @@ Each entry should capture:
 
 ---
 
-## Session 2026-02-08-n
+## Session 14 (2026-02-08)
 
-- **Session ID:** `2026-02-08-n`
+- **Legacy ID:** `2026-02-08-n`
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
 - **Primary commands:**
@@ -571,9 +573,9 @@ Each entry should capture:
 
 ---
 
-## Session 2026-02-08-o
+## Session 15 (2026-02-08)
 
-- **Session ID:** `2026-02-08-o`
+- **Legacy ID:** `2026-02-08-o`
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
 - **Primary commands:**
@@ -618,9 +620,9 @@ Each entry should capture:
 
 ---
 
-## Session 2026-02-09-p
+## Session 16 (2026-02-09)
 
-- **Session ID:** `2026-02-09-p`
+- **Legacy ID:** `2026-02-09-p`
 - **Capture:** `n/a (tooling update only; no new recording in this session)`
 - **Capture SHA256:** `n/a`
 - **Primary commands:**
@@ -661,9 +663,9 @@ Each entry should capture:
 
 ---
 
-## Session 2026-02-09-q
+## Session 17 (2026-02-09)
 
-- **Session ID:** `2026-02-09-q`
+- **Legacy ID:** `2026-02-09-q`
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
 - **Capture SHA256:** `28b8db6eb6b679455dad7376ef76149d26fdd7339dea246518685938cdb48662`
 - **Primary commands:**
@@ -671,7 +673,8 @@ Each entry should capture:
     `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_latest.json`
   - focus trace on first mismatch tick:
     `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 1069 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick1069_latest.json`
-- **First verifier mismatch:** `tick 1069 (players[0].ammo)` (`expected=25.0`, `actual=24.0`)
+- **First verifier mismatch (initial):** `tick 1069 (players[0].ammo)` (`expected=25.0`, `actual=24.0`)
+- **Current verifier mismatch (latest):** `tick 3882 (players[0].experience, score_xp)` (`expected=3263`, `actual=3007`)
 
 ### Findings
 
@@ -688,13 +691,30 @@ Each entry should capture:
 
 - No gameplay fix landed yet in this session; this pass established a new session baseline and isolated first-callsite evidence for the early ammo divergence path.
 
+### Continued updates (same capture SHA)
+
+- Additional commands:
+  - `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3624 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick3624_latest.json`
+  - `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out analysis/frida/divergence_report_latest.json`
+- Additional findings:
+  - The first pre-focus RNG shortfall moved to and remains at `tick 3624`: native has `perk_select_random x16` (`caller_static 0x0042fbdc`) while rewrite consumes `0` draws at that tick.
+  - The active XP/score divergence is now at `tick 3882`, where native reports projectile hit resolution (`projectile_find_hit=2`, including one corpse-hit pass) and rewrite misses both hit paths.
+  - For deterministic parity, preserving capture/native precision is higher priority than "intended-value" rounding when behavior depends on float32 boundaries.
+- Additional fixes:
+  - `fix(gameplay): mirror float32 movement store boundaries` (`da0a12de`)
+  - `fix(replay): align v2 capture input and perk reconstruction` (`d9f6815e`)
+  - `fix(creatures): round ai7 timer dt_ms to native boundary` (`bb88cfa8`)
+- Additional validation:
+  - `uv run pytest tests/test_player_update.py tests/test_original_capture_conversion.py tests/test_replay_perk_menu_open_event.py tests/test_creature_runtime.py`
+
 ### Validation
 
 - `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_latest.json` *(expected non-zero exit while diverged)*
 - `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 1069 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick1069_latest.json`
+- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3624 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick3624_latest.json`
+- `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out analysis/frida/divergence_report_latest.json` *(expected non-zero exit while diverged)*
 
 ### Next probe
 
-- Instrument and compare `player_fire_weapon` gating at `tick 1069` against capture input telemetry to explain why rewrite takes a shot path when native does not:
-  - verify fire-edge detection and key-latch handling in the replay-input reconstruction path,
-  - verify no rewrite-only call path can trigger `player_fire_weapon` in this state.
+- Resolve remaining `perk_select_random` parity at `tick 3624` (native `x16` draws, rewrite `x0`) so RNG streams align before the XP divergence window.
+- Instrument `projectile_update`/`projectile_find_hit` around `tick 3882` to match native corpse-hit and kill-resolution ordering (`capture_hits=2`, including one corpse hit).
