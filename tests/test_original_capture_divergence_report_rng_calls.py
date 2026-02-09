@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
-import sys
 
 from grim.geom import Vec2
 
@@ -17,14 +15,9 @@ from crimson.replay.checkpoints import (
 
 
 def _load_report_module():
-    script_path = Path(__file__).resolve().parents[1] / "scripts" / "original_capture_divergence_report.py"
-    spec = importlib.util.spec_from_file_location("original_capture_divergence_report", script_path)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    from crimson.original import divergence_report
+
+    return divergence_report
 
 
 def _step_crt_state(state: int, calls: int) -> int:
@@ -151,11 +144,54 @@ def test_window_rows_include_actual_rand_calls_and_delta() -> None:
 
 def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
     report = _load_report_module()
-    capture_path = tmp_path / "capture.jsonl"
-    row = {
-        "event": "tick",
+    capture_path = tmp_path / "capture.json"
+    tick = {
         "tick_index": 42,
-        "checkpoint": {"tick_index": 42},
+        "gameplay_frame": 43,
+        "checkpoint": {
+            "tick_index": 42,
+            "state_hash": "s",
+            "command_hash": "c",
+            "rng_state": 0,
+            "elapsed_ms": 0,
+            "score_xp": 0,
+            "kills": 0,
+            "creature_count": 0,
+            "perk_pending": 0,
+            "players": [],
+            "status": {"quest_unlock_index": -1, "quest_unlock_index_full": -1, "weapon_usage_counts": []},
+            "bonus_timers": {},
+            "rng_marks": {
+                "rand_calls": 0,
+                "rand_hash": "",
+                "rand_last": None,
+                "rand_head": [],
+                "rand_callers": [],
+                "rand_caller_overflow": 0,
+                "rand_seq_first": None,
+                "rand_seq_last": None,
+                "rand_seed_epoch_enter": None,
+                "rand_seed_epoch_last": None,
+                "rand_outside_before_calls": 0,
+                "rand_outside_before_dropped": 0,
+                "rand_outside_before_head": [],
+                "rand_mirror_mismatch_total": 0,
+                "rand_mirror_unknown_total": 0,
+            },
+            "deaths": [],
+            "perk": {"pending_count": 0, "choices_dirty": False, "choices": [], "player_nonzero_counts": []},
+            "events": {"hit_count": -1, "pickup_count": -1, "sfx_count": -1, "sfx_head": []},
+            "debug": {
+                "sampling_phase": "",
+                "timing": {},
+                "spawn": {},
+                "rng": {},
+                "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
+                "creature_lifecycle": None,
+                "before_players": [],
+                "before_status": {"quest_unlock_index": -1, "quest_unlock_index_full": -1},
+            },
+        },
         "samples": {
             "creatures": [{"index": 5, "type_id": 2, "hp": 100.0, "hitbox_size": 16.0, "pos": {"x": 10.0, "y": 20.0}}],
             "projectiles": [],
@@ -165,7 +201,19 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
             "bonuses": [],
         },
     }
-    capture_path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+    capture_obj = {
+        "script": "gameplay_diff_capture",
+        "session_id": "s",
+        "out_path": "capture.json",
+        "config": {},
+        "session_fingerprint": {"session_id": "s", "module_hash": "a", "ptrs_hash": "b"},
+        "process": {"pid": 1, "platform": "windows", "arch": "x86", "frida_version": "16", "runtime": "v8"},
+        "exe": {"base": "0x400000", "size": 1, "path": "crimsonland.exe"},
+        "grim": None,
+        "pointers_resolved": {},
+        "ticks": [tick],
+    }
+    capture_path.write_text(json.dumps(capture_obj), encoding="utf-8")
 
     raw = report._load_raw_tick_debug(capture_path, {42})
     assert 42 in raw

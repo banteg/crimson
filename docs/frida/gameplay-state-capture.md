@@ -10,8 +10,8 @@ tags:
 gameplay-focused mapping work.
 
 For deterministic replay-side differential work, prefer
-`scripts/frida/gameplay_diff_capture_v2.js` (see
-`docs/frida/gameplay-diff-capture-v2.md`).
+`scripts/frida/gameplay_diff_capture.js` (see
+`docs/frida/gameplay-diff-capture.md`).
 
 It runs fully automatically after attach:
 
@@ -60,36 +60,17 @@ The reducer also emits `gameplay_state_capture_sfx_candidates.json` containing
 high-confidence `event|function -> id` mappings for promotion into
 `name_map.json` comments/docs.
 
-Convert raw trace snapshots into replay-checkpoint sidecar format for
-differential replay checks:
-
-```text
-uv run crimson replay convert-original-capture \
-  artifacts/frida/share/gameplay_state_capture.jsonl \
-  analysis/frida/original_capture.checkpoints.json.gz
-```
-
-This also writes `analysis/frida/original_capture.crdemo.gz` by default (override with `--replay`).
-That replay is best-effort (rebuilt from telemetry) and mainly for visual
-inspection. It bootstraps from the first captured tick but is not a strict
-verification artifact. Checkpoint sidecars remain the verification target.
-
-Verify the capture directly against rewrite simulation checkpoints:
-
-```text
-uv run crimson replay verify-original-capture \
-  artifacts/frida/share/gameplay_state_capture.jsonl
-```
-
-This command compares checkpoint state fields at captured ticks and reports the
-first mismatch with field-level details.
+For deterministic replay-side verification (`convert-capture`,
+`verify-capture`, divergence/focus tooling), use
+`artifacts/frida/share/gameplay_diff_capture.json` from
+`scripts/frida/gameplay_diff_capture.js`. The differential pipeline now expects
+the canonical gameplay-diff capture schema and no longer consumes raw
+`gameplay_state_capture.jsonl` logs directly.
 
 Notes:
 
-- The converter uses sparse `snapshot_compact` / `snapshot_full` entries with
-  `gameplay_frame > 0` and maps them to replay ticks.
-- Fields that are not currently captured in raw trace snapshots are marked as
-  unknown sentinels and ignored during checkpoint diffing.
+- This capture is for runtime-mapping evidence and reducer-driven summaries.
+- Use gameplay-diff capture when you need deterministic replay-side verification.
 
 Recommended session:
 

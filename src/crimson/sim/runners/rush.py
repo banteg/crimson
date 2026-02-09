@@ -8,10 +8,10 @@ from ...game_modes import GameMode
 from ...gameplay import PlayerInput, weapon_assign_player
 from ...replay import Replay, UnknownEvent, unpack_packed_player_input, unpack_input_flags, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
-from ...replay.original_capture import (
-    ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
-    apply_original_capture_bootstrap_payload,
-    original_capture_bootstrap_payload_from_event_payload,
+from ...original.capture import (
+    CAPTURE_BOOTSTRAP_EVENT_KIND,
+    apply_capture_bootstrap_payload,
+    capture_bootstrap_payload_from_event_payload,
 )
 from ...weapons import WeaponId
 from ..sessions import RushDeterministicSession
@@ -99,9 +99,9 @@ def run_rush_replay(
     original_capture_replay = False
     digital_move_enabled_by_player: set[int] = set()
     for event in replay.events:
-        if isinstance(event, UnknownEvent) and str(event.kind) == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND:
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
             original_capture_replay = True
-            payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+            payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
             if isinstance(payload, dict):
                 enabled_raw = payload.get("digital_move_enabled_by_player")
                 if isinstance(enabled_raw, list):
@@ -175,10 +175,10 @@ def run_rush_replay(
 
         rng_before_events = int(state.rng.state)
         for event in events_by_tick.get(int(tick_index), []):
-            payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+            payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
             if payload is None:
                 raise ReplayRunnerError(f"invalid bootstrap payload at tick={tick_index}")
-            apply_original_capture_bootstrap_payload(
+            apply_capture_bootstrap_payload(
                 payload,
                 state=state,
                 players=list(world.players),
@@ -257,10 +257,10 @@ def run_rush_replay(
 
     rng_before_events = int(world.state.rng.state)
     for event in events_by_tick.get(int(tick_index), []):
-        payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+        payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
         if payload is None:
             raise ReplayRunnerError(f"invalid bootstrap payload at tick={tick_index}")
-        apply_original_capture_bootstrap_payload(
+        apply_capture_bootstrap_payload(
             payload,
             state=world.state,
             players=list(world.players),

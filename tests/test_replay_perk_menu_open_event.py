@@ -4,9 +4,9 @@ from crimson.game_modes import GameMode
 from crimson.gameplay import perk_count_get, perks_rebuild_available, weapon_refresh_available
 from crimson.perks import PerkId
 from crimson.replay import PerkMenuOpenEvent, PerkPickEvent, UnknownEvent
-from crimson.replay.original_capture import (
-    ORIGINAL_CAPTURE_PERK_APPLY_EVENT_KIND,
-    ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND,
+from crimson.original.capture import (
+    CAPTURE_PERK_APPLY_EVENT_KIND,
+    CAPTURE_PERK_PENDING_EVENT_KIND,
 )
 from crimson.sim.runners.common import reset_players
 from crimson.sim.runners.survival import _apply_tick_events
@@ -103,7 +103,7 @@ def test_original_capture_pending_event_sets_pending_without_pick_side_effects()
         [
             UnknownEvent(
                 tick_index=5,
-                kind=ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND,
+                kind=CAPTURE_PERK_PENDING_EVENT_KIND,
                 payload=[{"perk_pending": 0}],
             )
         ],
@@ -137,7 +137,7 @@ def test_original_capture_perk_apply_event_applies_perk_without_rng_for_non_rand
         [
             UnknownEvent(
                 tick_index=7,
-                kind=ORIGINAL_CAPTURE_PERK_APPLY_EVENT_KIND,
+                kind=CAPTURE_PERK_APPLY_EVENT_KIND,
                 payload=[{"perk_id": int(PerkId.FASTSHOT)}],
             )
         ],

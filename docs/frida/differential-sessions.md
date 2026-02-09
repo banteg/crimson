@@ -28,8 +28,8 @@ When the capture SHA is unchanged, append updates to the same session.
 
 ## Capture Policy (Current)
 
-- Default to full-detail `gameplay_diff_capture_v2` captures (no focus window, no sample limits).
-- Keep `artifacts/frida/share/gameplay_diff_capture_v2.jsonl` as the canonical artifact and always log SHA256.
+- Default to full-detail `gameplay_diff_capture` captures (no focus window, no sample limits).
+- Keep `artifacts/frida/share/gameplay_diff_capture.json` as the canonical artifact and always log SHA256.
 - Use `--run-summary` or `--run-summary-short` in divergence reports.
 - If any env knobs throttle capture volume, log exact knob/value.
 - If capture SHA is unchanged, update the existing session; do not create a new one.
@@ -39,10 +39,10 @@ When the capture SHA is unchanged, append updates to the same session.
 ## Session 1 (2026-02-08)
 
 - **Legacy IDs:** `2026-02-08-a` .. `2026-02-08-e`
-- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.json`
 - **Capture SHA256:** `a40e7fed4ea7b4658d420bc31f6101307864c8de1b06f926d9ddf7c0010ac2ee`
 - **Baseline verifier command:**
-  `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 20 --json-out`
+  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.json --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 20 --json-out`
 - **First mismatch:** `tick 1794 (players[0].experience, score_xp)`
 
 ### Key Findings
@@ -57,7 +57,7 @@ When the capture SHA is unchanged, append updates to the same session.
   - `--run-summary` and later `--run-summary-short` outputs.
   - rewrite RNG-call inference and stage-attribution diagnostics.
   - sample-coverage/blocker reporting in divergence output.
-- Added v2 capture telemetry:
+- Added capture telemetry:
   - secondary projectile spawn hooks and secondary sample capture.
 - Landed gameplay parity patch in `src/crimson/projectiles.py` for native-like secondary homing target semantics (active + hitbox sentinel behavior).
 
@@ -70,10 +70,10 @@ When the capture SHA is unchanged, append updates to the same session.
 ## Session 2 (2026-02-08)
 
 - **Legacy IDs:** `2026-02-08-f` .. `2026-02-08-o`
-- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.json`
 - **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
 - **Baseline verifier command:**
-  `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out`
+  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.json --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out`
 - **First mismatch:** `tick 3504 (players[0].experience, score_xp)`
 
 ### Key Findings
@@ -88,11 +88,11 @@ When the capture SHA is unchanged, append updates to the same session.
 ### Landed Changes
 
 - Added major investigation tooling:
-  - `scripts/original_capture_focus_trace.py` (callsite RNG, collision near-miss, indexed sample diffs).
+  - `original focus-trace` (callsite RNG, collision near-miss, indexed sample diffs).
   - RNG value-alignment and native-only tail diagnostics.
   - caller-gap and loop-parity summaries.
-  - `scripts/original_capture_creature_trajectory.py` enhancements for long-horizon slot drift.
-- Added v2 telemetry for projectile-hit resolution (`projectile_find_hit`, corpse-hit markers).
+  - `original creature-trajectory` enhancements for long-horizon slot drift.
+- Added telemetry for projectile-hit resolution (`projectile_find_hit`, corpse-hit markers).
 - Added shared parity helpers and precision-boundary cleanup groundwork:
   - `src/crimson/math_parity.py`
   - targeted updates in `src/crimson/creatures/ai.py` and `src/crimson/creatures/runtime.py`
@@ -119,10 +119,10 @@ When the capture SHA is unchanged, append updates to the same session.
 
 ### Landed Changes
 
-- Upgraded `scripts/frida/gameplay_diff_capture_v2.js` RNG diagnostics:
+- Upgraded `scripts/frida/gameplay_diff_capture.js` RNG diagnostics:
   - per-roll sequence metadata, between-tick carry, optional full roll log, CRT mirror integrity counters.
-- Extended `scripts/original_capture_divergence_report.py` to surface sequence/epoch anchors and mirror totals.
-- Updated `docs/frida/gameplay-diff-capture-v2.md` with full RNG trace profile guidance.
+- Extended `original divergence-report` to surface sequence/epoch anchors and mirror totals.
+- Updated `docs/frida/gameplay-diff-capture.md` with full RNG trace profile guidance.
 
 ### Outcome / Next Probe
 
@@ -133,10 +133,10 @@ When the capture SHA is unchanged, append updates to the same session.
 ## Session 4 (2026-02-09)
 
 - **Legacy IDs:** `2026-02-09-q`
-- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.json`
 - **Capture SHA256:** `28b8db6eb6b679455dad7376ef76149d26fdd7339dea246518685938cdb48662`
 - **Baseline verifier command:**
-  `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out`
+  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.json --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out`
 - **First mismatch progression:**
   - initial: `tick 1069 (players[0].ammo)`
   - after replay/input + movement fixes: `tick 3882 (players[0].experience, score_xp)`
@@ -161,28 +161,28 @@ When the capture SHA is unchanged, append updates to the same session.
 ### Landed Changes
 
 - `fix(gameplay): mirror float32 movement store boundaries` (`da0a12de`)
-- `fix(replay): align v2 capture input and perk reconstruction` (`d9f6815e`)
+- `fix(replay): align capture input and perk reconstruction` (`d9f6815e`)
   - improved fire fallback semantics
   - frame-dt precision preference
   - inferred perk menu/pending event reconstruction
 - `fix(creatures): round ai7 timer dt_ms to native boundary` (`bb88cfa8`)
 - Added event-phase RNG checkpoint marks and event-aware divergence accounting in replay runners/reporting.
 - Extended focus-trace RNG interception to cached pool RNG hooks (`particles._rand`, `sprite_effects._rand`).
-- Added v2 parser support for `rng.outside_before_calls` and wired per-tick outside-draw replay.
+- Added parser support for `rng.outside_before_calls` and wired per-tick outside-draw replay.
 - Patched `bonus_update` timer clamp semantics for `double_experience` and `freeze`.
 - Patched reload timing semantics in `player_update` (native preload ordering + float32-style reload timer arithmetic + anxious-loader tail behavior).
 - Added strict float32 AI distance/orbit intermediates in `src/crimson/creatures/ai.py`.
-- Added v2 perk-apply capture telemetry (`perk_apply`, `perk_apply_outside_before`) and replay-side event support (`orig_capture_perk_apply_v1`) so future captures can replay explicit perk picks.
+- Added perk-apply capture telemetry (`perk_apply`, `perk_apply_outside_before`) and replay-side event support (`orig_capture_perk_apply_v1`) so future captures can replay explicit perk picks.
 - `docs(frida): renumber sessions and fold same-sha updates` (`90f5637e`)
 
 ### Validation
 
 - `uv run pytest tests/test_player_update.py tests/test_original_capture_conversion.py tests/test_replay_perk_menu_open_event.py tests/test_creature_runtime.py`
-- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3624 --near-miss-threshold 0.35 --json-out`
-- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 7336 --near-miss-threshold 0.35 --json-out`
-- `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out` *(expected non-zero exit while diverged)*
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json --tick 3624 --near-miss-threshold 0.35 --json-out`
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json --tick 7336 --near-miss-threshold 0.35 --json-out`
+- `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.json --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out` *(expected non-zero exit while diverged)*
 
 ### Outcome / Next Probe
 
 - Blocked on missing perk-selection identity in this capture: the replay can observe pending/menu transitions but cannot know which perk native applied at each menu close.
-- Re-record this same SHA with updated v2 script (perk-apply telemetry enabled by default), then verify that replayed `orig_capture_perk_apply_v1` events remove the `tick 7336` RNG tail and push first mismatch beyond `tick 7466`.
+- Re-record this same SHA with the updated capture script (perk-apply telemetry enabled by default), then verify that replayed `orig_capture_perk_apply_v1` events remove the `tick 7336` RNG tail and push first mismatch beyond `tick 7466`.

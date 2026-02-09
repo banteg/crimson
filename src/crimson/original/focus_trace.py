@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
@@ -10,19 +9,20 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+import msgspec
 from grim.geom import Vec2
 
 import crimson.projectiles as projectiles_mod
 import crimson.sim.presentation_step as presentation_step_mod
 from crimson.game_modes import GameMode
 from crimson.gameplay import PlayerInput
-from crimson.replay.original_capture import (
-    ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
-    build_original_capture_dt_frame_overrides,
-    build_original_capture_dt_frame_ms_i32_overrides,
-    convert_original_capture_to_replay,
-    load_original_capture_sidecar,
-    original_capture_bootstrap_payload_from_event_payload,
+from crimson.original.capture import (
+    CAPTURE_BOOTSTRAP_EVENT_KIND,
+    build_capture_dt_frame_overrides,
+    build_capture_dt_frame_ms_i32_overrides,
+    capture_bootstrap_payload_from_event_payload,
+    convert_capture_to_replay,
+    load_capture,
 )
 from crimson.replay.types import UnknownEvent, unpack_input_flags, unpack_packed_player_input
 from crimson.sim.runners.common import (
@@ -177,16 +177,15 @@ def _resolve_json_out_path(value: str | None, *, tick: int) -> Path | None:
     return Path(value)
 
 
-def _read_capture_tick(path: Path, tick: int) -> dict[str, Any] | None:
-    with path.open("r", encoding="utf-8") as fh:
-        for line in fh:
-            if not line.strip():
-                continue
-            obj = json.loads(line)
-            if obj.get("event") != "tick":
-                continue
-            if int(obj.get("tick_index", -1)) != int(tick):
-                continue
+def _read_capture_tick(capture: object, tick: int) -> dict[str, Any] | None:
+    ticks = getattr(capture, "ticks", None)
+    if not isinstance(ticks, list):
+        return None
+    for row in ticks:
+        if int(getattr(row, "tick_index", -1)) != int(tick):
+            continue
+        obj = msgspec.to_builtins(row)
+        if isinstance(obj, dict):
             return obj
     return None
 
@@ -257,9 +256,9 @@ def _load_capture_events(replay: Any) -> tuple[dict[int, list[object]], bool, se
     original_capture_replay = False
     digital_move_enabled_by_player: set[int] = set()
     for event in replay.events:
-        if isinstance(event, UnknownEvent) and str(event.kind) == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND:
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
             original_capture_replay = True
-            payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+            payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
             if isinstance(payload, dict):
                 enabled_raw = payload.get("digital_move_enabled_by_player")
                 if isinstance(enabled_raw, list):
@@ -272,7 +271,7 @@ def _load_capture_events(replay: Any) -> tuple[dict[int, list[object]], bool, se
 
 def _summarize_creature_diffs(capture_creatures: list[dict[str, Any]], world: WorldState) -> list[dict[str, Any]]:
     cap_by_idx: dict[int, dict[str, Any]] = {
-        int(row.get("index")): row for row in capture_creatures if isinstance(row, dict) and row.get("index") is not None
+        int(row.get("index")): row for row in capture_creatures if isinstance(row, dict) and row.get("index") is not None  # ty:ignore[invalid-argument-type]
     }
     rows: list[dict[str, Any]] = []
     for idx, cap_row in cap_by_idx.items():
@@ -280,8 +279,8 @@ def _summarize_creature_diffs(capture_creatures: list[dict[str, Any]], world: Wo
             continue
         creature = world.creatures.entries[int(idx)]
         cap_pos = cap_row.get("pos") if isinstance(cap_row.get("pos"), dict) else {}
-        cap_x = float(cap_pos.get("x", 0.0))
-        cap_y = float(cap_pos.get("y", 0.0))
+        cap_x = float(cap_pos.get("x", 0.0))  # ty:ignore[possibly-missing-attribute]
+        cap_y = float(cap_pos.get("y", 0.0))  # ty:ignore[possibly-missing-attribute]
         cap_hp = float(cap_row.get("hp", 0.0))
         cap_hitbox = float(cap_row.get("hitbox_size", 0.0))
         rows.append(
@@ -311,7 +310,7 @@ def _summarize_creature_diffs(capture_creatures: list[dict[str, Any]], world: Wo
 
 def _summarize_projectile_diffs(capture_projectiles: list[dict[str, Any]], world: WorldState) -> list[dict[str, Any]]:
     cap_by_idx: dict[int, dict[str, Any]] = {
-        int(row.get("index")): row for row in capture_projectiles if isinstance(row, dict) and row.get("index") is not None
+        int(row.get("index")): row for row in capture_projectiles if isinstance(row, dict) and row.get("index") is not None  # ty:ignore[invalid-argument-type]
     }
     rows: list[dict[str, Any]] = []
     for idx, cap_row in cap_by_idx.items():
@@ -319,8 +318,8 @@ def _summarize_projectile_diffs(capture_projectiles: list[dict[str, Any]], world
             continue
         proj = world.state.projectiles.entries[int(idx)]
         cap_pos = cap_row.get("pos") if isinstance(cap_row.get("pos"), dict) else {}
-        cap_x = float(cap_pos.get("x", 0.0))
-        cap_y = float(cap_pos.get("y", 0.0))
+        cap_x = float(cap_pos.get("x", 0.0))  # ty:ignore[possibly-missing-attribute]
+        cap_y = float(cap_pos.get("y", 0.0))  # ty:ignore[possibly-missing-attribute]
         rows.append(
             {
                 "index": int(idx),
@@ -351,7 +350,7 @@ def _collect_creature_presence_diffs(
     world: WorldState,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     cap_by_idx: dict[int, dict[str, Any]] = {
-        int(row.get("index")): row for row in capture_creatures if isinstance(row, dict) and row.get("index") is not None
+        int(row.get("index")): row for row in capture_creatures if isinstance(row, dict) and row.get("index") is not None  # ty:ignore[invalid-argument-type]
     }
     cap_indices = {idx for idx, row in cap_by_idx.items() if bool(int(row.get("active", 0)) != 0)}
     rewrite_indices = {idx for idx, creature in enumerate(world.creatures.entries) if bool(creature.active)}
@@ -366,7 +365,7 @@ def _collect_creature_presence_diffs(
                 "type_id": int(row.get("type_id", 0)),
                 "hp": float(row.get("hp", 0.0)),
                 "hitbox_size": float(row.get("hitbox_size", 0.0)),
-                "pos": {"x": float(pos.get("x", 0.0)), "y": float(pos.get("y", 0.0))},
+                "pos": {"x": float(pos.get("x", 0.0)), "y": float(pos.get("y", 0.0))},  # ty:ignore[possibly-missing-attribute]
             }
         )
 
@@ -391,7 +390,7 @@ def _collect_projectile_presence_diffs(
     world: WorldState,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     cap_by_idx: dict[int, dict[str, Any]] = {
-        int(row.get("index")): row for row in capture_projectiles if isinstance(row, dict) and row.get("index") is not None
+        int(row.get("index")): row for row in capture_projectiles if isinstance(row, dict) and row.get("index") is not None  # ty:ignore[invalid-argument-type]
     }
     cap_indices = {idx for idx, row in cap_by_idx.items() if bool(int(row.get("active", 0)) != 0)}
     rewrite_indices = {idx for idx, proj in enumerate(world.state.projectiles.entries) if bool(proj.active)}
@@ -406,7 +405,7 @@ def _collect_projectile_presence_diffs(
                 "type_id": int(row.get("type_id", 0)),
                 "life_timer": float(row.get("life_timer", 0.0)),
                 "damage_pool": float(row.get("damage_pool", 0.0)),
-                "pos": {"x": float(pos.get("x", 0.0)), "y": float(pos.get("y", 0.0))},
+                "pos": {"x": float(pos.get("x", 0.0)), "y": float(pos.get("y", 0.0))},  # ty:ignore[possibly-missing-attribute]
             }
         )
 
@@ -649,21 +648,21 @@ def trace_focus_tick(
     near_miss_threshold: float,
     inter_tick_rand_draws: int,
 ) -> FocusTraceReport:
-    capture = load_original_capture_sidecar(capture_path)
-    replay = convert_original_capture_to_replay(capture)
+    capture = load_capture(capture_path)
+    replay = convert_capture_to_replay(capture)
     mode = int(replay.header.game_mode_id)
     if mode != int(GameMode.SURVIVAL):
         raise ValueError(f"focus trace currently supports survival mode only (got mode={mode})")
 
-    raw_tick = _read_capture_tick(capture_path, int(tick))
+    raw_tick = _read_capture_tick(capture, int(tick))
     if raw_tick is None:
         raise ValueError(f"capture tick {tick} not found in {capture_path}")
     samples = raw_tick.get("samples") if isinstance(raw_tick.get("samples"), dict) else {}
-    capture_creatures = samples.get("creatures") if isinstance(samples.get("creatures"), list) else []
-    capture_projectiles = samples.get("projectiles") if isinstance(samples.get("projectiles"), list) else []
+    capture_creatures = samples.get("creatures") if isinstance(samples.get("creatures"), list) else []  # ty:ignore[possibly-missing-attribute]
+    capture_projectiles = samples.get("projectiles") if isinstance(samples.get("projectiles"), list) else []  # ty:ignore[possibly-missing-attribute]
     capture_rng = raw_tick.get("rng") if isinstance(raw_tick.get("rng"), dict) else {}
-    capture_rng_head = capture_rng.get("head") if isinstance(capture_rng.get("head"), list) else []
-    capture_rng_calls = int(capture_rng.get("calls", len(capture_rng_head)))
+    capture_rng_head = capture_rng.get("head") if isinstance(capture_rng.get("head"), list) else []  # ty:ignore[possibly-missing-attribute]
+    capture_rng_calls = int(capture_rng.get("calls", len(capture_rng_head)))  # ty:ignore[invalid-argument-type, possibly-missing-attribute]
 
     world_size = float(replay.header.world_size)
     world = WorldState.build(
@@ -695,13 +694,13 @@ def trace_focus_tick(
     )
 
     events_by_tick, original_capture_replay, digital_move_enabled_by_player = _load_capture_events(replay)
-    dt_frame_overrides = build_original_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
-    dt_frame_ms_i32_overrides = build_original_capture_dt_frame_ms_i32_overrides(capture)
+    dt_frame_overrides = build_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
+    dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
     default_dt_frame = 1.0 / float(int(replay.header.tick_rate))
     outside_draws_by_tick = {
-        int(item.tick_index): int(item.rng_outside_before_calls)
+        int(item.tick_index): int(item.rng.outside_before_calls)
         for item in capture.ticks
-        if int(item.rng_outside_before_calls) >= 0
+        if int(item.rng.outside_before_calls) >= 0
     }
     if outside_draws_by_tick:
         first_tick_index = min(outside_draws_by_tick)
@@ -804,7 +803,7 @@ def trace_focus_tick(
                     threshold = float(target_size) * 0.14285715 + 3.0
                     margin = dist - float(radius) - threshold
                     hit = bool(margin < 0.0)
-                    frame = inspect.currentframe().f_back
+                    frame = inspect.currentframe().f_back  # ty:ignore[possibly-missing-attribute]
                     proj_index: int | None = None
                     proj_type: int | None = None
                     proj_life: float | None = None
@@ -812,15 +811,15 @@ def trace_focus_tick(
                     creature_idx: int | None = None
                     if frame is not None:
                         try:
-                            step = int(frame.f_locals.get("step")) if "step" in frame.f_locals else None
+                            step = int(frame.f_locals.get("step")) if "step" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
                         except Exception:
                             step = None
                         try:
-                            creature_idx = int(frame.f_locals.get("idx")) if "idx" in frame.f_locals else None
+                            creature_idx = int(frame.f_locals.get("idx")) if "idx" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
                         except Exception:
                             creature_idx = None
                         try:
-                            proj_index = int(frame.f_locals.get("proj_index")) if "proj_index" in frame.f_locals else None
+                            proj_index = int(frame.f_locals.get("proj_index")) if "proj_index" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
                         except Exception:
                             proj_index = None
                         proj = frame.f_locals.get("proj")
@@ -902,8 +901,8 @@ def trace_focus_tick(
                 world.state.rng.rand = orig_rand  # type: ignore[assignment]
                 world.state.particles._rand = orig_particles_rand
                 world.state.sprite_effects._rand = orig_sprite_effects_rand
-                projectiles_mod._within_native_find_radius = orig_within  # type: ignore[assignment]
-                presentation_step_mod.run_projectile_decal_hooks = orig_run_projectile_decal_hooks  # type: ignore[assignment]
+                projectiles_mod._within_native_find_radius = orig_within
+                presentation_step_mod.run_projectile_decal_hooks = orig_run_projectile_decal_hooks
 
             if not use_outside_draws:
                 draws = max(0, int(inter_tick_rand_draws))
@@ -913,18 +912,18 @@ def trace_focus_tick(
         world.state.rng.rand = orig_rand  # type: ignore[assignment]
         world.state.particles._rand = orig_particles_rand
         world.state.sprite_effects._rand = orig_sprite_effects_rand
-        projectiles_mod._within_native_find_radius = orig_within  # type: ignore[assignment]
-        presentation_step_mod.run_projectile_decal_hooks = orig_run_projectile_decal_hooks  # type: ignore[assignment]
+        projectiles_mod._within_native_find_radius = orig_within
+        presentation_step_mod.run_projectile_decal_hooks = orig_run_projectile_decal_hooks
 
     near_misses.sort(key=lambda row: float(row.margin))
     collision_hits.sort(key=lambda row: (int(row.proj_index or -1), int(row.step or -1), int(row.creature_idx or -1)))
 
-    creature_diffs_top = _summarize_creature_diffs(capture_creatures, world)
-    projectile_diffs_top = _summarize_projectile_diffs(capture_projectiles, world)
-    creature_capture_only, creature_rewrite_only = _collect_creature_presence_diffs(capture_creatures, world)
-    projectile_capture_only, projectile_rewrite_only = _collect_projectile_presence_diffs(capture_projectiles, world)
+    creature_diffs_top = _summarize_creature_diffs(capture_creatures, world)  # ty:ignore[invalid-argument-type]
+    projectile_diffs_top = _summarize_projectile_diffs(capture_projectiles, world)  # ty:ignore[invalid-argument-type]
+    creature_capture_only, creature_rewrite_only = _collect_creature_presence_diffs(capture_creatures, world)  # ty:ignore[invalid-argument-type]
+    projectile_capture_only, projectile_rewrite_only = _collect_projectile_presence_diffs(capture_projectiles, world)  # ty:ignore[invalid-argument-type]
     rng_alignment = _summarize_rng_alignment(
-        capture_rng_head=[row for row in capture_rng_head if isinstance(row, dict)],
+        capture_rng_head=[row for row in capture_rng_head if isinstance(row, dict)],  # ty:ignore[not-iterable]
         capture_rng_calls=int(capture_rng_calls),
         rewrite_rng_values=rng_values,
         rewrite_rng_callsites=rng_values_callsites,
@@ -944,8 +943,8 @@ def trace_focus_tick(
         collision_near_misses=near_misses,
         pre_projectiles=pre_projectiles,
         post_projectiles=post_projectiles,
-        capture_projectiles=list(capture_projectiles),
-        capture_creatures=list(capture_creatures),
+        capture_projectiles=list(capture_projectiles),  # ty:ignore[invalid-argument-type]
+        capture_creatures=list(capture_creatures),  # ty:ignore[invalid-argument-type]
         creature_diffs_top=creature_diffs_top,
         creature_capture_only=creature_capture_only,
         creature_rewrite_only=creature_rewrite_only,
@@ -1147,7 +1146,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Trace a single original-capture tick with rewrite RNG callsites and collision near-miss diagnostics.",
     )
-    parser.add_argument("capture", type=Path, help="raw gameplay capture (.jsonl/.jsonl.gz)")
+    parser.add_argument("capture", type=Path, help="capture file (.json/.json.gz)")
     parser.add_argument("--tick", type=int, required=True, help="tick index to trace")
     parser.add_argument(
         "--near-miss-threshold",

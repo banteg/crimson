@@ -26,10 +26,10 @@ from ..replay import (
     unpack_input_flags,
     warn_on_game_version_mismatch,
 )
-from ..replay.original_capture import (
-    ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
-    apply_original_capture_bootstrap_payload,
-    original_capture_bootstrap_payload_from_event_payload,
+from ..original.capture import (
+    CAPTURE_BOOTSTRAP_EVENT_KIND,
+    apply_capture_bootstrap_payload,
+    capture_bootstrap_payload_from_event_payload,
 )
 from ..sim.runners.common import build_damage_scale_by_type, status_from_snapshot
 from ..sim.sessions import RushDeterministicSession, SurvivalDeterministicSession
@@ -137,7 +137,7 @@ class ReplayPlaybackMode:
             self._rush = None
         elif int(replay.header.game_mode_id) == int(GameMode.RUSH):
             if any(
-                not (isinstance(event, UnknownEvent) and str(event.kind) == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND)
+                not (isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND)
                 for event in replay.events
             ):
                 raise ValueError("rush replay does not support events")
@@ -212,11 +212,11 @@ class ReplayPlaybackMode:
                     raise ValueError(f"perk_pick failed at tick={tick_index} choice_index={event.choice_index}")
                 continue
             if isinstance(event, UnknownEvent):
-                if str(event.kind) == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND:
-                    payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+                if str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
+                    payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
                     if payload is None:
                         raise ValueError(f"invalid bootstrap payload at tick={tick_index}")
-                    elapsed = apply_original_capture_bootstrap_payload(
+                    elapsed = apply_capture_bootstrap_payload(
                         payload,
                         state=world.state,
                         players=list(world.players),

@@ -4,25 +4,26 @@ import argparse
 import bisect
 from collections import Counter
 import functools
-import gzip
 import json
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 import re
 
+import msgspec
+
 from crimson.bonuses import bonus_label
 from crimson.game_modes import GameMode
 from crimson.perks import perk_label
 from crimson.replay.checkpoints import ReplayCheckpoint
-from crimson.replay.diff import ReplayFieldDiff, checkpoint_field_diffs
-from crimson.replay.original_capture import (
-    OriginalCaptureSidecar,
-    build_original_capture_dt_frame_overrides,
-    build_original_capture_dt_frame_ms_i32_overrides,
-    convert_original_capture_to_checkpoints,
-    convert_original_capture_to_replay,
-    load_original_capture_sidecar,
+from crimson.original.diff import ReplayFieldDiff, checkpoint_field_diffs
+from crimson.original.capture import (
+    build_capture_dt_frame_overrides,
+    build_capture_dt_frame_ms_i32_overrides,
+    convert_capture_to_checkpoints,
+    convert_capture_to_replay,
+    load_capture,
 )
+from crimson.original.schema import CaptureFile
 from crimson.sim.runners import run_rush_replay, run_survival_replay
 from crimson.weapons import WEAPON_BY_ID
 
@@ -141,7 +142,7 @@ def _int_or(value: object, default: int = -1) -> int:
     try:
         if value is None:
             return int(default)
-        return int(value)
+        return int(value)  # ty:ignore[invalid-argument-type]
     except Exception:
         return int(default)
 
@@ -150,7 +151,7 @@ def _float_or(value: object, default: float = 0.0) -> float:
     try:
         if value is None:
             return float(default)
-        return float(value)
+        return float(value)  # ty:ignore[invalid-argument-type]
     except Exception:
         return float(default)
 
@@ -159,7 +160,7 @@ def _fmt_opt_int(value: object, *, width: int = 0, unknown: str = "na") -> str:
     if value is None:
         return f"{unknown:>{width}}" if width > 0 else unknown
     try:
-        ivalue = int(value)
+        ivalue = int(value)  # ty:ignore[invalid-argument-type]
     except Exception:
         return f"{unknown:>{width}}" if width > 0 else unknown
     return f"{ivalue:{width}d}" if width > 0 else str(ivalue)
@@ -249,34 +250,46 @@ def _allow_capture_sample_creature_count(
     if expected_count < 0 or actual_count < 0:
         return False
 
-    # v2 capture `creature_active_count` can transiently disagree with sampled
+    # Capture `creature_active_count` can transiently disagree with sampled
     # active slots. When our sim count matches the sampled list exactly and this
     # is the only field mismatch, keep scanning for a stronger divergence.
     return actual_count == int(sample_count) and expected_count != int(sample_count)
 
 
-def _iter_jsonl_objects(path: Path):
-    open_fn = gzip.open if path.suffix == ".gz" else open
-    with open_fn(path, "rt", encoding="utf-8") as handle:
-        for line in handle:
-            text = line.strip()
-            if not text:
-                continue
-            try:
-                obj = json.loads(text)
-            except json.JSONDecodeError:
-                continue
-            if isinstance(obj, dict):
-                yield obj
+def _event_heads_by_kind(raw_event_heads: object) -> dict[str, list[dict[str, object]]]:
+    if not isinstance(raw_event_heads, list):
+        return {}
+
+    out: dict[str, list[dict[str, object]]] = {}
+    for item in raw_event_heads:
+        if not isinstance(item, dict):
+            continue
+        kind = str(item.get("kind", ""))  # ty:ignore[no-matching-overload]
+        if not kind:
+            continue
+        payload: dict[str, object]
+        if isinstance(item.get("data"), dict):  # ty:ignore[invalid-argument-type]
+            payload = dict(item["data"])  # ty:ignore[invalid-argument-type, no-matching-overload]
+        else:
+            payload = {str(key): value for key, value in item.items() if str(key) != "kind"}
+        out.setdefault(kind, []).append(payload)
+    return out
+
+
+def _iter_capture_tick_rows(path: Path):
+    capture = load_capture(path)
+    for tick in capture.ticks:
+        row = msgspec.to_builtins(tick)
+        if not isinstance(row, dict):
+            continue
+        row["event"] = "tick"
+        row["event_heads"] = _event_heads_by_kind(row.get("event_heads"))
+        yield row
 
 
 def _load_capture_sample_creature_counts(path: Path) -> dict[int, int]:
-    lower = str(path).lower()
-    if not (lower.endswith(".jsonl") or lower.endswith(".jsonl.gz")):
-        return {}
-
     out: dict[int, int] = {}
-    for obj in _iter_jsonl_objects(path):
+    for obj in _iter_capture_tick_rows(path):
         if obj.get("event") != "tick":
             continue
         tick_index = _int_or(obj.get("tick_index"), -1)
@@ -331,7 +344,7 @@ def _parse_raw_player_perk_counts(checkpoint_obj: dict[str, object]) -> dict[int
     perk_obj = checkpoint_obj.get("perk")
     if not isinstance(perk_obj, dict):
         return {}
-    raw_counts = perk_obj.get("player_nonzero_counts")
+    raw_counts = perk_obj.get("player_nonzero_counts")  # ty:ignore[invalid-argument-type]
     if not isinstance(raw_counts, list):
         return {}
 
@@ -363,7 +376,7 @@ def _build_run_summary_events_from_raw_capture(path: Path) -> list[RunSummaryEve
     prev_levels: dict[int, int] = {}
     prev_perk_counts: dict[int, Counter[int]] = {}
 
-    for obj in _iter_jsonl_objects(path):
+    for obj in _iter_capture_tick_rows(path):
         if obj.get("event") != "tick":
             continue
 
@@ -550,11 +563,12 @@ def _build_run_summary_events_from_checkpoints(expected: list[ReplayCheckpoint])
 
 
 def _build_run_summary_events(capture_path: Path, *, expected: list[ReplayCheckpoint]) -> list[RunSummaryEvent]:
-    lower = capture_path.name.lower()
-    if lower.endswith(".jsonl") or lower.endswith(".jsonl.gz"):
+    try:
         events = _build_run_summary_events_from_raw_capture(capture_path)
-        if events:
-            return events
+    except (OSError, ValueError):
+        events = []
+    if events:
+        return events
     return _build_run_summary_events_from_checkpoints(expected)
 
 
@@ -571,12 +585,8 @@ def _build_short_run_summary_events(events: list[RunSummaryEvent], *, max_rows: 
 
 
 def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> dict[int, dict[str, object]]:
-    lower = path.name.lower()
-    if not (lower.endswith(".jsonl") or lower.endswith(".jsonl.gz")):
-        return {}
-
     out: dict[int, dict[str, object]] = {}
-    for obj in _iter_jsonl_objects(path):
+    for obj in _iter_capture_tick_rows(path):
         if obj.get("event") != "tick":
             continue
         checkpoint = obj.get("checkpoint")
@@ -771,28 +781,28 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
 
 
 def _run_actual_checkpoints(
-    capture: OriginalCaptureSidecar,
+    capture: CaptureFile,
     *,
     max_ticks: int | None,
     seed: int | None,
     inter_tick_rand_draws: int,
 ) -> tuple[list[ReplayCheckpoint], list[ReplayCheckpoint], object]:
-    expected = convert_original_capture_to_checkpoints(capture).checkpoints
+    expected = convert_capture_to_checkpoints(capture).checkpoints
     if max_ticks is not None:
         tick_cap = max(0, int(max_ticks))
         expected = [ckpt for ckpt in expected if int(ckpt.tick_index) < int(tick_cap)]
 
-    replay = convert_original_capture_to_replay(capture, seed=seed)
-    dt_frame_overrides = build_original_capture_dt_frame_overrides(
+    replay = convert_capture_to_replay(capture, seed=seed)
+    dt_frame_overrides = build_capture_dt_frame_overrides(
         capture,
         tick_rate=int(replay.header.tick_rate),
     )
-    dt_frame_ms_i32_overrides = build_original_capture_dt_frame_ms_i32_overrides(capture)
+    dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
     checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected}
     inter_tick_rand_draws_by_tick = {
-        int(tick.tick_index): int(tick.rng_outside_before_calls)
+        int(tick.tick_index): int(tick.rng_outside_before_calls)  # ty:ignore[unresolved-attribute]
         for tick in capture.ticks
-        if int(tick.rng_outside_before_calls) >= 0
+        if int(tick.rng_outside_before_calls) >= 0  # ty:ignore[unresolved-attribute]
     }
     if inter_tick_rand_draws_by_tick:
         first_tick_index = min(inter_tick_rand_draws_by_tick)
@@ -1186,10 +1196,10 @@ def _aggregate_rng_callers(
         for caller in callers:
             if not isinstance(caller, dict):
                 continue
-            key = caller.get("caller_static")
+            key = caller.get("caller_static")  # ty:ignore[invalid-argument-type]
             if key is None:
                 continue
-            calls = _int_or(caller.get("calls"), 1)
+            calls = _int_or(caller.get("calls"), 1)  # ty:ignore[invalid-argument-type]
             if calls <= 0:
                 continue
             caller_key = str(key)
@@ -1216,10 +1226,10 @@ def _aggregate_neighbor_rng_callers_for_ticks(
                 for caller in callers:
                     if not isinstance(caller, dict):
                         continue
-                    key = caller.get("caller_static")
+                    key = caller.get("caller_static")  # ty:ignore[invalid-argument-type]
                     if key is None:
                         continue
-                    calls = _int_or(caller.get("calls"), 1)
+                    calls = _int_or(caller.get("calls"), 1)  # ty:ignore[invalid-argument-type]
                     if calls <= 0:
                         continue
                     picked.append((str(key), int(calls)))
@@ -1326,7 +1336,7 @@ def _find_first_projectile_hit_shortfall(
             for item in head_rows:
                 if not isinstance(item, dict):
                     continue
-                key = item.get("caller_static")
+                key = item.get("caller_static")  # ty:ignore[invalid-argument-type]
                 if key is None:
                     continue
                 reduced[str(key)] = int(reduced.get(str(key), 0)) + 1
@@ -1376,9 +1386,9 @@ def _extract_player_input_keys(raw: dict[str, object], player_index: int = 0) ->
     for idx, item in enumerate(rows):
         if not isinstance(item, dict):
             continue
-        row_player = _int_or(item.get("player_index"), idx)
+        row_player = _int_or(item.get("player_index"), idx)  # ty:ignore[invalid-argument-type]
         if int(row_player) == int(player_index):
-            return item
+            return item  # ty:ignore[invalid-return-type]
     return {}
 
 
@@ -1433,7 +1443,7 @@ def _build_investigation_leads(
     focus_raw = raw_debug_by_tick.get(int(focus_tick), {})
     sample_counts = focus_raw.get("sample_counts") if isinstance(focus_raw.get("sample_counts"), dict) else {}
     sample_counts_int = [
-        _int_or(sample_counts.get(key), -1)
+        _int_or(sample_counts.get(key), -1)  # ty:ignore[unresolved-attribute]
         for key in ("creatures", "projectiles", "secondary_projectiles", "bonuses")
     ]
     samples_missing = bool(not sample_counts or all(int(value) < 0 for value in sample_counts_int))
@@ -1447,14 +1457,14 @@ def _build_investigation_leads(
                         "for creatures/projectiles is unavailable on this run"
                     ),
                     (
-                        "use the latest v2 capture script defaults (full-detail per tick) so "
+                        "use the latest capture script defaults (full-detail per tick) so "
                         "`samples.secondary_projectiles` and `samples.creatures` are present at divergence ticks"
                     ),
                 ),
                 native_functions=(),
                 code_paths=(
-                    "scripts/frida/gameplay_diff_capture_v2.js",
-                    "docs/frida/gameplay-diff-capture-v2.md",
+                    "scripts/frida/gameplay_diff_capture.js",
+                    "docs/frida/gameplay-diff-capture.md",
                 ),
             )
         )
@@ -1480,13 +1490,13 @@ def _build_investigation_leads(
             rng_head_shortfall.get("caller_counts") if isinstance(rng_head_shortfall.get("caller_counts"), list) else []
         )
         top_native = _top_native_functions_from_callers(
-            caller_counts=caller_counts,
+            caller_counts=caller_counts,  # ty:ignore[invalid-argument-type]
             native_ranges=native_ranges,
             limit=5,
         )
         native_names = tuple(name for name, _calls in top_native)
         native_text = ", ".join(f"{name} x{calls}" for name, calls in top_native)
-        top_callers = ", ".join(f"{addr} x{calls}" for addr, calls in caller_counts[:6])
+        top_callers = ", ".join(f"{addr} x{calls}" for addr, calls in caller_counts[:6])  # ty:ignore[not-subscriptable]
 
         evidence = [
             (
@@ -1556,7 +1566,7 @@ def _build_investigation_leads(
             else []
         )
         caller_counts: list[tuple[str, int]] = []
-        for item in caller_counts_raw:
+        for item in caller_counts_raw:  # ty:ignore[not-iterable]
             if not isinstance(item, dict):
                 continue
             key = item.get("key")
@@ -1604,7 +1614,7 @@ def _build_investigation_leads(
                     (
                         "src/crimson/projectiles.py",
                         "src/crimson/sim/world_state.py",
-                        "scripts/frida/gameplay_diff_capture_v2.js",
+                        "scripts/frida/gameplay_diff_capture.js",
                     ),
                 ),
             )
@@ -1651,9 +1661,9 @@ def _build_investigation_leads(
                 if isinstance(focus_callers, list) and focus_callers:
                     top = sorted(
                         [
-                            (str(item.get("caller_static")), _int_or(item.get("calls"), 1))
+                            (str(item.get("caller_static")), _int_or(item.get("calls"), 1))  # ty:ignore[invalid-argument-type]
                             for item in focus_callers
-                            if isinstance(item, dict) and item.get("caller_static") is not None
+                            if isinstance(item, dict) and item.get("caller_static") is not None  # ty:ignore[invalid-argument-type]
                         ],
                         key=lambda item: (-int(item[1]), str(item[0])),
                     )[:6]
@@ -1836,11 +1846,11 @@ def _build_investigation_leads(
                         continue
                     preview.append(
                         "idx="
-                        + str(_int_or(item.get("creature_index"), -1))
+                        + str(_int_or(item.get("creature_index"), -1))  # ty:ignore[invalid-argument-type]
                         + "/type="
-                        + str(_int_or(item.get("damage_type"), -1))
+                        + str(_int_or(item.get("damage_type"), -1))  # ty:ignore[invalid-argument-type]
                         + "/k="
-                        + str(1 if bool(item.get("killed")) else 0)
+                        + str(1 if bool(item.get("killed")) else 0)  # ty:ignore[invalid-argument-type]
                     )
                 if preview:
                     evidence.append("native creature_apply_damage head: " + ", ".join(preview))
@@ -1850,9 +1860,9 @@ def _build_investigation_leads(
         if isinstance(focus_callers, list) and focus_callers:
             top = sorted(
                 [
-                    (str(item.get("caller_static")), _int_or(item.get("calls"), 1))
+                    (str(item.get("caller_static")), _int_or(item.get("calls"), 1))  # ty:ignore[invalid-argument-type]
                     for item in focus_callers
-                    if isinstance(item, dict) and item.get("caller_static") is not None
+                    if isinstance(item, dict) and item.get("caller_static") is not None  # ty:ignore[invalid-argument-type]
                 ],
                 key=lambda item: (-int(item[1]), str(item[0])),
             )[:6]
@@ -1961,20 +1971,20 @@ def _print_window(rows: list[dict[str, object]]) -> None:
         actual_rand_text = _fmt_opt_int(row.get("actual_rand_calls"), width=6)
         rand_delta_text = _fmt_opt_int(row.get("rand_calls_delta"), width=6)
         print(
-            f"{int(row['tick']):4d}  "
-            f"{int(row['expected_weapon']):2d}/{int(row['actual_weapon']):2d}    "
-            f"{float(row['expected_ammo']):6.2f}/{float(row['actual_ammo']):6.2f}  "
-            f"{int(row['expected_xp']):5d}/{int(row['actual_xp']):5d}  "
-            f"{int(row['expected_score']):6d}/{int(row['actual_score']):6d}  "
-            f"{int(row['expected_creatures']):4d}/{int(row['actual_creatures']):4d}    "
+            f"{int(row['tick']):4d}  "  # ty:ignore[invalid-argument-type]
+            f"{int(row['expected_weapon']):2d}/{int(row['actual_weapon']):2d}    "  # ty:ignore[invalid-argument-type]
+            f"{float(row['expected_ammo']):6.2f}/{float(row['actual_ammo']):6.2f}  "  # ty:ignore[invalid-argument-type]
+            f"{int(row['expected_xp']):5d}/{int(row['actual_xp']):5d}  "  # ty:ignore[invalid-argument-type]
+            f"{int(row['expected_score']):6d}/{int(row['actual_score']):6d}  "  # ty:ignore[invalid-argument-type]
+            f"{int(row['expected_creatures']):4d}/{int(row['actual_creatures']):4d}    "  # ty:ignore[invalid-argument-type]
             f"{expected_rand_text}/{actual_rand_text}/{rand_delta_text}     "
-            f"{int(row['actual_ps_draws']):6d}        "
+            f"{int(row['actual_ps_draws']):6d}        "  # ty:ignore[invalid-argument-type]
             f"{'Y' if bool(row['actual_rng_changed']) else 'N':>1}           "
-            f"{int(row['capture_bonus_spawn_events']):4d}       "
-            f"{int(row['capture_death_events']):3d}/{int(row['actual_deaths']):3d}      "
-            f"{int(row['capture_projectile_find_hits']):3d}/{int(row['actual_hits']):3d}      "
-            f"{int(row['expected_pickups']):3d}/{int(row['actual_pickups']):3d}      "
-            f"{int(row['expected_sfx']):3d}/{int(row['actual_sfx']):3d}"
+            f"{int(row['capture_bonus_spawn_events']):4d}       "  # ty:ignore[invalid-argument-type]
+            f"{int(row['capture_death_events']):3d}/{int(row['actual_deaths']):3d}      "  # ty:ignore[invalid-argument-type]
+            f"{int(row['capture_projectile_find_hits']):3d}/{int(row['actual_hits']):3d}      "  # ty:ignore[invalid-argument-type]
+            f"{int(row['expected_pickups']):3d}/{int(row['actual_pickups']):3d}      "  # ty:ignore[invalid-argument-type]
+            f"{int(row['expected_sfx']):3d}/{int(row['actual_sfx']):3d}"  # ty:ignore[invalid-argument-type]
         )
 
 
@@ -2015,7 +2025,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "capture",
         type=Path,
-        help="original capture sidecar (.json/.json.gz) or raw gameplay trace (.jsonl/.jsonl.gz)",
+        help="capture file (.json/.json.gz)",
     )
     parser.add_argument("--window", type=int, default=20, help="ticks before/after focus tick to display")
     parser.add_argument("--max-ticks", type=int, default=None, help="optional replay tick cap")
@@ -2086,7 +2096,7 @@ def main() -> int:
     capture_path = Path(args.capture)
     json_out_path = _resolve_json_out_path(args.json_out)
 
-    capture = load_original_capture_sidecar(capture_path)
+    capture = load_capture(capture_path)
     expected, actual, run_result = _run_actual_checkpoints(
         capture,
         max_ticks=args.max_ticks,
@@ -2105,11 +2115,11 @@ def main() -> int:
     print(f"capture={capture_path}")
     print(
         f"ticks(expected/actual)={len(expected)}/{len(actual)}"
-        f" sample_rate={int(capture.sample_rate)} run_ticks={int(run_result.ticks)}"
-        f" run_score_xp={int(run_result.score_xp)} run_kills={int(run_result.creature_kill_count)}"
+        f" sample_rate={int(capture.sample_rate)} run_ticks={int(run_result.ticks)}"  # ty:ignore[unresolved-attribute]
+        f" run_score_xp={int(run_result.score_xp)} run_kills={int(run_result.creature_kill_count)}"  # ty:ignore[unresolved-attribute]
     )
 
-    replay = convert_original_capture_to_replay(capture, seed=args.seed)
+    replay = convert_capture_to_replay(capture, seed=args.seed)
     print(
         f"mode={int(replay.header.game_mode_id)} tick_rate={int(replay.header.tick_rate)}"
         f" player_count={int(replay.header.player_count)} seed={int(replay.header.seed)}"
@@ -2285,13 +2295,13 @@ def main() -> int:
     zero_rand_consumed = [
         row
         for row in rows
-        if int(row["expected_rand_calls"]) == 0 and bool(row["actual_rng_changed"])
+        if int(row["expected_rand_calls"]) == 0 and bool(row["actual_rng_changed"])  # ty:ignore[invalid-argument-type]
     ]
     if zero_rand_consumed:
         print()
         print(
             "hint: expected rand_calls=0 but actual RNG state changed on ticks: "
-            + ", ".join(str(int(row["tick"])) for row in zero_rand_consumed[:12])
+            + ", ".join(str(int(row["tick"])) for row in zero_rand_consumed[:12])  # ty:ignore[invalid-argument-type]
         )
 
     if json_out_path is not None:
@@ -2300,10 +2310,10 @@ def main() -> int:
             "summary": {
                 "expected_count": len(expected),
                 "actual_count": len(actual),
-                "sample_rate": int(capture.sample_rate),
-                "run_ticks": int(run_result.ticks),
-                "run_score_xp": int(run_result.score_xp),
-                "run_kills": int(run_result.creature_kill_count),
+                "sample_rate": int(capture.sample_rate),  # ty:ignore[unresolved-attribute]
+                "run_ticks": int(run_result.ticks),  # ty:ignore[unresolved-attribute]
+                "run_score_xp": int(run_result.score_xp),  # ty:ignore[unresolved-attribute]
+                "run_kills": int(run_result.creature_kill_count),  # ty:ignore[unresolved-attribute]
             },
             "replay_header": {
                 "game_mode_id": int(replay.header.game_mode_id),

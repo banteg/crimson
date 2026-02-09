@@ -6,10 +6,10 @@ tags:
   - input
 ---
 
-# Task: Debug Missing Input Capture in `gameplay_diff_capture_v2.js`
+# Task: Debug Missing Input Capture in `gameplay_diff_capture.js`
 
 ## Problem
-Recent capture (`artifacts/frida/share/gameplay_diff_capture_v2.jsonl`) resolves and hooks input helpers successfully:
+Recent capture (`artifacts/frida/share/gameplay_diff_capture.json`) resolves and hooks input helpers successfully:
 
 - `input_any_key_pressed` (`0x00446000`)
 - `input_primary_just_pressed` (`0x00446030`)
@@ -21,7 +21,7 @@ This likely means the gameplay path for this run is not using those wrappers (or
 
 ## Goal
 Identify the real input query path used during gameplay and update
-`scripts/frida/gameplay_diff_capture_v2.js` so input capture produces non-zero,
+`scripts/frida/gameplay_diff_capture.js` so input capture produces non-zero,
 actionable telemetry during normal play.
 
 ## Constraints
@@ -30,9 +30,9 @@ actionable telemetry during normal play.
 - Backtrace should stay optional/off by default.
 
 ## Evidence to Start From
-- Capture file: `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
-- Summary: `analysis/frida/original_capture_v2_summary.json`
-- Script: `scripts/frida/gameplay_diff_capture_v2.js`
+- Capture file: `artifacts/frida/share/gameplay_diff_capture.json`
+- Summary: `analysis/frida/original_capture_summary.json`
+- Script: `scripts/frida/gameplay_diff_capture.js`
 - Input decompile references:
   - `analysis/ida/raw/crimsonland.exe/crimsonland.exe_decompiled.c`
   - `docs/detangling.md` (input sections)
@@ -88,13 +88,13 @@ For each candidate, collect:
 
 ## Frida Script Update Requirements
 
-Update `scripts/frida/gameplay_diff_capture_v2.js` to:
+Update `scripts/frida/gameplay_diff_capture.js` to:
 
 1. Hook the proven hot input function(s) (not just the wrappers if wrappers are cold).
 2. Emit per-tick compact stats compatible with existing fields:
    - `input_queries.stats.*`
    - `event_counts.input_*`
-3. Keep raw event logging gated by `CRIMSON_FRIDA_V2_INCLUDE_RAW_EVENTS`.
+3. Keep raw event diagnostics gated by `CRIMSON_FRIDA_INCLUDE_RAW_EVENTS`.
 4. Add env knobs only if necessary; defaults should “just work”.
 
 ## Verification Checklist
@@ -108,8 +108,8 @@ Run a short interactive session (movement + firing + menu transitions) and verif
 
 ## Deliverables
 
-1. Script patch to `scripts/frida/gameplay_diff_capture_v2.js`
-2. Doc update in `docs/frida/gameplay-diff-capture-v2.md` if hook source changes
+1. Script patch to `scripts/frida/gameplay_diff_capture.js`
+2. Doc update in `docs/frida/gameplay-diff-capture.md` if hook source changes
 3. Short findings note (append to this file or add sibling note) with:
    - root cause
    - final hooked function(s)

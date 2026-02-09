@@ -11,7 +11,7 @@ from crimson.replay.checkpoints import (
     ReplayPerkSnapshot,
     build_checkpoint,
 )
-from crimson.replay.diff import checkpoint_field_diffs, compare_checkpoints
+from crimson.original.diff import checkpoint_field_diffs, compare_checkpoints
 from crimson.sim.world_state import WorldState
 
 

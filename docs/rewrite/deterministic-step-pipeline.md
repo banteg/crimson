@@ -110,7 +110,7 @@ It reports first divergence tick with command/state/rng context.
 For original-game capture comparison, use capture-native verification first:
 
 ```bash
-uv run crimson replay verify-original-capture capture.jsonl
+uv run crimson original verify-capture capture.json
 ```
 
 This compares checkpoint state fields at captured ticks and reports first
@@ -120,12 +120,11 @@ domains from the original executable and rewrite RNG mark/state domains.
 Original-capture sidecars now have a dedicated schema + converter:
 
 ```bash
-uv run crimson replay convert-original-capture capture.json.gz expected.checkpoints.json.gz
+uv run crimson original convert-capture capture.json.gz expected.checkpoints.json.gz
 ```
 
-`convert-original-capture` also accepts raw Frida traces from
-`gameplay_state_capture.js` (`.jsonl` / `.jsonl.gz`) and derives sparse
-checkpoints from `snapshot_compact` / `snapshot_full` events.
+`convert-capture` accepts canonical gameplay-diff capture files only (`.json` /
+`.json.gz`).
 
 The same command now also writes a replay file next to the checkpoints
 (default: `expected.crdemo.gz`, override with `--replay`).

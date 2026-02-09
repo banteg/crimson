@@ -4,22 +4,22 @@ from dataclasses import dataclass, replace
 
 from ..game_modes import GameMode
 from ..sim.runners import RunResult, run_rush_replay, run_survival_replay
-from .checkpoints import ReplayCheckpoint
-from .diff import ReplayFieldDiff, checkpoint_field_diffs
-from .original_capture import (
-    OriginalCaptureSidecar,
-    build_original_capture_dt_frame_overrides,
-    convert_original_capture_to_checkpoints,
-    convert_original_capture_to_replay,
+from ..replay.checkpoints import ReplayCheckpoint
+from .capture import (
+    CaptureFile,
+    build_capture_dt_frame_overrides,
+    convert_capture_to_checkpoints,
+    convert_capture_to_replay,
 )
+from .diff import ReplayFieldDiff, checkpoint_field_diffs
 
 
-class OriginalCaptureVerifyError(ValueError):
+class CaptureVerifyError(ValueError):
     pass
 
 
 @dataclass(frozen=True, slots=True)
-class OriginalCaptureVerifyFailure:
+class CaptureVerifyFailure:
     kind: str
     tick_index: int
     expected: ReplayCheckpoint
@@ -28,14 +28,14 @@ class OriginalCaptureVerifyFailure:
 
 
 @dataclass(frozen=True, slots=True)
-class OriginalCaptureVerifyResult:
+class CaptureVerifyResult:
     ok: bool
     checked_count: int
     expected_count: int
     actual_count: int
     elapsed_baseline_tick: int | None = None
     elapsed_offset_ms: int | None = None
-    failure: OriginalCaptureVerifyFailure | None = None
+    failure: CaptureVerifyFailure | None = None
 
 
 def _allow_one_tick_creature_count_lag(
@@ -85,8 +85,8 @@ def _allow_one_tick_creature_count_lag(
     return False
 
 
-def verify_original_capture(
-    capture: OriginalCaptureSidecar,
+def verify_capture(
+    capture: CaptureFile,
     *,
     seed: int | None = None,
     max_ticks: int | None = None,
@@ -94,14 +94,14 @@ def verify_original_capture(
     trace_rng: bool = False,
     max_field_diffs: int = 16,
     float_abs_tol: float = 0.001,
-) -> tuple[OriginalCaptureVerifyResult, RunResult]:
-    expected = convert_original_capture_to_checkpoints(capture).checkpoints
+) -> tuple[CaptureVerifyResult, RunResult]:
+    expected = convert_capture_to_checkpoints(capture).checkpoints
     if max_ticks is not None:
         tick_cap = max(0, int(max_ticks))
         expected = [ckpt for ckpt in expected if int(ckpt.tick_index) < int(tick_cap)]
 
-    replay = convert_original_capture_to_replay(capture, seed=seed)
-    dt_frame_overrides = build_original_capture_dt_frame_overrides(
+    replay = convert_capture_to_replay(capture, seed=seed)
+    dt_frame_overrides = build_capture_dt_frame_overrides(
         capture,
         tick_rate=int(replay.header.tick_rate),
     )
@@ -109,8 +109,6 @@ def verify_original_capture(
     actual: list[ReplayCheckpoint] = []
 
     mode = int(replay.header.game_mode_id)
-    # Ghidra decompile (`console_hotkey_update`) shows one unconditional
-    # `crt_rand()` draw outside `gameplay_update_and_render` each frame.
     inter_tick_rand_draws = 1
     if mode == int(GameMode.SURVIVAL):
         run_result = run_survival_replay(
@@ -136,7 +134,7 @@ def verify_original_capture(
             inter_tick_rand_draws=int(inter_tick_rand_draws),
         )
     else:
-        raise OriginalCaptureVerifyError(f"unsupported game mode for original capture verification: {mode}")
+        raise CaptureVerifyError(f"unsupported game mode for capture verification: {mode}")
 
     expected_by_tick = {int(ckpt.tick_index): ckpt for ckpt in expected}
     actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
@@ -151,14 +149,14 @@ def verify_original_capture(
         act = actual_by_tick.get(tick)
         if act is None:
             return (
-                OriginalCaptureVerifyResult(
+                CaptureVerifyResult(
                     ok=False,
                     checked_count=checked_count,
                     expected_count=len(expected),
                     actual_count=len(actual),
                     elapsed_baseline_tick=elapsed_baseline_tick,
                     elapsed_offset_ms=elapsed_offset_ms,
-                    failure=OriginalCaptureVerifyFailure(
+                    failure=CaptureVerifyFailure(
                         kind="missing_checkpoint",
                         tick_index=tick,
                         expected=exp,
@@ -173,9 +171,6 @@ def verify_original_capture(
             elapsed_baseline_tick = int(tick)
             elapsed_offset_ms = int(act.elapsed_ms) - int(exp.elapsed_ms)
 
-        # Raw original captures carry wall-clock deltas from variable frame pacing.
-        # Current replay reconstruction drives a fixed simulation step, so elapsed
-        # values are not yet authoritative for divergence detection.
         exp_for_diff = replace(exp, elapsed_ms=-1)
         field_diffs = checkpoint_field_diffs(
             exp_for_diff,
@@ -197,14 +192,14 @@ def verify_original_capture(
             continue
         if field_diffs:
             return (
-                OriginalCaptureVerifyResult(
+                CaptureVerifyResult(
                     ok=False,
                     checked_count=checked_count,
                     expected_count=len(expected),
                     actual_count=len(actual),
                     elapsed_baseline_tick=elapsed_baseline_tick,
                     elapsed_offset_ms=elapsed_offset_ms,
-                    failure=OriginalCaptureVerifyFailure(
+                    failure=CaptureVerifyFailure(
                         kind="state_mismatch",
                         tick_index=tick,
                         expected=exp,
@@ -216,7 +211,7 @@ def verify_original_capture(
             )
 
     return (
-        OriginalCaptureVerifyResult(
+        CaptureVerifyResult(
             ok=True,
             checked_count=checked_count,
             expected_count=len(expected),
