@@ -118,6 +118,7 @@ See also:
 - [Module map (Grim vs Crimson)](module-map.md)
 - [Deterministic simulation PRD](deterministic-sim-prd.md)
 - [Deterministic step pipeline](deterministic-step-pipeline.md)
+- [Float parity policy](float-parity-policy.md)
 - [Terrain (rewrite)](terrain.md)
 - [Bonus pickups (rewrite)](bonuses.md)
 - [Survival entry fade (decompile notes)](survival-transition-fade.md)

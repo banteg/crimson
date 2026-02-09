@@ -172,8 +172,10 @@ High level:
 
 - Keep changes small and reviewable (one subsystem/feature at a time).
 - Prefer *measured parity* (captures/logs/deterministic tests) over “looks right”.
-- When porting float constants from decompilation, prefer the intended value
-  (e.g. `0.6` instead of `0.6000000238418579` when it’s clearly a float32 artifact).
+- For deterministic simulation paths, preserve native float32 math behavior
+  (constants, operation order, and store boundaries) even when literals look
+  less readable (e.g. keep `0.6000000238418579` when that matches native behavior).
+  See [rewrite/float parity policy](docs/rewrite/float-parity-policy.md).
 
 ---
 
