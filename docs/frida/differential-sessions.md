@@ -658,3 +658,43 @@ Each entry should capture:
   - `CRIMSON_FRIDA_V2_RNG_OUTSIDE_TICK_HEAD=-1`
   - `CRIMSON_FRIDA_V2_RNG_STATE_MIRROR=1`
 - Re-run divergence report on that capture and anchor the first shortfall by `seq_first/seq_last` instead of treating raw tick numbers as cross-session comparable.
+
+---
+
+## Session 2026-02-09-q
+
+- **Session ID:** `2026-02-09-q`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `28b8db6eb6b679455dad7376ef76149d26fdd7339dea246518685938cdb48662`
+- **Primary commands:**
+  - divergence check:
+    `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_latest.json`
+  - focus trace on first mismatch tick:
+    `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 1069 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick1069_latest.json`
+- **First verifier mismatch:** `tick 1069 (players[0].ammo)` (`expected=25.0`, `actual=24.0`)
+
+### Findings
+
+- This recording has a different early divergence profile than the prior `2026-02-08` capture family:
+  - first checkpoint mismatch is now at `tick 1069` (ammo),
+  - expected `rand_calls=0` but rewrite consumes RNG at this tick.
+- Focus trace identifies rewrite-only RNG at `tick 1069` in weapon-fire/presentation callsites:
+  - `src/crimson/gameplay.py:player_fire_weapon` (`2156`, `2157`, `2168`),
+  - `src/crimson/effects.py:spawn_shell_casing` (`705`, `706`, `709`, `710`).
+- The mismatch pattern is consistent with rewrite firing and reducing ammo where native capture reports no gameplay RNG draws for that tick window.
+- Focus trace also reports a rewrite-only projectile presence at the focus tick (`projectile index 0`, `type=2`, `life=0.4`), reinforcing the extra-fire-path hypothesis.
+
+### Fixes from this session
+
+- No gameplay fix landed yet in this session; this pass established a new session baseline and isolated first-callsite evidence for the early ammo divergence path.
+
+### Validation
+
+- `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_latest.json` *(expected non-zero exit while diverged)*
+- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 1069 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick1069_latest.json`
+
+### Next probe
+
+- Instrument and compare `player_fire_weapon` gating at `tick 1069` against capture input telemetry to explain why rewrite takes a shot path when native does not:
+  - verify fire-edge detection and key-latch handling in the replay-input reconstruction path,
+  - verify no rewrite-only call path can trigger `player_fire_weapon` in this state.
