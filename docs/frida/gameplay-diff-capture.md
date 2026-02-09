@@ -12,7 +12,7 @@ single canonical JSON object designed for one-shot `msgspec` decoding.
 
 Primary output:
 
-- `C:\share\frida\gameplay_diff_capture.json.gz`
+- `C:\share\frida\gameplay_diff_capture.json`
 
 Attach:
 
@@ -44,7 +44,7 @@ Notes:
 
 ```text
 uv run crimson original convert-capture \
-  artifacts/frida/share/gameplay_diff_capture.json.gz \
+  artifacts/frida/share/gameplay_diff_capture.json \
   analysis/frida/gameplay_diff_capture.checkpoints.json.gz
 ```
 
@@ -55,14 +55,14 @@ This also writes `analysis/frida/gameplay_diff_capture.crdemo.gz` by default
 
 ```text
 uv run crimson original verify-capture \
-  artifacts/frida/share/gameplay_diff_capture.json.gz
+  artifacts/frida/share/gameplay_diff_capture.json
 ```
 
 ## Divergence report
 
 ```text
 uv run crimson original divergence-report \
-  artifacts/frida/share/gameplay_diff_capture.json.gz \
+  artifacts/frida/share/gameplay_diff_capture.json \
   --float-abs-tol 2e-3 \
   --window 24 \
   --lead-lookback 1024 \
@@ -75,7 +75,7 @@ Use `--run-summary-short` for a shorter narrative.
 
 ```text
 uv run crimson original focus-trace \
-  artifacts/frida/share/gameplay_diff_capture.json.gz \
+  artifacts/frida/share/gameplay_diff_capture.json \
   --tick 3453 \
   --near-miss-threshold 0.35 \
   --json-out
@@ -85,7 +85,7 @@ uv run crimson original focus-trace \
 
 ```text
 uv run crimson original creature-trajectory \
-  artifacts/frida/share/gameplay_diff_capture.json.gz \
+  artifacts/frida/share/gameplay_diff_capture.json \
   --creature-index 120 \
   --json-out
 ```

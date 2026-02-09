@@ -62,7 +62,7 @@ high-confidence `event|function -> id` mappings for promotion into
 
 For deterministic replay-side verification (`convert-capture`,
 `verify-capture`, divergence/focus tooling), use
-`artifacts/frida/share/gameplay_diff_capture.json.gz` from
+`artifacts/frida/share/gameplay_diff_capture.json` from
 `scripts/frida/gameplay_diff_capture.js`. The differential pipeline now expects
 the canonical gameplay-diff capture schema and no longer consumes raw
 `gameplay_state_capture.jsonl` logs directly.
