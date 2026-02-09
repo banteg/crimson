@@ -107,6 +107,10 @@ const CONFIG = {
   maxEventsPerTick: parseLimitEnv("CRIMSON_FRIDA_V2_MAX_EVENTS_PER_TICK", -1, 0),
   maxRngHeadPerTick: parseLimitEnv("CRIMSON_FRIDA_V2_RNG_HEAD", -1, 0),
   maxRngCallerKinds: parseLimitEnv("CRIMSON_FRIDA_V2_RNG_CALLERS", -1, 1),
+  enableRngRollLog: parseBoolEnv("CRIMSON_FRIDA_V2_RNG_ROLL_LOG", true),
+  maxRngRollLogEvents: parseLimitEnv("CRIMSON_FRIDA_V2_MAX_RNG_ROLL_LOG_EVENTS", -1, 0),
+  maxRngOutsideTickHead: parseLimitEnv("CRIMSON_FRIDA_V2_RNG_OUTSIDE_TICK_HEAD", -1, 0),
+  enableRngStateMirror: parseBoolEnv("CRIMSON_FRIDA_V2_RNG_STATE_MIRROR", true),
   maxCreatureDeltaIds: Math.max(1, parseIntEnv("CRIMSON_FRIDA_V2_CREATURE_DELTA_IDS", 32)),
   creatureSampleLimit: parseIntEnv("CRIMSON_FRIDA_V2_CREATURE_SAMPLE_LIMIT", -1),
   projectileSampleLimit: parseIntEnv("CRIMSON_FRIDA_V2_PROJECTILE_SAMPLE_LIMIT", -1),
@@ -281,6 +285,8 @@ const COUNTS = {
 const STATUS_WEAPON_USAGE_COUNT = 53;
 const PROJECTILE_UPDATE_START = 0x00420b90;
 const PROJECTILE_UPDATE_END = 0x00422c6f;
+const CRT_RAND_MULT = 214013 >>> 0;
+const CRT_RAND_INC = 2531011 >>> 0;
 
 const fnPtrs = {};
 const grimFnPtrs = {};
@@ -313,6 +319,16 @@ const outState = {
   rngCallsTotal: 0,
   rngCallsOutsideTick: 0,
   rngHashState: fnvInit(),
+  rngCallSeq: 0,
+  rngRollLogEmitted: 0,
+  rngRollLogDropped: 0,
+  rngMirrorStateU32: null,
+  rngMirrorMismatchCount: 0,
+  rngMirrorUnknownCalls: 0,
+  rngSeedEpoch: 0,
+  rngOutsideTickPendingHead: [],
+  rngOutsideTickPendingCalls: 0,
+  rngOutsideTickPendingDropped: 0,
   lastSeed: null,
   lastTickElapsedMs: null,
   lastTickGameplayFrame: null,
@@ -1282,6 +1298,7 @@ function updatePlayerInputKeyState(tick, queryName, keyCode, pressed, callerStat
 function makeTickContext() {
   const before = makeCoreSnapshot();
   const creatureDigestBefore = CONFIG.enableCreatureLifecycleDigest ? captureCreatureDigest() : null;
+  const outsideRngBefore = takePendingOutsideRngRolls();
   const tickIndex = Math.max(0, outState.gameplayFrame - 1);
   const playerBindings =
     before && before.input_bindings && Array.isArray(before.input_bindings.players)
@@ -1362,6 +1379,15 @@ function makeTickContext() {
       head: [],
       caller_counts: {},
       caller_overflow: 0,
+      first_seq: null,
+      last_seq: null,
+      seed_epoch_enter: outState.rngSeedEpoch >>> 0,
+      seed_epoch_last: outState.rngSeedEpoch >>> 0,
+      outside_before_calls: outsideRngBefore.calls,
+      outside_before_dropped: outsideRngBefore.dropped,
+      outside_before_head: outsideRngBefore.head,
+      mirror_mismatch_total_enter: outState.rngMirrorMismatchCount,
+      mirror_unknown_total_enter: outState.rngMirrorUnknownCalls,
     },
     phase_markers: [
       {
@@ -1494,27 +1520,142 @@ function registerInputQuery(kind, pressed, token, payload) {
   }
 }
 
+function stepCrtRandState(stateU32) {
+  return (Math.imul(stateU32 >>> 0, CRT_RAND_MULT) + CRT_RAND_INC) >>> 0;
+}
+
+function queueOutsideRngRoll(rollRow) {
+  outState.rngOutsideTickPendingCalls += 1;
+  const cap = CONFIG.maxRngOutsideTickHead;
+  if (cap === 0) {
+    outState.rngOutsideTickPendingDropped += 1;
+    return;
+  }
+  if (cap > 0 && outState.rngOutsideTickPendingHead.length >= cap) {
+    outState.rngOutsideTickPendingDropped += 1;
+    return;
+  }
+  outState.rngOutsideTickPendingHead.push(rollRow);
+}
+
+function takePendingOutsideRngRolls() {
+  const head = outState.rngOutsideTickPendingHead;
+  const calls = outState.rngOutsideTickPendingCalls;
+  const dropped = outState.rngOutsideTickPendingDropped;
+  outState.rngOutsideTickPendingHead = [];
+  outState.rngOutsideTickPendingCalls = 0;
+  outState.rngOutsideTickPendingDropped = 0;
+  return {
+    head: head,
+    calls: calls,
+    dropped: dropped,
+  };
+}
+
+function emitRngRollEvent(rollRow) {
+  if (!rollRow || !CONFIG.enableRngRollLog) return;
+  const cap = CONFIG.maxRngRollLogEvents;
+  if (cap >= 0 && outState.rngRollLogEmitted >= cap) {
+    outState.rngRollLogDropped += 1;
+    return;
+  }
+  outState.rngRollLogEmitted += 1;
+  writeLine({
+    event: "rng_roll",
+    script: "gameplay_diff_capture_v2",
+    session_id: outState.sessionId,
+    seq: rollRow.seq,
+    seed_epoch: rollRow.seed_epoch,
+    tick_index: rollRow.tick_index,
+    tick_call_index: rollRow.tick_call_index,
+    outside_tick: rollRow.outside_tick,
+    value_i32: rollRow.value,
+    value_u32: rollRow.value_u32,
+    value_15: rollRow.value_15,
+    caller: rollRow.caller,
+    caller_static: rollRow.caller_static,
+    state_before_u32: rollRow.state_before_u32,
+    state_after_u32: rollRow.state_after_u32,
+    state_before_hex: rollRow.state_before_hex,
+    state_after_hex: rollRow.state_after_hex,
+    expected_value_15: rollRow.expected_value_15,
+    mirror_match: rollRow.mirror_match,
+  });
+}
+
 function registerRngRoll(value, callerStaticHex, callerLabel) {
+  let valueI32 = null;
+  if (Number.isFinite(value)) {
+    valueI32 = value | 0;
+  }
+
   outState.rngCallsTotal += 1;
-  outState.rngHashState = fnvMixString(outState.rngHashState, String(value));
+  outState.rngCallSeq += 1;
+  outState.rngHashState = fnvMixString(
+    outState.rngHashState,
+    String(valueI32 == null ? "na" : valueI32) + "@" + String(callerStaticHex || "na")
+  );
   outState.rngHashState = fnvMixByte(outState.rngHashState, 0x0a);
 
   const tick = outState.currentTick;
+  const seq = outState.rngCallSeq;
+  const tickCallIndex = tick ? tick.rng.calls + 1 : null;
+  const stateBeforeU32 =
+    CONFIG.enableRngStateMirror && outState.rngMirrorStateU32 != null ? outState.rngMirrorStateU32 >>> 0 : null;
+  const stateAfterU32 = stateBeforeU32 == null ? null : stepCrtRandState(stateBeforeU32);
+  const expectedValue15 = stateAfterU32 == null ? null : (stateAfterU32 >>> 16) & 0x7fff;
+  let mirrorMatch = null;
+  if (CONFIG.enableRngStateMirror) {
+    if (stateAfterU32 == null) {
+      outState.rngMirrorUnknownCalls += 1;
+    } else if (valueI32 != null) {
+      mirrorMatch = ((valueI32 & 0x7fff) >>> 0) === (expectedValue15 >>> 0);
+      if (!mirrorMatch) outState.rngMirrorMismatchCount += 1;
+    }
+  }
+  if (CONFIG.enableRngStateMirror && stateAfterU32 != null) {
+    outState.rngMirrorStateU32 = stateAfterU32 >>> 0;
+  }
+
+  const rollRow = {
+    seq: seq >>> 0,
+    seed_epoch: outState.rngSeedEpoch >>> 0,
+    tick_index: tick ? tick.tick_index : null,
+    tick_call_index: tickCallIndex,
+    outside_tick: !tick,
+    value: valueI32,
+    value_u32: valueI32 == null ? null : valueI32 >>> 0,
+    value_15: valueI32 == null ? null : valueI32 & 0x7fff,
+    caller: callerLabel || null,
+    caller_static: callerStaticHex || null,
+    state_before_u32: stateBeforeU32,
+    state_after_u32: stateAfterU32,
+    state_before_hex: stateBeforeU32 == null ? null : toHex(stateBeforeU32, 8),
+    state_after_hex: stateAfterU32 == null ? null : toHex(stateAfterU32, 8),
+    expected_value_15: expectedValue15,
+    mirror_match: mirrorMatch,
+  };
+
   if (!tick) {
     outState.rngCallsOutsideTick += 1;
-    return;
+    queueOutsideRngRoll(rollRow);
+    emitRngRollEvent(rollRow);
+    return rollRow;
   }
+
   tick.rng.calls += 1;
-  tick.rng.last_value = value;
-  tick.rng.hash_state = fnvMixString(tick.rng.hash_state, String(value) + "@" + String(callerStaticHex || "na"));
+  tick.rng.last_value = valueI32;
+  tick.rng.first_seq = tick.rng.first_seq == null ? seq >>> 0 : tick.rng.first_seq;
+  tick.rng.last_seq = seq >>> 0;
+  tick.rng.seed_epoch_last = outState.rngSeedEpoch >>> 0;
+  tick.rng.hash_state = fnvMixString(
+    tick.rng.hash_state,
+    String(valueI32 == null ? "na" : valueI32) + "@" + String(callerStaticHex || "na") + "#" + String(seq >>> 0)
+  );
   tick.rng.hash_state = fnvMixByte(tick.rng.hash_state, 0x0a);
 
   if (CONFIG.maxRngHeadPerTick < 0 || tick.rng.head.length < CONFIG.maxRngHeadPerTick) {
-    tick.rng.head.push({
-      value: value,
-      caller_static: callerStaticHex,
-      caller: callerLabel,
-    });
+    tick.rng.head.push(rollRow);
   }
 
   const key = callerStaticHex || "unknown";
@@ -1526,6 +1667,9 @@ function registerRngRoll(value, callerStaticHex, callerLabel) {
   } else {
     tick.rng.caller_overflow += 1;
   }
+
+  emitRngRollEvent(rollRow);
+  return rollRow;
 }
 
 function checkpointPlayersFromCompact(players) {
@@ -1743,6 +1887,21 @@ function finalizeTick() {
     top_bonus_spawn_callers: topCounterPairs(tick.bonus_spawn_callers, 8),
     mode_samples: tick.mode_samples,
   };
+  const rngDiagnostics = {
+    seq_first: tick.rng.first_seq,
+    seq_last: tick.rng.last_seq,
+    seed_epoch_enter: tick.rng.seed_epoch_enter,
+    seed_epoch_last: tick.rng.seed_epoch_last,
+    outside_before_calls: tick.rng.outside_before_calls,
+    outside_before_dropped: tick.rng.outside_before_dropped,
+    outside_before_head: tick.rng.outside_before_head,
+    mirror_mismatch_total_enter: tick.rng.mirror_mismatch_total_enter,
+    mirror_mismatch_total_leave: outState.rngMirrorMismatchCount,
+    mirror_unknown_total_enter: tick.rng.mirror_unknown_total_enter,
+    mirror_unknown_total_leave: outState.rngMirrorUnknownCalls,
+    roll_log_emitted_total: outState.rngRollLogEmitted,
+    roll_log_dropped_total: outState.rngRollLogDropped,
+  };
   const creatureLifecycleDiagnostics = creatureLifecycle || null;
 
   const checkpoint = {
@@ -1775,6 +1934,15 @@ function finalizeTick() {
       rand_head: tick.rng.head,
       rand_callers: rngCallers,
       rand_caller_overflow: tick.rng.caller_overflow,
+      rand_seq_first: tick.rng.first_seq,
+      rand_seq_last: tick.rng.last_seq,
+      rand_seed_epoch_enter: tick.rng.seed_epoch_enter,
+      rand_seed_epoch_last: tick.rng.seed_epoch_last,
+      rand_outside_before_calls: tick.rng.outside_before_calls,
+      rand_outside_before_dropped: tick.rng.outside_before_dropped,
+      rand_outside_before_head: tick.rng.outside_before_head,
+      rand_mirror_mismatch_total: outState.rngMirrorMismatchCount,
+      rand_mirror_unknown_total: outState.rngMirrorUnknownCalls,
     },
     deaths: [UNKNOWN_DEATH],
     perk: {
@@ -1788,6 +1956,7 @@ function finalizeTick() {
       sampling_phase: "post_gameplay_update_and_render",
       timing: timing,
       spawn: spawnDiagnostics,
+      rng: rngDiagnostics,
       creature_lifecycle: creatureLifecycleDiagnostics,
       before_players: checkpointPlayersFromCompact(beforePlayers),
       before_status: {
@@ -1831,11 +2000,21 @@ function finalizeTick() {
       head: tick.rng.head,
       callers: rngCallers,
       caller_overflow: tick.rng.caller_overflow,
+      seq_first: tick.rng.first_seq,
+      seq_last: tick.rng.last_seq,
+      seed_epoch_enter: tick.rng.seed_epoch_enter,
+      seed_epoch_last: tick.rng.seed_epoch_last,
+      outside_before_calls: tick.rng.outside_before_calls,
+      outside_before_dropped: tick.rng.outside_before_dropped,
+      outside_before_head: tick.rng.outside_before_head,
+      mirror_mismatch_total: outState.rngMirrorMismatchCount,
+      mirror_unknown_total: outState.rngMirrorUnknownCalls,
     },
     diagnostics: {
       sampling_phase: "post_gameplay_update_and_render",
       timing: timing,
       spawn: spawnDiagnostics,
+      rng: rngDiagnostics,
       creature_lifecycle: creatureLifecycleDiagnostics,
     },
     input_approx: buildInputApprox(afterPlayers, tick),
@@ -2136,11 +2315,17 @@ function installHooks() {
         delete srandContextByTid[this.threadId];
         if (!ctx) return;
         outState.lastSeed = ctx.seed_u32;
+        outState.rngSeedEpoch += 1;
+        if (CONFIG.enableRngStateMirror && ctx.seed_u32 != null) {
+          outState.rngMirrorStateU32 = ctx.seed_u32 >>> 0;
+        }
         emitRawEvent({
           event: "crt_srand",
           seed_u32: ctx.seed_u32,
           seed_hex: ctx.seed_u32 == null ? null : toHex(ctx.seed_u32, 8),
           caller: ctx.caller,
+          seed_epoch: outState.rngSeedEpoch >>> 0,
+          rng_call_seq: outState.rngCallSeq >>> 0,
         });
       },
     });
@@ -2162,14 +2347,21 @@ function installHooks() {
         } catch (_) {
           value = null;
         }
-        registerRngRoll(value, ctx ? ctx.caller_static : null, ctx ? ctx.caller : null);
-        const tick = outState.currentTick;
+        const roll = registerRngRoll(value, ctx ? ctx.caller_static : null, ctx ? ctx.caller : null);
         emitRawEvent({
           event: "crt_rand",
           value_i32: value,
           caller: ctx ? ctx.caller : null,
           caller_static: ctx ? ctx.caller_static : null,
-          tick_index: tick ? tick.tick_index : null,
+          seq: roll ? roll.seq : null,
+          seed_epoch: roll ? roll.seed_epoch : null,
+          tick_index: roll ? roll.tick_index : null,
+          tick_call_index: roll ? roll.tick_call_index : null,
+          outside_tick: roll ? roll.outside_tick : null,
+          state_before_u32: roll ? roll.state_before_u32 : null,
+          state_after_u32: roll ? roll.state_after_u32 : null,
+          expected_value_15: roll ? roll.expected_value_15 : null,
+          mirror_match: roll ? roll.mirror_match : null,
         });
       },
     });
@@ -2922,7 +3114,17 @@ function emitHeartbeat() {
     player_count: outState.playerCountResolved,
     input: readInputTelemetryCompact(),
     rng_calls_total: outState.rngCallsTotal,
+    rng_call_seq: outState.rngCallSeq >>> 0,
     rng_calls_outside_tick: outState.rngCallsOutsideTick,
+    rng_seed_epoch: outState.rngSeedEpoch >>> 0,
+    rng_mirror_state_u32: outState.rngMirrorStateU32,
+    rng_mirror_state_hex: outState.rngMirrorStateU32 == null ? null : toHex(outState.rngMirrorStateU32, 8),
+    rng_mirror_mismatch_count: outState.rngMirrorMismatchCount,
+    rng_mirror_unknown_calls: outState.rngMirrorUnknownCalls,
+    rng_roll_log_emitted: outState.rngRollLogEmitted,
+    rng_roll_log_dropped: outState.rngRollLogDropped,
+    rng_outside_pending_calls: outState.rngOutsideTickPendingCalls,
+    rng_outside_pending_dropped: outState.rngOutsideTickPendingDropped,
     globals: readGameplayGlobalsCompact(),
     players: readPlayersCompact(),
   });
@@ -2988,6 +3190,10 @@ function main() {
       max_events_per_tick: CONFIG.maxEventsPerTick,
       max_rng_head_per_tick: CONFIG.maxRngHeadPerTick,
       max_rng_caller_kinds: CONFIG.maxRngCallerKinds,
+      enable_rng_roll_log: CONFIG.enableRngRollLog,
+      max_rng_roll_log_events: CONFIG.maxRngRollLogEvents,
+      max_rng_outside_tick_head: CONFIG.maxRngOutsideTickHead,
+      enable_rng_state_mirror: CONFIG.enableRngStateMirror,
       max_creature_delta_ids: CONFIG.maxCreatureDeltaIds,
       creature_sample_limit: CONFIG.creatureSampleLimit,
       projectile_sample_limit: CONFIG.projectileSampleLimit,

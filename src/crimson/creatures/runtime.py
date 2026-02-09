@@ -19,6 +19,15 @@ from grim.geom import Vec2
 from grim.rand import Crand
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import GameplayState, PlayerState, award_experience, perk_active
+from ..math_parity import (
+    NATIVE_PI,
+    NATIVE_TAU,
+    NATIVE_TURN_RATE_SCALE,
+    f32,
+    f32_vec2,
+    heading_add_pi_f32,
+    heading_to_direction_f32,
+)
 from ..perks import PerkId
 from ..player_damage import player_take_damage
 from ..projectiles import ProjectileTypeId
@@ -55,7 +64,7 @@ CONTACT_DAMAGE_PERIOD = 0.5
 CREATURE_SPEED_SCALE = 30.0
 
 # Base heading turn rate multiplier (angle_approach clamps by frame_dt internally).
-CREATURE_TURN_RATE_SCALE = 4.0 / 3.0
+CREATURE_TURN_RATE_SCALE = NATIVE_TURN_RATE_SCALE
 
 # Native uses hitbox_size as a lifecycle sentinel:
 # - 16.0 means "alive" (normal AI/movement/anim update)
@@ -89,7 +98,7 @@ class _EffectsForCreatureSpawns(Protocol):
 
 
 def _wrap_angle(angle: float) -> float:
-    return (angle + math.pi) % math.tau - math.pi
+    return f32((f32(angle) + NATIVE_PI) % NATIVE_TAU - NATIVE_PI)
 
 
 def _angle_approach(current: float, target: float, rate: float, dt: float) -> float:
@@ -98,19 +107,19 @@ def _angle_approach(current: float, target: float, rate: float, dt: float) -> fl
     # - choose shortest arc using direct/wrap distances
     # - advance by `frame_dt * min(1, dist) * rate`
     # - do not re-wrap after the step (next call normalizes again)
-    angle = float(current)
-    target = float(target)
-    tau = 6.2831855
+    angle = f32(current)
+    target = f32(target)
+    tau = NATIVE_TAU
 
     while angle < 0.0:
-        angle += tau
+        angle = f32(angle + tau)
     while angle > tau:
-        angle -= tau
+        angle = f32(angle - tau)
 
-    direct = abs(target - angle)
+    direct = abs(float(target) - float(angle))
     hi = target if angle < target else angle
     lo = target if target < angle else angle
-    wrap = abs((tau - hi) + lo)
+    wrap = abs((float(tau) - float(hi)) + float(lo))
 
     step_scale = direct if direct < wrap else wrap
     if step_scale > 1.0:
@@ -119,11 +128,37 @@ def _angle_approach(current: float, target: float, rate: float, dt: float) -> fl
 
     if direct <= wrap:
         if angle < target:
-            return angle + step
+            return f32(float(angle) + float(step))
     else:
         if target < angle:
-            return angle + step
-    return angle - step
+            return f32(float(angle) + float(step))
+    return f32(float(angle) - float(step))
+
+
+def _movement_delta_from_heading_f32(
+    heading: float,
+    *,
+    dt: float,
+    move_scale: float,
+    move_speed: float,
+) -> Vec2:
+    direction = heading_to_direction_f32(heading)
+    step_scale = float(dt) * float(move_scale) * float(move_speed) * float(CREATURE_SPEED_SCALE)
+    return Vec2(f32(float(direction.x) * step_scale), f32(float(direction.y) * step_scale))
+
+
+def _velocity_from_delta_f32(delta: Vec2, *, dt: float) -> Vec2:
+    if dt <= 0.0:
+        return Vec2()
+    inv_dt = 1.0 / float(dt)
+    return Vec2(f32(float(delta.x) * inv_dt), f32(float(delta.y) * inv_dt))
+
+
+def _advance_pos_by_delta_f32(pos: Vec2, delta: Vec2) -> Vec2:
+    return Vec2(
+        f32(float(pos.x) + float(delta.x)),
+        f32(float(pos.y) + float(delta.y)),
+    )
 
 
 def _owner_id_to_player_index(owner_id: int) -> int | None:
@@ -643,7 +678,7 @@ class CreaturePool:
                 ):
                     creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
                 if creature.hitbox_size == CREATURE_HITBOX_ALIVE:
-                    creature.hitbox_size = CREATURE_HITBOX_ALIVE - 0.001
+                    creature.hitbox_size = f32(float(creature.hitbox_size) - float(dt))
                 if dt > 0.0:
                     self._tick_dead(
                         creature,
@@ -812,33 +847,45 @@ class CreaturePool:
                         continue
 
                 if (float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 500.0) or creature.plague_infected:
-                    creature.target_heading = _wrap_angle(float(creature.target_heading) + math.pi)
+                    creature.target_heading = heading_add_pi_f32(float(creature.target_heading))
 
-                turn_rate = float(creature.move_speed) * CREATURE_TURN_RATE_SCALE
-                speed = float(creature.move_speed) * CREATURE_SPEED_SCALE * creature.move_scale
-
+                turn_rate = f32(float(creature.move_speed) * CREATURE_TURN_RATE_SCALE)
                 if (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0:
                     if creature.ai_mode == 7:
                         creature.vel = Vec2()
                     else:
                         creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
-                        creature.vel = Vec2.from_heading(creature.heading) * speed
+                        move_delta = _movement_delta_from_heading_f32(
+                            creature.heading,
+                            dt=dt,
+                            move_scale=creature.move_scale,
+                            move_speed=creature.move_speed,
+                        )
+                        creature.vel = _velocity_from_delta_f32(move_delta, dt=dt)
                         # Native path (flags without 0x4): no bounds clamp here; offscreen spawns
                         # remain offscreen until their own velocity moves them in.
-                        creature.pos = creature.pos + creature.vel * dt
+                        creature.pos = _advance_pos_by_delta_f32(creature.pos, move_delta)
                 else:
                     # Spawner/short-strip creatures clamp to bounds using `size` as a radius; most are stationary
                     # unless ANIM_LONG_STRIP is set (see creature_update_all).
                     radius = max(0.0, float(creature.size))
                     max_x = max(radius, float(world_width) - radius)
                     max_y = max(radius, float(world_height) - radius)
-                    creature.pos = creature.pos.clamp_rect(radius, radius, max_x, max_y)
+                    creature.pos = f32_vec2(creature.pos.clamp_rect(radius, radius, max_x, max_y))
                     if (creature.flags & CreatureFlags.ANIM_LONG_STRIP) == 0:
                         creature.vel = Vec2()
                     else:
                         creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
-                        creature.vel = Vec2.from_heading(creature.heading) * speed
-                        creature.pos = (creature.pos + creature.vel * dt).clamp_rect(radius, radius, max_x, max_y)
+                        move_delta = _movement_delta_from_heading_f32(
+                            creature.heading,
+                            dt=dt,
+                            move_scale=creature.move_scale,
+                            move_speed=creature.move_speed,
+                        )
+                        creature.vel = _velocity_from_delta_f32(move_delta, dt=dt)
+                        creature.pos = f32_vec2(
+                            _advance_pos_by_delta_f32(creature.pos, move_delta).clamp_rect(radius, radius, max_x, max_y)
+                        )
 
             # Native decrements contact/ranged cooldown before interaction checks,
             # then lets contact hits raise it back by +1.0 in the same frame.
@@ -1070,20 +1117,27 @@ class CreaturePool:
         if dt <= 0.0:
             return
 
-        hitbox = float(creature.hitbox_size)
+        hitbox = f32(float(creature.hitbox_size))
         if hitbox <= 0.0:
-            creature.hitbox_size = hitbox - float(dt) * CREATURE_CORPSE_FADE_DECAY
+            creature.hitbox_size = f32(hitbox - f32(float(dt) * CREATURE_CORPSE_FADE_DECAY))
             return
 
         long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (creature.flags & CreatureFlags.ANIM_LONG_STRIP) != 0
 
-        new_hitbox = hitbox - float(dt) * CREATURE_DEATH_TIMER_DECAY
-        creature.hitbox_size = new_hitbox
+        new_hitbox = f32(hitbox - f32(float(dt) * CREATURE_DEATH_TIMER_DECAY))
+        creature.hitbox_size = f32(new_hitbox)
         if new_hitbox > 0.0:
             if long_strip:
-                slide = new_hitbox * float(dt) * CREATURE_DEATH_SLIDE_SCALE
-                creature.vel = Vec2.from_heading(creature.heading) * slide
-                creature.pos = (creature.pos - creature.vel).clamp_rect(0.0, 0.0, float(world_width), float(world_height))
+                slide = f32(new_hitbox * f32(float(dt)) * f32(CREATURE_DEATH_SLIDE_SCALE))
+                direction = heading_to_direction_f32(float(creature.heading))
+                creature.vel = Vec2(
+                    f32(float(direction.x) * float(slide)),
+                    f32(float(direction.y) * float(slide)),
+                )
+                creature.pos = Vec2(
+                    f32(float(creature.pos.x) - float(creature.vel.x)),
+                    f32(float(creature.pos.y) - float(creature.vel.y)),
+                )
             else:
                 creature.vel = Vec2()
             return

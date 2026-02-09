@@ -325,3 +325,336 @@ Each entry should capture:
 
 - Fix capture-side projectile hit telemetry reliability for these runs (`capture_projectile_find_hit_count` is still `0` at the shortfall tick despite clear native RNG tail evidence), then re-record.
 - After a capture with non-zero projectile hit rows at the shortfall tick, compare native hit-resolve sequence against rewrite to patch the exact missing corpse-hit path in `src/crimson/projectiles.py`.
+
+---
+
+## Session 2026-02-08-j
+
+- **Session ID:** `2026-02-08-j`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
+- **Primary commands:**
+  - baseline:
+    `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_latest.json`
+  - precision-parity run:
+    `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch.json`
+  - focus trace after precision patch:
+    `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick3453_precision_patch.json`
+- **First verifier mismatch:** `tick 3504 (players[0].experience, score_xp)` (unchanged)
+
+### Findings
+
+- Baseline and precision-patch runs still diverge at the same earliest points:
+  - first pre-focus RNG shortfall remains `tick 3453` (`expected_head_len=353`, rewrite `268`, missing `85`),
+  - first checkpoint-field mismatch remains `tick 3504` (`players[0].experience`, `score_xp`, `+35 XP`).
+- Dominant native caller buckets at the shortfall tick are unchanged and still concentrated in Fire-Bullets decal/random FX paths:
+  - `0x0042176f`, `0x0042184c`, `0x00427760`, `0x0042778e`, `0x004277b0`, `0x0042780b` (all `x30` in the shortfall view).
+- Focus-trace RNG alignment is still a perfect prefix + missing tail:
+  - `prefix_match=268`, `missing_native_tail=85`.
+- Precision slice moved creature geometry, but not in a beneficial direction for the known near-miss boundary:
+  - tick `3453`, creature `19`, substep `57` near-miss margin changed from `+0.0888205` (baseline) to `+0.0991395` (after patch),
+  - indexed drift for creature `19` changed from `x_delta=-0.116419` to `x_delta=-0.126840`.
+
+### Fixes from this session
+
+- Added a dedicated parity helper module:
+  - `src/crimson/math_parity.py` (`f32`, native angle constants, controlled heading/trig wrappers).
+- Applied float32-boundary movement/heading math in creature AI + runtime movement path:
+  - `src/crimson/creatures/ai.py`,
+  - `src/crimson/creatures/runtime.py`.
+- Added regression tests for parity helpers and AI quantization boundaries:
+  - `tests/test_math_parity.py`,
+  - updated `tests/test_creature_ai.py`.
+
+### Validation
+
+- `uv run pytest tests/test_math_parity.py tests/test_creature_ai.py tests/test_energizer_bonus.py tests/test_creature_runtime.py`
+- `uv run pytest tests/test_original_capture_divergence_report_rng_calls.py tests/test_original_capture_focus_trace.py`
+
+### Next probe
+
+- Keep this math-parity slice as groundwork, but pivot the next increment to a narrower branch-level investigation at tick `3453`:
+  - compare native vs rewrite hit-resolve sequencing around Fire-Bullets/Gauss decal emission (`queue_large_hit_decal_streak` + `fx_queue_add_random`) and validate whether rewrite misses a corpse/secondary resolve branch independent of movement precision.
+
+---
+
+## Session 2026-02-08-k
+
+- **Session ID:** `2026-02-08-k`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
+- **Primary commands:**
+  - dead-state parity run:
+    `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch3.json`
+  - focus trace after dead-state parity run:
+    `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick3453_precision_patch3.json`
+- **First verifier mismatch:** `tick 3504 (players[0].experience, score_xp)` (unchanged)
+
+### Findings
+
+- Dead-state f32 parity changes did not shift the earliest divergence points:
+  - first pre-focus RNG shortfall remains `tick 3453` (`expected_head_len=353`, rewrite `268`, missing `85`),
+  - first checkpoint-field mismatch remains `tick 3504` (`players[0].experience`, `score_xp`, `+35 XP`).
+- Dominant native caller buckets at the shortfall tick are unchanged:
+  - `0x0042176f`, `0x0042184c`, `0x00427760`, `0x0042778e`, `0x004277b0`, `0x0042780b` (all `x30` in the shortfall view).
+- Focus-trace alignment remains a perfect prefix + missing tail:
+  - `prefix_match=268`, `missing_native_tail=85`.
+- Known near-miss boundary still moved in the wrong direction for the missing hit candidate:
+  - tick `3453`, creature `19`, substep `57` margin is `+0.0991395` (vs `+0.0888205` in baseline).
+
+### Fixes from this session
+
+- Tightened dead-creature hitbox transition and decay math to float32 boundaries in `src/crimson/creatures/runtime.py`.
+- Updated dead-slide velocity/position update to use explicit float32 heading/trig conversion and float32 stores.
+- Removed dead-slide world clamp in the dead branch to match native `creature_update_all` flow.
+
+### Validation
+
+- `uv run ruff check src/crimson/creatures/runtime.py`
+- `uv run pytest tests/test_creature_runtime.py tests/test_creature_ai.py tests/test_math_parity.py tests/test_energizer_bonus.py`
+- `uv run pytest tests/test_original_capture_divergence_report_rng_calls.py tests/test_original_capture_focus_trace.py`
+- `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch3.json`
+- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick3453_precision_patch3.json`
+
+### Next probe
+
+- Keep the dead-state parity patch as groundwork, then patch one narrow hit-resolve branch in `src/crimson/projectiles.py` to recover the missing fifth hit at tick `3453` (creature `19`, substep `57`) before iterating on broader movement precision again.
+
+---
+
+## Session 2026-02-08-l
+
+- **Session ID:** `2026-02-08-l`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
+- **Primary commands:**
+  - divergence check:
+    `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch5.json`
+  - focus trace with enhanced diagnostics:
+    `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick3453_precision_patch5b.json`
+  - slot trajectory replay:
+    `uv run python scripts/original_capture_creature_trajectory.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --creature-index 19 --start-tick 2150 --end-tick 3453 --inter-tick-rand-draws 1 --json-out analysis/frida/creature19_trajectory_2150_3453_patch5.json`
+- **First verifier mismatch:** `tick 3504 (players[0].experience, score_xp)` (unchanged)
+
+### Findings
+
+- Earliest divergence points are unchanged:
+  - first pre-focus RNG shortfall still `tick 3453` (`expected_head_len=353`, rewrite `268`, missing `85`),
+  - first checkpoint mismatch still `tick 3504` (`players[0].experience`, `score_xp`, `+35 XP`).
+- Focus trace still shows exact rewrite-vs-native RNG prefix parity (`prefix_match=268`) followed by a native-only tail (`85` draws), so this remains a missing late-tick branch rather than wrong RNG values in shared paths.
+- New inferred-tail buckets identify the missing branch mix more concretely:
+  - dominated by `queue_large_hit_decal_streak` + `fx_queue.add_random` callsites,
+  - plus smaller `spawn_blood_splatter` tail buckets.
+- New per-hit hook rows confirm rewrite currently handles exactly `4` Gauss decal hooks at tick `3453` (`rng_draws=44,44,38,40`), which is consistent with missing additional native hit-resolution presentation work after rewrite stops drawing.
+- Creature slot `19` trajectory remains an accumulated alive-path drift (first drift >= `0.01` at tick `2519`, max `0.138328` at tick `3362`, no AI mode transitions), reinforcing that local trig precision probes did not address the shortfall mechanism.
+
+### Fixes from this session
+
+- Extended `scripts/original_capture_creature_trajectory.py` with richer capture-vs-rewrite state fields (`flags`, `target_player`, `ai_mode`, heading/attack/move-scale fields) and explicit AI/target transition reporting.
+- Extended `scripts/original_capture_focus_trace.py` with:
+  - inferred rewrite callsite buckets for the native-only RNG tail,
+  - per-hit decal hook rows (`handled`, `type_id`, per-hit RNG draw count, target position),
+  - JSON output for these new diagnostics.
+
+### Validation
+
+- `uv run ruff check scripts/original_capture_focus_trace.py scripts/original_capture_creature_trajectory.py`
+- `uv run pytest tests/test_original_capture_divergence_report_rng_calls.py tests/test_original_capture_focus_trace.py`
+
+### Next probe
+
+- Patch one narrow `projectile_update`/post-hit parity slice to recover missing late-tick hit-resolution work at tick `3453`:
+  - compare rewrite hit/decal loop sequencing against the native tail mix (`queue_large_hit_decal_streak`, `fx_queue_add_random`, `spawn_blood_splatter`),
+  - focus first on extra corpse/non-damaging hit resolve branches that can consume RNG without changing sampled world state immediately.
+
+---
+
+## Session 2026-02-08-m
+
+- **Session ID:** `2026-02-08-m`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
+- **Primary commands:**
+  - focus trace with caller-gap diagnostics:
+    `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --top-rng 20 --diff-limit 12 --json-out analysis/frida/focus_trace_tick3453_precision_patch6b.json`
+  - divergence check (non-zero exit on divergence is expected):
+    `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch7.json`
+  - tooling validation:
+    `uv run pytest tests/test_original_capture_focus_trace.py tests/test_original_capture_divergence_report_rng_calls.py`
+- **First verifier mismatch:** `tick 3504 (players[0].experience, score_xp)` (unchanged)
+
+### Findings
+
+- Earliest divergence points remain unchanged:
+  - first pre-focus RNG shortfall still `tick 3453` (`expected_head_len=353`, rewrite `268`, missing `85`),
+  - first checkpoint mismatch still `tick 3504` (`players[0].experience`, `score_xp`, `+35 XP`).
+- New focus-trace caller-gap diagnostics now quantify the shortfall in branch-level units:
+  - Fire-Bullets/Gauss loop-seed caller (`0x0042176f`) counts are `capture=30`, `rewrite=24`, gap `6`.
+  - With native loop width fixed at `6` iterations per handled hit, this is exactly **one missing hit-equivalent decal loop**.
+  - Matching `+6` gaps appear for `0x0042184c` and each `fx_queue_add_random` RNG caller (`0x00427760/8e/b0/0b`), reinforcing the same single-hit deficit.
+- Blood-splatter RNG caller counts (`0x0042ebc0/ebe3/ec00/ec1d/ec44`) show `capture=24`, `rewrite=16`, gap `8`, consistent with missing post-hit presentation work tied to that same missed resolution path.
+- Collision evidence at tick `3453` remains unchanged: projectile `3` near-misses creature `19` at substep `57` with margin `+0.0991395`, which aligns with the one-missing-hit interpretation.
+
+### Fixes from this session
+
+- Extended `scripts/original_capture_focus_trace.py` with native-vs-rewrite caller-count parity diagnostics:
+  - per-caller capture/rewrite count gaps with native caller labels,
+  - Fire-Bullets loop parity summary (`capture/rewrite iterations`, `missing iterations`, `estimated missing hits`),
+  - JSON output fields for these new diagnostics.
+- Added regression coverage in `tests/test_original_capture_focus_trace.py` for caller-gap and Fire-Bullets loop-parity inference helpers.
+
+### Validation
+
+- `uv run pytest tests/test_original_capture_focus_trace.py tests/test_original_capture_divergence_report_rng_calls.py`
+- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --top-rng 20 --diff-limit 12 --json-out analysis/frida/focus_trace_tick3453_precision_patch6b.json`
+- `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch7.json` *(expected non-zero exit while diverged)*
+
+### Next probe
+
+- Use the new Fire-Bullets loop parity metric as the primary acceptance target for the next sim patch:
+  - reduce `seed_iterations` gap at tick `3453` from `6` to `0`,
+  - confirm rewrite reaches `5` handled Gauss/Fire-Bullets decal hooks at that tick (from current `4`),
+  - then re-run divergence to check whether the first checkpoint mismatch moves past tick `3504`.
+
+---
+
+## Session 2026-02-08-n
+
+- **Session ID:** `2026-02-08-n`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
+- **Primary commands:**
+  - focus trace after truncation cleanup:
+    `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --top-rng 20 --diff-limit 12 --json-out analysis/frida/focus_trace_tick3453_precision_patch11_truncation_cleanup.json`
+  - divergence check after truncation cleanup:
+    `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch11_truncation_cleanup.json`
+  - movement/parity validation:
+    `uv run pytest tests/test_math_parity.py tests/test_creature_ai.py tests/test_creature_runtime.py tests/test_original_capture_divergence_report_rng_calls.py tests/test_original_capture_focus_trace.py`
+- **First verifier mismatch:** `tick 3504 (players[0].experience, score_xp)` (unchanged)
+
+### Findings
+
+- This truncation-boundary cleanup did not move the earliest divergence points:
+  - first pre-focus RNG shortfall remains `tick 3453` (`expected_head_len=353`, rewrite `268`, missing `85`),
+  - first checkpoint mismatch remains `tick 3504` (`players[0].experience`, `score_xp`, `+35 XP`).
+- Fire-Bullets loop parity is unchanged:
+  - `seed_iterations capture=30 rewrite=24 missing=6` (still one missing hit-equivalent loop).
+- The known near-miss boundary is effectively unchanged:
+  - tick `3453`, projectile `3`, creature `19`, substep `57`, margin `+0.099141`.
+- Creature drift distribution shifted slightly but not materially:
+  - creature `19` remains `x_delta=-0.126840` at tick `3453`.
+
+### Fixes from this session
+
+- Reduced excess intermediate float32 truncation in movement/heading parity helpers and AI targeting chains:
+  - `src/crimson/math_parity.py`
+    - switched native constants to exact float32 bit patterns,
+    - collapsed heading/trig chains to one float32 store boundary where appropriate.
+  - `src/crimson/creatures/ai.py`
+    - removed intermediate float32 truncation in `_orbit_target_f32`,
+    - removed intermediate float32 truncation in AI6 orbit target calculation.
+  - `src/crimson/creatures/runtime.py`
+    - kept intermediate math in `_angle_approach`, `_movement_delta_from_heading_f32`, and `_velocity_from_delta_f32` in higher precision, with float32 stores at state boundaries.
+
+### Validation
+
+- `uv run ruff check src/crimson/math_parity.py src/crimson/creatures/ai.py src/crimson/creatures/runtime.py`
+- `uv run pytest tests/test_math_parity.py tests/test_creature_ai.py tests/test_creature_runtime.py tests/test_original_capture_divergence_report_rng_calls.py tests/test_original_capture_focus_trace.py`
+- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --top-rng 20 --diff-limit 12 --json-out analysis/frida/focus_trace_tick3453_precision_patch11_truncation_cleanup.json`
+- `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch11_truncation_cleanup.json`
+
+### Next probe
+
+- Pivot from broad movement precision tweaks to the earliest missed-hit path itself at tick `3453`:
+  - instrument `projectile_update` hit-resolve ordering around corpse/non-corpse handling in `src/crimson/projectiles.py`,
+  - verify whether rewrite skips one native-equivalent Gauss hit resolve that drives `queue_large_hit_decal_streak`/`fx_queue_add_random` tail calls.
+
+---
+
+## Session 2026-02-08-o
+
+- **Session ID:** `2026-02-08-o`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
+- **Primary commands:**
+  - focus trace for orbit-phase rounding variants:
+    `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --top-rng 20 --diff-limit 12 --json-out analysis/frida/focus_trace_tick3453_precision_patch14_orbit_phase_mul_order.json`
+  - divergence check for selected variant:
+    `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch15_orbit_phase_order_only.json`
+  - focused trajectory context:
+    `uv run python scripts/original_capture_creature_trajectory.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --creature-index 19 --start-tick 0 --end-tick 3453 --inter-tick-rand-draws 1 --json-out analysis/frida/creature19_trajectory_0_3453_patch11.json`
+- **First verifier mismatch:** `tick 3504 (players[0].experience, score_xp)` (unchanged)
+
+### Findings
+
+- Changing AI orbit-phase rounding order materially reduced the known tick-3453 miss geometry but did not yet flip it:
+  - creature `19` drift at tick `3453` improved from `x_delta=-0.126840` to `x_delta=-0.061776`,
+  - near-miss margin improved from `+0.099141` to `+0.034608` (still a miss).
+- Earliest divergence points are still unchanged:
+  - pre-focus RNG shortfall remains `tick 3453` (`expected_head_len=353`, rewrite `268`, missing `85`),
+  - first checkpoint mismatch remains `tick 3504` (`players[0].experience`, `score_xp`, `+35 XP`).
+- Fire-Bullets loop parity still indicates one missing hit-equivalent loop at the shortfall tick:
+  - `seed_iterations capture=30 rewrite=24 missing=6`.
+
+### Fixes from this session
+
+- Updated AI movement-target prep in `src/crimson/creatures/ai.py`:
+  - changed orbit-phase construction to mirror native-like intermediate rounding order:
+    - from `f32(seed * 3.7 * pi)` style
+    - to `f32(seed * 3.7f) * pi` style,
+  - removed float32 truncation of `_distance_f32` intermediate distance before threshold checks.
+
+### Validation
+
+- `uv run ruff check src/crimson/creatures/ai.py`
+- `uv run pytest tests/test_creature_ai.py tests/test_math_parity.py`
+- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --top-rng 20 --diff-limit 12 --json-out analysis/frida/focus_trace_tick3453_precision_patch14_orbit_phase_mul_order.json`
+- `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch15_orbit_phase_order_only.json`
+
+### Next probe
+
+- Continue reducing the remaining `+0.0346` near-miss gap with similarly narrow movement-heading rounding adjustments, then re-check whether tick `3453` gains the missing fifth hit.
+- In parallel, add hit-resolve sequence instrumentation in `src/crimson/projectiles.py` for the tick-3453 path to rule out a logic-order mismatch independent of geometry.
+
+---
+
+## Session 2026-02-09-p
+
+- **Session ID:** `2026-02-09-p`
+- **Capture:** `n/a (tooling update only; no new recording in this session)`
+- **Capture SHA256:** `n/a`
+- **Primary commands:**
+  - tooling validation:
+    `uv run pytest tests/test_original_capture_divergence_report_rng_calls.py tests/test_original_capture_focus_trace.py`
+  - lint validation:
+    `uv run ruff check scripts/original_capture_divergence_report.py`
+- **First verifier mismatch:** `n/a`
+
+### Findings
+
+- Absolute tick windows are poor cross-session anchors because runs diverge in event chronology and RNG consumption even when the underlying root cause is unchanged.
+- We need RNG-order anchors (`global seq`, per-tick local call index, seed epoch) directly in capture output so later analysis can align by call order rather than by wall-clock tick.
+
+### Fixes from this session
+
+- Upgraded `scripts/frida/gameplay_diff_capture_v2.js` RNG diagnostics:
+  - every captured tick now stores RNG call sequence metadata (`seq`, `tick_call_index`, seed epoch, mirrored CRT state transitions) in `rng.head` and `checkpoint.rng_marks`.
+  - between-tick RNG draws are tracked and carried into the next tick (`outside_before_*`) so boundary activity is visible.
+  - added optional per-roll event emission (`event: "rng_roll"`) via `CRIMSON_FRIDA_V2_RNG_ROLL_LOG=1`, with cap control (`CRIMSON_FRIDA_V2_MAX_RNG_ROLL_LOG_EVENTS`).
+  - added mirrored CRT state integrity tracking (`CRIMSON_FRIDA_V2_RNG_STATE_MIRROR`, mismatch counters) and exposed counters in heartbeat output.
+- Extended `scripts/original_capture_divergence_report.py` to ingest and surface new RNG sequence metadata:
+  - raw tick debug now captures seq range + seed epoch + outside-before counters,
+  - pre-focus RNG shortfall lead now reports sequence/epoch anchors,
+  - focus debug output now prints capture RNG sequence range and mirror mismatch totals.
+- Updated `docs/frida/gameplay-diff-capture-v2.md` with the new RNG trace fields/knobs and a “full RNG divergence trace profile”.
+
+### Next probe
+
+- Record a new session using the full RNG trace profile:
+  - `CRIMSON_FRIDA_V2_RNG_ROLL_LOG=1`
+  - `CRIMSON_FRIDA_V2_MAX_RNG_ROLL_LOG_EVENTS=-1`
+  - `CRIMSON_FRIDA_V2_RNG_HEAD=-1`
+  - `CRIMSON_FRIDA_V2_RNG_CALLERS=-1`
+  - `CRIMSON_FRIDA_V2_RNG_OUTSIDE_TICK_HEAD=-1`
+  - `CRIMSON_FRIDA_V2_RNG_STATE_MIRROR=1`
+- Re-run divergence report on that capture and anchor the first shortfall by `seq_first/seq_last` instead of treating raw tick numbers as cross-session comparable.
