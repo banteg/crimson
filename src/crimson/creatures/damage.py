@@ -95,7 +95,6 @@ _CREATURE_DAMAGE_ATTACKER_PRE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] 
         _damage_type1_living_fortress,
         _damage_type1_barrel_greaser,
         _damage_type1_doctor,
-        _damage_type1_heading_jitter,
     ),
 }
 
@@ -153,6 +152,8 @@ def creature_apply_damage(
     if attacker is not None:
         for step in _CREATURE_DAMAGE_ATTACKER_PRE_STEPS.get(ctx.damage_type, ()):
             step(ctx)
+    if ctx.damage_type == 1:
+        _damage_type1_heading_jitter(ctx)
 
     if creature.hp <= 0.0:
         if dt > 0.0:
