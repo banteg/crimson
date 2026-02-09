@@ -130,11 +130,13 @@ uv run python scripts/original_capture_focus_trace.py \
   artifacts/frida/share/gameplay_diff_capture_v2.jsonl \
   --tick 3453 \
   --near-miss-threshold 0.35 \
-  --json-out analysis/frida/focus_trace_tick3453.json
+  --json-out
 ```
 
 This is especially useful when checkpoint fields still match but native RNG
 callers indicate hidden branch drift (for example corpse-hit resolution).
+Using `--json-out` without a value writes to
+`artifacts/frida/reports/focus_trace_tick<TICK>_latest.json`.
 
 `original_capture_focus_trace.py` now also prints `rng_value_alignment`:
 
