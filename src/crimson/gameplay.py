@@ -2469,13 +2469,15 @@ def player_update(
 
         player.turn_speed = min(7.0, max(1.0, float(player.turn_speed)))
         turned = False
-        if turning_left and not turning_right:
+        # Native keyboard mode checks left first, then right (`player_update` mode 1),
+        # so simultaneous turn keys resolve to left turn.
+        if turning_left:
             player.turn_speed = float(player.turn_speed + movement_dt * 10.0)
             turn_delta = float(player.turn_speed) * movement_dt * 0.5
             player.heading = float(player.heading - turn_delta)
             player.aim_heading = float(player.aim_heading - turn_delta)
             turned = True
-        elif turning_right and not turning_left:
+        elif turning_right:
             player.turn_speed = float(player.turn_speed + movement_dt * 10.0)
             turn_delta = float(player.turn_speed) * movement_dt * 0.5
             player.heading = float(player.heading + turn_delta)
@@ -2483,7 +2485,8 @@ def player_update(
             turned = True
 
         move_sign = 1.0
-        if moving_forward and not moving_backward:
+        # Native movement-key precedence is forward before backward.
+        if moving_forward:
             if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
                 if player.move_speed < 2.0:
                     player.move_speed = float(player.move_speed + movement_dt * 4.0)
@@ -2494,7 +2497,7 @@ def player_update(
                 player.move_speed = float(player.move_speed + movement_dt * 5.0)
                 if player.move_speed > 2.0:
                     player.move_speed = 2.0
-        elif moving_backward and not moving_forward:
+        elif moving_backward:
             if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
                 if player.move_speed < 2.0:
                     player.move_speed = float(player.move_speed + movement_dt * 4.0)

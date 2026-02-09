@@ -1586,14 +1586,14 @@ def convert_original_capture_to_replay(
                     move_backward = bool(sample.move_backward_pressed)
                     move_x = float(turn_right) - float(turn_left)
                     move_y = float(move_backward) - float(move_forward)
-                    # Rare capture artifacts can report opposite digital keys as
-                    # simultaneously pressed for a frame. When that happens, keep
-                    # deterministic replay moving in the observed analog direction
-                    # instead of collapsing the axis to 0.0.
+                    # Native keyboard mode resolves opposite key conflicts with
+                    # branch order, not axis cancellation:
+                    # - turn: left key wins over right
+                    # - move: forward key wins over backward
                     if turn_left and turn_right:
-                        move_x = max(-1.0, min(1.0, float(sample.move_dx)))
+                        move_x = -1.0
                     if move_forward and move_backward:
-                        move_y = max(-1.0, min(1.0, float(sample.move_dy)))
+                        move_y = -1.0
                 else:
                     move_x = max(-1.0, min(1.0, float(sample.move_dx)))
                     move_y = max(-1.0, min(1.0, float(sample.move_dy)))

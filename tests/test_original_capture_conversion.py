@@ -905,6 +905,65 @@ def test_convert_original_capture_to_replay_v2_prefers_input_player_keys_over_an
     assert reload_pressed is False
 
 
+def test_convert_original_capture_to_replay_v2_resolves_opposite_digital_keys_with_native_precedence(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "gameplay_diff_capture_v2_opposite_digital_keys.jsonl"
+    rows = [
+        {"event": "start"},
+        {
+            "event": "tick",
+            "tick_index": 0,
+            "input_player_keys": [
+                {
+                    "player_index": 0,
+                    "move_forward_pressed": True,
+                    "move_backward_pressed": True,
+                    "turn_left_pressed": True,
+                    "turn_right_pressed": True,
+                    "fire_down": False,
+                    "fire_pressed": False,
+                    "reload_pressed": False,
+                }
+            ],
+            "before": {
+                "input_bindings": {
+                    "players": [
+                        {
+                            "player_index": 0,
+                            "move_mode": 1,
+                            "move_forward": 17,
+                            "move_backward": 31,
+                            "turn_left": 30,
+                            "turn_right": 32,
+                            "fire": 18,
+                        }
+                    ]
+                }
+            },
+            "after": {
+                "globals": {"config_game_mode": 1},
+                "players": [{"aim_heading": -0.5}],
+            },
+            "checkpoint": {
+                "tick_index": 0,
+                "state_hash": "h0",
+                "command_hash": "c0",
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 1, "ammo": 10.0}],
+            },
+        },
+    ]
+    path.write_text("\n".join(json.dumps(row, separators=(",", ":"), sort_keys=True) for row in rows) + "\n", encoding="utf-8")
+
+    capture = load_original_capture_sidecar(path)
+    replay = convert_original_capture_to_replay(capture)
+
+    tick0 = replay.inputs[0][0]
+    # Native keyboard mode precedence: turn_left over turn_right, forward over backward.
+    assert tick0[0] == -1.0
+    assert tick0[1] == -1.0
+
+
 def test_convert_original_capture_to_replay_v2_does_not_override_explicit_fire_down_with_primary_stats(
     tmp_path: Path,
 ) -> None:

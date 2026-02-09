@@ -335,6 +335,43 @@ def test_player_update_digital_forward_turn_moves_in_heading_direction() -> None
     assert player.pos.y < 100.0
 
 
+def test_player_update_digital_turn_conflict_prefers_left() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, aim_heading=0.0, move_speed=0.0, turn_speed=1.0)
+    input_state = PlayerInput(
+        move=Vec2(0.0, 0.0),
+        aim=Vec2(200.0, 100.0),
+        move_forward_pressed=False,
+        move_backward_pressed=False,
+        turn_left_pressed=True,
+        turn_right_pressed=True,
+    )
+
+    player_update(player, input_state, 0.1, state)
+
+    assert player.heading < 0.0
+    assert player.aim_heading < math.pi / 2.0
+    assert player.turn_speed > 1.0
+
+
+def test_player_update_digital_move_conflict_prefers_forward() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, aim_heading=0.0, move_speed=0.0, turn_speed=1.0)
+    input_state = PlayerInput(
+        move=Vec2(0.0, 0.0),
+        aim=Vec2(200.0, 100.0),
+        move_forward_pressed=True,
+        move_backward_pressed=True,
+        turn_left_pressed=False,
+        turn_right_pressed=False,
+    )
+
+    player_update(player, input_state, 0.1, state)
+
+    assert player.move_speed > 0.0
+    assert player.pos.y < 100.0
+
+
 def test_player_update_wraps_negative_target_heading_before_turning() -> None:
     state = GameplayState()
     player = PlayerState(
