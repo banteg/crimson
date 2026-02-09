@@ -139,15 +139,19 @@ When the capture SHA is unchanged, append updates to the same session.
   `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 40 --json-out analysis/frida/divergence_report_latest.json`
 - **First mismatch progression:**
   - initial: `tick 1069 (players[0].ammo)`
-  - current: `tick 3882 (players[0].experience, score_xp)` (`expected=3263`, `actual=3007`)
+  - after replay/input + movement fixes: `tick 3882 (players[0].experience, score_xp)`
+  - after capture-RNG map + timer/reload parity fixes: `tick 4421 (players[0].ammo, players[0].weapon_id)`
 
 ### Key Findings
 
 - Early divergence (`tick 1069`) was driven by replay input reconstruction mismatch (rewrite firing where native did not).
-- After replay/input and movement parity fixes, the active blockers are:
-  - `tick 3624`: native-only `perk_select_random x16` (`caller_static 0x0042fbdc`), rewrite `0` draws.
-  - `tick 3882`: native projectile hit resolution exceeds rewrite (`projectile_find_hit=2`, includes corpse-hit pass), causing XP/score mismatch.
-- Deterministic parity requires preserving native/capture precision boundaries over human-friendly “intended value” rounding when behavior changes on float32 edges.
+- `tick 3624` “missing perk RNG” was a tooling false-positive: those draws happened in replay events, outside world-step RNG marks.
+- Per-tick `rng.outside_before_calls` replay must special-case tick 0 (bootstrap draws already baked into inferred seed).
+- Native `bonus_update` clamps `double_xp/freeze` to `0.0` when timer `<= 0.0`; missing this caused `-8ms` carry and `tick 4311` timer drift.
+- Reload timing is float-boundary sensitive: using float32-style reload math plus native preload ordering moved ammo parity to native at `tick 4396`.
+- Current blocker is now earlier than the old `3882` kill miss:
+  - a weapon bonus spawned at `tick 4150` has a position offset in rewrite (capture `427.1736,548.0906`, rewrite `427.8498,547.4852`),
+  - this shifts pickup timing one frame earlier (`tick 4421` vs native `4422`) and cascades into weapon/ammo state divergence.
 
 ### Landed Changes
 
@@ -157,6 +161,11 @@ When the capture SHA is unchanged, append updates to the same session.
   - frame-dt precision preference
   - inferred perk menu/pending event reconstruction
 - `fix(creatures): round ai7 timer dt_ms to native boundary` (`bb88cfa8`)
+- Added event-phase RNG checkpoint marks and event-aware divergence accounting in replay runners/reporting.
+- Extended focus-trace RNG interception to cached pool RNG hooks (`particles._rand`, `sprite_effects._rand`).
+- Added v2 parser support for `rng.outside_before_calls` and wired per-tick outside-draw replay.
+- Patched `bonus_update` timer clamp semantics for `double_experience` and `freeze`.
+- Patched reload timing semantics in `player_update` (native preload ordering + float32-style reload timer arithmetic + anxious-loader tail behavior).
 - `docs(frida): renumber sessions and fold same-sha updates` (`90f5637e`)
 
 ### Validation
@@ -167,6 +176,5 @@ When the capture SHA is unchanged, append updates to the same session.
 
 ### Outcome / Next Probe
 
-- Resolve remaining perk RNG parity at `tick 3624` so streams align before XP divergence.
-- Instrument and patch projectile corpse-hit/kill-resolution ordering at `tick 3882` in `src/crimson/projectiles.py`.
-
+- Resolve bonus spawn position parity at `tick 4150` (creature-death position path feeding `BonusPool.try_spawn_on_kill`).
+- Re-run divergence after spawn-position fix to see whether legacy `tick 3882` projectile/XP mismatch still remains or was superseded by the earlier pickup-timing drift.
