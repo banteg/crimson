@@ -1747,6 +1747,9 @@ def convert_original_capture_to_replay(
             seed=int(resolved_seed),
             tick_rate=max(1, int(tick_rate)),
             player_count=int(player_count),
+            # Original captures come from native gameplay where legacy quirks are
+            # always active; replay with preserve_bugs for parity investigations.
+            preserve_bugs=True,
             world_size=float(world_size),
             status=status_snapshot,
         ),

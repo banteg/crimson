@@ -17,7 +17,7 @@ from ..perks import PerkId
 from ..projectiles import ProjectileHit
 from ..weapon_sfx import resolve_weapon_sfx_ref
 from ..weapons import WEAPON_BY_ID, WeaponId
-from .world_defs import BEAM_TYPES, ION_TYPES
+from .world_defs import BEAM_TYPES
 
 _MAX_HIT_SFX_PER_FRAME = 4
 _MAX_DEATH_SFX_PER_FRAME = 3
@@ -327,7 +327,7 @@ def queue_projectile_decals_post_hit(
         )
     )
 
-    if bool(hook_handled) or int(post_ctx.type_id) in ION_TYPES or bool(post_ctx.freeze_active):
+    if bool(hook_handled) or bool(post_ctx.freeze_active):
         return
 
     for _ in range(3):

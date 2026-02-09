@@ -391,7 +391,9 @@ def _spawn_ion_hit_effects(
     burst = float(burst_scale) * 0.8
     lifetime = min(burst * 0.7, 1.1)
     half = burst * 32.0
-    count = int(half)
+    # Native `effect_spawn_ion_hit_sparks` computes loop count from
+    # `__ftol((scale * 0.8) * 5.0)`, not from half-size.
+    count = int(burst * 5.0)
     if detail < 3:
         count //= 2
 
