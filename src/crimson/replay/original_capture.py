@@ -38,6 +38,7 @@ ORIGINAL_CAPTURE_FORMAT_VERSION = 1
 ORIGINAL_CAPTURE_UNKNOWN_INT = -1
 ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND = "orig_capture_bootstrap_v1"
 ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND = "orig_capture_perk_pending_v1"
+ORIGINAL_CAPTURE_PERK_APPLY_EVENT_KIND = "orig_capture_perk_apply_v1"
 
 _CRT_RAND_MULT = 214013
 _CRT_RAND_INC = 2531011
@@ -82,8 +83,11 @@ class OriginalCaptureTick:
     input_primary_down_true_calls: int = 0
     input_approx: list["OriginalCaptureInputApprox"] = field(default_factory=list)
     frame_dt_ms: float | None = None
+    frame_dt_ms_i32: int | None = None
     rng_head: list[int] = field(default_factory=list)
     rng_outside_before_calls: int = -1
+    perk_apply_before: tuple[int, ...] = field(default_factory=tuple)
+    perk_apply_in_tick: tuple[int, ...] = field(default_factory=tuple)
     status_quest_unlock_index: int = -1
     status_quest_unlock_index_full: int = -1
     status_weapon_usage_counts: tuple[int, ...] = field(default_factory=tuple)
@@ -291,6 +295,13 @@ def _parse_frame_dt_ms_from_globals(globals_obj: dict[str, object]) -> float | N
     return None
 
 
+def _parse_frame_dt_ms_i32_from_globals(globals_obj: dict[str, object]) -> int | None:
+    dt_ms_i32 = _coerce_int_like(globals_obj.get("frame_dt_ms_i32"))
+    if dt_ms_i32 is not None and int(dt_ms_i32) > 0:
+        return int(dt_ms_i32)
+    return None
+
+
 def _parse_int_map(raw: object, name: str) -> dict[str, int]:
     if raw is None:
         return {}
@@ -321,6 +332,31 @@ def _parse_rng_head(raw_rng_marks: object) -> list[int]:
         if 0 <= int(value) <= 0x7FFF:
             out.append(int(value))
     return out
+
+
+def _parse_perk_apply_ids(raw: object) -> tuple[int, ...]:
+    head_raw = raw
+    if isinstance(raw, dict):
+        if isinstance(raw.get("head"), list):
+            head_raw = raw.get("head")
+        elif isinstance(raw.get("perk_ids"), list):
+            head_raw = raw.get("perk_ids")
+    if not isinstance(head_raw, list):
+        return ()
+
+    out: list[int] = []
+    for item in head_raw:
+        value: int | None
+        if isinstance(item, dict):
+            value = _coerce_int_like(item.get("perk_id"))
+            if value is None:
+                value = _coerce_int_like(item.get("id"))
+        else:
+            value = _coerce_int_like(item)
+        if value is None or int(value) <= 0:
+            continue
+        out.append(int(value))
+    return tuple(out)
 
 
 def _parse_status_snapshot(raw: object) -> tuple[int, int, tuple[int, ...]]:
@@ -362,6 +398,8 @@ def _parse_tick(raw: object) -> OriginalCaptureTick:
     raw_rng_marks = raw.get("rng_marks") or {}
     rng_marks = _parse_int_map(raw_rng_marks, "tick.rng_marks")
     rng_head = _parse_rng_head(raw_rng_marks)
+    perk_apply_before = _parse_perk_apply_ids(raw.get("perk_apply_before"))
+    perk_apply_in_tick = _parse_perk_apply_ids(raw.get("perk_apply_in_tick"))
     status_unlock_index, status_unlock_index_full, status_weapon_usage_counts = _parse_status_snapshot(raw.get("status"))
     mode_hint = str(raw.get("mode_hint", ""))
     game_mode_id = _int_or(raw.get("game_mode_id"), -1)
@@ -371,6 +409,9 @@ def _parse_tick(raw: object) -> OriginalCaptureTick:
     frame_dt_ms = _coerce_float_like(raw.get("frame_dt_ms"))
     if frame_dt_ms is not None and float(frame_dt_ms) <= 0.0:
         frame_dt_ms = None
+    frame_dt_ms_i32 = _coerce_int_like(raw.get("frame_dt_ms_i32"))
+    if frame_dt_ms_i32 is not None and int(frame_dt_ms_i32) <= 0:
+        frame_dt_ms_i32 = None
     input_queries_raw = raw.get("input_queries")
     if isinstance(input_queries_raw, dict):
         stats_raw = input_queries_raw.get("stats")
@@ -410,10 +451,13 @@ def _parse_tick(raw: object) -> OriginalCaptureTick:
         input_primary_down_true_calls=input_primary_down_true_calls,
         input_approx=input_approx,
         frame_dt_ms=frame_dt_ms,
+        frame_dt_ms_i32=(int(frame_dt_ms_i32) if frame_dt_ms_i32 is not None else None),
         rng_head=rng_head,
         status_quest_unlock_index=int(status_unlock_index),
         status_quest_unlock_index_full=int(status_unlock_index_full),
         status_weapon_usage_counts=tuple(status_weapon_usage_counts),
+        perk_apply_before=tuple(perk_apply_before),
+        perk_apply_in_tick=tuple(perk_apply_in_tick),
     )
 
 
@@ -520,6 +564,20 @@ def _parse_v2_frame_dt_ms(raw: dict[str, object]) -> float | None:
     return None
 
 
+def _parse_v2_frame_dt_ms_i32(raw: dict[str, object]) -> int | None:
+    for scope_name in ("after", "before"):
+        scope_raw = raw.get(scope_name)
+        if not isinstance(scope_raw, dict):
+            continue
+        globals_raw = scope_raw.get("globals")
+        if not isinstance(globals_raw, dict):
+            continue
+        dt_ms_i32 = _parse_frame_dt_ms_i32_from_globals(globals_raw)
+        if dt_ms_i32 is not None and int(dt_ms_i32) > 0:
+            return int(dt_ms_i32)
+    return None
+
+
 def _parse_v2_rng_outside_before_calls(raw: dict[str, object]) -> int:
     rng_raw = raw.get("rng")
     if not isinstance(rng_raw, dict):
@@ -528,6 +586,38 @@ def _parse_v2_rng_outside_before_calls(raw: dict[str, object]) -> int:
     if value is None:
         return -1
     return int(value)
+
+
+def _parse_v2_perk_apply_before(raw: dict[str, object]) -> tuple[int, ...]:
+    out: list[int] = []
+    out.extend(_parse_perk_apply_ids(raw.get("perk_apply_outside_before")))
+
+    diagnostics = raw.get("diagnostics")
+    if isinstance(diagnostics, dict):
+        out.extend(_parse_perk_apply_ids(diagnostics.get("perk_apply_outside_before")))
+
+    checkpoint_raw = raw.get("checkpoint")
+    if isinstance(checkpoint_raw, dict):
+        debug_raw = checkpoint_raw.get("debug")
+        if isinstance(debug_raw, dict):
+            out.extend(_parse_perk_apply_ids(debug_raw.get("perk_apply_outside_before")))
+
+    deduped: list[int] = []
+    seen: set[int] = set()
+    for perk_id in out:
+        key = int(perk_id)
+        if key <= 0 or key in seen:
+            continue
+        seen.add(key)
+        deduped.append(key)
+    return tuple(deduped)
+
+
+def _parse_v2_perk_apply_in_tick(raw: dict[str, object]) -> tuple[int, ...]:
+    event_heads = raw.get("event_heads")
+    if not isinstance(event_heads, dict):
+        return ()
+    return _parse_perk_apply_ids(event_heads.get("perk_apply"))
 
 
 def _parse_v2_input_query_true_calls(raw: dict[str, object], key: str) -> int:
@@ -839,7 +929,10 @@ def _load_original_capture_v2_ticks(path: Path) -> OriginalCaptureSidecar | None
         mode_hint = str(obj.get("mode_hint", parsed.mode_hint))
         game_mode_id = _parse_v2_game_mode_id(obj)
         frame_dt_ms = _parse_v2_frame_dt_ms(obj)
+        frame_dt_ms_i32 = _parse_v2_frame_dt_ms_i32(obj)
         rng_outside_before_calls = _parse_v2_rng_outside_before_calls(obj)
+        perk_apply_before = _parse_v2_perk_apply_before(obj)
+        perk_apply_in_tick = _parse_v2_perk_apply_in_tick(obj)
         input_primary_edge_true_calls = _parse_v2_input_query_true_calls(obj, "primary_edge")
         input_primary_down_true_calls = _parse_v2_input_query_true_calls(obj, "primary_down")
         input_approx = _enrich_v2_input_approx(
@@ -876,6 +969,11 @@ def _load_original_capture_v2_ticks(path: Path) -> OriginalCaptureSidecar | None
             ),
             input_approx=list(input_approx) if input_approx else list(parsed.input_approx),
             frame_dt_ms=float(frame_dt_ms) if frame_dt_ms is not None else parsed.frame_dt_ms,
+            frame_dt_ms_i32=(
+                int(frame_dt_ms_i32)
+                if frame_dt_ms_i32 is not None
+                else parsed.frame_dt_ms_i32
+            ),
             rng_head=list(parsed.rng_head),
             rng_outside_before_calls=(
                 int(rng_outside_before_calls)
@@ -885,6 +983,8 @@ def _load_original_capture_v2_ticks(path: Path) -> OriginalCaptureSidecar | None
             status_quest_unlock_index=int(parsed.status_quest_unlock_index),
             status_quest_unlock_index_full=int(parsed.status_quest_unlock_index_full),
             status_weapon_usage_counts=tuple(parsed.status_weapon_usage_counts),
+            perk_apply_before=tuple(perk_apply_before) if perk_apply_before else tuple(parsed.perk_apply_before),
+            perk_apply_in_tick=tuple(perk_apply_in_tick) if perk_apply_in_tick else tuple(parsed.perk_apply_in_tick),
         )
 
     if not saw_tick_rows:
@@ -938,6 +1038,7 @@ def _tick_from_trace_snapshot(frame: int, raw_snapshot: dict[str, object]) -> Or
         perk=ReplayPerkSnapshot(pending_count=ORIGINAL_CAPTURE_UNKNOWN_INT),
         events=ReplayEventSummary(hit_count=-1, pickup_count=-1, sfx_count=-1, sfx_head=[]),
         frame_dt_ms=_parse_frame_dt_ms_from_globals(globals_obj),
+        frame_dt_ms_i32=_parse_frame_dt_ms_i32_from_globals(globals_obj),
     )
 
 
@@ -1185,6 +1286,22 @@ def build_original_capture_dt_frame_overrides(
     return out
 
 
+def build_original_capture_dt_frame_ms_i32_overrides(capture: OriginalCaptureSidecar) -> dict[int, int]:
+    """Build per-tick integer frame_dt (milliseconds) overrides from capture samples."""
+
+    out: dict[int, int] = {}
+    for tick in capture.ticks:
+        tick_index = int(tick.tick_index)
+        dt_ms_i32 = tick.frame_dt_ms_i32
+        if dt_ms_i32 is None:
+            continue
+        dt_ms_i32 = int(dt_ms_i32)
+        if dt_ms_i32 <= 0:
+            continue
+        out[int(tick_index)] = int(dt_ms_i32)
+    return out
+
+
 def _capture_bootstrap_payload(
     tick: OriginalCaptureTick,
     *,
@@ -1301,6 +1418,7 @@ def apply_original_capture_bootstrap_payload(
                 state.bonuses.double_experience = max(0.0, float(double_xp_ms) / 1000.0)
             if freeze_ms is not None:
                 state.bonuses.freeze = max(0.0, float(freeze_ms) / 1000.0)
+            state.time_scale_active = float(state.bonuses.reflex_boost) > 0.0
         except Exception:
             pass
 
@@ -1578,6 +1696,23 @@ def convert_original_capture_to_replay(
         sorted_ticks = sorted(capture.ticks, key=lambda item: int(item.tick_index))
         previous_pending: int | None = None
         for tick in sorted_ticks:
+            captured_perk_apply_ids = [int(perk_id) for perk_id in tick.perk_apply_before]
+            if tick.perk_apply_in_tick:
+                captured_perk_apply_ids.extend(int(perk_id) for perk_id in tick.perk_apply_in_tick)
+            if captured_perk_apply_ids:
+                seen_perk_apply_ids: set[int] = set()
+                for perk_id in captured_perk_apply_ids:
+                    if int(perk_id) <= 0 or int(perk_id) in seen_perk_apply_ids:
+                        continue
+                    seen_perk_apply_ids.add(int(perk_id))
+                    events.append(
+                        UnknownEvent(
+                            tick_index=int(tick.tick_index),
+                            kind=ORIGINAL_CAPTURE_PERK_APPLY_EVENT_KIND,
+                            payload=[{"perk_id": int(perk_id)}],
+                        )
+                    )
+
             pending = int(tick.perk_pending)
             if pending < 0:
                 continue

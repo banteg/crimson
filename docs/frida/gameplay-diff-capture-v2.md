@@ -41,6 +41,8 @@ just frida-gameplay-diff-capture-v2
   `creature_spawn_tinted`) with caller buckets.
 - Captures input-query telemetry (`input_primary_*`, `input_any_key_pressed`) and
   RNG usage (`crt_rand`) per tick, including hashes/callers.
+- Captures perk applications (`perk_apply`) including outside-tick carry
+  (`perk_apply_outside_before`) so replay conversion can reconstruct picked perk IDs.
 - Captures RNG rolls with stable per-session sequence IDs (`seq`), per-tick
   call indices (`tick_call_index`), and mirrored CRT state transitions
   (`state_before_u32`/`state_after_u32`) so branch drift can be anchored by
@@ -156,6 +158,8 @@ Without any extra env vars, v2 now captures full detail for every tracked tick:
 - RNG mirror tracking on by default (`CRIMSON_FRIDA_V2_RNG_STATE_MIRROR=1`).
 - Between-tick RNG rolls retained in tick-local diagnostics
   (`rng.outside_before_*`, `checkpoint.rng_marks.rand_outside_before_*`) with unlimited head by default.
+- Between-tick perk-apply events retained in tick-local diagnostics
+  (`perk_apply_outside_before`) with unlimited head by default.
 - Unlimited event/phase head + tick event budget (`CRIMSON_FRIDA_V2_MAX_HEAD=-1`, `CRIMSON_FRIDA_V2_MAX_EVENTS_PER_TICK=-1`).
 - Player count resolved from game memory (`config_player_count`) unless manually overridden.
 

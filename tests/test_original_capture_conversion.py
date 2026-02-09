@@ -9,6 +9,7 @@ from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
 from crimson.replay.original_capture import (
     ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
     ORIGINAL_CAPTURE_FORMAT_VERSION,
+    ORIGINAL_CAPTURE_PERK_APPLY_EVENT_KIND,
     ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND,
     ORIGINAL_CAPTURE_UNKNOWN_INT,
     OriginalCaptureSidecar,
@@ -296,6 +297,53 @@ def test_convert_original_capture_to_replay_infers_perk_menu_and_pending_events_
     assert replay.events[3].payload == [{"perk_pending": 0}]
 
 
+def test_convert_original_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> None:
+    capture_obj = {
+        "v": ORIGINAL_CAPTURE_FORMAT_VERSION,
+        "sample_rate": 1,
+        "ticks": [
+            {
+                "tick_index": 20,
+                "state_hash": "h20",
+                "command_hash": "c20",
+                "perk_pending": 1,
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 1, "ammo": 10.0}],
+            },
+            {
+                "tick_index": 21,
+                "state_hash": "h21",
+                "command_hash": "c21",
+                "perk_pending": 0,
+                "perk_apply_before": [14],
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 1, "ammo": 10.0}],
+            },
+        ],
+    }
+    path = tmp_path / "capture_perk_apply.json"
+    path.write_text(json.dumps(capture_obj, separators=(",", ":"), sort_keys=True), encoding="utf-8")
+
+    capture = load_original_capture_sidecar(path)
+    replay = convert_original_capture_to_replay(capture)
+
+    assert len(replay.events) == 5
+    assert replay.events[0].kind == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND
+
+    by_kind_tick: dict[tuple[str, int], UnknownEvent | PerkMenuOpenEvent] = {}
+    for event in replay.events[1:]:
+        if isinstance(event, UnknownEvent):
+            by_kind_tick[(str(event.kind), int(event.tick_index))] = event
+        elif isinstance(event, PerkMenuOpenEvent):
+            by_kind_tick[("PerkMenuOpenEvent", int(event.tick_index))] = event
+
+    assert (ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND, 20) in by_kind_tick
+    assert ("PerkMenuOpenEvent", 20) in by_kind_tick
+    assert (ORIGINAL_CAPTURE_PERK_APPLY_EVENT_KIND, 21) in by_kind_tick
+    assert (ORIGINAL_CAPTURE_PERK_PENDING_EVENT_KIND, 21) in by_kind_tick
+    perk_apply_event = by_kind_tick[(ORIGINAL_CAPTURE_PERK_APPLY_EVENT_KIND, 21)]
+    assert isinstance(perk_apply_event, UnknownEvent)
+    assert perk_apply_event.payload == [{"perk_id": 14}]
+
+
 def test_load_original_capture_sidecar_supports_gameplay_trace_jsonl(tmp_path: Path) -> None:
     path = tmp_path / "gameplay_state_capture.jsonl"
     rows = [
@@ -405,10 +453,18 @@ def test_load_original_capture_sidecar_supports_v2_tick_jsonl(tmp_path: Path) ->
                     {"query": "grim_is_key_active", "pressed": True, "arg0": 31},
                     {"query": "grim_is_key_active", "pressed": True, "arg0": 30},
                 ],
+                "perk_apply": [
+                    {"perk_id": 33},
+                ],
                 "input_primary_down": [
                     {"query": "grim_is_key_active", "pressed": True, "arg0": 18},
                 ],
                 "input_primary_edge": [],
+            },
+            "perk_apply_outside_before": {
+                "calls": 1,
+                "dropped": 0,
+                "head": [{"perk_id": 14}],
             },
             "input_queries": {
                 "stats": {
@@ -529,6 +585,8 @@ def test_load_original_capture_sidecar_supports_v2_tick_jsonl(tmp_path: Path) ->
     assert tick.input_approx[0].turn_right_pressed is False
     assert tick.input_approx[0].fire_down is True
     assert tick.frame_dt_ms == 7.0
+    assert tick.perk_apply_before == (14,)
+    assert tick.perk_apply_in_tick == (33,)
     assert tick.status_quest_unlock_index == 9
     assert tick.status_quest_unlock_index_full == 31
     assert tick.status_weapon_usage_counts[:3] == (0, 1, 2)
