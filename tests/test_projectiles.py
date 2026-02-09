@@ -198,6 +198,42 @@ def test_projectile_pool_update_ion_minigun_linger_deals_aoe_damage() -> None:
     assert creatures[0].hp < hp_after_hit
 
 
+def test_projectile_pool_update_expired_ion_still_runs_linger_once() -> None:
+    pool = ProjectilePool(size=1)
+    idx = pool.spawn(
+        pos=Vec2(),
+        angle=math.pi / 2.0,
+        type_id=int(ProjectileTypeId.ION_RIFLE),
+        owner_id=-100,
+        base_damage=20.0,
+    )
+    proj = pool.entries[idx]
+    proj.life_timer = -0.001
+    creatures = [_Creature(pos=Vec2(5.0, 0.0), hp=-1.0, hitbox_size=6.0)]
+
+    calls: list[tuple[int, float, int, Vec2, int]] = []
+
+    def _apply_damage(creature_index: int, damage: float, damage_type: int, impulse: Vec2, owner_id: int) -> None:
+        calls.append((int(creature_index), float(damage), int(damage_type), impulse, int(owner_id)))
+
+    pool.update(
+        0.021,
+        creatures,
+        world_size=1024.0,
+        apply_creature_damage=_apply_damage,
+    )
+
+    assert proj.active is False
+    assert math.isclose(float(proj.life_timer), -0.022, abs_tol=1e-9)
+    assert len(calls) == 1
+    creature_index, damage, damage_type, impulse, owner_id = calls[0]
+    assert creature_index == 0
+    assert math.isclose(damage, 2.1, abs_tol=1e-9)
+    assert damage_type == 7
+    assert impulse == Vec2()
+    assert owner_id == -100
+
+
 def test_projectile_pool_update_ion_hit_spawns_ring_and_burst_effects() -> None:
     state = GameplayState()
     state.projectiles.spawn(

@@ -1005,9 +1005,10 @@ class ProjectilePool:
             behavior = PROJECTILE_BEHAVIOR_BY_TYPE_ID.get(int(proj.type_id), _DEFAULT_BEHAVIOR)
 
             if proj.life_timer <= 0.0:
-                _reset_shock_chain_if_owner(proj_index)
                 proj.active = False
-                continue
+                # Native `projectile_update` clears the active flag but still
+                # runs this tick's life_timer branch, so expired ion projectiles
+                # can apply one final linger AoE pass.
 
             if proj.life_timer < 0.4:
                 if int(proj.type_id) in (int(ProjectileTypeId.ION_RIFLE), int(ProjectileTypeId.ION_MINIGUN)):
