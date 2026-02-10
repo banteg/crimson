@@ -35,6 +35,7 @@ from ..menu import (
     MenuView,
     _draw_menu_cursor,
     ensure_menu_ground,
+    menu_ground_camera,
 )
 from ..transitions import _draw_screen_fade
 
@@ -217,7 +218,7 @@ class PanelMenuView:
             pause_background.draw_pause_background()
             return
         if self._ground is not None:
-            self._ground.draw(Vec2())
+            self._ground.draw(menu_ground_camera(self._state))
 
     def _draw_panel(self) -> None:
         assets = self._assets

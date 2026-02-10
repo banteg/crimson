@@ -63,6 +63,13 @@ MENU_SIGN_POS_X_PAD = 4.0
 MENU_DEMO_IDLE_START_MS = 23_000
 
 
+def menu_ground_camera(state: GameState) -> Vec2:
+    camera = getattr(state, "menu_ground_camera", None)
+    if isinstance(camera, Vec2):
+        return camera
+    return Vec2()
+
+
 def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer | None:
     cache = state.texture_cache
     if cache is None:
@@ -101,6 +108,7 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
             regenerate = True
     if regenerate:
         ground.schedule_generate(seed=state.rng.randrange(0, 10_000), layers=3)
+        state.menu_ground_camera = None
     return ground
 
 
@@ -269,7 +277,7 @@ class MenuView:
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
-            self._ground.draw(Vec2())
+            self._ground.draw(menu_ground_camera(self._state))
         _draw_screen_fade(self._state)
         assets = self._assets
         if assets is None:

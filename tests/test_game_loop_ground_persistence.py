@@ -3,24 +3,36 @@ from __future__ import annotations
 from pathlib import Path
 import random
 import time
+from typing import Any, cast
 
 import pyray as rl
 
 from crimson.game import GameLoopView, GameState
+from crimson.frontend.menu import ensure_menu_ground
 from crimson.persistence import save_status
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
+from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 
 
 class _GroundSourceView:
-    def __init__(self, ground: GroundRenderer | None) -> None:
+    def __init__(self, ground: GroundRenderer | None, camera: Vec2 | None = None) -> None:
         self._ground = ground
+        self._camera = camera
 
     def steal_ground_for_menu(self) -> GroundRenderer | None:
         ground = self._ground
         self._ground = None
         return ground
+
+    def menu_ground_camera(self) -> Vec2 | None:
+        return self._camera
+
+
+class _TextureCacheStub:
+    def texture(self, _name: str) -> rl.Texture:
+        return cast(rl.Texture, rl.Texture())
 
 
 def _build_state(tmp_path: Path) -> GameState:
@@ -50,9 +62,11 @@ def test_capture_gameplay_ground_from_active_view(tmp_path: Path) -> None:
 
     menu_ground = GroundRenderer(texture=rl.Texture())
     gameplay_ground = GroundRenderer(texture=rl.Texture())
-    gameplay_view = _GroundSourceView(gameplay_ground)
+    gameplay_camera = Vec2(-321.25, -456.5)
+    gameplay_view = _GroundSourceView(gameplay_ground, gameplay_camera)
 
     state.menu_ground = menu_ground
+    state.menu_ground_camera = Vec2(-1.0, -1.0)
     loop._front_active = gameplay_view
     loop._front_stack = []
     loop._gameplay_views = frozenset({gameplay_view})
@@ -60,6 +74,7 @@ def test_capture_gameplay_ground_from_active_view(tmp_path: Path) -> None:
     loop._capture_gameplay_ground_for_menu()
 
     assert state.menu_ground is gameplay_ground
+    assert state.menu_ground_camera == gameplay_camera
     assert gameplay_view.steal_ground_for_menu() is None
 
 
@@ -69,10 +84,12 @@ def test_capture_gameplay_ground_from_stacked_view(tmp_path: Path) -> None:
 
     menu_ground = GroundRenderer(texture=rl.Texture())
     gameplay_ground = GroundRenderer(texture=rl.Texture())
-    gameplay_view = _GroundSourceView(gameplay_ground)
+    gameplay_camera = Vec2(-611.0, -322.0)
+    gameplay_view = _GroundSourceView(gameplay_ground, gameplay_camera)
     overlay_view = object()
 
     state.menu_ground = menu_ground
+    state.menu_ground_camera = Vec2(-1.0, -1.0)
     loop._front_active = overlay_view
     loop._front_stack = [gameplay_view]
     loop._gameplay_views = frozenset({gameplay_view})
@@ -80,4 +97,16 @@ def test_capture_gameplay_ground_from_stacked_view(tmp_path: Path) -> None:
     loop._capture_gameplay_ground_for_menu()
 
     assert state.menu_ground is gameplay_ground
+    assert state.menu_ground_camera == gameplay_camera
     assert gameplay_view.steal_ground_for_menu() is None
+
+
+def test_regenerate_menu_ground_resets_menu_camera(tmp_path: Path) -> None:
+    state = _build_state(tmp_path)
+    state.texture_cache = cast(Any, _TextureCacheStub())
+    state.menu_ground_camera = Vec2(-100.0, -200.0)
+
+    ground = ensure_menu_ground(state, regenerate=True)
+
+    assert ground is not None
+    assert state.menu_ground_camera is None
