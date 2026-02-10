@@ -236,6 +236,38 @@ def test_survival_runner_applies_original_capture_bootstrap_event() -> None:
     assert result.score_xp == 321
 
 
+def test_survival_runner_original_capture_uses_packed_move_vector_for_turn_only_keys() -> None:
+    header = ReplayHeader(
+        game_mode_id=int(GameMode.SURVIVAL),
+        seed=0x1234,
+        tick_rate=60,
+        player_count=1,
+        game_version="0.0.0",
+    )
+    recorder = ReplayRecorder(header)
+    recorder.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(600.0, 512.0))])
+    replay = recorder.finish()
+    replay.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
+            payload=[{"digital_move_enabled_by_player": [True]}],
+        )
+    )
+
+    checkpoints = []
+    with pytest.warns(ReplayGameVersionWarning):
+        run_survival_replay(
+            replay,
+            max_ticks=1,
+            checkpoints_out=checkpoints,
+            checkpoint_ticks={0},
+        )
+
+    assert len(checkpoints) == 1
+    assert float(checkpoints[0].players[0].pos.x) > 512.0
+
+
 def test_rush_runner_is_deterministic() -> None:
     _header, rec = _blank_rush_replay(ticks=10, seed=0x1234, game_version="0.0.0")
     replay = rec.finish()
@@ -325,6 +357,38 @@ def test_rush_runner_applies_original_capture_bootstrap_event() -> None:
 
     assert result.ticks == 1
     assert result.score_xp == 77
+
+
+def test_rush_runner_original_capture_uses_packed_move_vector_for_turn_only_keys() -> None:
+    header = ReplayHeader(
+        game_mode_id=int(GameMode.RUSH),
+        seed=0x1234,
+        tick_rate=60,
+        player_count=1,
+        game_version="0.0.0",
+    )
+    recorder = ReplayRecorder(header)
+    recorder.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(600.0, 512.0))])
+    replay = recorder.finish()
+    replay.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
+            payload=[{"digital_move_enabled_by_player": [True]}],
+        )
+    )
+
+    checkpoints = []
+    with pytest.warns(ReplayGameVersionWarning):
+        run_rush_replay(
+            replay,
+            max_ticks=1,
+            checkpoints_out=checkpoints,
+            checkpoint_ticks={0},
+        )
+
+    assert len(checkpoints) == 1
+    assert float(checkpoints[0].players[0].pos.x) > 512.0
 
 
 def test_rush_runner_checkpoints_capture_rng_marks() -> None:
