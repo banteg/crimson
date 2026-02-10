@@ -76,6 +76,13 @@ class _TraceHistory:
 
 
 @dataclass(slots=True)
+class _DetachedTrace:
+    points: deque[tuple[int, float, float]]
+    max_age_ticks: int
+    last_active_tick: int
+
+
+@dataclass(slots=True)
 class _FrameSnapshot:
     tick_index: int
     capture_players: dict[int, _EntityDraw]
@@ -213,6 +220,8 @@ class CaptureVisualizerView:
         self._row_cursor = -1
         self._snapshot: _FrameSnapshot | None = None
         self._trace_histories: dict[str, _TraceHistory] = {}
+        self._detached_capture_traces: list[_DetachedTrace] = []
+        self._detached_rewrite_traces: list[_DetachedTrace] = []
         self._accumulator = 0.0
         self._paused = False
         self._show_traces = True
@@ -266,6 +275,8 @@ class CaptureVisualizerView:
         self._row_cursor = -1
         self._snapshot = None
         self._trace_histories.clear()
+        self._detached_capture_traces.clear()
+        self._detached_rewrite_traces.clear()
         self._accumulator = 0.0
 
         for idx in range(0, int(self._visible_start_idx)):
@@ -541,6 +552,25 @@ class CaptureVisualizerView:
         return float(dx * dx + dy * dy)
 
     @staticmethod
+    def _detach_points(
+        out: list[_DetachedTrace],
+        *,
+        points: deque[tuple[int, float, float]],
+        max_age_ticks: int,
+        last_active_tick: int | None,
+    ) -> None:
+        if not points:
+            return
+        last_tick = int(last_active_tick) if last_active_tick is not None else int(points[-1][0])
+        out.append(
+            _DetachedTrace(
+                points=deque(points, maxlen=max(1, int(max_age_ticks))),
+                max_age_ticks=max(1, int(max_age_ticks)),
+                last_active_tick=int(last_tick),
+            )
+        )
+
+    @staticmethod
     def _prune_trace_points(
         points: deque[tuple[int, float, float]],
         *,
@@ -572,6 +602,28 @@ class CaptureVisualizerView:
                 stale_keys.append(str(key))
         for key in stale_keys:
             self._trace_histories.pop(str(key), None)
+        self._detached_capture_traces = [
+            trace
+            for trace in self._detached_capture_traces
+            if self._prune_detached_trace(trace, current_tick=int(current_tick))
+        ]
+        self._detached_rewrite_traces = [
+            trace
+            for trace in self._detached_rewrite_traces
+            if self._prune_detached_trace(trace, current_tick=int(current_tick))
+        ]
+
+    def _prune_detached_trace(self, trace: _DetachedTrace, *, current_tick: int) -> bool:
+        self._prune_trace_points(
+            trace.points,
+            current_tick=int(current_tick),
+            max_age_ticks=int(trace.max_age_ticks),
+        )
+        if not trace.points:
+            return False
+        if int(current_tick) - int(trace.last_active_tick) > int(trace.max_age_ticks):
+            return False
+        return True
 
     def _append_trace_point(
         self,
@@ -605,6 +657,12 @@ class CaptureVisualizerView:
                 if jump_sq > float(_PROJECTILE_TRACE_RESET_DIST * _PROJECTILE_TRACE_RESET_DIST):
                     reset_capture = True
             if reset_capture:
+                self._detach_points(
+                    self._detached_capture_traces,
+                    points=trace.capture,
+                    max_age_ticks=int(trace.max_age_ticks),
+                    last_active_tick=trace.capture_last_tick,
+                )
                 trace.capture.clear()
             trace.capture.append((int(tick_index), float(capture_x), float(capture_y)))
             trace.capture_last_tick = int(tick_index)
@@ -622,6 +680,12 @@ class CaptureVisualizerView:
                 if jump_sq > float(_PROJECTILE_TRACE_RESET_DIST * _PROJECTILE_TRACE_RESET_DIST):
                     reset_rewrite = True
             if reset_rewrite:
+                self._detach_points(
+                    self._detached_rewrite_traces,
+                    points=trace.rewrite,
+                    max_age_ticks=int(trace.max_age_ticks),
+                    last_active_tick=trace.rewrite_last_tick,
+                )
                 trace.rewrite.clear()
             trace.rewrite.append((int(tick_index), float(rewrite_x), float(rewrite_y)))
             trace.rewrite_last_tick = int(tick_index)
@@ -863,6 +927,26 @@ class CaptureVisualizerView:
 
         self._prune_traces(current_tick=int(snapshot.tick_index))
         if self._show_traces:
+            for trace in self._detached_capture_traces:
+                self._draw_trace(
+                    trace.points,
+                    last_active_tick=int(trace.last_active_tick),
+                    current_tick=int(snapshot.tick_index),
+                    max_age_ticks=int(trace.max_age_ticks),
+                    width=width,
+                    height=height,
+                    color=_CAPTURE_TRACE_COLOR,
+                )
+            for trace in self._detached_rewrite_traces:
+                self._draw_trace(
+                    trace.points,
+                    last_active_tick=int(trace.last_active_tick),
+                    current_tick=int(snapshot.tick_index),
+                    max_age_ticks=int(trace.max_age_ticks),
+                    width=width,
+                    height=height,
+                    color=_REWRITE_TRACE_COLOR,
+                )
             for trace in self._trace_histories.values():
                 self._draw_trace(
                     trace.capture,
