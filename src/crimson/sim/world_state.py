@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from grim.geom import Vec2
@@ -117,28 +118,22 @@ class WorldState:
             dt = float(step(dt=dt, players=self.players))
         _mark("ws_begin")
         inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
-
         prev_positions = [(player.pos.x, player.pos.y) for player in self.players]
         prev_health = [float(player.health) for player in self.players]
-
         # Native runs `perks_update_effects` early and reads current aim, so stage aim before `player_update`.
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
             player.aim = input_state.aim
-
         perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
         _mark("ws_after_perk_effects")
-
         # `effects_update` runs early in the native frame loop, before creature/projectile updates.
         self.state.effects.update(dt, fx_queue=fx_queue)
         _mark("ws_after_effects_update")
-
         def _apply_projectile_damage_to_player(player_index: int, damage: float) -> None:
             idx = int(player_index)
             if not (0 <= idx < len(self.players)):
                 return
             player_take_projectile_damage(self.state, self.players[idx], float(damage))
-
         creature_result = self.creatures.update(
             dt,
             dt_ms_i32=(int(dt_ms_i32) if dt_ms_i32 is not None else None),
@@ -151,11 +146,9 @@ class WorldState:
             fx_queue_rotated=fx_queue_rotated,
         )
         _mark("ws_after_creatures")
-
         deaths = list(creature_result.deaths)
         planned_death_sfx: list[str] = []
         planned_death_sfx_cap = 3
-
         def _plan_death_sfx_now(death: CreatureDeath) -> None:
             if len(planned_death_sfx) >= planned_death_sfx_cap:
                 return
@@ -166,13 +159,11 @@ class WorldState:
             if remain <= 0:
                 return
             planned_death_sfx.extend(keys[:remain])
-
         for death in deaths:
             _plan_death_sfx_now(death)
         trigger_game_tune = False
         hit_sfx: list[str] = []
         hit_audio_game_tune_started = bool(game_tune_started)
-
         def _apply_projectile_damage_to_creature(
             creature_index: int,
             damage: float,
@@ -186,7 +177,6 @@ class WorldState:
             creature = self.creatures.entries[idx]
             if not creature.active:
                 return
-
             death_start_needed = creature.hp > 0.0 and creature.hitbox_size == CREATURE_HITBOX_ALIVE
             killed = creature_apply_damage(
                 creature,
@@ -199,20 +189,28 @@ class WorldState:
                 rand=self.state.rng.rand,
             )
             if killed and death_start_needed:
-                death = self.creatures.handle_death(
-                    idx,
-                    state=self.state,
-                    players=self.players,
-                    rand=self.state.rng.rand,
+                self._record_creature_death(
+                    creature_index=idx,
                     dt=float(dt),
                     detail_preset=int(detail_preset),
-                    world_width=float(world_size),
-                    world_height=float(world_size),
+                    world_size=float(world_size),
                     fx_queue=fx_queue,
+                    deaths=deaths,
+                    plan_death_sfx_now=_plan_death_sfx_now,
                 )
-                deaths.append(death)
-                _plan_death_sfx_now(death)
-
+        def _on_secondary_detonation_kill(creature_index: int) -> None:
+            idx = int(creature_index)
+            if not (0 <= idx < len(self.creatures.entries)) or float(self.creatures.entries[idx].hp) > 0.0:
+                return
+            self._record_creature_death(
+                creature_index=idx,
+                dt=float(dt),
+                detail_preset=int(detail_preset),
+                world_size=float(world_size),
+                fx_queue=fx_queue,
+                deaths=deaths,
+                plan_death_sfx_now=_plan_death_sfx_now,
+            )
         def _on_projectile_hit_pre(hit: ProjectileHit) -> ProjectileDecalPostCtx:
             return self._prepare_projectile_hit_presentation(
                 hit=hit,
@@ -220,7 +218,6 @@ class WorldState:
                 detail_preset=int(detail_preset),
                 fx_toggle=int(fx_toggle),
             )
-
         def _on_projectile_hit_post(_hit: ProjectileHit, post_ctx: object | None) -> None:
             nonlocal trigger_game_tune, hit_audio_game_tune_started
             if not isinstance(post_ctx, ProjectileDecalPostCtx):
@@ -274,6 +271,7 @@ class WorldState:
             runtime_state=self.state,
             fx_queue=fx_queue,
             detail_preset=int(detail_preset),
+            on_detonation_kill=_on_secondary_detonation_kill,
         )
         _mark("ws_after_secondary_projectiles")
 
@@ -308,20 +306,16 @@ class WorldState:
                 return
 
             creature.last_hit_owner_id = int(owner_id)
-            death = self.creatures.handle_death(
-                idx,
-                state=self.state,
-                players=self.players,
-                rand=self.state.rng.rand,
+            self._record_creature_death(
+                creature_index=idx,
                 dt=float(dt),
                 detail_preset=int(detail_preset),
-                world_width=float(world_size),
-                world_height=float(world_size),
+                world_size=float(world_size),
                 fx_queue=fx_queue,
+                deaths=deaths,
+                plan_death_sfx_now=_plan_death_sfx_now,
                 keep_corpse=False,
             )
-            deaths.append(death)
-            _plan_death_sfx_now(death)
 
         self.state.particles.update(
             dt,
@@ -409,6 +403,33 @@ class WorldState:
             hit_sfx=hit_sfx,
             death_sfx_preplanned=True,
         )
+
+    def _record_creature_death(
+        self,
+        *,
+        creature_index: int,
+        dt: float,
+        detail_preset: int,
+        world_size: float,
+        fx_queue: FxQueue,
+        deaths: list[CreatureDeath],
+        plan_death_sfx_now: Callable[[CreatureDeath], None],
+        keep_corpse: bool = True,
+    ) -> None:
+        death = self.creatures.handle_death(
+            int(creature_index),
+            state=self.state,
+            players=self.players,
+            rand=self.state.rng.rand,
+            dt=float(dt),
+            detail_preset=int(detail_preset),
+            world_width=float(world_size),
+            world_height=float(world_size),
+            fx_queue=fx_queue,
+            keep_corpse=bool(keep_corpse),
+        )
+        deaths.append(death)
+        plan_death_sfx_now(death)
 
     def _prepare_projectile_hit_presentation(
         self,

@@ -164,6 +164,7 @@ def _rng_zero() -> int:
 
 
 CreatureDamageApplier = Callable[[int, float, int, Vec2, int], None]
+SecondaryDetonationKillHandler = Callable[[int], None]
 
 
 @dataclass(frozen=True, slots=True)
@@ -1420,6 +1421,7 @@ class SecondaryProjectilePool:
         runtime_state: ProjectileRuntimeState | None = None,
         fx_queue: FxQueueLike | None = None,
         detail_preset: int = 5,
+        on_detonation_kill: SecondaryDetonationKillHandler | None = None,
     ) -> None:
         """Update the secondary projectile pool subset (types 1/2/4 + detonation type 3)."""
 
@@ -1488,6 +1490,7 @@ class SecondaryProjectilePool:
                         continue
                     d_sq = Vec2.distance_sq(entry.pos, creature.pos)
                     if d_sq < radius_sq:
+                        hp_before = float(creature.hp)
                         impulse_dir = entry.pos.direction_to(creature.pos)
                         impulse = impulse_dir * 0.1
                         _apply_secondary_damage(
@@ -1496,6 +1499,13 @@ class SecondaryProjectilePool:
                             owner_id=int(entry.owner_id),
                             impulse=impulse,
                         )
+                        if on_detonation_kill is not None and hp_before > 0.0 and float(creature.hp) <= 0.0:
+                            # Native detonation AoE does an extra two random decals and a
+                            # second `creature_handle_death` call after the killing hit.
+                            if fx_queue is not None:
+                                fx_queue.add_random(pos=creature.pos, rand=rand)
+                                fx_queue.add_random(pos=creature.pos, rand=rand)
+                            on_detonation_kill(int(creature_idx))
                 continue
 
             if entry.type_id not in (

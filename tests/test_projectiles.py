@@ -568,6 +568,60 @@ def test_secondary_projectile_pool_detonation_aoe_passes_impulse() -> None:
     assert math.isclose(impulse_y, 0.08, abs_tol=1e-9)
 
 
+def test_secondary_projectile_pool_detonation_kill_triggers_native_followup() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn(pos=Vec2(), angle=0.0, type_id=3, time_to_live=1.0)
+    creatures = [_Creature(pos=Vec2(0.0, 0.0), hp=20.0)]
+    fx_queue = FxQueue()
+
+    damage_calls: list[int] = []
+
+    def _apply(idx: int, damage: float, damage_type: int, impulse: Vec2, owner_id: int) -> None:
+        _ = (damage_type, impulse, owner_id)
+        damage_calls.append(int(idx))
+        creatures[int(idx)].hp -= float(damage)
+
+    followup_kills: list[int] = []
+
+    pool.update_pulse_gun(
+        0.1,
+        creatures,
+        apply_creature_damage=_apply,
+        fx_queue=fx_queue,
+        on_detonation_kill=lambda idx: followup_kills.append(int(idx)),
+    )
+
+    assert damage_calls == [0]
+    assert creatures[0].hp < 0.0
+    assert followup_kills == [0]
+    assert fx_queue.count == 2
+
+
+def test_secondary_projectile_pool_detonation_nonlethal_skips_followup() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn(pos=Vec2(), angle=0.0, type_id=3, time_to_live=1.0)
+    creatures = [_Creature(pos=Vec2(0.0, 0.0), hp=200.0)]
+    fx_queue = FxQueue()
+
+    def _apply(idx: int, damage: float, damage_type: int, impulse: Vec2, owner_id: int) -> None:
+        _ = (damage_type, impulse, owner_id)
+        creatures[int(idx)].hp -= float(damage)
+
+    followup_kills: list[int] = []
+
+    pool.update_pulse_gun(
+        0.1,
+        creatures,
+        apply_creature_damage=_apply,
+        fx_queue=fx_queue,
+        on_detonation_kill=lambda idx: followup_kills.append(int(idx)),
+    )
+
+    assert creatures[0].hp > 0.0
+    assert followup_kills == []
+    assert fx_queue.count == 0
+
+
 def test_secondary_projectile_pool_freeze_spawns_extra_shards_and_burst() -> None:
     class _FixedRng:
         def rand(self) -> int:
