@@ -1989,9 +1989,11 @@ function checkpointPlayersFromCompact(players) {
 
 function buildInputApprox(afterPlayers, tick) {
   const out = [];
+  const keyRows = tick && Array.isArray(tick.input_player_keys) ? tick.input_player_keys : [];
   for (let i = 0; i < afterPlayers.length; i++) {
     const p = afterPlayers[i];
     const fired = tick.fire_by_player[i] || 0;
+    const keyRow = keyRows[i] && typeof keyRows[i] === "object" ? keyRows[i] : null;
     const moving =
       p.move_dx != null &&
       p.move_dy != null &&
@@ -2002,10 +2004,20 @@ function buildInputApprox(afterPlayers, tick) {
       move_dy: p.move_dy,
       aim_x: p.aim_x,
       aim_y: p.aim_y,
+      aim_heading: p.aim_heading,
+      move_mode: null,
+      aim_scheme: null,
       fired_events: fired,
       moving: !!moving,
       reload_active: p.reload_active_i32 != null ? p.reload_active_i32 !== 0 : null,
       weapon_id: p.weapon_id,
+      move_forward_pressed: keyRow ? keyRow.move_forward_pressed : null,
+      move_backward_pressed: keyRow ? keyRow.move_backward_pressed : null,
+      turn_left_pressed: keyRow ? keyRow.turn_left_pressed : null,
+      turn_right_pressed: keyRow ? keyRow.turn_right_pressed : null,
+      fire_down: keyRow ? keyRow.fire_down : null,
+      fire_pressed: keyRow ? keyRow.fire_pressed : null,
+      reload_pressed: keyRow ? keyRow.reload_pressed : null,
     });
   }
   return out;

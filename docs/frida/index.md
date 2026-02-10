@@ -3,6 +3,7 @@
 Runtime instrumentation for evidence collection using Frida.
 
 - [Workflow](workflow.md) — How to collect and promote runtime evidence
+- [New session playbook](new-session-playbook.md) — What to do when handed only a fresh capture file
 - [Sessions](sessions.md) — Session templates and capture notes
 - [Differential capture sessions](differential-sessions.md) — Replay/sidecar verification runs, findings, and fixes
 - [Branch wrap handoff (2026-02-08)](branch-wrap-handoff-2026-02-08.md) — Merge handoff and next-branch precision-parity plan

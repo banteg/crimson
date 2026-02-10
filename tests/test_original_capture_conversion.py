@@ -491,3 +491,149 @@ def test_convert_capture_to_replay_explicit_seed_overrides_inferred_seed(tmp_pat
     replay = convert_capture_to_replay(capture, seed=0xBEEF)
 
     assert replay.header.seed == 0xBEEF
+
+
+def test_convert_capture_to_replay_prefers_input_player_keys_for_digital_move(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "move_forward_pressed": True,
+            "move_backward_pressed": False,
+            "turn_left_pressed": True,
+            "turn_right_pressed": False,
+            "fire_down": False,
+            "fire_pressed": False,
+            "reload_pressed": False,
+        }
+    ]
+    tick0["input_approx"] = [
+        {
+            "player_index": 0,
+            "move_dx": -21.5,
+            "move_dy": -7.6,
+            "aim_x": 540.0,
+            "aim_y": 500.0,
+            "fired_events": 0,
+            "reload_active": False,
+        }
+    ]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture)
+
+    move_x, move_y, _aim, flags = replay.inputs[0][0]
+    assert move_x == -1.0
+    assert move_y == -1.0
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
+    assert fire_down is False
+    assert fire_pressed is False
+    assert reload_pressed is False
+
+    bootstrap = next(
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+    )
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    assert payload is not None
+    assert payload.get("digital_move_enabled_by_player") == [True]
+
+
+def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capability(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["input_player_keys"] = [{"player_index": 0}]
+    tick0["input_approx"] = [
+        {
+            "player_index": 0,
+            "move_dx": 0.25,
+            "move_dy": 0.5,
+            "move_mode": 1,
+            "move_forward_pressed": True,
+            "move_backward_pressed": False,
+            "turn_left_pressed": True,
+            "turn_right_pressed": False,
+            "aim_x": 540.0,
+            "aim_y": 500.0,
+            "fired_events": 0,
+            "reload_active": False,
+        }
+    ]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture)
+
+    move_x, move_y, _aim, _flags = replay.inputs[0][0]
+    assert move_x == pytest.approx(0.25, abs=1e-6)
+    assert move_y == pytest.approx(0.5, abs=1e-6)
+
+    bootstrap = next(
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+    )
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    assert payload is not None
+    assert payload.get("digital_move_enabled_by_player") == [False]
+
+
+def test_convert_capture_to_replay_conflicting_turn_keys_fallback_to_normalized_vector(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "move_forward_pressed": False,
+            "move_backward_pressed": False,
+            "turn_left_pressed": True,
+            "turn_right_pressed": True,
+        }
+    ]
+    tick0["input_approx"] = [
+        {
+            "player_index": 0,
+            "move_dx": 99.1623,
+            "move_dy": 2.3589,
+            "aim_x": 306.0,
+            "aim_y": 309.0,
+        }
+    ]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture)
+    move_x, move_y, _aim, _flags = replay.inputs[0][0]
+    assert move_x == pytest.approx(0.9997, abs=1e-4)
+    assert move_y == pytest.approx(0.0238, abs=1e-4)
+
+
+def test_convert_capture_to_replay_uses_player_key_fire_reload_edges(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "fire_down": True,
+            "fire_pressed": True,
+            "reload_pressed": True,
+        }
+    ]
+    tick0["input_approx"] = [{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "fired_events": 0}]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture)
+
+    flags = int(replay.inputs[0][0][3])
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    assert fire_down is True
+    assert fire_pressed is True
+    assert reload_pressed is True
