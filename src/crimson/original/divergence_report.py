@@ -595,6 +595,38 @@ def _build_short_run_summary_events(events: list[RunSummaryEvent], *, max_rows: 
     return out[:limit]
 
 
+def _build_focus_run_summary_events(
+    events: list[RunSummaryEvent],
+    *,
+    focus_tick: int,
+    before_rows: int = 8,
+    after_rows: int = 4,
+) -> list[RunSummaryEvent]:
+    """Return short-kind events immediately around `focus_tick` for orientation."""
+
+    if not events:
+        return []
+
+    before_limit = max(0, int(before_rows))
+    after_limit = max(0, int(after_rows))
+    if before_limit <= 0 and after_limit <= 0:
+        return []
+
+    short_events = [event for event in events if str(event.kind) in RUN_SUMMARY_SHORT_KINDS]
+    source = short_events if short_events else list(events)
+    ordered = sorted(source, key=lambda item: (int(item.tick_index), str(item.kind), str(item.detail)))
+
+    before = [event for event in ordered if int(event.tick_index) <= int(focus_tick)]
+    after = [event for event in ordered if int(event.tick_index) > int(focus_tick)]
+
+    out: list[RunSummaryEvent] = []
+    if before_limit > 0:
+        out.extend(before[-before_limit:])
+    if after_limit > 0:
+        out.extend(after[:after_limit])
+    return out
+
+
 def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> dict[int, dict[str, object]]:
     out: dict[int, dict[str, object]] = {}
     for obj in _iter_capture_tick_rows(path):
@@ -2095,6 +2127,23 @@ def build_parser() -> argparse.ArgumentParser:
         help="max rows to print for --run-summary-short",
     )
     parser.add_argument(
+        "--run-summary-focus-context",
+        action="store_true",
+        help="print major timeline events immediately around the focus tick",
+    )
+    parser.add_argument(
+        "--run-summary-focus-before",
+        type=int,
+        default=8,
+        help="events at/before focus tick to print for --run-summary-focus-context",
+    )
+    parser.add_argument(
+        "--run-summary-focus-after",
+        type=int,
+        default=4,
+        help="events after focus tick to print for --run-summary-focus-context",
+    )
+    parser.add_argument(
         "--json-out",
         nargs="?",
         default=None,
@@ -2150,7 +2199,11 @@ def main(argv: list[str] | None = None) -> int:
 
     run_summary_events: list[RunSummaryEvent] = []
     run_summary_short_events: list[RunSummaryEvent] = []
-    if bool(args.run_summary) or bool(args.run_summary_short):
+    run_summary_focus_events: list[RunSummaryEvent] = []
+    focus_tick_for_summary = int(divergence.tick_index) if divergence is not None else (
+        int(expected[-1].tick_index) if expected else 0
+    )
+    if bool(args.run_summary) or bool(args.run_summary_short) or bool(args.run_summary_focus_context):
         run_summary_events = _build_run_summary_events(capture_path, expected=expected)
         if bool(args.run_summary_short):
             run_summary_short_events = _build_short_run_summary_events(
@@ -2167,6 +2220,18 @@ def main(argv: list[str] | None = None) -> int:
                 run_summary_events,
                 max_rows=max(1, int(args.run_summary_max_rows)),
                 title="run_summary",
+            )
+        if bool(args.run_summary_focus_context):
+            run_summary_focus_events = _build_focus_run_summary_events(
+                run_summary_events,
+                focus_tick=int(focus_tick_for_summary),
+                before_rows=max(0, int(args.run_summary_focus_before)),
+                after_rows=max(0, int(args.run_summary_focus_after)),
+            )
+            _print_run_summary(
+                run_summary_focus_events,
+                max_rows=max(1, int(max(0, int(args.run_summary_focus_before)) + max(0, int(args.run_summary_focus_after)))),
+                title=f"run_summary_focus_context (focus_tick={int(focus_tick_for_summary)})",
             )
 
     if divergence is None:
@@ -2366,9 +2431,10 @@ def main(argv: list[str] | None = None) -> int:
                 else {}
             ),
         }
-        if bool(args.run_summary) or bool(args.run_summary_short):
+        if bool(args.run_summary) or bool(args.run_summary_short) or bool(args.run_summary_focus_context):
             payload["run_summary_events"] = [asdict(event) for event in run_summary_events]
             payload["run_summary_short_events"] = [asdict(event) for event in run_summary_short_events]
+            payload["run_summary_focus_context_events"] = [asdict(event) for event in run_summary_focus_events]
         json_out_path.parent.mkdir(parents=True, exist_ok=True)
         json_out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         print()
