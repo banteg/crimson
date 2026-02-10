@@ -41,8 +41,8 @@ from crimson.sim.world_state import WorldState
 from crimson.paths import default_runtime_dir
 
 
-_CAPTURE_TRACE_COLOR = rl.Color(74, 205, 255, 150)
-_REWRITE_TRACE_COLOR = rl.Color(255, 143, 70, 150)
+_CAPTURE_TRACE_COLOR = rl.Color(74, 205, 255, 220)
+_REWRITE_TRACE_COLOR = rl.Color(255, 143, 70, 220)
 _CAPTURE_HITBOX_COLOR = rl.Color(84, 230, 170, 220)
 _REWRITE_HITBOX_COLOR = rl.Color(255, 130, 130, 220)
 _CAPTURE_PLAYER_COLOR = rl.Color(84, 220, 255, 235)
@@ -73,6 +73,7 @@ class _EntityDraw:
 class _TraceLayer:
     lifetime_ticks: int
     rt: rl.RenderTexture | None = None
+    fade_accum: float = 0.0
 
 
 @dataclass(slots=True)
@@ -339,6 +340,7 @@ class CaptureVisualizerView:
     def _clear_trace_layers(self) -> None:
         for layer in self._trace_layers():
             rt = layer.rt
+            layer.fade_accum = 0.0
             if rt is None or int(getattr(rt, "id", 0)) <= 0:
                 continue
             rl.begin_texture_mode(rt)
@@ -351,6 +353,7 @@ class CaptureVisualizerView:
             if rt is not None and int(getattr(rt, "id", 0)) > 0:
                 rl.unload_render_texture(rt)
             layer.rt = None
+            layer.fade_accum = 0.0
         self._trace_rt_size = (0, 0)
 
     def _ensure_trace_layers(self, *, width: int, height: int) -> None:
@@ -650,30 +653,32 @@ class CaptureVisualizerView:
         return float(dx * dx + dy * dy)
 
     @staticmethod
-    def _apply_mul_fade(rt: rl.RenderTexture, *, alpha: int) -> None:
-        if int(alpha) <= 0:
+    def _apply_linear_subtract_fade(rt: rl.RenderTexture, *, amount: int) -> None:
+        amount = int(max(0, min(255, int(amount))))
+        if amount <= 0:
             return
         width = int(max(1, getattr(rt.texture, "width", 1)))
         height = int(max(1, getattr(rt.texture, "height", 1)))
+        fade_color = rl.Color(int(amount), int(amount), int(amount), int(amount))
         rl.begin_texture_mode(rt)
         rl.rl_set_blend_factors_separate(
-            rd.RL_ZERO,
-            rd.RL_ONE_MINUS_SRC_ALPHA,
-            rd.RL_ZERO,
-            rd.RL_ONE_MINUS_SRC_ALPHA,
-            rd.RL_FUNC_ADD,
-            rd.RL_FUNC_ADD,
+            rd.RL_ONE,
+            rd.RL_ONE,
+            rd.RL_ONE,
+            rd.RL_ONE,
+            rd.RL_FUNC_REVERSE_SUBTRACT,
+            rd.RL_FUNC_REVERSE_SUBTRACT,
         )
         rl.begin_blend_mode(rl.BlendMode.BLEND_CUSTOM_SEPARATE)
         rl.rl_set_blend_factors_separate(
-            rd.RL_ZERO,
-            rd.RL_ONE_MINUS_SRC_ALPHA,
-            rd.RL_ZERO,
-            rd.RL_ONE_MINUS_SRC_ALPHA,
-            rd.RL_FUNC_ADD,
-            rd.RL_FUNC_ADD,
+            rd.RL_ONE,
+            rd.RL_ONE,
+            rd.RL_ONE,
+            rd.RL_ONE,
+            rd.RL_FUNC_REVERSE_SUBTRACT,
+            rd.RL_FUNC_REVERSE_SUBTRACT,
         )
-        rl.draw_rectangle(0, 0, int(width), int(height), rl.Color(0, 0, 0, int(alpha)))
+        rl.draw_rectangle(0, 0, int(width), int(height), fade_color)
         rl.end_blend_mode()
         rl.end_texture_mode()
 
@@ -685,9 +690,15 @@ class CaptureVisualizerView:
             if rt is None or int(getattr(rt, "id", 0)) <= 0:
                 continue
             duration = max(float(self._step_interval), float(layer.lifetime_ticks) * float(self._step_interval))
-            decay = math.exp(-max(0.0, float(sim_dt)) * math.log(256.0) / duration)
-            fade_alpha = int(round((1.0 - decay) * 255.0))
-            self._apply_mul_fade(rt, alpha=int(fade_alpha))
+            # Linear decay over the configured trail lifetime.
+            # Keep sub-byte precision in `fade_accum` so long lifetimes (e.g. player=1200)
+            # still decay every frame.
+            layer.fade_accum += (max(0.0, float(sim_dt)) * 255.0) / float(duration)
+            fade_amount = int(layer.fade_accum)
+            if fade_amount <= 0:
+                continue
+            layer.fade_accum -= float(fade_amount)
+            self._apply_linear_subtract_fade(rt, amount=int(fade_amount))
 
     def _draw_trace_layers(self, *, width: int, height: int) -> None:
         dst = rl.Rectangle(0.0, 0.0, float(width), float(height))
