@@ -669,6 +669,17 @@ def cmd_replay_creature_trajectory(ctx: typer.Context) -> None:
     raise typer.Exit(code=creature_trajectory.main(list(ctx.args)))
 
 
+@original_app.command(
+    "visualize-capture",
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True, "help_option_names": []},
+)
+def cmd_replay_visualize_capture(ctx: typer.Context) -> None:
+    """Visualize capture-vs-rewrite drift with hitbox overlays + movement traces."""
+    from .original import capture_visualizer
+
+    raise typer.Exit(code=capture_visualizer.main(list(ctx.args)))
+
+
 @app.callback(invoke_without_command=True)
 def cmd_game(
     ctx: typer.Context,
