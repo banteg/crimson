@@ -722,6 +722,7 @@ class CaptureVisualizerView:
         self,
         points: deque[tuple[int, float, float]],
         *,
+        last_active_tick: int | None,
         current_tick: int,
         max_age_ticks: int,
         width: int,
@@ -731,15 +732,46 @@ class CaptureVisualizerView:
         if len(points) < 2:
             return
         point_list = list(points)
-        _, prev_x, prev_y = point_list[0]
-        for point_tick, x, y in point_list[1:]:
+        inactive_progress = 0.0
+        if last_active_tick is not None and int(current_tick) > int(last_active_tick):
+            inactive_age = int(current_tick) - int(last_active_tick)
+            inactive_progress = min(1.0, float(inactive_age) / float(max(1, int(max_age_ticks))))
+        if inactive_progress >= 1.0:
+            return
+
+        start_pos = float(inactive_progress) * float(len(point_list) - 1)
+        start_idx = int(math.floor(start_pos))
+        start_frac = float(start_pos) - float(start_idx)
+        if start_idx >= len(point_list) - 1:
+            return
+
+        draw_points: list[tuple[int, float, float]]
+        if start_frac > 0.0:
+            tick0, x0, y0 = point_list[start_idx]
+            tick1, x1, y1 = point_list[start_idx + 1]
+            inv = 1.0 - float(start_frac)
+            interp_tick = int(round(float(tick0) * inv + float(tick1) * float(start_frac)))
+            interp_x = float(x0) * inv + float(x1) * float(start_frac)
+            interp_y = float(y0) * inv + float(y1) * float(start_frac)
+            draw_points = [(int(interp_tick), float(interp_x), float(interp_y))]
+            draw_points.extend(point_list[start_idx + 1 :])
+        else:
+            draw_points = point_list[start_idx:]
+
+        if len(draw_points) < 2:
+            return
+
+        inactive_alpha_scale = 1.0 - float(inactive_progress)
+        _, prev_x, prev_y = draw_points[0]
+        for point_tick, x, y in draw_points[1:]:
             x0, y0 = self._world_to_screen(x=float(prev_x), y=float(prev_y), width=width, height=height)
             x1, y1 = self._world_to_screen(x=float(x), y=float(y), width=width, height=height)
             if max_age_ticks <= 1:
-                alpha_scale = 1.0
+                age_alpha_scale = 1.0
             else:
                 age_ticks = max(0, int(current_tick) - int(point_tick))
-                alpha_scale = 1.0 - min(1.0, float(age_ticks) / float(max_age_ticks - 1))
+                age_alpha_scale = 1.0 - min(1.0, float(age_ticks) / float(max_age_ticks - 1))
+            alpha_scale = float(age_alpha_scale) * float(inactive_alpha_scale)
             alpha = int(round(float(color.a) * max(0.0, min(1.0, alpha_scale))))
             if alpha > 0:
                 line_color = rl.Color(int(color.r), int(color.g), int(color.b), int(alpha))
@@ -834,6 +866,7 @@ class CaptureVisualizerView:
             for trace in self._trace_histories.values():
                 self._draw_trace(
                     trace.capture,
+                    last_active_tick=trace.capture_last_tick,
                     current_tick=int(snapshot.tick_index),
                     max_age_ticks=int(trace.max_age_ticks),
                     width=width,
@@ -842,6 +875,7 @@ class CaptureVisualizerView:
                 )
                 self._draw_trace(
                     trace.rewrite,
+                    last_active_tick=trace.rewrite_last_tick,
                     current_tick=int(snapshot.tick_index),
                     max_age_ticks=int(trace.max_age_ticks),
                     width=width,
