@@ -5,7 +5,7 @@ tags:
   - workflow
 ---
 
-# New Session Playbook
+# Differential Playbook
 
 Use this when an agent is only given a new capture file (typically
 `artifacts/frida/share/gameplay_diff_capture.json`) and needs to continue
@@ -49,7 +49,7 @@ PY
 Notes:
 
 - Loader success is the gate. If it decodes cleanly, continue.
-- Missing terminal `capture_end` in a JSONL stream is a warning, not an automatic blocker.
+- Capture loading is strict: a truncated trailing JSONL row is a blocker and should be recaptured.
 
 ## 3) Decide session bookkeeping
 
