@@ -20,6 +20,7 @@ from ...perks import PerkId, perk_display_description, perk_display_name
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import (
     PERK_MENU_TRANSITION_MS,
+    PERK_MENU_DESC_TEXT_SCALE,
     PerkMenuAssets,
     PerkMenuLayout,
     UiButtonState,
@@ -376,7 +377,7 @@ class PerkMenuController:
         desc = perk_display_description(int(selected), fx_toggle=int(ctx.fx_toggle))
         if ctx.font is not None:
             desc = self._prewrapped_perk_desc(int(selected), ctx.font, fx_toggle=int(ctx.fx_toggle))
-        desc_scale = scale * 0.85
+        desc_scale = scale * PERK_MENU_DESC_TEXT_SCALE
         draw_ui_text(
             ctx.font,
             desc,
