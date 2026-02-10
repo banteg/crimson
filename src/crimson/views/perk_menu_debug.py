@@ -366,12 +366,11 @@ class PerkMenuDebugView:
 
                 selected_id = choices[self._selected]
                 desc = perk_display_description(int(selected_id))
-                desc_scale = scale * 0.85
                 draw_wrapped_ui_text_in_rect(
                     self._small,
                     desc,
                     rect=computed.desc,
-                    scale=desc_scale,
+                    scale=scale,
                     color=UI_TEXT_COLOR,
                 )
 

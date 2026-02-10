@@ -376,12 +376,11 @@ class PerkMenuController:
         desc = perk_display_description(int(selected), fx_toggle=int(ctx.fx_toggle))
         if ctx.font is not None:
             desc = self._prewrapped_perk_desc(int(selected), ctx.font, fx_toggle=int(ctx.fx_toggle))
-        desc_scale = scale * 0.85
         draw_ui_text(
             ctx.font,
             desc,
             computed.desc.top_left,
-            scale=desc_scale,
+            scale=scale,
             color=UI_TEXT_COLOR,
         )
 
