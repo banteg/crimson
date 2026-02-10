@@ -980,7 +980,7 @@ def perk_can_offer(
     if meta is None:
         return False
 
-    flags = meta.flags or PerkFlags(0)
+    flags = meta.flags
     # Native `perk_can_offer` treats these metadata bits as allow-lists for
     # specific runtime modes, not "only in this mode":
     # - in quest mode, offered perks must have bit 0x1 set
@@ -1100,7 +1100,7 @@ def perk_generate_choices(
                 continue
 
             meta = PERK_BY_ID.get(int(perk_id))
-            flags = meta.flags if meta is not None and meta.flags is not None else PerkFlags(0)
+            flags = meta.flags if meta is not None else PerkFlags(0)
             stackable = (flags & PerkFlags.STACKABLE) != 0
 
             if attempts > 10_000 and stackable:

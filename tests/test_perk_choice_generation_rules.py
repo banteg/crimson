@@ -113,8 +113,16 @@ def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -
         player.perk_counts[idx] = 1
 
     choices = perk_generate_choices(state, player, game_mode=int(GameMode.QUESTS), player_count=1, count=7)
-    assert choices == [PerkId.RANDOM_WEAPON] * 7
-    assert rng.calls == 1714835
+    assert choices == [
+        PerkId.RANDOM_WEAPON,
+        PerkId.INSTANT_WINNER,
+        PerkId.RANDOM_WEAPON,
+        PerkId.RANDOM_WEAPON,
+        PerkId.RANDOM_WEAPON,
+        PerkId.RANDOM_WEAPON,
+        PerkId.RANDOM_WEAPON,
+    ]
+    assert rng.calls == 65860
 
 
 def test_perk_generate_choices_caches_offerability_checks(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -142,5 +150,13 @@ def test_perk_generate_choices_caches_offerability_checks(monkeypatch: pytest.Mo
 
     monkeypatch.setattr(gameplay_mod, "perk_can_offer", _counting_perk_can_offer)
     choices = gameplay_mod.perk_generate_choices(state, player, game_mode=int(GameMode.QUESTS), player_count=1, count=7)
-    assert choices == [PerkId.RANDOM_WEAPON] * 7
+    assert choices == [
+        PerkId.INSTANT_WINNER,
+        PerkId.RANDOM_WEAPON,
+        PerkId.INSTANT_WINNER,
+        PerkId.INSTANT_WINNER,
+        PerkId.INSTANT_WINNER,
+        PerkId.INSTANT_WINNER,
+        PerkId.INSTANT_WINNER,
+    ]
     assert calls <= gameplay_mod.PERK_ID_MAX

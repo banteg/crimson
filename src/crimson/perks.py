@@ -15,6 +15,10 @@ class PerkFlags(IntFlag):
     STACKABLE = 0x4  # can be offered even if already owned
 
 
+# Native `perk_meta_table` ctor (`sub_42fac0`) initializes every entry with flags=3.
+PERK_DEFAULT_FLAGS = PerkFlags.MODE_3_ONLY | PerkFlags.TWO_PLAYER_ONLY
+
+
 class PerkId(IntEnum):
     ANTIPERK = 0
     BLOODY_MESS_QUICK_LEARNER = 1
@@ -83,7 +87,7 @@ class PerkMeta:
     const_addr: str
     name: str
     description: str
-    flags: PerkFlags | None
+    flags: PerkFlags
     prereq: tuple[PerkId, ...] = ()
     notes: str | None = None
 
@@ -95,7 +99,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b40",
         name="AntiPerk",
         description="You shouldn't be seeing this..",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="Never offered: `perk_can_offer` explicitly rejects `ANTIPERK`.",
     ),
@@ -105,7 +109,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b44",
         name="Bloody Mess",
         description="More the merrier. More blood guarantees a 30% better experience. You spill more blood and gain more experience points.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`CreaturePool._start_death`: if the killer has Bloody Mess, uses `xp_base = int(reward_value * 1.3)`. "
@@ -119,7 +123,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b48",
         name="Sharpshooter",
         description="Miraculously your aiming improves drastically, but you take a little bit more time on actually firing the gun. If you order now, you also get a fancy LASER SIGHT without ANY charge!",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`player_fire_weapon`: if Sharpshooter is active, multiplies `shot_cooldown` by `1.05` and does not "
@@ -133,7 +137,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b5c",
         name="Fastloader",
         description="Man, you sure know how to load a gun.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="`player_start_reload` (0x00413430): if Fastloader is active, multiplies weapon `reload_time` by `0.7`.",
     ),
@@ -143,7 +147,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b84",
         name="Lean Mean Exp Machine",
         description="Why kill for experience when you can make some of your own for free! With this perk the experience just keeps flowing in at a constant rate.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`perks_update_effects`: every `0.25` seconds, each player with this perk gains `+perk_count * 10` "
@@ -156,7 +160,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b54",
         name="Long Distance Runner",
         description="You move like a train that has feet and runs. You just need a little time to warm up. In other words you'll move faster the longer you run without stopping.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`player_update`: while moving, `move_speed` normally increases by `frame_dt * 5.0` (clamped to `2.0`). "
@@ -170,7 +174,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b64",
         name="Pyrokinetic",
         description="You see flames everywhere. Bare aiming at creatures causes them to heat up.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`perks_update_effects`: picks `creature_find_in_radius(&aim, 12.0, 0)`; while aiming at a creature, "
@@ -184,7 +188,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b4c",
         name="Instant Winner",
         description="2500 experience points. Right away. Take it or leave it.",
-        flags=PerkFlags.STACKABLE,
+        flags=PERK_DEFAULT_FLAGS | PerkFlags.STACKABLE,
         prereq=(),
         notes="`perk_apply` (0x004055e0): grants `+2500` experience to the perk owner.",
     ),
@@ -194,7 +198,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b70",
         name="Grim Deal",
         description="I'll make you a deal: I'll give you 18% more experience points, and you'll give me your life. So you'll die but score higher. Ponder that one for a sec.",
-        flags=None,
+        flags=PerkFlags(0),
         prereq=(),
         notes="`perk_apply` (0x004055e0): sets `player.health = -1.0` and grants `+int(experience * 0.18)`.",
     ),
@@ -218,7 +222,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b78",
         name="Plaguebearer",
         description="You carry a horrible disease. Good for you: you are immune. Bad for them: it is contagious! (Monsters become resistant over time though.)",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "Sets `player_plaguebearer_active` (`DAT_004908b9`). In `creature_update_all`, infected creatures "
@@ -235,7 +239,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b88",
         name="Evil Eyes",
         description="No living (nor dead) can resist the hypnotic power of your eyes: monsters freeze still as you look at them!",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`perks_update_effects` sets `evil_eyes_target_creature` (`DAT_00490bbc`) to "
@@ -249,7 +253,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b80",
         name="Ammo Maniac",
         description="You squeeze and you push and you pack your clips with about 20% more ammo than a regular fellow. They call you Ammo Maniac with a deep respect in their voices.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`perk_apply` (0x004055e0): on pick, calls `weapon_assign_player(player_index, weapon_id)` for each "
@@ -264,7 +268,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b7c",
         name="Radioactive",
         description="You are the Radioactive-man; you have that healthy green glow around you! Others don't like it though, it makes them sick and nauseous whenever near you. It does affect your social life a bit.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`creature_update_all`: if a creature is within 100 units and Radioactive is active, "
@@ -279,7 +283,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b50",
         name="Fastshot",
         description="Funny how you make your gun spit bullets faster than the next guy. Even the most professional of engineers are astonished.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="`player_fire_weapon`: while active, multiplies `shot_cooldown` by `0.88`.",
     ),
@@ -315,7 +319,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bac",
         name="Mr. Melee",
         description="You master the art of melee fighting. You don't just stand still when monsters come near -- you hit back. Hard.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`creature_update_all` (0x00426220): on a melee hit, if Mr. Melee is active, deals "
@@ -328,7 +332,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b90",
         name="Anxious Loader",
         description="When you can't stand waiting your gun to be reloaded you can speed up the process by clicking your FIRE button repeatedly as fast as you can.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="`player_update` (0x004136b0): while reloading (`reload_timer > 0`), `fire_pressed` subtracts `0.05` from `reload_timer`.",
     ),
@@ -338,7 +342,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b94",
         name="Final Revenge",
         description="Pick this and you'll get your revenge. It's a promise.",
-        flags=None,
+        flags=PerkFlags(0),
         prereq=(),
         notes=(
             "`player_take_damage` (0x00425e50): on death (`health < 0`), if Final Revenge is active, spawns an "
@@ -353,7 +357,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bf8",
         name="Telekinetic",
         description="Picking up bonuses has never been so easy and FUN. You can pick up bonuses simply by aiming at them for a while. Ingenious.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="`bonus_telekinetic_update`: aim at a bonus within 24 units for >650ms to pick it up remotely.",
     ),
@@ -363,7 +367,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2ba0",
         name="Perk Expert",
         description="You sure know how to pick a perk -- most people just don't see that extra perk laying around. This gives you the opportunity to pick the freshest and shiniest perks from the top.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="`perk_choice_count`: while active, offers `6` perk choices per selection (vs `5` baseline).",
     ),
@@ -373,7 +377,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b98",
         name="Unstoppable",
         description="Monsters can't slow you down with their nasty scratches and bites. It still hurts but you simply ignore the pain.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="`player_take_damage` (0x00425e50): while active, suppresses the on-hit heading jitter + spread heat increase.",
     ),
@@ -383,7 +387,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bd0",
         name="Regression Bullets",
         description="Attempt to shoot with an empty clip leads to a severe loss of experience. But hey, whatever makes them go down, right?",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`player_update`: while reloading with an empty clip, firing a shot costs experience "
@@ -397,7 +401,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b9c",
         name="Infernal Contract",
         description="In exchange for your soul, a dark stranger is offering you three (3) new perks. To collect his part of the bargain soon enough, your health is reduced to a near-death status. Just sign down here below this pentagram..",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="`perk_apply`: grants the perk owner `+3` levels (and `+3` pending perk picks), and sets all alive players to `health = 0.1`.",
     ),
@@ -407,7 +411,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bf4",
         name="Poison Bullets",
         description="You tend to explicitly treat each of your bullets with rat poison. You do it for good luck, but it seems to have other side effects too.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`projectile_update`: on creature hit, if Poison Bullets is active and `(crt_rand() & 7) == 1`, "
@@ -421,7 +425,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bdc",
         name="Dodger",
         description="It seems so stupid just to take the hits. Each time a monster attacks you you have a chance to dodge the attack.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="`player_take_damage` (0x00425e50): if Dodger is active and Ninja is not, 1/5 chance to ignore the hit (`crt_rand() % 5 == 0`).",
     ),
@@ -431,7 +435,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2ba8",
         name="Bonus Magnet",
         description="You somehow seem to lure all kinds of bonuses to appear around you more often.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="`BonusPool.try_spawn_on_kill`: if the base roll fails (`crt_rand() % 9 != 1`) but any player has Bonus Magnet, a second roll (`crt_rand() % 10 == 2`) can still spawn a bonus.",
     ),
@@ -441,7 +445,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2c00",
         name="Uranium Filled Bullets",
         description="Your bullets have a nice creamy uranium filling. Yummy. Now that's gotta hurt the monsters more, right?",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`creature_apply_damage` (0x004207c0): when `damage_type == 1` and Uranium Filled Bullets is active, "
@@ -454,7 +458,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b60",
         name="Doctor",
         description="With a single glance you can tell the medical condition of, well, anything. Also, being a doctor, you know exactly what hurts the most enabling you to do slightly more damage with your attacks.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="`creature_apply_damage` (0x004207c0): when `damage_type == 1` and Doctor is active, multiplies damage by 1.2.",
     ),
@@ -464,7 +468,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2be8",
         name="Monster Vision",
         description="With your newly enhanced senses you can see all bad energy VERY clearly. That's got to be enough.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`creature_render_all` (0x00419680): when active, draws a yellow 90x90 quad "
@@ -479,7 +483,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bfc",
         name="Hot Tempered",
         description="It literally boils inside you. That's exactly why you need to let it out once in a while, unfortunately for those near you.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="`player_update`: periodically spawns an 8-shot ring alternating projectile types `0x0b/0x09`; the interval is randomized to `(crt_rand() % 8) + 2` seconds.",
     ),
@@ -489,7 +493,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bf0",
         name="Bonus Economist",
         description="Your bonus power-ups last 50% longer than they normally would.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="`bonus_apply`: while active, scales bonus timer increments by `1.0 + 0.5 * perk_count`.",
     ),
@@ -499,7 +503,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bc0",
         name="Thick Skinned",
         description="Trade 1/3 of your health for only receiving 2/3rds damage on attacks.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="`perk_apply`: on pick, scales `player.health *= 2/3` (clamped to `>=1`). `player_take_damage` (0x00425e50): scales incoming damage by `2/3`.",
     ),
@@ -509,7 +513,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bec",
         name="Barrel Greaser",
         description="After studying a lot of physics and friction you've come up with a way to make your bullets fly faster. More speed, more damage.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`creature_apply_damage` (0x004207c0): when `damage_type == 1` and Barrel Greaser is active, "
@@ -523,7 +527,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bc8",
         name="Ammunition Within",
         description="Empty clip doesn't prevent you from shooting with a weapon; instead the ammunition is drawn from your health while you are reloading.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`player_update` (0x004136b0): while reloading with an empty clip, if Ammunition Within is active and "
@@ -537,7 +541,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bb8",
         name="Veins of Poison",
         description="A strong poison runs through your veins. Monsters taking a bite of you are eventually to experience an agonizing death.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`creature_update_all`: on a melee hit (when `player.shield_timer <= 0`), if Veins of Poison is active "
@@ -550,7 +554,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bbc",
         name="Toxic Avenger",
         description="You started out just by being poisonous. The next logical step for you is to become highly toxic -- the ULTIMATE TOXIC AVENGER. Most monsters touching you will just drop dead within seconds!",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(PerkId.VEINS_OF_POISON,),
         notes=(
             "`creature_update_all`: on a melee hit (when `player.shield_timer <= 0`), if Toxic Avenger is active "
@@ -563,7 +567,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bb0",
         name="Regeneration",
         description="Your health replenishes but very slowly. What more there is to say?",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`perks_update_effects` (0x00406b40): if Regeneration is active and `(crt_rand() & 1) != 0`, heals each "
@@ -576,7 +580,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bd4",
         name="Pyromaniac",
         description="You just enjoy using fire as your Tool of Destruction and you're good at it too; your fire based weapons do a lot more damage.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`creature_apply_damage` (0x004207c0): when `damage_type == 4` and Pyromaniac is active, multiplies "
@@ -589,7 +593,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2be0",
         name="Ninja",
         description="You've taken your dodging abilities to the next level; monsters have really hard time hitting you.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(PerkId.DODGER,),
         notes="`player_take_damage` (0x00425e50): 1/3 chance to ignore the hit (`crt_rand() % 3 == 0`) (takes precedence over Dodger).",
     ),
@@ -599,7 +603,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bd8",
         name="Highlander",
         description="You are immortal. Well, almost immortal. Instead of actually losing health on attacks you've got a 10% chance of just dropping dead whenever a monster attacks you. There really can be only one, you know.",
-        flags=None,
+        flags=PerkFlags(0),
         prereq=(),
         notes="`player_take_damage` (0x00425e50): when active, does not subtract damage; instead `crt_rand() % 10 == 0` sets `health = 0.0` (instant death).",
     ),
@@ -609,7 +613,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b68",
         name="Jinxed",
         description="Things happen near you. Strangest things. Creatures just drop dead and accidents happen. Beware.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "Global timer `data_4aaf1c` in `perks_update_effects`: every ~2.0–3.9s, 1/10 chance to deal 5 self-damage "
@@ -625,7 +629,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2ba4",
         name="Perk Master",
         description="Being the Perk Expert taught you a few things and now you are ready to take your training to the next level doubling the ability effect.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(PerkId.PERK_EXPERT,),
         notes="`perk_choice_count`: while active, offers `7` perk choices per selection (vs `5` baseline).",
     ),
@@ -635,7 +639,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b58",
         name="Reflex Boosted",
         description="To you the world seems to go on about 10% slower than to an average person. It can be rather irritating sometimes, but it does give you a chance to react better.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="Main loop (`grim_update`): when in gameplay (`game_state_id == 9`) and Reflex Boosted is active, scales `frame_dt *= 0.9`.",
     ),
@@ -645,7 +649,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bb4",
         name="Greater Regeneration",
         description="Your health replenishes faster than ever.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(PerkId.REGENERATION,),
         notes=(
             "No runtime hook found in this build: `perk_id_greater_regeneration` is only referenced in perk selection "
@@ -672,7 +676,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2c14",
         name="Death Clock",
         description="You die exactly in 30 seconds. You can't escape your destiny, but feel free to go on a spree. Tick, tock.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`player_take_damage` (0x00425e50): if Death Clock is active, returns immediately (immune to damage). "
@@ -688,7 +692,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2c18",
         name="My Favourite Weapon",
         description="You've grown very fond of your piece. You polish it all the time and talk nice to it, your precious. (+2 clip size, no more random weapon bonuses)",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`perk_apply` (0x004055e0): on pick, increases `clip_size` by `2` for each player. "
@@ -702,7 +706,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2c1c",
         name="Bandage",
         description="Here, eat this bandage and you'll feel a lot better in no time. (restores up to 50% health)",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`perk_apply` (0x004055e0): multiplies `player.health` by `(crt_rand() % 50 + 1)` and clamps to `100.0`, "
@@ -715,7 +719,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2c20",
         name="Angry Reloader",
         description="You hate it when you run out of shots. You HATE HATE HATE reloading your gun. Lucky for you, and strangely enough, your hate materializes as Mighty Balls of Fire. Or more like Quite Decent Balls of Fire, but it's still kinda neat, huh?",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="Spawns a ring of projectile type `0x0b` when the reload timer crosses the half threshold.",
     ),
@@ -725,7 +729,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2c0c",
         name="Ion Gun Master",
         description="You're good with ion weapons. You're so good that not only your shots do slightly more damage but your ion blast radius is also increased.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`projectile_update` (0x00420b90): sets `ion_aoe_scale` to `1.2` when active, scaling ion AoE radii "
@@ -739,7 +743,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2c10",
         name="Stationary Reloader",
         description="It's incredibly hard to reload your piece while moving around, you've noticed. In fact, realizing that, when you don't move a (leg) muscle you can reload the gun THREE TIMES FASTER!",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="`player_update` (0x004136b0): while stationary, applies `reload_scale = 3.0` when decrementing `reload_timer`.",
     ),
@@ -749,7 +753,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2c24",
         name="Man Bomb",
         description="You have the ability to go boom for you are the MAN BOMB. Going boom requires a lot of concentration and standing completely still for a few seconds.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="Burst spawns projectile types `0x15/0x16`.",
     ),
@@ -759,7 +763,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2c2c",
         name="Fire Caugh",
         description="You have a fireball stuck in your throat. Repeatedly. Mind your manners.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="Uses projectile type `0x2d` (see Fire Bullets in the atlas notes).",
     ),
@@ -769,7 +773,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2c28",
         name="Living Fortress",
         description="It comes a time in each man's life when you'd just rather not move anymore. Being living fortress not moving comes with extra benefits as well. You do the more damage the longer you stand still.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`player_update` (0x00412d70): while stationary and Living Fortress is active, increments "
@@ -784,7 +788,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2c30",
         name="Tough Reloader",
         description="Damage received during reloading a weapon is halved.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes="`player_take_damage` (0x00425e50): if `reload_active` is set, multiplies incoming damage by `0.5`.",
     ),
@@ -794,7 +798,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2be4",
         name="Lifeline 50-50",
         description="The computer removes half of the wrong monsters for you. You don't gain any experience.",
-        flags=None,
+        flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
             "`perk_apply` (0x004055e0): iterates `creature_pool` in slot order, deactivating every other slot "
