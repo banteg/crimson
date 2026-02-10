@@ -980,7 +980,7 @@ def perk_can_offer(
     if meta is None:
         return False
 
-    flags = meta.flags or PerkFlags(0)
+    flags = meta.flags
     # Native `perk_can_offer` treats these metadata bits as allow-lists for
     # specific runtime modes, not "only in this mode":
     # - in quest mode, offered perks must have bit 0x1 set
@@ -1016,6 +1016,27 @@ def perk_select_random(state: GameplayState, player: PlayerState, *, game_mode: 
     return PerkId.INSTANT_WINNER
 
 
+def _perk_offerable_mask(
+    state: GameplayState,
+    player: PlayerState,
+    *,
+    game_mode: int,
+    player_count: int,
+) -> list[bool]:
+    """Build a cached `perk_select_random` eligibility mask for `1..PERK_ID_MAX`."""
+
+    perks_rebuild_available(state)
+    offerable: list[bool] = [False] * (PERK_ID_MAX + 1)
+    max_perk_index = min(PERK_ID_MAX, len(state.perk_available) - 1)
+    for perk_index in range(1, max_perk_index + 1):
+        if not state.perk_available[perk_index]:
+            continue
+        perk_id = PerkId(perk_index)
+        if perk_can_offer(state, player, perk_id, game_mode=game_mode, player_count=player_count):
+            offerable[perk_index] = True
+    return offerable
+
+
 def perk_generate_choices(
     state: GameplayState,
     player: PlayerState,
@@ -1029,6 +1050,23 @@ def perk_generate_choices(
     if count is None:
         count = perk_choice_count(player)
 
+    offerable_mask = _perk_offerable_mask(
+        state,
+        player,
+        game_mode=game_mode,
+        player_count=player_count,
+    )
+    player_perk_counts = player.perk_counts
+    player_weapon_id = int(player.weapon_id)
+    death_clock_active = int(player_perk_counts[int(PerkId.DEATH_CLOCK)]) > 0
+
+    def _select_random_offer() -> PerkId:
+        for _ in range(1000):
+            perk_index = int(state.rng.rand()) % PERK_ID_MAX + 1
+            if offerable_mask[perk_index]:
+                return PerkId(perk_index)
+        return PerkId.INSTANT_WINNER
+
     # `perks_generate_choices` always fills a fixed array of 7 entries, even if the UI
     # only shows 5/6 (Perk Expert/Master). Preserve RNG consumption by generating the
     # full list, then slicing.
@@ -1039,7 +1077,7 @@ def perk_generate_choices(
     if (
         int(state.quest_stage_major) == 1
         and int(state.quest_stage_minor) == 7
-        and perk_count_get(player, PerkId.MONSTER_VISION) == 0
+        and int(player_perk_counts[int(PerkId.MONSTER_VISION)]) == 0
     ):
         choices[0] = PerkId.MONSTER_VISION
         choice_index = 1
@@ -1048,13 +1086,13 @@ def perk_generate_choices(
         attempts = 0
         while True:
             attempts += 1
-            perk_id = perk_select_random(state, player, game_mode=game_mode, player_count=player_count)
+            perk_id = _select_random_offer()
 
             # Pyromaniac can only be offered if the current weapon is Flamethrower.
-            if perk_id == PerkId.PYROMANIAC and int(player.weapon_id) != int(WeaponId.FLAMETHROWER):
+            if perk_id == PerkId.PYROMANIAC and player_weapon_id != int(WeaponId.FLAMETHROWER):
                 continue
 
-            if perk_count_get(player, PerkId.DEATH_CLOCK) > 0 and perk_id in _DEATH_CLOCK_BLOCKED:
+            if death_clock_active and perk_id in _DEATH_CLOCK_BLOCKED:
                 continue
 
             # Global rarity gate: certain perks have a 25% chance to be rejected.
@@ -1062,7 +1100,7 @@ def perk_generate_choices(
                 continue
 
             meta = PERK_BY_ID.get(int(perk_id))
-            flags = meta.flags if meta is not None and meta.flags is not None else PerkFlags(0)
+            flags = meta.flags if meta is not None else PerkFlags(0)
             stackable = (flags & PerkFlags.STACKABLE) != 0
 
             if attempts > 10_000 and stackable:
@@ -1071,7 +1109,7 @@ def perk_generate_choices(
             if perk_id in choices[:choice_index]:
                 continue
 
-            if stackable or perk_count_get(player, perk_id) < 1 or attempts > 29_999:
+            if stackable or int(player_perk_counts[int(perk_id)]) < 1 or attempts > 29_999:
                 break
 
         choices[choice_index] = perk_id

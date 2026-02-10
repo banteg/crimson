@@ -7,7 +7,7 @@ from pathlib import Path
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState, PlayerState, perk_can_offer
 from crimson.persistence.highscores import HighScoreRecord, rank_index, scores_path_for_config, sort_highscores
-from crimson.perks import PERK_BY_ID, PerkId
+from crimson.perks import PERK_BY_ID, PerkFlags, PerkId
 from grim.config import CrimsonConfig
 
 
@@ -175,10 +175,24 @@ def test_perk_mode_3_flag_allows_perk_in_survival_and_quest_modes() -> None:
 
 
 def test_perk_without_mode_3_flag_is_rejected_in_quest_mode() -> None:
-    meta = PERK_BY_ID.get(int(PerkId.SHARPSHOOTER))
+    meta = PERK_BY_ID.get(int(PerkId.GRIM_DEAL))
     assert meta is not None
 
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    assert perk_can_offer(state, player, PerkId.SHARPSHOOTER, game_mode=int(GameMode.SURVIVAL), player_count=1) is True
-    assert perk_can_offer(state, player, PerkId.SHARPSHOOTER, game_mode=int(GameMode.QUESTS), player_count=1) is False
+    assert perk_can_offer(state, player, PerkId.GRIM_DEAL, game_mode=int(GameMode.SURVIVAL), player_count=1) is True
+    assert perk_can_offer(state, player, PerkId.GRIM_DEAL, game_mode=int(GameMode.QUESTS), player_count=1) is False
+
+
+def test_perk_flags_match_native_ctor_defaults_and_known_overrides() -> None:
+    assert PERK_BY_ID[int(PerkId.SHARPSHOOTER)].flags == (
+        PerkFlags.MODE_3_ONLY | PerkFlags.TWO_PLAYER_ONLY
+    )
+    assert PERK_BY_ID[int(PerkId.INSTANT_WINNER)].flags == (
+        PerkFlags.MODE_3_ONLY | PerkFlags.TWO_PLAYER_ONLY | PerkFlags.STACKABLE
+    )
+    assert PERK_BY_ID[int(PerkId.RANDOM_WEAPON)].flags == (
+        PerkFlags.MODE_3_ONLY | PerkFlags.STACKABLE
+    )
+    assert PERK_BY_ID[int(PerkId.BREATHING_ROOM)].flags == PerkFlags.TWO_PLAYER_ONLY
+    assert PERK_BY_ID[int(PerkId.GRIM_DEAL)].flags == PerkFlags(0)
