@@ -183,8 +183,9 @@ class _StubRand:
 
     def rand(self) -> int:
         if self._idx >= len(self.values):
-            return 0
-        value = int(self.values[self._idx])
+            value = 0
+        else:
+            value = int(self.values[self._idx])
         self._idx += 1
         return value
 
@@ -218,6 +219,8 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert death.xp_awarded == 10
     assert player.experience == 10
     assert any(entry.bonus_id != 0 for entry in state.bonus_pool.entries)
+    # Successful spawn-on-kill emits a 16-particle burst (4 RNG draws each).
+    assert state.rng._idx == 67  # type: ignore[attr-defined]
 
 
 def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random() -> None:

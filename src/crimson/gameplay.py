@@ -256,7 +256,8 @@ class DeferredFreezeCorpseFx:
 # duration/value for some bonuses, so `--preserve-bugs` compares against the
 # native amount domain (see docs/rewrite/original-bugs.md).
 _BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION: dict[int, int] = {
-    int(BonusId.DOUBLE_EXPERIENCE): 0,
+    # Native default amount stored for Double Experience drops is 1.
+    int(BonusId.DOUBLE_EXPERIENCE): 1,
     int(BonusId.FIRE_BULLETS): 4,
 }
 
@@ -2731,22 +2732,37 @@ def player_update(
 def _player_heading_approach_target(player: PlayerState, target_heading: float, dt: float) -> float:
     """Native `player_heading_approach_target`: ease heading and return angular diff."""
 
-    heading = _normalize_heading_angle(float(player.heading))
-    player.heading = heading
+    # Native runs this through float32 temporaries (`var_8`/`edx_1`) before the
+    # direct-vs-wrapped compare and turn-sign branch. That quantization matters
+    # near opposite-heading ties.
+    heading = float(f32(float(_normalize_heading_angle(float(player.heading)))))
+    player.heading = float(heading)
+    target = float(f32(float(target_heading)))
 
-    direct = abs(float(target_heading) - heading)
-    high = float(target_heading) if heading < float(target_heading) else heading
-    low = float(target_heading) if float(target_heading) < heading else heading
-    wrapped = abs((math.tau - high) + low)
-    diff = direct if direct < wrapped else wrapped
+    direct = float(f32(abs(float(f32(float(target - heading))))))
+    high = heading
+    if target > high:
+        high = target
+    low = heading
+    if target < low:
+        low = target
+    wrapped = float(f32(abs(float(f32(float(f32(6.2831855 - high)) + low)))))
+    diff = wrapped if direct >= wrapped else direct
 
+    scaled = float(f32(float(f32(float(dt))) * float(diff)))
     if direct <= wrapped:
-        turn_sign = 1.0 if heading < float(target_heading) else -1.0
+        if target > heading:
+            turn_delta = float(f32(float(scaled) * 5.0))
+        else:
+            turn_delta = float(f32(float(scaled) * -5.0))
     else:
-        turn_sign = 1.0 if float(target_heading) < heading else -1.0
+        if target >= heading:
+            turn_delta = float(f32(float(scaled) * -5.0))
+        else:
+            turn_delta = float(f32(float(scaled) * 5.0))
 
-    player.heading = heading + turn_sign * dt * diff * 5.0
-    return diff
+    player.heading = float(f32(float(heading) + float(turn_delta)))
+    return float(diff)
 
 def _normalize_heading_angle(value: float) -> float:
     while value < 0.0:
