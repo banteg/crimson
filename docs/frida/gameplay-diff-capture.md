@@ -10,6 +10,9 @@ tags:
 `scripts/frida/gameplay_diff_capture.js` captures deterministic gameplay ticks into a
 JSONL event stream designed for robust incremental writes.
 
+If you are starting from only a fresh capture artifact, follow
+`docs/frida/new-session-playbook.md` first.
+
 Primary output:
 
 - `C:\share\frida\gameplay_diff_capture.json`
