@@ -26,6 +26,7 @@ class GameState(Protocol):
     console: Any
 
     menu_ground: Any
+    menu_ground_camera: Any
     pause_background: PauseBackground | None
 
     demo_enabled: bool

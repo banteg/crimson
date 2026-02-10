@@ -152,6 +152,7 @@ from .frontend.menu import (
     MenuView,
     _draw_menu_cursor,
     ensure_menu_ground,
+    menu_ground_camera,
 )
 from .frontend.panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .frontend.panels.alien_zookeeper import AlienZooKeeperView
@@ -217,6 +218,7 @@ class GameState:
     gamma_ramp: float = 1.0
     snd_freq_adjustment_enabled: bool = False
     menu_ground: GroundRenderer | None = None
+    menu_ground_camera: Vec2 | None = None
     menu_sign_locked: bool = False
     pause_background: PauseBackground | None = None
     pending_quest_level: str | None = None
@@ -517,7 +519,7 @@ class QuestsMenuView:
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
-            self._ground.draw(Vec2())
+            self._ground.draw(menu_ground_camera(self._state))
         _draw_screen_fade(self._state)
 
         self._draw_panel()
@@ -1025,6 +1027,12 @@ class SurvivalGameView:
     def draw_pause_background(self) -> None:
         self._mode.draw_pause_background()
 
+    def steal_ground_for_menu(self) -> GroundRenderer | None:
+        return self._mode.steal_ground_for_menu()
+
+    def menu_ground_camera(self) -> Vec2:
+        return self._mode.menu_ground_camera()
+
     def take_action(self) -> str | None:
         action = self._action
         self._action = None
@@ -1088,6 +1096,12 @@ class RushGameView:
 
     def draw_pause_background(self) -> None:
         self._mode.draw_pause_background()
+
+    def steal_ground_for_menu(self) -> GroundRenderer | None:
+        return self._mode.steal_ground_for_menu()
+
+    def menu_ground_camera(self) -> Vec2:
+        return self._mode.menu_ground_camera()
 
     def take_action(self) -> str | None:
         action = self._action
@@ -1153,6 +1167,12 @@ class TypoShooterGameView:
     def draw_pause_background(self) -> None:
         self._mode.draw_pause_background()
 
+    def steal_ground_for_menu(self) -> GroundRenderer | None:
+        return self._mode.steal_ground_for_menu()
+
+    def menu_ground_camera(self) -> Vec2:
+        return self._mode.menu_ground_camera()
+
     def take_action(self) -> str | None:
         action = self._action
         self._action = None
@@ -1209,6 +1229,12 @@ class TutorialGameView:
 
     def draw_pause_background(self) -> None:
         self._mode.draw_pause_background()
+
+    def steal_ground_for_menu(self) -> GroundRenderer | None:
+        return self._mode.steal_ground_for_menu()
+
+    def menu_ground_camera(self) -> Vec2:
+        return self._mode.menu_ground_camera()
 
     def take_action(self) -> str | None:
         action = self._action
@@ -1281,6 +1307,12 @@ class QuestGameView:
 
     def draw_pause_background(self) -> None:
         self._mode.draw_pause_background()
+
+    def steal_ground_for_menu(self) -> GroundRenderer | None:
+        return self._mode.steal_ground_for_menu()
+
+    def menu_ground_camera(self) -> Vec2:
+        return self._mode.menu_ground_camera()
 
     def take_action(self) -> str | None:
         action = self._action
@@ -1516,7 +1548,7 @@ class QuestResultsView:
         if pause_background is not None:
             pause_background.draw_pause_background()
         elif self._ground is not None:
-            self._ground.draw(Vec2())
+            self._ground.draw(menu_ground_camera(self._state))
         _draw_screen_fade(self._state)
         ui = self._ui
         if ui is not None:
@@ -1692,7 +1724,7 @@ class EndNoteView:
         if pause_background is not None:
             pause_background.draw_pause_background()
         elif self._ground is not None:
-            self._ground.draw(Vec2())
+            self._ground.draw(menu_ground_camera(self._state))
         _draw_screen_fade(self._state)
 
         panel_tex = self._panel_tex
@@ -1949,7 +1981,7 @@ class QuestFailedView:
         if pause_background is not None:
             pause_background.draw_pause_background()
         elif self._ground is not None:
-            self._ground.draw(Vec2())
+            self._ground.draw(menu_ground_camera(self._state))
         _draw_screen_fade(self._state)
 
         panel_top_left = self._panel_top_left()
@@ -2385,7 +2417,7 @@ class HighScoresView:
         if pause_background is not None:
             pause_background.draw_pause_background()
         elif self._ground is not None:
-            self._ground.draw(Vec2())
+            self._ground.draw(menu_ground_camera(self._state))
         _draw_screen_fade(self._state)
 
         assets = self._assets
@@ -3198,6 +3230,7 @@ class GameLoopView:
         if self._front_active is not None:
             action = self._front_active.take_action()
             if action == "back_to_menu":
+                self._capture_gameplay_ground_for_menu()
                 self._state.pause_background = None
                 self._front_active.close()
                 self._front_active = None
@@ -3416,6 +3449,7 @@ class GameLoopView:
             return True
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or action == "maybe_later":
+            self._capture_gameplay_ground_for_menu()
             if self._front_active is not None:
                 self._front_active.close()
                 self._front_active = None
@@ -3427,6 +3461,58 @@ class GameLoopView:
             return True
 
         return True
+
+    @staticmethod
+    def _steal_ground_from_view(view: FrontView | None) -> GroundRenderer | None:
+        if view is None:
+            return None
+        steal = getattr(view, "steal_ground_for_menu", None)
+        if not callable(steal):
+            return None
+        ground = steal()
+        if isinstance(ground, GroundRenderer):
+            return ground
+        return None
+
+    @staticmethod
+    def _menu_ground_camera_from_view(view: FrontView | None) -> Vec2 | None:
+        if view is None:
+            return None
+        camera_getter = getattr(view, "menu_ground_camera", None)
+        if not callable(camera_getter):
+            return None
+        camera = camera_getter()
+        if isinstance(camera, Vec2):
+            return camera
+        return None
+
+    def _replace_menu_ground(self, ground: GroundRenderer, *, camera: Vec2 | None) -> None:
+        previous = self._state.menu_ground
+        if previous is ground:
+            self._state.menu_ground_camera = camera
+            return
+        if previous is not None and previous.render_target is not None:
+            rl.unload_render_texture(previous.render_target)
+            previous.render_target = None
+        self._state.menu_ground = ground
+        self._state.menu_ground_camera = camera
+
+    def _capture_gameplay_ground_for_menu(self) -> None:
+        ground: GroundRenderer | None = None
+        camera: Vec2 | None = None
+        if self._front_active in self._gameplay_views:
+            camera = self._menu_ground_camera_from_view(self._front_active)
+            ground = self._steal_ground_from_view(self._front_active)
+        if ground is None:
+            for view in reversed(self._front_stack):
+                if view in self._gameplay_views:
+                    camera = self._menu_ground_camera_from_view(view)
+                    ground = self._steal_ground_from_view(view)
+                    if ground is not None:
+                        break
+        if ground is None:
+            return
+        self._replace_menu_ground(ground, camera=camera)
 
     def consume_screenshot_request(self) -> bool:
         requested = self._screenshot_requested

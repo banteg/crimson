@@ -31,6 +31,7 @@ from ..menu import (
     MenuView,
     _draw_menu_cursor,
     ensure_menu_ground,
+    menu_ground_camera,
 )
 from ..transitions import _draw_screen_fade
 from ..types import GameState
@@ -420,7 +421,7 @@ class AlienZooKeeperView:
         if pause_background is not None:
             pause_background.draw_pause_background()
         elif self._ground is not None:
-            self._ground.draw(Vec2())
+            self._ground.draw(menu_ground_camera(self._state))
         _draw_screen_fade(self._state)
 
         font = self._ensure_small_font()
