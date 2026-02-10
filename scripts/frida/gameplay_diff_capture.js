@@ -14,6 +14,8 @@
 
 const DEFAULT_LOG_DIR = "C:\\share\\frida";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
+const DEFAULT_CONSOLE_EVENTS =
+  "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
@@ -67,6 +69,19 @@ function parseStateSet(raw, fallbackCsv) {
   return out;
 }
 
+function parseStringSet(raw, fallbackCsv) {
+  const csv = raw && String(raw).trim() ? String(raw) : fallbackCsv;
+  const out = new Set();
+  const parts = String(csv)
+    .split(/[;,]/)
+    .map((v) => v.trim())
+    .filter((v) => v.length > 0);
+  for (let i = 0; i < parts.length; i++) {
+    out.add(String(parts[i]).toLowerCase());
+  }
+  return out;
+}
+
 function joinPath(base, leaf) {
   if (!base) return leaf;
   const sep = base.endsWith("\\") || base.endsWith("/") ? "" : "\\";
@@ -93,6 +108,8 @@ const LOG_DIR = getEnv("CRIMSON_FRIDA_DIR") || DEFAULT_LOG_DIR;
 const CONFIG = {
   outPath: joinPath(LOG_DIR, "gameplay_diff_capture.json"),
   logMode: getEnv("CRIMSON_FRIDA_APPEND") === "1" ? "append" : "truncate",
+  consoleAllEvents: parseBoolEnv("CRIMSON_FRIDA_CONSOLE_ALL_EVENTS", false),
+  consoleEvents: parseStringSet(getEnv("CRIMSON_FRIDA_CONSOLE_EVENTS"), DEFAULT_CONSOLE_EVENTS),
   includeCaller: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_CALLER", true),
   includeBacktrace: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_BT", false),
   includeTickSnapshots: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_TICK_SNAPSHOTS", true),
@@ -366,6 +383,11 @@ function openOutFile() {
 
 function writeLine(obj) {
   if (!obj) return;
+  const eventName =
+    obj && typeof obj.event === "string" ? String(obj.event).toLowerCase() : "";
+  if (!CONFIG.consoleAllEvents && !CONFIG.consoleEvents.has(eventName)) {
+    return;
+  }
   if (obj.ts_ms == null) obj.ts_ms = nowMs();
   if (obj.ts_iso == null) obj.ts_iso = nowIso();
   console.log(JSON.stringify(obj));
@@ -3511,6 +3533,8 @@ function main() {
 
   const captureConfig = {
     log_mode: CONFIG.logMode,
+    console_all_events: CONFIG.consoleAllEvents,
+    console_events: Array.from(CONFIG.consoleEvents.values()),
     include_caller: CONFIG.includeCaller,
     include_backtrace: CONFIG.includeBacktrace,
     include_tick_snapshots: CONFIG.includeTickSnapshots,

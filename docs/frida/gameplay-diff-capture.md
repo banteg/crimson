@@ -40,6 +40,7 @@ typed `CaptureFile` schema in Python (`msgspec`).
 Notes:
 
 - The file is streamed incrementally and flushed on each write.
+- Console output is filtered by default to high-signal lifecycle/errors only.
 - Before detaching from a live Frida session, call `crimsonCaptureStop("manual_stop")`
   in the REPL and wait for the `capture_shutdown` log line.
 - If the process/script is terminated before close, the final JSONL row can be truncated.
@@ -109,6 +110,8 @@ Without extra env vars, the script captures full per-tick detail:
 
 - `CRIMSON_FRIDA_STATES=6,9,10`
 - `CRIMSON_FRIDA_ALL_STATES=1`
+- `CRIMSON_FRIDA_CONSOLE_ALL_EVENTS=1`
+- `CRIMSON_FRIDA_CONSOLE_EVENTS=start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event`
 - `CRIMSON_FRIDA_TICK_DETAILS_EVERY=30`
 - `CRIMSON_FRIDA_CREATURE_SAMPLE_LIMIT=24`
 - `CRIMSON_FRIDA_PROJECTILE_SAMPLE_LIMIT=32`
