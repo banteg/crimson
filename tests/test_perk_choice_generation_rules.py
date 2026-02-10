@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from grim.geom import Vec2
+import pytest
 
 from pathlib import Path
 
@@ -85,3 +86,61 @@ def test_perk_generate_choices_applies_rarity_gate() -> None:
     player = PlayerState(index=0, pos=Vec2())
     choices = perk_generate_choices(state, player, game_mode=int(GameMode.SURVIVAL), player_count=1)
     assert PerkId.ANXIOUS_LOADER not in choices
+
+
+def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -> None:
+    class _LcgRng:
+        def __init__(self, seed: int) -> None:
+            self._state = int(seed) & 0x7FFFFFFF
+            self.calls = 0
+
+        def rand(self) -> int:
+            self.calls += 1
+            self._state = (1103515245 * self._state + 12345) & 0x7FFFFFFF
+            return self._state
+
+    status = _status_default()
+    status.quest_unlock_index = 40
+    rng = _LcgRng(123)
+    state = GameplayState(rng=rng)
+    state.status = status
+    state.quest_stage_major = 4
+    state.quest_stage_minor = 10
+    perks_rebuild_available(state)
+
+    player = PlayerState(index=0, pos=Vec2())
+    for idx in range(len(player.perk_counts)):
+        player.perk_counts[idx] = 1
+
+    choices = perk_generate_choices(state, player, game_mode=int(GameMode.QUESTS), player_count=1, count=7)
+    assert choices == [PerkId.RANDOM_WEAPON] * 7
+    assert rng.calls == 1714835
+
+
+def test_perk_generate_choices_caches_offerability_checks(monkeypatch: pytest.MonkeyPatch) -> None:
+    import crimson.gameplay as gameplay_mod
+
+    status = _status_default()
+    status.quest_unlock_index = 40
+    state = GameplayState(rng=_SeqRng(list(range(2048))))
+    state.status = status
+    state.quest_stage_major = 4
+    state.quest_stage_minor = 10
+    perks_rebuild_available(state)
+
+    player = PlayerState(index=0, pos=Vec2())
+    for idx in range(len(player.perk_counts)):
+        player.perk_counts[idx] = 1
+
+    original = gameplay_mod.perk_can_offer
+    calls = 0
+
+    def _counting_perk_can_offer(*args, **kwargs):  # type: ignore[no-untyped-def]
+        nonlocal calls
+        calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(gameplay_mod, "perk_can_offer", _counting_perk_can_offer)
+    choices = gameplay_mod.perk_generate_choices(state, player, game_mode=int(GameMode.QUESTS), player_count=1, count=7)
+    assert choices == [PerkId.RANDOM_WEAPON] * 7
+    assert calls <= gameplay_mod.PERK_ID_MAX
