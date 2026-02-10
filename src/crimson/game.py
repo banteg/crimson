@@ -1025,6 +1025,9 @@ class SurvivalGameView:
     def draw_pause_background(self) -> None:
         self._mode.draw_pause_background()
 
+    def steal_ground_for_menu(self) -> GroundRenderer | None:
+        return self._mode.steal_ground_for_menu()
+
     def take_action(self) -> str | None:
         action = self._action
         self._action = None
@@ -1088,6 +1091,9 @@ class RushGameView:
 
     def draw_pause_background(self) -> None:
         self._mode.draw_pause_background()
+
+    def steal_ground_for_menu(self) -> GroundRenderer | None:
+        return self._mode.steal_ground_for_menu()
 
     def take_action(self) -> str | None:
         action = self._action
@@ -1153,6 +1159,9 @@ class TypoShooterGameView:
     def draw_pause_background(self) -> None:
         self._mode.draw_pause_background()
 
+    def steal_ground_for_menu(self) -> GroundRenderer | None:
+        return self._mode.steal_ground_for_menu()
+
     def take_action(self) -> str | None:
         action = self._action
         self._action = None
@@ -1209,6 +1218,9 @@ class TutorialGameView:
 
     def draw_pause_background(self) -> None:
         self._mode.draw_pause_background()
+
+    def steal_ground_for_menu(self) -> GroundRenderer | None:
+        return self._mode.steal_ground_for_menu()
 
     def take_action(self) -> str | None:
         action = self._action
@@ -1281,6 +1293,9 @@ class QuestGameView:
 
     def draw_pause_background(self) -> None:
         self._mode.draw_pause_background()
+
+    def steal_ground_for_menu(self) -> GroundRenderer | None:
+        return self._mode.steal_ground_for_menu()
 
     def take_action(self) -> str | None:
         action = self._action
@@ -3198,6 +3213,7 @@ class GameLoopView:
         if self._front_active is not None:
             action = self._front_active.take_action()
             if action == "back_to_menu":
+                self._capture_gameplay_ground_for_menu()
                 self._state.pause_background = None
                 self._front_active.close()
                 self._front_active = None
@@ -3416,6 +3432,7 @@ class GameLoopView:
             return True
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or action == "maybe_later":
+            self._capture_gameplay_ground_for_menu()
             if self._front_active is not None:
                 self._front_active.close()
                 self._front_active = None
@@ -3427,6 +3444,41 @@ class GameLoopView:
             return True
 
         return True
+
+    @staticmethod
+    def _steal_ground_from_view(view: FrontView | None) -> GroundRenderer | None:
+        if view is None:
+            return None
+        steal = getattr(view, "steal_ground_for_menu", None)
+        if not callable(steal):
+            return None
+        ground = steal()
+        if isinstance(ground, GroundRenderer):
+            return ground
+        return None
+
+    def _replace_menu_ground(self, ground: GroundRenderer) -> None:
+        previous = self._state.menu_ground
+        if previous is ground:
+            return
+        if previous is not None and previous.render_target is not None:
+            rl.unload_render_texture(previous.render_target)
+            previous.render_target = None
+        self._state.menu_ground = ground
+
+    def _capture_gameplay_ground_for_menu(self) -> None:
+        ground: GroundRenderer | None = None
+        if self._front_active in self._gameplay_views:
+            ground = self._steal_ground_from_view(self._front_active)
+        if ground is None:
+            for view in reversed(self._front_stack):
+                if view in self._gameplay_views:
+                    ground = self._steal_ground_from_view(view)
+                    if ground is not None:
+                        break
+        if ground is None:
+            return
+        self._replace_menu_ground(ground)
 
     def consume_screenshot_request(self) -> bool:
         requested = self._screenshot_requested

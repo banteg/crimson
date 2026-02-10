@@ -309,6 +309,11 @@ class BaseGameplayMode:
     def draw_pause_background(self) -> None:
         self._world.draw(draw_aim_indicators=False)
 
+    def steal_ground_for_menu(self):
+        ground = self._world.ground
+        self._world.ground = None
+        return ground
+
     def _draw_screen_fade(self) -> None:
         fade_alpha = 0.0
         if self._screen_fade is not None:
