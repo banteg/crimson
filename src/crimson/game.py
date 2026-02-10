@@ -1742,6 +1742,8 @@ class QuestFailedView:
         self._action: str | None = None
         self._cursor_pulse_time = 0.0
         self._intro_ms = 0.0
+        self._closing = False
+        self._close_action: str | None = None
         self._small_font: SmallFontData | None = None
         self._panel_tex: rl.Texture | None = None
         self._reaper_tex: rl.Texture | None = None
@@ -1755,6 +1757,8 @@ class QuestFailedView:
         self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
         self._cursor_pulse_time = 0.0
         self._intro_ms = 0.0
+        self._closing = False
+        self._close_action = None
         self._outcome = self._state.quest_outcome
         self._state.quest_outcome = None
         self._quest_title = ""
@@ -1802,7 +1806,14 @@ class QuestFailedView:
             self._ground.process_pending()
         dt_step = min(float(dt), 0.1)
         self._cursor_pulse_time += dt_step * 1.1
-        self._intro_ms = min(QUEST_FAILED_PANEL_SLIDE_DURATION_MS, self._intro_ms + dt_step * 1000.0)
+        dt_ms = dt_step * 1000.0
+        if self._closing:
+            self._intro_ms = max(0.0, float(self._intro_ms) - dt_ms)
+            if self._intro_ms <= 1e-3 and self._close_action is not None:
+                self._action = self._close_action
+                self._close_action = None
+            return
+        self._intro_ms = min(QUEST_FAILED_PANEL_SLIDE_DURATION_MS, self._intro_ms + dt_ms)
 
         outcome = self._outcome
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -1823,8 +1834,6 @@ class QuestFailedView:
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        dt_ms = min(float(dt), 0.1) * 1000.0
-
         font = self._ensure_small_font()
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET * scale, QUEST_FAILED_BUTTON_Y_OFFSET * scale)
 
@@ -2045,19 +2054,25 @@ class QuestFailedView:
         self._state.pending_quest_level = outcome.level
         if self._state.audio is not None:
             play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-        self._action = "start_quest"
+        self._begin_close("start_quest")
 
     def _activate_play_another(self) -> None:
         self._state.quest_fail_retry_count = 0
         if self._state.audio is not None:
             play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-        self._action = "open_quests"
+        self._begin_close("open_quests")
 
     def _activate_main_menu(self) -> None:
         self._state.quest_fail_retry_count = 0
         if self._state.audio is not None:
             play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-        self._action = "back_to_menu"
+        self._begin_close("back_to_menu")
+
+    def _begin_close(self, action: str) -> None:
+        if self._closing:
+            return
+        self._closing = True
+        self._close_action = action
 
     def _text_width(self, text: str, scale: float) -> float:
         font = self._small_font
