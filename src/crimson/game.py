@@ -315,6 +315,7 @@ QUEST_FAILED_SCORE_Y_OFFSET = 152.0  # message_y + 16 + 10 in native
 QUEST_FAILED_BUTTON_X_OFFSET = QUEST_FAILED_BANNER_X_OFFSET + 52.0
 QUEST_FAILED_BUTTON_Y_OFFSET = 240.0  # score_y baseline + 98 in native
 QUEST_FAILED_BUTTON_STEP_Y = 32.0
+QUEST_FAILED_PANEL_SLIDE_DURATION_MS = 250.0
 
 
 class QuestsMenuView:
@@ -1798,6 +1799,9 @@ class QuestFailedView:
         self._quest_title: str = ""
         self._action: str | None = None
         self._cursor_pulse_time = 0.0
+        self._intro_ms = 0.0
+        self._closing = False
+        self._close_action: str | None = None
         self._small_font: SmallFontData | None = None
         self._panel_tex: rl.Texture | None = None
         self._reaper_tex: rl.Texture | None = None
@@ -1810,6 +1814,9 @@ class QuestFailedView:
         self._action = None
         self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
         self._cursor_pulse_time = 0.0
+        self._intro_ms = 0.0
+        self._closing = False
+        self._close_action = None
         self._outcome = self._state.quest_outcome
         self._state.quest_outcome = None
         self._quest_title = ""
@@ -1855,7 +1862,16 @@ class QuestFailedView:
             update_audio(self._state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
-        self._cursor_pulse_time += min(dt, 0.1) * 1.1
+        dt_step = min(float(dt), 0.1)
+        self._cursor_pulse_time += dt_step * 1.1
+        dt_ms = dt_step * 1000.0
+        if self._closing:
+            self._intro_ms = max(0.0, float(self._intro_ms) - dt_ms)
+            if self._intro_ms <= 1e-3 and self._close_action is not None:
+                self._action = self._close_action
+                self._close_action = None
+            return
+        self._intro_ms = min(QUEST_FAILED_PANEL_SLIDE_DURATION_MS, self._intro_ms + dt_ms)
 
         outcome = self._outcome
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -1868,7 +1884,7 @@ class QuestFailedView:
             self._activate_play_another()
             return
 
-        panel_top_left = self._panel_origin()
+        panel_top_left = self._panel_top_left()
         textures = self._button_textures
         if outcome is None or textures is None or (textures.button_sm is None and textures.button_md is None):
             return
@@ -1876,8 +1892,6 @@ class QuestFailedView:
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        dt_ms = min(float(dt), 0.1) * 1000.0
-
         font = self._ensure_small_font()
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET * scale, QUEST_FAILED_BUTTON_Y_OFFSET * scale)
 
@@ -1938,7 +1952,7 @@ class QuestFailedView:
             self._ground.draw(Vec2())
         _draw_screen_fade(self._state)
 
-        panel_top_left = self._panel_origin()
+        panel_top_left = self._panel_top_left()
         panel_tex = self._panel_tex
         if panel_tex is not None:
             panel = rl.Rectangle(
@@ -2030,6 +2044,20 @@ class QuestFailedView:
             QUEST_FAILED_PANEL_GEOM_Y0 + QUEST_FAILED_PANEL_POS_Y + widescreen_shift_y,
         )
 
+    def _panel_slide_x(self) -> float:
+        if QUEST_FAILED_PANEL_SLIDE_DURATION_MS <= 1e-6:
+            return 0.0
+        t = float(self._intro_ms) / QUEST_FAILED_PANEL_SLIDE_DURATION_MS
+        if t < 0.0:
+            t = 0.0
+        elif t > 1.0:
+            t = 1.0
+        eased = 1.0 - (1.0 - t) ** 3
+        return -QUEST_FAILED_PANEL_W * (1.0 - eased)
+
+    def _panel_top_left(self) -> Vec2:
+        return self._panel_origin().offset(dx=self._panel_slide_x())
+
     def _failure_message(self) -> str:
         retry_count = int(self._state.quest_fail_retry_count)
         if retry_count == 1:
@@ -2084,19 +2112,25 @@ class QuestFailedView:
         self._state.pending_quest_level = outcome.level
         if self._state.audio is not None:
             play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-        self._action = "start_quest"
+        self._begin_close("start_quest")
 
     def _activate_play_another(self) -> None:
         self._state.quest_fail_retry_count = 0
         if self._state.audio is not None:
             play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-        self._action = "open_quests"
+        self._begin_close("open_quests")
 
     def _activate_main_menu(self) -> None:
         self._state.quest_fail_retry_count = 0
         if self._state.audio is not None:
             play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-        self._action = "back_to_menu"
+        self._begin_close("back_to_menu")
+
+    def _begin_close(self, action: str) -> None:
+        if self._closing:
+            return
+        self._closing = True
+        self._close_action = action
 
     def _text_width(self, text: str, scale: float) -> float:
         font = self._small_font

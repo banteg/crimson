@@ -17,9 +17,11 @@ def _make_quest_mode() -> QuestMode:
 def test_quest_mode_closes_run_when_player_dies_during_perk_menu_transition(monkeypatch) -> None:
     mode = _make_quest_mode()
 
-    # Simulate Fatal Lottery killing the player while the perk menu is closing. Quest mode
-    # should still produce a failure outcome and close the run instead of freezing.
+    # Simulate Fatal Lottery killing the player while the perk menu is closing.
+    # Quest mode should still produce a failure outcome after the native death-timer
+    # delay instead of freezing.
     mode._player.health = -1.0
+    mode._player.death_timer = 0.3
     mode._perk_menu.open = False
     mode._perk_menu.timeline_ms = 100.0
 
@@ -30,6 +32,11 @@ def test_quest_mode_closes_run_when_player_dies_during_perk_menu_transition(monk
 
     mode.update(1.0 / 60.0)
 
+    assert mode.close_requested is False
+    for _ in range(120):
+        mode.update(1.0 / 60.0)
+        if mode.close_requested:
+            break
     assert mode.close_requested is True
     outcome = mode.consume_outcome()
     assert outcome is not None

@@ -450,6 +450,16 @@ class QuestMode(BaseGameplayMode):
         y = margin
         return Rect.from_top_left(Vec2(x, y), text_w, text_h)
 
+    def _death_transition_ready(self) -> bool:
+        dead_players = 0
+        for player in self._world.players:
+            if float(player.health) > 0.0:
+                return False
+            dead_players += 1
+            if float(player.death_timer) >= 0.0:
+                return False
+        return dead_players > 0
+
     def _close_failed_run(self) -> None:
         if self._outcome is None:
             fired = 0
@@ -600,9 +610,9 @@ class QuestMode(BaseGameplayMode):
 
         self._perk_menu.tick_timeline(dt_ui_ms)
 
-        dt_world = 0.0 if self._paused or (not any_alive) or self._perk_menu.active else dt_frame
+        dt_world = 0.0 if self._paused or self._perk_menu.active else dt_frame
         if dt_world <= 0.0:
-            if not self._any_player_alive():
+            if self._death_transition_ready():
                 self._close_failed_run()
             return
 
@@ -618,9 +628,6 @@ class QuestMode(BaseGameplayMode):
         )
 
         any_alive_after = any(player.health > 0.0 for player in self._world.players)
-        if not any_alive_after:
-            self._close_failed_run()
-            return
 
         creatures_none_active = not bool(self._creatures.iter_active())
 
@@ -645,59 +652,65 @@ class QuestMode(BaseGameplayMode):
                 rand=self._state.rng.rand,
             )
 
-        completion_ms, completed, play_hit_sfx, play_completion_music = tick_quest_completion_transition(
-            float(self._quest.completion_transition_ms),
-            frame_dt_ms=dt_world * 1000.0,
-            creatures_none_active=bool(creatures_none_active),
-            spawn_table_empty=quest_spawn_table_empty(self._quest.spawn_entries),
-        )
-        self._quest.completion_transition_ms = float(completion_ms)
-        if play_hit_sfx:
-            self._world.audio_router.play_sfx("sfx_questhit")
-        if play_completion_music and self._world.audio is not None:
-            play_music(self._world.audio, "crimsonquest")
-            playback = self._world.audio.music.playbacks.get("crimsonquest")
-            if playback is not None:
-                playback.volume = 0.0
-                try:
-                    rl.set_music_volume(playback.music, 0.0)
-                except Exception:
-                    pass
-        if completed:
-            if self._outcome is None:
-                fired = 0
-                hit = 0
-                try:
-                    fired = int(self._state.shots_fired[int(self._player.index)])
-                    hit = int(self._state.shots_hit[int(self._player.index)])
-                except Exception:
+        if any_alive_after:
+            completion_ms, completed, play_hit_sfx, play_completion_music = tick_quest_completion_transition(
+                float(self._quest.completion_transition_ms),
+                frame_dt_ms=dt_world * 1000.0,
+                creatures_none_active=bool(creatures_none_active),
+                spawn_table_empty=quest_spawn_table_empty(self._quest.spawn_entries),
+            )
+            self._quest.completion_transition_ms = float(completion_ms)
+            if play_hit_sfx:
+                self._world.audio_router.play_sfx("sfx_questhit")
+            if play_completion_music and self._world.audio is not None:
+                play_music(self._world.audio, "crimsonquest")
+                playback = self._world.audio.music.playbacks.get("crimsonquest")
+                if playback is not None:
+                    playback.volume = 0.0
+                    try:
+                        rl.set_music_volume(playback.music, 0.0)
+                    except Exception:
+                        pass
+            if completed:
+                if self._outcome is None:
                     fired = 0
                     hit = 0
-                fired = max(0, int(fired))
-                hit = max(0, min(int(hit), fired))
-                most_used_weapon_id = most_used_weapon_id_for_player(
-                    self._state,
-                    player_index=int(self._player.index),
-                    fallback_weapon_id=int(self._player.weapon_id),
-                )
-                player2_health = None
-                if len(self._world.players) >= 2:
-                    player2_health = float(self._world.players[1].health)
-                self._outcome = QuestRunOutcome(
-                    kind="completed",
-                    level=str(self._quest.level),
-                    base_time_ms=int(self._quest.spawn_timeline_ms),
-                    player_health=float(self._player.health),
-                    player2_health=player2_health,
-                    pending_perk_count=int(self._state.perk_selection.pending_count),
-                    experience=int(self._player.experience),
-                    kill_count=int(self._creatures.kill_count),
-                    weapon_id=int(self._player.weapon_id),
-                    shots_fired=fired,
-                    shots_hit=hit,
-                    most_used_weapon_id=int(most_used_weapon_id),
-                )
-            self.close_requested = True
+                    try:
+                        fired = int(self._state.shots_fired[int(self._player.index)])
+                        hit = int(self._state.shots_hit[int(self._player.index)])
+                    except Exception:
+                        fired = 0
+                        hit = 0
+                    fired = max(0, int(fired))
+                    hit = max(0, min(int(hit), fired))
+                    most_used_weapon_id = most_used_weapon_id_for_player(
+                        self._state,
+                        player_index=int(self._player.index),
+                        fallback_weapon_id=int(self._player.weapon_id),
+                    )
+                    player2_health = None
+                    if len(self._world.players) >= 2:
+                        player2_health = float(self._world.players[1].health)
+                    self._outcome = QuestRunOutcome(
+                        kind="completed",
+                        level=str(self._quest.level),
+                        base_time_ms=int(self._quest.spawn_timeline_ms),
+                        player_health=float(self._player.health),
+                        player2_health=player2_health,
+                        pending_perk_count=int(self._state.perk_selection.pending_count),
+                        experience=int(self._player.experience),
+                        kill_count=int(self._creatures.kill_count),
+                        weapon_id=int(self._player.weapon_id),
+                        shots_fired=fired,
+                        shots_hit=hit,
+                        most_used_weapon_id=int(most_used_weapon_id),
+                    )
+                self.close_requested = True
+        else:
+            self._quest.completion_transition_ms = -1.0
+
+        if self._death_transition_ready():
+            self._close_failed_run()
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active

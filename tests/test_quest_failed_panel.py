@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pyray as rl
 
-from crimson.game import GameState, QuestFailedView
+from crimson.game import GameState, QUEST_FAILED_PANEL_W, QuestFailedView
 from crimson.modes.quest_mode import QuestRunOutcome
 from crimson.persistence import save_status
 from grim.geom import Vec2
@@ -69,6 +69,20 @@ def test_quest_failed_panel_layout_uses_native_anchor(monkeypatch, tmp_path: Pat
     assert panel_1024.y == 119.0
 
 
+def test_quest_failed_panel_slides_in_from_left(monkeypatch, tmp_path: Path) -> None:
+    state = _make_state(tmp_path)
+    view = QuestFailedView(state)
+
+    monkeypatch.setattr("crimson.game.rl.get_screen_width", lambda: 640)
+    base = view._panel_origin()
+
+    view._intro_ms = 0.0
+    assert view._panel_top_left().x == base.x - QUEST_FAILED_PANEL_W
+
+    view._intro_ms = 250.0
+    assert view._panel_top_left().x == base.x
+
+
 def test_quest_failed_enter_retries_current_quest(monkeypatch, tmp_path: Path) -> None:
     state = _make_state(tmp_path)
     state.quest_outcome = _failed_outcome()
@@ -95,7 +109,14 @@ def test_quest_failed_enter_retries_current_quest(monkeypatch, tmp_path: Path) -
     assert state.quest_fail_retry_count == 3
     assert state.pending_quest_level == "5.10"
     assert played == ["sfx_ui_buttonclick"]
-    assert view.take_action() == "start_quest"
+    assert view.take_action() is None
+    action = None
+    for _ in range(120):
+        view.update(1.0 / 60.0)
+        action = view.take_action()
+        if action is not None:
+            break
+    assert action == "start_quest"
 
 
 def test_quest_failed_q_opens_quest_list(monkeypatch, tmp_path: Path) -> None:
@@ -123,7 +144,49 @@ def test_quest_failed_q_opens_quest_list(monkeypatch, tmp_path: Path) -> None:
 
     assert state.quest_fail_retry_count == 0
     assert played == ["sfx_ui_buttonclick"]
-    assert view.take_action() == "open_quests"
+    assert view.take_action() is None
+    action = None
+    for _ in range(120):
+        view.update(1.0 / 60.0)
+        action = view.take_action()
+        if action is not None:
+            break
+    assert action == "open_quests"
+
+
+def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, tmp_path: Path) -> None:
+    state = _make_state(tmp_path)
+    state.quest_outcome = _failed_outcome()
+    state.quest_fail_retry_count = 4
+
+    played: list[str] = []
+
+    def _play_sfx(_audio, key, *, rng=None, allow_variants=True) -> None:  # noqa: ARG001
+        played.append(key)
+
+    class _DummyCache:
+        def get_or_load(self, *_args, **_kwargs):  # noqa: ANN001
+            return SimpleNamespace(texture=None)
+
+    monkeypatch.setattr("crimson.game.update_audio", lambda _audio, _dt: None)
+    monkeypatch.setattr("crimson.game._ensure_texture_cache", lambda _state: _DummyCache())
+    monkeypatch.setattr("crimson.game.play_sfx", _play_sfx)
+    monkeypatch.setattr("crimson.game.rl.is_key_pressed", lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE))
+
+    view = QuestFailedView(state)
+    view.open()
+    view.update(0.016)
+
+    assert state.quest_fail_retry_count == 0
+    assert played == ["sfx_ui_buttonclick"]
+    assert view.take_action() is None
+    action = None
+    for _ in range(120):
+        view.update(1.0 / 60.0)
+        action = view.take_action()
+        if action is not None:
+            break
+    assert action == "back_to_menu"
 
 
 def test_quest_failed_score_block_matches_native_fields(monkeypatch, tmp_path: Path) -> None:
