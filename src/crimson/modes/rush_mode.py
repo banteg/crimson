@@ -16,8 +16,7 @@ from grim.geom import Vec2
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
-from ..gameplay import PlayerInput, weapon_assign_player
-from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
+from ..gameplay import weapon_assign_player
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
@@ -208,31 +207,6 @@ class RushMode(BaseGameplayMode):
             self._action = "open_pause_menu"
             return
 
-    def _build_input(self) -> PlayerInput:
-        keybinds = config_keybinds(self._config)
-        if not keybinds:
-            keybinds = (0x11, 0x1F, 0x1E, 0x20, 0x100)
-        up_key, down_key, left_key, right_key, fire_key = player_move_fire_binds(keybinds, 0)
-
-        move = Vec2(
-            float(input_code_is_down(right_key)) - float(input_code_is_down(left_key)),
-            float(input_code_is_down(down_key)) - float(input_code_is_down(up_key)),
-        )
-
-        mouse = self._ui_mouse_pos()
-        aim = self._world.screen_to_world(Vec2.from_xy(mouse))
-
-        fire_down = input_code_is_down(fire_key)
-        fire_pressed = input_code_is_pressed(fire_key)
-
-        return PlayerInput(
-            move=move,
-            aim=aim,
-            fire_down=bool(fire_down),
-            fire_pressed=bool(fire_pressed),
-            reload_pressed=False,
-        )
-
     def _player_name_default(self) -> str:
         config = self._config
         if config is None:
@@ -329,8 +303,7 @@ class RushMode(BaseGameplayMode):
             return
 
         dt_tick = float(self._sim_clock.dt_tick)
-        input_frame = self._build_input()
-        input_tick = input_frame
+        input_frame = self._build_local_inputs(dt_frame=dt_frame)
         session = self._sim_session
         if session is None:
             return
@@ -350,16 +323,7 @@ class RushMode(BaseGameplayMode):
         session.fx_toggle = int(fx_toggle)
 
         for tick_offset in range(int(ticks_to_run)):
-            if tick_offset:
-                input_tick = PlayerInput(
-                    move=input_frame.move,
-                    aim=input_frame.aim,
-                    fire_down=bool(input_frame.fire_down),
-                    fire_pressed=False,
-                    reload_pressed=False,
-                )
-
-            inputs = [input_tick for _ in self._world.players]
+            inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
             recorder = self._replay_recorder
             if recorder is not None:
                 tick_index = recorder.record_tick(inputs)

@@ -165,6 +165,7 @@ from .frontend.panels.play_game import PlayGameMenuView
 from .frontend.panels.stats import StatisticsMenuView
 from .frontend.pause_menu import PauseMenuView
 from .frontend.transitions import _draw_screen_fade, _update_screen_fade
+from .input_codes import input_begin_frame
 from .persistence.save_status import GameStatus, ensure_game_status
 from .ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
 from .ui.menu_panel import draw_classic_menu_panel
@@ -3209,6 +3210,7 @@ class GameLoopView:
         return self._state.quit_requested
 
     def update(self, dt: float) -> None:
+        input_begin_frame()
         console = self._state.console
         console.handle_hotkey()
         console.update(dt)
