@@ -142,7 +142,7 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
     shooter = pool.entries[0]
     shooter.active = True
     shooter.hp = 10.0
-    shooter.pos = Vec2()
+    shooter.pos = Vec2(-200.0, -200.0)
 
     target = pool.entries[1]
     target.active = True

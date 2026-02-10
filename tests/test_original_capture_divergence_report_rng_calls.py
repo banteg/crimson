@@ -184,7 +184,12 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
             "debug": {
                 "sampling_phase": "",
                 "timing": {},
-                "spawn": {},
+                "spawn": {
+                    "event_count_projectile_find_query": 3,
+                    "event_count_projectile_find_query_miss": 1,
+                    "event_count_projectile_find_query_owner_collision": 1,
+                    "top_projectile_find_query_callers": [{"key": "0x00420e52", "count": 3}],
+                },
                 "rng": {},
                 "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
                 "creature_lifecycle": None,
@@ -192,6 +197,30 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
                 "before_status": {"quest_unlock_index": -1, "quest_unlock_index_full": -1},
             },
         },
+        "event_counts": {
+            "projectile_find_query": 3,
+            "projectile_find_hit": 2,
+        },
+        "event_heads": [
+            {
+                "kind": "projectile_find_query",
+                "data": {
+                    "result_creature_index": None,
+                    "result_kind": "miss",
+                    "caller_static": "0x00420e52",
+                },
+            },
+            {
+                "kind": "projectile_find_query",
+                "data": {
+                    "result_creature_index": 19,
+                    "result_kind": "owner_collision",
+                    "owner_collision": True,
+                    "caller_static": "0x00420e52",
+                },
+            },
+            {"kind": "projectile_find_hit", "data": {"creature_index": 19, "caller_static": "0x00420e52"}},
+        ],
         "samples": {
             "creatures": [
                 {
@@ -246,6 +275,10 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
     assert tick["sample_counts"]["secondary_projectiles"] == 1
     assert tick["sample_secondary_head"][0]["index"] == 7
     assert tick["sample_creatures_head"][0]["index"] == 5
+    assert tick["projectile_find_query_count"] == 3
+    assert tick["projectile_find_query_miss_count"] == 1
+    assert tick["projectile_find_query_owner_collision_count"] == 1
+    assert tick["spawn_top_projectile_find_query_callers"] == [{"key": "0x00420e52", "count": 3}]
 
 
 def test_investigation_leads_flag_missing_focus_samples() -> None:
@@ -409,6 +442,10 @@ def test_find_first_projectile_hit_shortfall_detects_gap() -> None:
             12: {
                 "projectile_find_hit_count": 5,
                 "projectile_find_hit_corpse_count": 1,
+                "projectile_find_query_count": 8,
+                "projectile_find_query_miss_count": 2,
+                "projectile_find_query_owner_collision_count": 1,
+                "spawn_top_projectile_find_query_callers": [{"key": "0x00420e52", "count": 8}],
                 "spawn_top_projectile_find_hit_callers": [{"key": "0x00420fd7", "count": 5}],
             }
         },
@@ -421,6 +458,9 @@ def test_find_first_projectile_hit_shortfall_detects_gap() -> None:
     assert int(shortfall["capture_hits"]) == 5
     assert int(shortfall["actual_hits"]) == 4
     assert int(shortfall["missing_hits"]) == 1
+    assert int(shortfall["query_counts"]) == 8
+    assert int(shortfall["query_miss_count"]) == 2
+    assert int(shortfall["query_owner_collision_count"]) == 1
 
 
 def test_investigation_leads_include_projectile_hit_shortfall() -> None:
@@ -458,6 +498,10 @@ def test_investigation_leads_include_projectile_hit_shortfall() -> None:
                 "rng_rand_calls": 0,
                 "projectile_find_hit_count": 6,
                 "projectile_find_hit_corpse_count": 2,
+                "projectile_find_query_count": 9,
+                "projectile_find_query_miss_count": 2,
+                "projectile_find_query_owner_collision_count": 1,
+                "spawn_top_projectile_find_query_callers": [{"key": "0x00420e52", "count": 9}],
                 "spawn_top_projectile_find_hit_callers": [{"key": "0x00420fd7", "count": 6}],
                 "sample_counts": {"creatures": 1, "projectiles": 1, "secondary_projectiles": 0, "bonuses": 0},
             }

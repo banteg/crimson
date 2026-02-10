@@ -29,6 +29,7 @@ from ..replay.types import (
 )
 from .schema import (
     CaptureEventHeadPerkApply,
+    CaptureEventHeadPerkDelta,
     CaptureFile,
     CapturePlayerCheckpoint,
     CaptureTick,
@@ -716,6 +717,24 @@ def _perk_apply_ids_in_tick(tick: CaptureTick) -> tuple[int, ...]:
     return tuple(deduped)
 
 
+def _tick_perk_pending_count(tick: CaptureTick) -> int | None:
+    pending = int(tick.checkpoint.perk_pending)
+    if pending >= 0:
+        return int(pending)
+
+    snapshot_pending = int(tick.checkpoint.perk.pending_count)
+    if snapshot_pending >= 0:
+        return int(snapshot_pending)
+
+    for head in tick.event_heads:
+        if not isinstance(head, CaptureEventHeadPerkDelta):
+            continue
+        pending_value = _coerce_int_like(head.data.get("perk_pending_count"))
+        if pending_value is not None and int(pending_value) >= 0:
+            return int(pending_value)
+    return None
+
+
 def convert_capture_to_checkpoints(capture: CaptureFile, *, replay_sha256: str = "") -> ReplayCheckpoints:
     checkpoints: list[ReplayCheckpoint] = []
     for tick in capture.ticks:
@@ -789,6 +808,7 @@ def convert_capture_to_replay(
             fire_down_raw = None
             fire_pressed_raw = None
             reload_pressed_raw = None
+            use_digital_move = False
 
             if sample is not None or key_row is not None:
                 move_forward_raw = sample.move_forward_pressed if sample is not None else None
@@ -825,20 +845,16 @@ def convert_capture_to_replay(
                     move_x = float(turn_right) - float(turn_left)
                     move_y = float(move_backward) - float(move_forward)
                     if turn_left and turn_right:
-                        if not move_forward and not move_backward:
-                            fallback_x, fallback_y = _normalize_capture_move_components(
-                                sample_move_dx,
-                                sample_move_dy,
-                            )
-                            if abs(fallback_x) > 1e-9 or abs(fallback_y) > 1e-9:
-                                move_x = fallback_x
-                                move_y = fallback_y
-                            else:
-                                move_x = -1.0
-                        else:
-                            move_x = -1.0
+                        # `input_player_keys` collapses multiple key-query sites in
+                        # `player_update`. When move forward/backward is also active,
+                        # a later branch can override turn intent with left-biased
+                        # precedence; without move keys the initial turn branch stays
+                        # right-biased.
+                        move_x = -1.0 if (move_forward or move_backward) else 1.0
                     if move_forward and move_backward:
-                        move_y = -1.0
+                        # Same collapse behavior for move intent: with turn keys in
+                        # play, the later branch can resolve toward forward.
+                        move_y = -1.0 if (turn_left or turn_right) else 1.0
                 else:
                     move_x, move_y = _normalize_capture_move_components(sample_move_dx, sample_move_dy)
 
@@ -985,10 +1001,11 @@ def convert_capture_to_replay(
                         )
                     )
 
-            pending = int(tick.checkpoint.perk_pending)
-            if pending < 0:
+            pending = _tick_perk_pending_count(tick)
+            if pending is None:
                 continue
-            if previous_pending is not None and pending < previous_pending:
+            pending_i = int(pending)
+            if previous_pending is not None and pending_i < previous_pending:
                 menu_tick = max(0, int(tick.tick_index) - 1)
                 events.append(
                     UnknownEvent(
@@ -1002,10 +1019,10 @@ def convert_capture_to_replay(
                     UnknownEvent(
                         tick_index=int(tick.tick_index),
                         kind=CAPTURE_PERK_PENDING_EVENT_KIND,
-                        payload=[{"perk_pending": int(pending)}],
+                        payload=[{"perk_pending": int(pending_i)}],
                     )
                 )
-            previous_pending = pending
+            previous_pending = int(pending_i)
 
     return Replay(
         version=FORMAT_VERSION,

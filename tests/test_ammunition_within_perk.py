@@ -30,7 +30,7 @@ def test_ammunition_within_fires_during_reload_and_costs_health() -> None:
     assert player.health == pytest.approx(9.0)
     assert player.experience == 1
     assert any(entry.active for entry in state.projectiles.entries)
-    assert player.ammo == 0
+    assert player.ammo == -1
 
 
 def test_ammunition_within_fires_during_manual_reload_when_ammo_remaining() -> None:

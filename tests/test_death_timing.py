@@ -3,6 +3,7 @@ from __future__ import annotations
 from grim.geom import Vec2
 
 from crimson.creatures.runtime import CreatureDeath
+from crimson.creatures.runtime import CreatureUpdateResult
 from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
@@ -115,3 +116,63 @@ def test_detonation_followup_does_not_double_plan_death_sfx() -> None:
     assert len(events.deaths) == 2
     assert calls == [[0]]
     assert events.sfx == ["death"]
+
+
+def test_death_sfx_rand_consumes_past_cap() -> None:
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=True,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
+
+    deaths = tuple(
+        CreatureDeath(
+            index=idx,
+            pos=Vec2(200.0 + float(idx), 200.0),
+            type_id=2,
+            reward_value=0.0,
+            xp_awarded=0,
+            owner_id=-1,
+        )
+        for idx in range(7)
+    )
+
+    calls = {"count": 0}
+    original_plan = world_state_mod.plan_death_sfx_keys
+    original_update = world.creatures.update
+
+    def _fake_plan(deaths_now: tuple[object, ...] | list[object], *, rand: object) -> list[str]:
+        calls["count"] += 1
+        if callable(rand):
+            rand()
+        return ["death"] if deaths_now else []
+
+    def _fake_update(*args: object, **kwargs: object) -> CreatureUpdateResult:
+        _ = args, kwargs
+        return CreatureUpdateResult(deaths=deaths, sfx=())
+
+    world_state_mod.plan_death_sfx_keys = _fake_plan
+    world.creatures.update = _fake_update  # type: ignore[assignment]
+    try:
+        events = world.step(
+            0.016,
+            inputs=None,
+            world_size=world_size,
+            damage_scale_by_type={},
+            detail_preset=5,
+            fx_queue=FxQueue(),
+            fx_queue_rotated=FxQueueRotated(),
+            auto_pick_perks=False,
+            game_mode=int(GameMode.SURVIVAL),
+            perk_progression_enabled=False,
+        )
+    finally:
+        world_state_mod.plan_death_sfx_keys = original_plan
+        world.creatures.update = original_update  # type: ignore[assignment]
+
+    assert len(events.deaths) == 7
+    assert len(events.sfx) == 5
+    assert calls["count"] == 7

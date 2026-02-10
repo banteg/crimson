@@ -310,6 +310,12 @@ class CaptureEventHeadProjectileSpawn(
     pass
 
 
+class CaptureEventHeadProjectileFindQuery(
+    _CaptureEventHeadData, tag_field="kind", tag="projectile_find_query"
+):
+    pass
+
+
 class CaptureEventHeadProjectileFindHit(
     _CaptureEventHeadData, tag_field="kind", tag="projectile_find_hit"
 ):
@@ -389,6 +395,7 @@ CaptureEventHead: TypeAlias = (
     | CaptureEventHeadBonusSpawn
     | CaptureEventHeadSecondaryProjectileSpawn
     | CaptureEventHeadProjectileSpawn
+    | CaptureEventHeadProjectileFindQuery
     | CaptureEventHeadProjectileFindHit
     | CaptureEventHeadCreatureDamage
     | CaptureEventHeadPlayerDamage
@@ -583,6 +590,7 @@ class CaptureEventCounts(msgspec.Struct, forbid_unknown_fields=True):
     bonus_apply: int = 0
     bonus_spawn: int = 0
     projectile_spawn: int = 0
+    projectile_find_query: int = 0
     projectile_find_hit: int = 0
     secondary_projectile_spawn: int = 0
     player_damage: int = 0

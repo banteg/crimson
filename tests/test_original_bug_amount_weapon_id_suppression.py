@@ -41,3 +41,18 @@ def test_original_amount_weapon_id_suppression_bug_can_be_preserved() -> None:
     player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon_id=int(WeaponId.FLAMETHROWER))
     entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
     assert entry is None
+
+
+def test_original_amount_weapon_id_suppression_handles_nuke_amount_domain() -> None:
+    # Force the non-pistol-special drop path and a Nuke roll:
+    # - rand#1: pistol special-case gate -> skip ((v & 3) >= 3)
+    # - rand#2: base_roll where base_roll % 9 != 1
+    # - rand#3: allow_without_magnet when pistol -> True (v % 5 == 1)
+    # - rand#4: bonus_pick_random_type roll -> 35 => Nuke
+    state = GameplayState(rng=_SeqRng([3, 0, 1, 34]))
+    state.preserve_bugs = True
+    state.bonus_pool = BonusPool()
+
+    player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon_id=int(WeaponId.PISTOL))
+    entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
+    assert entry is None

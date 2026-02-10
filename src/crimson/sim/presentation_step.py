@@ -20,7 +20,7 @@ from ..weapons import WEAPON_BY_ID, WeaponId
 from .world_defs import BEAM_TYPES
 
 _MAX_HIT_SFX_PER_FRAME = 4
-_MAX_DEATH_SFX_PER_FRAME = 3
+_MAX_DEATH_SFX_PER_FRAME = 5
 
 _BULLET_HIT_SFX = (
     "sfx_bullet_hit_01",

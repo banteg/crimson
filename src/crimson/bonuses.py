@@ -82,7 +82,10 @@ BONUS_TABLE = [
         name="Nuke",
         description="An amazing explosion of ATOMIC power.",
         icon_id=1,
-        default_amount=0,
+        # Native bonus entries store amount=1 for Nuke spawns.
+        # This participates in the original amount-vs-weapon-id suppression bug
+        # when preserve_bugs mode is enabled.
+        default_amount=1,
         notes="`bonus_apply` performs the large explosion + shake sequence.",
     ),
     BonusMeta(
