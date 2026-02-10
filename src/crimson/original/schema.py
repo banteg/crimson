@@ -5,8 +5,11 @@ from typing import Literal, TypeAlias
 import msgspec
 
 
-class CaptureConfig(msgspec.Struct, forbid_unknown_fields=True):
+class CaptureConfig(msgspec.Struct):
     log_mode: str = "truncate"
+    # Keep config forward-compatible with evolving capture-script env knobs.
+    console_all_events: bool = False
+    console_events: list[str] = msgspec.field(default_factory=list)
     include_caller: bool = True
     include_backtrace: bool = False
     include_tick_snapshots: bool = True

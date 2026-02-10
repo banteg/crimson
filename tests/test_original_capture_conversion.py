@@ -243,6 +243,29 @@ def test_load_capture_supports_jsonl_stream_rows(tmp_path: Path) -> None:
     assert int(capture.ticks[0].tick_index) == 0
 
 
+def test_load_capture_stream_accepts_forward_compatible_config_fields(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    meta = {k: v for k, v in obj.items() if k != "ticks"}
+    meta["config"] = {
+        "log_mode": "truncate",
+        "console_all_events": True,
+        "console_events": ["start", "ready", "capture_shutdown"],
+        "include_caller": False,
+        "future_knob": 12345,
+    }
+    _write_capture_stream(path, meta=meta, ticks=[tick])
+
+    capture = load_capture(path)
+
+    assert capture.script == "gameplay_diff_capture"
+    assert capture.config.console_all_events is True
+    assert capture.config.console_events == ["start", "ready", "capture_shutdown"]
+    assert capture.config.include_caller is False
+    assert len(capture.ticks) == 1
+
+
 def test_load_capture_stream_ignores_truncated_last_line(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick])
