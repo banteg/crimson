@@ -203,7 +203,7 @@ When the capture SHA is unchanged, append updates to the same session.
 ### Key Findings
 
 - Capture SHA differs from Session 4 and should be tracked as a new session family.
-- Capture stream is valid JSONL with `11190` tick rows, but missing a terminal `capture_end` row.
+- Capture stream is valid JSONL with `11190` tick rows and no terminal capture marker (expected for current writer behavior).
 - In this capture family, `input_approx.move_dx/move_dy` appears to reflect runtime movement deltas, not stable raw input intent; replaying them directly caused a false early drift at `tick 61`.
 - Reconstructing replay input from `input_player_keys` (with fallback merge) moved the frontier from `tick 61` to `tick 3254`.
 - Current lead stack on this SHA is:

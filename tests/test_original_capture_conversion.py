@@ -191,13 +191,6 @@ def _write_capture_stream(path: Path, *, meta: dict[str, object], ticks: list[di
     rows.extend(
         json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True) for tick in ticks
     )
-    rows.append(
-        json.dumps(
-            {"event": "capture_end", "reason": "manual_stop", "ticks_written": int(len(ticks))},
-            separators=(",", ":"),
-            sort_keys=True,
-        )
-    )
     path.write_text("\n".join(rows) + "\n", encoding="utf-8")
 
 
@@ -266,7 +259,7 @@ def test_load_capture_stream_accepts_forward_compatible_config_fields(tmp_path: 
     assert len(capture.ticks) == 1
 
 
-def test_load_capture_stream_ignores_truncated_last_line(tmp_path: Path) -> None:
+def test_load_capture_stream_rejects_truncated_last_line(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
@@ -274,15 +267,28 @@ def test_load_capture_stream_ignores_truncated_last_line(tmp_path: Path) -> None
     rows = [
         json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True),
         json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True),
-        '{"event":"capture_end","reason":"manual_stop"',
+        '{"event":"tick","tick"',
     ]
     path.write_text("\n".join(rows), encoding="utf-8")
 
-    capture = load_capture(path)
+    with pytest.raises(Exception):
+        load_capture(path)
 
-    assert capture.script == "gameplay_diff_capture"
-    assert len(capture.ticks) == 1
-    assert int(capture.ticks[0].tick_index) == 0
+
+def test_load_capture_stream_rejects_legacy_capture_end_row(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    meta = {k: v for k, v in obj.items() if k != "ticks"}
+    rows = [
+        json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True),
+        json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True),
+        json.dumps({"event": "capture_end", "reason": "manual_stop", "ticks_written": 1}, separators=(",", ":")),
+    ]
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+    with pytest.raises(Exception):
+        load_capture(path)
 
 
 def test_load_capture_rejects_unknown_fields(tmp_path: Path) -> None:

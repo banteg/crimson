@@ -11,7 +11,7 @@ tags:
 JSONL event stream designed for robust incremental writes.
 
 If you are starting from only a fresh capture artifact, follow
-`docs/frida/new-session-playbook.md` first.
+`docs/frida/differential-playbook.md` first.
 
 Primary output:
 
@@ -35,7 +35,6 @@ The capture file is newline-delimited JSON rows:
 
 - `{"event":"capture_meta","capture":{...}}` exactly once at start
 - `{"event":"tick","tick":{...}}` once per captured gameplay tick
-- `{"event":"capture_end",...}` once at clean shutdown
 
 `uv run crimson original ...` commands load this stream and normalize it to the
 typed `CaptureFile` schema in Python (`msgspec`).
@@ -46,7 +45,7 @@ Notes:
 - Console output is filtered by default to high-signal lifecycle/errors only.
 - Before detaching from a live Frida session, call `crimsonCaptureStop("manual_stop")`
   in the REPL and wait for the `capture_shutdown` log line.
-- If the process/script is terminated before close, the final JSONL row can be truncated.
+- Loader behavior is strict: truncated trailing JSON rows are rejected.
 - No top-level raw event stream is written; diagnostics stay in per-tick aggregates.
 
 ## Convert to checkpoints + replay

@@ -65,12 +65,7 @@ class _CaptureStreamTickRow(msgspec.Struct, tag="tick", tag_field="event", forbi
     tick: CaptureTick
 
 
-class _CaptureStreamEndRow(msgspec.Struct, tag="capture_end", tag_field="event"):
-    reason: str | None = None
-    ticks_written: int | None = None
-
-
-_CaptureStreamRow = _CaptureStreamMetaRow | _CaptureStreamTickRow | _CaptureStreamEndRow
+_CaptureStreamRow = _CaptureStreamMetaRow | _CaptureStreamTickRow
 
 
 def _coerce_int_like(value: object) -> int | None:
@@ -1061,22 +1056,17 @@ def _decode_capture_stream(raw: bytes, path: Path) -> CaptureFile | None:
     if not lines:
         return None
 
-    has_terminal_newline = raw.endswith(b"\n") or raw.endswith(b"\r")
     meta: CaptureFile | None = None
     ticks: list[CaptureTick] = []
     saw_stream_row = False
 
-    for index, raw_line in enumerate(lines):
+    for raw_line in lines:
         line = raw_line.strip()
         if not line:
             continue
         try:
             row = msgspec.json.decode(line, type=_CaptureStreamRow)
         except msgspec.DecodeError:
-            is_last = index == (len(lines) - 1)
-            if is_last and not has_terminal_newline:
-                # Allow a truncated final line and keep all complete prior rows.
-                continue
             # Forward compatibility: permit plain tick objects in stream rows.
             try:
                 tick_row = msgspec.json.decode(line, type=CaptureTick)
@@ -1093,10 +1083,6 @@ def _decode_capture_stream(raw: bytes, path: Path) -> CaptureFile | None:
 
         if isinstance(row, _CaptureStreamTickRow):
             ticks.append(row.tick)
-            saw_stream_row = True
-            continue
-
-        if isinstance(row, _CaptureStreamEndRow):
             saw_stream_row = True
             continue
 

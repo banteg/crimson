@@ -4,7 +4,7 @@
 // - per-gameplay tick records with stable checkpoint payloads
 // - deterministic command/event summaries for first-divergence debugging
 // - compact before/after snapshots and optional entity samples
-// - JSONL stream output (`capture_meta` + `tick` rows + terminal `capture_end`)
+// - JSONL stream output (`capture_meta` + `tick` rows)
 //
 // Attach only:
 //   frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
@@ -329,7 +329,6 @@ const outState = {
   captureClosed: false,
   captureTickCount: 0,
   shutdownComplete: false,
-  closeReason: null,
   gameplayFrame: 0,
   currentStatePrev: null,
   currentStateId: null,
@@ -435,21 +434,12 @@ function writeCaptureTick(tickObj) {
   }
 }
 
-function closeCaptureFile(reason) {
+function closeCaptureFile() {
   if (!outState.captureStarted || outState.captureClosed) return;
-  outState.closeReason = reason || outState.closeReason || "unknown";
   let closed = false;
   try {
     if (outState.outFile) {
-      _captureWriteJsonLine(
-        {
-          event: "capture_end",
-          reason: outState.closeReason,
-          ticks_written: outState.captureTickCount,
-        },
-        true
-      );
-      outState.outFile.flush();
+      if (CONFIG.flushCaptureWrites) outState.outFile.flush();
       outState.outFile.close();
       closed = true;
     }
@@ -463,7 +453,6 @@ function shutdownCapture(reason) {
   if (outState.shutdownComplete) return;
   outState.shutdownComplete = true;
   const why = reason || "shutdown";
-  outState.closeReason = why;
   try {
     if (outState.heartbeatTimer) {
       clearInterval(outState.heartbeatTimer);
@@ -474,7 +463,7 @@ function shutdownCapture(reason) {
     finalizeTick();
   } catch (_) {}
   try {
-    closeCaptureFile(why);
+    closeCaptureFile();
   } catch (_) {}
   try {
     writeLine({
