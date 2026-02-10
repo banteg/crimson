@@ -337,33 +337,12 @@ def _infer_player_count(capture: CaptureFile) -> int:
 
 def _infer_digital_move_enabled_by_player(capture: CaptureFile, *, player_count: int) -> list[bool]:
     size = max(1, int(player_count))
-    saw_mode: list[bool] = [False for _ in range(size)]
-    saw_mode1: list[bool] = [False for _ in range(size)]
-    saw_non_mode1: list[bool] = [False for _ in range(size)]
     saw_digital_keys: list[bool] = [False for _ in range(size)]
 
     for tick in capture.ticks:
-        for sample in tick.input_approx:
-            player_index = int(sample.player_index)
-            if not (0 <= player_index < len(saw_mode)):
-                continue
-            if (
-                sample.move_forward_pressed is not None
-                or sample.move_backward_pressed is not None
-                or sample.turn_left_pressed is not None
-                or sample.turn_right_pressed is not None
-            ):
-                saw_digital_keys[player_index] = True
-            if sample.move_mode is None:
-                continue
-            saw_mode[player_index] = True
-            if int(sample.move_mode) == 1:
-                saw_mode1[player_index] = True
-            else:
-                saw_non_mode1[player_index] = True
         for key_row in tick.input_player_keys:
             player_index = int(key_row.player_index)
-            if not (0 <= player_index < len(saw_mode)):
+            if not (0 <= player_index < len(saw_digital_keys)):
                 continue
             if (
                 key_row.move_forward_pressed is not None
@@ -373,13 +352,7 @@ def _infer_digital_move_enabled_by_player(capture: CaptureFile, *, player_count:
             ):
                 saw_digital_keys[player_index] = True
 
-    out: list[bool] = []
-    for player_index in range(len(saw_mode)):
-        if saw_mode[player_index]:
-            out.append(bool(saw_mode1[player_index] and not saw_non_mode1[player_index]))
-        else:
-            out.append(bool(saw_digital_keys[player_index]))
-    return out
+    return [bool(enabled) for enabled in saw_digital_keys]
 
 
 def _infer_status_snapshot(capture: CaptureFile) -> ReplayStatusSnapshot:
