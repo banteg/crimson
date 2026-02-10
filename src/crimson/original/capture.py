@@ -57,6 +57,22 @@ class _CapturePerkPendingPayload(msgspec.Struct, forbid_unknown_fields=True):
     perk_pending: int
 
 
+class _CaptureStreamMetaRow(msgspec.Struct, tag="capture_meta", tag_field="event", forbid_unknown_fields=True):
+    capture: CaptureFile
+
+
+class _CaptureStreamTickRow(msgspec.Struct, tag="tick", tag_field="event", forbid_unknown_fields=True):
+    tick: CaptureTick
+
+
+class _CaptureStreamEndRow(msgspec.Struct, tag="capture_end", tag_field="event"):
+    reason: str | None = None
+    ticks_written: int | None = None
+
+
+_CaptureStreamRow = _CaptureStreamMetaRow | _CaptureStreamTickRow | _CaptureStreamEndRow
+
+
 def _coerce_int_like(value: object) -> int | None:
     if isinstance(value, bool):
         return int(value)
@@ -973,6 +989,64 @@ def _validate_capture_path(path: Path) -> None:
     raise CaptureError(f"capture path must end with .json or .json.gz: {path}")
 
 
+def _decode_capture_canonical(raw: bytes) -> CaptureFile | None:
+    try:
+        return msgspec.json.decode(raw, type=CaptureFile)
+    except (msgspec.DecodeError, msgspec.ValidationError):
+        return None
+
+
+def _decode_capture_stream(raw: bytes, path: Path) -> CaptureFile | None:
+    lines = raw.splitlines()
+    if not lines:
+        return None
+
+    has_terminal_newline = raw.endswith(b"\n") or raw.endswith(b"\r")
+    meta: CaptureFile | None = None
+    ticks: list[CaptureTick] = []
+    saw_stream_row = False
+
+    for index, raw_line in enumerate(lines):
+        line = raw_line.strip()
+        if not line:
+            continue
+        try:
+            row = msgspec.json.decode(line, type=_CaptureStreamRow)
+        except msgspec.DecodeError:
+            is_last = index == (len(lines) - 1)
+            if is_last and not has_terminal_newline:
+                # Allow a truncated final line and keep all complete prior rows.
+                continue
+            # Forward compatibility: permit plain tick objects in stream rows.
+            try:
+                tick_row = msgspec.json.decode(line, type=CaptureTick)
+            except (msgspec.DecodeError, msgspec.ValidationError) as tick_exc:
+                raise CaptureError(f"invalid capture file: {path}") from tick_exc
+            ticks.append(tick_row)
+            saw_stream_row = True
+            continue
+
+        if isinstance(row, _CaptureStreamMetaRow):
+            meta = row.capture
+            saw_stream_row = True
+            continue
+
+        if isinstance(row, _CaptureStreamTickRow):
+            ticks.append(row.tick)
+            saw_stream_row = True
+            continue
+
+        if isinstance(row, _CaptureStreamEndRow):
+            saw_stream_row = True
+            continue
+
+    if not saw_stream_row or meta is None:
+        return None
+
+    meta.ticks = ticks
+    return meta
+
+
 def load_capture(path: Path) -> CaptureFile:
     path = Path(path)
     _validate_capture_path(path)
@@ -981,12 +1055,15 @@ def load_capture(path: Path) -> CaptureFile:
     if raw.startswith(b"\x1f\x8b"):
         raw = gzip.decompress(raw)
 
-    try:
-        capture = msgspec.json.decode(raw, type=CaptureFile)
-    except (msgspec.DecodeError, msgspec.ValidationError) as exc:
-        raise CaptureError(f"invalid capture file: {path}") from exc
+    canonical = _decode_capture_canonical(raw)
+    if canonical is not None:
+        return canonical
 
-    return capture
+    stream = _decode_capture_stream(raw, path)
+    if stream is not None:
+        return stream
+
+    raise CaptureError(f"invalid capture file: {path}")
 
 
 def dump_capture(path: Path, capture: CaptureFile) -> None:

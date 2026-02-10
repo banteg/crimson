@@ -8,7 +8,7 @@ tags:
 # Gameplay Differential Capture
 
 `scripts/frida/gameplay_diff_capture.js` captures deterministic gameplay ticks into a
-single canonical JSON object designed for one-shot `msgspec` decoding.
+JSONL event stream designed for robust incremental writes.
 
 Primary output:
 
@@ -28,16 +28,22 @@ just frida-gameplay-diff-capture
 
 ## Capture format
 
-The capture file is one JSON object:
+The capture file is newline-delimited JSON rows:
 
-- top-level metadata (`script`, `session_id`, `out_path`, `config`, module/process info)
-- `ticks: [...]` containing typed per-tick records (`checkpoint`, `event_counts`,
-  `event_heads`, `phase_markers`, input/RNG diagnostics, optional snapshots/samples)
+- `{"event":"capture_meta","capture":{...}}` exactly once at start
+- `{"event":"tick","tick":{...}}` once per captured gameplay tick
+- `{"event":"capture_end",...}` once at clean shutdown
+
+`uv run crimson original ...` commands load this stream and normalize it to the
+typed `CaptureFile` schema in Python (`msgspec`).
 
 Notes:
 
-- The file is streamed incrementally and closed on script shutdown.
-- If the process/script is terminated before close, the JSON can be truncated.
+- The file is streamed incrementally and flushed on each write.
+- Console output is filtered by default to high-signal lifecycle/errors only.
+- Before detaching from a live Frida session, call `crimsonCaptureStop("manual_stop")`
+  in the REPL and wait for the `capture_shutdown` log line.
+- If the process/script is terminated before close, the final JSONL row can be truncated.
 - No top-level raw event stream is written; diagnostics stay in per-tick aggregates.
 
 ## Convert to checkpoints + replay
@@ -104,6 +110,8 @@ Without extra env vars, the script captures full per-tick detail:
 
 - `CRIMSON_FRIDA_STATES=6,9,10`
 - `CRIMSON_FRIDA_ALL_STATES=1`
+- `CRIMSON_FRIDA_CONSOLE_ALL_EVENTS=1`
+- `CRIMSON_FRIDA_CONSOLE_EVENTS=start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event`
 - `CRIMSON_FRIDA_TICK_DETAILS_EVERY=30`
 - `CRIMSON_FRIDA_CREATURE_SAMPLE_LIMIT=24`
 - `CRIMSON_FRIDA_PROJECTILE_SAMPLE_LIMIT=32`
@@ -126,4 +134,5 @@ Without extra env vars, the script captures full per-tick detail:
 - `CRIMSON_FRIDA_INCLUDE_BT=1`
 - `CRIMSON_FRIDA_INCLUDE_CALLER=0`
 
-Capture loading in Python accepts `.json` and `.json.gz` only.
+Capture loading in Python accepts `.json` and `.json.gz` only, and supports both
+legacy canonical JSON-object captures and JSONL row-stream captures.

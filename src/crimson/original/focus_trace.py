@@ -1176,9 +1176,9 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = _build_arg_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     json_out_path = _resolve_json_out_path(args.json_out, tick=int(args.tick))
 
     report = trace_focus_tick(

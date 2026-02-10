@@ -156,6 +156,17 @@ def _float_or(value: object, default: float = 0.0) -> float:
         return float(default)
 
 
+def _capture_sample_rate(capture: CaptureFile) -> int:
+    ticks = sorted(int(tick.tick_index) for tick in capture.ticks)
+    if len(ticks) < 2:
+        return 1
+    deltas = [next_tick - tick for tick, next_tick in zip(ticks, ticks[1:]) if int(next_tick) > int(tick)]
+    if not deltas:
+        return 1
+    deltas.sort()
+    return max(1, int(deltas[len(deltas) // 2]))
+
+
 def _fmt_opt_int(value: object, *, width: int = 0, unknown: str = "na") -> str:
     if value is None:
         return f"{unknown:>{width}}" if width > 0 else unknown
@@ -799,11 +810,16 @@ def _run_actual_checkpoints(
     )
     dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
     checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected}
-    inter_tick_rand_draws_by_tick = {
-        int(tick.tick_index): int(tick.rng_outside_before_calls)  # ty:ignore[unresolved-attribute]
-        for tick in capture.ticks
-        if int(tick.rng_outside_before_calls) >= 0  # ty:ignore[unresolved-attribute]
-    }
+    inter_tick_rand_draws_by_tick: dict[int, int] | None = {}
+    for tick in capture.ticks:
+        outside_before_calls = getattr(tick, "rng_outside_before_calls", None)
+        if outside_before_calls is None:
+            outside_before_calls = tick.checkpoint.rng_marks.rand_outside_before_calls
+        calls = _int_or(outside_before_calls, -1)
+        if calls < 0:
+            continue
+        assert inter_tick_rand_draws_by_tick is not None
+        inter_tick_rand_draws_by_tick[int(tick.tick_index)] = int(calls)
     if inter_tick_rand_draws_by_tick:
         first_tick_index = min(inter_tick_rand_draws_by_tick)
         # The inferred replay seed already matches the first sampled tick RNG
@@ -2091,12 +2107,13 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> int:
-    args = build_parser().parse_args()
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
     capture_path = Path(args.capture)
     json_out_path = _resolve_json_out_path(args.json_out)
 
     capture = load_capture(capture_path)
+    sample_rate = _capture_sample_rate(capture)
     expected, actual, run_result = _run_actual_checkpoints(
         capture,
         max_ticks=args.max_ticks,
@@ -2115,7 +2132,7 @@ def main() -> int:
     print(f"capture={capture_path}")
     print(
         f"ticks(expected/actual)={len(expected)}/{len(actual)}"
-        f" sample_rate={int(capture.sample_rate)} run_ticks={int(run_result.ticks)}"  # ty:ignore[unresolved-attribute]
+        f" sample_rate={int(sample_rate)} run_ticks={int(run_result.ticks)}"  # ty:ignore[unresolved-attribute]
         f" run_score_xp={int(run_result.score_xp)} run_kills={int(run_result.creature_kill_count)}"  # ty:ignore[unresolved-attribute]
     )
 
@@ -2310,7 +2327,7 @@ def main() -> int:
             "summary": {
                 "expected_count": len(expected),
                 "actual_count": len(actual),
-                "sample_rate": int(capture.sample_rate),  # ty:ignore[unresolved-attribute]
+                "sample_rate": int(sample_rate),
                 "run_ticks": int(run_result.ticks),  # ty:ignore[unresolved-attribute]
                 "run_score_xp": int(run_result.score_xp),  # ty:ignore[unresolved-attribute]
                 "run_kills": int(run_result.creature_kill_count),  # ty:ignore[unresolved-attribute]

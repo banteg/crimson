@@ -399,9 +399,9 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = _build_arg_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     start_tick = max(0, int(args.start_tick))
     end_tick = max(0, int(args.end_tick))
