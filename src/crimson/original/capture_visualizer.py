@@ -53,6 +53,8 @@ _GRID_COLOR = rl.Color(36, 40, 50, 255)
 _TEXT_COLOR = rl.Color(240, 242, 248, 255)
 _TEXT_DIM_COLOR = rl.Color(185, 190, 202, 255)
 _PROJECTILE_TRACE_RESET_DIST = 80.0
+_MIN_PLAYBACK_SPEED_EXP = -4
+_MAX_PLAYBACK_SPEED_EXP = 4
 
 
 @dataclass(slots=True)
@@ -189,7 +191,10 @@ class CaptureVisualizerView:
             self._world_size = 1024.0
         self._tick_rate = max(1, int(self._replay.header.tick_rate))
         self._step_interval = 1.0 / float(self._tick_rate)
-        self._playback_speed = max(0.05, float(playback_speed))
+        self._playback_speed = max(
+            float(2.0**_MIN_PLAYBACK_SPEED_EXP),
+            min(float(playback_speed), float(2.0**_MAX_PLAYBACK_SPEED_EXP)),
+        )
         self._player_trace_length = max(1, int(player_trace_length))
         self._creature_trace_length = max(1, int(creature_trace_length))
         self._projectile_trace_length = max(1, int(projectile_trace_length))
@@ -735,6 +740,29 @@ class CaptureVisualizerView:
         self._row_cursor = int(next_idx)
         return True
 
+    def _step_playback_speed(self, *, faster: bool) -> None:
+        min_exp = int(_MIN_PLAYBACK_SPEED_EXP)
+        max_exp = int(_MAX_PLAYBACK_SPEED_EXP)
+        min_speed = float(2.0**min_exp)
+        max_speed = float(2.0**max_exp)
+        speed = float(self._playback_speed)
+        if not math.isfinite(speed) or speed <= 0.0:
+            speed = 1.0
+        speed = max(float(min_speed), min(float(speed), float(max_speed)))
+        log_speed = float(math.log2(speed))
+
+        if faster:
+            exp = int(math.ceil(log_speed - 1e-12))
+            if math.isclose(speed, float(2.0**exp), rel_tol=1e-9, abs_tol=1e-12):
+                exp += 1
+        else:
+            exp = int(math.floor(log_speed + 1e-12))
+            if math.isclose(speed, float(2.0**exp), rel_tol=1e-9, abs_tol=1e-12):
+                exp -= 1
+
+        exp = max(min_exp, min(max_exp, int(exp)))
+        self._playback_speed = float(2.0**exp)
+
     def _handle_input(self) -> None:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
             self._paused = not bool(self._paused)
@@ -743,10 +771,10 @@ class CaptureVisualizerView:
             self._paused = True
         if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT) and self._paused:
             self._advance_one_tick()
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
-            self._playback_speed = min(16.0, float(self._playback_speed) * 1.25)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
-            self._playback_speed = max(0.05, float(self._playback_speed) / 1.25)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
+            self._step_playback_speed(faster=False)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_SLASH) or rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
+            self._step_playback_speed(faster=True)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_T):
             self._show_traces = not bool(self._show_traces)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_L):
@@ -1017,7 +1045,7 @@ class CaptureVisualizerView:
         )
         self._draw_ui_text(
             (
-                "Space pause  Right step  R restart  Up/Down speed  "
+                "Space pause  Right step  R restart  [ slower  / faster  "
                 "T traces  L divergence-lines  C capture-hitboxes  V rewrite-hitboxes  Esc close"
             ),
             x=16.0,
