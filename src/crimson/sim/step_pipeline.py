@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import hashlib
 import json
+from typing import Callable
 
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import PlayerInput, perks_rebuild_available, weapon_refresh_available
@@ -75,6 +76,9 @@ def run_deterministic_step(
     demo_mode_active: bool,
     perk_progression_enabled: bool,
     game_tune_started: bool,
+    defer_camera_shake_update: bool = False,
+    defer_freeze_corpse_fx: bool = False,
+    mid_step_hook: Callable[[], None] | None = None,
     rng_marks_out: dict[str, int] | None = None,
     trace_presentation_rng: bool = False,
 ) -> DeterministicStepResult:
@@ -118,6 +122,9 @@ def run_deterministic_step(
     events = world.step(
         float(dt_sim),
         dt_ms_i32=(int(dt_sim_ms_i32) if dt_sim_ms_i32 is not None else None),
+        defer_camera_shake_update=bool(defer_camera_shake_update),
+        defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
+        mid_step_hook=mid_step_hook,
         inputs=inputs,
         world_size=float(world_size),
         damage_scale_by_type=damage_scale_by_type,

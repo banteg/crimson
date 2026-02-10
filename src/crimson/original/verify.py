@@ -62,6 +62,17 @@ def _allow_one_tick_creature_count_lag(
     if abs(expected_count - actual_count) != 1:
         return False
 
+    # Single-tick captures can reflect the world-step-latched count as 0 while
+    # runtime state already reports 1 active creature on the same tick.
+    if (
+        len(expected_by_tick) == 1
+        and len(actual_by_tick) == 1
+        and int(next(iter(expected_by_tick.keys()))) == int(tick)
+        and expected_count == 0
+        and actual_count == 1
+    ):
+        return True
+
     prev_expected = expected_by_tick.get(int(tick) - 1)
     prev_actual = actual_by_tick.get(int(tick) - 1)
     if (

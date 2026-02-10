@@ -406,6 +406,7 @@ class GameWorld:
         auto_pick_perks: bool = False,
         game_mode: int = int(GameMode.SURVIVAL),
         perk_progression_enabled: bool = False,
+        defer_camera_shake_update: bool = False,
         rng_marks_out: dict[str, int] | None = None,
     ) -> list[ProjectileHit]:
         if self.audio_router is not None:
@@ -438,6 +439,7 @@ class GameWorld:
             demo_mode_active=bool(self.demo_mode_active),
             perk_progression_enabled=bool(perk_progression_enabled),
             game_tune_started=bool(self._game_tune_started),
+            defer_camera_shake_update=bool(defer_camera_shake_update),
             rng_marks_out=rng_marks_out,
         )
         self.apply_step_result(

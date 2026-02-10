@@ -33,7 +33,7 @@ def test_alternate_weapon_stashes_previous_weapon_on_first_weapon_pickup() -> No
 
     assert player.weapon_id == 2
     assert player.alt_weapon_id == 1
-    assert player.alt_clip_size == 12
+    assert player.alt_clip_size == 10
 
 
 def test_alternate_weapon_reload_pressed_swaps_and_adds_cooldown() -> None:

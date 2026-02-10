@@ -281,6 +281,30 @@ def test_load_capture_supports_plain_json_and_gz(tmp_path: Path) -> None:
     assert len(capture_zipped.ticks) == 1
 
 
+def test_load_capture_accepts_projectile_find_query_event_head(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    tick["event_counts"] = {"projectile_find_query": 1}
+    tick["event_heads"] = [
+        {
+            "kind": "projectile_find_query",
+            "data": {
+                "result_creature_index": None,
+                "result_kind": "miss",
+                "caller_static": "0x00420e52",
+            },
+        }
+    ]
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+
+    assert capture.ticks[0].event_counts.projectile_find_query == 1
+    assert capture.ticks[0].event_heads
+    assert capture.ticks[0].event_heads[0].data.get("result_kind") == "miss"
+
+
 def test_load_capture_supports_jsonl_stream_rows(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick])
@@ -481,6 +505,37 @@ def test_convert_capture_to_replay_infers_pending_drop_events(tmp_path: Path) ->
     assert CAPTURE_PERK_PENDING_EVENT_KIND in kinds
     assert "PerkMenuOpenEvent" in kinds
 
+
+
+def test_convert_capture_to_replay_infers_pending_drop_events_from_perk_delta(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16, perk_pending=-1)
+    tick1 = _base_tick(tick_index=1, elapsed_ms=32, perk_pending=-1)
+    tick2 = _base_tick(tick_index=2, elapsed_ms=48, perk_pending=-1)
+
+    tick0["event_heads"] = [{"kind": "perk_delta", "data": {"perk_pending_count": 1}}]
+    tick1["event_heads"] = [{"kind": "perk_delta", "data": {"perk_pending_count": 0}}]
+    tick2["event_heads"] = [{"kind": "perk_delta", "data": {"perk_pending_count": 0}}]
+
+    obj = _capture_obj(ticks=[tick0, tick1, tick2])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture)
+
+    pending_events = [
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_PERK_PENDING_EVENT_KIND
+    ]
+    assert [event.tick_index for event in pending_events] == [0, 1]
+    assert [capture_perk_pending_from_event_payload(list(event.payload)) for event in pending_events] == [1, 0]
+
+    kinds = [
+        type(event).__name__ if not isinstance(event, UnknownEvent) else str(event.kind)
+        for event in replay.events
+    ]
+    assert "PerkMenuOpenEvent" in kinds
 
 
 def test_convert_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> None:
@@ -711,7 +766,115 @@ def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capabil
     assert payload.get("digital_move_enabled_by_player") == [False]
 
 
-def test_convert_capture_to_replay_conflicting_turn_keys_fallback_to_normalized_vector(tmp_path: Path) -> None:
+def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_precedence(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "move_forward_pressed": False,
+            "move_backward_pressed": False,
+            "turn_left_pressed": False,
+            "turn_right_pressed": True,
+        }
+    ]
+    tick0["input_approx"] = [
+        {
+            "player_index": 0,
+            "move_dx": 98.0,
+            "move_dy": 5.0,
+            "aim_x": 306.0,
+            "aim_y": 309.0,
+        }
+    ]
+    tick1 = _base_tick(tick_index=1, elapsed_ms=32)
+    tick1["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "move_forward_pressed": False,
+            "move_backward_pressed": True,
+            "turn_left_pressed": True,
+            "turn_right_pressed": True,
+        }
+    ]
+    tick1["input_approx"] = [
+        {
+            "player_index": 0,
+            "move_dx": -77.0,
+            "move_dy": 11.0,
+            "aim_x": 308.0,
+            "aim_y": 311.0,
+        }
+    ]
+    obj = _capture_obj(ticks=[tick0, tick1])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture)
+
+    move_x0, move_y0, _aim0, _flags0 = replay.inputs[0][0]
+    move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
+    assert move_x0 == pytest.approx(1.0, abs=1e-6)
+    assert move_y0 == pytest.approx(0.0, abs=1e-6)
+    assert move_x1 == pytest.approx(-1.0, abs=1e-6)
+    assert move_y1 == pytest.approx(1.0, abs=1e-6)
+
+
+def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_precedence(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "move_forward_pressed": False,
+            "move_backward_pressed": True,
+            "turn_left_pressed": False,
+            "turn_right_pressed": False,
+        }
+    ]
+    tick0["input_approx"] = [
+        {
+            "player_index": 0,
+            "move_dx": 4.0,
+            "move_dy": 66.0,
+            "aim_x": 306.0,
+            "aim_y": 309.0,
+        }
+    ]
+    tick1 = _base_tick(tick_index=1, elapsed_ms=32)
+    tick1["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "move_forward_pressed": True,
+            "move_backward_pressed": True,
+            "turn_left_pressed": True,
+            "turn_right_pressed": False,
+        }
+    ]
+    tick1["input_approx"] = [
+        {
+            "player_index": 0,
+            "move_dx": -8.0,
+            "move_dy": -55.0,
+            "aim_x": 307.0,
+            "aim_y": 310.0,
+        }
+    ]
+    obj = _capture_obj(ticks=[tick0, tick1])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture)
+
+    move_x0, move_y0, _aim0, _flags0 = replay.inputs[0][0]
+    move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
+    assert move_x0 == pytest.approx(0.0, abs=1e-6)
+    assert move_y0 == pytest.approx(1.0, abs=1e-6)
+    assert move_x1 == pytest.approx(-1.0, abs=1e-6)
+    assert move_y1 == pytest.approx(-1.0, abs=1e-6)
+
+
+def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0["input_player_keys"] = [
         {
@@ -725,21 +888,44 @@ def test_convert_capture_to_replay_conflicting_turn_keys_fallback_to_normalized_
     tick0["input_approx"] = [
         {
             "player_index": 0,
-            "move_dx": 99.1623,
-            "move_dy": 2.3589,
-            "aim_x": 306.0,
-            "aim_y": 309.0,
+            "move_dx": -92.0,
+            "move_dy": 8.0,
+            "aim_x": 400.0,
+            "aim_y": 410.0,
         }
     ]
-    obj = _capture_obj(ticks=[tick0])
+    tick1 = _base_tick(tick_index=1, elapsed_ms=32)
+    tick1["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "move_forward_pressed": True,
+            "move_backward_pressed": True,
+            "turn_left_pressed": False,
+            "turn_right_pressed": False,
+        }
+    ]
+    tick1["input_approx"] = [
+        {
+            "player_index": 0,
+            "move_dx": 12.0,
+            "move_dy": -73.0,
+            "aim_x": 402.0,
+            "aim_y": 412.0,
+        }
+    ]
+    obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
 
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture)
-    move_x, move_y, _aim, _flags = replay.inputs[0][0]
-    assert move_x == pytest.approx(0.9997, abs=1e-4)
-    assert move_y == pytest.approx(0.0238, abs=1e-4)
+
+    move_x0, move_y0, _aim0, _flags0 = replay.inputs[0][0]
+    move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
+    assert move_x0 == pytest.approx(1.0, abs=1e-6)
+    assert move_y0 == pytest.approx(0.0, abs=1e-6)
+    assert move_x1 == pytest.approx(0.0, abs=1e-6)
+    assert move_y1 == pytest.approx(1.0, abs=1e-6)
 
 
 def test_convert_capture_to_replay_uses_player_key_fire_reload_edges(tmp_path: Path) -> None:

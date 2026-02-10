@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
+from crimson.creatures.spawn import CreatureTypeId
 from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
 from crimson.gameplay import BonusPickupEvent, GameplayState, PlayerState
 from crimson.projectiles import ProjectileHit, ProjectileTypeId
 from crimson.sim.presentation_step import (
     apply_world_presentation_step,
+    plan_death_sfx_keys,
     plan_hit_sfx_keys,
     queue_projectile_decals,
 )
@@ -50,6 +54,20 @@ def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
 
     assert trigger_game_tune is False
     assert keys == ["sfx_bullet_hit_01", "sfx_bullet_hit_01"]
+
+
+def test_plan_death_sfx_allows_five_randomized_deaths() -> None:
+    draws = {"count": 0}
+
+    def rand() -> int:
+        draws["count"] += 1
+        return 0
+
+    deaths = [SimpleNamespace(type_id=int(CreatureTypeId.ZOMBIE)) for _ in range(5)]
+    keys = plan_death_sfx_keys(deaths, rand=rand)
+
+    assert len(keys) == 5
+    assert draws["count"] == 5
 
 
 def test_apply_world_presentation_step_orders_sfx() -> None:

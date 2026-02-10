@@ -8,7 +8,10 @@ from pathlib import Path
 
 from crimson.camera import camera_shake_update
 from crimson.game_world import GameWorld
-from crimson.gameplay import BonusId, GameplayState, PlayerState, bonus_apply
+from crimson.gameplay import BonusId, GameplayState, PlayerInput, PlayerState, bonus_apply
+from crimson.sim.runners.common import build_damage_scale_by_type, build_empty_fx_queues, reset_players
+from crimson.sim.sessions import RushDeterministicSession, SurvivalDeterministicSession
+from crimson.sim.world_state import WorldState
 
 
 @dataclass(slots=True)
@@ -113,3 +116,75 @@ def test_game_world_nuke_pickup_defers_shake_decay_to_next_frame() -> None:
     assert entry.picked
     assert world.state.camera_shake_pulses == 0x14
     assert math.isclose(world.state.camera_shake_timer, 0.2, abs_tol=1e-9)
+
+
+def _spawn_nuke_pickup_on_player(world: WorldState) -> object:
+    player = world.players[0]
+    entry = world.state.bonus_pool.spawn_at(
+        pos=Vec2(player.pos.x, player.pos.y),
+        bonus_id=int(BonusId.NUKE),
+        state=world.state,
+    )
+    assert entry is not None
+    return entry
+
+
+def _build_session_world(*, seed: int = 0x1234, world_size: float = 1024.0) -> WorldState:
+    world = WorldState.build(
+        world_size=float(world_size),
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    reset_players(world.players, world_size=float(world_size), player_count=1)
+    world.state.rng.srand(int(seed))
+    return world
+
+
+def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
+    world = _build_session_world(seed=0x1234)
+    entry = _spawn_nuke_pickup_on_player(world)
+    player = world.players[0]
+    fx_queue, fx_queue_rotated = build_empty_fx_queues()
+    session = SurvivalDeterministicSession(
+        world=world,
+        world_size=1024.0,
+        damage_scale_by_type=build_damage_scale_by_type(),
+        fx_queue=fx_queue,
+        fx_queue_rotated=fx_queue_rotated,
+        perk_progression_enabled=False,
+    )
+
+    tick = session.step_tick(
+        dt_frame=1.0 / 60.0,
+        inputs=[PlayerInput(aim=Vec2(player.pos.x, player.pos.y))],
+    )
+
+    assert bool(getattr(entry, "picked", False))
+    assert world.state.camera_shake_pulses == 0x14
+    assert math.isclose(world.state.camera_shake_timer, 0.2, abs_tol=1e-9)
+    assert tick.rng_marks["after_camera_update"] == tick.rng_marks["after_wave_spawns"]
+
+
+def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
+    world = _build_session_world(seed=0x5678)
+    entry = _spawn_nuke_pickup_on_player(world)
+    player = world.players[0]
+    fx_queue, fx_queue_rotated = build_empty_fx_queues()
+    session = RushDeterministicSession(
+        world=world,
+        world_size=1024.0,
+        damage_scale_by_type=build_damage_scale_by_type(),
+        fx_queue=fx_queue,
+        fx_queue_rotated=fx_queue_rotated,
+    )
+
+    tick = session.step_tick(
+        dt_frame=1.0 / 60.0,
+        inputs=[PlayerInput(aim=Vec2(player.pos.x, player.pos.y))],
+    )
+
+    assert bool(getattr(entry, "picked", False))
+    assert world.state.camera_shake_pulses == 0x14
+    assert math.isclose(world.state.camera_shake_timer, 0.2, abs_tol=1e-9)
+    assert tick.rng_marks["after_camera_update"] == tick.rng_marks["after_rush_spawns"]

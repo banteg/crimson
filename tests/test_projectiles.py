@@ -260,7 +260,7 @@ def test_projectile_pool_update_ion_hit_spawns_ring_and_burst_effects() -> None:
     rings = [entry for entry in active if int(entry.effect_id) == 1]
     bursts = [entry for entry in active if int(entry.effect_id) == 0]
     assert len(rings) == 1
-    assert len(bursts) == 20
+    assert len(bursts) == 3
 
     ring = rings[0]
     [proj] = [entry for entry in state.projectiles.entries if entry.active]
@@ -275,6 +275,31 @@ def test_projectile_pool_update_ion_hit_spawns_ring_and_burst_effects() -> None:
     assert math.isclose(float(burst.half_width), 20.48, abs_tol=1e-6)
     assert math.isclose(float(burst.half_height), 20.48, abs_tol=1e-6)
     assert math.isclose(float(burst.lifetime), 0.448, abs_tol=1e-6)
+
+
+def test_projectile_pool_update_owner_collision_blocks_later_candidates() -> None:
+    pool = ProjectilePool(size=4)
+    creatures = [
+        _Creature(pos=Vec2(10.0, 0.0), hp=100.0),
+        _Creature(pos=Vec2(10.0, 0.0), hp=100.0),
+    ]
+
+    pool.spawn(
+        pos=Vec2(),
+        angle=math.pi / 2.0,
+        type_id=4,
+        owner_id=0,
+        base_damage=15.0,
+    )
+
+    hits = pool.update(0.1, creatures, world_size=1024.0, rng=_fixed_rng(0), runtime_state=GameplayState())
+
+    # Native `creature_find_in_radius` returns the first match even when it's the
+    # owner, and `projectile_update` does not continue searching for a later
+    # creature in that branch.
+    assert hits == []
+    assert math.isclose(creatures[0].hp, 100.0, abs_tol=1e-9)
+    assert math.isclose(creatures[1].hp, 100.0, abs_tol=1e-9)
 
 
 def test_projectile_pool_emits_hit_event_and_enters_hit_state() -> None:

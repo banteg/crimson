@@ -244,6 +244,12 @@ class BonusPickupEvent:
     pos: Vec2
 
 
+@dataclass(frozen=True, slots=True)
+class DeferredFreezeCorpseFx:
+    pos: Vec2
+    detail_preset: int
+
+
 # Native `bonus_try_spawn_on_kill` uses the bonus entry `amount` field for a weird
 # suppression check: it clears the spawned entry when `amount == player1.weapon_id`
 # regardless of bonus type. In the rewrite, `amount` is used as the "effective"
@@ -497,6 +503,7 @@ class BonusPool:
         creatures: Sequence[Damageable] | None = None,
         apply_creature_damage: CreatureDamageApplier | None = None,
         detail_preset: int = 5,
+        defer_freeze_corpse_fx: bool = False,
     ) -> list[BonusPickupEvent]:
         if dt <= 0.0:
             return []
@@ -529,6 +536,7 @@ class BonusPool:
                         players=players,
                         apply_creature_damage=apply_creature_damage,
                         detail_preset=int(detail_preset),
+                        defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
                     )
                     entry.picked = True
                     entry.time_left = BONUS_PICKUP_LINGER
@@ -610,6 +618,7 @@ class GameplayState:
     bonus_spawn_guard: bool = False
     bonus_hud: BonusHudState = field(default_factory=BonusHudState)
     bonus_pool: BonusPool = field(default_factory=BonusPool)
+    deferred_freeze_corpse_fx: list[DeferredFreezeCorpseFx] = field(default_factory=list)
     shock_chain_links_left: int = 0
     shock_chain_projectile_id: int = -1
     camera_shake_offset: Vec2 = field(default_factory=Vec2)
@@ -2390,7 +2399,9 @@ def player_fire_weapon(
 
     player.shot_seq += 1
     if state.bonuses.reflex_boost <= 0.0 and not is_fire_bullets:
-        player.ammo = max(0.0, float(player.ammo) - float(ammo_cost))
+        # Native allows ammo to cross below zero for reload-time firing paths
+        # (for example Regression Bullets), and replay checkpoints rely on that.
+        player.ammo = float(player.ammo) - float(ammo_cost)
     if player.ammo <= 0.0 and player.reload_timer <= 0.0:
         player_start_reload(player, state)
 
@@ -2425,6 +2436,7 @@ def player_update(
     else:
         player.spread_heat = max(0.01, player.spread_heat - dt * 0.4)
 
+    speed_bonus_active = player.speed_bonus_timer > 0.0
     player.shield_timer = max(0.0, player.shield_timer - dt)
     player.fire_bullets_timer = max(0.0, player.fire_bullets_timer - dt)
     player.speed_bonus_timer = max(0.0, player.speed_bonus_timer - dt)
@@ -2440,7 +2452,7 @@ def player_update(
         player.aim_heading = aim_dir.to_heading()
 
     speed_multiplier = float(player.speed_multiplier)
-    if player.speed_bonus_timer > 0.0:
+    if speed_bonus_active:
         speed_multiplier += 1.0
 
     movement_dt = float(dt)
@@ -2720,6 +2732,7 @@ class _BonusApplyCtx:
     economist_multiplier: float
     label: str
     icon_id: int
+    defer_freeze_corpse_fx: bool = False
 
     def register_global(self, timer_key: str) -> None:
         self.state.bonus_hud.register(
@@ -2821,6 +2834,7 @@ def _bonus_apply_freeze(ctx: _BonusApplyCtx) -> None:
 
     creatures = ctx.creatures
     if creatures:
+        defer_corpse_fx = bool(ctx.defer_freeze_corpse_fx)
         rand = ctx.state.rng.rand
         for creature in creatures:
             if not creature.active:
@@ -2828,24 +2842,59 @@ def _bonus_apply_freeze(ctx: _BonusApplyCtx) -> None:
             if creature.hp > 0.0:
                 continue
             pos = creature.pos
-            for _ in range(8):
+            if defer_corpse_fx:
+                ctx.state.deferred_freeze_corpse_fx.append(
+                    DeferredFreezeCorpseFx(
+                        pos=Vec2(float(pos.x), float(pos.y)),
+                        detail_preset=int(ctx.detail_preset),
+                    )
+                )
+            else:
+                for _ in range(8):
+                    angle = float(int(rand()) % 0x264) * 0.01
+                    ctx.state.effects.spawn_freeze_shard(
+                        pos=pos,
+                        angle=angle,
+                        rand=rand,
+                        detail_preset=int(ctx.detail_preset),
+                    )
                 angle = float(int(rand()) % 0x264) * 0.01
-                ctx.state.effects.spawn_freeze_shard(
+                ctx.state.effects.spawn_freeze_shatter(
                     pos=pos,
                     angle=angle,
                     rand=rand,
                     detail_preset=int(ctx.detail_preset),
                 )
-            angle = float(int(rand()) % 0x264) * 0.01
-            ctx.state.effects.spawn_freeze_shatter(
-                pos=pos,
-                angle=angle,
-                rand=rand,
-                detail_preset=int(ctx.detail_preset),
-            )
             creature.active = False
 
     ctx.state.sfx_queue.append("sfx_shockwave")
+
+
+def flush_deferred_freeze_corpse_fx(state: GameplayState) -> None:
+    pending = state.deferred_freeze_corpse_fx
+    if not pending:
+        return
+
+    rand = state.rng.rand
+    for queued in pending:
+        pos = queued.pos
+        detail = int(queued.detail_preset)
+        for _ in range(8):
+            angle = float(int(rand()) % 0x264) * 0.01
+            state.effects.spawn_freeze_shard(
+                pos=pos,
+                angle=angle,
+                rand=rand,
+                detail_preset=detail,
+            )
+        angle = float(int(rand()) % 0x264) * 0.01
+        state.effects.spawn_freeze_shatter(
+            pos=pos,
+            angle=angle,
+            rand=rand,
+            detail_preset=detail,
+        )
+    pending.clear()
 
 
 def _bonus_apply_shield(ctx: _BonusApplyCtx) -> None:
@@ -3071,6 +3120,7 @@ def bonus_apply(
     players: list[PlayerState] | None = None,
     apply_creature_damage: CreatureDamageApplier | None = None,
     detail_preset: int = 5,
+    defer_freeze_corpse_fx: bool = False,
 ) -> None:
     """Apply a bonus to player + global timers (subset of `bonus_apply`)."""
 
@@ -3096,6 +3146,7 @@ def bonus_apply(
         economist_multiplier=float(economist_multiplier),
         label=str(label),
         icon_id=int(icon_id),
+        defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
     )
     handler = _BONUS_APPLY_HANDLERS.get(bonus_id)
     if handler is not None:
@@ -3161,6 +3212,7 @@ def bonus_telekinetic_update(
     creatures: Sequence[Damageable] | None = None,
     apply_creature_damage: CreatureDamageApplier | None = None,
     detail_preset: int = 5,
+    defer_freeze_corpse_fx: bool = False,
 ) -> list[BonusPickupEvent]:
     """Allow Telekinetic perk owners to pick up bonuses by aiming at them."""
 
@@ -3201,6 +3253,7 @@ def bonus_telekinetic_update(
             players=players,
             apply_creature_damage=apply_creature_damage,
             detail_preset=int(detail_preset),
+            defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
         )
         entry.picked = True
         entry.time_left = BONUS_PICKUP_LINGER
@@ -3230,6 +3283,7 @@ def bonus_update(
     update_hud: bool = True,
     apply_creature_damage: CreatureDamageApplier | None = None,
     detail_preset: int = 5,
+    defer_freeze_corpse_fx: bool = False,
 ) -> list[BonusPickupEvent]:
     """Advance world bonuses and global timers (subset of `bonus_update`)."""
 
@@ -3240,6 +3294,7 @@ def bonus_update(
         creatures=creatures,
         apply_creature_damage=apply_creature_damage,
         detail_preset=int(detail_preset),
+        defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
     )
     pickups.extend(
         state.bonus_pool.update(
@@ -3249,6 +3304,7 @@ def bonus_update(
             creatures=creatures,
             apply_creature_damage=apply_creature_damage,
             detail_preset=int(detail_preset),
+            defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
         )
     )
 

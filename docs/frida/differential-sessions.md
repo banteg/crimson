@@ -349,3 +349,44 @@ When the capture SHA is unchanged, append updates to the same session.
   - `src/crimson/sim/sessions.py`
   - `src/crimson/sim/world_state.py`
   - `src/crimson/gameplay.py`
+
+### Continuation (2026-02-10, late)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.json`
+- **Capture SHA256:** `97268461b6661f4adadafe812a32bd1061a0db94c300f655628dc50688037b7f`
+
+#### First Mismatch Progression
+
+- after reverting broad projectile deferral and applying owner-collision parity patch: `tick 8135` (`players[0].experience`, `score_xp`)
+
+#### Key Findings
+
+- Native `projectile_update` (`0x00420e52`) uses `creature_find_in_radius(..., 0)` and treats `owner_id` returns as non-hits for damage, rather than continuing to later creature candidates in that step.
+- At `tick 7683`, matching this owner-collision branch behavior removed rewrite-only hit/RNG activity and advanced the frontier.
+- At `tick 8128`, native resolves additional `projectile_find_hit` rows (including corpse-hit repeats) that the rewrite still misses; this creates RNG tail shortfall and later XP divergence at `8135`.
+- Existing telemetry showed only successful `projectile_find_hit` results, which was insufficient to distinguish miss-vs-owner-collision query paths at branch points.
+
+#### Landed Changes
+
+- Updated `src/crimson/projectiles.py`:
+  - owner-collision handling now mirrors native `projectile_update` branch behavior for creature-hit resolution.
+  - tracked shock-chain slot now mirrors native `player_find_in_radius` skip behavior in that branch.
+- Updated capture telemetry in `scripts/frida/gameplay_diff_capture.js`:
+  - new `projectile_find_query` event stream for all projectile-update `creature_find_in_radius` calls (hits + misses),
+  - includes query result kind, projectile slot/type/owner context, owner-collision marker, and shock-chain skip marker,
+  - adds top-caller + miss/owner-collision diagnostics to per-tick spawn debug.
+- Updated consumers:
+  - `src/crimson/original/schema.py` adds `projectile_find_query` event-head + count support,
+  - `src/crimson/original/divergence_report.py` ingests/prints new query diagnostics and investigation evidence,
+  - coverage in `tests/test_original_capture_conversion.py` and `tests/test_original_capture_divergence_report_rng_calls.py`.
+- Verification cleanup/fidelity:
+  - `src/crimson/original/verify.py` now accepts the known single-tick world-step creature-count latch case.
+
+#### Validation
+
+- `just check`
+
+#### Outcome / Next Probe
+
+- Current frontier remains `tick 8135` on this SHA.
+- Next session should use a fresh capture with the new `projectile_find_query` telemetry enabled to isolate whether the remaining `8128+` shortfall is miss-path or owner-collision-path driven before further gameplay rewrites.

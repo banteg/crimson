@@ -682,6 +682,10 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
         creature_death_head_obj = creature_death_head if isinstance(creature_death_head, list) else []
         bonus_spawn_head = event_heads_obj.get("bonus_spawn")
         bonus_spawn_head_obj = bonus_spawn_head if isinstance(bonus_spawn_head, list) else []
+        projectile_find_query_head = event_heads_obj.get("projectile_find_query")
+        projectile_find_query_head_obj = (
+            projectile_find_query_head if isinstance(projectile_find_query_head, list) else []
+        )
         projectile_find_hit_head = event_heads_obj.get("projectile_find_hit")
         projectile_find_hit_head_obj = projectile_find_hit_head if isinstance(projectile_find_hit_head, list) else []
         rng_callers_top = rng_top_obj.get("callers")
@@ -788,6 +792,35 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
                 event_counts_obj.get("projectile_find_hit"),
                 len(projectile_find_hit_head_obj),
             ),
+            "projectile_find_query_count": _int_or(
+                event_counts_obj.get("projectile_find_query"),
+                _int_or(spawn_obj.get("event_count_projectile_find_query"), len(projectile_find_query_head_obj)),
+            ),
+            "projectile_find_query_head": projectile_find_query_head_obj,
+            "projectile_find_query_miss_count": _int_or(
+                spawn_obj.get("event_count_projectile_find_query_miss"),
+                sum(
+                    1
+                    for item in projectile_find_query_head_obj
+                    if isinstance(item, dict)
+                    and (
+                        str(item.get("result_kind")) == "miss"
+                        or _int_or(item.get("result_creature_index"), -1) < 0
+                    )
+                ),
+            ),
+            "projectile_find_query_owner_collision_count": _int_or(
+                spawn_obj.get("event_count_projectile_find_query_owner_collision"),
+                sum(
+                    1
+                    for item in projectile_find_query_head_obj
+                    if isinstance(item, dict)
+                    and (
+                        bool(item.get("owner_collision"))
+                        or str(item.get("result_kind")) == "owner_collision"
+                    )
+                ),
+            ),
             "projectile_find_hit_head": projectile_find_hit_head_obj,
             "projectile_find_hit_corpse_count": sum(
                 1
@@ -802,6 +835,11 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
             "spawn_top_projectile_find_hit_callers": (
                 spawn_obj.get("top_projectile_find_hit_callers")
                 if isinstance(spawn_obj.get("top_projectile_find_hit_callers"), list)
+                else []
+            ),
+            "spawn_top_projectile_find_query_callers": (
+                spawn_obj.get("top_projectile_find_query_callers")
+                if isinstance(spawn_obj.get("top_projectile_find_query_callers"), list)
                 else []
             ),
             "lifecycle_before_hash": lifecycle_obj.get("before_hash"),
@@ -1392,6 +1430,24 @@ def _find_first_projectile_hit_shortfall(
                 {"key": key, "count": count}
                 for key, count in sorted(reduced.items(), key=lambda item: (-int(item[1]), str(item[0])))
             ]
+        query_caller_counts = raw.get("spawn_top_projectile_find_query_callers")
+        if not isinstance(query_caller_counts, list):
+            query_caller_counts = []
+        if not query_caller_counts:
+            query_head = raw.get("projectile_find_query_head")
+            query_rows = query_head if isinstance(query_head, list) else []
+            reduced_query: dict[str, int] = {}
+            for item in query_rows:
+                if not isinstance(item, dict):
+                    continue
+                key = item.get("caller_static")  # ty:ignore[invalid-argument-type]
+                if key is None:
+                    continue
+                reduced_query[str(key)] = int(reduced_query.get(str(key), 0)) + 1
+            query_caller_counts = [
+                {"key": key, "count": count}
+                for key, count in sorted(reduced_query.items(), key=lambda item: (-int(item[1]), str(item[0])))
+            ]
         return {
             "tick": int(tick),
             "capture_hits": int(capture_hits),
@@ -1399,6 +1455,13 @@ def _find_first_projectile_hit_shortfall(
             "missing_hits": int(capture_hits) - int(actual_hits),
             "capture_corpse_hits": _int_or(raw.get("projectile_find_hit_corpse_count"), -1),
             "caller_counts": caller_counts,
+            "query_counts": _int_or(raw.get("projectile_find_query_count"), -1),
+            "query_miss_count": _int_or(raw.get("projectile_find_query_miss_count"), -1),
+            "query_owner_collision_count": _int_or(
+                raw.get("projectile_find_query_owner_collision_count"),
+                -1,
+            ),
+            "query_caller_counts": query_caller_counts,
         }
     return None
 
@@ -1608,6 +1671,9 @@ def _build_investigation_leads(
         actual_hits = _int_or(projectile_hit_shortfall.get("actual_hits"), -1)
         missing_hits = _int_or(projectile_hit_shortfall.get("missing_hits"), -1)
         corpse_hits = _int_or(projectile_hit_shortfall.get("capture_corpse_hits"), -1)
+        query_counts = _int_or(projectile_hit_shortfall.get("query_counts"), -1)
+        query_miss_count = _int_or(projectile_hit_shortfall.get("query_miss_count"), -1)
+        query_owner_collision_count = _int_or(projectile_hit_shortfall.get("query_owner_collision_count"), -1)
         caller_counts_raw = (
             projectile_hit_shortfall.get("caller_counts")
             if isinstance(projectile_hit_shortfall.get("caller_counts"), list)
@@ -1625,6 +1691,23 @@ def _build_investigation_leads(
             caller_counts.append((str(key), _int_or(item.get("count"), _int_or(item.get("calls"), 1))))
         caller_counts = sorted(caller_counts, key=lambda entry: (-int(entry[1]), str(entry[0])))
         top_callers = ", ".join(f"{addr} x{calls}" for addr, calls in caller_counts[:6])
+        query_caller_counts_raw = (
+            projectile_hit_shortfall.get("query_caller_counts")
+            if isinstance(projectile_hit_shortfall.get("query_caller_counts"), list)
+            else []
+        )
+        query_caller_counts: list[tuple[str, int]] = []
+        for item in query_caller_counts_raw:  # ty:ignore[not-iterable]
+            if not isinstance(item, dict):
+                continue
+            key = item.get("key")
+            if key is None:
+                key = item.get("caller_static")
+            if key is None:
+                continue
+            query_caller_counts.append((str(key), _int_or(item.get("count"), _int_or(item.get("calls"), 1))))
+        query_caller_counts = sorted(query_caller_counts, key=lambda entry: (-int(entry[1]), str(entry[0])))
+        top_query_callers = ", ".join(f"{addr} x{calls}" for addr, calls in query_caller_counts[:6])
         top_native = _top_native_functions_from_callers(
             caller_counts=caller_counts,
             native_ranges=native_ranges,
@@ -1643,8 +1726,19 @@ def _build_investigation_leads(
                 "without creating extra creature_damage events)"
             ),
         ]
+        if query_counts >= 0:
+            evidence.append(f"capture projectile_find queries at that tick: {int(query_counts)}")
+        if query_miss_count >= 0:
+            evidence.append(f"capture projectile_find query misses at that tick: {int(query_miss_count)}")
+        if query_owner_collision_count >= 0:
+            evidence.append(
+                "capture projectile_find owner-collision queries at that tick: "
+                f"{int(query_owner_collision_count)}"
+            )
         if corpse_hits >= 0:
             evidence.append(f"capture projectile hit resolves marked as corpse hits at that tick: {int(corpse_hits)}")
+        if top_query_callers:
+            evidence.append(f"dominant projectile_find_query caller_static at shortfall tick: {top_query_callers}")
         if top_callers:
             evidence.append(f"dominant projectile_find_hit caller_static at shortfall tick: {top_callers}")
         if native_text:
@@ -2327,9 +2421,24 @@ def main(argv: list[str] | None = None) -> int:
                 f"capture_projectile_find_hit_count={int(projectile_find_hit_count)} "
                 f"capture_projectile_find_hit_corpse_count={_int_or(focus_raw.get('projectile_find_hit_corpse_count'), -1)}"
             )
+        projectile_find_query_count = _int_or(focus_raw.get("projectile_find_query_count"), -1)
+        if projectile_find_query_count >= 0:
+            print(
+                "  "
+                f"capture_projectile_find_query_count={int(projectile_find_query_count)} "
+                f"capture_projectile_find_query_miss_count={_int_or(focus_raw.get('projectile_find_query_miss_count'), -1)} "
+                "capture_projectile_find_query_owner_collision_count="
+                f"{_int_or(focus_raw.get('projectile_find_query_owner_collision_count'), -1)}"
+            )
+        top_projectile_queries = focus_raw.get("spawn_top_projectile_find_query_callers")
+        if isinstance(top_projectile_queries, list) and top_projectile_queries:
+            print(f"  capture_projectile_find_query_callers_top={top_projectile_queries[:6]!r}")
         top_projectile_hits = focus_raw.get("spawn_top_projectile_find_hit_callers")
         if isinstance(top_projectile_hits, list) and top_projectile_hits:
             print(f"  capture_projectile_find_hit_callers_top={top_projectile_hits[:6]!r}")
+        projectile_find_query_head = focus_raw.get("projectile_find_query_head")
+        if isinstance(projectile_find_query_head, list) and projectile_find_query_head:
+            print(f"  capture_projectile_find_query_head={projectile_find_query_head[:6]!r}")
         projectile_find_hit_head = focus_raw.get("projectile_find_hit_head")
         if isinstance(projectile_find_hit_head, list) and projectile_find_hit_head:
             print(f"  capture_projectile_find_hit_head={projectile_find_hit_head[:6]!r}")

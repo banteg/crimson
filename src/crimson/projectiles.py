@@ -392,8 +392,8 @@ def _spawn_ion_hit_effects(
     burst = float(burst_scale) * 0.8
     lifetime = min(burst * 0.7, 1.1)
     half = burst * 32.0
-    # Native loop count follows the burst half-size (`__ftol(scale * 0.8 * 32.0)`).
-    count = int(half)
+    # Native loop count is `__ftol(scale * 5.0)` after the local `scale *= 0.8`.
+    count = int(burst * 5.0)
     if detail < 3:
         count //= 2
 
@@ -1045,8 +1045,6 @@ class ProjectilePool:
                     hit_idx = None
                     owner_creature_idx = int(proj.owner_id)
                     for idx, creature in enumerate(creatures):
-                        if idx == owner_creature_idx:
-                            continue
                         if not creature.active:
                             continue
                         if creature.hitbox_size <= 5.0:
@@ -1060,8 +1058,21 @@ class ProjectilePool:
                             hit_idx = idx
                             break
 
+                    owner_collision = hit_idx is not None and int(hit_idx) == owner_creature_idx
+                    if owner_collision:
+                        # Native `creature_find_in_radius` does not skip owner id during
+                        # search; owner hits are discarded after the first match instead of
+                        # continuing to a later candidate in the same tick.
+                        hit_idx = None
+
                     if hit_idx is None:
-                        if proj.hits_players:
+                        can_hit_players = True
+                        if runtime_state is not None and int(proj_index) == int(runtime_state.shock_chain_projectile_id):
+                            # Native skips `player_find_in_radius` for the currently tracked
+                            # shock-chain projectile slot in this branch.
+                            can_hit_players = False
+
+                        if proj.hits_players and can_hit_players:
                             hit_player_idx = None
                             owner_id = int(proj.owner_id)
                             owner_player_index = -1 - owner_id if owner_id < 0 and owner_id != -100 else None
@@ -1594,20 +1605,6 @@ class SecondaryProjectilePool:
 
                 hit_type_id = SecondaryProjectileTypeId(int(entry.type_id))
 
-                damage = 150.0
-                if entry.type_id == SecondaryProjectileTypeId.ROCKET:
-                    damage = entry.speed * 50.0 + 500.0
-                elif entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET:
-                    damage = entry.speed * 20.0 + 80.0
-                elif entry.type_id == SecondaryProjectileTypeId.ROCKET_MINIGUN:
-                    damage = entry.speed * 20.0 + 40.0
-                _apply_secondary_damage(
-                    hit_idx,
-                    damage,
-                    owner_id=int(entry.owner_id),
-                    impulse=entry.vel / float(dt),
-                )
-
                 det_scale = 0.5
                 if entry.type_id == SecondaryProjectileTypeId.ROCKET:
                     det_scale = 1.0
@@ -1648,6 +1645,22 @@ class SecondaryProjectilePool:
                         rand=rand,
                         detail_preset=int(detail_preset),
                     )
+
+                # Native `projectile_update` applies hit visuals before
+                # `creature_apply_damage` for secondary projectiles.
+                damage = 150.0
+                if entry.type_id == SecondaryProjectileTypeId.ROCKET:
+                    damage = entry.speed * 50.0 + 500.0
+                elif entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET:
+                    damage = entry.speed * 20.0 + 80.0
+                elif entry.type_id == SecondaryProjectileTypeId.ROCKET_MINIGUN:
+                    damage = entry.speed * 20.0 + 40.0
+                _apply_secondary_damage(
+                    hit_idx,
+                    damage,
+                    owner_id=int(entry.owner_id),
+                    impulse=entry.vel / float(dt),
+                )
 
                 entry.type_id = SecondaryProjectileTypeId.DETONATION
                 entry.vel = Vec2()

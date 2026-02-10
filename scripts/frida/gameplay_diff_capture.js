@@ -202,6 +202,8 @@ const DATA = {
   input_primary_latch: 0x00478e50,
   console_open_flag: 0x0047eec8,
   perk_pending_count: 0x00486fac,
+  shock_chain_links_left: 0x00486fbc,
+  shock_chain_projectile_id: 0x00486fc0,
   creature_active_count: 0x00486fcc,
   quest_spawn_timeline: 0x00486fd0,
   bonus_reflex_boost_timer: 0x00487014,
@@ -998,6 +1000,28 @@ function readProjectileEntry(index) {
   };
 }
 
+function projectileIndexFromPosPtr(posPtr) {
+  if (!posPtr || !dataPtrs.projectile_pool) return null;
+  try {
+    const delta = posPtr.sub(dataPtrs.projectile_pool).toInt32();
+    if (delta < 0) return null;
+    const localOffset = delta - 0x08;
+    if (localOffset < 0) return null;
+    if ((localOffset % STRIDES.projectile) !== 0) return null;
+    const idx = (localOffset / STRIDES.projectile) | 0;
+    if (idx < 0 || idx >= COUNTS.projectiles) return null;
+    return idx;
+  } catch (_e) {
+    return null;
+  }
+}
+
+function readProjectileEntryByPosPtr(posPtr) {
+  const idx = projectileIndexFromPosPtr(posPtr);
+  if (idx == null) return null;
+  return readProjectileEntry(idx);
+}
+
 function readActiveProjectileSample(limit) {
   const normalizedLimit = normalizeSampleLimit(limit);
   const out = [];
@@ -1474,6 +1498,7 @@ function makeTickContext() {
       bonus_apply: 0,
       bonus_spawn: 0,
       projectile_spawn: 0,
+      projectile_find_query: 0,
       projectile_find_hit: 0,
       secondary_projectile_spawn: 0,
       player_damage: 0,
@@ -1498,6 +1523,7 @@ function makeTickContext() {
       bonus_apply: [],
       bonus_spawn: [],
       projectile_spawn: [],
+      projectile_find_query: [],
       projectile_find_hit: [],
       secondary_projectile_spawn: [],
       player_damage: [],
@@ -1554,7 +1580,10 @@ function makeTickContext() {
     spawn_callers_low: {},
     spawn_sources_low: {},
     creature_damage_callers: {},
+    projectile_find_query_callers: {},
     projectile_find_hit_callers: {},
+    projectile_find_query_miss: 0,
+    projectile_find_query_owner_collision: 0,
     death_callers: {},
     bonus_spawn_callers: {},
     mode_samples: [],
@@ -1641,6 +1670,7 @@ const EVENT_HEAD_ORDER = [
   "bonus_spawn",
   "secondary_projectile_spawn",
   "projectile_spawn",
+  "projectile_find_query",
   "projectile_find_hit",
   "creature_damage",
   "player_damage",
@@ -2175,12 +2205,16 @@ function finalizeTick() {
     event_count_template: tick.event_counts.creature_spawn || 0,
     event_count_low_level: tick.event_counts.creature_spawn_low || 0,
     event_count_creature_damage: tick.event_counts.creature_damage || 0,
+    event_count_projectile_find_query: tick.event_counts.projectile_find_query || 0,
     event_count_projectile_find_hit: tick.event_counts.projectile_find_hit || 0,
+    event_count_projectile_find_query_miss: tick.projectile_find_query_miss || 0,
+    event_count_projectile_find_query_owner_collision: tick.projectile_find_query_owner_collision || 0,
     event_count_death: deathHookEventCount,
     top_template_callers: topCounterPairs(tick.spawn_callers_template, 8),
     top_low_level_callers: topCounterPairs(tick.spawn_callers_low, 8),
     top_low_level_sources: topCounterPairs(tick.spawn_sources_low, 8),
     top_creature_damage_callers: topCounterPairs(tick.creature_damage_callers, 8),
+    top_projectile_find_query_callers: topCounterPairs(tick.projectile_find_query_callers, 8),
     top_projectile_find_hit_callers: topCounterPairs(tick.projectile_find_hit_callers, 8),
     top_death_callers: topCounterPairs(tick.death_callers, 8),
     event_count_bonus_spawn: tick.event_counts.bonus_spawn || 0,
@@ -2933,13 +2967,24 @@ function installHooks() {
       if (!isProjectileUpdateCaller(callerStatic)) {
         return;
       }
+      const queryPosPtr = args[0];
+      const projectileIndex = projectileIndexFromPosPtr(queryPosPtr);
+      const projectile = readProjectileEntryByPosPtr(queryPosPtr);
+      const shockChainProjectileId = readDataI32("shock_chain_projectile_id");
+      const shockChainLinksLeft = readDataI32("shock_chain_links_left");
       this._ctx = {
         pos: {
-          x: round4(safeReadF32(args[0])),
-          y: round4(safeReadF32(args[0].add(4))),
+          x: round4(safeReadF32(queryPosPtr)),
+          y: round4(safeReadF32(queryPosPtr.add(4))),
         },
         radius_f32: round4(argAsF32(args[1])),
         start_index: args[2] ? args[2].toInt32() : null,
+        projectile_index: projectileIndex,
+        projectile_owner_id: projectile && projectile.owner_id != null ? projectile.owner_id : null,
+        projectile_type_id: projectile && projectile.type_id != null ? projectile.type_id : null,
+        projectile_hit_radius: projectile && projectile.hit_radius != null ? projectile.hit_radius : null,
+        shock_chain_projectile_id: shockChainProjectileId == null ? null : shockChainProjectileId,
+        shock_chain_links_left: shockChainLinksLeft == null ? null : shockChainLinksLeft,
         caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
         caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
         backtrace: maybeBacktrace(this.context),
@@ -2949,23 +2994,56 @@ function installHooks() {
       const ctx = this._ctx;
       if (!ctx) return;
       const creatureIndex = retval ? retval.toInt32() : -1;
-      if (creatureIndex < 0) return;
-      const creature = readCreatureLifecycleEntry(creatureIndex);
-      const payload = {
-        creature_index: creatureIndex,
+      const ownerId = ctx.projectile_owner_id;
+      const ownerCollision =
+        creatureIndex >= 0 && ownerId != null && Number.isFinite(ownerId) && creatureIndex === ownerId;
+      const shockChainTracked =
+        ctx.projectile_index != null &&
+        ctx.shock_chain_projectile_id != null &&
+        ctx.projectile_index === ctx.shock_chain_projectile_id;
+      const playerFindSkipped = (creatureIndex < 0 || ownerCollision) && !!shockChainTracked;
+      const queryPayload = {
+        result_creature_index: creatureIndex >= 0 ? creatureIndex : null,
+        result_kind: creatureIndex < 0 ? "miss" : ownerCollision ? "owner_collision" : "hit",
         start_index: ctx.start_index,
         radius_f32: ctx.radius_f32,
         query_pos: ctx.pos,
-        creature: creature,
-        corpse_hit:
-          creature && creature.hp != null && Number.isFinite(creature.hp)
-            ? creature.hp <= 0
-            : null,
+        projectile_index: ctx.projectile_index,
+        projectile_owner_id: ctx.projectile_owner_id,
+        projectile_type_id: ctx.projectile_type_id,
+        projectile_hit_radius: ctx.projectile_hit_radius,
+        owner_collision: ownerCollision,
+        player_find_skipped: playerFindSkipped,
+        shock_chain_projectile_id: ctx.shock_chain_projectile_id,
+        shock_chain_links_left: ctx.shock_chain_links_left,
         caller: ctx.caller,
         caller_static: ctx.caller_static,
         backtrace: ctx.backtrace,
       };
       const tick = outState.currentTick;
+      if (tick && queryPayload.caller_static) {
+        bumpCounterMap(tick.projectile_find_query_callers, queryPayload.caller_static);
+      }
+      if (tick && creatureIndex < 0) tick.projectile_find_query_miss = (tick.projectile_find_query_miss || 0) + 1;
+      if (tick && ownerCollision) {
+        tick.projectile_find_query_owner_collision = (tick.projectile_find_query_owner_collision || 0) + 1;
+      }
+      addTickEvent(
+        "projectile_find_query",
+        queryPayload,
+        "pfq:" + String(creatureIndex >= 0 ? creatureIndex : -1)
+      );
+      emitRawEvent(Object.assign({ event: "projectile_find_query" }, queryPayload));
+      if (creatureIndex < 0) return;
+      const creature = readCreatureLifecycleEntry(creatureIndex);
+      const payload = Object.assign({}, queryPayload, {
+        creature_index: creatureIndex,
+        creature: creature,
+        corpse_hit:
+          creature && creature.hp != null && Number.isFinite(creature.hp)
+            ? creature.hp <= 0
+            : null,
+      });
       if (tick && payload.caller_static) {
         bumpCounterMap(tick.projectile_find_hit_callers, payload.caller_static);
       }

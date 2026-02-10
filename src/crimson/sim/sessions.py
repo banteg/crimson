@@ -65,6 +65,40 @@ class SurvivalDeterministicSession:
         elapsed_before_ms = float(self.elapsed_ms)
 
         rng_marks: dict[str, int] = {"before_world_step": int(state.rng.state)}
+        dt_sim_ms_value = float(dt_sim_ms)
+
+        def _mid_step_spawns() -> None:
+            # Native `survival_update` runs after gameplay world updates:
+            # - it observes current player XP/level (post-kill award),
+            # - it computes spawn interval from the pre-increment survival elapsed timer.
+            player_level = self.world.players[0].level if self.world.players else 1
+            stage, milestone_calls = advance_survival_spawn_stage(self.stage, player_level=int(player_level))
+            self.stage = stage
+            for call in milestone_calls:
+                self.world.creatures.spawn_template(
+                    int(call.template_id),
+                    call.pos,
+                    float(call.heading),
+                    state.rng,
+                    rand=state.rng.rand,
+                )
+            rng_marks["after_stage_spawns"] = int(state.rng.state)
+
+            player_xp = self.world.players[0].experience if self.world.players else 0
+            cooldown, wave_spawns = tick_survival_wave_spawns(
+                self.spawn_cooldown_ms,
+                dt_sim_ms_value,
+                state.rng,
+                player_count=len(self.world.players),
+                survival_elapsed_ms=float(elapsed_before_ms),
+                player_experience=int(player_xp),
+                terrain_width=int(self.world_size),
+                terrain_height=int(self.world_size),
+            )
+            self.spawn_cooldown_ms = cooldown
+            self.world.creatures.spawn_inits(wave_spawns)
+            rng_marks["after_wave_spawns"] = int(state.rng.state)
+
         step = run_deterministic_step(
             world=self.world,
             dt_frame=float(dt_frame),
@@ -81,6 +115,8 @@ class SurvivalDeterministicSession:
             demo_mode_active=bool(self.demo_mode_active),
             perk_progression_enabled=bool(self.perk_progression_enabled),
             game_tune_started=bool(self.game_tune_started),
+            defer_camera_shake_update=False,
+            mid_step_hook=_mid_step_spawns,
             rng_marks_out=rng_marks,
             trace_presentation_rng=bool(trace_rng),
         )
@@ -95,37 +131,7 @@ class SurvivalDeterministicSession:
 
         creature_count_world_step = sum(1 for creature in self.world.creatures.entries if creature.active)
         rng_marks["after_world_step"] = int(state.rng.state)
-
-        # Native `survival_update` runs after gameplay world updates:
-        # - it observes current player XP/level (post-kill award),
-        # - it computes spawn interval from the pre-increment survival elapsed timer.
-        player_level = self.world.players[0].level if self.world.players else 1
-        stage, milestone_calls = advance_survival_spawn_stage(self.stage, player_level=int(player_level))
-        self.stage = stage
-        for call in milestone_calls:
-            self.world.creatures.spawn_template(
-                int(call.template_id),
-                call.pos,
-                float(call.heading),
-                state.rng,
-                rand=state.rng.rand,
-            )
-        rng_marks["after_stage_spawns"] = int(state.rng.state)
-
-        player_xp = self.world.players[0].experience if self.world.players else 0
-        cooldown, wave_spawns = tick_survival_wave_spawns(
-            self.spawn_cooldown_ms,
-            dt_sim_ms,
-            state.rng,
-            player_count=len(self.world.players),
-            survival_elapsed_ms=float(elapsed_before_ms),
-            player_experience=int(player_xp),
-            terrain_width=int(self.world_size),
-            terrain_height=int(self.world_size),
-        )
-        self.spawn_cooldown_ms = cooldown
-        self.world.creatures.spawn_inits(wave_spawns)
-        rng_marks["after_wave_spawns"] = int(state.rng.state)
+        rng_marks["after_camera_update"] = int(rng_marks.get("ws_after_camera_update", state.rng.state))
         self.world.creatures.finalize_post_render_lifecycle()
         self.elapsed_ms = float(elapsed_before_ms) + float(dt_sim_ms)
 
@@ -168,6 +174,21 @@ class RushDeterministicSession:
 
         state = self.world.state
         rng_marks: dict[str, int] = {"before_world_step": int(state.rng.state)}
+
+        def _mid_step_spawns() -> None:
+            cooldown, spawns = tick_rush_mode_spawns(
+                self.spawn_cooldown_ms,
+                dt_frame_ms,
+                state.rng,
+                player_count=len(self.world.players),
+                survival_elapsed_ms=int(self.elapsed_ms),
+                terrain_width=float(self.world_size),
+                terrain_height=float(self.world_size),
+            )
+            self.spawn_cooldown_ms = cooldown
+            self.world.creatures.spawn_inits(spawns)
+            rng_marks["after_rush_spawns"] = int(state.rng.state)
+
         step = run_deterministic_step(
             world=self.world,
             dt_frame=float(dt_frame),
@@ -183,6 +204,8 @@ class RushDeterministicSession:
             demo_mode_active=False,
             perk_progression_enabled=False,
             game_tune_started=bool(self.game_tune_started),
+            defer_camera_shake_update=False,
+            mid_step_hook=_mid_step_spawns,
             rng_marks_out=rng_marks,
             trace_presentation_rng=bool(trace_rng),
         )
@@ -197,19 +220,7 @@ class RushDeterministicSession:
 
         creature_count_world_step = sum(1 for creature in self.world.creatures.entries if creature.active)
         rng_marks["after_world_step"] = int(state.rng.state)
-
-        cooldown, spawns = tick_rush_mode_spawns(
-            self.spawn_cooldown_ms,
-            dt_frame_ms,
-            state.rng,
-            player_count=len(self.world.players),
-            survival_elapsed_ms=int(self.elapsed_ms),
-            terrain_width=float(self.world_size),
-            terrain_height=float(self.world_size),
-        )
-        self.spawn_cooldown_ms = cooldown
-        self.world.creatures.spawn_inits(spawns)
-        rng_marks["after_rush_spawns"] = int(state.rng.state)
+        rng_marks["after_camera_update"] = int(rng_marks.get("ws_after_camera_update", state.rng.state))
         self.world.creatures.finalize_post_render_lifecycle()
 
         return DeterministicSessionTick(

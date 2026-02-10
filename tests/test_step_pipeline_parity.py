@@ -91,6 +91,7 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
             auto_pick_perks=False,
             game_mode=int(GameMode.SURVIVAL),
             perk_progression_enabled=True,
+            defer_camera_shake_update=True,
             rng_marks_out=world_step_marks,
         )
         world_events = world.last_events
@@ -182,6 +183,7 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
             auto_pick_perks=False,
             game_mode=int(GameMode.RUSH),
             perk_progression_enabled=False,
+            defer_camera_shake_update=True,
             rng_marks_out=world_step_marks,
         )
         world_events = world.last_events

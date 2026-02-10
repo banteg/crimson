@@ -96,6 +96,8 @@ class WorldState:
         *,
         dt_ms_i32: int | None = None,
         defer_camera_shake_update: bool = False,
+        defer_freeze_corpse_fx: bool = False,
+        mid_step_hook: Callable[[], None] | None = None,
         inputs: list[PlayerInput] | None,
         world_size: float,
         damage_scale_by_type: dict[int, float],
@@ -250,7 +252,6 @@ class WorldState:
                     hit_audio_game_tune_started = True
                 if keys:
                     hit_sfx.extend(keys)
-
         hits = self.state.projectiles.update(
             dt,
             self.creatures.entries,
@@ -277,7 +278,6 @@ class WorldState:
             on_detonation_kill=_on_secondary_detonation_kill,
         )
         _mark("ws_after_secondary_projectiles")
-
         for idx, player in enumerate(self.players):
             if idx >= len(prev_health):
                 continue
@@ -297,7 +297,6 @@ class WorldState:
                     fx_queue=fx_queue,
                     deaths=deaths,
                 )
-
         def _kill_creature_no_corpse(creature_index: int, owner_id: int) -> None:
             idx = int(creature_index)
             if not (0 <= idx < len(self.creatures.entries)):
@@ -348,17 +347,17 @@ class WorldState:
             if idx == 0:
                 _mark("ws_after_player_update_p0")
         _mark("ws_after_player_update")
-
         if dt > 0.0:
             self._advance_creature_anim(dt)
             self._advance_player_anim(dt, prev_positions)
-
+        if mid_step_hook is not None:
+            mid_step_hook()
         if not bool(defer_camera_shake_update):
             camera_shake_update(self.state, dt)
+        _mark("ws_after_camera_update")
         # Native latches `time_scale_active` late (post mode update, pre bonus decrement); next-frame dt uses it.
         self.state.time_scale_active = float(self.state.bonuses.reflex_boost) > 0.0
         bonus_update_pre_pickup_timers(self.state, dt)
-
         pickups = bonus_update(
             self.state,
             self.players,
@@ -367,6 +366,7 @@ class WorldState:
             update_hud=True,
             apply_creature_damage=_apply_projectile_damage_to_creature,
             detail_preset=int(detail_preset),
+            defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
         )
         if pickups:
             emit_bonus_pickup_effects(
@@ -375,7 +375,6 @@ class WorldState:
                 detail_preset=int(detail_preset),
             )
         _mark("ws_after_bonus_update")
-
         if perk_progression_enabled:
             survival_progression_update(
                 self.state,
@@ -386,7 +385,6 @@ class WorldState:
                 creatures=self.creatures.entries,
             )
         _mark("ws_after_progression")
-
         sfx = list(planned_death_sfx)
         sfx.extend(creature_result.sfx)
         if self.state.sfx_queue:
