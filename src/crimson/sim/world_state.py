@@ -202,6 +202,9 @@ class WorldState:
             idx = int(creature_index)
             if not (0 <= idx < len(self.creatures.entries)) or float(self.creatures.entries[idx].hp) > 0.0:
                 return
+            # Native detonation follow-up re-enters creature death handling but does
+            # not run a second death-SFX random pick (`creature_apply_damage` only
+            # does that on the original killing hit).
             self._record_creature_death(
                 creature_index=idx,
                 dt=float(dt),
@@ -210,6 +213,7 @@ class WorldState:
                 fx_queue=fx_queue,
                 deaths=deaths,
                 plan_death_sfx_now=_plan_death_sfx_now,
+                plan_death_sfx=False,
             )
         def _on_projectile_hit_pre(hit: ProjectileHit) -> ProjectileDecalPostCtx:
             return self._prepare_projectile_hit_presentation(
@@ -415,6 +419,7 @@ class WorldState:
         deaths: list[CreatureDeath],
         plan_death_sfx_now: Callable[[CreatureDeath], None],
         keep_corpse: bool = True,
+        plan_death_sfx: bool = True,
     ) -> None:
         death = self.creatures.handle_death(
             int(creature_index),
@@ -429,7 +434,8 @@ class WorldState:
             keep_corpse=bool(keep_corpse),
         )
         deaths.append(death)
-        plan_death_sfx_now(death)
+        if bool(plan_death_sfx):
+            plan_death_sfx_now(death)
 
     def _prepare_projectile_hit_presentation(
         self,

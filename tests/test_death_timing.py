@@ -7,7 +7,8 @@ from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.gameplay import PlayerState
-from crimson.projectiles import ProjectileTypeId
+from crimson.projectiles import ProjectileTypeId, SecondaryProjectileTypeId
+import crimson.sim.world_state as world_state_mod
 from crimson.sim.world_state import WorldState
 
 
@@ -54,3 +55,63 @@ def test_projectile_kill_awards_xp_same_step() -> None:
     assert len(events.deaths) == 1
     assert isinstance(events.deaths[0], CreatureDeath)
     assert events.deaths[0].xp_awarded == 10
+
+
+def test_detonation_followup_does_not_double_plan_death_sfx() -> None:
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=True,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
+
+    creature = world.creatures.entries[0]
+    creature.active = True
+    creature.type_id = 2
+    creature.pos = Vec2(256.0, 256.0)
+    creature.flags = CreatureFlags(0)
+    creature.hp = 25.0
+    creature.max_hp = 25.0
+    creature.size = 50.0
+    creature.reward_value = 0.0
+    creature.hitbox_size = 16.0
+
+    world.state.secondary_projectiles.spawn(
+        pos=Vec2(float(creature.pos.x), float(creature.pos.y)),
+        angle=0.0,
+        type_id=int(SecondaryProjectileTypeId.DETONATION),
+        time_to_live=1.0,
+        owner_id=-1,
+    )
+
+    calls: list[list[int | None]] = []
+    original = world_state_mod.plan_death_sfx_keys
+
+    def _fake_plan(deaths: tuple[object, ...] | list[object], *, rand: object) -> list[str]:
+        calls.append([getattr(death, "index", None) for death in deaths])
+        return ["death"] if deaths else []
+
+    world_state_mod.plan_death_sfx_keys = _fake_plan
+    try:
+        events = world.step(
+            0.1,
+            inputs=None,
+            world_size=world_size,
+            damage_scale_by_type={},
+            detail_preset=5,
+            fx_queue=FxQueue(),
+            fx_queue_rotated=FxQueueRotated(),
+            auto_pick_perks=False,
+            game_mode=int(GameMode.SURVIVAL),
+            perk_progression_enabled=False,
+        )
+    finally:
+        world_state_mod.plan_death_sfx_keys = original
+
+    # Native detonation follow-up re-enters creature death handling for side effects,
+    # but does not perform a second death-SFX random pick.
+    assert len(events.deaths) == 2
+    assert calls == [[0]]
+    assert events.sfx == ["death"]
