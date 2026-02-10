@@ -46,6 +46,9 @@ Notes:
 - Before detaching from a live Frida session, call `crimsonCaptureStop("manual_stop")`
   in the REPL and wait for the `capture_shutdown` log line.
 - Loader behavior is strict: truncated trailing JSON rows are rejected.
+- Entity `samples` payloads are strictly typed (`creatures`, `projectiles`,
+  `secondary_projectiles`, `bonuses`): schema/script drift should be fixed in
+  instrumentation and re-captured, not handled via parser fallbacks.
 - No top-level raw event stream is written; diagnostics stay in per-tick aggregates.
 
 ## Convert to checkpoints + replay

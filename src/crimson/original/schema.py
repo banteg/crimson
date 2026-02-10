@@ -518,11 +518,62 @@ class CaptureSnapshot(msgspec.Struct, forbid_unknown_fields=True):
     input_bindings: dict[str, object] = msgspec.field(default_factory=dict)
 
 
+class CaptureCreatureSample(msgspec.Struct, forbid_unknown_fields=True):
+    index: int
+    active: int
+    state_flag: int
+    collision_flag: int
+    hitbox_size: float
+    pos: CaptureVec2
+    hp: float
+    type_id: int
+    target_player: int
+    flags: int
+
+
+class CaptureProjectileSample(msgspec.Struct, forbid_unknown_fields=True):
+    index: int
+    active: int
+    angle: float
+    pos: CaptureVec2
+    vel: CaptureVec2
+    type_id: int
+    life_timer: float
+    speed_scale: float
+    damage_pool: float
+    hit_radius: float
+    base_damage: float
+    owner_id: int
+
+
+class CaptureSecondaryProjectileSample(msgspec.Struct, forbid_unknown_fields=True):
+    index: int
+    active: int
+    pos: CaptureVec2
+    life_timer: float
+    angle: float
+    vel: CaptureVec2
+    trail_timer: float
+    type_id: int
+    target_id: int
+
+
+class CaptureBonusSample(msgspec.Struct, forbid_unknown_fields=True):
+    index: int
+    bonus_id: int
+    state: int
+    time_left: float
+    time_max: float
+    pos: CaptureVec2
+    amount_f32: float
+    amount_i32: int
+
+
 class CaptureSamples(msgspec.Struct, forbid_unknown_fields=True):
-    creatures: list[dict[str, object]] = msgspec.field(default_factory=list)
-    projectiles: list[dict[str, object]] = msgspec.field(default_factory=list)
-    secondary_projectiles: list[dict[str, object]] = msgspec.field(default_factory=list)
-    bonuses: list[dict[str, object]] = msgspec.field(default_factory=list)
+    creatures: list[CaptureCreatureSample] = msgspec.field(default_factory=list)
+    projectiles: list[CaptureProjectileSample] = msgspec.field(default_factory=list)
+    secondary_projectiles: list[CaptureSecondaryProjectileSample] = msgspec.field(default_factory=list)
+    bonuses: list[CaptureBonusSample] = msgspec.field(default_factory=list)
 
 
 class CaptureEventCounts(msgspec.Struct, forbid_unknown_fields=True):
