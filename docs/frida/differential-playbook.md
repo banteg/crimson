@@ -5,7 +5,7 @@ tags:
   - workflow
 ---
 
-# New Session Playbook
+# Differential Playbook
 
 Use this when an agent is only given a new capture file (typically
 `artifacts/frida/share/gameplay_diff_capture.json`) and needs to continue
@@ -49,7 +49,7 @@ PY
 Notes:
 
 - Loader success is the gate. If it decodes cleanly, continue.
-- Missing terminal `capture_end` in a JSONL stream is a warning, not an automatic blocker.
+- Capture loading is strict: a truncated trailing JSONL row is a blocker and should be recaptured.
 
 ## 3) Decide session bookkeeping
 
@@ -72,9 +72,18 @@ uv run crimson original divergence-report \
   --window 24 \
   --lead-lookback 1024 \
   --run-summary-short \
+  --run-summary-focus-context \
+  --run-summary-focus-before 8 \
+  --run-summary-focus-after 4 \
   --run-summary-short-max-rows 30 \
   --json-out analysis/frida/reports/capture_<sha8>_baseline.json
 ```
+
+Then read the emitted `run_summary_focus_context` block first to orient around
+major gameplay events near the focus tick (bonus pickups, perk picks, level-up,
+weapon swaps, state transitions). This is the quickest way to confirm whether a
+suspected mechanic (for example `Evil Eyes`) was actually active before the
+first mismatch.
 
 ```bash
 uv run crimson original verify-capture \
@@ -158,4 +167,3 @@ stacking replay fallbacks when capture instrumentation is the real gap.
    - landed changes
    - next probe
 4. Commit with conventional commits style.
-

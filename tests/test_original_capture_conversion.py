@@ -149,6 +149,65 @@ def _base_tick(
     }
 
 
+def _sample_creature(*, index: int = 5) -> dict[str, object]:
+    return {
+        "index": int(index),
+        "active": 1,
+        "state_flag": 1,
+        "collision_flag": 1,
+        "hitbox_size": 16.0,
+        "pos": {"x": 10.0, "y": 20.0},
+        "hp": 100.0,
+        "type_id": 2,
+        "target_player": 0,
+        "flags": 0,
+    }
+
+
+def _sample_projectile(*, index: int = 7) -> dict[str, object]:
+    return {
+        "index": int(index),
+        "active": 1,
+        "angle": 0.5,
+        "pos": {"x": 15.0, "y": 25.0},
+        "vel": {"x": 3.0, "y": -2.0},
+        "type_id": 1,
+        "life_timer": 0.9,
+        "speed_scale": 1.0,
+        "damage_pool": 12.0,
+        "hit_radius": 9.0,
+        "base_damage": 5.0,
+        "owner_id": 0,
+    }
+
+
+def _sample_secondary_projectile(*, index: int = 9) -> dict[str, object]:
+    return {
+        "index": int(index),
+        "active": 1,
+        "pos": {"x": 17.0, "y": 27.0},
+        "life_timer": 0.8,
+        "angle": 0.2,
+        "vel": {"x": 1.0, "y": -1.0},
+        "trail_timer": 0.1,
+        "type_id": 3,
+        "target_id": -1,
+    }
+
+
+def _sample_bonus(*, index: int = 2) -> dict[str, object]:
+    return {
+        "index": int(index),
+        "bonus_id": 6,
+        "state": 0,
+        "time_left": 10.0,
+        "time_max": 10.0,
+        "pos": {"x": 30.0, "y": 40.0},
+        "amount_f32": 0.0,
+        "amount_i32": 0,
+    }
+
+
 def _capture_obj(*, ticks: list[dict[str, object]]) -> dict[str, object]:
     return {
         "script": "gameplay_diff_capture",
@@ -190,13 +249,6 @@ def _write_capture_stream(path: Path, *, meta: dict[str, object], ticks: list[di
     rows = [json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True)]
     rows.extend(
         json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True) for tick in ticks
-    )
-    rows.append(
-        json.dumps(
-            {"event": "capture_end", "reason": "manual_stop", "ticks_written": int(len(ticks))},
-            separators=(",", ":"),
-            sort_keys=True,
-        )
     )
     path.write_text("\n".join(rows) + "\n", encoding="utf-8")
 
@@ -243,7 +295,30 @@ def test_load_capture_supports_jsonl_stream_rows(tmp_path: Path) -> None:
     assert int(capture.ticks[0].tick_index) == 0
 
 
-def test_load_capture_stream_ignores_truncated_last_line(tmp_path: Path) -> None:
+def test_load_capture_stream_accepts_forward_compatible_config_fields(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    meta = {k: v for k, v in obj.items() if k != "ticks"}
+    meta["config"] = {
+        "log_mode": "truncate",
+        "console_all_events": True,
+        "console_events": ["start", "ready", "capture_shutdown"],
+        "include_caller": False,
+        "future_knob": 12345,
+    }
+    _write_capture_stream(path, meta=meta, ticks=[tick])
+
+    capture = load_capture(path)
+
+    assert capture.script == "gameplay_diff_capture"
+    assert capture.config.console_all_events is True
+    assert capture.config.console_events == ["start", "ready", "capture_shutdown"]
+    assert capture.config.include_caller is False
+    assert len(capture.ticks) == 1
+
+
+def test_load_capture_stream_rejects_truncated_last_line(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
@@ -251,20 +326,73 @@ def test_load_capture_stream_ignores_truncated_last_line(tmp_path: Path) -> None
     rows = [
         json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True),
         json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True),
-        '{"event":"capture_end","reason":"manual_stop"',
+        '{"event":"tick","tick"',
     ]
     path.write_text("\n".join(rows), encoding="utf-8")
 
-    capture = load_capture(path)
+    with pytest.raises(Exception):
+        load_capture(path)
 
-    assert capture.script == "gameplay_diff_capture"
-    assert len(capture.ticks) == 1
-    assert int(capture.ticks[0].tick_index) == 0
+
+def test_load_capture_stream_rejects_legacy_capture_end_row(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    meta = {k: v for k, v in obj.items() if k != "ticks"}
+    rows = [
+        json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True),
+        json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True),
+        json.dumps({"event": "capture_end", "reason": "manual_stop", "ticks_written": 1}, separators=(",", ":")),
+    ]
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+    with pytest.raises(Exception):
+        load_capture(path)
 
 
 def test_load_capture_rejects_unknown_fields(tmp_path: Path) -> None:
     obj = _capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)])
     obj["unexpected"] = 1
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    with pytest.raises(Exception):
+        load_capture(path)
+
+
+def test_load_capture_accepts_strict_typed_sample_rows(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    tick["samples"] = {
+        "creatures": [_sample_creature()],
+        "projectiles": [_sample_projectile()],
+        "secondary_projectiles": [_sample_secondary_projectile()],
+        "bonuses": [_sample_bonus()],
+    }
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+
+    samples = capture.ticks[0].samples
+    assert samples is not None
+    assert len(samples.creatures) == 1
+    assert len(samples.projectiles) == 1
+    assert len(samples.secondary_projectiles) == 1
+    assert len(samples.bonuses) == 1
+
+
+def test_load_capture_rejects_incomplete_sample_rows(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    bad_creature = _sample_creature()
+    del bad_creature["collision_flag"]
+    tick["samples"] = {
+        "creatures": [bad_creature],
+        "projectiles": [],
+        "secondary_projectiles": [],
+        "bonuses": [],
+    }
+    obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
 

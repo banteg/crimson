@@ -193,10 +193,33 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
             },
         },
         "samples": {
-            "creatures": [{"index": 5, "type_id": 2, "hp": 100.0, "hitbox_size": 16.0, "pos": {"x": 10.0, "y": 20.0}}],
+            "creatures": [
+                {
+                    "index": 5,
+                    "active": 1,
+                    "state_flag": 1,
+                    "collision_flag": 1,
+                    "hitbox_size": 16.0,
+                    "pos": {"x": 10.0, "y": 20.0},
+                    "hp": 100.0,
+                    "type_id": 2,
+                    "target_player": 0,
+                    "flags": 0,
+                }
+            ],
             "projectiles": [],
             "secondary_projectiles": [
-                {"index": 7, "type_id": 1, "target_id": -1, "life_timer": 0.9, "pos": {"x": 15.0, "y": 25.0}}
+                {
+                    "index": 7,
+                    "active": 1,
+                    "pos": {"x": 15.0, "y": 25.0},
+                    "life_timer": 0.9,
+                    "angle": 0.0,
+                    "vel": {"x": 0.0, "y": 0.0},
+                    "trail_timer": 0.0,
+                    "type_id": 1,
+                    "target_id": -1,
+                }
             ],
             "bonuses": [],
         },

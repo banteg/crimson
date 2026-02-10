@@ -253,3 +253,51 @@ def test_build_short_run_summary_events_prefers_key_kinds() -> None:
         "perk_pick",
         "bonus_pickup",
     ]
+
+
+def test_build_focus_run_summary_events_uses_short_kinds_around_focus() -> None:
+    report = _load_report_module()
+    events = [
+        report.RunSummaryEvent(tick_index=90, kind="debug_note", detail="ignored"),
+        report.RunSummaryEvent(tick_index=95, kind="bonus_pickup", detail="bonus"),
+        report.RunSummaryEvent(tick_index=98, kind="weapon_assign", detail="weapon"),
+        report.RunSummaryEvent(tick_index=100, kind="debug_note", detail="ignored focus"),
+        report.RunSummaryEvent(tick_index=101, kind="perk_pick", detail="perk"),
+        report.RunSummaryEvent(tick_index=106, kind="level_up", detail="lvl"),
+        report.RunSummaryEvent(tick_index=110, kind="state_transition", detail="state"),
+    ]
+
+    focus_events = report._build_focus_run_summary_events(
+        events,
+        focus_tick=100,
+        before_rows=2,
+        after_rows=2,
+    )
+
+    assert [(event.tick_index, event.kind) for event in focus_events] == [
+        (95, "bonus_pickup"),
+        (98, "weapon_assign"),
+        (101, "perk_pick"),
+        (106, "level_up"),
+    ]
+
+
+def test_build_focus_run_summary_events_falls_back_when_no_short_kinds() -> None:
+    report = _load_report_module()
+    events = [
+        report.RunSummaryEvent(tick_index=10, kind="debug_note", detail="a"),
+        report.RunSummaryEvent(tick_index=12, kind="debug_note", detail="b"),
+        report.RunSummaryEvent(tick_index=15, kind="debug_note", detail="c"),
+    ]
+
+    focus_events = report._build_focus_run_summary_events(
+        events,
+        focus_tick=12,
+        before_rows=1,
+        after_rows=1,
+    )
+
+    assert [(event.tick_index, event.kind, event.detail) for event in focus_events] == [
+        (12, "debug_note", "b"),
+        (15, "debug_note", "c"),
+    ]
