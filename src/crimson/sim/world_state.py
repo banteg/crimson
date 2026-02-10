@@ -95,6 +95,7 @@ class WorldState:
         dt: float,
         *,
         dt_ms_i32: int | None = None,
+        defer_camera_shake_update: bool = False,
         inputs: list[PlayerInput] | None,
         world_size: float,
         damage_scale_by_type: dict[int, float],
@@ -148,10 +149,8 @@ class WorldState:
         _mark("ws_after_creatures")
         deaths = list(creature_result.deaths)
         planned_death_sfx: list[str] = []
-        planned_death_sfx_cap = 3
+        planned_death_sfx_cap = 5
         def _plan_death_sfx_now(death: CreatureDeath) -> None:
-            if len(planned_death_sfx) >= planned_death_sfx_cap:
-                return
             keys = plan_death_sfx_keys([death], rand=self.state.rng.rand)
             if not keys:
                 return
@@ -354,7 +353,8 @@ class WorldState:
             self._advance_creature_anim(dt)
             self._advance_player_anim(dt, prev_positions)
 
-        camera_shake_update(self.state, dt)
+        if not bool(defer_camera_shake_update):
+            camera_shake_update(self.state, dt)
         # Native latches `time_scale_active` late (post mode update, pre bonus decrement); next-frame dt uses it.
         self.state.time_scale_active = float(self.state.bonuses.reflex_boost) > 0.0
         bonus_update_pre_pickup_timers(self.state, dt)
