@@ -14,8 +14,9 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim.geom import Vec2
 from grim.view import ViewContext
 
-from ..gameplay import _creature_find_in_radius, perk_count_get
+from ..gameplay import PlayerInput, _creature_find_in_radius, perk_count_get
 from ..game_world import GameWorld
+from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..persistence.highscores import HighScoreRecord
 from ..perks import PerkId
 from ..ui.game_over import GameOverUi
@@ -90,6 +91,7 @@ class BaseGameplayMode:
         self._cursor_pulse_time = 0.0
         self._last_dt_ms = 0.0
         self._screen_fade: _ScreenFade | None = None
+        self._local_input = LocalInputInterpreter()
 
     def _cvar_float(self, name: str, default: float = 0.0) -> float:
         console = self._console
@@ -260,6 +262,7 @@ class BaseGameplayMode:
         self._world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._world.open()
         self._bind_world()
+        self._local_input.reset(players=self._world.players)
 
         self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
         self._cursor_pulse_time = 0.0
@@ -325,3 +328,16 @@ class BaseGameplayMode:
             return
         alpha = int(255 * max(0.0, min(1.0, fade_alpha)))
         rl.draw_rectangle(0, 0, int(rl.get_screen_width()), int(rl.get_screen_height()), rl.Color(0, 0, 0, alpha))
+
+    def _build_local_inputs(self, *, dt_frame: float) -> list[PlayerInput]:
+        return self._local_input.build_frame_inputs(
+            players=self._world.players,
+            config=self._config,
+            mouse_screen=self._ui_mouse,
+            screen_to_world=self._world.screen_to_world,
+            dt_frame=float(dt_frame),
+        )
+
+    @staticmethod
+    def _clear_local_input_edges(inputs: list[PlayerInput]) -> list[PlayerInput]:
+        return clear_input_edges(inputs)

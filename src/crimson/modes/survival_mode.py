@@ -19,13 +19,16 @@ from grim.view import ViewContext
 from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..gameplay import (
-    PlayerInput,
     survival_check_level_up,
     weapon_assign_player,
 )
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
-from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
+from ..input_codes import (
+    config_keybinds_for_player,
+    input_code_is_down_for_player,
+    input_code_is_pressed_for_player,
+)
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, draw_ui_text, load_perk_menu_assets
 from ..weapons import WEAPON_BY_ID
 from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
@@ -377,35 +380,6 @@ class SurvivalMode(BaseGameplayMode):
         weapon_id = int(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
         weapon_assign_player(self._player, weapon_id, state=self._state)
 
-    def _build_input(self) -> PlayerInput:
-        keybinds = config_keybinds(self._config)
-        if not keybinds:
-            keybinds = (0x11, 0x1F, 0x1E, 0x20, 0x100)
-        up_key, down_key, left_key, right_key, fire_key = player_move_fire_binds(keybinds, 0)
-
-        move = Vec2(
-            float(input_code_is_down(right_key)) - float(input_code_is_down(left_key)),
-            float(input_code_is_down(down_key)) - float(input_code_is_down(up_key)),
-        )
-
-        mouse = self._ui_mouse_pos()
-        aim = self._camera_screen_to_world(Vec2.from_xy(mouse))
-
-        fire_down = input_code_is_down(fire_key)
-        fire_pressed = input_code_is_pressed(fire_key)
-        reload_key = 0x102
-        if self._config is not None:
-            reload_key = int(self._config.data.get("keybind_reload", reload_key) or reload_key)
-        reload_pressed = input_code_is_pressed(reload_key)
-
-        return PlayerInput(
-            move=move,
-            aim=aim,
-            fire_down=fire_down,
-            fire_pressed=fire_pressed,
-            reload_pressed=reload_pressed,
-        )
-
     def _player_name_default(self) -> str:
         config = self._config
         if config is None:
@@ -502,23 +476,25 @@ class SurvivalMode(BaseGameplayMode):
                 mouse = self._ui_mouse_pos()
                 self._perk_prompt_hover = rect.contains(mouse)
 
-            keybinds = config_keybinds(self._config)
-            if not keybinds:
-                keybinds = (0x11, 0x1F, 0x1E, 0x20, 0x100)
-            _up_key, _down_key, _left_key, _right_key, fire_key = player_move_fire_binds(keybinds, 0)
+            player0_binds = config_keybinds_for_player(self._config, player_index=0)
+            fire_key = 0x100
+            if len(player0_binds) >= 5:
+                fire_key = int(player0_binds[4])
 
             pick_key = 0x101
             if self._config is not None:
                 pick_key = int(self._config.data.get("keybind_pick_perk", pick_key) or pick_key)
 
-            if input_code_is_pressed(pick_key) and (not input_code_is_down(fire_key)):
+            if input_code_is_pressed_for_player(pick_key, player_index=0) and (
+                not input_code_is_down_for_player(fire_key, player_index=0)
+            ):
                 self._perk_prompt_pulse = 1000.0
                 if self._replay_recorder is not None:
                     self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
                 opened = self._perk_menu.open_if_available(perk_ctx)
                 if opened and self._replay_recorder is not None:
                     self._replay_recorder.record_perk_menu_open(player_index=0)
-            elif self._perk_prompt_hover and input_code_is_pressed(fire_key):
+            elif self._perk_prompt_hover and input_code_is_pressed_for_player(fire_key, player_index=0):
                 self._perk_prompt_pulse = 1000.0
                 if self._replay_recorder is not None:
                     self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
@@ -555,8 +531,7 @@ class SurvivalMode(BaseGameplayMode):
             return
 
         dt_tick = float(self._sim_clock.dt_tick)
-        input_frame = self._build_input()
-        input_tick = input_frame
+        input_frame = self._build_local_inputs(dt_frame=dt_frame)
         session = self._sim_session
         if session is None:
             return
@@ -576,16 +551,7 @@ class SurvivalMode(BaseGameplayMode):
         session.fx_toggle = int(fx_toggle)
 
         for tick_offset in range(int(ticks_to_run)):
-            if tick_offset:
-                input_tick = PlayerInput(
-                    move=input_frame.move,
-                    aim=input_frame.aim,
-                    fire_down=bool(input_frame.fire_down),
-                    fire_pressed=False,
-                    reload_pressed=False,
-                )
-
-            inputs = [input_tick for _ in self._world.players]
+            inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
             recorder = self._replay_recorder
             if recorder is not None:
                 tick_index = recorder.record_tick(inputs)

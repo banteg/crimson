@@ -28,7 +28,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Main menu buttons + animations (Play/Options/Stats/Mods/Quit) with panel/back slide animation.
 - Play Game panel (mode select + player count dropdown + tooltips + F1 “times played” overlay).
 - Quest select menu UI (stage icons + hardcore toggle gating + quest list + counts overlay; quest gameplay wired).
-- Options panel (volume/detail/mouse sliders + “UI Info texts”; Controls dropdowns + direction-arrow checkbox are interactive, while key/axis rebinding is still pending).
+- Options panel (volume/detail/mouse sliders + “UI Info texts”; Controls supports 1..4 player selection, per-player direction-arrow toggle, and right-panel key/button/axis rebinding).
 - Statistics panel (Summary/Weapons/Quests pages; playtime + weapon usage + quest counters).
 - Menu terrain persists between screens (no regen on Options/Stats/etc navigation).
 - Menu sign shadow pass matches the original when `fx_detail` is enabled.
@@ -118,6 +118,7 @@ See also:
 - [Module map (Grim vs Crimson)](module-map.md)
 - [Deterministic simulation PRD](deterministic-sim-prd.md)
 - [Deterministic step pipeline](deterministic-step-pipeline.md)
+- [Local multiplayer rewrite notes](local-multiplayer.md)
 - [Float parity policy](float-parity-policy.md)
 - [Terrain (rewrite)](terrain.md)
 - [Bonus pickups (rewrite)](bonuses.md)
@@ -128,7 +129,7 @@ See also:
 
 - Creature runtime parity gaps: remaining AI edge cases and per-weapon behaviors are still pending.
 - Some gameplay SFX/events are still missing (perk UI selection sound, ranged enemy fire SFX).
-- Multiplayer (2-4 players): multiple players spawn, but inputs are currently mirrored (shared controls).
+- Multiplayer (2-4 players): per-player local input is wired in Survival/Rush/Quest; deep scheme-by-scheme parity validation is still in progress.
 - `game.cfg` progression/unlock wiring and some statistics counters are still incomplete.
 - Full Options/Controls parity (video/window mode editing, full widget set).
 - Online scores + mods/plugin interface (tracked but not yet implemented).

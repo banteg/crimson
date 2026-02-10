@@ -76,6 +76,7 @@ CREATURE_DEATH_TIMER_DECAY = 28.0
 CREATURE_CORPSE_FADE_DECAY = 20.0
 CREATURE_CORPSE_DESPAWN_HITBOX = -10.0
 CREATURE_DEATH_SLIDE_SCALE = 9.0
+_TARGET_REEVAL_PERIOD = 0x46
 
 _CREATURE_CONTACT_SFX: dict[CreatureTypeId, tuple[str, str]] = {
     CreatureTypeId.ZOMBIE: ("sfx_zombie_attack_01", "sfx_zombie_attack_02"),
@@ -445,6 +446,7 @@ class CreaturePool:
         self.effects = effects
         self.kill_count = 0
         self.spawned_count = 0
+        self._update_tick = 0
 
     @property
     def entries(self) -> list[CreatureState]:
@@ -456,6 +458,7 @@ class CreaturePool:
         self.spawn_slots.clear()
         self.kill_count = 0
         self.spawned_count = 0
+        self._update_tick = 0
 
     def iter_active(self) -> list[CreatureState]:
         return [entry for entry in self._entries if entry.active and entry.hp > 0.0]
@@ -490,6 +493,50 @@ class CreaturePool:
         if rand is not None:
             return int(rand()) % len(self._entries)
         return len(self._entries) - 1
+
+    def _resolve_target_player_index(self, creature: CreatureState, players: list[PlayerState]) -> int:
+        player_count = len(players)
+        if player_count <= 1:
+            creature.target_player = 0
+            return 0
+
+        target_player = int(creature.target_player)
+        if not (0 <= target_player < player_count):
+            target_player = 0
+
+        # Native 2-player behavior: periodically switch to P2 if alive and closer,
+        # and always flip when the current target dies.
+        if player_count == 2:
+            if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
+                other = 1 - target_player
+                if float(players[other].health) > 0.0:
+                    cur_dist_sq = Vec2.distance_sq(creature.pos, players[target_player].pos)
+                    other_dist_sq = Vec2.distance_sq(creature.pos, players[other].pos)
+                    if other_dist_sq < cur_dist_sq:
+                        target_player = other
+            if float(players[target_player].health) <= 0.0:
+                target_player = 1 - target_player
+            creature.target_player = int(target_player)
+            return int(target_player)
+
+        # 3/4-player extension: keep deterministic nearest-alive targeting with the
+        # same periodic refresh/dead-target refresh policy as native 2-player mode.
+        needs_refresh = (self._update_tick % _TARGET_REEVAL_PERIOD) != 0 or float(players[target_player].health) <= 0.0
+        if needs_refresh:
+            nearest_idx = -1
+            nearest_dist_sq = 0.0
+            for idx, player in enumerate(players):
+                if float(player.health) <= 0.0:
+                    continue
+                dist_sq = Vec2.distance_sq(creature.pos, player.pos)
+                if nearest_idx < 0 or dist_sq < nearest_dist_sq:
+                    nearest_idx = int(idx)
+                    nearest_dist_sq = float(dist_sq)
+            if nearest_idx >= 0:
+                target_player = nearest_idx
+
+        creature.target_player = int(target_player)
+        return int(target_player)
 
     def spawn_init(self, init: CreatureInit, *, rand: Callable[[], int] | None = None) -> int:
         """Materialize a single `CreatureInit` into the runtime pool."""
@@ -657,6 +704,7 @@ class CreaturePool:
         deaths: list[CreatureDeath] = []
         spawned: list[int] = []
         sfx: list[str] = []
+        self._update_tick = int(self._update_tick) + 1
 
         evil_target = -1
         if players and perk_active(players[0], PerkId.EVIL_EYES):
@@ -787,10 +835,7 @@ class CreaturePool:
                             )
                         continue
 
-            target_player = int(creature.target_player)
-            if not (0 <= target_player < len(players)):
-                target_player = 0
-                creature.target_player = 0
+            target_player = self._resolve_target_player_index(creature, players)
             player = players[target_player]
 
             if players and perk_active(players[0], PerkId.RADIOACTIVE):

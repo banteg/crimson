@@ -165,6 +165,7 @@ from .frontend.panels.play_game import PlayGameMenuView
 from .frontend.panels.stats import StatisticsMenuView
 from .frontend.pause_menu import PauseMenuView
 from .frontend.transitions import _draw_screen_fade, _update_screen_fade
+from .input_codes import input_begin_frame
 from .persistence.save_status import GameStatus, ensure_game_status
 from .ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
 from .ui.menu_panel import draw_classic_menu_panel
@@ -1437,10 +1438,16 @@ class QuestResultsView:
         record.shots_fired = fired
         record.shots_hit = hit
 
+        player_health_values = tuple(float(v) for v in getattr(outcome, "player_health_values", ()) or ())
+        if len(player_health_values) == 0:
+            player_health_values = (float(outcome.player_health),)
+            if outcome.player2_health is not None:
+                player_health_values = player_health_values + (float(outcome.player2_health),)
         breakdown = compute_quest_final_time(
             base_time_ms=int(outcome.base_time_ms),
             player_health=float(outcome.player_health),
             player2_health=(float(outcome.player2_health) if outcome.player2_health is not None else None),
+            player_health_values=player_health_values,
             pending_perk_count=int(outcome.pending_perk_count),
         )
         record.survival_elapsed_ms = int(breakdown.final_time_ms)
@@ -2731,9 +2738,17 @@ class HighScoresView:
             )
 
         # Values (static in the oracle).
+        player_count = int(self._state.config.data.get("player_count", 1) or 1)
+        if player_count < 1:
+            player_count = 1
+        if player_count > 4:
+            player_count = 4
+        player_count_label = f"{player_count} player"
+        if player_count != 1:
+            player_count_label += "s"
         draw_small_text(
             font,
-            "1 player",
+            player_count_label,
             right_top_left + Vec2(HS_RIGHT_PLAYER_COUNT_VALUE_X * scale, HS_RIGHT_PLAYER_COUNT_VALUE_Y * scale),
             text_scale,
             text_color,
@@ -3209,6 +3224,7 @@ class GameLoopView:
         return self._state.quit_requested
 
     def update(self, dt: float) -> None:
+        input_begin_frame()
         console = self._state.console
         console.handle_hotkey()
         console.update(dt)
