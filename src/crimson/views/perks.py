@@ -17,7 +17,6 @@ from ..gameplay import (
 from ..perks import PERK_BY_ID, PerkId, perk_display_description, perk_display_name
 from ..ui.menu_panel import draw_classic_menu_panel
 from ..ui.perk_menu import (
-    PERK_MENU_DESC_TEXT_SCALE,
     PerkMenuLayout,
     UiButtonState,
     button_draw,
@@ -341,12 +340,11 @@ class PerkSelectionView:
 
         selected = choices[self._perk_menu_selected]
         desc = perk_display_description(int(selected))
-        desc_scale = scale * PERK_MENU_DESC_TEXT_SCALE
         draw_wrapped_ui_text_in_rect(
             self._small,
             desc,
             rect=computed.desc,
-            scale=desc_scale,
+            scale=scale,
             color=UI_TEXT_COLOR,
         )
 

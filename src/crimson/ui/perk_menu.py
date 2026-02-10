@@ -42,9 +42,6 @@ MENU_DESC_Y_EXTRA_TIGHTEN = 20.0
 MENU_BUTTON_X = 162.0
 MENU_BUTTON_Y = 276.0
 MENU_DESC_RIGHT_X = 480.0
-# `perk_selection_screen_update` draws description text through `grim_draw_text_small`
-# with no extra local downscale.
-PERK_MENU_DESC_TEXT_SCALE = 1.0
 
 
 @dataclass(slots=True)
