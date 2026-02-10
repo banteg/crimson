@@ -126,7 +126,10 @@ _JOYS_BUTTON_CODES: dict[int, int] = {
 _AXIS_CODE_TO_AXIS: dict[int, int] = {
     0x13F: int(rl.GamepadAxis.GAMEPAD_AXIS_LEFT_X),
     0x140: int(rl.GamepadAxis.GAMEPAD_AXIS_LEFT_Y),
-    0x141: int(rl.GamepadAxis.GAMEPAD_AXIS_RIGHT_X),
+    # Native Grim maps 0x141 and 0x153 to distinct joystick state fields
+    # (lZ vs lRx in grim_get_config_float @ 0x100071b0), so keep them distinct.
+    # On raylib backends this is approximated with separate right-stick axes.
+    0x141: int(rl.GamepadAxis.GAMEPAD_AXIS_RIGHT_Y),
     0x153: int(rl.GamepadAxis.GAMEPAD_AXIS_RIGHT_X),
     0x154: int(rl.GamepadAxis.GAMEPAD_AXIS_RIGHT_Y),
     0x155: int(rl.GamepadAxis.GAMEPAD_AXIS_RIGHT_TRIGGER),
@@ -169,8 +172,10 @@ class _PressedState:
     wheel_down: bool = False
 
     def begin_frame(self) -> None:
-        self.prev_down = self.down
-        self.down = {}
+        # Keep last-known key state for keys that are not polled every frame.
+        # This preserves edge semantics across temporary input-query gaps and
+        # matches the native latch-style behavior used by input_primary_just_pressed.
+        self.prev_down = dict(self.down)
         self.pressed_cache = {}
         wheel_move = float(rl.get_mouse_wheel_move())
         self.wheel_up = wheel_move > 0.0
