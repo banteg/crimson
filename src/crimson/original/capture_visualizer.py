@@ -60,6 +60,7 @@ class _EntityDraw:
     y: float
     radius: float
     active: bool = True
+    filled: bool = False
 
 
 @dataclass(slots=True)
@@ -423,18 +424,22 @@ class CaptureVisualizerView:
         samples = row.samples
         if samples is not None:
             for sample in samples.creatures:
+                hitbox_radius = float(sample.hitbox_size) * 0.5
                 capture_creatures[int(sample.index)] = _EntityDraw(
                     x=_finite(sample.pos.x),
                     y=_finite(sample.pos.y),
-                    radius=_norm_radius(float(sample.hitbox_size) * 0.5, default=8.0),
+                    radius=_norm_radius(float(hitbox_radius), default=8.0),
                     active=bool(int(sample.active) != 0),
+                    filled=bool(math.isfinite(hitbox_radius) and float(hitbox_radius) < 0.0),
                 )
             for sample in samples.projectiles:
+                hit_radius = float(sample.hit_radius)
                 capture_projectiles[int(sample.index)] = _EntityDraw(
                     x=_finite(sample.pos.x),
                     y=_finite(sample.pos.y),
-                    radius=_norm_radius(float(sample.hit_radius), default=3.0),
+                    radius=_norm_radius(float(hit_radius), default=3.0),
                     active=bool(int(sample.active) != 0),
+                    filled=bool(math.isfinite(hit_radius) and float(hit_radius) < 0.0),
                 )
             for sample in samples.secondary_projectiles:
                 capture_secondary[int(sample.index)] = _EntityDraw(
@@ -448,22 +453,26 @@ class CaptureVisualizerView:
         for idx, creature in enumerate(self._world.creatures.entries):
             if not bool(creature.active):
                 continue
+            hitbox_radius = float(creature.hitbox_size) * 0.5
             rewrite_creatures[int(idx)] = _EntityDraw(
                 x=_finite(creature.pos.x),
                 y=_finite(creature.pos.y),
-                radius=_norm_radius(float(creature.hitbox_size) * 0.5, default=8.0),
+                radius=_norm_radius(float(hitbox_radius), default=8.0),
                 active=True,
+                filled=bool(math.isfinite(hitbox_radius) and float(hitbox_radius) < 0.0),
             )
 
         rewrite_projectiles: dict[int, _EntityDraw] = {}
         for idx, projectile in enumerate(self._world.state.projectiles.entries):
             if not bool(projectile.active):
                 continue
+            hit_radius = float(projectile.hit_radius)
             rewrite_projectiles[int(idx)] = _EntityDraw(
                 x=_finite(projectile.pos.x),
                 y=_finite(projectile.pos.y),
-                radius=_norm_radius(float(projectile.hit_radius), default=3.0),
+                radius=_norm_radius(float(hit_radius), default=3.0),
                 active=True,
+                filled=bool(math.isfinite(hit_radius) and float(hit_radius) < 0.0),
             )
 
         rewrite_secondary: dict[int, _EntityDraw] = {}
@@ -624,13 +633,19 @@ class CaptureVisualizerView:
                     x=float(capture.x), y=float(capture.y), width=width, height=height
                 )
                 rr = self._radius_to_screen(float(capture.radius), width=width, height=height)
-                rl.draw_circle_lines(int(cx), int(cy), float(rr), capture_color)
+                if bool(capture.filled):
+                    rl.draw_circle(int(cx), int(cy), float(rr), capture_color)
+                else:
+                    rl.draw_circle_lines(int(cx), int(cy), float(rr), capture_color)
             if self._show_rewrite_hitboxes and rewrite is not None and bool(rewrite.active):
                 rx, ry = self._world_to_screen(
                     x=float(rewrite.x), y=float(rewrite.y), width=width, height=height
                 )
                 rr = self._radius_to_screen(float(rewrite.radius), width=width, height=height)
-                rl.draw_circle_lines(int(rx), int(ry), float(rr), rewrite_color)
+                if bool(rewrite.filled):
+                    rl.draw_circle(int(rx), int(ry), float(rr), rewrite_color)
+                else:
+                    rl.draw_circle_lines(int(rx), int(ry), float(rr), rewrite_color)
 
             if (
                 self._show_divergence
