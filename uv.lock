@@ -149,7 +149,7 @@ wheels = [
 
 [[package]]
 name = "crimsonland"
-version = "0.1.0.dev23"
+version = "0.1.0.dev24"
 source = { editable = "." }
 dependencies = [
     { name = "construct" },
