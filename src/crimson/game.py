@@ -153,7 +153,7 @@ from .frontend.menu import (
     _draw_menu_cursor,
     ensure_menu_ground,
 )
-from .frontend.panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from .frontend.panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .frontend.panels.alien_zookeeper import AlienZooKeeperView
 from .frontend.panels.controls import ControlsMenuView
 from .frontend.panels.credits import CreditsView
@@ -349,6 +349,11 @@ class QuestsMenuView:
         self._action: str | None = None
         self._dirty = False
         self._cursor_pulse_time = 0.0
+        self._timeline_ms = 0
+        self._timeline_max_ms = PANEL_TIMELINE_START_MS
+        self._closing = False
+        self._close_action: str | None = None
+        self._panel_open_sfx_played = False
 
     def open(self) -> None:
         layout_w = float(self._state.config.screen_width)
@@ -379,6 +384,11 @@ class QuestsMenuView:
         self._dirty = False
         self._stage = max(1, min(5, int(self._stage)))
         self._cursor_pulse_time = 0.0
+        self._timeline_ms = 0
+        self._timeline_max_ms = PANEL_TIMELINE_START_MS
+        self._closing = False
+        self._close_action = None
+        self._panel_open_sfx_played = False
         self._back_button = UiButtonState("Back")
 
         # Ensure the quest registry is populated so titles render.
@@ -406,6 +416,23 @@ class QuestsMenuView:
         if self._ground is not None:
             self._ground.process_pending()
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
+        dt_ms = int(min(float(dt), 0.1) * 1000.0)
+
+        if self._closing:
+            if dt_ms > 0 and self._action is None:
+                self._timeline_ms -= dt_ms
+                if self._timeline_ms < 0 and self._close_action is not None:
+                    self._action = self._close_action
+                    self._close_action = None
+            return
+
+        if dt_ms > 0:
+            self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
+            if self._timeline_ms >= self._timeline_max_ms:
+                self._state.menu_sign_locked = True
+                if (not self._panel_open_sfx_played) and (self._state.audio is not None):
+                    play_sfx(self._state.audio, "sfx_ui_panelclick", rng=self._state.rng)
+                    self._panel_open_sfx_played = True
 
         config = self._state.config
         status = self._state.status
@@ -424,8 +451,13 @@ class QuestsMenuView:
                 status.quest_unlock_index_full = unlock
             self._state.console.log.log("debug: unlocked all quests")
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._action = "open_play_game"
+        enabled = self._timeline_ms >= self._timeline_max_ms
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
+            self._begin_close_transition("open_play_game")
+            return
+
+        if not enabled:
             return
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
@@ -463,7 +495,7 @@ class QuestsMenuView:
                 mouse=mouse,
                 click=bool(click),
             ):
-                self._action = "open_play_game"
+                self._begin_close_transition("open_play_game")
                 return
 
         # Quick-select row numbers 1..0 (10).
@@ -485,6 +517,7 @@ class QuestsMenuView:
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
             self._ground.draw(Vec2())
+        _draw_screen_fade(self._state)
 
         self._draw_panel()
         self._draw_sign()
@@ -507,10 +540,17 @@ class QuestsMenuView:
         self._ground = ensure_menu_ground(self._state)
 
     def _layout(self) -> _QuestMenuLayout:
+        _angle_rad, slide_x = MenuView._ui_element_anim(
+            self,
+            index=1,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+            width=MENU_PANEL_WIDTH,
+        )
         # `sub_447d40` base sums:
         #   x_sum = <ui_element_x> + <ui_element_offset_x>  (x=-5)
         #   y_sum = <ui_element_y> + <ui_element_offset_y>  (y=185 + widescreen shift via ui_menu_layout_init)
-        x_sum = QUEST_MENU_BASE_X + QUEST_MENU_PANEL_OFFSET_X
+        x_sum = QUEST_MENU_BASE_X + slide_x + QUEST_MENU_PANEL_OFFSET_X
         y_sum = QUEST_MENU_BASE_Y + MENU_PANEL_OFFSET_Y + self._widescreen_y_shift
 
         title_pos = Vec2(x_sum + QUEST_TITLE_X_OFFSET, y_sum + QUEST_TITLE_Y_OFFSET)
@@ -623,7 +663,7 @@ class QuestsMenuView:
         self._state.pending_quest_level = level
         self._state.config.data["game_mode"] = 3
         self._dirty = True
-        self._action = "start_quest"
+        self._begin_close_transition("start_quest")
 
     def _quest_title(self, stage: int, row: int) -> str:
         level = f"{int(stage)}.{int(row) + 1}"
@@ -877,17 +917,35 @@ class QuestsMenuView:
         panel = self._panel_tex
         if panel is None:
             return
+        _angle_rad, slide_x = MenuView._ui_element_anim(
+            self,
+            index=1,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+            width=MENU_PANEL_WIDTH,
+        )
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         draw_classic_menu_panel(
             panel,
             dst=rl.Rectangle(
-                float(QUEST_MENU_BASE_X + QUEST_MENU_PANEL_OFFSET_X),
+                float(QUEST_MENU_BASE_X + slide_x + QUEST_MENU_PANEL_OFFSET_X),
                 float(QUEST_MENU_BASE_Y + MENU_PANEL_OFFSET_Y + self._widescreen_y_shift),
                 float(MENU_PANEL_WIDTH),
                 float(QUEST_PANEL_HEIGHT),
             ),
             shadow=fx_detail,
         )
+
+    def _begin_close_transition(self, action: str) -> None:
+        if self._closing:
+            return
+        if action in FADE_TO_GAME_ACTIONS:
+            self._state.screen_fade_alpha = 0.0
+            self._state.screen_fade_ramp = True
+        if self._state.audio is not None:
+            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+        self._closing = True
+        self._close_action = action
 
 
 class FrontView(Protocol):
