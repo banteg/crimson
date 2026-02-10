@@ -24,7 +24,7 @@ from crimson.original.capture import (
     load_capture,
 )
 from crimson.original.schema import CaptureTick
-from crimson.replay.types import Replay, UnknownEvent
+from crimson.replay.types import Replay, UnknownEvent, unpack_input_flags, unpack_packed_player_input
 from crimson.sim.runners.common import (
     build_damage_scale_by_type,
     build_empty_fx_queues,
@@ -102,12 +102,6 @@ def _norm_radius(value: float, *, default: float = 4.0) -> float:
     if not math.isfinite(radius) or radius <= 0.0:
         return float(default)
     return max(1.0, radius)
-
-
-def _bool_or_none(value: object) -> bool | None:
-    if value is None:
-        return None
-    return bool(value)
 
 
 def _load_capture_events(replay: Replay) -> tuple[dict[int, list[object]], bool]:
@@ -218,8 +212,6 @@ class CaptureVisualizerView:
 
         self._world: WorldState | None = None
         self._session: SurvivalDeterministicSession | None = None
-        self._previous_fire_down: list[bool] = []
-        self._previous_reload_active: list[bool] = []
         self._bootstrap_world()
 
     def should_close(self) -> bool:
@@ -260,9 +252,6 @@ class CaptureVisualizerView:
 
         self._world = world
         self._session = session
-        player_count = max(1, int(self._replay.header.player_count))
-        self._previous_fire_down = [False for _ in range(player_count)]
-        self._previous_reload_active = [False for _ in range(player_count)]
         self._row_cursor = -1
         self._snapshot = None
         self._trace_histories.clear()
@@ -310,84 +299,30 @@ class CaptureVisualizerView:
             rl.unload_texture(self._small.texture)
             self._small = None
 
-    def _build_inputs_from_capture(self, row: CaptureTick) -> list[PlayerInput]:
-        player_count = len(self._previous_fire_down)
-        approx_by_player = {int(sample.player_index): sample for sample in row.input_approx}
-        keys_by_player = {int(sample.player_index): sample for sample in row.input_player_keys}
+    def _build_inputs_from_replay(self, tick_index: int) -> list[PlayerInput]:
+        player_count = max(1, int(self._replay.header.player_count))
+        if 0 <= int(tick_index) < len(self._replay.inputs):
+            packed_tick = self._replay.inputs[int(tick_index)]
+        else:
+            packed_tick = []
         out: list[PlayerInput] = []
 
         for player_index in range(player_count):
-            sample = approx_by_player.get(int(player_index))
-            key_row = keys_by_player.get(int(player_index))
-
-            move_x = _finite(sample.move_dx if sample is not None else 0.0)
-            move_y = _finite(sample.move_dy if sample is not None else 0.0)
-
-            if sample is not None:
-                aim_x = _finite(sample.aim_x)
-                aim_y = _finite(sample.aim_y)
+            if int(player_index) < len(packed_tick):
+                mx, my, ax, ay, flags = unpack_packed_player_input(packed_tick[int(player_index)])
+                fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
             else:
-                aim_x = 0.0
-                aim_y = 0.0
-            if (aim_x == 0.0 and aim_y == 0.0) and int(player_index) < len(row.checkpoint.players):
-                player = row.checkpoint.players[int(player_index)]
-                aim_x = float(player.pos.x)
-                aim_y = float(player.pos.y)
-
-            fire_down_raw = sample.fire_down if sample is not None else None
-            fire_pressed_raw = sample.fire_pressed if sample is not None else None
-            reload_pressed_raw = sample.reload_pressed if sample is not None else None
-            if key_row is not None:
-                if fire_down_raw is None:
-                    fire_down_raw = key_row.fire_down
-                if fire_pressed_raw is None:
-                    fire_pressed_raw = key_row.fire_pressed
-                if reload_pressed_raw is None:
-                    reload_pressed_raw = key_row.reload_pressed
-
-            fired_events = int(sample.fired_events) if sample is not None else 0
-            fire_down = bool(fire_down_raw) if fire_down_raw is not None else fired_events > 0
-            fire_pressed = bool(fire_pressed_raw) if fire_pressed_raw is not None else fired_events > 0
-
-            reload_active = (
-                bool(sample.reload_active)
-                if sample is not None and sample.reload_active is not None
-                else False
-            )
-            reload_pressed = bool(reload_pressed_raw) if reload_pressed_raw is not None else False
-
-            if player_index == 0:
-                input_primary_edge_true_calls = int(row.input_queries.stats.primary_edge.true_calls)
-                input_primary_down_true_calls = int(row.input_queries.stats.primary_down.true_calls)
-                if fire_down_raw is None:
-                    fire_down = bool(
-                        fire_down
-                        or int(input_primary_down_true_calls) > 0
-                        or int(input_primary_edge_true_calls) > 0
-                    )
-                if fire_pressed_raw is None:
-                    fire_pressed = bool(fire_pressed or int(input_primary_edge_true_calls) > 0)
-
-            if not fire_pressed:
-                fire_pressed = bool(fire_down and not self._previous_fire_down[player_index])
-
-            if reload_pressed_raw is None:
-                synth_reload_edge = bool(
-                    bool(reload_active) and not bool(self._previous_reload_active[player_index])
-                )
-                if player_index == 0 and synth_reload_edge and (bool(fire_down) or bool(fire_pressed)):
-                    synth_reload_edge = False
-                reload_pressed = bool(synth_reload_edge)
-
-            self._previous_fire_down[player_index] = bool(fire_down)
-            self._previous_reload_active[player_index] = bool(reload_active)
-
-            # Keep movement on the analog path intentionally: this visualizer drives
-            # sim directly from captured movement vectors, not replay input packing.
+                mx = 0.0
+                my = 0.0
+                ax = 0.0
+                ay = 0.0
+                fire_down = False
+                fire_pressed = False
+                reload_pressed = False
             out.append(
                 PlayerInput(
-                    move=Vec2(float(move_x), float(move_y)),
-                    aim=Vec2(float(aim_x), float(aim_y)),
+                    move=Vec2(float(mx), float(my)),
+                    aim=Vec2(float(ax), float(ay)),
                     fire_down=bool(fire_down),
                     fire_pressed=bool(fire_pressed),
                     reload_pressed=bool(reload_pressed),
@@ -432,7 +367,7 @@ class CaptureVisualizerView:
             world=self._world,
             strict_events=False,
         )
-        inputs = self._build_inputs_from_capture(row)
+        inputs = self._build_inputs_from_replay(tick_index)
         self._session.step_tick(
             dt_frame=float(dt_tick),
             dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
@@ -846,7 +781,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Visualize capture-vs-rewrite divergence with hitbox overlays and movement traces "
-            "(capture-driven sim inputs, no replay input packing)."
+            "(replay-packed sim inputs with capture overlays)."
         ),
     )
     parser.add_argument("capture", type=Path, help="capture file (.json/.json.gz)")
