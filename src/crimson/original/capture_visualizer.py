@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import argparse
 import math
-from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 import pyray as rl
+from raylib import defines as rd
 
 from grim.app import run_view
 from grim.assets import find_paq_path
@@ -14,7 +14,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
-from crimson.gameplay import PlayerInput
+from crimson.gameplay import BonusEntry, PlayerInput, bonus_label_for_entry
 from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     build_capture_dt_frame_ms_i32_overrides,
@@ -47,12 +47,15 @@ _CAPTURE_HITBOX_COLOR = rl.Color(84, 230, 170, 220)
 _REWRITE_HITBOX_COLOR = rl.Color(255, 130, 130, 220)
 _CAPTURE_PLAYER_COLOR = rl.Color(84, 220, 255, 235)
 _REWRITE_PLAYER_COLOR = rl.Color(255, 190, 90, 235)
+_CAPTURE_BONUS_COLOR = rl.Color(120, 240, 255, 225)
+_REWRITE_BONUS_COLOR = rl.Color(255, 196, 120, 225)
 _DIVERGENCE_LINE_COLOR = rl.Color(255, 240, 130, 220)
 _BACKGROUND_COLOR = rl.Color(14, 16, 21, 255)
 _GRID_COLOR = rl.Color(36, 40, 50, 255)
 _TEXT_COLOR = rl.Color(240, 242, 248, 255)
 _TEXT_DIM_COLOR = rl.Color(185, 190, 202, 255)
 _PROJECTILE_TRACE_RESET_DIST = 80.0
+_BONUS_DRAW_RADIUS = 12.0
 _MIN_PLAYBACK_SPEED_EXP = -4
 _MAX_PLAYBACK_SPEED_EXP = 4
 
@@ -67,21 +70,17 @@ class _EntityDraw:
 
 
 @dataclass(slots=True)
-class _TraceHistory:
-    max_age_ticks: int
-    capture: deque[tuple[int, float, float]] = field(default_factory=deque)
-    rewrite: deque[tuple[int, float, float]] = field(default_factory=deque)
-    capture_last_tick: int | None = None
-    rewrite_last_tick: int | None = None
-    capture_was_active: bool = False
-    rewrite_was_active: bool = False
+class _TraceLayer:
+    lifetime_ticks: int
+    rt: rl.RenderTexture | None = None
 
 
 @dataclass(slots=True)
-class _DetachedTrace:
-    points: deque[tuple[int, float, float]]
-    max_age_ticks: int
-    last_active_tick: int
+class _BonusDraw:
+    x: float
+    y: float
+    label: str
+    active: bool = True
 
 
 @dataclass(slots=True)
@@ -95,6 +94,8 @@ class _FrameSnapshot:
     rewrite_projectiles: dict[int, _EntityDraw]
     capture_secondary: dict[int, _EntityDraw]
     rewrite_secondary: dict[int, _EntityDraw]
+    capture_bonuses: dict[int, _BonusDraw]
+    rewrite_bonuses: dict[int, _BonusDraw]
     capture_sample_counts: dict[str, int]
 
 
@@ -224,9 +225,13 @@ class CaptureVisualizerView:
 
         self._row_cursor = -1
         self._snapshot: _FrameSnapshot | None = None
-        self._trace_histories: dict[str, _TraceHistory] = {}
-        self._detached_capture_traces: list[_DetachedTrace] = []
-        self._detached_rewrite_traces: list[_DetachedTrace] = []
+        self._player_traces = _TraceLayer(lifetime_ticks=int(self._player_trace_length))
+        self._creature_traces = _TraceLayer(lifetime_ticks=int(self._creature_trace_length))
+        self._projectile_traces = _TraceLayer(lifetime_ticks=int(self._projectile_trace_length))
+        self._trace_prev_capture: dict[str, tuple[int, float, float]] = {}
+        self._trace_prev_rewrite: dict[str, tuple[int, float, float]] = {}
+        self._trace_rt_size: tuple[int, int] = (0, 0)
+        self._trace_fade_dt = 0.0
         self._accumulator = 0.0
         self._paused = False
         self._show_traces = True
@@ -279,9 +284,10 @@ class CaptureVisualizerView:
         self._session = session
         self._row_cursor = -1
         self._snapshot = None
-        self._trace_histories.clear()
-        self._detached_capture_traces.clear()
-        self._detached_rewrite_traces.clear()
+        self._trace_prev_capture.clear()
+        self._trace_prev_rewrite.clear()
+        self._trace_fade_dt = 0.0
+        self._clear_trace_layers()
         self._accumulator = 0.0
 
         for idx in range(0, int(self._visible_start_idx)):
@@ -322,9 +328,58 @@ class CaptureVisualizerView:
             self._small = None
 
     def close(self) -> None:
+        self._unload_trace_layers()
         if self._small is not None:
             rl.unload_texture(self._small.texture)
             self._small = None
+
+    def _trace_layers(self) -> tuple[_TraceLayer, _TraceLayer, _TraceLayer]:
+        return (self._player_traces, self._creature_traces, self._projectile_traces)
+
+    def _clear_trace_layers(self) -> None:
+        for layer in self._trace_layers():
+            rt = layer.rt
+            if rt is None or int(getattr(rt, "id", 0)) <= 0:
+                continue
+            rl.begin_texture_mode(rt)
+            rl.clear_background(rl.Color(0, 0, 0, 0))
+            rl.end_texture_mode()
+
+    def _unload_trace_layers(self) -> None:
+        for layer in self._trace_layers():
+            rt = layer.rt
+            if rt is not None and int(getattr(rt, "id", 0)) > 0:
+                rl.unload_render_texture(rt)
+            layer.rt = None
+        self._trace_rt_size = (0, 0)
+
+    def _ensure_trace_layers(self, *, width: int, height: int) -> None:
+        width = int(max(1, width))
+        height = int(max(1, height))
+        resized = self._trace_rt_size != (int(width), int(height))
+
+        for layer in self._trace_layers():
+            rt = layer.rt
+            if (
+                rt is not None
+                and int(getattr(rt, "id", 0)) > 0
+                and int(getattr(getattr(rt, "texture", None), "width", 0)) == int(width)
+                and int(getattr(getattr(rt, "texture", None), "height", 0)) == int(height)
+            ):
+                continue
+            if rt is not None and int(getattr(rt, "id", 0)) > 0:
+                rl.unload_render_texture(rt)
+            layer.rt = rl.load_render_texture(int(width), int(height))
+            rl.begin_texture_mode(layer.rt)
+            rl.clear_background(rl.Color(0, 0, 0, 0))
+            rl.end_texture_mode()
+            resized = True
+
+        if resized:
+            self._trace_rt_size = (int(width), int(height))
+            # Render target space changed; avoid cross-resolution bridge segments.
+            self._trace_prev_capture.clear()
+            self._trace_prev_rewrite.clear()
 
     def _build_inputs_from_replay(self, tick_index: int) -> list[PlayerInput]:
         player_count = max(1, int(self._replay.header.player_count))
@@ -447,6 +502,7 @@ class CaptureVisualizerView:
         capture_creatures: dict[int, _EntityDraw] = {}
         capture_projectiles: dict[int, _EntityDraw] = {}
         capture_secondary: dict[int, _EntityDraw] = {}
+        capture_bonuses: dict[int, _BonusDraw] = {}
         samples = row.samples
         if samples is not None:
             for sample in samples.creatures:
@@ -473,6 +529,21 @@ class CaptureVisualizerView:
                     y=_finite(sample.pos.y),
                     radius=3.5,
                     active=bool(int(sample.active) != 0),
+                )
+            for sample in samples.bonuses:
+                bonus_id = int(sample.bonus_id)
+                state = int(sample.state)
+                active = bool(bonus_id > 0 and state >= 0)
+                if not active:
+                    continue
+                capture_bonuses[int(sample.index)] = _BonusDraw(
+                    x=_finite(sample.pos.x),
+                    y=_finite(sample.pos.y),
+                    label=self._bonus_label_from_capture_sample(
+                        bonus_id=int(bonus_id),
+                        amount_i32=int(sample.amount_i32),
+                    ),
+                    active=True,
                 )
 
         rewrite_creatures: dict[int, _EntityDraw] = {}
@@ -512,10 +583,23 @@ class CaptureVisualizerView:
                 active=True,
             )
 
+        rewrite_bonuses: dict[int, _BonusDraw] = {}
+        for idx, entry in enumerate(self._world.state.bonus_pool.entries):
+            bonus_id = int(entry.bonus_id)
+            if bonus_id <= 0:
+                continue
+            rewrite_bonuses[int(idx)] = _BonusDraw(
+                x=_finite(entry.pos.x),
+                y=_finite(entry.pos.y),
+                label=self._bonus_label_from_entry(entry),
+                active=True,
+            )
+
         sample_counts = {
             "creatures": int(len(capture_creatures)),
             "projectiles": int(len(capture_projectiles)),
             "secondary_projectiles": int(len(capture_secondary)),
+            "bonuses": int(len(capture_bonuses)),
         }
         return _FrameSnapshot(
             tick_index=int(row.tick_index),
@@ -527,108 +611,129 @@ class CaptureVisualizerView:
             rewrite_projectiles=rewrite_projectiles,
             capture_secondary=capture_secondary,
             rewrite_secondary=rewrite_secondary,
+            capture_bonuses=capture_bonuses,
+            rewrite_bonuses=rewrite_bonuses,
             capture_sample_counts=sample_counts,
         )
 
-    def _trace_length_for_key(self, key: str) -> int:
+    @staticmethod
+    def _bonus_label_from_entry(entry: BonusEntry) -> str:
+        try:
+            return str(bonus_label_for_entry(entry))
+        except Exception:
+            return "Bonus"
+
+    def _bonus_label_from_capture_sample(self, *, bonus_id: int, amount_i32: int) -> str:
+        return self._bonus_label_from_entry(
+            BonusEntry(
+                bonus_id=int(bonus_id),
+                amount=int(amount_i32),
+            )
+        )
+
+    def _trace_layer_for_key(self, key: str) -> _TraceLayer:
         if key.startswith("p:"):
-            return int(self._player_trace_length)
+            return self._player_traces
         if key.startswith("c:"):
-            return int(self._creature_trace_length)
-        # Both projectile pools (primary + secondary) use the projectile horizon.
-        return int(self._projectile_trace_length)
+            return self._creature_traces
+        # Both projectile pools (primary + secondary) use the projectile layer.
+        return self._projectile_traces
 
     @staticmethod
     def _is_projectile_trace_key(key: str) -> bool:
         return key.startswith("pr:") or key.startswith("spr:")
 
     @staticmethod
-    def _jump_distance_sq(
-        points: deque[tuple[int, float, float]],
-        *,
-        x: float,
-        y: float,
-    ) -> float:
-        if not points:
-            return 0.0
-        _, prev_x, prev_y = points[-1]
-        dx = float(x) - float(prev_x)
-        dy = float(y) - float(prev_y)
+    def _dist_sq(x0: float, y0: float, x1: float, y1: float) -> float:
+        dx = float(x1) - float(x0)
+        dy = float(y1) - float(y0)
         return float(dx * dx + dy * dy)
 
     @staticmethod
-    def _detach_points(
-        out: list[_DetachedTrace],
-        *,
-        points: deque[tuple[int, float, float]],
-        max_age_ticks: int,
-        last_active_tick: int | None,
-    ) -> None:
-        if not points:
+    def _apply_mul_fade(rt: rl.RenderTexture, *, alpha: int) -> None:
+        if int(alpha) <= 0:
             return
-        last_tick = int(last_active_tick) if last_active_tick is not None else int(points[-1][0])
-        out.append(
-            _DetachedTrace(
-                points=deque(points, maxlen=max(1, int(max_age_ticks))),
-                max_age_ticks=max(1, int(max_age_ticks)),
-                last_active_tick=int(last_tick),
-            )
+        width = int(max(1, getattr(rt.texture, "width", 1)))
+        height = int(max(1, getattr(rt.texture, "height", 1)))
+        rl.begin_texture_mode(rt)
+        rl.rl_set_blend_factors_separate(
+            rd.RL_ZERO,
+            rd.RL_ONE_MINUS_SRC_ALPHA,
+            rd.RL_ZERO,
+            rd.RL_ONE_MINUS_SRC_ALPHA,
+            rd.RL_FUNC_ADD,
+            rd.RL_FUNC_ADD,
         )
-
-    @staticmethod
-    def _prune_trace_points(
-        points: deque[tuple[int, float, float]],
-        *,
-        current_tick: int,
-        max_age_ticks: int,
-    ) -> None:
-        if not points:
-            return
-        min_tick = int(current_tick) - max(1, int(max_age_ticks)) + 1
-        while points and int(points[0][0]) < int(min_tick):
-            points.popleft()
-
-    def _prune_traces(self, *, current_tick: int) -> None:
-        if not self._trace_histories:
-            return
-        stale_keys: list[str] = []
-        for key, trace in self._trace_histories.items():
-            self._prune_trace_points(
-                trace.capture,
-                current_tick=int(current_tick),
-                max_age_ticks=int(trace.max_age_ticks),
-            )
-            self._prune_trace_points(
-                trace.rewrite,
-                current_tick=int(current_tick),
-                max_age_ticks=int(trace.max_age_ticks),
-            )
-            if not trace.capture and not trace.rewrite:
-                stale_keys.append(str(key))
-        for key in stale_keys:
-            self._trace_histories.pop(str(key), None)
-        self._detached_capture_traces = [
-            trace
-            for trace in self._detached_capture_traces
-            if self._prune_detached_trace(trace, current_tick=int(current_tick))
-        ]
-        self._detached_rewrite_traces = [
-            trace
-            for trace in self._detached_rewrite_traces
-            if self._prune_detached_trace(trace, current_tick=int(current_tick))
-        ]
-
-    def _prune_detached_trace(self, trace: _DetachedTrace, *, current_tick: int) -> bool:
-        self._prune_trace_points(
-            trace.points,
-            current_tick=int(current_tick),
-            max_age_ticks=int(trace.max_age_ticks),
+        rl.begin_blend_mode(rl.BlendMode.BLEND_CUSTOM_SEPARATE)
+        rl.rl_set_blend_factors_separate(
+            rd.RL_ZERO,
+            rd.RL_ONE_MINUS_SRC_ALPHA,
+            rd.RL_ZERO,
+            rd.RL_ONE_MINUS_SRC_ALPHA,
+            rd.RL_FUNC_ADD,
+            rd.RL_FUNC_ADD,
         )
-        if not trace.points:
-            return False
-        if int(current_tick) - int(trace.last_active_tick) > int(trace.max_age_ticks):
-            return False
-        return True
+        rl.draw_rectangle(0, 0, int(width), int(height), rl.Color(0, 0, 0, int(alpha)))
+        rl.end_blend_mode()
+        rl.end_texture_mode()
+
+    def _fade_trace_layers(self, *, sim_dt: float) -> None:
+        if sim_dt <= 0.0:
+            return
+        for layer in self._trace_layers():
+            rt = layer.rt
+            if rt is None or int(getattr(rt, "id", 0)) <= 0:
+                continue
+            duration = max(float(self._step_interval), float(layer.lifetime_ticks) * float(self._step_interval))
+            decay = math.exp(-max(0.0, float(sim_dt)) * math.log(256.0) / duration)
+            fade_alpha = int(round((1.0 - decay) * 255.0))
+            self._apply_mul_fade(rt, alpha=int(fade_alpha))
+
+    def _draw_trace_layers(self, *, width: int, height: int) -> None:
+        dst = rl.Rectangle(0.0, 0.0, float(width), float(height))
+        # Draw in this order so player trails remain easiest to read.
+        for layer in (self._creature_traces, self._projectile_traces, self._player_traces):
+            rt = layer.rt
+            if rt is None or int(getattr(rt, "id", 0)) <= 0:
+                continue
+            src = rl.Rectangle(
+                0.0,
+                0.0,
+                float(getattr(rt.texture, "width", width)),
+                -float(getattr(rt.texture, "height", height)),
+            )
+            rl.draw_texture_pro(rt.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+
+    def _trace_thickness_for_layer(self, layer: _TraceLayer) -> float:
+        if layer is self._player_traces:
+            return 3.0
+        return 1.0
+
+    def _stamp_trace_segment(
+        self,
+        *,
+        layer: _TraceLayer,
+        x0: float,
+        y0: float,
+        x1: float,
+        y1: float,
+        width: int,
+        height: int,
+        color: rl.Color,
+    ) -> None:
+        rt = layer.rt
+        if rt is None or int(getattr(rt, "id", 0)) <= 0:
+            return
+        sx0, sy0 = self._world_to_screen(x=float(x0), y=float(y0), width=width, height=height)
+        sx1, sy1 = self._world_to_screen(x=float(x1), y=float(y1), width=width, height=height)
+        rl.begin_texture_mode(rt)
+        rl.draw_line_ex(
+            rl.Vector2(float(sx0), float(sy0)),
+            rl.Vector2(float(sx1), float(sy1)),
+            float(self._trace_thickness_for_layer(layer)),
+            color,
+        )
+        rl.end_texture_mode()
 
     def _append_trace_point(
         self,
@@ -637,96 +742,145 @@ class CaptureVisualizerView:
         tick_index: int,
         capture: _EntityDraw | None,
         rewrite: _EntityDraw | None,
+        width: int,
+        height: int,
     ) -> None:
-        trace = self._trace_histories.get(key)
-        if trace is None:
-            trace_length = int(self._trace_length_for_key(key))
-            trace = _TraceHistory(
-                max_age_ticks=int(trace_length),
-                capture=deque(maxlen=trace_length),
-                rewrite=deque(maxlen=trace_length),
-            )
-            self._trace_histories[key] = trace
-        tick_index = int(tick_index)
+        layer = self._trace_layer_for_key(key)
         projectile_key = bool(self._is_projectile_trace_key(key))
+
         capture_active = capture is not None and bool(capture.active)
         if capture_active and capture is not None:
-            capture_x = float(capture.x)
-            capture_y = float(capture.y)
-            reset_capture = not bool(trace.capture_was_active)
-            if trace.capture_last_tick is not None and int(tick_index) - int(trace.capture_last_tick) > 1:
-                # Prevent slot reuse/inactivity gaps from stitching two different lifetimes.
-                reset_capture = True
-            if projectile_key and trace.capture:
-                jump_sq = self._jump_distance_sq(trace.capture, x=float(capture_x), y=float(capture_y))
-                if jump_sq > float(_PROJECTILE_TRACE_RESET_DIST * _PROJECTILE_TRACE_RESET_DIST):
-                    reset_capture = True
-            if reset_capture:
-                self._detach_points(
-                    self._detached_capture_traces,
-                    points=trace.capture,
-                    max_age_ticks=int(trace.max_age_ticks),
-                    last_active_tick=trace.capture_last_tick,
-                )
-                trace.capture.clear()
-            trace.capture.append((int(tick_index), float(capture_x), float(capture_y)))
-            trace.capture_last_tick = int(tick_index)
-        trace.capture_was_active = bool(capture_active)
+            cx = float(capture.x)
+            cy = float(capture.y)
+            prev = self._trace_prev_capture.get(key)
+            if prev is not None:
+                prev_tick, px, py = prev
+                if int(tick_index) - int(prev_tick) == 1:
+                    if (not projectile_key) or (
+                        self._dist_sq(float(px), float(py), float(cx), float(cy))
+                        <= float(_PROJECTILE_TRACE_RESET_DIST * _PROJECTILE_TRACE_RESET_DIST)
+                    ):
+                        self._stamp_trace_segment(
+                            layer=layer,
+                            x0=float(px),
+                            y0=float(py),
+                            x1=float(cx),
+                            y1=float(cy),
+                            width=width,
+                            height=height,
+                            color=_CAPTURE_TRACE_COLOR,
+                        )
+            self._trace_prev_capture[key] = (int(tick_index), float(cx), float(cy))
+        else:
+            self._trace_prev_capture.pop(key, None)
 
         rewrite_active = rewrite is not None and bool(rewrite.active)
         if rewrite_active and rewrite is not None:
-            rewrite_x = float(rewrite.x)
-            rewrite_y = float(rewrite.y)
-            reset_rewrite = not bool(trace.rewrite_was_active)
-            if trace.rewrite_last_tick is not None and int(tick_index) - int(trace.rewrite_last_tick) > 1:
-                reset_rewrite = True
-            if projectile_key and trace.rewrite:
-                jump_sq = self._jump_distance_sq(trace.rewrite, x=float(rewrite_x), y=float(rewrite_y))
-                if jump_sq > float(_PROJECTILE_TRACE_RESET_DIST * _PROJECTILE_TRACE_RESET_DIST):
-                    reset_rewrite = True
-            if reset_rewrite:
-                self._detach_points(
-                    self._detached_rewrite_traces,
-                    points=trace.rewrite,
-                    max_age_ticks=int(trace.max_age_ticks),
-                    last_active_tick=trace.rewrite_last_tick,
-                )
-                trace.rewrite.clear()
-            trace.rewrite.append((int(tick_index), float(rewrite_x), float(rewrite_y)))
-            trace.rewrite_last_tick = int(tick_index)
-        trace.rewrite_was_active = bool(rewrite_active)
+            rx = float(rewrite.x)
+            ry = float(rewrite.y)
+            prev = self._trace_prev_rewrite.get(key)
+            if prev is not None:
+                prev_tick, px, py = prev
+                if int(tick_index) - int(prev_tick) == 1:
+                    if (not projectile_key) or (
+                        self._dist_sq(float(px), float(py), float(rx), float(ry))
+                        <= float(_PROJECTILE_TRACE_RESET_DIST * _PROJECTILE_TRACE_RESET_DIST)
+                    ):
+                        self._stamp_trace_segment(
+                            layer=layer,
+                            x0=float(px),
+                            y0=float(py),
+                            x1=float(rx),
+                            y1=float(ry),
+                            width=width,
+                            height=height,
+                            color=_REWRITE_TRACE_COLOR,
+                        )
+            self._trace_prev_rewrite[key] = (int(tick_index), float(rx), float(ry))
+        else:
+            self._trace_prev_rewrite.pop(key, None)
 
     def _append_traces(self, snapshot: _FrameSnapshot) -> None:
         tick_index = int(snapshot.tick_index)
-        self._prune_traces(current_tick=int(tick_index))
+        width = int(rl.get_screen_width())
+        height = int(rl.get_screen_height())
+        if width > 0 and height > 0:
+            self._ensure_trace_layers(width=width, height=height)
+
+        capture_keys_seen: set[str] = set()
+        rewrite_keys_seen: set[str] = set()
+
         for idx in sorted(set(snapshot.capture_players) | set(snapshot.rewrite_players)):
+            key = f"p:{int(idx)}"
+            capture = snapshot.capture_players.get(int(idx))
+            rewrite = snapshot.rewrite_players.get(int(idx))
+            if capture is not None and bool(capture.active):
+                capture_keys_seen.add(str(key))
+            if rewrite is not None and bool(rewrite.active):
+                rewrite_keys_seen.add(str(key))
             self._append_trace_point(
-                f"p:{int(idx)}",
+                key,
                 tick_index=int(tick_index),
-                capture=snapshot.capture_players.get(int(idx)),
-                rewrite=snapshot.rewrite_players.get(int(idx)),
+                capture=capture,
+                rewrite=rewrite,
+                width=width,
+                height=height,
             )
         for idx in sorted(set(snapshot.capture_creatures) | set(snapshot.rewrite_creatures)):
+            key = f"c:{int(idx)}"
+            capture = snapshot.capture_creatures.get(int(idx))
+            rewrite = snapshot.rewrite_creatures.get(int(idx))
+            if capture is not None and bool(capture.active):
+                capture_keys_seen.add(str(key))
+            if rewrite is not None and bool(rewrite.active):
+                rewrite_keys_seen.add(str(key))
             self._append_trace_point(
-                f"c:{int(idx)}",
+                key,
                 tick_index=int(tick_index),
-                capture=snapshot.capture_creatures.get(int(idx)),
-                rewrite=snapshot.rewrite_creatures.get(int(idx)),
+                capture=capture,
+                rewrite=rewrite,
+                width=width,
+                height=height,
             )
         for idx in sorted(set(snapshot.capture_projectiles) | set(snapshot.rewrite_projectiles)):
+            key = f"pr:{int(idx)}"
+            capture = snapshot.capture_projectiles.get(int(idx))
+            rewrite = snapshot.rewrite_projectiles.get(int(idx))
+            if capture is not None and bool(capture.active):
+                capture_keys_seen.add(str(key))
+            if rewrite is not None and bool(rewrite.active):
+                rewrite_keys_seen.add(str(key))
             self._append_trace_point(
-                f"pr:{int(idx)}",
+                key,
                 tick_index=int(tick_index),
-                capture=snapshot.capture_projectiles.get(int(idx)),
-                rewrite=snapshot.rewrite_projectiles.get(int(idx)),
+                capture=capture,
+                rewrite=rewrite,
+                width=width,
+                height=height,
             )
         for idx in sorted(set(snapshot.capture_secondary) | set(snapshot.rewrite_secondary)):
+            key = f"spr:{int(idx)}"
+            capture = snapshot.capture_secondary.get(int(idx))
+            rewrite = snapshot.rewrite_secondary.get(int(idx))
+            if capture is not None and bool(capture.active):
+                capture_keys_seen.add(str(key))
+            if rewrite is not None and bool(rewrite.active):
+                rewrite_keys_seen.add(str(key))
             self._append_trace_point(
-                f"spr:{int(idx)}",
+                key,
                 tick_index=int(tick_index),
-                capture=snapshot.capture_secondary.get(int(idx)),
-                rewrite=snapshot.rewrite_secondary.get(int(idx)),
+                capture=capture,
+                rewrite=rewrite,
+                width=width,
+                height=height,
             )
+
+        for key in list(self._trace_prev_capture):
+            if str(key) not in capture_keys_seen:
+                self._trace_prev_capture.pop(str(key), None)
+        for key in list(self._trace_prev_rewrite):
+            if str(key) not in rewrite_keys_seen:
+                self._trace_prev_rewrite.pop(str(key), None)
 
     def _advance_one_tick(self) -> bool:
         if self._row_cursor >= self._visible_end_idx:
@@ -788,11 +942,14 @@ class CaptureVisualizerView:
 
     def update(self, dt: float) -> None:
         self._handle_input()
+        sim_dt = max(0.0, float(dt)) * float(self._playback_speed)
+        self._trace_fade_dt = 0.0
         if self._paused:
             return
         if self._row_cursor >= self._visible_end_idx:
             return
-        self._accumulator += max(0.0, float(dt)) * float(self._playback_speed)
+        self._trace_fade_dt = float(sim_dt)
+        self._accumulator += float(sim_dt)
         while self._accumulator >= float(self._step_interval):
             self._accumulator -= float(self._step_interval)
             if not self._advance_one_tick():
@@ -809,67 +966,6 @@ class CaptureVisualizerView:
     def _radius_to_screen(self, radius: float, *, width: int, height: int) -> float:
         scale = min(float(width), float(height)) / float(self._world_size)
         return max(1.0, float(radius) * scale)
-
-    def _draw_trace(
-        self,
-        points: deque[tuple[int, float, float]],
-        *,
-        last_active_tick: int | None,
-        current_tick: int,
-        max_age_ticks: int,
-        width: int,
-        height: int,
-        color: rl.Color,
-    ) -> None:
-        if len(points) < 2:
-            return
-        point_list = list(points)
-        inactive_progress = 0.0
-        if last_active_tick is not None and int(current_tick) > int(last_active_tick):
-            inactive_age = int(current_tick) - int(last_active_tick)
-            inactive_progress = min(1.0, float(inactive_age) / float(max(1, int(max_age_ticks))))
-        if inactive_progress >= 1.0:
-            return
-
-        start_pos = float(inactive_progress) * float(len(point_list) - 1)
-        start_idx = int(math.floor(start_pos))
-        start_frac = float(start_pos) - float(start_idx)
-        if start_idx >= len(point_list) - 1:
-            return
-
-        draw_points: list[tuple[int, float, float]]
-        if start_frac > 0.0:
-            tick0, x0, y0 = point_list[start_idx]
-            tick1, x1, y1 = point_list[start_idx + 1]
-            inv = 1.0 - float(start_frac)
-            interp_tick = int(round(float(tick0) * inv + float(tick1) * float(start_frac)))
-            interp_x = float(x0) * inv + float(x1) * float(start_frac)
-            interp_y = float(y0) * inv + float(y1) * float(start_frac)
-            draw_points = [(int(interp_tick), float(interp_x), float(interp_y))]
-            draw_points.extend(point_list[start_idx + 1 :])
-        else:
-            draw_points = point_list[start_idx:]
-
-        if len(draw_points) < 2:
-            return
-
-        inactive_alpha_scale = 1.0 - float(inactive_progress)
-        _, prev_x, prev_y = draw_points[0]
-        for point_tick, x, y in draw_points[1:]:
-            x0, y0 = self._world_to_screen(x=float(prev_x), y=float(prev_y), width=width, height=height)
-            x1, y1 = self._world_to_screen(x=float(x), y=float(y), width=width, height=height)
-            if max_age_ticks <= 1:
-                age_alpha_scale = 1.0
-            else:
-                age_ticks = max(0, int(current_tick) - int(point_tick))
-                age_alpha_scale = 1.0 - min(1.0, float(age_ticks) / float(max_age_ticks - 1))
-            alpha_scale = float(age_alpha_scale) * float(inactive_alpha_scale)
-            alpha = int(round(float(color.a) * max(0.0, min(1.0, alpha_scale))))
-            if alpha > 0:
-                line_color = rl.Color(int(color.r), int(color.g), int(color.b), int(alpha))
-                rl.draw_line(int(x0), int(y0), int(x1), int(y1), line_color)
-            prev_x = float(x)
-            prev_y = float(y)
 
     def _draw_entity_overlay(
         self,
@@ -925,6 +1021,49 @@ class CaptureVisualizerView:
                     max_drift = drift
         return max_drift
 
+    def _draw_bonus_overlay(
+        self,
+        *,
+        capture_map: dict[int, _BonusDraw],
+        rewrite_map: dict[int, _BonusDraw],
+        width: int,
+        height: int,
+    ) -> None:
+        bonus_radius = self._radius_to_screen(float(_BONUS_DRAW_RADIUS), width=width, height=height)
+        for key in sorted(set(capture_map) | set(rewrite_map)):
+            capture = capture_map.get(int(key))
+            rewrite = rewrite_map.get(int(key))
+            if self._show_capture_hitboxes and capture is not None and bool(capture.active):
+                cx, cy = self._world_to_screen(
+                    x=float(capture.x),
+                    y=float(capture.y),
+                    width=width,
+                    height=height,
+                )
+                rl.draw_circle_lines(int(cx), int(cy), float(bonus_radius), _CAPTURE_BONUS_COLOR)
+                self._draw_ui_text(
+                    str(capture.label),
+                    x=float(cx) + float(bonus_radius) + 4.0,
+                    y=float(cy) - 10.0,
+                    color=_CAPTURE_BONUS_COLOR,
+                    scale=0.8,
+                )
+            if self._show_rewrite_hitboxes and rewrite is not None and bool(rewrite.active):
+                rx, ry = self._world_to_screen(
+                    x=float(rewrite.x),
+                    y=float(rewrite.y),
+                    width=width,
+                    height=height,
+                )
+                rl.draw_circle_lines(int(rx), int(ry), float(bonus_radius), _REWRITE_BONUS_COLOR)
+                self._draw_ui_text(
+                    str(rewrite.label),
+                    x=float(rx) + float(bonus_radius) + 4.0,
+                    y=float(ry) + 2.0,
+                    color=_REWRITE_BONUS_COLOR,
+                    scale=0.8,
+                )
+
     def _draw_ui_text(self, text: str, *, x: float, y: float, color: rl.Color, scale: float = 1.0) -> None:
         if self._small is not None:
             draw_small_text(self._small, text, Vec2(float(x), float(y)), float(scale), color)
@@ -953,47 +1092,10 @@ class CaptureVisualizerView:
             self._draw_ui_text("No frame snapshot", x=12.0, y=12.0, color=_TEXT_COLOR)
             return
 
-        self._prune_traces(current_tick=int(snapshot.tick_index))
+        self._ensure_trace_layers(width=width, height=height)
+        self._fade_trace_layers(sim_dt=float(self._trace_fade_dt))
         if self._show_traces:
-            for trace in self._detached_capture_traces:
-                self._draw_trace(
-                    trace.points,
-                    last_active_tick=int(trace.last_active_tick),
-                    current_tick=int(snapshot.tick_index),
-                    max_age_ticks=int(trace.max_age_ticks),
-                    width=width,
-                    height=height,
-                    color=_CAPTURE_TRACE_COLOR,
-                )
-            for trace in self._detached_rewrite_traces:
-                self._draw_trace(
-                    trace.points,
-                    last_active_tick=int(trace.last_active_tick),
-                    current_tick=int(snapshot.tick_index),
-                    max_age_ticks=int(trace.max_age_ticks),
-                    width=width,
-                    height=height,
-                    color=_REWRITE_TRACE_COLOR,
-                )
-            for trace in self._trace_histories.values():
-                self._draw_trace(
-                    trace.capture,
-                    last_active_tick=trace.capture_last_tick,
-                    current_tick=int(snapshot.tick_index),
-                    max_age_ticks=int(trace.max_age_ticks),
-                    width=width,
-                    height=height,
-                    color=_CAPTURE_TRACE_COLOR,
-                )
-                self._draw_trace(
-                    trace.rewrite,
-                    last_active_tick=trace.rewrite_last_tick,
-                    current_tick=int(snapshot.tick_index),
-                    max_age_ticks=int(trace.max_age_ticks),
-                    width=width,
-                    height=height,
-                    color=_REWRITE_TRACE_COLOR,
-                )
+            self._draw_trace_layers(width=width, height=height)
 
         max_player_drift = self._draw_entity_overlay(
             capture_map=snapshot.capture_players,
@@ -1027,6 +1129,12 @@ class CaptureVisualizerView:
             capture_color=_CAPTURE_HITBOX_COLOR,
             rewrite_color=_REWRITE_HITBOX_COLOR,
         )
+        self._draw_bonus_overlay(
+            capture_map=snapshot.capture_bonuses,
+            rewrite_map=snapshot.rewrite_bonuses,
+            width=width,
+            height=height,
+        )
 
         total_rows = int(self._visible_end_idx - self._visible_start_idx + 1)
         row_progress = int(max(0, self._row_cursor - self._visible_start_idx + 1))
@@ -1057,7 +1165,8 @@ class CaptureVisualizerView:
             (
                 f"samples: creatures={snapshot.capture_sample_counts['creatures']}  "
                 f"projectiles={snapshot.capture_sample_counts['projectiles']}  "
-                f"secondary={snapshot.capture_sample_counts['secondary_projectiles']}"
+                f"secondary={snapshot.capture_sample_counts['secondary_projectiles']}  "
+                f"bonuses={snapshot.capture_sample_counts['bonuses']}"
             ),
             x=16.0,
             y=70.0,
