@@ -361,6 +361,17 @@ def _infer_digital_move_enabled_by_player(capture: CaptureFile, *, player_count:
                 saw_mode1[player_index] = True
             else:
                 saw_non_mode1[player_index] = True
+        for key_row in tick.input_player_keys:
+            player_index = int(key_row.player_index)
+            if not (0 <= player_index < len(saw_mode)):
+                continue
+            if (
+                key_row.move_forward_pressed is not None
+                or key_row.move_backward_pressed is not None
+                or key_row.turn_left_pressed is not None
+                or key_row.turn_right_pressed is not None
+            ):
+                saw_digital_keys[player_index] = True
 
     out: list[bool] = []
     for player_index in range(len(saw_mode)):
@@ -396,6 +407,23 @@ def _infer_status_snapshot(capture: CaptureFile) -> ReplayStatusSnapshot:
         quest_unlock_index_full=max(0, int(unlock_index_full)),
         weapon_usage_counts=tuple(int(value) & 0xFFFFFFFF for value in counts),
     )
+
+
+def _normalize_capture_move_components(move_dx: float, move_dy: float) -> tuple[float, float]:
+    x = float(move_dx)
+    y = float(move_dy)
+    if not math.isfinite(x):
+        x = 0.0
+    if not math.isfinite(y):
+        y = 0.0
+    mag_sq = x * x + y * y
+    if mag_sq > 1.0:
+        mag = math.sqrt(mag_sq)
+        if mag > 1e-9:
+            inv = 1.0 / mag
+            x *= inv
+            y *= inv
+    return (max(-1.0, min(1.0, x)), max(-1.0, min(1.0, y)))
 
 
 def _crt_rand_step(state: int) -> tuple[int, int]:
@@ -786,14 +814,35 @@ def convert_capture_to_replay(
         if tick_index < 0 or tick_index >= total_ticks:
             continue
         approx_by_player = {int(sample.player_index): sample for sample in tick.input_approx}
+        keys_by_player = {int(row.player_index): row for row in tick.input_player_keys}
         for player_index in range(player_count):
             sample = approx_by_player.get(int(player_index))
-            if sample is not None:
+            key_row = keys_by_player.get(int(player_index))
+            fire_down_raw = None
+            fire_pressed_raw = None
+            reload_pressed_raw = None
+
+            if sample is not None or key_row is not None:
+                move_forward_raw = sample.move_forward_pressed if sample is not None else None
+                move_backward_raw = sample.move_backward_pressed if sample is not None else None
+                turn_left_raw = sample.turn_left_pressed if sample is not None else None
+                turn_right_raw = sample.turn_right_pressed if sample is not None else None
+                if key_row is not None:
+                    if move_forward_raw is None:
+                        move_forward_raw = key_row.move_forward_pressed
+                    if move_backward_raw is None:
+                        move_backward_raw = key_row.move_backward_pressed
+                    if turn_left_raw is None:
+                        turn_left_raw = key_row.turn_left_pressed
+                    if turn_right_raw is None:
+                        turn_right_raw = key_row.turn_right_pressed
+                sample_move_dx = float(sample.move_dx) if sample is not None else 0.0
+                sample_move_dy = float(sample.move_dy) if sample is not None else 0.0
                 has_digital_move = (
-                    sample.move_forward_pressed is not None
-                    or sample.move_backward_pressed is not None
-                    or sample.turn_left_pressed is not None
-                    or sample.turn_right_pressed is not None
+                    move_forward_raw is not None
+                    or move_backward_raw is not None
+                    or turn_left_raw is not None
+                    or turn_right_raw is not None
                 )
                 use_digital_move = bool(
                     has_digital_move
@@ -801,50 +850,85 @@ def convert_capture_to_replay(
                     and bool(digital_move_enabled_by_player[int(player_index)])
                 )
                 if use_digital_move:
-                    turn_left = bool(sample.turn_left_pressed)
-                    turn_right = bool(sample.turn_right_pressed)
-                    move_forward = bool(sample.move_forward_pressed)
-                    move_backward = bool(sample.move_backward_pressed)
+                    turn_left = bool(turn_left_raw)
+                    turn_right = bool(turn_right_raw)
+                    move_forward = bool(move_forward_raw)
+                    move_backward = bool(move_backward_raw)
                     move_x = float(turn_right) - float(turn_left)
                     move_y = float(move_backward) - float(move_forward)
                     if turn_left and turn_right:
-                        if bool(sample.reload_active) and not move_forward and not move_backward:
-                            move_x = max(-1.0, min(1.0, float(sample.move_dx)))
+                        if not move_forward and not move_backward:
+                            fallback_x, fallback_y = _normalize_capture_move_components(
+                                sample_move_dx,
+                                sample_move_dy,
+                            )
+                            if abs(fallback_x) > 1e-9 or abs(fallback_y) > 1e-9:
+                                move_x = fallback_x
+                                move_y = fallback_y
+                            else:
+                                move_x = -1.0
                         else:
                             move_x = -1.0
                     if move_forward and move_backward:
                         move_y = -1.0
                 else:
-                    move_x = max(-1.0, min(1.0, float(sample.move_dx)))
-                    move_y = max(-1.0, min(1.0, float(sample.move_dy)))
+                    move_x, move_y = _normalize_capture_move_components(sample_move_dx, sample_move_dy)
 
-                aim_x_raw = float(sample.aim_x)
-                aim_y_raw = float(sample.aim_y)
-                has_aim_xy = math.isfinite(aim_x_raw) and math.isfinite(aim_y_raw)
-                use_heading_fallback = (
-                    (not has_aim_xy or (aim_x_raw == 0.0 and aim_y_raw == 0.0))
-                    and sample.aim_heading is not None
-                )
+                if sample is not None:
+                    aim_x_raw = float(sample.aim_x)
+                    aim_y_raw = float(sample.aim_y)
+                    has_aim_xy = math.isfinite(aim_x_raw) and math.isfinite(aim_y_raw)
+                    use_heading_fallback = (
+                        (not has_aim_xy or (aim_x_raw == 0.0 and aim_y_raw == 0.0))
+                        and sample.aim_heading is not None
+                    )
+                else:
+                    aim_x_raw = 0.0
+                    aim_y_raw = 0.0
+                    has_aim_xy = False
+                    use_heading_fallback = False
 
                 if use_heading_fallback:
+                    if sample is None or sample.aim_heading is None:
+                        continue
                     players = tick.checkpoint.players
                     if player_index < len(players):
                         player_pos = players[player_index].pos
                     else:
                         player_pos = Vec2()
-                    aim_pos = player_pos + Vec2.from_heading(float(sample.aim_heading)) * 256.0  # ty:ignore[invalid-argument-type, unsupported-operator]
+                    aim_pos = player_pos + Vec2.from_heading(float(sample.aim_heading)) * 256.0  # ty:ignore[unsupported-operator]
                     aim_x = float(aim_pos.x)
                     aim_y = float(aim_pos.y)
+                elif has_aim_xy:
+                    aim_x = float(aim_x_raw)
+                    aim_y = float(aim_y_raw)
                 else:
-                    aim_x = float(sample.aim_x)
-                    aim_y = float(sample.aim_y)
+                    players = tick.checkpoint.players
+                    if player_index < len(players):
+                        player = players[player_index]
+                        aim_x = float(player.pos.x)
+                        aim_y = float(player.pos.y)
+                    else:
+                        aim_x = 0.0
+                        aim_y = 0.0
 
-                fire_down = bool(sample.fire_down) if sample.fire_down is not None else int(sample.fired_events) > 0
-                fire_pressed = bool(sample.fire_pressed) if sample.fire_pressed is not None else bool(
-                    int(sample.fired_events) > 0
-                )
-                reload_active = bool(sample.reload_active)
-                reload_pressed = bool(sample.reload_pressed) if sample.reload_pressed is not None else False
+                if sample is not None:
+                    fire_down_raw = sample.fire_down
+                    fire_pressed_raw = sample.fire_pressed
+                    reload_pressed_raw = sample.reload_pressed
+                if key_row is not None:
+                    if fire_down_raw is None:
+                        fire_down_raw = key_row.fire_down
+                    if fire_pressed_raw is None:
+                        fire_pressed_raw = key_row.fire_pressed
+                    if reload_pressed_raw is None:
+                        reload_pressed_raw = key_row.reload_pressed
+
+                fired_events = int(sample.fired_events) if sample is not None else 0
+                fire_down = bool(fire_down_raw) if fire_down_raw is not None else fired_events > 0
+                fire_pressed = bool(fire_pressed_raw) if fire_pressed_raw is not None else bool(fired_events > 0)
+                reload_active = bool(sample.reload_active) if sample is not None else False
+                reload_pressed = bool(reload_pressed_raw) if reload_pressed_raw is not None else False
             else:
                 move_x = 0.0
                 move_y = 0.0
@@ -860,12 +944,15 @@ def convert_capture_to_replay(
                 fire_down = False
                 reload_active = False
                 reload_pressed = False
+                fire_down_raw = None
+                fire_pressed_raw = None
+                reload_pressed_raw = None
 
             input_primary_edge_true_calls = int(tick.input_queries.stats.primary_edge.true_calls)
             input_primary_down_true_calls = int(tick.input_queries.stats.primary_down.true_calls)
             if player_index == 0:
-                can_fallback_fire_down = sample is None or sample.fire_down is None
-                can_fallback_fire_pressed = sample is None or sample.fire_pressed is None
+                can_fallback_fire_down = fire_down_raw is None
+                can_fallback_fire_pressed = fire_pressed_raw is None
                 if can_fallback_fire_down:
                     fire_down = bool(
                         fire_down or int(input_primary_down_true_calls) > 0 or int(input_primary_edge_true_calls) > 0
@@ -876,7 +963,7 @@ def convert_capture_to_replay(
             if not fire_pressed:
                 fire_pressed = bool(fire_down and not previous_fire_down[player_index])
 
-            if sample is not None and sample.reload_pressed is None:
+            if reload_pressed_raw is None:
                 synth_reload_edge = bool(
                     int(tick_index) > 0 and bool(reload_active) and not bool(previous_reload_active[player_index])
                 )
