@@ -122,6 +122,58 @@ def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
     assert creature.pos.y == pytest.approx(1088.0)
 
 
+def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
+    state = GameplayState()
+    pool = CreaturePool()
+
+    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=0.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player1 = PlayerState(index=1, pos=Vec2(110.0, 100.0), health=100.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 50.0
+    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.flags = 0
+    creature.ai_mode = 0
+    creature.move_speed = 0.0
+    creature.size = 45.0
+    creature.contact_damage = 10.0
+    creature.target_player = 0
+    creature.pos = Vec2(110.0, 100.0)
+
+    pool.update(1.0 / 60.0, state=state, players=[player0, player1], rand=lambda: 0)
+
+    assert creature.target_player == 1
+    assert player0.health == pytest.approx(0.0)
+    assert player1.health == pytest.approx(90.0)
+
+
+def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
+    state = GameplayState()
+    pool = CreaturePool()
+
+    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player1 = PlayerState(index=1, pos=Vec2(104.0, 100.0), health=100.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 50.0
+    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.flags = 0
+    creature.ai_mode = 0
+    creature.move_speed = 0.0
+    creature.size = 45.0
+    creature.contact_damage = 10.0
+    creature.target_player = 0
+    creature.pos = Vec2(104.0, 100.0)
+
+    pool.update(1.0 / 60.0, state=state, players=[player0, player1], rand=lambda: 0)
+
+    assert creature.target_player == 1
+    assert player0.health == pytest.approx(100.0)
+    assert player1.health == pytest.approx(90.0)
+
+
 @dataclass
 class _StubRand:
     values: list[int]
