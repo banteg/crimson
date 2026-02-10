@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 
@@ -59,6 +60,7 @@ def compute_quest_final_time(
     player_health: float,
     pending_perk_count: int,
     player2_health: float | None = None,
+    player_health_values: Sequence[float] | None = None,
 ) -> QuestFinalTime:
     """Compute quest final time (ms) and breakdown.
 
@@ -68,9 +70,14 @@ def compute_quest_final_time(
     """
 
     base_ms = int(base_time_ms)
-    life_bonus_ms = int(round(float(player_health)))
-    if player2_health is not None:
-        life_bonus_ms += int(round(float(player2_health)))
+    if player_health_values is not None and len(player_health_values) > 0:
+        life_bonus_ms = 0
+        for health in player_health_values:
+            life_bonus_ms += int(round(float(health)))
+    else:
+        life_bonus_ms = int(round(float(player_health)))
+        if player2_health is not None:
+            life_bonus_ms += int(round(float(player2_health)))
 
     unpicked_perk_bonus_ms = max(0, int(pending_perk_count)) * 1000
     final_ms = base_ms - int(life_bonus_ms) - int(unpicked_perk_bonus_ms)

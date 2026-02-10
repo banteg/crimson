@@ -19,3 +19,14 @@ def test_compute_quest_final_time_two_player_sums_life_bonus() -> None:
     assert result.life_bonus_ms == 13  # round(5.2) + round(7.6)
     assert result.final_time_ms == 4987
 
+
+def test_compute_quest_final_time_sums_all_player_health_values() -> None:
+    result = compute_quest_final_time(
+        base_time_ms=5000,
+        player_health=5.2,
+        player2_health=7.6,
+        player_health_values=(5.2, 7.6, 3.3, 1.2),
+        pending_perk_count=0,
+    )
+    assert result.life_bonus_ms == 17  # round(5.2) + round(7.6) + round(3.3) + round(1.2)
+    assert result.final_time_ms == 4983

@@ -10,7 +10,7 @@ under `docs/crimsonland-exe/`.
   - Full boot flow (splash + company logos) → main menu.
   - Play Game / Options / Statistics panels.
   - Survival / Rush / Quests / Typ-o-Shooter / Tutorial gameplay loops are all wired and playable.
-  - Multiplayer (2–4): Survival/Rush/Quests can spawn multiple players, but all players currently share the same input (mirrored controls).
+  - Multiplayer (2–4): Survival/Rush/Quests use per-player local input frames (not mirrored player-0 controls).
   - Game over → high score entry for Survival/Rush/Typ-o; Quest completion/failure routes to results/failed screens.
 - Menu idle triggers demo/attract mode.
 - `uv run crimson view <name>`: debug views (terrain, atlases, survival, player sandbox, etc).
@@ -33,8 +33,8 @@ under `docs/crimsonland-exe/`.
 - **Options panel (state `2`)**: partially implemented.
   - Code: `src/crimson/game.py` (`OptionsMenuView`)
   - Implemented: SFX/music volume sliders, detail preset slider, mouse sensitivity, “UI Info texts”, save-on-exit.
-  - Implemented (Controls subpanel): interactive "Configure for" / "Aiming method" / "Moving method" dropdowns, one-open-at-a-time gating, direction-arrow checkbox, and panel-synced content transitions.
-  - Missing: interactive key/axis rebinding on the right panel, video/window mode editing, broader parity of widgets/labels.
+  - Implemented (Controls subpanel): interactive "Configure for" / "Aiming method" / "Moving method" dropdowns, one-open-at-a-time gating, 1..4 player selector, per-player direction-arrow toggles, and right-panel key/button/axis rebinding with capture/cancel/default/unbind flow.
+  - Missing: video/window mode editing and broader parity of non-controls widgets/labels.
 - **Statistics panel (state `4`)**: partially implemented (Summary/Weapons/Quests pages; reads `game.cfg` counters + checksum).
   - Code: `src/crimson/frontend/panels/stats.py` (`StatisticsMenuView`)
 - **Demo / attract mode**: implemented (variant sequencing + upsell + purchase screen flow).
@@ -65,9 +65,9 @@ under `docs/crimsonland-exe/`.
   - Typ-o-Shooter has typing buffer with target matching and reload command (`src/crimson/typo/typing.py`).
 - **Quest mode**: all tiers 1-5 implemented with full spawn scripting.
   - Code: `src/crimson/quests/tier*.py`, `src/crimson/quests/runtime.py`
-- **Multiplayer (2–4 players)**: partially wired (player count is read; multiple players spawn).
-  - Gap: per-player input is not implemented yet; Survival/Rush/Quest currently feed the same `PlayerInput` to every player (mirrored controls).
-  - Code: `src/crimson/modes/base_gameplay_mode.py` (reads `player_count`), `src/crimson/game_world.py` (`reset(... player_count=...)`), `src/crimson/modes/survival_mode.py` (mirrored input list)
+- **Multiplayer (2–4 players)**: player-count wiring and per-player local input are implemented for Survival/Rush/Quest.
+  - Native-first policy: `1–2` player behavior aims to match classic; `3–4` players follow deterministic extension rules.
+  - Code: `src/crimson/modes/base_gameplay_mode.py`, `src/crimson/local_input.py`, `src/crimson/modes/survival_mode.py`, `src/crimson/modes/rush_mode.py`, `src/crimson/modes/quest_mode.py`
 - **Progression/unlocks**: quest unlock indices + completion counters are updated on quest completion; mode play counters increment on mode start.
   - Code: `src/crimson/persistence/save_status.py`, `src/crimson/game.py`
 
@@ -116,14 +116,22 @@ under `docs/crimsonland-exe/`.
   - CLI: `uv run crimson original verify-capture <capture>`
   - Tests: `tests/test_original_capture_verify.py`
 
+## 4-player extension policy
+
+- Exact parity target: native `1/2` player behavior (input scheme semantics, perk/game-over ownership rules, scoring flow).
+- Deterministic extension target: `3/4` players apply the same per-player control and simulation rules without changing native `1/2` outcomes.
+- Current policy examples:
+  - Survival/Rush game-over highscore remains player-0-centric.
+  - Quest final-time life bonus aggregates all players for `3/4` runs; `1/2` behavior remains unchanged.
+
 ## Biggest remaining parity gaps (vs v1.9.93)
 
 1) **Creature + weapon coverage**
    - Remaining per-weapon behaviors and AI edge cases.
 2) **Multiplayer (2–4 players)**
-   - Player spawning is wired, but inputs are mirrored (all players share the same input).
+   - Deep parity validation is still needed for all native control-scheme edge-cases; 3/4-player behavior is an extension policy.
 3) **UI completeness**
-   - Full Options/Controls parity (Controls key/axis rebinding is still missing).
+   - Full Options parity outside controls (video/window mode widgets and remaining minor labels/flows).
 4) **Progression + stats fidelity**
    - Some `game.cfg` counters and stats screen parity are still incomplete.
 5) **Out-of-scope / later**

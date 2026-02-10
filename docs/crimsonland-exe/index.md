@@ -15,6 +15,7 @@ Sections:
 - [Frame loop](frame-loop.md)
 - [Rendering](rendering.md)
 - [UI and menus](ui.md)
+- [Local multiplayer controls](local-multiplayer-controls.md)
 - [Main menu (state 0)](main-menu.md)
 - [Play Game menu (state 1)](play-game-menu.md)
 - [Quest select menu (state 0x0b)](quest-select-menu.md)

@@ -17,7 +17,7 @@ from grim.view import ViewContext
 from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..gameplay import most_used_weapon_id_for_player, weapon_assign_player
-from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
+from ..input_codes import config_keybinds_for_player, input_code_is_down_for_player, input_code_is_pressed_for_player
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table, tick_quest_completion_transition
@@ -103,6 +103,7 @@ class QuestRunOutcome:
     shots_fired: int
     shots_hit: int
     most_used_weapon_id: int
+    player_health_values: tuple[float, ...] = ()
 
 
 def _quest_seed(level: str) -> int:
@@ -287,6 +288,7 @@ class QuestMode(BaseGameplayMode):
                 player_count = 1
         self._world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._bind_world()
+        self._local_input.reset(players=self._world.players)
         self._state.status = status
         self._state.quest_stage_major, self._state.quest_stage_minor = quest.level_key
 
@@ -383,37 +385,6 @@ class QuestMode(BaseGameplayMode):
         weapon_id = int(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
         weapon_assign_player(self._player, weapon_id, state=self._state)
 
-    def _build_input(self):
-        keybinds = config_keybinds(self._config)
-        if not keybinds:
-            keybinds = (0x11, 0x1F, 0x1E, 0x20, 0x100)
-        up_key, down_key, left_key, right_key, fire_key = player_move_fire_binds(keybinds, 0)
-
-        move = Vec2(
-            float(input_code_is_down(right_key)) - float(input_code_is_down(left_key)),
-            float(input_code_is_down(down_key)) - float(input_code_is_down(up_key)),
-        )
-
-        mouse = self._ui_mouse_pos()
-        aim = self._world.screen_to_world(Vec2.from_xy(mouse))
-
-        fire_down = input_code_is_down(fire_key)
-        fire_pressed = input_code_is_pressed(fire_key)
-        reload_key = 0x102
-        if self._config is not None:
-            reload_key = int(self._config.data.get("keybind_reload", reload_key) or reload_key)
-        reload_pressed = input_code_is_pressed(reload_key)
-
-        from ..gameplay import PlayerInput
-
-        return PlayerInput(
-            move=move,
-            aim=aim,
-            fire_down=bool(fire_down),
-            fire_pressed=bool(fire_pressed),
-            reload_pressed=bool(reload_pressed),
-        )
-
     def _perk_prompt_label(self) -> str:
         if self._config is not None and not bool(int(self._config.data.get("ui_info_texts", 1) or 0)):
             return ""
@@ -477,15 +448,17 @@ class QuestMode(BaseGameplayMode):
                 player_index=int(self._player.index),
                 fallback_weapon_id=int(self._player.weapon_id),
             )
+            player_health_values = tuple(float(player.health) for player in self._world.players)
             player2_health = None
-            if len(self._world.players) >= 2:
-                player2_health = float(self._world.players[1].health)
+            if len(player_health_values) >= 2:
+                player2_health = float(player_health_values[1])
             self._outcome = QuestRunOutcome(
                 kind="failed",
                 level=str(self._quest.level),
                 base_time_ms=int(self._quest.spawn_timeline_ms),
-                player_health=float(self._player.health),
+                player_health=float(player_health_values[0] if player_health_values else self._player.health),
                 player2_health=player2_health,
+                player_health_values=player_health_values,
                 pending_perk_count=int(self._state.perk_selection.pending_count),
                 experience=int(self._player.experience),
                 kill_count=int(self._creatures.kill_count),
@@ -580,19 +553,21 @@ class QuestMode(BaseGameplayMode):
                 rect = self._perk_prompt_rect(label)
                 self._perk_prompt_hover = rect.contains(self._ui_mouse_pos())
 
-            keybinds = config_keybinds(self._config)
-            if not keybinds:
-                keybinds = (0x11, 0x1F, 0x1E, 0x20, 0x100)
-            _up_key, _down_key, _left_key, _right_key, fire_key = player_move_fire_binds(keybinds, 0)
+            player0_binds = config_keybinds_for_player(self._config, player_index=0)
+            fire_key = 0x100
+            if len(player0_binds) >= 5:
+                fire_key = int(player0_binds[4])
 
             pick_key = 0x101
             if self._config is not None:
                 pick_key = int(self._config.data.get("keybind_pick_perk", pick_key) or pick_key)
 
-            if input_code_is_pressed(pick_key) and (not input_code_is_down(fire_key)):
+            if input_code_is_pressed_for_player(pick_key, player_index=0) and (
+                not input_code_is_down_for_player(fire_key, player_index=0)
+            ):
                 self._perk_prompt_pulse = 1000.0
                 self._perk_menu.open_if_available(perk_ctx)
-            elif self._perk_prompt_hover and input_code_is_pressed(fire_key):
+            elif self._perk_prompt_hover and input_code_is_pressed_for_player(fire_key, player_index=0):
                 self._perk_prompt_pulse = 1000.0
                 self._perk_menu.open_if_available(perk_ctx)
 
@@ -618,10 +593,10 @@ class QuestMode(BaseGameplayMode):
 
         self._quest.quest_name_timer_ms += dt_world * 1000.0
 
-        input_state = self._build_input()
+        input_frame = self._build_local_inputs(dt_frame=dt_frame)
         self._world.update(
             dt_world,
-            inputs=[input_state for _ in self._world.players],
+            inputs=input_frame,
             auto_pick_perks=False,
             game_mode=int(GameMode.QUESTS),
             perk_progression_enabled=True,
@@ -688,15 +663,17 @@ class QuestMode(BaseGameplayMode):
                         player_index=int(self._player.index),
                         fallback_weapon_id=int(self._player.weapon_id),
                     )
+                    player_health_values = tuple(float(player.health) for player in self._world.players)
                     player2_health = None
-                    if len(self._world.players) >= 2:
-                        player2_health = float(self._world.players[1].health)
+                    if len(player_health_values) >= 2:
+                        player2_health = float(player_health_values[1])
                     self._outcome = QuestRunOutcome(
                         kind="completed",
                         level=str(self._quest.level),
                         base_time_ms=int(self._quest.spawn_timeline_ms),
-                        player_health=float(self._player.health),
+                        player_health=float(player_health_values[0] if player_health_values else self._player.health),
                         player2_health=player2_health,
+                        player_health_values=player_health_values,
                         pending_perk_count=int(self._state.perk_selection.pending_count),
                         experience=int(self._player.experience),
                         kill_count=int(self._creatures.kill_count),
