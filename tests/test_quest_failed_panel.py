@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pyray as rl
 
-from crimson.game import GameState, QuestFailedView
+from crimson.game import GameState, QUEST_FAILED_PANEL_W, QuestFailedView
 from crimson.modes.quest_mode import QuestRunOutcome
 from crimson.persistence import save_status
 from grim.geom import Vec2
@@ -67,6 +67,20 @@ def test_quest_failed_panel_layout_uses_native_anchor(monkeypatch, tmp_path: Pat
     panel_1024 = view._panel_origin()
     assert panel_1024.x == -108.0
     assert panel_1024.y == 119.0
+
+
+def test_quest_failed_panel_slides_in_from_left(monkeypatch, tmp_path: Path) -> None:
+    state = _make_state(tmp_path)
+    view = QuestFailedView(state)
+
+    monkeypatch.setattr("crimson.game.rl.get_screen_width", lambda: 640)
+    base = view._panel_origin()
+
+    view._intro_ms = 0.0
+    assert view._panel_top_left().x == base.x - QUEST_FAILED_PANEL_W
+
+    view._intro_ms = 250.0
+    assert view._panel_top_left().x == base.x
 
 
 def test_quest_failed_enter_retries_current_quest(monkeypatch, tmp_path: Path) -> None:
