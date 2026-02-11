@@ -91,7 +91,7 @@ uv run crimson original bisect-divergence \
 If capture telemetry is missing `config_aim_scheme`/`input_approx.aim_scheme` for a
 known run (for example sidecar-enforced computer aim), add
 `--aim-scheme-player 0=5` to `verify-capture`, `divergence-report`,
-`bisect-divergence`, and `focus-trace`.
+`bisect-divergence`, `focus-trace`, and `visualize-capture`.
 
 Then read the emitted `run_summary_focus_context` block first to orient around
 major gameplay events near the focus tick (bonus pickups, perk picks, level-up,

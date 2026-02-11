@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -19,9 +20,11 @@ from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     build_capture_dt_frame_ms_i32_overrides,
     build_capture_dt_frame_overrides,
+    build_capture_inter_tick_rand_draws_overrides,
     capture_bootstrap_payload_from_event_payload,
     convert_capture_to_replay,
     load_capture,
+    parse_player_int_overrides,
 )
 from crimson.original.schema import CaptureTick
 from crimson.replay.types import Replay, UnknownEvent, unpack_input_flags, unpack_packed_player_input
@@ -149,9 +152,14 @@ class CaptureVisualizerView:
         projectile_trace_length: int,
         inter_tick_rand_draws: int,
         seed: int | None,
+        aim_scheme_overrides_by_player: Mapping[int, int] | None,
     ) -> None:
         self._capture = load_capture(Path(capture_path))
-        self._replay = convert_capture_to_replay(self._capture, seed=seed)
+        self._replay = convert_capture_to_replay(
+            self._capture,
+            seed=seed,
+            aim_scheme_overrides_by_player=aim_scheme_overrides_by_player,
+        )
         self._mode_id = int(self._replay.header.game_mode_id)
         if self._mode_id != int(GameMode.SURVIVAL):
             raise ValueError(
@@ -212,17 +220,7 @@ class CaptureVisualizerView:
         )
         self._dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(self._capture)
 
-        outside_by_tick: dict[int, int] = {}
-        for row in self._rows:
-            calls = int(row.rng.outside_before_calls)
-            if calls < 0:
-                continue
-            outside_by_tick[int(row.tick_index)] = int(calls)
-        if outside_by_tick:
-            first_tick = min(outside_by_tick)
-            # The inferred seed aligns with the first sampled capture row.
-            outside_by_tick[int(first_tick)] = 0
-        self._outside_draws_by_tick = outside_by_tick if outside_by_tick else None
+        self._outside_draws_by_tick = build_capture_inter_tick_rand_draws_overrides(self._capture)
 
         self._row_cursor = -1
         self._snapshot: _FrameSnapshot | None = None
@@ -1209,6 +1207,16 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--start-tick", type=int, default=0, help="first tick to display")
     parser.add_argument("--end-tick", type=int, default=None, help="last tick to display (default: capture end)")
     parser.add_argument("--seed", type=int, default=None, help="override inferred seed")
+    parser.add_argument(
+        "--aim-scheme-player",
+        action="append",
+        default=[],
+        metavar="PLAYER=SCHEME",
+        help=(
+            "override replay reconstruction aim scheme as PLAYER=SCHEME (repeatable); "
+            "use for captures missing config_aim_scheme telemetry"
+        ),
+    )
     parser.add_argument("--speed", type=float, default=1.0, help="initial playback speed multiplier")
     parser.add_argument(
         "--trace-len",
@@ -1245,6 +1253,15 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
+    try:
+        aim_scheme_overrides = parse_player_int_overrides(
+            args.aim_scheme_player,
+            option_name="--aim-scheme-player",
+        )
+    except ValueError as exc:
+        print(str(exc))
+        return 2
+
     trace_len_override = None if args.trace_len is None else max(1, int(args.trace_len))
     player_trace_len = (
         int(trace_len_override) if trace_len_override is not None else max(1, int(args.player_trace_len))
@@ -1268,6 +1285,7 @@ def main(argv: list[str] | None = None) -> int:
             projectile_trace_length=int(projectile_trace_len),
             inter_tick_rand_draws=int(args.inter_tick_rand_draws),
             seed=(None if args.seed is None else int(args.seed)),
+            aim_scheme_overrides_by_player=aim_scheme_overrides,
         )
     except Exception as exc:
         print(f"capture visualize failed: {exc}")
