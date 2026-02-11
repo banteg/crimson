@@ -1,18 +1,19 @@
 ---
 tags:
-  - gameplay
+  - reverse-engineering
+  - static-analysis
   - perks
 ---
 
-# Perks (behavior reference)
+# Perk Runtime Reference
 
-This page documents the **actual runtime behavior** of each perk in:
+This page documents runtime behavior evidence for each perk in:
 
 - **Original**: Crimsonland v1.9.93 (`analysis/ghidra/raw/crimsonland.exe_decompiled.c`)
-- **Rewrite**: our Python port (`src/`)
+- **Rewrite parity implementation**: Python port (`src/`)
 
-For player-facing shared mechanics prose, see [Perks mechanics (version-agnostic)](perks-mechanics.md).
-For ID ↔ name mapping, see [Perk ID map](perk-id-map.md). For a quick “where is this wired” view in the rewrite, see [perk matrix](rewrite/perk-matrix.md).
+For player-facing gameplay prose, see [Perks](../../mechanics/perks.md).
+For ID/name mapping and init metadata, see [Perk ID map](../../perk-id-map.md).
 
 Notes:
 

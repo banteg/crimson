@@ -17,8 +17,7 @@ nav = [
     ]},
     { "Systems" = [
       { "Overview" = "mechanics/systems/index.md" },
-      { "Perks mechanics" = "perks-mechanics.md" },
-      { "Perks behavior reference" = "perks.md" },
+      { "Perks" = "mechanics/perks.md" },
       { "UI elements" = "ui-elements.md" },
       { "In-game console" = "console.md" },
     ]},
@@ -55,7 +54,6 @@ nav = [
     { "Parity" = [
       { "Overview" = "rewrite/parity/index.md" },
       { "Status" = "rewrite/status.md" },
-      { "Perk matrix" = "rewrite/perk-matrix.md" },
       { "Original bugs" = "rewrite/original-bugs.md" },
     ]},
   ]},
@@ -67,6 +65,7 @@ nav = [
       { "Entrypoint trace" = "entrypoint.md" },
       { "Boot / loading sequence" = "boot-sequence.md" },
       { "Detangling notes" = "detangling.md" },
+      { "Perk runtime reference" = "re/static/perks-runtime-reference.md" },
       { "Crimsonland.exe" = [
         { "Overview" = "crimsonland-exe/index.md" },
         { "State machine" = "crimsonland-exe/state-machine.md" },
