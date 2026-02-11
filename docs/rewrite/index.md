@@ -124,6 +124,7 @@ See also:
 - [Float parity policy](float-parity-policy.md)
 - [Terrain (rewrite)](terrain.md)
 - [Bonus pickups (rewrite)](bonuses.md)
+- [Perks architecture (rewrite)](perks-architecture.md)
 - [Survival entry fade (decompile notes)](survival-transition-fade.md)
 - [Original bugs (and rewrite fixes)](original-bugs.md)
 
