@@ -12,11 +12,12 @@ from ..effects import FxQueue
 from ..features.bonuses.freeze import freeze_bonus_active
 from ..features.presentation import ProjectileDecalCtx, run_projectile_decal_hooks
 from ..game_modes import GameMode
-from ..gameplay import BonusPickupEvent, GameplayState, PlayerState, perk_active
+from ..gameplay import perk_active
 from ..perks import PerkId
 from ..projectiles import ProjectileHit
 from ..weapon_sfx import resolve_weapon_sfx_ref
 from ..weapons import WEAPON_BY_ID, WeaponId
+from .state_types import BonusPickupEvent, GameplayState, PlayerState
 from .world_defs import BEAM_TYPES
 
 _MAX_HIT_SFX_PER_FRAME = 4

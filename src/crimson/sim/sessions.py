@@ -6,7 +6,7 @@ from typing import Callable
 from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
-from ..gameplay import PlayerInput
+from .input import PlayerInput
 from .step_pipeline import DeterministicStepResult, run_deterministic_step, time_scale_reflex_boost_bonus
 from .world_state import WorldState
 

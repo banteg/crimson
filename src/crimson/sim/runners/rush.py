@@ -5,7 +5,7 @@ import math
 from grim.geom import Vec2
 
 from ...game_modes import GameMode
-from ...gameplay import PlayerInput, weapon_assign_player
+from ...gameplay import weapon_assign_player
 from ...replay import Replay, UnknownEvent, unpack_packed_player_input, unpack_input_flags, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from ...original.capture import (
@@ -14,6 +14,7 @@ from ...original.capture import (
     capture_bootstrap_payload_from_event_payload,
 )
 from ...weapons import WeaponId
+from ..input import PlayerInput
 from ..sessions import RushDeterministicSession
 from ..world_state import WorldEvents, WorldState
 from .common import (
