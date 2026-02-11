@@ -62,7 +62,8 @@ Not offered in Quest mode or two-player sessions.
 
 Adds a second weapon slot. Press reload to swap between them. Carrying two
 weapons reduces movement speed by 20%, and swapping adds a brief firing delay
-(+0.1 s cooldown) to prevent instant swap-firing.
+(+0.1 s cooldown) to prevent instant swap-firing. Not offered in two-player
+mode.
 
 ## 10. Plaguebearer
 
@@ -71,6 +72,7 @@ within 30 units) get infected. Infected creatures take 15 damage every 0.5
 seconds, and the infection spreads to other creatures within 45 units. Each
 infection kill increments a global counter that gradually suppresses further
 spreading — the plague burns itself out over time. Shared across all players.
+Suppressed in hardcore quest 2-10.
 
 ## 11. Evil Eyes
 
@@ -96,12 +98,14 @@ Fire rate is 12% faster (shot cooldown ×0.88).
 ## 15. Fatal Lottery
 
 50/50 coin flip: either +10 000 XP or instant death. Can be picked multiple
-times.
+times. Not offered in Quest mode or two-player sessions.
 
 ## 16. Random Weapon
 
-Immediately assigns a random unlocked weapon (never the pistol, never the
-current weapon). Not available in two-player mode. Can be picked multiple times.
+Immediately assigns a random unlocked weapon, retrying up to 100 rolls to avoid
+the pistol and the current weapon. Native edge case: if no valid roll appears
+within those retries, the last roll is used anyway. Not available in two-player
+mode. Can be picked multiple times.
 
 ## 17. Mr. Melee
 
@@ -117,7 +121,8 @@ time. Mash to reload faster.
 ## 19. Final Revenge
 
 On death, the player explodes with a 512-unit blast radius. Damage falls off
-linearly: (512 − distance) × 5.
+linearly: (512 − distance) × 5. Not offered in Quest mode or two-player
+sessions.
 
 ## 20. Telekinetic
 
@@ -150,7 +155,8 @@ player to 0.1 health. Not offered while Death Clock is active.
 Each projectile hit has a 1-in-8 chance to poison the target. Poisoned creatures
 take continuous damage (60/s) and show a red aura. Toxic Avenger's 180/s strong
 poison comes from its melee-retaliation path, not bullet poisoning. Poison
-ticks still trigger hit flash, but use zero impulse (no knockback).
+ticks still trigger hit flash, but use zero impulse (no knockback). Suppressed
+in hardcore quest 2-10.
 
 ## 26. Dodger
 
@@ -236,7 +242,8 @@ when both are owned. Requires Dodger.
 
 Damage no longer reduces health. Instead, every hit has a flat 10% chance of
 instant death. Hit disruption (knockback, spread penalty) still applies unless
-Unstoppable is active.
+Unstoppable is active. Not offered in Quest mode or two-player sessions, and
+blocked while Death Clock is active.
 
 ## 42. Jinxed
 

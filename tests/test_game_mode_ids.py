@@ -173,6 +173,8 @@ def test_perk_mode_3_flag_allows_perk_in_survival_and_quest_modes() -> None:
     player = PlayerState(index=0, pos=Vec2())
     assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=int(GameMode.SURVIVAL), player_count=1) is True
     assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=int(GameMode.QUESTS), player_count=1) is True
+    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=int(GameMode.SURVIVAL), player_count=2) is False
+    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=int(GameMode.QUESTS), player_count=2) is False
 
 
 def test_perk_without_mode_3_flag_is_rejected_in_quest_mode() -> None:
@@ -201,6 +203,31 @@ def test_breathing_room_mode_flags_match_native_allowlist_behavior() -> None:
     assert perk_can_offer(state, player, PerkId.BREATHING_ROOM, game_mode=int(GameMode.SURVIVAL), player_count=2) is True
     assert perk_can_offer(state, player, PerkId.BREATHING_ROOM, game_mode=int(GameMode.QUESTS), player_count=1) is False
     assert perk_can_offer(state, player, PerkId.BREATHING_ROOM, game_mode=int(GameMode.QUESTS), player_count=2) is False
+
+
+def test_mode_flag_gated_perks_reject_quest_and_two_player() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    for perk_id in (PerkId.FATAL_LOTTERY, PerkId.FINAL_REVENGE, PerkId.HIGHLANDER):
+        assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.SURVIVAL), player_count=1) is True
+        assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.QUESTS), player_count=1) is False
+        assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.SURVIVAL), player_count=2) is False
+        assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.QUESTS), player_count=2) is False
+
+
+def test_hardcore_quest_2_10_blocks_poison_related_perks() -> None:
+    baseline = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    for perk_id in (PerkId.POISON_BULLETS, PerkId.VEINS_OF_POISON, PerkId.PLAGUEBEARER):
+        assert perk_can_offer(baseline, player, perk_id, game_mode=int(GameMode.QUESTS), player_count=1) is True
+
+    state = GameplayState()
+    state.hardcore = True
+    state.quest_stage_major = 2
+    state.quest_stage_minor = 10
+
+    for perk_id in (PerkId.POISON_BULLETS, PerkId.VEINS_OF_POISON, PerkId.PLAGUEBEARER):
+        assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.QUESTS), player_count=1) is False
 
 
 def test_perk_flags_match_native_ctor_defaults_and_known_overrides() -> None:

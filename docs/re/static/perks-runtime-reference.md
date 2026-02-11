@@ -130,11 +130,13 @@ Notes:
 
 - `player_apply_move_with_spawn_avoidance` (0x0041e290): movement scaling.
 - `player_update` (0x004136b0): reload-triggered swap behavior + shot cooldown bump.
+- `perk_can_offer` (0x0042fb10): mode-flag gating (`flags & 0x2`) prevents offers in two-player.
 
 ### Rewrite
 
 - Swap and carry behavior: `src/crimson/gameplay.py`: `player_swap_alt_weapon()`, `player_update()`.
 - Bonus application during swap path: `src/crimson/bonuses/apply.py`: `bonus_apply()`.
+- Offer gating: `src/crimson/perks/availability.py`: `perk_can_offer()`.
 
 ## 10. Plaguebearer (`PerkId.PLAGUEBEARER`)
 
@@ -142,12 +144,14 @@ Notes:
 
 - `perk_apply` (0x004055e0): sets `player_plaguebearer_active` (global-ish field on player0).
 - `creature_update_all` (0x00426220): infection flagging, ticking, spread (`plaguebearer_spread_infection`), and infection kill bookkeeping.
+- `perk_can_offer` (0x0042fb10): hardcore quest 2-10 special-case blocks Plaguebearer.
 
 ### Rewrite
 
 - Flag application: `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
 - `src/crimson/perks/impl/plaguebearer.py`: `apply_plaguebearer()` (sets `plaguebearer_active` for all players).
 - Creature-side behavior: `src/crimson/creatures/runtime.py`: `CreaturePool.update()` (contact infection, tick damage, spread).
+- Offer gating: `src/crimson/perks/availability.py`: `perk_can_offer()` hardcore quest gate.
 
 ## 11. Evil Eyes (`PerkId.EVIL_EYES`)
 
@@ -202,17 +206,19 @@ Notes:
 ### Original
 
 - `perk_apply` (0x004055e0): `(crt_rand() & 1)` decides XP vs death.
+- `perk_can_offer` (0x0042fb10): mode-flag gating rejects the perk in quest mode and two-player.
 
 ### Rewrite
 
 - `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
 - `src/crimson/perks/impl/fatal_lottery.py`: `apply_fatal_lottery()`.
+- Offer gating: `src/crimson/perks/availability.py`: `perk_can_offer()`.
 
 ## 16. Random Weapon (`PerkId.RANDOM_WEAPON`)
 
 ### Original
 
-- `perk_apply` (0x004055e0): random selection and `weapon_assign_player`.
+- `perk_apply` (0x004055e0): random selection (`weapon_pick_random_available`) with up to 100 retries to avoid pistol/current, then `weapon_assign_player` with the last roll.
 
 ### Rewrite
 
@@ -244,11 +250,13 @@ Notes:
 ### Original
 
 - `player_take_damage` (0x00425e50): death check triggers the revenge burst and radial damage via `creature_apply_damage` (damage type 3).
+- `perk_can_offer` (0x0042fb10): mode-flag gating rejects the perk in quest mode and two-player.
 
 ### Rewrite
 
 - Death hook implementation: `src/crimson/perks/impl/final_revenge.py`: `apply_final_revenge_on_player_death()`.
 - Hook wiring and death pipeline call-site: `src/crimson/sim/world_state.py`.
+- Offer gating: `src/crimson/perks/availability.py`: `perk_can_offer()`.
 
 ## 20. Telekinetic (`PerkId.TELEKINETIC`)
 
@@ -314,12 +322,14 @@ Notes:
 - `creature_update_all` (0x00426220): applies self-damage using `creature_apply_damage(..., damage_type=0, impulse=(0,0))`.
 - Toxic Avenger does not modify this projectile-hit poison branch; strong poison (`flags |= 0x02`) comes from Toxic Avenger melee retaliation in `creature_update_all`.
 - Rendering: creature overlay draws aura `0x10` when poison flag is set.
+- `perk_can_offer` (0x0042fb10): hardcore quest 2-10 special-case blocks Poison Bullets.
 
 ### Rewrite
 
 - Poison flagging: `src/crimson/projectiles.py`: `ProjectilePool.update()` hit logic.
 - Poison tick: `src/crimson/creatures/runtime.py`: `CreaturePool.update()` routes self-damage through `creature_apply_damage()`.
 - Aura render: `src/crimson/render/world_renderer.py`: creature overlay in `WorldRenderer.draw()`.
+- Offer gating: `src/crimson/perks/availability.py`: `perk_can_offer()` hardcore quest gate.
 
 ## 26. Dodger (`PerkId.DODGER`)
 
@@ -495,10 +505,13 @@ Notes:
 ### Original
 
 - `player_take_damage` (0x00425e50): Highlander replacement behavior.
+- `perk_can_offer` (0x0042fb10): mode-flag gating rejects Highlander in quest mode and two-player.
+- `perks_generate_choices` (0x00430160): Death Clock active path rejects Highlander from offers.
 
 ### Rewrite
 
 - `src/crimson/player_damage.py`: `player_take_damage()`.
+- Offer gating: `src/crimson/perks/availability.py`: `perk_can_offer()`, plus Death Clock block in `src/crimson/perks/selection.py`: `perk_generate_choices()`.
 
 ## 42. Jinxed (`PerkId.JINXED`)
 
