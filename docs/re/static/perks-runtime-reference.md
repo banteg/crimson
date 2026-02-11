@@ -13,7 +13,8 @@ This page documents runtime location evidence for each perk in:
 - **Rewrite parity implementation**: Python port (`src/`)
 
 For gameplay effects and mechanics, see [Perks](../../mechanics/perks.md).
-For ID/name mapping and init metadata, see [Perk ID map](perk-id-map.md).
+For ID/name mapping and init metadata, see `src/crimson/perks/ids.py` and
+[Detangling notes](../../detangling.md).
 
 Notes:
 

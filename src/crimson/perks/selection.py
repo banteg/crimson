@@ -8,10 +8,10 @@ from ..weapons import WeaponId
 from .runtime.apply import perk_apply
 from .availability import perk_can_offer, perks_rebuild_available
 from .helpers import perk_active
-from .ids import PERK_BY_ID, PERK_TABLE, PerkFlags, PerkId
+from .ids import PERK_BY_ID, PerkFlags, PerkId
 from .state import CreatureForPerks, PerkSelectionState
 
-PERK_ID_MAX = max(int(meta.perk_id) for meta in PERK_TABLE)
+PERK_ID_MAX = max(PERK_BY_ID)
 
 _DEATH_CLOCK_BLOCKED: frozenset[PerkId] = frozenset(
     (

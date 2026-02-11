@@ -92,7 +92,7 @@ class PerkMeta:
     notes: str | None = None
 
 
-PERK_TABLE = [
+_PERK_TABLE = [
     PerkMeta(
         perk_id=PerkId.ANTIPERK,
         const_name="perk_id_antiperk",
@@ -808,7 +808,7 @@ PERK_TABLE = [
     ),
 ]
 
-PERK_BY_ID = {int(entry.perk_id): entry for entry in PERK_TABLE}
+PERK_BY_ID = {int(entry.perk_id): entry for entry in _PERK_TABLE}
 
 QUICK_LEARNER_NAME = "Quick Learner"
 QUICK_LEARNER_DESCRIPTION = (

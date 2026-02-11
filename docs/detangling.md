@@ -1048,7 +1048,8 @@ Init timing note:
   - Evidence: assigns perk id constants (`DAT_004c2b**`/`DAT_004c2c**`) and fills the perk
     name/description tables via `FUN_0042fd00`.
 
-  - See [Perk ID map](re/static/perk-id-map.md) for the extracted id-to-name mapping.
+  - For extracted id/name metadata and runtime references, see
+    `src/crimson/perks/ids.py` and [Perk runtime reference](re/static/perks-runtime-reference.md).
 - `FUN_0042fb10` -> `perk_can_offer`
   - Evidence: checks mode gates and perk flags, then returns a nonzero byte if the perk is eligible.
 - `FUN_0042fbd0` -> `perk_select_random`

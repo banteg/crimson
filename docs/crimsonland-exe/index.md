@@ -31,7 +31,6 @@ Sections:
 Related references:
 
 - [Weapon table](../weapon-table.md)
-- [Perk ID map](../re/static/perk-id-map.md)
 - [Bonus ID map](../bonus-id-map.md)
 - [Creature pool struct](../creatures/struct.md)
 - [Projectile struct](../structs/projectile.md)
