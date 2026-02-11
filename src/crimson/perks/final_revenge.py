@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 
-from ...creatures.damage import creature_apply_damage
-from ...creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureDeath, CreaturePool
-from ...effects import FxQueue
-from ...gameplay import GameplayState, PlayerState, perk_active
-from ...perks import PerkId
+from ..creatures.damage import creature_apply_damage
+from ..creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureDeath, CreaturePool
+from ..effects import FxQueue
+from ..gameplay import GameplayState, PlayerState, perk_active
+from .ids import PerkId
 
 
 def apply_final_revenge_on_player_death(

@@ -13,7 +13,6 @@ from ..creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureDeath, CreaturePo
 from ..creatures.anim import creature_anim_advance_phase
 from ..creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
-from ..features.perks import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from ..game_modes import GameMode
 from ..gameplay import (
     build_gameplay_state,
@@ -21,6 +20,7 @@ from ..gameplay import (
     player_update,
     survival_progression_update,
 )
+from ..perks.registry import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from ..player_damage import player_take_projectile_damage
 from ..projectiles import ProjectileHit
 from .input import PlayerInput
