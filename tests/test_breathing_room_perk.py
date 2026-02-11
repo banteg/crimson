@@ -7,7 +7,7 @@ import math
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureState
 from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
-from crimson.perks.apply import perk_apply
+from crimson.perks.runtime.apply import perk_apply
 
 
 def test_perk_apply_breathing_room_reduces_health_and_starts_creature_death_staging() -> None:

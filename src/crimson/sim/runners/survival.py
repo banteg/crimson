@@ -7,7 +7,7 @@ from grim.geom import Vec2
 
 from ...game_modes import GameMode
 from ...perks import PerkId
-from ...perks.apply import perk_apply
+from ...perks.runtime.apply import perk_apply
 from ...perks.selection import perk_selection_current_choices, perk_selection_pick
 from ...perks.state import CreatureForPerks
 from ...replay import (

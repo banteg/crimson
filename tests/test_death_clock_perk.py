@@ -6,8 +6,8 @@ import pytest
 
 from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
-from crimson.perks.apply import perk_apply
-from crimson.perks.effects import perks_update_effects
+from crimson.perks.runtime.apply import perk_apply
+from crimson.perks.runtime.effects import perks_update_effects
 from crimson.player_damage import player_take_damage
 
 

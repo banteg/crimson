@@ -3,7 +3,7 @@ from __future__ import annotations
 from grim.geom import Vec2
 
 from crimson.gameplay import GameplayState, PlayerState
-from crimson.perks.apply import perk_apply
+from crimson.perks.runtime.apply import perk_apply
 from crimson.perks import PerkId
 from crimson.perks.state import PerkSelectionState
 

@@ -9,8 +9,8 @@ from crimson.bonuses.pickup_fx import emit_bonus_pickup_effects
 from crimson.effects import FxQueue
 from crimson.effects_atlas import EffectId
 from crimson.gameplay import GameplayState
-from crimson.perks.final_revenge import apply_final_revenge_on_player_death
-from crimson.perks.manifest import (
+from crimson.perks.impl.final_revenge import apply_final_revenge_on_player_death
+from crimson.perks.runtime.manifest import (
     PERK_APPLY_HANDLERS,
     PERK_HOOKS_IN_ORDER,
     PERKS_UPDATE_EFFECT_STEPS,
@@ -18,8 +18,8 @@ from crimson.perks.manifest import (
     PLAYER_PERK_TICK_STEPS,
     WORLD_DT_STEPS,
 )
-from crimson.perks.player_bonus_timers_effect import update_player_bonus_timers
-from crimson.perks.reflex_boosted import apply_reflex_boosted_dt
+from crimson.perks.runtime.player_bonus_timers import update_player_bonus_timers
+from crimson.perks.impl.reflex_boosted import apply_reflex_boosted_dt
 from crimson.projectiles import ProjectileHit, ProjectileTypeId
 from crimson.sim.presentation_step import apply_world_presentation_step, queue_projectile_decals
 from crimson.sim.state_types import BonusPickupEvent

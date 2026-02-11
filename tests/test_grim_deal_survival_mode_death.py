@@ -8,7 +8,7 @@ import pyray as rl
 from crimson.game_world import GameWorld
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
-from crimson.perks.apply import perk_apply
+from crimson.perks.runtime.apply import perk_apply
 from grim.view import ViewContext
 
 
