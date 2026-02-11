@@ -22,7 +22,8 @@ from .movement_controls import MovementControlType
 
 _AIM_RADIUS_KEYBOARD = 60.0
 _AIM_RADIUS_PAD_BASE = 42.0
-_AIM_RADIUS_PAD_SCALE = 20.0
+# Native uses `cv_padAimDistMul` (default 96).
+_AIM_RADIUS_PAD_SCALE = 96.0
 _POINT_CLICK_STOP_RADIUS = 20.0
 _AIM_KEYBOARD_TURN_RATE = 3.0
 _AIM_JOYSTICK_TURN_RATE = 4.0
@@ -49,6 +50,8 @@ _ALT_MOVE_KEY_UP = 0xC8
 _ALT_MOVE_KEY_DOWN = 0xD0
 _ALT_MOVE_KEY_LEFT = 0xCB
 _ALT_MOVE_KEY_RIGHT = 0xCD
+_AIM_POV_LEFT_CODE = 0x133
+_AIM_POV_RIGHT_CODE = 0x134
 
 
 @dataclass(slots=True)
@@ -149,6 +152,16 @@ def _key_down_with_single_player_alt(
     if _single_player_alt_keys_enabled(config, player_index=int(player_index)):
         return bool(input_code_is_down_for_player(int(alt_key), player_index=int(player_index)))
     return False
+
+
+def _aim_pov_left_active() -> bool:
+    # Native `input_aim_pov_left_active` reads joystick POV index 0.
+    return bool(input_code_is_down_for_player(_AIM_POV_LEFT_CODE, player_index=0))
+
+
+def _aim_pov_right_active() -> bool:
+    # Native `input_aim_pov_right_active` reads joystick POV index 0.
+    return bool(input_code_is_down_for_player(_AIM_POV_RIGHT_CODE, player_index=0))
 
 
 def clear_input_edges(inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
@@ -292,8 +305,37 @@ class LocalInputInterpreter:
         turn_left_pressed: bool | None = None
         turn_right_pressed: bool | None = None
         computer_target_index: int | None = None
+        computer_move_active = (
+            move_mode_type is MovementControlType.COMPUTER
+            or int(aim_scheme) == 5
+        )
 
-        if move_mode_type is MovementControlType.RELATIVE:
+        if computer_move_active:
+            if creatures:
+                computer_target_index = self._select_computer_target(
+                    player_index=idx,
+                    player=player,
+                    creatures=creatures,
+                )
+            center_delta = _COMPUTER_ARENA_CENTER - player.pos
+            center_dist = center_delta.length()
+            if (
+                creatures is not None
+                and computer_target_index is not None
+                and 0 <= int(computer_target_index) < len(creatures)
+                and float(center_dist) <= _COMPUTER_MOVE_TARGET_RADIUS
+            ):
+                target_pos = Vec2(
+                    float(creatures[int(computer_target_index)].pos.x),
+                    float(creatures[int(computer_target_index)].pos.y),
+                )
+            else:
+                target_pos = _COMPUTER_ARENA_CENTER
+
+            move_dir, move_dist = (target_pos - player.pos).normalized_with_length()
+            if float(move_dist) > 1e-6:
+                move_vec = move_dir
+        elif move_mode_type is MovementControlType.RELATIVE:
             move_forward_pressed = _key_down_with_single_player_alt(
                 up_key,
                 alt_key=_ALT_MOVE_KEY_UP,
@@ -334,31 +376,6 @@ class LocalInputInterpreter:
                 _dir, dist = delta.normalized_with_length()
                 if float(dist) > _POINT_CLICK_STOP_RADIUS:
                     move_vec = _dir
-        elif move_mode_type is MovementControlType.COMPUTER:
-            if creatures:
-                computer_target_index = self._select_computer_target(
-                    player_index=idx,
-                    player=player,
-                    creatures=creatures,
-                )
-            center_delta = _COMPUTER_ARENA_CENTER - player.pos
-            center_dist = center_delta.length()
-            if (
-                creatures is not None
-                and computer_target_index is not None
-                and 0 <= int(computer_target_index) < len(creatures)
-                and float(center_dist) <= _COMPUTER_MOVE_TARGET_RADIUS
-            ):
-                target_pos = Vec2(
-                    float(creatures[int(computer_target_index)].pos.x),
-                    float(creatures[int(computer_target_index)].pos.y),
-                )
-            else:
-                target_pos = _COMPUTER_ARENA_CENTER
-
-            move_dir, move_dist = (target_pos - player.pos).normalized_with_length()
-            if float(move_dist) > 1e-6:
-                move_vec = move_dir
         elif move_mode_type is MovementControlType.STATIC:
             move_up_pressed = _key_down_with_single_player_alt(
                 up_key,
@@ -433,9 +450,9 @@ class LocalInputInterpreter:
             else:
                 aim = _aim_point_from_heading(player.pos, heading)
         elif int(aim_scheme) == 2:
-            if input_code_is_down_for_player(aim_right_key, player_index=idx):
+            if _aim_pov_right_active():
                 heading = float(heading + float(dt_frame) * _AIM_JOYSTICK_TURN_RATE)
-            if input_code_is_down_for_player(aim_left_key, player_index=idx):
+            if _aim_pov_left_active():
                 heading = float(heading - float(dt_frame) * _AIM_JOYSTICK_TURN_RATE)
             aim = _aim_point_from_heading(player.pos, heading)
         elif int(aim_scheme) == 5:
