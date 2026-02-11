@@ -65,6 +65,7 @@ nav = [
       { "Boot / loading sequence" = "boot-sequence.md" },
       { "Detangling notes" = "detangling.md" },
       { "Perk runtime reference" = "re/static/perks-runtime-reference.md" },
+      { "Fire Bullets 1.9.8 vs 1.9.93" = "re/static/fire-bullets-1.9.8-vs-1.9.93.md" },
       { "Crimsonland.exe" = [
         { "Overview" = "crimsonland-exe/index.md" },
         { "State machine" = "crimsonland-exe/state-machine.md" },
