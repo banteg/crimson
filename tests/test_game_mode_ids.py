@@ -187,13 +187,13 @@ def test_perk_without_mode_3_flag_is_rejected_in_quest_mode() -> None:
 
 def test_perk_flags_match_native_ctor_defaults_and_known_overrides() -> None:
     assert PERK_BY_ID[int(PerkId.SHARPSHOOTER)].flags == (
-        PerkFlags.MODE_3_ONLY | PerkFlags.TWO_PLAYER_ONLY
+        PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.TWO_PLAYER_ALLOWED
     )
     assert PERK_BY_ID[int(PerkId.INSTANT_WINNER)].flags == (
-        PerkFlags.MODE_3_ONLY | PerkFlags.TWO_PLAYER_ONLY | PerkFlags.STACKABLE
+        PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.TWO_PLAYER_ALLOWED | PerkFlags.STACKABLE
     )
     assert PERK_BY_ID[int(PerkId.RANDOM_WEAPON)].flags == (
-        PerkFlags.MODE_3_ONLY | PerkFlags.STACKABLE
+        PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.STACKABLE
     )
-    assert PERK_BY_ID[int(PerkId.BREATHING_ROOM)].flags == PerkFlags.TWO_PLAYER_ONLY
+    assert PERK_BY_ID[int(PerkId.BREATHING_ROOM)].flags == PerkFlags.TWO_PLAYER_ALLOWED
     assert PERK_BY_ID[int(PerkId.GRIM_DEAL)].flags == PerkFlags(0)

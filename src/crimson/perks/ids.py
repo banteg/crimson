@@ -8,15 +8,15 @@ from enum import IntEnum, IntFlag
 
 class PerkFlags(IntFlag):
     # `perk_can_offer` uses these bits as mode-specific allow-lists:
-    # - in quest mode, only perks with MODE_3_ONLY are eligible
-    # - in two-player mode, only perks with TWO_PLAYER_ONLY are eligible
-    MODE_3_ONLY = 0x1
-    TWO_PLAYER_ONLY = 0x2
+    # - in quest mode, only perks with QUEST_MODE_ALLOWED are eligible
+    # - in two-player mode, only perks with TWO_PLAYER_ALLOWED are eligible
+    QUEST_MODE_ALLOWED = 0x1
+    TWO_PLAYER_ALLOWED = 0x2
     STACKABLE = 0x4  # can be offered even if already owned
 
 
 # Native `perk_meta_table` ctor (`sub_42fac0`) initializes every entry with flags=3.
-PERK_DEFAULT_FLAGS = PerkFlags.MODE_3_ONLY | PerkFlags.TWO_PLAYER_ONLY
+PERK_DEFAULT_FLAGS = PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.TWO_PLAYER_ALLOWED
 
 
 class PerkId(IntEnum):
@@ -208,7 +208,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2b74",
         name="Alternate Weapon",
         description="Ever fancied about having two weapons available for use? This might be your lucky day; with this perk you'll get an extra weapon slot for another gun! Carrying around two guns slows you down slightly though. (You can switch the weapon slots with RELOAD key)",
-        flags=PerkFlags.MODE_3_ONLY,
+        flags=PerkFlags.QUEST_MODE_ALLOWED,
         prereq=(),
         notes=(
             "`player_apply_move_with_spawn_avoidance` (0x0041e290): scales movement delta by `0.8`. "
@@ -306,7 +306,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2c04",
         name="Random Weapon",
         description="Here, have this weapon. No questions asked.",
-        flags=PerkFlags.MODE_3_ONLY | PerkFlags.STACKABLE,
+        flags=PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.STACKABLE,
         prereq=(),
         notes=(
             "`perk_apply` (0x004055e0): picks a random available weapon (retries up to 100), skipping the pistol "
@@ -662,7 +662,7 @@ PERK_TABLE = [
         const_addr="DAT_004c2bc4",
         name="Breathing Room",
         description="Trade 2/3rds of your health for the killing of every single creature on the screen. No, you don't get the experience.",
-        flags=PerkFlags.TWO_PLAYER_ONLY,
+        flags=PerkFlags.TWO_PLAYER_ALLOWED,
         prereq=(),
         notes=(
             "`perk_apply` (0x004055e0): scales `player.health` down by 2/3 for each player, then for every active "
