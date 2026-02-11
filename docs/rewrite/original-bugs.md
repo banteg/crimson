@@ -39,3 +39,26 @@ Rewrite behavior:
 - With `--preserve-bugs`: re-enable the exe’s `amount == weapon_id` suppression
   rule for all bonus types.
 
+## 2) Greater Regeneration has no runtime effect
+
+Native behavior:
+
+- `perk_id_greater_regeneration` is defined and unlockable, but no gameplay tick
+  logic reads it.
+- `perks_update_effects` only checks `perk_id_regeneration`.
+- `perk_apply` only touches Greater Regeneration indirectly via Death Clock
+  clearing both regen perk counts.
+
+Why it’s likely a bug:
+
+- The in-game description says Greater Regeneration should replenish health
+  “faster than ever.”
+- It has a prerequisite (`Regeneration`), so the intended design is clearly an
+  upgrade path, but the effect implementation is missing.
+
+Rewrite behavior:
+
+- Default: Greater Regeneration upgrades Regeneration heal ticks from `+dt` to
+  `+2*dt` (same RNG gate/timing as base Regeneration).
+- With `--preserve-bugs`: keep original behavior where Greater Regeneration is a
+  no-op.

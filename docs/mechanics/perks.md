@@ -319,7 +319,9 @@ Unlocked by quest 4.5 (*The Massacre*).
 
 ## 45. Greater Regeneration
 
-No runtime effect has been found in this build. Appears to be a no-op.
+Upgrades [Regeneration](#38-regeneration): when a regen tick triggers, heal
+amount is doubled (+2×dt instead of +dt). With `--preserve-bugs`, original
+behavior is preserved and Greater Regeneration is a no-op.
 [Death Clock](#47-death-clock) clears it on pick.
 
 Requires [Regeneration](#38-regeneration).

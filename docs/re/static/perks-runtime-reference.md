@@ -552,7 +552,10 @@ Notes:
 
 ### Rewrite
 
-- No runtime effect implemented (matches this build).
+- Default rewrite mode: Greater Regeneration upgrades Regeneration heal ticks
+  from `+dt` to `+2*dt` (same RNG gate in `perks_update_effects`).
+- With `--preserve-bugs`: no runtime effect (matches original).
+- Implementation: `src/crimson/perks/impl/regeneration_effect.py`: `update_regeneration()`.
 - Cleared by Death Clock apply: `src/crimson/perks/impl/death_clock.py`: `apply_death_clock()`.
 
 ## 46. Breathing Room (`PerkId.BREATHING_ROOM`)
