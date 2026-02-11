@@ -17,24 +17,29 @@ Goals:
 - **Deterministic auditability**: stable RNG consumption and dispatch order for
   differential testing.
 
-## Design overview
+## Package layout
 
-Perk runtime logic is split into two layers:
+Perk runtime code is intentionally split into **three** concerns:
 
-1. **Per-perk ownership modules** in `src/crimson/perks/*.py`
-   - Each perk that has runtime behavior exports exactly one `HOOKS` value:
-     `PerkHooks(...)`.
-   - The same file contains the perk’s hook functions.
-2. **One canonical manifest** in `src/crimson/perks/manifest.py`
-   - `PERK_HOOKS_IN_ORDER`: parity-critical master ordering.
-   - Derived dispatch tables used by runtime call sites.
+1. **Perk metadata + selection state** (`src/crimson/perks/*.py`)
+   - `ids.py`, `helpers.py`, `availability.py`, `selection.py`, `state.py`
+   - No per-perk hook ownership in this layer.
+2. **Perk implementation ownership** (`src/crimson/perks/impl/*.py`)
+   - One module per perk behavior owner.
+   - Each module exports exactly one `HOOKS = PerkHooks(...)`.
+   - The same file holds the perk’s runtime hook functions.
+3. **Runtime dispatch orchestration** (`src/crimson/perks/runtime/*.py`)
+   - Hook contracts and contexts (`hook_types.py`, `*_context.py`)
+   - Dispatch entry points (`apply.py`, `effects.py`, `player_ticks.py`)
+   - Canonical registry (`manifest.py`) that imports all `impl` owners and
+     defines parity-critical dispatch ordering.
 
-There are no compatibility registry wrappers/re-exports for perk runtime
-dispatch. If you need runtime ownership or hook order, use `manifest.py`.
+There are no compatibility re-export wrappers for runtime dispatch. Runtime
+ownership/order is authoritative in `src/crimson/perks/runtime/manifest.py`.
 
 ## Runtime surfaces
 
-Hook shape is defined in `src/crimson/perks/hook_types.py`:
+Hook shape is defined in `src/crimson/perks/runtime/hook_types.py`:
 
 - `apply_handler`: immediate on-pick logic (`perk_apply` path)
 - `world_dt_step`: frame-dt transforms (e.g. Reflex Boosted)
@@ -57,7 +62,7 @@ HOOKS = PerkHooks(
 
 ### 1) Apply-time perks
 
-- Entry: `src/crimson/perks/apply.py:perk_apply`
+- Entry: `src/crimson/perks/runtime/apply.py:perk_apply`
 - Source: `PERK_APPLY_HANDLERS` derived from `PERK_HOOKS_IN_ORDER`
 - Flow:
   1. Increment owner perk count (`adjust_perk_count`).
@@ -75,7 +80,7 @@ shared-count behavior.
 
 ### 3) Perk effects hooks
 
-- Entry: `src/crimson/perks/effects.py:perks_update_effects`
+- Entry: `src/crimson/perks/runtime/effects.py:perks_update_effects`
 - Source: `PERKS_UPDATE_EFFECT_STEPS`
 - Called early in `WorldState.step`, after aim staging and before
   `state.effects.update(...)`.
@@ -84,7 +89,7 @@ shared-count behavior.
 ### 4) Player tick hooks
 
 - Entry: `src/crimson/gameplay.py:player_update` via
-  `src/crimson/perks/player_ticks.py:apply_player_perk_ticks`
+  `src/crimson/perks/runtime/player_ticks.py:apply_player_perk_ticks`
 - Source: `PLAYER_PERK_TICK_STEPS`
 - Runs once per player each tick.
 
@@ -107,6 +112,17 @@ These rules are parity-critical:
 5. Avoid moving logic between phases (`apply_handler` vs `effects_steps` vs
    `player_tick_steps`) without native evidence.
 
+## Import boundary contracts
+
+`import-linter` contracts enforce anti-drift boundaries in code:
+
+- `crimson.perks.impl` must not import `selection` / `availability`.
+- `crimson.perks.runtime` must not import `selection` / `availability`.
+- `selection` / `availability` must not import `impl` directly.
+
+This keeps runtime ownership centralized in `runtime/manifest.py` and avoids
+split-brain registration paths.
+
 ## Anti-drift guardrails
 
 Guard tests live in `tests/test_feature_hook_registries.py`:
@@ -124,10 +140,10 @@ Validation command:
 
 When adding or refactoring a perk runtime hook:
 
-1. Implement/update the hook function in that perk’s module.
+1. Implement/update the hook function in `src/crimson/perks/impl/<perk>.py`.
 2. Update that module’s `HOOKS = PerkHooks(...)`.
 3. Add/update the import + placement in `PERK_HOOKS_IN_ORDER` in
-   `src/crimson/perks/manifest.py`.
+   `src/crimson/perks/runtime/manifest.py`.
 4. Keep deterministic behavior explicit:
    - do not normalize parity-sensitive float constants.
    - preserve native guard/branch structure when it affects RNG or timing.

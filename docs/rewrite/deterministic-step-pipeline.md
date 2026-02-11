@@ -57,8 +57,8 @@ Now, all major paths execute the same step planner and emit the same command str
 The deterministic tick/presentation flow now dispatches selected behavior through explicit feature hooks:
 
 - Perk world-step hooks:
-  - manifest: `src/crimson/perks/manifest.py`
-  - contracts: `src/crimson/perks/hook_types.py`
+  - manifest: `src/crimson/perks/runtime/manifest.py`
+  - contracts: `src/crimson/perks/runtime/hook_types.py`
   - hooks: Reflex Boosted dt scaling, Final Revenge death burst
 - Bonus pickup presentation hooks:
   - registry: `src/crimson/bonuses/pickup_fx.py`

@@ -99,8 +99,8 @@ under `docs/crimsonland-exe/`.
   - Code: `src/crimson/oracle.py`
   - Test: `tests/test_oracle_session_pipeline.py`
 - Studyability-first feature hook extraction is now in place for key deterministic paths:
-  - Perk hook manifest: `src/crimson/perks/manifest.py`
-  - Perk hook contracts: `src/crimson/perks/hook_types.py`
+  - Perk hook manifest: `src/crimson/perks/runtime/manifest.py`
+  - Perk hook contracts: `src/crimson/perks/runtime/hook_types.py`
   - Bonus pickup hook registry: `src/crimson/bonuses/pickup_fx.py`
   - Presentation projectile-decal hook registry: `src/crimson/features/presentation/projectile_decals.py`
   - Architecture guard tests: `tests/test_feature_hook_registries.py`
