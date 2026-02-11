@@ -23,6 +23,7 @@ from ..menu import (
 )
 from ...ui.menu_panel import draw_classic_menu_panel
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from ...movement_controls import MovementControlType, movement_control_type_from_value
 from .controls_labels import (
     PICK_PERK_BIND_SLOT,
     RELOAD_BIND_SLOT,
@@ -305,7 +306,7 @@ class ControlsMenuView(PanelMenuView):
         *,
         player_index: int,
         aim_scheme: int,
-        move_mode: int,
+        move_mode: int | MovementControlType,
     ) -> tuple[tuple[str, tuple[tuple[str, int], ...]], ...]:
         aim_rows, move_rows, misc_rows = controls_rebind_slot_plan(
             aim_scheme=aim_scheme,
@@ -452,10 +453,14 @@ class ControlsMenuView(PanelMenuView):
         config.data["unknown_4c"] = bytes(raw)
 
     @staticmethod
-    def _move_method_items(*, move_mode: int) -> tuple[str, ...]:
-        items = [input_scheme_label(1), input_scheme_label(2), input_scheme_label(3)]
-        if int(move_mode) == 4:
-            items.append(input_scheme_label(4))
+    def _move_method_ids(*, move_mode: int | MovementControlType) -> tuple[MovementControlType, ...]:
+        items = [
+            MovementControlType.RELATIVE,
+            MovementControlType.STATIC,
+            MovementControlType.DUAL_ACTION_PAD,
+        ]
+        if movement_control_type_from_value(move_mode) is MovementControlType.MOUSE_POINT_CLICK:
+            items.append(MovementControlType.MOUSE_POINT_CLICK)
         return tuple(items)
 
     def _dropdown_layout(self, *, pos: Vec2, items: tuple[str, ...], scale: float) -> _DropdownLayout:
@@ -525,7 +530,8 @@ class ControlsMenuView(PanelMenuView):
         config = self._state.config
         player_idx = self._current_player_index()
         aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
-        move_items = self._move_method_items(move_mode=move_mode)
+        move_mode_ids = self._move_method_ids(move_mode=move_mode)
+        move_items = tuple(input_scheme_label(mode) for mode in move_mode_ids)
         aim_item_ids = controls_aim_method_dropdown_ids(int(aim_scheme))
         aim_items = tuple(input_configure_for_label(i) for i in aim_item_ids)
         player_items = ("Player 1", "Player 2", "Player 3", "Player 4")
@@ -559,7 +565,8 @@ class ControlsMenuView(PanelMenuView):
             scale=panel_scale,
         )
         if move_selected is not None:
-            self._set_player_move_mode(player_index=player_idx, move_mode=move_selected + 1)
+            selected_idx = max(0, min(int(move_selected), len(move_mode_ids) - 1))
+            self._set_player_move_mode(player_index=player_idx, move_mode=int(move_mode_ids[selected_idx]))
             self._dirty = True
         if consumed:
             return True
@@ -637,11 +644,16 @@ class ControlsMenuView(PanelMenuView):
         config = self._state.config
         player_idx = self._current_player_index()
         aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
-        move_items = self._move_method_items(move_mode=move_mode)
+        move_mode_ids = self._move_method_ids(move_mode=move_mode)
+        move_items = tuple(input_scheme_label(mode) for mode in move_mode_ids)
         aim_item_ids = controls_aim_method_dropdown_ids(int(aim_scheme))
         aim_items = tuple(input_configure_for_label(i) for i in aim_item_ids)
         player_items = ("Player 1", "Player 2", "Player 3", "Player 4")
-        move_selected = max(0, min(len(move_items) - 1, int(move_mode) - 1))
+        move_mode_type = movement_control_type_from_value(move_mode)
+        try:
+            move_selected = move_mode_ids.index(move_mode_type) if move_mode_type is not None else 0
+        except ValueError:
+            move_selected = 0
         try:
             aim_selected = aim_item_ids.index(int(aim_scheme))
         except ValueError:

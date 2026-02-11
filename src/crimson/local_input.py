@@ -18,6 +18,7 @@ from .input_codes import (
     input_code_is_down_for_player,
     input_code_is_pressed_for_player,
 )
+from .movement_controls import MovementControlType, movement_control_type_from_value
 
 _AIM_RADIUS_KEYBOARD = 60.0
 _AIM_RADIUS_PAD_BASE = 42.0
@@ -237,6 +238,7 @@ class LocalInputInterpreter:
         state = self._state_for_player(idx, player=player)
         binds = _load_player_bind_block(config, player_index=idx)
         aim_scheme, move_mode = self._safe_controls_modes(config, player_index=idx)
+        move_mode_type = movement_control_type_from_value(move_mode)
         reload_key = self._reload_key(config)
 
         up_key = int(binds[_MOVE_SLOT_UP])
@@ -257,7 +259,7 @@ class LocalInputInterpreter:
         turn_left_pressed: bool | None = None
         turn_right_pressed: bool | None = None
 
-        if int(move_mode) == 1:
+        if move_mode_type is MovementControlType.RELATIVE:
             move_forward_pressed = bool(input_code_is_down_for_player(up_key, player_index=idx))
             move_backward_pressed = bool(input_code_is_down_for_player(down_key, player_index=idx))
             turn_left_pressed = bool(input_code_is_down_for_player(left_key, player_index=idx))
@@ -266,11 +268,11 @@ class LocalInputInterpreter:
                 float(turn_right_pressed) - float(turn_left_pressed),
                 float(move_backward_pressed) - float(move_forward_pressed),
             )
-        elif int(move_mode) == 3:
+        elif move_mode_type is MovementControlType.DUAL_ACTION_PAD:
             axis_y = -input_axis_value_for_player(move_axis_y, player_index=idx)
             axis_x = -input_axis_value_for_player(move_axis_x, player_index=idx)
             move_vec = Vec2(_clamp_unit(axis_x), _clamp_unit(axis_y))
-        elif int(move_mode) == 4:
+        elif move_mode_type is MovementControlType.MOUSE_POINT_CLICK:
             if input_code_is_down_for_player(reload_key, player_index=idx):
                 state.move_target = mouse_world
             if float(state.move_target.x) >= 0.0 and float(state.move_target.y) >= 0.0:
@@ -278,9 +280,9 @@ class LocalInputInterpreter:
                 _dir, dist = delta.normalized_with_length()
                 if float(dist) > _POINT_CLICK_STOP_RADIUS:
                     move_vec = _dir
-        elif int(move_mode) == 5:
+        elif move_mode_type is MovementControlType.COMPUTER:
             move_vec = Vec2()
-        elif int(move_mode) == 2:
+        elif move_mode_type is MovementControlType.STATIC:
             move_up_pressed = bool(input_code_is_down_for_player(up_key, player_index=idx))
             move_down_pressed = bool(input_code_is_down_for_player(down_key, player_index=idx))
             move_left_pressed = bool(input_code_is_down_for_player(left_key, player_index=idx))
@@ -310,7 +312,7 @@ class LocalInputInterpreter:
             if delta.length_sq() > 1e-9:
                 heading = delta.to_heading()
         elif int(aim_scheme) == 1:
-            if int(move_mode) in {1, 2}:
+            if move_mode_type in {MovementControlType.RELATIVE, MovementControlType.STATIC}:
                 if input_code_is_down_for_player(aim_right_key, player_index=idx):
                     heading = float(heading + float(dt_frame) * _AIM_KEYBOARD_TURN_RATE)
                 if input_code_is_down_for_player(aim_left_key, player_index=idx):

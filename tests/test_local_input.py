@@ -4,6 +4,7 @@ import pytest
 
 from crimson import local_input
 from crimson.gameplay import PlayerState
+from crimson.movement_controls import MovementControlType
 from grim.geom import Vec2
 
 
@@ -35,7 +36,7 @@ def test_local_input_computer_aim_auto_fires_without_fire_pressed(monkeypatch: p
     monkeypatch.setattr(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
-        staticmethod(lambda _config, *, player_index: (5, 2)),
+        staticmethod(lambda _config, *, player_index: (5, int(MovementControlType.STATIC))),
     )
 
     interpreter = local_input.LocalInputInterpreter()
@@ -64,7 +65,7 @@ def test_local_input_computer_aim_without_target_points_away_from_center(monkeyp
     monkeypatch.setattr(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
-        staticmethod(lambda _config, *, player_index: (5, 2)),
+        staticmethod(lambda _config, *, player_index: (5, int(MovementControlType.STATIC))),
     )
 
     interpreter = local_input.LocalInputInterpreter()
@@ -109,7 +110,7 @@ def test_local_input_static_mode_conflict_precedence_matches_native(
     monkeypatch.setattr(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
-        staticmethod(lambda _config, *, player_index: (0, 2)),
+        staticmethod(lambda _config, *, player_index: (0, int(MovementControlType.STATIC))),
     )
 
     interpreter = local_input.LocalInputInterpreter()

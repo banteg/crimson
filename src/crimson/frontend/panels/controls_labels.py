@@ -3,6 +3,8 @@ from __future__ import annotations
 import struct
 from typing import Mapping
 
+from ...movement_controls import MovementControlType, movement_control_type_from_value
+
 
 PICK_PERK_BIND_SLOT = -1
 RELOAD_BIND_SLOT = -2
@@ -25,17 +27,21 @@ def input_configure_for_label(config_id: int) -> str:
     return "Unknown"
 
 
-def input_scheme_label(scheme: int) -> str:
+def input_scheme_label(scheme: int | MovementControlType) -> str:
     """Port of `input_scheme_label` (0x00447cf0)."""
 
+    mode_type = movement_control_type_from_value(scheme)
+    if mode_type is None:
+        return "Unknown"
+
     labels = {
-        1: "Relative",
-        2: "Static",
-        3: "Dual Action Pad",
-        4: "Mouse point click",
-        5: "Computer",
+        MovementControlType.RELATIVE: "Relative",
+        MovementControlType.STATIC: "Static",
+        MovementControlType.DUAL_ACTION_PAD: "Dual Action Pad",
+        MovementControlType.MOUSE_POINT_CLICK: "Mouse point click",
+        MovementControlType.COMPUTER: "Computer",
     }
-    return labels.get(int(scheme), "Unknown")
+    return labels.get(mode_type, "Unknown")
 
 
 def _read_player_mode_flags(config_data: Mapping[str, object]) -> tuple[int, int, int, int]:
@@ -105,7 +111,7 @@ def controls_aim_method_dropdown_ids(current_aim_scheme: int) -> tuple[int, ...]
 def controls_rebind_slot_plan(
     *,
     aim_scheme: int,
-    move_mode: int,
+    move_mode: int | MovementControlType,
     player_index: int,
 ) -> tuple[tuple[tuple[str, int], ...], tuple[tuple[str, int], ...], tuple[tuple[str, int], ...]]:
     """Return (aim_rows, move_rows, misc_rows) for `controls_menu_update`."""
@@ -113,6 +119,7 @@ def controls_rebind_slot_plan(
     aim_rows: list[tuple[str, int]] = []
     move_rows: list[tuple[str, int]] = []
     misc_rows: list[tuple[str, int]] = []
+    move_mode_type = movement_control_type_from_value(move_mode)
 
     if int(aim_scheme) == 1:
         aim_rows.append(("Torso left:", 7))
@@ -122,7 +129,7 @@ def controls_rebind_slot_plan(
         aim_rows.append(("Aim Left/Right Axis:", 10))
     aim_rows.append(("Fire:", 4))
 
-    if int(move_mode) == 2:
+    if move_mode_type is MovementControlType.STATIC:
         move_rows.extend(
             (
                 ("Move Up:", 0),
@@ -131,7 +138,7 @@ def controls_rebind_slot_plan(
                 ("Move Right:", 3),
             )
         )
-    elif int(move_mode) == 1:
+    elif move_mode_type is MovementControlType.RELATIVE:
         move_rows.extend(
             (
                 ("Forward:", 0),
@@ -140,19 +147,19 @@ def controls_rebind_slot_plan(
                 ("Turn right:", 3),
             )
         )
-    elif int(move_mode) == 3:
+    elif move_mode_type is MovementControlType.DUAL_ACTION_PAD:
         move_rows.extend(
             (
                 ("Up/Down Axis:", 11),
                 ("Left/Right Axis:", 12),
             )
         )
-    elif int(move_mode) == 4:
+    elif move_mode_type is MovementControlType.MOUSE_POINT_CLICK:
         move_rows.append(("Move to cursor:", RELOAD_BIND_SLOT))
 
     if int(player_index) == 0:
         misc_rows.append(("Level Up:", PICK_PERK_BIND_SLOT))
-        if int(move_mode) != 4:
+        if move_mode_type is not MovementControlType.MOUSE_POINT_CLICK:
             misc_rows.append(("Reload:", RELOAD_BIND_SLOT))
 
     return tuple(aim_rows), tuple(move_rows), tuple(misc_rows)
