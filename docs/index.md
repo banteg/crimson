@@ -1,33 +1,37 @@
 ---
 tags:
   - docs-hub
-  - audience-routing
 ---
 
 # Crimsonland documentation
 
-This docs set is organized by audience and purpose.
+A from-scratch rewrite of Crimsonland (2003), aiming for full parity with the
+original Windows executable. These docs cover the game's mechanics, the rewrite
+implementation, and the reverse engineering work that ties them together.
 
-## Choose your path
+[Blog post](https://banteg.xyz/posts/crimsonland/) • [Source code](https://github.com/banteg/crimson)
 
-- [Mechanics](mechanics/index.md)
-  Canonical gameplay behavior and reference tables.
+## Play now
 
-- [Rewrite](rewrite/index.md)
-  Python/raylib implementation architecture, contracts, modules, and parity status.
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
 
-- [Reverse engineering](re/index.md)
-  Static decompile evidence, runtime validation, file formats, and struct mapping.
+```bash
+uvx crimsonland@latest
+```
 
-- [Verification](verification/index.md)
-  Differential-testing workflow, evidence ledger, and parity matrices.
+## Highlights
 
-- [Contributor](contributor/index.md)
-  Setup, runbooks, project tracking, and cheatsheets.
+- [Perks](mechanics/perks.md): all 58 perks with exact numbers, interaction
+  rules, and original bug notes verified against two builds of the binary.
 
-## Fast links
+## Sections
 
-- [Rewrite status / parity gaps](rewrite/status.md)
-- [Crimsonland.exe overview](crimsonland-exe/index.md)
-- [Frida tooling](frida/index.md)
-- [Project tracking](contributor/project-tracking/index.md)
+- [Mechanics](mechanics/index.md): how the game actually plays. Behavior
+  specs, reference tables, and game rules written without decompiler details.
+- [Rewrite](rewrite/index.md): the Python port. Architecture, module map,
+  debug views, and parity status.
+- [Reverse engineering](re/index.md): static analysis, runtime probes, struct
+  layouts, and file formats extracted from the original binary.
+- [Verification](verification/index.md): differential testing, evidence
+  ledger, and parity matrices that connect claims to proof.
+- [Contributor](contributor/index.md): setup, workflows, and project tracking.
