@@ -77,8 +77,9 @@ frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
 
 Shortcut: `just frida-gameplay-diff-capture`
 
-Survival autoplay sidecar (forces Survival + native computer controls, auto-picks perks,
-optionally auto-restarts after game over, JSONL to `survival_autoplay.jsonl`):
+Survival autoplay sidecar (forces Survival, keeps native auto-aim, drives movement via
+key-query override with kiting/bonus/rush logic, auto-picks perks, and defaults to single-run
+stop-after-death to avoid score-screen glitches, JSONL to `survival_autoplay.jsonl`):
 
 ```text
 frida -n crimsonland.exe -l C:\share\frida\survival_autoplay.js
