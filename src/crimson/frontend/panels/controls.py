@@ -26,6 +26,7 @@ from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .controls_labels import (
     PICK_PERK_BIND_SLOT,
     RELOAD_BIND_SLOT,
+    controls_aim_method_dropdown_ids,
     controls_method_values,
     controls_rebind_slot_plan,
     input_configure_for_label,
@@ -525,7 +526,8 @@ class ControlsMenuView(PanelMenuView):
         player_idx = self._current_player_index()
         aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
         move_items = self._move_method_items(move_mode=move_mode)
-        aim_items = tuple(input_configure_for_label(i) for i in range(5))
+        aim_item_ids = controls_aim_method_dropdown_ids(int(aim_scheme))
+        aim_items = tuple(input_configure_for_label(i) for i in aim_item_ids)
         player_items = ("Player 1", "Player 2", "Player 3", "Player 4")
 
         move_layout = self._dropdown_layout(
@@ -570,7 +572,8 @@ class ControlsMenuView(PanelMenuView):
             scale=panel_scale,
         )
         if aim_selected is not None:
-            self._set_player_aim_scheme(player_index=player_idx, aim_scheme=aim_selected)
+            selected_idx = max(0, min(int(aim_selected), len(aim_item_ids) - 1))
+            self._set_player_aim_scheme(player_index=player_idx, aim_scheme=aim_item_ids[selected_idx])
             self._dirty = True
         if consumed:
             return True
@@ -635,10 +638,14 @@ class ControlsMenuView(PanelMenuView):
         player_idx = self._current_player_index()
         aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
         move_items = self._move_method_items(move_mode=move_mode)
-        aim_items = tuple(input_configure_for_label(i) for i in range(5))
+        aim_item_ids = controls_aim_method_dropdown_ids(int(aim_scheme))
+        aim_items = tuple(input_configure_for_label(i) for i in aim_item_ids)
         player_items = ("Player 1", "Player 2", "Player 3", "Player 4")
         move_selected = max(0, min(len(move_items) - 1, int(move_mode) - 1))
-        aim_selected = max(0, min(len(aim_items) - 1, int(aim_scheme)))
+        try:
+            aim_selected = aim_item_ids.index(int(aim_scheme))
+        except ValueError:
+            aim_selected = max(0, min(len(aim_items) - 1, int(aim_scheme)))
         player_selected = max(0, min(len(player_items) - 1, player_idx))
         move_layout = self._dropdown_layout(
             pos=Vec2(left_top_left.x + 214.0 * panel_scale, left_top_left.y + 144.0 * panel_scale),

@@ -336,6 +336,7 @@ class BaseGameplayMode:
             mouse_screen=self._ui_mouse,
             screen_to_world=self._world.screen_to_world,
             dt_frame=float(dt_frame),
+            creatures=self._creatures.entries,
         )
 
     @staticmethod

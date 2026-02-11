@@ -48,6 +48,15 @@ def test_player_update_weapon_power_up_scales_shot_cooldown_decay() -> None:
     assert math.isclose(player.shot_cooldown, 0.25, abs_tol=1e-9)
 
 
+def test_player_update_shot_cooldown_decay_snaps_tiny_residual_to_zero() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), shot_cooldown=0.03400000000000056)
+
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.034, state)
+
+    assert player.shot_cooldown == 0.0
+
+
 def test_player_update_stationary_reloader_tripples_reload_decay() -> None:
     state = GameplayState()
     player = PlayerState(

@@ -94,6 +94,14 @@ def controls_method_labels(config_data: Mapping[str, object], *, player_index: i
     return input_configure_for_label(aim_scheme), input_scheme_label(move_mode)
 
 
+def controls_aim_method_dropdown_ids(current_aim_scheme: int) -> tuple[int, ...]:
+    ids = [0, 1, 2, 3, 4]
+    if int(current_aim_scheme) == 5:
+        # Original menu keeps "Computer" hidden unless loaded from config.
+        ids.append(5)
+    return tuple(ids)
+
+
 def controls_rebind_slot_plan(
     *,
     aim_scheme: int,

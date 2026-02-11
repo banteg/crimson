@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import bisect
+from collections.abc import Mapping
 from collections import Counter
 import functools
 import json
@@ -24,6 +25,7 @@ from crimson.original.capture import (
     convert_capture_to_checkpoints,
     convert_capture_to_replay,
     load_capture,
+    parse_player_int_overrides,
 )
 from crimson.original.schema import CaptureFile
 from crimson.sim.runners import run_rush_replay, run_survival_replay
@@ -981,13 +983,18 @@ def _run_actual_checkpoints(
     max_ticks: int | None,
     seed: int | None,
     inter_tick_rand_draws: int,
+    aim_scheme_overrides_by_player: Mapping[int, int] | None = None,
 ) -> tuple[list[ReplayCheckpoint], list[ReplayCheckpoint], object]:
     expected = convert_capture_to_checkpoints(capture).checkpoints
     if max_ticks is not None:
         tick_cap = max(0, int(max_ticks))
         expected = [ckpt for ckpt in expected if int(ckpt.tick_index) < int(tick_cap)]
 
-    replay = convert_capture_to_replay(capture, seed=seed)
+    replay = convert_capture_to_replay(
+        capture,
+        seed=seed,
+        aim_scheme_overrides_by_player=aim_scheme_overrides_by_player,
+    )
     dt_frame_overrides = build_capture_dt_frame_overrides(
         capture,
         tick_rate=int(replay.header.tick_rate),
@@ -2623,6 +2630,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--window", type=int, default=20, help="ticks before/after focus tick to display")
     parser.add_argument("--max-ticks", type=int, default=None, help="optional replay tick cap")
     parser.add_argument("--seed", type=int, default=None, help="optional fixed replay seed override")
+    parser.add_argument(
+        "--aim-scheme-player",
+        action="append",
+        default=[],
+        metavar="PLAYER=SCHEME",
+        help=(
+            "override replay reconstruction aim scheme for player index "
+            "(repeatable; use for captures missing config_aim_scheme telemetry)"
+        ),
+    )
     parser.add_argument("--float-abs-tol", type=float, default=1e-3, help="absolute float tolerance")
     parser.add_argument("--max-field-diffs", type=int, default=16, help="max field diffs to show")
     parser.add_argument(
@@ -2705,6 +2722,14 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     capture_path = Path(args.capture)
     json_out_path = _resolve_json_out_path(args.json_out)
+    try:
+        aim_scheme_overrides = parse_player_int_overrides(
+            args.aim_scheme_player,
+            option_name="--aim-scheme-player",
+        )
+    except ValueError as exc:
+        print(exc)
+        return 2
 
     capture = load_capture(capture_path)
     sample_rate = _capture_sample_rate(capture)
@@ -2713,6 +2738,7 @@ def main(argv: list[str] | None = None) -> int:
         max_ticks=args.max_ticks,
         seed=args.seed,
         inter_tick_rand_draws=args.inter_tick_rand_draws,
+        aim_scheme_overrides_by_player=aim_scheme_overrides,
     )
     capture_sample_creature_counts = _load_capture_sample_creature_counts(capture_path)
     raw_debug_all_by_tick = _load_raw_tick_debug(capture_path)
@@ -2732,7 +2758,11 @@ def main(argv: list[str] | None = None) -> int:
         f" run_score_xp={int(run_result.score_xp)} run_kills={int(run_result.creature_kill_count)}"  # ty:ignore[unresolved-attribute]
     )
 
-    replay = convert_capture_to_replay(capture, seed=args.seed)
+    replay = convert_capture_to_replay(
+        capture,
+        seed=args.seed,
+        aim_scheme_overrides_by_player=aim_scheme_overrides,
+    )
     print(
         f"mode={int(replay.header.game_mode_id)} tick_rate={int(replay.header.tick_rate)}"
         f" player_count={int(replay.header.player_count)} seed={int(replay.header.seed)}"

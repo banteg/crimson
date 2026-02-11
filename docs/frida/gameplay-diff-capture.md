@@ -59,6 +59,10 @@ Notes:
 - Float precision contract: capture script emits memory-sourced float values as
   tagged float32 bit tokens (`"f32:XXXXXXXX"`). Tooling decodes these tokens at
   load time and treats decoded float32 values as authoritative.
+- Input metadata contract: `input_approx` rows include per-player `move_mode`
+  and `aim_scheme` sampled from config globals. Legacy captures may contain
+  `null` for these fields; use CLI `--aim-scheme-player <PLAYER=SCHEME>`
+  overrides when replay synthesis needs known config values.
 
 ## Convert to checkpoints + replay
 

@@ -197,6 +197,8 @@ const FN_GRIM_RVA = {
 const DATA = {
   config_player_count: 0x0048035c,
   config_game_mode: 0x00480360,
+  config_player_mode_flags: 0x00480364,
+  config_aim_scheme: 0x0048038c,
   frame_dt: 0x00480840,
   frame_dt_ms: 0x00480844,
   perk_lean_mean_exp_tick_timer_s: 0x004808a4,
@@ -632,6 +634,21 @@ function readDataF32Stride(name, index, strideBytes) {
   return captureF32Bits(safeReadF32Bits(p.add(index * strideBytes)));
 }
 
+function readDataI32Stride(name, index, strideBytes) {
+  const p = dataPtrs[name];
+  if (!p) return null;
+  return safeReadS32(p.add(index * strideBytes));
+}
+
+function readConfigPerPlayerI32(name) {
+  const count = Math.max(1, outState.playerCountResolved | 0);
+  const out = [];
+  for (let i = 0; i < count; i++) {
+    out.push(readDataI32Stride(name, i, 4));
+  }
+  return out;
+}
+
 function readStatusSnapshotCompact() {
   const packed = readDataU32("game_status_blob");
   const questUnlock = packed == null ? null : packed & 0xffff;
@@ -874,6 +891,8 @@ function resolvePointers(exeModule, grimModule) {
 function readGameplayGlobalsCompact() {
   return {
     config_game_mode: readDataI32("config_game_mode"),
+    config_player_mode_flags: readConfigPerPlayerI32("config_player_mode_flags"),
+    config_aim_scheme: readConfigPerPlayerI32("config_aim_scheme"),
     game_state_prev: readDataI32("game_state_prev"),
     game_state_id: readDataI32("game_state_id"),
     game_state_pending: readDataI32("game_state_pending"),
@@ -2092,8 +2111,8 @@ function buildInputApprox(afterPlayers, tick) {
       aim_x: p.aim_x,
       aim_y: p.aim_y,
       aim_heading: p.aim_heading,
-      move_mode: null,
-      aim_scheme: null,
+      move_mode: readDataI32Stride("config_player_mode_flags", i, 4),
+      aim_scheme: readDataI32Stride("config_aim_scheme", i, 4),
       fired_events: fired,
       moving: !!moving,
       reload_active: p.reload_active_i32 != null ? p.reload_active_i32 !== 0 : null,
@@ -2373,11 +2392,13 @@ function finalizeTick() {
   };
 
   const frameDtMs =
-    globals.frame_dt_ms_f32 != null
-      ? captureNumber(globals.frame_dt_ms_f32)
-      : decodeCapturedF32(globals.frame_dt) == null
-        ? null
-        : captureNumber(decodeCapturedF32(globals.frame_dt) * 1000);
+    globals.frame_dt_ms_i32 != null
+      ? captureNumber(globals.frame_dt_ms_i32)
+      : globals.frame_dt_ms_f32 != null
+        ? captureNumber(globals.frame_dt_ms_f32)
+        : decodeCapturedF32(globals.frame_dt) == null
+          ? null
+          : captureNumber(decodeCapturedF32(globals.frame_dt) * 1000);
   const frameDtMsI32 = globals.frame_dt_ms_i32 == null ? null : globals.frame_dt_ms_i32;
   const out = {
     tick_index: tick.tick_index,

@@ -2488,8 +2488,11 @@ def player_update(
         return
 
     player.muzzle_flash_alpha = max(0.0, player.muzzle_flash_alpha - dt * 2.0)
-    cooldown_decay = dt * (1.5 if state.bonuses.weapon_power_up > 0.0 else 1.0)
-    player.shot_cooldown = max(0.0, player.shot_cooldown - cooldown_decay)
+    cooldown_decay = float(f32(float(dt) * (1.5 if state.bonuses.weapon_power_up > 0.0 else 1.0)))
+    next_shot_cooldown = float(f32(float(player.shot_cooldown) - float(cooldown_decay)))
+    player.shot_cooldown = max(0.0, float(next_shot_cooldown))
+    if 0.0 < float(player.shot_cooldown) < 1e-6:
+        player.shot_cooldown = 0.0
 
     if perk_active(player, PerkId.SHARPSHOOTER):
         player.spread_heat = 0.02

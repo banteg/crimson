@@ -17,6 +17,7 @@ from .capture import (
     dump_capture,
     infer_capture_seed,
     load_capture,
+    parse_player_int_overrides,
 )
 from .diff import (
     DEFAULT_RNG_MARK_ORDER,
@@ -67,4 +68,5 @@ __all__ = [
     "dump_capture",
     "infer_capture_seed",
     "load_capture",
+    "parse_player_int_overrides",
 ]

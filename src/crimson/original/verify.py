@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, replace
 
 from ..game_modes import GameMode
@@ -99,13 +100,18 @@ def verify_capture(
     trace_rng: bool = False,
     max_field_diffs: int = 16,
     float_abs_tol: float = 0.001,
+    aim_scheme_overrides_by_player: Mapping[int, int] | None = None,
 ) -> tuple[CaptureVerifyResult, RunResult]:
     expected = convert_capture_to_checkpoints(capture).checkpoints
     if max_ticks is not None:
         tick_cap = max(0, int(max_ticks))
         expected = [ckpt for ckpt in expected if int(ckpt.tick_index) < int(tick_cap)]
 
-    replay = convert_capture_to_replay(capture, seed=seed)
+    replay = convert_capture_to_replay(
+        capture,
+        seed=seed,
+        aim_scheme_overrides_by_player=aim_scheme_overrides_by_player,
+    )
     dt_frame_overrides = build_capture_dt_frame_overrides(
         capture,
         tick_rate=int(replay.header.tick_rate),
