@@ -128,7 +128,8 @@ Aim at a bonus pickup within 24 units for 650 ms to collect it remotely.
 
 ## 21. Perk Expert
 
-Perk selection shows 6 choices instead of 5.
+Perk selection shows 6 choices instead of 5. Unlocks
+[Perk Master](#43-perk-master).
 
 ## 22. Unstoppable
 
@@ -156,8 +157,9 @@ Suppressed in hardcore quest 2-10.
 
 ## 26. Dodger
 
-Each incoming hit has a 1-in-5 chance of being dodged entirely. If Ninja is also
-owned, Ninja's better odds take over and Dodger does nothing.
+Each incoming hit has a 1-in-5 chance of being dodged entirely. If
+[Ninja](#40-ninja) is also owned, Ninja's better odds take over and Dodger does
+nothing. Unlocks [Ninja](#40-ninja).
 
 ## 27. Bonus Magnet
 
@@ -211,18 +213,19 @@ reduce or negate it. If Regression Bullets is also owned, it takes priority
 ## 36. Veins of Poison
 
 When a creature hits the player in melee and the shield bonus isn't active, that
-creature gets poisoned (weak tick, 60 damage/s). Suppressed in hardcore quest
-2-10.
+creature gets poisoned (weak tick, 60 damage/s). Unlocks
+[Toxic Avenger](#37-toxic-avenger). Suppressed in hardcore quest 2-10.
 
 ## 37. Toxic Avenger
 
-Upgraded version of Veins of Poison — melee attackers receive strong poison
-(180 damage/s) instead of weak. Requires Veins of Poison.
+Upgraded version of [Veins of Poison](#36-veins-of-poison) — melee attackers
+receive strong poison (180 damage/s) instead of weak. Requires Veins of Poison.
 
 ## 38. Regeneration
 
 Heals each alive player toward 100 HP. The heal ticks every other frame
 (50% chance per frame) for +dt health. Only triggers between 0 and 100 HP.
+Unlocks [Greater Regeneration](#45-greater-regeneration).
 
 ## 39. Pyromaniac
 
@@ -231,8 +234,8 @@ weapon is the Flamethrower.
 
 ## 40. Ninja
 
-Each incoming hit has a 1-in-3 chance of being dodged entirely. Overrides Dodger
-when both are owned. Requires Dodger.
+Each incoming hit has a 1-in-3 chance of being dodged entirely. Overrides
+[Dodger](#26-dodger) when both are owned. Requires Dodger.
 
 ## 41. Highlander
 
@@ -248,8 +251,8 @@ may instantly die, awarding its XP.
 
 ## 43. Perk Master
 
-Perk selection shows 7 choices instead of 5 (or 6 with Perk Expert). Requires
-Perk Expert.
+Perk selection shows 7 choices instead of 5 (or 6 with
+[Perk Expert](#21-perk-expert)). Requires Perk Expert.
 
 ## 44. Reflex Boosted
 
@@ -258,8 +261,9 @@ slow-motion effect.
 
 ## 45. Greater Regeneration
 
-No runtime effect has been found in this build — appears to be a no-op. Death
-Clock clears it on pick. Requires Regeneration.
+No runtime effect has been found in this build — appears to be a no-op.
+[Death Clock](#47-death-clock) clears it on pick. Requires
+[Regeneration](#38-regeneration).
 
 ## 46. Breathing Room
 
