@@ -8,6 +8,8 @@ from ..replay.checkpoints import ReplayCheckpoint
 from .capture import (
     CaptureFile,
     build_capture_dt_frame_overrides,
+    build_capture_dt_frame_ms_i32_overrides,
+    build_capture_inter_tick_rand_draws_overrides,
     convert_capture_to_checkpoints,
     convert_capture_to_replay,
 )
@@ -166,11 +168,13 @@ def verify_capture(
         capture,
         tick_rate=int(replay.header.tick_rate),
     )
+    dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
     checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected}
     actual: list[ReplayCheckpoint] = []
 
     mode = int(replay.header.game_mode_id)
     inter_tick_rand_draws = 1
+    inter_tick_rand_draws_by_tick = build_capture_inter_tick_rand_draws_overrides(capture)
     if mode == int(GameMode.SURVIVAL):
         run_result = run_survival_replay(
             replay,
@@ -181,7 +185,9 @@ def verify_capture(
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
             dt_frame_overrides=dt_frame_overrides,
+            dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
             inter_tick_rand_draws=int(inter_tick_rand_draws),
+            inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
         )
     elif mode == int(GameMode.RUSH):
         run_result = run_rush_replay(
@@ -193,6 +199,7 @@ def verify_capture(
             checkpoint_ticks=checkpoint_ticks,
             dt_frame_overrides=dt_frame_overrides,
             inter_tick_rand_draws=int(inter_tick_rand_draws),
+            inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
         )
     else:
         raise CaptureVerifyError(f"unsupported game mode for capture verification: {mode}")

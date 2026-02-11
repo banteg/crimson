@@ -20,6 +20,7 @@ from crimson.original.diff import ReplayFieldDiff, checkpoint_field_diffs
 from crimson.original.capture import (
     build_capture_dt_frame_overrides,
     build_capture_dt_frame_ms_i32_overrides,
+    build_capture_inter_tick_rand_draws_overrides,
     convert_capture_to_checkpoints,
     convert_capture_to_replay,
     load_capture,
@@ -912,23 +913,7 @@ def _run_actual_checkpoints(
     )
     dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
     checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected}
-    inter_tick_rand_draws_by_tick: dict[int, int] | None = {}
-    for tick in capture.ticks:
-        outside_before_calls = getattr(tick, "rng_outside_before_calls", None)
-        if outside_before_calls is None:
-            outside_before_calls = tick.checkpoint.rng_marks.rand_outside_before_calls
-        calls = _int_or(outside_before_calls, -1)
-        if calls < 0:
-            continue
-        assert inter_tick_rand_draws_by_tick is not None
-        inter_tick_rand_draws_by_tick[int(tick.tick_index)] = int(calls)
-    if inter_tick_rand_draws_by_tick:
-        first_tick_index = min(inter_tick_rand_draws_by_tick)
-        # The inferred replay seed already matches the first sampled tick RNG
-        # entry state, so do not reapply pre-capture bootstrap draws here.
-        inter_tick_rand_draws_by_tick[int(first_tick_index)] = 0
-    if not inter_tick_rand_draws_by_tick:
-        inter_tick_rand_draws_by_tick = None
+    inter_tick_rand_draws_by_tick = build_capture_inter_tick_rand_draws_overrides(capture)
     actual: list[ReplayCheckpoint] = []
 
     mode = int(replay.header.game_mode_id)

@@ -537,6 +537,25 @@ def build_capture_dt_frame_ms_i32_overrides(capture: CaptureFile) -> dict[int, i
     return out
 
 
+def build_capture_inter_tick_rand_draws_overrides(capture: CaptureFile) -> dict[int, int] | None:
+    out: dict[int, int] = {}
+    for tick in capture.ticks:
+        outside_before_calls = getattr(tick, "rng_outside_before_calls", None)
+        if outside_before_calls is None:
+            outside_before_calls = tick.checkpoint.rng_marks.rand_outside_before_calls
+        calls = _coerce_int_like(outside_before_calls)
+        if calls is None or int(calls) < 0:
+            continue
+        out[int(tick.tick_index)] = int(calls)
+
+    if out:
+        first_tick_index = min(out)
+        # Inferred replay seed already matches the first sampled tick state.
+        out[int(first_tick_index)] = 0
+        return out
+    return None
+
+
 def _capture_bootstrap_payload(
     tick: CaptureTick,
     *,

@@ -13,6 +13,7 @@ from crimson.original.capture import (
     CAPTURE_PERK_PENDING_EVENT_KIND,
     build_capture_dt_frame_overrides,
     build_capture_dt_frame_ms_i32_overrides,
+    build_capture_inter_tick_rand_draws_overrides,
     capture_bootstrap_payload_from_event_payload,
     capture_perk_apply_id_from_event_payload,
     capture_perk_pending_from_event_payload,
@@ -618,6 +619,48 @@ def test_build_capture_dt_frame_ms_i32_overrides_uses_explicit_values(tmp_path: 
     overrides = build_capture_dt_frame_ms_i32_overrides(capture)
 
     assert overrides == {0: 17}
+
+
+def test_build_capture_inter_tick_rand_draws_overrides_uses_checkpoint_marks(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=10, elapsed_ms=0)
+    tick1 = _base_tick(tick_index=11, elapsed_ms=16)
+    tick2 = _base_tick(tick_index=12, elapsed_ms=32)
+    assert isinstance(tick0["checkpoint"], dict)
+    assert isinstance(tick1["checkpoint"], dict)
+    assert isinstance(tick2["checkpoint"], dict)
+    assert isinstance(tick0["checkpoint"]["rng_marks"], dict)
+    assert isinstance(tick1["checkpoint"]["rng_marks"], dict)
+    assert isinstance(tick2["checkpoint"]["rng_marks"], dict)
+    tick0["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = 7
+    tick1["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = 3
+    tick2["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = -1
+    obj = _capture_obj(ticks=[tick0, tick1, tick2])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    overrides = build_capture_inter_tick_rand_draws_overrides(capture)
+
+    assert overrides == {10: 0, 11: 3}
+
+
+def test_build_capture_inter_tick_rand_draws_overrides_returns_none_when_missing(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=0)
+    tick1 = _base_tick(tick_index=1, elapsed_ms=16)
+    assert isinstance(tick0["checkpoint"], dict)
+    assert isinstance(tick1["checkpoint"], dict)
+    assert isinstance(tick0["checkpoint"]["rng_marks"], dict)
+    assert isinstance(tick1["checkpoint"]["rng_marks"], dict)
+    tick0["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = -1
+    tick1["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = -1
+    obj = _capture_obj(ticks=[tick0, tick1])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    overrides = build_capture_inter_tick_rand_draws_overrides(capture)
+
+    assert overrides is None
 
 
 def test_convert_capture_to_replay_infers_seed_from_rng_head(tmp_path: Path) -> None:
