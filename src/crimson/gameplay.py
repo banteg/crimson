@@ -30,7 +30,7 @@ from .weapons import (
     weapon_entry_for_projectile_type_id,
 )
 from .sim.input import PlayerInput
-from .sim.state_types import PERK_COUNT_SIZE, PlayerState
+from .sim.state_types import BonusPickupEvent, PERK_COUNT_SIZE, PlayerState
 
 if TYPE_CHECKING:
     from .persistence.save_status import GameStatus
@@ -163,14 +163,6 @@ class BonusEntry:
     time_max: float = 0.0
     pos: Vec2 = field(default_factory=Vec2)
     amount: int = 0
-
-
-@dataclass(frozen=True, slots=True)
-class BonusPickupEvent:
-    player_index: int
-    bonus_id: int
-    amount: int
-    pos: Vec2
 
 
 @dataclass(frozen=True, slots=True)
@@ -563,6 +555,10 @@ class GameplayState:
         rand = self.rng.rand
         self.particles = ParticlePool(rand=rand)
         self.sprite_effects = SpriteEffectPool(rand=rand)
+
+
+def build_gameplay_state() -> GameplayState:
+    return GameplayState()
 
 
 def perk_count_get(player: PlayerState, perk_id: PerkId) -> int:

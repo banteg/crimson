@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any, TypeAlias
 
 from grim.geom import Vec2
 
@@ -64,3 +65,14 @@ class PlayerState:
     speed_bonus_timer: float = 0.0
     shield_timer: float = 0.0
     fire_bullets_timer: float = 0.0
+
+
+@dataclass(frozen=True, slots=True)
+class BonusPickupEvent:
+    player_index: int
+    bonus_id: int
+    amount: int
+    pos: Vec2
+
+
+GameplayState: TypeAlias = Any

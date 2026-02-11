@@ -15,8 +15,7 @@ from ..features.bonuses import emit_bonus_pickup_effects
 from ..features.perks import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from ..game_modes import GameMode
 from ..gameplay import (
-    BonusPickupEvent,
-    GameplayState,
+    build_gameplay_state,
     bonus_update,
     bonus_update_pre_pickup_timers,
     perks_update_effects,
@@ -34,7 +33,7 @@ from .presentation_step import (
     queue_projectile_decals_post_hit,
     queue_projectile_decals_pre_hit,
 )
-from .state_types import PlayerState
+from .state_types import BonusPickupEvent, GameplayState, PlayerState
 from .world_defs import CREATURE_ANIM
 
 
@@ -77,7 +76,7 @@ class WorldState:
             hardcore=bool(hardcore),
             difficulty_level=int(difficulty_level),
         )
-        state = GameplayState()
+        state = build_gameplay_state()
         state.demo_mode_active = bool(demo_mode_active)
         state.hardcore = bool(hardcore)
         state.preserve_bugs = bool(preserve_bugs)
