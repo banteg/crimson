@@ -47,15 +47,12 @@ These weapons bypass `projectile_spawn` entirely (particle pools, secondary proj
 
 - 1.9.8: **0 fb/s** (perk has no effect)
 - 1.9.93: **7.1 fb/s** (fallback cadence, infinite ammo)
-- Flamethrower (8), Rocket Launcher (12), Seeker Rockets (13), Blow Torch (15), HR Flamer (16), Mini-Rocket Swarmers (17), Rocket Minigun (18), Bubblegun (42)
+- Flamethrower (8), Rocket Launcher (12), Seeker Rockets (13), Blow Torch (15), Mini-Rocket Swarmers (17), Rocket Minigun (18)
 
 ### Single-pellet weapons slowed by fallback cadence
 
 Native cooldown < 0.14s. The 1.9.93 fallback cadence is slower than their natural fire rate, reducing fire bullets output. In 1.9.8, the base weapon also continues firing on top.
 
-- Flameburst (0.02s): **50.0 -> 7.1** fb/s
-- Transmutator (0.04s): **25.0 -> 7.1** fb/s
-- Blaster R-300 (0.08s): **12.5 -> 7.1** fb/s
 - Submachine Gun (0.088s): **11.4 -> 7.1** fb/s
 - Mean Minigun (0.09s): **11.1 -> 7.1** fb/s
 - Pulse Gun (0.1s): **10.0 -> 7.1** fb/s
@@ -69,25 +66,12 @@ Native cooldown < 0.14s. The 1.9.93 fallback cadence is slower than their natura
 
 Native cooldown > 0.14s. The 1.9.93 fallback cadence fires faster than the weapon natively would. Base weapon output is lost but fire rate increases.
 
-- Spider Plasma (0.2s): **5.0 -> 7.1** fb/s
-- Plague Sphreader (0.2s): **5.0 -> 7.1** fb/s
-- Rainbow Gun (0.2s): **5.0 -> 7.1** fb/s
-- Shrinkifier 5k (0.21s): **4.8 -> 7.1** fb/s
 - Plasma Rifle (0.29s): **3.4 -> 7.1** fb/s
-- Blade Gun (0.35s): **2.9 -> 7.1** fb/s
 - Ion Rifle (0.4s): **2.5 -> 7.1** fb/s
-- Grim Weapon (0.5s): **2.0 -> 7.1** fb/s
 - Gauss Gun (0.6s): **1.7 -> 7.1** fb/s
-- Splitter Gun (0.7s): **1.4 -> 7.1** fb/s
-- RayGun (0.7s): **1.4 -> 7.1** fb/s
 - Pistol (0.71s): **1.4 -> 7.1** fb/s
 - Plasma Cannon (0.9s): **1.1 -> 7.1** fb/s
 - Ion Cannon (1.0s): **1.0 -> 7.1** fb/s
-- Evil Scythe (1.0s): **1.0 -> 7.1** fb/s
-- Lighting Rifle (4.0s): **0.25 -> 7.1** fb/s
-- Nuke Launcher (4.0s): **0.25 -> 7.1** fb/s
-
-For very slow weapons like Lighting Rifle and Nuke Launcher, 1.9.93 is a ~28x fire rate increase. For weapons near 0.2s, the modest ~1.4x increase may not compensate for losing the base weapon.
 
 ### Multi-pellet weapons (count matches base spawns)
 
@@ -107,6 +91,37 @@ These weapons have `pellet_count` that differs from the number of `projectile_sp
 
 - **Multi-Plasma** (5 base spawns, pellet_count=3, 0.62s): **8.1 -> 4.8** fb/s. The 5-shot plasma spread triggers 5 extra fire bullets in 1.9.8; only 3 in 1.9.93. Also loses the plasma projectiles.
 - **Gauss Shotgun** (6 base spawns, pellet_count=1, 1.05s): **5.7 -> 7.1** fb/s. The 6-shot gauss spread triggers 6 extra fire bullets in 1.9.8; in 1.9.93, pellet_count=1 activates the fallback cadence path. Faster cadence but single-pellet output, and loses the gauss spread.
+
+## Weapons not in quest progression
+
+These weapons are absent from `quest_database_init` and don't appear through standard quest unlocks. They have functional weapon table entries and fire paths but are likely secret, debug, or unfinished content. See `docs/secrets/weapon-candidates.md` for details.
+
+The same behavior classes apply. Rates listed as 1.9.8 -> 1.9.93.
+
+### Particle / secondary path
+
+- 1.9.8: **0 fb/s**, 1.9.93: **7.1 fb/s**
+- HR Flamer (16), Bubblegun (42)
+
+### Single-pellet, slowed
+
+- Flameburst (0.02s): **50.0 -> 7.1** fb/s
+- Transmutator (0.04s): **25.0 -> 7.1** fb/s
+- Blaster R-300 (0.08s): **12.5 -> 7.1** fb/s
+
+### Single-pellet, boosted
+
+- Spider Plasma (0.2s): **5.0 -> 7.1** fb/s
+- Plague Sphreader (0.2s): **5.0 -> 7.1** fb/s
+- Rainbow Gun (0.2s): **5.0 -> 7.1** fb/s
+- Shrinkifier 5k (0.21s): **4.8 -> 7.1** fb/s
+- Blade Gun (0.35s): **2.9 -> 7.1** fb/s
+- Grim Weapon (0.5s): **2.0 -> 7.1** fb/s
+- Splitter Gun (0.7s): **1.4 -> 7.1** fb/s
+- RayGun (0.7s): **1.4 -> 7.1** fb/s
+- Evil Scythe (1.0s): **1.0 -> 7.1** fb/s
+- Lighting Rifle (4.0s): **0.25 -> 7.1** fb/s
+- Nuke Launcher (4.0s): **0.25 -> 7.1** fb/s
 
 ### Fire Bullets weapon (id=45)
 
