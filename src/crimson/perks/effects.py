@@ -92,17 +92,26 @@ def _perks_update_lean_mean_exp_machine(ctx: _PerksUpdateEffectsCtx) -> None:
     ctx.state.lean_mean_exp_timer -= ctx.dt
     if ctx.state.lean_mean_exp_timer < 0.0:
         ctx.state.lean_mean_exp_timer = 0.25
-        for player in ctx.players:
-            perk_count = perk_count_get(player, PerkId.LEAN_MEAN_EXP_MACHINE)
-            if perk_count > 0:
-                player.experience += perk_count * 10
+        if not ctx.players:
+            return
+
+        # Native `perks_update_effects` uses global `perk_count_get` and awards the
+        # periodic XP tick only to player 0 (`player_experience[0]`).
+        player0 = ctx.players[0]
+        perk_count = perk_count_get(player0, PerkId.LEAN_MEAN_EXP_MACHINE)
+        if perk_count > 0:
+            player0.experience += perk_count * 10
 
 
 def _perks_update_death_clock(ctx: _PerksUpdateEffectsCtx) -> None:
-    for player in ctx.players:
-        if not perk_active(player, PerkId.DEATH_CLOCK):
-            continue
+    if not ctx.players:
+        return
+    if not perk_active(ctx.players[0], PerkId.DEATH_CLOCK):
+        return
 
+    # Native gates this effect on shared/player-0 perk state, then applies health
+    # drain to every active local player.
+    for player in ctx.players:
         if float(player.health) <= 0.0:
             player.health = 0.0
         else:

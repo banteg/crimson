@@ -61,3 +61,27 @@ def test_death_clock_clamps_dead_health_to_zero() -> None:
     perks_update_effects(state, [player], 0.1)
 
     assert player.health == 0.0
+
+
+def test_death_clock_tick_is_gated_by_player0_perk_state() -> None:
+    state = GameplayState()
+    player0 = PlayerState(index=0, pos=Vec2(), health=100.0)
+    player1 = PlayerState(index=1, pos=Vec2(), health=100.0)
+    player1.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
+
+    perks_update_effects(state, [player0, player1], 1.0)
+
+    assert player0.health == 100.0
+    assert player1.health == 100.0
+
+
+def test_death_clock_tick_applies_to_all_players_when_player0_has_perk() -> None:
+    state = GameplayState()
+    player0 = PlayerState(index=0, pos=Vec2(), health=100.0)
+    player1 = PlayerState(index=1, pos=Vec2(), health=100.0)
+    player0.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
+
+    perks_update_effects(state, [player0, player1], 1.0)
+
+    assert player0.health == pytest.approx(96.6666667)
+    assert player1.health == pytest.approx(96.6666667)
