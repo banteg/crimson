@@ -67,7 +67,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
   - Quest mode has all tiers 1-5 implemented with full spawn scripting.
   - Tutorial mode has full stage-based progression with hint system.
   - Typ-o-Shooter has typing mechanics with target matching and reload command.
-- Game over / high score entry screen is implemented for Survival/Rush/Typ-o: [rewrite/game-over.md](game-over.md)
+- Game over / high score entry screen is implemented for Survival/Rush/Typ-o.
 - Quest completion/failure screens are implemented (results + failed).
 - Demo/attract mode reuses the same gameplay systems (no separate “toy sim”).
 
@@ -118,14 +118,11 @@ Available via `uv run crimson view <name>`:
 See also:
 
 - [Module map (Grim vs Crimson)](module-map.md)
-- [Deterministic simulation PRD](deterministic-sim-prd.md)
 - [Deterministic step pipeline](deterministic-step-pipeline.md)
 - [Local multiplayer rewrite notes](local-multiplayer.md)
 - [Float parity policy](float-parity-policy.md)
 - [Terrain (rewrite)](terrain.md)
-- [Bonus pickups (rewrite)](bonuses.md)
 - [Perks architecture (rewrite)](perks-architecture.md)
-- [Survival entry fade (decompile notes)](survival-transition-fade.md)
 - [Original bugs (and rewrite fixes)](original-bugs.md)
 
 ## Known gaps (short list)
@@ -139,6 +136,4 @@ See also:
 
 ## Roadmap
 
-See the rewrite tech tree: [rewrite/tech-tree.md](tech-tree.md)
-
-See also: [Rewrite status / parity gaps](status.md)
+See: [Rewrite status / parity gaps](status.md)

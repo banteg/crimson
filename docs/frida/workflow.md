@@ -227,8 +227,6 @@ Shortcut:
 just demo-idle-summarize
 ```
 
-For a concrete “what to run / what to capture” checklist (Milestone 16), see `docs/frida/demo-trial-overlay.md`.
-
 ## 4) Promote evidence into Ghidra maps
 
 Review the summary + candidates, then manually promote good entries into:

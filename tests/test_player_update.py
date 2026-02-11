@@ -150,6 +150,21 @@ def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
     assert type_ids.count(0x15) == 4
 
 
+def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> None:
+    pool = ProjectilePool(size=32)
+    state = GameplayState(projectiles=pool)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), man_bomb_timer=0.0)
+    player.perk_counts[int(PerkId.MAN_BOMB)] = 1
+
+    player_update(player, PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(101.0, 100.0)), 4.2, state)
+
+    type_ids = _active_type_ids(pool)
+    assert len(type_ids) == 8
+    assert type_ids.count(int(ProjectileTypeId.ION_MINIGUN)) == 4
+    assert type_ids.count(int(ProjectileTypeId.ION_RIFLE)) == 4
+    assert player.man_bomb_timer == 0.0
+
+
 def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
     pool = ProjectilePool(size=8)
     state = GameplayState(projectiles=pool)

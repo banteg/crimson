@@ -146,3 +146,50 @@ def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
         perk_progression_enabled=False,
     )
     assert not (creature.flags & CreatureFlags.SELF_DAMAGE_TICK)
+
+
+def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet_hit() -> None:
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=True,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    world.state.rng = _FixedRng(1)  # rand & 7 == 1
+
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    player.perk_counts[int(PerkId.POISON_BULLETS)] = 1
+    player.perk_counts[int(PerkId.TOXIC_AVENGER)] = 1
+    world.players.append(player)
+
+    creature = world.creatures.entries[0]
+    creature.active = True
+    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.pos = Vec2(300.0, 300.0)
+    creature.hp = 1000.0
+    creature.max_hp = 1000.0
+
+    world.state.projectiles.spawn(
+        pos=Vec2(creature.pos.x, creature.pos.y),
+        angle=0.0,
+        type_id=int(ProjectileTypeId.PISTOL),
+        owner_id=-100,
+        base_damage=45.0,
+    )
+
+    world.step(
+        0.016,
+        inputs=[PlayerInput()],
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        auto_pick_perks=False,
+        game_mode=int(GameMode.SURVIVAL),
+        perk_progression_enabled=False,
+    )
+
+    assert creature.flags & CreatureFlags.SELF_DAMAGE_TICK
+    assert not (creature.flags & CreatureFlags.SELF_DAMAGE_TICK_STRONG)

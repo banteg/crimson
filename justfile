@@ -23,6 +23,7 @@ check *args:
     uv run ruff check .
     uv run lint-imports
     uv run ty check src
+    uv run scripts/check_docs.py
     uv run pytest {{args}}
 
 ty:
@@ -94,11 +95,11 @@ font-sample:
     uv run crimson view fonts
 
 # Docs
-docs-map-progress:
-    uv run scripts/update_map_progress_docs.py
-
 docs-build:
     uv run zensical build
+
+docs-check:
+    uv run scripts/check_docs.py
 
 docs-zensical-fix:
     uv run scripts/zensical_fix_md.py docs

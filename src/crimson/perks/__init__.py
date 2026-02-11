@@ -5,7 +5,6 @@ from __future__ import annotations
 from .ids import (
     PERK_BY_ID,
     PERK_DEFAULT_FLAGS,
-    PERK_TABLE,
     QUICK_LEARNER_DESCRIPTION,
     QUICK_LEARNER_NAME,
     PerkFlags,
@@ -19,7 +18,6 @@ from .ids import (
 __all__ = [
     "PERK_BY_ID",
     "PERK_DEFAULT_FLAGS",
-    "PERK_TABLE",
     "QUICK_LEARNER_DESCRIPTION",
     "QUICK_LEARNER_NAME",
     "PerkFlags",

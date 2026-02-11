@@ -166,7 +166,7 @@ Use Frida to log whenever the overlay is actually rendered:
   - Optional (retail): set `CONFIG.forceDemoInGameplayLoop=true` to force the demo gate checks in `gameplay_update_and_render` (for overlay-only validation).
   - Optional (retail): set `CONFIG.forcePlaytimeMs=2400001` (with `forceDemoInGameplayLoop=true`) to trigger the “trial expired” path immediately.
   - Optional: set `CONFIG.minOverlayLogIntervalMs=250` to log at most ~4 events/sec while the overlay is visible.
-- Copy the JSONL log into the repo under `analysis/frida/raw/` and summarize findings in `plan.md`.
+- Copy the JSONL log into the repo under `analysis/frida/raw/` and summarize findings in your session notes.
 - Optional: validate the log against the Python model:
   - `uv run scripts/demo_trial_overlay_validate.py analysis/frida/raw/demo_trial_overlay_trace.jsonl`
 

@@ -160,7 +160,8 @@ When adding or refactoring a perk runtime hook:
 - It does not hide phase boundaries. The phase where a perk runs is part of the
   parity contract.
 
-Use [perk matrix](perk-matrix.md) with this page:
+Use [Perk runtime reference](../re/static/perks-runtime-reference.md) with this
+page:
 
-- `perk-matrix.md` answers “where does this perk run?”
+- `re/static/perks-runtime-reference.md` answers “where does this perk run?”
 - this page answers “how does perk runtime registration and dispatch work?”

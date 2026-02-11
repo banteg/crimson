@@ -8,8 +8,13 @@ from ..ids import PerkId
 def apply_bandage(ctx: PerkApplyCtx) -> None:
     for player in ctx.players:
         if player.health > 0.0:
-            scale = float(ctx.state.rng.rand() % 50 + 1)
-            player.health = min(100.0, player.health * scale)
+            amount = float(ctx.state.rng.rand() % 50 + 1)
+            if bool(ctx.state.preserve_bugs):
+                # Original exe behavior (likely bug): health multiplier.
+                player.health = min(100.0, player.health * amount)
+            else:
+                # Intended behavior from in-game text: restore up to 50% HP.
+                player.health = min(100.0, player.health + amount)
             ctx.state.effects.spawn_burst(
                 pos=player.pos,
                 count=8,

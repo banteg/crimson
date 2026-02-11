@@ -22,5 +22,17 @@ def test_bandage_clamps_health_and_spawns_burst() -> None:
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=3.0)
     perk_apply(state, [player], PerkId.BANDAGE)
 
+    assert player.health == 53.0
+    assert len(state.effects.iter_active()) == 8
+
+
+def test_bandage_preserve_bugs_keeps_native_multiplier_behavior() -> None:
+    state = GameplayState()
+    state.preserve_bugs = True
+    state.rng = _FixedRng(49)  # (rand % 50) + 1 == 50
+
+    player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=3.0)
+    perk_apply(state, [player], PerkId.BANDAGE)
+
     assert player.health == 100.0
     assert len(state.effects.iter_active()) == 8

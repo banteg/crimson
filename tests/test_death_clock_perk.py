@@ -8,7 +8,7 @@ from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
 from crimson.perks.runtime.effects import perks_update_effects
-from crimson.player_damage import player_take_damage
+from crimson.player_damage import player_take_damage, player_take_projectile_damage
 
 
 def test_death_clock_clears_regeneration_and_restores_health() -> None:
@@ -41,6 +41,17 @@ def test_death_clock_blocks_damage() -> None:
 
     assert applied == 0.0
     assert player.health == 100.0
+
+
+def test_death_clock_does_not_block_projectile_hit_path() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(), health=100.0)
+    player.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
+
+    applied = player_take_projectile_damage(state, player, 10.0)
+
+    assert applied == 10.0
+    assert player.health == 90.0
 
 
 def test_death_clock_drains_health_over_time() -> None:

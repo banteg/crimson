@@ -22,7 +22,10 @@ class CreatureForPerks(Protocol):
 
 
 def creature_find_in_radius(creatures: Sequence[CreatureForPerks], *, pos: Vec2, radius: float, start_index: int) -> int:
-    """Port of `creature_find_in_radius` (0x004206a0)."""
+    """Find the first active creature intersecting an aim radius.
+
+    Port of `creature_find_in_radius` (0x004206a0).
+    """
 
     start_index = max(0, int(start_index))
     max_index = min(len(creatures), 0x180)
