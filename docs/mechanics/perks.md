@@ -370,10 +370,10 @@ Unlocked by quest 5.5 (*Knee-deep in the Dead*).
 ## 50. Angry Reloader
 
 Halfway through a reload (when the timer crosses 50%), fires a ring of Plasma
-Minigun projectiles centered on the player. The ring size scales with reload
-time: 7 + (reload time × 4) projectiles. Only triggers when reload time exceeds
-0.5 s. Benefits from Stationary Reloader's 3× reload speed. Friendly fire
-applies when enabled.
+Minigun projectiles centered on the player. Projectile count is
+`7 + floor(reload time × 4)` (for example: `15` projectiles at a `2.0 s` reload).
+Only triggers when reload time exceeds 0.5 s. Benefits from Stationary Reloader's
+3× reload speed. Friendly fire applies when enabled.
 
 Unlocked by quest 5.6 (*Cross Fire*).
 
@@ -395,8 +395,9 @@ Unlocked by quest 5.9 (*Nagolipoli*).
 
 Standing still charges an explosion timer (starts at 4 seconds). When it fires,
 8 ion projectiles spray out in a ring with slight angular jitter, alternating Ion
-Minigun and Ion Rifle. Moving resets the timer to zero. Friendly fire applies
-when enabled.
+Minigun and Ion Rifle. Moving resets the timer to zero after this check. In
+practice that means a very long moving frame can still trigger one burst before
+the reset. Friendly fire applies when enabled.
 
 ## 54. Fire Cough
 

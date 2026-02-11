@@ -658,10 +658,13 @@ Notes:
 ### Original
 
 - `player_update` (0x004136b0): timer accumulation/reset and ring spawn logic.
+- Ordering detail: `player_man_bomb_timer` is incremented/checked before the
+  later movement gate clears it (`player_state + 0x7c = 0`) when position changed.
 
 ### Rewrite
 
-- `src/crimson/perks/impl/man_bomb.py`: `tick_man_bomb()`.
+- `src/crimson/perks/impl/man_bomb.py`: `tick_man_bomb()` mirrors native ordering
+  (burst check first, movement reset after).
 - Movement/stationary state feed: `src/crimson/gameplay.py`: `player_update()`.
 
 ## 54. Fire Cough (`PerkId.FIRE_CAUGH`)
