@@ -143,21 +143,6 @@ def test_verify_capture_matches_state_ignoring_hash_domains() -> None:
     assert run_result.ticks == 1
 
 
-def test_verify_capture_accepts_single_tick_latched_creature_count() -> None:
-    checkpoint = _single_tick_survival_checkpoint(seed=0xB00B)
-    capture = _capture_from_checkpoint(checkpoint=checkpoint)
-    capture.ticks[0].checkpoint.creature_count = 0
-
-    result, _run_result = verify_capture(
-        capture,
-        seed=0xB00B,
-        strict_events=True,
-    )
-
-    assert result.ok is True
-    assert result.failure is None
-
-
 def test_allow_capture_sample_creature_count_prefers_sample_stream() -> None:
     checkpoint = _single_tick_survival_checkpoint(seed=0xD00D)
     expected = replace(checkpoint, tick_index=5, creature_count=31)

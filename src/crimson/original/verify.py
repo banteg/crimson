@@ -40,64 +40,6 @@ class CaptureVerifyResult:
     failure: CaptureVerifyFailure | None = None
 
 
-def _allow_one_tick_creature_count_lag(
-    *,
-    tick: int,
-    field_diffs: list[ReplayFieldDiff],
-    expected_by_tick: dict[int, ReplayCheckpoint],
-    actual_by_tick: dict[int, ReplayCheckpoint],
-) -> bool:
-    if not field_diffs:
-        return False
-    if any(str(diff.field) != "creature_count" for diff in field_diffs):
-        return False
-
-    expected_tick = expected_by_tick.get(int(tick))
-    actual_tick = actual_by_tick.get(int(tick))
-    if expected_tick is None or actual_tick is None:
-        return False
-
-    expected_count = int(expected_tick.creature_count)
-    actual_count = int(actual_tick.creature_count)
-    if expected_count < 0 or actual_count < 0:
-        return False
-    if abs(expected_count - actual_count) != 1:
-        return False
-
-    # Single-tick captures can reflect the world-step-latched count as 0 while
-    # runtime state already reports 1 active creature on the same tick.
-    if (
-        len(expected_by_tick) == 1
-        and len(actual_by_tick) == 1
-        and int(next(iter(expected_by_tick.keys()))) == int(tick)
-        and expected_count == 0
-        and actual_count == 1
-    ):
-        return True
-
-    prev_expected = expected_by_tick.get(int(tick) - 1)
-    prev_actual = actual_by_tick.get(int(tick) - 1)
-    if (
-        prev_expected is not None
-        and prev_actual is not None
-        and int(prev_expected.creature_count) == actual_count
-        and int(prev_actual.creature_count) == int(prev_expected.creature_count)
-    ):
-        return True
-
-    next_expected = expected_by_tick.get(int(tick) + 1)
-    next_actual = actual_by_tick.get(int(tick) + 1)
-    if (
-        next_expected is not None
-        and next_actual is not None
-        and int(next_expected.creature_count) == actual_count
-        and int(next_actual.creature_count) == int(next_expected.creature_count)
-    ):
-        return True
-
-    return False
-
-
 def _allow_capture_sample_creature_count(
     *,
     tick: int,
@@ -258,13 +200,6 @@ def verify_capture(
             expected_by_tick=expected_by_tick,
             actual_by_tick=actual_by_tick,
             capture_sample_creature_counts=sample_creature_counts,
-        ):
-            continue
-        if _allow_one_tick_creature_count_lag(
-            tick=int(tick),
-            field_diffs=field_diffs,
-            expected_by_tick=expected_by_tick,
-            actual_by_tick=actual_by_tick,
         ):
             continue
         if field_diffs:

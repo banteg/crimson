@@ -390,3 +390,9 @@ When the capture SHA is unchanged, append updates to the same session.
 
 - Current frontier remains `tick 8135` on this SHA.
 - Next session should use a fresh capture with the new `projectile_find_query` telemetry enabled to isolate whether the remaining `8128+` shortfall is miss-path or owner-collision-path driven before further gameplay rewrites.
+
+### Tooling Reset (2026-02-11)
+
+- Capture format tightened to stream rows only (`capture_meta` + `tick`); legacy monolithic JSON capture files are no longer supported by loader tooling.
+- Float capture contract tightened: memory-sourced float samples are emitted as tagged float32 bit tokens (`f32:XXXXXXXX`) and decoded in Python loader as authoritative float32 values.
+- Removed temporary verify fallback that ignored one-tick `creature_count` lag; verification now depends on aligned capture sampling and sample-stream parity instead of lag allowances.
