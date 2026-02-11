@@ -197,6 +197,7 @@ class ProjectileDecalPostCtx:
     base_angle: float
     type_id: int
     freeze_active: bool
+    freeze_shard_spawn: Callable[[Vec2, float], None] | None = None
 
 
 def queue_projectile_decals(
@@ -238,6 +239,16 @@ def queue_projectile_decals_pre_hit(
 ) -> ProjectileDecalPostCtx:
     freeze_active = freeze_bonus_active(state=state)
     bloody = bool(players) and perk_active(players[0], PerkId.BLOODY_MESS_QUICK_LEARNER)
+    freeze_shard_spawn: Callable[[Vec2, float], None] | None = None
+    if freeze_active:
+        def _spawn_freeze_shard(pos: Vec2, angle: float) -> None:
+            state.effects.spawn_freeze_shard(
+                pos=pos,
+                angle=float(angle),
+                rand=rand,
+                detail_preset=int(detail_preset),
+            )
+        freeze_shard_spawn = _spawn_freeze_shard
 
     type_id = int(hit.type_id)
 
@@ -302,6 +313,7 @@ def queue_projectile_decals_pre_hit(
         base_angle=float(base_angle),
         type_id=int(type_id),
         freeze_active=bool(freeze_active),
+        freeze_shard_spawn=freeze_shard_spawn,
     )
 
 
@@ -324,6 +336,8 @@ def queue_projectile_decals_post_hit(
             base_angle=float(base_angle),
             fx_queue=fx_queue,
             rand=rand,
+            freeze_origin=hit.hit if bool(post_ctx.freeze_active) else None,
+            spawn_freeze_shard=post_ctx.freeze_shard_spawn,
         )
     )
 
