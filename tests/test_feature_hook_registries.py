@@ -9,7 +9,6 @@ from crimson.bonuses.pickup_fx import emit_bonus_pickup_effects
 from crimson.effects import FxQueue
 from crimson.effects_atlas import EffectId
 from crimson.gameplay import GameplayState
-from crimson.perks.final_revenge import apply_final_revenge_on_player_death
 from crimson.perks.reflex_boosted import apply_reflex_boosted_dt
 from crimson.perks.registry import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from crimson.projectiles import ProjectileHit, ProjectileTypeId
@@ -20,7 +19,8 @@ from crimson.sim.world_state import WorldState
 
 def test_perk_hook_registries_are_explicit_and_ordered() -> None:
     assert WORLD_DT_STEPS == (apply_reflex_boosted_dt,)
-    assert PLAYER_DEATH_HOOKS == (apply_final_revenge_on_player_death,)
+    assert len(PLAYER_DEATH_HOOKS) == 1
+    assert PLAYER_DEATH_HOOKS[0].__name__ == "_apply_final_revenge_on_player_death_lazy"
 
 
 def test_bonus_pickup_feature_hooks_emit_expected_fx() -> None:

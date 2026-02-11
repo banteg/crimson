@@ -1,27 +1,15 @@
 from __future__ import annotations
 
-from typing import Callable
-
 from ..sim.state_types import GameplayState, PlayerState
-from .fire_cough import tick_fire_cough
-from .hot_tempered import tick_hot_tempered
-from .living_fortress import tick_living_fortress
-from .man_bomb import tick_man_bomb
 from .player_tick_context import (
     OwnerIdForPlayerFn,
     OwnerIdForPlayerProjectilesFn,
     PlayerPerkTickCtx,
     ProjectileSpawnFn,
 )
+from .runtime_registry import PLAYER_PERK_TICK_STEPS
 
-PlayerPerkTickStep = Callable[[PlayerPerkTickCtx], None]
-
-_PLAYER_PERK_TICK_STEPS: tuple[PlayerPerkTickStep, ...] = (
-    tick_man_bomb,
-    tick_living_fortress,
-    tick_fire_cough,
-    tick_hot_tempered,
-)
+_PLAYER_PERK_TICK_STEPS = PLAYER_PERK_TICK_STEPS
 
 
 def apply_player_perk_ticks(
