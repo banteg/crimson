@@ -150,8 +150,8 @@ PERK_TABLE = [
         flags=PERK_DEFAULT_FLAGS,
         prereq=(),
         notes=(
-            "`perks_update_effects`: every `0.25` seconds, each player with this perk gains `+perk_count * 10` "
-            "experience."
+            "`perks_update_effects`: every `0.25` seconds, if player 0 has the perk, "
+            "adds `+perk_count * 10` experience to player 0."
         ),
     ),
     PerkMeta(
@@ -495,7 +495,7 @@ PERK_TABLE = [
         description="Your bonus power-ups last 50% longer than they normally would.",
         flags=PERK_DEFAULT_FLAGS,
         prereq=(),
-        notes="`bonus_apply`: while active, scales bonus timer increments by `1.0 + 0.5 * perk_count`.",
+        notes="`bonus_apply`: when Bonus Economist is active, bonus timer increments use a fixed `1.5` multiplier.",
     ),
     PerkMeta(
         perk_id=PerkId.THICK_SKINNED,
