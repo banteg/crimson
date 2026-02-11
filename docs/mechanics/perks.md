@@ -13,96 +13,6 @@ selection conditions — no source paths or decompiler addresses.
 See also: [Perk ID map](../perk-id-map.md) |
 [Perk runtime reference](../re/static/perks-runtime-reference.md)
 
-## Selection Metadata
-
-`Base Modes` reflects only the static mode flags on each perk. Runtime offer
-gates (Death Clock blocks, hardcore quest special-cases, weapon checks, rarity
-gates) are listed below.
-
-### Metadata Matrix
-
-| ID | Perk | Stackable | Base Modes | Prereq | Unlocks |
-| --- | --- | --- | --- | --- | --- |
-| 0 | AntiPerk | No | Never offered | None | None |
-| 1 | Bloody Mess / Quick Learner | No | Survival, Quest, 2P | None | None |
-| 2 | Sharpshooter | No | Survival, Quest, 2P | None | None |
-| 3 | Fastloader | No | Survival, Quest, 2P | None | None |
-| 4 | Lean Mean Exp. Machine | No | Survival, Quest, 2P | None | None |
-| 5 | Long Distance Runner | No | Survival, Quest, 2P | None | None |
-| 6 | Pyrokinetic | No | Survival, Quest, 2P | None | None |
-| 7 | Instant Winner | Yes | Survival, Quest, 2P | None | None |
-| 8 | Grim Deal | No | Survival only | None | None |
-| 9 | Alternate Weapon | No | Survival, Quest | None | None |
-| 10 | Plaguebearer | No | Survival, Quest, 2P | None | None |
-| 11 | Evil Eyes | No | Survival, Quest, 2P | None | None |
-| 12 | Ammo Maniac | No | Survival, Quest, 2P | None | None |
-| 13 | Radioactive | No | Survival, Quest, 2P | None | None |
-| 14 | Fastshot | No | Survival, Quest, 2P | None | None |
-| 15 | Fatal Lottery | Yes | Survival only | None | None |
-| 16 | Random Weapon | Yes | Survival, Quest | None | None |
-| 17 | Mr. Melee | No | Survival, Quest, 2P | None | None |
-| 18 | Anxious Loader | No | Survival, Quest, 2P | None | None |
-| 19 | Final Revenge | No | Survival only | None | None |
-| 20 | Telekinetic | No | Survival, Quest, 2P | None | None |
-| 21 | Perk Expert | No | Survival, Quest, 2P | None | Perk Master (43) |
-| 22 | Unstoppable | No | Survival, Quest, 2P | None | None |
-| 23 | Regression Bullets | No | Survival, Quest, 2P | None | None |
-| 24 | Infernal Contract | No | Survival, Quest, 2P | None | None |
-| 25 | Poison Bullets | No | Survival, Quest, 2P | None | None |
-| 26 | Dodger | No | Survival, Quest, 2P | None | Ninja (40) |
-| 27 | Bonus Magnet | No | Survival, Quest, 2P | None | None |
-| 28 | Uranium Filled Bullets | No | Survival, Quest, 2P | None | None |
-| 29 | Doctor | No | Survival, Quest, 2P | None | None |
-| 30 | Monster Vision | No | Survival, Quest, 2P | None | None |
-| 31 | Hot Tempered | No | Survival, Quest, 2P | None | None |
-| 32 | Bonus Economist | No | Survival, Quest, 2P | None | None |
-| 33 | Thick Skinned | No | Survival, Quest, 2P | None | None |
-| 34 | Barrel Greaser | No | Survival, Quest, 2P | None | None |
-| 35 | Ammunition Within | No | Survival, Quest, 2P | None | None |
-| 36 | Veins of Poison | No | Survival, Quest, 2P | None | Toxic Avenger (37) |
-| 37 | Toxic Avenger | No | Survival, Quest, 2P | Veins of Poison (36) | None |
-| 38 | Regeneration | No | Survival, Quest, 2P | None | Greater Regeneration (45) |
-| 39 | Pyromaniac | No | Survival, Quest, 2P | None | None |
-| 40 | Ninja | No | Survival, Quest, 2P | Dodger (26) | None |
-| 41 | Highlander | No | Survival only | None | None |
-| 42 | Jinxed | No | Survival, Quest, 2P | None | None |
-| 43 | Perk Master | No | Survival, Quest, 2P | Perk Expert (21) | None |
-| 44 | Reflex Boosted | No | Survival, Quest, 2P | None | None |
-| 45 | Greater Regeneration | No | Survival, Quest, 2P | Regeneration (38) | None |
-| 46 | Breathing Room | No | Survival, 2P | None | None |
-| 47 | Death Clock | No | Survival, Quest, 2P | None | None |
-| 48 | My Favourite Weapon | No | Survival, Quest, 2P | None | None |
-| 49 | Bandage | No | Survival, Quest, 2P | None | None |
-| 50 | Angry Reloader | No | Survival, Quest, 2P | None | None |
-| 51 | Ion Gun Master | No | Survival, Quest, 2P | None | None |
-| 52 | Stationary Reloader | No | Survival, Quest, 2P | None | None |
-| 53 | Man Bomb | No | Survival, Quest, 2P | None | None |
-| 54 | Fire Cough | No | Survival, Quest, 2P | None | None |
-| 55 | Living Fortress | No | Survival, Quest, 2P | None | None |
-| 56 | Tough Reloader | No | Survival, Quest, 2P | None | None |
-| 57 | Lifeline 50-50 | No | Survival, Quest, 2P | None | None |
-
-### Additional Offer Gates
-
-- Hardcore quest `2-10` blocks Poison Bullets (25), Veins of Poison (36), and
-  Plaguebearer (10).
-- Death Clock (47) active blocks Jinxed (42), Breathing Room (46), Grim Deal
-  (8), Highlander (41), Fatal Lottery (15), Ammunition Within (35), Infernal
-  Contract (24), Regeneration (38), Greater Regeneration (45), Thick Skinned
-  (33), and Bandage (49).
-- Pyromaniac (39) is only offerable while the current weapon is Flamethrower.
-- Global 25% rarity reject gate applies to Jinxed (42), Ammunition Within (35),
-  Anxious Loader (18), and Monster Vision (30).
-- Quest `1-7` special case: Monster Vision (30) is forced as the first choice
-  if not already owned.
-
-### Progressions
-
-- Dodger (26) -> Ninja (40)
-- Veins of Poison (36) -> Toxic Avenger (37)
-- Perk Expert (21) -> Perk Master (43)
-- Regeneration (38) -> Greater Regeneration (45)
-
 ## 0. AntiPerk
 
 Internal sentinel. Never offered to the player.
@@ -135,7 +45,7 @@ long as the player keeps moving. Stopping causes speed to decay rapidly.
 ## 6. Pyrokinetic
 
 While the crosshair is near a creature, Pyrokinetic decrements that creature's
-shared collision timer. When it wraps, the timer is reset to 0.5 seconds and a
+shared collision timer. When it wraps, the timer resets to 0.5 seconds and a
 heat flare triggers — a burst of particles and a random decal at the target.
 Purely visual; no damage.
 
@@ -146,7 +56,7 @@ Immediately grants +2500 XP. Can be picked multiple times.
 ## 8. Grim Deal
 
 Immediately grants +18% of current XP (rounded down), then kills the player.
-Not offered in Quest mode or two-player sessions.
+Not offered in quest mode or two-player sessions.
 
 ## 9. Alternate Weapon
 
@@ -188,14 +98,12 @@ Fire rate is 12% faster (shot cooldown ×0.88).
 ## 15. Fatal Lottery
 
 50/50 coin flip: either +10 000 XP or instant death. Can be picked multiple
-times. Not offered in Quest mode or two-player sessions.
+times. Not offered in quest mode or two-player sessions.
 
 ## 16. Random Weapon
 
-Immediately assigns a random unlocked weapon, retrying up to 100 rolls to avoid
-the pistol and the current weapon. Native edge case: if no valid roll appears
-within those retries, the last roll is used anyway. Not available in two-player
-mode. Can be picked multiple times.
+Immediately assigns a random unlocked weapon (never the pistol, never the
+current weapon). Not available in two-player mode. Can be picked multiple times.
 
 ## 17. Mr. Melee
 
@@ -211,7 +119,7 @@ time. Mash to reload faster.
 ## 19. Final Revenge
 
 On death, the player explodes with a 512-unit blast radius. Damage falls off
-linearly: (512 − distance) × 5. Not offered in Quest mode or two-player
+linearly: (512 − distance) × 5. Not offered in quest mode or two-player
 sessions.
 
 ## 20. Telekinetic
@@ -220,7 +128,7 @@ Aim at a bonus pickup within 24 units for 650 ms to collect it remotely.
 
 ## 21. Perk Expert
 
-Perk selection shows 6 choices instead of the default 5.
+Perk selection shows 6 choices instead of 5.
 
 ## 22. Unstoppable
 
@@ -231,9 +139,8 @@ penalty. Damage still applies normally.
 
 Lets the player fire during a reload by spending XP instead of ammo. Cost per
 shot is based on weapon reload time: ×4 for fire-type weapons, ×200 otherwise.
-XP can't go negative. Native quirk: the reload-fire path only runs while XP is
-above 0. While this perk (or Ammunition Within) is active, reloads can't be
-restarted mid-reload.
+XP can't go negative. While this perk (or Ammunition Within) is active, reloads
+can't be restarted mid-reload.
 
 ## 24. Infernal Contract
 
@@ -243,10 +150,9 @@ player to 0.1 health. Not offered while Death Clock is active.
 ## 25. Poison Bullets
 
 Each projectile hit has a 1-in-8 chance to poison the target. Poisoned creatures
-take continuous damage (60/s) and show a red aura. Toxic Avenger's 180/s strong
-poison comes from its melee-retaliation path, not bullet poisoning. Poison
-ticks still trigger hit flash, but use zero impulse (no knockback). Suppressed
-in hardcore quest 2-10.
+take continuous damage (60/s normally, 180/s with Toxic Avenger) and show a red
+aura. Poison damage triggers normal hit effects like flash and knockback.
+Suppressed in hardcore quest 2-10.
 
 ## 26. Dodger
 
@@ -271,7 +177,8 @@ Eyes.
 ## 30. Monster Vision
 
 Every creature gets a yellow highlight behind it, making them easy to spot.
-Creature shadows are hidden while this perk is active.
+Creature shadows are hidden while this perk is active. Only offered when FX
+detail is enabled in settings.
 
 ## 31. Hot Tempered
 
@@ -299,8 +206,7 @@ Lets the player fire during a reload by paying health instead of ammo. Cost per
 shot is 1 HP normally, 0.15 HP for fire-type weapons. The health cost goes
 through normal damage processing, so Thick Skinned, Dodger, and Ninja can
 reduce or negate it. If Regression Bullets is also owned, it takes priority
-(XP cost instead of health). Native quirk: this path also requires XP above 0.
-Reloads can't be restarted mid-reload.
+(XP cost instead of health). Reloads can't be restarted mid-reload.
 
 ## 36. Veins of Poison
 
@@ -332,8 +238,7 @@ when both are owned. Requires Dodger.
 
 Damage no longer reduces health. Instead, every hit has a flat 10% chance of
 instant death. Hit disruption (knockback, spread penalty) still applies unless
-Unstoppable is active. Not offered in Quest mode or two-player sessions, and
-blocked while Death Clock is active.
+Unstoppable is active. Not offered in quest mode or two-player sessions.
 
 ## 42. Jinxed
 
@@ -343,8 +248,8 @@ may instantly die, awarding its XP.
 
 ## 43. Perk Master
 
-Perk selection shows 7 choices instead of the default 5 (or 6 with Perk Expert).
-Requires Perk Expert.
+Perk selection shows 7 choices instead of 5 (or 6 with Perk Expert). Requires
+Perk Expert.
 
 ## 44. Reflex Boosted
 
@@ -364,12 +269,10 @@ and every creature on screen is killed instantly without awarding XP.
 ## 47. Death Clock
 
 On pick, health is set to 100 and Regeneration / Greater Regeneration are
-cleared. For the next 30 seconds, damage routed through normal
-`player_take_damage` paths is ignored, but health drains steadily to zero
-(100 HP over 30 s). Projectile hits still apply their fixed hit damage.
-Medikits stop spawning, and perks that would undermine the clock
-(Regeneration, Thick Skinned, Highlander, Jinxed, etc.) are blocked from
-selection.
+cleared. For the next 30 seconds the player is immune to all other damage, but
+health drains steadily to zero (100 HP over 30 s). Medikits stop spawning, and
+perks that would undermine the clock (Regeneration, Thick Skinned, Highlander,
+Jinxed, etc.) are blocked from selection.
 
 ## 48. My Favourite Weapon
 
