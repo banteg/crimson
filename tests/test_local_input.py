@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from crimson import local_input
+from crimson.aim_schemes import AimScheme
 from crimson.gameplay import PlayerState
 from crimson.movement_controls import MovementControlType
 from grim.geom import Vec2
@@ -38,7 +39,7 @@ def test_local_input_computer_aim_auto_fires_without_fire_pressed(monkeypatch: p
     monkeypatch.setattr(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
-        staticmethod(lambda _config, *, player_index: (5, MovementControlType.STATIC)),
+        staticmethod(lambda _config, *, player_index: (AimScheme.COMPUTER, MovementControlType.STATIC)),
     )
 
     interpreter = local_input.LocalInputInterpreter()
@@ -67,7 +68,7 @@ def test_local_input_computer_aim_without_target_points_away_from_center(monkeyp
     monkeypatch.setattr(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
-        staticmethod(lambda _config, *, player_index: (5, MovementControlType.STATIC)),
+        staticmethod(lambda _config, *, player_index: (AimScheme.COMPUTER, MovementControlType.STATIC)),
     )
 
     interpreter = local_input.LocalInputInterpreter()
@@ -112,7 +113,7 @@ def test_local_input_static_mode_conflict_precedence_matches_native(
     monkeypatch.setattr(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
-        staticmethod(lambda _config, *, player_index: (0, MovementControlType.STATIC)),
+        staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.STATIC)),
     )
 
     interpreter = local_input.LocalInputInterpreter()
@@ -144,7 +145,7 @@ def test_local_input_relative_mode_single_player_uses_alt_arrow_fallback(
     monkeypatch.setattr(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
-        staticmethod(lambda _config, *, player_index: (0, MovementControlType.RELATIVE)),
+        staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.RELATIVE)),
     )
 
     interpreter = local_input.LocalInputInterpreter()
@@ -178,7 +179,7 @@ def test_local_input_relative_mode_multiplayer_does_not_use_alt_arrow_fallback(
     monkeypatch.setattr(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
-        staticmethod(lambda _config, *, player_index: (0, MovementControlType.RELATIVE)),
+        staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.RELATIVE)),
     )
     config = SimpleNamespace(data={"player_count": 2})
 
@@ -208,7 +209,7 @@ def test_local_input_computer_move_mode_near_center_heads_toward_target(
     monkeypatch.setattr(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
-        staticmethod(lambda _config, *, player_index: (0, MovementControlType.COMPUTER)),
+        staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.COMPUTER)),
     )
 
     interpreter = local_input.LocalInputInterpreter()
@@ -237,7 +238,7 @@ def test_local_input_computer_move_mode_far_from_center_heads_toward_center(
     monkeypatch.setattr(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
-        staticmethod(lambda _config, *, player_index: (0, MovementControlType.COMPUTER)),
+        staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.COMPUTER)),
     )
 
     interpreter = local_input.LocalInputInterpreter()
@@ -267,7 +268,7 @@ def test_local_input_computer_aim_scheme_forces_computer_movement(
     monkeypatch.setattr(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
-        staticmethod(lambda _config, *, player_index: (5, MovementControlType.STATIC)),
+        staticmethod(lambda _config, *, player_index: (AimScheme.COMPUTER, MovementControlType.STATIC)),
     )
 
     interpreter = local_input.LocalInputInterpreter()
@@ -301,7 +302,7 @@ def test_local_input_joystick_aim_uses_pov_not_aim_keybinds(
     monkeypatch.setattr(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
-        staticmethod(lambda _config, *, player_index: (2, MovementControlType.STATIC)),
+        staticmethod(lambda _config, *, player_index: (AimScheme.JOYSTICK, MovementControlType.STATIC)),
     )
 
     interpreter = local_input.LocalInputInterpreter()
@@ -335,7 +336,7 @@ def test_local_input_joystick_aim_turns_with_pov_input(
     monkeypatch.setattr(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
-        staticmethod(lambda _config, *, player_index: (2, MovementControlType.STATIC)),
+        staticmethod(lambda _config, *, player_index: (AimScheme.JOYSTICK, MovementControlType.STATIC)),
     )
 
     interpreter = local_input.LocalInputInterpreter()
@@ -375,7 +376,7 @@ def test_local_input_dual_action_pad_aim_uses_native_radius_scale(
     monkeypatch.setattr(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
-        staticmethod(lambda _config, *, player_index: (4, MovementControlType.STATIC)),
+        staticmethod(lambda _config, *, player_index: (AimScheme.DUAL_ACTION_PAD, MovementControlType.STATIC)),
     )
 
     interpreter = local_input.LocalInputInterpreter()
@@ -395,3 +396,107 @@ def test_local_input_dual_action_pad_aim_uses_native_radius_scale(
     # Native radius: 42 + mag * cv_padAimDistMul (default 96).
     assert float(out.aim.x) == pytest.approx(238.0, abs=1e-6)
     assert float(out.aim.y) == pytest.approx(100.0, abs=1e-6)
+
+
+def test_local_input_keyboard_aim_in_static_mode_reanchors_to_heading(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_no_user_input(monkeypatch)
+    monkeypatch.setattr(
+        local_input,
+        "_load_player_bind_block",
+        lambda _config, *, player_index: tuple(range(16)),
+    )
+    monkeypatch.setattr(
+        local_input.LocalInputInterpreter,
+        "_safe_controls_modes",
+        staticmethod(lambda _config, *, player_index: (AimScheme.KEYBOARD, MovementControlType.STATIC)),
+    )
+
+    interpreter = local_input.LocalInputInterpreter()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(180.0, 130.0), aim_heading=0.0)
+
+    out = interpreter.build_player_input(
+        player_index=0,
+        player=player,
+        config=None,
+        mouse_screen=Vec2(),
+        mouse_world=Vec2(),
+        screen_center=Vec2(),
+        dt_frame=0.1,
+        creatures=[],
+    )
+
+    assert float(out.aim.x) == pytest.approx(100.0, abs=1e-6)
+    assert float(out.aim.y) == pytest.approx(40.0, abs=1e-6)
+
+
+def test_local_input_keyboard_aim_with_non_relative_move_mode_keeps_world_aim(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_no_user_input(monkeypatch)
+    monkeypatch.setattr(
+        local_input,
+        "_load_player_bind_block",
+        lambda _config, *, player_index: tuple(range(16)),
+    )
+    monkeypatch.setattr(
+        local_input.LocalInputInterpreter,
+        "_safe_controls_modes",
+        staticmethod(lambda _config, *, player_index: (AimScheme.KEYBOARD, MovementControlType.DUAL_ACTION_PAD)),
+    )
+
+    interpreter = local_input.LocalInputInterpreter()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(180.0, 130.0), aim_heading=0.0)
+
+    out = interpreter.build_player_input(
+        player_index=0,
+        player=player,
+        config=None,
+        mouse_screen=Vec2(),
+        mouse_world=Vec2(),
+        screen_center=Vec2(),
+        dt_frame=0.1,
+        creatures=[],
+    )
+
+    assert float(out.aim.x) == pytest.approx(180.0, abs=1e-6)
+    assert float(out.aim.y) == pytest.approx(130.0, abs=1e-6)
+    expected_heading = (player.aim - player.pos).to_heading()
+    assert float(interpreter._states[0].aim_heading) == pytest.approx(float(expected_heading), abs=1e-6)
+
+
+def test_local_input_relative_mouse_aim_centered_keeps_world_aim(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_no_user_input(monkeypatch)
+    monkeypatch.setattr(
+        local_input,
+        "_load_player_bind_block",
+        lambda _config, *, player_index: tuple(range(16)),
+    )
+    monkeypatch.setattr(
+        local_input.LocalInputInterpreter,
+        "_safe_controls_modes",
+        staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE_RELATIVE, MovementControlType.STATIC)),
+    )
+
+    interpreter = local_input.LocalInputInterpreter()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(180.0, 130.0), aim_heading=0.0)
+    center = Vec2(320.0, 200.0)
+
+    out = interpreter.build_player_input(
+        player_index=0,
+        player=player,
+        config=None,
+        mouse_screen=center,
+        mouse_world=Vec2(),
+        screen_center=center,
+        dt_frame=0.1,
+        creatures=[],
+    )
+
+    assert float(out.aim.x) == pytest.approx(180.0, abs=1e-6)
+    assert float(out.aim.y) == pytest.approx(130.0, abs=1e-6)
+    expected_heading = (player.aim - player.pos).to_heading()
+    assert float(interpreter._states[0].aim_heading) == pytest.approx(float(expected_heading), abs=1e-6)
