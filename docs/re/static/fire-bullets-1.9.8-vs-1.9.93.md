@@ -124,10 +124,6 @@ Interpretation notes:
 - `1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
 - `Rewrite status`: Matches 1.9.93 semantics
 
-!!! warning "Significant divergence"
-    Effective projectile count differs strongly: 1.9.8 produces 24 total main-projectile shots per trigger,
-    while 1.9.93 produces 12 (delta +12).
-
 ### Weapon `4`: Sawed-off Shotgun
 
 - `Path basis`: Direct (explicit mapping/callsite)
@@ -137,10 +133,6 @@ Interpretation notes:
 - `1.9.93 Fire Bullets`: 12x `0x2d` only (base fire path bypassed)
 - `1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
 - `Rewrite status`: Matches 1.9.93 semantics
-
-!!! warning "Significant divergence"
-    Effective projectile count differs strongly: 1.9.8 produces 24 total main-projectile shots per trigger,
-    while 1.9.93 produces 12 (delta +12).
 
 ### Weapon `5`: Submachine Gun
 
@@ -183,8 +175,8 @@ Interpretation notes:
 - `Rewrite status`: Matches 1.9.93 semantics
 
 !!! warning "Significant divergence"
-    1.9.8 fire path emits no Fire Bullets projectile, while 1.9.93 emits 1 Fire Bullets projectile(s).
-    This is a path-class change (secondary/particle path vs dedicated Fire Bullets replacement path).
+    Fire Bullets projectile count differs by path class: 1.9.8 emits 0, while 1.9.93 emits 1.
+    This reflects secondary/particle fire paths in 1.9.8 versus dedicated Fire Bullets replacement emission in 1.9.93.
 
 ### Weapon `9`: Plasma Rifle
 
@@ -207,8 +199,8 @@ Interpretation notes:
 - `Rewrite status`: Matches 1.9.93 semantics
 
 !!! warning "Significant divergence"
-    Effective projectile count differs strongly: 1.9.8 produces 10 total main-projectile shots per trigger,
-    while 1.9.93 produces 3 (delta +7).
+    Fire Bullets projectile count differs: 1.9.8 emits 5 Fire Bullets projectile(s) per trigger,
+    while 1.9.93 emits 3 (delta +2).
 
 ### Weapon `11`: Plasma Minigun
 
@@ -231,8 +223,8 @@ Interpretation notes:
 - `Rewrite status`: Matches 1.9.93 semantics
 
 !!! warning "Significant divergence"
-    1.9.8 fire path emits no Fire Bullets projectile, while 1.9.93 emits 1 Fire Bullets projectile(s).
-    This is a path-class change (secondary/particle path vs dedicated Fire Bullets replacement path).
+    Fire Bullets projectile count differs by path class: 1.9.8 emits 0, while 1.9.93 emits 1.
+    This reflects secondary/particle fire paths in 1.9.8 versus dedicated Fire Bullets replacement emission in 1.9.93.
 
 ### Weapon `13`: Seeker Rockets
 
@@ -245,8 +237,8 @@ Interpretation notes:
 - `Rewrite status`: Matches 1.9.93 semantics
 
 !!! warning "Significant divergence"
-    1.9.8 fire path emits no Fire Bullets projectile, while 1.9.93 emits 1 Fire Bullets projectile(s).
-    This is a path-class change (secondary/particle path vs dedicated Fire Bullets replacement path).
+    Fire Bullets projectile count differs by path class: 1.9.8 emits 0, while 1.9.93 emits 1.
+    This reflects secondary/particle fire paths in 1.9.8 versus dedicated Fire Bullets replacement emission in 1.9.93.
 
 ### Weapon `14`: Plasma Shotgun
 
@@ -257,10 +249,6 @@ Interpretation notes:
 - `1.9.93 Fire Bullets`: 14x `0x2d` only (base fire path bypassed)
 - `1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
 - `Rewrite status`: Matches 1.9.93 semantics
-
-!!! warning "Significant divergence"
-    Effective projectile count differs strongly: 1.9.8 produces 28 total main-projectile shots per trigger,
-    while 1.9.93 produces 14 (delta +14).
 
 ### Weapon `15`: Blow Torch
 
@@ -273,8 +261,8 @@ Interpretation notes:
 - `Rewrite status`: Matches 1.9.93 semantics
 
 !!! warning "Significant divergence"
-    1.9.8 fire path emits no Fire Bullets projectile, while 1.9.93 emits 1 Fire Bullets projectile(s).
-    This is a path-class change (secondary/particle path vs dedicated Fire Bullets replacement path).
+    Fire Bullets projectile count differs by path class: 1.9.8 emits 0, while 1.9.93 emits 1.
+    This reflects secondary/particle fire paths in 1.9.8 versus dedicated Fire Bullets replacement emission in 1.9.93.
 
 ### Weapon `16`: HR Flamer
 
@@ -287,8 +275,8 @@ Interpretation notes:
 - `Rewrite status`: Matches 1.9.93 semantics
 
 !!! warning "Significant divergence"
-    1.9.8 fire path emits no Fire Bullets projectile, while 1.9.93 emits 1 Fire Bullets projectile(s).
-    This is a path-class change (secondary/particle path vs dedicated Fire Bullets replacement path).
+    Fire Bullets projectile count differs by path class: 1.9.8 emits 0, while 1.9.93 emits 1.
+    This reflects secondary/particle fire paths in 1.9.8 versus dedicated Fire Bullets replacement emission in 1.9.93.
 
 ### Weapon `17`: Mini-Rocket Swarmers
 
@@ -301,8 +289,8 @@ Interpretation notes:
 - `Rewrite status`: Matches 1.9.93 semantics
 
 !!! warning "Significant divergence"
-    1.9.8 fire path emits no Fire Bullets projectile, while 1.9.93 emits 1 Fire Bullets projectile(s).
-    This is a path-class change (secondary/particle path vs dedicated Fire Bullets replacement path).
+    Fire Bullets projectile count differs by path class: 1.9.8 emits 0, while 1.9.93 emits 1.
+    This reflects secondary/particle fire paths in 1.9.8 versus dedicated Fire Bullets replacement emission in 1.9.93.
 
 ### Weapon `18`: Rocket Minigun
 
@@ -315,8 +303,8 @@ Interpretation notes:
 - `Rewrite status`: Matches 1.9.93 semantics
 
 !!! warning "Significant divergence"
-    1.9.8 fire path emits no Fire Bullets projectile, while 1.9.93 emits 1 Fire Bullets projectile(s).
-    This is a path-class change (secondary/particle path vs dedicated Fire Bullets replacement path).
+    Fire Bullets projectile count differs by path class: 1.9.8 emits 0, while 1.9.93 emits 1.
+    This reflects secondary/particle fire paths in 1.9.8 versus dedicated Fire Bullets replacement emission in 1.9.93.
 
 ### Weapon `19`: Pulse Gun
 
@@ -337,10 +325,6 @@ Interpretation notes:
 - `1.9.93 Fire Bullets`: 4x `0x2d` only (base fire path bypassed)
 - `1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
 - `Rewrite status`: Matches 1.9.93 semantics
-
-!!! warning "Significant divergence"
-    Effective projectile count differs strongly: 1.9.8 produces 8 total main-projectile shots per trigger,
-    while 1.9.93 produces 4 (delta +4).
 
 ### Weapon `21`: Ion Rifle
 
@@ -443,8 +427,8 @@ Interpretation notes:
 - `Rewrite status`: Matches 1.9.93 semantics
 
 !!! warning "Significant divergence"
-    Effective projectile count differs strongly: 1.9.8 produces 12 total main-projectile shots per trigger,
-    while 1.9.93 produces 1 (delta +11).
+    Fire Bullets projectile count differs: 1.9.8 emits 6 Fire Bullets projectile(s) per trigger,
+    while 1.9.93 emits 1 (delta +5).
 
 ### Weapon `31`: Ion Shotgun
 
@@ -455,10 +439,6 @@ Interpretation notes:
 - `1.9.93 Fire Bullets`: 8x `0x2d` only (base fire path bypassed)
 - `1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
 - `Rewrite status`: Matches 1.9.93 semantics
-
-!!! warning "Significant divergence"
-    Effective projectile count differs strongly: 1.9.8 produces 16 total main-projectile shots per trigger,
-    while 1.9.93 produces 8 (delta +8).
 
 ### Weapon `32`: Flameburst
 
@@ -571,8 +551,8 @@ Interpretation notes:
 - `Rewrite status`: Matches 1.9.93 semantics
 
 !!! warning "Significant divergence"
-    1.9.8 fire path emits no Fire Bullets projectile, while 1.9.93 emits 1 Fire Bullets projectile(s).
-    This is a path-class change (secondary/particle path vs dedicated Fire Bullets replacement path).
+    Fire Bullets projectile count differs by path class: 1.9.8 emits 0, while 1.9.93 emits 1.
+    This reflects secondary/particle fire paths in 1.9.8 versus dedicated Fire Bullets replacement emission in 1.9.93.
 
 ### Weapon `43`: Rainbow Gun
 
