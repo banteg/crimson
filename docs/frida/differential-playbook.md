@@ -38,6 +38,7 @@ from crimson.original.capture import load_capture
 p = Path("artifacts/frida/share/gameplay_diff_capture.json")
 print("sha256", hashlib.sha256(p.read_bytes()).hexdigest())
 cap = load_capture(p)
+print("capture_format_version", int(cap.capture_format_version))
 ticks = cap.ticks
 print("ticks", len(ticks))
 if ticks:
@@ -49,6 +50,8 @@ PY
 Notes:
 
 - Loader success is the gate. If it decodes cleanly, continue.
+- Loader enforces exact `capture_format_version`; stale version captures must be
+  re-recorded with the current script.
 - Capture loading is strict: a truncated trailing JSONL row is a blocker and should be recaptured.
 
 ## 3) Decide session bookkeeping

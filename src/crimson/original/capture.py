@@ -29,6 +29,7 @@ from ..replay.types import (
     pack_input_flags,
 )
 from .schema import (
+    CAPTURE_FORMAT_VERSION,
     CaptureEventHeadPerkApply,
     CaptureEventHeadPerkDelta,
     CaptureFile,
@@ -1107,6 +1108,16 @@ def _validate_capture_path(path: Path) -> None:
     raise CaptureError(f"capture path must end with .json or .json.gz: {path}")
 
 
+def _validate_capture_format_version(capture: CaptureFile, path: Path) -> None:
+    version = int(capture.capture_format_version)
+    if int(version) == int(CAPTURE_FORMAT_VERSION):
+        return
+    raise CaptureError(
+        "unsupported capture format version for "
+        f"{path}: got {version}, expected {int(CAPTURE_FORMAT_VERSION)}"
+    )
+
+
 def _decode_capture_stream(raw: bytes, path: Path) -> CaptureFile | None:
     lines = raw.splitlines()
     if not lines:
@@ -1154,6 +1165,7 @@ def load_capture(path: Path) -> CaptureFile:
 
     stream = _decode_capture_stream(raw, path)
     if stream is not None:
+        _validate_capture_format_version(stream, path)
         return stream
 
     raise CaptureError(f"invalid capture file: {path}")
@@ -1162,6 +1174,7 @@ def load_capture(path: Path) -> CaptureFile:
 def dump_capture(path: Path, capture: CaptureFile) -> None:
     path = Path(path)
     _validate_capture_path(path)
+    _validate_capture_format_version(capture, path)
     capture_obj = msgspec.to_builtins(capture)
     if not isinstance(capture_obj, dict):
         raise CaptureError("invalid capture object during serialization")

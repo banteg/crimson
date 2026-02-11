@@ -5,6 +5,7 @@ from pathlib import Path
 
 from grim.geom import Vec2
 
+from crimson.original.schema import CAPTURE_FORMAT_VERSION
 from crimson.replay.checkpoints import (
     ReplayCheckpoint,
     ReplayEventSummary,
@@ -121,6 +122,7 @@ def _capture_tick(
 
 def _capture_obj(*, ticks: list[dict[str, object]]) -> dict[str, object]:
     return {
+        "capture_format_version": int(CAPTURE_FORMAT_VERSION),
         "script": "gameplay_diff_capture",
         "session_id": "s",
         "out_path": "capture.json",

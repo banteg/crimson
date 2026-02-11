@@ -5,6 +5,7 @@ from pathlib import Path
 
 from grim.geom import Vec2
 
+from crimson.original.schema import CAPTURE_FORMAT_VERSION
 from crimson.replay.checkpoints import (
     ReplayCheckpoint,
     ReplayDeathLedgerEntry,
@@ -378,6 +379,7 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
         },
     }
     capture_obj = {
+        "capture_format_version": int(CAPTURE_FORMAT_VERSION),
         "script": "gameplay_diff_capture",
         "session_id": "s",
         "out_path": "capture.json",
