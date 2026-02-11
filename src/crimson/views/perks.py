@@ -10,11 +10,10 @@ from ..game_modes import GameMode
 from ..gameplay import (
     GameplayState,
     PlayerState,
-    perk_selection_current_choices,
-    perk_selection_pick,
     survival_check_level_up,
 )
 from ..perks import PERK_BY_ID, PerkId, perk_display_description, perk_display_name
+from ..perks.selection import perk_selection_current_choices, perk_selection_pick
 from ..ui.menu_panel import draw_classic_menu_panel
 from ..ui.perk_menu import (
     PerkMenuLayout,

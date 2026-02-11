@@ -6,9 +6,9 @@ from types import SimpleNamespace
 import pyray as rl
 
 from crimson.game_world import GameWorld
-from crimson.gameplay import perk_apply
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
+from crimson.perks.apply import perk_apply
 from grim.view import ViewContext
 
 

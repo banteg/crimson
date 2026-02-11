@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from ..perks import PerkId
+from ..perks.helpers import perk_active
 from .apply_context import BonusApplyCtx
 
 
 def apply_weapon(ctx: BonusApplyCtx) -> None:
-    from ..gameplay import perk_active, weapon_assign_player
+    from ..gameplay import weapon_assign_player
 
     weapon_id = int(ctx.amount)
     if perk_active(ctx.player, PerkId.ALTERNATE_WEAPON) and ctx.player.alt_weapon_id is None:

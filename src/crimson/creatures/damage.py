@@ -6,8 +6,9 @@ from typing import Callable
 
 from grim.geom import Vec2
 
-from ..gameplay import PlayerState, perk_active
 from ..perks import PerkId
+from ..perks.helpers import perk_active
+from ..sim.state_types import PlayerState
 from .runtime import CREATURE_HITBOX_ALIVE, CreatureState
 from .spawn import CreatureFlags
 

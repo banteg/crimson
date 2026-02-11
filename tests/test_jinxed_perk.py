@@ -6,8 +6,9 @@ import math
 
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
-from crimson.gameplay import GameplayState, PlayerState, perks_update_effects
+from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
+from crimson.perks.effects import perks_update_effects
 
 
 class _ScriptedRng:
@@ -77,4 +78,3 @@ def test_perks_update_effects_jinxed_accident_damages_player_and_spawns_fx() -> 
     assert math.isclose(player.health, 45.0, abs_tol=1e-9)
     assert fx_queue.count == 2
     assert state.sfx_queue == []
-

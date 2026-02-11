@@ -8,15 +8,10 @@ import pyray as rl
 from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.math import clamp
 
-from ...gameplay import (
-    GameplayState,
-    PerkSelectionState,
-    PlayerState,
-    _CreatureForPerks,
-    perk_selection_current_choices,
-    perk_selection_pick,
-)
+from ...gameplay import GameplayState, PlayerState
 from ...perks import PerkId, perk_display_description, perk_display_name
+from ...perks.selection import perk_selection_current_choices, perk_selection_pick
+from ...perks.state import CreatureForPerks, PerkSelectionState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import (
     PERK_MENU_TRANSITION_MS,
@@ -47,7 +42,7 @@ class PerkMenuContext:
     state: GameplayState
     perk_state: PerkSelectionState
     players: list[PlayerState]
-    creatures: Sequence[_CreatureForPerks]
+    creatures: Sequence[CreatureForPerks]
     player: PlayerState
     game_mode: int
     player_count: int

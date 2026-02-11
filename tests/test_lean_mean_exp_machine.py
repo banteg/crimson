@@ -4,8 +4,9 @@ from grim.geom import Vec2
 
 import math
 
-from crimson.gameplay import GameplayState, PlayerState, perks_update_effects
+from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
+from crimson.perks.effects import perks_update_effects
 
 
 def test_perks_update_effects_lean_mean_exp_machine_ticks_xp_without_double_xp() -> None:
@@ -21,4 +22,3 @@ def test_perks_update_effects_lean_mean_exp_machine_ticks_xp_without_double_xp()
     perks_update_effects(state, [player], 0.1)
     assert player.experience == 20
     assert math.isclose(state.lean_mean_exp_timer, 0.25, abs_tol=1e-9)
-

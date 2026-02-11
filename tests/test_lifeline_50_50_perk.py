@@ -3,8 +3,9 @@ from __future__ import annotations
 from grim.geom import Vec2
 
 from crimson.creatures.runtime import CreatureState
-from crimson.gameplay import GameplayState, PlayerState, perk_apply
+from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
+from crimson.perks.apply import perk_apply
 
 
 class _FixedRng:
@@ -41,4 +42,3 @@ def test_perk_apply_lifeline_50_50_deactivates_every_other_eligible_creature_slo
     effects_spawned = sum(1 for entry in state.effects.entries if entry.flags)
     assert effects_spawned == 8
     assert player.perk_counts[int(PerkId.LIFELINE_50_50)] == 1
-

@@ -6,6 +6,7 @@ from typing import Sequence
 from grim.geom import Vec2
 
 from ..game_modes import GameMode
+from ..perks.helpers import perk_active
 from ..projectiles import CreatureDamageApplier, Damageable
 from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
 from ..weapons import WEAPON_BY_ID, WeaponId
@@ -187,7 +188,7 @@ class BonusPool:
         world_width: float = 1024.0,
         world_height: float = 1024.0,
     ) -> BonusEntry | None:
-        from ..gameplay import perk_active, weapon_pick_random_available
+        from ..gameplay import weapon_pick_random_available
         from ..perks import PerkId
 
         game_mode = int(state.game_mode)

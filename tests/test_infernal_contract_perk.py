@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 
-from crimson.gameplay import GameplayState, PlayerState, perk_apply
-from crimson.gameplay import PerkSelectionState
+from crimson.gameplay import GameplayState, PlayerState
+from crimson.perks.apply import perk_apply
 from crimson.perks import PerkId
+from crimson.perks.state import PerkSelectionState
 
 
 def test_infernal_contract_grants_levels_and_sets_low_health() -> None:
