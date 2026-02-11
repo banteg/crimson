@@ -77,17 +77,14 @@ frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
 
 Shortcut: `just frida-gameplay-diff-capture`
 
-Survival autoplay sidecar (manual-run helper that pins native computer control mode;
-no perk automation or auto-start transitions, JSONL to `survival_autoplay.jsonl`):
+Survival autoplay sidecar (manual-run helper that pins control scheme config only;
+default is static movement + computer aim, JSONL to `survival_autoplay.jsonl`):
 
 ```text
 frida -n crimsonland.exe -l C:\share\frida\survival_autoplay.js
 ```
 
 Shortcut: `just frida-survival-autoplay`
-
-Note: in the original EXE, `aim_scheme=5` uses the built-in computer control path
-which also drives movement.
 
 AlienZooKeeper no-unlock verifier (forces state `0x1a`, resets timer to `0x2580`, auto-solves board,
 and logs a final `verdict` event to `azk_verify_no_unlock.jsonl`):

@@ -5,10 +5,10 @@ tags:
   - automation
 ---
 
-# Survival computer-control sidecar
+# Survival control sidecar
 
-`scripts/frida/survival_autoplay.js` keeps the original game's native computer
-control mode pinned while leaving run flow manual.
+`scripts/frida/survival_autoplay.js` keeps the original game's control scheme
+values pinned while leaving run flow manual.
 
 Attach:
 
@@ -27,21 +27,10 @@ just frida-survival-autoplay
 - Does **not** auto-start Survival.
 - Does **not** inject movement input.
 - Does **not** auto-pick perks.
-- Enforces control config for the selected player:
-  - `config_player_mode_flags[player]` (default `5`)
-  - `config_aim_scheme[player]` (default `5`)
-- Optionally enforces `config_game_mode = 1` (Survival) without forcing state transitions.
-
-## Native control caveat (2003 EXE)
-
-In the original executable, `config_aim_scheme[player] = 5` is the built-in
-computer path. That path also routes through computer movement logic, even if
-you are not explicitly setting `config_player_mode_flags[player] = 5`.
-
-Practical effect:
-
-- `aim_scheme = 5` alone can still steer movement.
-- This sidecar intentionally keeps that native computer behavior.
+- Only enforces control config for the selected player:
+  - `config_player_mode_flags[player]` (default `2`, static movement)
+  - `config_aim_scheme[player]` (default `5`, computer aiming)
+- Does **not** patch game mode, player count, or demo-mode flags.
 
 ## Use with differential capture
 
@@ -52,8 +41,8 @@ frida -n crimsonland.exe -l C:\share\frida\survival_autoplay.js
 frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
 ```
 
-Then start the run manually in-game. The sidecar keeps native computer control mode pinned
-while `gameplay_diff_capture.js` records.
+Then start the run manually in-game. The sidecar keeps control scheme values
+pinned while `gameplay_diff_capture.js` records.
 
 ## Output
 
@@ -62,10 +51,6 @@ while `gameplay_diff_capture.js` records.
 ## Env knobs
 
 - `CRIMSON_FRIDA_AUTOPLAY_PLAYER=0` (P1 index)
-- `CRIMSON_FRIDA_AUTOPLAY_PLAYER_COUNT=1`
-- `CRIMSON_FRIDA_AUTOPLAY_ENFORCE_MODE=1|0` (default `1`)
-- `CRIMSON_FRIDA_AUTOPLAY_MODE=1` (Survival)
-- `CRIMSON_FRIDA_AUTOPLAY_MOVE_MODE=5`
+- `CRIMSON_FRIDA_AUTOPLAY_MOVE_MODE=2`
 - `CRIMSON_FRIDA_AUTOPLAY_AIM_SCHEME=5`
 - `CRIMSON_FRIDA_AUTOPLAY_ENFORCE_EACH_FRAME=1|0` (default `1`)
-- `CRIMSON_FRIDA_AUTOPLAY_DEMO_OFF=1|0` (default `1`)

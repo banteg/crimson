@@ -1,6 +1,6 @@
 "use strict";
 
-// Survival auto-aim/fire sidecar for differential capture sessions.
+// Survival control sidecar for differential capture sessions.
 //
 // Attach:
 //   frida -n crimsonland.exe -l C:\share\frida\survival_autoplay.js
@@ -9,7 +9,7 @@
 // - does NOT auto-start Survival
 // - does NOT inject movement input
 // - does NOT auto-pick perks
-// - only enforces the selected native computer control mode
+// - only enforces control scheme values (move + aim)
 
 const DEFAULT_LOG_DIR = "C:\\share\\frida";
 const GAME_MODULE = "crimsonland.exe";
@@ -59,18 +59,13 @@ const CONFIG = {
   outPath: joinPath(LOG_DIR, "survival_autoplay.jsonl"),
 
   playerIndex: Math.max(0, Math.min(3, parseIntEnv("CRIMSON_FRIDA_AUTOPLAY_PLAYER", 0))),
-  forcePlayerCount: Math.max(1, Math.min(4, parseIntEnv("CRIMSON_FRIDA_AUTOPLAY_PLAYER_COUNT", 1))),
-
-  // Keep this enabled if you always want the menu/game mode pre-selected to Survival.
-  enforceModeId: parseBoolEnv("CRIMSON_FRIDA_AUTOPLAY_ENFORCE_MODE", true),
-  forceModeId: parseIntEnv("CRIMSON_FRIDA_AUTOPLAY_MODE", 1), // 1 = Survival
 
   // Native computer-assisted control mode.
-  forceMoveMode: parseIntEnv("CRIMSON_FRIDA_AUTOPLAY_MOVE_MODE", 5),
+  // Defaults: static movement + computer aim.
+  forceMoveMode: parseIntEnv("CRIMSON_FRIDA_AUTOPLAY_MOVE_MODE", 2),
   forceAimScheme: parseIntEnv("CRIMSON_FRIDA_AUTOPLAY_AIM_SCHEME", 5),
 
   enforceConfigEachFrame: parseBoolEnv("CRIMSON_FRIDA_AUTOPLAY_ENFORCE_EACH_FRAME", true),
-  keepDemoModeOff: parseBoolEnv("CRIMSON_FRIDA_AUTOPLAY_DEMO_OFF", true),
 };
 
 const FN = {
@@ -78,12 +73,9 @@ const FN = {
 };
 
 const DATA = {
-  config_player_count: 0x0048035c,
-  config_game_mode: 0x00480360,
   config_player_mode_flags: 0x00480364,
   config_aim_scheme: 0x0048038c,
 
-  demo_mode_active: 0x0048700d,
   game_state_id: 0x00487270,
 };
 
@@ -144,15 +136,6 @@ function readS32Ptr(p) {
   }
 }
 
-function readU8Ptr(p) {
-  if (!p) return null;
-  try {
-    return p.readU8();
-  } catch (_) {
-    return null;
-  }
-}
-
 function writeS32Ptr(p, value) {
   if (!p) return false;
   try {
@@ -163,26 +146,8 @@ function writeS32Ptr(p, value) {
   }
 }
 
-function writeU8Ptr(p, value) {
-  if (!p) return false;
-  try {
-    p.writeU8(value & 0xff);
-    return true;
-  } catch (_) {
-    return false;
-  }
-}
-
 function readS32(name) {
   return readS32Ptr(dataPtrs[name]);
-}
-
-function writeS32IfDifferent(name, value) {
-  const p = dataPtrs[name];
-  if (!p) return false;
-  const cur = readS32Ptr(p);
-  if (cur === (value | 0)) return false;
-  return writeS32Ptr(p, value);
 }
 
 function playerDataPtr(name, playerIndex) {
@@ -207,27 +172,14 @@ function writePlayerS32IfDifferent(name, playerIndex, value) {
 function enforceAssistConfig(reason) {
   let changed = false;
 
-  changed = writeS32IfDifferent("config_player_count", CONFIG.forcePlayerCount) || changed;
-  if (CONFIG.enforceModeId) {
-    changed = writeS32IfDifferent("config_game_mode", CONFIG.forceModeId) || changed;
-  }
-
   changed = writePlayerS32IfDifferent("config_player_mode_flags", CONFIG.playerIndex, CONFIG.forceMoveMode) || changed;
   changed = writePlayerS32IfDifferent("config_aim_scheme", CONFIG.playerIndex, CONFIG.forceAimScheme) || changed;
-
-  if (CONFIG.keepDemoModeOff) {
-    const demoPtr = dataPtrs.demo_mode_active;
-    const demoVal = readU8Ptr(demoPtr);
-    if (demoVal && writeU8Ptr(demoPtr, 0)) changed = true;
-  }
 
   if (changed || reason !== "frame") {
     writeLog({
       event: "config_enforced",
       reason,
       game_state_id: readS32("game_state_id"),
-      game_mode: readS32("config_game_mode"),
-      player_count: readS32("config_player_count"),
       move_mode: readPlayerI32("config_player_mode_flags", CONFIG.playerIndex),
       aim_scheme: readPlayerI32("config_aim_scheme", CONFIG.playerIndex),
     });

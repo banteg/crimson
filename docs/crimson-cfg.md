@@ -72,17 +72,15 @@ typedef struct crimson_cfg_t {
 } crimson_cfg_t;
 ```
 
-## Control scheme coupling caveat
+## Control scheme notes
 
-Runtime behavior in the original executable couples control schemes in a way
-that is not obvious from the config layout alone:
+For player controls, movement and aiming are stored separately in the blob:
 
-- `config_aim_scheme[player] = 5` enters the built-in computer aim path.
-- In `gameplay_update_and_render` (`0x0040aab0`), that same path also uses
-  computer movement handling.
+- `config_player_mode_flags[player]` controls movement mode.
+- `config_aim_scheme[player]` controls aiming mode.
 
-So `aim_scheme = 5` can cause computer steering movement even when
-`config_player_mode_flags[player] != 5`.
+On the original EXE, these can be mixed in practice (for example
+`move_mode = 2` static movement with `aim_scheme = 5` computer aiming).
 
 Observed file:
 
