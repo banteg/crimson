@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 from crimson import local_input
@@ -128,3 +130,131 @@ def test_local_input_static_mode_conflict_precedence_matches_native(
     )
 
     assert out.move == expected_move
+
+
+def test_local_input_relative_mode_single_player_uses_alt_arrow_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_keys_down(monkeypatch, down_codes={0xC8, 0xCB})
+    monkeypatch.setattr(
+        local_input,
+        "_load_player_bind_block",
+        lambda _config, *, player_index: (0x17E,) * 16,
+    )
+    monkeypatch.setattr(
+        local_input.LocalInputInterpreter,
+        "_safe_controls_modes",
+        staticmethod(lambda _config, *, player_index: (0, MovementControlType.RELATIVE)),
+    )
+
+    interpreter = local_input.LocalInputInterpreter()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
+
+    out = interpreter.build_player_input(
+        player_index=0,
+        player=player,
+        config=None,
+        mouse_screen=Vec2(),
+        mouse_world=Vec2(),
+        screen_center=Vec2(),
+        dt_frame=0.1,
+        creatures=[],
+    )
+
+    assert out.move_forward_pressed is True
+    assert out.turn_left_pressed is True
+    assert out.move == Vec2(-1.0, -1.0)
+
+
+def test_local_input_relative_mode_multiplayer_does_not_use_alt_arrow_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_keys_down(monkeypatch, down_codes={0xC8, 0xCB})
+    monkeypatch.setattr(
+        local_input,
+        "_load_player_bind_block",
+        lambda _config, *, player_index: (0x17E,) * 16,
+    )
+    monkeypatch.setattr(
+        local_input.LocalInputInterpreter,
+        "_safe_controls_modes",
+        staticmethod(lambda _config, *, player_index: (0, MovementControlType.RELATIVE)),
+    )
+    config = SimpleNamespace(data={"player_count": 2})
+
+    interpreter = local_input.LocalInputInterpreter()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
+
+    out = interpreter.build_player_input(
+        player_index=0,
+        player=player,
+        config=config,
+        mouse_screen=Vec2(),
+        mouse_world=Vec2(),
+        screen_center=Vec2(),
+        dt_frame=0.1,
+        creatures=[],
+    )
+
+    assert out.move_forward_pressed is False
+    assert out.turn_left_pressed is False
+    assert out.move == Vec2()
+
+
+def test_local_input_computer_move_mode_near_center_heads_toward_target(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_no_user_input(monkeypatch)
+    monkeypatch.setattr(
+        local_input.LocalInputInterpreter,
+        "_safe_controls_modes",
+        staticmethod(lambda _config, *, player_index: (0, MovementControlType.COMPUTER)),
+    )
+
+    interpreter = local_input.LocalInputInterpreter()
+    player = PlayerState(index=0, pos=Vec2(500.0, 500.0), aim=Vec2(560.0, 500.0))
+    creatures = [_DummyCreature(pos=Vec2(560.0, 500.0), active=True, hp=20.0)]
+
+    out = interpreter.build_player_input(
+        player_index=0,
+        player=player,
+        config=None,
+        mouse_screen=Vec2(),
+        mouse_world=Vec2(),
+        screen_center=Vec2(),
+        dt_frame=0.1,
+        creatures=creatures,
+    )
+
+    assert float(out.move.x) == pytest.approx(1.0, abs=1e-6)
+    assert float(out.move.y) == pytest.approx(0.0, abs=1e-6)
+
+
+def test_local_input_computer_move_mode_far_from_center_heads_toward_center(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_no_user_input(monkeypatch)
+    monkeypatch.setattr(
+        local_input.LocalInputInterpreter,
+        "_safe_controls_modes",
+        staticmethod(lambda _config, *, player_index: (0, MovementControlType.COMPUTER)),
+    )
+
+    interpreter = local_input.LocalInputInterpreter()
+    player = PlayerState(index=0, pos=Vec2(900.0, 900.0), aim=Vec2(960.0, 900.0))
+    creatures = [_DummyCreature(pos=Vec2(960.0, 900.0), active=True, hp=20.0)]
+
+    out = interpreter.build_player_input(
+        player_index=0,
+        player=player,
+        config=None,
+        mouse_screen=Vec2(),
+        mouse_world=Vec2(),
+        screen_center=Vec2(),
+        dt_frame=0.1,
+        creatures=creatures,
+    )
+
+    expected = (Vec2(512.0, 512.0) - player.pos).normalized()
+    assert float(out.move.x) == pytest.approx(float(expected.x), abs=1e-6)
+    assert float(out.move.y) == pytest.approx(float(expected.y), abs=1e-6)
