@@ -5,7 +5,8 @@ from grim.geom import Vec2
 import pytest
 
 from crimson.bonuses import BonusId
-from crimson.gameplay import GameplayState, PlayerInput, PlayerState, bonus_apply, player_update, weapon_assign_player
+from crimson.bonuses.apply import bonus_apply
+from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_update, weapon_assign_player
 from crimson.perks import PerkId
 
 

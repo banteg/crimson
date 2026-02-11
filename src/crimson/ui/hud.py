@@ -10,8 +10,9 @@ from grim.assets import TextureLoader
 from grim.color import RGBA
 from grim.fonts.small import SmallFontData, draw_small_text
 from grim.geom import Vec2
+from ..bonuses.hud import BonusHudState
 from ..game_modes import GameMode
-from ..gameplay import BonusHudState, PlayerState, survival_level_threshold
+from ..gameplay import PlayerState, survival_level_threshold
 from ..weapons import WEAPON_BY_ID
 
 HUD_TEXT_COLOR = rl.Color(220, 220, 220, 255)

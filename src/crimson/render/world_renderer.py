@@ -14,10 +14,11 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim.terrain_render import _maybe_alpha_test
 
 from ..bonuses import BONUS_BY_ID, BonusId
+from ..bonuses.pool import bonus_find_aim_hover_entry, bonus_label_for_entry
 from ..creatures.anim import creature_anim_select_frame
 from ..creatures.spawn import CreatureFlags, CreatureTypeId
 from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRID
-from ..gameplay import bonus_find_aim_hover_entry, bonus_label_for_entry, perk_active
+from ..gameplay import perk_active
 from ..perks import PerkId
 from ..projectiles import ProjectileTypeId
 from ..sim.world_defs import (

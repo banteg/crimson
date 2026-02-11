@@ -15,8 +15,9 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim.geom import Vec2
 
 from crimson.bonuses import BonusId
+from crimson.bonuses.pool import BonusEntry, bonus_label_for_entry
 from crimson.game_modes import GameMode
-from crimson.gameplay import BonusEntry, PlayerInput, bonus_label_for_entry
+from crimson.gameplay import PlayerInput
 from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     CAPTURE_PERK_APPLY_EVENT_KIND,

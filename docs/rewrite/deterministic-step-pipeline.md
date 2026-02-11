@@ -60,7 +60,7 @@ The deterministic tick/presentation flow now dispatches selected behavior throug
   - registry: `src/crimson/features/perks/registry.py`
   - hooks: Reflex Boosted dt scaling, Final Revenge death burst
 - Bonus pickup presentation hooks:
-  - registry: `src/crimson/features/bonuses/pickup_fx.py`
+  - registry: `src/crimson/bonuses/pickup_fx.py`
   - hooks: Freeze/Reflex Boost pickup ring effects (+ shared burst behavior)
 - Projectile decal presentation hooks:
   - registry: `src/crimson/features/presentation/projectile_decals.py`

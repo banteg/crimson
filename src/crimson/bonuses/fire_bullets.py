@@ -6,8 +6,28 @@ from typing import Callable
 
 from grim.geom import Vec2
 
-from ...effects import FxQueue
-from ...projectiles import ProjectileHit
+from ..effects import FxQueue
+from ..projectiles import ProjectileHit
+from .apply_context import BonusApplyCtx, bonus_apply_seconds
+
+
+def apply_fire_bullets(ctx: BonusApplyCtx) -> None:
+    should_register = float(ctx.player.fire_bullets_timer) <= 0.0
+    if ctx.players is not None and len(ctx.players) > 1:
+        should_register = (
+            float(ctx.players[0].fire_bullets_timer) <= 0.0 and float(ctx.players[1].fire_bullets_timer) <= 0.0
+        )
+    if should_register:
+        ctx.register_player("fire_bullets_timer")
+    ctx.player.fire_bullets_timer = float(
+        ctx.player.fire_bullets_timer + bonus_apply_seconds(ctx) * ctx.economist_multiplier
+    )
+    ctx.player.weapon_reset_latch = 0
+    ctx.player.shot_cooldown = 0.0
+    ctx.player.reload_active = False
+    ctx.player.reload_timer = 0.0
+    ctx.player.reload_timer_max = 0.0
+    ctx.player.ammo = float(ctx.player.clip_size)
 
 
 def queue_large_hit_decal_streak(

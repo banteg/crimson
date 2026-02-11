@@ -105,7 +105,7 @@ NATIVE_FUNCTION_TO_PORT_PATHS: dict[str, tuple[str, ...]] = {
         "src/crimson/player_damage.py",
     ),
     "bonus_try_spawn_on_kill": (
-        "src/crimson/bonuses.py",
+        "src/crimson/bonuses/pool.py",
         "src/crimson/creatures/runtime.py",
     ),
     "fx_queue_add_random": (
@@ -119,7 +119,7 @@ NATIVE_FUNCTION_TO_PORT_PATHS: dict[str, tuple[str, ...]] = {
     "effect_spawn_blood_splatter": (
         "src/crimson/effects.py",
         "src/crimson/sim/presentation_step.py",
-        "src/crimson/features/bonuses/fire_bullets.py",
+        "src/crimson/bonuses/fire_bullets.py",
     ),
 }
 

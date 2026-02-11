@@ -9,7 +9,7 @@ from grim.geom import Vec2
 
 from ...effects import FxQueue
 from ...projectiles import ProjectileHit, ProjectileTypeId
-from ..bonuses.fire_bullets import queue_large_hit_decal_streak
+from ...bonuses.fire_bullets import queue_large_hit_decal_streak
 
 
 @dataclass(slots=True)

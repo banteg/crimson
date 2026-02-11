@@ -5,15 +5,16 @@ import inspect
 from grim.geom import Vec2
 
 from crimson.bonuses import BonusId
+from crimson.bonuses.pickup_fx import emit_bonus_pickup_effects
 from crimson.effects import FxQueue
 from crimson.effects_atlas import EffectId
-from crimson.features.bonuses import emit_bonus_pickup_effects
 from crimson.features.perks import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from crimson.features.perks.final_revenge import apply_final_revenge_on_player_death
 from crimson.features.perks.reflex_boosted import apply_reflex_boosted_dt
-from crimson.gameplay import BonusPickupEvent, GameplayState
+from crimson.gameplay import GameplayState
 from crimson.projectiles import ProjectileHit, ProjectileTypeId
 from crimson.sim.presentation_step import apply_world_presentation_step, queue_projectile_decals
+from crimson.sim.state_types import BonusPickupEvent
 from crimson.sim.world_state import WorldState
 
 
