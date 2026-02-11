@@ -55,7 +55,6 @@ nav = [
     { "Parity" = [
       { "Overview" = "rewrite/parity/index.md" },
       { "Status" = "rewrite/status.md" },
-      { "Tech tree" = "rewrite/tech-tree.md" },
       { "Perk matrix" = "rewrite/perk-matrix.md" },
       { "Original bugs" = "rewrite/original-bugs.md" },
     ]},

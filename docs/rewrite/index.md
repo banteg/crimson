@@ -136,6 +136,4 @@ See also:
 
 ## Roadmap
 
-See the rewrite tech tree: [rewrite/tech-tree.md](tech-tree.md)
-
-See also: [Rewrite status / parity gaps](status.md)
+See: [Rewrite status / parity gaps](status.md)
