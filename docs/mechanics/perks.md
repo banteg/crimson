@@ -9,7 +9,7 @@ tags:
 # Perks
 
 Mechanics reference for all 58 perks. Exact numbers, interaction rules, and
-selection conditions — no source paths or decompiler addresses.
+selection conditions. No source paths or decompiler addresses.
 
 See also: [Perk ID map](../perk-id-map.md) |
 [Perk runtime reference](../re/static/perks-runtime-reference.md)
@@ -46,7 +46,7 @@ long as the player keeps moving. Stopping causes speed to decay rapidly.
 
 While the crosshair is near a creature, Pyrokinetic decrements that creature's
 shared collision timer. When it wraps, the timer resets to 0.5 seconds and a
-heat flare triggers — a burst of particles and a random decal at the target.
+heat flare triggers: a burst of particles and a random decal at the target.
 Purely visual; no damage.
 
 ## 7. Instant Winner
@@ -73,14 +73,14 @@ The player becomes a disease carrier. Nearby weak creatures (under 150 HP,
 within 30 units) get infected. Infected creatures take 15 damage every 0.5
 seconds, and the infection spreads to other creatures within 45 units. Each
 infection kill increments a global counter that gradually suppresses further
-spreading — the plague burns itself out over time. Shared across all players.
+spreading. The plague burns itself out over time. Shared across all players.
 
 Suppressed in hardcore quest 2.10.
 
 ## 11. Evil Eyes
 
-The creature nearest the crosshair (within 12 units) is frozen in place — no
-AI, no movement — as long as it stays targeted.
+The creature nearest the crosshair (within 12 units) is frozen in place (no
+AI, no movement) as long as it stays targeted.
 
 ## 12. Ammo Maniac
 
@@ -142,7 +142,7 @@ Unlocks [Perk Master](#43-perk-master).
 
 ## 22. Unstoppable
 
-Getting hit no longer disrupts aim or movement — no knockback, no spread
+Getting hit no longer disrupts aim or movement: no knockback, no spread
 penalty. Damage still applies normally.
 
 ## 23. Regression Bullets
@@ -255,7 +255,7 @@ Unlocked by quest 2.9 (*Ghost Patrols*).
 
 ## 37. Toxic Avenger
 
-Upgraded version of [Veins of Poison](#36-veins-of-poison) — melee attackers
+Upgrades [Veins of Poison](#36-veins-of-poison). Melee attackers
 receive strong poison (180 damage/s) instead of weak.
 
 Requires [Veins of Poison](#36-veins-of-poison).
@@ -298,7 +298,7 @@ Unlocked by quest 3.9 (*Deja vu*).
 ## 42. Jinxed
 
 Random events on a global timer (randomized 2–4 second interval): 10% chance of
-taking 5 self-damage, and — if the Freeze bonus isn't active — a random creature
+taking 5 self-damage, and if the Freeze bonus isn't active, a random creature
 may instantly die, awarding its XP.
 
 Unlocked by quest 4.1 (*Major Alien Breach*).
@@ -320,7 +320,7 @@ Unlocked by quest 4.5 (*The Massacre*).
 
 ## 45. Greater Regeneration
 
-No runtime effect has been found in this build — appears to be a no-op.
+No runtime effect has been found in this build. Appears to be a no-op.
 [Death Clock](#47-death-clock) clears it on pick.
 
 Requires [Regeneration](#38-regeneration).
@@ -346,7 +346,7 @@ Unlocked by quest 5.2 (*The Spanking Of The Dead*).
 ## 48. My Favourite Weapon
 
 +2 clip size on pick and on every future weapon assignment. Weapon bonus pickups
-are disabled entirely — they won't spawn and can't be collected.
+are disabled entirely. They won't spawn and can't be collected.
 
 Unlocked by quest 5.3 (*The Fortress*).
 
@@ -371,7 +371,7 @@ Unlocked by quest 5.6 (*Cross Fire*).
 ## 51. Ion Gun Master
 
 Ion weapon damage and blast radius are both increased by 20% (×1.2). The damage
-bonus is global — any ion damage is scaled, regardless of which player owns the
+bonus is global: any ion damage is scaled, regardless of which player owns the
 perk.
 
 Unlocked by quest 5.8 (*Monster Blues*).
@@ -400,7 +400,7 @@ when enabled.
 
 While standing still, a timer ramps up over 30 seconds. Bullet damage is
 multiplied by (timer × 0.05 + 1), reaching up to ×2.5 at full charge. Moving
-resets the timer. In multiplayer, the bonus stacks — each alive player with a
+resets the timer. In multiplayer, the bonus stacks: each alive player with a
 charged timer contributes their own multiplier.
 
 ## 56. Tough Reloader
