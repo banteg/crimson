@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
 from crimson.gameplay import PlayerInput
 from crimson.original.capture import convert_capture_to_replay
+from crimson.original.diff import ReplayFieldDiff
 from crimson.original.schema import (
     CaptureCheckpoint,
     CaptureDeath,
@@ -18,6 +21,7 @@ from crimson.original.schema import (
     CaptureVec2,
 )
 from crimson.original.verify import verify_capture
+from crimson.original.verify import _allow_capture_sample_creature_count
 from crimson.replay import ReplayHeader, ReplayRecorder
 from crimson.replay.checkpoints import ReplayCheckpoint
 from crimson.sim.runners import run_survival_replay
@@ -38,7 +42,7 @@ def _single_tick_survival_checkpoint(*, seed: int = 0xBEEF):
     run_survival_replay(
         replay,
         strict_events=True,
-        checkpoint_use_world_step_creature_count=True,
+        checkpoint_use_world_step_creature_count=False,
         checkpoints_out=checkpoints,
         checkpoint_ticks={0},
     )
@@ -139,7 +143,7 @@ def test_verify_capture_matches_state_ignoring_hash_domains() -> None:
     assert run_result.ticks == 1
 
 
-def test_verify_capture_accepts_world_step_latched_creature_count() -> None:
+def test_verify_capture_accepts_single_tick_latched_creature_count() -> None:
     checkpoint = _single_tick_survival_checkpoint(seed=0xB00B)
     capture = _capture_from_checkpoint(checkpoint=checkpoint)
     capture.ticks[0].checkpoint.creature_count = 0
@@ -152,6 +156,21 @@ def test_verify_capture_accepts_world_step_latched_creature_count() -> None:
 
     assert result.ok is True
     assert result.failure is None
+
+
+def test_allow_capture_sample_creature_count_prefers_sample_stream() -> None:
+    checkpoint = _single_tick_survival_checkpoint(seed=0xD00D)
+    expected = replace(checkpoint, tick_index=5, creature_count=31)
+    actual = replace(checkpoint, tick_index=5, creature_count=32)
+    allowed = _allow_capture_sample_creature_count(
+        tick=5,
+        field_diffs=[ReplayFieldDiff(field="creature_count", expected=31, actual=32)],
+        expected_by_tick={5: expected},
+        actual_by_tick={5: actual},
+        capture_sample_creature_counts={5: 32},
+    )
+
+    assert allowed is True
 
 
 def test_verify_capture_surfaces_first_field_mismatch() -> None:
@@ -188,7 +207,7 @@ def test_verify_capture_float_tolerance_defaults_to_1e3_abs() -> None:
     run_survival_replay(
         replay,
         strict_events=True,
-        checkpoint_use_world_step_creature_count=True,
+        checkpoint_use_world_step_creature_count=False,
         checkpoints_out=checkpoints,
         checkpoint_ticks={0, 1},
     )
