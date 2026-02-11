@@ -13,6 +13,96 @@ selection conditions — no source paths or decompiler addresses.
 See also: [Perk ID map](../perk-id-map.md) |
 [Perk runtime reference](../re/static/perks-runtime-reference.md)
 
+## Selection Metadata
+
+`Base Modes` reflects only the static mode flags on each perk. Runtime offer
+gates (Death Clock blocks, hardcore quest special-cases, weapon checks, rarity
+gates) are listed below.
+
+### Metadata Matrix
+
+| ID | Perk | Stackable | Base Modes | Prereq | Unlocks |
+| --- | --- | --- | --- | --- | --- |
+| 0 | AntiPerk | No | Never offered | None | None |
+| 1 | Bloody Mess / Quick Learner | No | Survival, Quest, 2P | None | None |
+| 2 | Sharpshooter | No | Survival, Quest, 2P | None | None |
+| 3 | Fastloader | No | Survival, Quest, 2P | None | None |
+| 4 | Lean Mean Exp. Machine | No | Survival, Quest, 2P | None | None |
+| 5 | Long Distance Runner | No | Survival, Quest, 2P | None | None |
+| 6 | Pyrokinetic | No | Survival, Quest, 2P | None | None |
+| 7 | Instant Winner | Yes | Survival, Quest, 2P | None | None |
+| 8 | Grim Deal | No | Survival only | None | None |
+| 9 | Alternate Weapon | No | Survival, Quest | None | None |
+| 10 | Plaguebearer | No | Survival, Quest, 2P | None | None |
+| 11 | Evil Eyes | No | Survival, Quest, 2P | None | None |
+| 12 | Ammo Maniac | No | Survival, Quest, 2P | None | None |
+| 13 | Radioactive | No | Survival, Quest, 2P | None | None |
+| 14 | Fastshot | No | Survival, Quest, 2P | None | None |
+| 15 | Fatal Lottery | Yes | Survival only | None | None |
+| 16 | Random Weapon | Yes | Survival, Quest | None | None |
+| 17 | Mr. Melee | No | Survival, Quest, 2P | None | None |
+| 18 | Anxious Loader | No | Survival, Quest, 2P | None | None |
+| 19 | Final Revenge | No | Survival only | None | None |
+| 20 | Telekinetic | No | Survival, Quest, 2P | None | None |
+| 21 | Perk Expert | No | Survival, Quest, 2P | None | Perk Master (43) |
+| 22 | Unstoppable | No | Survival, Quest, 2P | None | None |
+| 23 | Regression Bullets | No | Survival, Quest, 2P | None | None |
+| 24 | Infernal Contract | No | Survival, Quest, 2P | None | None |
+| 25 | Poison Bullets | No | Survival, Quest, 2P | None | None |
+| 26 | Dodger | No | Survival, Quest, 2P | None | Ninja (40) |
+| 27 | Bonus Magnet | No | Survival, Quest, 2P | None | None |
+| 28 | Uranium Filled Bullets | No | Survival, Quest, 2P | None | None |
+| 29 | Doctor | No | Survival, Quest, 2P | None | None |
+| 30 | Monster Vision | No | Survival, Quest, 2P | None | None |
+| 31 | Hot Tempered | No | Survival, Quest, 2P | None | None |
+| 32 | Bonus Economist | No | Survival, Quest, 2P | None | None |
+| 33 | Thick Skinned | No | Survival, Quest, 2P | None | None |
+| 34 | Barrel Greaser | No | Survival, Quest, 2P | None | None |
+| 35 | Ammunition Within | No | Survival, Quest, 2P | None | None |
+| 36 | Veins of Poison | No | Survival, Quest, 2P | None | Toxic Avenger (37) |
+| 37 | Toxic Avenger | No | Survival, Quest, 2P | Veins of Poison (36) | None |
+| 38 | Regeneration | No | Survival, Quest, 2P | None | Greater Regeneration (45) |
+| 39 | Pyromaniac | No | Survival, Quest, 2P | None | None |
+| 40 | Ninja | No | Survival, Quest, 2P | Dodger (26) | None |
+| 41 | Highlander | No | Survival only | None | None |
+| 42 | Jinxed | No | Survival, Quest, 2P | None | None |
+| 43 | Perk Master | No | Survival, Quest, 2P | Perk Expert (21) | None |
+| 44 | Reflex Boosted | No | Survival, Quest, 2P | None | None |
+| 45 | Greater Regeneration | No | Survival, Quest, 2P | Regeneration (38) | None |
+| 46 | Breathing Room | No | Survival, 2P | None | None |
+| 47 | Death Clock | No | Survival, Quest, 2P | None | None |
+| 48 | My Favourite Weapon | No | Survival, Quest, 2P | None | None |
+| 49 | Bandage | No | Survival, Quest, 2P | None | None |
+| 50 | Angry Reloader | No | Survival, Quest, 2P | None | None |
+| 51 | Ion Gun Master | No | Survival, Quest, 2P | None | None |
+| 52 | Stationary Reloader | No | Survival, Quest, 2P | None | None |
+| 53 | Man Bomb | No | Survival, Quest, 2P | None | None |
+| 54 | Fire Cough | No | Survival, Quest, 2P | None | None |
+| 55 | Living Fortress | No | Survival, Quest, 2P | None | None |
+| 56 | Tough Reloader | No | Survival, Quest, 2P | None | None |
+| 57 | Lifeline 50-50 | No | Survival, Quest, 2P | None | None |
+
+### Additional Offer Gates
+
+- Hardcore quest `2-10` blocks Poison Bullets (25), Veins of Poison (36), and
+  Plaguebearer (10).
+- Death Clock (47) active blocks Jinxed (42), Breathing Room (46), Grim Deal
+  (8), Highlander (41), Fatal Lottery (15), Ammunition Within (35), Infernal
+  Contract (24), Regeneration (38), Greater Regeneration (45), Thick Skinned
+  (33), and Bandage (49).
+- Pyromaniac (39) is only offerable while the current weapon is Flamethrower.
+- Global 25% rarity reject gate applies to Jinxed (42), Ammunition Within (35),
+  Anxious Loader (18), and Monster Vision (30).
+- Quest `1-7` special case: Monster Vision (30) is forced as the first choice
+  if not already owned.
+
+### Progressions
+
+- Dodger (26) -> Ninja (40)
+- Veins of Poison (36) -> Toxic Avenger (37)
+- Perk Expert (21) -> Perk Master (43)
+- Regeneration (38) -> Greater Regeneration (45)
+
 ## 0. AntiPerk
 
 Internal sentinel. Never offered to the player.
