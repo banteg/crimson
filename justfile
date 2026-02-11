@@ -255,6 +255,12 @@ frida-gameplay-diff-capture process="crimsonland.exe":
     frida -n {{process}} -l scripts\\frida\\gameplay_diff_capture.js
 
 [windows]
+frida-survival-autoplay process="crimsonland.exe":
+    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
+    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
+    frida -n {{process}} -l scripts\\frida\\survival_autoplay.js
+
+[windows]
 ghidra-sync:
     wsl -e bash -lc "cd ~/dev/crimson && just ghidra-sync"
 

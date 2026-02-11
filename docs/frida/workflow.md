@@ -25,6 +25,7 @@ just frida-sync-share
 - `scripts/frida/ui_render_trace.js`
 - `scripts/frida/gameplay_state_capture.js`
 - `scripts/frida/gameplay_diff_capture.js`
+- `scripts/frida/survival_autoplay.js`
 - `scripts/frida/creature_anim_trace.js`
 - `scripts/frida/creature_render_trace.js`
 - `scripts/frida/fx_queue_render_trace.js`
@@ -76,6 +77,15 @@ frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
 
 Shortcut: `just frida-gameplay-diff-capture`
 
+Survival autoplay sidecar (forces Survival + native computer controls, auto-picks perks,
+optionally auto-restarts after game over, JSONL to `survival_autoplay.jsonl`):
+
+```text
+frida -n crimsonland.exe -l C:\share\frida\survival_autoplay.js
+```
+
+Shortcut: `just frida-survival-autoplay`
+
 AlienZooKeeper no-unlock verifier (forces state `0x1a`, resets timer to `0x2580`, auto-solves board,
 and logs a final `verdict` event to `azk_verify_no_unlock.jsonl`):
 
@@ -123,6 +133,7 @@ Default logs written by the scripts:
 - `C:\share\frida\grim_hits.jsonl`
 - `C:\share\frida\crimsonland_frida_hits.jsonl`
 - `C:\share\frida\gameplay_diff_capture.json` (if you ran `gameplay_diff_capture.js`)
+- `C:\share\frida\survival_autoplay.jsonl` (if you ran `survival_autoplay.js`)
 - `C:\share\frida\creature_anim_trace.jsonl`
 - `C:\share\frida\ui_render_trace.jsonl`
 - `C:\share\frida\demo_trial_overlay_trace.jsonl` (if you ran `demo_trial_overlay_trace.js`)
