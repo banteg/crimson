@@ -181,6 +181,11 @@ def test_window_rows_include_rng_stream_mismatch_details() -> None:
                 "rng_rand_calls": 3,
                 "rng_head_len": 3,
                 "rng_head_values": [values[0], values[1] ^ 1, values[2]],
+                "rng_stream_rows": [
+                    {"tick_call_index": 1, "value_15": values[0], "branch_id": "0x00420fd7"},
+                    {"tick_call_index": 2, "value_15": values[1] ^ 1, "branch_id": "0x00420fd7"},
+                    {"tick_call_index": 3, "value_15": values[2], "branch_id": "0x00420fd7"},
+                ],
                 "spawn_bonus_count": 0,
                 "spawn_death_count": 0,
             }
@@ -194,7 +199,71 @@ def test_window_rows_include_rng_stream_mismatch_details() -> None:
     assert int(row["rng_stream_prefix_match"]) == 1
     assert int(row["rng_stream_compared"]) == 3
     assert int(row["rng_stream_first_mismatch_idx"]) == 1
+    assert row["rng_stream_first_mismatch_reason"] == "value"
+    assert row["rng_stream_first_mismatch_capture_branch_id"] == "0x00420fd7"
     assert int(row["rng_stream_missing_tail"]) == 0
+
+
+def test_find_first_divergence_prefers_rng_stream_before_checkpoint_fields() -> None:
+    report = _load_report_module()
+    start = 0x10203040
+    values = _crt_rand_values(start, 2)
+    after_two = _step_crt_state(start, 2)
+
+    expected_ckpt = _checkpoint(
+        tick=9,
+        rng_marks={
+            "rand_calls": 2,
+            "before_world_step": start,
+            "after_world_step": after_two,
+            "after_wave_spawns": after_two,
+        },
+    )
+    actual_ckpt = _checkpoint(
+        tick=9,
+        rng_marks={
+            "before_world_step": start,
+            "after_world_step": after_two,
+            "after_wave_spawns": after_two,
+        },
+    )
+
+    divergence = report._find_first_divergence(
+        [expected_ckpt],
+        [actual_ckpt],
+        float_abs_tol=1e-3,
+        max_field_diffs=16,
+        raw_debug_by_tick={
+            9: {
+                "rng_head_len": 2,
+                "rng_stream_rows": [
+                    {
+                        "seq": 11,
+                        "tick_call_index": 1,
+                        "value_15": values[0] ^ 1,
+                        "state_before_u32": start,
+                        "state_after_u32": _step_crt_state(start, 1),
+                        "branch_id": "0x00420fd7",
+                        "caller_static": "0x00420fd7",
+                    },
+                    {
+                        "seq": 12,
+                        "tick_call_index": 2,
+                        "value_15": values[1],
+                        "state_before_u32": _step_crt_state(start, 1),
+                        "state_after_u32": after_two,
+                        "branch_id": "0x00420fd7",
+                        "caller_static": "0x00420fd7",
+                    },
+                ],
+            }
+        },
+    )
+
+    assert divergence is not None
+    assert int(divergence.tick_index) == 9
+    assert divergence.kind == "rng_stream_mismatch"
+    assert divergence.field_diffs == tuple()
 
 
 def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
