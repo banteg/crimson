@@ -1034,6 +1034,9 @@ class SurvivalGameView:
     def menu_ground_camera(self) -> Vec2:
         return self._mode.menu_ground_camera()
 
+    def adopt_menu_ground(self, ground: GroundRenderer | None) -> None:
+        self._mode.adopt_ground_from_menu(ground)
+
     def take_action(self) -> str | None:
         action = self._action
         self._action = None
@@ -1103,6 +1106,9 @@ class RushGameView:
 
     def menu_ground_camera(self) -> Vec2:
         return self._mode.menu_ground_camera()
+
+    def adopt_menu_ground(self, ground: GroundRenderer | None) -> None:
+        self._mode.adopt_ground_from_menu(ground)
 
     def take_action(self) -> str | None:
         action = self._action
@@ -3337,6 +3343,7 @@ class GameLoopView:
                                 self._front_stack.pop().close()
                         self._front_active.close()
                     view.open()
+                    self._maybe_adopt_menu_ground(action, view)
                     self._front_active = view
                     self._active = view
                     return
@@ -3366,6 +3373,7 @@ class GameLoopView:
                     self._menu.close()
                     self._menu_active = False
                     view.open()
+                    self._maybe_adopt_menu_ground(action, view)
                     self._front_active = view
                     self._active = view
                     return
@@ -3477,6 +3485,17 @@ class GameLoopView:
             return True
 
         return True
+
+    def _maybe_adopt_menu_ground(self, action: str, view: FrontView) -> None:
+        if action not in {"start_survival", "start_rush"}:
+            return
+        ground = self._state.menu_ground
+        if ground is None:
+            return
+        adopter = getattr(view, "adopt_menu_ground", None)
+        if not callable(adopter):
+            return
+        adopter(ground)
 
     @staticmethod
     def _steal_ground_from_view(view: FrontView | None) -> GroundRenderer | None:

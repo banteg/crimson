@@ -31,6 +31,8 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Options panel (volume/detail/mouse sliders + “UI Info texts”; Controls supports 1..4 player selection, per-player direction-arrow toggle, and right-panel key/button/axis rebinding).
 - Statistics panel (Summary/Weapons/Quests pages; playtime + weapon usage + quest counters).
 - Menu terrain persists between screens (no regen on Options/Stats/etc navigation).
+- Menu terrain selection matches original unlock-gated random variants (`(0,1,0)`, `(2,3,2)`, `(4,5,4)`, `(6,7,6)`).
+- Survival/Rush adopt the existing menu ground on start (same generated terrain variant carries into gameplay).
 - Menu sign shadow pass matches the original when `fx_detail` is enabled.
 - Demo/attract mode: idle trigger + variant sequencing; upsell overlay + trial overlay + purchase screen flow in demo builds.
 
