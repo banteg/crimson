@@ -34,8 +34,8 @@ Reload time is 30% shorter (×0.7 multiplier).
 
 ## 4. Lean Mean Exp. Machine
 
-Passive XP income: every 0.25 seconds, each player with this perk earns
-10 × (times picked) XP. Stacks linearly with itself.
+Passive XP income: every 0.25 seconds, player 0 earns 10 × (times picked) XP.
+Stacks linearly with itself.
 
 ## 5. Long Distance Runner
 
@@ -83,9 +83,10 @@ weapon is assigned, so it persists across weapon swaps and reloads.
 
 ## 13. Radioactive
 
-A green aura damages creatures within 100 units every 0.5 seconds. Damage
-scales with proximity: (100 − distance) × 0.3. Kills from the aura award XP
-directly.
+A green aura centered on player 0 damages creatures within 100 units. The
+shared collision timer (0.5 s period) decrements at 1.5× rate, giving an
+effective tick interval of 0.33 s. Damage scales with proximity:
+(100 − distance) × 0.3. Kills from the aura award XP to player 0.
 
 ## 14. Fastshot
 
@@ -99,7 +100,7 @@ times.
 ## 16. Random Weapon
 
 Immediately assigns a random unlocked weapon (never the pistol, never the
-current weapon). Quest mode only. Can be picked multiple times.
+current weapon). Not available in two-player mode. Can be picked multiple times.
 
 ## 17. Mr. Melee
 
@@ -186,9 +187,9 @@ Timed bonus pickups last 50% longer.
 
 ## 33. Thick Skinned
 
-On pick, current health drops to 2/3 (minimum 1). In exchange, all incoming
-damage is permanently reduced to 2/3. The damage reduction is applied before
-dodge rolls. Not offered while Death Clock is active.
+On pick, every alive player's health drops to 2/3 (minimum 1). In exchange, all
+incoming damage is permanently reduced to 2/3. The damage reduction is applied
+before dodge rolls. Not offered while Death Clock is active.
 
 ## 34. Barrel Greaser
 
@@ -257,8 +258,8 @@ Clock clears it on pick. Requires Regeneration.
 
 ## 46. Breathing Room
 
-Two-player mode only. On pick, every alive player's health drops to 1/3, and
-every creature on screen is killed instantly without awarding XP.
+Not available in quest mode. On pick, every alive player's health drops to 1/3,
+and every creature on screen is killed instantly without awarding XP.
 
 ## 47. Death Clock
 
@@ -275,8 +276,9 @@ are disabled entirely — they won't spawn and can't be collected.
 
 ## 49. Bandage
 
-Multiplies current health by a random value from 1 to 50, then clamps to 100.
-Produces a burst of particles.
+Multiplies every alive player's health by a random value from 1 to 50, then
+clamps to 100. Each player gets an independent roll. Produces a burst of
+particles per player.
 
 ## 50. Angry Reloader
 
