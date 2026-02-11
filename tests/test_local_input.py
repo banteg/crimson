@@ -395,3 +395,107 @@ def test_local_input_dual_action_pad_aim_uses_native_radius_scale(
     # Native radius: 42 + mag * cv_padAimDistMul (default 96).
     assert float(out.aim.x) == pytest.approx(238.0, abs=1e-6)
     assert float(out.aim.y) == pytest.approx(100.0, abs=1e-6)
+
+
+def test_local_input_keyboard_aim_in_static_mode_reanchors_to_heading(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_no_user_input(monkeypatch)
+    monkeypatch.setattr(
+        local_input,
+        "_load_player_bind_block",
+        lambda _config, *, player_index: tuple(range(16)),
+    )
+    monkeypatch.setattr(
+        local_input.LocalInputInterpreter,
+        "_safe_controls_modes",
+        staticmethod(lambda _config, *, player_index: (1, MovementControlType.STATIC)),
+    )
+
+    interpreter = local_input.LocalInputInterpreter()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(180.0, 130.0), aim_heading=0.0)
+
+    out = interpreter.build_player_input(
+        player_index=0,
+        player=player,
+        config=None,
+        mouse_screen=Vec2(),
+        mouse_world=Vec2(),
+        screen_center=Vec2(),
+        dt_frame=0.1,
+        creatures=[],
+    )
+
+    assert float(out.aim.x) == pytest.approx(100.0, abs=1e-6)
+    assert float(out.aim.y) == pytest.approx(40.0, abs=1e-6)
+
+
+def test_local_input_keyboard_aim_with_non_relative_move_mode_keeps_world_aim(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_no_user_input(monkeypatch)
+    monkeypatch.setattr(
+        local_input,
+        "_load_player_bind_block",
+        lambda _config, *, player_index: tuple(range(16)),
+    )
+    monkeypatch.setattr(
+        local_input.LocalInputInterpreter,
+        "_safe_controls_modes",
+        staticmethod(lambda _config, *, player_index: (1, MovementControlType.DUAL_ACTION_PAD)),
+    )
+
+    interpreter = local_input.LocalInputInterpreter()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(180.0, 130.0), aim_heading=0.0)
+
+    out = interpreter.build_player_input(
+        player_index=0,
+        player=player,
+        config=None,
+        mouse_screen=Vec2(),
+        mouse_world=Vec2(),
+        screen_center=Vec2(),
+        dt_frame=0.1,
+        creatures=[],
+    )
+
+    assert float(out.aim.x) == pytest.approx(180.0, abs=1e-6)
+    assert float(out.aim.y) == pytest.approx(130.0, abs=1e-6)
+    expected_heading = (player.aim - player.pos).to_heading()
+    assert float(interpreter._states[0].aim_heading) == pytest.approx(float(expected_heading), abs=1e-6)
+
+
+def test_local_input_relative_mouse_aim_centered_keeps_world_aim(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_no_user_input(monkeypatch)
+    monkeypatch.setattr(
+        local_input,
+        "_load_player_bind_block",
+        lambda _config, *, player_index: tuple(range(16)),
+    )
+    monkeypatch.setattr(
+        local_input.LocalInputInterpreter,
+        "_safe_controls_modes",
+        staticmethod(lambda _config, *, player_index: (3, MovementControlType.STATIC)),
+    )
+
+    interpreter = local_input.LocalInputInterpreter()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(180.0, 130.0), aim_heading=0.0)
+    center = Vec2(320.0, 200.0)
+
+    out = interpreter.build_player_input(
+        player_index=0,
+        player=player,
+        config=None,
+        mouse_screen=center,
+        mouse_world=Vec2(),
+        screen_center=center,
+        dt_frame=0.1,
+        creatures=[],
+    )
+
+    assert float(out.aim.x) == pytest.approx(180.0, abs=1e-6)
+    assert float(out.aim.y) == pytest.approx(130.0, abs=1e-6)
+    expected_heading = (player.aim - player.pos).to_heading()
+    assert float(interpreter._states[0].aim_heading) == pytest.approx(float(expected_heading), abs=1e-6)

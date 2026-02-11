@@ -418,7 +418,7 @@ class LocalInputInterpreter:
         heading = float(state.aim_heading)
         if not _is_finite(heading):
             heading = float(getattr(player, "aim_heading", 0.0) or 0.0)
-        aim = _aim_point_from_heading(player.pos, heading)
+        aim = Vec2(float(player.aim.x), float(player.aim.y))
         computer_auto_fire = False
         if int(aim_scheme) == 0:
             aim = mouse_world
@@ -431,12 +431,12 @@ class LocalInputInterpreter:
                     heading = float(heading + float(dt_frame) * _AIM_KEYBOARD_TURN_RATE)
                 if input_code_is_down_for_player(aim_left_key, player_index=idx):
                     heading = float(heading - float(dt_frame) * _AIM_KEYBOARD_TURN_RATE)
-            aim = _aim_point_from_heading(player.pos, heading)
+                aim = _aim_point_from_heading(player.pos, heading)
         elif int(aim_scheme) == 3:
             rel = mouse_screen - screen_center
             if rel.length_sq() > 1.0:
                 heading = rel.to_heading()
-            aim = _aim_point_from_heading(player.pos, heading)
+                aim = _aim_point_from_heading(player.pos, heading)
         elif int(aim_scheme) == 4:
             axis_y = input_axis_value_for_player(aim_axis_y, player_index=idx)
             axis_x = input_axis_value_for_player(aim_axis_x, player_index=idx)
@@ -483,6 +483,9 @@ class LocalInputInterpreter:
                 aim = player.pos + away * _AIM_RADIUS_KEYBOARD
                 heading = away.to_heading()
 
+        delta = aim - player.pos
+        if delta.length_sq() > 1e-9:
+            heading = delta.to_heading()
         state.aim_heading = float(heading)
 
         fire_down = bool(input_code_is_down_for_player(fire_key, player_index=idx))
