@@ -202,6 +202,48 @@ def test_local_input_relative_mode_multiplayer_does_not_use_alt_arrow_fallback(
     assert out.move == Vec2()
 
 
+def test_local_input_reload_pressed_allowed_only_for_single_player(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_no_user_input(monkeypatch)
+    monkeypatch.setattr(
+        local_input,
+        "input_code_is_pressed_for_player",
+        lambda key, **_kwargs: int(key) == 0x102,
+    )
+    monkeypatch.setattr(
+        local_input.LocalInputInterpreter,
+        "_safe_controls_modes",
+        staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.STATIC)),
+    )
+    interpreter = local_input.LocalInputInterpreter()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
+
+    single_player = interpreter.build_player_input(
+        player_index=0,
+        player=player,
+        config=SimpleNamespace(data={"player_count": 1}),
+        mouse_screen=Vec2(),
+        mouse_world=Vec2(),
+        screen_center=Vec2(),
+        dt_frame=0.1,
+        creatures=[],
+    )
+    multiplayer = interpreter.build_player_input(
+        player_index=0,
+        player=player,
+        config=SimpleNamespace(data={"player_count": 2}),
+        mouse_screen=Vec2(),
+        mouse_world=Vec2(),
+        screen_center=Vec2(),
+        dt_frame=0.1,
+        creatures=[],
+    )
+
+    assert single_player.reload_pressed is True
+    assert multiplayer.reload_pressed is False
+
+
 def test_local_input_mouse_point_click_marks_move_to_cursor_press(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

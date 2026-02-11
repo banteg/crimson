@@ -496,7 +496,11 @@ class LocalInputInterpreter:
         fire_pressed = bool(input_code_is_pressed_for_player(fire_key, player_index=idx))
         if aim_scheme is AimScheme.COMPUTER and computer_auto_fire:
             fire_down = True
-        reload_pressed = bool(input_code_is_pressed_for_player(reload_key, player_index=idx)) if idx == 0 else False
+        reload_pressed = (
+            bool(input_code_is_pressed_for_player(reload_key, player_index=idx))
+            if _single_player_alt_keys_enabled(config, player_index=idx)
+            else False
+        )
 
         return PlayerInput(
             move=move_vec,
