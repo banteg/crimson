@@ -241,9 +241,6 @@ let fPerkApply = null;
 let fGameStateSet = null;
 let fGameplayResetState = null;
 
-let grimIsKeyActiveOrig = null;
-let grimWasKeyPressedOrig = null;
-
 const RUN = {
   active: true,
   runComplete: false,
@@ -759,10 +756,6 @@ function syntheticKeyDownForCode(code) {
   return null;
 }
 
-function recordSyntheticDown(code, down) {
-  RUN.syntheticDownByCode[String(code | 0)] = !!down;
-}
-
 function wasSyntheticPressed(code, down) {
   const key = String(code | 0);
   const prev = !!RUN.syntheticDownByCode[key];
@@ -993,34 +986,30 @@ function installGrimInputOverrides() {
     return;
   }
 
-  const abi = resolveAbi();
-  grimIsKeyActiveOrig = abi
-    ? new NativeFunction(grimFnPtrs.grim_is_key_active, "int", ["int"], abi)
-    : new NativeFunction(grimFnPtrs.grim_is_key_active, "int", ["int"]);
-  grimWasKeyPressedOrig = abi
-    ? new NativeFunction(grimFnPtrs.grim_was_key_pressed, "int", ["int"], abi)
-    : new NativeFunction(grimFnPtrs.grim_was_key_pressed, "int", ["int"]);
+  attachOnce("grim_is_key_active_override", grimFnPtrs.grim_is_key_active, {
+    onEnter(args) {
+      const keyCode = args[0].toInt32() | 0;
+      this.synthetic = syntheticKeyDownForCode(keyCode);
+    },
+    onLeave(retval) {
+      if (this.synthetic == null) return;
+      retval.replace(ptr(this.synthetic | 0));
+    },
+  });
 
-  Interceptor.replace(
-    grimFnPtrs.grim_is_key_active,
-    new NativeCallback(function (keyCode) {
-      const synthetic = syntheticKeyDownForCode(keyCode | 0);
-      if (synthetic == null) return grimIsKeyActiveOrig(keyCode | 0);
-      recordSyntheticDown(keyCode | 0, synthetic !== 0);
-      return synthetic;
-    }, "int", ["int"]),
-  );
+  attachOnce("grim_was_key_pressed_override", grimFnPtrs.grim_was_key_pressed, {
+    onEnter(args) {
+      const keyCode = args[0].toInt32() | 0;
+      const synthetic = syntheticKeyDownForCode(keyCode);
+      this.syntheticPressed = synthetic == null ? null : wasSyntheticPressed(keyCode, synthetic !== 0);
+    },
+    onLeave(retval) {
+      if (this.syntheticPressed == null) return;
+      retval.replace(ptr(this.syntheticPressed | 0));
+    },
+  });
 
-  Interceptor.replace(
-    grimFnPtrs.grim_was_key_pressed,
-    new NativeCallback(function (keyCode) {
-      const synthetic = syntheticKeyDownForCode(keyCode | 0);
-      if (synthetic == null) return grimWasKeyPressedOrig(keyCode | 0);
-      return wasSyntheticPressed(keyCode | 0, synthetic !== 0);
-    }, "int", ["int"]),
-  );
-
-  writeLog({ event: "input_override_installed" });
+  writeLog({ event: "input_override_installed", method: "attach_onleave_override" });
 }
 
 function main() {
