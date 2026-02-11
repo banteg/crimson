@@ -136,8 +136,9 @@ penalty. Damage still applies normally.
 
 Lets the player fire during a reload by spending XP instead of ammo. Cost per
 shot is based on weapon reload time: ×4 for fire-type weapons, ×200 otherwise.
-XP can't go negative. While this perk (or Ammunition Within) is active, reloads
-can't be restarted mid-reload.
+XP can't go negative. Native quirk: the reload-fire path only runs while XP is
+above 0. While this perk (or Ammunition Within) is active, reloads can't be
+restarted mid-reload.
 
 ## 24. Infernal Contract
 
@@ -147,8 +148,9 @@ player to 0.1 health. Not offered while Death Clock is active.
 ## 25. Poison Bullets
 
 Each projectile hit has a 1-in-8 chance to poison the target. Poisoned creatures
-take continuous damage (60/s normally, 180/s with Toxic Avenger) and show a red
-aura. Poison damage triggers normal hit effects like flash and knockback.
+take continuous damage (60/s) and show a red aura. Toxic Avenger's 180/s strong
+poison comes from its melee-retaliation path, not bullet poisoning. Poison
+ticks still trigger hit flash, but use zero impulse (no knockback).
 
 ## 26. Dodger
 
@@ -201,7 +203,8 @@ Lets the player fire during a reload by paying health instead of ammo. Cost per
 shot is 1 HP normally, 0.15 HP for fire-type weapons. The health cost goes
 through normal damage processing, so Thick Skinned, Dodger, and Ninja can
 reduce or negate it. If Regression Bullets is also owned, it takes priority
-(XP cost instead of health). Reloads can't be restarted mid-reload.
+(XP cost instead of health). Native quirk: this path also requires XP above 0.
+Reloads can't be restarted mid-reload.
 
 ## 36. Veins of Poison
 
@@ -264,10 +267,12 @@ and every creature on screen is killed instantly without awarding XP.
 ## 47. Death Clock
 
 On pick, health is set to 100 and Regeneration / Greater Regeneration are
-cleared. For the next 30 seconds the player is immune to all other damage, but
-health drains steadily to zero (100 HP over 30 s). Medikits stop spawning, and
-perks that would undermine the clock (Regeneration, Thick Skinned, Highlander,
-Jinxed, etc.) are blocked from selection.
+cleared. For the next 30 seconds, damage routed through normal
+`player_take_damage` paths is ignored, but health drains steadily to zero
+(100 HP over 30 s). Projectile hits still apply their fixed hit damage.
+Medikits stop spawning, and perks that would undermine the clock
+(Regeneration, Thick Skinned, Highlander, Jinxed, etc.) are blocked from
+selection.
 
 ## 48. My Favourite Weapon
 

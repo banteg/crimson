@@ -247,7 +247,8 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/sim/world_state.py`: death pipeline triggers the revenge burst and applies damage.
+- Death hook implementation: `src/crimson/perks/impl/final_revenge.py`: `apply_final_revenge_on_player_death()`.
+- Hook wiring and death pipeline call-site: `src/crimson/sim/world_state.py`.
 
 ## 20. Telekinetic (`PerkId.TELEKINETIC`)
 
@@ -285,7 +286,7 @@ Notes:
 
 ### Original
 
-- `player_fire_weapon` (0x00444980): implements the "fire during reload by paying XP" path.
+- `player_fire_weapon` (0x00444980): implements the "fire during reload by paying XP" path; this branch is gated by `experience > 0`.
 - `player_start_reload` (0x00413430): reload restart guard when Regression Bullets or Ammunition Within is active.
 
 ### Rewrite
@@ -309,8 +310,9 @@ Notes:
 
 ### Original
 
-- `projectile_update` (0x00420b90): sets poison flags on hit.
+- `projectile_update` (0x00420b90): sets weak poison on hit (`flags |= 0x01`) when `(crt_rand() & 7) == 1`.
 - `creature_update_all` (0x00426220): applies self-damage using `creature_apply_damage(..., damage_type=0, impulse=(0,0))`.
+- Toxic Avenger does not modify this projectile-hit poison branch; strong poison (`flags |= 0x02`) comes from Toxic Avenger melee retaliation in `creature_update_all`.
 - Rendering: creature overlay draws aura `0x10` when poison flag is set.
 
 ### Rewrite
@@ -426,7 +428,7 @@ Notes:
 
 ### Original
 
-- `player_fire_weapon` (0x00444980): implements the "fire during reload by paying health" path.
+- `player_fire_weapon` (0x00444980): implements the "fire during reload by paying health" path; this branch is also gated by `experience > 0`.
 - `player_start_reload` (0x00413430): restart guard.
 
 ### Rewrite
@@ -557,6 +559,7 @@ Notes:
 
 - `perk_apply` (0x004055e0): clears regen perks and sets health to 100.
 - `player_take_damage` (0x00425e50): early-return immunity.
+- `projectile_update` (0x00420b90): player-hit path directly subtracts fixed projectile damage (bypasses `player_take_damage`).
 - `perks_update_effects` (0x00406b40): per-frame drain logic.
 - `bonus_pick_random_type` (0x00412470): medikit suppression while active.
 - Perk offering: blocks multiple perks while active.
@@ -568,6 +571,7 @@ Notes:
 - Offer gating: `src/crimson/perks/selection.py`: `perk_generate_choices()`.
 - Medikit suppression: `src/crimson/gameplay.py`: `bonus_pick_random_type()`.
 - Damage immunity: `src/crimson/player_damage.py`: `player_take_damage()`.
+- Projectile player-hit damage path: `src/crimson/player_damage.py`: `player_take_projectile_damage()`, called from `src/crimson/projectiles.py`: `ProjectilePool.update()`.
 - `src/crimson/perks/runtime/effects.py`: `perks_update_effects()`.
 - Death Clock step: `src/crimson/perks/impl/death_clock.py`: `update_death_clock()`.
 
