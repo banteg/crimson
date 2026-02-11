@@ -1,4 +1,5 @@
 ---
+icon: lucide/sparkles
 tags:
   - mechanics
   - systems
@@ -34,8 +35,7 @@ Reload time is 30% shorter (×0.7 multiplier).
 
 ## 4. Lean Mean Exp. Machine
 
-Passive XP income: every 0.25 seconds, player 0 earns 10 × (times picked) XP.
-Stacks linearly with itself.
+Generates 10 XP every 0.25 seconds. Stacks linearly with itself.
 
 ## 5. Long Distance Runner
 
@@ -86,10 +86,10 @@ weapon is assigned, so it persists across weapon swaps and reloads.
 
 ## 13. Radioactive
 
-A green aura centered on player 0 damages creatures within 100 units. The
-shared collision timer (0.5 s period) decrements at 1.5× rate, giving an
-effective tick interval of 0.33 s. Damage scales with proximity:
-(100 − distance) × 0.3. Kills from the aura award XP to player 0.
+A green aura damages creatures within 100 units. The shared collision timer
+(0.5 s period) decrements at 1.5× rate, giving an effective tick interval of
+0.33 s. Damage scales with proximity: (100 − distance) × 0.3. Kills from the
+aura award XP directly.
 
 ## 14. Fastshot
 
@@ -128,8 +128,9 @@ Aim at a bonus pickup within 24 units for 650 ms to collect it remotely.
 
 ## 21. Perk Expert
 
-Perk selection shows 6 choices instead of 5. Unlocks
-[Perk Master](#43-perk-master).
+Perk selection shows 6 choices instead of 5.
+
+Unlocks [Perk Master](#43-perk-master).
 
 ## 22. Unstoppable
 
@@ -159,7 +160,9 @@ Suppressed in hardcore quest 2-10.
 
 Each incoming hit has a 1-in-5 chance of being dodged entirely. If
 [Ninja](#40-ninja) is also owned, Ninja's better odds take over and Dodger does
-nothing. Unlocks [Ninja](#40-ninja).
+nothing.
+
+Unlocks [Ninja](#40-ninja).
 
 ## 27. Bonus Magnet
 
@@ -169,6 +172,7 @@ roll. Stacks with the pistol's built-in bonus boost.
 ## 28. Uranium Filled Bullets
 
 Bullet damage is doubled (×2).
+
 Unlocked by quest 1.3 (*Target Practice*).
 
 ## 29. Doctor
@@ -176,6 +180,7 @@ Unlocked by quest 1.3 (*Target Practice*).
 Bullet damage is increased by 20% (×1.2). Also shows a health bar above the
 creature nearest the crosshair, using the same targeting as Pyrokinetic and Evil
 Eyes.
+
 Unlocked by quest 1.5 (*Alien Dens*).
 
 ## 30. Monster Vision
@@ -183,6 +188,7 @@ Unlocked by quest 1.5 (*Alien Dens*).
 Every creature gets a yellow highlight behind it, making them easy to spot.
 Creature shadows are hidden while this perk is active. Only offered when FX
 detail is enabled in settings.
+
 Unlocked by quest 1.7 (*Spider Wave Syndrome*).
 
 ## 31. Hot Tempered
@@ -190,11 +196,13 @@ Unlocked by quest 1.7 (*Spider Wave Syndrome*).
 Periodically fires an 8-shot ring of plasma projectiles (alternating Plasma
 Minigun and Plasma Rifle) centered on the player. The interval is randomized
 between 2 and 9 seconds after each burst. Friendly fire applies when enabled.
+
 Unlocked by quest 1.9 (*Nesting Grounds*).
 
 ## 32. Bonus Economist
 
 Timed bonus pickups last 50% longer.
+
 Unlocked by quest 2.1 (*Everred Pastures*).
 
 ## 33. Thick Skinned
@@ -202,11 +210,13 @@ Unlocked by quest 2.1 (*Everred Pastures*).
 On pick, every alive player's health drops to 2/3 (minimum 1). In exchange, all
 incoming damage is permanently reduced to 2/3. The damage reduction is applied
 before dodge rolls. Not offered while Death Clock is active.
+
 Unlocked by quest 2.3 (*Arachnoid Farm*).
 
 ## 34. Barrel Greaser
 
 Bullet damage is increased by 40% (×1.4) and bullets travel at double speed.
+
 Unlocked by quest 2.5 (*Sweep Stakes*).
 
 ## 35. Ammunition Within
@@ -216,25 +226,31 @@ shot is 1 HP normally, 0.15 HP for fire-type weapons. The health cost goes
 through normal damage processing, so Thick Skinned, Dodger, and Ninja can
 reduce or negate it. If Regression Bullets is also owned, it takes priority
 (XP cost instead of health). Reloads can't be restarted mid-reload.
+
 Unlocked by quest 2.7 (*Survival Of The Fastest*).
 
 ## 36. Veins of Poison
 
 When a creature hits the player in melee and the shield bonus isn't active, that
-creature gets poisoned (weak tick, 60 damage/s). Unlocks
-[Toxic Avenger](#37-toxic-avenger). Suppressed in hardcore quest 2-10.
+creature gets poisoned (weak tick, 60 damage/s). Suppressed in hardcore quest
+2-10.
+
+Unlocks [Toxic Avenger](#37-toxic-avenger).
 Unlocked by quest 2.9 (*Ghost Patrols*).
 
 ## 37. Toxic Avenger
 
 Upgraded version of [Veins of Poison](#36-veins-of-poison) — melee attackers
-receive strong poison (180 damage/s) instead of weak. Requires Veins of Poison.
+receive strong poison (180 damage/s) instead of weak.
+
+Requires [Veins of Poison](#36-veins-of-poison).
 Unlocked by quest 3.1 (*The Blighting*).
 
 ## 38. Regeneration
 
 Heals each alive player toward 100 HP. The heal ticks every other frame
 (50% chance per frame) for +dt health. Only triggers between 0 and 100 HP.
+
 Unlocks [Greater Regeneration](#45-greater-regeneration).
 Unlocked by quest 3.3 (*The Killing*).
 
@@ -242,12 +258,15 @@ Unlocked by quest 3.3 (*The Killing*).
 
 Fire weapon damage is increased by 50% (×1.5). Only offered when the current
 weapon is the Flamethrower.
+
 Unlocked by quest 3.5 (*Surrounded By Reptiles*).
 
 ## 40. Ninja
 
 Each incoming hit has a 1-in-3 chance of being dodged entirely. Overrides
-[Dodger](#26-dodger) when both are owned. Requires Dodger.
+[Dodger](#26-dodger) when both are owned.
+
+Requires [Dodger](#26-dodger).
 Unlocked by quest 3.7 (*Spiders Inc.*).
 
 ## 41. Highlander
@@ -255,6 +274,7 @@ Unlocked by quest 3.7 (*Spiders Inc.*).
 Damage no longer reduces health. Instead, every hit has a flat 10% chance of
 instant death. Hit disruption (knockback, spread penalty) still applies unless
 Unstoppable is active. Not offered in quest mode or two-player sessions.
+
 Unlocked by quest 3.9 (*Deja vu*).
 
 ## 42. Jinxed
@@ -262,31 +282,37 @@ Unlocked by quest 3.9 (*Deja vu*).
 Random events on a global timer (randomized 2–4 second interval): 10% chance of
 taking 5 self-damage, and — if the Freeze bonus isn't active — a random creature
 may instantly die, awarding its XP.
+
 Unlocked by quest 4.1 (*Major Alien Breach*).
 
 ## 43. Perk Master
 
 Perk selection shows 7 choices instead of 5 (or 6 with
-[Perk Expert](#21-perk-expert)). Requires Perk Expert.
+[Perk Expert](#21-perk-expert)).
+
+Requires [Perk Expert](#21-perk-expert).
 Unlocked by quest 4.3 (*Lizard Zombie Pact*).
 
 ## 44. Reflex Boosted
 
 The entire game world runs 10% slower (frame time ×0.9). Effectively a global
 slow-motion effect.
+
 Unlocked by quest 4.5 (*The Massacre*).
 
 ## 45. Greater Regeneration
 
 No runtime effect has been found in this build — appears to be a no-op.
-[Death Clock](#47-death-clock) clears it on pick. Requires
-[Regeneration](#38-regeneration).
+[Death Clock](#47-death-clock) clears it on pick.
+
+Requires [Regeneration](#38-regeneration).
 Unlocked by quest 4.7 (*Gauntlet*).
 
 ## 46. Breathing Room
 
 Not available in quest mode. On pick, every alive player's health drops to 1/3,
 and every creature on screen is killed instantly without awarding XP.
+
 Unlocked by quest 4.9 (*The Annihilation*).
 
 ## 47. Death Clock
@@ -296,12 +322,14 @@ cleared. For the next 30 seconds the player is immune to all other damage, but
 health drains steadily to zero (100 HP over 30 s). Medikits stop spawning, and
 perks that would undermine the clock (Regeneration, Thick Skinned, Highlander,
 Jinxed, etc.) are blocked from selection.
+
 Unlocked by quest 5.2 (*The Spanking Of The Dead*).
 
 ## 48. My Favourite Weapon
 
 +2 clip size on pick and on every future weapon assignment. Weapon bonus pickups
 are disabled entirely — they won't spawn and can't be collected.
+
 Unlocked by quest 5.3 (*The Fortress*).
 
 ## 49. Bandage
@@ -309,6 +337,7 @@ Unlocked by quest 5.3 (*The Fortress*).
 Multiplies every alive player's health by a random value from 1 to 50, then
 clamps to 100. Each player gets an independent roll. Produces a burst of
 particles per player.
+
 Unlocked by quest 5.5 (*Knee-deep in the Dead*).
 
 ## 50. Angry Reloader
@@ -318,6 +347,7 @@ Minigun projectiles centered on the player. The ring size scales with reload
 time: 7 + (reload time × 4) projectiles. Only triggers when reload time exceeds
 0.5 s. Benefits from Stationary Reloader's 3× reload speed. Friendly fire
 applies when enabled.
+
 Unlocked by quest 5.6 (*Cross Fire*).
 
 ## 51. Ion Gun Master
@@ -325,11 +355,13 @@ Unlocked by quest 5.6 (*Cross Fire*).
 Ion weapon damage and blast radius are both increased by 20% (×1.2). The damage
 bonus is global — any ion damage is scaled, regardless of which player owns the
 perk.
+
 Unlocked by quest 5.8 (*Monster Blues*).
 
 ## 52. Stationary Reloader
 
 Reload speed triples (×3) while standing still.
+
 Unlocked by quest 5.9 (*Nagolipoli*).
 
 ## 53. Man Bomb
