@@ -101,7 +101,9 @@ def _decode_f32_token(value: object) -> object:
     text = value.strip()
     if not text.startswith(_F32_TOKEN_PREFIX):
         return value
-    raw = text[len(_F32_TOKEN_PREFIX) :]
+    raw = text[len(_F32_TOKEN_PREFIX) :].strip()
+    if raw.lower().startswith("0x"):
+        raw = raw[2:]
     if len(raw) != 8:
         raise CaptureError(f"invalid f32 token width: {value!r}")
     try:
@@ -240,6 +242,43 @@ def _rng_head_values(tick: CaptureTick) -> list[int]:
         if 0 <= int(value) <= 0x7FFF:
             out.append(int(value))
     return out
+
+
+def _infer_seed_from_rng_state_before(tick: CaptureTick) -> int | None:
+    sources = list(tick.rng.head)
+    if not sources:
+        sources = list(tick.checkpoint.rng_marks.rand_head)
+    if not sources:
+        return None
+
+    rng_head = _rng_head_values(tick)
+    marks = tick.checkpoint.rng_marks
+    rand_calls: object = int(marks.rand_calls)
+    rand_last: object = marks.rand_last
+    if int(rand_calls) <= 0 and int(tick.rng.calls) > 0:
+        rand_calls = int(tick.rng.calls)
+    if rand_last is None:
+        rand_last = tick.rng.last_value
+
+    for item in sources:
+        state_before_u32 = item.state_before_u32
+        if state_before_u32 is None:
+            parsed_from_hex = _coerce_int_like(item.state_before_hex)
+            if parsed_from_hex is not None:
+                state_before_u32 = int(parsed_from_hex)
+        if state_before_u32 is None:
+            continue
+        candidate = int(state_before_u32) & _CRT_RAND_MOD_MASK
+        if rng_head and not _seed_matches_rng_marks(
+            int(candidate),
+            rng_head=rng_head,
+            rand_calls=rand_calls,
+            rand_last=rand_last,
+        ):
+            continue
+        return int(candidate)
+
+    return None
 
 
 def _rng_marks_int_map(tick: CaptureTick) -> dict[str, int]:
@@ -488,6 +527,10 @@ def _infer_seed_from_rng_head(*, rng_head: list[int], rand_calls: object, rand_l
 
 def infer_capture_seed(capture: CaptureFile) -> int:
     for tick in sorted(capture.ticks, key=lambda item: int(item.tick_index)):
+        seed_from_state = _infer_seed_from_rng_state_before(tick)
+        if seed_from_state is not None:
+            return int(seed_from_state)
+
         rng_head = _rng_head_values(tick)
         if not rng_head:
             continue
@@ -844,8 +887,6 @@ def convert_capture_to_replay(
     inputs: list[list[list[float | int | list[float]]]] = [
         [[0.0, 0.0, [0.0, 0.0], 0] for _ in range(player_count)] for _ in range(total_ticks)
     ]
-    previous_fire_down: list[bool] = [False for _ in range(player_count)]
-    previous_reload_active: list[bool] = [False for _ in range(player_count)]
 
     for tick in sorted(capture.ticks, key=lambda item: int(item.tick_index)):
         tick_index = int(tick.tick_index)
@@ -862,19 +903,10 @@ def convert_capture_to_replay(
             use_digital_move = False
 
             if sample is not None or key_row is not None:
-                move_forward_raw = sample.move_forward_pressed if sample is not None else None
-                move_backward_raw = sample.move_backward_pressed if sample is not None else None
-                turn_left_raw = sample.turn_left_pressed if sample is not None else None
-                turn_right_raw = sample.turn_right_pressed if sample is not None else None
-                if key_row is not None:
-                    if move_forward_raw is None:
-                        move_forward_raw = key_row.move_forward_pressed
-                    if move_backward_raw is None:
-                        move_backward_raw = key_row.move_backward_pressed
-                    if turn_left_raw is None:
-                        turn_left_raw = key_row.turn_left_pressed
-                    if turn_right_raw is None:
-                        turn_right_raw = key_row.turn_right_pressed
+                move_forward_raw = key_row.move_forward_pressed if key_row is not None else None
+                move_backward_raw = key_row.move_backward_pressed if key_row is not None else None
+                turn_left_raw = key_row.turn_left_pressed if key_row is not None else None
+                turn_right_raw = key_row.turn_right_pressed if key_row is not None else None
                 sample_move_dx = float(sample.move_dx) if sample is not None else 0.0
                 sample_move_dy = float(sample.move_dy) if sample is not None else 0.0
                 has_digital_move = (
@@ -947,22 +979,13 @@ def convert_capture_to_replay(
                         aim_x = 0.0
                         aim_y = 0.0
 
-                if sample is not None:
-                    fire_down_raw = sample.fire_down
-                    fire_pressed_raw = sample.fire_pressed
-                    reload_pressed_raw = sample.reload_pressed
                 if key_row is not None:
-                    if fire_down_raw is None:
-                        fire_down_raw = key_row.fire_down
-                    if fire_pressed_raw is None:
-                        fire_pressed_raw = key_row.fire_pressed
-                    if reload_pressed_raw is None:
-                        reload_pressed_raw = key_row.reload_pressed
+                    fire_down_raw = key_row.fire_down
+                    fire_pressed_raw = key_row.fire_pressed
+                    reload_pressed_raw = key_row.reload_pressed
 
-                fired_events = int(sample.fired_events) if sample is not None else 0
-                fire_down = bool(fire_down_raw) if fire_down_raw is not None else fired_events > 0
-                fire_pressed = bool(fire_pressed_raw) if fire_pressed_raw is not None else bool(fired_events > 0)
-                reload_active = bool(sample.reload_active) if sample is not None else False
+                fire_down = bool(fire_down_raw) if fire_down_raw is not None else False
+                fire_pressed = bool(fire_pressed_raw) if fire_pressed_raw is not None else False
                 reload_pressed = bool(reload_pressed_raw) if reload_pressed_raw is not None else False
             else:
                 move_x = 0.0
@@ -977,38 +1000,10 @@ def convert_capture_to_replay(
                     aim_y = 0.0
                 fire_pressed = False
                 fire_down = False
-                reload_active = False
                 reload_pressed = False
                 fire_down_raw = None
                 fire_pressed_raw = None
                 reload_pressed_raw = None
-
-            input_primary_edge_true_calls = int(tick.input_queries.stats.primary_edge.true_calls)
-            input_primary_down_true_calls = int(tick.input_queries.stats.primary_down.true_calls)
-            if player_index == 0:
-                can_fallback_fire_down = fire_down_raw is None
-                can_fallback_fire_pressed = fire_pressed_raw is None
-                if can_fallback_fire_down:
-                    fire_down = bool(
-                        fire_down or int(input_primary_down_true_calls) > 0 or int(input_primary_edge_true_calls) > 0
-                    )
-                if can_fallback_fire_pressed:
-                    fire_pressed = bool(fire_pressed or int(input_primary_edge_true_calls) > 0)
-
-            if not fire_pressed:
-                fire_pressed = bool(fire_down and not previous_fire_down[player_index])
-
-            if reload_pressed_raw is None:
-                synth_reload_edge = bool(
-                    int(tick_index) > 0 and bool(reload_active) and not bool(previous_reload_active[player_index])
-                )
-                if player_index == 0 and synth_reload_edge:
-                    if bool(fire_down) or bool(fire_pressed):
-                        synth_reload_edge = False
-                reload_pressed = bool(synth_reload_edge)
-
-            previous_fire_down[player_index] = bool(fire_down)
-            previous_reload_active[player_index] = bool(reload_active)
 
             flags = pack_input_flags(
                 fire_down=bool(fire_down),
