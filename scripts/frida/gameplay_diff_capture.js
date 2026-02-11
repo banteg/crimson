@@ -694,9 +694,9 @@ function maybeBacktrace(context) {
   }
 }
 
-function round4(v) {
+function captureNumber(v) {
   if (v == null || !Number.isFinite(v)) return v == null ? null : 0;
-  return Math.round(v * 10000) / 10000;
+  return Number(v);
 }
 
 function normalizeSampleLimit(limit) {
@@ -734,7 +734,7 @@ function hashAny(h, value) {
   const t = typeof value;
   if (t === "number") {
     if (!Number.isFinite(value)) return fnvMixString(h, "d:nan");
-    return fnvMixString(h, "d:" + round4(value));
+    return fnvMixString(h, "d:" + captureNumber(value));
   }
   if (t === "string") return fnvMixString(h, "s:" + value);
   if (t === "boolean") return fnvMixString(h, value ? "b:1" : "b:0");
@@ -871,46 +871,46 @@ function readPlayerCompact(playerIndex) {
 
   return {
     index: playerIndex,
-    pos_x: round4(readPlayerF32("player_pos_x", playerIndex)),
-    pos_y: round4(readPlayerF32("player_pos_y", playerIndex)),
-    move_dx: round4(readPlayerF32("player_move_dx", playerIndex)),
-    move_dy: round4(readPlayerF32("player_move_dy", playerIndex)),
-    health: round4(readPlayerF32("player_health", playerIndex)),
-    aim_x: round4(readPlayerF32("player_aim_x", playerIndex)),
-    aim_y: round4(readPlayerF32("player_aim_y", playerIndex)),
-    aim_heading: round4(readPlayerF32("player_aim_heading", playerIndex)),
+    pos_x: captureNumber(readPlayerF32("player_pos_x", playerIndex)),
+    pos_y: captureNumber(readPlayerF32("player_pos_y", playerIndex)),
+    move_dx: captureNumber(readPlayerF32("player_move_dx", playerIndex)),
+    move_dy: captureNumber(readPlayerF32("player_move_dy", playerIndex)),
+    health: captureNumber(readPlayerF32("player_health", playerIndex)),
+    aim_x: captureNumber(readPlayerF32("player_aim_x", playerIndex)),
+    aim_y: captureNumber(readPlayerF32("player_aim_y", playerIndex)),
+    aim_heading: captureNumber(readPlayerF32("player_aim_heading", playerIndex)),
     weapon_id: readPlayerI32("player_weapon_id", playerIndex),
     clip_size_i32: clipU32 == null ? null : clipU32 | 0,
-    clip_size_f32: clipU32 == null ? null : round4(u32ToF32(clipU32)),
+    clip_size_f32: clipU32 == null ? null : captureNumber(u32ToF32(clipU32)),
     ammo_i32: ammoU32 == null ? null : ammoU32 | 0,
-    ammo_f32: ammoU32 == null ? null : round4(u32ToF32(ammoU32)),
+    ammo_f32: ammoU32 == null ? null : captureNumber(u32ToF32(ammoU32)),
     reload_active_i32: reloadActiveU32 == null ? null : reloadActiveU32 | 0,
-    reload_active_f32: reloadActiveU32 == null ? null : round4(u32ToF32(reloadActiveU32)),
-    reload_timer: round4(readPlayerF32("player_reload_timer", playerIndex)),
-    reload_timer_max: round4(readPlayerF32("player_reload_timer_max", playerIndex)),
-    shot_cooldown: round4(readPlayerF32("player_shot_cooldown", playerIndex)),
-    spread_heat: round4(readPlayerF32("player_spread_heat", playerIndex)),
+    reload_active_f32: reloadActiveU32 == null ? null : captureNumber(u32ToF32(reloadActiveU32)),
+    reload_timer: captureNumber(readPlayerF32("player_reload_timer", playerIndex)),
+    reload_timer_max: captureNumber(readPlayerF32("player_reload_timer_max", playerIndex)),
+    shot_cooldown: captureNumber(readPlayerF32("player_shot_cooldown", playerIndex)),
+    spread_heat: captureNumber(readPlayerF32("player_spread_heat", playerIndex)),
     experience: readPlayerI32("player_experience", playerIndex),
     level: readPlayerI32("player_level", playerIndex),
     perk_timers: {
-      hot_tempered: round4(readPlayerF32("player_hot_tempered_timer", playerIndex)),
-      man_bomb: round4(readPlayerF32("player_man_bomb_timer", playerIndex)),
-      living_fortress: round4(readPlayerF32("player_living_fortress_timer", playerIndex)),
-      fire_cough: round4(readPlayerF32("player_fire_cough_timer", playerIndex)),
+      hot_tempered: captureNumber(readPlayerF32("player_hot_tempered_timer", playerIndex)),
+      man_bomb: captureNumber(readPlayerF32("player_man_bomb_timer", playerIndex)),
+      living_fortress: captureNumber(readPlayerF32("player_living_fortress_timer", playerIndex)),
+      fire_cough: captureNumber(readPlayerF32("player_fire_cough_timer", playerIndex)),
     },
     bonus_timers: {
-      speed_bonus: round4(readPlayerF32("player_speed_bonus_timer", playerIndex)),
-      shield: round4(readPlayerF32("player_shield_timer", playerIndex)),
-      fire_bullets: round4(readPlayerF32("player_fire_bullets_timer", playerIndex)),
+      speed_bonus: captureNumber(readPlayerF32("player_speed_bonus_timer", playerIndex)),
+      shield: captureNumber(readPlayerF32("player_shield_timer", playerIndex)),
+      fire_bullets: captureNumber(readPlayerF32("player_fire_bullets_timer", playerIndex)),
     },
     alt_weapon: {
       weapon_id: readPlayerI32("player_alt_weapon_id", playerIndex),
       clip_size_i32: readPlayerI32("player_alt_clip_size", playerIndex),
       reload_active_i32: readPlayerI32("player_alt_reload_active", playerIndex),
       ammo_i32: readPlayerI32("player_alt_ammo", playerIndex),
-      reload_timer: round4(readPlayerF32("player_alt_reload_timer", playerIndex)),
-      shot_cooldown: round4(readPlayerF32("player_alt_shot_cooldown", playerIndex)),
-      reload_timer_max: round4(readPlayerF32("player_alt_reload_timer_max", playerIndex)),
+      reload_timer: captureNumber(readPlayerF32("player_alt_reload_timer", playerIndex)),
+      shot_cooldown: captureNumber(readPlayerF32("player_alt_shot_cooldown", playerIndex)),
+      reload_timer_max: captureNumber(readPlayerF32("player_alt_reload_timer_max", playerIndex)),
     },
   };
 }
@@ -959,15 +959,15 @@ function readInputTelemetryCompact() {
   for (let i = 0; i < count; i++) {
     aimScreen.push({
       player_index: i,
-      x: round4(readDataF32Stride("player_aim_screen_x", i, 8)),
-      y: round4(readDataF32Stride("player_aim_screen_y", i, 8)),
+      x: captureNumber(readDataF32Stride("player_aim_screen_x", i, 8)),
+      y: captureNumber(readDataF32Stride("player_aim_screen_y", i, 8)),
     });
   }
   return {
     console_open: readDataU32("console_open_flag"),
     primary_latch: readDataU32("input_primary_latch"),
-    mouse_x: round4(readDataF32("ui_mouse_x")),
-    mouse_y: round4(readDataF32("ui_mouse_y")),
+    mouse_x: captureNumber(readDataF32("ui_mouse_x")),
+    mouse_y: captureNumber(readDataF32("ui_mouse_y")),
     aim_screen: aimScreen,
   };
 }
@@ -981,21 +981,21 @@ function readProjectileEntry(index) {
   return {
     index: index,
     active: active,
-    angle: round4(safeReadF32(base.add(0x04))),
+    angle: captureNumber(safeReadF32(base.add(0x04))),
     pos: {
-      x: round4(safeReadF32(base.add(0x08))),
-      y: round4(safeReadF32(base.add(0x0c))),
+      x: captureNumber(safeReadF32(base.add(0x08))),
+      y: captureNumber(safeReadF32(base.add(0x0c))),
     },
     vel: {
-      x: round4(safeReadF32(base.add(0x18))),
-      y: round4(safeReadF32(base.add(0x1c))),
+      x: captureNumber(safeReadF32(base.add(0x18))),
+      y: captureNumber(safeReadF32(base.add(0x1c))),
     },
     type_id: safeReadS32(base.add(0x20)),
-    life_timer: round4(safeReadF32(base.add(0x24))),
-    speed_scale: round4(safeReadF32(base.add(0x2c))),
-    damage_pool: round4(safeReadF32(base.add(0x30))),
-    hit_radius: round4(safeReadF32(base.add(0x34))),
-    base_damage: round4(safeReadF32(base.add(0x38))),
+    life_timer: captureNumber(safeReadF32(base.add(0x24))),
+    speed_scale: captureNumber(safeReadF32(base.add(0x2c))),
+    damage_pool: captureNumber(safeReadF32(base.add(0x30))),
+    hit_radius: captureNumber(safeReadF32(base.add(0x34))),
+    base_damage: captureNumber(safeReadF32(base.add(0x38))),
     owner_id: safeReadS32(base.add(0x3c)),
   };
 }
@@ -1045,16 +1045,16 @@ function readSecondaryProjectileEntry(index) {
     index: index,
     active: active,
     pos: {
-      x: round4(safeReadF32(base.add(0x04))),
-      y: round4(safeReadF32(base.add(0x08))),
+      x: captureNumber(safeReadF32(base.add(0x04))),
+      y: captureNumber(safeReadF32(base.add(0x08))),
     },
-    life_timer: round4(safeReadF32(base.add(0x0c))),
-    angle: round4(safeReadF32(base.add(0x10))),
+    life_timer: captureNumber(safeReadF32(base.add(0x0c))),
+    angle: captureNumber(safeReadF32(base.add(0x10))),
     vel: {
-      x: round4(safeReadF32(base.add(0x14))),
-      y: round4(safeReadF32(base.add(0x18))),
+      x: captureNumber(safeReadF32(base.add(0x14))),
+      y: captureNumber(safeReadF32(base.add(0x18))),
     },
-    trail_timer: round4(safeReadF32(base.add(0x1c))),
+    trail_timer: captureNumber(safeReadF32(base.add(0x1c))),
     type_id: safeReadS32(base.add(0x20)),
     target_id: safeReadS32(base.add(0x24)),
   };
@@ -1085,12 +1085,12 @@ function readCreatureEntry(index) {
     active: activeFlag,
     state_flag: stateFlag,
     collision_flag: safeReadU8(base.add(0x09)),
-    hitbox_size: round4(safeReadF32(base.add(0x10))),
+    hitbox_size: captureNumber(safeReadF32(base.add(0x10))),
     pos: {
-      x: round4(safeReadF32(base.add(0x14))),
-      y: round4(safeReadF32(base.add(0x18))),
+      x: captureNumber(safeReadF32(base.add(0x14))),
+      y: captureNumber(safeReadF32(base.add(0x18))),
     },
-    hp: round4(safeReadF32(base.add(0x24))),
+    hp: captureNumber(safeReadF32(base.add(0x24))),
     type_id: safeReadS32(base.add(0x6c)),
     target_player: safeReadS32(base.add(0x70)),
     flags: safeReadS32(base.add(0x8c)),
@@ -1123,11 +1123,11 @@ function readCreatureLifecycleEntry(index) {
     active_flag: activeFlag == null ? null : activeFlag,
     state_flag: stateFlag == null ? null : stateFlag,
     type_id: safeReadS32(base.add(0x6c)),
-    hp: round4(safeReadF32(base.add(0x24))),
-    hitbox_size: round4(safeReadF32(base.add(0x10))),
+    hp: captureNumber(safeReadF32(base.add(0x24))),
+    hitbox_size: captureNumber(safeReadF32(base.add(0x10))),
     pos: {
-      x: round4(safeReadF32(base.add(0x14))),
-      y: round4(safeReadF32(base.add(0x18))),
+      x: captureNumber(safeReadF32(base.add(0x14))),
+      y: captureNumber(safeReadF32(base.add(0x18))),
     },
     flags: safeReadS32(base.add(0x8c)),
   };
@@ -1242,13 +1242,13 @@ function readBonusSlotRaw(index) {
     index: index,
     bonus_id: bonusId,
     state: state,
-    time_left: round4(safeReadF32(base.add(0x08))),
-    time_max: round4(safeReadF32(base.add(0x0c))),
+    time_left: captureNumber(safeReadF32(base.add(0x08))),
+    time_max: captureNumber(safeReadF32(base.add(0x0c))),
     pos: {
-      x: round4(safeReadF32(base.add(0x10))),
-      y: round4(safeReadF32(base.add(0x14))),
+      x: captureNumber(safeReadF32(base.add(0x10))),
+      y: captureNumber(safeReadF32(base.add(0x14))),
     },
-    amount_f32: round4(safeReadF32(base.add(0x18))),
+    amount_f32: captureNumber(safeReadF32(base.add(0x18))),
     amount_i32: safeReadS32(base.add(0x18)),
   };
 }
@@ -2191,12 +2191,12 @@ function finalizeTick() {
     elapsed_ms_after: afterElapsedMs,
     elapsed_delta_in_tick_ms: elapsedDeltaInTick,
     elapsed_delta_prev_tick_ms: elapsedDeltaFromPrevTick,
-    frame_dt_before: beforeGlobals.frame_dt == null ? null : round4(beforeGlobals.frame_dt),
-    frame_dt_after: globals.frame_dt == null ? null : round4(globals.frame_dt),
+    frame_dt_before: beforeGlobals.frame_dt == null ? null : captureNumber(beforeGlobals.frame_dt),
+    frame_dt_after: globals.frame_dt == null ? null : captureNumber(globals.frame_dt),
     frame_dt_ms_before_i32: beforeGlobals.frame_dt_ms_i32 == null ? null : beforeGlobals.frame_dt_ms_i32,
     frame_dt_ms_after_i32: globals.frame_dt_ms_i32 == null ? null : globals.frame_dt_ms_i32,
-    frame_dt_ms_before_f32: beforeGlobals.frame_dt_ms_f32 == null ? null : round4(beforeGlobals.frame_dt_ms_f32),
-    frame_dt_ms_after_f32: globals.frame_dt_ms_f32 == null ? null : round4(globals.frame_dt_ms_f32),
+    frame_dt_ms_before_f32: beforeGlobals.frame_dt_ms_f32 == null ? null : captureNumber(beforeGlobals.frame_dt_ms_f32),
+    frame_dt_ms_after_f32: globals.frame_dt_ms_f32 == null ? null : captureNumber(globals.frame_dt_ms_f32),
   };
   const spawnDiagnostics = {
     before_creature_count: beforeCreatureCount,
@@ -2306,10 +2306,10 @@ function finalizeTick() {
 
   const frameDtMs =
     globals.frame_dt_ms_f32 != null
-      ? round4(globals.frame_dt_ms_f32)
+      ? captureNumber(globals.frame_dt_ms_f32)
       : globals.frame_dt == null
         ? null
-        : round4(globals.frame_dt * 1000);
+        : captureNumber(globals.frame_dt * 1000);
   const frameDtMsI32 = globals.frame_dt_ms_i32 == null ? null : globals.frame_dt_ms_i32;
   const out = {
     tick_index: tick.tick_index,
@@ -2824,8 +2824,8 @@ function installHooks() {
         const callerStatic = runtimeToStatic(this.returnAddress);
         bonusSpawnContextByTid[this.threadId] = {
           pos: {
-            x: round4(posPtr ? safeReadF32(posPtr) : null),
-            y: round4(posPtr ? safeReadF32(posPtr.add(4)) : null),
+            x: captureNumber(posPtr ? safeReadF32(posPtr) : null),
+            y: captureNumber(posPtr ? safeReadF32(posPtr.add(4)) : null),
           },
           before_slots: snapshotBonusPoolRaw(),
           caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
@@ -2881,8 +2881,8 @@ function installHooks() {
     onEnter(args) {
       this._ctx = {
         pos: {
-          x: round4(safeReadF32(args[0])),
-          y: round4(safeReadF32(args[0].add(4))),
+          x: captureNumber(safeReadF32(args[0])),
+          y: captureNumber(safeReadF32(args[0].add(4))),
         },
         angle_f32: argAsF32(args[1]),
         requested_type_id: args[2].toInt32(),
@@ -2900,7 +2900,7 @@ function installHooks() {
         requested_type_id: ctx.requested_type_id,
         actual_type_id: actualType,
         spawned: spawned,
-        angle_f32: round4(ctx.angle_f32),
+        angle_f32: captureNumber(ctx.angle_f32),
         pos: ctx.pos,
         type_overridden: actualType == null ? null : actualType !== ctx.requested_type_id,
         caller: ctx.caller,
@@ -2921,8 +2921,8 @@ function installHooks() {
     onEnter(args) {
       this._ctx = {
         pos: {
-          x: round4(safeReadF32(args[0])),
-          y: round4(safeReadF32(args[0].add(4))),
+          x: captureNumber(safeReadF32(args[0])),
+          y: captureNumber(safeReadF32(args[0].add(4))),
         },
         angle_f32: argAsF32(args[1]),
         requested_type_id: args[2].toInt32(),
@@ -2942,7 +2942,7 @@ function installHooks() {
         actual_type_id: actualType,
         spawned: spawned,
         owner_id: ctx.owner_id,
-        angle_f32: round4(ctx.angle_f32),
+        angle_f32: captureNumber(ctx.angle_f32),
         pos: ctx.pos,
         type_overridden: actualType == null ? null : actualType !== ctx.requested_type_id,
         caller: ctx.caller,
@@ -2974,10 +2974,10 @@ function installHooks() {
       const shockChainLinksLeft = readDataI32("shock_chain_links_left");
       this._ctx = {
         pos: {
-          x: round4(safeReadF32(queryPosPtr)),
-          y: round4(safeReadF32(queryPosPtr.add(4))),
+          x: captureNumber(safeReadF32(queryPosPtr)),
+          y: captureNumber(safeReadF32(queryPosPtr.add(4))),
         },
-        radius_f32: round4(argAsF32(args[1])),
+        radius_f32: captureNumber(argAsF32(args[1])),
         start_index: args[2] ? args[2].toInt32() : null,
         projectile_index: projectileIndex,
         projectile_owner_id: projectile && projectile.owner_id != null ? projectile.owner_id : null,
@@ -3067,10 +3067,10 @@ function installHooks() {
         const impulsePtr = args[3];
         creatureDamageContextByTid[this.threadId] = {
           creature_index: creatureIndex,
-          damage_f32: round4(argAsF32(args[1])),
+          damage_f32: captureNumber(argAsF32(args[1])),
           damage_type: args[2] ? args[2].toInt32() : null,
-          impulse_x: round4(impulsePtr ? safeReadF32(impulsePtr) : null),
-          impulse_y: round4(impulsePtr ? safeReadF32(impulsePtr.add(4)) : null),
+          impulse_x: captureNumber(impulsePtr ? safeReadF32(impulsePtr) : null),
+          impulse_y: captureNumber(impulsePtr ? safeReadF32(impulsePtr.add(4)) : null),
           before: readCreatureLifecycleEntry(creatureIndex),
           caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
           caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
@@ -3093,7 +3093,7 @@ function installHooks() {
           hp_after: after ? after.hp : null,
           hp_delta:
             ctx.before && after && ctx.before.hp != null && after.hp != null
-              ? round4(after.hp - ctx.before.hp)
+              ? captureNumber(after.hp - ctx.before.hp)
               : null,
           killed: killReturn == null ? null : killReturn !== 0,
           kill_return: killReturn,
@@ -3126,7 +3126,7 @@ function installHooks() {
         const playerIndex = args[0].toInt32();
         damageContextByTid[this.threadId] = {
           player_index: playerIndex,
-          damage_f32: round4(argAsF32(args[1])),
+          damage_f32: captureNumber(argAsF32(args[1])),
           health_before: readPlayerCompact(playerIndex).health,
           caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
         };
@@ -3143,7 +3143,7 @@ function installHooks() {
           health_after: after.health,
           health_delta:
             ctx.health_before != null && after.health != null
-              ? round4(after.health - ctx.health_before)
+              ? captureNumber(after.health - ctx.health_before)
               : null,
           caller: ctx.caller,
         };
@@ -3213,10 +3213,10 @@ function installHooks() {
         creatureSpawnContextByTid[this.threadId] = {
           template_id: args[0].toInt32(),
           pos: {
-            x: round4(safeReadF32(args[1])),
-            y: round4(safeReadF32(args[1].add(4))),
+            x: captureNumber(safeReadF32(args[1])),
+            y: captureNumber(safeReadF32(args[1].add(4))),
           },
-          heading: round4(argAsF32(args[2])),
+          heading: captureNumber(argAsF32(args[2])),
           caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
           caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
         };
@@ -3252,8 +3252,8 @@ function installHooks() {
         this._spawnCtx = {
           source: "survival_spawn_creature",
           pos: {
-            x: round4(safeReadF32(args[0])),
-            y: round4(safeReadF32(args[0].add(4))),
+            x: captureNumber(safeReadF32(args[0])),
+            y: captureNumber(safeReadF32(args[0].add(4))),
           },
           creature_count_before: readDataI32("creature_active_count"),
           caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
@@ -3298,14 +3298,14 @@ function installHooks() {
           source: "creature_spawn_tinted",
           type_id: args[2].toInt32(),
           pos: {
-            x: round4(safeReadF32(posPtr)),
-            y: round4(safeReadF32(posPtr.add(4))),
+            x: captureNumber(safeReadF32(posPtr)),
+            y: captureNumber(safeReadF32(posPtr.add(4))),
           },
           tint: {
-            r: round4(safeReadF32(rgbaPtr)),
-            g: round4(safeReadF32(rgbaPtr.add(4))),
-            b: round4(safeReadF32(rgbaPtr.add(8))),
-            a: round4(safeReadF32(rgbaPtr.add(12))),
+            r: captureNumber(safeReadF32(rgbaPtr)),
+            g: captureNumber(safeReadF32(rgbaPtr.add(4))),
+            b: captureNumber(safeReadF32(rgbaPtr.add(8))),
+            a: captureNumber(safeReadF32(rgbaPtr.add(12))),
           },
           caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
           caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
@@ -3353,14 +3353,14 @@ function installHooks() {
             source: "creature_spawn",
             type_id: args[2].toInt32(),
             pos: {
-              x: round4(safeReadF32(posPtr)),
-              y: round4(safeReadF32(posPtr.add(4))),
+              x: captureNumber(safeReadF32(posPtr)),
+              y: captureNumber(safeReadF32(posPtr.add(4))),
             },
             tint: {
-              r: round4(safeReadF32(rgbaPtr)),
-              g: round4(safeReadF32(rgbaPtr.add(4))),
-              b: round4(safeReadF32(rgbaPtr.add(8))),
-              a: round4(safeReadF32(rgbaPtr.add(12))),
+              r: captureNumber(safeReadF32(rgbaPtr)),
+              g: captureNumber(safeReadF32(rgbaPtr.add(4))),
+              b: captureNumber(safeReadF32(rgbaPtr.add(8))),
+              a: captureNumber(safeReadF32(rgbaPtr.add(12))),
             },
             caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
             caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
@@ -3403,8 +3403,8 @@ function installHooks() {
   attachHook("perks_update_effects", fnPtrs.perks_update_effects, {
     onLeave() {
       const compact = {
-        perk_jinxed_proc_timer_s: round4(readDataF32("perk_jinxed_proc_timer_s")),
-        perk_lean_mean_exp_tick_timer_s: round4(readDataF32("perk_lean_mean_exp_tick_timer_s")),
+        perk_jinxed_proc_timer_s: captureNumber(readDataF32("perk_jinxed_proc_timer_s")),
+        perk_lean_mean_exp_tick_timer_s: captureNumber(readDataF32("perk_lean_mean_exp_tick_timer_s")),
         perk_doctor_target_creature_id: readDataI32("perk_doctor_target_creature_id"),
         perk_pending_count: readDataI32("perk_pending_count"),
       };
