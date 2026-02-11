@@ -310,6 +310,27 @@ def test_load_capture_decodes_f32_tokens(tmp_path: Path) -> None:
     assert capture.ticks[0].checkpoint.players[0].health == pytest.approx(100.0)
 
 
+def test_load_capture_decodes_f32_tokens_with_0x_prefix(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    checkpoint = tick.get("checkpoint")
+    assert isinstance(checkpoint, dict)
+    players = checkpoint.get("players")
+    assert isinstance(players, list)
+    assert isinstance(players[0], dict)
+    pos = players[0].get("pos")
+    assert isinstance(pos, dict)
+    pos["x"] = "f32:0x3f800000"
+    players[0]["health"] = "f32:0X42c80000"
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+
+    assert capture.ticks[0].checkpoint.players[0].pos.x == pytest.approx(1.0)
+    assert capture.ticks[0].checkpoint.players[0].health == pytest.approx(100.0)
+
+
 def test_load_capture_rejects_invalid_f32_token(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     checkpoint = tick.get("checkpoint")
@@ -510,6 +531,14 @@ def test_convert_capture_to_checkpoints_roundtrip(tmp_path: Path) -> None:
 
 def test_convert_capture_to_replay_from_ticks(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "fire_down": True,
+            "fire_pressed": True,
+            "reload_pressed": False,
+        }
+    ]
     tick0["input_approx"] = [
         {
             "player_index": 0,
@@ -517,8 +546,6 @@ def test_convert_capture_to_replay_from_ticks(tmp_path: Path) -> None:
             "move_dy": -1.0,
             "aim_x": 540.0,
             "aim_y": 500.0,
-            "fired_events": 1,
-            "reload_active": False,
         }
     ]
     obj = _capture_obj(ticks=[tick0])
@@ -536,6 +563,32 @@ def test_convert_capture_to_replay_from_ticks(tmp_path: Path) -> None:
     fire_down, fire_pressed, _reload_pressed = unpack_input_flags(flags)
     assert fire_down is True
     assert fire_pressed is True
+
+
+def test_convert_capture_to_replay_does_not_fallback_to_primary_query_stats(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["input_queries"] = {
+        "stats": {
+            "primary_edge": {"calls": 1, "true_calls": 1},
+            "primary_down": {"calls": 1, "true_calls": 1},
+            "any_key": {"calls": 0, "true_calls": 0},
+        },
+        "query_hash": "",
+    }
+    tick0["input_player_keys"] = [{"player_index": 0}]
+    tick0["input_approx"] = [{"player_index": 0, "aim_x": 540.0, "aim_y": 500.0, "reload_active": True}]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture)
+
+    flags = int(replay.inputs[0][0][3])
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    assert fire_down is False
+    assert fire_pressed is False
+    assert reload_pressed is False
 
 
 
@@ -743,6 +796,45 @@ def test_convert_capture_to_replay_infers_seed_from_rng_head(tmp_path: Path) -> 
     replay = convert_capture_to_replay(capture)
 
     assert replay.header.seed == int(seed) & 0x7FFFFFFF
+
+
+def test_convert_capture_to_replay_prefers_rng_state_before_seed(tmp_path: Path) -> None:
+    seed = 0x8C6978CC
+    outputs = _crt_rand_outputs(seed, 8)
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    checkpoint = tick0["checkpoint"]
+    assert isinstance(checkpoint, dict)
+    rng_marks = checkpoint["rng_marks"]
+    assert isinstance(rng_marks, dict)
+    rng_marks["rand_calls"] = 8
+    rng_marks["rand_last"] = outputs[-1]
+    rng_marks["rand_head"] = [
+        {
+            "value": int(outputs[0]),
+            "value_15": int(outputs[0]),
+            "state_before_u32": int(seed),
+        }
+    ]
+    tick0["rng"] = {
+        "calls": 8,
+        "last_value": outputs[-1],
+        "head": [
+            {
+                "value": int(outputs[0]),
+                "value_15": int(outputs[0]),
+                "state_before_u32": int(seed),
+            }
+        ],
+    }
+
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture)
+
+    assert replay.header.seed == int(seed)
 
 
 def test_convert_capture_to_replay_explicit_seed_overrides_inferred_seed(tmp_path: Path) -> None:

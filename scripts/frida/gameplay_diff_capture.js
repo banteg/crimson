@@ -186,6 +186,7 @@ const FN = {
 const PLAYER_UPDATE_END_RVA = 0x00417640;
 
 const FN_GRIM_RVA = {
+  grim_is_key_down: 0x00007320,
   grim_is_key_active: 0x00006fe0,
   grim_was_key_pressed: 0x00007390,
   grim_is_mouse_button_down: 0x00007410,
@@ -711,7 +712,8 @@ function maybeBacktrace(context) {
 
 function captureF32Bits(bits) {
   if (bits == null) return null;
-  return "f32:" + toHex(bits >>> 0, 8);
+  const hex = toHex(bits >>> 0, 8);
+  return "f32:" + (hex == null ? "" : String(hex).replace(/^0x/i, ""));
 }
 
 function decodeCapturedF32(v) {
@@ -719,7 +721,8 @@ function decodeCapturedF32(v) {
   if (typeof v === "number") return Number.isFinite(v) ? Number(v) : null;
   if (typeof v !== "string") return null;
   if (!v.startsWith("f32:")) return null;
-  const hex = v.slice(4);
+  let hex = v.slice(4);
+  if (hex.toLowerCase().startsWith("0x")) hex = hex.slice(2);
   if (hex.length !== 8) return null;
   const bits = parseInt(hex, 16);
   if (!Number.isFinite(bits)) return null;
@@ -1479,25 +1482,47 @@ function updatePlayerInputKeyState(tick, queryName, keyCode, pressed, callerStat
   if (!tick || !isPlayerUpdateCaller(callerStaticHex)) return;
   if (!Number.isFinite(keyCode)) return;
   const bindings = tick.before && tick.before.input_bindings && tick.before.input_bindings.players;
-  if (!Array.isArray(bindings) || bindings.length === 0) return;
+  const altBindings =
+    tick.before && tick.before.input_bindings ? tick.before.input_bindings.alternate_single : null;
+  if ((!Array.isArray(bindings) || bindings.length === 0) && (!altBindings || typeof altBindings !== "object")) {
+    return;
+  }
 
   const key = keyCode | 0;
   const down = !!pressed;
-  for (let i = 0; i < bindings.length; i++) {
-    const binding = bindings[i];
-    if (!binding || typeof binding !== "object") continue;
-    const state = ensurePlayerKeyState(tick, i);
-    if (!state) continue;
-    if ((binding.move_forward | 0) === key) state.move_forward_pressed = down;
-    if ((binding.move_backward | 0) === key) state.move_backward_pressed = down;
-    if ((binding.turn_left | 0) === key) state.turn_left_pressed = down;
-    if ((binding.turn_right | 0) === key) state.turn_right_pressed = down;
-    if ((binding.fire | 0) === key) {
-      if (queryName === "grim_is_key_active") state.fire_down = down;
-      if (queryName === "grim_was_key_pressed") state.fire_pressed = down;
+
+  if (Array.isArray(bindings)) {
+    for (let i = 0; i < bindings.length; i++) {
+      const binding = bindings[i];
+      if (!binding || typeof binding !== "object") continue;
+      const state = ensurePlayerKeyState(tick, i);
+      if (!state) continue;
+      if ((binding.move_forward | 0) === key) state.move_forward_pressed = down;
+      if ((binding.move_backward | 0) === key) state.move_backward_pressed = down;
+      if ((binding.turn_left | 0) === key) state.turn_left_pressed = down;
+      if ((binding.turn_right | 0) === key) state.turn_right_pressed = down;
+      if ((binding.fire | 0) === key) {
+        if (queryName === "grim_is_key_active" || queryName === "grim_is_key_down") state.fire_down = down;
+        if (queryName === "grim_was_key_pressed") state.fire_pressed = down;
+      }
+      if ((binding.reload | 0) === key && queryName === "grim_was_key_pressed") {
+        state.reload_pressed = down;
+      }
     }
-    if ((binding.reload | 0) === key && queryName === "grim_was_key_pressed") {
-      state.reload_pressed = down;
+  }
+
+  // player_update queries alternate bindings via grim_is_key_down when player_count == 1.
+  const singlePlayerBindings = !Array.isArray(bindings) || bindings.length === 1;
+  if (singlePlayerBindings && altBindings && typeof altBindings === "object") {
+    const state = ensurePlayerKeyState(tick, 0);
+    if (!state) return;
+    if ((altBindings.move_forward | 0) === key) state.move_forward_pressed = down;
+    if ((altBindings.move_backward | 0) === key) state.move_backward_pressed = down;
+    if ((altBindings.turn_left | 0) === key) state.turn_left_pressed = down;
+    if ((altBindings.turn_right | 0) === key) state.turn_right_pressed = down;
+    if ((altBindings.fire | 0) === key) {
+      if (queryName === "grim_is_key_active" || queryName === "grim_is_key_down") state.fire_down = down;
+      if (queryName === "grim_was_key_pressed") state.fire_pressed = down;
     }
   }
 }
@@ -1826,6 +1851,10 @@ function isPrimaryFireKeyCode(keyCode) {
   for (let i = 0; i < playerCount; i++) {
     const fireKey = readPlayerI32("player_fire_key", i);
     if (fireKey != null && fireKey === keyCode) return true;
+  }
+  if (playerCount === 1) {
+    const altFireKey = readDataI32("player_alt_fire_key");
+    if (altFireKey != null && altFireKey === keyCode) return true;
   }
   return false;
 }
@@ -2650,6 +2679,16 @@ function installHooks() {
       });
     }
 
+    addGrimInputQueryHook(
+      "grim_is_key_down",
+      grimFnPtrs.grim_is_key_down,
+      function (keyCode) {
+        if (isPrimaryFireKeyCode(keyCode)) return "primary_down";
+        if (Number.isFinite(keyCode)) return "any_key";
+        return null;
+      },
+      "gikd"
+    );
     addGrimInputQueryHook(
       "grim_is_key_active",
       grimFnPtrs.grim_is_key_active,
