@@ -269,7 +269,14 @@ class ProjectileRenderDebugView:
         self._targets = [target for target in self._targets if target.hp > 0.0]
 
         input_state = self._build_input()
-        player_update(self._player, input_state, float(dt), self._world.state, world_size=WORLD_SIZE)
+        player_update(
+            self._player,
+            input_state,
+            float(dt),
+            self._world.state,
+            world_size=WORLD_SIZE,
+            creatures=self._targets,
+        )
 
         if prev_audio is not None:
             prev_shot_seq, prev_reload_active, prev_reload_timer = prev_audio

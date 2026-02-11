@@ -265,7 +265,14 @@ class PlayerSandboxView:
         self._decay_global_timers(dt)
 
         input_state = self._build_input()
-        player_update(self._player, input_state, dt, self._state, world_size=WORLD_SIZE)
+        player_update(
+            self._player,
+            input_state,
+            dt,
+            self._state,
+            world_size=WORLD_SIZE,
+            creatures=self._creatures,
+        )
 
         bonus_hud_update(self._state, [self._player], dt=dt)
         self._update_camera(dt)

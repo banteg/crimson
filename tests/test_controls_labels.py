@@ -5,6 +5,7 @@ import struct
 from crimson.frontend.panels.controls_labels import (
     PICK_PERK_BIND_SLOT,
     RELOAD_BIND_SLOT,
+    controls_aim_method_dropdown_ids,
     controls_method_labels,
     controls_method_values,
     controls_rebind_slot_plan,
@@ -51,6 +52,11 @@ def test_controls_method_labels_reads_player_arrays() -> None:
 
 def test_controls_method_labels_defaults_missing_blob() -> None:
     assert controls_method_labels({}, player_index=0) == ("Mouse", "Static")
+
+
+def test_controls_aim_method_dropdown_ids_hides_computer_unless_loaded() -> None:
+    assert controls_aim_method_dropdown_ids(0) == (0, 1, 2, 3, 4)
+    assert controls_aim_method_dropdown_ids(5) == (0, 1, 2, 3, 4, 5)
 
 
 def test_controls_rebind_slot_plan_keyboard_static_player1() -> None:

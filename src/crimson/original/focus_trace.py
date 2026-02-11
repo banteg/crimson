@@ -4,6 +4,7 @@ import argparse
 import inspect
 import json
 import math
+from collections.abc import Mapping
 from collections import Counter
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -22,6 +23,7 @@ from crimson.original.capture import (
     build_capture_dt_frame_ms_i32_overrides,
     convert_capture_to_replay,
     load_capture,
+    parse_player_int_overrides,
 )
 from crimson.replay.types import UnknownEvent, unpack_input_flags, unpack_packed_player_input
 from crimson.sim.runners.common import (
@@ -621,9 +623,13 @@ def trace_focus_tick(
     tick: int,
     near_miss_threshold: float,
     inter_tick_rand_draws: int,
+    aim_scheme_overrides_by_player: Mapping[int, int] | None = None,
 ) -> FocusTraceReport:
     capture = load_capture(capture_path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(
+        capture,
+        aim_scheme_overrides_by_player=aim_scheme_overrides_by_player,
+    )
     mode = int(replay.header.game_mode_id)
     if mode != int(GameMode.SURVIVAL):
         raise ValueError(f"focus trace currently supports survival mode only (got mode={mode})")
@@ -1136,6 +1142,16 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         help="extra rand draws between ticks (native console loop parity)",
     )
     parser.add_argument(
+        "--aim-scheme-player",
+        action="append",
+        default=[],
+        metavar="PLAYER=SCHEME",
+        help=(
+            "override replay reconstruction aim scheme for player index "
+            "(repeatable; use for captures missing config_aim_scheme telemetry)"
+        ),
+    )
+    parser.add_argument(
         "--json-out",
         nargs="?",
         default=None,
@@ -1152,12 +1168,21 @@ def main(argv: list[str] | None = None) -> int:
     parser = _build_arg_parser()
     args = parser.parse_args(argv)
     json_out_path = _resolve_json_out_path(args.json_out, tick=int(args.tick))
+    try:
+        aim_scheme_overrides = parse_player_int_overrides(
+            args.aim_scheme_player,
+            option_name="--aim-scheme-player",
+        )
+    except ValueError as exc:
+        print(exc)
+        return 2
 
     report = trace_focus_tick(
         capture_path=Path(args.capture),
         tick=int(args.tick),
         near_miss_threshold=max(0.0, float(args.near_miss_threshold)),
         inter_tick_rand_draws=max(0, int(args.inter_tick_rand_draws)),
+        aim_scheme_overrides_by_player=aim_scheme_overrides,
     )
     _print_report(
         report,

@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 import math
+from typing import Protocol
 
 import pyray as rl
 
@@ -24,6 +25,11 @@ _AIM_RADIUS_PAD_SCALE = 20.0
 _POINT_CLICK_STOP_RADIUS = 20.0
 _AIM_KEYBOARD_TURN_RATE = 3.0
 _AIM_JOYSTICK_TURN_RATE = 4.0
+_COMPUTER_TARGET_SWITCH_HYSTERESIS = 64.0
+_COMPUTER_ARENA_CENTER = Vec2(512.0, 512.0)
+_COMPUTER_AIM_SNAP_DISTANCE = 4.0
+_COMPUTER_AIM_TRACK_GAIN = 6.0
+_COMPUTER_AUTO_FIRE_DISTANCE = 128.0
 
 _MOVE_SLOT_UP = 0
 _MOVE_SLOT_DOWN = 1
@@ -42,6 +48,13 @@ _MOVE_AXIS_X_SLOT = 12
 class _PerPlayerInputState:
     aim_heading: float = 0.0
     move_target: Vec2 = field(default_factory=lambda: Vec2(-1.0, -1.0))
+    computer_target_creature_index: int = -1
+
+
+class _ComputerAimCreature(Protocol):
+    active: bool
+    hp: float
+    pos: Vec2
 
 
 def _is_finite(v: float) -> bool:
@@ -93,12 +106,65 @@ class LocalInputInterpreter:
         for idx in range(4):
             state = self._states[idx]
             state.move_target = Vec2(-1.0, -1.0)
+            state.computer_target_creature_index = -1
             heading = 0.0
             if players is not None and idx < len(players):
                 candidate = float(getattr(players[idx], "aim_heading", 0.0))
                 if _is_finite(candidate):
                     heading = candidate
             state.aim_heading = float(heading)
+
+    @staticmethod
+    def _nearest_living_creature_index(pos: Vec2, creatures: Sequence[_ComputerAimCreature]) -> int | None:
+        best_idx: int | None = None
+        best_dist_sq = 0.0
+        for idx, creature in enumerate(creatures):
+            if not bool(getattr(creature, "active", False)):
+                continue
+            if float(getattr(creature, "hp", 0.0)) <= 0.0:
+                continue
+            dist_sq = Vec2.distance_sq(pos, creature.pos)
+            if best_idx is None or float(dist_sq) < float(best_dist_sq):
+                best_idx = int(idx)
+                best_dist_sq = float(dist_sq)
+        return best_idx
+
+    def _select_computer_target(
+        self,
+        *,
+        player_index: int,
+        player: PlayerState,
+        creatures: Sequence[_ComputerAimCreature],
+    ) -> int | None:
+        idx = max(0, min(3, int(player_index)))
+        state = self._states[idx]
+        candidate = self._nearest_living_creature_index(player.pos, creatures)
+        current = int(state.computer_target_creature_index)
+
+        if candidate is None:
+            state.computer_target_creature_index = -1
+            return None
+        if current < 0 or current >= len(creatures):
+            state.computer_target_creature_index = int(candidate)
+            return int(candidate)
+
+        current_creature = creatures[current]
+        if not bool(getattr(current_creature, "active", False)) or float(getattr(current_creature, "hp", 0.0)) <= 0.0:
+            state.computer_target_creature_index = int(candidate)
+            return int(candidate)
+        if int(candidate) == int(current):
+            return int(current)
+
+        candidate_creature = creatures[int(candidate)]
+        if not bool(getattr(candidate_creature, "active", False)) or float(getattr(candidate_creature, "hp", 0.0)) <= 0.0:
+            return int(current)
+
+        current_dist = (current_creature.pos - player.pos).length()
+        candidate_dist = (candidate_creature.pos - player.pos).length()
+        if float(candidate_dist) + float(_COMPUTER_TARGET_SWITCH_HYSTERESIS) < float(current_dist):
+            state.computer_target_creature_index = int(candidate)
+            return int(candidate)
+        return int(current)
 
     def _state_for_player(self, player_index: int, *, player: PlayerState | None = None) -> _PerPlayerInputState:
         idx = max(0, min(3, int(player_index)))
@@ -130,6 +196,7 @@ class LocalInputInterpreter:
         mouse_world: Vec2,
         screen_center: Vec2,
         dt_frame: float,
+        creatures: Sequence[_ComputerAimCreature] | None = None,
     ) -> PlayerInput:
         idx = max(0, min(3, int(player_index)))
         state = self._state_for_player(idx, player=player)
@@ -190,6 +257,7 @@ class LocalInputInterpreter:
         if not _is_finite(heading):
             heading = float(getattr(player, "aim_heading", 0.0) or 0.0)
         aim = _aim_point_from_heading(player.pos, heading)
+        computer_auto_fire = False
         if int(aim_scheme) == 0:
             aim = mouse_world
             delta = aim - player.pos
@@ -226,12 +294,39 @@ class LocalInputInterpreter:
                 heading = float(heading - float(dt_frame) * _AIM_JOYSTICK_TURN_RATE)
             aim = _aim_point_from_heading(player.pos, heading)
         elif int(aim_scheme) == 5:
-            aim = _aim_point_from_heading(player.pos, heading)
+            target_index = None
+            if creatures:
+                target_index = self._select_computer_target(
+                    player_index=idx,
+                    player=player,
+                    creatures=creatures,
+                )
+            if creatures is not None and target_index is not None and 0 <= int(target_index) < len(creatures):
+                target = creatures[int(target_index)]
+                aim = Vec2(float(player.aim.x), float(player.aim.y))
+                to_target = Vec2(float(target.pos.x), float(target.pos.y)) - aim
+                target_dir, target_dist = to_target.normalized_with_length()
+                if float(target_dist) >= _COMPUTER_AIM_SNAP_DISTANCE:
+                    aim = aim + target_dir * (float(target_dist) * _COMPUTER_AIM_TRACK_GAIN * float(dt_frame))
+                else:
+                    aim = Vec2(float(target.pos.x), float(target.pos.y))
+                delta = aim - player.pos
+                if delta.length_sq() > 1e-9:
+                    heading = delta.to_heading()
+                computer_auto_fire = float(target_dist) < _COMPUTER_AUTO_FIRE_DISTANCE
+            else:
+                away, away_mag = (player.pos - _COMPUTER_ARENA_CENTER).normalized_with_length()
+                if float(away_mag) <= 1e-6:
+                    away = Vec2(0.0, -1.0)
+                aim = player.pos + away * _AIM_RADIUS_KEYBOARD
+                heading = away.to_heading()
 
         state.aim_heading = float(heading)
 
         fire_down = bool(input_code_is_down_for_player(fire_key, player_index=idx))
         fire_pressed = bool(input_code_is_pressed_for_player(fire_key, player_index=idx))
+        if int(aim_scheme) == 5 and computer_auto_fire:
+            fire_down = True
         reload_pressed = bool(input_code_is_pressed_for_player(reload_key, player_index=idx)) if idx == 0 else False
 
         return PlayerInput(
@@ -254,6 +349,7 @@ class LocalInputInterpreter:
         mouse_screen: Vec2,
         screen_to_world: Callable[[Vec2], Vec2],
         dt_frame: float,
+        creatures: Sequence[_ComputerAimCreature] | None = None,
     ) -> list[PlayerInput]:
         mouse_world = screen_to_world(mouse_screen)
         screen_center = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
@@ -268,6 +364,7 @@ class LocalInputInterpreter:
                     mouse_world=mouse_world,
                     screen_center=screen_center,
                     dt_frame=float(dt_frame),
+                    creatures=creatures,
                 )
             )
         return out

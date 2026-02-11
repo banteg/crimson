@@ -88,6 +88,11 @@ uv run crimson original bisect-divergence \
   --json-out analysis/frida/reports/capture_<sha8>_bisect.json
 ```
 
+If capture telemetry is missing `config_aim_scheme`/`input_approx.aim_scheme` for a
+known run (for example sidecar-enforced computer aim), add
+`--aim-scheme-player 0=5` to `verify-capture`, `divergence-report`,
+`bisect-divergence`, `focus-trace`, and `visualize-capture`.
+
 Then read the emitted `run_summary_focus_context` block first to orient around
 major gameplay events near the focus tick (bonus pickups, perk picks, level-up,
 weapon swaps, state transitions). This is the quickest way to confirm whether a

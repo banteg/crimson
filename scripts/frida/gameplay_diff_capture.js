@@ -16,7 +16,7 @@ const DEFAULT_LOG_DIR = "C:\\share\\frida";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 2;
+const CAPTURE_FORMAT_VERSION = 3;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
@@ -197,6 +197,9 @@ const FN_GRIM_RVA = {
 const DATA = {
   config_player_count: 0x0048035c,
   config_game_mode: 0x00480360,
+  config_player_mode_flags: 0x00480364,
+  config_aim_scheme: 0x0048038c,
+  perk_choice_ids: 0x004807e8,
   frame_dt: 0x00480840,
   frame_dt_ms: 0x00480844,
   perk_lean_mean_exp_tick_timer_s: 0x004808a4,
@@ -204,6 +207,7 @@ const DATA = {
   input_primary_latch: 0x00478e50,
   console_open_flag: 0x0047eec8,
   perk_pending_count: 0x00486fac,
+  perk_choices_dirty: 0x00486fb0,
   shock_chain_links_left: 0x00486fbc,
   shock_chain_projectile_id: 0x00486fc0,
   creature_active_count: 0x00486fcc,
@@ -213,6 +217,7 @@ const DATA = {
   bonus_weapon_power_up_timer: 0x0048701c,
   bonus_energizer_timer: 0x00487020,
   bonus_double_xp_timer: 0x00487024,
+  creature_kill_count: 0x00487074,
   quest_transition_timer_ms: 0x00487088,
   time_played_ms: 0x0048718c,
   player_alt_weapon_swap_cooldown_ms: 0x0048719c,
@@ -243,6 +248,7 @@ const DATA = {
   player_fire_cough_timer: 0x00490958,
   player_experience: 0x0049095c,
   player_level: 0x00490964,
+  player_perk_counts: 0x00490968,
   player_spread_heat: 0x00490b68,
   player_weapon_id: 0x00490b70,
   player_clip_size: 0x00490b74,
@@ -307,6 +313,8 @@ const COUNTS = {
 };
 
 const STATUS_WEAPON_USAGE_COUNT = 53;
+const PERK_CHOICE_COUNT = 8;
+const PERK_COUNT_PER_PLAYER = 0x80;
 const PROJECTILE_UPDATE_START = 0x00420b90;
 const PROJECTILE_UPDATE_END = 0x00422c6f;
 const CRT_RAND_MULT = 214013 >>> 0;
@@ -632,6 +640,21 @@ function readDataF32Stride(name, index, strideBytes) {
   return captureF32Bits(safeReadF32Bits(p.add(index * strideBytes)));
 }
 
+function readDataI32Stride(name, index, strideBytes) {
+  const p = dataPtrs[name];
+  if (!p) return null;
+  return safeReadS32(p.add(index * strideBytes));
+}
+
+function readConfigPerPlayerI32(name) {
+  const count = Math.max(1, outState.playerCountResolved | 0);
+  const out = [];
+  for (let i = 0; i < count; i++) {
+    out.push(readDataI32Stride(name, i, 4));
+  }
+  return out;
+}
+
 function readStatusSnapshotCompact() {
   const packed = readDataU32("game_status_blob");
   const questUnlock = packed == null ? null : packed & 0xffff;
@@ -874,6 +897,8 @@ function resolvePointers(exeModule, grimModule) {
 function readGameplayGlobalsCompact() {
   return {
     config_game_mode: readDataI32("config_game_mode"),
+    config_player_mode_flags: readConfigPerPlayerI32("config_player_mode_flags"),
+    config_aim_scheme: readConfigPerPlayerI32("config_aim_scheme"),
     game_state_prev: readDataI32("game_state_prev"),
     game_state_id: readDataI32("game_state_id"),
     game_state_pending: readDataI32("game_state_pending"),
@@ -882,7 +907,11 @@ function readGameplayGlobalsCompact() {
     frame_dt_ms_f32: readDataF32("frame_dt_ms"),
     time_played_ms: readDataI32("time_played_ms"),
     creature_active_count: readDataI32("creature_active_count"),
+    creature_kill_count: readDataI32("creature_kill_count"),
     perk_pending_count: readDataI32("perk_pending_count"),
+    perk_choices_dirty: readDataI32("perk_choices_dirty"),
+    shock_chain_links_left: readDataI32("shock_chain_links_left"),
+    shock_chain_projectile_id: readDataI32("shock_chain_projectile_id"),
     quest_spawn_timeline: readDataI32("quest_spawn_timeline"),
     quest_spawn_stall_timer_ms: readDataI32("quest_spawn_stall_timer_ms"),
     quest_transition_timer_ms: readDataI32("quest_transition_timer_ms"),
@@ -2058,10 +2087,61 @@ function registerRngRoll(value, callerStaticHex, callerLabel) {
   return rollRow;
 }
 
+function readPerkChoicesCompact() {
+  const base = dataPtrs.perk_choice_ids;
+  const out = [];
+  if (!base) return out;
+  const seen = {};
+  for (let i = 0; i < PERK_CHOICE_COUNT; i++) {
+    const perkId = safeReadS32(base.add(i * 4));
+    if (perkId == null || perkId <= 0 || seen[perkId]) continue;
+    seen[perkId] = true;
+    out.push(perkId | 0);
+  }
+  return out;
+}
+
+function readPlayerPerkNonzeroCountsCompact() {
+  const base = dataPtrs.player_perk_counts;
+  const out = [];
+  const playerCount = Math.max(1, outState.playerCountResolved | 0);
+  if (!base) {
+    for (let i = 0; i < playerCount; i++) out.push([]);
+    return out;
+  }
+  for (let playerIndex = 0; playerIndex < playerCount; playerIndex++) {
+    const playerBase = base.add(playerIndex * STRIDES.player);
+    const playerRows = [];
+    for (let perkId = 0; perkId < PERK_COUNT_PER_PLAYER; perkId++) {
+      const count = safeReadS32(playerBase.add(perkId * 4));
+      if (count == null || count <= 0) continue;
+      playerRows.push([perkId | 0, count | 0]);
+    }
+    out.push(playerRows);
+  }
+  return out;
+}
+
+function playerBonusTimersMsFromCompactPlayers(players) {
+  const out = [];
+  for (let i = 0; i < players.length; i++) {
+    const p = players[i] || {};
+    const bonusTimers = p.bonus_timers && typeof p.bonus_timers === "object" ? p.bonus_timers : {};
+    out.push({
+      speed_bonus: Math.max(0, bonusTimerMs(bonusTimers.speed_bonus)),
+      shield: Math.max(0, bonusTimerMs(bonusTimers.shield)),
+      fire_bullets: Math.max(0, bonusTimerMs(bonusTimers.fire_bullets)),
+    });
+  }
+  return out;
+}
+
 function checkpointPlayersFromCompact(players) {
+  const playerBonusTimersMs = playerBonusTimersMsFromCompactPlayers(players);
   const out = [];
   for (let i = 0; i < players.length; i++) {
     const p = players[i];
+    const bonusTimers = playerBonusTimersMs[i] || {};
     out.push({
       pos: { x: p.pos_x == null ? 0 : p.pos_x, y: p.pos_y == null ? 0 : p.pos_y },
       health: p.health == null ? 0 : p.health,
@@ -2069,6 +2149,11 @@ function checkpointPlayersFromCompact(players) {
       ammo: p.ammo_f32 == null ? 0 : p.ammo_f32,
       experience: p.experience == null ? 0 : p.experience,
       level: p.level == null ? 0 : p.level,
+      bonus_timers: {
+        speed_bonus: bonusTimers.speed_bonus == null ? 0 : bonusTimers.speed_bonus,
+        shield: bonusTimers.shield == null ? 0 : bonusTimers.shield,
+        fire_bullets: bonusTimers.fire_bullets == null ? 0 : bonusTimers.fire_bullets,
+      },
     });
   }
   return out;
@@ -2092,8 +2177,8 @@ function buildInputApprox(afterPlayers, tick) {
       aim_x: p.aim_x,
       aim_y: p.aim_y,
       aim_heading: p.aim_heading,
-      move_mode: null,
-      aim_scheme: null,
+      move_mode: readDataI32Stride("config_player_mode_flags", i, 4),
+      aim_scheme: readDataI32Stride("config_aim_scheme", i, 4),
       fired_events: fired,
       moving: !!moving,
       reload_active: p.reload_active_i32 != null ? p.reload_active_i32 !== 0 : null,
@@ -2218,16 +2303,31 @@ function finalizeTick() {
     "6": bonusTimerMs(globals.bonus_double_xp_timer),
     "11": bonusTimerMs(globals.bonus_freeze_timer),
   };
+  const checkpointPlayers = checkpointPlayersFromCompact(afterPlayers);
+  const perkPendingCount = globals.perk_pending_count == null ? -1 : globals.perk_pending_count;
+  const perkChoicesDirty = readDataI32("perk_choices_dirty");
+  const perkSnapshot = {
+    pending_count: perkPendingCount,
+    choices_dirty: perkChoicesDirty != null ? perkChoicesDirty !== 0 : false,
+    choices: readPerkChoicesCompact(),
+    player_nonzero_counts: readPlayerPerkNonzeroCountsCompact(),
+  };
+  const killCount = globals.creature_kill_count == null ? -1 : globals.creature_kill_count;
 
   const stateHashSeed = {
     globals: {
       time_played_ms: globals.time_played_ms,
       creature_active_count: globals.creature_active_count,
+      creature_kill_count: globals.creature_kill_count,
       perk_pending_count: globals.perk_pending_count,
+      perk_choices_dirty: perkChoicesDirty,
       quest_spawn_timeline: globals.quest_spawn_timeline,
       perk_doctor_target_creature_id: globals.perk_doctor_target_creature_id,
+      shock_chain_links_left: globals.shock_chain_links_left,
+      shock_chain_projectile_id: globals.shock_chain_projectile_id,
     },
-    players: checkpointPlayersFromCompact(afterPlayers),
+    players: checkpointPlayers,
+    perk: perkSnapshot,
     bonus_timers: bonusTimers,
   };
 
@@ -2314,10 +2414,10 @@ function finalizeTick() {
     rng_state: tick.rng.last_value == null ? -1 : tick.rng.last_value,
     elapsed_ms: globals.time_played_ms == null ? -1 : globals.time_played_ms,
     score_xp: scoreXp,
-    kills: -1,
+    kills: killCount,
     creature_count: globals.creature_active_count == null ? -1 : globals.creature_active_count,
-    perk_pending: globals.perk_pending_count == null ? -1 : globals.perk_pending_count,
-    players: checkpointPlayersFromCompact(afterPlayers),
+    perk_pending: perkPendingCount,
+    players: checkpointPlayers,
     status: {
       quest_unlock_index:
         status.quest_unlock_index == null ? -1 : status.quest_unlock_index,
@@ -2348,12 +2448,7 @@ function finalizeTick() {
       rand_mirror_unknown_total: outState.rngMirrorUnknownCalls,
     },
     deaths: [UNKNOWN_DEATH],
-    perk: {
-      pending_count: -1,
-      choices_dirty: false,
-      choices: [],
-      player_nonzero_counts: [],
-    },
+    perk: perkSnapshot,
     events: eventSummary,
     debug: {
       sampling_phase: "post_gameplay_update_and_render",
@@ -2373,11 +2468,13 @@ function finalizeTick() {
   };
 
   const frameDtMs =
-    globals.frame_dt_ms_f32 != null
-      ? captureNumber(globals.frame_dt_ms_f32)
-      : decodeCapturedF32(globals.frame_dt) == null
-        ? null
-        : captureNumber(decodeCapturedF32(globals.frame_dt) * 1000);
+    globals.frame_dt_ms_i32 != null
+      ? captureNumber(globals.frame_dt_ms_i32)
+      : globals.frame_dt_ms_f32 != null
+        ? captureNumber(globals.frame_dt_ms_f32)
+        : decodeCapturedF32(globals.frame_dt) == null
+          ? null
+          : captureNumber(decodeCapturedF32(globals.frame_dt) * 1000);
   const frameDtMsI32 = globals.frame_dt_ms_i32 == null ? null : globals.frame_dt_ms_i32;
   const out = {
     tick_index: tick.tick_index,

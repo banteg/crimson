@@ -19,6 +19,7 @@ from .divergence_report import (
     _run_actual_checkpoints,
     _rng_stream_rows_for_raw_row,
 )
+from .capture import parse_player_int_overrides
 
 _JSON_OUT_AUTO = "__AUTO__"
 _DEFAULT_JSON_OUT_PATH = Path("artifacts/frida/reports/divergence_bisect_latest.json")
@@ -138,6 +139,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("capture", type=Path, help="capture file (.json/.json.gz)")
     parser.add_argument("--seed", type=int, default=None, help="optional fixed replay seed override")
+    parser.add_argument(
+        "--aim-scheme-player",
+        action="append",
+        default=[],
+        metavar="PLAYER=SCHEME",
+        help=(
+            "override replay reconstruction aim scheme for player index "
+            "(repeatable; use for captures missing config_aim_scheme telemetry)"
+        ),
+    )
     parser.add_argument("--max-ticks", type=int, default=None, help="optional replay tick cap for search")
     parser.add_argument("--float-abs-tol", type=float, default=1e-3, help="absolute float tolerance")
     parser.add_argument("--max-field-diffs", type=int, default=16, help="max field diffs to consider")
@@ -168,6 +179,14 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     capture_path = Path(args.capture)
     json_out_path = _resolve_json_out_path(args.json_out)
+    try:
+        aim_scheme_overrides = parse_player_int_overrides(
+            args.aim_scheme_player,
+            option_name="--aim-scheme-player",
+        )
+    except ValueError as exc:
+        print(exc)
+        return 2
 
     capture = load_capture(capture_path)
     raw_debug_all = _load_raw_tick_debug(capture_path)
@@ -202,6 +221,7 @@ def main(argv: list[str] | None = None) -> int:
             max_ticks=int(key) + 1,
             seed=args.seed,
             inter_tick_rand_draws=int(args.inter_tick_rand_draws),
+            aim_scheme_overrides_by_player=aim_scheme_overrides,
         )
         divergence = _find_first_divergence(
             expected,

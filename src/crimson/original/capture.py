@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 import gzip
 import math
 from pathlib import Path
@@ -32,6 +33,8 @@ from .schema import (
     CAPTURE_FORMAT_VERSION,
     CaptureEventHeadPerkApply,
     CaptureEventHeadPerkDelta,
+    CaptureEventHeadProjectileSpawn,
+    CaptureEventHeadSecondaryProjectileSpawn,
     CaptureFile,
     CapturePlayerCheckpoint,
     CaptureTick,
@@ -46,6 +49,9 @@ _CRT_RAND_MULT = 214013
 _CRT_RAND_INC = 2531011
 _CRT_RAND_MOD_MASK = 0xFFFFFFFF
 _CRT_RAND_INV_MULT = pow(_CRT_RAND_MULT, -1, 1 << 32)
+_AIM_SCHEME_COMPUTER = 5
+_PLAYER_PROJECTILE_OWNER_SENTINEL = -100
+_PROJECTILE_TYPE_FIRE_BULLETS = 45
 
 
 class CaptureError(ValueError):
@@ -90,6 +96,35 @@ def _coerce_int_like(value: object) -> int | None:
         except ValueError:
             return None
     return None
+
+
+def parse_player_int_overrides(entries: Iterable[str] | None, *, option_name: str) -> dict[int, int]:
+    out: dict[int, int] = {}
+    if entries is None:
+        return out
+
+    for raw_entry in entries:
+        entry = str(raw_entry).strip()
+        if not entry:
+            continue
+        if "=" in entry:
+            player_text, value_text = entry.split("=", 1)
+        elif ":" in entry:
+            player_text, value_text = entry.split(":", 1)
+        else:
+            raise ValueError(
+                f"{option_name} expects PLAYER=VALUE (or PLAYER:VALUE), got {entry!r}"
+            )
+
+        player_index = _coerce_int_like(player_text.strip())
+        value = _coerce_int_like(value_text.strip())
+        if player_index is None or int(player_index) < 0:
+            raise ValueError(f"{option_name} has invalid player index in {entry!r}")
+        if value is None:
+            raise ValueError(f"{option_name} has invalid value in {entry!r}")
+        out[int(player_index)] = int(value)
+
+    return out
 
 
 def _f32_from_u32(value: int) -> float:
@@ -321,8 +356,22 @@ def _tick_game_mode_id(tick: CaptureTick) -> int:
 
 
 def _tick_frame_dt_ms(tick: CaptureTick) -> float | None:
-    if tick.frame_dt_ms is not None and float(tick.frame_dt_ms) > 0.0:
-        return float(tick.frame_dt_ms)
+    def _valid_dt_ms(value: object) -> float | None:
+        if value is None:
+            return None
+        if not isinstance(value, (int, float)):
+            return None
+        candidate = float(value)
+        if not math.isfinite(candidate):
+            return None
+        if candidate < 0.1 or candidate > 1000.0:
+            return None
+        return float(candidate)
+
+    if tick.frame_dt_ms_i32 is not None and int(tick.frame_dt_ms_i32) > 0:
+        validated = _valid_dt_ms(int(tick.frame_dt_ms_i32))
+        if validated is not None:
+            return float(validated)
 
     globals_obj: dict[str, object] = {}
     if tick.after is not None and isinstance(tick.after.globals, dict):
@@ -330,24 +379,34 @@ def _tick_frame_dt_ms(tick: CaptureTick) -> float | None:
     elif tick.before is not None and isinstance(tick.before.globals, dict):
         globals_obj = tick.before.globals
 
+    dt_ms_i32 = _coerce_int_like(globals_obj.get("frame_dt_ms_i32"))
+    if dt_ms_i32 is not None and int(dt_ms_i32) > 0:
+        validated = _valid_dt_ms(int(dt_ms_i32))
+        if validated is not None:
+            return float(validated)
+
+    validated_tick_dt = _valid_dt_ms(tick.frame_dt_ms)
+    if validated_tick_dt is not None:
+        return float(validated_tick_dt)
+
+    validated_globals_dt = _valid_dt_ms(globals_obj.get("frame_dt_ms_f32"))
+    if validated_globals_dt is not None:
+        return float(validated_globals_dt)
+
     dt_seconds = globals_obj.get("frame_dt")
     if isinstance(dt_seconds, (int, float)) and math.isfinite(float(dt_seconds)):
         if 0.0 < float(dt_seconds) <= 1.0:
-            return float(dt_seconds) * 1000.0
-
-    dt_ms_i32 = _coerce_int_like(globals_obj.get("frame_dt_ms_i32"))
-    if dt_ms_i32 is not None and int(dt_ms_i32) > 0:
-        return float(dt_ms_i32)
-
-    dt_ms_f32 = globals_obj.get("frame_dt_ms_f32")
-    if isinstance(dt_ms_f32, (int, float)) and math.isfinite(float(dt_ms_f32)) and float(dt_ms_f32) > 0.0:
-        return float(dt_ms_f32)
+            validated = _valid_dt_ms(float(dt_seconds) * 1000.0)
+            if validated is not None:
+                return float(validated)
 
     timing = tick.diagnostics.timing
     if isinstance(timing, dict):
         value = timing.get("frame_dt_after")
         if isinstance(value, (int, float)) and math.isfinite(float(value)) and float(value) > 0.0:
-            return float(value) * 1000.0
+            validated = _valid_dt_ms(float(value) * 1000.0)
+            if validated is not None:
+                return float(validated)
 
     return None
 
@@ -421,6 +480,224 @@ def _infer_digital_move_enabled_by_player(capture: CaptureFile, *, player_count:
                 saw_digital_keys[player_index] = True
 
     return [bool(enabled) for enabled in saw_digital_keys]
+
+
+def _coerce_player_int(value: object, *, player_index: int) -> int | None:
+    direct = _coerce_int_like(value)
+    if direct is not None:
+        return int(direct)
+    if isinstance(value, (list, tuple)):
+        if 0 <= int(player_index) < len(value):
+            nested = _coerce_int_like(value[int(player_index)])
+            if nested is not None:
+                return int(nested)
+        return None
+    if isinstance(value, dict):
+        key_text = str(int(player_index))
+        preferred_key_texts = (
+            key_text,
+            f"player_{key_text}",
+            f"player{key_text}",
+            f"p{key_text}",
+        )
+        for raw_key, raw_value in value.items():
+            if raw_key != int(player_index) and str(raw_key) not in preferred_key_texts:
+                continue
+            nested = _coerce_int_like(raw_value)
+            if nested is not None:
+                return int(nested)
+    return None
+
+
+def _tick_player_aim_scheme(tick: CaptureTick, *, player_index: int) -> int | None:
+    for sample in tick.input_approx:
+        if int(sample.player_index) != int(player_index):
+            continue
+        if sample.aim_scheme is None:
+            continue
+        parsed = _coerce_int_like(sample.aim_scheme)
+        if parsed is not None:
+            return int(parsed)
+
+    for snapshot in (tick.after, tick.before):
+        if snapshot is None:
+            continue
+        globals_obj = snapshot.globals if isinstance(snapshot.globals, dict) else {}
+        globals_scheme = _coerce_player_int(
+            globals_obj.get("config_aim_scheme"),
+            player_index=int(player_index),
+        )
+        if globals_scheme is not None:
+            return int(globals_scheme)
+        input_obj = snapshot.input if isinstance(snapshot.input, dict) else {}
+        input_scheme = _coerce_player_int(
+            input_obj.get("config_aim_scheme"),
+            player_index=int(player_index),
+        )
+        if input_scheme is not None:
+            return int(input_scheme)
+    return None
+
+
+def _owner_id_to_player_index(owner_id: int, *, player_count: int) -> int | None:
+    owner = int(owner_id)
+    if -4 <= owner <= -1:
+        player_index = -1 - int(owner)
+        if 0 <= int(player_index) < int(player_count):
+            return int(player_index)
+    if int(owner) == _PLAYER_PROJECTILE_OWNER_SENTINEL and int(player_count) == 1:
+        return 0
+    return None
+
+
+def _tick_player_projectile_spawn_count(tick: CaptureTick, *, player_index: int, player_count: int) -> int:
+    total = 0
+    for head in tick.event_heads:
+        if not isinstance(head, CaptureEventHeadProjectileSpawn):
+            continue
+        owner_id = _coerce_int_like(head.data.get("owner_id"))
+        if owner_id is None:
+            continue
+        owner_player_index = _owner_id_to_player_index(int(owner_id), player_count=int(player_count))
+        if owner_player_index is None or int(owner_player_index) != int(player_index):
+            continue
+        total += 1
+    return int(total)
+
+
+def _tick_player_secondary_projectile_spawn_count(
+    tick: CaptureTick,
+    *,
+    player_index: int,
+    player_count: int,
+) -> int:
+    total = 0
+    for head in tick.event_heads:
+        if not isinstance(head, CaptureEventHeadSecondaryProjectileSpawn):
+            continue
+        owner_id = _coerce_int_like(head.data.get("owner_id"))
+        if owner_id is not None:
+            owner_player_index = _owner_id_to_player_index(int(owner_id), player_count=int(player_count))
+            if owner_player_index is None or int(owner_player_index) != int(player_index):
+                continue
+            total += 1
+            continue
+        if int(player_count) == 1 and int(player_index) == 0:
+            # Older captures did not include owner IDs on secondary spawns.
+            total += 1
+    return int(total)
+
+
+def _tick_player_weapon_projectile_spawned(
+    tick: CaptureTick,
+    *,
+    player_index: int,
+    player_count: int,
+    weapon_id: int,
+) -> bool:
+    for head in tick.event_heads:
+        if not isinstance(head, CaptureEventHeadProjectileSpawn):
+            continue
+        owner_id = _coerce_int_like(head.data.get("owner_id"))
+        if owner_id is None:
+            continue
+        owner_player_index = _owner_id_to_player_index(int(owner_id), player_count=int(player_count))
+        if owner_player_index is None or int(owner_player_index) != int(player_index):
+            continue
+        requested_type = _coerce_int_like(head.data.get("requested_type_id"))
+        actual_type = _coerce_int_like(head.data.get("actual_type_id"))
+        if requested_type is not None and int(requested_type) == int(weapon_id):
+            return True
+        if actual_type is not None and int(actual_type) == int(weapon_id):
+            return True
+    return False
+
+
+def _tick_player_projectile_type_spawned(
+    tick: CaptureTick,
+    *,
+    player_index: int,
+    player_count: int,
+    projectile_type_id: int,
+) -> bool:
+    target_type_id = int(projectile_type_id)
+    for head in tick.event_heads:
+        if not isinstance(head, CaptureEventHeadProjectileSpawn):
+            continue
+        owner_id = _coerce_int_like(head.data.get("owner_id"))
+        if owner_id is None:
+            continue
+        owner_player_index = _owner_id_to_player_index(int(owner_id), player_count=int(player_count))
+        if owner_player_index is None or int(owner_player_index) != int(player_index):
+            continue
+        requested_type = _coerce_int_like(head.data.get("requested_type_id"))
+        actual_type = _coerce_int_like(head.data.get("actual_type_id"))
+        if requested_type is not None and int(requested_type) == int(target_type_id):
+            return True
+        if actual_type is not None and int(actual_type) == int(target_type_id):
+            return True
+    return False
+
+
+def _should_synthesize_computer_fire_down(
+    *,
+    tick: CaptureTick,
+    player_index: int,
+    player_count: int,
+    aim_scheme: int | None,
+    sample: object | None,
+    fire_down_raw: object | None,
+    fire_pressed_raw: object | None,
+    ammo_dropped_since_previous_checkpoint: bool,
+    weapon_id_hint: int | None,
+) -> bool:
+    if aim_scheme is not None and int(aim_scheme) != int(_AIM_SCHEME_COMPUTER):
+        return False
+    if bool(fire_down_raw) or bool(fire_pressed_raw):
+        return False
+
+    fired_events = _coerce_int_like(getattr(sample, "fired_events", None))
+    if aim_scheme is not None and int(aim_scheme) == int(_AIM_SCHEME_COMPUTER) and fired_events is not None and int(fired_events) > 0:
+        return True
+
+    player_projectile_spawn_count = _tick_player_projectile_spawn_count(
+        tick,
+        player_index=int(player_index),
+        player_count=int(player_count),
+    )
+    player_secondary_spawn_count = _tick_player_secondary_projectile_spawn_count(
+        tick,
+        player_index=int(player_index),
+        player_count=int(player_count),
+    )
+    player_projectile_spawned = int(player_projectile_spawn_count) > 0
+    player_secondary_spawned = int(player_secondary_spawn_count) > 0
+    if not player_projectile_spawned and not player_secondary_spawned:
+        return False
+    if bool(ammo_dropped_since_previous_checkpoint):
+        return True
+    if bool(player_secondary_spawned):
+        return True
+    if weapon_id_hint is None:
+        return _tick_player_projectile_type_spawned(
+            tick,
+            player_index=int(player_index),
+            player_count=int(player_count),
+            projectile_type_id=int(_PROJECTILE_TYPE_FIRE_BULLETS),
+        )
+    if _tick_player_weapon_projectile_spawned(
+        tick,
+        player_index=int(player_index),
+        player_count=int(player_count),
+        weapon_id=int(weapon_id_hint),
+    ):
+        return True
+    return _tick_player_projectile_type_spawned(
+        tick,
+        player_index=int(player_index),
+        player_count=int(player_count),
+        projectile_type_id=int(_PROJECTILE_TYPE_FIRE_BULLETS),
+    )
 
 
 def _infer_status_snapshot(capture: CaptureFile) -> ReplayStatusSnapshot:
@@ -647,6 +924,7 @@ def _capture_bootstrap_payload(
                 "ammo": float(player.ammo),
                 "experience": int(player.experience),
                 "level": int(player.level),
+                "bonus_timers_ms": {str(key): int(value) for key, value in player.bonus_timers.items()},
             }
         )
     return {
@@ -747,6 +1025,21 @@ def apply_capture_bootstrap_payload(
                 setattr(player, "experience", int(experience))
             if level is not None and int(level) > 0:
                 setattr(player, "level", int(level))
+
+            player_timers_raw = raw_player.get("bonus_timers_ms")  # ty:ignore[invalid-argument-type]
+            if isinstance(player_timers_raw, dict):
+                try:
+                    shield_ms = _coerce_int_like(player_timers_raw.get("shield"))
+                    fire_bullets_ms = _coerce_int_like(player_timers_raw.get("fire_bullets"))
+                    speed_bonus_ms = _coerce_int_like(player_timers_raw.get("speed_bonus"))
+                    if shield_ms is not None:
+                        setattr(player, "shield_timer", max(0.0, float(shield_ms) / 1000.0))
+                    if fire_bullets_ms is not None:
+                        setattr(player, "fire_bullets_timer", max(0.0, float(fire_bullets_ms) / 1000.0))
+                    if speed_bonus_ms is not None:
+                        setattr(player, "speed_bonus_timer", max(0.0, float(speed_bonus_ms) / 1000.0))
+                except Exception:
+                    pass
 
     pending = _coerce_int_like(payload.get("perk_pending"))
     if pending is not None and int(pending) >= 0:
@@ -869,6 +1162,7 @@ def convert_capture_to_replay(
     tick_rate: int = 60,
     world_size: float = 1024.0,
     game_mode_id: int | None = None,
+    aim_scheme_overrides_by_player: Mapping[int, int] | None = None,
 ) -> Replay:
     resolved_seed = infer_capture_seed(capture) if seed is None else int(seed)
     player_count = _infer_player_count(capture)
@@ -888,6 +1182,8 @@ def convert_capture_to_replay(
     inputs: list[list[list[float | int | list[float]]]] = [
         [[0.0, 0.0, [0.0, 0.0], 0] for _ in range(player_count)] for _ in range(total_ticks)
     ]
+    previous_checkpoint_ammo: list[float | None] = [None for _ in range(player_count)]
+    normalized_aim_scheme_overrides = dict(aim_scheme_overrides_by_player or {})
 
     for tick in sorted(capture.ticks, key=lambda item: int(item.tick_index)):
         tick_index = int(tick.tick_index)
@@ -895,13 +1191,36 @@ def convert_capture_to_replay(
             continue
         approx_by_player = {int(sample.player_index): sample for sample in tick.input_approx}
         keys_by_player = {int(row.player_index): row for row in tick.input_player_keys}
+        checkpoint_players = tick.checkpoint.players
         for player_index in range(player_count):
             sample = approx_by_player.get(int(player_index))
             key_row = keys_by_player.get(int(player_index))
+            if normalized_aim_scheme_overrides:
+                aim_scheme_value = _coerce_player_int(
+                    normalized_aim_scheme_overrides,
+                    player_index=int(player_index),
+                )
+            else:
+                aim_scheme_value = None
+            if aim_scheme_value is None:
+                aim_scheme_value = _tick_player_aim_scheme(tick, player_index=int(player_index))
             fire_down_raw = None
             fire_pressed_raw = None
             reload_pressed_raw = None
             use_digital_move = False
+            ammo_dropped_since_previous_checkpoint = False
+
+            checkpoint_ammo: float | None = None
+            weapon_id_hint: int | None = None
+            if 0 <= int(player_index) < len(checkpoint_players):
+                checkpoint_ammo = float(checkpoint_players[int(player_index)].ammo)
+                weapon_id_hint = int(checkpoint_players[int(player_index)].weapon_id)
+                previous_ammo = previous_checkpoint_ammo[int(player_index)]
+                if previous_ammo is not None and float(checkpoint_ammo) < float(previous_ammo) - 1e-6:
+                    ammo_dropped_since_previous_checkpoint = True
+            sample_weapon_id = _coerce_int_like(getattr(sample, "weapon_id", None))
+            if sample_weapon_id is not None:
+                weapon_id_hint = int(sample_weapon_id)
 
             if sample is not None or key_row is not None:
                 move_forward_raw = key_row.move_forward_pressed if key_row is not None else None
@@ -961,10 +1280,11 @@ def convert_capture_to_replay(
                         continue
                     players = tick.checkpoint.players
                     if player_index < len(players):
-                        player_pos = players[player_index].pos
+                        player_pos_capture = players[player_index].pos
+                        player_pos = Vec2(float(player_pos_capture.x), float(player_pos_capture.y))
                     else:
                         player_pos = Vec2()
-                    aim_pos = player_pos + Vec2.from_heading(float(sample.aim_heading)) * 256.0  # ty:ignore[unsupported-operator]
+                    aim_pos = player_pos + Vec2.from_heading(float(sample.aim_heading)) * 256.0
                     aim_x = float(aim_pos.x)
                     aim_y = float(aim_pos.y)
                 elif has_aim_xy:
@@ -1006,12 +1326,27 @@ def convert_capture_to_replay(
                 fire_pressed_raw = None
                 reload_pressed_raw = None
 
+            if _should_synthesize_computer_fire_down(
+                tick=tick,
+                player_index=int(player_index),
+                player_count=int(player_count),
+                aim_scheme=aim_scheme_value,
+                sample=sample,
+                fire_down_raw=fire_down_raw,
+                fire_pressed_raw=fire_pressed_raw,
+                ammo_dropped_since_previous_checkpoint=ammo_dropped_since_previous_checkpoint,
+                weapon_id_hint=weapon_id_hint,
+            ):
+                fire_down = True
+
             flags = pack_input_flags(
                 fire_down=bool(fire_down),
                 fire_pressed=bool(fire_pressed),
                 reload_pressed=bool(reload_pressed),
             )
             inputs[tick_index][player_index] = [float(move_x), float(move_y), [float(aim_x), float(aim_y)], int(flags)]
+            if checkpoint_ammo is not None:
+                previous_checkpoint_ammo[int(player_index)] = float(checkpoint_ammo)
 
     events: list[object] = []
     if capture.ticks:

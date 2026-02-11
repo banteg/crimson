@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -10,20 +11,26 @@ from raylib import defines as rd
 
 from grim.app import run_view
 from grim.assets import find_paq_path
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 
+from crimson.bonuses import BonusId
 from crimson.game_modes import GameMode
 from crimson.gameplay import BonusEntry, PlayerInput, bonus_label_for_entry
 from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
+    CAPTURE_PERK_APPLY_EVENT_KIND,
     build_capture_dt_frame_ms_i32_overrides,
     build_capture_dt_frame_overrides,
+    build_capture_inter_tick_rand_draws_overrides,
     capture_bootstrap_payload_from_event_payload,
+    capture_perk_apply_id_from_event_payload,
     convert_capture_to_replay,
     load_capture,
+    parse_player_int_overrides,
 )
 from crimson.original.schema import CaptureTick
+from crimson.perks import perk_label
 from crimson.replay.types import Replay, UnknownEvent, unpack_input_flags, unpack_packed_player_input
 from crimson.sim.runners.common import (
     build_damage_scale_by_type,
@@ -37,7 +44,8 @@ from crimson.sim.runners.survival import (
     _resolve_dt_frame,
 )
 from crimson.sim.sessions import SurvivalDeterministicSession
-from crimson.sim.world_state import WorldState
+from crimson.sim.world_state import WorldEvents, WorldState
+from crimson.weapons import WEAPON_BY_ID
 from crimson.paths import default_runtime_dir
 
 
@@ -58,6 +66,11 @@ _PROJECTILE_TRACE_RESET_DIST = 80.0
 _BONUS_DRAW_RADIUS = 12.0
 _MIN_PLAYBACK_SPEED_EXP = -4
 _MAX_PLAYBACK_SPEED_EXP = 4
+_PROJECTILE_TYPE_SHOCK_CHAIN = 0x15
+_PERK_PANEL_MAX_CHOICES = 5
+_PERK_PANEL_MAX_COUNTS = 4
+_PERK_PANEL_MAX_APPLY = 4
+_SHOCK_CHAIN_HEAD_MAX = 4
 
 
 @dataclass(slots=True)
@@ -98,6 +111,15 @@ class _FrameSnapshot:
     capture_bonuses: dict[int, _BonusDraw]
     rewrite_bonuses: dict[int, _BonusDraw]
     capture_sample_counts: dict[str, int]
+    gameplay_lines: tuple["_GameplayHudLine", ...] = ()
+
+
+@dataclass(slots=True)
+class _GameplayHudLine:
+    left_text: str
+    left_color: rl.Color
+    right_text: str = ""
+    right_color: rl.Color | None = None
 
 
 def _finite(value: object, default: float = 0.0) -> float:
@@ -120,6 +142,82 @@ def _norm_radius(value: float, *, default: float = 4.0) -> float:
     if not math.isfinite(radius) or radius <= 0.0:
         return float(default)
     return max(1.0, radius)
+
+
+def _int_or(value: object, default: int = 0) -> int:
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, int):
+        return int(value)
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            return int(default)
+        return int(value)
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return int(default)
+        try:
+            return int(text, 0)
+        except ValueError:
+            return int(default)
+    return int(default)
+
+
+def _bonus_timer_ms(value: float) -> int:
+    ms = int(round(float(value) * 1000.0))
+    return 0 if ms < 0 else int(ms)
+
+
+def _format_seconds(ms: int) -> str:
+    return f"{float(ms) / 1000.0:.2f}"
+
+
+def _short_text(text: str, *, max_len: int = 20) -> str:
+    value = str(text)
+    if len(value) <= int(max_len):
+        return value
+    keep = max(1, int(max_len) - 3)
+    return f"{value[:keep]}..."
+
+
+def _secondary_samples_use_world_space(rows: list[CaptureTick], *, world_size: float) -> bool:
+    min_x = float("inf")
+    max_x = float("-inf")
+    min_y = float("inf")
+    max_y = float("-inf")
+    active_count = 0
+    for row in rows:
+        samples = row.samples
+        if samples is None:
+            continue
+        for sample in samples.secondary_projectiles:
+            if int(sample.active) == 0:
+                continue
+            x = float(sample.pos.x)
+            y = float(sample.pos.y)
+            if not math.isfinite(x) or not math.isfinite(y):
+                continue
+            active_count += 1
+            min_x = min(float(min_x), float(x))
+            max_x = max(float(max_x), float(x))
+            min_y = min(float(min_y), float(y))
+            max_y = max(float(max_y), float(y))
+
+    # Small windows may only cover local areas; avoid over-filtering sparse traces.
+    if active_count < 128:
+        return True
+
+    scale = max(1.0, float(abs(world_size)))
+    span_x = float(max_x) - float(min_x)
+    span_y = float(max_y) - float(min_y)
+    near_origin = (
+        max(abs(float(min_x)), abs(float(max_x)), abs(float(min_y)), abs(float(max_y))) <= float(scale * 0.1)
+    )
+    collapsed_extent = float(span_x) <= float(scale * 0.1) and float(span_y) <= float(scale * 0.1)
+    # Some captures store secondary "position" in local/non-world coordinates.
+    # In that case showing capture-side secondary divergence is misleading.
+    return not (near_origin and collapsed_extent)
 
 
 def _load_capture_events(replay: Replay) -> tuple[dict[int, list[object]], bool]:
@@ -149,9 +247,14 @@ class CaptureVisualizerView:
         projectile_trace_length: int,
         inter_tick_rand_draws: int,
         seed: int | None,
+        aim_scheme_overrides_by_player: Mapping[int, int] | None,
     ) -> None:
         self._capture = load_capture(Path(capture_path))
-        self._replay = convert_capture_to_replay(self._capture, seed=seed)
+        self._replay = convert_capture_to_replay(
+            self._capture,
+            seed=seed,
+            aim_scheme_overrides_by_player=aim_scheme_overrides_by_player,
+        )
         self._mode_id = int(self._replay.header.game_mode_id)
         if self._mode_id != int(GameMode.SURVIVAL):
             raise ValueError(
@@ -191,6 +294,10 @@ class CaptureVisualizerView:
         self._world_size = float(self._replay.header.world_size)
         if self._world_size <= 0.0 or not math.isfinite(self._world_size):
             self._world_size = 1024.0
+        self._capture_secondary_world_space = _secondary_samples_use_world_space(
+            self._rows,
+            world_size=float(self._world_size),
+        )
         self._tick_rate = max(1, int(self._replay.header.tick_rate))
         self._step_interval = 1.0 / float(self._tick_rate)
         self._playback_speed = max(
@@ -212,17 +319,7 @@ class CaptureVisualizerView:
         )
         self._dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(self._capture)
 
-        outside_by_tick: dict[int, int] = {}
-        for row in self._rows:
-            calls = int(row.rng.outside_before_calls)
-            if calls < 0:
-                continue
-            outside_by_tick[int(row.tick_index)] = int(calls)
-        if outside_by_tick:
-            first_tick = min(outside_by_tick)
-            # The inferred seed aligns with the first sampled capture row.
-            outside_by_tick[int(first_tick)] = 0
-        self._outside_draws_by_tick = outside_by_tick if outside_by_tick else None
+        self._outside_draws_by_tick = build_capture_inter_tick_rand_draws_overrides(self._capture)
 
         self._row_cursor = -1
         self._snapshot: _FrameSnapshot | None = None
@@ -235,6 +332,7 @@ class CaptureVisualizerView:
         self._trace_fade_dt = 0.0
         self._accumulator = 0.0
         self._paused = False
+        self._show_help = False
         self._show_traces = True
         self._show_divergence = True
         self._show_capture_hitboxes = True
@@ -453,12 +551,13 @@ class CaptureVisualizerView:
             strict_events=False,
         )
         inputs = self._build_inputs_from_replay(tick_index)
-        self._session.step_tick(
+        tick = self._session.step_tick(
             dt_frame=float(dt_tick),
             dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
             inputs=inputs,
             trace_rng=False,
         )
+        rewrite_events = tick.step.events
 
         if post_step_events:
             _apply_tick_events(
@@ -475,10 +574,314 @@ class CaptureVisualizerView:
                 self._world.state.rng.rand()
 
         if record:
-            self._snapshot = self._build_snapshot(row)
+            self._snapshot = self._build_snapshot(
+                row,
+                rewrite_events=rewrite_events,
+                tick_events=tick_events,
+            )
             self._append_traces(self._snapshot)
 
-    def _build_snapshot(self, row: CaptureTick) -> _FrameSnapshot:
+    @staticmethod
+    def _timer_map_from_world(world: WorldState) -> dict[str, int]:
+        bonuses = world.state.bonuses
+        return {
+            str(int(BonusId.ENERGIZER)): _bonus_timer_ms(float(bonuses.energizer)),
+            str(int(BonusId.WEAPON_POWER_UP)): _bonus_timer_ms(float(bonuses.weapon_power_up)),
+            str(int(BonusId.DOUBLE_EXPERIENCE)): _bonus_timer_ms(float(bonuses.double_experience)),
+            str(int(BonusId.REFLEX_BOOST)): _bonus_timer_ms(float(bonuses.reflex_boost)),
+            str(int(BonusId.FREEZE)): _bonus_timer_ms(float(bonuses.freeze)),
+        }
+
+    @staticmethod
+    def _timer_summary(timer_map: dict[str, int]) -> str:
+        fields = (
+            ("ENRG", str(int(BonusId.ENERGIZER))),
+            ("WPUP", str(int(BonusId.WEAPON_POWER_UP))),
+            ("DXP", str(int(BonusId.DOUBLE_EXPERIENCE))),
+            ("RFX", str(int(BonusId.REFLEX_BOOST))),
+            ("FRZ", str(int(BonusId.FREEZE))),
+        )
+        out: list[str] = []
+        for label, key in fields:
+            out.append(f"{label}={_format_seconds(_int_or(timer_map.get(str(key)), 0))}")
+        return " ".join(out)
+
+    @staticmethod
+    def _nonzero_perk_counts_from_checkpoint(tick: CaptureTick, *, player_index: int) -> list[tuple[int, int]]:
+        out: list[tuple[int, int]] = []
+        all_players = tick.checkpoint.perk.player_nonzero_counts
+        if not (0 <= int(player_index) < len(all_players)):
+            return out
+        for row in all_players[int(player_index)]:
+            if not isinstance(row, list) or len(row) != 2:
+                continue
+            perk_id = _int_or(row[0], -1)
+            count = _int_or(row[1], 0)
+            if perk_id < 0 or count <= 0:
+                continue
+            out.append((int(perk_id), int(count)))
+        out.sort(key=lambda item: (-int(item[1]), int(item[0])))
+        return out
+
+    @staticmethod
+    def _nonzero_perk_counts_from_world(world: WorldState, *, player_index: int) -> list[tuple[int, int]]:
+        if not (0 <= int(player_index) < len(world.players)):
+            return []
+        player = world.players[int(player_index)]
+        out: list[tuple[int, int]] = []
+        for perk_id, count_raw in enumerate(player.perk_counts):
+            count = int(count_raw)
+            if count <= 0:
+                continue
+            out.append((int(perk_id), int(count)))
+        out.sort(key=lambda item: (-int(item[1]), int(item[0])))
+        return out
+
+    @staticmethod
+    def _perk_apply_ids_from_tick(tick: CaptureTick) -> list[int]:
+        out: list[int] = []
+        seen: set[int] = set()
+        for item in tick.perk_apply_in_tick:
+            perk_id = _int_or(item.perk_id, -1)
+            if perk_id <= 0 or perk_id in seen:
+                continue
+            seen.add(int(perk_id))
+            out.append(int(perk_id))
+        return out
+
+    @staticmethod
+    def _perk_apply_ids_from_replay_events(events: list[object]) -> list[int]:
+        out: list[int] = []
+        seen: set[int] = set()
+        for event in events:
+            if not isinstance(event, UnknownEvent):
+                continue
+            if str(event.kind) != CAPTURE_PERK_APPLY_EVENT_KIND:
+                continue
+            perk_id = capture_perk_apply_id_from_event_payload(list(event.payload))
+            if perk_id is None or int(perk_id) <= 0 or int(perk_id) in seen:
+                continue
+            seen.add(int(perk_id))
+            out.append(int(perk_id))
+        return out
+
+    @staticmethod
+    def _format_perk_choices(values: list[int]) -> str:
+        if not values:
+            return "-"
+        labels = [
+            _short_text(str(perk_label(int(perk_id))), max_len=18)
+            for perk_id in values[:_PERK_PANEL_MAX_CHOICES]
+        ]
+        return ", ".join(labels)
+
+    @staticmethod
+    def _format_perk_counts(values: list[tuple[int, int]]) -> str:
+        if not values:
+            return "-"
+        chunks: list[str] = []
+        for perk_id, count in values[:_PERK_PANEL_MAX_COUNTS]:
+            name = _short_text(str(perk_label(int(perk_id))), max_len=14)
+            count_i = int(count)
+            chunks.append(name if count_i == 1 else f"{name}x{count_i}")
+        return ", ".join(chunks)
+
+    @staticmethod
+    def _weapon_name(weapon_id: int) -> str:
+        weapon = WEAPON_BY_ID.get(int(weapon_id))
+        if weapon is not None and weapon.name:
+            return _short_text(str(weapon.name), max_len=22)
+        return f"id{int(weapon_id)}"
+
+    @staticmethod
+    def _format_ammo(ammo: float) -> str:
+        value = float(_finite(ammo))
+        if not math.isfinite(value):
+            return "?"
+        rounded = int(round(value))
+        if math.isclose(value, float(rounded), rel_tol=0.0, abs_tol=1e-6):
+            return str(int(rounded))
+        return f"{value:.2f}"
+
+    @staticmethod
+    def _player_timer_map_from_world(world: WorldState, *, player_index: int = 0) -> dict[str, int]:
+        if not (0 <= int(player_index) < len(world.players)):
+            return {}
+        player = world.players[int(player_index)]
+        return {
+            "shield": _bonus_timer_ms(float(player.shield_timer)),
+            "fire_bullets": _bonus_timer_ms(float(player.fire_bullets_timer)),
+            "speed_bonus": _bonus_timer_ms(float(player.speed_bonus_timer)),
+        }
+
+    @staticmethod
+    def _player_timer_map_from_capture_row(row: CaptureTick, *, player_index: int = 0) -> dict[str, int]:
+        if not (0 <= int(player_index) < len(row.checkpoint.players)):
+            return {}
+        raw = row.checkpoint.players[int(player_index)].bonus_timers
+        if not isinstance(raw, dict) or not raw:
+            return {}
+        out: dict[str, int] = {}
+        for key in ("shield", "fire_bullets", "speed_bonus"):
+            out[str(key)] = max(0, _int_or(raw.get(str(key)), 0))
+        return out
+
+    def _active_bonus_summary(
+        self,
+        *,
+        global_timers: dict[str, int],
+        player_timers: dict[str, int],
+    ) -> str:
+        chunks: list[str] = []
+
+        player_fields = (
+            ("Shield", "shield"),
+            ("Fire Bullets", "fire_bullets"),
+            ("Speed", "speed_bonus"),
+        )
+        for label, key in player_fields:
+            ms = _int_or(player_timers.get(str(key)), 0)
+            if int(ms) <= 0:
+                continue
+            chunks.append(f"{label} {_format_seconds(int(ms))}s")
+
+        ordered_bonus_ids = (
+            int(BonusId.ENERGIZER),
+            int(BonusId.WEAPON_POWER_UP),
+            int(BonusId.DOUBLE_EXPERIENCE),
+            int(BonusId.REFLEX_BOOST),
+            int(BonusId.FREEZE),
+        )
+        for bonus_id in ordered_bonus_ids:
+            ms = _int_or(global_timers.get(str(int(bonus_id))), 0)
+            if int(ms) <= 0:
+                continue
+            label = _short_text(self._bonus_label_from_entry(BonusEntry(bonus_id=int(bonus_id), amount=0)), max_len=18)
+            chunks.append(f"{label} {_format_seconds(int(ms))}s")
+        return ", ".join(chunks) if chunks else "-"
+
+    def _build_gameplay_lines(
+        self,
+        *,
+        row: CaptureTick,
+        rewrite_events: WorldEvents | None,
+        tick_events: list[object],
+    ) -> tuple[_GameplayHudLine, ...]:
+        assert self._world is not None
+        _ = rewrite_events, tick_events
+
+        capture_kills = int(row.checkpoint.kills)
+        rewrite_kills = int(self._world.creatures.kill_count)
+
+        capture_p0_xp = int(row.checkpoint.players[0].experience) if row.checkpoint.players else -1
+        capture_p0_level = int(row.checkpoint.players[0].level) if row.checkpoint.players else -1
+        if self._world.players:
+            rewrite_p0_xp = int(self._world.players[0].experience)
+            rewrite_p0_level = int(self._world.players[0].level)
+        else:
+            rewrite_p0_xp = -1
+            rewrite_p0_level = -1
+
+        capture_weapon_id = int(row.checkpoint.players[0].weapon_id) if row.checkpoint.players else 0
+        capture_ammo = float(row.checkpoint.players[0].ammo) if row.checkpoint.players else 0.0
+        if self._world.players:
+            rewrite_weapon_id = int(self._world.players[0].weapon_id)
+            rewrite_ammo = float(self._world.players[0].ammo)
+        else:
+            rewrite_weapon_id = 0
+            rewrite_ammo = 0.0
+
+        capture_counts = self._nonzero_perk_counts_from_checkpoint(row, player_index=0)
+        rewrite_counts = self._nonzero_perk_counts_from_world(self._world, player_index=0)
+
+        capture_global_timers = {str(key): int(value) for key, value in row.checkpoint.bonus_timers.items()}
+        rewrite_global_timers = self._timer_map_from_world(self._world)
+        capture_player_timers = self._player_timer_map_from_capture_row(row, player_index=0)
+        rewrite_player_timers = self._player_timer_map_from_world(self._world, player_index=0)
+
+        lines: list[_GameplayHudLine] = []
+
+        def append_pair(*, left_text: str, right_text: str) -> None:
+            lines.append(
+                _GameplayHudLine(
+                    left_text=left_text,
+                    left_color=_CAPTURE_PLAYER_COLOR,
+                    right_text=right_text,
+                    right_color=_REWRITE_PLAYER_COLOR,
+                )
+            )
+
+        append_pair(
+            left_text=f"xp: {int(capture_p0_xp)} lvl {int(capture_p0_level)}",
+            right_text=f"{int(rewrite_p0_xp)} lvl {int(rewrite_p0_level)}",
+        )
+        append_pair(
+            left_text=f"kills: {int(capture_kills)}",
+            right_text=f"{int(rewrite_kills)}",
+        )
+        append_pair(
+            left_text=f"weapon: {self._weapon_name(capture_weapon_id)} ammo {self._format_ammo(capture_ammo)}",
+            right_text=f"{self._weapon_name(rewrite_weapon_id)} ammo {self._format_ammo(rewrite_ammo)}",
+        )
+        lines.append(_GameplayHudLine(left_text="", left_color=_TEXT_DIM_COLOR))
+
+        lines.append(
+            _GameplayHudLine(
+                left_text="perks:",
+                left_color=_TEXT_DIM_COLOR,
+            )
+        )
+        lines.append(
+            _GameplayHudLine(
+                left_text=self._format_perk_counts(capture_counts),
+                left_color=_CAPTURE_PLAYER_COLOR,
+            )
+        )
+        lines.append(
+            _GameplayHudLine(
+                left_text=self._format_perk_counts(rewrite_counts),
+                left_color=_REWRITE_PLAYER_COLOR,
+            )
+        )
+
+        capture_bonus_active = self._active_bonus_summary(
+            global_timers=capture_global_timers,
+            player_timers=capture_player_timers,
+        )
+        rewrite_bonus_active = self._active_bonus_summary(
+            global_timers=rewrite_global_timers,
+            player_timers=rewrite_player_timers,
+        )
+        has_active_bonuses = capture_bonus_active != "-" or rewrite_bonus_active != "-"
+        if has_active_bonuses:
+            lines.append(_GameplayHudLine(left_text="", left_color=_TEXT_DIM_COLOR))
+            lines.append(
+                _GameplayHudLine(
+                    left_text="bonuses:",
+                    left_color=_TEXT_DIM_COLOR,
+                )
+            )
+            lines.append(
+                _GameplayHudLine(
+                    left_text=capture_bonus_active,
+                    left_color=_CAPTURE_PLAYER_COLOR,
+                )
+            )
+            lines.append(
+                _GameplayHudLine(
+                    left_text=rewrite_bonus_active,
+                    left_color=_REWRITE_PLAYER_COLOR,
+                )
+            )
+        return tuple(lines)
+
+    def _build_snapshot(
+        self,
+        row: CaptureTick,
+        *,
+        rewrite_events: WorldEvents | None,
+        tick_events: list[object],
+    ) -> _FrameSnapshot:
         assert self._world is not None
 
         capture_players: dict[int, _EntityDraw] = {}
@@ -526,13 +929,14 @@ class CaptureVisualizerView:
                     active=bool(int(sample.active) != 0),
                     filled=bool(math.isfinite(hit_radius) and float(hit_radius) < 0.0),
                 )
-            for sample in samples.secondary_projectiles:
-                capture_secondary[int(sample.index)] = _EntityDraw(
-                    x=_finite(sample.pos.x),
-                    y=_finite(sample.pos.y),
-                    radius=3.5,
-                    active=bool(int(sample.active) != 0),
-                )
+            if self._capture_secondary_world_space:
+                for sample in samples.secondary_projectiles:
+                    capture_secondary[int(sample.index)] = _EntityDraw(
+                        x=_finite(sample.pos.x),
+                        y=_finite(sample.pos.y),
+                        radius=3.5,
+                        active=bool(int(sample.active) != 0),
+                    )
             for sample in samples.bonuses:
                 bonus_id = int(sample.bonus_id)
                 state = int(sample.state)
@@ -604,6 +1008,11 @@ class CaptureVisualizerView:
             "secondary_projectiles": int(len(capture_secondary)),
             "bonuses": int(len(capture_bonuses)),
         }
+        gameplay_lines = self._build_gameplay_lines(
+            row=row,
+            rewrite_events=rewrite_events,
+            tick_events=tick_events,
+        )
         return _FrameSnapshot(
             tick_index=int(row.tick_index),
             capture_players=capture_players,
@@ -617,6 +1026,7 @@ class CaptureVisualizerView:
             capture_bonuses=capture_bonuses,
             rewrite_bonuses=rewrite_bonuses,
             capture_sample_counts=sample_counts,
+            gameplay_lines=gameplay_lines,
         )
 
     @staticmethod
@@ -942,6 +1352,8 @@ class CaptureVisualizerView:
             self._step_playback_speed(faster=True)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_T):
             self._show_traces = not bool(self._show_traces)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_H):
+            self._show_help = not bool(self._show_help)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_L):
             self._show_divergence = not bool(self._show_divergence)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_C):
@@ -1081,6 +1493,11 @@ class CaptureVisualizerView:
             return
         rl.draw_text(text, int(x), int(y), int(20 * float(scale)), color)
 
+    def _ui_text_width(self, text: str, *, scale: float = 1.0) -> float:
+        if self._small is not None:
+            return float(measure_small_text_width(self._small, str(text), float(scale)))
+        return float(rl.measure_text(str(text), int(20 * float(scale))))
+
     def draw(self) -> None:
         width = int(rl.get_screen_width())
         height = int(rl.get_screen_height())
@@ -1156,23 +1573,6 @@ class CaptureVisualizerView:
         )
         self._draw_ui_text(header, x=16.0, y=16.0, color=_TEXT_COLOR, scale=1.0)
         self._draw_ui_text(
-            "capture trace (cyan) vs rewrite trace (orange), hitbox-only overlay",
-            x=16.0,
-            y=34.0,
-            color=_TEXT_DIM_COLOR,
-            scale=1.0,
-        )
-        self._draw_ui_text(
-            (
-                "Space pause  Right step  R restart  [ slower  / faster  "
-                "T traces  L divergence-lines  C capture-hitboxes  V rewrite-hitboxes  Esc close"
-            ),
-            x=16.0,
-            y=52.0,
-            color=_TEXT_DIM_COLOR,
-            scale=1.0,
-        )
-        self._draw_ui_text(
             (
                 f"samples: creatures={snapshot.capture_sample_counts['creatures']}  "
                 f"projectiles={snapshot.capture_sample_counts['projectiles']}  "
@@ -1180,10 +1580,64 @@ class CaptureVisualizerView:
                 f"bonuses={snapshot.capture_sample_counts['bonuses']}"
             ),
             x=16.0,
-            y=70.0,
+            y=34.0,
             color=_TEXT_DIM_COLOR,
             scale=1.0,
         )
+        gameplay_y = 52.0
+        for line in snapshot.gameplay_lines:
+            if line.left_text:
+                self._draw_ui_text(
+                    line.left_text,
+                    x=16.0,
+                    y=float(gameplay_y),
+                    color=line.left_color,
+                    scale=1.0,
+                )
+            if line.right_text:
+                right_x = 16.0
+                if line.left_text:
+                    right_x = 16.0 + self._ui_text_width(f"{line.left_text}  ", scale=1.0)
+                self._draw_ui_text(
+                    line.right_text,
+                    x=float(right_x),
+                    y=float(gameplay_y),
+                    color=line.right_color or _TEXT_DIM_COLOR,
+                    scale=1.0,
+                )
+            gameplay_y += 18.0
+        if self._show_help:
+            self._draw_ui_text(
+                "capture trace (cyan) vs rewrite trace (orange), hitbox-only overlay",
+                x=16.0,
+                y=float(gameplay_y),
+                color=_TEXT_DIM_COLOR,
+                scale=1.0,
+            )
+            gameplay_y += 18.0
+            self._draw_ui_text(
+                (
+                    "Space pause  Right step  R restart  [ slower ] faster  "
+                    "T traces  L divergence-lines  C capture-hitboxes  V rewrite-hitboxes  H help  Esc close"
+                ),
+                x=16.0,
+                y=float(gameplay_y),
+                color=_TEXT_DIM_COLOR,
+                scale=1.0,
+            )
+            gameplay_y += 18.0
+        else:
+            self._draw_ui_text("H help", x=16.0, y=float(gameplay_y), color=_TEXT_DIM_COLOR, scale=1.0)
+            gameplay_y += 18.0
+        if not self._capture_secondary_world_space:
+            self._draw_ui_text(
+                "note: capture secondary samples look non-world-space; capture secondary overlay disabled",
+                x=16.0,
+                y=float(gameplay_y),
+                color=_TEXT_DIM_COLOR,
+                scale=1.0,
+            )
+            gameplay_y += 18.0
 
         drift_text = (
             f"max drift  players={max_player_drift:.4f}  creatures={max_creature_drift:.4f}  "
@@ -1209,6 +1663,16 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--start-tick", type=int, default=0, help="first tick to display")
     parser.add_argument("--end-tick", type=int, default=None, help="last tick to display (default: capture end)")
     parser.add_argument("--seed", type=int, default=None, help="override inferred seed")
+    parser.add_argument(
+        "--aim-scheme-player",
+        action="append",
+        default=[],
+        metavar="PLAYER=SCHEME",
+        help=(
+            "override replay reconstruction aim scheme as PLAYER=SCHEME (repeatable); "
+            "use for captures missing config_aim_scheme telemetry"
+        ),
+    )
     parser.add_argument("--speed", type=float, default=1.0, help="initial playback speed multiplier")
     parser.add_argument(
         "--trace-len",
@@ -1245,6 +1709,15 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
+    try:
+        aim_scheme_overrides = parse_player_int_overrides(
+            args.aim_scheme_player,
+            option_name="--aim-scheme-player",
+        )
+    except ValueError as exc:
+        print(str(exc))
+        return 2
+
     trace_len_override = None if args.trace_len is None else max(1, int(args.trace_len))
     player_trace_len = (
         int(trace_len_override) if trace_len_override is not None else max(1, int(args.player_trace_len))
@@ -1268,6 +1741,7 @@ def main(argv: list[str] | None = None) -> int:
             projectile_trace_length=int(projectile_trace_len),
             inter_tick_rand_draws=int(args.inter_tick_rand_draws),
             seed=(None if args.seed is None else int(args.seed)),
+            aim_scheme_overrides_by_player=aim_scheme_overrides,
         )
     except Exception as exc:
         print(f"capture visualize failed: {exc}")

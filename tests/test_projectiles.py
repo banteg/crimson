@@ -481,6 +481,28 @@ def test_secondary_projectile_pool_type2_uses_hint_for_initial_target() -> None:
     assert entry.target_hint_active is False
 
 
+def test_secondary_projectile_pool_type2_seeds_target_id_at_spawn_when_creatures_available() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    creatures = [
+        _Creature(pos=Vec2(100.0, 0.0), hp=100.0),
+        _Creature(pos=Vec2(1000.0, 0.0), hp=100.0),
+    ]
+
+    idx = pool.spawn(
+        pos=Vec2(),
+        angle=0.0,
+        type_id=2,
+        target_hint=Vec2(1000.0, 0.0),
+        creatures=creatures,
+    )
+
+    entry = pool.entries[idx]
+    assert entry.active
+    assert entry.type_id == 2
+    assert entry.target_id == 1
+    assert entry.target_hint_active is False
+
+
 def test_secondary_projectile_pool_type2_target_pick_uses_active_hitbox_sentinel() -> None:
     pool = SecondaryProjectilePool(size=1)
     pool.spawn(pos=Vec2(), angle=0.0, type_id=2, target_hint=Vec2(300.0, 0.0))

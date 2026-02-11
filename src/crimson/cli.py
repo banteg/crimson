@@ -501,9 +501,17 @@ def cmd_replay_verify_capture(
         min=0.0,
         help="absolute tolerance for float field comparisons",
     ),
+    aim_scheme_player: list[str] = typer.Option(
+        [],
+        "--aim-scheme-player",
+        help=(
+            "override replay reconstruction aim scheme as PLAYER=SCHEME (repeatable); "
+            "use for captures missing config_aim_scheme telemetry"
+        ),
+    ),
 ) -> None:
     """Verify capture ticks directly against rewrite simulation state."""
-    from .original.capture import load_capture
+    from .original.capture import load_capture, parse_player_int_overrides
     from .original.verify import (
         CaptureVerifyError,
         verify_capture,
@@ -511,6 +519,14 @@ def cmd_replay_verify_capture(
     from .sim.runners import ReplayRunnerError
 
     capture = load_capture(Path(capture_file))
+    try:
+        aim_scheme_overrides = parse_player_int_overrides(
+            aim_scheme_player,
+            option_name="--aim-scheme-player",
+        )
+    except ValueError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=2) from exc
 
     try:
         result, run_result = verify_capture(
@@ -521,6 +537,7 @@ def cmd_replay_verify_capture(
             trace_rng=bool(trace_rng),
             max_field_diffs=int(max_field_diffs),
             float_abs_tol=float(float_abs_tol),
+            aim_scheme_overrides_by_player=aim_scheme_overrides,
         )
     except (ReplayRunnerError, CaptureVerifyError) as exc:
         typer.echo(f"capture verification failed: {exc}", err=True)
@@ -604,6 +621,14 @@ def cmd_replay_convert_capture(
         None,
         help="seed override for replay reconstruction (default: infer from capture rng telemetry)",
     ),
+    aim_scheme_player: list[str] = typer.Option(
+        [],
+        "--aim-scheme-player",
+        help=(
+            "override replay reconstruction aim scheme as PLAYER=SCHEME (repeatable); "
+            "use for captures missing config_aim_scheme telemetry"
+        ),
+    ),
 ) -> None:
     """Convert capture data into replay + checkpoint artifacts."""
     import hashlib
@@ -615,10 +640,23 @@ def cmd_replay_convert_capture(
         convert_capture_to_replay,
         default_capture_replay_path,
         load_capture,
+        parse_player_int_overrides,
     )
 
     capture = load_capture(Path(capture_file))
-    replay = convert_capture_to_replay(capture, seed=seed)
+    try:
+        aim_scheme_overrides = parse_player_int_overrides(
+            aim_scheme_player,
+            option_name="--aim-scheme-player",
+        )
+    except ValueError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=2) from exc
+    replay = convert_capture_to_replay(
+        capture,
+        seed=seed,
+        aim_scheme_overrides_by_player=aim_scheme_overrides,
+    )
     replay_path = (
         Path(replay_file) if replay_file is not None else default_capture_replay_path(Path(output_file))
     )

@@ -205,6 +205,7 @@ class SecondaryProjectile:
     owner_id: int = -100
     trail_timer: float = 0.0
     target_id: int = -1
+    # Compatibility fallback for contexts that cannot supply creature snapshots at spawn time.
     target_hint_active: bool = False
     target_hint: Vec2 = field(default_factory=Vec2)
 
@@ -1035,11 +1036,18 @@ class ProjectilePool:
             acc = Vec2()
             step = 0
             while step < steps:
-                acc = acc + direction * (dt * 20.0 * proj.speed_scale * 3.0)
+                step_scale = float(f32(float(dt) * 20.0 * float(proj.speed_scale) * 3.0))
+                acc = Vec2(
+                    float(f32(float(acc.x) + float(direction.x) * float(step_scale))),
+                    float(f32(float(acc.y) + float(direction.y) * float(step_scale))),
+                )
 
                 if acc.length() >= 4.0 or steps <= step + 3:
                     move = acc
-                    proj.pos = proj.pos + move
+                    proj.pos = Vec2(
+                        float(f32(float(proj.pos.x) + float(move.x))),
+                        float(f32(float(proj.pos.y) + float(move.y))),
+                    )
                     acc = Vec2()
 
                     hit_idx = None
@@ -1167,7 +1175,10 @@ class ProjectilePool:
                     ):
                         proj.life_timer = 0.25
                         jitter = rng() & 3
-                        proj.pos = proj.pos + direction * float(jitter)
+                        proj.pos = Vec2(
+                            float(f32(float(proj.pos.x) + float(direction.x) * float(jitter))),
+                            float(f32(float(proj.pos.y) + float(direction.y) * float(jitter))),
+                        )
 
                     dist = proj.origin.distance_to(proj.pos)
                     if dist < 50.0:
@@ -1378,6 +1389,7 @@ class SecondaryProjectilePool:
         owner_id: int = -100,
         time_to_live: float = 2.0,
         target_hint: Vec2 | None = None,
+        creatures: Sequence[Damageable] | None = None,
     ) -> int:
         index = None
         for i, entry in enumerate(self._entries):
@@ -1415,9 +1427,19 @@ class SecondaryProjectilePool:
         entry.vel = Vec2.from_heading(float(angle)) * base_speed
         entry.speed = float(time_to_live)
 
-        if entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET and target_hint is not None:
-            entry.target_hint_active = True
-            entry.target_hint = target_hint
+        if entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET:
+            # Native `fx_spawn_secondary_projectile` seeds seeker target_id at spawn via
+            # `creature_find_nearest(&player_aim_x, -1, 0.0)`.
+            if creatures is not None:
+                origin = target_hint if target_hint is not None else pos
+                entry.target_id = _creature_find_nearest_for_secondary(
+                    creatures=creatures,
+                    origin=origin,
+                )
+            elif target_hint is not None:
+                # Keep legacy fallback for tests/debug views that omit creature snapshots.
+                entry.target_hint_active = True
+                entry.target_hint = target_hint
 
         return index
 

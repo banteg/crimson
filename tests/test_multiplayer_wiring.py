@@ -77,3 +77,30 @@ def test_quest_mode_update_uses_per_player_input_frame(monkeypatch, tmp_path: Pa
 
     assert captured["inputs"] is inputs
     assert len(inputs) == 3
+
+
+def test_base_gameplay_build_local_inputs_passes_creatures(monkeypatch, tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    assets_dir = repo_root / "artifacts" / "assets"
+
+    cfg = ensure_crimson_cfg(tmp_path)
+    ctx = ViewContext(assets_dir=assets_dir)
+    mode = SurvivalMode(ctx, config=cfg)
+
+    captured: dict[str, object] = {}
+
+    def _fake_build_frame_inputs(*, players, config, mouse_screen, screen_to_world, dt_frame, creatures):  # noqa: ANN001
+        captured["players"] = players
+        captured["config"] = config
+        captured["mouse_screen"] = mouse_screen
+        captured["screen_to_world"] = screen_to_world
+        captured["dt_frame"] = dt_frame
+        captured["creatures"] = creatures
+        return [PlayerInput() for _ in players]
+
+    monkeypatch.setattr(mode._local_input, "build_frame_inputs", _fake_build_frame_inputs)
+
+    frame = mode._build_local_inputs(dt_frame=0.016)
+
+    assert len(frame) == len(mode._world.players)
+    assert captured["creatures"] is mode._creatures.entries
