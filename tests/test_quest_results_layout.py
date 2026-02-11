@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import pyray as rl
 
 from crimson.persistence.highscores import HighScoreRecord
-from crimson.ui.quest_results import PANEL_SLIDE_START_MS, QuestResultsUi
+from crimson.ui.quest_results import PANEL_SLIDE_END_MS, PANEL_SLIDE_START_MS, QuestResultsUi
 
 
 def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
@@ -146,3 +146,24 @@ def test_quest_results_buttons_phase_keeps_weapon_stats_hidden(monkeypatch, tmp_
     assert "Hit %: 23%" not in captured_text
     assert "Shotgun" not in captured_text
     assert texture_draws == []
+
+
+def test_quest_results_world_entity_alpha_tracks_close_timeline(tmp_path: Path) -> None:
+    ui = QuestResultsUi(
+        assets_root=tmp_path,
+        base_dir=tmp_path,
+        config=SimpleNamespace(data={"fx_detail_0": 0}),
+    )
+
+    ui._closing = True
+    ui._intro_ms = PANEL_SLIDE_END_MS
+    assert ui.world_entity_alpha() == 0.0
+
+    ui._intro_ms = (PANEL_SLIDE_START_MS + PANEL_SLIDE_END_MS) * 0.5
+    assert ui.world_entity_alpha() == 0.5
+
+    ui._intro_ms = PANEL_SLIDE_START_MS
+    assert ui.world_entity_alpha() == 1.0
+
+    ui._closing = False
+    assert ui.world_entity_alpha() == 1.0

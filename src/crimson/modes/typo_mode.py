@@ -398,7 +398,7 @@ class TypoShooterMode(BaseGameplayMode):
         alive = self._player.health > 0.0
         show_gameplay_ui = alive and (not self._game_over_active)
 
-        self._world.draw(draw_aim_indicators=show_gameplay_ui)
+        self._world.draw(draw_aim_indicators=show_gameplay_ui, entity_alpha=self._world_entity_alpha())
         self._draw_screen_fade()
 
         if show_gameplay_ui:

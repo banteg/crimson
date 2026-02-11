@@ -263,6 +263,24 @@ class QuestResultsUi:
         self._closing = True
         self._close_action = action
 
+    def world_entity_alpha(self) -> float:
+        if not self._closing:
+            return 1.0
+        t_ms = float(self._intro_ms)
+        if t_ms <= PANEL_SLIDE_END_MS:
+            return 0.0
+        if t_ms >= PANEL_SLIDE_START_MS:
+            return 1.0
+        span = float(PANEL_SLIDE_START_MS - PANEL_SLIDE_END_MS)
+        if span <= 1e-6:
+            return 1.0
+        alpha = (t_ms - PANEL_SLIDE_END_MS) / span
+        if alpha < 0.0:
+            return 0.0
+        if alpha > 1.0:
+            return 1.0
+        return alpha
+
     def _text_width(self, text: str, scale: float) -> float:
         if self.font is None:
             return float(rl.measure_text(text, int(20 * scale)))

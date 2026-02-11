@@ -215,6 +215,18 @@ class GameOverUi:
             return True
         return False
 
+    def world_entity_alpha(self) -> float:
+        if not self._closing:
+            return 1.0
+        if PANEL_SLIDE_DURATION_MS <= 1e-6:
+            return 0.0
+        alpha = float(self._intro_ms) / float(PANEL_SLIDE_DURATION_MS)
+        if alpha < 0.0:
+            return 0.0
+        if alpha > 1.0:
+            return 1.0
+        return alpha
+
     def _text_width(self, text: str, scale: float) -> float:
         if self.font is None:
             return float(rl.measure_text(text, int(20 * scale)))
