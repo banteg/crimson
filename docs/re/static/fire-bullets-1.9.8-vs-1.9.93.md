@@ -66,9 +66,12 @@ Native cooldown < 0.14s. The 1.9.93 fallback cadence is slower than their natura
 
 Native cooldown > 0.14s. The 1.9.93 fallback cadence fires faster than the weapon natively would. Base weapon output is lost but fire rate increases.
 
+- Shrinkifier 5k (0.21s): **4.8 -> 7.1** fb/s
 - Plasma Rifle (0.29s): **3.4 -> 7.1** fb/s
+- Blade Gun (0.35s): **2.9 -> 7.1** fb/s
 - Ion Rifle (0.4s): **2.5 -> 7.1** fb/s
 - Gauss Gun (0.6s): **1.7 -> 7.1** fb/s
+- Splitter Gun (0.7s): **1.4 -> 7.1** fb/s
 - Pistol (0.71s): **1.4 -> 7.1** fb/s
 - Plasma Cannon (0.9s): **1.1 -> 7.1** fb/s
 - Ion Cannon (1.0s): **1.0 -> 7.1** fb/s
@@ -114,10 +117,7 @@ The same behavior classes apply. Rates listed as 1.9.8 -> 1.9.93.
 - Spider Plasma (0.2s): **5.0 -> 7.1** fb/s
 - Plague Sphreader (0.2s): **5.0 -> 7.1** fb/s
 - Rainbow Gun (0.2s): **5.0 -> 7.1** fb/s
-- Shrinkifier 5k (0.21s): **4.8 -> 7.1** fb/s
-- Blade Gun (0.35s): **2.9 -> 7.1** fb/s
 - Grim Weapon (0.5s): **2.0 -> 7.1** fb/s
-- Splitter Gun (0.7s): **1.4 -> 7.1** fb/s
 - RayGun (0.7s): **1.4 -> 7.1** fb/s
 - Evil Scythe (1.0s): **1.0 -> 7.1** fb/s
 - Lighting Rifle (4.0s): **0.25 -> 7.1** fb/s
