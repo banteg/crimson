@@ -24,6 +24,10 @@ uvx crimsonland@latest
 - [Perks](mechanics/perks.md): all 58 perks with exact numbers, interaction
   rules, and original bug notes verified against two builds of the binary.
 
+- [Fire Bullets (1.9.8 vs 1.9.93)](re/static/fire-bullets-1.9.8-vs-1.9.93.md):
+  static-analysis comparison of additive vs replacement behavior, including
+  weapon-class DPS impact.
+
 ## Sections
 
 - [Mechanics](mechanics/index.md): how the game actually plays. Behavior

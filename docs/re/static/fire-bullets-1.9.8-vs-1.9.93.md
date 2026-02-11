@@ -1,4 +1,5 @@
 ---
+icon: lucide/flame
 tags:
   - status-analysis
 ---
