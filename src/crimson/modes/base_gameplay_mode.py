@@ -12,6 +12,7 @@ from grim.console import ConsoleState
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
+from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
 from ..gameplay import PlayerInput, _creature_find_in_radius, perk_count_get
@@ -316,6 +317,16 @@ class BaseGameplayMode:
         ground = self._world.ground
         self._world.ground = None
         return ground
+
+    def adopt_ground_from_menu(self, ground: GroundRenderer | None) -> None:
+        if ground is None:
+            return
+        current = self._world.ground
+        if current is not None and current is not ground and current.render_target is not None:
+            rl.unload_render_texture(current.render_target)
+            current.render_target = None
+        self._world.ground = ground
+        self._world._sync_ground_settings()
 
     def menu_ground_camera(self) -> Vec2:
         return self._world.camera

@@ -35,6 +35,47 @@ class _TextureCacheStub:
         return cast(rl.Texture, rl.Texture())
 
 
+class _TerrainTextureCacheStub:
+    def __init__(self) -> None:
+        self._textures = {
+            "ter_q1_base": cast(rl.Texture, object()),
+            "ter_q1_tex1": cast(rl.Texture, object()),
+            "ter_q2_base": cast(rl.Texture, object()),
+            "ter_q2_tex1": cast(rl.Texture, object()),
+            "ter_q3_base": cast(rl.Texture, object()),
+            "ter_q3_tex1": cast(rl.Texture, object()),
+            "ter_q4_base": cast(rl.Texture, object()),
+            "ter_q4_tex1": cast(rl.Texture, object()),
+        }
+
+    def texture(self, name: str) -> rl.Texture | None:
+        return self._textures.get(name)
+
+
+class _RngStub:
+    def __init__(self, values: list[int]) -> None:
+        self._values = list(values)
+
+    def randrange(self, start: int, stop: int | None = None) -> int:
+        if stop is None:
+            stop = start
+            start = 0
+        if not self._values:
+            raise AssertionError("rng stub exhausted")
+        value = int(self._values.pop(0))
+        if not (int(start) <= value < int(stop)):
+            raise AssertionError(f"stub value {value} outside range [{start}, {stop})")
+        return value
+
+
+class _AdoptMenuGroundView:
+    def __init__(self) -> None:
+        self.adopted: GroundRenderer | None = None
+
+    def adopt_menu_ground(self, ground: GroundRenderer | None) -> None:
+        self.adopted = ground
+
+
 def _build_state(tmp_path: Path) -> GameState:
     repo_root = Path(__file__).resolve().parents[1]
     assets_dir = repo_root / "artifacts" / "assets"
@@ -110,3 +151,31 @@ def test_regenerate_menu_ground_resets_menu_camera(tmp_path: Path) -> None:
 
     assert ground is not None
     assert state.menu_ground_camera is None
+
+
+def test_regenerate_menu_ground_unlock_branch_selects_q4_variant(tmp_path: Path) -> None:
+    state = _build_state(tmp_path)
+    cache = _TerrainTextureCacheStub()
+    state.texture_cache = cast(Any, cache)
+    state.status.quest_unlock_index = 0x28
+    # unlock>=40 and first (rand & 7)==3 should pick (6,7,6) i.e. q4 base/tex1/base.
+    state.rng = cast(random.Random, _RngStub([3, 1234]))
+
+    ground = ensure_menu_ground(state, regenerate=True)
+
+    assert ground is not None
+    assert ground.texture is cache.texture("ter_q4_base")
+    assert ground.overlay is cache.texture("ter_q4_tex1")
+    assert ground.overlay_detail is cache.texture("ter_q4_base")
+
+
+def test_start_survival_adopts_existing_menu_ground(tmp_path: Path) -> None:
+    state = _build_state(tmp_path)
+    loop = GameLoopView(state)
+    menu_ground = GroundRenderer(texture=rl.Texture())
+    adopter = _AdoptMenuGroundView()
+    state.menu_ground = menu_ground
+
+    loop._maybe_adopt_menu_ground("start_survival", cast(Any, adopter))
+
+    assert adopter.adopted is menu_ground
