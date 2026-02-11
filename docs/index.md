@@ -60,6 +60,7 @@ Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
 - [Weapon ID map](weapon-id-map.md)
 - [UI weapon icons](ui-weapon-icons.md)
 - [Perk ID map](perk-id-map.md)
+- [Perks mechanics (version-agnostic)](perks-mechanics.md)
 - [Perks (behavior reference)](perks.md)
 - [Bonus ID map](bonus-id-map.md)
 - [Bonus drop rates](bonus-drop-rates.md)
