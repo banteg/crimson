@@ -41,7 +41,6 @@ nav = [
       { "Overview" = "rewrite/architecture/index.md" },
       { "Module map" = "rewrite/module-map.md" },
       { "Perks architecture" = "rewrite/perks-architecture.md" },
-      { "Deterministic simulation PRD" = "rewrite/deterministic-sim-prd.md" },
     ]},
     { "Contracts" = [
       { "Overview" = "rewrite/contracts/index.md" },
@@ -51,10 +50,7 @@ nav = [
     ]},
     { "Modules" = [
       { "Overview" = "rewrite/modules/index.md" },
-      { "Bonuses" = "rewrite/bonuses.md" },
       { "Terrain" = "rewrite/terrain.md" },
-      { "Game over" = "rewrite/game-over.md" },
-      { "Projectile render debug" = "rewrite/projectile-render-debug.md" },
     ]},
     { "Parity" = [
       { "Overview" = "rewrite/parity/index.md" },
@@ -62,7 +58,6 @@ nav = [
       { "Tech tree" = "rewrite/tech-tree.md" },
       { "Perk matrix" = "rewrite/perk-matrix.md" },
       { "Original bugs" = "rewrite/original-bugs.md" },
-      { "Survival transition fade" = "rewrite/survival-transition-fade.md" },
     ]},
   ]},
   { "Reverse Engineering" = [
@@ -73,7 +68,6 @@ nav = [
       { "Entrypoint trace" = "entrypoint.md" },
       { "Boot / loading sequence" = "boot-sequence.md" },
       { "Detangling notes" = "detangling.md" },
-      { "Struct candidates" = "struct-candidates.md" },
       { "Crimsonland.exe" = [
         { "Overview" = "crimsonland-exe/index.md" },
         { "State machine" = "crimsonland-exe/state-machine.md" },
@@ -116,8 +110,6 @@ nav = [
         { "Gameplay differential capture" = "frida/gameplay-diff-capture.md" },
         { "Survival autoplay" = "frida/survival-autoplay.md" },
         { "RNG divergence root cause" = "frida/rng-divergence-root-cause.md" },
-        { "Demo trial overlay" = "frida/demo-trial-overlay.md" },
-        { "Demo idle threshold" = "frida/demo-idle-threshold.md" },
       ]},
       { "WinDbg" = [
         { "Overview" = "windbg/index.md" },
@@ -166,21 +158,15 @@ nav = [
     { "Setup" = "contributor/setup.md" },
     { "Workflows" = [
       { "Overview" = "contributor/workflows/index.md" },
-      { "Duplication triage" = "duplication-triage.md" },
     ]},
     { "Project tracking" = [
       { "Overview" = "contributor/project-tracking/index.md" },
-      { "Progress metrics" = "metrics.md" },
-      { "Work status model" = "work-status.md" },
-      { "Worklog" = "worklog.md" },
       { "Build provenance and hashes" = "provenance.md" },
       { "Third-party libraries" = "third-party-libs.md" },
     ]},
     { "Cheatsheets" = [
       { "Frida GumJS" = "cheatsheets/frida.md" },
       { "raylib (Python)" = "cheatsheets/raylib.md" },
-      { "Zensical Markdown" = "cheatsheets/zensical.md" },
-      { "Zig 0.15" = "cheatsheets/zig.md" },
       { "DirectX 8" = "cheatsheets/directx8.md" },
     ]},
   ]},

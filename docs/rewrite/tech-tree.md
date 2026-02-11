@@ -80,8 +80,8 @@ it unlocks for parity. Goal: 100% replication of game logic.
 
 - Creature runtime parity gaps: AI edge cases and remaining per-weapon behaviors.
 - Some gameplay SFX/events: perk UI selection sound, ranged enemy fire SFX.
-- Multiplayer (2-4 players): multiple players spawn, but inputs are currently mirrored (shared controls).
-- Full Options/Controls parity: key/axis rebinding, video/window mode editing, full widget set.
+- Multiplayer (2-4 players): per-player input is wired for Survival/Rush/Quest, but deep control-scheme parity validation is still pending.
+- Full Options/Controls parity: video/window mode editing and remaining minor widget/label parity are still pending.
 - Some progression/unlock wiring and statistics counters are still incomplete.
 - High score list screen (post-run): implemented locally; online scores still missing.
 

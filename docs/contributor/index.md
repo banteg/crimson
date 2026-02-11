@@ -16,5 +16,5 @@ Contributor-facing docs for setup, workflows, and project tracking.
 
 ## Related
 
-- [Cheatsheets](../cheatsheets/zensical.md)
-- [Work status model](../work-status.md)
+- [Frida GumJS cheatsheet](../cheatsheets/frida.md)
+- [Build provenance and hashes](../provenance.md)

@@ -95,9 +95,6 @@ font-sample:
     uv run crimson view fonts
 
 # Docs
-docs-map-progress:
-    uv run scripts/update_map_progress_docs.py
-
 docs-build:
     uv run zensical build
 

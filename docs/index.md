@@ -30,4 +30,4 @@ This docs set is organized by audience and purpose.
 - [Rewrite status / parity gaps](rewrite/status.md)
 - [Crimsonland.exe overview](crimsonland-exe/index.md)
 - [Frida tooling](frida/index.md)
-- [Worklog](worklog.md)
+- [Project tracking](contributor/project-tracking/index.md)
