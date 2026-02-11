@@ -2147,6 +2147,7 @@ def player_fire_weapon(
     state: GameplayState,
     *,
     detail_preset: int = 5,
+    creatures: Sequence[Damageable] | None = None,
 ) -> None:
     dt = float(dt)
 
@@ -2296,6 +2297,7 @@ def player_fire_weapon(
             type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
             owner_id=owner_id,
             target_hint=aim,
+            creatures=creatures,
         )
     elif weapon_id == WeaponId.MINI_ROCKET_SWARMERS:
         # Mini-Rocket Swarmers -> secondary type 2 (fires the full clip in a spread).
@@ -2309,6 +2311,7 @@ def player_fire_weapon(
                 type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
                 owner_id=owner_id,
                 target_hint=aim,
+                creatures=creatures,
             )
             angle += step
         ammo_cost = float(rocket_count)
@@ -2475,6 +2478,7 @@ def player_update(
     detail_preset: int = 5,
     world_size: float = 1024.0,
     players: list[PlayerState] | None = None,
+    creatures: Sequence[Damageable] | None = None,
 ) -> None:
     """Port of `player_update` (0x004136b0) for the rewrite runtime."""
 
@@ -2731,7 +2735,14 @@ def player_update(
         elif player.reload_timer == 0.0:
             player_start_reload(player, state)
 
-    player_fire_weapon(player, input_state, dt, state, detail_preset=int(detail_preset))
+    player_fire_weapon(
+        player,
+        input_state,
+        dt,
+        state,
+        detail_preset=int(detail_preset),
+        creatures=creatures,
+    )
 
     while player.move_phase > 14.0:
         player.move_phase -= 14.0

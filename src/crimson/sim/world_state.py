@@ -343,6 +343,7 @@ class WorldState:
                 detail_preset=int(detail_preset),
                 world_size=float(world_size),
                 players=self.players,
+                creatures=self.creatures.entries,
             )
             if idx == 0:
                 _mark("ws_after_player_update_p0")
