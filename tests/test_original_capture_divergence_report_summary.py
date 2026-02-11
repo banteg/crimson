@@ -134,6 +134,17 @@ def _capture_obj(*, ticks: list[dict[str, object]]) -> dict[str, object]:
     }
 
 
+def _write_capture_stream(path: Path, capture: dict[str, object]) -> None:
+    meta = {k: v for k, v in capture.items() if k != "ticks"}
+    ticks_obj = capture.get("ticks")
+    ticks = ticks_obj if isinstance(ticks_obj, list) else []
+    rows = [json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True)]
+    rows.extend(
+        json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True) for tick in ticks
+    )
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+
 def test_run_summary_events_from_raw_capture(tmp_path: Path) -> None:
     report = _load_report_module()
     capture_path = tmp_path / "capture.json"
@@ -161,7 +172,7 @@ def test_run_summary_events_from_raw_capture(tmp_path: Path) -> None:
             ),
         ]
     )
-    capture_path.write_text(json.dumps(capture), encoding="utf-8")
+    _write_capture_stream(capture_path, capture)
 
     events = report._build_run_summary_events_from_raw_capture(capture_path)
 

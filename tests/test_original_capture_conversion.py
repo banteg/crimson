@@ -239,7 +239,14 @@ def _capture_obj(*, ticks: list[dict[str, object]]) -> dict[str, object]:
 
 
 def _write_capture(path: Path, obj: dict[str, object]) -> None:
-    encoded = json.dumps(obj, separators=(",", ":"), sort_keys=True).encode("utf-8")
+    meta = {k: v for k, v in obj.items() if k != "ticks"}
+    ticks_obj = obj.get("ticks")
+    ticks = ticks_obj if isinstance(ticks_obj, list) else []
+    rows = [json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True)]
+    rows.extend(
+        json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True) for tick in ticks
+    )
+    encoded = ("\n".join(rows) + "\n").encode("utf-8")
     if str(path).endswith(".gz"):
         path.write_bytes(gzip.compress(encoded))
     else:
@@ -280,6 +287,52 @@ def test_load_capture_supports_plain_json_and_gz(tmp_path: Path) -> None:
     assert capture_zipped.script == "gameplay_diff_capture"
     assert len(capture_plain.ticks) == 1
     assert len(capture_zipped.ticks) == 1
+
+
+def test_load_capture_decodes_f32_tokens(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    checkpoint = tick.get("checkpoint")
+    assert isinstance(checkpoint, dict)
+    players = checkpoint.get("players")
+    assert isinstance(players, list)
+    assert isinstance(players[0], dict)
+    pos = players[0].get("pos")
+    assert isinstance(pos, dict)
+    pos["x"] = "f32:3f800000"
+    players[0]["health"] = "f32:42c80000"
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+
+    assert capture.ticks[0].checkpoint.players[0].pos.x == pytest.approx(1.0)
+    assert capture.ticks[0].checkpoint.players[0].health == pytest.approx(100.0)
+
+
+def test_load_capture_rejects_invalid_f32_token(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    checkpoint = tick.get("checkpoint")
+    assert isinstance(checkpoint, dict)
+    players = checkpoint.get("players")
+    assert isinstance(players, list)
+    assert isinstance(players[0], dict)
+    players[0]["ammo"] = "f32:bad"
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    with pytest.raises(Exception):
+        load_capture(path)
+
+
+def test_load_capture_rejects_legacy_canonical_json(tmp_path: Path) -> None:
+    obj = _capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)])
+    path = tmp_path / "capture.json"
+    path.write_text(json.dumps(obj, separators=(",", ":"), sort_keys=True), encoding="utf-8")
+
+    with pytest.raises(Exception):
+        load_capture(path)
 
 
 def test_load_capture_accepts_projectile_find_query_event_head(tmp_path: Path) -> None:

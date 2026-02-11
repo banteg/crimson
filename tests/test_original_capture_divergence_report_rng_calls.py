@@ -320,7 +320,12 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
         "pointers_resolved": {},
         "ticks": [tick],
     }
-    capture_path.write_text(json.dumps(capture_obj), encoding="utf-8")
+    meta = {k: v for k, v in capture_obj.items() if k != "ticks"}
+    rows = [
+        json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True),
+        json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True),
+    ]
+    capture_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
 
     raw = report._load_raw_tick_debug(capture_path, {42})
     assert 42 in raw

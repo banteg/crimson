@@ -559,6 +559,14 @@ function safeReadF32(ptrVal) {
   }
 }
 
+function safeReadF32Bits(ptrVal) {
+  try {
+    return ptrVal.readU32();
+  } catch (_) {
+    return null;
+  }
+}
+
 function safeReadCString(ptrVal, maxLen) {
   if (!ptrVal) return null;
   try {
@@ -580,6 +588,13 @@ function u32ToF32(u32) {
   const dv = new DataView(buf);
   dv.setUint32(0, u32 >>> 0, true);
   return dv.getFloat32(0, true);
+}
+
+function f32ToU32(v) {
+  const buf = new ArrayBuffer(4);
+  const dv = new DataView(buf);
+  dv.setFloat32(0, Number(v), true);
+  return dv.getUint32(0, true);
 }
 
 function argAsF32(arg) {
@@ -606,13 +621,13 @@ function readDataU32(name) {
 function readDataF32(name) {
   const p = dataPtrs[name];
   if (!p) return null;
-  return safeReadF32(p);
+  return captureF32Bits(safeReadF32Bits(p));
 }
 
 function readDataF32Stride(name, index, strideBytes) {
   const p = dataPtrs[name];
   if (!p) return null;
-  return safeReadF32(p.add(index * strideBytes));
+  return captureF32Bits(safeReadF32Bits(p.add(index * strideBytes)));
 }
 
 function readStatusSnapshotCompact() {
@@ -649,7 +664,7 @@ function readPlayerU32(name, playerIndex) {
 function readPlayerF32(name, playerIndex) {
   const p = dataPtrs[name];
   if (!p) return null;
-  return safeReadF32(p.add(playerIndex * STRIDES.player));
+  return captureF32Bits(safeReadF32Bits(p.add(playerIndex * STRIDES.player)));
 }
 
 function runtimeToStatic(addr) {
@@ -694,9 +709,28 @@ function maybeBacktrace(context) {
   }
 }
 
+function captureF32Bits(bits) {
+  if (bits == null) return null;
+  return "f32:" + toHex(bits >>> 0, 8);
+}
+
+function decodeCapturedF32(v) {
+  if (v == null) return null;
+  if (typeof v === "number") return Number.isFinite(v) ? Number(v) : null;
+  if (typeof v !== "string") return null;
+  if (!v.startsWith("f32:")) return null;
+  const hex = v.slice(4);
+  if (hex.length !== 8) return null;
+  const bits = parseInt(hex, 16);
+  if (!Number.isFinite(bits)) return null;
+  return u32ToF32(bits >>> 0);
+}
+
 function captureNumber(v) {
-  if (v == null || !Number.isFinite(v)) return v == null ? null : 0;
-  return Number(v);
+  if (v == null) return null;
+  if (typeof v === "string" && v.startsWith("f32:")) return v;
+  if (!Number.isFinite(v)) return null;
+  return captureF32Bits(f32ToU32(v));
 }
 
 function normalizeSampleLimit(limit) {
@@ -706,8 +740,9 @@ function normalizeSampleLimit(limit) {
 }
 
 function bonusTimerMs(v) {
-  if (v == null || !Number.isFinite(v)) return -1;
-  const ms = Math.round(v * 1000);
+  const value = decodeCapturedF32(v);
+  if (value == null || !Number.isFinite(value)) return -1;
+  const ms = Math.round(value * 1000);
   return ms < 0 ? 0 : ms;
 }
 
@@ -2307,9 +2342,9 @@ function finalizeTick() {
   const frameDtMs =
     globals.frame_dt_ms_f32 != null
       ? captureNumber(globals.frame_dt_ms_f32)
-      : globals.frame_dt == null
+      : decodeCapturedF32(globals.frame_dt) == null
         ? null
-        : captureNumber(globals.frame_dt * 1000);
+        : captureNumber(decodeCapturedF32(globals.frame_dt) * 1000);
   const frameDtMsI32 = globals.frame_dt_ms_i32 == null ? null : globals.frame_dt_ms_i32;
   const out = {
     tick_index: tick.tick_index,
@@ -2799,7 +2834,7 @@ function installHooks() {
         bonus_id: entry ? safeReadS32(entry) : null,
         entry_state: entry ? safeReadS32(entry.add(4)) : null,
         amount_i32: entry ? safeReadS32(entry.add(0x18)) : null,
-        amount_f32: entry ? safeReadF32(entry.add(0x18)) : null,
+        amount_f32: entry ? captureNumber(safeReadF32(entry.add(0x18))) : null,
         caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
       };
     },
