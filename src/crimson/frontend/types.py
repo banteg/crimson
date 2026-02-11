@@ -6,7 +6,7 @@ from typing import Any, Protocol
 
 
 class PauseBackground(Protocol):
-    def draw_pause_background(self) -> None: ...
+    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None: ...
 
 
 class GameState(Protocol):

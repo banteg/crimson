@@ -98,3 +98,18 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, tmp_path: Path) -> 
     assert panel_rect.width == 510.0
     assert panel_rect.height == 378.0
     assert shadow_enabled is False
+
+
+def test_game_over_world_entity_alpha_tracks_close_timeline(tmp_path: Path) -> None:
+    ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=object())
+
+    ui._closing = True
+    ui._intro_ms = PANEL_SLIDE_DURATION_MS * 0.5
+    assert ui.world_entity_alpha() == 0.5
+
+    ui._intro_ms = -1.0
+    assert ui.world_entity_alpha() == 0.0
+
+    ui._closing = False
+    ui._intro_ms = 0.0
+    assert ui.world_entity_alpha() == 1.0

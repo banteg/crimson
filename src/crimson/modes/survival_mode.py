@@ -391,6 +391,16 @@ class SurvivalMode(BaseGameplayMode):
             return raw
         return ""
 
+    def _death_transition_ready(self) -> bool:
+        dead_players = 0
+        for player in self._world.players:
+            if float(player.health) > 0.0:
+                return False
+            dead_players += 1
+            if float(player.death_timer) >= 0.0:
+                return False
+        return dead_players > 0
+
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
@@ -506,7 +516,7 @@ class SurvivalMode(BaseGameplayMode):
             pulse_delta = dt_ui_ms * (6.0 if self._perk_prompt_hover else -2.0)
             self._perk_prompt_pulse = clamp(self._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
 
-        sim_active = (not self._paused) and any_alive and (not perk_menu_active)
+        sim_active = (not self._paused) and (not perk_menu_active)
 
         prompt_active = perk_pending and (not perk_menu_active) and (not self._paused)
         if prompt_active:
@@ -522,7 +532,7 @@ class SurvivalMode(BaseGameplayMode):
 
         if not sim_active:
             self._sim_clock.reset()
-            if not any_alive:
+            if self._death_transition_ready():
                 self._enter_game_over()
             return
 
@@ -581,7 +591,7 @@ class SurvivalMode(BaseGameplayMode):
                     command_hash=str(tick.step.command_hash),
                 )
 
-            if not any(player.health > 0.0 for player in self._world.players):
+            if self._death_transition_ready():
                 self._enter_game_over()
                 break
 
@@ -661,7 +671,10 @@ class SurvivalMode(BaseGameplayMode):
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
-        self._world.draw(draw_aim_indicators=(not self._game_over_active) and (not perk_menu_active))
+        self._world.draw(
+            draw_aim_indicators=(not self._game_over_active) and (not perk_menu_active),
+            entity_alpha=self._world_entity_alpha(),
+        )
         self._draw_screen_fade()
 
         hud_bottom = 0.0

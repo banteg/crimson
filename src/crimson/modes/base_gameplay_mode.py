@@ -310,8 +310,18 @@ class BaseGameplayMode:
             self._action = "back_to_menu"
             self.close_requested = True
 
-    def draw_pause_background(self) -> None:
-        self._world.draw(draw_aim_indicators=False)
+    def _world_entity_alpha(self) -> float:
+        if not self._game_over_active:
+            return 1.0
+        return float(self._game_over_ui.world_entity_alpha())
+
+    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
+        alpha = float(entity_alpha)
+        if alpha < 0.0:
+            alpha = 0.0
+        elif alpha > 1.0:
+            alpha = 1.0
+        self._world.draw(draw_aim_indicators=False, entity_alpha=self._world_entity_alpha() * alpha)
 
     def steal_ground_for_menu(self):
         ground = self._world.ground

@@ -372,7 +372,10 @@ class RushMode(BaseGameplayMode):
         draw_aim_cursor(self._world.particles_texture, aim_tex, pos=mouse_pos)
 
     def draw(self) -> None:
-        self._world.draw(draw_aim_indicators=(not self._game_over_active))
+        self._world.draw(
+            draw_aim_indicators=(not self._game_over_active),
+            entity_alpha=self._world_entity_alpha(),
+        )
         self._draw_screen_fade()
 
         hud_bottom = 0.0
