@@ -31,7 +31,7 @@ def test_input_scheme_label_mapping() -> None:
     assert input_scheme_label(MovementControlType.DUAL_ACTION_PAD) == "Dual Action Pad"
     assert input_scheme_label(MovementControlType.MOUSE_POINT_CLICK) == "Mouse point click"
     assert input_scheme_label(MovementControlType.COMPUTER) == "Computer"
-    assert input_scheme_label(0) == "Unknown"
+    assert input_scheme_label(MovementControlType.UNKNOWN) == "Unknown"
 
 
 def test_controls_method_labels_reads_player_arrays() -> None:
@@ -48,11 +48,18 @@ def test_controls_method_labels_reads_player_arrays() -> None:
     assert controls_method_labels(config_data, player_index=1) == ("Joystick", "Mouse point click")
     assert controls_method_labels(config_data, player_index=2) == ("Dual Action Pad", "Computer")
     assert controls_method_labels(config_data, player_index=3) == ("Computer", "Relative")
-    assert controls_method_values(config_data, player_index=1) == (2, int(MovementControlType.MOUSE_POINT_CLICK))
+    assert controls_method_values(config_data, player_index=1) == (2, MovementControlType.MOUSE_POINT_CLICK)
 
 
 def test_controls_method_labels_defaults_missing_blob() -> None:
     assert controls_method_labels({}, player_index=0) == ("Mouse", "Static")
+
+
+def test_controls_method_values_unknown_move_mode_maps_to_unknown_enum() -> None:
+    mode_flags = struct.pack("<IIII", 99, 2, 2, 2) + b"\x00" * (40 - 16)
+    config_data = {"unknown_1c": mode_flags}
+
+    assert controls_method_values(config_data, player_index=0) == (0, MovementControlType.UNKNOWN)
 
 
 def test_controls_aim_method_dropdown_ids_hides_computer_unless_loaded() -> None:

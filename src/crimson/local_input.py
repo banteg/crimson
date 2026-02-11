@@ -18,7 +18,7 @@ from .input_codes import (
     input_code_is_down_for_player,
     input_code_is_pressed_for_player,
 )
-from .movement_controls import MovementControlType, movement_control_type_from_value
+from .movement_controls import MovementControlType
 
 _AIM_RADIUS_KEYBOARD = 60.0
 _AIM_RADIUS_PAD_BASE = 42.0
@@ -216,11 +216,11 @@ class LocalInputInterpreter:
         return int(config.data.get("keybind_reload", 0x102) or 0x102)
 
     @staticmethod
-    def _safe_controls_modes(config: CrimsonConfig | None, *, player_index: int) -> tuple[int, int]:
+    def _safe_controls_modes(config: CrimsonConfig | None, *, player_index: int) -> tuple[int, MovementControlType]:
         if config is None:
-            return 0, 2
+            return 0, MovementControlType.STATIC
         aim_scheme, move_mode = controls_method_values(config.data, player_index=int(player_index))
-        return int(aim_scheme), int(move_mode)
+        return int(aim_scheme), move_mode
 
     def build_player_input(
         self,
@@ -237,8 +237,7 @@ class LocalInputInterpreter:
         idx = max(0, min(3, int(player_index)))
         state = self._state_for_player(idx, player=player)
         binds = _load_player_bind_block(config, player_index=idx)
-        aim_scheme, move_mode = self._safe_controls_modes(config, player_index=idx)
-        move_mode_type = movement_control_type_from_value(move_mode)
+        aim_scheme, move_mode_type = self._safe_controls_modes(config, player_index=idx)
         reload_key = self._reload_key(config)
 
         up_key = int(binds[_MOVE_SLOT_UP])

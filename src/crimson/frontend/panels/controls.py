@@ -23,7 +23,7 @@ from ..menu import (
 )
 from ...ui.menu_panel import draw_classic_menu_panel
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
-from ...movement_controls import MovementControlType, movement_control_type_from_value
+from ...movement_controls import MovementControlType
 from .controls_labels import (
     PICK_PERK_BIND_SLOT,
     RELOAD_BIND_SLOT,
@@ -306,7 +306,7 @@ class ControlsMenuView(PanelMenuView):
         *,
         player_index: int,
         aim_scheme: int,
-        move_mode: int | MovementControlType,
+        move_mode: MovementControlType,
     ) -> tuple[tuple[str, tuple[tuple[str, int], ...]], ...]:
         aim_rows, move_rows, misc_rows = controls_rebind_slot_plan(
             aim_scheme=aim_scheme,
@@ -431,11 +431,11 @@ class ControlsMenuView(PanelMenuView):
             del values[size:]
         return values
 
-    def _set_player_move_mode(self, *, player_index: int, move_mode: int) -> None:
+    def _set_player_move_mode(self, *, player_index: int, move_mode: MovementControlType) -> None:
         config = self._state.config
         raw = self._coerce_blob(config.data.get("unknown_1c"), 0x28)
         idx = max(0, min(3, int(player_index)))
-        struct.pack_into("<I", raw, idx * 4, int(move_mode))
+        struct.pack_into("<I", raw, idx * 4, move_mode.value)
         config.data["unknown_1c"] = bytes(raw)
 
     def _set_player_aim_scheme(self, *, player_index: int, aim_scheme: int) -> None:
@@ -453,13 +453,13 @@ class ControlsMenuView(PanelMenuView):
         config.data["unknown_4c"] = bytes(raw)
 
     @staticmethod
-    def _move_method_ids(*, move_mode: int | MovementControlType) -> tuple[MovementControlType, ...]:
+    def _move_method_ids(*, move_mode: MovementControlType) -> tuple[MovementControlType, ...]:
         items = [
             MovementControlType.RELATIVE,
             MovementControlType.STATIC,
             MovementControlType.DUAL_ACTION_PAD,
         ]
-        if movement_control_type_from_value(move_mode) is MovementControlType.MOUSE_POINT_CLICK:
+        if move_mode is MovementControlType.MOUSE_POINT_CLICK:
             items.append(MovementControlType.MOUSE_POINT_CLICK)
         return tuple(items)
 
@@ -566,7 +566,7 @@ class ControlsMenuView(PanelMenuView):
         )
         if move_selected is not None:
             selected_idx = max(0, min(int(move_selected), len(move_mode_ids) - 1))
-            self._set_player_move_mode(player_index=player_idx, move_mode=int(move_mode_ids[selected_idx]))
+            self._set_player_move_mode(player_index=player_idx, move_mode=move_mode_ids[selected_idx])
             self._dirty = True
         if consumed:
             return True
@@ -649,9 +649,8 @@ class ControlsMenuView(PanelMenuView):
         aim_item_ids = controls_aim_method_dropdown_ids(int(aim_scheme))
         aim_items = tuple(input_configure_for_label(i) for i in aim_item_ids)
         player_items = ("Player 1", "Player 2", "Player 3", "Player 4")
-        move_mode_type = movement_control_type_from_value(move_mode)
         try:
-            move_selected = move_mode_ids.index(move_mode_type) if move_mode_type is not None else 0
+            move_selected = move_mode_ids.index(move_mode)
         except ValueError:
             move_selected = 0
         try:
