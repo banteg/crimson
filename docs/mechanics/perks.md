@@ -55,15 +55,17 @@ Immediately grants +2500 XP. Can be picked multiple times.
 
 ## 8. Grim Deal
 
-Immediately grants +18% of current XP (rounded down), then kills the player.
+Immediately grants +18% of current XP, then kills the player.
+
 Not offered in quest mode or two-player sessions.
 
 ## 9. Alternate Weapon
 
 Adds a second weapon slot. Press reload to swap between them. Carrying two
 weapons reduces movement speed by 20%, and swapping adds a brief firing delay
-(+0.1 s cooldown) to prevent instant swap-firing. Not offered in two-player
-mode.
+(+0.1 s cooldown) to prevent instant swap-firing.
+
+Not offered in two-player mode.
 
 ## 10. Plaguebearer
 
@@ -72,7 +74,8 @@ within 30 units) get infected. Infected creatures take 15 damage every 0.5
 seconds, and the infection spreads to other creatures within 45 units. Each
 infection kill increments a global counter that gradually suppresses further
 spreading — the plague burns itself out over time. Shared across all players.
-Suppressed in hardcore quest 2-10.
+
+Suppressed in hardcore quest 2.10.
 
 ## 11. Evil Eyes
 
@@ -98,12 +101,16 @@ Fire rate is 12% faster (shot cooldown ×0.88).
 ## 15. Fatal Lottery
 
 50/50 coin flip: either +10 000 XP or instant death. Can be picked multiple
-times. Not offered in quest mode or two-player sessions.
+times.
+
+Not offered in quest mode or two-player sessions.
 
 ## 16. Random Weapon
 
 Immediately assigns a random unlocked weapon (never the pistol, never the
-current weapon). Not available in two-player mode. Can be picked multiple times.
+current weapon). Can be picked multiple times.
+
+Not available in two-player mode.
 
 ## 17. Mr. Melee
 
@@ -119,8 +126,9 @@ time. Mash to reload faster.
 ## 19. Final Revenge
 
 On death, the player explodes with a 512-unit blast radius. Damage falls off
-linearly: (512 − distance) × 5. Not offered in quest mode or two-player
-sessions.
+linearly: (512 − distance) × 5.
+
+Not offered in quest mode or two-player sessions.
 
 ## 20. Telekinetic
 
@@ -147,14 +155,17 @@ can't be restarted mid-reload.
 ## 24. Infernal Contract
 
 Immediately grants +3 levels and +3 pending perk picks, but drops every alive
-player to 0.1 health. Not offered while Death Clock is active.
+player to 0.1 health.
+
+Not offered while Death Clock is active.
 
 ## 25. Poison Bullets
 
 Each projectile hit has a 1-in-8 chance to poison the target. Poisoned creatures
 take continuous damage (60/s normally, 180/s with Toxic Avenger) and show a red
 aura. Poison damage triggers normal hit effects like flash and knockback.
-Suppressed in hardcore quest 2-10.
+
+Suppressed in hardcore quest 2.10.
 
 ## 26. Dodger
 
@@ -186,8 +197,9 @@ Unlocked by quest 1.5 (*Alien Dens*).
 ## 30. Monster Vision
 
 Every creature gets a yellow highlight behind it, making them easy to spot.
-Creature shadows are hidden while this perk is active. Only offered when FX
-detail is enabled in settings.
+Creature shadows are hidden while this perk is active.
+
+Only offered when FX detail is enabled in settings.
 
 Unlocked by quest 1.7 (*Spider Wave Syndrome*).
 
@@ -209,7 +221,9 @@ Unlocked by quest 2.1 (*Everred Pastures*).
 
 On pick, every alive player's health drops to 2/3 (minimum 1). In exchange, all
 incoming damage is permanently reduced to 2/3. The damage reduction is applied
-before dodge rolls. Not offered while Death Clock is active.
+before dodge rolls.
+
+Not offered while Death Clock is active.
 
 Unlocked by quest 2.3 (*Arachnoid Farm*).
 
@@ -232,8 +246,9 @@ Unlocked by quest 2.7 (*Survival Of The Fastest*).
 ## 36. Veins of Poison
 
 When a creature hits the player in melee and the shield bonus isn't active, that
-creature gets poisoned (weak tick, 60 damage/s). Suppressed in hardcore quest
-2-10.
+creature gets poisoned (weak tick, 60 damage/s).
+
+Suppressed in hardcore quest 2.10.
 
 Unlocks [Toxic Avenger](#37-toxic-avenger).
 Unlocked by quest 2.9 (*Ghost Patrols*).
@@ -256,8 +271,9 @@ Unlocked by quest 3.3 (*The Killing*).
 
 ## 39. Pyromaniac
 
-Fire weapon damage is increased by 50% (×1.5). Only offered when the current
-weapon is the Flamethrower.
+Fire weapon damage is increased by 50% (×1.5).
+
+Only offered when the current weapon is the Flamethrower.
 
 Unlocked by quest 3.5 (*Surrounded By Reptiles*).
 
@@ -273,7 +289,9 @@ Unlocked by quest 3.7 (*Spiders Inc.*).
 
 Damage no longer reduces health. Instead, every hit has a flat 10% chance of
 instant death. Hit disruption (knockback, spread penalty) still applies unless
-Unstoppable is active. Not offered in quest mode or two-player sessions.
+Unstoppable is active.
+
+Not offered in quest mode or two-player sessions.
 
 Unlocked by quest 3.9 (*Deja vu*).
 
@@ -310,7 +328,7 @@ Unlocked by quest 4.7 (*Gauntlet*).
 
 ## 46. Breathing Room
 
-Not available in quest mode. On pick, every alive player's health drops to 1/3,
+On pick, every alive player's health drops to 1/3,
 and every creature on screen is killed instantly without awarding XP.
 
 Unlocked by quest 4.9 (*The Annihilation*).
