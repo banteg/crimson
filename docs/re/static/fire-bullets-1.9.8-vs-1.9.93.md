@@ -19,6 +19,15 @@ tags:
   - `crimsonland_1.9.8.txt:25170`
   - `crimsonland_1.9.8.txt:25188`
 
+- **1.9.8 cooldown assignment remains weapon-native while Fire Bullets is active**:
+  cooldown is assigned from the current weapon table entry in `player_update` before dispatch,
+  then `sub_41fc20` handles additive Fire Bullets recursion without a cooldown override.
+
+  - `crimsonland_1.9.8.txt:17517`
+  - `crimsonland_1.9.8.txt:18793`
+  - `crimsonland_1.9.8.txt:25170`
+  - `crimsonland_1.9.8.txt:25188`
+
 - In the exported 1.9.8 HLIL, the only direct `sub_41fc20(..., 0x2d, ...)` callsite is that self-call line above.
 - **1.9.93 in-place override** (`projectile_spawn`): same owner filter, but rewrites local `type_id_1 = 0x2d` (no recursive spawn).
 
@@ -79,6 +88,11 @@ tags:
 
 - 1.9.8: not observed in `sub_41fc20` hook behavior.
 - 1.9.93: uses `fire_bullets_fallback_shot_cooldown` and `fire_bullets_fallback_spread_heat` when pellet count is 1.
+
+### Fire-rate handling under Fire Bullets
+
+- 1.9.8: cadence stays on the weapon-native cooldown path, and Fire Bullets is additive (`+0x2d`) on top of base spawns.
+- 1.9.93: dedicated Fire Bullets branch replaces base spawn path; for `pellet_count == 1`, cadence is forced to fallback `0.14` instead of the weapon's own cooldown.
 
 ### Fire SFX while Fire Bullets is active
 
@@ -315,6 +329,11 @@ Interpretation notes:
 - `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
 - `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
 - `Rewrite status`: Matches 1.9.93 semantics
+
+!!! warning "Significant divergence"
+    Fire Bullets fire-rate behavior diverges for this single-pellet weapon:
+    1.9.8 keeps weapon-native cadence and adds Fire Bullets recursively,
+    while 1.9.93 forces Fire Bullets fallback cadence (`0.14`) on the replacement path.
 
 ### Weapon `20`: Jackhammer
 
