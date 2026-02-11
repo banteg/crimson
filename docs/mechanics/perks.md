@@ -162,7 +162,7 @@ Not offered while Death Clock is active.
 ## 25. Poison Bullets
 
 Each projectile hit has a 1-in-8 chance to poison the target. Poisoned creatures
-take continuous damage (60/s normally, 180/s with Toxic Avenger) and show a red
+take continuous damage (60/s normally, 180/s with [Toxic Avenger](#37-toxic-avenger)) and show a red
 aura. Poison damage triggers normal hit effects like flash and knockback.
 
 Suppressed in hardcore quest 2.10.
@@ -188,7 +188,7 @@ Unlocked by quest 1.3 (*Target Practice*).
 
 ## 29. Doctor
 
-Bullet damage is increased by 20% (×1.2). Also shows a health bar above the
+Bullet damage is increased by 20% (×1.2). Also shows a health bar below the
 creature nearest the crosshair, using the same targeting as Pyrokinetic and Evil
 Eyes.
 
@@ -199,7 +199,6 @@ Unlocked by quest 1.5 (*Alien Dens*).
 Every creature gets a yellow highlight behind it, making them easy to spot.
 Creature shadows are hidden while this perk is active.
 
-Only offered when FX detail is enabled in settings.
 
 Unlocked by quest 1.7 (*Spider Wave Syndrome*).
 
@@ -246,7 +245,7 @@ Unlocked by quest 2.7 (*Survival Of The Fastest*).
 ## 36. Veins of Poison
 
 When a creature hits the player in melee and the shield bonus isn't active, that
-creature gets poisoned (weak tick, 60 damage/s).
+creature gets poisoned (60 damage/s).
 
 Suppressed in hardcore quest 2.10.
 
@@ -263,8 +262,8 @@ Unlocked by quest 3.1 (*The Blighting*).
 
 ## 38. Regeneration
 
-Heals each alive player toward 100 HP. The heal ticks every other frame
-(50% chance per frame) for +dt health. Only triggers between 0 and 100 HP.
+Heals each alive player toward 100 HP at 0.5 HP/s. Every frame has a 50%
+chance to heal +dt HP. Only triggers between 0 and 100 HP.
 
 Unlocks [Greater Regeneration](#45-greater-regeneration).
 Unlocked by quest 3.3 (*The Killing*).
