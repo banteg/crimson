@@ -35,6 +35,8 @@ The capture file is newline-delimited JSON rows:
 
 - `{"event":"capture_meta","capture":{...}}` exactly once at start
 - `{"event":"tick","tick":{...}}` once per captured gameplay tick
+- `capture_meta.capture_format_version` is required and must match the current
+  loader version (`2`).
 
 `uv run crimson original ...` commands load this stream and normalize it to the
 typed `CaptureFile` schema in Python (`msgspec`).
@@ -46,6 +48,8 @@ Notes:
 - Before detaching from a live Frida session, call `crimsonCaptureStop("manual_stop")`
   in the REPL and wait for the `capture_shutdown` log line.
 - Loader behavior is strict: truncated trailing JSON rows are rejected.
+- Loader behavior is strict: only captures with the current
+  `capture_format_version` are accepted.
 - Loader accepts only stream rows (`capture_meta` + `tick`), not legacy
   monolithic JSON captures.
 - Entity `samples` payloads are strictly typed (`creatures`, `projectiles`,

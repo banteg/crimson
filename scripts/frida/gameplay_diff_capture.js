@@ -16,6 +16,7 @@ const DEFAULT_LOG_DIR = "C:\\share\\frida";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
+const CAPTURE_FORMAT_VERSION = 2;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
@@ -1945,6 +1946,7 @@ function emitRngRollEvent(rollRow) {
   writeLine({
     event: "rng_roll",
     script: "gameplay_diff_capture",
+    capture_format_version: CAPTURE_FORMAT_VERSION,
     session_id: outState.sessionId,
     seq: rollRow.seq,
     seed_epoch: rollRow.seed_epoch,
@@ -3722,6 +3724,7 @@ function main() {
     enable_creature_lifecycle_digest: CONFIG.enableCreatureLifecycleDigest,
   };
   const captureMeta = {
+    capture_format_version: CAPTURE_FORMAT_VERSION,
     script: "gameplay_diff_capture",
     session_id: outState.sessionId,
     out_path: CONFIG.outPath,
@@ -3752,6 +3755,7 @@ function main() {
 
   writeLine({
     event: "start",
+    capture_format_version: CAPTURE_FORMAT_VERSION,
     session_id: outState.sessionId,
     out_path: CONFIG.outPath,
     capture_file_started: outState.captureStarted,
@@ -3777,7 +3781,12 @@ function main() {
     shutdownCapture("script_unload");
   });
 
-  writeLine({ event: "ready", session_id: outState.sessionId, capture_file_started: outState.captureStarted });
+  writeLine({
+    event: "ready",
+    capture_format_version: CAPTURE_FORMAT_VERSION,
+    session_id: outState.sessionId,
+    capture_file_started: outState.captureStarted,
+  });
 }
 
 main();

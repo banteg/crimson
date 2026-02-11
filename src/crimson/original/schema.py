@@ -4,6 +4,8 @@ from typing import Literal, TypeAlias
 
 import msgspec
 
+CAPTURE_FORMAT_VERSION = 2
+
 
 class CaptureConfig(msgspec.Struct):
     log_mode: str = "truncate"
@@ -675,6 +677,7 @@ class CaptureFile(msgspec.Struct, forbid_unknown_fields=True):
     script: Literal["gameplay_diff_capture"]
     session_id: str
     out_path: str
+    capture_format_version: int = -1
     config: CaptureConfig = msgspec.field(default_factory=CaptureConfig)
     session_fingerprint: SessionFingerprint = msgspec.field(default_factory=_default_session_fingerprint)
     process: ProcessInfo = msgspec.field(default_factory=_default_process_info)

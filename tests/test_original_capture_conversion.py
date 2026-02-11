@@ -22,6 +22,7 @@ from crimson.original.capture import (
     default_capture_replay_path,
     load_capture,
 )
+from crimson.original.schema import CAPTURE_FORMAT_VERSION
 from crimson.replay import UnknownEvent, unpack_input_flags
 from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
 
@@ -211,6 +212,7 @@ def _sample_bonus(*, index: int = 2) -> dict[str, object]:
 
 def _capture_obj(*, ticks: list[dict[str, object]]) -> dict[str, object]:
     return {
+        "capture_format_version": int(CAPTURE_FORMAT_VERSION),
         "script": "gameplay_diff_capture",
         "session_id": "session-1",
         "out_path": "capture.json",
@@ -287,6 +289,26 @@ def test_load_capture_supports_plain_json_and_gz(tmp_path: Path) -> None:
     assert capture_zipped.script == "gameplay_diff_capture"
     assert len(capture_plain.ticks) == 1
     assert len(capture_zipped.ticks) == 1
+
+
+def test_load_capture_rejects_missing_capture_format_version(tmp_path: Path) -> None:
+    obj = _capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)])
+    obj.pop("capture_format_version", None)
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    with pytest.raises(ValueError, match="unsupported capture format version"):
+        load_capture(path)
+
+
+def test_load_capture_rejects_unsupported_capture_format_version(tmp_path: Path) -> None:
+    obj = _capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)])
+    obj["capture_format_version"] = int(CAPTURE_FORMAT_VERSION) - 1
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    with pytest.raises(ValueError, match="unsupported capture format version"):
+        load_capture(path)
 
 
 def test_load_capture_decodes_f32_tokens(tmp_path: Path) -> None:
