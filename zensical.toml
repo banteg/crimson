@@ -107,6 +107,7 @@ features = [
     "content.tabs.link",
     "navigation.footer",
     "navigation.instant",
+    "navigation.tabs",
     "navigation.sections",
 ]
 
