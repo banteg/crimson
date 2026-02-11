@@ -16,7 +16,7 @@ from .game_modes import GameMode
 from .math_parity import f32
 from .perks import PerkId
 from .perks.helpers import perk_active
-from .perks.player_ticks import apply_player_perk_ticks
+from .perks.runtime.player_ticks import apply_player_perk_ticks
 from .perks.selection import perk_auto_pick
 from .perks.state import CreatureForPerks, PerkEffectIntervals, PerkSelectionState
 from .projectiles import (

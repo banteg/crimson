@@ -11,6 +11,7 @@ This page documents the **actual runtime behavior** of each perk in:
 - **Original**: Crimsonland v1.9.93 (`analysis/ghidra/raw/crimsonland.exe_decompiled.c`)
 - **Rewrite**: our Python port (`src/`)
 
+For player-facing shared mechanics prose, see [Perks mechanics (version-agnostic)](perks-mechanics.md).
 For ID ↔ name mapping, see [Perk ID map](perk-id-map.md). For a quick “where is this wired” view in the rewrite, see [perk matrix](rewrite/perk-matrix.md).
 
 Notes:

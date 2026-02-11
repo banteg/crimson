@@ -5,7 +5,7 @@ from typing import Sequence
 from ..game_modes import GameMode
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WeaponId
-from .apply import perk_apply
+from .runtime.apply import perk_apply
 from .availability import perk_can_offer, perks_rebuild_available
 from .helpers import perk_active
 from .ids import PERK_BY_ID, PERK_TABLE, PerkFlags, PerkId

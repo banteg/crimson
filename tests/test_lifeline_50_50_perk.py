@@ -5,7 +5,7 @@ from grim.geom import Vec2
 from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
-from crimson.perks.apply import perk_apply
+from crimson.perks.runtime.apply import perk_apply
 
 
 class _FixedRng:

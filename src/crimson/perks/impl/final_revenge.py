@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from grim.geom import Vec2
 
-from ..creatures.damage import creature_apply_damage
-from ..creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureDeath, CreaturePool
-from ..effects import FxQueue
-from ..sim.state_types import GameplayState, PlayerState
-from .helpers import perk_active
-from .ids import PerkId
+from ...effects import FxQueue
+from ...sim.state_types import GameplayState, PlayerState
+from ..helpers import perk_active
+from ..runtime.hook_types import PerkHooks
+from ..ids import PerkId
+
+if TYPE_CHECKING:
+    from ...creatures.runtime import CreatureDeath, CreaturePool
 
 
 def apply_final_revenge_on_player_death(
@@ -23,6 +27,9 @@ def apply_final_revenge_on_player_death(
     deaths: list[CreatureDeath],
 ) -> None:
     """Apply Final Revenge perk behavior when a player dies."""
+    from ...creatures.damage import creature_apply_damage
+    from ...creatures.runtime import CREATURE_HITBOX_ALIVE
+
     if not perk_active(player, PerkId.FINAL_REVENGE):
         return
 
@@ -81,3 +88,9 @@ def apply_final_revenge_on_player_death(
     state.bonus_spawn_guard = prev_guard
     state.sfx_queue.append("sfx_explosion_large")
     state.sfx_queue.append("sfx_shockwave")
+
+
+HOOKS = PerkHooks(
+    perk_id=PerkId.FINAL_REVENGE,
+    player_death_hook=apply_final_revenge_on_player_death,
+)

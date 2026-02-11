@@ -21,6 +21,7 @@ test-cov *args:
 
 check *args:
     uv run ruff check .
+    uv run lint-imports
     uv run ty check src
     uv run pytest {{args}}
 

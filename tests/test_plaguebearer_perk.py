@@ -8,7 +8,7 @@ from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
-from crimson.perks.apply import perk_apply
+from crimson.perks.runtime.apply import perk_apply
 
 
 def test_plaguebearer_apply_sets_active_flag_for_all_players() -> None:

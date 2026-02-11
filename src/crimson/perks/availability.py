@@ -90,9 +90,9 @@ def perk_can_offer(
     # specific runtime modes, not "only in this mode":
     # - in quest mode, offered perks must have bit 0x1 set
     # - in two-player mode, offered perks must have bit 0x2 set
-    if int(game_mode) == int(GameMode.QUESTS) and (flags & PerkFlags.MODE_3_ONLY) == 0:
+    if int(game_mode) == int(GameMode.QUESTS) and (flags & PerkFlags.QUEST_MODE_ALLOWED) == 0:
         return False
-    if int(player_count) == 2 and (flags & PerkFlags.TWO_PLAYER_ONLY) == 0:
+    if int(player_count) == 2 and (flags & PerkFlags.TWO_PLAYER_ALLOWED) == 0:
         return False
 
     if meta.prereq and any(perk_count_get(player, req) <= 0 for req in meta.prereq):

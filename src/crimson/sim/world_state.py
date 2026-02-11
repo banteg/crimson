@@ -20,8 +20,8 @@ from ..gameplay import (
     player_update,
     survival_progression_update,
 )
-from ..perks.effects import perks_update_effects
-from ..perks.registry import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
+from ..perks.runtime.effects import perks_update_effects
+from ..perks.runtime.manifest import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from ..perks.state import CreatureForPerks
 from ..player_damage import player_take_projectile_damage
 from ..projectiles import ProjectileHit

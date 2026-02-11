@@ -3,9 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Sequence
 
-from ..sim.state_types import GameplayState, PlayerState
-from .ids import PerkId
-from .state import CreatureForPerks, PerkSelectionState
+from ...sim.state_types import GameplayState, PlayerState
+from ..ids import PerkId
+from ..state import CreatureForPerks, PerkSelectionState
 
 
 @dataclass(slots=True)
