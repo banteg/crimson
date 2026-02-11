@@ -12,6 +12,7 @@ from crimson.frontend.panels.controls_labels import (
     input_configure_for_label,
     input_scheme_label,
 )
+from crimson.aim_schemes import AimScheme
 from crimson.movement_controls import MovementControlType
 
 
@@ -48,7 +49,7 @@ def test_controls_method_labels_reads_player_arrays() -> None:
     assert controls_method_labels(config_data, player_index=1) == ("Joystick", "Mouse point click")
     assert controls_method_labels(config_data, player_index=2) == ("Dual Action Pad", "Computer")
     assert controls_method_labels(config_data, player_index=3) == ("Computer", "Relative")
-    assert controls_method_values(config_data, player_index=1) == (2, MovementControlType.MOUSE_POINT_CLICK)
+    assert controls_method_values(config_data, player_index=1) == (AimScheme.JOYSTICK, MovementControlType.MOUSE_POINT_CLICK)
 
 
 def test_controls_method_labels_defaults_missing_blob() -> None:
@@ -59,17 +60,30 @@ def test_controls_method_values_unknown_move_mode_maps_to_unknown_enum() -> None
     mode_flags = struct.pack("<IIII", 99, 2, 2, 2) + b"\x00" * (40 - 16)
     config_data = {"unknown_1c": mode_flags}
 
-    assert controls_method_values(config_data, player_index=0) == (0, MovementControlType.UNKNOWN)
+    assert controls_method_values(config_data, player_index=0) == (AimScheme.MOUSE, MovementControlType.UNKNOWN)
 
 
 def test_controls_aim_method_dropdown_ids_hides_computer_unless_loaded() -> None:
-    assert controls_aim_method_dropdown_ids(0) == (0, 1, 2, 3, 4)
-    assert controls_aim_method_dropdown_ids(5) == (0, 1, 2, 3, 4, 5)
+    assert controls_aim_method_dropdown_ids(AimScheme.MOUSE) == (
+        AimScheme.MOUSE,
+        AimScheme.KEYBOARD,
+        AimScheme.JOYSTICK,
+        AimScheme.MOUSE_RELATIVE,
+        AimScheme.DUAL_ACTION_PAD,
+    )
+    assert controls_aim_method_dropdown_ids(AimScheme.COMPUTER) == (
+        AimScheme.MOUSE,
+        AimScheme.KEYBOARD,
+        AimScheme.JOYSTICK,
+        AimScheme.MOUSE_RELATIVE,
+        AimScheme.DUAL_ACTION_PAD,
+        AimScheme.COMPUTER,
+    )
 
 
 def test_controls_rebind_slot_plan_keyboard_static_player1() -> None:
     aim_rows, move_rows, misc_rows = controls_rebind_slot_plan(
-        aim_scheme=1,
+        aim_scheme=AimScheme.KEYBOARD,
         move_mode=MovementControlType.STATIC,
         player_index=0,
     )
@@ -80,7 +94,7 @@ def test_controls_rebind_slot_plan_keyboard_static_player1() -> None:
 
 def test_controls_rebind_slot_plan_dualpad_mouse_cursor_player2() -> None:
     aim_rows, move_rows, misc_rows = controls_rebind_slot_plan(
-        aim_scheme=4,
+        aim_scheme=AimScheme.DUAL_ACTION_PAD,
         move_mode=MovementControlType.MOUSE_POINT_CLICK,
         player_index=1,
     )

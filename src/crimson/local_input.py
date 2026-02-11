@@ -18,6 +18,7 @@ from .input_codes import (
     input_code_is_down_for_player,
     input_code_is_pressed_for_player,
 )
+from .aim_schemes import AimScheme
 from .movement_controls import MovementControlType
 
 _AIM_RADIUS_KEYBOARD = 60.0
@@ -263,11 +264,11 @@ class LocalInputInterpreter:
         return int(config.data.get("keybind_reload", 0x102) or 0x102)
 
     @staticmethod
-    def _safe_controls_modes(config: CrimsonConfig | None, *, player_index: int) -> tuple[int, MovementControlType]:
+    def _safe_controls_modes(config: CrimsonConfig | None, *, player_index: int) -> tuple[AimScheme, MovementControlType]:
         if config is None:
-            return 0, MovementControlType.STATIC
+            return AimScheme.MOUSE, MovementControlType.STATIC
         aim_scheme, move_mode = controls_method_values(config.data, player_index=int(player_index))
-        return int(aim_scheme), move_mode
+        return aim_scheme, move_mode
 
     def build_player_input(
         self,
@@ -307,7 +308,7 @@ class LocalInputInterpreter:
         computer_target_index: int | None = None
         computer_move_active = (
             move_mode_type is MovementControlType.COMPUTER
-            or int(aim_scheme) == 5
+            or aim_scheme is AimScheme.COMPUTER
         )
 
         if computer_move_active:
@@ -420,24 +421,24 @@ class LocalInputInterpreter:
             heading = float(getattr(player, "aim_heading", 0.0) or 0.0)
         aim = Vec2(float(player.aim.x), float(player.aim.y))
         computer_auto_fire = False
-        if int(aim_scheme) == 0:
+        if aim_scheme is AimScheme.MOUSE:
             aim = mouse_world
             delta = aim - player.pos
             if delta.length_sq() > 1e-9:
                 heading = delta.to_heading()
-        elif int(aim_scheme) == 1:
+        elif aim_scheme is AimScheme.KEYBOARD:
             if move_mode_type in {MovementControlType.RELATIVE, MovementControlType.STATIC}:
                 if input_code_is_down_for_player(aim_right_key, player_index=idx):
                     heading = float(heading + float(dt_frame) * _AIM_KEYBOARD_TURN_RATE)
                 if input_code_is_down_for_player(aim_left_key, player_index=idx):
                     heading = float(heading - float(dt_frame) * _AIM_KEYBOARD_TURN_RATE)
                 aim = _aim_point_from_heading(player.pos, heading)
-        elif int(aim_scheme) == 3:
+        elif aim_scheme is AimScheme.MOUSE_RELATIVE:
             rel = mouse_screen - screen_center
             if rel.length_sq() > 1.0:
                 heading = rel.to_heading()
                 aim = _aim_point_from_heading(player.pos, heading)
-        elif int(aim_scheme) == 4:
+        elif aim_scheme is AimScheme.DUAL_ACTION_PAD:
             axis_y = input_axis_value_for_player(aim_axis_y, player_index=idx)
             axis_x = input_axis_value_for_player(aim_axis_x, player_index=idx)
             axis_vec = Vec2(axis_x, axis_y)
@@ -449,13 +450,13 @@ class LocalInputInterpreter:
                 aim = player.pos + axis_dir * radius
             else:
                 aim = _aim_point_from_heading(player.pos, heading)
-        elif int(aim_scheme) == 2:
+        elif aim_scheme is AimScheme.JOYSTICK:
             if _aim_pov_right_active():
                 heading = float(heading + float(dt_frame) * _AIM_JOYSTICK_TURN_RATE)
             if _aim_pov_left_active():
                 heading = float(heading - float(dt_frame) * _AIM_JOYSTICK_TURN_RATE)
             aim = _aim_point_from_heading(player.pos, heading)
-        elif int(aim_scheme) == 5:
+        elif aim_scheme is AimScheme.COMPUTER:
             target_index = computer_target_index
             if target_index is None and creatures:
                 target_index = self._select_computer_target(
@@ -490,7 +491,7 @@ class LocalInputInterpreter:
 
         fire_down = bool(input_code_is_down_for_player(fire_key, player_index=idx))
         fire_pressed = bool(input_code_is_pressed_for_player(fire_key, player_index=idx))
-        if int(aim_scheme) == 5 and computer_auto_fire:
+        if aim_scheme is AimScheme.COMPUTER and computer_auto_fire:
             fire_down = True
         reload_pressed = bool(input_code_is_pressed_for_player(reload_key, player_index=idx)) if idx == 0 else False
 
