@@ -8,7 +8,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand
 from .bonuses import BONUS_BY_ID, BonusId
-from .bonuses.apply import DeferredFreezeCorpseFx
+from .bonuses.freeze import DeferredFreezeCorpseFx
 from .bonuses.hud import BonusHudState
 from .bonuses.pool import BonusPool
 from .creatures.spawn import CreatureFlags
