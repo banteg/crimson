@@ -69,6 +69,7 @@ const CONFIG = {
   // Defaults chosen to avoid movement injection while preserving native auto target/fire behavior.
   forceMoveMode: parseIntEnv("CRIMSON_FRIDA_AUTOPLAY_MOVE_MODE", 5),
   forceAimScheme: parseIntEnv("CRIMSON_FRIDA_AUTOPLAY_AIM_SCHEME", 5),
+  disableMovement: parseBoolEnv("CRIMSON_FRIDA_AUTOPLAY_DISABLE_MOVEMENT", true),
 
   enforceConfigEachFrame: parseBoolEnv("CRIMSON_FRIDA_AUTOPLAY_ENFORCE_EACH_FRAME", true),
   keepDemoModeOff: parseBoolEnv("CRIMSON_FRIDA_AUTOPLAY_DEMO_OFF", true),
@@ -86,6 +87,11 @@ const DATA = {
 
   demo_mode_active: 0x0048700d,
   game_state_id: 0x00487270,
+
+  player_pos_x: 0x004908c4,
+  player_pos_y: 0x004908c8,
+  player_move_dx: 0x004908cc,
+  player_move_dy: 0x004908d0,
 };
 
 const STRIDE = {
@@ -99,6 +105,10 @@ let outWarned = false;
 const fnPtrs = {};
 const dataPtrs = {};
 const attached = {};
+const RUN = {
+  framePosX: null,
+  framePosY: null,
+};
 
 function openOutFile() {
   if (outFile !== null) return;
@@ -154,6 +164,15 @@ function readU8Ptr(p) {
   }
 }
 
+function readF32Ptr(p) {
+  if (!p) return null;
+  try {
+    return p.readFloat();
+  } catch (_) {
+    return null;
+  }
+}
+
 function writeS32Ptr(p, value) {
   if (!p) return false;
   try {
@@ -168,6 +187,16 @@ function writeU8Ptr(p, value) {
   if (!p) return false;
   try {
     p.writeU8(value & 0xff);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function writeF32Ptr(p, value) {
+  if (!p) return false;
+  try {
+    p.writeFloat(Number(value));
     return true;
   } catch (_) {
     return false;
@@ -197,12 +226,45 @@ function readPlayerI32(name, playerIndex) {
   return readS32Ptr(playerDataPtr(name, playerIndex));
 }
 
+function readPlayerF32(name, playerIndex) {
+  return readF32Ptr(playerDataPtr(name, playerIndex));
+}
+
 function writePlayerS32IfDifferent(name, playerIndex, value) {
   const p = playerDataPtr(name, playerIndex);
   if (!p) return false;
   const cur = readS32Ptr(p);
   if (cur === (value | 0)) return false;
   return writeS32Ptr(p, value);
+}
+
+function writePlayerF32(name, playerIndex, value) {
+  return writeF32Ptr(playerDataPtr(name, playerIndex), value);
+}
+
+function capturePlayerPosForFrame() {
+  RUN.framePosX = null;
+  RUN.framePosY = null;
+  if (!CONFIG.disableMovement) return;
+  if (readS32("game_state_id") !== 9) return;
+
+  const x = readPlayerF32("player_pos_x", CONFIG.playerIndex);
+  const y = readPlayerF32("player_pos_y", CONFIG.playerIndex);
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+
+  RUN.framePosX = x;
+  RUN.framePosY = y;
+}
+
+function suppressPlayerMovementForFrame() {
+  if (!CONFIG.disableMovement) return;
+  if (!Number.isFinite(RUN.framePosX) || !Number.isFinite(RUN.framePosY)) return;
+  if (readS32("game_state_id") !== 9) return;
+
+  writePlayerF32("player_pos_x", CONFIG.playerIndex, RUN.framePosX);
+  writePlayerF32("player_pos_y", CONFIG.playerIndex, RUN.framePosY);
+  writePlayerF32("player_move_dx", CONFIG.playerIndex, 0.0);
+  writePlayerF32("player_move_dy", CONFIG.playerIndex, 0.0);
 }
 
 function enforceAssistConfig(reason) {
@@ -279,7 +341,11 @@ function main() {
   if (CONFIG.enforceConfigEachFrame && fnPtrs.gameplay_update_and_render) {
     attachOnce("gameplay_update_and_render", fnPtrs.gameplay_update_and_render, {
       onEnter() {
+        capturePlayerPosForFrame();
         enforceAssistConfig("frame");
+      },
+      onLeave() {
+        suppressPlayerMovementForFrame();
       },
     });
   } else {

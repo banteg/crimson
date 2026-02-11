@@ -27,6 +27,8 @@ just frida-survival-autoplay
 - Does **not** auto-start Survival.
 - Does **not** inject movement input.
 - Does **not** auto-pick perks.
+- Suppresses player movement by default during gameplay frames so computer assist
+  does not steer the character.
 - Enforces control config for the selected player:
   - `config_player_mode_flags[player]` (default `5`)
   - `config_aim_scheme[player]` (default `5`)
@@ -56,5 +58,6 @@ while `gameplay_diff_capture.js` records.
 - `CRIMSON_FRIDA_AUTOPLAY_MODE=1` (Survival)
 - `CRIMSON_FRIDA_AUTOPLAY_MOVE_MODE=5`
 - `CRIMSON_FRIDA_AUTOPLAY_AIM_SCHEME=5`
+- `CRIMSON_FRIDA_AUTOPLAY_DISABLE_MOVEMENT=1|0` (default `1`)
 - `CRIMSON_FRIDA_AUTOPLAY_ENFORCE_EACH_FRAME=1|0` (default `1`)
 - `CRIMSON_FRIDA_AUTOPLAY_DEMO_OFF=1|0` (default `1`)
