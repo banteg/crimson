@@ -18,7 +18,12 @@ from grim.view import ViewContext
 from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..gameplay import most_used_weapon_id_for_player, weapon_assign_player
-from ..input_codes import config_keybinds_for_player, input_code_is_down_for_player, input_code_is_pressed_for_player
+from ..input_codes import (
+    config_keybinds_for_player,
+    input_code_is_down_for_player,
+    input_code_is_pressed_for_player,
+    input_primary_just_pressed,
+)
 from ..perks.state import CreatureForPerks
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
@@ -569,7 +574,10 @@ class QuestMode(BaseGameplayMode):
             ):
                 self._perk_prompt_pulse = 1000.0
                 self._perk_menu.open_if_available(perk_ctx)
-            elif self._perk_prompt_hover and input_code_is_pressed_for_player(fire_key, player_index=0):
+            elif self._perk_prompt_hover and input_primary_just_pressed(
+                self._config,
+                player_count=len(self._world.players),
+            ):
                 self._perk_prompt_pulse = 1000.0
                 self._perk_menu.open_if_available(perk_ctx)
 

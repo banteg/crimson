@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 
 import pyray as rl
 
-from grim.config import CrimsonConfig, player_keybind_block
+from grim.config import CrimsonConfig, default_player_keybind_block, player_keybind_block
 
 
 INPUT_CODE_UNBOUND = 0x17E
@@ -199,6 +199,8 @@ class _PressedState:
 
 
 _PRESSED_STATE = _PressedState()
+_PRIMARY_EDGE_SENTINEL_PLAYER = -1
+_PRIMARY_EDGE_SENTINEL_KEY = -1
 
 
 def _dik_to_rl_key(dik_code: int) -> int | None:
@@ -467,6 +469,45 @@ def config_keybinds_for_player(config: CrimsonConfig | None, *, player_index: in
     if config is None:
         return ()
     return tuple(int(value) for value in player_keybind_block(config.data, player_index=int(player_index)))
+
+
+def player_fire_keybind(config: CrimsonConfig | None, *, player_index: int) -> int:
+    idx = max(0, min(3, int(player_index)))
+    keybinds = config_keybinds_for_player(config, player_index=idx)
+    if len(keybinds) >= 5:
+        return int(keybinds[4])
+    return int(default_player_keybind_block(idx)[4])
+
+
+def _input_primary_any_down(config: CrimsonConfig | None, *, player_count: int) -> bool:
+    if input_code_is_down_for_player(0x100, player_index=0):
+        return True
+
+    count = max(1, min(4, int(player_count)))
+    for player_index in range(count):
+        fire_key = player_fire_keybind(config, player_index=player_index)
+        if input_code_is_down_for_player(fire_key, player_index=player_index):
+            return True
+    return False
+
+
+def input_primary_is_down(config: CrimsonConfig | None, *, player_count: int) -> bool:
+    down = _input_primary_any_down(config, player_count=player_count)
+    _PRESSED_STATE.mark_down(
+        player_index=_PRIMARY_EDGE_SENTINEL_PLAYER,
+        key_code=_PRIMARY_EDGE_SENTINEL_KEY,
+        is_down=down,
+    )
+    return bool(down)
+
+
+def input_primary_just_pressed(config: CrimsonConfig | None, *, player_count: int) -> bool:
+    down = _input_primary_any_down(config, player_count=player_count)
+    return _PRESSED_STATE.is_pressed(
+        player_index=_PRIMARY_EDGE_SENTINEL_PLAYER,
+        key_code=_PRIMARY_EDGE_SENTINEL_KEY,
+        is_down=down,
+    )
 
 
 def player_move_fire_binds(keybinds: Sequence[int], player_index: int) -> tuple[int, int, int, int, int]:
