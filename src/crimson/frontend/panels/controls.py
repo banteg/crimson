@@ -744,30 +744,52 @@ class ControlsMenuView(PanelMenuView):
             rl.Color(255, 255, 255, checkbox_alpha),
         )
 
-        self._draw_dropdown(
-            layout=player_layout,
-            items=player_items,
-            selected_index=player_selected,
-            is_open=self._player_profile_open,
-            enabled=not (self._move_method_open or self._aim_method_open or self._rebind_active()),
-            scale=panel_scale,
+        dropdowns: tuple[tuple[bool, _DropdownLayout, tuple[str, ...], int, bool], ...] = (
+            (
+                self._player_profile_open,
+                player_layout,
+                player_items,
+                player_selected,
+                not (self._move_method_open or self._aim_method_open or self._rebind_active()),
+            ),
+            (
+                self._aim_method_open,
+                aim_layout,
+                aim_items,
+                aim_selected,
+                not (self._move_method_open or self._player_profile_open or self._rebind_active()),
+            ),
+            (
+                self._move_method_open,
+                move_layout,
+                move_items,
+                move_selected,
+                not (self._aim_method_open or self._player_profile_open or self._rebind_active()),
+            ),
         )
-        self._draw_dropdown(
-            layout=aim_layout,
-            items=aim_items,
-            selected_index=aim_selected,
-            is_open=self._aim_method_open,
-            enabled=not (self._move_method_open or self._player_profile_open or self._rebind_active()),
-            scale=panel_scale,
-        )
-        self._draw_dropdown(
-            layout=move_layout,
-            items=move_items,
-            selected_index=move_selected,
-            is_open=self._move_method_open,
-            enabled=not (self._aim_method_open or self._player_profile_open or self._rebind_active()),
-            scale=panel_scale,
-        )
+        # Active list must render last so overlapping widgets don't occlude open options.
+        for is_open, layout, items, selected_index, enabled in dropdowns:
+            if is_open:
+                continue
+            self._draw_dropdown(
+                layout=layout,
+                items=items,
+                selected_index=selected_index,
+                is_open=is_open,
+                enabled=enabled,
+                scale=panel_scale,
+            )
+        for is_open, layout, items, selected_index, enabled in dropdowns:
+            if not is_open:
+                continue
+            self._draw_dropdown(
+                layout=layout,
+                items=items,
+                selected_index=selected_index,
+                is_open=is_open,
+                enabled=enabled,
+                scale=panel_scale,
+            )
 
         # --- Right panel: configured bindings list ---
         def _draw_section_heading(title: str, *, y: float) -> None:
