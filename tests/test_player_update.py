@@ -68,6 +68,25 @@ def test_player_update_stationary_reloader_tripples_reload_decay() -> None:
     assert math.isclose(player.reload_timer, 0.7, abs_tol=2e-8)
 
 
+def test_player_update_move_to_cursor_reload_key_does_not_start_reload() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(50.0, 50.0), clip_size=10, ammo=10)
+
+    player_update(
+        player,
+        PlayerInput(
+            aim=Vec2(51.0, 50.0),
+            reload_pressed=True,
+            move_to_cursor_pressed=True,
+        ),
+        0.1,
+        state,
+    )
+
+    assert player.reload_active is False
+    assert player.reload_timer == 0.0
+
+
 def test_player_update_speed_bonus_expires_before_player_update_step() -> None:
     state = GameplayState()
     no_bonus = PlayerState(index=0, pos=Vec2(100.0, 100.0))

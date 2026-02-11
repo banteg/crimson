@@ -54,3 +54,24 @@ def test_alternate_weapon_reload_pressed_swaps_and_adds_cooldown() -> None:
     assert player.weapon_id == 1
     assert player.alt_weapon_id == 2
     assert player.shot_cooldown == pytest.approx(0.1)
+
+
+def test_alternate_weapon_reload_pressed_still_swaps_in_move_to_cursor_mode() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    weapon_assign_player(player, 1)
+    player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+    bonus_apply(state, player, BonusId.WEAPON, amount=2)
+
+    player.shot_cooldown = 0.0
+    state.sfx_queue.clear()
+    player_update(
+        player,
+        PlayerInput(reload_pressed=True, move_to_cursor_pressed=True),
+        dt=0.1,
+        state=state,
+    )
+
+    assert player.weapon_id == 1
+    assert player.alt_weapon_id == 2
+    assert player.shot_cooldown == pytest.approx(0.1)
