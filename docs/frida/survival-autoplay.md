@@ -34,6 +34,18 @@ just frida-survival-autoplay
   - `config_aim_scheme[player]` (default `5`)
 - Optionally enforces `config_game_mode = 1` (Survival) without forcing state transitions.
 
+## Native control caveat (2003 EXE)
+
+In the original executable, `config_aim_scheme[player] = 5` is the built-in
+computer path. That path also routes through computer movement logic, even if
+you are not explicitly setting `config_player_mode_flags[player] = 5`.
+
+Practical effect:
+
+- `aim_scheme = 5` alone can still steer movement.
+- This sidecar therefore suppresses movement by default
+  (`CRIMSON_FRIDA_AUTOPLAY_DISABLE_MOVEMENT=1`) when pinning native auto aim/fire.
+
 ## Use with differential capture
 
 Run this sidecar in one terminal, then run the capture script in another:

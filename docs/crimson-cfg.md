@@ -72,6 +72,18 @@ typedef struct crimson_cfg_t {
 } crimson_cfg_t;
 ```
 
+## Control scheme coupling caveat
+
+Runtime behavior in the original executable couples control schemes in a way
+that is not obvious from the config layout alone:
+
+- `config_aim_scheme[player] = 5` enters the built-in computer aim path.
+- In `gameplay_update_and_render` (`0x0040aab0`), that same path also uses
+  computer movement handling.
+
+So `aim_scheme = 5` can cause computer steering movement even when
+`config_player_mode_flags[player] != 5`.
+
 Observed file:
 
 - `game_bins/crimsonland/1.9.93-gog/crimson.cfg`
