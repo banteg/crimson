@@ -15,6 +15,7 @@ from crimson.gameplay import (
     bonus_hud_update,
     player_fire_weapon,
     player_update,
+    perks_update_effects,
     weapon_assign_player,
 )
 from crimson.perks import PerkId
@@ -65,7 +66,7 @@ def test_player_update_stationary_reloader_tripples_reload_decay() -> None:
     assert math.isclose(player.reload_timer, 0.7, abs_tol=2e-8)
 
 
-def test_player_update_speed_bonus_applies_on_expiry_boundary() -> None:
+def test_player_update_speed_bonus_expires_before_player_update_step() -> None:
     state = GameplayState()
     no_bonus = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     no_bonus.move_speed = 2.0
@@ -77,14 +78,14 @@ def test_player_update_speed_bonus_applies_on_expiry_boundary() -> None:
     with_bonus.heading = 0.0
 
     input_state = PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(200.0, 100.0))
+    perks_update_effects(state, [no_bonus, with_bonus], 0.018)
     player_update(no_bonus, input_state, 0.018, state)
     player_update(with_bonus, input_state, 0.018, state)
 
     no_bonus_delta = (no_bonus.pos - Vec2(100.0, 100.0)).length()
     with_bonus_delta = (with_bonus.pos - Vec2(100.0, 100.0)).length()
 
-    assert with_bonus_delta > no_bonus_delta
-    assert math.isclose(with_bonus_delta, no_bonus_delta * 1.5, rel_tol=1e-6)
+    assert math.isclose(with_bonus_delta, no_bonus_delta, abs_tol=1e-9)
     assert math.isclose(with_bonus.speed_bonus_timer, 0.0, abs_tol=1e-9)
 
 

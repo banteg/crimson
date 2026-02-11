@@ -811,7 +811,28 @@ def _perks_update_jinxed(ctx: _PerksUpdateEffectsCtx) -> None:
         ctx.state.sfx_queue.append("sfx_trooper_inpain_01")
 
 
+def _perks_update_player_bonus_timers(ctx: _PerksUpdateEffectsCtx) -> None:
+    # Native `perks_update_effects` decrements per-player shield/fire-bullets/speed
+    # timers before `player_update` reads them for this frame.
+    for player in ctx.players:
+        if player.shield_timer <= 0.0:
+            player.shield_timer = 0.0
+        else:
+            player.shield_timer = float(player.shield_timer) - float(ctx.dt)
+
+        if player.fire_bullets_timer <= 0.0:
+            player.fire_bullets_timer = 0.0
+        else:
+            player.fire_bullets_timer = float(player.fire_bullets_timer) - float(ctx.dt)
+
+        if player.speed_bonus_timer <= 0.0:
+            player.speed_bonus_timer = 0.0
+        else:
+            player.speed_bonus_timer = float(player.speed_bonus_timer) - float(ctx.dt)
+
+
 _PERKS_UPDATE_EFFECT_STEPS: tuple[_PerksUpdateEffectsStep, ...] = (
+    _perks_update_player_bonus_timers,
     _perks_update_regeneration,
     _perks_update_lean_mean_exp_machine,
     _perks_update_death_clock,
@@ -2476,9 +2497,6 @@ def player_update(
         player.spread_heat = max(0.01, player.spread_heat - dt * 0.4)
 
     speed_bonus_active = player.speed_bonus_timer > 0.0
-    player.shield_timer = max(0.0, player.shield_timer - dt)
-    player.fire_bullets_timer = max(0.0, player.fire_bullets_timer - dt)
-    player.speed_bonus_timer = max(0.0, player.speed_bonus_timer - dt)
     if player.aux_timer > 0.0:
         aux_decay = 1.4 if player.aux_timer >= 1.0 else 0.5
         player.aux_timer = max(0.0, player.aux_timer - dt * aux_decay)
