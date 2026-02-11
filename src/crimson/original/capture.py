@@ -961,10 +961,11 @@ def convert_capture_to_replay(
                         continue
                     players = tick.checkpoint.players
                     if player_index < len(players):
-                        player_pos = players[player_index].pos
+                        player_pos_capture = players[player_index].pos
+                        player_pos = Vec2(float(player_pos_capture.x), float(player_pos_capture.y))
                     else:
                         player_pos = Vec2()
-                    aim_pos = player_pos + Vec2.from_heading(float(sample.aim_heading)) * 256.0  # ty:ignore[unsupported-operator]
+                    aim_pos = player_pos + Vec2.from_heading(float(sample.aim_heading)) * 256.0
                     aim_x = float(aim_pos.x)
                     aim_y = float(aim_pos.y)
                 elif has_aim_xy:

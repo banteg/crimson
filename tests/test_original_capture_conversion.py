@@ -25,6 +25,7 @@ from crimson.original.capture import (
 from crimson.original.schema import CAPTURE_FORMAT_VERSION
 from crimson.replay import UnknownEvent, unpack_input_flags
 from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
+from grim.geom import Vec2
 
 
 def _crt_rand_outputs(seed: int, calls: int) -> list[int]:
@@ -585,6 +586,22 @@ def test_convert_capture_to_replay_from_ticks(tmp_path: Path) -> None:
     fire_down, fire_pressed, _reload_pressed = unpack_input_flags(flags)
     assert fire_down is True
     assert fire_pressed is True
+
+
+def test_convert_capture_to_replay_heading_fallback_uses_checkpoint_pos(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["input_approx"] = [{"player_index": 0, "aim_x": 0.0, "aim_y": 0.0, "aim_heading": 0.0}]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture)
+
+    aim = replay.inputs[0][0][2]
+    expected = Vec2(512.0, 512.0) + Vec2.from_heading(0.0) * 256.0
+    assert float(aim[0]) == pytest.approx(expected.x)
+    assert float(aim[1]) == pytest.approx(expected.y)
 
 
 def test_convert_capture_to_replay_does_not_fallback_to_primary_query_stats(tmp_path: Path) -> None:
