@@ -44,9 +44,10 @@ long as the player keeps moving. Stopping causes speed to decay rapidly.
 
 ## 6. Pyrokinetic
 
-While the crosshair is near a creature, a heat flare triggers every
-0.5 seconds — a burst of particles and a random decal at the target. Purely
-visual; no damage.
+While the crosshair is near a creature, Pyrokinetic decrements that creature's
+shared collision timer. When it wraps, the timer is reset to 0.5 seconds and a
+heat flare triggers — a burst of particles and a random decal at the target.
+Purely visual; no damage.
 
 ## 7. Instant Winner
 
@@ -55,7 +56,7 @@ Immediately grants +2500 XP. Can be picked multiple times.
 ## 8. Grim Deal
 
 Immediately grants +18% of current XP (rounded down), then kills the player.
-Only available in Survival and Rush.
+Not offered in Quest mode or two-player sessions.
 
 ## 9. Alternate Weapon
 
@@ -172,8 +173,7 @@ Eyes.
 ## 30. Monster Vision
 
 Every creature gets a yellow highlight behind it, making them easy to spot.
-Creature shadows are hidden while this perk is active. Only offered when FX
-detail is enabled in settings.
+Creature shadows are hidden while this perk is active.
 
 ## 31. Hot Tempered
 
