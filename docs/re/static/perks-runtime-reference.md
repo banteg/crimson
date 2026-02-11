@@ -615,6 +615,9 @@ Notes:
 
 ### Rewrite
 
+- Default rewrite mode: heals `+1..+50` HP (clamped to 100), matching the
+  in-game perk description text.
+- With `--preserve-bugs`: keeps the native multiplier behavior (`health *= 1..50`).
 - `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
 - `src/crimson/perks/impl/bandage.py`: `apply_bandage()`.
 

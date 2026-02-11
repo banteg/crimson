@@ -320,9 +320,13 @@ Unlocked by quest 4.5 (*The Massacre*).
 ## 45. Greater Regeneration
 
 Upgrades [Regeneration](#38-regeneration): when a regen tick triggers, heal
-amount is doubled (+2×dt instead of +dt). With `--preserve-bugs`, original
-behavior is preserved and Greater Regeneration is a no-op.
+amount is doubled (+2×dt instead of +dt), for an effective average heal rate
+of about 1 HP/s.
 [Death Clock](#47-death-clock) clears it on pick.
+
+!!! bug "Original bug"
+    In the original executable, Greater Regeneration has no runtime effect.
+    Run with `--preserve-bugs` to keep that no-op behavior for parity.
 
 Requires [Regeneration](#38-regeneration).
 Unlocked by quest 4.7 (*Gauntlet*).
@@ -353,9 +357,13 @@ Unlocked by quest 5.3 (*The Fortress*).
 
 ## 49. Bandage
 
-Multiplies every alive player's health by a random value from 1 to 50, then
-clamps to 100. Each player gets an independent roll. Produces a burst of
-particles per player.
+Restores each alive player's health by a random amount from +1 to +50 HP
+(1-50% of the full 100-HP bar), then clamps to 100. Each player gets an
+independent roll.
+
+!!! bug "Original behavior"
+    The original executable multiplies health by ×1..×50 instead of restoring
+    +1..+50 HP. Use `--preserve-bugs` to keep that native behavior.
 
 Unlocked by quest 5.5 (*Knee-deep in the Dead*).
 

@@ -62,3 +62,22 @@ Rewrite behavior:
   `+2*dt` (same RNG gate/timing as base Regeneration).
 - With `--preserve-bugs`: keep original behavior where Greater Regeneration is a
   no-op.
+
+## 3) Bandage applies a health multiplier instead of a heal
+
+Native behavior:
+
+- `perk_apply` computes `roll = (crt_rand() % 50) + 1`.
+- It multiplies each alive player's health by `roll`, then clamps to `100`.
+
+Why it’s likely a bug:
+
+- The perk text says it “restores up to 50% health.”
+- A ×1..×50 multiplier is wildly different from a bounded heal and can jump from
+  low health to full almost every time.
+
+Rewrite behavior:
+
+- Default: heal each alive player by `+1..+50` HP (1-50% of a 100-HP bar), then
+  clamp to `100`.
+- With `--preserve-bugs`: keep the original multiplier behavior.
