@@ -8,11 +8,15 @@ tags:
 
 # Perks
 
-Mechanics reference for all 58 perks. Exact numbers, interaction rules, and
-selection conditions. No source paths or decompiler addresses.
+Perks are passive abilities chosen on level-up. The player picks one from a
+random selection of 5 (or more with Perk Expert / Perk Master). Most perks are
+permanent, some are instant one-shots, and a few carry harsh trade-offs. In
+two-player mode, perk counts are shared: picking a perk on either player grants
+it to both.
 
-See also: [Perk ID map](../perk-id-map.md) |
-[Perk runtime reference](../re/static/perks-runtime-reference.md)
+This page documents all 58 perks with exact numbers and interaction rules.
+For decompiler-level details on where each perk runs in the game loop, see
+[Perk runtime reference](../re/static/perks-runtime-reference.md).
 
 ## 0. AntiPerk
 

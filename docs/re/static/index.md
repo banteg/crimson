@@ -12,6 +12,7 @@ Decompiler- and symbol-driven reference docs.
 - [Entrypoint trace](../../entrypoint.md)
 - [Boot / loading sequence](../../boot-sequence.md)
 - [Detangling notes](../../detangling.md)
+- [Perk ID map](perk-id-map.md)
 - [Perk runtime reference](perks-runtime-reference.md)
 - [Structs docs](../../re/structs/index.md)
 - [Crimsonland.exe docs](../../crimsonland-exe/index.md)

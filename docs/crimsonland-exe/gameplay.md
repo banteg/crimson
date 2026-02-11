@@ -285,7 +285,7 @@ See the data tables for concrete values:
 - [Weapon table](../weapon-table.md)
 - [Projectile struct](../structs/projectile.md)
 - [Effects pools](../structs/effects.md)
-- [Perk ID map](../perk-id-map.md)
+- [Perk ID map](../re/static/perk-id-map.md)
 - [Bonus ID map](../bonus-id-map.md)
 
 ## Mode updates
