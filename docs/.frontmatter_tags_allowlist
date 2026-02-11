@@ -1,0 +1,34 @@
+# Temporary allowlist for docs missing frontmatter tags.
+# Keep this list shrinking over time; `scripts/check_docs.py` fails on stale entries.
+cheatsheets/directx8.md
+cheatsheets/frida.md
+cheatsheets/raylib.md
+cheatsheets/zensical.md
+cheatsheets/zig.md
+duplication-triage.md
+frida/demo-idle-threshold.md
+frida/demo-trial-overlay.md
+frida/differential-sessions.md
+frida/index.md
+frida/workflow.md
+metrics.md
+provenance.md
+rewrite/bonuses.md
+rewrite/float-parity-policy.md
+rewrite/game-over.md
+rewrite/index.md
+rewrite/local-multiplayer.md
+rewrite/module-map.md
+rewrite/original-bugs.md
+rewrite/perk-matrix.md
+rewrite/projectile-render-debug.md
+rewrite/status.md
+rewrite/tech-tree.md
+rewrite/terrain.md
+third-party-libs.md
+typo.md
+windbg/index.md
+windbg/sessions.md
+windbg/workflow.md
+work-status.md
+worklog.md
