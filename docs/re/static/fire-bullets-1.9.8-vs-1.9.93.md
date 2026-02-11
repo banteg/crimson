@@ -14,62 +14,81 @@ tags:
 ## Evidence anchors
 
 - **1.9.8 recursive add-on shot** (`sub_41fc20`): owner filter + `arg3 != 0x2d` guard + self-call with `0x2d`.
+
   - `crimsonland_1.9.8.txt:25166`
   - `crimsonland_1.9.8.txt:25170`
   - `crimsonland_1.9.8.txt:25188`
+
 - In the exported 1.9.8 HLIL, the only direct `sub_41fc20(..., 0x2d, ...)` callsite is that self-call line above.
 - **1.9.93 in-place override** (`projectile_spawn`): same owner filter, but rewrites local `type_id_1 = 0x2d` (no recursive spawn).
+
   - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:27925`
   - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:27929`
   - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:27948`
+
 - **1.9.93 dedicated Fire Bullets fire path in `player_update`**: paired SFX, pellet-count loop, single-pellet fallback cadence/spread.
+
   - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:20782`
   - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:20797`
   - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:20803`
   - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:20812`
   - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:20838`
+
 - Fire Bullets fallback constants initialized in weapon table init (`0.14`, `0.22`).
+
   - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:67796`
   - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:67798`
+
 - Weapon pellet-count field used by Fire Bullets logic.
+
   - `docs/weapon-table.md:102`
+
 - Rewrite mirrors 1.9.93 behavior (in-place override + dedicated fire branch).
+
   - `src/crimson/gameplay.py:623`
   - `src/crimson/gameplay.py:831`
 
 ## Version-level comparison
 
 ### Hook location
+
 - 1.9.8: `sub_41fc20` (projectile spawn).
 - 1.9.93: `projectile_spawn` plus a dedicated Fire Bullets branch in `player_update`.
 
 ### Fire Bullets conversion model
+
 - 1.9.8: additive recursion. An extra `0x2d` shot is spawned and the original shot remains.
 - 1.9.93: replacement. Shot type is forced to `0x2d` instead of adding a second main projectile.
 
 ### `0x2d` recursion guard
+
 - 1.9.8: yes (`arg3 != 0x2d`).
 - 1.9.93: no recursion path in `projectile_spawn`, so no equivalent guard is needed.
 
 ### Multi-pellet outcomes
+
 - 1.9.8: original pellets plus same-count extra `0x2d` pellets.
 - 1.9.93: only `pellet_count[weapon_id]` fire bullets.
 
 ### Particle and secondary weapon outcomes
+
 - 1.9.8: Fire Bullets hook does not inject `0x2d` for fire paths that avoid main `projectile_spawn`.
 - 1.9.93: dedicated Fire Bullets branch still emits `0x2d` using weapon pellet count.
 
 ### Single-pellet cadence/spread fallback
+
 - 1.9.8: not observed in `sub_41fc20` hook behavior.
 - 1.9.93: uses `fire_bullets_fallback_shot_cooldown` and `fire_bullets_fallback_spread_heat` when pellet count is 1.
 
 ### Fire SFX while Fire Bullets is active
+
 - 1.9.8: weapon-path dependent.
 - 1.9.93: dedicated paired Fire Bullets SFX path (`primary` + `secondary`).
 
 ## Full weapon matrix (section format)
 
 Interpretation notes:
+
 - `Path basis` shows whether behavior is direct from explicit callsites/mappings or inferred from default behavior.
 - `Base main spawn calls` counts main `projectile_spawn` calls per trigger with Fire Bullets off.
 - `1.9.8 Fire Bullets` describes additive-recursive behavior.
@@ -563,6 +582,7 @@ Interpretation notes:
 
 - Current Python gameplay matches the **1.9.93** model (replacement + dedicated Fire Bullets branch), not the **1.9.8 additive recursion** model.
 - Core references:
+
   - Projectile override gate: `src/crimson/gameplay.py:623`
   - Dedicated Fire Bullets projectile loop: `src/crimson/gameplay.py:831`
   - Single-pellet fallback cadence: `src/crimson/gameplay.py:763`
