@@ -95,481 +95,534 @@ Interpretation notes:
 - `1.9.93 Fire Bullets` describes replacement-model behavior from the dedicated branch.
 
 ### Weapon `1`: Pistol
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x01`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x01`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `2`: Assault Rifle
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x02`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x02`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `3`: Shotgun
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x03`
-`Base main spawn calls`: 12
-`1.9.8 Fire Bullets`: +12 extra `0x2d` (base 12 shots kept)
-`1.9.93 Fire Bullets`: 12x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x03`
+- `Base main spawn calls`: 12
+- `1.9.8 Fire Bullets`: +12 extra `0x2d` (base 12 shots kept)
+- `1.9.93 Fire Bullets`: 12x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `4`: Sawed-off Shotgun
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x03`
-`Base main spawn calls`: 12
-`1.9.8 Fire Bullets`: +12 extra `0x2d` (base 12 shots kept)
-`1.9.93 Fire Bullets`: 12x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x03`
+- `Base main spawn calls`: 12
+- `1.9.8 Fire Bullets`: +12 extra `0x2d` (base 12 shots kept)
+- `1.9.93 Fire Bullets`: 12x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `5`: Submachine Gun
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x05`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x05`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `6`: Gauss Gun
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x06`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x06`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `7`: Mean Minigun
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x01`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x01`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `8`: Flamethrower
-`Path basis`: Direct (explicit non-main path)
-`Base fire path`: Particle pool (`fx_spawn_particle` style 0)
-`Base main spawn calls`: 0 (no main `projectile_spawn`)
-`1.9.8 Fire Bullets`: No Fire Bullets projectile from this fire path
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit non-main path)
+- `Base fire path`: Particle pool (`fx_spawn_particle` style 0)
+- `Base main spawn calls`: 0 (no main `projectile_spawn`)
+- `1.9.8 Fire Bullets`: No Fire Bullets projectile from this fire path
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `9`: Plasma Rifle
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x09`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x09`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `10`: Multi-Plasma
-`Path basis`: Direct (explicit special-case branch)
-`Base fire path`: Main projectile pool, fixed 5-shot pattern (`0x09/0x0B`); primary types: `0x09,0x0b`
-`Base main spawn calls`: 5
-`1.9.8 Fire Bullets`: +5 extra `0x2d` (base 5 shots kept)
-`1.9.93 Fire Bullets`: 3x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit special-case branch)
+- `Base fire path`: Main projectile pool, fixed 5-shot pattern (`0x09/0x0B`); primary types: `0x09,0x0b`
+- `Base main spawn calls`: 5
+- `1.9.8 Fire Bullets`: +5 extra `0x2d` (base 5 shots kept)
+- `1.9.93 Fire Bullets`: 3x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `11`: Plasma Minigun
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x0b`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x0b`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `12`: Rocket Launcher
-`Path basis`: Direct (explicit non-main path)
-`Base fire path`: Secondary projectile pool (rocket type 1)
-`Base main spawn calls`: 0 (no main `projectile_spawn`)
-`1.9.8 Fire Bullets`: No Fire Bullets projectile from this fire path
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit non-main path)
+- `Base fire path`: Secondary projectile pool (rocket type 1)
+- `Base main spawn calls`: 0 (no main `projectile_spawn`)
+- `1.9.8 Fire Bullets`: No Fire Bullets projectile from this fire path
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `13`: Seeker Rockets
-`Path basis`: Direct (explicit non-main path)
-`Base fire path`: Secondary projectile pool (homing rocket type 2)
-`Base main spawn calls`: 0 (no main `projectile_spawn`)
-`1.9.8 Fire Bullets`: No Fire Bullets projectile from this fire path
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit non-main path)
+- `Base fire path`: Secondary projectile pool (homing rocket type 2)
+- `Base main spawn calls`: 0 (no main `projectile_spawn`)
+- `1.9.8 Fire Bullets`: No Fire Bullets projectile from this fire path
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `14`: Plasma Shotgun
-`Path basis`: Direct (explicit special-case branch)
-`Base fire path`: Main projectile pool, 14-shot plasma spread (`0x0B`); primary types: `0x0b`
-`Base main spawn calls`: 14
-`1.9.8 Fire Bullets`: +14 extra `0x2d` (base 14 shots kept)
-`1.9.93 Fire Bullets`: 14x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit special-case branch)
+- `Base fire path`: Main projectile pool, 14-shot plasma spread (`0x0B`); primary types: `0x0b`
+- `Base main spawn calls`: 14
+- `1.9.8 Fire Bullets`: +14 extra `0x2d` (base 14 shots kept)
+- `1.9.93 Fire Bullets`: 14x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `15`: Blow Torch
-`Path basis`: Direct (explicit non-main path)
-`Base fire path`: Particle pool (`fx_spawn_particle` style 1)
-`Base main spawn calls`: 0 (no main `projectile_spawn`)
-`1.9.8 Fire Bullets`: No Fire Bullets projectile from this fire path
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit non-main path)
+- `Base fire path`: Particle pool (`fx_spawn_particle` style 1)
+- `Base main spawn calls`: 0 (no main `projectile_spawn`)
+- `1.9.8 Fire Bullets`: No Fire Bullets projectile from this fire path
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `16`: HR Flamer
-`Path basis`: Direct (explicit non-main path)
-`Base fire path`: Particle pool (`fx_spawn_particle` style 2)
-`Base main spawn calls`: 0 (no main `projectile_spawn`)
-`1.9.8 Fire Bullets`: No Fire Bullets projectile from this fire path
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit non-main path)
+- `Base fire path`: Particle pool (`fx_spawn_particle` style 2)
+- `Base main spawn calls`: 0 (no main `projectile_spawn`)
+- `1.9.8 Fire Bullets`: No Fire Bullets projectile from this fire path
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `17`: Mini-Rocket Swarmers
-`Path basis`: Direct (explicit non-main path)
-`Base fire path`: Secondary projectile pool (homing rockets; count = current ammo)
-`Base main spawn calls`: 0 (no main `projectile_spawn`)
-`1.9.8 Fire Bullets`: No Fire Bullets projectile from this fire path
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit non-main path)
+- `Base fire path`: Secondary projectile pool (homing rockets; count = current ammo)
+- `Base main spawn calls`: 0 (no main `projectile_spawn`)
+- `1.9.8 Fire Bullets`: No Fire Bullets projectile from this fire path
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `18`: Rocket Minigun
-`Path basis`: Direct (explicit non-main path)
-`Base fire path`: Secondary projectile pool (rocket-minigun type 4)
-`Base main spawn calls`: 0 (no main `projectile_spawn`)
-`1.9.8 Fire Bullets`: No Fire Bullets projectile from this fire path
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit non-main path)
+- `Base fire path`: Secondary projectile pool (rocket-minigun type 4)
+- `Base main spawn calls`: 0 (no main `projectile_spawn`)
+- `1.9.8 Fire Bullets`: No Fire Bullets projectile from this fire path
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `19`: Pulse Gun
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x13`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x13`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `20`: Jackhammer
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x03`
-`Base main spawn calls`: 4
-`1.9.8 Fire Bullets`: +4 extra `0x2d` (base 4 shots kept)
-`1.9.93 Fire Bullets`: 4x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x03`
+- `Base main spawn calls`: 4
+- `1.9.8 Fire Bullets`: +4 extra `0x2d` (base 4 shots kept)
+- `1.9.93 Fire Bullets`: 4x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `21`: Ion Rifle
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x15`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x15`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `22`: Ion Minigun
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x16`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x16`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `23`: Ion Cannon
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x17`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x17`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `24`: Shrinkifier 5k
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x18`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x18`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `25`: Blade Gun
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x19`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x19`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `26`: Spider Plasma
-`Path basis`: Inferred (default type_id == weapon_id)
-`Base fire path`: Main projectile pool; primary type(s): `0x1a`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Inferred (default type_id == weapon_id)
+- `Base fire path`: Main projectile pool; primary type(s): `0x1a`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `27`: Evil Scythe
-`Path basis`: Inferred (default type_id == weapon_id)
-`Base fire path`: Main projectile pool; primary type(s): `0x1b`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Inferred (default type_id == weapon_id)
+- `Base fire path`: Main projectile pool; primary type(s): `0x1b`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `28`: Plasma Cannon
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x1c`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x1c`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `29`: Splitter Gun
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x1d`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x1d`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `30`: Gauss Shotgun
-`Path basis`: Direct (explicit special-case branch)
-`Base fire path`: Main projectile pool, 6-shot gauss spread (`0x06`); primary types: `0x06`
-`Base main spawn calls`: 6
-`1.9.8 Fire Bullets`: +6 extra `0x2d` (base 6 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit special-case branch)
+- `Base fire path`: Main projectile pool, 6-shot gauss spread (`0x06`); primary types: `0x06`
+- `Base main spawn calls`: 6
+- `1.9.8 Fire Bullets`: +6 extra `0x2d` (base 6 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `31`: Ion Shotgun
-`Path basis`: Direct (explicit special-case branch)
-`Base fire path`: Main projectile pool, 8-shot ion spread (`0x16`); primary types: `0x16`
-`Base main spawn calls`: 8
-`1.9.8 Fire Bullets`: +8 extra `0x2d` (base 8 shots kept)
-`1.9.93 Fire Bullets`: 8x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit special-case branch)
+- `Base fire path`: Main projectile pool, 8-shot ion spread (`0x16`); primary types: `0x16`
+- `Base main spawn calls`: 8
+- `1.9.8 Fire Bullets`: +8 extra `0x2d` (base 8 shots kept)
+- `1.9.93 Fire Bullets`: 8x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Keeps weapon cadence/spread (no fallback override)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `32`: Flameburst
-`Path basis`: Inferred (default type_id == weapon_id)
-`Base fire path`: Main projectile pool; primary type(s): `0x20`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Inferred (default type_id == weapon_id)
+- `Base fire path`: Main projectile pool; primary type(s): `0x20`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `33`: RayGun
-`Path basis`: Inferred (default type_id == weapon_id)
-`Base fire path`: Main projectile pool; primary type(s): `0x21`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Inferred (default type_id == weapon_id)
+- `Base fire path`: Main projectile pool; primary type(s): `0x21`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `34`: Unknown / unlabelled
-`Path basis`: Unknown
-`Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
-`Base main spawn calls`: Unknown
-`1.9.8 Fire Bullets`: Unknown
-`1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
-`1.9.93 cadence/spread`: Unknown
-`Rewrite status`: Not represented in `WEAPON_TABLE`
+
+- `Path basis`: Unknown
+- `Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
+- `Base main spawn calls`: Unknown
+- `1.9.8 Fire Bullets`: Unknown
+- `1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
+- `1.9.93 cadence/spread`: Unknown
+- `Rewrite status`: Not represented in `WEAPON_TABLE`
 
 ### Weapon `35`: Unknown / unlabelled
-`Path basis`: Unknown
-`Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
-`Base main spawn calls`: Unknown
-`1.9.8 Fire Bullets`: Unknown
-`1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
-`1.9.93 cadence/spread`: Unknown
-`Rewrite status`: Not represented in `WEAPON_TABLE`
+
+- `Path basis`: Unknown
+- `Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
+- `Base main spawn calls`: Unknown
+- `1.9.8 Fire Bullets`: Unknown
+- `1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
+- `1.9.93 cadence/spread`: Unknown
+- `Rewrite status`: Not represented in `WEAPON_TABLE`
 
 ### Weapon `36`: Unknown / unlabelled
-`Path basis`: Unknown
-`Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
-`Base main spawn calls`: Unknown
-`1.9.8 Fire Bullets`: Unknown
-`1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
-`1.9.93 cadence/spread`: Unknown
-`Rewrite status`: Not represented in `WEAPON_TABLE`
+
+- `Path basis`: Unknown
+- `Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
+- `Base main spawn calls`: Unknown
+- `1.9.8 Fire Bullets`: Unknown
+- `1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
+- `1.9.93 cadence/spread`: Unknown
+- `Rewrite status`: Not represented in `WEAPON_TABLE`
 
 ### Weapon `37`: Unknown / unlabelled
-`Path basis`: Unknown
-`Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
-`Base main spawn calls`: Unknown
-`1.9.8 Fire Bullets`: Unknown
-`1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
-`1.9.93 cadence/spread`: Unknown
-`Rewrite status`: Not represented in `WEAPON_TABLE`
+
+- `Path basis`: Unknown
+- `Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
+- `Base main spawn calls`: Unknown
+- `1.9.8 Fire Bullets`: Unknown
+- `1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
+- `1.9.93 cadence/spread`: Unknown
+- `Rewrite status`: Not represented in `WEAPON_TABLE`
 
 ### Weapon `38`: Unknown / unlabelled
-`Path basis`: Unknown
-`Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
-`Base main spawn calls`: Unknown
-`1.9.8 Fire Bullets`: Unknown
-`1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
-`1.9.93 cadence/spread`: Unknown
-`Rewrite status`: Not represented in `WEAPON_TABLE`
+
+- `Path basis`: Unknown
+- `Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
+- `Base main spawn calls`: Unknown
+- `1.9.8 Fire Bullets`: Unknown
+- `1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
+- `1.9.93 cadence/spread`: Unknown
+- `Rewrite status`: Not represented in `WEAPON_TABLE`
 
 ### Weapon `39`: Unknown / unlabelled
-`Path basis`: Unknown
-`Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
-`Base main spawn calls`: Unknown
-`1.9.8 Fire Bullets`: Unknown
-`1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
-`1.9.93 cadence/spread`: Unknown
-`Rewrite status`: Not represented in `WEAPON_TABLE`
+
+- `Path basis`: Unknown
+- `Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
+- `Base main spawn calls`: Unknown
+- `1.9.8 Fire Bullets`: Unknown
+- `1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
+- `1.9.93 cadence/spread`: Unknown
+- `Rewrite status`: Not represented in `WEAPON_TABLE`
 
 ### Weapon `40`: Unknown / unlabelled
-`Path basis`: Unknown
-`Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
-`Base main spawn calls`: Unknown
-`1.9.8 Fire Bullets`: Unknown
-`1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
-`1.9.93 cadence/spread`: Unknown
-`Rewrite status`: Not represented in `WEAPON_TABLE`
+
+- `Path basis`: Unknown
+- `Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
+- `Base main spawn calls`: Unknown
+- `1.9.8 Fire Bullets`: Unknown
+- `1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
+- `1.9.93 cadence/spread`: Unknown
+- `Rewrite status`: Not represented in `WEAPON_TABLE`
 
 ### Weapon `41`: Plague Sphreader Gun
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x29`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x29`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `42`: Bubblegun
-`Path basis`: Direct (explicit non-main path)
-`Base fire path`: Particle pool (`fx_spawn_particle_slow`)
-`Base main spawn calls`: 0 (no main `projectile_spawn`)
-`1.9.8 Fire Bullets`: No Fire Bullets projectile from this fire path
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit non-main path)
+- `Base fire path`: Particle pool (`fx_spawn_particle_slow`)
+- `Base main spawn calls`: 0 (no main `projectile_spawn`)
+- `1.9.8 Fire Bullets`: No Fire Bullets projectile from this fire path
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `43`: Rainbow Gun
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x2b`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x2b`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `44`: Grim Weapon
-`Path basis`: Inferred (default type_id == weapon_id)
-`Base fire path`: Main projectile pool; primary type(s): `0x2c`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Inferred (default type_id == weapon_id)
+- `Base fire path`: Main projectile pool; primary type(s): `0x2c`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `45`: Fire bullets
-`Path basis`: Direct (explicit mapping/callsite)
-`Base fire path`: Main projectile pool; primary type(s): `0x2d`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: Guarded (`arg3 == 0x2d`): no recursive extra shot
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Direct (explicit mapping/callsite)
+- `Base fire path`: Main projectile pool; primary type(s): `0x2d`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: Guarded (`arg3 == 0x2d`): no recursive extra shot
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `46`: Unknown / unlabelled
-`Path basis`: Unknown
-`Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
-`Base main spawn calls`: Unknown
-`1.9.8 Fire Bullets`: Unknown
-`1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
-`1.9.93 cadence/spread`: Unknown
-`Rewrite status`: Not represented in `WEAPON_TABLE`
+
+- `Path basis`: Unknown
+- `Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
+- `Base main spawn calls`: Unknown
+- `1.9.8 Fire Bullets`: Unknown
+- `1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
+- `1.9.93 cadence/spread`: Unknown
+- `Rewrite status`: Not represented in `WEAPON_TABLE`
 
 ### Weapon `47`: Unknown / unlabelled
-`Path basis`: Unknown
-`Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
-`Base main spawn calls`: Unknown
-`1.9.8 Fire Bullets`: Unknown
-`1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
-`1.9.93 cadence/spread`: Unknown
-`Rewrite status`: Not represented in `WEAPON_TABLE`
+
+- `Path basis`: Unknown
+- `Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
+- `Base main spawn calls`: Unknown
+- `1.9.8 Fire Bullets`: Unknown
+- `1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
+- `1.9.93 cadence/spread`: Unknown
+- `Rewrite status`: Not represented in `WEAPON_TABLE`
 
 ### Weapon `48`: Unknown / unlabelled
-`Path basis`: Unknown
-`Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
-`Base main spawn calls`: Unknown
-`1.9.8 Fire Bullets`: Unknown
-`1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
-`1.9.93 cadence/spread`: Unknown
-`Rewrite status`: Not represented in `WEAPON_TABLE`
+
+- `Path basis`: Unknown
+- `Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
+- `Base main spawn calls`: Unknown
+- `1.9.8 Fire Bullets`: Unknown
+- `1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
+- `1.9.93 cadence/spread`: Unknown
+- `Rewrite status`: Not represented in `WEAPON_TABLE`
 
 ### Weapon `49`: Unknown / unlabelled
-`Path basis`: Unknown
-`Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
-`Base main spawn calls`: Unknown
-`1.9.8 Fire Bullets`: Unknown
-`1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
-`1.9.93 cadence/spread`: Unknown
-`Rewrite status`: Not represented in `WEAPON_TABLE`
+
+- `Path basis`: Unknown
+- `Base fire path`: Unknown / unlabelled weapon id (no direct callsite evidence)
+- `Base main spawn calls`: Unknown
+- `1.9.8 Fire Bullets`: Unknown
+- `1.9.93 Fire Bullets`: Unknown / unlabelled (no confirmed active path)
+- `1.9.93 cadence/spread`: Unknown
+- `Rewrite status`: Not represented in `WEAPON_TABLE`
 
 ### Weapon `50`: Transmutator
-`Path basis`: Inferred (default type_id == weapon_id)
-`Base fire path`: Main projectile pool; primary type(s): `0x32`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Inferred (default type_id == weapon_id)
+- `Base fire path`: Main projectile pool; primary type(s): `0x32`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `51`: Blaster R-300
-`Path basis`: Inferred (default type_id == weapon_id)
-`Base fire path`: Main projectile pool; primary type(s): `0x33`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Inferred (default type_id == weapon_id)
+- `Base fire path`: Main projectile pool; primary type(s): `0x33`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `52`: Lighting Rifle
-`Path basis`: Inferred (default type_id == weapon_id)
-`Base fire path`: Main projectile pool; primary type(s): `0x34`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Inferred (default type_id == weapon_id)
+- `Base fire path`: Main projectile pool; primary type(s): `0x34`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ### Weapon `53`: Nuke Launcher
-`Path basis`: Inferred (default type_id == weapon_id)
-`Base fire path`: Main projectile pool; primary type(s): `0x35`
-`Base main spawn calls`: 1
-`1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
-`1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
-`1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
-`Rewrite status`: Matches 1.9.93 semantics
+
+- `Path basis`: Inferred (default type_id == weapon_id)
+- `Base fire path`: Main projectile pool; primary type(s): `0x35`
+- `Base main spawn calls`: 1
+- `1.9.8 Fire Bullets`: +1 extra `0x2d` (base 1 shots kept)
+- `1.9.93 Fire Bullets`: 1x `0x2d` only (base fire path bypassed)
+- `1.9.93 cadence/spread`: Uses Fire Bullets fallback cadence/spread (`0.14`, `0.22`)
+- `Rewrite status`: Matches 1.9.93 semantics
 
 ## High-impact weapon deltas
 
