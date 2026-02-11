@@ -13,6 +13,7 @@ from crimson.original.capture import (
     CAPTURE_PERK_PENDING_EVENT_KIND,
     build_capture_dt_frame_overrides,
     build_capture_dt_frame_ms_i32_overrides,
+    build_capture_inter_tick_rand_draws_overrides,
     capture_bootstrap_payload_from_event_payload,
     capture_perk_apply_id_from_event_payload,
     capture_perk_pending_from_event_payload,
@@ -238,7 +239,14 @@ def _capture_obj(*, ticks: list[dict[str, object]]) -> dict[str, object]:
 
 
 def _write_capture(path: Path, obj: dict[str, object]) -> None:
-    encoded = json.dumps(obj, separators=(",", ":"), sort_keys=True).encode("utf-8")
+    meta = {k: v for k, v in obj.items() if k != "ticks"}
+    ticks_obj = obj.get("ticks")
+    ticks = ticks_obj if isinstance(ticks_obj, list) else []
+    rows = [json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True)]
+    rows.extend(
+        json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True) for tick in ticks
+    )
+    encoded = ("\n".join(rows) + "\n").encode("utf-8")
     if str(path).endswith(".gz"):
         path.write_bytes(gzip.compress(encoded))
     else:
@@ -279,6 +287,52 @@ def test_load_capture_supports_plain_json_and_gz(tmp_path: Path) -> None:
     assert capture_zipped.script == "gameplay_diff_capture"
     assert len(capture_plain.ticks) == 1
     assert len(capture_zipped.ticks) == 1
+
+
+def test_load_capture_decodes_f32_tokens(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    checkpoint = tick.get("checkpoint")
+    assert isinstance(checkpoint, dict)
+    players = checkpoint.get("players")
+    assert isinstance(players, list)
+    assert isinstance(players[0], dict)
+    pos = players[0].get("pos")
+    assert isinstance(pos, dict)
+    pos["x"] = "f32:3f800000"
+    players[0]["health"] = "f32:42c80000"
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+
+    assert capture.ticks[0].checkpoint.players[0].pos.x == pytest.approx(1.0)
+    assert capture.ticks[0].checkpoint.players[0].health == pytest.approx(100.0)
+
+
+def test_load_capture_rejects_invalid_f32_token(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    checkpoint = tick.get("checkpoint")
+    assert isinstance(checkpoint, dict)
+    players = checkpoint.get("players")
+    assert isinstance(players, list)
+    assert isinstance(players[0], dict)
+    players[0]["ammo"] = "f32:bad"
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    with pytest.raises(Exception):
+        load_capture(path)
+
+
+def test_load_capture_rejects_legacy_canonical_json(tmp_path: Path) -> None:
+    obj = _capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)])
+    path = tmp_path / "capture.json"
+    path.write_text(json.dumps(obj, separators=(",", ":"), sort_keys=True), encoding="utf-8")
+
+    with pytest.raises(Exception):
+        load_capture(path)
 
 
 def test_load_capture_accepts_projectile_find_query_event_head(tmp_path: Path) -> None:
@@ -618,6 +672,48 @@ def test_build_capture_dt_frame_ms_i32_overrides_uses_explicit_values(tmp_path: 
     overrides = build_capture_dt_frame_ms_i32_overrides(capture)
 
     assert overrides == {0: 17}
+
+
+def test_build_capture_inter_tick_rand_draws_overrides_uses_checkpoint_marks(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=10, elapsed_ms=0)
+    tick1 = _base_tick(tick_index=11, elapsed_ms=16)
+    tick2 = _base_tick(tick_index=12, elapsed_ms=32)
+    assert isinstance(tick0["checkpoint"], dict)
+    assert isinstance(tick1["checkpoint"], dict)
+    assert isinstance(tick2["checkpoint"], dict)
+    assert isinstance(tick0["checkpoint"]["rng_marks"], dict)
+    assert isinstance(tick1["checkpoint"]["rng_marks"], dict)
+    assert isinstance(tick2["checkpoint"]["rng_marks"], dict)
+    tick0["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = 7
+    tick1["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = 3
+    tick2["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = -1
+    obj = _capture_obj(ticks=[tick0, tick1, tick2])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    overrides = build_capture_inter_tick_rand_draws_overrides(capture)
+
+    assert overrides == {10: 0, 11: 3}
+
+
+def test_build_capture_inter_tick_rand_draws_overrides_returns_none_when_missing(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=0)
+    tick1 = _base_tick(tick_index=1, elapsed_ms=16)
+    assert isinstance(tick0["checkpoint"], dict)
+    assert isinstance(tick1["checkpoint"], dict)
+    assert isinstance(tick0["checkpoint"]["rng_marks"], dict)
+    assert isinstance(tick1["checkpoint"]["rng_marks"], dict)
+    tick0["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = -1
+    tick1["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = -1
+    obj = _capture_obj(ticks=[tick0, tick1])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    overrides = build_capture_inter_tick_rand_draws_overrides(capture)
+
+    assert overrides is None
 
 
 def test_convert_capture_to_replay_infers_seed_from_rng_head(tmp_path: Path) -> None:

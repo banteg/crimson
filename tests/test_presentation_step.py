@@ -170,6 +170,35 @@ def test_queue_projectile_decals_native_default_draw_count() -> None:
     assert fx_queue.count == 12
 
 
+def test_queue_projectile_decals_fire_bullets_freeze_runs_six_shard_iterations() -> None:
+    state = GameplayState()
+    state.bonuses.freeze = 1.0
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    fx_queue = FxQueue()
+    shard_calls = {"count": 0}
+
+    orig_spawn_freeze_shard = state.effects.spawn_freeze_shard
+
+    def _spawn_freeze_shard(**kwargs):  # noqa: ANN003
+        shard_calls["count"] += 1
+        return orig_spawn_freeze_shard(**kwargs)
+
+    state.effects.spawn_freeze_shard = _spawn_freeze_shard  # type: ignore[method-assign]
+
+    queue_projectile_decals(
+        state=state,
+        players=[player],
+        fx_queue=fx_queue,
+        hits=_hits(1, type_id=int(ProjectileTypeId.FIRE_BULLETS)),
+        rand=lambda: 0,
+        detail_preset=5,
+        fx_toggle=0,
+    )
+
+    assert shard_calls["count"] == 6
+    assert fx_queue.count == 6
+
+
 def test_queue_projectile_decals_orders_blood_before_decals() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))

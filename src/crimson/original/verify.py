@@ -8,6 +8,8 @@ from ..replay.checkpoints import ReplayCheckpoint
 from .capture import (
     CaptureFile,
     build_capture_dt_frame_overrides,
+    build_capture_dt_frame_ms_i32_overrides,
+    build_capture_inter_tick_rand_draws_overrides,
     convert_capture_to_checkpoints,
     convert_capture_to_replay,
 )
@@ -38,16 +40,23 @@ class CaptureVerifyResult:
     failure: CaptureVerifyFailure | None = None
 
 
-def _allow_one_tick_creature_count_lag(
+def _allow_capture_sample_creature_count(
     *,
     tick: int,
     field_diffs: list[ReplayFieldDiff],
     expected_by_tick: dict[int, ReplayCheckpoint],
     actual_by_tick: dict[int, ReplayCheckpoint],
+    capture_sample_creature_counts: dict[int, int],
 ) -> bool:
     if not field_diffs:
         return False
     if any(str(diff.field) != "creature_count" for diff in field_diffs):
+        return False
+    if not capture_sample_creature_counts:
+        return False
+
+    sample_count = capture_sample_creature_counts.get(int(tick))
+    if sample_count is None or int(sample_count) < 0:
         return False
 
     expected_tick = expected_by_tick.get(int(tick))
@@ -59,41 +68,26 @@ def _allow_one_tick_creature_count_lag(
     actual_count = int(actual_tick.creature_count)
     if expected_count < 0 or actual_count < 0:
         return False
-    if abs(expected_count - actual_count) != 1:
-        return False
 
-    # Single-tick captures can reflect the world-step-latched count as 0 while
-    # runtime state already reports 1 active creature on the same tick.
-    if (
-        len(expected_by_tick) == 1
-        and len(actual_by_tick) == 1
-        and int(next(iter(expected_by_tick.keys()))) == int(tick)
-        and expected_count == 0
-        and actual_count == 1
-    ):
-        return True
+    # `checkpoint.creature_count` can lag the sampled creature pool in captures.
+    # When replay count matches sampled active entries exactly, ignore this field.
+    return actual_count == int(sample_count) and expected_count != int(sample_count)
 
-    prev_expected = expected_by_tick.get(int(tick) - 1)
-    prev_actual = actual_by_tick.get(int(tick) - 1)
-    if (
-        prev_expected is not None
-        and prev_actual is not None
-        and int(prev_expected.creature_count) == actual_count
-        and int(prev_actual.creature_count) == int(prev_expected.creature_count)
-    ):
-        return True
 
-    next_expected = expected_by_tick.get(int(tick) + 1)
-    next_actual = actual_by_tick.get(int(tick) + 1)
-    if (
-        next_expected is not None
-        and next_actual is not None
-        and int(next_expected.creature_count) == actual_count
-        and int(next_actual.creature_count) == int(next_expected.creature_count)
-    ):
-        return True
-
-    return False
+def _capture_sample_creature_counts(capture: CaptureFile) -> dict[int, int]:
+    out: dict[int, int] = {}
+    for tick in capture.ticks:
+        tick_index = int(tick.tick_index)
+        if tick_index < 0:
+            continue
+        samples = tick.samples
+        if samples is None:
+            continue
+        creatures = samples.creatures
+        if not isinstance(creatures, list):
+            continue
+        out[int(tick_index)] = int(len(creatures))
+    return out
 
 
 def verify_capture(
@@ -116,39 +110,45 @@ def verify_capture(
         capture,
         tick_rate=int(replay.header.tick_rate),
     )
+    dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
     checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected}
     actual: list[ReplayCheckpoint] = []
 
     mode = int(replay.header.game_mode_id)
     inter_tick_rand_draws = 1
+    inter_tick_rand_draws_by_tick = build_capture_inter_tick_rand_draws_overrides(capture)
     if mode == int(GameMode.SURVIVAL):
         run_result = run_survival_replay(
             replay,
             max_ticks=max_ticks,
             strict_events=bool(strict_events),
             trace_rng=bool(trace_rng),
-            checkpoint_use_world_step_creature_count=True,
+            checkpoint_use_world_step_creature_count=False,
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
             dt_frame_overrides=dt_frame_overrides,
+            dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
             inter_tick_rand_draws=int(inter_tick_rand_draws),
+            inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
         )
     elif mode == int(GameMode.RUSH):
         run_result = run_rush_replay(
             replay,
             max_ticks=max_ticks,
             trace_rng=bool(trace_rng),
-            checkpoint_use_world_step_creature_count=True,
+            checkpoint_use_world_step_creature_count=False,
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
             dt_frame_overrides=dt_frame_overrides,
             inter_tick_rand_draws=int(inter_tick_rand_draws),
+            inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
         )
     else:
         raise CaptureVerifyError(f"unsupported game mode for capture verification: {mode}")
 
     expected_by_tick = {int(ckpt.tick_index): ckpt for ckpt in expected}
     actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
+    sample_creature_counts = _capture_sample_creature_counts(capture)
     checked_count = 0
     elapsed_baseline: tuple[int, int] | None = None
     elapsed_baseline_tick: int | None = None
@@ -194,11 +194,12 @@ def verify_capture(
             max_diffs=max_field_diffs,
             float_abs_tol=float(float_abs_tol),
         )
-        if _allow_one_tick_creature_count_lag(
+        if _allow_capture_sample_creature_count(
             tick=int(tick),
             field_diffs=field_diffs,
             expected_by_tick=expected_by_tick,
             actual_by_tick=actual_by_tick,
+            capture_sample_creature_counts=sample_creature_counts,
         ):
             continue
         if field_diffs:

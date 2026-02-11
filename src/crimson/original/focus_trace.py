@@ -20,7 +20,6 @@ from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     build_capture_dt_frame_overrides,
     build_capture_dt_frame_ms_i32_overrides,
-    capture_bootstrap_payload_from_event_payload,
     convert_capture_to_replay,
     load_capture,
 )
@@ -33,7 +32,6 @@ from crimson.sim.runners.common import (
 )
 from crimson.sim.runners.survival import (
     _apply_tick_events,
-    _decode_digital_move_keys,
     _partition_tick_events,
     _resolve_dt_frame,
 )
@@ -213,28 +211,12 @@ def _projectile_snapshot(world: WorldState) -> list[dict[str, Any]]:
 def _decode_inputs_for_tick(
     replay: Any,
     tick_index: int,
-    *,
-    original_capture_replay: bool,
-    digital_move_enabled_by_player: set[int],
 ) -> list[PlayerInput]:
     packed_tick = replay.inputs[int(tick_index)]
     out: list[PlayerInput] = []
-    for player_index, packed in enumerate(packed_tick):
+    for packed in packed_tick:
         mx, my, ax, ay, flags = unpack_packed_player_input(packed)
         fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
-        move_forward_pressed: bool | None = None
-        move_backward_pressed: bool | None = None
-        turn_left_pressed: bool | None = None
-        turn_right_pressed: bool | None = None
-        if original_capture_replay and int(player_index) in digital_move_enabled_by_player:
-            digital_move = _decode_digital_move_keys(float(mx), float(my))
-            if digital_move is not None:
-                (
-                    move_forward_pressed,
-                    move_backward_pressed,
-                    turn_left_pressed,
-                    turn_right_pressed,
-                ) = digital_move
         out.append(
             PlayerInput(
                 move=Vec2(float(mx), float(my)),
@@ -242,31 +224,23 @@ def _decode_inputs_for_tick(
                 fire_down=bool(fire_down),
                 fire_pressed=bool(fire_pressed),
                 reload_pressed=bool(reload_pressed),
-                move_forward_pressed=move_forward_pressed,
-                move_backward_pressed=move_backward_pressed,
-                turn_left_pressed=turn_left_pressed,
-                turn_right_pressed=turn_right_pressed,
+                move_forward_pressed=None,
+                move_backward_pressed=None,
+                turn_left_pressed=None,
+                turn_right_pressed=None,
             )
         )
     return out
 
 
-def _load_capture_events(replay: Any) -> tuple[dict[int, list[object]], bool, set[int]]:
+def _load_capture_events(replay: Any) -> tuple[dict[int, list[object]], bool]:
     events_by_tick: dict[int, list[object]] = {}
     original_capture_replay = False
-    digital_move_enabled_by_player: set[int] = set()
     for event in replay.events:
         if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
             original_capture_replay = True
-            payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
-            if isinstance(payload, dict):
-                enabled_raw = payload.get("digital_move_enabled_by_player")
-                if isinstance(enabled_raw, list):
-                    for player_index, enabled in enumerate(enabled_raw):
-                        if bool(enabled):
-                            digital_move_enabled_by_player.add(int(player_index))
         events_by_tick.setdefault(int(event.tick_index), []).append(event)
-    return events_by_tick, original_capture_replay, digital_move_enabled_by_player
+    return events_by_tick, original_capture_replay
 
 
 def _summarize_creature_diffs(capture_creatures: list[dict[str, Any]], world: WorldState) -> list[dict[str, Any]]:
@@ -693,7 +667,7 @@ def trace_focus_tick(
         clear_fx_queues_each_tick=True,
     )
 
-    events_by_tick, original_capture_replay, digital_move_enabled_by_player = _load_capture_events(replay)
+    events_by_tick, original_capture_replay = _load_capture_events(replay)
     dt_frame_overrides = build_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
     dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
     default_dt_frame = 1.0 / float(int(replay.header.tick_rate))
@@ -760,8 +734,6 @@ def trace_focus_tick(
             player_inputs = _decode_inputs_for_tick(
                 replay,
                 int(tick_index),
-                original_capture_replay=bool(original_capture_replay),
-                digital_move_enabled_by_player=digital_move_enabled_by_player,
             )
 
             if int(tick_index) == int(tick):

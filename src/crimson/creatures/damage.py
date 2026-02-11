@@ -12,12 +12,8 @@ from .runtime import CREATURE_HITBOX_ALIVE, CreatureState
 from .spawn import CreatureFlags
 
 
-def _owner_id_to_player_index(owner_id: int) -> int | None:
-    if owner_id == -100:
-        return 0
-    if owner_id < 0:
-        return -1 - owner_id
-    return None
+def _any_player_has_perk(players: list[PlayerState], perk_id: PerkId) -> bool:
+    return any(perk_active(player, perk_id) for player in players)
 
 
 @dataclass(slots=True)
@@ -30,21 +26,19 @@ class _CreatureDamageCtx:
     dt: float
     players: list[PlayerState]
     rand: Callable[[], int]
-    attacker: PlayerState | None
 
 
 _CreatureDamageStep = Callable[[_CreatureDamageCtx], None]
 
 
 def _damage_type1_uranium_filled_bullets(ctx: _CreatureDamageCtx) -> None:
-    if ctx.attacker is None or not perk_active(ctx.attacker, PerkId.URANIUM_FILLED_BULLETS):
+    if not _any_player_has_perk(ctx.players, PerkId.URANIUM_FILLED_BULLETS):
         return
     ctx.damage *= 2.0
 
 
 def _damage_type1_living_fortress(ctx: _CreatureDamageCtx) -> None:
-    attacker = ctx.attacker
-    if attacker is None or not perk_active(attacker, PerkId.LIVING_FORTRESS):
+    if not _any_player_has_perk(ctx.players, PerkId.LIVING_FORTRESS):
         return
     for player in ctx.players:
         if float(player.health) <= 0.0:
@@ -55,13 +49,13 @@ def _damage_type1_living_fortress(ctx: _CreatureDamageCtx) -> None:
 
 
 def _damage_type1_barrel_greaser(ctx: _CreatureDamageCtx) -> None:
-    if ctx.attacker is None or not perk_active(ctx.attacker, PerkId.BARREL_GREASER):
+    if not _any_player_has_perk(ctx.players, PerkId.BARREL_GREASER):
         return
     ctx.damage *= 1.4
 
 
 def _damage_type1_doctor(ctx: _CreatureDamageCtx) -> None:
-    if ctx.attacker is None or not perk_active(ctx.attacker, PerkId.DOCTOR):
+    if not _any_player_has_perk(ctx.players, PerkId.DOCTOR):
         return
     ctx.damage *= 1.2
 
@@ -83,13 +77,13 @@ def _damage_type7_ion_gun_master(ctx: _CreatureDamageCtx) -> None:
 
 
 def _damage_type4_pyromaniac(ctx: _CreatureDamageCtx) -> None:
-    if ctx.attacker is None or not perk_active(ctx.attacker, PerkId.PYROMANIAC):
+    if not _any_player_has_perk(ctx.players, PerkId.PYROMANIAC):
         return
     ctx.damage *= 1.5
     ctx.rand()
 
 
-_CREATURE_DAMAGE_ATTACKER_PRE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] = {
+_CREATURE_DAMAGE_PRE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] = {
     1: (
         _damage_type1_uranium_filled_bullets,
         _damage_type1_living_fortress,
@@ -103,7 +97,7 @@ _CREATURE_DAMAGE_GLOBAL_PRE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] = 
 }
 
 
-_CREATURE_DAMAGE_ATTACKER_ALIVE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] = {
+_CREATURE_DAMAGE_ALIVE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] = {
     4: (_damage_type4_pyromaniac,),
 }
 
@@ -131,9 +125,6 @@ def creature_apply_damage(
     creature.last_hit_owner_id = int(owner_id)
     creature.hit_flash_timer = 0.2
 
-    player_index = _owner_id_to_player_index(owner_id)
-    attacker = players[player_index] if player_index is not None and 0 <= player_index < len(players) else None
-
     ctx = _CreatureDamageCtx(
         creature=creature,
         damage=float(damage_amount),
@@ -143,15 +134,13 @@ def creature_apply_damage(
         dt=float(dt),
         players=players,
         rand=rand,
-        attacker=attacker,
     )
 
     for step in _CREATURE_DAMAGE_GLOBAL_PRE_STEPS.get(ctx.damage_type, ()):
         step(ctx)
 
-    if attacker is not None:
-        for step in _CREATURE_DAMAGE_ATTACKER_PRE_STEPS.get(ctx.damage_type, ()):
-            step(ctx)
+    for step in _CREATURE_DAMAGE_PRE_STEPS.get(ctx.damage_type, ()):
+        step(ctx)
     if ctx.damage_type == 1:
         _damage_type1_heading_jitter(ctx)
 
@@ -160,9 +149,8 @@ def creature_apply_damage(
             creature.hitbox_size -= float(dt) * 15.0
         return True
 
-    if attacker is not None:
-        for step in _CREATURE_DAMAGE_ATTACKER_ALIVE_STEPS.get(ctx.damage_type, ()):
-            step(ctx)
+    for step in _CREATURE_DAMAGE_ALIVE_STEPS.get(ctx.damage_type, ()):
+        step(ctx)
 
     creature.hp -= float(ctx.damage)
     creature.vel = creature.vel - ctx.impulse

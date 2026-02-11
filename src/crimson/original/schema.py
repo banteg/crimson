@@ -115,6 +115,7 @@ class CaptureRngHeadEntry(msgspec.Struct, forbid_unknown_fields=True):
     value: int | None = None
     value_u32: int | None = None
     value_15: int | None = None
+    branch_id: str | None = None
     caller: str | None = None
     caller_static: str | None = None
     state_before_u32: int | None = None

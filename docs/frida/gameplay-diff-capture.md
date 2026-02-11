@@ -46,10 +46,15 @@ Notes:
 - Before detaching from a live Frida session, call `crimsonCaptureStop("manual_stop")`
   in the REPL and wait for the `capture_shutdown` log line.
 - Loader behavior is strict: truncated trailing JSON rows are rejected.
+- Loader accepts only stream rows (`capture_meta` + `tick`), not legacy
+  monolithic JSON captures.
 - Entity `samples` payloads are strictly typed (`creatures`, `projectiles`,
   `secondary_projectiles`, `bonuses`): schema/script drift should be fixed in
   instrumentation and re-captured, not handled via parser fallbacks.
 - No top-level raw event stream is written; diagnostics stay in per-tick aggregates.
+- Float precision contract: capture script emits memory-sourced float values as
+  tagged float32 bit tokens (`"f32:XXXXXXXX"`). Tooling decodes these tokens at
+  load time and treats decoded float32 values as authoritative.
 
 ## Convert to checkpoints + replay
 
@@ -82,6 +87,16 @@ uv run crimson original divergence-report \
 
 Use `--run-summary-short` for a shorter narrative.
 
+## First-divergence bisect
+
+```text
+uv run crimson original bisect-divergence \
+  artifacts/frida/share/gameplay_diff_capture.json \
+  --window-before 12 \
+  --window-after 6 \
+  --json-out
+```
+
 ## Focus tick trace
 
 ```text
@@ -108,7 +123,7 @@ Without extra env vars, the script captures full per-tick detail:
 - `before`/`after` snapshots every captured tick
 - samples for `creatures`, `projectiles`, `secondary_projectiles`, `bonuses`
 - unlimited head budgets by default (`-1` limits)
-- RNG head + caller diagnostics, RNG mirror tracking, outside-tick carry
+- RNG per-draw stream rows (`value/state_before/state_after/branch_id`), caller diagnostics, mirror tracking, outside-tick carry
 - perk-apply diagnostics and input query/key snapshots
 
 ## Optional env knobs
@@ -139,5 +154,5 @@ Without extra env vars, the script captures full per-tick detail:
 - `CRIMSON_FRIDA_INCLUDE_BT=1`
 - `CRIMSON_FRIDA_INCLUDE_CALLER=0`
 
-Capture loading in Python accepts `.json` and `.json.gz` only, and supports both
-legacy canonical JSON-object captures and JSONL row-stream captures.
+Capture loading in Python accepts `.json` and `.json.gz` only, with JSONL
+row-stream capture rows as the canonical format.

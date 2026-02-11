@@ -1048,6 +1048,19 @@ class CreaturePool:
         """Run one-shot death side effects and return the `CreatureDeath` event."""
 
         creature = self._entries[int(idx)]
+        if not bool(creature.active):
+            # Native `creature_handle_death` gates its XP/bonus/freeze body under
+            # `if (active != 0)`. Re-entrant callers (notably secondary
+            # detonation follow-up) can invoke death handling after the first call
+            # has already deactivated the creature.
+            return CreatureDeath(
+                index=int(idx),
+                pos=creature.pos,
+                type_id=int(creature.type_id),
+                reward_value=float(creature.reward_value),
+                xp_awarded=0,
+                owner_id=int(creature.last_hit_owner_id),
+            )
         death = self._start_death(
             int(idx),
             creature,

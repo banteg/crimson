@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import argparse
 import math
-from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 import pyray as rl
+from raylib import defines as rd
 
 from grim.app import run_view
 from grim.assets import find_paq_path
@@ -14,7 +14,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
-from crimson.gameplay import PlayerInput
+from crimson.gameplay import BonusEntry, PlayerInput, bonus_label_for_entry
 from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     build_capture_dt_frame_ms_i32_overrides,
@@ -24,7 +24,7 @@ from crimson.original.capture import (
     load_capture,
 )
 from crimson.original.schema import CaptureTick
-from crimson.replay.types import Replay, UnknownEvent
+from crimson.replay.types import Replay, UnknownEvent, unpack_input_flags, unpack_packed_player_input
 from crimson.sim.runners.common import (
     build_damage_scale_by_type,
     build_empty_fx_queues,
@@ -41,17 +41,23 @@ from crimson.sim.world_state import WorldState
 from crimson.paths import default_runtime_dir
 
 
-_CAPTURE_TRACE_COLOR = rl.Color(74, 205, 255, 150)
-_REWRITE_TRACE_COLOR = rl.Color(255, 143, 70, 150)
+_CAPTURE_TRACE_COLOR = rl.Color(74, 205, 255, 220)
+_REWRITE_TRACE_COLOR = rl.Color(255, 143, 70, 220)
 _CAPTURE_HITBOX_COLOR = rl.Color(84, 230, 170, 220)
 _REWRITE_HITBOX_COLOR = rl.Color(255, 130, 130, 220)
 _CAPTURE_PLAYER_COLOR = rl.Color(84, 220, 255, 235)
 _REWRITE_PLAYER_COLOR = rl.Color(255, 190, 90, 235)
+_CAPTURE_BONUS_COLOR = rl.Color(120, 240, 255, 225)
+_REWRITE_BONUS_COLOR = rl.Color(255, 196, 120, 225)
 _DIVERGENCE_LINE_COLOR = rl.Color(255, 240, 130, 220)
 _BACKGROUND_COLOR = rl.Color(14, 16, 21, 255)
 _GRID_COLOR = rl.Color(36, 40, 50, 255)
 _TEXT_COLOR = rl.Color(240, 242, 248, 255)
 _TEXT_DIM_COLOR = rl.Color(185, 190, 202, 255)
+_PROJECTILE_TRACE_RESET_DIST = 80.0
+_BONUS_DRAW_RADIUS = 12.0
+_MIN_PLAYBACK_SPEED_EXP = -4
+_MAX_PLAYBACK_SPEED_EXP = 4
 
 
 @dataclass(slots=True)
@@ -60,12 +66,22 @@ class _EntityDraw:
     y: float
     radius: float
     active: bool = True
+    filled: bool = False
 
 
 @dataclass(slots=True)
-class _TraceHistory:
-    capture: deque[tuple[float, float]] = field(default_factory=deque)
-    rewrite: deque[tuple[float, float]] = field(default_factory=deque)
+class _TraceLayer:
+    lifetime_ticks: int
+    rt: rl.RenderTexture | None = None
+    fade_accum: float = 0.0
+
+
+@dataclass(slots=True)
+class _BonusDraw:
+    x: float
+    y: float
+    label: str
+    active: bool = True
 
 
 @dataclass(slots=True)
@@ -79,6 +95,8 @@ class _FrameSnapshot:
     rewrite_projectiles: dict[int, _EntityDraw]
     capture_secondary: dict[int, _EntityDraw]
     rewrite_secondary: dict[int, _EntityDraw]
+    capture_bonuses: dict[int, _BonusDraw]
+    rewrite_bonuses: dict[int, _BonusDraw]
     capture_sample_counts: dict[str, int]
 
 
@@ -104,12 +122,6 @@ def _norm_radius(value: float, *, default: float = 4.0) -> float:
     return max(1.0, radius)
 
 
-def _bool_or_none(value: object) -> bool | None:
-    if value is None:
-        return None
-    return bool(value)
-
-
 def _load_capture_events(replay: Replay) -> tuple[dict[int, list[object]], bool]:
     events_by_tick: dict[int, list[object]] = {}
     original_capture_replay = False
@@ -132,7 +144,9 @@ class CaptureVisualizerView:
         start_tick: int,
         end_tick: int | None,
         playback_speed: float,
-        trace_length: int,
+        player_trace_length: int,
+        creature_trace_length: int,
+        projectile_trace_length: int,
         inter_tick_rand_draws: int,
         seed: int | None,
     ) -> None:
@@ -179,8 +193,13 @@ class CaptureVisualizerView:
             self._world_size = 1024.0
         self._tick_rate = max(1, int(self._replay.header.tick_rate))
         self._step_interval = 1.0 / float(self._tick_rate)
-        self._playback_speed = max(0.05, float(playback_speed))
-        self._trace_length = max(1, int(trace_length))
+        self._playback_speed = max(
+            float(2.0**_MIN_PLAYBACK_SPEED_EXP),
+            min(float(playback_speed), float(2.0**_MAX_PLAYBACK_SPEED_EXP)),
+        )
+        self._player_trace_length = max(1, int(player_trace_length))
+        self._creature_trace_length = max(1, int(creature_trace_length))
+        self._projectile_trace_length = max(1, int(projectile_trace_length))
         self._inter_tick_rand_draws = max(0, int(inter_tick_rand_draws))
         self._assets_root = self._resolve_assets_root(assets_dir)
         self._missing_assets: list[str] = []
@@ -207,7 +226,13 @@ class CaptureVisualizerView:
 
         self._row_cursor = -1
         self._snapshot: _FrameSnapshot | None = None
-        self._trace_histories: dict[str, _TraceHistory] = {}
+        self._player_traces = _TraceLayer(lifetime_ticks=int(self._player_trace_length))
+        self._creature_traces = _TraceLayer(lifetime_ticks=int(self._creature_trace_length))
+        self._projectile_traces = _TraceLayer(lifetime_ticks=int(self._projectile_trace_length))
+        self._trace_prev_capture: dict[str, tuple[int, float, float]] = {}
+        self._trace_prev_rewrite: dict[str, tuple[int, float, float]] = {}
+        self._trace_rt_size: tuple[int, int] = (0, 0)
+        self._trace_fade_dt = 0.0
         self._accumulator = 0.0
         self._paused = False
         self._show_traces = True
@@ -218,8 +243,6 @@ class CaptureVisualizerView:
 
         self._world: WorldState | None = None
         self._session: SurvivalDeterministicSession | None = None
-        self._previous_fire_down: list[bool] = []
-        self._previous_reload_active: list[bool] = []
         self._bootstrap_world()
 
     def should_close(self) -> bool:
@@ -260,12 +283,12 @@ class CaptureVisualizerView:
 
         self._world = world
         self._session = session
-        player_count = max(1, int(self._replay.header.player_count))
-        self._previous_fire_down = [False for _ in range(player_count)]
-        self._previous_reload_active = [False for _ in range(player_count)]
         self._row_cursor = -1
         self._snapshot = None
-        self._trace_histories.clear()
+        self._trace_prev_capture.clear()
+        self._trace_prev_rewrite.clear()
+        self._trace_fade_dt = 0.0
+        self._clear_trace_layers()
         self._accumulator = 0.0
 
         for idx in range(0, int(self._visible_start_idx)):
@@ -306,88 +329,85 @@ class CaptureVisualizerView:
             self._small = None
 
     def close(self) -> None:
+        self._unload_trace_layers()
         if self._small is not None:
             rl.unload_texture(self._small.texture)
             self._small = None
 
-    def _build_inputs_from_capture(self, row: CaptureTick) -> list[PlayerInput]:
-        player_count = len(self._previous_fire_down)
-        approx_by_player = {int(sample.player_index): sample for sample in row.input_approx}
-        keys_by_player = {int(sample.player_index): sample for sample in row.input_player_keys}
+    def _trace_layers(self) -> tuple[_TraceLayer, _TraceLayer, _TraceLayer]:
+        return (self._player_traces, self._creature_traces, self._projectile_traces)
+
+    def _clear_trace_layers(self) -> None:
+        for layer in self._trace_layers():
+            rt = layer.rt
+            layer.fade_accum = 0.0
+            if rt is None or int(getattr(rt, "id", 0)) <= 0:
+                continue
+            rl.begin_texture_mode(rt)
+            rl.clear_background(rl.Color(0, 0, 0, 0))
+            rl.end_texture_mode()
+
+    def _unload_trace_layers(self) -> None:
+        for layer in self._trace_layers():
+            rt = layer.rt
+            if rt is not None and int(getattr(rt, "id", 0)) > 0:
+                rl.unload_render_texture(rt)
+            layer.rt = None
+            layer.fade_accum = 0.0
+        self._trace_rt_size = (0, 0)
+
+    def _ensure_trace_layers(self, *, width: int, height: int) -> None:
+        width = int(max(1, width))
+        height = int(max(1, height))
+        resized = self._trace_rt_size != (int(width), int(height))
+
+        for layer in self._trace_layers():
+            rt = layer.rt
+            if (
+                rt is not None
+                and int(getattr(rt, "id", 0)) > 0
+                and int(getattr(getattr(rt, "texture", None), "width", 0)) == int(width)
+                and int(getattr(getattr(rt, "texture", None), "height", 0)) == int(height)
+            ):
+                continue
+            if rt is not None and int(getattr(rt, "id", 0)) > 0:
+                rl.unload_render_texture(rt)
+            layer.rt = rl.load_render_texture(int(width), int(height))
+            rl.begin_texture_mode(layer.rt)
+            rl.clear_background(rl.Color(0, 0, 0, 0))
+            rl.end_texture_mode()
+            resized = True
+
+        if resized:
+            self._trace_rt_size = (int(width), int(height))
+            # Render target space changed; avoid cross-resolution bridge segments.
+            self._trace_prev_capture.clear()
+            self._trace_prev_rewrite.clear()
+
+    def _build_inputs_from_replay(self, tick_index: int) -> list[PlayerInput]:
+        player_count = max(1, int(self._replay.header.player_count))
+        if 0 <= int(tick_index) < len(self._replay.inputs):
+            packed_tick = self._replay.inputs[int(tick_index)]
+        else:
+            packed_tick = []
         out: list[PlayerInput] = []
 
         for player_index in range(player_count):
-            sample = approx_by_player.get(int(player_index))
-            key_row = keys_by_player.get(int(player_index))
-
-            move_x = _finite(sample.move_dx if sample is not None else 0.0)
-            move_y = _finite(sample.move_dy if sample is not None else 0.0)
-
-            if sample is not None:
-                aim_x = _finite(sample.aim_x)
-                aim_y = _finite(sample.aim_y)
+            if int(player_index) < len(packed_tick):
+                mx, my, ax, ay, flags = unpack_packed_player_input(packed_tick[int(player_index)])
+                fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
             else:
-                aim_x = 0.0
-                aim_y = 0.0
-            if (aim_x == 0.0 and aim_y == 0.0) and int(player_index) < len(row.checkpoint.players):
-                player = row.checkpoint.players[int(player_index)]
-                aim_x = float(player.pos.x)
-                aim_y = float(player.pos.y)
-
-            fire_down_raw = sample.fire_down if sample is not None else None
-            fire_pressed_raw = sample.fire_pressed if sample is not None else None
-            reload_pressed_raw = sample.reload_pressed if sample is not None else None
-            if key_row is not None:
-                if fire_down_raw is None:
-                    fire_down_raw = key_row.fire_down
-                if fire_pressed_raw is None:
-                    fire_pressed_raw = key_row.fire_pressed
-                if reload_pressed_raw is None:
-                    reload_pressed_raw = key_row.reload_pressed
-
-            fired_events = int(sample.fired_events) if sample is not None else 0
-            fire_down = bool(fire_down_raw) if fire_down_raw is not None else fired_events > 0
-            fire_pressed = bool(fire_pressed_raw) if fire_pressed_raw is not None else fired_events > 0
-
-            reload_active = (
-                bool(sample.reload_active)
-                if sample is not None and sample.reload_active is not None
-                else False
-            )
-            reload_pressed = bool(reload_pressed_raw) if reload_pressed_raw is not None else False
-
-            if player_index == 0:
-                input_primary_edge_true_calls = int(row.input_queries.stats.primary_edge.true_calls)
-                input_primary_down_true_calls = int(row.input_queries.stats.primary_down.true_calls)
-                if fire_down_raw is None:
-                    fire_down = bool(
-                        fire_down
-                        or int(input_primary_down_true_calls) > 0
-                        or int(input_primary_edge_true_calls) > 0
-                    )
-                if fire_pressed_raw is None:
-                    fire_pressed = bool(fire_pressed or int(input_primary_edge_true_calls) > 0)
-
-            if not fire_pressed:
-                fire_pressed = bool(fire_down and not self._previous_fire_down[player_index])
-
-            if reload_pressed_raw is None:
-                synth_reload_edge = bool(
-                    bool(reload_active) and not bool(self._previous_reload_active[player_index])
-                )
-                if player_index == 0 and synth_reload_edge and (bool(fire_down) or bool(fire_pressed)):
-                    synth_reload_edge = False
-                reload_pressed = bool(synth_reload_edge)
-
-            self._previous_fire_down[player_index] = bool(fire_down)
-            self._previous_reload_active[player_index] = bool(reload_active)
-
-            # Keep movement on the analog path intentionally: this visualizer drives
-            # sim directly from captured movement vectors, not replay input packing.
+                mx = 0.0
+                my = 0.0
+                ax = 0.0
+                ay = 0.0
+                fire_down = False
+                fire_pressed = False
+                reload_pressed = False
             out.append(
                 PlayerInput(
-                    move=Vec2(float(move_x), float(move_y)),
-                    aim=Vec2(float(aim_x), float(aim_y)),
+                    move=Vec2(float(mx), float(my)),
+                    aim=Vec2(float(ax), float(ay)),
                     fire_down=bool(fire_down),
                     fire_pressed=bool(fire_pressed),
                     reload_pressed=bool(reload_pressed),
@@ -432,7 +452,7 @@ class CaptureVisualizerView:
             world=self._world,
             strict_events=False,
         )
-        inputs = self._build_inputs_from_capture(row)
+        inputs = self._build_inputs_from_replay(tick_index)
         self._session.step_tick(
             dt_frame=float(dt_tick),
             dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
@@ -485,21 +505,26 @@ class CaptureVisualizerView:
         capture_creatures: dict[int, _EntityDraw] = {}
         capture_projectiles: dict[int, _EntityDraw] = {}
         capture_secondary: dict[int, _EntityDraw] = {}
+        capture_bonuses: dict[int, _BonusDraw] = {}
         samples = row.samples
         if samples is not None:
             for sample in samples.creatures:
+                hitbox_radius = float(sample.hitbox_size) * 0.5
                 capture_creatures[int(sample.index)] = _EntityDraw(
                     x=_finite(sample.pos.x),
                     y=_finite(sample.pos.y),
-                    radius=_norm_radius(float(sample.hitbox_size) * 0.5, default=8.0),
+                    radius=_norm_radius(float(hitbox_radius), default=8.0),
                     active=bool(int(sample.active) != 0),
+                    filled=bool(math.isfinite(hitbox_radius) and float(hitbox_radius) < 0.0),
                 )
             for sample in samples.projectiles:
+                hit_radius = float(sample.hit_radius)
                 capture_projectiles[int(sample.index)] = _EntityDraw(
                     x=_finite(sample.pos.x),
                     y=_finite(sample.pos.y),
-                    radius=_norm_radius(float(sample.hit_radius), default=3.0),
+                    radius=_norm_radius(float(hit_radius), default=3.0),
                     active=bool(int(sample.active) != 0),
+                    filled=bool(math.isfinite(hit_radius) and float(hit_radius) < 0.0),
                 )
             for sample in samples.secondary_projectiles:
                 capture_secondary[int(sample.index)] = _EntityDraw(
@@ -508,27 +533,46 @@ class CaptureVisualizerView:
                     radius=3.5,
                     active=bool(int(sample.active) != 0),
                 )
+            for sample in samples.bonuses:
+                bonus_id = int(sample.bonus_id)
+                state = int(sample.state)
+                active = bool(bonus_id > 0 and state >= 0)
+                if not active:
+                    continue
+                capture_bonuses[int(sample.index)] = _BonusDraw(
+                    x=_finite(sample.pos.x),
+                    y=_finite(sample.pos.y),
+                    label=self._bonus_label_from_capture_sample(
+                        bonus_id=int(bonus_id),
+                        amount_i32=int(sample.amount_i32),
+                    ),
+                    active=True,
+                )
 
         rewrite_creatures: dict[int, _EntityDraw] = {}
         for idx, creature in enumerate(self._world.creatures.entries):
             if not bool(creature.active):
                 continue
+            hitbox_radius = float(creature.hitbox_size) * 0.5
             rewrite_creatures[int(idx)] = _EntityDraw(
                 x=_finite(creature.pos.x),
                 y=_finite(creature.pos.y),
-                radius=_norm_radius(float(creature.hitbox_size) * 0.5, default=8.0),
+                radius=_norm_radius(float(hitbox_radius), default=8.0),
                 active=True,
+                filled=bool(math.isfinite(hitbox_radius) and float(hitbox_radius) < 0.0),
             )
 
         rewrite_projectiles: dict[int, _EntityDraw] = {}
         for idx, projectile in enumerate(self._world.state.projectiles.entries):
             if not bool(projectile.active):
                 continue
+            hit_radius = float(projectile.hit_radius)
             rewrite_projectiles[int(idx)] = _EntityDraw(
                 x=_finite(projectile.pos.x),
                 y=_finite(projectile.pos.y),
-                radius=_norm_radius(float(projectile.hit_radius), default=3.0),
+                radius=_norm_radius(float(hit_radius), default=3.0),
                 active=True,
+                filled=bool(math.isfinite(hit_radius) and float(hit_radius) < 0.0),
             )
 
         rewrite_secondary: dict[int, _EntityDraw] = {}
@@ -542,10 +586,23 @@ class CaptureVisualizerView:
                 active=True,
             )
 
+        rewrite_bonuses: dict[int, _BonusDraw] = {}
+        for idx, entry in enumerate(self._world.state.bonus_pool.entries):
+            bonus_id = int(entry.bonus_id)
+            if bonus_id <= 0:
+                continue
+            rewrite_bonuses[int(idx)] = _BonusDraw(
+                x=_finite(entry.pos.x),
+                y=_finite(entry.pos.y),
+                label=self._bonus_label_from_entry(entry),
+                active=True,
+            )
+
         sample_counts = {
             "creatures": int(len(capture_creatures)),
             "projectiles": int(len(capture_projectiles)),
             "secondary_projectiles": int(len(capture_secondary)),
+            "bonuses": int(len(capture_bonuses)),
         }
         return _FrameSnapshot(
             tick_index=int(row.tick_index),
@@ -557,47 +614,284 @@ class CaptureVisualizerView:
             rewrite_projectiles=rewrite_projectiles,
             capture_secondary=capture_secondary,
             rewrite_secondary=rewrite_secondary,
+            capture_bonuses=capture_bonuses,
+            rewrite_bonuses=rewrite_bonuses,
             capture_sample_counts=sample_counts,
         )
 
-    def _append_trace_point(self, key: str, *, capture: _EntityDraw | None, rewrite: _EntityDraw | None) -> None:
-        trace = self._trace_histories.get(key)
-        if trace is None:
-            trace = _TraceHistory(
-                capture=deque(maxlen=self._trace_length),
-                rewrite=deque(maxlen=self._trace_length),
+    @staticmethod
+    def _bonus_label_from_entry(entry: BonusEntry) -> str:
+        try:
+            return str(bonus_label_for_entry(entry))
+        except Exception:
+            return "Bonus"
+
+    def _bonus_label_from_capture_sample(self, *, bonus_id: int, amount_i32: int) -> str:
+        return self._bonus_label_from_entry(
+            BonusEntry(
+                bonus_id=int(bonus_id),
+                amount=int(amount_i32),
             )
-            self._trace_histories[key] = trace
-        if capture is not None and bool(capture.active):
-            trace.capture.append((float(capture.x), float(capture.y)))
-        if rewrite is not None and bool(rewrite.active):
-            trace.rewrite.append((float(rewrite.x), float(rewrite.y)))
+        )
+
+    def _trace_layer_for_key(self, key: str) -> _TraceLayer:
+        if key.startswith("p:"):
+            return self._player_traces
+        if key.startswith("c:"):
+            return self._creature_traces
+        # Both projectile pools (primary + secondary) use the projectile layer.
+        return self._projectile_traces
+
+    @staticmethod
+    def _is_projectile_trace_key(key: str) -> bool:
+        return key.startswith("pr:") or key.startswith("spr:")
+
+    @staticmethod
+    def _dist_sq(x0: float, y0: float, x1: float, y1: float) -> float:
+        dx = float(x1) - float(x0)
+        dy = float(y1) - float(y0)
+        return float(dx * dx + dy * dy)
+
+    @staticmethod
+    def _apply_linear_subtract_fade(rt: rl.RenderTexture, *, amount: int) -> None:
+        amount = int(max(0, min(255, int(amount))))
+        if amount <= 0:
+            return
+        width = int(max(1, getattr(rt.texture, "width", 1)))
+        height = int(max(1, getattr(rt.texture, "height", 1)))
+        fade_color = rl.Color(int(amount), int(amount), int(amount), int(amount))
+        rl.begin_texture_mode(rt)
+        rl.rl_set_blend_factors_separate(
+            rd.RL_ONE,
+            rd.RL_ONE,
+            rd.RL_ONE,
+            rd.RL_ONE,
+            rd.RL_FUNC_REVERSE_SUBTRACT,
+            rd.RL_FUNC_REVERSE_SUBTRACT,
+        )
+        rl.begin_blend_mode(rl.BlendMode.BLEND_CUSTOM_SEPARATE)
+        rl.rl_set_blend_factors_separate(
+            rd.RL_ONE,
+            rd.RL_ONE,
+            rd.RL_ONE,
+            rd.RL_ONE,
+            rd.RL_FUNC_REVERSE_SUBTRACT,
+            rd.RL_FUNC_REVERSE_SUBTRACT,
+        )
+        rl.draw_rectangle(0, 0, int(width), int(height), fade_color)
+        rl.end_blend_mode()
+        rl.end_texture_mode()
+
+    def _fade_trace_layers(self, *, sim_dt: float) -> None:
+        if sim_dt <= 0.0:
+            return
+        for layer in self._trace_layers():
+            rt = layer.rt
+            if rt is None or int(getattr(rt, "id", 0)) <= 0:
+                continue
+            duration = max(float(self._step_interval), float(layer.lifetime_ticks) * float(self._step_interval))
+            # Linear decay over the configured trail lifetime.
+            # Keep sub-byte precision in `fade_accum` so long lifetimes (e.g. player=1200)
+            # still decay every frame.
+            layer.fade_accum += (max(0.0, float(sim_dt)) * 255.0) / float(duration)
+            fade_amount = int(layer.fade_accum)
+            if fade_amount <= 0:
+                continue
+            layer.fade_accum -= float(fade_amount)
+            self._apply_linear_subtract_fade(rt, amount=int(fade_amount))
+
+    def _draw_trace_layers(self, *, width: int, height: int) -> None:
+        dst = rl.Rectangle(0.0, 0.0, float(width), float(height))
+        # Draw in this order so player trails remain easiest to read.
+        for layer in (self._creature_traces, self._projectile_traces, self._player_traces):
+            rt = layer.rt
+            if rt is None or int(getattr(rt, "id", 0)) <= 0:
+                continue
+            src = rl.Rectangle(
+                0.0,
+                0.0,
+                float(getattr(rt.texture, "width", width)),
+                -float(getattr(rt.texture, "height", height)),
+            )
+            rl.draw_texture_pro(rt.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+
+    def _trace_thickness_for_layer(self, layer: _TraceLayer) -> float:
+        if layer is self._player_traces:
+            return 3.0
+        return 1.0
+
+    def _stamp_trace_segment(
+        self,
+        *,
+        layer: _TraceLayer,
+        x0: float,
+        y0: float,
+        x1: float,
+        y1: float,
+        width: int,
+        height: int,
+        color: rl.Color,
+    ) -> None:
+        rt = layer.rt
+        if rt is None or int(getattr(rt, "id", 0)) <= 0:
+            return
+        sx0, sy0 = self._world_to_screen(x=float(x0), y=float(y0), width=width, height=height)
+        sx1, sy1 = self._world_to_screen(x=float(x1), y=float(y1), width=width, height=height)
+        rl.begin_texture_mode(rt)
+        rl.draw_line_ex(
+            rl.Vector2(float(sx0), float(sy0)),
+            rl.Vector2(float(sx1), float(sy1)),
+            float(self._trace_thickness_for_layer(layer)),
+            color,
+        )
+        rl.end_texture_mode()
+
+    def _append_trace_point(
+        self,
+        key: str,
+        *,
+        tick_index: int,
+        capture: _EntityDraw | None,
+        rewrite: _EntityDraw | None,
+        width: int,
+        height: int,
+    ) -> None:
+        layer = self._trace_layer_for_key(key)
+        projectile_key = bool(self._is_projectile_trace_key(key))
+
+        capture_active = capture is not None and bool(capture.active)
+        if capture_active and capture is not None:
+            cx = float(capture.x)
+            cy = float(capture.y)
+            prev = self._trace_prev_capture.get(key)
+            if prev is not None:
+                prev_tick, px, py = prev
+                if int(tick_index) - int(prev_tick) == 1:
+                    if (not projectile_key) or (
+                        self._dist_sq(float(px), float(py), float(cx), float(cy))
+                        <= float(_PROJECTILE_TRACE_RESET_DIST * _PROJECTILE_TRACE_RESET_DIST)
+                    ):
+                        self._stamp_trace_segment(
+                            layer=layer,
+                            x0=float(px),
+                            y0=float(py),
+                            x1=float(cx),
+                            y1=float(cy),
+                            width=width,
+                            height=height,
+                            color=_CAPTURE_TRACE_COLOR,
+                        )
+            self._trace_prev_capture[key] = (int(tick_index), float(cx), float(cy))
+        else:
+            self._trace_prev_capture.pop(key, None)
+
+        rewrite_active = rewrite is not None and bool(rewrite.active)
+        if rewrite_active and rewrite is not None:
+            rx = float(rewrite.x)
+            ry = float(rewrite.y)
+            prev = self._trace_prev_rewrite.get(key)
+            if prev is not None:
+                prev_tick, px, py = prev
+                if int(tick_index) - int(prev_tick) == 1:
+                    if (not projectile_key) or (
+                        self._dist_sq(float(px), float(py), float(rx), float(ry))
+                        <= float(_PROJECTILE_TRACE_RESET_DIST * _PROJECTILE_TRACE_RESET_DIST)
+                    ):
+                        self._stamp_trace_segment(
+                            layer=layer,
+                            x0=float(px),
+                            y0=float(py),
+                            x1=float(rx),
+                            y1=float(ry),
+                            width=width,
+                            height=height,
+                            color=_REWRITE_TRACE_COLOR,
+                        )
+            self._trace_prev_rewrite[key] = (int(tick_index), float(rx), float(ry))
+        else:
+            self._trace_prev_rewrite.pop(key, None)
 
     def _append_traces(self, snapshot: _FrameSnapshot) -> None:
+        tick_index = int(snapshot.tick_index)
+        width = int(rl.get_screen_width())
+        height = int(rl.get_screen_height())
+        if width > 0 and height > 0:
+            self._ensure_trace_layers(width=width, height=height)
+
+        capture_keys_seen: set[str] = set()
+        rewrite_keys_seen: set[str] = set()
+
         for idx in sorted(set(snapshot.capture_players) | set(snapshot.rewrite_players)):
+            key = f"p:{int(idx)}"
+            capture = snapshot.capture_players.get(int(idx))
+            rewrite = snapshot.rewrite_players.get(int(idx))
+            if capture is not None and bool(capture.active):
+                capture_keys_seen.add(str(key))
+            if rewrite is not None and bool(rewrite.active):
+                rewrite_keys_seen.add(str(key))
             self._append_trace_point(
-                f"p:{int(idx)}",
-                capture=snapshot.capture_players.get(int(idx)),
-                rewrite=snapshot.rewrite_players.get(int(idx)),
+                key,
+                tick_index=int(tick_index),
+                capture=capture,
+                rewrite=rewrite,
+                width=width,
+                height=height,
             )
         for idx in sorted(set(snapshot.capture_creatures) | set(snapshot.rewrite_creatures)):
+            key = f"c:{int(idx)}"
+            capture = snapshot.capture_creatures.get(int(idx))
+            rewrite = snapshot.rewrite_creatures.get(int(idx))
+            if capture is not None and bool(capture.active):
+                capture_keys_seen.add(str(key))
+            if rewrite is not None and bool(rewrite.active):
+                rewrite_keys_seen.add(str(key))
             self._append_trace_point(
-                f"c:{int(idx)}",
-                capture=snapshot.capture_creatures.get(int(idx)),
-                rewrite=snapshot.rewrite_creatures.get(int(idx)),
+                key,
+                tick_index=int(tick_index),
+                capture=capture,
+                rewrite=rewrite,
+                width=width,
+                height=height,
             )
         for idx in sorted(set(snapshot.capture_projectiles) | set(snapshot.rewrite_projectiles)):
+            key = f"pr:{int(idx)}"
+            capture = snapshot.capture_projectiles.get(int(idx))
+            rewrite = snapshot.rewrite_projectiles.get(int(idx))
+            if capture is not None and bool(capture.active):
+                capture_keys_seen.add(str(key))
+            if rewrite is not None and bool(rewrite.active):
+                rewrite_keys_seen.add(str(key))
             self._append_trace_point(
-                f"pr:{int(idx)}",
-                capture=snapshot.capture_projectiles.get(int(idx)),
-                rewrite=snapshot.rewrite_projectiles.get(int(idx)),
+                key,
+                tick_index=int(tick_index),
+                capture=capture,
+                rewrite=rewrite,
+                width=width,
+                height=height,
             )
         for idx in sorted(set(snapshot.capture_secondary) | set(snapshot.rewrite_secondary)):
+            key = f"spr:{int(idx)}"
+            capture = snapshot.capture_secondary.get(int(idx))
+            rewrite = snapshot.rewrite_secondary.get(int(idx))
+            if capture is not None and bool(capture.active):
+                capture_keys_seen.add(str(key))
+            if rewrite is not None and bool(rewrite.active):
+                rewrite_keys_seen.add(str(key))
             self._append_trace_point(
-                f"spr:{int(idx)}",
-                capture=snapshot.capture_secondary.get(int(idx)),
-                rewrite=snapshot.rewrite_secondary.get(int(idx)),
+                key,
+                tick_index=int(tick_index),
+                capture=capture,
+                rewrite=rewrite,
+                width=width,
+                height=height,
             )
+
+        for key in list(self._trace_prev_capture):
+            if str(key) not in capture_keys_seen:
+                self._trace_prev_capture.pop(str(key), None)
+        for key in list(self._trace_prev_rewrite):
+            if str(key) not in rewrite_keys_seen:
+                self._trace_prev_rewrite.pop(str(key), None)
 
     def _advance_one_tick(self) -> bool:
         if self._row_cursor >= self._visible_end_idx:
@@ -611,6 +905,29 @@ class CaptureVisualizerView:
         self._row_cursor = int(next_idx)
         return True
 
+    def _step_playback_speed(self, *, faster: bool) -> None:
+        min_exp = int(_MIN_PLAYBACK_SPEED_EXP)
+        max_exp = int(_MAX_PLAYBACK_SPEED_EXP)
+        min_speed = float(2.0**min_exp)
+        max_speed = float(2.0**max_exp)
+        speed = float(self._playback_speed)
+        if not math.isfinite(speed) or speed <= 0.0:
+            speed = 1.0
+        speed = max(float(min_speed), min(float(speed), float(max_speed)))
+        log_speed = float(math.log2(speed))
+
+        if faster:
+            exp = int(math.ceil(log_speed - 1e-12))
+            if math.isclose(speed, float(2.0**exp), rel_tol=1e-9, abs_tol=1e-12):
+                exp += 1
+        else:
+            exp = int(math.floor(log_speed + 1e-12))
+            if math.isclose(speed, float(2.0**exp), rel_tol=1e-9, abs_tol=1e-12):
+                exp -= 1
+
+        exp = max(min_exp, min(max_exp, int(exp)))
+        self._playback_speed = float(2.0**exp)
+
     def _handle_input(self) -> None:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
             self._paused = not bool(self._paused)
@@ -619,10 +936,10 @@ class CaptureVisualizerView:
             self._paused = True
         if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT) and self._paused:
             self._advance_one_tick()
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
-            self._playback_speed = min(16.0, float(self._playback_speed) * 1.25)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
-            self._playback_speed = max(0.05, float(self._playback_speed) / 1.25)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
+            self._step_playback_speed(faster=False)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_SLASH) or rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
+            self._step_playback_speed(faster=True)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_T):
             self._show_traces = not bool(self._show_traces)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_L):
@@ -636,11 +953,14 @@ class CaptureVisualizerView:
 
     def update(self, dt: float) -> None:
         self._handle_input()
+        sim_dt = max(0.0, float(dt)) * float(self._playback_speed)
+        self._trace_fade_dt = 0.0
         if self._paused:
             return
         if self._row_cursor >= self._visible_end_idx:
             return
-        self._accumulator += max(0.0, float(dt)) * float(self._playback_speed)
+        self._trace_fade_dt = float(sim_dt)
+        self._accumulator += float(sim_dt)
         while self._accumulator >= float(self._step_interval):
             self._accumulator -= float(self._step_interval)
             if not self._advance_one_tick():
@@ -657,16 +977,6 @@ class CaptureVisualizerView:
     def _radius_to_screen(self, radius: float, *, width: int, height: int) -> float:
         scale = min(float(width), float(height)) / float(self._world_size)
         return max(1.0, float(radius) * scale)
-
-    def _draw_trace(self, points: deque[tuple[float, float]], *, width: int, height: int, color: rl.Color) -> None:
-        if len(points) < 2:
-            return
-        prev = points[0]
-        for point in list(points)[1:]:
-            x0, y0 = self._world_to_screen(x=float(prev[0]), y=float(prev[1]), width=width, height=height)
-            x1, y1 = self._world_to_screen(x=float(point[0]), y=float(point[1]), width=width, height=height)
-            rl.draw_line(int(x0), int(y0), int(x1), int(y1), color)
-            prev = point
 
     def _draw_entity_overlay(
         self,
@@ -689,13 +999,19 @@ class CaptureVisualizerView:
                     x=float(capture.x), y=float(capture.y), width=width, height=height
                 )
                 rr = self._radius_to_screen(float(capture.radius), width=width, height=height)
-                rl.draw_circle_lines(int(cx), int(cy), float(rr), capture_color)
+                if bool(capture.filled):
+                    rl.draw_circle(int(cx), int(cy), float(rr), capture_color)
+                else:
+                    rl.draw_circle_lines(int(cx), int(cy), float(rr), capture_color)
             if self._show_rewrite_hitboxes and rewrite is not None and bool(rewrite.active):
                 rx, ry = self._world_to_screen(
                     x=float(rewrite.x), y=float(rewrite.y), width=width, height=height
                 )
                 rr = self._radius_to_screen(float(rewrite.radius), width=width, height=height)
-                rl.draw_circle_lines(int(rx), int(ry), float(rr), rewrite_color)
+                if bool(rewrite.filled):
+                    rl.draw_circle(int(rx), int(ry), float(rr), rewrite_color)
+                else:
+                    rl.draw_circle_lines(int(rx), int(ry), float(rr), rewrite_color)
 
             if (
                 self._show_divergence
@@ -715,6 +1031,49 @@ class CaptureVisualizerView:
                 if drift > max_drift:
                     max_drift = drift
         return max_drift
+
+    def _draw_bonus_overlay(
+        self,
+        *,
+        capture_map: dict[int, _BonusDraw],
+        rewrite_map: dict[int, _BonusDraw],
+        width: int,
+        height: int,
+    ) -> None:
+        bonus_radius = self._radius_to_screen(float(_BONUS_DRAW_RADIUS), width=width, height=height)
+        for key in sorted(set(capture_map) | set(rewrite_map)):
+            capture = capture_map.get(int(key))
+            rewrite = rewrite_map.get(int(key))
+            if self._show_capture_hitboxes and capture is not None and bool(capture.active):
+                cx, cy = self._world_to_screen(
+                    x=float(capture.x),
+                    y=float(capture.y),
+                    width=width,
+                    height=height,
+                )
+                rl.draw_circle_lines(int(cx), int(cy), float(bonus_radius), _CAPTURE_BONUS_COLOR)
+                self._draw_ui_text(
+                    str(capture.label),
+                    x=float(cx) + float(bonus_radius) + 4.0,
+                    y=float(cy) - 10.0,
+                    color=_CAPTURE_BONUS_COLOR,
+                    scale=0.8,
+                )
+            if self._show_rewrite_hitboxes and rewrite is not None and bool(rewrite.active):
+                rx, ry = self._world_to_screen(
+                    x=float(rewrite.x),
+                    y=float(rewrite.y),
+                    width=width,
+                    height=height,
+                )
+                rl.draw_circle_lines(int(rx), int(ry), float(bonus_radius), _REWRITE_BONUS_COLOR)
+                self._draw_ui_text(
+                    str(rewrite.label),
+                    x=float(rx) + float(bonus_radius) + 4.0,
+                    y=float(ry) + 2.0,
+                    color=_REWRITE_BONUS_COLOR,
+                    scale=0.8,
+                )
 
     def _draw_ui_text(self, text: str, *, x: float, y: float, color: rl.Color, scale: float = 1.0) -> None:
         if self._small is not None:
@@ -744,20 +1103,10 @@ class CaptureVisualizerView:
             self._draw_ui_text("No frame snapshot", x=12.0, y=12.0, color=_TEXT_COLOR)
             return
 
+        self._ensure_trace_layers(width=width, height=height)
+        self._fade_trace_layers(sim_dt=float(self._trace_fade_dt))
         if self._show_traces:
-            for trace in self._trace_histories.values():
-                self._draw_trace(
-                    trace.capture,
-                    width=width,
-                    height=height,
-                    color=_CAPTURE_TRACE_COLOR,
-                )
-                self._draw_trace(
-                    trace.rewrite,
-                    width=width,
-                    height=height,
-                    color=_REWRITE_TRACE_COLOR,
-                )
+            self._draw_trace_layers(width=width, height=height)
 
         max_player_drift = self._draw_entity_overlay(
             capture_map=snapshot.capture_players,
@@ -791,6 +1140,12 @@ class CaptureVisualizerView:
             capture_color=_CAPTURE_HITBOX_COLOR,
             rewrite_color=_REWRITE_HITBOX_COLOR,
         )
+        self._draw_bonus_overlay(
+            capture_map=snapshot.capture_bonuses,
+            rewrite_map=snapshot.rewrite_bonuses,
+            width=width,
+            height=height,
+        )
 
         total_rows = int(self._visible_end_idx - self._visible_start_idx + 1)
         row_progress = int(max(0, self._row_cursor - self._visible_start_idx + 1))
@@ -809,7 +1164,7 @@ class CaptureVisualizerView:
         )
         self._draw_ui_text(
             (
-                "Space pause  Right step  R restart  Up/Down speed  "
+                "Space pause  Right step  R restart  [ slower  / faster  "
                 "T traces  L divergence-lines  C capture-hitboxes  V rewrite-hitboxes  Esc close"
             ),
             x=16.0,
@@ -821,7 +1176,8 @@ class CaptureVisualizerView:
             (
                 f"samples: creatures={snapshot.capture_sample_counts['creatures']}  "
                 f"projectiles={snapshot.capture_sample_counts['projectiles']}  "
-                f"secondary={snapshot.capture_sample_counts['secondary_projectiles']}"
+                f"secondary={snapshot.capture_sample_counts['secondary_projectiles']}  "
+                f"bonuses={snapshot.capture_sample_counts['bonuses']}"
             ),
             x=16.0,
             y=70.0,
@@ -846,7 +1202,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Visualize capture-vs-rewrite divergence with hitbox overlays and movement traces "
-            "(capture-driven sim inputs, no replay input packing)."
+            "(replay-packed sim inputs with capture overlays)."
         ),
     )
     parser.add_argument("capture", type=Path, help="capture file (.json/.json.gz)")
@@ -854,7 +1210,20 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--end-tick", type=int, default=None, help="last tick to display (default: capture end)")
     parser.add_argument("--seed", type=int, default=None, help="override inferred seed")
     parser.add_argument("--speed", type=float, default=1.0, help="initial playback speed multiplier")
-    parser.add_argument("--trace-len", type=int, default=180, help="movement trace length in ticks")
+    parser.add_argument(
+        "--trace-len",
+        type=int,
+        default=None,
+        help="legacy override: movement trace length in ticks for all entity types",
+    )
+    parser.add_argument("--player-trace-len", type=int, default=1200, help="player trace length in ticks")
+    parser.add_argument("--creature-trace-len", type=int, default=600, help="creature trace length in ticks")
+    parser.add_argument(
+        "--projectile-trace-len",
+        type=int,
+        default=60,
+        help="projectile trace length in ticks (primary + secondary)",
+    )
     parser.add_argument(
         "--inter-tick-rand-draws",
         type=int,
@@ -876,6 +1245,16 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
+    trace_len_override = None if args.trace_len is None else max(1, int(args.trace_len))
+    player_trace_len = (
+        int(trace_len_override) if trace_len_override is not None else max(1, int(args.player_trace_len))
+    )
+    creature_trace_len = (
+        int(trace_len_override) if trace_len_override is not None else max(1, int(args.creature_trace_len))
+    )
+    projectile_trace_len = (
+        int(trace_len_override) if trace_len_override is not None else max(1, int(args.projectile_trace_len))
+    )
 
     try:
         view = CaptureVisualizerView(
@@ -884,7 +1263,9 @@ def main(argv: list[str] | None = None) -> int:
             start_tick=int(args.start_tick),
             end_tick=(None if args.end_tick is None else int(args.end_tick)),
             playback_speed=float(args.speed),
-            trace_length=int(args.trace_len),
+            player_trace_length=int(player_trace_len),
+            creature_trace_length=int(creature_trace_len),
+            projectile_trace_length=int(projectile_trace_len),
             inter_tick_rand_draws=int(args.inter_tick_rand_draws),
             seed=(None if args.seed is None else int(args.seed)),
         )

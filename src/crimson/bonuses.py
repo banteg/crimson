@@ -93,8 +93,9 @@ BONUS_TABLE = [
         name="Double Experience",
         description="Every experience point you get is doubled when this bonus is active.",
         icon_id=4,
-        # Native default amount is 0; the pickup adds a fixed 6 seconds (scaled by Bonus Economist).
-        default_amount=0,
+        # Native integer amount field is 1 for spawn-time suppression parity;
+        # pickup application still uses a fixed +6 seconds (scaled by Bonus Economist).
+        default_amount=1,
         apply_seconds=6.0,
         notes="`bonus_apply` updates `bonus_double_xp_timer` (fixed +6 seconds, scaled by Bonus Economist).",
     ),
@@ -103,7 +104,7 @@ BONUS_TABLE = [
         name="Shock Chain",
         description="Chain of shocks shock the crowd.",
         icon_id=3,
-        default_amount=0,
+        default_amount=1,
         notes="`bonus_apply` spawns chained lightning via `projectile_spawn` type `0x15`; `shock_chain_links_left` / `shock_chain_projectile_id` track the active chain.",
     ),
     BonusMeta(
@@ -111,7 +112,7 @@ BONUS_TABLE = [
         name="Fireblast",
         description="Fireballs all over the place.",
         icon_id=2,
-        default_amount=0,
+        default_amount=1,
         notes="`bonus_apply` spawns a radial projectile burst (type `9`).",
     ),
     BonusMeta(

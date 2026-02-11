@@ -355,6 +355,19 @@ class WorldState:
         if not bool(defer_camera_shake_update):
             camera_shake_update(self.state, dt)
         _mark("ws_after_camera_update")
+        # Native level-up/perk-pending check runs before `bonus_update` in
+        # gameplay_update_and_render. Keep the same ordering so XP awarded from
+        # bonus-side kill paths (e.g. freeze cleanup) levels on the next tick.
+        if perk_progression_enabled:
+            survival_progression_update(
+                self.state,
+                self.players,
+                game_mode=game_mode,
+                auto_pick=auto_pick_perks,
+                dt=dt,
+                creatures=self.creatures.entries,
+            )
+        _mark("ws_after_progression")
         # Native latches `time_scale_active` late (post mode update, pre bonus decrement); next-frame dt uses it.
         self.state.time_scale_active = float(self.state.bonuses.reflex_boost) > 0.0
         bonus_update_pre_pickup_timers(self.state, dt)
@@ -375,16 +388,6 @@ class WorldState:
                 detail_preset=int(detail_preset),
             )
         _mark("ws_after_bonus_update")
-        if perk_progression_enabled:
-            survival_progression_update(
-                self.state,
-                self.players,
-                game_mode=game_mode,
-                auto_pick=auto_pick_perks,
-                dt=dt,
-                creatures=self.creatures.entries,
-            )
-        _mark("ws_after_progression")
         sfx = list(planned_death_sfx)
         sfx.extend(creature_result.sfx)
         if self.state.sfx_queue:

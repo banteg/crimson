@@ -8,6 +8,7 @@ import json
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 import re
+from typing import cast
 
 import msgspec
 
@@ -19,6 +20,7 @@ from crimson.original.diff import ReplayFieldDiff, checkpoint_field_diffs
 from crimson.original.capture import (
     build_capture_dt_frame_overrides,
     build_capture_dt_frame_ms_i32_overrides,
+    build_capture_inter_tick_rand_draws_overrides,
     convert_capture_to_checkpoints,
     convert_capture_to_replay,
     load_capture,
@@ -154,6 +156,114 @@ def _float_or(value: object, default: float = 0.0) -> float:
         return float(value)  # ty:ignore[invalid-argument-type]
     except Exception:
         return float(default)
+
+
+def _coerce_u32(value: object) -> int | None:
+    parsed = _int_or(value, -1)
+    if parsed < 0:
+        return None
+    return int(parsed) & 0xFFFFFFFF
+
+
+def _rng_value_15_from_row(row: dict[str, object]) -> int | None:
+    value_15 = _int_or(row.get("value_15"), -1)
+    if 0 <= value_15 <= 0x7FFF:
+        return int(value_15)
+    value = _int_or(row.get("value"), _int_or(row.get("value_i32"), -1))
+    if value < 0:
+        return None
+    return int(value) & 0x7FFF
+
+
+def _coerce_rng_stream_rows(value: object) -> list[dict[str, object]]:
+    if not isinstance(value, list):
+        return []
+    out: list[dict[str, object]] = []
+    for item in value:
+        if isinstance(item, dict):
+            row = cast(dict[str, object], item)
+            value_15 = _rng_value_15_from_row(row)
+            state_before_u32 = _coerce_u32(row.get("state_before_u32"))
+            state_after_u32 = _coerce_u32(row.get("state_after_u32"))
+            caller_static = row.get("caller_static")
+            branch_id = row.get("branch_id")
+            seq = _int_or(row.get("seq"), -1)
+            tick_call_index = _int_or(row.get("tick_call_index"), -1)
+
+            if (
+                value_15 is None
+                and state_before_u32 is None
+                and state_after_u32 is None
+                and caller_static is None
+                and branch_id is None
+                and seq < 0
+                and tick_call_index < 0
+            ):
+                continue
+
+            normalized: dict[str, object] = {}
+            if value_15 is not None:
+                normalized["value_15"] = int(value_15)
+                normalized["value"] = int(value_15)
+            if state_before_u32 is not None:
+                normalized["state_before_u32"] = int(state_before_u32)
+            if state_after_u32 is not None:
+                normalized["state_after_u32"] = int(state_after_u32)
+            if seq >= 0:
+                normalized["seq"] = int(seq)
+            if tick_call_index >= 0:
+                normalized["tick_call_index"] = int(tick_call_index)
+            caller_static_s = str(caller_static) if caller_static is not None else ""
+            branch_id_s = str(branch_id) if branch_id is not None else ""
+            if caller_static_s:
+                normalized["caller_static"] = caller_static_s
+            if branch_id_s:
+                normalized["branch_id"] = branch_id_s
+            elif caller_static_s:
+                normalized["branch_id"] = caller_static_s
+            caller = row.get("caller")
+            if caller is not None and str(caller):
+                normalized["caller"] = str(caller)
+            out.append(normalized)
+            continue
+
+        parsed = _int_or(item, -1)
+        if parsed < 0:
+            continue
+        out.append({"value_15": int(parsed) & 0x7FFF, "value": int(parsed) & 0x7FFF})
+    return out
+
+
+def _extract_rng_head_values(rows: list[object] | list[dict[str, object]]) -> list[int]:
+    out: list[int] = []
+    for row in _coerce_rng_stream_rows(rows):
+        value_15 = _rng_value_15_from_row(row)
+        if value_15 is None:
+            continue
+        out.append(int(value_15))
+    return out
+
+
+def _coerce_nonnegative_int_list(value: object) -> list[int]:
+    if not isinstance(value, list):
+        return []
+    out: list[int] = []
+    for item in value:
+        parsed = _int_or(item, -1)
+        if parsed < 0:
+            continue
+        out.append(int(parsed))
+    return out
+
+
+def _rng_stream_rows_for_raw_row(raw_row: dict[str, object]) -> list[dict[str, object]]:
+    rows = _coerce_rng_stream_rows(raw_row.get("rng_stream_rows"))
+    if rows:
+        return rows
+    values = _coerce_nonnegative_int_list(raw_row.get("rng_head_values"))
+    if not values:
+        return []
+    return [{"value_15": int(value) & 0x7FFF, "value": int(value) & 0x7FFF} for value in values]
 
 
 def _capture_sample_rate(capture: CaptureFile) -> int:
@@ -723,6 +833,8 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
             rng_head_top = rng_top_obj.get("head")
             if isinstance(rng_head_top, list):
                 rng_head_obj = rng_head_top
+        rng_stream_rows = _coerce_rng_stream_rows(rng_head_obj)
+        rng_head_values = _extract_rng_head_values(rng_stream_rows)
 
         sample_creatures_head: list[dict[str, object]] = []
         for item in sample_creatures_obj[:6]:
@@ -763,6 +875,8 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
         out[int(tick)] = {
             "rng_rand_calls": rng_rand_calls,
             "rng_head_len": len(rng_head_obj),
+            "rng_stream_rows": rng_stream_rows,
+            "rng_head_values": rng_head_values,
             "rng_rand_last": rng_rand_last,
             "rng_seq_first": rng_seq_first,
             "rng_seq_last": rng_seq_last,
@@ -880,23 +994,7 @@ def _run_actual_checkpoints(
     )
     dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
     checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected}
-    inter_tick_rand_draws_by_tick: dict[int, int] | None = {}
-    for tick in capture.ticks:
-        outside_before_calls = getattr(tick, "rng_outside_before_calls", None)
-        if outside_before_calls is None:
-            outside_before_calls = tick.checkpoint.rng_marks.rand_outside_before_calls
-        calls = _int_or(outside_before_calls, -1)
-        if calls < 0:
-            continue
-        assert inter_tick_rand_draws_by_tick is not None
-        inter_tick_rand_draws_by_tick[int(tick.tick_index)] = int(calls)
-    if inter_tick_rand_draws_by_tick:
-        first_tick_index = min(inter_tick_rand_draws_by_tick)
-        # The inferred replay seed already matches the first sampled tick RNG
-        # entry state, so do not reapply pre-capture bootstrap draws here.
-        inter_tick_rand_draws_by_tick[int(first_tick_index)] = 0
-    if not inter_tick_rand_draws_by_tick:
-        inter_tick_rand_draws_by_tick = None
+    inter_tick_rand_draws_by_tick = build_capture_inter_tick_rand_draws_overrides(capture)
     actual: list[ReplayCheckpoint] = []
 
     mode = int(replay.header.game_mode_id)
@@ -937,10 +1035,12 @@ def _find_first_divergence(
     float_abs_tol: float,
     max_field_diffs: int,
     capture_sample_creature_counts: dict[int, int] | None = None,
+    raw_debug_by_tick: dict[int, dict[str, object]] | None = None,
 ) -> Divergence | None:
     expected_by_tick = {int(ckpt.tick_index): ckpt for ckpt in expected}
     actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
     sample_counts = capture_sample_creature_counts or {}
+    raw_by_tick = raw_debug_by_tick or {}
 
     for exp in expected:
         tick = int(exp.tick_index)
@@ -953,6 +1053,29 @@ def _find_first_divergence(
                 expected=exp,
                 actual=None,
             )
+
+        raw_row = raw_by_tick.get(int(tick), {})
+        capture_stream_rows = _rng_stream_rows_for_raw_row(raw_row)
+        capture_head_len = _int_or(raw_row.get("rng_head_len"), len(capture_stream_rows))
+        if capture_head_len < 0:
+            capture_head_len = len(capture_stream_rows)
+        if capture_head_len > 0 or capture_stream_rows:
+            stream_alignment = _compute_rng_stream_alignment(
+                act=act,
+                capture_stream_rows=capture_stream_rows,
+                capture_head_len=int(capture_head_len),
+            )
+            if (
+                _int_or(stream_alignment.get("first_mismatch_idx"), -1) >= 0
+                or _int_or(stream_alignment.get("missing_tail"), 0) > 0
+            ):
+                return Divergence(
+                    tick_index=int(tick),
+                    kind="rng_stream_mismatch",
+                    field_diffs=(),
+                    expected=exp,
+                    actual=act,
+                )
 
         exp_for_diff = replace(exp, elapsed_ms=-1)
         field_diffs = checkpoint_field_diffs(
@@ -1036,6 +1159,172 @@ def _actual_rand_calls_for_checkpoint(ckpt: ReplayCheckpoint) -> int | None:
     before = _rng_mark_with_fallback(ckpt.rng_marks, "before_events")
     after = _primary_rng_after(ckpt)
     return _infer_rand_calls_between_states(before, after)
+
+
+def _actual_rng_stream_rows_for_checkpoint(
+    ckpt: ReplayCheckpoint,
+    *,
+    max_rows: int | None = None,
+) -> tuple[list[dict[str, int]], int | None]:
+    actual_calls = _actual_rand_calls_for_checkpoint(ckpt)
+    if actual_calls is None:
+        return [], None
+
+    total_calls = max(0, int(actual_calls))
+    before_state = _rng_mark_with_fallback(ckpt.rng_marks, "before_events")
+    if before_state < 0:
+        return [], int(total_calls)
+
+    limit = int(total_calls) if max_rows is None else max(0, min(int(total_calls), int(max_rows)))
+    state = int(before_state) & _CRT_RAND_MASK
+    out: list[dict[str, int]] = []
+    for idx in range(limit):
+        state_before_u32 = int(state) & _CRT_RAND_MASK
+        state_after_u32 = (int(state_before_u32) * _CRT_RAND_MULT + _CRT_RAND_INC) & _CRT_RAND_MASK
+        value_15 = int((state_after_u32 >> 16) & 0x7FFF)
+        out.append(
+            {
+                "tick_call_index": int(idx) + 1,
+                "value_15": int(value_15),
+                "state_before_u32": int(state_before_u32),
+                "state_after_u32": int(state_after_u32),
+            }
+        )
+        state = int(state_after_u32)
+    return out, int(total_calls)
+
+
+def _compute_rng_stream_alignment(
+    *,
+    act: ReplayCheckpoint,
+    capture_stream_rows: list[dict[str, object]],
+    capture_head_len: int,
+) -> dict[str, object]:
+    capture_rows = _coerce_rng_stream_rows(capture_stream_rows)
+    cap_len = max(int(capture_head_len), len(capture_rows))
+    actual_rows, actual_calls = _actual_rng_stream_rows_for_checkpoint(
+        act,
+        max_rows=len(capture_rows),
+    )
+    if actual_calls is None:
+        return {
+            "capture_head_len": int(cap_len),
+            "actual_calls": None,
+            "prefix_match": None,
+            "compared": None,
+            "first_mismatch_idx": None,
+            "first_mismatch_reason": None,
+            "first_mismatch_capture": None,
+            "first_mismatch_actual": None,
+            "first_mismatch_capture_state_before": None,
+            "first_mismatch_capture_state_after": None,
+            "first_mismatch_actual_state_before": None,
+            "first_mismatch_actual_state_after": None,
+            "first_mismatch_capture_caller_static": None,
+            "first_mismatch_capture_branch_id": None,
+            "first_mismatch_capture_seq": None,
+            "missing_tail": None,
+        }
+
+    actual_calls_i = max(0, int(actual_calls))
+    if not actual_rows and capture_rows:
+        return {
+            "capture_head_len": int(cap_len),
+            "actual_calls": int(actual_calls_i),
+            "prefix_match": None,
+            "compared": None,
+            "first_mismatch_idx": None,
+            "first_mismatch_reason": None,
+            "first_mismatch_capture": None,
+            "first_mismatch_actual": None,
+            "first_mismatch_capture_state_before": None,
+            "first_mismatch_capture_state_after": None,
+            "first_mismatch_actual_state_before": None,
+            "first_mismatch_actual_state_after": None,
+            "first_mismatch_capture_caller_static": None,
+            "first_mismatch_capture_branch_id": None,
+            "first_mismatch_capture_seq": None,
+            "missing_tail": max(0, int(cap_len) - int(actual_calls_i)),
+        }
+
+    compared = min(len(capture_rows), len(actual_rows))
+    prefix = 0
+    first_mismatch_idx: int | None = None
+    first_mismatch_reason: str | None = None
+    first_mismatch_capture: int | None = None
+    first_mismatch_actual: int | None = None
+    first_mismatch_capture_state_before: int | None = None
+    first_mismatch_capture_state_after: int | None = None
+    first_mismatch_actual_state_before: int | None = None
+    first_mismatch_actual_state_after: int | None = None
+    first_mismatch_capture_caller_static: str | None = None
+    first_mismatch_capture_branch_id: str | None = None
+    first_mismatch_capture_seq: int | None = None
+
+    for idx in range(compared):
+        capture_row = capture_rows[idx]
+        actual_row = actual_rows[idx]
+
+        capture_value = _rng_value_15_from_row(capture_row)
+        actual_value = int(actual_row["value_15"])
+        capture_before = _coerce_u32(capture_row.get("state_before_u32"))
+        capture_after = _coerce_u32(capture_row.get("state_after_u32"))
+        actual_before = int(actual_row["state_before_u32"])
+        actual_after = int(actual_row["state_after_u32"])
+
+        mismatch_reason: str | None = None
+        if capture_value is None:
+            mismatch_reason = "capture_value_missing"
+        elif int(capture_value) != int(actual_value):
+            mismatch_reason = "value"
+        elif capture_before is not None and int(capture_before) != int(actual_before):
+            mismatch_reason = "state_before"
+        elif capture_after is not None and int(capture_after) != int(actual_after):
+            mismatch_reason = "state_after"
+
+        if mismatch_reason is None:
+            prefix += 1
+            continue
+
+        first_mismatch_idx = int(idx)
+        first_mismatch_reason = str(mismatch_reason)
+        first_mismatch_capture = int(capture_value) if capture_value is not None else None
+        first_mismatch_actual = int(actual_value)
+        first_mismatch_capture_state_before = int(capture_before) if capture_before is not None else None
+        first_mismatch_capture_state_after = int(capture_after) if capture_after is not None else None
+        first_mismatch_actual_state_before = int(actual_before)
+        first_mismatch_actual_state_after = int(actual_after)
+        caller_static = capture_row.get("caller_static")
+        if caller_static is not None and str(caller_static):
+            first_mismatch_capture_caller_static = str(caller_static)
+        branch_id = capture_row.get("branch_id")
+        if branch_id is not None and str(branch_id):
+            first_mismatch_capture_branch_id = str(branch_id)
+        elif first_mismatch_capture_caller_static is not None:
+            first_mismatch_capture_branch_id = first_mismatch_capture_caller_static
+        seq = _int_or(capture_row.get("seq"), -1)
+        if seq >= 0:
+            first_mismatch_capture_seq = int(seq)
+        break
+
+    return {
+        "capture_head_len": int(cap_len),
+        "actual_calls": int(actual_calls_i),
+        "prefix_match": int(prefix),
+        "compared": int(compared),
+        "first_mismatch_idx": first_mismatch_idx,
+        "first_mismatch_reason": first_mismatch_reason,
+        "first_mismatch_capture": first_mismatch_capture,
+        "first_mismatch_actual": first_mismatch_actual,
+        "first_mismatch_capture_state_before": first_mismatch_capture_state_before,
+        "first_mismatch_capture_state_after": first_mismatch_capture_state_after,
+        "first_mismatch_actual_state_before": first_mismatch_actual_state_before,
+        "first_mismatch_actual_state_after": first_mismatch_actual_state_after,
+        "first_mismatch_capture_caller_static": first_mismatch_capture_caller_static,
+        "first_mismatch_capture_branch_id": first_mismatch_capture_branch_id,
+        "first_mismatch_capture_seq": first_mismatch_capture_seq,
+        "missing_tail": max(0, int(cap_len) - int(actual_calls_i)),
+    }
 
 
 def _actual_rand_stage_calls(ckpt: ReplayCheckpoint) -> dict[str, int]:
@@ -1357,31 +1646,54 @@ def _find_first_rng_head_shortfall(
         act = actual_by_tick.get(int(tick))
         if exp is None or act is None:
             continue
-        expected_head_len = _int_or(raw_debug_by_tick.get(int(tick), {}).get("rng_head_len"), -1)
+        raw_row = raw_debug_by_tick.get(int(tick), {})
+        capture_stream_rows = _rng_stream_rows_for_raw_row(raw_row)
+        expected_head_len = _int_or(raw_row.get("rng_head_len"), len(capture_stream_rows))
         if expected_head_len <= 0:
             continue
-        actual_rand_calls = _actual_rand_calls_for_checkpoint(act)
-        if actual_rand_calls is None:
+        align = _compute_rng_stream_alignment(
+            act=act,
+            capture_stream_rows=capture_stream_rows,
+            capture_head_len=int(expected_head_len),
+        )
+        actual_rand_calls_i = _int_or(align.get("actual_calls"), -1)
+        if actual_rand_calls_i < 0:
             continue
-        if int(actual_rand_calls) >= int(expected_head_len):
+        first_mismatch_idx = align.get("first_mismatch_idx")
+        missing_tail = _int_or(align.get("missing_tail"), 0)
+        if first_mismatch_idx is None and int(missing_tail) <= 0:
             continue
         expected_rand_calls = _int_or(
-            raw_debug_by_tick.get(int(tick), {}).get("rng_rand_calls"),
+            raw_row.get("rng_rand_calls"),
             _int_or(exp.rng_marks.get("rand_calls"), -1),
         )
         caller_counts = _aggregate_rng_callers(
             raw_debug_by_tick=raw_debug_by_tick,
             ticks=[int(tick)],
         )
-        seq_first = _int_or(raw_debug_by_tick.get(int(tick), {}).get("rng_seq_first"), -1)
-        seq_last = _int_or(raw_debug_by_tick.get(int(tick), {}).get("rng_seq_last"), -1)
-        seed_epoch_enter = _int_or(raw_debug_by_tick.get(int(tick), {}).get("rng_seed_epoch_enter"), -1)
-        seed_epoch_last = _int_or(raw_debug_by_tick.get(int(tick), {}).get("rng_seed_epoch_last"), -1)
+        seq_first = _int_or(raw_row.get("rng_seq_first"), -1)
+        seq_last = _int_or(raw_row.get("rng_seq_last"), -1)
+        seed_epoch_enter = _int_or(raw_row.get("rng_seed_epoch_enter"), -1)
+        seed_epoch_last = _int_or(raw_row.get("rng_seed_epoch_last"), -1)
         return {
             "tick": int(tick),
             "expected_head_len": int(expected_head_len),
-            "actual_rand_calls": int(actual_rand_calls),
-            "missing_draws": int(expected_head_len) - int(actual_rand_calls),
+            "actual_rand_calls": int(actual_rand_calls_i),
+            "missing_draws": max(0, int(expected_head_len) - int(actual_rand_calls_i)),
+            "stream_prefix_match": align.get("prefix_match"),
+            "stream_compared": align.get("compared"),
+            "stream_first_mismatch_idx": first_mismatch_idx,
+            "stream_first_mismatch_reason": align.get("first_mismatch_reason"),
+            "stream_first_mismatch_capture": align.get("first_mismatch_capture"),
+            "stream_first_mismatch_actual": align.get("first_mismatch_actual"),
+            "stream_first_mismatch_capture_state_before": align.get("first_mismatch_capture_state_before"),
+            "stream_first_mismatch_capture_state_after": align.get("first_mismatch_capture_state_after"),
+            "stream_first_mismatch_actual_state_before": align.get("first_mismatch_actual_state_before"),
+            "stream_first_mismatch_actual_state_after": align.get("first_mismatch_actual_state_after"),
+            "stream_first_mismatch_capture_caller_static": align.get("first_mismatch_capture_caller_static"),
+            "stream_first_mismatch_capture_branch_id": align.get("first_mismatch_capture_branch_id"),
+            "stream_first_mismatch_capture_seq": align.get("first_mismatch_capture_seq"),
+            "stream_missing_tail": int(missing_tail),
             "expected_rand_calls": int(expected_rand_calls),
             "caller_counts": caller_counts,
             "seq_first": int(seq_first),
@@ -1592,6 +1904,36 @@ def _build_investigation_leads(
         expected_head_len = _int_or(rng_head_shortfall.get("expected_head_len"), -1)
         actual_rand_calls = _int_or(rng_head_shortfall.get("actual_rand_calls"), -1)
         missing_draws = _int_or(rng_head_shortfall.get("missing_draws"), -1)
+        stream_prefix_match = _int_or(rng_head_shortfall.get("stream_prefix_match"), -1)
+        stream_compared = _int_or(rng_head_shortfall.get("stream_compared"), -1)
+        stream_first_mismatch_idx = _int_or(rng_head_shortfall.get("stream_first_mismatch_idx"), -1)
+        stream_first_mismatch_reason = str(rng_head_shortfall.get("stream_first_mismatch_reason") or "").strip()
+        stream_first_mismatch_capture = _int_or(rng_head_shortfall.get("stream_first_mismatch_capture"), -1)
+        stream_first_mismatch_actual = _int_or(rng_head_shortfall.get("stream_first_mismatch_actual"), -1)
+        stream_first_mismatch_capture_state_before = _int_or(
+            rng_head_shortfall.get("stream_first_mismatch_capture_state_before"),
+            -1,
+        )
+        stream_first_mismatch_capture_state_after = _int_or(
+            rng_head_shortfall.get("stream_first_mismatch_capture_state_after"),
+            -1,
+        )
+        stream_first_mismatch_actual_state_before = _int_or(
+            rng_head_shortfall.get("stream_first_mismatch_actual_state_before"),
+            -1,
+        )
+        stream_first_mismatch_actual_state_after = _int_or(
+            rng_head_shortfall.get("stream_first_mismatch_actual_state_after"),
+            -1,
+        )
+        stream_first_mismatch_capture_branch_id = str(
+            rng_head_shortfall.get("stream_first_mismatch_capture_branch_id") or ""
+        ).strip()
+        stream_first_mismatch_capture_seq = _int_or(
+            rng_head_shortfall.get("stream_first_mismatch_capture_seq"),
+            -1,
+        )
+        stream_missing_tail = _int_or(rng_head_shortfall.get("stream_missing_tail"), -1)
         expected_rand_calls = _int_or(rng_head_shortfall.get("expected_rand_calls"), -1)
         seq_first = _int_or(rng_head_shortfall.get("seq_first"), -1)
         seq_last = _int_or(rng_head_shortfall.get("seq_last"), -1)
@@ -1610,16 +1952,53 @@ def _build_investigation_leads(
         top_callers = ", ".join(f"{addr} x{calls}" for addr, calls in caller_counts[:6])  # ty:ignore[not-subscriptable]
 
         evidence = [
+            f"first pre-focus tick with RNG stream drift: tick={int(shortfall_tick)}",
             (
-                f"first pre-focus tick with native RNG-head shortfall: tick={int(shortfall_tick)} "
-                f"(expected_head_len={int(expected_head_len)}, actual_rand_calls={int(actual_rand_calls)}, "
-                f"missing={int(missing_draws)})"
-            ),
-            (
-                "this means rewrite consumed fewer draws than native before the focus mismatch, "
+                "this means rewrite followed a different RNG branch before the focus mismatch, "
                 "so later gameplay RNG decisions can diverge even if sampled state still matches"
             ),
         ]
+        if stream_first_mismatch_idx >= 0:
+            evidence.append(
+                "capture-vs-rewrite RNG stream diverges at "
+                f"idx={int(stream_first_mismatch_idx)} (capture={int(stream_first_mismatch_capture)}, "
+                f"rewrite={int(stream_first_mismatch_actual)}) with prefix_match="
+                f"{int(stream_prefix_match)}/{int(stream_compared)}"
+            )
+            if stream_first_mismatch_reason:
+                evidence.append(f"first mismatch reason: {stream_first_mismatch_reason}")
+            if stream_first_mismatch_capture_state_before >= 0 or stream_first_mismatch_actual_state_before >= 0:
+                evidence.append(
+                    "first mismatch state_before: "
+                    f"capture={int(stream_first_mismatch_capture_state_before)} "
+                    f"rewrite={int(stream_first_mismatch_actual_state_before)}"
+                )
+            if stream_first_mismatch_capture_state_after >= 0 or stream_first_mismatch_actual_state_after >= 0:
+                evidence.append(
+                    "first mismatch state_after: "
+                    f"capture={int(stream_first_mismatch_capture_state_after)} "
+                    f"rewrite={int(stream_first_mismatch_actual_state_after)}"
+                )
+            if stream_first_mismatch_capture_branch_id:
+                evidence.append(
+                    "capture branch_id at first mismatch: "
+                    f"{stream_first_mismatch_capture_branch_id}"
+                    + (
+                        f" (seq={int(stream_first_mismatch_capture_seq)})"
+                        if stream_first_mismatch_capture_seq >= 0
+                        else ""
+                    )
+                )
+        if stream_missing_tail > 0:
+            evidence.append(
+                f"capture RNG head exceeds rewrite stream at that tick: capture_head_len={int(expected_head_len)} "
+                f"rewrite_calls={int(actual_rand_calls)} missing_tail={int(stream_missing_tail)}"
+            )
+        if missing_draws > 0 and stream_first_mismatch_idx < 0:
+            evidence.append(
+                f"first pre-focus RNG-head shortfall details: expected_head_len={int(expected_head_len)} "
+                f"actual_rand_calls={int(actual_rand_calls)} missing={int(missing_draws)}"
+            )
         if expected_rand_calls >= 0 and expected_head_len >= 0:
             evidence.append(
                 f"capture rand_calls at that tick: {int(expected_rand_calls)} (head_len={int(expected_head_len)})"
@@ -1643,9 +2022,12 @@ def _build_investigation_leads(
             "fx_queue_add_random",
         )
         effective_native = native_names if native_names else fallback_native
+        lead_title = "Pre-focus RNG-head shortfall indicates missing RNG-consuming branch"
+        if stream_first_mismatch_idx >= 0:
+            lead_title = "Pre-focus RNG stream mismatch indicates branch divergence"
         leads.append(
             InvestigationLead(
-                title="Pre-focus RNG-head shortfall indicates missing RNG-consuming branch",
+                title=lead_title,
                 evidence=tuple(evidence),
                 native_functions=tuple(effective_native),
                 code_paths=_merge_paths(
@@ -1768,9 +2150,20 @@ def _build_investigation_leads(
             _int_or(focus_exp.rng_marks.get("rand_calls"), -1),
         )
         actual_rand_calls = _actual_rand_calls_for_checkpoint(focus_act)
+        focus_stream_rows = _rng_stream_rows_for_raw_row(focus_raw)
+        focus_head_len = _int_or(focus_raw.get("rng_head_len"), len(focus_stream_rows))
+        focus_stream = _compute_rng_stream_alignment(
+            act=focus_act,
+            capture_stream_rows=focus_stream_rows,
+            capture_head_len=int(focus_head_len),
+        )
+        focus_stream_mismatch = (
+            _int_or(focus_stream.get("first_mismatch_idx"), -1) >= 0
+            or _int_or(focus_stream.get("missing_tail"), 0) > 0
+        )
         if expected_rand_calls >= 0 and actual_rand_calls is not None:
             rand_delta = int(actual_rand_calls) - int(expected_rand_calls)
-            if abs(int(rand_delta)) >= 8:
+            if abs(int(rand_delta)) >= 8 or focus_stream_mismatch:
                 stage_calls = _actual_rand_stage_calls(focus_act)
                 top_stages = sorted(
                     [(name, calls) for name, calls in stage_calls.items() if int(calls) > 0],
@@ -1782,6 +2175,28 @@ def _build_investigation_leads(
                         f"actual={int(actual_rand_calls)} delta={int(rand_delta):+d}"
                     ),
                 ]
+                first_mismatch_idx = _int_or(focus_stream.get("first_mismatch_idx"), -1)
+                missing_tail = _int_or(focus_stream.get("missing_tail"), 0)
+                if first_mismatch_idx >= 0:
+                    evidence.append(
+                        "focus tick RNG stream mismatch: "
+                        f"idx={int(first_mismatch_idx)} capture={_int_or(focus_stream.get('first_mismatch_capture'))} "
+                        f"rewrite={_int_or(focus_stream.get('first_mismatch_actual'))} "
+                        f"prefix_match={_int_or(focus_stream.get('prefix_match'))}/{_int_or(focus_stream.get('compared'))}"
+                    )
+                    mismatch_reason = str(focus_stream.get("first_mismatch_reason") or "").strip()
+                    if mismatch_reason:
+                        evidence.append(f"focus mismatch reason: {mismatch_reason}")
+                    branch_id = str(focus_stream.get("first_mismatch_capture_branch_id") or "").strip()
+                    if branch_id:
+                        evidence.append(f"capture branch_id at focus mismatch: {branch_id}")
+                elif missing_tail > 0:
+                    evidence.append(
+                        "focus tick RNG stream shortfall: "
+                        f"capture_head_len={_int_or(focus_stream.get('capture_head_len'))} "
+                        f"rewrite_calls={_int_or(focus_stream.get('actual_calls'))} "
+                        f"missing_tail={int(missing_tail)}"
+                    )
                 if top_stages:
                     evidence.append(
                         "rewrite stage-local rand call totals: "
@@ -2062,6 +2477,13 @@ def _build_window_rows(
         rand_calls_delta: int | None = None
         if expected_rand_calls >= 0 and actual_rand_calls is not None:
             rand_calls_delta = int(actual_rand_calls) - int(expected_rand_calls)
+        rng_stream_rows = _rng_stream_rows_for_raw_row(raw)
+        rng_head_len = _int_or(raw.get("rng_head_len"), len(rng_stream_rows))
+        stream_align = _compute_rng_stream_alignment(
+            act=act,
+            capture_stream_rows=rng_stream_rows,
+            capture_head_len=int(rng_head_len),
+        )
 
         rows.append(
             {
@@ -2079,6 +2501,15 @@ def _build_window_rows(
                 "expected_rand_calls": int(expected_rand_calls),
                 "actual_rand_calls": actual_rand_calls,
                 "rand_calls_delta": rand_calls_delta,
+                "rng_stream_prefix_match": stream_align.get("prefix_match"),
+                "rng_stream_compared": stream_align.get("compared"),
+                "rng_stream_first_mismatch_idx": stream_align.get("first_mismatch_idx"),
+                "rng_stream_first_mismatch_reason": stream_align.get("first_mismatch_reason"),
+                "rng_stream_first_mismatch_capture": stream_align.get("first_mismatch_capture"),
+                "rng_stream_first_mismatch_actual": stream_align.get("first_mismatch_actual"),
+                "rng_stream_first_mismatch_capture_branch_id": stream_align.get("first_mismatch_capture_branch_id"),
+                "rng_stream_first_mismatch_capture_seq": stream_align.get("first_mismatch_capture_seq"),
+                "rng_stream_missing_tail": stream_align.get("missing_tail"),
                 "capture_rng_seq_first": _int_or(raw.get("rng_seq_first"), -1),
                 "capture_rng_seq_last": _int_or(raw.get("rng_seq_last"), -1),
                 "capture_rng_seed_epoch_enter": _int_or(raw.get("rng_seed_epoch_enter"), -1),
@@ -2101,17 +2532,36 @@ def _build_window_rows(
     return rows
 
 
+def _format_rng_stream_cell(row: dict[str, object], *, width: int = 14) -> str:
+    prefix = _int_or(row.get("rng_stream_prefix_match"), -1)
+    compared = _int_or(row.get("rng_stream_compared"), -1)
+    mismatch_idx = _int_or(row.get("rng_stream_first_mismatch_idx"), -1)
+    mismatch_reason = str(row.get("rng_stream_first_mismatch_reason") or "").strip()
+    missing_tail = _int_or(row.get("rng_stream_missing_tail"), -1)
+    if prefix < 0 or compared < 0:
+        text = "na"
+    elif mismatch_idx >= 0:
+        reason_short = mismatch_reason[:1] if mismatch_reason else "x"
+        text = f"{prefix}/{compared}/m{mismatch_idx}{reason_short}"
+    elif missing_tail > 0:
+        text = f"{prefix}/{compared}/t+{missing_tail}"
+    else:
+        text = f"{prefix}/{compared}/ok"
+    return f"{text:>{width}}"
+
+
 def _print_window(rows: list[dict[str, object]]) -> None:
     print()
     print(
         "tick  w(e/a)   ammo(e/a)  xp(e/a)   score(e/a)  creatures(e/a)"
-        "  rand_calls(e/a/d)  ps_draws(a)  rng_changed(a)  bonus_spawn(e)  deaths(e/a)  p_hits(e/a)  pickups(e/a)  sfx(e/a)"
+        "  rand_calls(e/a/d)  rng_stream(p/c/status)  ps_draws(a)  rng_changed(a)  bonus_spawn(e)  deaths(e/a)  p_hits(e/a)  pickups(e/a)  sfx(e/a)"
     )
     for row in rows:
         expected_rand_calls = _int_or(row.get("expected_rand_calls"), -1)
         expected_rand_text = _fmt_opt_int(expected_rand_calls if expected_rand_calls >= 0 else None, width=6)
         actual_rand_text = _fmt_opt_int(row.get("actual_rand_calls"), width=6)
         rand_delta_text = _fmt_opt_int(row.get("rand_calls_delta"), width=6)
+        rng_stream_text = _format_rng_stream_cell(row, width=16)
         print(
             f"{int(row['tick']):4d}  "  # ty:ignore[invalid-argument-type]
             f"{int(row['expected_weapon']):2d}/{int(row['actual_weapon']):2d}    "  # ty:ignore[invalid-argument-type]
@@ -2120,6 +2570,7 @@ def _print_window(rows: list[dict[str, object]]) -> None:
             f"{int(row['expected_score']):6d}/{int(row['actual_score']):6d}  "  # ty:ignore[invalid-argument-type]
             f"{int(row['expected_creatures']):4d}/{int(row['actual_creatures']):4d}    "  # ty:ignore[invalid-argument-type]
             f"{expected_rand_text}/{actual_rand_text}/{rand_delta_text}     "
+            f"{rng_stream_text}      "
             f"{int(row['actual_ps_draws']):6d}        "  # ty:ignore[invalid-argument-type]
             f"{'Y' if bool(row['actual_rng_changed']) else 'N':>1}           "
             f"{int(row['capture_bonus_spawn_events']):4d}       "  # ty:ignore[invalid-argument-type]
@@ -2264,12 +2715,14 @@ def main(argv: list[str] | None = None) -> int:
         inter_tick_rand_draws=args.inter_tick_rand_draws,
     )
     capture_sample_creature_counts = _load_capture_sample_creature_counts(capture_path)
+    raw_debug_all_by_tick = _load_raw_tick_debug(capture_path)
     divergence = _find_first_divergence(
         expected,
         actual,
         float_abs_tol=float(args.float_abs_tol),
         max_field_diffs=max(1, int(args.max_field_diffs)),
         capture_sample_creature_counts=capture_sample_creature_counts,
+        raw_debug_by_tick=raw_debug_all_by_tick,
     )
 
     print(f"capture={capture_path}")
@@ -2344,7 +2797,12 @@ def main(argv: list[str] | None = None) -> int:
     actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
     window_ticks = set(range(max(0, focus_tick - int(args.window)), focus_tick + int(args.window) + 1))
     lead_ticks = set(range(max(0, focus_tick - int(args.lead_lookback)), focus_tick + 1))
-    raw_debug_by_tick = _load_raw_tick_debug(capture_path, window_ticks | lead_ticks | {focus_tick})
+    focused_debug_ticks = window_ticks | lead_ticks | {focus_tick}
+    raw_debug_by_tick = {
+        int(tick): row
+        for tick, row in raw_debug_all_by_tick.items()
+        if int(tick) in focused_debug_ticks
+    }
     rows = _build_window_rows(
         expected_by_tick=expected_by_tick,
         actual_by_tick=actual_by_tick,
@@ -2466,10 +2924,27 @@ def main(argv: list[str] | None = None) -> int:
     if focus_actual_ckpt is not None:
         actual_rand_calls = _actual_rand_calls_for_checkpoint(focus_actual_ckpt)
         stage_calls = _actual_rand_stage_calls(focus_actual_ckpt)
+        focus_stream_rows = _rng_stream_rows_for_raw_row(focus_raw)
+        focus_stream = _compute_rng_stream_alignment(
+            act=focus_actual_ckpt,
+            capture_stream_rows=focus_stream_rows,
+            capture_head_len=_int_or(focus_raw.get("rng_head_len"), len(focus_stream_rows)),
+        )
         print(
             "  "
             f"rewrite_rand_calls={actual_rand_calls!r} "
             f"rewrite_rand_stage_calls={stage_calls!r}"
+        )
+        print(
+            "  "
+            "rewrite_rng_stream_alignment="
+            f"prefix_match={focus_stream.get('prefix_match')!r}/{focus_stream.get('compared')!r} "
+            f"first_mismatch_idx={focus_stream.get('first_mismatch_idx')!r} "
+            f"reason={focus_stream.get('first_mismatch_reason')!r} "
+            f"capture_mismatch={focus_stream.get('first_mismatch_capture')!r} "
+            f"rewrite_mismatch={focus_stream.get('first_mismatch_actual')!r} "
+            f"capture_branch_id={focus_stream.get('first_mismatch_capture_branch_id')!r} "
+            f"missing_tail={focus_stream.get('missing_tail')!r}"
         )
         if focus_actual_ckpt.deaths:
             death_head = [
@@ -2526,6 +3001,14 @@ def main(argv: list[str] | None = None) -> int:
                 {
                     "rand_calls": _actual_rand_calls_for_checkpoint(focus_actual_ckpt),
                     "rand_stage_calls": _actual_rand_stage_calls(focus_actual_ckpt),
+                    "rand_stream_alignment": _compute_rng_stream_alignment(
+                        act=focus_actual_ckpt,
+                        capture_stream_rows=_rng_stream_rows_for_raw_row(focus_raw),
+                        capture_head_len=_int_or(
+                            focus_raw.get("rng_head_len"),
+                            len(_rng_stream_rows_for_raw_row(focus_raw)),
+                        ),
+                    ),
                     "deaths": [
                         {
                             "creature_index": int(item.creature_index),

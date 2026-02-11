@@ -1220,23 +1220,24 @@ class ProjectilePool:
                             )
                             proj.damage_pool -= float(creature.hp)
 
-                    # Native `projectile_update` emits an extra freeze-hit shard on
-                    # creature impacts while Freeze is active, then consumes one
-                    # additional hit-SFX variant draw in the same branch.
+                    # Native `projectile_update` has projectile-type specific freeze-hit
+                    # handling. Non-Gauss/non-Fire-Bullets impacts emit a single shard
+                    # here; Gauss/Fire-Bullets emits shards inside the six-iteration
+                    # large-streak loop (presentation hook parity).
                     if (
                         runtime_state is not None
                         and float(runtime_state.bonuses.freeze) > 0.0
                         and effects is not None
+                        and type_id not in (ProjectileTypeId.GAUSS_GUN, ProjectileTypeId.FIRE_BULLETS)
                     ):
                         shard_angle = float(float(proj.angle) - NATIVE_HALF_PI)
-                        shard_angle += float(int(rng()) % 100) * 0.01
+                        shard_angle += float(int(rng()) % 0x264) * 0.01
                         effects.spawn_freeze_shard(
                             pos=proj.pos,
                             angle=float(shard_angle),
                             rand=rng,
                             detail_preset=int(detail_preset),
                         )
-                        rng()
 
                     if proj.damage_pool == 1.0 and proj.life_timer != 0.25:
                         proj.damage_pool = 0.0

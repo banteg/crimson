@@ -3,6 +3,7 @@ from __future__ import annotations
 import gzip
 import math
 from pathlib import Path
+import struct
 
 import msgspec
 from grim.geom import Vec2
@@ -67,6 +68,7 @@ class _CaptureStreamTickRow(msgspec.Struct, tag="tick", tag_field="event", forbi
 
 
 _CaptureStreamRow = _CaptureStreamMetaRow | _CaptureStreamTickRow
+_F32_TOKEN_PREFIX = "f32:"
 
 
 def _coerce_int_like(value: object) -> int | None:
@@ -87,6 +89,36 @@ def _coerce_int_like(value: object) -> int | None:
         except ValueError:
             return None
     return None
+
+
+def _f32_from_u32(value: int) -> float:
+    return struct.unpack("<f", struct.pack("<I", int(value) & 0xFFFFFFFF))[0]
+
+
+def _decode_f32_token(value: object) -> object:
+    if not isinstance(value, str):
+        return value
+    text = value.strip()
+    if not text.startswith(_F32_TOKEN_PREFIX):
+        return value
+    raw = text[len(_F32_TOKEN_PREFIX) :]
+    if len(raw) != 8:
+        raise CaptureError(f"invalid f32 token width: {value!r}")
+    try:
+        bits = int(raw, 16)
+    except ValueError as exc:
+        raise CaptureError(f"invalid f32 token hex: {value!r}") from exc
+    return float(_f32_from_u32(int(bits)))
+
+
+def _decode_f32_tokens(value: object) -> object:
+    if isinstance(value, dict):
+        return {str(k): _decode_f32_tokens(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_decode_f32_tokens(item) for item in value]
+    if isinstance(value, tuple):
+        return [_decode_f32_tokens(item) for item in value]
+    return _decode_f32_token(value)
 
 
 def _float_or(value: object, default: float) -> float:
@@ -535,6 +567,25 @@ def build_capture_dt_frame_ms_i32_overrides(capture: CaptureFile) -> dict[int, i
             continue
         out[int(tick_index)] = int(dt_ms_i32)
     return out
+
+
+def build_capture_inter_tick_rand_draws_overrides(capture: CaptureFile) -> dict[int, int] | None:
+    out: dict[int, int] = {}
+    for tick in capture.ticks:
+        outside_before_calls = getattr(tick, "rng_outside_before_calls", None)
+        if outside_before_calls is None:
+            outside_before_calls = tick.checkpoint.rng_marks.rand_outside_before_calls
+        calls = _coerce_int_like(outside_before_calls)
+        if calls is None or int(calls) < 0:
+            continue
+        out[int(tick.tick_index)] = int(calls)
+
+    if out:
+        first_tick_index = min(out)
+        # Inferred replay seed already matches the first sampled tick state.
+        out[int(first_tick_index)] = 0
+        return out
+    return None
 
 
 def _capture_bootstrap_payload(
@@ -1061,13 +1112,6 @@ def _validate_capture_path(path: Path) -> None:
     raise CaptureError(f"capture path must end with .json or .json.gz: {path}")
 
 
-def _decode_capture_canonical(raw: bytes) -> CaptureFile | None:
-    try:
-        return msgspec.json.decode(raw, type=CaptureFile)
-    except (msgspec.DecodeError, msgspec.ValidationError):
-        return None
-
-
 def _decode_capture_stream(raw: bytes, path: Path) -> CaptureFile | None:
     lines = raw.splitlines()
     if not lines:
@@ -1082,16 +1126,11 @@ def _decode_capture_stream(raw: bytes, path: Path) -> CaptureFile | None:
         if not line:
             continue
         try:
-            row = msgspec.json.decode(line, type=_CaptureStreamRow)
-        except msgspec.DecodeError:
-            # Forward compatibility: permit plain tick objects in stream rows.
-            try:
-                tick_row = msgspec.json.decode(line, type=CaptureTick)
-            except (msgspec.DecodeError, msgspec.ValidationError) as tick_exc:
-                raise CaptureError(f"invalid capture file: {path}") from tick_exc
-            ticks.append(tick_row)
-            saw_stream_row = True
-            continue
+            row_obj = msgspec.json.decode(line)
+            row_obj = _decode_f32_tokens(row_obj)
+            row = msgspec.convert(row_obj, type=_CaptureStreamRow, strict=False)
+        except (msgspec.DecodeError, msgspec.ValidationError) as exc:
+            raise CaptureError(f"invalid capture file: {path}") from exc
 
         if isinstance(row, _CaptureStreamMetaRow):
             meta = row.capture
@@ -1118,10 +1157,6 @@ def load_capture(path: Path) -> CaptureFile:
     if raw.startswith(b"\x1f\x8b"):
         raw = gzip.decompress(raw)
 
-    canonical = _decode_capture_canonical(raw)
-    if canonical is not None:
-        return canonical
-
     stream = _decode_capture_stream(raw, path)
     if stream is not None:
         return stream
@@ -1132,7 +1167,16 @@ def load_capture(path: Path) -> CaptureFile:
 def dump_capture(path: Path, capture: CaptureFile) -> None:
     path = Path(path)
     _validate_capture_path(path)
-    encoded = msgspec.json.encode(capture)
+    capture_obj = msgspec.to_builtins(capture)
+    if not isinstance(capture_obj, dict):
+        raise CaptureError("invalid capture object during serialization")
+    ticks_obj = capture_obj.get("ticks")
+    ticks = ticks_obj if isinstance(ticks_obj, list) else []
+    meta = dict(capture_obj)
+    meta["ticks"] = []
+    rows: list[bytes] = [msgspec.json.encode({"event": "capture_meta", "capture": meta})]
+    rows.extend(msgspec.json.encode({"event": "tick", "tick": tick}) for tick in ticks)
+    encoded = b"\n".join(rows) + b"\n"
     if str(path).lower().endswith(".gz"):
         path.write_bytes(gzip.compress(encoded))
     else:
