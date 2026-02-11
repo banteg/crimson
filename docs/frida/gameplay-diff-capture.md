@@ -36,7 +36,7 @@ The capture file is newline-delimited JSON rows:
 - `{"event":"capture_meta","capture":{...}}` exactly once at start
 - `{"event":"tick","tick":{...}}` once per captured gameplay tick
 - `capture_meta.capture_format_version` is required and must match the current
-  loader version (`2`).
+  loader version (`3`).
 
 `uv run crimson original ...` commands load this stream and normalize it to the
 typed `CaptureFile` schema in Python (`msgspec`).
@@ -52,6 +52,9 @@ Notes:
   `capture_format_version` are accepted.
 - Loader accepts only stream rows (`capture_meta` + `tick`), not legacy
   monolithic JSON captures.
+- Current checkpoints include direct kill count, perk snapshot
+  (`pending_count`/`choices_dirty`/`choices`/`player_nonzero_counts`), and
+  per-player bonus timers in checkpoint player rows.
 - Entity `samples` payloads are strictly typed (`creatures`, `projectiles`,
   `secondary_projectiles`, `bonuses`): schema/script drift should be fixed in
   instrumentation and re-captured, not handled via parser fallbacks.

@@ -4,7 +4,7 @@ from typing import Literal, TypeAlias
 
 import msgspec
 
-CAPTURE_FORMAT_VERSION = 2
+CAPTURE_FORMAT_VERSION = 3
 
 
 class CaptureConfig(msgspec.Struct):
@@ -76,6 +76,7 @@ class CapturePlayerCheckpoint(msgspec.Struct, forbid_unknown_fields=True):
     ammo: float = 0.0
     experience: int = 0
     level: int = 0
+    bonus_timers: dict[str, int] = msgspec.field(default_factory=dict)
 
 
 class CaptureDeath(msgspec.Struct, forbid_unknown_fields=True):

@@ -132,8 +132,9 @@ This replay is reconstructed from captured input telemetry and is intended for
 inspection/debugging. It also bootstraps initial state from the first captured
 tick, but checkpoint sidecars remain the authoritative verification artifact.
 
-Unavailable fields in raw traces (for example kill ledger/perk detail) are
-stored as explicit "unknown" sentinels so differential comparison can focus on
-captured fields without false mismatches.
+Some domains are still intentionally sparse in raw traces (for example detailed
+death-ledger ownership/reward attribution), and remain explicit "unknown"
+sentinels so differential comparison can focus on captured fields without false
+mismatches.
 
 The converted file can be compared directly with rewrite checkpoints using `replay diff-checkpoints`.

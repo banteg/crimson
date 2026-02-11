@@ -924,6 +924,7 @@ def _capture_bootstrap_payload(
                 "ammo": float(player.ammo),
                 "experience": int(player.experience),
                 "level": int(player.level),
+                "bonus_timers_ms": {str(key): int(value) for key, value in player.bonus_timers.items()},
             }
         )
     return {
@@ -1024,6 +1025,21 @@ def apply_capture_bootstrap_payload(
                 setattr(player, "experience", int(experience))
             if level is not None and int(level) > 0:
                 setattr(player, "level", int(level))
+
+            player_timers_raw = raw_player.get("bonus_timers_ms")  # ty:ignore[invalid-argument-type]
+            if isinstance(player_timers_raw, dict):
+                try:
+                    shield_ms = _coerce_int_like(player_timers_raw.get("shield"))
+                    fire_bullets_ms = _coerce_int_like(player_timers_raw.get("fire_bullets"))
+                    speed_bonus_ms = _coerce_int_like(player_timers_raw.get("speed_bonus"))
+                    if shield_ms is not None:
+                        setattr(player, "shield_timer", max(0.0, float(shield_ms) / 1000.0))
+                    if fire_bullets_ms is not None:
+                        setattr(player, "fire_bullets_timer", max(0.0, float(fire_bullets_ms) / 1000.0))
+                    if speed_bonus_ms is not None:
+                        setattr(player, "speed_bonus_timer", max(0.0, float(speed_bonus_ms) / 1000.0))
+                except Exception:
+                    pass
 
     pending = _coerce_int_like(payload.get("perk_pending"))
     if pending is not None and int(pending) >= 0:
