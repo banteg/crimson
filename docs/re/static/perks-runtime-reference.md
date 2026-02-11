@@ -32,7 +32,7 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `perk_can_offer()` rejects `PerkId.ANTIPERK`.
+- `src/crimson/perks/availability.py`: `perk_can_offer()` rejects `PerkId.ANTIPERK`.
 
 ## 1. Bloody Mess / Quick Learner (`PerkId.BLOODY_MESS_QUICK_LEARNER`)
 
@@ -78,7 +78,8 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `perks_update_effects()` (Lean Mean timer step).
+- `src/crimson/perks/runtime/effects.py`: `perks_update_effects()`.
+- Lean Mean step: `src/crimson/perks/impl/lean_mean_exp_machine_effect.py`: `update_lean_mean_exp_machine()`.
 
 ## 5. Long Distance Runner (`PerkId.LONG_DISTANCE_RUNNER`)
 
@@ -98,7 +99,8 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `perks_update_effects()` (Pyrokinetic step).
+- `src/crimson/perks/runtime/effects.py`: `perks_update_effects()`.
+- Pyrokinetic step: `src/crimson/perks/impl/pyrokinetic_effect.py`: `update_pyrokinetic()`.
 
 ## 7. Instant Winner (`PerkId.INSTANT_WINNER`)
 
@@ -108,7 +110,8 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `perk_apply()` (Instant Winner handler).
+- `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
+- `src/crimson/perks/impl/instant_winner.py`: `apply_instant_winner()`.
 
 ## 8. Grim Deal (`PerkId.GRIM_DEAL`)
 
@@ -118,7 +121,8 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `perk_apply()` (Grim Deal handler).
+- `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
+- `src/crimson/perks/impl/grim_deal.py`: `apply_grim_deal()`.
 
 ## 9. Alternate Weapon (`PerkId.ALTERNATE_WEAPON`)
 
@@ -129,7 +133,8 @@ Notes:
 
 ### Rewrite
 
-- Swap and carry behavior: `src/crimson/gameplay.py`: `player_swap_alt_weapon()`, `player_update()`, `bonus_apply()`.
+- Swap and carry behavior: `src/crimson/gameplay.py`: `player_swap_alt_weapon()`, `player_update()`.
+- Bonus application during swap path: `src/crimson/bonuses/apply.py`: `bonus_apply()`.
 
 ## 10. Plaguebearer (`PerkId.PLAGUEBEARER`)
 
@@ -140,7 +145,8 @@ Notes:
 
 ### Rewrite
 
-- Flag application: `src/crimson/gameplay.py`: `perk_apply()` (Plaguebearer handler sets `plaguebearer_active` for all players).
+- Flag application: `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
+- `src/crimson/perks/impl/plaguebearer.py`: `apply_plaguebearer()` (sets `plaguebearer_active` for all players).
 - Creature-side behavior: `src/crimson/creatures/runtime.py`: `CreaturePool.update()` (contact infection, tick damage, spread).
 
 ## 11. Evil Eyes (`PerkId.EVIL_EYES`)
@@ -152,7 +158,8 @@ Notes:
 
 ### Rewrite
 
-- Target selection: `src/crimson/gameplay.py`: `perks_update_effects()` (Evil Eyes target step).
+- `src/crimson/perks/runtime/effects.py`: `perks_update_effects()`.
+- Evil Eyes step: `src/crimson/perks/impl/evil_eyes_effect.py`: `update_evil_eyes_target()`.
 - Freeze behavior: `src/crimson/creatures/runtime.py`: `CreaturePool.update()` (evil-eyes target handling).
 
 ## 12. Ammo Maniac (`PerkId.AMMO_MANIAC`)
@@ -165,7 +172,8 @@ Notes:
 ### Rewrite
 
 - Clip sizing: `src/crimson/gameplay.py`: `weapon_assign_player()` (Ammo Maniac modifier).
-- Apply-time reassignment: `src/crimson/gameplay.py`: `perk_apply()` (Ammo Maniac handler).
+- Apply-time reassignment: `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
+- `src/crimson/perks/impl/ammo_maniac.py`: `apply_ammo_maniac()`.
 
 ## 13. Radioactive (`PerkId.RADIOACTIVE`)
 
@@ -197,7 +205,8 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `perk_apply()` (Fatal Lottery handler).
+- `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
+- `src/crimson/perks/impl/fatal_lottery.py`: `apply_fatal_lottery()`.
 
 ## 16. Random Weapon (`PerkId.RANDOM_WEAPON`)
 
@@ -207,7 +216,8 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `perk_apply()` (Random Weapon handler).
+- `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
+- `src/crimson/perks/impl/random_weapon.py`: `apply_random_weapon()`.
 
 ## 17. Mr. Melee (`PerkId.MR_MELEE`)
 
@@ -247,7 +257,8 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `bonus_telekinetic_update()`, `bonus_find_aim_hover_entry()`.
+- `src/crimson/bonuses/update.py`: `bonus_telekinetic_update()`.
+- `src/crimson/bonuses/pool.py`: `bonus_find_aim_hover_entry()`.
 
 ## 21. Perk Expert (`PerkId.PERK_EXPERT`)
 
@@ -257,7 +268,7 @@ Notes:
 
 ### Rewrite
 
-- Choice count: `src/crimson/gameplay.py`: `perk_choice_count()`.
+- Choice count: `src/crimson/perks/selection.py`: `perk_choice_count()`.
 - UI layout + sponsor text: `src/crimson/ui/perk_menu.py`, `src/crimson/views/perks.py`.
 
 ## 22. Unstoppable (`PerkId.UNSTOPPABLE`)
@@ -290,7 +301,9 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `perk_apply()` (Infernal Contract handler) and perk generation (`perk_generate_choices()`).
+- Apply: `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
+- `src/crimson/perks/impl/infernal_contract.py`: `apply_infernal_contract()`.
+- Selection/gating: `src/crimson/perks/selection.py`: `perk_generate_choices()`.
 
 ## 25. Poison Bullets (`PerkId.POISON_BULLETS`)
 
@@ -324,7 +337,7 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `BonusPool.try_spawn_on_kill()`.
+- `src/crimson/bonuses/pool.py`: `BonusPool.try_spawn_on_kill()`.
 
 ## 28. Uranium Filled Bullets (`PerkId.URANIUM_FILLED_BULLETS`)
 
@@ -358,7 +371,8 @@ Notes:
 
 ### Rewrite
 
-- Offer gating: `src/crimson/gameplay.py`: `perk_can_offer()` / perk selection.
+- Offer gating: `src/crimson/perks/availability.py`: `perk_can_offer()`.
+- Perk selection: `src/crimson/perks/selection.py`: `perk_generate_choices()`.
 - Rendering: `src/crimson/render/world_renderer.py`: `WorldRenderer.draw()` (Monster Vision overlay and shadow gating).
 
 ## 31. Hot Tempered (`PerkId.HOT_TEMPERED`)
@@ -369,7 +383,7 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `_perk_update_hot_tempered()` (called from `player_update()`).
+- `src/crimson/perks/impl/hot_tempered.py`: `tick_hot_tempered()`.
 
 ## 32. Bonus Economist (`PerkId.BONUS_ECONOMIST`)
 
@@ -379,7 +393,7 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `bonus_apply()` (economist multiplier).
+- `src/crimson/bonuses/apply.py`: `bonus_apply()` (economist multiplier).
 
 ## 33. Thick Skinned (`PerkId.THICK_SKINNED`)
 
@@ -391,9 +405,10 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `perk_apply()`.
+- `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
+- `src/crimson/perks/impl/thick_skinned.py`: `apply_thick_skinned()`.
 - `src/crimson/player_damage.py`: `player_take_damage()`.
-- Offer gating: `src/crimson/gameplay.py`: perk generation.
+- Offer gating: `src/crimson/perks/selection.py`: `perk_generate_choices()`.
 
 ## 34. Barrel Greaser (`PerkId.BARREL_GREASER`)
 
@@ -428,7 +443,7 @@ Notes:
 ### Rewrite
 
 - Contact poison flagging: `src/crimson/creatures/runtime.py`: `_creature_interaction_contact_damage()`.
-- Offer gating: `src/crimson/gameplay.py`: `perk_can_offer()`.
+- Offer gating: `src/crimson/perks/availability.py`: `perk_can_offer()`.
 
 ## 37. Toxic Avenger (`PerkId.TOXIC_AVENGER`)
 
@@ -448,7 +463,8 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `perks_update_effects()` (Regeneration step).
+- `src/crimson/perks/runtime/effects.py`: `perks_update_effects()`.
+- Regeneration step: `src/crimson/perks/impl/regeneration_effect.py`: `update_regeneration()`.
 
 ## 39. Pyromaniac (`PerkId.PYROMANIAC`)
 
@@ -460,7 +476,7 @@ Notes:
 ### Rewrite
 
 - Damage: `src/crimson/creatures/damage.py`: `creature_apply_damage()`.
-- Offer gating: `src/crimson/gameplay.py`: perk generation rules.
+- Offer gating: `src/crimson/perks/selection.py`: perk generation rules (`perk_generate_choices()` weapon gate).
 
 ## 40. Ninja (`PerkId.NINJA`)
 
@@ -490,7 +506,8 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `perks_update_effects()` (Jinxed steps).
+- `src/crimson/perks/runtime/effects.py`: `perks_update_effects()`.
+- Jinxed steps: `src/crimson/perks/impl/jinxed_effect.py`: `update_jinxed_timer()`, `update_jinxed()`.
 
 ## 43. Perk Master (`PerkId.PERK_MASTER`)
 
@@ -500,7 +517,7 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `perk_choice_count()`.
+- `src/crimson/perks/selection.py`: `perk_choice_count()`.
 
 ## 44. Reflex Boosted (`PerkId.REFLEX_BOOSTED`)
 
@@ -521,7 +538,7 @@ Notes:
 ### Rewrite
 
 - No runtime effect implemented (matches this build).
-- Cleared by Death Clock apply: `src/crimson/gameplay.py`: Death Clock handler.
+- Cleared by Death Clock apply: `src/crimson/perks/impl/death_clock.py`: `apply_death_clock()`.
 
 ## 46. Breathing Room (`PerkId.BREATHING_ROOM`)
 
@@ -531,7 +548,8 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `perk_apply()` (Breathing Room handler).
+- `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
+- `src/crimson/perks/impl/breathing_room.py`: `apply_breathing_room()`.
 
 ## 47. Death Clock (`PerkId.DEATH_CLOCK`)
 
@@ -545,9 +563,13 @@ Notes:
 
 ### Rewrite
 
-- Apply and offer gating: `src/crimson/gameplay.py`: `perk_apply()`, perk generation, `bonus_pick_random_type()`.
+- Apply: `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
+- `src/crimson/perks/impl/death_clock.py`: `apply_death_clock()`.
+- Offer gating: `src/crimson/perks/selection.py`: `perk_generate_choices()`.
+- Medikit suppression: `src/crimson/gameplay.py`: `bonus_pick_random_type()`.
 - Damage immunity: `src/crimson/player_damage.py`: `player_take_damage()`.
-- Drain tick: `src/crimson/gameplay.py`: `perks_update_effects()` (Death Clock step).
+- `src/crimson/perks/runtime/effects.py`: `perks_update_effects()`.
+- Death Clock step: `src/crimson/perks/impl/death_clock.py`: `update_death_clock()`.
 
 ## 48. My Favourite Weapon (`PerkId.MY_FAVOURITE_WEAPON`)
 
@@ -559,7 +581,11 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `perk_apply()`, `weapon_assign_player()`, `bonus_pick_random_type()`, `BonusPool.try_spawn_on_kill()`, `bonus_apply()`.
+- `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
+- `src/crimson/perks/impl/my_favourite_weapon.py`: `apply_my_favourite_weapon()`.
+- `src/crimson/gameplay.py`: `weapon_assign_player()`, `bonus_pick_random_type()`.
+- `src/crimson/bonuses/pool.py`: `BonusPool.try_spawn_on_kill()`.
+- `src/crimson/bonuses/apply.py`: `bonus_apply()`.
 
 ## 49. Bandage (`PerkId.BANDAGE`)
 
@@ -569,7 +595,8 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `perk_apply()` (Bandage handler).
+- `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
+- `src/crimson/perks/impl/bandage.py`: `apply_bandage()`.
 
 ## 50. Angry Reloader (`PerkId.ANGRY_RELOADER`)
 
@@ -611,7 +638,8 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `_perk_update_man_bomb()` and `player_update()`.
+- `src/crimson/perks/impl/man_bomb.py`: `tick_man_bomb()`.
+- Movement/stationary state feed: `src/crimson/gameplay.py`: `player_update()`.
 
 ## 54. Fire Cough (`PerkId.FIRE_CAUGH`)
 
@@ -622,7 +650,8 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `_perk_update_fire_cough()` and `player_update()` (sprite FX via `GameplayState.sprite_effects`).
+- `src/crimson/perks/impl/fire_cough.py`: `tick_fire_cough()`.
+- Player aim/input feed: `src/crimson/gameplay.py`: `player_update()` (sprite FX via `GameplayState.sprite_effects`).
 
 ## 55. Living Fortress (`PerkId.LIVING_FORTRESS`)
 
@@ -654,4 +683,5 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/gameplay.py`: `perk_apply()` (Lifeline 50-50 handler).
+- `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
+- `src/crimson/perks/impl/lifeline_50_50.py`: `apply_lifeline_50_50()`.
