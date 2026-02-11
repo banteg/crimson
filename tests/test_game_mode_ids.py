@@ -185,6 +185,24 @@ def test_perk_without_mode_3_flag_is_rejected_in_quest_mode() -> None:
     assert perk_can_offer(state, player, PerkId.GRIM_DEAL, game_mode=int(GameMode.QUESTS), player_count=1) is False
 
 
+def test_random_weapon_mode_flags_match_native_allowlist_behavior() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    assert perk_can_offer(state, player, PerkId.RANDOM_WEAPON, game_mode=int(GameMode.SURVIVAL), player_count=1) is True
+    assert perk_can_offer(state, player, PerkId.RANDOM_WEAPON, game_mode=int(GameMode.QUESTS), player_count=1) is True
+    assert perk_can_offer(state, player, PerkId.RANDOM_WEAPON, game_mode=int(GameMode.SURVIVAL), player_count=2) is False
+    assert perk_can_offer(state, player, PerkId.RANDOM_WEAPON, game_mode=int(GameMode.QUESTS), player_count=2) is False
+
+
+def test_breathing_room_mode_flags_match_native_allowlist_behavior() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    assert perk_can_offer(state, player, PerkId.BREATHING_ROOM, game_mode=int(GameMode.SURVIVAL), player_count=1) is True
+    assert perk_can_offer(state, player, PerkId.BREATHING_ROOM, game_mode=int(GameMode.SURVIVAL), player_count=2) is True
+    assert perk_can_offer(state, player, PerkId.BREATHING_ROOM, game_mode=int(GameMode.QUESTS), player_count=1) is False
+    assert perk_can_offer(state, player, PerkId.BREATHING_ROOM, game_mode=int(GameMode.QUESTS), player_count=2) is False
+
+
 def test_perk_flags_match_native_ctor_defaults_and_known_overrides() -> None:
     assert PERK_BY_ID[int(PerkId.SHARPSHOOTER)].flags == (
         PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.TWO_PLAYER_ALLOWED
