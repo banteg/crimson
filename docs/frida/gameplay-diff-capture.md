@@ -87,6 +87,16 @@ uv run crimson original divergence-report \
 
 Use `--run-summary-short` for a shorter narrative.
 
+## First-divergence bisect
+
+```text
+uv run crimson original bisect-divergence \
+  artifacts/frida/share/gameplay_diff_capture.json \
+  --window-before 12 \
+  --window-after 6 \
+  --json-out
+```
+
 ## Focus tick trace
 
 ```text
@@ -113,7 +123,7 @@ Without extra env vars, the script captures full per-tick detail:
 - `before`/`after` snapshots every captured tick
 - samples for `creatures`, `projectiles`, `secondary_projectiles`, `bonuses`
 - unlimited head budgets by default (`-1` limits)
-- RNG head + caller diagnostics, RNG mirror tracking, outside-tick carry
+- RNG per-draw stream rows (`value/state_before/state_after/branch_id`), caller diagnostics, mirror tracking, outside-tick carry
 - perk-apply diagnostics and input query/key snapshots
 
 ## Optional env knobs

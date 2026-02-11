@@ -648,6 +648,17 @@ def cmd_replay_divergence_report(ctx: typer.Context) -> None:
 
 
 @original_app.command(
+    "bisect-divergence",
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True, "help_option_names": []},
+)
+def cmd_replay_bisect_divergence(ctx: typer.Context) -> None:
+    """Binary-search the first divergent tick and emit a compact repro bundle."""
+    from .original import divergence_bisect
+
+    raise typer.Exit(code=divergence_bisect.main(list(ctx.args)))
+
+
+@original_app.command(
     "focus-trace",
     context_settings={"allow_extra_args": True, "ignore_unknown_options": True, "help_option_names": []},
 )

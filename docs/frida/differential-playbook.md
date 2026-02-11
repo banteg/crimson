@@ -77,6 +77,12 @@ uv run crimson original divergence-report \
   --run-summary-focus-after 4 \
   --run-summary-short-max-rows 30 \
   --json-out analysis/frida/reports/capture_<sha8>_baseline.json
+
+uv run crimson original bisect-divergence \
+  artifacts/frida/share/gameplay_diff_capture.json \
+  --window-before 12 \
+  --window-after 6 \
+  --json-out analysis/frida/reports/capture_<sha8>_bisect.json
 ```
 
 Then read the emitted `run_summary_focus_context` block first to orient around
