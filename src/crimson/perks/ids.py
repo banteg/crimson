@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""Perk ids and runtime metadata for perk systems."""
+"""Perk ids and runtime metadata extracted from `perks_init_database` (FUN_0042fd90)."""
 
 from dataclasses import dataclass
 from enum import IntEnum, IntFlag
@@ -15,7 +15,8 @@ class PerkFlags(IntFlag):
     STACKABLE = 0x4  # can be offered even if already owned
 
 
-# Native perk metadata defaults to both quest and two-player allow bits enabled.
+# Native perk metadata defaults to both quest and two-player allow bits enabled
+# (`sub_42fac0` initializes flags to 3).
 PERK_DEFAULT_FLAGS = PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.TWO_PLAYER_ALLOWED
 
 

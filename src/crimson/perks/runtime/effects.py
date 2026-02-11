@@ -21,7 +21,10 @@ def perks_update_effects(
     creatures: Sequence[CreatureForPerks] | None = None,
     fx_queue: FxQueue | None = None,
 ) -> None:
-    """Apply frame-based perk effect updates."""
+    """Apply frame-based perk effect updates.
+
+    Port subset of `perks_update_effects` (0x00406b40).
+    """
 
     dt = float(dt)
     if dt <= 0.0:

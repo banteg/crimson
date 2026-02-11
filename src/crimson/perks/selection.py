@@ -49,6 +49,8 @@ def perk_choice_count(player: PlayerState) -> int:
 
 def perk_select_random(state: GameplayState, player: PlayerState, *, game_mode: int, player_count: int) -> PerkId:
     """Randomly select an eligible perk id.
+
+    Port of `perk_select_random` (0x0042fbd0).
     """
 
     perks_rebuild_available(state)

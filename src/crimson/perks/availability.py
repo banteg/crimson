@@ -16,6 +16,8 @@ _PERK_ALWAYS_AVAILABLE: tuple[PerkId, ...] = (
 
 def perks_rebuild_available(state: GameplayState) -> None:
     """Rebuild quest unlock driven `perk_meta_table[perk_id].available` flags.
+
+    Port of `perks_rebuild_available` (0x0042fc30).
     """
 
     unlock_index = 0
@@ -62,6 +64,8 @@ def perk_can_offer(
     state: GameplayState, player: PlayerState, perk_id: PerkId, *, game_mode: int, player_count: int
 ) -> bool:
     """Return whether `perk_id` is eligible for selection.
+
+    Modeled after `perk_can_offer` (0x0042fb10).
     """
 
     if perk_id == PerkId.ANTIPERK:
