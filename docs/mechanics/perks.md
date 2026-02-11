@@ -7,506 +7,322 @@ tags:
 
 # Perks
 
-Player-facing mechanics reference for perk behavior.
+Mechanics reference for all 58 perks. Exact numbers, interaction rules, and
+selection conditions — no source paths or decompiler addresses.
 
-This page describes what perks do in gameplay terms (timers, multipliers,
-limits, and interaction rules). It intentionally avoids decompile addresses,
-source-file paths, and rewrite architecture details.
+See also: [Perk ID map](../perk-id-map.md) |
+[Perk runtime reference](../re/static/perks-runtime-reference.md)
 
-See also:
+## 0. AntiPerk
 
-- [Perk ID map](../perk-id-map.md)
-- [Perk runtime reference (static + parity notes)](../re/static/perks-runtime-reference.md)
+Internal sentinel. Never offered to the player.
 
-## Conventions
+## 1. Bloody Mess / Quick Learner
 
-- Numeric values are listed exactly when behavior is known.
-- If two perks conflict, precedence is called out explicitly.
-- Multiplayer notes are included only when behavior is shared/global.
++30% XP from creature kills. When blood effects are enabled, projectile hits
+produce extra gore decals and blood particles. The perk's name and description
+switch between "Bloody Mess" and "Quick Learner" depending on the blood toggle.
 
-## 0 — AntiPerk (`PerkId.ANTIPERK`)
+## 2. Sharpshooter
 
-### Effects
+Nearly eliminates weapon spread (forced to a very low baseline) and adds a laser
+sight. The trade-off is a 5% slower fire rate.
 
-- Sentinel “no perk” entry; never offered to the player.
+## 3. Fastloader
 
-## 1 — Bloody Mess / Quick Learner (`PerkId.BLOODY_MESS_QUICK_LEARNER`)
+Reload time is 30% shorter (×0.7 multiplier).
 
-### Effects
+## 4. Lean Mean Exp. Machine
 
-- **+30% XP from creature kills** (XP awarded at death).
-- When blood/gore FX are enabled, projectile hits spawn **extra gore decals / blood particles**.
-- The UI name/description toggles between “Bloody Mess” and “Quick Learner” based on the blood toggle.
+Passive XP income: every 0.25 seconds, each player with this perk earns
+10 × (times picked) XP. Stacks linearly with itself.
 
-## 2 — Sharpshooter (`PerkId.SHARPSHOOTER`)
+## 5. Long Distance Runner
 
-### Effects
+Movement speed continues ramping beyond the normal cap of 2.0, up to 2.8, as
+long as the player keeps moving. Stopping causes speed to decay rapidly.
 
-- **Tighter spread**: spread heat is forced to a low baseline (0.02).
-- **Slightly slower firing**: shot cooldown is multiplied by **1.05**.
-- Draws a **laser sight line** while active.
+## 6. Pyrokinetic
 
-## 3 — Fastloader (`PerkId.FASTLOADER`)
+While the crosshair is near a creature, a heat flare triggers roughly every
+0.5 seconds — a burst of particles and a random decal at the target. Purely
+visual; no damage.
 
-### Effects
+## 7. Instant Winner
 
-- **Reload time multiplier**: reload duration is multiplied by **0.7**.
+Immediately grants +2500 XP. Can be picked multiple times.
 
-## 4 — Lean Mean Exp. Machine (`PerkId.LEAN_MEAN_EXP_MACHINE`)
+## 8. Grim Deal
 
-### Effects
+Immediately grants +18% of current XP (rounded down), then kills the player.
+Only available in Survival and Rush.
 
-- Passive XP drip: every **0.25s**, each player with the perk gains **`perk_count * 10` XP**.
+## 9. Alternate Weapon
 
-## 5 — Long Distance Runner (`PerkId.LONG_DISTANCE_RUNNER`)
+Adds a second weapon slot. Press reload to swap between them. Carrying two
+weapons reduces movement speed by 20%, and swapping adds a brief firing delay
+(+0.1 s cooldown) to prevent instant swap-firing.
 
-### Effects
+## 10. Plaguebearer
 
-- While moving, movement speed ramps normally up to **2.0**, then continues ramping to **2.8**.
-- When not moving, speed decays quickly (`dt * 15`).
+The player becomes a disease carrier. Nearby weak creatures (under 150 HP,
+within 30 units) get infected. Infected creatures take 15 damage every 0.5
+seconds, and the infection spreads to other creatures within 45 units. Each
+infection kill increments a global counter that gradually suppresses further
+spreading — the plague burns itself out over time. Shared across all players.
 
-## 6 — Pyrokinetic (`PerkId.PYROKINETIC`)
+## 11. Evil Eyes
 
-### Effects
+The creature nearest the crosshair (within 12 units) is frozen in place — no
+AI, no movement — as long as it stays targeted.
 
-- While aiming close to a creature (within a small radius), periodically triggers a **heat/flare visual**:
-  - every ~0.5s: spawns a small burst of particles with fixed intensities (0.8, 0.6, 0.4, 0.3, 0.2) and a random decal.
+## 12. Ammo Maniac
 
-## 7 — Instant Winner (`PerkId.INSTANT_WINNER`)
+Clip size increases by 25% (at least +1 round). The bonus applies whenever a
+weapon is assigned, so it persists across weapon swaps and reloads.
 
-### Effects
+## 13. Radioactive
 
-- Immediately grants **+2500 XP** to the picker.
-- Stackable.
+A green aura damages creatures within 100 units every 0.5 seconds. Damage
+scales with proximity: (100 − distance) × 0.3. Kills from the aura award XP
+directly.
 
-## 8 — Grim Deal (`PerkId.GRIM_DEAL`)
+## 14. Fastshot
 
-### Effects
+Fire rate is 12% faster (shot cooldown ×0.88).
 
-- Immediately grants **+18% of current XP** (rounded down to int) to the picker.
-- Immediately kills the picker (sets health negative).
+## 15. Fatal Lottery
 
-## 9 — Alternate Weapon (`PerkId.ALTERNATE_WEAPON`)
+50/50 coin flip: either +10 000 XP or instant death. Can be picked multiple
+times.
 
-### Effects
+## 16. Random Weapon
 
-- Enables a **second weapon slot** (alternate weapon).
-- **Movement speed penalty**: speed is multiplied by **0.8** while active.
-- Reload input swaps primary and alternate weapon runtime state and adds **+0.1** to shot cooldown (to prevent instant swap-firing).
+Immediately assigns a random unlocked weapon (never the pistol, never the
+current weapon). Quest mode only. Can be picked multiple times.
 
-## 10 — Plaguebearer (`PerkId.PLAGUEBEARER`)
+## 17. Mr. Melee
 
-### Effects
+When a creature hits the player in melee, the player automatically
+counter-attacks for 25 damage. The player still takes the contact damage
+normally.
 
-- Enables the Plaguebearer system (treated as a global/shared flag in the original).
-- While the infection counter is low enough:
-  - Players infect nearby weak creatures (HP < 150) within **30** units, up to an infection-count cap.
-  - Infected creatures take **15 damage every 0.5s**.
-  - Infection spreads between nearby creatures (within **45** units) while the global infection count is below a cap.
-- Each “infection kill” increments a global infection counter which gradually suppresses further spread/infection.
+## 18. Anxious Loader
 
-## 11 — Evil Eyes (`PerkId.EVIL_EYES`)
+During a reload, each fire press shaves 0.05 seconds off the remaining reload
+time. Mash to reload faster.
 
-### Effects
+## 19. Final Revenge
 
-- Picks a single creature near the aim point (within 12 units).
-- That creature’s AI/movement is frozen while targeted.
+On death, the player explodes with a 512-unit blast radius. Damage falls off
+linearly: (512 − distance) × 5.
 
-## 12 — Ammo Maniac (`PerkId.AMMO_MANIAC`)
+## 20. Telekinetic
 
-### Effects
+Aim at a bonus pickup within 24 units for about 650 ms to collect it remotely.
 
-- Increases clip size by **+25%**, rounded down, but at least **+1**:
-  `clip += max(1, int(clip * 0.25))`.
-- Applied on weapon assignment, so it persists across weapon swaps and reload refills.
+## 21. Perk Expert
 
-## 13 — Radioactive (`PerkId.RADIOACTIVE`)
+Perk selection shows 6 choices instead of the default 5.
 
-### Effects
+## 22. Unstoppable
 
-- Creatures near the player are periodically damaged:
-  - within 100 units, decrements a timer faster; when it wraps, deals damage proportional to proximity:
-    `damage = (100 - dist) * 0.3` every **0.5s** per creature.
-- Has a visible green “aura” around the player.
-- Kills from the aura award XP directly and start the death staging without a full damage event path.
+Getting hit no longer disrupts aim or movement — no knockback, no spread
+penalty. Damage still applies normally.
 
-## 14 — Fastshot (`PerkId.FASTSHOT`)
+## 23. Regression Bullets
 
-### Effects
+Lets the player fire during a reload by spending XP instead of ammo. Cost per
+shot is based on weapon reload time: ×4 for fire-type weapons, ×200 otherwise.
+XP can't go negative. While this perk (or Ammunition Within) is active, reloads
+can't be restarted mid-reload.
 
-- **Faster firing**: shot cooldown is multiplied by **0.88**.
+## 24. Infernal Contract
 
-## 15 — Fatal Lottery (`PerkId.FATAL_LOTTERY`)
+Immediately grants +3 levels and +3 pending perk picks, but drops every alive
+player to 0.1 health. Not offered while Death Clock is active.
 
-### Effects
+## 25. Poison Bullets
 
-- 50/50 outcome:
-  - either immediately grants **+10000 XP**, or
-  - immediately kills the picker.
-- Stackable.
+Each projectile hit has a 1-in-8 chance to poison the target. Poisoned creatures
+take continuous damage (60/s normally, 180/s with Toxic Avenger) and show a red
+aura. Poison damage triggers normal hit effects like flash and knockback.
 
-## 16 — Random Weapon (`PerkId.RANDOM_WEAPON`)
+## 26. Dodger
 
-### Effects
+Each incoming hit has a 1-in-5 chance of being dodged entirely. If Ninja is also
+owned, Ninja's better odds take over and Dodger does nothing.
 
-- Quest-only perk that immediately assigns a random available weapon:
-  - retries up to ~100 times,
-  - avoids the pistol and the currently equipped weapon.
-- Stackable.
+## 27. Bonus Magnet
 
-## 17 — Mr. Melee (`PerkId.MR_MELEE`)
+When a kill doesn't naturally spawn a bonus, Bonus Magnet gives a second chance
+roll. Stacks with the pistol's built-in bonus boost.
 
-### Effects
+## 28. Uranium Filled Bullets
 
-- When a creature lands a melee “contact damage” tick on the player:
-  - the player automatically counter-hits the attacker for **25 damage** (damage type 2),
-  - **and the player still takes the contact damage** for that tick.
+Bullet damage is doubled (×2).
 
-## 18 — Anxious Loader (`PerkId.ANXIOUS_LOADER`)
+## 29. Doctor
 
-### Effects
+Bullet damage is increased by 20% (×1.2). Also shows a health bar above the
+creature nearest the crosshair, using the same targeting as Pyrokinetic and Evil
+Eyes.
 
-- While reloading (`reload_timer > 0`), each “fire” press reduces reload timer by **0.05** seconds.
+## 30. Monster Vision
 
-## 19 — Final Revenge (`PerkId.FINAL_REVENGE`)
+Every creature gets a yellow highlight behind it, making them easy to spot.
+Creature shadows are hidden while this perk is active. Only offered when FX
+detail is enabled in settings.
 
-### Effects
+## 31. Hot Tempered
 
-- When the player dies, triggers an explosion centered on the player:
-  - radius **512**
-  - damage falloff: `damage = (512 - dist) * 5.0`
-- Plays large explosion + shockwave SFX.
-- Uses a “bonus spawn guard” style toggle during the effect in the original (to match stats/spawn semantics).
+Periodically fires an 8-shot ring of plasma projectiles (alternating Plasma
+Minigun and Plasma Rifle) centered on the player. The interval is randomized
+between 2 and 9 seconds after each burst. Friendly fire applies when enabled.
 
-## 20 — Telekinetic (`PerkId.TELEKINETIC`)
+## 32. Bonus Economist
 
-### Effects
+Timed bonus pickups last 50% longer.
 
-- Allows remote pickup of bonuses:
-  - aim at a bonus within **24** units,
-  - maintain aim hover for **>650ms**,
-  - bonus is picked up automatically.
+## 33. Thick Skinned
 
-## 21 — Perk Expert (`PerkId.PERK_EXPERT`)
+On pick, current health drops to 2/3 (minimum 1). In exchange, all incoming
+damage is permanently reduced to 2/3. The damage reduction is applied before
+dodge rolls. Not offered while Death Clock is active.
 
-### Effects
+## 34. Barrel Greaser
 
-- Perk selection offers **6 choices** instead of 5.
-- UI layout is adjusted for the extra entry and shows an “extra perk sponsored…” line.
+Bullet damage is increased by 40% (×1.4) and bullets travel at double speed.
 
-## 22 — Unstoppable (`PerkId.UNSTOPPABLE`)
+## 35. Ammunition Within
 
-### Effects
+Lets the player fire during a reload by paying health instead of ammo. Cost per
+shot is 1 HP normally, 0.15 HP for fire-type weapons. The health cost goes
+through normal damage processing, so Thick Skinned, Dodger, and Ninja can
+reduce or negate it. If Regression Bullets is also owned, it takes priority
+(XP cost instead of health). Reloads can't be restarted mid-reload.
 
-- On taking damage, suppresses the normal “hit disruption”:
-  - no random heading knock,
-  - no spread heat penalty.
-- Damage still applies normally.
+## 36. Veins of Poison
 
-## 23 — Regression Bullets (`PerkId.REGRESSION_BULLETS`)
+When a creature hits the player in melee and the shield bonus isn't active, that
+creature gets poisoned (weak tick, 60 damage/s). Suppressed in hardcore quest
+2-10.
 
-### Effects
+## 37. Toxic Avenger
 
-- While reloading (`reload_timer != 0`), firing is allowed if the player has **XP > 0**:
-  - consumes XP based on weapon reload time and ammo class:
-    - `cost = reload_time * 4.0` when `weapon_ammo_class == 1`
-    - `cost = reload_time * 200.0` otherwise
-  - XP is clamped to be non-negative.
-  - the shot fires **without consuming ammo**.
-- Reload cannot be “restarted” while already reloading when this perk (or Ammunition Within) is active (prevents reload-reset abuse).
+Upgraded version of Veins of Poison — melee attackers receive strong poison
+(180 damage/s) instead of weak. Requires Veins of Poison.
 
-## 24 — Infernal Contract (`PerkId.INFERNAL_CONTRACT`)
+## 38. Regeneration
 
-### Effects
+Slowly heals each alive player toward 100 HP. The heal ticks roughly every other
+frame for +dt health, so it's gradual. Only triggers between 0 and 100 HP.
 
-- Immediately:
-  - sets every alive player to **0.1 health**,
-  - grants the picker **+3 levels** and **+3 pending perk picks**.
-- Not offered while Death Clock is active.
+## 39. Pyromaniac
 
-## 25 — Poison Bullets (`PerkId.POISON_BULLETS`)
+Fire weapon damage is increased by 50% (×1.5). Only offered when the current
+weapon is the Flamethrower.
 
-### Effects
+## 40. Ninja
 
-- On projectile hit to a creature: 1/8 chance to poison (`(rand & 7) == 1`).
-- Poisoned creatures take self-damage every frame:
-  - weak poison: `dt * 60`
-  - strong poison (when Toxic Avenger sets the strong bit): `dt * 180`
-- Poison is applied via the “normal damage” path (hit flash / heading jitter side-effects occur).
-- Poisoned creatures render a **red aura** (60×60, effect atlas `0x10`) behind them with corpse-fade alpha.
+Each incoming hit has a 1-in-3 chance of being dodged entirely. Overrides Dodger
+when both are owned. Requires Dodger.
 
-## 26 — Dodger (`PerkId.DODGER`)
+## 41. Highlander
 
-### Effects
+Damage no longer reduces health. Instead, every hit has a flat 10% chance of
+instant death. Hit disruption (knockback, spread penalty) still applies unless
+Unstoppable is active.
 
-- When taking damage, 1/5 chance to dodge completely (no damage).
-- Ninja (if owned) overrides Dodger (checked first).
+## 42. Jinxed
 
-## 27 — Bonus Magnet (`PerkId.BONUS_MAGNET`)
+Random events on a global timer (roughly every 2–4 seconds): 10% chance of
+taking 5 self-damage, and — if the Freeze bonus isn't active — a random creature
+may instantly die, awarding its XP.
 
-### Effects
+## 43. Perk Master
 
-- Adds an extra chance for a bonus to spawn on kill when the base roll fails.
-- Interacts with pistol special-case rules (pistol already has its own bonus-boost rules).
+Perk selection shows 7 choices instead of the default 5 (or 6 with Perk Expert).
+Requires Perk Expert.
 
-## 28 — Uranium Filled Bullets (`PerkId.URANIUM_FILLED_BULLETS`)
+## 44. Reflex Boosted
 
-### Effects
+The entire game world runs 10% slower (frame time ×0.9). Effectively a global
+slow-motion effect.
 
-- Bullet damage is doubled (**×2.0**) when the attacker has the perk.
+## 45. Greater Regeneration
 
-## 29 — Doctor (`PerkId.DOCTOR`)
+No runtime effect has been found in this build — appears to be a no-op. Death
+Clock clears it on pick. Requires Regeneration.
 
-### Effects
+## 46. Breathing Room
 
-- Bullet damage bonus: **×1.2** when the attacker has the perk.
-- Shows a target health bar for the creature near the aim point (same target selection as Pyrokinetic/Evil Eyes).
-  - Corpses that are still “active/targetable” render as **0%**.
+Two-player mode only. On pick, every alive player's health drops to 1/3, and
+every creature on screen is killed instantly without awarding XP.
 
-## 30 — Monster Vision (`PerkId.MONSTER_VISION`)
+## 47. Death Clock
 
-### Effects
+On pick, health is set to 100 and Regeneration / Greater Regeneration are
+cleared. For the next 30 seconds the player is immune to all other damage, but
+health drains steadily to zero (100 HP over 30 s). Medikits stop spawning, and
+perks that would undermine the clock (Regeneration, Thick Skinned, Highlander,
+Jinxed, etc.) are blocked from selection.
 
-- Not offered when FX detail is disabled (config gating).
-- Renders a highlight behind each active creature:
-  - yellow 90×90 quad (effect atlas `0x10`),
-  - fades during corpse despawn.
-- Disables the creature shadow pass while active.
+## 48. My Favourite Weapon
 
-## 31 — Hot Tempered (`PerkId.HOT_TEMPERED`)
++2 clip size on pick and on every future weapon assignment. Weapon bonus pickups
+are disabled entirely — they won't spawn and can't be collected.
 
-### Effects
+## 49. Bandage
 
-- Periodically spawns an 8-shot ring centered on the player:
-  - even indices: Plasma Minigun projectile
-  - odd indices: Plasma Rifle projectile
-  - angles: `idx * (pi/4)`
-- Interval is randomized to **`(rand % 8) + 2` seconds** after each burst.
-- Projectile owner id depends on friendly-fire setting:
-  - friendly fire off: `owner_id = -100`
-  - friendly fire on: `owner_id = -1 - player_index`
+Multiplies current health by a random value from 1 to 50, then clamps to 100.
+Produces a burst of particles.
 
-## 32 — Bonus Economist (`PerkId.BONUS_ECONOMIST`)
+## 50. Angry Reloader
 
-### Effects
+Halfway through a reload (when the timer crosses 50%), fires a ring of Plasma
+Minigun projectiles centered on the player. The ring size scales with reload
+time: 7 + (reload time × 4) projectiles. Only triggers when reload time exceeds
+0.5 s. Benefits from Stationary Reloader's 3× reload speed. Friendly fire
+applies when enabled.
 
-- Timed bonuses last **50% longer** (timer increments are multiplied by 1.5).
+## 51. Ion Gun Master
 
-## 33 — Thick Skinned (`PerkId.THICK_SKINNED`)
+Ion weapon damage and blast radius are both increased by 20% (×1.2). The damage
+bonus is global — any ion damage is scaled, regardless of which player owns the
+perk.
 
-### Effects
+## 52. Stationary Reloader
 
-- On pick: reduces current health to **2/3** (clamped to at least 1.0).
-- On damage taken: damage is multiplied by **2/3** (applied before dodge logic).
-- Not offered while Death Clock is active.
+Reload speed triples (×3) while standing still.
 
-## 34 — Barrel Greaser (`PerkId.BARREL_GREASER`)
+## 53. Man Bomb
 
-### Effects
+Standing still charges an explosion timer (starts at 4 seconds). When it fires,
+8 ion projectiles spray out in a ring with slight angular jitter, alternating Ion
+Minigun and Ion Rifle. Moving resets the timer to zero. Friendly fire applies
+when enabled.
 
-- Bullet damage multiplier: **×1.4**.
-- Player-owned projectiles step more aggressively (doubling movement steps), making bullets effectively “faster” and harder to dodge.
+## 54. Fire Cough
 
-## 35 — Ammunition Within (`PerkId.AMMUNITION_WITHIN`)
+Every 2–5 seconds (randomized), involuntarily fires a single Fire Bullets
+projectile from the muzzle, complete with weapon fire sound effects and a small
+smoke sprite. The shot inherits the current weapon spread. Friendly fire applies
+when enabled.
 
-### Effects
+## 55. Living Fortress
 
-- While reloading (`reload_timer != 0`), firing is allowed if **XP > 0**:
-  - the shot fires without consuming ammo,
-  - the player takes self-damage per shot:
-    - fire ammo class (`weapon_ammo_class == 1`): **0.15**
-    - otherwise: **1.0**
-  - self-damage is applied via `player_take_damage` (so Thick Skinned / Dodger / Ninja interactions apply).
-- Regression Bullets takes precedence if both perks are active.
-- Reload restart is blocked while already reloading (shared guard with Regression Bullets).
+While standing still, a timer ramps up over 30 seconds. Bullet damage is
+multiplied by (timer × 0.05 + 1), reaching up to ×2.5 at full charge. Moving
+resets the timer. In multiplayer, the bonus stacks — each alive player with a
+charged timer contributes their own multiplier.
 
-## 36 — Veins of Poison (`PerkId.VEINS_OF_POISON`)
+## 56. Tough Reloader
 
-### Effects
+Damage taken while reloading is halved (×0.5).
 
-- When a creature lands a melee contact-damage tick on the player (and the player isn’t shielded):
-  - the attacking creature is poisoned (weak poison tick).
-- Hardcore quest gating may suppress poison perks in a specific stage.
+## 57. Lifeline 50-50
 
-## 37 — Toxic Avenger (`PerkId.TOXIC_AVENGER`)
-
-### Effects
-
-- Like Veins of Poison, but applies **strong poison** (fast tick) to attackers on contact when not shielded.
-- Requires Veins of Poison.
-
-## 38 — Regeneration (`PerkId.REGENERATION`)
-
-### Effects
-
-- Each frame (when a random bit hits), heals each alive player by **+dt**, clamped to 100:
-  - triggers only if `0 < health < 100`
-  - random gate: `(rand & 1) != 0`
-
-## 39 — Pyromaniac (`PerkId.PYROMANIAC`)
-
-### Effects
-
-- Fire damage multiplier: **×1.5** when the attacker has the perk.
-- Consumes one RNG call as a side-effect in the original.
-- Typically offered only when the current weapon is Flamethrower (selection gating).
-
-## 40 — Ninja (`PerkId.NINJA`)
-
-### Effects
-
-- When taking damage, 1/3 chance to dodge completely (`rand % 3 == 0`).
-- Takes precedence over Dodger.
-
-## 41 — Highlander (`PerkId.HIGHLANDER`)
-
-### Effects
-
-- Incoming damage does not reduce health.
-- Instead, each time a hit lands, there is a **10% chance** to die instantly (`rand % 10 == 0`).
-- Normal “on-hit disruption” still applies unless Unstoppable is active.
-
-## 42 — Jinxed (`PerkId.JINXED`)
-
-### Effects
-
-- Periodically:
-  - has a 1/10 chance to deal **5 self-damage** (and emit two random decals),
-  - and, if Freeze bonus is not active, may instantly kill a random creature and award its XP (no normal death handler).
-- Uses a global timer that is randomized after each activation.
-
-## 43 — Perk Master (`PerkId.PERK_MASTER`)
-
-### Effects
-
-- Perk selection offers **7 choices** instead of 5 (and instead of 6 with Perk Expert).
-
-## 44 — Reflex Boosted (`PerkId.REFLEX_BOOSTED`)
-
-### Effects
-
-- Global slow-motion effect: scales frame dt by **0.9** while active (i.e., the world runs ~10% slower).
-
-## 45 — Greater Regeneration (`PerkId.GREATER_REGENERATION`)
-
-### Effects
-
-- In this build, **no runtime effect** has been found (it appears to be a no-op perk).
-- Death Clock clears its perk count on apply.
-
-## 46 — Breathing Room (`PerkId.BREATHING_ROOM`)
-
-### Effects
-
-- Two-player-only perk.
-- On pick:
-  - reduces each alive player’s health to **1/3** (subtracts 2/3),
-  - forces every active creature into the “death staging” path without awarding XP,
-  - clears `bonus_spawn_guard`.
-
-## 47 — Death Clock (`PerkId.DEATH_CLOCK`)
-
-### Effects
-
-- On pick:
-  - clears Regeneration and Greater Regeneration perk counts,
-  - sets each alive player’s health to **100**.
-- While active:
-  - immune to all other damage,
-  - health drains at a fixed rate: **100 HP over 30 seconds** (`health -= dt * 3.3333333`),
-  - medikits are removed from the random bonus pool,
-  - perk selection blocks a set of perks that would undermine the clock (regen, thick skinned, etc).
-
-## 48 — My Favourite Weapon (`PerkId.MY_FAVOURITE_WEAPON`)
-
-### Effects
-
-- Increases clip size by **+2** (applied on pick and on weapon assignment).
-- Weapon bonuses cannot spawn or be selected; picking up a weapon bonus is ignored.
-
-## 49 — Bandage (`PerkId.BANDAGE`)
-
-### Effects
-
-- Randomly multiplies current health by **1..50**, then clamps to **100**.
-- Spawns an 8-particle burst effect.
-
-## 50 — Angry Reloader (`PerkId.ANGRY_RELOADER`)
-
-### Effects
-
-- During a reload, when the reload timer crosses the half threshold (from >50% to ≤50%) and `reload_timer_max > 0.5`:
-  - spawns a projectile ring centered on the player:
-    - projectile type: Plasma Minigun
-    - count: `7 + int(reload_timer_max * 4.0)`
-    - angle offset: `0.1`
-  - plays `sfx_explosion_small`
-- Uses Stationary Reloader’s 3× reload scaling when stationary.
-- Projectile owner id depends on friendly-fire setting (`-100` when off, else `-1-player_index`).
-
-## 51 — Ion Gun Master (`PerkId.ION_GUN_MASTER`)
-
-### Effects
-
-- Ion blast damage multiplier: **×1.2**.
-- Ion AoE radii are scaled by **×1.2** for ion weapons.
-- The damage multiplier is global (not attacker-bound): any `damage_type == 7` damage is scaled while Ion Gun Master exists.
-
-## 52 — Stationary Reloader (`PerkId.STATIONARY_RELOADER`)
-
-### Effects
-
-- While stationary, reload speed is multiplied by **3.0**.
-
-## 53 — Man Bomb (`PerkId.MAN_BOMB`)
-
-### Effects
-
-- Charges while stationary; when the timer exceeds an interval (starts at 4.0s):
-  - spawns 8 ion projectiles in a ring with per-projectile angular jitter:
-    - even indices: Ion Minigun
-    - odd indices: Ion Rifle
-    - angle: `idx*(pi/4) + ((rand%50)*0.01 - 0.25)`
-  - plays `sfx_explosion_small`
-  - subtracts the interval from the timer and resets the interval back to 4.0.
-- If the player moves, the timer is reset to 0.0 (so it only accumulates while stationary).
-- Projectile owner id depends on friendly-fire setting (`-100` when off, else `-1-player_index`).
-
-## 54 — Fire Caugh (`PerkId.FIRE_CAUGH`)
-
-### Effects
-
-- Periodically (interval randomized to 2–5 seconds):
-  - plays two weapon-fire SFX,
-  - spawns one Fire Bullets projectile from the muzzle:
-    - muzzle is offset by a fixed `-0.150915` rad rotation (same muzzle convention as normal firing),
-    - aim is jittered using the same distance-scaled spread model as normal firing (`dist * spread_heat`),
-  - spawns a small grey sprite FX traveling forward from the muzzle.
-- Projectile owner id depends on friendly-fire setting (`-100` when off, else `-1-player_index`).
-
-## 55 — Living Fortress (`PerkId.LIVING_FORTRESS`)
-
-### Effects
-
-- While stationary, a timer ramps up to **30s**.
-- Bullet damage scaling: for each alive player, bullet damage is multiplied by:
-  `living_fortress_timer * 0.05 + 1.0`
-  (with multiple alive players, the multiplier applies once per player).
-
-## 56 — Tough Reloader (`PerkId.TOUGH_RELOADER`)
-
-### Effects
-
-- While reloading (`reload_active != 0`), incoming damage is multiplied by **0.5**.
-
-## 57 — Lifeline 50-50 (`PerkId.LIFELINE_50_50`)
-
-### Effects
-
-- On pick, iterates the creature pool in slot order and removes roughly half of eligible creatures:
-  - a toggle flips each slot; when “on”, and the creature is:
-    - active,
-    - `hp <= 500`,
-    - `(flags & 4) == 0`,
-    it is removed immediately (no normal death handling / no XP).
-  - spawns a small burst FX per removed creature (4 particles).
+On pick, roughly half of all creatures on screen are instantly removed (no XP
+awarded). The selection alternates through creature pool slots, skipping
+creatures with more than 500 HP or special flags.
