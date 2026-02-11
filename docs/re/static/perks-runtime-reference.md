@@ -366,7 +366,7 @@ Notes:
 
 ### Original
 
-- Offer gating: perk selection checks FX detail.
+- Selection: no FX-detail offer gate in `perks_generate_choices`; Monster Vision is part of the 25% rarity reject group.
 - Rendering: creature render pass draws `0x10` behind creatures; shadow pass is disabled while active.
 
 ### Rewrite
