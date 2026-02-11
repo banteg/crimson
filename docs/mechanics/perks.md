@@ -44,7 +44,7 @@ long as the player keeps moving. Stopping causes speed to decay rapidly.
 
 ## 6. Pyrokinetic
 
-While the crosshair is near a creature, a heat flare triggers roughly every
+While the crosshair is near a creature, a heat flare triggers every
 0.5 seconds — a burst of particles and a random decal at the target. Purely
 visual; no damage.
 
@@ -119,7 +119,7 @@ linearly: (512 − distance) × 5.
 
 ## 20. Telekinetic
 
-Aim at a bonus pickup within 24 units for about 650 ms to collect it remotely.
+Aim at a bonus pickup within 24 units for 650 ms to collect it remotely.
 
 ## 21. Perk Expert
 
@@ -215,8 +215,8 @@ Upgraded version of Veins of Poison — melee attackers receive strong poison
 
 ## 38. Regeneration
 
-Slowly heals each alive player toward 100 HP. The heal ticks roughly every other
-frame for +dt health, so it's gradual. Only triggers between 0 and 100 HP.
+Heals each alive player toward 100 HP. The heal ticks every other frame
+(50% chance per frame) for +dt health. Only triggers between 0 and 100 HP.
 
 ## 39. Pyromaniac
 
@@ -236,7 +236,7 @@ Unstoppable is active.
 
 ## 42. Jinxed
 
-Random events on a global timer (roughly every 2–4 seconds): 10% chance of
+Random events on a global timer (randomized 2–4 second interval): 10% chance of
 taking 5 self-damage, and — if the Freeze bonus isn't active — a random creature
 may instantly die, awarding its XP.
 
@@ -323,6 +323,6 @@ Damage taken while reloading is halved (×0.5).
 
 ## 57. Lifeline 50-50
 
-On pick, roughly half of all creatures on screen are instantly removed (no XP
+On pick, every other creature on screen is instantly removed (no XP
 awarded). The selection alternates through creature pool slots, skipping
 creatures with more than 500 HP or special flags.
