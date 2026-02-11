@@ -53,3 +53,44 @@ def test_pressed_edge_does_not_retrigger_after_unpolled_held_frame(monkeypatch) 
     input_codes.input_begin_frame()
 
     assert not input_codes.input_code_is_pressed_for_player(0x11, player_index=0)
+
+
+def test_input_primary_just_pressed_latches_across_multiplayer_fire_keys(monkeypatch) -> None:
+    down: dict[tuple[int, int], bool] = {}
+
+    def _fake_input_code_is_down_for_player(key_code: int, *, player_index: int) -> bool:
+        return bool(down.get((int(player_index), int(key_code)), False))
+
+    monkeypatch.setattr(input_codes, "input_code_is_down_for_player", _fake_input_code_is_down_for_player)
+    monkeypatch.setattr(input_codes.rl, "get_mouse_wheel_move", lambda: 0.0)
+
+    input_codes._PRESSED_STATE.prev_down.clear()
+    input_codes._PRESSED_STATE.down.clear()
+    input_codes._PRESSED_STATE.pressed_cache.clear()
+    input_codes._PRESSED_STATE.wheel_up = False
+    input_codes._PRESSED_STATE.wheel_down = False
+
+    # Player 2 fire key press opens the latch in two-player mode.
+    input_codes.input_begin_frame()
+    down[(1, 0x9D)] = True
+    assert input_codes.input_primary_just_pressed(None, player_count=2)
+
+    # Holding any primary source should not retrigger next frame.
+    input_codes.input_begin_frame()
+    assert not input_codes.input_primary_just_pressed(None, player_count=2)
+
+    # Pressing another primary source while already held still does not retrigger.
+    input_codes.input_begin_frame()
+    down[(0, 0x100)] = True
+    assert not input_codes.input_primary_just_pressed(None, player_count=2)
+
+    # Releasing all sources clears the latch.
+    input_codes.input_begin_frame()
+    down[(1, 0x9D)] = False
+    down[(0, 0x100)] = False
+    assert not input_codes.input_primary_just_pressed(None, player_count=2)
+
+    # Fresh primary press edges again after full release.
+    input_codes.input_begin_frame()
+    down[(0, 0x100)] = True
+    assert input_codes.input_primary_just_pressed(None, player_count=2)

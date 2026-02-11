@@ -30,6 +30,7 @@ from ..input_codes import (
     config_keybinds_for_player,
     input_code_is_down_for_player,
     input_code_is_pressed_for_player,
+    input_primary_just_pressed,
 )
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, draw_ui_text, load_perk_menu_assets
 from ..weapons import WEAPON_BY_ID
@@ -506,7 +507,10 @@ class SurvivalMode(BaseGameplayMode):
                 opened = self._perk_menu.open_if_available(perk_ctx)
                 if opened and self._replay_recorder is not None:
                     self._replay_recorder.record_perk_menu_open(player_index=0)
-            elif self._perk_prompt_hover and input_code_is_pressed_for_player(fire_key, player_index=0):
+            elif self._perk_prompt_hover and input_primary_just_pressed(
+                self._config,
+                player_count=len(self._world.players),
+            ):
                 self._perk_prompt_pulse = 1000.0
                 if self._replay_recorder is not None:
                     self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
