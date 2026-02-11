@@ -74,6 +74,41 @@ def _aim_point_from_heading(pos: Vec2, heading: float, *, radius: float = _AIM_R
     return pos + Vec2.from_heading(float(heading)) * float(radius)
 
 
+def _resolve_static_move_vector(
+    *,
+    move_up: bool,
+    move_down: bool,
+    move_left: bool,
+    move_right: bool,
+) -> Vec2:
+    """Mirror native move-mode 2 key precedence from `player_update`."""
+
+    move = Vec2()
+    if move_left:
+        move = Vec2(-1.0, 0.0)
+    if move_right:
+        move = Vec2(1.0, 0.0)
+
+    if move_up:
+        if move_left:
+            move = Vec2(-1.0, -1.0)
+        elif move_right:
+            move = Vec2(1.0, -1.0)
+        else:
+            move = Vec2(0.0, -1.0)
+
+    # Native checks backward after forward, so it overrides on conflicts.
+    if move_down:
+        if move_left:
+            move = Vec2(-1.0, 1.0)
+        elif move_right:
+            move = Vec2(1.0, 1.0)
+        else:
+            move = Vec2(0.0, 1.0)
+
+    return move
+
+
 def _load_player_bind_block(config: CrimsonConfig | None, *, player_index: int) -> tuple[int, ...]:
     binds = config_keybinds_for_player(config, player_index=int(player_index))
     if len(binds) >= 16:
@@ -245,6 +280,17 @@ class LocalInputInterpreter:
                     move_vec = _dir
         elif int(move_mode) == 5:
             move_vec = Vec2()
+        elif int(move_mode) == 2:
+            move_up_pressed = bool(input_code_is_down_for_player(up_key, player_index=idx))
+            move_down_pressed = bool(input_code_is_down_for_player(down_key, player_index=idx))
+            move_left_pressed = bool(input_code_is_down_for_player(left_key, player_index=idx))
+            move_right_pressed = bool(input_code_is_down_for_player(right_key, player_index=idx))
+            move_vec = _resolve_static_move_vector(
+                move_up=move_up_pressed,
+                move_down=move_down_pressed,
+                move_left=move_left_pressed,
+                move_right=move_right_pressed,
+            )
         else:
             move_vec = Vec2(
                 float(input_code_is_down_for_player(right_key, player_index=idx))
