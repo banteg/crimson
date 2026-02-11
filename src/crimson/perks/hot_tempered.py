@@ -4,6 +4,7 @@ import math
 
 from ..projectiles import ProjectileTypeId
 from .helpers import perk_active
+from .hook_types import PerkHooks
 from .ids import PerkId
 from .player_tick_context import PlayerPerkTickCtx
 
@@ -33,3 +34,9 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
 
     ctx.player.hot_tempered_timer -= ctx.state.perk_intervals.hot_tempered
     ctx.state.perk_intervals.hot_tempered = float(ctx.state.rng.rand() % 8) + 2.0
+
+
+HOOKS = PerkHooks(
+    perk_id=PerkId.HOT_TEMPERED,
+    player_tick_steps=(tick_hot_tempered,),
+)

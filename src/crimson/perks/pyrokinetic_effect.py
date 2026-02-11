@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .effects_context import PerksUpdateEffectsCtx
 from .helpers import perk_active
+from .hook_types import PerkHooks
 from .ids import PerkId
 
 
@@ -25,3 +26,9 @@ def update_pyrokinetic(ctx: PerksUpdateEffectsCtx) -> None:
             ctx.state.particles.spawn_particle(pos=creature.pos, angle=angle, intensity=float(intensity))
         if ctx.fx_queue is not None:
             ctx.fx_queue.add_random(pos=creature.pos, rand=ctx.state.rng.rand)
+
+
+HOOKS = PerkHooks(
+    perk_id=PerkId.PYROKINETIC,
+    effects_steps=(update_pyrokinetic,),
+)

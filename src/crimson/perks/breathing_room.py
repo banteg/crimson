@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from .apply_context import PerkApplyCtx
+from .hook_types import PerkHooks
+from .ids import PerkId
 
 
 def apply_breathing_room(ctx: PerkApplyCtx) -> None:
@@ -15,3 +17,9 @@ def apply_breathing_room(ctx: PerkApplyCtx) -> None:
                 creature.hitbox_size = float(creature.hitbox_size) - frame_dt
 
     ctx.state.bonus_spawn_guard = False
+
+
+HOOKS = PerkHooks(
+    perk_id=PerkId.BREATHING_ROOM,
+    apply_handler=apply_breathing_room,
+)

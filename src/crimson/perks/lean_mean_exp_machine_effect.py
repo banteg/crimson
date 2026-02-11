@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .effects_context import PerksUpdateEffectsCtx
 from .helpers import perk_count_get
+from .hook_types import PerkHooks
 from .ids import PerkId
 
 
@@ -18,3 +19,9 @@ def update_lean_mean_exp_machine(ctx: PerksUpdateEffectsCtx) -> None:
         perk_count = perk_count_get(player0, PerkId.LEAN_MEAN_EXP_MACHINE)
         if perk_count > 0:
             player0.experience += perk_count * 10
+
+
+HOOKS = PerkHooks(
+    perk_id=PerkId.LEAN_MEAN_EXP_MACHINE,
+    effects_steps=(update_lean_mean_exp_machine,),
+)

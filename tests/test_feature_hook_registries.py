@@ -9,8 +9,17 @@ from crimson.bonuses.pickup_fx import emit_bonus_pickup_effects
 from crimson.effects import FxQueue
 from crimson.effects_atlas import EffectId
 from crimson.gameplay import GameplayState
+from crimson.perks.final_revenge import apply_final_revenge_on_player_death
+from crimson.perks.manifest import (
+    PERK_APPLY_HANDLERS,
+    PERK_HOOKS_IN_ORDER,
+    PERKS_UPDATE_EFFECT_STEPS,
+    PLAYER_DEATH_HOOKS,
+    PLAYER_PERK_TICK_STEPS,
+    WORLD_DT_STEPS,
+)
+from crimson.perks.player_bonus_timers_effect import update_player_bonus_timers
 from crimson.perks.reflex_boosted import apply_reflex_boosted_dt
-from crimson.perks.registry import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from crimson.projectiles import ProjectileHit, ProjectileTypeId
 from crimson.sim.presentation_step import apply_world_presentation_step, queue_projectile_decals
 from crimson.sim.state_types import BonusPickupEvent
@@ -19,8 +28,27 @@ from crimson.sim.world_state import WorldState
 
 def test_perk_hook_registries_are_explicit_and_ordered() -> None:
     assert WORLD_DT_STEPS == (apply_reflex_boosted_dt,)
-    assert len(PLAYER_DEATH_HOOKS) == 1
-    assert PLAYER_DEATH_HOOKS[0].__name__ == "_apply_final_revenge_on_player_death_lazy"
+    assert PLAYER_DEATH_HOOKS == (apply_final_revenge_on_player_death,)
+
+
+def test_perk_manifest_has_single_runtime_owner_per_perk() -> None:
+    perk_ids = [hooks.perk_id for hooks in PERK_HOOKS_IN_ORDER]
+    assert len(perk_ids) == len(set(perk_ids))
+
+    expected_apply_ids = {
+        hooks.perk_id for hooks in PERK_HOOKS_IN_ORDER if hooks.apply_handler is not None
+    }
+    assert set(PERK_APPLY_HANDLERS) == expected_apply_ids
+
+    expected_player_tick_steps = tuple(
+        step for hooks in PERK_HOOKS_IN_ORDER for step in hooks.player_tick_steps
+    )
+    assert PLAYER_PERK_TICK_STEPS == expected_player_tick_steps
+
+    expected_effect_steps = (update_player_bonus_timers,) + tuple(
+        step for hooks in PERK_HOOKS_IN_ORDER for step in hooks.effects_steps
+    )
+    assert PERKS_UPDATE_EFFECT_STEPS == expected_effect_steps
 
 
 def test_bonus_pickup_feature_hooks_emit_expected_fx() -> None:

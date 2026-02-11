@@ -7,7 +7,7 @@ from .player_tick_context import (
     PlayerPerkTickCtx,
     ProjectileSpawnFn,
 )
-from .runtime_registry import PLAYER_PERK_TICK_STEPS
+from .manifest import PLAYER_PERK_TICK_STEPS
 
 _PLAYER_PERK_TICK_STEPS = PLAYER_PERK_TICK_STEPS
 

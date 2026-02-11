@@ -4,9 +4,9 @@ from typing import Sequence
 
 from ..sim.state_types import GameplayState, PlayerState
 from .apply_context import PerkApplyCtx
-from .apply_handlers import PERK_APPLY_HANDLERS
 from .counts import adjust_perk_count
 from .ids import PerkId
+from .manifest import PERK_APPLY_HANDLERS
 from .state import CreatureForPerks, PerkSelectionState
 
 

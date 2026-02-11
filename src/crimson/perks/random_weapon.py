@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from ..weapons import WeaponId
 from .apply_context import PerkApplyCtx
+from .hook_types import PerkHooks
+from .ids import PerkId
 
 
 def apply_random_weapon(ctx: PerkApplyCtx) -> None:
@@ -15,3 +17,9 @@ def apply_random_weapon(ctx: PerkApplyCtx) -> None:
         if candidate != int(WeaponId.PISTOL) and candidate != current:
             break
     weapon_assign_player(ctx.owner, weapon_id, state=ctx.state)
+
+
+HOOKS = PerkHooks(
+    perk_id=PerkId.RANDOM_WEAPON,
+    apply_handler=apply_random_weapon,
+)

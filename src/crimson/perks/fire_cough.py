@@ -7,6 +7,7 @@ from grim.geom import Vec2
 
 from ..projectiles import ProjectileTypeId
 from .helpers import perk_active
+from .hook_types import PerkHooks
 from .ids import PerkId
 from .player_tick_context import PlayerPerkTickCtx
 
@@ -49,3 +50,9 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
 
     ctx.player.fire_cough_timer -= ctx.state.perk_intervals.fire_cough
     ctx.state.perk_intervals.fire_cough = float(ctx.state.rng.rand() % 4) + 2.0
+
+
+HOOKS = PerkHooks(
+    perk_id=PerkId.FIRE_CAUGH,
+    player_tick_steps=(tick_fire_cough,),
+)

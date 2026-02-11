@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .effects_context import PerksUpdateEffectsCtx
 from .helpers import perk_active
+from .hook_types import PerkHooks
 from .ids import PerkId
 
 
@@ -45,3 +46,9 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
         creature.hitbox_size = float(creature.hitbox_size) - ctx.dt * 20.0
         player.experience = int(float(player.experience) + float(creature.reward_value))
         ctx.state.sfx_queue.append("sfx_trooper_inpain_01")
+
+
+HOOKS = PerkHooks(
+    perk_id=PerkId.JINXED,
+    effects_steps=(update_jinxed_timer, update_jinxed),
+)

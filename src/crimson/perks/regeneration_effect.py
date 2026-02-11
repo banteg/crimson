@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .effects_context import PerksUpdateEffectsCtx
 from .helpers import perk_active
+from .hook_types import PerkHooks
 from .ids import PerkId
 
 
@@ -13,3 +14,9 @@ def update_regeneration(ctx: PerksUpdateEffectsCtx) -> None:
             player.health = float(player.health) + ctx.dt
             if player.health > 100.0:
                 player.health = 100.0
+
+
+HOOKS = PerkHooks(
+    perk_id=PerkId.REGENERATION,
+    effects_steps=(update_regeneration,),
+)

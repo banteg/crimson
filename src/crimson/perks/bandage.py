@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from .apply_context import PerkApplyCtx
+from .hook_types import PerkHooks
+from .ids import PerkId
 
 
 def apply_bandage(ctx: PerkApplyCtx) -> None:
@@ -14,3 +16,9 @@ def apply_bandage(ctx: PerkApplyCtx) -> None:
                 rand=ctx.state.rng.rand,
                 detail_preset=5,
             )
+
+
+HOOKS = PerkHooks(
+    perk_id=PerkId.BANDAGE,
+    apply_handler=apply_bandage,
+)

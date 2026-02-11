@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from .apply_context import PerkApplyCtx
+from .hook_types import PerkHooks
+from .ids import PerkId
 
 
 def apply_lifeline_50_50(ctx: PerkApplyCtx) -> None:
@@ -19,3 +21,9 @@ def apply_lifeline_50_50(ctx: PerkApplyCtx) -> None:
                 detail_preset=5,
             )
         kill_toggle = not kill_toggle
+
+
+HOOKS = PerkHooks(
+    perk_id=PerkId.LIFELINE_50_50,
+    apply_handler=apply_lifeline_50_50,
+)

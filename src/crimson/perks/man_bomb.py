@@ -4,6 +4,7 @@ import math
 
 from ..projectiles import ProjectileTypeId
 from .helpers import perk_active
+from .hook_types import PerkHooks
 from .ids import PerkId
 from .player_tick_context import PlayerPerkTickCtx
 
@@ -33,3 +34,9 @@ def tick_man_bomb(ctx: PlayerPerkTickCtx) -> None:
 
     ctx.player.man_bomb_timer -= ctx.state.perk_intervals.man_bomb
     ctx.state.perk_intervals.man_bomb = 4.0
+
+
+HOOKS = PerkHooks(
+    perk_id=PerkId.MAN_BOMB,
+    player_tick_steps=(tick_man_bomb,),
+)
