@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING, Callable, Protocol, Sequence
 
 from grim.color import RGBA
 from grim.geom import Vec2
+from grim.rand import Crand
 from .bonuses import BONUS_BY_ID, BonusId
 from .creatures.spawn import CreatureFlags
-from grim.rand import Crand
 from .effects import EffectPool, FxQueue, ParticlePool, SpriteEffectPool
 from .game_modes import GameMode
 from .math_parity import f32
@@ -29,6 +29,8 @@ from .weapons import (
     projectile_type_id_from_weapon_id,
     weapon_entry_for_projectile_type_id,
 )
+from .sim.input import PlayerInput
+from .sim.state_types import PERK_COUNT_SIZE, PlayerState
 
 if TYPE_CHECKING:
     from .persistence.save_status import GameStatus
@@ -49,81 +51,8 @@ class _CreatureForPerks(Protocol):
     size: float
 
 
-@dataclass(frozen=True, slots=True)
-class PlayerInput:
-    move: Vec2 = field(default_factory=Vec2)
-    aim: Vec2 = field(default_factory=Vec2)
-    fire_down: bool = False
-    fire_pressed: bool = False
-    reload_pressed: bool = False
-    move_forward_pressed: bool | None = None
-    move_backward_pressed: bool | None = None
-    turn_left_pressed: bool | None = None
-    turn_right_pressed: bool | None = None
-
-
-PERK_COUNT_SIZE = 0x80
 PERK_ID_MAX = max(int(meta.perk_id) for meta in PERK_TABLE)
 WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
-
-
-@dataclass(slots=True)
-class PlayerState:
-    index: int
-    pos: Vec2
-    health: float = 100.0
-    size: float = 48.0
-
-    speed_multiplier: float = 2.0
-    move_speed: float = 0.0
-    move_phase: float = 0.0
-    heading: float = 0.0
-    turn_speed: float = 1.0
-    death_timer: float = 16.0
-    low_health_timer: float = 100.0
-
-    aim: Vec2 = field(default_factory=Vec2)
-    aim_heading: float = 0.0
-    aim_dir: Vec2 = field(default_factory=lambda: Vec2(1.0, 0.0))
-    evil_eyes_target_creature: int = -1
-
-    bonus_aim_hover_index: int = -1
-    bonus_aim_hover_timer_ms: float = 0.0
-
-    weapon_id: int = 1
-    clip_size: int = 0
-    ammo: float = 0.0
-    reload_active: bool = False
-    reload_timer: float = 0.0
-    reload_timer_max: float = 0.0
-    shot_cooldown: float = 0.0
-    shot_seq: int = 0
-    weapon_reset_latch: int = 0
-    aux_timer: float = 0.0
-    spread_heat: float = 0.01
-    muzzle_flash_alpha: float = 0.0
-
-    alt_weapon_id: int | None = None
-    alt_clip_size: int = 0
-    alt_ammo: float = 0.0
-    alt_reload_active: bool = False
-    alt_reload_timer: float = 0.0
-    alt_reload_timer_max: float = 0.0
-    alt_shot_cooldown: float = 0.0
-
-    experience: int = 0
-    level: int = 1
-
-    perk_counts: list[int] = field(default_factory=lambda: [0] * PERK_COUNT_SIZE)
-    plaguebearer_active: bool = False
-    hot_tempered_timer: float = 0.0
-    man_bomb_timer: float = 0.0
-    living_fortress_timer: float = 0.0
-    fire_cough_timer: float = 0.0
-
-    speed_bonus_timer: float = 0.0
-    shield_timer: float = 0.0
-    fire_bullets_timer: float = 0.0
 
 
 @dataclass(slots=True)

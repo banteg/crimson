@@ -17,8 +17,6 @@ from ..game_modes import GameMode
 from ..gameplay import (
     BonusPickupEvent,
     GameplayState,
-    PlayerInput,
-    PlayerState,
     bonus_update,
     bonus_update_pre_pickup_timers,
     perks_update_effects,
@@ -27,6 +25,7 @@ from ..gameplay import (
 )
 from ..player_damage import player_take_projectile_damage
 from ..projectiles import ProjectileHit
+from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .presentation_step import (
     ProjectileDecalPostCtx,
@@ -35,6 +34,7 @@ from .presentation_step import (
     queue_projectile_decals_post_hit,
     queue_projectile_decals_pre_hit,
 )
+from .state_types import PlayerState
 from .world_defs import CREATURE_ANIM
 
 
