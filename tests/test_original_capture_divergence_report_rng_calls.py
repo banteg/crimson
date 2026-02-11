@@ -27,6 +27,15 @@ def _step_crt_state(state: int, calls: int) -> int:
     return value
 
 
+def _crt_rand_values(state: int, calls: int) -> list[int]:
+    value = int(state) & 0xFFFFFFFF
+    out: list[int] = []
+    for _ in range(max(0, int(calls))):
+        value = (value * 214013 + 2531011) & 0xFFFFFFFF
+        out.append((value >> 16) & 0x7FFF)
+    return out
+
+
 def _checkpoint(
     *,
     tick: int,
@@ -140,6 +149,52 @@ def test_window_rows_include_actual_rand_calls_and_delta() -> None:
     assert int(row["actual_rand_calls"]) == 10
     assert int(row["rand_calls_delta"]) == 8
     assert int(row["actual_deaths"]) == 1
+    assert int(row["rng_stream_prefix_match"]) == 0
+    assert int(row["rng_stream_compared"]) == 0
+    assert row["rng_stream_first_mismatch_idx"] is None
+
+
+def test_window_rows_include_rng_stream_mismatch_details() -> None:
+    report = _load_report_module()
+    start = 0x0BADF00D
+    values = _crt_rand_values(start, 3)
+    after = _step_crt_state(start, 3)
+
+    expected_ckpt = _checkpoint(
+        tick=6,
+        rng_marks={"rand_calls": 3},
+    )
+    actual_ckpt = _checkpoint(
+        tick=6,
+        rng_marks={
+            "before_world_step": start,
+            "after_world_step": after,
+            "after_wave_spawns": after,
+        },
+    )
+
+    rows = report._build_window_rows(
+        expected_by_tick={6: expected_ckpt},
+        actual_by_tick={6: actual_ckpt},
+        raw_debug_by_tick={
+            6: {
+                "rng_rand_calls": 3,
+                "rng_head_len": 3,
+                "rng_head_values": [values[0], values[1] ^ 1, values[2]],
+                "spawn_bonus_count": 0,
+                "spawn_death_count": 0,
+            }
+        },
+        focus_tick=6,
+        window=0,
+    )
+
+    assert len(rows) == 1
+    row = rows[0]
+    assert int(row["rng_stream_prefix_match"]) == 1
+    assert int(row["rng_stream_compared"]) == 3
+    assert int(row["rng_stream_first_mismatch_idx"]) == 1
+    assert int(row["rng_stream_missing_tail"]) == 0
 
 
 def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
@@ -355,6 +410,48 @@ def test_find_first_rng_head_shortfall_detects_pre_focus_gap() -> None:
     assert int(shortfall["missing_draws"]) == 1
 
 
+def test_find_first_rng_head_shortfall_detects_stream_value_mismatch() -> None:
+    report = _load_report_module()
+    start = 0x21436587
+    values = _crt_rand_values(start, 3)
+    after_three = _step_crt_state(start, 3)
+
+    expected_ckpt = _checkpoint(
+        tick=8,
+        rng_marks={"rand_calls": 3},
+    )
+    actual_ckpt = _checkpoint(
+        tick=8,
+        rng_marks={
+            "before_world_step": start,
+            "after_world_step": after_three,
+            "after_wave_spawns": after_three,
+        },
+    )
+
+    shortfall = report._find_first_rng_head_shortfall(
+        expected_by_tick={8: expected_ckpt},
+        actual_by_tick={8: actual_ckpt},
+        raw_debug_by_tick={
+            8: {
+                "rng_head_len": 3,
+                "rng_rand_calls": 3,
+                "rng_head_values": [values[0] ^ 1, values[1], values[2]],
+                "rng_callers": [{"caller_static": "0x00420fd7", "calls": 3}],
+            }
+        },
+        start_tick=0,
+        end_tick=16,
+    )
+
+    assert shortfall is not None
+    assert int(shortfall["tick"]) == 8
+    assert int(shortfall["stream_first_mismatch_idx"]) == 0
+    assert int(shortfall["stream_first_mismatch_capture"]) != int(shortfall["stream_first_mismatch_actual"])
+    assert int(shortfall["stream_missing_tail"]) == 0
+    assert int(shortfall["missing_draws"]) == 0
+
+
 def test_investigation_leads_include_rng_head_shortfall() -> None:
     report = _load_report_module()
     start = 0x55667788
@@ -420,6 +517,77 @@ def test_investigation_leads_include_rng_head_shortfall() -> None:
     )
 
     lead = next((item for item in leads if item.title == "Pre-focus RNG-head shortfall indicates missing RNG-consuming branch"), None)
+    assert lead is not None
+    assert "projectile_update" in lead.native_functions
+
+
+def test_investigation_leads_include_rng_stream_mismatch() -> None:
+    report = _load_report_module()
+    start = 0x55667788
+    values = _crt_rand_values(start, 3)
+    after_three = _step_crt_state(start, 3)
+
+    expected_shortfall = _checkpoint(
+        tick=7,
+        rng_marks={"rand_calls": 3},
+    )
+    actual_shortfall = _checkpoint(
+        tick=7,
+        rng_marks={
+            "before_world_step": start,
+            "after_world_step": after_three,
+            "after_wave_spawns": after_three,
+        },
+    )
+
+    expected_focus = _checkpoint(
+        tick=10,
+        rng_marks={"rand_calls": 0},
+    )
+    actual_focus = _checkpoint(
+        tick=10,
+        rng_marks={
+            "before_world_step": after_three,
+            "after_world_step": after_three,
+            "after_wave_spawns": after_three,
+        },
+    )
+
+    divergence = report.Divergence(
+        tick_index=10,
+        kind="state_mismatch",
+        field_diffs=tuple(),
+        expected=expected_focus,
+        actual=actual_focus,
+    )
+
+    leads = report._build_investigation_leads(
+        divergence=divergence,
+        focus_tick=10,
+        lookback_ticks=8,
+        float_abs_tol=1e-3,
+        expected_by_tick={7: expected_shortfall, 10: expected_focus},
+        actual_by_tick={7: actual_shortfall, 10: actual_focus},
+        raw_debug_by_tick={
+            7: {
+                "rng_head_len": 3,
+                "rng_head_values": [values[0], values[1] ^ 1, values[2]],
+                "rng_rand_calls": 3,
+                "rng_callers": [{"caller_static": "0x00420fd7", "calls": 3}],
+                "sample_counts": {"creatures": 1, "projectiles": 1, "secondary_projectiles": 0, "bonuses": 0},
+            },
+            10: {
+                "rng_head_len": 0,
+                "rng_rand_calls": 0,
+                "sample_counts": {"creatures": 1, "projectiles": 1, "secondary_projectiles": 0, "bonuses": 0},
+            },
+        },
+        native_ranges=(
+            report.NativeFunctionRange(name="projectile_update", start=0x00420B90, end=0x00422C70),
+        ),
+    )
+
+    lead = next((item for item in leads if item.title == "Pre-focus RNG stream mismatch indicates branch divergence"), None)
     assert lead is not None
     assert "projectile_update" in lead.native_functions
 
