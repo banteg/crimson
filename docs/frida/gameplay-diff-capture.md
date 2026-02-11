@@ -23,6 +23,12 @@ Attach:
 frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
 ```
 
+Optional sidecar for unattended recordings:
+
+```text
+frida -n crimsonland.exe -l C:\share\frida\survival_autoplay.js
+```
+
 Just shortcut (Windows VM):
 
 ```text
