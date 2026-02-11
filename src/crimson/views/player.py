@@ -12,13 +12,13 @@ from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..bonuses import BonusId
+from ..bonuses.apply import bonus_apply
+from ..bonuses.hud import bonus_hud_update
 from ..creatures.spawn import CreatureFlags
 from ..gameplay import (
     GameplayState,
     PlayerInput,
     PlayerState,
-    bonus_apply,
-    bonus_hud_update,
     player_update,
     weapon_assign_player,
 )

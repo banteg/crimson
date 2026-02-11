@@ -6,9 +6,9 @@ from collections.abc import Callable
 
 from grim.color import RGBA
 
-from ...bonuses import BonusId
-from ...gameplay import BonusPickupEvent, GameplayState
+from ..sim.state_types import BonusPickupEvent, GameplayState
 from .freeze import apply_freeze_pickup_fx
+from .ids import BonusId
 from .reflex_boost import apply_reflex_boost_pickup_fx
 
 BonusPickupFxHook = Callable[[GameplayState, BonusPickupEvent, int], None]
@@ -49,4 +49,3 @@ def emit_bonus_pickup_effects(*, state: GameplayState, pickups: list[BonusPickup
         hook = _BONUS_PICKUP_HOOKS.get(int(pickup.bonus_id))
         if hook is not None:
             hook(state, pickup, int(detail_preset))
-

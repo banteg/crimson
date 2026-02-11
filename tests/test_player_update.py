@@ -6,18 +6,10 @@ from dataclasses import dataclass
 import math
 
 from grim.rand import Crand
-from crimson.gameplay import (
-    BonusId,
-    GameplayState,
-    PlayerInput,
-    PlayerState,
-    bonus_apply,
-    bonus_hud_update,
-    player_fire_weapon,
-    player_update,
-    perks_update_effects,
-    weapon_assign_player,
-)
+from crimson.bonuses import BonusId
+from crimson.bonuses.apply import bonus_apply
+from crimson.bonuses.hud import bonus_hud_update
+from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_fire_weapon, player_update, perks_update_effects, weapon_assign_player
 from crimson.perks import PerkId
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
 from crimson.weapons import WeaponId

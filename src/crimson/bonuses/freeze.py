@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from grim.color import RGBA
 
-from ...gameplay import BonusPickupEvent, GameplayState
+from ..sim.state_types import BonusPickupEvent, GameplayState
 
 
 def freeze_bonus_active(*, state: GameplayState) -> bool:
@@ -19,4 +19,3 @@ def apply_freeze_pickup_fx(*, state: GameplayState, pickup: BonusPickupEvent, de
         detail_preset=int(detail_preset),
         color=RGBA(0.3, 0.5, 0.8, 1.0),
     )
-

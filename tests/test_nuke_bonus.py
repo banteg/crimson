@@ -5,8 +5,9 @@ from grim.geom import Vec2
 import math
 
 from crimson.bonuses import BonusId
+from crimson.bonuses.apply import bonus_apply
 from crimson.creatures.runtime import CreaturePool
-from crimson.gameplay import GameplayState, PlayerState, bonus_apply
+from crimson.gameplay import GameplayState, PlayerState
 from crimson.projectiles import ProjectileTypeId
 
 

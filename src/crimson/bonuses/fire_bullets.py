@@ -6,8 +6,8 @@ from typing import Callable
 
 from grim.geom import Vec2
 
-from ...effects import FxQueue
-from ...projectiles import ProjectileHit
+from ..effects import FxQueue
+from ..projectiles import ProjectileHit
 
 
 def queue_large_hit_decal_streak(

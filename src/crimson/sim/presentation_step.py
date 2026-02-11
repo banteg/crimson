@@ -6,10 +6,10 @@ from typing import Callable, Sequence
 
 from grim.geom import Vec2
 
+from ..bonuses.freeze import freeze_bonus_active
 from ..creatures.runtime import CreatureDeath
 from ..creatures.spawn import CreatureTypeId
 from ..effects import FxQueue
-from ..features.bonuses.freeze import freeze_bonus_active
 from ..features.presentation import ProjectileDecalCtx, run_projectile_decal_hooks
 from ..game_modes import GameMode
 from ..gameplay import perk_active
