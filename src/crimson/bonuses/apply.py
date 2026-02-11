@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Sequence
 
 from ..perks import PerkId
+from ..perks.helpers import perk_count_get
 from ..projectiles import CreatureDamageApplier, Damageable
 from ..sim.state_types import GameplayState, PlayerState
 from .apply_context import BonusApplyCtx, BonusApplyHandler, HasPos
@@ -55,8 +56,6 @@ def bonus_apply(
     defer_freeze_corpse_fx: bool = False,
 ) -> None:
     """Apply a bonus to player + global timers (subset of `bonus_apply`)."""
-
-    from ..gameplay import perk_count_get
 
     meta = BONUS_BY_ID.get(int(bonus_id))
     if meta is None:

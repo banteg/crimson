@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from ..gameplay import PlayerState, perk_active
+from ..sim.state_types import PlayerState
+from .helpers import perk_active
 from .ids import PerkId
 
 

@@ -6,9 +6,11 @@ import pytest
 from pathlib import Path
 
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState, PlayerState, perk_generate_choices, perks_rebuild_available
+from crimson.gameplay import GameplayState, PlayerState
 from crimson.persistence import save_status
 from crimson.perks import PerkId
+from crimson.perks.availability import perks_rebuild_available
+from crimson.perks.selection import PERK_ID_MAX, perk_generate_choices
 
 
 class _SeqRng:
@@ -126,7 +128,7 @@ def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -
 
 
 def test_perk_generate_choices_caches_offerability_checks(monkeypatch: pytest.MonkeyPatch) -> None:
-    import crimson.gameplay as gameplay_mod
+    import crimson.perks.selection as selection_mod
 
     status = _status_default()
     status.quest_unlock_index = 40
@@ -140,7 +142,7 @@ def test_perk_generate_choices_caches_offerability_checks(monkeypatch: pytest.Mo
     for idx in range(len(player.perk_counts)):
         player.perk_counts[idx] = 1
 
-    original = gameplay_mod.perk_can_offer
+    original = selection_mod.perk_can_offer
     calls = 0
 
     def _counting_perk_can_offer(*args, **kwargs):  # type: ignore[no-untyped-def]
@@ -148,8 +150,8 @@ def test_perk_generate_choices_caches_offerability_checks(monkeypatch: pytest.Mo
         calls += 1
         return original(*args, **kwargs)
 
-    monkeypatch.setattr(gameplay_mod, "perk_can_offer", _counting_perk_can_offer)
-    choices = gameplay_mod.perk_generate_choices(state, player, game_mode=int(GameMode.QUESTS), player_count=1, count=7)
+    monkeypatch.setattr(selection_mod, "perk_can_offer", _counting_perk_can_offer)
+    choices = selection_mod.perk_generate_choices(state, player, game_mode=int(GameMode.QUESTS), player_count=1, count=7)
     assert choices == [
         PerkId.INSTANT_WINNER,
         PerkId.RANDOM_WEAPON,
@@ -159,4 +161,4 @@ def test_perk_generate_choices_caches_offerability_checks(monkeypatch: pytest.Mo
         PerkId.INSTANT_WINNER,
         PerkId.INSTANT_WINNER,
     ]
-    assert calls <= gameplay_mod.PERK_ID_MAX
+    assert calls <= PERK_ID_MAX

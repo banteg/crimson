@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import random
+from typing import cast
 
 import pyray as rl
 
@@ -18,6 +19,7 @@ from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..gameplay import most_used_weapon_id_for_player, weapon_assign_player
 from ..input_codes import config_keybinds_for_player, input_code_is_down_for_player, input_code_is_pressed_for_player
+from ..perks.state import CreatureForPerks
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table, tick_quest_completion_transition
@@ -245,7 +247,7 @@ class QuestMode(BaseGameplayMode):
             state=self._state,
             perk_state=self._state.perk_selection,
             players=players,
-            creatures=self._creatures.entries,
+            creatures=cast("list[CreatureForPerks]", self._creatures.entries),
             player=self._player,
             game_mode=int(GameMode.QUESTS),
             player_count=len(players),

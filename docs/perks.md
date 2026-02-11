@@ -53,7 +53,7 @@ Notes:
 
 - XP multiplier on kill: `src/crimson/creatures/runtime.py`: `CreaturePool._start_death()`.
 - Extra hit decals/blood: `src/crimson/game_world.py`: `GameWorld._queue_projectile_decals()`.
-- Name/description toggle: `src/crimson/perks.py`: `perk_display_name()` / `perk_display_description()`.
+- Name/description toggle: `src/crimson/perks/ids.py`: `perk_display_name()` / `perk_display_description()`.
 
 ## 2 — Sharpshooter (`PerkId.SHARPSHOOTER`)
 

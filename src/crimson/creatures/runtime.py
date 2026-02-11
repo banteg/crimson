@@ -18,7 +18,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand
 from ..effects import FxQueue, FxQueueRotated
-from ..gameplay import GameplayState, PlayerState, award_experience, perk_active
+from ..gameplay import award_experience
 from ..math_parity import (
     NATIVE_PI,
     NATIVE_TAU,
@@ -29,8 +29,10 @@ from ..math_parity import (
     heading_to_direction_f32,
 )
 from ..perks import PerkId
+from ..perks.helpers import perk_active
 from ..player_damage import player_take_damage
 from ..projectiles import ProjectileTypeId
+from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import weapon_entry_for_projectile_type_id
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .spawn import (

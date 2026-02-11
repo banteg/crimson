@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Sequence
 
 from ..math_parity import f32
+from ..perks.helpers import perk_active
 from ..projectiles import CreatureDamageApplier, Damageable
 from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
 from .apply import bonus_apply
@@ -22,7 +23,6 @@ def bonus_telekinetic_update(
     defer_freeze_corpse_fx: bool = False,
 ) -> list[BonusPickupEvent]:
     """Allow Telekinetic perk owners to pick up bonuses by aiming at them."""
-    from ..gameplay import perk_active
     from ..perks import PerkId
 
     if dt <= 0.0:

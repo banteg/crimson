@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import cast
 
 from grim.geom import Vec2
 
@@ -16,11 +17,12 @@ from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
 from ..gameplay import (
     build_gameplay_state,
-    perks_update_effects,
     player_update,
     survival_progression_update,
 )
+from ..perks.effects import perks_update_effects
 from ..perks.registry import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
+from ..perks.state import CreatureForPerks
 from ..player_damage import player_take_projectile_damage
 from ..projectiles import ProjectileHit
 from .input import PlayerInput
@@ -364,7 +366,7 @@ class WorldState:
                 game_mode=game_mode,
                 auto_pick=auto_pick_perks,
                 dt=dt,
-                creatures=self.creatures.entries,
+                creatures=cast("list[CreatureForPerks]", self.creatures.entries),
             )
         _mark("ws_after_progression")
         # Native latches `time_scale_active` late (post mode update, pre bonus decrement); next-frame dt uses it.

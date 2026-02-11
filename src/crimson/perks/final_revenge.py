@@ -5,7 +5,8 @@ from grim.geom import Vec2
 from ..creatures.damage import creature_apply_damage
 from ..creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureDeath, CreaturePool
 from ..effects import FxQueue
-from ..gameplay import GameplayState, PlayerState, perk_active
+from ..sim.state_types import GameplayState, PlayerState
+from .helpers import perk_active
 from .ids import PerkId
 
 

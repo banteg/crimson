@@ -4,8 +4,10 @@ from grim.geom import Vec2
 
 import pytest
 
-from crimson.gameplay import GameplayState, PlayerState, perk_apply, perks_update_effects
+from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
+from crimson.perks.apply import perk_apply
+from crimson.perks.effects import perks_update_effects
 from crimson.player_damage import player_take_damage
 
 

@@ -4,8 +4,9 @@ from grim.geom import Vec2
 
 import pytest
 
-from crimson.gameplay import GameplayState, PlayerState, perk_apply
+from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
+from crimson.perks.apply import perk_apply
 from crimson.projectiles import ProjectileTypeId
 from crimson.weapons import WEAPON_BY_ID
 

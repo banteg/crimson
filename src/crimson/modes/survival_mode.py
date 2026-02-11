@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import datetime as dt
 import hashlib
 import random
+from typing import cast
 
 import pyray as rl
 
@@ -22,6 +23,7 @@ from ..gameplay import (
     survival_check_level_up,
     weapon_assign_player,
 )
+from ..perks.state import CreatureForPerks
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..input_codes import (
@@ -222,7 +224,7 @@ class SurvivalMode(BaseGameplayMode):
             state=self._state,
             perk_state=self._state.perk_selection,
             players=players,
-            creatures=self._creatures.entries,
+            creatures=cast("list[CreatureForPerks]", self._creatures.entries),
             player=self._player,
             game_mode=int(GameMode.SURVIVAL),
             player_count=len(players),

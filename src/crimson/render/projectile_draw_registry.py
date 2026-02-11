@@ -12,8 +12,8 @@ from grim.geom import Vec2
 from grim.math import clamp
 
 from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRID
-from ..gameplay import perk_active
 from ..perks import PerkId
+from ..perks.helpers import perk_active
 from ..projectiles import ProjectileTypeId
 from ..sim.world_defs import BEAM_TYPES, ION_TYPES, KNOWN_PROJ_FRAMES, PLASMA_PARTICLE_TYPES
 from .projectile_render_registry import beam_effect_scale, plasma_projectile_render_config

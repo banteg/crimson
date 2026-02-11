@@ -18,8 +18,8 @@ from ..bonuses.pool import bonus_find_aim_hover_entry, bonus_label_for_entry
 from ..creatures.anim import creature_anim_select_frame
 from ..creatures.spawn import CreatureFlags, CreatureTypeId
 from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRID
-from ..gameplay import perk_active
 from ..perks import PerkId
+from ..perks.helpers import perk_active
 from ..projectiles import ProjectileTypeId
 from ..sim.world_defs import (
     CREATURE_ANIM,

@@ -12,8 +12,8 @@ from ..creatures.spawn import CreatureTypeId
 from ..effects import FxQueue
 from ..features.presentation import ProjectileDecalCtx, run_projectile_decal_hooks
 from ..game_modes import GameMode
-from ..gameplay import perk_active
 from ..perks import PerkId
+from ..perks.helpers import perk_active
 from ..projectiles import ProjectileHit
 from ..weapon_sfx import resolve_weapon_sfx_ref
 from ..weapons import WEAPON_BY_ID, WeaponId

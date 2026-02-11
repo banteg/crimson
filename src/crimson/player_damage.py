@@ -8,8 +8,9 @@ See: `docs/crimsonland-exe/player-damage.md`.
 
 from typing import Callable
 
-from .gameplay import GameplayState, PlayerState, perk_active
 from .perks import PerkId
+from .perks.helpers import perk_active
+from .sim.state_types import GameplayState, PlayerState
 
 __all__ = ["player_take_damage", "player_take_projectile_damage"]
 _PLAYER_PAIN_SFX: tuple[str, ...] = (

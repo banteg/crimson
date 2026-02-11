@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 
-from crimson.gameplay import perk_choice_count
 from crimson.gameplay import PlayerState
 from crimson.perks import PerkId
+from crimson.perks.selection import perk_choice_count
 
 
 def test_perk_expert_adds_one_choice() -> None:

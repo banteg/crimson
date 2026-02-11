@@ -944,7 +944,8 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         return track_x, track_y, track_h, thumb_top, thumb_h, scroll_span
 
     def _build_perk_database_ids(self) -> list[int]:
-        from ...gameplay import PERK_COUNT_SIZE, perks_rebuild_available
+        from ...perks.availability import perks_rebuild_available
+        from ...sim.state_types import PERK_COUNT_SIZE
 
         # Avoid spinning up a full GameplayState; perks_rebuild_available only needs these fields.
         class _Stub:
@@ -956,7 +957,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         stub.status = self._state.status
         stub.perk_available = [False] * int(PERK_COUNT_SIZE)
         stub._perk_available_unlock_index = -1
-        perks_rebuild_available(stub)  # type: ignore[arg-type]
+        perks_rebuild_available(stub)
 
         perk_ids = [idx for idx, available in enumerate(stub.perk_available) if available and idx > 0]
         perk_ids.sort()

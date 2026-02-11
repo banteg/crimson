@@ -9,8 +9,9 @@ from grim.rand import Crand
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.bonuses.hud import bonus_hud_update
-from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_fire_weapon, player_update, perks_update_effects, weapon_assign_player
+from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_fire_weapon, player_update, weapon_assign_player
 from crimson.perks import PerkId
+from crimson.perks.effects import perks_update_effects
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
 from crimson.weapons import WeaponId
 

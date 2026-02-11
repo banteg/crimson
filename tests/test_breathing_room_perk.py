@@ -5,8 +5,9 @@ from grim.geom import Vec2
 import math
 
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureState
-from crimson.gameplay import GameplayState, PlayerState, perk_apply
+from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
+from crimson.perks.apply import perk_apply
 
 
 def test_perk_apply_breathing_room_reduces_health_and_starts_creature_death_staging() -> None:
@@ -33,4 +34,3 @@ def test_perk_apply_breathing_room_reduces_health_and_starts_creature_death_stag
     assert math.isclose(creatures[2].hitbox_size, -5.0 - dt, abs_tol=1e-9)
     assert state.bonus_spawn_guard is False
     assert player.perk_counts[int(PerkId.BREATHING_ROOM)] == 1
-
