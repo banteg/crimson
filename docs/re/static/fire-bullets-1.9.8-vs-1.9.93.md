@@ -37,99 +37,113 @@ Cross-check against the rewrite (`src/crimson/gameplay.py`) for parity.
 - **1.9.8**: weapon-path dependent.
 - **1.9.93**: dedicated paired Fire Bullets SFX.
 
-## Fire bullets output by weapon class
+## DPS comparison by weapon class
 
-Each `0x2d` projectile has identical damage characteristics (projectile_meta=60, damage_scale=0.25), so fire bullets per second (fb/s) is directly proportional to perk DPS. In 1.9.8, the base weapon also fires alongside fire bullets; in 1.9.93, only fire bullets are emitted.
+### Damage formula
+
+Point-blank single-target DPS, using the standard projectile hit formula at minimum travel distance (dist=50):
+
+```
+hit_damage(scale) = ((100 / 50) * scale * 30 + 10) * 0.95 = (60 * scale + 10) * 0.95
+```
+
+- Fire bullet (`0x2d`, scale=0.25): **23.75** damage per hit
+- 1.9.8 DPS = weapon_rate * (base_hit_damage + fb_hit_damage), since each `projectile_spawn` triggers both the base shot and a recursive fire bullet
+- 1.9.93 DPS = fb_rate * fb_hit_damage, since the base weapon is fully replaced
+
+Fire bullets also have damage_pool=240 (pierce ~240 enemies vs pool=1 for most projectiles), so crowd DPS is substantially higher than single-target. Not included here.
+
+All values listed as **1.9.8 -> 1.9.93**. 1.9.93 single-pellet DPS is always **170** (= 7.1 fb/s * 23.75).
 
 ### Particle and secondary-path weapons
 
-These weapons bypass `projectile_spawn` entirely (particle pools, secondary projectile pools). In 1.9.8, the Fire Bullets hook never triggers. In 1.9.93, the dedicated branch emits fire bullets regardless.
+These weapons bypass `projectile_spawn` entirely (particle pools, secondary projectile pools). In 1.9.8, the Fire Bullets hook never triggers. In 1.9.93, the dedicated branch emits fire bullets regardless. Base weapon damage goes through separate particle/secondary systems and is not included.
 
-- 1.9.8: **0 fb/s** (perk has no effect)
-- 1.9.93: **7.1 fb/s** (fallback cadence, infinite ammo)
+- 1.9.8: **0 fb/s**, **0** fb dps (perk has no effect)
+- 1.9.93: **7.1 fb/s**, **170** dps (fallback cadence, infinite ammo)
 - Flamethrower (8), Rocket Launcher (12), Seeker Rockets (13), Blow Torch (15), Mini-Rocket Swarmers (17), Rocket Minigun (18)
 
 ### Single-pellet weapons slowed by fallback cadence
 
-Native cooldown < 0.14s. The 1.9.93 fallback cadence is slower than their natural fire rate, reducing fire bullets output. In 1.9.8, the base weapon also continues firing on top.
+Native cooldown < 0.14s. The 1.9.93 fallback cadence is slower than their natural fire rate. In 1.9.8, the base weapon also fires on top, making it strictly better.
 
-- Submachine Gun (0.088s): **11.4 -> 7.1** fb/s
-- Mean Minigun (0.09s): **11.1 -> 7.1** fb/s
-- Pulse Gun (0.1s): **10.0 -> 7.1** fb/s
-- Ion Minigun (0.1s): **10.0 -> 7.1** fb/s
-- Plasma Minigun (0.11s): **9.1 -> 7.1** fb/s
-- Assault Rifle (0.117s): **8.5 -> 7.1** fb/s
-
-1.9.8 is strictly better for these weapons: more fire bullets per second AND the base weapon still fires.
+- Mean Minigun (0.09s, scale 4.1): 11.1 -> 7.1 fb/s, **2967 -> 170** dps
+- Plasma Minigun (0.11s, scale 2.1): 9.1 -> 7.1 fb/s, **1391 -> 170** dps
+- Ion Minigun (0.1s, scale 1.4): 10.0 -> 7.1 fb/s, **1131 -> 170** dps
+- Submachine Gun (0.088s, scale 1.0): 11.4 -> 7.1 fb/s, **1025 -> 170** dps
+- Pulse Gun (0.1s, scale 1.0): 10.0 -> 7.1 fb/s, **903 -> 170** dps
+- Assault Rifle (0.117s, scale 1.0): 8.5 -> 7.1 fb/s, **772 -> 170** dps
 
 ### Single-pellet weapons boosted by fallback cadence
 
-Native cooldown > 0.14s. The 1.9.93 fallback cadence fires faster than the weapon natively would. Base weapon output is lost but fire rate increases.
+Native cooldown > 0.14s. The 1.9.93 fallback cadence fires faster than the weapon natively would. Base weapon output is lost but fire rate increases. Whether total DPS improves depends on the base weapon's damage_scale.
 
-- Shrinkifier 5k (0.21s): **4.8 -> 7.1** fb/s
-- Plasma Rifle (0.29s): **3.4 -> 7.1** fb/s
-- Blade Gun (0.35s): **2.9 -> 7.1** fb/s
-- Ion Rifle (0.4s): **2.5 -> 7.1** fb/s
-- Gauss Gun (0.6s): **1.7 -> 7.1** fb/s
-- Splitter Gun (0.7s): **1.4 -> 7.1** fb/s
-- Pistol (0.71s): **1.4 -> 7.1** fb/s
-- Plasma Cannon (0.9s): **1.1 -> 7.1** fb/s
-- Ion Cannon (1.0s): **1.0 -> 7.1** fb/s
+- Blade Gun (0.35s, scale 11.0): 2.9 -> 7.1 fb/s, **1888 -> 170** dps
+- Plasma Rifle (0.29s, scale 5.0): 3.4 -> 7.1 fb/s, **1098 -> 170** dps
+- Plasma Cannon (0.9s, scale 28.0): 1.1 -> 7.1 fb/s, **1809 -> 170** dps
+- Ion Cannon (1.0s, scale 16.7): 1.0 -> 7.1 fb/s, **985 -> 170** dps
+- Splitter Gun (0.7s, scale 6.0): 1.4 -> 7.1 fb/s, **537 -> 170** dps
+- Ion Rifle (0.4s, scale 3.0): 2.5 -> 7.1 fb/s, **511 -> 170** dps
+- Pistol (0.71s, scale 4.1): 1.4 -> 7.1 fb/s, **376 -> 170** dps
+- Shrinkifier 5k (0.21s, scale 0.0): 4.8 -> 7.1 fb/s, **158 -> 170** dps
+- Gauss Gun (0.6s, scale 1.0): 1.7 -> 7.1 fb/s, **151 -> 170** dps
+
+Only Shrinkifier 5k (zero base damage) and Gauss Gun (slow + low scale) come out ahead in 1.9.93.
 
 ### Multi-pellet weapons (count matches base spawns)
 
-Both versions produce the same number of fire bullets per trigger. The weapon's own cadence is used since `pellet_count > 1`.
+Both versions produce the same number of fire bullets per trigger. The weapon's own cadence is used since `pellet_count > 1`. In 1.9.8, each pellet also produces the base weapon's projectile.
 
-- Shotgun (12 pellets, 0.85s): **14.1 fb/s** in both
-- Sawed-off Shotgun (12 pellets, 0.87s): **13.8 fb/s** in both
-- Plasma Shotgun (14 pellets, 0.48s): **29.2 fb/s** in both
-- Jackhammer (4 pellets, 0.14s): **28.6 fb/s** in both
-- Ion Shotgun (8 pellets, 0.85s): **9.4 fb/s** in both
-
-Same fire bullets rate, but 1.9.8 additionally keeps the base weapon's projectiles.
+- Plasma Shotgun (14 pellets, 0.48s, scale 2.1): 29.2 fb/s, **4462 -> 693** dps
+- Jackhammer (4 pellets, 0.14s, scale 1.2): 28.6 fb/s, **2904 -> 679** dps
+- Shotgun (12 pellets, 0.85s, scale 1.2): 14.1 fb/s, **1435 -> 335** dps
+- Sawed-off Shotgun (12 pellets, 0.87s, scale 1.2): 13.8 fb/s, **1402 -> 328** dps
+- Ion Shotgun (8 pellets, 0.85s, scale 1.4): 9.4 fb/s, **1064 -> 224** dps
 
 ### Multi-pellet count mismatches
 
-These weapons have `pellet_count` that differs from the number of `projectile_spawn` calls in their base fire path. In 1.9.8, fire bullet count equals base spawn count; in 1.9.93, it equals `pellet_count`.
+In 1.9.8, fire bullet count equals base spawn count; in 1.9.93, it equals `pellet_count`.
 
-- **Multi-Plasma** (5 base spawns, pellet_count=3, 0.62s): **8.1 -> 4.8** fb/s. The 5-shot plasma spread triggers 5 extra fire bullets in 1.9.8; only 3 in 1.9.93. Also loses the plasma projectiles.
-- **Gauss Shotgun** (6 base spawns, pellet_count=1, 1.05s): **5.7 -> 7.1** fb/s. The 6-shot gauss spread triggers 6 extra fire bullets in 1.9.8; in 1.9.93, pellet_count=1 activates the fallback cadence path. Faster cadence but single-pellet output, and loses the gauss spread.
+- **Multi-Plasma** (5 base spawns, pellet_count=3, 0.62s): 8.1 -> 4.8 fb/s, **2033 -> 115** dps. The 5-shot spread uses types 0x09 (scale 5.0) and 0x0B (scale 2.1). In 1.9.8, base spread + 5 fire bullets; in 1.9.93, only 3 fire bullets.
+- **Gauss Shotgun** (6 base spawns, pellet_count=1, 1.05s): 5.7 -> 7.1 fb/s, **516 -> 170** dps. In 1.9.8, 6 gauss shots (scale 1.0) + 6 fire bullets. In 1.9.93, pellet_count=1 triggers the fallback cadence path.
 
 ## Weapons not in quest progression
 
 These weapons are absent from `quest_database_init` and don't appear through standard quest unlocks. They have functional weapon table entries and fire paths but are likely secret, debug, or unfinished content. See `docs/secrets/weapon-candidates.md` for details.
 
-The same behavior classes apply. Rates listed as 1.9.8 -> 1.9.93.
+The same behavior classes apply. Values listed as **1.9.8 -> 1.9.93**.
 
 ### Particle / secondary path
 
-- 1.9.8: **0 fb/s**, 1.9.93: **7.1 fb/s**
+- 1.9.8: **0 fb/s**, **0** fb dps. 1.9.93: **7.1 fb/s**, **170** dps
 - HR Flamer (16), Bubblegun (42)
 
 ### Single-pellet, slowed
 
-- Flameburst (0.02s): **50.0 -> 7.1** fb/s
-- Transmutator (0.04s): **25.0 -> 7.1** fb/s
-- Blaster R-300 (0.08s): **12.5 -> 7.1** fb/s
+- Flameburst (0.02s, scale 1.0): 50.0 -> 7.1 fb/s, **4513 -> 170** dps
+- Transmutator (0.04s, scale 1.0): 25.0 -> 7.1 fb/s, **2256 -> 170** dps
+- Blaster R-300 (0.08s, scale 1.0): 12.5 -> 7.1 fb/s, **1128 -> 170** dps
 
 ### Single-pellet, boosted
 
-- Spider Plasma (0.2s): **5.0 -> 7.1** fb/s
-- Plague Sphreader (0.2s): **5.0 -> 7.1** fb/s
-- Rainbow Gun (0.2s): **5.0 -> 7.1** fb/s
-- Grim Weapon (0.5s): **2.0 -> 7.1** fb/s
-- RayGun (0.7s): **1.4 -> 7.1** fb/s
-- Evil Scythe (1.0s): **1.0 -> 7.1** fb/s
-- Lighting Rifle (4.0s): **0.25 -> 7.1** fb/s
-- Nuke Launcher (4.0s): **0.25 -> 7.1** fb/s
+- Rainbow Gun (0.2s, scale 1.0): 5.0 -> 7.1 fb/s, **451 -> 170** dps
+- Spider Plasma (0.2s, scale 0.5): 5.0 -> 7.1 fb/s, **309 -> 170** dps
+- Grim Weapon (0.5s, scale 1.0): 2.0 -> 7.1 fb/s, **181 -> 170** dps
+- Plague Sphreader (0.2s, scale 0.0): 5.0 -> 7.1 fb/s, **166 -> 170** dps
+- RayGun (0.7s, scale 1.0): 1.4 -> 7.1 fb/s, **129 -> 170** dps
+- Evil Scythe (1.0s, scale 1.0): 1.0 -> 7.1 fb/s, **90 -> 170** dps
+- Lighting Rifle (4.0s, scale 1.0): 0.25 -> 7.1 fb/s, **23 -> 170** dps
+- Nuke Launcher (4.0s, scale 1.0): 0.25 -> 7.1 fb/s, **23 -> 170** dps
+
+Several of these actually benefit from 1.9.93: Plague Sphreader (zero base damage), RayGun, Evil Scythe, Lighting Rifle, and Nuke Launcher all have higher total DPS with the replacement model.
 
 ### Fire Bullets weapon (id=45)
 
-When Fire Bullets IS the equipped weapon (shot_cooldown=0.14s, pellet_count=1):
+When Fire Bullets IS the equipped weapon (shot_cooldown=0.14s, pellet_count=1, scale=0.25):
 
 - 1.9.8: recursion guard (`arg3 == 0x2d`) prevents self-duplication. Normal output.
 - 1.9.93: dedicated branch emits 1x `0x2d` at fallback cadence. No behavioral difference.
-- **7.1 fb/s** in both.
+- **7.1 fb/s**, **170 dps** in both.
 
 ## Rewrite parity
 
@@ -153,3 +167,4 @@ The Python gameplay matches the 1.9.93 model (replacement + dedicated fire branc
 - Dedicated fire branch in `player_update`: `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:20782`, `20797`, `20803`, `20812`, `20838`
 - Fallback constants in `weapon_table_init`: `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:67796`, `67798`
 - Pellet count field: `docs/weapon-table.md:102`
+- Projectile hit damage formula: `src/crimson/projectiles.py:1183`, `1199`
