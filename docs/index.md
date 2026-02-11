@@ -25,8 +25,9 @@ uvx crimsonland@latest
   rules, and original bug notes verified against two builds of the binary.
 
 - [Fire Bullets (1.9.8 vs 1.9.93)](re/static/fire-bullets-1.9.8-vs-1.9.93.md):
-  static-analysis comparison of additive vs replacement behavior, including
-  weapon-class DPS impact.
+  how fire bullets changed from an additive bonus (1.9.8) to a full weapon
+  replacement (1.9.93), with per-weapon DPS showing most weapons lost 80-95%
+  of their output.
 
 ## Sections
 
