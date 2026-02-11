@@ -125,6 +125,45 @@ def _norm_radius(value: float, *, default: float = 4.0) -> float:
     return max(1.0, radius)
 
 
+def _secondary_samples_use_world_space(rows: list[CaptureTick], *, world_size: float) -> bool:
+    min_x = float("inf")
+    max_x = float("-inf")
+    min_y = float("inf")
+    max_y = float("-inf")
+    active_count = 0
+    for row in rows:
+        samples = row.samples
+        if samples is None:
+            continue
+        for sample in samples.secondary_projectiles:
+            if int(sample.active) == 0:
+                continue
+            x = float(sample.pos.x)
+            y = float(sample.pos.y)
+            if not math.isfinite(x) or not math.isfinite(y):
+                continue
+            active_count += 1
+            min_x = min(float(min_x), float(x))
+            max_x = max(float(max_x), float(x))
+            min_y = min(float(min_y), float(y))
+            max_y = max(float(max_y), float(y))
+
+    # Small windows may only cover local areas; avoid over-filtering sparse traces.
+    if active_count < 128:
+        return True
+
+    scale = max(1.0, float(abs(world_size)))
+    span_x = float(max_x) - float(min_x)
+    span_y = float(max_y) - float(min_y)
+    near_origin = (
+        max(abs(float(min_x)), abs(float(max_x)), abs(float(min_y)), abs(float(max_y))) <= float(scale * 0.1)
+    )
+    collapsed_extent = float(span_x) <= float(scale * 0.1) and float(span_y) <= float(scale * 0.1)
+    # Some captures store secondary "position" in local/non-world coordinates.
+    # In that case showing capture-side secondary divergence is misleading.
+    return not (near_origin and collapsed_extent)
+
+
 def _load_capture_events(replay: Replay) -> tuple[dict[int, list[object]], bool]:
     events_by_tick: dict[int, list[object]] = {}
     original_capture_replay = False
@@ -199,6 +238,10 @@ class CaptureVisualizerView:
         self._world_size = float(self._replay.header.world_size)
         if self._world_size <= 0.0 or not math.isfinite(self._world_size):
             self._world_size = 1024.0
+        self._capture_secondary_world_space = _secondary_samples_use_world_space(
+            self._rows,
+            world_size=float(self._world_size),
+        )
         self._tick_rate = max(1, int(self._replay.header.tick_rate))
         self._step_interval = 1.0 / float(self._tick_rate)
         self._playback_speed = max(
@@ -524,13 +567,14 @@ class CaptureVisualizerView:
                     active=bool(int(sample.active) != 0),
                     filled=bool(math.isfinite(hit_radius) and float(hit_radius) < 0.0),
                 )
-            for sample in samples.secondary_projectiles:
-                capture_secondary[int(sample.index)] = _EntityDraw(
-                    x=_finite(sample.pos.x),
-                    y=_finite(sample.pos.y),
-                    radius=3.5,
-                    active=bool(int(sample.active) != 0),
-                )
+            if self._capture_secondary_world_space:
+                for sample in samples.secondary_projectiles:
+                    capture_secondary[int(sample.index)] = _EntityDraw(
+                        x=_finite(sample.pos.x),
+                        y=_finite(sample.pos.y),
+                        radius=3.5,
+                        active=bool(int(sample.active) != 0),
+                    )
             for sample in samples.bonuses:
                 bonus_id = int(sample.bonus_id)
                 state = int(sample.state)
@@ -1182,6 +1226,14 @@ class CaptureVisualizerView:
             color=_TEXT_DIM_COLOR,
             scale=1.0,
         )
+        if not self._capture_secondary_world_space:
+            self._draw_ui_text(
+                "note: capture secondary samples look non-world-space; capture secondary overlay disabled",
+                x=16.0,
+                y=88.0,
+                color=_TEXT_DIM_COLOR,
+                scale=1.0,
+            )
 
         drift_text = (
             f"max drift  players={max_player_drift:.4f}  creatures={max_creature_drift:.4f}  "
