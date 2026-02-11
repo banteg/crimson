@@ -173,6 +173,7 @@ def clear_input_edges(inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
             fire_down=bool(inp.fire_down),
             fire_pressed=False,
             reload_pressed=False,
+            move_to_cursor_pressed=False,
             move_forward_pressed=inp.move_forward_pressed,
             move_backward_pressed=inp.move_backward_pressed,
             turn_left_pressed=inp.turn_left_pressed,
@@ -305,6 +306,7 @@ class LocalInputInterpreter:
         move_backward_pressed: bool | None = None
         turn_left_pressed: bool | None = None
         turn_right_pressed: bool | None = None
+        move_to_cursor_pressed = False
         computer_target_index: int | None = None
         computer_move_active = (
             move_mode_type is MovementControlType.COMPUTER
@@ -370,7 +372,8 @@ class LocalInputInterpreter:
             axis_x = -input_axis_value_for_player(move_axis_x, player_index=idx)
             move_vec = Vec2(_clamp_unit(axis_x), _clamp_unit(axis_y))
         elif move_mode_type is MovementControlType.MOUSE_POINT_CLICK:
-            if input_code_is_down_for_player(reload_key, player_index=idx):
+            move_to_cursor_pressed = bool(input_code_is_down_for_player(reload_key, player_index=idx))
+            if move_to_cursor_pressed:
                 state.move_target = mouse_world
             if float(state.move_target.x) >= 0.0 and float(state.move_target.y) >= 0.0:
                 delta = state.move_target - player.pos
@@ -501,6 +504,7 @@ class LocalInputInterpreter:
             fire_down=fire_down,
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,
+            move_to_cursor_pressed=bool(move_to_cursor_pressed),
             move_forward_pressed=move_forward_pressed,
             move_backward_pressed=move_backward_pressed,
             turn_left_pressed=turn_left_pressed,

@@ -202,6 +202,54 @@ def test_local_input_relative_mode_multiplayer_does_not_use_alt_arrow_fallback(
     assert out.move == Vec2()
 
 
+def test_local_input_mouse_point_click_marks_move_to_cursor_press(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    mouse_world = Vec2(160.0, 140.0)
+    monkeypatch.setattr(
+        local_input,
+        "input_code_is_down_for_player",
+        lambda key, **_kwargs: int(key) == 0x102,
+    )
+    monkeypatch.setattr(
+        local_input,
+        "input_code_is_pressed_for_player",
+        lambda key, **_kwargs: int(key) == 0x102,
+    )
+    monkeypatch.setattr(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
+    monkeypatch.setattr(
+        local_input,
+        "_load_player_bind_block",
+        lambda _config, *, player_index: tuple(range(16)),
+    )
+    monkeypatch.setattr(
+        local_input.LocalInputInterpreter,
+        "_safe_controls_modes",
+        staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.MOUSE_POINT_CLICK)),
+    )
+
+    interpreter = local_input.LocalInputInterpreter()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
+
+    out = interpreter.build_player_input(
+        player_index=0,
+        player=player,
+        config=None,
+        mouse_screen=Vec2(),
+        mouse_world=mouse_world,
+        screen_center=Vec2(),
+        dt_frame=0.1,
+        creatures=[],
+    )
+
+    assert out.reload_pressed is True
+    assert out.move_to_cursor_pressed is True
+    assert interpreter._states[0].move_target == mouse_world
+    expected = (mouse_world - player.pos).normalized()
+    assert float(out.move.x) == pytest.approx(float(expected.x), abs=1e-6)
+    assert float(out.move.y) == pytest.approx(float(expected.y), abs=1e-6)
+
+
 def test_local_input_computer_move_mode_near_center_heads_toward_target(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

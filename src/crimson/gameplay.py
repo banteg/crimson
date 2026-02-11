@@ -1299,7 +1299,7 @@ def player_update(
                 if key is not None:
                     state.sfx_queue.append(key)
             player.shot_cooldown = float(player.shot_cooldown) + 0.1
-        elif player.reload_timer == 0.0:
+        elif player.reload_timer == 0.0 and not input_state.move_to_cursor_pressed:
             player_start_reload(player, state)
 
     player_fire_weapon(
