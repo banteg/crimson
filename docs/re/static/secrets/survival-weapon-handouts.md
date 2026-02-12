@@ -107,5 +107,5 @@ normal unlocks.
   - `creature_handle_death` recent-death tracking around `0x0041e910`
   - reset init around `0x00412d70`
 - `docs/weapon-id-map.md`
-- `docs/secrets/weapon-candidates.md`
+- `docs/re/static/secrets/weapon-candidates.md`
 - `docs/crimsonland-exe/survival.md`

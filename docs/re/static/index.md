@@ -17,4 +17,4 @@ Decompiler- and symbol-driven reference docs.
 - [Structs docs](../../re/structs/index.md)
 - [Crimsonland.exe docs](../../crimsonland-exe/index.md)
 - [Grim2D docs](../../grim2d/index.md)
-- [Secrets](../../secrets/index.md)
+- [Secrets](secrets/index.md)

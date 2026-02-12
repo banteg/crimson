@@ -93,10 +93,10 @@ nav = [
         { "API evidence" = "grim2d/api-evidence.md" },
       ]},
       { "Secrets" = [
-        { "Overview" = "secrets/index.md" },
-        { "Easter eggs" = "secrets/easter-eggs.md" },
-        { "Weapon candidates" = "secrets/weapon-candidates.md" },
-        { "Survival weapon handouts" = "secrets/survival-weapon-handouts.md" },
+        { "Overview" = "re/static/secrets/index.md" },
+        { "Easter eggs" = "re/static/secrets/easter-eggs.md" },
+        { "Weapon candidates" = "re/static/secrets/weapon-candidates.md" },
+        { "Survival weapon handouts" = "re/static/secrets/survival-weapon-handouts.md" },
       ]},
     ]},
     { "Runtime" = [

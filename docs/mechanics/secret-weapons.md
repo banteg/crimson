@@ -17,6 +17,8 @@ Current verified paths are:
 
 In single-player Survival, `survival_update` can assign hidden weapons under
 strict runtime gates. These are runtime grants, not permanent unlocks.
+For decompile-level gate writes and evidence pointers, see
+[Survival weapon handouts (RE/static)](../re/static/secrets/survival-weapon-handouts.md).
 
 ### Shrinkifier 5k (`weapon_id = 24`)
 
@@ -82,5 +84,5 @@ It becomes available once hardcore quest progression reaches
 
 Multiple named weapons exist in the weapon table but are not present in
 `quest_unlock_weapon_id` progression. For these, no verified unlock path is
-currently documented. See `docs/secrets/weapon-candidates.md` for the current
+currently documented. See [weapon candidates](../re/static/secrets/weapon-candidates.md) for the current
 candidate list and evidence notes.
