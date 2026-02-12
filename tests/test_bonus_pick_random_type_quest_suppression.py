@@ -3,8 +3,9 @@ from __future__ import annotations
 from grim.geom import Vec2
 
 from crimson.bonuses import BonusId
+from crimson.bonuses.selection import bonus_pick_random_type
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState, PlayerState, bonus_pick_random_type
+from crimson.gameplay import GameplayState, PlayerState
 
 
 class _SeqRng:

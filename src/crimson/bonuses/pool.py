@@ -12,6 +12,7 @@ from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 from .apply import bonus_apply
 from .ids import BONUS_BY_ID, BonusId, bonus_display_name
+from .selection import bonus_pick_random_type
 
 BONUS_POOL_SIZE = 16
 BONUS_SPAWN_MARGIN = 32.0
@@ -140,7 +141,7 @@ class BonusPool:
         world_width: float = 1024.0,
         world_height: float = 1024.0,
     ) -> BonusEntry:
-        from ..gameplay import bonus_pick_random_type, weapon_pick_random_available
+        from ..gameplay import weapon_pick_random_available
 
         if int(state.game_mode) == int(GameMode.RUSH):
             return self._sentinel
