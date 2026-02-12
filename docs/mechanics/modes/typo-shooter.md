@@ -1,4 +1,5 @@
 ---
+icon: lucide/keyboard
 tags:
   - mechanics
   - modes
