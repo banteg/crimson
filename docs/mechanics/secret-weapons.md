@@ -13,6 +13,9 @@ progression. Three verified paths exist:
 - One persistent progression unlock (Splitter Gun)
 - Two Survival rewards (Shrinkifier 5k, Blade Gun)
 
+Shrinkifier 5k and Blade Gun are temporary, granted under strict conditions
+in single-player Survival and lost at the end of the run.
+
 For decompiler-level details, gate variables, and evidence pointers, see
 [Survival weapon handouts (RE/static)](../re/static/secrets/survival-weapon-handouts.md).
 
@@ -29,12 +32,7 @@ Splitter Gun is a persistent unlock, not a temporary reward. It becomes
 available after beating 4.10 *The End of All* on hardcore. Once unlocked it
 appears in the normal weapon pool.
 
-## Survival rewards
-
-In single-player Survival, the game can grant hidden weapons under strict
-conditions. These are temporary rewards that do not persist across runs.
-
-### Shrinkifier 5k
+## Shrinkifier 5k
 
 Fires blue plasma bolts that shrink the target to 65% of its current size on
 every hit while also applying a normal damage hit. If a creature shrinks below
@@ -47,7 +45,7 @@ and without firing. When the timer check runs, you must still be holding
 the Pistol. If you've picked up another weapon by then, the opportunity
 is silently consumed and won't come back.
 
-### Blade Gun
+## Blade Gun
 
 A piercing weapon with a very high damage scale (11x in weapon data). Each
 shot starts with a pierce pool of 50, but that is not "50 creatures" - the
