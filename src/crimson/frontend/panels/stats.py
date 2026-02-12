@@ -181,6 +181,8 @@ class StatisticsMenuView:
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
+            if not self._closing:
+                play_music(self._state.audio, "shortie_monk")
             update_audio(self._state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
