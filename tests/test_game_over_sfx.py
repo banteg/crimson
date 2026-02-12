@@ -7,7 +7,10 @@ from types import SimpleNamespace
 
 import pyray as rl
 
-from crimson.game import PANEL_TIMELINE_START_MS, GameState, HighScoresRequest, HighScoresView
+from crimson.frontend.panels.base import PANEL_TIMELINE_START_MS
+from crimson.game.high_scores_view import HighScoresView
+from crimson.game.types import HighScoresRequest
+from crimson.game.types import GameState
 from crimson.persistence import save_status
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.ui.game_over import GameOverUi, PANEL_SLIDE_DURATION_MS
@@ -78,11 +81,11 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
         def get_or_load(self, *_args, **_kwargs):  # noqa: ANN001
             return SimpleNamespace(texture=None)
 
-    monkeypatch.setattr("crimson.game.update_audio", lambda _audio, _dt: None)
-    monkeypatch.setattr("crimson.game.play_sfx", _play_sfx)
-    monkeypatch.setattr("crimson.game._ensure_texture_cache", lambda _state: _DummyCache())
+    monkeypatch.setattr("crimson.game.high_scores_view.update_audio", lambda _audio, _dt: None)
+    monkeypatch.setattr("crimson.game.high_scores_view.play_sfx", _play_sfx)
+    monkeypatch.setattr("crimson.game.high_scores_view._ensure_texture_cache", lambda _state: _DummyCache())
     monkeypatch.setattr(
-        "crimson.game.load_menu_assets",
+        "crimson.game.high_scores_view.load_menu_assets",
         lambda _state: SimpleNamespace(sign=None, item=None, panel=None, labels=None),
     )
 
@@ -95,10 +98,10 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
         return int(key) == int(rl.KeyboardKey.KEY_ESCAPE)
 
     # High scores view animates in; advance its timeline before pressing escape.
-    monkeypatch.setattr("crimson.game.rl.is_key_pressed", lambda _key: False)
+    monkeypatch.setattr("crimson.game.high_scores_view.rl.is_key_pressed", lambda _key: False)
     view.update(0.1)
     view.update(0.1)
-    monkeypatch.setattr("crimson.game.rl.is_key_pressed", _is_key_pressed)
+    monkeypatch.setattr("crimson.game.high_scores_view.rl.is_key_pressed", _is_key_pressed)
 
     view.update(0.1)
 
@@ -141,14 +144,14 @@ def test_high_scores_view_draw_fades_pause_background_during_close(monkeypatch, 
         def get_or_load(self, *_args, **_kwargs):  # noqa: ANN001
             return SimpleNamespace(texture=None)
 
-    monkeypatch.setattr("crimson.game.update_audio", lambda _audio, _dt: None)
-    monkeypatch.setattr("crimson.game._ensure_texture_cache", lambda _state: _DummyCache())
+    monkeypatch.setattr("crimson.game.high_scores_view.update_audio", lambda _audio, _dt: None)
+    monkeypatch.setattr("crimson.game.high_scores_view._ensure_texture_cache", lambda _state: _DummyCache())
     monkeypatch.setattr(
-        "crimson.game.load_menu_assets",
+        "crimson.game.high_scores_view.load_menu_assets",
         lambda _state: SimpleNamespace(sign=None, item=None, panel=None, labels=None),
     )
-    monkeypatch.setattr("crimson.game.rl.clear_background", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.game._draw_screen_fade", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.game.high_scores_view.rl.clear_background", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.game.high_scores_view._draw_screen_fade", lambda *_args, **_kwargs: None)
 
     view = HighScoresView(state)
     view.open()

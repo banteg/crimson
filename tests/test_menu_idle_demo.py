@@ -6,7 +6,7 @@ import time
 from types import SimpleNamespace
 
 from crimson.frontend.menu import MENU_DEMO_IDLE_START_MS, MenuEntry, MenuView
-from crimson.game import GameState
+from crimson.game.types import GameState
 from crimson.persistence import save_status
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
