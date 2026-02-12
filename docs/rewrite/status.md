@@ -37,10 +37,10 @@ Last reviewed: **2026-02-12**
   - Code: `src/crimson/frontend/menu.py`
   - Ref: [`docs/crimsonland-exe/main-menu.md`](../crimsonland-exe/main-menu.md)
 - **Play Game panel (state `1`)**: implemented (mode buttons, player-count dropdown, tooltips, F1 times-played overlay).
-  - Code: `src/crimson/game.py` (`PlayGameMenuView`)
+  - Code: `src/crimson/game/__init__.py` (`PlayGameMenuView`)
   - Ref: [`docs/crimsonland-exe/play-game-menu.md`](../crimsonland-exe/play-game-menu.md)
 - **Quest select menu (state `0x0b`)**: implemented (quest list, stage icons, hardcore gating/counts overlay).
-  - Code: `src/crimson/game.py` (`QuestsMenuView`)
+  - Code: `src/crimson/game/__init__.py` (`QuestsMenuView`)
   - Ref: [`docs/crimsonland-exe/quest-select-menu.md`](../crimsonland-exe/quest-select-menu.md)
 - **Options panel (state `2`)**: implemented for core sliders + controls workflow.
   - Code: `src/crimson/frontend/panels/options.py`, `src/crimson/frontend/panels/controls.py`
@@ -49,14 +49,14 @@ Last reviewed: **2026-02-12**
 - **Statistics hub (state `4`)**: implemented with child panels.
   - Code: `src/crimson/frontend/panels/stats.py`
   - Child views: high scores, weapons database, perks database, credits.
-  - Code: `src/crimson/game.py`, `src/crimson/frontend/panels/databases.py`, `src/crimson/frontend/panels/credits.py`
+  - Code: `src/crimson/game/__init__.py`, `src/crimson/frontend/panels/databases.py`, `src/crimson/frontend/panels/credits.py`
 - **Demo / attract mode**: implemented (variant sequencing, upsell flow, trial overlay during gameplay).
   - Code: `src/crimson/demo.py`, `src/crimson/ui/demo_trial_overlay.py`
   - Ref: [`docs/crimsonland-exe/demo-mode.md`](../crimsonland-exe/demo-mode.md), [`docs/crimsonland-exe/screens.md`](../crimsonland-exe/screens.md)
 - **Game over / high score entry (state `7`)**: implemented for Survival/Rush/Typ-o.
-  - Code: `src/crimson/ui/game_over.py`, `src/crimson/persistence/highscores.py`, `src/crimson/game.py`
+  - Code: `src/crimson/ui/game_over.py`, `src/crimson/persistence/highscores.py`, `src/crimson/game/__init__.py`
 - **Quest results (state `8`) / quest failed (state `0x0c`)**: implemented.
-  - Code: `src/crimson/ui/quest_results.py`, `src/crimson/game.py`
+  - Code: `src/crimson/ui/quest_results.py`, `src/crimson/game/__init__.py`
 - **Mods menu (state `0x14` path from main menu)**: implemented as a panel and filesystem DLL discovery UI; plugin loading/runtime is still not implemented.
   - Code: `src/crimson/frontend/panels/mods.py`, `src/crimson/frontend/menu.py`
   - Ref: [`docs/crimsonland-exe/mods.md`](../crimsonland-exe/mods.md)

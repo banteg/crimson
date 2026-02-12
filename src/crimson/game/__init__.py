@@ -38,20 +38,20 @@ from grim.terrain_render import GroundRenderer
 from grim.view import View, ViewContext
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
-from .debug import debug_enabled, set_debug_enabled
+from ..debug import debug_enabled, set_debug_enabled
 from grim import music
 
-from .demo import DemoView
-from .demo_trial import (
+from ..demo import DemoView
+from ..demo_trial import (
     DEMO_QUEST_GRACE_TIME_MS,
     DEMO_TOTAL_PLAY_TIME_MS,
     demo_trial_overlay_info,
     format_demo_trial_time,
     tick_demo_trial_timers,
 )
-from .frontend.boot import BootView
-from .frontend.assets import MenuAssets, _ensure_texture_cache, load_menu_assets
-from .frontend.high_scores_layout import (
+from ..frontend.boot import BootView
+from ..frontend.assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from ..frontend.high_scores_layout import (
     HS_BACK_BUTTON_X,
     HS_BACK_BUTTON_Y,
     HS_BUTTON_STEP_Y,
@@ -136,7 +136,7 @@ from .frontend.high_scores_layout import (
     HS_TITLE_UNDERLINE_Y,
     hs_right_panel_pos_x,
 )
-from .frontend.menu import (
+from ..frontend.menu import (
     MENU_PANEL_OFFSET_X,
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
@@ -154,28 +154,28 @@ from .frontend.menu import (
     ensure_menu_ground,
     menu_ground_camera,
 )
-from .frontend.panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
-from .frontend.panels.alien_zookeeper import AlienZooKeeperView
-from .frontend.panels.controls import ControlsMenuView
-from .frontend.panels.credits import CreditsView
-from .frontend.panels.databases import UnlockedPerksDatabaseView, UnlockedWeaponsDatabaseView
-from .frontend.panels.mods import ModsMenuView
-from .frontend.panels.options import OptionsMenuView
-from .frontend.panels.play_game import PlayGameMenuView
-from .frontend.panels.stats import StatisticsMenuView
-from .frontend.pause_menu import PauseMenuView
-from .frontend.transitions import _draw_screen_fade, _update_screen_fade
-from .input_codes import input_begin_frame
-from .persistence.save_status import GameStatus, ensure_game_status
-from .ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
-from .ui.menu_panel import draw_classic_menu_panel
-from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from .paths import default_runtime_dir
-from .assets_fetch import download_missing_paqs
+from ..frontend.panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from ..frontend.panels.alien_zookeeper import AlienZooKeeperView
+from ..frontend.panels.controls import ControlsMenuView
+from ..frontend.panels.credits import CreditsView
+from ..frontend.panels.databases import UnlockedPerksDatabaseView, UnlockedWeaponsDatabaseView
+from ..frontend.panels.mods import ModsMenuView
+from ..frontend.panels.options import OptionsMenuView
+from ..frontend.panels.play_game import PlayGameMenuView
+from ..frontend.panels.stats import StatisticsMenuView
+from ..frontend.pause_menu import PauseMenuView
+from ..frontend.transitions import _draw_screen_fade, _update_screen_fade
+from ..input_codes import input_begin_frame
+from ..persistence.save_status import GameStatus, ensure_game_status
+from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
+from ..ui.menu_panel import draw_classic_menu_panel
+from ..ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ..paths import default_runtime_dir
+from ..assets_fetch import download_missing_paqs
 
 if TYPE_CHECKING:
-    from .modes.quest_mode import QuestRunOutcome
-    from .persistence.highscores import HighScoreRecord
+    from ..modes.quest_mode import QuestRunOutcome
+    from ..persistence.highscores import HighScoreRecord
 
 
 @dataclass(frozen=True, slots=True)
@@ -398,7 +398,7 @@ class QuestsMenuView:
         # Ensure the quest registry is populated so titles render.
         # (The package import registers all tier builders.)
         try:
-            from . import quests as _quests
+            from .. import quests as _quests
 
             _ = _quests
         except Exception:
@@ -672,7 +672,7 @@ class QuestsMenuView:
     def _quest_title(self, stage: int, row: int) -> str:
         level = f"{int(stage)}.{int(row) + 1}"
         try:
-            from .quests import quest_by_level
+            from ..quests import quest_by_level
 
             quest = quest_by_level(level)
         except Exception:
@@ -972,7 +972,7 @@ class SurvivalGameView:
     """Gameplay view wrapper that adapts SurvivalMode into `crimson game`."""
 
     def __init__(self, state: GameState) -> None:
-        from .modes.survival_mode import SurvivalMode
+        from ..modes.survival_mode import SurvivalMode
 
         self._state = state
         self._mode = SurvivalMode(
@@ -1047,7 +1047,7 @@ class RushGameView:
     """Gameplay view wrapper that adapts RushMode into `crimson game`."""
 
     def __init__(self, state: GameState) -> None:
-        from .modes.rush_mode import RushMode
+        from ..modes.rush_mode import RushMode
 
         self._state = state
         self._mode = RushMode(
@@ -1120,7 +1120,7 @@ class TypoShooterGameView:
     """Gameplay view wrapper that adapts TypoShooterMode into `crimson game`."""
 
     def __init__(self, state: GameState) -> None:
-        from .modes.typo_mode import TypoShooterMode
+        from ..modes.typo_mode import TypoShooterMode
 
         self._state = state
         self._mode = TypoShooterMode(
@@ -1190,7 +1190,7 @@ class TutorialGameView:
     """Gameplay view wrapper that adapts TutorialMode into `crimson game`."""
 
     def __init__(self, state: GameState) -> None:
-        from .modes.tutorial_mode import TutorialMode
+        from ..modes.tutorial_mode import TutorialMode
 
         self._state = state
         self._mode = TutorialMode(
@@ -1253,7 +1253,7 @@ class QuestGameView:
     """Gameplay view wrapper that adapts QuestMode into `crimson game`."""
 
     def __init__(self, state: GameState) -> None:
-        from .modes.quest_mode import QuestMode
+        from ..modes.quest_mode import QuestMode
 
         self._state = state
         self._mode = QuestMode(
@@ -1344,7 +1344,7 @@ def _next_quest_level(level: str) -> str | None:
     except Exception:
         return None
 
-    from .quests import quest_by_level
+    from ..quests import quest_by_level
 
     for _ in range(100):
         minor += 1
@@ -1371,9 +1371,9 @@ class QuestResultsView:
         self._action: str | None = None
 
     def open(self) -> None:
-        from .persistence.highscores import HighScoreRecord
-        from .quests.results import compute_quest_final_time
-        from .ui.quest_results import QuestResultsUi
+        from ..persistence.highscores import HighScoreRecord
+        from ..quests.results import compute_quest_final_time
+        from ..ui.quest_results import QuestResultsUi
 
         self._action = None
         self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
@@ -1403,14 +1403,14 @@ class QuestResultsView:
         self._quest_stage_minor = int(minor)
 
         try:
-            from .quests import quest_by_level
+            from ..quests import quest_by_level
 
             quest = quest_by_level(outcome.level)
             self._quest_title = quest.title if quest is not None else ""
             if quest is not None:
                 weapon_id_native = int(quest.unlock_weapon_id or 0)
                 if weapon_id_native > 0:
-                    from .weapons import WEAPON_BY_ID, weapon_display_name
+                    from ..weapons import WEAPON_BY_ID, weapon_display_name
 
                     weapon_entry = WEAPON_BY_ID.get(weapon_id_native)
                     self._unlock_weapon_name = (
@@ -1419,7 +1419,7 @@ class QuestResultsView:
                         else f"weapon_{weapon_id_native}"
                     )
 
-                from .perks import PERK_BY_ID, PerkId, perk_display_name
+                from ..perks import PERK_BY_ID, PerkId, perk_display_name
 
                 perk_id = int(quest.unlock_perk_id or 0)
                 if perk_id != int(PerkId.ANTIPERK):
@@ -1924,7 +1924,7 @@ class QuestFailedView:
         outcome = self._outcome
         if outcome is not None:
             try:
-                from .quests import quest_by_level
+                from ..quests import quest_by_level
 
                 quest = quest_by_level(outcome.level)
                 self._quest_title = quest.title if quest is not None else ""
@@ -2180,7 +2180,7 @@ class QuestFailedView:
         return "Quest failed, try again."
 
     def _build_score_preview(self, outcome: QuestRunOutcome | None) -> None:
-        from .persistence.highscores import HighScoreRecord
+        from ..persistence.highscores import HighScoreRecord
 
         self._record = None
         if outcome is None:
@@ -2316,7 +2316,7 @@ class HighScoresView:
         self._scroll_index = 0
 
     def open(self) -> None:
-        from .persistence.highscores import read_highscore_table, scores_path_for_mode
+        from ..persistence.highscores import read_highscore_table, scores_path_for_mode
 
         layout_w = float(self._state.config.screen_width)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
@@ -3139,7 +3139,7 @@ class HighScoresView:
         return f"{day}. {month_name} {year}"
 
     def _weapon_label_and_icon(self, weapon_id: int) -> tuple[str, int | None]:
-        from .weapons import WEAPON_BY_ID, weapon_display_name
+        from ..weapons import WEAPON_BY_ID, weapon_display_name
 
         weapon = WEAPON_BY_ID.get(int(weapon_id))
         if weapon is None:
@@ -3207,7 +3207,7 @@ class HighScoresView:
     @staticmethod
     def _quest_title(major: int, minor: int) -> str:
         try:
-            from .quests import quest_by_level
+            from ..quests import quest_by_level
 
             q = quest_by_level(f"{int(major)}.{int(minor)}")
             if q is not None and q.title:
