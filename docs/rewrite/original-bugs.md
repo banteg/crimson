@@ -86,13 +86,10 @@ Rewrite behavior:
 
 Native behavior:
 
-- Some perk/weapon/bonus strings include spelling mistakes carried in the
-  executable data tables.
-- Examples:
-  - Perk: `Fire Caugh`
-  - Weapon: `Plague Sphreader Gun`
-  - Weapon: `Lighting Rifle`
-  - Bonus text: `firerate`, `For few seconds`
+- User-facing strings include spelling/grammar mistakes in both:
+  - gameplay data tables (perk/weapon/bonus labels/descriptions), and
+  - screen/UI copy.
+- Source evidence: `analysis/ghidra/raw/crimsonland.exe_strings.txt`.
 
 Why it’s likely a bug:
 
@@ -104,3 +101,27 @@ Rewrite behavior:
 - Default: display corrected text in the rewrite.
 - With `--preserve-bugs`: keep the original misspelled strings for parity
   captures/testing.
+
+Full gated text-fix list:
+
+| Area | Native text (`--preserve-bugs`) | Default rewrite text |
+| --- | --- | --- |
+| Perk name | `Fire Caugh` | `Fire Cough` |
+| Weapon name | `Plague Sphreader Gun` | `Plague Spreader Gun` |
+| Weapon name | `Lighting Rifle` | `Lightning Rifle` |
+| Weapon name | `Fire bullets` | `Fire Bullets` |
+| Perk description (`Anxious Loader`) | `waiting your gun to be reloaded` | `waiting for your gun to be reloaded` |
+| Perk description (`Dodger`) | `attacks you you have a chance` | `attacks you, you have a chance` |
+| Perk description (`Ninja`) | `have really hard time` | `have a really hard time` |
+| Perk description (`Living Fortress`) | `It comes a time ... Being living fortress ... You do the more damage ...` | `There comes a time ... Being a living fortress ... You do more damage ...` |
+| Bonus description (`Weapon Power Up`) | `Your firerate and load time increase for a short period.` | `Your fire rate and load time increase for a short period.` |
+| Bonus description (`Fire Bullets`) | `For few seconds -- make them count.` | `For a few seconds -- make them count.` |
+| End note line | `You've completed all the levels but the battle` | `You've completed all the levels, but the battle` |
+| Quest failed line | `Persistence will be rewared.` | `Persistence will be rewarded.` |
+| Tutorial hint | `Picking it you gets a new weapon.` | `Picking it up gives you a new weapon.` |
+| Tutorial hint | `exposion` | `explosion` |
+| Weapon database panel label | `wepno #<id>` | `weapon #<id>` |
+| Weapon database panel label | `Firerate` | `Fire rate` |
+| Perk database panel label | `perkno #<id>` | `perk #<id>` |
+| Quest results prompt | `State your name trooper!` | `State your name, trooper!` |
+| Game over hit-ratio tooltip | `The % of shot bullets hit the target` | `The % of bullets that hit the target` |

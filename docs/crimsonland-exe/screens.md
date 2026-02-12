@@ -79,7 +79,9 @@ Recovered staged-reveal globals:
 
 - Used when the player fails a quest (state `game_state_id` (`DAT_00487270`) == `0xc`).
 - Renders failure text and retry options.
-- Note: the original string list includes a typo ("Persistence will be rewared."); we correct it to "rewarded" in the rewrite.
+- Note: the original string list includes a typo ("Persistence will be rewared.").
+  The rewrite shows "rewarded" by default and keeps native wording when
+  `--preserve-bugs` is enabled.
 - `quest_failed_screen_flags` (`0x004825d8`) is the one-shot init bitfield for
   the three action buttons (Play Again / Play Another / Main Menu).
 - Persistent action button structs:
