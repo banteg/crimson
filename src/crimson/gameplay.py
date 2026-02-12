@@ -1373,18 +1373,33 @@ def perk_auto_pick(
         return []
     if player_count is None:
         player_count = len(players)
+
+    def _refresh_choices() -> None:
+        perk_state.choices = [
+            int(perk)
+            for perk in perk_generate_choices(
+                state,
+                players[0],
+                game_mode=game_mode,
+                player_count=player_count,
+                count=7,
+            )
+        ]
+        perk_state.choices_dirty = False
+
+    def _visible_choices() -> list[int]:
+        choice_count = max(0, int(perk_choice_count(players[0])))
+        return [int(perk_id) for perk_id in perk_state.choices[:choice_count]]
+
     picks: list[PerkId] = []
     while perk_state.pending_count > 0:
         if perk_state.choices_dirty or not perk_state.choices:
-            perk_state.choices = [
-                int(perk)
-                for perk in perk_generate_choices(state, players[0], game_mode=game_mode, player_count=player_count)
-            ]
-            perk_state.choices_dirty = False
-        if not perk_state.choices:
+            _refresh_choices()
+        visible_choices = _visible_choices()
+        if not visible_choices:
             break
-        idx = int(state.rng.rand() % len(perk_state.choices))
-        perk_id = PerkId(perk_state.choices[idx])
+        idx = int(state.rng.rand() % len(visible_choices))
+        perk_id = PerkId(visible_choices[idx])
         perk_apply(state, players, perk_id, perk_state=perk_state, dt=dt, creatures=creatures)
         picks.append(perk_id)
         perk_state.pending_count -= 1
@@ -1413,10 +1428,17 @@ def perk_selection_current_choices(
     if perk_state.choices_dirty or not perk_state.choices:
         perk_state.choices = [
             int(perk)
-            for perk in perk_generate_choices(state, players[0], game_mode=game_mode, player_count=player_count)
+            for perk in perk_generate_choices(
+                state,
+                players[0],
+                game_mode=game_mode,
+                player_count=player_count,
+                count=7,
+            )
         ]
         perk_state.choices_dirty = False
-    return [PerkId(perk_id) for perk_id in perk_state.choices]
+    choice_count = max(0, int(perk_choice_count(players[0])))
+    return [PerkId(perk_id) for perk_id in perk_state.choices[:choice_count]]
 
 
 def perk_selection_pick(

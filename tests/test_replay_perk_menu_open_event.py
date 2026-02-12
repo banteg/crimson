@@ -1,7 +1,12 @@
 from __future__ import annotations
 
 from crimson.game_modes import GameMode
-from crimson.gameplay import perk_count_get, perks_rebuild_available, weapon_refresh_available
+from crimson.gameplay import (
+    perk_count_get,
+    perk_selection_current_choices,
+    perks_rebuild_available,
+    weapon_refresh_available,
+)
 from crimson.perks import PerkId
 from crimson.replay import PerkMenuOpenEvent, PerkPickEvent, UnknownEvent
 from crimson.original.capture import (
@@ -40,6 +45,15 @@ def test_perk_menu_open_event_consumes_rng_for_choices() -> None:
     assert int(state.rng.state) != before
     assert not bool(state.perk_selection.choices_dirty)
     assert state.perk_selection.choices
+    assert len(state.perk_selection.choices) == 7
+    visible = perk_selection_current_choices(
+        state,
+        world.players,
+        state.perk_selection,
+        game_mode=int(GameMode.SURVIVAL),
+        player_count=1,
+    )
+    assert len(visible) == 5
 
 
 def test_perk_pick_event_refreshes_choices_for_ui_transition_parity() -> None:
