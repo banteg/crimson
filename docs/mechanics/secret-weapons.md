@@ -41,16 +41,11 @@ below size 16, it dies. A typical enemy takes about four or five hits to
 collapse entirely — each shot visibly squeezing it smaller with a blue
 pulse and scattered particle puffs.
 
-Granted after surviving 64 seconds in single-player Survival, provided:
-
-- the player has not taken any damage
-- the player has not fired any weapon
-- the handout system has not already been consumed
-- the player is still holding the Pistol
-
-If the timer condition passes but the player is holding a different weapon
-(e.g. from a pickup), the handout opportunity is consumed without granting
-the Shrinkifier. The gate does not reset.
+In single-player Survival, survive for 64 seconds without taking damage,
+without firing, and without picking up another weapon, and the game
+replaces your Pistol with the Shrinkifier. The check only fires once per
+run — if the timer passes while you're holding a picked-up weapon instead
+of the Pistol, the opportunity is silently consumed and won't come back.
 
 ### Blade Gun
 
