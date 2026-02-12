@@ -31,19 +31,19 @@ appears in the normal weapon pool.
 ## Survival rewards
 
 In single-player Survival, the game can grant hidden weapons under strict
-conditions. These are temporary rewards — they do not persist across runs.
+conditions. These are temporary rewards that do not persist across runs.
 
 ### Shrinkifier 5k
 
 Fires blue plasma bolts that deal no direct damage. Instead, each hit
 shrinks the target to 65% of its current size. Once a creature shrinks
 below size 16, it dies. A typical enemy takes about four or five hits to
-collapse entirely — each shot visibly squeezing it smaller with a blue
+collapse entirely, each shot visibly squeezing it smaller with a blue
 pulse and scattered particle puffs.
 
 In single-player Survival, survive for 64 seconds without taking damage
 and without firing. When the timer check runs, you must still be holding
-the Pistol — if you've picked up another weapon by then, the opportunity
+the Pistol. If you've picked up another weapon by then, the opportunity
 is silently consumed and won't come back.
 
 ### Blade Gun
@@ -58,7 +58,7 @@ In single-player Survival, kill exactly three creatures, then walk to the
 center of the triangle formed by those three deaths without firing. If
 you're within distance 16 of that center and your health is below 15, the
 game grants the Blade Gun. Unlike the Shrinkifier, this does not require being
-damage-free or still on the Pistol — the third kill itself resets the fire
+damage-free or still on the Pistol. The third kill itself resets the fire
 flag, which is what opens the path.
 
 ## Unverified weapons
