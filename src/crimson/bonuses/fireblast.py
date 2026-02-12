@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 from ..projectiles import ProjectileTypeId
+from ..weapon_runtime.spawn import owner_id_for_player, spawn_projectile_ring
 from .apply_context import BonusApplyCtx
 
 
 def apply_fireblast(ctx: BonusApplyCtx) -> None:
-    from ..gameplay import _owner_id_for_player, _spawn_projectile_ring
-
     origin_pos = ctx.origin_pos()
-    owner_id = _owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else -100
+    owner_id = owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else -100
     ctx.state.bonus_spawn_guard = True
-    _spawn_projectile_ring(
+    spawn_projectile_ring(
         ctx.state,
         origin_pos,
         count=16,

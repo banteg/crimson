@@ -3,12 +3,11 @@ from __future__ import annotations
 from grim.geom import Vec2
 
 from ..projectiles import ProjectileTypeId
+from ..weapon_runtime.spawn import owner_id_for_player, projectile_spawn
 from .apply_context import BonusApplyCtx
 
 
 def apply_nuke(ctx: BonusApplyCtx) -> None:
-    from ..gameplay import _owner_id_for_player, _projectile_spawn
-
     # `bonus_apply` (crimsonland.exe @ 0x00409890) starts screen shake via:
     #   camera_shake_pulses = 0x14;
     #   camera_shake_timer = 0.2f;
@@ -23,7 +22,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
     bullet_count += 4
     for _ in range(bullet_count):
         angle = float(int(rand()) % 0x274) * 0.01
-        proj_id = _projectile_spawn(
+        proj_id = projectile_spawn(
             ctx.state,
             players=ctx.players,
             pos=origin,
@@ -37,7 +36,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
 
     for _ in range(2):
         angle = float(int(rand()) % 0x274) * 0.01
-        _projectile_spawn(
+        projectile_spawn(
             ctx.state,
             players=ctx.players,
             pos=origin,
@@ -75,7 +74,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
                         float(damage),
                         3,
                         Vec2(),
-                        _owner_id_for_player(ctx.player.index),
+                        owner_id_for_player(ctx.player.index),
                     )
                 else:
                     creature.hp -= float(damage)
