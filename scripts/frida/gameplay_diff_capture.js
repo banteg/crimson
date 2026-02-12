@@ -140,6 +140,7 @@ const CONFIG = {
   enableRngHooks: parseBoolEnv("CRIMSON_FRIDA_RNG_HOOKS", true),
   enableSfxHooks: parseBoolEnv("CRIMSON_FRIDA_SFX", true),
   enableDamageHooks: parseBoolEnv("CRIMSON_FRIDA_DAMAGE", true),
+  enableEffectHooks: parseBoolEnv("CRIMSON_FRIDA_EFFECTS", true),
   creatureDamageProjectileOnly: parseBoolEnv("CRIMSON_FRIDA_DAMAGE_PROJECTILE_ONLY", true),
   enableSpawnHooks: parseBoolEnv("CRIMSON_FRIDA_SPAWNS", true),
   enableCreatureSpawnHook: parseBoolEnv("CRIMSON_FRIDA_CREATURE_SPAWN_HOOK", true),
@@ -173,6 +174,7 @@ const FN = {
   creature_spawn_tinted: 0x00444810,
   perks_update_effects: 0x00406b40,
   quest_spawn_timeline_update: 0x00434250,
+  effect_spawn_blood_splatter: 0x0042eb10,
   input_any_key_pressed: 0x00446000,
   input_primary_just_pressed: 0x00446030,
   input_primary_is_down: 0x004460f0,
@@ -334,6 +336,7 @@ const bonusSpawnContextByTid = {};
 const inputContextByTid = {};
 const rngContextByTid = {};
 const srandContextByTid = {};
+const bloodSplatterContextByTid = {};
 const outState = {
   outFile: null,
   outWarned: false,
@@ -1676,6 +1679,11 @@ function makeTickContext() {
     projectile_find_query_owner_collision: 0,
     death_callers: {},
     bonus_spawn_callers: {},
+    blood_splatter_calls: 0,
+    blood_splatter_rng_draws: 0,
+    blood_splatter_projectile_update_calls: 0,
+    blood_splatter_callers: {},
+    blood_splatter_rng_draws_by_caller: {},
     mode_samples: [],
     creature_digest_before: creatureDigestBefore,
     mode_hint: null,
@@ -1696,6 +1704,17 @@ function bumpCounterMap(mapObj, key) {
     return;
   }
   mapObj[key] = 1;
+}
+
+function bumpCounterMapBy(mapObj, key, delta) {
+  if (!mapObj || key == null) return;
+  const amount = Number(delta);
+  if (!Number.isFinite(amount) || amount === 0) return;
+  if (mapObj[key] != null) {
+    mapObj[key] += amount;
+    return;
+  }
+  mapObj[key] = amount;
 }
 
 function topCounterPairs(mapObj, limit) {
@@ -2385,6 +2404,14 @@ function finalizeTick() {
     top_projectile_find_query_callers: topCounterPairs(tick.projectile_find_query_callers, 8),
     top_projectile_find_hit_callers: topCounterPairs(tick.projectile_find_hit_callers, 8),
     top_death_callers: topCounterPairs(tick.death_callers, 8),
+    event_count_blood_splatter: tick.blood_splatter_calls || 0,
+    blood_splatter_rng_draws: tick.blood_splatter_rng_draws || 0,
+    blood_splatter_projectile_update_calls: tick.blood_splatter_projectile_update_calls || 0,
+    top_blood_splatter_callers: topCounterPairs(tick.blood_splatter_callers, 8),
+    top_blood_splatter_rng_draw_callers: topCounterPairs(
+      tick.blood_splatter_rng_draws_by_caller,
+      8
+    ),
     event_count_bonus_spawn: tick.event_counts.bonus_spawn || 0,
     top_bonus_spawn_callers: topCounterPairs(tick.bonus_spawn_callers, 8),
     mode_samples: tick.mode_samples,
@@ -3332,6 +3359,71 @@ function installHooks() {
     });
   }
 
+  if (CONFIG.enableEffectHooks) {
+    attachHook("effect_spawn_blood_splatter", fnPtrs.effect_spawn_blood_splatter, {
+      onEnter(args) {
+        const callerStaticU32 = runtimeToStatic(this.returnAddress);
+        const callerStaticHex = callerStaticU32 == null ? null : toHex(callerStaticU32, 8);
+        const posPtr = args[0];
+        bloodSplatterContextByTid[this.threadId] = {
+          pos: {
+            x: captureNumber(posPtr ? safeReadF32(posPtr) : null),
+            y: captureNumber(posPtr ? safeReadF32(posPtr.add(4)) : null),
+          },
+          angle_f32: captureNumber(argAsF32(args[1])),
+          age_f32: captureNumber(argAsF32(args[2])),
+          caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
+          caller_static: callerStaticHex,
+          caller_static_u32: callerStaticU32 == null ? null : callerStaticU32 >>> 0,
+          rng_seq_before: outState.rngCallSeq >>> 0,
+        };
+      },
+      onLeave() {
+        const ctx = bloodSplatterContextByTid[this.threadId];
+        delete bloodSplatterContextByTid[this.threadId];
+        if (!ctx) return;
+        const rngSeqAfter = outState.rngCallSeq >>> 0;
+        const rngDraws = rngSeqAfter >= ctx.rng_seq_before ? rngSeqAfter - ctx.rng_seq_before : 0;
+        const projectileUpdateCaller =
+          ctx.caller_static_u32 == null ? false : isProjectileUpdateCaller(ctx.caller_static_u32);
+        const payload = {
+          pos: ctx.pos,
+          angle_f32: ctx.angle_f32,
+          age_f32: ctx.age_f32,
+          caller: ctx.caller,
+          caller_static: ctx.caller_static,
+          projectile_update_caller: projectileUpdateCaller,
+          rng_seq_before: ctx.rng_seq_before,
+          rng_seq_after: rngSeqAfter,
+          rng_draws: rngDraws,
+        };
+        const tick = outState.currentTick;
+        if (tick) {
+          tick.blood_splatter_calls = (tick.blood_splatter_calls || 0) + 1;
+          tick.blood_splatter_rng_draws = (tick.blood_splatter_rng_draws || 0) + rngDraws;
+          if (projectileUpdateCaller) {
+            tick.blood_splatter_projectile_update_calls =
+              (tick.blood_splatter_projectile_update_calls || 0) + 1;
+          }
+          if (payload.caller_static) {
+            bumpCounterMap(tick.blood_splatter_callers, payload.caller_static);
+            bumpCounterMapBy(
+              tick.blood_splatter_rng_draws_by_caller,
+              payload.caller_static,
+              rngDraws
+            );
+          }
+        }
+        emitRawEvent(
+          Object.assign({ event: "effect_spawn_blood_splatter" }, payload, {
+            outside_tick: !tick,
+            tick_index: tick ? tick.tick_index : Math.max(0, outState.gameplayFrame - 1),
+          })
+        );
+      },
+    });
+  }
+
   if (CONFIG.enableCreatureDeathHook) {
     attachHook("creature_handle_death", fnPtrs.creature_handle_death, {
       onEnter(args) {
@@ -3813,6 +3905,7 @@ function main() {
     enable_rng_hooks: CONFIG.enableRngHooks,
     enable_sfx_hooks: CONFIG.enableSfxHooks,
     enable_damage_hooks: CONFIG.enableDamageHooks,
+    enable_effect_hooks: CONFIG.enableEffectHooks,
     creature_damage_projectile_only: CONFIG.creatureDamageProjectileOnly,
     enable_spawn_hooks: CONFIG.enableSpawnHooks,
     enable_creature_spawn_hook: CONFIG.enableCreatureSpawnHook,

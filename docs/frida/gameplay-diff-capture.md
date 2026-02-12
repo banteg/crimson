@@ -141,6 +141,7 @@ Without extra env vars, the script captures full per-tick detail:
 - samples for `creatures`, `projectiles`, `secondary_projectiles`, `bonuses`
 - unlimited head budgets by default (`-1` limits)
 - RNG per-draw stream rows (`value/state_before/state_after/branch_id`), caller diagnostics, mirror tracking, outside-tick carry
+- blood-splatter effect diagnostics (`effect_spawn_blood_splatter`) with per-tick caller and RNG-draw attribution
 - perk-apply diagnostics and input query/key snapshots
 
 ## Optional env knobs
@@ -158,6 +159,7 @@ Without extra env vars, the script captures full per-tick detail:
 - `CRIMSON_FRIDA_MAX_EVENTS_PER_TICK=-1`
 - `CRIMSON_FRIDA_INPUT_HOOKS=0`
 - `CRIMSON_FRIDA_RNG_HOOKS=0`
+- `CRIMSON_FRIDA_EFFECTS=0`
 - `CRIMSON_FRIDA_SPAWNS=0`
 - `CRIMSON_FRIDA_CREATURE_SPAWN_HOOK=0`
 - `CRIMSON_FRIDA_CREATURE_DEATH_HOOK=0`
