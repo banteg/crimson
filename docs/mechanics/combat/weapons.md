@@ -15,47 +15,146 @@ and bonuses modify these base values at runtime.
 The HUD ammo indicator shows one of four icons depending on the weapon's
 class: bullet, fire, rocket, or electric.
 
-## Weapon table
+## Weapon reference
 
 All 33 selectable weapons in internal ID order, roughly following quest
 unlock progression. Damage is the base multiplier. Fire interval and
 reload are in seconds.
 
-| Name | Clip | Damage | Fire | Reload | Pellets | Class |
-|---|---:|---:|---:|---:|---:|---|
-| Pistol | 10 | 4.1 | 0.712 | 1.2 | 1 | Bullet |
-| Assault Rifle | 25 | 1.0 | 0.117 | 1.2 | 1 | Bullet |
-| Shotgun | 12 | 1.2 | 0.85 | 1.9 | 12 | Bullet |
-| Sawed-off Shotgun | 12 | 1.0 | 0.87 | 1.9 | 12 | Bullet |
-| Submachine Gun | 30 | 1.0 | 0.088 | 1.2 | 1 | Bullet |
-| Gauss Gun | 6 | 1.0 | 0.6 | 1.6 | 1 | Bullet |
-| Mean Minigun | 120 | 1.0 | 0.09 | 4.0 | 1 | Bullet |
-| Flamethrower | 30 | 1.0 | 0.008 | 2.0 | 1 | Fire |
-| Plasma Rifle | 20 | 5.0 | 0.291 | 1.2 | 1 | Bullet |
-| Multi-Plasma | 8 | 1.0 | 0.621 | 1.4 | 3 | Bullet |
-| Plasma Minigun | 30 | 2.1 | 0.11 | 1.3 | 1 | Bullet |
-| Rocket Launcher | 5 | 1.0 | 0.741 | 1.2 | 1 | Rocket |
-| Seeker Rockets | 8 | 1.0 | 0.311 | 1.2 | 1 | Rocket |
-| Plasma Shotgun | 8 | 1.0 | 0.48 | 3.1 | 14 | Bullet |
-| Blow Torch | 30 | 1.0 | 0.006 | 1.5 | 1 | Fire |
-| HR Flamer | 30 | 1.0 | 0.009 | 1.8 | 1 | Fire |
-| Mini-Rocket Swarmers | 5 | 1.0 | 1.8 | 1.8 | 1 | Rocket |
-| Rocket Minigun | 16 | 1.0 | 0.12 | 1.8 | 1 | Rocket |
-| Pulse Gun | 16 | 1.0 | 0.1 | 0.1 | 1 | Electric |
-| Jackhammer | 16 | 1.0 | 0.14 | 3.0 | 4 | Bullet |
-| Ion Rifle | 8 | 3.0 | 0.4 | 1.35 | 1 | Electric |
-| Ion Minigun | 20 | 1.4 | 0.1 | 1.8 | 1 | Electric |
-| Ion Cannon | 3 | 16.7 | 1.0 | 3.0 | 1 | Electric |
-| [Shrinkifier 5k](../secret-weapons.md#shrinkifier-5k) | 8 | 0.0 | 0.21 | 1.22 | 1 | Bullet |
-| [Blade Gun](../secret-weapons.md#blade-gun) | 6 | 11.0 | 0.35 | 3.5 | 1 | Bullet |
-| Spider Plasma | 5 | 0.5 | 0.2 | 1.2 | 1 | Bullet |
-| Evil Scythe | 3 | 1.0 | 1.0 | 3.0 | 1 | Electric |
-| Plasma Cannon | 3 | 28.0 | 0.9 | 2.7 | 1 | Bullet |
-| [Splitter Gun](../secret-weapons.md#splitter-gun) | 6 | 6.0 | 0.7 | 2.2 | 1 | Bullet |
-| Gauss Shotgun | 4 | 1.0 | 1.05 | 2.1 | 1 | Bullet |
-| Ion Shotgun | 10 | 1.0 | 0.85 | 1.9 | 8 | Electric |
-| Flameburst | 60 | 1.0 | 0.02 | 3.0 | 1 | Electric |
-| RayGun | 12 | 1.0 | 0.7 | 2.0 | 1 | Electric |
+### 1. Pistol
+
+Clip 10 · Damage 4.1 · Fire 0.712 s · Reload 1.2 s · Bullet
+
+### 2. Assault Rifle
+
+Clip 25 · Damage 1.0 · Fire 0.117 s · Reload 1.2 s · Bullet
+
+### 3. Shotgun
+
+Clip 12 · Damage 1.2 · Fire 0.85 s · Reload 1.9 s · 12 pellets · Bullet
+
+### 4. Sawed-off Shotgun
+
+Clip 12 · Damage 1.0 · Fire 0.87 s · Reload 1.9 s · 12 pellets · Bullet
+
+### 5. Submachine Gun
+
+Clip 30 · Damage 1.0 · Fire 0.088 s · Reload 1.2 s · Bullet
+
+### 6. Gauss Gun
+
+Clip 6 · Damage 1.0 · Fire 0.6 s · Reload 1.6 s · Bullet
+
+### 7. Mean Minigun
+
+Clip 120 · Damage 1.0 · Fire 0.09 s · Reload 4.0 s · Bullet
+
+### 8. Flamethrower
+
+Clip 30 · Damage 1.0 · Fire 0.008 s · Reload 2.0 s · Fire
+
+### 9. Plasma Rifle
+
+Clip 20 · Damage 5.0 · Fire 0.291 s · Reload 1.2 s · Bullet
+
+### 10. Multi-Plasma
+
+Clip 8 · Damage 1.0 · Fire 0.621 s · Reload 1.4 s · 3 pellets · Bullet
+
+### 11. Plasma Minigun
+
+Clip 30 · Damage 2.1 · Fire 0.11 s · Reload 1.3 s · Bullet
+
+### 12. Rocket Launcher
+
+Clip 5 · Damage 1.0 · Fire 0.741 s · Reload 1.2 s · Rocket
+
+### 13. Seeker Rockets
+
+Clip 8 · Damage 1.0 · Fire 0.311 s · Reload 1.2 s · Rocket
+
+### 14. Plasma Shotgun
+
+Clip 8 · Damage 1.0 · Fire 0.48 s · Reload 3.1 s · 14 pellets · Bullet
+
+### 15. Blow Torch
+
+Clip 30 · Damage 1.0 · Fire 0.006 s · Reload 1.5 s · Fire
+
+### 16. HR Flamer
+
+Clip 30 · Damage 1.0 · Fire 0.009 s · Reload 1.8 s · Fire
+
+### 17. Mini-Rocket Swarmers
+
+Clip 5 · Damage 1.0 · Fire 1.8 s · Reload 1.8 s · Rocket
+
+### 18. Rocket Minigun
+
+Clip 16 · Damage 1.0 · Fire 0.12 s · Reload 1.8 s · Rocket
+
+### 19. Pulse Gun
+
+Clip 16 · Damage 1.0 · Fire 0.1 s · Reload 0.1 s · Electric
+
+### 20. Jackhammer
+
+Clip 16 · Damage 1.0 · Fire 0.14 s · Reload 3.0 s · 4 pellets · Bullet
+
+### 21. Ion Rifle
+
+Clip 8 · Damage 3.0 · Fire 0.4 s · Reload 1.35 s · Electric
+
+### 22. Ion Minigun
+
+Clip 20 · Damage 1.4 · Fire 0.1 s · Reload 1.8 s · Electric
+
+### 23. Ion Cannon
+
+Clip 3 · Damage 16.7 · Fire 1.0 s · Reload 3.0 s · Electric
+
+### 24. Shrinkifier 5k
+
+Clip 8 · Damage 0.0 · Fire 0.21 s · Reload 1.22 s · Bullet
+· [Secret weapon](../secret-weapons.md#shrinkifier-5k)
+
+### 25. Blade Gun
+
+Clip 6 · Damage 11.0 · Fire 0.35 s · Reload 3.5 s · Bullet
+· [Secret weapon](../secret-weapons.md#blade-gun)
+
+### 26. Spider Plasma
+
+Clip 5 · Damage 0.5 · Fire 0.2 s · Reload 1.2 s · Bullet
+
+### 27. Evil Scythe
+
+Clip 3 · Damage 1.0 · Fire 1.0 s · Reload 3.0 s · Electric
+
+### 28. Plasma Cannon
+
+Clip 3 · Damage 28.0 · Fire 0.9 s · Reload 2.7 s · Bullet
+
+### 29. Splitter Gun
+
+Clip 6 · Damage 6.0 · Fire 0.7 s · Reload 2.2 s · Bullet
+· [Secret weapon](../secret-weapons.md#splitter-gun)
+
+### 30. Gauss Shotgun
+
+Clip 4 · Damage 1.0 · Fire 1.05 s · Reload 2.1 s · Bullet
+
+### 31. Ion Shotgun
+
+Clip 10 · Damage 1.0 · Fire 0.85 s · Reload 1.9 s · 8 pellets · Electric
+
+### 32. Flameburst
+
+Clip 60 · Damage 1.0 · Fire 0.02 s · Reload 3.0 s · Electric
+
+### 33. RayGun
+
+Clip 12 · Damage 1.0 · Fire 0.7 s · Reload 2.0 s · Electric
 
 ## Special behaviors
 
