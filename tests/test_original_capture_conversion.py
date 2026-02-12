@@ -445,6 +445,38 @@ def test_load_capture_stream_accepts_forward_compatible_config_fields(tmp_path: 
     assert len(capture.ticks) == 1
 
 
+def test_load_capture_accepts_player_fire_debug_payloads(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    checkpoint = tick.get("checkpoint")
+    assert isinstance(checkpoint, dict)
+    debug = checkpoint.get("debug")
+    assert isinstance(debug, dict)
+    debug["player_fire"] = {
+        "event_count_player_fire": 3,
+        "top_direct_events_by_player": [{"player_index": 0, "count": 1}],
+        "top_fallback_events_by_player": [{"player_index": 0, "count": 2}],
+        "top_player_projectile_spawns_by_player": [{"player_index": 0, "count": 3}],
+    }
+    tick["diagnostics"] = {
+        "player_fire": {
+            "event_count_player_fire": 4,
+            "top_direct_events_by_player": [{"player_index": 0, "count": 4}],
+            "top_fallback_events_by_player": [],
+            "top_player_projectile_spawns_by_player": [],
+        }
+    }
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json.gz"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+
+    assert capture.ticks[0].checkpoint.debug.player_fire is not None
+    assert capture.ticks[0].checkpoint.debug.player_fire.get("event_count_player_fire") == 3
+    assert capture.ticks[0].diagnostics.player_fire is not None
+    assert capture.ticks[0].diagnostics.player_fire.get("event_count_player_fire") == 4
+
+
 def test_load_capture_stream_rejects_truncated_last_line(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick])
