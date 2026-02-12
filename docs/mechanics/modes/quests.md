@@ -220,7 +220,7 @@ green, 30 more green. Pure crowd control.
 #### 3.5. Surrounded By Reptiles
 
 Unlocks [Pyromaniac](../perks.md#39-pyromaniac).
-Lizard spawner nests in two perpendicular lines — vertical pairs first,
+Lizard spawner nests in two perpendicular lines, vertical pairs first,
 then horizontal pairs.
 
 #### 3.6. The Lizquidation
