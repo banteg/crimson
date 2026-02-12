@@ -13,7 +13,7 @@ This section avoids rewrite internals and decompiler implementation details wher
 ## Subsections
 
 - [Combat](combat/index.md) — combat flow and combat systems for player actions.
-- [Modes](modes/index.md) — high-level mode behavior.
+- Modes — [Survival](modes/survival.md), [Rush](modes/rush.md), [Quests](modes/quests.md), [Typ-o-Shooter](modes/typo-shooter.md), [Tutorial](modes/tutorial.md).
 - [Systems](systems/index.md) — gameplay systems like perks and secret weapons.
 - [Multiplayer](multiplayer/overview.md) — local multiplayer behavior and split-screen edge cases.
 - [Gameplay quirks](quirks/index.md) — notable edge cases and observed behavior oddities.
