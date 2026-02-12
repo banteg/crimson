@@ -2,7 +2,7 @@
 
 This page tracks the current code-level state of the rewrite under `src/`, and the
 largest remaining parity gaps vs the classic Windows build (v1.9.93) documented in
-`docs/crimsonland-exe/`.
+[`docs/crimsonland-exe/`](../crimsonland-exe/).
 
 Last reviewed: **2026-02-12**
 
@@ -35,30 +35,31 @@ Last reviewed: **2026-02-12**
 
 - **Main menu (state `0`)**: implemented, including timeline/layout behavior and terrain/sign-shadow rules.
   - Code: `src/crimson/frontend/menu.py`
-  - Ref: `docs/crimsonland-exe/main-menu.md`
+  - Ref: [`docs/crimsonland-exe/main-menu.md`](../crimsonland-exe/main-menu.md)
 - **Play Game panel (state `1`)**: implemented (mode buttons, player-count dropdown, tooltips, F1 times-played overlay).
   - Code: `src/crimson/game.py` (`PlayGameMenuView`)
-  - Ref: `docs/crimsonland-exe/play-game-menu.md`
+  - Ref: [`docs/crimsonland-exe/play-game-menu.md`](../crimsonland-exe/play-game-menu.md)
 - **Quest select menu (state `0x0b`)**: implemented (quest list, stage icons, hardcore gating/counts overlay).
   - Code: `src/crimson/game.py` (`QuestsMenuView`)
-  - Ref: `docs/crimsonland-exe/quest-select-menu.md`
-- **Options panel (state `2`)**: implemented for core sliders + controls workflow; still partial for full native widget parity.
+  - Ref: [`docs/crimsonland-exe/quest-select-menu.md`](../crimsonland-exe/quest-select-menu.md)
+- **Options panel (state `2`)**: implemented for core sliders + controls workflow.
   - Code: `src/crimson/frontend/panels/options.py`, `src/crimson/frontend/panels/controls.py`
   - Implemented: SFX/music/detail/mouse sliders, UI info toggle, controls entry and interactive rebinding flow.
+  - Not exposed in this in-game UI: `screen_width`, `screen_height`, `windowed_flag`, `screen_bpp`, `texture_scale` editing (currently config/CLI-managed).
 - **Statistics hub (state `4`)**: implemented with child panels.
   - Code: `src/crimson/frontend/panels/stats.py`
   - Child views: high scores, weapons database, perks database, credits.
   - Code: `src/crimson/game.py`, `src/crimson/frontend/panels/databases.py`, `src/crimson/frontend/panels/credits.py`
 - **Demo / attract mode**: implemented (variant sequencing, upsell flow, trial overlay during gameplay).
   - Code: `src/crimson/demo.py`, `src/crimson/ui/demo_trial_overlay.py`
-  - Ref: `docs/crimsonland-exe/demo-mode.md`, `docs/crimsonland-exe/screens.md`
+  - Ref: [`docs/crimsonland-exe/demo-mode.md`](../crimsonland-exe/demo-mode.md), [`docs/crimsonland-exe/screens.md`](../crimsonland-exe/screens.md)
 - **Game over / high score entry (state `7`)**: implemented for Survival/Rush/Typ-o.
   - Code: `src/crimson/ui/game_over.py`, `src/crimson/persistence/highscores.py`, `src/crimson/game.py`
 - **Quest results (state `8`) / quest failed (state `0x0c`)**: implemented.
   - Code: `src/crimson/ui/quest_results.py`, `src/crimson/game.py`
 - **Mods menu (state `0x14` path from main menu)**: implemented as a panel and filesystem DLL discovery UI; plugin loading/runtime is still not implemented.
   - Code: `src/crimson/frontend/panels/mods.py`, `src/crimson/frontend/menu.py`
-  - Ref: `docs/crimsonland-exe/mods.md`
+  - Ref: [`docs/crimsonland-exe/mods.md`](../crimsonland-exe/mods.md)
 - **Scope policy for Mods and Other Games/shareware ads**: out of scope for the rewrite target.
   - Rationale: native DLL plugin runtime is not practical to support in the Python rewrite architecture.
   - Rewrite stance: keep menu-shell UX compatibility where useful, but do not implement native DLL mod loading/execution or Other Games ad/runtime flows.
@@ -88,7 +89,7 @@ Last reviewed: **2026-02-12**
 ## Verification and parity evidence
 
 - Ground renderer parity is fixture-tested against runtime dumps.
-  - Doc: `docs/rewrite/terrain.md`
+  - Doc: [`docs/rewrite/terrain.md`](terrain.md)
   - Test: `tests/test_ground_dump_fixtures.py`
 - Deterministic step pipeline parity (live update vs replay/headless runners) is covered with command-hash checks.
   - Tests: `tests/test_step_pipeline_parity.py`, `tests/test_replay_runners.py`
@@ -102,7 +103,7 @@ Last reviewed: **2026-02-12**
 - Divergence triage tooling (report, bisect, focus trace, visualizer) is in-tree and wired through `crimson original`.
   - Code: `src/crimson/original/divergence_report.py`, `src/crimson/original/divergence_bisect.py`, `src/crimson/original/focus_trace.py`, `src/crimson/original/capture_visualizer.py`
 - Capture-only triage workflow is documented here:
-  - `docs/frida/differential-playbook.md`
+  - [`docs/frida/differential-playbook.md`](../frida/differential-playbook.md)
 
 ## 4-player extension policy
 
@@ -115,9 +116,17 @@ Last reviewed: **2026-02-12**
 ## Biggest remaining parity gaps (vs v1.9.93)
 
 1. **Options parity completeness**
-   - Video/window mode editing and some remaining minor option widgets/labels are still incomplete.
+   - In-game options do not currently edit display/config fields:
+     - `screen_width`
+     - `screen_height`
+     - `windowed_flag`
+     - `screen_bpp`
+     - `texture_scale`
+   - These fields are persisted/used, but today are managed via `crimson.cfg` + CLI/runtime startup, not the state-2 panel.
 2. **Ongoing deep parity validation**
-   - Deterministic parity infrastructure is in place; native edge-case behavior/timing is still being tightened via differential capture sessions.
+   - Deterministic parity infrastructure is in place; remaining gaps are mostly capture-backed edge-case timing and branch-order issues.
+   - This status page intentionally avoids tick/session-specific examples that go stale quickly.
+   - Current active probes and per-SHA outcomes are tracked in [`docs/frida/differential-sessions.md`](../frida/differential-sessions.md).
 
 ## Out of scope for this rewrite
 
