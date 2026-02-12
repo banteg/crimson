@@ -91,12 +91,12 @@ NATIVE_FUNCTION_TO_PORT_PATHS: dict[str, tuple[str, ...]] = {
         "src/crimson/creatures/runtime.py",
     ),
     "creature_find_in_radius": (
-        "src/crimson/projectiles.py",
+        "src/crimson/projectiles/pools.py",
         "src/crimson/creatures/runtime.py",
     ),
     "creature_handle_death": ("src/crimson/creatures/runtime.py",),
     "projectile_update": (
-        "src/crimson/projectiles.py",
+        "src/crimson/projectiles/pools.py",
         "src/crimson/sim/world_state.py",
     ),
     "player_update": (
@@ -125,8 +125,8 @@ NATIVE_FUNCTION_TO_PORT_PATHS: dict[str, tuple[str, ...]] = {
 
 RNG_STAGE_TO_PORT_PATHS: dict[str, tuple[str, ...]] = {
     "creatures": ("src/crimson/creatures/runtime.py", "src/crimson/creatures/ai.py"),
-    "projectiles": ("src/crimson/projectiles.py", "src/crimson/sim/world_state.py"),
-    "secondary_projectiles": ("src/crimson/projectiles.py", "src/crimson/sim/world_state.py"),
+    "projectiles": ("src/crimson/projectiles/pools.py", "src/crimson/sim/world_state.py"),
+    "secondary_projectiles": ("src/crimson/projectiles/pools.py", "src/crimson/sim/world_state.py"),
     "death_sfx_preplan": ("src/crimson/sim/world_state.py", "src/crimson/sim/presentation_step.py"),
     "world_step_tail": ("src/crimson/sim/world_state.py",),
     "survival_stage_spawns": ("src/crimson/creatures/spawn.py", "src/crimson/sim/sessions.py"),
@@ -2250,7 +2250,7 @@ def _build_investigation_leads(
                 code_paths=_merge_paths(
                     _port_paths_for_native_functions(effective_native),
                     (
-                        "src/crimson/projectiles.py",
+                        "src/crimson/projectiles/pools.py",
                         "src/crimson/sim/presentation_step.py",
                         "src/crimson/effects.py",
                     ),
@@ -2353,7 +2353,7 @@ def _build_investigation_leads(
                 code_paths=_merge_paths(
                     _port_paths_for_native_functions(effective_native),
                     (
-                        "src/crimson/projectiles.py",
+                        "src/crimson/projectiles/pools.py",
                         "src/crimson/sim/world_state.py",
                         "scripts/frida/gameplay_diff_capture.js",
                     ),
