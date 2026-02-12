@@ -624,7 +624,21 @@ def trace_focus_tick(
     near_miss_threshold: float,
     inter_tick_rand_draws: int,
     aim_scheme_overrides_by_player: Mapping[int, int] | None = None,
+    session: Any | None = None,
 ) -> FocusTraceReport:
+    if session is not None:
+        from .diagnostics_cache import build_focus_key
+
+        key = build_focus_key(
+            inter_tick_rand_draws=int(inter_tick_rand_draws),
+            aim_scheme_overrides_by_player=aim_scheme_overrides_by_player,
+        )
+        return session.get_focus_report(
+            key=key,
+            tick=int(tick),
+            near_miss_threshold=float(near_miss_threshold),
+        )
+
     capture = load_capture(capture_path)
     replay = convert_capture_to_replay(
         capture,
@@ -1120,8 +1134,9 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
         print("  none")
 
 
-def _build_arg_parser() -> argparse.ArgumentParser:
+def _build_arg_parser(*, prog: str = "crimson") -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
+        prog=str(prog),
         description="Trace a single original-capture tick with rewrite RNG callsites and collision near-miss diagnostics.",
     )
     parser.add_argument("capture", type=Path, help="capture file (.json/.json.gz)")
@@ -1164,7 +1179,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
     parser = _build_arg_parser()
     args = parser.parse_args(argv)
     json_out_path = _resolve_json_out_path(args.json_out, tick=int(args.tick))
@@ -1183,6 +1198,7 @@ def main(argv: list[str] | None = None) -> int:
         near_miss_threshold=max(0.0, float(args.near_miss_threshold)),
         inter_tick_rand_draws=max(0, int(args.inter_tick_rand_draws)),
         aim_scheme_overrides_by_player=aim_scheme_overrides,
+        session=session,
     )
     _print_report(
         report,
