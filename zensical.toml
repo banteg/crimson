@@ -14,7 +14,7 @@ nav = [
       { "Overview" = "mechanics/modes/index.md" },
       { "Survival" = "mechanics/modes/survival.md" },
       { "Rush" = "mechanics/modes/rush.md" },
-      { "Quest" = "mechanics/modes/quests.md" },
+      { "Quests" = "mechanics/modes/quests.md" },
       { "Typ-o-Shooter" = "mechanics/modes/typo-shooter.md" },
       { "Tutorial" = "mechanics/modes/tutorial.md" },
     ]},
