@@ -263,6 +263,9 @@ class MenuView:
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
+            if not self._closing:
+                theme = "crimsonquest" if self._state.demo_enabled else "crimson_theme"
+                play_music(self._state.audio, theme)
             update_audio(self._state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()

@@ -209,29 +209,21 @@ def play_music(state: MusicState, track_name: str) -> None:
     if music is None:
         return
 
-    # Original behavior uses an "exclusive" music channel: starting a new track
-    # mutes (fades out) any currently-unmuted music.
+    # Original behavior uses an "exclusive" music channel: requesting a track
+    # mutes (fades out) any other currently-unmuted music ids.
     for key, pb in state.playbacks.items():
-        if key != track_name:
+        if key != track_name and (not pb.muted):
             pb.muted = True
 
     pb = state.playbacks.get(track_name)
     if pb is None:
-        pb = TrackPlayback(music=music, volume=0.0, muted=False)
+        pb = TrackPlayback(music=music, volume=0.0, muted=True)
         state.playbacks[track_name] = pb
-    else:
+
+    # Mirror `sfx_play_exclusive`: only arm/unmute the requested track when its
+    # tracked volume has already faded to silence.
+    if pb.volume <= 0.0:
         pb.muted = False
-
-    playing = False
-    try:
-        playing = bool(rl.is_music_stream_playing(music))
-    except Exception:
-        playing = False
-
-    # Mirror `sfx_play_exclusive`: if the track isn't already audible, start it
-    # immediately at the target volume. Otherwise, let the fade logic bring it
-    # back up (resume behavior).
-    if (not playing) or pb.volume <= 0.0:
         pb.volume = state.volume
         try:
             rl.set_music_volume(music, pb.volume)
