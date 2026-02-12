@@ -815,7 +815,7 @@ def _perks_update_jinxed(ctx: _PerksUpdateEffectsCtx) -> None:
         creature = ctx.creatures[idx]
         creature.hp = -1.0
         creature.hitbox_size = float(creature.hitbox_size) - ctx.dt * 20.0
-        player.experience = int(float(player.experience) + float(creature.reward_value))
+        _award_experience_once_from_reward(player, float(creature.reward_value))
         ctx.state.sfx_queue.append("sfx_trooper_inpain_01")
 
 
