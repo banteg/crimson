@@ -7,7 +7,12 @@ import pytest
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
-from crimson.perks.selection import perk_auto_pick, perk_generate_choices, perk_selection_pick
+from crimson.perks.selection import (
+    perk_auto_pick,
+    perk_generate_choices,
+    perk_selection_current_choices,
+    perk_selection_pick,
+)
 from crimson.perks.state import PerkSelectionState
 
 
@@ -60,6 +65,51 @@ def test_perk_generate_choices_tutorial_returns_fixed_list() -> None:
         PerkId.RADIOACTIVE,
         PerkId.FASTSHOT,
     ]
+
+
+def test_perk_selection_current_choices_keeps_hidden_internal_entries(monkeypatch: pytest.MonkeyPatch) -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    perk_state = PerkSelectionState(pending_count=1, choices=[], choices_dirty=True)
+
+    def _fake_perk_generate_choices(*args, **kwargs):  # type: ignore[no-untyped-def]
+        return [
+            PerkId.SHARPSHOOTER,
+            PerkId.FASTSHOT,
+            PerkId.AMMO_MANIAC,
+            PerkId.LONG_DISTANCE_RUNNER,
+            PerkId.TOUGH_RELOADER,
+            PerkId.PERK_MASTER,
+            PerkId.INSTANT_WINNER,
+        ]
+
+    monkeypatch.setattr("crimson.perks.selection.perk_generate_choices", _fake_perk_generate_choices)
+
+    visible = perk_selection_current_choices(
+        state,
+        [player],
+        perk_state,
+        game_mode=int(GameMode.SURVIVAL),
+        player_count=1,
+    )
+
+    assert visible == [
+        PerkId.SHARPSHOOTER,
+        PerkId.FASTSHOT,
+        PerkId.AMMO_MANIAC,
+        PerkId.LONG_DISTANCE_RUNNER,
+        PerkId.TOUGH_RELOADER,
+    ]
+    assert perk_state.choices == [
+        int(PerkId.SHARPSHOOTER),
+        int(PerkId.FASTSHOT),
+        int(PerkId.AMMO_MANIAC),
+        int(PerkId.LONG_DISTANCE_RUNNER),
+        int(PerkId.TOUGH_RELOADER),
+        int(PerkId.PERK_MASTER),
+        int(PerkId.INSTANT_WINNER),
+    ]
+    assert perk_state.choices_dirty is False
 
 
 def test_perk_selection_pick_syncs_perk_counts_across_players() -> None:

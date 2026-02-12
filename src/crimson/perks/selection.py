@@ -201,7 +201,13 @@ def perk_auto_pick(
         if perk_state.choices_dirty or not perk_state.choices:
             perk_state.choices = [
                 int(perk)
-                for perk in perk_generate_choices(state, players[0], game_mode=game_mode, player_count=player_count)
+                for perk in perk_generate_choices(
+                    state,
+                    players[0],
+                    game_mode=game_mode,
+                    player_count=player_count,
+                    count=7,
+                )
             ]
             perk_state.choices_dirty = False
         if not perk_state.choices:
@@ -240,10 +246,17 @@ def perk_selection_current_choices(
     if perk_state.choices_dirty or not perk_state.choices:
         perk_state.choices = [
             int(perk)
-            for perk in perk_generate_choices(state, players[0], game_mode=game_mode, player_count=player_count)
+            for perk in perk_generate_choices(
+                state,
+                players[0],
+                game_mode=game_mode,
+                player_count=player_count,
+                count=7,
+            )
         ]
         perk_state.choices_dirty = False
-    return [PerkId(perk_id) for perk_id in perk_state.choices]
+    visible_count = max(1, int(perk_choice_count(players[0])))
+    return [PerkId(perk_id) for perk_id in perk_state.choices[:visible_count]]
 
 
 def perk_selection_pick(
