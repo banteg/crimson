@@ -13,7 +13,7 @@ from typing import Any
 import msgspec
 from grim.geom import Vec2
 
-import crimson.projectiles as projectiles_mod
+import crimson.projectiles.pools as projectiles_mod
 import crimson.sim.presentation_step as presentation_step_mod
 from crimson.game_modes import GameMode
 from crimson.gameplay import PlayerInput

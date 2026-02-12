@@ -15,7 +15,7 @@ from typing import Any, cast
 import msgspec
 from platformdirs import PlatformDirs
 
-import crimson.projectiles as projectiles_mod
+import crimson.projectiles.pools as projectiles_mod
 import crimson.sim.presentation_step as presentation_step_mod
 from crimson.bonuses import bonus_label
 from crimson.game_modes import GameMode
