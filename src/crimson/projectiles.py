@@ -647,13 +647,17 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
         rng=ctx.rng,
         detail_preset=ctx.detail_preset,
     )
+    # Native player-hit checks in `projectile_update` key off `owner_id != -100`.
+    # Splitter children are spawned with `owner_id = hit creature index`, so they
+    # can hit players even when the parent projectile owner was `-100`.
+    split_hits_players = int(hit_idx) != -100
     ctx.pool.spawn(
         pos=proj.pos,
         angle=proj.angle - 1.0471976,
         type_id=ProjectileTypeId.SPLITTER_GUN,
         owner_id=int(hit_idx),
         base_damage=proj.base_damage,
-        hits_players=proj.hits_players,
+        hits_players=split_hits_players,
     )
     ctx.pool.spawn(
         pos=proj.pos,
@@ -661,7 +665,7 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
         type_id=ProjectileTypeId.SPLITTER_GUN,
         owner_id=int(hit_idx),
         base_damage=proj.base_damage,
-        hits_players=proj.hits_players,
+        hits_players=split_hits_players,
     )
 
 
