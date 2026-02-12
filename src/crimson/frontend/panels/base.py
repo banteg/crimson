@@ -243,7 +243,7 @@ class PanelMenuView:
             + self._panel_offset * item_scale
         )
         dst = rl.Rectangle(panel_top_left.x, panel_top_left.y, float(panel_w), float(panel_h))
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
         draw_classic_menu_panel(panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
     def _draw_entry(self, entry: MenuEntry) -> None:
@@ -274,7 +274,7 @@ class PanelMenuView:
             item_h * item_scale,
         )
         origin = rl.Vector2(-offset_x, -offset_y)
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=item,
@@ -346,7 +346,7 @@ class PanelMenuView:
         # so the sign is already locked in place. Keep it static here.
         rotation_deg = 0.0
         sign = assets.sign
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,

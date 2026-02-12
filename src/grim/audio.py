@@ -20,10 +20,10 @@ class AudioState:
 
 
 def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleState) -> AudioState:
-    music_disabled = int(config.data.get("music_disable", 0)) != 0
-    sound_disabled = int(config.data.get("sound_disable", 0)) != 0
-    music_volume = float(config.data.get("music_volume", 1.0))
-    sfx_volume = float(config.data.get("sfx_volume", 1.0))
+    music_disabled = bool(config.music_disabled)
+    sound_disabled = bool(config.sound_disabled)
+    music_volume = float(config.music_volume)
+    sfx_volume = float(config.sfx_volume)
 
     music_enabled = not music_disabled
     sfx_enabled = not sound_disabled

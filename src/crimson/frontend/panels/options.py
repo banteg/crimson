@@ -100,15 +100,15 @@ class OptionsMenuView(PanelMenuView):
             return
 
         if self._update_slider("sfx", self._slider_sfx, slider_pos.offset(dy=47.0 * scale), rect_on, rect_off, scale):
-            config.data["sfx_volume"] = float(self._slider_sfx.value) * 0.1
-            set_sfx_volume(self._state.audio, float(config.data["sfx_volume"]))
+            config.sfx_volume = float(self._slider_sfx.value) * 0.1
+            set_sfx_volume(self._state.audio, config.sfx_volume)
             self._dirty = True
 
         if self._update_slider(
             "music", self._slider_music, slider_pos.offset(dy=67.0 * scale), rect_on, rect_off, scale
         ):
-            config.data["music_volume"] = float(self._slider_music.value) * 0.1
-            set_music_volume(self._state.audio, float(config.data["music_volume"]))
+            config.music_volume = float(self._slider_music.value) * 0.1
+            set_music_volume(self._state.audio, config.music_volume)
             self._dirty = True
 
         if self._update_slider(
@@ -126,12 +126,11 @@ class OptionsMenuView(PanelMenuView):
                 sensitivity = 0.1
             if sensitivity > 1.0:
                 sensitivity = 1.0
-            config.data["mouse_sensitivity"] = sensitivity
+            config.mouse_sensitivity = sensitivity
             self._dirty = True
 
         if self._update_checkbox(label_pos.offset(dy=135.0 * scale), scale):
-            value = 1 if self._ui_info_texts else 0
-            config.data["ui_info_texts"] = value
+            config.ui_info_texts = self._ui_info_texts
             self._dirty = True
 
         textures = self._button_textures
@@ -188,12 +187,12 @@ class OptionsMenuView(PanelMenuView):
 
     def _sync_from_config(self) -> None:
         config = self._state.config
-        self._ui_info_texts = bool(int(config.data.get("ui_info_texts", 1) or 0))
+        self._ui_info_texts = bool(config.ui_info_texts)
 
-        sfx_volume = float(config.data.get("sfx_volume", 1.0))
-        music_volume = float(config.data.get("music_volume", 1.0))
-        detail_preset = int(config.data.get("detail_preset", 5))
-        mouse_sensitivity = float(config.data.get("mouse_sensitivity", 1.0))
+        sfx_volume = float(config.sfx_volume)
+        music_volume = float(config.music_volume)
+        detail_preset = int(config.detail_preset)
+        mouse_sensitivity = float(config.mouse_sensitivity)
 
         self._slider_sfx.value = max(
             self._slider_sfx.min_value, min(self._slider_sfx.max_value, int(sfx_volume * 10.0))

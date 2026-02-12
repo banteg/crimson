@@ -12,7 +12,9 @@ import pyray as rl
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.console import ConsoleState
-from grim.config import CrimsonConfig
+from grim.config import (
+    CrimsonConfig,
+)
 from grim.geom import Rect, Vec2
 from grim.math import clamp
 from grim.view import ViewContext
@@ -216,8 +218,8 @@ class SurvivalMode(BaseGameplayMode):
             self._console.log.flush()
 
     def _perk_menu_context(self) -> PerkMenuContext:
-        fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0) if self._config is not None else 0
-        fx_detail = bool(int(self._config.data.get("fx_detail_0", 0) or 0)) if self._config is not None else False
+        fx_toggle = int(self._config.fx_toggle) if self._config is not None else 0
+        fx_detail = bool(self._config.fx_detail(level=0, default=False)) if self._config is not None else False
         players = self._world.players
         return PerkMenuContext(
             state=self._state,
@@ -385,12 +387,7 @@ class SurvivalMode(BaseGameplayMode):
         config = self._config
         if config is None:
             return ""
-        raw = config.data.get("player_name")
-        if isinstance(raw, (bytes, bytearray)):
-            return bytes(raw).split(b"\x00", 1)[0].decode("latin-1", errors="ignore")
-        if isinstance(raw, str):
-            return raw
-        return ""
+        return str(config.player_name or "")
 
     def _death_transition_ready(self) -> bool:
         dead_players = 0
@@ -405,7 +402,7 @@ class SurvivalMode(BaseGameplayMode):
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
-        game_mode_id = int(self._config.data.get("game_mode", 1)) if self._config is not None else 1
+        game_mode_id = int(self._config.game_mode) if self._config is not None else 1
         record = build_highscore_record_for_game_over(
             state=self._state,
             player=self._player,
@@ -420,7 +417,7 @@ class SurvivalMode(BaseGameplayMode):
         self._save_replay()
 
     def _perk_prompt_label(self) -> str:
-        if self._config is not None and not bool(int(self._config.data.get("ui_info_texts", 1) or 0)):
+        if self._config is not None and not bool(self._config.ui_info_texts):
             return ""
         pending = int(self._state.perk_selection.pending_count)
         if pending <= 0:
@@ -492,9 +489,7 @@ class SurvivalMode(BaseGameplayMode):
             if len(player0_binds) >= 5:
                 fire_key = int(player0_binds[4])
 
-            pick_key = 0x101
-            if self._config is not None:
-                pick_key = int(self._config.data.get("keybind_pick_perk", pick_key) or pick_key)
+            pick_key = int(self._config.keybind_pick_perk) if self._config is not None else 0x101
 
             if input_code_is_pressed_for_player(pick_key, player_index=0) and (
                 not input_code_is_down_for_player(fire_key, player_index=0)
@@ -559,8 +554,8 @@ class SurvivalMode(BaseGameplayMode):
         detail_preset = 5
         fx_toggle = 0
         if self._config is not None:
-            detail_preset = int(self._config.data.get("detail_preset", 5) or 5)
-            fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0)
+            detail_preset = int(self._config.detail_preset)
+            fx_toggle = int(self._config.fx_toggle)
         session.detail_preset = int(detail_preset)
         session.fx_toggle = int(fx_toggle)
 

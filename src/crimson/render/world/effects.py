@@ -53,7 +53,7 @@ class WorldRendererEffectsMixin(WorldRendererMixinBase):
         if src_normal is None or src_style_8 is None:
             return
 
-        fx_detail_1 = bool(self.config.data.get("fx_detail_1", 0)) if self.config is not None else True
+        fx_detail_1 = self.config.fx_detail(level=1, default=True) if self.config is not None else True
 
         rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
 
@@ -119,7 +119,7 @@ class WorldRendererEffectsMixin(WorldRendererMixinBase):
         alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
-        if self.config is not None and not bool(self.config.data.get("fx_detail_2", 0)):
+        if self.config is not None and not self.config.fx_detail(level=2, default=False):
             return
         texture = self.particles_texture
         if texture is None:

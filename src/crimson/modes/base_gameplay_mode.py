@@ -113,11 +113,7 @@ class BaseGameplayMode:
         config = self._config
         if config is None:
             return int(self._default_game_mode_id)
-        try:
-            value = config.data.get("game_mode", self._default_game_mode_id)
-            return int(value or self._default_game_mode_id)
-        except Exception:
-            return int(self._default_game_mode_id)
+        return config.int_value("game_mode", self._default_game_mode_id)
 
     def _draw_target_health_bar(self, *, alpha: float = 1.0) -> None:
         creatures = getattr(self._creatures, "entries", [])
@@ -227,12 +223,7 @@ class BaseGameplayMode:
         config = self._config
         if config is None:
             return ""
-        raw = config.data.get("player_name")
-        if isinstance(raw, (bytes, bytearray)):
-            return bytes(raw).split(b"\x00", 1)[0].decode("latin-1", errors="ignore")
-        if isinstance(raw, str):
-            return raw
-        return ""
+        return str(config.player_name or "")
 
     def open(self) -> None:
         self.close_requested = False
@@ -258,10 +249,7 @@ class BaseGameplayMode:
         player_count = 1
         config = self._config
         if config is not None:
-            try:
-                player_count = int(config.data.get("player_count", 1) or 1)
-            except Exception:
-                player_count = 1
+            player_count = int(config.player_count)
         seed = random.getrandbits(32)
         self._world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._world.open()

@@ -211,22 +211,13 @@ class RushMode(BaseGameplayMode):
         config = self._config
         if config is None:
             return ""
-        raw = config.data.get("player_name")
-        if isinstance(raw, (bytes, bytearray)):
-            return bytes(raw).split(b"\x00", 1)[0].decode("latin-1", errors="ignore")
-        if isinstance(raw, str):
-            return raw
-        return ""
+        return str(config.player_name or "")
 
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
 
-        game_mode_id = (
-            int(self._config.data.get("game_mode", int(GameMode.RUSH)))
-            if self._config is not None
-            else int(GameMode.RUSH)
-        )
+        game_mode_id = int(self._config.game_mode) if self._config is not None else int(GameMode.RUSH)
         record = build_highscore_record_for_game_over(
             state=self._state,
             player=self._player,
@@ -317,8 +308,8 @@ class RushMode(BaseGameplayMode):
         detail_preset = 5
         fx_toggle = 0
         if self._config is not None:
-            detail_preset = int(self._config.data.get("detail_preset", 5) or 5)
-            fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0)
+            detail_preset = int(self._config.detail_preset)
+            fx_toggle = int(self._config.fx_toggle)
         session.detail_preset = int(detail_preset)
         session.fx_toggle = int(fx_toggle)
 

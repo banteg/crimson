@@ -279,7 +279,7 @@ class GameLoopView:
         if not self._state.demo_enabled:
             return False
 
-        mode_id = int(self._state.config.data.get("game_mode", 0) or 0)
+        mode_id = int(self._state.config.game_mode)
         quest_major, quest_minor = 0, 0
         if mode_id == 3:
             level = self._state.pending_quest_level or ""
@@ -437,5 +437,4 @@ class GameLoopView:
         self._boot.close()
         self._state.console.close()
         rl.show_cursor()
-
 

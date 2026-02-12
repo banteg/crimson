@@ -247,8 +247,8 @@ class QuestsMenuView:
 
         # The original forcibly clears hardcore in the demo build.
         if self._state.demo_enabled:
-            if int(config.data.get("hardcore_flag", 0) or 0) != 0:
-                config.data["hardcore_flag"] = 0
+            if config.hardcore:
+                config.hardcore = False
                 self._dirty = True
 
         if debug_enabled() and rl.is_key_pressed(rl.KeyboardKey.KEY_F5):
@@ -392,7 +392,7 @@ class QuestsMenuView:
         if check_on is None or check_off is None:
             return False
         config = self._state.config
-        hardcore = bool(int(config.data.get("hardcore_flag", 0) or 0))
+        hardcore = bool(config.hardcore)
 
         font = self._ensure_small_font()
         text_scale = 1.0
@@ -406,10 +406,10 @@ class QuestsMenuView:
         mouse_pos = Vec2.from_xy(rl.get_mouse_position())
         hovered = Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
         if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            config.data["hardcore_flag"] = 0 if hardcore else 1
+            config.hardcore = not hardcore
             self._dirty = True
             if self._state.demo_enabled:
-                config.data["hardcore_flag"] = 0
+                config.hardcore = False
             return True
         return False
 
@@ -459,7 +459,7 @@ class QuestsMenuView:
         status = self._state.status
         config = self._state.config
         unlock = int(status.quest_unlock_index)
-        if bool(int(config.data.get("hardcore_flag", 0) or 0)):
+        if config.hardcore:
             unlock = int(status.quest_unlock_index_full)
         global_index = (int(stage) - 1) * 10 + int(row)
         return unlock >= global_index
@@ -469,7 +469,7 @@ class QuestsMenuView:
             return
         level = f"{int(stage)}.{int(row) + 1}"
         self._state.pending_quest_level = level
-        self._state.config.data["game_mode"] = 3
+        self._state.config.game_mode = 3
         self._dirty = True
         self._begin_close_transition("start_quest")
 
@@ -603,7 +603,7 @@ class QuestsMenuView:
 
         config = self._state.config
         status = self._state.status
-        hardcore_flag = bool(int(config.data.get("hardcore_flag", 0) or 0))
+        hardcore_flag = bool(config.hardcore)
         base_color, hover_color = self._quest_row_colors(hardcore=hardcore_flag)
 
         font = self._ensure_small_font()
@@ -703,7 +703,7 @@ class QuestsMenuView:
             _ = slide_x
             rotation_deg = math.degrees(angle_rad)
         sign = assets.sign
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
@@ -732,7 +732,7 @@ class QuestsMenuView:
             end_ms=PANEL_TIMELINE_END_MS,
             width=MENU_PANEL_WIDTH,
         )
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
         draw_classic_menu_panel(
             panel,
             dst=rl.Rectangle(
@@ -757,12 +757,7 @@ class QuestsMenuView:
 
 
 def _player_name_default(config: CrimsonConfig) -> str:
-    raw = config.data.get("player_name")
-    if isinstance(raw, (bytes, bytearray)):
-        return bytes(raw).split(b"\x00", 1)[0].decode("latin-1", errors="ignore")
-    if isinstance(raw, str):
-        return raw
-    return ""
+    return config.player_name
 
 
 def _next_quest_level(level: str) -> str | None:
@@ -854,7 +849,7 @@ class QuestResultsView:
                 if perk_id != int(PerkId.ANTIPERK):
                     perk_entry = PERK_BY_ID.get(perk_id)
                     if perk_entry is not None and perk_entry.name:
-                        fx_toggle = int(self._state.config.data.get("fx_toggle", 0) or 0)
+                        fx_toggle = int(self._state.config.fx_toggle)
                         self._unlock_perk_name = perk_display_name(
                             perk_id,
                             fx_toggle=fx_toggle,
@@ -904,7 +899,7 @@ class QuestResultsView:
         # Advance quest unlock progression when completing the currently-unlocked quest.
         if global_index >= 0:
             next_unlock = int(global_index + 1)
-            hardcore = bool(int(self._state.config.data.get("hardcore_flag", 0) or 0))
+            hardcore = bool(self._state.config.hardcore)
             try:
                 if hardcore:
                     if next_unlock > int(self._state.status.quest_unlock_index_full):
@@ -1132,7 +1127,7 @@ class EndNoteView:
             mouse=mouse,
             click=click,
         ):
-            self._state.config.data["game_mode"] = 1
+            self._state.config.game_mode = 1
             self._begin_close_transition("start_survival")
             return
 
@@ -1146,7 +1141,7 @@ class EndNoteView:
             mouse=mouse,
             click=click,
         ):
-            self._state.config.data["game_mode"] = 2
+            self._state.config.game_mode = 2
             self._begin_close_transition("start_rush")
             return
 
@@ -1160,7 +1155,7 @@ class EndNoteView:
             mouse=mouse,
             click=click,
         ):
-            self._state.config.data["game_mode"] = 4
+            self._state.config.game_mode = 4
             self._begin_close_transition("start_typo", fade_to_black=True)
             return
 
@@ -1208,11 +1203,11 @@ class EndNoteView:
             float(END_NOTE_PANEL_H * scale),
         )
 
-        fx_detail = bool(int(self._state.config.data.get("fx_detail_0", 0) or 0))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
         draw_classic_menu_panel(panel_tex, dst=panel, tint=rl.WHITE, shadow=fx_detail)
 
         font = self._ensure_small_font()
-        hardcore = bool(int(self._state.config.data.get("hardcore_flag", 0) or 0))
+        hardcore = bool(self._state.config.hardcore)
         header = "   Incredible!" if hardcore else "Congratulations!"
         levels_line = (
             "You've completed all the levels but the battle"
@@ -1483,7 +1478,7 @@ class QuestFailedView:
                 float(QUEST_FAILED_PANEL_W),
                 float(QUEST_FAILED_PANEL_H),
             )
-            fx_detail = bool(int(self._state.config.data.get("fx_detail_0", 0) or 0))
+            fx_detail = self._state.config.fx_detail(level=0, default=False)
             draw_classic_menu_panel(panel_tex, dst=panel, tint=rl.WHITE, shadow=fx_detail)
 
         reaper_tex = self._reaper_tex

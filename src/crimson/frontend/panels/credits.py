@@ -570,7 +570,7 @@ class CreditsView:
             MENU_PANEL_WIDTH * scale,
             CREDITS_PANEL_HEIGHT * scale,
         )
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
         draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
         font = self._ensure_small_font()
@@ -652,7 +652,7 @@ class CreditsView:
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * sign_scale
         rotation_deg = 0.0
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,

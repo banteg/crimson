@@ -9,7 +9,9 @@ import pyray as rl
 from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState, play_music
 from grim.console import ConsoleState
-from grim.config import CrimsonConfig
+from grim.config import (
+    CrimsonConfig,
+)
 from grim.geom import Rect, Vec2
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.math import clamp
@@ -248,8 +250,8 @@ class QuestMode(BaseGameplayMode):
             self._perk_prompt_pulse = 0.0
 
     def _perk_menu_context(self) -> PerkMenuContext:
-        fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0) if self._config is not None else 0
-        fx_detail = bool(int(self._config.data.get("fx_detail_0", 0) or 0)) if self._config is not None else False
+        fx_toggle = int(self._config.fx_toggle) if self._config is not None else 0
+        fx_detail = bool(self._config.fx_detail(level=0, default=False)) if self._config is not None else False
         players = self._world.players
         return PerkMenuContext(
             state=self._state,
@@ -282,20 +284,13 @@ class QuestMode(BaseGameplayMode):
             return
         self._outcome = None
 
-        hardcore_flag = False
-        if self._config is not None:
-            hardcore_flag = bool(int(self._config.data.get("hardcore_flag", 0) or 0))
+        hardcore_flag = bool(self._config.hardcore) if self._config is not None else False
 
         self._world.hardcore = hardcore_flag
         seed = _quest_seed(level)
 
-        player_count = 1
         config = self._config
-        if config is not None:
-            try:
-                player_count = int(config.data.get("player_count", 1) or 1)
-            except Exception:
-                player_count = 1
+        player_count = int(config.player_count) if config is not None else 1
         self._world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._bind_world()
         self._local_input.reset(players=self._world.players)
@@ -396,7 +391,7 @@ class QuestMode(BaseGameplayMode):
         weapon_assign_player(self._player, weapon_id, state=self._state)
 
     def _perk_prompt_label(self) -> str:
-        if self._config is not None and not bool(int(self._config.data.get("ui_info_texts", 1) or 0)):
+        if self._config is not None and not bool(self._config.ui_info_texts):
             return ""
         pending = int(self._state.perk_selection.pending_count)
         if pending <= 0:
@@ -568,9 +563,7 @@ class QuestMode(BaseGameplayMode):
             if len(player0_binds) >= 5:
                 fire_key = int(player0_binds[4])
 
-            pick_key = 0x101
-            if self._config is not None:
-                pick_key = int(self._config.data.get("keybind_pick_perk", pick_key) or pick_key)
+            pick_key = int(self._config.keybind_pick_perk) if self._config is not None else 0x101
 
             if input_code_is_pressed_for_player(pick_key, player_index=0) and (
                 not input_code_is_down_for_player(fire_key, player_index=0)

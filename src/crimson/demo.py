@@ -87,7 +87,7 @@ class DemoView:
             assets_dir=state.assets_dir,
             world_size=WORLD_SIZE,
             demo_mode_active=True,
-            hardcore=bool(int(state.config.data.get("hardcore_flag", 0) or 0)),
+            hardcore=bool(state.config.hardcore),
             difficulty_level=0,
             preserve_bugs=bool(state.preserve_bugs),
             texture_cache=state.texture_cache,

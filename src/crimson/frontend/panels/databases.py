@@ -147,7 +147,7 @@ class _DatabaseBaseView:
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * sign_scale
         rotation_deg = 0.0
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
@@ -234,7 +234,7 @@ class _DatabaseBaseView:
             return
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
 
         panel_w = MENU_PANEL_WIDTH * scale
         _angle_rad, left_slide_x = MenuView._ui_element_anim(
@@ -531,7 +531,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
 
             stub = _Stub()
             stub.status = self._state.status
-            stub.game_mode = int(self._state.config.data.get("game_mode", 1) or 1)
+            stub.game_mode = int(self._state.config.game_mode)
             stub.demo_mode_active = bool(getattr(self._state, "demo_enabled", False))
             stub.weapon_available = [False] * int(WEAPON_COUNT_SIZE)
             stub._weapon_available_game_mode = -1

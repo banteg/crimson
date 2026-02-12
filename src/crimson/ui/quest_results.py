@@ -225,7 +225,7 @@ class QuestResultsUi:
         else:
             self._play_next_button.label = "Play Next"
 
-        hardcore = bool(int(self.config.data.get("hardcore_flag", 0) or 0))
+        hardcore = bool(self.config.hardcore)
         self._scores_path = scores_path_for_mode(
             self.base_dir,
             3,
@@ -652,7 +652,7 @@ class QuestResultsUi:
         panel = panel_layout.panel
 
         if self.assets.menu_panel is not None:
-            fx_detail = bool(int(self.config.data.get("fx_detail_0", 0) or 0))
+            fx_detail = self.config.fx_detail(level=0, default=False)
             draw_classic_menu_panel(
                 self.assets.menu_panel,
                 dst=panel.to_rl(),

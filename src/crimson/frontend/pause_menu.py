@@ -306,7 +306,7 @@ class PauseMenuView:
         label_tex = assets.labels
         item_w = float(item.width)
         item_h = float(item.height)
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
         for idx in range(len(self._menu_entries) - 1, -1, -1):
             entry = self._menu_entries[idx]
             pos = Vec2(MenuView._menu_slot_pos_x(entry.slot), entry.y)
@@ -412,7 +412,7 @@ class PauseMenuView:
             _ = slide_x
             rotation_deg = math.degrees(angle_rad)
         sign = assets.sign
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,

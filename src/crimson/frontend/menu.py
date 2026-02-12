@@ -458,7 +458,7 @@ class MenuView:
         label_tex = assets.labels
         item_w = float(item.width)
         item_h = float(item.height)
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
         # Matches ui_elements_update_and_render reverse table iteration:
         # later entries draw first, earlier entries draw last (on top).
         for idx in range(len(self._menu_entries) - 1, -1, -1):
@@ -729,7 +729,7 @@ class MenuView:
             _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
             rotation_deg = math.degrees(angle_rad)
         sign = assets.sign
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
         if fx_detail:
             self._draw_ui_quad_shadow(
                 texture=sign,

@@ -112,8 +112,8 @@ class TutorialMode(BaseGameplayMode):
         super().close()
 
     def _perk_menu_context(self) -> PerkMenuContext:
-        fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0) if self._config is not None else 0
-        fx_detail = bool(int(self._config.data.get("fx_detail_0", 0) or 0)) if self._config is not None else False
+        fx_toggle = int(self._config.fx_toggle) if self._config is not None else 0
+        fx_detail = bool(self._config.fx_detail(level=0, default=False)) if self._config is not None else False
         return PerkMenuContext(
             state=self._state,
             perk_state=self._state.perk_selection,
@@ -158,9 +158,7 @@ class TutorialMode(BaseGameplayMode):
 
         fire_down = input_code_is_down(fire_key)
         fire_pressed = input_code_is_pressed(fire_key)
-        reload_key = 0x102
-        if self._config is not None:
-            reload_key = int(self._config.data.get("keybind_reload", reload_key) or reload_key)
+        reload_key = int(self._config.keybind_reload) if self._config is not None else 0x102
         reload_pressed = input_code_is_pressed(reload_key)
 
         return PlayerInput(
@@ -313,7 +311,7 @@ class TutorialMode(BaseGameplayMode):
 
         detail_preset = 5
         if self._world.config is not None:
-            detail_preset = int(self._world.config.data.get("detail_preset", 5) or 5)
+            detail_preset = int(self._world.config.detail_preset)
 
         for call in actions.spawn_bonuses:
             spawned = self._state.bonus_pool.spawn_at(
