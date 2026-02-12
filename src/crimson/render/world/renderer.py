@@ -13,6 +13,7 @@ from .draw import WorldRendererDrawMixin
 from .effects import WorldRendererEffectsMixin
 from .overlays import WorldRendererOverlaysMixin
 from .projectiles import WorldRendererProjectilesMixin
+from .trooper import WorldRendererTrooperMixin
 
 if TYPE_CHECKING:
     from ...game_world import GameWorld
@@ -23,6 +24,7 @@ class WorldRenderer(
     WorldRendererDrawMixin,
     WorldRendererEffectsMixin,
     WorldRendererProjectilesMixin,
+    WorldRendererTrooperMixin,
     WorldRendererCreaturesMixin,
     WorldRendererOverlaysMixin,
     WorldRendererBonusesMixin,
