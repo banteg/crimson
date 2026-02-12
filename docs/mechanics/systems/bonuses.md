@@ -1,4 +1,5 @@
 ---
+icon: lucide/gift
 tags:
   - mechanics
   - systems
