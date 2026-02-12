@@ -79,7 +79,7 @@ Escalating alien stream from the right. A brute alien appears mid-quest.
 
 #### 1.3. Target Practice
 
-Unlocks Uranium Filled Bullets.
+Unlocks [Uranium Filled Bullets](../perks.md#28-uranium-filled-bullets).
 Orbiters spawn at random positions around the center with accelerating
 tempo. Randomized layout.
 
@@ -91,7 +91,7 @@ mid-quest. Two brutes from the sides at wave 10.
 
 #### 1.5. Alien Dens
 
-Unlocks Doctor.
+Unlocks [Doctor](../perks.md#29-doctor).
 Spawner nests that produce child aliens. The center nest scales with
 player count.
 
@@ -103,7 +103,7 @@ randomly (~20% chance per wave). Randomized layout.
 
 #### 1.7. Spider Wave Syndrome
 
-Unlocks Monster Vision.
+Unlocks [Monster Vision](../perks.md#30-monster-vision).
 First spider quest. Repeated spider waves from the left edge every 5.5
 seconds. Wave size scales with player count.
 
@@ -115,7 +115,7 @@ individual aliens.
 
 #### 1.9. Nesting Grounds
 
-Unlocks Hot Tempered.
+Unlocks [Hot Tempered](../perks.md#31-hot-tempered).
 Mix of random alien waves and spawner nests. Multiple spawner phases,
 ending with tougher alien variants.
 
@@ -131,7 +131,7 @@ Introduces zombies, lizard-producing spawners, and splitter spiders.
 
 #### 2.1. Everred Pastures
 
-Unlocks Bonus Economist.
+Unlocks [Bonus Economist](../perks.md#32-bonus-economist).
 Four different spider types from all four edges simultaneously.
 Escalating wave sizes. Blue-tinted spider burst at wave 4.
 
@@ -143,7 +143,7 @@ bosses patrol from the edges.
 
 #### 2.3. Arachnoid Farm
 
-Unlocks Thick Skinned.
+Unlocks [Thick Skinned](../perks.md#33-thick-skinned).
 Lines of spawner nests. Slow spawners first, then fast spawners.
 
 #### 2.4. Two Fronts
@@ -154,7 +154,7 @@ nests appear at waves 10, 20, and 30.
 
 #### 2.5. Sweep Stakes
 
-Starts with Gauss Gun. Unlocks Barrel Greaser.
+Starts with Gauss Gun. Unlocks [Barrel Greaser](../perks.md#34-barrel-greaser).
 Short quest (35 s time limit). Radial orbiter spawns with accelerating
 tempo, same pattern as Target Practice.
 
@@ -166,7 +166,7 @@ First zombie quest. Zombie waves from all four edges, escalating from
 
 #### 2.7. Survival Of The Fastest
 
-Starts with Submachine Gun. Unlocks Ammunition Within.
+Starts with Submachine Gun. Unlocks [Ammunition Within](../perks.md#35-ammunition-within).
 Spiral pattern of fast spawner nests wrapping inward, plus corner
 spawners at the end.
 
@@ -178,7 +178,7 @@ each quadrant.
 
 #### 2.9. Ghost Patrols
 
-Unlocks Veins of Poison.
+Unlocks [Veins of Poison](../perks.md#36-veins-of-poison).
 Fast red aliens, then alternating left/right ring formations of 5
 aliens. Ends with a grid formation.
 
@@ -194,7 +194,7 @@ Introduces ghosts, lizard enemy types, and mixed-species quests.
 
 #### 3.1. The Blighting
 
-Unlocks Toxic Avenger.
+Unlocks [Toxic Avenger](../perks.md#37-toxic-avenger).
 Fast red aliens plus spawner nests in all four corners. Alternating
 alien and lizard waves from rotating edges.
 
@@ -206,7 +206,7 @@ individual lizards spiraling around the center.
 
 #### 3.3. The Killing
 
-Unlocks Regeneration.
+Unlocks [Regeneration](../perks.md#38-regeneration).
 Cycling alien/spider/lizard waves from rotating edges. Every 5th wave
 spawns random-position spawner nests instead. Randomized layout.
 
@@ -218,7 +218,7 @@ green, 30 more green. Pure crowd control.
 
 #### 3.5. Surrounded By Reptiles
 
-Unlocks Pyromaniac.
+Unlocks [Pyromaniac](../perks.md#39-pyromaniac).
 Lizard spawner nests in two perpendicular lines — vertical pairs first,
 then horizontal pairs.
 
@@ -230,7 +230,7 @@ aliens at wave 4.
 
 #### 3.7. Spiders Inc.
 
-Starts with Plasma Minigun. Unlocks Ninja.
+Starts with Plasma Minigun. Unlocks [Ninja](../perks.md#40-ninja).
 Timer-based spider bosses plus blue spiders. Escalating paired waves
 from top and bottom.
 
@@ -242,7 +242,7 @@ spawner nests.
 
 #### 3.9. Deja vu
 
-Starts with Gauss Gun. Unlocks Highlander.
+Starts with Gauss Gun. Unlocks [Highlander](../perks.md#41-highlander).
 Same radial pattern as Sweep Stakes (2.5), but spawns lizard spawner
 nests instead of orbiters.
 
@@ -258,7 +258,7 @@ High-volume quests mixing all enemy types and complex spawner patterns.
 
 #### 4.1. Major Alien Breach
 
-Starts with Rocket Minigun. Unlocks Jinxed.
+Starts with Rocket Minigun. Unlocks [Jinxed](../perks.md#42-jinxed).
 Massive alien flood from right and top edges with accelerating spawn
 interval. 100 spawn entries total.
 
@@ -270,7 +270,7 @@ endurance test.
 
 #### 4.3. Lizard Zombie Pact
 
-Unlocks Perk Master.
+Unlocks [Perk Master](../perks.md#43-perk-master).
 Zombie waves from both sides plus lizard spawner nests every 5th wave,
 with escalating spawner counts.
 
@@ -282,7 +282,7 @@ left, zombies top. Escalating counts per wave.
 
 #### 4.5. The Massacre
 
-Unlocks Reflex Boosted.
+Unlocks [Reflex Boosted](../perks.md#44-reflex-boosted).
 Zombie stream from the right. Fast red aliens join on even waves.
 
 #### 4.6. The Unblitzkrieg
@@ -293,7 +293,7 @@ successive loop places nests faster.
 
 #### 4.7. Gauntlet
 
-Unlocks Greater Regeneration.
+Unlocks [Greater Regeneration](../perks.md#45-greater-regeneration).
 Inner ring of spawner nests, then zombie waves from all four edges,
 then an outer ring of spawner nests.
 
@@ -305,7 +305,7 @@ pattern). Multiple waves with pseudorandom placement.
 
 #### 4.9. The Annihilation
 
-Unlocks Breathing Room.
+Unlocks [Breathing Room](../perks.md#46-breathing-room).
 Fast red aliens plus two phases of spawner nests in staggered columns.
 
 #### 4.10. The End of All
@@ -328,14 +328,14 @@ sides, brown transparent aliens, and ring formations from below.
 
 #### 5.2. The Spanking Of The Dead
 
-Unlocks Death Clock.
+Unlocks [Death Clock](../perks.md#47-death-clock).
 Two weapon bonus aliens, then 130 zombies spawning in a tightening
 spiral around the center, followed by grey zombie waves from both
 sides.
 
 #### 5.3. The Fortress
 
-Unlocks My Favourite Weapon.
+Unlocks [My Favourite Weapon](../perks.md#48-my-favourite-weapon).
 Blue spiders, then limited spawner nests along one side, then a grid
 of spider spawner nests filling most of the map.
 
@@ -348,14 +348,14 @@ chain formation finale.
 
 #### 5.5. Knee-deep in the Dead
 
-Unlocks Bandage.
+Unlocks [Bandage](../perks.md#49-bandage).
 Relentless zombie stream from the left. Green zombie brute every 8th
 wave. Adds more spawn lanes as the quest progresses, up to five
 simultaneous streams.
 
 #### 5.6. Cross Fire
 
-Unlocks Angry Reloader.
+Unlocks [Angry Reloader](../perks.md#50-angry-reloader).
 Blue spiders, escalating ranged spider bosses, splitter spiders in
 the center, and more blue spiders from top and bottom.
 
@@ -368,13 +368,13 @@ spider grids from above.
 
 #### 5.8. Monster Blues
 
-Unlocks Ion Gun Master.
+Unlocks [Ion Gun Master](../perks.md#51-ion-gun-master).
 All types in sequence: lizards, aliens, spiders. Then a long mixed
 phase cycling all types with escalating counts.
 
 #### 5.9. Nagolipoli
 
-Unlocks Stationary Reloader.
+Unlocks [Stationary Reloader](../perks.md#52-stationary-reloader).
 Spider rings around the center, then lizard waves from all four
 corners, then spawner nests on both sides, ending with ranged spider
 spawners at center.
