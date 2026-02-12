@@ -3,10 +3,11 @@ from __future__ import annotations
 from grim.geom import Vec2
 
 from crimson.bonuses import BonusId
+from crimson.bonuses.apply import bonus_apply
 from crimson.creatures.runtime import CreaturePool
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState, PlayerState, bonus_apply
+from crimson.gameplay import GameplayState, PlayerState
 from crimson.sim.world_state import WorldState
 
 

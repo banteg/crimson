@@ -1,6 +1,6 @@
 [project]
 name = "crimsonland"
-version = "0.1.0.dev25"
+version = "0.1.0.dev27"
 readme = { file = "readme.md", content-type = "text/markdown" }
 requires-python = ">=3.13"
 dependencies = [
@@ -30,13 +30,14 @@ module-name = ["crimson", "grim"]
 [dependency-groups]
 dev = [
     "import-linter>=2.9",
+    "mkdocstrings>=1.0.3",
     "py-spy>=0.4.1",
     "pylint>=4.0.4",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "syrupy>=5.0.0",
     "ty>=0.0.15",
-    "zensical>=0.0.16",
+    "zensical>=0.0.22",
 ]
 
 [tool.ruff]
@@ -76,13 +77,22 @@ source_modules = ["grim"]
 forbidden_modules = ["crimson"]
 
 [[tool.importlinter.contracts]]
-name = "crimson.sim must not import pyray"
+name = "perk implementations must stay out of selection and availability"
 type = "forbidden"
-source_modules = ["crimson.sim"]
-forbidden_modules = ["pyray"]
+source_modules = ["crimson.perks.impl"]
+forbidden_modules = ["crimson.perks.selection", "crimson.perks.availability"]
+allow_indirect_imports = true
 
 [[tool.importlinter.contracts]]
-name = "crimson.frontend must not import simulation"
+name = "perk runtime must stay out of selection and availability"
 type = "forbidden"
-source_modules = ["crimson.frontend"]
-forbidden_modules = ["crimson.sim", "crimson.game_world"]
+source_modules = ["crimson.perks.runtime"]
+forbidden_modules = ["crimson.perks.selection", "crimson.perks.availability"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "selection and availability must not import perk impl directly"
+type = "forbidden"
+source_modules = ["crimson.perks.selection", "crimson.perks.availability"]
+forbidden_modules = ["crimson.perks.impl"]
+allow_indirect_imports = true

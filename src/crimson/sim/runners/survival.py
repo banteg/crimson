@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 import math
+from typing import cast
 
 from grim.geom import Vec2
 
 from ...game_modes import GameMode
-from ...gameplay import (
-    PlayerInput,
-    perk_apply,
-    perk_selection_current_choices,
-    perk_selection_pick,
-)
 from ...perks import PerkId
+from ...perks.runtime.apply import perk_apply
+from ...perks.selection import perk_selection_current_choices, perk_selection_pick
+from ...perks.state import CreatureForPerks
 from ...replay import (
     PerkMenuOpenEvent,
     PerkPickEvent,
@@ -31,6 +29,7 @@ from ...original.capture import (
     capture_perk_apply_from_event_payload,
     capture_perk_pending_from_event_payload,
 )
+from ..input import PlayerInput
 from ..sessions import SurvivalDeterministicSession
 from ..world_state import WorldEvents, WorldState
 from .common import (
@@ -77,7 +76,7 @@ def _apply_tick_events(
                 game_mode=int(GameMode.SURVIVAL),
                 player_count=len(players),
                 dt=float(dt_frame),
-                creatures=world.creatures.entries,
+                creatures=cast("list[CreatureForPerks]", world.creatures.entries),
             )
             if picked is None:
                 if strict_events:
@@ -134,7 +133,7 @@ def _apply_tick_events(
                         perk_enum,
                         perk_state=perk_state,
                         dt=float(dt_frame),
-                        creatures=world.creatures.entries,
+                        creatures=cast("list[CreatureForPerks]", world.creatures.entries),
                     )
                     state.rng.srand(int(rng_state_before))
                 else:
@@ -144,7 +143,7 @@ def _apply_tick_events(
                         perk_enum,
                         perk_state=perk_state,
                         dt=float(dt_frame),
-                        creatures=world.creatures.entries,
+                        creatures=cast("list[CreatureForPerks]", world.creatures.entries),
                     )
                 continue
             if str(event.kind) == CAPTURE_PERK_PENDING_EVENT_KIND:

@@ -6,8 +6,10 @@ import json
 from typing import Callable
 
 from ..effects import FxQueue, FxQueueRotated
-from ..gameplay import PlayerInput, perks_rebuild_available, weapon_refresh_available
+from ..gameplay import weapon_refresh_available
 from ..math_parity import f32
+from ..perks.availability import perks_rebuild_available
+from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .presentation_step import PresentationStepCommands, apply_world_presentation_step
 from .world_state import WorldEvents, WorldState

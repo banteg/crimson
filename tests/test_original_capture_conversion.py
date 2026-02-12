@@ -786,8 +786,6 @@ def test_build_capture_dt_frame_overrides_prefers_timing_frame_dt_after_over_i32
     overrides = build_capture_dt_frame_overrides(capture, tick_rate=60)
 
     assert overrides[0] == pytest.approx(0.029000001028180122)
-
-
 def test_build_capture_dt_frame_ms_i32_overrides_uses_explicit_values(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=0)
     tick0["frame_dt_ms_i32"] = 17
@@ -1469,8 +1467,6 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_nuke_fi
     assert fire_down is False
     assert fire_pressed is False
     assert reload_pressed is False
-
-
 def test_convert_capture_to_replay_does_not_synthesize_secondary_spawn_without_owner_in_multiplayer(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0["checkpoint"]["players"] = [_base_player(), _base_player()]

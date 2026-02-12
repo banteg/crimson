@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import random
+from typing import cast
 
 import pyray as rl
 
@@ -17,7 +18,13 @@ from grim.view import ViewContext
 from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..gameplay import most_used_weapon_id_for_player, weapon_assign_player
-from ..input_codes import config_keybinds_for_player, input_code_is_down_for_player, input_code_is_pressed_for_player
+from ..input_codes import (
+    config_keybinds_for_player,
+    input_code_is_down_for_player,
+    input_code_is_pressed_for_player,
+    input_primary_just_pressed,
+)
+from ..perks.state import CreatureForPerks
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table, tick_quest_completion_transition
@@ -245,7 +252,7 @@ class QuestMode(BaseGameplayMode):
             state=self._state,
             perk_state=self._state.perk_selection,
             players=players,
-            creatures=self._creatures.entries,
+            creatures=cast("list[CreatureForPerks]", self._creatures.entries),
             player=self._player,
             game_mode=int(GameMode.QUESTS),
             player_count=len(players),
@@ -567,7 +574,10 @@ class QuestMode(BaseGameplayMode):
             ):
                 self._perk_prompt_pulse = 1000.0
                 self._perk_menu.open_if_available(perk_ctx)
-            elif self._perk_prompt_hover and input_code_is_pressed_for_player(fire_key, player_index=0):
+            elif self._perk_prompt_hover and input_primary_just_pressed(
+                self._config,
+                player_count=len(self._world.players),
+            ):
                 self._perk_prompt_pulse = 1000.0
                 self._perk_menu.open_if_available(perk_ctx)
 
@@ -691,7 +701,10 @@ class QuestMode(BaseGameplayMode):
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
-        self._world.draw(draw_aim_indicators=not perk_menu_active)
+        self._world.draw(
+            draw_aim_indicators=not perk_menu_active,
+            entity_alpha=self._world_entity_alpha(),
+        )
         self._draw_screen_fade()
 
         hud_bottom = 0.0
@@ -717,6 +730,7 @@ class QuestMode(BaseGameplayMode):
                 show_quest_hud=hud_flags.show_quest_hud,
                 quest_progress_ratio=quest_progress_ratio,
                 small_indicators=self._hud_small_indicators(),
+                preserve_bugs=bool(self._world.preserve_bugs),
             )
 
         if debug_enabled() and (not perk_menu_active):

@@ -4,8 +4,9 @@ from grim.geom import Vec2
 
 import math
 
-from crimson.gameplay import PlayerState, perk_active
+from crimson.gameplay import PlayerState
 from crimson.perks import PerkId
+from crimson.perks.helpers import perk_active
 from crimson.render.world_renderer import monster_vision_fade_alpha
 
 
@@ -20,4 +21,3 @@ def test_monster_vision_fade_alpha_matches_death_stage_clamp() -> None:
     assert math.isclose(monster_vision_fade_alpha(-5.0), 0.5, abs_tol=1e-9)
     assert math.isclose(monster_vision_fade_alpha(-10.0), 0.0, abs_tol=1e-9)
     assert math.isclose(monster_vision_fade_alpha(-20.0), 0.0, abs_tol=1e-9)
-

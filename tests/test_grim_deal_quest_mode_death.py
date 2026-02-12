@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pyray as rl
 
-from crimson.gameplay import perk_apply
 from crimson.modes.quest_mode import QuestMode
 from crimson.perks import PerkId
+from crimson.perks.runtime.apply import perk_apply
 from grim.view import ViewContext
 
 

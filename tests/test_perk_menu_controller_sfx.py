@@ -203,12 +203,12 @@ def test_prewrapped_perk_desc_uses_cache(monkeypatch) -> None:
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.measure_small_text_width", _fake_measure)
     monkeypatch.setattr(
         "crimson.modes.components.perk_menu_controller.perk_display_description",
-        lambda _perk_id, *, fx_toggle=0: "alpha beta gamma",  # noqa: ARG005
+        lambda _perk_id, *, fx_toggle=0, preserve_bugs=False: "alpha beta gamma",  # noqa: ARG005
     )
 
-    first = menu._prewrapped_perk_desc(5, object(), fx_toggle=0)  # type: ignore[arg-type]
+    first = menu._prewrapped_perk_desc(5, object(), fx_toggle=0, preserve_bugs=False)  # type: ignore[arg-type]
     count_after_first = calls["count"]
-    second = menu._prewrapped_perk_desc(5, object(), fx_toggle=0)  # type: ignore[arg-type]
+    second = menu._prewrapped_perk_desc(5, object(), fx_toggle=0, preserve_bugs=False)  # type: ignore[arg-type]
 
     assert first == second
     assert calls["count"] == count_after_first

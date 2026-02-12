@@ -5,6 +5,7 @@ import inspect
 import json
 import random
 import re
+import sys
 from pathlib import Path
 from dataclasses import fields, is_dataclass
 from typing import Any, cast
@@ -674,6 +675,47 @@ def cmd_replay_convert_capture(
     typer.echo("note: replay uses best-effort input reconstruction; checkpoints remain the authoritative diff target")
 
 
+def _strip_no_cache_flag(argv: list[str]) -> tuple[list[str], bool]:
+    filtered: list[str] = []
+    no_cache = False
+    for arg in argv:
+        if str(arg) == "--no-cache":
+            no_cache = True
+            continue
+        filtered.append(str(arg))
+    return filtered, bool(no_cache)
+
+
+def _run_original_tool_cached(
+    *,
+    tool: str,
+    argv: list[str],
+    fallback: Any,
+) -> int:
+    from .original import diagnostics_cache, diagnostics_daemon
+
+    args, no_cache = _strip_no_cache_flag(argv)
+    if bool(no_cache) or not diagnostics_cache.cache_enabled():
+        return int(fallback(args))
+
+    try:
+        response = diagnostics_daemon.run_tool_request(
+            tool=str(tool),
+            args=list(args),
+            cwd=Path.cwd(),
+        )
+        if response.stdout:
+            sys.stdout.write(str(response.stdout))
+            sys.stdout.flush()
+        if response.stderr:
+            sys.stderr.write(str(response.stderr))
+            sys.stderr.flush()
+        return int(response.exit_code)
+    except Exception as exc:
+        typer.echo(f"warning: diagnostics cache unavailable ({exc}); falling back to local execution", err=True)
+        return int(fallback(args))
+
+
 @original_app.command(
     "divergence-report",
     context_settings={"allow_extra_args": True, "ignore_unknown_options": True, "help_option_names": []},
@@ -682,7 +724,13 @@ def cmd_replay_divergence_report(ctx: typer.Context) -> None:
     """Run divergence report against a capture."""
     from .original import divergence_report
 
-    raise typer.Exit(code=divergence_report.main(list(ctx.args)))
+    raise typer.Exit(
+        code=_run_original_tool_cached(
+            tool="divergence-report",
+            argv=list(ctx.args),
+            fallback=divergence_report.main,
+        )
+    )
 
 
 @original_app.command(
@@ -704,7 +752,13 @@ def cmd_replay_focus_trace(ctx: typer.Context) -> None:
     """Trace a single focus tick from capture diagnostics."""
     from .original import focus_trace
 
-    raise typer.Exit(code=focus_trace.main(list(ctx.args)))
+    raise typer.Exit(
+        code=_run_original_tool_cached(
+            tool="focus-trace",
+            argv=list(ctx.args),
+            fallback=focus_trace.main,
+        )
+    )
 
 
 @original_app.command(

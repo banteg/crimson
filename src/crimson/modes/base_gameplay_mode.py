@@ -12,9 +12,12 @@ from grim.console import ConsoleState
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
+from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
-from ..gameplay import PlayerInput, _creature_find_in_radius, perk_count_get
+from ..gameplay import PlayerInput
+from ..perks.runtime.effects import _creature_find_in_radius
+from ..perks.helpers import perk_count_get
 from ..game_world import GameWorld
 from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..persistence.highscores import HighScoreRecord
@@ -84,6 +87,7 @@ class BaseGameplayMode:
             base_dir=self._base_dir,
             config=config
             or CrimsonConfig(path=self._base_dir / "crimson.cfg", data={"game_mode": int(default_game_mode_id)}),
+            preserve_bugs=bool(ctx.preserve_bugs),
         )
         self._game_over_banner = "reaper"
 
@@ -309,13 +313,33 @@ class BaseGameplayMode:
             self._action = "back_to_menu"
             self.close_requested = True
 
-    def draw_pause_background(self) -> None:
-        self._world.draw(draw_aim_indicators=False)
+    def _world_entity_alpha(self) -> float:
+        if not self._game_over_active:
+            return 1.0
+        return float(self._game_over_ui.world_entity_alpha())
+
+    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
+        alpha = float(entity_alpha)
+        if alpha < 0.0:
+            alpha = 0.0
+        elif alpha > 1.0:
+            alpha = 1.0
+        self._world.draw(draw_aim_indicators=False, entity_alpha=self._world_entity_alpha() * alpha)
 
     def steal_ground_for_menu(self):
         ground = self._world.ground
         self._world.ground = None
         return ground
+
+    def adopt_ground_from_menu(self, ground: GroundRenderer | None) -> None:
+        if ground is None:
+            return
+        current = self._world.ground
+        if current is not None and current is not ground and current.render_target is not None:
+            rl.unload_render_texture(current.render_target)
+            current.render_target = None
+        self._world.ground = ground
+        self._world._sync_ground_settings()
 
     def menu_ground_camera(self) -> Vec2:
         return self._world.camera

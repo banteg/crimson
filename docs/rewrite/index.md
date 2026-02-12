@@ -31,6 +31,8 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Options panel (volume/detail/mouse sliders + “UI Info texts”; Controls supports 1..4 player selection, per-player direction-arrow toggle, and right-panel key/button/axis rebinding).
 - Statistics panel (Summary/Weapons/Quests pages; playtime + weapon usage + quest counters).
 - Menu terrain persists between screens (no regen on Options/Stats/etc navigation).
+- Menu terrain selection matches original unlock-gated random variants (`(0,1,0)`, `(2,3,2)`, `(4,5,4)`, `(6,7,6)`).
+- Survival/Rush regenerate terrain on start (menu terrain does not carry into a fresh gameplay run).
 - Menu sign shadow pass matches the original when `fx_detail` is enabled.
 - Demo/attract mode: idle trigger + variant sequencing; upsell overlay + trial overlay + purchase screen flow in demo builds.
 
@@ -65,7 +67,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
   - Quest mode has all tiers 1-5 implemented with full spawn scripting.
   - Tutorial mode has full stage-based progression with hint system.
   - Typ-o-Shooter has typing mechanics with target matching and reload command.
-- Game over / high score entry screen is implemented for Survival/Rush/Typ-o: [rewrite/game-over.md](game-over.md)
+- Game over / high score entry screen is implemented for Survival/Rush/Typ-o.
 - Quest completion/failure screens are implemented (results + failed).
 - Demo/attract mode reuses the same gameplay systems (no separate “toy sim”).
 
@@ -116,13 +118,11 @@ Available via `uv run crimson view <name>`:
 See also:
 
 - [Module map (Grim vs Crimson)](module-map.md)
-- [Deterministic simulation PRD](deterministic-sim-prd.md)
 - [Deterministic step pipeline](deterministic-step-pipeline.md)
 - [Local multiplayer rewrite notes](local-multiplayer.md)
 - [Float parity policy](float-parity-policy.md)
 - [Terrain (rewrite)](terrain.md)
-- [Bonus pickups (rewrite)](bonuses.md)
-- [Survival entry fade (decompile notes)](survival-transition-fade.md)
+- [Perks architecture (rewrite)](perks-architecture.md)
 - [Original bugs (and rewrite fixes)](original-bugs.md)
 
 ## Known gaps (short list)
@@ -132,10 +132,9 @@ See also:
 - Multiplayer (2-4 players): per-player local input is wired in Survival/Rush/Quest; deep scheme-by-scheme parity validation is still in progress.
 - `game.cfg` progression/unlock wiring and some statistics counters are still incomplete.
 - Full Options/Controls parity (video/window mode editing, full widget set).
-- Online scores + mods/plugin interface (tracked but not yet implemented).
+- Native online-score submission is out of scope; direction is a more advanced headless verification system.
+- Mods/plugin runtime and Other Games/shareware ad flows are out of scope for the rewrite.
 
 ## Roadmap
 
-See the rewrite tech tree: [rewrite/tech-tree.md](tech-tree.md)
-
-See also: [Rewrite status / parity gaps](status.md)
+See: [Rewrite status / parity gaps](status.md)

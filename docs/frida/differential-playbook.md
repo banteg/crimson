@@ -66,6 +66,13 @@ anchors, not exact absolute tick equality across different recordings.
 
 ## 4) Baseline triage commands
 
+Caching note:
+
+- `original divergence-report` and `original focus-trace` now auto-use a local diagnostics cache daemon.
+- First run for a new capture can block while the cache warms.
+- Subsequent runs against the same capture should be significantly faster.
+- Use `--no-cache` to force the legacy in-process path for debugging/regressions.
+
 Run in this order:
 
 ```bash

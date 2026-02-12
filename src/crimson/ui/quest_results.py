@@ -22,7 +22,7 @@ from ..persistence.highscores import (
     upsert_highscore_record,
 )
 from ..quests.results import QuestFinalTime, QuestResultsBreakdownAnim, tick_quest_results_breakdown_anim
-from ..weapons import WEAPON_BY_ID
+from ..weapons import WEAPON_BY_ID, weapon_display_name
 from .formatting import format_ordinal, format_time_mm_ss
 from .layout import menu_widescreen_y_shift, ui_scale
 from .menu_panel import draw_classic_menu_panel
@@ -143,6 +143,7 @@ class QuestResultsUi:
     assets_root: Path
     base_dir: Path
     config: CrimsonConfig
+    preserve_bugs: bool = False
 
     assets: QuestResultsAssets | None = None
     font: SmallFontData | None = None
@@ -263,6 +264,24 @@ class QuestResultsUi:
         self._closing = True
         self._close_action = action
 
+    def world_entity_alpha(self) -> float:
+        if not self._closing:
+            return 1.0
+        t_ms = float(self._intro_ms)
+        if t_ms <= PANEL_SLIDE_END_MS:
+            return 0.0
+        if t_ms >= PANEL_SLIDE_START_MS:
+            return 1.0
+        span = float(PANEL_SLIDE_START_MS - PANEL_SLIDE_END_MS)
+        if span <= 1e-6:
+            return 1.0
+        alpha = (t_ms - PANEL_SLIDE_END_MS) / span
+        if alpha < 0.0:
+            return 0.0
+        if alpha > 1.0:
+            return 1.0
+        return alpha
+
     def _text_width(self, text: str, scale: float) -> float:
         if self.font is None:
             return float(rl.measure_text(text, int(20 * scale)))
@@ -344,8 +363,7 @@ class QuestResultsUi:
                 rl.draw_texture_pro(self.assets.wicons, src, dst, rl.Vector2(0.0, 0.0), 0.0, icon_tint)
 
         weapon_id = int(record.most_used_weapon_id)
-        weapon_entry = WEAPON_BY_ID.get(weapon_id)
-        weapon_name = weapon_entry.name if weapon_entry is not None and weapon_entry.name else f"weapon_{weapon_id}"
+        weapon_name = weapon_display_name(weapon_id, preserve_bugs=bool(self.preserve_bugs))
         name_w = self._text_width(weapon_name, 1.0 * scale)
         name_x = max(x + 4.0 * scale, left_center_x - name_w * 0.5)
         self._draw_small(weapon_name, Vec2(name_x, row_y + 32.0 * scale), 1.0 * scale, col_row)
@@ -716,8 +734,12 @@ class QuestResultsUi:
 
         elif self.phase == 1:
             text_y = panel_layout.top_left.y + 118.0 * scale
+            name_prompt = "State your name trooper!" if bool(self.preserve_bugs) else "State your name, trooper!"
             self._draw_small(
-                "State your name trooper!", Vec2(content_pos.x + 42.0 * scale, text_y), 1.0 * scale, COLOR_UI_ACCENT
+                name_prompt,
+                Vec2(content_pos.x + 42.0 * scale, text_y),
+                1.0 * scale,
+                COLOR_UI_ACCENT,
             )
 
             input_pos = content_pos.offset(dy=150.0 * scale)

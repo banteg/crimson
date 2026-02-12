@@ -72,6 +72,16 @@ typedef struct crimson_cfg_t {
 } crimson_cfg_t;
 ```
 
+## Control scheme notes
+
+For player controls, movement and aiming are stored separately in the blob:
+
+- `config_player_mode_flags[player]` controls movement mode.
+- `config_aim_scheme[player]` controls aiming mode.
+
+On the original EXE, these can be mixed in practice (for example
+`move_mode = 2` static movement with `aim_scheme = 5` computer aiming).
+
 Observed file:
 
 - `game_bins/crimsonland/1.9.93-gog/crimson.cfg`

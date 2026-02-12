@@ -3,7 +3,7 @@ from __future__ import annotations
 import struct
 from typing import Sequence
 
-from ..gameplay import PlayerInput
+from ..sim.input import PlayerInput
 from .types import (
     PackedPlayerInput,
     PackedTickInputs,

@@ -10,7 +10,7 @@ from pathlib import Path
 
 from grim.geom import Vec2
 from ..bonuses import BonusId
-from ..gameplay import PlayerState
+from ..sim.state_types import PlayerState
 from ..sim.world_state import WorldState
 
 FORMAT_VERSION = 1

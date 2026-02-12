@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import random
+from typing import cast
 
 import pyray as rl
 
@@ -17,6 +18,7 @@ from ..creatures.runtime import CreatureFlags
 from ..game_modes import GameMode
 from ..gameplay import PlayerInput, survival_check_level_up, weapon_assign_player
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
+from ..perks.state import CreatureForPerks
 from ..tutorial.timeline import TutorialFrameActions, TutorialState, tick_tutorial_timeline
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
@@ -114,7 +116,7 @@ class TutorialMode(BaseGameplayMode):
             state=self._state,
             perk_state=self._state.perk_selection,
             players=[self._player],
-            creatures=self._creatures.entries,
+            creatures=cast("list[CreatureForPerks]", self._creatures.entries),
             player=self._player,
             game_mode=int(GameMode.TUTORIAL),
             player_count=1,
@@ -298,6 +300,7 @@ class TutorialMode(BaseGameplayMode):
             bonus_pool_empty=bonus_pool_empty,
             perk_pending_count=perk_pending_count,
             hint_bonus_died=hint_bonus_died,
+            preserve_bugs=bool(self._world.preserve_bugs),
         )
         self._tutorial_actions = actions
 
@@ -350,7 +353,10 @@ class TutorialMode(BaseGameplayMode):
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
-        self._world.draw(draw_aim_indicators=not perk_menu_active)
+        self._world.draw(
+            draw_aim_indicators=not perk_menu_active,
+            entity_alpha=self._world_entity_alpha(),
+        )
         self._draw_screen_fade()
 
         hud_bottom = 0.0
@@ -374,6 +380,7 @@ class TutorialMode(BaseGameplayMode):
                 show_time=hud_flags.show_time,
                 show_quest_hud=hud_flags.show_quest_hud,
                 small_indicators=self._hud_small_indicators(),
+                preserve_bugs=bool(self._world.preserve_bugs),
             )
 
         self._draw_tutorial_prompts(hud_bottom=hud_bottom)

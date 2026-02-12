@@ -1,115 +1,42 @@
-# Crimsonland reverse engineering notes
+---
+tags:
+  - docs-hub
+---
 
-Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
+# Crimsonland documentation
 
-!!! abstract "Current state"
-    The rewrite is a playable full game: boot → menus → in-game for Survival, Rush,
-    Quests, Tutorial, and Typ-o-Shooter, with core UI flows, terrain/sprite/decal
-    rendering, and music + most gameplay SFX. Run the latest packaged build via
-    `uvx crimsonland@latest`, or from a checkout with `uv run crimson`. Remaining
-    work is mainly parity polish and content breadth (weapons/creatures),
-    multiplayer input separation, online scores/mods, and continued map/type recovery.
+A from-scratch rewrite of Crimsonland (2003), aiming for full parity with the
+original Windows executable. These docs cover the game's mechanics, the rewrite
+implementation, and the reverse engineering work that ties them together.
 
-## Analysis
+[Blog post](https://banteg.xyz/posts/crimsonland/) • [Source code](https://github.com/banteg/crimson)
 
-- [Binary Analysis](binary-analysis.md)
-- [Entrypoint trace](entrypoint.md)
-- [Boot / Loading Sequence](boot-sequence.md)
-- [Detangling notes](detangling.md)
-- [Progress metrics](metrics.md)
+## Play now
 
-## Rewrite (Python + raylib)
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
 
-- [Rewrite overview](rewrite/index.md)
-- [Rewrite status / parity gaps](rewrite/status.md)
-- [Float parity policy](rewrite/float-parity-policy.md)
-- [Rewrite tech tree](rewrite/tech-tree.md)
-- [Terrain (rewrite)](rewrite/terrain.md)
+```bash
+uvx crimsonland@latest
+```
 
-## Crimsonland.exe
+## Highlights
 
-- [Crimsonland.exe overview (by concern)](crimsonland-exe/index.md)
-- [State machine](crimsonland-exe/state-machine.md)
-- [State id glossary](crimsonland-exe/state-ids.md)
-- [Frame loop](crimsonland-exe/frame-loop.md)
-- [Gameplay glue](crimsonland-exe/gameplay.md)
-- [Rendering pipeline](crimsonland-exe/rendering.md)
-- [UI and menus](crimsonland-exe/ui.md)
-- [Main menu (state 0)](crimsonland-exe/main-menu.md)
-- [Screens and flows](crimsonland-exe/screens.md)
-- [Demo / attract mode](crimsonland-exe/demo-mode.md)
-- [Online high scores](crimsonland-exe/online-scores.md)
-- [Mods (CMOD plugins)](crimsonland-exe/mods.md)
-- [Terrain pipeline](crimsonland-exe/terrain.md)
+- [Perks](mechanics/perks.md): all 58 perks with exact numbers, interaction
+  rules, and original bug notes verified against two builds of the binary.
 
-## Formats & pipeline
+- [Fire Bullets (1.9.8 vs 1.9.93)](re/static/fire-bullets-1.9.8-vs-1.9.93.md):
+  how fire bullets changed from an additive bonus (1.9.8) to a full weapon
+  replacement (1.9.93), with per-weapon DPS showing most weapons lost 80-95%
+  of their output.
 
-- [Formats overview](formats/index.md)
-- [PAQ archives](formats/paq.md)
-- [JAZ textures](formats/jaz.md)
-- [Fonts](formats/fonts.md)
-- [Sprite atlas cutting](atlas.md)
-- [Extraction pipeline](pipeline.md)
-- [Python executable spec](python-executable-spec.md)
-- [Save/status file (game.cfg)](save-status-format.md)
-- [Config blob (crimson.cfg)](crimson-cfg.md)
+## Sections
 
-## Data tables & IDs
-
-- [Weapon table](weapon-table.md)
-- [Weapon ID map](weapon-id-map.md)
-- [UI weapon icons](ui-weapon-icons.md)
-- [Perk ID map](perk-id-map.md)
-- [Perks (behavior reference)](perks.md)
-- [Bonus ID map](bonus-id-map.md)
-- [Bonus drop rates](bonus-drop-rates.md)
-- [Game mode map](game-mode-map.md)
-- [Quest builders](quest-builders.md)
-- [Audio](audio.md)
-
-## Structs & pools
-
-- [Structs overview](structs/index.md)
-- [Player struct](structs/player.md)
-- [Creature pool struct](creatures/struct.md)
-- [Projectile struct](structs/projectile.md)
-- [Effects pools](structs/effects.md)
-
-## Creatures
-
-- [Creatures overview](creatures/index.md)
-- [Spawning (templates)](creatures/spawning.md)
-- [Animations](creatures/animations.md)
-- [AI](creatures/ai.md)
-
-## Grim2D
-
-- [Grim2D overview](grim2d/index.md)
-- [Grim2D API vtable](grim2d/api.md)
-- [Grim2D API evidence](grim2d/api-evidence.md)
-- [Grim2D runtime validation](grim2d/runtime-validation.md)
-
-## Runtime tooling
-
-- [Frida](frida/index.md)
-- [WinDbg / CDB](windbg/index.md)
-
-## Gameplay notes
-
-- [UI elements](ui-elements.md)
-- [In-game console](console.md)
-- [Secrets](secrets/index.md)
-
-## Tracking & meta
-
-- [Work status model](work-status.md)
-- [Worklog](worklog.md)
-- [Build provenance and hashes](provenance.md)
-- [Third-party libraries](third-party-libs.md)
-
-## Cheatsheets
-
-- [Frida GumJS](cheatsheets/frida.md)
-- [raylib (Python)](cheatsheets/raylib.md)
-- [Zensical Markdown](cheatsheets/zensical.md)
-- [Zig 0.15](cheatsheets/zig.md)
+- [Mechanics](mechanics/index.md): how the game actually plays. Behavior
+  specs, reference tables, and game rules written without decompiler details.
+- [Rewrite](rewrite/index.md): the Python port. Architecture, module map,
+  debug views, and parity status.
+- [Reverse engineering](re/index.md): static analysis, runtime probes, struct
+  layouts, and file formats extracted from the original binary.
+- [Verification](verification/index.md): differential testing, evidence
+  ledger, and parity matrices that connect claims to proof.
+- [Contributor](contributor/index.md): setup, workflows, and project tracking.

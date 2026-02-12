@@ -782,6 +782,27 @@ WEAPON_BY_ID = {
     entry.weapon_id: entry for entry in WEAPON_TABLE
 }
 
+_WEAPON_FIXED_NAMES = {
+    int(WeaponId.PLAGUE_SPHREADER_GUN): "Plague Spreader Gun",
+    int(WeaponId.LIGHTING_RIFLE): "Lightning Rifle",
+    int(WeaponId.FIRE_BULLETS): "Fire Bullets",
+}
+
+
+def weapon_display_name(weapon_id: int, *, preserve_bugs: bool = False) -> str:
+    weapon_id_i = int(weapon_id)
+    entry = WEAPON_BY_ID.get(weapon_id_i)
+    if entry is None:
+        return f"weapon_{weapon_id_i}"
+    name = entry.name or f"weapon_{int(entry.weapon_id)}"
+    if bool(preserve_bugs):
+        return str(name)
+    fixed = _WEAPON_FIXED_NAMES.get(weapon_id_i)
+    if fixed is not None:
+        return fixed
+    return str(name)
+
+
 WEAPON_PROJECTILE_TYPE_IDS: dict[int, tuple[int, ...]] = {
     # Source: analysis/ghidra/raw/crimsonland.exe_decompiled.c (`player_fire_weapon`).
     # Weapon ids not listed here use `type_id == weapon_id` in the native

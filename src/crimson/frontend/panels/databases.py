@@ -421,9 +421,11 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         weapon_id = int(self._selected_weapon_id)
         name, icon_index = self._weapon_label_and_icon(weapon_id)
         weapon = self._weapon_entry(weapon_id)
+        preserve_bugs = bool(getattr(self._state, "preserve_bugs", False))
+        weapon_no_label = "wepno" if preserve_bugs else "weapon"
         draw_small_text(
             font,
-            f"wepno #{weapon_id}",
+            f"{weapon_no_label} #{weapon_id}",
             right + Vec2(240.0 * scale, 32.0 * scale),
             text_scale,
             rl.Color(255, 255, 255, int(255 * 0.4)),
@@ -439,10 +441,11 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             reload_time = float(reload_raw) if isinstance(reload_raw, (int, float)) else None
             clip_size = int(clip_raw) if isinstance(clip_raw, (int, float)) else None
             ammo_class = int(getattr(weapon, "ammo_class", 0) or 0)
+            firerate_label = "Firerate" if preserve_bugs else "Fire rate"
             if ammo_class == 1:
-                firerate_text = "Firerate: n/a"
+                firerate_text = f"{firerate_label}: n/a"
             elif rpm is not None:
-                firerate_text = f"Firerate: {rpm} rpm"
+                firerate_text = f"{firerate_label}: {rpm} rpm"
             else:
                 firerate_text = None
             if firerate_text is not None:
@@ -603,16 +606,16 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             rl.WHITE,
         )
 
-    @staticmethod
-    def _weapon_label_and_icon(weapon_id: int) -> tuple[str, int | None]:
-        try:
-            from ...weapons import WEAPON_BY_ID
-        except Exception:
-            WEAPON_BY_ID = {}
+    def _weapon_label_and_icon(self, weapon_id: int) -> tuple[str, int | None]:
+        from ...weapons import WEAPON_BY_ID, weapon_display_name
+
         weapon = WEAPON_BY_ID.get(int(weapon_id))
         if weapon is None:
             return f"Weapon {int(weapon_id)}", None
-        name = weapon.name or f"weapon_{int(weapon.weapon_id)}"
+        name = weapon_display_name(
+            int(weapon.weapon_id),
+            preserve_bugs=bool(getattr(self._state, "preserve_bugs", False)),
+        )
         return name, weapon.icon_index
 
 
@@ -635,7 +638,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         self._nav_focus_index: int = 0
         self._scroll_drag_active: bool = False
         self._scroll_drag_offset: float = 0.0
-        self._wrapped_desc_cache: dict[tuple[int, int], str] = {}
+        self._wrapped_desc_cache: dict[tuple[int, int, int], str] = {}
 
     def open(self) -> None:
         super().open()
@@ -725,6 +728,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         end = min(len(perk_ids), start + self._VISIBLE_ROWS)
         list_top_left = left + Vec2(self._LIST_TEXT_X * scale, self._LIST_TEXT_Y * scale)
         row_step = self._LIST_ROW_HEIGHT * scale
+        preserve_bugs = self._preserve_bugs()
         for row, perk_id in enumerate(perk_ids[start:end], start=0):
             list_index = start + row
             if list_index == self._hovered_row_index:
@@ -735,7 +739,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
                 row_alpha = 0.7
             draw_small_text(
                 font,
-                self._perk_name(perk_id, fx_toggle=fx_toggle),
+                self._perk_name(perk_id, fx_toggle=fx_toggle, preserve_bugs=preserve_bugs),
                 list_top_left.offset(dy=float(row) * row_step),
                 text_scale,
                 rl.Color(255, 255, 255, int(255 * row_alpha)),
@@ -775,11 +779,12 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         if hovered_perk_id is None:
             return
         perk_id = int(hovered_perk_id)
-        perk_name = self._perk_name(perk_id, fx_toggle=fx_toggle)
+        perk_name = self._perk_name(perk_id, fx_toggle=fx_toggle, preserve_bugs=preserve_bugs)
         detail_anchor = right + Vec2(34.0 * scale, 72.0 * scale)
+        perk_no_label = "perkno" if preserve_bugs else "perk"
         draw_small_text(
             font,
-            f"perkno #{perk_id}",
+            f"{perk_no_label} #{perk_id}",
             detail_anchor + Vec2(190.0 * scale, -40.0 * scale),
             text_scale,
             rl.Color(255, 255, 255, int(255 * 0.4)),
@@ -799,7 +804,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         )
 
         desc_pos = detail_anchor + Vec2(16.0 * scale, 0.0)
-        prereq_name = self._perk_prereq_name(perk_id, fx_toggle=fx_toggle)
+        prereq_name = self._perk_prereq_name(perk_id, fx_toggle=fx_toggle, preserve_bugs=preserve_bugs)
         if prereq_name:
             draw_small_text(
                 font,
@@ -944,7 +949,8 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         return track_x, track_y, track_h, thumb_top, thumb_h, scroll_span
 
     def _build_perk_database_ids(self) -> list[int]:
-        from ...gameplay import PERK_COUNT_SIZE, perks_rebuild_available
+        from ...perks.availability import perks_rebuild_available
+        from ...sim.state_types import PERK_COUNT_SIZE
 
         # Avoid spinning up a full GameplayState; perks_rebuild_available only needs these fields.
         class _Stub:
@@ -956,26 +962,34 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         stub.status = self._state.status
         stub.perk_available = [False] * int(PERK_COUNT_SIZE)
         stub._perk_available_unlock_index = -1
-        perks_rebuild_available(stub)  # type: ignore[arg-type]
+        perks_rebuild_available(stub)
 
         perk_ids = [idx for idx, available in enumerate(stub.perk_available) if available and idx > 0]
         perk_ids.sort()
         return perk_ids
 
     @staticmethod
-    def _perk_name(perk_id: int, *, fx_toggle: int = 0) -> str:
+    def _perk_name(perk_id: int, *, fx_toggle: int = 0, preserve_bugs: bool = False) -> str:
         from ...perks import perk_display_name
 
-        return perk_display_name(int(perk_id), fx_toggle=int(fx_toggle))
+        return perk_display_name(
+            int(perk_id),
+            fx_toggle=int(fx_toggle),
+            preserve_bugs=bool(preserve_bugs),
+        )
 
     @staticmethod
-    def _perk_desc(perk_id: int, *, fx_toggle: int = 0) -> str:
+    def _perk_desc(perk_id: int, *, fx_toggle: int = 0, preserve_bugs: bool = False) -> str:
         from ...perks import perk_display_description
 
-        return perk_display_description(int(perk_id), fx_toggle=int(fx_toggle))
+        return perk_display_description(
+            int(perk_id),
+            fx_toggle=int(fx_toggle),
+            preserve_bugs=bool(preserve_bugs),
+        )
 
     @staticmethod
-    def _perk_prereq_name(perk_id: int, *, fx_toggle: int = 0) -> str | None:
+    def _perk_prereq_name(perk_id: int, *, fx_toggle: int = 0, preserve_bugs: bool = False) -> str | None:
         from ...perks import PERK_BY_ID, perk_display_name
 
         meta = PERK_BY_ID.get(int(perk_id))
@@ -984,7 +998,14 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         prereq = tuple(getattr(meta, "prereq", ()) or ())
         if not prereq:
             return None
-        return perk_display_name(int(prereq[0]), fx_toggle=int(fx_toggle))
+        return perk_display_name(
+            int(prereq[0]),
+            fx_toggle=int(fx_toggle),
+            preserve_bugs=bool(preserve_bugs),
+        )
+
+    def _preserve_bugs(self) -> bool:
+        return bool(getattr(self._state, "preserve_bugs", False))
 
     def _fx_toggle(self) -> int:
         data = getattr(getattr(self._state, "config", None), "data", None)
@@ -993,11 +1014,11 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         return int(data.get("fx_toggle", 0) or 0)
 
     def _prewrapped_perk_desc(self, perk_id: int, font: SmallFontData, *, fx_toggle: int) -> str:
-        key = (int(perk_id), int(fx_toggle))
+        key = (int(perk_id), int(fx_toggle), int(bool(self._preserve_bugs())))
         cached = self._wrapped_desc_cache.get(key)
         if cached is not None:
             return cached
-        desc = self._perk_desc(perk_id, fx_toggle=fx_toggle)
+        desc = self._perk_desc(perk_id, fx_toggle=fx_toggle, preserve_bugs=self._preserve_bugs())
         wrapped = self._wrap_small_text_native(
             font,
             desc,

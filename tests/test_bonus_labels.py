@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from crimson.bonuses import BonusId
-from crimson.gameplay import BonusEntry, bonus_label_for_entry
+from crimson.bonuses.pool import BonusEntry, bonus_label_for_entry
 
 
 def test_bonus_label_for_entry_formats_points() -> None:

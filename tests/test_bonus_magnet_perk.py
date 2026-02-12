@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 
-from crimson.gameplay import BonusPool, GameplayState, PlayerState
+from crimson.bonuses.pool import BonusPool
+from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
 from crimson.weapons import WeaponId
 

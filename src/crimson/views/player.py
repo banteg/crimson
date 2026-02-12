@@ -12,19 +12,19 @@ from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..bonuses import BonusId
+from ..bonuses.apply import bonus_apply
+from ..bonuses.hud import bonus_hud_update
 from ..creatures.spawn import CreatureFlags
 from ..gameplay import (
     GameplayState,
     PlayerInput,
     PlayerState,
-    bonus_apply,
-    bonus_hud_update,
     player_update,
     weapon_assign_player,
 )
 from ..perks import PerkId
 from ..ui.hud import HudAssets, HudState, draw_hud_overlay, hud_ui_scale, load_hud_assets
-from ..weapons import WEAPON_TABLE
+from ..weapons import WEAPON_TABLE, weapon_display_name
 from ._ui_helpers import draw_ui_text, ui_line_height
 
 WORLD_SIZE = 1024.0
@@ -53,6 +53,7 @@ def _rand_float01(state: GameplayState) -> float:
 class PlayerSandboxView:
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
+        self._preserve_bugs = bool(ctx.preserve_bugs)
         self._missing_assets: list[str] = []
         self._small: SmallFontData | None = None
 
@@ -337,6 +338,7 @@ class PlayerSandboxView:
                 score=self._player.experience,
                 font=self._small,
                 frame_dt_ms=self._last_dt_ms,
+                preserve_bugs=bool(self._preserve_bugs),
             )
 
         if self._hud_missing:
@@ -351,7 +353,7 @@ class PlayerSandboxView:
         line = ui_line_height(self._small, scale=UI_TEXT_SCALE)
 
         weapon_id = self._player.weapon_id
-        weapon_name = next((w.name for w in WEAPON_TABLE if w.weapon_id == weapon_id), None) or f"weapon_{weapon_id}"
+        weapon_name = weapon_display_name(int(weapon_id), preserve_bugs=bool(self._preserve_bugs))
         draw_ui_text(
             self._small, f"{weapon_name} (id {weapon_id})", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
         )

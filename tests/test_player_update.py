@@ -6,19 +6,12 @@ from dataclasses import dataclass
 import math
 
 from grim.rand import Crand
-from crimson.gameplay import (
-    BonusId,
-    GameplayState,
-    PlayerInput,
-    PlayerState,
-    bonus_apply,
-    bonus_hud_update,
-    player_fire_weapon,
-    player_update,
-    perks_update_effects,
-    weapon_assign_player,
-)
+from crimson.bonuses import BonusId
+from crimson.bonuses.apply import bonus_apply
+from crimson.bonuses.hud import bonus_hud_update
+from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_fire_weapon, player_update, weapon_assign_player
 from crimson.perks import PerkId
+from crimson.perks.runtime.effects import perks_update_effects
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
 from crimson.weapons import WeaponId
 
@@ -113,6 +106,25 @@ def test_player_update_does_not_preload_ammo_when_reload_timer_is_zero() -> None
     assert math.isclose(player.ammo, -1.0, abs_tol=1e-9)
 
 
+def test_player_update_move_to_cursor_reload_key_does_not_start_reload() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(50.0, 50.0), clip_size=10, ammo=10)
+
+    player_update(
+        player,
+        PlayerInput(
+            aim=Vec2(51.0, 50.0),
+            reload_pressed=True,
+            move_to_cursor_pressed=True,
+        ),
+        0.1,
+        state,
+    )
+
+    assert player.reload_active is False
+    assert player.reload_timer == 0.0
+
+
 def test_player_update_speed_bonus_expires_before_player_update_step() -> None:
     state = GameplayState()
     no_bonus = PlayerState(index=0, pos=Vec2(100.0, 100.0))
@@ -174,6 +186,21 @@ def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
     assert len(type_ids) == 8
     assert type_ids.count(0x16) == 4
     assert type_ids.count(0x15) == 4
+
+
+def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> None:
+    pool = ProjectilePool(size=32)
+    state = GameplayState(projectiles=pool)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), man_bomb_timer=0.0)
+    player.perk_counts[int(PerkId.MAN_BOMB)] = 1
+
+    player_update(player, PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(101.0, 100.0)), 4.2, state)
+
+    type_ids = _active_type_ids(pool)
+    assert len(type_ids) == 8
+    assert type_ids.count(int(ProjectileTypeId.ION_MINIGUN)) == 4
+    assert type_ids.count(int(ProjectileTypeId.ION_RIFLE)) == 4
+    assert player.man_bomb_timer == 0.0
 
 
 def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
@@ -346,6 +373,15 @@ def test_player_update_tracks_aim_point() -> None:
     player_update(player, input_state, 0.1, state)
 
     assert player.aim == Vec2(123.0, 456.0)
+
+
+def test_player_update_sets_survival_fire_seen_when_fire_input_is_down() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), shot_cooldown=1.0)
+
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0), fire_down=True), 0.016, state)
+
+    assert state.survival_reward_fire_seen is True
 
 
 def test_player_update_turns_toward_move_heading_with_turn_slowdown() -> None:

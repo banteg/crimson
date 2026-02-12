@@ -9,7 +9,7 @@ import json
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 import re
-from typing import cast
+from typing import Any, cast
 
 import msgspec
 
@@ -105,7 +105,7 @@ NATIVE_FUNCTION_TO_PORT_PATHS: dict[str, tuple[str, ...]] = {
         "src/crimson/player_damage.py",
     ),
     "bonus_try_spawn_on_kill": (
-        "src/crimson/bonuses.py",
+        "src/crimson/bonuses/pool.py",
         "src/crimson/creatures/runtime.py",
     ),
     "fx_queue_add_random": (
@@ -119,7 +119,7 @@ NATIVE_FUNCTION_TO_PORT_PATHS: dict[str, tuple[str, ...]] = {
     "effect_spawn_blood_splatter": (
         "src/crimson/effects.py",
         "src/crimson/sim/presentation_step.py",
-        "src/crimson/features/bonuses/fire_bullets.py",
+        "src/crimson/bonuses/fire_bullets.py",
     ),
 }
 
@@ -443,6 +443,22 @@ def _load_capture_sample_creature_counts(path: Path) -> dict[int, int]:
     return out
 
 
+def _capture_sample_creature_counts(capture: CaptureFile) -> dict[int, int]:
+    out: dict[int, int] = {}
+    for tick in capture.ticks:
+        tick_index = int(tick.tick_index)
+        if tick_index < 0:
+            continue
+        samples = tick.samples
+        if samples is None:
+            continue
+        creatures = samples.creatures
+        if not isinstance(creatures, list):
+            continue
+        out[int(tick_index)] = int(len(creatures))
+    return out
+
+
 def _load_capture_active_corpse_below_despawn_ticks(path: Path) -> set[int]:
     out: set[int] = set()
     for obj in _iter_capture_tick_rows(path):
@@ -465,6 +481,29 @@ def _load_capture_active_corpse_below_despawn_ticks(path: Path) -> set[int]:
             if _float_or(creature.get("hp"), 0.0) > 0.0:
                 continue
             if _float_or(creature.get("hitbox_size"), 0.0) < -10.0:
+                out.add(int(tick_index))
+                break
+    return out
+
+
+def _capture_active_corpse_below_despawn_ticks(capture: CaptureFile) -> set[int]:
+    out: set[int] = set()
+    for tick in capture.ticks:
+        tick_index = int(tick.tick_index)
+        if tick_index < 0:
+            continue
+        samples = tick.samples
+        if samples is None:
+            continue
+        creatures = samples.creatures
+        if not isinstance(creatures, list):
+            continue
+        for creature in creatures:
+            if int(creature.active) == 0:
+                continue
+            if float(creature.hp) > 0.0:
+                continue
+            if float(creature.hitbox_size) < -10.0:
                 out.add(int(tick_index))
                 break
     return out
@@ -2663,8 +2702,9 @@ def _print_run_summary(events: list[RunSummaryEvent], *, max_rows: int = 120, ti
         print(f"  ... truncated {len(events) - limit} additional events")
 
 
-def build_parser() -> argparse.ArgumentParser:
+def build_parser(*, prog: str = "crimson") -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
+        prog=str(prog),
         description="Report the next original-capture divergence with context window + RNG diagnostics.",
     )
     parser.add_argument(
@@ -2763,7 +2803,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
     args = build_parser().parse_args(argv)
     capture_path = Path(args.capture)
     json_out_path = _resolve_json_out_path(args.json_out)
@@ -2776,18 +2816,34 @@ def main(argv: list[str] | None = None) -> int:
         print(exc)
         return 2
 
-    capture = load_capture(capture_path)
-    sample_rate = _capture_sample_rate(capture)
-    expected, actual, run_result = _run_actual_checkpoints(
-        capture,
-        max_ticks=args.max_ticks,
-        seed=args.seed,
-        inter_tick_rand_draws=args.inter_tick_rand_draws,
-        aim_scheme_overrides_by_player=aim_scheme_overrides,
-    )
-    capture_sample_creature_counts = _load_capture_sample_creature_counts(capture_path)
-    capture_active_corpse_below_despawn_ticks = _load_capture_active_corpse_below_despawn_ticks(capture_path)
-    raw_debug_all_by_tick = _load_raw_tick_debug(capture_path)
+    replay_key: object | None = None
+    if session is not None:
+        from .diagnostics_cache import replay_key_from_args
+
+        replay_key = replay_key_from_args(args, aim_scheme_overrides=aim_scheme_overrides)
+        capture = session.get_capture()
+        sample_rate = int(session.get_sample_rate())
+        expected, actual, run_result, replay = session.get_replay_outcome(replay_key)
+        capture_sample_creature_counts = session.get_sample_creature_counts()
+        raw_debug_all_by_tick = session.get_raw_debug_by_tick()
+    else:
+        capture = load_capture(capture_path)
+        sample_rate = _capture_sample_rate(capture)
+        expected, actual, run_result = _run_actual_checkpoints(
+            capture,
+            max_ticks=args.max_ticks,
+            seed=args.seed,
+            inter_tick_rand_draws=args.inter_tick_rand_draws,
+            aim_scheme_overrides_by_player=aim_scheme_overrides,
+        )
+        capture_sample_creature_counts = _capture_sample_creature_counts(capture)
+        raw_debug_all_by_tick = _load_raw_tick_debug(capture_path)
+        replay = convert_capture_to_replay(
+            capture,
+            seed=args.seed,
+            aim_scheme_overrides_by_player=aim_scheme_overrides,
+        )
+    capture_active_corpse_below_despawn_ticks = _capture_active_corpse_below_despawn_ticks(capture)
     divergence = _find_first_divergence(
         expected,
         actual,
@@ -2805,11 +2861,6 @@ def main(argv: list[str] | None = None) -> int:
         f" run_score_xp={int(run_result.score_xp)} run_kills={int(run_result.creature_kill_count)}"  # ty:ignore[unresolved-attribute]
     )
 
-    replay = convert_capture_to_replay(
-        capture,
-        seed=args.seed,
-        aim_scheme_overrides_by_player=aim_scheme_overrides,
-    )
     print(
         f"mode={int(replay.header.game_mode_id)} tick_rate={int(replay.header.tick_rate)}"
         f" player_count={int(replay.header.player_count)} seed={int(replay.header.seed)}"
@@ -2828,7 +2879,17 @@ def main(argv: list[str] | None = None) -> int:
         int(expected[-1].tick_index) if expected else 0
     )
     if bool(args.run_summary) or bool(args.run_summary_short) or bool(args.run_summary_focus_context):
-        run_summary_events = _build_run_summary_events(capture_path, expected=expected)
+        if session is not None:
+            run_summary_events = [
+                RunSummaryEvent(
+                    tick_index=int(item.tick_index),
+                    kind=str(item.kind),
+                    detail=str(item.detail),
+                )
+                for item in session.get_run_summary_events()
+            ]
+        else:
+            run_summary_events = _build_run_summary_events(capture_path, expected=expected)
         if bool(args.run_summary_short):
             run_summary_short_events = _build_short_run_summary_events(
                 run_summary_events,
@@ -2875,11 +2936,14 @@ def main(argv: list[str] | None = None) -> int:
     window_ticks = set(range(max(0, focus_tick - int(args.window)), focus_tick + int(args.window) + 1))
     lead_ticks = set(range(max(0, focus_tick - int(args.lead_lookback)), focus_tick + 1))
     focused_debug_ticks = window_ticks | lead_ticks | {focus_tick}
-    raw_debug_by_tick = {
-        int(tick): row
-        for tick, row in raw_debug_all_by_tick.items()
-        if int(tick) in focused_debug_ticks
-    }
+    if session is not None:
+        raw_debug_by_tick = session.get_raw_debug_by_tick(tick_indices=focused_debug_ticks)
+    else:
+        raw_debug_by_tick = {
+            int(tick): row
+            for tick, row in raw_debug_all_by_tick.items()
+            if int(tick) in focused_debug_ticks
+        }
     rows = _build_window_rows(
         expected_by_tick=expected_by_tick,
         actual_by_tick=actual_by_tick,

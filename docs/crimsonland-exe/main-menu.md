@@ -33,6 +33,27 @@ Terrain generation is triggered elsewhere:
 - Debug: `console_hotkey_update` checks config var `0x57` and calls `terrain_generate_random()`
   (or `terrain_generate(desc)` in quest mode), then clears the config var.
 
+## Menu terrain selection (`terrain_generate_random`)
+
+When menu terrain is regenerated, `terrain_generate_random()` chooses a descriptor
+based on progression (`quest_unlock_index`) and random checks:
+
+- default descriptor: terrain ids `(0, 1, 0)` (q1 base/overlay/base)
+- if `quest_unlock_index >= 0x28` (40) and `(crt_rand() & 7) == 3`:
+  terrain ids `(6, 7, 6)` (q4)
+- else if `quest_unlock_index >= 0x1e` (30) and `(crt_rand() & 7) == 3`:
+  terrain ids `(4, 5, 4)` (q3)
+- else if `quest_unlock_index >= 0x14` (20) and `(crt_rand() & 7) == 3`:
+  terrain ids `(2, 3, 2)` (q2)
+- else keep default `(0, 1, 0)`
+
+Important parity detail: these are sequential `if/else if` checks with separate
+`crt_rand()` calls, so higher unlock levels still allow lower-tier outcomes.
+
+Shareware/demo behavior note: the frame loop clamps `quest_unlock_index` to `10`
+(`if !game_is_full_version() && quest_unlock_index > 10`) after processing menu
+frame input. In practice this prevents q2/q3/q4 menu terrain variants in the demo build.
+
 ## Keyboard navigation (state 0)
 
 Main-menu focus navigation is **Tab-based** (not arrow keys):

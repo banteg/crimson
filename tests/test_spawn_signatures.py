@@ -4,7 +4,9 @@ from grim.geom import Vec2
 
 from collections import Counter
 
-from crimson.gameplay import BonusId, GameplayState, PlayerInput, PlayerState, bonus_apply, player_update
+from crimson.bonuses import BonusId
+from crimson.bonuses.apply import bonus_apply
+from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_update
 from crimson.perks import PerkId
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
 

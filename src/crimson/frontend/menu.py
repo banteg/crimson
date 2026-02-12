@@ -10,6 +10,7 @@ from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.geom import Rect, Vec2
 from grim.terrain_render import GroundRenderer
 
+from ..terrain_assets import terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.shadow import UI_SHADOW_OFFSET, UI_SHADOW_TINT, draw_ui_quad_shadow  # noqa: F401
 from .assets import MenuAssets, _ensure_texture_cache, load_menu_assets
@@ -61,6 +62,12 @@ MENU_SIGN_POS_X_PAD = 4.0
 # Measured in the shareware/demo attract loop trace:
 # {"event":"demo_mode_start","dt_since_start_ms":23024,"game_state_id":0,"demo_mode_active":0,...}
 MENU_DEMO_IDLE_START_MS = 23_000
+MENU_DEFAULT_TERRAIN_IDS = (0, 1, 0)
+MENU_UNLOCK_TERRAIN_RULES: tuple[tuple[int, tuple[int, int, int]], ...] = (
+    (0x28, (6, 7, 6)),
+    (0x1E, (4, 5, 4)),
+    (0x14, (2, 3, 2)),
+)
 
 
 def menu_ground_camera(state: GameState) -> Vec2:
@@ -70,20 +77,82 @@ def menu_ground_camera(state: GameState) -> Vec2:
     return Vec2()
 
 
+def _menu_unlock_index(state: GameState) -> int:
+    status = getattr(state, "status", None)
+    if status is None:
+        return 0
+    try:
+        return int(status.quest_unlock_index)
+    except Exception:
+        return 0
+
+
+def _choose_menu_terrain_ids(state: GameState) -> tuple[int, int, int]:
+    unlock_index = _menu_unlock_index(state)
+    for threshold, ids in MENU_UNLOCK_TERRAIN_RULES:
+        if unlock_index >= threshold and (state.rng.randrange(0, 8) & 7) == 3:
+            return ids
+    return MENU_DEFAULT_TERRAIN_IDS
+
+
+def _menu_terrain_texture(state: GameState, terrain_id: int) -> rl.Texture | None:
+    cache = state.texture_cache
+    if cache is None:
+        return None
+    terrain = terrain_texture_by_id(int(terrain_id))
+    if terrain is None:
+        return None
+
+    key, rel_path = terrain
+    tex_get = getattr(cache, "texture", None)
+    if callable(tex_get):
+        texture = tex_get(key)
+        if texture is not None:
+            return texture
+    tex_load = getattr(cache, "get_or_load", None)
+    if callable(tex_load):
+        asset = tex_load(key, rel_path)
+        texture = getattr(asset, "texture", None)
+        if texture is not None:
+            return texture
+    return None
+
+
 def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer | None:
     cache = state.texture_cache
     if cache is None:
         return None
-    base = cache.texture("ter_q1_base")
-    if base is None:
-        return None
-    overlay = cache.texture("ter_q1_tex1")
-    detail = overlay or base
+
     ground = state.menu_ground
     screen_width = float(state.config.screen_width)
     screen_height = float(state.config.screen_height)
     texture_scale = float(state.config.texture_scale)
+    explicit_regenerate = bool(regenerate)
+    should_select_layers = ground is None or explicit_regenerate
+    scale_changed = False
+    if ground is not None:
+        scale_changed = abs(float(ground.texture_scale) - texture_scale) > 1e-6
+
+    base: rl.Texture | None = ground.texture if ground is not None else None
+    overlay: rl.Texture | None = ground.overlay if ground is not None else None
+    detail: rl.Texture | None = ground.overlay_detail if ground is not None else None
+
+    if should_select_layers:
+        base_id, overlay_id, detail_id = _choose_menu_terrain_ids(state)
+        selected_base = _menu_terrain_texture(state, base_id)
+        if selected_base is None and (base_id, overlay_id, detail_id) != MENU_DEFAULT_TERRAIN_IDS:
+            base_id, overlay_id, detail_id = MENU_DEFAULT_TERRAIN_IDS
+            selected_base = _menu_terrain_texture(state, base_id)
+        if selected_base is not None:
+            base = selected_base
+            overlay = _menu_terrain_texture(state, overlay_id)
+            detail = _menu_terrain_texture(state, detail_id)
+
     if ground is None:
+        if base is None:
+            return None
+        if detail is None:
+            detail = overlay or base
         ground = GroundRenderer(
             texture=base,
             overlay=overlay,
@@ -97,10 +166,10 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
         state.menu_ground = ground
         regenerate = True
     else:
-        scale_changed = abs(float(ground.texture_scale) - texture_scale) > 1e-6
-        ground.texture = base
+        if base is not None:
+            ground.texture = base
         ground.overlay = overlay
-        ground.overlay_detail = detail
+        ground.overlay_detail = detail or overlay or ground.texture
         ground.texture_scale = texture_scale
         ground.screen_width = screen_width
         ground.screen_height = screen_height

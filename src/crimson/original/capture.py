@@ -391,6 +391,17 @@ def _tick_frame_dt_ms(tick: CaptureTick) -> float | None:
     elif tick.before is not None and isinstance(tick.before.globals, dict):
         globals_obj = tick.before.globals
 
+    if tick.frame_dt_ms_i32 is not None and int(tick.frame_dt_ms_i32) > 0:
+        validated = _valid_dt_ms(int(tick.frame_dt_ms_i32))
+        if validated is not None:
+            return float(validated)
+
+    dt_ms_i32 = _coerce_int_like(globals_obj.get("frame_dt_ms_i32"))
+    if dt_ms_i32 is not None and int(dt_ms_i32) > 0:
+        validated = _valid_dt_ms(int(dt_ms_i32))
+        if validated is not None:
+            return float(validated)
+
     validated_tick_dt = _valid_dt_ms(tick.frame_dt_ms)
     if validated_tick_dt is not None:
         return float(validated_tick_dt)
@@ -406,16 +417,13 @@ def _tick_frame_dt_ms(tick: CaptureTick) -> float | None:
             if validated is not None:
                 return float(validated)
 
-    if tick.frame_dt_ms_i32 is not None and int(tick.frame_dt_ms_i32) > 0:
-        validated = _valid_dt_ms(int(tick.frame_dt_ms_i32))
-        if validated is not None:
-            return float(validated)
-
-    dt_ms_i32 = _coerce_int_like(globals_obj.get("frame_dt_ms_i32"))
-    if dt_ms_i32 is not None and int(dt_ms_i32) > 0:
-        validated = _valid_dt_ms(int(dt_ms_i32))
-        if validated is not None:
-            return float(validated)
+    timing = tick.diagnostics.timing
+    if isinstance(timing, dict):
+        value = timing.get("frame_dt_after")
+        if isinstance(value, (int, float)) and math.isfinite(float(value)) and float(value) > 0.0:
+            validated = _valid_dt_ms(float(value) * 1000.0)
+            if validated is not None:
+                return float(validated)
 
     return None
 

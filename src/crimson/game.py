@@ -965,7 +965,7 @@ class FrontView(Protocol):
 
 
 class PauseBackground(Protocol):
-    def draw_pause_background(self) -> None: ...
+    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None: ...
 
 
 class SurvivalGameView:
@@ -1025,14 +1025,17 @@ class SurvivalGameView:
     def draw(self) -> None:
         self._mode.draw()
 
-    def draw_pause_background(self) -> None:
-        self._mode.draw_pause_background()
+    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
+        self._mode.draw_pause_background(entity_alpha=entity_alpha)
 
     def steal_ground_for_menu(self) -> GroundRenderer | None:
         return self._mode.steal_ground_for_menu()
 
     def menu_ground_camera(self) -> Vec2:
         return self._mode.menu_ground_camera()
+
+    def adopt_menu_ground(self, ground: GroundRenderer | None) -> None:
+        self._mode.adopt_ground_from_menu(ground)
 
     def take_action(self) -> str | None:
         action = self._action
@@ -1095,14 +1098,17 @@ class RushGameView:
     def draw(self) -> None:
         self._mode.draw()
 
-    def draw_pause_background(self) -> None:
-        self._mode.draw_pause_background()
+    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
+        self._mode.draw_pause_background(entity_alpha=entity_alpha)
 
     def steal_ground_for_menu(self) -> GroundRenderer | None:
         return self._mode.steal_ground_for_menu()
 
     def menu_ground_camera(self) -> Vec2:
         return self._mode.menu_ground_camera()
+
+    def adopt_menu_ground(self, ground: GroundRenderer | None) -> None:
+        self._mode.adopt_ground_from_menu(ground)
 
     def take_action(self) -> str | None:
         action = self._action
@@ -1165,8 +1171,8 @@ class TypoShooterGameView:
     def draw(self) -> None:
         self._mode.draw()
 
-    def draw_pause_background(self) -> None:
-        self._mode.draw_pause_background()
+    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
+        self._mode.draw_pause_background(entity_alpha=entity_alpha)
 
     def steal_ground_for_menu(self) -> GroundRenderer | None:
         return self._mode.steal_ground_for_menu()
@@ -1228,8 +1234,8 @@ class TutorialGameView:
     def draw(self) -> None:
         self._mode.draw()
 
-    def draw_pause_background(self) -> None:
-        self._mode.draw_pause_background()
+    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
+        self._mode.draw_pause_background(entity_alpha=entity_alpha)
 
     def steal_ground_for_menu(self) -> GroundRenderer | None:
         return self._mode.steal_ground_for_menu()
@@ -1306,8 +1312,8 @@ class QuestGameView:
     def draw(self) -> None:
         self._mode.draw()
 
-    def draw_pause_background(self) -> None:
-        self._mode.draw_pause_background()
+    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
+        self._mode.draw_pause_background(entity_alpha=entity_alpha)
 
     def steal_ground_for_menu(self) -> GroundRenderer | None:
         return self._mode.steal_ground_for_menu()
@@ -1404,11 +1410,11 @@ class QuestResultsView:
             if quest is not None:
                 weapon_id_native = int(quest.unlock_weapon_id or 0)
                 if weapon_id_native > 0:
-                    from .weapons import WEAPON_BY_ID
+                    from .weapons import WEAPON_BY_ID, weapon_display_name
 
                     weapon_entry = WEAPON_BY_ID.get(weapon_id_native)
                     self._unlock_weapon_name = (
-                        weapon_entry.name
+                        weapon_display_name(weapon_id_native, preserve_bugs=bool(self._state.preserve_bugs))
                         if weapon_entry is not None and weapon_entry.name
                         else f"weapon_{weapon_id_native}"
                     )
@@ -1420,7 +1426,11 @@ class QuestResultsView:
                     perk_entry = PERK_BY_ID.get(perk_id)
                     if perk_entry is not None and perk_entry.name:
                         fx_toggle = int(self._state.config.data.get("fx_toggle", 0) or 0)
-                        self._unlock_perk_name = perk_display_name(perk_id, fx_toggle=fx_toggle)
+                        self._unlock_perk_name = perk_display_name(
+                            perk_id,
+                            fx_toggle=fx_toggle,
+                            preserve_bugs=bool(self._state.preserve_bugs),
+                        )
                     else:
                         self._unlock_perk_name = f"perk_{perk_id}"
         except Exception:
@@ -1485,6 +1495,7 @@ class QuestResultsView:
             assets_root=self._state.assets_dir,
             base_dir=self._state.base_dir,
             config=self._state.config,
+            preserve_bugs=bool(self._state.preserve_bugs),
         )
         self._ui.open(
             record=record,
@@ -1551,13 +1562,16 @@ class QuestResultsView:
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
+        ui = self._ui
+        bg_alpha = 1.0
+        if ui is not None:
+            bg_alpha = float(ui.world_entity_alpha())
         pause_background = self._state.pause_background
         if pause_background is not None:
-            pause_background.draw_pause_background()
+            pause_background.draw_pause_background(entity_alpha=bg_alpha)
         elif self._ground is not None:
             self._ground.draw(menu_ground_camera(self._state))
         _draw_screen_fade(self._state)
-        ui = self._ui
         if ui is not None:
             ui.draw()
             return
@@ -1599,6 +1613,10 @@ class EndNoteView:
         self._button_textures: UiButtonTextureSet | None = None
         self._action: str | None = None
         self._cursor_pulse_time = 0.0
+        self._timeline_ms = 0
+        self._timeline_max_ms = PANEL_TIMELINE_START_MS
+        self._closing = False
+        self._close_action: str | None = None
 
         self._survival_button = UiButtonState("Survival", force_wide=True)
         self._rush_button = UiButtonState("  Rush  ", force_wide=True)
@@ -1608,6 +1626,10 @@ class EndNoteView:
     def open(self) -> None:
         self._action = None
         self._cursor_pulse_time = 0.0
+        self._timeline_ms = 0
+        self._timeline_max_ms = PANEL_TIMELINE_START_MS
+        self._closing = False
+        self._close_action = None
         self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
 
         cache = _ensure_texture_cache(self._state)
@@ -1622,22 +1644,36 @@ class EndNoteView:
         self._small_font = None
         self._panel_tex = None
         self._button_textures = None
+        self._closing = False
+        self._close_action = None
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
             update_audio(self._state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
-        self._cursor_pulse_time += min(float(dt), 0.1) * 1.1
+        dt_step = min(float(dt), 0.1)
+        self._cursor_pulse_time += dt_step * 1.1
+        dt_ms = int(dt_step * 1000.0)
+        if self._closing:
+            if dt_ms > 0 and self._action is None:
+                self._timeline_ms -= dt_ms
+                if self._timeline_ms < 0 and self._close_action is not None:
+                    self._action = self._close_action
+                    self._close_action = None
+            return
+        if dt_ms > 0:
+            self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            if self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-            self._action = "back_to_menu"
+        enabled = self._timeline_ms >= self._timeline_max_ms
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
+            self._begin_close_transition("back_to_menu")
             return
 
         textures = self._button_textures
         if textures is None or (textures.button_sm is None and textures.button_md is None):
+            return
+        if not enabled:
             return
 
         screen_w = float(rl.get_screen_width())
@@ -1655,7 +1691,6 @@ class EndNoteView:
         font = self._ensure_small_font()
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        dt_ms = min(float(dt), 0.1) * 1000.0
 
         survival_w = button_width(
             font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide
@@ -1669,9 +1704,7 @@ class EndNoteView:
             click=click,
         ):
             self._state.config.data["game_mode"] = 1
-            if self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-            self._action = "start_survival"
+            self._begin_close_transition("start_survival")
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
@@ -1685,9 +1718,7 @@ class EndNoteView:
             click=click,
         ):
             self._state.config.data["game_mode"] = 2
-            if self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-            self._action = "start_rush"
+            self._begin_close_transition("start_rush")
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
@@ -1701,11 +1732,7 @@ class EndNoteView:
             click=click,
         ):
             self._state.config.data["game_mode"] = 4
-            self._state.screen_fade_alpha = 0.0
-            self._state.screen_fade_ramp = True
-            if self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-            self._action = "start_typo"
+            self._begin_close_transition("start_typo", fade_to_black=True)
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
@@ -1720,16 +1747,14 @@ class EndNoteView:
             mouse=mouse,
             click=click,
         ):
-            if self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-            self._action = "back_to_menu"
+            self._begin_close_transition("back_to_menu")
             return
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
         pause_background = self._state.pause_background
         if pause_background is not None:
-            pause_background.draw_pause_background()
+            pause_background.draw_pause_background(entity_alpha=self._world_entity_alpha())
         elif self._ground is not None:
             self._ground.draw(menu_ground_camera(self._state))
         _draw_screen_fade(self._state)
@@ -1760,6 +1785,11 @@ class EndNoteView:
         font = self._ensure_small_font()
         hardcore = bool(int(self._state.config.data.get("hardcore_flag", 0) or 0))
         header = "   Incredible!" if hardcore else "Congratulations!"
+        levels_line = (
+            "You've completed all the levels but the battle"
+            if bool(self._state.preserve_bugs)
+            else "You've completed all the levels, but the battle"
+        )
         body_lines = (
             [
                 "You've done the thing we all thought was",
@@ -1771,7 +1801,7 @@ class EndNoteView:
             ]
             if hardcore
             else [
-                "You've completed all the levels but the battle",
+                levels_line,
                 "isn't over yet! With all of the unlocked perks",
                 "and weapons your Survival is just a bit easier.",
                 "You can also replay the quests in Hardcore.",
@@ -1827,6 +1857,30 @@ class EndNoteView:
         missing_assets: list[str] = []
         self._small_font = load_small_font(self._state.assets_dir, missing_assets)
         return self._small_font
+
+    def _world_entity_alpha(self) -> float:
+        if not self._closing:
+            return 1.0
+        span = PANEL_TIMELINE_START_MS - PANEL_TIMELINE_END_MS
+        if span <= 0:
+            return 0.0
+        alpha = (float(self._timeline_ms) - PANEL_TIMELINE_END_MS) / float(span)
+        if alpha < 0.0:
+            return 0.0
+        if alpha > 1.0:
+            return 1.0
+        return alpha
+
+    def _begin_close_transition(self, action: str, *, fade_to_black: bool = False) -> None:
+        if self._closing:
+            return
+        if fade_to_black:
+            self._state.screen_fade_alpha = 0.0
+            self._state.screen_fade_ramp = True
+        if self._state.audio is not None:
+            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+        self._closing = True
+        self._close_action = action
 
 
 class QuestFailedView:
@@ -1986,7 +2040,7 @@ class QuestFailedView:
         rl.clear_background(rl.BLACK)
         pause_background = self._state.pause_background
         if pause_background is not None:
-            pause_background.draw_pause_background()
+            pause_background.draw_pause_background(entity_alpha=self._world_entity_alpha())
         elif self._ground is not None:
             self._ground.draw(menu_ground_camera(self._state))
         _draw_screen_fade(self._state)
@@ -2094,6 +2148,18 @@ class QuestFailedView:
         eased = 1.0 - (1.0 - t) ** 3
         return -QUEST_FAILED_PANEL_W * (1.0 - eased)
 
+    def _world_entity_alpha(self) -> float:
+        if not self._closing:
+            return 1.0
+        if QUEST_FAILED_PANEL_SLIDE_DURATION_MS <= 1e-6:
+            return 0.0
+        alpha = float(self._intro_ms) / QUEST_FAILED_PANEL_SLIDE_DURATION_MS
+        if alpha < 0.0:
+            return 0.0
+        if alpha > 1.0:
+            return 1.0
+        return alpha
+
     def _panel_top_left(self) -> Vec2:
         return self._panel_origin().offset(dx=self._panel_slide_x())
 
@@ -2106,6 +2172,8 @@ class QuestFailedView:
         if retry_count == 3:
             return "No luck this time, have another go?"
         if retry_count == 4:
+            if bool(self._state.preserve_bugs):
+                return "Persistence will be rewared."
             return "Persistence will be rewarded."
         if retry_count == 5:
             return "Try one more time?"
@@ -2228,6 +2296,8 @@ class HighScoresView:
         self._widescreen_y_shift = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
+        self._closing = False
+        self._close_action: str | None = None
         self._small_font: SmallFontData | None = None
         self._button_tex: rl.Texture | None = None
         self._button_textures: UiButtonTextureSet | None = None
@@ -2256,6 +2326,8 @@ class HighScoresView:
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
+        self._closing = False
+        self._close_action = None
         self._small_font = None
         self._scroll_index = 0
         self._button_textures = None
@@ -2322,6 +2394,8 @@ class HighScoresView:
         self._request = None
         self._records = []
         self._scroll_index = 0
+        self._closing = False
+        self._close_action = None
 
     def _panel_top_left(self, *, pos: Vec2, scale: float) -> Vec2:
         return Vec2(
@@ -2337,15 +2411,20 @@ class HighScoresView:
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
 
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
+        if self._closing:
+            if dt_ms > 0 and self._action is None:
+                self._timeline_ms -= dt_ms
+                if self._timeline_ms < 0 and self._close_action is not None:
+                    self._action = self._close_action
+                    self._close_action = None
+            return
         if dt_ms > 0:
             self._timeline_ms = min(self._timeline_max_ms, int(self._timeline_ms + dt_ms))
 
         enabled = self._timeline_ms >= self._timeline_max_ms
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
-            if self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-            self._action = "back_to_previous"
+            self._begin_close_transition("back_to_previous")
             return
 
         textures = self._button_textures
@@ -2379,9 +2458,7 @@ class HighScoresView:
                 mouse=mouse,
                 click=click,
             ):
-                if self._state.audio is not None:
-                    play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-                self._action = "open_play_game"
+                self._begin_close_transition("open_play_game")
                 return
             back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
             if button_update(
@@ -2392,9 +2469,7 @@ class HighScoresView:
                 mouse=mouse,
                 click=click,
             ):
-                if self._state.audio is not None:
-                    play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-                self._action = "back_to_previous"
+                self._begin_close_transition("back_to_previous")
                 return
 
         rows = 10
@@ -2422,7 +2497,7 @@ class HighScoresView:
         rl.clear_background(rl.BLACK)
         pause_background = self._state.pause_background
         if pause_background is not None:
-            pause_background.draw_pause_background()
+            pause_background.draw_pause_background(entity_alpha=self._world_entity_alpha())
         elif self._ground is not None:
             self._ground.draw(menu_ground_camera(self._state))
         _draw_screen_fade(self._state)
@@ -3063,16 +3138,13 @@ class HighScoresView:
         year = 2000 + year_off if year_off >= 0 else 2000
         return f"{day}. {month_name} {year}"
 
-    @staticmethod
-    def _weapon_label_and_icon(weapon_id: int) -> tuple[str, int | None]:
-        try:
-            from .weapons import WEAPON_BY_ID
-        except Exception:
-            WEAPON_BY_ID = {}
+    def _weapon_label_and_icon(self, weapon_id: int) -> tuple[str, int | None]:
+        from .weapons import WEAPON_BY_ID, weapon_display_name
+
         weapon = WEAPON_BY_ID.get(int(weapon_id))
         if weapon is None:
             return f"Weapon {int(weapon_id)}", None
-        name = weapon.name or f"weapon_{int(weapon.weapon_id)}"
+        name = weapon_display_name(int(weapon.weapon_id), preserve_bugs=bool(self._state.preserve_bugs))
         return name, weapon.icon_index
 
     def _draw_sign(self, assets: MenuAssets) -> None:
@@ -3107,6 +3179,30 @@ class HighScoresView:
             rotation_deg=rotation_deg,
             tint=rl.WHITE,
         )
+
+    def _world_entity_alpha(self) -> float:
+        if not self._closing:
+            return 1.0
+        span = PANEL_TIMELINE_START_MS - PANEL_TIMELINE_END_MS
+        if span <= 0:
+            return 0.0
+        alpha = (float(self._timeline_ms) - PANEL_TIMELINE_END_MS) / float(span)
+        if alpha < 0.0:
+            return 0.0
+        if alpha > 1.0:
+            return 1.0
+        return alpha
+
+    def _begin_close_transition(self, action: str) -> None:
+        if self._closing:
+            return
+        if action in FADE_TO_GAME_ACTIONS:
+            self._state.screen_fade_alpha = 0.0
+            self._state.screen_fade_ramp = True
+        if self._state.audio is not None:
+            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+        self._closing = True
+        self._close_action = action
 
     @staticmethod
     def _quest_title(major: int, minor: int) -> str:
@@ -3337,6 +3433,7 @@ class GameLoopView:
                                 self._front_stack.pop().close()
                         self._front_active.close()
                     view.open()
+                    self._maybe_adopt_menu_ground(action, view)
                     self._front_active = view
                     self._active = view
                     return
@@ -3366,6 +3463,7 @@ class GameLoopView:
                     self._menu.close()
                     self._menu_active = False
                     view.open()
+                    self._maybe_adopt_menu_ground(action, view)
                     self._front_active = view
                     self._active = view
                     return
@@ -3477,6 +3575,14 @@ class GameLoopView:
             return True
 
         return True
+
+    def _maybe_adopt_menu_ground(self, action: str, _view: FrontView) -> None:
+        if action not in {"start_survival", "start_rush"}:
+            return
+        # Native `game_state_set(9)` always calls `gameplay_reset_state()`, which
+        # runs `terrain_generate_random()`. Menu terrain should carry back to menu,
+        # but entering a fresh gameplay run must regenerate terrain instead of
+        # reusing the captured menu render target.
 
     @staticmethod
     def _steal_ground_from_view(view: FrontView | None) -> GroundRenderer | None:

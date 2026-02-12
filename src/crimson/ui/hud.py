@@ -10,9 +10,10 @@ from grim.assets import TextureLoader
 from grim.color import RGBA
 from grim.fonts.small import SmallFontData, draw_small_text
 from grim.geom import Vec2
+from ..bonuses.hud import BonusHudState
 from ..game_modes import GameMode
-from ..gameplay import BonusHudState, PlayerState, survival_level_threshold
-from ..weapons import WEAPON_BY_ID
+from ..gameplay import PlayerState, survival_level_threshold
+from ..weapons import WEAPON_BY_ID, weapon_display_name
 
 HUD_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 HUD_HINT_COLOR = rl.Color(170, 170, 180, 255)
@@ -331,6 +332,7 @@ def draw_hud_overlay(
     show_quest_hud: bool = False,
     quest_progress_ratio: float | None = None,
     small_indicators: bool = False,
+    preserve_bugs: bool = False,
 ) -> float:
     if frame_dt_ms is None:
         frame_dt_ms = max(0.0, float(rl.get_frame_time()) * 1000.0)
@@ -941,12 +943,7 @@ def draw_hud_overlay(
                 )
                 max_y = max(max_y, dst.y + dst.height)
 
-            weapon_entry = WEAPON_BY_ID.get(int(hud_player.weapon_id))
-            weapon_name = (
-                weapon_entry.name or f"weapon_{int(hud_player.weapon_id)}"
-                if weapon_entry is not None
-                else f"weapon_{int(hud_player.weapon_id)}"
-            )
+            weapon_name = weapon_display_name(int(hud_player.weapon_id), preserve_bugs=bool(preserve_bugs))
             weapon_color = _with_alpha(HUD_TEXT_COLOR, text_alpha)
             text_pos = aux_text_base_pos + aux_step * float(idx)
             _draw_text(

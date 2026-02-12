@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 
-from crimson.gameplay import GameplayState, PlayerState, perk_apply
+from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
+from crimson.perks.runtime.apply import perk_apply
 
 
 def test_instant_winner_grants_xp_to_owner() -> None:

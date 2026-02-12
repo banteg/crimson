@@ -95,3 +95,13 @@ def test_player_take_damage_thick_skinned_uses_native_damage_scale_constant() ->
 
     assert applied == pytest.approx(3.4885711669921875, abs=1e-6)
     assert player.health == pytest.approx(47.41618728637695, abs=1e-6)
+
+
+def test_player_take_damage_sets_survival_damage_seen_even_when_shielded() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(), health=100.0, shield_timer=1.0)
+
+    applied = player_take_damage(state, player, 10.0, rand=lambda: 0)
+
+    assert applied == 0.0
+    assert state.survival_reward_damage_seen is True

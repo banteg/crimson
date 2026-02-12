@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 
-from crimson.gameplay import GameplayState, PlayerState, perk_apply
+from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
+from crimson.perks.runtime.apply import perk_apply
 
 
 class _FixedRng:
@@ -26,6 +27,16 @@ class _SequenceRng:
         return int(self._values[-1]) if self._values else 0
 
 
+class _CountingFixedRng:
+    def __init__(self, value: int) -> None:
+        self._value = int(value)
+        self.calls = 0
+
+    def rand(self) -> int:
+        self.calls += 1
+        return int(self._value)
+
+
 def test_random_weapon_assigns_a_non_pistol_weapon() -> None:
     state = GameplayState(rng=_FixedRng(1))  # type: ignore[arg-type]
     player = PlayerState(index=0, pos=Vec2())
@@ -45,3 +56,16 @@ def test_random_weapon_skips_pistol_when_current_is_not_pistol() -> None:
     perk_apply(state, [player], PerkId.RANDOM_WEAPON)
 
     assert player.weapon_id == 2
+
+
+def test_random_weapon_uses_last_roll_after_100_retries() -> None:
+    rng = _CountingFixedRng(0)  # 0 % 33 + 1 = pistol every time
+    state = GameplayState(rng=rng)  # type: ignore[arg-type]
+    player = PlayerState(index=0, pos=Vec2())
+    player.weapon_id = 1
+
+    perk_apply(state, [player], PerkId.RANDOM_WEAPON)
+
+    # Native behavior: capped retries still apply the last candidate.
+    assert rng.calls == 100
+    assert player.weapon_id == 1

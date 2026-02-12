@@ -39,6 +39,9 @@ from .transitions import _draw_screen_fade
 from .types import GameState, PauseBackground
 
 
+PAUSE_MENU_TO_MAIN_MENU_FADE_MS = 500
+
+
 class PauseMenuView:
     def __init__(self, state: GameState) -> None:
         self._state = state
@@ -151,7 +154,7 @@ class PauseMenuView:
         rl.clear_background(rl.BLACK)
         pause_background = self._pause_background()
         if pause_background is not None:
-            pause_background.draw_pause_background()
+            pause_background.draw_pause_background(entity_alpha=self._pause_background_entity_alpha())
         _draw_screen_fade(self._state)
 
         assets = self._assets
@@ -168,6 +171,18 @@ class PauseMenuView:
 
     def _pause_background(self) -> PauseBackground | None:
         return self._state.pause_background
+
+    def _pause_background_entity_alpha(self) -> float:
+        # Native gameplay_render_world keeps gameplay entities fully visible for most transitions,
+        # but fades them out when pause menu closes to main menu (ui_element_slot_28 timing = 0x1f4 ms).
+        if (not self._closing) or (self._close_action != "back_to_menu"):
+            return 1.0
+        alpha = float(self._timeline_ms) / float(PAUSE_MENU_TO_MAIN_MENU_FADE_MS)
+        if alpha < 0.0:
+            return 0.0
+        if alpha > 1.0:
+            return 1.0
+        return alpha
 
     def _activate_menu_entry(self, index: int) -> None:
         if not (0 <= index < len(self._menu_entries)):

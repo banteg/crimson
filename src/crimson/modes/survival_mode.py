@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import datetime as dt
 import hashlib
 import random
+from typing import cast
 
 import pyray as rl
 
@@ -22,12 +23,14 @@ from ..gameplay import (
     survival_check_level_up,
     weapon_assign_player,
 )
+from ..perks.state import CreatureForPerks
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..input_codes import (
     config_keybinds_for_player,
     input_code_is_down_for_player,
     input_code_is_pressed_for_player,
+    input_primary_just_pressed,
 )
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, draw_ui_text, load_perk_menu_assets
 from ..weapons import WEAPON_BY_ID
@@ -222,7 +225,7 @@ class SurvivalMode(BaseGameplayMode):
             state=self._state,
             perk_state=self._state.perk_selection,
             players=players,
-            creatures=self._creatures.entries,
+            creatures=cast("list[CreatureForPerks]", self._creatures.entries),
             player=self._player,
             game_mode=int(GameMode.SURVIVAL),
             player_count=len(players),
@@ -391,6 +394,16 @@ class SurvivalMode(BaseGameplayMode):
             return raw
         return ""
 
+    def _death_transition_ready(self) -> bool:
+        dead_players = 0
+        for player in self._world.players:
+            if float(player.health) > 0.0:
+                return False
+            dead_players += 1
+            if float(player.death_timer) >= 0.0:
+                return False
+        return dead_players > 0
+
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
@@ -494,7 +507,10 @@ class SurvivalMode(BaseGameplayMode):
                 opened = self._perk_menu.open_if_available(perk_ctx)
                 if opened and self._replay_recorder is not None:
                     self._replay_recorder.record_perk_menu_open(player_index=0)
-            elif self._perk_prompt_hover and input_code_is_pressed_for_player(fire_key, player_index=0):
+            elif self._perk_prompt_hover and input_primary_just_pressed(
+                self._config,
+                player_count=len(self._world.players),
+            ):
                 self._perk_prompt_pulse = 1000.0
                 if self._replay_recorder is not None:
                     self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
@@ -506,7 +522,7 @@ class SurvivalMode(BaseGameplayMode):
             pulse_delta = dt_ui_ms * (6.0 if self._perk_prompt_hover else -2.0)
             self._perk_prompt_pulse = clamp(self._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
 
-        sim_active = (not self._paused) and any_alive and (not perk_menu_active)
+        sim_active = (not self._paused) and (not perk_menu_active)
 
         prompt_active = perk_pending and (not perk_menu_active) and (not self._paused)
         if prompt_active:
@@ -522,7 +538,7 @@ class SurvivalMode(BaseGameplayMode):
 
         if not sim_active:
             self._sim_clock.reset()
-            if not any_alive:
+            if self._death_transition_ready():
                 self._enter_game_over()
             return
 
@@ -581,7 +597,7 @@ class SurvivalMode(BaseGameplayMode):
                     command_hash=str(tick.step.command_hash),
                 )
 
-            if not any(player.health > 0.0 for player in self._world.players):
+            if self._death_transition_ready():
                 self._enter_game_over()
                 break
 
@@ -661,7 +677,10 @@ class SurvivalMode(BaseGameplayMode):
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
-        self._world.draw(draw_aim_indicators=(not self._game_over_active) and (not perk_menu_active))
+        self._world.draw(
+            draw_aim_indicators=(not self._game_over_active) and (not perk_menu_active),
+            entity_alpha=self._world_entity_alpha(),
+        )
         self._draw_screen_fade()
 
         hud_bottom = 0.0
@@ -686,6 +705,7 @@ class SurvivalMode(BaseGameplayMode):
                 show_time=hud_flags.show_time,
                 show_quest_hud=hud_flags.show_quest_hud,
                 small_indicators=self._hud_small_indicators(),
+                preserve_bugs=bool(self._world.preserve_bugs),
             )
 
         if debug_enabled() and (not self._game_over_active) and (not perk_menu_active):

@@ -21,7 +21,7 @@ from ..persistence.highscores import (
     scores_path_for_config,
     upsert_highscore_record,
 )
-from ..weapons import WEAPON_BY_ID
+from ..weapons import WEAPON_BY_ID, weapon_display_name
 from .formatting import format_ordinal, format_time_mm_ss
 from .hud import HudAssets
 from .layout import menu_widescreen_y_shift, ui_scale
@@ -145,6 +145,7 @@ class GameOverUi:
     base_dir: Path
 
     config: CrimsonConfig
+    preserve_bugs: bool = False
 
     assets: GameOverAssets | None = None
     font: SmallFontData | None = None
@@ -214,6 +215,18 @@ class GameOverUi:
             self._consume_enter = False
             return True
         return False
+
+    def world_entity_alpha(self) -> float:
+        if not self._closing:
+            return 1.0
+        if PANEL_SLIDE_DURATION_MS <= 1e-6:
+            return 0.0
+        alpha = float(self._intro_ms) / float(PANEL_SLIDE_DURATION_MS)
+        if alpha < 0.0:
+            return 0.0
+        if alpha > 1.0:
+            return 1.0
+        return alpha
 
     def _text_width(self, text: str, scale: float) -> float:
         if self.font is None:
@@ -553,8 +566,7 @@ class GameOverUi:
                 )
 
             weapon_id = int(record.most_used_weapon_id)
-            weapon_entry = WEAPON_BY_ID.get(int(weapon_id))
-            weapon_name = weapon_entry.name if weapon_entry is not None and weapon_entry.name else f"weapon_{weapon_id}"
+            weapon_name = weapon_display_name(weapon_id, preserve_bugs=bool(self.preserve_bugs))
             name_w = self._text_width(weapon_name, 1.0 * scale)
             name_pos = Vec2(card_origin.x + max(0.0, (32.0 * scale - name_w * 0.5)), row_pos.y + 32.0 * scale)
             self._draw_small(weapon_name, name_pos, 1.0 * scale, hint_color)
@@ -606,8 +618,13 @@ class GameOverUi:
         if self._hover_hit_ratio > 0.5:
             t = (self._hover_hit_ratio - 0.5) * 2.0
             col = rl.Color(label_color.r, label_color.g, label_color.b, int(255 * alpha * t))
+            hit_ratio_tooltip = (
+                "The % of shot bullets hit the target"
+                if bool(self.preserve_bugs)
+                else "The % of bullets that hit the target"
+            )
             self._draw_small(
-                "The % of shot bullets hit the target",
+                hit_ratio_tooltip,
                 tooltip_pos.offset(dx=-22.0 * scale),
                 1.0 * scale,
                 col,

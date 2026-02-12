@@ -21,7 +21,9 @@ test-cov *args:
 
 check *args:
     uv run ruff check .
+    uv run lint-imports
     uv run ty check src
+    uv run scripts/check_docs.py
     uv run pytest {{args}}
 
 ty:
@@ -93,11 +95,11 @@ font-sample:
     uv run crimson view fonts
 
 # Docs
-docs-map-progress:
-    uv run scripts/update_map_progress_docs.py
-
 docs-build:
     uv run zensical build
+
+docs-check:
+    uv run scripts/check_docs.py
 
 docs-zensical-fix:
     uv run scripts/zensical_fix_md.py docs
@@ -253,6 +255,12 @@ frida-gameplay-diff-capture process="crimsonland.exe":
     $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
     New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
     frida -n {{process}} -l scripts\\frida\\gameplay_diff_capture.js
+
+[windows]
+frida-survival-autoplay process="crimsonland.exe":
+    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
+    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
+    frida -n {{process}} -l scripts\\frida\\survival_autoplay.js
 
 [windows]
 ghidra-sync:

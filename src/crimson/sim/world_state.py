@@ -2,30 +2,30 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import cast
 
 from grim.geom import Vec2
 
+from ..bonuses.update import bonus_update, bonus_update_pre_pickup_timers
+from ..bonuses.pickup_fx import emit_bonus_pickup_effects
 from ..camera import camera_shake_update
 from ..creatures.damage import creature_apply_damage
 from ..creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureDeath, CreaturePool
 from ..creatures.anim import creature_anim_advance_phase
 from ..creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
-from ..features.bonuses import emit_bonus_pickup_effects
-from ..features.perks import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from ..gameplay import (
-    BonusPickupEvent,
-    GameplayState,
-    PlayerInput,
-    PlayerState,
-    bonus_update,
-    bonus_update_pre_pickup_timers,
-    perks_update_effects,
+    build_gameplay_state,
     player_update,
+    survival_enforce_reward_weapon_guard,
     survival_progression_update,
 )
+from ..perks.runtime.effects import perks_update_effects
+from ..perks.runtime.manifest import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
+from ..perks.state import CreatureForPerks
 from ..player_damage import player_take_projectile_damage
 from ..projectiles import ProjectileHit
+from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .presentation_step import (
     ProjectileDecalPostCtx,
@@ -34,6 +34,7 @@ from .presentation_step import (
     queue_projectile_decals_post_hit,
     queue_projectile_decals_pre_hit,
 )
+from .state_types import BonusPickupEvent, GameplayState, PlayerState
 from .world_defs import CREATURE_ANIM
 
 
@@ -76,7 +77,7 @@ class WorldState:
             hardcore=bool(hardcore),
             difficulty_level=int(difficulty_level),
         )
-        state = GameplayState()
+        state = build_gameplay_state()
         state.demo_mode_active = bool(demo_mode_active)
         state.hardcore = bool(hardcore)
         state.preserve_bugs = bool(preserve_bugs)
@@ -359,7 +360,7 @@ class WorldState:
                 game_mode=game_mode,
                 auto_pick=auto_pick_perks,
                 dt=dt,
-                creatures=self.creatures.entries,
+                creatures=cast("list[CreatureForPerks]", self.creatures.entries),
             )
         _mark("ws_after_progression")
         # Native latches `time_scale_active` late (post mode update, pre bonus decrement); next-frame dt uses it.
@@ -382,6 +383,7 @@ class WorldState:
                 pickups=pickups,
                 detail_preset=int(detail_preset),
             )
+        survival_enforce_reward_weapon_guard(self.state, self.players)
         _mark("ws_after_bonus_update")
         sfx = list(planned_death_sfx)
         sfx.extend(creature_result.sfx)

@@ -5,7 +5,7 @@ from grim.geom import Vec2
 import pytest
 
 from crimson.creatures.runtime import CreatureState
-from crimson.gameplay import GameplayState
+from crimson.gameplay import GameplayState, PlayerState
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
 
 
@@ -69,6 +69,32 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
 
     split = [p for p in pool.entries if p.active and int(p.type_id) == int(ProjectileTypeId.SPLITTER_GUN) and int(p.owner_id) == 0]
     assert len(split) == 2
+    assert all(bool(p.hits_players) for p in split)
+
+
+def test_splitter_child_from_owner_minus_100_can_hit_players() -> None:
+    pool = ProjectilePool(size=64)
+    creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0)
+    player = PlayerState(index=0, pos=Vec2())
+
+    pool.spawn(
+        pos=Vec2(),
+        angle=0.0,
+        type_id=ProjectileTypeId.SPLITTER_GUN,
+        owner_id=-100,
+        base_damage=30.0,
+    )
+
+    pool.update(
+        0.016,
+        [creature],
+        world_size=4096.0,
+        detail_preset=5,
+        rng=lambda: 0,
+        players=[player],
+    )
+
+    assert float(player.health) < 100.0
 
 
 def test_shrinkifier_hit_spawns_native_hit_effects() -> None:

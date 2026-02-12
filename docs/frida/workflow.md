@@ -25,6 +25,7 @@ just frida-sync-share
 - `scripts/frida/ui_render_trace.js`
 - `scripts/frida/gameplay_state_capture.js`
 - `scripts/frida/gameplay_diff_capture.js`
+- `scripts/frida/survival_autoplay.js`
 - `scripts/frida/creature_anim_trace.js`
 - `scripts/frida/creature_render_trace.js`
 - `scripts/frida/fx_queue_render_trace.js`
@@ -76,6 +77,15 @@ frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
 
 Shortcut: `just frida-gameplay-diff-capture`
 
+Survival autoplay sidecar (manual-run helper that pins control scheme config only;
+default is static movement + computer aim, JSONL to `survival_autoplay.jsonl`):
+
+```text
+frida -n crimsonland.exe -l C:\share\frida\survival_autoplay.js
+```
+
+Shortcut: `just frida-survival-autoplay`
+
 AlienZooKeeper no-unlock verifier (forces state `0x1a`, resets timer to `0x2580`, auto-solves board,
 and logs a final `verdict` event to `azk_verify_no_unlock.jsonl`):
 
@@ -123,6 +133,7 @@ Default logs written by the scripts:
 - `C:\share\frida\grim_hits.jsonl`
 - `C:\share\frida\crimsonland_frida_hits.jsonl`
 - `C:\share\frida\gameplay_diff_capture.json` (if you ran `gameplay_diff_capture.js`)
+- `C:\share\frida\survival_autoplay.jsonl` (if you ran `survival_autoplay.js`)
 - `C:\share\frida\creature_anim_trace.jsonl`
 - `C:\share\frida\ui_render_trace.jsonl`
 - `C:\share\frida\demo_trial_overlay_trace.jsonl` (if you ran `demo_trial_overlay_trace.js`)
@@ -216,8 +227,6 @@ Shortcut:
 just demo-idle-summarize
 ```
 
-For a concrete “what to run / what to capture” checklist (Milestone 16), see `docs/frida/demo-trial-overlay.md`.
-
 ## 4) Promote evidence into Ghidra maps
 
 Review the summary + candidates, then manually promote good entries into:
@@ -232,6 +241,15 @@ just ghidra-exe
 ```
 
 ## Tips
+
+- Original diagnostics cache:
+  - `uv run crimson original divergence-report ...` and `uv run crimson original focus-trace ...` auto-use a local cache daemon.
+  - First run for a new capture may be slow while cache artifacts are built.
+  - Force uncached behavior with `--no-cache`.
+  - Optional env controls:
+    - `CRIMSON_ORIGINAL_CACHE=0` disables cache mode.
+    - `CRIMSON_ORIGINAL_CACHE_DIR=/path` overrides cache storage.
+    - `CRIMSON_ORIGINAL_CACHE_SOCKET=/path.sock` overrides daemon socket.
 
 - Keep hooks narrow: use the Grim hot-window or limit targets in
   `scripts/frida/grim_hooks_targets.json` when tracing draw calls.

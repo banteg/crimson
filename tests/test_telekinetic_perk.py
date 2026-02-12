@@ -5,8 +5,10 @@ from grim.geom import Vec2
 import math
 
 from crimson.bonuses import BonusId
+from crimson.bonuses.pool import BonusPool
+from crimson.bonuses.update import bonus_telekinetic_update
 from crimson.creatures.runtime import CreaturePool
-from crimson.gameplay import BonusPool, GameplayState, PlayerState, bonus_telekinetic_update
+from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
 
 

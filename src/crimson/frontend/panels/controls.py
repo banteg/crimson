@@ -23,6 +23,8 @@ from ..menu import (
 )
 from ...ui.menu_panel import draw_classic_menu_panel
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from ...movement_controls import MovementControlType
+from ...aim_schemes import AimScheme
 from .controls_labels import (
     PICK_PERK_BIND_SLOT,
     RELOAD_BIND_SLOT,
@@ -304,8 +306,8 @@ class ControlsMenuView(PanelMenuView):
         self,
         *,
         player_index: int,
-        aim_scheme: int,
-        move_mode: int,
+        aim_scheme: AimScheme,
+        move_mode: MovementControlType,
     ) -> tuple[tuple[str, tuple[tuple[str, int], ...]], ...]:
         aim_rows, move_rows, misc_rows = controls_rebind_slot_plan(
             aim_scheme=aim_scheme,
@@ -430,17 +432,17 @@ class ControlsMenuView(PanelMenuView):
             del values[size:]
         return values
 
-    def _set_player_move_mode(self, *, player_index: int, move_mode: int) -> None:
+    def _set_player_move_mode(self, *, player_index: int, move_mode: MovementControlType) -> None:
         config = self._state.config
         raw = self._coerce_blob(config.data.get("unknown_1c"), 0x28)
         idx = max(0, min(3, int(player_index)))
-        struct.pack_into("<I", raw, idx * 4, int(move_mode))
+        struct.pack_into("<I", raw, idx * 4, move_mode.value)
         config.data["unknown_1c"] = bytes(raw)
 
-    def _set_player_aim_scheme(self, *, player_index: int, aim_scheme: int) -> None:
+    def _set_player_aim_scheme(self, *, player_index: int, aim_scheme: AimScheme) -> None:
         config = self._state.config
         idx = max(0, min(3, int(player_index)))
-        scheme = int(aim_scheme)
+        scheme = int(aim_scheme.value)
         if idx == 0:
             config.data["unknown_44"] = scheme
             return
@@ -452,10 +454,14 @@ class ControlsMenuView(PanelMenuView):
         config.data["unknown_4c"] = bytes(raw)
 
     @staticmethod
-    def _move_method_items(*, move_mode: int) -> tuple[str, ...]:
-        items = [input_scheme_label(1), input_scheme_label(2), input_scheme_label(3)]
-        if int(move_mode) == 4:
-            items.append(input_scheme_label(4))
+    def _move_method_ids(*, move_mode: MovementControlType) -> tuple[MovementControlType, ...]:
+        items = [
+            MovementControlType.RELATIVE,
+            MovementControlType.STATIC,
+            MovementControlType.DUAL_ACTION_PAD,
+        ]
+        if move_mode is MovementControlType.MOUSE_POINT_CLICK:
+            items.append(MovementControlType.MOUSE_POINT_CLICK)
         return tuple(items)
 
     def _dropdown_layout(self, *, pos: Vec2, items: tuple[str, ...], scale: float) -> _DropdownLayout:
@@ -525,9 +531,10 @@ class ControlsMenuView(PanelMenuView):
         config = self._state.config
         player_idx = self._current_player_index()
         aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
-        move_items = self._move_method_items(move_mode=move_mode)
-        aim_item_ids = controls_aim_method_dropdown_ids(int(aim_scheme))
-        aim_items = tuple(input_configure_for_label(i) for i in aim_item_ids)
+        move_mode_ids = self._move_method_ids(move_mode=move_mode)
+        move_items = tuple(input_scheme_label(mode) for mode in move_mode_ids)
+        aim_item_ids = controls_aim_method_dropdown_ids(aim_scheme)
+        aim_items = tuple(input_configure_for_label(scheme) for scheme in aim_item_ids)
         player_items = ("Player 1", "Player 2", "Player 3", "Player 4")
 
         move_layout = self._dropdown_layout(
@@ -559,7 +566,8 @@ class ControlsMenuView(PanelMenuView):
             scale=panel_scale,
         )
         if move_selected is not None:
-            self._set_player_move_mode(player_index=player_idx, move_mode=move_selected + 1)
+            selected_idx = max(0, min(int(move_selected), len(move_mode_ids) - 1))
+            self._set_player_move_mode(player_index=player_idx, move_mode=move_mode_ids[selected_idx])
             self._dirty = True
         if consumed:
             return True
@@ -637,15 +645,19 @@ class ControlsMenuView(PanelMenuView):
         config = self._state.config
         player_idx = self._current_player_index()
         aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
-        move_items = self._move_method_items(move_mode=move_mode)
-        aim_item_ids = controls_aim_method_dropdown_ids(int(aim_scheme))
-        aim_items = tuple(input_configure_for_label(i) for i in aim_item_ids)
+        move_mode_ids = self._move_method_ids(move_mode=move_mode)
+        move_items = tuple(input_scheme_label(mode) for mode in move_mode_ids)
+        aim_item_ids = controls_aim_method_dropdown_ids(aim_scheme)
+        aim_items = tuple(input_configure_for_label(scheme) for scheme in aim_item_ids)
         player_items = ("Player 1", "Player 2", "Player 3", "Player 4")
-        move_selected = max(0, min(len(move_items) - 1, int(move_mode) - 1))
         try:
-            aim_selected = aim_item_ids.index(int(aim_scheme))
+            move_selected = move_mode_ids.index(move_mode)
         except ValueError:
-            aim_selected = max(0, min(len(aim_items) - 1, int(aim_scheme)))
+            move_selected = 0
+        try:
+            aim_selected = aim_item_ids.index(aim_scheme)
+        except ValueError:
+            aim_selected = 0
         player_selected = max(0, min(len(player_items) - 1, player_idx))
         move_layout = self._dropdown_layout(
             pos=Vec2(left_top_left.x + 214.0 * panel_scale, left_top_left.y + 144.0 * panel_scale),
@@ -732,30 +744,52 @@ class ControlsMenuView(PanelMenuView):
             rl.Color(255, 255, 255, checkbox_alpha),
         )
 
-        self._draw_dropdown(
-            layout=player_layout,
-            items=player_items,
-            selected_index=player_selected,
-            is_open=self._player_profile_open,
-            enabled=not (self._move_method_open or self._aim_method_open or self._rebind_active()),
-            scale=panel_scale,
+        dropdowns: tuple[tuple[bool, _DropdownLayout, tuple[str, ...], int, bool], ...] = (
+            (
+                self._player_profile_open,
+                player_layout,
+                player_items,
+                player_selected,
+                not (self._move_method_open or self._aim_method_open or self._rebind_active()),
+            ),
+            (
+                self._aim_method_open,
+                aim_layout,
+                aim_items,
+                aim_selected,
+                not (self._move_method_open or self._player_profile_open or self._rebind_active()),
+            ),
+            (
+                self._move_method_open,
+                move_layout,
+                move_items,
+                move_selected,
+                not (self._aim_method_open or self._player_profile_open or self._rebind_active()),
+            ),
         )
-        self._draw_dropdown(
-            layout=aim_layout,
-            items=aim_items,
-            selected_index=aim_selected,
-            is_open=self._aim_method_open,
-            enabled=not (self._move_method_open or self._player_profile_open or self._rebind_active()),
-            scale=panel_scale,
-        )
-        self._draw_dropdown(
-            layout=move_layout,
-            items=move_items,
-            selected_index=move_selected,
-            is_open=self._move_method_open,
-            enabled=not (self._aim_method_open or self._player_profile_open or self._rebind_active()),
-            scale=panel_scale,
-        )
+        # Active list must render last so overlapping widgets don't occlude open options.
+        for is_open, layout, items, selected_index, enabled in dropdowns:
+            if is_open:
+                continue
+            self._draw_dropdown(
+                layout=layout,
+                items=items,
+                selected_index=selected_index,
+                is_open=is_open,
+                enabled=enabled,
+                scale=panel_scale,
+            )
+        for is_open, layout, items, selected_index, enabled in dropdowns:
+            if not is_open:
+                continue
+            self._draw_dropdown(
+                layout=layout,
+                items=items,
+                selected_index=selected_index,
+                is_open=is_open,
+                enabled=enabled,
+                scale=panel_scale,
+            )
 
         # --- Right panel: configured bindings list ---
         def _draw_section_heading(title: str, *, y: float) -> None:

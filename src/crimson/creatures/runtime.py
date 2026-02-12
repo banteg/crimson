@@ -18,7 +18,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand
 from ..effects import FxQueue, FxQueueRotated
-from ..gameplay import GameplayState, PlayerState, award_experience, award_experience_from_reward, perk_active
+from ..gameplay import award_experience, award_experience_from_reward, survival_record_recent_death
 from ..math_parity import (
     NATIVE_PI,
     NATIVE_TAU,
@@ -29,8 +29,10 @@ from ..math_parity import (
     heading_to_direction_f32,
 )
 from ..perks import PerkId
+from ..perks.helpers import perk_active
 from ..player_damage import player_take_damage
 from ..projectiles import ProjectileTypeId
+from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import weapon_entry_for_projectile_type_id
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .spawn import (
@@ -1048,6 +1050,7 @@ class CreaturePool:
         """Run one-shot death side effects and return the `CreatureDeath` event."""
 
         creature = self._entries[int(idx)]
+        survival_record_recent_death(state, pos=creature.pos)
         if not bool(creature.active):
             # Native `creature_handle_death` gates its XP/bonus/freeze body under
             # `if (active != 0)`. Re-entrant callers (notably secondary

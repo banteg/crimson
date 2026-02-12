@@ -7,6 +7,5 @@ Runtime instrumentation for evidence collection using Frida.
 - [Differential capture sessions](differential-sessions.md) — Replay/sidecar verification runs, findings, and fixes
 - [Gameplay/state capture](gameplay-state-capture.md) — automatic large-run capture script
 - [Gameplay differential capture](gameplay-diff-capture.md) — deterministic tick + verifier-oriented telemetry
+- [Survival autoplay sidecar](survival-autoplay.md) — unattended Survival runs for repeated differential recordings
 - [RNG divergence root cause](rng-divergence-root-cause.md) — Guidance for isolating first RNG call-order drift
-- [Demo trial overlay](demo-trial-overlay.md) — Wishlist for finishing Milestone 16
-- [Demo idle threshold](demo-idle-threshold.md) — Wishlist for confirming menu idle timeout

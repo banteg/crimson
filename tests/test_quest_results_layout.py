@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import pyray as rl
 
 from crimson.persistence.highscores import HighScoreRecord
-from crimson.ui.quest_results import PANEL_SLIDE_START_MS, QuestResultsUi
+from crimson.ui.quest_results import PANEL_SLIDE_END_MS, PANEL_SLIDE_START_MS, QuestResultsUi
 
 
 def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
@@ -85,7 +85,7 @@ def test_quest_results_name_entry_draws_stats_card(monkeypatch, tmp_path: Path) 
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
-    assert "State your name trooper!" in captured_text
+    assert "State your name, trooper!" in captured_text
     assert "Score" in captured_text
     assert "Experience" in captured_text
     assert "Rank: 1st" in captured_text
@@ -93,6 +93,19 @@ def test_quest_results_name_entry_draws_stats_card(monkeypatch, tmp_path: Path) 
     assert "Frags: 10" in captured_text
     assert "Hit %: 23%" in captured_text
     assert len(texture_draws) == 1
+
+
+def test_quest_results_name_prompt_preserve_bugs(monkeypatch, tmp_path: Path) -> None:
+    ui = _build_ui(tmp_path, phase=1)
+    ui.preserve_bugs = True
+    captured_text: list[str] = []
+    texture_draws: list[object] = []
+    _patch_draw_environment(monkeypatch, captured_text, texture_draws)
+
+    ui.draw(mouse=rl.Vector2(0.0, 0.0))
+
+    assert "State your name trooper!" in captured_text
+    assert "State your name, trooper!" not in captured_text
 
 
 def test_quest_results_name_entry_uses_native_offsets_and_colors(monkeypatch, tmp_path: Path) -> None:
@@ -113,7 +126,7 @@ def test_quest_results_name_entry_uses_native_offsets_and_colors(monkeypatch, tm
 
     draw_map = {text: (x, y, color) for text, x, y, color in captured_draws}
 
-    state_x, state_y, state_color = draw_map["State your name trooper!"]
+    state_x, state_y, state_color = draw_map["State your name, trooper!"]
     assert (state_x, state_y) == (154.0, 147.0)
     assert (state_color.r, state_color.g, state_color.b, state_color.a) == (149, 175, 198, 255)
 
@@ -146,3 +159,24 @@ def test_quest_results_buttons_phase_keeps_weapon_stats_hidden(monkeypatch, tmp_
     assert "Hit %: 23%" not in captured_text
     assert "Shotgun" not in captured_text
     assert texture_draws == []
+
+
+def test_quest_results_world_entity_alpha_tracks_close_timeline(tmp_path: Path) -> None:
+    ui = QuestResultsUi(
+        assets_root=tmp_path,
+        base_dir=tmp_path,
+        config=SimpleNamespace(data={"fx_detail_0": 0}),
+    )
+
+    ui._closing = True
+    ui._intro_ms = PANEL_SLIDE_END_MS
+    assert ui.world_entity_alpha() == 0.0
+
+    ui._intro_ms = (PANEL_SLIDE_START_MS + PANEL_SLIDE_END_MS) * 0.5
+    assert ui.world_entity_alpha() == 0.5
+
+    ui._intro_ms = PANEL_SLIDE_START_MS
+    assert ui.world_entity_alpha() == 1.0
+
+    ui._closing = False
+    assert ui.world_entity_alpha() == 1.0

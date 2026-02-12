@@ -5,15 +5,10 @@ from grim.geom import Vec2
 import pytest
 
 from crimson.game_modes import GameMode
-from crimson.gameplay import (
-    GameplayState,
-    PerkSelectionState,
-    PlayerState,
-    perk_auto_pick,
-    perk_generate_choices,
-    perk_selection_pick,
-)
+from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
+from crimson.perks.selection import perk_auto_pick, perk_generate_choices, perk_selection_pick
+from crimson.perks.state import PerkSelectionState
 
 
 def test_perk_selection_pick_applies_perk_and_marks_dirty() -> None:

@@ -12,9 +12,10 @@ from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..bonuses import BonusId
+from ..bonuses.apply import bonus_apply
 from ..creatures.spawn import CreatureFlags
 from ..effects_atlas import EffectId, effect_src_rect
-from ..gameplay import GameplayState, PlayerState, bonus_apply
+from ..gameplay import GameplayState, PlayerState
 from ..projectiles import ProjectileTypeId
 from ..weapons import (
     WEAPON_BY_ID,

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import cast
 
 import pyray as rl
 
@@ -12,10 +13,10 @@ from ..game_modes import GameMode
 from ..game_world import GameWorld
 from ..gameplay import (
     PlayerInput,
-    perk_selection_current_choices,
-    perk_selection_pick,
     weapon_assign_player,
 )
+from ..perks.state import CreatureForPerks
+from ..perks.selection import perk_selection_current_choices, perk_selection_pick
 from ..replay import (
     PerkMenuOpenEvent,
     PerkPickEvent,
@@ -206,7 +207,7 @@ class ReplayPlaybackMode:
                     game_mode=int(replay.header.game_mode_id),
                     player_count=len(world.players),
                     dt=float(dt_frame),
-                    creatures=world.creatures.entries,
+                    creatures=cast("list[CreatureForPerks]", world.creatures.entries),
                 )
                 if picked is None:
                     raise ValueError(f"perk_pick failed at tick={tick_index} choice_index={event.choice_index}")

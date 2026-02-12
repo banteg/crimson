@@ -14,7 +14,7 @@ This page defines the current per-tick contract used by:
 
 The shared implementation lives in `src/crimson/sim/step_pipeline.py`.
 Mode/session orchestration lives in `src/crimson/sim/sessions.py`.
-Feature hook registries now live under `src/crimson/features/`.
+Feature hook dispatch lives in subsystem-local registries/manifests.
 Multiplayer input normalization lives in `src/crimson/sim/input_frame.py`.
 
 ## Tick contract
@@ -57,10 +57,11 @@ Now, all major paths execute the same step planner and emit the same command str
 The deterministic tick/presentation flow now dispatches selected behavior through explicit feature hooks:
 
 - Perk world-step hooks:
-  - registry: `src/crimson/features/perks/registry.py`
+  - manifest: `src/crimson/perks/runtime/manifest.py`
+  - contracts: `src/crimson/perks/runtime/hook_types.py`
   - hooks: Reflex Boosted dt scaling, Final Revenge death burst
 - Bonus pickup presentation hooks:
-  - registry: `src/crimson/features/bonuses/pickup_fx.py`
+  - registry: `src/crimson/bonuses/pickup_fx.py`
   - hooks: Freeze/Reflex Boost pickup ring effects (+ shared burst behavior)
 - Projectile decal presentation hooks:
   - registry: `src/crimson/features/presentation/projectile_decals.py`

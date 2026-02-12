@@ -7,7 +7,12 @@ from types import SimpleNamespace
 
 import pyray as rl
 
-from crimson.game import GameState, QUEST_FAILED_PANEL_W, QuestFailedView
+from crimson.game import (
+    GameState,
+    QUEST_FAILED_PANEL_SLIDE_DURATION_MS,
+    QUEST_FAILED_PANEL_W,
+    QuestFailedView,
+)
 from crimson.modes.quest_mode import QuestRunOutcome
 from crimson.persistence import save_status
 from grim.geom import Vec2
@@ -33,7 +38,7 @@ def _make_state(tmp_path: Path) -> GameState:
         session_start=time.monotonic(),
     )
     # Avoid ground/menu asset loading in tests.
-    state.pause_background = object()
+    state.pause_background = SimpleNamespace(draw_pause_background=lambda **_kwargs: None)
     return state
 
 
@@ -81,6 +86,18 @@ def test_quest_failed_panel_slides_in_from_left(monkeypatch, tmp_path: Path) -> 
 
     view._intro_ms = 250.0
     assert view._panel_top_left().x == base.x
+
+
+def test_quest_failed_retry_message_respects_preserve_bugs(tmp_path: Path) -> None:
+    state = _make_state(tmp_path)
+    state.quest_fail_retry_count = 4
+    view = QuestFailedView(state)
+
+    state.preserve_bugs = False
+    assert view._failure_message() == "Persistence will be rewarded."
+
+    state.preserve_bugs = True
+    assert view._failure_message() == "Persistence will be rewared."
 
 
 def test_quest_failed_enter_retries_current_quest(monkeypatch, tmp_path: Path) -> None:
@@ -229,3 +246,36 @@ def test_quest_failed_score_block_matches_native_fields(monkeypatch, tmp_path: P
     assert not any(text.startswith("Hit %:") for text in drawn_text)
     assert drawn_lines  # vertical separator
     assert any(w == 192 and h == 1 for (_x, _y, w, h) in drawn_rects)  # horizontal separator
+
+
+def test_quest_failed_draw_fades_pause_background_during_close(monkeypatch, tmp_path: Path) -> None:
+    state = _make_state(tmp_path)
+    state.quest_outcome = _failed_outcome()
+    captured_alpha: list[float] = []
+    state.pause_background = SimpleNamespace(
+        draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha))
+    )
+
+    class _DummyCache:
+        def get_or_load(self, *_args, **_kwargs):  # noqa: ANN001
+            return SimpleNamespace(texture=None)
+
+    view = QuestFailedView(state)
+    monkeypatch.setattr("crimson.game._ensure_texture_cache", lambda _state: _DummyCache())
+    monkeypatch.setattr("crimson.game.rl.clear_background", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.game.rl.get_screen_width", lambda: 640)
+    monkeypatch.setattr("crimson.game._draw_screen_fade", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.game._draw_menu_cursor", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.game.draw_small_text", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.game.button_draw", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.game.button_width", lambda *_args, **_kwargs: 82.0)
+    monkeypatch.setattr(view, "_ensure_small_font", lambda: SimpleNamespace())
+    monkeypatch.setattr(view, "_draw_score_preview", lambda *_args, **_kwargs: None)
+
+    view.open()
+    view._closing = True
+    view._intro_ms = QUEST_FAILED_PANEL_SLIDE_DURATION_MS * 0.5
+    view.draw()
+
+    assert captured_alpha
+    assert captured_alpha[-1] == 0.5
