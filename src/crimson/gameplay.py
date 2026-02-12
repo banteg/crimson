@@ -2216,14 +2216,12 @@ def player_fire_weapon(
     if not input_state.fire_down:
         return
 
-    firing_during_reload = False
     ammo_cost = 1.0
     is_fire_bullets = float(player.fire_bullets_timer) > 0.0
     if player.reload_timer > 0.0:
         if player.experience <= 0:
             return
         if perk_active(player, PerkId.REGRESSION_BULLETS):
-            firing_during_reload = True
             ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
 
             reload_time = float(weapon.reload_time) if weapon.reload_time is not None else 0.0
@@ -2232,7 +2230,6 @@ def player_fire_weapon(
             if player.experience < 0:
                 player.experience = 0
         elif perk_active(player, PerkId.AMMUNITION_WITHIN):
-            firing_during_reload = True
             ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
 
             from .player_damage import player_take_damage
@@ -2241,10 +2238,6 @@ def player_fire_weapon(
             player_take_damage(state, player, cost, dt=dt, rand=state.rng.rand)
         else:
             return
-
-    if player.ammo <= 0 and not firing_during_reload and not is_fire_bullets:
-        player_start_reload(player, state)
-        return
 
     pellet_count = int(weapon.pellet_count) if weapon.pellet_count is not None else 0
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.FIRE_BULLETS))
@@ -2520,7 +2513,7 @@ def player_fire_weapon(
         # Native allows ammo to cross below zero for reload-time firing paths
         # (for example Regression Bullets), and replay checkpoints rely on that.
         player.ammo = float(player.ammo) - float(ammo_cost)
-    if player.ammo <= 0.0 and player.reload_timer <= 0.0:
+    if player.ammo <= 0.0:
         player_start_reload(player, state)
 
 

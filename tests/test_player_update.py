@@ -261,6 +261,29 @@ def test_player_fire_weapon_fire_bullets_can_fire_at_zero_ammo_and_then_reload()
     assert player.reload_timer > 0.0
 
 
+def test_player_fire_weapon_can_fire_with_negative_ammo_then_reloads() -> None:
+    pool = ProjectilePool(size=8)
+    state = GameplayState(projectiles=pool)
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        weapon_id=int(WeaponId.ION_CANNON),
+        clip_size=6,
+        ammo=-1.0,
+        reload_active=False,
+        reload_timer=0.0,
+    )
+    player.aim_dir = Vec2(1.0, 0.0)
+
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), 0.016, state)
+
+    type_ids = _active_type_ids(pool)
+    assert type_ids == [int(ProjectileTypeId.ION_CANNON)]
+    assert math.isclose(player.ammo, -2.0, abs_tol=1e-9)
+    assert player.reload_active
+    assert math.isclose(player.reload_timer, 3.0, abs_tol=1e-9)
+
+
 def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_pellet_weapons() -> None:
     from crimson.weapons import weapon_entry_for_projectile_type_id
 
