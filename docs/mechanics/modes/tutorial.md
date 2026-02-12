@@ -20,29 +20,22 @@ is recorded.
 
 ## Stages
 
-The tutorial advances through 9 stages (0-8), each gated by a specific
-player action:
+The tutorial advances through 9 stages. An intro message displays for 6
+seconds, then the player learns movement (press a movement key), bonus
+pickup (collect placed bonuses), shooting (press fire), and aiming (kill
+the spawned creatures). Stage 5 runs 7 combat waves from alternating
+sides. After the waves, experience is set to 3000 to trigger a level-up
+and perk selection. A final wave follows, then the player chooses Play
+or Repeat.
 
-| Stage | Instruction | Advances when |
-| ---: | --- | --- |
-| 0 | Intro text | 6 seconds elapse |
-| 1 | Move with arrow keys | Move key pressed |
-| 2 | Pick up bonuses | All bonuses collected |
-| 3 | Shoot with left mouse | Fire button pressed |
-| 4 | Aim at creatures | All creatures killed |
-| 5 | Move and shoot together | 7 waves cleared |
-| 6 | Learn about perks | Perk picked |
-| 7 | Perks give abilities | All creatures and bonuses cleared |
-| 8 | Ready to play | Player selects Play or Repeat |
+A skip button appears after 1 second on each stage except the last,
+which shows Play and Repeat buttons instead.
 
-A skip button appears after 1 second on each stage (except stage 8,
-which shows Play and Repeat buttons instead).
+## Bonus rotation
 
-## Stage 5 bonus rotation
-
-During the 7 combat waves in stage 5, creatures spawn from alternating
-sides. The first 5 waves include a bonus carrier creature that drops a
-specific bonus on death:
+During the 7 combat waves, creatures spawn from alternating sides. The
+first 5 waves include a bonus carrier creature that drops a specific
+bonus on death:
 
 1. Speed
 2. Weapon (Shotgun)
@@ -56,5 +49,4 @@ hint panel describes what it does.
 ## Forced state
 
 The player's health is locked to 100 throughout the tutorial. Experience
-is forced to 0 outside the perk lesson. At the transition from stage 5
-to 6, experience is set to 3000 to trigger a level-up and perk choice.
+is forced to 0 outside the perk lesson.
