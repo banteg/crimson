@@ -774,7 +774,10 @@ def _perks_update_pyrokinetic(ctx: _PerksUpdateEffectsCtx) -> None:
 
 def _perks_update_jinxed_timer(ctx: _PerksUpdateEffectsCtx) -> None:
     if ctx.state.jinxed_timer >= 0.0:
-        ctx.state.jinxed_timer -= ctx.dt
+        # Native keeps this timer in float32; preserving f32 subtraction avoids
+        # one-tick-early underflow in capture-sensitive Jinxed windows.
+        next_timer = f32(f32(float(ctx.state.jinxed_timer)) - f32(float(ctx.dt)))
+        ctx.state.jinxed_timer = float(next_timer)
 
 
 def _perks_update_jinxed(ctx: _PerksUpdateEffectsCtx) -> None:

@@ -47,7 +47,7 @@ def test_perks_update_effects_jinxed_kills_creature_and_awards_base_reward() -> 
 
     perks_update_effects(state, [player], dt, creatures=creatures)
 
-    assert math.isclose(state.jinxed_timer, 1.8, abs_tol=1e-9)
+    assert math.isclose(state.jinxed_timer, 1.8, abs_tol=1e-8)
     assert creatures[2].hp == -1.0
     assert math.isclose(creatures[2].hitbox_size, 16.0 - dt * 20.0, abs_tol=1e-9)
     assert player.experience == 112
@@ -73,8 +73,26 @@ def test_perks_update_effects_jinxed_accident_damages_player_and_spawns_fx() -> 
 
     perks_update_effects(state, [player], dt, creatures=[], fx_queue=fx_queue)
 
-    assert math.isclose(state.jinxed_timer, 1.8, abs_tol=1e-9)
+    assert math.isclose(state.jinxed_timer, 1.8, abs_tol=1e-8)
     assert math.isclose(player.health, 45.0, abs_tol=1e-9)
     assert fx_queue.count == 2
     assert state.sfx_queue == []
 
+
+def test_perks_update_effects_jinxed_timer_uses_f32_underflow_threshold() -> None:
+    # Capture boundary from gameplay_diff_capture tick 5163:
+    # native decrements to a tiny positive value and does not proc Jinxed this tick.
+    dt = 0.03400000184774399
+
+    state = GameplayState()
+    state.jinxed_timer = 0.034000836312770844
+    state.rng = _ScriptedRng([3, 0, 7, 9])
+
+    player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=50.0)
+    player.perk_counts[int(PerkId.JINXED)] = 1
+
+    perks_update_effects(state, [player], dt, creatures=[])
+
+    assert math.isclose(state.jinxed_timer, 8.344650268554688e-07, abs_tol=1e-15)
+    assert math.isclose(player.health, 50.0, abs_tol=1e-9)
+    assert state.rng._index == 0  # ty: ignore[attr-defined]
