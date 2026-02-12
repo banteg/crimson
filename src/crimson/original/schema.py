@@ -182,6 +182,7 @@ class CaptureCheckpointDebug(msgspec.Struct, forbid_unknown_fields=True):
         default_factory=CapturePerkApplyOutsideBefore
     )
     creature_lifecycle: dict[str, object] | None = None
+    player_fire: dict[str, object] | None = None
     before_players: list[CapturePlayerCheckpoint] = msgspec.field(default_factory=list)
     before_status: CaptureCheckpointDebugStatus = msgspec.field(default_factory=CaptureCheckpointDebugStatus)
 
@@ -519,6 +520,7 @@ class CaptureDiagnostics(msgspec.Struct, forbid_unknown_fields=True):
         default_factory=CapturePerkApplyOutsideBefore
     )
     creature_lifecycle: dict[str, object] | None = None
+    player_fire: dict[str, object] | None = None
 
 
 class CaptureSnapshot(msgspec.Struct, forbid_unknown_fields=True):
@@ -541,6 +543,13 @@ class CaptureCreatureSample(msgspec.Struct, forbid_unknown_fields=True):
     type_id: int
     target_player: int
     flags: int
+    link_index: int | None = None
+    ai_mode: int | None = None
+    heading: float | None = None
+    target_heading: float | None = None
+    orbit_angle: float | None = None
+    orbit_radius: float | None = None
+    ai7_timer_ms: int | None = None
 
 
 class CaptureProjectileSample(msgspec.Struct, forbid_unknown_fields=True):

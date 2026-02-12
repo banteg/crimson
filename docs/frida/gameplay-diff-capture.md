@@ -64,6 +64,9 @@ Notes:
 - Entity `samples` payloads are strictly typed (`creatures`, `projectiles`,
   `secondary_projectiles`, `bonuses`): schema/script drift should be fixed in
   instrumentation and re-captured, not handled via parser fallbacks.
+- Creature sample/lifecycle payloads include AI lineage context
+  (`ai_mode`, `link_index`, `orbit_angle`, `orbit_radius`, `ai7_timer_ms`)
+  to diagnose spawn/link timer drift without replay-side guesswork.
 - No top-level raw event stream is written; diagnostics stay in per-tick aggregates.
 - Float precision contract: capture script emits memory-sourced float values as
   tagged float32 bit tokens (`"f32:XXXXXXXX"`). Tooling decodes these tokens at

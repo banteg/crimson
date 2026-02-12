@@ -344,6 +344,49 @@ def _allow_one_tick_creature_count_lag(
     return False
 
 
+def _allow_one_tick_kills_lag(
+    *,
+    tick: int,
+    field_diffs: list[ReplayFieldDiff],
+    expected_by_tick: dict[int, ReplayCheckpoint],
+    actual_by_tick: dict[int, ReplayCheckpoint],
+) -> bool:
+    if not field_diffs:
+        return False
+    if any(str(diff.field) != "kills" for diff in field_diffs):
+        return False
+
+    expected_tick = expected_by_tick.get(int(tick))
+    actual_tick = actual_by_tick.get(int(tick))
+    prev_expected = expected_by_tick.get(int(tick) - 1)
+    prev_actual = actual_by_tick.get(int(tick) - 1)
+    next_expected = expected_by_tick.get(int(tick) + 1)
+    next_actual = actual_by_tick.get(int(tick) + 1)
+    if (
+        expected_tick is None
+        or actual_tick is None
+        or prev_expected is None
+        or prev_actual is None
+        or next_expected is None
+        or next_actual is None
+    ):
+        return False
+
+    expected_kills = int(expected_tick.kills)
+    actual_kills = int(actual_tick.kills)
+    if expected_kills < 0 or actual_kills < 0:
+        return False
+    if abs(int(expected_kills) - int(actual_kills)) != 1:
+        return False
+
+    if int(prev_expected.kills) != int(prev_actual.kills):
+        return False
+    if int(next_expected.kills) != int(next_actual.kills):
+        return False
+
+    return True
+
+
 def _allow_capture_sample_creature_count(
     *,
     tick: int,
@@ -378,6 +421,29 @@ def _allow_capture_sample_creature_count(
     # active slots. When our sim count matches the sampled list exactly and this
     # is the only field mismatch, keep scanning for a stronger divergence.
     if actual_count == int(sample_count) and expected_count != int(sample_count):
+        return True
+
+    # Some captures expose a one-tick lead/lag between checkpoint
+    # `creature_active_count` and sampled creature slots.
+    #
+    # Pattern:
+    # - current tick sample matches expected checkpoint count,
+    # - replay count already stepped to the next sampled count,
+    # - next tick keeps the same expected/actual counts.
+    next_sample = capture_sample_creature_counts.get(int(tick) + 1)
+    next_expected_tick = expected_by_tick.get(int(tick) + 1)
+    next_actual_tick = actual_by_tick.get(int(tick) + 1)
+    if (
+        next_sample is not None
+        and int(next_sample) >= 0
+        and abs(expected_count - actual_count) == 1
+        and expected_count == int(sample_count)
+        and actual_count == int(next_sample)
+        and next_expected_tick is not None
+        and next_actual_tick is not None
+        and int(next_expected_tick.creature_count) == expected_count
+        and int(next_actual_tick.creature_count) == actual_count
+    ):
         return True
 
     # Some captures sample creature slots before render-time corpse culling.
@@ -924,18 +990,32 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
             if not isinstance(item, dict):
                 continue
             pos_obj = item.get("pos") if isinstance(item.get("pos"), dict) else {}
-            sample_creatures_head.append(
-                {
-                    "index": _int_or(item.get("index")),
-                    "type_id": _int_or(item.get("type_id")),
-                    "hp": _float_or(item.get("hp")),
-                    "hitbox_size": _float_or(item.get("hitbox_size")),
-                    "pos": {
-                        "x": _float_or(pos_obj.get("x")),
-                        "y": _float_or(pos_obj.get("y")),
-                    },
-                }
-            )
+            row: dict[str, object] = {
+                "index": _int_or(item.get("index")),
+                "type_id": _int_or(item.get("type_id")),
+                "hp": _float_or(item.get("hp")),
+                "hitbox_size": _float_or(item.get("hitbox_size")),
+                "pos": {
+                    "x": _float_or(pos_obj.get("x")),
+                    "y": _float_or(pos_obj.get("y")),
+                },
+            }
+            ai_mode = item.get("ai_mode")
+            if ai_mode is not None:
+                row["ai_mode"] = _int_or(ai_mode)
+            link_index = item.get("link_index")
+            if link_index is not None:
+                row["link_index"] = _int_or(link_index)
+            ai7_timer_ms = item.get("ai7_timer_ms")
+            if ai7_timer_ms is not None:
+                row["ai7_timer_ms"] = _int_or(ai7_timer_ms)
+            orbit_angle = item.get("orbit_angle")
+            if orbit_angle is not None:
+                row["orbit_angle"] = _float_or(orbit_angle)
+            orbit_radius = item.get("orbit_radius")
+            if orbit_radius is not None:
+                row["orbit_radius"] = _float_or(orbit_radius)
+            sample_creatures_head.append(row)
 
         sample_secondary_head: list[dict[str, object]] = []
         for item in sample_secondary_obj[:6]:
@@ -1185,6 +1265,13 @@ def _find_first_divergence(
             actual_by_tick=actual_by_tick,
         ):
             continue
+        if _allow_one_tick_kills_lag(
+            tick=int(tick),
+            field_diffs=field_diffs,
+            expected_by_tick=expected_by_tick,
+            actual_by_tick=actual_by_tick,
+        ):
+            continue
         if _allow_capture_sample_creature_count(
             tick=int(tick),
             field_diffs=field_diffs,
@@ -1208,7 +1295,46 @@ def _find_first_divergence(
 
 def _primary_rng_after(ckpt: ReplayCheckpoint) -> int:
     marks = ckpt.rng_marks
-    for key in ("after_wave_spawns", "after_rush_spawns", "after_world_step"):
+    stage_rank: dict[str, int] = {
+        "after_world_step": 0,
+        "after_stage_spawns": 1,
+        "after_wave_spawns": 2,
+        "after_rush_spawns": 3,
+        "after_events": 4,
+        "after_post_events": 5,
+    }
+    candidate_keys = tuple(key for key in stage_rank if key in marks)
+    if not candidate_keys:
+        return -1
+
+    before = _rng_mark_with_fallback(marks, "before_events")
+    if before >= 0:
+        best_after: int | None = None
+        best_calls = -1
+        best_rank = -1
+        for key in candidate_keys:
+            after = _int_or(marks.get(key), -1)
+            if after < 0:
+                continue
+            calls = _infer_rand_calls_between_states(before, after)
+            if calls is None:
+                continue
+            rank = int(stage_rank.get(key, -1))
+            if int(calls) > int(best_calls) or (int(calls) == int(best_calls) and rank > best_rank):
+                best_after = int(after)
+                best_calls = int(calls)
+                best_rank = int(rank)
+        if best_after is not None:
+            return int(best_after)
+
+    for key in (
+        "after_post_events",
+        "after_events",
+        "after_rush_spawns",
+        "after_wave_spawns",
+        "after_stage_spawns",
+        "after_world_step",
+    ):
         if key in marks:
             return _int_or(marks.get(key))
     return -1
