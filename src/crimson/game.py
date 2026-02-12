@@ -1410,11 +1410,11 @@ class QuestResultsView:
             if quest is not None:
                 weapon_id_native = int(quest.unlock_weapon_id or 0)
                 if weapon_id_native > 0:
-                    from .weapons import WEAPON_BY_ID
+                    from .weapons import WEAPON_BY_ID, weapon_display_name
 
                     weapon_entry = WEAPON_BY_ID.get(weapon_id_native)
                     self._unlock_weapon_name = (
-                        weapon_entry.name
+                        weapon_display_name(weapon_id_native, preserve_bugs=bool(self._state.preserve_bugs))
                         if weapon_entry is not None and weapon_entry.name
                         else f"weapon_{weapon_id_native}"
                     )
@@ -1426,7 +1426,11 @@ class QuestResultsView:
                     perk_entry = PERK_BY_ID.get(perk_id)
                     if perk_entry is not None and perk_entry.name:
                         fx_toggle = int(self._state.config.data.get("fx_toggle", 0) or 0)
-                        self._unlock_perk_name = perk_display_name(perk_id, fx_toggle=fx_toggle)
+                        self._unlock_perk_name = perk_display_name(
+                            perk_id,
+                            fx_toggle=fx_toggle,
+                            preserve_bugs=bool(self._state.preserve_bugs),
+                        )
                     else:
                         self._unlock_perk_name = f"perk_{perk_id}"
         except Exception:
@@ -1491,6 +1495,7 @@ class QuestResultsView:
             assets_root=self._state.assets_dir,
             base_dir=self._state.base_dir,
             config=self._state.config,
+            preserve_bugs=bool(self._state.preserve_bugs),
         )
         self._ui.open(
             record=record,
@@ -1780,6 +1785,11 @@ class EndNoteView:
         font = self._ensure_small_font()
         hardcore = bool(int(self._state.config.data.get("hardcore_flag", 0) or 0))
         header = "   Incredible!" if hardcore else "Congratulations!"
+        levels_line = (
+            "You've completed all the levels but the battle"
+            if bool(self._state.preserve_bugs)
+            else "You've completed all the levels, but the battle"
+        )
         body_lines = (
             [
                 "You've done the thing we all thought was",
@@ -1791,7 +1801,7 @@ class EndNoteView:
             ]
             if hardcore
             else [
-                "You've completed all the levels but the battle",
+                levels_line,
                 "isn't over yet! With all of the unlocked perks",
                 "and weapons your Survival is just a bit easier.",
                 "You can also replay the quests in Hardcore.",
@@ -2162,6 +2172,8 @@ class QuestFailedView:
         if retry_count == 3:
             return "No luck this time, have another go?"
         if retry_count == 4:
+            if bool(self._state.preserve_bugs):
+                return "Persistence will be rewared."
             return "Persistence will be rewarded."
         if retry_count == 5:
             return "Try one more time?"
@@ -3126,16 +3138,13 @@ class HighScoresView:
         year = 2000 + year_off if year_off >= 0 else 2000
         return f"{day}. {month_name} {year}"
 
-    @staticmethod
-    def _weapon_label_and_icon(weapon_id: int) -> tuple[str, int | None]:
-        try:
-            from .weapons import WEAPON_BY_ID
-        except Exception:
-            WEAPON_BY_ID = {}
+    def _weapon_label_and_icon(self, weapon_id: int) -> tuple[str, int | None]:
+        from .weapons import WEAPON_BY_ID, weapon_display_name
+
         weapon = WEAPON_BY_ID.get(int(weapon_id))
         if weapon is None:
             return f"Weapon {int(weapon_id)}", None
-        name = weapon.name or f"weapon_{int(weapon.weapon_id)}"
+        name = weapon_display_name(int(weapon.weapon_id), preserve_bugs=bool(self._state.preserve_bugs))
         return name, weapon.icon_index
 
     def _draw_sign(self, assets: MenuAssets) -> None:

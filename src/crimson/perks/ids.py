@@ -506,24 +506,44 @@ QUICK_LEARNER_DESCRIPTION = (
     "You learn things faster than a regular Joe from now on gaining 30% more experience points from everything you do."
 )
 
+_PERK_FIXED_NAMES = {
+    int(PerkId.FIRE_CAUGH): "Fire Cough",
+}
 
-def perk_display_name(perk_id: int, *, fx_toggle: int = 0) -> str:
+_PERK_FIXED_DESCRIPTIONS = {
+    int(PerkId.ANXIOUS_LOADER): "When you can't stand waiting for your gun to be reloaded you can speed up the process by clicking your FIRE button repeatedly as fast as you can.",
+    int(PerkId.PERK_EXPERT): "You sure know how to pick a perk -- most people just don't see that extra perk laying around. This gives you the opportunity to pick the freshest and shiniest perks from the top.",
+    int(PerkId.DODGER): "It seems so stupid just to take the hits. Each time a monster attacks you, you have a chance to dodge the attack.",
+    int(PerkId.NINJA): "You've taken your dodging abilities to the next level; monsters have a really hard time hitting you.",
+    int(PerkId.LIVING_FORTRESS): "There comes a time in each man's life when you'd just rather not move anymore. Being a living fortress comes with extra benefits as well. You do more damage the longer you stand still.",
+}
+
+
+def perk_display_name(perk_id: int, *, fx_toggle: int = 0, preserve_bugs: bool = False) -> str:
     if int(perk_id) == int(PerkId.BLOODY_MESS_QUICK_LEARNER) and int(fx_toggle) != 0:
         return QUICK_LEARNER_NAME
     entry = PERK_BY_ID.get(int(perk_id))
     if entry is None:
         return f"Perk {int(perk_id)}"
+    if not bool(preserve_bugs):
+        fixed = _PERK_FIXED_NAMES.get(int(perk_id))
+        if fixed is not None:
+            return fixed
     return entry.name
 
 
-def perk_display_description(perk_id: int, *, fx_toggle: int = 0) -> str:
+def perk_display_description(perk_id: int, *, fx_toggle: int = 0, preserve_bugs: bool = False) -> str:
     if int(perk_id) == int(PerkId.BLOODY_MESS_QUICK_LEARNER) and int(fx_toggle) != 0:
         return QUICK_LEARNER_DESCRIPTION
     entry = PERK_BY_ID.get(int(perk_id))
     if entry is None:
         return "Unknown perk."
+    if not bool(preserve_bugs):
+        fixed = _PERK_FIXED_DESCRIPTIONS.get(int(perk_id))
+        if fixed is not None:
+            return fixed
     return entry.description
 
 
-def perk_label(perk_id: int, *, fx_toggle: int = 0) -> str:
-    return perk_display_name(perk_id, fx_toggle=fx_toggle)
+def perk_label(perk_id: int, *, fx_toggle: int = 0, preserve_bugs: bool = False) -> str:
+    return perk_display_name(perk_id, fx_toggle=fx_toggle, preserve_bugs=preserve_bugs)

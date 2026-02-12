@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import pyray as rl
 
-from ..weapons import WEAPON_TABLE, Weapon
+from ..weapons import WEAPON_TABLE, Weapon, weapon_display_name
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 from grim.fonts.small import SmallFontData, load_small_font
@@ -43,6 +43,7 @@ WEAPON_ICON_GROUPS = _build_icon_groups()
 class WeaponIconView:
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
+        self._preserve_bugs = bool(ctx.preserve_bugs)
         self._missing_assets: list[str] = []
         self._texture: rl.Texture | None = None
         self._small: SmallFontData | None = None
@@ -150,7 +151,7 @@ class WeaponIconView:
                 info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6
             else:
                 for weapon in group.weapons:
-                    name = weapon.name or f"weapon_{weapon.weapon_id}"
+                    name = weapon_display_name(int(weapon.weapon_id), preserve_bugs=bool(self._preserve_bugs))
                     draw_ui_text(self._small, name, Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
                     info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 4
 

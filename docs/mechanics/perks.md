@@ -53,10 +53,6 @@ shared collision timer. When it wraps, the timer resets to 0.5 seconds and a
 heat flare triggers: a burst of particles and a random decal at the target.
 Purely visual; no damage.
 
-!!! question "Cross-version check"
-    Verify other game versions/builds to confirm whether the no-damage behavior
-    is original design or a regression in this release.
-
 ## 7. Instant Winner
 
 Immediately grants +2500 XP. Can be picked multiple times.
@@ -369,7 +365,7 @@ Restores each alive player's health by a random amount from +1 to +50 HP
 (1-50% of the full 100-HP bar), then clamps to 100. Each player gets an
 independent roll.
 
-!!! bug "Original behavior"
+!!! bug "Original bug"
     The original executable multiplies health by ×1..×50 instead of restoring
     +1..+50 HP. Use `--preserve-bugs` to keep that native behavior.
 

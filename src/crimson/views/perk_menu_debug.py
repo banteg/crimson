@@ -54,6 +54,7 @@ PERK_PROMPT_TEXT_OFFSET_Y = 8.0
 class PerkMenuDebugView:
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
+        self._preserve_bugs = bool(ctx.preserve_bugs)
         self._missing_assets: list[str] = []
         self._small: SmallFontData | None = None
         self._assets: PerkMenuAssets | None = None
@@ -273,7 +274,7 @@ class PerkMenuDebugView:
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         for idx, perk_id in enumerate(choices):
-            label = perk_display_name(int(perk_id))
+            label = perk_display_name(int(perk_id), preserve_bugs=bool(self._preserve_bugs))
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(self._small, label, pos=item_pos, scale=scale)
             if rect.contains(mouse):
@@ -358,14 +359,14 @@ class PerkMenuDebugView:
 
                 mouse = rl.get_mouse_position()
                 for idx, perk_id in enumerate(choices):
-                    label = perk_display_name(int(perk_id))
+                    label = perk_display_name(int(perk_id), preserve_bugs=bool(self._preserve_bugs))
                     item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
                     rect = menu_item_hit_rect(self._small, label, pos=item_pos, scale=scale)
                     hovered = rect.contains(mouse) or (idx == self._selected)
                     draw_menu_item(self._small, label, pos=item_pos, scale=scale, hovered=hovered)
 
                 selected_id = choices[self._selected]
-                desc = perk_display_description(int(selected_id))
+                desc = perk_display_description(int(selected_id), preserve_bugs=bool(self._preserve_bugs))
                 draw_wrapped_ui_text_in_rect(
                     self._small,
                     desc,

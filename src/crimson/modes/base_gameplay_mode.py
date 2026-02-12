@@ -87,6 +87,7 @@ class BaseGameplayMode:
             base_dir=self._base_dir,
             config=config
             or CrimsonConfig(path=self._base_dir / "crimson.cfg", data={"game_mode": int(default_game_mode_id)}),
+            preserve_bugs=bool(ctx.preserve_bugs),
         )
         self._game_over_banner = "reaper"
 

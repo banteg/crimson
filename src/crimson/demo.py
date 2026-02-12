@@ -22,7 +22,7 @@ from .game_world import GameWorld
 from .gameplay import PlayerInput, PlayerState, weapon_assign_player
 from .ui.cursor import draw_menu_cursor
 from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from .weapons import WEAPON_TABLE
+from .weapons import weapon_display_name
 
 WORLD_SIZE = 1024.0
 DEMO_VARIANT_COUNT = 6
@@ -64,11 +64,8 @@ class DemoState(Protocol):
     quit_requested: bool
 
 
-def _weapon_name(weapon_id: int) -> str:
-    for weapon in WEAPON_TABLE:
-        if weapon.weapon_id == weapon_id:
-            return weapon.name or f"weapon_{weapon_id}"
-    return f"weapon_{weapon_id}"
+def _weapon_name(weapon_id: int, *, preserve_bugs: bool = False) -> str:
+    return weapon_display_name(int(weapon_id), preserve_bugs=bool(preserve_bugs))
 
 
 class DemoView:
@@ -622,7 +619,10 @@ class DemoView:
         title = f"DEMO MODE  ({self._variant_index + 1}/{DEMO_VARIANT_COUNT})"
         hint = "Press any key / click to skip"
         remaining = max(0.0, float(self._demo_time_limit_ms - self._quest_spawn_timeline_ms) / 1000.0)
-        weapons = ", ".join(f"P{p.index + 1}:{_weapon_name(p.weapon_id)}" for p in self._world.players)
+        weapons = ", ".join(
+            f"P{p.index + 1}:{_weapon_name(p.weapon_id, preserve_bugs=bool(self._state.preserve_bugs))}"
+            for p in self._world.players
+        )
         detail = f"{weapons}  —  next in {remaining:0.1f}s"
         rl.draw_text(title, 16, 12, 20, rl.Color(240, 240, 240, 255))
         rl.draw_text(detail, 16, 36, 16, rl.Color(180, 180, 190, 255))

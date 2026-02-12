@@ -55,7 +55,7 @@ def test_prewrapped_perk_desc_uses_cache(monkeypatch) -> None:
     monkeypatch.setattr(
         UnlockedPerksDatabaseView,
         "_perk_desc",
-        staticmethod(lambda _perk_id, *, fx_toggle=0: "alpha beta gamma"),
+        staticmethod(lambda _perk_id, *, fx_toggle=0, preserve_bugs=False: "alpha beta gamma"),  # noqa: ARG005
     )
 
     view = UnlockedPerksDatabaseView(_dummy_state())  # type: ignore[arg-type]

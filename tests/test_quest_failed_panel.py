@@ -88,6 +88,18 @@ def test_quest_failed_panel_slides_in_from_left(monkeypatch, tmp_path: Path) -> 
     assert view._panel_top_left().x == base.x
 
 
+def test_quest_failed_retry_message_respects_preserve_bugs(tmp_path: Path) -> None:
+    state = _make_state(tmp_path)
+    state.quest_fail_retry_count = 4
+    view = QuestFailedView(state)
+
+    state.preserve_bugs = False
+    assert view._failure_message() == "Persistence will be rewarded."
+
+    state.preserve_bugs = True
+    assert view._failure_message() == "Persistence will be rewared."
+
+
 def test_quest_failed_enter_retries_current_quest(monkeypatch, tmp_path: Path) -> None:
     state = _make_state(tmp_path)
     state.quest_outcome = _failed_outcome()

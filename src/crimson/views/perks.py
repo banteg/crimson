@@ -42,6 +42,7 @@ UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 class PerkSelectionView:
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
+        self._preserve_bugs = bool(ctx.preserve_bugs)
         self._small: SmallFontData | None = None
         self._missing_assets: list[str] = []
         self._ui_assets = None
@@ -206,7 +207,7 @@ class PerkSelectionView:
         )
 
         for idx, perk_id in enumerate(choices):
-            label = perk_display_name(int(perk_id))
+            label = perk_display_name(int(perk_id), preserve_bugs=bool(self._preserve_bugs))
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(self._small, label, pos=item_pos, scale=scale)
             if rect.contains(mouse):
@@ -331,14 +332,14 @@ class PerkSelectionView:
 
         mouse = rl.get_mouse_position()
         for idx, perk_id in enumerate(choices):
-            label = perk_display_name(int(perk_id))
+            label = perk_display_name(int(perk_id), preserve_bugs=bool(self._preserve_bugs))
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(self._small, label, pos=item_pos, scale=scale)
             hovered = rect.contains(mouse) or (idx == self._perk_menu_selected)
             draw_menu_item(self._small, label, pos=item_pos, scale=scale, hovered=hovered)
 
         selected = choices[self._perk_menu_selected]
-        desc = perk_display_description(int(selected))
+        desc = perk_display_description(int(selected), preserve_bugs=bool(self._preserve_bugs))
         draw_wrapped_ui_text_in_rect(
             self._small,
             desc,
@@ -386,7 +387,10 @@ class PerkSelectionView:
         )
         y += line_h
         owned = [
-            (perk_display_name(int(meta.perk_id)), int(self._player.perk_counts[int(meta.perk_id)]))
+            (
+                perk_display_name(int(meta.perk_id), preserve_bugs=bool(self._preserve_bugs)),
+                int(self._player.perk_counts[int(meta.perk_id)]),
+            )
             for meta in PERK_BY_ID.values()
             if int(self._player.perk_counts[int(meta.perk_id)]) > 0 and meta.perk_id != PerkId.ANTIPERK
         ]

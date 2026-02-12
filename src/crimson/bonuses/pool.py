@@ -9,9 +9,9 @@ from ..game_modes import GameMode
 from ..perks.helpers import perk_active
 from ..projectiles import CreatureDamageApplier, Damageable
 from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
-from ..weapons import WEAPON_BY_ID, WeaponId
+from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 from .apply import bonus_apply
-from .ids import BONUS_BY_ID, BonusId
+from .ids import BONUS_BY_ID, BonusId, bonus_display_name
 
 BONUS_POOL_SIZE = 16
 BONUS_SPAWN_MARGIN = 32.0
@@ -357,20 +357,19 @@ def bonus_find_aim_hover_entry(player: PlayerState, bonus_pool: BonusPool) -> tu
     return None
 
 
-def bonus_label_for_entry(entry: BonusEntry) -> str:
+def bonus_label_for_entry(entry: BonusEntry, *, preserve_bugs: bool = False) -> str:
     """Return the classic label text for a bonus entry (`bonus_label_for_entry`)."""
 
     bonus_id = int(entry.bonus_id)
     if bonus_id == int(BonusId.WEAPON):
         weapon = WEAPON_BY_ID.get(int(entry.amount))
         if weapon is not None and weapon.name:
-            return str(weapon.name)
+            return weapon_display_name(int(entry.amount), preserve_bugs=bool(preserve_bugs))
         return "Weapon"
     if bonus_id == int(BonusId.POINTS):
-        points_meta = BONUS_BY_ID.get(int(BonusId.POINTS))
-        points_label = str(points_meta.name) if points_meta is not None else "Points"
+        points_label = bonus_display_name(int(BonusId.POINTS), preserve_bugs=bool(preserve_bugs))
         return f"{points_label}: {int(entry.amount)}"
     meta = BONUS_BY_ID.get(bonus_id)
     if meta is not None:
-        return str(meta.name)
+        return bonus_display_name(int(meta.bonus_id), preserve_bugs=bool(preserve_bugs))
     return "Bonus"

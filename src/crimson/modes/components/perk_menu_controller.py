@@ -107,14 +107,25 @@ class PerkMenuController:
         self._open = False
         self._selected_index = 0
         self._timeline_ms = 0.0
-        self._wrapped_desc_cache: dict[tuple[int, int], str] = {}
+        self._wrapped_desc_cache: dict[tuple[int, int, int], str] = {}
 
-    def _prewrapped_perk_desc(self, perk_id: int, font: SmallFontData, *, fx_toggle: int) -> str:
-        key = (int(perk_id), int(fx_toggle))
+    def _prewrapped_perk_desc(
+        self,
+        perk_id: int,
+        font: SmallFontData,
+        *,
+        fx_toggle: int,
+        preserve_bugs: bool,
+    ) -> str:
+        key = (int(perk_id), int(fx_toggle), int(bool(preserve_bugs)))
         cached = self._wrapped_desc_cache.get(key)
         if cached is not None:
             return cached
-        desc = perk_display_description(int(perk_id), fx_toggle=int(fx_toggle))
+        desc = perk_display_description(
+            int(perk_id),
+            fx_toggle=int(fx_toggle),
+            preserve_bugs=bool(preserve_bugs),
+        )
         wrapped = self._wrap_small_text_native(
             font,
             desc,
@@ -235,8 +246,13 @@ class PerkMenuController:
             panel_slide_x=slide_x,
         )
 
+        preserve_bugs = bool(getattr(ctx.state, "preserve_bugs", False))
         for idx, perk_id in enumerate(choices):
-            label = perk_display_name(int(perk_id), fx_toggle=int(ctx.fx_toggle))
+            label = perk_display_name(
+                int(perk_id),
+                fx_toggle=int(ctx.fx_toggle),
+                preserve_bugs=preserve_bugs,
+            )
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(ctx.font, label, pos=item_pos, scale=scale)
             if rect.contains(ctx.mouse):
@@ -360,17 +376,31 @@ class PerkMenuController:
         if sponsor:
             draw_ui_text(ctx.font, sponsor, computed.sponsor_pos, scale=scale, color=UI_SPONSOR_COLOR)
 
+        preserve_bugs = bool(getattr(ctx.state, "preserve_bugs", False))
         for idx, perk_id in enumerate(choices):
-            label = perk_display_name(int(perk_id), fx_toggle=int(ctx.fx_toggle))
+            label = perk_display_name(
+                int(perk_id),
+                fx_toggle=int(ctx.fx_toggle),
+                preserve_bugs=preserve_bugs,
+            )
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(ctx.font, label, pos=item_pos, scale=scale)
             hovered = rect.contains(ctx.mouse) or (idx == self._selected_index)
             draw_menu_item(ctx.font, label, pos=item_pos, scale=scale, hovered=hovered)
 
         selected = choices[self._selected_index]
-        desc = perk_display_description(int(selected), fx_toggle=int(ctx.fx_toggle))
+        desc = perk_display_description(
+            int(selected),
+            fx_toggle=int(ctx.fx_toggle),
+            preserve_bugs=preserve_bugs,
+        )
         if ctx.font is not None:
-            desc = self._prewrapped_perk_desc(int(selected), ctx.font, fx_toggle=int(ctx.fx_toggle))
+            desc = self._prewrapped_perk_desc(
+                int(selected),
+                ctx.font,
+                fx_toggle=int(ctx.fx_toggle),
+                preserve_bugs=preserve_bugs,
+            )
         draw_ui_text(
             ctx.font,
             desc,

@@ -705,6 +705,7 @@ class SurvivalMode(BaseGameplayMode):
                 show_time=hud_flags.show_time,
                 show_quest_hud=hud_flags.show_quest_hud,
                 small_indicators=self._hud_small_indicators(),
+                preserve_bugs=bool(self._world.preserve_bugs),
             )
 
         if debug_enabled() and (not self._game_over_active) and (not perk_menu_active):

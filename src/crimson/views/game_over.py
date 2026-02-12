@@ -48,7 +48,12 @@ class GameOverDebugView:
         self._config = CrimsonConfig(path=_BASE_DIR / "crimson.cfg", data=data)
         self._hud: HudAssets | None = None
 
-        self._ui = GameOverUi(assets_root=self._assets_root, base_dir=_BASE_DIR, config=self._config)
+        self._ui = GameOverUi(
+            assets_root=self._assets_root,
+            base_dir=_BASE_DIR,
+            config=self._config,
+            preserve_bugs=bool(ctx.preserve_bugs),
+        )
         self._record = HighScoreRecord.blank()
         self._banner = "reaper"
         self._qualifies = True

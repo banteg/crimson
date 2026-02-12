@@ -410,7 +410,7 @@ class WorldRenderer:
             if hovered is None:
                 continue
             _idx, entry = hovered
-            label = bonus_label_for_entry(entry)
+            label = bonus_label_for_entry(entry, preserve_bugs=bool(self.state.preserve_bugs))
             if not label:
                 continue
 
