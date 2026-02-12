@@ -159,6 +159,7 @@ const FN = {
   survival_spawn_creature: 0x00407510,
   typo_gameplay_update_and_render: 0x004457c0,
   game_state_set: 0x004461c0,
+  // Typ-o Shooter fire entrypoint. Classic modes fire from `player_update`.
   player_fire_weapon: 0x00444980,
   weapon_assign_player: 0x00452d40,
   bonus_apply: 0x00409890,
@@ -1511,18 +1512,42 @@ function isPlayerUpdateCaller(callerStaticHex) {
   return caller >= (FN.player_update >>> 0) && caller < (PLAYER_UPDATE_END_RVA >>> 0);
 }
 
+function ownerIdToPlayerIndex(ownerId) {
+  if (!Number.isFinite(ownerId)) return null;
+  const idx = (-100 - (ownerId | 0)) | 0;
+  if (idx < 0) return null;
+  const playerCount = Math.max(1, outState.playerCountResolved | 0);
+  if (idx >= playerCount) return null;
+  return idx;
+}
+
 function updatePlayerInputKeyState(tick, queryName, keyCode, pressed, callerStaticHex) {
   if (!tick || !isPlayerUpdateCaller(callerStaticHex)) return;
   if (!Number.isFinite(keyCode)) return;
   const bindings = tick.before && tick.before.input_bindings && tick.before.input_bindings.players;
   const altBindings =
     tick.before && tick.before.input_bindings ? tick.before.input_bindings.alternate_single : null;
-  if ((!Array.isArray(bindings) || bindings.length === 0) && (!altBindings || typeof altBindings !== "object")) {
-    return;
-  }
 
   const key = keyCode | 0;
   const down = !!pressed;
+  const downSeen = function (prev) {
+    return prev === true ? true : down;
+  };
+
+  if (queryName === "grim_is_mouse_button_down" || queryName === "grim_was_mouse_button_pressed") {
+    if (key === 0) {
+      const state = ensurePlayerKeyState(tick, 0);
+      if (state) {
+        if (queryName === "grim_is_mouse_button_down") state.fire_down = downSeen(state.fire_down);
+        if (queryName === "grim_was_mouse_button_pressed") state.fire_pressed = downSeen(state.fire_pressed);
+      }
+    }
+    return;
+  }
+
+  if ((!Array.isArray(bindings) || bindings.length === 0) && (!altBindings || typeof altBindings !== "object")) {
+    return;
+  }
 
   if (Array.isArray(bindings)) {
     for (let i = 0; i < bindings.length; i++) {
@@ -1535,11 +1560,12 @@ function updatePlayerInputKeyState(tick, queryName, keyCode, pressed, callerStat
       if ((binding.turn_left | 0) === key) state.turn_left_pressed = down;
       if ((binding.turn_right | 0) === key) state.turn_right_pressed = down;
       if ((binding.fire | 0) === key) {
-        if (queryName === "grim_is_key_active" || queryName === "grim_is_key_down") state.fire_down = down;
-        if (queryName === "grim_was_key_pressed") state.fire_pressed = down;
+        if (queryName === "grim_is_key_active" || queryName === "grim_is_key_down")
+          state.fire_down = downSeen(state.fire_down);
+        if (queryName === "grim_was_key_pressed") state.fire_pressed = downSeen(state.fire_pressed);
       }
       if ((binding.reload | 0) === key && queryName === "grim_was_key_pressed") {
-        state.reload_pressed = down;
+        state.reload_pressed = downSeen(state.reload_pressed);
       }
     }
   }
@@ -1554,8 +1580,9 @@ function updatePlayerInputKeyState(tick, queryName, keyCode, pressed, callerStat
     if ((altBindings.turn_left | 0) === key) state.turn_left_pressed = down;
     if ((altBindings.turn_right | 0) === key) state.turn_right_pressed = down;
     if ((altBindings.fire | 0) === key) {
-      if (queryName === "grim_is_key_active" || queryName === "grim_is_key_down") state.fire_down = down;
-      if (queryName === "grim_was_key_pressed") state.fire_pressed = down;
+      if (queryName === "grim_is_key_active" || queryName === "grim_is_key_down")
+        state.fire_down = downSeen(state.fire_down);
+      if (queryName === "grim_was_key_pressed") state.fire_pressed = downSeen(state.fire_pressed);
     }
   }
 }
@@ -1669,6 +1696,9 @@ function makeTickContext() {
     ],
     sfx_ids: [],
     fire_by_player: {},
+    player_fire_direct_by_player: {},
+    player_fire_fallback_by_player: {},
+    player_projectile_spawn_by_player: {},
     spawn_callers_template: {},
     spawn_callers_low: {},
     spawn_sources_low: {},
@@ -2370,6 +2400,12 @@ function finalizeTick() {
     rng_call_count: tick.rng.calls,
     input_true_count: inputTrueCount,
   };
+  const playerFireDiagnostics = {
+    event_count_player_fire: tick.event_counts.player_fire || 0,
+    top_direct_events_by_player: topCounterPairs(tick.player_fire_direct_by_player, 8),
+    top_fallback_events_by_player: topCounterPairs(tick.player_fire_fallback_by_player, 8),
+    top_player_projectile_spawns_by_player: topCounterPairs(tick.player_projectile_spawn_by_player, 8),
+  };
 
   const timing = {
     gameplay_frame: tick.gameplay_frame,
@@ -2482,6 +2518,7 @@ function finalizeTick() {
       timing: timing,
       spawn: spawnDiagnostics,
       rng: rngDiagnostics,
+      player_fire: playerFireDiagnostics,
       perk_apply_outside_before: perkApplyOutsideBefore,
       creature_lifecycle: creatureLifecycleDiagnostics,
       before_players: checkpointPlayersFromCompact(beforePlayers),
@@ -2550,6 +2587,7 @@ function finalizeTick() {
       timing: timing,
       spawn: spawnDiagnostics,
       rng: rngDiagnostics,
+      player_fire: playerFireDiagnostics,
       perk_apply_outside_before: perkApplyOutsideBefore,
       creature_lifecycle: creatureLifecycleDiagnostics,
     },
@@ -2950,6 +2988,7 @@ function installHooks() {
       const tick = outState.currentTick;
       if (tick) {
         tick.fire_by_player[idx] = (tick.fire_by_player[idx] || 0) + 1;
+        tick.player_fire_direct_by_player[idx] = (tick.player_fire_direct_by_player[idx] || 0) + 1;
       }
       addTickEvent(
         "player_fire",
@@ -3121,6 +3160,7 @@ function installHooks() {
 
   attachHook("projectile_spawn", fnPtrs.projectile_spawn, {
     onEnter(args) {
+      const callerStatic = runtimeToStatic(this.returnAddress);
       this._ctx = {
         pos: {
           x: captureNumber(safeReadF32(args[0])),
@@ -3130,6 +3170,7 @@ function installHooks() {
         requested_type_id: args[2].toInt32(),
         owner_id: args[3].toInt32(),
         caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
+        caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
       };
     },
     onLeave(retval) {
@@ -3148,6 +3189,7 @@ function installHooks() {
         pos: ctx.pos,
         type_overridden: actualType == null ? null : actualType !== ctx.requested_type_id,
         caller: ctx.caller,
+        caller_static: ctx.caller_static,
       };
       addTickEvent(
         "projectile_spawn",
@@ -3159,6 +3201,38 @@ function installHooks() {
           "->" +
           (payload.actual_type_id == null ? -1 : payload.actual_type_id)
       );
+      const tick = outState.currentTick;
+      const playerIndex = ownerIdToPlayerIndex(ctx.owner_id);
+      if (tick && playerIndex != null && isPlayerUpdateCaller(ctx.caller_static)) {
+        tick.player_projectile_spawn_by_player[playerIndex] =
+          (tick.player_projectile_spawn_by_player[playerIndex] || 0) + 1;
+        if ((tick.fire_by_player[playerIndex] || 0) <= 0) {
+          const beforePlayers = tick.before && Array.isArray(tick.before.players) ? tick.before.players : [];
+          const beforePlayer =
+            beforePlayers[playerIndex] && typeof beforePlayers[playerIndex] === "object"
+              ? beforePlayers[playerIndex]
+              : null;
+          const afterPlayer = readPlayerCompact(playerIndex);
+          const firePayload = {
+            player_index: playerIndex,
+            weapon_before: beforePlayer && beforePlayer.weapon_id != null ? beforePlayer.weapon_id : null,
+            weapon_after: afterPlayer.weapon_id,
+            ammo_before: beforePlayer && beforePlayer.ammo_f32 != null ? beforePlayer.ammo_f32 : null,
+            ammo_after: afterPlayer.ammo_f32,
+            shot_cooldown_after: afterPlayer.shot_cooldown,
+            owner_id: ctx.owner_id,
+            requested_type_id: ctx.requested_type_id,
+            actual_type_id: actualType,
+            source: "projectile_spawn_owner",
+            caller: ctx.caller,
+            caller_static: ctx.caller_static,
+          };
+          addTickEvent("player_fire", firePayload, "pfb:" + playerIndex + ":" + String(payload.index | 0));
+          tick.fire_by_player[playerIndex] = (tick.fire_by_player[playerIndex] || 0) + 1;
+          tick.player_fire_fallback_by_player[playerIndex] =
+            (tick.player_fire_fallback_by_player[playerIndex] || 0) + 1;
+        }
+      }
       emitRawEvent(Object.assign({ event: "projectile_spawn" }, payload));
     },
   });
