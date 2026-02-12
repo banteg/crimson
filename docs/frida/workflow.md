@@ -242,6 +242,15 @@ just ghidra-exe
 
 ## Tips
 
+- Original diagnostics cache:
+  - `uv run crimson original divergence-report ...` and `uv run crimson original focus-trace ...` auto-use a local cache daemon.
+  - First run for a new capture may be slow while cache artifacts are built.
+  - Force uncached behavior with `--no-cache`.
+  - Optional env controls:
+    - `CRIMSON_ORIGINAL_CACHE=0` disables cache mode.
+    - `CRIMSON_ORIGINAL_CACHE_DIR=/path` overrides cache storage.
+    - `CRIMSON_ORIGINAL_CACHE_SOCKET=/path.sock` overrides daemon socket.
+
 - Keep hooks narrow: use the Grim hot-window or limit targets in
   `scripts/frida/grim_hooks_targets.json` when tracing draw calls.
 
