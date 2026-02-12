@@ -505,6 +505,7 @@ class BonusPool:
         apply_creature_damage: CreatureDamageApplier | None = None,
         detail_preset: int = 5,
         defer_freeze_corpse_fx: bool = False,
+        freeze_corpse_indices: set[int] | None = None,
     ) -> list[BonusPickupEvent]:
         if dt <= 0.0:
             return []
@@ -538,6 +539,7 @@ class BonusPool:
                         apply_creature_damage=apply_creature_damage,
                         detail_preset=int(detail_preset),
                         defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
+                        freeze_corpse_indices=freeze_corpse_indices,
                     )
                     entry.picked = True
                     entry.time_left = BONUS_PICKUP_LINGER
@@ -2872,6 +2874,7 @@ class _BonusApplyCtx:
     label: str
     icon_id: int
     defer_freeze_corpse_fx: bool = False
+    freeze_corpse_indices: set[int] | None = None
 
     def register_global(self, timer_key: str) -> None:
         self.state.bonus_hud.register(
@@ -2974,11 +2977,17 @@ def _bonus_apply_freeze(ctx: _BonusApplyCtx) -> None:
     creatures = ctx.creatures
     if creatures:
         defer_corpse_fx = bool(ctx.defer_freeze_corpse_fx)
+        freeze_corpse_indices = ctx.freeze_corpse_indices
         rand = ctx.state.rng.rand
-        for creature in creatures:
+        for idx, creature in enumerate(creatures):
             if not creature.active:
                 continue
             if creature.hp > 0.0:
+                continue
+            if freeze_corpse_indices is not None and int(idx) not in freeze_corpse_indices:
+                # Corpses created this tick are cleared immediately, but native
+                # does not run Freeze shard/shatter RNG for them.
+                creature.active = False
                 continue
             pos = creature.pos
             if defer_corpse_fx:
@@ -3260,6 +3269,7 @@ def bonus_apply(
     apply_creature_damage: CreatureDamageApplier | None = None,
     detail_preset: int = 5,
     defer_freeze_corpse_fx: bool = False,
+    freeze_corpse_indices: set[int] | None = None,
 ) -> None:
     """Apply a bonus to player + global timers (subset of `bonus_apply`)."""
 
@@ -3286,6 +3296,7 @@ def bonus_apply(
         label=str(label),
         icon_id=int(icon_id),
         defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
+        freeze_corpse_indices=freeze_corpse_indices,
     )
     handler = _BONUS_APPLY_HANDLERS.get(bonus_id)
     if handler is not None:
@@ -3352,6 +3363,7 @@ def bonus_telekinetic_update(
     apply_creature_damage: CreatureDamageApplier | None = None,
     detail_preset: int = 5,
     defer_freeze_corpse_fx: bool = False,
+    freeze_corpse_indices: set[int] | None = None,
 ) -> list[BonusPickupEvent]:
     """Allow Telekinetic perk owners to pick up bonuses by aiming at them."""
 
@@ -3393,6 +3405,7 @@ def bonus_telekinetic_update(
             apply_creature_damage=apply_creature_damage,
             detail_preset=int(detail_preset),
             defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
+            freeze_corpse_indices=freeze_corpse_indices,
         )
         entry.picked = True
         entry.time_left = BONUS_PICKUP_LINGER
@@ -3423,6 +3436,7 @@ def bonus_update(
     apply_creature_damage: CreatureDamageApplier | None = None,
     detail_preset: int = 5,
     defer_freeze_corpse_fx: bool = False,
+    freeze_corpse_indices: set[int] | None = None,
 ) -> list[BonusPickupEvent]:
     """Advance world bonuses and global timers (subset of `bonus_update`)."""
 
@@ -3434,6 +3448,7 @@ def bonus_update(
         apply_creature_damage=apply_creature_damage,
         detail_preset=int(detail_preset),
         defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
+        freeze_corpse_indices=freeze_corpse_indices,
     )
     pickups.extend(
         state.bonus_pool.update(
@@ -3444,6 +3459,7 @@ def bonus_update(
             apply_creature_damage=apply_creature_damage,
             detail_preset=int(detail_preset),
             defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
+            freeze_corpse_indices=freeze_corpse_indices,
         )
     )
 

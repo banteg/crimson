@@ -43,6 +43,43 @@ def test_freeze_pickup_shatters_existing_corpses() -> None:
     assert len(freeze_effects) == 16
 
 
+def test_freeze_pickup_can_limit_shatter_to_tick_start_corpses() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
+
+    pool = CreaturePool()
+    old_corpse = pool.entries[0]
+    old_corpse.active = True
+    old_corpse.hp = -1.0
+    old_corpse.pos = Vec2(100.0, 200.0)
+
+    new_corpse = pool.entries[1]
+    new_corpse.active = True
+    new_corpse.hp = -1.0
+    new_corpse.pos = Vec2(150.0, 240.0)
+
+    bonus_apply(
+        state,
+        player,
+        BonusId.FREEZE,
+        amount=1,
+        origin=player,
+        creatures=pool.entries,
+        players=[player],
+        detail_preset=5,
+        freeze_corpse_indices={0},
+    )
+
+    assert not old_corpse.active
+    assert not new_corpse.active
+    freeze_effects = [
+        entry
+        for entry in state.effects.iter_active()
+        if int(entry.effect_id) in (0x08, 0x09, 0x0A, 0x0E)
+    ]
+    assert len(freeze_effects) == 16
+
+
 def test_freeze_stops_creature_movement_and_animation() -> None:
     world_size = 1024.0
     world = WorldState.build(

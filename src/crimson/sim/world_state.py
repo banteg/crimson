@@ -122,6 +122,13 @@ class WorldState:
         inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
         prev_positions = [(player.pos.x, player.pos.y) for player in self.players]
         prev_health = [float(player.health) for player in self.players]
+        # Native Freeze pickup shatters corpses that existed at tick start;
+        # same-tick kills are not included in that pass.
+        freeze_corpse_indices_at_tick_start = {
+            int(idx)
+            for idx, creature in enumerate(self.creatures.entries)
+            if creature.active and float(creature.hp) <= 0.0
+        }
         perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
         _mark("ws_after_perk_effects")
         # `effects_update` runs early in the native frame loop, before creature/projectile updates.
@@ -367,6 +374,7 @@ class WorldState:
             apply_creature_damage=_apply_projectile_damage_to_creature,
             detail_preset=int(detail_preset),
             defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
+            freeze_corpse_indices=freeze_corpse_indices_at_tick_start,
         )
         if pickups:
             emit_bonus_pickup_effects(
