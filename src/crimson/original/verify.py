@@ -48,6 +48,7 @@ def _allow_capture_sample_creature_count(
     expected_by_tick: dict[int, ReplayCheckpoint],
     actual_by_tick: dict[int, ReplayCheckpoint],
     capture_sample_creature_counts: dict[int, int],
+    capture_active_corpse_below_despawn_ticks: set[int] | None = None,
 ) -> bool:
     if not field_diffs:
         return False
@@ -72,7 +73,21 @@ def _allow_capture_sample_creature_count(
 
     # `checkpoint.creature_count` can lag the sampled creature pool in captures.
     # When replay count matches sampled active entries exactly, ignore this field.
-    return actual_count == int(sample_count) and expected_count != int(sample_count)
+    if actual_count == int(sample_count) and expected_count != int(sample_count):
+        return True
+
+    # Some captures sample creature slots before render-time corpse culling.
+    # In those ticks, sampled active count can exceed replay by exactly one when a
+    # corpse is already below the native despawn threshold (< -10.0 hitbox_size).
+    if (
+        expected_count == int(sample_count)
+        and actual_count == int(sample_count) - 1
+        and capture_active_corpse_below_despawn_ticks is not None
+        and int(tick) in capture_active_corpse_below_despawn_ticks
+    ):
+        return True
+
+    return False
 
 
 def _capture_sample_creature_counts(capture: CaptureFile) -> dict[int, int]:
@@ -88,6 +103,29 @@ def _capture_sample_creature_counts(capture: CaptureFile) -> dict[int, int]:
         if not isinstance(creatures, list):
             continue
         out[int(tick_index)] = int(len(creatures))
+    return out
+
+
+def _capture_active_corpse_below_despawn_ticks(capture: CaptureFile) -> set[int]:
+    out: set[int] = set()
+    for tick in capture.ticks:
+        tick_index = int(tick.tick_index)
+        if tick_index < 0:
+            continue
+        samples = tick.samples
+        if samples is None:
+            continue
+        creatures = samples.creatures
+        if not isinstance(creatures, list):
+            continue
+        for creature in creatures:
+            if int(creature.active) == 0:
+                continue
+            if float(creature.hp) > 0.0:
+                continue
+            if float(creature.hitbox_size) < -10.0:
+                out.add(int(tick_index))
+                break
     return out
 
 
@@ -155,6 +193,7 @@ def verify_capture(
     expected_by_tick = {int(ckpt.tick_index): ckpt for ckpt in expected}
     actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
     sample_creature_counts = _capture_sample_creature_counts(capture)
+    sample_corpse_below_despawn_ticks = _capture_active_corpse_below_despawn_ticks(capture)
     checked_count = 0
     elapsed_baseline: tuple[int, int] | None = None
     elapsed_baseline_tick: int | None = None
@@ -206,6 +245,7 @@ def verify_capture(
             expected_by_tick=expected_by_tick,
             actual_by_tick=actual_by_tick,
             capture_sample_creature_counts=sample_creature_counts,
+            capture_active_corpse_below_despawn_ticks=sample_corpse_below_despawn_ticks,
         ):
             continue
         if field_diffs:
