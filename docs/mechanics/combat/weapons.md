@@ -65,9 +65,12 @@ Accuracy uses a spread heat value:
 ## Fire while reloading
 
 - [Regression Bullets](../perks.md#23-regression-bullets) — allowed during reload and spends experience per shot.
+
   - Ammo class `1` (flamethrower-class): `reload_time × 4`.
   - All other ammo classes: `reload_time × 200`.
+
 - [Ammunition Within](../perks.md#35-ammunition-within) — allowed during reload and costs player health per shot.
+
   - `1.0` health for most weapons,
   - `0.15` health for flamethrower-class weapons.
 - [Fire Bullets](../systems/bonuses.md), when active, bypasses standard projectile routing for one shot burst
