@@ -18,7 +18,7 @@ For decompiler-level details, gate variables, and evidence pointers, see
 
 ## Splitter Gun
 
-Every projectile that hits a target splits into two child projectiles
+Every projectile that hits a creature splits into two child projectiles
 diverging at 120 degrees. The children can split again on subsequent hits,
 creating exponential chain reactions through clustered enemies. Each impact
 throws off yellow-gold sparks. At 6x damage, every fragment hits hard enough
@@ -41,11 +41,10 @@ below size 16, it dies. A typical enemy takes about four or five hits to
 collapse entirely — each shot visibly squeezing it smaller with a blue
 pulse and scattered particle puffs.
 
-In single-player Survival, survive for 64 seconds without taking damage,
-without firing, and without picking up another weapon, and the game
-replaces your Pistol with the Shrinkifier. The check only fires once per
-run — if the timer passes while you're holding a picked-up weapon instead
-of the Pistol, the opportunity is silently consumed and won't come back.
+In single-player Survival, survive for 64 seconds without taking damage
+and without firing. When the timer check runs, you must still be holding
+the Pistol — if you've picked up another weapon by then, the opportunity
+is silently consumed and won't come back.
 
 ### Blade Gun
 
@@ -62,7 +61,7 @@ game grants the Blade Gun. Unlike the Shrinkifier, this does not require being
 damage-free or still on the Pistol — the third kill itself resets the fire
 flag, which is what opens the path.
 
-## Cut content
+## Unverified weapons
 
 17 named weapons exist in the weapon table but are absent from the quest
 unlock sequence. Beyond the three listed above, no verified unlock path is
