@@ -134,6 +134,7 @@ Run:
 ```bash
 uv run python - <<'PY'
 from pathlib import Path
+import msgspec
 from crimson.original.capture import load_capture
 
 cap = load_capture(Path("artifacts/frida/share/gameplay_diff_capture.json.gz"))
@@ -167,10 +168,12 @@ for t in cap.ticks:
             sample_creature_rows += 1
             if creature.ai_mode is not None or creature.link_index is not None:
                 sample_creature_rows_with_ai_lineage += 1
-    for head in t.event_heads:
-        if getattr(head, "kind", "") != "creature_lifecycle":
+    for head in msgspec.to_builtins(t.event_heads):
+        if not isinstance(head, dict):
             continue
-        data = head.data if isinstance(head.data, dict) else {}
+        if head.get("kind") != "creature_lifecycle":
+            continue
+        data = head.get("data") if isinstance(head.get("data"), dict) else {}
         for key in ("added_head", "removed_head"):
             rows = data.get(key)
             if not isinstance(rows, list):
