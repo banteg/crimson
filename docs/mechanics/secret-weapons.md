@@ -18,11 +18,12 @@ For decompiler-level details, gate variables, and evidence pointers, see
 
 ## Splitter Gun
 
-Every projectile that hits a creature splits into two child projectiles
-diverging at 120 degrees. The children can split again on subsequent hits,
-creating exponential chain reactions through clustered enemies. Each impact
-throws off yellow-gold sparks. At 6x damage, every fragment hits hard enough
-to matter.
+Each shot that hits a creature spawns two child projectiles at +/-60 degrees
+(120 degrees apart). Those children can split again on later hits, so dense
+enemy packs can chain into rapid branching bursts. Each impact throws off
+yellow-gold sparks. In the original game, Splitter fragments can also hit the
+player, so bad angles can bounce damage back at you. At 6x damage, fragments
+still hit hard enough to matter.
 
 Splitter Gun is a persistent unlock, not a temporary reward. It becomes
 available after beating 4.10 *The End of All* on hardcore. Once unlocked it
@@ -35,11 +36,11 @@ conditions. These are temporary rewards that do not persist across runs.
 
 ### Shrinkifier 5k
 
-Fires blue plasma bolts that deal no direct damage. Instead, each hit
-shrinks the target to 65% of its current size. Once a creature shrinks
-below size 16, it dies. A typical enemy takes about four or five hits to
-collapse entirely, each shot visibly squeezing it smaller with a blue
-pulse and scattered particle puffs.
+Fires blue plasma bolts that shrink the target to 65% of its current size on
+every hit while also applying a normal damage hit. If a creature shrinks below
+size 16, it dies immediately. In practice, enemies usually collapse in a few
+hits (often around three for medium-size targets), with visible blue pulse and
+particle effects on impact.
 
 In single-player Survival, survive for 64 seconds without taking damage
 and without firing. When the timer check runs, you must still be holding
@@ -48,11 +49,11 @@ is silently consumed and won't come back.
 
 ### Blade Gun
 
-A slow, heavy-hitting piercing weapon. Each shot carries a damage pool of
-50, meaning a single blade can cut through an entire line of enemies before
-being spent. With an 11x damage multiplier, individual hits are devastating.
-The projectile renders as a segmented beam rather than a ball, reinforcing
-the cutting visual.
+A piercing weapon with a very high damage scale (11x in weapon data). Each
+shot starts with a pierce pool of 50, but that is not "50 creatures" - the
+pool is consumed by damage interactions, so real pierce count varies by target
+health and hit order. Visually, the projectile appears as a short slash-like
+trail rather than a standard bullet orb.
 
 In single-player Survival, kill exactly three creatures, then walk to the
 center of the triangle formed by those three deaths without firing. If
