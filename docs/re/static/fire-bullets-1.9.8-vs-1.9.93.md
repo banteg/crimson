@@ -110,7 +110,7 @@ In 1.9.8, fire bullet count equals base spawn count; in 1.9.93, it equals `pelle
 
 ## Weapons not in quest progression
 
-These weapons are absent from `quest_database_init` and don't appear through standard quest unlocks. They have functional weapon table entries and fire paths but are likely secret, debug, or unfinished content. See `docs/secrets/weapon-candidates.md` for details.
+These weapons are absent from `quest_database_init` and don't appear through standard quest unlocks. They have functional weapon table entries and fire paths but are likely secret, debug, or unfinished content. See `docs/re/static/secrets/weapon-candidates.md` for details.
 
 The same behavior classes apply. Values listed as **1.9.8 to 1.9.93**.
 

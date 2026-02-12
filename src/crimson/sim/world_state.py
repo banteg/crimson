@@ -18,6 +18,7 @@ from ..game_modes import GameMode
 from ..gameplay import (
     build_gameplay_state,
     player_update,
+    survival_enforce_reward_weapon_guard,
     survival_progression_update,
 )
 from ..perks.runtime.effects import perks_update_effects
@@ -388,6 +389,7 @@ class WorldState:
                 pickups=pickups,
                 detail_preset=int(detail_preset),
             )
+        survival_enforce_reward_weapon_guard(self.state, self.players)
         _mark("ws_after_bonus_update")
         sfx = list(planned_death_sfx)
         sfx.extend(creature_result.sfx)

@@ -10,7 +10,7 @@ progression, making them candidates for "Secret Weapons" or unfinished content.
 
 ## Methodology
 
-1. **Full Weapon List**: Derived from [weapon-id-map](../weapon-id-map.md) (1-based ids 1-53;
+1. **Full Weapon List**: Derived from [weapon-id-map](../../../weapon-id-map.md) (1-based ids 1-53;
    id 0 is the dummy/none entry).
 
 2. **Quest Unlocks**: Analyzed `quest_database_init` (`FUN_00439230`) in
@@ -207,6 +207,10 @@ Weapons not present in the quest unlock table (excluding default Pistol) are:
 - Blaster R-300 (51)
 - Lighting Rifle (52)
 - Nuke Launcher (53)
+
+Two of these candidates now have verified runtime acquisition logic in Survival:
+Shrinkifier 5k (24) and Blade Gun (25). See
+`docs/re/static/secrets/survival-weapon-handouts.md`.
 
 The late-ID block (RayGun and 41+, plus 50+) still looks like the strongest
 "secret/debug weapon" cluster. The midrange misses (HR Flamer, Shrinkifier,
