@@ -109,6 +109,55 @@ def test_infer_rand_calls_between_states_and_stage_breakdown() -> None:
     }
 
 
+def test_actual_rand_calls_prefers_non_stale_after_mark() -> None:
+    report = _load_report_module()
+    start = 0x3AB51475
+    after_world = _step_crt_state(start, 36)
+
+    ckpt = _checkpoint(
+        tick=570,
+        rng_marks={
+            "before_world_step": start,
+            "before_events": start,
+            "after_events": start,
+            "ws_after_creatures": start,
+            "ws_after_projectiles": start,
+            "ws_after_secondary_projectiles": start,
+            "ws_after_death_sfx": start,
+            "after_world_step": after_world,
+            "after_stage_spawns": start,
+            "after_wave_spawns": start,
+        },
+    )
+
+    assert report._actual_rand_calls_for_checkpoint(ckpt) == 36
+    assert report._rng_changed(ckpt) is True
+
+
+def test_actual_rand_calls_prefers_late_event_after_mark() -> None:
+    report = _load_report_module()
+    start = 0xE199E00E
+    after_world = _step_crt_state(start, 1)
+    after_post_events = _step_crt_state(start, 11)
+
+    ckpt = _checkpoint(
+        tick=1247,
+        rng_marks={
+            "before_events": start,
+            "before_world_step": start,
+            "after_world_step": after_world,
+            "after_stage_spawns": after_world,
+            "after_wave_spawns": after_world,
+            "before_post_events": after_world,
+            "after_events": after_post_events,
+            "after_post_events": after_post_events,
+        },
+    )
+
+    assert report._actual_rand_calls_for_checkpoint(ckpt) == 11
+    assert report._rng_changed(ckpt) is True
+
+
 def test_window_rows_include_actual_rand_calls_and_delta() -> None:
     report = _load_report_module()
     start = 0x0BADF00D

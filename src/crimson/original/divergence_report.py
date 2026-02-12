@@ -1208,7 +1208,46 @@ def _find_first_divergence(
 
 def _primary_rng_after(ckpt: ReplayCheckpoint) -> int:
     marks = ckpt.rng_marks
-    for key in ("after_wave_spawns", "after_rush_spawns", "after_world_step"):
+    stage_rank: dict[str, int] = {
+        "after_world_step": 0,
+        "after_stage_spawns": 1,
+        "after_wave_spawns": 2,
+        "after_rush_spawns": 3,
+        "after_events": 4,
+        "after_post_events": 5,
+    }
+    candidate_keys = tuple(key for key in stage_rank if key in marks)
+    if not candidate_keys:
+        return -1
+
+    before = _rng_mark_with_fallback(marks, "before_events")
+    if before >= 0:
+        best_after: int | None = None
+        best_calls = -1
+        best_rank = -1
+        for key in candidate_keys:
+            after = _int_or(marks.get(key), -1)
+            if after < 0:
+                continue
+            calls = _infer_rand_calls_between_states(before, after)
+            if calls is None:
+                continue
+            rank = int(stage_rank.get(key, -1))
+            if int(calls) > int(best_calls) or (int(calls) == int(best_calls) and rank > best_rank):
+                best_after = int(after)
+                best_calls = int(calls)
+                best_rank = int(rank)
+        if best_after is not None:
+            return int(best_after)
+
+    for key in (
+        "after_post_events",
+        "after_events",
+        "after_rush_spawns",
+        "after_wave_spawns",
+        "after_stage_spawns",
+        "after_world_step",
+    ):
         if key in marks:
             return _int_or(marks.get(key))
     return -1
