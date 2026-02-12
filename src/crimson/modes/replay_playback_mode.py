@@ -11,10 +11,8 @@ from grim.view import ViewContext
 
 from ..game_modes import GameMode
 from ..game_world import GameWorld
-from ..gameplay import (
-    PlayerInput,
-    weapon_assign_player,
-)
+from ..sim.input import PlayerInput
+from ..weapon_runtime import weapon_assign_player
 from ..perks.state import CreatureForPerks
 from ..perks.selection import perk_selection_current_choices, perk_selection_pick
 from ..replay import (

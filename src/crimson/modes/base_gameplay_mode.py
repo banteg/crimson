@@ -15,7 +15,7 @@ from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
-from ..gameplay import PlayerInput
+from ..sim.input import PlayerInput
 from ..perks.runtime.effects import _creature_find_in_radius
 from ..perks.helpers import perk_count_get
 from ..game_world import GameWorld

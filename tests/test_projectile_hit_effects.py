@@ -5,7 +5,8 @@ from grim.geom import Vec2
 import pytest
 
 from crimson.creatures.runtime import CreatureState
-from crimson.gameplay import GameplayState, PlayerState
+from crimson.gameplay import GameplayState
+from crimson.sim.state_types import PlayerState
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
 
 

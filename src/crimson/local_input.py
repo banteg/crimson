@@ -11,7 +11,8 @@ from grim.config import CrimsonConfig, default_player_keybind_block
 from grim.geom import Vec2
 
 from .frontend.panels.controls_labels import controls_method_values
-from .gameplay import PlayerInput, PlayerState
+from .sim.input import PlayerInput
+from .sim.state_types import PlayerState
 from .input_codes import (
     config_keybinds_for_player,
     input_axis_value_for_player,

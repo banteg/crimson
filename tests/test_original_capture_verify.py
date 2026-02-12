@@ -5,7 +5,7 @@ from dataclasses import replace
 from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
-from crimson.gameplay import PlayerInput
+from crimson.sim.input import PlayerInput
 from crimson.original.capture import convert_capture_to_replay
 from crimson.original.diff import ReplayFieldDiff
 from crimson.original.schema import (

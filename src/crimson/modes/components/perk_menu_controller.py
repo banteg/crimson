@@ -8,7 +8,8 @@ import pyray as rl
 from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.math import clamp
 
-from ...gameplay import GameplayState, PlayerState
+from ...gameplay import GameplayState
+from ...sim.state_types import PlayerState
 from ...perks import PerkId, perk_display_description, perk_display_name
 from ...perks.selection import perk_selection_current_choices, perk_selection_pick
 from ...perks.state import CreatureForPerks, PerkSelectionState

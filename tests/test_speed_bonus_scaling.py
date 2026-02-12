@@ -4,7 +4,12 @@ from grim.geom import Vec2
 
 import pytest
 
-from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_update
+from crimson.gameplay import (
+    GameplayState,
+    player_update,
+)
+from crimson.sim.input import PlayerInput
+from crimson.sim.state_types import PlayerState
 
 
 def test_speed_bonus_adds_one_to_speed_multiplier() -> None:

@@ -5,7 +5,8 @@ from types import SimpleNamespace
 from crimson.creatures.spawn import CreatureTypeId
 from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState, PlayerState
+from crimson.gameplay import GameplayState
+from crimson.sim.state_types import PlayerState
 from crimson.projectiles import ProjectileHit, ProjectileTypeId
 from crimson.sim.presentation_step import (
     apply_world_presentation_step,

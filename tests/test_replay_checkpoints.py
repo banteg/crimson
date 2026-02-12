@@ -5,7 +5,7 @@ from grim.geom import Vec2
 import gzip
 import json
 
-from crimson.gameplay import PlayerState
+from crimson.sim.state_types import PlayerState
 from crimson.replay.checkpoints import (
     FORMAT_VERSION,
     ReplayCheckpoints,

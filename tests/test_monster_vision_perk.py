@@ -4,7 +4,7 @@ from grim.geom import Vec2
 
 import math
 
-from crimson.gameplay import PlayerState
+from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 from crimson.perks.helpers import perk_active
 from crimson.render.world_renderer import monster_vision_fade_alpha

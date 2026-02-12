@@ -4,7 +4,12 @@ from grim.geom import Vec2
 
 import math
 
-from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_update
+from crimson.gameplay import (
+    GameplayState,
+    player_update,
+)
+from crimson.sim.input import PlayerInput
+from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
 

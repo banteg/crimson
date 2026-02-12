@@ -6,7 +6,8 @@ import pytest
 
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
-from crimson.gameplay import PlayerInput, PlayerState
+from crimson.sim.input import PlayerInput
+from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 from crimson.sim.world_state import WorldState
 

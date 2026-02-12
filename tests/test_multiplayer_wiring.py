@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from crimson.gameplay import PlayerInput
+from crimson.sim.input import PlayerInput
 from crimson.game_world import GameWorld
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.survival_mode import SurvivalMode

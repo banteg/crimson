@@ -16,7 +16,9 @@ from grim.view import ViewContext
 
 from ..creatures.runtime import CreatureFlags
 from ..game_modes import GameMode
-from ..gameplay import PlayerInput, survival_check_level_up, weapon_assign_player
+from ..gameplay import survival_check_level_up
+from ..sim.input import PlayerInput
+from ..weapon_runtime import weapon_assign_player
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
 from ..perks.state import CreatureForPerks
 from ..tutorial.timeline import TutorialFrameActions, TutorialState, tick_tutorial_timeline

@@ -14,7 +14,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from .gameplay import PlayerInput, PlayerState
+from .sim.input import PlayerInput
+from .sim.state_types import PlayerState
 from .sim.runners.common import build_damage_scale_by_type
 from .sim.sessions import SurvivalDeterministicSession
 from .sim.world_state import WorldState
@@ -296,7 +297,8 @@ def run_headless(config: OracleConfig) -> None:
     # Set up player at center
     players = world_state.players
     if not players:
-        from .gameplay import PlayerState, weapon_assign_player
+        from .sim.state_types import PlayerState
+        from .weapon_runtime import weapon_assign_player
 
         player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
         weapon_assign_player(player, 1)

@@ -17,11 +17,11 @@ from ..bonuses.hud import bonus_hud_update
 from ..creatures.spawn import CreatureFlags
 from ..gameplay import (
     GameplayState,
-    PlayerInput,
-    PlayerState,
     player_update,
-    weapon_assign_player,
 )
+from ..sim.input import PlayerInput
+from ..sim.state_types import PlayerState
+from ..weapon_runtime import weapon_assign_player
 from ..perks import PerkId
 from ..ui.hud import HudAssets, HudState, draw_hud_overlay, hud_ui_scale, load_hud_assets
 from ..weapons import WEAPON_TABLE, weapon_display_name

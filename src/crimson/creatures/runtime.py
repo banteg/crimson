@@ -18,7 +18,11 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand
 from ..effects import FxQueue, FxQueueRotated
-from ..gameplay import award_experience, award_experience_from_reward, survival_record_recent_death
+from ..gameplay import (
+    award_experience,
+    award_experience_from_reward,
+    survival_record_recent_death,
+)
 from ..math_parity import (
     NATIVE_PI,
     NATIVE_TAU,

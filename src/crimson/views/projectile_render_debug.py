@@ -14,7 +14,9 @@ from grim.view import View, ViewContext
 
 from ..creatures.spawn import CreatureFlags
 from ..game_world import GameWorld
-from ..gameplay import PlayerInput, player_update, weapon_assign_player
+from ..gameplay import player_update
+from ..sim.input import PlayerInput
+from ..weapon_runtime import weapon_assign_player
 from ..sim.world_defs import BEAM_TYPES
 from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_TABLE

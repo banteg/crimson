@@ -10,7 +10,8 @@ from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 
 from ..creatures.runtime import CreaturePool
-from ..gameplay import GameplayState, PlayerState
+from ..gameplay import GameplayState
+from ..sim.state_types import PlayerState
 
 
 @dataclass(frozen=True, slots=True)

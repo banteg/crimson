@@ -24,35 +24,26 @@ from .projectiles import (
     SecondaryProjectilePool,
 )
 from .weapon_runtime import (
-    most_used_weapon_id_for_player,
     owner_id_for_player as _owner_id_for_player,
     owner_id_for_player_projectiles as _owner_id_for_player_projectiles,
-    player_fire_weapon,
-    player_start_reload,
-    player_swap_alt_weapon,
+    player_fire_weapon as _player_fire_weapon,
+    player_start_reload as _player_start_reload,
+    player_swap_alt_weapon as _player_swap_alt_weapon,
     projectile_spawn as _projectile_spawn,
     spawn_projectile_ring as _spawn_projectile_ring,
     weapon_entry as _weapon_entry,
-    weapon_assign_player,
-    weapon_pick_random_available,
-    weapon_refresh_available,
+    weapon_assign_player as _weapon_assign_player,
 )
 from .weapons import WEAPON_TABLE, WeaponId
-from .sim.input import PlayerInput
-from .sim.state_types import PERK_COUNT_SIZE, PlayerState
+from .sim.state_types import PERK_COUNT_SIZE
 
 if TYPE_CHECKING:
     from .persistence.save_status import GameStatus
+    from .sim.input import PlayerInput
+    from .sim.state_types import PlayerState
 
 
 WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
-# Compatibility shim: keep weapon runtime API available from `crimson.gameplay`
-# while call sites are migrated.
-_COMPAT_WEAPON_RUNTIME_EXPORTS = (
-    most_used_weapon_id_for_player,
-    weapon_pick_random_available,
-    weapon_refresh_available,
-)
 
 
 @dataclass(slots=True)
@@ -255,7 +246,7 @@ def survival_update_weapon_handouts(
         and bool(state.survival_reward_handout_enabled)
     ):
         if int(player.weapon_id) == int(WeaponId.PISTOL):
-            weapon_assign_player(player, int(WeaponId.SHRINKIFIER_5K), state=state)
+            _weapon_assign_player(player, int(WeaponId.SHRINKIFIER_5K), state=state)
             state.survival_reward_weapon_guard_id = int(WeaponId.SHRINKIFIER_5K)
         state.survival_reward_handout_enabled = False
         state.survival_reward_damage_seen = True
@@ -268,7 +259,7 @@ def survival_update_weapon_handouts(
         dx = float(player.pos.x) - float(centroid_x)
         dy = float(player.pos.y) - float(centroid_y)
         if math.sqrt(dx * dx + dy * dy) < 16.0 and float(player.health) < 15.0:
-            weapon_assign_player(player, int(WeaponId.BLADE_GUN), state=state)
+            _weapon_assign_player(player, int(WeaponId.BLADE_GUN), state=state)
             state.survival_reward_weapon_guard_id = int(WeaponId.BLADE_GUN)
             state.survival_reward_fire_seen = True
             state.survival_reward_handout_enabled = False
@@ -281,9 +272,9 @@ def survival_enforce_reward_weapon_guard(state: GameplayState, players: Sequence
     for player in players:
         weapon_id = int(player.weapon_id)
         if weapon_id == int(WeaponId.BLADE_GUN) and guard_id != int(WeaponId.BLADE_GUN):
-            weapon_assign_player(player, int(WeaponId.PISTOL))
+            _weapon_assign_player(player, int(WeaponId.PISTOL))
         if weapon_id == int(WeaponId.SHRINKIFIER_5K) and guard_id != int(WeaponId.SHRINKIFIER_5K):
-            weapon_assign_player(player, int(WeaponId.PISTOL))
+            _weapon_assign_player(player, int(WeaponId.PISTOL))
 
 
 def player_update(
@@ -562,7 +553,7 @@ def player_update(
         player.reload_active = False
 
     if input_state.reload_pressed:
-        if perk_active(player, PerkId.ALTERNATE_WEAPON) and player_swap_alt_weapon(player):
+        if perk_active(player, PerkId.ALTERNATE_WEAPON) and _player_swap_alt_weapon(player):
             weapon = _weapon_entry(player.weapon_id)
             if weapon is not None and weapon.reload_sound is not None:
                 from .weapon_sfx import resolve_weapon_sfx_ref
@@ -572,12 +563,12 @@ def player_update(
                     state.sfx_queue.append(key)
             player.shot_cooldown = float(player.shot_cooldown) + 0.1
         elif player.reload_timer == 0.0 and not input_state.move_to_cursor_pressed:
-            player_start_reload(player, state)
+            _player_start_reload(player, state)
 
     if input_state.fire_down:
         state.survival_reward_fire_seen = True
 
-    player_fire_weapon(
+    _player_fire_weapon(
         player,
         input_state,
         dt,

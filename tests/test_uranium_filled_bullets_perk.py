@@ -6,7 +6,7 @@ import pytest
 
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
-from crimson.gameplay import PlayerState
+from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 
 

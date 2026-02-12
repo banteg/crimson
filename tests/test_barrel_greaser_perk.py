@@ -8,7 +8,7 @@ import pytest
 
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
-from crimson.gameplay import PlayerState
+from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
 from crimson.weapons import WEAPON_BY_ID

@@ -7,7 +7,8 @@ from crimson.creatures.runtime import CreatureUpdateResult
 from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
-from crimson.gameplay import PlayerInput, PlayerState
+from crimson.sim.input import PlayerInput
+from crimson.sim.state_types import PlayerState
 from crimson.projectiles import ProjectileHit, ProjectileTypeId, SecondaryProjectileTypeId
 import crimson.sim.world_state as world_state_mod
 from crimson.sim.world_state import WorldState

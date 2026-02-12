@@ -17,7 +17,7 @@ from grim.geom import Vec2
 from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusEntry, bonus_label_for_entry
 from crimson.game_modes import GameMode
-from crimson.gameplay import PlayerInput
+from crimson.sim.input import PlayerInput
 from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     CAPTURE_PERK_APPLY_EVENT_KIND,

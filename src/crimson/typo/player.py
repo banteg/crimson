@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 
-from ..gameplay import PlayerInput, PlayerState, weapon_assign_player
+from ..sim.input import PlayerInput
+from ..sim.state_types import PlayerState
+from ..weapon_runtime import weapon_assign_player
 
 TYPO_WEAPON_ID = 4
 

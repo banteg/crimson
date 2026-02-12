@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 
-from crimson.gameplay import (
-    GameplayState,
-    PlayerInput,
-    PlayerState,
+from crimson.gameplay import GameplayState
+from crimson.sim.input import PlayerInput
+from crimson.sim.state_types import PlayerState
+from crimson.weapon_runtime import (
     most_used_weapon_id_for_player,
     player_fire_weapon,
     weapon_assign_player,

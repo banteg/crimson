@@ -4,7 +4,8 @@ import pytest
 from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
-from crimson.gameplay import PlayerInput, PlayerState
+from crimson.sim.input import PlayerInput
+from crimson.sim.state_types import PlayerState
 from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder
 from crimson.sim.input_frame import normalize_input_frame
 from crimson.sim.runners import run_survival_replay

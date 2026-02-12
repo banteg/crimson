@@ -4,7 +4,7 @@ import pytest
 from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
-from crimson.gameplay import PlayerInput
+from crimson.sim.input import PlayerInput
 from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder, UnknownEvent
 from crimson.original.capture import CAPTURE_BOOTSTRAP_EVENT_KIND
 from crimson.sim.runners import ReplayRunnerError, run_rush_replay, run_survival_replay

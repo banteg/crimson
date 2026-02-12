@@ -15,7 +15,8 @@ from ..bonuses import BonusId
 from ..bonuses.apply import bonus_apply
 from ..creatures.spawn import CreatureFlags
 from ..effects_atlas import EffectId, effect_src_rect
-from ..gameplay import GameplayState, PlayerState
+from ..gameplay import GameplayState
+from ..sim.state_types import PlayerState
 from ..projectiles import ProjectileTypeId
 from ..weapons import (
     WEAPON_BY_ID,
