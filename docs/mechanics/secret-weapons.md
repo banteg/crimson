@@ -7,82 +7,86 @@ tags:
 
 # Secret weapons
 
-This page tracks weapon paths that are not part of normal quest weapon unlocks.
-Current verified paths are:
+Several weapons in Crimsonland are not unlocked through normal quest
+progression. Three verified paths exist:
 
-- two one-off Survival handouts (`24` Shrinkifier 5k, `25` Blade Gun)
-- one persistent progression unlock (`29` Splitter Gun)
+- One persistent progression unlock (Splitter Gun)
+- Two hidden Survival rewards (Shrinkifier 5k, Blade Gun)
 
-## Survival one-off handouts
-
-In single-player Survival, `survival_update` can assign hidden weapons under
-strict runtime gates. These are runtime grants, not permanent unlocks.
-For decompile-level gate writes and evidence pointers, see
+For decompiler-level details, gate variables, and evidence pointers, see
 [Survival weapon handouts (RE/static)](../re/static/secrets/survival-weapon-handouts.md).
-
-### Shrinkifier 5k (`weapon_id = 24`)
-
-The time-based check runs when all of these are true:
-
-- single-player Survival
-- `survival_reward_damage_seen == 0`
-- `survival_reward_fire_seen == 0`
-- `survival_elapsed_ms > 64000`
-- `survival_reward_handout_enabled != 0`
-
-To actually receive the weapon, the current weapon must still be Pistol
-(`weapon_id == 1`).
-
-Important edge case: if the timer gate passes while holding a non-pistol weapon,
-the gate is still consumed (flags are set), but no Shrinkifier is granted.
-
-Known table stats: clip `8`, shot cooldown `0.21s`, reload `1.22s`.
-
-### Blade Gun (`weapon_id = 25`)
-
-The centroid check runs when all of these are true:
-
-- single-player Survival
-- `survival_recent_death_count == 3`
-- `survival_reward_fire_seen == 0`
-- player distance to centroid of the first three recorded death positions is `< 16.0`
-- player health is `< 15.0`
-
-Centroid formula:
-
-- `cx = (p0.x + p1.x + p2.x) * 0.33333334`
-- `cy = (p0.y + p1.y + p2.y) * 0.33333334`
-
-Important edge case: this check does not require
-`survival_reward_handout_enabled != 0` and does not require
-`survival_reward_damage_seen == 0`.
-
-`creature_handle_death` sets `survival_reward_fire_seen = 0` and
-`survival_reward_handout_enabled = 0` exactly when the recent-death counter
-reaches `3`; that transition is what opens the Blade Gun path.
-
-Known table stats: clip `6`, shot cooldown `0.35s`, reload `3.50s`, damage scale `11.0x`.
-
-## Handout guard behavior
-
-`survival_reward_weapon_guard_id` guards temporary handout ownership.
-Each world step:
-
-- if current weapon is Blade Gun (`25`) and guard is not `25`, force Pistol
-- if current weapon is Shrinkifier 5k (`24`) and guard is not `24`, force Pistol
-
-This guard is written by the handout grants and initialized at run reset.
-It is not generally cleared just because you switched weapons.
 
 ## Splitter Gun
 
-Splitter Gun (`weapon_id = 29`) is a persistent unlock, not a one-off handout.
-It becomes available once hardcore quest progression reaches
-`quest_unlock_index_full >= 40` (and demo mode is off).
+Every projectile that hits a target splits into two child projectiles
+diverging at 120 degrees. The children can split again on subsequent hits,
+creating exponential chain reactions through clustered enemies. Each impact
+throws off yellow-gold sparks. At 6x damage, every fragment hits hard enough
+to matter.
 
-## Other non-quest weapon candidates
+Splitter Gun is a persistent unlock, not a temporary reward. It becomes
+available after beating 4.10 *The End of All* on hardcore. Once unlocked it
+appears in the normal weapon pool.
 
-Multiple named weapons exist in the weapon table but are not present in
-`quest_unlock_weapon_id` progression. For these, no verified unlock path is
-currently documented. See [weapon candidates](../re/static/secrets/weapon-candidates.md) for the current
-candidate list and evidence notes.
+## Hidden Survival rewards
+
+In single-player Survival, the game can grant hidden weapons under strict
+conditions. These are temporary rewards — they do not persist across runs.
+
+### Shrinkifier 5k
+
+Fires blue plasma bolts that deal no direct damage. Instead, each hit
+shrinks the target to 65% of its current size. Once a creature shrinks
+below size 16, it dies. A typical enemy takes about four or five hits to
+collapse entirely — each shot visibly squeezing it smaller with a blue
+pulse and scattered particle puffs.
+
+Granted after surviving 64 seconds in single-player Survival, provided:
+
+- the player has not taken any damage
+- the player has not fired any weapon
+- the handout system has not already been consumed
+- the player is still holding the Pistol
+
+If the timer condition passes but the player is holding a different weapon
+(e.g. from a pickup), the handout opportunity is consumed without granting
+the Shrinkifier. The gate does not reset.
+
+### Blade Gun
+
+A slow, heavy-hitting piercing weapon. Each shot carries a damage pool of
+50, meaning a single blade can cut through an entire line of enemies before
+being spent. With an 11x damage multiplier, individual hits are devastating.
+The projectile renders as a segmented beam rather than a ball, reinforcing
+the cutting visual.
+
+Granted when the player returns to the centroid of their first three kill
+positions under pressure. All of these must be true:
+
+- single-player Survival
+- exactly 3 creatures have died so far
+- the player has not fired since the 3rd kill
+- the player is within distance 16 of the average position of the first 3
+  death locations
+- the player's health is below 15
+
+Unlike the Shrinkifier, this check does not require the player to be
+damage-free or still on the Pistol, and it does not require the handout
+system to be in its initial state. The 3rd creature death itself resets
+the fire flag, which is what opens the Blade Gun path.
+
+### Reward guard
+
+Both weapons are guard-protected: each world step, if the player is holding
+Shrinkifier 5k or Blade Gun without the matching guard, the game forces a
+switch back to Pistol. The guard is set when the weapon is granted and reset
+at the start of each run. This makes them effectively single-run rewards —
+switching away or starting a new run loses them.
+
+## Other non-quest weapons
+
+17 named weapons exist in the weapon table but are absent from the quest
+unlock sequence. Beyond the three listed above, no verified unlock path is
+currently documented. See
+[weapon candidates (RE/static)](../re/static/secrets/weapon-candidates.md)
+for the full candidate list and analysis.

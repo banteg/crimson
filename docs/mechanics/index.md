@@ -15,6 +15,7 @@ This section avoids rewrite internals and decompiler implementation details wher
 - [Modes](modes/index.md) — mode-level behavior and mode IDs.
 - [Systems](systems/index.md) — gameplay systems like perks and UI behavior.
 - [Reference](reference/index.md) — IDs, tables, and lookup documentation used by mechanics pages.
+- [Secret weapons](secret-weapons.md) — hidden weapons outside normal quest progression.
 
 ## Related sections
 
