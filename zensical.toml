@@ -17,6 +17,7 @@ nav = [
     ]},
     { "Systems" = [
       { "Overview" = "mechanics/systems/index.md" },
+      { "Secret weapons" = "mechanics/secret-weapons.md" },
       { "Perks" = "mechanics/perks.md" },
       { "UI elements" = "ui-elements.md" },
       { "In-game console" = "console.md" },
