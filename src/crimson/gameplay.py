@@ -759,9 +759,12 @@ def _perks_update_pyrokinetic(ctx: _PerksUpdateEffectsCtx) -> None:
         return
 
     creature = ctx.creatures[target]
-    creature.collision_timer = float(creature.collision_timer) - ctx.dt
-    if creature.collision_timer < 0.0:
-        creature.collision_timer = 0.5
+    # Native stores this timer as float32; keeping f32 math avoids crossing
+    # the zero threshold one frame early in parity-sensitive Pyro windows.
+    next_timer = f32(f32(float(creature.collision_timer)) - f32(float(ctx.dt)))
+    creature.collision_timer = float(next_timer)
+    if float(next_timer) < 0.0:
+        creature.collision_timer = float(f32(0.5))
         for intensity in (0.8, 0.6, 0.4, 0.3, 0.2):
             angle = float(int(ctx.state.rng.rand()) % 0x274) * 0.01
             ctx.state.particles.spawn_particle(pos=creature.pos, angle=angle, intensity=float(intensity))
