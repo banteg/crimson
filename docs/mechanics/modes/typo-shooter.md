@@ -3,49 +3,56 @@ tags:
   - mechanics
   - modes
   - typo
-  - typing
 ---
 
 # Typ-o-Shooter
 
-Typ-o-Shooter replaces shooting by matching names.
+Shooting is replaced by typing. Creatures are labeled with names, and
+typing a name followed by Enter fires at the matching creature.
 
-## Spawn system
+## Starting conditions
 
-- Every frame, spawn cooldown shrinks by `frame_dt × player_count`.
-- When enough time accumulates, it schedules another pair of creatures and resets with:
-  - `3500 - elapsed_ms / 800`
-  - clamped to `100 ms` minimum.
-- Spawns always come in symmetric pairs from opposite sides.
-- Each cycle has a cyan-then-green tint progression tied to game time.
+- Weapon: typing rifle (internal, not selectable).
+- Bonuses: disabled. Weapon Power Up and Reflex Boost timers are cleared
+  every frame.
+- Perks: disabled.
+- Single-player only.
 
-## Typing input flow
+## Input
 
-- Typing characters append to a buffer and play key sounds.
-- Enter tries to match a living creature name.
-  - when matched, that target is fired at directly.
-  - reload key can also be sent from Enter input.
-- Backspace edits buffer text.
-- Mouse cursor still controls aiming anchor and aim panel still shows.
+- Type characters to build a buffer, displayed in a panel at the bottom
+  of the screen.
+- Press Enter to match the buffer against living creature names. On a
+  match, the player fires at that creature.
+- Backspace deletes the last character.
+- Mouse still controls the aiming direction.
 
-## Player setup each frame
+## Spawning
 
-Typ-o mode forcibly keeps the same constrained state every frame:
+Spawn cooldown decreases by `frame_dt × player_count` each frame. When
+it crosses zero, a symmetric pair spawns from opposite edges:
 
-- weapon is fixed to the typing rifle,
-- shot cooldown is zeroed,
-- spread is reset,
-- ammo is full,
-- reload is inactive.
+- **Right edge**: Spider.
+- **Left edge**: Alien.
 
-It also cancels active reactive buffs:
+Cooldown resets to:
 
-- [Weapon Power Up](../systems/bonuses.md#weapon-power-up),
-- [Reflex Boost](../systems/bonuses.md#reflex-boost),
-- and clears bonus items pending spawn.
+`3500 − elapsed_ms / 800` (milliseconds, minimum 100)
 
-## Game over and scoring
+Creatures are tinted based on elapsed time, shifting through color over
+the course of a run.
 
-Run over follows the same animation timing as other modes: you get a small delay after death before the screen opens.
+## Player state
 
-High score output uses elapsed time and shot counters from typing actions.
+The typing rifle overrides normal weapon behavior every frame: shot
+cooldown is zeroed, spread is reset, ammo is kept full, and reload is
+inactive.
+
+## Scoring
+
+Ranked by elapsed time. The record includes shots fired (Enter presses)
+and shots hit (successful name matches).
+
+## Game over
+
+The run ends when the player dies and the death timer completes.

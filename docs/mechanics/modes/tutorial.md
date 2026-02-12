@@ -5,50 +5,53 @@ tags:
   - tutorial
 ---
 
-# Tutorial mode
+# Tutorial
 
-The tutorial is a staged script that advances by behavior checks, not a freeform challenge.
+A guided onboarding sequence that teaches movement, shooting, pickups,
+and perks through a fixed series of stages. Single-player only. No score
+is recorded.
 
-## Stage progression
+## Starting conditions
 
-The tutorial runs through a fixed sequence of prompts:
+- Weapon: Pistol.
+- Bonuses: placed by the tutorial script (not random drops). Bonuses
+  persist indefinitely until picked up.
+- Perks: enabled at stage 6 for the perk lesson.
 
-1. intro text,
-2. move-with-keys check,
-3. pickup check,
-4. shoot while moving,
-5. aim with mouse,
-6. perk intro and repeat spawn loop,
-7. perk done and final wave,
-8. close-out.
+## Stages
 
-## Progress gates
+The tutorial advances through 8 stages, each gated by a specific player
+action:
 
-Each stage advances only when its trigger condition is satisfied:
+| Stage | Instruction | Advances when |
+| ---: | --- | --- |
+| 1 | Intro text | Play begins |
+| 2 | Move with keys | Move key pressed |
+| 3 | Pick up bonus | Bonus pool empty |
+| 4 | Shoot while moving | Fire key pressed |
+| 5 | Aim with mouse | All creatures dead |
+| 6 | Perk intro + repeated waves | 7 waves cleared, perk picked |
+| 7 | Final wave | All creatures dead |
+| 8 | Close-out | Player selects Play or Repeat |
 
-- move key pressed,
-- bonus pickup pool is empty,
-- fire key pressed,
-- all creatures are dead where required,
-- perk pending count is handled for the perk lesson.
+A skip button appears after 1 second on each stage (except stage 8,
+which shows Play and Repeat buttons instead).
 
-## Stage 5 repeated loop
+## Stage 6 bonus rotation
 
-After the first clear, the script repeats a wave pattern and carries a counter.
+During the 7 repeated waves in stage 6, each wave has a designated
+creature that drops a specific bonus on death, cycling through:
 
-- it runs for the first `7` repeats,
-- each repeat can configure a new bonus-carrier,
-- the configured bonuses rotate as:
-  - speed,
-  - weapon,
-  - double experience,
-  - nuke,
-  - reflex boost.
+1. Speed
+2. Weapon
+3. Double Experience
+4. Nuke
+5. Reflex Boost
 
-## Script timing
+The cycle repeats from the start for waves 6 and 7.
 
-If a stage fails to advance in time, the tutorial keeps prompting the current instruction and can fade text in and out based on stage transitions.
+## Forced state
 
-## Why it feels deterministic
-
-The sequence is deterministic from input and state checks, which is why this mode is ideal for first-run onboarding and parity replay work.
+The tutorial script can force the player's health and experience to
+specific values at stage transitions to ensure a consistent teaching
+flow.

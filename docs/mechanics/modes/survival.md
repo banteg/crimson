@@ -5,52 +5,70 @@ tags:
   - survival
 ---
 
-# Survival mode
+# Survival
 
-Survival is the open-ended mode: endless enemies, level-ups, and perks.
+Endless mode. Enemies spawn continuously, accelerating over time. The
+player levels up from XP, picks perks, and survives as long as possible.
+Score is total XP.
 
-## Core loop
+## Starting conditions
 
-- The mode updates continuously until every alive player is dead and the death timer has finished.
-- During normal play, inputs, simulation, and perk progression are active.
-- Game over is delayed by per-player death timers so death animation and timing can complete.
+- Weapon: Pistol.
+- Always available: Pistol, Assault Rifle, Shotgun, Submachine Gun.
+  Additional weapons come from quest unlock state.
+- Bonuses: enabled.
+- Perks: enabled, manual selection on level-up.
 
-## Spawn model
+## XP and leveling
+
+XP required for next level:
+
+`1000 + 1000 × level^1.8`
+
+Each level-up adds one pending perk pick. The perk menu appears while at
+least one player is alive and a pick is pending.
+
+## Spawning
 
 ### Continuous waves
 
-- cooldown reduction includes player count.
-- wave interval starts from `500 - elapsed_ms / 1800` milliseconds.
-- intervals below zero create extra spawns and then stretch the interval to keep spacing stable.
+Spawn cooldown decreases by `player_count × frame_dt` each frame. When
+it crosses zero, one creature spawns from a random edge and cooldown
+resets to:
 
-### Level stages
+`500 − elapsed_ms / 1800` (milliseconds, minimum 1)
 
-At certain levels, scripted stage waves are added immediately:
+If the interval is already negative, extra creatures spawn first, then
+the interval stretches by 2 ms per extra spawn to keep spacing stable.
 
-- Level 5: ring wave from left and right.
-- Level 9: first red boss.
-- Level 11: 12 spider pack.
-- Level 13: red-fast alien set.
-- Level 15: timer spiders on both sides.
-- Level 17: red ranged boss.
-- Level 19: splitter pack.
-- Level 21: second splitter pack.
-- Level 26: dual ranged boss spread.
-- Level 32+: harder end-stage pattern.
+### Milestone waves
 
-## Perks and progression
+At certain player levels, scripted waves spawn immediately:
 
-- XP growth drives level-up using the threshold formula in [progression](../systems/progression/intro.md).
-- Each level-up can add one pending perk.
-- Perk UI appears only while at least one player is still alive.
+| Level | Wave |
+| ---: | --- |
+| 5 | Two 8-alien rings from left and right |
+| 9 | Red boss |
+| 11 | 12-spider pack |
+| 13 | 4 fast red aliens |
+| 15 | 8 spiders, 4 per side |
+| 17 | Red ranged spider boss |
+| 19 | Splitter spider pack |
+| 21 | Two splitter packs from opposite corners |
+| 26 | 8 ranged spider bosses, 4 per side |
+| 32+ | Shock-capable spider bosses and ranged columns |
 
-## Weapon setup and persistence
+## Secret weapon handouts
 
-- Weapon availability is refreshed from quest unlock state.
-- Pistol is always available.
-- In Survival, Assault Rifle, Shotgun, and Submachine Gun are always present as baseline loadout options.
+Two one-time weapon handouts can trigger in single-player Survival. See
+[Secret weapons](../secret-weapons.md) for full conditions.
 
-## HUD and counters
+## Scoring
 
-- HUD shows health, active weapon, and XP bar.
-- Debug view (when enabled) can show elapsed time, stage, level, and kills.
+Ranked by highest XP. The end-of-run record includes elapsed time, kills,
+shots fired, shots hit, and most used weapon.
+
+## Game over
+
+The run ends when all players are dead and their death timers have
+completed.

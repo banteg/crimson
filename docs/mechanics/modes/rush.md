@@ -5,36 +5,47 @@ tags:
   - rush
 ---
 
-# Rush mode
+# Rush
 
-Rush is pressure mode: constant flow, fixed weapon identity, and score by survival time.
+Pure reaction mode. The player is locked to the Assault Rifle with
+infinite ammo. No bonuses, no perks, no pickups. Score is survival time.
 
-## Flow and pacing
+## Starting conditions
 
-- Spawn timer ticks down with player-count scaling.
-- On each wave event the mode spawns two enemies, one from each side.
-- Base tick interval is `250 ms`.
-- Interval is effectively reduced by how many players are active.
+- Weapon: Assault Rifle (forced). Cannot be changed.
+- Ammo is refilled to full clip every frame.
+- Bonuses: disabled.
+- Perks: disabled.
 
-Because this mode is built for reaction speed, it also
+## Spawning
 
-- forces [Assault Rifle](../weapons.md#13-assault-rifle),
-- keeps your ammo topped up at the end of each frame.
+Every 250 ms, two creatures spawn simultaneously:
 
-## Bonuses and perks
+- **Right edge**: Alien (type 2).
+- **Left edge**: Spider (type 3), 1.4× faster than the right-side alien.
 
-- Bonuses are disabled in this mode.
-- Perk progression is not offered while the rush session runs.
-- The perk menu is still available during setup states, but not as Survival-style progression flow.
+Both spawn positions oscillate vertically using sine/cosine of elapsed
+time.
 
-## Game over and score
+Spawn cooldown decreases by `player_count × frame_dt`, so multiplayer
+speeds up the pace.
 
-- Rush does not show XP scoring the way Survival does.
-- Run end is tied to all players being dead.
-- Ranking uses longest survival time.
+### Scaling over time
 
-## What to expect visually
+All creatures scale with elapsed time:
 
-- Right-side enemies are the standard alien type,
-- left-side enemies are a faster spider-like type,
-- both are visible from the edges and quickly accelerate inward.
+| Stat | Formula |
+| --- | --- |
+| Health | `10 + elapsed_ms × 0.0001` |
+| Size | `47 + elapsed_ms × 0.00001` |
+| Move speed (right) | `2.5 + elapsed_ms × 0.00001` |
+| Move speed (left) | right speed × 1.4 |
+| Contact damage | 4.0 (fixed) |
+
+## Scoring
+
+Ranked by longest survival time. The end-of-run record includes kills.
+
+## Game over
+
+The run ends when all players are dead.

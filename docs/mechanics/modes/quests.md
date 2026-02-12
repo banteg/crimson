@@ -5,53 +5,53 @@ tags:
   - quests
 ---
 
-# Quest mode
+# Quest
 
-Quest mode runs the scripted build selected in quest menu, with fixed objective flow and completion timing.
+Scripted encounters with a fixed spawn timeline. The player clears all
+enemies to complete the quest.
 
-## How a run starts
+## Starting conditions
 
-- You pick a quest and it loads terrain plus a spawn script.
-- Start weapon comes from the quest definition.
-- A timestamped spawn table is built and then consumed over time.
+- Weapon: defined per quest.
+- Bonuses: enabled, with stage-specific suppression (see
+  [Bonuses — suppression rules](../systems/bonuses.md#suppression-rules)).
+- Perks: enabled, manual selection on level-up.
+- Terrain: defined per quest.
 
-## Spawn behavior
+## Spawning
 
-- Each table entry has a trigger time, creature pattern, and count.
-- The table clock advances while the run is active.
-- When trigger time is reached, all remaining entries for that timestamp spawn.
-- If the board goes idle too long, the timer can force a pending trigger to avoid stalls.
+Each quest has a spawn table of timed entries. A timeline counter
+advances with game time, and entries fire when their trigger time is
+reached. Each entry can spawn one or more creatures in a formation with
+fixed spacing.
 
-Quest entries can be enlarged in hardcore as follows:
+If no living creatures remain and the spawn table still has entries, the
+timeline keeps advancing. If the table has entries but no creatures have
+been active for over 3 seconds (and timeline > ~1700 ms), the next entry
+is force-triggered to prevent stalls.
 
-- most multi-spawn entries get `+8` extra spawns,
-- one special class gets `+2`.
+### Hardcore scaling
 
-## Completion transition
+On hardcore difficulty, most multi-spawn entries get +8 extra creatures.
+One special entry class gets +2.
 
-Run completion needs two things:
+## Completion
 
-- spawn table emptied,
-- no living active creatures.
+A quest is complete when both conditions are met:
 
-Then the transition waits through a short completion window:
+1. Spawn table is empty.
+2. No living creatures remain.
 
-- after about `0.8 s`, quest-hit feedback can fire,
-- after about `2 s`, completion music transition can start,
-- after about `2.5 s`, the result is finalized.
+The completion transition takes about 2.5 seconds: feedback sound at
+~0.8 s, music transition at ~2 s, result finalized at ~2.5 s.
 
-## Score and outcomes
+## Failure
 
-Quest run records keep:
+If all players die before completion, the run is marked as failed. A
+record is still written for stats and score tables.
 
-- elapsed time in milliseconds,
-- kills,
-- shots fired and hits,
-- most used weapon,
-- base quest string.
+## Scoring
 
-Ranking prefers lower completed time. Unfinished entries are ranked after finished ones.
-
-## Failure behavior
-
-If all players die before completion, the run is marked as failed but still writes a normal outcome record for stats and score tables.
+Ranked by fastest completion time. Failed attempts are ranked behind
+completed ones. The record includes elapsed time, kills, shots
+fired/hit, and most used weapon.
