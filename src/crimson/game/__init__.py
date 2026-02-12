@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 import datetime as dt
 import faulthandler
@@ -9,18 +9,15 @@ import random
 import time
 import traceback
 import webbrowser
-from typing import Protocol, TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, cast
 
 import pyray as rl
 
 from grim.audio import (
-    AudioState,
     play_sfx,
-    stop_music,
     update_audio,
 )
 from grim.assets import (
-    LogoAssets,
     PaqTextureCache,
     load_paq_entries_from_path,
 )
@@ -35,7 +32,7 @@ from grim.console import (
 from grim.geom import Rect, Vec2
 from grim.app import run_view
 from grim.terrain_render import GroundRenderer
-from grim.view import View, ViewContext
+from grim.view import View
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
 from ..debug import debug_enabled, set_debug_enabled
@@ -166,70 +163,17 @@ from ..frontend.panels.stats import StatisticsMenuView
 from ..frontend.pause_menu import PauseMenuView
 from ..frontend.transitions import _draw_screen_fade, _update_screen_fade
 from ..input_codes import input_begin_frame
-from ..persistence.save_status import GameStatus, ensure_game_status
+from ..persistence.save_status import ensure_game_status
 from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
 from ..ui.menu_panel import draw_classic_menu_panel
 from ..ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..paths import default_runtime_dir
 from ..assets_fetch import download_missing_paqs
+from .mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
+from .types import FrontView, GameConfig, GameState, HighScoresRequest, PauseBackground
 
 if TYPE_CHECKING:
     from ..modes.quest_mode import QuestRunOutcome
     from ..persistence.highscores import HighScoreRecord
-
-
-@dataclass(frozen=True, slots=True)
-class GameConfig:
-    base_dir: Path = field(default_factory=default_runtime_dir)
-    assets_dir: Path | None = None
-    width: int | None = None
-    height: int | None = None
-    fps: int = 60
-    seed: int | None = None
-    demo_enabled: bool = False
-    no_intro: bool = False
-    debug: bool = False
-    preserve_bugs: bool = False
-
-
-@dataclass(slots=True)
-class HighScoresRequest:
-    game_mode_id: int
-    quest_stage_major: int = 0
-    quest_stage_minor: int = 0
-    highlight_rank: int | None = None
-
-
-@dataclass(slots=True)
-class GameState:
-    base_dir: Path
-    assets_dir: Path
-    rng: random.Random
-    config: CrimsonConfig
-    status: GameStatus
-    console: ConsoleState
-    demo_enabled: bool
-    preserve_bugs: bool
-    logos: LogoAssets | None
-    texture_cache: PaqTextureCache | None
-    audio: AudioState | None
-    resource_paq: Path
-    session_start: float
-    skip_intro: bool = False
-    gamma_ramp: float = 1.0
-    snd_freq_adjustment_enabled: bool = False
-    menu_ground: GroundRenderer | None = None
-    menu_ground_camera: Vec2 | None = None
-    menu_sign_locked: bool = False
-    pause_background: PauseBackground | None = None
-    pending_quest_level: str | None = None
-    pending_high_scores: HighScoresRequest | None = None
-    quest_outcome: QuestRunOutcome | None = None
-    quest_fail_retry_count: int = 0
-    demo_trial_elapsed_ms: int = 0
-    quit_requested: bool = False
-    screen_fade_alpha: float = 0.0
-    screen_fade_ramp: bool = False
 
 
 CRIMSON_PAQ_NAME = "crimson.paq"
@@ -950,381 +894,6 @@ class QuestsMenuView:
             play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
         self._closing = True
         self._close_action = action
-
-
-class FrontView(Protocol):
-    def open(self) -> None: ...
-
-    def close(self) -> None: ...
-
-    def update(self, dt: float) -> None: ...
-
-    def draw(self) -> None: ...
-
-    def take_action(self) -> str | None: ...
-
-
-class PauseBackground(Protocol):
-    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None: ...
-
-
-class SurvivalGameView:
-    """Gameplay view wrapper that adapts SurvivalMode into `crimson game`."""
-
-    def __init__(self, state: GameState) -> None:
-        from ..modes.survival_mode import SurvivalMode
-
-        self._state = state
-        self._mode = SurvivalMode(
-            ViewContext(assets_dir=state.assets_dir, preserve_bugs=state.preserve_bugs),
-            texture_cache=state.texture_cache,
-            config=state.config,
-            console=state.console,
-            audio=state.audio,
-            audio_rng=state.rng,
-        )
-        self._action: str | None = None
-
-    def open(self) -> None:
-        self._action = None
-        if self._state.screen_fade_ramp:
-            self._state.screen_fade_alpha = 1.0
-        self._state.screen_fade_ramp = False
-        if self._state.audio is not None:
-            # Original game: entering gameplay cuts the menu theme; in-game tunes
-            # start later on the first creature hit.
-            stop_music(self._state.audio)
-        self._mode.bind_status(self._state.status)
-        self._mode.bind_audio(self._state.audio, self._state.rng)
-        self._mode.bind_screen_fade(self._state)
-        self._mode.open()
-
-    def close(self) -> None:
-        if self._state.audio is not None:
-            stop_music(self._state.audio)
-        self._mode.close()
-
-    def update(self, dt: float) -> None:
-        self._mode.update(dt)
-        mode_action = self._mode.take_action()
-        if mode_action == "open_pause_menu":
-            self._action = "open_pause_menu"
-            return
-        if mode_action == "open_high_scores":
-            self._state.pending_high_scores = HighScoresRequest(game_mode_id=1)
-            self._action = "open_high_scores"
-            return
-        if mode_action == "back_to_menu":
-            self._action = "back_to_menu"
-            self._mode.close_requested = False
-            return
-        if getattr(self._mode, "close_requested", False):
-            self._action = "back_to_menu"
-            self._mode.close_requested = False
-
-    def draw(self) -> None:
-        self._mode.draw()
-
-    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
-        self._mode.draw_pause_background(entity_alpha=entity_alpha)
-
-    def steal_ground_for_menu(self) -> GroundRenderer | None:
-        return self._mode.steal_ground_for_menu()
-
-    def menu_ground_camera(self) -> Vec2:
-        return self._mode.menu_ground_camera()
-
-    def adopt_menu_ground(self, ground: GroundRenderer | None) -> None:
-        self._mode.adopt_ground_from_menu(ground)
-
-    def take_action(self) -> str | None:
-        action = self._action
-        self._action = None
-        return action
-
-
-class RushGameView:
-    """Gameplay view wrapper that adapts RushMode into `crimson game`."""
-
-    def __init__(self, state: GameState) -> None:
-        from ..modes.rush_mode import RushMode
-
-        self._state = state
-        self._mode = RushMode(
-            ViewContext(assets_dir=state.assets_dir, preserve_bugs=state.preserve_bugs),
-            texture_cache=state.texture_cache,
-            config=state.config,
-            console=state.console,
-            audio=state.audio,
-            audio_rng=state.rng,
-        )
-        self._action: str | None = None
-
-    def open(self) -> None:
-        self._action = None
-        if self._state.screen_fade_ramp:
-            self._state.screen_fade_alpha = 1.0
-        self._state.screen_fade_ramp = False
-        if self._state.audio is not None:
-            stop_music(self._state.audio)
-        self._mode.bind_status(self._state.status)
-        self._mode.bind_audio(self._state.audio, self._state.rng)
-        self._mode.bind_screen_fade(self._state)
-        self._mode.open()
-
-    def close(self) -> None:
-        if self._state.audio is not None:
-            stop_music(self._state.audio)
-        self._mode.close()
-
-    def update(self, dt: float) -> None:
-        self._mode.update(dt)
-        mode_action = self._mode.take_action()
-        if mode_action == "open_pause_menu":
-            self._action = "open_pause_menu"
-            return
-        if mode_action == "open_high_scores":
-            self._state.pending_high_scores = HighScoresRequest(game_mode_id=2)
-            self._action = "open_high_scores"
-            return
-        if mode_action == "back_to_menu":
-            self._action = "back_to_menu"
-            self._mode.close_requested = False
-            return
-        if getattr(self._mode, "close_requested", False):
-            self._action = "back_to_menu"
-            self._mode.close_requested = False
-
-    def draw(self) -> None:
-        self._mode.draw()
-
-    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
-        self._mode.draw_pause_background(entity_alpha=entity_alpha)
-
-    def steal_ground_for_menu(self) -> GroundRenderer | None:
-        return self._mode.steal_ground_for_menu()
-
-    def menu_ground_camera(self) -> Vec2:
-        return self._mode.menu_ground_camera()
-
-    def adopt_menu_ground(self, ground: GroundRenderer | None) -> None:
-        self._mode.adopt_ground_from_menu(ground)
-
-    def take_action(self) -> str | None:
-        action = self._action
-        self._action = None
-        return action
-
-
-class TypoShooterGameView:
-    """Gameplay view wrapper that adapts TypoShooterMode into `crimson game`."""
-
-    def __init__(self, state: GameState) -> None:
-        from ..modes.typo_mode import TypoShooterMode
-
-        self._state = state
-        self._mode = TypoShooterMode(
-            ViewContext(assets_dir=state.assets_dir, preserve_bugs=state.preserve_bugs),
-            texture_cache=state.texture_cache,
-            config=state.config,
-            console=state.console,
-            audio=state.audio,
-            audio_rng=state.rng,
-        )
-        self._action: str | None = None
-
-    def open(self) -> None:
-        self._action = None
-        if self._state.screen_fade_ramp:
-            self._state.screen_fade_alpha = 1.0
-        self._state.screen_fade_ramp = False
-        if self._state.audio is not None:
-            stop_music(self._state.audio)
-        self._mode.bind_status(self._state.status)
-        self._mode.bind_audio(self._state.audio, self._state.rng)
-        self._mode.bind_screen_fade(self._state)
-        self._mode.open()
-
-    def close(self) -> None:
-        if self._state.audio is not None:
-            stop_music(self._state.audio)
-        self._mode.close()
-
-    def update(self, dt: float) -> None:
-        self._mode.update(dt)
-        mode_action = self._mode.take_action()
-        if mode_action == "open_pause_menu":
-            self._action = "open_pause_menu"
-            return
-        if mode_action == "open_high_scores":
-            self._state.pending_high_scores = HighScoresRequest(game_mode_id=4)
-            self._action = "open_high_scores"
-            return
-        if mode_action == "back_to_menu":
-            self._action = "back_to_menu"
-            self._mode.close_requested = False
-            return
-        if getattr(self._mode, "close_requested", False):
-            self._action = "back_to_menu"
-            self._mode.close_requested = False
-
-    def draw(self) -> None:
-        self._mode.draw()
-
-    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
-        self._mode.draw_pause_background(entity_alpha=entity_alpha)
-
-    def steal_ground_for_menu(self) -> GroundRenderer | None:
-        return self._mode.steal_ground_for_menu()
-
-    def menu_ground_camera(self) -> Vec2:
-        return self._mode.menu_ground_camera()
-
-    def take_action(self) -> str | None:
-        action = self._action
-        self._action = None
-        return action
-
-
-class TutorialGameView:
-    """Gameplay view wrapper that adapts TutorialMode into `crimson game`."""
-
-    def __init__(self, state: GameState) -> None:
-        from ..modes.tutorial_mode import TutorialMode
-
-        self._state = state
-        self._mode = TutorialMode(
-            ViewContext(assets_dir=state.assets_dir, preserve_bugs=state.preserve_bugs),
-            texture_cache=state.texture_cache,
-            config=state.config,
-            console=state.console,
-            audio=state.audio,
-            audio_rng=state.rng,
-            demo_mode_active=state.demo_enabled,
-        )
-        self._action: str | None = None
-
-    def open(self) -> None:
-        self._action = None
-        if self._state.screen_fade_ramp:
-            self._state.screen_fade_alpha = 1.0
-        self._state.screen_fade_ramp = False
-        if self._state.audio is not None:
-            stop_music(self._state.audio)
-        self._mode.bind_status(self._state.status)
-        self._mode.bind_audio(self._state.audio, self._state.rng)
-        self._mode.bind_screen_fade(self._state)
-        self._mode.open()
-
-    def close(self) -> None:
-        if self._state.audio is not None:
-            stop_music(self._state.audio)
-        self._mode.close()
-
-    def update(self, dt: float) -> None:
-        self._mode.update(dt)
-        mode_action = self._mode.take_action()
-        if mode_action == "open_pause_menu":
-            self._action = "open_pause_menu"
-            return
-        if getattr(self._mode, "close_requested", False):
-            self._action = "back_to_menu"
-            self._mode.close_requested = False
-
-    def draw(self) -> None:
-        self._mode.draw()
-
-    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
-        self._mode.draw_pause_background(entity_alpha=entity_alpha)
-
-    def steal_ground_for_menu(self) -> GroundRenderer | None:
-        return self._mode.steal_ground_for_menu()
-
-    def menu_ground_camera(self) -> Vec2:
-        return self._mode.menu_ground_camera()
-
-    def take_action(self) -> str | None:
-        action = self._action
-        self._action = None
-        return action
-
-
-class QuestGameView:
-    """Gameplay view wrapper that adapts QuestMode into `crimson game`."""
-
-    def __init__(self, state: GameState) -> None:
-        from ..modes.quest_mode import QuestMode
-
-        self._state = state
-        self._mode = QuestMode(
-            ViewContext(assets_dir=state.assets_dir, preserve_bugs=state.preserve_bugs),
-            texture_cache=state.texture_cache,
-            config=state.config,
-            console=state.console,
-            audio=state.audio,
-            audio_rng=state.rng,
-            demo_mode_active=state.demo_enabled,
-        )
-        self._action: str | None = None
-
-    def open(self) -> None:
-        self._action = None
-        if self._state.screen_fade_ramp:
-            self._state.screen_fade_alpha = 1.0
-        self._state.screen_fade_ramp = False
-        self._state.quest_outcome = None
-        if self._state.audio is not None:
-            stop_music(self._state.audio)
-        self._mode.bind_status(self._state.status)
-        self._mode.bind_audio(self._state.audio, self._state.rng)
-        self._mode.bind_screen_fade(self._state)
-        self._mode.open()
-
-        level = self._state.pending_quest_level
-        if level is not None:
-            self._mode.prepare_new_run(level, status=self._state.status)
-
-    def close(self) -> None:
-        if self._state.audio is not None:
-            stop_music(self._state.audio)
-        self._mode.close()
-
-    def update(self, dt: float) -> None:
-        self._mode.update(dt)
-        mode_action = self._mode.take_action()
-        if mode_action == "open_pause_menu":
-            self._action = "open_pause_menu"
-            return
-        if getattr(self._mode, "close_requested", False):
-            outcome = self._mode.consume_outcome()
-            if outcome is not None:
-                self._state.quest_outcome = outcome
-                if outcome.kind == "completed":
-                    self._action = "quest_results"
-                elif outcome.kind == "failed":
-                    self._action = "quest_failed"
-                else:
-                    self._action = "back_to_menu"
-            else:
-                self._action = "back_to_menu"
-            self._mode.close_requested = False
-
-    def draw(self) -> None:
-        self._mode.draw()
-
-    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
-        self._mode.draw_pause_background(entity_alpha=entity_alpha)
-
-    def steal_ground_for_menu(self) -> GroundRenderer | None:
-        return self._mode.steal_ground_for_menu()
-
-    def menu_ground_camera(self) -> Vec2:
-        return self._mode.menu_ground_camera()
-
-    def take_action(self) -> str | None:
-        action = self._action
-        self._action = None
-        return action
 
 
 def _player_name_default(config: CrimsonConfig) -> str:
