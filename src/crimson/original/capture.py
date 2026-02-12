@@ -68,6 +68,7 @@ class CaptureError(ValueError):
 
 class _CapturePerkApplyPayload(msgspec.Struct, forbid_unknown_fields=True):
     perk_id: int
+    outside_before: bool = False
 
 
 class _CapturePerkPendingPayload(msgspec.Struct, forbid_unknown_fields=True):
@@ -999,6 +1000,14 @@ def capture_bootstrap_payload_from_event_payload(payload: list[object]) -> dict[
 
 
 def capture_perk_apply_id_from_event_payload(payload: list[object]) -> int | None:
+    parsed = capture_perk_apply_from_event_payload(payload)
+    if parsed is None:
+        return None
+    perk_id, _ = parsed
+    return int(perk_id)
+
+
+def capture_perk_apply_from_event_payload(payload: list[object]) -> tuple[int, bool] | None:
     event_payload = _event_payload_object(payload)
     if event_payload is None:
         return None
@@ -1006,7 +1015,7 @@ def capture_perk_apply_id_from_event_payload(payload: list[object]) -> int | Non
         parsed = msgspec.convert(event_payload, type=_CapturePerkApplyPayload, strict=False)
     except msgspec.ValidationError:
         return None
-    return int(parsed.perk_id)
+    return int(parsed.perk_id), bool(parsed.outside_before)
 
 
 def capture_perk_pending_from_event_payload(payload: list[object]) -> int | None:
@@ -1117,34 +1126,34 @@ def apply_capture_bootstrap_payload(
     return elapsed_ms
 
 
-def _perk_apply_ids_in_tick(tick: CaptureTick) -> tuple[int, ...]:
-    out: list[int] = []
+def _perk_apply_rows_in_tick(tick: CaptureTick) -> tuple[tuple[int, bool], ...]:
+    out: list[tuple[int, bool]] = []
 
     for item in tick.perk_apply_outside_before.head:
         perk_id = item.perk_id
         if perk_id is None or int(perk_id) <= 0:
             continue
-        out.append(int(perk_id))
+        out.append((int(perk_id), True))
 
     for item in tick.perk_apply_in_tick:
         perk_id = item.perk_id
         if perk_id is None or int(perk_id) <= 0:
             continue
-        out.append(int(perk_id))
+        out.append((int(perk_id), False))
 
     if not tick.perk_apply_in_tick:
         for head in tick.event_heads:
             if isinstance(head, CaptureEventHeadPerkApply):
                 if head.perk_id is not None and int(head.perk_id) > 0:
-                    out.append(int(head.perk_id))
+                    out.append((int(head.perk_id), False))
 
-    deduped: list[int] = []
+    deduped: list[tuple[int, bool]] = []
     seen: set[int] = set()
-    for perk_id in out:
+    for perk_id, outside_before in out:
         if int(perk_id) in seen:
             continue
         seen.add(int(perk_id))
-        deduped.append(int(perk_id))
+        deduped.append((int(perk_id), bool(outside_before)))
     return tuple(deduped)
 
 
@@ -1411,10 +1420,10 @@ def convert_capture_to_replay(
         sorted_ticks = sorted(capture.ticks, key=lambda item: int(item.tick_index))
         previous_pending: int | None = None
         for tick in sorted_ticks:
-            captured_perk_apply_ids = [int(perk_id) for perk_id in _perk_apply_ids_in_tick(tick)]
-            if captured_perk_apply_ids:
+            captured_perk_apply_rows = list(_perk_apply_rows_in_tick(tick))
+            if captured_perk_apply_rows:
                 seen_perk_apply_ids: set[int] = set()
-                for perk_id in captured_perk_apply_ids:
+                for perk_id, outside_before in captured_perk_apply_rows:
                     if int(perk_id) <= 0 or int(perk_id) in seen_perk_apply_ids:
                         continue
                     seen_perk_apply_ids.add(int(perk_id))
@@ -1422,7 +1431,7 @@ def convert_capture_to_replay(
                         UnknownEvent(
                             tick_index=int(tick.tick_index),
                             kind=CAPTURE_PERK_APPLY_EVENT_KIND,
-                            payload=[{"perk_id": int(perk_id)}],
+                            payload=[{"perk_id": int(perk_id), "outside_before": bool(outside_before)}],
                         )
                     )
 

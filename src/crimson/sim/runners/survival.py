@@ -28,7 +28,7 @@ from ...original.capture import (
     CAPTURE_PERK_PENDING_EVENT_KIND,
     apply_capture_bootstrap_payload,
     capture_bootstrap_payload_from_event_payload,
-    capture_perk_apply_id_from_event_payload,
+    capture_perk_apply_from_event_payload,
     capture_perk_pending_from_event_payload,
 )
 from ..sessions import SurvivalDeterministicSession
@@ -105,11 +105,12 @@ def _apply_tick_events(
                     bootstrap_elapsed_ms = int(elapsed)
                 continue
             if str(event.kind) == CAPTURE_PERK_APPLY_EVENT_KIND:
-                perk_id = capture_perk_apply_id_from_event_payload(list(event.payload))
-                if perk_id is None:
+                parsed_perk_apply = capture_perk_apply_from_event_payload(list(event.payload))
+                if parsed_perk_apply is None:
                     if strict_events:
                         raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}")
                     continue
+                perk_id, outside_before = parsed_perk_apply
                 if perk_id <= 0:
                     if strict_events:
                         raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}")
@@ -122,14 +123,29 @@ def _apply_tick_events(
                     if strict_events:
                         raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}")
                     continue
-                perk_apply(
-                    state,
-                    players,
-                    perk_enum,
-                    perk_state=perk_state,
-                    dt=float(dt_frame),
-                    creatures=world.creatures.entries,
-                )
+                # `perk_apply_outside_before` draws are already accounted for by
+                # capture inter-tick RNG overrides. Replaying Bandage RNG work a
+                # second time here shifts gameplay RNG and causes later hit drift.
+                if bool(outside_before) and perk_enum == PerkId.BANDAGE:
+                    rng_state_before = int(state.rng.state)
+                    perk_apply(
+                        state,
+                        players,
+                        perk_enum,
+                        perk_state=perk_state,
+                        dt=float(dt_frame),
+                        creatures=world.creatures.entries,
+                    )
+                    state.rng.srand(int(rng_state_before))
+                else:
+                    perk_apply(
+                        state,
+                        players,
+                        perk_enum,
+                        perk_state=perk_state,
+                        dt=float(dt_frame),
+                        creatures=world.creatures.entries,
+                    )
                 continue
             if str(event.kind) == CAPTURE_PERK_PENDING_EVENT_KIND:
                 pending = capture_perk_pending_from_event_payload(list(event.payload))

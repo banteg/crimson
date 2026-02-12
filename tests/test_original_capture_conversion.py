@@ -15,6 +15,7 @@ from crimson.original.capture import (
     build_capture_dt_frame_ms_i32_overrides,
     build_capture_inter_tick_rand_draws_overrides,
     capture_bootstrap_payload_from_event_payload,
+    capture_perk_apply_from_event_payload,
     capture_perk_apply_id_from_event_payload,
     capture_perk_pending_from_event_payload,
     convert_capture_to_checkpoints,
@@ -267,11 +268,14 @@ def _write_capture_stream(path: Path, *, meta: dict[str, object], ticks: list[di
 
 def test_capture_event_payload_helpers_parse_msgspec_payloads() -> None:
     assert capture_bootstrap_payload_from_event_payload([{"elapsed_ms": "123"}]) == {"elapsed_ms": "123"}
+    assert capture_perk_apply_from_event_payload([{"perk_id": "14"}]) == (14, False)
+    assert capture_perk_apply_from_event_payload([{"perk_id": 49, "outside_before": True}]) == (49, True)
     assert capture_perk_apply_id_from_event_payload([{"perk_id": "14"}]) == 14
     assert capture_perk_pending_from_event_payload([{"perk_pending": "2"}]) == 2
 
     assert capture_bootstrap_payload_from_event_payload([]) is None
     assert capture_bootstrap_payload_from_event_payload(["bad"]) is None
+    assert capture_perk_apply_from_event_payload([{"perk_pending": 2}]) is None
     assert capture_perk_apply_id_from_event_payload([{"perk_pending": 2}]) is None
     assert capture_perk_pending_from_event_payload([{"perk_id": 14}]) is None
 
