@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from crimson.render.world_renderer import WorldRenderer
+from crimson.render.world import WorldRenderer
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 

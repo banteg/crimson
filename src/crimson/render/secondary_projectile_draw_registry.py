@@ -13,7 +13,7 @@ from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRI
 
 if TYPE_CHECKING:
     from ..projectiles import SecondaryProjectile
-    from .world_renderer import WorldRenderer
+    from .world.renderer import WorldRenderer
 
 
 @dataclass(frozen=True, slots=True)

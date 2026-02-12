@@ -24,7 +24,7 @@ from .sim.state_types import PlayerState
 from .weapon_runtime import weapon_assign_player
 from .render.terrain_fx import FxQueueTextures, bake_fx_queues
 from .render.frame import RenderFrame
-from .render.world_renderer import WorldRenderer
+from .render.world import WorldRenderer
 from .audio_router import AudioRouter
 from .sim.presentation_step import (
     PresentationStepCommands,
