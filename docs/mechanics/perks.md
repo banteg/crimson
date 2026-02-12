@@ -365,7 +365,7 @@ Restores each alive player's health by a random amount from +1 to +50 HP
 (1-50% of the full 100-HP bar), then clamps to 100. Each player gets an
 independent roll.
 
-!!! bug "Original behavior"
+!!! bug "Original bug"
     The original executable multiplies health by ×1..×50 instead of restoring
     +1..+50 HP. Use `--preserve-bugs` to keep that native behavior.
 
