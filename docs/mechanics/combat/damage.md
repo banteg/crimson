@@ -65,7 +65,7 @@ Several perks affect player health directly and are part of the damage/death pla
 - [Fatal Lottery](../perks.md#15-fatal-lottery): 50% instant death, 50% bonus XP.
 - [Infernal Contract](../perks.md#24-infernal-contract): sets alive players to `0.1` health.
 - [Breathing Room](../perks.md#46-breathing-room): drops alive players to one-third health (`-2/3` health).
-- [Jinxed](../perks.md#42-jinxed): every **2.0 to 3.9** seconds, **1 in 10** chance to lose **5** health.
+- [Jinxed](../perks.md#42-jinxed): every **2.0 to 3.9** seconds, **1 in 10** chance to lose **5** health (expected average drain about **0.17 HP/s**).
 - [Death Clock](../perks.md#47-death-clock): starts at 100 HP, then drains at **3.3333333 HP/s** for about 30 seconds.
 
 ## Death state and run transition
