@@ -1011,14 +1011,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         cached = self._wrapped_desc_cache.get(key)
         if cached is not None:
             return cached
-        preserve_bugs = self._preserve_bugs()
-        try:
-            desc = self._perk_desc(perk_id, fx_toggle=fx_toggle, preserve_bugs=preserve_bugs)
-        except TypeError as exc:
-            if "preserve_bugs" not in str(exc):
-                raise
-            # Test monkeypatches may replace _perk_desc with legacy callables.
-            desc = self._perk_desc(perk_id, fx_toggle=fx_toggle)
+        desc = self._perk_desc(perk_id, fx_toggle=fx_toggle, preserve_bugs=self._preserve_bugs())
         wrapped = self._wrap_small_text_native(
             font,
             desc,
