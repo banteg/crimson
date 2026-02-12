@@ -26,6 +26,8 @@ Crimsonland contains several layers of secrets:
 
 - Credits puzzle logic is fully mapped (click 'o' lines, avoid others)
 - AlienZooKeeper minigame code is understood but has no external unlock
-- The decoded message meaning ("Dead Center Inside The Triangle...") remains unsolved
+- The decoded "Dead Center...Sacrifice...Firepower" line is now best-mapped
+  (inference) to the Blade Gun Survival handout gate; no direct string->logic
+  xref is known yet
 - 17 named weapons are not in the quest unlock table
 - Survival has two verified one-off secret-weapon style grants (Shrinkifier 5k and Blade Gun), with strict runtime gates

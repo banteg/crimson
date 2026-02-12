@@ -62,6 +62,24 @@ Side effects:
 - `survival_reward_fire_seen = 1`
 - `survival_reward_handout_enabled = 0`
 
+## Decoded Blade-hint mapping (inference)
+
+From the decoded secret line in [Easter eggs](easter-eggs.md#secret-line-decode-5-bit-indices):
+
+> Dead Center Inside The Triangle Of The First Blood Sacrifice Yourself For Firepower
+
+The Blade Gun handout gate matches this text closely:
+
+- **"Dead Center Inside The Triangle"** -> player must stand near the centroid of
+  three recorded death positions (`distance < 16.0`).
+- **"Of The First Blood"** -> the check uses the first three stored death samples
+  (`survival_recent_death_count == 3`, positions at indices 0..2).
+- **"Sacrifice Yourself"** -> player health must be low (`player_health < 15.0`).
+- **"For Firepower"** -> reward is weapon id `25` (Blade Gun).
+
+This mapping is an evidence-backed inference, not a direct static code xref from
+the secret string to `survival_update`.
+
 ## Gate writers and lifecycle
 
 Related writes outside `survival_update`:

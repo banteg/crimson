@@ -227,10 +227,13 @@ All of the hint strings in the cluster are printed from a single guarded block i
 ## Open questions
 
 - **Resolved**: The Secret Path transition is gated by `credits_screen_update` skipping the Secret button update until all 'o' lines are flagged.
-- **Unresolved**: What does "Dead Center Inside The Triangle Of The First Blood Sacrifice Yourself For Firepower" actually mean in gameplay terms?
-  - Is "First Blood" a specific event/monster?
-  - Is "Triangle" a formation or location? **Lead:** `D3DPT_TRIANGLEFAN` is used in the rendering code (Grim2D vtable `0xd8`), possibly for circle fills. Could "Inside The Triangle" mean inside a specific rendered shape or a glitch?
-  - Does "Sacrifice Yourself" require dying in a specific spot?
+- **Partially resolved (inference)**: the decoded line strongly matches the
+  Blade Gun Survival handout gate (centroid of first 3 death points + low HP).
+  See [Survival weapon handouts](survival-weapon-handouts.md#decoded-blade-hint-mapping-inference).
+  - Remaining ambiguity: no direct static xref ties the string block to
+    `survival_update`.
+  - "First Blood" is still interpretive wording; runtime logic is
+    `survival_recent_death_count == 3` using the first three stored positions.
 - Are secret weapon unlocks stored in `game.cfg`, or derived from other state (weapon table flags, globals)?
   - **Partial Answer:** `quest_database_init` initializes the `quest_unlock_weapon_id` array with static values (e.g., `quest_unlock_weapon_id = 2` for the shotgun). A "secret weapon" unlock would likely require writing to this array (`DAT_00484754`) or the `weapon_table` availability flags directly.
 - Is the startup secret-hint block tied to a “redistribution build” check or another sentinel?
