@@ -768,6 +768,22 @@ def test_build_capture_dt_frame_overrides_ignores_denormal_frame_dt_ms_and_prefe
     assert overrides[0] == pytest.approx(0.032)
 
 
+def test_build_capture_dt_frame_overrides_prefers_timing_frame_dt_after_over_i32(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=0)
+    tick0["frame_dt_ms"] = 30.0
+    tick0["frame_dt_ms_i32"] = 30
+    tick0["diagnostics"] = {"timing": {"frame_dt_after": "f32:3ced9169"}}
+    tick1 = _base_tick(tick_index=1, elapsed_ms=29)
+    obj = _capture_obj(ticks=[tick0, tick1])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    overrides = build_capture_dt_frame_overrides(capture, tick_rate=60)
+
+    assert overrides[0] == pytest.approx(0.029000001028180122)
+
+
 def test_build_capture_dt_frame_ms_i32_overrides_uses_explicit_values(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=0)
     tick0["frame_dt_ms_i32"] = 17
