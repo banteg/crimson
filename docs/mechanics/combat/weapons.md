@@ -62,8 +62,9 @@ make it excellent for sustained crowd control.
 
 Clip 6 · Damage 1.0 · Fire 0.6 s · Reload 1.6 s · Bullet
 
-High-penetration single shots. Spread builds fast, so accuracy degrades
-quickly under sustained fire.
+Piercing shots with a damage pool of 300 that punch through multiple
+enemies. Spread builds fast, so accuracy degrades quickly under
+sustained fire.
 
 ### 7. Mean Minigun
 
@@ -191,8 +192,9 @@ instantly, so most fall in a few shots regardless of health.
 Clip 6 · Damage 11.0 · Fire 0.35 s · Reload 3.5 s · Bullet
 · [Secret weapon](../secret-weapons.md#blade-gun)
 
-Piercing projectile at 11x damage that cuts through multiple enemies.
-High pierce pool but the 3.5-second reload limits sustained use.
+Piercing projectile at 11x damage with a damage pool of 50. Cuts
+through multiple enemies but the 3.5-second reload limits sustained
+use.
 
 ### 28. Plasma Cannon
 
@@ -271,6 +273,11 @@ suggest an unfinished design.
 Most weapons fire a single projectile per shot with standard collision.
 Several deviate:
 
+- **Piercing**: Most projectiles die on first hit (damage pool 1).
+  Gauss Gun (300), Fire Bullets (240), and Blade Gun (50) get elevated
+  pools that let them punch through multiple targets. Each enemy hit
+  drains the pool by its HP, so low-health crowds get shredded while a
+  few tough targets exhaust the pool quickly.
 - **Multi-pellet**: Shotgun and Sawed-off (12 pellets), Plasma Shotgun
   (14), Ion Shotgun (8), Gauss Shotgun (6), Multi-Plasma (5-shot volley),
   Jackhammer (4). Pellets spawn with randomized speed and spread.
