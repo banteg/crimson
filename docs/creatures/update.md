@@ -138,7 +138,7 @@ Minimum side effects needed by Survival:
 
 3) **Attempt bonus drop**
    - Native uses a per-kill gate (`bonus_try_spawn_on_kill`, `0x41f8d0`), then selects a type using
-     `bonus_pick_random_type` (`docs/bonus-drop-rates.md`).
+     `bonus_pick_random_type` (`docs/re/static/reference/bonus-drop-rates.md`).
 
    - Forced bonus-on-death uses flag `0x400` (`BONUS_ON_DEATH`) and calls `bonus_spawn_at(pos, id, duration)`
      using `link_index` low/high 16-bit fields.

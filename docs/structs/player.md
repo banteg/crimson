@@ -138,6 +138,6 @@ they are no longer considered unknown.
 Related docs:
 
 - [Gameplay glue](../crimsonland-exe/gameplay.md)
-- [Weapon table](../weapon-table.md)
+- [Weapon table](../re/static/reference/weapon-table.md)
 - [Projectile struct](projectile.md)
-- [Bonus ID map](../bonus-id-map.md)
+- [Bonus ID map](../re/static/reference/bonus-id-map.md)

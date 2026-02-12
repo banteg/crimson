@@ -29,7 +29,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Play Game panel (mode select + player count dropdown + tooltips + F1 “times played” overlay).
 - Quest select menu UI (stage icons + hardcore toggle gating + quest list + counts overlay; quest gameplay wired).
 - Options panel (volume/detail/mouse sliders + “UI Info texts”; Controls supports 1..4 player selection, per-player direction-arrow toggle, and right-panel key/button/axis rebinding).
-- Statistics panel (Summary/Weapons/Quests pages; playtime + weapon usage + quest counters).
+- Statistics hub (High scores / Weapons / Perks / Credits panels; playtime + weapon usage + quest counters).
 - Menu terrain persists between screens (no regen on Options/Stats/etc navigation).
 - Menu terrain selection matches original unlock-gated random variants (`(0,1,0)`, `(2,3,2)`, `(4,5,4)`, `(6,7,6)`).
 - Survival/Rush regenerate terrain on start (menu terrain does not carry into a fresh gameplay run).
@@ -107,13 +107,15 @@ Available via `uv run crimson view <name>`:
 - `survival` (survival mode view)
 - `rush` (rush mode view)
 - `game_over` (game over screen preview)
-- `spawn_plan` (spawn plan visualization)
-- `perks` / `perk_menu_debug` (perk selection UI)
-- `camera_debug` / `camera_shake` (camera system)
-- `decals_debug` / `corpse_stamp_debug` (decal system)
-- `aim_debug` (aiming visualization)
-- `player_sprite_debug` (player sprite variants)
-- `small_font_debug` (font glyph testing)
+- `spawn-plan` (spawn plan visualization)
+- `perks` / `perk-menu-debug` (perk selection UI)
+- `camera-debug` / `camera-shake` (camera system)
+- `decals` / `corpse-stamp-debug` (decal system)
+- `aim-debug` (aiming visualization)
+- `player-sprite-debug` (player sprite variants)
+- `small-font-debug` (font glyph testing)
+- `arsenal` (weapon/arsenal sandbox)
+- `lighting-debug` (lighting/SDF sandbox)
 
 See also:
 
@@ -128,9 +130,8 @@ See also:
 ## Known gaps (short list)
 
 - Creature runtime parity gaps: remaining AI edge cases and per-weapon behaviors are still pending.
-- Some gameplay SFX/events are still missing (perk UI selection sound, ranged enemy fire SFX).
 - Multiplayer (2-4 players): per-player local input is wired in Survival/Rush/Quest; deep scheme-by-scheme parity validation is still in progress.
-- `game.cfg` progression/unlock wiring and some statistics counters are still incomplete.
+- `game.cfg` progression/unlock wiring is in place; some tail fields/counter semantics still need deeper mapping validation.
 - Full Options/Controls parity (video/window mode editing, full widget set).
 - Native online-score submission is out of scope; direction is a more advanced headless verification system.
 - Mods/plugin runtime and Other Games/shareware ad flows are out of scope for the rewrite.

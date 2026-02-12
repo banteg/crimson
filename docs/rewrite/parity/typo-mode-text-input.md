@@ -1,3 +1,9 @@
+---
+tags:
+  - rewrite
+  - parity
+---
+
 # TypoShooter Mode Text Input Field Rendering
 
 ## Summary

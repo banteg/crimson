@@ -93,7 +93,7 @@ tests/              200+ tests: gameplay, perks, physics, replay, parity
 
 **Differential testing** captures original execution via Frida, replays the same inputs through the rewrite's headless oracle, and compares state checkpoints field-by-field.
 
-See [docs/provenance.md](docs/provenance.md) for exact binary hashes of the target build.
+See [docs/contributor/project-tracking/provenance.md](docs/contributor/project-tracking/provenance.md) for exact binary hashes of the target build.
 
 ## Development
 

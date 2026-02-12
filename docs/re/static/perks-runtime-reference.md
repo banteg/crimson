@@ -14,7 +14,7 @@ This page documents runtime location evidence for each perk in:
 
 For gameplay effects and mechanics, see [Perks](../../mechanics/perks.md).
 For rewrite ID/name mapping, see `src/crimson/perks/ids.py`.
-For decompile constants/addresses, see [Detangling notes](../../detangling.md).
+For decompile constants/addresses, see [Detangling notes](detangling.md).
 
 Notes:
 

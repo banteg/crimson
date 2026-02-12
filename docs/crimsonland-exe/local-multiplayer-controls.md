@@ -10,12 +10,12 @@ This note consolidates the controls/multiplayer evidence used by the rewrite.
 ## Config storage and player blocks
 
 - `crimson.cfg` is fixed-size `0x480` bytes and rewritten as a whole struct.
-  - Ref: `docs/crimson-cfg.md`
+  - Ref: `docs/formats/crimson-cfg.md`
 - Keybind blocks:
   - P1: offset `0x1c8`, `13 dwords + 3 dwords padding`
   - P2: offset `0x208`, `13 dwords + 3 dwords padding`
   - Reserved extension region starts at `0x248` (`0x200` bytes), suitable for extra player blocks.
-  - Ref: `docs/crimson-cfg.md`
+  - Ref: `docs/formats/crimson-cfg.md`
 
 ## Control mode IDs and labels
 
@@ -50,4 +50,3 @@ This note consolidates the controls/multiplayer evidence used by the rewrite.
   - `controls_rebind_axis_peak_abs_*` (`0x004d79e4..0x004d79f8`)
   - compared against `0.5` assignment threshold.
 - Ref: `docs/crimsonland-exe/ui.md`
-

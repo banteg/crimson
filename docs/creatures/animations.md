@@ -7,7 +7,7 @@ tags:
 
 This page tracks how creatures advance animation phase and select atlas frames.
 
-See also: [Creature pool struct](struct.md), [Atlas notes](../atlas.md).
+See also: [Creature pool struct](struct.md), [Atlas notes](../formats/atlas.md).
 
 ## Animation phase (creature_anim_phase / offset 0x94)
 

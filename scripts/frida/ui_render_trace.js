@@ -568,7 +568,7 @@ function readUiButton(buttonPtr) {
   };
 }
 
-// ui_element_t fields (offsets based on docs/ui-elements.md; best-effort only).
+// ui_element_t fields (offsets based on docs/mechanics/systems/ui-elements.md; best-effort only).
 function readUiElementSummary(elementPtr) {
   if (!elementPtr) return null;
   return {

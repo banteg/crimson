@@ -8,5 +8,5 @@ tags:
 
 Project-level evidence summaries and provenance tracking.
 
-- [Build provenance and hashes](../../provenance.md)
+- [Build provenance and hashes](../../contributor/project-tracking/provenance.md)
 - [Differential sessions](../../frida/differential-sessions.md)

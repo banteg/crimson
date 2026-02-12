@@ -6,7 +6,7 @@ cheatsheets/raylib.md
 frida/differential-sessions.md
 frida/index.md
 frida/workflow.md
-provenance.md
+contributor/project-tracking/provenance.md
 rewrite/float-parity-policy.md
 rewrite/index.md
 rewrite/local-multiplayer.md
@@ -14,8 +14,7 @@ rewrite/module-map.md
 rewrite/original-bugs.md
 rewrite/status.md
 rewrite/terrain.md
-third-party-libs.md
-typo.md
+contributor/project-tracking/third-party-libs.md
 windbg/index.md
 windbg/sessions.md
 windbg/workflow.md
