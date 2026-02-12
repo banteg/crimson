@@ -33,7 +33,7 @@ bonuses. No hidden modifiers are introduced by the docs layer.
 ## Ammo, clip size, and reload timing
 
 - When you equip a weapon, ammo is set to full clip.
-- [Ammomanic](../perks.md#12-ammo-maniac) and [My Favourite Weapon](../perks.md#48-my-favourite-weapon) increase clip size on equip, so swaps and pickups benefit automatically.
+- [Ammo Maniac](../perks.md#12-ammo-maniac) and [My Favourite Weapon](../perks.md#48-my-favourite-weapon) increase clip size on equip, so swaps and pickups benefit automatically.
 - [Fastloader](../perks.md#3-fastloader) reduces reload duration to 70% of weapon base.
 - [Weapon Power Up](../systems/bonuses.md) reduces reload duration to 60% of weapon base and
   refills the clip immediately.
