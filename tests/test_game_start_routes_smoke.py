@@ -4,16 +4,10 @@ from pathlib import Path
 import random
 import time
 
-from crimson.game import (
-    GameLoopView,
-    GameState,
-    HighScoresView,
-    QuestGameView,
-    RushGameView,
-    SurvivalGameView,
-    TutorialGameView,
-    TypoShooterGameView,
-)
+from crimson.game.high_scores_view import HighScoresView
+from crimson.game.loop_view import GameLoopView
+from crimson.game.mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
+from crimson.game.types import GameState
 from crimson.persistence import save_status
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console

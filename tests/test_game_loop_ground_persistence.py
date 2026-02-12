@@ -7,8 +7,9 @@ from typing import Any, cast
 
 import pyray as rl
 
-from crimson.game import GameLoopView, GameState
 from crimson.frontend.menu import ensure_menu_ground
+from crimson.game.loop_view import GameLoopView
+from crimson.game.types import GameState
 from crimson.persistence import save_status
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console

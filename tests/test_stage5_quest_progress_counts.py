@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-from crimson.game import QuestsMenuView
+from crimson.game.quest_views import QuestsMenuView
 from crimson.persistence import save_status
 
 
@@ -32,4 +32,3 @@ def test_quest_select_f1_counts_stage5_reads_tail_fields() -> None:
     assert view._quest_counts(stage=5, row=5) == (tail_u32, 789)
 
     assert view._quest_counts(stage=5, row=9) == (0, 999)
-

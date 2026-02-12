@@ -702,7 +702,7 @@ def validate_high_scores_screens(oracle: dict[str, Any], *, tol: float) -> list[
 
 def validate_quest_menu_panel(oracle: dict[str, Any], *, tol: float) -> list[str]:
     from crimson.frontend import menu as m
-    from crimson.game import QUEST_MENU_BASE_X, QUEST_MENU_BASE_Y, QUEST_MENU_PANEL_OFFSET_X, QUEST_PANEL_HEIGHT
+    from crimson.game.quest_views import QUEST_MENU_BASE_X, QUEST_MENU_BASE_Y, QUEST_MENU_PANEL_OFFSET_X, QUEST_PANEL_HEIGHT
 
     errors: list[str] = []
     screen = _find_screen(oracle, "state_11:#.#")

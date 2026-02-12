@@ -7,12 +7,8 @@ from types import SimpleNamespace
 
 import pyray as rl
 
-from crimson.game import (
-    GameState,
-    QUEST_FAILED_PANEL_SLIDE_DURATION_MS,
-    QUEST_FAILED_PANEL_W,
-    QuestFailedView,
-)
+from crimson.game.quest_views import QUEST_FAILED_PANEL_SLIDE_DURATION_MS, QUEST_FAILED_PANEL_W, QuestFailedView
+from crimson.game.types import GameState
 from crimson.modes.quest_mode import QuestRunOutcome
 from crimson.persistence import save_status
 from grim.geom import Vec2
@@ -63,12 +59,12 @@ def test_quest_failed_panel_layout_uses_native_anchor(monkeypatch, tmp_path: Pat
     state = _make_state(tmp_path)
     view = QuestFailedView(state)
 
-    monkeypatch.setattr("crimson.game.rl.get_screen_width", lambda: 640)
+    monkeypatch.setattr("crimson.game.quest_views.rl.get_screen_width", lambda: 640)
     panel_640 = view._panel_origin()
     assert panel_640.x == -108.0
     assert panel_640.y == 29.0
 
-    monkeypatch.setattr("crimson.game.rl.get_screen_width", lambda: 1024)
+    monkeypatch.setattr("crimson.game.quest_views.rl.get_screen_width", lambda: 1024)
     panel_1024 = view._panel_origin()
     assert panel_1024.x == -108.0
     assert panel_1024.y == 119.0
@@ -78,7 +74,7 @@ def test_quest_failed_panel_slides_in_from_left(monkeypatch, tmp_path: Path) -> 
     state = _make_state(tmp_path)
     view = QuestFailedView(state)
 
-    monkeypatch.setattr("crimson.game.rl.get_screen_width", lambda: 640)
+    monkeypatch.setattr("crimson.game.quest_views.rl.get_screen_width", lambda: 640)
     base = view._panel_origin()
 
     view._intro_ms = 0.0
@@ -114,10 +110,10 @@ def test_quest_failed_enter_retries_current_quest(monkeypatch, tmp_path: Path) -
         def get_or_load(self, *_args, **_kwargs):  # noqa: ANN001
             return SimpleNamespace(texture=None)
 
-    monkeypatch.setattr("crimson.game.update_audio", lambda _audio, _dt: None)
-    monkeypatch.setattr("crimson.game._ensure_texture_cache", lambda _state: _DummyCache())
-    monkeypatch.setattr("crimson.game.play_sfx", _play_sfx)
-    monkeypatch.setattr("crimson.game.rl.is_key_pressed", lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER))
+    monkeypatch.setattr("crimson.game.quest_views.update_audio", lambda _audio, _dt: None)
+    monkeypatch.setattr("crimson.game.quest_views._ensure_texture_cache", lambda _state: _DummyCache())
+    monkeypatch.setattr("crimson.game.quest_views.play_sfx", _play_sfx)
+    monkeypatch.setattr("crimson.game.quest_views.rl.is_key_pressed", lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER))
 
     view = QuestFailedView(state)
     view.open()
@@ -150,10 +146,10 @@ def test_quest_failed_q_opens_quest_list(monkeypatch, tmp_path: Path) -> None:
         def get_or_load(self, *_args, **_kwargs):  # noqa: ANN001
             return SimpleNamespace(texture=None)
 
-    monkeypatch.setattr("crimson.game.update_audio", lambda _audio, _dt: None)
-    monkeypatch.setattr("crimson.game._ensure_texture_cache", lambda _state: _DummyCache())
-    monkeypatch.setattr("crimson.game.play_sfx", _play_sfx)
-    monkeypatch.setattr("crimson.game.rl.is_key_pressed", lambda key: int(key) == int(rl.KeyboardKey.KEY_Q))
+    monkeypatch.setattr("crimson.game.quest_views.update_audio", lambda _audio, _dt: None)
+    monkeypatch.setattr("crimson.game.quest_views._ensure_texture_cache", lambda _state: _DummyCache())
+    monkeypatch.setattr("crimson.game.quest_views.play_sfx", _play_sfx)
+    monkeypatch.setattr("crimson.game.quest_views.rl.is_key_pressed", lambda key: int(key) == int(rl.KeyboardKey.KEY_Q))
 
     view = QuestFailedView(state)
     view.open()
@@ -185,10 +181,10 @@ def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, tmp_path:
         def get_or_load(self, *_args, **_kwargs):  # noqa: ANN001
             return SimpleNamespace(texture=None)
 
-    monkeypatch.setattr("crimson.game.update_audio", lambda _audio, _dt: None)
-    monkeypatch.setattr("crimson.game._ensure_texture_cache", lambda _state: _DummyCache())
-    monkeypatch.setattr("crimson.game.play_sfx", _play_sfx)
-    monkeypatch.setattr("crimson.game.rl.is_key_pressed", lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE))
+    monkeypatch.setattr("crimson.game.quest_views.update_audio", lambda _audio, _dt: None)
+    monkeypatch.setattr("crimson.game.quest_views._ensure_texture_cache", lambda _state: _DummyCache())
+    monkeypatch.setattr("crimson.game.quest_views.play_sfx", _play_sfx)
+    monkeypatch.setattr("crimson.game.quest_views.rl.is_key_pressed", lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE))
 
     view = QuestFailedView(state)
     view.open()
@@ -215,7 +211,7 @@ def test_quest_failed_score_block_matches_native_fields(monkeypatch, tmp_path: P
         def get_or_load(self, *_args, **_kwargs):  # noqa: ANN001
             return SimpleNamespace(texture=None)
 
-    monkeypatch.setattr("crimson.game._ensure_texture_cache", lambda _state: _DummyCache())
+    monkeypatch.setattr("crimson.game.quest_views._ensure_texture_cache", lambda _state: _DummyCache())
     view.open()
 
     drawn_text: list[str] = []
@@ -231,10 +227,10 @@ def test_quest_failed_score_block_matches_native_fields(monkeypatch, tmp_path: P
     def _draw_rect(x, y, w, h, color):  # noqa: ANN001, ARG001
         drawn_rects.append((int(x), int(y), int(w), int(h)))
 
-    monkeypatch.setattr("crimson.game.draw_small_text", _draw_small_text)
-    monkeypatch.setattr("crimson.game.rl.draw_line", _draw_line)
-    monkeypatch.setattr("crimson.game.rl.draw_rectangle", _draw_rect)
-    monkeypatch.setattr("crimson.game.rl.measure_text", lambda text, _size: len(str(text)) * 8)
+    monkeypatch.setattr("crimson.game.quest_views.draw_small_text", _draw_small_text)
+    monkeypatch.setattr("crimson.game.quest_views.rl.draw_line", _draw_line)
+    monkeypatch.setattr("crimson.game.quest_views.rl.draw_rectangle", _draw_rect)
+    monkeypatch.setattr("crimson.game.quest_views.rl.measure_text", lambda text, _size: len(str(text)) * 8)
 
     view._small_font = None
     view._draw_score_preview(None, panel_top_left=Vec2(-108.0, 29.0))  # type: ignore[arg-type]
@@ -261,14 +257,14 @@ def test_quest_failed_draw_fades_pause_background_during_close(monkeypatch, tmp_
             return SimpleNamespace(texture=None)
 
     view = QuestFailedView(state)
-    monkeypatch.setattr("crimson.game._ensure_texture_cache", lambda _state: _DummyCache())
-    monkeypatch.setattr("crimson.game.rl.clear_background", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.game.rl.get_screen_width", lambda: 640)
-    monkeypatch.setattr("crimson.game._draw_screen_fade", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.game._draw_menu_cursor", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.game.draw_small_text", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.game.button_draw", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.game.button_width", lambda *_args, **_kwargs: 82.0)
+    monkeypatch.setattr("crimson.game.quest_views._ensure_texture_cache", lambda _state: _DummyCache())
+    monkeypatch.setattr("crimson.game.quest_views.rl.clear_background", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.game.quest_views.rl.get_screen_width", lambda: 640)
+    monkeypatch.setattr("crimson.game.quest_views._draw_screen_fade", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.game.quest_views._draw_menu_cursor", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.game.quest_views.draw_small_text", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.game.quest_views.button_draw", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.game.quest_views.button_width", lambda *_args, **_kwargs: 82.0)
     monkeypatch.setattr(view, "_ensure_small_font", lambda: SimpleNamespace())
     monkeypatch.setattr(view, "_draw_score_preview", lambda *_args, **_kwargs: None)
 
