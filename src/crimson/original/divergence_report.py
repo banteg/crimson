@@ -990,18 +990,32 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
             if not isinstance(item, dict):
                 continue
             pos_obj = item.get("pos") if isinstance(item.get("pos"), dict) else {}
-            sample_creatures_head.append(
-                {
-                    "index": _int_or(item.get("index")),
-                    "type_id": _int_or(item.get("type_id")),
-                    "hp": _float_or(item.get("hp")),
-                    "hitbox_size": _float_or(item.get("hitbox_size")),
-                    "pos": {
-                        "x": _float_or(pos_obj.get("x")),
-                        "y": _float_or(pos_obj.get("y")),
-                    },
-                }
-            )
+            row: dict[str, object] = {
+                "index": _int_or(item.get("index")),
+                "type_id": _int_or(item.get("type_id")),
+                "hp": _float_or(item.get("hp")),
+                "hitbox_size": _float_or(item.get("hitbox_size")),
+                "pos": {
+                    "x": _float_or(pos_obj.get("x")),
+                    "y": _float_or(pos_obj.get("y")),
+                },
+            }
+            ai_mode = item.get("ai_mode")
+            if ai_mode is not None:
+                row["ai_mode"] = _int_or(ai_mode)
+            link_index = item.get("link_index")
+            if link_index is not None:
+                row["link_index"] = _int_or(link_index)
+            ai7_timer_ms = item.get("ai7_timer_ms")
+            if ai7_timer_ms is not None:
+                row["ai7_timer_ms"] = _int_or(ai7_timer_ms)
+            orbit_angle = item.get("orbit_angle")
+            if orbit_angle is not None:
+                row["orbit_angle"] = _float_or(orbit_angle)
+            orbit_radius = item.get("orbit_radius")
+            if orbit_radius is not None:
+                row["orbit_radius"] = _float_or(orbit_radius)
+            sample_creatures_head.append(row)
 
         sample_secondary_head: list[dict[str, object]] = []
         for item in sample_secondary_obj[:6]:

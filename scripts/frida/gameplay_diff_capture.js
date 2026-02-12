@@ -322,6 +322,7 @@ const PROJECTILE_UPDATE_START = 0x00420b90;
 const PROJECTILE_UPDATE_END = 0x00422c6f;
 const CRT_RAND_MULT = 214013 >>> 0;
 const CRT_RAND_INC = 2531011 >>> 0;
+const CREATURE_FLAG_AI7_LINK_TIMER = 0x80;
 
 const fnPtrs = {};
 const grimFnPtrs = {};
@@ -1152,6 +1153,8 @@ function readCreatureEntry(index) {
   const activeFlag = safeReadU8(base);
   if (!activeFlag) return null;
   const stateFlag = safeReadU8(base.add(0x08));
+  const flags = safeReadS32(base.add(0x8c));
+  const linkIndex = safeReadS32(base.add(0x78));
   return {
     index: index,
     active: activeFlag,
@@ -1165,7 +1168,17 @@ function readCreatureEntry(index) {
     hp: captureNumber(safeReadF32(base.add(0x24))),
     type_id: safeReadS32(base.add(0x6c)),
     target_player: safeReadS32(base.add(0x70)),
-    flags: safeReadS32(base.add(0x8c)),
+    flags: flags,
+    link_index: linkIndex,
+    ai_mode: safeReadS32(base.add(0x90)),
+    heading: captureNumber(safeReadF32(base.add(0x2c))),
+    target_heading: captureNumber(safeReadF32(base.add(0x30))),
+    orbit_angle: captureNumber(safeReadF32(base.add(0x84))),
+    orbit_radius: captureNumber(safeReadF32(base.add(0x88))),
+    ai7_timer_ms:
+      flags != null && linkIndex != null && (flags & CREATURE_FLAG_AI7_LINK_TIMER) !== 0
+        ? linkIndex
+        : null,
   };
 }
 
@@ -1189,6 +1202,8 @@ function readCreatureLifecycleEntry(index) {
   const activeFlag = safeReadU8(base);
   const stateFlag = safeReadU8(base.add(0x08));
   const active = activeFlag == null ? !!stateFlag : !!activeFlag;
+  const flags = safeReadS32(base.add(0x8c));
+  const linkIndex = safeReadS32(base.add(0x78));
   return {
     index: index,
     active: active,
@@ -1201,7 +1216,17 @@ function readCreatureLifecycleEntry(index) {
       x: captureNumber(safeReadF32(base.add(0x14))),
       y: captureNumber(safeReadF32(base.add(0x18))),
     },
-    flags: safeReadS32(base.add(0x8c)),
+    flags: flags,
+    link_index: linkIndex,
+    ai_mode: safeReadS32(base.add(0x90)),
+    heading: captureNumber(safeReadF32(base.add(0x2c))),
+    target_heading: captureNumber(safeReadF32(base.add(0x30))),
+    orbit_angle: captureNumber(safeReadF32(base.add(0x84))),
+    orbit_radius: captureNumber(safeReadF32(base.add(0x88))),
+    ai7_timer_ms:
+      flags != null && linkIndex != null && (flags & CREATURE_FLAG_AI7_LINK_TIMER) !== 0
+        ? linkIndex
+        : null,
   };
 }
 

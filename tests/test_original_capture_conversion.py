@@ -166,6 +166,13 @@ def _sample_creature(*, index: int = 5) -> dict[str, object]:
         "type_id": 2,
         "target_player": 0,
         "flags": 0,
+        "link_index": -733,
+        "ai_mode": 7,
+        "heading": 1.5,
+        "target_heading": 1.6,
+        "orbit_angle": 0.25,
+        "orbit_radius": 10.0,
+        "ai7_timer_ms": -733,
     }
 
 
@@ -539,6 +546,11 @@ def test_load_capture_accepts_strict_typed_sample_rows(tmp_path: Path) -> None:
     assert len(samples.projectiles) == 1
     assert len(samples.secondary_projectiles) == 1
     assert len(samples.bonuses) == 1
+    creature = samples.creatures[0]
+    assert creature.ai_mode == 7
+    assert creature.link_index == -733
+    assert creature.ai7_timer_ms == -733
+    assert creature.orbit_radius == pytest.approx(10.0)
 
 
 def test_load_capture_rejects_incomplete_sample_rows(tmp_path: Path) -> None:

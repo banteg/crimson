@@ -815,15 +815,24 @@ def _build_sample_creatures_head(tick: CaptureTick) -> list[dict[str, object]]:
     if tick.samples is None:
         return out
     for item in tick.samples.creatures[:6]:
-        out.append(
-            {
-                "index": int(item.index),
-                "type_id": int(item.type_id),
-                "hp": float(item.hp),
-                "hitbox_size": float(item.hitbox_size),
-                "pos": {"x": float(item.pos.x), "y": float(item.pos.y)},
-            }
-        )
+        row: dict[str, object] = {
+            "index": int(item.index),
+            "type_id": int(item.type_id),
+            "hp": float(item.hp),
+            "hitbox_size": float(item.hitbox_size),
+            "pos": {"x": float(item.pos.x), "y": float(item.pos.y)},
+        }
+        if item.ai_mode is not None:
+            row["ai_mode"] = int(item.ai_mode)
+        if item.link_index is not None:
+            row["link_index"] = int(item.link_index)
+        if item.ai7_timer_ms is not None:
+            row["ai7_timer_ms"] = int(item.ai7_timer_ms)
+        if item.orbit_angle is not None:
+            row["orbit_angle"] = float(item.orbit_angle)
+        if item.orbit_radius is not None:
+            row["orbit_radius"] = float(item.orbit_radius)
+        out.append(row)
     return out
 
 

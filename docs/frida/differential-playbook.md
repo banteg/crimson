@@ -136,12 +136,16 @@ uv run python - <<'PY'
 from pathlib import Path
 from crimson.original.capture import load_capture
 
-cap = load_capture(Path("artifacts/frida/share/gameplay_diff_capture.json"))
+cap = load_capture(Path("artifacts/frida/share/gameplay_diff_capture.json.gz"))
 
 key_rows = 0
 key_rows_with_move = 0
 perk_in_tick = 0
 perk_outside_calls = 0
+sample_creature_rows = 0
+sample_creature_rows_with_ai_lineage = 0
+lifecycle_rows = 0
+lifecycle_rows_with_ai_lineage = 0
 
 for t in cap.ticks:
     for row in t.input_player_keys:
@@ -158,11 +162,34 @@ for t in cap.ticks:
             key_rows_with_move += 1
     perk_in_tick += len([e for e in t.perk_apply_in_tick if e.perk_id is not None])
     perk_outside_calls += int(t.perk_apply_outside_before.calls)
+    if t.samples is not None:
+        for creature in t.samples.creatures:
+            sample_creature_rows += 1
+            if creature.ai_mode is not None or creature.link_index is not None:
+                sample_creature_rows_with_ai_lineage += 1
+    for head in t.event_heads:
+        if getattr(head, "kind", "") != "creature_lifecycle":
+            continue
+        data = head.data if isinstance(head.data, dict) else {}
+        for key in ("added_head", "removed_head"):
+            rows = data.get(key)
+            if not isinstance(rows, list):
+                continue
+            for row in rows:
+                if not isinstance(row, dict):
+                    continue
+                lifecycle_rows += 1
+                if row.get("ai_mode") is not None or row.get("link_index") is not None:
+                    lifecycle_rows_with_ai_lineage += 1
 
 print("key_rows", key_rows)
 print("key_rows_with_any_signal", key_rows_with_move)
 print("perk_apply_in_tick_entries", perk_in_tick)
 print("perk_apply_outside_calls", perk_outside_calls)
+print("sample_creature_rows", sample_creature_rows)
+print("sample_creature_rows_with_ai_lineage", sample_creature_rows_with_ai_lineage)
+print("creature_lifecycle_rows", lifecycle_rows)
+print("creature_lifecycle_rows_with_ai_lineage", lifecycle_rows_with_ai_lineage)
 PY
 ```
 
