@@ -18,6 +18,7 @@ _PLAYER_PAIN_SFX: tuple[str, ...] = (
     "sfx_trooper_inpain_03",
 )
 _PLAYER_DEATH_SFX: tuple[str, ...] = ("sfx_trooper_die_01", "sfx_trooper_die_02")
+_THICK_SKINNED_DAMAGE_SCALE_F32 = 0.6660000085830688
 
 
 def player_take_damage(
@@ -51,7 +52,8 @@ def player_take_damage(
     was_alive = float(player.health) > 0.0
 
     if perk_active(player, PerkId.THICK_SKINNED):
-        damage_scaled *= 2.0 / 3.0
+        # Native uses an f32 constant (`~0.666`) here, not exact 2/3.
+        damage_scaled *= _THICK_SKINNED_DAMAGE_SCALE_F32
 
     dodged = False
     if perk_active(player, PerkId.NINJA):
