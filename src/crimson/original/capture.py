@@ -31,6 +31,7 @@ from ..replay.types import (
 )
 from .schema import (
     CAPTURE_FORMAT_VERSION,
+    CaptureEventHeadBonusApply,
     CaptureEventHeadPerkApply,
     CaptureEventHeadPerkDelta,
     CaptureEventHeadProjectileSpawn,
@@ -52,6 +53,13 @@ _CRT_RAND_INV_MULT = pow(_CRT_RAND_MULT, -1, 1 << 32)
 _AIM_SCHEME_COMPUTER = 5
 _PLAYER_PROJECTILE_OWNER_SENTINEL = -100
 _PROJECTILE_TYPE_FIRE_BULLETS = 45
+_PROJECTILE_SPAWNING_BONUS_IDS = frozenset(
+    {
+        int(BonusId.FIREBLAST),
+        int(BonusId.SHOCK_CHAIN),
+        int(BonusId.NUKE),
+    }
+)
 
 
 class CaptureError(ValueError):
@@ -613,6 +621,28 @@ def _tick_player_weapon_projectile_spawned(
     return False
 
 
+def _tick_player_projectile_bonus_apply(
+    tick: CaptureTick,
+    *,
+    player_index: int,
+    player_count: int,
+) -> bool:
+    for head in tick.event_heads:
+        if not isinstance(head, CaptureEventHeadBonusApply):
+            continue
+        bonus_id = _coerce_int_like(head.data.get("bonus_id"))
+        if bonus_id is None or int(bonus_id) not in _PROJECTILE_SPAWNING_BONUS_IDS:
+            continue
+        applied_player_index = _coerce_int_like(head.data.get("player_index"))
+        if applied_player_index is None:
+            if int(player_count) == 1 and int(player_index) == 0:
+                return True
+            continue
+        if int(applied_player_index) == int(player_index):
+            return True
+    return False
+
+
 def _tick_player_projectile_type_spawned(
     tick: CaptureTick,
     *,
@@ -678,6 +708,19 @@ def _should_synthesize_computer_fire_down(
         return True
     if bool(player_secondary_spawned):
         return True
+    if _tick_player_projectile_bonus_apply(
+        tick,
+        player_index=int(player_index),
+        player_count=int(player_count),
+    ):
+        if weapon_id_hint is not None and _tick_player_weapon_projectile_spawned(
+            tick,
+            player_index=int(player_index),
+            player_count=int(player_count),
+            weapon_id=int(weapon_id_hint),
+        ):
+            return True
+        return False
     if weapon_id_hint is None:
         return _tick_player_projectile_type_spawned(
             tick,
