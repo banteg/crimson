@@ -22,7 +22,7 @@ The shield timer and [Death Clock](../perks.md#47-death-clock) are hard gates th
 
 ## Contact damage
 
-Contact damage is checked when a live creature is close enough to attack and the player is not protected by shield or the `Death Clock` immunity window.
+Contact damage is checked when a live creature is close enough to attack and the player is not protected by shield or the [Death Clock](../perks.md#47-death-clock) immunity window.
 
 If [Dodger](../perks.md#26-dodger) is active, each normal contact hit has a **1 in 5** dodge chance.
 
