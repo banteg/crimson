@@ -84,8 +84,10 @@ Kills from the burst do not spawn further bonuses.
 
 Duration: 3 seconds.
 
-Slows the entire game world (global time scale). On pickup, all players
-have their ammo refilled and reload cancelled.
+Slows the entire game world to 30% speed (×0.3 time scale). During the
+final second the scale ramps linearly back to 1.0. Player movement is
+compensated so you move at ×2 relative to the slowed world. On pickup,
+all players have their ammo refilled and reload cancelled.
 
 ## 10. Shield
 
