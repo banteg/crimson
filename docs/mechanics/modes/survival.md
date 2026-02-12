@@ -1,4 +1,5 @@
 ---
+icon: lucide/infinity
 tags:
   - mechanics
   - modes
