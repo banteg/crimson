@@ -9,6 +9,7 @@ from ..game_modes import GameMode
 from ..perks.helpers import perk_active
 from ..projectiles import CreatureDamageApplier, Damageable
 from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
+from ..weapon_runtime.availability import weapon_pick_random_available
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 from .apply import bonus_apply
 from .ids import BONUS_BY_ID, BonusId, bonus_display_name
@@ -141,8 +142,6 @@ class BonusPool:
         world_width: float = 1024.0,
         world_height: float = 1024.0,
     ) -> BonusEntry:
-        from ..gameplay import weapon_pick_random_available
-
         if int(state.game_mode) == int(GameMode.RUSH):
             return self._sentinel
         if (
@@ -189,7 +188,6 @@ class BonusPool:
         world_width: float = 1024.0,
         world_height: float = 1024.0,
     ) -> BonusEntry | None:
-        from ..gameplay import weapon_pick_random_available
         from ..perks import PerkId
 
         game_mode = int(state.game_mode)
