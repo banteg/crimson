@@ -1,4 +1,5 @@
 ---
+icon: lucide/scroll
 tags:
   - mechanics
   - modes
