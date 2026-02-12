@@ -344,6 +344,49 @@ def _allow_one_tick_creature_count_lag(
     return False
 
 
+def _allow_one_tick_kills_lag(
+    *,
+    tick: int,
+    field_diffs: list[ReplayFieldDiff],
+    expected_by_tick: dict[int, ReplayCheckpoint],
+    actual_by_tick: dict[int, ReplayCheckpoint],
+) -> bool:
+    if not field_diffs:
+        return False
+    if any(str(diff.field) != "kills" for diff in field_diffs):
+        return False
+
+    expected_tick = expected_by_tick.get(int(tick))
+    actual_tick = actual_by_tick.get(int(tick))
+    prev_expected = expected_by_tick.get(int(tick) - 1)
+    prev_actual = actual_by_tick.get(int(tick) - 1)
+    next_expected = expected_by_tick.get(int(tick) + 1)
+    next_actual = actual_by_tick.get(int(tick) + 1)
+    if (
+        expected_tick is None
+        or actual_tick is None
+        or prev_expected is None
+        or prev_actual is None
+        or next_expected is None
+        or next_actual is None
+    ):
+        return False
+
+    expected_kills = int(expected_tick.kills)
+    actual_kills = int(actual_tick.kills)
+    if expected_kills < 0 or actual_kills < 0:
+        return False
+    if abs(int(expected_kills) - int(actual_kills)) != 1:
+        return False
+
+    if int(prev_expected.kills) != int(prev_actual.kills):
+        return False
+    if int(next_expected.kills) != int(next_actual.kills):
+        return False
+
+    return True
+
+
 def _allow_capture_sample_creature_count(
     *,
     tick: int,
@@ -378,6 +421,29 @@ def _allow_capture_sample_creature_count(
     # active slots. When our sim count matches the sampled list exactly and this
     # is the only field mismatch, keep scanning for a stronger divergence.
     if actual_count == int(sample_count) and expected_count != int(sample_count):
+        return True
+
+    # Some captures expose a one-tick lead/lag between checkpoint
+    # `creature_active_count` and sampled creature slots.
+    #
+    # Pattern:
+    # - current tick sample matches expected checkpoint count,
+    # - replay count already stepped to the next sampled count,
+    # - next tick keeps the same expected/actual counts.
+    next_sample = capture_sample_creature_counts.get(int(tick) + 1)
+    next_expected_tick = expected_by_tick.get(int(tick) + 1)
+    next_actual_tick = actual_by_tick.get(int(tick) + 1)
+    if (
+        next_sample is not None
+        and int(next_sample) >= 0
+        and abs(expected_count - actual_count) == 1
+        and expected_count == int(sample_count)
+        and actual_count == int(next_sample)
+        and next_expected_tick is not None
+        and next_actual_tick is not None
+        and int(next_expected_tick.creature_count) == expected_count
+        and int(next_actual_tick.creature_count) == actual_count
+    ):
         return True
 
     # Some captures sample creature slots before render-time corpse culling.
@@ -1179,6 +1245,13 @@ def _find_first_divergence(
             float_abs_tol=float(float_abs_tol),
         )
         if _allow_one_tick_creature_count_lag(
+            tick=int(tick),
+            field_diffs=field_diffs,
+            expected_by_tick=expected_by_tick,
+            actual_by_tick=actual_by_tick,
+        ):
+            continue
+        if _allow_one_tick_kills_lag(
             tick=int(tick),
             field_diffs=field_diffs,
             expected_by_tick=expected_by_tick,

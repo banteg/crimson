@@ -41,6 +41,8 @@ def _checkpoint(
     *,
     tick: int,
     rng_marks: dict[str, int],
+    kills: int = 0,
+    creature_count: int = 0,
     deaths: list[ReplayDeathLedgerEntry] | None = None,
     events: ReplayEventSummary | None = None,
 ) -> ReplayCheckpoint:
@@ -49,8 +51,8 @@ def _checkpoint(
         rng_state=int(rng_marks.get("after_wave_spawns", rng_marks.get("after_world_step", 0))),
         elapsed_ms=0,
         score_xp=0,
-        kills=0,
-        creature_count=0,
+        kills=int(kills),
+        creature_count=int(creature_count),
         perk_pending=0,
         players=[
             ReplayPlayerCheckpoint(
@@ -314,6 +316,55 @@ def test_find_first_divergence_prefers_rng_stream_before_checkpoint_fields() -> 
     assert int(divergence.tick_index) == 9
     assert divergence.kind == "rng_stream_mismatch"
     assert divergence.field_diffs == tuple()
+
+
+def test_find_first_divergence_ignores_one_tick_kills_lag() -> None:
+    report = _load_report_module()
+
+    expected = [
+        _checkpoint(tick=5169, rng_marks={"rand_calls": 0}, kills=486, creature_count=51),
+        _checkpoint(tick=5170, rng_marks={"rand_calls": 0}, kills=487, creature_count=51),
+        _checkpoint(tick=5171, rng_marks={"rand_calls": 0}, kills=487, creature_count=51),
+    ]
+    actual = [
+        _checkpoint(tick=5169, rng_marks={"rand_calls": 0}, kills=486, creature_count=51),
+        _checkpoint(tick=5170, rng_marks={"rand_calls": 0}, kills=486, creature_count=51),
+        _checkpoint(tick=5171, rng_marks={"rand_calls": 0}, kills=487, creature_count=51),
+    ]
+
+    divergence = report._find_first_divergence(
+        expected,
+        actual,
+        float_abs_tol=1e-3,
+        max_field_diffs=16,
+    )
+
+    assert divergence is None
+
+
+def test_find_first_divergence_allows_one_tick_creature_count_sample_lag() -> None:
+    report = _load_report_module()
+
+    expected = [
+        _checkpoint(tick=5178, rng_marks={"rand_calls": 0}, creature_count=52),
+        _checkpoint(tick=5179, rng_marks={"rand_calls": 0}, creature_count=52),
+        _checkpoint(tick=5180, rng_marks={"rand_calls": 0}, creature_count=51),
+    ]
+    actual = [
+        _checkpoint(tick=5178, rng_marks={"rand_calls": 0}, creature_count=51),
+        _checkpoint(tick=5179, rng_marks={"rand_calls": 0}, creature_count=51),
+        _checkpoint(tick=5180, rng_marks={"rand_calls": 0}, creature_count=51),
+    ]
+
+    divergence = report._find_first_divergence(
+        expected,
+        actual,
+        float_abs_tol=1e-3,
+        max_field_diffs=16,
+        capture_sample_creature_counts={5178: 52, 5179: 51, 5180: 51},
+    )
+
+    assert divergence is None
 
 
 def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:

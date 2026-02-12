@@ -22,6 +22,7 @@ from crimson.original.schema import (
 )
 from crimson.original.verify import verify_capture
 from crimson.original.verify import _allow_capture_sample_creature_count
+from crimson.original.verify import _allow_one_tick_kills_lag
 from crimson.replay import ReplayHeader, ReplayRecorder
 from crimson.replay.checkpoints import ReplayCheckpoint
 from crimson.sim.runners import run_survival_replay
@@ -177,6 +178,60 @@ def test_allow_capture_sample_creature_count_allows_corpse_despawn_sampling_lag(
         actual_by_tick={9: actual},
         capture_sample_creature_counts={9: 51},
         capture_active_corpse_below_despawn_ticks=set(),
+    )
+
+    assert allowed is True
+    assert blocked is False
+
+
+def test_allow_capture_sample_creature_count_allows_one_tick_sample_lead_lag() -> None:
+    checkpoint = _single_tick_survival_checkpoint(seed=0x5178)
+    expected_by_tick = {
+        5178: replace(checkpoint, tick_index=5178, creature_count=52),
+        5179: replace(checkpoint, tick_index=5179, creature_count=52),
+    }
+    actual_by_tick = {
+        5178: replace(checkpoint, tick_index=5178, creature_count=51),
+        5179: replace(checkpoint, tick_index=5179, creature_count=51),
+    }
+    allowed = _allow_capture_sample_creature_count(
+        tick=5178,
+        field_diffs=[ReplayFieldDiff(field="creature_count", expected=52, actual=51)],
+        expected_by_tick=expected_by_tick,
+        actual_by_tick=actual_by_tick,
+        capture_sample_creature_counts={5178: 52, 5179: 51},
+    )
+
+    assert allowed is True
+
+
+def test_allow_one_tick_kills_lag_allows_isolated_blip() -> None:
+    checkpoint = _single_tick_survival_checkpoint(seed=0xA11CE)
+    expected_by_tick = {
+        9: replace(checkpoint, tick_index=9, kills=486),
+        10: replace(checkpoint, tick_index=10, kills=487),
+        11: replace(checkpoint, tick_index=11, kills=487),
+    }
+    actual_by_tick = {
+        9: replace(checkpoint, tick_index=9, kills=486),
+        10: replace(checkpoint, tick_index=10, kills=486),
+        11: replace(checkpoint, tick_index=11, kills=487),
+    }
+    allowed = _allow_one_tick_kills_lag(
+        tick=10,
+        field_diffs=[ReplayFieldDiff(field="kills", expected=487, actual=486)],
+        expected_by_tick=expected_by_tick,
+        actual_by_tick=actual_by_tick,
+    )
+    blocked = _allow_one_tick_kills_lag(
+        tick=10,
+        field_diffs=[ReplayFieldDiff(field="kills", expected=487, actual=486)],
+        expected_by_tick=expected_by_tick,
+        actual_by_tick={
+            9: replace(checkpoint, tick_index=9, kills=485),
+            10: replace(checkpoint, tick_index=10, kills=486),
+            11: replace(checkpoint, tick_index=11, kills=487),
+        },
     )
 
     assert allowed is True
