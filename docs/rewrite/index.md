@@ -132,7 +132,8 @@ See also:
 - Multiplayer (2-4 players): per-player local input is wired in Survival/Rush/Quest; deep scheme-by-scheme parity validation is still in progress.
 - `game.cfg` progression/unlock wiring and some statistics counters are still incomplete.
 - Full Options/Controls parity (video/window mode editing, full widget set).
-- Online scores + mods/plugin interface (tracked but not yet implemented).
+- Native online-score submission is out of scope; direction is a more advanced headless verification system.
+- Mods/plugin runtime and Other Games/shareware ad flows are out of scope for the rewrite.
 
 ## Roadmap
 
