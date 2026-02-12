@@ -169,9 +169,38 @@ BONUS_TABLE = [
 
 BONUS_BY_ID = {int(entry.bonus_id): entry for entry in BONUS_TABLE}
 
+_BONUS_FIXED_NAMES: dict[int, str] = {}
+_BONUS_FIXED_DESCRIPTIONS = {
+    int(BonusId.WEAPON_POWER_UP): "Your fire rate and load time increase for a short period.",
+    int(BonusId.FIRE_BULLETS): "For a few seconds -- make them count.",
+}
 
-def bonus_label(bonus_id: int) -> str:
-    entry = BONUS_BY_ID.get(bonus_id)
+def bonus_display_name(bonus_id: int, *, preserve_bugs: bool = False) -> str:
+    bonus_id_i = int(bonus_id)
+    entry = BONUS_BY_ID.get(bonus_id_i)
     if entry is None:
         return "unknown"
+    if not bool(preserve_bugs):
+        fixed = _BONUS_FIXED_NAMES.get(bonus_id_i)
+        if fixed is not None:
+            return fixed
     return entry.name
+
+
+def bonus_display_description(bonus_id: int, *, preserve_bugs: bool = False) -> str | None:
+    bonus_id_i = int(bonus_id)
+    entry = BONUS_BY_ID.get(bonus_id_i)
+    if entry is None:
+        return None
+    if not bool(preserve_bugs):
+        fixed = _BONUS_FIXED_DESCRIPTIONS.get(bonus_id_i)
+        if fixed is not None:
+            return fixed
+    return entry.description
+
+
+def bonus_label(bonus_id: int, *, preserve_bugs: bool = False) -> str:
+    entry = BONUS_BY_ID.get(int(bonus_id))
+    if entry is None:
+        return "unknown"
+    return bonus_display_name(int(entry.bonus_id), preserve_bugs=preserve_bugs)

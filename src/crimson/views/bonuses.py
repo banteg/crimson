@@ -4,8 +4,8 @@ from dataclasses import dataclass
 
 import pyray as rl
 
-from ..bonuses import BONUS_TABLE, BonusMeta
-from ..weapons import WEAPON_TABLE
+from ..bonuses import BONUS_TABLE, BonusMeta, bonus_display_description, bonus_display_name
+from ..weapons import weapon_display_name
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 from grim.fonts.small import SmallFontData, load_small_font
@@ -44,6 +44,7 @@ WEAPON_BONUS = next(
 class BonusIconView:
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
+        self._preserve_bugs = bool(ctx.preserve_bugs)
         self._missing_assets: list[str] = []
         self._texture: rl.Texture | None = None
         self._small: SmallFontData | None = None
@@ -158,16 +159,17 @@ class BonusIconView:
                     amount_label = f" default={amount}" if amount is not None else ""
                     draw_ui_text(
                         self._small,
-                        f"id {bonus_id:02d} {entry.name}{amount_label}",
+                        f"id {bonus_id:02d} {bonus_display_name(bonus_id, preserve_bugs=bool(self._preserve_bugs))}{amount_label}",
                         Vec2(info_x, info_y),
                         scale=UI_TEXT_SCALE,
                         color=UI_TEXT_COLOR,
                     )
                     info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 4
-                    if entry.description:
+                    description = bonus_display_description(bonus_id, preserve_bugs=bool(self._preserve_bugs))
+                    if description:
                         draw_ui_text(
                             self._small,
-                            entry.description,
+                            description,
                             Vec2(info_x, info_y),
                             scale=UI_TEXT_SCALE,
                             color=UI_HINT_COLOR,
@@ -183,10 +185,7 @@ class BonusIconView:
             weapon_id = WEAPON_BONUS.default_amount
             weapon_name = None
             if weapon_id is not None:
-                for weapon in WEAPON_TABLE:
-                    if weapon.weapon_id == weapon_id:
-                        weapon_name = weapon.name
-                        break
+                weapon_name = weapon_display_name(int(weapon_id), preserve_bugs=bool(self._preserve_bugs))
             name_label = f" ({weapon_name})" if weapon_name else ""
             weapon_label = f"icon_id = -1 → ui_wicons (default weapon {weapon_id}{name_label})"
             draw_ui_text(self._small, weapon_label, Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)

@@ -730,6 +730,7 @@ class QuestMode(BaseGameplayMode):
                 show_quest_hud=hud_flags.show_quest_hud,
                 quest_progress_ratio=quest_progress_ratio,
                 small_indicators=self._hud_small_indicators(),
+                preserve_bugs=bool(self._world.preserve_bugs),
             )
 
         if debug_enabled() and (not perk_menu_active):

@@ -666,23 +666,37 @@ class CaptureVisualizerView:
             out.append(int(perk_id))
         return out
 
-    @staticmethod
-    def _format_perk_choices(values: list[int]) -> str:
+    def _format_perk_choices(self, values: list[int]) -> str:
         if not values:
             return "-"
         labels = [
-            _short_text(str(perk_label(int(perk_id))), max_len=18)
+            _short_text(
+                str(
+                    perk_label(
+                        int(perk_id),
+                        preserve_bugs=bool(getattr(self._replay.header, "preserve_bugs", False)),
+                    )
+                ),
+                max_len=18,
+            )
             for perk_id in values[:_PERK_PANEL_MAX_CHOICES]
         ]
         return ", ".join(labels)
 
-    @staticmethod
-    def _format_perk_counts(values: list[tuple[int, int]]) -> str:
+    def _format_perk_counts(self, values: list[tuple[int, int]]) -> str:
         if not values:
             return "-"
         chunks: list[str] = []
         for perk_id, count in values[:_PERK_PANEL_MAX_COUNTS]:
-            name = _short_text(str(perk_label(int(perk_id))), max_len=14)
+            name = _short_text(
+                str(
+                    perk_label(
+                        int(perk_id),
+                        preserve_bugs=bool(getattr(self._replay.header, "preserve_bugs", False)),
+                    )
+                ),
+                max_len=14,
+            )
             count_i = int(count)
             chunks.append(name if count_i == 1 else f"{name}x{count_i}")
         return ", ".join(chunks)
@@ -1030,10 +1044,14 @@ class CaptureVisualizerView:
             gameplay_lines=gameplay_lines,
         )
 
-    @staticmethod
-    def _bonus_label_from_entry(entry: BonusEntry) -> str:
+    def _bonus_label_from_entry(self, entry: BonusEntry) -> str:
         try:
-            return str(bonus_label_for_entry(entry))
+            return str(
+                bonus_label_for_entry(
+                    entry,
+                    preserve_bugs=bool(getattr(self._replay.header, "preserve_bugs", False)),
+                )
+            )
         except Exception:
             return "Bonus"
 

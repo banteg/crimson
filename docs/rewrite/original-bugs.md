@@ -81,3 +81,26 @@ Rewrite behavior:
 - Default: heal each alive player by `+1..+50` HP (1-50% of a 100-HP bar), then
   clamp to `100`.
 - With `--preserve-bugs`: keep the original multiplier behavior.
+
+## 4) Player-facing text typos are preserved in native data
+
+Native behavior:
+
+- Some perk/weapon/bonus strings include spelling mistakes carried in the
+  executable data tables.
+- Examples:
+  - Perk: `Fire Caugh`
+  - Weapon: `Plague Sphreader Gun`
+  - Weapon: `Lighting Rifle`
+  - Bonus text: `firerate`, `For few seconds`
+
+Why it’s likely a bug:
+
+- These are straightforward spelling/wording mistakes in user-facing text, not
+  gameplay semantics.
+
+Rewrite behavior:
+
+- Default: display corrected text in the rewrite.
+- With `--preserve-bugs`: keep the original misspelled strings for parity
+  captures/testing.

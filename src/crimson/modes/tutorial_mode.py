@@ -379,6 +379,7 @@ class TutorialMode(BaseGameplayMode):
                 show_time=hud_flags.show_time,
                 show_quest_hud=hud_flags.show_quest_hud,
                 small_indicators=self._hud_small_indicators(),
+                preserve_bugs=bool(self._world.preserve_bugs),
             )
 
         self._draw_tutorial_prompts(hud_bottom=hud_bottom)
