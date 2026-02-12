@@ -1,140 +1,139 @@
 # Rewrite status (Python + raylib)
 
-This page is the current snapshot of the **Python + raylib rewrite** under `src/`,
-and the biggest **parity gaps vs the classic Windows build (v1.9.93)** as documented
-under `docs/crimsonland-exe/`.
+This page tracks the current code-level state of the rewrite under `src/`, and the
+largest remaining parity gaps vs the classic Windows build (v1.9.93) documented in
+[`docs/crimsonland-exe/`](../crimsonland-exe/).
+
+Last reviewed: **2026-02-12**
 
 ## What you can run today
 
 - `uv run crimson`
-  - Full boot flow (splash + company logos) → main menu.
-  - Play Game / Options / Statistics panels.
-  - Survival / Rush / Quests / Typ-o-Shooter / Tutorial gameplay loops are all wired and playable.
-  - Multiplayer (2–4): Survival/Rush/Quests use per-player local input frames (not mirrored player-0 controls).
-  - Game over → high score entry for Survival/Rush/Typ-o; Quest completion/failure routes to results/failed screens.
-- Menu idle triggers demo/attract mode.
-- `uv run crimson view <name>`: debug views (terrain, atlases, survival, player sandbox, etc).
-- `uv run crimson quests <level>`: quest builder output / spawn scripts.
+  - Full boot flow (splash + company logos) -> main menu.
+  - Play Game / Options / Statistics / Mods menu flows.
+  - Survival / Rush / Quests / Typ-o-Shooter / Tutorial are all wired and playable.
+  - Game over -> high score entry (Survival/Rush/Typ-o), and quest completion/failure flows.
+- `uv run crimson --preserve-bugs` to re-enable known native quirks for parity/diff work.
+- `uv run crimson view <name>` for debug views and sandboxes.
+- `uv run crimson spawn-plan <template_id>` and `uv run crimson quests <level>` for spawn/script inspection.
+- Replay tooling:
+  - `uv run crimson replay play <replay.crdemo.gz>`
+  - `uv run crimson replay verify <replay.crdemo.gz>`
+  - `uv run crimson replay diff-checkpoints <expected> <actual>`
+- Original/capture differential tooling:
+  - `uv run crimson original verify-capture <capture.json>`
+  - `uv run crimson original convert-capture <capture.json> <expected.checkpoints.json.gz>`
+  - `uv run crimson original divergence-report <capture.json>`
+  - `uv run crimson original bisect-divergence <capture.json>`
+  - `uv run crimson original focus-trace <capture.json> --tick <n>`
+  - `uv run crimson original creature-trajectory <capture.json>`
+  - `uv run crimson original visualize-capture <capture.json>`
 
 ## Coverage map (rewrite vs classic)
 
 ### Front-end (menus + screens)
 
-- **Main menu (state `0`)**: implemented (layout/timeline rules, terrain persistence, sign shadow pass).
-  - Code: `src/crimson/game.py` (`MenuView`)
-  - Ref: `docs/crimsonland-exe/main-menu.md`
-- **Play Game panel (state `1`)**: implemented (mode buttons, player-count dropdown, tooltips, F1 “times played” overlay).
+- **Main menu (state `0`)**: implemented, including timeline/layout behavior and terrain/sign-shadow rules.
+  - Code: `src/crimson/frontend/menu.py`
+  - Ref: [`docs/crimsonland-exe/main-menu.md`](../crimsonland-exe/main-menu.md)
+- **Play Game panel (state `1`)**: implemented (mode buttons, player-count dropdown, tooltips, F1 times-played overlay).
   - Code: `src/crimson/game.py` (`PlayGameMenuView`)
-  - Ref: `docs/crimsonland-exe/play-game-menu.md`
-- **Quest select menu (state `0x0b`)**: UI implemented (stage icons, hardcore toggle gating, quest list + counts overlay).
+  - Ref: [`docs/crimsonland-exe/play-game-menu.md`](../crimsonland-exe/play-game-menu.md)
+- **Quest select menu (state `0x0b`)**: implemented (quest list, stage icons, hardcore gating/counts overlay).
   - Code: `src/crimson/game.py` (`QuestsMenuView`)
-  - Ref: `docs/crimsonland-exe/quest-select-menu.md`
-  - Selecting a quest starts Quest gameplay (with results/failed screens).
-- **Options panel (state `2`)**: partially implemented.
-  - Code: `src/crimson/game.py` (`OptionsMenuView`)
-  - Implemented: SFX/music volume sliders, detail preset slider, mouse sensitivity, “UI Info texts”, save-on-exit.
-  - Implemented (Controls subpanel): interactive "Configure for" / "Aiming method" / "Moving method" dropdowns, one-open-at-a-time gating, 1..4 player selector, per-player direction-arrow toggles, and right-panel key/button/axis rebinding with capture/cancel/default/unbind flow.
-  - Missing: video/window mode editing and broader parity of non-controls widgets/labels.
-- **Statistics panel (state `4`)**: partially implemented (Summary/Weapons/Quests pages; reads `game.cfg` counters + checksum).
-  - Code: `src/crimson/frontend/panels/stats.py` (`StatisticsMenuView`)
-- **Demo / attract mode**: implemented (variant sequencing + upsell + purchase screen flow).
-  - Code: `src/crimson/demo.py`
-  - Ref: `docs/crimsonland-exe/demo-mode.md`, `docs/crimsonland-exe/screens.md`
-  - Demo trial overlay: implemented and wired into gameplay loop.
-    - Code: `src/crimson/ui/demo_trial_overlay.py`, `src/crimson/game.py` (`GameLoopView._update_demo_trial_overlay`)
+  - Ref: [`docs/crimsonland-exe/quest-select-menu.md`](../crimsonland-exe/quest-select-menu.md)
+- **Options panel (state `2`)**: implemented for core sliders + controls workflow.
+  - Code: `src/crimson/frontend/panels/options.py`, `src/crimson/frontend/panels/controls.py`
+  - Implemented: SFX/music/detail/mouse sliders, UI info toggle, controls entry and interactive rebinding flow.
+  - Not exposed in this in-game UI: `screen_width`, `screen_height`, `windowed_flag`, `screen_bpp`, `texture_scale` editing (currently config/CLI-managed).
+- **Statistics hub (state `4`)**: implemented with child panels.
+  - Code: `src/crimson/frontend/panels/stats.py`
+  - Child views: high scores, weapons database, perks database, credits.
+  - Code: `src/crimson/game.py`, `src/crimson/frontend/panels/databases.py`, `src/crimson/frontend/panels/credits.py`
+- **Demo / attract mode**: implemented (variant sequencing, upsell flow, trial overlay during gameplay).
+  - Code: `src/crimson/demo.py`, `src/crimson/ui/demo_trial_overlay.py`
+  - Ref: [`docs/crimsonland-exe/demo-mode.md`](../crimsonland-exe/demo-mode.md), [`docs/crimsonland-exe/screens.md`](../crimsonland-exe/screens.md)
 - **Game over / high score entry (state `7`)**: implemented for Survival/Rush/Typ-o.
-  - Code: `src/crimson/ui/game_over.py`, `src/crimson/persistence/highscores.py`, `src/crimson/game.py` (`*GameView`)
-  - Ref: `docs/crimsonland-exe/screens.md`
-  - Gap: UI transition timeline + full UI SFX parity are still missing.
-- **Quest results (state `8`) / quest failed (state `0xc`)**: implemented.
-  - Code: `src/crimson/game.py` (`QuestResultsView`, `QuestFailedView`)
-  - Ref: `docs/crimsonland-exe/screens.md`
-- **Mods / Online scores / plugin modal flow**: missing (mods button is a stub; online score submission is not implemented).
-  - Ref: `docs/crimsonland-exe/mods.md`, `docs/crimsonland-exe/online-scores.md`, `docs/crimsonland-exe/screens.md`
+  - Code: `src/crimson/ui/game_over.py`, `src/crimson/persistence/highscores.py`, `src/crimson/game.py`
+- **Quest results (state `8`) / quest failed (state `0x0c`)**: implemented.
+  - Code: `src/crimson/ui/quest_results.py`, `src/crimson/game.py`
+- **Mods menu (state `0x14` path from main menu)**: implemented as a panel and filesystem DLL discovery UI; plugin loading/runtime is still not implemented.
+  - Code: `src/crimson/frontend/panels/mods.py`, `src/crimson/frontend/menu.py`
+  - Ref: [`docs/crimsonland-exe/mods.md`](../crimsonland-exe/mods.md)
+- **Scope policy for Mods and Other Games/shareware ads**: out of scope for the rewrite target.
+  - Rationale: native DLL plugin runtime is not practical to support in the Python rewrite architecture.
+  - Rewrite stance: keep menu-shell UX compatibility where useful, but do not implement native DLL mod loading/execution or Other Games ad/runtime flows.
+- **Secrets / extras**: implemented, including the Alien Zoo Keeper credits secret flow.
+  - Code: `src/crimson/frontend/panels/alien_zookeeper.py`, `src/crimson/frontend/panels/credits.py`
 
 ### Gameplay
 
-- **Core world sim**: `GameWorld` is the active runtime container (players, creatures, projectiles, bonuses/perks, FX queues, terrain renderer).
+- **Core world sim**: `GameWorld` is the active runtime container (players, creatures, projectiles, bonuses/perks, FX, terrain renderer).
   - Code: `src/crimson/game_world.py`
-- **Survival loop**: wired and playable.
-  - Code: `src/crimson/modes/survival_mode.py`, `src/crimson/creatures/spawn.py` (wave + milestone spawns)
-  - Gaps: still missing full enemy/weapon parity (remaining per-weapon behaviors), and some SFX/event hooks.
-- **Rush / Typ-o-Shooter / Tutorial**: wired and playable.
-  - Code: `src/crimson/modes/rush_mode.py`, `src/crimson/modes/typo_mode.py`, `src/crimson/modes/tutorial_mode.py`
-  - Tutorial has full stage progression with hint system (`src/crimson/tutorial/timeline.py`).
-  - Typ-o-Shooter has typing buffer with target matching and reload command (`src/crimson/typo/typing.py`).
-- **Quest mode**: all tiers 1-5 implemented with full spawn scripting.
+- **Playable modes**: Survival, Rush, Quests, Typ-o-Shooter, Tutorial are all wired through the shared gameplay framework.
+  - Code: `src/crimson/modes/*.py`
+- **Quest content**: tiers 1-5 are present and script-driven through runtime builders.
   - Code: `src/crimson/quests/tier*.py`, `src/crimson/quests/runtime.py`
-- **Multiplayer (2–4 players)**: player-count wiring and per-player local input are implemented for Survival/Rush/Quest.
-  - Native-first policy: `1–2` player behavior aims to match classic; `3–4` players follow deterministic extension rules.
-  - Code: `src/crimson/modes/base_gameplay_mode.py`, `src/crimson/local_input.py`, `src/crimson/modes/survival_mode.py`, `src/crimson/modes/rush_mode.py`, `src/crimson/modes/quest_mode.py`
-- **Progression/unlocks**: quest unlock indices + completion counters are updated on quest completion; mode play counters increment on mode start.
-  - Code: `src/crimson/persistence/save_status.py`, `src/crimson/game.py`
+- **Multiplayer**: local 2-4 player input-frame flow is implemented for Survival/Rush/Quest.
+  - Code: `src/crimson/modes/base_gameplay_mode.py`, `src/crimson/local_input.py`
+- **Progression/unlocks/persistence**: quest unlock indices, mode play counters, and status persistence are wired.
+  - Code: `src/crimson/persistence/save_status.py`, `src/crimson/gameplay.py`
+- **Content breadth**: rewrite tables and runtime paths cover full weapon/perk/quest content, with ongoing parity validation focused on edge-case behavior/timing through differential captures.
 
 ### Audio
 
-- **Audio routing system** (`AudioRouter`): routes gameplay events to SFX with per-creature-type death sounds.
+- **Audio routing** (`AudioRouter`) is implemented and wired for gameplay events.
   - Code: `src/crimson/audio_router.py`
-  - Creature death SFX: zombie, lizard, alien, spider, trooper variants.
-  - Hit SFX: bullet hits (multiple variants), beam hits, explosion for rockets.
-  - Weapon SFX: fire and reload sounds mapped per-weapon.
-  - Survival music trigger: game tune activates on first hits in Survival mode.
+  - Includes per-creature death SFX routing, hit/explosion variants, weapon fire/reload mapping, and gameplay music triggers.
 
-### Evidence (what is verified)
+## Verification and parity evidence
 
-- Ground renderer parity is guarded by fixture tests against runtime dumps:
-  - Doc: `docs/rewrite/terrain.md`
+- Ground renderer parity is fixture-tested against runtime dumps.
+  - Doc: [`docs/rewrite/terrain.md`](terrain.md)
   - Test: `tests/test_ground_dump_fixtures.py`
-- There is broad unit test coverage for deterministic subsystems (spawn plans, timelines, perks, config, etc):
-  - Tests: `tests/test_spawn_plan.py`, `tests/test_survival_wave.py`, `tests/test_quest_spawn_timeline.py`, …
-- Deterministic tick pipeline parity (live `GameWorld.update` vs headless replay runners) is covered with command-hash checks:
+- Deterministic step pipeline parity (live update vs replay/headless runners) is covered with command-hash checks.
   - Tests: `tests/test_step_pipeline_parity.py`, `tests/test_replay_runners.py`
-- Survival/Rush deterministic orchestration now flows through shared session adapters:
-  - Code: `src/crimson/sim/sessions.py`
-  - Consumers: `src/crimson/modes/survival_mode.py`, `src/crimson/modes/rush_mode.py`, `src/crimson/modes/replay_playback_mode.py`, `src/crimson/sim/runners/*.py`
-- Replay sidecar differential tooling now has a reusable first-divergence comparator and CLI:
+  - Code: `src/crimson/sim/sessions.py`, `src/crimson/sim/runners/*.py`
+- Replay-side checkpoint differential comparison is reusable via CLI and library helpers.
   - Code: `src/crimson/original/diff.py`
-  - Command: `uv run crimson replay diff-checkpoints expected.checkpoints.json.gz actual.checkpoints.json.gz`
-- Oracle headless output now steps through the deterministic session pipeline and emits `command_hash` per frame:
-  - Code: `src/crimson/oracle.py`
-  - Test: `tests/test_oracle_session_pipeline.py`
-- Studyability-first feature hook extraction is now in place for key deterministic paths:
-  - Perk hook manifest: `src/crimson/perks/runtime/manifest.py`
-  - Perk hook contracts: `src/crimson/perks/runtime/hook_types.py`
-  - Bonus pickup hook registry: `src/crimson/bonuses/pickup_fx.py`
-  - Presentation projectile-decal hook registry: `src/crimson/features/presentation/projectile_decals.py`
-  - Architecture guard tests: `tests/test_feature_hook_registries.py`
-  - Rewrite architecture doc: `docs/rewrite/perks-architecture.md`
-- Per-player deterministic input-frame normalization is now first-class and shared:
-  - Code: `src/crimson/sim/input_frame.py`
-  - Tests: `tests/test_input_frame_contract.py`
-- Original-capture sidecar schema and conversion into replay checkpoints is now available:
-  - Code: `src/crimson/original/capture.py`
-  - CLI: `uv run crimson original convert-capture <capture> <expected-checkpoints>`
-    (also writes `<expected>.crdemo.gz` by default)
-  - Tests: `tests/test_original_capture_conversion.py`
-- Capture-native differential verification is now available (without replay playback parity dependency):
-  - Code: `src/crimson/original/verify.py`
-  - CLI: `uv run crimson original verify-capture <capture>`
-  - Tests: `tests/test_original_capture_verify.py`
+  - Command: `uv run crimson replay diff-checkpoints <expected> <actual>`
+- Original-capture conversion and capture-native verification are implemented.
+  - Code: `src/crimson/original/capture.py`, `src/crimson/original/verify.py`
+  - Tests: `tests/test_original_capture_conversion.py`, `tests/test_original_capture_verify.py`
+- Divergence triage tooling (report, bisect, focus trace, visualizer) is in-tree and wired through `crimson original`.
+  - Code: `src/crimson/original/divergence_report.py`, `src/crimson/original/divergence_bisect.py`, `src/crimson/original/focus_trace.py`, `src/crimson/original/capture_visualizer.py`
+- Capture-only triage workflow is documented here:
+  - [`docs/frida/differential-playbook.md`](../frida/differential-playbook.md)
 
 ## 4-player extension policy
 
-- Exact parity target: native `1/2` player behavior (input scheme semantics, perk/game-over ownership rules, scoring flow).
-- Deterministic extension target: `3/4` players apply the same per-player control and simulation rules without changing native `1/2` outcomes.
-- Current policy examples:
-  - Survival/Rush game-over highscore remains player-0-centric.
-  - Quest final-time life bonus aggregates all players for `3/4` runs; `1/2` behavior remains unchanged.
+- Exact parity target: native `1/2` player behavior.
+- Deterministic extension target: `3/4` players follow the same per-player rules without perturbing `1/2` outcomes.
+- Current examples:
+  - Survival/Rush high-score ownership remains player-0-centric.
+  - Quest final-time life bonus aggregates all players for `3/4` runs while preserving native `1/2` behavior.
 
 ## Biggest remaining parity gaps (vs v1.9.93)
 
-1) **Creature + weapon coverage**
-   - Remaining per-weapon behaviors and AI edge cases.
-2) **Multiplayer (2–4 players)**
-   - Deep parity validation is still needed for all native control-scheme edge-cases; 3/4-player behavior is an extension policy.
-3) **UI completeness**
-   - Full Options parity outside controls (video/window mode widgets and remaining minor labels/flows).
-4) **Progression + stats fidelity**
-   - Some `game.cfg` counters and stats screen parity are still incomplete.
-5) **Out-of-scope / later**
-   - Online scores + mods/plugin interface (tracked in the decompiled docs but not implemented in the rewrite yet).
+1. **Options parity completeness**
+   - In-game options do not currently edit display/config fields:
+     - `screen_width`
+     - `screen_height`
+     - `windowed_flag`
+     - `screen_bpp`
+     - `texture_scale`
+   - These fields are persisted/used, but today are managed via `crimson.cfg` + CLI/runtime startup, not the state-2 panel.
+2. **Ongoing deep parity validation**
+   - Deterministic parity infrastructure is in place; remaining gaps are mostly capture-backed edge-case timing and branch-order issues.
+   - This status page intentionally avoids tick/session-specific examples that go stale quickly.
+   - Current active probes and per-SHA outcomes are tracked in [`docs/frida/differential-sessions.md`](../frida/differential-sessions.md).
+
+## Out of scope for this rewrite
+
+1. **Native DLL mods/plugin runtime**
+   - We do not plan to support loading/executing original DLL mods from Python.
+2. **Other Games/shareware ad flows**
+   - Shareware ad/runtime paths are not part of the parity target.
+3. **Native online-score submission**
+   - Local high-score tables stay supported, but we do not target original online score submission.
+   - Direction: use a more advanced headless verification system for score legitimacy/parity evidence.
