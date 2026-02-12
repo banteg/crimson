@@ -223,6 +223,33 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert state.rng._idx == 67  # type: ignore[attr-defined]
 
 
+def test_death_award_uses_float32_sum_before_truncation() -> None:
+    state = GameplayState()
+    state.rng = _StubRand([0])  # type: ignore[assignment]
+
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player.experience = 48_841
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.pos = Vec2(100.0, 100.0)
+    creature.reward_value = 60.998285714285714
+    creature.hp = 0.0
+
+    death = pool.handle_death(
+        0,
+        state=state,
+        players=[player],
+        rand=state.rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=None,
+    )
+    assert death.xp_awarded == 61
+    assert player.experience == 48_902
+
+
 def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random() -> None:
     state = GameplayState()
     state.game_mode = int(GameMode.RUSH)

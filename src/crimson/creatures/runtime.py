@@ -18,7 +18,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand
 from ..effects import FxQueue, FxQueueRotated
-from ..gameplay import GameplayState, PlayerState, award_experience, perk_active
+from ..gameplay import GameplayState, PlayerState, award_experience, award_experience_from_reward, perk_active
 from ..math_parity import (
     NATIVE_PI,
     NATIVE_TAU,
@@ -1280,7 +1280,6 @@ class CreaturePool:
                 detail_preset=int(detail_preset),
             )
 
-        xp_base = int(creature.reward_value)
         killer: PlayerState | None = None
         if players:
             player_index = _owner_id_to_player_index(int(creature.last_hit_owner_id))
@@ -1288,12 +1287,12 @@ class CreaturePool:
                 player_index = 0
             killer = players[player_index]
 
-        if killer is not None and perk_active(killer, PerkId.BLOODY_MESS_QUICK_LEARNER):
-            xp_base = int(float(creature.reward_value) * 1.3)
-
         xp_awarded = 0
         if killer is not None:
-            xp_awarded = award_experience(state, killer, xp_base)
+            if perk_active(killer, PerkId.BLOODY_MESS_QUICK_LEARNER):
+                xp_awarded = award_experience(state, killer, int(float(creature.reward_value) * 1.3))
+            else:
+                xp_awarded = award_experience_from_reward(state, killer, float(creature.reward_value))
 
         if players:
             spawned_bonus = None

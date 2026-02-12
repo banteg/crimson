@@ -885,6 +885,31 @@ def award_experience(state: GameplayState, player: PlayerState, amount: int) -> 
     return xp
 
 
+def _award_experience_once_from_reward(player: PlayerState, reward_value: float) -> int:
+    """Mirror native `__ftol(player_xp + reward_value)` accumulation for one award."""
+
+    reward_f32 = f32(float(reward_value))
+    if float(reward_f32) <= 0.0:
+        return 0
+
+    before = int(player.experience)
+    total_f32 = f32(f32(float(before)) + float(reward_f32))
+    after = int(float(total_f32))
+    player.experience = int(after)
+    return int(after - before)
+
+
+def award_experience_from_reward(state: GameplayState, player: PlayerState, reward_value: float) -> int:
+    """Grant kill XP from a floating reward value with native float32 store semantics."""
+
+    gained = _award_experience_once_from_reward(player, float(reward_value))
+    if gained <= 0:
+        return 0
+    if state.bonuses.double_experience > 0.0:
+        gained += _award_experience_once_from_reward(player, float(reward_value))
+    return int(gained)
+
+
 def survival_level_threshold(level: int) -> int:
     """Return the XP threshold for advancing past the given level."""
 
