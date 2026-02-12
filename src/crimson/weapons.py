@@ -785,6 +785,7 @@ WEAPON_BY_ID = {
 _WEAPON_FIXED_NAMES = {
     int(WeaponId.PLAGUE_SPHREADER_GUN): "Plague Spreader Gun",
     int(WeaponId.LIGHTING_RIFLE): "Lightning Rifle",
+    int(WeaponId.FIRE_BULLETS): "Fire Bullets",
 }
 
 
