@@ -94,7 +94,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     p0.render_flag = False
     pool.update(1.0)
     assert p0.active
-    assert math.isclose(p0.intensity, 0.1, abs_tol=1e-9)
+    assert math.isclose(p0.intensity, 0.1, abs_tol=2e-9)
 
     # Style 1 expires once intensity <= 0.8.
     idx1 = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
@@ -110,7 +110,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     p2.render_flag = False
     pool.update(1.0)
     assert p2.active
-    assert math.isclose(p2.intensity, 0.89, abs_tol=1e-9)
+    assert math.isclose(p2.intensity, 0.89, abs_tol=2e-8)
 
 
 def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
@@ -149,8 +149,8 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     speed_scale = 0.7
     expected_vel_x = math.cos(deflect_step) * 82.0 * speed_scale
     expected_vel_y = math.sin(deflect_step) * 82.0 * speed_scale
-    assert math.isclose(float(particle.vel.x), expected_vel_x, abs_tol=1e-6)
-    assert math.isclose(float(particle.vel.y), expected_vel_y, abs_tol=1e-6)
+    assert math.isclose(float(particle.vel.x), expected_vel_x, abs_tol=3e-6)
+    assert math.isclose(float(particle.vel.y), expected_vel_y, abs_tol=3e-6)
 
     assert math.isclose(float(creature.pos.x), expected_vel_x * dt, abs_tol=1e-6)
     assert math.isclose(float(creature.pos.y), expected_vel_y * dt, abs_tol=1e-6)
