@@ -1368,9 +1368,11 @@ class CreatureInit:
 
     pos: Vec2
 
-    # Headings are in radians. The original seeds a random heading early, then overwrites it
-    # at the end with the function argument (or a randomized argument for `RANDOM_HEADING_SENTINEL`).
-    heading: float
+    # Heading is optional at plan-build time:
+    # - `None` means "preserve stale slot heading" (native `creature_alloc_slot` behavior).
+    # - explicit float means "set heading to this value".
+    # The base template path writes heading explicitly at tail (`final_heading`).
+    heading: float | None
 
     phase_seed: float
 
@@ -1758,7 +1760,9 @@ def alloc_creature(template_id: int, pos: Vec2, rng: Crand) -> CreatureInit:
     # - clears flags
     # - seeds phase_seed = float(crt_rand() & 0x17f)
     phase_seed = float(rng.rand() & 0x17F)
-    return CreatureInit(origin_template_id=template_id, pos=pos, heading=0.0, phase_seed=phase_seed)
+    # Native `creature_alloc_slot` does not clear heading; some template child paths
+    # intentionally keep stale heading from the recycled slot.
+    return CreatureInit(origin_template_id=template_id, pos=pos, heading=None, phase_seed=phase_seed)
 
 
 def clamp01(value: float) -> float:

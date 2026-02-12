@@ -1107,8 +1107,9 @@ class CreaturePool:
         entry.active = True
         entry.type_id = int(init.type_id.value) if init.type_id is not None else 0
         entry.pos = init.pos
-        entry.heading = float(init.heading)
-        entry.target_heading = float(init.heading)
+        if init.heading is not None:
+            entry.heading = float(init.heading)
+            entry.target_heading = float(init.heading)
         entry.target = init.pos
         entry.phase_seed = float(init.phase_seed)
         # Native spawn paths zero velocity and a few per-frame state fields on every
