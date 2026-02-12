@@ -29,6 +29,13 @@ check *args:
 ty:
     uv run ty check src
 
+# ast-grep
+ast-grep-scan *args:
+    sg scan {{args}}
+
+ast-grep-test *args:
+    sg test {{args}}
+
 # Lint
 lint-imports:
     uv run lint-imports
