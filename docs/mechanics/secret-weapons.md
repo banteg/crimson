@@ -1,4 +1,5 @@
 ---
+icon: lucide/swords
 tags:
   - mechanics
   - systems

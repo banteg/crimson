@@ -12,8 +12,11 @@ This section avoids rewrite internals and decompiler implementation details wher
 
 ## Subsections
 
+- [Combat](combat/index.md) — combat flow and combat systems for player actions.
 - [Modes](modes/index.md) — high-level mode behavior.
 - [Systems](systems/index.md) — gameplay systems like perks and secret weapons.
+- [Multiplayer](multiplayer/overview.md) — local multiplayer behavior and split-screen edge cases.
+- [Gameplay quirks](quirks/index.md) — notable edge cases and observed behavior oddities.
 - [Secret weapons](secret-weapons.md) — hidden weapons outside normal quest progression.
 
 ## Related sections
