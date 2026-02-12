@@ -1,5 +1,4 @@
 ---
-icon: lucide/heart
 tags:
   - mechanics
   - combat

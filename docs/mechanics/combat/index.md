@@ -1,5 +1,4 @@
 ---
-icon: lucide/swords
 tags:
   - mechanics
   - combat
