@@ -8,78 +8,72 @@ tags:
 
 # Damage and death
 
-Your health bar is finite and fragile. Most damage follows a few predictable rules, so you can plan around it instead of guessing.
+This page documents how player health changes over time and how death is evaluated. It does not cover creature damage values.
 
-## How damage is dealt
+## How player damage is taken
 
-You can take damage from:
+A player can lose health from:
 
-- Creature contact.
-- Projectile hits.
-- Ongoing effects like poison and toxic auras.
+- Creature contact damage.
+- Projectile damage.
+- Poison ticks from creature melee effects (`Veins of Poison`, `Toxic Avenger`).
 
-Contact and creature effects are where most early deaths come from, because they bypass your firing rhythm and punish movement errors.
+The shield timer and `Death Clock` are hard gates that stop normal incoming damage checks.
 
-## Contact damage and touch effects
+## Contact damage
 
-- Contact damage is checked while the creature is active and physically touching you.
-- If poison is active (`Toxic Avenger` or `Veins of Poison`), it deals damage over time frame-by-frame in addition to contact hits.
-- `Plaguebearer` and `Radioactive` add creature-related damage pressure around the player, so you can be under threat even without direct bullet exchange.
-- While your shield timer is running, incoming damage is ignored.
-- `Death Clock` makes incoming normal damage bypass your health as well.
+Contact damage is checked when a live creature is close enough to attack and the player is not protected by shield or the `Death Clock` immunity window.
 
-## Projectile damage
+If `Dodger` is active, each normal contact hit has a **1 in 5** dodge chance.
 
-Most creature- or enemy-fired shots that reach the player apply a fixed **10 damage** before modifiers.
-
-There is a dedicated projectile damage path, so normal dodge checks that apply to some contact flows do not apply the same way to projectiles.
-
-## Dodge odds and damage reduction
-
-For a normal player hit, dodge checks are:
-
-- `Ninja`: **1 in 3** chance to dodge the hit entirely.
-- `Dodger`: **1 in 5** chance to dodge the hit entirely.
-
-If both are present, the `Ninja` check is used first.
+If `Ninja` is also active, use **1 in 3** dodge instead (Ninja takes precedence).
 
 If the hit is not dodged:
 
-- `Thick Skinned`: damage is multiplied by **about 2/3 (0.666)**.
-- `Tough Reloader`: damage is multiplied by **0.5** while reloading.
-- `Unstoppable`: removes knockback/aim disruption side effects from the hit.
-- `Highlander`: after a surviving hit, there is a **1 in 10** chance to be killed instantly.
+- `Thick Skinned` reduces damage to **2/3**.
+- `Tough Reloader` reduces damage to **1/2** while reloading.
+- `Unstoppable` suppresses knockback and spread disruption from the hit.
+- `Highlander`: even when the hit would normally deal damage, there is a **1 in 10** chance to die instantly.
 
-## What hurts aiming
+## Projectile damage
 
-A non-avoided hit also applies a small, temporary spread/jitter effect. It stacks with low-health danger, so the same incoming damage can feel much worse when your bar is already emptying.
+Projectile hits use a fixed base of **10** damage.
 
-## Low-health warning behavior
+These are still blocked by shield/`Death Clock`, but dodge checks are not the same branch as normal contact flow in the current implementation.
 
-When your health is **20 or less**, the low-health warning can trigger with probability:
+## Poison pressure on the player
 
-- **1 in 8** chance at trigger check.
+When you are poisoned by creature contact:
 
-Treat this as a red-light moment: leave open lines, break contact, and recover spacing.
+- `Veins of Poison`: base poison damage over time.
+- `Toxic Avenger`: stronger poison damage over time.
 
-## Death transition
+That damage is periodic and independent from normal contact rolls.
 
-Once health reaches zero:
+## Low-health warning
 
-- you are no longer able to shoot or move normally,
-- and the game waits for the death-state timers before changing run state.
+When health reaches **20 or below**, there is a **1 in 8** chance to trigger the low-health warning state.
 
-In co-op, the run-level transition only finishes when all dead players have completed their individual death timing windows.
+Treat this as a high-priority warning and reset your spacing immediately.
 
-## Death can still matter
+## Self-damaging and lethal perks
 
-`Final Revenge` can trigger when you die, and it can clear nearby threats instantly in a blast radius while you are downed.
+Several perks affect player health directly and are part of the damage/death plan:
 
-## Quick facts
+- `Thick Skinned` applies a two-thirds health drop on pick, then clamps to at least 1 HP.
+- `Grim Deal` kills instantly on pick.
+- `Fatal Lottery`: 50% instant death, 50% bonus XP.
+- `Infernal Contract`: sets alive players to `0.1` health.
+- `Breathing Room`: drops alive players to one-third health (`-2/3` health).
+- `Jinxed`: every **2.0 to 3.9** seconds, **1 in 10** chance to lose **5** health.
+- `Death Clock`: starts at 100 HP, then drains at **3.3333333 HP/s** for about 30 seconds.
 
-- `Ninja`: 1/3 dodge, `Dodger`: 1/5 dodge.
-- `Thick Skinned`: ≈×0.666 damage (about 2/3).
-- `Tough Reloader`: ×0.5 damage while reloading.
-- `Highlander`: 1/10 instant-death chance on a non-fatal hit.
-- Projectile base damage: 10.
-- Shield and `Death Clock` are full-negation windows against damage.
+## Death state and run transition
+
+When health reaches zero:
+
+- combat input and movement are no longer active in the normal play flow,
+- death timers begin,
+- and run/state transition waits until all dead players have passed their death timing checks.
+
+In co-op, your run does not advance until every dead player has completed their own death timer window.
