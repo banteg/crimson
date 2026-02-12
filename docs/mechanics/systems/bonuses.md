@@ -103,9 +103,8 @@ In co-op, each player has an independent shield timer.
 
 Duration: 5 seconds.
 
-All creatures stop moving and stop attacking. On pickup, any creature
-corpses still on screen are shattered. A new Freeze cannot spawn while a
-previous Freeze is still active.
+All creatures stop moving and stop attacking. A new Freeze cannot spawn
+while a previous Freeze is still active.
 
 ## 12. MediKit
 
