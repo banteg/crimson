@@ -169,7 +169,7 @@ def test_regenerate_menu_ground_unlock_branch_selects_q4_variant(tmp_path: Path)
     assert ground.overlay_detail is cache.texture("ter_q4_base")
 
 
-def test_start_survival_adopts_existing_menu_ground(tmp_path: Path) -> None:
+def test_start_survival_does_not_adopt_existing_menu_ground(tmp_path: Path) -> None:
     state = _build_state(tmp_path)
     loop = GameLoopView(state)
     menu_ground = GroundRenderer(texture=rl.Texture())
@@ -178,4 +178,4 @@ def test_start_survival_adopts_existing_menu_ground(tmp_path: Path) -> None:
 
     loop._maybe_adopt_menu_ground("start_survival", cast(Any, adopter))
 
-    assert adopter.adopted is menu_ground
+    assert adopter.adopted is None
