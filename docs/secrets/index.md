@@ -20,6 +20,7 @@ Crimsonland contains several layers of secrets:
 
 - [Easter eggs](easter-eggs.md) — Credits puzzle, AlienZooKeeper, decoded messages
 - [Weapon candidates](weapon-candidates.md) — Data analysis of weapons missing from quest unlocks
+- [Survival weapon handouts](survival-weapon-handouts.md) — one-off Survival grants for Shrinkifier 5k and Blade Gun
 
 ## Current status
 
@@ -27,3 +28,4 @@ Crimsonland contains several layers of secrets:
 - AlienZooKeeper minigame code is understood but has no external unlock
 - The decoded message meaning ("Dead Center Inside The Triangle...") remains unsolved
 - 17 named weapons are not in the quest unlock table
+- Survival has two verified one-off secret-weapon style grants (Shrinkifier 5k and Blade Gun), with strict runtime gates

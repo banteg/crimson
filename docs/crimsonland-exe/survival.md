@@ -60,6 +60,7 @@ See also:
 
 - Reward gate globals are listed in `docs/creatures/struct.md`.
 - `docs/weapon-id-map.md` for the id-to-name mapping.
+- `docs/secrets/survival-weapon-handouts.md` for detailed secret-lead analysis of these two grants.
 
 ### 2) Scripted stage spawns (milestones)
 

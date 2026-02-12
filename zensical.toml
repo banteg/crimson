@@ -95,6 +95,7 @@ nav = [
         { "Overview" = "secrets/index.md" },
         { "Easter eggs" = "secrets/easter-eggs.md" },
         { "Weapon candidates" = "secrets/weapon-candidates.md" },
+        { "Survival weapon handouts" = "secrets/survival-weapon-handouts.md" },
       ]},
     ]},
     { "Runtime" = [

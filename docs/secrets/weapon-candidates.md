@@ -208,6 +208,10 @@ Weapons not present in the quest unlock table (excluding default Pistol) are:
 - Lighting Rifle (52)
 - Nuke Launcher (53)
 
+Two of these candidates now have verified runtime acquisition logic in Survival:
+Shrinkifier 5k (24) and Blade Gun (25). See
+`docs/secrets/survival-weapon-handouts.md`.
+
 The late-ID block (RayGun and 41+, plus 50+) still looks like the strongest
 "secret/debug weapon" cluster. The midrange misses (HR Flamer, Shrinkifier,
 Splitter, Flameburst, Fire bullets) may be normal weapons unlocked via other
