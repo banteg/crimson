@@ -152,3 +152,36 @@ def test_original_capture_perk_apply_event_applies_perk_without_rng_for_non_rand
     assert perk_count_get(world.players[0], PerkId.FASTSHOT) == 1
     assert int(state.perk_selection.pending_count) == 1
     assert int(state.rng.state) == before_rng
+
+
+def test_original_capture_outside_before_bandage_does_not_shift_rng_state() -> None:
+    world = WorldState.build(
+        world_size=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=0,
+        preserve_bugs=False,
+    )
+    reset_players(world.players, world_size=1024.0, player_count=1)
+
+    state = world.state
+    state.game_mode = int(GameMode.SURVIVAL)
+    state.rng.srand(0x1234)
+    before_rng = int(state.rng.state)
+
+    _apply_tick_events(
+        [
+            UnknownEvent(
+                tick_index=9,
+                kind=CAPTURE_PERK_APPLY_EVENT_KIND,
+                payload=[{"perk_id": int(PerkId.BANDAGE), "outside_before": True}],
+            )
+        ],
+        tick_index=9,
+        dt_frame=1.0 / 60.0,
+        world=world,
+        strict_events=True,
+    )
+
+    assert perk_count_get(world.players[0], PerkId.BANDAGE) == 1
+    assert int(state.rng.state) == before_rng

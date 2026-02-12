@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 from grim.geom import Vec2
 
 from crimson.gameplay import GameplayState, PlayerState
@@ -83,6 +84,17 @@ def test_player_take_damage_decrements_death_timer_on_death_hit() -> None:
     assert applied == 10.0
     assert player.health == -5.0
     assert player.death_timer == 16.0 - 0.1 * 28.0
+
+
+def test_player_take_damage_thick_skinned_uses_native_damage_scale_constant() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(), health=50.90475845336914)
+    player.perk_counts[int(PerkId.THICK_SKINNED)] = 1
+
+    applied = player_take_damage(state, player, 5.238095283508301, rand=lambda: 0)
+
+    assert applied == pytest.approx(3.4885711669921875, abs=1e-6)
+    assert player.health == pytest.approx(47.41618728637695, abs=1e-6)
 
 
 def test_player_take_damage_sets_survival_damage_seen_even_when_shielded() -> None:

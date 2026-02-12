@@ -158,6 +158,31 @@ def test_allow_capture_sample_creature_count_prefers_sample_stream() -> None:
     assert allowed is True
 
 
+def test_allow_capture_sample_creature_count_allows_corpse_despawn_sampling_lag() -> None:
+    checkpoint = _single_tick_survival_checkpoint(seed=0xFACE)
+    expected = replace(checkpoint, tick_index=9, creature_count=51)
+    actual = replace(checkpoint, tick_index=9, creature_count=50)
+    allowed = _allow_capture_sample_creature_count(
+        tick=9,
+        field_diffs=[ReplayFieldDiff(field="creature_count", expected=51, actual=50)],
+        expected_by_tick={9: expected},
+        actual_by_tick={9: actual},
+        capture_sample_creature_counts={9: 51},
+        capture_active_corpse_below_despawn_ticks={9},
+    )
+    blocked = _allow_capture_sample_creature_count(
+        tick=9,
+        field_diffs=[ReplayFieldDiff(field="creature_count", expected=51, actual=50)],
+        expected_by_tick={9: expected},
+        actual_by_tick={9: actual},
+        capture_sample_creature_counts={9: 51},
+        capture_active_corpse_below_despawn_ticks=set(),
+    )
+
+    assert allowed is True
+    assert blocked is False
+
+
 def test_verify_capture_surfaces_first_field_mismatch() -> None:
     checkpoint = _single_tick_survival_checkpoint(seed=0x1234)
     capture = _capture_from_checkpoint(checkpoint=checkpoint)

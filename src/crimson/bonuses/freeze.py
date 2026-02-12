@@ -26,21 +26,23 @@ def apply_freeze(ctx: BonusApplyCtx) -> None:
     creatures = ctx.creatures
     if creatures:
         defer_corpse_fx = bool(ctx.defer_freeze_corpse_fx)
+        allowed_indices = ctx.freeze_corpse_indices
         rand = ctx.state.rng.rand
-        for creature in creatures:
+        for idx, creature in enumerate(creatures):
             if not creature.active:
                 continue
             if creature.hp > 0.0:
                 continue
+            allow_shatter_fx = allowed_indices is None or int(idx) in allowed_indices
             pos = creature.pos
-            if defer_corpse_fx:
+            if allow_shatter_fx and defer_corpse_fx:
                 ctx.state.deferred_freeze_corpse_fx.append(
                     DeferredFreezeCorpseFx(
                         pos=Vec2(float(pos.x), float(pos.y)),
                         detail_preset=int(ctx.detail_preset),
                     )
                 )
-            else:
+            elif allow_shatter_fx:
                 for _ in range(8):
                     angle = float(int(rand()) % 0x264) * 0.01
                     ctx.state.effects.spawn_freeze_shard(

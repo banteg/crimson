@@ -206,8 +206,12 @@ def perk_auto_pick(
             perk_state.choices_dirty = False
         if not perk_state.choices:
             break
-        idx = int(state.rng.rand() % len(perk_state.choices))
-        perk_id = PerkId(perk_state.choices[idx])
+        visible_count = max(1, int(perk_choice_count(players[0])))
+        visible_choices = perk_state.choices[:visible_count]
+        if not visible_choices:
+            break
+        idx = int(state.rng.rand() % len(visible_choices))
+        perk_id = PerkId(visible_choices[idx])
         perk_apply(state, players, perk_id, perk_state=perk_state, dt=dt, creatures=creatures)
         picks.append(perk_id)
         perk_state.pending_count -= 1

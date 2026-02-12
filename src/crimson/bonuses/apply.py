@@ -54,6 +54,7 @@ def bonus_apply(
     apply_creature_damage: CreatureDamageApplier | None = None,
     detail_preset: int = 5,
     defer_freeze_corpse_fx: bool = False,
+    freeze_corpse_indices: set[int] | None = None,
 ) -> None:
     """Apply a bonus to player + global timers (subset of `bonus_apply`)."""
 
@@ -80,6 +81,7 @@ def bonus_apply(
         label=str(label),
         icon_id=int(icon_id),
         defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
+        freeze_corpse_indices=freeze_corpse_indices,
     )
     handler = _BONUS_APPLY_HANDLERS.get(bonus_id)
     if handler is not None:

@@ -351,6 +351,7 @@ def _allow_capture_sample_creature_count(
     expected_by_tick: dict[int, ReplayCheckpoint],
     actual_by_tick: dict[int, ReplayCheckpoint],
     capture_sample_creature_counts: dict[int, int],
+    capture_active_corpse_below_despawn_ticks: set[int] | None = None,
 ) -> bool:
     if not field_diffs:
         return False
@@ -376,7 +377,21 @@ def _allow_capture_sample_creature_count(
     # Capture `creature_active_count` can transiently disagree with sampled
     # active slots. When our sim count matches the sampled list exactly and this
     # is the only field mismatch, keep scanning for a stronger divergence.
-    return actual_count == int(sample_count) and expected_count != int(sample_count)
+    if actual_count == int(sample_count) and expected_count != int(sample_count):
+        return True
+
+    # Some captures sample creature slots before render-time corpse culling.
+    # In those ticks, sampled active count can exceed replay by exactly one when a
+    # corpse is already below the native despawn threshold (< -10.0 hitbox_size).
+    if (
+        expected_count == int(sample_count)
+        and actual_count == int(sample_count) - 1
+        and capture_active_corpse_below_despawn_ticks is not None
+        and int(tick) in capture_active_corpse_below_despawn_ticks
+    ):
+        return True
+
+    return False
 
 
 def _event_heads_by_kind(raw_event_heads: object) -> dict[str, list[dict[str, object]]]:
@@ -425,6 +440,72 @@ def _load_capture_sample_creature_counts(path: Path) -> dict[int, int]:
         if not isinstance(creatures, list):
             continue
         out[int(tick_index)] = int(len(creatures))
+    return out
+
+
+def _capture_sample_creature_counts(capture: CaptureFile) -> dict[int, int]:
+    out: dict[int, int] = {}
+    for tick in capture.ticks:
+        tick_index = int(tick.tick_index)
+        if tick_index < 0:
+            continue
+        samples = tick.samples
+        if samples is None:
+            continue
+        creatures = samples.creatures
+        if not isinstance(creatures, list):
+            continue
+        out[int(tick_index)] = int(len(creatures))
+    return out
+
+
+def _load_capture_active_corpse_below_despawn_ticks(path: Path) -> set[int]:
+    out: set[int] = set()
+    for obj in _iter_capture_tick_rows(path):
+        if obj.get("event") != "tick":
+            continue
+        tick_index = _int_or(obj.get("tick_index"), -1)
+        if tick_index < 0:
+            continue
+        samples = obj.get("samples")
+        if not isinstance(samples, dict):
+            continue
+        creatures = samples.get("creatures")
+        if not isinstance(creatures, list):
+            continue
+        for creature in creatures:
+            if not isinstance(creature, dict):
+                continue
+            if _int_or(creature.get("active"), 0) == 0:
+                continue
+            if _float_or(creature.get("hp"), 0.0) > 0.0:
+                continue
+            if _float_or(creature.get("hitbox_size"), 0.0) < -10.0:
+                out.add(int(tick_index))
+                break
+    return out
+
+
+def _capture_active_corpse_below_despawn_ticks(capture: CaptureFile) -> set[int]:
+    out: set[int] = set()
+    for tick in capture.ticks:
+        tick_index = int(tick.tick_index)
+        if tick_index < 0:
+            continue
+        samples = tick.samples
+        if samples is None:
+            continue
+        creatures = samples.creatures
+        if not isinstance(creatures, list):
+            continue
+        for creature in creatures:
+            if int(creature.active) == 0:
+                continue
+            if float(creature.hp) > 0.0:
+                continue
+            if float(creature.hitbox_size) < -10.0:
+                out.add(int(tick_index))
+                break
     return out
 
 
@@ -1042,11 +1123,13 @@ def _find_first_divergence(
     float_abs_tol: float,
     max_field_diffs: int,
     capture_sample_creature_counts: dict[int, int] | None = None,
+    capture_active_corpse_below_despawn_ticks: set[int] | None = None,
     raw_debug_by_tick: dict[int, dict[str, object]] | None = None,
 ) -> Divergence | None:
     expected_by_tick = {int(ckpt.tick_index): ckpt for ckpt in expected}
     actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
     sample_counts = capture_sample_creature_counts or {}
+    corpse_below_despawn_ticks = capture_active_corpse_below_despawn_ticks or set()
     raw_by_tick = raw_debug_by_tick or {}
 
     for exp in expected:
@@ -1108,6 +1191,7 @@ def _find_first_divergence(
             expected_by_tick=expected_by_tick,
             actual_by_tick=actual_by_tick,
             capture_sample_creature_counts=sample_counts,
+            capture_active_corpse_below_despawn_ticks=corpse_below_despawn_ticks,
         ):
             continue
         if field_diffs:
@@ -2742,13 +2826,6 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
         expected, actual, run_result, replay = session.get_replay_outcome(replay_key)
         capture_sample_creature_counts = session.get_sample_creature_counts()
         raw_debug_all_by_tick = session.get_raw_debug_by_tick()
-        divergence = session.get_divergence(
-            replay_key=replay_key,
-            expected=expected,
-            actual=actual,
-            float_abs_tol=float(args.float_abs_tol),
-            max_field_diffs=max(1, int(args.max_field_diffs)),
-        )
     else:
         capture = load_capture(capture_path)
         sample_rate = _capture_sample_rate(capture)
@@ -2759,21 +2836,23 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
             inter_tick_rand_draws=args.inter_tick_rand_draws,
             aim_scheme_overrides_by_player=aim_scheme_overrides,
         )
-        capture_sample_creature_counts = _load_capture_sample_creature_counts(capture_path)
+        capture_sample_creature_counts = _capture_sample_creature_counts(capture)
         raw_debug_all_by_tick = _load_raw_tick_debug(capture_path)
-        divergence = _find_first_divergence(
-            expected,
-            actual,
-            float_abs_tol=float(args.float_abs_tol),
-            max_field_diffs=max(1, int(args.max_field_diffs)),
-            capture_sample_creature_counts=capture_sample_creature_counts,
-            raw_debug_by_tick=raw_debug_all_by_tick,
-        )
         replay = convert_capture_to_replay(
             capture,
             seed=args.seed,
             aim_scheme_overrides_by_player=aim_scheme_overrides,
         )
+    capture_active_corpse_below_despawn_ticks = _capture_active_corpse_below_despawn_ticks(capture)
+    divergence = _find_first_divergence(
+        expected,
+        actual,
+        float_abs_tol=float(args.float_abs_tol),
+        max_field_diffs=max(1, int(args.max_field_diffs)),
+        capture_sample_creature_counts=capture_sample_creature_counts,
+        capture_active_corpse_below_despawn_ticks=capture_active_corpse_below_despawn_ticks,
+        raw_debug_by_tick=raw_debug_all_by_tick,
+    )
 
     print(f"capture={capture_path}")
     print(

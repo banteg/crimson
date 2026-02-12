@@ -30,6 +30,7 @@ class BonusApplyCtx:
     label: str
     icon_id: int
     defer_freeze_corpse_fx: bool = False
+    freeze_corpse_indices: set[int] | None = None
 
     def register_global(self, timer_key: str) -> None:
         self.state.bonus_hud.register(

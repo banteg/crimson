@@ -7,7 +7,7 @@ import pytest
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
-from crimson.perks.selection import perk_generate_choices, perk_selection_pick
+from crimson.perks.selection import perk_auto_pick, perk_generate_choices, perk_selection_pick
 from crimson.perks.state import PerkSelectionState
 
 
@@ -79,3 +79,39 @@ def test_perk_selection_pick_syncs_perk_counts_across_players() -> None:
     assert p2.perk_counts[int(PerkId.THICK_SKINNED)] == 1
     assert p1.health == pytest.approx(60.0)
     assert p2.health == pytest.approx(40.0)
+
+
+def test_perk_auto_pick_uses_visible_choices_only() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    perk_state = PerkSelectionState(
+        pending_count=1,
+        choices=[
+            int(PerkId.INSTANT_WINNER),
+            int(PerkId.FASTSHOT),
+            int(PerkId.AMMO_MANIAC),
+            int(PerkId.LONG_DISTANCE_RUNNER),
+            int(PerkId.SHARPSHOOTER),
+            int(PerkId.TOUGH_RELOADER),
+            int(PerkId.PERK_MASTER),
+        ],
+        choices_dirty=False,
+    )
+
+    class _FixedRand:
+        def rand(self) -> int:
+            return 6
+
+    state.rng = _FixedRand()  # ty:ignore[assignment]
+
+    picks = perk_auto_pick(
+        state,
+        [player],
+        perk_state,
+        game_mode=int(GameMode.SURVIVAL),
+        player_count=1,
+    )
+
+    assert picks == [PerkId.FASTSHOT]
+    assert player.perk_counts[int(PerkId.FASTSHOT)] == 1
+    assert player.perk_counts[int(PerkId.PERK_MASTER)] == 0

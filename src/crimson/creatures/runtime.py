@@ -18,7 +18,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand
 from ..effects import FxQueue, FxQueueRotated
-from ..gameplay import award_experience, survival_record_recent_death
+from ..gameplay import award_experience, award_experience_from_reward, survival_record_recent_death
 from ..math_parity import (
     NATIVE_PI,
     NATIVE_TAU,
@@ -720,11 +720,37 @@ class CreaturePool:
             dt_ms = max(0, int(dt_ms_i32))
         else:
             dt_ms = int(round(dt * 1000.0)) if dt > 0.0 else 0
+
+        def _apply_self_damage_tick(creature: CreatureState) -> bool:
+            if dt <= 0.0 or float(state.bonuses.freeze) > 0.0:
+                return False
+            damage_amount = 0.0
+            if creature.flags & CreatureFlags.SELF_DAMAGE_TICK_STRONG:
+                damage_amount = dt * 180.0
+            elif creature.flags & CreatureFlags.SELF_DAMAGE_TICK:
+                damage_amount = dt * 60.0
+            if damage_amount <= 0.0:
+                return False
+
+            from .damage import creature_apply_damage
+
+            return creature_apply_damage(
+                creature,
+                damage_amount=float(damage_amount),
+                damage_type=0,
+                impulse=Vec2(),
+                owner_id=int(creature.last_hit_owner_id),
+                dt=dt,
+                players=players,
+                rand=rand,
+            )
+
         for idx, creature in enumerate(self._entries):
             if not creature.active:
                 continue
 
             if creature.hitbox_size != CREATURE_HITBOX_ALIVE or creature.hp <= 0.0:
+                _apply_self_damage_tick(creature)
                 # Native still ticks AI7 link-timer state (and its RNG draws) for
                 # dead creatures inside `creature_update_all`.
                 if (
@@ -753,33 +779,7 @@ class CreaturePool:
                 creature.vel = Vec2()
                 continue
 
-            poison_killed = False
-            if creature.flags & CreatureFlags.SELF_DAMAGE_TICK_STRONG:
-                from .damage import creature_apply_damage
-
-                poison_killed = creature_apply_damage(
-                    creature,
-                    damage_amount=dt * 180.0,
-                    damage_type=0,
-                    impulse=Vec2(),
-                    owner_id=int(creature.last_hit_owner_id),
-                    dt=dt,
-                    players=players,
-                    rand=rand,
-                )
-            elif creature.flags & CreatureFlags.SELF_DAMAGE_TICK:
-                from .damage import creature_apply_damage
-
-                poison_killed = creature_apply_damage(
-                    creature,
-                    damage_amount=dt * 60.0,
-                    damage_type=0,
-                    impulse=Vec2(),
-                    owner_id=int(creature.last_hit_owner_id),
-                    dt=dt,
-                    players=players,
-                    rand=rand,
-                )
+            poison_killed = _apply_self_damage_tick(creature)
             if poison_killed:
                 deaths.append(
                     self.handle_death(
@@ -1110,8 +1110,9 @@ class CreaturePool:
         entry.active = True
         entry.type_id = int(init.type_id.value) if init.type_id is not None else 0
         entry.pos = init.pos
-        entry.heading = float(init.heading)
-        entry.target_heading = float(init.heading)
+        if init.heading is not None:
+            entry.heading = float(init.heading)
+            entry.target_heading = float(init.heading)
         entry.target = init.pos
         entry.phase_seed = float(init.phase_seed)
         # Native spawn paths zero velocity and a few per-frame state fields on every
@@ -1282,7 +1283,6 @@ class CreaturePool:
                 detail_preset=int(detail_preset),
             )
 
-        xp_base = int(creature.reward_value)
         killer: PlayerState | None = None
         if players:
             player_index = _owner_id_to_player_index(int(creature.last_hit_owner_id))
@@ -1290,12 +1290,12 @@ class CreaturePool:
                 player_index = 0
             killer = players[player_index]
 
-        if killer is not None and perk_active(killer, PerkId.BLOODY_MESS_QUICK_LEARNER):
-            xp_base = int(float(creature.reward_value) * 1.3)
-
         xp_awarded = 0
         if killer is not None:
-            xp_awarded = award_experience(state, killer, xp_base)
+            if perk_active(killer, PerkId.BLOODY_MESS_QUICK_LEARNER):
+                xp_awarded = award_experience(state, killer, int(float(creature.reward_value) * 1.3))
+            else:
+                xp_awarded = award_experience_from_reward(state, killer, float(creature.reward_value))
 
         if players:
             spawned_bonus = None

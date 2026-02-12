@@ -31,6 +31,10 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
     creature.size = 50.0
     creature.move_speed = 1.0
 
+    # `perks_update_effects` evaluates Evil Eyes before `player_update` applies
+    # current-frame input aim, so seed the previous-frame aim.
+    player.aim = Vec2(float(creature.pos.x), float(creature.pos.y))
+
     before = (float(creature.pos.x), float(creature.pos.y))
     events = world.step(
         0.5,

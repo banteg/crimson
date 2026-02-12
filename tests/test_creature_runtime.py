@@ -223,6 +223,33 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert state.rng._idx == 67  # type: ignore[attr-defined]
 
 
+def test_death_award_uses_float32_sum_before_truncation() -> None:
+    state = GameplayState()
+    state.rng = _StubRand([0])  # type: ignore[assignment]
+
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player.experience = 48_841
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.pos = Vec2(100.0, 100.0)
+    creature.reward_value = 60.998285714285714
+    creature.hp = 0.0
+
+    death = pool.handle_death(
+        0,
+        state=state,
+        players=[player],
+        rand=state.rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=None,
+    )
+    assert death.xp_awarded == 61
+    assert player.experience == 48_902
+
+
 def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random() -> None:
     state = GameplayState()
     state.game_mode = int(GameMode.RUSH)
@@ -437,6 +464,24 @@ def test_tick_dead_defers_corpse_deactivation_until_post_render_cleanup() -> Non
 
     pool.finalize_post_render_lifecycle()
     assert corpse.active is False
+
+
+def test_dead_self_damage_tick_flags_still_shrink_hitbox_before_dead_decay() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    pool = CreaturePool()
+
+    corpse = pool.entries[42]
+    corpse.active = True
+    corpse.hp = -0.08500146865844727
+    corpse.hitbox_size = 12.640003204345703
+    corpse.flags = CreatureFlags.SELF_DAMAGE_TICK
+
+    # 38 ms frame from gameplay_diff_capture tick 3636.
+    pool.update(0.03800000250339508, state=state, players=[player], rand=lambda: 0)
+
+    # Native applies SELF_DAMAGE_TICK via creature_apply_damage even while hp<=0.
+    assert corpse.hitbox_size == pytest.approx(11.006003, abs=1e-5)
 
 
 def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> None:

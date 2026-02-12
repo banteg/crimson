@@ -9,6 +9,7 @@ from grim.geom import Vec2
 from grim.math import clamp
 
 from .effects_atlas import EffectId
+from .math_parity import f32
 
 __all__ = [
     "FX_QUEUE_CAPACITY",
@@ -177,26 +178,31 @@ class ParticlePool:
 
         if dt <= 0.0:
             return []
+        dt = f32(float(dt))
 
         def _creature_find_in_radius(*, pos: Vec2, radius: float) -> int:
             if creatures is None:
                 return -1
             max_index = min(len(creatures), 0x180)
-            radius = float(radius)
+            radius = f32(float(radius))
 
             for creature_idx in range(max_index):
                 creature = creatures[creature_idx]
                 if not creature.active:
                     continue
-                if creature.hp <= 0.0:
-                    continue
+                # Native particle `creature_find_in_radius` is hitbox-gated, not
+                # HP-gated: freshly killed creatures (hp<=0, hitbox>5) can still
+                # receive same-tick style-0 damage callbacks.
                 if creature.hitbox_size < 5.0:
                     continue
 
-                size = float(creature.size)
-                dist = creature.pos.distance_to(pos) - radius
-                threshold = size * 0.14285715 + 3.0
-                if threshold < dist:
+                size = f32(float(creature.size))
+                dx = f32(float(creature.pos.x) - float(pos.x))
+                dy = f32(float(creature.pos.y) - float(pos.y))
+                dist_sq = f32(f32(float(dx) * float(dx)) + f32(float(dy) * float(dy)))
+                dist = f32(f32(math.sqrt(float(dist_sq))) - float(radius))
+                threshold = f32(f32(float(size) * 0.14285715) + 3.0)
+                if float(threshold) < float(dist):
                     continue
                 return int(creature_idx)
 
@@ -212,39 +218,25 @@ class ParticlePool:
             style = int(entry.style_id) & 0xFF
 
             if style == 8:
-                entry.intensity -= dt * 0.11
-                entry.spin += dt * 5.0
-                move_scale = entry.intensity
+                entry.intensity = f32(float(entry.intensity) - float(dt) * 0.11)
+                entry.spin = f32(float(entry.spin) + float(dt) * 5.0)
+                move_scale = float(entry.intensity)
                 if move_scale <= 0.15:
                     move_scale *= 0.55
-                entry.pos = entry.pos + entry.vel * (dt * move_scale)
+                move = entry.vel * (float(dt) * float(move_scale))
+                entry.pos = Vec2(
+                    f32(float(entry.pos.x) + float(move.x)),
+                    f32(float(entry.pos.y) + float(move.y)),
+                )
             else:
-                entry.intensity -= dt * 0.9
-                entry.spin += dt
-                move_scale = max(entry.intensity, 0.15) * 2.5
-                entry.pos = entry.pos + entry.vel * (dt * move_scale)
-
-            if entry.render_flag:
-                # Random walk drift (native adjusts angle based on `crt_rand`).
-                jitter = float(int(rand()) % 100 - 50) * 0.06 * max(entry.intensity, 0.0) * dt
-                if style == 0:
-                    jitter *= 1.96
-                    speed = 82.0
-                elif style == 8:
-                    jitter *= 1.1
-                    speed = 62.0
-                else:
-                    jitter *= 1.1
-                    speed = 82.0
-                entry.angle -= jitter
-                entry.vel = Vec2.from_angle(entry.angle) * speed
-
-            alpha = clamp(entry.intensity, 0.0, 1.0)
-            shade = 1.0 - max(entry.intensity, 0.0) * 0.95
-            entry.age = alpha
-            entry.scale_x = shade
-            entry.scale_y = shade
-            # Native only updates scale_x/scale_y; scale_z stays at its spawn value (1.0).
+                entry.intensity = f32(float(entry.intensity) - float(dt) * 0.9)
+                entry.spin = f32(float(entry.spin) + float(dt))
+                move_scale = max(float(entry.intensity), 0.15) * 2.5
+                move = entry.vel * (float(dt) * float(move_scale))
+                entry.pos = Vec2(
+                    f32(float(entry.pos.x) + float(move.x)),
+                    f32(float(entry.pos.y) + float(move.y)),
+                )
 
             alive = entry.intensity > (0.0 if style == 0 else 0.8)
             if not alive:
@@ -260,13 +252,39 @@ class ParticlePool:
                         creatures[target_id].active = False
                 continue
 
+            if entry.render_flag:
+                # Random walk drift (native adjusts angle based on `crt_rand`).
+                jitter = f32(float(int(rand()) % 100 - 50) * 0.06 * max(float(entry.intensity), 0.0) * float(dt))
+                if style == 0:
+                    jitter = f32(float(jitter) * 1.96)
+                    speed = 82.0
+                elif style == 8:
+                    jitter = f32(float(jitter) * 1.1)
+                    speed = 62.0
+                else:
+                    jitter = f32(float(jitter) * 1.1)
+                    speed = 82.0
+                entry.angle = f32(float(entry.angle) - float(jitter))
+                vel = Vec2.from_angle(float(entry.angle)) * speed
+                entry.vel = Vec2(
+                    f32(float(vel.x)),
+                    f32(float(vel.y)),
+                )
+
+            alpha = clamp(entry.intensity, 0.0, 1.0)
+            shade = 1.0 - max(entry.intensity, 0.0) * 0.95
+            entry.age = alpha
+            entry.scale_x = shade
+            entry.scale_y = shade
+            # Native only updates scale_x/scale_y; scale_z stays at its spawn value (1.0).
+
             if style == 8 and (not entry.render_flag) and entry.target_id != -1 and creatures is not None:
                 target_id = int(entry.target_id)
                 if 0 <= target_id < len(creatures) and creatures[target_id].active:
                     entry.pos = creatures[target_id].pos
 
             if entry.render_flag and creatures is not None:
-                hit_idx = _creature_find_in_radius(pos=entry.pos, radius=max(entry.intensity, 0.0) * 8.0)
+                hit_idx = _creature_find_in_radius(pos=entry.pos, radius=max(float(entry.intensity), 0.0) * 8.0)
                 if hit_idx != -1:
                     entry.render_flag = False
                     creature = creatures[hit_idx]
@@ -283,13 +301,16 @@ class ParticlePool:
                         hit_angle = float(hit_angle) % math.tau
                         deflect_step = math.tau * 0.2
                         if float(entry.angle) <= float(hit_angle):
-                            entry.angle += deflect_step
+                            entry.angle = f32(float(entry.angle) + deflect_step)
                         else:
-                            entry.angle -= deflect_step
+                            entry.angle = f32(float(entry.angle) - deflect_step)
 
                         bounce_velocity = Vec2.from_angle(float(entry.angle)) * 82.0
-                        speed_scale = float(int(rand()) % 10) * 0.1
-                        entry.vel = bounce_velocity * speed_scale
+                        speed_scale = f32(float(int(rand()) % 10) * 0.1)
+                        entry.vel = Vec2(
+                            f32(float(bounce_velocity.x) * float(speed_scale)),
+                            f32(float(bounce_velocity.y) * float(speed_scale)),
+                        )
 
                         damage = max(0.0, float(entry.intensity) * 10.0)
                         if damage > 0.0:
@@ -322,7 +343,10 @@ class ParticlePool:
                                 rand=rand,
                             )
 
-                        creature.pos = creature.pos + entry.vel * dt
+                        creature.pos = Vec2(
+                            f32(float(creature.pos.x) + float(entry.vel.x) * float(dt)),
+                            f32(float(creature.pos.y) + float(entry.vel.y) * float(dt)),
+                        )
 
         return expired
 

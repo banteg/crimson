@@ -1,9 +1,35 @@
 from __future__ import annotations
 
+from ...math_parity import f32
+from ...sim.state_types import PlayerState
 from ..runtime.effects_context import PerksUpdateEffectsCtx
 from ..helpers import perk_active
 from ..runtime.hook_types import PerkHooks
 from ..ids import PerkId
+
+
+def _award_experience_once_from_reward(*, player: PlayerState, reward_value: float) -> int:
+    reward_f32 = f32(float(reward_value))
+    if float(reward_f32) <= 0.0:
+        return 0
+
+    before = int(player.experience)
+    total_f32 = f32(f32(float(before)) + float(reward_f32))
+    after = int(float(total_f32))
+    player.experience = int(after)
+    return int(after - before)
+
+
+def _award_experience_from_reward(ctx: PerksUpdateEffectsCtx, *, reward_value: float) -> int:
+    if not ctx.players:
+        return 0
+    player = ctx.players[0]
+    gained = _award_experience_once_from_reward(player=player, reward_value=float(reward_value))
+    if gained <= 0:
+        return 0
+    if float(ctx.state.bonuses.double_experience) > 0.0:
+        gained += _award_experience_once_from_reward(player=player, reward_value=float(reward_value))
+    return int(gained)
 
 
 def update_jinxed_timer(ctx: PerksUpdateEffectsCtx) -> None:
@@ -44,7 +70,7 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
         creature = ctx.creatures[idx]
         creature.hp = -1.0
         creature.hitbox_size = float(creature.hitbox_size) - ctx.dt * 20.0
-        player.experience = int(float(player.experience) + float(creature.reward_value))
+        _award_experience_from_reward(ctx, reward_value=float(creature.reward_value))
         ctx.state.sfx_queue.append("sfx_trooper_inpain_01")
 
 

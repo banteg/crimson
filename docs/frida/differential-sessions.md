@@ -575,7 +575,6 @@ When the capture SHA is unchanged, append updates to the same session.
   - `verify-capture --aim-scheme-player 0=5`,
   - `divergence-report --run-summary-focus-context`,
   - `focus-trace` across the first post-4227 divergence window.
-
 ---
 
 ## Session 10 (2026-02-12)

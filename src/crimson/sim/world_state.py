@@ -14,7 +14,6 @@ from ..creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureDeath, CreaturePo
 from ..creatures.anim import creature_anim_advance_phase
 from ..creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
-from ..game_modes import GameMode
 from ..gameplay import (
     build_gameplay_state,
     player_update,
@@ -124,10 +123,13 @@ class WorldState:
         inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
         prev_positions = [(player.pos.x, player.pos.y) for player in self.players]
         prev_health = [float(player.health) for player in self.players]
-        # Native runs `perks_update_effects` early and reads current aim, so stage aim before `player_update`.
-        for idx, player in enumerate(self.players):
-            input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
-            player.aim = input_state.aim
+        # Native Freeze pickup shatters corpses that existed at tick start;
+        # same-tick kills are not included in that pass.
+        freeze_corpse_indices_at_tick_start = {
+            int(idx)
+            for idx, creature in enumerate(self.creatures.entries)
+            if creature.active and float(creature.hp) <= 0.0
+        }
         perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
         _mark("ws_after_perk_effects")
         # `effects_update` runs early in the native frame loop, before creature/projectile updates.
@@ -232,27 +234,18 @@ class WorldState:
                 post_ctx=post_ctx,
                 fx_queue=fx_queue,
             )
-            if float(self.state.bonuses.freeze) > 0.0:
-                if (
-                    (not bool(self.state.demo_mode_active))
-                    and int(game_mode) != int(GameMode.RUSH)
-                    and (not bool(hit_audio_game_tune_started))
-                ):
-                    trigger_game_tune = True
-                    hit_audio_game_tune_started = True
-            else:
-                hit_trigger, keys = plan_hit_sfx_keys(
-                    [_hit],
-                    game_mode=int(game_mode),
-                    demo_mode_active=bool(self.state.demo_mode_active),
-                    game_tune_started=bool(hit_audio_game_tune_started),
-                    rand=self.state.rng.rand,
-                )
-                if hit_trigger:
-                    trigger_game_tune = True
-                    hit_audio_game_tune_started = True
-                if keys:
-                    hit_sfx.extend(keys)
+            hit_trigger, keys = plan_hit_sfx_keys(
+                [_hit],
+                game_mode=int(game_mode),
+                demo_mode_active=bool(self.state.demo_mode_active),
+                game_tune_started=bool(hit_audio_game_tune_started),
+                rand=self.state.rng.rand,
+            )
+            if hit_trigger:
+                trigger_game_tune = True
+                hit_audio_game_tune_started = True
+            if keys:
+                hit_sfx.extend(keys)
         hits = self.state.projectiles.update(
             dt,
             self.creatures.entries,
@@ -382,6 +375,7 @@ class WorldState:
             apply_creature_damage=_apply_projectile_damage_to_creature,
             detail_preset=int(detail_preset),
             defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
+            freeze_corpse_indices=freeze_corpse_indices_at_tick_start,
         )
         if pickups:
             emit_bonus_pickup_effects(

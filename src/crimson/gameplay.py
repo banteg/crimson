@@ -132,6 +132,31 @@ def award_experience(state: GameplayState, player: PlayerState, amount: int) -> 
     return xp
 
 
+def _award_experience_once_from_reward(player: PlayerState, reward_value: float) -> int:
+    """Mirror native `__ftol(player_xp + reward_value)` accumulation for one award."""
+
+    reward_f32 = f32(float(reward_value))
+    if float(reward_f32) <= 0.0:
+        return 0
+
+    before = int(player.experience)
+    total_f32 = f32(f32(float(before)) + float(reward_f32))
+    after = int(float(total_f32))
+    player.experience = int(after)
+    return int(after - before)
+
+
+def award_experience_from_reward(state: GameplayState, player: PlayerState, reward_value: float) -> int:
+    """Grant kill XP from floating reward values with native float32 store semantics."""
+
+    gained = _award_experience_once_from_reward(player, float(reward_value))
+    if gained <= 0:
+        return 0
+    if state.bonuses.double_experience > 0.0:
+        gained += _award_experience_once_from_reward(player, float(reward_value))
+    return int(gained)
+
+
 def survival_level_threshold(level: int) -> int:
     """Return the XP threshold for advancing past the given level."""
 
@@ -800,14 +825,12 @@ def player_fire_weapon(
     if not input_state.fire_down:
         return
 
-    firing_during_reload = False
     ammo_cost = 1.0
     is_fire_bullets = float(player.fire_bullets_timer) > 0.0
     if player.reload_timer > 0.0:
         if player.experience <= 0:
             return
         if perk_active(player, PerkId.REGRESSION_BULLETS):
-            firing_during_reload = True
             ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
 
             reload_time = float(weapon.reload_time) if weapon.reload_time is not None else 0.0
@@ -816,7 +839,6 @@ def player_fire_weapon(
             if player.experience < 0:
                 player.experience = 0
         elif perk_active(player, PerkId.AMMUNITION_WITHIN):
-            firing_during_reload = True
             ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
 
             from .player_damage import player_take_damage
@@ -825,10 +847,6 @@ def player_fire_weapon(
             player_take_damage(state, player, cost, dt=dt, rand=state.rng.rand)
         else:
             return
-
-    if player.ammo <= 0 and not firing_during_reload and not is_fire_bullets:
-        player_start_reload(player, state)
-        return
 
     pellet_count = int(weapon.pellet_count) if weapon.pellet_count is not None else 0
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.FIRE_BULLETS))
@@ -1332,7 +1350,7 @@ def player_update(
     # unscaled `frame_dt` (before Stationary Reloader scale is applied).
     reload_timer_now = float(f32(float(player.reload_timer)))
     dt_f32 = float(f32(float(dt)))
-    if player.reload_active and float(f32(reload_timer_now - dt_f32)) < 0.0 and 0.0 <= reload_timer_now:
+    if player.reload_active and float(f32(reload_timer_now - dt_f32)) < 0.0 and reload_timer_now > 0.0:
         player.ammo = float(player.clip_size)
 
     if player.reload_timer > 0.0:
