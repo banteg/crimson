@@ -4,7 +4,8 @@ from grim.geom import Vec2
 
 import pytest
 
-from crimson.gameplay import GameplayState, PlayerState
+from crimson.gameplay import GameplayState
+from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
 

@@ -20,7 +20,8 @@ from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId, SpawnEnv
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.effects_atlas import EffectId
-from crimson.gameplay import GameplayState, PlayerState
+from crimson.gameplay import GameplayState
+from crimson.sim.state_types import PlayerState
 from crimson.render.terrain_fx import FxQueueTextures, bake_fx_queues
 from grim.assets import resolve_asset_path
 from grim.config import ensure_crimson_cfg

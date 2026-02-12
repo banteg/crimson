@@ -16,7 +16,7 @@ from grim.geom import Vec2
 import crimson.projectiles.pools as projectiles_mod
 import crimson.sim.presentation_step as presentation_step_mod
 from crimson.game_modes import GameMode
-from crimson.gameplay import PlayerInput
+from crimson.sim.input import PlayerInput
 from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     build_capture_dt_frame_overrides,

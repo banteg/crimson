@@ -15,7 +15,8 @@ from ..bonuses import BONUS_TABLE, BonusId
 from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..game_world import GameWorld
-from ..gameplay import PlayerInput, weapon_assign_player
+from ..sim.input import PlayerInput
+from ..weapon_runtime import weapon_assign_player
 from ..projectiles import ProjectileTypeId
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_sfx import resolve_weapon_sfx_ref

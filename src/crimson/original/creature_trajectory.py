@@ -11,7 +11,7 @@ import msgspec
 from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
-from crimson.gameplay import PlayerInput
+from crimson.sim.input import PlayerInput
 from crimson.original.capture import (
     build_capture_dt_frame_overrides,
     build_capture_dt_frame_ms_i32_overrides,

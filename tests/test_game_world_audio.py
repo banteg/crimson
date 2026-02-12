@@ -4,7 +4,8 @@ from pathlib import Path
 import random
 
 from crimson.bonuses import BonusId
-from crimson.gameplay import PlayerInput, player_update
+from crimson.gameplay import player_update
+from crimson.sim.input import PlayerInput
 from crimson.game_world import GameWorld
 from crimson.perks import PerkId
 from grim.geom import Vec2

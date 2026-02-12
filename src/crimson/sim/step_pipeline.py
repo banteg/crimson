@@ -6,7 +6,7 @@ import json
 from typing import Callable
 
 from ..effects import FxQueue, FxQueueRotated
-from ..gameplay import weapon_refresh_available
+from ..weapon_runtime import weapon_refresh_available
 from ..math_parity import f32
 from ..perks.availability import perks_rebuild_available
 from .input import PlayerInput

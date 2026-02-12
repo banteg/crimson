@@ -6,7 +6,12 @@ from collections import Counter
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
-from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_update
+from crimson.gameplay import (
+    GameplayState,
+    player_update,
+)
+from crimson.sim.input import PlayerInput
+from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
 

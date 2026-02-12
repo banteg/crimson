@@ -511,7 +511,10 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         available: list[bool] | None = None
         weapon_refresh_available: Callable[..., None] | None = None
         try:
-            from ...gameplay import WEAPON_COUNT_SIZE, weapon_refresh_available as refresh_available
+            from ...gameplay import WEAPON_COUNT_SIZE
+            from ...weapon_runtime import (
+                weapon_refresh_available as refresh_available,
+            )
             weapon_refresh_available = cast(Callable[..., None], refresh_available)
         except Exception:
             WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1

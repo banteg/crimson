@@ -19,10 +19,8 @@ from grim.view import ViewContext
 
 from ..debug import debug_enabled
 from ..game_modes import GameMode
-from ..gameplay import (
-    survival_check_level_up,
-    weapon_assign_player,
-)
+from ..gameplay import survival_check_level_up
+from ..weapon_runtime import weapon_assign_player
 from ..perks.state import CreatureForPerks
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode

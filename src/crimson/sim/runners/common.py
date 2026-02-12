@@ -7,7 +7,10 @@ import math
 from pathlib import Path
 
 from ...effects import FxQueue, FxQueueRotated
-from ...gameplay import most_used_weapon_id_for_player, weapon_assign_player
+from ...weapon_runtime import (
+    most_used_weapon_id_for_player,
+    weapon_assign_player,
+)
 from ...persistence.save_status import WEAPON_USAGE_COUNT, GameStatus, default_status_data
 from ...weapons import WEAPON_TABLE
 from ..step_pipeline import time_scale_reflex_boost_bonus as _time_scale_reflex_boost_bonus

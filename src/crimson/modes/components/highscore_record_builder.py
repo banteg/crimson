@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from ...gameplay import GameplayState, PlayerState, most_used_weapon_id_for_player
+from ...gameplay import GameplayState
+from ...sim.state_types import PlayerState
+from ...weapon_runtime import most_used_weapon_id_for_player
 from ...persistence.highscores import HighScoreRecord
 
 

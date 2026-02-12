@@ -10,7 +10,8 @@ from .ids import BONUS_BY_ID, BonusId
 
 if TYPE_CHECKING:
     from .pool import BonusPool
-    from ..gameplay import GameplayState, PlayerState
+    from ..gameplay import GameplayState
+    from ..sim.state_types import PlayerState
     from grim.rand import Crand
 
 

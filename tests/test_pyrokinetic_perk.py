@@ -6,7 +6,8 @@ import math
 
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
-from crimson.gameplay import GameplayState, PlayerState
+from crimson.gameplay import GameplayState
+from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
 

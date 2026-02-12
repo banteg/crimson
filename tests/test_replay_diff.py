@@ -4,7 +4,7 @@ from dataclasses import replace
 
 from grim.geom import Vec2
 
-from crimson.gameplay import PlayerState
+from crimson.sim.state_types import PlayerState
 from crimson.replay.checkpoints import (
     ReplayDeathLedgerEntry,
     ReplayEventSummary,

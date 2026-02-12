@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 
-from crimson.gameplay import GameplayState, PlayerState
+from crimson.gameplay import GameplayState
+from crimson.sim.state_types import PlayerState
 from crimson.modes.components.highscore_record_builder import (
     build_highscore_record_for_game_over,
     clamp_shots,

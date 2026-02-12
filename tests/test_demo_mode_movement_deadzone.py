@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 
-from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_update
+from crimson.gameplay import (
+    GameplayState,
+    player_update,
+)
+from crimson.sim.input import PlayerInput
+from crimson.sim.state_types import PlayerState
 
 
 def test_demo_mode_does_not_apply_movement_deadzone() -> None:

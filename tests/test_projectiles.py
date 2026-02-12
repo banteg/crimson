@@ -6,7 +6,8 @@ from grim.geom import Vec2
 from dataclasses import dataclass
 import math
 
-from crimson.gameplay import GameplayState, PlayerState
+from crimson.gameplay import GameplayState
+from crimson.sim.state_types import PlayerState
 from crimson.effects import FxQueue
 from crimson.projectiles import ProjectileHit, ProjectilePool, SecondaryProjectilePool
 from crimson.projectiles import ProjectileTypeId

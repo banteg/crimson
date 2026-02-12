@@ -8,7 +8,8 @@ import pytest
 
 from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState, PlayerState
+from crimson.gameplay import GameplayState
+from crimson.sim.state_types import PlayerState
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId, SpawnEnv, SpawnSlotInit, build_spawn_plan
 from crimson.weapons import WeaponId

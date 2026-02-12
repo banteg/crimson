@@ -6,7 +6,13 @@ import pytest
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
-from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_update, weapon_assign_player
+from crimson.gameplay import (
+    GameplayState,
+    player_update,
+)
+from crimson.sim.input import PlayerInput
+from crimson.sim.state_types import PlayerState
+from crimson.weapon_runtime import weapon_assign_player
 from crimson.perks import PerkId
 
 

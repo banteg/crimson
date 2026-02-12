@@ -18,7 +18,7 @@ from grim.view import ViewContext
 
 from ..creatures.spawn import CreatureInit, CreatureTypeId
 from ..game_world import GameWorld
-from ..gameplay import PlayerInput
+from ..sim.input import PlayerInput
 from ..paths import default_runtime_dir
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view

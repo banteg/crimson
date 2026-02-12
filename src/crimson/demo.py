@@ -19,7 +19,9 @@ from grim.math import clamp
 from grim.rand import Crand
 from .creatures.spawn import RANDOM_HEADING_SENTINEL
 from .game_world import GameWorld
-from .gameplay import PlayerInput, PlayerState, weapon_assign_player
+from .sim.input import PlayerInput
+from .sim.state_types import PlayerState
+from .weapon_runtime import weapon_assign_player
 from .ui.cursor import draw_menu_cursor
 from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from .weapons import weapon_display_name

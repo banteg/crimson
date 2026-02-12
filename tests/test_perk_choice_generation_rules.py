@@ -6,7 +6,8 @@ import pytest
 from pathlib import Path
 
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState, PlayerState
+from crimson.gameplay import GameplayState
+from crimson.sim.state_types import PlayerState
 from crimson.persistence import save_status
 from crimson.perks import PerkId
 from crimson.perks.availability import perks_rebuild_available

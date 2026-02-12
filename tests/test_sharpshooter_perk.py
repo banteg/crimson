@@ -4,7 +4,13 @@ from grim.geom import Vec2
 
 import pytest
 
-from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_fire_weapon, player_update
+from crimson.gameplay import (
+    GameplayState,
+    player_update,
+)
+from crimson.sim.input import PlayerInput
+from crimson.sim.state_types import PlayerState
+from crimson.weapon_runtime import player_fire_weapon
 from crimson.perks import PerkId
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
 from crimson.weapons import WEAPON_BY_ID

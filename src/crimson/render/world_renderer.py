@@ -40,7 +40,8 @@ if TYPE_CHECKING:
 
     from ..creatures.runtime import CreaturePool
     from ..game_world import GameWorld
-    from ..gameplay import GameplayState, PlayerState
+    from ..gameplay import GameplayState
+    from ..sim.state_types import PlayerState
     from ..projectiles import Projectile, SecondaryProjectile
 
 _RAD_TO_DEG = 57.29577951308232

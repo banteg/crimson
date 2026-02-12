@@ -5,7 +5,8 @@ from grim.geom import Vec2
 import pytest
 
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
-from crimson.gameplay import GameplayState, PlayerState
+from crimson.gameplay import GameplayState
+from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 
 

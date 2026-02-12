@@ -3,7 +3,8 @@ from __future__ import annotations
 from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState, PlayerState
+from crimson.gameplay import GameplayState
+from crimson.sim.state_types import PlayerState
 
 
 def test_bonus_try_spawn_on_kill_suppressed_in_typo_mode() -> None:

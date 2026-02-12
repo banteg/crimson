@@ -17,7 +17,10 @@ from grim.view import ViewContext
 
 from ..debug import debug_enabled
 from ..game_modes import GameMode
-from ..gameplay import most_used_weapon_id_for_player, weapon_assign_player
+from ..weapon_runtime import (
+    most_used_weapon_id_for_player,
+    weapon_assign_player,
+)
 from ..input_codes import (
     config_keybinds_for_player,
     input_code_is_down_for_player,

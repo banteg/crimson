@@ -18,12 +18,10 @@ from .creatures.anim import creature_corpse_frame_for_type
 from .creatures.runtime import CreaturePool
 from .creatures.spawn import SpawnEnv
 from .effects import FxQueue, FxQueueRotated
-from .gameplay import (
-    GameplayState,
-    PlayerInput,
-    PlayerState,
-    weapon_assign_player,
-)
+from .gameplay import GameplayState
+from .sim.input import PlayerInput
+from .sim.state_types import PlayerState
+from .weapon_runtime import weapon_assign_player
 from .render.terrain_fx import FxQueueTextures, bake_fx_queues
 from .render.frame import RenderFrame
 from .render.world_renderer import WorldRenderer

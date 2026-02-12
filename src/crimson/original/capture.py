@@ -1051,7 +1051,7 @@ def apply_capture_bootstrap_payload(
     state: object,
     players: list[object],
 ) -> int | None:
-    from ..gameplay import weapon_assign_player
+    from ..weapon_runtime import weapon_assign_player
 
     elapsed_ms: int | None = None
     elapsed_raw = _coerce_int_like(payload.get("elapsed_ms"))

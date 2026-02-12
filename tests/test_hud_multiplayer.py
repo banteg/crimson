@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 
-from crimson.gameplay import PlayerState
+from crimson.sim.state_types import PlayerState
 from crimson.ui.hud import HudAssets, HudState, draw_hud_overlay
 
 

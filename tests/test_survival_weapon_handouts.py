@@ -5,11 +5,11 @@ from grim.geom import Vec2
 from crimson.creatures.runtime import CreaturePool
 from crimson.gameplay import (
     GameplayState,
-    PlayerState,
     survival_enforce_reward_weapon_guard,
     survival_update_weapon_handouts,
-    weapon_assign_player,
 )
+from crimson.sim.state_types import PlayerState
+from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 
 

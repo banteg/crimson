@@ -7,7 +7,8 @@ from grim.geom import Vec2
 
 from crimson.creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
 from crimson.game_modes import GameMode
-from crimson.gameplay import PlayerInput, weapon_assign_player
+from crimson.sim.input import PlayerInput
+from crimson.weapon_runtime import weapon_assign_player
 from crimson.game_world import GameWorld
 from crimson.replay import Replay, ReplayGameVersionWarning, ReplayHeader, ReplayRecorder, unpack_input_flags, unpack_packed_player_input
 from crimson.replay.checkpoints import ReplayCheckpoint, build_checkpoint
