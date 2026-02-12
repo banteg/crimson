@@ -48,12 +48,8 @@ length is 16 characters.
 ## Spawning
 
 Spawn cooldown decreases by `frame_dt × player_count` each frame. When
-it crosses zero, a symmetric pair spawns from opposite edges:
-
-- **Right edge**: Spider.
-- **Left edge**: Alien.
-
-Cooldown resets to:
+it crosses zero, a symmetric pair spawns from opposite edges — a spider
+on the right and an alien on the left. Cooldown resets to:
 
 `3500 − elapsed_ms / 800` (milliseconds, minimum 100)
 
