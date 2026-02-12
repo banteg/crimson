@@ -31,7 +31,7 @@ shareware build:
 
 Full builds instead play `music_track_crimson_theme_id` and proceed to the menu.
 
-See: `docs/boot-sequence.md` (handoff section).
+See: `docs/re/static/boot-sequence.md` (handoff section).
 
 ### Runtime entry: trial/attract trigger
 

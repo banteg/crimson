@@ -67,7 +67,7 @@ const CONFIG = {
   hotWindowMs: 2000,
   hotWindowAutoStart: false,
   grimVtableTargets: {
-    // Backlog / low callsite validation targets (from docs/grim2d-api.md + docs/grim2d-runtime-validation.md)
+    // Backlog / low callsite validation targets (from docs/grim2d/api.md + docs/grim2d/runtime-validation.md)
     0x000: { name: 'grim_release', args: [] },
     0x004: { name: 'grim_set_paused', args: ['i32'] },
     0x008: { name: 'grim_get_version', args: [] },
@@ -836,7 +836,7 @@ function dumpWeapon(weaponId) {
 // ---------------------------
 
 function makeKnownPlayerOffsetPredicate() {
-  // Known offsets from docs/player-struct.md.
+  // Known offsets from docs/structs/player.md.
   // We mark known ranges so that frequent changes outside them are highlighted.
 
   const knownSingles = new Set([
@@ -1478,7 +1478,7 @@ function hookGameplay() {
     },
   });
 
-  // Grim interface loader (helps align with docs/grim2d-api.md)
+  // Grim interface loader (helps align with docs/grim2d/api.md)
   attachAtVa('crimsonland.exe', ADDR.grim_load_interface, 'grim_load_interface', {
     onEnter(args) {
       const dllName = tryReadAnsi(args[0], 256);

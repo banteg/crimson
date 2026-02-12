@@ -38,7 +38,7 @@ bonuses (stride `0xd8`, base `player_health` / `DAT_004908d4`). See
 | `0x2f8` | `player_fire_bullets_timer` | Fire Bullets timer | Bonus id 14 (Fire Bullets) |
 
 Alt-weapon swap caches live in the same struct (offsets `0x2b8..0x2d0`); see
-[Weapon table](../weapon-table.md) for the current field map.
+[Weapon table](../mechanics/reference/weapon-table.md) for the current field map.
 
 Global bonus timers used by `player_update` and the main loop:
 
@@ -282,10 +282,10 @@ shot cooldown (`player_shot_cooldown` / `DAT_00490b84`) at 1.5x speed.
 
 See the data tables for concrete values:
 
-- [Weapon table](../weapon-table.md)
+- [Weapon table](../mechanics/reference/weapon-table.md)
 - [Projectile struct](../structs/projectile.md)
 - [Effects pools](../structs/effects.md)
-- [Bonus ID map](../bonus-id-map.md)
+- [Bonus ID map](../mechanics/reference/bonus-id-map.md)
 
 ## Mode updates
 
@@ -296,4 +296,4 @@ Mode-specific updates are dispatched from the main frame loop:
 - Quests: `quest_mode_update`
 - Typ-o-Shooter: separate loop (`typo_gameplay_update_and_render`, `FUN_004457c0`, state `0x12`)
 
-See [Game mode map](../game-mode-map.md) for mode ids.
+See [Game mode map](../mechanics/modes/game-mode-map.md) for mode ids.

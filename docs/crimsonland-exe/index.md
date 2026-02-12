@@ -30,10 +30,10 @@ Sections:
 
 Related references:
 
-- [Weapon table](../weapon-table.md)
-- [Bonus ID map](../bonus-id-map.md)
+- [Weapon table](../mechanics/reference/weapon-table.md)
+- [Bonus ID map](../mechanics/reference/bonus-id-map.md)
 - [Creature pool struct](../creatures/struct.md)
 - [Projectile struct](../structs/projectile.md)
 - [Effects pools](../structs/effects.md)
-- [Detangling notes](../detangling.md)
-- [Entrypoint trace](../entrypoint.md)
+- [Detangling notes](../re/static/detangling.md)
+- [Entrypoint trace](../re/static/entrypoint.md)

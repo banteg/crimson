@@ -15,5 +15,5 @@ Crimsonland uses custom container and texture formats for game assets.
 
 ## Related
 
-- [Extraction pipeline](../pipeline.md) — CLI tool for unpacking and converting assets
-- [Sprite atlas cutting](../atlas.md) — Runtime atlas slicing logic
+- [Extraction pipeline](pipeline.md) — CLI tool for unpacking and converting assets
+- [Sprite atlas cutting](atlas.md) — Runtime atlas slicing logic

@@ -8,10 +8,10 @@ tags:
 
 Decompiler- and symbol-driven reference docs.
 
-- [Binary analysis](../../binary-analysis.md)
-- [Entrypoint trace](../../entrypoint.md)
-- [Boot / loading sequence](../../boot-sequence.md)
-- [Detangling notes](../../detangling.md)
+- [Binary analysis](binary-analysis.md)
+- [Entrypoint trace](entrypoint.md)
+- [Boot / loading sequence](boot-sequence.md)
+- [Detangling notes](detangling.md)
 - [Perk runtime reference](perks-runtime-reference.md)
 - [Fire Bullets 1.9.8 vs 1.9.93](fire-bullets-1.9.8-vs-1.9.93.md)
 - [Structs docs](../../re/structs/index.md)

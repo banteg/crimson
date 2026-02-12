@@ -101,7 +101,7 @@ Hardcoded defaults (from `config_sync_from_grim` when `grim_config_invoked` is s
 
 ## Load / write behavior
 
-From the decompile (see `docs/detangling.md`):
+From the decompile (see `docs/re/static/detangling.md`):
 
 - `config_load_presets` reads the 0x480-byte blob into `config_blob`.
 - `config_sync_from_grim`:

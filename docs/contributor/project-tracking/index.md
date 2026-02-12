@@ -8,5 +8,5 @@ tags:
 
 Project-level provenance and dependency notes.
 
-- [Build provenance and hashes](../../provenance.md)
-- [Third-party libraries](../../third-party-libs.md)
+- [Build provenance and hashes](provenance.md)
+- [Third-party libraries](third-party-libs.md)

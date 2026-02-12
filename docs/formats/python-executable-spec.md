@@ -45,7 +45,7 @@ crimson extract <game_dir> <assets_dir>
 ```
 
 - Extracts all `.paq` archives under `game_dir` into `assets_dir`.
-- Converts `.jaz` and `.tga` assets to PNG (see `docs/pipeline.md`).
+- Converts `.jaz` and `.tga` assets to PNG (see `docs/formats/pipeline.md`).
 - Exits with code `1` if the game directory is missing or no `.paq` files exist.
 
 ### `crimson view`

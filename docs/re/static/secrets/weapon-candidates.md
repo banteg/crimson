@@ -10,7 +10,7 @@ progression, making them candidates for "Secret Weapons" or unfinished content.
 
 ## Methodology
 
-1. **Full Weapon List**: Derived from [weapon-id-map](../../../weapon-id-map.md) (1-based ids 1-53;
+1. **Full Weapon List**: Derived from [weapon-id-map](../../../mechanics/reference/weapon-id-map.md) (1-based ids 1-53;
    id 0 is the dummy/none entry).
 
 2. **Quest Unlocks**: Analyzed `quest_database_init` (`FUN_00439230`) in

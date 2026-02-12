@@ -158,7 +158,7 @@ The shadow/highlight pass draws a slightly larger quad (`size * 1.03`) and shift
 
 See also:
 
-- [Sprite atlas cutting](../atlas.md)
+- [Sprite atlas cutting](../formats/atlas.md)
 - [Creature pool struct](../creatures/struct.md)
 - [Projectile struct](../structs/projectile.md)
 - [Effects pools](../structs/effects.md)

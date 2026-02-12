@@ -319,7 +319,7 @@ grim.dll_functions.json
 - `FUN_0043c590` -> `music_stream_fill`
   - Evidence: decodes Ogg data and writes the next streaming chunk.
 
-Audio entries are 0x84-byte `audio_entry_t` records; see [Audio](audio.md)
+Audio entries are 0x84-byte `audio_entry_t` records; see [Audio](../../mechanics/reference/audio.md)
 for the field layout used by `sfx_entry_table` and `music_entry_table`.
 
 ### Audio playback + streaming (high confidence)
@@ -944,7 +944,7 @@ Init timing note:
 
 - `FUN_0043caa0` -> `audio_init_sfx`
   - Evidence: loads `sfx.paq` and registers the sound effect ids.
-  - See [Audio](audio.md) for SFX IDs, usage hotspots, and data labels.
+  - See [Audio](../../mechanics/reference/audio.md) for SFX IDs, usage hotspots, and data labels.
 - `FUN_0043c740` -> `sfx_load_sample`
   - Evidence: allocates a free slot in `DAT_004c84e4`, loads `.ogg`/`.wav` data, and returns the
     sample id.
@@ -1049,7 +1049,7 @@ Init timing note:
     name/description tables via `FUN_0042fd00`.
 
   - For extracted id/name metadata and runtime references, see
-    `src/crimson/perks/ids.py` and [Perk runtime reference](re/static/perks-runtime-reference.md).
+    `src/crimson/perks/ids.py` and [Perk runtime reference](perks-runtime-reference.md).
 - `FUN_0042fb10` -> `perk_can_offer`
   - Evidence: checks mode gates and perk flags, then returns a nonzero byte if the perk is eligible.
 - `FUN_0042fbd0` -> `perk_select_random`
@@ -1254,7 +1254,7 @@ Button struct (size `0x18`, used by `DAT_0047f5f8` / `DAT_00480250` / `DAT_00480
   | 0x90 | AI mode | selects movement pattern (cases 0/1/3/4/5/6/7/8 in update loop). |
   | 0x94 | anim phase | accumulates and wraps (31/15) to drive sprite animation timing. |
 
-See [Creature pool struct](creatures/struct.md) for the expanded field map and cross-links.
+See [Creature pool struct](../../creatures/struct.md) for the expanded field map and cross-links.
 
 - Creature-type table carving updates:
   - `creature_type_table` is now typed as `creature_type_table_t` (6 entries, stride `0x44`).
@@ -1296,7 +1296,7 @@ See [Creature pool struct](creatures/struct.md) for the expanded field map and c
   | 0x34 | hit radius | Used for creature collision checks. |
   | 0x3c | owner id | Used to skip the shooter in hit tests. |
 
-See [Projectile struct](structs/projectile.md) for the expanded field map and notes.
+See [Projectile struct](../../structs/projectile.md) for the expanded field map and notes.
 ### Effects pools (medium confidence)
 
 - `FUN_00420130` -> `fx_spawn_particle`
@@ -1313,7 +1313,7 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
   - Evidence: allocates a `0x2c`-byte entry in `sprite_effect_pool` (`DAT_00496820`) with position,
     velocity, tint, and a scalar parameter used by the renderer.
 
-- Layouts and fields are tracked in [Effects pools](structs/effects.md).
+- Layouts and fields are tracked in [Effects pools](../../structs/effects.md).
 ### Bonus / pickup pool (medium confidence)
 
 - `FUN_0041f580` -> `bonus_alloc_slot`
@@ -1338,7 +1338,7 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
   - Evidence: applies bonus effects based on entry type (`param_2[0]`), spawns effects via
     effect_spawn (`FUN_0042e120`), and plays bonus SFX (sfx_play_panned (`FUN_0043d260`)).
 
-- See [Bonus ID map](bonus-id-map.md) for the id-to-name table and default amounts.
+- See [Bonus ID map](../../mechanics/reference/bonus-id-map.md) for the id-to-name table and default amounts.
 - Layout (entry size `0x1c`, base `bonus_pool` (`DAT_00482948`), 16 entries):
 
   | Offset | Field | Evidence |
@@ -1352,7 +1352,7 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
   | 0x18 | amount/duration (`bonus_amount`) | used by `bonus_apply` when applying certain bonus types. |
 ### Game mode selector (partial)
 
-- `config_game_mode` (`DAT_00480360`) holds the current game mode (typed as `game_mode_id_t`). See [Game mode map](game-mode-map.md) for the observed
+- `config_game_mode` (`DAT_00480360`) holds the current game mode (typed as `game_mode_id_t`). See [Game mode map](../../mechanics/modes/game-mode-map.md) for the observed
   values and evidence.
 
 - `FUN_00412960` -> `game_mode_label`

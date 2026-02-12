@@ -124,6 +124,6 @@ normal unlocks.
   - `player_take_damage` damage flag write around `0x00425e50`
   - `creature_handle_death` recent-death tracking around `0x0041e910`
   - reset init around `0x00412d70`
-- `docs/weapon-id-map.md`
+- `docs/mechanics/reference/weapon-id-map.md`
 - `docs/re/static/secrets/weapon-candidates.md`
 - `docs/crimsonland-exe/survival.md`
