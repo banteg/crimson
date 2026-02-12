@@ -84,6 +84,7 @@ Clip 30 · Damage 1.0 · Fire 0.006 s · Reload 1.5 s · Fire
 ### 16. HR Flamer
 
 Clip 30 · Damage 1.0 · Fire 0.009 s · Reload 1.8 s · Fire
+· Not obtainable
 
 ### 17. Mini-Rocket Swarmers
 
@@ -126,10 +127,12 @@ Clip 6 · Damage 11.0 · Fire 0.35 s · Reload 3.5 s · Bullet
 ### 26. Spider Plasma
 
 Clip 5 · Damage 0.5 · Fire 0.2 s · Reload 1.2 s · Bullet
+· Not obtainable
 
 ### 27. Evil Scythe
 
 Clip 3 · Damage 1.0 · Fire 1.0 s · Reload 3.0 s · Electric
+· Not obtainable
 
 ### 28. Plasma Cannon
 
@@ -151,10 +154,12 @@ Clip 10 · Damage 1.0 · Fire 0.85 s · Reload 1.9 s · 8 pellets · Electric
 ### 32. Flameburst
 
 Clip 60 · Damage 1.0 · Fire 0.02 s · Reload 3.0 s · Electric
+· Not obtainable
 
 ### 33. RayGun
 
 Clip 12 · Damage 1.0 · Fire 0.7 s · Reload 2.0 s · Electric
+· Not obtainable
 
 ## Special behaviors
 
