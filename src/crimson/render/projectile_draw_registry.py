@@ -21,7 +21,7 @@ from .projectile_render_registry import beam_effect_scale, plasma_projectile_ren
 if TYPE_CHECKING:
     from ..creatures.runtime import CreatureState
     from ..projectiles import Projectile
-    from .world_renderer import WorldRenderer
+    from .world.renderer import WorldRenderer
 
 _RAD_TO_DEG = 57.29577951308232
 
