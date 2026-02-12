@@ -15,11 +15,64 @@ and bonuses modify these base values at runtime.
 The HUD ammo indicator shows one of four icons depending on the weapon's
 class: bullet, fire, rocket, or electric.
 
+## How projectile damage works
+
+Each projectile carries a few key stats from its weapon.
+
+### Damage multiplier
+
+The **Damage** value in each weapon entry is a multiplier applied to
+the base damage formula:
+
+```
+damage = ((100 / distance) * multiplier * 30 + 10) * 0.95
+```
+
+Distance is measured from the shot origin to the point of impact,
+clamped to a minimum of 50. This means point-blank shots deal roughly
+twice as much as long-range hits. A 1.0x weapon at minimum distance
+deals about 67 damage; the Plasma Cannon at 28x deals about 1606.
+
+### Hit radius
+
+Most projectiles use a hit radius of 1 — they have to land close to
+connect. Ion weapons have larger collision spheres: Ion Minigun 3,
+Ion Rifle 5, Ion Cannon and Plasma Cannon 10. This is what makes ion
+shots feel like they have area-of-effect even before chain arcs.
+
+### Damage pool
+
+Every projectile has a damage pool that determines whether it stops
+or pierces through on hit. Most weapons have a pool of 1, so the
+projectile is consumed on first contact and deals the full formula
+damage.
+
+Three weapons get elevated pools that enable piercing:
+
+| Weapon | Pool |
+|---|---:|
+| Gauss Gun | 300 |
+| Fire Bullets | 240 |
+| Blade Gun | 50 |
+
+When a piercing projectile hits, it deals the current pool value as
+damage instead of the distance formula, then subtracts the target's
+HP from the pool. The projectile keeps going until the pool is
+drained. This means piercing shots shred crowds of weak enemies but
+get eaten quickly by a few tough targets.
+
+### Projectile speed
+
+The weapon table field `projectile_meta` controls how many collision
+sub-steps a projectile takes per frame — higher values mean a faster
+projectile that covers more ground per tick. The
+[Barrel Greaser](../perks.md#34-barrel-greaser) perk doubles this
+value, making projectiles twice as fast.
+
 ## Weapon reference
 
 All 33 selectable weapons in internal ID order, roughly following quest
-unlock progression. Damage is the base multiplier. Fire interval and
-reload are in seconds.
+unlock progression. Fire interval and reload are in seconds.
 
 ### 1. Pistol
 
@@ -273,11 +326,8 @@ suggest an unfinished design.
 Most weapons fire a single projectile per shot with standard collision.
 Several deviate:
 
-- **Piercing**: Most projectiles die on first hit (damage pool 1).
-  Gauss Gun (300), Fire Bullets (240), and Blade Gun (50) get elevated
-  pools that let them punch through multiple targets. Each enemy hit
-  drains the pool by its HP, so low-health crowds get shredded while a
-  few tough targets exhaust the pool quickly.
+- **Piercing**: Gauss Gun, Fire Bullets, and Blade Gun pierce through
+  targets using elevated [damage pools](#damage-pool).
 - **Multi-pellet**: Shotgun and Sawed-off (12 pellets), Plasma Shotgun
   (14), Ion Shotgun (8), Gauss Shotgun (6), Multi-Plasma (5-shot volley),
   Jackhammer (4). Pellets spawn with randomized speed and spread.
