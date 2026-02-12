@@ -13,7 +13,6 @@ from ..creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
 from ..features.bonuses import emit_bonus_pickup_effects
 from ..features.perks import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
-from ..game_modes import GameMode
 from ..gameplay import (
     BonusPickupEvent,
     GameplayState,
@@ -123,10 +122,6 @@ class WorldState:
         inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
         prev_positions = [(player.pos.x, player.pos.y) for player in self.players]
         prev_health = [float(player.health) for player in self.players]
-        # Native runs `perks_update_effects` early and reads current aim, so stage aim before `player_update`.
-        for idx, player in enumerate(self.players):
-            input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
-            player.aim = input_state.aim
         perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
         _mark("ws_after_perk_effects")
         # `effects_update` runs early in the native frame loop, before creature/projectile updates.
@@ -231,27 +226,18 @@ class WorldState:
                 post_ctx=post_ctx,
                 fx_queue=fx_queue,
             )
-            if float(self.state.bonuses.freeze) > 0.0:
-                if (
-                    (not bool(self.state.demo_mode_active))
-                    and int(game_mode) != int(GameMode.RUSH)
-                    and (not bool(hit_audio_game_tune_started))
-                ):
-                    trigger_game_tune = True
-                    hit_audio_game_tune_started = True
-            else:
-                hit_trigger, keys = plan_hit_sfx_keys(
-                    [_hit],
-                    game_mode=int(game_mode),
-                    demo_mode_active=bool(self.state.demo_mode_active),
-                    game_tune_started=bool(hit_audio_game_tune_started),
-                    rand=self.state.rng.rand,
-                )
-                if hit_trigger:
-                    trigger_game_tune = True
-                    hit_audio_game_tune_started = True
-                if keys:
-                    hit_sfx.extend(keys)
+            hit_trigger, keys = plan_hit_sfx_keys(
+                [_hit],
+                game_mode=int(game_mode),
+                demo_mode_active=bool(self.state.demo_mode_active),
+                game_tune_started=bool(hit_audio_game_tune_started),
+                rand=self.state.rng.rand,
+            )
+            if hit_trigger:
+                trigger_game_tune = True
+                hit_audio_game_tune_started = True
+            if keys:
+                hit_sfx.extend(keys)
         hits = self.state.projectiles.update(
             dt,
             self.creatures.entries,
