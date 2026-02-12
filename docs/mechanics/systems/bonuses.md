@@ -178,7 +178,7 @@ If the selected type is suppressed (see below), the game rerolls up to
 
 - Maximum 16 bonuses on screen at once.
 - Minimum 32 units between bonuses.
-- Unpicked bonuses vanish after 10 seconds (5 seconds in tutorial).
+- Unpicked bonuses vanish after 10 seconds (never in tutorial).
 - Bonuses must spawn at least 32 pixels from the world edge.
 
 ## Mode availability
