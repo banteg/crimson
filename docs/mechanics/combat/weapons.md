@@ -26,8 +26,9 @@ reload are in seconds.
 Clip 10 · Damage 4.1 · Fire 0.712 s · Reload 1.2 s · Bullet
 
 Starter weapon. Hits hard per shot but slow fire rate and tiny clip
-limit sustained output. You'll swap off it as soon as something better
-drops.
+limit sustained output. While you're holding the Pistol, 75% of bonus
+drops are forced to be weapon pickups and the overall drop rate
+increases — the game actively tries to get you off it.
 
 ### 2. Assault Rifle
 
