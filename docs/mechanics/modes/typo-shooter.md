@@ -30,17 +30,10 @@ typing a name followed by Enter fires at the matching creature.
 ## Creature names
 
 Names are randomly generated from a pool of 52 word parts (e.g. "lamb",
-"gun", "head", "fox", "boom"). Complexity scales with the player's
-score:
-
-| Score | Name length |
-| ---: | --- |
-| 0–20 | 1 part |
-| 21–40 | 1–2 parts |
-| 41–80 | 1–3 parts |
-| 81+ | 1–4 parts |
-
-Higher part counts become more probable as score increases. Names must
+"gun", "head", "fox", "boom"). Names start as single parts and grow
+to 2, 3, then 4 concatenated parts as the player's score increases
+past 20, 60, and 120. Higher part counts become more probable at each
+threshold. Names must
 be unique among living creatures (up to 200 reroll attempts). Maximum
 length is 16 characters.
 
