@@ -115,8 +115,8 @@ health. Suppressed from the drop pool when [Death Clock](../perks.md#47-death-cl
 
 Duration: 8 seconds. Per-player timer.
 
-Adds 1.0 to the player's movement speed multiplier. In co-op, each player
-has an independent speed timer.
+The player's base speed multiplier is 2.0. Speed adds 1.0, bringing it to
+3.0 — a 50% boost. In co-op, each player has an independent speed timer.
 
 ## 14. Fire Bullets
 
