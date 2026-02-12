@@ -140,6 +140,10 @@ Clip 10 · Damage 1.0 · Fire 0.85 s · Reload 1.9 s · 8 pellets · Electric
 
 These weapons exist in the weapon table but have no known unlock path.
 
+!!! tip
+    You can view these unfinished developer prototypes in the remake
+    using `crimson view arsenal`.
+
 ### 16. HR Flamer
 
 Clip 30 · Damage 1.0 · Fire 0.009 s · Reload 1.8 s · Fire
