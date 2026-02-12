@@ -439,6 +439,24 @@ def test_tick_dead_defers_corpse_deactivation_until_post_render_cleanup() -> Non
     assert corpse.active is False
 
 
+def test_dead_self_damage_tick_flags_still_shrink_hitbox_before_dead_decay() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    pool = CreaturePool()
+
+    corpse = pool.entries[42]
+    corpse.active = True
+    corpse.hp = -0.08500146865844727
+    corpse.hitbox_size = 12.640003204345703
+    corpse.flags = CreatureFlags.SELF_DAMAGE_TICK
+
+    # 38 ms frame from gameplay_diff_capture tick 3636.
+    pool.update(0.03800000250339508, state=state, players=[player], rand=lambda: 0)
+
+    # Native applies SELF_DAMAGE_TICK via creature_apply_damage even while hp<=0.
+    assert corpse.hitbox_size == pytest.approx(11.006003, abs=1e-5)
+
+
 def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> None:
     pool = CreaturePool(size=24)
     for idx in range(22):

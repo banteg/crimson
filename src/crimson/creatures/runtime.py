@@ -718,11 +718,37 @@ class CreaturePool:
             dt_ms = max(0, int(dt_ms_i32))
         else:
             dt_ms = int(round(dt * 1000.0)) if dt > 0.0 else 0
+
+        def _apply_self_damage_tick(creature: CreatureState) -> bool:
+            if dt <= 0.0 or float(state.bonuses.freeze) > 0.0:
+                return False
+            damage_amount = 0.0
+            if creature.flags & CreatureFlags.SELF_DAMAGE_TICK_STRONG:
+                damage_amount = dt * 180.0
+            elif creature.flags & CreatureFlags.SELF_DAMAGE_TICK:
+                damage_amount = dt * 60.0
+            if damage_amount <= 0.0:
+                return False
+
+            from .damage import creature_apply_damage
+
+            return creature_apply_damage(
+                creature,
+                damage_amount=float(damage_amount),
+                damage_type=0,
+                impulse=Vec2(),
+                owner_id=int(creature.last_hit_owner_id),
+                dt=dt,
+                players=players,
+                rand=rand,
+            )
+
         for idx, creature in enumerate(self._entries):
             if not creature.active:
                 continue
 
             if creature.hitbox_size != CREATURE_HITBOX_ALIVE or creature.hp <= 0.0:
+                _apply_self_damage_tick(creature)
                 # Native still ticks AI7 link-timer state (and its RNG draws) for
                 # dead creatures inside `creature_update_all`.
                 if (
@@ -751,33 +777,7 @@ class CreaturePool:
                 creature.vel = Vec2()
                 continue
 
-            poison_killed = False
-            if creature.flags & CreatureFlags.SELF_DAMAGE_TICK_STRONG:
-                from .damage import creature_apply_damage
-
-                poison_killed = creature_apply_damage(
-                    creature,
-                    damage_amount=dt * 180.0,
-                    damage_type=0,
-                    impulse=Vec2(),
-                    owner_id=int(creature.last_hit_owner_id),
-                    dt=dt,
-                    players=players,
-                    rand=rand,
-                )
-            elif creature.flags & CreatureFlags.SELF_DAMAGE_TICK:
-                from .damage import creature_apply_damage
-
-                poison_killed = creature_apply_damage(
-                    creature,
-                    damage_amount=dt * 60.0,
-                    damage_type=0,
-                    impulse=Vec2(),
-                    owner_id=int(creature.last_hit_owner_id),
-                    dt=dt,
-                    players=players,
-                    rand=rand,
-                )
+            poison_killed = _apply_self_damage_tick(creature)
             if poison_killed:
                 deaths.append(
                     self.handle_death(
