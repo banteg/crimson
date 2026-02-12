@@ -58,6 +58,7 @@ class BonusTimers:
 
 
 WEAPON_DROP_ID_COUNT = 0x21  # weapon ids 1..33
+_RELOAD_PRELOAD_UNDERFLOW_EPS = 1e-7
 
 
 @dataclass(slots=True)
@@ -1350,7 +1351,12 @@ def player_update(
     # unscaled `frame_dt` (before Stationary Reloader scale is applied).
     reload_timer_now = float(f32(float(player.reload_timer)))
     dt_f32 = float(f32(float(dt)))
-    if player.reload_active and float(f32(reload_timer_now - dt_f32)) < 0.0 and reload_timer_now > 0.0:
+    reload_preload_underflow = float(f32(reload_timer_now - dt_f32))
+    if (
+        player.reload_active
+        and reload_timer_now > 0.0
+        and reload_preload_underflow < -_RELOAD_PRELOAD_UNDERFLOW_EPS
+    ):
         player.ammo = float(player.clip_size)
 
     if player.reload_timer > 0.0:
@@ -1382,8 +1388,11 @@ def player_update(
     if player.reload_timer < 0.0:
         player.reload_timer = 0.0
 
+    if player.reload_active and player.reload_timer == 0.0 and player.ammo <= 0.0 and input_state.fire_down:
+        player.ammo = float(player.clip_size)
+
     # Native clears `reload_active` only once the player can shoot again.
-    if player.shot_cooldown <= 0.0 and player.reload_timer == 0.0:
+    if player.shot_cooldown <= 0.0 and player.reload_timer == 0.0 and player.ammo > 0.0:
         player.reload_active = False
 
     if input_state.reload_pressed:
