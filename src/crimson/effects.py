@@ -188,8 +188,9 @@ class ParticlePool:
                 creature = creatures[creature_idx]
                 if not creature.active:
                     continue
-                if creature.hp <= 0.0:
-                    continue
+                # Native particle `creature_find_in_radius` is hitbox-gated, not
+                # HP-gated: freshly killed creatures (hp<=0, hitbox>5) can still
+                # receive same-tick style-0 damage callbacks.
                 if creature.hitbox_size < 5.0:
                     continue
 
