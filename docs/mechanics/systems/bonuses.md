@@ -128,6 +128,9 @@ is cancelled, and shot cooldown is reset to zero.
 
 In co-op, each player has an independent Fire Bullets timer.
 
+For a detailed comparison of Fire Bullets behavior across game versions,
+see [Fire Bullets 1.9.8 vs 1.9.93](../../re/static/fire-bullets-1.9.8-vs-1.9.93.md).
+
 ## Drop mechanics
 
 Each creature kill has an 11.1% base chance (1-in-9) to spawn a bonus.
