@@ -338,4 +338,4 @@ Notes:
 - Quest timeline (pure model): `src/crimson/quests/timeline.py`
   - `tick_quest_spawn_timeline`, `tick_quest_mode_spawns`, `quest_spawn_table_empty`
   - Tests: `tests/test_quest_spawn_timeline.py`, `tests/test_quest_mode_spawns.py`
-- MSVCRT-compatible RNG for deterministic replays: `src/crimson/crand.py`
+- MSVCRT-compatible RNG for deterministic replays: `src/grim/rand.py` (`Crand`)
