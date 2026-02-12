@@ -18,7 +18,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand
 from ..effects import FxQueue, FxQueueRotated
-from ..gameplay import award_experience
+from ..gameplay import award_experience, survival_record_recent_death
 from ..math_parity import (
     NATIVE_PI,
     NATIVE_TAU,
@@ -1050,6 +1050,7 @@ class CreaturePool:
         """Run one-shot death side effects and return the `CreatureDeath` event."""
 
         creature = self._entries[int(idx)]
+        survival_record_recent_death(state, pos=creature.pos)
         if not bool(creature.active):
             # Native `creature_handle_death` gates its XP/bonus/freeze body under
             # `if (active != 0)`. Re-entrant callers (notably secondary

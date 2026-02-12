@@ -314,6 +314,15 @@ def test_player_update_tracks_aim_point() -> None:
     assert player.aim == Vec2(123.0, 456.0)
 
 
+def test_player_update_sets_survival_fire_seen_when_fire_input_is_down() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), shot_cooldown=1.0)
+
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0), fire_down=True), 0.016, state)
+
+    assert state.survival_reward_fire_seen is True
+
+
 def test_player_update_turns_toward_move_heading_with_turn_slowdown() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), move_speed=2.0, heading=0.0)

@@ -83,3 +83,13 @@ def test_player_take_damage_decrements_death_timer_on_death_hit() -> None:
     assert applied == 10.0
     assert player.health == -5.0
     assert player.death_timer == 16.0 - 0.1 * 28.0
+
+
+def test_player_take_damage_sets_survival_damage_seen_even_when_shielded() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(), health=100.0, shield_timer=1.0)
+
+    applied = player_take_damage(state, player, 10.0, rand=lambda: 0)
+
+    assert applied == 0.0
+    assert state.survival_reward_damage_seen is True

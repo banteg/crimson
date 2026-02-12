@@ -6,6 +6,7 @@ from typing import Callable
 from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
+from ..gameplay import survival_update_weapon_handouts
 from .input import PlayerInput
 from .step_pipeline import DeterministicStepResult, run_deterministic_step, time_scale_reflex_boost_bonus
 from .world_state import WorldState
@@ -71,6 +72,12 @@ class SurvivalDeterministicSession:
             # Native `survival_update` runs after gameplay world updates:
             # - it observes current player XP/level (post-kill award),
             # - it computes spawn interval from the pre-increment survival elapsed timer.
+            survival_update_weapon_handouts(
+                state,
+                self.world.players,
+                survival_elapsed_ms=float(elapsed_before_ms),
+            )
+
             player_level = self.world.players[0].level if self.world.players else 1
             stage, milestone_calls = advance_survival_spawn_stage(self.stage, player_level=int(player_level))
             self.stage = stage

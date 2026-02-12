@@ -96,6 +96,12 @@ class GameplayState:
     deferred_freeze_corpse_fx: list[DeferredFreezeCorpseFx] = field(default_factory=list)
     shock_chain_links_left: int = 0
     shock_chain_projectile_id: int = -1
+    survival_reward_weapon_guard_id: int = int(WeaponId.PISTOL)
+    survival_reward_handout_enabled: bool = True
+    survival_reward_fire_seen: bool = False
+    survival_reward_damage_seen: bool = False
+    survival_recent_death_pos: list[Vec2] = field(default_factory=lambda: [Vec2(), Vec2(), Vec2()])
+    survival_recent_death_count: int = 0
     camera_shake_offset: Vec2 = field(default_factory=Vec2)
     camera_shake_timer: float = 0.0
     camera_shake_pulses: int = 0
@@ -173,6 +179,79 @@ def survival_progression_update(
             creatures=creatures,
         )
     return []
+
+
+_SURVIVAL_RECENT_DEATH_CENTROID_SCALE = 0.33333334
+
+
+def survival_record_recent_death(state: GameplayState, *, pos: Vec2) -> None:
+    """Track Survival recent-death samples used by one-off weapon handout gating."""
+
+    recent_count = int(state.survival_recent_death_count)
+    if recent_count >= 6:
+        return
+
+    if recent_count < 3:
+        state.survival_recent_death_pos[recent_count] = Vec2(
+            f32(float(pos.x)),
+            f32(float(pos.y)),
+        )
+
+    recent_count += 1
+    state.survival_recent_death_count = int(recent_count)
+    if recent_count == 3:
+        state.survival_reward_fire_seen = False
+        state.survival_reward_handout_enabled = False
+
+
+def survival_update_weapon_handouts(
+    state: GameplayState,
+    players: list[PlayerState],
+    *,
+    survival_elapsed_ms: float,
+) -> None:
+    """Apply native `survival_update` one-off Survival weapon handout checks."""
+
+    if len(players) != 1:
+        return
+    player = players[0]
+
+    if (
+        (not bool(state.survival_reward_damage_seen))
+        and (not bool(state.survival_reward_fire_seen))
+        and int(float(survival_elapsed_ms)) > 64000
+        and bool(state.survival_reward_handout_enabled)
+    ):
+        if int(player.weapon_id) == int(WeaponId.PISTOL):
+            weapon_assign_player(player, int(WeaponId.SHRINKIFIER_5K), state=state)
+            state.survival_reward_weapon_guard_id = int(WeaponId.SHRINKIFIER_5K)
+        state.survival_reward_handout_enabled = False
+        state.survival_reward_damage_seen = True
+        state.survival_reward_fire_seen = True
+
+    if int(state.survival_recent_death_count) == 3 and (not bool(state.survival_reward_fire_seen)):
+        pos0, pos1, pos2 = state.survival_recent_death_pos
+        centroid_x = f32(float(f32(float(pos0.x) + float(pos1.x) + float(pos2.x))) * _SURVIVAL_RECENT_DEATH_CENTROID_SCALE)
+        centroid_y = f32(float(f32(float(pos0.y) + float(pos1.y) + float(pos2.y))) * _SURVIVAL_RECENT_DEATH_CENTROID_SCALE)
+        dx = float(player.pos.x) - float(centroid_x)
+        dy = float(player.pos.y) - float(centroid_y)
+        if math.sqrt(dx * dx + dy * dy) < 16.0 and float(player.health) < 15.0:
+            weapon_assign_player(player, int(WeaponId.BLADE_GUN), state=state)
+            state.survival_reward_weapon_guard_id = int(WeaponId.BLADE_GUN)
+            state.survival_reward_fire_seen = True
+            state.survival_reward_handout_enabled = False
+
+
+def survival_enforce_reward_weapon_guard(state: GameplayState, players: Sequence[PlayerState]) -> None:
+    """Revoke temporary Survival handout weapons when guard id mismatches."""
+
+    guard_id = int(state.survival_reward_weapon_guard_id)
+    for player in players:
+        weapon_id = int(player.weapon_id)
+        if weapon_id == int(WeaponId.BLADE_GUN) and guard_id != int(WeaponId.BLADE_GUN):
+            weapon_assign_player(player, int(WeaponId.PISTOL))
+        if weapon_id == int(WeaponId.SHRINKIFIER_5K) and guard_id != int(WeaponId.SHRINKIFIER_5K):
+            weapon_assign_player(player, int(WeaponId.PISTOL))
 
 
 def _owner_id_for_player(player_index: int) -> int:
@@ -1301,6 +1380,9 @@ def player_update(
             player.shot_cooldown = float(player.shot_cooldown) + 0.1
         elif player.reload_timer == 0.0 and not input_state.move_to_cursor_pressed:
             player_start_reload(player, state)
+
+    if input_state.fire_down:
+        state.survival_reward_fire_seen = True
 
     player_fire_weapon(
         player,

@@ -46,6 +46,8 @@ def player_take_damage(
     if perk_active(player, PerkId.TOUGH_RELOADER) and bool(player.reload_active):
         damage_scaled *= 0.5
 
+    state.survival_reward_damage_seen = True
+
     if float(player.shield_timer) > 0.0:
         return 0.0
 
