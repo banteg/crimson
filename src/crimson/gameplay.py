@@ -2741,7 +2741,7 @@ def player_update(
     # unscaled `frame_dt` (before Stationary Reloader scale is applied).
     reload_timer_now = float(f32(float(player.reload_timer)))
     dt_f32 = float(f32(float(dt)))
-    if player.reload_active and float(f32(reload_timer_now - dt_f32)) < 0.0 and 0.0 <= reload_timer_now:
+    if player.reload_active and float(f32(reload_timer_now - dt_f32)) < 0.0 and 0.0 < reload_timer_now:
         player.ammo = float(player.clip_size)
 
     if player.reload_timer > 0.0:
