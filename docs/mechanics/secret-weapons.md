@@ -11,7 +11,7 @@ Several weapons in Crimsonland are not unlocked through normal quest
 progression. Three verified paths exist:
 
 - One persistent progression unlock (Splitter Gun)
-- Two hidden Survival rewards (Shrinkifier 5k, Blade Gun)
+- Two Survival rewards (Shrinkifier 5k, Blade Gun)
 
 For decompiler-level details, gate variables, and evidence pointers, see
 [Survival weapon handouts (RE/static)](../re/static/secrets/survival-weapon-handouts.md).
@@ -28,7 +28,7 @@ Splitter Gun is a persistent unlock, not a temporary reward. It becomes
 available after beating 4.10 *The End of All* on hardcore. Once unlocked it
 appears in the normal weapon pool.
 
-## Hidden Survival rewards
+## Survival rewards
 
 In single-player Survival, the game can grant hidden weapons under strict
 conditions. These are temporary rewards — they do not persist across runs.
@@ -55,30 +55,14 @@ being spent. With an 11x damage multiplier, individual hits are devastating.
 The projectile renders as a segmented beam rather than a ball, reinforcing
 the cutting visual.
 
-Granted when the player returns to the centroid of their first three kill
-positions under pressure. All of these must be true:
+In single-player Survival, kill exactly three creatures, then walk to the
+center of the triangle formed by those three deaths without firing. If
+you're within distance 16 of that center and your health is below 15, the
+game grants the Blade Gun. Unlike the Shrinkifier, this does not require being
+damage-free or still on the Pistol — the third kill itself resets the fire
+flag, which is what opens the path.
 
-- single-player Survival
-- exactly 3 creatures have died so far
-- the player has not fired since the 3rd kill
-- the player is within distance 16 of the average position of the first 3
-  death locations
-- the player's health is below 15
-
-Unlike the Shrinkifier, this check does not require the player to be
-damage-free or still on the Pistol, and it does not require the handout
-system to be in its initial state. The 3rd creature death itself resets
-the fire flag, which is what opens the Blade Gun path.
-
-### Reward guard
-
-Both weapons are guard-protected: each world step, if the player is holding
-Shrinkifier 5k or Blade Gun without the matching guard, the game forces a
-switch back to Pistol. The guard is set when the weapon is granted and reset
-at the start of each run. This makes them effectively single-run rewards —
-switching away or starting a new run loses them.
-
-## Other non-quest weapons
+## Cut content
 
 17 named weapons exist in the weapon table but are absent from the quest
 unlock sequence. Beyond the three listed above, no verified unlock path is
