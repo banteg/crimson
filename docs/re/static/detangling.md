@@ -319,7 +319,7 @@ grim.dll_functions.json
 - `FUN_0043c590` -> `music_stream_fill`
   - Evidence: decodes Ogg data and writes the next streaming chunk.
 
-Audio entries are 0x84-byte `audio_entry_t` records; see [Audio](../../mechanics/reference/audio.md)
+Audio entries are 0x84-byte `audio_entry_t` records; see [Audio](../../re/static/reference/audio.md)
 for the field layout used by `sfx_entry_table` and `music_entry_table`.
 
 ### Audio playback + streaming (high confidence)
@@ -944,7 +944,7 @@ Init timing note:
 
 - `FUN_0043caa0` -> `audio_init_sfx`
   - Evidence: loads `sfx.paq` and registers the sound effect ids.
-  - See [Audio](../../mechanics/reference/audio.md) for SFX IDs, usage hotspots, and data labels.
+  - See [Audio](../../re/static/reference/audio.md) for SFX IDs, usage hotspots, and data labels.
 - `FUN_0043c740` -> `sfx_load_sample`
   - Evidence: allocates a free slot in `DAT_004c84e4`, loads `.ogg`/`.wav` data, and returns the
     sample id.
@@ -1338,7 +1338,7 @@ See [Projectile struct](../../structs/projectile.md) for the expanded field map 
   - Evidence: applies bonus effects based on entry type (`param_2[0]`), spawns effects via
     effect_spawn (`FUN_0042e120`), and plays bonus SFX (sfx_play_panned (`FUN_0043d260`)).
 
-- See [Bonus ID map](../../mechanics/reference/bonus-id-map.md) for the id-to-name table and default amounts.
+- See [Bonus ID map](../../re/static/reference/bonus-id-map.md) for the id-to-name table and default amounts.
 - Layout (entry size `0x1c`, base `bonus_pool` (`DAT_00482948`), 16 entries):
 
   | Offset | Field | Evidence |
@@ -1352,7 +1352,7 @@ See [Projectile struct](../../structs/projectile.md) for the expanded field map 
   | 0x18 | amount/duration (`bonus_amount`) | used by `bonus_apply` when applying certain bonus types. |
 ### Game mode selector (partial)
 
-- `config_game_mode` (`DAT_00480360`) holds the current game mode (typed as `game_mode_id_t`). See [Game mode map](../../mechanics/modes/game-mode-map.md) for the observed
+- `config_game_mode` (`DAT_00480360`) holds the current game mode (typed as `game_mode_id_t`). See [Game mode map](../../re/static/modes/game-mode-map.md) for the observed
   values and evidence.
 
 - `FUN_00412960` -> `game_mode_label`

@@ -59,7 +59,7 @@ Weapons granted (weapon ids):
 See also:
 
 - Reward gate globals are listed in `docs/creatures/struct.md`.
-- `docs/mechanics/reference/weapon-id-map.md` for the id-to-name mapping.
+- `docs/re/static/reference/weapon-id-map.md` for the id-to-name mapping.
 - `docs/re/static/secrets/survival-weapon-handouts.md` for detailed secret-lead analysis of these two grants.
 
 ### 2) Scripted stage spawns (milestones)

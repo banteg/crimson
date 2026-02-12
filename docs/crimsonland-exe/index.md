@@ -30,8 +30,8 @@ Sections:
 
 Related references:
 
-- [Weapon table](../mechanics/reference/weapon-table.md)
-- [Bonus ID map](../mechanics/reference/bonus-id-map.md)
+- [Weapon table](../re/static/reference/weapon-table.md)
+- [Bonus ID map](../re/static/reference/bonus-id-map.md)
 - [Creature pool struct](../creatures/struct.md)
 - [Projectile struct](../structs/projectile.md)
 - [Effects pools](../structs/effects.md)

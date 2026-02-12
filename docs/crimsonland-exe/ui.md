@@ -220,7 +220,7 @@ mode/timeline, UV/color tuples) with confidence across menu variants.
 ## UI element render (ui_element_render / FUN_00446c40)
 
 `ui_element_render` updates focus/click handling and draws a UI element's quads,
-colors, and textures. See [UI elements](../mechanics/systems/ui-elements.md) for struct details.
+colors, and textures. See [UI elements](../re/static/systems/ui-elements.md) for struct details.
 
 Keyboard focus updates are globally gated by `ui_focus_input_locked`; controls
 rebind flows toggle this lock while waiting for key/axis capture.

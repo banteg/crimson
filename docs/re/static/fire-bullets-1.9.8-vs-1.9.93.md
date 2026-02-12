@@ -167,5 +167,5 @@ The Python gameplay matches the 1.9.93 model (replacement + dedicated fire branc
 - In-place type override in `projectile_spawn`: `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:27925`, `27929`, `27948`
 - Dedicated fire branch in `player_update`: `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:20782`, `20797`, `20803`, `20812`, `20838`
 - Fallback constants in `weapon_table_init`: `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:67796`, `67798`
-- Pellet count field: `docs/mechanics/reference/weapon-table.md:102`
+- Pellet count field: `docs/re/static/reference/weapon-table.md:102`
 - Projectile hit damage formula: `src/crimson/projectiles.py:1183`, `1199`

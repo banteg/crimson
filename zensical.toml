@@ -12,26 +12,11 @@ nav = [
     { "Overview" = "mechanics/index.md" },
     { "Modes" = [
       { "Overview" = "mechanics/modes/index.md" },
-      { "Game mode map" = "mechanics/modes/game-mode-map.md" },
-      { "Typ-o-Shooter" = "mechanics/modes/typo.md" },
     ]},
     { "Systems" = [
       { "Overview" = "mechanics/systems/index.md" },
       { "Secret weapons" = "mechanics/secret-weapons.md" },
       { "Perks" = "mechanics/perks.md" },
-      { "UI elements" = "mechanics/systems/ui-elements.md" },
-      { "In-game console" = "mechanics/systems/console.md" },
-    ]},
-    { "Reference" = [
-      { "Overview" = "mechanics/reference/index.md" },
-      { "Weapon table" = "mechanics/reference/weapon-table.md" },
-      { "Weapon ID map" = "mechanics/reference/weapon-id-map.md" },
-      { "UI weapon icons" = "mechanics/reference/ui-weapon-icons.md" },
-      { "Bonus ID map" = "mechanics/reference/bonus-id-map.md" },
-      { "Bonus drop rates" = "mechanics/reference/bonus-drop-rates.md" },
-      { "Quest builders" = "mechanics/reference/quest-builders.md" },
-      { "Audio" = "mechanics/reference/audio.md" },
-      { "Music" = "mechanics/reference/music.md" },
     ]},
   ]},
   { "Rewrite" = [
@@ -55,6 +40,7 @@ nav = [
       { "Overview" = "rewrite/parity/index.md" },
       { "Status" = "rewrite/status.md" },
       { "Original bugs" = "rewrite/original-bugs.md" },
+      { "Typ-o-Shooter text input" = "rewrite/parity/typo-mode-text-input.md" },
     ]},
   ]},
   { "Reverse Engineering" = [
@@ -67,6 +53,26 @@ nav = [
       { "Detangling notes" = "re/static/detangling.md" },
       { "Perk runtime reference" = "re/static/perks-runtime-reference.md" },
       { "Fire Bullets 1.9.8 vs 1.9.93" = "re/static/fire-bullets-1.9.8-vs-1.9.93.md" },
+      { "Modes" = [
+        { "Overview" = "re/static/modes/index.md" },
+        { "Game mode map" = "re/static/modes/game-mode-map.md" },
+      ]},
+      { "Systems" = [
+        { "Overview" = "re/static/systems/index.md" },
+        { "UI elements" = "re/static/systems/ui-elements.md" },
+        { "In-game console" = "re/static/systems/console.md" },
+      ]},
+      { "Reference" = [
+        { "Overview" = "re/static/reference/index.md" },
+        { "Weapon table" = "re/static/reference/weapon-table.md" },
+        { "Weapon ID map" = "re/static/reference/weapon-id-map.md" },
+        { "UI weapon icons" = "re/static/reference/ui-weapon-icons.md" },
+        { "Bonus ID map" = "re/static/reference/bonus-id-map.md" },
+        { "Bonus drop rates" = "re/static/reference/bonus-drop-rates.md" },
+        { "Quest builders" = "re/static/reference/quest-builders.md" },
+        { "Audio" = "re/static/reference/audio.md" },
+        { "Music" = "re/static/reference/music.md" },
+      ]},
       { "Crimsonland.exe" = [
         { "Overview" = "crimsonland-exe/index.md" },
         { "State machine" = "crimsonland-exe/state-machine.md" },

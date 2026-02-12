@@ -6,9 +6,10 @@ tags:
 
 # Modes
 
-High-level mode behavior and identifiers.
+High-level mode behavior and player-facing differences.
 
-- [Game mode map](game-mode-map.md)
-- [Typ-o-Shooter notes](typo.md)
+Detailed mode IDs and state-machine evidence live in
+[RE static mode analysis](../../re/static/modes/index.md).
 
-Evidence-heavy, state-machine-level details remain in [RE static docs](../../re/static/index.md).
+Typ-o-Shooter text-input implementation parity notes live in
+[Rewrite parity](../../rewrite/parity/typo-mode-text-input.md).

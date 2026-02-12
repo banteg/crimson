@@ -10,5 +10,6 @@ Behavioral system docs intended for gameplay truth and design-level understandin
 
 - [Perks](../perks.md)
 - [Secret weapons](../secret-weapons.md)
-- [UI elements](ui-elements.md)
-- [In-game console](console.md)
+
+Decompiler-heavy system internals live in
+[RE static systems analysis](../../re/static/systems/index.md).

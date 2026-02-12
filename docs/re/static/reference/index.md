@@ -1,12 +1,13 @@
 ---
 tags:
-  - mechanics
+  - reverse-engineering
+  - static-analysis
   - reference
 ---
 
-# Mechanics Reference
+# Static Reference
 
-Lookup tables, IDs, and data mappings consumed by mechanics and rewrite docs.
+Lookup tables, IDs, and data mappings from static analysis.
 
 - [Weapon table](weapon-table.md)
 - [Weapon ID map](weapon-id-map.md)
