@@ -300,6 +300,7 @@ class TutorialMode(BaseGameplayMode):
             bonus_pool_empty=bonus_pool_empty,
             perk_pending_count=perk_pending_count,
             hint_bonus_died=hint_bonus_died,
+            preserve_bugs=bool(self._world.preserve_bugs),
         )
         self._tutorial_actions = actions
 

@@ -29,6 +29,16 @@ _TUTORIAL_HINT_TEXT: tuple[str, ...] = (
     "This is the speed powerup, it makes you move faster!",
     "This is a weapon powerup. Picking it up gives you a new weapon.",
     "This powerup doubles all experience points you gain while it's active.",
+    "This is the nuke powerup, picking it up causes a huge\nexplosion harming all monsters nearby!",
+    "Reflex Boost powerup slows down time giving you a chance to react better",
+    "",
+    "",
+)
+
+_TUTORIAL_HINT_TEXT_BUGS: tuple[str, ...] = (
+    "This is the speed powerup, it makes you move faster!",
+    "This is a weapon powerup. Picking it you gets a new weapon.",
+    "This powerup doubles all experience points you gain while it's active.",
     "This is the nuke powerup, picking it up causes a huge\nexposion harming all monsters nearby!",
     "Reflex Boost powerup slows down time giving you a chance to react better",
     "",
@@ -145,7 +155,13 @@ def _prompt_alpha(*, stage_index: int, stage_timer_ms: int, transition_timer_ms:
     return _clamp01(alpha)
 
 
-def _tick_hint(state: TutorialState, *, frame_dt_ms: int, hint_bonus_died: bool) -> tuple[tuple[SpawnTemplateCall, ...], str, float]:
+def _tick_hint(
+    state: TutorialState,
+    *,
+    frame_dt_ms: int,
+    hint_bonus_died: bool,
+    preserve_bugs: bool,
+) -> tuple[tuple[SpawnTemplateCall, ...], str, float]:
     hint_spawns: list[SpawnTemplateCall] = []
 
     if (not state.hint_fade_in) and bool(hint_bonus_died):
@@ -165,8 +181,9 @@ def _tick_hint(state: TutorialState, *, frame_dt_ms: int, hint_bonus_died: bool)
     elif state.hint_alpha > 1000:
         state.hint_alpha = 1000
 
+    hint_text_table = _TUTORIAL_HINT_TEXT_BUGS if bool(preserve_bugs) else _TUTORIAL_HINT_TEXT
     idx = int(state.hint_index)
-    text = _TUTORIAL_HINT_TEXT[idx] if 0 <= idx < len(_TUTORIAL_HINT_TEXT) else ""
+    text = hint_text_table[idx] if 0 <= idx < len(hint_text_table) else ""
     alpha = float(state.hint_alpha) * 0.001 if text else 0.0
     return tuple(hint_spawns), text, _clamp01(alpha)
 
@@ -181,6 +198,7 @@ def tick_tutorial_timeline(
     bonus_pool_empty: bool,
     perk_pending_count: int,
     hint_bonus_died: bool = False,
+    preserve_bugs: bool = False,
 ) -> tuple[TutorialState, TutorialFrameActions]:
     """Pure model of the tutorial director (`tutorial_timeline_update` / 0x00408990).
 
@@ -202,7 +220,12 @@ def tick_tutorial_timeline(
         prompt_text = ""
         prompt_alpha = 0.0
 
-    hint_spawns, hint_text, hint_alpha = _tick_hint(state, frame_dt_ms=dt_ms, hint_bonus_died=bool(hint_bonus_died))
+    hint_spawns, hint_text, hint_alpha = _tick_hint(
+        state,
+        frame_dt_ms=dt_ms,
+        hint_bonus_died=bool(hint_bonus_died),
+        preserve_bugs=bool(preserve_bugs),
+    )
 
     actions = TutorialFrameActions(
         prompt_text=prompt_text,

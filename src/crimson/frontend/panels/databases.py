@@ -421,9 +421,11 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         weapon_id = int(self._selected_weapon_id)
         name, icon_index = self._weapon_label_and_icon(weapon_id)
         weapon = self._weapon_entry(weapon_id)
+        preserve_bugs = bool(getattr(self._state, "preserve_bugs", False))
+        weapon_no_label = "wepno" if preserve_bugs else "weapon"
         draw_small_text(
             font,
-            f"wepno #{weapon_id}",
+            f"{weapon_no_label} #{weapon_id}",
             right + Vec2(240.0 * scale, 32.0 * scale),
             text_scale,
             rl.Color(255, 255, 255, int(255 * 0.4)),
@@ -439,10 +441,11 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             reload_time = float(reload_raw) if isinstance(reload_raw, (int, float)) else None
             clip_size = int(clip_raw) if isinstance(clip_raw, (int, float)) else None
             ammo_class = int(getattr(weapon, "ammo_class", 0) or 0)
+            firerate_label = "Firerate" if preserve_bugs else "Fire rate"
             if ammo_class == 1:
-                firerate_text = "Firerate: n/a"
+                firerate_text = f"{firerate_label}: n/a"
             elif rpm is not None:
-                firerate_text = f"Firerate: {rpm} rpm"
+                firerate_text = f"{firerate_label}: {rpm} rpm"
             else:
                 firerate_text = None
             if firerate_text is not None:
@@ -609,7 +612,10 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         weapon = WEAPON_BY_ID.get(int(weapon_id))
         if weapon is None:
             return f"Weapon {int(weapon_id)}", None
-        name = weapon_display_name(int(weapon.weapon_id), preserve_bugs=bool(self._state.preserve_bugs))
+        name = weapon_display_name(
+            int(weapon.weapon_id),
+            preserve_bugs=bool(getattr(self._state, "preserve_bugs", False)),
+        )
         return name, weapon.icon_index
 
 
@@ -775,9 +781,10 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         perk_id = int(hovered_perk_id)
         perk_name = self._perk_name(perk_id, fx_toggle=fx_toggle, preserve_bugs=preserve_bugs)
         detail_anchor = right + Vec2(34.0 * scale, 72.0 * scale)
+        perk_no_label = "perkno" if preserve_bugs else "perk"
         draw_small_text(
             font,
-            f"perkno #{perk_id}",
+            f"{perk_no_label} #{perk_id}",
             detail_anchor + Vec2(190.0 * scale, -40.0 * scale),
             text_scale,
             rl.Color(255, 255, 255, int(255 * 0.4)),

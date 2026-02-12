@@ -618,8 +618,13 @@ class GameOverUi:
         if self._hover_hit_ratio > 0.5:
             t = (self._hover_hit_ratio - 0.5) * 2.0
             col = rl.Color(label_color.r, label_color.g, label_color.b, int(255 * alpha * t))
+            hit_ratio_tooltip = (
+                "The % of shot bullets hit the target"
+                if bool(self.preserve_bugs)
+                else "The % of bullets that hit the target"
+            )
             self._draw_small(
-                "The % of shot bullets hit the target",
+                hit_ratio_tooltip,
                 tooltip_pos.offset(dx=-22.0 * scale),
                 1.0 * scale,
                 col,

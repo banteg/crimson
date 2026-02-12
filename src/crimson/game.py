@@ -1785,6 +1785,11 @@ class EndNoteView:
         font = self._ensure_small_font()
         hardcore = bool(int(self._state.config.data.get("hardcore_flag", 0) or 0))
         header = "   Incredible!" if hardcore else "Congratulations!"
+        levels_line = (
+            "You've completed all the levels but the battle"
+            if bool(self._state.preserve_bugs)
+            else "You've completed all the levels, but the battle"
+        )
         body_lines = (
             [
                 "You've done the thing we all thought was",
@@ -1796,7 +1801,7 @@ class EndNoteView:
             ]
             if hardcore
             else [
-                "You've completed all the levels but the battle",
+                levels_line,
                 "isn't over yet! With all of the unlocked perks",
                 "and weapons your Survival is just a bit easier.",
                 "You can also replay the quests in Hardcore.",
@@ -2167,6 +2172,8 @@ class QuestFailedView:
         if retry_count == 3:
             return "No luck this time, have another go?"
         if retry_count == 4:
+            if bool(self._state.preserve_bugs):
+                return "Persistence will be rewared."
             return "Persistence will be rewarded."
         if retry_count == 5:
             return "Try one more time?"

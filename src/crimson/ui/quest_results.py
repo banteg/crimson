@@ -734,8 +734,12 @@ class QuestResultsUi:
 
         elif self.phase == 1:
             text_y = panel_layout.top_left.y + 118.0 * scale
+            name_prompt = "State your name trooper!" if bool(self.preserve_bugs) else "State your name, trooper!"
             self._draw_small(
-                "State your name trooper!", Vec2(content_pos.x + 42.0 * scale, text_y), 1.0 * scale, COLOR_UI_ACCENT
+                name_prompt,
+                Vec2(content_pos.x + 42.0 * scale, text_y),
+                1.0 * scale,
+                COLOR_UI_ACCENT,
             )
 
             input_pos = content_pos.offset(dy=150.0 * scale)

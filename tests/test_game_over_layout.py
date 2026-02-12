@@ -4,9 +4,11 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pyray as rl
+import pytest
 
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.ui.game_over import GameOverUi, PANEL_SLIDE_DURATION_MS
+from grim.geom import Vec2
 
 
 def test_game_over_panel_layout_uses_native_panel_anchor(tmp_path: Path) -> None:
@@ -113,3 +115,56 @@ def test_game_over_world_entity_alpha_tracks_close_timeline(tmp_path: Path) -> N
     ui._closing = False
     ui._intro_ms = 0.0
     assert ui.world_entity_alpha() == 1.0
+
+
+@pytest.mark.parametrize(
+    ("preserve_bugs", "expected_tooltip"),
+    [
+        (False, "The % of bullets that hit the target"),
+        (True, "The % of shot bullets hit the target"),
+    ],
+)
+def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
+    monkeypatch, tmp_path: Path, preserve_bugs: bool, expected_tooltip: str
+) -> None:
+    ui = GameOverUi(
+        assets_root=tmp_path,
+        base_dir=tmp_path,
+        config=SimpleNamespace(data={"fx_detail_0": 0, "game_mode": 1}),
+        preserve_bugs=preserve_bugs,
+    )
+    ui.rank = 0
+    ui._dt = 0.0
+    ui._hover_weapon = 0.0
+    ui._hover_time = 0.0
+    ui._hover_hit_ratio = 1.0
+
+    record = HighScoreRecord.blank()
+    record.game_mode_id = 1
+    record.score_xp = 1000
+    record.survival_elapsed_ms = 12_000
+    record.creature_kill_count = 20
+    record.shots_fired = 50
+    record.shots_hit = 25
+    record.most_used_weapon_id = 1
+
+    captured_text: list[str] = []
+    monkeypatch.setattr("crimson.ui.game_over.rl.measure_text", lambda text, _size: len(str(text)) * 8)
+    monkeypatch.setattr("crimson.ui.game_over.rl.draw_line", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.ui.game_over.rl.draw_texture_pro", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        "crimson.ui.game_over.GameOverUi._draw_small",
+        lambda _self, text, _pos, _scale, _color: captured_text.append(str(text)),
+    )
+
+    ui._draw_score_card(
+        pos=Vec2(0.0, 0.0),
+        record=record,
+        hud_assets=SimpleNamespace(wicons=SimpleNamespace(width=256, height=256), clock_table=None, clock_pointer=None),
+        alpha=1.0,
+        show_weapon_row=True,
+        scale=1.0,
+        mouse=rl.Vector2(-1000.0, -1000.0),
+    )
+
+    assert expected_tooltip in captured_text
