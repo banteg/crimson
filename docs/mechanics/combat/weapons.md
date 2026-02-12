@@ -25,116 +25,202 @@ reload are in seconds.
 
 Clip 10 · Damage 4.1 · Fire 0.712 s · Reload 1.2 s · Bullet
 
+Starter weapon. Hits hard per shot but slow fire rate and tiny clip
+limit sustained output. You'll swap off it as soon as something better
+drops.
+
 ### 2. Assault Rifle
 
 Clip 25 · Damage 1.0 · Fire 0.117 s · Reload 1.2 s · Bullet
+
+Fast automatic with a generous clip. Reliable all-rounder that stays
+useful throughout the game.
 
 ### 3. Shotgun
 
 Clip 12 · Damage 1.2 · Fire 0.85 s · Reload 1.9 s · 12 pellets · Bullet
 
+12-pellet spread. Devastating at close range, falls off with distance
+as pellets scatter.
+
 ### 4. Sawed-off Shotgun
 
 Clip 12 · Damage 1.0 · Fire 0.87 s · Reload 1.9 s · 12 pellets · Bullet
+
+Wider spread than the Shotgun with slightly less damage per pellet.
+Better for sweeping crowds, worse for focused fire.
 
 ### 5. Submachine Gun
 
 Clip 30 · Damage 1.0 · Fire 0.088 s · Reload 1.2 s · Bullet
 
+Fastest fire rate among bullet weapons. Large clip and quick reload
+make it excellent for sustained crowd control.
+
 ### 6. Gauss Gun
 
 Clip 6 · Damage 1.0 · Fire 0.6 s · Reload 1.6 s · Bullet
+
+High-penetration single shots. Spread builds fast, so accuracy degrades
+quickly under sustained fire.
 
 ### 7. Mean Minigun
 
 Clip 120 · Damage 1.0 · Fire 0.09 s · Reload 4.0 s · Bullet
 
+Enormous clip dumps a wall of bullets. Movement speed is reduced while
+firing, and the 4-second reload leaves you exposed.
+
 ### 8. Flamethrower
 
 Clip 30 · Damage 1.0 · Fire 0.008 s · Reload 2.0 s · Fire
+
+Continuous particle stream that drains 0.1 ammo per tick. Short range
+but high damage density against anything you can walk into.
 
 ### 9. Plasma Rifle
 
 Clip 20 · Damage 5.0 · Fire 0.291 s · Reload 1.2 s · Bullet
 
+5x damage multiplier makes each plasma bolt hit like a truck. Moderate
+fire rate rewards aim over spray.
+
 ### 10. Multi-Plasma
 
 Clip 8 · Damage 1.0 · Fire 0.621 s · Reload 1.4 s · 3 pellets · Bullet
+
+Fires a 5-shot volley of plasma bolts at fixed offsets. Slow cadence
+but each trigger pull covers a wide arc.
 
 ### 11. Plasma Minigun
 
 Clip 30 · Damage 2.1 · Fire 0.11 s · Reload 1.3 s · Bullet
 
+Rapid plasma stream at 2.1x damage. One of the best sustained DPS
+weapons in the game.
+
 ### 12. Rocket Launcher
 
 Clip 5 · Damage 1.0 · Fire 0.741 s · Reload 1.2 s · Rocket
+
+Slow explosive rockets with splash damage. Small clip means every shot
+counts.
 
 ### 13. Seeker Rockets
 
 Clip 8 · Damage 1.0 · Fire 0.311 s · Reload 1.2 s · Rocket
 
+Homing rockets that track the nearest enemy. Faster fire rate and
+larger clip than the standard launcher, at the cost of less direct
+control.
+
 ### 14. Plasma Shotgun
 
 Clip 8 · Damage 1.0 · Fire 0.48 s · Reload 3.1 s · 14 pellets · Bullet
+
+14 plasma pellets per shot. Devastating burst but the 3.1-second
+reload is punishing if you empty the clip at a bad time.
 
 ### 15. Blow Torch
 
 Clip 30 · Damage 1.0 · Fire 0.006 s · Reload 1.5 s · Fire
 
+Short-range particle stream like the Flamethrower but drains only 0.05
+ammo per tick, making it more ammo-efficient.
+
 ### 17. Mini-Rocket Swarmers
 
 Clip 5 · Damage 1.0 · Fire 1.8 s · Reload 1.8 s · Rocket
+
+Dumps the entire clip as individual rockets in a single burst. One
+trigger pull, five rockets, then a full reload.
 
 ### 18. Rocket Minigun
 
 Clip 16 · Damage 1.0 · Fire 0.12 s · Reload 1.8 s · Rocket
 
+Rapid-fire rocket stream. Sustained explosive output that chews
+through dense packs.
+
 ### 19. Pulse Gun
 
 Clip 16 · Damage 1.0 · Fire 0.1 s · Reload 0.1 s · Electric
+
+Electric bolts that knock enemies back on hit. Near-instant reload
+means you're almost never caught empty. Great for keeping distance.
 
 ### 20. Jackhammer
 
 Clip 16 · Damage 1.0 · Fire 0.14 s · Reload 3.0 s · 4 pellets · Bullet
 
+Automatic shotgun firing 4 pellets per shot at rifle speed. Long
+reload but the sustained burst shreds anything close.
+
 ### 21. Ion Rifle
 
 Clip 8 · Damage 3.0 · Fire 0.4 s · Reload 1.35 s · Electric
+
+3x damage electric shots that arc to nearby enemies on impact. Strong
+single-target with crowd bonus in tight groups.
 
 ### 22. Ion Minigun
 
 Clip 20 · Damage 1.4 · Fire 0.1 s · Reload 1.8 s · Electric
 
+Rapid electric stream with chain arcs. Lower per-hit damage than the
+Ion Rifle but much higher volume.
+
 ### 23. Ion Cannon
 
 Clip 3 · Damage 16.7 · Fire 1.0 s · Reload 3.0 s · Electric
+
+Massive 16.7x damage electric blast with AoE chains. Only 3 rounds
+and a slow cycle, but each shot can clear a cluster.
 
 ### 24. Shrinkifier 5k
 
 Clip 8 · Damage 0.0 · Fire 0.21 s · Reload 1.22 s · Bullet
 · [Secret weapon](../secret-weapons.md#shrinkifier-5k)
 
+Shrinks targets to 65% size per hit. Enemies below size 16 die
+instantly, so most fall in a few shots regardless of health.
+
 ### 25. Blade Gun
 
 Clip 6 · Damage 11.0 · Fire 0.35 s · Reload 3.5 s · Bullet
 · [Secret weapon](../secret-weapons.md#blade-gun)
 
+Piercing projectile at 11x damage that cuts through multiple enemies.
+High pierce pool but the 3.5-second reload limits sustained use.
+
 ### 28. Plasma Cannon
 
 Clip 3 · Damage 28.0 · Fire 0.9 s · Reload 2.7 s · Bullet
+
+Highest damage weapon in the game at 28x. Each shot fires a heavy
+primary bolt followed by a spread of smaller homing projectiles.
 
 ### 29. Splitter Gun
 
 Clip 6 · Damage 6.0 · Fire 0.7 s · Reload 2.2 s · Bullet
 · [Secret weapon](../secret-weapons.md#splitter-gun)
 
+Projectiles fork into two children on hit, and children split again on
+subsequent hits. Scales explosively in dense enemy packs.
+
 ### 30. Gauss Shotgun
 
 Clip 4 · Damage 1.0 · Fire 1.05 s · Reload 2.1 s · Bullet
 
+Fires 6 high-penetration gauss pellets per shot. Slow and small clip
+but each blast hits hard at range.
+
 ### 31. Ion Shotgun
 
 Clip 10 · Damage 1.0 · Fire 0.85 s · Reload 1.9 s · 8 pellets · Electric
+
+8 electric pellets with chain arcs. Combines shotgun spread with ion
+AoE for strong crowd damage.
 
 ## Unobtainable weapons
 
@@ -148,21 +234,36 @@ These weapons exist in the weapon table but have no known unlock path.
 
 Clip 30 · Damage 1.0 · Fire 0.009 s · Reload 1.8 s · Fire
 
+Particle stream similar to the Flamethrower. Slightly slower tick rate
+and longer reload, drains 0.1 ammo per tick.
+
 ### 26. Spider Plasma
 
 Clip 5 · Damage 0.5 · Fire 0.2 s · Reload 1.2 s · Bullet
+
+Low-damage plasma bolts with a tiny clip. Appears to be a creature
+weapon repurposed into the weapon table.
 
 ### 27. Evil Scythe
 
 Clip 3 · Damage 1.0 · Fire 1.0 s · Reload 3.0 s · Electric
 
+Shares the Ion Cannon's fire rate and reload but at base 1x damage.
+Likely an early prototype of the Ion Cannon.
+
 ### 32. Flameburst
 
 Clip 60 · Damage 1.0 · Fire 0.02 s · Reload 3.0 s · Electric
 
+Large clip with very fast fire rate in the electric class. Functions
+as a rapid-fire electric stream.
+
 ### 33. RayGun
 
 Clip 12 · Damage 1.0 · Fire 0.7 s · Reload 2.0 s · Electric
+
+Mid-speed electric weapon with no distinctive mechanics. Generic stats
+suggest an unfinished design.
 
 ## Special behaviors
 
