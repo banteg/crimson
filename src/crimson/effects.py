@@ -225,6 +225,20 @@ class ParticlePool:
                 move_scale = max(entry.intensity, 0.15) * 2.5
                 entry.pos = entry.pos + entry.vel * (dt * move_scale)
 
+            alive = entry.intensity > (0.0 if style == 0 else 0.8)
+            if not alive:
+                entry.active = False
+                expired.append(idx)
+                if style == 8 and entry.target_id != -1:
+                    target_id = int(entry.target_id)
+                    entry.target_id = -1
+                    if kill_creature is not None:
+                        kill_creature(target_id, int(entry.owner_id))
+                    elif creatures is not None and 0 <= target_id < len(creatures):
+                        creatures[target_id].hp = -1.0
+                        creatures[target_id].active = False
+                continue
+
             if entry.render_flag:
                 # Random walk drift (native adjusts angle based on `crt_rand`).
                 jitter = float(int(rand()) % 100 - 50) * 0.06 * max(entry.intensity, 0.0) * dt
@@ -246,20 +260,6 @@ class ParticlePool:
             entry.scale_x = shade
             entry.scale_y = shade
             # Native only updates scale_x/scale_y; scale_z stays at its spawn value (1.0).
-
-            alive = entry.intensity > (0.0 if style == 0 else 0.8)
-            if not alive:
-                entry.active = False
-                expired.append(idx)
-                if style == 8 and entry.target_id != -1:
-                    target_id = int(entry.target_id)
-                    entry.target_id = -1
-                    if kill_creature is not None:
-                        kill_creature(target_id, int(entry.owner_id))
-                    elif creatures is not None and 0 <= target_id < len(creatures):
-                        creatures[target_id].hp = -1.0
-                        creatures[target_id].active = False
-                continue
 
             if style == 8 and (not entry.render_flag) and entry.target_id != -1 and creatures is not None:
                 target_id = int(entry.target_id)
