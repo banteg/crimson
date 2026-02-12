@@ -1,4 +1,5 @@
 ---
+icon: lucide/zap
 tags:
   - mechanics
   - modes
