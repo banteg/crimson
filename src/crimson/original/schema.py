@@ -36,6 +36,7 @@ class CaptureConfig(msgspec.Struct):
     enable_rng_hooks: bool = True
     enable_sfx_hooks: bool = True
     enable_damage_hooks: bool = True
+    enable_effect_hooks: bool = True
     creature_damage_projectile_only: bool = True
     enable_spawn_hooks: bool = True
     enable_creature_spawn_hook: bool = True
