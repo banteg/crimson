@@ -31,10 +31,15 @@ timeline keeps advancing. If the table has entries but no creatures have
 been active for over 3 seconds (and timeline > ~1700 ms), the next entry
 is force-triggered to prevent stalls.
 
-### Hardcore scaling
+### Hardcore
 
-On hardcore difficulty, most multi-spawn entries get +8 extra creatures.
-One special entry class gets +2.
+Hardcore difficulty becomes available after completing all tier 1-4
+quests on normal. It maintains a separate progression track: you replay
+quests from 1.1 with tougher spawns. Most multi-spawn entries get +8
+extra creatures, one special entry class gets +2.
+
+Completing all tier 1-4 quests on hardcore unlocks the
+[Splitter Gun](../secret-weapons.md#splitter-gun).
 
 ## Completion
 

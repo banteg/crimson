@@ -11,6 +11,8 @@ tags:
 Shooting is replaced by typing. Creatures are labeled with names, and
 typing a name followed by Enter fires at the matching creature.
 
+Unlocked after completing all tier 1-4 quests on normal difficulty.
+
 ## Starting conditions
 
 - Weapon: typing rifle (internal, not selectable).
