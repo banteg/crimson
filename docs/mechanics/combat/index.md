@@ -1,4 +1,5 @@
 ---
+icon: lucide/swords
 tags:
   - mechanics
   - combat
@@ -6,14 +7,12 @@ tags:
 
 # Combat
 
-This stub index captures high-level player-facing combat behavior.
+Core player-facing combat behavior in one place.
 
-- [Weapons](weapons.md)
+- [Weapons and behavior](weapons.md)
 - [Fire and reload loop](fire-and-reload.md)
 - [Damage and death](damage.md)
 
-## Pending details
+For behavior that lives in the engine implementation, see:
 
-- Per-weapon runtime expectations.
-- Weapon switching behavior under pressure.
-- Shared combat timings across 1/2/4 player.
+- [Combat static analysis](../re/static/combat/index.md)
