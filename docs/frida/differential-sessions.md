@@ -665,6 +665,14 @@ When the capture SHA is unchanged, append updates to the same session.
     - `player_fire.top_player_projectile_spawns_by_player`
   - changed `input_player_keys` fire/reload tracking to **sticky true** within a tick (once true, stays true for that tick),
   - mapped mouse primary queries (`grim_is_mouse_button_down`, `grim_was_mouse_button_pressed`) to player 0 `fire_down`/`fire_pressed`.
+- Updated replay conversion to handle same-tick weapon swaps in computer-aim synthesis:
+  - `src/crimson/original/capture.py` now checks both current and previous checkpoint weapon id hints when inferring `fire_down` from player-owned projectile spawns.
+  - Added regression coverage in `tests/test_original_capture_conversion.py` for weapon-bonus swap ticks (`1 -> 14`) where the spawned projectile type still matches the pre-swap weapon.
+- Updated reload boundary parity in `src/crimson/gameplay.py`:
+  - added underflow epsilon guard to avoid premature preload on tiny float32 underflow,
+  - kept `reload_active` latched until ammo is actually available,
+  - mirrored native "top up on next fire tick after reload completion" behavior for empty clips.
+  - Added regressions in `tests/test_player_update.py`.
 
 ### Validation
 

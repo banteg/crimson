@@ -689,6 +689,7 @@ def _should_synthesize_computer_fire_down(
     fire_pressed_raw: object | None,
     ammo_dropped_since_previous_checkpoint: bool,
     weapon_id_hint: int | None,
+    previous_weapon_id_hint: int | None,
 ) -> bool:
     if aim_scheme is not None and int(aim_scheme) != int(_AIM_SCHEME_COMPUTER):
         return False
@@ -742,6 +743,13 @@ def _should_synthesize_computer_fire_down(
         player_index=int(player_index),
         player_count=int(player_count),
         weapon_id=int(weapon_id_hint),
+    ):
+        return True
+    if previous_weapon_id_hint is not None and _tick_player_weapon_projectile_spawned(
+        tick,
+        player_index=int(player_index),
+        player_count=int(player_count),
+        weapon_id=int(previous_weapon_id_hint),
     ):
         return True
     return _tick_player_projectile_type_spawned(
@@ -1243,6 +1251,7 @@ def convert_capture_to_replay(
         [[0.0, 0.0, [0.0, 0.0], 0] for _ in range(player_count)] for _ in range(total_ticks)
     ]
     previous_checkpoint_ammo: list[float | None] = [None for _ in range(player_count)]
+    previous_checkpoint_weapon_id: list[int | None] = [None for _ in range(player_count)]
     normalized_aim_scheme_overrides = dict(aim_scheme_overrides_by_player or {})
 
     for tick in sorted(capture.ticks, key=lambda item: int(item.tick_index)):
@@ -1271,10 +1280,13 @@ def convert_capture_to_replay(
             ammo_dropped_since_previous_checkpoint = False
 
             checkpoint_ammo: float | None = None
+            checkpoint_weapon_id: int | None = None
             weapon_id_hint: int | None = None
+            previous_weapon_id_hint: int | None = previous_checkpoint_weapon_id[int(player_index)]
             if 0 <= int(player_index) < len(checkpoint_players):
                 checkpoint_ammo = float(checkpoint_players[int(player_index)].ammo)
-                weapon_id_hint = int(checkpoint_players[int(player_index)].weapon_id)
+                checkpoint_weapon_id = int(checkpoint_players[int(player_index)].weapon_id)
+                weapon_id_hint = int(checkpoint_weapon_id)
                 previous_ammo = previous_checkpoint_ammo[int(player_index)]
                 if previous_ammo is not None and float(checkpoint_ammo) < float(previous_ammo) - 1e-6:
                     ammo_dropped_since_previous_checkpoint = True
@@ -1396,6 +1408,7 @@ def convert_capture_to_replay(
                 fire_pressed_raw=fire_pressed_raw,
                 ammo_dropped_since_previous_checkpoint=ammo_dropped_since_previous_checkpoint,
                 weapon_id_hint=weapon_id_hint,
+                previous_weapon_id_hint=previous_weapon_id_hint,
             ):
                 fire_down = True
 
@@ -1407,6 +1420,8 @@ def convert_capture_to_replay(
             inputs[tick_index][player_index] = [float(move_x), float(move_y), [float(aim_x), float(aim_y)], int(flags)]
             if checkpoint_ammo is not None:
                 previous_checkpoint_ammo[int(player_index)] = float(checkpoint_ammo)
+            if checkpoint_weapon_id is not None:
+                previous_checkpoint_weapon_id[int(player_index)] = int(checkpoint_weapon_id)
 
     events: list[object] = []
     if capture.ticks:

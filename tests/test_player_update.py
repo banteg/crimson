@@ -106,6 +106,50 @@ def test_player_update_does_not_preload_ammo_when_reload_timer_is_zero() -> None
     assert math.isclose(player.ammo, -1.0, abs_tol=1e-9)
 
 
+def test_player_update_does_not_preload_ammo_on_tiny_underflow() -> None:
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(50.0, 50.0),
+        weapon_id=int(WeaponId.ION_CANNON),
+        clip_size=6,
+        ammo=-1.0,
+        reload_active=True,
+        reload_timer=0.03199996426701546,
+        reload_timer_max=3.0,
+        shot_cooldown=0.5,
+    )
+
+    player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.03200000151991844, state)
+
+    assert math.isclose(player.ammo, -1.0, abs_tol=1e-9)
+
+
+def test_player_update_tops_up_empty_reload_on_next_fire_tick() -> None:
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(50.0, 50.0),
+        weapon_id=int(WeaponId.ION_CANNON),
+        clip_size=6,
+        ammo=0.0,
+        reload_active=True,
+        reload_timer=0.0,
+        reload_timer_max=3.0,
+        shot_cooldown=0.0,
+    )
+
+    player_update(
+        player,
+        PlayerInput(aim=Vec2(51.0, 50.0), fire_down=True),
+        0.03100000135600567,
+        state,
+    )
+
+    assert math.isclose(player.ammo, 5.0, abs_tol=1e-9)
+    assert player.reload_active is False
+
+
 def test_player_update_move_to_cursor_reload_key_does_not_start_reload() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(50.0, 50.0), clip_size=10, ammo=10)
