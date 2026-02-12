@@ -3576,16 +3576,13 @@ class GameLoopView:
 
         return True
 
-    def _maybe_adopt_menu_ground(self, action: str, view: FrontView) -> None:
+    def _maybe_adopt_menu_ground(self, action: str, _view: FrontView) -> None:
         if action not in {"start_survival", "start_rush"}:
             return
-        ground = self._state.menu_ground
-        if ground is None:
-            return
-        adopter = getattr(view, "adopt_menu_ground", None)
-        if not callable(adopter):
-            return
-        adopter(ground)
+        # Native `game_state_set(9)` always calls `gameplay_reset_state()`, which
+        # runs `terrain_generate_random()`. Menu terrain should carry back to menu,
+        # but entering a fresh gameplay run must regenerate terrain instead of
+        # reusing the captured menu render target.
 
     @staticmethod
     def _steal_ground_from_view(view: FrontView | None) -> GroundRenderer | None:
