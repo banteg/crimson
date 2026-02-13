@@ -17,6 +17,7 @@ from grim.view import ViewContext
 
 from ..sim.input import PlayerInput
 from ..debug import debug_enabled
+from ..net.debug_log import lan_debug_log
 from ..perks.runtime.effects import _creature_find_in_radius
 from ..perks.helpers import perk_count_get
 from ..game_world import GameWorld
@@ -108,6 +109,7 @@ class BaseGameplayMode:
         self._lan_expected_players = 1
         self._lan_connected_players = 1
         self._lan_waiting_for_players = False
+        self._lan_trace_last_ms = -1000.0
 
     def _cvar_float(self, name: str, default: float = 0.0) -> float:
         console = self._console
@@ -222,6 +224,7 @@ class BaseGameplayMode:
         self._last_dt_ms = dt_ui_ms
 
         self._update_ui_mouse()
+        self._trace_lan_state_heartbeat()
 
         pulse_dt = float(min(dt_frame, 0.1)) if clamp_cursor_pulse else dt_frame
         self._cursor_pulse_time += pulse_dt * 1.1
@@ -242,6 +245,16 @@ class BaseGameplayMode:
         self._lan_expected_players = max(1, min(4, int(expected_players)))
         self._lan_connected_players = max(0, min(self._lan_expected_players, int(connected_players)))
         self._lan_waiting_for_players = bool(waiting_for_players)
+        self._lan_trace_last_ms = -1000.0
+        lan_debug_log(
+            "set_lan_runtime",
+            mode=self.__class__.__name__,
+            enabled=bool(self._lan_enabled),
+            role=str(self._lan_role),
+            expected_players=int(self._lan_expected_players),
+            connected_players=int(self._lan_connected_players),
+            waiting_for_players=bool(self._lan_waiting_for_players),
+        )
 
     def _lan_wait_gate_active(self) -> bool:
         if not bool(self._lan_enabled):
@@ -257,6 +270,32 @@ class BaseGameplayMode:
             return
         self._lan_connected_players = int(self._lan_expected_players)
         self._lan_waiting_for_players = False
+        lan_debug_log(
+            "wait_gate_override",
+            mode=self.__class__.__name__,
+            role=str(self._lan_role),
+            connected_players=int(self._lan_connected_players),
+            expected_players=int(self._lan_expected_players),
+        )
+
+    def _trace_lan_state_heartbeat(self) -> None:
+        if not bool(self._lan_enabled):
+            return
+        elapsed_ms = float(self.world._elapsed_ms)
+        if (elapsed_ms - float(self._lan_trace_last_ms)) < 1000.0:
+            return
+        self._lan_trace_last_ms = float(elapsed_ms)
+        lan_debug_log(
+            "mode_heartbeat",
+            mode=self.__class__.__name__,
+            elapsed_ms=int(elapsed_ms),
+            role=str(self._lan_role),
+            expected_players=int(self._lan_expected_players),
+            connected_players=int(self._lan_connected_players),
+            waiting_for_players=bool(self._lan_waiting_for_players),
+            wait_gate_active=bool(self._lan_wait_gate_active()),
+            local_players=int(len(self.world.players)),
+        )
 
     def _draw_lan_debug_info(self, *, x: float, y: float, line_h: float) -> float:
         if (not debug_enabled()) or (not bool(self._lan_enabled)):

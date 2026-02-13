@@ -43,6 +43,9 @@ Notes:
 - Current bring-up behavior: CLI auto-start host sessions skip the wait-gate
   lobby hold so localhost dual-process runs can enter gameplay while live
   transport/lobby runtime wiring is still being integrated.
+- LAN CLI sessions now emit per-process trace logs under
+  `<base-dir>/logs/lan/` (separate host/client files, filename includes role
+  and pid) and print the chosen log path on startup.
 
 ### In-game UI
 
