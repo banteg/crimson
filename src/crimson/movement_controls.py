@@ -19,5 +19,5 @@ def movement_control_type_from_value(
 ) -> MovementControlType:
     try:
         return MovementControlType(int(value))
-    except Exception:
+    except (TypeError, ValueError):
         return MovementControlType.UNKNOWN

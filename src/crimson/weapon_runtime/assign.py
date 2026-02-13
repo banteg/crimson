@@ -5,6 +5,7 @@ from typing import Callable
 
 from ..perks import PerkId
 from ..perks.helpers import perk_active
+from ..persistence.save_status import WEAPON_USAGE_COUNT
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WEAPON_BY_ID, Weapon
 
@@ -42,11 +43,13 @@ def weapon_assign_player(player: PlayerState, weapon_id: int, *, state: Gameplay
     """Assign weapon and reset per-weapon runtime state (ammo/cooldowns)."""
 
     weapon_id = int(weapon_id)
-    if state is not None and state.status is not None and not state.demo_mode_active:
-        try:
-            state.status.increment_weapon_usage(weapon_id)
-        except Exception:
-            pass
+    if (
+        state is not None
+        and state.status is not None
+        and not state.demo_mode_active
+        and 0 <= weapon_id < WEAPON_USAGE_COUNT
+    ):
+        state.status.increment_weapon_usage(weapon_id)
 
     weapon = weapon_entry(weapon_id)
     player.weapon_id = weapon_id

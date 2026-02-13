@@ -13,14 +13,11 @@ def clamp_shots(fired: int, hit: int) -> tuple[int, int]:
 
 
 def shots_from_state(state: GameplayState, *, player_index: int) -> tuple[int, int]:
-    fired = 0
-    hit = 0
-    try:
-        fired = int(state.shots_fired[int(player_index)])
-        hit = int(state.shots_hit[int(player_index)])
-    except Exception:
-        fired = 0
-        hit = 0
+    index = int(player_index)
+    if index < 0 or index >= len(state.shots_fired) or index >= len(state.shots_hit):
+        return 0, 0
+    fired = int(state.shots_fired[index])
+    hit = int(state.shots_hit[index])
     return clamp_shots(fired, hit)
 
 
@@ -57,4 +54,3 @@ def build_highscore_record_for_game_over(
     record.shots_hit = hit
     record.game_mode_id = int(game_mode_id)
     return record
-

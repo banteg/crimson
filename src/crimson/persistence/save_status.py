@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import datetime as dt
 from pathlib import Path
+import warnings
 
-from construct import Array, Bytes, Int16ul, Int32ul, Struct
+from construct import Array, Bytes, ConstructError, Int16ul, Int32ul, Struct
 
 GAME_CFG_NAME = "game.cfg"
 
@@ -226,6 +228,18 @@ def default_status_blob() -> bytes:
     return bytes(BLOB_SIZE)
 
 
+def _backup_corrupt_status(path: Path) -> Path | None:
+    timestamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%SZ")
+    backup_path = path.with_name(f"{path.name}.corrupt.{timestamp}.bak")
+    if backup_path.exists():
+        backup_path = path.with_name(f"{path.name}.corrupt.{timestamp}.{int(path.stat().st_mtime_ns)}.bak")
+    try:
+        path.replace(backup_path)
+    except OSError:
+        return None
+    return backup_path
+
+
 def ensure_game_status(base_dir: Path) -> GameStatus:
     path = base_dir / GAME_CFG_NAME
     if path.exists():
@@ -234,10 +248,21 @@ def ensure_game_status(base_dir: Path) -> GameStatus:
             if not blob.checksum_valid:
                 raise ValueError("checksum mismatch")
             data = parse_status_blob(blob.decoded)
-        except Exception:
+        except (ConstructError, OSError, ValueError) as exc:
+            backup_path = _backup_corrupt_status(path)
             data = default_status_data()
             decoded = build_status_blob(data)
             save_status(path, decoded)
+            if backup_path is not None:
+                warnings.warn(
+                    f"status: failed to load {path} ({exc}); backed up corrupt file to {backup_path} and reset state",
+                    stacklevel=2,
+                )
+            else:
+                warnings.warn(
+                    f"status: failed to load {path} ({exc}); backup failed and state was reset",
+                    stacklevel=2,
+                )
         return GameStatus(path=path, data=data, dirty=False)
     data = default_status_data()
     decoded = build_status_blob(data)

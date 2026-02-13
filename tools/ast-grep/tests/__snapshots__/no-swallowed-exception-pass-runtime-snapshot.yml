@@ -1,0 +1,30 @@
+id: no-swallowed-exception-pass-runtime
+snapshots:
+  ? |
+    try:
+      save_cfg()
+    except Exception:
+      pass
+  : labels:
+    - source: |-
+        try:
+          save_cfg()
+        except Exception:
+          pass
+      style: primary
+      start: 0
+      end: 42
+  ? |
+    try:
+      update_audio_stream()
+    except RuntimeError as err:
+      pass
+  : labels:
+    - source: |-
+        try:
+          update_audio_stream()
+        except RuntimeError as err:
+          pass
+      style: primary
+      start: 0
+      end: 63

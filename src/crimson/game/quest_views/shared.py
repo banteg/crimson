@@ -94,11 +94,13 @@ def _player_name_default(config: CrimsonConfig) -> str:
 
 
 def _next_quest_level(level: str) -> str | None:
+    major_text, dot, minor_text = level.partition(".")
+    if dot == "":
+        return None
     try:
-        major_text, minor_text = level.split(".", 1)
         major = int(major_text)
         minor = int(minor_text)
-    except Exception:
+    except ValueError:
         return None
 
     from ...quests import quest_by_level

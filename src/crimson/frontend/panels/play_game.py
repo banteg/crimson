@@ -188,9 +188,10 @@ class PlayGameMenuView(PanelMenuView):
         if self._dirty:
             try:
                 self.state.config.save()
-            except Exception:
-                pass
-            self._dirty = False
+            except (OSError, ValueError) as exc:
+                self.state.console.log.log(f"config: save failed: {exc}")
+            else:
+                self._dirty = False
         super()._begin_close_transition(action)
 
     def _ensure_small_font(self) -> SmallFontData:

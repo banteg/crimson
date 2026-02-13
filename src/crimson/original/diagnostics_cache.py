@@ -10,7 +10,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, TypeVar, cast
 
 import msgspec
 from platformdirs import PlatformDirs
@@ -81,6 +81,7 @@ _DEFAULT_IDLE_TIMEOUT_SECONDS = 15 * 60
 _FOCUS_NEAR_TICK_WINDOW = 256
 _FOCUS_ANCHOR_INTERVAL = 64
 _FOCUS_ANCHOR_LIMIT = 32
+_DecodedT = TypeVar("_DecodedT")
 
 
 class CaptureFingerprint(msgspec.Struct, forbid_unknown_fields=True):
@@ -711,7 +712,7 @@ def _write_msgpack_gz(path: Path, value: object) -> None:
     _atomic_write_bytes(path, gzip.compress(payload))
 
 
-def _read_msgpack_gz(path: Path, *, type: type[Any] | Any) -> Any:
+def _read_msgpack_gz(path: Path, *, type: type[_DecodedT]) -> _DecodedT:
     raw = gzip.decompress(path.read_bytes())
     return msgspec.msgpack.decode(raw, type=type)
 

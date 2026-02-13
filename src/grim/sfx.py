@@ -14,6 +14,31 @@ from . import sfx_map
 
 SFX_PAK_NAME = "sfx.paq"
 DEFAULT_VOICE_COUNT = 4
+_SFX_RUNTIME_EXCEPTIONS = (RuntimeError, OSError, ValueError)
+
+
+def _stop_sound_safe(sound: rl.Sound) -> bool:
+    try:
+        rl.stop_sound(sound)
+        return True
+    except _SFX_RUNTIME_EXCEPTIONS:
+        return False
+
+
+def _unload_sound_alias_safe(sound: rl.Sound) -> bool:
+    try:
+        rl.unload_sound_alias(sound)
+        return True
+    except _SFX_RUNTIME_EXCEPTIONS:
+        return False
+
+
+def _unload_sound_safe(sound: rl.Sound) -> bool:
+    try:
+        rl.unload_sound(sound)
+        return True
+    except _SFX_RUNTIME_EXCEPTIONS:
+        return False
 
 
 @dataclass(slots=True)
@@ -258,16 +283,10 @@ def shutdown_sfx(state: SfxState) -> None:
         return
     for sample in state.samples.values():
         for alias in sample.aliases:
-            try:
-                rl.stop_sound(alias)
-                rl.unload_sound_alias(alias)
-            except Exception:
-                pass
-        try:
-            rl.stop_sound(sample.source)
-            rl.unload_sound(sample.source)
-        except Exception:
-            pass
+            _stop_sound_safe(alias)
+            _unload_sound_alias_safe(alias)
+        _stop_sound_safe(sample.source)
+        _unload_sound_safe(sample.source)
     state.samples.clear()
     state.entries.clear()
     state.key_to_entry.clear()

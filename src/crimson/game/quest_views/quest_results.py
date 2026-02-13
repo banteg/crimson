@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any, cast
+
 import pyray as rl
 
 from grim.audio import play_sfx, update_audio
@@ -9,6 +11,27 @@ from ...frontend.menu import ensure_menu_ground, menu_ground_camera
 from ...frontend.transitions import _draw_screen_fade
 from ..types import GameState, HighScoresRequest
 from .shared import _next_quest_level, _player_name_default
+
+
+def _parse_level_pair(level: object) -> tuple[int, int]:
+    level_text = str(level or "")
+    major_text, dot, minor_text = level_text.partition(".")
+    if dot == "":
+        return (0, 0)
+    try:
+        return (int(major_text), int(minor_text))
+    except ValueError:
+        return (0, 0)
+
+
+def _int_or_zero(value: object) -> int:
+    if value is None:
+        return 0
+    try:
+        return int(cast(Any, value))
+    except (TypeError, ValueError):
+        return 0
+
 
 class QuestResultsView:
     def __init__(self, state: GameState) -> None:
@@ -44,50 +67,45 @@ class QuestResultsView:
             return
         self._quest_level = str(outcome.level or "")
 
-        major, minor = 0, 0
-        try:
-            major_text, minor_text = outcome.level.split(".", 1)
-            major = int(major_text)
-            minor = int(minor_text)
-        except Exception:
-            major = 0
-            minor = 0
+        major, minor = _parse_level_pair(outcome.level)
         self._quest_stage_major = int(major)
         self._quest_stage_minor = int(minor)
 
         try:
             from ...quests import quest_by_level
+        except ImportError as exc:
+            self._log_nonfatal("quest registry import failed", exc)
+            quest = None
+        else:
+            quest = quest_by_level(str(outcome.level or ""))
 
-            quest = quest_by_level(outcome.level)
-            self._quest_title = quest.title if quest is not None else ""
-            if quest is not None:
-                weapon_id_native = int(quest.unlock_weapon_id or 0)
-                if weapon_id_native > 0:
-                    from ...weapons import WEAPON_BY_ID, weapon_display_name
+        self._quest_title = quest.title if quest is not None else ""
+        if quest is not None:
+            weapon_id_native = _int_or_zero(quest.unlock_weapon_id)
+            if weapon_id_native > 0:
+                from ...weapons import WEAPON_BY_ID, weapon_display_name
 
-                    weapon_entry = WEAPON_BY_ID.get(weapon_id_native)
-                    self._unlock_weapon_name = (
-                        weapon_display_name(weapon_id_native, preserve_bugs=bool(self.state.preserve_bugs))
-                        if weapon_entry is not None and weapon_entry.name
-                        else f"weapon_{weapon_id_native}"
+                weapon_entry = WEAPON_BY_ID.get(weapon_id_native)
+                self._unlock_weapon_name = (
+                    weapon_display_name(weapon_id_native, preserve_bugs=bool(self.state.preserve_bugs))
+                    if weapon_entry is not None and weapon_entry.name
+                    else f"weapon_{weapon_id_native}"
+                )
+
+            from ...perks import PERK_BY_ID, PerkId, perk_display_name
+
+            perk_id = _int_or_zero(quest.unlock_perk_id)
+            if perk_id != int(PerkId.ANTIPERK):
+                perk_entry = PERK_BY_ID.get(perk_id)
+                if perk_entry is not None and perk_entry.name:
+                    fx_toggle = self.state.config.fx_toggle
+                    self._unlock_perk_name = perk_display_name(
+                        perk_id,
+                        fx_toggle=fx_toggle,
+                        preserve_bugs=bool(self.state.preserve_bugs),
                     )
-
-                from ...perks import PERK_BY_ID, PerkId, perk_display_name
-
-                perk_id = int(quest.unlock_perk_id or 0)
-                if perk_id != int(PerkId.ANTIPERK):
-                    perk_entry = PERK_BY_ID.get(perk_id)
-                    if perk_entry is not None and perk_entry.name:
-                        fx_toggle = self.state.config.fx_toggle
-                        self._unlock_perk_name = perk_display_name(
-                            perk_id,
-                            fx_toggle=fx_toggle,
-                            preserve_bugs=bool(self.state.preserve_bugs),
-                        )
-                    else:
-                        self._unlock_perk_name = f"perk_{perk_id}"
-        except Exception:
-            self._quest_title = ""
+                else:
+                    self._unlock_perk_name = f"perk_{perk_id}"
 
         record = HighScoreRecord.blank()
         record.game_mode_id = 3
@@ -122,8 +140,8 @@ class QuestResultsView:
             try:
                 # `sub_447d40` reads completed counts from indices 51..90.
                 self.state.status.increment_quest_play_count(global_index + 51)
-            except Exception:
-                pass
+            except (IndexError, KeyError, TypeError, ValueError) as exc:
+                self._log_nonfatal("failed to increment quest play count", exc)
 
         # Advance quest unlock progression when completing the currently-unlocked quest.
         if global_index >= 0:
@@ -136,13 +154,13 @@ class QuestResultsView:
                 else:
                     if next_unlock > int(self.state.status.quest_unlock_index):
                         self.state.status.quest_unlock_index = next_unlock
-            except Exception:
-                pass
+            except (KeyError, TypeError, ValueError) as exc:
+                self._log_nonfatal("failed to update quest unlock progression", exc)
 
         try:
             self.state.status.save_if_dirty()
-        except Exception:
-            pass
+        except (OSError, ValueError) as exc:
+            self._log_nonfatal("failed to save status", exc)
 
         self._ui = QuestResultsUi(
             assets_root=self.state.assets_dir,
@@ -249,6 +267,8 @@ class QuestResultsView:
         )
         self._action = "open_high_scores"
 
+    def _log_nonfatal(self, message: str, exc: Exception) -> None:
+        self.state.console.log.log(f"quest results: {message}: {exc}")
 
 
 __all__ = ["QuestResultsView"]

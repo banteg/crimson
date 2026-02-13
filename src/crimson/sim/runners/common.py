@@ -98,15 +98,10 @@ def reset_players(
 
 
 def player0_shots(state: GameplayState) -> tuple[int, int]:
-    fired = 0
-    hit = 0
-    try:
-        fired = int(state.shots_fired[0])
-        hit = int(state.shots_hit[0])
-    except Exception:
-        fired = 0
-        hit = 0
-
+    if len(state.shots_fired) <= 0 or len(state.shots_hit) <= 0:
+        return 0, 0
+    fired = int(state.shots_fired[0])
+    hit = int(state.shots_hit[0])
     fired = max(0, int(fired))
     hit = max(0, min(int(hit), fired))
     return fired, hit
