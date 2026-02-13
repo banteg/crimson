@@ -200,6 +200,54 @@ class TrackPlayback:
 _MUSIC_MAX_DT = 0.1
 _MUSIC_FADE_IN_PER_SEC = 1.0
 _MUSIC_FADE_OUT_PER_SEC = 0.5
+_MUSIC_RUNTIME_EXCEPTIONS = (RuntimeError, OSError, ValueError)
+
+
+def _set_music_volume_safe(music: rl.Music, volume: float) -> bool:
+    try:
+        rl.set_music_volume(music, volume)
+        return True
+    except _MUSIC_RUNTIME_EXCEPTIONS:
+        return False
+
+
+def _play_music_stream_safe(music: rl.Music) -> bool:
+    try:
+        rl.play_music_stream(music)
+        return True
+    except _MUSIC_RUNTIME_EXCEPTIONS:
+        return False
+
+
+def _stop_music_stream_safe(music: rl.Music) -> bool:
+    try:
+        rl.stop_music_stream(music)
+        return True
+    except _MUSIC_RUNTIME_EXCEPTIONS:
+        return False
+
+
+def _update_music_stream_safe(music: rl.Music) -> bool:
+    try:
+        rl.update_music_stream(music)
+        return True
+    except _MUSIC_RUNTIME_EXCEPTIONS:
+        return False
+
+
+def _is_music_stream_playing_safe(music: rl.Music) -> bool:
+    try:
+        return bool(rl.is_music_stream_playing(music))
+    except _MUSIC_RUNTIME_EXCEPTIONS:
+        return False
+
+
+def _unload_music_stream_safe(music: rl.Music) -> bool:
+    try:
+        rl.unload_music_stream(music)
+        return True
+    except _MUSIC_RUNTIME_EXCEPTIONS:
+        return False
 
 
 def play_music(state: MusicState, track_name: str) -> None:
@@ -225,14 +273,8 @@ def play_music(state: MusicState, track_name: str) -> None:
     if pb.volume <= 0.0:
         pb.muted = False
         pb.volume = state.volume
-        try:
-            rl.set_music_volume(music, pb.volume)
-        except Exception:
-            pass
-        try:
-            rl.play_music_stream(music)
-        except Exception:
-            pass
+        _set_music_volume_safe(music, pb.volume)
+        _play_music_stream_safe(music)
 
     state.active_track = track_name
 
@@ -291,14 +333,8 @@ def update_music(state: MusicState, dt: float) -> None:
             pb = state.playbacks.pop(track_key, None)
             if pb is None:
                 continue
-            try:
-                rl.set_music_volume(pb.music, 0.0)
-            except Exception:
-                pass
-            try:
-                rl.stop_music_stream(pb.music)
-            except Exception:
-                pass
+            _set_music_volume_safe(pb.music, 0.0)
+            _stop_music_stream_safe(pb.music)
         return
 
     for track_key in list(state.playbacks.keys()):
@@ -308,49 +344,31 @@ def update_music(state: MusicState, dt: float) -> None:
         music = pb.music
 
         # Keep streams serviced while they play.
-        try:
-            if rl.is_music_stream_playing(music):
-                rl.update_music_stream(music)
-        except Exception:
-            pass
+        if _is_music_stream_playing_safe(music):
+            _update_music_stream_safe(music)
 
         muted = pb.muted or target_volume <= 0.0
         if muted:
             pb.volume -= frame_dt * _MUSIC_FADE_OUT_PER_SEC
             if pb.volume <= 0.0:
                 pb.volume = 0.0
-                try:
-                    rl.set_music_volume(music, 0.0)
-                except Exception:
-                    pass
-                try:
-                    rl.stop_music_stream(music)
-                except Exception:
-                    pass
+                _set_music_volume_safe(music, 0.0)
+                _stop_music_stream_safe(music)
                 state.playbacks.pop(track_key, None)
                 continue
-            try:
-                rl.set_music_volume(music, pb.volume)
-            except Exception:
-                pass
+            _set_music_volume_safe(music, pb.volume)
             continue
 
         # Unmuted track: ensure it stays playing and ramp toward target volume.
-        try:
-            if not rl.is_music_stream_playing(music):
-                rl.play_music_stream(music)
-        except Exception:
-            pass
+        if not _is_music_stream_playing_safe(music):
+            _play_music_stream_safe(music)
 
         if pb.volume > target_volume:
             pb.volume = target_volume
         elif pb.volume < target_volume:
             pb.volume = min(target_volume, pb.volume + frame_dt * _MUSIC_FADE_IN_PER_SEC)
 
-        try:
-            rl.set_music_volume(music, pb.volume)
-        except Exception:
-            pass
+        _set_music_volume_safe(music, pb.volume)
 
 
 def set_music_volume(state: MusicState, volume: float) -> None:
@@ -369,27 +387,18 @@ def set_music_volume(state: MusicState, volume: float) -> None:
             continue
         if pb.volume > state.volume:
             pb.volume = state.volume
-        try:
-            rl.set_music_volume(pb.music, pb.volume)
-        except Exception:
-            pass
+        _set_music_volume_safe(pb.music, pb.volume)
 
 
 def shutdown_music(state: MusicState) -> None:
     if not state.ready:
         return
     for pb in list(state.playbacks.values()):
-        try:
-            rl.stop_music_stream(pb.music)
-        except Exception:
-            pass
+        _stop_music_stream_safe(pb.music)
     state.playbacks.clear()
     for music in state.tracks.values():
-        try:
-            rl.stop_music_stream(music)
-            rl.unload_music_stream(music)
-        except Exception:
-            pass
+        _stop_music_stream_safe(music)
+        _unload_music_stream_safe(music)
     state.tracks.clear()
     state.active_track = None
     state.game_tune_started = False
