@@ -26,6 +26,7 @@ from ..frontend.panels.stats import StatisticsMenuView
 from ..frontend.pause_menu import PauseMenuView
 from ..frontend.transitions import _update_screen_fade
 from ..input_codes import input_begin_frame
+from ..quests.types import parse_level
 from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
 from .high_scores_view import HighScoresView
 from .mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
@@ -283,12 +284,11 @@ class GameLoopView:
         quest_major, quest_minor = 0, 0
         if mode_id == 3:
             level = self.state.pending_quest_level or ""
-            try:
-                major_text, minor_text = level.split(".", 1)
-                quest_major = int(major_text)
-                quest_minor = int(minor_text)
-            except Exception:
-                quest_major, quest_minor = 0, 0
+            if level:
+                try:
+                    quest_major, quest_minor = parse_level(level)
+                except ValueError:
+                    quest_major, quest_minor = 0, 0
 
         current = demo_trial_overlay_info(
             demo_build=True,

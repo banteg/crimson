@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ...quests.types import parse_level
+
 
 def ordinal(value: int) -> str:
     n = int(value)
@@ -34,9 +36,8 @@ def parse_quest_level(level: str | None) -> tuple[int, int]:
     if not level:
         return (0, 0)
     try:
-        major_text, minor_text = str(level).split(".", 1)
-        return (int(major_text), int(minor_text))
-    except Exception:
+        return parse_level(str(level))
+    except ValueError:
         return (0, 0)
 
 
