@@ -71,7 +71,6 @@ CRIMSON_CFG_STRUCT = Struct(
     "unknown_440" / Int32ul,
     "unknown_444" / Int32ul,
     "hardcore_flag" / Byte,
-    # `crimsonland.exe` uses this byte as the "UI Info texts" toggle (it gates the perk prompt text).
     "ui_info_texts" / Byte,
     "unknown_44a" / Bytes(2),
     "perk_prompt_counter" / Int32ul,
