@@ -326,6 +326,9 @@ class BaseGameplayMode:
     def menu_ground_camera(self) -> Vec2:
         return self.world.camera
 
+    def console_elapsed_ms(self) -> float:
+        return float(self.world._elapsed_ms)
+
     def _draw_screen_fade(self) -> None:
         fade_alpha = 0.0
         if self._screen_fade is not None:

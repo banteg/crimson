@@ -97,6 +97,7 @@ class GameLoopView:
         console = self.state.console
         console.handle_hotkey()
         console.update(dt)
+        self._sync_console_elapsed_ms()
         _update_screen_fade(self.state, dt)
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_P):
             self._screenshot_requested = True
@@ -275,6 +276,19 @@ class GameLoopView:
         if console.quit_requested:
             self.state.quit_requested = True
             console.quit_requested = False
+
+    def _sync_console_elapsed_ms(self) -> None:
+        views: list[FrontView] = []
+        if self._front_active is not None:
+            views.append(self._front_active)
+        if self._front_stack:
+            views.extend(reversed(self._front_stack))
+        for view in views:
+            getter = getattr(view, "console_elapsed_ms", None)
+            if not callable(getter):
+                continue
+            self.state.survival_elapsed_ms = max(0.0, float(getter()))
+            return
 
     def _update_demo_trial_overlay(self, dt: float) -> bool:
         if not self.state.demo_enabled:

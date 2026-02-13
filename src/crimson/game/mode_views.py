@@ -82,6 +82,12 @@ class _BaseModeGameView:
     def menu_ground_camera(self) -> Vec2:
         return self._mode.menu_ground_camera()
 
+    def console_elapsed_ms(self) -> float:
+        elapsed_ms = getattr(self._mode, "console_elapsed_ms", None)
+        if callable(elapsed_ms):
+            return float(elapsed_ms())
+        return 0.0
+
     def take_action(self) -> str | None:
         action = self._action
         self._action = None

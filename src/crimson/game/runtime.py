@@ -128,7 +128,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         ensure_menu_ground(state, regenerate=True)
 
     def cmd_tell_time_survived(_args: list[str]) -> None:
-        seconds = int(max(0.0, time.monotonic() - state.session_start))
+        seconds = int(max(0.0, float(state.survival_elapsed_ms)) * 0.00100000005)
         console.log.log(f"Survived: {seconds} seconds.")
 
     def cmd_set_resource_paq(args: list[str]) -> None:
