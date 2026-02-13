@@ -25,7 +25,7 @@ from crimson.original.capture import (
     parse_player_int_overrides,
 )
 from crimson.original.schema import CAPTURE_FORMAT_VERSION
-from crimson.replay import UnknownEvent, unpack_input_flags
+from crimson.replay import UnknownEvent, unpack_input_flags, unpack_input_move_key_flags
 from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
 from grim.geom import Vec2
 
@@ -1020,6 +1020,11 @@ def test_convert_capture_to_replay_prefers_input_player_keys_for_digital_move(tm
     assert fire_down is False
     assert fire_pressed is False
     assert reload_pressed is False
+    move_forward, move_backward, turn_left, turn_right = unpack_input_move_key_flags(int(flags))
+    assert move_forward is True
+    assert move_backward is False
+    assert turn_left is True
+    assert turn_right is False
 
     bootstrap = next(
         event
@@ -1057,9 +1062,14 @@ def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capabil
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture)
 
-    move_x, move_y, _aim, _flags = replay.inputs[0][0]
+    move_x, move_y, _aim, flags = replay.inputs[0][0]
     assert move_x == pytest.approx(0.25, abs=1e-6)
     assert move_y == pytest.approx(0.5, abs=1e-6)
+    move_forward, move_backward, turn_left, turn_right = unpack_input_move_key_flags(int(flags))
+    assert move_forward is None
+    assert move_backward is None
+    assert turn_left is None
+    assert turn_right is None
 
     bootstrap = next(
         event
@@ -1117,12 +1127,14 @@ def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_preceden
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture)
 
-    move_x0, move_y0, _aim0, _flags0 = replay.inputs[0][0]
-    move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
+    move_x0, move_y0, _aim0, flags0 = replay.inputs[0][0]
+    move_x1, move_y1, _aim1, flags1 = replay.inputs[1][0]
     assert move_x0 == pytest.approx(1.0, abs=1e-6)
     assert move_y0 == pytest.approx(0.0, abs=1e-6)
     assert move_x1 == pytest.approx(-1.0, abs=1e-6)
     assert move_y1 == pytest.approx(1.0, abs=1e-6)
+    assert unpack_input_move_key_flags(int(flags0)) == (False, False, False, True)
+    assert unpack_input_move_key_flags(int(flags1)) == (False, True, True, True)
 
 
 def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_precedence(tmp_path: Path) -> None:
@@ -1171,12 +1183,14 @@ def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_preceden
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture)
 
-    move_x0, move_y0, _aim0, _flags0 = replay.inputs[0][0]
-    move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
+    move_x0, move_y0, _aim0, flags0 = replay.inputs[0][0]
+    move_x1, move_y1, _aim1, flags1 = replay.inputs[1][0]
     assert move_x0 == pytest.approx(0.0, abs=1e-6)
     assert move_y0 == pytest.approx(1.0, abs=1e-6)
     assert move_x1 == pytest.approx(-1.0, abs=1e-6)
     assert move_y1 == pytest.approx(-1.0, abs=1e-6)
+    assert unpack_input_move_key_flags(int(flags0)) == (False, True, False, False)
+    assert unpack_input_move_key_flags(int(flags1)) == (True, True, True, False)
 
 
 def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_path: Path) -> None:

@@ -19,7 +19,12 @@ from crimson.original.capture import (
     convert_capture_to_replay,
     load_capture,
 )
-from crimson.replay.types import UnknownEvent, unpack_input_flags, unpack_packed_player_input
+from crimson.replay.types import (
+    UnknownEvent,
+    unpack_input_flags,
+    unpack_input_move_key_flags,
+    unpack_packed_player_input,
+)
 from crimson.sim.runners.common import (
     build_damage_scale_by_type,
     build_empty_fx_queues,
@@ -137,6 +142,9 @@ def _decode_inputs_for_tick(
     for packed in packed_tick:
         mx, my, ax, ay, flags = unpack_packed_player_input(packed)
         fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
+        move_forward_pressed, move_backward_pressed, turn_left_pressed, turn_right_pressed = (
+            unpack_input_move_key_flags(int(flags))
+        )
         out.append(
             PlayerInput(
                 move=Vec2(float(mx), float(my)),
@@ -144,10 +152,10 @@ def _decode_inputs_for_tick(
                 fire_down=bool(fire_down),
                 fire_pressed=bool(fire_pressed),
                 reload_pressed=bool(reload_pressed),
-                move_forward_pressed=None,
-                move_backward_pressed=None,
-                turn_left_pressed=None,
-                turn_right_pressed=None,
+                move_forward_pressed=move_forward_pressed,
+                move_backward_pressed=move_backward_pressed,
+                turn_left_pressed=turn_left_pressed,
+                turn_right_pressed=turn_right_pressed,
             )
         )
     return out

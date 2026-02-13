@@ -10,6 +10,11 @@ WEAPON_USAGE_COUNT = 53
 FIRE_DOWN_FLAG = 1 << 0
 FIRE_PRESSED_FLAG = 1 << 1
 RELOAD_PRESSED_FLAG = 1 << 2
+MOVE_KEYS_PRESENT_FLAG = 1 << 3
+MOVE_FORWARD_FLAG = 1 << 4
+MOVE_BACKWARD_FLAG = 1 << 5
+TURN_LEFT_FLAG = 1 << 6
+TURN_RIGHT_FLAG = 1 << 7
 
 InputQuantization: TypeAlias = Literal["raw", "f32"]
 
@@ -20,7 +25,16 @@ def _default_game_version() -> str:
     return str(__version__)
 
 
-def pack_input_flags(*, fire_down: bool, fire_pressed: bool, reload_pressed: bool) -> int:
+def pack_input_flags(
+    *,
+    fire_down: bool,
+    fire_pressed: bool,
+    reload_pressed: bool,
+    move_forward_pressed: bool | None = None,
+    move_backward_pressed: bool | None = None,
+    turn_left_pressed: bool | None = None,
+    turn_right_pressed: bool | None = None,
+) -> int:
     flags = 0
     if fire_down:
         flags |= FIRE_DOWN_FLAG
@@ -28,6 +42,22 @@ def pack_input_flags(*, fire_down: bool, fire_pressed: bool, reload_pressed: boo
         flags |= FIRE_PRESSED_FLAG
     if reload_pressed:
         flags |= RELOAD_PRESSED_FLAG
+    key_fields = (
+        move_forward_pressed,
+        move_backward_pressed,
+        turn_left_pressed,
+        turn_right_pressed,
+    )
+    if any(field is not None for field in key_fields):
+        flags |= MOVE_KEYS_PRESENT_FLAG
+        if bool(move_forward_pressed):
+            flags |= MOVE_FORWARD_FLAG
+        if bool(move_backward_pressed):
+            flags |= MOVE_BACKWARD_FLAG
+        if bool(turn_left_pressed):
+            flags |= TURN_LEFT_FLAG
+        if bool(turn_right_pressed):
+            flags |= TURN_RIGHT_FLAG
     return int(flags)
 
 
@@ -37,6 +67,18 @@ def unpack_input_flags(flags: int) -> tuple[bool, bool, bool]:
         bool(flags & FIRE_DOWN_FLAG),
         bool(flags & FIRE_PRESSED_FLAG),
         bool(flags & RELOAD_PRESSED_FLAG),
+    )
+
+
+def unpack_input_move_key_flags(flags: int) -> tuple[bool | None, bool | None, bool | None, bool | None]:
+    flags = int(flags)
+    if not bool(flags & MOVE_KEYS_PRESENT_FLAG):
+        return None, None, None, None
+    return (
+        bool(flags & MOVE_FORWARD_FLAG),
+        bool(flags & MOVE_BACKWARD_FLAG),
+        bool(flags & TURN_LEFT_FLAG),
+        bool(flags & TURN_RIGHT_FLAG),
     )
 
 
