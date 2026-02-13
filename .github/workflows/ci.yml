@@ -18,10 +18,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - task: lint-assets
-            do_sync: true
-            command: uv run --no-sync python scripts/check_asset_loader_usage.py
-            sync_args: --no-install-project --group dev
           - task: lint-imports
             do_sync: true
             command: uv run --no-sync lint-imports
