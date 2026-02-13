@@ -75,6 +75,13 @@ def _is_orbes_volantes_day(today: dt.date) -> bool:
     return int(today.month) == 3 and int(today.day) == 3
 
 
+def _format_playtime_text(game_sequence_ms: int) -> str:
+    total_minutes = (max(0, int(game_sequence_ms)) // 1000) // 60
+    hours = total_minutes // 60
+    minutes = total_minutes % 60
+    return f"played for {hours} hours {minutes} minutes"
+
+
 class StatisticsMenuView:
     """
     Classic "Statistics" menu (state_id=4).
@@ -342,20 +349,9 @@ class StatisticsMenuView:
 
         # "played for # hours # minutes"
         font = self._ensure_small_font()
-        playtime_text = "played for 0 hours 0 minutes"
-        try:
-            # The classic menu shows a coarse playtime summary; our persisted value is ms.
-            ms = max(0, int(self.state.status.game_sequence_id))
-            minutes = (ms // 1000) // 60
-            hours = minutes // 60
-            minutes %= 60
-            playtime_text = f"played for {hours} hours {minutes} minutes"
-        except Exception:
-            playtime_text = "played for ? hours ? minutes"
-
         draw_small_text(
             font,
-            playtime_text,
+            _format_playtime_text(int(self.state.status.game_sequence_id)),
             panel_top_left + Vec2(_PLAYTIME_X * scale, _PLAYTIME_Y * scale),
             1.0 * scale,
             rl.Color(255, 255, 255, int(255 * 0.8)),
