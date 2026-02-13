@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Callable, MutableSequence, Sequence
 from grim.geom import Vec2
 
 from ...creatures.spawn import CreatureFlags
+from ...math_parity import f32
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..effects import (
     _spawn_ion_hit_effects,
@@ -82,16 +83,20 @@ class ProjectileBehavior:
     post_hit_creature: ProjectilePostHitCreatureHandler | None = None
 
 
+def _life_timer_sub_f32(life_timer: float, amount: float) -> float:
+    return float(f32(float(life_timer) - float(amount)))
+
+
 def _linger_default(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
-    proj.life_timer -= ctx.dt
+    proj.life_timer = _life_timer_sub_f32(float(proj.life_timer), float(ctx.dt))
 
 
 def _linger_gauss_gun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
-    proj.life_timer -= ctx.dt * 0.1
+    proj.life_timer = _life_timer_sub_f32(float(proj.life_timer), float(ctx.dt) * 0.1)
 
 
 def _linger_ion_minigun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
-    proj.life_timer -= ctx.dt
+    proj.life_timer = _life_timer_sub_f32(float(proj.life_timer), float(ctx.dt))
     damage = ctx.dt * 40.0
     radius = ctx.ion_scale * 60.0
     for creature_idx, creature in enumerate(ctx.creatures):
@@ -114,7 +119,7 @@ def _linger_ion_minigun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
 
 
 def _linger_ion_rifle(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
-    proj.life_timer -= ctx.dt
+    proj.life_timer = _life_timer_sub_f32(float(proj.life_timer), float(ctx.dt))
     damage = ctx.dt * 100.0
     radius = ctx.ion_scale * 88.0
     for creature_idx, creature in enumerate(ctx.creatures):
@@ -137,7 +142,7 @@ def _linger_ion_rifle(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
 
 
 def _linger_ion_cannon(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
-    proj.life_timer -= ctx.dt * 0.7
+    proj.life_timer = _life_timer_sub_f32(float(proj.life_timer), float(ctx.dt) * 0.7)
     damage = ctx.dt * 300.0
     radius = ctx.ion_scale * 128.0
     for creature_idx, creature in enumerate(ctx.creatures):

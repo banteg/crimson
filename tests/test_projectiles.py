@@ -235,6 +235,32 @@ def test_projectile_pool_update_expired_ion_still_runs_linger_once() -> None:
     assert owner_id == -100
 
 
+def test_projectile_life_timer_f32_decay_delays_deactivate_by_one_tick() -> None:
+    pool = ProjectilePool(size=1)
+    idx = pool.spawn(
+        pos=Vec2(1200.0, 1200.0),
+        angle=math.pi / 2.0,
+        type_id=int(ProjectileTypeId.SPLITTER_GUN),
+        owner_id=0,
+        base_damage=1.0,
+    )
+    proj = pool.entries[idx]
+
+    for _ in range(4):
+        pool.update(0.1, [], world_size=1024.0)
+
+    assert proj.active is True
+    assert 0.0 < float(proj.life_timer) < 5e-8
+
+    pool.update(0.1, [], world_size=1024.0)
+    assert proj.active is True
+    assert proj.life_timer < 0.0
+    assert math.isclose(float(proj.life_timer), -0.09999998658895493, abs_tol=1e-9)
+
+    pool.update(0.1, [], world_size=1024.0)
+    assert proj.active is False
+
+
 def test_projectile_pool_update_ion_hit_spawns_ring_and_burst_effects() -> None:
     state = GameplayState()
     state.projectiles.spawn(
@@ -328,7 +354,7 @@ def test_projectile_pool_emits_hit_event_and_enters_hit_state() -> None:
         speed_by_type={4: 100.0},
         damage_by_type={4: 18.0},
     )
-    assert math.isclose(proj.life_timer, 0.15, abs_tol=1e-9)
+    assert math.isclose(proj.life_timer, 0.15, abs_tol=1e-6)
 
 
 def test_projectile_pool_demo_type_0x0b_does_not_splash_nearby_creatures() -> None:

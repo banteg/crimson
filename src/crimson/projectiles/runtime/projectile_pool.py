@@ -231,7 +231,7 @@ class ProjectilePool:
                 or proj.pos.x > world_size + margin
                 or proj.pos.y > world_size + margin
             ):
-                proj.life_timer -= dt
+                proj.life_timer = float(f32(float(proj.life_timer) - float(dt)))
                 continue
 
             steps = int(proj.base_damage)
@@ -530,7 +530,7 @@ class ProjectilePool:
                         hit_r = radius + creature_radius
                         if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
                             creature.hp -= damage
-                proj.life_timer -= dt
+                proj.life_timer = float(f32(float(proj.life_timer) - float(dt)))
                 continue
 
             if (
@@ -539,7 +539,7 @@ class ProjectilePool:
                 or proj.pos.x > world_size + margin
                 or proj.pos.y > world_size + margin
             ):
-                proj.life_timer -= dt
+                proj.life_timer = float(f32(float(proj.life_timer) - float(dt)))
                 continue
 
             speed = speed_by_type.get(proj.type_id, 650.0) * proj.speed_scale
@@ -574,5 +574,4 @@ class ProjectilePool:
             proj.life_timer = 0.25
 
         return hits
-
 
