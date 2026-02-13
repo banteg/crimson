@@ -222,6 +222,20 @@ def _resolve_dt_frame_ms_i32(
     return int(dt_ms_i32)
 
 
+def _should_apply_world_dt_steps_for_replay(
+    *,
+    original_capture_replay: bool,
+    dt_frame_overrides: dict[int, float] | None,
+    dt_frame_ms_i32_overrides: dict[int, int] | None,
+) -> bool:
+    if not bool(original_capture_replay):
+        return True
+    has_capture_dt_overrides = bool(dt_frame_overrides) or bool(dt_frame_ms_i32_overrides)
+    if bool(has_capture_dt_overrides):
+        return False
+    return True
+
+
 def run_survival_replay(
     replay: Replay,
     *,
@@ -270,6 +284,18 @@ def run_survival_replay(
     )
     world.state.rng.srand(int(replay.header.seed))
 
+    events_by_tick: dict[int, list[object]] = {}
+    original_capture_replay = False
+    for event in replay.events:
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
+            original_capture_replay = True
+        events_by_tick.setdefault(int(event.tick_index), []).append(event)
+    apply_world_dt_steps = _should_apply_world_dt_steps_for_replay(
+        original_capture_replay=bool(original_capture_replay),
+        dt_frame_overrides=dt_frame_overrides,
+        dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
+    )
+
     fx_queue, fx_queue_rotated = build_empty_fx_queues()
     damage_scale_by_type = build_damage_scale_by_type()
     session = SurvivalDeterministicSession(
@@ -281,15 +307,9 @@ def run_survival_replay(
         detail_preset=5,
         fx_toggle=0,
         game_tune_started=False,
+        apply_world_dt_steps=bool(apply_world_dt_steps),
         clear_fx_queues_each_tick=True,
     )
-
-    events_by_tick: dict[int, list[object]] = {}
-    original_capture_replay = False
-    for event in replay.events:
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
-            original_capture_replay = True
-        events_by_tick.setdefault(int(event.tick_index), []).append(event)
 
     inputs = replay.inputs
     tick_limit = len(inputs) if max_ticks is None else min(len(inputs), max(0, int(max_ticks)))

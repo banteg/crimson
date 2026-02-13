@@ -33,6 +33,7 @@ class SurvivalDeterministicSession:
     auto_pick_perks: bool = False
     demo_mode_active: bool = False
     perk_progression_enabled: bool = True
+    apply_world_dt_steps: bool = True
     clear_fx_queues_each_tick: bool = False
     elapsed_ms: float = 0.0
     stage: int = 0
@@ -110,6 +111,7 @@ class SurvivalDeterministicSession:
             world=self.world,
             dt_frame=float(dt_frame),
             dt_frame_ms_i32=(int(dt_frame_ms_i32) if dt_frame_ms_i32 is not None else None),
+            apply_world_dt_steps=bool(self.apply_world_dt_steps),
             inputs=inputs,
             world_size=float(self.world_size),
             damage_scale_by_type=self.damage_scale_by_type,

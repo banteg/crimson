@@ -66,6 +66,7 @@ def run_deterministic_step(
     world: WorldState,
     dt_frame: float,
     dt_frame_ms_i32: int | None = None,
+    apply_world_dt_steps: bool = True,
     inputs: list[PlayerInput] | None,
     world_size: float,
     damage_scale_by_type: dict[int, float],
@@ -123,6 +124,7 @@ def run_deterministic_step(
 
     events = world.step(
         float(dt_sim),
+        apply_world_dt_steps=bool(apply_world_dt_steps),
         dt_ms_i32=(int(dt_sim_ms_i32) if dt_sim_ms_i32 is not None else None),
         defer_camera_shake_update=bool(defer_camera_shake_update),
         defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),

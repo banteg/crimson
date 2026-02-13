@@ -94,6 +94,7 @@ class WorldState:
         self,
         dt: float,
         *,
+        apply_world_dt_steps: bool = True,
         dt_ms_i32: int | None = None,
         defer_camera_shake_update: bool = False,
         defer_freeze_corpse_fx: bool = False,
@@ -117,8 +118,9 @@ class WorldState:
             rng_marks[str(name)] = int(self.state.rng.state)
 
         dt = float(dt)
-        for step in _WORLD_DT_STEPS:
-            dt = float(step(dt=dt, players=self.players))
+        if bool(apply_world_dt_steps):
+            for step in _WORLD_DT_STEPS:
+                dt = float(step(dt=dt, players=self.players))
         _mark("ws_begin")
         inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
         prev_positions = [(player.pos.x, player.pos.y) for player in self.players]

@@ -32,6 +32,7 @@ from crimson.sim.runners.survival import (
     _apply_tick_events,
     _partition_tick_events,
     _resolve_dt_frame,
+    _should_apply_world_dt_steps_for_replay,
 )
 from crimson.sim.sessions import SurvivalDeterministicSession
 from crimson.sim.world_state import WorldState
@@ -177,6 +178,11 @@ class _FocusRuntime:
         self.events_by_tick, self.original_capture_replay = _load_capture_events(replay)
         self.dt_frame_overrides = build_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
         self.dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
+        self.apply_world_dt_steps = _should_apply_world_dt_steps_for_replay(
+            original_capture_replay=bool(self.original_capture_replay),
+            dt_frame_overrides=self.dt_frame_overrides,
+            dt_frame_ms_i32_overrides=self.dt_frame_ms_i32_overrides,
+        )
         self.default_dt_frame = 1.0 / float(int(replay.header.tick_rate))
         self.outside_draws_by_tick = {
             int(item.tick_index): int(item.rng.outside_before_calls)
@@ -223,6 +229,7 @@ class _FocusRuntime:
             detail_preset=5,
             fx_toggle=0,
             game_tune_started=False,
+            apply_world_dt_steps=bool(self.apply_world_dt_steps),
             clear_fx_queues_each_tick=True,
         )
         return world, session

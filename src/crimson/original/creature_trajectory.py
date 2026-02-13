@@ -13,19 +13,24 @@ from grim.geom import Vec2
 from crimson.game_modes import GameMode
 from crimson.sim.input import PlayerInput
 from crimson.original.capture import (
+    CAPTURE_BOOTSTRAP_EVENT_KIND,
     build_capture_dt_frame_overrides,
     build_capture_dt_frame_ms_i32_overrides,
     convert_capture_to_replay,
     load_capture,
 )
-from crimson.replay.types import unpack_input_flags, unpack_packed_player_input
+from crimson.replay.types import UnknownEvent, unpack_input_flags, unpack_packed_player_input
 from crimson.sim.runners.common import (
     build_damage_scale_by_type,
     build_empty_fx_queues,
     reset_players,
     status_from_snapshot,
 )
-from crimson.sim.runners.survival import _apply_tick_events, _resolve_dt_frame
+from crimson.sim.runners.survival import (
+    _apply_tick_events,
+    _resolve_dt_frame,
+    _should_apply_world_dt_steps_for_replay,
+)
 from crimson.sim.sessions import SurvivalDeterministicSession
 from crimson.sim.world_state import WorldState
 
@@ -112,11 +117,14 @@ def _read_capture_creature_samples(
     return out
 
 
-def _load_capture_events(replay: Any) -> dict[int, list[object]]:
+def _load_capture_events(replay: Any) -> tuple[dict[int, list[object]], bool]:
     events_by_tick: dict[int, list[object]] = {}
+    original_capture_replay = False
     for event in replay.events:
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
+            original_capture_replay = True
         events_by_tick.setdefault(int(event.tick_index), []).append(event)
-    return events_by_tick
+    return events_by_tick, original_capture_replay
 
 
 def _decode_inputs_for_tick(
@@ -196,9 +204,14 @@ def trace_creature_trajectory(
         clear_fx_queues_each_tick=True,
     )
 
-    events_by_tick = _load_capture_events(replay)
+    events_by_tick, original_capture_replay = _load_capture_events(replay)
     dt_frame_overrides = build_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
     dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
+    session.apply_world_dt_steps = _should_apply_world_dt_steps_for_replay(
+        original_capture_replay=bool(original_capture_replay),
+        dt_frame_overrides=dt_frame_overrides,
+        dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
+    )
     default_dt_frame = 1.0 / float(int(replay.header.tick_rate))
 
     out: list[CreatureTrajectoryRow] = []

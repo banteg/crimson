@@ -36,6 +36,7 @@ from crimson.sim.runners.survival import (
     _apply_tick_events,
     _partition_tick_events,
     _resolve_dt_frame,
+    _should_apply_world_dt_steps_for_replay,
 )
 from crimson.sim.sessions import SurvivalDeterministicSession
 from crimson.sim.world_state import WorldState
@@ -690,6 +691,11 @@ def trace_focus_tick(
     events_by_tick, original_capture_replay = _load_capture_events(replay)
     dt_frame_overrides = build_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
     dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
+    session.apply_world_dt_steps = _should_apply_world_dt_steps_for_replay(
+        original_capture_replay=bool(original_capture_replay),
+        dt_frame_overrides=dt_frame_overrides,
+        dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
+    )
     default_dt_frame = 1.0 / float(int(replay.header.tick_rate))
     outside_draws_by_tick = {
         int(item.tick_index): int(item.rng.outside_before_calls)
