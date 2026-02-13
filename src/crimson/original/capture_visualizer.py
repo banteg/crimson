@@ -1390,10 +1390,30 @@ class CaptureVisualizerView:
             return
         if self._row_cursor >= self._visible_end_idx:
             return
+        if self._step_interval <= 0.0:
+            self._step_interval = 1.0 / 60.0
         self._trace_fade_dt = float(sim_dt)
         self._accumulator += float(sim_dt)
-        while self._accumulator >= float(self._step_interval):
-            self._accumulator -= float(self._step_interval)
+        while self._row_cursor < self._visible_end_idx:
+            next_idx = int(self._row_cursor) + 1
+            if next_idx < self._visible_start_idx:
+                next_idx = int(self._visible_start_idx)
+            if next_idx > self._visible_end_idx:
+                break
+            next_row = self._rows[int(next_idx)]
+            tick_interval = _resolve_dt_frame(
+                tick_index=int(next_row.tick_index),
+                default_dt_frame=float(self._step_interval),
+                dt_frame_overrides=self._dt_frame_overrides,
+            )
+            if float(tick_interval) <= 0.0:
+                tick_interval = float(self._step_interval)
+            tick_advance = float(tick_interval)
+            if tick_advance <= 0.0:
+                tick_advance = float(self._step_interval)
+            if self._accumulator < float(tick_advance):
+                break
+            self._accumulator -= float(tick_advance)
             if not self._advance_one_tick():
                 self._paused = True
                 break
