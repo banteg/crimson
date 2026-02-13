@@ -42,7 +42,7 @@ def test_survival_mode_uses_config_player_count(tmp_path: Path) -> None:
     ctx = ViewContext(assets_dir=assets_dir)
 
     mode = SurvivalMode(ctx, config=cfg)
-    assert len(mode._world.players) == 2  # intentional: wiring smoke test
+    assert len(mode.world.players) == 2  # intentional: wiring smoke test
 
 
 def test_quest_mode_update_uses_per_player_input_frame(monkeypatch, tmp_path: Path) -> None:
@@ -54,7 +54,7 @@ def test_quest_mode_update_uses_per_player_input_frame(monkeypatch, tmp_path: Pa
     ctx = ViewContext(assets_dir=assets_dir)
     mode = QuestMode(ctx, config=cfg)
 
-    inputs = [PlayerInput(move=Vec2(float(idx), 0.0)) for idx in range(len(mode._world.players))]
+    inputs = [PlayerInput(move=Vec2(float(idx), 0.0)) for idx in range(len(mode.world.players))]
     captured: dict[str, object] = {}
 
     def _world_update(_self, _dt, *, inputs=None, **_kwargs):  # noqa: ANN001
@@ -102,5 +102,5 @@ def test_base_gameplay_build_local_inputs_passes_creatures(monkeypatch, tmp_path
 
     frame = mode._build_local_inputs(dt_frame=0.016)
 
-    assert len(frame) == len(mode._world.players)
-    assert captured["creatures"] is mode._creatures.entries
+    assert len(frame) == len(mode.world.players)
+    assert captured["creatures"] is mode.creatures.entries

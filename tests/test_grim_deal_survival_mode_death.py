@@ -31,7 +31,7 @@ def _install_minimal_sim_session(mode: SurvivalMode, monkeypatch) -> None:
         def step_tick(self, *, dt_frame: float, inputs):  # noqa: ANN001
             _ = inputs
             self.elapsed_ms += float(dt_frame) * 1000.0
-            for player in mode._world.players:
+            for player in mode.world.players:
                 if float(player.health) <= 0.0:
                     player.death_timer -= float(dt_frame) * 20.0
             step = SimpleNamespace(events=SimpleNamespace(deaths=()), command_hash=0)
@@ -46,13 +46,13 @@ def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_
     monkeypatch.setattr("crimson.ui.game_over.GameOverUi.open", lambda self: None)  # noqa: ARG005
     _install_minimal_sim_session(mode, monkeypatch)
 
-    assert mode._player.health > 0.0
-    mode._player.death_timer = 0.3
+    assert mode.player.health > 0.0
+    mode.player.death_timer = 0.3
     mode._perk_menu.open = True
     mode._perk_menu.timeline_ms = 100.0
 
     def _apply_grim_deal_and_close(_ctx, *, dt_frame: float, dt_ui_ms: float) -> None:
-        perk_apply(mode.state, mode._world.players, PerkId.GRIM_DEAL)
+        perk_apply(mode.state, mode.world.players, PerkId.GRIM_DEAL)
         mode._perk_menu.close()
 
     monkeypatch.setattr(mode._perk_menu, "handle_input", _apply_grim_deal_and_close)
@@ -64,7 +64,7 @@ def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_
 
     mode.update(1.0 / 60.0)
 
-    assert mode._player.health < 0.0
+    assert mode.player.health < 0.0
     assert mode._game_over_active is False
     for _ in range(120):
         mode.update(1.0 / 60.0)

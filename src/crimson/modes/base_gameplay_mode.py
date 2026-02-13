@@ -73,7 +73,7 @@ class BaseGameplayMode:
         self._paused = False
         self._status: GameStatus | None = None
 
-        self._world = GameWorld(
+        self.world = GameWorld(
             assets_dir=ctx.assets_dir,
             world_size=float(world_size),
             demo_mode_active=bool(demo_mode_active),
@@ -119,16 +119,16 @@ class BaseGameplayMode:
         return self.config.game_mode
 
     def _draw_target_health_bar(self, *, alpha: float = 1.0) -> None:
-        creatures = getattr(self._creatures, "entries", [])
+        creatures = getattr(self.creatures, "entries", [])
         if not creatures:
             return
 
-        if perk_count_get(self._player, PerkId.DOCTOR) <= 0:
+        if perk_count_get(self.player, PerkId.DOCTOR) <= 0:
             return
 
         target_idx = _creature_find_in_radius(
             creatures,
-            pos=self._player.aim,
+            pos=self.player.aim,
             radius=12.0,
             start_index=0,
         )
@@ -149,21 +149,21 @@ class BaseGameplayMode:
         if ratio > 1.0:
             ratio = 1.0
 
-        screen_left = self._world.world_to_screen(creature.pos + Vec2(-32.0, 32.0))
-        screen_right = self._world.world_to_screen(creature.pos + Vec2(32.0, 32.0))
+        screen_left = self.world.world_to_screen(creature.pos + Vec2(-32.0, 32.0))
+        screen_right = self.world.world_to_screen(creature.pos + Vec2(32.0, 32.0))
         width = screen_right.x - screen_left.x
         if width <= 1e-3:
             return
         draw_target_health_bar(pos=screen_left, width=width, ratio=ratio, alpha=alpha, scale=width / 64.0)
 
     def _bind_world(self) -> None:
-        self.state = self._world.state
-        self._creatures = self._world.creatures
-        self._player = self._world.players[0]
+        self.state = self.world.state
+        self.creatures = self.world.creatures
+        self.player = self.world.players[0]
         self.state.status = self._status
 
     def _any_player_alive(self) -> bool:
-        return any(player.health > 0.0 for player in self._world.players)
+        return any(player.health > 0.0 for player in self.world.players)
 
     def bind_status(self, status: GameStatus | None) -> None:
         self._status = status
@@ -173,12 +173,12 @@ class BaseGameplayMode:
         self._screen_fade = fade
 
     def bind_audio(self, audio: AudioState | None, audio_rng: random.Random | None) -> None:
-        self._world.audio = audio
-        self._world.audio_rng = audio_rng
+        self.world.audio = audio
+        self.world.audio_rng = audio_rng
 
     def _update_audio(self, dt: float) -> None:
-        if self._world.audio is not None:
-            update_audio(self._world.audio, dt)
+        if self.world.audio is not None:
+            update_audio(self.world.audio, dt)
 
     def _ui_line_height(self, scale: float = 1.0) -> int:
         if self._small is not None:
@@ -248,10 +248,10 @@ class BaseGameplayMode:
 
         player_count = self.config.player_count
         seed = random.getrandbits(32)
-        self._world.reset(seed=seed, player_count=max(1, min(4, player_count)))
-        self._world.open()
+        self.world.reset(seed=seed, player_count=max(1, min(4, player_count)))
+        self.world.open()
         self._bind_world()
-        self._local_input.reset(players=self._world.players)
+        self._local_input.reset(players=self.world.players)
 
         self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
         self._cursor_pulse_time = 0.0
@@ -262,7 +262,7 @@ class BaseGameplayMode:
             rl.unload_texture(self._small.texture)
             self._small = None
         self._hud_assets = None
-        self._world.close()
+        self.world.close()
 
     def take_action(self) -> str | None:
         action = self._action
@@ -284,7 +284,7 @@ class BaseGameplayMode:
             dt,
             record=record,
             player_name_default=self._player_name_default(),
-            play_sfx=self._world.audio_router.play_sfx,
+            play_sfx=self.world.audio_router.play_sfx,
             rand=self.state.rng.rand,
             mouse=self._ui_mouse_pos(),
         )
@@ -309,25 +309,25 @@ class BaseGameplayMode:
             alpha = 0.0
         elif alpha > 1.0:
             alpha = 1.0
-        self._world.draw(draw_aim_indicators=False, entity_alpha=self._world_entity_alpha() * alpha)
+        self.world.draw(draw_aim_indicators=False, entity_alpha=self._world_entity_alpha() * alpha)
 
     def steal_ground_for_menu(self):
-        ground = self._world.ground
-        self._world.ground = None
+        ground = self.world.ground
+        self.world.ground = None
         return ground
 
     def adopt_ground_from_menu(self, ground: GroundRenderer | None) -> None:
         if ground is None:
             return
-        current = self._world.ground
+        current = self.world.ground
         if current is not None and current is not ground and current.render_target is not None:
             rl.unload_render_texture(current.render_target)
             current.render_target = None
-        self._world.ground = ground
-        self._world._sync_ground_settings()
+        self.world.ground = ground
+        self.world._sync_ground_settings()
 
     def menu_ground_camera(self) -> Vec2:
-        return self._world.camera
+        return self.world.camera
 
     def _draw_screen_fade(self) -> None:
         fade_alpha = 0.0
@@ -340,12 +340,12 @@ class BaseGameplayMode:
 
     def _build_local_inputs(self, *, dt_frame: float) -> list[PlayerInput]:
         return self._local_input.build_frame_inputs(
-            players=self._world.players,
+            players=self.world.players,
             config=self.config,
             mouse_screen=self._ui_mouse,
-            screen_to_world=self._world.screen_to_world,
+            screen_to_world=self.world.screen_to_world,
             dt_frame=float(dt_frame),
-            creatures=self._creatures.entries,
+            creatures=self.creatures.entries,
         )
 
     @staticmethod

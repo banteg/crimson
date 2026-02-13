@@ -108,7 +108,7 @@ class RushMode(BaseGameplayMode):
         self._replay_checkpoints.append(
             build_checkpoint(
                 tick_index=int(tick_index),
-                world=self._world.world_state,
+                world=self.world.world_state,
                 elapsed_ms=float(self._rush.elapsed_ms),
                 rng_marks=rng_marks,
                 deaths=deaths,
@@ -119,7 +119,7 @@ class RushMode(BaseGameplayMode):
         self._replay_checkpoints_last_tick = int(tick_index)
 
     def _enforce_rush_loadout(self) -> None:
-        for player in self._world.players:
+        for player in self.world.players:
             if int(player.weapon_id) != RUSH_WEAPON_ID:
                 weapon_assign_player(player, RUSH_WEAPON_ID)
             # `rush_mode_update` forces weapon+ammo every frame; keep ammo topped up.
@@ -133,14 +133,14 @@ class RushMode(BaseGameplayMode):
         self._rush = _RushState()
         self._sim_clock.reset()
         self._sim_session = RushDeterministicSession(
-            world=self._world.world_state,
-            world_size=float(self._world.world_size),
-            damage_scale_by_type=self._world._damage_scale_by_type,
-            fx_queue=self._world.fx_queue,
-            fx_queue_rotated=self._world.fx_queue_rotated,
+            world=self.world.world_state,
+            world_size=float(self.world.world_size),
+            damage_scale_by_type=self.world._damage_scale_by_type,
+            fx_queue=self.world.fx_queue,
+            fx_queue_rotated=self.world.fx_queue_rotated,
             detail_preset=5,
             fx_toggle=0,
-            game_tune_started=bool(self._world._game_tune_started),
+            game_tune_started=bool(self.world._game_tune_started),
             clear_fx_queues_each_tick=False,
             enforce_loadout=self._enforce_rush_loadout,
         )
@@ -171,11 +171,11 @@ class RushMode(BaseGameplayMode):
                 game_mode_id=int(GameMode.RUSH),
                 seed=int(self.state.rng.state),
                 tick_rate=int(self._sim_clock.tick_rate),
-                difficulty_level=int(self._world.difficulty_level),
-                hardcore=bool(self._world.hardcore),
-                preserve_bugs=bool(self._world.preserve_bugs),
-                world_size=float(self._world.world_size),
-                player_count=len(self._world.players),
+                difficulty_level=int(self.world.difficulty_level),
+                hardcore=bool(self.world.hardcore),
+                preserve_bugs=bool(self.world.preserve_bugs),
+                world_size=float(self.world.world_size),
+                player_count=len(self.world.players),
                 status=status_snapshot,
             )
         )
@@ -214,9 +214,9 @@ class RushMode(BaseGameplayMode):
         game_mode_id = self.config.game_mode
         record = build_highscore_record_for_game_over(
             state=self.state,
-            player=self._player,
+            player=self.player,
             survival_elapsed_ms=int(self._rush.elapsed_ms),
-            creature_kill_count=int(self._creatures.kill_count),
+            creature_kill_count=int(self.creatures.kill_count),
             game_mode_id=game_mode_id,
         )
 
@@ -236,7 +236,7 @@ class RushMode(BaseGameplayMode):
         stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
         replay_dir = self._base_dir / "replays"
         replay_dir.mkdir(parents=True, exist_ok=True)
-        kills = int(self._creatures.kill_count)
+        kills = int(self.creatures.kill_count)
         base_name = f"rush_{stamp}_kills{kills}"
         path = replay_dir / f"{base_name}.crdemo.gz"
         counter = 1
@@ -274,7 +274,7 @@ class RushMode(BaseGameplayMode):
             self._update_game_over_ui(dt)
             return
 
-        any_alive = any(player.health > 0.0 for player in self._world.players)
+        any_alive = any(player.health > 0.0 for player in self.world.players)
         sim_active = (not self._paused) and any_alive
 
         if not sim_active:
@@ -292,13 +292,13 @@ class RushMode(BaseGameplayMode):
         session = self._sim_session
         if session is None:
             return
-        if self._world.audio_router is not None:
-            self._world.audio_router.audio = self._world.audio
-            self._world.audio_router.audio_rng = self._world.audio_rng
-            self._world.audio_router.demo_mode_active = self._world.demo_mode_active
-        if self._world.ground is not None:
-            self._world._sync_ground_settings()
-            self._world.ground.process_pending()
+        if self.world.audio_router is not None:
+            self.world.audio_router.audio = self.world.audio
+            self.world.audio_router.audio_rng = self.world.audio_rng
+            self.world.audio_router.demo_mode_active = self.world.demo_mode_active
+        if self.world.ground is not None:
+            self.world._sync_ground_settings()
+            self.world.ground.process_pending()
         session.detail_preset = self.config.detail_preset
         session.fx_toggle = self.config.fx_toggle
 
@@ -313,7 +313,7 @@ class RushMode(BaseGameplayMode):
                 dt_frame=dt_tick,
                 inputs=inputs,
             )
-            self._world.apply_step_result(
+            self.world.apply_step_result(
                 tick.step,
                 game_tune_started=bool(session.game_tune_started),
                 apply_audio=True,
@@ -332,7 +332,7 @@ class RushMode(BaseGameplayMode):
                     command_hash=str(tick.step.command_hash),
                 )
 
-            if not any(player.health > 0.0 for player in self._world.players):
+            if not any(player.health > 0.0 for player in self.world.players):
                 self._enter_game_over()
                 break
 
@@ -340,7 +340,7 @@ class RushMode(BaseGameplayMode):
         mouse_pos = self._ui_mouse
         cursor_tex = self._ui_assets.cursor if self._ui_assets is not None else None
         draw_menu_cursor(
-            self._world.particles_texture,
+            self.world.particles_texture,
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
@@ -349,10 +349,10 @@ class RushMode(BaseGameplayMode):
     def _draw_aim_cursor(self) -> None:
         mouse_pos = self._ui_mouse
         aim_tex = self._ui_assets.aim if self._ui_assets is not None else None
-        draw_aim_cursor(self._world.particles_texture, aim_tex, pos=mouse_pos)
+        draw_aim_cursor(self.world.particles_texture, aim_tex, pos=mouse_pos)
 
     def draw(self) -> None:
-        self._world.draw(
+        self.world.draw(
             draw_aim_indicators=(not self._game_over_active),
             entity_alpha=self._world_entity_alpha(),
         )
@@ -365,8 +365,8 @@ class RushMode(BaseGameplayMode):
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
                 state=self._hud_state,
-                player=self._player,
-                players=self._world.players,
+                player=self.player,
+                players=self.world.players,
                 bonus_hud=self.state.bonus_hud,
                 elapsed_ms=self._rush.elapsed_ms,
                 font=self._small,
@@ -377,7 +377,7 @@ class RushMode(BaseGameplayMode):
                 show_time=hud_flags.show_time,
                 show_quest_hud=hud_flags.show_quest_hud,
                 small_indicators=self._hud_small_indicators(),
-                preserve_bugs=bool(self._world.preserve_bugs),
+                preserve_bugs=bool(self.world.preserve_bugs),
             )
 
         if not self._game_over_active:
@@ -385,15 +385,15 @@ class RushMode(BaseGameplayMode):
             y = max(18.0, hud_bottom + 10.0)
             line = float(self._ui_line_height())
             self._draw_ui_text(f"rush: t={self._rush.elapsed_ms / 1000.0:6.1f}s", Vec2(x, y), UI_TEXT_COLOR)
-            self._draw_ui_text(f"kills={self._creatures.kill_count}", Vec2(x, y + line), UI_HINT_COLOR)
+            self._draw_ui_text(f"kills={self.creatures.kill_count}", Vec2(x, y + line), UI_HINT_COLOR)
             if self._paused:
                 self._draw_ui_text("paused (TAB)", Vec2(x, y + line * 2.0), UI_HINT_COLOR)
-            if self._player.health <= 0.0:
+            if self.player.health <= 0.0:
                 self._draw_ui_text("game over", Vec2(x, y + line * 2.0), UI_ERROR_COLOR)
 
         warn_y = float(rl.get_screen_height()) - 28.0
-        if self._world.missing_assets:
-            warn = "Missing world assets: " + ", ".join(self._world.missing_assets)
+        if self.world.missing_assets:
+            warn = "Missing world assets: " + ", ".join(self.world.missing_assets)
             self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
             warn_y -= float(self._ui_line_height(scale=0.8)) + 2.0
         if self._hud_missing:

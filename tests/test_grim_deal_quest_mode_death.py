@@ -23,13 +23,13 @@ def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_tran
     # The perk kills the player immediately, but QuestMode must still close the run
     # as failed after the native death-timer gate, even while world updates are
     # paused during the perk-menu transition.
-    assert mode._player.health > 0.0
-    mode._player.death_timer = 0.3
+    assert mode.player.health > 0.0
+    mode.player.death_timer = 0.3
     mode._perk_menu.open = True
     mode._perk_menu.timeline_ms = 100.0
 
     def _apply_grim_deal_and_close(_ctx, *, dt_frame: float, dt_ui_ms: float) -> None:
-        perk_apply(mode.state, mode._world.players, PerkId.GRIM_DEAL)
+        perk_apply(mode.state, mode.world.players, PerkId.GRIM_DEAL)
         mode._perk_menu.close()
 
     monkeypatch.setattr(mode._perk_menu, "handle_input", _apply_grim_deal_and_close)
@@ -41,7 +41,7 @@ def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_tran
 
     mode.update(1.0 / 60.0)
 
-    assert mode._player.health < 0.0
+    assert mode.player.health < 0.0
     assert mode.close_requested is False
     for _ in range(120):
         mode.update(1.0 / 60.0)

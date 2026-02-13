@@ -233,7 +233,7 @@ class QuestMode(BaseGameplayMode):
 
     def _load_quest_complete_texture(self) -> rl.Texture | None:
         loader = TextureLoader(
-            assets_root=self._assets_root, cache=self._world.texture_cache, missing=self._missing_assets
+            assets_root=self._assets_root, cache=self.world.texture_cache, missing=self._missing_assets
         )
         try:
             return loader.get(name="ui_textLevComp", paq_rel="ui/ui_textLevComp.jaz", fs_rel="ui/ui_textLevComp.png")
@@ -252,13 +252,13 @@ class QuestMode(BaseGameplayMode):
     def _perk_menu_context(self) -> PerkMenuContext:
         fx_toggle = self.config.fx_toggle
         fx_detail = self.config.fx_detail(level=0, default=False)
-        players = self._world.players
+        players = self.world.players
         return PerkMenuContext(
             state=self.state,
             perk_state=self.state.perk_selection,
             players=players,
-            creatures=cast("list[CreatureForPerks]", self._creatures.entries),
-            player=self._player,
+            creatures=cast("list[CreatureForPerks]", self.creatures.entries),
+            player=self.player,
             game_mode=int(GameMode.QUESTS),
             player_count=len(players),
             fx_toggle=fx_toggle,
@@ -266,7 +266,7 @@ class QuestMode(BaseGameplayMode):
             font=self._small,
             assets=self._perk_menu_assets,
             mouse=self._ui_mouse_pos(),
-            play_sfx=self._world.audio_router.play_sfx,
+            play_sfx=self.world.audio_router.play_sfx,
         )
 
     def select_level(self, level: str | None) -> None:
@@ -286,13 +286,13 @@ class QuestMode(BaseGameplayMode):
 
         hardcore_flag = self.config.hardcore
 
-        self._world.hardcore = hardcore_flag
+        self.world.hardcore = hardcore_flag
         seed = _quest_seed(level)
 
         player_count = self.config.player_count
-        self._world.reset(seed=seed, player_count=max(1, min(4, player_count)))
+        self.world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._bind_world()
-        self._local_input.reset(players=self._world.players)
+        self._local_input.reset(players=self.world.players)
         self.state.status = status
         self.state.quest_stage_major, self.state.quest_stage_minor = quest.level_key
 
@@ -305,7 +305,7 @@ class QuestMode(BaseGameplayMode):
             overlay_key, overlay_path = overlay
             detail_key = detail[0] if detail is not None else None
             detail_path = detail[1] if detail is not None else None
-            self._world.set_terrain(
+            self.world.set_terrain(
                 base_key=base_key,
                 overlay_key=overlay_key,
                 base_path=base_path,
@@ -316,20 +316,20 @@ class QuestMode(BaseGameplayMode):
 
         # Quest metadata already stores native (1-based) weapon ids.
         start_weapon_id = max(1, int(quest.start_weapon_id))
-        for player in self._world.players:
+        for player in self.world.players:
             weapon_assign_player(player, start_weapon_id)
 
         ctx = QuestContext(
-            width=int(self._world.world_size),
-            height=int(self._world.world_size),
-            player_count=len(self._world.players),
+            width=int(self.world.world_size),
+            height=int(self.world.world_size),
+            player_count=len(self.world.players),
         )
         entries = build_quest_spawn_table(
             quest,
             ctx,
             seed=seed,
             hardcore=hardcore_flag,
-            full_version=not self._world.demo_mode_active,
+            full_version=not self.world.demo_mode_active,
         )
         total_spawn_count = sum(int(entry.count) for entry in entries)
         max_trigger_ms = max((int(entry.trigger_ms) for entry in entries), default=0)
@@ -353,7 +353,7 @@ class QuestMode(BaseGameplayMode):
 
     def _handle_input(self) -> None:
         if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._world.audio_router.play_sfx("sfx_ui_buttonclick")
+            self.world.audio_router.play_sfx("sfx_ui_buttonclick")
             self._perk_menu.close()
             return
 
@@ -363,11 +363,11 @@ class QuestMode(BaseGameplayMode):
         if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
                 self.state.debug_god_mode = not bool(self.state.debug_god_mode)
-                self._world.audio_router.play_sfx("sfx_ui_buttonclick")
+                self.world.audio_router.play_sfx("sfx_ui_buttonclick")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F3):
                 self.state.perk_selection.pending_count += 1
                 self.state.perk_selection.choices_dirty = True
-                self._world.audio_router.play_sfx("sfx_ui_levelup")
+                self.world.audio_router.play_sfx("sfx_ui_levelup")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
                 self._debug_cycle_weapon(-1)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
@@ -381,13 +381,13 @@ class QuestMode(BaseGameplayMode):
         weapon_ids = _DEBUG_WEAPON_IDS
         if not weapon_ids:
             return
-        current = int(self._player.weapon_id)
+        current = int(self.player.weapon_id)
         try:
             idx = weapon_ids.index(current)
         except ValueError:
             idx = 0
         weapon_id = int(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
-        weapon_assign_player(self._player, weapon_id, state=self.state)
+        weapon_assign_player(self.player, weapon_id, state=self.state)
 
     def _perk_prompt_label(self) -> str:
         if not self.config.ui_info_texts:
@@ -427,7 +427,7 @@ class QuestMode(BaseGameplayMode):
 
     def _death_transition_ready(self) -> bool:
         dead_players = 0
-        for player in self._world.players:
+        for player in self.world.players:
             if float(player.health) > 0.0:
                 return False
             dead_players += 1
@@ -440,8 +440,8 @@ class QuestMode(BaseGameplayMode):
             fired = 0
             hit = 0
             try:
-                fired = int(self.state.shots_fired[int(self._player.index)])
-                hit = int(self.state.shots_hit[int(self._player.index)])
+                fired = int(self.state.shots_fired[int(self.player.index)])
+                hit = int(self.state.shots_hit[int(self.player.index)])
             except Exception:
                 fired = 0
                 hit = 0
@@ -449,10 +449,10 @@ class QuestMode(BaseGameplayMode):
             hit = max(0, min(int(hit), fired))
             most_used_weapon_id = most_used_weapon_id_for_player(
                 self.state,
-                player_index=int(self._player.index),
-                fallback_weapon_id=int(self._player.weapon_id),
+                player_index=int(self.player.index),
+                fallback_weapon_id=int(self.player.weapon_id),
             )
-            player_health_values = tuple(float(player.health) for player in self._world.players)
+            player_health_values = tuple(float(player.health) for player in self.world.players)
             player2_health = None
             if len(player_health_values) >= 2:
                 player2_health = float(player_health_values[1])
@@ -460,13 +460,13 @@ class QuestMode(BaseGameplayMode):
                 kind="failed",
                 level=str(self._quest.level),
                 base_time_ms=int(self._quest.spawn_timeline_ms),
-                player_health=float(player_health_values[0] if player_health_values else self._player.health),
+                player_health=float(player_health_values[0] if player_health_values else self.player.health),
                 player2_health=player2_health,
                 player_health_values=player_health_values,
                 pending_perk_count=int(self.state.perk_selection.pending_count),
-                experience=int(self._player.experience),
-                kill_count=int(self._creatures.kill_count),
-                weapon_id=int(self._player.weapon_id),
+                experience=int(self.player.experience),
+                kill_count=int(self.creatures.kill_count),
+                weapon_id=int(self.player.weapon_id),
                 shots_fired=fired,
                 shots_hit=hit,
                 most_used_weapon_id=int(most_used_weapon_id),
@@ -476,7 +476,7 @@ class QuestMode(BaseGameplayMode):
     def _draw_perk_prompt(self) -> None:
         if self._perk_menu.active:
             return
-        if not any(player.health > 0.0 for player in self._world.players):
+        if not any(player.health > 0.0 for player in self.world.players):
             return
         pending = int(self.state.perk_selection.pending_count)
         if pending <= 0:
@@ -541,7 +541,7 @@ class QuestMode(BaseGameplayMode):
         if self.close_requested:
             return
 
-        any_alive = any(player.health > 0.0 for player in self._world.players)
+        any_alive = any(player.health > 0.0 for player in self.world.players)
         perk_pending = int(self.state.perk_selection.pending_count) > 0 and any_alive
 
         self._perk_prompt_hover = False
@@ -571,7 +571,7 @@ class QuestMode(BaseGameplayMode):
                 self._perk_menu.open_if_available(perk_ctx)
             elif self._perk_prompt_hover and input_primary_just_pressed(
                 self.config,
-                player_count=len(self._world.players),
+                player_count=len(self.world.players),
             ):
                 self._perk_prompt_pulse = 1000.0
                 self._perk_menu.open_if_available(perk_ctx)
@@ -599,7 +599,7 @@ class QuestMode(BaseGameplayMode):
         self._quest.quest_name_timer_ms += dt_world * 1000.0
 
         input_frame = self._build_local_inputs(dt_frame=dt_frame)
-        self._world.update(
+        self.world.update(
             dt_world,
             inputs=input_frame,
             auto_pick_perks=False,
@@ -607,15 +607,15 @@ class QuestMode(BaseGameplayMode):
             perk_progression_enabled=True,
         )
 
-        any_alive_after = any(player.health > 0.0 for player in self._world.players)
+        any_alive_after = any(player.health > 0.0 for player in self.world.players)
 
-        creatures_none_active = not bool(self._creatures.iter_active())
+        creatures_none_active = not bool(self.creatures.iter_active())
 
         entries, timeline_ms, creatures_none_active, no_creatures_timer_ms, spawns = tick_quest_mode_spawns(
             self._quest.spawn_entries,
             quest_spawn_timeline_ms=float(self._quest.spawn_timeline_ms),
             frame_dt_ms=dt_world * 1000.0,
-            terrain_width=float(self._world.world_size),
+            terrain_width=float(self.world.world_size),
             creatures_none_active=creatures_none_active,
             no_creatures_timer_ms=float(self._quest.no_creatures_timer_ms),
         )
@@ -624,7 +624,7 @@ class QuestMode(BaseGameplayMode):
         self._quest.no_creatures_timer_ms = float(no_creatures_timer_ms)
 
         for call in spawns:
-            self._creatures.spawn_template(
+            self.creatures.spawn_template(
                 int(call.template_id),
                 call.pos,
                 float(call.heading),
@@ -641,10 +641,10 @@ class QuestMode(BaseGameplayMode):
             )
             self._quest.completion_transition_ms = float(completion_ms)
             if play_hit_sfx:
-                self._world.audio_router.play_sfx("sfx_questhit")
-            if play_completion_music and self._world.audio is not None:
-                play_music(self._world.audio, "crimsonquest")
-                playback = self._world.audio.music.playbacks.get("crimsonquest")
+                self.world.audio_router.play_sfx("sfx_questhit")
+            if play_completion_music and self.world.audio is not None:
+                play_music(self.world.audio, "crimsonquest")
+                playback = self.world.audio.music.playbacks.get("crimsonquest")
                 if playback is not None:
                     playback.volume = 0.0
                     try:
@@ -656,8 +656,8 @@ class QuestMode(BaseGameplayMode):
                     fired = 0
                     hit = 0
                     try:
-                        fired = int(self.state.shots_fired[int(self._player.index)])
-                        hit = int(self.state.shots_hit[int(self._player.index)])
+                        fired = int(self.state.shots_fired[int(self.player.index)])
+                        hit = int(self.state.shots_hit[int(self.player.index)])
                     except Exception:
                         fired = 0
                         hit = 0
@@ -665,10 +665,10 @@ class QuestMode(BaseGameplayMode):
                     hit = max(0, min(int(hit), fired))
                     most_used_weapon_id = most_used_weapon_id_for_player(
                         self.state,
-                        player_index=int(self._player.index),
-                        fallback_weapon_id=int(self._player.weapon_id),
+                        player_index=int(self.player.index),
+                        fallback_weapon_id=int(self.player.weapon_id),
                     )
-                    player_health_values = tuple(float(player.health) for player in self._world.players)
+                    player_health_values = tuple(float(player.health) for player in self.world.players)
                     player2_health = None
                     if len(player_health_values) >= 2:
                         player2_health = float(player_health_values[1])
@@ -676,13 +676,13 @@ class QuestMode(BaseGameplayMode):
                         kind="completed",
                         level=str(self._quest.level),
                         base_time_ms=int(self._quest.spawn_timeline_ms),
-                        player_health=float(player_health_values[0] if player_health_values else self._player.health),
+                        player_health=float(player_health_values[0] if player_health_values else self.player.health),
                         player2_health=player2_health,
                         player_health_values=player_health_values,
                         pending_perk_count=int(self.state.perk_selection.pending_count),
-                        experience=int(self._player.experience),
-                        kill_count=int(self._creatures.kill_count),
-                        weapon_id=int(self._player.weapon_id),
+                        experience=int(self.player.experience),
+                        kill_count=int(self.creatures.kill_count),
+                        weapon_id=int(self.player.weapon_id),
                         shots_fired=fired,
                         shots_hit=hit,
                         most_used_weapon_id=int(most_used_weapon_id),
@@ -696,7 +696,7 @@ class QuestMode(BaseGameplayMode):
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
-        self._world.draw(
+        self.world.draw(
             draw_aim_indicators=not perk_menu_active,
             entity_alpha=self._world_entity_alpha(),
         )
@@ -705,15 +705,15 @@ class QuestMode(BaseGameplayMode):
         hud_bottom = 0.0
         if (not perk_menu_active) and self._hud_assets is not None:
             total = int(self._quest.total_spawn_count)
-            kills = int(self._creatures.kill_count)
+            kills = int(self.creatures.kill_count)
             quest_progress_ratio = float(kills) / float(total) if total > 0 else None
             hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             self._draw_target_health_bar()
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
                 state=self._hud_state,
-                player=self._player,
-                players=self._world.players,
+                player=self.player,
+                players=self.world.players,
                 bonus_hud=self.state.bonus_hud,
                 elapsed_ms=float(self._quest.spawn_timeline_ms),
                 font=self._small,
@@ -725,7 +725,7 @@ class QuestMode(BaseGameplayMode):
                 show_quest_hud=hud_flags.show_quest_hud,
                 quest_progress_ratio=quest_progress_ratio,
                 small_indicators=self._hud_small_indicators(),
-                preserve_bugs=bool(self._world.preserve_bugs),
+                preserve_bugs=bool(self.world.preserve_bugs),
             )
 
         if debug_enabled() and (not perk_menu_active):
@@ -738,8 +738,8 @@ class QuestMode(BaseGameplayMode):
         self._draw_quest_complete_banner()
 
         warn_y = float(rl.get_screen_height()) - 28.0
-        if self._world.missing_assets:
-            warn = "Missing world assets: " + ", ".join(self._world.missing_assets)
+        if self.world.missing_assets:
+            warn = "Missing world assets: " + ", ".join(self.world.missing_assets)
             self._draw_ui_text(warn, Vec2(24.0, warn_y), rl.Color(240, 80, 80, 255), scale=0.8)
             warn_y -= float(self._ui_line_height(scale=0.8)) + 2.0
         if self._hud_missing:
@@ -766,7 +766,7 @@ class QuestMode(BaseGameplayMode):
         cursor_tex = assets.cursor if assets is not None else None
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
-            self._world.particles_texture,
+            self.world.particles_texture,
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
@@ -777,7 +777,7 @@ class QuestMode(BaseGameplayMode):
         aim_tex = assets.aim if assets is not None else None
         mouse_pos = self._ui_mouse
         draw_aim_cursor(
-            self._world.particles_texture,
+            self.world.particles_texture,
             aim_tex,
             pos=mouse_pos,
         )
