@@ -30,9 +30,9 @@ const WEAPONS = [
 ];
 
 const POOL_WEAPONS = [
-  { name: "Gauss Gun", pool: 300 },
-  { name: "Fire Bullets", pool: 240 },
-  { name: "Blade Gun", pool: 50 },
+  { name: "Gauss Gun", pool: 300, trail: "51, 128, 255" },
+  { name: "Fire Bullets", pool: 240, trail: "255, 153, 26" },
+  { name: "Blade Gun", pool: 50, trail: "240, 120, 255" },
 ];
 
 const ENEMIES = [
@@ -166,6 +166,7 @@ function initDamagePool(container) {
 
     let pool = weapon.pool;
     let drained = false;
+    let hitCount = 0;
     const maxEnemies = Math.ceil(weapon.pool / enemy.hp) + 1;
 
     for (let i = 0; i < maxEnemies; i++) {
@@ -173,6 +174,7 @@ function initDamagePool(container) {
       const dealt = hit ? Math.min(pool, enemy.hp) : 0;
       const remaining = enemy.hp - dealt;
       const killed = hit && remaining === 0;
+      if (hit) hitCount++;
 
       const poolLabel = document.createElement("div");
       poolLabel.className = "pool-cell";
@@ -191,14 +193,21 @@ function initDamagePool(container) {
       spriteRow.appendChild(sprite);
 
       const hpLabel = document.createElement("div");
-      hpLabel.className = "pool-cell" + (killed ? " pool-hp--killed" : "");
-      hpLabel.textContent = `${remaining}`;
+      hpLabel.className = "pool-cell";
+      if (!killed) hpLabel.textContent = `${remaining}`;
       hpRow.appendChild(hpLabel);
 
       if (hit) pool = Math.max(0, pool - enemy.hp);
     }
 
+    const trail = document.createElement("div");
+    trail.className = "pool-trail";
+    const c = weapon.trail;
+    trail.style.width = `calc(${hitCount * 32 - 16}px + 1rem)`;
+    trail.style.background = `linear-gradient(to right, rgba(${c}, 0.25), rgba(${c}, 0.8))`;
+
     row.append(poolRow, spriteRow, hpRow);
+    spriteRow.appendChild(trail);
     return row;
   }
 

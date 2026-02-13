@@ -52,6 +52,10 @@
   display: flex;
 }
 
+.pool-sprite-row {
+  position: relative;
+}
+
 .pool-cell {
   width: 32px;
   flex-shrink: 0;
@@ -62,11 +66,11 @@
 
 .pool-label-row .pool-cell {
   font-size: 0.7rem;
-  opacity: 0.5;
 }
 
 .pool-hp-row .pool-cell {
-  font-size: 0.65rem;
+  font-size: 0.55rem;
+  color: #e53935;
 }
 
 .pool-sprite {
@@ -77,6 +81,13 @@
   transform: rotate(180deg);
 }
 
-.pool-hp--killed {
-  color: #e53935;
+.pool-trail {
+  position: absolute;
+  top: 50%;
+  left: -1rem;
+  height: 3px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  border-radius: 1px;
 }
+

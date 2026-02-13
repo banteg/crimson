@@ -49,19 +49,14 @@ or pierces through on hit. Most weapons have a pool of 1, so the
 projectile is consumed on first contact and deals the full formula
 damage.
 
-Three weapons get elevated pools that enable piercing:
-
-| Weapon | Pool |
-|---|---:|
-| Gauss Gun | 300 |
-| Fire Bullets | 240 |
-| Blade Gun | 50 |
+Three weapons get elevated pools that enable piercing: Gauss Gun
+(300), Fire Bullets (240), and Blade Gun (50).
 
 When a piercing projectile hits, it deals the current pool value as
 damage instead of the distance formula, then subtracts the target's
 HP from the pool. The projectile keeps going until the pool is
-drained. This means piercing shots shred crowds of weak enemies but
-get eaten quickly by a few tough targets.
+drained. Piercing shots shred crowds of weak enemies but get eaten
+quickly by a few tough targets.
 
 <div data-widget="damage-pool"></div>
 
