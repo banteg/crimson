@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime as dt
 import os
 
 import pyray as rl
@@ -105,6 +106,7 @@ LOGO_REF_IN_END = 8.0
 LOGO_REF_HOLD_END = 10.0
 LOGO_REF_OUT_END = 11.0
 DEBUG_LOADING_HOLD_ENV = "CRIMSON_DEBUG_LOADING_HOLD_SECONDS"
+_BALLOON_EASTER_DATES = frozenset(((9, 12), (11, 8), (12, 18)))
 
 MENU_PREP_TEXTURES: tuple[tuple[str, str], ...] = (
     ("ui_signCrimson", "ui/ui_signCrimson.jaz"),
@@ -118,6 +120,10 @@ MENU_PREP_TEXTURES: tuple[tuple[str, str], ...] = (
     ("ui_buttonSm", "ui/ui_button_64x32.jaz"),
     ("ui_buttonMd", "ui/ui_button_128x32.jaz"),
 )
+
+
+def _is_balloon_easter_egg_day(today: dt.date) -> bool:
+    return (int(today.month), int(today.day)) in _BALLOON_EASTER_DATES
 
 
 def _debug_loading_hold_seconds() -> float:
@@ -185,6 +191,18 @@ class BootView:
             self.state.console.log.flush()
         self._menu_prepped = True
 
+    def _load_balloon_easter_egg_texture(self) -> None:
+        if not _is_balloon_easter_egg_day(dt.date.today()):
+            return
+        cache = self.state.texture_cache
+        if cache is None:
+            return
+        try:
+            cache.get_or_load("balloon", "balloon.tga")
+        except FileNotFoundError:
+            self.state.console.log.log("balloon easter-egg texture missing: balloon.tga")
+            self.state.console.log.flush()
+
     def open(self) -> None:
         if self.state.logos is None:
             entries = _load_resource_entries(self.state)
@@ -215,6 +233,7 @@ class BootView:
                         total = len(self.state.texture_cache.textures)
                         self.state.console.log.log(f"boot textures loaded: {loaded}/{total}")
                         self.state.console.log.flush()
+                    self._load_balloon_easter_egg_texture()
                     self._load_company_logos()
                     self._prepare_menu_assets()
                     self._fade_out_ready = True
