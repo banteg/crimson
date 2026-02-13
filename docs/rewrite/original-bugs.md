@@ -125,3 +125,4 @@ Full gated text-fix list:
 | Perk database panel label | `perkno #<id>` | `perk #<id>` |
 | Quest results prompt | `State your name trooper!` | `State your name, trooper!` |
 | Game over hit-ratio tooltip | `The % of shot bullets hit the target` | `The % of bullets that hit the target` |
+| Statistics panel line | `played for 1 hours 1 minutes` | `played for 1 hour 1 minute` |

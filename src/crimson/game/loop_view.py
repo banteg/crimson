@@ -198,6 +198,7 @@ class GameLoopView:
             return
 
         self._demo_trial_info = None
+        self._tick_statistics_playtime(dt)
         if self._front_active is not None and self._front_active in self._gameplay_views:
             if self._update_demo_trial_overlay(dt):
                 return
@@ -366,6 +367,18 @@ class GameLoopView:
         if console.quit_requested:
             self.state.quit_requested = True
             console.quit_requested = False
+
+    def _tick_statistics_playtime(self, dt: float) -> None:
+        # Native `_game_sequence_id` advances on gameplay frames only (state 9)
+        # and is used by the Statistics "played for ... hours ... minutes" row.
+        if self.state.demo_enabled:
+            return
+        if self._front_active is None or self._front_active not in self._gameplay_views:
+            return
+        delta_ms = int(float(dt) * 1000.0)
+        if delta_ms <= 0:
+            return
+        self.state.status.game_sequence_id = int(self.state.status.game_sequence_id + delta_ms)
 
     def _sync_console_elapsed_ms(self) -> None:
         views: list[FrontView] = []
