@@ -1,0 +1,15 @@
+id: no-config-data-get
+language: python
+severity: error
+message: Use CrimsonConfig accessors/properties instead of raw config.data.get(...)
+files:
+  - src/**/*.py
+ignores:
+  - src/grim/config.py
+rule:
+  any:
+    - pattern: config.data.get($$$ARGS)
+    - pattern: _config.data.get($$$ARGS)
+    - pattern: self.config.data.get($$$ARGS)
+    - pattern: self._config.data.get($$$ARGS)
+    - pattern: $STATE.config.data.get($$$ARGS)

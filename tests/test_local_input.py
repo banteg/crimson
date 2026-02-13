@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
+from pathlib import Path
 
 import pytest
 
@@ -8,6 +8,7 @@ from crimson import local_input
 from crimson.aim_schemes import AimScheme
 from crimson.sim.state_types import PlayerState
 from crimson.movement_controls import MovementControlType
+from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.geom import Vec2
 
 
@@ -16,6 +17,12 @@ class _DummyCreature:
         self.pos = pos
         self.active = active
         self.hp = hp
+
+
+def _test_config(**updates: object) -> CrimsonConfig:
+    data = default_crimson_cfg_data()
+    data.update(updates)
+    return CrimsonConfig(path=Path("<memory>"), data=data)
 
 
 def _patch_keys_down(monkeypatch: pytest.MonkeyPatch, *, down_codes: set[int]) -> None:
@@ -181,7 +188,7 @@ def test_local_input_relative_mode_multiplayer_does_not_use_alt_arrow_fallback(
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.RELATIVE)),
     )
-    config = SimpleNamespace(data={"player_count": 2})
+    config = _test_config(player_count=2)
 
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
@@ -222,7 +229,7 @@ def test_local_input_reload_pressed_allowed_only_for_single_player(
     single_player = interpreter.build_player_input(
         player_index=0,
         player=player,
-        config=SimpleNamespace(data={"player_count": 1}),
+        config=_test_config(player_count=1),
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -232,7 +239,7 @@ def test_local_input_reload_pressed_allowed_only_for_single_player(
     multiplayer = interpreter.build_player_input(
         player_index=0,
         player=player,
-        config=SimpleNamespace(data={"player_count": 2}),
+        config=_test_config(player_count=2),
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),

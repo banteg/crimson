@@ -1,0 +1,23 @@
+id: no-config-data-get
+snapshots:
+  ? |
+    hardcore = self._state.config.data.get("hardcore_flag", 0)
+  : labels:
+    - source: self._state.config.data.get("hardcore_flag", 0)
+      style: primary
+      start: 11
+      end: 58
+  ? |
+    mode_id = config.data.get("game_mode", 1)
+  : labels:
+    - source: config.data.get("game_mode", 1)
+      style: primary
+      start: 10
+      end: 41
+  ? |
+    players = _config.data.get("player_count", 1)
+  : labels:
+    - source: _config.data.get("player_count", 1)
+      style: primary
+      start: 10
+      end: 45

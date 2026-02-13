@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, cast
 
 from construct import Byte, Bytes, Float32l, Int32ul, Struct
 
@@ -228,14 +229,14 @@ def config_int(config: CrimsonConfig | None, key: str, default: int = 0) -> int:
     value = config_raw(config, key, default)
     if value is None:
         return int(default)
-    return int(value)
+    return int(cast(Any, value))
 
 
 def config_float(config: CrimsonConfig | None, key: str, default: float = 0.0) -> float:
     value = config_raw(config, key, default)
     if value is None:
         return float(default)
-    return float(value)
+    return float(cast(Any, value))
 
 
 def config_bool(config: CrimsonConfig | None, key: str, *, default: bool = False) -> bool:
@@ -496,7 +497,7 @@ class CrimsonConfig:
         value = self.raw_value(key, default)
         if value is None:
             return int(default)
-        return int(value)
+        return int(cast(Any, value))
 
     def set_int_value(self, key: str, value: int) -> None:
         self.data[str(key)] = int(value)
@@ -505,7 +506,7 @@ class CrimsonConfig:
         value = self.raw_value(key, default)
         if value is None:
             return float(default)
-        return float(value)
+        return float(cast(Any, value))
 
     def set_float_value(self, key: str, value: float) -> None:
         self.data[str(key)] = float(value)
@@ -884,7 +885,7 @@ class CrimsonConfig:
 
     @property
     def player_name(self) -> str:
-        raw = bytes(self.data["player_name"])
+        raw = self.blob_value("player_name", size=PLAYER_NAME_SIZE, default=bytes(PLAYER_NAME_SIZE))
         return raw.split(b"\x00", 1)[0].decode("latin-1", errors="ignore")
 
     @player_name.setter

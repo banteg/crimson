@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+from pathlib import Path
 from types import SimpleNamespace
 
 import crimson.frontend.panels.databases as perk_db
 from crimson.frontend.panels.databases import UnlockedPerksDatabaseView
+from grim.config import CrimsonConfig, default_crimson_cfg_data
 
 
 def _dummy_state() -> object:
-    return SimpleNamespace(audio=None, config=SimpleNamespace(data={"fx_toggle": 0}))
+    data = default_crimson_cfg_data()
+    data["fx_toggle"] = 0
+    return SimpleNamespace(audio=None, config=CrimsonConfig(path=Path("<memory>"), data=data))
 
 
 def test_selected_perk_id_uses_selected_row_index() -> None:
