@@ -33,6 +33,8 @@ clamped to a minimum of 50. This means point-blank shots deal roughly
 twice as much as long-range hits. A 1.0x weapon at minimum distance
 deals about 67 damage; the Plasma Cannon at 28x deals about 1606.
 
+<div data-widget="damage-calculator"></div>
+
 ### Hit radius
 
 Most projectiles use a hit radius of 1 — they have to land close to
@@ -60,6 +62,8 @@ damage instead of the distance formula, then subtracts the target's
 HP from the pool. The projectile keeps going until the pool is
 drained. This means piercing shots shred crowds of weak enemies but
 get eaten quickly by a few tough targets.
+
+<div data-widget="damage-pool"></div>
 
 ### Projectile speed
 

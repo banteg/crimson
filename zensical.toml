@@ -5,6 +5,12 @@ site_dir = "_site"
 site_description = "Reverse engineering notes for Crimsonland assets and formats."
 site_author = "banteg"
 extra_css = ["stylesheets/extra.css"]
+extra_javascript = [
+    "https://cdn.jsdelivr.net/npm/vega@6",
+    "https://cdn.jsdelivr.net/npm/vega-lite@6",
+    "https://cdn.jsdelivr.net/npm/vega-embed@7",
+    "javascripts/weapons-widgets.js",
+]
 
 nav = [
   { "Home" = "index.md" },
