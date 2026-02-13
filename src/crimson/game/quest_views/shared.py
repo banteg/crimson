@@ -1,0 +1,180 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+from grim.config import CrimsonConfig
+from grim.geom import Vec2
+
+QUEST_MENU_BASE_X = -5.0
+QUEST_MENU_BASE_Y = 185.0
+QUEST_MENU_PANEL_OFFSET_X = -63.0
+
+QUEST_TITLE_X_OFFSET = 219.0  # 300 + 64 - 145
+QUEST_TITLE_Y_OFFSET = 44.0  # 40 + 4
+QUEST_TITLE_W = 64.0
+QUEST_TITLE_H = 32.0
+
+QUEST_STAGE_ICON_X_OFFSET = 80.0  # 64 + 16
+QUEST_STAGE_ICON_Y_OFFSET = 3.0
+QUEST_STAGE_ICON_SIZE = 32.0
+QUEST_STAGE_ICON_STEP = 36.0
+QUEST_STAGE_ICON_SCALE_UNSELECTED = 0.8
+
+QUEST_LIST_Y_OFFSET = 50.0
+QUEST_LIST_ROW_STEP = 20.0
+QUEST_LIST_NAME_X_OFFSET = 32.0
+QUEST_LIST_HOVER_LEFT_PAD = 10.0
+QUEST_LIST_HOVER_RIGHT_PAD = 210.0
+QUEST_LIST_HOVER_TOP_PAD = 2.0
+QUEST_LIST_HOVER_BOTTOM_PAD = 18.0
+
+QUEST_HARDCORE_UNLOCK_INDEX = 40
+QUEST_HARDCORE_CHECKBOX_X_OFFSET = 132.0
+QUEST_HARDCORE_CHECKBOX_Y_OFFSET = -12.0
+QUEST_HARDCORE_LIST_Y_SHIFT = 10.0
+
+QUEST_BACK_BUTTON_X_OFFSET = 138.0
+QUEST_BACK_BUTTON_Y_OFFSET = 212.0
+QUEST_PANEL_HEIGHT = 378.0
+
+
+@dataclass(frozen=True, slots=True)
+class _QuestMenuLayout:
+    title_pos: Vec2
+    icons_start_pos: Vec2
+    list_pos: Vec2
+
+
+# game_update_victory_screen (0x00406350): used as the "end note" screen after the final quest.
+END_NOTE_PANEL_POS_X = -45.0
+END_NOTE_PANEL_POS_Y = 110.0
+END_NOTE_PANEL_GEOM_X0 = -63.0
+END_NOTE_PANEL_GEOM_Y0 = -81.0
+END_NOTE_PANEL_W = 510.0
+END_NOTE_PANEL_H = 378.0
+
+END_NOTE_HEADER_X_OFFSET = 214.0  # v11 + 44 - 10 in the decompile, relative to panel-left
+END_NOTE_HEADER_Y_OFFSET = 46.0  # (base_y + 40) + 6 in the decompile, relative to panel-top
+END_NOTE_BODY_X_OFFSET = END_NOTE_HEADER_X_OFFSET - 8.0
+END_NOTE_BODY_Y_GAP = 32.0
+END_NOTE_LINE_STEP_Y = 14.0
+END_NOTE_AFTER_BODY_Y_GAP = 22.0  # 14 + 8 in the decompile
+
+END_NOTE_BUTTON_X_OFFSET = 266.0  # (v11 + 44 + 20) - 4 + 26, relative to panel-left
+END_NOTE_BUTTON_Y_OFFSET = 210.0  # (base_y + 40) + 170 in the decompile, relative to panel-top
+END_NOTE_BUTTON_STEP_Y = 32.0
+
+# `quest_failed_screen_update` panel geometry/anchors:
+# - panel is the classic ui_menuPanel at (-45, 110) with geom x0/y0 (-63, -81)
+# - reaper banner X = panel-left + 214; message/buttons are derived from that anchor.
+QUEST_FAILED_PANEL_POS_X = -45.0
+QUEST_FAILED_PANEL_POS_Y = 110.0
+QUEST_FAILED_PANEL_GEOM_X0 = -63.0
+QUEST_FAILED_PANEL_GEOM_Y0 = -81.0
+QUEST_FAILED_PANEL_W = 510.0
+QUEST_FAILED_PANEL_H = 378.0
+
+QUEST_FAILED_BANNER_X_OFFSET = 214.0
+QUEST_FAILED_BANNER_Y_OFFSET = 40.0
+QUEST_FAILED_BANNER_W = 256.0
+QUEST_FAILED_BANNER_H = 64.0
+
+QUEST_FAILED_MESSAGE_X_OFFSET = QUEST_FAILED_BANNER_X_OFFSET + 30.0
+QUEST_FAILED_MESSAGE_Y_OFFSET = 126.0  # (base_y + 40) + 70 + 16
+QUEST_FAILED_SCORE_X_OFFSET = QUEST_FAILED_BANNER_X_OFFSET + 40.0
+QUEST_FAILED_SCORE_Y_OFFSET = 152.0  # message_y + 16 + 10 in native
+QUEST_FAILED_BUTTON_X_OFFSET = QUEST_FAILED_BANNER_X_OFFSET + 52.0
+QUEST_FAILED_BUTTON_Y_OFFSET = 240.0  # score_y baseline + 98 in native
+QUEST_FAILED_BUTTON_STEP_Y = 32.0
+QUEST_FAILED_PANEL_SLIDE_DURATION_MS = 250.0
+
+
+def _player_name_default(config: CrimsonConfig) -> str:
+    return config.player_name
+
+
+def _next_quest_level(level: str) -> str | None:
+    try:
+        major_text, minor_text = level.split(".", 1)
+        major = int(major_text)
+        minor = int(minor_text)
+    except Exception:
+        return None
+
+    from ...quests import quest_by_level
+
+    for _ in range(100):
+        minor += 1
+        if minor > 10:
+            minor = 1
+            major += 1
+        candidate = f"{major}.{minor}"
+        if quest_by_level(candidate) is not None:
+            return candidate
+    return None
+
+
+__all__ = [
+    "END_NOTE_AFTER_BODY_Y_GAP",
+    "END_NOTE_BODY_X_OFFSET",
+    "END_NOTE_BODY_Y_GAP",
+    "END_NOTE_BUTTON_STEP_Y",
+    "END_NOTE_BUTTON_X_OFFSET",
+    "END_NOTE_BUTTON_Y_OFFSET",
+    "END_NOTE_HEADER_X_OFFSET",
+    "END_NOTE_HEADER_Y_OFFSET",
+    "END_NOTE_LINE_STEP_Y",
+    "END_NOTE_PANEL_GEOM_X0",
+    "END_NOTE_PANEL_GEOM_Y0",
+    "END_NOTE_PANEL_H",
+    "END_NOTE_PANEL_POS_X",
+    "END_NOTE_PANEL_POS_Y",
+    "END_NOTE_PANEL_W",
+    "QUEST_BACK_BUTTON_X_OFFSET",
+    "QUEST_BACK_BUTTON_Y_OFFSET",
+    "QUEST_FAILED_BANNER_H",
+    "QUEST_FAILED_BANNER_W",
+    "QUEST_FAILED_BANNER_X_OFFSET",
+    "QUEST_FAILED_BANNER_Y_OFFSET",
+    "QUEST_FAILED_BUTTON_STEP_Y",
+    "QUEST_FAILED_BUTTON_X_OFFSET",
+    "QUEST_FAILED_BUTTON_Y_OFFSET",
+    "QUEST_FAILED_MESSAGE_X_OFFSET",
+    "QUEST_FAILED_MESSAGE_Y_OFFSET",
+    "QUEST_FAILED_PANEL_GEOM_X0",
+    "QUEST_FAILED_PANEL_GEOM_Y0",
+    "QUEST_FAILED_PANEL_H",
+    "QUEST_FAILED_PANEL_POS_X",
+    "QUEST_FAILED_PANEL_POS_Y",
+    "QUEST_FAILED_PANEL_SLIDE_DURATION_MS",
+    "QUEST_FAILED_PANEL_W",
+    "QUEST_FAILED_SCORE_X_OFFSET",
+    "QUEST_FAILED_SCORE_Y_OFFSET",
+    "QUEST_HARDCORE_CHECKBOX_X_OFFSET",
+    "QUEST_HARDCORE_CHECKBOX_Y_OFFSET",
+    "QUEST_HARDCORE_LIST_Y_SHIFT",
+    "QUEST_HARDCORE_UNLOCK_INDEX",
+    "QUEST_LIST_HOVER_BOTTOM_PAD",
+    "QUEST_LIST_HOVER_LEFT_PAD",
+    "QUEST_LIST_HOVER_RIGHT_PAD",
+    "QUEST_LIST_HOVER_TOP_PAD",
+    "QUEST_LIST_NAME_X_OFFSET",
+    "QUEST_LIST_ROW_STEP",
+    "QUEST_LIST_Y_OFFSET",
+    "QUEST_MENU_BASE_X",
+    "QUEST_MENU_BASE_Y",
+    "QUEST_MENU_PANEL_OFFSET_X",
+    "QUEST_PANEL_HEIGHT",
+    "QUEST_STAGE_ICON_SCALE_UNSELECTED",
+    "QUEST_STAGE_ICON_SIZE",
+    "QUEST_STAGE_ICON_STEP",
+    "QUEST_STAGE_ICON_X_OFFSET",
+    "QUEST_STAGE_ICON_Y_OFFSET",
+    "QUEST_TITLE_H",
+    "QUEST_TITLE_W",
+    "QUEST_TITLE_X_OFFSET",
+    "QUEST_TITLE_Y_OFFSET",
+    "_QuestMenuLayout",
+    "_next_quest_level",
+    "_player_name_default",
+]
