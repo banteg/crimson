@@ -423,3 +423,4 @@ class RushMode(BaseGameplayMode):
                     hud_assets=self._hud_assets,
                     mouse=self._ui_mouse_pos(),
                 )
+        self._draw_lan_wait_overlay()

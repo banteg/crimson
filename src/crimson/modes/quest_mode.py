@@ -792,6 +792,7 @@ class QuestMode(BaseGameplayMode):
             self._draw_ui_text("paused (TAB)", Vec2(x, y), UI_HINT_COLOR)
         else:
             self._draw_aim_cursor()
+        self._draw_lan_wait_overlay()
 
     def _draw_game_cursor(self) -> None:
         assets = self._perk_menu_assets

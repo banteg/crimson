@@ -292,6 +292,70 @@ class BaseGameplayMode:
 
         return float(y)
 
+    def _draw_lan_wait_overlay(self) -> None:
+        if not self._lan_wait_gate_active():
+            return
+
+        screen_w = float(rl.get_screen_width())
+        screen_h = float(rl.get_screen_height())
+        if screen_w <= 0.0 or screen_h <= 0.0:
+            return
+
+        rl.draw_rectangle(
+            0,
+            0,
+            int(screen_w),
+            int(screen_h),
+            rl.Color(8, 12, 18, 148),
+        )
+
+        panel_w = min(560.0, max(320.0, screen_w - 80.0))
+        panel_h = 156.0
+        panel_x = 0.5 * (screen_w - panel_w)
+        panel_y = max(36.0, 0.17 * screen_h)
+
+        rl.draw_rectangle(
+            int(panel_x),
+            int(panel_y),
+            int(panel_w),
+            int(panel_h),
+            rl.Color(17, 24, 34, 230),
+        )
+        rl.draw_rectangle_lines_ex(
+            rl.Rectangle(panel_x, panel_y, panel_w, panel_h),
+            2.0,
+            rl.Color(108, 170, 230, 220),
+        )
+
+        dots = "." * int((self._cursor_pulse_time * 2.5) % 4)
+        title = f"Waiting for LAN players{dots}"
+        connected = int(self._lan_connected_players)
+        expected = int(self._lan_expected_players)
+        status = f"Connected peers: {connected}/{expected}"
+        role = "Host" if str(self._lan_role) == "host" else "Client"
+        role_line = f"Role: {role}"
+        hint = (
+            "Match will start automatically when all peers are connected."
+            if role == "Host"
+            else "Waiting for host to finish lobby and start the match."
+        )
+
+        text_x = panel_x + 22.0
+        text_y = panel_y + 20.0
+        line_h = float(self._ui_line_height(scale=0.95))
+        self._draw_ui_text(title, Vec2(text_x, text_y), rl.Color(230, 237, 247, 255), scale=0.95)
+        self._draw_ui_text(status, Vec2(text_x, text_y + line_h * 1.4), rl.Color(169, 214, 255, 255), scale=0.9)
+        self._draw_ui_text(role_line, Vec2(text_x, text_y + line_h * 2.4), rl.Color(169, 214, 255, 255), scale=0.9)
+        self._draw_ui_text(hint, Vec2(text_x, text_y + line_h * 3.5), rl.Color(186, 196, 214, 255), scale=0.82)
+
+        if debug_enabled():
+            self._draw_ui_text(
+                "Debug override: press F10 to force start",
+                Vec2(text_x, text_y + line_h * 4.5),
+                rl.Color(232, 197, 117, 255),
+                scale=0.8,
+            )
+
     def _player_name_default(self) -> str:
         return str(self.config.player_name or "")
 
