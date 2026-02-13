@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 from grim.geom import Vec2
 from crimson.projectiles import ProjectileTypeId
-from crimson.render.projectile_draw_registry import ProjectileDrawCtx, draw_projectile_from_registry
+from crimson.render.projectile_draw import ProjectileDrawCtx, draw_projectile_from_registry
 
 
 class _TextureStub:
