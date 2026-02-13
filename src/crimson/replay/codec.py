@@ -54,7 +54,7 @@ def _header_from_dict(data: dict[str, Any]) -> ReplayHeader:
         for idx, value in enumerate(raw_weapon_usage_counts[:WEAPON_USAGE_COUNT]):
             try:
                 weapon_usage_counts[idx] = int(value)
-            except Exception:
+            except (TypeError, ValueError, OverflowError):
                 weapon_usage_counts[idx] = 0
     status = ReplayStatusSnapshot(
         quest_unlock_index=int(status_in.get("quest_unlock_index", 0)),

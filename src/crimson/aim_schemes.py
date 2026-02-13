@@ -20,5 +20,5 @@ def aim_scheme_from_value(
 ) -> AimScheme:
     try:
         return AimScheme(int(value))
-    except Exception:
+    except (TypeError, ValueError, OverflowError):
         return AimScheme.UNKNOWN

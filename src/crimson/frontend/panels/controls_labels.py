@@ -63,7 +63,7 @@ def _read_aim_schemes(config_data: Mapping[str, object]) -> tuple[AimScheme, Aim
         if isinstance(value, (int, float, str, bytes, bytearray)):
             try:
                 return int(value)
-            except Exception:
+            except (TypeError, ValueError, OverflowError):
                 return default
         return default
 

@@ -42,6 +42,7 @@ from ..ui.perk_menu import PerkMenuAssets, draw_ui_text, load_perk_menu_assets
 from ..views.quest_title_overlay import draw_quest_title_overlay
 from ..weapons import WEAPON_BY_ID
 from .base_gameplay_mode import BaseGameplayMode
+from .components.highscore_record_builder import shots_from_state
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
 
 WORLD_SIZE = 1024.0
@@ -423,16 +424,7 @@ class QuestMode(BaseGameplayMode):
 
     def _close_failed_run(self) -> None:
         if self._outcome is None:
-            fired = 0
-            hit = 0
-            try:
-                fired = int(self.state.shots_fired[int(self.player.index)])
-                hit = int(self.state.shots_hit[int(self.player.index)])
-            except Exception:
-                fired = 0
-                hit = 0
-            fired = max(0, int(fired))
-            hit = max(0, min(int(hit), fired))
+            fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
             most_used_weapon_id = most_used_weapon_id_for_player(
                 self.state,
                 player_index=int(self.player.index),
@@ -639,16 +631,7 @@ class QuestMode(BaseGameplayMode):
                         playback.volume = 0.0
             if completed:
                 if self._outcome is None:
-                    fired = 0
-                    hit = 0
-                    try:
-                        fired = int(self.state.shots_fired[int(self.player.index)])
-                        hit = int(self.state.shots_hit[int(self.player.index)])
-                    except Exception:
-                        fired = 0
-                        hit = 0
-                    fired = max(0, int(fired))
-                    hit = max(0, min(int(hit), fired))
+                    fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
                     most_used_weapon_id = most_used_weapon_id_for_player(
                         self.state,
                         player_index=int(self.player.index),
