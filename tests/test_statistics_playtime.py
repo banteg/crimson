@@ -38,6 +38,21 @@ def test_format_playtime_text_uses_hour_and_minute_buckets() -> None:
     assert _format_playtime_text((2 * 60 * 60 + 35 * 60 + 59) * 1000) == "played for 2 hours 35 minutes"
 
 
+def test_format_playtime_text_pluralizes_in_default_mode() -> None:
+    assert _format_playtime_text((1 * 60 * 60 + 1 * 60) * 1000) == "played for 1 hour 1 minute"
+    assert _format_playtime_text((1 * 60 * 60 + 2 * 60) * 1000) == "played for 1 hour 2 minutes"
+
+
+def test_format_playtime_text_preserve_bugs_keeps_native_plural_form() -> None:
+    assert (
+        _format_playtime_text(
+            (1 * 60 * 60 + 1 * 60) * 1000,
+            preserve_bugs=True,
+        )
+        == "played for 1 hours 1 minutes"
+    )
+
+
 def test_tick_statistics_playtime_accumulates_for_non_demo_gameplay(tmp_path: Path) -> None:
     state = _build_state(tmp_path, demo_enabled=False)
     loop = GameLoopView(state)
