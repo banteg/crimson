@@ -884,9 +884,7 @@ When the capture SHA is unchanged, append updates to the same session.
   - `src/crimson/projectiles/pools.py`
   - `src/crimson/effects.py`
 
----
-
-## Session 15 (2026-02-13)
+### Session 14 (continued: update 2, formerly Session 15)
 
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture.json.gz`
 - **Capture SHA256:** `49aec5d3705f7c8cfb90143a6d204053c8ba6744ca30c4a367666cdaec04fe0e`
@@ -936,9 +934,7 @@ When the capture SHA is unchanged, append updates to the same session.
   - `src/crimson/gameplay.py`,
   - `src/crimson/sim/world_state.py`.
 
----
-
-## Session 16 (2026-02-13)
+### Session 14 (continued: update 3, formerly Session 16)
 
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture.json.gz`
 - **Capture SHA256:** `49aec5d3705f7c8cfb90143a6d204053c8ba6744ca30c4a367666cdaec04fe0e`
@@ -981,14 +977,12 @@ When the capture SHA is unchanged, append updates to the same session.
   - native `creature_update` movement branch decisions,
   - rewrite `src/crimson/creatures/runtime.py` + `src/crimson/creatures/ai.py` parity at the first ancestry tick where creature position drift appears.
 
----
-
-## Session 17 (2026-02-13)
+### Session 14 (continued: update 4, formerly Session 17)
 
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture.json.gz`
 - **Capture SHA256:** `49aec5d3705f7c8cfb90143a6d204053c8ba6744ca30c4a367666cdaec04fe0e`
 - **First mismatch progression:**
-  - baseline after Session 16 fix (`0974bf4d`): `tick 9065 (state_mismatch: players[0].experience/score_xp +110 in replay)`
+  - baseline after Session 14 update 3 fix (`0974bf4d`): `tick 9065 (state_mismatch: players[0].experience/score_xp +110 in replay)`
   - no additional gameplay fix landed in this session (investigation-only)
 
 ### Key Findings
