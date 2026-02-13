@@ -1,0 +1,16 @@
+id: no-menu-getattr-fallbacks
+snapshots:
+  ? |
+    status = getattr(state, "status", None)
+  : labels:
+    - source: getattr(state, "status", None)
+      style: primary
+      start: 9
+      end: 39
+  ? |
+    t = getattr(self, "_timeline_ms", 0)
+  : labels:
+    - source: getattr(self, "_timeline_ms", 0)
+      style: primary
+      start: 4
+      end: 36

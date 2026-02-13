@@ -1,0 +1,20 @@
+id: no-legacy-asset-loader-helpers
+valid:
+  - |
+    from grim.assets import TextureLoader
+
+    def load_menu(cache: TextureLoader) -> object | None:
+      return cache.get(name="ui", paq_rel="ui/menu.jaz")
+  - |
+    def _resolve_assets_dir(config):
+      return config.assets_dir
+invalid:
+  - |
+    def _resolve_asset(path: str):
+      return path
+  - |
+    def _load_from_cache(name: str):
+      return None
+  - |
+    def _load_from_path(name: str):
+      return None

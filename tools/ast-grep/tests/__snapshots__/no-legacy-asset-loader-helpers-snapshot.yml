@@ -1,0 +1,32 @@
+id: no-legacy-asset-loader-helpers
+snapshots:
+  ? |
+    def _load_from_cache(name: str):
+      return None
+  : labels:
+    - source: |-
+        def _load_from_cache(name: str):
+          return None
+      style: primary
+      start: 0
+      end: 46
+  ? |
+    def _load_from_path(name: str):
+      return None
+  : labels:
+    - source: |-
+        def _load_from_path(name: str):
+          return None
+      style: primary
+      start: 0
+      end: 45
+  ? |
+    def _resolve_asset(path: str):
+      return path
+  : labels:
+    - source: |-
+        def _resolve_asset(path: str):
+          return path
+      style: primary
+      start: 0
+      end: 44

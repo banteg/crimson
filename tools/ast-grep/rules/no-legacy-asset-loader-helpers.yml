@@ -1,0 +1,19 @@
+id: no-legacy-asset-loader-helpers
+language: python
+severity: error
+message: Legacy asset loader helpers are forbidden; use grim.assets.TextureLoader instead.
+files:
+  - src/**/*.py
+ignores:
+  - src/grim/assets.py
+rule:
+  any:
+    - pattern: |
+        def _resolve_asset($$$ARGS):
+          $$$BODY
+    - pattern: |
+        def _load_from_cache($$$ARGS):
+          $$$BODY
+    - pattern: |
+        def _load_from_path($$$ARGS):
+          $$$BODY

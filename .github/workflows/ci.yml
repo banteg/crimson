@@ -18,10 +18,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - task: lint-assets
-            do_sync: true
-            command: uv run --no-sync python scripts/check_asset_loader_usage.py
-            sync_args: --no-install-project --group dev
           - task: lint-imports
             do_sync: true
             command: uv run --no-sync lint-imports
@@ -30,13 +26,9 @@ jobs:
             do_sync: false
             command: uv run --no-sync python scripts/check_docs.py
             sync_args: ""
-          - task: ast-grep-scan
+          - task: ast-grep
             do_sync: false
-            command: sg scan
-            sync_args: ""
-          - task: ast-grep-test
-            do_sync: false
-            command: sg test
+            command: sg scan && sg test
             sync_args: ""
           - task: ty
             do_sync: true

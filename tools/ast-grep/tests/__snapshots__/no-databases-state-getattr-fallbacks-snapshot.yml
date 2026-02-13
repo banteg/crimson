@@ -1,0 +1,30 @@
+id: no-databases-state-getattr-fallbacks
+snapshots:
+  ? |
+    data = getattr(getattr(self.state, "config", None), "data", None)
+  : labels:
+    - source: getattr(getattr(self.state, "config", None), "data", None)
+      style: primary
+      start: 7
+      end: 65
+  ? |
+    demo = bool(getattr(self.state, "demo_enabled", False))
+  : labels:
+    - source: bool(getattr(self.state, "demo_enabled", False))
+      style: primary
+      start: 7
+      end: 55
+  ? |
+    prereq = tuple(getattr(meta, "prereq", ()) or ())
+  : labels:
+    - source: tuple(getattr(meta, "prereq", ()) or ())
+      style: primary
+      start: 9
+      end: 49
+  ? |
+    preserve = bool(getattr(self.state, "preserve_bugs", False))
+  : labels:
+    - source: bool(getattr(self.state, "preserve_bugs", False))
+      style: primary
+      start: 11
+      end: 60

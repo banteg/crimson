@@ -1,0 +1,12 @@
+id: no-databases-state-getattr-fallbacks
+language: python
+severity: warning
+message: Database views should use concrete GameState and metadata contracts instead of `getattr` fallbacks.
+files:
+  - src/crimson/frontend/panels/databases.py
+rule:
+  any:
+    - pattern: bool(getattr(self.state, "preserve_bugs", False))
+    - pattern: bool(getattr(self.state, "demo_enabled", False))
+    - pattern: getattr(getattr(self.state, "config", None), "data", None)
+    - pattern: tuple(getattr($META, "prereq", ()) or ())

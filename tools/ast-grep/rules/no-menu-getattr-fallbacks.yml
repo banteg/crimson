@@ -1,0 +1,8 @@
+id: no-menu-getattr-fallbacks
+language: python
+severity: warning
+message: Menu rendering contracts are concrete; avoid `getattr` fallbacks in frontend menu code.
+files:
+  - src/crimson/frontend/menu.py
+rule:
+  pattern: getattr($OBJ, $ATTR, $DEFAULT)

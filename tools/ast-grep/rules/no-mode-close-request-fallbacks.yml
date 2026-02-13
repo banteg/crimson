@@ -1,0 +1,10 @@
+id: no-mode-close-request-fallbacks
+language: python
+severity: warning
+message: Mode wrappers should rely on concrete `close_requested` contracts instead of getattr/hasattr fallbacks.
+files:
+  - src/crimson/game/mode_views.py
+rule:
+  any:
+    - pattern: getattr(self._mode, "close_requested", False)
+    - pattern: hasattr(self._mode, "close_requested")

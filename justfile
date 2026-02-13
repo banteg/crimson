@@ -31,19 +31,9 @@ check *args:
 ty:
     uv run ty check src
 
-# ast-grep
-ast-grep-scan *args:
-    sg scan {{args}}
-
-ast-grep-test *args:
-    sg test {{args}}
-
 # Lint
 lint-imports:
     uv run lint-imports
-
-lint-assets:
-    uv run scripts/check_asset_loader_usage.py
 
 # Duplication
 dup-report out="artifacts/duplication/pylint-r0801.txt" min="12":
