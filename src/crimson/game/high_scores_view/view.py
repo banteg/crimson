@@ -52,6 +52,7 @@ from .right_panel import draw_right_panel
 class HighScoresView:
     def __init__(self, state: GameState) -> None:
         self.state = state
+        self._is_open = False
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._action: str | None = None
@@ -112,8 +113,10 @@ class HighScoresView:
         self._records = load_records(self.state, request)
         if self.state.audio is not None:
             play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
+        self._is_open = True
 
     def close(self) -> None:
+        self._is_open = False
         if self._small_font is not None:
             rl.unload_texture(self._small_font.texture)
             self._small_font = None
@@ -139,6 +142,7 @@ class HighScoresView:
         )
 
     def update(self, dt: float) -> None:
+        self._assert_open()
         if self.state.audio is not None:
             update_audio(self.state.audio, dt)
         if self._ground is not None:
@@ -229,6 +233,7 @@ class HighScoresView:
                 self._scroll_index = max_scroll
 
     def draw(self) -> None:
+        self._assert_open()
         rl.clear_background(rl.BLACK)
         pause_background = self.state.pause_background
         if pause_background is not None:
@@ -238,8 +243,7 @@ class HighScoresView:
         _draw_screen_fade(self.state)
 
         assets = self._assets
-        if assets is None or assets.panel is None:
-            return
+        assert assets is not None, "HighScoresView assets must be loaded before draw()"
 
         font = self._ensure_small_font()
         request = self._request
@@ -309,8 +313,6 @@ class HighScoresView:
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def _draw_sign(self, assets: MenuAssets) -> None:
-        if assets.sign is None:
-            return
         sign = assets.sign
         screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
@@ -366,9 +368,13 @@ class HighScoresView:
         self._close_action = action
 
     def take_action(self) -> str | None:
+        self._assert_open()
         action = self._action
         self._action = None
         return action
+
+    def _assert_open(self) -> None:
+        assert self._is_open, "HighScoresView must be opened before use"
 
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:

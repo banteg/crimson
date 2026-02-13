@@ -199,6 +199,7 @@ class MenuEntry:
 class MenuView:
     def __init__(self, state: GameState) -> None:
         self.state = state
+        self._is_open = False
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._menu_entries: list[MenuEntry] = []
@@ -254,11 +255,14 @@ class MenuView:
             if self.state.audio.music.active_track != theme:
                 stop_music(self.state.audio)
             play_music(self.state.audio, theme)
+        self._is_open = True
 
     def close(self) -> None:
+        self._is_open = False
         self._ground = None
 
     def update(self, dt: float) -> None:
+        self._assert_open()
         if self.state.audio is not None:
             if not self._closing:
                 theme = "crimsonquest" if self.state.demo_enabled else "crimson_theme"
@@ -344,21 +348,25 @@ class MenuView:
         self._update_hover_amounts(dt_ms)
 
     def draw(self) -> None:
+        self._assert_open()
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
             self._ground.draw(menu_ground_camera(self.state))
         _draw_screen_fade(self.state)
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "MenuView assets must be loaded before draw()"
         self._draw_menu_items()
         self._draw_menu_sign()
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
+        self._assert_open()
         action = self._pending_action
         self._pending_action = None
         return action
+
+    def _assert_open(self) -> None:
+        assert self._is_open, "MenuView must be opened before use"
 
     def _activate_menu_entry(self, index: int) -> None:
         if not (0 <= index < len(self._menu_entries)):
@@ -447,11 +455,10 @@ class MenuView:
 
     def _draw_menu_items(self) -> None:
         assets = self._assets
-        if assets is None or assets.labels is None or not self._menu_entries:
+        assert assets is not None, "MenuView assets must be loaded before drawing menu items"
+        if not self._menu_entries:
             return
         item = assets.item
-        if item is None:
-            return
         label_tex = assets.labels
         item_w = float(item.width)
         item_h = float(item.height)
@@ -597,8 +604,7 @@ class MenuView:
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         # FUN_0044fb50: inset bounds derived from quad0 v0/v2 and pos_x/pos_y.
         assets = self._assets
-        if assets is None or assets.item is None:
-            return Rect()
+        assert assets is not None, "MenuView assets must be loaded before computing menu bounds"
         item_w = float(assets.item.width)
         item_h = float(assets.item.height)
         item_scale, local_y_shift = self._menu_item_scale(entry.slot)
@@ -700,8 +706,7 @@ class MenuView:
 
     def _draw_menu_sign(self) -> None:
         assets = self._assets
-        if assets is None or assets.sign is None:
-            return
+        assert assets is not None, "MenuView assets must be loaded before drawing sign"
         screen_w = float(self.state.config.screen_width)
         scale, shift_x = self._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(

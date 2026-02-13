@@ -45,6 +45,7 @@ PAUSE_MENU_TO_MAIN_MENU_FADE_MS = 500
 class PauseMenuView:
     def __init__(self, state: GameState) -> None:
         self.state = state
+        self._is_open = False
         self._assets: MenuAssets | None = None
         self._menu_entries: list[MenuEntry] = []
         self._selected_index = 0
@@ -86,12 +87,15 @@ class PauseMenuView:
         self._close_action = None
         self._pending_action = None
         self._panel_open_sfx_played = False
+        self._is_open = True
 
     def close(self) -> None:
+        self._is_open = False
         self._assets = None
         self._menu_entries = []
 
     def update(self, dt: float) -> None:
+        self._assert_open()
         if self.state.audio is not None:
             update_audio(self.state.audio, dt)
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
@@ -151,6 +155,7 @@ class PauseMenuView:
         self._update_hover_amounts(dt_ms)
 
     def draw(self) -> None:
+        self._assert_open()
         rl.clear_background(rl.BLACK)
         pause_background = self._pause_background()
         if pause_background is not None:
@@ -158,16 +163,19 @@ class PauseMenuView:
         _draw_screen_fade(self.state)
 
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "PauseMenuView assets must be loaded before draw()"
         self._draw_menu_items()
         self._draw_menu_sign()
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
+        self._assert_open()
         action = self._pending_action
         self._pending_action = None
         return action
+
+    def _assert_open(self) -> None:
+        assert self._is_open, "PauseMenuView must be opened before use"
 
     def _pause_background(self) -> PauseBackground | None:
         return self.state.pause_background
@@ -247,8 +255,7 @@ class PauseMenuView:
 
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         assets = self._assets
-        if assets is None or assets.item is None:
-            return Rect()
+        assert assets is not None, "PauseMenuView assets must be loaded before computing menu bounds"
         item_w = float(assets.item.width)
         item_h = float(assets.item.height)
         item_scale, local_y_shift = self._menu_item_scale(entry.slot)
@@ -298,11 +305,10 @@ class PauseMenuView:
 
     def _draw_menu_items(self) -> None:
         assets = self._assets
-        if assets is None or assets.labels is None or not self._menu_entries:
+        assert assets is not None, "PauseMenuView assets must be loaded before drawing menu items"
+        if not self._menu_entries:
             return
         item = assets.item
-        if item is None:
-            return
         label_tex = assets.labels
         item_w = float(item.width)
         item_h = float(item.height)
@@ -389,8 +395,7 @@ class PauseMenuView:
 
     def _draw_menu_sign(self) -> None:
         assets = self._assets
-        if assets is None or assets.sign is None:
-            return
+        assert assets is not None, "PauseMenuView assets must be loaded before drawing sign"
         screen_w = float(self.state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(

@@ -39,6 +39,7 @@ def test_menu_demo_idle_starts_demo(monkeypatch, tmp_path: Path) -> None:
 
     state = _make_state(tmp_path=tmp_path, demo_enabled=True)
     view = MenuView(state)
+    view._is_open = True
     view._menu_entries = [MenuEntry(slot=0, row=1, y=0.0)]
     view._timeline_max_ms = 0
     view._timeline_ms = 0
@@ -60,6 +61,7 @@ def test_menu_idle_does_not_start_demo_in_full_version(monkeypatch, tmp_path: Pa
 
     state = _make_state(tmp_path=tmp_path, demo_enabled=False)
     view = MenuView(state)
+    view._is_open = True
     view._menu_entries = [MenuEntry(slot=0, row=1, y=0.0)]
     view._timeline_max_ms = 0
     view._timeline_ms = 0
@@ -79,6 +81,7 @@ def test_menu_idle_resets_on_key_press(monkeypatch, tmp_path: Path) -> None:
 
     state = _make_state(tmp_path=tmp_path, demo_enabled=True)
     view = MenuView(state)
+    view._is_open = True
     view._menu_entries = [MenuEntry(slot=0, row=1, y=0.0)]
     view._timeline_max_ms = 0
     view._timeline_ms = 0

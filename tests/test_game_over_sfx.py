@@ -144,14 +144,21 @@ def test_high_scores_view_draw_fades_pause_background_during_close(monkeypatch, 
         def get_or_load(self, *_args, **_kwargs):  # noqa: ANN001
             return SimpleNamespace(texture=None)
 
+    dummy_tex = SimpleNamespace(width=1, height=1)
     monkeypatch.setattr("crimson.game.high_scores_view.view.update_audio", lambda _audio, _dt: None)
     monkeypatch.setattr("crimson.game.high_scores_view.view._ensure_texture_cache", lambda _state: _DummyCache())
     monkeypatch.setattr(
         "crimson.game.high_scores_view.view.load_menu_assets",
-        lambda _state: SimpleNamespace(sign=None, item=None, panel=None, labels=None),
+        lambda _state: SimpleNamespace(sign=dummy_tex, item=dummy_tex, panel=dummy_tex, labels=dummy_tex),
     )
     monkeypatch.setattr("crimson.game.high_scores_view.view.rl.clear_background", lambda *_args, **_kwargs: None)
     monkeypatch.setattr("crimson.game.high_scores_view.view._draw_screen_fade", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.game.high_scores_view.view.draw_classic_menu_panel", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.game.high_scores_view.view.draw_main_panel", lambda *_args, **_kwargs: 0)
+    monkeypatch.setattr("crimson.game.high_scores_view.view.draw_right_panel", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.game.high_scores_view.view._draw_menu_cursor", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(HighScoresView, "_ensure_small_font", lambda _self: SimpleNamespace(texture=dummy_tex))
+    monkeypatch.setattr(HighScoresView, "_draw_sign", lambda _self, _assets: None)
 
     view = HighScoresView(state)
     view.open()

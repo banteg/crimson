@@ -74,6 +74,7 @@ class PanelMenuView:
         back_action: str = "back_to_menu",
     ) -> None:
         self.state = state
+        self._is_open = False
         self._title = title
         self._body_lines = (body or "").splitlines()
         self._panel_pos = panel_pos
@@ -110,11 +111,14 @@ class PanelMenuView:
         self._pending_action = None
         self._panel_open_sfx_played = False
         self._init_ground()
+        self._is_open = True
 
     def close(self) -> None:
+        self._is_open = False
         self._ground = None
 
     def update(self, dt: float) -> None:
+        self._assert_open()
         if self.state.audio is not None:
             update_audio(self.state.audio, dt)
         if self._ground is not None:
@@ -162,12 +166,13 @@ class PanelMenuView:
             entry.ready_timer_ms = min(0x100, entry.ready_timer_ms + dt_ms)
 
     def draw(self) -> None:
+        self._assert_open()
         self._draw_background()
         _draw_screen_fade(self.state)
         assets = self._assets
         entry = self._entry
-        if assets is None or entry is None:
-            return
+        assert assets is not None, "PanelMenuView assets must be loaded before draw()"
+        assert entry is not None, "PanelMenuView entry must be initialized before draw()"
         self._draw_panel()
         self._draw_entry(entry)
         self._draw_sign()
@@ -175,9 +180,13 @@ class PanelMenuView:
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
+        self._assert_open()
         action = self._pending_action
         self._pending_action = None
         return action
+
+    def _assert_open(self) -> None:
+        assert self._is_open, f"{self.__class__.__name__} must be opened before use"
 
     def _draw_contents(self) -> None:
         self._draw_title_text()
@@ -222,8 +231,7 @@ class PanelMenuView:
 
     def _draw_panel(self) -> None:
         assets = self._assets
-        if assets is None or assets.panel is None:
-            return
+        assert assets is not None, "PanelMenuView assets must be loaded before drawing panel"
         panel = assets.panel
         _angle_rad, slide_x = MenuView._ui_element_anim(
             self,
@@ -248,11 +256,8 @@ class PanelMenuView:
 
     def _draw_entry(self, entry: MenuEntry) -> None:
         assets = self._assets
-        if assets is None or assets.labels is None:
-            return
+        assert assets is not None, "PanelMenuView assets must be loaded before drawing entry"
         item = assets.item
-        if item is None:
-            return
         label_tex = assets.labels
         item_w = float(item.width)
         item_h = float(item.height)
@@ -330,8 +335,7 @@ class PanelMenuView:
 
     def _draw_sign(self) -> None:
         assets = self._assets
-        if assets is None or assets.sign is None:
-            return
+        assert assets is not None, "PanelMenuView assets must be loaded before drawing sign"
         screen_w = float(self.state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
@@ -379,8 +383,7 @@ class PanelMenuView:
 
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         assets = self._assets
-        if assets is None or assets.item is None:
-            return Rect()
+        assert assets is not None, "PanelMenuView assets must be loaded before computing menu bounds"
         item_w = float(assets.item.width)
         item_h = float(assets.item.height)
         item_scale, local_y_shift = self._menu_item_scale(entry.slot)

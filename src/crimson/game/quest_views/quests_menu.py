@@ -74,9 +74,9 @@ class QuestsMenuView:
 
     def __init__(self, state: GameState) -> None:
         self.state = state
+        self._is_open = False
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
-        self._panel_tex: rl.Texture | None = None
 
         self._small_font: SmallFontData | None = None
         self._text_quest: rl.Texture | None = None
@@ -109,7 +109,6 @@ class QuestsMenuView:
 
         # Sign and ground match the main menu/panels.
         self._assets = load_menu_assets(self.state)
-        self._panel_tex = self._assets.panel if self._assets is not None else None
         self._init_ground()
 
         self._text_quest = cache.get_or_load("ui_textQuest", "ui/ui_textQuest.jaz").texture
@@ -145,8 +144,10 @@ class QuestsMenuView:
             _ = _quests
         except Exception:
             pass
+        self._is_open = True
 
     def close(self) -> None:
+        self._is_open = False
         if self._dirty:
             try:
                 self.state.config.save()
@@ -157,6 +158,7 @@ class QuestsMenuView:
         self._button_textures = None
 
     def update(self, dt: float) -> None:
+        self._assert_open()
         if self.state.audio is not None:
             update_audio(self.state.audio, dt)
         if self._ground is not None:
@@ -260,6 +262,7 @@ class QuestsMenuView:
             return
 
     def draw(self) -> None:
+        self._assert_open()
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
             self._ground.draw(menu_ground_camera(self.state))
@@ -271,9 +274,13 @@ class QuestsMenuView:
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
+        self._assert_open()
         action = self._action
         self._action = None
         return action
+
+    def _assert_open(self) -> None:
+        assert self._is_open, "QuestsMenuView must be opened before use"
 
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:
@@ -617,8 +624,7 @@ class QuestsMenuView:
 
     def _draw_sign(self) -> None:
         assets = self._assets
-        if assets is None or assets.sign is None:
-            return
+        assert assets is not None, "QuestsMenuView assets must be loaded before drawing sign"
         screen_w = float(self.state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
@@ -660,9 +666,9 @@ class QuestsMenuView:
         )
 
     def _draw_panel(self) -> None:
-        panel = self._panel_tex
-        if panel is None:
-            return
+        assets = self._assets
+        assert assets is not None, "QuestsMenuView assets must be loaded before drawing panel"
+        panel = assets.panel
         _angle_rad, slide_x = MenuView._ui_element_anim(
             self,
             index=1,

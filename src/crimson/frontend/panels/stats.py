@@ -69,6 +69,7 @@ class StatisticsMenuView:
 
     def __init__(self, state: GameState) -> None:
         self.state = state
+        self._is_open = False
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._small_font: SmallFontData | None = None
@@ -120,8 +121,10 @@ class StatisticsMenuView:
                 stop_music(self.state.audio)
             play_music(self.state.audio, "shortie_monk")
             play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
+        self._is_open = True
 
     def close(self) -> None:
+        self._is_open = False
         if self._small_font is not None:
             rl.unload_texture(self._small_font.texture)
             self._small_font = None
@@ -149,6 +152,7 @@ class StatisticsMenuView:
             play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
 
     def take_action(self) -> str | None:
+        self._assert_open()
         if self._pending_action is not None:
             action = self._pending_action
             self._pending_action = None
@@ -159,6 +163,9 @@ class StatisticsMenuView:
         action = self._action
         self._action = None
         return action
+
+    def _assert_open(self) -> None:
+        assert self._is_open, "StatisticsMenuView must be opened before use"
 
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:
@@ -180,6 +187,7 @@ class StatisticsMenuView:
         self._close_action = action
 
     def update(self, dt: float) -> None:
+        self._assert_open()
         if self.state.audio is not None:
             if not self._closing:
                 play_music(self.state.audio, "shortie_monk")
@@ -263,6 +271,7 @@ class StatisticsMenuView:
             return
 
     def draw(self) -> None:
+        self._assert_open()
         rl.clear_background(rl.BLACK)
         pause_background = self.state.pause_background
         if pause_background is not None:
@@ -272,8 +281,7 @@ class StatisticsMenuView:
         _draw_screen_fade(self.state)
 
         assets = self._assets
-        if assets is None or assets.panel is None:
-            return
+        assert assets is not None, "StatisticsMenuView assets must be loaded before draw()"
 
         scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
         panel_w = MENU_PANEL_WIDTH * scale
@@ -293,23 +301,22 @@ class StatisticsMenuView:
         draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
         # Title: full-size row from ui_itemTexts.jaz (128x32).
-        if assets.labels is not None:
-            label_tex = assets.labels
-            row_h = float(MENU_LABEL_ROW_HEIGHT)
-            src = rl.Rectangle(0.0, float(MENU_LABEL_ROW_STATISTICS) * row_h, float(label_tex.width), row_h)
-            MenuView._draw_ui_quad(
-                texture=label_tex,
-                src=src,
-                dst=rl.Rectangle(
-                    panel_top_left.x + _TITLE_X * scale,
-                    panel_top_left.y + _TITLE_Y * scale,
-                    _TITLE_W * scale,
-                    _TITLE_H * scale,
-                ),
-                origin=rl.Vector2(0.0, 0.0),
-                rotation_deg=0.0,
-                tint=rl.WHITE,
-            )
+        label_tex = assets.labels
+        row_h = float(MENU_LABEL_ROW_HEIGHT)
+        src = rl.Rectangle(0.0, float(MENU_LABEL_ROW_STATISTICS) * row_h, float(label_tex.width), row_h)
+        MenuView._draw_ui_quad(
+            texture=label_tex,
+            src=src,
+            dst=rl.Rectangle(
+                panel_top_left.x + _TITLE_X * scale,
+                panel_top_left.y + _TITLE_Y * scale,
+                _TITLE_W * scale,
+                _TITLE_H * scale,
+            ),
+            origin=rl.Vector2(0.0, 0.0),
+            rotation_deg=0.0,
+            tint=rl.WHITE,
+        )
 
         # "played for # hours # minutes"
         font = self._ensure_small_font()
@@ -362,8 +369,7 @@ class StatisticsMenuView:
 
     def _draw_sign(self, *, scale: float) -> None:
         assets = self._assets
-        if assets is None or assets.sign is None:
-            return
+        assert assets is not None, "StatisticsMenuView assets must be loaded before drawing sign"
         sign = assets.sign
         screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))

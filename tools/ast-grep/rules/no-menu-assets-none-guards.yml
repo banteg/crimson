@@ -1,0 +1,33 @@
+id: no-menu-assets-none-guards
+language: python
+severity: warning
+message: Menu view assets are required after `open()`; prefer fail-fast assertions over `None` branches.
+files:
+  - src/crimson/frontend/menu.py
+  - src/crimson/frontend/pause_menu.py
+  - src/crimson/frontend/panels/base.py
+  - src/crimson/frontend/panels/credits.py
+  - src/crimson/frontend/panels/stats.py
+  - src/crimson/frontend/panels/databases.py
+  - src/crimson/frontend/panels/controls.py
+  - src/crimson/frontend/panels/alien_zookeeper.py
+  - src/crimson/game/high_scores_view/view.py
+  - src/crimson/game/quest_views/quests_menu.py
+rule:
+  any:
+    - pattern: |
+        if assets is None:
+            $$$BODY
+    - pattern: |
+        if assets is not None:
+            $$$BODY
+    - pattern: |
+        if assets is None or $COND:
+            $$$BODY
+    - pattern: |
+        if $COND or assets is None:
+            $$$BODY
+    - pattern: assets.sign is None
+    - pattern: assets.panel is None
+    - pattern: assets.item is None
+    - pattern: assets.labels is None

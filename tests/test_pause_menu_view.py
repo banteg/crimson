@@ -45,12 +45,18 @@ def test_pause_menu_draw_fades_pause_background_on_main_menu_close(monkeypatch, 
         draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha))
     )
     view = PauseMenuView(state)
+    view._is_open = True
+    dummy_tex = SimpleNamespace(width=1, height=1)
+    view._assets = SimpleNamespace(sign=dummy_tex, item=dummy_tex, panel=dummy_tex, labels=dummy_tex)
     view._closing = True
     view._close_action = "back_to_menu"
     view._timeline_ms = PAUSE_MENU_TO_MAIN_MENU_FADE_MS // 2
 
     monkeypatch.setattr("crimson.frontend.pause_menu.rl.clear_background", lambda *_args, **_kwargs: None)
     monkeypatch.setattr("crimson.frontend.pause_menu._draw_screen_fade", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(PauseMenuView, "_draw_menu_items", lambda _self: None)
+    monkeypatch.setattr(PauseMenuView, "_draw_menu_sign", lambda _self: None)
+    monkeypatch.setattr("crimson.frontend.pause_menu._draw_menu_cursor", lambda *_args, **_kwargs: None)
 
     view.draw()
 
@@ -65,12 +71,18 @@ def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(monkeyp
         draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha))
     )
     view = PauseMenuView(state)
+    view._is_open = True
+    dummy_tex = SimpleNamespace(width=1, height=1)
+    view._assets = SimpleNamespace(sign=dummy_tex, item=dummy_tex, panel=dummy_tex, labels=dummy_tex)
     view._closing = True
     view._close_action = "back_to_previous"
     view._timeline_ms = 0
 
     monkeypatch.setattr("crimson.frontend.pause_menu.rl.clear_background", lambda *_args, **_kwargs: None)
     monkeypatch.setattr("crimson.frontend.pause_menu._draw_screen_fade", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(PauseMenuView, "_draw_menu_items", lambda _self: None)
+    monkeypatch.setattr(PauseMenuView, "_draw_menu_sign", lambda _self: None)
+    monkeypatch.setattr("crimson.frontend.pause_menu._draw_menu_cursor", lambda *_args, **_kwargs: None)
 
     view.draw()
 

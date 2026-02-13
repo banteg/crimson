@@ -595,8 +595,7 @@ class ControlsMenuView(PanelMenuView):
 
     def _draw_panel(self) -> None:
         assets = self._assets
-        if assets is None or assets.panel is None:
-            return
+        assert assets is not None, "ControlsMenuView assets must be loaded before drawing panel"
         panel = assets.panel
 
         fx_detail = self.state.config.fx_detail(level=0, default=False)

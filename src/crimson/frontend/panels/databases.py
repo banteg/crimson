@@ -52,6 +52,7 @@ RIGHT_PANEL_HEIGHT = 254.0
 class _DatabaseBaseView:
     def __init__(self, state: GameState) -> None:
         self.state = state
+        self._is_open = False
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._small_font: SmallFontData | None = None
@@ -90,8 +91,10 @@ class _DatabaseBaseView:
 
         if self.state.audio is not None:
             play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
+        self._is_open = True
 
     def close(self) -> None:
+        self._is_open = False
         if self._small_font is not None:
             rl.unload_texture(self._small_font.texture)
             self._small_font = None
@@ -104,6 +107,7 @@ class _DatabaseBaseView:
         self._action = None
 
     def take_action(self) -> str | None:
+        self._assert_open()
         if self._pending_action is not None:
             action = self._pending_action
             self._pending_action = None
@@ -114,6 +118,9 @@ class _DatabaseBaseView:
         action = self._action
         self._action = None
         return action
+
+    def _assert_open(self) -> None:
+        assert self._is_open, f"{self.__class__.__name__} must be opened before use"
 
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:
@@ -136,8 +143,7 @@ class _DatabaseBaseView:
 
     def _draw_sign(self) -> None:
         assets = self._assets
-        if assets is None or assets.sign is None:
-            return
+        assert assets is not None, "Database panel assets must be loaded before drawing sign"
         sign = assets.sign
         screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
@@ -169,6 +175,7 @@ class _DatabaseBaseView:
         )
 
     def update(self, dt: float) -> None:
+        self._assert_open()
         if self.state.audio is not None:
             update_audio(self.state.audio, dt)
         if self._ground is not None:
@@ -224,6 +231,7 @@ class _DatabaseBaseView:
             self._begin_close_transition("back_to_previous")
 
     def draw(self) -> None:
+        self._assert_open()
         rl.clear_background(rl.BLACK)
         pause_background = self.state.pause_background
         if pause_background is not None:
@@ -233,8 +241,7 @@ class _DatabaseBaseView:
         _draw_screen_fade(self.state)
 
         assets = self._assets
-        if assets is None or assets.panel is None:
-            return
+        assert assets is not None, "Database panel assets must be loaded before draw()"
 
         scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
         fx_detail = self.state.config.fx_detail(level=0, default=False)

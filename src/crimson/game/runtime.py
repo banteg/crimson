@@ -41,6 +41,35 @@ CRIMSON_PAQ_NAME = "crimson.paq"
 MUSIC_PAQ_NAME = "music.paq"
 SFX_PAQ_NAME = "sfx.paq"
 AUTOEXEC_NAME = "autoexec.txt"
+REQUIRED_RUNTIME_PAQS: tuple[str, ...] = (CRIMSON_PAQ_NAME,)
+OPTIONAL_AUDIO_PAQ_FALLBACKS: tuple[tuple[str, str], ...] = (
+    (MUSIC_PAQ_NAME, "music"),
+    (SFX_PAQ_NAME, "sfx"),
+)
+
+
+def _runtime_download_targets(assets_dir: Path) -> tuple[str, ...]:
+    names: list[str] = [CRIMSON_PAQ_NAME]
+    for paq_name, dir_name in OPTIONAL_AUDIO_PAQ_FALLBACKS:
+        if (assets_dir / paq_name).is_file() or (assets_dir / dir_name).is_dir():
+            continue
+        names.append(paq_name)
+    return tuple(names)
+
+
+def _require_runtime_assets(assets_dir: Path) -> None:
+    missing = [name for name in REQUIRED_RUNTIME_PAQS if not (assets_dir / name).is_file()]
+    if missing:
+        joined = ", ".join(missing)
+        raise FileNotFoundError(f"assets: missing required archives: {joined}")
+    missing_audio = [
+        f"{paq_name} (or {dir_name}/)"
+        for paq_name, dir_name in OPTIONAL_AUDIO_PAQ_FALLBACKS
+        if not (assets_dir / paq_name).is_file() and not (assets_dir / dir_name).is_dir()
+    ]
+    if missing_audio:
+        joined = ", ".join(missing_audio)
+        raise FileNotFoundError(f"assets: missing audio archives or unpacked directories: {joined}")
 
 def _parse_float_arg(value: str) -> float:
     try:
@@ -289,11 +318,9 @@ def run_game(config: GameConfig) -> None:
         console.log.log(f"config: {cfg.screen_width}x{cfg.screen_height} windowed={cfg.windowed_flag}")
         console.log.log(f"status: {status.path.name} loaded")
         console.log.log(f"assets: {assets_dir}")
-        download_missing_paqs(assets_dir, console)
-        if not (assets_dir / CRIMSON_PAQ_NAME).is_file():
-            console.log.log(f"assets: missing {CRIMSON_PAQ_NAME} (textures will not load)")
-        if not (assets_dir / MUSIC_PAQ_NAME).is_file():
-            console.log.log(f"assets: missing {MUSIC_PAQ_NAME}")
+        download_missing_paqs(assets_dir, console, names=_runtime_download_targets(assets_dir))
+        _require_runtime_assets(assets_dir)
+        console.log.log(f"assets: required archives ready ({', '.join(REQUIRED_RUNTIME_PAQS)})")
         console.log.log(f"commands: {len(console.commands)} registered")
         console.log.log(f"cvars: {len(console.cvars)} registered")
         console.exec_line("exec autoexec.txt")
