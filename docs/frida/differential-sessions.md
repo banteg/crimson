@@ -832,3 +832,54 @@ When the capture SHA is unchanged, append updates to the same session.
   - `divergence-report --run-summary-focus-context`,
   - `verify-capture`,
   - `focus-trace --tick <first sustained mismatch>`.
+
+---
+
+## Session 14 (2026-02-13)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.json.gz`
+- **Capture SHA256:** `49aec5d3705f7c8cfb90143a6d204053c8ba6744ca30c4a367666cdaec04fe0e`
+- **First mismatch progression:**
+  - sustained (`divergence-report` + `bisect-divergence`): `tick 1390 (rng_stream_mismatch)`
+  - checkpoint-state verifier (`verify-capture`): `tick 1571 (players[0].experience/score_xp expected=10406 actual=10450)`
+
+### Key Findings
+
+- New capture SHA family; no prior session entry for `49aec5d3`.
+- Loader health check passed:
+  - `capture_format_version=3`,
+  - `ticks=9463` (`tick 0..9462`, gameplay frame `1..9463`).
+- Baseline run context before first sustained drift includes:
+  - `perk_pick` `Evil Eyes (11)` at `tick 1318`,
+  - first sustained mismatch at `tick 1390` with `rand_calls(e/a)=1/0`.
+- `focus-trace --tick 1390` confirms RNG-tail shortfall at focus:
+  - `capture_calls=1`, `rewrite_calls=0`, `missing_native_tail=1`,
+  - missing call caller top: `0x004263b1 x1`.
+- `divergence-report` investigation leads attribute the pre-focus shortfall to a missing RNG-consuming branch in `creature_update_all` path.
+- Telemetry quality gate is strong for this artifact:
+  - `key_rows=9463`, `key_rows_with_any_signal=9450`,
+  - `perk_apply_in_tick_entries=0`, `perk_apply_outside_calls=13`,
+  - `sample_creature_rows=415067`, `sample_creature_rows_with_ai_lineage=415067`,
+  - `creature_lifecycle_rows=3145`, `creature_lifecycle_rows_with_ai_lineage=3145`.
+
+### Landed Changes
+
+- None (triage/session-bookkeeping only).
+
+### Validation
+
+- `uv run python - <<'PY' ... load_capture(Path("artifacts/frida/share/gameplay_diff_capture.json.gz")) ...` (health check: sha/version/tick range)
+- `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --json-out analysis/frida/reports/capture_49aec5d3_baseline.json` *(expected non-zero exit while diverged)*
+- `uv run crimson original bisect-divergence artifacts/frida/share/gameplay_diff_capture.json.gz --window-before 12 --window-after 6 --json-out analysis/frida/reports/capture_49aec5d3_bisect.json` *(expected non-zero exit while diverged)*
+- `uv run crimson original verify-capture artifacts/frida/share/gameplay_diff_capture.json.gz --float-abs-tol 1e-3 --max-field-diffs 32` *(expected non-zero exit while diverged)*
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json.gz --tick 1390 --near-miss-threshold 0.35 --json-out analysis/frida/reports/capture_49aec5d3_focus_1390.json`
+- `uv run python - <<'PY' ... telemetry quality audit ...` (key/perk + AI-lineage coverage)
+
+### Outcome / Next Probe
+
+- Primary actionable lead is the first RNG-tail shortfall at `tick 1390` (`caller_static=0x004263b1`, mapped in divergence lead as `creature_update_all` path).
+- Next probe should focus on replay/runtime branch parity in creature/projectile update flow around `tick 1390`, especially:
+  - `src/crimson/creatures/runtime.py`
+  - `src/crimson/creatures/ai.py`
+  - `src/crimson/projectiles/pools.py`
+  - `src/crimson/effects.py`
