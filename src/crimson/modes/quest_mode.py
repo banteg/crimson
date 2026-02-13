@@ -34,7 +34,7 @@ from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table, tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
-from ..quests.types import QuestContext, QuestDefinition, SpawnEntry, parse_level
+from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..terrain_assets import terrain_texture_by_id
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
@@ -119,21 +119,22 @@ class QuestRunOutcome:
     player_health_values: tuple[float, ...] = ()
 
 
-def _quest_seed(level: str) -> int:
-    tier, quest = parse_level(level)
-    return tier * 100 + quest
+def _quest_seed(major: int, minor: int) -> int:
+    return int(major) * 100 + int(minor)
 
 
-def _quest_attempt_counter_index(level: str) -> int | None:
-    tier, quest = parse_level(level)
+def _quest_attempt_counter_index(major: int, minor: int) -> int | None:
+    tier = int(major)
+    quest = int(minor)
     global_index = (tier - 1) * 10 + (quest - 1)
     if not (0 <= global_index < 40):
         return None
     return global_index + 11
 
 
-def _quest_level_label(level: str) -> str:
-    major, minor = parse_level(level)
+def _quest_level_label(major: int, minor: int) -> str:
+    major = int(major)
+    minor = int(minor)
 
     # Match `ui_render_hud` (0x0041bf94): quest minor can temporarily exceed 10
     # (e.g. after incrementing), and the HUD carries it into the major.
@@ -274,7 +275,7 @@ class QuestMode(BaseGameplayMode):
         hardcore_flag = self.config.hardcore
 
         self.world.hardcore = hardcore_flag
-        seed = _quest_seed(level)
+        seed = _quest_seed(quest.major, quest.minor)
 
         player_count = self.config.player_count
         self.world.reset(seed=seed, player_count=max(1, min(4, player_count)))
@@ -323,7 +324,7 @@ class QuestMode(BaseGameplayMode):
 
         self._quest = _QuestRunState(
             quest=quest,
-            level=str(level),
+            level=quest.level,
             spawn_entries=entries,
             total_spawn_count=int(total_spawn_count),
             max_trigger_time_ms=int(max_trigger_ms),
@@ -334,7 +335,7 @@ class QuestMode(BaseGameplayMode):
         )
 
         if status is not None:
-            idx = _quest_attempt_counter_index(level)
+            idx = _quest_attempt_counter_index(quest.major, quest.minor)
             if idx is not None:
                 status.increment_quest_play_count(idx)
 
@@ -767,7 +768,7 @@ class QuestMode(BaseGameplayMode):
             t = timer_ms - (QUEST_TITLE_FADE_IN_MS + QUEST_TITLE_HOLD_MS)
             alpha = max(0.0, 1.0 - (t / max(1e-3, QUEST_TITLE_FADE_OUT_MS)))
 
-        draw_quest_title_overlay(font, quest.title, _quest_level_label(self._quest.level), alpha=alpha)
+        draw_quest_title_overlay(font, quest.title, _quest_level_label(quest.major, quest.minor), alpha=alpha)
 
     def _draw_quest_complete_banner(self) -> None:
         tex = self._quest_complete_texture

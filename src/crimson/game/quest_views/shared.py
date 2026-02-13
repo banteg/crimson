@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
-from ...quests.types import parse_level
+from ...quests.types import format_level, parse_level
 
 QUEST_MENU_BASE_X = -5.0
 QUEST_MENU_BASE_Y = 185.0
@@ -97,16 +97,15 @@ def _player_name_default(config: CrimsonConfig) -> str:
 def _next_quest_level(level: str) -> str | None:
     major, minor = parse_level(level)
 
-    from ...quests import quest_by_level
+    from ...quests import quest_by_stage
 
     for _ in range(100):
         minor += 1
         if minor > 10:
             minor = 1
             major += 1
-        candidate = f"{major}.{minor}"
-        if quest_by_level(candidate) is not None:
-            return candidate
+        if quest_by_stage(major, minor) is not None:
+            return format_level(major, minor)
     return None
 
 

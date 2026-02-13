@@ -56,9 +56,9 @@ def mode_label(mode_id: int, quest_major: int, quest_minor: int) -> str:
 
 
 def quest_title(major: int, minor: int) -> str:
-    from ...quests import quest_by_level
+    from ...quests import quest_by_stage
 
-    q = quest_by_level(f"{int(major)}.{int(minor)}")
+    q = quest_by_stage(major, minor)
     if q is not None and q.title:
         return str(q.title)
     return "???"
