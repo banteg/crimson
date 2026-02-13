@@ -73,7 +73,7 @@ class GameState:
     session_start: float
     skip_intro: bool = False
     gamma_ramp: float = 1.0
-    snd_freq_adjustment_enabled: bool = False
+    snd_freq_adjustment_enabled: bool = True
     menu_ground: GroundRenderer | None = None
     menu_ground_camera: Vec2 | None = None
     menu_sign_locked: bool = False
@@ -83,6 +83,8 @@ class GameState:
     pending_high_scores: HighScoresRequest | None = None
     quest_outcome: QuestRunOutcome | None = None
     quest_fail_retry_count: int = 0
+    terrain_regenerate_requested: bool = False
+    survival_elapsed_ms: float = 0.0
     demo_trial_elapsed_ms: int = 0
     quit_requested: bool = False
     screen_fade_alpha: float = 0.0

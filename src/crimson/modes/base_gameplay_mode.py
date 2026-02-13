@@ -326,6 +326,15 @@ class BaseGameplayMode:
     def menu_ground_camera(self) -> Vec2:
         return self.world.camera
 
+    def console_elapsed_ms(self) -> float:
+        return float(self.world._elapsed_ms)
+
+    def regenerate_terrain_for_console(self) -> None:
+        if self.world.ground is None:
+            return
+        terrain_seed = int(self.state.rng.rand() % 10_000)
+        self.world.ground.schedule_generate(seed=terrain_seed, layers=3)
+
     def _draw_screen_fade(self) -> None:
         fade_alpha = 0.0
         if self._screen_fade is not None:

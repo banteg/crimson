@@ -151,14 +151,14 @@ Tracking which console commands are implemented in `src/` vs still partial.
 | `extendconsole` | core | implemented | Expands console height to 480. |
 | `minimizeconsole` | core | implemented | Restores console height to 300. |
 | `exec` | core | implemented | Executes scripts; ignores `//` comment lines. |
-| `setGammaRamp` | startup | partial | Stores scalar; no renderer gamma yet. |
+| `setGammaRamp` | startup | implemented | Applies gamma gain in draw path via shader and logs updated scalar. |
 | `snd_addGameTune` | startup | implemented | Loads `music/<name>` and queues. |
-| `generateterrain` | startup | partial | Regenerates menu ground only. |
-| `telltimesurvived` | startup | partial | Reports session time elapsed. |
+| `generateterrain` | startup | implemented | Requests terrain regeneration for menu and active gameplay terrain. |
+| `telltimesurvived` | startup | implemented | Reports active gameplay elapsed time (seconds). |
 | `setresourcepaq` | startup | implemented | Validates path and swaps resource paq entries. |
 | `loadtexture` | startup | implemented | Loads from current resource paq; logs ok/failed. |
 | `openurl` | startup | implemented | Launches browser. |
-| `sndfreqadjustment` | startup | partial | Toggles runtime flag only. |
+| `sndfreqadjustment` | startup | implemented | Toggles runtime flag with native-style enabled/disabled log text. |
 
 ## Known console variables (cvars)
 
