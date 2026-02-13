@@ -241,9 +241,9 @@ def cmd_replay_play(
     base_dir.mkdir(parents=True, exist_ok=True)
     cfg = ensure_crimson_cfg(base_dir)
     if width is None:
-        width = int(cfg.screen_width)
+        width = cfg.screen_width
     if height is None:
-        height = int(cfg.screen_height)
+        height = cfg.screen_height
     console = create_console(base_dir, assets_dir=assets_dir)
     download_missing_paqs(assets_dir, console)
 

@@ -246,7 +246,7 @@ def scores_path_for_mode(
 
 
 def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage_major: int = 0, quest_stage_minor: int = 0) -> Path:
-    mode = int(config.game_mode)
+    mode = config.game_mode
     root = scores_dir_for_base_dir(base_dir)
     if mode == 1:
         return root / "survival.hi"
@@ -255,10 +255,10 @@ def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage
     if mode == 4:
         return root / "typo.hi"
     if mode == 3:
-        hardcore = bool(config.hardcore)
+        hardcore = config.hardcore
         if int(quest_stage_major) == 0 and int(quest_stage_minor) == 0:
-            major = int(config.quest_stage_major)
-            minor = int(config.quest_stage_minor)
+            major = config.quest_stage_major
+            minor = config.quest_stage_minor
             if major == 0 and minor == 0:
                 level = config.quest_level
                 if isinstance(level, str):

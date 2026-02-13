@@ -87,7 +87,7 @@ class DemoView:
             assets_dir=state.assets_dir,
             world_size=WORLD_SIZE,
             demo_mode_active=True,
-            hardcore=bool(state.config.hardcore),
+            hardcore=state.config.hardcore,
             difficulty_level=0,
             preserve_bugs=bool(state.preserve_bugs),
             texture_cache=state.texture_cache,
@@ -218,7 +218,7 @@ class DemoView:
         return self._small_font
 
     def _purchase_var_28_2(self) -> float:
-        screen_w = int(self._state.config.screen_width)
+        screen_w = self._state.config.screen_width
         if screen_w == 0x320:  # 800
             return 64.0
         if screen_w == 0x400:  # 1024

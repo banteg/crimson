@@ -249,7 +249,7 @@ class BaseGameplayMode:
         player_count = 1
         config = self._config
         if config is not None:
-            player_count = int(config.player_count)
+            player_count = config.player_count
         seed = random.getrandbits(32)
         self._world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._world.open()

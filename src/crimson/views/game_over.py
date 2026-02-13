@@ -27,7 +27,7 @@ def _seed_highscores(config: CrimsonConfig) -> None:
     records: list[HighScoreRecord] = []
     for idx in range(100):
         record = HighScoreRecord.blank()
-        record.game_mode_id = int(config.game_mode)
+        record.game_mode_id = config.game_mode
         record.set_name(f"bot{idx:03d}")
         record.score_xp = 10_000 - idx
         record.survival_elapsed_ms = (idx + 1) * 1000

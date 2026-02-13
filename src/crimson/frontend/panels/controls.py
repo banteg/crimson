@@ -196,10 +196,10 @@ class ControlsMenuView(PanelMenuView):
     def _slot_key(self, *, player_index: int, slot: int) -> int:
         slot_idx = int(slot)
         if slot_idx == PICK_PERK_BIND_SLOT:
-            return int(self._state.config.keybind_pick_perk)
+            return self._state.config.keybind_pick_perk
         if slot_idx == RELOAD_BIND_SLOT:
-            return int(self._state.config.keybind_reload)
-        return int(self._state.config.player_keybind_value(player_index=int(player_index), slot_index=slot_idx))
+            return self._state.config.keybind_reload
+        return self._state.config.player_keybind_value(player_index=int(player_index), slot_index=slot_idx)
 
     def _set_slot_key(self, *, player_index: int, slot: int, code: int) -> None:
         slot_idx = int(slot)
@@ -252,7 +252,7 @@ class ControlsMenuView(PanelMenuView):
         )
 
     def _direction_arrow_enabled(self) -> bool:
-        return bool(self._state.config.hud_indicator_enabled_for_player(player_index=int(self._current_player_index())))
+        return self._state.config.hud_indicator_enabled_for_player(player_index=int(self._current_player_index()))
 
     def _set_direction_arrow_enabled(self, enabled: bool) -> None:
         self._state.config.set_hud_indicator_for_player(
@@ -598,7 +598,7 @@ class ControlsMenuView(PanelMenuView):
             return
         panel = assets.panel
 
-        fx_detail = bool(self._state.config.fx_detail(level=0, default=False))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
         panel_scale, _local_y_shift = self._menu_item_scale(0)
         panel_w = MENU_PANEL_WIDTH * panel_scale
 

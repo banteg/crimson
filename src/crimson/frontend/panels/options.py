@@ -187,12 +187,12 @@ class OptionsMenuView(PanelMenuView):
 
     def _sync_from_config(self) -> None:
         config = self._state.config
-        self._ui_info_texts = bool(config.ui_info_texts)
+        self._ui_info_texts = config.ui_info_texts
 
-        sfx_volume = float(config.sfx_volume)
-        music_volume = float(config.music_volume)
-        detail_preset = int(config.detail_preset)
-        mouse_sensitivity = float(config.mouse_sensitivity)
+        sfx_volume = config.sfx_volume
+        music_volume = config.music_volume
+        detail_preset = config.detail_preset
+        mouse_sensitivity = config.mouse_sensitivity
 
         self._slider_sfx.value = max(
             self._slider_sfx.min_value, min(self._slider_sfx.max_value, int(sfx_volume * 10.0))

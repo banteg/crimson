@@ -1,0 +1,33 @@
+id: no-config-accessor-casts
+valid:
+  - |
+    music_disabled = config.music_disabled
+  - |
+    hardcore = self._state.config.hardcore
+  - |
+    player_count = self._state.config.player_count
+  - |
+    screen_w = float(self._state.config.screen_width)
+  - |
+    preserve = bool(config.preserve_bugs)
+invalid:
+  - |
+    music_disabled = bool(config.music_disabled)
+  - |
+    hardcore = bool(self._state.config.hardcore)
+  - |
+    detail = bool(self._state.config.fx_detail(level=0, default=False))
+  - |
+    arrow = bool(self._state.config.hud_indicator_enabled_for_player(player_index=1))
+  - |
+    players = int(config.player_count)
+  - |
+    mode = int(self._state.config.game_mode)
+  - |
+    preset = int(self._world.config.detail_preset)
+  - |
+    width = int(cfg.screen_width)
+  - |
+    volume = float(config.music_volume)
+  - |
+    scale = float(state.config.texture_scale)

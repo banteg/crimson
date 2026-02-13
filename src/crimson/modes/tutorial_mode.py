@@ -311,7 +311,7 @@ class TutorialMode(BaseGameplayMode):
 
         detail_preset = 5
         if self._world.config is not None:
-            detail_preset = int(self._world.config.detail_preset)
+            detail_preset = self._world.config.detail_preset
 
         for call in actions.spawn_bonuses:
             spawned = self._state.bonus_pool.spawn_at(

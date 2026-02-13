@@ -180,7 +180,7 @@ class HighScoresView:
         request = self._state.pending_high_scores
         self._state.pending_high_scores = None
         if request is None:
-            request = HighScoresRequest(game_mode_id=int(self._state.config.game_mode))
+            request = HighScoresRequest(game_mode_id=self._state.config.game_mode)
 
         if int(request.game_mode_id) == 3 and (
             int(request.quest_stage_major) <= 0 or int(request.quest_stage_minor) <= 0
@@ -189,8 +189,8 @@ class HighScoresView:
             if major <= 0 or minor <= 0:
                 major, minor = self._parse_quest_level(self._state.config.quest_level)
             if major <= 0 or minor <= 0:
-                major = int(self._state.config.quest_stage_major)
-                minor = int(self._state.config.quest_stage_minor)
+                major = self._state.config.quest_stage_major
+                minor = self._state.config.quest_stage_minor
             request.quest_stage_major = int(major)
             request.quest_stage_minor = int(minor)
 
@@ -198,7 +198,7 @@ class HighScoresView:
         path = scores_path_for_mode(
             self._state.base_dir,
             int(request.game_mode_id),
-            hardcore=bool(self._state.config.hardcore),
+            hardcore=self._state.config.hardcore,
             quest_stage_major=int(request.quest_stage_major),
             quest_stage_minor=int(request.quest_stage_minor),
         )
@@ -340,13 +340,13 @@ class HighScoresView:
         font = self._ensure_small_font()
         request = self._request
         mode_id = (
-            int(request.game_mode_id) if request is not None else int(self._state.config.game_mode)
+            int(request.game_mode_id) if request is not None else self._state.config.game_mode
         )
         quest_major = int(request.quest_stage_major) if request is not None else 0
         quest_minor = int(request.quest_stage_minor) if request is not None else 0
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        fx_detail = bool(self._state.config.fx_detail(level=0, default=False))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
         panel_w = MENU_PANEL_WIDTH * scale
         _angle_rad, left_slide_x = MenuView._ui_element_anim(
             self,
@@ -413,7 +413,7 @@ class HighScoresView:
             rl.Color(255, 255, 255, int(255 * 0.7)),
         )
         if int(mode_id) == 3:
-            hardcore = bool(self._state.config.hardcore)
+            hardcore = self._state.config.hardcore
             if hardcore:
                 quest_color = rl.Color(250, 70, 60, int(255 * 0.7))
             else:
@@ -644,7 +644,7 @@ class HighScoresView:
             )
 
         # Values (static in the oracle).
-        player_count = int(self._state.config.player_count)
+        player_count = self._state.config.player_count
         if player_count < 1:
             player_count = 1
         if player_count > 4:
@@ -993,7 +993,7 @@ class HighScoresView:
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * sign_scale
         rotation_deg = 0.0
-        fx_detail = bool(self._state.config.fx_detail(level=0, default=False))
+        fx_detail = self._state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,

@@ -247,7 +247,7 @@ class ProjectileRenderDebugView:
 
         detail_preset = 5
         if self._world.config is not None:
-            detail_preset = int(self._world.config.detail_preset)
+            detail_preset = self._world.config.detail_preset
 
         # Keep the scene stable: targets are static, only projectiles + player advance.
         hits = self._world.state.projectiles.update(

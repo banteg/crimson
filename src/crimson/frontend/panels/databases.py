@@ -531,7 +531,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
 
             stub = _Stub()
             stub.status = self._state.status
-            stub.game_mode = int(self._state.config.game_mode)
+            stub.game_mode = self._state.config.game_mode
             stub.demo_mode_active = bool(getattr(self._state, "demo_enabled", False))
             stub.weapon_available = [False] * int(WEAPON_COUNT_SIZE)
             stub._weapon_available_game_mode = -1

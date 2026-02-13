@@ -66,7 +66,7 @@ class CameraDebugView:
             return
         self._config_screen_w = float(cfg.screen_width)
         self._config_screen_h = float(cfg.screen_height)
-        self._texture_scale = float(cfg.texture_scale)
+        self._texture_scale = cfg.texture_scale
 
     def _camera_screen_size(self) -> Vec2:
         if self._use_config_screen:

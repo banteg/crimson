@@ -244,7 +244,7 @@ class PlayGameMenuView(PanelMenuView):
 
         # Clamp to a valid range; older configs in the repo can contain 0 here,
         # which would incorrectly hide the Tutorial entry (it is gated on == 1).
-        player_count = int(config.player_count)
+        player_count = config.player_count
         if player_count < 1:
             player_count = 1
         if player_count > len(self._PLAYER_COUNT_LABELS):
@@ -556,7 +556,7 @@ class PlayGameMenuView(PanelMenuView):
                 rl.WHITE,
             )
 
-        player_count = int(self._state.config.player_count)
+        player_count = self._state.config.player_count
         if player_count < 1:
             player_count = 1
         if player_count > len(self._PLAYER_COUNT_LABELS):

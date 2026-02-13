@@ -392,7 +392,7 @@ class QuestsMenuView:
         if check_on is None or check_off is None:
             return False
         config = self._state.config
-        hardcore = bool(config.hardcore)
+        hardcore = config.hardcore
 
         font = self._ensure_small_font()
         text_scale = 1.0
@@ -603,7 +603,7 @@ class QuestsMenuView:
 
         config = self._state.config
         status = self._state.status
-        hardcore_flag = bool(config.hardcore)
+        hardcore_flag = config.hardcore
         base_color, hover_color = self._quest_row_colors(hardcore=hardcore_flag)
 
         font = self._ensure_small_font()
@@ -849,7 +849,7 @@ class QuestResultsView:
                 if perk_id != int(PerkId.ANTIPERK):
                     perk_entry = PERK_BY_ID.get(perk_id)
                     if perk_entry is not None and perk_entry.name:
-                        fx_toggle = int(self._state.config.fx_toggle)
+                        fx_toggle = self._state.config.fx_toggle
                         self._unlock_perk_name = perk_display_name(
                             perk_id,
                             fx_toggle=fx_toggle,
@@ -899,7 +899,7 @@ class QuestResultsView:
         # Advance quest unlock progression when completing the currently-unlocked quest.
         if global_index >= 0:
             next_unlock = int(global_index + 1)
-            hardcore = bool(self._state.config.hardcore)
+            hardcore = self._state.config.hardcore
             try:
                 if hardcore:
                     if next_unlock > int(self._state.status.quest_unlock_index_full):
@@ -1207,7 +1207,7 @@ class EndNoteView:
         draw_classic_menu_panel(panel_tex, dst=panel, tint=rl.WHITE, shadow=fx_detail)
 
         font = self._ensure_small_font()
-        hardcore = bool(self._state.config.hardcore)
+        hardcore = self._state.config.hardcore
         header = "   Incredible!" if hardcore else "Congratulations!"
         levels_line = (
             "You've completed all the levels but the battle"

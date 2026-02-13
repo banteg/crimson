@@ -137,7 +137,7 @@ class DecalsDebugView:
             try:
                 cfg = ensure_crimson_cfg(runtime_dir)
                 return (
-                    float(cfg.texture_scale),
+                    cfg.texture_scale,
                     float(cfg.screen_width),
                     float(cfg.screen_height),
                 )

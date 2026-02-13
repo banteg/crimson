@@ -305,7 +305,7 @@ class GameOverUi:
             rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
         if self.phase == -1:
             # If in the top 100, prompt for a name. Otherwise show score-too-low message and buttons.
-            game_mode_id = int(self.config.game_mode)
+            game_mode_id = self.config.game_mode
             candidate = record.copy()
             candidate.game_mode_id = game_mode_id
             self._candidate_record = candidate

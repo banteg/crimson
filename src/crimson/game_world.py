@@ -117,7 +117,7 @@ class GameWorld:
             self._damage_scale_by_type[int(entry.weapon_id)] = float(entry.damage_scale or 1.0)
         player_count = 1
         if self.config is not None:
-            player_count = int(self.config.player_count)
+            player_count = self.config.player_count
         self.reset(player_count=max(1, min(4, player_count)))
 
     def reset(
@@ -202,7 +202,7 @@ class GameWorld:
             self.ground.screen_width = None
             self.ground.screen_height = None
             return
-        self.ground.texture_scale = float(self.config.texture_scale)
+        self.ground.texture_scale = self.config.texture_scale
         self.ground.screen_width = float(self.config.screen_width)
         self.ground.screen_height = float(self.config.screen_height)
 
@@ -412,8 +412,8 @@ class GameWorld:
         detail_preset = 5
         fx_toggle = 0
         if self.config is not None:
-            detail_preset = int(self.config.detail_preset)
-            fx_toggle = int(self.config.fx_toggle)
+            detail_preset = self.config.detail_preset
+            fx_toggle = self.config.fx_toggle
 
         if self.ground is not None:
             self._sync_ground_settings()
@@ -476,8 +476,8 @@ class GameWorld:
         fx_toggle = 0
         detail_preset = 5
         if self.config is not None:
-            fx_toggle = int(self.config.fx_toggle)
-            detail_preset = int(self.config.detail_preset)
+            fx_toggle = self.config.fx_toggle
+            detail_preset = self.config.detail_preset
         queue_projectile_decals(
             state=self.state,
             players=self.players,

@@ -68,7 +68,7 @@ class CorpseStampDebugView:
         if runtime_dir.is_dir():
             try:
                 cfg = ensure_crimson_cfg(runtime_dir)
-                return float(cfg.texture_scale), float(cfg.screen_width), float(cfg.screen_height)
+                return cfg.texture_scale, float(cfg.screen_width), float(cfg.screen_height)
             except Exception:
                 return 1.0, None, None
         return 1.0, None, None

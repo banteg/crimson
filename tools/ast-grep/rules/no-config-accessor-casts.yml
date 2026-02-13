@@ -1,0 +1,60 @@
+id: no-config-accessor-casts
+language: python
+severity: error
+message: CrimsonConfig accessors are typed; remove redundant bool/int/float coercion.
+files:
+  - src/**/*.py
+ignores:
+  - src/grim/config.py
+rule:
+  any:
+    # bool wrappers on typed bool accessors
+    - pattern: bool(config.hardcore)
+    - pattern: bool($STATE.config.hardcore)
+    - pattern: bool(config.ui_info_texts)
+    - pattern: bool($STATE.config.ui_info_texts)
+    - pattern: bool(config.music_disabled)
+    - pattern: bool($STATE.config.music_disabled)
+    - pattern: bool(config.sound_disabled)
+    - pattern: bool($STATE.config.sound_disabled)
+    - pattern: bool(config.fx_detail($$$ARGS))
+    - pattern: bool($STATE.config.fx_detail($$$ARGS))
+    - pattern: bool(config.hud_indicator_enabled_for_player($$$ARGS))
+    - pattern: bool($STATE.config.hud_indicator_enabled_for_player($$$ARGS))
+
+    # int wrappers on typed int accessors
+    - pattern: int(config.player_count)
+    - pattern: int($STATE.config.player_count)
+    - pattern: int(config.game_mode)
+    - pattern: int($STATE.config.game_mode)
+    - pattern: int(config.detail_preset)
+    - pattern: int($STATE.config.detail_preset)
+    - pattern: int(config.fx_toggle)
+    - pattern: int($STATE.config.fx_toggle)
+    - pattern: int(config.keybind_reload)
+    - pattern: int($STATE.config.keybind_reload)
+    - pattern: int(config.keybind_pick_perk)
+    - pattern: int($STATE.config.keybind_pick_perk)
+    - pattern: int(config.quest_stage_major)
+    - pattern: int($STATE.config.quest_stage_major)
+    - pattern: int(config.quest_stage_minor)
+    - pattern: int($STATE.config.quest_stage_minor)
+    - pattern: int(config.player_keybind_value($$$ARGS))
+    - pattern: int($STATE.config.player_keybind_value($$$ARGS))
+    - pattern: int(config.screen_width)
+    - pattern: int($STATE.config.screen_width)
+    - pattern: int(cfg.screen_width)
+    - pattern: int(config.screen_height)
+    - pattern: int($STATE.config.screen_height)
+    - pattern: int(cfg.screen_height)
+
+    # float wrappers on typed float accessors
+    - pattern: float(config.sfx_volume)
+    - pattern: float($STATE.config.sfx_volume)
+    - pattern: float(config.music_volume)
+    - pattern: float($STATE.config.music_volume)
+    - pattern: float(config.mouse_sensitivity)
+    - pattern: float($STATE.config.mouse_sensitivity)
+    - pattern: float(config.texture_scale)
+    - pattern: float($STATE.config.texture_scale)
+    - pattern: float(cfg.texture_scale)

@@ -225,7 +225,7 @@ class QuestResultsUi:
         else:
             self._play_next_button.label = "Play Next"
 
-        hardcore = bool(self.config.hardcore)
+        hardcore = self.config.hardcore
         self._scores_path = scores_path_for_mode(
             self.base_dir,
             3,

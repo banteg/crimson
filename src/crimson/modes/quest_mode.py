@@ -290,7 +290,7 @@ class QuestMode(BaseGameplayMode):
         seed = _quest_seed(level)
 
         config = self._config
-        player_count = int(config.player_count) if config is not None else 1
+        player_count = config.player_count if config is not None else 1
         self._world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._bind_world()
         self._local_input.reset(players=self._world.players)
