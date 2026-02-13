@@ -98,6 +98,7 @@ class GameLoopView:
         console.handle_hotkey()
         console.update(dt)
         self._sync_console_elapsed_ms()
+        self._handle_console_requests()
         _update_screen_fade(self.state, dt)
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_P):
             self._screenshot_requested = True
@@ -289,6 +290,24 @@ class GameLoopView:
                 continue
             self.state.survival_elapsed_ms = max(0.0, float(getter()))
             return
+
+    def _handle_console_requests(self) -> None:
+        if self.state.terrain_regenerate_requested:
+            self.state.terrain_regenerate_requested = False
+            self._regenerate_terrain_for_console()
+
+    def _regenerate_terrain_for_console(self) -> None:
+        ensure_menu_ground(self.state, regenerate=True)
+        views: list[FrontView] = []
+        if self._front_active is not None:
+            views.append(self._front_active)
+        if self._front_stack:
+            views.extend(reversed(self._front_stack))
+        for view in views:
+            regenerate = getattr(view, "regenerate_terrain_for_console", None)
+            if callable(regenerate):
+                regenerate()
+                return
 
     def _update_demo_trial_overlay(self, dt: float) -> bool:
         if not self.state.demo_enabled:

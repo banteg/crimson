@@ -83,6 +83,7 @@ class GameState:
     pending_high_scores: HighScoresRequest | None = None
     quest_outcome: QuestRunOutcome | None = None
     quest_fail_retry_count: int = 0
+    terrain_regenerate_requested: bool = False
     survival_elapsed_ms: float = 0.0
     demo_trial_elapsed_ms: int = 0
     quit_requested: bool = False

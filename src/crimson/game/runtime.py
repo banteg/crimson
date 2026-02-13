@@ -32,7 +32,6 @@ from ..demo_trial import (
     format_demo_trial_time,
 )
 from ..frontend.assets import _ensure_texture_cache
-from ..frontend.menu import ensure_menu_ground
 from ..persistence.save_status import ensure_game_status
 from ..quests.types import parse_level
 from .loop_view import GameLoopView
@@ -125,7 +124,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         music.queue_track(audio.music, track_key)
 
     def cmd_generate_terrain(_args: list[str]) -> None:
-        ensure_menu_ground(state, regenerate=True)
+        state.terrain_regenerate_requested = True
 
     def cmd_tell_time_survived(_args: list[str]) -> None:
         seconds = int(max(0.0, float(state.survival_elapsed_ms)) * 0.00100000005)

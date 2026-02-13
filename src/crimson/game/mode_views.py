@@ -88,6 +88,11 @@ class _BaseModeGameView:
             return float(elapsed_ms())
         return 0.0
 
+    def regenerate_terrain_for_console(self) -> None:
+        regenerate = getattr(self._mode, "regenerate_terrain_for_console", None)
+        if callable(regenerate):
+            regenerate()
+
     def take_action(self) -> str | None:
         action = self._action
         self._action = None
