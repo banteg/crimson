@@ -30,13 +30,9 @@ jobs:
             do_sync: false
             command: uv run --no-sync python scripts/check_docs.py
             sync_args: ""
-          - task: ast-grep-scan
+          - task: ast-grep
             do_sync: false
-            command: sg scan
-            sync_args: ""
-          - task: ast-grep-test
-            do_sync: false
-            command: sg test
+            command: sg scan && sg test
             sync_args: ""
           - task: ty
             do_sync: true
