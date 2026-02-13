@@ -157,12 +157,13 @@ class OptionsMenuView(PanelMenuView):
                 self._begin_close_transition("open_controls")
 
     def draw(self) -> None:
+        self._assert_open()
         self._draw_background()
         _draw_screen_fade(self.state)
         assets = self._assets
         entry = self._entry
-        if assets is None or entry is None:
-            return
+        assert assets is not None, "OptionsMenuView assets must be loaded before draw()"
+        assert entry is not None, "OptionsMenuView entry must be initialized before draw()"
         self._draw_panel()
         self._draw_entry(entry)
         self._draw_sign()

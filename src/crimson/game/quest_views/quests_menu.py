@@ -74,6 +74,7 @@ class QuestsMenuView:
 
     def __init__(self, state: GameState) -> None:
         self.state = state
+        self._is_open = False
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
 
@@ -143,8 +144,10 @@ class QuestsMenuView:
             _ = _quests
         except Exception:
             pass
+        self._is_open = True
 
     def close(self) -> None:
+        self._is_open = False
         if self._dirty:
             try:
                 self.state.config.save()
@@ -155,6 +158,7 @@ class QuestsMenuView:
         self._button_textures = None
 
     def update(self, dt: float) -> None:
+        self._assert_open()
         if self.state.audio is not None:
             update_audio(self.state.audio, dt)
         if self._ground is not None:
@@ -258,6 +262,7 @@ class QuestsMenuView:
             return
 
     def draw(self) -> None:
+        self._assert_open()
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
             self._ground.draw(menu_ground_camera(self.state))
@@ -269,9 +274,13 @@ class QuestsMenuView:
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
+        self._assert_open()
         action = self._action
         self._action = None
         return action
+
+    def _assert_open(self) -> None:
+        assert self._is_open, "QuestsMenuView must be opened before use"
 
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:

@@ -199,6 +199,7 @@ class MenuEntry:
 class MenuView:
     def __init__(self, state: GameState) -> None:
         self.state = state
+        self._is_open = False
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._menu_entries: list[MenuEntry] = []
@@ -254,11 +255,14 @@ class MenuView:
             if self.state.audio.music.active_track != theme:
                 stop_music(self.state.audio)
             play_music(self.state.audio, theme)
+        self._is_open = True
 
     def close(self) -> None:
+        self._is_open = False
         self._ground = None
 
     def update(self, dt: float) -> None:
+        self._assert_open()
         if self.state.audio is not None:
             if not self._closing:
                 theme = "crimsonquest" if self.state.demo_enabled else "crimson_theme"
@@ -344,6 +348,7 @@ class MenuView:
         self._update_hover_amounts(dt_ms)
 
     def draw(self) -> None:
+        self._assert_open()
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
             self._ground.draw(menu_ground_camera(self.state))
@@ -355,9 +360,13 @@ class MenuView:
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
+        self._assert_open()
         action = self._pending_action
         self._pending_action = None
         return action
+
+    def _assert_open(self) -> None:
+        assert self._is_open, "MenuView must be opened before use"
 
     def _activate_menu_entry(self, index: int) -> None:
         if not (0 <= index < len(self._menu_entries)):

@@ -99,6 +99,7 @@ class PlayGameMenuView(PanelMenuView):
         self._mode_buttons.clear()
 
     def update(self, dt: float) -> None:
+        self._assert_open()
         if self.state.audio is not None:
             update_audio(self.state.audio, dt)
         if self._ground is not None:

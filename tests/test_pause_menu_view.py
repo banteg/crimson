@@ -45,6 +45,7 @@ def test_pause_menu_draw_fades_pause_background_on_main_menu_close(monkeypatch, 
         draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha))
     )
     view = PauseMenuView(state)
+    view._is_open = True
     dummy_tex = SimpleNamespace(width=1, height=1)
     view._assets = SimpleNamespace(sign=dummy_tex, item=dummy_tex, panel=dummy_tex, labels=dummy_tex)
     view._closing = True
@@ -70,6 +71,7 @@ def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(monkeyp
         draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha))
     )
     view = PauseMenuView(state)
+    view._is_open = True
     dummy_tex = SimpleNamespace(width=1, height=1)
     view._assets = SimpleNamespace(sign=dummy_tex, item=dummy_tex, panel=dummy_tex, labels=dummy_tex)
     view._closing = True

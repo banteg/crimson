@@ -74,6 +74,7 @@ class PanelMenuView:
         back_action: str = "back_to_menu",
     ) -> None:
         self.state = state
+        self._is_open = False
         self._title = title
         self._body_lines = (body or "").splitlines()
         self._panel_pos = panel_pos
@@ -110,11 +111,14 @@ class PanelMenuView:
         self._pending_action = None
         self._panel_open_sfx_played = False
         self._init_ground()
+        self._is_open = True
 
     def close(self) -> None:
+        self._is_open = False
         self._ground = None
 
     def update(self, dt: float) -> None:
+        self._assert_open()
         if self.state.audio is not None:
             update_audio(self.state.audio, dt)
         if self._ground is not None:
@@ -162,6 +166,7 @@ class PanelMenuView:
             entry.ready_timer_ms = min(0x100, entry.ready_timer_ms + dt_ms)
 
     def draw(self) -> None:
+        self._assert_open()
         self._draw_background()
         _draw_screen_fade(self.state)
         assets = self._assets
@@ -175,9 +180,13 @@ class PanelMenuView:
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
+        self._assert_open()
         action = self._pending_action
         self._pending_action = None
         return action
+
+    def _assert_open(self) -> None:
+        assert self._is_open, f"{self.__class__.__name__} must be opened before use"
 
     def _draw_contents(self) -> None:
         self._draw_title_text()
