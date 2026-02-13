@@ -511,21 +511,15 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         self._selected_weapon_id = None
 
     def _build_weapon_database_ids(self) -> list[int]:
-        try:
-            from ...weapons import WEAPON_TABLE, WeaponId
-        except Exception:
-            return []
+        from ...weapons import WEAPON_TABLE, WeaponId
 
         available: list[bool] | None = None
-        weapon_refresh_available: Callable[..., None] | None = None
-        try:
-            from ...gameplay import WEAPON_COUNT_SIZE
-            from ...weapon_runtime import (
-                weapon_refresh_available as refresh_available,
-            )
-            weapon_refresh_available = cast(Callable[..., None], refresh_available)
-        except Exception:
-            WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
+        from ...gameplay import WEAPON_COUNT_SIZE
+        from ...weapon_runtime import (
+            weapon_refresh_available as refresh_available,
+        )
+
+        weapon_refresh_available = cast(Callable[..., None], refresh_available)
 
         if weapon_refresh_available is not None:
             class _Stub:
@@ -575,10 +569,8 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         return used
 
     def _weapon_entry(self, weapon_id: int) -> Weapon | None:
-        try:
-            from ...weapons import WEAPON_BY_ID
-        except Exception:
-            return None
+        from ...weapons import WEAPON_BY_ID
+
         return WEAPON_BY_ID.get(int(weapon_id))
 
     def _weapon_rpm(self, weapon: Weapon) -> int | None:

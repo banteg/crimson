@@ -81,13 +81,10 @@ class QuestFailedView:
         self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
         outcome = self._outcome
         if outcome is not None:
-            try:
-                from ...quests import quest_by_level
+            from ...quests import quest_by_level
 
-                quest = quest_by_level(outcome.level)
-                self._quest_title = quest.title if quest is not None else ""
-            except Exception:
-                self._quest_title = ""
+            quest = quest_by_level(outcome.level)
+            self._quest_title = quest.title if quest is not None else ""
 
         self._build_score_preview(outcome)
 
