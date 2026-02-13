@@ -3,7 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from grim.geom import Vec2
-from crimson.render.secondary_projectile_draw_registry import SecondaryProjectileDrawCtx, draw_secondary_projectile_from_registry
+from crimson.render.projectile_draw import SecondaryProjectileDrawCtx, draw_secondary_projectile_from_registry
 
 
 class _TextureStub:
@@ -58,7 +58,7 @@ def test_secondary_draw_registry_renders_type4_fallback_circle(monkeypatch) -> N
     def _draw_circle(x: int, y: int, radius: float, _color) -> None:  # noqa: ANN001
         calls.append((int(x), int(y), float(radius)))
 
-    monkeypatch.setattr("crimson.render.secondary_projectile_draw_registry.rl.draw_circle", _draw_circle)
+    monkeypatch.setattr("crimson.render.projectile_draw.secondary_rocket.rl.draw_circle", _draw_circle)
 
     ctx = SecondaryProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]
@@ -81,7 +81,7 @@ def test_secondary_draw_registry_renders_detonation_lines_when_no_particles(monk
     def _draw_circle_lines(_x: int, _y: int, radius: float, _color) -> None:  # noqa: ANN001
         calls.append(float(radius))
 
-    monkeypatch.setattr("crimson.render.secondary_projectile_draw_registry.rl.draw_circle_lines", _draw_circle_lines)
+    monkeypatch.setattr("crimson.render.projectile_draw.secondary_detonation.rl.draw_circle_lines", _draw_circle_lines)
 
     ctx = SecondaryProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]

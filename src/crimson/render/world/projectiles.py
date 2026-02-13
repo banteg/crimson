@@ -12,9 +12,13 @@ from ...perks import PerkId
 from ...perks.helpers import perk_active
 from ...projectiles import ProjectileTypeId
 from ...sim.world_defs import KNOWN_PROJ_FRAMES
-from ..projectile_draw_registry import ProjectileDrawCtx, draw_projectile_from_registry
+from ..projectile_draw import (
+    ProjectileDrawCtx,
+    SecondaryProjectileDrawCtx,
+    draw_projectile_from_registry,
+    draw_secondary_projectile_from_registry,
+)
 from ..projectile_render_registry import known_proj_rgb
-from ..secondary_projectile_draw_registry import SecondaryProjectileDrawCtx, draw_secondary_projectile_from_registry
 from .mixin_base import WorldRendererMixinBase
 
 if TYPE_CHECKING:
