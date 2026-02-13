@@ -9,18 +9,6 @@ from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GR
 from .types import SecondaryProjectileDrawCtx
 
 
-def draw_secondary_type4_fallback(ctx: SecondaryProjectileDrawCtx) -> bool:
-    if int(ctx.proj_type) != 4:
-        return False
-    rl.draw_circle(
-        int(ctx.screen_pos.x),
-        int(ctx.screen_pos.y),
-        max(1.0, 12.0 * ctx.scale),
-        rl.Color(200, 120, 255, int(255 * ctx.alpha + 0.5)),
-    )
-    return True
-
-
 def draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
     renderer = ctx.renderer
     if int(ctx.proj_type) != 3:
@@ -79,4 +67,4 @@ def draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
     return True
 
 
-__all__ = ["draw_secondary_detonation", "draw_secondary_type4_fallback"]
+__all__ = ["draw_secondary_detonation"]

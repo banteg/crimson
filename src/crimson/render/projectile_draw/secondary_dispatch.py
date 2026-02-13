@@ -1,18 +1,27 @@
 from __future__ import annotations
 
-from .secondary_detonation import draw_secondary_detonation, draw_secondary_type4_fallback
-from .secondary_rocket import draw_secondary_rocket_like
+from collections.abc import Callable
+
+from .secondary_detonation import draw_secondary_detonation
+from .secondary_type1 import draw_secondary_type1
+from .secondary_type2 import draw_secondary_type2
+from .secondary_type4 import draw_secondary_type4
+from .secondary_type4_fallback import draw_secondary_type4_fallback
 from .types import SecondaryProjectileDrawCtx
 
-SECONDARY_PROJECTILE_DRAW_HANDLERS = (
-    draw_secondary_rocket_like,
-    draw_secondary_type4_fallback,
-    draw_secondary_detonation,
-)
+type SecondaryProjectileDrawHandler = Callable[[SecondaryProjectileDrawCtx], bool]
+
+SECONDARY_PROJECTILE_DRAW_HANDLERS_BY_TYPE: dict[int, tuple[SecondaryProjectileDrawHandler, ...]] = {
+    1: (draw_secondary_type1,),
+    2: (draw_secondary_type2,),
+    3: (draw_secondary_detonation,),
+    4: (draw_secondary_type4, draw_secondary_type4_fallback),
+}
 
 
 def draw_secondary_projectile_from_registry(ctx: SecondaryProjectileDrawCtx) -> bool:
-    for handler in SECONDARY_PROJECTILE_DRAW_HANDLERS:
+    handlers = SECONDARY_PROJECTILE_DRAW_HANDLERS_BY_TYPE.get(int(ctx.proj_type), ())
+    for handler in handlers:
         if handler(ctx):
             return True
     return False
