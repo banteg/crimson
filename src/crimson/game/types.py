@@ -77,6 +77,7 @@ class GameState:
     menu_ground: GroundRenderer | None = None
     menu_ground_camera: Vec2 | None = None
     menu_sign_locked: bool = False
+    stats_menu_easter_egg_roll: int = -1
     pause_background: PauseBackground | None = None
     pending_quest_level: str | None = None
     pending_high_scores: HighScoresRequest | None = None
