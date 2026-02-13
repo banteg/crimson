@@ -213,10 +213,7 @@ class QuestMode(BaseGameplayMode):
         if self._perk_menu_assets.missing:
             self._missing_assets.extend(self._perk_menu_assets.missing)
         self._quest_complete_texture = self._load_quest_complete_texture()
-        try:
-            self._grim_mono = load_grim_mono_font(self._assets_root, self._missing_assets)
-        except Exception:
-            self._grim_mono = None
+        self._grim_mono = load_grim_mono_font(self._assets_root, self._missing_assets)
 
         self._perk_prompt_timer_ms = 0.0
         self._perk_prompt_hover = False

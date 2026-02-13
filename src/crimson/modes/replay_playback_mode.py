@@ -69,10 +69,7 @@ class ReplayPlaybackMode:
 
     def open(self) -> None:
         self._missing_assets.clear()
-        try:
-            self._small = load_small_font(self._ctx.assets_dir, self._missing_assets)
-        except Exception:
-            self._small = None
+        self._small = load_small_font(self._ctx.assets_dir, self._missing_assets)
 
         replay = load_replay_file(self._replay_path)
         self._replay = replay

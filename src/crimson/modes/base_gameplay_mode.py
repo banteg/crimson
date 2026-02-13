@@ -231,10 +231,7 @@ class BaseGameplayMode:
         self._paused = False
         self._missing_assets.clear()
         self._hud_missing.clear()
-        try:
-            self._small = load_small_font(self._assets_root, self._missing_assets)
-        except Exception:
-            self._small = None
+        self._small = load_small_font(self._assets_root, self._missing_assets)
 
         self._hud_assets = load_hud_assets(self._assets_root)
         if self._hud_assets.missing:
