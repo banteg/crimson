@@ -112,8 +112,8 @@ class TutorialMode(BaseGameplayMode):
         super().close()
 
     def _perk_menu_context(self) -> PerkMenuContext:
-        fx_toggle = int(self._config.fx_toggle) if self._config is not None else 0
-        fx_detail = bool(self._config.fx_detail(level=0, default=False)) if self._config is not None else False
+        fx_toggle = self.config.fx_toggle
+        fx_detail = self.config.fx_detail(level=0, default=False)
         return PerkMenuContext(
             state=self.state,
             perk_state=self.state.perk_selection,
@@ -143,7 +143,7 @@ class TutorialMode(BaseGameplayMode):
             return
 
     def _build_input(self) -> PlayerInput:
-        keybinds = config_keybinds(self._config)
+        keybinds = config_keybinds(self.config)
         if not keybinds:
             keybinds = (0x11, 0x1F, 0x1E, 0x20, 0x100)
         up_key, down_key, left_key, right_key, fire_key = player_move_fire_binds(keybinds, 0)
@@ -158,7 +158,7 @@ class TutorialMode(BaseGameplayMode):
 
         fire_down = input_code_is_down(fire_key)
         fire_pressed = input_code_is_pressed(fire_key)
-        reload_key = int(self._config.keybind_reload) if self._config is not None else 0x102
+        reload_key = self.config.keybind_reload
         reload_pressed = input_code_is_pressed(reload_key)
 
         return PlayerInput(

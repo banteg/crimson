@@ -207,17 +207,11 @@ class RushMode(BaseGameplayMode):
             self._action = "open_pause_menu"
             return
 
-    def _player_name_default(self) -> str:
-        config = self._config
-        if config is None:
-            return ""
-        return str(config.player_name or "")
-
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
 
-        game_mode_id = int(self._config.game_mode) if self._config is not None else int(GameMode.RUSH)
+        game_mode_id = self.config.game_mode
         record = build_highscore_record_for_game_over(
             state=self.state,
             player=self._player,
@@ -305,13 +299,8 @@ class RushMode(BaseGameplayMode):
         if self._world.ground is not None:
             self._world._sync_ground_settings()
             self._world.ground.process_pending()
-        detail_preset = 5
-        fx_toggle = 0
-        if self._config is not None:
-            detail_preset = int(self._config.detail_preset)
-            fx_toggle = int(self._config.fx_toggle)
-        session.detail_preset = int(detail_preset)
-        session.fx_toggle = int(fx_toggle)
+        session.detail_preset = self.config.detail_preset
+        session.fx_toggle = self.config.fx_toggle
 
         for tick_offset in range(int(ticks_to_run)):
             inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)

@@ -9,7 +9,7 @@ import pyray as rl
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState, update_audio
 from grim.console import ConsoleState
-from grim.config import CrimsonConfig
+from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
@@ -56,10 +56,17 @@ class BaseGameplayMode:
         self._hud_assets: HudAssets | None = None
         self._hud_state = HudState()
 
-        self._default_game_mode_id = int(default_game_mode_id)
-        self._config = config
+        mode_id = int(default_game_mode_id)
+        if config is None:
+            base_dir = Path.cwd()
+            resolved_config = CrimsonConfig(path=base_dir / "crimson.cfg", data=default_crimson_cfg_data())
+            resolved_config.game_mode = mode_id
+        else:
+            resolved_config = config
+            base_dir = resolved_config.path.parent
+        self.config: CrimsonConfig = resolved_config
         self._console = console
-        self._base_dir = config.path.parent if config is not None else Path.cwd()
+        self._base_dir = base_dir
 
         self.close_requested = False
         self._action: str | None = None
@@ -74,7 +81,7 @@ class BaseGameplayMode:
             hardcore=bool(hardcore),
             preserve_bugs=bool(ctx.preserve_bugs),
             texture_cache=texture_cache,
-            config=config,
+            config=self.config,
             audio=audio,
             audio_rng=audio_rng,
         )
@@ -85,8 +92,7 @@ class BaseGameplayMode:
         self._game_over_ui = GameOverUi(
             assets_root=self._assets_root,
             base_dir=self._base_dir,
-            config=config
-            or CrimsonConfig(path=self._base_dir / "crimson.cfg", data={"game_mode": int(default_game_mode_id)}),
+            config=self.config,
             preserve_bugs=bool(ctx.preserve_bugs),
         )
         self._game_over_banner = "reaper"
@@ -110,10 +116,7 @@ class BaseGameplayMode:
         return self._cvar_float("cv_uiSmallIndicators", 0.0) != 0.0
 
     def _config_game_mode_id(self) -> int:
-        config = self._config
-        if config is None:
-            return int(self._default_game_mode_id)
-        return config.int_value("game_mode", self._default_game_mode_id)
+        return self.config.game_mode
 
     def _draw_target_health_bar(self, *, alpha: float = 1.0) -> None:
         creatures = getattr(self._creatures, "entries", [])
@@ -220,10 +223,7 @@ class BaseGameplayMode:
         return dt_frame, dt_ui_ms
 
     def _player_name_default(self) -> str:
-        config = self._config
-        if config is None:
-            return ""
-        return str(config.player_name or "")
+        return str(self.config.player_name or "")
 
     def open(self) -> None:
         self.close_requested = False
@@ -246,10 +246,7 @@ class BaseGameplayMode:
         self._game_over_banner = "reaper"
         self._game_over_ui.close()
 
-        player_count = 1
-        config = self._config
-        if config is not None:
-            player_count = config.player_count
+        player_count = self.config.player_count
         seed = random.getrandbits(32)
         self._world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._world.open()
@@ -344,7 +341,7 @@ class BaseGameplayMode:
     def _build_local_inputs(self, *, dt_frame: float) -> list[PlayerInput]:
         return self._local_input.build_frame_inputs(
             players=self._world.players,
-            config=self._config,
+            config=self.config,
             mouse_screen=self._ui_mouse,
             screen_to_world=self._world.screen_to_world,
             dt_frame=float(dt_frame),

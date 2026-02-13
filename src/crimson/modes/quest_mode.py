@@ -250,8 +250,8 @@ class QuestMode(BaseGameplayMode):
             self._perk_prompt_pulse = 0.0
 
     def _perk_menu_context(self) -> PerkMenuContext:
-        fx_toggle = int(self._config.fx_toggle) if self._config is not None else 0
-        fx_detail = bool(self._config.fx_detail(level=0, default=False)) if self._config is not None else False
+        fx_toggle = self.config.fx_toggle
+        fx_detail = self.config.fx_detail(level=0, default=False)
         players = self._world.players
         return PerkMenuContext(
             state=self.state,
@@ -284,13 +284,12 @@ class QuestMode(BaseGameplayMode):
             return
         self._outcome = None
 
-        hardcore_flag = bool(self._config.hardcore) if self._config is not None else False
+        hardcore_flag = self.config.hardcore
 
         self._world.hardcore = hardcore_flag
         seed = _quest_seed(level)
 
-        config = self._config
-        player_count = config.player_count if config is not None else 1
+        player_count = self.config.player_count
         self._world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._bind_world()
         self._local_input.reset(players=self._world.players)
@@ -391,7 +390,7 @@ class QuestMode(BaseGameplayMode):
         weapon_assign_player(self._player, weapon_id, state=self.state)
 
     def _perk_prompt_label(self) -> str:
-        if self._config is not None and not bool(self._config.ui_info_texts):
+        if not self.config.ui_info_texts:
             return ""
         pending = int(self.state.perk_selection.pending_count)
         if pending <= 0:
@@ -558,12 +557,12 @@ class QuestMode(BaseGameplayMode):
                 rect = self._perk_prompt_rect(label)
                 self._perk_prompt_hover = rect.contains(self._ui_mouse_pos())
 
-            player0_binds = config_keybinds_for_player(self._config, player_index=0)
+            player0_binds = config_keybinds_for_player(self.config, player_index=0)
             fire_key = 0x100
             if len(player0_binds) >= 5:
                 fire_key = int(player0_binds[4])
 
-            pick_key = int(self._config.keybind_pick_perk) if self._config is not None else 0x101
+            pick_key = self.config.keybind_pick_perk
 
             if input_code_is_pressed_for_player(pick_key, player_index=0) and (
                 not input_code_is_down_for_player(fire_key, player_index=0)
@@ -571,7 +570,7 @@ class QuestMode(BaseGameplayMode):
                 self._perk_prompt_pulse = 1000.0
                 self._perk_menu.open_if_available(perk_ctx)
             elif self._perk_prompt_hover and input_primary_just_pressed(
-                self._config,
+                self.config,
                 player_count=len(self._world.players),
             ):
                 self._perk_prompt_pulse = 1000.0

@@ -218,8 +218,8 @@ class SurvivalMode(BaseGameplayMode):
             self._console.log.flush()
 
     def _perk_menu_context(self) -> PerkMenuContext:
-        fx_toggle = int(self._config.fx_toggle) if self._config is not None else 0
-        fx_detail = bool(self._config.fx_detail(level=0, default=False)) if self._config is not None else False
+        fx_toggle = self.config.fx_toggle
+        fx_detail = self.config.fx_detail(level=0, default=False)
         players = self._world.players
         return PerkMenuContext(
             state=self.state,
@@ -383,12 +383,6 @@ class SurvivalMode(BaseGameplayMode):
         weapon_id = int(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
         weapon_assign_player(self._player, weapon_id, state=self.state)
 
-    def _player_name_default(self) -> str:
-        config = self._config
-        if config is None:
-            return ""
-        return str(config.player_name or "")
-
     def _death_transition_ready(self) -> bool:
         dead_players = 0
         for player in self._world.players:
@@ -402,7 +396,7 @@ class SurvivalMode(BaseGameplayMode):
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
-        game_mode_id = int(self._config.game_mode) if self._config is not None else 1
+        game_mode_id = self.config.game_mode
         record = build_highscore_record_for_game_over(
             state=self.state,
             player=self._player,
@@ -417,7 +411,7 @@ class SurvivalMode(BaseGameplayMode):
         self._save_replay()
 
     def _perk_prompt_label(self) -> str:
-        if self._config is not None and not bool(self._config.ui_info_texts):
+        if not self.config.ui_info_texts:
             return ""
         pending = int(self.state.perk_selection.pending_count)
         if pending <= 0:
@@ -484,12 +478,12 @@ class SurvivalMode(BaseGameplayMode):
                 mouse = self._ui_mouse_pos()
                 self._perk_prompt_hover = rect.contains(mouse)
 
-            player0_binds = config_keybinds_for_player(self._config, player_index=0)
+            player0_binds = config_keybinds_for_player(self.config, player_index=0)
             fire_key = 0x100
             if len(player0_binds) >= 5:
                 fire_key = int(player0_binds[4])
 
-            pick_key = int(self._config.keybind_pick_perk) if self._config is not None else 0x101
+            pick_key = self.config.keybind_pick_perk
 
             if input_code_is_pressed_for_player(pick_key, player_index=0) and (
                 not input_code_is_down_for_player(fire_key, player_index=0)
@@ -501,7 +495,7 @@ class SurvivalMode(BaseGameplayMode):
                 if opened and self._replay_recorder is not None:
                     self._replay_recorder.record_perk_menu_open(player_index=0)
             elif self._perk_prompt_hover and input_primary_just_pressed(
-                self._config,
+                self.config,
                 player_count=len(self._world.players),
             ):
                 self._perk_prompt_pulse = 1000.0
@@ -551,13 +545,8 @@ class SurvivalMode(BaseGameplayMode):
         if self._world.ground is not None:
             self._world._sync_ground_settings()
             self._world.ground.process_pending()
-        detail_preset = 5
-        fx_toggle = 0
-        if self._config is not None:
-            detail_preset = int(self._config.detail_preset)
-            fx_toggle = int(self._config.fx_toggle)
-        session.detail_preset = int(detail_preset)
-        session.fx_toggle = int(fx_toggle)
+        session.detail_preset = self.config.detail_preset
+        session.fx_toggle = self.config.fx_toggle
 
         for tick_offset in range(int(ticks_to_run)):
             inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
