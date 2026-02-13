@@ -247,7 +247,7 @@ class PauseMenuView:
 
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         assets = self._assets
-        if assets is None or assets.item is None:
+        if assets is None:
             return Rect()
         item_w = float(assets.item.width)
         item_h = float(assets.item.height)
@@ -298,11 +298,9 @@ class PauseMenuView:
 
     def _draw_menu_items(self) -> None:
         assets = self._assets
-        if assets is None or assets.labels is None or not self._menu_entries:
+        if assets is None or not self._menu_entries:
             return
         item = assets.item
-        if item is None:
-            return
         label_tex = assets.labels
         item_w = float(item.width)
         item_h = float(item.height)
@@ -389,7 +387,7 @@ class PauseMenuView:
 
     def _draw_menu_sign(self) -> None:
         assets = self._assets
-        if assets is None or assets.sign is None:
+        if assets is None:
             return
         screen_w = float(self.state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))

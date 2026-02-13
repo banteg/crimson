@@ -41,6 +41,18 @@ CRIMSON_PAQ_NAME = "crimson.paq"
 MUSIC_PAQ_NAME = "music.paq"
 SFX_PAQ_NAME = "sfx.paq"
 AUTOEXEC_NAME = "autoexec.txt"
+REQUIRED_RUNTIME_PAQS: tuple[str, ...] = (
+    CRIMSON_PAQ_NAME,
+    MUSIC_PAQ_NAME,
+    SFX_PAQ_NAME,
+)
+
+
+def _require_runtime_paqs(assets_dir: Path) -> None:
+    missing = [name for name in REQUIRED_RUNTIME_PAQS if not (assets_dir / name).is_file()]
+    if missing:
+        joined = ", ".join(missing)
+        raise FileNotFoundError(f"assets: missing required archives: {joined}")
 
 def _parse_float_arg(value: str) -> float:
     try:
@@ -290,10 +302,8 @@ def run_game(config: GameConfig) -> None:
         console.log.log(f"status: {status.path.name} loaded")
         console.log.log(f"assets: {assets_dir}")
         download_missing_paqs(assets_dir, console)
-        if not (assets_dir / CRIMSON_PAQ_NAME).is_file():
-            console.log.log(f"assets: missing {CRIMSON_PAQ_NAME} (textures will not load)")
-        if not (assets_dir / MUSIC_PAQ_NAME).is_file():
-            console.log.log(f"assets: missing {MUSIC_PAQ_NAME}")
+        _require_runtime_paqs(assets_dir)
+        console.log.log(f"assets: required archives ready ({', '.join(REQUIRED_RUNTIME_PAQS)})")
         console.log.log(f"commands: {len(console.commands)} registered")
         console.log.log(f"cvars: {len(console.cvars)} registered")
         console.exec_line("exec autoexec.txt")
