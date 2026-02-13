@@ -118,6 +118,33 @@ def build_gameplay_state() -> GameplayState:
     return GameplayState()
 
 
+def player_frame_dt_after_roundtrip(*, dt: float, time_scale_active: bool, reflex_boost_timer: float) -> float:
+    """Mirror `player_update` frame_dt round-trip under Reflex Boost.
+
+    Native scales frame_dt for movement (`* 0.6 / _time_scale_factor`) and then
+    restores it with `* _time_scale_factor * 1.6666666` before returning.
+    """
+
+    dt_f32 = float(f32(float(dt)))
+    if not bool(time_scale_active) or dt_f32 <= 0.0:
+        return float(dt_f32)
+
+    reflex_f32 = float(f32(float(reflex_boost_timer)))
+    time_scale_factor = float(f32(0.3))
+    if reflex_f32 < 1.0:
+        time_scale_factor = float(f32(float(f32(float(f32(1.0) - float(reflex_f32)) * float(f32(0.7)))) + 0.3))
+    if time_scale_factor <= 0.0:
+        return float(dt_f32)
+
+    roundtrip_dt = float(
+        f32(
+            float(f32(float(time_scale_factor) * float(f32(float(dt_f32) * float(f32(0.6 / time_scale_factor))))))
+            * float(f32(1.6666666))
+        )
+    )
+    return float(roundtrip_dt)
+
+
 def award_experience(state: GameplayState, player: PlayerState, amount: int) -> int:
     """Grant XP while honoring active bonus multipliers."""
 

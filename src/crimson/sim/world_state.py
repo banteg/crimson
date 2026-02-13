@@ -16,6 +16,7 @@ from ..creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import (
     build_gameplay_state,
+    player_frame_dt_after_roundtrip,
     player_update,
     survival_enforce_reward_weapon_guard,
     survival_progression_update,
@@ -340,6 +341,9 @@ class WorldState:
                 world_size=float(world_size),
                 players=self.players,
                 creatures=self.creatures.entries,
+            )
+            dt = player_frame_dt_after_roundtrip(
+                dt=dt, time_scale_active=bool(self.state.time_scale_active), reflex_boost_timer=float(self.state.bonuses.reflex_boost)
             )
             if idx == 0:
                 _mark("ws_after_player_update_p0")
