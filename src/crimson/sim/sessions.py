@@ -60,8 +60,7 @@ class SurvivalDeterministicSession:
             # then apply reflex scaling with integer semantics.
             base_dt_ms_i32 = int(dt_frame_ms_i32)
             if bool(state.time_scale_active) and float(dt_frame) > 0.0:
-                scale = float(dt_sim) / float(dt_frame)
-                dt_sim_ms = float(max(0, int(float(base_dt_ms_i32) * float(scale))))
+                dt_sim_ms = float(max(0, int(float(dt_sim) * 1000.0)))
             else:
                 dt_sim_ms = float(base_dt_ms_i32)
         elapsed_before_ms = float(self.elapsed_ms)

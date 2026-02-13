@@ -282,6 +282,35 @@ def test_survival_runner_skips_world_dt_perk_steps_for_original_capture_dt_overr
     assert orig_capture_x > plain_replay_x
 
 
+def test_survival_runner_original_capture_reflex_scaled_dt_ms_uses_scaled_float_dt() -> None:
+    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+    replay.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
+            payload=[
+                {
+                    "bonus_timers_ms": {"9": 124},
+                    "digital_move_enabled_by_player": [True],
+                }
+            ],
+        )
+    )
+
+    with pytest.warns(ReplayGameVersionWarning):
+        result = run_survival_replay(
+            replay,
+            max_ticks=1,
+            dt_frame_overrides={0: 0.0468},
+            dt_frame_ms_i32_overrides={0: 46},
+        )
+
+    # With Reflex Boost active, native scaled frame_dt_ms is derived from the
+    # scaled float dt path (~42.12ms -> 42), not from integer base-ms scaling.
+    assert result.elapsed_ms == 42
+
+
 def test_survival_runner_original_capture_uses_packed_move_vector_for_turn_only_keys() -> None:
     header = ReplayHeader(
         game_mode_id=int(GameMode.SURVIVAL),

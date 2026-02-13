@@ -883,3 +883,55 @@ When the capture SHA is unchanged, append updates to the same session.
   - `src/crimson/creatures/ai.py`
   - `src/crimson/projectiles/pools.py`
   - `src/crimson/effects.py`
+
+---
+
+## Session 15 (2026-02-13)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.json.gz`
+- **Capture SHA256:** `49aec5d3705f7c8cfb90143a6d204053c8ba6744ca30c4a367666cdaec04fe0e`
+- **First mismatch progression:**
+  - pre-fix baseline (`3804bbf6`): `tick 5226 (rng_stream_mismatch, native 16-call survival spawn burst arrived one tick earlier than rewrite)`
+  - after landed fix in this session: `tick 5305 (state_mismatch: bonus_timers.9 expected=81 actual=82)`
+
+### Key Findings
+
+- Confirmed prior `tick 5226` parity issue was a one-tick delayed survival wave spawn in rewrite:
+  - native burst at `5226`, rewrite at `5227`,
+  - callers/callsites map to `survival_spawn_creature` path.
+- Fixing survival-session scaled ms derivation (for original-capture replay with dt overrides) realigned the spawn burst:
+  - `focus-trace --tick 5226`: `capture_calls=16`, `rewrite_calls=16`, `prefix_match=16`,
+  - `focus-trace --tick 5227`: `capture_calls=0`, `rewrite_calls=0`.
+- New first mismatch is a transient one-tick Reflex Boost timer rounding drift:
+  - `tick 5305`: `bonus_timers.9 expected=81 actual=82`,
+  - self-heals on the next tick (`tick 5306`).
+- Failed local probes (not landed):
+  - applying the same scaled-ms conversion change in `run_deterministic_step` (no net gain),
+  - hybrid `<1.0s` fallback in survival session (reintroduced one-tick RNG spawn shift at `5307/5308`).
+- Current working hypothesis for residual timer drift:
+  - native `player_update` temporarily mutates global `frame_dt` and restores it with `*1.6666666`, introducing tiny float drift before `bonus_reflex_boost_timer` decrement,
+  - rewrite currently models movement dt locally and does not propagate this global post-player-update drift.
+
+### Landed Changes
+
+- `src/crimson/sim/sessions.py`
+  - In `SurvivalDeterministicSession.step_tick`, when capture `dt_frame_ms_i32` is present and Reflex Boost scaling is active, derive session ms counters from scaled float dt (`int(dt_sim * 1000.0)`) instead of integer-base ms scaling.
+  - This matches native survival wave cadence in the `tick 5226` window.
+- `tests/test_replay_runners.py`
+  - Added `test_survival_runner_original_capture_reflex_scaled_dt_ms_uses_scaled_float_dt` to lock the scaled-float ms behavior for original-capture replay under Reflex Boost time scaling.
+
+### Validation
+
+- `uv run pytest tests/test_replay_runners.py -q`
+- `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache --json-out analysis/frida/reports/capture_49aec5d3_fix13c_sessions_only_baseline_nocache.json` *(expected non-zero exit while diverged)*
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json.gz --tick 5226 --near-miss-threshold 0.35 --no-cache --json-out analysis/frida/reports/capture_49aec5d3_fix13b_focus_5226_nocache.json`
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json.gz --tick 5227 --near-miss-threshold 0.35 --no-cache --json-out analysis/frida/reports/capture_49aec5d3_fix13b_focus_5227_nocache.json`
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json.gz --tick 5305 --near-miss-threshold 0.35 --no-cache --json-out analysis/frida/reports/capture_49aec5d3_fix13b_focus_5305_nocache.json`
+
+### Outcome / Next Probe
+
+- Landed fix removed the dominant `tick 5226` RNG-stream drift and advanced first mismatch to a narrow one-tick timer rounding discrepancy.
+- Next probe should target native `frame_dt` round-trip side effects in `player_update` and post-player-update timer decrement ordering:
+  - `analysis/ghidra/raw/crimsonland.exe_decompiled.c` (`player_update` around `0x004136b0`, `frame_dt` temporary rescale/restore),
+  - `src/crimson/gameplay.py`,
+  - `src/crimson/sim/world_state.py`.
