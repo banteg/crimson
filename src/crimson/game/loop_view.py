@@ -29,6 +29,7 @@ from ..frontend.transitions import _update_screen_fade
 from ..input_codes import input_begin_frame
 from ..quests.types import parse_level
 from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
+from ..net.debug_log import lan_debug_log
 from .high_scores_view import HighScoresView
 from .mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
 from .quest_views import EndNoteView, QuestFailedView, QuestResultsView, QuestsMenuView
@@ -197,6 +198,13 @@ class GameLoopView:
             return None
         mode = str(pending.config.mode)
         pending.started = True
+        lan_debug_log(
+            "auto_lan_start",
+            role=str(pending.role),
+            mode=mode,
+            auto_start=bool(pending.auto_start),
+            player_count=pending.config.player_count,
+        )
         if mode == "rush":
             return "start_rush_lan"
         if mode == "quests":
@@ -205,6 +213,7 @@ class GameLoopView:
             return "start_survival_lan"
         pending.error = f"Unsupported LAN mode: {mode}"
         self.state.lan_last_error = pending.error
+        lan_debug_log("auto_lan_start_error", error=str(pending.error))
         return "open_lan_session"
 
     def _resolve_lan_action(self, action: str) -> str | None:
@@ -212,6 +221,7 @@ class GameLoopView:
             if self._lan_ui_enabled():
                 return action
             self.state.lan_last_error = "LAN UI is disabled (set cv_lanLockstepEnabled 1 to enable)."
+            lan_debug_log("lan_action_denied", action=action, reason=str(self.state.lan_last_error))
             return "open_play_game"
 
         mode_by_action = {
@@ -232,12 +242,14 @@ class GameLoopView:
         pending = self.state.pending_lan_session
         if pending is None:
             self.state.lan_last_error = "LAN session is not configured."
+            lan_debug_log("lan_action_error", action=action, reason=str(self.state.lan_last_error))
             return None
         cfg = pending.config
         if str(cfg.mode) != expected_mode:
             self.state.lan_last_error = (
                 f"LAN mode mismatch: pending={cfg.mode!r} action={expected_mode!r}"
             )
+            lan_debug_log("lan_action_error", action=action, reason=str(self.state.lan_last_error))
             return None
 
         player_count = max(1, min(4, int(cfg.player_count)))
@@ -255,18 +267,31 @@ class GameLoopView:
         self.state.lan_desync_count = 0
         self.state.lan_resync_failure_count = 0
         self.state.config.game_mode = int(mode_id)
+        lan_debug_log(
+            "lan_action_resolved",
+            action=action,
+            forward_action=forward_action,
+            role=str(pending.role),
+            mode=str(expected_mode),
+            auto_start=bool(pending.auto_start),
+            player_count=int(player_count),
+            connected_players=int(self.state.lan_connected_players),
+            waiting_for_players=bool(self.state.lan_waiting_for_players),
+        )
 
         if expected_mode == "quests":
             level = str(cfg.quest_level).strip()
             if not level:
                 self.state.lan_last_error = "Quest LAN mode requires --quest-level."
                 pending.error = self.state.lan_last_error
+                lan_debug_log("lan_action_error", action=action, reason=str(self.state.lan_last_error))
                 return None
             try:
                 parse_level(level)
             except ValueError as exc:
                 self.state.lan_last_error = f"Invalid quest level for LAN: {level!r} ({exc})"
                 pending.error = self.state.lan_last_error
+                lan_debug_log("lan_action_error", action=action, reason=str(self.state.lan_last_error))
                 return None
             self.state.pending_quest_level = level
 
