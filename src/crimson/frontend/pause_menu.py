@@ -44,7 +44,7 @@ PAUSE_MENU_TO_MAIN_MENU_FADE_MS = 500
 
 class PauseMenuView:
     def __init__(self, state: GameState) -> None:
-        self._state = state
+        self.state = state
         self._assets: MenuAssets | None = None
         self._menu_entries: list[MenuEntry] = []
         self._selected_index = 0
@@ -61,10 +61,10 @@ class PauseMenuView:
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
-        layout_w = float(self._state.config.screen_width)
+        layout_w = float(self.state.config.screen_width)
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        self._assets = load_menu_assets(self._state)
+        self._assets = load_menu_assets(self.state)
 
         ys = [
             MENU_LABEL_BASE_Y + self._widescreen_y_shift,
@@ -92,8 +92,8 @@ class PauseMenuView:
         self._menu_entries = []
 
     def update(self, dt: float) -> None:
-        if self._state.audio is not None:
-            update_audio(self._state.audio, dt)
+        if self.state.audio is not None:
+            update_audio(self.state.audio, dt)
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
 
         dt_ms = int(min(dt, 0.1) * 1000.0)
@@ -110,9 +110,9 @@ class PauseMenuView:
             self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
             self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
             if self._timeline_ms >= self._timeline_max_ms:
-                self._state.menu_sign_locked = True
-                if (not self._panel_open_sfx_played) and (self._state.audio is not None):
-                    play_sfx(self._state.audio, "sfx_ui_panelclick", rng=self._state.rng)
+                self.state.menu_sign_locked = True
+                if (not self._panel_open_sfx_played) and (self.state.audio is not None):
+                    play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
                     self._panel_open_sfx_played = True
 
         if not self._menu_entries:
@@ -155,14 +155,14 @@ class PauseMenuView:
         pause_background = self._pause_background()
         if pause_background is not None:
             pause_background.draw_pause_background(entity_alpha=self._pause_background_entity_alpha())
-        _draw_screen_fade(self._state)
+        _draw_screen_fade(self.state)
 
         assets = self._assets
         if assets is None:
             return
         self._draw_menu_items()
         self._draw_menu_sign()
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         action = self._pending_action
@@ -170,7 +170,7 @@ class PauseMenuView:
         return action
 
     def _pause_background(self) -> PauseBackground | None:
-        return self._state.pause_background
+        return self.state.pause_background
 
     def _pause_background_entity_alpha(self) -> float:
         # Native gameplay_render_world keeps gameplay entities fully visible for most transitions,
@@ -191,8 +191,8 @@ class PauseMenuView:
         action = self._action_for_entry(entry)
         if action is None:
             return
-        if self._state.audio is not None:
-            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._begin_close_transition(action)
 
     @staticmethod
@@ -306,7 +306,7 @@ class PauseMenuView:
         label_tex = assets.labels
         item_w = float(item.width)
         item_h = float(item.height)
-        fx_detail = self._state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         for idx in range(len(self._menu_entries) - 1, -1, -1):
             entry = self._menu_entries[idx]
             pos = Vec2(MenuView._menu_slot_pos_x(entry.slot), entry.y)
@@ -391,7 +391,7 @@ class PauseMenuView:
         assets = self._assets
         if assets is None or assets.sign is None:
             return
-        screen_w = float(self._state.config.screen_width)
+        screen_w = float(self.state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
@@ -402,7 +402,7 @@ class PauseMenuView:
         offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * scale
         rotation_deg = 0.0
-        if not self._state.menu_sign_locked:
+        if not self.state.menu_sign_locked:
             angle_rad, slide_x = self._ui_element_anim(
                 index=0,
                 start_ms=300,
@@ -412,7 +412,7 @@ class PauseMenuView:
             _ = slide_x
             rotation_deg = math.degrees(angle_rad)
         sign = assets.sign
-        fx_detail = self._state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,

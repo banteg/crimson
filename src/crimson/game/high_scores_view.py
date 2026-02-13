@@ -119,7 +119,7 @@ from .types import GameState, HighScoresRequest
 
 class HighScoresView:
     def __init__(self, state: GameState) -> None:
-        self._state = state
+        self.state = state
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._action: str | None = None
@@ -149,11 +149,11 @@ class HighScoresView:
     def open(self) -> None:
         from ..persistence.highscores import read_highscore_table, scores_path_for_mode
 
-        layout_w = float(self._state.config.screen_width)
+        layout_w = float(self.state.config.screen_width)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
         self._action = None
-        self._assets = load_menu_assets(self._state)
-        self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
+        self._assets = load_menu_assets(self.state)
+        self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
@@ -166,7 +166,7 @@ class HighScoresView:
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
 
-        cache = _ensure_texture_cache(self._state)
+        cache = _ensure_texture_cache(self.state)
         self._button_tex = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
         button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=self._button_tex)
@@ -177,28 +177,28 @@ class HighScoresView:
         self._clock_table_tex = cache.get_or_load("ui_clockTable", "ui/ui_clockTable.jaz").texture
         self._clock_pointer_tex = cache.get_or_load("ui_clockPointer", "ui/ui_clockPointer.jaz").texture
 
-        request = self._state.pending_high_scores
-        self._state.pending_high_scores = None
+        request = self.state.pending_high_scores
+        self.state.pending_high_scores = None
         if request is None:
-            request = HighScoresRequest(game_mode_id=self._state.config.game_mode)
+            request = HighScoresRequest(game_mode_id=self.state.config.game_mode)
 
         if int(request.game_mode_id) == 3 and (
             int(request.quest_stage_major) <= 0 or int(request.quest_stage_minor) <= 0
         ):
-            major, minor = self._parse_quest_level(self._state.pending_quest_level)
+            major, minor = self._parse_quest_level(self.state.pending_quest_level)
             if major <= 0 or minor <= 0:
-                major, minor = self._parse_quest_level(self._state.config.quest_level)
+                major, minor = self._parse_quest_level(self.state.config.quest_level)
             if major <= 0 or minor <= 0:
-                major = self._state.config.quest_stage_major
-                minor = self._state.config.quest_stage_minor
+                major = self.state.config.quest_stage_major
+                minor = self.state.config.quest_stage_minor
             request.quest_stage_major = int(major)
             request.quest_stage_minor = int(minor)
 
         self._request = request
         path = scores_path_for_mode(
-            self._state.base_dir,
+            self.state.base_dir,
             int(request.game_mode_id),
-            hardcore=self._state.config.hardcore,
+            hardcore=self.state.config.hardcore,
             quest_stage_major=int(request.quest_stage_major),
             quest_stage_minor=int(request.quest_stage_minor),
         )
@@ -206,8 +206,8 @@ class HighScoresView:
             self._records = read_highscore_table(path, game_mode_id=int(request.game_mode_id))
         except Exception:
             self._records = []
-        if self._state.audio is not None:
-            play_sfx(self._state.audio, "sfx_ui_panelclick", rng=self._state.rng)
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
 
     def close(self) -> None:
         if self._small_font is not None:
@@ -235,8 +235,8 @@ class HighScoresView:
         )
 
     def update(self, dt: float) -> None:
-        if self._state.audio is not None:
-            update_audio(self._state.audio, dt)
+        if self.state.audio is not None:
+            update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
@@ -260,7 +260,7 @@ class HighScoresView:
 
         textures = self._button_textures
         if enabled and textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-            scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
+            scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
             font = self._ensure_small_font()
             panel_top_left = self._panel_top_left(pos=Vec2(HS_LEFT_PANEL_POS_X, HS_LEFT_PANEL_POS_Y), scale=scale)
             button_base_pos = panel_top_left + Vec2(HS_BUTTON_X * scale, HS_BUTTON_Y0 * scale)
@@ -276,8 +276,8 @@ class HighScoresView:
                 click=click,
             ):
                 # Reload scores from disk (no view transition).
-                if self._state.audio is not None:
-                    play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+                if self.state.audio is not None:
+                    play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
                 self.open()
                 return
             w = button_width(font, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
@@ -326,12 +326,12 @@ class HighScoresView:
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
-        pause_background = self._state.pause_background
+        pause_background = self.state.pause_background
         if pause_background is not None:
             pause_background.draw_pause_background(entity_alpha=self._world_entity_alpha())
         elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self._state))
-        _draw_screen_fade(self._state)
+            self._ground.draw(menu_ground_camera(self.state))
+        _draw_screen_fade(self.state)
 
         assets = self._assets
         if assets is None or assets.panel is None:
@@ -340,13 +340,13 @@ class HighScoresView:
         font = self._ensure_small_font()
         request = self._request
         mode_id = (
-            int(request.game_mode_id) if request is not None else self._state.config.game_mode
+            int(request.game_mode_id) if request is not None else self.state.config.game_mode
         )
         quest_major = int(request.quest_stage_major) if request is not None else 0
         quest_minor = int(request.quest_stage_minor) if request is not None else 0
 
-        scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        fx_detail = self._state.config.fx_detail(level=0, default=False)
+        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         panel_w = MENU_PANEL_WIDTH * scale
         _angle_rad, left_slide_x = MenuView._ui_element_anim(
             self,
@@ -366,7 +366,7 @@ class HighScoresView:
         )
 
         left_top_left = self._panel_top_left(pos=Vec2(HS_LEFT_PANEL_POS_X, HS_LEFT_PANEL_POS_Y), scale=scale)
-        right_panel_pos_x = hs_right_panel_pos_x(float(self._state.config.screen_width))
+        right_panel_pos_x = hs_right_panel_pos_x(float(self.state.config.screen_width))
         right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, HS_RIGHT_PANEL_POS_Y), scale=scale)
         left_panel_top_left = left_top_left.offset(dx=float(left_slide_x))
         right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
@@ -413,7 +413,7 @@ class HighScoresView:
             rl.Color(255, 255, 255, int(255 * 0.7)),
         )
         if int(mode_id) == 3:
-            hardcore = self._state.config.hardcore
+            hardcore = self.state.config.hardcore
             if hardcore:
                 quest_color = rl.Color(250, 70, 60, int(255 * 0.7))
             else:
@@ -546,7 +546,7 @@ class HighScoresView:
             highlight_rank=selected_rank,
         )
         self._draw_sign(assets)
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def _draw_right_panel(
         self,
@@ -644,7 +644,7 @@ class HighScoresView:
             )
 
         # Values (static in the oracle).
-        player_count = self._state.config.player_count
+        player_count = self.state.config.player_count
         if player_count < 1:
             player_count = 1
         if player_count > 4:
@@ -975,14 +975,14 @@ class HighScoresView:
         weapon = WEAPON_BY_ID.get(int(weapon_id))
         if weapon is None:
             return f"Weapon {int(weapon_id)}", None
-        name = weapon_display_name(int(weapon.weapon_id), preserve_bugs=bool(self._state.preserve_bugs))
+        name = weapon_display_name(int(weapon.weapon_id), preserve_bugs=bool(self.state.preserve_bugs))
         return name, weapon.icon_index
 
     def _draw_sign(self, assets: MenuAssets) -> None:
         if assets.sign is None:
             return
         sign = assets.sign
-        screen_w = float(self._state.config.screen_width)
+        screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
@@ -993,7 +993,7 @@ class HighScoresView:
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * sign_scale
         rotation_deg = 0.0
-        fx_detail = self._state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
@@ -1028,10 +1028,10 @@ class HighScoresView:
         if self._closing:
             return
         if action in FADE_TO_GAME_ACTIONS:
-            self._state.screen_fade_alpha = 0.0
-            self._state.screen_fade_ramp = True
-        if self._state.audio is not None:
-            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            self.state.screen_fade_alpha = 0.0
+            self.state.screen_fade_ramp = True
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._closing = True
         self._close_action = action
 
@@ -1056,7 +1056,7 @@ class HighScoresView:
         if self._small_font is not None:
             return self._small_font
         missing_assets: list[str] = []
-        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        self._small_font = load_small_font(self.state.assets_dir, missing_assets)
         return self._small_font
 
     def _visible_rows(self, font: SmallFontData) -> int:

@@ -201,7 +201,7 @@ class MenuEntry:
 
 class MenuView:
     def __init__(self, state: GameState) -> None:
-        self._state = state
+        self.state = state
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._menu_entries: list[MenuEntry] = []
@@ -222,13 +222,13 @@ class MenuView:
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
-        layout_w = float(self._state.config.screen_width)
+        layout_w = float(self.state.config.screen_width)
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = self._menu_widescreen_y_shift(layout_w)
-        self._assets = load_menu_assets(self._state)
+        self._assets = load_menu_assets(self.state)
         # Shareware gating is controlled by the --demo flag (see GameState.demo_enabled),
         # not by a persisted config byte.
-        self._full_version = not self._state.demo_enabled
+        self._full_version = not self.state.demo_enabled
         self._menu_entries = self._menu_entries_for_flags(
             full_version=self._full_version,
             mods_available=self._mods_available(),
@@ -252,21 +252,21 @@ class MenuView:
             other_games=self._other_games_enabled(),
         )
         self._init_ground()
-        if self._state.audio is not None:
-            theme = "crimsonquest" if self._state.demo_enabled else "crimson_theme"
-            if self._state.audio.music.active_track != theme:
-                stop_music(self._state.audio)
-            play_music(self._state.audio, theme)
+        if self.state.audio is not None:
+            theme = "crimsonquest" if self.state.demo_enabled else "crimson_theme"
+            if self.state.audio.music.active_track != theme:
+                stop_music(self.state.audio)
+            play_music(self.state.audio, theme)
 
     def close(self) -> None:
         self._ground = None
 
     def update(self, dt: float) -> None:
-        if self._state.audio is not None:
+        if self.state.audio is not None:
             if not self._closing:
-                theme = "crimsonquest" if self._state.demo_enabled else "crimson_theme"
-                play_music(self._state.audio, theme)
-            update_audio(self._state.audio, dt)
+                theme = "crimsonquest" if self.state.demo_enabled else "crimson_theme"
+                play_music(self.state.audio, theme)
+            update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
@@ -303,9 +303,9 @@ class MenuView:
             self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
             self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
             if self._timeline_ms >= self._timeline_max_ms:
-                self._state.menu_sign_locked = True
-                if (not self._panel_open_sfx_played) and (self._state.audio is not None):
-                    play_sfx(self._state.audio, "sfx_ui_panelclick", rng=self._state.rng)
+                self.state.menu_sign_locked = True
+                if (not self._panel_open_sfx_played) and (self.state.audio is not None):
+                    play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
                     self._panel_open_sfx_played = True
         if not self._menu_entries:
             return
@@ -338,7 +338,7 @@ class MenuView:
         if (
             (not self._closing)
             and self._pending_action is None
-            and self._state.demo_enabled
+            and self.state.demo_enabled
             and self._timeline_ms >= self._timeline_max_ms
             and self._idle_ms >= MENU_DEMO_IDLE_START_MS
         ):
@@ -349,14 +349,14 @@ class MenuView:
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
-            self._ground.draw(menu_ground_camera(self._state))
-        _draw_screen_fade(self._state)
+            self._ground.draw(menu_ground_camera(self.state))
+        _draw_screen_fade(self.state)
         assets = self._assets
         if assets is None:
             return
         self._draw_menu_items()
         self._draw_menu_sign()
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         action = self._pending_action
@@ -367,10 +367,10 @@ class MenuView:
         if not (0 <= index < len(self._menu_entries)):
             return
         entry = self._menu_entries[index]
-        if self._state.audio is not None:
-            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-        self._state.console.log.log(f"menu select: {index} (row {entry.row})")
-        self._state.console.log.flush()
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+        self.state.console.log.log(f"menu select: {index} (row {entry.row})")
+        self.state.console.log.flush()
         if entry.row == MENU_LABEL_ROW_QUIT:
             self._begin_quit_transition()
         elif entry.row == MENU_LABEL_ROW_PLAY_GAME:
@@ -391,11 +391,11 @@ class MenuView:
         self._close_action = action
 
     def _begin_quit_transition(self) -> None:
-        self._state.menu_sign_locked = False
-        self._begin_close_transition("quit_after_demo" if self._state.demo_enabled else "quit_app")
+        self.state.menu_sign_locked = False
+        self._begin_close_transition("quit_after_demo" if self.state.demo_enabled else "quit_app")
 
     def _init_ground(self) -> None:
-        self._ground = ensure_menu_ground(self._state)
+        self._ground = ensure_menu_ground(self.state)
 
     def _menu_entries_for_flags(
         self,
@@ -458,7 +458,7 @@ class MenuView:
         label_tex = assets.labels
         item_w = float(item.width)
         item_h = float(item.height)
-        fx_detail = self._state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         # Matches ui_elements_update_and_render reverse table iteration:
         # later entries draw first, earlier entries draw last (on top).
         for idx in range(len(self._menu_entries) - 1, -1, -1):
@@ -542,7 +542,7 @@ class MenuView:
                 rl.end_blend_mode()
 
     def _mods_available(self) -> bool:
-        mods_dir = self._state.base_dir / "mods"
+        mods_dir = self.state.base_dir / "mods"
         if not mods_dir.exists():
             return False
         return any(mods_dir.glob("*.dll"))
@@ -708,7 +708,7 @@ class MenuView:
         assets = self._assets
         if assets is None or assets.sign is None:
             return
-        screen_w = float(self._state.config.screen_width)
+        screen_w = float(self.state.config.screen_width)
         scale, shift_x = self._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
@@ -719,7 +719,7 @@ class MenuView:
         offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * scale
         rotation_deg = 0.0
-        if not self._state.menu_sign_locked:
+        if not self.state.menu_sign_locked:
             angle_rad, slide_x = self._ui_element_anim(
                 index=0,
                 start_ms=300,
@@ -729,7 +729,7 @@ class MenuView:
             _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
             rotation_deg = math.degrees(angle_rad)
         sign = assets.sign
-        fx_detail = self._state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         if fx_detail:
             self._draw_ui_quad_shadow(
                 texture=sign,

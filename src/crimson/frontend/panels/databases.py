@@ -48,7 +48,7 @@ RIGHT_PANEL_HEIGHT = 254.0
 
 class _DatabaseBaseView:
     def __init__(self, state: GameState) -> None:
-        self._state = state
+        self.state = state
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._small_font: SmallFontData | None = None
@@ -66,10 +66,10 @@ class _DatabaseBaseView:
         self._back_button = UiButtonState("Back", force_wide=False)
 
     def open(self) -> None:
-        layout_w = float(self._state.config.screen_width)
+        layout_w = float(self.state.config.screen_width)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        self._assets = load_menu_assets(self._state)
-        self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
+        self._assets = load_menu_assets(self.state)
+        self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self._small_font = None
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
@@ -79,14 +79,14 @@ class _DatabaseBaseView:
         self._pending_action = None
         self._action = None
 
-        cache = _ensure_texture_cache(self._state)
+        cache = _ensure_texture_cache(self.state)
         button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
         button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
         self._back_button = UiButtonState("Back", force_wide=False)
 
-        if self._state.audio is not None:
-            play_sfx(self._state.audio, "sfx_ui_panelclick", rng=self._state.rng)
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
 
     def close(self) -> None:
         if self._small_font is not None:
@@ -116,7 +116,7 @@ class _DatabaseBaseView:
         if self._small_font is not None:
             return self._small_font
         missing_assets: list[str] = []
-        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        self._small_font = load_small_font(self.state.assets_dir, missing_assets)
         return self._small_font
 
     def _panel_top_left(self, *, pos: Vec2, scale: float) -> Vec2:
@@ -136,7 +136,7 @@ class _DatabaseBaseView:
         if assets is None or assets.sign is None:
             return
         sign = assets.sign
-        screen_w = float(self._state.config.screen_width)
+        screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
@@ -147,7 +147,7 @@ class _DatabaseBaseView:
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * sign_scale
         rotation_deg = 0.0
-        fx_detail = self._state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
@@ -166,8 +166,8 @@ class _DatabaseBaseView:
         )
 
     def update(self, dt: float) -> None:
-        if self._state.audio is not None:
-            update_audio(self._state.audio, dt)
+        if self.state.audio is not None:
+            update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         self._cursor_pulse_time += min(float(dt), 0.1) * 1.1
@@ -187,8 +187,8 @@ class _DatabaseBaseView:
         enabled = self._timeline_ms >= self._timeline_max_ms
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
-            if self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            if self.state.audio is not None:
+                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
             self._begin_close_transition("back_to_previous")
             return
 
@@ -198,7 +198,7 @@ class _DatabaseBaseView:
         if not enabled:
             return
 
-        scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
+        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
         left_top_left = self._panel_top_left(pos=Vec2(LEFT_PANEL_POS_X, LEFT_PANEL_POS_Y), scale=scale)
         font = self._ensure_small_font()
 
@@ -216,25 +216,25 @@ class _DatabaseBaseView:
             mouse=mouse,
             click=click,
         ):
-            if self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            if self.state.audio is not None:
+                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
             self._begin_close_transition("back_to_previous")
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
-        pause_background = self._state.pause_background
+        pause_background = self.state.pause_background
         if pause_background is not None:
             pause_background.draw_pause_background()
         elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self._state))
-        _draw_screen_fade(self._state)
+            self._ground.draw(menu_ground_camera(self.state))
+        _draw_screen_fade(self.state)
 
         assets = self._assets
         if assets is None or assets.panel is None:
             return
 
-        scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        fx_detail = self._state.config.fx_detail(level=0, default=False)
+        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
 
         panel_w = MENU_PANEL_WIDTH * scale
         _angle_rad, left_slide_x = MenuView._ui_element_anim(
@@ -290,7 +290,7 @@ class _DatabaseBaseView:
             )
 
         self._draw_sign()
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def _back_button_pos(self) -> Vec2:
         raise NotImplementedError
@@ -322,7 +322,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         self._weapon_ids = self._build_weapon_database_ids()
         self._selected_weapon_id = None
         self._list_scroll_index = 0
-        cache = _ensure_texture_cache(self._state)
+        cache = _ensure_texture_cache(self.state)
         self._wicons_tex = cache.get_or_load("ui_wicons", "ui/ui_wicons.jaz").texture
 
     def close(self) -> None:
@@ -421,7 +421,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         weapon_id = int(self._selected_weapon_id)
         name, icon_index = self._weapon_label_and_icon(weapon_id)
         weapon = self._weapon_entry(weapon_id)
-        preserve_bugs = bool(getattr(self._state, "preserve_bugs", False))
+        preserve_bugs = bool(getattr(self.state, "preserve_bugs", False))
         weapon_no_label = "wepno" if preserve_bugs else "weapon"
         draw_small_text(
             font,
@@ -530,9 +530,9 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
                 _weapon_available_unlock_index_full: int
 
             stub = _Stub()
-            stub.status = self._state.status
-            stub.game_mode = self._state.config.game_mode
-            stub.demo_mode_active = bool(getattr(self._state, "demo_enabled", False))
+            stub.status = self.state.status
+            stub.game_mode = self.state.config.game_mode
+            stub.demo_mode_active = bool(getattr(self.state, "demo_enabled", False))
             stub.weapon_available = [False] * int(WEAPON_COUNT_SIZE)
             stub._weapon_available_game_mode = -1
             stub._weapon_available_unlock_index = -1
@@ -543,7 +543,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             except Exception:
                 available = None
 
-        status = self._state.status
+        status = self.state.status
         used: list[int] = []
         for weapon in WEAPON_TABLE:
             if weapon.name is None:
@@ -617,7 +617,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             return f"Weapon {int(weapon_id)}", None
         name = weapon_display_name(
             int(weapon.weapon_id),
-            preserve_bugs=bool(getattr(self._state, "preserve_bugs", False)),
+            preserve_bugs=bool(getattr(self.state, "preserve_bugs", False)),
         )
         return name, weapon.icon_index
 
@@ -920,8 +920,8 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         if self._nav_focus_index == 0 and (
             rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
         ):
-            if self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            if self.state.audio is not None:
+                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
             self._begin_close_transition("back_to_previous")
 
     def _hovered_perk_id(self) -> int | None:
@@ -962,7 +962,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             _perk_available_unlock_index: int
 
         stub = _Stub()
-        stub.status = self._state.status
+        stub.status = self.state.status
         stub.perk_available = [False] * int(PERK_COUNT_SIZE)
         stub._perk_available_unlock_index = -1
         perks_rebuild_available(stub)
@@ -1008,10 +1008,10 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         )
 
     def _preserve_bugs(self) -> bool:
-        return bool(getattr(self._state, "preserve_bugs", False))
+        return bool(getattr(self.state, "preserve_bugs", False))
 
     def _fx_toggle(self) -> int:
-        data = getattr(getattr(self._state, "config", None), "data", None)
+        data = getattr(getattr(self.state, "config", None), "data", None)
         if not isinstance(data, dict):
             return 0
         return int(data.get("fx_toggle", 0) or 0)

@@ -145,7 +145,7 @@ class RushMode(BaseGameplayMode):
             enforce_loadout=self._enforce_rush_loadout,
         )
         self._enforce_rush_loadout()
-        status = self._state.status
+        status = self.state.status
         weapon_usage_counts: tuple[int, ...] = ()
         if status is not None:
             try:
@@ -169,7 +169,7 @@ class RushMode(BaseGameplayMode):
         self._replay_recorder = ReplayRecorder(
             ReplayHeader(
                 game_mode_id=int(GameMode.RUSH),
-                seed=int(self._state.rng.state),
+                seed=int(self.state.rng.state),
                 tick_rate=int(self._sim_clock.tick_rate),
                 difficulty_level=int(self._world.difficulty_level),
                 hardcore=bool(self._world.hardcore),
@@ -219,7 +219,7 @@ class RushMode(BaseGameplayMode):
 
         game_mode_id = int(self._config.game_mode) if self._config is not None else int(GameMode.RUSH)
         record = build_highscore_record_for_game_over(
-            state=self._state,
+            state=self.state,
             player=self._player,
             survival_elapsed_ms=int(self._rush.elapsed_ms),
             creature_kill_count=int(self._creatures.kill_count),
@@ -378,7 +378,7 @@ class RushMode(BaseGameplayMode):
                 state=self._hud_state,
                 player=self._player,
                 players=self._world.players,
-                bonus_hud=self._state.bonus_hud,
+                bonus_hud=self.state.bonus_hud,
                 elapsed_ms=self._rush.elapsed_ms,
                 font=self._small,
                 frame_dt_ms=self._last_dt_ms,

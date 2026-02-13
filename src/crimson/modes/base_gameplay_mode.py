@@ -154,17 +154,17 @@ class BaseGameplayMode:
         draw_target_health_bar(pos=screen_left, width=width, ratio=ratio, alpha=alpha, scale=width / 64.0)
 
     def _bind_world(self) -> None:
-        self._state = self._world.state
+        self.state = self._world.state
         self._creatures = self._world.creatures
         self._player = self._world.players[0]
-        self._state.status = self._status
+        self.state.status = self._status
 
     def _any_player_alive(self) -> bool:
         return any(player.health > 0.0 for player in self._world.players)
 
     def bind_status(self, status: GameStatus | None) -> None:
         self._status = status
-        self._state.status = status
+        self.state.status = status
 
     def bind_screen_fade(self, fade: _ScreenFade | None) -> None:
         self._screen_fade = fade
@@ -288,7 +288,7 @@ class BaseGameplayMode:
             record=record,
             player_name_default=self._player_name_default(),
             play_sfx=self._world.audio_router.play_sfx,
-            rand=self._state.rng.rand,
+            rand=self.state.rng.rand,
             mouse=self._ui_mouse_pos(),
         )
         if action == "play_again":

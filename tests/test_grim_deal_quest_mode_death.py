@@ -29,7 +29,7 @@ def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_tran
     mode._perk_menu.timeline_ms = 100.0
 
     def _apply_grim_deal_and_close(_ctx, *, dt_frame: float, dt_ui_ms: float) -> None:
-        perk_apply(mode._state, mode._world.players, PerkId.GRIM_DEAL)
+        perk_apply(mode.state, mode._world.players, PerkId.GRIM_DEAL)
         mode._perk_menu.close()
 
     monkeypatch.setattr(mode._perk_menu, "handle_input", _apply_grim_deal_and_close)

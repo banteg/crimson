@@ -132,7 +132,7 @@ class TypoShooterMode(BaseGameplayMode):
         if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
             self._typing.backspace()
             if self._world.audio_router is not None:
-                key = "sfx_ui_typeclick_01" if (self._state.rng.rand() & 1) == 0 else "sfx_ui_typeclick_02"
+                key = "sfx_ui_typeclick_01" if (self.state.rng.rand() & 1) == 0 else "sfx_ui_typeclick_02"
                 self._world.audio_router.play_sfx(key)
 
         codepoint = int(rl.get_char_pressed())
@@ -145,7 +145,7 @@ class TypoShooterMode(BaseGameplayMode):
                 if ch:
                     self._typing.push_char(ch)
                     if self._world.audio_router is not None:
-                        key = "sfx_ui_typeclick_01" if (self._state.rng.rand() & 1) == 0 else "sfx_ui_typeclick_02"
+                        key = "sfx_ui_typeclick_01" if (self.state.rng.rand() & 1) == 0 else "sfx_ui_typeclick_02"
                         self._world.audio_router.play_sfx(key)
             codepoint = int(rl.get_char_pressed())
 
@@ -175,7 +175,7 @@ class TypoShooterMode(BaseGameplayMode):
     def _spawn_tinted_creature(
         self, *, type_id: CreatureTypeId, pos: Vec2, tint_rgba: RGBA
     ) -> int:
-        rand = self._state.rng.rand
+        rand = self.state.rng.rand
         heading = float(int(rand()) % 314) * 0.01
         size = float(int(rand()) % 20 + 47)
 
@@ -209,7 +209,7 @@ class TypoShooterMode(BaseGameplayMode):
             return
 
         record = build_highscore_record_for_game_over(
-            state=self._state,
+            state=self.state,
             player=self._player,
             survival_elapsed_ms=int(self._typo.elapsed_ms),
             creature_kill_count=int(self._creatures.kill_count),
@@ -271,9 +271,9 @@ class TypoShooterMode(BaseGameplayMode):
         )
         enforce_typo_player_frame(self._player)
 
-        self._state.bonuses.weapon_power_up = 0.0
-        self._state.bonuses.reflex_boost = 0.0
-        self._state.bonus_pool.reset()
+        self.state.bonuses.weapon_power_up = 0.0
+        self.state.bonuses.reflex_boost = 0.0
+        self.state.bonus_pool.reset()
 
         cooldown, spawns = tick_typo_spawns(
             elapsed_ms=int(self._typo.elapsed_ms),
@@ -292,7 +292,7 @@ class TypoShooterMode(BaseGameplayMode):
             )
             self._names.assign_random(
                 creature_idx,
-                self._state.rng,
+                self.state.rng,
                 score_xp=int(self._player.experience),
                 active_mask=self._active_mask(),
                 unique_words=self._unique_words,
@@ -412,7 +412,7 @@ class TypoShooterMode(BaseGameplayMode):
                 state=self._hud_state,
                 player=self._player,
                 players=self._world.players,
-                bonus_hud=self._state.bonus_hud,
+                bonus_hud=self.state.bonus_hud,
                 elapsed_ms=float(self._typo.elapsed_ms),
                 font=self._small,
                 frame_dt_ms=self._last_dt_ms,

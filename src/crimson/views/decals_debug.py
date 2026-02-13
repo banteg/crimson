@@ -108,7 +108,7 @@ class DecalsDebugView:
         self._stamp_log_path: Path | None = None
         self._stamp_log_file = None
 
-        self._state = GameplayState()
+        self.state = GameplayState()
         self._player = PlayerState(index=0, pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
         self._creatures = CreaturePool()
         self._env = SpawnEnv(
@@ -275,16 +275,16 @@ class DecalsDebugView:
         rl.draw_texture_pro(texture, src, dst, origin, math.degrees(float(rotation_rad)), tint)
 
     def _spawn_enemy(self, pos: Vec2) -> None:
-        type_id = CreatureTypeId(int(self._state.rng.rand()) % 5)
-        size = float(int(self._state.rng.rand()) % 30 + 40)
-        move_speed = float(int(self._state.rng.rand()) % 30) * 0.05 + 1.0
-        hp = float(int(self._state.rng.rand()) % 4 + 2)
-        heading = float(int(self._state.rng.rand()) % 628) * 0.01
+        type_id = CreatureTypeId(int(self.state.rng.rand()) % 5)
+        size = float(int(self.state.rng.rand()) % 30 + 40)
+        move_speed = float(int(self.state.rng.rand()) % 30) * 0.05 + 1.0
+        hp = float(int(self.state.rng.rand()) % 4 + 2)
+        heading = float(int(self.state.rng.rand()) % 628) * 0.01
         init = CreatureInit(
             origin_template_id=-1,
             pos=pos,
             heading=heading,
-            phase_seed=float(int(self._state.rng.rand()) & 0xFF),
+            phase_seed=float(int(self.state.rng.rand()) & 0xFF),
             type_id=type_id,
             flags=CreatureFlags(0),
             ai_mode=0,
@@ -296,7 +296,7 @@ class DecalsDebugView:
             contact_damage=0.0,
             tint=(1.0, 1.0, 1.0, 1.0),
         )
-        self._creatures.spawn_init(init, rand=self._state.rng.rand)
+        self._creatures.spawn_init(init, rand=self.state.rng.rand)
 
     def open(self) -> None:
         self._missing_assets.clear()
@@ -379,8 +379,8 @@ class DecalsDebugView:
 
         # Spawn a few enemies near the center for immediate testing.
         for _ in range(6):
-            ox = float(int(self._state.rng.rand()) % 200 - 100)
-            oy = float(int(self._state.rng.rand()) % 200 - 100)
+            ox = float(int(self.state.rng.rand()) % 200 - 100)
+            oy = float(int(self.state.rng.rand()) % 200 - 100)
             self._spawn_enemy(Vec2(WORLD_SIZE * 0.5 + ox, WORLD_SIZE * 0.5 + oy))
 
     def close(self) -> None:
@@ -469,7 +469,7 @@ class DecalsDebugView:
                     break
             if hit is not None:
                 hit.hp -= 1.0
-                self._fx_queue.add_random(pos=hit.pos, rand=self._state.rng.rand)
+                self._fx_queue.add_random(pos=hit.pos, rand=self.state.rng.rand)
             else:
                 # Paint blood directly for ground decal checks.
                 self._fx_queue.add(
@@ -487,7 +487,7 @@ class DecalsDebugView:
 
         creature_result = self._creatures.update(
             dt,
-            state=self._state,
+            state=self.state,
             players=[self._player],
             env=self._env,
             world_width=WORLD_SIZE,

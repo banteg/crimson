@@ -101,7 +101,7 @@ class ProjectileFxView:
         self._show_help = True
         self._show_debug = True
 
-        self._state = GameplayState()
+        self.state = GameplayState()
         self._player = PlayerState(index=0, pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
         self._creatures: list[DummyCreature] = []
 
@@ -147,10 +147,10 @@ class ProjectileFxView:
         self._camera = Vec2.lerp(self._camera, desired, t)
 
     def _reset_scene(self) -> None:
-        self._state.projectiles.reset()
-        self._state.secondary_projectiles.reset()
-        self._state.shock_chain_links_left = 0
-        self._state.shock_chain_projectile_id = -1
+        self.state.projectiles.reset()
+        self.state.secondary_projectiles.reset()
+        self.state.shock_chain_links_left = 0
+        self.state.shock_chain_projectile_id = -1
         self._beams.clear()
         self._effects.clear()
         self._creatures = [
@@ -182,7 +182,7 @@ class ProjectileFxView:
 
         self.close_requested = False
         self._paused = False
-        self._state.rng.srand(0xBEEF)
+        self.state.rng.srand(0xBEEF)
         self._reset_scene()
 
         self._camera = Vec2(-1.0, -1.0)
@@ -216,7 +216,7 @@ class ProjectileFxView:
                 effect_id=int(effect_id),
                 pos=pos,
                 life=float(duration),
-                rotation=float(int(self._state.rng.rand()) % 0x274) * 0.01,
+                rotation=float(int(self.state.rng.rand()) % 0x274) * 0.01,
                 scale=float(scale),
             )
         )
@@ -224,7 +224,7 @@ class ProjectileFxView:
     def _spawn_projectile(self, *, type_id: int, angle: float, owner_id: int = -100) -> None:
         meta = self._projectile_meta_for(type_id)
         self._spawn_effect(effect_id=int(EffectId.CASING), pos=self._origin, scale=0.55, duration=0.18)
-        self._state.projectiles.spawn(
+        self.state.projectiles.spawn(
             pos=self._origin,
             angle=float(angle),
             type_id=int(type_id),
@@ -239,8 +239,8 @@ class ProjectileFxView:
         meta = self._projectile_meta_for(ProjectileTypeId.FIRE_BULLETS)
         self._spawn_effect(effect_id=int(EffectId.CASING), pos=self._origin, scale=0.6, duration=0.2)
         for _ in range(pellet_count):
-            jitter = (float(self._state.rng.rand() % 200) - 100.0) * 0.0015
-            self._state.projectiles.spawn(
+            jitter = (float(self.state.rng.rand() % 200) - 100.0) * 0.0015
+            self.state.projectiles.spawn(
                 pos=self._origin,
                 angle=float(angle + jitter),
                 type_id=ProjectileTypeId.FIRE_BULLETS,
@@ -298,7 +298,7 @@ class ProjectileFxView:
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_S):
             self._player.pos = self._origin
-            bonus_apply(self._state, self._player, BonusId.SHOCK_CHAIN, origin=self._player, creatures=self._creatures)
+            bonus_apply(self.state, self._player, BonusId.SHOCK_CHAIN, origin=self._player, creatures=self._creatures)
 
     def update(self, dt: float) -> None:
         self._handle_input()
@@ -318,14 +318,14 @@ class ProjectileFxView:
         for fx in self._effects:
             fx.life -= dt
 
-        hits = self._state.projectiles.update(
+        hits = self.state.projectiles.update(
             dt,
             self._creatures,
             world_size=WORLD_SIZE,
             damage_scale_by_type=self._damage_scale_by_type,
             detail_preset=5,
-            rng=self._state.rng.rand,
-            runtime_state=self._state,
+            rng=self.state.rng.rand,
+            runtime_state=self.state,
         )
         for hit in hits:
             if int(hit.type_id) in _BEAM_TYPES:
@@ -467,7 +467,7 @@ class ProjectileFxView:
             )
 
         # AOE rings for ion linger types.
-        for proj in self._state.projectiles.iter_active():
+        for proj in self.state.projectiles.iter_active():
             life = float(proj.life_timer)
             if life >= 0.4:
                 continue
@@ -526,7 +526,7 @@ class ProjectileFxView:
                 )
 
         # Projectiles.
-        for proj in self._state.projectiles.iter_active():
+        for proj in self.state.projectiles.iter_active():
             self._draw_projectile(proj)
 
         # UI.
@@ -561,7 +561,7 @@ class ProjectileFxView:
             y += line + 4
             draw_ui_text(
                 self._small,
-                f"shock_chain links {self._state.shock_chain_links_left}  proj {self._state.shock_chain_projectile_id}",
+                f"shock_chain links {self.state.shock_chain_links_left}  proj {self.state.shock_chain_projectile_id}",
                 Vec2(x, y),
                 scale=UI_TEXT_SCALE,
                 color=UI_HINT_COLOR,

@@ -229,7 +229,7 @@ def _credits_unlock_secret_lines(lines: list[_CreditsLine], base_index: int) -> 
 
 class CreditsView:
     def __init__(self, state: GameState) -> None:
-        self._state = state
+        self.state = state
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._small_font: SmallFontData | None = None
@@ -256,10 +256,10 @@ class CreditsView:
         self._secret_button = UiButtonState("Secret", force_wide=False)
 
     def open(self) -> None:
-        layout_w = float(self._state.config.screen_width)
+        layout_w = float(self.state.config.screen_width)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        self._assets = load_menu_assets(self._state)
-        self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
+        self._assets = load_menu_assets(self.state)
+        self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self._small_font = None
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
@@ -275,15 +275,15 @@ class CreditsView:
         self._scroll_line_start_index = 0
         self._scroll_line_end_index = 0
 
-        cache = _ensure_texture_cache(self._state)
+        cache = _ensure_texture_cache(self.state)
         button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
         button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
         self._back_button = UiButtonState("Back", force_wide=False)
         self._secret_button = UiButtonState("Secret", force_wide=False)
 
-        if self._state.audio is not None:
-            play_sfx(self._state.audio, "sfx_ui_panelclick", rng=self._state.rng)
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
 
     def close(self) -> None:
         if self._small_font is not None:
@@ -319,7 +319,7 @@ class CreditsView:
         if self._small_font is not None:
             return self._small_font
         missing_assets: list[str] = []
-        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        self._small_font = load_small_font(self.state.assets_dir, missing_assets)
         return self._small_font
 
     def _panel_top_left(self, *, scale: float) -> Vec2:
@@ -440,12 +440,12 @@ class CreditsView:
                 continue
 
             if "o" in line.text:
-                if (line.flags & _FLAG_CLICKED) == 0 and self._state.audio is not None:
-                    play_sfx(self._state.audio, "sfx_ui_bonus", rng=self._state.rng)
+                if (line.flags & _FLAG_CLICKED) == 0 and self.state.audio is not None:
+                    play_sfx(self.state.audio, "sfx_ui_bonus", rng=self.state.rng)
                 line.flags |= _FLAG_CLICKED
             else:
-                if _credits_line_clear_flag(self._lines, index) and self._state.audio is not None:
-                    play_sfx(self._state.audio, "sfx_trooper_inpain_01", rng=self._state.rng)
+                if _credits_line_clear_flag(self._lines, index) and self.state.audio is not None:
+                    play_sfx(self.state.audio, "sfx_trooper_inpain_01", rng=self.state.rng)
             return
 
     def _update_secret_unlock(self) -> None:
@@ -460,8 +460,8 @@ class CreditsView:
         return self._secret_unlock or debug_enabled()
 
     def update(self, dt: float) -> None:
-        if self._state.audio is not None:
-            update_audio(self._state.audio, dt)
+        if self.state.audio is not None:
+            update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         dt_clamped = min(float(dt), 0.1)
@@ -483,15 +483,15 @@ class CreditsView:
 
         interactive = self._timeline_ms >= self._timeline_max_ms
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
-            if self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            if self.state.audio is not None:
+                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
             self._begin_close_transition("back_to_previous")
             return
 
         if not interactive:
             return
 
-        scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
+        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
         slide_x = self._panel_slide_x(scale=scale)
         panel_top_left = self._panel_top_left(scale=scale).offset(dx=slide_x)
         font = self._ensure_small_font()
@@ -522,8 +522,8 @@ class CreditsView:
             mouse=mouse,
             click=click,
         ):
-            if self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            if self.state.audio is not None:
+                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
             self._begin_close_transition("back_to_previous")
             return
 
@@ -542,25 +542,25 @@ class CreditsView:
                 mouse=mouse,
                 click=click,
             ):
-                if self._state.audio is not None:
-                    play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+                if self.state.audio is not None:
+                    play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
                 self._begin_close_transition("open_alien_zookeeper")
                 return
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
-        pause_background = self._state.pause_background
+        pause_background = self.state.pause_background
         if pause_background is not None:
             pause_background.draw_pause_background()
         elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self._state))
-        _draw_screen_fade(self._state)
+            self._ground.draw(menu_ground_camera(self.state))
+        _draw_screen_fade(self.state)
 
         assets = self._assets
         if assets is None or assets.panel is None:
             return
 
-        scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
+        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
         slide_x = self._panel_slide_x(scale=scale)
         panel_top_left = self._panel_top_left(scale=scale).offset(dx=slide_x)
 
@@ -570,7 +570,7 @@ class CreditsView:
             MENU_PANEL_WIDTH * scale,
             CREDITS_PANEL_HEIGHT * scale,
         )
-        fx_detail = self._state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
         font = self._ensure_small_font()
@@ -634,14 +634,14 @@ class CreditsView:
                 )
 
         self._draw_sign()
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def _draw_sign(self) -> None:
         assets = self._assets
         if assets is None or assets.sign is None:
             return
         sign = assets.sign
-        screen_w = float(self._state.config.screen_width)
+        screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
@@ -652,7 +652,7 @@ class CreditsView:
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * sign_scale
         rotation_deg = 0.0
-        fx_detail = self._state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,

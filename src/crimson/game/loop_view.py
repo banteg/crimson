@@ -34,7 +34,7 @@ from .types import FrontView, GameState, PauseBackground
 
 class GameLoopView:
     def __init__(self, state: GameState) -> None:
-        self._state = state
+        self.state = state
         self._boot = BootView(state)
         self._demo = DemoView(state)
         self._menu = MenuView(state)
@@ -89,19 +89,19 @@ class GameLoopView:
         self._boot.open()
 
     def should_close(self) -> bool:
-        return self._state.quit_requested
+        return self.state.quit_requested
 
     def update(self, dt: float) -> None:
         input_begin_frame()
-        console = self._state.console
+        console = self.state.console
         console.handle_hotkey()
         console.update(dt)
-        _update_screen_fade(self._state, dt)
+        _update_screen_fade(self.state, dt)
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_P):
             self._screenshot_requested = True
         if console.open_flag:
             if console.quit_requested:
-                self._state.quit_requested = True
+                self.state.quit_requested = True
                 console.quit_requested = False
             return
 
@@ -115,7 +115,7 @@ class GameLoopView:
             action = self._front_active.take_action()
             if action == "back_to_menu":
                 self._capture_gameplay_ground_for_menu()
-                self._state.pause_background = None
+                self.state.pause_background = None
                 self._front_active.close()
                 self._front_active = None
                 while self._front_stack:
@@ -129,7 +129,7 @@ class GameLoopView:
                     self._front_active.close()
                     self._front_active = self._front_stack.pop()
                     if self._front_active in self._gameplay_views:
-                        self._state.pause_background = None
+                        self.state.pause_background = None
                     else:
                         reopen_from_child = getattr(self._front_active, "reopen_from_child", None)
                         if callable(reopen_from_child):
@@ -138,7 +138,7 @@ class GameLoopView:
                     return
                 self._front_active.close()
                 self._front_active = None
-                self._state.pause_background = None
+                self.state.pause_background = None
                 self._menu.open()
                 self._active = self._menu
                 self._menu_active = True
@@ -148,13 +148,13 @@ class GameLoopView:
                 if pause_view is None:
                     return
                 if self._front_active in self._gameplay_views:
-                    self._state.pause_background = cast(PauseBackground, self._front_active)
+                    self.state.pause_background = cast(PauseBackground, self._front_active)
                     self._front_stack.append(self._front_active)
                     pause_view.open()
                     self._front_active = pause_view
                     self._active = pause_view
                     return
-                if self._state.pause_background is None:
+                if self.state.pause_background is None:
                     # Options panel uses open_pause_menu as back_action; when no game is
                     # running, treat it like back_to_menu.
                     self._front_active.close()
@@ -179,16 +179,16 @@ class GameLoopView:
                     "start_typo": "typo",
                 }.get(action)
                 if mode_name is not None:
-                    self._state.status.increment_mode_play_count(mode_name)
+                    self.state.status.increment_mode_play_count(mode_name)
             if action is not None:
                 view = self._front_views.get(action)
                 if view is not None:
                     if action in {"open_high_scores", "open_weapon_database", "open_perk_database", "open_credits"}:
-                        if (self._front_active in self._gameplay_views) and (self._state.pause_background is None):
-                            self._state.pause_background = cast(PauseBackground, self._front_active)
+                        if (self._front_active in self._gameplay_views) and (self.state.pause_background is None):
+                            self.state.pause_background = cast(PauseBackground, self._front_active)
                         self._front_stack.append(self._front_active)
                     elif action in {"quest_results", "quest_failed"} and (self._front_active in self._gameplay_views):
-                        self._state.pause_background = cast(PauseBackground, self._front_active)
+                        self.state.pause_background = cast(PauseBackground, self._front_active)
                         self._front_stack.append(self._front_active)
                     else:
                         if action in {
@@ -200,7 +200,7 @@ class GameLoopView:
                             "open_play_game",
                             "open_quests",
                         }:
-                            self._state.pause_background = None
+                            self.state.pause_background = None
                             while self._front_stack:
                                 self._front_stack.pop().close()
                         self._front_active.close()
@@ -212,7 +212,7 @@ class GameLoopView:
         if self._menu_active:
             action = self._menu.take_action()
             if action == "quit_app":
-                self._state.quit_requested = True
+                self.state.quit_requested = True
                 return
             if action == "start_demo":
                 self._menu.close()
@@ -243,7 +243,7 @@ class GameLoopView:
             (not self._demo_active)
             and (not self._menu_active)
             and self._front_active is None
-            and self._state.demo_enabled
+            and self.state.demo_enabled
             and self._boot.is_theme_started()
         ):
             self._demo.open()
@@ -255,9 +255,9 @@ class GameLoopView:
             self._demo_active = False
             if self._quit_after_demo:
                 self._quit_after_demo = False
-                self._state.quit_requested = True
+                self.state.quit_requested = True
                 return
-            ensure_menu_ground(self._state, regenerate=True)
+            ensure_menu_ground(self.state, regenerate=True)
             self._menu.open()
             self._active = self._menu
             self._menu_active = True
@@ -272,17 +272,17 @@ class GameLoopView:
             self._active = self._menu
             self._menu_active = True
         if console.quit_requested:
-            self._state.quit_requested = True
+            self.state.quit_requested = True
             console.quit_requested = False
 
     def _update_demo_trial_overlay(self, dt: float) -> bool:
-        if not self._state.demo_enabled:
+        if not self.state.demo_enabled:
             return False
 
-        mode_id = self._state.config.game_mode
+        mode_id = self.state.config.game_mode
         quest_major, quest_minor = 0, 0
         if mode_id == 3:
-            level = self._state.pending_quest_level or ""
+            level = self.state.pending_quest_level or ""
             try:
                 major_text, minor_text = level.split(".", 1)
                 quest_major = int(major_text)
@@ -293,8 +293,8 @@ class GameLoopView:
         current = demo_trial_overlay_info(
             demo_build=True,
             game_mode_id=mode_id,
-            global_playtime_ms=int(self._state.status.game_sequence_id),
-            quest_grace_elapsed_ms=int(self._state.demo_trial_elapsed_ms),
+            global_playtime_ms=int(self.state.status.game_sequence_id),
+            quest_grace_elapsed_ms=int(self.state.demo_trial_elapsed_ms),
             quest_stage_major=int(quest_major),
             quest_stage_minor=int(quest_minor),
         )
@@ -305,19 +305,19 @@ class GameLoopView:
             demo_build=True,
             game_mode_id=int(mode_id),
             overlay_visible=bool(current.visible),
-            global_playtime_ms=int(self._state.status.game_sequence_id),
-            quest_grace_elapsed_ms=int(self._state.demo_trial_elapsed_ms),
+            global_playtime_ms=int(self.state.status.game_sequence_id),
+            quest_grace_elapsed_ms=int(self.state.demo_trial_elapsed_ms),
             dt_ms=int(dt_ms),
         )
-        if used_ms != int(self._state.status.game_sequence_id):
-            self._state.status.game_sequence_id = int(used_ms)
-        self._state.demo_trial_elapsed_ms = int(grace_ms)
+        if used_ms != int(self.state.status.game_sequence_id):
+            self.state.status.game_sequence_id = int(used_ms)
+        self.state.demo_trial_elapsed_ms = int(grace_ms)
 
         info = demo_trial_overlay_info(
             demo_build=True,
             game_mode_id=mode_id,
-            global_playtime_ms=int(self._state.status.game_sequence_id),
-            quest_grace_elapsed_ms=int(self._state.demo_trial_elapsed_ms),
+            global_playtime_ms=int(self.state.status.game_sequence_id),
+            quest_grace_elapsed_ms=int(self.state.demo_trial_elapsed_ms),
             quest_stage_major=int(quest_major),
             quest_stage_minor=int(quest_minor),
         )
@@ -325,7 +325,7 @@ class GameLoopView:
         if not info.visible:
             return False
 
-        self._demo_trial_overlay.bind_cache(self._state.texture_cache)
+        self._demo_trial_overlay.bind_cache(self.state.texture_cache)
         action = self._demo_trial_overlay.update(dt_ms)
         if action == "purchase":
             try:
@@ -381,15 +381,15 @@ class GameLoopView:
         return None
 
     def _replace_menu_ground(self, ground: GroundRenderer, *, camera: Vec2 | None) -> None:
-        previous = self._state.menu_ground
+        previous = self.state.menu_ground
         if previous is ground:
-            self._state.menu_ground_camera = camera
+            self.state.menu_ground_camera = camera
             return
         if previous is not None and previous.render_target is not None:
             rl.unload_render_texture(previous.render_target)
             previous.render_target = None
-        self._state.menu_ground = ground
-        self._state.menu_ground_camera = camera
+        self.state.menu_ground = ground
+        self.state.menu_ground_camera = camera
 
     def _capture_gameplay_ground_for_menu(self) -> None:
         ground: GroundRenderer | None = None
@@ -417,9 +417,9 @@ class GameLoopView:
         self._active.draw()
         info = self._demo_trial_info
         if info is not None and getattr(info, "visible", False):
-            self._demo_trial_overlay.bind_cache(self._state.texture_cache)
+            self._demo_trial_overlay.bind_cache(self.state.texture_cache)
             self._demo_trial_overlay.draw(info)
-        self._state.console.draw()
+        self.state.console.draw()
 
     def close(self) -> None:
         if self._menu_active:
@@ -431,10 +431,10 @@ class GameLoopView:
         if self._demo_active:
             self._demo.close()
         self._demo_trial_overlay.close()
-        if self._state.menu_ground is not None and self._state.menu_ground.render_target is not None:
-            rl.unload_render_texture(self._state.menu_ground.render_target)
-            self._state.menu_ground.render_target = None
+        if self.state.menu_ground is not None and self.state.menu_ground.render_target is not None:
+            rl.unload_render_texture(self.state.menu_ground.render_target)
+            self.state.menu_ground.render_target = None
         self._boot.close()
-        self._state.console.close()
+        self.state.console.close()
         rl.show_cursor()
 

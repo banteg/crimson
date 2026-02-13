@@ -243,7 +243,7 @@ class QuestMode(BaseGameplayMode):
             return None
 
     def _reset_perk_prompt(self) -> None:
-        if int(self._state.perk_selection.pending_count) > 0:
+        if int(self.state.perk_selection.pending_count) > 0:
             # Reset the prompt swing so each pending perk replays the intro.
             self._perk_prompt_timer_ms = 0.0
             self._perk_prompt_hover = False
@@ -254,8 +254,8 @@ class QuestMode(BaseGameplayMode):
         fx_detail = bool(self._config.fx_detail(level=0, default=False)) if self._config is not None else False
         players = self._world.players
         return PerkMenuContext(
-            state=self._state,
-            perk_state=self._state.perk_selection,
+            state=self.state,
+            perk_state=self.state.perk_selection,
             players=players,
             creatures=cast("list[CreatureForPerks]", self._creatures.entries),
             player=self._player,
@@ -294,8 +294,8 @@ class QuestMode(BaseGameplayMode):
         self._world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._bind_world()
         self._local_input.reset(players=self._world.players)
-        self._state.status = status
-        self._state.quest_stage_major, self._state.quest_stage_minor = quest.level_key
+        self.state.status = status
+        self.state.quest_stage_major, self.state.quest_stage_minor = quest.level_key
 
         base_id, overlay_id, detail_id = quest.terrain_ids or (0, 1, 0)
         base = terrain_texture_by_id(int(base_id))
@@ -363,11 +363,11 @@ class QuestMode(BaseGameplayMode):
 
         if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
-                self._state.debug_god_mode = not bool(self._state.debug_god_mode)
+                self.state.debug_god_mode = not bool(self.state.debug_god_mode)
                 self._world.audio_router.play_sfx("sfx_ui_buttonclick")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F3):
-                self._state.perk_selection.pending_count += 1
-                self._state.perk_selection.choices_dirty = True
+                self.state.perk_selection.pending_count += 1
+                self.state.perk_selection.choices_dirty = True
                 self._world.audio_router.play_sfx("sfx_ui_levelup")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
                 self._debug_cycle_weapon(-1)
@@ -388,12 +388,12 @@ class QuestMode(BaseGameplayMode):
         except ValueError:
             idx = 0
         weapon_id = int(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
-        weapon_assign_player(self._player, weapon_id, state=self._state)
+        weapon_assign_player(self._player, weapon_id, state=self.state)
 
     def _perk_prompt_label(self) -> str:
         if self._config is not None and not bool(self._config.ui_info_texts):
             return ""
-        pending = int(self._state.perk_selection.pending_count)
+        pending = int(self.state.perk_selection.pending_count)
         if pending <= 0:
             return ""
         suffix = f" ({pending})" if pending > 1 else ""
@@ -441,15 +441,15 @@ class QuestMode(BaseGameplayMode):
             fired = 0
             hit = 0
             try:
-                fired = int(self._state.shots_fired[int(self._player.index)])
-                hit = int(self._state.shots_hit[int(self._player.index)])
+                fired = int(self.state.shots_fired[int(self._player.index)])
+                hit = int(self.state.shots_hit[int(self._player.index)])
             except Exception:
                 fired = 0
                 hit = 0
             fired = max(0, int(fired))
             hit = max(0, min(int(hit), fired))
             most_used_weapon_id = most_used_weapon_id_for_player(
-                self._state,
+                self.state,
                 player_index=int(self._player.index),
                 fallback_weapon_id=int(self._player.weapon_id),
             )
@@ -464,7 +464,7 @@ class QuestMode(BaseGameplayMode):
                 player_health=float(player_health_values[0] if player_health_values else self._player.health),
                 player2_health=player2_health,
                 player_health_values=player_health_values,
-                pending_perk_count=int(self._state.perk_selection.pending_count),
+                pending_perk_count=int(self.state.perk_selection.pending_count),
                 experience=int(self._player.experience),
                 kill_count=int(self._creatures.kill_count),
                 weapon_id=int(self._player.weapon_id),
@@ -479,7 +479,7 @@ class QuestMode(BaseGameplayMode):
             return
         if not any(player.health > 0.0 for player in self._world.players):
             return
-        pending = int(self._state.perk_selection.pending_count)
+        pending = int(self.state.perk_selection.pending_count)
         if pending <= 0:
             return
         label = self._perk_prompt_label()
@@ -543,7 +543,7 @@ class QuestMode(BaseGameplayMode):
             return
 
         any_alive = any(player.health > 0.0 for player in self._world.players)
-        perk_pending = int(self._state.perk_selection.pending_count) > 0 and any_alive
+        perk_pending = int(self.state.perk_selection.pending_count) > 0 and any_alive
 
         self._perk_prompt_hover = False
         perk_ctx = self._perk_menu_context()
@@ -629,8 +629,8 @@ class QuestMode(BaseGameplayMode):
                 int(call.template_id),
                 call.pos,
                 float(call.heading),
-                self._state.rng,
-                rand=self._state.rng.rand,
+                self.state.rng,
+                rand=self.state.rng.rand,
             )
 
         if any_alive_after:
@@ -657,15 +657,15 @@ class QuestMode(BaseGameplayMode):
                     fired = 0
                     hit = 0
                     try:
-                        fired = int(self._state.shots_fired[int(self._player.index)])
-                        hit = int(self._state.shots_hit[int(self._player.index)])
+                        fired = int(self.state.shots_fired[int(self._player.index)])
+                        hit = int(self.state.shots_hit[int(self._player.index)])
                     except Exception:
                         fired = 0
                         hit = 0
                     fired = max(0, int(fired))
                     hit = max(0, min(int(hit), fired))
                     most_used_weapon_id = most_used_weapon_id_for_player(
-                        self._state,
+                        self.state,
                         player_index=int(self._player.index),
                         fallback_weapon_id=int(self._player.weapon_id),
                     )
@@ -680,7 +680,7 @@ class QuestMode(BaseGameplayMode):
                         player_health=float(player_health_values[0] if player_health_values else self._player.health),
                         player2_health=player2_health,
                         player_health_values=player_health_values,
-                        pending_perk_count=int(self._state.perk_selection.pending_count),
+                        pending_perk_count=int(self.state.perk_selection.pending_count),
                         experience=int(self._player.experience),
                         kill_count=int(self._creatures.kill_count),
                         weapon_id=int(self._player.weapon_id),
@@ -715,7 +715,7 @@ class QuestMode(BaseGameplayMode):
                 state=self._hud_state,
                 player=self._player,
                 players=self._world.players,
-                bonus_hud=self._state.bonus_hud,
+                bonus_hud=self.state.bonus_hud,
                 elapsed_ms=float(self._quest.spawn_timeline_ms),
                 font=self._small,
                 frame_dt_ms=self._last_dt_ms,
@@ -732,7 +732,7 @@ class QuestMode(BaseGameplayMode):
         if debug_enabled() and (not perk_menu_active):
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
-            god = "on" if self._state.debug_god_mode else "off"
+            god = "on" if self.state.debug_god_mode else "off"
             self._draw_ui_text(f"debug: [/] weapon  F3 perk+1  F2 god={god}", Vec2(x, y), UI_HINT_COLOR, scale=0.9)
 
         self._draw_quest_title()

@@ -87,7 +87,7 @@ class OptionsMenuView(PanelMenuView):
         if entry is None or not self._entry_enabled(entry):
             return
 
-        config = self._state.config
+        config = self.state.config
         layout = self._content_layout()
         base_pos = layout.base_pos
         label_pos = layout.label_pos
@@ -101,14 +101,14 @@ class OptionsMenuView(PanelMenuView):
 
         if self._update_slider("sfx", self._slider_sfx, slider_pos.offset(dy=47.0 * scale), rect_on, rect_off, scale):
             config.sfx_volume = float(self._slider_sfx.value) * 0.1
-            set_sfx_volume(self._state.audio, config.sfx_volume)
+            set_sfx_volume(self.state.audio, config.sfx_volume)
             self._dirty = True
 
         if self._update_slider(
             "music", self._slider_music, slider_pos.offset(dy=67.0 * scale), rect_on, rect_off, scale
         ):
             config.music_volume = float(self._slider_music.value) * 0.1
-            set_music_volume(self._state.audio, config.music_volume)
+            set_music_volume(self.state.audio, config.music_volume)
             self._dirty = True
 
         if self._update_slider(
@@ -158,7 +158,7 @@ class OptionsMenuView(PanelMenuView):
 
     def draw(self) -> None:
         self._draw_background()
-        _draw_screen_fade(self._state)
+        _draw_screen_fade(self.state)
         assets = self._assets
         entry = self._entry
         if assets is None or entry is None:
@@ -167,12 +167,12 @@ class OptionsMenuView(PanelMenuView):
         self._draw_entry(entry)
         self._draw_sign()
         self._draw_options_contents()
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def _begin_close_transition(self, action: str) -> None:
         if self._dirty:
             try:
-                self._state.config.save()
+                self.state.config.save()
             except Exception:
                 pass
             self._dirty = False
@@ -182,11 +182,11 @@ class OptionsMenuView(PanelMenuView):
         if self._small_font is not None:
             return self._small_font
         missing_assets: list[str] = []
-        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        self._small_font = load_small_font(self.state.assets_dir, missing_assets)
         return self._small_font
 
     def _sync_from_config(self) -> None:
-        config = self._state.config
+        config = self.state.config
         self._ui_info_texts = config.ui_info_texts
 
         sfx_volume = config.sfx_volume

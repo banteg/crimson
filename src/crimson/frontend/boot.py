@@ -132,7 +132,7 @@ def _debug_loading_hold_seconds() -> float:
 
 class BootView:
     def __init__(self, state: GameState) -> None:
-        self._state = state
+        self.state = state
         self._texture_stage = 0
         self._textures_done = False
         self._boot_time = 0.0
@@ -148,7 +148,7 @@ class BootView:
         self._loading_hold_remaining = _debug_loading_hold_seconds()
 
     def _load_texture_stage(self, stage: int) -> None:
-        cache = self._state.texture_cache
+        cache = self.state.texture_cache
         if cache is None:
             return
         stage_defs = TEXTURE_LOAD_STAGES.get(stage)
@@ -160,47 +160,47 @@ class BootView:
     def _load_company_logos(self) -> None:
         if self._company_logos_loaded:
             return
-        cache = self._state.texture_cache
+        cache = self.state.texture_cache
         if cache is None:
             return
         for name, rel_path in COMPANY_LOGOS.items():
             cache.get_or_load(name, rel_path)
         loaded = sum(1 for name in COMPANY_LOGOS if cache.get(name) and cache.get(name).texture is not None)
         if COMPANY_LOGOS:
-            self._state.console.log.log(f"company logos loaded: {loaded}/{len(COMPANY_LOGOS)}")
-            self._state.console.log.flush()
+            self.state.console.log.log(f"company logos loaded: {loaded}/{len(COMPANY_LOGOS)}")
+            self.state.console.log.flush()
         self._company_logos_loaded = True
 
     def _prepare_menu_assets(self) -> None:
         if self._menu_prepped:
             return
-        cache = self._state.texture_cache
+        cache = self.state.texture_cache
         if cache is None:
             return
         for name, rel_path in MENU_PREP_TEXTURES:
             cache.get_or_load(name, rel_path)
         loaded = sum(1 for name, _rel in MENU_PREP_TEXTURES if cache.get(name) and cache.get(name).texture is not None)
         if MENU_PREP_TEXTURES:
-            self._state.console.log.log(f"menu textures loaded: {loaded}/{len(MENU_PREP_TEXTURES)}")
-            self._state.console.log.flush()
+            self.state.console.log.log(f"menu textures loaded: {loaded}/{len(MENU_PREP_TEXTURES)}")
+            self.state.console.log.flush()
         self._menu_prepped = True
 
     def open(self) -> None:
-        if self._state.logos is None:
-            entries = _load_resource_entries(self._state)
-            logos = load_logo_assets(self._state.assets_dir, entries=entries)
-            self._state.console.log.log(f"logo assets: {logos.loaded_count()}/{len(logos.all())} loaded")
-            self._state.console.log.flush()
-            self._state.logos = logos
-            self._state.texture_cache = PaqTextureCache(entries=entries, textures={})
-        if self._state.audio is None:
-            self._state.audio = init_audio_state(self._state.config, self._state.assets_dir, self._state.console)
-            self._state.console.exec_line("exec music/game_tunes.txt")
+        if self.state.logos is None:
+            entries = _load_resource_entries(self.state)
+            logos = load_logo_assets(self.state.assets_dir, entries=entries)
+            self.state.console.log.log(f"logo assets: {logos.loaded_count()}/{len(logos.all())} loaded")
+            self.state.console.log.flush()
+            self.state.logos = logos
+            self.state.texture_cache = PaqTextureCache(entries=entries, textures={})
+        if self.state.audio is None:
+            self.state.audio = init_audio_state(self.state.config, self.state.assets_dir, self.state.console)
+            self.state.console.exec_line("exec music/game_tunes.txt")
 
     def update(self, dt: float) -> None:
         frame_dt = min(dt, 0.1)
-        if self._state.audio is not None:
-            update_audio(self._state.audio, frame_dt)
+        if self.state.audio is not None:
+            update_audio(self.state.audio, frame_dt)
         if self._theme_started:
             return
         if not self._textures_done:
@@ -210,11 +210,11 @@ class BootView:
                 self._texture_stage += 1
                 if self._texture_stage >= len(TEXTURE_LOAD_STAGES):
                     self._textures_done = True
-                    if self._state.texture_cache is not None:
-                        loaded = self._state.texture_cache.loaded_count()
-                        total = len(self._state.texture_cache.textures)
-                        self._state.console.log.log(f"boot textures loaded: {loaded}/{total}")
-                        self._state.console.log.flush()
+                    if self.state.texture_cache is not None:
+                        loaded = self.state.texture_cache.loaded_count()
+                        total = len(self.state.texture_cache.textures)
+                        self.state.console.log.log(f"boot textures loaded: {loaded}/{total}")
+                        self.state.console.log.flush()
                     self._load_company_logos()
                     self._prepare_menu_assets()
                     self._fade_out_ready = True
@@ -240,7 +240,7 @@ class BootView:
             self._boot_time += frame_dt
             return
 
-        if self._state.skip_intro:
+        if self.state.skip_intro:
             self._start_theme()
             return
 
@@ -252,8 +252,8 @@ class BootView:
         if self._boot_time > LOGO_THEME_TRIGGER:
             self._start_theme()
             return
-        if (not self._state.skip_intro) and (not self._intro_started) and self._state.audio is not None:
-            play_music(self._state.audio, "intro")
+        if (not self.state.skip_intro) and (not self._intro_started) and self.state.audio is not None:
+            play_music(self.state.audio, "intro")
             self._intro_started = True
         if not self._logo_skip and self._skip_triggered():
             self._logo_skip = True
@@ -269,7 +269,7 @@ class BootView:
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
         if not self._fade_out_ready or not self._fade_out_done:
-            logos = self._state.logos
+            logos = self.state.logos
             if logos is not None:
                 self._draw_splash(logos, self._splash_alpha())
             return
@@ -277,16 +277,16 @@ class BootView:
             self._draw_company_logo_sequence()
 
     def close(self) -> None:
-        if self._state.audio is not None:
-            shutdown_audio(self._state.audio)
+        if self.state.audio is not None:
+            shutdown_audio(self.state.audio)
 
     def _start_theme(self) -> None:
         if self._theme_started:
             return
-        if self._state.audio is not None:
-            stop_music(self._state.audio)
-            theme = "crimsonquest" if self._state.demo_enabled else "crimson_theme"
-            play_music(self._state.audio, theme)
+        if self.state.audio is not None:
+            stop_music(self.state.audio)
+            theme = "crimsonquest" if self.state.demo_enabled else "crimson_theme"
+            play_music(self.state.audio, theme)
         self._theme_started = True
 
     def is_theme_started(self) -> bool:
@@ -321,7 +321,7 @@ class BootView:
         return None
 
     def _draw_company_logo_sequence(self) -> None:
-        cache = self._state.texture_cache
+        cache = self.state.texture_cache
         if cache is None:
             return
         t = self._boot_time - LOGO_TIME_OFFSET

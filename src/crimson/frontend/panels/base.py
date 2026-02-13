@@ -73,7 +73,7 @@ class PanelMenuView:
         back_pos: Vec2 = Vec2(PANEL_BACK_POS_X, PANEL_BACK_POS_Y),
         back_action: str = "back_to_menu",
     ) -> None:
-        self._state = state
+        self.state = state
         self._title = title
         self._body_lines = (body or "").splitlines()
         self._panel_pos = panel_pos
@@ -96,10 +96,10 @@ class PanelMenuView:
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
-        layout_w = float(self._state.config.screen_width)
+        layout_w = float(self.state.config.screen_width)
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        self._assets = load_menu_assets(self._state)
+        self._assets = load_menu_assets(self.state)
         self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=self._back_pos.y)
         self._hovered = False
         self._timeline_ms = 0
@@ -115,8 +115,8 @@ class PanelMenuView:
         self._ground = None
 
     def update(self, dt: float) -> None:
-        if self._state.audio is not None:
-            update_audio(self._state.audio, dt)
+        if self.state.audio is not None:
+            update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
@@ -132,9 +132,9 @@ class PanelMenuView:
         if dt_ms > 0:
             self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
             if self._timeline_ms >= self._timeline_max_ms:
-                self._state.menu_sign_locked = True
-                if (not self._panel_open_sfx_played) and (self._state.audio is not None):
-                    play_sfx(self._state.audio, "sfx_ui_panelclick", rng=self._state.rng)
+                self.state.menu_sign_locked = True
+                if (not self._panel_open_sfx_played) and (self.state.audio is not None):
+                    play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
                     self._panel_open_sfx_played = True
 
         entry = self._entry
@@ -163,7 +163,7 @@ class PanelMenuView:
 
     def draw(self) -> None:
         self._draw_background()
-        _draw_screen_fade(self._state)
+        _draw_screen_fade(self.state)
         assets = self._assets
         entry = self._entry
         if assets is None or entry is None:
@@ -172,7 +172,7 @@ class PanelMenuView:
         self._draw_entry(entry)
         self._draw_sign()
         self._draw_contents()
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         action = self._pending_action
@@ -195,30 +195,30 @@ class PanelMenuView:
         if self._closing:
             return
         if action in FADE_TO_GAME_ACTIONS:
-            self._state.screen_fade_alpha = 0.0
-            self._state.screen_fade_ramp = True
-        if self._state.audio is not None:
-            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            self.state.screen_fade_alpha = 0.0
+            self.state.screen_fade_ramp = True
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._closing = True
         self._close_action = action
 
     def _ensure_cache(self) -> PaqTextureCache:
-        return _ensure_texture_cache(self._state)
+        return _ensure_texture_cache(self.state)
 
     def _init_ground(self) -> None:
-        if self._state.pause_background is not None:
+        if self.state.pause_background is not None:
             self._ground = None
             return
-        self._ground = ensure_menu_ground(self._state)
+        self._ground = ensure_menu_ground(self.state)
 
     def _draw_background(self) -> None:
         rl.clear_background(rl.BLACK)
-        pause_background = self._state.pause_background
+        pause_background = self.state.pause_background
         if pause_background is not None:
             pause_background.draw_pause_background()
             return
         if self._ground is not None:
-            self._ground.draw(menu_ground_camera(self._state))
+            self._ground.draw(menu_ground_camera(self.state))
 
     def _draw_panel(self) -> None:
         assets = self._assets
@@ -243,7 +243,7 @@ class PanelMenuView:
             + self._panel_offset * item_scale
         )
         dst = rl.Rectangle(panel_top_left.x, panel_top_left.y, float(panel_w), float(panel_h))
-        fx_detail = self._state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         draw_classic_menu_panel(panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
     def _draw_entry(self, entry: MenuEntry) -> None:
@@ -274,7 +274,7 @@ class PanelMenuView:
             item_h * item_scale,
         )
         origin = rl.Vector2(-offset_x, -offset_y)
-        fx_detail = self._state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=item,
@@ -332,7 +332,7 @@ class PanelMenuView:
         assets = self._assets
         if assets is None or assets.sign is None:
             return
-        screen_w = float(self._state.config.screen_width)
+        screen_w = float(self.state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
@@ -346,7 +346,7 @@ class PanelMenuView:
         # so the sign is already locked in place. Keep it static here.
         rotation_deg = 0.0
         sign = assets.sign
-        fx_detail = self._state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,

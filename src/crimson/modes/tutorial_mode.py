@@ -100,9 +100,9 @@ class TutorialMode(BaseGameplayMode):
         self._tutorial = TutorialState()
         self._tutorial_actions = TutorialFrameActions()
 
-        self._state.perk_selection.pending_count = 0
-        self._state.perk_selection.choices.clear()
-        self._state.perk_selection.choices_dirty = True
+        self.state.perk_selection.pending_count = 0
+        self.state.perk_selection.choices.clear()
+        self.state.perk_selection.choices_dirty = True
 
         self._player.pos = Vec2(float(self._world.world_size) * 0.5, float(self._world.world_size) * 0.5)
         weapon_assign_player(self._player, 1)
@@ -115,8 +115,8 @@ class TutorialMode(BaseGameplayMode):
         fx_toggle = int(self._config.fx_toggle) if self._config is not None else 0
         fx_detail = bool(self._config.fx_detail(level=0, default=False)) if self._config is not None else False
         return PerkMenuContext(
-            state=self._state,
-            perk_state=self._state.perk_selection,
+            state=self.state,
+            perk_state=self.state.perk_selection,
             players=[self._player],
             creatures=cast("list[CreatureForPerks]", self._creatures.entries),
             player=self._player,
@@ -251,7 +251,7 @@ class TutorialMode(BaseGameplayMode):
             return
 
         perk_ctx = self._perk_menu_context()
-        perk_pending = int(self._state.perk_selection.pending_count) > 0 and self._player.health > 0.0
+        perk_pending = int(self.state.perk_selection.pending_count) > 0 and self._player.health > 0.0
         if int(self._tutorial.stage_index) == 6 and perk_pending and not self._perk_menu.open:
             self._perk_menu.open_if_available(perk_ctx)
 
@@ -288,8 +288,8 @@ class TutorialMode(BaseGameplayMode):
         hint_bonus_died = hint_alive_before and (not hint_alive_after)
 
         creatures_none_active = not bool(self._creatures.iter_active())
-        bonus_pool_empty = not bool(self._state.bonus_pool.iter_active())
-        perk_pending_count = int(self._state.perk_selection.pending_count)
+        bonus_pool_empty = not bool(self.state.bonus_pool.iter_active())
+        perk_pending_count = int(self.state.perk_selection.pending_count)
 
         self._tutorial, actions = tick_tutorial_timeline(
             self._tutorial,
@@ -307,26 +307,26 @@ class TutorialMode(BaseGameplayMode):
         self._player.health = float(actions.force_player_health)
         if actions.force_player_experience is not None:
             self._player.experience = int(actions.force_player_experience)
-            survival_check_level_up(self._player, self._state.perk_selection)
+            survival_check_level_up(self._player, self.state.perk_selection)
 
         detail_preset = 5
         if self._world.config is not None:
             detail_preset = self._world.config.detail_preset
 
         for call in actions.spawn_bonuses:
-            spawned = self._state.bonus_pool.spawn_at(
+            spawned = self.state.bonus_pool.spawn_at(
                 pos=call.pos,
                 bonus_id=int(call.bonus_id),
                 duration_override=int(call.amount),
-                state=self._state,
+                state=self.state,
                 world_width=float(self._world.world_size),
                 world_height=float(self._world.world_size),
             )
             if spawned is not None:
-                self._state.effects.spawn_burst(
+                self.state.effects.spawn_burst(
                     pos=spawned.pos,
                     count=12,
-                    rand=self._state.rng.rand,
+                    rand=self.state.rng.rand,
                     detail_preset=detail_preset,
                 )
 
@@ -335,8 +335,8 @@ class TutorialMode(BaseGameplayMode):
                 int(call.template_id),
                 call.pos,
                 float(call.heading),
-                self._state.rng,
-                rand=self._state.rng.rand,
+                self.state.rng,
+                rand=self.state.rng.rand,
             )
             if int(call.template_id) == 0x27 and primary is not None and actions.stage5_bonus_carrier_drop is not None:
                 drop_id, drop_amount = actions.stage5_bonus_carrier_drop
@@ -368,7 +368,7 @@ class TutorialMode(BaseGameplayMode):
                 state=self._hud_state,
                 player=self._player,
                 players=self._world.players,
-                bonus_hud=self._state.bonus_hud,
+                bonus_hud=self.state.bonus_hud,
                 elapsed_ms=float(self._tutorial.stage_timer_ms),
                 score=int(self._player.experience),
                 font=self._small,

@@ -133,7 +133,7 @@ class SurvivalMode(BaseGameplayMode):
         self._sim_session: SurvivalDeterministicSession | None = None
 
     def _reset_perk_prompt(self) -> None:
-        if int(self._state.perk_selection.pending_count) > 0:
+        if int(self.state.perk_selection.pending_count) > 0:
             # Reset the prompt swing so each pending perk replays the intro.
             self._perk_prompt_timer_ms = 0.0
             self._perk_prompt_hover = False
@@ -222,8 +222,8 @@ class SurvivalMode(BaseGameplayMode):
         fx_detail = bool(self._config.fx_detail(level=0, default=False)) if self._config is not None else False
         players = self._world.players
         return PerkMenuContext(
-            state=self._state,
-            perk_state=self._state.perk_selection,
+            state=self.state,
+            perk_state=self.state.perk_selection,
             players=players,
             creatures=cast("list[CreatureForPerks]", self._creatures.entries),
             player=self._player,
@@ -289,7 +289,7 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_prompt_hover = False
         self._perk_prompt_pulse = 0.0
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
-        status = self._state.status
+        status = self.state.status
         weapon_usage_counts: tuple[int, ...] = ()
         if status is not None:
             try:
@@ -313,7 +313,7 @@ class SurvivalMode(BaseGameplayMode):
         self._replay_recorder = ReplayRecorder(
             ReplayHeader(
                 game_mode_id=int(GameMode.SURVIVAL),
-                seed=int(self._state.rng.state),
+                seed=int(self.state.rng.state),
                 tick_rate=int(self._sim_clock.tick_rate),
                 difficulty_level=int(self._world.difficulty_level),
                 hardcore=bool(self._world.hardcore),
@@ -353,11 +353,11 @@ class SurvivalMode(BaseGameplayMode):
 
         if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
-                self._state.debug_god_mode = not bool(self._state.debug_god_mode)
+                self.state.debug_god_mode = not bool(self.state.debug_god_mode)
                 self._world.audio_router.play_sfx("sfx_ui_buttonclick")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F3):
-                self._state.perk_selection.pending_count += 1
-                self._state.perk_selection.choices_dirty = True
+                self.state.perk_selection.pending_count += 1
+                self.state.perk_selection.choices_dirty = True
                 self._world.audio_router.play_sfx("sfx_ui_levelup")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
                 self._debug_cycle_weapon(-1)
@@ -365,7 +365,7 @@ class SurvivalMode(BaseGameplayMode):
                 self._debug_cycle_weapon(1)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_X):
                 self._player.experience += 5000
-                survival_check_level_up(self._player, self._state.perk_selection)
+                survival_check_level_up(self._player, self.state.perk_selection)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self._action = "open_pause_menu"
@@ -381,7 +381,7 @@ class SurvivalMode(BaseGameplayMode):
         except ValueError:
             idx = 0
         weapon_id = int(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
-        weapon_assign_player(self._player, weapon_id, state=self._state)
+        weapon_assign_player(self._player, weapon_id, state=self.state)
 
     def _player_name_default(self) -> str:
         config = self._config
@@ -404,7 +404,7 @@ class SurvivalMode(BaseGameplayMode):
             return
         game_mode_id = int(self._config.game_mode) if self._config is not None else 1
         record = build_highscore_record_for_game_over(
-            state=self._state,
+            state=self.state,
             player=self._player,
             survival_elapsed_ms=int(self._survival.elapsed_ms),
             creature_kill_count=int(self._creatures.kill_count),
@@ -419,7 +419,7 @@ class SurvivalMode(BaseGameplayMode):
     def _perk_prompt_label(self) -> str:
         if self._config is not None and not bool(self._config.ui_info_texts):
             return ""
-        pending = int(self._state.perk_selection.pending_count)
+        pending = int(self.state.perk_selection.pending_count)
         if pending <= 0:
             return ""
         suffix = f" ({pending})" if pending > 1 else ""
@@ -467,7 +467,7 @@ class SurvivalMode(BaseGameplayMode):
             return
 
         any_alive = any(player.health > 0.0 for player in self._world.players)
-        perk_pending = int(self._state.perk_selection.pending_count) > 0 and any_alive
+        perk_pending = int(self.state.perk_selection.pending_count) > 0 and any_alive
 
         self._perk_prompt_hover = False
         perk_ctx = self._perk_menu_context()
@@ -601,7 +601,7 @@ class SurvivalMode(BaseGameplayMode):
             return
         if not any(player.health > 0.0 for player in self._world.players):
             return
-        pending = int(self._state.perk_selection.pending_count)
+        pending = int(self.state.perk_selection.pending_count)
         if pending <= 0:
             return
         label = self._perk_prompt_label()
@@ -686,7 +686,7 @@ class SurvivalMode(BaseGameplayMode):
                 state=self._hud_state,
                 player=self._player,
                 players=self._world.players,
-                bonus_hud=self._state.bonus_hud,
+                bonus_hud=self.state.bonus_hud,
                 elapsed_ms=self._survival.elapsed_ms,
                 score=self._player.experience,
                 font=self._small,
@@ -716,7 +716,7 @@ class SurvivalMode(BaseGameplayMode):
                 Vec2(x, y + line),
                 UI_HINT_COLOR,
             )
-            god = "on" if self._state.debug_god_mode else "off"
+            god = "on" if self.state.debug_god_mode else "off"
             self._draw_ui_text(
                 f"debug: [/] weapon  F3 perk+1  F2 god={god}  X xp+5000",
                 Vec2(x, y + line * 2.0),
