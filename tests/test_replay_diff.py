@@ -246,3 +246,42 @@ def test_checkpoint_field_diffs_reports_nested_paths() -> None:
 
     assert diffs
     assert diffs[0].field == "players[0].health"
+
+
+def test_checkpoint_field_diffs_ignores_one_ms_reflex_timer_jitter() -> None:
+    world = _base_world()
+    expected = build_checkpoint(
+        tick_index=3,
+        world=world,
+        elapsed_ms=48.0,
+    )
+    reflex_key = "9"
+    expected_reflex = int(expected.bonus_timers.get(reflex_key, 0))
+    if expected_reflex <= 1:
+        expected_reflex = 81
+    expected = replace(expected, bonus_timers={**expected.bonus_timers, reflex_key: int(expected_reflex)})
+    actual_plus_one = replace(
+        expected,
+        bonus_timers={**expected.bonus_timers, reflex_key: int(expected_reflex + 1)},
+    )
+    actual_plus_two = replace(
+        expected,
+        bonus_timers={**expected.bonus_timers, reflex_key: int(expected_reflex + 2)},
+    )
+
+    tolerant = checkpoint_field_diffs(
+        expected,
+        actual_plus_one,
+        include_hash_fields=False,
+        include_rng_fields=False,
+    )
+    strict = checkpoint_field_diffs(
+        expected,
+        actual_plus_two,
+        include_hash_fields=False,
+        include_rng_fields=False,
+    )
+
+    assert tolerant == []
+    assert strict
+    assert strict[0].field == "bonus_timers.9"
