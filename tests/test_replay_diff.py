@@ -285,3 +285,42 @@ def test_checkpoint_field_diffs_ignores_one_ms_reflex_timer_jitter() -> None:
     assert tolerant == []
     assert strict
     assert strict[0].field == "bonus_timers.9"
+
+
+def test_checkpoint_field_diffs_ignores_one_ms_weapon_power_up_timer_jitter() -> None:
+    world = _base_world()
+    expected = build_checkpoint(
+        tick_index=4,
+        world=world,
+        elapsed_ms=64.0,
+    )
+    wpup_key = "4"
+    expected_wpup = int(expected.bonus_timers.get(wpup_key, 0))
+    if expected_wpup <= 1:
+        expected_wpup = 181
+    expected = replace(expected, bonus_timers={**expected.bonus_timers, wpup_key: int(expected_wpup)})
+    actual_plus_one = replace(
+        expected,
+        bonus_timers={**expected.bonus_timers, wpup_key: int(expected_wpup + 1)},
+    )
+    actual_plus_two = replace(
+        expected,
+        bonus_timers={**expected.bonus_timers, wpup_key: int(expected_wpup + 2)},
+    )
+
+    tolerant = checkpoint_field_diffs(
+        expected,
+        actual_plus_one,
+        include_hash_fields=False,
+        include_rng_fields=False,
+    )
+    strict = checkpoint_field_diffs(
+        expected,
+        actual_plus_two,
+        include_hash_fields=False,
+        include_rng_fields=False,
+    )
+
+    assert tolerant == []
+    assert strict
+    assert strict[0].field == "bonus_timers.4"
