@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import inspect
+import ipaddress
 import json
 import random
 import re
@@ -35,6 +36,18 @@ _QUEST_BUILDERS = {level: quest.builder for level, quest in _QUEST_DEFS.items()}
 _QUEST_TITLES = {level: quest.title for level, quest in _QUEST_DEFS.items()}
 
 _SEP_RE = re.compile(r"[\\/]+")
+
+
+def _is_loopback_host(host: str) -> bool:
+    normalized = str(host).strip().strip("[]").lower()
+    if not normalized:
+        return False
+    if normalized == "localhost":
+        return True
+    try:
+        return bool(ipaddress.ip_address(normalized).is_loopback)
+    except ValueError:
+        return False
 
 
 def _safe_relpath(name: str) -> Path:
@@ -311,6 +324,7 @@ def cmd_lan_join(
     host_ip = str(host).strip()
     if not host_ip:
         raise typer.BadParameter("host address is required", param_hint="--host")
+    localhost_testing = _is_loopback_host(host_ip)
     pending = PendingLanSession(
         role="join",
         config=LanSessionConfig(
@@ -322,7 +336,7 @@ def cmd_lan_join(
             port=int(port),
             preserve_bugs=False,
         ),
-        auto_start=False,
+        auto_start=bool(localhost_testing),
     )
     run_game(
         GameConfig(
