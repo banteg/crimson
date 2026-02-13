@@ -244,8 +244,14 @@ class GameLoopView:
         self.state.config.player_count = int(player_count)
         self.state.lan_in_lobby = True
         self.state.lan_expected_players = int(player_count)
-        self.state.lan_connected_players = 1
-        self.state.lan_waiting_for_players = int(player_count) > 1
+        if bool(pending.auto_start) and str(pending.role) == "host":
+            # Temporary bring-up path: CLI auto-start host sessions should not
+            # deadlock at 1/N until live lobby transport updates are wired.
+            self.state.lan_connected_players = int(player_count)
+            self.state.lan_waiting_for_players = False
+        else:
+            self.state.lan_connected_players = 1
+            self.state.lan_waiting_for_players = int(player_count) > 1
         self.state.lan_desync_count = 0
         self.state.lan_resync_failure_count = 0
         self.state.config.game_mode = int(mode_id)
