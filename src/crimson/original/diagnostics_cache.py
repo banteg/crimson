@@ -16,6 +16,8 @@ import msgspec
 from platformdirs import PlatformDirs
 
 import crimson.projectiles.runtime.collision as projectiles_mod
+import crimson.projectiles.runtime.projectile_pool as projectile_pool_mod
+import crimson.projectiles.runtime.secondary_pool as secondary_pool_mod
 import crimson.sim.presentation_step as presentation_step_mod
 from crimson.bonuses import bonus_label
 from crimson.game_modes import GameMode
@@ -340,6 +342,8 @@ class _FocusRuntime:
         orig_particles_rand = self.world.state.particles._rand
         orig_sprite_effects_rand = self.world.state.sprite_effects._rand
         orig_within = projectiles_mod._within_native_find_radius
+        orig_within_projectile_pool = projectile_pool_mod._within_native_find_radius
+        orig_within_secondary_pool = secondary_pool_mod._within_native_find_radius
         orig_run_projectile_decal_hooks = presentation_step_mod.run_projectile_decal_hooks
 
         try:
@@ -458,6 +462,8 @@ class _FocusRuntime:
                 self.world.state.particles._rand = traced_rand
                 self.world.state.sprite_effects._rand = traced_rand
                 projectiles_mod._within_native_find_radius = traced_within_native_find_radius  # type: ignore[assignment]
+                projectile_pool_mod._within_native_find_radius = traced_within_native_find_radius  # type: ignore[assignment]
+                secondary_pool_mod._within_native_find_radius = traced_within_native_find_radius  # type: ignore[assignment]
                 presentation_step_mod.run_projectile_decal_hooks = traced_run_projectile_decal_hooks  # type: ignore[assignment]
 
             tick_result = self.session.step_tick(
@@ -486,6 +492,8 @@ class _FocusRuntime:
             self.world.state.particles._rand = orig_particles_rand
             self.world.state.sprite_effects._rand = orig_sprite_effects_rand
             projectiles_mod._within_native_find_radius = orig_within
+            projectile_pool_mod._within_native_find_radius = orig_within_projectile_pool
+            secondary_pool_mod._within_native_find_radius = orig_within_secondary_pool
             presentation_step_mod.run_projectile_decal_hooks = orig_run_projectile_decal_hooks
 
         if not self.use_outside_draws:
