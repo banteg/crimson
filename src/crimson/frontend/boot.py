@@ -192,6 +192,8 @@ class BootView:
         self._menu_prepped = True
 
     def _load_balloon_easter_egg_texture(self) -> None:
+        # Native 1.9.93 date-gates a one-shot balloon texture preload in startup prelude.
+        # No executable draw path references the "balloon" texture name in this build.
         if not _is_balloon_easter_egg_day(dt.date.today()):
             return
         cache = self.state.texture_cache
@@ -233,8 +235,8 @@ class BootView:
                         total = len(self.state.texture_cache.textures)
                         self.state.console.log.log(f"boot textures loaded: {loaded}/{total}")
                         self.state.console.log.flush()
-                    self._load_balloon_easter_egg_texture()
                     self._load_company_logos()
+                    self._load_balloon_easter_egg_texture()
                     self._prepare_menu_assets()
                     self._fade_out_ready = True
                     self._loading_hold_remaining = _debug_loading_hold_seconds()
