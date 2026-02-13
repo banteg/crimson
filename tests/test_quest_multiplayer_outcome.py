@@ -20,7 +20,7 @@ def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, 
     mode.prepare_new_run("1.1", status=None)
     health_values = (91.2, 50.6, 10.4, 0.49)
     for idx, health in enumerate(health_values):
-        mode._world.players[idx].health = float(health)
+        mode.world.players[idx].health = float(health)
     mode._close_failed_run()
     outcome = mode.consume_outcome()
     assert outcome is not None

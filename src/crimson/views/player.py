@@ -57,7 +57,7 @@ class PlayerSandboxView:
         self._missing_assets: list[str] = []
         self._small: SmallFontData | None = None
 
-        self._state = GameplayState()
+        self.state = GameplayState()
         self._player = PlayerState(index=0, pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
         self._creatures: list[DummyCreature] = []
 
@@ -81,8 +81,8 @@ class PlayerSandboxView:
     def _ensure_creatures(self, target_count: int) -> None:
         while len(self._creatures) < target_count:
             margin = 40.0
-            x = margin + _rand_float01(self._state) * (WORLD_SIZE - margin * 2)
-            y = margin + _rand_float01(self._state) * (WORLD_SIZE - margin * 2)
+            x = margin + _rand_float01(self.state) * (WORLD_SIZE - margin * 2)
+            y = margin + _rand_float01(self.state) * (WORLD_SIZE - margin * 2)
             self._creatures.append(DummyCreature(pos=Vec2(x, y), hp=80.0, size=28.0))
 
     def _weapon_id(self) -> int:
@@ -123,7 +123,7 @@ class PlayerSandboxView:
             self._hud_missing = list(self._hud_assets.missing)
         self._hud_state = HudState()
 
-        self._state.rng.srand(0xBEEF)
+        self.state.rng.srand(0xBEEF)
         self._creatures.clear()
         self._ensure_creatures(14)
 
@@ -170,22 +170,22 @@ class PlayerSandboxView:
             self._toggle_perk(PerkId.ALTERNATE_WEAPON)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_Z):
-            bonus_apply(self._state, self._player, BonusId.WEAPON_POWER_UP)
+            bonus_apply(self.state, self._player, BonusId.WEAPON_POWER_UP)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_X):
-            bonus_apply(self._state, self._player, BonusId.SHIELD)
+            bonus_apply(self.state, self._player, BonusId.SHIELD)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_C):
-            bonus_apply(self._state, self._player, BonusId.SPEED)
+            bonus_apply(self.state, self._player, BonusId.SPEED)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_V):
-            bonus_apply(self._state, self._player, BonusId.FIRE_BULLETS)
+            bonus_apply(self.state, self._player, BonusId.FIRE_BULLETS)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_B):
-            bonus_apply(self._state, self._player, BonusId.FIREBLAST, origin=self._player)
+            bonus_apply(self.state, self._player, BonusId.FIREBLAST, origin=self._player)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
-            self._state.bonuses.weapon_power_up = 0.0
+            self.state.bonuses.weapon_power_up = 0.0
             self._player.shield_timer = 0.0
             self._player.speed_bonus_timer = 0.0
             self._player.fire_bullets_timer = 0.0
-            bonus_hud_update(self._state, [self._player], dt=0.0)
+            bonus_hud_update(self.state, [self._player], dt=0.0)
 
     def _camera_world_to_screen(self, pos: Vec2) -> Vec2:
         return self._camera + pos
@@ -233,11 +233,11 @@ class PlayerSandboxView:
         )
 
     def _decay_global_timers(self, dt: float) -> None:
-        self._state.bonuses.weapon_power_up = max(0.0, self._state.bonuses.weapon_power_up - dt)
-        self._state.bonuses.reflex_boost = max(0.0, self._state.bonuses.reflex_boost - dt)
-        self._state.bonuses.energizer = max(0.0, self._state.bonuses.energizer - dt)
-        self._state.bonuses.double_experience = max(0.0, self._state.bonuses.double_experience - dt)
-        self._state.bonuses.freeze = max(0.0, self._state.bonuses.freeze - dt)
+        self.state.bonuses.weapon_power_up = max(0.0, self.state.bonuses.weapon_power_up - dt)
+        self.state.bonuses.reflex_boost = max(0.0, self.state.bonuses.reflex_boost - dt)
+        self.state.bonuses.energizer = max(0.0, self.state.bonuses.energizer - dt)
+        self.state.bonuses.double_experience = max(0.0, self.state.bonuses.double_experience - dt)
+        self.state.bonuses.freeze = max(0.0, self.state.bonuses.freeze - dt)
 
     def update(self, dt: float) -> None:
         self._handle_input()
@@ -250,16 +250,16 @@ class PlayerSandboxView:
         self._elapsed_ms += dt * 1000.0
 
         # Frame loop: projectiles update first; player spawns are visible next tick.
-        self._state.projectiles.update(
+        self.state.projectiles.update(
             dt,
             self._creatures,
             world_size=WORLD_SIZE,
             damage_scale_by_type=self._damage_scale_by_type,
             detail_preset=5,
-            rng=self._state.rng.rand,
-            runtime_state=self._state,
+            rng=self.state.rng.rand,
+            runtime_state=self.state,
         )
-        self._state.secondary_projectiles.update_pulse_gun(dt, self._creatures)
+        self.state.secondary_projectiles.update_pulse_gun(dt, self._creatures)
         self._creatures = [c for c in self._creatures if c.hp > 0.0]
         self._ensure_creatures(10)
 
@@ -270,12 +270,12 @@ class PlayerSandboxView:
             self._player,
             input_state,
             dt,
-            self._state,
+            self.state,
             world_size=WORLD_SIZE,
             creatures=self._creatures,
         )
 
-        bonus_hud_update(self._state, [self._player], dt=dt)
+        bonus_hud_update(self.state, [self._player], dt=dt)
         self._update_camera(dt)
 
     def draw(self) -> None:
@@ -303,11 +303,11 @@ class PlayerSandboxView:
             rl.draw_circle(int(screen_pos.x), int(screen_pos.y), float(creature.size * 0.5), color)
 
         # Projectiles.
-        for proj in self._state.projectiles.iter_active():
+        for proj in self.state.projectiles.iter_active():
             screen_pos = self._camera_world_to_screen(proj.pos)
             rl.draw_circle(int(screen_pos.x), int(screen_pos.y), 2.0, rl.Color(240, 220, 160, 255))
 
-        for proj in self._state.secondary_projectiles.iter_active():
+        for proj in self.state.secondary_projectiles.iter_active():
             screen_pos = self._camera_world_to_screen(proj.pos)
             color = rl.Color(120, 200, 240, 255) if proj.type_id != 3 else rl.Color(200, 240, 160, 255)
             rl.draw_circle(int(screen_pos.x), int(screen_pos.y), 3.0, color)
@@ -333,7 +333,7 @@ class PlayerSandboxView:
                 self._hud_assets,
                 state=self._hud_state,
                 player=self._player,
-                bonus_hud=self._state.bonus_hud,
+                bonus_hud=self.state.bonus_hud,
                 elapsed_ms=self._elapsed_ms,
                 score=self._player.experience,
                 font=self._small,
@@ -423,7 +423,7 @@ class PlayerSandboxView:
         y += line + 8
 
         # Bonus HUD slots (text-only).
-        slots = [slot for slot in self._state.bonus_hud.slots if slot.active]
+        slots = [slot for slot in self.state.bonus_hud.slots if slot.active]
         if slots:
             draw_ui_text(self._small, "bonuses:", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
             y += line + 4

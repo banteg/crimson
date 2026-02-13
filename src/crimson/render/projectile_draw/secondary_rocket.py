@@ -89,7 +89,7 @@ def draw_secondary_type4_fallback(ctx: SecondaryProjectileDrawCtx) -> bool:
 
 def _draw_secondary_rocket_glow(ctx: SecondaryProjectileDrawCtx, *, style: SecondaryRocketStyle) -> None:
     renderer = ctx.renderer
-    fx_detail_1 = bool(renderer.config.data.get("fx_detail_1", 0)) if renderer.config is not None else True
+    fx_detail_1 = renderer.config.fx_detail(level=1, default=True) if renderer.config is not None else True
     particles_texture = renderer.particles_texture
     if not fx_detail_1 or particles_texture is None:
         return

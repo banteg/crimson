@@ -15,17 +15,17 @@ def test_survival_high_score_record_uses_player0_stats_in_multiplayer(monkeypatc
     mode = SurvivalMode(ctx, config=config)
     monkeypatch.setattr("crimson.ui.game_over.GameOverUi.open", lambda self: None)  # noqa: ARG005
 
-    player0, player1 = mode._world.players[:2]
+    player0, player1 = mode.world.players[:2]
     player0.experience = 1234
     player1.experience = 9999
 
-    mode._state.shots_fired[0] = 10
-    mode._state.shots_hit[0] = 7
-    mode._state.shots_fired[1] = 999
-    mode._state.shots_hit[1] = 888
+    mode.state.shots_fired[0] = 10
+    mode.state.shots_hit[0] = 7
+    mode.state.shots_fired[1] = 999
+    mode.state.shots_hit[1] = 888
 
-    mode._state.weapon_shots_fired[0][1] = 5
-    mode._state.weapon_shots_fired[1][2] = 999
+    mode.state.weapon_shots_fired[0][1] = 5
+    mode.state.weapon_shots_fired[1][2] = 999
 
     mode._enter_game_over()
 

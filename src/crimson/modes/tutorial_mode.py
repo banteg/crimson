@@ -100,26 +100,26 @@ class TutorialMode(BaseGameplayMode):
         self._tutorial = TutorialState()
         self._tutorial_actions = TutorialFrameActions()
 
-        self._state.perk_selection.pending_count = 0
-        self._state.perk_selection.choices.clear()
-        self._state.perk_selection.choices_dirty = True
+        self.state.perk_selection.pending_count = 0
+        self.state.perk_selection.choices.clear()
+        self.state.perk_selection.choices_dirty = True
 
-        self._player.pos = Vec2(float(self._world.world_size) * 0.5, float(self._world.world_size) * 0.5)
-        weapon_assign_player(self._player, 1)
+        self.player.pos = Vec2(float(self.world.world_size) * 0.5, float(self.world.world_size) * 0.5)
+        weapon_assign_player(self.player, 1)
 
     def close(self) -> None:
         self._ui_assets = None
         super().close()
 
     def _perk_menu_context(self) -> PerkMenuContext:
-        fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0) if self._config is not None else 0
-        fx_detail = bool(int(self._config.data.get("fx_detail_0", 0) or 0)) if self._config is not None else False
+        fx_toggle = self.config.fx_toggle
+        fx_detail = self.config.fx_detail(level=0, default=False)
         return PerkMenuContext(
-            state=self._state,
-            perk_state=self._state.perk_selection,
-            players=[self._player],
-            creatures=cast("list[CreatureForPerks]", self._creatures.entries),
-            player=self._player,
+            state=self.state,
+            perk_state=self.state.perk_selection,
+            players=[self.player],
+            creatures=cast("list[CreatureForPerks]", self.creatures.entries),
+            player=self.player,
             game_mode=int(GameMode.TUTORIAL),
             player_count=1,
             fx_toggle=fx_toggle,
@@ -143,7 +143,7 @@ class TutorialMode(BaseGameplayMode):
             return
 
     def _build_input(self) -> PlayerInput:
-        keybinds = config_keybinds(self._config)
+        keybinds = config_keybinds(self.config)
         if not keybinds:
             keybinds = (0x11, 0x1F, 0x1E, 0x20, 0x100)
         up_key, down_key, left_key, right_key, fire_key = player_move_fire_binds(keybinds, 0)
@@ -154,13 +154,11 @@ class TutorialMode(BaseGameplayMode):
         )
 
         mouse = self._ui_mouse_pos()
-        aim = self._world.screen_to_world(Vec2.from_xy(mouse))
+        aim = self.world.screen_to_world(Vec2.from_xy(mouse))
 
         fire_down = input_code_is_down(fire_key)
         fire_pressed = input_code_is_pressed(fire_key)
-        reload_key = 0x102
-        if self._config is not None:
-            reload_key = int(self._config.data.get("keybind_reload", reload_key) or reload_key)
+        reload_key = self.config.keybind_reload
         reload_pressed = input_code_is_pressed(reload_key)
 
         return PlayerInput(
@@ -253,7 +251,7 @@ class TutorialMode(BaseGameplayMode):
             return
 
         perk_ctx = self._perk_menu_context()
-        perk_pending = int(self._state.perk_selection.pending_count) > 0 and self._player.health > 0.0
+        perk_pending = int(self.state.perk_selection.pending_count) > 0 and self.player.health > 0.0
         if int(self._tutorial.stage_index) == 6 and perk_pending and not self._perk_menu.open:
             self._perk_menu.open_if_available(perk_ctx)
 
@@ -270,12 +268,12 @@ class TutorialMode(BaseGameplayMode):
 
         hint_alive_before = False
         hint_ref = self._tutorial.hint_bonus_creature_ref
-        if hint_ref is not None and 0 <= int(hint_ref) < len(self._creatures.entries):
-            entry = self._creatures.entries[int(hint_ref)]
+        if hint_ref is not None and 0 <= int(hint_ref) < len(self.creatures.entries):
+            entry = self.creatures.entries[int(hint_ref)]
             hint_alive_before = bool(entry.active and entry.hp > 0.0)
 
         if dt_world > 0.0:
-            self._world.update(
+            self.world.update(
                 dt_world,
                 inputs=[input_state],
                 auto_pick_perks=False,
@@ -284,14 +282,14 @@ class TutorialMode(BaseGameplayMode):
             )
 
         hint_alive_after = hint_alive_before
-        if hint_ref is not None and 0 <= int(hint_ref) < len(self._creatures.entries):
-            entry = self._creatures.entries[int(hint_ref)]
+        if hint_ref is not None and 0 <= int(hint_ref) < len(self.creatures.entries):
+            entry = self.creatures.entries[int(hint_ref)]
             hint_alive_after = bool(entry.active and entry.hp > 0.0)
         hint_bonus_died = hint_alive_before and (not hint_alive_after)
 
-        creatures_none_active = not bool(self._creatures.iter_active())
-        bonus_pool_empty = not bool(self._state.bonus_pool.iter_active())
-        perk_pending_count = int(self._state.perk_selection.pending_count)
+        creatures_none_active = not bool(self.creatures.iter_active())
+        bonus_pool_empty = not bool(self.state.bonus_pool.iter_active())
+        perk_pending_count = int(self.state.perk_selection.pending_count)
 
         self._tutorial, actions = tick_tutorial_timeline(
             self._tutorial,
@@ -302,49 +300,49 @@ class TutorialMode(BaseGameplayMode):
             bonus_pool_empty=bonus_pool_empty,
             perk_pending_count=perk_pending_count,
             hint_bonus_died=hint_bonus_died,
-            preserve_bugs=bool(self._world.preserve_bugs),
+            preserve_bugs=bool(self.world.preserve_bugs),
         )
         self._tutorial_actions = actions
 
-        self._player.health = float(actions.force_player_health)
+        self.player.health = float(actions.force_player_health)
         if actions.force_player_experience is not None:
-            self._player.experience = int(actions.force_player_experience)
-            survival_check_level_up(self._player, self._state.perk_selection)
+            self.player.experience = int(actions.force_player_experience)
+            survival_check_level_up(self.player, self.state.perk_selection)
 
         detail_preset = 5
-        if self._world.config is not None:
-            detail_preset = int(self._world.config.data.get("detail_preset", 5) or 5)
+        if self.world.config is not None:
+            detail_preset = self.world.config.detail_preset
 
         for call in actions.spawn_bonuses:
-            spawned = self._state.bonus_pool.spawn_at(
+            spawned = self.state.bonus_pool.spawn_at(
                 pos=call.pos,
                 bonus_id=int(call.bonus_id),
                 duration_override=int(call.amount),
-                state=self._state,
-                world_width=float(self._world.world_size),
-                world_height=float(self._world.world_size),
+                state=self.state,
+                world_width=float(self.world.world_size),
+                world_height=float(self.world.world_size),
             )
             if spawned is not None:
-                self._state.effects.spawn_burst(
+                self.state.effects.spawn_burst(
                     pos=spawned.pos,
                     count=12,
-                    rand=self._state.rng.rand,
+                    rand=self.state.rng.rand,
                     detail_preset=detail_preset,
                 )
 
         for call in actions.spawn_templates:
-            mapping, primary = self._creatures.spawn_template(
+            mapping, primary = self.creatures.spawn_template(
                 int(call.template_id),
                 call.pos,
                 float(call.heading),
-                self._state.rng,
-                rand=self._state.rng.rand,
+                self.state.rng,
+                rand=self.state.rng.rand,
             )
             if int(call.template_id) == 0x27 and primary is not None and actions.stage5_bonus_carrier_drop is not None:
                 drop_id, drop_amount = actions.stage5_bonus_carrier_drop
                 self._tutorial.hint_bonus_creature_ref = int(primary)
-                if 0 <= int(primary) < len(self._creatures.entries):
-                    creature = self._creatures.entries[int(primary)]
+                if 0 <= int(primary) < len(self.creatures.entries):
+                    creature = self.creatures.entries[int(primary)]
                     creature.flags |= CreatureFlags.BONUS_ON_DEATH
                     creature.bonus_id = int(drop_id)
                     creature.bonus_duration_override = int(drop_amount)
@@ -355,7 +353,7 @@ class TutorialMode(BaseGameplayMode):
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
-        self._world.draw(
+        self.world.draw(
             draw_aim_indicators=not perk_menu_active,
             entity_alpha=self._world_entity_alpha(),
         )
@@ -368,11 +366,11 @@ class TutorialMode(BaseGameplayMode):
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
                 state=self._hud_state,
-                player=self._player,
-                players=self._world.players,
-                bonus_hud=self._state.bonus_hud,
+                player=self.player,
+                players=self.world.players,
+                bonus_hud=self.state.bonus_hud,
                 elapsed_ms=float(self._tutorial.stage_timer_ms),
-                score=int(self._player.experience),
+                score=int(self.player.experience),
                 font=self._small,
                 alpha=1.0,
                 frame_dt_ms=self._last_dt_ms,
@@ -382,14 +380,14 @@ class TutorialMode(BaseGameplayMode):
                 show_time=hud_flags.show_time,
                 show_quest_hud=hud_flags.show_quest_hud,
                 small_indicators=self._hud_small_indicators(),
-                preserve_bugs=bool(self._world.preserve_bugs),
+                preserve_bugs=bool(self.world.preserve_bugs),
             )
 
         self._draw_tutorial_prompts(hud_bottom=hud_bottom)
 
         warn_y = float(rl.get_screen_height()) - 28.0
-        if self._world.missing_assets:
-            warn = "Missing world assets: " + ", ".join(self._world.missing_assets)
+        if self.world.missing_assets:
+            warn = "Missing world assets: " + ", ".join(self.world.missing_assets)
             self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
             warn_y -= float(self._ui_line_height(scale=0.8)) + 2.0
         if self._hud_missing:
@@ -482,7 +480,7 @@ class TutorialMode(BaseGameplayMode):
         cursor_tex = assets.cursor
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
-            self._world.particles_texture,
+            self.world.particles_texture,
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
@@ -495,7 +493,7 @@ class TutorialMode(BaseGameplayMode):
         aim_tex = assets.aim
         mouse_pos = self._ui_mouse
         draw_aim_cursor(
-            self._world.particles_texture,
+            self.world.particles_texture,
             aim_tex,
             pos=mouse_pos,
         )

@@ -18,23 +18,23 @@ def _mode_view_context(state: GameState) -> ViewContext:
 
 class _BaseModeGameView:
     def __init__(self, state: GameState, mode: Any) -> None:
-        self._state = state
+        self.state = state
         self._mode = mode
         self._action: str | None = None
 
     def open(self) -> None:
         self._action = None
-        if self._state.screen_fade_ramp:
-            self._state.screen_fade_alpha = 1.0
-        self._state.screen_fade_ramp = False
+        if self.state.screen_fade_ramp:
+            self.state.screen_fade_alpha = 1.0
+        self.state.screen_fade_ramp = False
         self._on_open_begin()
-        if self._state.audio is not None:
+        if self.state.audio is not None:
             # Original game: entering gameplay cuts the menu theme; in-game tunes
             # start later on the first creature hit.
-            stop_music(self._state.audio)
-        self._mode.bind_status(self._state.status)
-        self._mode.bind_audio(self._state.audio, self._state.rng)
-        self._mode.bind_screen_fade(self._state)
+            stop_music(self.state.audio)
+        self._mode.bind_status(self.state.status)
+        self._mode.bind_audio(self.state.audio, self.state.rng)
+        self._mode.bind_screen_fade(self.state)
         self._mode.open()
         self._on_open_end()
 
@@ -45,8 +45,8 @@ class _BaseModeGameView:
         return
 
     def close(self) -> None:
-        if self._state.audio is not None:
-            stop_music(self._state.audio)
+        if self.state.audio is not None:
+            stop_music(self.state.audio)
         self._mode.close()
 
     def update(self, dt: float) -> None:
@@ -98,7 +98,7 @@ class _ArcadeModeGameView(_BaseModeGameView):
         if super()._handle_mode_action(mode_action):
             return True
         if mode_action == "open_high_scores":
-            self._state.pending_high_scores = HighScoresRequest(game_mode_id=self._game_mode_id)
+            self.state.pending_high_scores = HighScoresRequest(game_mode_id=self._game_mode_id)
             self._action = "open_high_scores"
             return True
         if mode_action == "back_to_menu":
@@ -201,17 +201,17 @@ class QuestGameView(_BaseModeGameView):
         super().__init__(state, mode)
 
     def _on_open_begin(self) -> None:
-        self._state.quest_outcome = None
+        self.state.quest_outcome = None
 
     def _on_open_end(self) -> None:
-        level = self._state.pending_quest_level
+        level = self.state.pending_quest_level
         if level is not None:
-            self._mode.prepare_new_run(level, status=self._state.status)
+            self._mode.prepare_new_run(level, status=self.state.status)
 
     def _handle_close_requested(self) -> None:
         outcome = self._mode.consume_outcome()
         if outcome is not None:
-            self._state.quest_outcome = outcome
+            self.state.quest_outcome = outcome
             if outcome.kind == "completed":
                 self._action = "quest_results"
             elif outcome.kind == "failed":

@@ -39,7 +39,7 @@ class ModsMenuView(PanelMenuView):
         if self._small_font is not None:
             return self._small_font
         missing_assets: list[str] = []
-        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        self._small_font = load_small_font(self.state.assets_dir, missing_assets)
         return self._small_font
 
     def _content_layout(self) -> _ModsContentLayout:
@@ -64,7 +64,7 @@ class ModsMenuView(PanelMenuView):
         return _ModsContentLayout(scale=panel_scale, base_pos=base_pos, label_pos=label_pos)
 
     def _build_lines(self) -> list[str]:
-        mods_dir = self._state.base_dir / "mods"
+        mods_dir = self.state.base_dir / "mods"
         dlls: list[Path] = []
         try:
             dlls = sorted(mods_dir.glob("*.dll"))

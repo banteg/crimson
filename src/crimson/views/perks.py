@@ -51,7 +51,7 @@ class PerkSelectionView:
         self.close_requested = False
         self._debug_overlay = False
 
-        self._state = GameplayState()
+        self.state = GameplayState()
         self._player = PlayerState(index=0, pos=Vec2())
         self._game_mode = GameMode.SURVIVAL
         self._player_count = 1
@@ -67,14 +67,14 @@ class PerkSelectionView:
         return float(rl.measure_text(text, int(20 * scale)))
 
     def _reset(self) -> None:
-        self._state = GameplayState()
-        self._state.rng.srand(0xBEEF)
+        self.state = GameplayState()
+        self.state.rng.srand(0xBEEF)
         self._player = PlayerState(index=0, pos=Vec2())
         self._game_mode = GameMode.SURVIVAL
         self._player_count = 1
 
-        self._state.perk_selection.pending_count = 1
-        self._state.perk_selection.choices_dirty = True
+        self.state.perk_selection.pending_count = 1
+        self.state.perk_selection.choices_dirty = True
 
         self._perk_menu_open = True
         self._perk_menu_selected = 0
@@ -105,7 +105,7 @@ class PerkSelectionView:
         idx = int(perk_id)
         value = int(self._player.perk_counts[idx])
         self._player.perk_counts[idx] = 0 if value > 0 else 1
-        self._state.perk_selection.choices_dirty = True
+        self.state.perk_selection.choices_dirty = True
 
     def update(self, dt: float) -> None:
         dt_ms = float(min(dt, 0.1) * 1000.0)
@@ -126,22 +126,22 @@ class PerkSelectionView:
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ONE):
             self._player_count = 1
-            self._state.perk_selection.choices_dirty = True
+            self.state.perk_selection.choices_dirty = True
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TWO):
             self._player_count = 2
-            self._state.perk_selection.choices_dirty = True
+            self.state.perk_selection.choices_dirty = True
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_G):
             self._game_mode = GameMode.QUESTS if int(self._game_mode) == int(GameMode.SURVIVAL) else GameMode.SURVIVAL
-            self._state.perk_selection.choices_dirty = True
+            self.state.perk_selection.choices_dirty = True
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
-            self._state.perk_selection.pending_count = max(0, int(self._state.perk_selection.pending_count) - 1)
+            self.state.perk_selection.pending_count = max(0, int(self.state.perk_selection.pending_count) - 1)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
-            self._state.perk_selection.pending_count += 1
+            self.state.perk_selection.pending_count += 1
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_C):
-            self._state.perk_selection.choices_dirty = True
+            self.state.perk_selection.choices_dirty = True
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_E):
             self._toggle_perk(PerkId.PERK_EXPERT)
@@ -154,24 +154,24 @@ class PerkSelectionView:
                     1, int(self._player.perk_counts[int(PerkId.PERK_EXPERT)])
                 )
                 self._player.perk_counts[int(PerkId.PERK_MASTER)] = 1
-            self._state.perk_selection.choices_dirty = True
+            self.state.perk_selection.choices_dirty = True
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_X):
             self._player.experience += 5000
-            survival_check_level_up(self._player, self._state.perk_selection)
+            survival_check_level_up(self._player, self.state.perk_selection)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_H):
             self._player.health = 100.0
 
         if not self._perk_menu_open:
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_P) and int(self._state.perk_selection.pending_count) > 0:
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_P) and int(self.state.perk_selection.pending_count) > 0:
                 self._perk_menu_open = True
                 self._perk_menu_selected = 0
             return
 
-        perk_state = self._state.perk_selection
+        perk_state = self.state.perk_selection
         choices = perk_selection_current_choices(
-            self._state,
+            self.state,
             [self._player],
             perk_state,
             game_mode=self._game_mode,
@@ -214,7 +214,7 @@ class PerkSelectionView:
                 self._perk_menu_selected = idx
                 if click:
                     perk_selection_pick(
-                        self._state,
+                        self.state,
                         [self._player],
                         perk_state,
                         idx,
@@ -242,7 +242,7 @@ class PerkSelectionView:
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
             perk_selection_pick(
-                self._state,
+                self.state,
                 [self._player],
                 perk_state,
                 self._perk_menu_selected,
@@ -272,9 +272,9 @@ class PerkSelectionView:
         if self._ui_assets is None:
             return
 
-        perk_state = self._state.perk_selection
+        perk_state = self.state.perk_selection
         choices = perk_selection_current_choices(
-            self._state,
+            self.state,
             [self._player],
             perk_state,
             game_mode=self._game_mode,
@@ -367,7 +367,7 @@ class PerkSelectionView:
         y = 24.0
         scale = 0.9
         line_h = float(self._small.cell_size * scale) if self._small is not None else float(20 * scale)
-        perk_state = self._state.perk_selection
+        perk_state = self.state.perk_selection
         draw_ui_text(self._small, "Perk selection (debug overlay, F1)", Vec2(x, y), scale=scale, color=UI_TEXT_COLOR)
         y += line_h
         draw_ui_text(

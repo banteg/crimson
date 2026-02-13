@@ -135,7 +135,7 @@ class QuestsMenuView:
     """
 
     def __init__(self, state: GameState) -> None:
-        self._state = state
+        self.state = state
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._panel_tex: rl.Texture | None = None
@@ -164,13 +164,13 @@ class QuestsMenuView:
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
-        layout_w = float(self._state.config.screen_width)
+        layout_w = float(self.state.config.screen_width)
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        cache = _ensure_texture_cache(self._state)
+        cache = _ensure_texture_cache(self.state)
 
         # Sign and ground match the main menu/panels.
-        self._assets = load_menu_assets(self._state)
+        self._assets = load_menu_assets(self.state)
         self._panel_tex = self._assets.panel if self._assets is not None else None
         self._init_ground()
 
@@ -211,7 +211,7 @@ class QuestsMenuView:
     def close(self) -> None:
         if self._dirty:
             try:
-                self._state.config.save()
+                self.state.config.save()
             except Exception:
                 pass
             self._dirty = False
@@ -219,8 +219,8 @@ class QuestsMenuView:
         self._button_textures = None
 
     def update(self, dt: float) -> None:
-        if self._state.audio is not None:
-            update_audio(self._state.audio, dt)
+        if self.state.audio is not None:
+            update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
@@ -237,18 +237,18 @@ class QuestsMenuView:
         if dt_ms > 0:
             self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
             if self._timeline_ms >= self._timeline_max_ms:
-                self._state.menu_sign_locked = True
-                if (not self._panel_open_sfx_played) and (self._state.audio is not None):
-                    play_sfx(self._state.audio, "sfx_ui_panelclick", rng=self._state.rng)
+                self.state.menu_sign_locked = True
+                if (not self._panel_open_sfx_played) and (self.state.audio is not None):
+                    play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
                     self._panel_open_sfx_played = True
 
-        config = self._state.config
-        status = self._state.status
+        config = self.state.config
+        status = self.state.status
 
         # The original forcibly clears hardcore in the demo build.
-        if self._state.demo_enabled:
-            if int(config.data.get("hardcore_flag", 0) or 0) != 0:
-                config.data["hardcore_flag"] = 0
+        if self.state.demo_enabled:
+            if config.hardcore:
+                config.hardcore = False
                 self._dirty = True
 
         if debug_enabled() and rl.is_key_pressed(rl.KeyboardKey.KEY_F5):
@@ -257,7 +257,7 @@ class QuestsMenuView:
                 status.quest_unlock_index = unlock
             if int(status.quest_unlock_index_full) < unlock:
                 status.quest_unlock_index_full = unlock
-            self._state.console.log.log("debug: unlocked all quests")
+            self.state.console.log.log("debug: unlocked all quests")
 
         enabled = self._timeline_ms >= self._timeline_max_ms
 
@@ -324,13 +324,13 @@ class QuestsMenuView:
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
-            self._ground.draw(menu_ground_camera(self._state))
-        _draw_screen_fade(self._state)
+            self._ground.draw(menu_ground_camera(self.state))
+        _draw_screen_fade(self.state)
 
         self._draw_panel()
         self._draw_sign()
         self._draw_contents()
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         action = self._action
@@ -341,11 +341,11 @@ class QuestsMenuView:
         if self._small_font is not None:
             return self._small_font
         missing_assets: list[str] = []
-        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        self._small_font = load_small_font(self.state.assets_dir, missing_assets)
         return self._small_font
 
     def _init_ground(self) -> None:
-        self._ground = ensure_menu_ground(self._state)
+        self._ground = ensure_menu_ground(self.state)
 
     def _layout(self) -> _QuestMenuLayout:
         _angle_rad, slide_x = MenuView._ui_element_anim(
@@ -384,15 +384,15 @@ class QuestsMenuView:
         return None
 
     def _hardcore_checkbox_clicked(self, layout: _QuestMenuLayout) -> bool:
-        status = self._state.status
+        status = self.state.status
         if int(status.quest_unlock_index) < QUEST_HARDCORE_UNLOCK_INDEX:
             return False
         check_on = self._check_on
         check_off = self._check_off
         if check_on is None or check_off is None:
             return False
-        config = self._state.config
-        hardcore = bool(int(config.data.get("hardcore_flag", 0) or 0))
+        config = self.state.config
+        hardcore = config.hardcore
 
         font = self._ensure_small_font()
         text_scale = 1.0
@@ -406,10 +406,10 @@ class QuestsMenuView:
         mouse_pos = Vec2.from_xy(rl.get_mouse_position())
         hovered = Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
         if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            config.data["hardcore_flag"] = 0 if hardcore else 1
+            config.hardcore = not hardcore
             self._dirty = True
-            if self._state.demo_enabled:
-                config.data["hardcore_flag"] = 0
+            if self.state.demo_enabled:
+                config.hardcore = False
             return True
         return False
 
@@ -434,7 +434,7 @@ class QuestsMenuView:
 
     def _rows_y0(self, layout: _QuestMenuLayout) -> float:
         # `sub_447d40` adds +10 to the list Y after rendering the Hardcore checkbox.
-        status = self._state.status
+        status = self.state.status
         y0 = layout.list_pos.y
         if int(status.quest_unlock_index) >= QUEST_HARDCORE_UNLOCK_INDEX:
             y0 += QUEST_HARDCORE_LIST_Y_SHIFT
@@ -456,10 +456,10 @@ class QuestsMenuView:
         return None
 
     def _quest_unlocked(self, stage: int, row: int) -> bool:
-        status = self._state.status
-        config = self._state.config
+        status = self.state.status
+        config = self.state.config
         unlock = int(status.quest_unlock_index)
-        if bool(int(config.data.get("hardcore_flag", 0) or 0)):
+        if config.hardcore:
             unlock = int(status.quest_unlock_index_full)
         global_index = (int(stage) - 1) * 10 + int(row)
         return unlock >= global_index
@@ -468,8 +468,8 @@ class QuestsMenuView:
         if not self._quest_unlocked(stage, row):
             return
         level = f"{int(stage)}.{int(row) + 1}"
-        self._state.pending_quest_level = level
-        self._state.config.data["game_mode"] = 3
+        self.state.pending_quest_level = level
+        self.state.config.game_mode = 3
         self._dirty = True
         self._begin_close_transition("start_quest")
 
@@ -512,7 +512,7 @@ class QuestsMenuView:
             return None
         count_index = global_index + 10
 
-        status = self._state.status
+        status = self.state.status
         games_idx = 1 + count_index
         completed_idx = 41 + count_index
         try:
@@ -601,9 +601,9 @@ class QuestsMenuView:
                 tint,
             )
 
-        config = self._state.config
-        status = self._state.status
-        hardcore_flag = bool(int(config.data.get("hardcore_flag", 0) or 0))
+        config = self.state.config
+        status = self.state.status
+        hardcore_flag = config.hardcore
         base_color, hover_color = self._quest_row_colors(hardcore=hardcore_flag)
 
         font = self._ensure_small_font()
@@ -681,7 +681,7 @@ class QuestsMenuView:
         assets = self._assets
         if assets is None or assets.sign is None:
             return
-        screen_w = float(self._state.config.screen_width)
+        screen_w = float(self.state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
@@ -692,7 +692,7 @@ class QuestsMenuView:
         offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * scale
         rotation_deg = 0.0
-        if not self._state.menu_sign_locked:
+        if not self.state.menu_sign_locked:
             angle_rad, slide_x = MenuView._ui_element_anim(
                 self,
                 index=0,
@@ -703,7 +703,7 @@ class QuestsMenuView:
             _ = slide_x
             rotation_deg = math.degrees(angle_rad)
         sign = assets.sign
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
@@ -732,7 +732,7 @@ class QuestsMenuView:
             end_ms=PANEL_TIMELINE_END_MS,
             width=MENU_PANEL_WIDTH,
         )
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         draw_classic_menu_panel(
             panel,
             dst=rl.Rectangle(
@@ -748,21 +748,16 @@ class QuestsMenuView:
         if self._closing:
             return
         if action in FADE_TO_GAME_ACTIONS:
-            self._state.screen_fade_alpha = 0.0
-            self._state.screen_fade_ramp = True
-        if self._state.audio is not None:
-            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            self.state.screen_fade_alpha = 0.0
+            self.state.screen_fade_ramp = True
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._closing = True
         self._close_action = action
 
 
 def _player_name_default(config: CrimsonConfig) -> str:
-    raw = config.data.get("player_name")
-    if isinstance(raw, (bytes, bytearray)):
-        return bytes(raw).split(b"\x00", 1)[0].decode("latin-1", errors="ignore")
-    if isinstance(raw, str):
-        return raw
-    return ""
+    return config.player_name
 
 
 def _next_quest_level(level: str) -> str | None:
@@ -788,7 +783,7 @@ def _next_quest_level(level: str) -> str | None:
 
 class QuestResultsView:
     def __init__(self, state: GameState) -> None:
-        self._state = state
+        self.state = state
         self._ground: GroundRenderer | None = None
         self._quest_level: str = ""
         self._quest_title: str = ""
@@ -805,10 +800,10 @@ class QuestResultsView:
         from ..ui.quest_results import QuestResultsUi
 
         self._action = None
-        self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
-        self._state.quest_fail_retry_count = 0
-        outcome = self._state.quest_outcome
-        self._state.quest_outcome = None
+        self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
+        self.state.quest_fail_retry_count = 0
+        outcome = self.state.quest_outcome
+        self.state.quest_outcome = None
         self._quest_level = ""
         self._quest_title = ""
         self._quest_stage_major = 0
@@ -843,7 +838,7 @@ class QuestResultsView:
 
                     weapon_entry = WEAPON_BY_ID.get(weapon_id_native)
                     self._unlock_weapon_name = (
-                        weapon_display_name(weapon_id_native, preserve_bugs=bool(self._state.preserve_bugs))
+                        weapon_display_name(weapon_id_native, preserve_bugs=bool(self.state.preserve_bugs))
                         if weapon_entry is not None and weapon_entry.name
                         else f"weapon_{weapon_id_native}"
                     )
@@ -854,11 +849,11 @@ class QuestResultsView:
                 if perk_id != int(PerkId.ANTIPERK):
                     perk_entry = PERK_BY_ID.get(perk_id)
                     if perk_entry is not None and perk_entry.name:
-                        fx_toggle = int(self._state.config.data.get("fx_toggle", 0) or 0)
+                        fx_toggle = self.state.config.fx_toggle
                         self._unlock_perk_name = perk_display_name(
                             perk_id,
                             fx_toggle=fx_toggle,
-                            preserve_bugs=bool(self._state.preserve_bugs),
+                            preserve_bugs=bool(self.state.preserve_bugs),
                         )
                     else:
                         self._unlock_perk_name = f"perk_{perk_id}"
@@ -890,41 +885,41 @@ class QuestResultsView:
             pending_perk_count=int(outcome.pending_perk_count),
         )
         record.survival_elapsed_ms = int(breakdown.final_time_ms)
-        player_name_default = _player_name_default(self._state.config) or "Player"
+        player_name_default = _player_name_default(self.state.config) or "Player"
         record.set_name(player_name_default)
 
         global_index = (int(major) - 1) * 10 + (int(minor) - 1)
         if 0 <= global_index < 40:
             try:
                 # `sub_447d40` reads completed counts from indices 51..90.
-                self._state.status.increment_quest_play_count(global_index + 51)
+                self.state.status.increment_quest_play_count(global_index + 51)
             except Exception:
                 pass
 
         # Advance quest unlock progression when completing the currently-unlocked quest.
         if global_index >= 0:
             next_unlock = int(global_index + 1)
-            hardcore = bool(int(self._state.config.data.get("hardcore_flag", 0) or 0))
+            hardcore = self.state.config.hardcore
             try:
                 if hardcore:
-                    if next_unlock > int(self._state.status.quest_unlock_index_full):
-                        self._state.status.quest_unlock_index_full = next_unlock
+                    if next_unlock > int(self.state.status.quest_unlock_index_full):
+                        self.state.status.quest_unlock_index_full = next_unlock
                 else:
-                    if next_unlock > int(self._state.status.quest_unlock_index):
-                        self._state.status.quest_unlock_index = next_unlock
+                    if next_unlock > int(self.state.status.quest_unlock_index):
+                        self.state.status.quest_unlock_index = next_unlock
             except Exception:
                 pass
 
         try:
-            self._state.status.save_if_dirty()
+            self.state.status.save_if_dirty()
         except Exception:
             pass
 
         self._ui = QuestResultsUi(
-            assets_root=self._state.assets_dir,
-            base_dir=self._state.base_dir,
-            config=self._state.config,
-            preserve_bugs=bool(self._state.preserve_bugs),
+            assets_root=self.state.assets_dir,
+            base_dir=self.state.base_dir,
+            config=self.state.config,
+            preserve_bugs=bool(self.state.preserve_bugs),
         )
         self._ui.open(
             record=record,
@@ -951,15 +946,15 @@ class QuestResultsView:
         self._unlock_perk_name = ""
 
     def update(self, dt: float) -> None:
-        if self._state.audio is not None:
-            update_audio(self._state.audio, dt)
+        if self.state.audio is not None:
+            update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         ui = self._ui
         if ui is None:
             return
-        audio = self._state.audio
-        rng = self._state.rng
+        audio = self.state.audio
+        rng = self.state.rng
 
         def _play(name: str) -> None:
             if audio is None:
@@ -968,7 +963,7 @@ class QuestResultsView:
 
         action = ui.update(dt, play_sfx=_play if audio is not None else None, rand=lambda: rng.getrandbits(32))
         if action == "play_again":
-            self._state.pending_quest_level = self._quest_level
+            self.state.pending_quest_level = self._quest_level
             self._action = "start_quest"
             return
         if action == "play_next":
@@ -977,7 +972,7 @@ class QuestResultsView:
                 return
             next_level = _next_quest_level(self._quest_level)
             if next_level is not None:
-                self._state.pending_quest_level = next_level
+                self.state.pending_quest_level = next_level
                 self._action = "start_quest"
             else:
                 self._action = "back_to_menu"
@@ -995,12 +990,12 @@ class QuestResultsView:
         bg_alpha = 1.0
         if ui is not None:
             bg_alpha = float(ui.world_entity_alpha())
-        pause_background = self._state.pause_background
+        pause_background = self.state.pause_background
         if pause_background is not None:
             pause_background.draw_pause_background(entity_alpha=bg_alpha)
         elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self._state))
-        _draw_screen_fade(self._state)
+            self._ground.draw(menu_ground_camera(self.state))
+        _draw_screen_fade(self.state)
         if ui is not None:
             ui.draw()
             return
@@ -1017,7 +1012,7 @@ class QuestResultsView:
         highlight_rank = None
         if self._ui is not None:
             highlight_rank = self._ui.highlight_rank
-        self._state.pending_high_scores = HighScoresRequest(
+        self.state.pending_high_scores = HighScoresRequest(
             game_mode_id=3,
             quest_stage_major=int(self._quest_stage_major),
             quest_stage_minor=int(self._quest_stage_minor),
@@ -1035,7 +1030,7 @@ class EndNoteView:
     """
 
     def __init__(self, state: GameState) -> None:
-        self._state = state
+        self.state = state
         self._ground: GroundRenderer | None = None
         self._small_font: SmallFontData | None = None
         self._panel_tex: rl.Texture | None = None
@@ -1059,9 +1054,9 @@ class EndNoteView:
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
         self._close_action = None
-        self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
+        self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
 
-        cache = _ensure_texture_cache(self._state)
+        cache = _ensure_texture_cache(self.state)
         self._panel_tex = cache.get_or_load("ui_menuPanel", "ui/ui_menuPanel.jaz").texture
         button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
         button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
@@ -1077,8 +1072,8 @@ class EndNoteView:
         self._close_action = None
 
     def update(self, dt: float) -> None:
-        if self._state.audio is not None:
-            update_audio(self._state.audio, dt)
+        if self.state.audio is not None:
+            update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         dt_step = min(float(dt), 0.1)
@@ -1132,7 +1127,7 @@ class EndNoteView:
             mouse=mouse,
             click=click,
         ):
-            self._state.config.data["game_mode"] = 1
+            self.state.config.game_mode = 1
             self._begin_close_transition("start_survival")
             return
 
@@ -1146,7 +1141,7 @@ class EndNoteView:
             mouse=mouse,
             click=click,
         ):
-            self._state.config.data["game_mode"] = 2
+            self.state.config.game_mode = 2
             self._begin_close_transition("start_rush")
             return
 
@@ -1160,7 +1155,7 @@ class EndNoteView:
             mouse=mouse,
             click=click,
         ):
-            self._state.config.data["game_mode"] = 4
+            self.state.config.game_mode = 4
             self._begin_close_transition("start_typo", fade_to_black=True)
             return
 
@@ -1181,12 +1176,12 @@ class EndNoteView:
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
-        pause_background = self._state.pause_background
+        pause_background = self.state.pause_background
         if pause_background is not None:
             pause_background.draw_pause_background(entity_alpha=self._world_entity_alpha())
         elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self._state))
-        _draw_screen_fade(self._state)
+            self._ground.draw(menu_ground_camera(self.state))
+        _draw_screen_fade(self.state)
 
         panel_tex = self._panel_tex
         if panel_tex is None:
@@ -1208,15 +1203,15 @@ class EndNoteView:
             float(END_NOTE_PANEL_H * scale),
         )
 
-        fx_detail = bool(int(self._state.config.data.get("fx_detail_0", 0) or 0))
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         draw_classic_menu_panel(panel_tex, dst=panel, tint=rl.WHITE, shadow=fx_detail)
 
         font = self._ensure_small_font()
-        hardcore = bool(int(self._state.config.data.get("hardcore_flag", 0) or 0))
+        hardcore = self.state.config.hardcore
         header = "   Incredible!" if hardcore else "Congratulations!"
         levels_line = (
             "You've completed all the levels but the battle"
-            if bool(self._state.preserve_bugs)
+            if bool(self.state.preserve_bugs)
             else "You've completed all the levels, but the battle"
         )
         body_lines = (
@@ -1273,7 +1268,7 @@ class EndNoteView:
             )
             button_draw(textures, font, self._main_menu_button, pos=button_pos, width=main_w, scale=scale)
 
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         action = self._action
@@ -1284,7 +1279,7 @@ class EndNoteView:
         if self._small_font is not None:
             return self._small_font
         missing_assets: list[str] = []
-        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        self._small_font = load_small_font(self.state.assets_dir, missing_assets)
         return self._small_font
 
     def _world_entity_alpha(self) -> float:
@@ -1304,17 +1299,17 @@ class EndNoteView:
         if self._closing:
             return
         if fade_to_black:
-            self._state.screen_fade_alpha = 0.0
-            self._state.screen_fade_ramp = True
-        if self._state.audio is not None:
-            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            self.state.screen_fade_alpha = 0.0
+            self.state.screen_fade_ramp = True
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._closing = True
         self._close_action = action
 
 
 class QuestFailedView:
     def __init__(self, state: GameState) -> None:
-        self._state = state
+        self.state = state
         self._ground: GroundRenderer | None = None
         self._outcome: QuestRunOutcome | None = None
         self._record: HighScoreRecord | None = None
@@ -1334,13 +1329,13 @@ class QuestFailedView:
 
     def open(self) -> None:
         self._action = None
-        self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
+        self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self._cursor_pulse_time = 0.0
         self._intro_ms = 0.0
         self._closing = False
         self._close_action = None
-        self._outcome = self._state.quest_outcome
-        self._state.quest_outcome = None
+        self._outcome = self.state.quest_outcome
+        self.state.quest_outcome = None
         self._quest_title = ""
         self._record = None
         self._small_font = None
@@ -1362,7 +1357,7 @@ class QuestFailedView:
 
         self._build_score_preview(outcome)
 
-        cache = _ensure_texture_cache(self._state)
+        cache = _ensure_texture_cache(self.state)
         self._panel_tex = cache.get_or_load("ui_menuPanel", "ui/ui_menuPanel.jaz").texture
         self._reaper_tex = cache.get_or_load("ui_textReaper", "ui/ui_textReaper.jaz").texture
         button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
@@ -1380,8 +1375,8 @@ class QuestFailedView:
         self._button_textures = None
 
     def update(self, dt: float) -> None:
-        if self._state.audio is not None:
-            update_audio(self._state.audio, dt)
+        if self.state.audio is not None:
+            update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         dt_step = min(float(dt), 0.1)
@@ -1467,12 +1462,12 @@ class QuestFailedView:
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
-        pause_background = self._state.pause_background
+        pause_background = self.state.pause_background
         if pause_background is not None:
             pause_background.draw_pause_background(entity_alpha=self._world_entity_alpha())
         elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self._state))
-        _draw_screen_fade(self._state)
+            self._ground.draw(menu_ground_camera(self.state))
+        _draw_screen_fade(self.state)
 
         panel_top_left = self._panel_top_left()
         panel_tex = self._panel_tex
@@ -1483,7 +1478,7 @@ class QuestFailedView:
                 float(QUEST_FAILED_PANEL_W),
                 float(QUEST_FAILED_PANEL_H),
             )
-            fx_detail = bool(int(self._state.config.data.get("fx_detail_0", 0) or 0))
+            fx_detail = self.state.config.fx_detail(level=0, default=False)
             draw_classic_menu_panel(panel_tex, dst=panel, tint=rl.WHITE, shadow=fx_detail)
 
         reaper_tex = self._reaper_tex
@@ -1551,7 +1546,7 @@ class QuestFailedView:
                 scale=scale,
             )
 
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         action = self._action
@@ -1593,7 +1588,7 @@ class QuestFailedView:
         return self._panel_origin().offset(dx=self._panel_slide_x())
 
     def _failure_message(self) -> str:
-        retry_count = int(self._state.quest_fail_retry_count)
+        retry_count = int(self.state.quest_fail_retry_count)
         if retry_count == 1:
             return "You didn't make it, do try again."
         if retry_count == 2:
@@ -1601,7 +1596,7 @@ class QuestFailedView:
         if retry_count == 3:
             return "No luck this time, have another go?"
         if retry_count == 4:
-            if bool(self._state.preserve_bugs):
+            if bool(self.state.preserve_bugs):
                 return "Persistence will be rewared."
             return "Persistence will be rewarded."
         if retry_count == 5:
@@ -1625,7 +1620,7 @@ class QuestFailedView:
             pass
 
         record = HighScoreRecord.blank()
-        record.set_name(_player_name_default(self._state.config) or "Player")
+        record.set_name(_player_name_default(self.state.config) or "Player")
         record.game_mode_id = 3
         record.quest_stage_major = major
         record.quest_stage_minor = minor
@@ -1644,22 +1639,22 @@ class QuestFailedView:
         outcome = self._outcome
         if outcome is None:
             return
-        self._state.quest_fail_retry_count = int(self._state.quest_fail_retry_count) + 1
-        self._state.pending_quest_level = outcome.level
-        if self._state.audio is not None:
-            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+        self.state.quest_fail_retry_count = int(self.state.quest_fail_retry_count) + 1
+        self.state.pending_quest_level = outcome.level
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._begin_close("start_quest")
 
     def _activate_play_another(self) -> None:
-        self._state.quest_fail_retry_count = 0
-        if self._state.audio is not None:
-            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+        self.state.quest_fail_retry_count = 0
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._begin_close("open_quests")
 
     def _activate_main_menu(self) -> None:
-        self._state.quest_fail_retry_count = 0
-        if self._state.audio is not None:
-            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+        self.state.quest_fail_retry_count = 0
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._begin_close("back_to_menu")
 
     def _begin_close(self, action: str) -> None:
@@ -1711,5 +1706,5 @@ class QuestFailedView:
         if self._small_font is not None:
             return self._small_font
         missing_assets: list[str] = []
-        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        self._small_font = load_small_font(self.state.assets_dir, missing_assets)
         return self._small_font

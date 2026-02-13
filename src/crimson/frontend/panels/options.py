@@ -87,7 +87,7 @@ class OptionsMenuView(PanelMenuView):
         if entry is None or not self._entry_enabled(entry):
             return
 
-        config = self._state.config
+        config = self.state.config
         layout = self._content_layout()
         base_pos = layout.base_pos
         label_pos = layout.label_pos
@@ -100,15 +100,15 @@ class OptionsMenuView(PanelMenuView):
             return
 
         if self._update_slider("sfx", self._slider_sfx, slider_pos.offset(dy=47.0 * scale), rect_on, rect_off, scale):
-            config.data["sfx_volume"] = float(self._slider_sfx.value) * 0.1
-            set_sfx_volume(self._state.audio, float(config.data["sfx_volume"]))
+            config.sfx_volume = float(self._slider_sfx.value) * 0.1
+            set_sfx_volume(self.state.audio, config.sfx_volume)
             self._dirty = True
 
         if self._update_slider(
             "music", self._slider_music, slider_pos.offset(dy=67.0 * scale), rect_on, rect_off, scale
         ):
-            config.data["music_volume"] = float(self._slider_music.value) * 0.1
-            set_music_volume(self._state.audio, float(config.data["music_volume"]))
+            config.music_volume = float(self._slider_music.value) * 0.1
+            set_music_volume(self.state.audio, config.music_volume)
             self._dirty = True
 
         if self._update_slider(
@@ -126,12 +126,11 @@ class OptionsMenuView(PanelMenuView):
                 sensitivity = 0.1
             if sensitivity > 1.0:
                 sensitivity = 1.0
-            config.data["mouse_sensitivity"] = sensitivity
+            config.mouse_sensitivity = sensitivity
             self._dirty = True
 
         if self._update_checkbox(label_pos.offset(dy=135.0 * scale), scale):
-            value = 1 if self._ui_info_texts else 0
-            config.data["ui_info_texts"] = value
+            config.ui_info_texts = self._ui_info_texts
             self._dirty = True
 
         textures = self._button_textures
@@ -159,7 +158,7 @@ class OptionsMenuView(PanelMenuView):
 
     def draw(self) -> None:
         self._draw_background()
-        _draw_screen_fade(self._state)
+        _draw_screen_fade(self.state)
         assets = self._assets
         entry = self._entry
         if assets is None or entry is None:
@@ -168,12 +167,12 @@ class OptionsMenuView(PanelMenuView):
         self._draw_entry(entry)
         self._draw_sign()
         self._draw_options_contents()
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def _begin_close_transition(self, action: str) -> None:
         if self._dirty:
             try:
-                self._state.config.save()
+                self.state.config.save()
             except Exception:
                 pass
             self._dirty = False
@@ -183,17 +182,17 @@ class OptionsMenuView(PanelMenuView):
         if self._small_font is not None:
             return self._small_font
         missing_assets: list[str] = []
-        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        self._small_font = load_small_font(self.state.assets_dir, missing_assets)
         return self._small_font
 
     def _sync_from_config(self) -> None:
-        config = self._state.config
-        self._ui_info_texts = bool(int(config.data.get("ui_info_texts", 1) or 0))
+        config = self.state.config
+        self._ui_info_texts = config.ui_info_texts
 
-        sfx_volume = float(config.data.get("sfx_volume", 1.0))
-        music_volume = float(config.data.get("music_volume", 1.0))
-        detail_preset = int(config.data.get("detail_preset", 5))
-        mouse_sensitivity = float(config.data.get("mouse_sensitivity", 1.0))
+        sfx_volume = config.sfx_volume
+        music_volume = config.music_volume
+        detail_preset = config.detail_preset
+        mouse_sensitivity = config.mouse_sensitivity
 
         self._slider_sfx.value = max(
             self._slider_sfx.min_value, min(self._slider_sfx.max_value, int(sfx_volume * 10.0))

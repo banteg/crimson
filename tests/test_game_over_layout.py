@@ -8,7 +8,14 @@ import pytest
 
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.ui.game_over import GameOverUi, PANEL_SLIDE_DURATION_MS
+from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.geom import Vec2
+
+
+def _test_config(**updates: object) -> CrimsonConfig:
+    data = default_crimson_cfg_data()
+    data.update(updates)
+    return CrimsonConfig(path=Path("<memory>"), data=data)
 
 
 def test_game_over_panel_layout_uses_native_panel_anchor(tmp_path: Path) -> None:
@@ -60,7 +67,7 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, tmp_path: Path) -> 
     ui = GameOverUi(
         assets_root=tmp_path,
         base_dir=tmp_path,
-        config=SimpleNamespace(data={"fx_detail_0": 0}),
+        config=_test_config(fx_detail_0=0),
     )
     ui.phase = 1
     ui.rank = 0
@@ -130,7 +137,7 @@ def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
     ui = GameOverUi(
         assets_root=tmp_path,
         base_dir=tmp_path,
-        config=SimpleNamespace(data={"fx_detail_0": 0, "game_mode": 1}),
+        config=_test_config(fx_detail_0=0, game_mode=1),
         preserve_bugs=preserve_bugs,
     )
     ui.rank = 0

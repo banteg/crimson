@@ -82,12 +82,12 @@ class DemoView:
     """
 
     def __init__(self, state: DemoState) -> None:
-        self._state = state
+        self.state = state
         self._world = GameWorld(
             assets_dir=state.assets_dir,
             world_size=WORLD_SIZE,
             demo_mode_active=True,
-            hardcore=bool(int(state.config.data.get("hardcore_flag", 0) or 0)),
+            hardcore=state.config.hardcore,
             difficulty_level=0,
             preserve_bugs=bool(state.preserve_bugs),
             texture_cache=state.texture_cache,
@@ -124,7 +124,7 @@ class DemoView:
         self._demo_variant_index = 0
         self._quest_spawn_timeline_ms = 0
         self._demo_time_limit_ms = 0
-        self._crand.srand(self._state.rng.getrandbits(32))
+        self._crand.srand(self.state.rng.getrandbits(32))
         self._world.open()
         self._demo_mode_start()
 
@@ -141,8 +141,8 @@ class DemoView:
         return self._finished
 
     def update(self, dt: float) -> None:
-        if self._state.audio is not None:
-            update_audio(self._state.audio, dt)
+        if self.state.audio is not None:
+            update_audio(self.state.audio, dt)
         if self._finished:
             return
         frame_dt = min(dt, 0.1)
@@ -152,7 +152,7 @@ class DemoView:
 
         if (
             (not self._purchase_active)
-            and getattr(self._state, "demo_enabled", False)
+            and getattr(self.state, "demo_enabled", False)
             and self._purchase_screen_triggered()
         ):
             self._begin_purchase_screen(DEMO_PURCHASE_SCREEN_LIMIT_MS, reset_timeline=False)
@@ -214,11 +214,11 @@ class DemoView:
         if self._small_font is not None:
             return self._small_font
         missing_assets: list[str] = []
-        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        self._small_font = load_small_font(self.state.assets_dir, missing_assets)
         return self._small_font
 
     def _purchase_var_28_2(self) -> float:
-        screen_w = int(self._state.config.screen_width)
+        screen_w = self.state.config.screen_width
         if screen_w == 0x320:  # 800
             return 64.0
         if screen_w == 0x400:  # 1024
@@ -241,8 +241,8 @@ class DemoView:
         if textures.button_sm is None and textures.button_md is None:
             return
 
-        w = float(self._state.config.screen_width)
-        h = float(self._state.config.screen_height)
+        w = float(self.state.config.screen_width)
+        h = float(self.state.config.screen_height)
         wide_shift = self._purchase_var_28_2()
         button_base_y = h / 2.0 + 102.0 + wide_shift * 0.3
         button_base_pos = Vec2(w / 2.0 + 128.0, button_base_y + 50.0)
@@ -269,8 +269,8 @@ class DemoView:
                     webbrowser.open(DEMO_PURCHASE_URL)
                 except Exception:
                     pass
-            if hasattr(self._state, "quit_requested"):
-                self._state.quit_requested = True
+            if hasattr(self.state, "quit_requested"):
+                self.state.quit_requested = True
 
         if button_update(
             self._maybe_later_button,
@@ -294,8 +294,8 @@ class DemoView:
                     webbrowser.open(DEMO_PURCHASE_URL)
                 except Exception:
                     pass
-            if hasattr(self._state, "quit_requested"):
-                self._state.quit_requested = True
+            if hasattr(self.state, "quit_requested"):
+                self.state.quit_requested = True
 
         # Keep referenced to avoid unused warnings if this method grows.
         _ = textures
@@ -303,7 +303,7 @@ class DemoView:
     def _draw_purchase_screen(self) -> None:
         rl.clear_background(rl.BLACK)
 
-        logos = getattr(self._state, "logos", None)
+        logos = getattr(self.state, "logos", None)
         if logos is None or logos.backplasma.texture is None:
             return
         backplasma = logos.backplasma.texture
@@ -312,8 +312,8 @@ class DemoView:
         pulse = math.sin(pulse_phase * 6.2831855)
         pulse = pulse * pulse
 
-        screen_w = float(self._state.config.screen_width)
-        screen_h = float(self._state.config.screen_height)
+        screen_w = float(self.state.config.screen_width)
+        screen_h = float(self.state.config.screen_height)
 
         # demo_purchase_screen_update @ 0x0040b985:
         #   - full-screen quad
@@ -427,12 +427,12 @@ class DemoView:
         draw_menu_cursor(particles, cursor_tex, pos=Vec2.from_xy(mouse), pulse_time=pulse_time)
 
     def _ensure_cache(self) -> PaqTextureCache:
-        cache = self._state.texture_cache
+        cache = self.state.texture_cache
         if cache is not None:
             return cache
-        entries = load_paq_entries(self._state.assets_dir)
+        entries = load_paq_entries(self.state.assets_dir)
         cache = PaqTextureCache(entries=entries, textures={})
-        self._state.texture_cache = cache
+        self.state.texture_cache = cache
         return cache
 
     def _demo_mode_start(self) -> None:
@@ -443,7 +443,7 @@ class DemoView:
         self._demo_time_limit_ms = 0
         self._purchase_active = False
         self._purchase_url_opened = False
-        self._spawn_rng.srand(self._state.rng.randrange(0, 0x1_0000_0000))
+        self._spawn_rng.srand(self.state.rng.randrange(0, 0x1_0000_0000))
         self._world.state.bonuses.weapon_power_up = 0.0
         if index == 0:
             self._apply_variant_ground(0)
@@ -470,7 +470,7 @@ class DemoView:
             self._upsell_message_index = (self._upsell_message_index + 1) % len(_DEMO_UPSELL_MESSAGES)
 
     def _setup_world_players(self, specs: list[tuple[Vec2, int]]) -> None:
-        seed = int(self._state.rng.getrandbits(32))
+        seed = int(self.state.rng.getrandbits(32))
         self._world.reset(seed=seed, player_count=len(specs))
         for idx, (pos, weapon_id) in enumerate(specs):
             if idx >= len(self._world.players):
@@ -615,14 +615,14 @@ class DemoView:
                 self._spawn(0x25, spawn_pos, heading=0.0)
 
     def _draw_overlay(self) -> None:
-        if getattr(self._state, "demo_enabled", False):
+        if getattr(self.state, "demo_enabled", False):
             self._draw_demo_upsell_overlay()
             return
         title = f"DEMO MODE  ({self._variant_index + 1}/{DEMO_VARIANT_COUNT})"
         hint = "Press any key / click to skip"
         remaining = max(0.0, float(self._demo_time_limit_ms - self._quest_spawn_timeline_ms) / 1000.0)
         weapons = ", ".join(
-            f"P{p.index + 1}:{_weapon_name(p.weapon_id, preserve_bugs=bool(self._state.preserve_bugs))}"
+            f"P{p.index + 1}:{_weapon_name(p.weapon_id, preserve_bugs=bool(self.state.preserve_bugs))}"
             for p in self._world.players
         )
         detail = f"{weapons}  —  next in {remaining:0.1f}s"
@@ -634,7 +634,7 @@ class DemoView:
         if self._upsell_font is not None:
             return self._upsell_font
         missing_assets: list[str] = []
-        self._upsell_font = load_grim_mono_font(self._state.assets_dir, missing_assets)
+        self._upsell_font = load_grim_mono_font(self.state.assets_dir, missing_assets)
         return self._upsell_font
 
     def _draw_demo_upsell_overlay(self) -> None:

@@ -1,13 +1,18 @@
 from __future__ import annotations
 
+from pathlib import Path
 from types import SimpleNamespace
 
 from crimson.frontend.pause_menu import PAUSE_MENU_TO_MAIN_MENU_FADE_MS, PauseMenuView
+from grim.config import CrimsonConfig, default_crimson_cfg_data
 
 
 def _make_state() -> SimpleNamespace:
+    data = default_crimson_cfg_data()
+    data["screen_width"] = 640
+    config = CrimsonConfig(path=Path("<memory>"), data=data)
     return SimpleNamespace(
-        config=SimpleNamespace(screen_width=640, data={}),
+        config=config,
         audio=None,
         pause_background=None,
         menu_sign_locked=False,

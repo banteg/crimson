@@ -195,7 +195,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         console.log.log("demo trial: timers reset")
 
     def cmd_demo_trial_info(_args: list[str]) -> None:
-        mode_id = int(state.config.data.get("game_mode", 0) or 0)
+        mode_id = state.config.game_mode
         quest_major = 0
         quest_minor = 0
         if mode_id == 3:

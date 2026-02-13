@@ -6,10 +6,6 @@ from grim.geom import Rect, Vec2
 from grim.config import (
     KEYBIND_UNBOUND_CODE,
     default_player_keybind_block,
-    hud_indicator_enabled_for_player,
-    player_keybind_value,
-    set_hud_indicator_for_player,
-    set_player_keybind_value,
 )
 
 import pyray as rl
@@ -143,7 +139,7 @@ class ControlsMenuView(PanelMenuView):
     def _begin_close_transition(self, action: str) -> None:
         if self._dirty:
             try:
-                self._state.config.save()
+                self.state.config.save()
             except Exception:
                 pass
             self._dirty = False
@@ -153,7 +149,7 @@ class ControlsMenuView(PanelMenuView):
         if self._small_font is not None:
             return self._small_font
         missing_assets: list[str] = []
-        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        self._small_font = load_small_font(self.state.assets_dir, missing_assets)
         return self._small_font
 
     def _current_player_index(self) -> int:
@@ -200,22 +196,21 @@ class ControlsMenuView(PanelMenuView):
     def _slot_key(self, *, player_index: int, slot: int) -> int:
         slot_idx = int(slot)
         if slot_idx == PICK_PERK_BIND_SLOT:
-            return int(self._state.config.data.get("keybind_pick_perk", 0x101) or 0x101)
+            return self.state.config.keybind_pick_perk
         if slot_idx == RELOAD_BIND_SLOT:
-            return int(self._state.config.data.get("keybind_reload", 0x102) or 0x102)
-        return int(player_keybind_value(self._state.config.data, player_index=int(player_index), slot_index=slot_idx))
+            return self.state.config.keybind_reload
+        return self.state.config.player_keybind_value(player_index=int(player_index), slot_index=slot_idx)
 
     def _set_slot_key(self, *, player_index: int, slot: int, code: int) -> None:
         slot_idx = int(slot)
         value = int(code)
         if slot_idx == PICK_PERK_BIND_SLOT:
-            self._state.config.data["keybind_pick_perk"] = value
+            self.state.config.keybind_pick_perk = value
             return
         if slot_idx == RELOAD_BIND_SLOT:
-            self._state.config.data["keybind_reload"] = value
+            self.state.config.keybind_reload = value
             return
-        set_player_keybind_value(
-            self._state.config.data,
+        self.state.config.set_player_keybind_value(
             player_index=int(player_index),
             slot_index=slot_idx,
             value=value,
@@ -257,13 +252,10 @@ class ControlsMenuView(PanelMenuView):
         )
 
     def _direction_arrow_enabled(self) -> bool:
-        return bool(
-            hud_indicator_enabled_for_player(self._state.config.data, player_index=int(self._current_player_index()))
-        )
+        return self.state.config.hud_indicator_enabled_for_player(player_index=int(self._current_player_index()))
 
     def _set_direction_arrow_enabled(self, enabled: bool) -> None:
-        set_hud_indicator_for_player(
-            self._state.config.data,
+        self.state.config.set_hud_indicator_for_player(
             player_index=int(self._current_player_index()),
             enabled=bool(enabled),
         )
@@ -358,7 +350,7 @@ class ControlsMenuView(PanelMenuView):
 
     def _update_rebind_capture(self, *, right_top_left: Vec2, panel_scale: float) -> bool:
         player_idx = self._current_player_index()
-        aim_scheme, move_mode = controls_method_values(self._state.config.data, player_index=player_idx)
+        aim_scheme, move_mode = controls_method_values(self.state.config.data, player_index=player_idx)
         sections = self._rebind_sections(player_index=player_idx, aim_scheme=aim_scheme, move_mode=move_mode)
         rows = self._collect_rebind_rows(
             right_top_left=right_top_left,
@@ -433,25 +425,25 @@ class ControlsMenuView(PanelMenuView):
         return values
 
     def _set_player_move_mode(self, *, player_index: int, move_mode: MovementControlType) -> None:
-        config = self._state.config
-        raw = self._coerce_blob(config.data.get("unknown_1c"), 0x28)
+        config = self.state.config
+        raw = self._coerce_blob(config.unknown_1c, 0x28)
         idx = max(0, min(3, int(player_index)))
         struct.pack_into("<I", raw, idx * 4, move_mode.value)
-        config.data["unknown_1c"] = bytes(raw)
+        config.unknown_1c = bytes(raw)
 
     def _set_player_aim_scheme(self, *, player_index: int, aim_scheme: AimScheme) -> None:
-        config = self._state.config
+        config = self.state.config
         idx = max(0, min(3, int(player_index)))
         scheme = int(aim_scheme.value)
         if idx == 0:
-            config.data["unknown_44"] = scheme
+            config.unknown_44 = scheme
             return
         if idx == 1:
-            config.data["unknown_48"] = scheme
+            config.unknown_48 = scheme
             return
-        raw = self._coerce_blob(config.data.get("unknown_4c"), 0x20)
+        raw = self._coerce_blob(config.unknown_4c, 0x20)
         struct.pack_into("<I", raw, (idx - 2) * 4, scheme)
-        config.data["unknown_4c"] = bytes(raw)
+        config.unknown_4c = bytes(raw)
 
     @staticmethod
     def _move_method_ids(*, move_mode: MovementControlType) -> tuple[MovementControlType, ...]:
@@ -528,7 +520,7 @@ class ControlsMenuView(PanelMenuView):
         return is_open, None, False
 
     def _update_method_dropdowns(self, *, left_top_left: Vec2, panel_scale: float) -> bool:
-        config = self._state.config
+        config = self.state.config
         player_idx = self._current_player_index()
         aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
         move_mode_ids = self._move_method_ids(move_mode=move_mode)
@@ -606,7 +598,7 @@ class ControlsMenuView(PanelMenuView):
             return
         panel = assets.panel
 
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         panel_scale, _local_y_shift = self._menu_item_scale(0)
         panel_w = MENU_PANEL_WIDTH * panel_scale
 
@@ -642,7 +634,7 @@ class ControlsMenuView(PanelMenuView):
         font = self._ensure_small_font()
         text_color_full = rl.Color(255, 255, 255, 255)
         text_color_soft = rl.Color(255, 255, 255, 204)
-        config = self._state.config
+        config = self.state.config
         player_idx = self._current_player_index()
         aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
         move_mode_ids = self._move_method_ids(move_mode=move_mode)

@@ -1,0 +1,17 @@
+id: no-private-mode-runtime-handles
+valid:
+  - |
+    self.world.update(dt, inputs=inputs)
+  - |
+    if self.player.health <= 0.0:
+        return
+  - |
+    kills = self.creatures.kill_count
+invalid:
+  - |
+    self._world.update(dt, inputs=inputs)
+  - |
+    if self._player.health <= 0.0:
+        return
+  - |
+    kills = self._creatures.kill_count

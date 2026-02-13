@@ -305,7 +305,7 @@ class GameOverUi:
             rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
         if self.phase == -1:
             # If in the top 100, prompt for a name. Otherwise show score-too-low message and buttons.
-            game_mode_id = int(self.config.data.get("game_mode", 1))
+            game_mode_id = self.config.game_mode
             candidate = record.copy()
             candidate.game_mode_id = game_mode_id
             self._candidate_record = candidate
@@ -653,7 +653,7 @@ class GameOverUi:
 
         # Panel background
         if self.assets.menu_panel is not None:
-            fx_detail = bool(int(self.config.data.get("fx_detail_0", 0) or 0))
+            fx_detail = self.config.fx_detail(level=0, default=False)
             draw_classic_menu_panel(
                 self.assets.menu_panel,
                 dst=panel.to_rl(),

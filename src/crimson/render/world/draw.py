@@ -269,7 +269,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
             tint = tint_rgba.scaled_alpha(ctx.entity_alpha).clamped().to_rl()
 
             size_scale = clamp(float(creature.size) / 64.0, 0.25, 2.0)
-            fx_detail = bool(self.config.data.get("fx_detail_0", 0)) if self.config is not None else True
+            fx_detail = self.config.fx_detail(level=0, default=True) if self.config is not None else True
             # Mirrors `creature_render_type`: the "shadow-ish" pass is gated by fx_detail_0
             # and is disabled when the Monster Vision perk is active.
             shadow = fx_detail and (not self.players or not perk_active(self.players[0], PerkId.MONSTER_VISION))

@@ -1,0 +1,34 @@
+id: no-optional-mode-config
+snapshots:
+  ? |
+    if self._config is None:
+        return
+  : labels:
+    - source: self._config is None
+      style: primary
+      start: 3
+      end: 23
+  ? |
+    if self._config is not None:
+        mode_id = self._config.game_mode
+  : labels:
+    - source: self._config is not None
+      style: primary
+      start: 3
+      end: 27
+  ? |
+    if self.config is None:
+        return
+  : labels:
+    - source: self.config is None
+      style: primary
+      start: 3
+      end: 22
+  ? |
+    if self.config is not None:
+        mode_id = self.config.game_mode
+  : labels:
+    - source: self.config is not None
+      style: primary
+      start: 3
+      end: 26

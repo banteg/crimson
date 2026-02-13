@@ -1,0 +1,72 @@
+id: no-config-accessor-casts
+snapshots:
+  ? |
+    arrow = bool(self._state.config.hud_indicator_enabled_for_player(player_index=1))
+  : labels:
+    - source: bool(self._state.config.hud_indicator_enabled_for_player(player_index=1))
+      style: primary
+      start: 8
+      end: 81
+  ? |
+    detail = bool(self._state.config.fx_detail(level=0, default=False))
+  : labels:
+    - source: bool(self._state.config.fx_detail(level=0, default=False))
+      style: primary
+      start: 9
+      end: 67
+  ? |
+    hardcore = bool(self._state.config.hardcore)
+  : labels:
+    - source: bool(self._state.config.hardcore)
+      style: primary
+      start: 11
+      end: 44
+  ? |
+    mode = int(self._state.config.game_mode)
+  : labels:
+    - source: int(self._state.config.game_mode)
+      style: primary
+      start: 7
+      end: 40
+  ? |
+    music_disabled = bool(config.music_disabled)
+  : labels:
+    - source: bool(config.music_disabled)
+      style: primary
+      start: 17
+      end: 44
+  ? |
+    players = int(config.player_count)
+  : labels:
+    - source: int(config.player_count)
+      style: primary
+      start: 10
+      end: 34
+  ? |
+    preset = int(self._world.config.detail_preset)
+  : labels:
+    - source: int(self._world.config.detail_preset)
+      style: primary
+      start: 9
+      end: 46
+  ? |
+    scale = float(state.config.texture_scale)
+  : labels:
+    - source: float(state.config.texture_scale)
+      style: primary
+      start: 8
+      end: 41
+  ? |
+    volume = float(config.music_volume)
+  : labels:
+    - source: float(config.music_volume)
+      style: primary
+      start: 9
+      end: 35
+  ? |
+    width = int(cfg.screen_width)
+  : labels:
+    - source: int(cfg.screen_width)
+      style: primary
+      start: 8
+      end: 29

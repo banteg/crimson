@@ -90,7 +90,7 @@ class TypoShooterMode(BaseGameplayMode):
             self._missing_assets.extend(self._ui_assets.missing)
         self._typo = _TypoState()
         self._typing = TypingBuffer()
-        self._names = CreatureNameTable.sized(len(self._creatures.entries))
+        self._names = CreatureNameTable.sized(len(self.creatures.entries))
         self._unique_words = None
 
         dictionary_path = self._base_dir / "typo_dictionary.txt"
@@ -99,9 +99,9 @@ class TypoShooterMode(BaseGameplayMode):
             if words:
                 self._unique_words = words
 
-        self._aim_target = self._player.pos.offset(dx=128.0)
+        self._aim_target = self.player.pos.offset(dx=128.0)
 
-        enforce_typo_player_frame(self._player)
+        enforce_typo_player_frame(self.player)
 
     def close(self) -> None:
         if self._ui_assets is not None:
@@ -123,7 +123,7 @@ class TypoShooterMode(BaseGameplayMode):
             return
 
     def _active_mask(self) -> list[bool]:
-        return [bool(entry.active) for entry in self._creatures.entries]
+        return [bool(entry.active) for entry in self.creatures.entries]
 
     def _handle_typing_input(self) -> tuple[bool, bool]:
         fire_pressed = False
@@ -131,9 +131,9 @@ class TypoShooterMode(BaseGameplayMode):
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
             self._typing.backspace()
-            if self._world.audio_router is not None:
-                key = "sfx_ui_typeclick_01" if (self._state.rng.rand() & 1) == 0 else "sfx_ui_typeclick_02"
-                self._world.audio_router.play_sfx(key)
+            if self.world.audio_router is not None:
+                key = "sfx_ui_typeclick_01" if (self.state.rng.rand() & 1) == 0 else "sfx_ui_typeclick_02"
+                self.world.audio_router.play_sfx(key)
 
         codepoint = int(rl.get_char_pressed())
         while codepoint > 0:
@@ -144,9 +144,9 @@ class TypoShooterMode(BaseGameplayMode):
                     ch = ""
                 if ch:
                     self._typing.push_char(ch)
-                    if self._world.audio_router is not None:
-                        key = "sfx_ui_typeclick_01" if (self._state.rng.rand() & 1) == 0 else "sfx_ui_typeclick_02"
-                        self._world.audio_router.play_sfx(key)
+                    if self.world.audio_router is not None:
+                        key = "sfx_ui_typeclick_01" if (self.state.rng.rand() & 1) == 0 else "sfx_ui_typeclick_02"
+                        self.world.audio_router.play_sfx(key)
             codepoint = int(rl.get_char_pressed())
 
         enter_pressed = rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
@@ -158,12 +158,12 @@ class TypoShooterMode(BaseGameplayMode):
                 return self._names.find_by_name(name, active_mask=active)
 
             result = self._typing.enter(find_target=_find_target)
-            if had_text and self._world.audio_router is not None:
-                self._world.audio_router.play_sfx("sfx_ui_typeenter")
+            if had_text and self.world.audio_router is not None:
+                self.world.audio_router.play_sfx("sfx_ui_typeenter")
             if result.fire_requested and result.target_creature_idx is not None:
                 target_idx = int(result.target_creature_idx)
-                if 0 <= target_idx < len(self._creatures.entries):
-                    creature = self._creatures.entries[target_idx]
+                if 0 <= target_idx < len(self.creatures.entries):
+                    creature = self.creatures.entries[target_idx]
                     if creature.active:
                         self._aim_target = creature.pos
                 fire_pressed = True
@@ -175,7 +175,7 @@ class TypoShooterMode(BaseGameplayMode):
     def _spawn_tinted_creature(
         self, *, type_id: CreatureTypeId, pos: Vec2, tint_rgba: RGBA
     ) -> int:
-        rand = self._state.rng.rand
+        rand = self.state.rng.rand
         heading = float(int(rand()) % 314) * 0.01
         size = float(int(rand()) % 20 + 47)
 
@@ -202,17 +202,17 @@ class TypoShooterMode(BaseGameplayMode):
             contact_damage=100.0,
             tint=tint_rgba.to_tuple(),
         )
-        return self._creatures.spawn_init(init, rand=rand)
+        return self.creatures.spawn_init(init, rand=rand)
 
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
 
         record = build_highscore_record_for_game_over(
-            state=self._state,
-            player=self._player,
+            state=self.state,
+            player=self.player,
             survival_elapsed_ms=int(self._typo.elapsed_ms),
-            creature_kill_count=int(self._creatures.kill_count),
+            creature_kill_count=int(self.creatures.kill_count),
             game_mode_id=int(GameMode.TYPO),
             shots_fired=int(self._typing.shots_fired),
             shots_hit=int(self._typing.shots_hit),
@@ -239,10 +239,10 @@ class TypoShooterMode(BaseGameplayMode):
 
         # Native: delay game-over transition until the trooper death animation finishes
         # (checks `death_timer < 0.0` in the main gameplay loop).
-        if self._player.health <= 0.0:
+        if self.player.health <= 0.0:
             if dt_world > 0.0:
-                self._player.death_timer -= float(dt_world) * 20.0
-            if self._player.death_timer < 0.0:
+                self.player.death_timer -= float(dt_world) * 20.0
+            if self.player.death_timer < 0.0:
                 self._enter_game_over()
                 self._update_game_over_ui(dt)
                 return
@@ -256,32 +256,32 @@ class TypoShooterMode(BaseGameplayMode):
         if dt_world <= 0.0:
             return
 
-        enforce_typo_player_frame(self._player)
+        enforce_typo_player_frame(self.player)
         input_state = build_typo_player_input(
             aim=self._aim_target,
             fire_requested=bool(fire_pressed),
             reload_requested=bool(reload_pressed),
         )
-        self._world.update(
+        self.world.update(
             dt_world,
             inputs=[input_state],
             auto_pick_perks=False,
             game_mode=int(GameMode.TYPO),
             perk_progression_enabled=False,
         )
-        enforce_typo_player_frame(self._player)
+        enforce_typo_player_frame(self.player)
 
-        self._state.bonuses.weapon_power_up = 0.0
-        self._state.bonuses.reflex_boost = 0.0
-        self._state.bonus_pool.reset()
+        self.state.bonuses.weapon_power_up = 0.0
+        self.state.bonuses.reflex_boost = 0.0
+        self.state.bonus_pool.reset()
 
         cooldown, spawns = tick_typo_spawns(
             elapsed_ms=int(self._typo.elapsed_ms),
             spawn_cooldown_ms=int(self._typo.spawn_cooldown_ms),
             frame_dt_ms=int(dt_world * 1000.0),
             player_count=1,
-            world_width=float(self._world.world_size),
-            world_height=float(self._world.world_size),
+            world_width=float(self.world.world_size),
+            world_height=float(self.world.world_size),
         )
         self._typo.spawn_cooldown_ms = int(cooldown)
         for call in spawns:
@@ -292,8 +292,8 @@ class TypoShooterMode(BaseGameplayMode):
             )
             self._names.assign_random(
                 creature_idx,
-                self._state.rng,
-                score_xp=int(self._player.experience),
+                self.state.rng,
+                score_xp=int(self.player.experience),
                 active_mask=self._active_mask(),
                 unique_words=self._unique_words,
             )
@@ -306,7 +306,7 @@ class TypoShooterMode(BaseGameplayMode):
         mouse_pos = self._ui_mouse
         cursor_tex = self._ui_assets.cursor if self._ui_assets is not None else None
         draw_menu_cursor(
-            self._world.particles_texture,
+            self.world.particles_texture,
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
@@ -315,14 +315,14 @@ class TypoShooterMode(BaseGameplayMode):
     def _draw_aim_cursor(self) -> None:
         mouse_pos = self._ui_mouse
         aim_tex = self._ui_assets.aim if self._ui_assets is not None else None
-        draw_aim_cursor(self._world.particles_texture, aim_tex, pos=mouse_pos)
+        draw_aim_cursor(self.world.particles_texture, aim_tex, pos=mouse_pos)
 
     def _draw_name_labels(self) -> None:
         names = self._names.names
         if not names:
             return
 
-        for idx, creature in enumerate(self._creatures.entries):
+        for idx, creature in enumerate(self.creatures.entries):
             if not creature.active:
                 continue
             if not (0 <= idx < len(names)):
@@ -338,7 +338,7 @@ class TypoShooterMode(BaseGameplayMode):
             if label_alpha <= 1e-3:
                 continue
 
-            screen_pos = self._world.world_to_screen(creature.pos)
+            screen_pos = self.world.world_to_screen(creature.pos)
             y = screen_pos.y - 50.0
             text_w = float(self._ui_text_width(text, scale=NAME_LABEL_SCALE))
             text_h = 15.0
@@ -395,10 +395,10 @@ class TypoShooterMode(BaseGameplayMode):
         self._draw_ui_text(TYPING_CURSOR, Vec2(cursor_x, cursor_y), cursor_color, scale=1.0)
 
     def draw(self) -> None:
-        alive = self._player.health > 0.0
+        alive = self.player.health > 0.0
         show_gameplay_ui = alive and (not self._game_over_active)
 
-        self._world.draw(draw_aim_indicators=show_gameplay_ui, entity_alpha=self._world_entity_alpha())
+        self.world.draw(draw_aim_indicators=show_gameplay_ui, entity_alpha=self._world_entity_alpha())
         self._draw_screen_fade()
 
         if show_gameplay_ui:
@@ -410,9 +410,9 @@ class TypoShooterMode(BaseGameplayMode):
             draw_hud_overlay(
                 self._hud_assets,
                 state=self._hud_state,
-                player=self._player,
-                players=self._world.players,
-                bonus_hud=self._state.bonus_hud,
+                player=self.player,
+                players=self.world.players,
+                bonus_hud=self.state.bonus_hud,
                 elapsed_ms=float(self._typo.elapsed_ms),
                 font=self._small,
                 frame_dt_ms=self._last_dt_ms,
@@ -422,15 +422,15 @@ class TypoShooterMode(BaseGameplayMode):
                 show_time=hud_flags.show_time,
                 show_quest_hud=hud_flags.show_quest_hud,
                 small_indicators=self._hud_small_indicators(),
-                preserve_bugs=bool(self._world.preserve_bugs),
+                preserve_bugs=bool(self.world.preserve_bugs),
             )
 
         if show_gameplay_ui:
             self._draw_typing_box()
 
         warn_y = float(rl.get_screen_height()) - 28.0
-        if self._world.missing_assets:
-            warn = "Missing world assets: " + ", ".join(self._world.missing_assets)
+        if self.world.missing_assets:
+            warn = "Missing world assets: " + ", ".join(self.world.missing_assets)
             self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
             warn_y -= float(self._ui_line_height(scale=0.8)) + 2.0
         if self._hud_missing:

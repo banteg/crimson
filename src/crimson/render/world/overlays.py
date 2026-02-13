@@ -80,7 +80,7 @@ class WorldRendererOverlaysMixin(WorldRendererMixinBase):
     def _hud_indicator_enabled(self, player_index: int) -> bool:
         if self.config is None:
             return True
-        raw = self.config.data.get("hud_indicators", b"\x01\x01")
+        raw = self.config.hud_indicators
         if not isinstance(raw, (bytes, bytearray)):
             return True
         idx = int(player_index)

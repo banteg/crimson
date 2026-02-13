@@ -129,7 +129,7 @@ def _credits_secret_match3_find(board: list[int]) -> tuple[bool, int, int]:
 
 class AlienZooKeeperView:
     def __init__(self, state: GameState) -> None:
-        self._state = state
+        self.state = state
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._small_font: SmallFontData | None = None
@@ -155,13 +155,13 @@ class AlienZooKeeperView:
         self._back_button = UiButtonState(_BACK_LABEL, force_wide=False)
 
     def open(self) -> None:
-        layout_w = float(self._state.config.screen_width)
+        layout_w = float(self.state.config.screen_width)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        self._assets = load_menu_assets(self._state)
-        self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
+        self._assets = load_menu_assets(self.state)
+        self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self._small_font = None
 
-        cache = _ensure_texture_cache(self._state)
+        cache = _ensure_texture_cache(self.state)
         button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
         button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
@@ -216,7 +216,7 @@ class AlienZooKeeperView:
         if self._small_font is not None:
             return self._small_font
         missing_assets: list[str] = []
-        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        self._small_font = load_small_font(self.state.assets_dir, missing_assets)
         return self._small_font
 
     def _panel_slide_x(self, *, scale: float) -> float:
@@ -232,7 +232,7 @@ class AlienZooKeeperView:
         return float(slide_x)
 
     def _layout(self, *, scale: float) -> _AzkLayout:
-        layout_offset_x = _LAYOUT_OFFSET_X_SMALL if float(self._state.config.screen_width) < 641.0 else _LAYOUT_OFFSET_X
+        layout_offset_x = _LAYOUT_OFFSET_X_SMALL if float(self.state.config.screen_width) < 641.0 else _LAYOUT_OFFSET_X
         slide_x = self._panel_slide_x(scale=scale)
         anchor_x = _LAYOUT_POS_X + layout_offset_x + _BOARD_X_OFFSET + slide_x
         title_base_y = _LAYOUT_BASE_Y + _LAYOUT_POS_Y + _TITLE_BASE_Y_OFFSET + self._widescreen_y_shift
@@ -267,18 +267,18 @@ class AlienZooKeeperView:
     def _fill_empty_cells(self) -> None:
         for i, value in enumerate(self._board):
             if value == -1:
-                self._board[i] = self._state.rng.randrange(5)
+                self._board[i] = self.state.rng.randrange(5)
 
     def _reroll_board_no_initial_match(self) -> None:
         for _ in range(4096):
             for i in range(_BOARD_CELLS):
-                self._board[i] = self._state.rng.randrange(5)
+                self._board[i] = self.state.rng.randrange(5)
             has_match, _out_idx, _out_dir = _credits_secret_match3_find(self._board)
             if not has_match:
                 return
         # Fallback to avoid a hard loop even though this should never happen in practice.
         for i in range(_BOARD_CELLS):
-            self._board[i] = self._state.rng.randrange(5)
+            self._board[i] = self.state.rng.randrange(5)
 
     def _reset_state(self) -> None:
         self._reroll_board_no_initial_match()
@@ -300,8 +300,8 @@ class AlienZooKeeperView:
             if not _mouse_inside_rect(mouse, x=x, y=y, w=layout.tile_size, h=layout.tile_size):
                 continue
 
-            if self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_clink_01", rng=self._state.rng)
+            if self.state.audio is not None:
+                play_sfx(self.state.audio, "sfx_ui_clink_01", rng=self.state.rng)
 
             if self._selected_index == -1:
                 self._selected_index = index
@@ -329,13 +329,13 @@ class AlienZooKeeperView:
 
             self._score += 1
             self._timer_ms += _MATCH_TIMER_BONUS_MS
-            if self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_bonus", rng=self._state.rng)
+            if self.state.audio is not None:
+                play_sfx(self.state.audio, "sfx_ui_bonus", rng=self.state.rng)
             return
 
     def update(self, dt: float) -> None:
-        if self._state.audio is not None:
-            update_audio(self._state.audio, dt)
+        if self.state.audio is not None:
+            update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
 
@@ -358,8 +358,8 @@ class AlienZooKeeperView:
                 self._timer_ms -= dt_ms
                 if self._timer_ms <= 0:
                     self._timer_ms = 0
-                    if self._state.audio is not None:
-                        play_sfx(self._state.audio, "sfx_trooper_die_01", rng=self._state.rng)
+                    if self.state.audio is not None:
+                        play_sfx(self.state.audio, "sfx_trooper_die_01", rng=self.state.rng)
             elif self._timer_ms < 0:
                 self._timer_ms = 0
 
@@ -367,14 +367,14 @@ class AlienZooKeeperView:
 
         interactive = self._timeline_ms >= self._timeline_max_ms
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
-            if self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            if self.state.audio is not None:
+                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
             self._begin_close_transition("open_statistics")
             return
         if not interactive:
             return
 
-        scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
+        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
         layout = self._layout(scale=scale)
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -396,8 +396,8 @@ class AlienZooKeeperView:
             mouse=mouse,
             click=click,
         ):
-            if self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            if self.state.audio is not None:
+                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
             self._reset_state()
             return
 
@@ -410,22 +410,22 @@ class AlienZooKeeperView:
             mouse=mouse,
             click=click,
         ):
-            if self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            if self.state.audio is not None:
+                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
             self._begin_close_transition("open_statistics")
             return
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
-        pause_background = self._state.pause_background
+        pause_background = self.state.pause_background
         if pause_background is not None:
             pause_background.draw_pause_background()
         elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self._state))
-        _draw_screen_fade(self._state)
+            self._ground.draw(menu_ground_camera(self.state))
+        _draw_screen_fade(self.state)
 
         font = self._ensure_small_font()
-        scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
+        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
         layout = self._layout(scale=scale)
 
         assets = self._assets
@@ -436,7 +436,7 @@ class AlienZooKeeperView:
                 MENU_PANEL_WIDTH * scale,
                 378.0 * scale,
             )
-            fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+            fx_detail = self.state.config.fx_detail(level=0, default=False)
             draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
         draw_small_text(font, _TITLE, Vec2(layout.title_x, layout.title_y), 1.0 * scale, rl.WHITE)
@@ -549,14 +549,14 @@ class AlienZooKeeperView:
             )
 
         self._draw_sign()
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def _draw_sign(self) -> None:
         assets = self._assets
         if assets is None or assets.sign is None:
             return
         sign = assets.sign
-        screen_w = float(self._state.config.screen_width)
+        screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
@@ -567,7 +567,7 @@ class AlienZooKeeperView:
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * sign_scale
         rotation_deg = 0.0
-        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,

@@ -1,0 +1,24 @@
+id: no-private-mode-runtime-handles
+snapshots:
+  ? |
+    if self._player.health <= 0.0:
+        return
+  : labels:
+    - source: self._player
+      style: primary
+      start: 3
+      end: 15
+  ? |
+    kills = self._creatures.kill_count
+  : labels:
+    - source: self._creatures
+      style: primary
+      start: 8
+      end: 23
+  ? |
+    self._world.update(dt, inputs=inputs)
+  : labels:
+    - source: self._world
+      style: primary
+      start: 0
+      end: 11

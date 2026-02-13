@@ -7,13 +7,20 @@ import pyray as rl
 
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.ui.quest_results import PANEL_SLIDE_END_MS, PANEL_SLIDE_START_MS, QuestResultsUi
+from grim.config import CrimsonConfig, default_crimson_cfg_data
+
+
+def _test_config(**updates: object) -> CrimsonConfig:
+    data = default_crimson_cfg_data()
+    data.update(updates)
+    return CrimsonConfig(path=Path("<memory>"), data=data)
 
 
 def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
     ui = QuestResultsUi(
         assets_root=tmp_path,
         base_dir=tmp_path,
-        config=SimpleNamespace(data={"fx_detail_0": 0}),
+        config=_test_config(fx_detail_0=0),
     )
     ui.phase = int(phase)
     ui.rank = 0
@@ -165,7 +172,7 @@ def test_quest_results_world_entity_alpha_tracks_close_timeline(tmp_path: Path) 
     ui = QuestResultsUi(
         assets_root=tmp_path,
         base_dir=tmp_path,
-        config=SimpleNamespace(data={"fx_detail_0": 0}),
+        config=_test_config(fx_detail_0=0),
     )
 
     ui._closing = True

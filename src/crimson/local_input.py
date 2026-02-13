@@ -129,12 +129,7 @@ def _load_player_bind_block(config: CrimsonConfig | None, *, player_index: int) 
 
 
 def _config_player_count(config: CrimsonConfig | None) -> int:
-    if config is None:
-        return 1
-    try:
-        value = int(config.data.get("player_count", 1) or 1)
-    except Exception:
-        value = 1
+    value = config.player_count if config is not None else 1
     return max(1, value)
 
 
@@ -263,7 +258,7 @@ class LocalInputInterpreter:
     def _reload_key(config: CrimsonConfig | None) -> int:
         if config is None:
             return 0x102
-        return int(config.data.get("keybind_reload", 0x102) or 0x102)
+        return config.keybind_reload
 
     @staticmethod
     def _safe_controls_modes(config: CrimsonConfig | None, *, player_index: int) -> tuple[AimScheme, MovementControlType]:

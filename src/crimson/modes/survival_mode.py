@@ -12,7 +12,9 @@ import pyray as rl
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.console import ConsoleState
-from grim.config import CrimsonConfig
+from grim.config import (
+    CrimsonConfig,
+)
 from grim.geom import Rect, Vec2
 from grim.math import clamp
 from grim.view import ViewContext
@@ -131,7 +133,7 @@ class SurvivalMode(BaseGameplayMode):
         self._sim_session: SurvivalDeterministicSession | None = None
 
     def _reset_perk_prompt(self) -> None:
-        if int(self._state.perk_selection.pending_count) > 0:
+        if int(self.state.perk_selection.pending_count) > 0:
             # Reset the prompt swing so each pending perk replays the intro.
             self._perk_prompt_timer_ms = 0.0
             self._perk_prompt_hover = False
@@ -165,7 +167,7 @@ class SurvivalMode(BaseGameplayMode):
         self._replay_checkpoints.append(
             build_checkpoint(
                 tick_index=int(tick_index),
-                world=self._world.world_state,
+                world=self.world.world_state,
                 elapsed_ms=float(self._survival.elapsed_ms),
                 rng_marks=rng_marks,
                 deaths=deaths,
@@ -189,7 +191,7 @@ class SurvivalMode(BaseGameplayMode):
         stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
         replay_dir = self._base_dir / "replays"
         replay_dir.mkdir(parents=True, exist_ok=True)
-        score = int(self._player.experience)
+        score = int(self.player.experience)
         base_name = f"survival_{stamp}_score{score}"
         path = replay_dir / f"{base_name}.crdemo.gz"
         counter = 1
@@ -216,15 +218,15 @@ class SurvivalMode(BaseGameplayMode):
             self._console.log.flush()
 
     def _perk_menu_context(self) -> PerkMenuContext:
-        fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0) if self._config is not None else 0
-        fx_detail = bool(int(self._config.data.get("fx_detail_0", 0) or 0)) if self._config is not None else False
-        players = self._world.players
+        fx_toggle = self.config.fx_toggle
+        fx_detail = self.config.fx_detail(level=0, default=False)
+        players = self.world.players
         return PerkMenuContext(
-            state=self._state,
-            perk_state=self._state.perk_selection,
+            state=self.state,
+            perk_state=self.state.perk_selection,
             players=players,
-            creatures=cast("list[CreatureForPerks]", self._creatures.entries),
-            player=self._player,
+            creatures=cast("list[CreatureForPerks]", self.creatures.entries),
+            player=self.player,
             game_mode=int(GameMode.SURVIVAL),
             player_count=len(players),
             fx_toggle=fx_toggle,
@@ -232,7 +234,7 @@ class SurvivalMode(BaseGameplayMode):
             font=self._small,
             assets=self._perk_menu_assets,
             mouse=self._ui_mouse_pos(),
-            play_sfx=self._world.audio_router.play_sfx,
+            play_sfx=self.world.audio_router.play_sfx,
         )
 
     def _wrap_ui_text(self, text: str, *, max_width: float, scale: float = UI_TEXT_SCALE) -> list[str]:
@@ -255,10 +257,10 @@ class SurvivalMode(BaseGameplayMode):
         return lines
 
     def _camera_world_to_screen(self, pos: Vec2) -> Vec2:
-        return self._world.world_to_screen(pos)
+        return self.world.world_to_screen(pos)
 
     def _camera_screen_to_world(self, pos: Vec2) -> Vec2:
-        return self._world.screen_to_world(pos)
+        return self.world.screen_to_world(pos)
 
     def open(self) -> None:
         super().open()
@@ -272,14 +274,14 @@ class SurvivalMode(BaseGameplayMode):
         self._sim_clock.reset()
         self._survival = _SurvivalState()
         self._sim_session = SurvivalDeterministicSession(
-            world=self._world.world_state,
-            world_size=float(self._world.world_size),
-            damage_scale_by_type=self._world._damage_scale_by_type,
-            fx_queue=self._world.fx_queue,
-            fx_queue_rotated=self._world.fx_queue_rotated,
+            world=self.world.world_state,
+            world_size=float(self.world.world_size),
+            damage_scale_by_type=self.world._damage_scale_by_type,
+            fx_queue=self.world.fx_queue,
+            fx_queue_rotated=self.world.fx_queue_rotated,
             detail_preset=5,
             fx_toggle=0,
-            game_tune_started=bool(self._world._game_tune_started),
+            game_tune_started=bool(self.world._game_tune_started),
             clear_fx_queues_each_tick=False,
         )
 
@@ -287,7 +289,7 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_prompt_hover = False
         self._perk_prompt_pulse = 0.0
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
-        status = self._state.status
+        status = self.state.status
         weapon_usage_counts: tuple[int, ...] = ()
         if status is not None:
             try:
@@ -311,13 +313,13 @@ class SurvivalMode(BaseGameplayMode):
         self._replay_recorder = ReplayRecorder(
             ReplayHeader(
                 game_mode_id=int(GameMode.SURVIVAL),
-                seed=int(self._state.rng.state),
+                seed=int(self.state.rng.state),
                 tick_rate=int(self._sim_clock.tick_rate),
-                difficulty_level=int(self._world.difficulty_level),
-                hardcore=bool(self._world.hardcore),
-                preserve_bugs=bool(self._world.preserve_bugs),
-                world_size=float(self._world.world_size),
-                player_count=len(self._world.players),
+                difficulty_level=int(self.world.difficulty_level),
+                hardcore=bool(self.world.hardcore),
+                preserve_bugs=bool(self.world.preserve_bugs),
+                world_size=float(self.world.world_size),
+                player_count=len(self.world.players),
                 status=status_snapshot,
             )
         )
@@ -342,7 +344,7 @@ class SurvivalMode(BaseGameplayMode):
                 self.close_requested = True
             return
         if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._world.audio_router.play_sfx("sfx_ui_buttonclick")
+            self.world.audio_router.play_sfx("sfx_ui_buttonclick")
             self._perk_menu.close()
             return
 
@@ -351,19 +353,19 @@ class SurvivalMode(BaseGameplayMode):
 
         if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
-                self._state.debug_god_mode = not bool(self._state.debug_god_mode)
-                self._world.audio_router.play_sfx("sfx_ui_buttonclick")
+                self.state.debug_god_mode = not bool(self.state.debug_god_mode)
+                self.world.audio_router.play_sfx("sfx_ui_buttonclick")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F3):
-                self._state.perk_selection.pending_count += 1
-                self._state.perk_selection.choices_dirty = True
-                self._world.audio_router.play_sfx("sfx_ui_levelup")
+                self.state.perk_selection.pending_count += 1
+                self.state.perk_selection.choices_dirty = True
+                self.world.audio_router.play_sfx("sfx_ui_levelup")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
                 self._debug_cycle_weapon(-1)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
                 self._debug_cycle_weapon(1)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_X):
-                self._player.experience += 5000
-                survival_check_level_up(self._player, self._state.perk_selection)
+                self.player.experience += 5000
+                survival_check_level_up(self.player, self.state.perk_selection)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self._action = "open_pause_menu"
@@ -373,28 +375,17 @@ class SurvivalMode(BaseGameplayMode):
         weapon_ids = _DEBUG_WEAPON_IDS
         if not weapon_ids:
             return
-        current = int(self._player.weapon_id)
+        current = int(self.player.weapon_id)
         try:
             idx = weapon_ids.index(current)
         except ValueError:
             idx = 0
         weapon_id = int(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
-        weapon_assign_player(self._player, weapon_id, state=self._state)
-
-    def _player_name_default(self) -> str:
-        config = self._config
-        if config is None:
-            return ""
-        raw = config.data.get("player_name")
-        if isinstance(raw, (bytes, bytearray)):
-            return bytes(raw).split(b"\x00", 1)[0].decode("latin-1", errors="ignore")
-        if isinstance(raw, str):
-            return raw
-        return ""
+        weapon_assign_player(self.player, weapon_id, state=self.state)
 
     def _death_transition_ready(self) -> bool:
         dead_players = 0
-        for player in self._world.players:
+        for player in self.world.players:
             if float(player.health) > 0.0:
                 return False
             dead_players += 1
@@ -405,12 +396,12 @@ class SurvivalMode(BaseGameplayMode):
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
-        game_mode_id = int(self._config.data.get("game_mode", 1)) if self._config is not None else 1
+        game_mode_id = self.config.game_mode
         record = build_highscore_record_for_game_over(
-            state=self._state,
-            player=self._player,
+            state=self.state,
+            player=self.player,
             survival_elapsed_ms=int(self._survival.elapsed_ms),
-            creature_kill_count=int(self._creatures.kill_count),
+            creature_kill_count=int(self.creatures.kill_count),
             game_mode_id=game_mode_id,
         )
         self._game_over_record = record
@@ -420,9 +411,9 @@ class SurvivalMode(BaseGameplayMode):
         self._save_replay()
 
     def _perk_prompt_label(self) -> str:
-        if self._config is not None and not bool(int(self._config.data.get("ui_info_texts", 1) or 0)):
+        if not self.config.ui_info_texts:
             return ""
-        pending = int(self._state.perk_selection.pending_count)
+        pending = int(self.state.perk_selection.pending_count)
         if pending <= 0:
             return ""
         suffix = f" ({pending})" if pending > 1 else ""
@@ -469,8 +460,8 @@ class SurvivalMode(BaseGameplayMode):
             self._update_game_over_ui(dt)
             return
 
-        any_alive = any(player.health > 0.0 for player in self._world.players)
-        perk_pending = int(self._state.perk_selection.pending_count) > 0 and any_alive
+        any_alive = any(player.health > 0.0 for player in self.world.players)
+        perk_pending = int(self.state.perk_selection.pending_count) > 0 and any_alive
 
         self._perk_prompt_hover = False
         perk_ctx = self._perk_menu_context()
@@ -487,14 +478,12 @@ class SurvivalMode(BaseGameplayMode):
                 mouse = self._ui_mouse_pos()
                 self._perk_prompt_hover = rect.contains(mouse)
 
-            player0_binds = config_keybinds_for_player(self._config, player_index=0)
+            player0_binds = config_keybinds_for_player(self.config, player_index=0)
             fire_key = 0x100
             if len(player0_binds) >= 5:
                 fire_key = int(player0_binds[4])
 
-            pick_key = 0x101
-            if self._config is not None:
-                pick_key = int(self._config.data.get("keybind_pick_perk", pick_key) or pick_key)
+            pick_key = self.config.keybind_pick_perk
 
             if input_code_is_pressed_for_player(pick_key, player_index=0) and (
                 not input_code_is_down_for_player(fire_key, player_index=0)
@@ -506,8 +495,8 @@ class SurvivalMode(BaseGameplayMode):
                 if opened and self._replay_recorder is not None:
                     self._replay_recorder.record_perk_menu_open(player_index=0)
             elif self._perk_prompt_hover and input_primary_just_pressed(
-                self._config,
-                player_count=len(self._world.players),
+                self.config,
+                player_count=len(self.world.players),
             ):
                 self._perk_prompt_pulse = 1000.0
                 if self._replay_recorder is not None:
@@ -549,20 +538,15 @@ class SurvivalMode(BaseGameplayMode):
         session = self._sim_session
         if session is None:
             return
-        if self._world.audio_router is not None:
-            self._world.audio_router.audio = self._world.audio
-            self._world.audio_router.audio_rng = self._world.audio_rng
-            self._world.audio_router.demo_mode_active = self._world.demo_mode_active
-        if self._world.ground is not None:
-            self._world._sync_ground_settings()
-            self._world.ground.process_pending()
-        detail_preset = 5
-        fx_toggle = 0
-        if self._config is not None:
-            detail_preset = int(self._config.data.get("detail_preset", 5) or 5)
-            fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0)
-        session.detail_preset = int(detail_preset)
-        session.fx_toggle = int(fx_toggle)
+        if self.world.audio_router is not None:
+            self.world.audio_router.audio = self.world.audio
+            self.world.audio_router.audio_rng = self.world.audio_rng
+            self.world.audio_router.demo_mode_active = self.world.demo_mode_active
+        if self.world.ground is not None:
+            self.world._sync_ground_settings()
+            self.world.ground.process_pending()
+        session.detail_preset = self.config.detail_preset
+        session.fx_toggle = self.config.fx_toggle
 
         for tick_offset in range(int(ticks_to_run)):
             inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
@@ -575,7 +559,7 @@ class SurvivalMode(BaseGameplayMode):
                 dt_frame=dt_tick,
                 inputs=inputs,
             )
-            self._world.apply_step_result(
+            self.world.apply_step_result(
                 tick.step,
                 game_tune_started=bool(session.game_tune_started),
                 apply_audio=True,
@@ -604,9 +588,9 @@ class SurvivalMode(BaseGameplayMode):
             return
         if self._perk_menu.active:
             return
-        if not any(player.health > 0.0 for player in self._world.players):
+        if not any(player.health > 0.0 for player in self.world.players):
             return
-        pending = int(self._state.perk_selection.pending_count)
+        pending = int(self.state.perk_selection.pending_count)
         if pending <= 0:
             return
         label = self._perk_prompt_label()
@@ -662,7 +646,7 @@ class SurvivalMode(BaseGameplayMode):
         mouse_pos = self._ui_mouse
         cursor_tex = self._perk_menu_assets.cursor if self._perk_menu_assets is not None else None
         draw_menu_cursor(
-            self._world.particles_texture,
+            self.world.particles_texture,
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
@@ -671,11 +655,11 @@ class SurvivalMode(BaseGameplayMode):
     def _draw_aim_cursor(self) -> None:
         mouse_pos = self._ui_mouse
         aim_tex = self._perk_menu_assets.aim if self._perk_menu_assets is not None else None
-        draw_aim_cursor(self._world.particles_texture, aim_tex, pos=mouse_pos)
+        draw_aim_cursor(self.world.particles_texture, aim_tex, pos=mouse_pos)
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
-        self._world.draw(
+        self.world.draw(
             draw_aim_indicators=(not self._game_over_active) and (not perk_menu_active),
             entity_alpha=self._world_entity_alpha(),
         )
@@ -689,11 +673,11 @@ class SurvivalMode(BaseGameplayMode):
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
                 state=self._hud_state,
-                player=self._player,
-                players=self._world.players,
-                bonus_hud=self._state.bonus_hud,
+                player=self.player,
+                players=self.world.players,
+                bonus_hud=self.state.bonus_hud,
                 elapsed_ms=self._survival.elapsed_ms,
-                score=self._player.experience,
+                score=self.player.experience,
                 font=self._small,
                 alpha=hud_alpha,
                 frame_dt_ms=self._last_dt_ms,
@@ -703,7 +687,7 @@ class SurvivalMode(BaseGameplayMode):
                 show_time=hud_flags.show_time,
                 show_quest_hud=hud_flags.show_quest_hud,
                 small_indicators=self._hud_small_indicators(),
-                preserve_bugs=bool(self._world.preserve_bugs),
+                preserve_bugs=bool(self.world.preserve_bugs),
             )
 
         if debug_enabled() and (not self._game_over_active) and (not perk_menu_active):
@@ -717,11 +701,11 @@ class SurvivalMode(BaseGameplayMode):
                 UI_TEXT_COLOR,
             )
             self._draw_ui_text(
-                f"xp={self._player.experience}  level={self._player.level}  kills={self._creatures.kill_count}",
+                f"xp={self.player.experience}  level={self.player.level}  kills={self.creatures.kill_count}",
                 Vec2(x, y + line),
                 UI_HINT_COLOR,
             )
-            god = "on" if self._state.debug_god_mode else "off"
+            god = "on" if self.state.debug_god_mode else "off"
             self._draw_ui_text(
                 f"debug: [/] weapon  F3 perk+1  F2 god={god}  X xp+5000",
                 Vec2(x, y + line * 2.0),
@@ -730,11 +714,11 @@ class SurvivalMode(BaseGameplayMode):
             )
             if self._paused:
                 self._draw_ui_text("paused (TAB)", Vec2(x, y + line * 3.0), UI_HINT_COLOR)
-            if self._player.health <= 0.0:
+            if self.player.health <= 0.0:
                 self._draw_ui_text("game over", Vec2(x, y + line * 3.0), UI_ERROR_COLOR)
         warn_y = float(rl.get_screen_height()) - 28.0
-        if self._world.missing_assets:
-            warn = "Missing world assets: " + ", ".join(self._world.missing_assets)
+        if self.world.missing_assets:
+            warn = "Missing world assets: " + ", ".join(self.world.missing_assets)
             self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
             warn_y -= float(self._ui_line_height(scale=0.8)) + 2.0
         if self._hud_missing:

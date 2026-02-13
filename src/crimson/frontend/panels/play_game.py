@@ -99,8 +99,8 @@ class PlayGameMenuView(PanelMenuView):
         self._mode_buttons.clear()
 
     def update(self, dt: float) -> None:
-        if self._state.audio is not None:
-            update_audio(self._state.audio, dt)
+        if self.state.audio is not None:
+            update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
@@ -118,7 +118,7 @@ class PlayGameMenuView(PanelMenuView):
         if dt_ms > 0:
             self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
             if self._timeline_ms >= self._timeline_max_ms:
-                self._state.menu_sign_locked = True
+                self.state.menu_sign_locked = True
 
         entry = self._entry
         if entry is None:
@@ -187,7 +187,7 @@ class PlayGameMenuView(PanelMenuView):
     def _begin_close_transition(self, action: str) -> None:
         if self._dirty:
             try:
-                self._state.config.save()
+                self.state.config.save()
             except Exception:
                 pass
             self._dirty = False
@@ -197,7 +197,7 @@ class PlayGameMenuView(PanelMenuView):
         if self._small_font is not None:
             return self._small_font
         missing_assets: list[str] = []
-        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        self._small_font = load_small_font(self.state.assets_dir, missing_assets)
         return self._small_font
 
     def _content_layout(self) -> _PlayGameContentLayout:
@@ -231,7 +231,7 @@ class PlayGameMenuView(PanelMenuView):
         )
 
     def _quests_total_played(self) -> int:
-        counts = self._state.status.data.get("quest_play_counts", [])
+        counts = self.state.status.data.get("quest_play_counts", [])
         if not isinstance(counts, list) or not counts:
             return 0
         # `sub_44ed80` sums 40 ints from game_status_blob+0x104..0x1a4.
@@ -239,18 +239,18 @@ class PlayGameMenuView(PanelMenuView):
         return int(sum(int(v) for v in counts[11:51]))
 
     def _mode_entries(self) -> tuple[list[_PlayGameModeEntry], float, float, float]:
-        config = self._state.config
-        status = self._state.status
+        config = self.state.config
+        status = self.state.status
 
         # Clamp to a valid range; older configs in the repo can contain 0 here,
         # which would incorrectly hide the Tutorial entry (it is gated on == 1).
-        player_count = int(config.data.get("player_count", 1))
+        player_count = config.player_count
         if player_count < 1:
             player_count = 1
         if player_count > len(self._PLAYER_COUNT_LABELS):
             player_count = len(self._PLAYER_COUNT_LABELS)
         quest_unlock = int(status.quest_unlock_index)
-        full_version = not self._state.demo_enabled
+        full_version = not self.state.demo_enabled
 
         quests_total = self._quests_total_played()
         rush_total = int(status.mode_play_count("rush"))
@@ -362,7 +362,7 @@ class PlayGameMenuView(PanelMenuView):
 
     def _activate_mode(self, mode: _PlayGameModeEntry) -> None:
         if mode.game_mode is not None:
-            self._state.config.data["game_mode"] = int(mode.game_mode)
+            self.state.config.game_mode = int(mode.game_mode)
             self._dirty = True
         self._begin_close_transition(mode.action)
 
@@ -409,7 +409,7 @@ class PlayGameMenuView(PanelMenuView):
         )
 
     def _update_player_count(self, pos: Vec2, scale: float) -> bool:
-        config = self._state.config
+        config = self.state.config
         layout = self._player_count_widget_layout(pos, scale)
 
         mouse = rl.get_mouse_position()
@@ -442,7 +442,7 @@ class PlayGameMenuView(PanelMenuView):
                 height=14.0 * scale,
             )
             if item_hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-                config.data["player_count"] = idx + 1
+                config.player_count = idx + 1
                 self._dirty = True
                 self._player_list_open = False
                 return True
@@ -556,7 +556,7 @@ class PlayGameMenuView(PanelMenuView):
                 rl.WHITE,
             )
 
-        player_count = int(self._state.config.data.get("player_count", 1))
+        player_count = self.state.config.player_count
         if player_count < 1:
             player_count = 1
         if player_count > len(self._PLAYER_COUNT_LABELS):
@@ -597,7 +597,7 @@ class PlayGameMenuView(PanelMenuView):
         button_draw(textures, font, state, pos=pos, width=width, scale=scale)
 
     def _draw_mode_count(self, key: str, pos: Vec2, scale: float, color: rl.Color) -> None:
-        status = self._state.status
+        status = self.state.status
         if key == "quests":
             count = self._quests_total_played()
         elif key == "rush":

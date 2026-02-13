@@ -43,7 +43,7 @@ def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
     )
 
     speed_scale = float(getattr(ctx.proj, "speed_scale", 1.0))
-    fx_detail_1 = bool(renderer.config.data.get("fx_detail_1", 0)) if renderer.config is not None else True
+    fx_detail_1 = renderer.config.fx_detail(level=1, default=True) if renderer.config is not None else True
 
     plasma_cfg = plasma_projectile_render_config(type_id)
     rgb = plasma_cfg.rgb
