@@ -106,6 +106,9 @@ class GameState:
     pause_background: PauseBackground | None = None
     pending_lan_session: PendingLanSession | None = None
     lan_in_lobby: bool = False
+    lan_waiting_for_players: bool = False
+    lan_expected_players: int = 1
+    lan_connected_players: int = 1
     lan_desync_count: int = 0
     lan_resync_failure_count: int = 0
     lan_last_error: str = ""

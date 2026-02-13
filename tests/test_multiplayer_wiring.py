@@ -3,9 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+import pyray as rl
+
 from crimson.sim.input import PlayerInput
 from crimson.game_world import GameWorld
 from crimson.modes.quest_mode import QuestMode
+from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
 from grim.config import ensure_crimson_cfg
 from grim.geom import Vec2
@@ -119,3 +122,90 @@ def test_base_gameplay_build_local_inputs_passes_creatures(monkeypatch, tmp_path
 
     assert len(frame) == len(mode.world.players)
     assert captured["creatures"] is mode.creatures.entries
+
+
+def test_rush_mode_pauses_sim_while_lan_wait_gate_is_active(monkeypatch, tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    assets_dir = repo_root / "artifacts" / "assets"
+
+    cfg = ensure_crimson_cfg(tmp_path)
+    ctx = ViewContext(assets_dir=assets_dir)
+    mode = RushMode(ctx, config=cfg)
+    mode.set_lan_runtime(
+        enabled=True,
+        role="host",
+        expected_players=3,
+        connected_players=1,
+        waiting_for_players=True,
+    )
+
+    class _FakeClock:
+        def __init__(self) -> None:
+            self.reset_calls = 0
+            self.advance_calls = 0
+            self.dt_tick = 1.0 / 60.0
+
+        def reset(self) -> None:
+            self.reset_calls += 1
+
+        def advance(self, _dt: float) -> int:
+            self.advance_calls += 1
+            return 1
+
+    clock = _FakeClock()
+    mode._sim_clock = clock
+
+    monkeypatch.setattr(mode, "_update_audio", lambda _dt: None)
+    monkeypatch.setattr(mode, "_tick_frame", lambda _dt: (0.02, 20.0))
+    monkeypatch.setattr(mode, "_handle_input", lambda: None)
+
+    mode.update(0.02)
+
+    assert clock.reset_calls == 1
+    assert clock.advance_calls == 0
+
+
+def test_rush_mode_debug_f10_releases_lan_wait_gate(monkeypatch, tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    assets_dir = repo_root / "artifacts" / "assets"
+
+    cfg = ensure_crimson_cfg(tmp_path)
+    ctx = ViewContext(assets_dir=assets_dir)
+    mode = RushMode(ctx, config=cfg)
+    mode.set_lan_runtime(
+        enabled=True,
+        role="host",
+        expected_players=2,
+        connected_players=1,
+        waiting_for_players=True,
+    )
+
+    class _FakeClock:
+        def __init__(self) -> None:
+            self.reset_calls = 0
+            self.advance_calls = 0
+            self.dt_tick = 1.0 / 60.0
+
+        def reset(self) -> None:
+            self.reset_calls += 1
+
+        def advance(self, _dt: float) -> int:
+            self.advance_calls += 1
+            return 0
+
+    clock = _FakeClock()
+    mode._sim_clock = clock
+
+    monkeypatch.setattr(mode, "_update_audio", lambda _dt: None)
+    monkeypatch.setattr(mode, "_tick_frame", lambda _dt: (0.02, 20.0))
+    monkeypatch.setattr(mode, "_handle_input", lambda: None)
+    monkeypatch.setattr("crimson.modes.base_gameplay_mode.debug_enabled", lambda: True)
+    monkeypatch.setattr(
+        "crimson.modes.base_gameplay_mode.rl.is_key_pressed",
+        lambda key: key == rl.KeyboardKey.KEY_F10,
+    )
+
+    mode.update(0.02)
+
+    assert clock.advance_calls == 1
+    assert mode._lan_wait_gate_active() is False
