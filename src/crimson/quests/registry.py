@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import Callable
 
-from .types import QuestBuilder, QuestDefinition
+from .types import QuestBuilder, QuestDefinition, parse_level
 
-_QUESTS: dict[str, QuestDefinition] = {}
+_QUESTS: dict[tuple[int, int], QuestDefinition] = {}
 
 
 def register_quest(
@@ -23,8 +23,10 @@ def register_quest(
         return str(getattr(builder_fn, "__name__", type(builder_fn).__name__))
 
     def decorator(builder: QuestBuilder) -> QuestBuilder:
+        major, minor = parse_level(level)
         quest = QuestDefinition(
-            level=level,
+            major=major,
+            minor=minor,
             title=title,
             builder=builder,
             time_limit_ms=time_limit_ms,
@@ -35,12 +37,13 @@ def register_quest(
             terrain_ids=terrain_ids,
             builder_address=builder_address,
         )
-        existing = _QUESTS.get(quest.level)
+        key = quest.level_key
+        existing = _QUESTS.get(key)
         if existing is not None:
             raise ValueError(
                 f"duplicate quest level {quest.level}: {_builder_name(existing.builder)} vs {_builder_name(builder)}"
             )
-        _QUESTS[quest.level] = quest
+        _QUESTS[key] = quest
         return builder
 
     return decorator
@@ -50,5 +53,13 @@ def all_quests() -> list[QuestDefinition]:
     return sorted(_QUESTS.values(), key=lambda quest: quest.level_key)
 
 
+def quest_by_stage(major: int, minor: int) -> QuestDefinition | None:
+    return _QUESTS.get((int(major), int(minor)))
+
+
 def quest_by_level(level: str) -> QuestDefinition | None:
-    return _QUESTS.get(level)
+    try:
+        major, minor = parse_level(level)
+    except ValueError:
+        return None
+    return quest_by_stage(major, minor)

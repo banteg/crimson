@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pyray as rl
+from construct import ConstructError
 
 from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
 from grim.geom import Vec2
@@ -38,7 +39,7 @@ def load_grim_mono_font(assets_root: Path, missing_assets: list[str]) -> GrimMon
             cache = PaqTextureCache(entries=entries, textures={})
             texture_asset = cache.get_or_load("default_font_courier", "load/default_font_courier.tga")
             texture = texture_asset.texture
-        except Exception:
+        except (ConstructError, FileNotFoundError, OSError, ValueError, RuntimeError):
             texture = None
 
     if texture is None:

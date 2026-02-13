@@ -148,12 +148,15 @@ class RushMode(BaseGameplayMode):
         status = self.state.status
         weapon_usage_counts: tuple[int, ...] = ()
         if status is not None:
-            try:
-                raw_counts = status.data.get("weapon_usage_counts")
-                if isinstance(raw_counts, list):
-                    weapon_usage_counts = tuple(int(value) & 0xFFFFFFFF for value in raw_counts[:WEAPON_USAGE_COUNT])
-            except Exception:
-                weapon_usage_counts = ()
+            raw_counts = status.data.get("weapon_usage_counts")
+            if isinstance(raw_counts, list):
+                coerced: list[int] = []
+                for value in raw_counts[:WEAPON_USAGE_COUNT]:
+                    try:
+                        coerced.append(int(value) & 0xFFFFFFFF)
+                    except (TypeError, ValueError, OverflowError):
+                        coerced.append(0)
+                weapon_usage_counts = tuple(coerced)
         if len(weapon_usage_counts) != WEAPON_USAGE_COUNT:
             weapon_usage_counts = tuple(weapon_usage_counts) + (0,) * max(
                 0, WEAPON_USAGE_COUNT - len(weapon_usage_counts)

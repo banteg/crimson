@@ -15,7 +15,7 @@ from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 from ..paths import default_runtime_dir
 from ..quests import all_quests
-from ..quests.types import QuestDefinition, parse_level
+from ..quests.types import QuestDefinition
 from ._ui_helpers import draw_ui_text
 from .quest_title_overlay import draw_quest_title_overlay
 from .registry import register_view
@@ -210,7 +210,7 @@ class GroundView:
             self._renderer.texture = base
             self._renderer.overlay = overlay
             self._renderer.overlay_detail = detail
-        self._terrain_seed = self._quest_seed(quest.level)
+        self._terrain_seed = self._quest_seed(quest.major, quest.minor)
         self._regenerate_terrain(reset_camera=True)
 
     def _regenerate_terrain(self, *, reset_camera: bool = False) -> None:
@@ -221,9 +221,8 @@ class GroundView:
         if reset_camera:
             self._camera = Vec2()
 
-    def _quest_seed(self, level: str) -> int:
-        tier, quest = parse_level(level)
-        return tier * 100 + quest
+    def _quest_seed(self, major: int, minor: int) -> int:
+        return int(major) * 100 + int(minor)
 
     def _draw_quest_title_overlay(self) -> None:
         if self._grim_mono is None or not self._quests:

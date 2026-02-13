@@ -6,6 +6,7 @@ from pathlib import Path
 import struct
 
 from grim.config import CrimsonConfig
+from ..quests.types import parse_level
 
 
 RECORD_SIZE = 0x48
@@ -263,10 +264,8 @@ def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage
                 level = config.quest_level
                 if isinstance(level, str):
                     try:
-                        major_text, minor_text = level.split(".", 1)
-                        major = int(major_text)
-                        minor = int(minor_text)
-                    except Exception:
+                        major, minor = parse_level(level)
+                    except ValueError:
                         major = 0
                         minor = 0
             quest_stage_major = major

@@ -162,10 +162,7 @@ class ProjectileFxView:
 
     def open(self) -> None:
         self._missing_assets.clear()
-        try:
-            self._small = load_small_font(self._assets_root, self._missing_assets)
-        except Exception:
-            self._small = None
+        self._small = load_small_font(self._assets_root, self._missing_assets)
 
         projs_path = self._assets_root / "crimson" / "game" / "projs.png"
         if not projs_path.is_file():

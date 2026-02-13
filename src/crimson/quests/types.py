@@ -28,12 +28,24 @@ QuestBuilder = Callable[..., list[SpawnEntry]]
 
 
 def parse_level(level: str) -> tuple[int, int]:
-    tier_text, quest_text = level.split(".", 1)
-    return int(tier_text), int(quest_text)
+    major_text, minor_text = level.split(".", 1)
+    return int(major_text), int(minor_text)
 
 
-def terrain_ids_for(level: str) -> tuple[int, int, int]:
-    tier, quest = parse_level(level)
+def format_level(major: int, minor: int) -> str:
+    return f"{int(major)}.{int(minor)}"
+
+
+def _level_parts(level_or_major: str | int, minor: int | None = None) -> tuple[int, int]:
+    if isinstance(level_or_major, str):
+        return parse_level(level_or_major)
+    if minor is None:
+        raise TypeError("minor is required when major is passed as an int")
+    return int(level_or_major), int(minor)
+
+
+def terrain_ids_for(level_or_major: str | int, minor: int | None = None) -> tuple[int, int, int]:
+    tier, quest = _level_parts(level_or_major, minor)
     if tier <= 4:
         base = (tier - 1) * 2
         alt = base + 1
@@ -43,13 +55,14 @@ def terrain_ids_for(level: str) -> tuple[int, int, int]:
     return quest & 0x3, 1, 3
 
 
-def terrain_id_for(level: str) -> int:
-    return terrain_ids_for(level)[0]
+def terrain_id_for(level_or_major: str | int, minor: int | None = None) -> int:
+    return terrain_ids_for(level_or_major, minor)[0]
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class QuestDefinition:
-    level: str
+    major: int
+    minor: int
     title: str
     builder: QuestBuilder
     time_limit_ms: int
@@ -61,13 +74,22 @@ class QuestDefinition:
     builder_address: int | None = None
 
     def __post_init__(self) -> None:
+        major = int(self.major)
+        minor = int(self.minor)
+        object.__setattr__(self, "major", major)
+        object.__setattr__(self, "minor", minor)
+
         terrain_ids = self.terrain_ids
         if terrain_ids is None:
-            terrain_ids = terrain_ids_for(self.level)
+            terrain_ids = terrain_ids_for(major, minor)
             object.__setattr__(self, "terrain_ids", terrain_ids)
         if self.terrain_id is None:
             object.__setattr__(self, "terrain_id", terrain_ids[0])
 
     @property
+    def level(self) -> str:
+        return format_level(self.major, self.minor)
+
+    @property
     def level_key(self) -> tuple[int, int]:
-        return parse_level(self.level)
+        return self.major, self.minor

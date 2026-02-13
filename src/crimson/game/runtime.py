@@ -34,6 +34,7 @@ from ..demo_trial import (
 from ..frontend.assets import _ensure_texture_cache
 from ..frontend.menu import ensure_menu_ground
 from ..persistence.save_status import ensure_game_status
+from ..quests.types import parse_level
 from .loop_view import GameLoopView
 from .types import GameConfig, GameState
 
@@ -180,7 +181,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         ok = False
         try:
             ok = webbrowser.open(url)
-        except Exception:
+        except (OSError, webbrowser.Error):
             ok = False
         if ok:
             console.log.log(f"Launching web browser ({url})..")
@@ -229,12 +230,11 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         quest_minor = 0
         if mode_id == 3:
             level = state.pending_quest_level or ""
-            try:
-                major_text, minor_text = level.split(".", 1)
-                quest_major = int(major_text)
-                quest_minor = int(minor_text)
-            except Exception:
-                quest_major, quest_minor = 0, 0
+            if level:
+                try:
+                    quest_major, quest_minor = parse_level(level)
+                except ValueError:
+                    quest_major, quest_minor = 0, 0
         info = demo_trial_overlay_info(
             demo_build=bool(state.demo_enabled),
             game_mode_id=mode_id,

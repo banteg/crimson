@@ -271,11 +271,7 @@ def _draw_right_panel_local_score(
     lower_section_color = rl.Color(int(255 * 0.9), int(255 * 0.9), int(255 * 0.9), int(255 * 0.7))
     separator_color = rl.Color(149, 175, 198, int(255 * 0.7))
 
-    name = ""
-    try:
-        name = str(entry.name())
-    except Exception:
-        name = ""
+    name = str(entry.name())
     if not name:
         name = "???"
     draw_small_text(

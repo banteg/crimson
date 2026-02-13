@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ...quests.types import parse_level
+
 
 def ordinal(value: int) -> str:
     n = int(value)
@@ -20,7 +22,7 @@ def format_score_date(entry: object) -> str:
         day = int(getattr(entry, "day", 0) or 0)
         month = int(getattr(entry, "month", 0) or 0)
         year_off = int(getattr(entry, "year_offset", 0) or 0)
-    except Exception:
+    except (TypeError, ValueError):
         return ""
     if day <= 0 or month <= 0:
         return ""
@@ -34,9 +36,8 @@ def parse_quest_level(level: str | None) -> tuple[int, int]:
     if not level:
         return (0, 0)
     try:
-        major_text, minor_text = str(level).split(".", 1)
-        return (int(major_text), int(minor_text))
-    except Exception:
+        return parse_level(str(level))
+    except ValueError:
         return (0, 0)
 
 
@@ -55,9 +56,9 @@ def mode_label(mode_id: int, quest_major: int, quest_minor: int) -> str:
 
 
 def quest_title(major: int, minor: int) -> str:
-    from ...quests import quest_by_level
+    from ...quests import quest_by_stage
 
-    q = quest_by_level(f"{int(major)}.{int(minor)}")
+    q = quest_by_stage(major, minor)
     if q is not None and q.title:
         return str(q.title)
     return "???"

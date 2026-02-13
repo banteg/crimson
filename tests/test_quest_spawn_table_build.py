@@ -61,7 +61,7 @@ def test_build_quest_spawn_table_passes_rng_and_full_version() -> None:
             )
         ]
 
-    quest = QuestDefinition(level="1.1", title="dummy", builder=builder, time_limit_ms=1000, start_weapon_id=0)
+    quest = QuestDefinition(major=1, minor=1, title="dummy", builder=builder, time_limit_ms=1000, start_weapon_id=0)
     ctx = QuestContext(width=1024, height=1024, player_count=1)
 
     full_entries = build_quest_spawn_table(quest, ctx, seed=123, hardcore=False, full_version=True)
