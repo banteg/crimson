@@ -313,6 +313,7 @@ def player_update(
 ) -> None:
     """Port of `player_update` (0x004136b0) for the rewrite runtime."""
 
+    dt = float(f32(float(dt)))
     if dt <= 0.0:
         return
 
@@ -351,16 +352,15 @@ def player_update(
         speed_multiplier += 1.0
 
     movement_dt = float(dt)
-    if state.time_scale_active:
-        time_scale_factor = 0.3
-        reflex_timer = float(state.bonuses.reflex_boost)
-        if reflex_timer < 1.0:
-            time_scale_factor = (1.0 - reflex_timer) * 0.7 + 0.3
-        if time_scale_factor > 1e-9:
-            # Native `player_update` temporarily rescales frame_dt while applying
-            # movement/heading, then restores the scaled frame_dt for the rest of
-            # gameplay_update_and_render.
-            movement_dt = float(movement_dt * (0.6 / float(time_scale_factor)))
+    if state.time_scale_active and movement_dt > 0.0:
+        reflex_f32 = float(f32(float(state.bonuses.reflex_boost)))
+        time_scale_factor = float(f32(0.3))
+        if reflex_f32 < 1.0:
+            time_scale_factor = float(f32((1.0 - float(reflex_f32)) * 0.7 + 0.3))
+        if time_scale_factor > 0.0:
+            # Native computes `frame_dt = (0.6 / _time_scale_factor) * frame_dt`
+            # and stores back to float before movement/heading logic.
+            movement_dt = float(f32((0.6 / float(time_scale_factor)) * float(movement_dt)))
 
     # Movement.
     raw_move = input_state.move
