@@ -980,3 +980,62 @@ When the capture SHA is unchanged, append updates to the same session.
 - Next probe should add creature update micro-tracing for focused ticks (movement candidate selection + per-step target heading/obstacle decisions) and recapture:
   - native `creature_update` movement branch decisions,
   - rewrite `src/crimson/creatures/runtime.py` + `src/crimson/creatures/ai.py` parity at the first ancestry tick where creature position drift appears.
+
+---
+
+## Session 17 (2026-02-13)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.json.gz`
+- **Capture SHA256:** `49aec5d3705f7c8cfb90143a6d204053c8ba6744ca30c4a367666cdaec04fe0e`
+- **First mismatch progression:**
+  - baseline after Session 16 fix (`0974bf4d`): `tick 9065 (state_mismatch: players[0].experience/score_xp +110 in replay)`
+  - no additional gameplay fix landed in this session (investigation-only)
+
+### Key Findings
+
+- Reconfirmed the current baseline drift point:
+  - `divergence-report --no-cache` remains `tick 9065`,
+  - replay still produces a replay-only kill/XP branch (`+110`).
+- Focus ancestry checkpoints (`9013/9014`) again show slot `31` as the parent-target divergence source for the later Splitter chain.
+- A sequential `_FocusRuntime` scan (same engine used by `focus-trace`) localized the slot-31 drift timeline:
+  - respawn lifecycle for slot `31` (type `4`) occurs at `tick 8679` (`source=survival_spawn_creature`),
+  - first measurable spatial delta appears at `tick 8736` (`x_delta=-0.000061`),
+  - drift grows smoothly through chase updates (`x_delta +0.523 @8957`, `+1.032 @8964`, `+2.063 @8974`, `+6.002 @8993`),
+  - first large HP branch split appears later at `tick 9011` (`hp_delta=-125.294`), then feeds the known `9014 -> 9043 -> 9065` chain.
+- Slot-31 behavior in the onset window is not an orbit-branch issue:
+  - rewrite `force_target=1` through the early drift window (`~8890..8974`), so movement is player-chase steering in those ticks.
+- Decompile + structural queries were used to re-check native movement/turn paths:
+  - `creature_update_all` (`0x00426220`) and `angle_approach` (`0x0041f430`) loops/conditions,
+  - `survival_spawn_creature` confirms spawn writes heading/velocity/move_speed but leaves other fields as recycled-slot state.
+- Multiple targeted A/B probes were run via runtime monkeypatches with no material improvement on the slot-31 drift profile:
+  - orbit helper intermediate-rounding changes,
+  - distance helper rounding changes,
+  - stricter float32 arithmetic variants in `angle_approach`,
+  - `heading_from_delta_f32` f32-cast input deltas,
+  - dt resolve f32-cast,
+  - spawn/init scalar f32 canonicalization in `_apply_init`.
+- Conclusion: we can localize the drift timeline from current capture, but not disambiguate the first causative arithmetic/branch delta in native without finer-grained creature-update internals.
+
+### Landed Changes
+
+- None (investigation/session-bookkeeping only).
+
+### Validation
+
+- `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache --json-out analysis/frida/reports/capture_49aec5d3_fix40_baseline_nocache.json` *(expected non-zero exit while diverged)*
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json.gz --tick 9013 --near-miss-threshold 20 --no-cache --json-out analysis/frida/reports/capture_49aec5d3_fix40_focus_9013_nm20_nocache.json`
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json.gz --tick 9014 --near-miss-threshold 20 --no-cache --json-out analysis/frida/reports/capture_49aec5d3_fix40_focus_9014_nm20_nocache.json`
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json.gz --tick 8957 --near-miss-threshold 20 --no-cache --json-out analysis/frida/reports/capture_49aec5d3_fix40_focus_8957_nm20_nocache.json`
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json.gz --tick 8964 --near-miss-threshold 20 --no-cache --json-out analysis/frida/reports/capture_49aec5d3_fix40_focus_8964_nm20_nocache.json`
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json.gz --tick 8974 --near-miss-threshold 20 --no-cache --json-out analysis/frida/reports/capture_49aec5d3_fix40_focus_8974_nm20_nocache.json`
+- `uv run python - <<'PY' ... _FocusRuntime slot-31 drift scan over ancestry ticks ...` (onset localization + heading/target deltas + force_target inspection)
+- `sg run -p 'while ($COND) { $$$BODY }' analysis/ghidra/raw/crimsonland.exe_decompiled.c -l c --json=stream` (structural scan over decompile loops including `angle_approach`/movement loop forms)
+
+### Outcome / Next Probe
+
+- **Hard block with current capture granularity:** first visible slot-31 drift is sub-ULP-scale and accumulative (`8736+`), but current telemetry lacks per-creature pre/post movement internals to isolate which native arithmetic/branch diverges first.
+- Next required capture probe should add creature-update micro-telemetry for targeted slots/ticks:
+  - per-creature pre/post `heading`, `target_heading`, `force_target`, `ai_mode`, `move_scale`,
+  - per-creature `angle_approach` inputs/step outputs (`angle`, `target`, `rate`, chosen branch),
+  - raw `target_x/target_y` and `dist_to_target` comparisons used by `<40` / `>400` forcing,
+  - emitted at least for slot `31` around `8679..9014` and the player-chase onset window (`8730..8900`).
