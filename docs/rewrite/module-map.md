@@ -36,6 +36,7 @@ Game modes | `src/crimson/modes/*.py` | `src/crimson/modes/*` | Survival, Rush, 
 Quests | `src/crimson/quests/*` | `src/crimson/quests/*` | Game content (tiers 1-5) + runtime.
 Tutorial | `src/crimson/tutorial/*` | `src/crimson/tutorial/*` | Tutorial stage progression + hint system.
 Typ-o-Shooter | `src/crimson/typo/*` | `src/crimson/typo/*` | Typing mechanics + target matching.
+LAN lockstep networking | `src/crimson/net/*.py` | `src/crimson/net/*` | UDP transport, reliability, lobby, lockstep, resync, adapters.
 Simulation | `src/crimson/sim/*` | `src/crimson/sim/*` | World state, definitions, gameplay systems.
 Creatures | `src/crimson/creatures/*.py` | `src/crimson/creatures/*` | AI, animations, runtime pool, spawning.
 Data tables (Python) | `src/crimson/weapons.py`, `src/crimson/perks/ids.py`, `src/crimson/bonuses/ids.py`, `src/crimson/creatures/spawn.py` | `src/crimson/*` (or `src/crimson/data/*`) | Keep tables/enums in Python (no JSON move).

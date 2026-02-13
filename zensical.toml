@@ -45,6 +45,7 @@ nav = [
       { "Overview" = "rewrite/contracts/index.md" },
       { "Deterministic step pipeline" = "rewrite/deterministic-step-pipeline.md" },
       { "Float parity policy" = "rewrite/float-parity-policy.md" },
+      { "LAN lockstep" = "rewrite/lan-lockstep.md" },
       { "Local multiplayer" = "rewrite/local-multiplayer.md" },
     ]},
     { "Modules" = [
