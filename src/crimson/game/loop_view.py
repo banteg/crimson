@@ -223,6 +223,9 @@ class GameLoopView:
         if resolved is None:
             if action in {"start_survival", "start_rush", "start_typo", "start_tutorial", "start_quest"}:
                 self.state.lan_in_lobby = False
+                self.state.lan_waiting_for_players = False
+                self.state.lan_expected_players = 1
+                self.state.lan_connected_players = 1
             return action
 
         expected_mode, forward_action, mode_id = resolved
@@ -240,6 +243,9 @@ class GameLoopView:
         player_count = max(1, min(4, int(cfg.player_count)))
         self.state.config.player_count = int(player_count)
         self.state.lan_in_lobby = True
+        self.state.lan_expected_players = int(player_count)
+        self.state.lan_connected_players = 1
+        self.state.lan_waiting_for_players = int(player_count) > 1
         self.state.lan_desync_count = 0
         self.state.lan_resync_failure_count = 0
         self.state.config.game_mode = int(mode_id)

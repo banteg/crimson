@@ -16,6 +16,7 @@ from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
 from ..sim.input import PlayerInput
+from ..debug import debug_enabled
 from ..perks.runtime.effects import _creature_find_in_radius
 from ..perks.helpers import perk_count_get
 from ..game_world import GameWorld
@@ -102,6 +103,11 @@ class BaseGameplayMode:
         self._last_dt_ms = 0.0
         self._screen_fade: _ScreenFade | None = None
         self._local_input = LocalInputInterpreter()
+        self._lan_enabled = False
+        self._lan_role = ""
+        self._lan_expected_players = 1
+        self._lan_connected_players = 1
+        self._lan_waiting_for_players = False
 
     def _cvar_float(self, name: str, default: float = 0.0) -> float:
         console = self._console
@@ -221,6 +227,70 @@ class BaseGameplayMode:
         self._cursor_pulse_time += pulse_dt * 1.1
 
         return dt_frame, dt_ui_ms
+
+    def set_lan_runtime(
+        self,
+        *,
+        enabled: bool,
+        role: str,
+        expected_players: int,
+        connected_players: int,
+        waiting_for_players: bool,
+    ) -> None:
+        self._lan_enabled = bool(enabled)
+        self._lan_role = str(role)
+        self._lan_expected_players = max(1, min(4, int(expected_players)))
+        self._lan_connected_players = max(0, min(self._lan_expected_players, int(connected_players)))
+        self._lan_waiting_for_players = bool(waiting_for_players)
+
+    def _lan_wait_gate_active(self) -> bool:
+        if not bool(self._lan_enabled):
+            return False
+        if not bool(self._lan_waiting_for_players):
+            return False
+        return int(self._lan_connected_players) < int(self._lan_expected_players)
+
+    def _update_lan_wait_gate_debug_override(self) -> None:
+        if not self._lan_wait_gate_active():
+            return
+        if (not debug_enabled()) or (not rl.is_key_pressed(rl.KeyboardKey.KEY_F10)):
+            return
+        self._lan_connected_players = int(self._lan_expected_players)
+        self._lan_waiting_for_players = False
+
+    def _draw_lan_debug_info(self, *, x: float, y: float, line_h: float) -> float:
+        if (not debug_enabled()) or (not bool(self._lan_enabled)):
+            return float(y)
+
+        role = str(self._lan_role or "?")
+        expected = int(self._lan_expected_players)
+        connected = int(self._lan_connected_players)
+        state = "waiting" if self._lan_wait_gate_active() else "active"
+        self._draw_ui_text(
+            f"lan: role={role} players={connected}/{expected} state={state}",
+            Vec2(float(x), float(y)),
+            rl.Color(130, 180, 240, 255),
+            scale=0.9,
+        )
+        y += float(line_h)
+
+        if self._lan_wait_gate_active():
+            self._draw_ui_text(
+                "lan(wait): simulation paused until all peers are ready",
+                Vec2(float(x), float(y)),
+                rl.Color(130, 180, 240, 255),
+                scale=0.9,
+            )
+            y += float(line_h)
+            self._draw_ui_text(
+                "debug: F10 force start (temporary bring-up override)",
+                Vec2(float(x), float(y)),
+                rl.Color(130, 180, 240, 255),
+                scale=0.8,
+            )
+            y += float(line_h)
+
+        return float(y)
 
     def _player_name_default(self) -> str:
         return str(self.config.player_name or "")

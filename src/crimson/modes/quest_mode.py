@@ -616,6 +616,11 @@ class QuestMode(BaseGameplayMode):
 
         self._perk_menu.tick_timeline(dt_ui_ms)
 
+        self._update_lan_wait_gate_debug_override()
+        if self._lan_wait_gate_active():
+            self._sim_clock.reset()
+            return
+
         dt_world = 0.0 if self._paused or self._perk_menu.active else dt_frame
         if dt_world <= 0.0:
             self._sim_clock.reset()
@@ -720,6 +725,7 @@ class QuestMode(BaseGameplayMode):
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
+        debug_overlay_height = 0.0
         self.world.draw(
             draw_aim_indicators=not perk_menu_active,
             entity_alpha=self._world_entity_alpha(),
@@ -756,7 +762,10 @@ class QuestMode(BaseGameplayMode):
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
             god = "on" if self.state.debug_god_mode else "off"
+            line = float(self._ui_line_height(scale=0.9))
             self._draw_ui_text(f"debug: [/] weapon  F3 perk+1  F2 god={god}", Vec2(x, y), UI_HINT_COLOR, scale=0.9)
+            overlay_end_y = self._draw_lan_debug_info(x=x, y=y + line, line_h=line)
+            debug_overlay_height = max(0.0, float(overlay_end_y) - float(y))
 
         self._draw_quest_title()
         self._draw_quest_complete_banner()
@@ -779,8 +788,7 @@ class QuestMode(BaseGameplayMode):
             self._draw_game_cursor()
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
-            if debug_enabled() and (not perk_menu_active):
-                y += float(self._ui_line_height(scale=0.9))
+            y += float(debug_overlay_height)
             self._draw_ui_text("paused (TAB)", Vec2(x, y), UI_HINT_COLOR)
         else:
             self._draw_aim_cursor()

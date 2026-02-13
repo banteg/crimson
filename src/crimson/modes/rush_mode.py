@@ -280,6 +280,11 @@ class RushMode(BaseGameplayMode):
         any_alive = any(player.health > 0.0 for player in self.world.players)
         sim_active = (not self._paused) and any_alive
 
+        self._update_lan_wait_gate_debug_override()
+        if self._lan_wait_gate_active():
+            self._sim_clock.reset()
+            return
+
         if not sim_active:
             self._sim_clock.reset()
             if not any_alive:
@@ -389,10 +394,14 @@ class RushMode(BaseGameplayMode):
             line = float(self._ui_line_height())
             self._draw_ui_text(f"rush: t={self._rush.elapsed_ms / 1000.0:6.1f}s", Vec2(x, y), UI_TEXT_COLOR)
             self._draw_ui_text(f"kills={self.creatures.kill_count}", Vec2(x, y + line), UI_HINT_COLOR)
+            y_extra = y + line * 2.0
             if self._paused:
-                self._draw_ui_text("paused (TAB)", Vec2(x, y + line * 2.0), UI_HINT_COLOR)
+                self._draw_ui_text("paused (TAB)", Vec2(x, y_extra), UI_HINT_COLOR)
+                y_extra += line
             if self.player.health <= 0.0:
-                self._draw_ui_text("game over", Vec2(x, y + line * 2.0), UI_ERROR_COLOR)
+                self._draw_ui_text("game over", Vec2(x, y_extra), UI_ERROR_COLOR)
+                y_extra += line
+            self._draw_lan_debug_info(x=x, y=y_extra, line_h=line)
 
         warn_y = float(rl.get_screen_height()) - 28.0
         if self.world.missing_assets:

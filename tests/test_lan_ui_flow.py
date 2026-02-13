@@ -69,6 +69,26 @@ def test_loop_view_maps_lan_start_action_into_mode_action(tmp_path: Path) -> Non
     assert state.config.player_count == 3
     assert state.pending_quest_level == "1.1"
     assert state.lan_in_lobby is True
+    assert state.lan_waiting_for_players is True
+    assert state.lan_expected_players == 3
+    assert state.lan_connected_players == 1
+
+
+def test_non_lan_start_resets_lobby_wait_state(tmp_path: Path) -> None:
+    state = _build_state(tmp_path)
+    state.lan_in_lobby = True
+    state.lan_waiting_for_players = True
+    state.lan_expected_players = 4
+    state.lan_connected_players = 2
+    loop = GameLoopView(state)
+
+    action = loop._resolve_lan_action("start_survival")
+
+    assert action == "start_survival"
+    assert state.lan_in_lobby is False
+    assert state.lan_waiting_for_players is False
+    assert state.lan_expected_players == 1
+    assert state.lan_connected_players == 1
 
 
 def test_open_lan_session_route_requires_feature_cvar(tmp_path: Path) -> None:

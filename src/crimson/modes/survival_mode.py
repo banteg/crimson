@@ -526,6 +526,11 @@ class SurvivalMode(BaseGameplayMode):
         else:
             self._hud_fade_ms = clamp(self._hud_fade_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
 
+        self._update_lan_wait_gate_debug_override()
+        if self._lan_wait_gate_active():
+            self._sim_clock.reset()
+            return
+
         if not sim_active:
             self._sim_clock.reset()
             if self._death_transition_ready():
@@ -715,10 +720,14 @@ class SurvivalMode(BaseGameplayMode):
                 UI_HINT_COLOR,
                 scale=0.9,
             )
+            y_extra = y + line * 3.0
             if self._paused:
-                self._draw_ui_text("paused (TAB)", Vec2(x, y + line * 3.0), UI_HINT_COLOR)
+                self._draw_ui_text("paused (TAB)", Vec2(x, y_extra), UI_HINT_COLOR)
+                y_extra += line
             if self.player.health <= 0.0:
-                self._draw_ui_text("game over", Vec2(x, y + line * 3.0), UI_ERROR_COLOR)
+                self._draw_ui_text("game over", Vec2(x, y_extra), UI_ERROR_COLOR)
+                y_extra += line
+            self._draw_lan_debug_info(x=x, y=y_extra, line_h=line)
         warn_y = float(rl.get_screen_height()) - 28.0
         if self.world.missing_assets:
             warn = "Missing world assets: " + ", ".join(self.world.missing_assets)

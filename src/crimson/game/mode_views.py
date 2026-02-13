@@ -32,6 +32,7 @@ class _BaseModeGameView:
             # Original game: entering gameplay cuts the menu theme; in-game tunes
             # start later on the first creature hit.
             stop_music(self.state.audio)
+        self._configure_lan_runtime()
         self._mode.bind_status(self.state.status)
         self._mode.bind_audio(self.state.audio, self.state.rng)
         self._mode.bind_screen_fade(self.state)
@@ -43,6 +44,33 @@ class _BaseModeGameView:
 
     def _on_open_end(self) -> None:
         return
+
+    def _configure_lan_runtime(self) -> None:
+        set_lan_runtime = getattr(self._mode, "set_lan_runtime", None)
+        if not callable(set_lan_runtime):
+            return
+
+        pending = self.state.pending_lan_session
+        if (not bool(self.state.lan_in_lobby)) or pending is None:
+            set_lan_runtime(
+                enabled=False,
+                role="",
+                expected_players=1,
+                connected_players=1,
+                waiting_for_players=False,
+            )
+            return
+
+        expected_players = max(1, min(4, int(getattr(self.state, "lan_expected_players", 1))))
+        connected_players = max(0, min(expected_players, int(getattr(self.state, "lan_connected_players", 1))))
+        waiting_for_players = bool(getattr(self.state, "lan_waiting_for_players", False))
+        set_lan_runtime(
+            enabled=True,
+            role=str(pending.role),
+            expected_players=int(expected_players),
+            connected_players=int(connected_players),
+            waiting_for_players=bool(waiting_for_players),
+        )
 
     def close(self) -> None:
         if self.state.audio is not None:
