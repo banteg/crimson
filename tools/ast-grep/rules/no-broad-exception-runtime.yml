@@ -3,11 +3,17 @@ language: python
 severity: warning
 message: Avoid broad `except Exception` in runtime hot paths; catch specific expected exception types.
 files:
+  - src/crimson/frontend/menu.py
   - src/crimson/frontend/panels/controls.py
   - src/crimson/frontend/panels/options.py
   - src/crimson/frontend/panels/play_game.py
+  - src/crimson/game/quest_views/shared.py
   - src/crimson/game/quest_views/quest_results.py
+  - src/crimson/modes/components/highscore_record_builder.py
+  - src/crimson/movement_controls.py
+  - src/crimson/perks/availability.py
   - src/crimson/persistence/save_status.py
+  - src/crimson/sim/runners/common.py
   - src/crimson/weapon_runtime/assign.py
   - src/crimson/weapon_runtime/availability.py
   - src/grim/music.py
