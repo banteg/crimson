@@ -23,8 +23,8 @@ Level progression is immediate and checked after kills and reward application.
 
 In single-player Survival, one-time conditional handout checks can replace your weapon temporarily:
 
-- after `64000 ms`, if you never switched off pistol and the one-shot conditions remain open, you can get [Shrinkifier 5k](../secret-weapons.md).
-- after 3 recent deaths around the same area and your health is below `15`, you can get [Blade Gun](../secret-weapons.md).
+- after `64000 ms`, if you never switched off pistol and the one-shot conditions remain open, you can get [Shrinkifier 5k](../../secret-weapons.md).
+- after 3 recent deaths around the same area and your health is below `15`, you can get [Blade Gun](../../secret-weapons.md).
 
 The replacement is revoked by the internal guard once the conditions are no longer met.
 
