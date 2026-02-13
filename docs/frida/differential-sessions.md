@@ -935,3 +935,48 @@ When the capture SHA is unchanged, append updates to the same session.
   - `analysis/ghidra/raw/crimsonland.exe_decompiled.c` (`player_update` around `0x004136b0`, `frame_dt` temporary rescale/restore),
   - `src/crimson/gameplay.py`,
   - `src/crimson/sim/world_state.py`.
+
+---
+
+## Session 16 (2026-02-13)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.json.gz`
+- **Capture SHA256:** `49aec5d3705f7c8cfb90143a6d204053c8ba6744ca30c4a367666cdaec04fe0e`
+- **First mismatch progression:**
+  - pre-fix baseline (`fix38`): `tick 8999 (rng_stream_mismatch, missing_native_tail=16)`
+  - after landed fix in this session: `tick 9065 (state_mismatch: players[0].experience/score_xp +110 in replay)`
+
+### Key Findings
+
+- A tiny Reflex Boost tail-rounding bias remained upstream of the old `tick 8999` RNG shortfall.
+  - At `tick 8915`, capture and replay quest cadence differed by one ms (`capture +21` vs `rewrite +20`).
+  - Bias sweep around `_REFLEX_TIMER_SUBTRACT_BIAS` showed `4e-9/5e-9/1e-8` all remove that cadence mismatch and eliminate the `tick 8999` RNG-tail shortfall.
+- With the Reflex timer fix in place, first sustained divergence moved to `tick 9065` and became XP-only (`+110` replay).
+  - `focus-trace` at `9065` shows replay-only Splitter branch (`proj 17` hit creature `17`, spawning children `idx 9/11`) while capture shows five misses for `proj 17`.
+- Root-cause chain for the `9065` branch was traced backward through spawn ancestry:
+  - `9065`: `proj 17` replay hit vs capture miss,
+  - `9043`: same slot hits one query earlier in replay, creating translated child spawn positions,
+  - `9041`/`9030`: translated Splitter-hit spawn positions persist across generations,
+  - `9014`: parent `proj 4` hit timing differs because target creature `31` position is already far from capture (`~+6.39,+1.50` in replay at the decisive query),
+  - `9013`: initial player projectile spawn for this chain is near-identical to capture (drift is not introduced at fire spawn).
+- This isolates the remaining failure as upstream creature-motion/AI parity drift, not a local Splitter branch implementation bug.
+
+### Landed Changes
+
+- `src/crimson/bonuses/update.py`
+  - tuned `_REFLEX_TIMER_SUBTRACT_BIAS` from `2e-9` to `4e-9` to match native Reflex tail decrement cadence in this capture family.
+
+### Validation
+
+- `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache --json-out analysis/frida/reports/capture_49aec5d3_fix38_try_reflex_bias_4e-9_baseline_nocache.json` *(expected non-zero exit while diverged)*
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json.gz --tick 8915 --near-miss-threshold 0.35 --no-cache --json-out analysis/frida/reports/capture_49aec5d3_fix38_focus_8915_nocache.json`
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json.gz --tick 9065 --near-miss-threshold 20 --no-cache --json-out analysis/frida/reports/capture_49aec5d3_fix39_focus_9065_nm20_nocache.json`
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json.gz --tick 9043 --near-miss-threshold 20 --no-cache --json-out analysis/frida/reports/capture_49aec5d3_fix39_focus_9043_nm20_nocache.json`
+
+### Outcome / Next Probe
+
+- Reflex-tail parity improvement is landed and moved divergence later (`8999 -> 9065`), but the remaining blocker is upstream creature-motion drift causing earlier/later hit resolution in long Splitter chains.
+- Current capture is insufficient to localize the first creature-motion branch split in replay with confidence from existing per-tick summaries alone.
+- Next probe should add creature update micro-tracing for focused ticks (movement candidate selection + per-step target heading/obstacle decisions) and recapture:
+  - native `creature_update` movement branch decisions,
+  - rewrite `src/crimson/creatures/runtime.py` + `src/crimson/creatures/ai.py` parity at the first ancestry tick where creature position drift appears.

@@ -11,7 +11,7 @@ from .hud import bonus_hud_update
 from .ids import BonusId
 from .pool import BONUS_PICKUP_LINGER, BONUS_TELEKINETIC_PICKUP_MS, bonus_find_aim_hover_entry
 
-_REFLEX_TIMER_SUBTRACT_BIAS = 2e-9
+_REFLEX_TIMER_SUBTRACT_BIAS = 4e-9
 
 
 def bonus_telekinetic_update(
