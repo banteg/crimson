@@ -66,6 +66,7 @@ from .schema import (
     CaptureEventHeadBonusSpawn,
     CaptureEventHeadCreatureDamage,
     CaptureEventHeadCreatureDeath,
+    CaptureEventHeadCreatureUpdateMicro,
     CaptureEventHeadProjectileFindHit,
     CaptureEventHeadProjectileFindQuery,
     CaptureEventHeadProjectileSpawn,
@@ -820,6 +821,8 @@ def _build_event_heads_by_kind(tick: CaptureTick) -> dict[str, list[dict[str, ob
             kind = "projectile_find_query"
         elif isinstance(head, CaptureEventHeadProjectileFindHit):
             kind = "projectile_find_hit"
+        elif isinstance(head, CaptureEventHeadCreatureUpdateMicro):
+            kind = "creature_update_micro"
         if not kind:
             continue
         out.setdefault(kind, []).append(_event_head_payload(head))
@@ -921,6 +924,7 @@ def _build_tick_lite_row(tick: CaptureTick) -> dict[str, object]:
     bonus_spawn_head_obj = list(event_heads_obj.get("bonus_spawn", []))
     projectile_find_query_head_obj = list(event_heads_obj.get("projectile_find_query", []))
     projectile_find_hit_head_obj = list(event_heads_obj.get("projectile_find_hit", []))
+    creature_update_micro_head_obj = list(event_heads_obj.get("creature_update_micro", []))
 
     projectile_find_query_miss_count = _int_or(
         spawn_obj.get("event_count_projectile_find_query_miss"),
@@ -1041,6 +1045,11 @@ def _build_tick_lite_row(tick: CaptureTick) -> dict[str, object]:
             for item in projectile_find_hit_head_obj
             if isinstance(item, dict) and bool(item.get("corpse_hit"))
         ),
+        "creature_update_micro_count": _int_or(
+            int(tick.event_counts.creature_update_micro),
+            len(creature_update_micro_head_obj),
+        ),
+        "creature_update_micro_head": creature_update_micro_head_obj,
         "spawn_top_creature_damage_callers": top_creature_damage_callers,
         "spawn_top_projectile_find_hit_callers": top_projectile_find_hit_callers,
         "spawn_top_projectile_find_query_callers": top_projectile_find_query_callers,

@@ -947,6 +947,10 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
         )
         projectile_find_hit_head = event_heads_obj.get("projectile_find_hit")
         projectile_find_hit_head_obj = projectile_find_hit_head if isinstance(projectile_find_hit_head, list) else []
+        creature_update_micro_head = event_heads_obj.get("creature_update_micro")
+        creature_update_micro_head_obj = (
+            creature_update_micro_head if isinstance(creature_update_micro_head, list) else []
+        )
         rng_callers_top = rng_top_obj.get("callers")
         rng_callers_top_obj = rng_callers_top if isinstance(rng_callers_top, list) else []
         rng_rand_calls = _int_or(rng_obj.get("rand_calls"))
@@ -1104,6 +1108,11 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
                 for item in projectile_find_hit_head_obj
                 if isinstance(item, dict) and bool(item.get("corpse_hit"))
             ),
+            "creature_update_micro_count": _int_or(
+                event_counts_obj.get("creature_update_micro"),
+                len(creature_update_micro_head_obj),
+            ),
+            "creature_update_micro_head": creature_update_micro_head_obj,
             "spawn_top_creature_damage_callers": (
                 spawn_obj.get("top_creature_damage_callers")
                 if isinstance(spawn_obj.get("top_creature_damage_callers"), list)
@@ -2108,6 +2117,34 @@ def _build_investigation_leads(
                 ),
             )
         )
+    else:
+        creature_micro_count = _int_or(focus_raw.get("creature_update_micro_count"), -1)
+        if creature_micro_count <= 0:
+            leads.append(
+                InvestigationLead(
+                    title="Capture lacks creature-update micro telemetry at the focus tick",
+                    evidence=(
+                        (
+                            "focus tick has no `creature_update_micro` event heads; per-creature movement "
+                            "turn/target internals are unavailable for root-cause analysis"
+                        ),
+                        (
+                            "re-capture with targeted micro hooks enabled "
+                            "(CRIMSON_FRIDA_CREATURE_MICRO_HOOKS=1, "
+                            "CRIMSON_FRIDA_CREATURE_MICRO_SLOTS=<slot list>, "
+                            "CRIMSON_FRIDA_CREATURE_MICRO_TICK_START/END=<window>)"
+                        ),
+                    ),
+                    native_functions=(
+                        "creature_update_all",
+                        "angle_approach",
+                    ),
+                    code_paths=(
+                        "scripts/frida/gameplay_diff_capture.js",
+                        "docs/frida/gameplay-diff-capture.md",
+                    ),
+                )
+            )
 
     rng_head_shortfall = _find_first_rng_head_shortfall(
         expected_by_tick=expected_by_tick,
@@ -3167,6 +3204,12 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
         projectile_find_hit_head = focus_raw.get("projectile_find_hit_head")
         if isinstance(projectile_find_hit_head, list) and projectile_find_hit_head:
             print(f"  capture_projectile_find_hit_head={projectile_find_hit_head[:6]!r}")
+        creature_update_micro_count = _int_or(focus_raw.get("creature_update_micro_count"), -1)
+        if creature_update_micro_count >= 0:
+            print(f"  capture_creature_update_micro_count={int(creature_update_micro_count)}")
+        creature_update_micro_head = focus_raw.get("creature_update_micro_head")
+        if isinstance(creature_update_micro_head, list) and creature_update_micro_head:
+            print(f"  capture_creature_update_micro_head={creature_update_micro_head[:6]!r}")
         secondary_spawn_count = _int_or(focus_raw.get("secondary_projectile_spawn_count"), 0)
         if secondary_spawn_count > 0:
             print(f"  capture_secondary_projectile_spawn_count={secondary_spawn_count}")

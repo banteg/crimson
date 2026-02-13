@@ -4,7 +4,7 @@ from typing import Literal, TypeAlias
 
 import msgspec
 
-CAPTURE_FORMAT_VERSION = 3
+CAPTURE_FORMAT_VERSION = 4
 
 
 class CaptureConfig(msgspec.Struct):
@@ -43,6 +43,11 @@ class CaptureConfig(msgspec.Struct):
     enable_creature_death_hook: bool = True
     enable_bonus_spawn_hook: bool = True
     enable_creature_lifecycle_digest: bool = True
+    enable_creature_micro_hooks: bool = False
+    creature_micro_slots: list[int] = msgspec.field(default_factory=list)
+    creature_micro_tick_start: int = -1
+    creature_micro_tick_end: int = -1
+    creature_micro_max_head_per_tick: int = 64
 
 
 class SessionFingerprint(msgspec.Struct, forbid_unknown_fields=True):
@@ -378,6 +383,12 @@ class CaptureEventHeadCreatureLifecycle(
     pass
 
 
+class CaptureEventHeadCreatureUpdateMicro(
+    _CaptureEventHeadData, tag_field="kind", tag="creature_update_micro"
+):
+    pass
+
+
 class CaptureEventHeadPerkApply(
     msgspec.Struct, tag_field="kind", tag="perk_apply", forbid_unknown_fields=True
 ):
@@ -412,6 +423,7 @@ CaptureEventHead: TypeAlias = (
     | CaptureEventHeadQuestTimelineDelta
     | CaptureEventHeadSfx
     | CaptureEventHeadCreatureLifecycle
+    | CaptureEventHeadCreatureUpdateMicro
     | CaptureEventHeadPerkApply
 )
 
@@ -613,6 +625,7 @@ class CaptureEventCounts(msgspec.Struct, forbid_unknown_fields=True):
     creature_spawn_low: int = 0
     creature_death: int = 0
     creature_lifecycle: int = 0
+    creature_update_micro: int = 0
     perk_apply: int = 0
     sfx: int = 0
     perk_delta: int = 0
