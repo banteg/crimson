@@ -33,6 +33,8 @@ class GameState(Protocol):
     skip_intro: bool
     menu_sign_locked: bool
 
+    stats_menu_easter_egg_roll: int
+
     quit_requested: bool
     screen_fade_alpha: float
     screen_fade_ramp: bool

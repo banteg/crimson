@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import datetime as dt
+import random
+
 import pyray as rl
 
 from grim.audio import play_music, play_sfx, stop_music, update_audio
@@ -55,6 +58,21 @@ _BACK_BUTTON_Y = 290.0
 
 _PLAYTIME_X = 204.0
 _PLAYTIME_Y = 334.0
+
+_STATS_EASTER_ROLL_UNSET = -1
+_STATS_EASTER_TRIGGER_ROLL = 3
+_STATS_EASTER_TEXT = "Orbes Volantes Exstare"
+_STATS_EASTER_TEXT_Y = 5.0
+
+
+def _stats_menu_easter_roll(current_roll: int, *, rng: random.Random) -> int:
+    if int(current_roll) != _STATS_EASTER_ROLL_UNSET:
+        return int(current_roll)
+    return int(rng.randrange(32))
+
+
+def _is_orbes_volantes_day(today: dt.date) -> bool:
+    return int(today.month) == 3 and int(today.day) == 3
 
 
 class StatisticsMenuView:
@@ -192,6 +210,10 @@ class StatisticsMenuView:
             if not self._closing:
                 play_music(self.state.audio, "shortie_monk")
             update_audio(self.state.audio, dt)
+        self.state.stats_menu_easter_egg_roll = _stats_menu_easter_roll(
+            self.state.stats_menu_easter_egg_roll,
+            rng=self.state.rng,
+        )
         if self._ground is not None:
             self._ground.process_pending()
         self._cursor_pulse_time += min(float(dt), 0.1) * 1.1
@@ -338,6 +360,17 @@ class StatisticsMenuView:
             1.0 * scale,
             rl.Color(255, 255, 255, int(255 * 0.8)),
         )
+
+        if _is_orbes_volantes_day(dt.date.today()) and int(self.state.stats_menu_easter_egg_roll) == _STATS_EASTER_TRIGGER_ROLL:
+            self.state.stats_menu_easter_egg_roll = _STATS_EASTER_ROLL_UNSET
+            x = float(self.state.rng.randrange(64) + 16)
+            draw_small_text(
+                font,
+                _STATS_EASTER_TEXT,
+                Vec2(x, _STATS_EASTER_TEXT_Y),
+                1.0,
+                rl.Color(51, 255, 153, 128),
+            )
 
         # Buttons.
         textures = self._button_textures
