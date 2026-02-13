@@ -1,0 +1,16 @@
+id: no-private-mode-runtime-handles
+language: python
+severity: error
+message: Gameplay modes should use public runtime handles (`self.world`, `self.player`, `self.creatures`).
+files:
+  - src/crimson/modes/base_gameplay_mode.py
+  - src/crimson/modes/quest_mode.py
+  - src/crimson/modes/rush_mode.py
+  - src/crimson/modes/survival_mode.py
+  - src/crimson/modes/tutorial_mode.py
+  - src/crimson/modes/typo_mode.py
+rule:
+  any:
+    - pattern: self._world
+    - pattern: self._player
+    - pattern: self._creatures
