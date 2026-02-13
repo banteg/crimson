@@ -615,8 +615,7 @@ class QuestsMenuView:
 
     def _draw_sign(self) -> None:
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "QuestsMenuView assets must be loaded before drawing sign"
         screen_w = float(self.state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
@@ -659,8 +658,7 @@ class QuestsMenuView:
 
     def _draw_panel(self) -> None:
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "QuestsMenuView assets must be loaded before drawing panel"
         panel = assets.panel
         _angle_rad, slide_x = MenuView._ui_element_anim(
             self,

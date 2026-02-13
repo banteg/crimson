@@ -4,10 +4,42 @@ snapshots:
     if assets is None or assets.sign is None:
         return
   : labels:
-    - source: assets.sign is None
+    - source: |-
+        if assets is None or assets.sign is None:
+            return
       style: primary
-      start: 21
-      end: 40
+      start: 0
+      end: 52
+  ? |
+    if assets is None or not entries:
+        return
+  : labels:
+    - source: |-
+        if assets is None or not entries:
+            return
+      style: primary
+      start: 0
+      end: 44
+  ? |
+    if assets is None:
+        return
+  : labels:
+    - source: |-
+        if assets is None:
+            return
+      style: primary
+      start: 0
+      end: 29
+  ? |
+    if assets is not None:
+        draw(assets.sign)
+  : labels:
+    - source: |-
+        if assets is not None:
+            draw(assets.sign)
+      style: primary
+      start: 0
+      end: 44
   ? |
     if assets.labels is None:
         return

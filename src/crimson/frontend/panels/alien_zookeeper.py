@@ -429,15 +429,15 @@ class AlienZooKeeperView:
         layout = self._layout(scale=scale)
 
         assets = self._assets
-        if assets is not None:
-            dst = rl.Rectangle(
-                layout.panel_x,
-                layout.panel_y,
-                MENU_PANEL_WIDTH * scale,
-                378.0 * scale,
-            )
-            fx_detail = self.state.config.fx_detail(level=0, default=False)
-            draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
+        assert assets is not None, "AlienZooKeeperView assets must be loaded before draw()"
+        dst = rl.Rectangle(
+            layout.panel_x,
+            layout.panel_y,
+            MENU_PANEL_WIDTH * scale,
+            378.0 * scale,
+        )
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
         draw_small_text(font, _TITLE, Vec2(layout.title_x, layout.title_y), 1.0 * scale, rl.WHITE)
         draw_small_text(font, _SUBTITLE_1, Vec2(layout.subtitle_1_x, layout.subtitle_1_y), 1.0 * scale, rl.WHITE)
@@ -553,8 +553,7 @@ class AlienZooKeeperView:
 
     def _draw_sign(self) -> None:
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "AlienZooKeeperView assets must be loaded before drawing sign"
         sign = assets.sign
         screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))

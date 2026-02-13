@@ -272,8 +272,7 @@ class StatisticsMenuView:
         _draw_screen_fade(self.state)
 
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "StatisticsMenuView assets must be loaded before draw()"
 
         scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
         panel_w = MENU_PANEL_WIDTH * scale
@@ -361,8 +360,7 @@ class StatisticsMenuView:
 
     def _draw_sign(self, *, scale: float) -> None:
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "StatisticsMenuView assets must be loaded before drawing sign"
         sign = assets.sign
         screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))

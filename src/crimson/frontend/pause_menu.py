@@ -158,8 +158,7 @@ class PauseMenuView:
         _draw_screen_fade(self.state)
 
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "PauseMenuView assets must be loaded before draw()"
         self._draw_menu_items()
         self._draw_menu_sign()
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
@@ -247,8 +246,7 @@ class PauseMenuView:
 
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         assets = self._assets
-        if assets is None:
-            return Rect()
+        assert assets is not None, "PauseMenuView assets must be loaded before computing menu bounds"
         item_w = float(assets.item.width)
         item_h = float(assets.item.height)
         item_scale, local_y_shift = self._menu_item_scale(entry.slot)
@@ -298,7 +296,8 @@ class PauseMenuView:
 
     def _draw_menu_items(self) -> None:
         assets = self._assets
-        if assets is None or not self._menu_entries:
+        assert assets is not None, "PauseMenuView assets must be loaded before drawing menu items"
+        if not self._menu_entries:
             return
         item = assets.item
         label_tex = assets.labels
@@ -387,8 +386,7 @@ class PauseMenuView:
 
     def _draw_menu_sign(self) -> None:
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "PauseMenuView assets must be loaded before drawing sign"
         screen_w = float(self.state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(

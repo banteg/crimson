@@ -238,8 +238,7 @@ class HighScoresView:
         _draw_screen_fade(self.state)
 
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "HighScoresView assets must be loaded before draw()"
 
         font = self._ensure_small_font()
         request = self._request

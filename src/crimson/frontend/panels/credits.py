@@ -557,8 +557,7 @@ class CreditsView:
         _draw_screen_fade(self.state)
 
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "CreditsView assets must be loaded before draw()"
 
         scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
         slide_x = self._panel_slide_x(scale=scale)
@@ -638,8 +637,7 @@ class CreditsView:
 
     def _draw_sign(self) -> None:
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "CreditsView assets must be loaded before drawing sign"
         sign = assets.sign
         screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))

@@ -166,8 +166,8 @@ class PanelMenuView:
         _draw_screen_fade(self.state)
         assets = self._assets
         entry = self._entry
-        if assets is None or entry is None:
-            return
+        assert assets is not None, "PanelMenuView assets must be loaded before draw()"
+        assert entry is not None, "PanelMenuView entry must be initialized before draw()"
         self._draw_panel()
         self._draw_entry(entry)
         self._draw_sign()
@@ -222,8 +222,7 @@ class PanelMenuView:
 
     def _draw_panel(self) -> None:
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "PanelMenuView assets must be loaded before drawing panel"
         panel = assets.panel
         _angle_rad, slide_x = MenuView._ui_element_anim(
             self,
@@ -248,8 +247,7 @@ class PanelMenuView:
 
     def _draw_entry(self, entry: MenuEntry) -> None:
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "PanelMenuView assets must be loaded before drawing entry"
         item = assets.item
         label_tex = assets.labels
         item_w = float(item.width)
@@ -328,8 +326,7 @@ class PanelMenuView:
 
     def _draw_sign(self) -> None:
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "PanelMenuView assets must be loaded before drawing sign"
         screen_w = float(self.state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
@@ -377,8 +374,7 @@ class PanelMenuView:
 
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         assets = self._assets
-        if assets is None:
-            return Rect()
+        assert assets is not None, "PanelMenuView assets must be loaded before computing menu bounds"
         item_w = float(assets.item.width)
         item_h = float(assets.item.height)
         item_scale, local_y_shift = self._menu_item_scale(entry.slot)

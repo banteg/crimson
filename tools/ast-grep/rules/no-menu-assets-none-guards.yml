@@ -1,7 +1,7 @@
 id: no-menu-assets-none-guards
 language: python
 severity: warning
-message: MenuAssets fields are required once assets are loaded; guard only `assets is None`.
+message: Menu view assets are required after `open()`; prefer fail-fast assertions over `None` branches.
 files:
   - src/crimson/frontend/menu.py
   - src/crimson/frontend/pause_menu.py
@@ -15,7 +15,19 @@ files:
   - src/crimson/game/quest_views/quests_menu.py
 rule:
   any:
-    - pattern: $ASSETS.sign is None
-    - pattern: $ASSETS.panel is None
-    - pattern: $ASSETS.item is None
-    - pattern: $ASSETS.labels is None
+    - pattern: |
+        if assets is None:
+            $$$BODY
+    - pattern: |
+        if assets is not None:
+            $$$BODY
+    - pattern: |
+        if assets is None or $COND:
+            $$$BODY
+    - pattern: |
+        if $COND or assets is None:
+            $$$BODY
+    - pattern: assets.sign is None
+    - pattern: assets.panel is None
+    - pattern: assets.item is None
+    - pattern: assets.labels is None

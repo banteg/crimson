@@ -136,8 +136,7 @@ class _DatabaseBaseView:
 
     def _draw_sign(self) -> None:
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "Database panel assets must be loaded before drawing sign"
         sign = assets.sign
         screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
@@ -233,8 +232,7 @@ class _DatabaseBaseView:
         _draw_screen_fade(self.state)
 
         assets = self._assets
-        if assets is None:
-            return
+        assert assets is not None, "Database panel assets must be loaded before draw()"
 
         scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
         fx_detail = self.state.config.fx_detail(level=0, default=False)
