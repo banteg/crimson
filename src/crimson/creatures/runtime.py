@@ -866,83 +866,90 @@ class CreaturePool:
                                 continue
 
             frozen_by_evil_eyes = idx == evil_target
+            # Native order in creature_update_all:
+            # AI7 link timer (flag 0x80) is updated before Evil Eyes freeze handling.
+            # Keeping this outside the freeze branch preserves rand-call timing parity
+            # for link_index transitions (e.g. 0x004263ac/0x0042637c paths).
+            creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
             if frozen_by_evil_eyes:
-                creature.move_scale = 0.0
-                creature.vel = Vec2()
-            else:
-                creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
-                ai = creature_ai_update_target(
-                    creature,
-                    player_pos=player.pos,
-                    creatures=self._entries,
-                    dt=dt,
-                )
-                creature.move_scale = float(ai.move_scale)
-                if ai.self_damage is not None and ai.self_damage > 0.0:
-                    creature.hp -= float(ai.self_damage)
-                    if creature.hp <= 0.0:
-                        deaths.append(
-                            self.handle_death(
-                                idx,
-                                state=state,
-                                players=players,
-                                rand=rand,
-                                dt=float(dt),
-                                world_width=world_width,
-                                world_height=world_height,
-                                fx_queue=fx_queue,
-                            )
+                # Native branch (`creature_update_all`, around 0x0042665f): when the
+                # current creature is the Evil Eyes target, the update path jumps to
+                # the loop tail before cooldown/interaction/ranged logic.
+                creature.force_target = 0
+                continue
+
+            ai = creature_ai_update_target(
+                creature,
+                player_pos=player.pos,
+                creatures=self._entries,
+                dt=dt,
+            )
+            creature.move_scale = float(ai.move_scale)
+            if ai.self_damage is not None and ai.self_damage > 0.0:
+                creature.hp -= float(ai.self_damage)
+                if creature.hp <= 0.0:
+                    deaths.append(
+                        self.handle_death(
+                            idx,
+                            state=state,
+                            players=players,
+                            rand=rand,
+                            dt=float(dt),
+                            world_width=world_width,
+                            world_height=world_height,
+                            fx_queue=fx_queue,
                         )
-                        if creature.active:
-                            self._tick_dead(
-                                creature,
-                                dt=dt,
-                                world_width=world_width,
-                                world_height=world_height,
-                                fx_queue_rotated=fx_queue_rotated,
-                            )
-                        continue
-
-                if (float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 500.0) or creature.plague_infected:
-                    creature.target_heading = heading_add_pi_f32(float(creature.target_heading))
-
-                turn_rate = f32(float(creature.move_speed) * CREATURE_TURN_RATE_SCALE)
-                if (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0:
-                    if creature.ai_mode == 7:
-                        creature.vel = Vec2()
-                    else:
-                        creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
-                        move_delta = _movement_delta_from_heading_f32(
-                            creature.heading,
+                    )
+                    if creature.active:
+                        self._tick_dead(
+                            creature,
                             dt=dt,
-                            move_scale=creature.move_scale,
-                            move_speed=creature.move_speed,
+                            world_width=world_width,
+                            world_height=world_height,
+                            fx_queue_rotated=fx_queue_rotated,
                         )
-                        creature.vel = _velocity_from_delta_f32(move_delta, dt=dt)
-                        # Native path (flags without 0x4): no bounds clamp here; offscreen spawns
-                        # remain offscreen until their own velocity moves them in.
-                        creature.pos = _advance_pos_by_delta_f32(creature.pos, move_delta)
+                    continue
+
+            if (float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 500.0) or creature.plague_infected:
+                creature.target_heading = heading_add_pi_f32(float(creature.target_heading))
+
+            turn_rate = f32(float(creature.move_speed) * CREATURE_TURN_RATE_SCALE)
+            if (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0:
+                if creature.ai_mode == 7:
+                    creature.vel = Vec2()
                 else:
-                    # Spawner/short-strip creatures clamp to bounds using `size` as a radius; most are stationary
-                    # unless ANIM_LONG_STRIP is set (see creature_update_all).
-                    radius = max(0.0, float(creature.size))
-                    max_x = max(radius, float(world_width) - radius)
-                    max_y = max(radius, float(world_height) - radius)
-                    creature.pos = f32_vec2(creature.pos.clamp_rect(radius, radius, max_x, max_y))
-                    if (creature.flags & CreatureFlags.ANIM_LONG_STRIP) == 0:
-                        creature.vel = Vec2()
-                    else:
-                        creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
-                        move_delta = _movement_delta_from_heading_f32(
-                            creature.heading,
-                            dt=dt,
-                            move_scale=creature.move_scale,
-                            move_speed=creature.move_speed,
-                        )
-                        creature.vel = _velocity_from_delta_f32(move_delta, dt=dt)
-                        creature.pos = f32_vec2(
-                            _advance_pos_by_delta_f32(creature.pos, move_delta).clamp_rect(radius, radius, max_x, max_y)
-                        )
+                    creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
+                    move_delta = _movement_delta_from_heading_f32(
+                        creature.heading,
+                        dt=dt,
+                        move_scale=creature.move_scale,
+                        move_speed=creature.move_speed,
+                    )
+                    creature.vel = _velocity_from_delta_f32(move_delta, dt=dt)
+                    # Native path (flags without 0x4): no bounds clamp here; offscreen spawns
+                    # remain offscreen until their own velocity moves them in.
+                    creature.pos = _advance_pos_by_delta_f32(creature.pos, move_delta)
+            else:
+                # Spawner/short-strip creatures clamp to bounds using `size` as a radius; most are stationary
+                # unless ANIM_LONG_STRIP is set (see creature_update_all).
+                radius = max(0.0, float(creature.size))
+                max_x = max(radius, float(world_width) - radius)
+                max_y = max(radius, float(world_height) - radius)
+                creature.pos = f32_vec2(creature.pos.clamp_rect(radius, radius, max_x, max_y))
+                if (creature.flags & CreatureFlags.ANIM_LONG_STRIP) == 0:
+                    creature.vel = Vec2()
+                else:
+                    creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
+                    move_delta = _movement_delta_from_heading_f32(
+                        creature.heading,
+                        dt=dt,
+                        move_scale=creature.move_scale,
+                        move_speed=creature.move_speed,
+                    )
+                    creature.vel = _velocity_from_delta_f32(move_delta, dt=dt)
+                    creature.pos = f32_vec2(
+                        _advance_pos_by_delta_f32(creature.pos, move_delta).clamp_rect(radius, radius, max_x, max_y)
+                    )
 
             # Native decrements contact/ranged cooldown before interaction checks,
             # then lets contact hits raise it back by +1.0 in the same frame.

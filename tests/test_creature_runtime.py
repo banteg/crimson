@@ -9,6 +9,7 @@ import pytest
 from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
+from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId, SpawnEnv, SpawnSlotInit, build_spawn_plan
@@ -558,3 +559,63 @@ def test_ai7_link_timer_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None
 
     pool.finalize_post_render_lifecycle()
     assert pool.entries[6].active is False
+
+
+def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
+    state = GameplayState(rng=Crand(0xBEEF))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    player.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    player.evil_eyes_target_creature = 0
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 50.0
+    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.flags = CreatureFlags.AI7_LINK_TIMER
+    creature.ai_mode = 7
+    creature.link_index = 1
+    creature.target_player = 0
+    creature.pos = Vec2(640.0, 512.0)
+    creature.move_speed = 0.0
+    creature.size = 45.0
+
+    stub_rand = _StubRand([0x2A])
+    pool.update(1.0 / 60.0, state=state, players=[player], rand=stub_rand.rand)
+
+    # Native ticks AI7 link timers before Evil Eyes movement freeze.
+    assert creature.link_index == -742
+    assert stub_rand._idx == 1
+
+
+def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
+    state = GameplayState(rng=Crand(0xBEEF))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    player.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    player.evil_eyes_target_creature = 0
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 50.0
+    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.flags = CreatureFlags.AI7_LINK_TIMER
+    creature.ai_mode = 7
+    creature.link_index = 100
+    creature.target_player = 0
+    creature.pos = Vec2(640.0, 512.0)
+    creature.vel = Vec2(2.0, -3.0)
+    creature.attack_cooldown = 1.0
+    creature.move_speed = 0.0
+    creature.size = 45.0
+
+    stub_rand = _StubRand([0x2A])
+    pool.update(1.0 / 60.0, state=state, players=[player], rand=stub_rand.rand)
+
+    # Native Evil Eyes path jumps to loop tail before cooldown/interaction/ranged branches.
+    assert creature.attack_cooldown == pytest.approx(1.0, abs=1e-9)
+    assert creature.vel == Vec2(2.0, -3.0)
+    assert creature.pos == Vec2(640.0, 512.0)
+    assert creature.link_index == 83
+    assert creature.force_target == 0
+    assert stub_rand._idx == 0
