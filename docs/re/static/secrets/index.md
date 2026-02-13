@@ -15,6 +15,8 @@ Crimsonland contains several layers of secrets:
 2. **AlienZooKeeper minigame** — A match-3 game accessed via the Secret button
 3. **Cryptic messages** — Decoded hints pointing to unknown in-game actions
 4. **Secret weapons** — Weapons not unlocked through normal quest progression
+5. **Statistics date gate** — March-3 randomized text easter egg (`Orbes Volantes Exstare`)
+6. **Startup date gate** — Date-based `balloon.tga` preload path in startup prelude
 
 ## Documents
 
@@ -29,5 +31,7 @@ Crimsonland contains several layers of secrets:
 - The decoded "Dead Center...Sacrifice...Firepower" line is now best-mapped
   (inference) to the Blade Gun Survival handout gate; no direct string->logic
   xref is known yet
+- The March-3 statistics text gate (`stats_menu_easter_egg_roll`) is mapped in decompile.
+- The startup date-gated `balloon.tga` preload path is mapped; downstream runtime effect is still unknown.
 - 17 named weapons are not in the quest unlock table
 - Survival has two verified one-off secret-weapon style grants (Shrinkifier 5k and Blade Gun), with strict runtime gates

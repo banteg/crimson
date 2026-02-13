@@ -11,6 +11,9 @@ wire save editing and runtime validation around concrete logic instead of rumor 
 ## Current status
 
 - We have a cluster of secret-hint strings and a single code path that prints them.
+- We have two additional date-gated easter-egg paths mapped in native code:
+  - statistics-menu March-3 text gate ("Orbes Volantes Exstare")
+  - startup prelude date gate for `balloon.tga`
 - We have not yet mapped the *actual* unlock logic or any persistent flags.
 - No save-file fields are confirmed to drive these secrets.
 
@@ -66,6 +69,43 @@ labels and consumes the credits line table.
 These functions provide a concrete anchor for the **credits click puzzle** logic, but we still have not
 located any code that branches into the **Secret Path** or unlocks secret weapons based on the click
 pattern. That logic remains to be found.
+
+## Date-gated easter eggs (verified)
+
+### Statistics menu: "Orbes Volantes Exstare"
+
+Decompiled main-loop logic (outside `statistics_menu_update`) shows a date + RNG gate:
+
+- if `stats_menu_easter_egg_roll == -1`, generate a one-shot roll in `0..31`
+- when `game_state_id == GAME_STATE_STATISTICS_MENU`, month = `3`, day = `3`, and
+  `stats_menu_easter_egg_roll == 3`, then:
+  - reset `stats_menu_easter_egg_roll = -1`
+  - set color to `(0.2, 1.0, 0.6, 0.5)`
+  - draw `"Orbes Volantes Exstare"` at y=`5.0` with x=`rand % 64 + 16`
+
+Evidence anchor: `analysis/ghidra/raw/crimsonland.exe_decompiled.c` around
+`0x0040ccf1` (`lines 7751-7771` in current export).
+
+### Startup prelude: date-gated `balloon.tga`
+
+`game_startup_init_prelude` (`0x0042b070`) checks local date and conditionally
+loads a hidden texture pair:
+
+- accepted month/day pairs:
+  - `9/12` (September 12)
+  - `11/8` (November 8)
+  - `12/18` (December 18)
+- on match:
+  - set `DAT_004aaed8 = 1`
+  - call `texture_get_or_load("balloon", "balloon.tga")`
+- then clear `DAT_004aaed8 = 0`
+
+Evidence anchor: `analysis/ghidra/raw/crimsonland.exe_decompiled.c` around
+`0x0042b10a` (`lines 23806-23818` in current export).
+
+Interpretation: this is a concrete secret/date path in startup code, but we do
+not yet have a confirmed runtime consumer for the loaded balloon texture or for
+`DAT_004aaed8`.
 
 ## Preconditions and logic (what we do / do not know)
 
@@ -237,4 +277,5 @@ All of the hint strings in the cluster are printed from a single guarded block i
 - Are secret weapon unlocks stored in `game.cfg`, or derived from other state (weapon table flags, globals)?
   - **Partial Answer:** `quest_database_init` initializes the `quest_unlock_weapon_id` array with static values (e.g., `quest_unlock_weapon_id = 2` for the shotgun). A "secret weapon" unlock would likely require writing to this array (`DAT_00484754`) or the `weapon_table` availability flags directly.
 - Is the startup secret-hint block tied to a “redistribution build” check or another sentinel?
+- What runtime path consumes the startup `balloon.tga` load / `DAT_004aaed8` gate?
 - Are any of these flags version-specific (v1.9.93 vs earlier)?
