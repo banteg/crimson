@@ -417,6 +417,33 @@ def test_spawn_init_preserves_stale_link_index_for_implicit_ai7_timer() -> None:
     assert pool.entries[idx].link_index == -1
 
 
+def test_spawn_init_preserves_stale_target_heading_from_recycled_slot() -> None:
+    pool = CreaturePool()
+    pool.entries[0].target_heading = 2.5632283687591553
+
+    idx = pool.spawn_init(
+        CreatureInit(
+            origin_template_id=0x75,
+            pos=Vec2(-40.0, 812.0),
+            heading=0.53,
+            phase_seed=323.0,
+            type_id=CreatureTypeId.SPIDER_SP1,
+            flags=CreatureFlags.AI7_LINK_TIMER,
+            ai_mode=0,
+            health=63.86125183105469,
+            max_health=63.86125183105469,
+            move_speed=1.3,
+            reward_value=43.0,
+            size=44.0,
+            contact_damage=4.0,
+        )
+    )
+
+    assert idx == 0
+    assert pool.entries[idx].heading == pytest.approx(0.53, abs=1e-9)
+    assert pool.entries[idx].target_heading == pytest.approx(2.5632283687591553, abs=1e-9)
+
+
 def test_spawn_init_ai_timer_still_overrides_link_index() -> None:
     pool = CreaturePool()
     pool.entries[0].link_index = -1
@@ -586,6 +613,32 @@ def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
     # Native ticks AI7 link timers before Evil Eyes movement freeze.
     assert creature.link_index == -742
     assert stub_rand._idx == 1
+
+
+def test_ai7_non_spawner_idle_keeps_previous_velocity() -> None:
+    state = GameplayState(rng=Crand(0xBEEF))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 50.0
+    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.flags = CreatureFlags.AI7_LINK_TIMER
+    creature.ai_mode = 7
+    creature.link_index = 400
+    creature.target_player = 0
+    creature.pos = Vec2(640.0, 512.0)
+    creature.vel = Vec2(2.0, -3.0)
+    creature.move_speed = 4.2
+    creature.size = 45.0
+
+    pool.update(1.0 / 60.0, state=state, players=[player], rand=lambda: 0)
+
+    # Native `creature_update_all` skips movement work for AI7 here without
+    # writing vel=0 for non-spawner creatures.
+    assert creature.vel == Vec2(2.0, -3.0)
+    assert creature.pos == Vec2(640.0, 512.0)
 
 
 def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:

@@ -24,6 +24,7 @@ from ..gameplay import (
     survival_record_recent_death,
 )
 from ..math_parity import (
+    NATIVE_HALF_PI,
     NATIVE_PI,
     NATIVE_TAU,
     NATIVE_TURN_RATE_SCALE,
@@ -149,9 +150,15 @@ def _movement_delta_from_heading_f32(
     move_scale: float,
     move_speed: float,
 ) -> Vec2:
-    direction = heading_to_direction_f32(heading)
+    # Native movement path computes cos/sin in x87 precision and rounds only on the
+    # final velocity write (`creature_update_all` around 0x00426b85..0x00426bb1).
+    # Avoid pre-rounding direction components to float32 here.
+    radians = float(f32(heading)) - NATIVE_HALF_PI
     step_scale = float(dt) * float(move_scale) * float(move_speed) * float(CREATURE_SPEED_SCALE)
-    return Vec2(f32(float(direction.x) * step_scale), f32(float(direction.y) * step_scale))
+    return Vec2(
+        f32(math.cos(radians) * step_scale),
+        f32(math.sin(radians) * step_scale),
+    )
 
 
 def _velocity_from_delta_f32(delta: Vec2, *, dt: float) -> Vec2:
@@ -915,9 +922,7 @@ class CreaturePool:
 
             turn_rate = f32(float(creature.move_speed) * CREATURE_TURN_RATE_SCALE)
             if (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0:
-                if creature.ai_mode == 7:
-                    creature.vel = Vec2()
-                else:
+                if creature.ai_mode != 7:
                     creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
                     move_delta = _movement_delta_from_heading_f32(
                         creature.heading,
@@ -1122,8 +1127,10 @@ class CreaturePool:
         entry.type_id = int(init.type_id.value) if init.type_id is not None else 0
         entry.pos = init.pos
         if init.heading is not None:
+            # Native spawn paths write heading but keep target_heading stale from
+            # the recycled slot (capture lifecycle shows added entries retaining
+            # prior target_heading values).
             entry.heading = float(init.heading)
-            entry.target_heading = float(init.heading)
         entry.target = init.pos
         entry.phase_seed = float(init.phase_seed)
         # Native spawn paths zero velocity and a few per-frame state fields on every
