@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..math_parity import f32
 from .apply_context import BonusApplyCtx
 
 
@@ -9,4 +10,6 @@ def apply_shield(ctx: BonusApplyCtx) -> None:
         should_register = float(ctx.players[0].shield_timer) <= 0.0 and float(ctx.players[1].shield_timer) <= 0.0
     if should_register:
         ctx.register_player("shield_timer")
-    ctx.player.shield_timer = float(ctx.player.shield_timer + float(ctx.amount) * ctx.economist_multiplier)
+    ctx.player.shield_timer = float(
+        f32(float(ctx.player.shield_timer) + float(ctx.amount) * float(ctx.economist_multiplier))
+    )

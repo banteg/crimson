@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from grim.color import RGBA
 from grim.geom import Vec2
 
+from ..math_parity import f32
 from ..sim.state_types import BonusPickupEvent, GameplayState
 from .apply_context import BonusApplyCtx
 
@@ -21,7 +22,9 @@ def apply_freeze(ctx: BonusApplyCtx) -> None:
     old = float(ctx.state.bonuses.freeze)
     if old <= 0.0:
         ctx.register_global("freeze")
-    ctx.state.bonuses.freeze = float(old + float(ctx.amount) * ctx.economist_multiplier)
+    ctx.state.bonuses.freeze = float(
+        f32(float(old) + float(ctx.amount) * float(ctx.economist_multiplier))
+    )
 
     creatures = ctx.creatures
     if creatures:

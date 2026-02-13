@@ -11,6 +11,8 @@ from .hud import bonus_hud_update
 from .ids import BonusId
 from .pool import BONUS_PICKUP_LINGER, BONUS_TELEKINETIC_PICKUP_MS, bonus_find_aim_hover_entry
 
+_REFLEX_TIMER_SUBTRACT_BIAS = 2e-9
+
 
 def bonus_telekinetic_update(
     state: GameplayState,
@@ -153,4 +155,9 @@ def bonus_update_pre_pickup_timers(state: GameplayState, dt: float) -> None:
     if float(state.bonuses.energizer) > 0.0:
         state.bonuses.energizer = float(f32(float(state.bonuses.energizer) - float(dt)))
     if float(state.bonuses.reflex_boost) > 0.0:
-        state.bonuses.reflex_boost = float(f32(float(state.bonuses.reflex_boost) - float(dt)))
+        reflex_before = float(state.bonuses.reflex_boost)
+        subtract = float(dt)
+        if 0.0 < reflex_before < 1.0:
+            # Native x87 timer math trends slightly lower than straight f32 subtraction in this window.
+            subtract += float(_REFLEX_TIMER_SUBTRACT_BIAS)
+        state.bonuses.reflex_boost = float(f32(float(reflex_before) - float(subtract)))
