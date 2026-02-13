@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 import random
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Literal, Protocol
 
 from ..paths import default_runtime_dir
 
@@ -30,6 +30,31 @@ class GameConfig:
     no_intro: bool = False
     debug: bool = False
     preserve_bugs: bool = False
+    pending_lan_session: "PendingLanSession | None" = None
+
+
+LanSessionMode = Literal["survival", "rush", "quests"]
+LanSessionRole = Literal["host", "join"]
+
+
+@dataclass(frozen=True, slots=True)
+class LanSessionConfig:
+    mode: LanSessionMode
+    player_count: int = 1
+    quest_level: str = ""
+    bind_host: str = "0.0.0.0"
+    host_ip: str = ""
+    port: int = 31993
+    preserve_bugs: bool = False
+
+
+@dataclass(slots=True)
+class PendingLanSession:
+    role: LanSessionRole
+    config: LanSessionConfig
+    auto_start: bool = False
+    started: bool = False
+    error: str = ""
 
 
 @dataclass(slots=True)
@@ -79,6 +104,11 @@ class GameState:
     menu_sign_locked: bool = False
     stats_menu_easter_egg_roll: int = -1
     pause_background: PauseBackground | None = None
+    pending_lan_session: PendingLanSession | None = None
+    lan_in_lobby: bool = False
+    lan_desync_count: int = 0
+    lan_resync_failure_count: int = 0
+    lan_last_error: str = ""
     pending_quest_level: str | None = None
     pending_high_scores: HighScoresRequest | None = None
     quest_outcome: QuestRunOutcome | None = None
@@ -96,5 +126,7 @@ __all__ = [
     "GameConfig",
     "GameState",
     "HighScoresRequest",
+    "LanSessionConfig",
+    "PendingLanSession",
     "PauseBackground",
 ]

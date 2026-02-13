@@ -28,6 +28,11 @@ class GameState(Protocol):
     menu_ground: Any
     menu_ground_camera: Any
     pause_background: PauseBackground | None
+    pending_lan_session: Any
+    lan_in_lobby: bool
+    lan_desync_count: int
+    lan_resync_failure_count: int
+    lan_last_error: str
 
     demo_enabled: bool
     skip_intro: bool

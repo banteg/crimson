@@ -56,6 +56,9 @@ FADE_TO_GAME_ACTIONS = frozenset(
         "start_typo",
         "start_tutorial",
         "start_quest",
+        "start_survival_lan",
+        "start_rush_lan",
+        "start_quest_lan",
     }
 )
 
