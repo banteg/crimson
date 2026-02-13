@@ -13,7 +13,7 @@ wire save editing and runtime validation around concrete logic instead of rumor 
 - We have a cluster of secret-hint strings and a single code path that prints them.
 - We have two additional date-gated easter-egg paths mapped in native code:
   - statistics-menu March-3 text gate ("Orbes Volantes Exstare")
-  - startup prelude date gate for `balloon.tga`
+  - startup prelude date gate for `balloon.tga` (preload-only in v1.9.93)
 - We have not yet mapped the *actual* unlock logic or any persistent flags.
 - No save-file fields are confirmed to drive these secrets.
 
@@ -103,9 +103,13 @@ loads a hidden texture pair:
 Evidence anchor: `analysis/ghidra/raw/crimsonland.exe_decompiled.c` around
 `0x0042b10a` (`lines 23806-23818` in current export).
 
-Interpretation: this is a concrete secret/date path in startup code, but we do
-not yet have a confirmed runtime consumer for the loaded balloon texture or for
-`DAT_004aaed8`.
+Cross-reference result (v1.9.93): all in-binary references to the `balloon`
+string literals and `DAT_004aaed8` resolve back to `game_startup_init_prelude`
+only. No other decompiled function in this build references `"balloon"` as a
+texture lookup key.
+
+Interpretation: this path is a one-shot startup preload gate in the main exe,
+not a mapped in-binary runtime draw/use path.
 
 ## Preconditions and logic (what we do / do not know)
 
@@ -277,5 +281,5 @@ All of the hint strings in the cluster are printed from a single guarded block i
 - Are secret weapon unlocks stored in `game.cfg`, or derived from other state (weapon table flags, globals)?
   - **Partial Answer:** `quest_database_init` initializes the `quest_unlock_weapon_id` array with static values (e.g., `quest_unlock_weapon_id = 2` for the shotgun). A "secret weapon" unlock would likely require writing to this array (`DAT_00484754`) or the `weapon_table` availability flags directly.
 - Is the startup secret-hint block tied to a “redistribution build” check or another sentinel?
-- What runtime path consumes the startup `balloon.tga` load / `DAT_004aaed8` gate?
+- Are there any **out-of-main-exe** consumers (e.g., other modules/builds) for the startup `balloon.tga` preload gate?
 - Are any of these flags version-specific (v1.9.93 vs earlier)?
