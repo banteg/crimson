@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 import pyray as rl
+from raylib import defines as rd
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -12,6 +13,27 @@ from ...projectiles import ProjectileTypeId
 from ...sim.world_defs import KNOWN_PROJ_FRAMES
 from .common import proj_origin
 from .types import ProjectileDrawCtx
+
+
+def _begin_darken_src_zero_blend() -> None:
+    # Native projectile_render switches Plague Spreader to D3D8 SRC=ZERO / DST=INVSRCALPHA.
+    rl.rl_set_blend_factors_separate(
+        rd.RL_ZERO,
+        rd.RL_ONE_MINUS_SRC_ALPHA,
+        rd.RL_ZERO,
+        rd.RL_ONE,
+        rd.RL_FUNC_ADD,
+        rd.RL_FUNC_ADD,
+    )
+    rl.begin_blend_mode(rl.BlendMode.BLEND_CUSTOM_SEPARATE)
+    rl.rl_set_blend_factors_separate(
+        rd.RL_ZERO,
+        rd.RL_ONE_MINUS_SRC_ALPHA,
+        rd.RL_ZERO,
+        rd.RL_ONE,
+        rd.RL_FUNC_ADD,
+        rd.RL_FUNC_ADD,
+    )
 
 
 def draw_pulse_gun(ctx: ProjectileDrawCtx) -> bool:
@@ -162,34 +184,38 @@ def draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
                 tint=tint,
             )
 
-        draw_plague_quad(pos=ctx.pos, size=60.0)
+        _begin_darken_src_zero_blend()
+        try:
+            draw_plague_quad(pos=ctx.pos, size=60.0)
 
-        offset = Vec2.from_heading(ctx.angle + math.pi) * 15.0
-        draw_plague_quad(
-            pos=ctx.pos + offset,
-            size=60.0,
-        )
+            offset = Vec2.from_heading(ctx.angle + math.pi) * 15.0
+            draw_plague_quad(
+                pos=ctx.pos + offset,
+                size=60.0,
+            )
 
-        phase = float(int(ctx.proj_index)) + float(renderer.elapsed_ms) * 0.01
-        cos_phase = math.cos(phase)
-        sin_phase = math.sin(phase)
-        draw_plague_quad(
-            pos=ctx.pos.offset(dx=cos_phase * cos_phase - 5.0, dy=sin_phase * 11.0 - 5.0),
-            size=52.0,
-        )
+            phase = float(int(ctx.proj_index)) + float(renderer.elapsed_ms) * 0.01
+            cos_phase = math.cos(phase)
+            sin_phase = math.sin(phase)
+            draw_plague_quad(
+                pos=ctx.pos.offset(dx=cos_phase * cos_phase - 5.0, dy=sin_phase * 11.0 - 5.0),
+                size=52.0,
+            )
 
-        phase_120 = phase + 2.0943952
-        sin_phase_120 = math.sin(phase_120)
-        draw_plague_quad(
-            pos=ctx.pos + Vec2.from_polar(phase_120, 10.0),
-            size=62.0,
-        )
+            phase_120 = phase + 2.0943952
+            sin_phase_120 = math.sin(phase_120)
+            draw_plague_quad(
+                pos=ctx.pos + Vec2.from_polar(phase_120, 10.0),
+                size=62.0,
+            )
 
-        phase_240 = phase + 4.1887903
-        draw_plague_quad(
-            pos=ctx.pos + Vec2(math.cos(phase_240) * 10.0, math.sin(phase_240) * sin_phase_120),
-            size=62.0,
-        )
+            phase_240 = phase + 4.1887903
+            draw_plague_quad(
+                pos=ctx.pos + Vec2(math.cos(phase_240) * 10.0, math.sin(phase_240) * sin_phase_120),
+                size=62.0,
+            )
+        finally:
+            rl.end_blend_mode()
         return True
 
     fade = clamp(life * 2.5, 0.0, 1.0)
@@ -203,15 +229,19 @@ def draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
         return True
 
     tint = RGBA(1.0, 1.0, 1.0, fade_alpha).to_rl()
-    renderer._draw_atlas_sprite(
-        texture,
-        grid=grid,
-        frame=frame,
-        pos=ctx.screen_pos,
-        scale=sprite_scale,
-        rotation_rad=0.0,
-        tint=tint,
-    )
+    _begin_darken_src_zero_blend()
+    try:
+        renderer._draw_atlas_sprite(
+            texture,
+            grid=grid,
+            frame=frame,
+            pos=ctx.screen_pos,
+            scale=sprite_scale,
+            rotation_rad=0.0,
+            tint=tint,
+        )
+    finally:
+        rl.end_blend_mode()
     return True
 
 
