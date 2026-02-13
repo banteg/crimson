@@ -21,5 +21,5 @@ just docs-build
 
 ## Useful commands
 
-- `just check` — lint, type-check, and tests
+- `just check` — lint, type-check, docs checks, ast-grep scan/tests, and pytest
 - `just docs-build` — build docs site

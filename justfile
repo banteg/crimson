@@ -24,6 +24,8 @@ check *args:
     uv run lint-imports
     uv run ty check src
     uv run scripts/check_docs.py
+    sg scan
+    sg test
     uv run pytest {{args}}
 
 ty:
