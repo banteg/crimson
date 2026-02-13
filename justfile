@@ -24,19 +24,16 @@ check *args:
     uv run lint-imports
     uv run ty check src
     uv run scripts/check_docs.py
-    sg scan
-    sg test
+    just ast-grep
     uv run pytest {{args}}
 
 ty:
     uv run ty check src
 
 # ast-grep
-ast-grep-scan *args:
-    sg scan {{args}}
-
-ast-grep-test *args:
-    sg test {{args}}
+ast-grep:
+    sg scan
+    sg test
 
 # Lint
 lint-imports:
