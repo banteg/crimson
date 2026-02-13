@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from ..game_modes import GameMode
+from ..quests import all_quests
+from ..replay.types import WEAPON_USAGE_COUNT
 from ..sim.state_types import GameplayState
 from ..weapons import WeaponId
 
@@ -17,14 +19,8 @@ def weapon_refresh_available(state: GameplayState) -> None:
     unlock_index_full = 0
     status = state.status
     if status is not None:
-        try:
-            unlock_index = int(status.quest_unlock_index)
-        except Exception:
-            unlock_index = 0
-        try:
-            unlock_index_full = int(status.quest_unlock_index_full)
-        except Exception:
-            unlock_index_full = 0
+        unlock_index = int(status.quest_unlock_index)
+        unlock_index_full = int(status.quest_unlock_index_full)
 
     game_mode = int(state.game_mode)
     if (
@@ -46,13 +42,7 @@ def weapon_refresh_available(state: GameplayState) -> None:
 
     # Unlock weapons from the quest list (first `quest_unlock_index` entries).
     if unlock_index > 0:
-        try:
-            from ..quests import all_quests
-
-            quests = all_quests()
-        except Exception:
-            quests = []
-
+        quests = all_quests()
         for quest in quests[:unlock_index]:
             weapon_id = int(getattr(quest, "unlock_weapon_id", 0) or 0)
             if 0 < weapon_id < len(available):
@@ -91,14 +81,10 @@ def weapon_pick_random_available(state: GameplayState) -> int:
         weapon_id = base_rand % WEAPON_DROP_ID_COUNT + 1
 
         # Bias: used weapons have a 50% chance to reroll once.
-        if status is not None:
-            try:
-                if status.weapon_usage_count(weapon_id) != 0:
-                    if (int(state.rng.rand()) & 1) == 0:
-                        base_rand = int(state.rng.rand())
-                        weapon_id = base_rand % WEAPON_DROP_ID_COUNT + 1
-            except Exception:
-                pass
+        if status is not None and 0 <= weapon_id < WEAPON_USAGE_COUNT and status.weapon_usage_count(weapon_id) != 0:
+            if (int(state.rng.rand()) & 1) == 0:
+                base_rand = int(state.rng.rand())
+                weapon_id = base_rand % WEAPON_DROP_ID_COUNT + 1
 
         if not (0 <= weapon_id < len(state.weapon_available)):
             continue
