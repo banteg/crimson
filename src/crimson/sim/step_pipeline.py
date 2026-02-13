@@ -116,11 +116,13 @@ def run_deterministic_step(
 
     dt_sim_ms_i32: int | None = None
     if dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
-        if float(dt_frame) > 0.0:
-            scale = float(dt_sim) / float(dt_frame)
-            dt_sim_ms_i32 = max(0, int(float(int(dt_frame_ms_i32)) * float(scale)))
+        base_dt_ms_i32 = int(dt_frame_ms_i32)
+        if bool(state.time_scale_active) and float(dt_frame) > 0.0:
+            # Under Reflex Boost, native integer cadence counters track the scaled
+            # float dt path (`frame_dt`) instead of integer-base ms scaling.
+            dt_sim_ms_i32 = max(0, int(float(dt_sim) * 1000.0))
         else:
-            dt_sim_ms_i32 = int(dt_frame_ms_i32)
+            dt_sim_ms_i32 = base_dt_ms_i32
 
     events = world.step(
         float(dt_sim),
