@@ -310,6 +310,7 @@ def run_game(config: GameConfig) -> None:
             audio=None,
             resource_paq=assets_dir / CRIMSON_PAQ_NAME,
             session_start=time.monotonic(),
+            pending_lan_session=config.pending_lan_session,
         )
         register_boot_commands(console, _boot_command_handlers(state))
         register_core_cvars(console, width, height)

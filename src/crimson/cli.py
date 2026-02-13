@@ -25,8 +25,10 @@ from .quests.types import QuestContext, QuestDefinition, SpawnEntry
 app = typer.Typer(add_completion=False)
 replay_app = typer.Typer(add_completion=False)
 original_app = typer.Typer(add_completion=False)
+lan_app = typer.Typer(add_completion=False)
 app.add_typer(replay_app, name="replay")
 app.add_typer(original_app, name="original")
+app.add_typer(lan_app, name="lan")
 
 _QUEST_DEFS: dict[str, QuestDefinition] = {quest.level: quest for quest in all_quests()}
 _QUEST_BUILDERS = {level: quest.builder for level, quest in _QUEST_DEFS.items()}
@@ -208,6 +210,130 @@ def cmd_view(
         view = view_def.factory()
     title = f"{view_def.title} — Crimsonland"
     run_view(view, width=width, height=height, title=title, fps=fps)
+
+
+@lan_app.command("host")
+def cmd_lan_host(
+    mode: str = typer.Option(..., "--mode", help="survival|rush|quests"),
+    quest_level: str = typer.Option("", "--quest-level", help="quest level major.minor (required for quests mode)"),
+    players: int = typer.Option(..., "--players", min=1, max=4, help="player count (1..4)"),
+    bind: str = typer.Option("0.0.0.0", "--bind", help="host bind address"),
+    port: int = typer.Option(31993, "--port", min=1, max=65535, help="host UDP port"),
+    preserve_bugs: bool = typer.Option(False, "--preserve-bugs", help="preserve known original exe bugs/quirks"),
+    width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
+    height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
+    fps: int = typer.Option(60, help="target fps"),
+    base_dir: Path = typer.Option(
+        default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
+        help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
+    ),
+    assets_dir: Path | None = typer.Option(
+        None,
+        help="assets root (default: base-dir; missing .paq files are downloaded)",
+    ),
+) -> None:
+    """Host a LAN lockstep session from CLI."""
+    from .game import GameConfig, run_game
+    from .game.types import LanSessionConfig, LanSessionMode, PendingLanSession
+    from .quests.types import parse_level
+
+    mode_name = str(mode).strip().lower()
+    resolved_mode: LanSessionMode
+    if mode_name == "survival":
+        resolved_mode = "survival"
+    elif mode_name == "rush":
+        resolved_mode = "rush"
+    elif mode_name == "quests":
+        resolved_mode = "quests"
+    else:
+        raise typer.BadParameter(
+            f"unsupported mode {mode!r}; expected one of: survival, rush, quests",
+            param_hint="--mode",
+        )
+    normalized_quest_level = str(quest_level).strip()
+    if resolved_mode == "quests":
+        if not normalized_quest_level:
+            raise typer.BadParameter("quest level is required for quests mode", param_hint="--quest-level")
+        try:
+            parse_level(normalized_quest_level)
+        except ValueError as exc:
+            raise typer.BadParameter(str(exc), param_hint="--quest-level") from exc
+    pending = PendingLanSession(
+        role="host",
+        config=LanSessionConfig(
+            mode=resolved_mode,
+            player_count=int(players),
+            quest_level=normalized_quest_level,
+            bind_host=str(bind).strip() or "0.0.0.0",
+            host_ip="",
+            port=int(port),
+            preserve_bugs=bool(preserve_bugs),
+        ),
+        auto_start=True,
+    )
+    run_game(
+        GameConfig(
+            base_dir=base_dir,
+            assets_dir=assets_dir,
+            width=width,
+            height=height,
+            fps=fps,
+            preserve_bugs=bool(preserve_bugs),
+            pending_lan_session=pending,
+        )
+    )
+
+
+@lan_app.command("join")
+def cmd_lan_join(
+    host: str = typer.Option(..., "--host", help="host IP address"),
+    port: int = typer.Option(31993, "--port", min=1, max=65535, help="host UDP port"),
+    width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
+    height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
+    fps: int = typer.Option(60, help="target fps"),
+    base_dir: Path = typer.Option(
+        default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
+        help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
+    ),
+    assets_dir: Path | None = typer.Option(
+        None,
+        help="assets root (default: base-dir; missing .paq files are downloaded)",
+    ),
+) -> None:
+    """Join a LAN lockstep session from CLI."""
+    from .game import GameConfig, run_game
+    from .game.types import LanSessionConfig, PendingLanSession
+
+    host_ip = str(host).strip()
+    if not host_ip:
+        raise typer.BadParameter("host address is required", param_hint="--host")
+    pending = PendingLanSession(
+        role="join",
+        config=LanSessionConfig(
+            mode="survival",
+            player_count=1,
+            quest_level="",
+            bind_host="0.0.0.0",
+            host_ip=host_ip,
+            port=int(port),
+            preserve_bugs=False,
+        ),
+        auto_start=False,
+    )
+    run_game(
+        GameConfig(
+            base_dir=base_dir,
+            assets_dir=assets_dir,
+            width=width,
+            height=height,
+            fps=fps,
+            pending_lan_session=pending,
+        )
+    )
 
 
 @replay_app.command("play")

@@ -19,6 +19,7 @@ from ..frontend.panels.base import PanelMenuView
 from ..frontend.panels.controls import ControlsMenuView
 from ..frontend.panels.credits import CreditsView
 from ..frontend.panels.databases import UnlockedPerksDatabaseView, UnlockedWeaponsDatabaseView
+from ..frontend.panels.lan_session import LanSessionPanelView
 from ..frontend.panels.mods import ModsMenuView
 from ..frontend.panels.options import OptionsMenuView
 from ..frontend.panels.play_game import PlayGameMenuView
@@ -130,6 +131,7 @@ class GameLoopView:
         self._menu = MenuView(state)
         self._front_views: dict[str, FrontView] = {
             "open_play_game": PlayGameMenuView(state),
+            "open_lan_session": LanSessionPanelView(state),
             "open_quests": QuestsMenuView(state),
             "open_pause_menu": PauseMenuView(state),
             "start_quest": QuestGameView(state),
@@ -181,6 +183,83 @@ class GameLoopView:
     def should_close(self) -> bool:
         return self.state.quit_requested
 
+    def _lan_ui_enabled(self) -> bool:
+        cvar = self.state.console.cvars.get("cv_lanLockstepEnabled")
+        if cvar is None:
+            return False
+        return bool(cvar.value_f)
+
+    def _auto_lan_start_action(self) -> str | None:
+        pending = self.state.pending_lan_session
+        if pending is None:
+            return None
+        if (not pending.auto_start) or pending.started:
+            return None
+        mode = str(pending.config.mode)
+        pending.started = True
+        if mode == "rush":
+            return "start_rush_lan"
+        if mode == "quests":
+            return "start_quest_lan"
+        if mode == "survival":
+            return "start_survival_lan"
+        pending.error = f"Unsupported LAN mode: {mode}"
+        self.state.lan_last_error = pending.error
+        return "open_lan_session"
+
+    def _resolve_lan_action(self, action: str) -> str | None:
+        if action == "open_lan_session":
+            if self._lan_ui_enabled():
+                return action
+            self.state.lan_last_error = "LAN UI is disabled (set cv_lanLockstepEnabled 1 to enable)."
+            return "open_play_game"
+
+        mode_by_action = {
+            "start_survival_lan": ("survival", "start_survival", 1),
+            "start_rush_lan": ("rush", "start_rush", 2),
+            "start_quest_lan": ("quests", "start_quest", 3),
+        }
+        resolved = mode_by_action.get(action)
+        if resolved is None:
+            if action in {"start_survival", "start_rush", "start_typo", "start_tutorial", "start_quest"}:
+                self.state.lan_in_lobby = False
+            return action
+
+        expected_mode, forward_action, mode_id = resolved
+        pending = self.state.pending_lan_session
+        if pending is None:
+            self.state.lan_last_error = "LAN session is not configured."
+            return None
+        cfg = pending.config
+        if str(cfg.mode) != expected_mode:
+            self.state.lan_last_error = (
+                f"LAN mode mismatch: pending={cfg.mode!r} action={expected_mode!r}"
+            )
+            return None
+
+        player_count = max(1, min(4, int(cfg.player_count)))
+        self.state.config.player_count = int(player_count)
+        self.state.lan_in_lobby = True
+        self.state.lan_desync_count = 0
+        self.state.lan_resync_failure_count = 0
+        self.state.config.game_mode = int(mode_id)
+
+        if expected_mode == "quests":
+            level = str(cfg.quest_level).strip()
+            if not level:
+                self.state.lan_last_error = "Quest LAN mode requires --quest-level."
+                pending.error = self.state.lan_last_error
+                return None
+            try:
+                parse_level(level)
+            except ValueError as exc:
+                self.state.lan_last_error = f"Invalid quest level for LAN: {level!r} ({exc})"
+                pending.error = self.state.lan_last_error
+                return None
+            self.state.pending_quest_level = level
+
+        return forward_action
+
     def update(self, dt: float) -> None:
         input_begin_frame()
         console = self.state.console
@@ -206,6 +285,10 @@ class GameLoopView:
         self._active.update(dt)
         if self._front_active is not None:
             action = self._front_active.take_action()
+            if action is not None:
+                action = self._resolve_lan_action(action)
+                if action is None:
+                    return
             if action == "back_to_menu":
                 self._capture_gameplay_ground_for_menu()
                 self.state.pause_background = None
@@ -291,6 +374,7 @@ class GameLoopView:
                             "start_tutorial",
                             "start_quest",
                             "open_play_game",
+                            "open_lan_session",
                             "open_quests",
                         }:
                             self.state.pause_background = None
@@ -304,6 +388,8 @@ class GameLoopView:
                     return
         if self._menu_active:
             action = self._menu.take_action()
+            if action is None:
+                action = self._auto_lan_start_action()
             if action == "quit_app":
                 self.state.quit_requested = True
                 return
@@ -323,6 +409,9 @@ class GameLoopView:
                 self._demo_active = True
                 return
             if action is not None:
+                action = self._resolve_lan_action(action)
+                if action is None:
+                    return
                 view = self._front_views.get(action)
                 if view is not None:
                     self._menu.close()
