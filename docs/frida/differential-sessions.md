@@ -884,7 +884,7 @@ When the capture SHA is unchanged, append updates to the same session.
   - `src/crimson/projectiles/pools.py`
   - `src/crimson/effects.py`
 
-### Session 14 (continued: update 2, formerly Session 15)
+### Session 14 (continued: update 2)
 
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture.json.gz`
 - **Capture SHA256:** `49aec5d3705f7c8cfb90143a6d204053c8ba6744ca30c4a367666cdaec04fe0e`
@@ -934,7 +934,7 @@ When the capture SHA is unchanged, append updates to the same session.
   - `src/crimson/gameplay.py`,
   - `src/crimson/sim/world_state.py`.
 
-### Session 14 (continued: update 3, formerly Session 16)
+### Session 14 (continued: update 3)
 
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture.json.gz`
 - **Capture SHA256:** `49aec5d3705f7c8cfb90143a6d204053c8ba6744ca30c4a367666cdaec04fe0e`
@@ -977,7 +977,7 @@ When the capture SHA is unchanged, append updates to the same session.
   - native `creature_update` movement branch decisions,
   - rewrite `src/crimson/creatures/runtime.py` + `src/crimson/creatures/ai.py` parity at the first ancestry tick where creature position drift appears.
 
-### Session 14 (continued: update 4, formerly Session 17)
+### Session 14 (continued: update 4)
 
 - **Capture:** `artifacts/frida/share/gameplay_diff_capture.json.gz`
 - **Capture SHA256:** `49aec5d3705f7c8cfb90143a6d204053c8ba6744ca30c4a367666cdaec04fe0e`
