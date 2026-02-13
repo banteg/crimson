@@ -26,23 +26,12 @@ nav = [
     { "Combat" = [
       { "Overview" = "mechanics/combat/index.md" },
       { "Weapons" = "mechanics/combat/weapons.md" },
-      { "Fire and reload loop" = "mechanics/combat/fire-and-reload.md" },
-      { "Damage and death" = "mechanics/combat/damage.md" },
     ]},
     { "Systems" = [
       { "Overview" = "mechanics/systems/index.md" },
       { "Bonuses" = "mechanics/systems/bonuses.md" },
-      { "Score" = "mechanics/systems/score.md" },
-      { "Spawning" = "mechanics/systems/spawning.md" },
-      { "Progression" = "mechanics/systems/progression/intro.md" },
       { "Secret weapons" = "mechanics/secret-weapons.md" },
       { "Perks" = "mechanics/perks.md" },
-    ]},
-    { "Multiplayer" = [
-      { "Local multiplayer" = "mechanics/multiplayer/overview.md" },
-    ]},
-    { "Quirks" = [
-      { "Gameplay quirks" = "mechanics/quirks/index.md" },
     ]},
   ]},
   { "Rewrite" = [
