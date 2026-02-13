@@ -1294,6 +1294,46 @@ def test_convert_capture_to_replay_synthesizes_computer_aim_fire_down_from_proje
     assert reload_pressed is False
 
 
+def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_non_weapon_projectile_spawns(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["before"] = {
+        "globals": {"config_aim_scheme": [5]},
+        "status": {},
+        "player_count": 1,
+        "players": [],
+        "input": {},
+        "input_bindings": {},
+    }
+    tick0["checkpoint"]["players"][0]["weapon_id"] = 29
+    tick0["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "fire_down": False,
+            "fire_pressed": False,
+            "reload_pressed": False,
+        }
+    ]
+    tick0["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 29, "fired_events": 1}]
+    tick0["event_heads"] = [
+        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 21, "actual_type_id": 21}},
+        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 22, "actual_type_id": 22}},
+    ]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture)
+
+    flags = int(replay.inputs[0][0][3])
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    assert fire_down is False
+    assert fire_pressed is False
+    assert reload_pressed is False
+
+
 def test_convert_capture_to_replay_does_not_synthesize_non_computer_fire_down(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0["before"] = {
@@ -1554,7 +1594,7 @@ def test_convert_capture_to_replay_does_not_synthesize_secondary_spawn_without_o
     assert reload_pressed11 is False
 
 
-def test_convert_capture_to_replay_applies_aim_scheme_override_for_missing_telemetry(tmp_path: Path) -> None:
+def test_convert_capture_to_replay_does_not_synthesize_fire_from_fired_events_only(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick0["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 2}]
@@ -1571,7 +1611,7 @@ def test_convert_capture_to_replay_applies_aim_scheme_override_for_missing_telem
     fire_down_default, _fire_pressed_default, _reload_pressed_default = unpack_input_flags(flags_default)
     fire_down_override, _fire_pressed_override, _reload_pressed_override = unpack_input_flags(flags_override)
     assert fire_down_default is False
-    assert fire_down_override is True
+    assert fire_down_override is False
 
 
 def test_parse_player_int_overrides_accepts_equals_and_colon() -> None:

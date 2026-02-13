@@ -696,10 +696,6 @@ def _should_synthesize_computer_fire_down(
     if bool(fire_down_raw) or bool(fire_pressed_raw):
         return False
 
-    fired_events = _coerce_int_like(getattr(sample, "fired_events", None))
-    if aim_scheme is not None and int(aim_scheme) == int(_AIM_SCHEME_COMPUTER) and fired_events is not None and int(fired_events) > 0:
-        return True
-
     player_projectile_spawn_count = _tick_player_projectile_spawn_count(
         tick,
         player_index=int(player_index),
