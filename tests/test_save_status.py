@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.persistence import save_status
 
 
@@ -17,10 +19,14 @@ def test_game_cfg_roundtrip(tmp_path) -> None:
 def test_ensure_game_status_regenerates_on_checksum_mismatch(tmp_path) -> None:
     path = tmp_path / save_status.GAME_CFG_NAME
     path.write_bytes(b"\xFF" * save_status.FILE_SIZE)
-    status = save_status.ensure_game_status(tmp_path)
+    with pytest.warns(UserWarning, match="failed to load"):
+        status = save_status.ensure_game_status(tmp_path)
     assert status.path == path
     blob = save_status.load_status(path)
     assert blob.checksum_valid
+    backups = sorted(tmp_path.glob(f"{save_status.GAME_CFG_NAME}.corrupt.*.bak"))
+    assert len(backups) == 1
+    assert backups[0].read_bytes() == (b"\xFF" * save_status.FILE_SIZE)
 
 
 def test_game_status_edit_persists(tmp_path) -> None:
