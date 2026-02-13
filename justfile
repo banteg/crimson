@@ -192,7 +192,7 @@ windbg-client:
     cdb.exe -remote tcp:server=127.0.0.1,port=5005,password=secret -bonc
 
 windbg-tail:
-    uv run scripts/windbg_tail.py
+    uv run --no-sync scripts/windbg_tail.py
 
 # Frida
 [windows]
