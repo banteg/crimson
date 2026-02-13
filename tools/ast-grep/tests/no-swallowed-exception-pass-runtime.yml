@@ -1,0 +1,23 @@
+id: no-swallowed-exception-pass-runtime
+valid:
+  - |
+    try:
+      save_cfg()
+    except OSError as exc:
+      report(exc)
+  - |
+    try:
+      update_audio_stream()
+    except RuntimeError:
+      stream_failed = True
+invalid:
+  - |
+    try:
+      save_cfg()
+    except Exception:
+      pass
+  - |
+    try:
+      update_audio_stream()
+    except RuntimeError as err:
+      pass

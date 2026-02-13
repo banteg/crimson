@@ -1,0 +1,23 @@
+id: no-broad-exception-runtime
+valid:
+  - |
+    try:
+      save_cfg()
+    except OSError as exc:
+      report(exc)
+  - |
+    try:
+      set_music_volume()
+    except RuntimeError:
+      muted = True
+invalid:
+  - |
+    try:
+      save_cfg()
+    except Exception:
+      failed = True
+  - |
+    try:
+      set_music_volume()
+    except Exception as exc:
+      muted = True

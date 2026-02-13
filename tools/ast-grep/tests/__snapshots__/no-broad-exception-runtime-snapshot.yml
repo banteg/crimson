@@ -1,0 +1,30 @@
+id: no-broad-exception-runtime
+snapshots:
+  ? |
+    try:
+      save_cfg()
+    except Exception:
+      failed = True
+  : labels:
+    - source: |-
+        try:
+          save_cfg()
+        except Exception:
+          failed = True
+      style: primary
+      start: 0
+      end: 51
+  ? |
+    try:
+      set_music_volume()
+    except Exception as exc:
+      muted = True
+  : labels:
+    - source: |-
+        try:
+          set_music_volume()
+        except Exception as exc:
+          muted = True
+      style: primary
+      start: 0
+      end: 65

@@ -1,0 +1,16 @@
+id: no-any-return-contracts
+valid:
+  - |
+    def value(name: str) -> str:
+      return name
+  - |
+    from typing import Never
+
+    def fail(name: str) -> Never:
+      raise AttributeError(name)
+invalid:
+  - |
+    from typing import Any
+
+    def value(name: str) -> Any:
+      return name

@@ -1,0 +1,11 @@
+id: no-any-return-contracts
+language: python
+severity: warning
+message: Avoid `-> Any` return contracts in runtime code; use precise types.
+files:
+  - src/crimson/original/diagnostics_cache.py
+  - src/crimson/render/world/mixin_base.py
+rule:
+  pattern: |
+    def $FUNC($$$ARGS) -> Any:
+      $$$BODY

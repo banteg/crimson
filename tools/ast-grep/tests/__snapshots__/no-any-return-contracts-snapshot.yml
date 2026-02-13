@@ -1,0 +1,14 @@
+id: no-any-return-contracts
+snapshots:
+  ? |
+    from typing import Any
+
+    def value(name: str) -> Any:
+      return name
+  : labels:
+    - source: |-
+        def value(name: str) -> Any:
+          return name
+      style: primary
+      start: 24
+      end: 66

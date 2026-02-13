@@ -1,0 +1,26 @@
+id: no-broad-exception-runtime
+language: python
+severity: warning
+message: Avoid broad `except Exception` in runtime hot paths; catch specific expected exception types.
+files:
+  - src/crimson/frontend/panels/controls.py
+  - src/crimson/frontend/panels/options.py
+  - src/crimson/frontend/panels/play_game.py
+  - src/crimson/game/quest_views/quest_results.py
+  - src/crimson/persistence/save_status.py
+  - src/crimson/weapon_runtime/assign.py
+  - src/crimson/weapon_runtime/availability.py
+  - src/grim/music.py
+  - src/grim/sfx.py
+rule:
+  any:
+    - pattern: |
+        try:
+          $$$TRY
+        except Exception:
+          $$$HANDLER
+    - pattern: |
+        try:
+          $$$TRY
+        except Exception as $ERR:
+          $$$HANDLER
