@@ -633,8 +633,8 @@ class QuestMode(BaseGameplayMode):
                     playback.volume = 0.0
                     try:
                         rl.set_music_volume(playback.music, 0.0)
-                    except Exception:
-                        pass
+                    except RuntimeError:
+                        playback.volume = 0.0
             if completed:
                 if self._outcome is None:
                     fired = 0

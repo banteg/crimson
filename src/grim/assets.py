@@ -58,8 +58,8 @@ class TextureLoader:
                 entries = load_paq_entries_from_path(paq_path)
                 cache = PaqTextureCache(entries=entries, textures={})
                 return cls(assets_root=assets_root, cache=cache)
-            except Exception:
-                pass
+            except (FileNotFoundError, OSError, ValueError):
+                return cls(assets_root=assets_root)
         return cls(assets_root=assets_root)
 
     def resolve_path(self, rel_path: str) -> Path | None:

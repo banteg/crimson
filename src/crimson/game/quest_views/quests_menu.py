@@ -148,8 +148,8 @@ class QuestsMenuView:
         if self._dirty:
             try:
                 self.state.config.save()
-            except Exception:
-                pass
+            except (OSError, ValueError) as exc:
+                self.state.console.log.log(f"failed to save quest menu config: {exc}")
             self._dirty = False
         self._ground = None
         self._button_textures = None

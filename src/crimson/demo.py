@@ -4,6 +4,7 @@ import math
 from pathlib import Path
 import random
 from typing import Protocol
+import webbrowser
 
 import pyray as rl
 from raylib import defines as rd
@@ -264,11 +265,9 @@ class DemoView:
             if not self._purchase_url_opened:
                 self._purchase_url_opened = True
                 try:
-                    import webbrowser
-
                     webbrowser.open(DEMO_PURCHASE_URL)
-                except Exception:
-                    pass
+                except (OSError, webbrowser.Error):
+                    self._purchase_url_opened = True
             if hasattr(self.state, "quit_requested"):
                 self.state.quit_requested = True
 
@@ -289,11 +288,9 @@ class DemoView:
             if not self._purchase_url_opened:
                 self._purchase_url_opened = True
                 try:
-                    import webbrowser
-
                     webbrowser.open(DEMO_PURCHASE_URL)
-                except Exception:
-                    pass
+                except (OSError, webbrowser.Error):
+                    self._purchase_url_opened = True
             if hasattr(self.state, "quit_requested"):
                 self.state.quit_requested = True
 

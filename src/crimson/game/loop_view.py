@@ -330,8 +330,8 @@ class GameLoopView:
         if action == "purchase":
             try:
                 webbrowser.open(DEMO_PURCHASE_URL)
-            except Exception:
-                pass
+            except (OSError, webbrowser.Error):
+                self.state.console.log.log("demo trial: failed to open purchase URL")
             return True
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or action == "maybe_later":
@@ -437,4 +437,3 @@ class GameLoopView:
         self._boot.close()
         self.state.console.close()
         rl.show_cursor()
-
