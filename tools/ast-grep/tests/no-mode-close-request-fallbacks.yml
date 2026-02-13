@@ -1,0 +1,14 @@
+id: no-mode-close-request-fallbacks
+valid:
+  - |
+    if self._mode.close_requested:
+      self._handle_close_requested()
+  - |
+    self._mode.close_requested = False
+invalid:
+  - |
+    if getattr(self._mode, "close_requested", False):
+      self._handle_close_requested()
+  - |
+    if hasattr(self._mode, "close_requested"):
+      setattr(self._mode, "close_requested", False)

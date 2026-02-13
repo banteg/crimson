@@ -1,0 +1,18 @@
+id: no-mode-close-request-fallbacks
+snapshots:
+  ? |
+    if getattr(self._mode, "close_requested", False):
+      self._handle_close_requested()
+  : labels:
+    - source: getattr(self._mode, "close_requested", False)
+      style: primary
+      start: 3
+      end: 48
+  ? |
+    if hasattr(self._mode, "close_requested"):
+      setattr(self._mode, "close_requested", False)
+  : labels:
+    - source: hasattr(self._mode, "close_requested")
+      style: primary
+      start: 3
+      end: 41

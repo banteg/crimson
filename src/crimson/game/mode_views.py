@@ -54,7 +54,7 @@ class _BaseModeGameView:
         mode_action = self._mode.take_action()
         if self._handle_mode_action(mode_action):
             return
-        if getattr(self._mode, "close_requested", False):
+        if self._mode.close_requested:
             self._handle_close_requested()
 
     def _handle_mode_action(self, mode_action: str | None) -> bool:
@@ -68,8 +68,7 @@ class _BaseModeGameView:
         self._clear_close_requested()
 
     def _clear_close_requested(self) -> None:
-        if hasattr(self._mode, "close_requested"):
-            setattr(self._mode, "close_requested", False)
+        self._mode.close_requested = False
 
     def draw(self) -> None:
         self._mode.draw()
