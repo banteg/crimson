@@ -219,12 +219,14 @@ class QuestMode(BaseGameplayMode):
         loader = TextureLoader(
             assets_root=self._assets_root, cache=self.world.texture_cache, missing=self._missing_assets
         )
-        try:
-            return loader.get(name="ui_textLevComp", paq_rel="ui/ui_textLevComp.jaz", fs_rel="ui/ui_textLevComp.png")
-        except FileNotFoundError:
-            if "ui/ui_textLevComp.jaz" not in self._missing_assets:
-                self._missing_assets.append("ui/ui_textLevComp.jaz")
-            return None
+        texture = loader.get_optional(
+            name="ui_textLevComp",
+            paq_rel="ui/ui_textLevComp.jaz",
+            fs_rel="ui/ui_textLevComp.png",
+        )
+        if texture is None and "ui/ui_textLevComp.jaz" not in self._missing_assets:
+            self._missing_assets.append("ui/ui_textLevComp.jaz")
+        return texture
 
     def _reset_perk_prompt(self) -> None:
         if int(self.state.perk_selection.pending_count) > 0:

@@ -90,7 +90,7 @@ class TextureLoader:
         self._fs_textures[name] = texture
         return texture
 
-    def get(self, *, name: str, paq_rel: str, fs_rel: str | None = None) -> rl.Texture | None:
+    def get_required(self, *, name: str, paq_rel: str, fs_rel: str | None = None) -> rl.Texture | None:
         if self.cache is not None:
             texture = self.load_from_cache(name, paq_rel)
             if texture is not None:
@@ -98,6 +98,15 @@ class TextureLoader:
         if fs_rel is None:
             fs_rel = paq_rel
         return self.load_from_path(name, fs_rel)
+
+    def get_optional(self, *, name: str, paq_rel: str, fs_rel: str | None = None) -> rl.Texture | None:
+        try:
+            return self.get_required(name=name, paq_rel=paq_rel, fs_rel=fs_rel)
+        except FileNotFoundError:
+            return None
+
+    def get(self, *, name: str, paq_rel: str, fs_rel: str | None = None) -> rl.Texture | None:
+        return self.get_required(name=name, paq_rel=paq_rel, fs_rel=fs_rel)
 
 
 @dataclass(slots=True)
