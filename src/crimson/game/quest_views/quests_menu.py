@@ -138,12 +138,9 @@ class QuestsMenuView:
 
         # Ensure the quest registry is populated so titles render.
         # (The package import registers all tier builders.)
-        try:
-            from ... import quests as _quests
+        from ... import quests as _quests
 
-            _ = _quests
-        except Exception:
-            pass
+        _ = _quests
         self._is_open = True
 
     def close(self) -> None:
@@ -151,8 +148,8 @@ class QuestsMenuView:
         if self._dirty:
             try:
                 self.state.config.save()
-            except Exception:
-                pass
+            except (OSError, ValueError) as exc:
+                self.state.console.log.log(f"failed to save quest menu config: {exc}")
             self._dirty = False
         self._ground = None
         self._button_textures = None
@@ -420,12 +417,9 @@ class QuestsMenuView:
 
     def _quest_title(self, stage: int, row: int) -> str:
         level = f"{int(stage)}.{int(row) + 1}"
-        try:
-            from ...quests import quest_by_level
+        from ...quests import quest_by_level
 
-            quest = quest_by_level(level)
-        except Exception:
-            quest = None
+        quest = quest_by_level(level)
         if quest is None:
             return "???"
         return quest.title

@@ -49,10 +49,7 @@ class DemoTrialOverlayUi:
     def _ensure_loaded(self) -> None:
         if self._font is None:
             self._missing_assets.clear()
-            try:
-                self._font = load_small_font(self._assets_root, self._missing_assets)
-            except Exception:
-                self._font = None
+            self._font = load_small_font(self._assets_root, self._missing_assets)
 
         cache = self._cache
         if cache is None:

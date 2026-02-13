@@ -27,10 +27,13 @@ class SpawnEntry:
 QuestBuilder = Callable[..., list[SpawnEntry]]
 
 
-def terrain_ids_for(level: str) -> tuple[int, int, int]:
+def parse_level(level: str) -> tuple[int, int]:
     tier_text, quest_text = level.split(".", 1)
-    tier = int(tier_text)
-    quest = int(quest_text)
+    return int(tier_text), int(quest_text)
+
+
+def terrain_ids_for(level: str) -> tuple[int, int, int]:
+    tier, quest = parse_level(level)
     if tier <= 4:
         base = (tier - 1) * 2
         alt = base + 1
@@ -67,5 +70,4 @@ class QuestDefinition:
 
     @property
     def level_key(self) -> tuple[int, int]:
-        tier_text, quest_text = self.level.split(".", 1)
-        return int(tier_text), int(quest_text)
+        return parse_level(self.level)

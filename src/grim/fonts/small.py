@@ -36,8 +36,9 @@ def load_small_font(assets_root: Path, missing_assets: list[str]) -> SmallFontDa
                 if texture_asset.texture is not None:
                     rl.set_texture_filter(texture_asset.texture, SMALL_FONT_FILTER)
                     return SmallFontData(widths=list(widths_data), texture=texture_asset.texture)
-        except Exception:
-            pass
+        except (FileNotFoundError, OSError, ValueError):
+            # Fall back to extracted assets when PAQ decode/load fails.
+            paq_path = None
 
     widths_path = assets_root / "crimson" / "load" / "smallFnt.dat"
     atlas_png = assets_root / "crimson" / "load" / "smallWhite.png"

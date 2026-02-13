@@ -197,10 +197,7 @@ class QuestResultsUi:
     ) -> None:
         self.close()
         self.missing_assets = []
-        try:
-            self.font = load_small_font(self.assets_root, self.missing_assets)
-        except Exception:
-            self.font = None
+        self.font = load_small_font(self.assets_root, self.missing_assets)
         self.assets = load_quest_results_assets(self.assets_root)
         if self.assets.missing:
             self.missing_assets.extend(self.assets.missing)

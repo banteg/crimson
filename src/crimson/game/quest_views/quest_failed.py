@@ -12,6 +12,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from ...frontend.assets import _ensure_texture_cache
 from ...frontend.menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
 from ...frontend.transitions import _draw_screen_fade
+from ...quests.types import parse_level
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from ..types import GameState
@@ -81,13 +82,10 @@ class QuestFailedView:
         self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
         outcome = self._outcome
         if outcome is not None:
-            try:
-                from ...quests import quest_by_level
+            from ...quests import quest_by_level
 
-                quest = quest_by_level(outcome.level)
-                self._quest_title = quest.title if quest is not None else ""
-            except Exception:
-                self._quest_title = ""
+            quest = quest_by_level(outcome.level)
+            self._quest_title = quest.title if quest is not None else ""
 
         self._build_score_preview(outcome)
 
@@ -344,14 +342,7 @@ class QuestFailedView:
         if outcome is None:
             return
 
-        major = 0
-        minor = 0
-        try:
-            major_text, minor_text = str(outcome.level).split(".", 1)
-            major = int(major_text)
-            minor = int(minor_text)
-        except Exception:
-            pass
+        major, minor = parse_level(str(outcome.level))
 
         record = HighScoreRecord.blank()
         record.set_name(_player_name_default(self.state.config) or "Player")

@@ -34,7 +34,7 @@ from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table, tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
-from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
+from ..quests.types import QuestContext, QuestDefinition, SpawnEntry, parse_level
 from ..terrain_assets import terrain_texture_by_id
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
@@ -119,20 +119,12 @@ class QuestRunOutcome:
 
 
 def _quest_seed(level: str) -> int:
-    tier_text, quest_text = level.split(".", 1)
-    try:
-        return int(tier_text) * 100 + int(quest_text)
-    except ValueError:
-        return sum(ord(ch) for ch in level)
+    tier, quest = parse_level(level)
+    return tier * 100 + quest
 
 
 def _quest_attempt_counter_index(level: str) -> int | None:
-    try:
-        tier_text, quest_text = level.split(".", 1)
-        tier = int(tier_text)
-        quest = int(quest_text)
-    except ValueError:
-        return None
+    tier, quest = parse_level(level)
     global_index = (tier - 1) * 10 + (quest - 1)
     if not (0 <= global_index < 40):
         return None
@@ -140,12 +132,7 @@ def _quest_attempt_counter_index(level: str) -> int | None:
 
 
 def _quest_level_label(level: str) -> str:
-    try:
-        tier_text, quest_text = level.split(".", 1)
-        major = int(tier_text)
-        minor = int(quest_text)
-    except Exception:
-        return str(level)
+    major, minor = parse_level(level)
 
     # Match `ui_render_hud` (0x0041bf94): quest minor can temporarily exceed 10
     # (e.g. after incrementing), and the HUD carries it into the major.
@@ -213,10 +200,7 @@ class QuestMode(BaseGameplayMode):
         if self._perk_menu_assets.missing:
             self._missing_assets.extend(self._perk_menu_assets.missing)
         self._quest_complete_texture = self._load_quest_complete_texture()
-        try:
-            self._grim_mono = load_grim_mono_font(self._assets_root, self._missing_assets)
-        except Exception:
-            self._grim_mono = None
+        self._grim_mono = load_grim_mono_font(self._assets_root, self._missing_assets)
 
         self._perk_prompt_timer_ms = 0.0
         self._perk_prompt_hover = False
@@ -235,12 +219,14 @@ class QuestMode(BaseGameplayMode):
         loader = TextureLoader(
             assets_root=self._assets_root, cache=self.world.texture_cache, missing=self._missing_assets
         )
-        try:
-            return loader.get(name="ui_textLevComp", paq_rel="ui/ui_textLevComp.jaz", fs_rel="ui/ui_textLevComp.png")
-        except FileNotFoundError:
-            if "ui/ui_textLevComp.jaz" not in self._missing_assets:
-                self._missing_assets.append("ui/ui_textLevComp.jaz")
-            return None
+        texture = loader.get_optional(
+            name="ui_textLevComp",
+            paq_rel="ui/ui_textLevComp.jaz",
+            fs_rel="ui/ui_textLevComp.png",
+        )
+        if texture is None and "ui/ui_textLevComp.jaz" not in self._missing_assets:
+            self._missing_assets.append("ui/ui_textLevComp.jaz")
+        return texture
 
     def _reset_perk_prompt(self) -> None:
         if int(self.state.perk_selection.pending_count) > 0:
@@ -649,8 +635,8 @@ class QuestMode(BaseGameplayMode):
                     playback.volume = 0.0
                     try:
                         rl.set_music_volume(playback.music, 0.0)
-                    except Exception:
-                        pass
+                    except RuntimeError:
+                        playback.volume = 0.0
             if completed:
                 if self._outcome is None:
                     fired = 0
