@@ -329,6 +329,60 @@ def test_projectile_pool_update_owner_collision_blocks_later_candidates() -> Non
     assert math.isclose(creatures[1].hp, 100.0, abs_tol=1e-9)
 
 
+def test_projectile_pool_update_player_hit_does_not_break_step_loop() -> None:
+    pool = ProjectilePool(size=1)
+    idx = pool.spawn(
+        pos=Vec2(),
+        angle=math.pi / 2.0,
+        type_id=int(ProjectileTypeId.SPLITTER_GUN),
+        owner_id=0,
+        base_damage=30.0,
+        hits_players=True,
+    )
+    proj = pool.entries[idx]
+    players = [PlayerState(index=0, pos=Vec2(15.0, 0.0), health=100.0)]
+
+    hits = pool.update(
+        0.1,
+        [],
+        world_size=1024.0,
+        damage_scale_by_type={int(ProjectileTypeId.SPLITTER_GUN): 1.0},
+        players=players,
+        rng=_fixed_rng(0),
+    )
+
+    # Native `projectile_update` keeps advancing after player hits in the same
+    # tick, but player hits do not emit projectile-hit presentation events.
+    assert hits == []
+    assert math.isclose(players[0].health, 60.0, abs_tol=1e-9)
+    assert math.isclose(proj.life_timer, 0.25, abs_tol=1e-9)
+
+
+def test_projectile_pool_update_clears_unit_damage_pool_even_when_already_hit_state() -> None:
+    pool = ProjectilePool(size=1)
+    idx = pool.spawn(
+        pos=Vec2(),
+        angle=math.pi / 2.0,
+        type_id=int(ProjectileTypeId.ION_RIFLE),
+        owner_id=-100,
+        base_damage=15.0,
+    )
+    proj = pool.entries[idx]
+    creatures = [_Creature(pos=Vec2(41.1428575, 0.0), hp=0.0)]
+
+    pool.update(
+        0.1,
+        creatures,
+        world_size=1024.0,
+        damage_scale_by_type={int(ProjectileTypeId.ION_RIFLE): 1.0},
+        rng=_fixed_rng(0),
+        runtime_state=GameplayState(),
+    )
+
+    assert math.isclose(proj.life_timer, 0.25, abs_tol=1e-9)
+    assert math.isclose(proj.damage_pool, 0.0, abs_tol=1e-9)
+
+
 def test_projectile_pool_emits_hit_event_and_enters_hit_state() -> None:
     pool = ProjectilePool(size=1)
     idx = pool.spawn(pos=Vec2(), angle=math.pi / 2.0, type_id=4, owner_id=-100)
