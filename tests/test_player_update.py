@@ -134,7 +134,7 @@ def test_player_update_does_not_preload_ammo_on_tiny_underflow() -> None:
     assert math.isclose(player.ammo, -1.0, abs_tol=1e-9)
 
 
-def test_player_update_tops_up_empty_reload_on_next_fire_tick() -> None:
+def test_player_update_empty_reload_fire_tick_keeps_underflow_and_restarts_reload() -> None:
     state = GameplayState()
     player = PlayerState(
         index=0,
@@ -155,8 +155,10 @@ def test_player_update_tops_up_empty_reload_on_next_fire_tick() -> None:
         state,
     )
 
-    assert math.isclose(player.ammo, 5.0, abs_tol=1e-9)
-    assert player.reload_active is False
+    assert math.isclose(player.ammo, -1.0, abs_tol=1e-9)
+    assert player.reload_active is True
+    assert player.reload_timer > 0.0
+    assert math.isclose(player.reload_timer, player.reload_timer_max, abs_tol=1e-9)
 
 
 def test_player_update_does_not_top_up_when_reload_finishes_same_tick() -> None:

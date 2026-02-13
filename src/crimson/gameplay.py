@@ -509,7 +509,6 @@ def player_update(
     ):
         player.ammo = float(player.clip_size)
 
-    reload_timer_started = float(player.reload_timer)
     if player.reload_timer > 0.0:
         if (
             perk_active(player, PerkId.ANGRY_RELOADER)
@@ -539,17 +538,9 @@ def player_update(
     if player.reload_timer < 0.0:
         player.reload_timer = 0.0
 
-    if (
-        player.reload_active
-        and reload_timer_started <= 0.0
-        and player.reload_timer == 0.0
-        and player.ammo <= 0.0
-        and input_state.fire_down
-    ):
-        player.ammo = float(player.clip_size)
-
-    # Native clears `reload_active` only once the player can shoot again.
-    if player.shot_cooldown <= 0.0 and player.reload_timer == 0.0 and player.ammo > 0.0:
+    # Native clears `reload_active` whenever the cooldown/timer gates are open,
+    # even if ammo is empty and perk firing paths can still proceed.
+    if player.shot_cooldown <= 0.0 and player.reload_timer == 0.0:
         player.reload_active = False
 
     if input_state.reload_pressed:
