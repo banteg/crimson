@@ -73,7 +73,7 @@ class GameState:
     session_start: float
     skip_intro: bool = False
     gamma_ramp: float = 1.0
-    snd_freq_adjustment_enabled: bool = False
+    snd_freq_adjustment_enabled: bool = True
     menu_ground: GroundRenderer | None = None
     menu_ground_camera: Vec2 | None = None
     menu_sign_locked: bool = False
