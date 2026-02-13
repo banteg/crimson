@@ -1,0 +1,12 @@
+id: no-optional-mode-config
+language: python
+severity: error
+message: Gameplay modes always carry a concrete config; remove optional config checks.
+files:
+  - src/crimson/modes/**/*.py
+rule:
+  any:
+    - pattern: self.config is None
+    - pattern: self.config is not None
+    - pattern: self._config is None
+    - pattern: self._config is not None

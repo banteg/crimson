@@ -1,0 +1,23 @@
+id: no-optional-mode-config
+valid:
+  - |
+    if self.config.ui_info_texts:
+        return
+  - |
+    mode_id = self.config.game_mode
+  - |
+    if config is None:
+        return
+invalid:
+  - |
+    if self.config is None:
+        return
+  - |
+    if self.config is not None:
+        mode_id = self.config.game_mode
+  - |
+    if self._config is None:
+        return
+  - |
+    if self._config is not None:
+        mode_id = self._config.game_mode
