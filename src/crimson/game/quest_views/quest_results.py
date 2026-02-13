@@ -9,19 +9,13 @@ from grim.terrain_render import GroundRenderer
 
 from ...frontend.menu import ensure_menu_ground, menu_ground_camera
 from ...frontend.transitions import _draw_screen_fade
+from ...quests.types import parse_level
 from ..types import GameState, HighScoresRequest
 from .shared import _next_quest_level, _player_name_default
 
 
 def _parse_level_pair(level: object) -> tuple[int, int]:
-    level_text = str(level or "")
-    major_text, dot, minor_text = level_text.partition(".")
-    if dot == "":
-        return (0, 0)
-    try:
-        return (int(major_text), int(minor_text))
-    except ValueError:
-        return (0, 0)
+    return parse_level(str(level or ""))
 
 
 def _int_or_zero(value: object) -> int:

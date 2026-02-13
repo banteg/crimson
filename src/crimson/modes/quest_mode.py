@@ -34,7 +34,7 @@ from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table, tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
-from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
+from ..quests.types import QuestContext, QuestDefinition, SpawnEntry, parse_level
 from ..terrain_assets import terrain_texture_by_id
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
@@ -119,20 +119,12 @@ class QuestRunOutcome:
 
 
 def _quest_seed(level: str) -> int:
-    tier_text, quest_text = level.split(".", 1)
-    try:
-        return int(tier_text) * 100 + int(quest_text)
-    except ValueError:
-        return sum(ord(ch) for ch in level)
+    tier, quest = parse_level(level)
+    return tier * 100 + quest
 
 
 def _quest_attempt_counter_index(level: str) -> int | None:
-    try:
-        tier_text, quest_text = level.split(".", 1)
-        tier = int(tier_text)
-        quest = int(quest_text)
-    except ValueError:
-        return None
+    tier, quest = parse_level(level)
     global_index = (tier - 1) * 10 + (quest - 1)
     if not (0 <= global_index < 40):
         return None
@@ -140,12 +132,7 @@ def _quest_attempt_counter_index(level: str) -> int | None:
 
 
 def _quest_level_label(level: str) -> str:
-    try:
-        tier_text, quest_text = level.split(".", 1)
-        major = int(tier_text)
-        minor = int(quest_text)
-    except Exception:
-        return str(level)
+    major, minor = parse_level(level)
 
     # Match `ui_render_hud` (0x0041bf94): quest minor can temporarily exceed 10
     # (e.g. after incrementing), and the HUD carries it into the major.
