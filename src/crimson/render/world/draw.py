@@ -205,21 +205,8 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
         hitbox_size: float,
         ctx: _WorldDrawContext,
     ) -> None:
-        if (
-            ctx.particles_texture is not None
-            and ctx.poison_src is not None
-            and (creature.flags & CreatureFlags.SELF_DAMAGE_TICK)
-        ):
-            fade = monster_vision_fade_alpha(hitbox_size)
-            poison_alpha = fade * ctx.entity_alpha
-            if poison_alpha > 1e-3:
-                size = 60.0 * ctx.scale
-                dst = rl.Rectangle(screen.x, screen.y, size, size)
-                origin = rl.Vector2(size * 0.5, size * 0.5)
-                tint = rl.Color(255, 0, 0, int(clamp(poison_alpha, 0.0, 1.0) * 255.0 + 0.5))
-                rl.draw_texture_pro(ctx.particles_texture, ctx.poison_src, dst, origin, 0.0, tint)
+        fade = monster_vision_fade_alpha(hitbox_size)
         if ctx.monster_vision and ctx.particles_texture is not None and ctx.monster_vision_src is not None:
-            fade = monster_vision_fade_alpha(hitbox_size)
             mv_alpha = fade * ctx.entity_alpha
             if mv_alpha > 1e-3:
                 size = 90.0 * ctx.scale
@@ -227,6 +214,27 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
                 origin = rl.Vector2(size * 0.5, size * 0.5)
                 tint = rl.Color(255, 255, 0, int(clamp(mv_alpha, 0.0, 1.0) * 255.0 + 0.5))
                 rl.draw_texture_pro(ctx.particles_texture, ctx.monster_vision_src, dst, origin, 0.0, tint)
+        if ctx.particles_texture is not None and ctx.poison_src is not None and bool(getattr(creature, "plague_infected", False)):
+            # creature_render_all: collision_flag overlay (black 80x80 aura), drawn before red poison flag.
+            plague_alpha = fade * ctx.entity_alpha
+            if plague_alpha > 1e-3:
+                size = 80.0 * ctx.scale
+                dst = rl.Rectangle(screen.x, screen.y, size, size)
+                origin = rl.Vector2(size * 0.5, size * 0.5)
+                tint = rl.Color(0, 0, 0, int(clamp(plague_alpha, 0.0, 1.0) * 255.0 + 0.5))
+                rl.draw_texture_pro(ctx.particles_texture, ctx.poison_src, dst, origin, 0.0, tint)
+        if (
+            ctx.particles_texture is not None
+            and ctx.poison_src is not None
+            and (creature.flags & CreatureFlags.SELF_DAMAGE_TICK)
+        ):
+            poison_alpha = fade * ctx.entity_alpha
+            if poison_alpha > 1e-3:
+                size = 60.0 * ctx.scale
+                dst = rl.Rectangle(screen.x, screen.y, size, size)
+                origin = rl.Vector2(size * 0.5, size * 0.5)
+                tint = rl.Color(255, 0, 0, int(clamp(poison_alpha, 0.0, 1.0) * 255.0 + 0.5))
+                rl.draw_texture_pro(ctx.particles_texture, ctx.poison_src, dst, origin, 0.0, tint)
 
     def _draw_creatures(self, *, ctx: _WorldDrawContext) -> None:
         for _idx, creature in self._sorted_active_creatures():
