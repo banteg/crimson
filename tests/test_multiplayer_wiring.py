@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 from crimson.sim.input import PlayerInput
 from crimson.game_world import GameWorld
@@ -57,23 +58,37 @@ def test_quest_mode_update_uses_per_player_input_frame(monkeypatch, tmp_path: Pa
     inputs = [PlayerInput(move=Vec2(float(idx), 0.0)) for idx in range(len(mode.world.players))]
     captured: dict[str, object] = {}
 
-    def _world_update(_self, _dt, *, inputs=None, **_kwargs):  # noqa: ANN001
-        captured["inputs"] = inputs
-        return []
+    class _FakeSession:
+        def __init__(self) -> None:
+            self.detail_preset = 5
+            self.fx_toggle = 0
+            self.spawn_entries = ()
+            self.spawn_timeline_ms = 0.0
+            self.no_creatures_timer_ms = 0.0
+            self.completion_transition_ms = -1.0
 
-    monkeypatch.setattr("crimson.game_world.GameWorld.update", _world_update)
-    monkeypatch.setattr("crimson.modes.quest_mode.tick_quest_mode_spawns", lambda *args, **kwargs: (args[0], kwargs.get("quest_spawn_timeline_ms", 0.0), False, 0.0, ()))
-    monkeypatch.setattr(
-        "crimson.modes.quest_mode.tick_quest_completion_transition",
-        lambda *_args, **_kwargs: (-1.0, False, False, False),
-    )
+        def step_tick(self, *, dt_frame, inputs, trace_rng=False):  # noqa: ANN001
+            del dt_frame, trace_rng
+            captured["inputs"] = inputs
+            return SimpleNamespace(
+                step=SimpleNamespace(),
+                spawn_timeline_ms=0.0,
+                no_creatures_timer_ms=0.0,
+                completion_transition_ms=-1.0,
+                play_hit_sfx=False,
+                play_completion_music=False,
+                completed=False,
+            )
+
+    mode._sim_session = _FakeSession()
     monkeypatch.setattr(mode, "_update_audio", lambda _dt: None)
-    monkeypatch.setattr(mode, "_tick_frame", lambda _dt: (0.016, 16.0))
+    monkeypatch.setattr(mode, "_tick_frame", lambda _dt: (0.02, 20.0))
     monkeypatch.setattr(mode, "_handle_input", lambda: None)
     monkeypatch.setattr(mode, "_build_local_inputs", lambda *, dt_frame: inputs)
     monkeypatch.setattr(mode, "_death_transition_ready", lambda: False)
+    monkeypatch.setattr("crimson.game_world.GameWorld.apply_step_result", lambda *_args, **_kwargs: None)
 
-    mode.update(0.016)
+    mode.update(0.02)
 
     assert captured["inputs"] is inputs
     assert len(inputs) == 3
