@@ -1666,6 +1666,38 @@ def test_convert_capture_to_replay_does_not_synthesize_unknown_mode_without_weap
     assert reload_pressed1 is False
 
 
+def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_mapped_weapon_projectile(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["checkpoint"]["players"][0]["weapon_id"] = 14
+    tick0["checkpoint"]["players"][0]["ammo"] = 8.0
+    tick0["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
+    tick0["input_approx"] = [{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 14}]
+
+    tick1 = _base_tick(tick_index=1, elapsed_ms=32)
+    tick1["checkpoint"]["players"][0]["weapon_id"] = 14
+    tick1["checkpoint"]["players"][0]["ammo"] = 8.0
+    tick1["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
+    tick1["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 14}]
+    tick1["event_heads"] = [
+        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 11, "actual_type_id": 11}}
+    ]
+
+    obj = _capture_obj(ticks=[tick0, tick1])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture)
+
+    flags1 = int(replay.inputs[1][0][3])
+    fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
+    assert fire_down1 is True
+    assert fire_pressed1 is False
+    assert reload_pressed1 is False
+
+
 def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_when_weapon_switches_in_tick(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0["checkpoint"]["players"][0]["weapon_id"] = 1

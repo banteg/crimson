@@ -11,6 +11,8 @@ from ..math_parity import f32
 from ..sim.state_types import BonusPickupEvent, GameplayState
 from .apply_context import BonusApplyCtx
 
+_CORPSE_DESPAWN_HITBOX = -10.0
+
 
 @dataclass(frozen=True, slots=True)
 class DeferredFreezeCorpseFx:
@@ -35,6 +37,11 @@ def apply_freeze(ctx: BonusApplyCtx) -> None:
             if not creature.active:
                 continue
             if creature.hp > 0.0:
+                continue
+            # Native excludes corpses already below the despawn hitbox threshold
+            # from Freeze FX random work in `bonus_apply`.
+            if float(creature.hitbox_size) < _CORPSE_DESPAWN_HITBOX:
+                creature.active = False
                 continue
             allow_shatter_fx = allowed_indices is None or int(idx) in allowed_indices
             pos = creature.pos

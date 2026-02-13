@@ -114,6 +114,10 @@ def _parse_capture_path(tool: str, args: list[str]) -> Path | None:
             from . import divergence_report
 
             parser = divergence_report.build_parser()
+        elif str(tool) == "bisect-divergence":
+            from . import divergence_bisect
+
+            parser = divergence_bisect.build_parser()
         elif str(tool) == "focus-trace":
             from . import focus_trace
 
@@ -184,6 +188,10 @@ def _run_tool(
                     from . import divergence_report
 
                     exit_code = int(divergence_report.main(list(args), session=session))
+                elif str(tool) == "bisect-divergence":
+                    from . import divergence_bisect
+
+                    exit_code = int(divergence_bisect.main(list(args)))
                 elif str(tool) == "focus-trace":
                     from . import focus_trace
 

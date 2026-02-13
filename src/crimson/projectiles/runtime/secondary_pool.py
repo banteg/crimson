@@ -7,6 +7,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 
 from ...effects_atlas import EffectId
+from ...math_parity import f32
 from ..types import (
     CreatureDamageApplier,
     Damageable,
@@ -71,7 +72,7 @@ class SecondaryProjectilePool:
             # Detonation uses explicit timer/scale fields now.
             entry.detonation_t = 0.0
             entry.detonation_scale = float(time_to_live)
-            entry.speed = float(time_to_live)
+            entry.speed = float(f32(float(time_to_live)))
             return index
 
         # Effects.md: vel = cos/sin(angle - PI/2) * 90 (190 for type 2).
@@ -79,7 +80,7 @@ class SecondaryProjectilePool:
         if entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET:
             base_speed = 190.0
         entry.vel = Vec2.from_heading(float(angle)) * base_speed
-        entry.speed = float(time_to_live)
+        entry.speed = float(f32(float(time_to_live)))
 
         if entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET:
             # Native `fx_spawn_secondary_projectile` seeds seeker target_id at spawn via
@@ -212,12 +213,12 @@ class SecondaryProjectilePool:
                 if speed_mag < 500.0:
                     factor = 1.0 + dt * 3.0
                     entry.vel = entry.vel * factor
-                entry.speed -= dt
+                entry.speed = float(f32(float(entry.speed) - float(dt)))
             elif entry.type_id == SecondaryProjectileTypeId.ROCKET_MINIGUN:
                 if speed_mag < 600.0:
                     factor = 1.0 + dt * 4.0
                     entry.vel = entry.vel * factor
-                entry.speed -= dt
+                entry.speed = float(f32(float(entry.speed) - float(dt)))
             else:
                 # Type 2: homing projectile.
                 target_id = entry.target_id
@@ -243,11 +244,12 @@ class SecondaryProjectilePool:
                         if next_velocity.length() <= 350.0:
                             entry.vel = next_velocity
 
-                entry.speed -= dt * 0.5
+                entry.speed = float(f32(float(entry.speed) - float(dt) * 0.5))
 
             # Rocket smoke trail (`trail_timer` in crimsonland.exe).
-            entry.trail_timer -= (abs(entry.vel.x) + abs(entry.vel.y)) * dt * 0.01
-            if entry.trail_timer < 0.0:
+            trail_decay = float(f32((abs(entry.vel.x) + abs(entry.vel.y)) * dt * 0.01))
+            entry.trail_timer = float(f32(float(entry.trail_timer) - float(trail_decay)))
+            if float(entry.trail_timer) < 0.0:
                 direction = Vec2.from_heading(entry.angle)
                 spawn_pos = entry.pos - direction * 9.0
                 trail_velocity = Vec2.from_heading(entry.angle + math.pi) * 90.0
@@ -258,7 +260,7 @@ class SecondaryProjectilePool:
                         scale=14.0,
                         color=RGBA(1.0, 1.0, 1.0, 0.25),
                     )
-                entry.trail_timer = 0.06
+                entry.trail_timer = float(f32(0.06))
 
             # projectile_update uses creature_find_in_radius(..., 8.0, ...)
             hit_idx: int | None = None
@@ -401,7 +403,7 @@ class SecondaryProjectilePool:
 
                 continue
 
-            if entry.speed <= 0.0:
+            if entry.speed < 0.0:
                 entry.type_id = SecondaryProjectileTypeId.DETONATION
                 entry.vel = Vec2()
                 entry.detonation_t = 0.0
