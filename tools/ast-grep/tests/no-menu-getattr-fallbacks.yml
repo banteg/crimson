@@ -1,0 +1,12 @@
+id: no-menu-getattr-fallbacks
+valid:
+  - |
+    timeline = int(self._timeline_ms)
+  - |
+    status = state.status
+    unlock_index = int(status.quest_unlock_index)
+invalid:
+  - |
+    t = getattr(self, "_timeline_ms", 0)
+  - |
+    status = getattr(state, "status", None)

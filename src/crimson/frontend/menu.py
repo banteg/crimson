@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 import os
+from typing import Protocol
 
 import pyray as rl
 
@@ -70,20 +71,23 @@ MENU_UNLOCK_TERRAIN_RULES: tuple[tuple[int, tuple[int, int, int]], ...] = (
 )
 
 
+class _TimelineView(Protocol):
+    _timeline_ms: int
+
+
 def menu_ground_camera(state: GameState) -> Vec2:
-    camera = getattr(state, "menu_ground_camera", None)
+    camera = state.menu_ground_camera
     if isinstance(camera, Vec2):
         return camera
     return Vec2()
 
 
 def _menu_unlock_index(state: GameState) -> int:
-    status = getattr(state, "status", None)
+    status = state.status
     if status is None:
         return 0
-    unlock_index = getattr(status, "quest_unlock_index", 0)
     try:
-        return int(unlock_index)
+        return int(status.quest_unlock_index)
     except (TypeError, ValueError):
         return 0
 
@@ -105,18 +109,10 @@ def _menu_terrain_texture(state: GameState, terrain_id: int) -> rl.Texture | Non
         return None
 
     key, rel_path = terrain
-    tex_get = getattr(cache, "texture", None)
-    if callable(tex_get):
-        texture = tex_get(key)
-        if texture is not None:
-            return texture
-    tex_load = getattr(cache, "get_or_load", None)
-    if callable(tex_load):
-        asset = tex_load(key, rel_path)
-        texture = getattr(asset, "texture", None)
-        if texture is not None:
-            return texture
-    return None
+    texture = cache.texture(key)
+    if texture is not None:
+        return texture
+    return cache.get_or_load(key, rel_path).texture
 
 
 def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer | None:
@@ -648,7 +644,7 @@ class MenuView:
         return max_ms
 
     def _ui_element_anim(
-        self: object,
+        self: _TimelineView,
         *,
         index: int,
         start_ms: int,
@@ -662,10 +658,7 @@ class MenuView:
         if start_ms <= end_ms or width <= 0.0:
             return 0.0, 0.0
         dir_sign = 1.0 if int(direction_flag) else -1.0
-        # Some menu-like views reuse this helper without exposing a dedicated
-        # timeline field; default to fully-visible in those cases.
-        t_raw = getattr(self, "_timeline_ms", start_ms)
-        t = int(t_raw) if isinstance(t_raw, (int, float)) else int(start_ms)
+        t = int(self._timeline_ms)
         if t < end_ms:
             angle = 1.5707964
             offset_x = dir_sign * abs(width)
