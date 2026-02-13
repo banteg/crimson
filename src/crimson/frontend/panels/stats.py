@@ -69,6 +69,7 @@ class StatisticsMenuView:
 
     def __init__(self, state: GameState) -> None:
         self.state = state
+        self._is_open = False
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._small_font: SmallFontData | None = None
@@ -120,8 +121,10 @@ class StatisticsMenuView:
                 stop_music(self.state.audio)
             play_music(self.state.audio, "shortie_monk")
             play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
+        self._is_open = True
 
     def close(self) -> None:
+        self._is_open = False
         if self._small_font is not None:
             rl.unload_texture(self._small_font.texture)
             self._small_font = None
@@ -149,6 +152,7 @@ class StatisticsMenuView:
             play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
 
     def take_action(self) -> str | None:
+        self._assert_open()
         if self._pending_action is not None:
             action = self._pending_action
             self._pending_action = None
@@ -159,6 +163,9 @@ class StatisticsMenuView:
         action = self._action
         self._action = None
         return action
+
+    def _assert_open(self) -> None:
+        assert self._is_open, "StatisticsMenuView must be opened before use"
 
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:
@@ -180,6 +187,7 @@ class StatisticsMenuView:
         self._close_action = action
 
     def update(self, dt: float) -> None:
+        self._assert_open()
         if self.state.audio is not None:
             if not self._closing:
                 play_music(self.state.audio, "shortie_monk")
@@ -263,6 +271,7 @@ class StatisticsMenuView:
             return
 
     def draw(self) -> None:
+        self._assert_open()
         rl.clear_background(rl.BLACK)
         pause_background = self.state.pause_background
         if pause_background is not None:
