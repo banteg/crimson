@@ -33,6 +33,95 @@ from .mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialG
 from .quest_views import EndNoteView, QuestFailedView, QuestResultsView, QuestsMenuView
 from .types import FrontView, GameState, PauseBackground
 
+
+_GAMMA_RAMP_SHADER: rl.Shader | None = None
+_GAMMA_RAMP_SHADER_GAIN_LOC: int = -1
+_GAMMA_RAMP_SHADER_TRIED = False
+
+_GAMMA_RAMP_VS_330 = r"""
+#version 330
+
+in vec3 vertexPosition;
+in vec2 vertexTexCoord;
+in vec4 vertexColor;
+
+out vec2 fragTexCoord;
+out vec4 fragColor;
+
+uniform mat4 mvp;
+
+void main() {
+    fragTexCoord = vertexTexCoord;
+    fragColor = vertexColor;
+    gl_Position = mvp * vec4(vertexPosition, 1.0);
+}
+"""
+
+_GAMMA_RAMP_FS_330 = r"""
+#version 330
+
+in vec2 fragTexCoord;
+in vec4 fragColor;
+
+uniform sampler2D texture0;
+uniform vec4 colDiffuse;
+uniform float u_gamma_gain;
+
+out vec4 finalColor;
+
+void main() {
+    vec4 texel = texture(texture0, fragTexCoord) * fragColor * colDiffuse;
+    texel.rgb = clamp(texel.rgb * max(u_gamma_gain, 0.0), 0.0, 1.0);
+    finalColor = texel;
+}
+"""
+
+
+def _get_gamma_ramp_shader() -> tuple[rl.Shader | None, int]:
+    global _GAMMA_RAMP_SHADER, _GAMMA_RAMP_SHADER_GAIN_LOC, _GAMMA_RAMP_SHADER_TRIED
+    if _GAMMA_RAMP_SHADER_TRIED:
+        shader = _GAMMA_RAMP_SHADER
+        if shader is None:
+            return None, -1
+        if int(getattr(shader, "id", 0)) <= 0:
+            return None, -1
+        if _GAMMA_RAMP_SHADER_GAIN_LOC < 0:
+            return None, -1
+        return shader, _GAMMA_RAMP_SHADER_GAIN_LOC
+
+    _GAMMA_RAMP_SHADER_TRIED = True
+    try:
+        shader = rl.load_shader_from_memory(_GAMMA_RAMP_VS_330, _GAMMA_RAMP_FS_330)
+    except (RuntimeError, OSError, ValueError):
+        _GAMMA_RAMP_SHADER = None
+        _GAMMA_RAMP_SHADER_GAIN_LOC = -1
+        return None, -1
+
+    if int(getattr(shader, "id", 0)) <= 0:
+        _GAMMA_RAMP_SHADER = None
+        _GAMMA_RAMP_SHADER_GAIN_LOC = -1
+        return None, -1
+
+    gain_loc = int(rl.get_shader_location(shader, "u_gamma_gain"))
+    if gain_loc < 0:
+        _GAMMA_RAMP_SHADER = None
+        _GAMMA_RAMP_SHADER_GAIN_LOC = -1
+        return None, -1
+
+    _GAMMA_RAMP_SHADER = shader
+    _GAMMA_RAMP_SHADER_GAIN_LOC = gain_loc
+    return _GAMMA_RAMP_SHADER, _GAMMA_RAMP_SHADER_GAIN_LOC
+
+
+def _set_gamma_ramp_gain(shader: rl.Shader, gain_loc: int, gain: float) -> None:
+    rl.set_shader_value(
+        shader,
+        int(gain_loc),
+        rl.ffi.new("float *", max(0.0, float(gain))),
+        rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT,
+    )
+
+
 class GameLoopView:
     def __init__(self, state: GameState) -> None:
         self.state = state
@@ -446,13 +535,31 @@ class GameLoopView:
         self._screenshot_requested = False
         return requested
 
-    def draw(self) -> None:
+    def _draw_scene_layers(self) -> None:
         self._active.draw()
         info = self._demo_trial_info
         if info is not None and getattr(info, "visible", False):
             self._demo_trial_overlay.bind_cache(self.state.texture_cache)
             self._demo_trial_overlay.draw(info)
         self.state.console.draw()
+
+    def draw(self) -> None:
+        gamma_gain = max(0.0, float(self.state.gamma_ramp))
+        if abs(gamma_gain - 1.0) <= 1e-6:
+            self._draw_scene_layers()
+            return
+
+        shader, gain_loc = _get_gamma_ramp_shader()
+        if shader is None or gain_loc < 0:
+            self._draw_scene_layers()
+            return
+
+        _set_gamma_ramp_gain(shader, gain_loc, gamma_gain)
+        rl.begin_shader_mode(shader)
+        try:
+            self._draw_scene_layers()
+        finally:
+            rl.end_shader_mode()
 
     def close(self) -> None:
         if self._menu_active:
