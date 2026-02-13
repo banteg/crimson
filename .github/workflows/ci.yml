@@ -30,6 +30,14 @@ jobs:
             do_sync: false
             command: uv run --no-sync python scripts/check_docs.py
             sync_args: ""
+          - task: ast-grep-scan
+            do_sync: false
+            command: sg scan
+            sync_args: ""
+          - task: ast-grep-test
+            do_sync: false
+            command: sg test
+            sync_args: ""
           - task: ty
             do_sync: true
             command: uv run --no-sync ty check src
@@ -52,6 +60,14 @@ jobs:
         with:
           python-version: "3.13"
           enable-cache: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install ast-grep
+        run: npm install --global @ast-grep/cli
 
       - name: Install dependencies
         if: matrix.do_sync
