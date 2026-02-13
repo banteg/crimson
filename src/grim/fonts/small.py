@@ -20,7 +20,6 @@ class SmallFontData:
 SMALL_FONT_UV_BIAS_PX = 0.5
 SMALL_FONT_FILTER = rl.TextureFilter.TEXTURE_FILTER_POINT
 SMALL_FONT_RENDER_SCALE = 1.0
-SMALL_FONT_OPTIONAL_EXCEPTIONS = (FileNotFoundError, OSError, ValueError, RuntimeError)
 
 
 def load_small_font(assets_root: Path, missing_assets: list[str]) -> SmallFontData:
@@ -51,13 +50,6 @@ def load_small_font(assets_root: Path, missing_assets: list[str]) -> SmallFontDa
     texture = rl.load_texture(str(atlas_png if atlas_png.is_file() else atlas_tga))
     rl.set_texture_filter(texture, SMALL_FONT_FILTER)
     return SmallFontData(widths=widths, texture=texture)
-
-
-def load_small_font_optional(assets_root: Path, missing_assets: list[str]) -> SmallFontData | None:
-    try:
-        return load_small_font(assets_root, missing_assets)
-    except SMALL_FONT_OPTIONAL_EXCEPTIONS:
-        return None
 
 
 def draw_small_text(font: SmallFontData, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:

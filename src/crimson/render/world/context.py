@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import pyray as rl
 
 from grim.geom import Vec2
-from grim.fonts.small import SmallFontData, load_small_font_optional
+from grim.fonts.small import SmallFontData, load_small_font
 
 from .constants import _RAD_TO_DEG
 from .mixin_base import WorldRendererMixinBase
@@ -194,7 +194,7 @@ class WorldRendererContextMixin(WorldRendererMixinBase):
         if self._small_font is not None:
             return self._small_font
         # Keep UI text consistent with the HUD/menu font when available.
-        self._small_font = load_small_font_optional(self.assets_dir, self.missing_assets)
+        self._small_font = load_small_font(self.assets_dir, self.missing_assets)
         return self._small_font
 
     def _camera_screen_size(self) -> Vec2:

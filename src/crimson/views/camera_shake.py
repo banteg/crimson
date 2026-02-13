@@ -7,7 +7,7 @@ import pyray as rl
 from construct import ConstructError
 
 from grim.config import ensure_crimson_cfg
-from grim.fonts.small import SmallFontData, load_small_font_optional
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
 from grim.view import View, ViewContext
 
@@ -107,7 +107,7 @@ class CameraShakeView:
 
     def open(self) -> None:
         self._missing_assets.clear()
-        self._small = load_small_font_optional(self._assets_root, self._missing_assets)
+        self._small = load_small_font(self._assets_root, self._missing_assets)
         self._world.open()
 
     def close(self) -> None:

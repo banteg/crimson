@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pyray as rl
 
-from grim.fonts.small import SmallFontData, load_small_font_optional, measure_small_text_width
+from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.view import ViewContext
 
@@ -83,7 +83,7 @@ class PerkSelectionView:
     def open(self) -> None:
         self.close_requested = False
         self._missing_assets.clear()
-        self._small = load_small_font_optional(self._assets_root, self._missing_assets)
+        self._small = load_small_font(self._assets_root, self._missing_assets)
         self._ui_assets = load_perk_menu_assets(self._assets_root)
         if self._ui_assets.missing:
             self._missing_assets.extend(self._ui_assets.missing)

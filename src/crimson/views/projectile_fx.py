@@ -7,7 +7,7 @@ import math
 
 import pyray as rl
 
-from grim.fonts.small import SmallFontData, load_small_font_optional
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.math import clamp
 from grim.view import View, ViewContext
 
@@ -162,7 +162,7 @@ class ProjectileFxView:
 
     def open(self) -> None:
         self._missing_assets.clear()
-        self._small = load_small_font_optional(self._assets_root, self._missing_assets)
+        self._small = load_small_font(self._assets_root, self._missing_assets)
 
         projs_path = self._assets_root / "crimson" / "game" / "projs.png"
         if not projs_path.is_file():
