@@ -58,7 +58,7 @@ def test_secondary_draw_registry_renders_type4_fallback_circle(monkeypatch) -> N
     def _draw_circle(x: int, y: int, radius: float, _color) -> None:  # noqa: ANN001
         calls.append((int(x), int(y), float(radius)))
 
-    monkeypatch.setattr("crimson.render.projectile_draw.secondary_type4_fallback.rl.draw_circle", _draw_circle)
+    monkeypatch.setattr("crimson.render.projectile_draw.secondary_rocket.rl.draw_circle", _draw_circle)
 
     ctx = SecondaryProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]

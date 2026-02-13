@@ -3,19 +3,16 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from .secondary_detonation import draw_secondary_detonation
-from .secondary_type1 import draw_secondary_type1
-from .secondary_type2 import draw_secondary_type2
-from .secondary_type4 import draw_secondary_type4
-from .secondary_type4_fallback import draw_secondary_type4_fallback
+from .secondary_rocket import draw_secondary_rocket, draw_secondary_type4_fallback
 from .types import SecondaryProjectileDrawCtx
 
 type SecondaryProjectileDrawHandler = Callable[[SecondaryProjectileDrawCtx], bool]
 
 SECONDARY_PROJECTILE_DRAW_HANDLERS_BY_TYPE: dict[int, tuple[SecondaryProjectileDrawHandler, ...]] = {
-    1: (draw_secondary_type1,),
-    2: (draw_secondary_type2,),
+    1: (draw_secondary_rocket,),
+    2: (draw_secondary_rocket,),
     3: (draw_secondary_detonation,),
-    4: (draw_secondary_type4, draw_secondary_type4_fallback),
+    4: (draw_secondary_rocket, draw_secondary_type4_fallback),
 }
 
 

@@ -20,7 +20,33 @@ class SecondaryRocketStyle:
     glow_alpha_mul: float
 
 
-def draw_secondary_rocket_style(ctx: SecondaryProjectileDrawCtx, *, style: SecondaryRocketStyle) -> bool:
+_ROCKET_STYLE_BY_TYPE: dict[int, SecondaryRocketStyle] = {
+    1: SecondaryRocketStyle(
+        base_size=14.0,
+        glow_size=60.0,
+        glow_rgb=(1.0, 1.0, 1.0),
+        glow_alpha_mul=0.68,
+    ),
+    2: SecondaryRocketStyle(
+        base_size=10.0,
+        glow_size=40.0,
+        glow_rgb=(1.0, 1.0, 1.0),
+        glow_alpha_mul=0.58,
+    ),
+    4: SecondaryRocketStyle(
+        base_size=8.0,
+        glow_size=30.0,
+        glow_rgb=(0.7, 0.7, 1.0),
+        glow_alpha_mul=0.158,
+    ),
+}
+
+
+def draw_secondary_rocket(ctx: SecondaryProjectileDrawCtx) -> bool:
+    style = _ROCKET_STYLE_BY_TYPE.get(int(ctx.proj_type))
+    if style is None:
+        return False
+
     renderer = ctx.renderer
     texture = renderer.projs_texture
     if texture is None:
@@ -45,6 +71,18 @@ def draw_secondary_rocket_style(ctx: SecondaryProjectileDrawCtx, *, style: Secon
         scale=sprite_scale,
         rotation_rad=ctx.angle,
         tint=base_tint,
+    )
+    return True
+
+
+def draw_secondary_type4_fallback(ctx: SecondaryProjectileDrawCtx) -> bool:
+    if int(ctx.proj_type) != 4:
+        return False
+    rl.draw_circle(
+        int(ctx.screen_pos.x),
+        int(ctx.screen_pos.y),
+        max(1.0, 12.0 * ctx.scale),
+        rl.Color(200, 120, 255, int(255 * ctx.alpha + 0.5)),
     )
     return True
 
@@ -108,4 +146,4 @@ def _draw_secondary_rocket_glow(ctx: SecondaryProjectileDrawCtx, *, style: Secon
     rl.end_blend_mode()
 
 
-__all__ = ["SecondaryRocketStyle", "draw_secondary_rocket_style"]
+__all__ = ["draw_secondary_rocket", "draw_secondary_type4_fallback"]
