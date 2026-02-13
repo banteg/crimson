@@ -32,7 +32,13 @@ from crimson.original.capture import (
 )
 from crimson.original.schema import CaptureTick
 from crimson.perks import perk_label
-from crimson.replay.types import Replay, UnknownEvent, unpack_input_flags, unpack_packed_player_input
+from crimson.replay.types import (
+    Replay,
+    UnknownEvent,
+    unpack_input_flags,
+    unpack_input_move_key_flags,
+    unpack_packed_player_input,
+)
 from crimson.sim.runners.common import (
     build_damage_scale_by_type,
     build_empty_fx_queues,
@@ -43,6 +49,7 @@ from crimson.sim.runners.survival import (
     _apply_tick_events,
     _partition_tick_events,
     _resolve_dt_frame,
+    _should_apply_world_dt_steps_for_replay,
 )
 from crimson.sim.sessions import SurvivalDeterministicSession
 from crimson.sim.world_state import WorldEvents, WorldState
@@ -319,6 +326,11 @@ class CaptureVisualizerView:
             tick_rate=int(self._tick_rate),
         )
         self._dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(self._capture)
+        self._apply_world_dt_steps = _should_apply_world_dt_steps_for_replay(
+            original_capture_replay=bool(self._original_capture_replay),
+            dt_frame_overrides=self._dt_frame_overrides,
+            dt_frame_ms_i32_overrides=self._dt_frame_ms_i32_overrides,
+        )
 
         self._outside_draws_by_tick = build_capture_inter_tick_rand_draws_overrides(self._capture)
 
@@ -377,6 +389,7 @@ class CaptureVisualizerView:
             detail_preset=5,
             fx_toggle=0,
             game_tune_started=False,
+            apply_world_dt_steps=bool(self._apply_world_dt_steps),
             clear_fx_queues_each_tick=True,
         )
 
@@ -495,6 +508,9 @@ class CaptureVisualizerView:
             if int(player_index) < len(packed_tick):
                 mx, my, ax, ay, flags = unpack_packed_player_input(packed_tick[int(player_index)])
                 fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
+                move_forward_pressed, move_backward_pressed, turn_left_pressed, turn_right_pressed = (
+                    unpack_input_move_key_flags(int(flags))
+                )
             else:
                 mx = 0.0
                 my = 0.0
@@ -503,6 +519,10 @@ class CaptureVisualizerView:
                 fire_down = False
                 fire_pressed = False
                 reload_pressed = False
+                move_forward_pressed = None
+                move_backward_pressed = None
+                turn_left_pressed = None
+                turn_right_pressed = None
             out.append(
                 PlayerInput(
                     move=Vec2(float(mx), float(my)),
@@ -510,10 +530,10 @@ class CaptureVisualizerView:
                     fire_down=bool(fire_down),
                     fire_pressed=bool(fire_pressed),
                     reload_pressed=bool(reload_pressed),
-                    move_forward_pressed=None,
-                    move_backward_pressed=None,
-                    turn_left_pressed=None,
-                    turn_right_pressed=None,
+                    move_forward_pressed=move_forward_pressed,
+                    move_backward_pressed=move_backward_pressed,
+                    turn_left_pressed=turn_left_pressed,
+                    turn_right_pressed=turn_right_pressed,
                 )
             )
 

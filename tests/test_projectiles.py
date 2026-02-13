@@ -235,6 +235,32 @@ def test_projectile_pool_update_expired_ion_still_runs_linger_once() -> None:
     assert owner_id == -100
 
 
+def test_projectile_life_timer_f32_decay_delays_deactivate_by_one_tick() -> None:
+    pool = ProjectilePool(size=1)
+    idx = pool.spawn(
+        pos=Vec2(1200.0, 1200.0),
+        angle=math.pi / 2.0,
+        type_id=int(ProjectileTypeId.SPLITTER_GUN),
+        owner_id=0,
+        base_damage=1.0,
+    )
+    proj = pool.entries[idx]
+
+    for _ in range(4):
+        pool.update(0.1, [], world_size=1024.0)
+
+    assert proj.active is True
+    assert 0.0 < float(proj.life_timer) < 5e-8
+
+    pool.update(0.1, [], world_size=1024.0)
+    assert proj.active is True
+    assert proj.life_timer < 0.0
+    assert math.isclose(float(proj.life_timer), -0.09999998658895493, abs_tol=1e-9)
+
+    pool.update(0.1, [], world_size=1024.0)
+    assert proj.active is False
+
+
 def test_projectile_pool_update_ion_hit_spawns_ring_and_burst_effects() -> None:
     state = GameplayState()
     state.projectiles.spawn(
@@ -303,6 +329,60 @@ def test_projectile_pool_update_owner_collision_blocks_later_candidates() -> Non
     assert math.isclose(creatures[1].hp, 100.0, abs_tol=1e-9)
 
 
+def test_projectile_pool_update_player_hit_does_not_break_step_loop() -> None:
+    pool = ProjectilePool(size=1)
+    idx = pool.spawn(
+        pos=Vec2(),
+        angle=math.pi / 2.0,
+        type_id=int(ProjectileTypeId.SPLITTER_GUN),
+        owner_id=0,
+        base_damage=30.0,
+        hits_players=True,
+    )
+    proj = pool.entries[idx]
+    players = [PlayerState(index=0, pos=Vec2(15.0, 0.0), health=100.0)]
+
+    hits = pool.update(
+        0.1,
+        [],
+        world_size=1024.0,
+        damage_scale_by_type={int(ProjectileTypeId.SPLITTER_GUN): 1.0},
+        players=players,
+        rng=_fixed_rng(0),
+    )
+
+    # Native `projectile_update` keeps advancing after player hits in the same
+    # tick, but player hits do not emit projectile-hit presentation events.
+    assert hits == []
+    assert math.isclose(players[0].health, 60.0, abs_tol=1e-9)
+    assert math.isclose(proj.life_timer, 0.25, abs_tol=1e-9)
+
+
+def test_projectile_pool_update_clears_unit_damage_pool_even_when_already_hit_state() -> None:
+    pool = ProjectilePool(size=1)
+    idx = pool.spawn(
+        pos=Vec2(),
+        angle=math.pi / 2.0,
+        type_id=int(ProjectileTypeId.ION_RIFLE),
+        owner_id=-100,
+        base_damage=15.0,
+    )
+    proj = pool.entries[idx]
+    creatures = [_Creature(pos=Vec2(41.1428575, 0.0), hp=0.0)]
+
+    pool.update(
+        0.1,
+        creatures,
+        world_size=1024.0,
+        damage_scale_by_type={int(ProjectileTypeId.ION_RIFLE): 1.0},
+        rng=_fixed_rng(0),
+        runtime_state=GameplayState(),
+    )
+
+    assert math.isclose(proj.life_timer, 0.25, abs_tol=1e-9)
+    assert math.isclose(proj.damage_pool, 0.0, abs_tol=1e-9)
+
+
 def test_projectile_pool_emits_hit_event_and_enters_hit_state() -> None:
     pool = ProjectilePool(size=1)
     idx = pool.spawn(pos=Vec2(), angle=math.pi / 2.0, type_id=4, owner_id=-100)
@@ -328,7 +408,7 @@ def test_projectile_pool_emits_hit_event_and_enters_hit_state() -> None:
         speed_by_type={4: 100.0},
         damage_by_type={4: 18.0},
     )
-    assert math.isclose(proj.life_timer, 0.15, abs_tol=1e-9)
+    assert math.isclose(proj.life_timer, 0.15, abs_tol=1e-6)
 
 
 def test_projectile_pool_demo_type_0x0b_does_not_splash_nearby_creatures() -> None:

@@ -21,8 +21,9 @@ from ..replay import (
     Replay,
     UnknownEvent,
     load_replay_file,
-    unpack_packed_player_input,
     unpack_input_flags,
+    unpack_input_move_key_flags,
+    unpack_packed_player_input,
     warn_on_game_version_mismatch,
 )
 from ..original.capture import (
@@ -234,6 +235,9 @@ class ReplayPlaybackMode:
         for packed in packed_tick:
             mx, my, ax, ay, flags = unpack_packed_player_input(packed)
             fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
+            move_forward_pressed, move_backward_pressed, turn_left_pressed, turn_right_pressed = (
+                unpack_input_move_key_flags(int(flags))
+            )
             inputs.append(
                 PlayerInput(
                     move=Vec2(float(mx), float(my)),
@@ -241,6 +245,10 @@ class ReplayPlaybackMode:
                     fire_down=fire_down,
                     fire_pressed=fire_pressed,
                     reload_pressed=reload_pressed,
+                    move_forward_pressed=move_forward_pressed,
+                    move_backward_pressed=move_backward_pressed,
+                    turn_left_pressed=turn_left_pressed,
+                    turn_right_pressed=turn_right_pressed,
                 )
             )
         return inputs

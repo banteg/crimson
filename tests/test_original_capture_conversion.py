@@ -25,7 +25,7 @@ from crimson.original.capture import (
     parse_player_int_overrides,
 )
 from crimson.original.schema import CAPTURE_FORMAT_VERSION
-from crimson.replay import UnknownEvent, unpack_input_flags
+from crimson.replay import UnknownEvent, unpack_input_flags, unpack_input_move_key_flags
 from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
 from grim.geom import Vec2
 
@@ -1020,6 +1020,11 @@ def test_convert_capture_to_replay_prefers_input_player_keys_for_digital_move(tm
     assert fire_down is False
     assert fire_pressed is False
     assert reload_pressed is False
+    move_forward, move_backward, turn_left, turn_right = unpack_input_move_key_flags(int(flags))
+    assert move_forward is True
+    assert move_backward is False
+    assert turn_left is True
+    assert turn_right is False
 
     bootstrap = next(
         event
@@ -1057,9 +1062,14 @@ def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capabil
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture)
 
-    move_x, move_y, _aim, _flags = replay.inputs[0][0]
+    move_x, move_y, _aim, flags = replay.inputs[0][0]
     assert move_x == pytest.approx(0.25, abs=1e-6)
     assert move_y == pytest.approx(0.5, abs=1e-6)
+    move_forward, move_backward, turn_left, turn_right = unpack_input_move_key_flags(int(flags))
+    assert move_forward is None
+    assert move_backward is None
+    assert turn_left is None
+    assert turn_right is None
 
     bootstrap = next(
         event
@@ -1117,12 +1127,14 @@ def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_preceden
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture)
 
-    move_x0, move_y0, _aim0, _flags0 = replay.inputs[0][0]
-    move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
+    move_x0, move_y0, _aim0, flags0 = replay.inputs[0][0]
+    move_x1, move_y1, _aim1, flags1 = replay.inputs[1][0]
     assert move_x0 == pytest.approx(1.0, abs=1e-6)
     assert move_y0 == pytest.approx(0.0, abs=1e-6)
     assert move_x1 == pytest.approx(-1.0, abs=1e-6)
     assert move_y1 == pytest.approx(1.0, abs=1e-6)
+    assert unpack_input_move_key_flags(int(flags0)) == (False, False, False, True)
+    assert unpack_input_move_key_flags(int(flags1)) == (False, True, True, True)
 
 
 def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_precedence(tmp_path: Path) -> None:
@@ -1171,12 +1183,14 @@ def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_preceden
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture)
 
-    move_x0, move_y0, _aim0, _flags0 = replay.inputs[0][0]
-    move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
+    move_x0, move_y0, _aim0, flags0 = replay.inputs[0][0]
+    move_x1, move_y1, _aim1, flags1 = replay.inputs[1][0]
     assert move_x0 == pytest.approx(0.0, abs=1e-6)
     assert move_y0 == pytest.approx(1.0, abs=1e-6)
     assert move_x1 == pytest.approx(-1.0, abs=1e-6)
     assert move_y1 == pytest.approx(-1.0, abs=1e-6)
+    assert unpack_input_move_key_flags(int(flags0)) == (False, True, False, False)
+    assert unpack_input_move_key_flags(int(flags1)) == (True, True, True, False)
 
 
 def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_path: Path) -> None:
@@ -1290,6 +1304,46 @@ def test_convert_capture_to_replay_synthesizes_computer_aim_fire_down_from_proje
     flags = int(replay.inputs[0][0][3])
     fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
     assert fire_down is True
+    assert fire_pressed is False
+    assert reload_pressed is False
+
+
+def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_non_weapon_projectile_spawns(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["before"] = {
+        "globals": {"config_aim_scheme": [5]},
+        "status": {},
+        "player_count": 1,
+        "players": [],
+        "input": {},
+        "input_bindings": {},
+    }
+    tick0["checkpoint"]["players"][0]["weapon_id"] = 29
+    tick0["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "fire_down": False,
+            "fire_pressed": False,
+            "reload_pressed": False,
+        }
+    ]
+    tick0["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 29, "fired_events": 1}]
+    tick0["event_heads"] = [
+        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 21, "actual_type_id": 21}},
+        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 22, "actual_type_id": 22}},
+    ]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture)
+
+    flags = int(replay.inputs[0][0][3])
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    assert fire_down is False
     assert fire_pressed is False
     assert reload_pressed is False
 
@@ -1554,7 +1608,7 @@ def test_convert_capture_to_replay_does_not_synthesize_secondary_spawn_without_o
     assert reload_pressed11 is False
 
 
-def test_convert_capture_to_replay_applies_aim_scheme_override_for_missing_telemetry(tmp_path: Path) -> None:
+def test_convert_capture_to_replay_does_not_synthesize_fire_from_fired_events_only(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick0["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 2}]
@@ -1571,7 +1625,7 @@ def test_convert_capture_to_replay_applies_aim_scheme_override_for_missing_telem
     fire_down_default, _fire_pressed_default, _reload_pressed_default = unpack_input_flags(flags_default)
     fire_down_override, _fire_pressed_override, _reload_pressed_override = unpack_input_flags(flags_override)
     assert fire_down_default is False
-    assert fire_down_override is True
+    assert fire_down_override is False
 
 
 def test_parse_player_int_overrides_accepts_equals_and_colon() -> None:

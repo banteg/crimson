@@ -33,6 +33,7 @@ class SurvivalDeterministicSession:
     auto_pick_perks: bool = False
     demo_mode_active: bool = False
     perk_progression_enabled: bool = True
+    apply_world_dt_steps: bool = True
     clear_fx_queues_each_tick: bool = False
     elapsed_ms: float = 0.0
     stage: int = 0
@@ -59,8 +60,7 @@ class SurvivalDeterministicSession:
             # then apply reflex scaling with integer semantics.
             base_dt_ms_i32 = int(dt_frame_ms_i32)
             if bool(state.time_scale_active) and float(dt_frame) > 0.0:
-                scale = float(dt_sim) / float(dt_frame)
-                dt_sim_ms = float(max(0, int(float(base_dt_ms_i32) * float(scale))))
+                dt_sim_ms = float(max(0, int(float(dt_sim) * 1000.0)))
             else:
                 dt_sim_ms = float(base_dt_ms_i32)
         elapsed_before_ms = float(self.elapsed_ms)
@@ -110,6 +110,7 @@ class SurvivalDeterministicSession:
             world=self.world,
             dt_frame=float(dt_frame),
             dt_frame_ms_i32=(int(dt_frame_ms_i32) if dt_frame_ms_i32 is not None else None),
+            apply_world_dt_steps=bool(self.apply_world_dt_steps),
             inputs=inputs,
             world_size=float(self.world_size),
             damage_scale_by_type=self.damage_scale_by_type,

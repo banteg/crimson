@@ -16,7 +16,7 @@ const DEFAULT_LOG_DIR = "C:\\share\\frida";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 3;
+const CAPTURE_FORMAT_VERSION = 4;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
@@ -147,6 +147,11 @@ const CONFIG = {
   enableCreatureDeathHook: parseBoolEnv("CRIMSON_FRIDA_CREATURE_DEATH_HOOK", true),
   enableBonusSpawnHook: parseBoolEnv("CRIMSON_FRIDA_BONUS_SPAWN_HOOK", true),
   enableCreatureLifecycleDigest: parseBoolEnv("CRIMSON_FRIDA_CREATURE_LIFECYCLE", true),
+  enableCreatureMicroHooks: parseBoolEnv("CRIMSON_FRIDA_CREATURE_MICRO_HOOKS", false),
+  creatureMicroSlots: parseStateSet(getEnv("CRIMSON_FRIDA_CREATURE_MICRO_SLOTS"), ""),
+  creatureMicroTickStart: parseIntEnv("CRIMSON_FRIDA_CREATURE_MICRO_TICK_START", -1),
+  creatureMicroTickEnd: parseIntEnv("CRIMSON_FRIDA_CREATURE_MICRO_TICK_END", -1),
+  creatureMicroMaxHeadPerTick: parseLimitEnv("CRIMSON_FRIDA_CREATURE_MICRO_MAX_HEAD", 64, 0),
 };
 
 const FN = {
@@ -168,6 +173,8 @@ const FN = {
   projectile_spawn: 0x00420440,
   creature_find_in_radius: 0x004206a0,
   creature_apply_damage: 0x004207c0,
+  angle_approach: 0x0041f430,
+  creature_update_all: 0x00426220,
   player_take_damage: 0x00425e50,
   creature_spawn: 0x00428240,
   creature_handle_death: 0x0041e910,
@@ -323,6 +330,8 @@ const PROJECTILE_UPDATE_END = 0x00422c6f;
 const CRT_RAND_MULT = 214013 >>> 0;
 const CRT_RAND_INC = 2531011 >>> 0;
 const CREATURE_FLAG_AI7_LINK_TIMER = 0x80;
+const CREATURE_HEADING_OFFSET = 0x2c;
+const TWO_PI = Math.PI * 2.0;
 
 const fnPtrs = {};
 const grimFnPtrs = {};
@@ -339,6 +348,8 @@ const inputContextByTid = {};
 const rngContextByTid = {};
 const srandContextByTid = {};
 const bloodSplatterContextByTid = {};
+const creatureUpdateMicroContextByTid = {};
+const angleApproachContextByTid = {};
 const outState = {
   outFile: null,
   outWarned: false,
@@ -1230,6 +1241,212 @@ function readCreatureLifecycleEntry(index) {
   };
 }
 
+function _isFiniteNumber(value) {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function _distanceBucket(distance) {
+  if (!_isFiniteNumber(distance)) return null;
+  if (distance < 40.0) return "<40";
+  if (distance > 400.0) return ">400";
+  return "40-400";
+}
+
+function _readCreatureMicroState(index) {
+  const pool = dataPtrs.creature_pool;
+  if (!pool || index < 0 || index >= COUNTS.creatures) return null;
+  const base = pool.add(index * STRIDES.creature);
+
+  const activeFlag = safeReadU8(base);
+  const stateFlag = safeReadU8(base.add(0x08));
+  const posX = safeReadF32(base.add(0x14));
+  const posY = safeReadF32(base.add(0x18));
+  const velX = safeReadF32(base.add(0x1c));
+  const velY = safeReadF32(base.add(0x20));
+  const heading = safeReadF32(base.add(0x2c));
+  const targetHeading = safeReadF32(base.add(0x30));
+  const forceTarget = safeReadS32(base.add(0x4c));
+  const targetX = safeReadF32(base.add(0x50));
+  const targetY = safeReadF32(base.add(0x54));
+  const moveSpeed = safeReadF32(base.add(0x5c));
+  const aiMode = safeReadS32(base.add(0x90));
+  const frameDt = dataPtrs.frame_dt ? safeReadF32(dataPtrs.frame_dt) : null;
+
+  let distToTarget = null;
+  if (_isFiniteNumber(posX) && _isFiniteNumber(posY) && _isFiniteNumber(targetX) && _isFiniteNumber(targetY)) {
+    const dx = targetX - posX;
+    const dy = targetY - posY;
+    distToTarget = Math.sqrt(dx * dx + dy * dy);
+  }
+
+  let moveScaleEstimate = null;
+  if (
+    _isFiniteNumber(velX) &&
+    _isFiniteNumber(velY) &&
+    _isFiniteNumber(moveSpeed) &&
+    _isFiniteNumber(frameDt) &&
+    Math.abs(moveSpeed) > 1e-7 &&
+    Math.abs(frameDt) > 1e-9
+  ) {
+    const speedAbs = Math.sqrt(velX * velX + velY * velY);
+    moveScaleEstimate = speedAbs / (Math.abs(moveSpeed) * 11.0 * Math.abs(frameDt));
+  }
+
+  return {
+    index: index,
+    active: activeFlag == null ? !!stateFlag : !!activeFlag,
+    active_flag: activeFlag == null ? null : activeFlag,
+    state_flag: stateFlag == null ? null : stateFlag,
+    ai_mode: aiMode,
+    force_target: forceTarget,
+    heading: captureNumber(heading),
+    target_heading: captureNumber(targetHeading),
+    target_x: captureNumber(targetX),
+    target_y: captureNumber(targetY),
+    pos: {
+      x: captureNumber(posX),
+      y: captureNumber(posY),
+    },
+    vel: {
+      x: captureNumber(velX),
+      y: captureNumber(velY),
+    },
+    move_speed: captureNumber(moveSpeed),
+    dt_frame: captureNumber(frameDt),
+    dist_to_target: captureNumber(distToTarget),
+    dist_bucket: _distanceBucket(distToTarget),
+    move_scale_estimate: captureNumber(moveScaleEstimate),
+  };
+}
+
+function _shouldCaptureCreatureMicroForTick(tickIndex) {
+  if (!CONFIG.enableCreatureMicroHooks) return false;
+  const tick = tickIndex | 0;
+  if (CONFIG.creatureMicroTickStart >= 0 && tick < (CONFIG.creatureMicroTickStart | 0)) return false;
+  if (CONFIG.creatureMicroTickEnd >= 0 && tick > (CONFIG.creatureMicroTickEnd | 0)) return false;
+  return true;
+}
+
+function _shouldCaptureCreatureMicroSlot(creatureIndex) {
+  const slots = CONFIG.creatureMicroSlots;
+  if (!(slots instanceof Set) || slots.size <= 0) return true;
+  return slots.has(creatureIndex | 0);
+}
+
+function _listCreatureMicroTrackedSlots() {
+  const out = [];
+  const slots = CONFIG.creatureMicroSlots;
+  if (slots instanceof Set && slots.size > 0) {
+    for (const slot of slots.values()) {
+      const idx = slot | 0;
+      if (idx < 0 || idx >= COUNTS.creatures) continue;
+      out.push(idx);
+    }
+    out.sort(function (a, b) {
+      return a - b;
+    });
+    return out;
+  }
+
+  const pool = dataPtrs.creature_pool;
+  if (!pool) return out;
+  const cap =
+    CONFIG.creatureMicroMaxHeadPerTick >= 0
+      ? Math.max(1, CONFIG.creatureMicroMaxHeadPerTick | 0)
+      : COUNTS.creatures;
+  for (let i = 0; i < COUNTS.creatures; i++) {
+    const active = safeReadU8(pool.add(i * STRIDES.creature));
+    if (!active) continue;
+    out.push(i);
+    if (out.length >= cap) break;
+  }
+  return out;
+}
+
+function _addCreatureMicroEvent(payload, commandToken) {
+  const tick = outState.currentTick;
+  if (!tick || !payload) return;
+  if (!_shouldCaptureCreatureMicroForTick(tick.tick_index)) return;
+  const cap = CONFIG.creatureMicroMaxHeadPerTick;
+  if (cap === 0) return;
+  if (cap > 0 && (tick.creature_update_micro_rows | 0) >= cap) return;
+  tick.creature_update_micro_rows = (tick.creature_update_micro_rows | 0) + 1;
+  addTickEvent("creature_update_micro", payload, commandToken || "cum");
+}
+
+function _creatureIndexFromHeadingPtr(anglePtr) {
+  if (!anglePtr || !dataPtrs.creature_pool) return null;
+  try {
+    const delta = anglePtr.sub(dataPtrs.creature_pool).toInt32();
+    if (delta < CREATURE_HEADING_OFFSET) return null;
+    const localOffset = delta - CREATURE_HEADING_OFFSET;
+    if (localOffset < 0) return null;
+    if ((localOffset % STRIDES.creature) !== 0) return null;
+    const idx = (localOffset / STRIDES.creature) | 0;
+    if (idx < 0 || idx >= COUNTS.creatures) return null;
+    return idx;
+  } catch (_e) {
+    return null;
+  }
+}
+
+function _classifyAngleApproach(angleIn, target, rate, angleOut) {
+  if (
+    !_isFiniteNumber(angleIn) ||
+    !_isFiniteNumber(target) ||
+    !_isFiniteNumber(rate) ||
+    !_isFiniteNumber(angleOut)
+  ) {
+    return {
+      branch: null,
+      target_effective: null,
+      delta_direct: null,
+      delta_effective: null,
+      step_delta: null,
+    };
+  }
+
+  const direct = Math.abs(target - angleIn);
+  const wrapPlusTarget = target + TWO_PI;
+  const wrapMinusTarget = target - TWO_PI;
+  const wrapPlus = Math.abs(wrapPlusTarget - angleIn);
+  const wrapMinus = Math.abs(wrapMinusTarget - angleIn);
+
+  let targetEffective = target;
+  let domain = "direct";
+  let domainDist = direct;
+  if (wrapPlus < domainDist) {
+    domain = "wrap_plus";
+    domainDist = wrapPlus;
+    targetEffective = wrapPlusTarget;
+  }
+  if (wrapMinus < domainDist) {
+    domain = "wrap_minus";
+    domainDist = wrapMinus;
+    targetEffective = wrapMinusTarget;
+  }
+
+  const stepDelta = angleOut - angleIn;
+  let action = "step";
+  if (Math.abs(stepDelta) <= 1e-9) {
+    action = "none";
+  } else if (Math.abs(targetEffective - angleOut) <= 1e-6 || Math.abs(domainDist) <= Math.abs(rate) + 1e-9) {
+    action = "snap";
+  } else if (stepDelta > 0.0) {
+    action = "inc";
+  } else {
+    action = "dec";
+  }
+
+  return {
+    branch: action + ":" + domain,
+    target_effective: targetEffective,
+    delta_direct: target - angleIn,
+    delta_effective: targetEffective - angleIn,
+    step_delta: stepDelta,
+  };
+}
+
 function captureCreatureDigest() {
   if (!dataPtrs.creature_pool) {
     return {
@@ -1652,6 +1869,7 @@ function makeTickContext() {
       creature_spawn_low: 0,
       creature_death: 0,
       creature_lifecycle: 0,
+      creature_update_micro: 0,
       perk_apply: 0,
       sfx: 0,
       perk_delta: 0,
@@ -1677,6 +1895,7 @@ function makeTickContext() {
       creature_spawn_low: [],
       creature_death: [],
       creature_lifecycle: [],
+      creature_update_micro: [],
       perk_apply: [],
       sfx: [],
       perk_delta: [],
@@ -1741,6 +1960,7 @@ function makeTickContext() {
     blood_splatter_rng_draws_by_caller: {},
     mode_samples: [],
     creature_digest_before: creatureDigestBefore,
+    creature_update_micro_rows: 0,
     mode_hint: null,
     overflow: false,
   };
@@ -1841,6 +2061,7 @@ const EVENT_HEAD_ORDER = [
   "creature_death",
   "creature_spawn",
   "creature_spawn_low",
+  "creature_update_micro",
   "perk_apply",
   "sfx",
   "perk_delta",
@@ -1945,6 +2166,23 @@ function popInputContext(threadId) {
   if (!stack || stack.length === 0) return null;
   const ctx = stack.pop();
   if (stack.length === 0) delete inputContextByTid[threadId];
+  return ctx;
+}
+
+function pushAngleApproachContext(threadId, ctx) {
+  let stack = angleApproachContextByTid[threadId];
+  if (!stack) {
+    stack = [];
+    angleApproachContextByTid[threadId] = stack;
+  }
+  stack.push(ctx);
+}
+
+function popAngleApproachContext(threadId) {
+  const stack = angleApproachContextByTid[threadId];
+  if (!stack || stack.length === 0) return null;
+  const ctx = stack.pop();
+  if (stack.length === 0) delete angleApproachContextByTid[threadId];
   return ctx;
 }
 
@@ -2774,6 +3012,112 @@ function installHooks() {
   hookModeTick("rush_mode_update");
   hookModeTick("survival_update");
   hookModeTick("typo_gameplay_update_and_render");
+
+  if (CONFIG.enableCreatureMicroHooks) {
+    attachHook("creature_update_all", fnPtrs.creature_update_all, {
+      onEnter() {
+        const tick = outState.currentTick;
+        if (!tick) return;
+        if (!_shouldCaptureCreatureMicroForTick(tick.tick_index)) return;
+        const slots = _listCreatureMicroTrackedSlots();
+        if (!Array.isArray(slots) || slots.length <= 0) return;
+        const beforeBySlot = {};
+        for (let i = 0; i < slots.length; i++) {
+          const slot = slots[i] | 0;
+          beforeBySlot[slot] = _readCreatureMicroState(slot);
+        }
+        creatureUpdateMicroContextByTid[this.threadId] = {
+          tick_index: tick.tick_index,
+          slots: slots,
+          before_by_slot: beforeBySlot,
+        };
+      },
+      onLeave() {
+        const ctx = creatureUpdateMicroContextByTid[this.threadId];
+        delete creatureUpdateMicroContextByTid[this.threadId];
+        if (!ctx) return;
+        const tick = outState.currentTick;
+        if (!tick) return;
+        if ((ctx.tick_index | 0) !== (tick.tick_index | 0)) return;
+        const slots = Array.isArray(ctx.slots) ? ctx.slots : [];
+        const beforeBySlot = asObject(ctx.before_by_slot);
+        for (let i = 0; i < slots.length; i++) {
+          const slot = slots[i] | 0;
+          if (!_shouldCaptureCreatureMicroSlot(slot)) continue;
+          const payload = {
+            event_kind: "creature_update_window",
+            slot: slot,
+            before: beforeBySlot[slot] || null,
+            after: _readCreatureMicroState(slot),
+          };
+          _addCreatureMicroEvent(payload, "cum:w:" + String(slot));
+          emitRawEvent(Object.assign({ event: "creature_update_micro_window" }, payload));
+        }
+      },
+    });
+
+    attachHook("angle_approach", fnPtrs.angle_approach, {
+      onEnter(args) {
+        const tick = outState.currentTick;
+        if (!tick) return;
+        if (!_shouldCaptureCreatureMicroForTick(tick.tick_index)) return;
+        const anglePtr = args[0];
+        const slot = _creatureIndexFromHeadingPtr(anglePtr);
+        if (slot == null) return;
+        if (!_shouldCaptureCreatureMicroSlot(slot)) return;
+        const angleIn = safeReadF32(anglePtr);
+        const target = argAsF32(args[1]);
+        const rate = argAsF32(args[2]);
+        pushAngleApproachContext(this.threadId, {
+          tick_index: tick.tick_index,
+          slot: slot,
+          angle_ptr: anglePtr,
+          angle_in: angleIn,
+          target: target,
+          rate: rate,
+          before: _readCreatureMicroState(slot),
+        });
+      },
+      onLeave() {
+        const ctx = popAngleApproachContext(this.threadId);
+        if (!ctx) return;
+        const tick = outState.currentTick;
+        if (!tick) return;
+        if ((ctx.tick_index | 0) !== (tick.tick_index | 0)) return;
+        const slot = ctx.slot | 0;
+        if (slot < 0) return;
+        const angleOut = safeReadF32(ctx.angle_ptr);
+        const angleInNum = _isFiniteNumber(ctx.angle_in) ? Number(ctx.angle_in) : null;
+        const targetNum = _isFiniteNumber(ctx.target) ? Number(ctx.target) : null;
+        const rateNum = _isFiniteNumber(ctx.rate) ? Number(ctx.rate) : null;
+        const angleOutNum = _isFiniteNumber(angleOut) ? Number(angleOut) : null;
+        const classified = _classifyAngleApproach(
+          angleInNum,
+          targetNum,
+          rateNum,
+          angleOutNum,
+        );
+        const payload = {
+          event_kind: "angle_approach",
+          slot: slot,
+          angle_ptr: ctx.angle_ptr ? ctx.angle_ptr.toString() : null,
+          angle_in: captureNumber(angleInNum),
+          angle_out: captureNumber(angleOutNum),
+          target: captureNumber(targetNum),
+          target_effective: captureNumber(classified.target_effective),
+          rate: captureNumber(rateNum),
+          delta_to_target_direct: captureNumber(classified.delta_direct),
+          delta_to_target_effective: captureNumber(classified.delta_effective),
+          step_delta: captureNumber(classified.step_delta),
+          branch: classified.branch,
+          before: ctx.before || null,
+          after: _readCreatureMicroState(slot),
+        };
+        _addCreatureMicroEvent(payload, "cum:a:" + String(slot));
+        emitRawEvent(Object.assign({ event: "creature_update_micro_angle_approach" }, payload));
+      },
+    });
+  }
 
   if (CONFIG.enableInputHooks) {
     function addInputQueryHook(name, queryKey, token) {
@@ -4011,6 +4355,11 @@ function main() {
     enable_creature_death_hook: CONFIG.enableCreatureDeathHook,
     enable_bonus_spawn_hook: CONFIG.enableBonusSpawnHook,
     enable_creature_lifecycle_digest: CONFIG.enableCreatureLifecycleDigest,
+    enable_creature_micro_hooks: CONFIG.enableCreatureMicroHooks,
+    creature_micro_slots: Array.from(CONFIG.creatureMicroSlots.values()),
+    creature_micro_tick_start: CONFIG.creatureMicroTickStart,
+    creature_micro_tick_end: CONFIG.creatureMicroTickEnd,
+    creature_micro_max_head_per_tick: CONFIG.creatureMicroMaxHeadPerTick,
   };
   const captureMeta = {
     capture_format_version: CAPTURE_FORMAT_VERSION,

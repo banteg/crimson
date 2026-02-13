@@ -47,7 +47,7 @@ def time_scale_reflex_boost_bonus(
     reflex_f32 = f32(float(reflex_boost_timer))
     time_scale_factor = f32(0.3)
     if float(reflex_f32) < 1.0:
-        time_scale_factor = f32(f32(f32(1.0) - reflex_f32) * f32(0.7) + f32(0.3))
+        time_scale_factor = f32((1.0 - float(reflex_f32)) * 0.7 + 0.3)
     return float(f32(float(dt_f32) * float(time_scale_factor)))
 
 
@@ -66,6 +66,7 @@ def run_deterministic_step(
     world: WorldState,
     dt_frame: float,
     dt_frame_ms_i32: int | None = None,
+    apply_world_dt_steps: bool = True,
     inputs: list[PlayerInput] | None,
     world_size: float,
     damage_scale_by_type: dict[int, float],
@@ -115,14 +116,17 @@ def run_deterministic_step(
 
     dt_sim_ms_i32: int | None = None
     if dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
-        if float(dt_frame) > 0.0:
-            scale = float(dt_sim) / float(dt_frame)
-            dt_sim_ms_i32 = max(0, int(float(int(dt_frame_ms_i32)) * float(scale)))
+        base_dt_ms_i32 = int(dt_frame_ms_i32)
+        if bool(state.time_scale_active) and float(dt_frame) > 0.0:
+            # Under Reflex Boost, native integer cadence counters track the scaled
+            # float dt path (`frame_dt`) instead of integer-base ms scaling.
+            dt_sim_ms_i32 = max(0, int(float(dt_sim) * 1000.0))
         else:
-            dt_sim_ms_i32 = int(dt_frame_ms_i32)
+            dt_sim_ms_i32 = base_dt_ms_i32
 
     events = world.step(
         float(dt_sim),
+        apply_world_dt_steps=bool(apply_world_dt_steps),
         dt_ms_i32=(int(dt_sim_ms_i32) if dt_sim_ms_i32 is not None else None),
         defer_camera_shake_update=bool(defer_camera_shake_update),
         defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),

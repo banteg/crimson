@@ -147,6 +147,9 @@ sample_creature_rows = 0
 sample_creature_rows_with_ai_lineage = 0
 lifecycle_rows = 0
 lifecycle_rows_with_ai_lineage = 0
+creature_update_micro_rows = 0
+creature_update_micro_angle_rows = 0
+creature_update_micro_window_rows = 0
 
 for t in cap.ticks:
     for row in t.input_player_keys:
@@ -172,6 +175,14 @@ for t in cap.ticks:
         if not isinstance(head, dict):
             continue
         if head.get("kind") != "creature_lifecycle":
+            if head.get("kind") == "creature_update_micro":
+                creature_update_micro_rows += 1
+                data = head.get("data") if isinstance(head.get("data"), dict) else {}
+                event_kind = str(data.get("event_kind") or "")
+                if event_kind == "angle_approach":
+                    creature_update_micro_angle_rows += 1
+                elif event_kind == "creature_update_window":
+                    creature_update_micro_window_rows += 1
             continue
         data = head.get("data") if isinstance(head.get("data"), dict) else {}
         for key in ("added_head", "removed_head"):
@@ -193,11 +204,19 @@ print("sample_creature_rows", sample_creature_rows)
 print("sample_creature_rows_with_ai_lineage", sample_creature_rows_with_ai_lineage)
 print("creature_lifecycle_rows", lifecycle_rows)
 print("creature_lifecycle_rows_with_ai_lineage", lifecycle_rows_with_ai_lineage)
+print("creature_update_micro_rows", creature_update_micro_rows)
+print("creature_update_micro_angle_rows", creature_update_micro_angle_rows)
+print("creature_update_micro_window_rows", creature_update_micro_window_rows)
 PY
 ```
 
 If telemetry is missing/weak, patch Frida capture first and recapture. Avoid
 stacking replay fallbacks when capture instrumentation is the real gap.
+
+For creature-movement root-cause work (for example slot-level drift ancestry),
+require non-zero `creature_update_micro_rows` and both non-zero
+`creature_update_micro_angle_rows` and `creature_update_micro_window_rows` in
+the target tick window.
 
 ## 6) Common mismatch classes
 

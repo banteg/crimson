@@ -37,6 +37,16 @@ class BonusEntry:
     amount: int = 0
 
 
+def _bonus_entry_is_empty(entry: BonusEntry) -> bool:
+    return (
+        int(entry.bonus_id) == 0
+        and not bool(entry.picked)
+        and float(entry.time_left) <= 0.0
+        and float(entry.time_max) <= 0.0
+        and int(entry.amount) == 0
+    )
+
+
 # Native `bonus_try_spawn_on_kill` uses the bonus entry `amount` field for a weird
 # suppression check: it clears the spawned entry when `amount == player1.weapon_id`
 # regardless of bonus type. In the rewrite, `amount` is used as the "effective"
@@ -77,7 +87,7 @@ class BonusPool:
 
     def _alloc_slot(self) -> BonusEntry | None:
         for entry in self._entries:
-            if entry.bonus_id == 0:
+            if _bonus_entry_is_empty(entry):
                 return entry
         return None
 
@@ -301,20 +311,27 @@ class BonusPool:
 
         pickups: list[BonusPickupEvent] = []
         for entry in self._entries:
-            if entry.bonus_id == 0:
+            if _bonus_entry_is_empty(entry):
                 continue
 
             decay = dt * (BONUS_PICKUP_DECAY_RATE if entry.picked else 1.0)
             entry.time_left -= decay
             if not entry.picked and int(state.game_mode) == int(GameMode.TUTORIAL):
                 entry.time_left = 5.0
+            expired_to_unused = False
             if entry.time_left < 0.0:
-                self._clear_entry(entry)
-                continue
+                if entry.picked:
+                    self._clear_entry(entry)
+                    continue
+                # Native `bonus_update` sets bonus_id to NONE before pickup checks
+                # and still allows one final in-range pickup in that tick.
+                entry.bonus_id = int(BonusId.UNUSED)
+                expired_to_unused = True
 
             if entry.picked:
                 continue
 
+            picked_now = False
             for player in players:
                 if Vec2.distance_sq(entry.pos, player.pos) < BONUS_PICKUP_RADIUS * BONUS_PICKUP_RADIUS:
                     bonus_apply(
@@ -340,7 +357,11 @@ class BonusPool:
                             pos=entry.pos,
                         )
                     )
+                    picked_now = True
                     break
+
+            if expired_to_unused and not picked_now:
+                self._clear_entry(entry)
 
         return pickups
 

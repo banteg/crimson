@@ -16,6 +16,7 @@ from ..creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import (
     build_gameplay_state,
+    player_frame_dt_after_roundtrip,
     player_update,
     survival_enforce_reward_weapon_guard,
     survival_progression_update,
@@ -94,6 +95,7 @@ class WorldState:
         self,
         dt: float,
         *,
+        apply_world_dt_steps: bool = True,
         dt_ms_i32: int | None = None,
         defer_camera_shake_update: bool = False,
         defer_freeze_corpse_fx: bool = False,
@@ -117,8 +119,9 @@ class WorldState:
             rng_marks[str(name)] = int(self.state.rng.state)
 
         dt = float(dt)
-        for step in _WORLD_DT_STEPS:
-            dt = float(step(dt=dt, players=self.players))
+        if bool(apply_world_dt_steps):
+            for step in _WORLD_DT_STEPS:
+                dt = float(step(dt=dt, players=self.players))
         _mark("ws_begin")
         inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
         prev_positions = [(player.pos.x, player.pos.y) for player in self.players]
@@ -338,6 +341,9 @@ class WorldState:
                 world_size=float(world_size),
                 players=self.players,
                 creatures=self.creatures.entries,
+            )
+            dt = player_frame_dt_after_roundtrip(
+                dt=dt, time_scale_active=bool(self.state.time_scale_active), reflex_boost_timer=float(self.state.bonuses.reflex_boost)
             )
             if idx == 0:
                 _mark("ws_after_player_update_p0")

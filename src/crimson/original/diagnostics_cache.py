@@ -16,6 +16,8 @@ import msgspec
 from platformdirs import PlatformDirs
 
 import crimson.projectiles.runtime.collision as projectiles_mod
+import crimson.projectiles.runtime.projectile_pool as projectile_pool_mod
+import crimson.projectiles.runtime.secondary_pool as secondary_pool_mod
 import crimson.sim.presentation_step as presentation_step_mod
 from crimson.bonuses import bonus_label
 from crimson.game_modes import GameMode
@@ -32,6 +34,7 @@ from crimson.sim.runners.survival import (
     _apply_tick_events,
     _partition_tick_events,
     _resolve_dt_frame,
+    _should_apply_world_dt_steps_for_replay,
 )
 from crimson.sim.sessions import SurvivalDeterministicSession
 from crimson.sim.world_state import WorldState
@@ -63,6 +66,7 @@ from .schema import (
     CaptureEventHeadBonusSpawn,
     CaptureEventHeadCreatureDamage,
     CaptureEventHeadCreatureDeath,
+    CaptureEventHeadCreatureUpdateMicro,
     CaptureEventHeadProjectileFindHit,
     CaptureEventHeadProjectileFindQuery,
     CaptureEventHeadProjectileSpawn,
@@ -177,6 +181,11 @@ class _FocusRuntime:
         self.events_by_tick, self.original_capture_replay = _load_capture_events(replay)
         self.dt_frame_overrides = build_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
         self.dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
+        self.apply_world_dt_steps = _should_apply_world_dt_steps_for_replay(
+            original_capture_replay=bool(self.original_capture_replay),
+            dt_frame_overrides=self.dt_frame_overrides,
+            dt_frame_ms_i32_overrides=self.dt_frame_ms_i32_overrides,
+        )
         self.default_dt_frame = 1.0 / float(int(replay.header.tick_rate))
         self.outside_draws_by_tick = {
             int(item.tick_index): int(item.rng.outside_before_calls)
@@ -223,6 +232,7 @@ class _FocusRuntime:
             detail_preset=5,
             fx_toggle=0,
             game_tune_started=False,
+            apply_world_dt_steps=bool(self.apply_world_dt_steps),
             clear_fx_queues_each_tick=True,
         )
         return world, session
@@ -333,6 +343,8 @@ class _FocusRuntime:
         orig_particles_rand = self.world.state.particles._rand
         orig_sprite_effects_rand = self.world.state.sprite_effects._rand
         orig_within = projectiles_mod._within_native_find_radius
+        orig_within_projectile_pool = projectile_pool_mod._within_native_find_radius
+        orig_within_secondary_pool = secondary_pool_mod._within_native_find_radius
         orig_run_projectile_decal_hooks = presentation_step_mod.run_projectile_decal_hooks
 
         try:
@@ -451,6 +463,8 @@ class _FocusRuntime:
                 self.world.state.particles._rand = traced_rand
                 self.world.state.sprite_effects._rand = traced_rand
                 projectiles_mod._within_native_find_radius = traced_within_native_find_radius  # type: ignore[assignment]
+                projectile_pool_mod._within_native_find_radius = traced_within_native_find_radius  # type: ignore[assignment]
+                secondary_pool_mod._within_native_find_radius = traced_within_native_find_radius  # type: ignore[assignment]
                 presentation_step_mod.run_projectile_decal_hooks = traced_run_projectile_decal_hooks  # type: ignore[assignment]
 
             tick_result = self.session.step_tick(
@@ -479,6 +493,8 @@ class _FocusRuntime:
             self.world.state.particles._rand = orig_particles_rand
             self.world.state.sprite_effects._rand = orig_sprite_effects_rand
             projectiles_mod._within_native_find_radius = orig_within
+            projectile_pool_mod._within_native_find_radius = orig_within_projectile_pool
+            secondary_pool_mod._within_native_find_radius = orig_within_secondary_pool
             presentation_step_mod.run_projectile_decal_hooks = orig_run_projectile_decal_hooks
 
         if not self.use_outside_draws:
@@ -805,6 +821,8 @@ def _build_event_heads_by_kind(tick: CaptureTick) -> dict[str, list[dict[str, ob
             kind = "projectile_find_query"
         elif isinstance(head, CaptureEventHeadProjectileFindHit):
             kind = "projectile_find_hit"
+        elif isinstance(head, CaptureEventHeadCreatureUpdateMicro):
+            kind = "creature_update_micro"
         if not kind:
             continue
         out.setdefault(kind, []).append(_event_head_payload(head))
@@ -906,6 +924,7 @@ def _build_tick_lite_row(tick: CaptureTick) -> dict[str, object]:
     bonus_spawn_head_obj = list(event_heads_obj.get("bonus_spawn", []))
     projectile_find_query_head_obj = list(event_heads_obj.get("projectile_find_query", []))
     projectile_find_hit_head_obj = list(event_heads_obj.get("projectile_find_hit", []))
+    creature_update_micro_head_obj = list(event_heads_obj.get("creature_update_micro", []))
 
     projectile_find_query_miss_count = _int_or(
         spawn_obj.get("event_count_projectile_find_query_miss"),
@@ -1026,6 +1045,11 @@ def _build_tick_lite_row(tick: CaptureTick) -> dict[str, object]:
             for item in projectile_find_hit_head_obj
             if isinstance(item, dict) and bool(item.get("corpse_hit"))
         ),
+        "creature_update_micro_count": _int_or(
+            int(tick.event_counts.creature_update_micro),
+            len(creature_update_micro_head_obj),
+        ),
+        "creature_update_micro_head": creature_update_micro_head_obj,
         "spawn_top_creature_damage_callers": top_creature_damage_callers,
         "spawn_top_projectile_find_hit_callers": top_projectile_find_hit_callers,
         "spawn_top_projectile_find_query_callers": top_projectile_find_query_callers,

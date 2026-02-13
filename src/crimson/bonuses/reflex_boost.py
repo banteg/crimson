@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from grim.color import RGBA
 
+from ..math_parity import f32
 from ..sim.state_types import BonusPickupEvent, GameplayState
 from .apply_context import BonusApplyCtx
 
@@ -12,7 +13,9 @@ def apply_reflex_boost(ctx: BonusApplyCtx) -> None:
     old = float(ctx.state.bonuses.reflex_boost)
     if old <= 0.0:
         ctx.register_global("reflex_boost")
-    ctx.state.bonuses.reflex_boost = float(old + float(ctx.amount) * ctx.economist_multiplier)
+    ctx.state.bonuses.reflex_boost = float(
+        f32(float(old) + float(ctx.amount) * float(ctx.economist_multiplier))
+    )
 
     targets = ctx.players if ctx.players is not None else [ctx.player]
     for target in targets:

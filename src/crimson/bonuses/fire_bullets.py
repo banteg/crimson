@@ -7,6 +7,7 @@ from typing import Callable
 from grim.geom import Vec2
 
 from ..effects import FxQueue
+from ..math_parity import f32
 from ..projectiles import ProjectileHit
 from .apply_context import BonusApplyCtx, bonus_apply_seconds
 
@@ -20,7 +21,7 @@ def apply_fire_bullets(ctx: BonusApplyCtx) -> None:
     if should_register:
         ctx.register_player("fire_bullets_timer")
     ctx.player.fire_bullets_timer = float(
-        ctx.player.fire_bullets_timer + bonus_apply_seconds(ctx) * ctx.economist_multiplier
+        f32(float(ctx.player.fire_bullets_timer) + bonus_apply_seconds(ctx) * float(ctx.economist_multiplier))
     )
     ctx.player.weapon_reset_latch = 0
     ctx.player.shot_cooldown = 0.0

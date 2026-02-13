@@ -56,6 +56,16 @@ class BonusTimers:
 
 
 _RELOAD_PRELOAD_UNDERFLOW_EPS = 1e-7
+_RELATIVE_MOVE_HEADING_NONE = -1.0
+_RELATIVE_MOVE_HEADING_FORWARD = 0.0
+_RELATIVE_MOVE_HEADING_FORWARD_RIGHT = 0.7853982
+_RELATIVE_MOVE_HEADING_RIGHT = 1.5707964
+_RELATIVE_MOVE_HEADING_BACKWARD_RIGHT = 2.3561945
+_RELATIVE_MOVE_HEADING_BACKWARD = 3.1415927
+_RELATIVE_MOVE_HEADING_BACKWARD_LEFT = 3.926991
+_RELATIVE_MOVE_HEADING_LEFT = 4.712389
+_RELATIVE_MOVE_HEADING_FORWARD_LEFT = 5.4977875
+_RELATIVE_MOVE_TURN_ALIGN_SCALE = 7.957747
 
 
 @dataclass(slots=True)
@@ -116,6 +126,29 @@ class GameplayState:
 
 def build_gameplay_state() -> GameplayState:
     return GameplayState()
+
+
+def player_frame_dt_after_roundtrip(*, dt: float, time_scale_active: bool, reflex_boost_timer: float) -> float:
+    """Mirror `player_update` frame_dt round-trip under Reflex Boost.
+
+    Native scales frame_dt for movement (`* 0.6 / _time_scale_factor`) and then
+    restores it with `* _time_scale_factor * 1.6666666` before returning.
+    """
+
+    dt_f32 = float(f32(float(dt)))
+    if not bool(time_scale_active) or dt_f32 <= 0.0:
+        return float(dt_f32)
+
+    reflex_f32 = float(f32(float(reflex_boost_timer)))
+    time_scale_factor = float(f32(0.3))
+    if reflex_f32 < 1.0:
+        time_scale_factor = float(f32((1.0 - float(reflex_f32)) * 0.7 + 0.3))
+    if time_scale_factor <= 0.0:
+        return float(dt_f32)
+
+    movement_dt = float(f32((0.6 / float(time_scale_factor)) * float(dt_f32)))
+    roundtrip_dt = float(f32(float(time_scale_factor) * float(movement_dt) * 1.6666666))
+    return float(roundtrip_dt)
 
 
 def award_experience(state: GameplayState, player: PlayerState, amount: int) -> int:
@@ -290,6 +323,7 @@ def player_update(
 ) -> None:
     """Port of `player_update` (0x004136b0) for the rewrite runtime."""
 
+    dt = float(f32(float(dt)))
     if dt <= 0.0:
         return
 
@@ -328,16 +362,15 @@ def player_update(
         speed_multiplier += 1.0
 
     movement_dt = float(dt)
-    if state.time_scale_active:
-        time_scale_factor = 0.3
-        reflex_timer = float(state.bonuses.reflex_boost)
-        if reflex_timer < 1.0:
-            time_scale_factor = (1.0 - reflex_timer) * 0.7 + 0.3
-        if time_scale_factor > 1e-9:
-            # Native `player_update` temporarily rescales frame_dt while applying
-            # movement/heading, then restores the scaled frame_dt for the rest of
-            # gameplay_update_and_render.
-            movement_dt = float(movement_dt * (0.6 / float(time_scale_factor)))
+    if state.time_scale_active and movement_dt > 0.0:
+        reflex_f32 = float(f32(float(state.bonuses.reflex_boost)))
+        time_scale_factor = float(f32(0.3))
+        if reflex_f32 < 1.0:
+            time_scale_factor = float(f32((1.0 - float(reflex_f32)) * 0.7 + 0.3))
+        if time_scale_factor > 0.0:
+            # Native computes `frame_dt = (0.6 / _time_scale_factor) * frame_dt`
+            # and stores back to float before movement/heading logic.
+            movement_dt = float(f32((0.6 / float(time_scale_factor)) * float(movement_dt)))
 
     # Movement.
     raw_move = input_state.move
@@ -349,69 +382,80 @@ def player_update(
         and input_state.turn_right_pressed is not None
     )
     phase_sign = 1.0
+    move_delta_override: Vec2 | None = None
     if use_digital_move:
+        # Native `player_update` relative keyboard movement path (`mode == 2`).
         moving_forward = bool(input_state.move_forward_pressed)
         moving_backward = bool(input_state.move_backward_pressed)
         turning_left = bool(input_state.turn_left_pressed)
         turning_right = bool(input_state.turn_right_pressed)
-
-        player.turn_speed = min(7.0, max(1.0, float(player.turn_speed)))
-        turned = False
-        # Native keyboard mode checks left first, then right (`player_update` mode 1),
-        # so simultaneous turn keys resolve to left turn.
+        target_heading = float(_RELATIVE_MOVE_HEADING_NONE)
         if turning_left:
-            player.turn_speed = float(player.turn_speed + movement_dt * 10.0)
-            turn_delta = float(player.turn_speed) * movement_dt * 0.5
-            player.heading = float(player.heading - turn_delta)
-            player.aim_heading = float(player.aim_heading - turn_delta)
-            turned = True
-        elif turning_right:
-            player.turn_speed = float(player.turn_speed + movement_dt * 10.0)
-            turn_delta = float(player.turn_speed) * movement_dt * 0.5
-            player.heading = float(player.heading + turn_delta)
-            player.aim_heading = float(player.aim_heading + turn_delta)
-            turned = True
+            target_heading = float(_RELATIVE_MOVE_HEADING_LEFT)
+        if turning_right:
+            target_heading = float(_RELATIVE_MOVE_HEADING_RIGHT)
 
-        move_sign = 1.0
-        # Native movement-key precedence is forward before backward.
         if moving_forward:
-            if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
-                if player.move_speed < 2.0:
-                    player.move_speed = float(player.move_speed + movement_dt * 4.0)
-                player.move_speed = float(player.move_speed + movement_dt)
-                if player.move_speed > 2.8:
-                    player.move_speed = 2.8
+            if turning_left:
+                target_heading = float(_RELATIVE_MOVE_HEADING_FORWARD_LEFT)
+            elif turning_right:
+                target_heading = float(_RELATIVE_MOVE_HEADING_FORWARD_RIGHT)
             else:
-                player.move_speed = float(player.move_speed + movement_dt * 5.0)
-                if player.move_speed > 2.0:
-                    player.move_speed = 2.0
-        elif moving_backward:
-            if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
-                if player.move_speed < 2.0:
-                    player.move_speed = float(player.move_speed + movement_dt * 4.0)
-                player.move_speed = float(player.move_speed + movement_dt)
-                if player.move_speed > 2.8:
-                    player.move_speed = 2.8
+                target_heading = float(_RELATIVE_MOVE_HEADING_FORWARD)
+        if moving_backward:
+            if turning_left:
+                target_heading = float(_RELATIVE_MOVE_HEADING_BACKWARD_LEFT)
+            elif turning_right:
+                target_heading = float(_RELATIVE_MOVE_HEADING_BACKWARD_RIGHT)
             else:
-                player.move_speed = float(player.move_speed + movement_dt * 5.0)
-                if player.move_speed > 2.0:
-                    player.move_speed = 2.0
-            move_sign = -1.0
-            phase_sign = -1.0
-        else:
-            if not turned:
-                player.turn_speed = 1.0
-            player.move_speed = float(player.move_speed - movement_dt * 15.0)
+                target_heading = float(_RELATIVE_MOVE_HEADING_BACKWARD)
+
+        if (not moving_backward) and target_heading == float(_RELATIVE_MOVE_HEADING_NONE):
+            player.move_speed = float(f32(float(player.move_speed) - float(movement_dt) * 15.0))
             if player.move_speed < 0.0:
                 player.move_speed = 0.0
+            move = Vec2.from_heading(float(player.heading))
+            move_dx = float(f32(float(move.x) * float(player.move_speed) * float(speed_multiplier) * 25.0))
+            move_dy = float(f32(float(move.y) * float(player.move_speed) * float(speed_multiplier) * 25.0))
+        else:
+            angle_diff, turn_delta = _player_heading_approach_target_with_delta(
+                player,
+                float(target_heading),
+                float(movement_dt),
+            )
+            player.aim_heading = float(f32(float(player.aim_heading) + float(turn_delta)))
 
-        if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
-            player.move_speed = 0.8
+            if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
+                if player.move_speed < 2.0:
+                    player.move_speed = float(f32(float(player.move_speed) + float(movement_dt) * 4.0))
+                player.move_speed = float(f32(float(player.move_speed) + float(movement_dt)))
+                if player.move_speed > 2.8:
+                    player.move_speed = 2.8
+            else:
+                player.move_speed = float(f32(float(player.move_speed) + float(movement_dt) * 5.0))
+                if player.move_speed > 2.0:
+                    player.move_speed = 2.0
 
-        move = Vec2.from_heading(player.heading)
-        speed = player.move_speed * speed_multiplier * 25.0 * move_sign
+            if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
+                player.move_speed = 0.8
+
+            move = Vec2.from_heading(float(player.heading))
+            turn_align = float(f32((3.1415927 - float(angle_diff)) * float(_RELATIVE_MOVE_TURN_ALIGN_SCALE)))
+            move_dx = float(
+                f32(float(move.x) * float(player.move_speed) * float(turn_align) * float(speed_multiplier))
+            )
+            move_dy = float(
+                f32(float(move.y) * float(player.move_speed) * float(turn_align) * float(speed_multiplier))
+            )
+
         if perk_active(player, PerkId.ALTERNATE_WEAPON):
-            speed *= 0.8
+            move_dx = float(f32(float(move_dx) * 0.8))
+            move_dy = float(f32(float(move_dy) * 0.8))
+
+        move_delta_override = Vec2(
+            f32(float(movement_dt) * float(move_dx)),
+            f32(float(movement_dt) * float(move_dy)),
+        )
     else:
         # Demo/autoplay uses very small analog magnitudes to represent turn-in-place and
         # heading alignment slowdown; don't apply a deadzone there.
@@ -453,13 +497,16 @@ def player_update(
         if perk_active(player, PerkId.ALTERNATE_WEAPON):
             speed *= 0.8
 
-    # Native movement stores through float32 velocity/delta slots before writing
-    # player position; mirror those store boundaries for replay parity.
-    move_step = f32(float(speed) * float(movement_dt))
-    move_delta = Vec2(
-        f32(float(move.x) * float(move_step)),
-        f32(float(move.y) * float(move_step)),
-    )
+    if move_delta_override is None:
+        # Native movement stores through float32 velocity/delta slots before writing
+        # player position; mirror those store boundaries for replay parity.
+        move_step = f32(float(speed) * float(movement_dt))
+        move_delta = Vec2(
+            f32(float(move.x) * float(move_step)),
+            f32(float(move.y) * float(move_step)),
+        )
+    else:
+        move_delta = move_delta_override
     next_pos = Vec2(
         f32(float(player.pos.x) + float(move_delta.x)),
         f32(float(player.pos.y) + float(move_delta.y)),
@@ -509,7 +556,6 @@ def player_update(
     ):
         player.ammo = float(player.clip_size)
 
-    reload_timer_started = float(player.reload_timer)
     if player.reload_timer > 0.0:
         if (
             perk_active(player, PerkId.ANGRY_RELOADER)
@@ -539,17 +585,9 @@ def player_update(
     if player.reload_timer < 0.0:
         player.reload_timer = 0.0
 
-    if (
-        player.reload_active
-        and reload_timer_started <= 0.0
-        and player.reload_timer == 0.0
-        and player.ammo <= 0.0
-        and input_state.fire_down
-    ):
-        player.ammo = float(player.clip_size)
-
-    # Native clears `reload_active` only once the player can shoot again.
-    if player.shot_cooldown <= 0.0 and player.reload_timer == 0.0 and player.ammo > 0.0:
+    # Native clears `reload_active` whenever the cooldown/timer gates are open,
+    # even if ammo is empty and perk firing paths can still proceed.
+    if player.shot_cooldown <= 0.0 and player.reload_timer == 0.0:
         player.reload_active = False
 
     if input_state.reload_pressed:
@@ -594,8 +632,12 @@ def player_update(
         player.muzzle_flash_alpha = 0.8
 
 
-def _player_heading_approach_target(player: PlayerState, target_heading: float, dt: float) -> float:
-    """Native `player_heading_approach_target`: ease heading and return angular diff."""
+def _player_heading_approach_target_with_delta(
+    player: PlayerState,
+    target_heading: float,
+    dt: float,
+) -> tuple[float, float]:
+    """Native `player_heading_approach_target`: ease heading and return (diff, turn_delta)."""
 
     # Native runs this through float32 temporaries (`var_8`/`edx_1`) before the
     # direct-vs-wrapped compare and turn-sign branch. That quantization matters
@@ -627,7 +669,13 @@ def _player_heading_approach_target(player: PlayerState, target_heading: float, 
             turn_delta = float(f32(float(scaled) * 5.0))
 
     player.heading = float(f32(float(heading) + float(turn_delta)))
+    return float(diff), float(turn_delta)
+
+
+def _player_heading_approach_target(player: PlayerState, target_heading: float, dt: float) -> float:
+    diff, _ = _player_heading_approach_target_with_delta(player, target_heading, dt)
     return float(diff)
+
 
 def _normalize_heading_angle(value: float) -> float:
     while value < 0.0:

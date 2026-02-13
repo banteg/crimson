@@ -6,7 +6,8 @@ from grim.geom import Vec2
 from crimson.game_modes import GameMode
 from crimson.sim.input import PlayerInput
 from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder, UnknownEvent
-from crimson.original.capture import CAPTURE_BOOTSTRAP_EVENT_KIND
+from crimson.original.capture import CAPTURE_BOOTSTRAP_EVENT_KIND, CAPTURE_PERK_APPLY_EVENT_KIND
+from crimson.perks import PerkId
 from crimson.sim.runners import ReplayRunnerError, run_rush_replay, run_survival_replay
 
 
@@ -234,6 +235,80 @@ def test_survival_runner_applies_original_capture_bootstrap_event() -> None:
 
     assert result.ticks == 1
     assert result.score_xp == 321
+
+
+def test_survival_runner_skips_world_dt_perk_steps_for_original_capture_dt_overrides() -> None:
+    def _run(*, include_bootstrap: bool) -> float:
+        header = ReplayHeader(
+            game_mode_id=int(GameMode.SURVIVAL),
+            seed=0x1234,
+            tick_rate=60,
+            player_count=1,
+            game_version="0.0.0",
+        )
+        recorder = ReplayRecorder(header)
+        recorder.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(600.0, 512.0))])
+        replay = recorder.finish()
+        if include_bootstrap:
+            replay.events.append(
+                UnknownEvent(
+                    tick_index=0,
+                    kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
+                    payload=[{"digital_move_enabled_by_player": [True]}],
+                )
+            )
+        replay.events.append(
+            UnknownEvent(
+                tick_index=0,
+                kind=CAPTURE_PERK_APPLY_EVENT_KIND,
+                payload=[{"perk_id": int(PerkId.REFLEX_BOOSTED), "outside_before": False}],
+            )
+        )
+
+        checkpoints = []
+        with pytest.warns(ReplayGameVersionWarning):
+            run_survival_replay(
+                replay,
+                max_ticks=1,
+                checkpoints_out=checkpoints,
+                checkpoint_ticks={0},
+                dt_frame_overrides={0: 0.1},
+            )
+        assert len(checkpoints) == 1
+        return float(checkpoints[0].players[0].pos.x)
+
+    orig_capture_x = _run(include_bootstrap=True)
+    plain_replay_x = _run(include_bootstrap=False)
+    assert orig_capture_x > plain_replay_x
+
+
+def test_survival_runner_original_capture_reflex_scaled_dt_ms_uses_scaled_float_dt() -> None:
+    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+    replay.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
+            payload=[
+                {
+                    "bonus_timers_ms": {"9": 124},
+                    "digital_move_enabled_by_player": [True],
+                }
+            ],
+        )
+    )
+
+    with pytest.warns(ReplayGameVersionWarning):
+        result = run_survival_replay(
+            replay,
+            max_ticks=1,
+            dt_frame_overrides={0: 0.0468},
+            dt_frame_ms_i32_overrides={0: 46},
+        )
+
+    # With Reflex Boost active, native scaled frame_dt_ms is derived from the
+    # scaled float dt path (~42.12ms -> 42), not from integer base-ms scaling.
+    assert result.elapsed_ms == 42
 
 
 def test_survival_runner_original_capture_uses_packed_move_vector_for_turn_only_keys() -> None:

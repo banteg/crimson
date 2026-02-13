@@ -36,6 +36,11 @@ def f32(value: float) -> float:
     return struct.unpack("<f", struct.pack("<f", float(value)))[0]
 
 
+_NATIVE_LEFT_AXIS_HEADING_POS = f32(NATIVE_TAU - NATIVE_HALF_PI)
+_NATIVE_LEFT_AXIS_HEADING_EPS = 1e-6
+_NATIVE_LEFT_AXIS_DY_EPS = 5e-4
+
+
 def f32_vec2(value: Vec2) -> Vec2:
     return Vec2(f32(value.x), f32(value.y))
 
@@ -53,7 +58,18 @@ def atan2_f32(y: float, x: float) -> float:
 
 
 def heading_from_delta_f32(*, dx: float, dy: float) -> float:
-    return f32(math.atan2(float(dy), float(dx)) + NATIVE_HALF_PI)
+    heading = f32(math.atan2(float(dy), float(dx)) + NATIVE_HALF_PI)
+    # `fpatan` boundary case: native can encode left-axis headings as `-pi/2`
+    # (instead of `3pi/2`) and that representation feeds branchy angle_approach
+    # decisions. Treat near-axis, near-horizontal vectors as the negative branch
+    # to match native tie-break behavior around signed-zero boundaries.
+    if (
+        float(dx) < 0.0
+        and abs(float(heading) - float(_NATIVE_LEFT_AXIS_HEADING_POS)) <= _NATIVE_LEFT_AXIS_HEADING_EPS
+        and abs(float(dy)) <= _NATIVE_LEFT_AXIS_DY_EPS
+    ):
+        return f32(float(heading) - NATIVE_TAU)
+    return heading
 
 
 def heading_add_pi_f32(heading: float) -> float:

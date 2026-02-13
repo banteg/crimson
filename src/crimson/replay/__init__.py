@@ -5,7 +5,12 @@ from .recorder import ReplayRecorder
 from .types import (
     FIRE_DOWN_FLAG,
     FIRE_PRESSED_FLAG,
+    MOVE_BACKWARD_FLAG,
+    MOVE_FORWARD_FLAG,
+    MOVE_KEYS_PRESENT_FLAG,
     RELOAD_PRESSED_FLAG,
+    TURN_LEFT_FLAG,
+    TURN_RIGHT_FLAG,
     PerkMenuOpenEvent,
     PerkPickEvent,
     Replay,
@@ -15,13 +20,19 @@ from .types import (
     pack_input_flags,
     unpack_packed_player_input,
     unpack_input_flags,
+    unpack_input_move_key_flags,
 )
 from .versioning import ReplayGameVersionWarning, warn_on_game_version_mismatch
 
 __all__ = [
     "FIRE_DOWN_FLAG",
     "FIRE_PRESSED_FLAG",
+    "MOVE_BACKWARD_FLAG",
+    "MOVE_FORWARD_FLAG",
+    "MOVE_KEYS_PRESENT_FLAG",
     "RELOAD_PRESSED_FLAG",
+    "TURN_LEFT_FLAG",
+    "TURN_RIGHT_FLAG",
     "PerkMenuOpenEvent",
     "PerkPickEvent",
     "Replay",
@@ -38,5 +49,6 @@ __all__ = [
     "pack_input_flags",
     "unpack_packed_player_input",
     "unpack_input_flags",
+    "unpack_input_move_key_flags",
     "warn_on_game_version_mismatch",
 ]

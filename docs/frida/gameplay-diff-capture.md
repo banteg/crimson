@@ -42,7 +42,7 @@ The capture file is newline-delimited JSON rows:
 - `{"event":"capture_meta","capture":{...}}` exactly once at start
 - `{"event":"tick","tick":{...}}` once per captured gameplay tick
 - `capture_meta.capture_format_version` is required and must match the current
-  loader version (`3`).
+  loader version (`4`).
 
 `uv run crimson original ...` commands load this stream and normalize it to the
 typed `CaptureFile` schema in Python (`msgspec`).
@@ -67,6 +67,9 @@ Notes:
 - Creature sample/lifecycle payloads include AI lineage context
   (`ai_mode`, `link_index`, `orbit_angle`, `orbit_radius`, `ai7_timer_ms`)
   to diagnose spawn/link timer drift without replay-side guesswork.
+- Optional `creature_update_micro` event heads provide slot-level movement
+  internals (`creature_update_window` pre/post snapshots + `angle_approach`
+  call traces) for targeted drift windows.
 - No top-level raw event stream is written; diagnostics stay in per-tick aggregates.
 - Float precision contract: capture script emits memory-sourced float values as
   tagged float32 bit tokens (`"f32:XXXXXXXX"`). Tooling decodes these tokens at
@@ -167,6 +170,11 @@ Without extra env vars, the script captures full per-tick detail:
 - `CRIMSON_FRIDA_CREATURE_SPAWN_HOOK=0`
 - `CRIMSON_FRIDA_CREATURE_DEATH_HOOK=0`
 - `CRIMSON_FRIDA_BONUS_SPAWN_HOOK=0`
+- `CRIMSON_FRIDA_CREATURE_MICRO_HOOKS=1`
+- `CRIMSON_FRIDA_CREATURE_MICRO_SLOTS=31`
+- `CRIMSON_FRIDA_CREATURE_MICRO_TICK_START=8679`
+- `CRIMSON_FRIDA_CREATURE_MICRO_TICK_END=9014`
+- `CRIMSON_FRIDA_CREATURE_MICRO_MAX_HEAD=256`
 - `CRIMSON_FRIDA_RNG_ROLL_LOG=0`
 - `CRIMSON_FRIDA_MAX_RNG_ROLL_LOG_EVENTS=-1`
 - `CRIMSON_FRIDA_RNG_HEAD=-1`

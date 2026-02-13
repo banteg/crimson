@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..math_parity import f32
 from .apply_context import BonusApplyCtx
 
 
@@ -11,4 +12,6 @@ def apply_speed(ctx: BonusApplyCtx) -> None:
         )
     if should_register:
         ctx.register_player("speed_bonus_timer")
-    ctx.player.speed_bonus_timer = float(ctx.player.speed_bonus_timer + float(ctx.amount) * ctx.economist_multiplier)
+    ctx.player.speed_bonus_timer = float(
+        f32(float(ctx.player.speed_bonus_timer) + float(ctx.amount) * float(ctx.economist_multiplier))
+    )

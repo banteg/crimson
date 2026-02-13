@@ -14,6 +14,8 @@ import msgspec
 from grim.geom import Vec2
 
 import crimson.projectiles.runtime.collision as projectiles_mod
+import crimson.projectiles.runtime.projectile_pool as projectile_pool_mod
+import crimson.projectiles.runtime.secondary_pool as secondary_pool_mod
 import crimson.sim.presentation_step as presentation_step_mod
 from crimson.game_modes import GameMode
 from crimson.sim.input import PlayerInput
@@ -25,7 +27,12 @@ from crimson.original.capture import (
     load_capture,
     parse_player_int_overrides,
 )
-from crimson.replay.types import UnknownEvent, unpack_input_flags, unpack_packed_player_input
+from crimson.replay.types import (
+    UnknownEvent,
+    unpack_input_flags,
+    unpack_input_move_key_flags,
+    unpack_packed_player_input,
+)
 from crimson.sim.runners.common import (
     build_damage_scale_by_type,
     build_empty_fx_queues,
@@ -36,6 +43,7 @@ from crimson.sim.runners.survival import (
     _apply_tick_events,
     _partition_tick_events,
     _resolve_dt_frame,
+    _should_apply_world_dt_steps_for_replay,
 )
 from crimson.sim.sessions import SurvivalDeterministicSession
 from crimson.sim.world_state import WorldState
@@ -219,6 +227,9 @@ def _decode_inputs_for_tick(
     for packed in packed_tick:
         mx, my, ax, ay, flags = unpack_packed_player_input(packed)
         fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
+        move_forward_pressed, move_backward_pressed, turn_left_pressed, turn_right_pressed = (
+            unpack_input_move_key_flags(int(flags))
+        )
         out.append(
             PlayerInput(
                 move=Vec2(float(mx), float(my)),
@@ -226,10 +237,10 @@ def _decode_inputs_for_tick(
                 fire_down=bool(fire_down),
                 fire_pressed=bool(fire_pressed),
                 reload_pressed=bool(reload_pressed),
-                move_forward_pressed=None,
-                move_backward_pressed=None,
-                turn_left_pressed=None,
-                turn_right_pressed=None,
+                move_forward_pressed=move_forward_pressed,
+                move_backward_pressed=move_backward_pressed,
+                turn_left_pressed=turn_left_pressed,
+                turn_right_pressed=turn_right_pressed,
             )
         )
     return out
@@ -690,6 +701,11 @@ def trace_focus_tick(
     events_by_tick, original_capture_replay = _load_capture_events(replay)
     dt_frame_overrides = build_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
     dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
+    session.apply_world_dt_steps = _should_apply_world_dt_steps_for_replay(
+        original_capture_replay=bool(original_capture_replay),
+        dt_frame_overrides=dt_frame_overrides,
+        dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
+    )
     default_dt_frame = 1.0 / float(int(replay.header.tick_rate))
     outside_draws_by_tick = {
         int(item.tick_index): int(item.rng.outside_before_calls)
@@ -720,6 +736,8 @@ def trace_focus_tick(
     orig_particles_rand = world.state.particles._rand
     orig_sprite_effects_rand = world.state.sprite_effects._rand
     orig_within = projectiles_mod._within_native_find_radius
+    orig_within_projectile_pool = projectile_pool_mod._within_native_find_radius
+    orig_within_secondary_pool = secondary_pool_mod._within_native_find_radius
     orig_run_projectile_decal_hooks = presentation_step_mod.run_projectile_decal_hooks
 
     try:
@@ -865,6 +883,8 @@ def trace_focus_tick(
                 world.state.particles._rand = traced_rand
                 world.state.sprite_effects._rand = traced_rand
                 projectiles_mod._within_native_find_radius = traced_within_native_find_radius  # type: ignore[assignment]
+                projectile_pool_mod._within_native_find_radius = traced_within_native_find_radius  # type: ignore[assignment]
+                secondary_pool_mod._within_native_find_radius = traced_within_native_find_radius  # type: ignore[assignment]
                 presentation_step_mod.run_projectile_decal_hooks = traced_run_projectile_decal_hooks  # type: ignore[assignment]
 
             tick_result = session.step_tick(
@@ -894,6 +914,8 @@ def trace_focus_tick(
                 world.state.particles._rand = orig_particles_rand
                 world.state.sprite_effects._rand = orig_sprite_effects_rand
                 projectiles_mod._within_native_find_radius = orig_within
+                projectile_pool_mod._within_native_find_radius = orig_within_projectile_pool
+                secondary_pool_mod._within_native_find_radius = orig_within_secondary_pool
                 presentation_step_mod.run_projectile_decal_hooks = orig_run_projectile_decal_hooks
 
             if not use_outside_draws:
@@ -905,6 +927,8 @@ def trace_focus_tick(
         world.state.particles._rand = orig_particles_rand
         world.state.sprite_effects._rand = orig_sprite_effects_rand
         projectiles_mod._within_native_find_radius = orig_within
+        projectile_pool_mod._within_native_find_radius = orig_within_projectile_pool
+        secondary_pool_mod._within_native_find_radius = orig_within_secondary_pool
         presentation_step_mod.run_projectile_decal_hooks = orig_run_projectile_decal_hooks
 
     near_misses.sort(key=lambda row: float(row.margin))

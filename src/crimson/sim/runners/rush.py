@@ -5,9 +5,16 @@ import math
 from grim.geom import Vec2
 
 from ...game_modes import GameMode
-from ...weapon_runtime import weapon_assign_player
-from ...replay import Replay, UnknownEvent, unpack_packed_player_input, unpack_input_flags, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
+from ...replay import (
+    Replay,
+    UnknownEvent,
+    unpack_input_flags,
+    unpack_input_move_key_flags,
+    unpack_packed_player_input,
+    warn_on_game_version_mismatch,
+)
+from ...weapon_runtime import weapon_assign_player
 from ...original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     apply_capture_bootstrap_payload,
@@ -162,6 +169,9 @@ def run_rush_replay(
         for packed in packed_tick:
             mx, my, ax, ay, flags = unpack_packed_player_input(packed)
             fire_down, fire_pressed, _reload_pressed = unpack_input_flags(int(flags))
+            move_forward_pressed, move_backward_pressed, turn_left_pressed, turn_right_pressed = (
+                unpack_input_move_key_flags(int(flags))
+            )
             player_inputs.append(
                 PlayerInput(
                     move=Vec2(float(mx), float(my)),
@@ -169,10 +179,10 @@ def run_rush_replay(
                     fire_down=fire_down,
                     fire_pressed=fire_pressed,
                     reload_pressed=False,
-                    move_forward_pressed=None,
-                    move_backward_pressed=None,
-                    turn_left_pressed=None,
-                    turn_right_pressed=None,
+                    move_forward_pressed=move_forward_pressed,
+                    move_backward_pressed=move_backward_pressed,
+                    turn_left_pressed=turn_left_pressed,
+                    turn_right_pressed=turn_right_pressed,
                 )
             )
 

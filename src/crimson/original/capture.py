@@ -696,10 +696,6 @@ def _should_synthesize_computer_fire_down(
     if bool(fire_down_raw) or bool(fire_pressed_raw):
         return False
 
-    fired_events = _coerce_int_like(getattr(sample, "fired_events", None))
-    if aim_scheme is not None and int(aim_scheme) == int(_AIM_SCHEME_COMPUTER) and fired_events is not None and int(fired_events) > 0:
-        return True
-
     player_projectile_spawn_count = _tick_player_projectile_spawn_count(
         tick,
         player_index=int(player_index),
@@ -1276,6 +1272,10 @@ def convert_capture_to_replay(
             fire_down_raw = None
             fire_pressed_raw = None
             reload_pressed_raw = None
+            move_forward_pressed: bool | None = None
+            move_backward_pressed: bool | None = None
+            turn_left_pressed: bool | None = None
+            turn_right_pressed: bool | None = None
             use_digital_move = False
             ammo_dropped_since_previous_checkpoint = False
 
@@ -1317,6 +1317,10 @@ def convert_capture_to_replay(
                     turn_right = bool(turn_right_raw)
                     move_forward = bool(move_forward_raw)
                     move_backward = bool(move_backward_raw)
+                    move_forward_pressed = bool(move_forward)
+                    move_backward_pressed = bool(move_backward)
+                    turn_left_pressed = bool(turn_left)
+                    turn_right_pressed = bool(turn_right)
                     move_x = float(turn_right) - float(turn_left)
                     move_y = float(move_backward) - float(move_forward)
                     if turn_left and turn_right:
@@ -1332,6 +1336,10 @@ def convert_capture_to_replay(
                         move_y = -1.0 if (turn_left or turn_right) else 1.0
                 else:
                     move_x, move_y = _normalize_capture_move_components(sample_move_dx, sample_move_dy)
+                    move_forward_pressed = None
+                    move_backward_pressed = None
+                    turn_left_pressed = None
+                    turn_right_pressed = None
 
                 if sample is not None:
                     aim_x_raw = float(sample.aim_x)
@@ -1397,6 +1405,10 @@ def convert_capture_to_replay(
                 fire_down_raw = None
                 fire_pressed_raw = None
                 reload_pressed_raw = None
+                move_forward_pressed = None
+                move_backward_pressed = None
+                turn_left_pressed = None
+                turn_right_pressed = None
 
             if _should_synthesize_computer_fire_down(
                 tick=tick,
@@ -1416,6 +1428,10 @@ def convert_capture_to_replay(
                 fire_down=bool(fire_down),
                 fire_pressed=bool(fire_pressed),
                 reload_pressed=bool(reload_pressed),
+                move_forward_pressed=move_forward_pressed,
+                move_backward_pressed=move_backward_pressed,
+                turn_left_pressed=turn_left_pressed,
+                turn_right_pressed=turn_right_pressed,
             )
             inputs[tick_index][player_index] = [float(move_x), float(move_y), [float(aim_x), float(aim_y)], int(flags)]
             if checkpoint_ammo is not None:

@@ -231,7 +231,7 @@ class ProjectilePool:
                 or proj.pos.x > world_size + margin
                 or proj.pos.y > world_size + margin
             ):
-                proj.life_timer -= dt
+                proj.life_timer = float(f32(float(proj.life_timer) - float(dt)))
                 continue
 
             steps = int(proj.base_damage)
@@ -311,20 +311,8 @@ class ProjectilePool:
                                 step += 3
                                 continue
 
-                            type_id = proj.type_id
                             assert players is not None
                             player = players[int(hit_player_idx)]
-                            hit = ProjectileHit(
-                                type_id=int(type_id),
-                                origin=proj.origin,
-                                hit=proj.pos,
-                                target=player.pos,
-                            )
-                            hits.append(hit)
-                            hit_ctx: object | None = None
-                            if on_hit is not None:
-                                hit_ctx = on_hit(hit)
-
                             proj.life_timer = 0.25
                             if apply_player_damage is not None:
                                 apply_player_damage(int(hit_player_idx), 10.0)
@@ -332,10 +320,8 @@ class ProjectilePool:
                                 if float(player.shield_timer) <= 0.0:
                                     player.health -= 10.0
 
-                            if on_hit_post is not None:
-                                on_hit_post(hit, hit_ctx)
-
-                            break
+                            step += 3
+                            continue
 
                         step += 3
                         continue
@@ -458,9 +444,13 @@ class ProjectilePool:
                             detail_preset=int(detail_preset),
                         )
 
-                    if proj.damage_pool == 1.0 and proj.life_timer != 0.25:
+                    if proj.damage_pool == 1.0:
+                        # Native clears damage_pool to 0.0 whenever it's exactly 1.0
+                        # in this branch, even if life_timer is already 0.25.
+                        life_before = float(proj.life_timer)
                         proj.damage_pool = 0.0
-                        proj.life_timer = 0.25
+                        if life_before != 0.25:
+                            proj.life_timer = 0.25
 
                     if proj.life_timer == 0.25 and type_id not in (
                         ProjectileTypeId.FIRE_BULLETS,
@@ -530,7 +520,7 @@ class ProjectilePool:
                         hit_r = radius + creature_radius
                         if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
                             creature.hp -= damage
-                proj.life_timer -= dt
+                proj.life_timer = float(f32(float(proj.life_timer) - float(dt)))
                 continue
 
             if (
@@ -539,7 +529,7 @@ class ProjectilePool:
                 or proj.pos.x > world_size + margin
                 or proj.pos.y > world_size + margin
             ):
-                proj.life_timer -= dt
+                proj.life_timer = float(f32(float(proj.life_timer) - float(dt)))
                 continue
 
             speed = speed_by_type.get(proj.type_id, 650.0) * proj.speed_scale
@@ -574,5 +564,3 @@ class ProjectilePool:
             proj.life_timer = 0.25
 
         return hits
-
-
