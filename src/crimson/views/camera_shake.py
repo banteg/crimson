@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import math
 
 import pyray as rl
+from construct import ConstructError
 
 from grim.config import ensure_crimson_cfg
 from grim.fonts.small import SmallFontData, load_small_font_optional
@@ -47,7 +48,7 @@ class CameraShakeView:
         if runtime_dir.is_dir():
             try:
                 config = ensure_crimson_cfg(runtime_dir)
-            except Exception:
+            except (ConstructError, OSError, ValueError):
                 config = None
 
         self.close_requested = False

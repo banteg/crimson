@@ -181,7 +181,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         ok = False
         try:
             ok = webbrowser.open(url)
-        except Exception:
+        except (OSError, webbrowser.Error):
             ok = False
         if ok:
             console.log.log(f"Launching web browser ({url})..")

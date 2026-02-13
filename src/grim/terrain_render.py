@@ -86,7 +86,7 @@ def _get_alpha_test_shader() -> rl.Shader | None:
     _ALPHA_TEST_SHADER_TRIED = True
     try:
         shader = rl.load_shader_from_memory(_ALPHA_TEST_VS_330, _ALPHA_TEST_FS_330)
-    except Exception:
+    except (RuntimeError, OSError, ValueError):
         _ALPHA_TEST_SHADER = None
         return None
 
@@ -697,7 +697,7 @@ class GroundRenderer:
 
         try:
             candidate = rl.load_render_texture(render_w, render_h)
-        except Exception:
+        except (RuntimeError, OSError, ValueError):
             return False
 
         if not getattr(candidate, "id", 0) or not rl.is_render_texture_valid(candidate):
