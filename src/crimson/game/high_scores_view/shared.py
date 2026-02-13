@@ -22,7 +22,7 @@ def format_score_date(entry: object) -> str:
         day = int(getattr(entry, "day", 0) or 0)
         month = int(getattr(entry, "month", 0) or 0)
         year_off = int(getattr(entry, "year_offset", 0) or 0)
-    except Exception:
+    except (TypeError, ValueError):
         return ""
     if day <= 0 or month <= 0:
         return ""

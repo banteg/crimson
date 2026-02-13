@@ -37,7 +37,7 @@ def load_records(state: GameState, request: HighScoresRequest) -> list:
     )
     try:
         return read_highscore_table(path, game_mode_id=int(request.game_mode_id))
-    except Exception:
+    except (OSError, ValueError):
         return []
 
 

@@ -234,7 +234,7 @@ class QuestResultsUi:
         try:
             records = read_highscore_table(self._scores_path, game_mode_id=3)
             self.rank = int(rank_index(records, self.record))
-        except Exception:
+        except (OSError, ValueError):
             self.rank = TABLE_MAX
 
         self.input_text = str(player_name_default or "")[:NAME_MAX_EDIT]
@@ -519,7 +519,7 @@ class QuestResultsUi:
                             self.highlight_rank = int(idx) if int(idx) < TABLE_MAX else None
                             if int(idx) < TABLE_MAX:
                                 self.rank = int(idx)
-                        except Exception:
+                        except (OSError, ValueError):
                             self.highlight_rank = None
                         self._saved = True
                     self.config.set_player_name(self.input_text)

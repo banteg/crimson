@@ -142,11 +142,7 @@ def draw_main_panel(
     else:
         for idx in range(start, end):
             entry = view._records[idx]
-            name = ""
-            try:
-                name = str(entry.name())
-            except Exception:
-                name = ""
+            name = str(entry.name())
             if not name:
                 name = "???"
             if len(name) > 16:
