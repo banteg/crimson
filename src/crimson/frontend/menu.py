@@ -81,9 +81,10 @@ def _menu_unlock_index(state: GameState) -> int:
     status = getattr(state, "status", None)
     if status is None:
         return 0
+    unlock_index = getattr(status, "quest_unlock_index", 0)
     try:
-        return int(status.quest_unlock_index)
-    except Exception:
+        return int(unlock_index)
+    except (TypeError, ValueError):
         return 0
 
 

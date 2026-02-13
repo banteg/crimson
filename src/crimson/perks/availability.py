@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ..game_modes import GameMode
+from ..quests import all_quests
 from ..sim.state_types import GameplayState, PlayerState
 from .helpers import perk_count_get
 from .ids import PERK_BY_ID, PerkFlags, PerkId
@@ -22,10 +23,7 @@ def perks_rebuild_available(state: GameplayState) -> None:
 
     unlock_index = 0
     if state.status is not None:
-        try:
-            unlock_index = int(state.status.quest_unlock_index)
-        except Exception:
-            unlock_index = 0
+        unlock_index = int(state.status.quest_unlock_index)
 
     if int(state._perk_available_unlock_index) == unlock_index:
         return
@@ -44,13 +42,7 @@ def perks_rebuild_available(state: GameplayState) -> None:
             available[idx] = True
 
     if unlock_index > 0:
-        try:
-            from ..quests import all_quests
-
-            quests = all_quests()
-        except Exception:
-            quests = []
-
+        quests = all_quests()
         for quest in quests[:unlock_index]:
             perk_id = int(getattr(quest, "unlock_perk_id", 0) or 0)
             if 0 < perk_id < len(available):
