@@ -5,39 +5,33 @@ site_dir = "_site"
 site_description = "Reverse engineering notes for Crimsonland assets and formats."
 site_author = "banteg"
 extra_css = ["stylesheets/extra.css"]
+extra_javascript = [
+    "https://cdn.jsdelivr.net/npm/vega@6",
+    "https://cdn.jsdelivr.net/npm/vega-lite@6",
+    "https://cdn.jsdelivr.net/npm/vega-embed@7",
+    "javascripts/weapons-widgets.js",
+]
 
 nav = [
   { "Home" = "index.md" },
   { "Mechanics" = [
     { "Overview" = "mechanics/index.md" },
     { "Modes" = [
-      { "Overview" = "mechanics/modes/index.md" },
       { "Survival" = "mechanics/modes/survival.md" },
       { "Rush" = "mechanics/modes/rush.md" },
-      { "Quest" = "mechanics/modes/quests.md" },
+      { "Quests" = "mechanics/modes/quests.md" },
       { "Typ-o-Shooter" = "mechanics/modes/typo-shooter.md" },
       { "Tutorial" = "mechanics/modes/tutorial.md" },
     ]},
     { "Combat" = [
       { "Overview" = "mechanics/combat/index.md" },
       { "Weapons" = "mechanics/combat/weapons.md" },
-      { "Fire and reload loop" = "mechanics/combat/fire-and-reload.md" },
-      { "Damage and death" = "mechanics/combat/damage.md" },
     ]},
     { "Systems" = [
       { "Overview" = "mechanics/systems/index.md" },
       { "Bonuses" = "mechanics/systems/bonuses.md" },
-      { "Score" = "mechanics/systems/score.md" },
-      { "Spawning" = "mechanics/systems/spawning.md" },
-      { "Progression" = "mechanics/systems/progression/intro.md" },
       { "Secret weapons" = "mechanics/secret-weapons.md" },
       { "Perks" = "mechanics/perks.md" },
-    ]},
-    { "Multiplayer" = [
-      { "Local multiplayer" = "mechanics/multiplayer/overview.md" },
-    ]},
-    { "Quirks" = [
-      { "Gameplay quirks" = "mechanics/quirks/index.md" },
     ]},
   ]},
   { "Rewrite" = [

@@ -12,9 +12,6 @@ Behavioral system docs intended for gameplay truth and design-level understandin
 - [Perks](../perks.md)
 - [Secret weapons](../secret-weapons.md)
 - [Bonuses](bonuses.md)
-- [Score and progression counters](score.md)
-- [Creature spawning](spawning.md)
-- [Progression systems](progression/intro.md)
 
 Decompiler-heavy system internals live in
 [RE static systems analysis](../../re/static/systems/index.md).
