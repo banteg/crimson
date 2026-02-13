@@ -54,9 +54,11 @@ def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> N
     )
     world.players.append(PlayerState(index=0, pos=Vec2()))
     world.state.time_scale_active = True
-    world.state.bonuses.reflex_boost = 0.75
+    # Use a near-expiry timer value where the player_update roundtrip path
+    # produces a distinct float32 decrement from plain `dt`.
+    world.state.bonuses.reflex_boost = 0.05
 
-    dt = 0.016
+    dt = 0.0109
     expected_post_player_dt = player_frame_dt_after_roundtrip(
         dt=dt,
         time_scale_active=True,

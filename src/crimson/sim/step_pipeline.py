@@ -47,7 +47,7 @@ def time_scale_reflex_boost_bonus(
     reflex_f32 = f32(float(reflex_boost_timer))
     time_scale_factor = f32(0.3)
     if float(reflex_f32) < 1.0:
-        time_scale_factor = f32(f32(f32(1.0) - reflex_f32) * f32(0.7) + f32(0.3))
+        time_scale_factor = f32((1.0 - float(reflex_f32)) * 0.7 + 0.3)
     return float(f32(float(dt_f32) * float(time_scale_factor)))
 
 

@@ -132,16 +132,12 @@ def player_frame_dt_after_roundtrip(*, dt: float, time_scale_active: bool, refle
     reflex_f32 = float(f32(float(reflex_boost_timer)))
     time_scale_factor = float(f32(0.3))
     if reflex_f32 < 1.0:
-        time_scale_factor = float(f32(float(f32(float(f32(1.0) - float(reflex_f32)) * float(f32(0.7)))) + 0.3))
+        time_scale_factor = float(f32((1.0 - float(reflex_f32)) * 0.7 + 0.3))
     if time_scale_factor <= 0.0:
         return float(dt_f32)
 
-    roundtrip_dt = float(
-        f32(
-            float(f32(float(time_scale_factor) * float(f32(float(dt_f32) * float(f32(0.6 / time_scale_factor))))))
-            * float(f32(1.6666666))
-        )
-    )
+    movement_dt = float(f32((0.6 / float(time_scale_factor)) * float(dt_f32)))
+    roundtrip_dt = float(f32(float(time_scale_factor) * float(movement_dt) * 1.6666666))
     return float(roundtrip_dt)
 
 
