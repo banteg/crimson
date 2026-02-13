@@ -510,6 +510,11 @@ def cmd_replay_verify_capture(
             "use for captures missing config_aim_scheme telemetry"
         ),
     ),
+    json_out: Path | None = typer.Option(
+        None,
+        "--json-out",
+        help="optional JSON output path for verify result payload",
+    ),
 ) -> None:
     """Verify capture ticks directly against rewrite simulation state."""
     from .original.capture import load_capture, parse_player_int_overrides
@@ -544,9 +549,65 @@ def cmd_replay_verify_capture(
         typer.echo(f"capture verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
+    def _checkpoint_summary(checkpoint: object | None) -> dict[str, object] | None:
+        if checkpoint is None:
+            return None
+        ckpt = cast("Any", checkpoint)
+        return {
+            "tick_index": int(ckpt.tick_index),
+            "elapsed_ms": int(ckpt.elapsed_ms),
+            "score_xp": int(ckpt.score_xp),
+            "kills": int(ckpt.kills),
+            "creature_count": int(ckpt.creature_count),
+            "perk_pending": int(ckpt.perk_pending),
+        }
+
+    payload: dict[str, object] = {
+        "capture": str(capture_file),
+        "ok": bool(result.ok),
+        "checked_count": int(result.checked_count),
+        "expected_count": int(result.expected_count),
+        "actual_count": int(result.actual_count),
+        "elapsed_baseline_tick": (
+            int(result.elapsed_baseline_tick) if result.elapsed_baseline_tick is not None else None
+        ),
+        "elapsed_offset_ms": int(result.elapsed_offset_ms) if result.elapsed_offset_ms is not None else None,
+        "run_result": {
+            "game_mode_id": int(run_result.game_mode_id),
+            "tick_rate": int(run_result.tick_rate),
+            "ticks": int(run_result.ticks),
+            "elapsed_ms": int(run_result.elapsed_ms),
+            "score_xp": int(run_result.score_xp),
+            "creature_kill_count": int(run_result.creature_kill_count),
+            "most_used_weapon_id": int(run_result.most_used_weapon_id),
+            "shots_fired": int(run_result.shots_fired),
+            "shots_hit": int(run_result.shots_hit),
+            "rng_state": int(run_result.rng_state),
+        },
+        "failure": None,
+    }
+
     if not result.ok:
         failure = result.failure
         assert failure is not None
+        payload["failure"] = {
+            "kind": str(failure.kind),
+            "tick_index": int(failure.tick_index),
+            "expected": _checkpoint_summary(failure.expected),
+            "actual": _checkpoint_summary(failure.actual),
+            "field_diffs": [
+                {
+                    "field": str(diff.field),
+                    "expected": diff.expected,
+                    "actual": diff.actual,
+                }
+                for diff in failure.field_diffs
+            ],
+        }
+        if json_out is not None:
+            json_out.parent.mkdir(parents=True, exist_ok=True)
+            json_out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+            typer.echo(f"json_report={json_out}")
         typer.echo(f"capture mismatch at tick={int(failure.tick_index)}", err=True)
         typer.echo(
             "  note: compared checkpoint state fields only "
@@ -599,6 +660,10 @@ def cmd_replay_verify_capture(
             f"; elapsed baseline tick={result.elapsed_baseline_tick} "
             f"offset_ms(actual-expected)={result.elapsed_offset_ms}"
         )
+    if json_out is not None:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        typer.echo(f"json_report={json_out}")
     typer.echo(message)
 
 
@@ -741,7 +806,13 @@ def cmd_replay_bisect_divergence(ctx: typer.Context) -> None:
     """Binary-search the first divergent tick and emit a compact repro bundle."""
     from .original import divergence_bisect
 
-    raise typer.Exit(code=divergence_bisect.main(list(ctx.args)))
+    raise typer.Exit(
+        code=_run_original_tool_cached(
+            tool="bisect-divergence",
+            argv=list(ctx.args),
+            fallback=divergence_bisect.main,
+        )
+    )
 
 
 @original_app.command(

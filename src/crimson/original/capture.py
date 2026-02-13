@@ -29,6 +29,7 @@ from ..replay.types import (
     WEAPON_USAGE_COUNT,
     pack_input_flags,
 )
+from ..weapons import projectile_type_ids_from_weapon_id
 from .schema import (
     CAPTURE_FORMAT_VERSION,
     CaptureEventHeadBonusApply,
@@ -612,6 +613,9 @@ def _tick_player_weapon_projectile_spawned(
     player_count: int,
     weapon_id: int,
 ) -> bool:
+    # Captures report projectile type IDs; many weapons do not emit `weapon_id` directly.
+    target_type_ids = set(projectile_type_ids_from_weapon_id(int(weapon_id)))
+    target_type_ids.add(int(weapon_id))
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadProjectileSpawn):
             continue
@@ -623,9 +627,9 @@ def _tick_player_weapon_projectile_spawned(
             continue
         requested_type = _coerce_int_like(head.data.get("requested_type_id"))
         actual_type = _coerce_int_like(head.data.get("actual_type_id"))
-        if requested_type is not None and int(requested_type) == int(weapon_id):
+        if requested_type is not None and int(requested_type) in target_type_ids:
             return True
-        if actual_type is not None and int(actual_type) == int(weapon_id):
+        if actual_type is not None and int(actual_type) in target_type_ids:
             return True
     return False
 

@@ -9,6 +9,7 @@ import math
 from crimson.gameplay import GameplayState
 from crimson.sim.state_types import PlayerState
 from crimson.effects import FxQueue
+from crimson.math_parity import f32
 from crimson.projectiles import ProjectileHit, ProjectilePool, SecondaryProjectilePool
 from crimson.projectiles import ProjectileTypeId
 
@@ -506,7 +507,7 @@ def test_secondary_projectile_pool_type1_accelerates_and_counts_down() -> None:
 
     # Seeker Rockets (type 1): accelerate by factor (1.0 + dt * 3.0) while speed < 500.
     assert math.isclose(entry.vel.y, -117.0, abs_tol=1e-9)
-    assert math.isclose(entry.speed, 1.9, abs_tol=1e-9)
+    assert math.isclose(entry.speed, float(f32(2.0 - 0.1)), abs_tol=1e-9)
 
     # No further acceleration once past the 500 speed threshold.
     entry.vel = Vec2(0.0, -600.0)

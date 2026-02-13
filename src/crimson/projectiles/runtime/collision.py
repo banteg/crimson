@@ -7,6 +7,8 @@ from grim.geom import Vec2
 
 from ..types import CreatureDamageApplier, Damageable, _CREATURE_HITBOX_ALIVE, _SizeLike
 
+_NATIVE_FIND_RADIUS_MARGIN_EPS = 0.001
+
 
 def _hit_radius_for(creature: _SizeLike) -> float:
     """Approximate `creature_find_in_radius`/`creatures_apply_radius_damage` sizing.
@@ -27,7 +29,10 @@ def _within_native_find_radius(*, origin: Vec2, target: Vec2, radius: float, tar
 
     dx = float(target.x) - float(origin.x)
     dy = float(target.y) - float(origin.y)
-    return math.sqrt(dx * dx + dy * dy) - float(radius) < float(target_size) * 0.14285715 + 3.0
+    margin = math.sqrt(dx * dx + dy * dy) - float(radius) - (float(target_size) * 0.14285715 + 3.0)
+    # Native uses x87-heavy float math in this path; a tiny epsilon avoids
+    # branch flips on sub-millimetric drift from float32 replay state.
+    return float(margin) < _NATIVE_FIND_RADIUS_MARGIN_EPS
 
 
 def _creature_find_nearest_for_secondary(*, creatures: Sequence[Damageable], origin: Vec2) -> int:

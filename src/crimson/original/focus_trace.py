@@ -812,7 +812,14 @@ def trace_focus_tick(
                     dist = math.sqrt(dx * dx + dy * dy)
                     threshold = float(target_size) * 0.14285715 + 3.0
                     margin = dist - float(radius) - threshold
-                    hit = bool(margin < 0.0)
+                    hit = bool(
+                        orig_within(
+                            origin=origin,
+                            target=target,
+                            radius=float(radius),
+                            target_size=float(target_size),
+                        )
+                    )
                     frame = inspect.currentframe().f_back  # ty:ignore[possibly-missing-attribute]
                     proj_index: int | None = None
                     proj_type: int | None = None
