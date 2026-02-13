@@ -67,9 +67,9 @@ Notes:
 - Creature sample/lifecycle payloads include AI lineage context
   (`ai_mode`, `link_index`, `orbit_angle`, `orbit_radius`, `ai7_timer_ms`)
   to diagnose spawn/link timer drift without replay-side guesswork.
-- Optional `creature_update_micro` event heads provide slot-level movement
-  internals (`creature_update_window` pre/post snapshots + `angle_approach`
-  call traces) for targeted drift windows.
+- `creature_update_micro` event heads provide slot-level movement internals
+  (`creature_update_window` pre/post snapshots + `angle_approach` call traces)
+  and are enabled in default captures.
 - No top-level raw event stream is written; diagnostics stay in per-tick aggregates.
 - Float precision contract: capture script emits memory-sourced float values as
   tagged float32 bit tokens (`"f32:XXXXXXXX"`). Tooling decodes these tokens at
@@ -149,8 +149,14 @@ Without extra env vars, the script captures full per-tick detail:
 - RNG per-draw stream rows (`value/state_before/state_after/branch_id`), caller diagnostics, mirror tracking, outside-tick carry
 - blood-splatter effect diagnostics (`effect_spawn_blood_splatter`) with per-tick caller and RNG-draw attribution
 - perk-apply diagnostics and input query/key snapshots
+- creature movement micro telemetry (`creature_update_window` +
+  `angle_approach`) with per-kind per-tick head cap (`128`) and no slot/window
+  filtering
 
 ## Optional env knobs
+
+Creature micro hooks are not controlled via env knobs anymore; they are always
+captured by default for differential parity sessions.
 
 - `CRIMSON_FRIDA_STATES=6,9,10`
 - `CRIMSON_FRIDA_ALL_STATES=1`
@@ -170,11 +176,6 @@ Without extra env vars, the script captures full per-tick detail:
 - `CRIMSON_FRIDA_CREATURE_SPAWN_HOOK=0`
 - `CRIMSON_FRIDA_CREATURE_DEATH_HOOK=0`
 - `CRIMSON_FRIDA_BONUS_SPAWN_HOOK=0`
-- `CRIMSON_FRIDA_CREATURE_MICRO_HOOKS=1`
-- `CRIMSON_FRIDA_CREATURE_MICRO_SLOTS=31`
-- `CRIMSON_FRIDA_CREATURE_MICRO_TICK_START=8679`
-- `CRIMSON_FRIDA_CREATURE_MICRO_TICK_END=9014`
-- `CRIMSON_FRIDA_CREATURE_MICRO_MAX_HEAD=256`
 - `CRIMSON_FRIDA_RNG_ROLL_LOG=0`
 - `CRIMSON_FRIDA_MAX_RNG_ROLL_LOG_EVENTS=-1`
 - `CRIMSON_FRIDA_RNG_HEAD=-1`

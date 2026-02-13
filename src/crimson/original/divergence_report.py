@@ -2129,10 +2129,9 @@ def _build_investigation_leads(
                             "turn/target internals are unavailable for root-cause analysis"
                         ),
                         (
-                            "re-capture with targeted micro hooks enabled "
-                            "(CRIMSON_FRIDA_CREATURE_MICRO_HOOKS=1, "
-                            "CRIMSON_FRIDA_CREATURE_MICRO_SLOTS=<slot list>, "
-                            "CRIMSON_FRIDA_CREATURE_MICRO_TICK_START/END=<window>)"
+                            "re-capture with the current gameplay_diff_capture defaults; "
+                            "creature micro telemetry is expected to be on by default "
+                            "(captures missing it are usually older script revisions or legacy override runs)"
                         ),
                     ),
                     native_functions=(

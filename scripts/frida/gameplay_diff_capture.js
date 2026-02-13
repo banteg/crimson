@@ -147,11 +147,12 @@ const CONFIG = {
   enableCreatureDeathHook: parseBoolEnv("CRIMSON_FRIDA_CREATURE_DEATH_HOOK", true),
   enableBonusSpawnHook: parseBoolEnv("CRIMSON_FRIDA_BONUS_SPAWN_HOOK", true),
   enableCreatureLifecycleDigest: parseBoolEnv("CRIMSON_FRIDA_CREATURE_LIFECYCLE", true),
-  enableCreatureMicroHooks: parseBoolEnv("CRIMSON_FRIDA_CREATURE_MICRO_HOOKS", false),
-  creatureMicroSlots: parseStateSet(getEnv("CRIMSON_FRIDA_CREATURE_MICRO_SLOTS"), ""),
-  creatureMicroTickStart: parseIntEnv("CRIMSON_FRIDA_CREATURE_MICRO_TICK_START", -1),
-  creatureMicroTickEnd: parseIntEnv("CRIMSON_FRIDA_CREATURE_MICRO_TICK_END", -1),
-  creatureMicroMaxHeadPerTick: parseLimitEnv("CRIMSON_FRIDA_CREATURE_MICRO_MAX_HEAD", 64, 0),
+  // Always-on by default for parity sessions; no extra env config required.
+  enableCreatureMicroHooks: true,
+  creatureMicroSlots: new Set(),
+  creatureMicroTickStart: -1,
+  creatureMicroTickEnd: -1,
+  creatureMicroMaxHeadPerTick: 128,
 };
 
 const FN = {
@@ -1367,9 +1368,18 @@ function _addCreatureMicroEvent(payload, commandToken) {
   const tick = outState.currentTick;
   if (!tick || !payload) return;
   if (!_shouldCaptureCreatureMicroForTick(tick.tick_index)) return;
+  const eventKind = String(payload.event_kind || "");
   const cap = CONFIG.creatureMicroMaxHeadPerTick;
   if (cap === 0) return;
-  if (cap > 0 && (tick.creature_update_micro_rows | 0) >= cap) return;
+  if (eventKind === "angle_approach") {
+    if (cap > 0 && (tick.creature_update_micro_angle_rows | 0) >= cap) return;
+    tick.creature_update_micro_angle_rows = (tick.creature_update_micro_angle_rows | 0) + 1;
+  } else if (eventKind === "creature_update_window") {
+    if (cap > 0 && (tick.creature_update_micro_window_rows | 0) >= cap) return;
+    tick.creature_update_micro_window_rows = (tick.creature_update_micro_window_rows | 0) + 1;
+  } else if (cap > 0 && (tick.creature_update_micro_rows | 0) >= cap) {
+    return;
+  }
   tick.creature_update_micro_rows = (tick.creature_update_micro_rows | 0) + 1;
   addTickEvent("creature_update_micro", payload, commandToken || "cum");
 }
@@ -1961,6 +1971,8 @@ function makeTickContext() {
     mode_samples: [],
     creature_digest_before: creatureDigestBefore,
     creature_update_micro_rows: 0,
+    creature_update_micro_angle_rows: 0,
+    creature_update_micro_window_rows: 0,
     mode_hint: null,
     overflow: false,
   };

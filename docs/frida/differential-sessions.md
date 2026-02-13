@@ -1089,8 +1089,4 @@ When the capture SHA is unchanged, append updates to the same session.
 ### Outcome / Next Probe
 
 - **Current hard block:** first surviving mismatch is a tiny cumulative movement/state drift (`tick 5053`) without RNG/collision branch evidence at focus, and this capture lacks creature movement micro telemetry required to isolate the first branch split.
-- Next required capture should enable creature micro hooks and target the first drift corridor:
-  - `CRIMSON_FRIDA_CREATURE_MICRO_HOOKS=1`
-  - `CRIMSON_FRIDA_CREATURE_MICRO_TICK_START=4690`
-  - `CRIMSON_FRIDA_CREATURE_MICRO_TICK_END=5060`
-  - `CRIMSON_FRIDA_CREATURE_MICRO_SLOTS=<top drifting slot ids from focus trace>`
+- Next required capture should use the current `scripts/frida/gameplay_diff_capture.js` defaults (creature micro telemetry on by default), then re-run baseline triage/focus around the first drift corridor (`~4690..5060`).

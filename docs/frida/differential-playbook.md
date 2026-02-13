@@ -213,6 +213,10 @@ PY
 If telemetry is missing/weak, patch Frida capture first and recapture. Avoid
 stacking replay fallbacks when capture instrumentation is the real gap.
 
+`creature_update_micro` telemetry is expected in default captures. If those
+rows are zero, treat the artifact as stale/invalid for movement root-cause work
+and recapture with the current `scripts/frida/gameplay_diff_capture.js`.
+
 For creature-movement root-cause work (for example slot-level drift ancestry),
 require non-zero `creature_update_micro_rows` and both non-zero
 `creature_update_micro_angle_rows` and `creature_update_micro_window_rows` in

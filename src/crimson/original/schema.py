@@ -43,11 +43,11 @@ class CaptureConfig(msgspec.Struct):
     enable_creature_death_hook: bool = True
     enable_bonus_spawn_hook: bool = True
     enable_creature_lifecycle_digest: bool = True
-    enable_creature_micro_hooks: bool = False
+    enable_creature_micro_hooks: bool = True
     creature_micro_slots: list[int] = msgspec.field(default_factory=list)
     creature_micro_tick_start: int = -1
     creature_micro_tick_end: int = -1
-    creature_micro_max_head_per_tick: int = 64
+    creature_micro_max_head_per_tick: int = 128
 
 
 class SessionFingerprint(msgspec.Struct, forbid_unknown_fields=True):
