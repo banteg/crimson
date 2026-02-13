@@ -136,7 +136,7 @@ class _DatabaseBaseView:
 
     def _draw_sign(self) -> None:
         assets = self._assets
-        if assets is None or assets.sign is None:
+        if assets is None:
             return
         sign = assets.sign
         screen_w = float(self.state.config.screen_width)
@@ -233,7 +233,7 @@ class _DatabaseBaseView:
         _draw_screen_fade(self.state)
 
         assets = self._assets
-        if assets is None or assets.panel is None:
+        if assets is None:
             return
 
         scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0

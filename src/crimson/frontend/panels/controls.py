@@ -595,7 +595,7 @@ class ControlsMenuView(PanelMenuView):
 
     def _draw_panel(self) -> None:
         assets = self._assets
-        if assets is None or assets.panel is None:
+        if assets is None:
             return
         panel = assets.panel
 

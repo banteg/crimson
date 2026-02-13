@@ -76,7 +76,6 @@ class QuestsMenuView:
         self.state = state
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
-        self._panel_tex: rl.Texture | None = None
 
         self._small_font: SmallFontData | None = None
         self._text_quest: rl.Texture | None = None
@@ -109,7 +108,6 @@ class QuestsMenuView:
 
         # Sign and ground match the main menu/panels.
         self._assets = load_menu_assets(self.state)
-        self._panel_tex = self._assets.panel if self._assets is not None else None
         self._init_ground()
 
         self._text_quest = cache.get_or_load("ui_textQuest", "ui/ui_textQuest.jaz").texture
@@ -617,7 +615,7 @@ class QuestsMenuView:
 
     def _draw_sign(self) -> None:
         assets = self._assets
-        if assets is None or assets.sign is None:
+        if assets is None:
             return
         screen_w = float(self.state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
@@ -660,9 +658,10 @@ class QuestsMenuView:
         )
 
     def _draw_panel(self) -> None:
-        panel = self._panel_tex
-        if panel is None:
+        assets = self._assets
+        if assets is None:
             return
+        panel = assets.panel
         _angle_rad, slide_x = MenuView._ui_element_anim(
             self,
             index=1,

@@ -272,7 +272,7 @@ class StatisticsMenuView:
         _draw_screen_fade(self.state)
 
         assets = self._assets
-        if assets is None or assets.panel is None:
+        if assets is None:
             return
 
         scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
@@ -293,23 +293,22 @@ class StatisticsMenuView:
         draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
         # Title: full-size row from ui_itemTexts.jaz (128x32).
-        if assets.labels is not None:
-            label_tex = assets.labels
-            row_h = float(MENU_LABEL_ROW_HEIGHT)
-            src = rl.Rectangle(0.0, float(MENU_LABEL_ROW_STATISTICS) * row_h, float(label_tex.width), row_h)
-            MenuView._draw_ui_quad(
-                texture=label_tex,
-                src=src,
-                dst=rl.Rectangle(
-                    panel_top_left.x + _TITLE_X * scale,
-                    panel_top_left.y + _TITLE_Y * scale,
-                    _TITLE_W * scale,
-                    _TITLE_H * scale,
-                ),
-                origin=rl.Vector2(0.0, 0.0),
-                rotation_deg=0.0,
-                tint=rl.WHITE,
-            )
+        label_tex = assets.labels
+        row_h = float(MENU_LABEL_ROW_HEIGHT)
+        src = rl.Rectangle(0.0, float(MENU_LABEL_ROW_STATISTICS) * row_h, float(label_tex.width), row_h)
+        MenuView._draw_ui_quad(
+            texture=label_tex,
+            src=src,
+            dst=rl.Rectangle(
+                panel_top_left.x + _TITLE_X * scale,
+                panel_top_left.y + _TITLE_Y * scale,
+                _TITLE_W * scale,
+                _TITLE_H * scale,
+            ),
+            origin=rl.Vector2(0.0, 0.0),
+            rotation_deg=0.0,
+            tint=rl.WHITE,
+        )
 
         # "played for # hours # minutes"
         font = self._ensure_small_font()
@@ -362,7 +361,7 @@ class StatisticsMenuView:
 
     def _draw_sign(self, *, scale: float) -> None:
         assets = self._assets
-        if assets is None or assets.sign is None:
+        if assets is None:
             return
         sign = assets.sign
         screen_w = float(self.state.config.screen_width)

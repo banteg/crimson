@@ -429,7 +429,7 @@ class AlienZooKeeperView:
         layout = self._layout(scale=scale)
 
         assets = self._assets
-        if assets is not None and assets.panel is not None:
+        if assets is not None:
             dst = rl.Rectangle(
                 layout.panel_x,
                 layout.panel_y,
@@ -553,7 +553,7 @@ class AlienZooKeeperView:
 
     def _draw_sign(self) -> None:
         assets = self._assets
-        if assets is None or assets.sign is None:
+        if assets is None:
             return
         sign = assets.sign
         screen_w = float(self.state.config.screen_width)

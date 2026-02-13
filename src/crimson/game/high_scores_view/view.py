@@ -238,7 +238,7 @@ class HighScoresView:
         _draw_screen_fade(self.state)
 
         assets = self._assets
-        if assets is None or assets.panel is None:
+        if assets is None:
             return
 
         font = self._ensure_small_font()
@@ -309,8 +309,6 @@ class HighScoresView:
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def _draw_sign(self, assets: MenuAssets) -> None:
-        if assets.sign is None:
-            return
         sign = assets.sign
         screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))

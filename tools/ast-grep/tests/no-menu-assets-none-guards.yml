@@ -1,0 +1,19 @@
+id: no-menu-assets-none-guards
+valid:
+  - |
+    if assets is None:
+        return
+    draw(assets.sign)
+  - |
+    sign = assets.sign
+    panel = assets.panel
+invalid:
+  - |
+    if assets is None or assets.sign is None:
+        return
+  - |
+    if assets.panel is None:
+        return
+  - |
+    if assets.labels is None:
+        return

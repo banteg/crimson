@@ -1,0 +1,26 @@
+id: no-menu-assets-none-guards
+snapshots:
+  ? |
+    if assets is None or assets.sign is None:
+        return
+  : labels:
+    - source: assets.sign is None
+      style: primary
+      start: 21
+      end: 40
+  ? |
+    if assets.labels is None:
+        return
+  : labels:
+    - source: assets.labels is None
+      style: primary
+      start: 3
+      end: 24
+  ? |
+    if assets.panel is None:
+        return
+  : labels:
+    - source: assets.panel is None
+      style: primary
+      start: 3
+      end: 23
