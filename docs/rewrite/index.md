@@ -17,7 +17,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - `uv run crimson quests 1.1` (quest spawn dump)
 - `uv run crimson config` (inspect `crimson.cfg`)
 - `uv run crimson lan host --mode survival --players 2` (host LAN session bring-up path)
-- `uv run crimson lan join --host 127.0.0.1 --port 31993` (join LAN session bring-up path)
+- `uv run crimson lan join --host 127.0.0.1 --port 31993` (join LAN session bring-up path; loopback auto-starts)
 
 ## What exists now
 

@@ -101,3 +101,33 @@ def test_lan_join_command_builds_pending_join_session(monkeypatch, tmp_path: Pat
     assert pending.config.mode == "survival"
     assert pending.config.host_ip == "192.168.1.42"
     assert pending.config.port == 31993
+
+
+def test_lan_join_loopback_host_autostarts_session(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, Any] = {}
+
+    def _fake_run_game(config):  # noqa: ANN001
+        captured["config"] = config
+
+    monkeypatch.setattr("crimson.game.run_game", _fake_run_game)
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "lan",
+            "join",
+            "--host",
+            "127.0.0.1",
+            "--base-dir",
+            str(tmp_path),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    config = captured["config"]
+    pending = config.pending_lan_session
+    assert pending is not None
+    assert pending.role == "join"
+    assert pending.auto_start is True
+    assert pending.config.host_ip == "127.0.0.1"

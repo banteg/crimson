@@ -38,7 +38,8 @@ Notes:
 
 - Quest hosting enforces `--quest-level`.
 - `lan host` seeds an auto-start host session.
-- `lan join` preloads pending join data; mode start continues through in-game flow.
+- `lan join` preloads pending join data; for loopback hosts (`localhost`,
+  `127.0.0.1`, `::1`) it auto-starts gameplay for single-machine testing.
 
 ### In-game UI
 
