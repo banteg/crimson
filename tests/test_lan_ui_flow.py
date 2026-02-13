@@ -121,3 +121,29 @@ def test_auto_lan_start_action_consumes_pending_session_once(tmp_path: Path) -> 
     assert loop._auto_lan_start_action() == "start_rush_lan"
     assert state.pending_lan_session.started is True
     assert loop._auto_lan_start_action() is None
+
+
+def test_cli_autostart_host_does_not_block_on_wait_gate(tmp_path: Path) -> None:
+    state = _build_state(tmp_path)
+    state.pending_lan_session = PendingLanSession(
+        role="host",
+        config=LanSessionConfig(
+            mode="survival",
+            player_count=2,
+            quest_level="",
+            bind_host="0.0.0.0",
+            host_ip="",
+            port=31993,
+            preserve_bugs=False,
+        ),
+        auto_start=True,
+    )
+    loop = GameLoopView(state)
+
+    action = loop._resolve_lan_action("start_survival_lan")
+
+    assert action == "start_survival"
+    assert state.lan_in_lobby is True
+    assert state.lan_waiting_for_players is False
+    assert state.lan_expected_players == 2
+    assert state.lan_connected_players == 2
