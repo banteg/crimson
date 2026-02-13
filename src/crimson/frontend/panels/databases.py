@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 import pyray as rl
 
@@ -34,6 +34,9 @@ from ..menu import (
 from ..transitions import _draw_screen_fade
 from ..types import GameState
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
+
+if TYPE_CHECKING:
+    from ...weapons import Weapon
 
 
 # Shared panel layout (state_14/15/16 in the oracle): tall left panel + short right panel.
@@ -421,7 +424,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         weapon_id = int(self._selected_weapon_id)
         name, icon_index = self._weapon_label_and_icon(weapon_id)
         weapon = self._weapon_entry(weapon_id)
-        preserve_bugs = bool(getattr(self.state, "preserve_bugs", False))
+        preserve_bugs = self.state.preserve_bugs
         weapon_no_label = "wepno" if preserve_bugs else "weapon"
         draw_small_text(
             font,
@@ -436,11 +439,9 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
 
         if weapon is not None:
             rpm = self._weapon_rpm(weapon)
-            reload_raw = getattr(weapon, "reload_time", None)
-            clip_raw = getattr(weapon, "clip_size", None)
-            reload_time = float(reload_raw) if isinstance(reload_raw, (int, float)) else None
-            clip_size = int(clip_raw) if isinstance(clip_raw, (int, float)) else None
-            ammo_class = int(getattr(weapon, "ammo_class", 0) or 0)
+            reload_time = weapon.reload_time
+            clip_size = weapon.clip_size
+            ammo_class = int(weapon.ammo_class or 0)
             firerate_label = "Firerate" if preserve_bugs else "Fire rate"
             if ammo_class == 1:
                 firerate_text = f"{firerate_label}: n/a"
@@ -532,7 +533,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             stub = _Stub()
             stub.status = self.state.status
             stub.game_mode = self.state.config.game_mode
-            stub.demo_mode_active = bool(getattr(self.state, "demo_enabled", False))
+            stub.demo_mode_active = self.state.demo_enabled
             stub.weapon_available = [False] * int(WEAPON_COUNT_SIZE)
             stub._weapon_available_game_mode = -1
             stub._weapon_available_unlock_index = -1
@@ -566,24 +567,18 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         used.sort()
         return used
 
-    def _weapon_entry(self, weapon_id: int) -> object | None:
+    def _weapon_entry(self, weapon_id: int) -> Weapon | None:
         try:
             from ...weapons import WEAPON_BY_ID
         except Exception:
             return None
         return WEAPON_BY_ID.get(int(weapon_id))
 
-    def _weapon_rpm(self, weapon: object) -> int | None:
-        try:
-            cooldown = getattr(weapon, "shot_cooldown", None)
-            if cooldown is None:
-                return None
-            cooldown = float(cooldown)
-        except Exception:
+    def _weapon_rpm(self, weapon: Weapon) -> int | None:
+        cooldown = weapon.shot_cooldown
+        if cooldown is None or cooldown <= 0.0:
             return None
-        if cooldown <= 0.0:
-            return None
-        return int(60.0 / cooldown)
+        return int(60.0 / float(cooldown))
 
     def _draw_wicon(self, icon_index: int, *, pos: Vec2, scale: float) -> None:
         tex = self._wicons_tex
@@ -617,7 +612,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             return f"Weapon {int(weapon_id)}", None
         name = weapon_display_name(
             int(weapon.weapon_id),
-            preserve_bugs=bool(getattr(self.state, "preserve_bugs", False)),
+            preserve_bugs=self.state.preserve_bugs,
         )
         return name, weapon.icon_index
 
@@ -998,7 +993,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         meta = PERK_BY_ID.get(int(perk_id))
         if meta is None:
             return None
-        prereq = tuple(getattr(meta, "prereq", ()) or ())
+        prereq = meta.prereq
         if not prereq:
             return None
         return perk_display_name(
@@ -1008,13 +1003,10 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         )
 
     def _preserve_bugs(self) -> bool:
-        return bool(getattr(self.state, "preserve_bugs", False))
+        return self.state.preserve_bugs
 
     def _fx_toggle(self) -> int:
-        data = getattr(getattr(self.state, "config", None), "data", None)
-        if not isinstance(data, dict):
-            return 0
-        return int(data.get("fx_toggle", 0) or 0)
+        return self.state.config.fx_toggle
 
     def _prewrapped_perk_desc(self, perk_id: int, font: SmallFontData, *, fx_toggle: int) -> str:
         key = (int(perk_id), int(fx_toggle), int(bool(self._preserve_bugs())))

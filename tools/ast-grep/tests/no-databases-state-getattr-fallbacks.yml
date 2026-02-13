@@ -1,0 +1,17 @@
+id: no-databases-state-getattr-fallbacks
+valid:
+  - |
+    preserve = self.state.preserve_bugs
+  - |
+    fx_toggle = self.state.config.fx_toggle
+  - |
+    prereq = meta.prereq
+invalid:
+  - |
+    preserve = bool(getattr(self.state, "preserve_bugs", False))
+  - |
+    demo = bool(getattr(self.state, "demo_enabled", False))
+  - |
+    data = getattr(getattr(self.state, "config", None), "data", None)
+  - |
+    prereq = tuple(getattr(meta, "prereq", ()) or ())
