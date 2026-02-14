@@ -126,3 +126,27 @@ Full gated text-fix list:
 | Quest results prompt | `State your name trooper!` | `State your name, trooper!` |
 | Game over hit-ratio tooltip | `The % of shot bullets hit the target` | `The % of bullets that hit the target` |
 | Statistics panel line | `played for 1 hours 1 minutes` | `played for 1 hour 1 minute` |
+
+## 5) Stationary Reloader can finish a reload without refilling ammo
+
+Native behavior:
+
+- `player_update` preloads ammo when `reload_timer - frame_dt < 0` (unscaled `frame_dt`),
+  then later applies Stationary Reloader by decrementing `reload_timer` using
+  `reload_scale * frame_dt` (with `reload_scale = 3` when stationary).
+- When Stationary Reloader is active, `reload_timer` can underflow in a single tick
+  even though `reload_timer - frame_dt` was still non-negative. In that case ammo is
+  never refilled when the reload completes.
+- This can lead to a “one shot + forced reload loop” (reload completes with `ammo == 0`,
+  the next shot underflows ammo and restarts reload).
+
+Why it’s likely a bug:
+
+- The intent is clearly “refill ammo when reload completes”; the underflow check
+  just fails to account for the Stationary Reloader scale factor.
+
+Rewrite behavior:
+
+- Default: use the scaled reload decrement (`reload_scale * frame_dt`) for the preload
+  check so ammo is always refilled when Stationary Reloader causes same-tick completion.
+- With `--preserve-bugs`: keep the native unscaled preload check (and the empty-reload loop).

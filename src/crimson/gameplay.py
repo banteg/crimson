@@ -544,11 +544,17 @@ def player_update(
             # Anxious Loader overcuts the timer.
             player.reload_timer = float(f32(float(dt) * 0.8))
 
-    # Native preloads ammo one frame before reload timer underflows, using
-    # unscaled `frame_dt` (before Stationary Reloader scale is applied).
     reload_timer_now = float(f32(float(player.reload_timer)))
     dt_f32 = float(f32(float(dt)))
-    reload_preload_underflow = float(f32(reload_timer_now - dt_f32))
+    # Native preloads ammo one frame before reload timer underflows using the
+    # unscaled `frame_dt` (before Stationary Reloader scale is applied). That
+    # can miss reload completion when Stationary Reloader is active, leaving the
+    # clip empty and causing a one-shot reload loop (fixed by default).
+    preload_dt = dt_f32
+    if not bool(state.preserve_bugs):
+        preload_dt = float(f32(float(reload_scale) * float(dt_f32)))
+
+    reload_preload_underflow = float(f32(reload_timer_now - preload_dt))
     if (
         player.reload_active
         and reload_timer_now > 0.0
