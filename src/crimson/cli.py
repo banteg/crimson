@@ -232,6 +232,7 @@ def cmd_lan_host(
     players: int = typer.Option(..., "--players", min=1, max=4, help="player count (1..4)"),
     bind: str = typer.Option("0.0.0.0", "--bind", help="host bind address"),
     port: int = typer.Option(31993, "--port", min=1, max=65535, help="host UDP port"),
+    debug: bool = typer.Option(False, "--debug", help="enable debug cheats and overlays"),
     preserve_bugs: bool = typer.Option(False, "--preserve-bugs", help="preserve known original exe bugs/quirks"),
     width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
     height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
@@ -293,6 +294,7 @@ def cmd_lan_host(
             width=width,
             height=height,
             fps=fps,
+            debug=bool(debug),
             preserve_bugs=bool(preserve_bugs),
             pending_lan_session=pending,
         )
@@ -303,6 +305,7 @@ def cmd_lan_host(
 def cmd_lan_join(
     host: str = typer.Option(..., "--host", help="host IP address"),
     port: int = typer.Option(31993, "--port", min=1, max=65535, help="host UDP port"),
+    debug: bool = typer.Option(False, "--debug", help="enable debug cheats and overlays"),
     width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
     height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, help="target fps"),
@@ -324,7 +327,6 @@ def cmd_lan_join(
     host_ip = str(host).strip()
     if not host_ip:
         raise typer.BadParameter("host address is required", param_hint="--host")
-    localhost_testing = _is_loopback_host(host_ip)
     pending = PendingLanSession(
         role="join",
         config=LanSessionConfig(
@@ -336,7 +338,7 @@ def cmd_lan_join(
             port=int(port),
             preserve_bugs=False,
         ),
-        auto_start=bool(localhost_testing),
+        auto_start=True,
     )
     run_game(
         GameConfig(
@@ -345,6 +347,7 @@ def cmd_lan_join(
             width=width,
             height=height,
             fps=fps,
+            debug=bool(debug),
             pending_lan_session=pending,
         )
     )
