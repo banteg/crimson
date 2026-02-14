@@ -1,0 +1,56 @@
+Crimsonland v1.9.8 - balloon easter egg consumer (sub_40c300)
+
+This snippet is a small excerpt from Binary Ninja disassembly/HLIL output for
+`C:\games\crimsonland_1.9.8\crimsonland.exe` to document the runtime consumer
+that was cut in v1.9.93.
+
+Key globals (v1.9.8):
+- `data_4a83b0`: persistent "balloons enabled" flag set by startup prelude on 9/12, 11/8, 12/18.
+- `data_46f2e8`: cached texture handle for "balloon" (initialized to 0xffffffff).
+- `data_47e5e8`: float positions (seeded once; y starts in [screen_h..2*screen_h)).
+- `data_47e668`: byte balloon type/tint (0..3).
+
+Gate + one-shot seed + handle/bind (0x0040cca9..0x0040cd47):
+
+0040cca9  38 1d b0 83 4a 00  cmp     byte [0x4a83b0], bl
+0040ccaf  0f 84 1e 04 00 00  je      0x40d0d3
+
+0040ccb5  a1 e8 f2 46 00      mov     eax, dword [0x46f2e8]
+0040ccba  83 f8 ff            cmp     eax, 0xffffffff
+0040ccbd  75 56               jne     0x40cd15
+
+0040ccbf  33 f6               xor     esi, esi
+0040ccc1  e8 e0 2d 05 00      call    0x45faa6              ; rand()
+0040ccc6  8b 0d 20 e2 47 00   mov     ecx, dword [0x47e220] ; screen_h
+0040cccd  f7 f9               idiv    ecx
+0040cccf  03 d1               add     edx, ecx
+0040ccd9  d9 1c b5 e8 e5 47 00 fstp    dword [esi*4+0x47e5e8], st0
+0040cce0  e8 c1 2d 05 00      call    0x45faa6              ; rand()
+0040cce5  25 03 00 00 80      and     eax, 0x80000003
+0040ccf1  88 86 68 e6 47 00   mov     byte [esi+0x47e668], al
+0040ccf7  46                  inc     esi
+0040ccf8  83 fe 20            cmp     esi, 0x20
+0040ccfb  7c c4               jl      0x40ccc1              ; seed 0x20 entries
+
+0040ccfd  8b 0d 4c e5 47 00   mov     ecx, dword [0x47e54c] ; grim iface
+0040cd03  68 34 09 47 00      push    0x470934              ; "balloon"
+0040cd0a  ff 92 b8 00 00 00   call    dword [edx+0xb8]      ; get_texture_handle("balloon")
+0040cd10  a3 e8 f2 46 00      mov     dword [0x46f2e8], eax
+
+0040cd15  8b 0d 4c e5 47 00   mov     ecx, dword [0x47e54c]
+0040cd1b  53                  push    ebx
+0040cd1c  50                  push    eax
+0040cd1f  ff 92 bc 00 00 00   call    dword [edx+0xbc]      ; bind_texture(handle, 0)
+
+Tint selection by type (0..3) uses vtable `+0x10c` with 4 floats (RGBA-like):
+- type 0: (0.2, 1.0, 0.2, 0.5)
+- type 1: (0.2, 0.2, 1.0, 0.8)
+- type 2: (0.7, 0.2, 1.0, 0.6)
+- type 3: (1.0, 0.2, 0.2, 0.7)
+
+Per-frame motion and draw loop (0x0040ce29..0x0040cf15):
+- y_i := y_i - dt * 60.0
+- if y_i < -128.0: y_i := y_i + (screen_h + 128.0)
+- x_i := ((screen_w * i) >> 4) + cos(time_ms * 0.002 + phase_i) * 64.0
+- draw via vtable `+0x11c` (quad/sprite draw) for i=0..0x0f
+

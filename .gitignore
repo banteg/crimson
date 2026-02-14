@@ -10,6 +10,7 @@
 /analysis/frida/ui_render_trace_marked_frames.jsonl
 /analysis/windbg/*.log
 /analysis/binary_ninja/*.bndb
+crimsonland198.txt
 .venv/
 .venv-dev/
 __pycache__/

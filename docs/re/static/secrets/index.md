@@ -32,6 +32,6 @@ Crimsonland contains several layers of secrets:
   (inference) to the Blade Gun Survival handout gate; no direct string->logic
   xref is known yet
 - The March-3 statistics text gate (`stats_menu_easter_egg_roll`) is mapped in decompile.
-- The startup date-gated `balloon.tga` path is mapped as a startup-preload-only gate (no in-binary consumer xrefs in v1.9.93).
+- The startup date-gated `balloon.tga` gate is preload-only in v1.9.93, but v1.9.8 still has a draw consumer.
 - 17 named weapons are not in the quest unlock table
 - Survival has two verified one-off secret-weapon style grants (Shrinkifier 5k and Blade Gun), with strict runtime gates

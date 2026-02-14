@@ -88,7 +88,7 @@ Evidence anchor: `analysis/ghidra/raw/crimsonland.exe_decompiled.c` around
 
 ### Startup prelude: date-gated `balloon.tga`
 
-`game_startup_init_prelude` (`0x0042b070`) checks local date and conditionally
+`game_startup_init_prelude` (`0x0042b090`) checks local date and conditionally
 loads a hidden texture pair:
 
 - accepted month/day pairs:
@@ -110,6 +110,21 @@ texture lookup key.
 
 Interpretation: this path is a one-shot startup preload gate in the main exe,
 not a mapped in-binary runtime draw/use path.
+
+#### Version note: 1.9.8 consumer still intact
+
+In v1.9.8, this date gate is not preload-only: a later per-frame update path
+draws balloons when the date flag is set.
+
+- Startup prelude (`sub_42a880`, `0x0042a880`) sets a persistent flag
+  `data_4a83b0 = 1` on matching dates and calls `texture_get_or_load("balloon", "balloon.tga")`.
+- Render/update path (`sub_40c300`, `0x0040c300`) gates on `data_4a83b0 != 0` and:
+  - lazy-caches `data_46f2e8 = grim_get_texture_handle("balloon")` (vtable `+0xb8`)
+  - binds it to stage 0 (`grim_bind_texture(handle, 0)`, vtable `+0xbc`)
+  - seeds `0x20` balloon instances (`data_47e668` ids, `data_47e5e8` positions) and draws them.
+
+Evidence anchor: `analysis/binary_ninja/snippets/crimsonland_1.9.8_balloons_sub_40c300.txt`
+around `0x0040cca9..0x0040cf15`, plus string xrefs for `"balloon"` at `0x0040cd03`.
 
 ## Preconditions and logic (what we do / do not know)
 

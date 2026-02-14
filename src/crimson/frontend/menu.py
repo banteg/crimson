@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime as dt
 from dataclasses import dataclass
 import math
 import os
@@ -15,6 +16,7 @@ from ..terrain_assets import terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.shadow import UI_SHADOW_OFFSET, UI_SHADOW_TINT, draw_ui_quad_shadow  # noqa: F401
 from .assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from .balloons_198 import Balloons198, should_show_balloons_198
 from .transitions import _draw_screen_fade
 
 from .types import GameState
@@ -202,6 +204,7 @@ class MenuView:
         self._is_open = False
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
+        self._balloons_198: Balloons198 | None = None
         self._menu_entries: list[MenuEntry] = []
         self._selected_index = 0
         self._focus_timer_ms = 0
@@ -250,6 +253,7 @@ class MenuView:
             other_games=self._other_games_enabled(),
         )
         self._init_ground()
+        self._balloons_198 = Balloons198() if should_show_balloons_198(dt.date.today()) else None
         if self.state.audio is not None:
             theme = "crimsonquest" if self.state.demo_enabled else "crimson_theme"
             if self.state.audio.music.active_track != theme:
@@ -260,6 +264,7 @@ class MenuView:
     def close(self) -> None:
         self._is_open = False
         self._ground = None
+        self._balloons_198 = None
 
     def update(self, dt: float) -> None:
         self._assert_open()
@@ -270,8 +275,11 @@ class MenuView:
             update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
-        self._cursor_pulse_time += min(dt, 0.1) * 1.1
-        dt_ms = int(min(dt, 0.1) * 1000.0)
+        frame_dt = min(dt, 0.1)
+        self._cursor_pulse_time += frame_dt * 1.1
+        if self._balloons_198 is not None:
+            self._balloons_198.update(frame_dt, screen_h=float(self.state.config.screen_height))
+        dt_ms = int(frame_dt * 1000.0)
         if self._closing:
             if dt_ms > 0 and self._pending_action is None:
                 self._timeline_ms -= dt_ms
@@ -352,6 +360,8 @@ class MenuView:
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
             self._ground.draw(menu_ground_camera(self.state))
+        if self._balloons_198 is not None:
+            self._balloons_198.draw(self.state.texture_cache, screen_w=float(self.state.config.screen_width))
         _draw_screen_fade(self.state)
         assets = self._assets
         assert assets is not None, "MenuView assets must be loaded before draw()"
