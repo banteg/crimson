@@ -66,7 +66,7 @@ Last reviewed: **2026-02-12**
 - **Secrets / extras**: implemented, including the Alien Zoo Keeper credits secret flow.
   - Code: `src/crimson/frontend/panels/alien_zookeeper.py`, `src/crimson/frontend/panels/credits.py`
   - Note: native v1.9.93 keeps the balloon easter egg as preload-only; the rewrite can optionally enable the v1.9.8 balloon
-    overlay with `CRIMSON_ENABLE_BALLOONS_198=1` (use `CRIMSON_FORCE_BALLOONS_198=1` to ignore date gating).
+    overlay with `CRIMSON_ENABLE_BALLOONS_198=1` (or set `CRIMSON_FORCE_BALLOONS_198=1` to ignore date gating).
 
 ### Gameplay
 

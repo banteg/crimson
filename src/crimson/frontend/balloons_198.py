@@ -36,10 +36,10 @@ def balloons_198_forced() -> bool:
 
 
 def should_show_balloons_198(today: dt.date) -> bool:
-    if not balloons_198_enabled():
-        return False
     if balloons_198_forced():
         return True
+    if not balloons_198_enabled():
+        return False
     return is_balloon_easter_egg_day(today)
 
 
@@ -134,4 +134,3 @@ class Balloons198:
         # v1.9.8 seeds y in [screen_h .. 2*screen_h).
         self._y = [float(self.rng.randrange(h) + h) for _ in range(_BALLOON_SEED_COUNT)]
         self._initialized = True
-

@@ -16,7 +16,7 @@ from ..terrain_assets import terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.shadow import UI_SHADOW_OFFSET, UI_SHADOW_TINT, draw_ui_quad_shadow  # noqa: F401
 from .assets import MenuAssets, _ensure_texture_cache, load_menu_assets
-from .balloons_198 import Balloons198, should_show_balloons_198
+from .balloons_198 import Balloons198, balloons_198_forced, should_show_balloons_198
 from .transitions import _draw_screen_fade
 
 from .types import GameState
@@ -362,6 +362,8 @@ class MenuView:
             self._ground.draw(menu_ground_camera(self.state))
         if self._balloons_198 is not None:
             self._balloons_198.draw(self.state.texture_cache, screen_w=float(self.state.config.screen_width))
+            if balloons_198_forced():
+                rl.draw_text("BALLOONS198", 10, 10, 20, rl.Color(255, 40, 40, 255))
         _draw_screen_fade(self.state)
         assets = self._assets
         assert assets is not None, "MenuView assets must be loaded before draw()"
