@@ -52,18 +52,6 @@ class HostLobby:
             return Welcome(accepted=False, reason="protocol_mismatch")
         if str(hello.build_id) != str(self.build_id):
             return Welcome(accepted=False, reason="build_mismatch")
-        if int(hello.mode_id) != int(self.mode_id):
-            return Welcome(accepted=False, reason="mode_mismatch")
-        if int(hello.player_count) != int(self.player_count):
-            return Welcome(accepted=False, reason="player_count_mismatch")
-        if int(hello.tick_rate) != int(self.tick_rate):
-            return Welcome(accepted=False, reason="tick_rate_mismatch")
-        if int(hello.input_delay_ticks) != int(self.input_delay_ticks):
-            return Welcome(accepted=False, reason="input_delay_mismatch")
-        if str(hello.quest_level) != str(self.quest_level):
-            return Welcome(accepted=False, reason="quest_level_mismatch")
-        if bool(hello.preserve_bugs) != bool(self.preserve_bugs):
-            return Welcome(accepted=False, reason="preserve_bugs_mismatch")
 
         peer = self.peers_by_addr.get(addr)
         if peer is None:
