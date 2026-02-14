@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass, field
+import socket
 import time
 
 from .debug_log import lan_debug_log
@@ -99,6 +100,11 @@ class LanRuntime:
             role=str(self.cfg.role),
             bind_host=str(self.cfg.bind_host),
             bind_port=int(self.transport.bound_port),
+            build_id=str(self.build_id),
+            mode_id=int(self.cfg.mode_id),
+            player_count=int(self.cfg.player_count),
+            tick_rate=int(self.cfg.tick_rate),
+            input_delay_ticks=int(self.cfg.input_delay_ticks),
         )
         if str(self.cfg.role) == "host":
             self.host_lobby = HostLobby(
@@ -112,7 +118,21 @@ class LanRuntime:
             )
             self.host_last_broadcast_ms = _now_ms()
         else:
-            self.client_host_addr = (str(self.cfg.host_ip), int(self.cfg.port))
+            host_ip_raw = str(self.cfg.host_ip).strip()
+            host_ip = host_ip_raw
+            if host_ip_raw:
+                try:
+                    host_ip = socket.gethostbyname(host_ip_raw)
+                except OSError as exc:
+                    lan_debug_log("net_resolve_host_error", role="join", host=str(host_ip_raw), error=str(exc))
+            self.client_host_addr = (str(host_ip), int(self.cfg.port))
+            lan_debug_log(
+                "net_resolve_host",
+                role="join",
+                host=str(host_ip_raw),
+                resolved=str(host_ip),
+                port=int(self.cfg.port),
+            )
             self.client_link = ReliableLink()
             hello = Hello(
                 protocol_version=int(PROTOCOL_VERSION),
@@ -292,19 +312,36 @@ class LanRuntime:
         lobby = self.host_lobby
         if lobby is None:
             return
-        kind = getattr(message, "kind", type(message).__name__)
-        lan_debug_log("net_recv", role="host", kind=str(kind), addr=f"{addr[0]}:{addr[1]}")
         if isinstance(message, Hello):
+            lan_debug_log("net_recv", role="host", kind="hello", addr=f"{addr[0]}:{addr[1]}")
             welcome = lobby.process_hello(addr, message)
+            lan_debug_log(
+                "lobby_welcome",
+                role="host",
+                addr=f"{addr[0]}:{addr[1]}",
+                accepted=bool(welcome.accepted),
+                reason=str(welcome.reason or ""),
+                slot_index=int(welcome.slot_index),
+                session_id=str(welcome.session_id),
+            )
             self._host_send(addr, welcome, reliable=True, now_ms=int(now_ms))
             # Publish lobby state update after accepting/rejecting.
             self._host_broadcast_lobby_state(now_ms=int(now_ms))
             return
         if isinstance(message, Ready):
+            lan_debug_log(
+                "net_recv",
+                role="host",
+                kind="ready",
+                addr=f"{addr[0]}:{addr[1]}",
+                slot_index=int(message.slot_index),
+                ready=bool(message.ready),
+            )
             lobby.process_ready(addr, message)
             self._host_broadcast_lobby_state(now_ms=int(now_ms))
             return
         if isinstance(message, Disconnect):
+            lan_debug_log("net_recv", role="host", kind="disconnect", addr=f"{addr[0]}:{addr[1]}")
             self.host_peers.pop(addr, None)
             lobby.peers_by_addr.pop(addr, None)
             self._host_broadcast_lobby_state(now_ms=int(now_ms))
@@ -319,6 +356,23 @@ class LanRuntime:
             batch = message
             if int(batch.slot_index) != int(mapped_slot):
                 batch = InputBatch(slot_index=int(mapped_slot), samples=list(batch.samples))
+            max_tick = -1
+            min_tick = 2**31 - 1
+            for sample in batch.samples:
+                tick = int(getattr(sample, "tick_index", 0) or 0)
+                max_tick = max(int(max_tick), int(tick))
+                min_tick = min(int(min_tick), int(tick))
+            if max_tick >= 0 and (int(max_tick) < 5 or (int(max_tick) % 60) == 0):
+                lan_debug_log(
+                    "net_recv",
+                    role="host",
+                    kind="input_batch",
+                    addr=f"{addr[0]}:{addr[1]}",
+                    slot_index=int(batch.slot_index),
+                    sample_count=int(len(batch.samples)),
+                    tick_min=int(min_tick) if min_tick != 2**31 - 1 else 0,
+                    tick_max=int(max_tick),
+                )
             lockstep.submit_input_batch(batch)
             return
 
@@ -332,8 +386,27 @@ class LanRuntime:
             self.transport.send_packet(addr, packet)
         except OSError:
             return
+        if isinstance(message, TickFrame):
+            tick = int(getattr(message, "tick_index", 0) or 0)
+            if int(tick) < 5 or (int(tick) % 60) == 0:
+                lan_debug_log(
+                    "net_send",
+                    role="host",
+                    kind="tick_frame",
+                    addr=f"{addr[0]}:{addr[1]}",
+                    reliable=bool(reliable),
+                    tick_index=int(tick),
+                    command_hash=str(getattr(message, "command_hash", "") or ""),
+                )
+            return
         kind = getattr(message, "kind", type(message).__name__)
-        lan_debug_log("net_send", role="host", kind=str(kind), addr=f"{addr[0]}:{addr[1]}", reliable=bool(reliable))
+        lan_debug_log(
+            "net_send",
+            role="host",
+            kind=str(kind),
+            addr=f"{addr[0]}:{addr[1]}",
+            reliable=bool(reliable),
+        )
 
     def _host_broadcast(self, message: NetMessage, *, reliable: bool, now_ms: int) -> None:
         for addr in list(self.host_peers):
@@ -383,9 +456,16 @@ class LanRuntime:
         lobby = self.client_lobby
         if lobby is None:
             return
-        kind = getattr(message, "kind", type(message).__name__)
-        lan_debug_log("net_recv", role="join", kind=str(kind))
         if isinstance(message, Welcome):
+            lan_debug_log(
+                "net_recv",
+                role="join",
+                kind="welcome",
+                accepted=bool(message.accepted),
+                reason=str(message.reason or ""),
+                slot_index=int(message.slot_index),
+                session_id=str(message.session_id),
+            )
             lobby.ingest_welcome(message)
             if not bool(message.accepted):
                 self.error = str(message.reason or "rejected")
@@ -394,9 +474,29 @@ class LanRuntime:
             self._client_send(ready, reliable=True, now_ms=int(now_ms))
             return
         if isinstance(message, LobbyState):
+            connected = sum(1 for slot in message.slots if bool(slot.connected))
+            lan_debug_log(
+                "net_recv",
+                role="join",
+                kind="lobby_state",
+                session_id=str(message.session_id),
+                player_count=int(message.player_count),
+                connected=int(connected),
+                all_ready=bool(message.all_ready),
+                started=bool(message.started),
+            )
             lobby.ingest_lobby_state(message)
             return
         if isinstance(message, MatchStart):
+            lan_debug_log(
+                "net_recv",
+                role="join",
+                kind="match_start",
+                session_id=str(message.session_id),
+                mode_id=int(message.mode_id),
+                player_count=int(message.player_count),
+                seed=int(message.seed),
+            )
             lobby.ingest_match_start(message)
             self.started = True
             self._client_init_lockstep(message)
@@ -405,15 +505,34 @@ class LanRuntime:
             lockstep = self.client_lockstep
             if lockstep is None:
                 return
+            tick = int(getattr(message, "tick_index", 0) or 0)
+            if int(tick) < 5 or (int(tick) % 60) == 0:
+                lan_debug_log(
+                    "net_recv",
+                    role="join",
+                    kind="tick_frame",
+                    tick_index=int(tick),
+                    command_hash=str(getattr(message, "command_hash", "") or ""),
+                )
             lockstep.ingest_tick_frame(message, now_ms=int(now_ms), local_command_hash="")
             return
         if isinstance(message, PauseState):
+            lan_debug_log(
+                "net_recv",
+                role="join",
+                kind="pause_state",
+                paused=bool(message.paused),
+                reason=str(message.reason or ""),
+            )
             # Lobby doesn't model pause; keep for logging and future integration.
             self.client_pause_state = message
             return
         if isinstance(message, Disconnect):
+            lan_debug_log("net_recv", role="join", kind="disconnect", reason=str(message.reason or ""))
             self.error = str(message.reason or "disconnect")
             return
+        kind = getattr(message, "kind", type(message).__name__)
+        lan_debug_log("net_recv", role="join", kind=str(kind))
 
     def _client_send(self, message: NetMessage, *, reliable: bool, now_ms: int) -> None:
         link = self.client_link
@@ -424,6 +543,25 @@ class LanRuntime:
         try:
             self.transport.send_packet(host, packet)
         except OSError:
+            return
+        if isinstance(message, InputBatch):
+            max_tick = -1
+            min_tick = 2**31 - 1
+            for sample in message.samples:
+                tick = int(getattr(sample, "tick_index", 0) or 0)
+                max_tick = max(int(max_tick), int(tick))
+                min_tick = min(int(min_tick), int(tick))
+            if max_tick >= 0 and (int(max_tick) < 5 or (int(max_tick) % 60) == 0):
+                lan_debug_log(
+                    "net_send",
+                    role="join",
+                    kind="input_batch",
+                    reliable=bool(reliable),
+                    slot_index=int(message.slot_index),
+                    sample_count=int(len(message.samples)),
+                    tick_min=int(min_tick) if min_tick != 2**31 - 1 else 0,
+                    tick_max=int(max_tick),
+                )
             return
         kind = getattr(message, "kind", type(message).__name__)
         lan_debug_log("net_send", role="join", kind=str(kind), reliable=bool(reliable))

@@ -315,11 +315,14 @@ def run_game(config: GameConfig) -> None:
         )
         pending = config.pending_lan_session
         if pending is not None:
+            from ..net.protocol import current_build_id
+
             host = str(pending.config.host_ip or pending.config.bind_host)
             log_path = init_lan_debug_log(
                 base_dir=base_dir,
                 role=str(pending.role),
                 mode=str(pending.config.mode),
+                build_id=str(current_build_id()),
                 host=host,
                 port=int(pending.config.port),
                 player_count=pending.config.player_count,

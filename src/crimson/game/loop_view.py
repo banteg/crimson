@@ -187,10 +187,13 @@ class GameLoopView:
             return
         cfg = pending.config
         host = str(cfg.host_ip or cfg.bind_host)
+        from ..net.protocol import current_build_id
+
         log_path = init_lan_debug_log(
             base_dir=self.state.base_dir,
             role=str(pending.role),
             mode=str(cfg.mode),
+            build_id=str(current_build_id()),
             host=host,
             port=cfg.port,
             player_count=cfg.player_count,
