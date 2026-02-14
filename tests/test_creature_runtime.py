@@ -9,6 +9,7 @@ import pytest
 from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
@@ -440,7 +441,7 @@ def test_spawn_init_preserves_stale_target_heading_from_recycled_slot() -> None:
     )
 
     assert idx == 0
-    assert pool.entries[idx].heading == pytest.approx(0.53, abs=1e-9)
+    assert pool.entries[idx].heading == pytest.approx(float(f32(0.53)), abs=0.0)
     assert pool.entries[idx].target_heading == pytest.approx(2.5632283687591553, abs=1e-9)
 
 
