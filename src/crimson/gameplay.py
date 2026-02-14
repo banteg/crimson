@@ -11,7 +11,7 @@ from .bonuses.hud import BonusHudState
 from .bonuses.pool import BonusPool
 from .effects import EffectPool, ParticlePool, SpriteEffectPool
 from .game_modes import GameMode
-from .math_parity import f32
+from .math_parity import NATIVE_HALF_PI, NATIVE_PI, NATIVE_TAU, f32
 from .perks import PerkId
 from .perks.helpers import perk_active
 from .perks.runtime.player_ticks import apply_player_perk_ticks
@@ -58,14 +58,14 @@ class BonusTimers:
 _RELOAD_PRELOAD_UNDERFLOW_EPS = 1e-7
 _RELATIVE_MOVE_HEADING_NONE = -1.0
 _RELATIVE_MOVE_HEADING_FORWARD = 0.0
-_RELATIVE_MOVE_HEADING_FORWARD_RIGHT = 0.7853982
-_RELATIVE_MOVE_HEADING_RIGHT = 1.5707964
-_RELATIVE_MOVE_HEADING_BACKWARD_RIGHT = 2.3561945
-_RELATIVE_MOVE_HEADING_BACKWARD = 3.1415927
-_RELATIVE_MOVE_HEADING_BACKWARD_LEFT = 3.926991
-_RELATIVE_MOVE_HEADING_LEFT = 4.712389
-_RELATIVE_MOVE_HEADING_FORWARD_LEFT = 5.4977875
-_RELATIVE_MOVE_TURN_ALIGN_SCALE = 7.957747
+_RELATIVE_MOVE_HEADING_FORWARD_RIGHT = float(f32(0.7853982))
+_RELATIVE_MOVE_HEADING_RIGHT = float(f32(1.5707964))
+_RELATIVE_MOVE_HEADING_BACKWARD_RIGHT = float(f32(2.3561945))
+_RELATIVE_MOVE_HEADING_BACKWARD = float(NATIVE_PI)
+_RELATIVE_MOVE_HEADING_BACKWARD_LEFT = float(f32(3.926991))
+_RELATIVE_MOVE_HEADING_LEFT = float(f32(4.712389))
+_RELATIVE_MOVE_HEADING_FORWARD_LEFT = float(f32(5.4977875))
+_RELATIVE_MOVE_TURN_ALIGN_SCALE = float(f32(7.957747))
 
 
 @dataclass(slots=True)
@@ -310,6 +310,79 @@ def survival_enforce_reward_weapon_guard(state: GameplayState, players: Sequence
             _weapon_assign_player(player, int(WeaponId.PISTOL))
 
 
+def _distance_f32_xy(ax: float, ay: float, bx: float, by: float) -> float:
+    dx = f32(float(ax) - float(bx))
+    dy = f32(float(ay) - float(by))
+    dist_sq = f32(f32(float(dx) * float(dx)) + f32(float(dy) * float(dy)))
+    return f32(math.sqrt(float(dist_sq)))
+
+
+def _player_apply_move_with_spawn_avoidance(
+    player: PlayerState,
+    *,
+    delta: Vec2,
+    spawn_slots: Sequence[object] | None,
+    creatures: Sequence[Damageable] | None,
+) -> None:
+    """Port of native `player_apply_move_with_spawn_avoidance` (0x0041e290)."""
+
+    dx = float(delta.x)
+    dy = float(delta.y)
+    if perk_active(player, PerkId.ALTERNATE_WEAPON):
+        dx = float(f32(float(dx) * 0.8))
+        dy = float(f32(float(dy) * 0.8))
+
+    pos_x = float(f32(float(player.pos.x) + float(dx)))
+    pos_y = float(f32(float(player.pos.y) + float(dy)))
+
+    if spawn_slots and creatures:
+        for slot in spawn_slots:
+            owner_index = int(getattr(slot, "owner_creature", -1))
+            if not (0 <= owner_index < len(creatures)):
+                continue
+            owner = creatures[owner_index]
+            owner_pos = getattr(owner, "pos", None)
+            if owner_pos is None:
+                continue
+
+            radius = float(
+                f32((float(getattr(owner, "size", 0.0)) + float(player.size)) * 0.33333334)
+            )
+            if _distance_f32_xy(float(owner_pos.x), float(owner_pos.y), float(pos_x), float(pos_y)) > float(radius):
+                continue
+
+            # Collision: revert, then try axis resolution.
+            old_x = float(f32(float(pos_x) - float(dx)))
+            old_y = float(f32(float(pos_y) - float(dy)))
+            old_dist = _distance_f32_xy(float(owner_pos.x), float(owner_pos.y), float(old_x), float(old_y))
+            x_candidate = float(f32(float(old_x) + float(dx)))
+            y_candidate = float(f32(float(old_y) + float(dy)))
+
+            if float(radius) < float(old_dist):
+                # X-only move.
+                pos_x = x_candidate
+                pos_y = old_y
+                if _distance_f32_xy(float(owner_pos.x), float(owner_pos.y), float(pos_x), float(pos_y)) <= float(radius):
+                    # Y-only move.
+                    pos_x = float(f32(float(x_candidate) - float(dx)))
+                    pos_y = y_candidate
+                    if _distance_f32_xy(float(owner_pos.x), float(owner_pos.y), float(pos_x), float(pos_y)) <= float(
+                        radius
+                    ):
+                        pos_y = float(f32(float(y_candidate) - float(dy)))
+            else:
+                pos_x = x_candidate
+                pos_y = y_candidate
+
+    player.pos = Vec2(float(pos_x), float(pos_y))
+
+
+def _direction_from_heading_native(heading: float) -> Vec2:
+    # Native uses `fcos/fsin(heading - 1.5707964f)` (float32 half-pi literal).
+    radians = float(heading) - float(NATIVE_HALF_PI)
+    return Vec2(math.cos(radians), math.sin(radians))
+
+
 def player_update(
     player: PlayerState,
     input_state: PlayerInput,
@@ -320,6 +393,7 @@ def player_update(
     world_size: float = 1024.0,
     players: list[PlayerState] | None = None,
     creatures: Sequence[Damageable] | None = None,
+    spawn_slots: Sequence[object] | None = None,
 ) -> None:
     """Port of `player_update` (0x004136b0) for the rewrite runtime."""
 
@@ -414,7 +488,7 @@ def player_update(
             player.move_speed = float(f32(float(player.move_speed) - float(movement_dt) * 15.0))
             if player.move_speed < 0.0:
                 player.move_speed = 0.0
-            move = Vec2.from_heading(float(player.heading))
+            move = _direction_from_heading_native(float(player.heading))
             move_dx = float(f32(float(move.x) * float(player.move_speed) * float(speed_multiplier) * 25.0))
             move_dy = float(f32(float(move.y) * float(player.move_speed) * float(speed_multiplier) * 25.0))
         else:
@@ -439,18 +513,18 @@ def player_update(
             if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
                 player.move_speed = 0.8
 
-            move = Vec2.from_heading(float(player.heading))
-            turn_align = float(f32((3.1415927 - float(angle_diff)) * float(_RELATIVE_MOVE_TURN_ALIGN_SCALE)))
+            move = _direction_from_heading_native(float(player.heading))
+            turn_align = (
+                (float(NATIVE_PI) - float(angle_diff))
+                * float(speed_multiplier)
+                * float(_RELATIVE_MOVE_TURN_ALIGN_SCALE)
+            )
             move_dx = float(
-                f32(float(move.x) * float(player.move_speed) * float(turn_align) * float(speed_multiplier))
+                f32(float(move.x) * float(player.move_speed) * float(turn_align))
             )
             move_dy = float(
-                f32(float(move.y) * float(player.move_speed) * float(turn_align) * float(speed_multiplier))
+                f32(float(move.y) * float(player.move_speed) * float(turn_align))
             )
-
-        if perk_active(player, PerkId.ALTERNATE_WEAPON):
-            move_dx = float(f32(float(move_dx) * 0.8))
-            move_dy = float(f32(float(move_dy) * 0.8))
 
         move_delta_override = Vec2(
             f32(float(movement_dt) * float(move_dx)),
@@ -469,7 +543,7 @@ def player_update(
             # `player_heading_approach_target` (see ghidra @ 0x00413fxx).
             target_heading = _normalize_heading_angle(move.to_heading())
             angle_diff = _player_heading_approach_target(player, target_heading, movement_dt)
-            move = Vec2.from_heading(player.heading)
+            move = _direction_from_heading_native(float(player.heading))
             turn_alignment_scale = max(0.0, (math.pi - angle_diff) / math.pi)
             if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
                 if player.move_speed < 2.0:
@@ -485,7 +559,7 @@ def player_update(
             player.move_speed = float(player.move_speed - movement_dt * 15.0)
             if player.move_speed < 0.0:
                 player.move_speed = 0.0
-            move = Vec2.from_heading(player.heading)
+            move = _direction_from_heading_native(float(player.heading))
 
         if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
             player.move_speed = 0.8
@@ -494,8 +568,6 @@ def player_update(
         if moving_input:
             speed *= min(1.0, raw_mag)
             speed *= turn_alignment_scale
-        if perk_active(player, PerkId.ALTERNATE_WEAPON):
-            speed *= 0.8
 
     if move_delta_override is None:
         # Native movement stores through float32 velocity/delta slots before writing
@@ -507,14 +579,12 @@ def player_update(
         )
     else:
         move_delta = move_delta_override
-    next_pos = Vec2(
-        f32(float(player.pos.x) + float(move_delta.x)),
-        f32(float(player.pos.y) + float(move_delta.y)),
+    _player_apply_move_with_spawn_avoidance(
+        player,
+        delta=move_delta,
+        spawn_slots=spawn_slots,
+        creatures=creatures,
     )
-
-    # Native clamps player world bounds at the end of `player_update`, after
-    # firing/reload logic has consumed the in-frame movement position.
-    player.pos = next_pos
 
     player.move_phase += phase_sign * movement_dt * player.move_speed * 19.0
 
@@ -659,10 +729,11 @@ def _player_heading_approach_target_with_delta(
     low = heading
     if target < low:
         low = target
-    wrapped = float(f32(abs(float(f32(float(f32(6.2831855 - high)) + low)))))
+    wrapped = float(f32(abs(float(f32(float(NATIVE_TAU) - float(high) + float(low))))))
     diff = wrapped if direct >= wrapped else direct
 
-    scaled = float(f32(float(f32(float(dt))) * float(diff)))
+    dt_f32 = float(f32(float(dt)))
+    scaled = float(dt_f32) * float(diff)
     if direct <= wrapped:
         if target > heading:
             turn_delta = float(f32(float(scaled) * 5.0))
@@ -684,8 +755,10 @@ def _player_heading_approach_target(player: PlayerState, target_heading: float, 
 
 
 def _normalize_heading_angle(value: float) -> float:
-    while value < 0.0:
-        value += math.tau
-    while value > math.tau:
-        value -= math.tau
-    return value
+    tau = float(NATIVE_TAU)
+    angle = float(f32(float(value)))
+    while angle < 0.0:
+        angle = float(f32(float(angle) + float(tau)))
+    while angle > tau:
+        angle = float(f32(float(angle) - float(tau)))
+    return float(angle)
