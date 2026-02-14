@@ -182,7 +182,9 @@ class LanSessionPanelView(PanelMenuView):
             )
             + self._panel_offset * panel_scale
         )
-        base_pos = panel_top_left + Vec2(56.0 * panel_scale, 40.0 * panel_scale)
+        # Match other classic panels: the panel is offset left (like Play Game), so anchor content
+        # further inside to avoid clipping against the left screen edge.
+        base_pos = panel_top_left + Vec2(212.0 * panel_scale, 40.0 * panel_scale)
 
         font = self._ensure_small_font()
         back_w = button_width(font, self._back_button.label, scale=panel_scale, force_wide=self._back_button.force_wide)
