@@ -240,6 +240,12 @@ class PlayGameMenuView(PanelMenuView):
         # Our `quest_play_counts` array starts at blob+0xd8, so this is indices 11..50.
         return int(sum(int(v) for v in counts[11:51]))
 
+    def _lan_lockstep_enabled(self) -> bool:
+        cvar = self.state.console.cvars.get("cv_lanLockstepEnabled")
+        if cvar is None:
+            return False
+        return bool(cvar.value_f)
+
     def _mode_entries(self) -> tuple[list[_PlayGameModeEntry], float, float, float]:
         config = self.state.config
         status = self.state.status
@@ -328,6 +334,16 @@ class PlayGameMenuView(PanelMenuView):
                     tooltip="Learn how to play Crimsonland.",
                     action="start_tutorial",
                     game_mode=8,
+                )
+            )
+
+        if self._lan_lockstep_enabled():
+            entries.append(
+                _PlayGameModeEntry(
+                    key="lan",
+                    label=" LAN ",
+                    tooltip="Host or join a deterministic LAN lockstep session.",
+                    action="open_lan_session",
                 )
             )
 

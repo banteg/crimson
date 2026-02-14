@@ -16,6 +16,15 @@ from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
 from ..sim.input import PlayerInput
+from ..debug import debug_enabled
+from ..net.debug_log import lan_debug_log
+from ..replay.types import (
+    PackedPlayerInput,
+    pack_input_flags,
+    unpack_input_flags,
+    unpack_input_move_key_flags,
+    unpack_packed_player_input,
+)
 from ..perks.runtime.effects import _creature_find_in_radius
 from ..perks.helpers import perk_count_get
 from ..game_world import GameWorld
@@ -27,6 +36,7 @@ from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_asset
 
 if TYPE_CHECKING:
     from ..persistence.save_status import GameStatus
+    from ..net.runtime import LanRuntime
 
 
 class _ScreenFade(Protocol):
@@ -102,6 +112,27 @@ class BaseGameplayMode:
         self._last_dt_ms = 0.0
         self._screen_fade: _ScreenFade | None = None
         self._local_input = LocalInputInterpreter()
+        self._lan_runtime: LanRuntime | None = None
+        self._lan_local_slot_index = 0
+        self._lan_seed_override: int | None = None
+        self._lan_start_tick = 0
+        self._lan_enabled = False
+        self._lan_role = ""
+        self._lan_expected_players = 1
+        self._lan_connected_players = 1
+        self._lan_waiting_for_players = False
+        self._lan_trace_last_ms = -1000.0
+
+    def bind_lan_runtime(self, runtime: LanRuntime | None) -> None:
+        self._lan_runtime = runtime
+        slot_index = 0
+        if runtime is not None:
+            slot_index = int(getattr(runtime, "local_slot_index", 0))
+        self._lan_local_slot_index = max(0, min(3, int(slot_index)))
+
+    def set_lan_match_start(self, *, seed: int, start_tick: int = 0) -> None:
+        self._lan_seed_override = int(seed)
+        self._lan_start_tick = int(start_tick)
 
     def _cvar_float(self, name: str, default: float = 0.0) -> float:
         console = self._console
@@ -216,11 +247,239 @@ class BaseGameplayMode:
         self._last_dt_ms = dt_ui_ms
 
         self._update_ui_mouse()
+        self._trace_lan_state_heartbeat()
 
         pulse_dt = float(min(dt_frame, 0.1)) if clamp_cursor_pulse else dt_frame
         self._cursor_pulse_time += pulse_dt * 1.1
 
         return dt_frame, dt_ui_ms
+
+    def set_lan_runtime(
+        self,
+        *,
+        enabled: bool,
+        role: str,
+        expected_players: int,
+        connected_players: int,
+        waiting_for_players: bool,
+    ) -> None:
+        role = str(role)
+        expected_players = max(1, min(4, int(expected_players)))
+        connected_players = max(0, min(expected_players, int(connected_players)))
+        waiting_for_players = bool(waiting_for_players)
+
+        if (
+            bool(self._lan_enabled) == bool(enabled)
+            and str(self._lan_role) == role
+            and int(self._lan_expected_players) == int(expected_players)
+            and int(self._lan_connected_players) == int(connected_players)
+            and bool(self._lan_waiting_for_players) == bool(waiting_for_players)
+        ):
+            return
+        self._lan_enabled = bool(enabled)
+        self._lan_role = role
+        self._lan_expected_players = int(expected_players)
+        self._lan_connected_players = int(connected_players)
+        self._lan_waiting_for_players = bool(waiting_for_players)
+        self._lan_trace_last_ms = -1000.0
+        lan_debug_log(
+            "set_lan_runtime",
+            mode=self.__class__.__name__,
+            enabled=bool(self._lan_enabled),
+            role=str(self._lan_role),
+            expected_players=int(self._lan_expected_players),
+            connected_players=int(self._lan_connected_players),
+            waiting_for_players=bool(self._lan_waiting_for_players),
+        )
+
+    def _lan_wait_gate_active(self) -> bool:
+        if not bool(self._lan_enabled):
+            return False
+        if not bool(self._lan_waiting_for_players):
+            return False
+        return int(self._lan_connected_players) < int(self._lan_expected_players)
+
+    def _update_lan_wait_gate_debug_override(self) -> None:
+        if not self._lan_wait_gate_active():
+            return
+        if (not debug_enabled()) or (not rl.is_key_pressed(rl.KeyboardKey.KEY_F10)):
+            return
+        self._lan_connected_players = int(self._lan_expected_players)
+        self._lan_waiting_for_players = False
+        lan_debug_log(
+            "wait_gate_override",
+            mode=self.__class__.__name__,
+            role=str(self._lan_role),
+            connected_players=int(self._lan_connected_players),
+            expected_players=int(self._lan_expected_players),
+        )
+
+    def _trace_lan_state_heartbeat(self) -> None:
+        if not bool(self._lan_enabled):
+            return
+        elapsed_ms = float(self.world._elapsed_ms)
+        if (elapsed_ms - float(self._lan_trace_last_ms)) < 1000.0:
+            return
+        self._lan_trace_last_ms = float(elapsed_ms)
+        lan_debug_log(
+            "mode_heartbeat",
+            mode=self.__class__.__name__,
+            elapsed_ms=int(elapsed_ms),
+            role=str(self._lan_role),
+            expected_players=int(self._lan_expected_players),
+            connected_players=int(self._lan_connected_players),
+            waiting_for_players=bool(self._lan_waiting_for_players),
+            wait_gate_active=bool(self._lan_wait_gate_active()),
+            local_players=int(len(self.world.players)),
+        )
+
+    def _draw_lan_debug_info(self, *, x: float, y: float, line_h: float) -> float:
+        if (not debug_enabled()) or (not bool(self._lan_enabled)):
+            return float(y)
+
+        role = str(self._lan_role or "?")
+        expected = int(self._lan_expected_players)
+        connected = int(self._lan_connected_players)
+        slot = int(self._lan_local_slot_index)
+        state = "waiting" if self._lan_wait_gate_active() else "active"
+        self._draw_ui_text(
+            f"lan: role={role} slot={slot} players={connected}/{expected} state={state}",
+            Vec2(float(x), float(y)),
+            rl.Color(130, 180, 240, 255),
+            scale=0.9,
+        )
+        y += float(line_h)
+
+        runtime = self._lan_runtime
+        debug_lines_fn = getattr(runtime, "debug_overlay_lines", None) if runtime is not None else None
+        if callable(debug_lines_fn):
+            for line in debug_lines_fn():
+                self._draw_ui_text(
+                    str(line),
+                    Vec2(float(x), float(y)),
+                    rl.Color(232, 197, 117, 255),
+                    scale=0.85,
+                )
+                y += float(line_h)
+
+        if self._lan_wait_gate_active():
+            self._draw_ui_text(
+                "lan(wait): simulation paused until all peers are ready",
+                Vec2(float(x), float(y)),
+                rl.Color(130, 180, 240, 255),
+                scale=0.9,
+            )
+            y += float(line_h)
+            self._draw_ui_text(
+                "debug: F10 force start (temporary bring-up override)",
+                Vec2(float(x), float(y)),
+                rl.Color(130, 180, 240, 255),
+                scale=0.8,
+            )
+            y += float(line_h)
+
+        return float(y)
+
+    def _draw_lan_wait_overlay(self) -> None:
+        if not self._lan_wait_gate_active():
+            return
+
+        screen_w = float(rl.get_screen_width())
+        screen_h = float(rl.get_screen_height())
+        if screen_w <= 0.0 or screen_h <= 0.0:
+            return
+
+        rl.draw_rectangle(
+            0,
+            0,
+            int(screen_w),
+            int(screen_h),
+            rl.Color(8, 12, 18, 148),
+        )
+
+        panel_w = min(560.0, max(320.0, screen_w - 80.0))
+        panel_h = 156.0
+        panel_x = 0.5 * (screen_w - panel_w)
+        panel_y = max(36.0, 0.17 * screen_h)
+
+        rl.draw_rectangle(
+            int(panel_x),
+            int(panel_y),
+            int(panel_w),
+            int(panel_h),
+            rl.Color(17, 24, 34, 230),
+        )
+        rl.draw_rectangle_lines_ex(
+            rl.Rectangle(panel_x, panel_y, panel_w, panel_h),
+            2.0,
+            rl.Color(108, 170, 230, 220),
+        )
+
+        dots = "." * int((self._cursor_pulse_time * 2.5) % 4)
+        title = f"Waiting for LAN players{dots}"
+        connected = int(self._lan_connected_players)
+        expected = int(self._lan_expected_players)
+        status = f"Connected peers: {connected}/{expected}"
+        role = "Host" if str(self._lan_role) == "host" else "Client"
+        role_line = f"Role: {role}"
+        hint = (
+            "Match will start automatically when all peers are connected."
+            if role == "Host"
+            else "Waiting for host to finish lobby and start the match."
+        )
+
+        text_x = panel_x + 22.0
+        text_y = panel_y + 20.0
+        line_h = float(self._ui_line_height(scale=0.95))
+        self._draw_ui_text(title, Vec2(text_x, text_y), rl.Color(230, 237, 247, 255), scale=0.95)
+        self._draw_ui_text(status, Vec2(text_x, text_y + line_h * 1.4), rl.Color(169, 214, 255, 255), scale=0.9)
+        self._draw_ui_text(role_line, Vec2(text_x, text_y + line_h * 2.4), rl.Color(169, 214, 255, 255), scale=0.9)
+        self._draw_ui_text(hint, Vec2(text_x, text_y + line_h * 3.5), rl.Color(186, 196, 214, 255), scale=0.82)
+
+        if debug_enabled():
+            self._draw_ui_text(
+                "Debug override: press F10 to force start",
+                Vec2(text_x, text_y + line_h * 4.5),
+                rl.Color(232, 197, 117, 255),
+                scale=0.8,
+            )
+
+    @staticmethod
+    def _pack_player_input_for_net(inp: PlayerInput) -> PackedPlayerInput:
+        flags = pack_input_flags(
+            fire_down=bool(inp.fire_down),
+            fire_pressed=bool(inp.fire_pressed),
+            reload_pressed=bool(inp.reload_pressed),
+            move_forward_pressed=inp.move_forward_pressed,
+            move_backward_pressed=inp.move_backward_pressed,
+            turn_left_pressed=inp.turn_left_pressed,
+            turn_right_pressed=inp.turn_right_pressed,
+        )
+        return [
+            float(inp.move.x),
+            float(inp.move.y),
+            [float(inp.aim.x), float(inp.aim.y)],
+            int(flags),
+        ]
+
+    @staticmethod
+    def _unpack_player_input_from_net(packed: PackedPlayerInput) -> PlayerInput:
+        mx, my, ax, ay, flags = unpack_packed_player_input(packed)
+        fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
+        move_forward_pressed, move_backward_pressed, turn_left_pressed, turn_right_pressed = unpack_input_move_key_flags(
+            int(flags)
+        )
+        return PlayerInput(
+            move=Vec2(float(mx), float(my)),
+            aim=Vec2(float(ax), float(ay)),
+            fire_down=bool(fire_down),
+            fire_pressed=bool(fire_pressed),
+            reload_pressed=bool(reload_pressed),
+            move_forward_pressed=move_forward_pressed,
+            move_backward_pressed=move_backward_pressed,
+            turn_left_pressed=turn_left_pressed,
+            turn_right_pressed=turn_right_pressed,
+        )
 
     def _player_name_default(self) -> str:
         return str(self.config.player_name or "")
@@ -244,7 +503,10 @@ class BaseGameplayMode:
         self._game_over_ui.close()
 
         player_count = self.config.player_count
-        seed = random.getrandbits(32)
+        if self._lan_seed_override is not None:
+            seed = int(self._lan_seed_override)
+        else:
+            seed = random.getrandbits(32)
         self.world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self.world.open()
         self._bind_world()

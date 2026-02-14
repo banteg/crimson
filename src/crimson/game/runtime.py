@@ -31,6 +31,7 @@ from ..demo_trial import (
     demo_trial_overlay_info,
     format_demo_trial_time,
 )
+from ..net.debug_log import close_lan_debug_log, init_lan_debug_log, lan_debug_log
 from ..frontend.assets import _ensure_texture_cache
 from ..persistence.save_status import ensure_game_status
 from ..quests.types import parse_level
@@ -310,7 +311,33 @@ def run_game(config: GameConfig) -> None:
             audio=None,
             resource_paq=assets_dir / CRIMSON_PAQ_NAME,
             session_start=time.monotonic(),
+            pending_lan_session=config.pending_lan_session,
         )
+        pending = config.pending_lan_session
+        if pending is not None:
+            from ..net.protocol import current_build_id
+
+            host = str(pending.config.host_ip or pending.config.bind_host)
+            log_path = init_lan_debug_log(
+                base_dir=base_dir,
+                role=str(pending.role),
+                mode=str(pending.config.mode),
+                build_id=str(current_build_id()),
+                host=host,
+                port=int(pending.config.port),
+                player_count=pending.config.player_count,
+                auto_start=bool(pending.auto_start),
+                debug_enabled=bool(config.debug),
+            )
+            lan_debug_log(
+                "run_game_session",
+                width=int(width),
+                height=int(height),
+                fps=int(config.fps),
+                preserve_bugs=bool(config.preserve_bugs),
+            )
+            console.log.log(f"lan debug log: {log_path}")
+            print(f"[lan-debug] role={pending.role} log={log_path}")
         register_boot_commands(console, _boot_command_handlers(state))
         register_core_cvars(console, width, height)
         console.log.log("crimson: boot start")
@@ -346,5 +373,6 @@ def run_game(config: GameConfig) -> None:
         crash_file.flush()
         raise
     finally:
+        close_lan_debug_log()
         faulthandler.disable()
         crash_file.close()

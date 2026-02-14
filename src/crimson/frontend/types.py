@@ -28,6 +28,16 @@ class GameState(Protocol):
     menu_ground: Any
     menu_ground_camera: Any
     pause_background: PauseBackground | None
+    pending_lan_session: Any
+    lan_runtime: Any
+    lan_in_lobby: bool
+    lan_waiting_for_players: bool
+    lan_expected_players: int
+    lan_connected_players: int
+    lan_desync_count: int
+    lan_resync_failure_count: int
+    lan_last_error: str
+    pending_quest_level: Any
 
     demo_enabled: bool
     skip_intro: bool

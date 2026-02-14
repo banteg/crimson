@@ -10,10 +10,14 @@ from crimson.game_modes import GameMode
 from crimson.sim.input import PlayerInput
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.game_world import GameWorld
+from crimson.quests import quest_by_level
+from crimson.quests.runtime import build_quest_spawn_table
+from crimson.quests.types import QuestContext
 from crimson.replay import Replay, ReplayGameVersionWarning, ReplayHeader, ReplayRecorder, unpack_input_flags, unpack_packed_player_input
 from crimson.replay.checkpoints import ReplayCheckpoint, build_checkpoint
-from crimson.sim.runners import run_rush_replay, run_survival_replay
+from crimson.sim.runners import run_quest_replay, run_rush_replay, run_survival_replay
 from crimson.sim.runners.common import status_from_snapshot
+from crimson.sim.sessions import QuestDeterministicSession
 from crimson.weapons import WeaponId
 
 
@@ -222,6 +226,76 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
     return checkpoints
 
 
+def _quest_spawn_entries(*, level: str, player_count: int, seed: int) -> tuple:
+    quest = quest_by_level(level)
+    assert quest is not None
+    ctx = QuestContext(width=1024, height=1024, player_count=int(player_count))
+    return tuple(
+        build_quest_spawn_table(
+            quest,
+            ctx,
+            seed=int(seed),
+            hardcore=False,
+            full_version=True,
+        )
+    )
+
+
+def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[ReplayCheckpoint]:
+    repo_root = Path(__file__).resolve().parents[1]
+    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world.reset(seed=int(replay.header.seed), player_count=int(replay.header.player_count))
+    world.state.status = status_from_snapshot(
+        quest_unlock_index=int(replay.header.status.quest_unlock_index),
+        quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
+        weapon_usage_counts=replay.header.status.weapon_usage_counts,
+    )
+
+    session = QuestDeterministicSession(
+        world=world.world_state,
+        world_size=float(world.world_size),
+        damage_scale_by_type=world._damage_scale_by_type,
+        fx_queue=world.fx_queue,
+        fx_queue_rotated=world.fx_queue_rotated,
+        spawn_entries=tuple(spawn_entries),
+        detail_preset=5,
+        fx_toggle=0,
+        clear_fx_queues_each_tick=True,
+    )
+
+    checkpoints: list[ReplayCheckpoint] = []
+    dt_frame = 1.0 / float(replay.header.tick_rate)
+
+    for tick_index in range(len(replay.inputs)):
+        tick = session.step_tick(
+            dt_frame=dt_frame,
+            inputs=_inputs_for_tick(replay, tick_index),
+            trace_rng=False,
+        )
+        step = tick.step
+
+        world.apply_step_result(
+            step,
+            game_tune_started=False,
+            apply_audio=False,
+            update_camera=False,
+        )
+
+        checkpoints.append(
+            build_checkpoint(
+                tick_index=int(tick_index),
+                world=world.world_state,
+                elapsed_ms=float(tick.spawn_timeline_ms),
+                rng_marks=dict(tick.rng_marks),
+                deaths=step.events.deaths,
+                events=step.events,
+                command_hash=str(step.command_hash),
+            )
+        )
+
+    return checkpoints
+
+
 def test_survival_live_vs_headless_tick_pipeline() -> None:
     replay = _build_replay(mode=int(GameMode.SURVIVAL), ticks=6, seed=0x1234)
 
@@ -248,6 +322,29 @@ def test_rush_live_vs_headless_tick_pipeline() -> None:
     with pytest.warns(ReplayGameVersionWarning):
         run_rush_replay(
             replay,
+            checkpoints_out=headless,
+            checkpoint_ticks=set(range(len(replay.inputs))),
+        )
+
+    assert [ck.state_hash for ck in live] == [ck.state_hash for ck in headless]
+    assert [ck.command_hash for ck in live] == [ck.command_hash for ck in headless]
+    assert [ck.rng_state for ck in live] == [ck.rng_state for ck in headless]
+
+
+def test_quest_live_vs_headless_tick_pipeline() -> None:
+    replay = _build_replay(mode=int(GameMode.QUESTS), ticks=6, seed=101)
+    spawn_entries = _quest_spawn_entries(
+        level="1.1",
+        player_count=int(replay.header.player_count),
+        seed=int(replay.header.seed),
+    )
+
+    live = _live_quest_checkpoints(replay, spawn_entries=spawn_entries)
+    headless: list[ReplayCheckpoint] = []
+    with pytest.warns(ReplayGameVersionWarning):
+        run_quest_replay(
+            replay,
+            spawn_entries=spawn_entries,
             checkpoints_out=headless,
             checkpoint_ticks=set(range(len(replay.inputs))),
         )

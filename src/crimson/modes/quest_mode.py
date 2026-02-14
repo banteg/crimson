@@ -32,13 +32,19 @@ from ..input_codes import (
 from ..perks.state import CreatureForPerks
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
-from ..quests.runtime import build_quest_spawn_table, tick_quest_completion_transition
-from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
+from ..quests.runtime import build_quest_spawn_table
+from ..quests.runtime import tick_quest_completion_transition as _legacy_tick_quest_completion_transition
+from ..quests.timeline import quest_spawn_table_empty as _legacy_quest_spawn_table_empty
+from ..quests.timeline import tick_quest_mode_spawns as _legacy_tick_quest_mode_spawns
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..terrain_assets import terrain_texture_by_id
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PerkMenuAssets, draw_ui_text, load_perk_menu_assets
+from ..sim.clock import FixedStepClock
+from ..sim.input import PlayerInput
+from ..sim.sessions import QuestDeterministicSession
+from ..net.protocol import TickFrame
 from ..views.quest_title_overlay import draw_quest_title_overlay
 from ..weapons import WEAPON_BY_ID
 from .base_gameplay_mode import BaseGameplayMode
@@ -87,6 +93,11 @@ QUEST_COMPLETE_BANNER_SCALE_RATE = 0.0004 * 0.13
 QUEST_COMPLETE_BANNER_FADE_IN_MS = 500.0
 QUEST_COMPLETE_BANNER_HOLD_END_MS = 1500.0
 QUEST_COMPLETE_BANNER_FADE_OUT_END_MS = 2000.0
+
+# Compatibility aliases used by existing monkeypatch-based tests.
+tick_quest_mode_spawns = _legacy_tick_quest_mode_spawns
+tick_quest_completion_transition = _legacy_tick_quest_completion_transition
+quest_spawn_table_empty = _legacy_quest_spawn_table_empty
 
 
 @dataclass(slots=True)
@@ -193,6 +204,9 @@ class QuestMode(BaseGameplayMode):
         self._perk_prompt_hover = False
         self._perk_prompt_pulse = 0.0
         self._perk_menu = PerkMenuController(on_close=self._reset_perk_prompt)
+        self._sim_clock = FixedStepClock(tick_rate=60)
+        self._lan_capture_clock = FixedStepClock(tick_rate=60)
+        self._sim_session: QuestDeterministicSession | None = None
 
     def open(self) -> None:
         super().open()
@@ -208,6 +222,19 @@ class QuestMode(BaseGameplayMode):
         self._perk_prompt_hover = False
         self._perk_prompt_pulse = 0.0
         self._perk_menu.reset()
+        self._sim_clock.reset()
+        self._lan_capture_clock.reset()
+        self._sim_session = QuestDeterministicSession(
+            world=self.world.world_state,
+            world_size=float(self.world.world_size),
+            damage_scale_by_type=self.world._damage_scale_by_type,
+            fx_queue=self.world.fx_queue,
+            fx_queue_rotated=self.world.fx_queue_rotated,
+            spawn_entries=(),
+            detail_preset=5,
+            fx_toggle=0,
+            clear_fx_queues_each_tick=False,
+        )
 
     def close(self) -> None:
         if self._grim_mono is not None:
@@ -215,6 +242,7 @@ class QuestMode(BaseGameplayMode):
             self._grim_mono = None
         self._quest_complete_texture = None
         self._perk_menu_assets = None
+        self._sim_session = None
         super().close()
 
     def _load_quest_complete_texture(self) -> rl.Texture | None:
@@ -333,6 +361,18 @@ class QuestMode(BaseGameplayMode):
             no_creatures_timer_ms=0.0,
             completion_transition_ms=-1.0,
         )
+        self._sim_clock.reset()
+        self._sim_session = QuestDeterministicSession(
+            world=self.world.world_state,
+            world_size=float(self.world.world_size),
+            damage_scale_by_type=self.world._damage_scale_by_type,
+            fx_queue=self.world.fx_queue,
+            fx_queue_rotated=self.world.fx_queue_rotated,
+            spawn_entries=tuple(entries),
+            detail_preset=5,
+            fx_toggle=0,
+            clear_fx_queues_each_tick=False,
+        )
 
         if status is not None:
             idx = _quest_attempt_counter_index(quest.major, quest.minor)
@@ -345,7 +385,7 @@ class QuestMode(BaseGameplayMode):
             self._perk_menu.close()
             return
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
+        if (not bool(self._lan_enabled)) and rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
             self._paused = not self._paused
 
         if debug_enabled() and (not self._perk_menu.open):
@@ -422,6 +462,17 @@ class QuestMode(BaseGameplayMode):
             if float(player.death_timer) >= 0.0:
                 return False
         return dead_players > 0
+
+    def _tick_death_timers(self, dt_frame: float, *, rate: float = 20.0) -> None:
+        delta = float(dt_frame) * float(rate)
+        if delta <= 0.0:
+            return
+        for player in self.world.players:
+            if float(player.health) > 0.0:
+                continue
+            if float(player.death_timer) < 0.0:
+                continue
+            player.death_timer = float(player.death_timer) - delta
 
     def _close_failed_run(self) -> None:
         if self._outcome is None:
@@ -520,6 +571,10 @@ class QuestMode(BaseGameplayMode):
         if self.close_requested:
             return
 
+        if bool(self._lan_enabled) and self._lan_runtime is not None:
+            self._update_lan_match(dt_frame=dt_frame, dt_ui_ms=dt_ui_ms)
+            return
+
         any_alive = any(player.health > 0.0 for player in self.world.players)
         perk_pending = int(self.state.perk_selection.pending_count) > 0 and any_alive
 
@@ -569,59 +624,70 @@ class QuestMode(BaseGameplayMode):
 
         self._perk_menu.tick_timeline(dt_ui_ms)
 
+        self._update_lan_wait_gate_debug_override()
+        if self._lan_wait_gate_active():
+            self._sim_clock.reset()
+            return
+
         dt_world = 0.0 if self._paused or self._perk_menu.active else dt_frame
         if dt_world <= 0.0:
+            self._sim_clock.reset()
+            # Match legacy transition behavior: keep countdown moving, but at
+            # real-time pace while perk-menu transition is holding world ticks.
+            self._tick_death_timers(dt_frame, rate=1.0)
             if self._death_transition_ready():
                 self._close_failed_run()
             return
 
-        self._quest.quest_name_timer_ms += dt_world * 1000.0
+        ticks_to_run = self._sim_clock.advance(dt_world)
+        if ticks_to_run <= 0:
+            return
 
+        dt_tick = float(self._sim_clock.dt_tick)
         input_frame = self._build_local_inputs(dt_frame=dt_frame)
-        self.world.update(
-            dt_world,
-            inputs=input_frame,
-            auto_pick_perks=False,
-            game_mode=int(GameMode.QUESTS),
-            perk_progression_enabled=True,
-        )
+        session = self._sim_session
+        if session is None:
+            self._tick_death_timers(dt_world)
+            if self._death_transition_ready():
+                self._close_failed_run()
+            return
 
-        any_alive_after = any(player.health > 0.0 for player in self.world.players)
+        session.detail_preset = self.config.detail_preset
+        session.fx_toggle = self.config.fx_toggle
+        session.spawn_entries = tuple(self._quest.spawn_entries)
+        session.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
+        session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
+        session.completion_transition_ms = float(self._quest.completion_transition_ms)
 
-        creatures_none_active = not bool(self.creatures.iter_active())
+        if self.world.audio_router is not None:
+            self.world.audio_router.audio = self.world.audio
+            self.world.audio_router.audio_rng = self.world.audio_rng
+            self.world.audio_router.demo_mode_active = self.world.demo_mode_active
+        if self.world.ground is not None:
+            self.world._sync_ground_settings()
+            self.world.ground.process_pending()
 
-        entries, timeline_ms, creatures_none_active, no_creatures_timer_ms, spawns = tick_quest_mode_spawns(
-            self._quest.spawn_entries,
-            quest_spawn_timeline_ms=float(self._quest.spawn_timeline_ms),
-            frame_dt_ms=dt_world * 1000.0,
-            terrain_width=float(self.world.world_size),
-            creatures_none_active=creatures_none_active,
-            no_creatures_timer_ms=float(self._quest.no_creatures_timer_ms),
-        )
-        self._quest.spawn_entries = entries
-        self._quest.spawn_timeline_ms = float(timeline_ms)
-        self._quest.no_creatures_timer_ms = float(no_creatures_timer_ms)
-
-        for call in spawns:
-            self.creatures.spawn_template(
-                int(call.template_id),
-                call.pos,
-                float(call.heading),
-                self.state.rng,
-                rand=self.state.rng.rand,
+        for tick_offset in range(int(ticks_to_run)):
+            inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
+            tick = session.step_tick(
+                dt_frame=dt_tick,
+                inputs=inputs,
             )
-
-        if any_alive_after:
-            completion_ms, completed, play_hit_sfx, play_completion_music = tick_quest_completion_transition(
-                float(self._quest.completion_transition_ms),
-                frame_dt_ms=dt_world * 1000.0,
-                creatures_none_active=bool(creatures_none_active),
-                spawn_table_empty=quest_spawn_table_empty(self._quest.spawn_entries),
+            self.world.apply_step_result(
+                tick.step,
+                game_tune_started=False,
+                apply_audio=True,
+                update_camera=True,
             )
-            self._quest.completion_transition_ms = float(completion_ms)
-            if play_hit_sfx:
+            self._quest.spawn_entries = tuple(session.spawn_entries)
+            self._quest.spawn_timeline_ms = float(tick.spawn_timeline_ms)
+            self._quest.no_creatures_timer_ms = float(tick.no_creatures_timer_ms)
+            self._quest.completion_transition_ms = float(tick.completion_transition_ms)
+            self._quest.quest_name_timer_ms += float(dt_tick) * 1000.0
+
+            if tick.play_hit_sfx:
                 self.world.audio_router.play_sfx("sfx_questhit")
-            if play_completion_music and self.world.audio is not None:
+            if tick.play_completion_music and self.world.audio is not None:
                 play_music(self.world.audio, "crimsonquest")
                 playback = self.world.audio.music.playbacks.get("crimsonquest")
                 if playback is not None:
@@ -630,7 +696,8 @@ class QuestMode(BaseGameplayMode):
                         rl.set_music_volume(playback.music, 0.0)
                     except RuntimeError:
                         playback.volume = 0.0
-            if completed:
+
+            if tick.completed:
                 if self._outcome is None:
                     fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
                     most_used_weapon_id = most_used_weapon_id_for_player(
@@ -658,14 +725,144 @@ class QuestMode(BaseGameplayMode):
                         most_used_weapon_id=int(most_used_weapon_id),
                     )
                 self.close_requested = True
-        else:
-            self._quest.completion_transition_ms = -1.0
+                break
 
-        if self._death_transition_ready():
-            self._close_failed_run()
+            if self._death_transition_ready():
+                self._close_failed_run()
+                break
+
+    def _update_lan_match(self, *, dt_frame: float, dt_ui_ms: float) -> None:
+        runtime = self._lan_runtime
+        if runtime is None:
+            return
+        session = self._sim_session
+        if session is None:
+            return
+
+        ticks_to_capture = self._lan_capture_clock.advance(dt_frame)
+        if ticks_to_capture > 0:
+            input_frame = self._build_local_inputs(dt_frame=dt_frame)
+            # In LAN sessions each peer is a single local player, so always sample
+            # inputs using the configured Player 1 bindings (index 0). The network
+            # slot mapping is handled by the lockstep runtime.
+            local_input_index = 0
+            for tick_offset in range(int(ticks_to_capture)):
+                inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
+                local_input = PlayerInput()
+                if 0 <= local_input_index < len(inputs):
+                    local_input = inputs[local_input_index]
+                runtime.queue_local_input(self._pack_player_input_for_net(local_input))
+        # Pump networking again after queuing local inputs so the host can emit frames
+        # in the same render frame (reduces perceived host-side input latency).
+        runtime.update()
+
+        if bool(self._paused):
+            self._sim_clock.reset()
+            # Mirror legacy: keep the fail transition timers moving at real-time pace while paused.
+            self._tick_death_timers(dt_frame, rate=1.0)
+            if self._death_transition_ready():
+                self._close_failed_run()
+            return
+
+        if self.world.audio_router is not None:
+            self.world.audio_router.audio = self.world.audio
+            self.world.audio_router.audio_rng = self.world.audio_rng
+            self.world.audio_router.demo_mode_active = self.world.demo_mode_active
+        if self.world.ground is not None:
+            self.world._sync_ground_settings()
+            self.world.ground.process_pending()
+
+        dt_tick = float(self._lan_capture_clock.dt_tick)
+        while True:
+            frame = runtime.pop_tick_frame()
+            if frame is None:
+                break
+
+            packed_inputs = list(getattr(frame, "frame_inputs", []) or [])
+            player_inputs = [self._unpack_player_input_from_net(packed) for packed in packed_inputs]
+
+            session.detail_preset = self.config.detail_preset
+            session.fx_toggle = self.config.fx_toggle
+            session.spawn_entries = tuple(self._quest.spawn_entries)
+            session.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
+            session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
+            session.completion_transition_ms = float(self._quest.completion_transition_ms)
+
+            tick = session.step_tick(
+                dt_frame=float(dt_tick),
+                inputs=player_inputs,
+            )
+            self.world.apply_step_result(
+                tick.step,
+                game_tune_started=False,
+                apply_audio=True,
+                update_camera=True,
+            )
+            self._quest.spawn_entries = tuple(session.spawn_entries)
+            self._quest.spawn_timeline_ms = float(tick.spawn_timeline_ms)
+            self._quest.no_creatures_timer_ms = float(tick.no_creatures_timer_ms)
+            self._quest.completion_transition_ms = float(tick.completion_transition_ms)
+            self._quest.quest_name_timer_ms += float(dt_tick) * 1000.0
+
+            if tick.play_hit_sfx:
+                self.world.audio_router.play_sfx("sfx_questhit")
+            if tick.play_completion_music and self.world.audio is not None:
+                play_music(self.world.audio, "crimsonquest")
+                playback = self.world.audio.music.playbacks.get("crimsonquest")
+                if playback is not None:
+                    playback.volume = 0.0
+                    try:
+                        rl.set_music_volume(playback.music, 0.0)
+                    except RuntimeError:
+                        playback.volume = 0.0
+
+            if str(self._lan_role) == "host":
+                runtime.broadcast_tick_frame(
+                    TickFrame(
+                        tick_index=int(frame.tick_index),
+                        frame_inputs=list(frame.frame_inputs),
+                        command_hash=str(tick.step.command_hash),
+                        state_hash="",
+                    )
+                )
+
+            if tick.completed:
+                if self._outcome is None:
+                    fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
+                    most_used_weapon_id = most_used_weapon_id_for_player(
+                        self.state,
+                        player_index=int(self.player.index),
+                        fallback_weapon_id=int(self.player.weapon_id),
+                    )
+                    player_health_values = tuple(float(player.health) for player in self.world.players)
+                    player2_health = None
+                    if len(player_health_values) >= 2:
+                        player2_health = float(player_health_values[1])
+                    self._outcome = QuestRunOutcome(
+                        kind="completed",
+                        level=str(self._quest.level),
+                        base_time_ms=int(self._quest.spawn_timeline_ms),
+                        player_health=float(player_health_values[0] if player_health_values else self.player.health),
+                        player2_health=player2_health,
+                        player_health_values=player_health_values,
+                        pending_perk_count=int(self.state.perk_selection.pending_count),
+                        experience=int(self.player.experience),
+                        kill_count=int(self.creatures.kill_count),
+                        weapon_id=int(self.player.weapon_id),
+                        shots_fired=fired,
+                        shots_hit=hit,
+                        most_used_weapon_id=int(most_used_weapon_id),
+                    )
+                self.close_requested = True
+                break
+
+            if self._death_transition_ready():
+                self._close_failed_run()
+                break
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
+        debug_overlay_height = 0.0
         self.world.draw(
             draw_aim_indicators=not perk_menu_active,
             entity_alpha=self._world_entity_alpha(),
@@ -702,7 +899,10 @@ class QuestMode(BaseGameplayMode):
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
             god = "on" if self.state.debug_god_mode else "off"
+            line = float(self._ui_line_height(scale=0.9))
             self._draw_ui_text(f"debug: [/] weapon  F3 perk+1  F2 god={god}", Vec2(x, y), UI_HINT_COLOR, scale=0.9)
+            overlay_end_y = self._draw_lan_debug_info(x=x, y=y + line, line_h=line)
+            debug_overlay_height = max(0.0, float(overlay_end_y) - float(y))
 
         self._draw_quest_title()
         self._draw_quest_complete_banner()
@@ -725,11 +925,11 @@ class QuestMode(BaseGameplayMode):
             self._draw_game_cursor()
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
-            if debug_enabled() and (not perk_menu_active):
-                y += float(self._ui_line_height(scale=0.9))
+            y += float(debug_overlay_height)
             self._draw_ui_text("paused (TAB)", Vec2(x, y), UI_HINT_COLOR)
         else:
             self._draw_aim_cursor()
+        self._draw_lan_wait_overlay()
 
     def _draw_game_cursor(self) -> None:
         assets = self._perk_menu_assets
