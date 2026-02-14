@@ -38,12 +38,15 @@ def time_scale_reflex_boost_bonus(
 ) -> float:
     """Apply Reflex Boost time scaling, matching the classic frame loop latch semantics."""
 
-    if not (float(dt) > 0.0):
-        return float(dt)
-    if not bool(time_scale_active):
-        return float(dt)
-
+    # Native stores frame delta time in float32 (`frame_dt`). Many downstream systems
+    # multiply `frame_dt` before rounding back to float32, so the *input* precision
+    # matters even when Reflex Boost is inactive.
     dt_f32 = f32(float(dt))
+    if not (float(dt_f32) > 0.0):
+        return float(dt_f32)
+    if not bool(time_scale_active):
+        return float(dt_f32)
+
     reflex_f32 = f32(float(reflex_boost_timer))
     time_scale_factor = f32(0.3)
     if float(reflex_f32) < 1.0:
