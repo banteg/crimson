@@ -21,6 +21,7 @@ from typing import Callable, SupportsInt
 
 from grim.geom import Vec2
 from ..bonuses import BonusId
+from ..math_parity import f32
 from grim.rand import Crand
 
 __all__ = [
@@ -1823,27 +1824,28 @@ def build_survival_spawn_creature(pos: Vec2, rng: Crand, *, player_experience: i
     c.size = float(rng.rand() % 20 + 44)
 
     # heading = (rand() % 314) * 0.01
-    c.heading = float(rng.rand() % 314) * 0.01
+    c.heading = float(f32(f32(float(rng.rand() % 314)) * f32(0.01)))
 
-    move_speed = float(xp // 4000) * 0.045 + 0.9
+    # Native computes in float32; preserve rounding so derived speeds match capture.
+    move_speed = f32(f32(f32(float(xp // 4000)) * f32(0.045)) + f32(0.9))
     if c.type_id == CreatureTypeId.SPIDER_SP1:
         c.flags |= CreatureFlags.AI7_LINK_TIMER
-        move_speed *= 1.3
+        move_speed = f32(f32(move_speed) * f32(1.3))
 
     r_health = rng.rand()
-    health = float(xp) * 0.00125 + float(r_health & 0xF) + 52.0
+    health = f32(f32(f32(float(xp)) * f32(0.00125)) + f32(float(r_health & 0xF)) + f32(52.0))
 
     if c.type_id == CreatureTypeId.ZOMBIE:
-        move_speed *= 0.6
-        if move_speed < 1.3:
-            move_speed = 1.3
-        health *= 1.5
+        move_speed = f32(f32(move_speed) * f32(0.6))
+        if float(move_speed) < 1.3:
+            move_speed = f32(1.3)
+        health = f32(f32(health) * f32(1.5))
 
-    if 3.5 < move_speed:
-        move_speed = 3.5
+    if float(move_speed) > 3.5:
+        move_speed = f32(3.5)
 
-    c.move_speed = move_speed
-    c.health = health
+    c.move_speed = float(move_speed)
+    c.health = float(health)
     c.reward_value = 0.0
 
     # Tint based on player_experience thresholds.
