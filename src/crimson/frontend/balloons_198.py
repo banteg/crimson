@@ -67,11 +67,10 @@ _BALLOON_WRAP_TOP_Y = -128.0
 _BALLOON_WRAP_PAD_PX = 128.0
 
 _BALLOON_WAVE_AMP_PX = 64.0
-_BALLOON_WAVE_FREQ_PER_MS = 0.002
+_BALLOON_WAVE_FREQ_PER_MS = 0.00031415926
 
-_BALLOON_WOBBLE_AMP_RAD = 0.2
+_BALLOON_WOBBLE_AMP_RAD = 0.4
 _BALLOON_WOBBLE_FREQ_PER_MS = 0.003
-_BALLOON_WOBBLE_BASE_RAD = -(math.pi * 0.25)
 
 # v1.9.8 computes these via a slightly odd integer pipeline, but the result is constant:
 #  w = 64 * 0.6 = 38.4, h = 128 * 0.6 = 76.8
@@ -115,18 +114,21 @@ class Balloons198:
             self._seed(screen_h=float(rl.get_screen_height()))
 
         src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-        origin = rl.Vector2(_BALLOON_W * 0.5, _BALLOON_H * 0.5)
         t = float(self.time_ms)
-        screen_w = max(1.0, float(screen_w))
+        screen_w_int = max(1, int(screen_w))
         for i in range(min(_BALLOON_DRAW_COUNT, len(self._y))):
             tint = _BALLOON_TINTS[int(self._types[i]) & 3]
             phase = float(i)
-            x_base = (screen_w * phase) / float(_BALLOON_DRAW_COUNT)
-            x = x_base + math.cos(t * _BALLOON_WAVE_FREQ_PER_MS + phase) * _BALLOON_WAVE_AMP_PX
+            x_base = (screen_w_int * int(i)) >> 4
+            x = float(x_base) + math.cos(t * _BALLOON_WAVE_FREQ_PER_MS + phase) * _BALLOON_WAVE_AMP_PX
             y = float(self._y[i])
-            angle = math.sin(t * _BALLOON_WOBBLE_FREQ_PER_MS + phase) * _BALLOON_WOBBLE_AMP_RAD + _BALLOON_WOBBLE_BASE_RAD
-            dst = rl.Rectangle(x - _BALLOON_W * 0.5, y - _BALLOON_H * 0.5, _BALLOON_W, _BALLOON_H)
-            rl.draw_texture_pro(tex, src, dst, origin, math.degrees(angle), tint)
+            # Native uses grim_set_rotation(sin(t*0.003 + i)*0.4 - pi/4), but grim's
+            # rotation matrix is built from (radians + pi/4), so the visual rotation is
+            # centered around 0: sin(t*0.003 + i)*0.4.
+            angle_rad = math.sin(t * _BALLOON_WOBBLE_FREQ_PER_MS + phase) * _BALLOON_WOBBLE_AMP_RAD
+            dst = rl.Rectangle(x, y, _BALLOON_W, _BALLOON_H)
+            origin = rl.Vector2(_BALLOON_W * 0.5, _BALLOON_H * 0.5)
+            rl.draw_texture_pro(tex, src, dst, origin, math.degrees(angle_rad), tint)
 
     def _seed(self, *, screen_h: float) -> None:
         self._types = [int(self.rng.randrange(4)) for _ in range(_BALLOON_SEED_COUNT)]
