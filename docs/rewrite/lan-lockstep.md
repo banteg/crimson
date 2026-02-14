@@ -11,7 +11,7 @@ Deterministic LAN lockstep for the rewrite is implemented as a host-relay model
 over UDP with replay-compatible input frames and host-authoritative recovery.
 This page tracks the design contracts and current rollout status.
 
-Last reviewed: **2026-02-13**
+Last reviewed: **2026-02-14**
 
 ## Locked product decisions
 
@@ -31,18 +31,16 @@ Last reviewed: **2026-02-13**
 
 Implemented in `src/crimson/cli.py`:
 
-- `uv run crimson lan host --mode survival|rush|quests --players <1..4> [--quest-level <major.minor>] [--bind <ip>] [--port <n>] [--preserve-bugs]`
-- `uv run crimson lan join --host <ip> [--port <n>]`
+- `uv run crimson lan host --mode survival|rush|quests --players <1..4> [--quest-level <major.minor>] [--bind <ip>] [--port <n>] [--debug] [--preserve-bugs]`
+- `uv run crimson lan join --host <ip> [--port <n>] [--debug]`
 
 Notes:
 
 - Quest hosting enforces `--quest-level`.
-- `lan host` seeds an auto-start host session.
-- `lan join` preloads pending join data; for loopback hosts (`localhost`,
-  `127.0.0.1`, `::1`) it auto-starts gameplay for single-machine testing.
-- Current bring-up behavior: CLI auto-start host sessions skip the wait-gate
-  lobby hold so localhost dual-process runs can enter gameplay while live
-  transport/lobby runtime wiring is still being integrated.
+- `lan host` starts in a LAN lobby and begins the match automatically once all
+  peers are connected + ready.
+- `lan join` starts in a LAN lobby and auto-readies when accepted by the host.
+- `--host localhost` is supported (resolved to IPv4).
 - LAN CLI sessions now emit per-process trace logs under
   `<base-dir>/logs/lan/` (separate host/client files, filename includes role
   and pid) and print the chosen log path on startup.
@@ -56,6 +54,7 @@ Implemented in `src/crimson/frontend/panels/lan_session.py` and
   `start_quest_lan`.
 - Panel supports host/join role, mode, player count, host/bind IP, port, and
   quest level entry.
+- Lobby wait/start panel implemented in `src/crimson/frontend/panels/lan_lobby.py`.
 - UI entry is gated behind console cvar `cv_lanLockstepEnabled` (default `0`).
 
 ## Network package
@@ -69,6 +68,7 @@ Core LAN modules live under `src/crimson/net/`:
 - `lockstep.py`: host/client lockstep frame state machines.
 - `resync.py`: replay/checkpoint bundle chunking + assembly.
 - `adapter.py`: host/client adapter wrappers and resync-failure tracking.
+- `runtime.py`: lobby + transport driver integrated into the main game loop.
 
 ## Protocol contract
 
@@ -142,14 +142,52 @@ LAN and quest-determinism coverage is tracked by:
 Implemented now:
 
 - deterministic quest session prerequisite
-- LAN protocol/reliability/lobby/lockstep/resync core modules
-- LAN CLI + pending session routing
-- feature-flagged LAN setup panel
+- LAN protocol/reliability/lobby/lockstep core modules
+- LAN runtime driver (transport + lobby + tick-frame relay)
+- Survival/Rush/Quests mode integration (lockstep tick frames drive sim ticks)
+- host-only replay/checkpoints for LAN sessions
+- LAN CLI + feature-flagged setup UI + lobby view
+- debug HUD lines in-game when `--debug` is enabled
 
-Pending for full end-to-end LAN match runtime:
+Not yet implemented / limitations:
 
-- bind `src/crimson/net/*` transport/poll/send loops into gameplay mode update
-  paths for live host/client simulation advancement
-- wire pause/resume and resync execution into active match flow
-- complete phased enablement (Survival -> Rush -> Quests) behind
-  `cv_lanLockstepEnabled`
+- perk menu ownership + deterministic replication (currently disabled in LAN)
+- desync detection + host-driven resync (resync chunking exists, not wired end-to-end)
+- phased enablement (Survival -> Rush -> Quests) behind `cv_lanLockstepEnabled`
+
+## Manual testing
+
+### Localhost (single machine, two processes)
+
+1. Choose a runtime directory (so logs are easy to find):
+
+   - `export CRIMSON_RUNTIME_DIR=/tmp/crimson-lan`
+
+2. Terminal A (host):
+
+   - `uv run crimson lan host --mode survival --players 2 --debug`
+
+3. Terminal B (client):
+
+   - `uv run crimson lan join --host 127.0.0.1 --debug`
+
+4. Expected behavior:
+
+   - both processes enter the LAN lobby screen first
+   - host shows `Connected peers: 1/2` then `2/2`
+   - match starts automatically once both peers are connected/ready
+   - in-game debug HUD shows `lan:` and `net(...)` / `lockstep(...)` lines
+
+5. Inspect logs:
+
+   - `/tmp/crimson-lan/logs/lan/`
+
+### Two machines on the same LAN
+
+1. On the host machine:
+
+   - `uv run crimson lan host --mode survival --players 2 --port 31993`
+
+2. Find the host LAN IP (for example `192.168.x.y`) and join from the client:
+
+   - `uv run crimson lan join --host <host-ip> --port 31993`
