@@ -79,9 +79,11 @@ def resolve_live_link(creatures: Sequence[CreatureLinkLike], link_index: int) ->
 
 
 def _distance_f32(a: Vec2, b: Vec2) -> float:
+    # Native computes deltas into float locals, then runs the distance math in
+    # x87 precision and stores only the final sqrt back to float.
     dx = f32(float(b.x) - float(a.x))
     dy = f32(float(b.y) - float(a.y))
-    dist_sq = f32(f32(float(dx) * float(dx)) + f32(float(dy) * float(dy)))
+    dist_sq = float(dx) * float(dx) + float(dy) * float(dy)
     return f32(math.sqrt(float(dist_sq)))
 
 
