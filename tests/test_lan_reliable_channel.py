@@ -9,9 +9,10 @@ def test_reliable_packet_is_acked_and_removed() -> None:
     receiver = ReliableLink(resend_ms=40)
 
     packet = sender.build_packet(Ready(slot_index=1, ready=True), reliable=True, now_ms=1000)
-    message, is_dup = receiver.ingest_packet(packet)
+    messages, is_dup = receiver.ingest_packet(packet)
     assert is_dup is False
-    assert isinstance(message, Ready)
+    assert len(messages) == 1
+    assert isinstance(messages[0], Ready)
 
     ack = receiver.build_packet(PauseState(paused=False, reason=""), reliable=False, now_ms=1001)
     sender.ingest_packet(ack)
@@ -25,12 +26,13 @@ def test_duplicate_reliable_packet_is_dropped() -> None:
 
     packet = sender.build_packet(Ready(slot_index=2, ready=True), reliable=True, now_ms=10)
 
-    message0, dup0 = receiver.ingest_packet(packet)
-    message1, dup1 = receiver.ingest_packet(packet)
+    messages0, dup0 = receiver.ingest_packet(packet)
+    messages1, dup1 = receiver.ingest_packet(packet)
 
-    assert isinstance(message0, Ready)
+    assert len(messages0) == 1
+    assert isinstance(messages0[0], Ready)
     assert dup0 is False
-    assert message1 is None
+    assert messages1 == []
     assert dup1 is True
 
 
@@ -44,3 +46,23 @@ def test_reliable_packet_is_resent_after_timeout() -> None:
     assert len(resent) == 1
     assert resent[0].reliable is True
     assert resent[0].seq == 1
+
+
+def test_reliable_delivery_buffers_out_of_order_packets_and_acks_contiguously() -> None:
+    sender = ReliableLink(resend_ms=40)
+    receiver = ReliableLink(resend_ms=40)
+
+    p1 = sender.build_packet(Ready(slot_index=1, ready=True), reliable=True, now_ms=0)
+    p2 = sender.build_packet(Ready(slot_index=2, ready=True), reliable=True, now_ms=0)
+
+    # Deliver seq=2 first: receiver should buffer it and not advance contiguous ACK.
+    msgs2, dup2 = receiver.ingest_packet(p2)
+    assert dup2 is False
+    assert msgs2 == []
+    assert receiver.recv_highest_seq == 0
+
+    # Deliver seq=1: receiver can now deliver both 1 and 2 in order.
+    msgs1, dup1 = receiver.ingest_packet(p1)
+    assert dup1 is False
+    assert [m.slot_index for m in msgs1 if isinstance(m, Ready)] == [1, 2]
+    assert receiver.recv_highest_seq == 2

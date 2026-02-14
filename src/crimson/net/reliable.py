@@ -17,9 +17,11 @@ class ReliableLink:
 
     resend_ms: int = RELIABLE_RESEND_MS
     _next_seq: int = 1
+    # Highest *contiguous* reliable sequence that has been received and delivered.
     _recv_highest_seq: int = 0
     _pending: dict[int, _PendingReliable] = field(default_factory=dict)
-    _seen_reliable: set[int] = field(default_factory=set)
+    # Out-of-order reliable packets (seq > _recv_highest_seq + 1).
+    _recv_buffer: dict[int, Packet] = field(default_factory=dict)
 
     @property
     def recv_highest_seq(self) -> int:
@@ -40,23 +42,37 @@ class ReliableLink:
             self._pending[int(seq)] = _PendingReliable(packet=packet, sent_at_ms=int(now_ms))
         return packet
 
-    def ingest_packet(self, packet: Packet) -> tuple[NetMessage | None, bool]:
-        """Return `(message, is_duplicate_reliable)`."""
+    def ingest_packet(self, packet: Packet) -> tuple[list[NetMessage], bool]:
+        """Return `(messages, is_duplicate_reliable_packet)`.
+
+        Reliable delivery uses a cumulative ACK of the highest contiguous reliable
+        sequence that has been received and delivered. Out-of-order packets are
+        buffered and only delivered once gaps are filled.
+        """
         self._apply_ack(int(packet.ack))
         if not bool(packet.reliable):
-            return packet.message, False
+            return [packet.message], False
 
         seq = int(packet.seq)
         if seq <= 0:
-            return None, False
-        if seq in self._seen_reliable:
-            # Already processed. Caller can still use outbound ack on next send.
-            self._recv_highest_seq = max(int(self._recv_highest_seq), int(seq))
-            return None, True
+            return [], False
 
-        self._seen_reliable.add(int(seq))
-        self._recv_highest_seq = max(int(self._recv_highest_seq), int(seq))
-        return packet.message, False
+        if seq <= int(self._recv_highest_seq):
+            return [], True
+        if seq in self._recv_buffer:
+            return [], True
+
+        self._recv_buffer[int(seq)] = packet
+
+        delivered: list[NetMessage] = []
+        next_seq = int(self._recv_highest_seq) + 1
+        while next_seq in self._recv_buffer:
+            next_packet = self._recv_buffer.pop(int(next_seq))
+            delivered.append(next_packet.message)
+            self._recv_highest_seq = int(next_seq)
+            next_seq += 1
+
+        return delivered, False
 
     def _apply_ack(self, ack: int) -> None:
         if int(ack) <= 0:
