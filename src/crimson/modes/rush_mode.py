@@ -32,7 +32,9 @@ from ..replay.checkpoints import (
     resolve_checkpoint_sample_rate,
 )
 from ..sim.clock import FixedStepClock
+from ..sim.input import PlayerInput
 from ..sim.sessions import RushDeterministicSession
+from ..net.protocol import TickFrame
 from ..weapons import WeaponId
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
@@ -80,6 +82,7 @@ class RushMode(BaseGameplayMode):
 
         self._ui_assets = None
         self._sim_clock = FixedStepClock(tick_rate=60)
+        self._lan_capture_clock = FixedStepClock(tick_rate=60)
         self._replay_recorder: ReplayRecorder | None = None
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         self._replay_checkpoints_sample_rate: int = 60
@@ -132,6 +135,7 @@ class RushMode(BaseGameplayMode):
             self._missing_assets.extend(self._ui_assets.missing)
         self._rush = _RushState()
         self._sim_clock.reset()
+        self._lan_capture_clock.reset()
         self._sim_session = RushDeterministicSession(
             world=self.world.world_state,
             world_size=float(self.world.world_size),
@@ -169,21 +173,25 @@ class RushMode(BaseGameplayMode):
             else 0,
             weapon_usage_counts=weapon_usage_counts,
         )
-        self._replay_recorder = ReplayRecorder(
-            ReplayHeader(
-                game_mode_id=int(GameMode.RUSH),
-                seed=int(self.state.rng.state),
-                tick_rate=int(self._sim_clock.tick_rate),
-                difficulty_level=int(self.world.difficulty_level),
-                hardcore=bool(self.world.hardcore),
-                preserve_bugs=bool(self.world.preserve_bugs),
-                world_size=float(self.world.world_size),
-                player_count=len(self.world.players),
-                status=status_snapshot,
+        record_replay = (not bool(self._lan_enabled)) or str(self._lan_role) == "host"
+        if record_replay:
+            self._replay_recorder = ReplayRecorder(
+                ReplayHeader(
+                    game_mode_id=int(GameMode.RUSH),
+                    seed=int(self.state.rng.state),
+                    tick_rate=int(self._sim_clock.tick_rate),
+                    difficulty_level=int(self.world.difficulty_level),
+                    hardcore=bool(self.world.hardcore),
+                    preserve_bugs=bool(self.world.preserve_bugs),
+                    world_size=float(self.world.world_size),
+                    player_count=len(self.world.players),
+                    status=status_snapshot,
+                )
             )
-        )
-        tick_rate = int(self._replay_recorder.header.tick_rate)
-        self._replay_checkpoints_sample_rate = resolve_checkpoint_sample_rate(tick_rate)
+            tick_rate = int(self._replay_recorder.header.tick_rate)
+            self._replay_checkpoints_sample_rate = resolve_checkpoint_sample_rate(tick_rate)
+        else:
+            self._replay_recorder = None
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
 
@@ -203,7 +211,7 @@ class RushMode(BaseGameplayMode):
                 self.close_requested = True
             return
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
+        if (not bool(self._lan_enabled)) and rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
             self._paused = not self._paused
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -277,6 +285,10 @@ class RushMode(BaseGameplayMode):
             self._update_game_over_ui(dt)
             return
 
+        if bool(self._lan_enabled) and self._lan_runtime is not None:
+            self._update_lan_match(dt_frame=dt_frame)
+            return
+
         any_alive = any(player.health > 0.0 for player in self.world.players)
         sim_active = (not self._paused) and any_alive
 
@@ -338,6 +350,92 @@ class RushMode(BaseGameplayMode):
                     deaths=world_events.deaths,
                     events=world_events,
                     command_hash=str(tick.step.command_hash),
+                )
+
+            if not any(player.health > 0.0 for player in self.world.players):
+                self._enter_game_over()
+                break
+
+    def _update_lan_match(self, *, dt_frame: float) -> None:
+        runtime = self._lan_runtime
+        if runtime is None:
+            return
+        session = self._sim_session
+        if session is None:
+            return
+
+        ticks_to_capture = self._lan_capture_clock.advance(dt_frame)
+        if ticks_to_capture > 0:
+            input_frame = self._build_local_inputs(dt_frame=dt_frame)
+            local_slot = int(self._lan_local_slot_index)
+            for tick_offset in range(int(ticks_to_capture)):
+                inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
+                local_input = PlayerInput()
+                if 0 <= local_slot < len(inputs):
+                    local_input = inputs[local_slot]
+                runtime.queue_local_input(self._pack_player_input_for_net(local_input))
+
+        any_alive = any(player.health > 0.0 for player in self.world.players)
+        if (not any_alive) or bool(self._paused):
+            self._sim_clock.reset()
+            if not any_alive:
+                self._enter_game_over()
+            return
+
+        if self.world.audio_router is not None:
+            self.world.audio_router.audio = self.world.audio
+            self.world.audio_router.audio_rng = self.world.audio_rng
+            self.world.audio_router.demo_mode_active = self.world.demo_mode_active
+        if self.world.ground is not None:
+            self.world._sync_ground_settings()
+            self.world.ground.process_pending()
+        session.detail_preset = self.config.detail_preset
+        session.fx_toggle = self.config.fx_toggle
+
+        dt_tick = float(self._lan_capture_clock.dt_tick)
+        while True:
+            frame = runtime.pop_tick_frame()
+            if frame is None:
+                break
+
+            packed_inputs = list(getattr(frame, "frame_inputs", []) or [])
+            player_inputs = [self._unpack_player_input_from_net(packed) for packed in packed_inputs]
+            recorder = self._replay_recorder
+            if recorder is not None:
+                tick_index = recorder.record_tick(player_inputs)
+            else:
+                tick_index = None
+            tick = session.step_tick(
+                dt_frame=float(dt_tick),
+                inputs=player_inputs,
+            )
+            self.world.apply_step_result(
+                tick.step,
+                game_tune_started=bool(session.game_tune_started),
+                apply_audio=True,
+                update_camera=True,
+            )
+            self._rush.elapsed_ms = float(session.elapsed_ms)
+            self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
+            world_events = tick.step.events
+
+            if tick_index is not None:
+                self._record_replay_checkpoint(
+                    int(tick_index),
+                    rng_marks=tick.rng_marks,
+                    deaths=world_events.deaths,
+                    events=world_events,
+                    command_hash=str(tick.step.command_hash),
+                )
+
+            if str(self._lan_role) == "host":
+                runtime.broadcast_tick_frame(
+                    TickFrame(
+                        tick_index=int(frame.tick_index),
+                        frame_inputs=list(frame.frame_inputs),
+                        command_hash=str(tick.step.command_hash),
+                        state_hash="",
+                    )
                 )
 
             if not any(player.health > 0.0 for player in self.world.players):

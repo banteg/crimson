@@ -18,6 +18,13 @@ from grim.view import ViewContext
 from ..sim.input import PlayerInput
 from ..debug import debug_enabled
 from ..net.debug_log import lan_debug_log
+from ..replay.types import (
+    PackedPlayerInput,
+    pack_input_flags,
+    unpack_input_flags,
+    unpack_input_move_key_flags,
+    unpack_packed_player_input,
+)
 from ..perks.runtime.effects import _creature_find_in_radius
 from ..perks.helpers import perk_count_get
 from ..game_world import GameWorld
@@ -423,6 +430,43 @@ class BaseGameplayMode:
                 rl.Color(232, 197, 117, 255),
                 scale=0.8,
             )
+
+    @staticmethod
+    def _pack_player_input_for_net(inp: PlayerInput) -> PackedPlayerInput:
+        flags = pack_input_flags(
+            fire_down=bool(inp.fire_down),
+            fire_pressed=bool(inp.fire_pressed),
+            reload_pressed=bool(inp.reload_pressed),
+            move_forward_pressed=inp.move_forward_pressed,
+            move_backward_pressed=inp.move_backward_pressed,
+            turn_left_pressed=inp.turn_left_pressed,
+            turn_right_pressed=inp.turn_right_pressed,
+        )
+        return [
+            float(inp.move.x),
+            float(inp.move.y),
+            [float(inp.aim.x), float(inp.aim.y)],
+            int(flags),
+        ]
+
+    @staticmethod
+    def _unpack_player_input_from_net(packed: PackedPlayerInput) -> PlayerInput:
+        mx, my, ax, ay, flags = unpack_packed_player_input(packed)
+        fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
+        move_forward_pressed, move_backward_pressed, turn_left_pressed, turn_right_pressed = unpack_input_move_key_flags(
+            int(flags)
+        )
+        return PlayerInput(
+            move=Vec2(float(mx), float(my)),
+            aim=Vec2(float(ax), float(ay)),
+            fire_down=bool(fire_down),
+            fire_pressed=bool(fire_pressed),
+            reload_pressed=bool(reload_pressed),
+            move_forward_pressed=move_forward_pressed,
+            move_backward_pressed=move_backward_pressed,
+            turn_left_pressed=turn_left_pressed,
+            turn_right_pressed=turn_right_pressed,
+        )
 
     def _player_name_default(self) -> str:
         return str(self.config.player_name or "")
