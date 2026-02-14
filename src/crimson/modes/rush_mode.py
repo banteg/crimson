@@ -367,12 +367,15 @@ class RushMode(BaseGameplayMode):
         ticks_to_capture = self._lan_capture_clock.advance(dt_frame)
         if ticks_to_capture > 0:
             input_frame = self._build_local_inputs(dt_frame=dt_frame)
-            local_slot = int(self._lan_local_slot_index)
+            # In LAN sessions each peer is a single local player, so always sample
+            # inputs using the configured Player 1 bindings (index 0). The network
+            # slot mapping is handled by the lockstep runtime.
+            local_input_index = 0
             for tick_offset in range(int(ticks_to_capture)):
                 inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
                 local_input = PlayerInput()
-                if 0 <= local_slot < len(inputs):
-                    local_input = inputs[local_slot]
+                if 0 <= local_input_index < len(inputs):
+                    local_input = inputs[local_input_index]
                 runtime.queue_local_input(self._pack_player_input_for_net(local_input))
 
         any_alive = any(player.health > 0.0 for player in self.world.players)
