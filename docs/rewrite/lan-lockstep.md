@@ -31,12 +31,13 @@ Last reviewed: **2026-02-14**
 
 Implemented in `src/crimson/cli.py`:
 
-- `uv run crimson lan host --mode survival|rush|quests --players <1..4> [--quest-level <major.minor>] [--bind <ip>] [--port <n>] [--debug] [--preserve-bugs]`
+- `uv run crimson lan host --mode survival|rush|quests --players <1..4> [--quest-level <major.minor>] [--bind <ip>] [--port <n>] [--debug]`
 - `uv run crimson lan join --host <ip> [--port <n>] [--debug]`
 
 Notes:
 
 - Quest hosting enforces `--quest-level`.
+- LAN sessions force `preserve_bugs=0` to keep simulation rules consistent across peers.
 - `lan host` starts in a LAN lobby and begins the match automatically once all
   peers are connected + ready.
 - `lan join` starts in a LAN lobby and auto-readies when accepted by the host.

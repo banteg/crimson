@@ -233,7 +233,6 @@ def cmd_lan_host(
     bind: str = typer.Option("0.0.0.0", "--bind", help="host bind address"),
     port: int = typer.Option(31993, "--port", min=1, max=65535, help="host UDP port"),
     debug: bool = typer.Option(False, "--debug", help="enable debug cheats and overlays"),
-    preserve_bugs: bool = typer.Option(False, "--preserve-bugs", help="preserve known original exe bugs/quirks"),
     width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
     height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, help="target fps"),
@@ -283,7 +282,7 @@ def cmd_lan_host(
             bind_host=str(bind).strip() or "0.0.0.0",
             host_ip="",
             port=int(port),
-            preserve_bugs=bool(preserve_bugs),
+            preserve_bugs=False,
         ),
         auto_start=True,
     )
@@ -295,7 +294,7 @@ def cmd_lan_host(
             height=height,
             fps=fps,
             debug=bool(debug),
-            preserve_bugs=bool(preserve_bugs),
+            preserve_bugs=False,
             pending_lan_session=pending,
         )
     )

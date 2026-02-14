@@ -316,7 +316,9 @@ class GameLoopView:
                 host_ip=str(cfg.host_ip),
                 port=int(cfg.port),
                 quest_level=str(cfg.quest_level),
-                preserve_bugs=bool(cfg.preserve_bugs),
+                # LAN lockstep is a rewrite-only feature; keep gameplay rules consistent
+                # and do not expose preserve_bugs in multiplayer.
+                preserve_bugs=False,
             )
         )
         self.state.lan_runtime = runtime

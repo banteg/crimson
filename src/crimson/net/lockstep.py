@@ -152,6 +152,13 @@ class ClientLockstepState:
                 continue
             samples.append(InputSample(tick_index=int(tick), packed_input=list(value)))
 
+        # Keep memory bounded: we only ever re-send the last 3 ticks in the rolling window above.
+        min_keep_tick = int(target_tick) - 2
+        if min_keep_tick > 0:
+            for tick in list(self._sent_inputs):
+                if int(tick) < int(min_keep_tick):
+                    self._sent_inputs.pop(int(tick), None)
+
         self._capture_tick += 1
         return InputBatch(slot_index=int(self.local_slot_index), samples=samples)
 
