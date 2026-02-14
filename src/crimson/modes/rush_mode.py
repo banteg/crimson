@@ -377,6 +377,9 @@ class RushMode(BaseGameplayMode):
                 if 0 <= local_input_index < len(inputs):
                     local_input = inputs[local_input_index]
                 runtime.queue_local_input(self._pack_player_input_for_net(local_input))
+        # Pump networking again after queuing local inputs so the host can emit frames
+        # in the same render frame (reduces perceived host-side input latency).
+        runtime.update()
 
         if bool(self._paused):
             self._sim_clock.reset()
