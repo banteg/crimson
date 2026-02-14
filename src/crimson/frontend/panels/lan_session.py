@@ -135,7 +135,8 @@ class LanSessionPanelView(PanelMenuView):
                     bind_host=str(self._bind_host.strip() or "0.0.0.0"),
                     host_ip="",
                     port=int(port),
-                    preserve_bugs=bool(self.state.preserve_bugs),
+                    # LAN lockstep is rewrite-only; keep rules consistent and do not expose preserve_bugs here.
+                    preserve_bugs=False,
                 ),
                 auto_start=False,
             )
@@ -152,7 +153,8 @@ class LanSessionPanelView(PanelMenuView):
                     bind_host="0.0.0.0",
                     host_ip=str(self._host_ip.strip()),
                     port=int(port),
-                    preserve_bugs=bool(self.state.preserve_bugs),
+                    # LAN lockstep is rewrite-only; keep rules consistent and do not expose preserve_bugs here.
+                    preserve_bugs=False,
                 ),
                 auto_start=False,
             )

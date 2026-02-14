@@ -13,7 +13,12 @@ if TYPE_CHECKING:
 
 
 def _mode_view_context(state: GameState) -> ViewContext:
-    return ViewContext(assets_dir=state.assets_dir, preserve_bugs=state.preserve_bugs)
+    preserve_bugs = bool(state.preserve_bugs)
+    if bool(getattr(state, "lan_in_lobby", False)):
+        # LAN lockstep is a rewrite-only feature; force preserve_bugs off to keep
+        # simulation rules consistent across peers.
+        preserve_bugs = False
+    return ViewContext(assets_dir=state.assets_dir, preserve_bugs=preserve_bugs)
 
 
 class _BaseModeGameView:

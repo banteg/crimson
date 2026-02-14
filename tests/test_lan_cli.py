@@ -30,7 +30,6 @@ def test_lan_host_command_builds_pending_session_and_runs_game(monkeypatch, tmp_
             "127.0.0.1",
             "--port",
             "32001",
-            "--preserve-bugs",
             "--base-dir",
             str(tmp_path),
         ],
@@ -46,7 +45,7 @@ def test_lan_host_command_builds_pending_session_and_runs_game(monkeypatch, tmp_
     assert pending.config.player_count == 3
     assert pending.config.bind_host == "127.0.0.1"
     assert pending.config.port == 32001
-    assert pending.config.preserve_bugs is True
+    assert pending.config.preserve_bugs is False
 
 
 def test_lan_host_quests_requires_quest_level(monkeypatch, tmp_path: Path) -> None:
