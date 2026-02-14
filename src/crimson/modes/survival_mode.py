@@ -625,8 +625,7 @@ class SurvivalMode(BaseGameplayMode):
                     local_input = inputs[local_input_index]
                 runtime.queue_local_input(self._pack_player_input_for_net(local_input))
 
-        any_alive = self._any_player_alive()
-        if (not any_alive) or bool(self._paused):
+        if bool(self._paused):
             self._sim_clock.reset()
             if self._death_transition_ready():
                 self._enter_game_over()

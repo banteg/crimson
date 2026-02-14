@@ -378,11 +378,8 @@ class RushMode(BaseGameplayMode):
                     local_input = inputs[local_input_index]
                 runtime.queue_local_input(self._pack_player_input_for_net(local_input))
 
-        any_alive = any(player.health > 0.0 for player in self.world.players)
-        if (not any_alive) or bool(self._paused):
+        if bool(self._paused):
             self._sim_clock.reset()
-            if not any_alive:
-                self._enter_game_over()
             return
 
         if self.world.audio_router is not None:

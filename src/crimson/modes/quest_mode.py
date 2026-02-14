@@ -753,8 +753,7 @@ class QuestMode(BaseGameplayMode):
                     local_input = inputs[local_input_index]
                 runtime.queue_local_input(self._pack_player_input_for_net(local_input))
 
-        any_alive = any(player.health > 0.0 for player in self.world.players)
-        if (not any_alive) or bool(self._paused):
+        if bool(self._paused):
             self._sim_clock.reset()
             # Mirror legacy: keep the fail transition timers moving at real-time pace while paused.
             self._tick_death_timers(dt_frame, rate=1.0)
