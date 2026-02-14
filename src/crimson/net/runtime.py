@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass, field
 import time
 
 from .debug_log import lan_debug_log
 from .lobby import ClientLobby, HostLobby
+from .lockstep import ClientLockstepState, HostLockstepState
 from .protocol import (
     INPUT_DELAY_TICKS,
     LINK_TIMEOUT_MS,
@@ -12,16 +14,19 @@ from .protocol import (
     TICK_RATE,
     Disconnect,
     Hello,
+    InputBatch,
     LobbyState,
     MatchStart,
     NetMessage,
     PauseState,
     Ready,
+    TickFrame,
     Welcome,
     current_build_id,
 )
 from .reliable import ReliableLink
 from .transport import PeerAddr, UdpTransport
+from ..replay.types import PackedPlayerInput
 
 
 def _now_ms() -> int:
@@ -64,12 +69,22 @@ class LanRuntime:
     host_seed: int = field(init=False, default=0)
     host_match_start: MatchStart | None = field(init=False, default=None)
     host_last_broadcast_ms: int = field(init=False, default=0)
+    host_lockstep: HostLockstepState | None = field(init=False, default=None)
+    host_capture_tick: int = field(init=False, default=0)
+    host_ready_frames: deque[TickFrame] = field(init=False, default_factory=deque)
 
     client_lobby: ClientLobby | None = field(init=False, default=None)
     client_link: ReliableLink | None = field(init=False, default=None)
     client_host_addr: PeerAddr | None = field(init=False, default=None)
     client_last_hello_ms: int = field(init=False, default=0)
     client_last_seen_ms: int = field(init=False, default=0)
+    client_lockstep: ClientLockstepState | None = field(init=False, default=None)
+    client_pause_state: PauseState | None = field(init=False, default=None)
+
+    _neutral_input: PackedPlayerInput = field(
+        init=False,
+        default_factory=lambda: [0.0, 0.0, [0.0, 0.0], 0],
+    )
 
     def __post_init__(self) -> None:
         bind_port = int(self.cfg.port) if str(self.cfg.role) == "host" else 0
@@ -128,6 +143,11 @@ class LanRuntime:
             self.client_host_addr = None
             self.client_last_hello_ms = 0
             self.client_last_seen_ms = 0
+            self.host_lockstep = None
+            self.host_capture_tick = 0
+            self.host_ready_frames.clear()
+            self.client_lockstep = None
+            self.client_pause_state = None
             self.started = False
             self.error = ""
             lan_debug_log("net_close", role=str(self.cfg.role))
@@ -163,6 +183,45 @@ class LanRuntime:
         if lobby is None:
             return -1
         return int(lobby.slot_index)
+
+    def queue_local_input(self, packed_input: PackedPlayerInput, *, now_ms: int | None = None) -> None:
+        if now_ms is None:
+            now_ms = _now_ms()
+        if str(self.cfg.role) == "host":
+            lockstep = self.host_lockstep
+            if lockstep is None:
+                return
+            target_tick = int(self.host_capture_tick) + int(self.cfg.input_delay_ticks)
+            lockstep.submit_input_sample(
+                slot_index=0,
+                tick_index=int(target_tick),
+                packed_input=list(packed_input),
+            )
+            self.host_capture_tick += 1
+            return
+
+        lockstep = self.client_lockstep
+        if lockstep is None:
+            return
+        batch = lockstep.queue_local_input(list(packed_input))
+        self._client_send(batch, reliable=False, now_ms=int(now_ms))
+
+    def pop_tick_frame(self) -> TickFrame | None:
+        if str(self.cfg.role) == "host":
+            if not self.host_ready_frames:
+                return None
+            return self.host_ready_frames.popleft()
+        lockstep = self.client_lockstep
+        if lockstep is None:
+            return None
+        return lockstep.pop_canonical_frame()
+
+    def broadcast_tick_frame(self, frame: TickFrame, *, now_ms: int | None = None) -> None:
+        if str(self.cfg.role) != "host":
+            return
+        if now_ms is None:
+            now_ms = _now_ms()
+        self._host_broadcast(frame, reliable=True, now_ms=int(now_ms))
 
     def update(self, *, now_ms: int | None = None) -> None:
         if now_ms is None:
@@ -209,8 +268,17 @@ class LanRuntime:
             event = lobby.start_match(seed=int(self.host_seed))
             self.started = True
             self.host_match_start = event
+            self._host_init_lockstep(event)
             lan_debug_log("net_match_start", role="host", seed=int(event.seed), player_count=int(event.player_count))
             self._host_broadcast(event, reliable=True, now_ms=int(now_ms))
+
+        if self.host_lockstep is not None:
+            pause = self.host_lockstep.update_pause_state(now_ms=int(now_ms))
+            if pause is not None:
+                self._host_broadcast(pause, reliable=True, now_ms=int(now_ms))
+            frames = self.host_lockstep.pop_ready_frames(now_ms=int(now_ms))
+            for frame in frames:
+                self.host_ready_frames.append(frame)
 
         # Resend reliable packets.
         for addr, peer in self.host_peers.items():
@@ -240,6 +308,18 @@ class LanRuntime:
             self.host_peers.pop(addr, None)
             lobby.peers_by_addr.pop(addr, None)
             self._host_broadcast_lobby_state(now_ms=int(now_ms))
+            return
+        if isinstance(message, InputBatch):
+            lockstep = self.host_lockstep
+            if lockstep is None:
+                return
+            mapped_slot = lobby.slot_for_addr(addr)
+            if mapped_slot is None:
+                return
+            batch = message
+            if int(batch.slot_index) != int(mapped_slot):
+                batch = InputBatch(slot_index=int(mapped_slot), samples=list(batch.samples))
+            lockstep.submit_input_batch(batch)
             return
 
     def _host_send(self, addr: PeerAddr, message: NetMessage, *, reliable: bool, now_ms: int) -> None:
@@ -319,9 +399,17 @@ class LanRuntime:
         if isinstance(message, MatchStart):
             lobby.ingest_match_start(message)
             self.started = True
+            self._client_init_lockstep(message)
+            return
+        if isinstance(message, TickFrame):
+            lockstep = self.client_lockstep
+            if lockstep is None:
+                return
+            lockstep.ingest_tick_frame(message, now_ms=int(now_ms), local_command_hash="")
             return
         if isinstance(message, PauseState):
             # Lobby doesn't model pause; keep for logging and future integration.
+            self.client_pause_state = message
             return
         if isinstance(message, Disconnect):
             self.error = str(message.reason or "disconnect")
@@ -339,6 +427,34 @@ class LanRuntime:
             return
         kind = getattr(message, "kind", type(message).__name__)
         lan_debug_log("net_send", role="join", kind=str(kind), reliable=bool(reliable))
+
+    def _host_init_lockstep(self, event: MatchStart) -> None:
+        player_count = max(1, min(4, int(getattr(event, "player_count", 1) or 1)))
+        self.host_lockstep = HostLockstepState(
+            player_count=int(player_count),
+            input_delay_ticks=int(self.cfg.input_delay_ticks),
+        )
+        self.host_capture_tick = 0
+        self.host_ready_frames.clear()
+
+        # Prime initial ticks (0..delay-1) with neutral inputs so the match can start immediately.
+        delay = max(0, int(self.cfg.input_delay_ticks))
+        neutral = list(self._neutral_input)
+        for tick in range(int(delay)):
+            for slot in range(int(player_count)):
+                self.host_lockstep.submit_input_sample(
+                    slot_index=int(slot),
+                    tick_index=int(tick),
+                    packed_input=list(neutral),
+                )
+
+    def _client_init_lockstep(self, event: MatchStart) -> None:
+        slot_index = int(self.local_slot_index)
+        self.client_lockstep = ClientLockstepState(
+            local_slot_index=int(slot_index),
+            input_delay_ticks=int(self.cfg.input_delay_ticks),
+        )
+        self.client_pause_state = None
 
 
 __all__ = ["LanRuntime", "LanRuntimeConfig"]
