@@ -29,7 +29,7 @@ from ..frontend.transitions import _update_screen_fade
 from ..input_codes import input_begin_frame
 from ..quests.types import parse_level
 from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
-from ..net.debug_log import lan_debug_log
+from ..net.debug_log import init_lan_debug_log, lan_debug_log, lan_debug_log_path
 from .high_scores_view import HighScoresView
 from .mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
 from .quest_views import EndNoteView, QuestFailedView, QuestResultsView, QuestsMenuView
@@ -177,6 +177,28 @@ class GameLoopView:
             }
         )
 
+    def _ensure_lan_debug_log_started(self) -> None:
+        if lan_debug_log_path() is not None:
+            return
+        pending = self.state.pending_lan_session
+        if pending is None:
+            return
+        cfg = pending.config
+        host = str(cfg.host_ip or cfg.bind_host)
+        log_path = init_lan_debug_log(
+            base_dir=self.state.base_dir,
+            role=str(pending.role),
+            mode=str(cfg.mode),
+            host=host,
+            port=cfg.port,
+            player_count=cfg.player_count,
+            auto_start=bool(pending.auto_start),
+            debug_enabled=debug_enabled(),
+        )
+        self.state.console.log.log(f"lan debug log: {log_path}")
+        self.state.console.log.flush()
+        print(f"[lan-debug] role={pending.role} log={log_path}")
+
     def open(self) -> None:
         rl.hide_cursor()
         self._boot.open()
@@ -196,6 +218,7 @@ class GameLoopView:
             return None
         if (not pending.auto_start) or pending.started:
             return None
+        self._ensure_lan_debug_log_started()
         mode = str(pending.config.mode)
         pending.started = True
         lan_debug_log(
@@ -237,6 +260,8 @@ class GameLoopView:
                 self.state.lan_expected_players = 1
                 self.state.lan_connected_players = 1
             return action
+
+        self._ensure_lan_debug_log_started()
 
         expected_mode, forward_action, mode_id = resolved
         pending = self.state.pending_lan_session
