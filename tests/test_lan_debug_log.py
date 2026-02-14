@@ -16,6 +16,7 @@ def test_lan_debug_log_writes_events_to_file(tmp_path: Path) -> None:
         base_dir=tmp_path,
         role="host",
         mode="survival",
+        build_id="test-build",
         host="127.0.0.1",
         port=31993,
         player_count=2,
