@@ -340,14 +340,27 @@ class BaseGameplayMode:
         role = str(self._lan_role or "?")
         expected = int(self._lan_expected_players)
         connected = int(self._lan_connected_players)
+        slot = int(self._lan_local_slot_index)
         state = "waiting" if self._lan_wait_gate_active() else "active"
         self._draw_ui_text(
-            f"lan: role={role} players={connected}/{expected} state={state}",
+            f"lan: role={role} slot={slot} players={connected}/{expected} state={state}",
             Vec2(float(x), float(y)),
             rl.Color(130, 180, 240, 255),
             scale=0.9,
         )
         y += float(line_h)
+
+        runtime = self._lan_runtime
+        debug_lines_fn = getattr(runtime, "debug_overlay_lines", None) if runtime is not None else None
+        if callable(debug_lines_fn):
+            for line in debug_lines_fn():
+                self._draw_ui_text(
+                    str(line),
+                    Vec2(float(x), float(y)),
+                    rl.Color(232, 197, 117, 255),
+                    scale=0.85,
+                )
+                y += float(line_h)
 
         if self._lan_wait_gate_active():
             self._draw_ui_text(

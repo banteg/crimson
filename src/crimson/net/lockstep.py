@@ -30,6 +30,20 @@ class HostLockstepState:
     def next_emit_tick(self) -> int:
         return int(self._next_emit_tick)
 
+    @property
+    def buffered_tick_count(self) -> int:
+        return int(len(self._inputs_by_tick))
+
+    @property
+    def paused(self) -> bool:
+        return bool(self._paused)
+
+    def waiting_for_inputs(self, *, tick_index: int | None = None) -> int:
+        if tick_index is None:
+            tick_index = int(self._next_emit_tick)
+        tick_inputs = self._inputs_by_tick.get(int(tick_index), {})
+        return max(0, int(self.player_count) - int(len(tick_inputs)))
+
     def submit_input_sample(self, *, slot_index: int, tick_index: int, packed_input: PackedPlayerInput) -> None:
         if int(slot_index) < 0 or int(slot_index) >= int(self.player_count):
             return
@@ -114,6 +128,18 @@ class ClientLockstepState:
     @property
     def next_consume_tick(self) -> int:
         return int(self._next_consume_tick)
+
+    @property
+    def capture_tick(self) -> int:
+        return int(self._capture_tick)
+
+    @property
+    def buffered_frame_count(self) -> int:
+        return int(len(self._canonical_by_tick))
+
+    @property
+    def paused(self) -> bool:
+        return bool(self._paused)
 
     def queue_local_input(self, packed_input: PackedPlayerInput) -> InputBatch:
         target_tick = int(self._capture_tick + int(self.input_delay_ticks))

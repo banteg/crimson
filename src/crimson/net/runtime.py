@@ -176,6 +176,60 @@ class LanRuntime:
     def bound_port(self) -> int:
         return int(self.transport.bound_port)
 
+    def debug_overlay_lines(self) -> list[str]:
+        """Return short debug HUD lines for in-game overlays (guarded by --debug)."""
+        lines: list[str] = []
+        role = str(self.cfg.role)
+
+        if self.error:
+            lines.append(f"net: error={self.error}")
+
+        if role == "host":
+            lines.append(
+                "net(host): "
+                f"bind={self.cfg.bind_host}:{self.bound_port} "
+                f"peers={len(self.host_peers)}/{max(0, int(self.cfg.player_count) - 1)} "
+                f"started={int(self.started)}"
+            )
+            lockstep = self.host_lockstep
+            if lockstep is not None:
+                lines.append(
+                    "lockstep(host): "
+                    f"capture={int(self.host_capture_tick)} "
+                    f"emit={int(lockstep.next_emit_tick)} "
+                    f"ready_frames={len(self.host_ready_frames)} "
+                    f"buffered_ticks={int(lockstep.buffered_tick_count)} "
+                    f"waiting_for={int(lockstep.waiting_for_inputs())} "
+                    f"paused={int(lockstep.paused)}"
+                )
+            return lines
+
+        lobby = self.client_lobby
+        host = self.client_host_addr
+        host_label = f"{host[0]}:{host[1]}" if host is not None else "?"
+        joined = bool(lobby.joined) if lobby is not None else False
+        started = bool(lobby.started) if lobby is not None else False
+        slot = int(lobby.slot_index) if lobby is not None else -1
+        lines.append(
+            "net(join): "
+            f"host={host_label} local_port={self.bound_port} slot={slot} joined={int(joined)} started={int(started)}"
+        )
+
+        lockstep = self.client_lockstep
+        if lockstep is not None:
+            lines.append(
+                "lockstep(join): "
+                f"capture={int(lockstep.capture_tick)} "
+                f"consume={int(lockstep.next_consume_tick)} "
+                f"buffered_frames={int(lockstep.buffered_frame_count)} "
+                f"paused={int(lockstep.paused)}"
+            )
+        pause = self.client_pause_state
+        if pause is not None and bool(pause.paused):
+            lines.append(f"pause: {str(pause.reason or '')}")
+
+        return lines
+
     def lobby_state(self) -> LobbyState | None:
         if str(self.cfg.role) == "host":
             lobby = self.host_lobby
