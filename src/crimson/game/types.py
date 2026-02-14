@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from grim.geom import Vec2
     from grim.terrain_render import GroundRenderer
     from ..modes.quest_mode import QuestRunOutcome
+    from ..net.runtime import LanRuntime
     from ..persistence.save_status import GameStatus
 
 
@@ -105,6 +106,7 @@ class GameState:
     stats_menu_easter_egg_roll: int = -1
     pause_background: PauseBackground | None = None
     pending_lan_session: PendingLanSession | None = None
+    lan_runtime: "LanRuntime | None" = None
     lan_in_lobby: bool = False
     lan_waiting_for_players: bool = False
     lan_expected_players: int = 1

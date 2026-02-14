@@ -97,7 +97,7 @@ def test_lan_join_command_builds_pending_join_session(monkeypatch, tmp_path: Pat
     pending = config.pending_lan_session
     assert pending is not None
     assert pending.role == "join"
-    assert pending.auto_start is False
+    assert pending.auto_start is True
     assert pending.config.mode == "survival"
     assert pending.config.host_ip == "192.168.1.42"
     assert pending.config.port == 31993

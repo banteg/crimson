@@ -29,6 +29,7 @@ from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_asset
 
 if TYPE_CHECKING:
     from ..persistence.save_status import GameStatus
+    from ..net.runtime import LanRuntime
 
 
 class _ScreenFade(Protocol):
@@ -104,12 +105,27 @@ class BaseGameplayMode:
         self._last_dt_ms = 0.0
         self._screen_fade: _ScreenFade | None = None
         self._local_input = LocalInputInterpreter()
+        self._lan_runtime: LanRuntime | None = None
+        self._lan_local_slot_index = 0
+        self._lan_seed_override: int | None = None
+        self._lan_start_tick = 0
         self._lan_enabled = False
         self._lan_role = ""
         self._lan_expected_players = 1
         self._lan_connected_players = 1
         self._lan_waiting_for_players = False
         self._lan_trace_last_ms = -1000.0
+
+    def bind_lan_runtime(self, runtime: LanRuntime | None) -> None:
+        self._lan_runtime = runtime
+        slot_index = 0
+        if runtime is not None:
+            slot_index = int(getattr(runtime, "local_slot_index", 0))
+        self._lan_local_slot_index = max(0, min(3, int(slot_index)))
+
+    def set_lan_match_start(self, *, seed: int, start_tick: int = 0) -> None:
+        self._lan_seed_override = int(seed)
+        self._lan_start_tick = int(start_tick)
 
     def _cvar_float(self, name: str, default: float = 0.0) -> float:
         console = self._console
@@ -240,10 +256,23 @@ class BaseGameplayMode:
         connected_players: int,
         waiting_for_players: bool,
     ) -> None:
+        role = str(role)
+        expected_players = max(1, min(4, int(expected_players)))
+        connected_players = max(0, min(expected_players, int(connected_players)))
+        waiting_for_players = bool(waiting_for_players)
+
+        if (
+            bool(self._lan_enabled) == bool(enabled)
+            and str(self._lan_role) == role
+            and int(self._lan_expected_players) == int(expected_players)
+            and int(self._lan_connected_players) == int(connected_players)
+            and bool(self._lan_waiting_for_players) == bool(waiting_for_players)
+        ):
+            return
         self._lan_enabled = bool(enabled)
-        self._lan_role = str(role)
-        self._lan_expected_players = max(1, min(4, int(expected_players)))
-        self._lan_connected_players = max(0, min(self._lan_expected_players, int(connected_players)))
+        self._lan_role = role
+        self._lan_expected_players = int(expected_players)
+        self._lan_connected_players = int(connected_players)
         self._lan_waiting_for_players = bool(waiting_for_players)
         self._lan_trace_last_ms = -1000.0
         lan_debug_log(
@@ -417,7 +446,10 @@ class BaseGameplayMode:
         self._game_over_ui.close()
 
         player_count = self.config.player_count
-        seed = random.getrandbits(32)
+        if self._lan_seed_override is not None:
+            seed = int(self._lan_seed_override)
+        else:
+            seed = random.getrandbits(32)
         self.world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self.world.open()
         self._bind_world()

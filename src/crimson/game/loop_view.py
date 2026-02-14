@@ -19,6 +19,7 @@ from ..frontend.panels.base import PanelMenuView
 from ..frontend.panels.controls import ControlsMenuView
 from ..frontend.panels.credits import CreditsView
 from ..frontend.panels.databases import UnlockedPerksDatabaseView, UnlockedWeaponsDatabaseView
+from ..frontend.panels.lan_lobby import LanLobbyPanelView
 from ..frontend.panels.lan_session import LanSessionPanelView
 from ..frontend.panels.mods import ModsMenuView
 from ..frontend.panels.options import OptionsMenuView
@@ -133,6 +134,7 @@ class GameLoopView:
         self._front_views: dict[str, FrontView] = {
             "open_play_game": PlayGameMenuView(state),
             "open_lan_session": LanSessionPanelView(state),
+            "open_lan_lobby": LanLobbyPanelView(state),
             "open_quests": QuestsMenuView(state),
             "open_pause_menu": PauseMenuView(state),
             "start_quest": QuestGameView(state),
@@ -248,9 +250,9 @@ class GameLoopView:
             return "open_play_game"
 
         mode_by_action = {
-            "start_survival_lan": ("survival", "start_survival", 1),
-            "start_rush_lan": ("rush", "start_rush", 2),
-            "start_quest_lan": ("quests", "start_quest", 3),
+            "start_survival_lan": ("survival", "open_lan_lobby", 1),
+            "start_rush_lan": ("rush", "open_lan_lobby", 2),
+            "start_quest_lan": ("quests", "open_lan_lobby", 3),
         }
         resolved = mode_by_action.get(action)
         if resolved is None:
@@ -259,6 +261,10 @@ class GameLoopView:
                 self.state.lan_waiting_for_players = False
                 self.state.lan_expected_players = 1
                 self.state.lan_connected_players = 1
+                runtime = getattr(self.state, "lan_runtime", None)
+                if runtime is not None:
+                    runtime.close()
+                self.state.lan_runtime = None
             return action
 
         self._ensure_lan_debug_log_started()
@@ -281,17 +287,30 @@ class GameLoopView:
         self.state.config.player_count = int(player_count)
         self.state.lan_in_lobby = True
         self.state.lan_expected_players = int(player_count)
-        if bool(pending.auto_start) and str(pending.role) == "host":
-            # Temporary bring-up path: CLI auto-start host sessions should not
-            # deadlock at 1/N until live lobby transport updates are wired.
-            self.state.lan_connected_players = int(player_count)
-            self.state.lan_waiting_for_players = False
-        else:
-            self.state.lan_connected_players = 1
-            self.state.lan_waiting_for_players = int(player_count) > 1
+        self.state.lan_connected_players = 1 if str(pending.role) == "host" else 0
+        self.state.lan_waiting_for_players = True
         self.state.lan_desync_count = 0
         self.state.lan_resync_failure_count = 0
         self.state.config.game_mode = int(mode_id)
+
+        from ..net.runtime import LanRuntime, LanRuntimeConfig
+
+        runtime = getattr(self.state, "lan_runtime", None)
+        if runtime is not None:
+            runtime.close()
+        runtime = LanRuntime(
+            LanRuntimeConfig(
+                role=str(pending.role),
+                mode_id=int(mode_id),
+                player_count=int(player_count),
+                bind_host=str(cfg.bind_host),
+                host_ip=str(cfg.host_ip),
+                port=int(cfg.port),
+                quest_level=str(cfg.quest_level),
+                preserve_bugs=bool(cfg.preserve_bugs),
+            )
+        )
+        self.state.lan_runtime = runtime
         lan_debug_log(
             "lan_action_resolved",
             action=action,
@@ -322,6 +341,32 @@ class GameLoopView:
 
         return forward_action
 
+    def _tick_lan_runtime(self) -> None:
+        pending = self.state.pending_lan_session
+        runtime = getattr(self.state, "lan_runtime", None)
+        if pending is None or runtime is None:
+            return
+        try:
+            runtime.open()
+        except OSError as exc:
+            msg = f"LAN socket error: {exc}"
+            runtime.error = msg
+            pending.error = msg
+            self.state.lan_last_error = msg
+            lan_debug_log("net_open_error", role=str(pending.role), error=str(exc))
+            return
+        runtime.update()
+        lobby_state = runtime.lobby_state()
+        if lobby_state is not None:
+            expected = max(1, min(4, int(lobby_state.player_count)))
+            connected = sum(1 for slot in lobby_state.slots if bool(slot.connected))
+            self.state.lan_expected_players = int(expected)
+            self.state.lan_connected_players = max(0, min(int(expected), int(connected)))
+            self.state.lan_waiting_for_players = not bool(getattr(lobby_state, "started", False))
+        error = str(getattr(runtime, "error", "") or "")
+        if error and not self.state.lan_last_error:
+            self.state.lan_last_error = error
+
     def update(self, dt: float) -> None:
         input_begin_frame()
         console = self.state.console
@@ -330,6 +375,7 @@ class GameLoopView:
         self._sync_console_elapsed_ms()
         self._handle_console_requests()
         _update_screen_fade(self.state, dt)
+        self._tick_lan_runtime()
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_P):
             self._screenshot_requested = True
         if console.open_flag:

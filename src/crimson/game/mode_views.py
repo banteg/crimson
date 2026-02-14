@@ -47,6 +47,8 @@ class _BaseModeGameView:
 
     def _configure_lan_runtime(self) -> None:
         set_lan_runtime = getattr(self._mode, "set_lan_runtime", None)
+        bind_lan_runtime = getattr(self._mode, "bind_lan_runtime", None)
+        set_lan_match_start = getattr(self._mode, "set_lan_match_start", None)
         if not callable(set_lan_runtime):
             return
 
@@ -59,6 +61,8 @@ class _BaseModeGameView:
                 connected_players=1,
                 waiting_for_players=False,
             )
+            if callable(bind_lan_runtime):
+                bind_lan_runtime(None)
             return
 
         expected_players = max(1, min(4, int(getattr(self.state, "lan_expected_players", 1))))
@@ -71,6 +75,15 @@ class _BaseModeGameView:
             connected_players=int(connected_players),
             waiting_for_players=bool(waiting_for_players),
         )
+        runtime = getattr(self.state, "lan_runtime", None)
+        if callable(bind_lan_runtime):
+            bind_lan_runtime(runtime)
+        if callable(set_lan_match_start) and runtime is not None:
+            match_start = getattr(runtime, "match_start", None)
+            if callable(match_start):
+                event = match_start()
+                if event is not None:
+                    set_lan_match_start(seed=int(event.seed), start_tick=int(event.start_tick))
 
     def close(self) -> None:
         if self.state.audio is not None:
@@ -78,6 +91,7 @@ class _BaseModeGameView:
         self._mode.close()
 
     def update(self, dt: float) -> None:
+        self._configure_lan_runtime()
         self._mode.update(dt)
         mode_action = self._mode.take_action()
         if self._handle_mode_action(mode_action):

@@ -64,7 +64,7 @@ def test_loop_view_maps_lan_start_action_into_mode_action(tmp_path: Path) -> Non
 
     action = loop._resolve_lan_action("start_quest_lan")
 
-    assert action == "start_quest"
+    assert action == "open_lan_lobby"
     assert state.config.game_mode == 3
     assert state.config.player_count == 3
     assert state.pending_quest_level == "1.1"
@@ -72,6 +72,7 @@ def test_loop_view_maps_lan_start_action_into_mode_action(tmp_path: Path) -> Non
     assert state.lan_waiting_for_players is True
     assert state.lan_expected_players == 3
     assert state.lan_connected_players == 1
+    assert state.lan_runtime is not None
 
 
 def test_non_lan_start_resets_lobby_wait_state(tmp_path: Path) -> None:
@@ -142,8 +143,9 @@ def test_cli_autostart_host_does_not_block_on_wait_gate(tmp_path: Path) -> None:
 
     action = loop._resolve_lan_action("start_survival_lan")
 
-    assert action == "start_survival"
+    assert action == "open_lan_lobby"
     assert state.lan_in_lobby is True
-    assert state.lan_waiting_for_players is False
+    assert state.lan_waiting_for_players is True
     assert state.lan_expected_players == 2
-    assert state.lan_connected_players == 2
+    assert state.lan_connected_players == 1
+    assert state.lan_runtime is not None
