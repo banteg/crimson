@@ -36,25 +36,23 @@ const LOG_DIR = getLogDir();
 const CONFIG = {
   retryIntervalMs: 500,
   waitLogEveryMs: 2000,
-  logWait: false,
+  logWait: true,
   keepApplied: true,
   logPath: joinPath(LOG_DIR, 'force_balloons_198.jsonl'),
 };
 
 const GAME_MODULE = 'crimsonland.exe';
 
-// Static VAs for Crimsonland v1.9.8 (link base 0x00400000).
-const LINK_BASE = {
-  'crimsonland.exe': ptr('0x00400000'),
-};
-
-const ADDR = {
+// RVAs for Crimsonland v1.9.8 (relative to module base).
+const RVA = {
   // Globals
-  grim_interface_ptr: 0x0047e54c, // DAT_0047e54c
-  balloons_enabled_flag: 0x004a83b0, // DAT_004a83b0 (byte)
+  grim_interface_ptr: 0x7e54c, // DAT_0047e54c
+  balloons_enabled_flag: 0xa83b0, // DAT_004a83b0 (byte)
+  balloons_suppress_flag: 0x7e5e0, // DAT_0047e5e0 (byte) - suppresses balloon draw path in menu
+  balloons_menu_cached_handle: 0x6f2e8, // DAT_0046f2e8 (i32) - menu's cached balloon texture handle
 
   // Functions
-  texture_get_or_load: 0x00429e50, // sub_429e50(name, filename) -> handle (i32)
+  texture_get_or_load: 0x29e50, // sub_429e50(name, filename) -> handle (i32)
 };
 
 let LOG = { file: null, ok: false };
@@ -63,6 +61,8 @@ let appliedCount = 0;
 let lastWaitReason = null;
 let lastWaitLogTs = 0;
 let lastHandle = null;
+let didResetMenuCache = false;
+let lastModuleBase = null;
 
 function nowMs() {
   return Date.now();
@@ -91,18 +91,30 @@ function resolveAbi() {
   return null;
 }
 
-function exePtr(staticVa) {
-  let mod = null;
+function findModuleByNameInsensitive(name) {
+  const want = String(name).toLowerCase();
   try {
-    mod = Process.getModuleByName(GAME_MODULE);
+    const mods = Process.enumerateModulesSync();
+    for (let i = 0; i < mods.length; i++) {
+      if (String(mods[i].name).toLowerCase() === want) return mods[i];
+    }
   } catch (_) {
     return null;
   }
+  return null;
+}
+
+function gameMod() {
+  const mod = findModuleByNameInsensitive(GAME_MODULE);
+  if (mod) lastModuleBase = mod.base;
+  return mod;
+}
+
+function exePtr(rva) {
+  const mod = gameMod();
   if (!mod) return null;
-  const linkBase = LINK_BASE[GAME_MODULE];
-  if (!linkBase) return null;
   try {
-    return mod.base.add(ptr(staticVa).sub(linkBase));
+    return mod.base.add(ptr(rva));
   } catch (_) {
     return null;
   }
@@ -117,6 +129,22 @@ function isReadable(p) {
   }
 }
 
+function readU8Safe(p) {
+  try {
+    return p.readU8();
+  } catch (_) {
+    return null;
+  }
+}
+
+function readS32Safe(p) {
+  try {
+    return p.readS32();
+  } catch (_) {
+    return null;
+  }
+}
+
 function readPtrSafe(p) {
   try {
     return p.readPointer();
@@ -127,7 +155,7 @@ function readPtrSafe(p) {
 
 function resolveFunctions() {
   if (fTextureGetOrLoad) return true;
-  const p = exePtr(ADDR.texture_get_or_load);
+  const p = exePtr(RVA.texture_get_or_load);
   if (!p) return false;
   const abi = resolveAbi();
 
@@ -139,7 +167,7 @@ function resolveFunctions() {
 }
 
 function grimReady() {
-  const pIface = exePtr(ADDR.grim_interface_ptr);
+  const pIface = exePtr(RVA.grim_interface_ptr);
   if (!pIface || !isReadable(pIface)) return false;
   const iface = readPtrSafe(pIface);
   if (!iface) return false;
@@ -156,6 +184,10 @@ function maybeLogWait(reason) {
 }
 
 function forceOnce() {
+  if (!gameMod()) {
+    maybeLogWait('game_module_not_found');
+    return false;
+  }
   if (!resolveFunctions()) {
     maybeLogWait('resolve_functions_failed');
     return false;
@@ -165,14 +197,19 @@ function forceOnce() {
     return false;
   }
 
-  const pFlag = exePtr(ADDR.balloons_enabled_flag);
+  const pFlag = exePtr(RVA.balloons_enabled_flag);
   if (!pFlag) {
     writeLog({ event: 'error', error: 'balloons_flag_unavailable' });
     return false;
   }
 
+  const pSuppress = exePtr(RVA.balloons_suppress_flag);
+  const pMenuHandle = exePtr(RVA.balloons_menu_cached_handle);
+
   try {
     pFlag.writeU8(1);
+    // Clear suppress flag so balloons can render in menu even if it got latched earlier.
+    if (pSuppress) pSuppress.writeU8(0);
   } catch (e) {
     writeLog({ event: 'error', error: 'write_flag_failed', detail: String(e) });
     return false;
@@ -194,14 +231,35 @@ function forceOnce() {
     if (lastHandle !== handle) {
       lastHandle = handle;
       appliedCount += 1;
-      const pLoad = exePtr(ADDR.texture_get_or_load);
+      const pLoad = exePtr(RVA.texture_get_or_load);
       writeLog({
         event: 'forced',
         handle: handle,
         applied_count: appliedCount,
         flag_addr: pFlag.toString(),
+        flag_value: readU8Safe(pFlag),
+        suppress_addr: pSuppress ? pSuppress.toString() : null,
+        suppress_value: pSuppress ? readU8Safe(pSuppress) : null,
+        menu_handle_addr: pMenuHandle ? pMenuHandle.toString() : null,
+        menu_handle_value: pMenuHandle ? readS32Safe(pMenuHandle) : null,
         load_fn: pLoad ? pLoad.toString() : null,
+        module_base: lastModuleBase ? lastModuleBase.toString() : null,
       });
+    }
+  }
+
+  // Once we know the texture exists, force the menu to re-seed by resetting its cached handle to -1.
+  if (!didResetMenuCache && lastHandle !== null && lastHandle !== -1 && pMenuHandle) {
+    try {
+      pMenuHandle.writeS32(-1);
+      didResetMenuCache = true;
+      writeLog({
+        event: 'menu_handle_reset',
+        addr: pMenuHandle.toString(),
+        value: readS32Safe(pMenuHandle),
+      });
+    } catch (e) {
+      writeLog({ event: 'menu_handle_reset_error', error: String(e) });
     }
   }
 
