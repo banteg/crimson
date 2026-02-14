@@ -65,6 +65,35 @@ def test_host_lobby_rejects_build_mismatch() -> None:
     assert welcome.reason == "build_mismatch"
 
 
+def test_host_lobby_accepts_mismatched_client_mode_and_players() -> None:
+    lobby = HostLobby(
+        mode_id=2,
+        player_count=4,
+        build_id="b1",
+        tick_rate=TICK_RATE,
+        input_delay_ticks=INPUT_DELAY_TICKS,
+    )
+
+    # Client may not know host settings yet (CLI join); handshake is gated by build/protocol only.
+    welcome = lobby.process_hello(
+        ("127.0.0.1", 32001),
+        Hello(
+            protocol_version=1,
+            build_id="b1",
+            mode_id=0,
+            player_count=1,
+            tick_rate=999,
+            input_delay_ticks=0,
+            quest_level="",
+            preserve_bugs=True,
+            host=False,
+        ),
+    )
+    assert welcome.accepted is True
+    assert welcome.mode_id == 2
+    assert welcome.player_count == 4
+
+
 def test_host_lobby_rejects_when_full() -> None:
     lobby = HostLobby(
         mode_id=1,
