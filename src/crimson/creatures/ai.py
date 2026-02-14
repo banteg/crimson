@@ -218,8 +218,8 @@ def creature_ai_update_target(
     if creature.force_target or creature.ai_mode == 2:
         creature.target = f32_vec2(player_pos)
 
-    creature.target_heading = heading_from_delta_f32(
-        dx=float(creature.target.x) - float(creature.pos.x),
-        dy=float(creature.target.y) - float(creature.pos.y),
-    )
+    # Native stores dx/dy deltas into float locals before calling atan2.
+    dx = f32(float(creature.target.x) - float(creature.pos.x))
+    dy = f32(float(creature.target.y) - float(creature.pos.y))
+    creature.target_heading = heading_from_delta_f32(dx=float(dx), dy=float(dy))
     return CreatureAIUpdate(move_scale=f32(move_scale), self_damage=self_damage)
