@@ -92,6 +92,34 @@ def test_non_lan_start_resets_lobby_wait_state(tmp_path: Path) -> None:
     assert state.lan_connected_players == 1
 
 
+def test_lan_match_start_action_does_not_close_runtime(tmp_path: Path) -> None:
+    state = _build_state(tmp_path)
+    state.pending_lan_session = PendingLanSession(
+        role="host",
+        config=LanSessionConfig(
+            mode="survival",
+            player_count=2,
+            quest_level="",
+            bind_host="0.0.0.0",
+            host_ip="",
+            port=31993,
+            preserve_bugs=False,
+        ),
+        auto_start=True,
+    )
+    loop = GameLoopView(state)
+
+    assert loop._resolve_lan_action("start_survival_lan") == "open_lan_lobby"
+    runtime = state.lan_runtime
+    assert runtime is not None
+    assert state.lan_in_lobby is True
+
+    # The LAN lobby starts gameplay via the normal mode actions; keep LAN active.
+    assert loop._resolve_lan_action("start_survival") == "start_survival"
+    assert state.lan_in_lobby is True
+    assert state.lan_runtime is runtime
+
+
 def test_open_lan_session_route_requires_feature_cvar(tmp_path: Path) -> None:
     state = _build_state(tmp_path)
     loop = GameLoopView(state)

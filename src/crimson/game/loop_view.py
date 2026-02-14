@@ -260,11 +260,17 @@ class GameLoopView:
         resolved = mode_by_action.get(action)
         if resolved is None:
             if action in {"start_survival", "start_rush", "start_typo", "start_tutorial", "start_quest"}:
+                # Starting gameplay from the LAN lobby uses the normal mode start actions
+                # (`start_survival`, `start_rush`, etc) but must keep the LAN runtime alive.
+                pending = self.state.pending_lan_session
+                runtime = getattr(self.state, "lan_runtime", None)
+                if bool(self.state.lan_in_lobby) and pending is not None and runtime is not None:
+                    return action
+
                 self.state.lan_in_lobby = False
                 self.state.lan_waiting_for_players = False
                 self.state.lan_expected_players = 1
                 self.state.lan_connected_players = 1
-                runtime = getattr(self.state, "lan_runtime", None)
                 if runtime is not None:
                     runtime.close()
                 self.state.lan_runtime = None
