@@ -401,7 +401,7 @@ class QuestMode(BaseGameplayMode):
         self.world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._bind_world()
         self._local_input.reset(players=self.world.players)
-        self.state.status = status
+        self.bind_status(status)
         self.state.quest_stage_major, self.state.quest_stage_minor = quest.level_key
 
         base_id, overlay_id, detail_id = quest.terrain_ids or (0, 1, 0)

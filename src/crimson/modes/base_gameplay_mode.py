@@ -20,6 +20,14 @@ from grim.view import ViewContext
 from ..sim.input import PlayerInput
 from ..debug import debug_enabled
 from ..net.debug_log import lan_debug_log
+from ..net.deterministic_status import build_lan_deterministic_status
+from ..replay.types import (
+    PackedPlayerInput,
+    pack_input_flags,
+    unpack_input_flags,
+    unpack_input_move_key_flags,
+    unpack_packed_player_input,
+)
 from ..perks.runtime.effects import _creature_find_in_radius
 from ..perks.helpers import perk_count_get
 from ..game_world import GameWorld
@@ -101,7 +109,9 @@ class BaseGameplayMode:
         self.close_requested = False
         self._action: str | None = None
         self._paused = False
-        self._status: GameStatus | None = None
+        self._status_base: GameStatus | None = None
+        self._status_sim: GameStatus | None = None
+        self._lan_status: GameStatus | None = None
 
         self.world = GameWorld(
             assets_dir=ctx.assets_dir,
@@ -147,6 +157,20 @@ class BaseGameplayMode:
         self._lan_terrain_pending_last = False
         self._lan_terrain_pending_since_ms = 0
         self._lan_initial_terrain_ready = False
+
+    def _refresh_effective_status(self, *, reset_lan_status: bool) -> None:
+        if bool(self._lan_enabled):
+            if bool(reset_lan_status) or self._lan_status is None:
+                self._lan_status = build_lan_deterministic_status(base=self._status_base)
+            self._status_sim = self._lan_status
+        else:
+            self._lan_status = None
+            self._status_sim = self._status_base
+
+        # Keep the currently-bound world state in sync (note that `open()` resets
+        # the underlying `GameWorld.state`, so `_bind_world()` also re-applies it).
+        if hasattr(self, "state"):
+            self.state.status = self._status_sim
 
     def bind_lan_runtime(self, runtime: LanRuntime | None) -> None:
         self._lan_runtime = runtime
@@ -216,14 +240,14 @@ class BaseGameplayMode:
         self.state = self.world.state
         self.creatures = self.world.creatures
         self.player = self.world.players[0]
-        self.state.status = self._status
+        self.state.status = self._status_sim
 
     def _any_player_alive(self) -> bool:
         return any(player.health > 0.0 for player in self.world.players)
 
     def bind_status(self, status: GameStatus | None) -> None:
-        self._status = status
-        self.state.status = status
+        self._status_base = status
+        self._refresh_effective_status(reset_lan_status=False)
 
     def bind_screen_fade(self, fade: _ScreenFade | None) -> None:
         self._screen_fade = fade
@@ -293,6 +317,7 @@ class BaseGameplayMode:
         connected_players = max(0, min(expected_players, int(connected_players)))
         waiting_for_players = bool(waiting_for_players)
 
+        prev_enabled = bool(self._lan_enabled)
         if (
             bool(self._lan_enabled) == bool(enabled)
             and str(self._lan_role) == role
@@ -307,6 +332,8 @@ class BaseGameplayMode:
         self._lan_connected_players = int(connected_players)
         self._lan_waiting_for_players = bool(waiting_for_players)
         self._lan_trace_last_ms = -1000.0
+        if bool(prev_enabled) != bool(self._lan_enabled):
+            self._refresh_effective_status(reset_lan_status=True)
         lan_debug_log(
             "set_lan_runtime",
             mode=self.__class__.__name__,
@@ -560,6 +587,11 @@ class BaseGameplayMode:
         else:
             seed = random.getrandbits(32)
         self._bootstrap_seed = int(seed) & 0xFFFFFFFF
+
+        # Reset LAN sim status at the start of each run so per-session usage
+        # counts (weapon bias) start from a consistent baseline across peers.
+        self._refresh_effective_status(reset_lan_status=True)
+
         self.world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self.world.open()
         self._bind_world()
@@ -575,6 +607,18 @@ class BaseGameplayMode:
             lan_enabled=bool(self._lan_enabled),
             lan_role=str(self._lan_role),
             lan_slot=int(self._lan_local_slot_index),
+            base_status_quest_unlock_index=int(getattr(self._status_base, "quest_unlock_index", 0) or 0)
+            if self._status_base is not None
+            else 0,
+            base_status_quest_unlock_index_full=int(getattr(self._status_base, "quest_unlock_index_full", 0) or 0)
+            if self._status_base is not None
+            else 0,
+            sim_status_quest_unlock_index=int(getattr(self._status_sim, "quest_unlock_index", 0) or 0)
+            if self._status_sim is not None
+            else 0,
+            sim_status_quest_unlock_index_full=int(getattr(self._status_sim, "quest_unlock_index_full", 0) or 0)
+            if self._status_sim is not None
+            else 0,
             detail_preset=self.config.detail_preset,
             fx_toggle=self.config.fx_toggle,
             sim_detail_preset=int(self._deterministic_detail_preset()),
