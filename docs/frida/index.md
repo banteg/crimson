@@ -3,6 +3,7 @@
 Runtime instrumentation for evidence collection using Frida.
 
 - [Workflow](workflow.md) — How to collect and promote runtime evidence
+- [Panel state resolution sweep](panel-state-resolution-sweep.md) — Automatic panel/text capture across UI states per resolution
 - [Differential playbook](differential-playbook.md) — What to do when handed only a fresh capture file
 - [Differential capture sessions](differential-sessions.md) — Replay/sidecar verification runs, findings, and fixes
 - [Gameplay/state capture](gameplay-state-capture.md) — automatic large-run capture script

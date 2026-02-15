@@ -126,6 +126,7 @@ nav = [
       { "Frida" = [
         { "Overview" = "frida/index.md" },
         { "Workflow" = "frida/workflow.md" },
+        { "Panel state resolution sweep" = "frida/panel-state-resolution-sweep.md" },
         { "Differential playbook" = "frida/differential-playbook.md" },
         { "Differential sessions" = "frida/differential-sessions.md" },
         { "Gameplay/state capture" = "frida/gameplay-state-capture.md" },
