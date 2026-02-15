@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from grim.geom import Vec2
 
 from dataclasses import dataclass, field
@@ -49,6 +50,8 @@ class GameWorld:
     config: CrimsonConfig | None = None
     audio: AudioState | None = None
     audio_rng: random.Random | None = None
+    # Presentation-only RNG for terrain/UI. Must not consume deterministic gameplay RNG.
+    terrain_rng: random.Random = field(default_factory=random.Random)
     audio_router: AudioRouter = field(init=False)
     renderer: WorldRenderer = field(init=False)
     world_state: WorldState = field(init=False)
@@ -139,6 +142,7 @@ class GameWorld:
         self.players = self.world_state.players
         self.creatures = self.world_state.creatures
         self.state.rng.srand(int(seed))
+        self.terrain_rng.seed(int(seed) & 0xFFFFFFFF)
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
@@ -163,7 +167,7 @@ class GameWorld:
             self.players.append(player)
         self.camera = Vec2(-1.0, -1.0)
         if self.ground is not None:
-            terrain_seed = int(self.state.rng.rand() % 10_000)
+            terrain_seed = int(self.terrain_rng.randrange(0, 10_000))
             self.ground.schedule_generate(seed=terrain_seed, layers=3)
 
     def _ensure_texture_loader(self) -> TextureLoader:
@@ -253,7 +257,7 @@ class GameWorld:
             self.ground.overlay = overlay
             self.ground.overlay_detail = detail
         self._sync_ground_settings()
-        terrain_seed = int(self.state.rng.rand() % 10_000)
+        terrain_seed = int(self.terrain_rng.randrange(0, 10_000))
         self.ground.schedule_generate(seed=terrain_seed, layers=3)
 
     def open(self) -> None:
@@ -289,7 +293,7 @@ class GameWorld:
                 self.ground.overlay = overlay
                 self.ground.overlay_detail = detail
             self._sync_ground_settings()
-            terrain_seed = int(self.state.rng.rand() % 10_000)
+            terrain_seed = int(self.terrain_rng.randrange(0, 10_000))
             self.ground.schedule_generate(seed=terrain_seed, layers=3)
 
         for asset in sorted(set(CREATURE_ASSET.values())):
@@ -472,7 +476,7 @@ class GameWorld:
         if update_camera:
             self.update_camera(step.dt_sim)
 
-    def _queue_projectile_decals(self, hits: list[ProjectileHit]) -> None:
+    def _queue_projectile_decals(self, hits: list[ProjectileHit], *, rand: Callable[[], int]) -> None:
         fx_toggle = 0
         detail_preset = 5
         if self.config is not None:
@@ -483,7 +487,7 @@ class GameWorld:
             players=self.players,
             fx_queue=self.fx_queue,
             hits=hits,
-            rand=self.state.rng.rand,
+            rand=rand,
             detail_preset=detail_preset,
             fx_toggle=fx_toggle,
         )

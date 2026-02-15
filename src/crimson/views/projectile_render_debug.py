@@ -261,7 +261,7 @@ class ProjectileRenderDebugView:
         )
         self._world.state.secondary_projectiles.update_pulse_gun(float(dt), self._targets)
         if hits:
-            self._world._queue_projectile_decals(hits)
+            self._world._queue_projectile_decals(hits, rand=self._world.state.rng.rand)
             self._world.audio_router.play_hit_sfx(
                 hits,
                 game_mode=1,

@@ -558,12 +558,18 @@ class BaseGameplayMode:
         if record is None:
             return
 
+        rand = None
+        audio_rng = self.world.audio_rng
+        if audio_rng is not None:
+            def rand() -> int:
+                return int(audio_rng.randrange(0, 0x8000))
+
         action = self._game_over_ui.update(
             dt,
             record=record,
             player_name_default=self._player_name_default(),
             play_sfx=self.world.audio_router.play_sfx,
-            rand=self.state.rng.rand,
+            rand=rand,
             mouse=self._ui_mouse_pos(),
         )
         if action == "play_again":
@@ -613,7 +619,7 @@ class BaseGameplayMode:
     def regenerate_terrain_for_console(self) -> None:
         if self.world.ground is None:
             return
-        terrain_seed = int(self.state.rng.rand() % 10_000)
+        terrain_seed = int(self.world.terrain_rng.randrange(0, 10_000))
         self.world.ground.schedule_generate(seed=terrain_seed, layers=3)
 
     def _draw_screen_fade(self) -> None:

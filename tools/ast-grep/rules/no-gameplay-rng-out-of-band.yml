@@ -1,0 +1,11 @@
+id: no-gameplay-rng-out-of-band
+language: python
+severity: warning
+message: Do not consume deterministic gameplay RNG (`state.rng.rand`) in out-of-band presentation/init code; use `terrain_rng`/`audio_rng` or the deterministic step pipeline.
+files:
+  - src/crimson/game_world.py
+  - src/crimson/modes/base_gameplay_mode.py
+rule:
+  any:
+    - pattern: $OBJ.state.rng.rand
+    - pattern: $OBJ.state.rng.rand()
