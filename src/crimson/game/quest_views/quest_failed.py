@@ -365,7 +365,20 @@ class QuestFailedView:
         if outcome is None:
             return
         self.state.quest_fail_retry_count = int(self.state.quest_fail_retry_count) + 1
-        self.state.pending_quest_level = outcome.level
+        level = str(outcome.level or "")
+        self.state.pending_quest_level = level
+        self.state.config.game_mode = 3
+        self.state.config.quest_level = level
+        try:
+            major, minor = parse_level(level)
+        except ValueError:
+            major, minor = 0, 0
+        self.state.config.quest_stage_major = int(major)
+        self.state.config.quest_stage_minor = int(minor)
+        try:
+            self.state.config.save()
+        except (OSError, ValueError) as exc:
+            self.state.console.log.log(f"quest failed: failed to save quest selection config: {exc}")
         if self.state.audio is not None:
             play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._begin_close("start_quest")

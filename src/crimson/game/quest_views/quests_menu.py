@@ -412,6 +412,9 @@ class QuestsMenuView:
         level = f"{int(stage)}.{int(row) + 1}"
         self.state.pending_quest_level = level
         self.state.config.game_mode = 3
+        self.state.config.quest_level = level
+        self.state.config.quest_stage_major = int(stage)
+        self.state.config.quest_stage_minor = int(row) + 1
         self._dirty = True
         self._begin_close_transition("start_quest")
 

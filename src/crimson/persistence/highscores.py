@@ -220,6 +220,17 @@ def scores_dir_for_base_dir(base_dir: Path) -> Path:
     return base_dir / "scores5"
 
 
+def _with_player_count_suffix(path: Path, *, player_count: int) -> Path:
+    count = int(player_count)
+    if count <= 1:
+        return path
+    # Native only supports 1P/2P. Our port supports up to 4 players; keep separate leaderboards.
+    count = max(2, min(4, count))
+    if path.suffix.lower() != ".hi":
+        return path
+    return path.with_name(f"{path.stem}_{count}{path.suffix}")
+
+
 def scores_path_for_mode(
     base_dir: Path,
     game_mode_id: int,
@@ -227,35 +238,39 @@ def scores_path_for_mode(
     hardcore: bool = False,
     quest_stage_major: int = 0,
     quest_stage_minor: int = 0,
+    player_count: int = 1,
 ) -> Path:
     root = scores_dir_for_base_dir(base_dir)
     mode = int(game_mode_id)
     if mode == 1:
-        return root / "survival.hi"
-    if mode == 2:
-        return root / "rush.hi"
-    if mode == 4:
-        return root / "typo.hi"
-    if mode == 3:
+        path = root / "survival.hi"
+    elif mode == 2:
+        path = root / "rush.hi"
+    elif mode == 4:
+        path = root / "typo.hi"
+    elif mode == 3:
         # Native `highscore_build_path` uses `questhc*.hi` when hardcore is OFF,
         # and `quest*.hi` when hardcore is ON.
         prefix = "quest" if hardcore else "questhc"
         major = int(quest_stage_major)
         minor = int(quest_stage_minor)
-        return root / f"{prefix}{major}_{minor}.hi"
-    return root / "unknown.hi"
+        path = root / f"{prefix}{major}_{minor}.hi"
+    else:
+        path = root / "unknown.hi"
+
+    return _with_player_count_suffix(path, player_count=int(player_count))
 
 
 def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage_major: int = 0, quest_stage_minor: int = 0) -> Path:
     mode = config.game_mode
     root = scores_dir_for_base_dir(base_dir)
     if mode == 1:
-        return root / "survival.hi"
-    if mode == 2:
-        return root / "rush.hi"
-    if mode == 4:
-        return root / "typo.hi"
-    if mode == 3:
+        path = root / "survival.hi"
+    elif mode == 2:
+        path = root / "rush.hi"
+    elif mode == 4:
+        path = root / "typo.hi"
+    elif mode == 3:
         hardcore = config.hardcore
         if int(quest_stage_major) == 0 and int(quest_stage_minor) == 0:
             major = config.quest_stage_major
@@ -275,8 +290,11 @@ def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage
         prefix = "quest" if hardcore else "questhc"
         major = int(quest_stage_major)
         minor = int(quest_stage_minor)
-        return root / f"{prefix}{major}_{minor}.hi"
-    return root / "unknown.hi"
+        path = root / f"{prefix}{major}_{minor}.hi"
+    else:
+        path = root / "unknown.hi"
+
+    return _with_player_count_suffix(path, player_count=config.player_count)
 
 
 def decode_record_payload(encoded: bytes) -> bytes:

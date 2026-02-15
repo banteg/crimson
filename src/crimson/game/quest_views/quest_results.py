@@ -204,7 +204,7 @@ class QuestResultsView:
 
         action = ui.update(dt, play_sfx=_play if audio is not None else None, rand=lambda: rng.getrandbits(32))
         if action == "play_again":
-            self.state.pending_quest_level = self._quest_level
+            self._set_pending_quest_level(self._quest_level)
             self._action = "start_quest"
             return
         if action == "play_next":
@@ -213,7 +213,7 @@ class QuestResultsView:
                 return
             next_level = _next_quest_level(self._quest_level)
             if next_level is not None:
-                self.state.pending_quest_level = next_level
+                self._set_pending_quest_level(next_level)
                 self._action = "start_quest"
             else:
                 self._action = "back_to_menu"
@@ -260,6 +260,21 @@ class QuestResultsView:
             highlight_rank=highlight_rank,
         )
         self._action = "open_high_scores"
+
+    def _set_pending_quest_level(self, level: str) -> None:
+        self.state.pending_quest_level = str(level or "")
+        self.state.config.game_mode = 3
+        self.state.config.quest_level = str(level or "")
+        try:
+            major, minor = parse_level(str(level or ""))
+        except ValueError:
+            major, minor = 0, 0
+        self.state.config.quest_stage_major = int(major)
+        self.state.config.quest_stage_minor = int(minor)
+        try:
+            self.state.config.save()
+        except (OSError, ValueError) as exc:
+            self._log_nonfatal("failed to save quest selection config", exc)
 
     def _log_nonfatal(self, message: str, exc: Exception) -> None:
         self.state.console.log.log(f"quest results: {message}: {exc}")

@@ -45,10 +45,22 @@ def test_scores_path_for_config_survival_mode_uses_survival_filename(tmp_path: P
     assert path == tmp_path / "scores5" / "survival.hi"
 
 
+def test_scores_path_for_config_survival_mode_uses_player_count_suffix(tmp_path: Path) -> None:
+    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data={"game_mode": int(GameMode.SURVIVAL), "player_count": 3})
+    path = scores_path_for_config(tmp_path, config)
+    assert path == tmp_path / "scores5" / "survival_3.hi"
+
+
 def test_scores_path_for_config_rush_mode_uses_rush_filename(tmp_path: Path) -> None:
     config = CrimsonConfig(path=tmp_path / "crimson.cfg", data={"game_mode": int(GameMode.RUSH)})
     path = scores_path_for_config(tmp_path, config)
     assert path == tmp_path / "scores5" / "rush.hi"
+
+
+def test_scores_path_for_config_rush_mode_uses_player_count_suffix(tmp_path: Path) -> None:
+    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data={"game_mode": int(GameMode.RUSH), "player_count": 4})
+    path = scores_path_for_config(tmp_path, config)
+    assert path == tmp_path / "scores5" / "rush_4.hi"
 
 
 def test_scores_path_for_config_quest_mode_uses_config_stage_fields_when_missing_args(tmp_path: Path) -> None:
@@ -62,6 +74,20 @@ def test_scores_path_for_config_quest_mode_uses_config_stage_fields_when_missing
     )
     path = scores_path_for_config(tmp_path, config)
     assert path == tmp_path / "scores5" / "questhc4_7.hi"
+
+
+def test_scores_path_for_config_quest_mode_uses_player_count_suffix(tmp_path: Path) -> None:
+    config = CrimsonConfig(
+        path=tmp_path / "crimson.cfg",
+        data={
+            "game_mode": int(GameMode.QUESTS),
+            "quest_stage_major": 4,
+            "quest_stage_minor": 7,
+            "player_count": 2,
+        },
+    )
+    path = scores_path_for_config(tmp_path, config)
+    assert path == tmp_path / "scores5" / "questhc4_7_2.hi"
 
 
 def test_scores_path_for_config_typo_mode_uses_typo_filename(tmp_path: Path) -> None:

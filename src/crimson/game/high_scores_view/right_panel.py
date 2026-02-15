@@ -7,6 +7,7 @@ import pyray as rl
 from grim.geom import Vec2
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 
+from ...frontend.panels.hit_test import mouse_inside_rect_with_padding
 from ...frontend.high_scores_layout import (
     HS_LOCAL_CLOCK_X,
     HS_LOCAL_CLOCK_Y,
@@ -80,6 +81,120 @@ if TYPE_CHECKING:
     from .view import HighScoresView
 
 
+def _saved_score_names(view: "HighScoresView") -> list[str]:
+    slot_count = max(1, min(8, int(view.state.config.int_value("saved_name_index", 1))))
+    names_blob = view.state.config.blob_value("saved_names", size=0x1B * 8, default=b"")  # 8 entries
+    names: list[str] = []
+    for i in range(slot_count):
+        entry = names_blob[i * 0x1B : (i + 1) * 0x1B]
+        label = entry.split(b"\x00", 1)[0].decode("latin-1", errors="ignore").strip()
+        if not label:
+            label = "default" if i == 0 else f"slot_{i}"
+        names.append(label)
+    return names
+
+
+def _draw_dropdown(
+    view: "HighScoresView",
+    *,
+    font: SmallFontData,
+    widget_pos: Vec2,
+    widget_w: float,
+    items: list[str] | tuple[str, ...],
+    selected_index: int,
+    value_pos: Vec2,
+    arrow_pos: Vec2,
+    is_open: bool,
+    enabled: bool,
+    scale: float,
+) -> None:
+    item_count = max(0, len(items))
+    header_h = 16.0 * scale
+    row_h = 16.0 * scale
+    full_h = (float(item_count) * 16.0 + 24.0) * scale
+    rows_y0 = widget_pos.y + 17.0 * scale
+
+    mouse = rl.get_mouse_position()
+    hovered_header = bool(enabled) and mouse_inside_rect_with_padding(
+        mouse,
+        pos=widget_pos,
+        width=widget_w,
+        height=14.0 * scale,
+    )
+
+    widget_h = full_h if is_open else header_h
+    rl.draw_rectangle(int(widget_pos.x), int(widget_pos.y), int(widget_w), int(widget_h), rl.WHITE)
+    rl.draw_rectangle(
+        int(widget_pos.x) + 1,
+        int(widget_pos.y) + 1,
+        max(0, int(widget_w) - 2),
+        max(0, int(widget_h) - 2),
+        rl.BLACK,
+    )
+
+    if (is_open or hovered_header) and enabled:
+        line_h = max(1, int(1.0 * scale))
+        rl.draw_rectangle(
+            int(widget_pos.x),
+            int(widget_pos.y + 15.0 * scale),
+            int(widget_w),
+            line_h,
+            rl.Color(255, 255, 255, 128),
+        )
+
+    arrow_tex = view._drop_on if ((is_open or hovered_header) and enabled) else view._drop_off
+    if arrow_tex is None:
+        arrow_tex = view._drop_off
+    if arrow_tex is not None:
+        arrow_w = float(arrow_tex.width) * scale
+        arrow_h = float(arrow_tex.height) * scale
+        rl.draw_texture_pro(
+            arrow_tex,
+            rl.Rectangle(0.0, 0.0, float(arrow_tex.width), float(arrow_tex.height)),
+            rl.Rectangle(arrow_pos.x, arrow_pos.y, arrow_w, arrow_h),
+            rl.Vector2(0.0, 0.0),
+            0.0,
+            rl.WHITE,
+        )
+
+    if item_count <= 0:
+        return
+
+    selected_index = max(0, min(item_count - 1, int(selected_index)))
+    header_alpha = 242 if ((is_open or hovered_header) and enabled) else 191
+    draw_small_text(
+        font,
+        str(items[selected_index]),
+        value_pos,
+        1.0 * scale,
+        rl.Color(255, 255, 255, header_alpha),
+    )
+
+    if not is_open:
+        return
+
+    for idx, label in enumerate(items):
+        item_y = rows_y0 + row_h * float(idx)
+        hovered = bool(enabled) and mouse_inside_rect_with_padding(
+            mouse,
+            pos=Vec2(widget_pos.x, item_y),
+            width=widget_w,
+            height=14.0 * scale,
+        )
+        alpha = 153
+        if hovered:
+            alpha = 242
+        if idx == selected_index:
+            alpha = max(alpha, 245)
+        draw_small_text(
+            font,
+            str(label),
+            Vec2(value_pos.x, item_y),
+            1.0 * scale,
+            rl.Color(255, 255, 255, alpha),
+        )
+
+
 def draw_right_panel(
     view: "HighScoresView",
     *,
@@ -110,13 +225,14 @@ def _draw_right_panel_quest_options(
     text_scale = 1.0 * scale
     text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
-    check_on = view._check_on
-    if check_on is not None:
-        check_w = float(check_on.width) * scale
-        check_h = float(check_on.height) * scale
+    # Checkbox: "Show internet scores"
+    check_tex = view._check_on if view.state.config.score_load_gate else view._check_off
+    if check_tex is not None:
+        check_w = float(check_tex.width) * scale
+        check_h = float(check_tex.height) * scale
         rl.draw_texture_pro(
-            check_on,
-            rl.Rectangle(0.0, 0.0, float(check_on.width), float(check_on.height)),
+            check_tex,
+            rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
             rl.Rectangle(
                 right_top_left.x + HS_RIGHT_CHECK_X * scale,
                 right_top_left.y + HS_RIGHT_CHECK_Y * scale,
@@ -163,87 +279,99 @@ def _draw_right_panel_quest_options(
         text_color,
     )
 
-    # Closed list widgets (state_14 quest variant): white border + black fill.
-    widget_h = 16.0 * scale
-    for widget_offset, widget_width in (
-        (Vec2(HS_RIGHT_PLAYER_COUNT_WIDGET_X, HS_RIGHT_PLAYER_COUNT_WIDGET_Y), HS_RIGHT_PLAYER_COUNT_WIDGET_W),
-        (Vec2(HS_RIGHT_GAME_MODE_WIDGET_X, HS_RIGHT_GAME_MODE_WIDGET_Y), HS_RIGHT_GAME_MODE_WIDGET_W),
-        (Vec2(HS_RIGHT_SHOW_SCORES_WIDGET_X, HS_RIGHT_SHOW_SCORES_WIDGET_Y), HS_RIGHT_SHOW_SCORES_WIDGET_W),
-        (Vec2(HS_RIGHT_SCORE_LIST_WIDGET_X, HS_RIGHT_SCORE_LIST_WIDGET_Y), HS_RIGHT_SCORE_LIST_WIDGET_W),
-    ):
-        widget_pos = right_top_left + widget_offset * scale
-        w = float(widget_width) * scale
-        rl.draw_rectangle(int(widget_pos.x), int(widget_pos.y), int(w), int(widget_h), rl.WHITE)
-        rl.draw_rectangle(
-            int(widget_pos.x) + 1,
-            int(widget_pos.y) + 1,
-            max(0, int(w) - 2),
-            max(0, int(widget_h) - 2),
-            rl.BLACK,
+    # Dropdown widgets (state_14 quest variant).
+    show_scores_items = ("Best of all time", "Best of month", "Best of week", "Best of day")
+    player_items = ("1 player", "2 players", "3 players", "4 players")
+    mode_items: list[tuple[str, int]] = [("Quests", 3), ("Rush", 2), ("Survival", 1)]
+    if int(view.state.status.quest_unlock_index) >= 0x28:
+        mode_items.append(("Typ'o'Shooter", 4))
+    names = _saved_score_names(view)
+
+    player_count = max(1, min(4, view.state.config.player_count))
+    player_selected = player_count - 1
+    show_scores_selected = max(0, min(len(show_scores_items) - 1, view.state.config.highscore_date_mode))
+    mode_id = view.state.config.game_mode
+    mode_selected = 0
+    for idx, (_label, _id) in enumerate(mode_items):
+        if int(_id) == int(mode_id):
+            mode_selected = idx
+            break
+    name_selected = max(0, min(len(names) - 1, int(view.state.config.int_value("selected_name_slot", 0))))
+
+    dropdowns = (
+        (
+            view._player_count_open,
+            Vec2(HS_RIGHT_PLAYER_COUNT_WIDGET_X, HS_RIGHT_PLAYER_COUNT_WIDGET_Y),
+            float(HS_RIGHT_PLAYER_COUNT_WIDGET_W),
+            list(player_items),
+            player_selected,
+            Vec2(HS_RIGHT_PLAYER_COUNT_VALUE_X, HS_RIGHT_PLAYER_COUNT_VALUE_Y),
+            Vec2(HS_RIGHT_PLAYER_COUNT_DROP_X, HS_RIGHT_PLAYER_COUNT_DROP_Y),
+            not (view._game_mode_open or view._show_scores_open or view._score_list_open),
+        ),
+        (
+            view._game_mode_open,
+            Vec2(HS_RIGHT_GAME_MODE_WIDGET_X, HS_RIGHT_GAME_MODE_WIDGET_Y),
+            float(HS_RIGHT_GAME_MODE_WIDGET_W),
+            [label for label, _id in mode_items],
+            mode_selected,
+            Vec2(HS_RIGHT_GAME_MODE_VALUE_X, HS_RIGHT_GAME_MODE_VALUE_Y),
+            Vec2(HS_RIGHT_GAME_MODE_DROP_X, HS_RIGHT_GAME_MODE_DROP_Y),
+            not (view._player_count_open or view._show_scores_open or view._score_list_open),
+        ),
+        (
+            view._show_scores_open,
+            Vec2(HS_RIGHT_SHOW_SCORES_WIDGET_X, HS_RIGHT_SHOW_SCORES_WIDGET_Y),
+            float(HS_RIGHT_SHOW_SCORES_WIDGET_W),
+            list(show_scores_items),
+            show_scores_selected,
+            Vec2(HS_RIGHT_SHOW_SCORES_VALUE_X, HS_RIGHT_SHOW_SCORES_VALUE_Y),
+            Vec2(HS_RIGHT_SHOW_SCORES_DROP_X, HS_RIGHT_SHOW_SCORES_DROP_Y),
+            not (view._player_count_open or view._game_mode_open or view._score_list_open),
+        ),
+        (
+            view._score_list_open,
+            Vec2(HS_RIGHT_SCORE_LIST_WIDGET_X, HS_RIGHT_SCORE_LIST_WIDGET_Y),
+            float(HS_RIGHT_SCORE_LIST_WIDGET_W),
+            names,
+            name_selected,
+            Vec2(HS_RIGHT_SCORE_LIST_VALUE_X, HS_RIGHT_SCORE_LIST_VALUE_Y),
+            Vec2(HS_RIGHT_SCORE_LIST_DROP_X, HS_RIGHT_SCORE_LIST_DROP_Y),
+            not (view._player_count_open or view._game_mode_open or view._show_scores_open),
+        ),
+    )
+    # Active list must render last so overlapping widgets don't occlude open options.
+    for is_open, widget_offset, widget_w, items, selected_index, value_offset, arrow_offset, enabled in dropdowns:
+        if is_open:
+            continue
+        _draw_dropdown(
+            view,
+            font=font,
+            widget_pos=right_top_left + widget_offset * scale,
+            widget_w=widget_w * scale,
+            items=items,
+            selected_index=selected_index,
+            value_pos=right_top_left + value_offset * scale,
+            arrow_pos=right_top_left + arrow_offset * scale,
+            is_open=is_open,
+            enabled=bool(enabled),
+            scale=scale,
         )
-
-    # Values (static in the oracle).
-    player_count = view.state.config.player_count
-    if player_count < 1:
-        player_count = 1
-    if player_count > 4:
-        player_count = 4
-    player_count_label = f"{player_count} player"
-    if player_count != 1:
-        player_count_label += "s"
-    draw_small_text(
-        font,
-        player_count_label,
-        right_top_left + Vec2(HS_RIGHT_PLAYER_COUNT_VALUE_X * scale, HS_RIGHT_PLAYER_COUNT_VALUE_Y * scale),
-        text_scale,
-        text_color,
-    )
-    draw_small_text(
-        font,
-        "Quests",
-        right_top_left + Vec2(HS_RIGHT_GAME_MODE_VALUE_X * scale, HS_RIGHT_GAME_MODE_VALUE_Y * scale),
-        text_scale,
-        text_color,
-    )
-    draw_small_text(
-        font,
-        "Best of all time",
-        right_top_left + Vec2(HS_RIGHT_SHOW_SCORES_VALUE_X * scale, HS_RIGHT_SHOW_SCORES_VALUE_Y * scale),
-        text_scale,
-        text_color,
-    )
-    draw_small_text(
-        font,
-        "default",
-        right_top_left + Vec2(HS_RIGHT_SCORE_LIST_VALUE_X * scale, HS_RIGHT_SCORE_LIST_VALUE_Y * scale),
-        text_scale,
-        text_color,
-    )
-
-    drop_off = view._drop_off
-    if drop_off is None:
-        return
-    drop_w = float(drop_off.width) * scale
-    drop_h = float(drop_off.height) * scale
-    for drop_offset in (
-        Vec2(HS_RIGHT_PLAYER_COUNT_DROP_X, HS_RIGHT_PLAYER_COUNT_DROP_Y),
-        Vec2(HS_RIGHT_GAME_MODE_DROP_X, HS_RIGHT_GAME_MODE_DROP_Y),
-        Vec2(HS_RIGHT_SHOW_SCORES_DROP_X, HS_RIGHT_SHOW_SCORES_DROP_Y),
-        Vec2(HS_RIGHT_SCORE_LIST_DROP_X, HS_RIGHT_SCORE_LIST_DROP_Y),
-    ):
-        drop_pos = right_top_left + drop_offset * scale
-        rl.draw_texture_pro(
-            drop_off,
-            rl.Rectangle(0.0, 0.0, float(drop_off.width), float(drop_off.height)),
-            rl.Rectangle(
-                drop_pos.x,
-                drop_pos.y,
-                drop_w,
-                drop_h,
-            ),
-            rl.Vector2(0.0, 0.0),
-            0.0,
-            rl.WHITE,
+    for is_open, widget_offset, widget_w, items, selected_index, value_offset, arrow_offset, enabled in dropdowns:
+        if not is_open:
+            continue
+        _draw_dropdown(
+            view,
+            font=font,
+            widget_pos=right_top_left + widget_offset * scale,
+            widget_w=widget_w * scale,
+            items=items,
+            selected_index=selected_index,
+            value_pos=right_top_left + value_offset * scale,
+            arrow_pos=right_top_left + arrow_offset * scale,
+            is_open=is_open,
+            enabled=bool(enabled),
+            scale=scale,
         )
 
 
@@ -320,9 +448,14 @@ def _draw_right_panel_local_score(
         text_scale,
         text_color,
     )
+
+    mode_id = int(getattr(entry, "game_mode_id", 0) or 0)
+    elapsed_ms = int(getattr(entry, "survival_elapsed_ms", 0) or 0)
+    score_xp = int(getattr(entry, "score_xp", 0) or 0)
+
     draw_small_text(
         font,
-        "Game time",
+        "Experience" if mode_id == 3 else "Game time",
         right_top_left + Vec2(HS_LOCAL_TIME_LABEL_X * scale, HS_LOCAL_TIME_LABEL_Y * scale),
         text_scale,
         game_time_color,
@@ -335,7 +468,13 @@ def _draw_right_panel_local_score(
         separator_color,
     )
 
-    score_value = f"{int(getattr(entry, 'score_xp', 0))}"
+    # Native highscore card:
+    # - Rush/Quest: score is survival time in seconds (ms * 0.001), rendered with 2 decimals.
+    # - Others: score is XP (u32).
+    if mode_id in (2, 3):
+        score_value = f"{max(0, elapsed_ms) * 0.001:.2f} secs"
+    else:
+        score_value = f"{score_xp}"
     draw_small_text(
         font,
         score_value,
@@ -344,20 +483,28 @@ def _draw_right_panel_local_score(
         value_color,
     )
 
-    elapsed_ms = int(getattr(entry, "survival_elapsed_ms", 0) or 0)
-    _draw_clock_gauge(
-        view,
-        elapsed_ms=elapsed_ms,
-        pos=right_top_left + Vec2(HS_LOCAL_CLOCK_X * scale, HS_LOCAL_CLOCK_Y * scale),
-        scale=scale,
-    )
-    draw_small_text(
-        font,
-        format_elapsed_mm_ss(elapsed_ms),
-        right_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
-        text_scale,
-        game_time_color,
-    )
+    if mode_id == 3:
+        draw_small_text(
+            font,
+            f"{score_xp}",
+            right_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
+            text_scale,
+            game_time_color,
+        )
+    else:
+        _draw_clock_gauge(
+            view,
+            elapsed_ms=elapsed_ms,
+            pos=right_top_left + Vec2(HS_LOCAL_CLOCK_X * scale, HS_LOCAL_CLOCK_Y * scale),
+            scale=scale,
+        )
+        draw_small_text(
+            font,
+            format_elapsed_mm_ss(elapsed_ms),
+            right_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
+            text_scale,
+            game_time_color,
+        )
 
     draw_small_text(
         font,

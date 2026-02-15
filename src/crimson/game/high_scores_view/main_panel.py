@@ -83,13 +83,36 @@ def draw_main_panel(
         )
         arrow = view._arrow_tex
         if arrow is not None:
+            major = max(1, min(5, int(quest_major)))
+            minor = max(1, min(10, int(quest_minor)))
+            global_index = (major - 1) * 10 + (minor - 1)
+            if global_index < 0:
+                global_index = 0
+            unlock = (
+                int(view.state.status.quest_unlock_index_full)
+                if view.state.config.hardcore
+                else int(view.state.status.quest_unlock_index)
+            )
+            max_index = max(0, min(49, unlock))
+
             dst_w = float(arrow.width) * scale
             dst_h = float(arrow.height) * scale
-            # state_14 draws ui_arrow.jaz flipped (uv 1..0) to point left.
-            src = rl.Rectangle(float(arrow.width), 0.0, -float(arrow.width), float(arrow.height))
-            arrow_pos = left_panel_top_left + Vec2(HS_QUEST_ARROW_X * scale, HS_QUEST_ARROW_Y * scale)
-            dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
-            rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+            tint = rl.Color(255, 255, 255, int(255 * 0.51))
+
+            if global_index > 0:
+                src = rl.Rectangle(0.0, 0.0, float(arrow.width), float(arrow.height))
+                arrow_pos = left_panel_top_left + Vec2((HS_QUEST_ARROW_X - 255.0) * scale, HS_QUEST_ARROW_Y * scale)
+                dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
+                rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+
+            if global_index < max_index:
+                # state_14 flips ui_arrow.jaz (uv 1..0) for the right arrow.
+                # Keep src.x in-range; with CLAMP wrap, raylib can collapse flipped UVs
+                # when the rect starts at x=tex.width.
+                src = rl.Rectangle(0.0, 0.0, -float(arrow.width), float(arrow.height))
+                arrow_pos = left_panel_top_left + Vec2(HS_QUEST_ARROW_X * scale, HS_QUEST_ARROW_Y * scale)
+                dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
+                rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
     header_color = rl.Color(255, 255, 255, 255)
     draw_small_text(font, "Rank", left_panel_top_left + Vec2(211.0 * scale, 84.0 * scale), 1.0 * scale, header_color)
@@ -148,7 +171,11 @@ def draw_main_panel(
             if len(name) > 16:
                 name = name[:16]
 
-            value = f"{int(getattr(entry, 'score_xp', 0))}"
+            if int(mode_id) in (2, 3):
+                elapsed_ms = int(getattr(entry, "survival_elapsed_ms", 0) or 0)
+                value = f"{max(0, elapsed_ms) // 1000}"
+            else:
+                value = f"{int(getattr(entry, 'score_xp', 0))}"
 
             color = rl.Color(255, 255, 255, int(255 * 0.7))
             if selected_rank is not None and int(selected_rank) == idx:
