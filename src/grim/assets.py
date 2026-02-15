@@ -87,6 +87,8 @@ class TextureLoader:
             self._record_missing(rel_path)
             return None
         texture = rl.load_texture(str(path))
+        if _is_ui_sprite(rel_path):
+            rl.set_texture_wrap(texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
         self._fs_textures[name] = texture
         return texture
 
@@ -188,26 +190,38 @@ def _load_texture_from_bytes(data: bytes, fmt: str) -> rl.Texture:
     return texture
 
 
+def _is_ui_sprite(rel_path: str) -> bool:
+    rel_path = rel_path.replace("\\", "/")
+    return rel_path.startswith("ui/")
+
+
 def _load_texture_asset_from_bytes(name: str, rel_path: str, data: bytes | None) -> TextureAsset:
     if data is None:
         raise FileNotFoundError(f"Missing asset data: {rel_path}")
     if rel_path.lower().endswith(".jaz"):
         jaz_image = jaz.decode_jaz_bytes(data)
         buf = io.BytesIO()
-        jaz_image.composite_image().save(buf, format="PNG")
+        img = jaz_image.composite_image()
+        img.save(buf, format="PNG")
+        texture = _load_texture_from_bytes(buf.getvalue(), ".png")
+        if _is_ui_sprite(rel_path):
+            rl.set_texture_wrap(texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
         return TextureAsset(
             name=name,
             rel_path=rel_path,
-            texture=_load_texture_from_bytes(buf.getvalue(), ".png"),
+            texture=texture,
         )
     if rel_path.lower().endswith(".tga"):
         img = Image.open(io.BytesIO(data))
         buf = io.BytesIO()
         img.save(buf, format="PNG")
+        texture = _load_texture_from_bytes(buf.getvalue(), ".png")
+        if _is_ui_sprite(rel_path):
+            rl.set_texture_wrap(texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
         return TextureAsset(
             name=name,
             rel_path=rel_path,
-            texture=_load_texture_from_bytes(buf.getvalue(), ".png"),
+            texture=texture,
         )
     if rel_path.lower().endswith((".jpg", ".jpeg")):
         img = Image.open(io.BytesIO(data))
