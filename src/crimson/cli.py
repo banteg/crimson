@@ -60,6 +60,28 @@ def _safe_relpath(name: str) -> Path:
     return Path(*parts)
 
 
+def _resolve_replay_path(replay_file: Path, *, base_dir: Path) -> tuple[Path, tuple[Path, ...]]:
+    """Resolve a replay path, with a convenience lookup under the runtime dir.
+
+    If the input is just a filename and it doesn't exist in the current directory,
+    try `base_dir/replays/<name>`.
+    """
+
+    path = Path(replay_file)
+    tried: list[Path] = [path]
+    if path.is_file():
+        return path, tuple(tried)
+
+    if not path.is_absolute() and len(path.parts) == 1:
+        under_replays = base_dir / "replays" / path.name
+        if under_replays not in tried:
+            tried.append(under_replays)
+            if under_replays.is_file():
+                return under_replays, tuple(tried)
+
+    return path, tuple(tried)
+
+
 def _extract_one(paq_path: Path, assets_root: Path) -> int:
     out_root = assets_root / paq_path.stem
     out_root.mkdir(parents=True, exist_ok=True)
@@ -354,7 +376,10 @@ def cmd_lan_join(
 
 @replay_app.command("play")
 def cmd_replay_play(
-    replay_file: Path = typer.Argument(..., help="replay file path (.crdemo.gz)"),
+    replay_file: Path = typer.Argument(
+        ...,
+        help="replay file path (.crdemo.gz); if a filename is provided, also search base-dir/replays",
+    ),
     width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
     height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, help="target fps"),
@@ -381,6 +406,13 @@ def cmd_replay_play(
     if assets_dir is None:
         assets_dir = base_dir
     base_dir.mkdir(parents=True, exist_ok=True)
+    replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
+    if not replay_path.is_file():
+        message = f"replay file not found: {tried[0]}"
+        if len(tried) > 1:
+            message += f" (also tried: {tried[1]})"
+        typer.echo(message, err=True)
+        raise typer.Exit(code=1)
     cfg = ensure_crimson_cfg(base_dir)
     if width is None:
         width = cfg.screen_width
@@ -390,14 +422,17 @@ def cmd_replay_play(
     download_missing_paqs(assets_dir, console)
 
     ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=False)
-    view = ReplayPlaybackMode(ctx, replay_path=replay_file)
-    title = f"Replay — {replay_file.name}"
+    view = ReplayPlaybackMode(ctx, replay_path=replay_path)
+    title = f"Replay — {replay_path.name}"
     run_view(view, width=width, height=height, title=title, fps=fps)
 
 
 @replay_app.command("verify")
 def cmd_replay_verify(
-    replay_file: Path = typer.Argument(..., help="replay file path (.crdemo.gz)"),
+    replay_file: Path = typer.Argument(
+        ...,
+        help="replay file path (.crdemo.gz); if a filename is provided, also search base-dir/replays",
+    ),
     checkpoints_file: Path | None = typer.Option(
         None,
         "--checkpoints",
@@ -414,6 +449,12 @@ def cmd_replay_verify(
         "--trace-rng",
         help="include presentation RNG draw marks in verification checkpoints",
     ),
+    base_dir: Path = typer.Option(
+        default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
+        help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
+    ),
 ) -> None:
     """Verify a replay by comparing headless checkpoints with a sidecar file."""
     import hashlib
@@ -424,12 +465,20 @@ def cmd_replay_verify(
     from .replay.checkpoints import default_checkpoints_path, load_checkpoints_file
     from .sim.runners import ReplayRunnerError, run_quest_replay, run_rush_replay, run_survival_replay
 
-    replay_bytes = Path(replay_file).read_bytes()
+    replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
+    if not replay_path.is_file():
+        message = f"replay file not found: {tried[0]}"
+        if len(tried) > 1:
+            message += f" (also tried: {tried[1]})"
+        typer.echo(message, err=True)
+        raise typer.Exit(code=1)
+
+    replay_bytes = Path(replay_path).read_bytes()
     replay_sha256 = hashlib.sha256(replay_bytes).hexdigest()
     replay = load_replay(replay_bytes)
 
     if checkpoints_file is None:
-        checkpoints_file = default_checkpoints_path(replay_file)
+        checkpoints_file = default_checkpoints_path(replay_path)
     checkpoints_path = Path(checkpoints_file)
     if not checkpoints_path.is_file():
         typer.echo(f"checkpoints file not found: {checkpoints_path}", err=True)
