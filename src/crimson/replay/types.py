@@ -139,6 +139,9 @@ class ReplayStatusSnapshot:
 class ReplayHeader:
     game_mode_id: int
     seed: int
+    # Quests can recover their spawn script deterministically from the level id.
+    # Leave empty for non-quest modes or legacy replays.
+    quest_level: str = ""
     bootstrap_kind: BootstrapKind = "none"
     bootstrap_seed: int = 0
     game_version: str = field(default_factory=_default_game_version)
