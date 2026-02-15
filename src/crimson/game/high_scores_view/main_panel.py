@@ -171,7 +171,11 @@ def draw_main_panel(
             if len(name) > 16:
                 name = name[:16]
 
-            value = f"{int(getattr(entry, 'score_xp', 0))}"
+            if int(mode_id) in (2, 3):
+                elapsed_ms = int(getattr(entry, "survival_elapsed_ms", 0) or 0)
+                value = f"{max(0, elapsed_ms) // 1000}"
+            else:
+                value = f"{int(getattr(entry, 'score_xp', 0))}"
 
             color = rl.Color(255, 255, 255, int(255 * 0.7))
             if selected_rank is not None and int(selected_rank) == idx:

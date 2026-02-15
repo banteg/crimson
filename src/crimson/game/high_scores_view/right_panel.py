@@ -448,9 +448,14 @@ def _draw_right_panel_local_score(
         text_scale,
         text_color,
     )
+
+    mode_id = int(getattr(entry, "game_mode_id", 0) or 0)
+    elapsed_ms = int(getattr(entry, "survival_elapsed_ms", 0) or 0)
+    score_xp = int(getattr(entry, "score_xp", 0) or 0)
+
     draw_small_text(
         font,
-        "Game time",
+        "Experience" if mode_id == 3 else "Game time",
         right_top_left + Vec2(HS_LOCAL_TIME_LABEL_X * scale, HS_LOCAL_TIME_LABEL_Y * scale),
         text_scale,
         game_time_color,
@@ -463,7 +468,13 @@ def _draw_right_panel_local_score(
         separator_color,
     )
 
-    score_value = f"{int(getattr(entry, 'score_xp', 0))}"
+    # Native highscore card:
+    # - Rush/Quest: score is survival time in seconds (ms * 0.001), rendered with 2 decimals.
+    # - Others: score is XP (u32).
+    if mode_id in (2, 3):
+        score_value = f"{max(0, elapsed_ms) * 0.001:.2f} secs"
+    else:
+        score_value = f"{score_xp}"
     draw_small_text(
         font,
         score_value,
@@ -472,20 +483,28 @@ def _draw_right_panel_local_score(
         value_color,
     )
 
-    elapsed_ms = int(getattr(entry, "survival_elapsed_ms", 0) or 0)
-    _draw_clock_gauge(
-        view,
-        elapsed_ms=elapsed_ms,
-        pos=right_top_left + Vec2(HS_LOCAL_CLOCK_X * scale, HS_LOCAL_CLOCK_Y * scale),
-        scale=scale,
-    )
-    draw_small_text(
-        font,
-        format_elapsed_mm_ss(elapsed_ms),
-        right_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
-        text_scale,
-        game_time_color,
-    )
+    if mode_id == 3:
+        draw_small_text(
+            font,
+            f"{score_xp}",
+            right_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
+            text_scale,
+            game_time_color,
+        )
+    else:
+        _draw_clock_gauge(
+            view,
+            elapsed_ms=elapsed_ms,
+            pos=right_top_left + Vec2(HS_LOCAL_CLOCK_X * scale, HS_LOCAL_CLOCK_Y * scale),
+            scale=scale,
+        )
+        draw_small_text(
+            font,
+            format_elapsed_mm_ss(elapsed_ms),
+            right_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
+            text_scale,
+            game_time_color,
+        )
 
     draw_small_text(
         font,
