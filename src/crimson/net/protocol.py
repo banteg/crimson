@@ -11,7 +11,7 @@ import msgspec
 from .. import __version__
 from ..replay.types import PackedPlayerInput
 
-PROTOCOL_VERSION = 2
+PROTOCOL_VERSION = 3
 DEFAULT_PORT = 31993
 TICK_RATE = 60
 # LAN runs on a good network and doesn't need a large buffer; keeping this low
@@ -216,6 +216,34 @@ class PauseState(msgspec.Struct, tag_field="kind", tag="pause_state", forbid_unk
     reason: str = ""
 
 
+class KeepAlive(msgspec.Struct, tag_field="kind", tag="keep_alive", forbid_unknown_fields=True):
+    """Best-effort keepalive packet to prevent timeouts during stalls/pauses."""
+
+    tick_index: int = 0
+
+
+class PerkMenuOpen(msgspec.Struct, tag_field="kind", tag="perk_menu_open", forbid_unknown_fields=True):
+    """Host-authored perk menu open event (deterministic, tick-indexed)."""
+
+    tick_index: int = -1
+    player_index: int = 0
+
+
+class PerkMenuClose(msgspec.Struct, tag_field="kind", tag="perk_menu_close", forbid_unknown_fields=True):
+    """Host-authored perk menu close/cancel event (deterministic, tick-indexed)."""
+
+    tick_index: int = -1
+    player_index: int = 0
+
+
+class PerkPick(msgspec.Struct, tag_field="kind", tag="perk_pick", forbid_unknown_fields=True):
+    """Host-authored perk pick event (deterministic, tick-indexed)."""
+
+    tick_index: int = -1
+    player_index: int = 0
+    choice_index: int = 0
+
+
 class DesyncNotice(msgspec.Struct, tag_field="kind", tag="desync_notice", forbid_unknown_fields=True):
     tick_index: int = -1
     expected_command_hash: str = ""
@@ -260,6 +288,10 @@ NetMessage: TypeAlias = (
     | MatchStart
     | TickFrame
     | PauseState
+    | KeepAlive
+    | PerkMenuOpen
+    | PerkMenuClose
+    | PerkPick
     | DesyncNotice
     | DebugLogBatch
     | ResyncBegin

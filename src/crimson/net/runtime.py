@@ -20,11 +20,15 @@ from .protocol import (
     DesyncNotice,
     Disconnect,
     Hello,
+    KeepAlive,
     InputBatch,
     LobbyState,
     MatchStart,
     NetMessage,
     PauseState,
+    PerkMenuOpen,
+    PerkMenuClose,
+    PerkPick,
     Ready,
     StatusSnapshot,
     TickFrame,
@@ -56,6 +60,7 @@ CLIENT_LOG_FORWARD_MAX_CHARS_PER_BATCH = 900
 # view transitions can include multi-second stalls (e.g. terrain generation).
 # Use a more forgiving timeout until lockstep traffic is flowing.
 LOADING_LINK_TIMEOUT_MS = 10_000
+KEEPALIVE_INTERVAL_MS = 250
 
 
 @dataclass(slots=True)
@@ -108,6 +113,9 @@ class LanRuntime:
     client_lockstep: ClientLockstepState | None = field(init=False, default=None)
     client_pause_state: PauseState | None = field(init=False, default=None)
     _client_seen_tick_frame: bool = field(init=False, default=False)
+    _last_send_ms: int = field(init=False, default=0)
+
+    _client_perk_events: deque[PerkMenuOpen | PerkMenuClose | PerkPick] = field(init=False, default_factory=deque)
 
     # Instrumentation (debug overlay + lan debug logs).
     _metrics_last_log_ms: int = field(init=False, default=0)
@@ -148,6 +156,7 @@ class LanRuntime:
         if self.host_lobby is not None or self.client_lobby is not None:
             return
         self.transport.open()
+        self._last_send_ms = 0
         self._metrics_last_log_ms = 0
         self._metrics_last_resends_total = 0
         self._host_input_queued_at_ms.clear()
@@ -169,6 +178,7 @@ class LanRuntime:
         self._client_log_forward_enabled = False
         self._host_remote_log_paths.clear()
         self._client_seen_tick_frame = False
+        self._client_perk_events.clear()
         lan_debug_log(
             "net_open",
             role=str(self.cfg.role),
@@ -244,6 +254,8 @@ class LanRuntime:
             self.host_ready_frames.clear()
             self.client_lockstep = None
             self.client_pause_state = None
+            self._last_send_ms = 0
+            self._client_perk_events.clear()
             self._metrics_last_log_ms = 0
             self._metrics_last_resends_total = 0
             self._host_input_queued_at_ms.clear()
@@ -602,6 +614,11 @@ class LanRuntime:
         self._client_input_queued_at_ms[int(target_tick)] = int(now_ms)
         self._client_send(batch, reliable=False, now_ms=int(now_ms))
 
+    def pop_perk_event(self) -> PerkMenuOpen | PerkMenuClose | PerkPick | None:
+        if not self._client_perk_events:
+            return None
+        return self._client_perk_events.popleft()
+
     def pop_tick_frame(self) -> TickFrame | None:
         if str(self.cfg.role) == "host":
             if not self.host_ready_frames:
@@ -618,6 +635,46 @@ class LanRuntime:
         if now_ms is None:
             now_ms = _now_ms()
         self._host_broadcast(frame, reliable=True, now_ms=int(now_ms))
+
+    def broadcast_perk_menu_open(self, *, tick_index: int, player_index: int = 0, now_ms: int | None = None) -> None:
+        if str(self.cfg.role) != "host":
+            return
+        if now_ms is None:
+            now_ms = _now_ms()
+        self._host_broadcast(
+            PerkMenuOpen(tick_index=int(tick_index), player_index=int(player_index)),
+            reliable=True,
+            now_ms=int(now_ms),
+        )
+
+    def broadcast_perk_menu_close(self, *, tick_index: int, player_index: int = 0, now_ms: int | None = None) -> None:
+        if str(self.cfg.role) != "host":
+            return
+        if now_ms is None:
+            now_ms = _now_ms()
+        self._host_broadcast(
+            PerkMenuClose(tick_index=int(tick_index), player_index=int(player_index)),
+            reliable=True,
+            now_ms=int(now_ms),
+        )
+
+    def broadcast_perk_pick(
+        self,
+        *,
+        tick_index: int,
+        player_index: int = 0,
+        choice_index: int,
+        now_ms: int | None = None,
+    ) -> None:
+        if str(self.cfg.role) != "host":
+            return
+        if now_ms is None:
+            now_ms = _now_ms()
+        self._host_broadcast(
+            PerkPick(tick_index=int(tick_index), player_index=int(player_index), choice_index=int(choice_index)),
+            reliable=True,
+            now_ms=int(now_ms),
+        )
 
     def update(self, *, now_ms: int | None = None) -> None:
         if now_ms is None:
@@ -735,10 +792,27 @@ class LanRuntime:
                     self.transport.send_packet(addr, resend)
                 except OSError:
                     continue
+                self._last_send_ms = int(now_ms)
+
+        # Prevent timeouts during stalls/pauses by sending best-effort keepalives.
+        if bool(self.started) and self.host_peers:
+            last_send = int(self._last_send_ms)
+            if last_send <= 0:
+                self._last_send_ms = int(now_ms)
+            elif (int(now_ms) - int(last_send)) >= int(KEEPALIVE_INTERVAL_MS):
+                tick_index = 0
+                if self.host_lockstep is not None:
+                    tick_index = int(getattr(self.host_lockstep, "next_emit_tick", 0) or 0)
+                self._host_broadcast(KeepAlive(tick_index=int(tick_index)), reliable=False, now_ms=int(now_ms))
 
     def _handle_host_message(self, addr: PeerAddr, message: NetMessage, *, now_ms: int) -> None:
         lobby = self.host_lobby
         if lobby is None:
+            return
+        if isinstance(message, KeepAlive):
+            return
+        if isinstance(message, PerkMenuOpen) or isinstance(message, PerkMenuClose) or isinstance(message, PerkPick):
+            # Host is authoritative for perk events; ignore unexpected client packets.
             return
         if isinstance(message, Hello):
             lan_debug_log(
@@ -856,6 +930,9 @@ class LanRuntime:
             self.transport.send_packet(addr, packet)
         except OSError:
             return
+        self._last_send_ms = int(now_ms)
+        if isinstance(message, KeepAlive):
+            return
         if isinstance(message, TickFrame):
             tick = int(getattr(message, "tick_index", 0) or 0)
             if int(tick) < 5 or (int(tick) % 60) == 0:
@@ -869,6 +946,51 @@ class LanRuntime:
                     command_hash=str(getattr(message, "command_hash", "") or ""),
                     state_hash=str(getattr(message, "state_hash", "") or ""),
                 )
+            return
+        if isinstance(message, PauseState):
+            lan_debug_log(
+                "net_send",
+                role="host",
+                kind="pause_state",
+                addr=f"{addr[0]}:{addr[1]}",
+                reliable=bool(reliable),
+                paused=bool(message.paused),
+                reason=str(message.reason or ""),
+            )
+            return
+        if isinstance(message, PerkMenuOpen):
+            lan_debug_log(
+                "net_send",
+                role="host",
+                kind="perk_menu_open",
+                addr=f"{addr[0]}:{addr[1]}",
+                reliable=bool(reliable),
+                tick_index=int(message.tick_index),
+                player_index=int(message.player_index),
+            )
+            return
+        if isinstance(message, PerkMenuClose):
+            lan_debug_log(
+                "net_send",
+                role="host",
+                kind="perk_menu_close",
+                addr=f"{addr[0]}:{addr[1]}",
+                reliable=bool(reliable),
+                tick_index=int(message.tick_index),
+                player_index=int(message.player_index),
+            )
+            return
+        if isinstance(message, PerkPick):
+            lan_debug_log(
+                "net_send",
+                role="host",
+                kind="perk_pick",
+                addr=f"{addr[0]}:{addr[1]}",
+                reliable=bool(reliable),
+                tick_index=int(message.tick_index),
+                player_index=int(message.player_index),
+                choice_index=int(message.choice_index),
+            )
             return
         kind = getattr(message, "kind", type(message).__name__)
         lan_debug_log(
@@ -934,10 +1056,55 @@ class LanRuntime:
                 self.transport.send_packet(host, resend)
             except OSError:
                 continue
+            self._last_send_ms = int(now_ms)
+
+        # Prevent timeouts during stalls/pauses by sending best-effort keepalives.
+        if bool(self.started):
+            last_send = int(self._last_send_ms)
+            if last_send <= 0:
+                self._last_send_ms = int(now_ms)
+            elif (int(now_ms) - int(last_send)) >= int(KEEPALIVE_INTERVAL_MS):
+                tick_index = 0
+                if self.client_lockstep is not None:
+                    tick_index = int(getattr(self.client_lockstep, "next_consume_tick", 0) or 0)
+                self._client_send(KeepAlive(tick_index=int(tick_index)), reliable=False, now_ms=int(now_ms))
 
     def _handle_client_message(self, message: NetMessage, *, now_ms: int) -> None:
         lobby = self.client_lobby
         if lobby is None:
+            return
+        if isinstance(message, KeepAlive):
+            return
+        if isinstance(message, PerkMenuOpen):
+            lan_debug_log(
+                "net_recv",
+                role="join",
+                kind="perk_menu_open",
+                tick_index=int(message.tick_index),
+                player_index=int(message.player_index),
+            )
+            self._client_perk_events.append(message)
+            return
+        if isinstance(message, PerkMenuClose):
+            lan_debug_log(
+                "net_recv",
+                role="join",
+                kind="perk_menu_close",
+                tick_index=int(message.tick_index),
+                player_index=int(message.player_index),
+            )
+            self._client_perk_events.append(message)
+            return
+        if isinstance(message, PerkPick):
+            lan_debug_log(
+                "net_recv",
+                role="join",
+                kind="perk_pick",
+                tick_index=int(message.tick_index),
+                player_index=int(message.player_index),
+                choice_index=int(message.choice_index),
+            )
+            self._client_perk_events.append(message)
             return
         if isinstance(message, Welcome):
             lan_debug_log(
@@ -1169,6 +1336,9 @@ class LanRuntime:
         try:
             self.transport.send_packet(host, packet)
         except OSError:
+            return
+        self._last_send_ms = int(now_ms)
+        if isinstance(message, KeepAlive):
             return
         if isinstance(message, DebugLogBatch):
             # Avoid recursive log forwarding (sending logs would itself get logged).
