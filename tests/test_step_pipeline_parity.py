@@ -15,8 +15,8 @@ from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.replay import Replay, ReplayGameVersionWarning, ReplayHeader, ReplayRecorder, unpack_input_flags, unpack_packed_player_input
 from crimson.replay.checkpoints import ReplayCheckpoint, build_checkpoint
-from crimson.sim.runners import run_quest_replay, run_rush_replay, run_survival_replay
-from crimson.sim.runners.common import status_from_snapshot
+from crimson.sim.driver.replay_runner import run_quest_replay, run_rush_replay, run_survival_replay
+from crimson.sim.driver.setup import status_from_snapshot
 from crimson.sim.sessions import QuestDeterministicSession
 from crimson.weapons import WeaponId
 

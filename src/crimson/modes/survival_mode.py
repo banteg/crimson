@@ -35,6 +35,7 @@ from ..input_codes import (
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, load_perk_menu_assets
 from ..weapons import WEAPON_BY_ID
 from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
+from ..replay.input_codec import pack_player_input, unpack_player_input
 from ..replay.types import WEAPON_USAGE_COUNT
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
@@ -619,7 +620,7 @@ class SurvivalMode(BaseGameplayMode):
                     return False
 
                 packed_inputs = list(getattr(frame, "frame_inputs", []) or [])
-                player_inputs = [self._unpack_player_input_from_net(packed) for packed in packed_inputs]
+                player_inputs = [unpack_player_input(packed) for packed in packed_inputs]
                 recorder = self._replay_recorder
                 if recorder is not None:
                     tick_index = recorder.record_tick(player_inputs)
@@ -722,7 +723,7 @@ class SurvivalMode(BaseGameplayMode):
                 local_input = PlayerInput()
                 if 0 <= local_input_index < len(inputs):
                     local_input = inputs[local_input_index]
-                runtime.queue_local_input(self._pack_player_input_for_net(local_input))
+                runtime.queue_local_input(pack_player_input(local_input))
         # Pump networking again after queuing local inputs so the host can emit frames
         # in the same render frame (reduces perceived host-side input latency).
         runtime.update()

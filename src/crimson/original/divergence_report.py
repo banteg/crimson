@@ -28,7 +28,7 @@ from crimson.original.capture import (
     parse_player_int_overrides,
 )
 from crimson.original.schema import CaptureFile
-from crimson.sim.runners import run_rush_replay, run_survival_replay
+from crimson.sim.driver.replay_runner import run_rush_replay, run_survival_replay
 from crimson.weapons import WEAPON_BY_ID
 
 

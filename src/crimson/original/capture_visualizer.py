@@ -40,17 +40,17 @@ from crimson.replay.types import (
     unpack_input_move_key_flags,
     unpack_packed_player_input,
 )
-from crimson.sim.runners.common import (
+from crimson.sim.driver.replay_events import apply_replay_tick_events, partition_tick_events
+from crimson.sim.driver.replay_timing import (
+    resolve_dt_frame,
+    resolve_dt_frame_ms_i32,
+    should_apply_world_dt_steps_for_replay,
+)
+from crimson.sim.driver.setup import (
     build_damage_scale_by_type,
     build_empty_fx_queues,
     reset_players,
     status_from_snapshot,
-)
-from crimson.sim.runners.survival import (
-    _apply_tick_events,
-    _partition_tick_events,
-    _resolve_dt_frame,
-    _should_apply_world_dt_steps_for_replay,
 )
 from crimson.sim.sessions import SurvivalDeterministicSession
 from crimson.sim.world_state import WorldEvents, WorldState
@@ -327,7 +327,7 @@ class CaptureVisualizerView:
             tick_rate=int(self._tick_rate),
         )
         self._dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(self._capture)
-        self._apply_world_dt_steps = _should_apply_world_dt_steps_for_replay(
+        self._apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
             original_capture_replay=bool(self._original_capture_replay),
             dt_frame_overrides=self._dt_frame_overrides,
             dt_frame_ms_i32_overrides=self._dt_frame_ms_i32_overrides,
@@ -558,23 +558,28 @@ class CaptureVisualizerView:
             for _ in range(max(0, int(draws))):
                 self._world.state.rng.rand()
 
-        dt_tick = _resolve_dt_frame(
+        dt_tick = resolve_dt_frame(
             tick_index=int(tick_index),
             default_dt_frame=float(self._step_interval),
             dt_frame_overrides=self._dt_frame_overrides,
         )
-        dt_tick_ms_i32 = self._dt_frame_ms_i32_overrides.get(int(tick_index))
+        dt_tick_ms_i32 = resolve_dt_frame_ms_i32(
+            tick_index=int(tick_index),
+            dt_frame=float(dt_tick),
+            dt_frame_ms_i32_overrides=self._dt_frame_ms_i32_overrides,
+        )
 
         tick_events = self._events_by_tick.get(int(tick_index), [])
-        pre_step_events, post_step_events = _partition_tick_events(
+        pre_step_events, post_step_events = partition_tick_events(
             tick_events,
             defer_menu_open=bool(self._original_capture_replay),
         )
-        _apply_tick_events(
+        apply_replay_tick_events(
             pre_step_events,
             tick_index=int(tick_index),
             dt_frame=float(dt_tick),
             world=self._world,
+            game_mode_id=int(GameMode.SURVIVAL),
             strict_events=False,
         )
         inputs = self._build_inputs_from_replay(tick_index)
@@ -587,11 +592,12 @@ class CaptureVisualizerView:
         rewrite_events = tick.step.events
 
         if post_step_events:
-            _apply_tick_events(
+            apply_replay_tick_events(
                 post_step_events,
                 tick_index=int(tick_index),
                 dt_frame=float(dt_tick),
                 world=self._world,
+                game_mode_id=int(GameMode.SURVIVAL),
                 strict_events=False,
             )
 
@@ -1427,7 +1433,7 @@ class CaptureVisualizerView:
             if next_idx > self._visible_end_idx:
                 break
             next_row = self._rows[int(next_idx)]
-            tick_interval = _resolve_dt_frame(
+            tick_interval = resolve_dt_frame(
                 tick_index=int(next_row.tick_index),
                 default_dt_frame=float(self._step_interval),
                 dt_frame_overrides=self._dt_frame_overrides,

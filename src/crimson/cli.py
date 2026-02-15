@@ -422,7 +422,7 @@ def cmd_replay_play(
     download_missing_paqs(assets_dir, console)
 
     ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=False)
-    view = ReplayPlaybackMode(ctx, replay_path=replay_path)
+    view = ReplayPlaybackMode(ctx, replay_path=replay_path, config=cfg, console=console)
     title = f"Replay — {replay_path.name}"
     run_view(view, width=width, height=height, title=title, fps=fps)
 
@@ -459,11 +459,10 @@ def cmd_replay_verify(
     """Verify a replay by comparing headless checkpoints with a sidecar file."""
     import hashlib
 
-    from .game_modes import GameMode
     from .original.diff import compare_checkpoints
     from .replay import load_replay
     from .replay.checkpoints import default_checkpoints_path, load_checkpoints_file
-    from .sim.runners import ReplayRunnerError, run_quest_replay, run_rush_replay, run_survival_replay
+    from .sim.driver.replay_runner import ReplayRunnerError, run_replay
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
     if not replay_path.is_file():
@@ -494,77 +493,15 @@ def cmd_replay_verify(
     checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected.checkpoints}
     actual = []
 
-    mode = int(replay.header.game_mode_id)
     try:
-        if mode == int(GameMode.SURVIVAL):
-            result = run_survival_replay(
-                replay,
-                max_ticks=max_ticks,
-                strict_events=bool(strict_events),
-                trace_rng=bool(trace_rng),
-                checkpoints_out=actual,
-                checkpoint_ticks=checkpoint_ticks,
-            )
-        elif mode == int(GameMode.QUESTS):
-            from .quests import quest_by_level
-            from .quests.runtime import build_quest_spawn_table
-            from .quests.types import QuestContext
-
-            quest_level = str(getattr(replay.header, "quest_level", "") or "")
-            if not quest_level:
-                # Legacy replays (e.g. capture-derived) may not encode the quest id.
-                # Classic quest RNG seeding uses `major*100 + minor`, so we can often
-                # recover the level from `header.seed`.
-                seed = int(replay.header.seed)
-                major = seed // 100
-                minor = seed % 100
-                if 1 <= int(major) <= 5 and 1 <= int(minor) <= 10:
-                    quest_level = f"{major}.{minor}"
-
-            quest = quest_by_level(quest_level) if quest_level else None
-            if quest is None:
-                typer.echo(
-                    f"unsupported quest replay: unknown quest_level={quest_level!r} (seed={int(replay.header.seed)})",
-                    err=True,
-                )
-                raise typer.Exit(code=1)
-
-            ctx = QuestContext(
-                width=int(replay.header.world_size),
-                height=int(replay.header.world_size),
-                player_count=int(replay.header.player_count),
-            )
-            spawn_entries = build_quest_spawn_table(
-                quest,
-                ctx,
-                seed=int(replay.header.seed),
-                hardcore=bool(replay.header.hardcore),
-                full_version=True,
-            )
-            start_weapon_id = max(1, int(quest.start_weapon_id))
-            result = run_quest_replay(
-                replay,
-                spawn_entries=tuple(spawn_entries),
-                quest_stage_major=int(quest.level_key[0]),
-                quest_stage_minor=int(quest.level_key[1]),
-                start_weapon_id=int(start_weapon_id),
-                max_ticks=max_ticks,
-                strict_events=bool(strict_events),
-                trace_rng=bool(trace_rng),
-                checkpoints_out=actual,
-                checkpoint_ticks=checkpoint_ticks,
-            )
-        elif mode == int(GameMode.RUSH):
-            result = run_rush_replay(
-                replay,
-                max_ticks=max_ticks,
-                trace_rng=bool(trace_rng),
-                checkpoints_out=actual,
-                checkpoint_ticks=checkpoint_ticks,
-            )
-        else:
-            typer.echo(f"unsupported replay game_mode_id={mode}", err=True)
-            raise typer.Exit(code=1)
+        result = run_replay(
+            replay,
+            max_ticks=max_ticks,
+            strict_events=bool(strict_events),
+            trace_rng=bool(trace_rng),
+            checkpoints_out=actual,
+            checkpoint_ticks=checkpoint_ticks,
+        )
     except ReplayRunnerError as exc:
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
@@ -762,7 +699,7 @@ def cmd_replay_verify_capture(
         CaptureVerifyError,
         verify_capture,
     )
-    from .sim.runners import ReplayRunnerError
+    from .sim.driver.setup import ReplayRunnerError
 
     capture = load_capture(Path(capture_file))
     try:

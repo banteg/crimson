@@ -16,7 +16,7 @@ from typing import Any
 
 from .sim.input import PlayerInput
 from .sim.state_types import PlayerState
-from .sim.runners.common import build_damage_scale_by_type
+from .sim.driver.setup import build_damage_scale_by_type
 from .sim.sessions import SurvivalDeterministicSession
 from .sim.world_state import WorldState
 

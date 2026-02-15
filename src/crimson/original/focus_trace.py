@@ -34,17 +34,17 @@ from crimson.replay.types import (
     unpack_input_move_key_flags,
     unpack_packed_player_input,
 )
-from crimson.sim.runners.common import (
+from crimson.sim.driver.replay_events import apply_replay_tick_events, partition_tick_events
+from crimson.sim.driver.replay_timing import (
+    resolve_dt_frame,
+    resolve_dt_frame_ms_i32,
+    should_apply_world_dt_steps_for_replay,
+)
+from crimson.sim.driver.setup import (
     build_damage_scale_by_type,
     build_empty_fx_queues,
     reset_players,
     status_from_snapshot,
-)
-from crimson.sim.runners.survival import (
-    _apply_tick_events,
-    _partition_tick_events,
-    _resolve_dt_frame,
-    _should_apply_world_dt_steps_for_replay,
 )
 from crimson.sim.sessions import SurvivalDeterministicSession
 from crimson.sim.world_state import WorldState
@@ -707,7 +707,7 @@ def trace_focus_tick(
     events_by_tick, original_capture_replay = _load_capture_events(replay)
     dt_frame_overrides = build_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
     dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
-    session.apply_world_dt_steps = _should_apply_world_dt_steps_for_replay(
+    session.apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
         original_capture_replay=bool(original_capture_replay),
         dt_frame_overrides=dt_frame_overrides,
         dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
@@ -756,23 +756,28 @@ def trace_focus_tick(
                     draws = int(inter_tick_rand_draws)
                 for _ in range(max(0, int(draws))):
                     world.state.rng.rand()
-            dt_tick = _resolve_dt_frame(
+            dt_tick = resolve_dt_frame(
                 tick_index=int(tick_index),
                 default_dt_frame=float(default_dt_frame),
                 dt_frame_overrides=dt_frame_overrides,
             )
-            dt_tick_ms_i32 = dt_frame_ms_i32_overrides.get(int(tick_index))
+            dt_tick_ms_i32 = resolve_dt_frame_ms_i32(
+                tick_index=int(tick_index),
+                dt_frame=float(dt_tick),
+                dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
+            )
             tick_events = events_by_tick.get(int(tick_index), [])
-            pre_step_events, post_step_events = _partition_tick_events(
+            pre_step_events, post_step_events = partition_tick_events(
                 tick_events,
                 defer_menu_open=bool(original_capture_replay),
             )
 
-            _apply_tick_events(
+            apply_replay_tick_events(
                 pre_step_events,
                 tick_index=int(tick_index),
                 dt_frame=float(dt_tick),
                 world=world,
+                game_mode_id=int(GameMode.SURVIVAL),
                 strict_events=False,
             )
             player_inputs = _decode_inputs_for_tick(
@@ -914,11 +919,12 @@ def trace_focus_tick(
                 focus_sfx = int(len(tick_result.step.events.sfx))
 
             if post_step_events:
-                _apply_tick_events(
+                apply_replay_tick_events(
                     post_step_events,
                     tick_index=int(tick_index),
                     dt_frame=float(dt_tick),
                     world=world,
+                    game_mode_id=int(GameMode.SURVIVAL),
                     strict_events=False,
                 )
 
