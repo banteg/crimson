@@ -187,16 +187,9 @@ class GameWorld:
         self._texture_loader = loader
         return loader
 
-    def _load_texture(self, name: str, *, cache_path: str, file_path: str) -> rl.Texture | None:
+    def _load_texture(self, name: str, *, cache_path: str) -> rl.Texture | None:
         loader = self._ensure_texture_loader()
-        return loader.get(name=name, paq_rel=cache_path, fs_rel=file_path)
-
-    @staticmethod
-    def _png_path_for(rel_path: str) -> str:
-        lower = rel_path.lower()
-        if lower.endswith(".jaz"):
-            return rel_path[:-4] + ".png"
-        return rel_path
+        return loader.get(name=name, paq_rel=cache_path)
 
     def _sync_ground_settings(self) -> None:
         if self.ground is None:
@@ -231,7 +224,6 @@ class GameWorld:
             return self._load_texture(
                 str(key),
                 cache_path=str(rel_path),
-                file_path=self._png_path_for(str(rel_path)),
             )
 
         base = _load(base_spec)
@@ -280,19 +272,16 @@ class GameWorld:
         base = self._load_texture(
             base_key,
             cache_path=base_path,
-            file_path=self._png_path_for(base_path),
         )
         overlay = self._load_texture(
             overlay_key,
             cache_path=overlay_path,
-            file_path=self._png_path_for(overlay_path),
         )
         detail = None
         if detail_key is not None and detail_path is not None:
             detail = self._load_texture(
                 detail_key,
                 cache_path=detail_path,
-                file_path=self._png_path_for(detail_path),
             )
         if detail is None:
             detail = overlay or base
@@ -325,12 +314,10 @@ class GameWorld:
         base = self._load_texture(
             "ter_q1_base",
             cache_path="ter/ter_q1_base.jaz",
-            file_path="ter/ter_q1_base.png",
         )
         overlay = self._load_texture(
             "ter_q1_tex1",
             cache_path="ter/ter_q1_tex1.jaz",
-            file_path="ter/ter_q1_tex1.png",
         )
         detail = overlay or base
         if base is not None:
@@ -357,7 +344,6 @@ class GameWorld:
             texture = self._load_texture(
                 asset,
                 cache_path=f"game/{asset}.jaz",
-                file_path=f"game/{asset}.png",
             )
             if texture is not None:
                 self.creature_textures[asset] = texture
@@ -365,57 +351,46 @@ class GameWorld:
         self.projs_texture = self._load_texture(
             "projs",
             cache_path="game/projs.jaz",
-            file_path="game/projs.png",
         )
         self.particles_texture = self._load_texture(
             "particles",
             cache_path="game/particles.jaz",
-            file_path="game/particles.png",
         )
         self.bullet_texture = self._load_texture(
             "bullet_i",
             cache_path="load/bullet16.tga",
-            file_path="load/bullet16.png",
         )
         self.bullet_trail_texture = self._load_texture(
             "bulletTrail",
             cache_path="load/bulletTrail.tga",
-            file_path="load/bulletTrail.png",
         )
         self.arrow_texture = self._load_texture(
             "arrow",
             cache_path="load/arrow.tga",
-            file_path="load/arrow.png",
         )
         self.bonuses_texture = self._load_texture(
             "bonuses",
             cache_path="game/bonuses.jaz",
-            file_path="game/bonuses.png",
         )
         self.wicons_texture = self._load_texture(
             "ui_wicons",
             cache_path="ui/ui_wicons.jaz",
-            file_path="ui/ui_wicons.png",
         )
         self.bodyset_texture = self._load_texture(
             "bodyset",
             cache_path="game/bodyset.jaz",
-            file_path="game/bodyset.png",
         )
         self.clock_table_texture = self._load_texture(
             "ui_clockTable",
             cache_path="ui/ui_clockTable.jaz",
-            file_path="ui/ui_clockTable.png",
         )
         self.clock_pointer_texture = self._load_texture(
             "ui_clockPointer",
             cache_path="ui/ui_clockPointer.jaz",
-            file_path="ui/ui_clockPointer.png",
         )
         self.muzzle_flash_texture = self._load_texture(
             "muzzleFlash",
             cache_path="game/muzzleFlash.jaz",
-            file_path="game/muzzleFlash.png",
         )
 
         if self.particles_texture is not None and self.bodyset_texture is not None:

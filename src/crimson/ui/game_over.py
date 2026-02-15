@@ -107,14 +107,13 @@ class _GameOverPanelLayout:
 def load_game_over_assets(assets_root: Path) -> GameOverAssets:
     perk_menu_assets = load_perk_menu_assets(assets_root)
     loader = TextureLoader.from_assets_root(assets_root)
-    menu_panel = loader.get(name="ui_menuPanel", paq_rel="ui/ui_menuPanel.jaz", fs_rel="ui/ui_menuPanel.png")
-    text_reaper = loader.get(name="ui_textReaper", paq_rel="ui/ui_textReaper.jaz", fs_rel="ui/ui_textReaper.png")
+    menu_panel = loader.get(name="ui_menuPanel", paq_rel="ui/ui_menuPanel.jaz")
+    text_reaper = loader.get(name="ui_textReaper", paq_rel="ui/ui_textReaper.jaz")
     text_well_done = loader.get(
         name="ui_textWellDone",
         paq_rel="ui/ui_textWellDone.jaz",
-        fs_rel="ui/ui_textWellDone.png",
     )
-    particles = loader.get(name="particles", paq_rel="game/particles.jaz", fs_rel="game/particles.png")
+    particles = loader.get(name="particles", paq_rel="game/particles.jaz")
     missing: list[str] = list(perk_menu_assets.missing)
     missing.extend(loader.missing)
     return GameOverAssets(

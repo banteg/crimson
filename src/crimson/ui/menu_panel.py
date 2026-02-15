@@ -59,7 +59,12 @@ def draw_classic_menu_panel(
     def _src(rect: rl.Rectangle) -> rl.Rectangle:
         if not flip_x:
             return rect
-        return rl.Rectangle(rect.x + rect.width, rect.y, -rect.width, rect.height)
+        # Use negative source width to mirror the panel, but keep src.x in-range.
+        #
+        # With CLAMP wrap, raylib's DrawTexturePro behaves badly when flipping via
+        # src.x=rect.x+rect.width (u near 1.0) and negative widths; it can clamp
+        # the UVs to the edge texel and collapse the panel to a transparent strip.
+        return rl.Rectangle(rect.x, rect.y, -rect.width, rect.height)
 
     if mid_h <= 0.0:
         src = _src(rl.Rectangle(src_x, src_y, src_w, src_h))

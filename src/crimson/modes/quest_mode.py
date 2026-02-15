@@ -254,7 +254,6 @@ class QuestMode(BaseGameplayMode):
         texture = loader.get_optional(
             name="ui_textLevComp",
             paq_rel="ui/ui_textLevComp.jaz",
-            fs_rel="ui/ui_textLevComp.png",
         )
         if texture is None and "ui/ui_textLevComp.jaz" not in self._missing_assets:
             self._missing_assets.append("ui/ui_textLevComp.jaz")

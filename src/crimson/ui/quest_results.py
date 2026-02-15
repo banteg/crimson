@@ -122,10 +122,9 @@ def load_quest_results_assets(assets_root: Path) -> QuestResultsAssets:
     text_well_done = loader.get(
         name="ui_textWellDone",
         paq_rel="ui/ui_textWellDone.jaz",
-        fs_rel="ui/ui_textWellDone.png",
     )
-    particles = loader.get(name="particles", paq_rel="game/particles.jaz", fs_rel="game/particles.png")
-    wicons = loader.get(name="ui_wicons", paq_rel="ui/ui_wicons.jaz", fs_rel="ui/ui_wicons.png")
+    particles = loader.get(name="particles", paq_rel="game/particles.jaz")
+    wicons = loader.get(name="ui_wicons", paq_rel="ui/ui_wicons.jaz")
     missing: list[str] = list(perk_menu_assets.missing)
     missing.extend(loader.missing)
     return QuestResultsAssets(

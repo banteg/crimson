@@ -188,26 +188,23 @@ class PerkMenuAssets:
 def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
     loader = TextureLoader.from_assets_root(assets_root)
     return PerkMenuAssets(
-        menu_panel=loader.get(name="ui_menuPanel", paq_rel="ui/ui_menuPanel.jaz", fs_rel="ui/ui_menuPanel.png"),
+        menu_panel=loader.get(name="ui_menuPanel", paq_rel="ui/ui_menuPanel.jaz"),
         title_pick_perk=loader.get(
             name="ui_textPickAPerk",
             paq_rel="ui/ui_textPickAPerk.jaz",
-            fs_rel="ui/ui_textPickAPerk.png",
         ),
         title_level_up=loader.get(
             name="ui_textLevelUp",
             paq_rel="ui/ui_textLevelUp.jaz",
-            fs_rel="ui/ui_textLevelUp.png",
         ),
-        menu_item=loader.get(name="ui_menuItem", paq_rel="ui/ui_menuItem.jaz", fs_rel="ui/ui_menuItem.png"),
-        button_sm=loader.get(name="ui_buttonSm", paq_rel="ui/ui_button_64x32.jaz", fs_rel="ui/ui_button_64x32.png"),
+        menu_item=loader.get(name="ui_menuItem", paq_rel="ui/ui_menuItem.jaz"),
+        button_sm=loader.get(name="ui_buttonSm", paq_rel="ui/ui_button_64x32.jaz"),
         button_md=loader.get(
             name="ui_buttonMd",
             paq_rel="ui/ui_button_128x32.jaz",
-            fs_rel="ui/ui_button_128x32.png",
         ),
-        cursor=loader.get(name="ui_cursor", paq_rel="ui/ui_cursor.jaz", fs_rel="ui/ui_cursor.png"),
-        aim=loader.get(name="ui_aim", paq_rel="ui/ui_aim.jaz", fs_rel="ui/ui_aim.png"),
+        cursor=loader.get(name="ui_cursor", paq_rel="ui/ui_cursor.jaz"),
+        aim=loader.get(name="ui_aim", paq_rel="ui/ui_aim.jaz"),
         missing=loader.missing,
     )
 

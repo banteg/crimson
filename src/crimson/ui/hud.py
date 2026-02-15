@@ -192,26 +192,24 @@ def hud_layout(screen_w: float, screen_h: float, *, font: SmallFontData | None, 
 def load_hud_assets(assets_root: Path) -> HudAssets:
     loader = TextureLoader.from_assets_root(assets_root)
     return HudAssets(
-        game_top=loader.get(name="iGameUI", paq_rel="ui/ui_gameTop.jaz", fs_rel="ui/ui_gameTop.png"),
-        life_heart=loader.get(name="iHeart", paq_rel="ui/ui_lifeHeart.jaz", fs_rel="ui/ui_lifeHeart.png"),
-        ind_life=loader.get(name="ui_indLife", paq_rel="ui/ui_indLife.jaz", fs_rel="ui/ui_indLife.png"),
-        ind_panel=loader.get(name="ui_indPanel", paq_rel="ui/ui_indPanel.jaz", fs_rel="ui/ui_indPanel.png"),
-        ind_bullet=loader.get(name="ui_indBullet", paq_rel="ui/ui_indBullet.jaz", fs_rel="ui/ui_indBullet.png"),
-        ind_fire=loader.get(name="ui_indFire", paq_rel="ui/ui_indFire.jaz", fs_rel="ui/ui_indFire.png"),
-        ind_rocket=loader.get(name="ui_indRocket", paq_rel="ui/ui_indRocket.jaz", fs_rel="ui/ui_indRocket.png"),
+        game_top=loader.get(name="iGameUI", paq_rel="ui/ui_gameTop.jaz"),
+        life_heart=loader.get(name="iHeart", paq_rel="ui/ui_lifeHeart.jaz"),
+        ind_life=loader.get(name="ui_indLife", paq_rel="ui/ui_indLife.jaz"),
+        ind_panel=loader.get(name="ui_indPanel", paq_rel="ui/ui_indPanel.jaz"),
+        ind_bullet=loader.get(name="ui_indBullet", paq_rel="ui/ui_indBullet.jaz"),
+        ind_fire=loader.get(name="ui_indFire", paq_rel="ui/ui_indFire.jaz"),
+        ind_rocket=loader.get(name="ui_indRocket", paq_rel="ui/ui_indRocket.jaz"),
         ind_electric=loader.get(
             name="ui_indElectric",
             paq_rel="ui/ui_indElectric.jaz",
-            fs_rel="ui/ui_indElectric.png",
         ),
-        wicons=loader.get(name="ui_wicons", paq_rel="ui/ui_wicons.jaz", fs_rel="ui/ui_wicons.png"),
-        clock_table=loader.get(name="ui_clockTable", paq_rel="ui/ui_clockTable.jaz", fs_rel="ui/ui_clockTable.png"),
+        wicons=loader.get(name="ui_wicons", paq_rel="ui/ui_wicons.jaz"),
+        clock_table=loader.get(name="ui_clockTable", paq_rel="ui/ui_clockTable.jaz"),
         clock_pointer=loader.get(
             name="ui_clockPointer",
             paq_rel="ui/ui_clockPointer.jaz",
-            fs_rel="ui/ui_clockPointer.png",
         ),
-        bonuses=loader.get(name="bonuses", paq_rel="game/bonuses.jaz", fs_rel="game/bonuses.png"),
+        bonuses=loader.get(name="bonuses", paq_rel="game/bonuses.jaz"),
         missing=loader.missing,
     )
 
