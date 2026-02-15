@@ -19,6 +19,7 @@ from ...replay import (
 )
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from ...quests.types import SpawnEntry
+from ...weapon_runtime import weapon_assign_player
 from ..input import PlayerInput
 from ..sessions import QuestDeterministicSession
 from ..world_state import WorldEvents, WorldState
@@ -91,6 +92,9 @@ def run_quest_replay(
     replay: Replay,
     *,
     spawn_entries: tuple[SpawnEntry, ...] = (),
+    quest_stage_major: int = 0,
+    quest_stage_minor: int = 0,
+    start_weapon_id: int = 1,
     max_ticks: int | None = None,
     warn_on_version_mismatch: bool = True,
     strict_events: bool = True,
@@ -125,6 +129,11 @@ def run_quest_replay(
         world_size=world_size,
         player_count=int(replay.header.player_count),
     )
+    world.state.quest_stage_major = int(quest_stage_major)
+    world.state.quest_stage_minor = int(quest_stage_minor)
+    weapon_id = max(1, int(start_weapon_id))
+    for player in world.players:
+        weapon_assign_player(player, weapon_id)
     world.state.status = status_from_snapshot(
         quest_unlock_index=int(replay.header.status.quest_unlock_index),
         quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
@@ -218,9 +227,6 @@ def run_quest_replay(
                 )
             )
 
-        if not any(player.health > 0.0 for player in world.players):
-            tick_index += 1
-            break
     else:
         tick_index = tick_limit
 

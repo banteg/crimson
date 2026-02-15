@@ -11,7 +11,11 @@ from grim.view import ViewContext
 
 from ..game_modes import GameMode
 from ..game_world import GameWorld
+from ..quests import quest_by_level
+from ..quests.runtime import build_quest_spawn_table
+from ..quests.types import QuestContext
 from ..sim.input import PlayerInput
+from ..terrain_assets import terrain_texture_by_id
 from ..weapon_runtime import weapon_assign_player
 from ..perks.state import CreatureForPerks
 from ..perks.selection import perk_selection_current_choices, perk_selection_pick
@@ -33,7 +37,7 @@ from ..original.capture import (
     capture_bootstrap_payload_from_event_payload,
 )
 from ..sim.runners.common import build_damage_scale_by_type, status_from_snapshot
-from ..sim.sessions import RushDeterministicSession, SurvivalDeterministicSession
+from ..sim.sessions import QuestDeterministicSession, RushDeterministicSession, SurvivalDeterministicSession
 from ..weapons import WeaponId
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
@@ -68,6 +72,7 @@ class ReplayPlaybackMode:
 
         self._survival: SurvivalDeterministicSession | None = None
         self._rush: RushDeterministicSession | None = None
+        self._quest: QuestDeterministicSession | None = None
 
     def open(self) -> None:
         self._missing_assets.clear()
@@ -145,6 +150,69 @@ class ReplayPlaybackMode:
                 clear_fx_queues_each_tick=False,
             )
             self._rush = None
+            self._quest = None
+        elif int(replay.header.game_mode_id) == int(GameMode.QUESTS):
+            self._survival = None
+            self._rush = None
+
+            quest_level = str(getattr(replay.header, "quest_level", "") or "")
+            if not quest_level:
+                seed = int(replay.header.seed)
+                major = seed // 100
+                minor = seed % 100
+                if 1 <= int(major) <= 5 and 1 <= int(minor) <= 10:
+                    quest_level = f"{major}.{minor}"
+            quest = quest_by_level(quest_level) if quest_level else None
+            if quest is None:
+                raise ValueError(f"unsupported quest replay: unknown quest_level={quest_level!r}")
+
+            world.state.quest_stage_major, world.state.quest_stage_minor = quest.level_key
+
+            base_id, overlay_id, detail_id = quest.terrain_ids or (0, 1, 0)
+            base = terrain_texture_by_id(int(base_id))
+            overlay = terrain_texture_by_id(int(overlay_id))
+            detail = terrain_texture_by_id(int(detail_id))
+            if base is not None and overlay is not None:
+                base_key, base_path = base
+                overlay_key, overlay_path = overlay
+                detail_key = detail[0] if detail is not None else None
+                detail_path = detail[1] if detail is not None else None
+                world.set_terrain(
+                    base_key=base_key,
+                    overlay_key=overlay_key,
+                    base_path=base_path,
+                    overlay_path=overlay_path,
+                    detail_key=detail_key,
+                    detail_path=detail_path,
+                )
+
+            start_weapon_id = max(1, int(quest.start_weapon_id))
+            for player in world.players:
+                weapon_assign_player(player, start_weapon_id)
+
+            ctx = QuestContext(
+                width=int(world.world_size),
+                height=int(world.world_size),
+                player_count=len(world.players),
+            )
+            spawn_entries = build_quest_spawn_table(
+                quest,
+                ctx,
+                seed=int(replay.header.seed),
+                hardcore=bool(replay.header.hardcore),
+                full_version=True,
+            )
+            self._quest = QuestDeterministicSession(
+                world=world.world_state,
+                world_size=float(world.world_size),
+                damage_scale_by_type=self._damage_scale_by_type,
+                fx_queue=world.fx_queue,
+                fx_queue_rotated=world.fx_queue_rotated,
+                spawn_entries=tuple(spawn_entries),
+                detail_preset=int(replay.header.detail_preset),
+                fx_toggle=int(replay.header.fx_toggle),
+                clear_fx_queues_each_tick=False,
+            )
         elif int(replay.header.game_mode_id) == int(GameMode.RUSH):
             if any(
                 not (isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND)
@@ -164,6 +232,7 @@ class ReplayPlaybackMode:
                 clear_fx_queues_each_tick=False,
                 enforce_loadout=self._enforce_rush_loadout,
             )
+            self._quest = None
             self._enforce_rush_loadout()
         else:
             raise ValueError(f"unsupported replay game_mode_id: {int(replay.header.game_mode_id)}")
@@ -311,6 +380,28 @@ class ReplayPlaybackMode:
         )
         return float(tick.step.dt_sim)
 
+    def _tick_quest(self, *, tick_index: int, dt_frame: float) -> float:
+        replay = self._replay
+        world = self._world
+        session = self._quest
+        if replay is None or world is None or session is None:
+            return 0.0
+
+        self._apply_tick_events(tick_index=tick_index, dt_frame=dt_frame)
+
+        player_inputs = self._build_tick_inputs(tick_index=tick_index)
+        tick = session.step_tick(
+            dt_frame=float(dt_frame),
+            inputs=player_inputs,
+        )
+        world.apply_step_result(
+            tick.step,
+            game_tune_started=False,
+            apply_audio=True,
+            update_camera=False,
+        )
+        return float(tick.step.dt_sim)
+
     def _tick_one(self) -> None:
         replay = self._replay
         world = self._world
@@ -329,6 +420,8 @@ class ReplayPlaybackMode:
         dt_frame = float(self._dt_frame)
         if self._survival is not None:
             dt_sim = self._tick_survival(tick_index=tick_index, dt_frame=dt_frame)
+        elif self._quest is not None:
+            dt_sim = self._tick_quest(tick_index=tick_index, dt_frame=dt_frame)
         elif self._rush is not None:
             dt_sim = self._tick_rush(tick_index=tick_index, dt_frame=dt_frame)
         else:  # pragma: no cover

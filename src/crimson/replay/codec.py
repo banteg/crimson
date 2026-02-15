@@ -76,9 +76,13 @@ def _header_from_dict(data: dict[str, Any]) -> ReplayHeader:
         raise ReplayCodecError(f"unknown bootstrap_kind: {bootstrap_kind_raw!r}")
     bootstrap_kind: BootstrapKind = "terrain_v1" if bootstrap_kind_raw == "terrain_v1" else "none"
 
+    quest_level_raw = data.get("quest_level", "")
+    quest_level = "" if quest_level_raw is None else str(quest_level_raw)
+
     return ReplayHeader(
         game_mode_id=int(data["game_mode_id"]),
         seed=int(data["seed"]),
+        quest_level=quest_level,
         bootstrap_kind=bootstrap_kind,
         bootstrap_seed=int(data.get("bootstrap_seed", 0)),
         game_version=game_version_str,
