@@ -15,6 +15,8 @@ from .protocol import (
 )
 
 CLIENT_MAX_CAPTURE_LEAD_TICKS = 1
+CLIENT_MAX_RESEND_SAMPLES = 64
+CLIENT_MAX_SENT_HISTORY_TICKS = 256
 
 
 @dataclass(slots=True)
@@ -123,6 +125,8 @@ class ClientLockstepState:
     local_slot_index: int
     input_delay_ticks: int = INPUT_DELAY_TICKS
     input_stall_timeout_ms: int = INPUT_STALL_TIMEOUT_MS
+    max_resend_samples: int = CLIENT_MAX_RESEND_SAMPLES
+    max_sent_history_ticks: int = CLIENT_MAX_SENT_HISTORY_TICKS
     _capture_tick: int = 0
     _sent_inputs: dict[int, PackedPlayerInput] = field(default_factory=dict)
     _canonical_by_tick: dict[int, TickFrame] = field(default_factory=dict)
@@ -162,14 +166,25 @@ class ClientLockstepState:
         self._sent_inputs[int(target_tick)] = list(packed_input)
 
         samples: list[InputSample] = []
-        for tick in range(int(target_tick), int(target_tick) - 3, -1):
+        oldest_tick = max(0, int(self._next_consume_tick))
+        history_ticks = int(self.max_sent_history_ticks)
+        if history_ticks > 0:
+            oldest_tick = max(int(oldest_tick), int(target_tick) - int(history_ticks) + 1)
+        max_samples = max(1, int(self.max_resend_samples))
+        sample_count = 0
+        for tick in range(int(target_tick), int(oldest_tick) - 1, -1):
             value = self._sent_inputs.get(int(tick))
             if value is None:
                 continue
             samples.append(InputSample(tick_index=int(tick), packed_input=list(value)))
+            sample_count += 1
+            if int(sample_count) >= int(max_samples):
+                break
 
-        # Keep memory bounded: we only ever re-send the last 3 ticks in the rolling window above.
-        min_keep_tick = int(target_tick) - 2
+        # Keep memory bounded while preserving any still-unacknowledged ticks.
+        min_keep_tick = max(0, int(self._next_consume_tick))
+        if history_ticks > 0:
+            min_keep_tick = max(int(min_keep_tick), int(target_tick) - int(history_ticks) + 1)
         max_keep_tick = int(target_tick)
         for tick in list(self._sent_inputs):
             if int(tick) < int(min_keep_tick) or int(tick) > int(max_keep_tick):

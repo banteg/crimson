@@ -65,7 +65,7 @@ def test_host_lobby_rejects_build_mismatch() -> None:
     assert welcome.reason == "build_mismatch"
 
 
-def test_host_lobby_accepts_same_public_version_with_different_build_id() -> None:
+def test_host_lobby_accepts_release_version_against_git_build_id() -> None:
     lobby = HostLobby(
         mode_id=1,
         player_count=2,
@@ -76,6 +76,20 @@ def test_host_lobby_accepts_same_public_version_with_different_build_id() -> Non
 
     welcome = lobby.process_hello(("127.0.0.1", 32001), _hello(build_id="0.1.0"))
     assert welcome.accepted is True
+
+
+def test_host_lobby_rejects_same_version_with_different_git_hashes() -> None:
+    lobby = HostLobby(
+        mode_id=1,
+        player_count=2,
+        build_id="0.1.0+g1234567",
+        tick_rate=TICK_RATE,
+        input_delay_ticks=INPUT_DELAY_TICKS,
+    )
+
+    welcome = lobby.process_hello(("127.0.0.1", 32001), _hello(build_id="0.1.0+g7654321"))
+    assert welcome.accepted is False
+    assert welcome.reason == "build_mismatch"
 
 
 def test_host_lobby_accepts_mismatched_client_mode_and_players() -> None:

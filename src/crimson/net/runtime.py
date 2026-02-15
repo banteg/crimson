@@ -57,6 +57,9 @@ CLIENT_LOG_FORWARD_MAX_CHARS_PER_BATCH = 900
 # Use a more forgiving timeout until lockstep traffic is flowing.
 LOADING_LINK_TIMEOUT_MS = 10_000
 
+# Bound socket drain work per update to avoid frame-time spikes under burst traffic.
+MAX_RECV_PACKETS_PER_UPDATE = 512
+
 
 @dataclass(slots=True)
 class LanRuntimeConfig:
@@ -468,6 +471,31 @@ class LanRuntime:
         except Exception:
             return
 
+    def _set_client_error(self, reason: str) -> None:
+        if self.error:
+            return
+        self.error = str(reason)
+        # Once client enters a terminal error state, stop forwarding local logs.
+        if self._client_log_forward_enabled:
+            set_lan_debug_forwarder(None)
+        self._client_log_forward_enabled = False
+        self._client_log_forward_queue.clear()
+
+    def _abort_host_match(self, *, reason: str, now_ms: int, addr: PeerAddr | None = None) -> None:
+        if not bool(self.started):
+            return
+        if self.error:
+            return
+        self.error = str(reason)
+        details: dict[str, object] = {
+            "role": "host",
+            "reason": str(reason),
+        }
+        if addr is not None:
+            details["addr"] = f"{addr[0]}:{int(addr[1])}"
+        lan_debug_log("net_match_abort", **details)
+        self._host_broadcast(Disconnect(reason=str(reason)), reliable=True, now_ms=int(now_ms))
+
     def _client_forward_log_line(self, line: str) -> None:
         # Best-effort: keep a bounded queue of recent log lines.
         if not bool(self._client_log_forward_enabled):
@@ -633,13 +661,21 @@ class LanRuntime:
         if lobby is None:
             return
 
-        for addr, packet in self.transport.recv_packets():
+        for addr, packet in self.transport.recv_packets(max_packets=int(MAX_RECV_PACKETS_PER_UPDATE)):
             peer_link = self.host_peers.get(addr)
             if peer_link is None:
-                peer_link = _HostPeerLink(addr=addr, last_seen_ms=int(now_ms))
-                self.host_peers[addr] = peer_link
+                message = getattr(packet, "message", None)
+                if isinstance(message, Hello):
+                    self._handle_host_message(addr, message, now_ms=int(now_ms))
+                    accepted_peer = self.host_peers.get(addr)
+                    if (
+                        accepted_peer is not None
+                        and bool(getattr(packet, "reliable", False))
+                        and int(getattr(packet, "seq", 0) or 0) > 0
+                    ):
+                        accepted_peer.link.prime_recv_seq(int(getattr(packet, "seq", 0) or 0))
+                continue
             peer_link.last_seen_ms = int(now_ms)
-
             messages, dup = peer_link.link.ingest_packet(packet, now_ms=int(now_ms))
             if dup:
                 lan_debug_log("net_recv_dup", role="host", addr=f"{addr[0]}:{addr[1]}", seq=int(packet.seq))
@@ -653,8 +689,11 @@ class LanRuntime:
         for addr, peer in list(self.host_peers.items()):
             if (int(now_ms) - int(peer.last_seen_ms)) < int(timeout_ms):
                 continue
+            slot = lobby.slot_for_addr(addr)
             self.host_peers.pop(addr, None)
             lobby.peers_by_addr.pop(addr, None)
+            if slot is not None:
+                self._host_seen_input_slots.discard(int(slot))
             lan_debug_log(
                 "net_timeout",
                 role="host",
@@ -662,6 +701,8 @@ class LanRuntime:
                 timeout_ms=int(timeout_ms),
                 started=bool(lobby.started),
             )
+            if bool(lobby.started):
+                self._abort_host_match(reason="peer_timeout", now_ms=int(now_ms), addr=addr)
 
         # Broadcast lobby state periodically.
         if (not lobby.started) and (int(now_ms) - int(self.host_last_broadcast_ms)) >= 250:
@@ -766,7 +807,19 @@ class LanRuntime:
                 slot_index=int(welcome.slot_index),
                 session_id=str(welcome.session_id),
             )
-            self._host_send(addr, welcome, reliable=True, now_ms=int(now_ms))
+            if bool(welcome.accepted):
+                peer = self.host_peers.get(addr)
+                if peer is None:
+                    self.host_peers[addr] = _HostPeerLink(addr=addr, last_seen_ms=int(now_ms))
+                else:
+                    peer.last_seen_ms = int(now_ms)
+            self._host_send(
+                addr,
+                welcome,
+                reliable=True,
+                now_ms=int(now_ms),
+                track_peer=bool(welcome.accepted),
+            )
             # Publish lobby state update after accepting/rejecting.
             self._host_broadcast_lobby_state(now_ms=int(now_ms))
             return
@@ -784,8 +837,13 @@ class LanRuntime:
             return
         if isinstance(message, Disconnect):
             lan_debug_log("net_recv", role="host", kind="disconnect", addr=f"{addr[0]}:{addr[1]}")
+            slot = lobby.slot_for_addr(addr)
             self.host_peers.pop(addr, None)
             lobby.peers_by_addr.pop(addr, None)
+            if slot is not None:
+                self._host_seen_input_slots.discard(int(slot))
+            if bool(lobby.started):
+                self._abort_host_match(reason="peer_disconnect", now_ms=int(now_ms), addr=addr)
             self._host_broadcast_lobby_state(now_ms=int(now_ms))
             return
         if isinstance(message, DesyncNotice):
@@ -846,12 +904,24 @@ class LanRuntime:
             lockstep.submit_input_batch(batch)
             return
 
-    def _host_send(self, addr: PeerAddr, message: NetMessage, *, reliable: bool, now_ms: int) -> None:
+    def _host_send(
+        self,
+        addr: PeerAddr,
+        message: NetMessage,
+        *,
+        reliable: bool,
+        now_ms: int,
+        track_peer: bool = True,
+    ) -> None:
         peer = self.host_peers.get(addr)
         if peer is None:
-            peer = _HostPeerLink(addr=addr)
-            self.host_peers[addr] = peer
-        packet = peer.link.build_packet(message, reliable=bool(reliable), now_ms=int(now_ms))
+            if bool(track_peer):
+                peer = _HostPeerLink(addr=addr, last_seen_ms=int(now_ms))
+                self.host_peers[addr] = peer
+        if peer is not None:
+            packet = peer.link.build_packet(message, reliable=bool(reliable), now_ms=int(now_ms))
+        else:
+            packet = ReliableLink().build_packet(message, reliable=bool(reliable), now_ms=int(now_ms))
         try:
             self.transport.send_packet(addr, packet)
         except OSError:
@@ -896,13 +966,19 @@ class LanRuntime:
         host = self.client_host_addr
         if lobby is None or link is None or host is None:
             return
+        if self.error:
+            return
 
         # Send hello until welcome arrives.
-        if lobby.welcome is None and (int(now_ms) - int(self.client_last_hello_ms)) >= 200:
+        if (
+            lobby.welcome is None
+            and int(link.pending_count) <= 0
+            and (int(now_ms) - int(self.client_last_hello_ms)) >= 200
+        ):
             self.client_last_hello_ms = int(now_ms)
             self._client_send(lobby.hello, reliable=True, now_ms=int(now_ms))
 
-        for addr, packet in self.transport.recv_packets():
+        for addr, packet in self.transport.recv_packets(max_packets=int(MAX_RECV_PACKETS_PER_UPDATE)):
             if addr != host:
                 continue
             self.client_last_seen_ms = int(now_ms)
@@ -911,13 +987,15 @@ class LanRuntime:
                 lan_debug_log("net_recv_dup", role="join", addr=f"{addr[0]}:{addr[1]}", seq=int(packet.seq))
             for message in messages:
                 self._handle_client_message(message, now_ms=int(now_ms))
+                if self.error:
+                    return
 
         timeout_ms = int(LINK_TIMEOUT_MS)
         if bool(self.started) and (not bool(self._client_seen_tick_frame)):
             timeout_ms = int(LOADING_LINK_TIMEOUT_MS)
         if (int(now_ms) - int(self.client_last_seen_ms)) >= int(timeout_ms):
             if not self.error:
-                self.error = "timeout"
+                self._set_client_error("timeout")
                 lan_debug_log(
                     "net_timeout",
                     role="join",
@@ -926,6 +1004,7 @@ class LanRuntime:
                     started=bool(self.started),
                     seen_tick_frame=bool(self._client_seen_tick_frame),
                 )
+            return
 
         self._client_flush_forwarded_logs(now_ms=int(now_ms))
 
@@ -960,7 +1039,7 @@ class LanRuntime:
             )
             lobby.ingest_welcome(message)
             if not bool(message.accepted):
-                self.error = str(message.reason or "rejected")
+                self._set_client_error(str(message.reason or "rejected"))
                 return
             hello = getattr(lobby, "hello", None)
             if hello is not None:
@@ -1041,7 +1120,7 @@ class LanRuntime:
             welcome = getattr(lobby, "welcome", None)
             if welcome is not None and str(getattr(welcome, "session_id", "") or ""):
                 if str(getattr(message, "session_id", "") or "") != str(getattr(welcome, "session_id", "") or ""):
-                    self.error = "session_id_mismatch"
+                    self._set_client_error("session_id_mismatch")
                     lan_debug_log(
                         "net_sanity_mismatch",
                         role="join",
@@ -1057,7 +1136,7 @@ class LanRuntime:
                 or bool(getattr(message, "preserve_bugs", False)) != bool(self.cfg.preserve_bugs)
             )
             if mismatched:
-                self.error = "match_start_mismatch"
+                self._set_client_error("match_start_mismatch")
                 lan_debug_log(
                     "net_sanity_mismatch",
                     role="join",
@@ -1075,7 +1154,7 @@ class LanRuntime:
 
             status_snapshot = message.status_snapshot
             if status_snapshot is None:
-                self.error = "match_start_missing_status_snapshot"
+                self._set_client_error("match_start_missing_status_snapshot")
                 lan_debug_log(
                     "net_sanity_error",
                     role="join",
@@ -1087,7 +1166,7 @@ class LanRuntime:
             if expected_hash:
                 actual_hash = hash_status_snapshot(status_snapshot)
                 if str(actual_hash) != str(expected_hash):
-                    self.error = "match_start_status_hash_mismatch"
+                    self._set_client_error("match_start_status_hash_mismatch")
                     lan_debug_log(
                         "net_sanity_mismatch",
                         role="join",
@@ -1155,7 +1234,7 @@ class LanRuntime:
             return
         if isinstance(message, Disconnect):
             lan_debug_log("net_recv", role="join", kind="disconnect", reason=str(message.reason or ""))
-            self.error = str(message.reason or "disconnect")
+            self._set_client_error(str(message.reason or "disconnect"))
             return
         kind = getattr(message, "kind", type(message).__name__)
         lan_debug_log("net_recv", role="join", kind=str(kind))

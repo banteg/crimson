@@ -73,3 +73,11 @@ def test_decode_packet_rejects_invalid_blob() -> None:
     bad = encode_packet(Packet(seq=0, ack=0, reliable=False, message=PauseState(paused=False, reason="")))
     decoded = decode_packet(bad)
     assert isinstance(decoded.message, PauseState)
+
+
+def test_build_compatibility_rejects_mismatched_git_hashes() -> None:
+    assert protocol.builds_compatible("0.1.0+g1234567", "0.1.0+g7654321") is False
+
+
+def test_build_compatibility_allows_release_to_match_same_public_version() -> None:
+    assert protocol.builds_compatible("0.1.0", "0.1.0+g1234567") is True

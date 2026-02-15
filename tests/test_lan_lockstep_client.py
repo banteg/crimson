@@ -54,3 +54,18 @@ def test_client_pause_state_tracks_missing_tick_frames() -> None:
     resume = client.update_pause_state(now_ms=251)
     assert resume is not None
     assert resume.paused is False
+
+
+def test_client_resend_window_includes_oldest_unconsumed_tick() -> None:
+    client = ClientLockstepState(local_slot_index=0, input_delay_ticks=2)
+    client._next_consume_tick = 5
+    client._capture_tick = 6
+    client._sent_inputs[5] = [0.0, 0.0, [0.0, 0.0], 5]
+    client._sent_inputs[6] = [0.0, 0.0, [0.0, 0.0], 6]
+    client._sent_inputs[7] = [0.0, 0.0, [0.0, 0.0], 7]
+
+    batch = client.queue_local_input([0.0, 0.0, [0.0, 0.0], 1])
+
+    ticks = [sample.tick_index for sample in batch.samples]
+    assert 5 in ticks
+    assert ticks[0] == 8

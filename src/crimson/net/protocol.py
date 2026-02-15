@@ -73,8 +73,10 @@ def builds_compatible(peer_build_id: str, host_build_id: str) -> bool:
 
     peer_hash = build_git_hash(peer)
     host_hash = build_git_hash(host)
-    if peer_hash is not None and host_hash is not None and peer_hash == host_hash:
-        return True
+    if peer_hash is not None and host_hash is not None:
+        # Lockstep sessions are sensitive to tiny behavioral drift. If both peers
+        # report git hashes, require an exact hash match.
+        return peer_hash == host_hash
 
     peer_ver = build_public_version(peer)
     host_ver = build_public_version(host)
