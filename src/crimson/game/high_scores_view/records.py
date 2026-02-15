@@ -19,6 +19,11 @@ def resolve_request(state: GameState) -> HighScoresRequest:
         if major <= 0 or minor <= 0:
             major = state.config.quest_stage_major
             minor = state.config.quest_stage_minor
+        # Native screen always has a valid quest stage selected (defaults to 1.1).
+        if major <= 0 or minor <= 0:
+            major, minor = 1, 1
+        major = max(1, min(5, int(major)))
+        minor = max(1, min(10, int(minor)))
         request.quest_stage_major = int(major)
         request.quest_stage_minor = int(minor)
 
