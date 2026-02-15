@@ -340,7 +340,7 @@ class WorldState:
                 detail_preset=int(detail_preset),
                 world_size=float(world_size),
                 players=self.players,
-                creatures=self.creatures.entries,
+                creatures=self.creatures.entries, spawn_slots=self.creatures.spawn_slots,
             )
             dt = player_frame_dt_after_roundtrip(
                 dt=dt, time_scale_active=bool(self.state.time_scale_active), reflex_boost_timer=float(self.state.bonuses.reflex_boost)

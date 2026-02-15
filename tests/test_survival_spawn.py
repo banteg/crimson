@@ -5,6 +5,7 @@ import pytest
 from grim.rand import Crand
 from grim.geom import Vec2
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, build_survival_spawn_creature
+from crimson.math_parity import f32
 
 
 def test_survival_spawn_creature_baseline_seed1_xp0() -> None:
@@ -16,12 +17,12 @@ def test_survival_spawn_creature_baseline_seed1_xp0() -> None:
     assert c.ai_mode == 0
 
     assert c.size == pytest.approx(44.0, abs=1e-9)
-    assert c.heading == pytest.approx(0.15, abs=1e-9)
-    assert c.move_speed == pytest.approx(0.9, abs=1e-9)
+    assert c.heading == pytest.approx(float(f32(f32(15.0) * f32(0.01))), abs=0.0)
+    assert c.move_speed == pytest.approx(float(f32(0.9)), abs=0.0)
     assert c.health == pytest.approx(64.0, abs=1e-9)
     assert c.max_health == pytest.approx(64.0, abs=1e-9)
     assert c.contact_damage == pytest.approx(4.19047619047619, abs=1e-9)
-    assert c.reward_value == pytest.approx(36.36190476190476, abs=1e-9)
+    assert c.reward_value == pytest.approx(36.36190466653733, abs=1e-9)
 
     assert c.tint == pytest.approx((0.9, 0.88, 0.78, 1.0), abs=1e-9)
 
@@ -50,7 +51,7 @@ def test_survival_spawn_creature_applies_zombie_speed_floor_and_health_scale() -
 
     assert c.type_id == CreatureTypeId.ZOMBIE
     assert c.flags == CreatureFlags(0)
-    assert c.move_speed == pytest.approx(1.3, abs=1e-9)
+    assert c.move_speed == pytest.approx(float(f32(1.3)), abs=0.0)
     assert c.health == pytest.approx(264.75, abs=1e-9)
     assert c.max_health == pytest.approx(264.75, abs=1e-9)
     assert rng.state == 0xC1BBB05F

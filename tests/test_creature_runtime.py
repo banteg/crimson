@@ -9,6 +9,7 @@ import pytest
 from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
@@ -174,6 +175,33 @@ def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
     assert creature.target_player == 1
     assert player0.health == pytest.approx(100.0)
     assert player1.health == pytest.approx(90.0)
+
+
+def test_small_creature_dies_on_contact() -> None:
+    state = GameplayState()
+    pool = CreaturePool()
+
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 50.0
+    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.flags = 0
+    creature.ai_mode = 0
+    creature.move_speed = 0.0
+    creature.size = 30.0
+    creature.contact_damage = 10.0
+    creature.target_player = 0
+    creature.pos = Vec2(120.0, 100.0)  # dist=20
+
+    dt = 1.0 / 60.0
+    pool.update(dt, state=state, players=[player], rand=lambda: 0)
+
+    assert player.health == pytest.approx(90.0)
+    assert creature.hp == pytest.approx(0.0)
+    assert creature.hitbox_size == pytest.approx(f32(float(CREATURE_HITBOX_ALIVE) - float(dt)))
+    assert pool.kill_count == 0
 
 
 @dataclass
@@ -440,7 +468,7 @@ def test_spawn_init_preserves_stale_target_heading_from_recycled_slot() -> None:
     )
 
     assert idx == 0
-    assert pool.entries[idx].heading == pytest.approx(0.53, abs=1e-9)
+    assert pool.entries[idx].heading == pytest.approx(float(f32(0.53)), abs=0.0)
     assert pool.entries[idx].target_heading == pytest.approx(2.5632283687591553, abs=1e-9)
 
 

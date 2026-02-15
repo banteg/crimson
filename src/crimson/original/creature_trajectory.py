@@ -16,6 +16,7 @@ from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     build_capture_dt_frame_overrides,
     build_capture_dt_frame_ms_i32_overrides,
+    build_capture_inter_tick_rand_draws_overrides,
     convert_capture_to_replay,
     load_capture,
 )
@@ -33,7 +34,9 @@ from crimson.sim.runners.common import (
 )
 from crimson.sim.runners.survival import (
     _apply_tick_events,
+    _partition_tick_events,
     _resolve_dt_frame,
+    _resolve_dt_frame_ms_i32,
     _should_apply_world_dt_steps_for_replay,
 )
 from crimson.sim.sessions import SurvivalDeterministicSession
@@ -215,6 +218,7 @@ def trace_creature_trajectory(
     events_by_tick, original_capture_replay = _load_capture_events(replay)
     dt_frame_overrides = build_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
     dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
+    inter_tick_rand_draws_by_tick = build_capture_inter_tick_rand_draws_overrides(capture)
     session.apply_world_dt_steps = _should_apply_world_dt_steps_for_replay(
         original_capture_replay=bool(original_capture_replay),
         dt_frame_overrides=dt_frame_overrides,
@@ -224,14 +228,32 @@ def trace_creature_trajectory(
 
     out: list[CreatureTrajectoryRow] = []
     for tick_index in range(int(end_tick) + 1):
+        state = world.state
+        state.game_mode = int(GameMode.SURVIVAL)
+        state.demo_mode_active = False
+        if inter_tick_rand_draws_by_tick is not None:
+            draws = inter_tick_rand_draws_by_tick.get(int(tick_index))
+            if draws is None:
+                draws = int(inter_tick_rand_draws)
+            for _ in range(max(0, int(draws))):
+                state.rng.rand()
         dt_tick = _resolve_dt_frame(
             tick_index=int(tick_index),
             default_dt_frame=float(default_dt_frame),
             dt_frame_overrides=dt_frame_overrides,
         )
-        dt_tick_ms_i32 = dt_frame_ms_i32_overrides.get(int(tick_index))
+        dt_tick_ms_i32 = _resolve_dt_frame_ms_i32(
+            tick_index=int(tick_index),
+            dt_frame=float(dt_tick),
+            dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
+        )
+        tick_events = events_by_tick.get(int(tick_index), [])
+        pre_step_events, post_step_events = _partition_tick_events(
+            tick_events,
+            defer_menu_open=bool(original_capture_replay),
+        )
         _apply_tick_events(
-            events_by_tick.get(int(tick_index), []),
+            pre_step_events,
             tick_index=int(tick_index),
             dt_frame=float(dt_tick),
             world=world,
@@ -247,6 +269,14 @@ def trace_creature_trajectory(
             inputs=player_inputs,
             trace_rng=False,
         )
+        if post_step_events:
+            _apply_tick_events(
+                post_step_events,
+                tick_index=int(tick_index),
+                dt_frame=float(dt_tick),
+                world=world,
+                strict_events=False,
+            )
 
         sample = capture_rows.get(int(tick_index))
         if sample is not None and int(tick_index) >= int(start_tick):
@@ -296,9 +326,10 @@ def trace_creature_trajectory(
                 )
             )
 
-        draws = max(0, int(inter_tick_rand_draws))
-        for _ in range(draws):
-            world.state.rng.rand()
+        if inter_tick_rand_draws_by_tick is None:
+            draws = max(0, int(inter_tick_rand_draws))
+            for _ in range(draws):
+                state.rng.rand()
     return out
 
 

@@ -79,9 +79,11 @@ def resolve_live_link(creatures: Sequence[CreatureLinkLike], link_index: int) ->
 
 
 def _distance_f32(a: Vec2, b: Vec2) -> float:
+    # Native computes deltas into float locals, then runs the distance math in
+    # x87 precision and stores only the final sqrt back to float.
     dx = f32(float(b.x) - float(a.x))
     dy = f32(float(b.y) - float(a.y))
-    dist_sq = f32(f32(float(dx) * float(dx)) + f32(float(dy) * float(dy)))
+    dist_sq = float(dx) * float(dx) + float(dy) * float(dy)
     return f32(math.sqrt(float(dist_sq)))
 
 
@@ -216,8 +218,8 @@ def creature_ai_update_target(
     if creature.force_target or creature.ai_mode == 2:
         creature.target = f32_vec2(player_pos)
 
-    creature.target_heading = heading_from_delta_f32(
-        dx=float(creature.target.x) - float(creature.pos.x),
-        dy=float(creature.target.y) - float(creature.pos.y),
-    )
+    # Native stores dx/dy deltas into float locals before calling atan2.
+    dx = f32(float(creature.target.x) - float(creature.pos.x))
+    dy = f32(float(creature.target.y) - float(creature.pos.y))
+    creature.target_heading = heading_from_delta_f32(dx=float(dx), dy=float(dy))
     return CreatureAIUpdate(move_scale=f32(move_scale), self_damage=self_damage)

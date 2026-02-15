@@ -110,37 +110,52 @@ def _wrap_angle(angle: float) -> float:
 
 
 def _angle_approach(current: float, target: float, rate: float, dt: float) -> float:
-    # Native parity (`angle_approach`, 0x0041f430):
-    # - normalize to [0, 2*pi]
-    # - choose shortest arc using direct/wrap distances
-    # - advance by `frame_dt * min(1, dist) * rate`
-    # - do not re-wrap after the step (next call normalizes again)
-    angle = f32(current)
-    target = f32(target)
-    tau = NATIVE_TAU
+    """Native `angle_approach` (0x0041f430).
+
+    The original code uses float locals throughout and reads the frame delta from
+    the global `frame_dt` float. Mirror the float32 store boundaries here to avoid
+    1-ULP turn drift that can amplify over long capture replays.
+    """
+
+    angle = float(f32(float(current)))
+    target_f32 = float(f32(float(target)))
+    rate_f32 = float(f32(float(rate)))
+    dt_f32 = float(f32(float(dt)))
+    tau = float(NATIVE_TAU)
 
     while angle < 0.0:
-        angle = f32(angle + tau)
-    while angle > tau:
-        angle = f32(angle - tau)
+        angle = float(f32(float(angle) + float(tau)))
+    while float(tau) < float(angle):
+        angle = float(f32(float(angle) - float(tau)))
 
-    direct = abs(float(target) - float(angle))
-    hi = target if angle < target else angle
-    lo = target if target < angle else angle
-    wrap = abs((float(tau) - float(hi)) + float(lo))
+    direct_delta = float(f32(float(target_f32) - float(angle)))
+    direct = float(f32(abs(float(direct_delta))))
 
-    step_scale = direct if direct < wrap else wrap
-    if step_scale > 1.0:
+    hi = float(angle)
+    if float(angle) < float(target_f32):
+        hi = float(target_f32)
+    lo = float(angle)
+    if float(target_f32) < float(angle):
+        lo = float(target_f32)
+
+    wrap_delta = float(f32(float(tau) - float(hi)))
+    wrapped = float(f32(abs(float(f32(float(wrap_delta) + float(lo))))))
+
+    step_scale = float(wrapped)
+    if float(direct) < float(wrapped):
+        step_scale = float(direct)
+    if 1.0 < float(step_scale):
         step_scale = 1.0
-    step = float(dt) * float(step_scale) * float(rate)
 
-    if direct <= wrap:
-        if angle < target:
-            return f32(float(angle) + float(step))
+    step_delta = float(f32(float(dt_f32) * float(step_scale) * float(rate_f32)))
+
+    if float(direct) <= float(wrapped):
+        if float(angle) < float(target_f32):
+            return float(f32(float(step_delta) + float(angle)))
     else:
-        if target < angle:
-            return f32(float(angle) + float(step))
-    return f32(float(angle) - float(step))
+        if float(target_f32) < float(angle):
+            return float(f32(float(step_delta) + float(angle)))
+    return float(f32(float(angle) - float(step_delta)))
 
 
 def _movement_delta_from_heading_f32(
@@ -154,11 +169,22 @@ def _movement_delta_from_heading_f32(
     # final velocity write (`creature_update_all` around 0x00426b85..0x00426bb1).
     # Avoid pre-rounding direction components to float32 here.
     radians = float(f32(heading)) - NATIVE_HALF_PI
-    step_scale = float(dt) * float(move_scale) * float(move_speed) * float(CREATURE_SPEED_SCALE)
-    return Vec2(
-        f32(math.cos(radians) * step_scale),
-        f32(math.sin(radians) * step_scale),
-    )
+
+    # Preserve native multiply order:
+    # `vel = trig(heading - half_pi) * frame_dt * move_scale * move_speed * 30.0`
+    vx = math.cos(radians)
+    vx *= float(dt)
+    vx *= float(move_scale)
+    vx *= float(move_speed)
+    vx *= float(CREATURE_SPEED_SCALE)
+
+    vy = math.sin(radians)
+    vy *= float(dt)
+    vy *= float(move_scale)
+    vy *= float(move_speed)
+    vy *= float(CREATURE_SPEED_SCALE)
+
+    return Vec2(f32(vx), f32(vy))
 
 
 def _velocity_from_delta_f32(delta: Vec2, *, dt: float) -> Vec2:
@@ -296,7 +322,9 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
     if eat_dist_sq >= 20.0 * 20.0:
         return
 
-    creature.pos = (creature.pos - creature.vel * ctx.dt).clamp_rect(
+    # Native stores `vel` as per-tick delta (not per-second). It applies movement
+    # as `pos += vel`, so reverting the just-applied movement subtracts `vel`.
+    creature.pos = (creature.pos - creature.vel).clamp_rect(
         0.0,
         0.0,
         float(ctx.world_width),
@@ -437,11 +465,37 @@ def _creature_interaction_plaguebearer_contact_flag(ctx: _CreatureInteractionCtx
             creature.plague_infected = True
 
 
+def _creature_interaction_contact_kill_small(ctx: _CreatureInteractionCtx) -> None:
+    """Kill small creatures that make contact, matching native `creature_update_all`.
+
+    Native logic (see decompile around 0x004276d6) sets `health = 0.0` and
+    decrements hitbox_size by frame_dt whenever:
+    - distance to the target player is < 30.0, and
+    - creature `size` is <= 30.0.
+
+    This path does not call `creature_handle_death`, so it intentionally skips XP
+    awards + bonus spawns. The corpse staging still increments kill_count later.
+    """
+
+    creature = ctx.creature
+    if creature.hitbox_size != CREATURE_HITBOX_ALIVE:
+        return
+    if ctx.contact_dist_sq >= 30.0 * 30.0:
+        return
+    if float(creature.size) > 30.0:
+        return
+
+    creature.hp = 0.0
+    creature.hitbox_size = f32(float(creature.hitbox_size) - float(ctx.dt))
+    ctx.skip_creature = True
+
+
 _CREATURE_INTERACTION_STEPS: tuple[_CreatureInteractionStep, ...] = (
     _creature_interaction_plaguebearer_spread,
     _creature_interaction_energizer_eat,
     _creature_interaction_contact_damage,
     _creature_interaction_plaguebearer_contact_flag,
+    _creature_interaction_contact_kill_small,
 )
 
 
@@ -930,7 +984,7 @@ class CreaturePool:
                         move_scale=creature.move_scale,
                         move_speed=creature.move_speed,
                     )
-                    creature.vel = _velocity_from_delta_f32(move_delta, dt=dt)
+                    creature.vel = move_delta
                     # Native path (flags without 0x4): no bounds clamp here; offscreen spawns
                     # remain offscreen until their own velocity moves them in.
                     creature.pos = _advance_pos_by_delta_f32(creature.pos, move_delta)
@@ -951,7 +1005,7 @@ class CreaturePool:
                         move_scale=creature.move_scale,
                         move_speed=creature.move_speed,
                     )
-                    creature.vel = _velocity_from_delta_f32(move_delta, dt=dt)
+                    creature.vel = move_delta
                     creature.pos = f32_vec2(
                         _advance_pos_by_delta_f32(creature.pos, move_delta).clamp_rect(radius, radius, max_x, max_y)
                     )
@@ -1125,14 +1179,14 @@ class CreaturePool:
     def _apply_init(self, entry: CreatureState, init: CreatureInit) -> None:
         entry.active = True
         entry.type_id = int(init.type_id.value) if init.type_id is not None else 0
-        entry.pos = init.pos
+        entry.pos = f32_vec2(init.pos)
         if init.heading is not None:
             # Native spawn paths write heading but keep target_heading stale from
             # the recycled slot (capture lifecycle shows added entries retaining
             # prior target_heading values).
-            entry.heading = float(init.heading)
-        entry.target = init.pos
-        entry.phase_seed = float(init.phase_seed)
+            entry.heading = f32(float(init.heading))
+        entry.target = f32_vec2(init.pos)
+        entry.phase_seed = f32(float(init.phase_seed))
         # Native spawn paths zero velocity and a few per-frame state fields on every
         # allocation (`creature_spawn`, `survival_spawn_creature`, `creature_spawn_template`).
         entry.vel = Vec2()
@@ -1144,23 +1198,23 @@ class CreaturePool:
         hp = float(init.health or 0.0)
         if hp <= 0.0:
             hp = 1.0
-        entry.hp = hp
-        entry.max_hp = float(init.max_health or hp)
+        entry.hp = f32(hp)
+        entry.max_hp = f32(float(init.max_health or hp))
 
-        entry.move_speed = float(init.move_speed or 1.0)
-        entry.reward_value = float(init.reward_value or 0.0)
-        entry.size = float(init.size or 50.0)
-        entry.contact_damage = float(init.contact_damage or 0.0)
+        entry.move_speed = f32(float(init.move_speed or 1.0))
+        entry.reward_value = f32(float(init.reward_value or 0.0))
+        entry.size = f32(float(init.size or 50.0))
+        entry.contact_damage = f32(float(init.contact_damage or 0.0))
 
-        entry.target_offset = init.target_offset
-        entry.orbit_angle = float(init.orbit_angle or 0.0)
+        entry.target_offset = f32_vec2(init.target_offset) if init.target_offset is not None else None
+        entry.orbit_angle = f32(float(init.orbit_angle or 0.0))
         if init.orbit_radius is not None:
             orbit_radius = float(init.orbit_radius)
         elif init.ranged_projectile_type is not None:
             orbit_radius = float(init.ranged_projectile_type)
         else:
             orbit_radius = 0.0
-        entry.orbit_radius = orbit_radius
+        entry.orbit_radius = f32(orbit_radius)
 
         entry.spawn_slot_index = None
         entry.attack_cooldown = 0.0
