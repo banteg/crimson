@@ -19,10 +19,12 @@ if TYPE_CHECKING:
     from ...sim.state_types import PlayerState
 
 _LAN_PLAYER_RING_RGB: tuple[tuple[int, int, int], ...] = (
-    (102, 255, 110),
-    (120, 240, 255),
-    (255, 150, 245),
-    (255, 120, 120),
+    # Match existing trooper torso tint colors for P1/P2.
+    (77, 77, 255),
+    (255, 140, 89),
+    # Distinct colors for P3/P4 (4-player LAN readability).
+    (90, 240, 255),
+    (255, 120, 230),
 )
 
 
