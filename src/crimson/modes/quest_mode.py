@@ -652,6 +652,10 @@ class QuestMode(BaseGameplayMode):
         if session is None:
             return
 
+        runtime.update()
+        if str(self._lan_role) == "host" and (not bool(runtime.host_remote_inputs_ready())):
+            return
+
         ticks_to_capture = self._lan_capture_clock.advance(dt_frame)
         if ticks_to_capture > 0:
             input_frame = self._build_local_inputs(dt_frame=dt_frame)

@@ -73,6 +73,7 @@ class LanRuntime:
     host_lockstep: HostLockstepState | None = field(init=False, default=None)
     host_capture_tick: int = field(init=False, default=0)
     host_ready_frames: deque[TickFrame] = field(init=False, default_factory=deque)
+    _host_seen_input_slots: set[int] = field(init=False, default_factory=set)
 
     client_lobby: ClientLobby | None = field(init=False, default=None)
     client_link: ReliableLink | None = field(init=False, default=None)
@@ -115,6 +116,7 @@ class LanRuntime:
         self._client_input_queued_at_ms.clear()
         self._client_local_input_latency_ms = 0
         self._client_local_input_latency_ewma_ms = 0.0
+        self._host_seen_input_slots.clear()
         lan_debug_log(
             "net_open",
             role=str(self.cfg.role),
@@ -196,9 +198,28 @@ class LanRuntime:
             self._client_input_queued_at_ms.clear()
             self._client_local_input_latency_ms = 0
             self._client_local_input_latency_ewma_ms = 0.0
+            self._host_seen_input_slots.clear()
             self.started = False
             self.error = ""
             lan_debug_log("net_close", role=str(self.cfg.role))
+
+    def host_remote_inputs_ready(self) -> bool:
+        """True once each remote slot has sent at least one InputBatch.
+
+        This is used to gate the host's first simulation steps so the host doesn't
+        start capturing inputs before joiners have entered gameplay, which can
+        create persistent host-side input latency.
+        """
+        if str(self.cfg.role) != "host":
+            return True
+        lockstep = self.host_lockstep
+        if lockstep is None:
+            return False
+        player_count = max(1, int(lockstep.player_count))
+        for slot in range(1, int(player_count)):
+            if int(slot) not in self._host_seen_input_slots:
+                return False
+        return True
 
     @property
     def bound_port(self) -> int:
@@ -416,6 +437,7 @@ class LanRuntime:
             self.started = True
             self.host_match_start = event
             self._host_init_lockstep(event)
+            self._host_seen_input_slots.clear()
             lan_debug_log("net_match_start", role="host", seed=int(event.seed), player_count=int(event.player_count))
             self._host_broadcast(event, reliable=True, now_ms=int(now_ms))
 
@@ -491,6 +513,8 @@ class LanRuntime:
             mapped_slot = lobby.slot_for_addr(addr)
             if mapped_slot is None:
                 return
+            if int(mapped_slot) > 0:
+                self._host_seen_input_slots.add(int(mapped_slot))
             batch = message
             if int(batch.slot_index) != int(mapped_slot):
                 batch = InputBatch(slot_index=int(mapped_slot), samples=list(batch.samples))
