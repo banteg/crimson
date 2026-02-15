@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from .types import (
+    BootstrapKind,
     PackedPlayerInput,
     PackedTickInputs,
     PerkMenuOpenEvent,
@@ -69,9 +70,30 @@ def _header_from_dict(data: dict[str, Any]) -> ReplayHeader:
     input_quant = data.get("input_quantization", "raw")
     if input_quant not in ("raw", "f32"):
         raise ReplayCodecError(f"unknown input_quantization: {input_quant!r}")
+
+    bootstrap_kind_raw = data.get("bootstrap_kind", "none")
+    if bootstrap_kind_raw not in ("none", "terrain_v1"):
+        raise ReplayCodecError(f"unknown bootstrap_kind: {bootstrap_kind_raw!r}")
+    bootstrap_kind: BootstrapKind = "terrain_v1" if bootstrap_kind_raw == "terrain_v1" else "none"
+
+    raw_bootstrap_ids = data.get("bootstrap_terrain_ids", [0, 1, 0])
+    bootstrap_ids: list[int] = [0, 1, 0]
+    if isinstance(raw_bootstrap_ids, (list, tuple)):
+        for idx, value in enumerate(list(raw_bootstrap_ids)[:3]):
+            try:
+                bootstrap_ids[idx] = int(value)
+            except (TypeError, ValueError, OverflowError):
+                bootstrap_ids[idx] = bootstrap_ids[idx]
+
     return ReplayHeader(
         game_mode_id=int(data["game_mode_id"]),
         seed=int(data["seed"]),
+        bootstrap_kind=bootstrap_kind,
+        bootstrap_seed=int(data.get("bootstrap_seed", 0)),
+        bootstrap_terrain_seed=int(data.get("bootstrap_terrain_seed", 0)),
+        bootstrap_terrain_ids=(int(bootstrap_ids[0]), int(bootstrap_ids[1]), int(bootstrap_ids[2])),
+        bootstrap_selection_draws=int(data.get("bootstrap_selection_draws", 0)),
+        bootstrap_stamping_draws=int(data.get("bootstrap_stamping_draws", 0)),
         game_version=game_version_str,
         tick_rate=int(data.get("tick_rate", 60)),
         difficulty_level=int(data.get("difficulty_level", 0)),

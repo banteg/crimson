@@ -45,6 +45,7 @@ from ..replay.checkpoints import (
     dump_checkpoints_file,
     resolve_checkpoint_sample_rate,
 )
+from ..sim.bootstrap import run_terrain_bootstrap
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSessionTick, SurvivalDeterministicSession
@@ -255,6 +256,18 @@ class SurvivalMode(BaseGameplayMode):
         self._sim_clock.reset()
         self._lan_capture_clock.reset()
         self._survival = _SurvivalState()
+
+        status = self.state.status
+        quest_unlock_index = int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0
+        bootstrap = run_terrain_bootstrap(
+            self.state.rng,
+            quest_unlock_index=int(quest_unlock_index),
+            width=int(self.world.world_size),
+            height=int(self.world.world_size),
+            layers=3,
+        )
+        self.world.apply_bootstrap_terrain(terrain_ids=bootstrap.terrain_ids, seed=bootstrap.terrain_seed, layers=3)
+
         self._sim_session = SurvivalDeterministicSession(
             world=self.world.world_state,
             world_size=float(self.world.world_size),
@@ -271,7 +284,6 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_prompt_hover = False
         self._perk_prompt_pulse = 0.0
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
-        status = self.state.status
         weapon_usage_counts: tuple[int, ...] = ()
         if status is not None:
             raw_counts = status.data.get("weapon_usage_counts")
@@ -301,6 +313,12 @@ class SurvivalMode(BaseGameplayMode):
                 ReplayHeader(
                     game_mode_id=int(GameMode.SURVIVAL),
                     seed=int(self.state.rng.state),
+                    bootstrap_kind="terrain_v1",
+                    bootstrap_seed=int(getattr(self, "_bootstrap_seed", 0) or 0),
+                    bootstrap_terrain_seed=int(bootstrap.terrain_seed),
+                    bootstrap_terrain_ids=bootstrap.terrain_ids,
+                    bootstrap_selection_draws=int(bootstrap.selection_draws),
+                    bootstrap_stamping_draws=int(bootstrap.stamping_draws),
                     tick_rate=int(self._sim_clock.tick_rate),
                     difficulty_level=int(self.world.difficulty_level),
                     hardcore=bool(self.world.hardcore),

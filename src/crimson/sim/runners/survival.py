@@ -15,6 +15,7 @@ from ...replay import (
     PerkPickEvent,
     Replay,
     UnknownEvent,
+    apply_replay_bootstrap,
     unpack_packed_player_input,
     unpack_input_flags,
     unpack_input_move_key_flags,
@@ -283,7 +284,12 @@ def run_survival_replay(
         quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
         weapon_usage_counts=replay.header.status.weapon_usage_counts,
     )
-    world.state.rng.srand(int(replay.header.seed))
+    apply_replay_bootstrap(
+        replay.header,
+        rng=world.state.rng,
+        world_size=float(world_size),
+        strict=True,
+    )
 
     events_by_tick: dict[int, list[object]] = {}
     original_capture_replay = False

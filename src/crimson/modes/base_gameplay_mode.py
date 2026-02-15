@@ -132,6 +132,7 @@ class BaseGameplayMode:
         self._screen_fade: _ScreenFade | None = None
         self._local_input = LocalInputInterpreter()
         self._terrain_regen_counter = 0
+        self._bootstrap_seed = 0
         self._lan_runtime: LanRuntime | None = None
         self._lan_local_slot_index = 0
         self._lan_seed_override: int | None = None
@@ -527,6 +528,7 @@ class BaseGameplayMode:
             seed = int(self._lan_seed_override)
         else:
             seed = random.getrandbits(32)
+        self._bootstrap_seed = int(seed) & 0xFFFFFFFF
         self.world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self.world.open()
         self._bind_world()

@@ -18,6 +18,7 @@ from ..perks.selection import perk_selection_current_choices, perk_selection_pic
 from ..replay import (
     PerkMenuOpenEvent,
     PerkPickEvent,
+    apply_replay_bootstrap,
     Replay,
     UnknownEvent,
     load_replay_file,
@@ -106,14 +107,28 @@ class ReplayPlaybackMode:
             audio=None,
             audio_rng=None,
         )
-        world.reset(seed=int(replay.header.seed), player_count=int(replay.header.player_count))
+        seed_for_reset = int(replay.header.seed)
+        if str(replay.header.bootstrap_kind) != "none":
+            seed_for_reset = int(replay.header.bootstrap_seed)
+        world.reset(seed=int(seed_for_reset), player_count=int(replay.header.player_count))
         world.open()
         world.state.status = status_from_snapshot(
             quest_unlock_index=int(replay.header.status.quest_unlock_index),
             quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
             weapon_usage_counts=replay.header.status.weapon_usage_counts,
         )
-        # `replay.header.seed` is the gameplay RNG state at tick 0; presentation systems must not consume it.
+        bootstrap = apply_replay_bootstrap(
+            replay.header,
+            rng=world.state.rng,
+            world_size=float(world_size),
+            strict=True,
+        )
+        if bootstrap is not None:
+            world.apply_bootstrap_terrain(
+                terrain_ids=replay.header.bootstrap_terrain_ids,
+                seed=int(replay.header.bootstrap_terrain_seed),
+                layers=3,
+            )
 
         self._world = world
 

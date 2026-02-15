@@ -23,6 +23,7 @@ from crimson.bonuses import bonus_label
 from crimson.game_modes import GameMode
 from crimson.paths import APP_NAME
 from crimson.perks import perk_label
+from crimson.replay import apply_replay_bootstrap
 from crimson.replay.checkpoints import ReplayCheckpoint
 from crimson.sim.runners.common import (
     build_damage_scale_by_type,
@@ -221,7 +222,12 @@ class _FocusRuntime:
             quest_unlock_index_full=int(self.replay.header.status.quest_unlock_index_full),
             weapon_usage_counts=self.replay.header.status.weapon_usage_counts,
         )
-        world.state.rng.srand(int(self.replay.header.seed))
+        apply_replay_bootstrap(
+            self.replay.header,
+            rng=world.state.rng,
+            world_size=float(world_size),
+            strict=True,
+        )
         fx_queue, fx_queue_rotated = build_empty_fx_queues()
         session = SurvivalDeterministicSession(
             world=world,
