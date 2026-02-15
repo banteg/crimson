@@ -199,7 +199,6 @@ class ProjectileRenderDebugView:
         self._aim_texture = self._world._load_texture(
             "ui_aim",
             cache_path="ui/ui_aim.jaz",
-            file_path="ui/ui_aim.png",
         )
         self._reset_scene()
         rl.hide_cursor()
