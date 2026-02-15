@@ -694,18 +694,16 @@ class LanRuntime:
             lan_debug_log(
                 "net_match_start",
                 role="host",
-                session_id=str(getattr(event, "session_id", "") or ""),
-                mode_id=int(getattr(event, "mode_id", 0) or 0),
-                player_count=int(getattr(event, "player_count", 1) or 1),
-                seed=int(getattr(event, "seed", 0) or 0),
-                start_tick=int(getattr(event, "start_tick", 0) or 0),
-                quest_level=str(getattr(event, "quest_level", "") or ""),
-                preserve_bugs=bool(getattr(event, "preserve_bugs", False)),
-                status_hash=str(getattr(event, "status_hash", "") or ""),
-                status_quest_unlock_index=int(getattr(getattr(event, "status_snapshot", None), "quest_unlock_index", 0) or 0),
-                status_quest_unlock_index_full=int(
-                    getattr(getattr(event, "status_snapshot", None), "quest_unlock_index_full", 0) or 0
-                ),
+                session_id=str(event.session_id or ""),
+                mode_id=int(event.mode_id),
+                player_count=int(event.player_count),
+                seed=int(event.seed),
+                start_tick=int(event.start_tick),
+                quest_level=str(event.quest_level or ""),
+                preserve_bugs=bool(event.preserve_bugs),
+                status_hash=str(status_hash),
+                status_quest_unlock_index=int(status_snapshot.quest_unlock_index),
+                status_quest_unlock_index_full=int(status_snapshot.quest_unlock_index_full),
                 tick_rate=int(self.cfg.tick_rate),
                 input_delay_ticks=int(self.cfg.input_delay_ticks),
             )
@@ -1019,6 +1017,12 @@ class LanRuntime:
             lobby.ingest_lobby_state(message)
             return
         if isinstance(message, MatchStart):
+            status_snapshot = message.status_snapshot
+            status_unlock = 0
+            status_unlock_full = 0
+            if status_snapshot is not None:
+                status_unlock = int(status_snapshot.quest_unlock_index)
+                status_unlock_full = int(status_snapshot.quest_unlock_index_full)
             lan_debug_log(
                 "net_recv",
                 role="join",
@@ -1027,16 +1031,12 @@ class LanRuntime:
                 mode_id=int(message.mode_id),
                 player_count=int(message.player_count),
                 seed=int(message.seed),
-                start_tick=int(getattr(message, "start_tick", 0) or 0),
-                quest_level=str(getattr(message, "quest_level", "") or ""),
-                preserve_bugs=bool(getattr(message, "preserve_bugs", False)),
-                status_hash=str(getattr(message, "status_hash", "") or ""),
-                status_quest_unlock_index=int(
-                    getattr(getattr(message, "status_snapshot", None), "quest_unlock_index", 0) or 0
-                ),
-                status_quest_unlock_index_full=int(
-                    getattr(getattr(message, "status_snapshot", None), "quest_unlock_index_full", 0) or 0
-                ),
+                start_tick=int(message.start_tick),
+                quest_level=str(message.quest_level or ""),
+                preserve_bugs=bool(message.preserve_bugs),
+                status_hash=str(message.status_hash or ""),
+                status_quest_unlock_index=int(status_unlock),
+                status_quest_unlock_index_full=int(status_unlock_full),
             )
             welcome = getattr(lobby, "welcome", None)
             if welcome is not None and str(getattr(welcome, "session_id", "") or ""):
@@ -1073,7 +1073,7 @@ class LanRuntime:
                 )
                 return
 
-            status_snapshot = getattr(message, "status_snapshot", None)
+            status_snapshot = message.status_snapshot
             if status_snapshot is None:
                 self.error = "match_start_missing_status_snapshot"
                 lan_debug_log(
