@@ -13,7 +13,12 @@ if TYPE_CHECKING:
 
 
 def _mode_view_context(state: GameState) -> ViewContext:
-    return ViewContext(assets_dir=state.assets_dir, preserve_bugs=state.preserve_bugs)
+    preserve_bugs = bool(state.preserve_bugs)
+    if bool(getattr(state, "lan_in_lobby", False)):
+        # LAN lockstep is a rewrite-only feature; force preserve_bugs off to keep
+        # simulation rules consistent across peers.
+        preserve_bugs = False
+    return ViewContext(assets_dir=state.assets_dir, preserve_bugs=preserve_bugs)
 
 
 class _BaseModeGameView:
@@ -32,6 +37,7 @@ class _BaseModeGameView:
             # Original game: entering gameplay cuts the menu theme; in-game tunes
             # start later on the first creature hit.
             stop_music(self.state.audio)
+        self._configure_lan_runtime()
         self._mode.bind_status(self.state.status)
         self._mode.bind_audio(self.state.audio, self.state.rng)
         self._mode.bind_screen_fade(self.state)
@@ -44,12 +50,53 @@ class _BaseModeGameView:
     def _on_open_end(self) -> None:
         return
 
+    def _configure_lan_runtime(self) -> None:
+        set_lan_runtime = getattr(self._mode, "set_lan_runtime", None)
+        bind_lan_runtime = getattr(self._mode, "bind_lan_runtime", None)
+        set_lan_match_start = getattr(self._mode, "set_lan_match_start", None)
+        if not callable(set_lan_runtime):
+            return
+
+        pending = self.state.pending_lan_session
+        if (not bool(self.state.lan_in_lobby)) or pending is None:
+            set_lan_runtime(
+                enabled=False,
+                role="",
+                expected_players=1,
+                connected_players=1,
+                waiting_for_players=False,
+            )
+            if callable(bind_lan_runtime):
+                bind_lan_runtime(None)
+            return
+
+        expected_players = max(1, min(4, int(getattr(self.state, "lan_expected_players", 1))))
+        connected_players = max(0, min(expected_players, int(getattr(self.state, "lan_connected_players", 1))))
+        waiting_for_players = bool(getattr(self.state, "lan_waiting_for_players", False))
+        set_lan_runtime(
+            enabled=True,
+            role=str(pending.role),
+            expected_players=int(expected_players),
+            connected_players=int(connected_players),
+            waiting_for_players=bool(waiting_for_players),
+        )
+        runtime = getattr(self.state, "lan_runtime", None)
+        if callable(bind_lan_runtime):
+            bind_lan_runtime(runtime)
+        if callable(set_lan_match_start) and runtime is not None:
+            match_start = getattr(runtime, "match_start", None)
+            if callable(match_start):
+                event = match_start()
+                if event is not None:
+                    set_lan_match_start(seed=int(event.seed), start_tick=int(event.start_tick))
+
     def close(self) -> None:
         if self.state.audio is not None:
             stop_music(self.state.audio)
         self._mode.close()
 
     def update(self, dt: float) -> None:
+        self._configure_lan_runtime()
         self._mode.update(dt)
         mode_action = self._mode.take_action()
         if self._handle_mode_action(mode_action):

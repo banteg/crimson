@@ -7,8 +7,11 @@ from crimson.game_modes import GameMode
 from crimson.sim.input import PlayerInput
 from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder, UnknownEvent
 from crimson.original.capture import CAPTURE_BOOTSTRAP_EVENT_KIND, CAPTURE_PERK_APPLY_EVENT_KIND
+from crimson.quests.runtime import build_quest_spawn_table
+from crimson.quests import quest_by_level
+from crimson.quests.types import QuestContext
 from crimson.perks import PerkId
-from crimson.sim.runners import ReplayRunnerError, run_rush_replay, run_survival_replay
+from crimson.sim.runners import ReplayRunnerError, run_quest_replay, run_rush_replay, run_survival_replay
 
 
 def _blank_survival_replay(*, ticks: int, seed: int = 0xBEEF, game_version: str = "0.0.0") -> tuple[ReplayHeader, ReplayRecorder]:
@@ -39,6 +42,33 @@ def _blank_rush_replay(*, ticks: int, seed: int = 0xBEEF, game_version: str = "0
     return header, rec
 
 
+def _blank_quest_replay(*, ticks: int, seed: int = 101, game_version: str = "0.0.0") -> tuple[ReplayHeader, ReplayRecorder]:
+    header = ReplayHeader(
+        game_mode_id=int(GameMode.QUESTS),
+        seed=int(seed),
+        tick_rate=60,
+        player_count=1,
+        game_version=game_version,
+    )
+    rec = ReplayRecorder(header)
+    for _ in range(int(ticks)):
+        rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
+    return header, rec
+
+
+def _quest_spawn_entries(level: str = "1.1", *, player_count: int = 1, seed: int = 101):
+    quest = quest_by_level(level)
+    assert quest is not None
+    ctx = QuestContext(width=1024, height=1024, player_count=int(player_count))
+    return build_quest_spawn_table(
+        quest,
+        ctx,
+        seed=int(seed),
+        hardcore=False,
+        full_version=True,
+    )
+
+
 def test_survival_runner_is_deterministic() -> None:
     _header, rec = _blank_survival_replay(ticks=10, seed=0x1234, game_version="0.0.0")
     replay = rec.finish()
@@ -57,6 +87,30 @@ def test_survival_runner_is_deterministic() -> None:
     assert result0.most_used_weapon_id == 1
     assert result0.shots_fired == 0
     assert result0.shots_hit == 0
+
+
+def test_quest_runner_is_deterministic() -> None:
+    _header, rec = _blank_quest_replay(ticks=10, seed=101, game_version="0.0.0")
+    replay = rec.finish()
+    spawn_entries = _quest_spawn_entries("1.1", player_count=int(replay.header.player_count), seed=int(replay.header.seed))
+
+    with pytest.warns(ReplayGameVersionWarning):
+        result0 = run_quest_replay(
+            replay,
+            spawn_entries=tuple(spawn_entries),
+        )
+    with pytest.warns(ReplayGameVersionWarning):
+        result1 = run_quest_replay(
+            replay,
+            spawn_entries=tuple(spawn_entries),
+        )
+
+    assert result0 == result1
+    assert result0.game_mode_id == int(GameMode.QUESTS)
+    assert result0.ticks == 10
+    assert result0.elapsed_ms >= 0
+    assert result0.score_xp == 0
+    assert result0.creature_kill_count == 0
 
 
 def test_survival_runner_honors_dt_frame_overrides_for_elapsed_ms() -> None:

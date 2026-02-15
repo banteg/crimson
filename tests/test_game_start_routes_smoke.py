@@ -4,6 +4,7 @@ from pathlib import Path
 import random
 import time
 
+from crimson.frontend.panels.lan_session import LanSessionPanelView
 from crimson.game.high_scores_view import HighScoresView
 from crimson.game.loop_view import GameLoopView
 from crimson.game.mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
@@ -43,3 +44,4 @@ def test_start_actions_map_to_expected_views(tmp_path: Path) -> None:
     assert isinstance(views["start_tutorial"], TutorialGameView)
     assert isinstance(views["start_quest"], QuestGameView)
     assert isinstance(views["open_high_scores"], HighScoresView)
+    assert isinstance(views["open_lan_session"], LanSessionPanelView)

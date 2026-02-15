@@ -19,6 +19,8 @@ from ..frontend.panels.base import PanelMenuView
 from ..frontend.panels.controls import ControlsMenuView
 from ..frontend.panels.credits import CreditsView
 from ..frontend.panels.databases import UnlockedPerksDatabaseView, UnlockedWeaponsDatabaseView
+from ..frontend.panels.lan_lobby import LanLobbyPanelView
+from ..frontend.panels.lan_session import LanSessionPanelView
 from ..frontend.panels.mods import ModsMenuView
 from ..frontend.panels.options import OptionsMenuView
 from ..frontend.panels.play_game import PlayGameMenuView
@@ -28,6 +30,7 @@ from ..frontend.transitions import _update_screen_fade
 from ..input_codes import input_begin_frame
 from ..quests.types import parse_level
 from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
+from ..net.debug_log import init_lan_debug_log, lan_debug_log, lan_debug_log_path
 from .high_scores_view import HighScoresView
 from .mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
 from .quest_views import EndNoteView, QuestFailedView, QuestResultsView, QuestsMenuView
@@ -130,6 +133,8 @@ class GameLoopView:
         self._menu = MenuView(state)
         self._front_views: dict[str, FrontView] = {
             "open_play_game": PlayGameMenuView(state),
+            "open_lan_session": LanSessionPanelView(state),
+            "open_lan_lobby": LanLobbyPanelView(state),
             "open_quests": QuestsMenuView(state),
             "open_pause_menu": PauseMenuView(state),
             "start_quest": QuestGameView(state),
@@ -174,12 +179,204 @@ class GameLoopView:
             }
         )
 
+    def _ensure_lan_debug_log_started(self) -> None:
+        if lan_debug_log_path() is not None:
+            return
+        pending = self.state.pending_lan_session
+        if pending is None:
+            return
+        cfg = pending.config
+        host = str(cfg.host_ip or cfg.bind_host)
+        from ..net.protocol import current_build_id
+
+        log_path = init_lan_debug_log(
+            base_dir=self.state.base_dir,
+            role=str(pending.role),
+            mode=str(cfg.mode),
+            build_id=str(current_build_id()),
+            host=host,
+            port=cfg.port,
+            player_count=cfg.player_count,
+            auto_start=bool(pending.auto_start),
+            debug_enabled=debug_enabled(),
+        )
+        self.state.console.log.log(f"lan debug log: {log_path}")
+        self.state.console.log.flush()
+        print(f"[lan-debug] role={pending.role} log={log_path}")
+
     def open(self) -> None:
         rl.hide_cursor()
         self._boot.open()
 
     def should_close(self) -> bool:
         return self.state.quit_requested
+
+    def _lan_ui_enabled(self) -> bool:
+        cvar = self.state.console.cvars.get("cv_lanLockstepEnabled")
+        if cvar is None:
+            return False
+        return bool(cvar.value_f)
+
+    def _auto_lan_start_action(self) -> str | None:
+        pending = self.state.pending_lan_session
+        if pending is None:
+            return None
+        if (not pending.auto_start) or pending.started:
+            return None
+        self._ensure_lan_debug_log_started()
+        mode = str(pending.config.mode)
+        pending.started = True
+        lan_debug_log(
+            "auto_lan_start",
+            role=str(pending.role),
+            mode=mode,
+            auto_start=bool(pending.auto_start),
+            player_count=pending.config.player_count,
+        )
+        if mode == "rush":
+            return "start_rush_lan"
+        if mode == "quests":
+            return "start_quest_lan"
+        if mode == "survival":
+            return "start_survival_lan"
+        pending.error = f"Unsupported LAN mode: {mode}"
+        self.state.lan_last_error = pending.error
+        lan_debug_log("auto_lan_start_error", error=str(pending.error))
+        return "open_lan_session"
+
+    def _resolve_lan_action(self, action: str) -> str | None:
+        if action == "open_lan_session":
+            if self._lan_ui_enabled():
+                return action
+            self.state.lan_last_error = "LAN UI is disabled (set cv_lanLockstepEnabled 1 to enable)."
+            lan_debug_log("lan_action_denied", action=action, reason=str(self.state.lan_last_error))
+            return "open_play_game"
+
+        mode_by_action = {
+            "start_survival_lan": ("survival", "open_lan_lobby", 1),
+            "start_rush_lan": ("rush", "open_lan_lobby", 2),
+            "start_quest_lan": ("quests", "open_lan_lobby", 3),
+        }
+        resolved = mode_by_action.get(action)
+        if resolved is None:
+            if action in {"start_survival", "start_rush", "start_typo", "start_tutorial", "start_quest"}:
+                # Starting gameplay from the LAN lobby uses the normal mode start actions
+                # (`start_survival`, `start_rush`, etc) but must keep the LAN runtime alive.
+                pending = self.state.pending_lan_session
+                runtime = getattr(self.state, "lan_runtime", None)
+                if bool(self.state.lan_in_lobby) and pending is not None and runtime is not None:
+                    return action
+
+                self.state.lan_in_lobby = False
+                self.state.lan_waiting_for_players = False
+                self.state.lan_expected_players = 1
+                self.state.lan_connected_players = 1
+                if runtime is not None:
+                    runtime.close()
+                self.state.lan_runtime = None
+            return action
+
+        self._ensure_lan_debug_log_started()
+
+        expected_mode, forward_action, mode_id = resolved
+        pending = self.state.pending_lan_session
+        if pending is None:
+            self.state.lan_last_error = "LAN session is not configured."
+            lan_debug_log("lan_action_error", action=action, reason=str(self.state.lan_last_error))
+            return None
+        cfg = pending.config
+        if str(cfg.mode) != expected_mode:
+            self.state.lan_last_error = (
+                f"LAN mode mismatch: pending={cfg.mode!r} action={expected_mode!r}"
+            )
+            lan_debug_log("lan_action_error", action=action, reason=str(self.state.lan_last_error))
+            return None
+
+        player_count = max(1, min(4, int(cfg.player_count)))
+        self.state.config.player_count = int(player_count)
+        self.state.lan_in_lobby = True
+        self.state.lan_expected_players = int(player_count)
+        self.state.lan_connected_players = 1 if str(pending.role) == "host" else 0
+        self.state.lan_waiting_for_players = True
+        self.state.lan_desync_count = 0
+        self.state.lan_resync_failure_count = 0
+        self.state.config.game_mode = int(mode_id)
+
+        from ..net.runtime import LanRuntime, LanRuntimeConfig
+
+        runtime = getattr(self.state, "lan_runtime", None)
+        if runtime is not None:
+            runtime.close()
+        runtime = LanRuntime(
+            LanRuntimeConfig(
+                role=str(pending.role),
+                mode_id=int(mode_id),
+                player_count=int(player_count),
+                bind_host=str(cfg.bind_host),
+                host_ip=str(cfg.host_ip),
+                port=int(cfg.port),
+                quest_level=str(cfg.quest_level),
+                # LAN lockstep is a rewrite-only feature; keep gameplay rules consistent
+                # and do not expose preserve_bugs in multiplayer.
+                preserve_bugs=False,
+            )
+        )
+        self.state.lan_runtime = runtime
+        lan_debug_log(
+            "lan_action_resolved",
+            action=action,
+            forward_action=forward_action,
+            role=str(pending.role),
+            mode=str(expected_mode),
+            auto_start=bool(pending.auto_start),
+            player_count=int(player_count),
+            connected_players=int(self.state.lan_connected_players),
+            waiting_for_players=bool(self.state.lan_waiting_for_players),
+        )
+
+        if expected_mode == "quests":
+            level = str(cfg.quest_level).strip()
+            if not level:
+                self.state.lan_last_error = "Quest LAN mode requires --quest-level."
+                pending.error = self.state.lan_last_error
+                lan_debug_log("lan_action_error", action=action, reason=str(self.state.lan_last_error))
+                return None
+            try:
+                parse_level(level)
+            except ValueError as exc:
+                self.state.lan_last_error = f"Invalid quest level for LAN: {level!r} ({exc})"
+                pending.error = self.state.lan_last_error
+                lan_debug_log("lan_action_error", action=action, reason=str(self.state.lan_last_error))
+                return None
+            self.state.pending_quest_level = level
+
+        return forward_action
+
+    def _tick_lan_runtime(self) -> None:
+        pending = self.state.pending_lan_session
+        runtime = getattr(self.state, "lan_runtime", None)
+        if pending is None or runtime is None:
+            return
+        try:
+            runtime.open()
+        except OSError as exc:
+            msg = f"LAN socket error: {exc}"
+            runtime.error = msg
+            pending.error = msg
+            self.state.lan_last_error = msg
+            lan_debug_log("net_open_error", role=str(pending.role), error=str(exc))
+            return
+        runtime.update()
+        lobby_state = runtime.lobby_state()
+        if lobby_state is not None:
+            expected = max(1, min(4, int(lobby_state.player_count)))
+            connected = sum(1 for slot in lobby_state.slots if bool(slot.connected))
+            self.state.lan_expected_players = int(expected)
+            self.state.lan_connected_players = max(0, min(int(expected), int(connected)))
+            self.state.lan_waiting_for_players = not bool(getattr(lobby_state, "started", False))
+        error = str(getattr(runtime, "error", "") or "")
+        if error and not self.state.lan_last_error:
+            self.state.lan_last_error = error
 
     def update(self, dt: float) -> None:
         input_begin_frame()
@@ -189,6 +386,7 @@ class GameLoopView:
         self._sync_console_elapsed_ms()
         self._handle_console_requests()
         _update_screen_fade(self.state, dt)
+        self._tick_lan_runtime()
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_P):
             self._screenshot_requested = True
         if console.open_flag:
@@ -206,6 +404,10 @@ class GameLoopView:
         self._active.update(dt)
         if self._front_active is not None:
             action = self._front_active.take_action()
+            if action is not None:
+                action = self._resolve_lan_action(action)
+                if action is None:
+                    return
             if action == "back_to_menu":
                 self._capture_gameplay_ground_for_menu()
                 self.state.pause_background = None
@@ -291,6 +493,7 @@ class GameLoopView:
                             "start_tutorial",
                             "start_quest",
                             "open_play_game",
+                            "open_lan_session",
                             "open_quests",
                         }:
                             self.state.pause_background = None
@@ -304,6 +507,8 @@ class GameLoopView:
                     return
         if self._menu_active:
             action = self._menu.take_action()
+            if action is None:
+                action = self._auto_lan_start_action()
             if action == "quit_app":
                 self.state.quit_requested = True
                 return
@@ -323,6 +528,9 @@ class GameLoopView:
                 self._demo_active = True
                 return
             if action is not None:
+                action = self._resolve_lan_action(action)
+                if action is None:
+                    return
                 view = self._front_views.get(action)
                 if view is not None:
                     self._menu.close()

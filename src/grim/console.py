@@ -663,6 +663,7 @@ def register_core_cvars(console: ConsoleState, width: int, height: int) -> None:
     console.register_cvar("cv_uiSmallIndicators", "0")
     console.register_cvar("cv_aimEnhancementFade", "0.7")
     console.register_cvar("cv_friendlyFire", "0")
+    console.register_cvar("cv_lanLockstepEnabled", "0")
     console.register_cvar("cv_showFPS", "0")
     console.register_cvar("cv_padAimDistMul", "96")
     console.register_cvar("v_width", str(width))

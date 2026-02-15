@@ -1,0 +1,872 @@
+from __future__ import annotations
+
+from collections import deque
+from dataclasses import dataclass, field
+import socket
+import time
+
+from .debug_log import lan_debug_log
+from .lobby import ClientLobby, HostLobby
+from .lockstep import ClientLockstepState, HostLockstepState
+from .protocol import (
+    INPUT_DELAY_TICKS,
+    LINK_TIMEOUT_MS,
+    PROTOCOL_VERSION,
+    TICK_RATE,
+    Disconnect,
+    Hello,
+    InputBatch,
+    LobbyState,
+    MatchStart,
+    NetMessage,
+    PauseState,
+    Ready,
+    TickFrame,
+    Welcome,
+    current_build_id,
+)
+from .reliable import ReliableLink
+from .transport import PeerAddr, UdpTransport
+from ..replay.types import PackedPlayerInput
+
+
+def _now_ms() -> int:
+    return int(time.monotonic() * 1000.0)
+
+
+# The host is authoritative and doesn't need to queue inputs far ahead. Keeping
+# the host capture clock close to lockstep progress avoids persistent host-side
+# input lag if the host stalls briefly and then "runs behind" real time.
+HOST_MAX_CAPTURE_LEAD_TICKS = 1
+
+
+@dataclass(slots=True)
+class LanRuntimeConfig:
+    role: str
+    mode_id: int
+    player_count: int
+    bind_host: str
+    host_ip: str
+    port: int
+    quest_level: str = ""
+    preserve_bugs: bool = False
+    tick_rate: int = TICK_RATE
+    input_delay_ticks: int = INPUT_DELAY_TICKS
+
+
+@dataclass(slots=True)
+class _HostPeerLink:
+    addr: PeerAddr
+    link: ReliableLink = field(default_factory=ReliableLink)
+    last_seen_ms: int = 0
+
+
+@dataclass(slots=True)
+class LanRuntime:
+    """Drive LAN lobby handshake and keep socket state alive across views."""
+
+    cfg: LanRuntimeConfig
+    build_id: str = field(default_factory=current_build_id)
+    transport: UdpTransport = field(init=False)
+    started: bool = field(init=False, default=False)
+    error: str = field(init=False, default="")
+
+    host_lobby: HostLobby | None = field(init=False, default=None)
+    host_peers: dict[PeerAddr, _HostPeerLink] = field(init=False, default_factory=dict)
+    host_seed: int = field(init=False, default=0)
+    host_match_start: MatchStart | None = field(init=False, default=None)
+    host_last_broadcast_ms: int = field(init=False, default=0)
+    host_lockstep: HostLockstepState | None = field(init=False, default=None)
+    host_capture_tick: int = field(init=False, default=0)
+    host_ready_frames: deque[TickFrame] = field(init=False, default_factory=deque)
+    _host_seen_input_slots: set[int] = field(init=False, default_factory=set)
+
+    client_lobby: ClientLobby | None = field(init=False, default=None)
+    client_link: ReliableLink | None = field(init=False, default=None)
+    client_host_addr: PeerAddr | None = field(init=False, default=None)
+    client_last_hello_ms: int = field(init=False, default=0)
+    client_last_seen_ms: int = field(init=False, default=0)
+    client_lockstep: ClientLockstepState | None = field(init=False, default=None)
+    client_pause_state: PauseState | None = field(init=False, default=None)
+
+    # Instrumentation (debug overlay + lan debug logs).
+    _metrics_last_log_ms: int = field(init=False, default=0)
+    _metrics_last_resends_total: int = field(init=False, default=0)
+
+    _host_input_queued_at_ms: dict[int, int] = field(init=False, default_factory=dict)
+    _host_local_input_latency_ms: int = field(init=False, default=0)
+    _host_local_input_latency_ewma_ms: float = field(init=False, default=0.0)
+
+    _client_input_queued_at_ms: dict[int, int] = field(init=False, default_factory=dict)
+    _client_local_input_latency_ms: int = field(init=False, default=0)
+    _client_local_input_latency_ewma_ms: float = field(init=False, default=0.0)
+
+    _neutral_input: PackedPlayerInput = field(
+        init=False,
+        default_factory=lambda: [0.0, 0.0, [0.0, 0.0], 0],
+    )
+
+    def __post_init__(self) -> None:
+        bind_port = int(self.cfg.port) if str(self.cfg.role) == "host" else 0
+        self.transport = UdpTransport(bind_host=str(self.cfg.bind_host), bind_port=int(bind_port))
+
+    def open(self) -> None:
+        if self.host_lobby is not None or self.client_lobby is not None:
+            return
+        self.transport.open()
+        self._metrics_last_log_ms = 0
+        self._metrics_last_resends_total = 0
+        self._host_input_queued_at_ms.clear()
+        self._host_local_input_latency_ms = 0
+        self._host_local_input_latency_ewma_ms = 0.0
+        self._client_input_queued_at_ms.clear()
+        self._client_local_input_latency_ms = 0
+        self._client_local_input_latency_ewma_ms = 0.0
+        self._host_seen_input_slots.clear()
+        lan_debug_log(
+            "net_open",
+            role=str(self.cfg.role),
+            bind_host=str(self.cfg.bind_host),
+            bind_port=int(self.transport.bound_port),
+            build_id=str(self.build_id),
+            mode_id=int(self.cfg.mode_id),
+            player_count=int(self.cfg.player_count),
+            tick_rate=int(self.cfg.tick_rate),
+            input_delay_ticks=int(self.cfg.input_delay_ticks),
+        )
+        if str(self.cfg.role) == "host":
+            self.host_lobby = HostLobby(
+                mode_id=int(self.cfg.mode_id),
+                player_count=int(self.cfg.player_count),
+                build_id=str(self.build_id),
+                tick_rate=int(self.cfg.tick_rate),
+                input_delay_ticks=int(self.cfg.input_delay_ticks),
+                quest_level=str(self.cfg.quest_level),
+                preserve_bugs=bool(self.cfg.preserve_bugs),
+            )
+            self.host_last_broadcast_ms = _now_ms()
+        else:
+            host_ip_raw = str(self.cfg.host_ip).strip()
+            host_ip = host_ip_raw
+            if host_ip_raw:
+                try:
+                    host_ip = socket.gethostbyname(host_ip_raw)
+                except OSError as exc:
+                    lan_debug_log("net_resolve_host_error", role="join", host=str(host_ip_raw), error=str(exc))
+            self.client_host_addr = (str(host_ip), int(self.cfg.port))
+            lan_debug_log(
+                "net_resolve_host",
+                role="join",
+                host=str(host_ip_raw),
+                resolved=str(host_ip),
+                port=int(self.cfg.port),
+            )
+            self.client_link = ReliableLink()
+            hello = Hello(
+                protocol_version=int(PROTOCOL_VERSION),
+                build_id=str(self.build_id),
+                mode_id=int(self.cfg.mode_id),
+                player_count=int(self.cfg.player_count),
+                tick_rate=int(self.cfg.tick_rate),
+                input_delay_ticks=int(self.cfg.input_delay_ticks),
+                quest_level=str(self.cfg.quest_level),
+                preserve_bugs=bool(self.cfg.preserve_bugs),
+                host=False,
+            )
+            self.client_lobby = ClientLobby(build_id=str(self.build_id), hello=hello)
+            self.client_last_hello_ms = 0
+            self.client_last_seen_ms = _now_ms()
+
+    def close(self) -> None:
+        try:
+            self.transport.close()
+        finally:
+            self.host_lobby = None
+            self.host_peers.clear()
+            self.host_seed = 0
+            self.host_match_start = None
+            self.host_last_broadcast_ms = 0
+            self.client_lobby = None
+            self.client_link = None
+            self.client_host_addr = None
+            self.client_last_hello_ms = 0
+            self.client_last_seen_ms = 0
+            self.host_lockstep = None
+            self.host_capture_tick = 0
+            self.host_ready_frames.clear()
+            self.client_lockstep = None
+            self.client_pause_state = None
+            self._metrics_last_log_ms = 0
+            self._metrics_last_resends_total = 0
+            self._host_input_queued_at_ms.clear()
+            self._host_local_input_latency_ms = 0
+            self._host_local_input_latency_ewma_ms = 0.0
+            self._client_input_queued_at_ms.clear()
+            self._client_local_input_latency_ms = 0
+            self._client_local_input_latency_ewma_ms = 0.0
+            self._host_seen_input_slots.clear()
+            self.started = False
+            self.error = ""
+            lan_debug_log("net_close", role=str(self.cfg.role))
+
+    def host_remote_inputs_ready(self) -> bool:
+        """True once each remote slot has sent at least one InputBatch.
+
+        This is used to gate the host's first simulation steps so the host doesn't
+        start capturing inputs before joiners have entered gameplay, which can
+        create persistent host-side input latency.
+        """
+        if str(self.cfg.role) != "host":
+            return True
+        lockstep = self.host_lockstep
+        if lockstep is None:
+            return False
+        player_count = max(1, int(lockstep.player_count))
+        for slot in range(1, int(player_count)):
+            if int(slot) not in self._host_seen_input_slots:
+                return False
+        return True
+
+    @property
+    def bound_port(self) -> int:
+        return int(self.transport.bound_port)
+
+    def debug_overlay_lines(self) -> list[str]:
+        """Return short debug HUD lines for in-game overlays (guarded by --debug)."""
+        lines: list[str] = []
+        role = str(self.cfg.role)
+        now_ms = _now_ms()
+        tick_rate = max(1, int(self.cfg.tick_rate) or 1)
+        delay_ticks = max(0, int(self.cfg.input_delay_ticks))
+        delay_ms = int(round(float(delay_ticks) * 1000.0 / float(tick_rate)))
+
+        if self.error:
+            lines.append(f"net: error={self.error}")
+
+        if role == "host":
+            lines.append(
+                "net(host): "
+                f"bind={self.cfg.bind_host}:{self.bound_port} "
+                f"peers={len(self.host_peers)}/{max(0, int(self.cfg.player_count) - 1)} "
+                f"started={int(self.started)}"
+            )
+            lockstep = self.host_lockstep
+            if lockstep is not None:
+                waiting_for = int(lockstep.waiting_for_inputs())
+                stall_ms = 0
+                if waiting_for > 0:
+                    stall_ms = max(0, int(now_ms) - int(lockstep.last_progress_ms))
+                target_lead = int(self.host_capture_tick) + int(delay_ticks) - int(lockstep.next_emit_tick)
+                lines.append(
+                    "lockstep(host): "
+                    f"capture={int(self.host_capture_tick)} "
+                    f"emit={int(lockstep.next_emit_tick)} "
+                    f"target_lead={int(target_lead)} "
+                    f"ready_frames={len(self.host_ready_frames)} "
+                    f"buffered_ticks={int(lockstep.buffered_tick_count)} "
+                    f"waiting_for={int(waiting_for)} "
+                    f"paused={int(lockstep.paused)} "
+                    f"stall_ms={int(stall_ms)}"
+                )
+                rtts = [int(peer.link.rtt_last_ms) for peer in self.host_peers.values() if peer.link.rtt_last_ms > 0]
+                rtt_label = "?"
+                if rtts:
+                    rtt_label = f"{min(rtts)}..{max(rtts)}"
+                pending_max = max((int(peer.link.pending_count) for peer in self.host_peers.values()), default=0)
+                resends_total = sum(int(peer.link.resend_count) for peer in self.host_peers.values())
+                input_ms = int(self._host_local_input_latency_ms)
+                input_ewma_ms = int(self._host_local_input_latency_ewma_ms)
+                lines.append(
+                    "lat(host): "
+                    f"delay={delay_ticks}t({delay_ms}ms) "
+                    f"input_ms={input_ms}/{input_ewma_ms} "
+                    f"rtt_ms={rtt_label} "
+                    f"pending={pending_max} "
+                    f"resends={resends_total}"
+                )
+            return lines
+
+        lobby = self.client_lobby
+        host = self.client_host_addr
+        host_label = f"{host[0]}:{host[1]}" if host is not None else "?"
+        joined = bool(lobby.joined) if lobby is not None else False
+        started = bool(lobby.started) if lobby is not None else False
+        slot = int(lobby.slot_index) if lobby is not None else -1
+        lines.append(
+            "net(join): "
+            f"host={host_label} local_port={self.bound_port} slot={slot} joined={int(joined)} started={int(started)}"
+        )
+
+        lockstep = self.client_lockstep
+        if lockstep is not None:
+            stall_ms = 0
+            if int(lockstep.buffered_frame_count) <= 0:
+                stall_ms = max(0, int(now_ms) - int(lockstep.last_progress_ms))
+            lines.append(
+                "lockstep(join): "
+                f"capture={int(lockstep.capture_tick)} "
+                f"consume={int(lockstep.next_consume_tick)} "
+                f"buffered_frames={int(lockstep.buffered_frame_count)} "
+                f"paused={int(lockstep.paused)} "
+                f"stall_ms={int(stall_ms)}"
+            )
+        link = self.client_link
+        if link is not None:
+            input_ms = int(self._client_local_input_latency_ms)
+            input_ewma_ms = int(self._client_local_input_latency_ewma_ms)
+            lines.append(
+                "lat(join): "
+                f"delay={delay_ticks}t({delay_ms}ms) "
+                f"input_ms={input_ms}/{input_ewma_ms} "
+                f"rtt_ms={int(link.rtt_last_ms)}/{int(link.rtt_ewma_ms)} "
+                f"pending={int(link.pending_count)} "
+                f"resends={int(link.resend_count)}"
+            )
+        pause = self.client_pause_state
+        if pause is not None and bool(pause.paused):
+            lines.append(f"pause: {str(pause.reason or '')}")
+
+        return lines
+
+    def lobby_state(self) -> LobbyState | None:
+        if str(self.cfg.role) == "host":
+            lobby = self.host_lobby
+            if lobby is None:
+                return None
+            return lobby.lobby_state()
+        lobby = self.client_lobby
+        if lobby is None:
+            return None
+        return lobby.lobby_state_latest
+
+    def match_start(self) -> MatchStart | None:
+        if str(self.cfg.role) == "host":
+            return self.host_match_start
+        lobby = self.client_lobby
+        if lobby is None:
+            return None
+        return lobby.match_start
+
+    @property
+    def local_slot_index(self) -> int:
+        if str(self.cfg.role) == "host":
+            return 0
+        lobby = self.client_lobby
+        if lobby is None:
+            return -1
+        return int(lobby.slot_index)
+
+    def queue_local_input(self, packed_input: PackedPlayerInput, *, now_ms: int | None = None) -> None:
+        if now_ms is None:
+            now_ms = _now_ms()
+        if str(self.cfg.role) == "host":
+            lockstep = self.host_lockstep
+            if lockstep is None:
+                return
+            # Keep the host capture clock close to lockstep progress. Otherwise
+            # even short stalls can cause the host to queue inputs far in the
+            # future, which shows up as persistent host-side input latency.
+            max_capture_tick = int(lockstep.next_emit_tick) + int(HOST_MAX_CAPTURE_LEAD_TICKS)
+            if int(self.host_capture_tick) > int(max_capture_tick):
+                self.host_capture_tick = int(max_capture_tick)
+            target_tick = int(self.host_capture_tick) + int(self.cfg.input_delay_ticks)
+            self._host_input_queued_at_ms[int(target_tick)] = int(now_ms)
+            lockstep.submit_input_sample(
+                slot_index=0,
+                tick_index=int(target_tick),
+                packed_input=list(packed_input),
+            )
+            self.host_capture_tick += 1
+            return
+
+        lockstep = self.client_lockstep
+        if lockstep is None:
+            return
+        batch = lockstep.queue_local_input(list(packed_input))
+        # The client lockstep can clamp its internal capture tick to stay close to
+        # lockstep progress, so compute the actual target tick after enqueuing.
+        used_capture_tick = int(lockstep.capture_tick) - 1
+        target_tick = int(used_capture_tick) + int(lockstep.input_delay_ticks)
+        self._client_input_queued_at_ms[int(target_tick)] = int(now_ms)
+        self._client_send(batch, reliable=False, now_ms=int(now_ms))
+
+    def pop_tick_frame(self) -> TickFrame | None:
+        if str(self.cfg.role) == "host":
+            if not self.host_ready_frames:
+                return None
+            return self.host_ready_frames.popleft()
+        lockstep = self.client_lockstep
+        if lockstep is None:
+            return None
+        return lockstep.pop_canonical_frame()
+
+    def broadcast_tick_frame(self, frame: TickFrame, *, now_ms: int | None = None) -> None:
+        if str(self.cfg.role) != "host":
+            return
+        if now_ms is None:
+            now_ms = _now_ms()
+        self._host_broadcast(frame, reliable=True, now_ms=int(now_ms))
+
+    def update(self, *, now_ms: int | None = None) -> None:
+        if now_ms is None:
+            now_ms = _now_ms()
+        if str(self.cfg.role) == "host":
+            self._update_host(now_ms=int(now_ms))
+        else:
+            self._update_client(now_ms=int(now_ms))
+        self._trace_metrics(now_ms=int(now_ms))
+
+    def _update_host(self, *, now_ms: int) -> None:
+        lobby = self.host_lobby
+        if lobby is None:
+            return
+
+        for addr, packet in self.transport.recv_packets():
+            peer_link = self.host_peers.get(addr)
+            if peer_link is None:
+                peer_link = _HostPeerLink(addr=addr, last_seen_ms=int(now_ms))
+                self.host_peers[addr] = peer_link
+            peer_link.last_seen_ms = int(now_ms)
+
+            messages, dup = peer_link.link.ingest_packet(packet, now_ms=int(now_ms))
+            if dup:
+                lan_debug_log("net_recv_dup", role="host", addr=f"{addr[0]}:{addr[1]}", seq=int(packet.seq))
+            for message in messages:
+                self._handle_host_message(addr, message, now_ms=int(now_ms))
+
+        # Drop timed-out peers.
+        for addr, peer in list(self.host_peers.items()):
+            if (int(now_ms) - int(peer.last_seen_ms)) < int(LINK_TIMEOUT_MS):
+                continue
+            self.host_peers.pop(addr, None)
+            lobby.peers_by_addr.pop(addr, None)
+            lan_debug_log("net_timeout", role="host", addr=f"{addr[0]}:{addr[1]}")
+
+        # Broadcast lobby state periodically.
+        if (not lobby.started) and (int(now_ms) - int(self.host_last_broadcast_ms)) >= 250:
+            self.host_last_broadcast_ms = int(now_ms)
+            self._host_broadcast_lobby_state(now_ms=int(now_ms))
+
+        # Start automatically once ready.
+        if (not lobby.started) and lobby.all_ready():
+            self.host_seed = int((_now_ms() * 1103515245 + 12345) & 0xFFFFFFFF)
+            event = lobby.start_match(seed=int(self.host_seed))
+            self.started = True
+            self.host_match_start = event
+            self._host_init_lockstep(event)
+            self._host_seen_input_slots.clear()
+            lan_debug_log("net_match_start", role="host", seed=int(event.seed), player_count=int(event.player_count))
+            self._host_broadcast(event, reliable=True, now_ms=int(now_ms))
+
+        if self.host_lockstep is not None:
+            pause = self.host_lockstep.update_pause_state(now_ms=int(now_ms))
+            if pause is not None:
+                self._host_broadcast(pause, reliable=True, now_ms=int(now_ms))
+            frames = self.host_lockstep.pop_ready_frames(now_ms=int(now_ms))
+            for frame in frames:
+                tick = int(getattr(frame, "tick_index", 0) or 0)
+                queued_at = self._host_input_queued_at_ms.pop(int(tick), None)
+                if queued_at is not None:
+                    latency_ms = max(0, int(now_ms) - int(queued_at))
+                    self._host_local_input_latency_ms = int(latency_ms)
+                    if self._host_local_input_latency_ewma_ms <= 0.0:
+                        self._host_local_input_latency_ewma_ms = float(latency_ms)
+                    else:
+                        self._host_local_input_latency_ewma_ms = float(
+                            self._host_local_input_latency_ewma_ms * 0.9 + float(latency_ms) * 0.1
+                        )
+                self.host_ready_frames.append(frame)
+
+        # Resend reliable packets.
+        for addr, peer in self.host_peers.items():
+            for resend in peer.link.poll_resends(now_ms=int(now_ms)):
+                try:
+                    self.transport.send_packet(addr, resend)
+                except OSError:
+                    continue
+
+    def _handle_host_message(self, addr: PeerAddr, message: NetMessage, *, now_ms: int) -> None:
+        lobby = self.host_lobby
+        if lobby is None:
+            return
+        if isinstance(message, Hello):
+            lan_debug_log("net_recv", role="host", kind="hello", addr=f"{addr[0]}:{addr[1]}")
+            welcome = lobby.process_hello(addr, message)
+            lan_debug_log(
+                "lobby_welcome",
+                role="host",
+                addr=f"{addr[0]}:{addr[1]}",
+                accepted=bool(welcome.accepted),
+                reason=str(welcome.reason or ""),
+                slot_index=int(welcome.slot_index),
+                session_id=str(welcome.session_id),
+            )
+            self._host_send(addr, welcome, reliable=True, now_ms=int(now_ms))
+            # Publish lobby state update after accepting/rejecting.
+            self._host_broadcast_lobby_state(now_ms=int(now_ms))
+            return
+        if isinstance(message, Ready):
+            lan_debug_log(
+                "net_recv",
+                role="host",
+                kind="ready",
+                addr=f"{addr[0]}:{addr[1]}",
+                slot_index=int(message.slot_index),
+                ready=bool(message.ready),
+            )
+            lobby.process_ready(addr, message)
+            self._host_broadcast_lobby_state(now_ms=int(now_ms))
+            return
+        if isinstance(message, Disconnect):
+            lan_debug_log("net_recv", role="host", kind="disconnect", addr=f"{addr[0]}:{addr[1]}")
+            self.host_peers.pop(addr, None)
+            lobby.peers_by_addr.pop(addr, None)
+            self._host_broadcast_lobby_state(now_ms=int(now_ms))
+            return
+        if isinstance(message, InputBatch):
+            lockstep = self.host_lockstep
+            if lockstep is None:
+                return
+            mapped_slot = lobby.slot_for_addr(addr)
+            if mapped_slot is None:
+                return
+            if int(mapped_slot) > 0:
+                self._host_seen_input_slots.add(int(mapped_slot))
+            batch = message
+            if int(batch.slot_index) != int(mapped_slot):
+                batch = InputBatch(slot_index=int(mapped_slot), samples=list(batch.samples))
+            max_tick = -1
+            min_tick = 2**31 - 1
+            for sample in batch.samples:
+                tick = int(getattr(sample, "tick_index", 0) or 0)
+                max_tick = max(int(max_tick), int(tick))
+                min_tick = min(int(min_tick), int(tick))
+            if max_tick >= 0 and (int(max_tick) < 5 or (int(max_tick) % 60) == 0):
+                lan_debug_log(
+                    "net_recv",
+                    role="host",
+                    kind="input_batch",
+                    addr=f"{addr[0]}:{addr[1]}",
+                    slot_index=int(batch.slot_index),
+                    sample_count=int(len(batch.samples)),
+                    tick_min=int(min_tick) if min_tick != 2**31 - 1 else 0,
+                    tick_max=int(max_tick),
+                )
+            lockstep.submit_input_batch(batch)
+            return
+
+    def _host_send(self, addr: PeerAddr, message: NetMessage, *, reliable: bool, now_ms: int) -> None:
+        peer = self.host_peers.get(addr)
+        if peer is None:
+            peer = _HostPeerLink(addr=addr)
+            self.host_peers[addr] = peer
+        packet = peer.link.build_packet(message, reliable=bool(reliable), now_ms=int(now_ms))
+        try:
+            self.transport.send_packet(addr, packet)
+        except OSError:
+            return
+        if isinstance(message, TickFrame):
+            tick = int(getattr(message, "tick_index", 0) or 0)
+            if int(tick) < 5 or (int(tick) % 60) == 0:
+                lan_debug_log(
+                    "net_send",
+                    role="host",
+                    kind="tick_frame",
+                    addr=f"{addr[0]}:{addr[1]}",
+                    reliable=bool(reliable),
+                    tick_index=int(tick),
+                    command_hash=str(getattr(message, "command_hash", "") or ""),
+                )
+            return
+        kind = getattr(message, "kind", type(message).__name__)
+        lan_debug_log(
+            "net_send",
+            role="host",
+            kind=str(kind),
+            addr=f"{addr[0]}:{addr[1]}",
+            reliable=bool(reliable),
+        )
+
+    def _host_broadcast(self, message: NetMessage, *, reliable: bool, now_ms: int) -> None:
+        for addr in list(self.host_peers):
+            self._host_send(addr, message, reliable=bool(reliable), now_ms=int(now_ms))
+
+    def _host_broadcast_lobby_state(self, *, now_ms: int) -> None:
+        lobby = self.host_lobby
+        if lobby is None:
+            return
+        state = lobby.lobby_state()
+        self._host_broadcast(state, reliable=True, now_ms=int(now_ms))
+
+    def _update_client(self, *, now_ms: int) -> None:
+        lobby = self.client_lobby
+        link = self.client_link
+        host = self.client_host_addr
+        if lobby is None or link is None or host is None:
+            return
+
+        # Send hello until welcome arrives.
+        if lobby.welcome is None and (int(now_ms) - int(self.client_last_hello_ms)) >= 200:
+            self.client_last_hello_ms = int(now_ms)
+            self._client_send(lobby.hello, reliable=True, now_ms=int(now_ms))
+
+        for addr, packet in self.transport.recv_packets():
+            if addr != host:
+                continue
+            self.client_last_seen_ms = int(now_ms)
+            messages, dup = link.ingest_packet(packet, now_ms=int(now_ms))
+            if dup:
+                lan_debug_log("net_recv_dup", role="join", addr=f"{addr[0]}:{addr[1]}", seq=int(packet.seq))
+            for message in messages:
+                self._handle_client_message(message, now_ms=int(now_ms))
+
+        if (int(now_ms) - int(self.client_last_seen_ms)) >= int(LINK_TIMEOUT_MS):
+            if not self.error:
+                self.error = "timeout"
+                lan_debug_log("net_timeout", role="join", addr=f"{host[0]}:{host[1]}")
+
+        for resend in link.poll_resends(now_ms=int(now_ms)):
+            try:
+                self.transport.send_packet(host, resend)
+            except OSError:
+                continue
+
+    def _handle_client_message(self, message: NetMessage, *, now_ms: int) -> None:
+        lobby = self.client_lobby
+        if lobby is None:
+            return
+        if isinstance(message, Welcome):
+            lan_debug_log(
+                "net_recv",
+                role="join",
+                kind="welcome",
+                accepted=bool(message.accepted),
+                reason=str(message.reason or ""),
+                slot_index=int(message.slot_index),
+                session_id=str(message.session_id),
+            )
+            lobby.ingest_welcome(message)
+            if not bool(message.accepted):
+                self.error = str(message.reason or "rejected")
+                return
+            ready = Ready(slot_index=int(message.slot_index), ready=True)
+            self._client_send(ready, reliable=True, now_ms=int(now_ms))
+            return
+        if isinstance(message, LobbyState):
+            connected = sum(1 for slot in message.slots if bool(slot.connected))
+            lan_debug_log(
+                "net_recv",
+                role="join",
+                kind="lobby_state",
+                session_id=str(message.session_id),
+                player_count=int(message.player_count),
+                connected=int(connected),
+                all_ready=bool(message.all_ready),
+                started=bool(message.started),
+            )
+            lobby.ingest_lobby_state(message)
+            return
+        if isinstance(message, MatchStart):
+            lan_debug_log(
+                "net_recv",
+                role="join",
+                kind="match_start",
+                session_id=str(message.session_id),
+                mode_id=int(message.mode_id),
+                player_count=int(message.player_count),
+                seed=int(message.seed),
+            )
+            lobby.ingest_match_start(message)
+            self.started = True
+            self._client_init_lockstep(message)
+            return
+        if isinstance(message, TickFrame):
+            lockstep = self.client_lockstep
+            if lockstep is None:
+                return
+            tick = int(getattr(message, "tick_index", 0) or 0)
+            if int(tick) < 5 or (int(tick) % 60) == 0:
+                lan_debug_log(
+                    "net_recv",
+                    role="join",
+                    kind="tick_frame",
+                    tick_index=int(tick),
+                    command_hash=str(getattr(message, "command_hash", "") or ""),
+                )
+            lockstep.ingest_tick_frame(message, now_ms=int(now_ms), local_command_hash="")
+            queued_at = self._client_input_queued_at_ms.pop(int(tick), None)
+            if queued_at is not None:
+                latency_ms = max(0, int(now_ms) - int(queued_at))
+                self._client_local_input_latency_ms = int(latency_ms)
+                if self._client_local_input_latency_ewma_ms <= 0.0:
+                    self._client_local_input_latency_ewma_ms = float(latency_ms)
+                else:
+                    self._client_local_input_latency_ewma_ms = float(
+                        self._client_local_input_latency_ewma_ms * 0.9 + float(latency_ms) * 0.1
+                    )
+            return
+        if isinstance(message, PauseState):
+            lan_debug_log(
+                "net_recv",
+                role="join",
+                kind="pause_state",
+                paused=bool(message.paused),
+                reason=str(message.reason or ""),
+            )
+            # Lobby doesn't model pause; keep for logging and future integration.
+            self.client_pause_state = message
+            return
+        if isinstance(message, Disconnect):
+            lan_debug_log("net_recv", role="join", kind="disconnect", reason=str(message.reason or ""))
+            self.error = str(message.reason or "disconnect")
+            return
+        kind = getattr(message, "kind", type(message).__name__)
+        lan_debug_log("net_recv", role="join", kind=str(kind))
+
+    def _client_send(self, message: NetMessage, *, reliable: bool, now_ms: int) -> None:
+        link = self.client_link
+        host = self.client_host_addr
+        if link is None or host is None:
+            return
+        packet = link.build_packet(message, reliable=bool(reliable), now_ms=int(now_ms))
+        try:
+            self.transport.send_packet(host, packet)
+        except OSError:
+            return
+        if isinstance(message, InputBatch):
+            max_tick = -1
+            min_tick = 2**31 - 1
+            for sample in message.samples:
+                tick = int(getattr(sample, "tick_index", 0) or 0)
+                max_tick = max(int(max_tick), int(tick))
+                min_tick = min(int(min_tick), int(tick))
+            if max_tick >= 0 and (int(max_tick) < 5 or (int(max_tick) % 60) == 0):
+                lan_debug_log(
+                    "net_send",
+                    role="join",
+                    kind="input_batch",
+                    reliable=bool(reliable),
+                    slot_index=int(message.slot_index),
+                    sample_count=int(len(message.samples)),
+                    tick_min=int(min_tick) if min_tick != 2**31 - 1 else 0,
+                    tick_max=int(max_tick),
+                )
+            return
+        kind = getattr(message, "kind", type(message).__name__)
+        lan_debug_log("net_send", role="join", kind=str(kind), reliable=bool(reliable))
+
+    def _trace_metrics(self, *, now_ms: int) -> None:
+        if (int(now_ms) - int(self._metrics_last_log_ms)) < 1000:
+            return
+        self._metrics_last_log_ms = int(now_ms)
+
+        tick_rate = max(1, int(self.cfg.tick_rate) or 1)
+        delay_ticks = max(0, int(self.cfg.input_delay_ticks))
+        delay_ms = int(round(float(delay_ticks) * 1000.0 / float(tick_rate)))
+
+        role = str(self.cfg.role)
+        if role == "host":
+            lockstep = self.host_lockstep
+            waiting_for = int(lockstep.waiting_for_inputs()) if lockstep is not None else 0
+            stall_ms = 0
+            if lockstep is not None and waiting_for > 0:
+                stall_ms = max(0, int(now_ms) - int(lockstep.last_progress_ms))
+
+            capture_tick = int(self.host_capture_tick)
+            emit_tick = int(lockstep.next_emit_tick) if lockstep is not None else 0
+            ready_frames = int(len(self.host_ready_frames))
+            buffered_ticks = int(lockstep.buffered_tick_count) if lockstep is not None else 0
+            target_lead_ticks = int(capture_tick) + int(delay_ticks) - int(emit_tick)
+
+            rtts = [int(peer.link.rtt_last_ms) for peer in self.host_peers.values() if peer.link.rtt_last_ms > 0]
+            rtt_min = min(rtts) if rtts else 0
+            rtt_max = max(rtts) if rtts else 0
+            pending_max = max((int(peer.link.pending_count) for peer in self.host_peers.values()), default=0)
+            resends_total = sum(int(peer.link.resend_count) for peer in self.host_peers.values())
+            resends_delta = max(0, int(resends_total) - int(self._metrics_last_resends_total))
+            self._metrics_last_resends_total = int(resends_total)
+
+            lan_debug_log(
+                "net_metrics",
+                role="host",
+                delay_ticks=int(delay_ticks),
+                delay_ms=int(delay_ms),
+                capture_tick=int(capture_tick),
+                emit_tick=int(emit_tick),
+                lead_ticks=int(capture_tick) - int(emit_tick),
+                target_lead_ticks=int(target_lead_ticks),
+                ready_frames=int(ready_frames),
+                buffered_ticks=int(buffered_ticks),
+                waiting_for=int(waiting_for),
+                stall_ms=int(stall_ms),
+                rtt_min_ms=int(rtt_min),
+                rtt_max_ms=int(rtt_max),
+                pending_max=int(pending_max),
+                resends_s=int(resends_delta),
+                input_latency_ms=int(self._host_local_input_latency_ms),
+                input_latency_ewma_ms=int(self._host_local_input_latency_ewma_ms),
+            )
+            return
+
+        link = self.client_link
+        lockstep = self.client_lockstep
+        pending = int(link.pending_count) if link is not None else 0
+        resends_total = int(link.resend_count) if link is not None else 0
+        resends_delta = max(0, int(resends_total) - int(self._metrics_last_resends_total))
+        self._metrics_last_resends_total = int(resends_total)
+
+        stall_ms = 0
+        if lockstep is not None and int(lockstep.buffered_frame_count) <= 0:
+            stall_ms = max(0, int(now_ms) - int(lockstep.last_progress_ms))
+
+        capture_tick = int(lockstep.capture_tick) if lockstep is not None else 0
+        consume_tick = int(lockstep.next_consume_tick) if lockstep is not None else 0
+        buffered_frames = int(lockstep.buffered_frame_count) if lockstep is not None else 0
+        lan_debug_log(
+            "net_metrics",
+            role="join",
+            delay_ticks=int(delay_ticks),
+            delay_ms=int(delay_ms),
+            stall_ms=int(stall_ms),
+            capture_tick=int(capture_tick),
+            consume_tick=int(consume_tick),
+            lead_ticks=int(capture_tick) - int(consume_tick),
+            buffered_frames=int(buffered_frames),
+            rtt_ms=int(link.rtt_last_ms) if link is not None else 0,
+            rtt_ewma_ms=int(link.rtt_ewma_ms) if link is not None else 0,
+            pending=int(pending),
+            resends_s=int(resends_delta),
+            input_latency_ms=int(self._client_local_input_latency_ms),
+            input_latency_ewma_ms=int(self._client_local_input_latency_ewma_ms),
+        )
+
+    def _host_init_lockstep(self, event: MatchStart) -> None:
+        player_count = max(1, min(4, int(getattr(event, "player_count", 1) or 1)))
+        self.host_lockstep = HostLockstepState(
+            player_count=int(player_count),
+            input_delay_ticks=int(self.cfg.input_delay_ticks),
+        )
+        self.host_capture_tick = 0
+        self.host_ready_frames.clear()
+
+        # Prime initial ticks (0..delay-1) with neutral inputs so the match can start immediately.
+        delay = max(0, int(self.cfg.input_delay_ticks))
+        neutral = list(self._neutral_input)
+        for tick in range(int(delay)):
+            for slot in range(int(player_count)):
+                self.host_lockstep.submit_input_sample(
+                    slot_index=int(slot),
+                    tick_index=int(tick),
+                    packed_input=list(neutral),
+                )
+
+    def _client_init_lockstep(self, event: MatchStart) -> None:
+        slot_index = int(self.local_slot_index)
+        self.client_lockstep = ClientLockstepState(
+            local_slot_index=int(slot_index),
+            input_delay_ticks=int(self.cfg.input_delay_ticks),
+        )
+        self.client_pause_state = None
+
+
+__all__ = ["LanRuntime", "LanRuntimeConfig"]
