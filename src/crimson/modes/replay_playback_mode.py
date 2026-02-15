@@ -479,7 +479,7 @@ class ReplayPlaybackMode:
 
             while self._dt_accum + 1e-9 >= self._dt_frame and not self._finished:
                 self._tick_one()
-            self._dt_accum -= self._dt_frame
+                self._dt_accum -= self._dt_frame
 
         if self._audio is not None:
             update_audio(self._audio, float(dt))
