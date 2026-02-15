@@ -3,7 +3,18 @@ from __future__ import annotations
 import subprocess
 
 from crimson.net import protocol
-from crimson.net.protocol import DebugLogBatch, Hello, Packet, PauseState, decode_packet, encode_packet
+from crimson.net.protocol import (
+    DebugLogBatch,
+    Hello,
+    KeepAlive,
+    Packet,
+    PauseState,
+    PerkMenuClose,
+    PerkMenuOpen,
+    PerkPick,
+    decode_packet,
+    encode_packet,
+)
 
 
 def test_packet_msgpack_round_trip() -> None:
@@ -45,8 +56,23 @@ def test_debug_log_batch_msgpack_round_trip() -> None:
     assert decoded.message.lines == ["test line\n"]
 
 
+def test_lan_perk_and_keepalive_messages_round_trip() -> None:
+    messages = [
+        KeepAlive(tick_index=42),
+        PerkMenuOpen(tick_index=123, player_index=0),
+        PerkMenuClose(tick_index=124, player_index=0),
+        PerkPick(tick_index=125, player_index=0, choice_index=2),
+    ]
+
+    for idx, message in enumerate(messages, start=1):
+        packet = Packet(seq=idx, ack=0, reliable=True, message=message)
+        decoded = decode_packet(encode_packet(packet))
+        assert type(decoded.message) is type(message)
+        assert decoded.message == message
+
+
 def test_protocol_constants_match_spec() -> None:
-    assert protocol.PROTOCOL_VERSION == 2
+    assert protocol.PROTOCOL_VERSION == 3
     assert protocol.DEFAULT_PORT == 31993
     assert protocol.TICK_RATE == 60
     assert protocol.INPUT_DELAY_TICKS == 1
