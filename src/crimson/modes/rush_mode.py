@@ -35,7 +35,8 @@ from ..sim.bootstrap import run_terrain_bootstrap
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSessionTick, RushDeterministicSession
-from ..net.protocol import TickFrame
+from ..net.debug_log import lan_debug_log
+from ..net.protocol import STATE_HASH_PERIOD_TICKS, TickFrame
 from ..weapons import WeaponId
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
@@ -140,12 +141,36 @@ class RushMode(BaseGameplayMode):
 
         status = self.state.status
         quest_unlock_index = int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0
+        status_unlock_index = int(quest_unlock_index)
+        status_unlock_index_full = int(getattr(status, "quest_unlock_index_full", 0) or 0) if status is not None else 0
+        if bool(self._lan_enabled):
+            # LAN lockstep peers may have different save progress. Terrain bootstrap
+            # consumes the authoritative gameplay RNG stream, so use a fixed unlock
+            # index to keep host/client RNG in sync.
+            quest_unlock_index = 0x28
         bootstrap = run_terrain_bootstrap(
             self.state.rng,
             quest_unlock_index=int(quest_unlock_index),
             width=int(self.world.world_size),
             height=int(self.world.world_size),
             layers=3,
+        )
+        lan_debug_log(
+            "terrain_bootstrap",
+            mode="RushMode",
+            lan_enabled=bool(self._lan_enabled),
+            lan_role=str(self._lan_role),
+            status_quest_unlock_index=int(status_unlock_index),
+            status_quest_unlock_index_full=int(status_unlock_index_full),
+            quest_unlock_index=int(quest_unlock_index),
+            seed_before=int(bootstrap.seed_before),
+            seed_after=int(bootstrap.seed_after),
+            selection_draws=int(bootstrap.selection_draws),
+            stamping_draws=int(bootstrap.stamping_draws),
+            terrain_base=int(bootstrap.terrain_ids[0]),
+            terrain_overlay=int(bootstrap.terrain_ids[1]),
+            terrain_detail=int(bootstrap.terrain_ids[2]),
+            terrain_seed=int(bootstrap.terrain_seed),
         )
         self.world.apply_bootstrap_terrain(
             terrain_ids=bootstrap.terrain_ids,
@@ -370,13 +395,6 @@ class RushMode(BaseGameplayMode):
 
         runtime.update()
         role = str(self._lan_role)
-        if role == "host" and (not bool(runtime.host_remote_inputs_ready())):
-            return
-
-        if bool(self._paused):
-            self._sim_clock.reset()
-            return
-
         if self.world.audio_router is not None:
             self.world.audio_router.audio = self.world.audio
             self.world.audio_router.audio_rng = self.world.audio_rng
@@ -384,6 +402,17 @@ class RushMode(BaseGameplayMode):
         if self.world.ground is not None:
             self.world._sync_ground_settings()
             self.world.ground.process_pending()
+        self._trace_lan_terrain_generation()
+        if bool(self._lan_terrain_generation_pending()):
+            self._lan_capture_clock.reset()
+            return
+
+        if role == "host" and (not bool(runtime.host_remote_inputs_ready())):
+            return
+
+        if bool(self._paused):
+            self._sim_clock.reset()
+            return
         session.detail_preset = self.config.detail_preset
         session.fx_toggle = self.config.fx_toggle
 
@@ -405,6 +434,48 @@ class RushMode(BaseGameplayMode):
                     dt_frame=float(dt_tick),
                     inputs=player_inputs,
                 )
+
+                remote_command_hash = str(getattr(frame, "command_hash", "") or "")
+                remote_state_hash = str(getattr(frame, "state_hash", "") or "")
+                local_command_hash = str(tick.step.command_hash)
+                local_state_hash = ""
+                if role == "join":
+                    if remote_command_hash and remote_command_hash != local_command_hash:
+                        runtime.note_desync(
+                            kind="command_hash",
+                            tick_index=int(frame.tick_index),
+                            expected=str(remote_command_hash),
+                            actual=str(local_command_hash),
+                        )
+                    if remote_state_hash:
+                        local_state_hash = str(
+                            build_checkpoint(
+                                tick_index=int(frame.tick_index),
+                                world=self.world.world_state,
+                                elapsed_ms=float(session.elapsed_ms),
+                                creature_count_override=int(tick.creature_count_world_step),
+                            ).state_hash
+                        )
+                        if local_state_hash != remote_state_hash:
+                            runtime.note_desync(
+                                kind="state_hash",
+                                tick_index=int(frame.tick_index),
+                                expected=str(remote_state_hash),
+                                actual=str(local_state_hash),
+                            )
+
+                state_hash = ""
+                if role == "host":
+                    tick_i = int(frame.tick_index)
+                    if int(tick_i) < 5 or (int(tick_i) % int(STATE_HASH_PERIOD_TICKS)) == 0:
+                        state_hash = str(
+                            build_checkpoint(
+                                tick_index=int(frame.tick_index),
+                                world=self.world.world_state,
+                                elapsed_ms=float(session.elapsed_ms),
+                                creature_count_override=int(tick.creature_count_world_step),
+                            ).state_hash
+                        )
                 self.world.apply_step_result(
                     tick.step,
                     game_tune_started=bool(session.game_tune_started),
@@ -429,8 +500,8 @@ class RushMode(BaseGameplayMode):
                         TickFrame(
                             tick_index=int(frame.tick_index),
                             frame_inputs=list(frame.frame_inputs),
-                            command_hash=str(tick.step.command_hash),
-                            state_hash="",
+                            command_hash=str(local_command_hash),
+                            state_hash=str(state_hash),
                         )
                     )
 

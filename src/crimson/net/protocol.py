@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import subprocess
 from functools import lru_cache
 from pathlib import Path
@@ -23,9 +24,75 @@ INPUT_STALL_TIMEOUT_MS = 250
 STATE_HASH_PERIOD_TICKS = 120
 
 
+_BUILD_ID_VERSION_RE = re.compile(r"^[vV]?\d+(?:\.\d+)+[A-Za-z0-9.\-_]*$")
+_BUILD_ID_GIT_HASH_RE = re.compile(r"^[0-9a-f]{7,40}$")
+
+
+def build_public_version(build_id: str) -> str | None:
+    """Extract a "public" version from a build id if it resembles a version string.
+
+    Supports plain versions like "0.1.0" and build ids with local metadata like
+    "0.1.0+gabcdef123456". Returns None when build_id doesn't look like a version.
+    """
+    raw = str(build_id).strip()
+    if not raw:
+        return None
+    base = raw.split("+", 1)[0]
+    if base.startswith(("v", "V")):
+        base = base[1:]
+    if _BUILD_ID_VERSION_RE.fullmatch(base) is None:
+        return None
+    return str(base)
+
+
+def build_git_hash(build_id: str) -> str | None:
+    """Extract a git hash from a build id if present."""
+    raw = str(build_id).strip()
+    if not raw:
+        return None
+    if _BUILD_ID_GIT_HASH_RE.fullmatch(raw) is not None:
+        return raw.lower()
+    match = re.search(r"(?:\+|\.)g([0-9a-f]{7,40})\b", raw, flags=re.IGNORECASE)
+    if match is None:
+        return None
+    return match.group(1).lower()
+
+
+def builds_compatible(peer_build_id: str, host_build_id: str) -> bool:
+    """Return True when two peers should be able to talk to each other.
+
+    LAN gameplay is lockstep and will desync on behavioral mismatches anyway; this
+    is a guardrail against obvious incompatibilities while allowing:
+    - release builds to join git checkouts for the same version (0.1.0 == 0.1.0+g...),
+    - old hash-only build ids to interop with new "<version>+g<hash>" ids.
+    """
+    peer = str(peer_build_id)
+    host = str(host_build_id)
+    if peer == host:
+        return True
+
+    peer_hash = build_git_hash(peer)
+    host_hash = build_git_hash(host)
+    if peer_hash is not None and host_hash is not None and peer_hash == host_hash:
+        return True
+
+    peer_ver = build_public_version(peer)
+    host_ver = build_public_version(host)
+    if peer_ver is not None and host_ver is not None and peer_ver == host_ver:
+        return True
+
+    return False
+
+
 @lru_cache(maxsize=1)
 def current_build_id() -> str:
-    """Return runtime build id, preferring git commit hash over package version."""
+    """Return runtime build id.
+
+    Format:
+    - In a git checkout: "<version>+g<short_sha>"
+    - In a packaged build (no git): "<version>"
+    """
+    version = str(__version__)
     try:
         repo_root = Path(__file__).resolve().parents[3]
         out = subprocess.check_output(
@@ -35,10 +102,12 @@ def current_build_id() -> str:
         )
         build = out.decode("utf-8", errors="replace").strip()
         if build:
-            return str(build)
+            if "+" in version:
+                return f"{version}.g{build}"
+            return f"{version}+g{build}"
     except (OSError, subprocess.CalledProcessError):
         pass
-    return str(__version__)
+    return version
 
 
 class Hello(msgspec.Struct, tag_field="kind", tag="hello", forbid_unknown_fields=True):
@@ -132,6 +201,13 @@ class DesyncNotice(msgspec.Struct, tag_field="kind", tag="desync_notice", forbid
     actual_command_hash: str = ""
 
 
+class DebugLogBatch(msgspec.Struct, tag_field="kind", tag="debug_log_batch", forbid_unknown_fields=True):
+    """Client-to-host debug log forwarding payload (best-effort)."""
+
+    slot_index: int = -1
+    lines: list[str] = msgspec.field(default_factory=list)
+
+
 class ResyncBegin(msgspec.Struct, tag_field="kind", tag="resync_begin", forbid_unknown_fields=True):
     stream_id: str = ""
     total_chunks: int = 0
@@ -164,6 +240,7 @@ NetMessage: TypeAlias = (
     | TickFrame
     | PauseState
     | DesyncNotice
+    | DebugLogBatch
     | ResyncBegin
     | ResyncChunk
     | ResyncCommit

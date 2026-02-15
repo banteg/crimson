@@ -4,10 +4,12 @@ import datetime as dt
 import os
 from pathlib import Path
 from threading import Lock
+from typing import Callable
 
 
 _TRACE_LOCK = Lock()
 _TRACE_PATH: Path | None = None
+_TRACE_FORWARDER: Callable[[str], None] | None = None
 
 
 def _format_value(value: object) -> str:
@@ -25,6 +27,17 @@ def _format_fields(fields: dict[str, object]) -> str:
 def lan_debug_log_path() -> Path | None:
     with _TRACE_LOCK:
         return _TRACE_PATH
+
+
+def set_lan_debug_forwarder(forwarder: Callable[[str], None] | None) -> None:
+    """Install a callback that receives each formatted debug log line.
+
+    This is used by LAN clients to mirror their debug logs to the host for easier
+    cross-machine analysis. The callback is invoked outside the file lock.
+    """
+    with _TRACE_LOCK:
+        global _TRACE_FORWARDER
+        _TRACE_FORWARDER = forwarder
 
 
 def init_lan_debug_log(
@@ -71,18 +84,25 @@ def lan_debug_log(event: str, **fields: object) -> None:
         line += f" {payload}"
     line += "\n"
 
+    forwarder: Callable[[str], None] | None
     with _TRACE_LOCK:
         path = _TRACE_PATH
+        forwarder = _TRACE_FORWARDER
         if path is None:
             return
         with path.open("a", encoding="utf-8") as handle:
             handle.write(line)
+
+    if forwarder is not None:
+        forwarder(str(line))
 
 
 def close_lan_debug_log() -> None:
     with _TRACE_LOCK:
         global _TRACE_PATH
         _TRACE_PATH = None
+        global _TRACE_FORWARDER
+        _TRACE_FORWARDER = None
 
 
 __all__ = [
@@ -90,4 +110,5 @@ __all__ = [
     "init_lan_debug_log",
     "lan_debug_log",
     "lan_debug_log_path",
+    "set_lan_debug_forwarder",
 ]

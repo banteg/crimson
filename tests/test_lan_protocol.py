@@ -3,7 +3,7 @@ from __future__ import annotations
 import subprocess
 
 from crimson.net import protocol
-from crimson.net.protocol import Hello, Packet, PauseState, decode_packet, encode_packet
+from crimson.net.protocol import DebugLogBatch, Hello, Packet, PauseState, decode_packet, encode_packet
 
 
 def test_packet_msgpack_round_trip() -> None:
@@ -28,6 +28,21 @@ def test_packet_msgpack_round_trip() -> None:
     assert decoded.message.build_id == "build123"
     assert decoded.message.mode_id == 1
     assert decoded.message.player_count == 2
+
+
+def test_debug_log_batch_msgpack_round_trip() -> None:
+    packet = Packet(
+        seq=1,
+        ack=0,
+        reliable=False,
+        message=DebugLogBatch(slot_index=1, lines=["test line\n"]),
+    )
+
+    decoded = decode_packet(encode_packet(packet))
+
+    assert isinstance(decoded.message, DebugLogBatch)
+    assert decoded.message.slot_index == 1
+    assert decoded.message.lines == ["test line\n"]
 
 
 def test_protocol_constants_match_spec() -> None:
