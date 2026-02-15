@@ -65,6 +65,9 @@ KEEPALIVE_INTERVAL_MS = 250
 # Bound socket drain work per update to avoid frame-time spikes under burst traffic.
 MAX_RECV_PACKETS_PER_UPDATE = 512
 
+# Bound socket drain work per update to avoid frame-time spikes under burst traffic.
+MAX_RECV_PACKETS_PER_UPDATE = 512
+
 
 @dataclass(slots=True)
 class LanRuntimeConfig:
