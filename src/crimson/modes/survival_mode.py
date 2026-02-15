@@ -15,7 +15,7 @@ from grim.console import ConsoleState
 from grim.config import (
     CrimsonConfig,
 )
-from grim.geom import Rect, Vec2
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.view import ViewContext
 
@@ -32,7 +32,7 @@ from ..input_codes import (
     input_code_is_pressed_for_player,
     input_primary_just_pressed,
 )
-from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, draw_ui_text, load_perk_menu_assets
+from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, load_perk_menu_assets
 from ..weapons import WEAPON_BY_ID
 from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
 from ..replay.types import WEAPON_USAGE_COUNT
@@ -50,6 +50,7 @@ from ..sim.sessions import SurvivalDeterministicSession
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
+from .components.perk_prompt_ui import PERK_PROMPT_MAX_TIMER_MS, PerkPromptUi
 
 WORLD_SIZE = 1024.0
 
@@ -58,29 +59,6 @@ UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
-
-PERK_PROMPT_MAX_TIMER_MS = 200.0
-PERK_PROMPT_OUTSET_X = 50.0
-# Perk prompt bar geometry comes from `ui_menu_assets_init` + `ui_menu_layout_init`:
-# - `ui_menu_item_element` is set_rect(512x64, offset -72,-60)
-# - the perk prompt mutates quad coords: x = (x - 300) * 0.75, y = y * 0.75
-PERK_PROMPT_BAR_SCALE = 0.75
-PERK_PROMPT_BAR_BASE_OFFSET_X = -72.0
-PERK_PROMPT_BAR_BASE_OFFSET_Y = -60.0
-PERK_PROMPT_BAR_SHIFT_X = -300.0
-
-# `ui_textLevelUp` is set_rect(75x25, offset -230,-27), then its quad coords are:
-# x = x * 0.85 - 46, y = y * 0.85 - 4
-PERK_PROMPT_LEVEL_UP_SCALE = 0.85
-PERK_PROMPT_LEVEL_UP_BASE_OFFSET_X = -230.0
-PERK_PROMPT_LEVEL_UP_BASE_OFFSET_Y = -27.0
-PERK_PROMPT_LEVEL_UP_BASE_W = 75.0
-PERK_PROMPT_LEVEL_UP_BASE_H = 25.0
-PERK_PROMPT_LEVEL_UP_SHIFT_X = -46.0
-PERK_PROMPT_LEVEL_UP_SHIFT_Y = -4.0
-
-PERK_PROMPT_TEXT_MARGIN_X = 16.0
-PERK_PROMPT_TEXT_OFFSET_Y = 8.0
 
 _DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
 
@@ -413,43 +391,6 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_menu.close()
         self._save_replay()
 
-    def _perk_prompt_label(self) -> str:
-        if not self.config.ui_info_texts:
-            return ""
-        pending = int(self.state.perk_selection.pending_count)
-        if pending <= 0:
-            return ""
-        suffix = f" ({pending})" if pending > 1 else ""
-        return f"Press Mouse2 to pick a perk{suffix}"
-
-    def _perk_prompt_hinge(self) -> Vec2:
-        screen_w = float(rl.get_screen_width())
-        hinge_x = screen_w + PERK_PROMPT_OUTSET_X
-        hinge_y = 80.0 if int(screen_w) == 640 else 40.0
-        return Vec2(hinge_x, hinge_y)
-
-    def _perk_prompt_rect(self, label: str, *, scale: float = UI_TEXT_SCALE) -> Rect:
-        hinge = self._perk_prompt_hinge()
-        if self._perk_menu_assets is not None and self._perk_menu_assets.menu_item is not None:
-            tex = self._perk_menu_assets.menu_item
-            bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
-            bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
-            local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
-            local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
-
-            return Rect.from_top_left(
-                hinge.offset(dx=local_x, dy=local_y),
-                bar_w,
-                bar_h,
-            )
-
-        margin = 16.0 * scale
-        text_w = float(self._ui_text_width(label, scale))
-        text_h = float(self._ui_line_height(scale))
-        x = float(rl.get_screen_width()) - margin - text_w
-        y = margin
-        return Rect.from_top_left(Vec2(x, y), text_w, text_h)
-
     def update(self, dt: float) -> None:
         self._update_audio(dt)
 
@@ -475,9 +416,15 @@ class SurvivalMode(BaseGameplayMode):
         any_alive = self._any_player_alive()
 
         if (not perk_menu_active) and perk_pending and (not self._paused):
-            label = self._perk_prompt_label()
+            label = PerkPromptUi.label(self.config, pending_count=int(self.state.perk_selection.pending_count))
             if label:
-                rect = self._perk_prompt_rect(label)
+                rect = PerkPromptUi.rect(
+                    label,
+                    ui_text_width=self._ui_text_width,
+                    ui_line_height=self._ui_line_height,
+                    assets=self._perk_menu_assets,
+                    scale=UI_TEXT_SCALE,
+                )
                 mouse = self._ui_mouse_pos()
                 self._perk_prompt_hover = rect.contains(mouse)
 
@@ -593,57 +540,22 @@ class SurvivalMode(BaseGameplayMode):
             return
         if not any(player.health > 0.0 for player in self.world.players):
             return
-        pending = int(self.state.perk_selection.pending_count)
-        if pending <= 0:
+        pending_count = int(self.state.perk_selection.pending_count)
+        if pending_count <= 0:
             return
-        label = self._perk_prompt_label()
+        label = PerkPromptUi.label(self.config, pending_count=pending_count)
         if not label:
             return
-
-        alpha = float(self._perk_prompt_timer_ms) / PERK_PROMPT_MAX_TIMER_MS
-        if alpha <= 1e-3:
-            return
-
-        hinge = self._perk_prompt_hinge()
-        # Prompt swings counter-clockwise; raylib's Y-down makes positive rotation clockwise.
-        rot_deg = -(1.0 - alpha) * 90.0
-        tint = rl.Color(255, 255, 255, int(255 * alpha))
-
-        text_w = float(self._ui_text_width(label, UI_TEXT_SCALE))
-        x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
-        y = hinge.y + PERK_PROMPT_TEXT_OFFSET_Y
-        color = rl.Color(UI_TEXT_COLOR.r, UI_TEXT_COLOR.g, UI_TEXT_COLOR.b, int(255 * alpha))
-        draw_ui_text(self._small, label, Vec2(x, y), scale=UI_TEXT_SCALE, color=color)
-
-        if self._perk_menu_assets is not None and self._perk_menu_assets.menu_item is not None:
-            tex = self._perk_menu_assets.menu_item
-            bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
-            bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
-            local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
-            local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
-            src = rl.Rectangle(float(tex.width), 0.0, -float(tex.width), float(tex.height))
-            dst = rl.Rectangle(hinge.x, hinge.y, bar_w, bar_h)
-            origin = rl.Vector2(float(-local_x), float(-local_y))
-            rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
-
-        if self._perk_menu_assets is not None and self._perk_menu_assets.title_level_up is not None:
-            tex = self._perk_menu_assets.title_level_up
-            local_x = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_X * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_X
-            local_y = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_Y * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_Y
-            w = PERK_PROMPT_LEVEL_UP_BASE_W * PERK_PROMPT_LEVEL_UP_SCALE
-            h = PERK_PROMPT_LEVEL_UP_BASE_H * PERK_PROMPT_LEVEL_UP_SCALE
-            pulse_alpha = (100.0 + float(int(self._perk_prompt_pulse * 155.0 / 1000.0))) / 255.0
-            pulse_alpha = max(0.0, min(1.0, pulse_alpha))
-            label_alpha = max(0.0, min(1.0, alpha * pulse_alpha))
-            pulse_tint = rl.Color(255, 255, 255, int(255 * label_alpha))
-            src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-            dst = rl.Rectangle(hinge.x, hinge.y, w, h)
-            origin = rl.Vector2(float(-local_x), float(-local_y))
-            rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
-            if label_alpha > 0.0:
-                rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-                rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
-                rl.end_blend_mode()
+        PerkPromptUi.draw(
+            font=self._small,
+            assets=self._perk_menu_assets,
+            label=label,
+            timer_ms=float(self._perk_prompt_timer_ms),
+            pulse=float(self._perk_prompt_pulse),
+            ui_text_width=self._ui_text_width,
+            text_color=UI_TEXT_COLOR,
+            scale=UI_TEXT_SCALE,
+        )
 
     def _draw_game_cursor(self) -> None:
         mouse_pos = self._ui_mouse
