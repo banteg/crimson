@@ -63,6 +63,13 @@ class _ReplayRecorderLike(Protocol):
     def record_tick(self, inputs: list[PlayerInput]) -> int: ...
 
 
+# LAN lockstep must keep presentation-step RNG consumption identical across peers.
+# These knobs currently affect deterministic simulation (not just rendering), so
+# we force stable values while in a LAN match.
+LAN_SIM_DETAIL_PRESET = 5
+LAN_SIM_FX_TOGGLE = 0
+
+
 class BaseGameplayMode:
     def __init__(
         self,
@@ -562,6 +569,16 @@ class BaseGameplayMode:
     def _player_name_default(self) -> str:
         return str(self.config.player_name or "")
 
+    def _deterministic_detail_preset(self) -> int:
+        if bool(self._lan_enabled):
+            return int(LAN_SIM_DETAIL_PRESET)
+        return self.config.detail_preset
+
+    def _deterministic_fx_toggle(self) -> int:
+        if bool(self._lan_enabled):
+            return int(LAN_SIM_FX_TOGGLE)
+        return self.config.fx_toggle
+
     def open(self) -> None:
         self.close_requested = False
         self._action = None
@@ -602,6 +619,10 @@ class BaseGameplayMode:
             lan_enabled=bool(self._lan_enabled),
             lan_role=str(self._lan_role),
             lan_slot=int(self._lan_local_slot_index),
+            detail_preset=self.config.detail_preset,
+            fx_toggle=self.config.fx_toggle,
+            sim_detail_preset=int(self._deterministic_detail_preset()),
+            sim_fx_toggle=int(self._deterministic_fx_toggle()),
             screen_w=int(rl.get_screen_width()),
             screen_h=int(rl.get_screen_height()),
             render_w=int(rl.get_render_width()),
@@ -740,8 +761,8 @@ class BaseGameplayMode:
         if self.world.ground is not None:
             self.world._sync_ground_settings()
             self.world.ground.process_pending()
-        session.detail_preset = self.config.detail_preset
-        session.fx_toggle = self.config.fx_toggle
+        session.detail_preset = int(self._deterministic_detail_preset())
+        session.fx_toggle = int(self._deterministic_fx_toggle())
 
         for tick_offset in range(int(ticks_to_run)):
             inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
