@@ -62,11 +62,16 @@ CLIENT_LOG_FORWARD_MAX_CHARS_PER_BATCH = 900
 LOADING_LINK_TIMEOUT_MS = 10_000
 KEEPALIVE_INTERVAL_MS = 250
 
-# Bound socket drain work per update to avoid frame-time spikes under burst traffic.
-MAX_RECV_PACKETS_PER_UPDATE = 512
+# During intentional gameplay pauses (e.g. perk selection) peers can stop
+# producing fresh inputs for longer than the normal 1s failure timeout.
+PAUSED_LINK_TIMEOUT_MS = 60_000
 
 # Bound socket drain work per update to avoid frame-time spikes under burst traffic.
 MAX_RECV_PACKETS_PER_UPDATE = 512
+
+# When gameplay is paused and no new inputs are generated, periodically send a
+# tiny no-op batch so ACK progression and timeout tracking stay alive.
+IDLE_HEARTBEAT_MS = 250
 
 
 @dataclass(slots=True)
@@ -116,6 +121,7 @@ class LanRuntime:
     client_host_addr: PeerAddr | None = field(init=False, default=None)
     client_last_hello_ms: int = field(init=False, default=0)
     client_last_seen_ms: int = field(init=False, default=0)
+    _client_last_send_ms: int = field(init=False, default=0)
     client_lockstep: ClientLockstepState | None = field(init=False, default=None)
     client_pause_state: PauseState | None = field(init=False, default=None)
     _client_seen_tick_frame: bool = field(init=False, default=False)
@@ -240,6 +246,7 @@ class LanRuntime:
             self.client_lobby = ClientLobby(build_id=str(self.build_id), hello=hello)
             self.client_last_hello_ms = 0
             self.client_last_seen_ms = _now_ms()
+            self._client_last_send_ms = 0
 
     def close(self) -> None:
         try:
@@ -255,6 +262,7 @@ class LanRuntime:
             self.client_host_addr = None
             self.client_last_hello_ms = 0
             self.client_last_seen_ms = 0
+            self._client_last_send_ms = 0
             self.host_lockstep = None
             self.host_capture_tick = 0
             self.host_ready_frames.clear()
@@ -746,6 +754,9 @@ class LanRuntime:
         timeout_ms = int(LINK_TIMEOUT_MS)
         if bool(lobby.started) and (not bool(self.host_remote_inputs_ready())):
             timeout_ms = int(LOADING_LINK_TIMEOUT_MS)
+        lockstep = self.host_lockstep
+        if bool(lobby.started) and lockstep is not None and bool(lockstep.paused):
+            timeout_ms = max(int(timeout_ms), int(PAUSED_LINK_TIMEOUT_MS))
         for addr, peer in list(self.host_peers.items()):
             if (int(now_ms) - int(peer.last_seen_ms)) < int(timeout_ms):
                 continue
@@ -1118,6 +1129,14 @@ class LanRuntime:
         timeout_ms = int(LINK_TIMEOUT_MS)
         if bool(self.started) and (not bool(self._client_seen_tick_frame)):
             timeout_ms = int(LOADING_LINK_TIMEOUT_MS)
+        pause_state = self.client_pause_state
+        if (
+            bool(self.started)
+            and pause_state is not None
+            and bool(getattr(pause_state, "paused", False))
+            and str(getattr(pause_state, "reason", "") or "") == "waiting_input"
+        ):
+            timeout_ms = max(int(timeout_ms), int(PAUSED_LINK_TIMEOUT_MS))
         if (int(now_ms) - int(self.client_last_seen_ms)) >= int(timeout_ms):
             if not self.error:
                 self._set_client_error("timeout")
@@ -1139,6 +1158,7 @@ class LanRuntime:
             except OSError:
                 continue
             self._last_send_ms = int(now_ms)
+            self._client_last_send_ms = int(now_ms)
 
         # Prevent timeouts during stalls/pauses by sending best-effort keepalives.
         if bool(self.started):
@@ -1150,6 +1170,8 @@ class LanRuntime:
                 if self.client_lockstep is not None:
                     tick_index = int(getattr(self.client_lockstep, "next_consume_tick", 0) or 0)
                 self._client_send(KeepAlive(tick_index=int(tick_index)), reliable=False, now_ms=int(now_ms))
+
+        self._client_send_idle_heartbeat(now_ms=int(now_ms))
 
     def _handle_client_message(self, message: NetMessage, *, now_ms: int) -> None:
         lobby = self.client_lobby
@@ -1420,6 +1442,7 @@ class LanRuntime:
         except OSError:
             return
         self._last_send_ms = int(now_ms)
+        self._client_last_send_ms = int(now_ms)
         if isinstance(message, KeepAlive):
             return
         if isinstance(message, DebugLogBatch):
@@ -1446,6 +1469,30 @@ class LanRuntime:
             return
         kind = getattr(message, "kind", type(message).__name__)
         lan_debug_log("net_send", role="join", kind=str(kind), reliable=bool(reliable))
+
+    def _client_send_idle_heartbeat(self, *, now_ms: int) -> None:
+        if not bool(self.started):
+            return
+        pause_state = self.client_pause_state
+        if (
+            pause_state is None
+            or (not bool(getattr(pause_state, "paused", False)))
+            or str(getattr(pause_state, "reason", "") or "") != "waiting_input"
+        ):
+            return
+        if (int(now_ms) - int(self._client_last_send_ms)) < int(IDLE_HEARTBEAT_MS):
+            return
+        lobby = self.client_lobby
+        link = self.client_link
+        if lobby is None or link is None:
+            return
+        if int(link.pending_count) > 0:
+            return
+        self._client_send(
+            InputBatch(slot_index=int(lobby.slot_index), samples=[]),
+            reliable=False,
+            now_ms=int(now_ms),
+        )
 
     def _trace_metrics(self, *, now_ms: int) -> None:
         if (int(now_ms) - int(self._metrics_last_log_ms)) < 1000:
