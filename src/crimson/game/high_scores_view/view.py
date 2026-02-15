@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import pyray as rl
 
 from grim.audio import play_sfx, update_audio
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 from grim.terrain_render import GroundRenderer
-from grim.fonts.small import SmallFontData, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 
 from ...frontend.assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ...frontend.high_scores_layout import (
@@ -17,8 +19,24 @@ from ...frontend.high_scores_layout import (
     HS_LEFT_PANEL_HEIGHT,
     HS_LEFT_PANEL_POS_X,
     HS_LEFT_PANEL_POS_Y,
+    HS_QUEST_ARROW_X,
+    HS_QUEST_ARROW_Y,
+    HS_RIGHT_CHECK_X,
+    HS_RIGHT_CHECK_Y,
+    HS_RIGHT_GAME_MODE_WIDGET_W,
+    HS_RIGHT_GAME_MODE_WIDGET_X,
+    HS_RIGHT_GAME_MODE_WIDGET_Y,
     HS_RIGHT_PANEL_HEIGHT,
     HS_RIGHT_PANEL_POS_Y,
+    HS_RIGHT_PLAYER_COUNT_WIDGET_W,
+    HS_RIGHT_PLAYER_COUNT_WIDGET_X,
+    HS_RIGHT_PLAYER_COUNT_WIDGET_Y,
+    HS_RIGHT_SCORE_LIST_WIDGET_W,
+    HS_RIGHT_SCORE_LIST_WIDGET_X,
+    HS_RIGHT_SCORE_LIST_WIDGET_Y,
+    HS_RIGHT_SHOW_SCORES_WIDGET_W,
+    HS_RIGHT_SHOW_SCORES_WIDGET_X,
+    HS_RIGHT_SHOW_SCORES_WIDGET_Y,
     hs_right_panel_pos_x,
 )
 from ...frontend.menu import (
@@ -39,6 +57,7 @@ from ...frontend.menu import (
     ensure_menu_ground,
     menu_ground_camera,
 )
+from ...frontend.panels.hit_test import mouse_inside_rect_with_padding
 from ...frontend.panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ...frontend.transitions import _draw_screen_fade
 from ...ui.menu_panel import draw_classic_menu_panel
@@ -47,6 +66,16 @@ from ..types import GameState, HighScoresRequest
 from .main_panel import draw_main_panel
 from .records import load_records, resolve_request
 from .right_panel import draw_right_panel
+
+
+@dataclass(frozen=True, slots=True)
+class _DropdownLayout:
+    pos: Vec2
+    width: float
+    header_h: float
+    row_h: float
+    rows_y0: float
+    full_h: float
 
 
 class HighScoresView:
@@ -66,6 +95,8 @@ class HighScoresView:
         self._button_tex: rl.Texture | None = None
         self._button_textures: UiButtonTextureSet | None = None
         self._check_on: rl.Texture | None = None
+        self._check_off: rl.Texture | None = None
+        self._drop_on: rl.Texture | None = None
         self._drop_off: rl.Texture | None = None
         self._arrow_tex: rl.Texture | None = None
         self._wicons_tex: rl.Texture | None = None
@@ -78,6 +109,13 @@ class HighScoresView:
         self._request: HighScoresRequest | None = None
         self._records: list = []
         self._scroll_index = 0
+        self._dirty = False
+
+        # Right-panel list widget state (quests variant).
+        self._player_count_open = False
+        self._game_mode_open = False
+        self._show_scores_open = False
+        self._score_list_open = False
 
     def open(self) -> None:
         layout_w = float(self.state.config.screen_width)
@@ -93,15 +131,23 @@ class HighScoresView:
         self._small_font = None
         self._scroll_index = 0
         self._button_textures = None
+        self._dirty = False
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
+
+        self._player_count_open = False
+        self._game_mode_open = False
+        self._show_scores_open = False
+        self._score_list_open = False
 
         cache = _ensure_texture_cache(self.state)
         self._button_tex = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
         button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=self._button_tex)
         self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
+        self._check_off = cache.get_or_load("ui_checkOff", "ui/ui_checkOff.jaz").texture
+        self._drop_on = cache.get_or_load("ui_dropOn", "ui/ui_dropDownOn.jaz").texture
         self._drop_off = cache.get_or_load("ui_dropOff", "ui/ui_dropDownOff.jaz").texture
         self._arrow_tex = cache.get_or_load("ui_arrow", "ui/ui_arrow.jaz").texture
         self._wicons_tex = cache.get_or_load("ui_wicons", "ui/ui_wicons.jaz").texture
@@ -127,11 +173,18 @@ class HighScoresView:
         self._button_tex = None
         self._button_textures = None
         self._check_on = None
+        self._check_off = None
+        self._drop_on = None
         self._drop_off = None
         self._arrow_tex = None
         self._request = None
         self._records = []
         self._scroll_index = 0
+        self._dirty = False
+        self._player_count_open = False
+        self._game_mode_open = False
+        self._show_scores_open = False
+        self._score_list_open = False
         self._closing = False
         self._close_action = None
 
@@ -166,12 +219,44 @@ class HighScoresView:
             self._begin_close_transition("back_to_previous")
             return
 
+        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
+        # Defer small font loading to draw(); update() should be able to run
+        # in unit tests without extracted font assets present.
+        font = self._small_font
+
+        # Compute animated panel positions so hit-tests match the draw path even while sliding.
+        panel_w = MENU_PANEL_WIDTH * scale
+        _angle_rad, left_slide_x = MenuView._ui_element_anim(
+            self,
+            index=1,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+            width=panel_w,
+            direction_flag=0,
+        )
+        _angle_rad, right_slide_x = MenuView._ui_element_anim(
+            self,
+            index=2,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+            width=panel_w,
+            direction_flag=1,
+        )
+        left_top_left = self._panel_top_left(pos=Vec2(HS_LEFT_PANEL_POS_X, HS_LEFT_PANEL_POS_Y), scale=scale)
+        right_panel_pos_x = hs_right_panel_pos_x(float(self.state.config.screen_width))
+        right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, HS_RIGHT_PANEL_POS_Y), scale=scale)
+        left_panel_top_left = left_top_left.offset(dx=float(left_slide_x))
+        right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
+
+        if enabled:
+            if self._update_right_panel_widgets(font=font, right_top_left=right_panel_top_left, scale=scale):
+                return
+            if self._update_quest_arrows(left_panel_top_left=left_panel_top_left, scale=scale):
+                return
+
         textures = self._button_textures
         if enabled and textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-            scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
-            font = self._ensure_small_font()
-            panel_top_left = self._panel_top_left(pos=Vec2(HS_LEFT_PANEL_POS_X, HS_LEFT_PANEL_POS_Y), scale=scale)
-            button_base_pos = panel_top_left + Vec2(HS_BUTTON_X * scale, HS_BUTTON_Y0 * scale)
+            button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X * scale, HS_BUTTON_Y0 * scale)
             mouse = rl.get_mouse_position()
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
             w = button_width(font, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
@@ -202,7 +287,7 @@ class HighScoresView:
             back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
             if button_update(
                 self._back_button,
-                pos=panel_top_left + Vec2(HS_BACK_BUTTON_X * scale, HS_BACK_BUTTON_Y * scale),
+                pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X * scale, HS_BACK_BUTTON_Y * scale),
                 width=back_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -231,6 +316,305 @@ class HighScoresView:
                 self._scroll_index = 0
             if rl.is_key_pressed(rl.KeyboardKey.KEY_END):
                 self._scroll_index = max_scroll
+
+    def _begin_close_transition(self, action: str) -> None:
+        if self._dirty:
+            try:
+                self.state.config.save()
+            except (OSError, ValueError) as exc:
+                self.state.console.log.log(f"config: save failed: {exc}")
+            else:
+                self._dirty = False
+        if self._closing:
+            return
+        if action in FADE_TO_GAME_ACTIONS:
+            self.state.screen_fade_alpha = 0.0
+            self.state.screen_fade_ramp = True
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+        self._closing = True
+        self._close_action = action
+
+    def _dropdown_layout(self, *, pos: Vec2, width: float, item_count: int, scale: float) -> _DropdownLayout:
+        header_h = 16.0 * scale
+        row_h = 16.0 * scale
+        full_h = (float(item_count) * 16.0 + 24.0) * scale
+        return _DropdownLayout(
+            pos=pos,
+            width=float(width),
+            header_h=header_h,
+            row_h=row_h,
+            rows_y0=pos.y + 17.0 * scale,
+            full_h=full_h,
+        )
+
+    def _update_dropdown(
+        self,
+        *,
+        layout: _DropdownLayout,
+        item_count: int,
+        is_open: bool,
+        enabled: bool,
+        scale: float,
+    ) -> tuple[bool, int | None, bool]:
+        mouse = rl.get_mouse_position()
+        click = bool(enabled) and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        hovered_header = bool(enabled) and mouse_inside_rect_with_padding(
+            mouse,
+            pos=layout.pos,
+            width=layout.width,
+            height=14.0 * scale,
+        )
+        if hovered_header and click:
+            return (not is_open), None, True
+        if not is_open:
+            return is_open, None, False
+
+        list_hovered = Rect.from_top_left(layout.pos, layout.width, layout.full_h).contains(Vec2.from_xy(mouse))
+        if click and not list_hovered:
+            return False, None, True
+
+        for idx in range(item_count):
+            item_y = layout.rows_y0 + layout.row_h * float(idx)
+            hovered = bool(enabled) and mouse_inside_rect_with_padding(
+                mouse,
+                pos=Vec2(layout.pos.x, item_y),
+                width=layout.width,
+                height=14.0 * scale,
+            )
+            if hovered and click:
+                return False, idx, True
+
+        return is_open, None, False
+
+    def _reload_records(self) -> None:
+        request = self._request
+        if request is None:
+            return
+        self._records = load_records(self.state, request)
+        rows = 10
+        self._scroll_index = max(0, min(int(self._scroll_index), max(0, len(self._records) - rows)))
+
+    def _update_right_panel_widgets(self, *, font: SmallFontData | None, right_top_left: Vec2, scale: float) -> bool:
+        request = self._request
+        if request is None:
+            return False
+
+        # Widgets are only shown in the "options" right panel (not the local-score detail panel).
+        # We don't explicitly track which right panel is active; hit tests are enough.
+        dropdown_blocked = self._player_count_open or self._game_mode_open or self._show_scores_open or self._score_list_open
+
+        # Checkbox: "Show internet scores" (config.score_load_gate).
+        if not dropdown_blocked:
+            check_tex = self._check_on if self.state.config.score_load_gate else self._check_off
+            if check_tex is not None:
+                label = "Show internet scores"
+                check_pos = right_top_left + Vec2(HS_RIGHT_CHECK_X * scale, HS_RIGHT_CHECK_Y * scale)
+                if font is None:
+                    label_w = float(rl.measure_text(label, int(20 * scale)))
+                    font_h = 16.0 * scale
+                else:
+                    label_w = measure_small_text_width(font, label, 1.0 * scale)
+                    font_h = float(font.cell_size) * scale
+                rect_w = float(check_tex.width) * scale + 6.0 * scale + label_w
+                rect_h = max(float(check_tex.height) * scale, font_h)
+                mouse_pos = Vec2.from_xy(rl.get_mouse_position())
+                if Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos):
+                    if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+                        self.state.config.score_load_gate = not self.state.config.score_load_gate
+                        self._dirty = True
+                        self._reload_records()
+                        return True
+
+        # Dropdown: show scores date filter (config.highscore_date_mode).
+        show_scores_items = ("Best of all time", "Best of month", "Best of week", "Best of day")
+        show_scores_pos = right_top_left + Vec2(HS_RIGHT_SHOW_SCORES_WIDGET_X * scale, HS_RIGHT_SHOW_SCORES_WIDGET_Y * scale)
+        show_scores_layout = self._dropdown_layout(
+            pos=show_scores_pos,
+            width=float(HS_RIGHT_SHOW_SCORES_WIDGET_W) * scale,
+            item_count=len(show_scores_items),
+            scale=scale,
+        )
+        show_scores_enabled = not (self._player_count_open or self._game_mode_open or self._score_list_open)
+        self._show_scores_open, show_scores_selected, consumed = self._update_dropdown(
+            layout=show_scores_layout,
+            item_count=len(show_scores_items),
+            is_open=self._show_scores_open,
+            enabled=bool(show_scores_enabled),
+            scale=scale,
+        )
+        if show_scores_selected is not None:
+            self.state.config.highscore_date_mode = int(show_scores_selected)
+            self._dirty = True
+            self._reload_records()
+        if consumed:
+            # Close other dropdowns when this one opens.
+            if self._show_scores_open:
+                self._player_count_open = False
+                self._game_mode_open = False
+                self._score_list_open = False
+            return True
+
+        # Dropdown: player count (config.player_count).
+        player_items = ("1 player", "2 players", "3 players", "4 players")
+        player_pos = right_top_left + Vec2(HS_RIGHT_PLAYER_COUNT_WIDGET_X * scale, HS_RIGHT_PLAYER_COUNT_WIDGET_Y * scale)
+        player_layout = self._dropdown_layout(
+            pos=player_pos,
+            width=float(HS_RIGHT_PLAYER_COUNT_WIDGET_W) * scale,
+            item_count=len(player_items),
+            scale=scale,
+        )
+        player_enabled = not (self._game_mode_open or self._show_scores_open or self._score_list_open)
+        self._player_count_open, player_selected, consumed = self._update_dropdown(
+            layout=player_layout,
+            item_count=len(player_items),
+            is_open=self._player_count_open,
+            enabled=bool(player_enabled),
+            scale=scale,
+        )
+        if player_selected is not None:
+            self.state.config.player_count = int(player_selected) + 1
+            self._dirty = True
+        if consumed:
+            if self._player_count_open:
+                self._game_mode_open = False
+                self._show_scores_open = False
+                self._score_list_open = False
+            return True
+
+        # Dropdown: game mode (config.game_mode / request.game_mode_id).
+        # Typ-o shooter entry is unlocked at quest_unlock_index>=40 in the native.
+        mode_items: list[tuple[str, int]] = [("Quests", 3), ("Rush", 2), ("Survival", 1)]
+        if int(self.state.status.quest_unlock_index) >= 0x28:
+            mode_items.append(("Typ'o'Shooter", 4))
+        game_mode_pos = right_top_left + Vec2(HS_RIGHT_GAME_MODE_WIDGET_X * scale, HS_RIGHT_GAME_MODE_WIDGET_Y * scale)
+        game_mode_layout = self._dropdown_layout(
+            pos=game_mode_pos,
+            width=float(HS_RIGHT_GAME_MODE_WIDGET_W) * scale,
+            item_count=len(mode_items),
+            scale=scale,
+        )
+        game_mode_enabled = not (self._player_count_open or self._show_scores_open or self._score_list_open)
+        self._game_mode_open, game_mode_selected, consumed = self._update_dropdown(
+            layout=game_mode_layout,
+            item_count=len(mode_items),
+            is_open=self._game_mode_open,
+            enabled=bool(game_mode_enabled),
+            scale=scale,
+        )
+        if game_mode_selected is not None:
+            _label, mode_id = mode_items[max(0, min(int(game_mode_selected), len(mode_items) - 1))]
+            mode_id = int(mode_id)
+            self.state.config.game_mode = mode_id
+            request.game_mode_id = mode_id
+            if mode_id == 4:
+                # Native forces Typ-o shooter scores to 1 player.
+                self.state.config.player_count = 1
+            if mode_id == 3:
+                # Ensure quest selection exists when switching into quests.
+                if int(request.quest_stage_major) <= 0 or int(request.quest_stage_minor) <= 0:
+                    request.quest_stage_major = max(1, int(self.state.config.quest_stage_major or 1))
+                    request.quest_stage_minor = max(1, int(self.state.config.quest_stage_minor or 1))
+            self._dirty = True
+            self._reload_records()
+        if consumed:
+            if self._game_mode_open:
+                self._player_count_open = False
+                self._show_scores_open = False
+                self._score_list_open = False
+            return True
+
+        # Dropdown: selected score list (profile slots). We currently expose the selection
+        # but do not emulate the full native add/delete flow.
+        score_list_enabled = not (self._player_count_open or self._game_mode_open or self._show_scores_open)
+        slot_count = max(1, min(8, int(self.state.config.int_value("saved_name_index", 1))))
+        names_blob = self.state.config.blob_value("saved_names", size=0x1B * 8, default=b"")  # 8 entries
+        names: list[str] = []
+        for i in range(slot_count):
+            entry = names_blob[i * 0x1B : (i + 1) * 0x1B]
+            label = entry.split(b"\x00", 1)[0].decode("latin-1", errors="ignore").strip() or f"slot_{i}"
+            names.append(label)
+        score_list_pos = right_top_left + Vec2(HS_RIGHT_SCORE_LIST_WIDGET_X * scale, HS_RIGHT_SCORE_LIST_WIDGET_Y * scale)
+        score_list_layout = self._dropdown_layout(
+            pos=score_list_pos,
+            width=float(HS_RIGHT_SCORE_LIST_WIDGET_W) * scale,
+            item_count=len(names),
+            scale=scale,
+        )
+        self._score_list_open, score_list_selected, consumed = self._update_dropdown(
+            layout=score_list_layout,
+            item_count=len(names),
+            is_open=self._score_list_open,
+            enabled=bool(score_list_enabled),
+            scale=scale,
+        )
+        if score_list_selected is not None:
+            self.state.config.set_int_value("selected_name_slot", int(score_list_selected))
+            self._dirty = True
+            self._reload_records()
+        if consumed:
+            if self._score_list_open:
+                self._player_count_open = False
+                self._game_mode_open = False
+                self._show_scores_open = False
+            return True
+
+        return False
+
+    def _update_quest_arrows(self, *, left_panel_top_left: Vec2, scale: float) -> bool:
+        request = self._request
+        arrow = self._arrow_tex
+        if request is None or arrow is None:
+            return False
+        if int(request.game_mode_id) != 3:
+            return False
+
+        major = int(request.quest_stage_major)
+        minor = int(request.quest_stage_minor)
+        if major <= 0 or minor <= 0:
+            return False
+
+        # Clamp to a sane range.
+        major = max(1, min(5, major))
+        minor = max(1, min(10, minor))
+        global_index = (major - 1) * 10 + (minor - 1)
+        if global_index < 0:
+            global_index = 0
+
+        unlock = int(self.state.status.quest_unlock_index_full) if self.state.config.hardcore else int(self.state.status.quest_unlock_index)
+        max_index = max(0, min(49, unlock))
+
+        mouse = Vec2.from_xy(rl.get_mouse_position())
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        arrow_w = float(arrow.width) * scale
+        arrow_h = float(arrow.height) * scale
+
+        # The native has two arrows spaced 255px apart; at 1.1 only the "next" arrow is drawn.
+        prev_pos = left_panel_top_left + Vec2((HS_QUEST_ARROW_X - 255.0) * scale, HS_QUEST_ARROW_Y * scale)
+        next_pos = left_panel_top_left + Vec2(HS_QUEST_ARROW_X * scale, HS_QUEST_ARROW_Y * scale)
+        prev_rect = Rect.from_top_left(prev_pos, arrow_w, arrow_h)
+        next_rect = Rect.from_top_left(next_pos, arrow_w, arrow_h)
+
+        def _set_level(index: int) -> None:
+            index = max(0, min(max_index, int(index)))
+            new_major = index // 10 + 1
+            new_minor = index % 10 + 1
+            request.quest_stage_major = int(new_major)
+            request.quest_stage_minor = int(new_minor)
+            level = f"{int(new_major)}.{int(new_minor)}"
+            self.state.config.quest_level = level
+            self.state.config.quest_stage_major = int(new_major)
+            self.state.config.quest_stage_minor = int(new_minor)
+            self._dirty = True
+            self._reload_records()
+
+        if global_index > 0 and prev_rect.contains(mouse) and click:
+            _set_level(global_index - 1)
+            return True
+        if global_index < max_index and next_rect.contains(mouse) and click:
+            _set_level(global_index + 1)
+            return True
+        return False
 
     def draw(self) -> None:
         self._assert_open()
@@ -355,17 +739,6 @@ class HighScoresView:
         if alpha > 1.0:
             return 1.0
         return alpha
-
-    def _begin_close_transition(self, action: str) -> None:
-        if self._closing:
-            return
-        if action in FADE_TO_GAME_ACTIONS:
-            self.state.screen_fade_alpha = 0.0
-            self.state.screen_fade_ramp = True
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
-        self._closing = True
-        self._close_action = action
 
     def take_action(self) -> str | None:
         self._assert_open()

@@ -574,6 +574,28 @@ class CrimsonConfig:
         self.set_int_value("fx_toggle", value)
 
     @property
+    def score_load_gate(self) -> bool:
+        # Native: `config_score_load_gate` (byte) toggled by the High scores screen
+        # "Show internet scores" checkbox.
+        return self.bool_value("score_load_gate", default=False)
+
+    @score_load_gate.setter
+    def score_load_gate(self, enabled: bool) -> None:
+        self.set_bool_value("score_load_gate", enabled=bool(enabled))
+
+    @property
+    def highscore_date_mode(self) -> int:
+        # Native: `config_highscore_date_mode` (byte).
+        # Values observed in `highscore_screen_update`:
+        #   0 = all time, 1 = month, 2 = week, 3 = day.
+        value = self.int_value("highscore_date_mode", 0)
+        return max(0, min(3, int(value)))
+
+    @highscore_date_mode.setter
+    def highscore_date_mode(self, value: int) -> None:
+        self.set_int_value("highscore_date_mode", max(0, min(3, int(value))) & 0xFF)
+
+    @property
     def ui_info_texts(self) -> bool:
         return self.bool_value("ui_info_texts", default=True)
 
