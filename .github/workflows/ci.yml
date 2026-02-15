@@ -53,6 +53,14 @@ jobs:
           python-version: "3.13"
           enable-cache: true
 
+      - name: Ensure uv cache dir exists
+        run: |
+          # setup-uv enables caching via UV_CACHE_DIR, but jobs that don't invoke uv (e.g. ast-grep)
+          # may never create the directory, causing the post-job cache step to fail.
+          if [[ -n "${UV_CACHE_DIR:-}" ]]; then
+            mkdir -p "$UV_CACHE_DIR"
+          fi
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
