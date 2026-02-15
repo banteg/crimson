@@ -289,6 +289,15 @@ class ReplayPlaybackMode:
                 )
                 if picked is None:
                     raise ValueError(f"perk_pick failed at tick={tick_index} choice_index={event.choice_index}")
+                # UI parity quirk: after closing the menu, draw/update may query choices once more
+                # during transition, consuming RNG and clearing `choices_dirty`.
+                perk_selection_current_choices(
+                    world.state,
+                    world.players,
+                    world.state.perk_selection,
+                    game_mode=int(replay.header.game_mode_id),
+                    player_count=len(world.players),
+                )
                 continue
             if isinstance(event, UnknownEvent):
                 if str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
