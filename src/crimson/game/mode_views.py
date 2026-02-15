@@ -91,7 +91,7 @@ class _BaseModeGameView:
                     set_lan_match_start(
                         seed=int(event.seed),
                         start_tick=int(event.start_tick),
-                        status_snapshot=getattr(event, "status_snapshot", None),
+                        status_snapshot=event.status_snapshot,
                     )
 
     def close(self) -> None:
