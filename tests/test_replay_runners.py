@@ -237,6 +237,23 @@ def test_survival_runner_applies_original_capture_bootstrap_event() -> None:
     assert result.score_xp == 321
 
 
+def test_survival_runner_does_not_stop_early_on_death_for_original_capture_replay() -> None:
+    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+    replay.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
+            payload=[{"players": [{"health": -1.0}]}],
+        )
+    )
+
+    with pytest.warns(ReplayGameVersionWarning):
+        result = run_survival_replay(replay, strict_events=True)
+
+    assert result.ticks == 3
+
+
 def test_survival_runner_skips_world_dt_perk_steps_for_original_capture_dt_overrides() -> None:
     def _run(*, include_bootstrap: bool) -> float:
         header = ReplayHeader(

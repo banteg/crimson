@@ -423,7 +423,10 @@ def run_survival_replay(
             for _ in range(draws):
                 world.state.rng.rand()
 
-        if not any(player.health > 0.0 for player in world.players):
+        # Original captures keep emitting checkpoints during the death -> game-over
+        # transition while all players can have `health <= 0`. Keep simulating those
+        # ticks so verification can compare the full capture timeline.
+        if (not bool(original_capture_replay)) and (not any(player.health > 0.0 for player in world.players)):
             tick_index += 1
             break
     else:
