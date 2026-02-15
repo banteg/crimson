@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import random
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Protocol
 
 import pyray as rl
@@ -22,6 +23,7 @@ from ..game_world import GameWorld
 from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..persistence.highscores import HighScoreRecord
 from ..perks import PerkId
+from ..sim.sessions import DeterministicSessionTick
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
 
@@ -31,6 +33,23 @@ if TYPE_CHECKING:
 
 class _ScreenFade(Protocol):
     screen_fade_alpha: float
+
+
+class _DeterministicSession(Protocol):
+    detail_preset: int
+    fx_toggle: int
+    game_tune_started: bool
+
+    def step_tick(
+        self,
+        *,
+        dt_frame: float,
+        inputs: list[PlayerInput] | None,
+    ) -> DeterministicSessionTick: ...
+
+
+class _ReplayRecorderLike(Protocol):
+    def record_tick(self, inputs: list[PlayerInput]) -> int: ...
 
 
 class BaseGameplayMode:
@@ -357,3 +376,42 @@ class BaseGameplayMode:
     @staticmethod
     def _clear_local_input_edges(inputs: list[PlayerInput]) -> list[PlayerInput]:
         return clear_input_edges(inputs)
+
+    def _run_deterministic_session_ticks(
+        self,
+        *,
+        ticks_to_run: int,
+        dt_tick: float,
+        input_frame: list[PlayerInput],
+        session: _DeterministicSession,
+        recorder: _ReplayRecorderLike | None,
+        on_tick: Callable[[DeterministicSessionTick, int | None], bool],
+    ) -> None:
+        if self.world.audio_router is not None:
+            self.world.audio_router.audio = self.world.audio
+            self.world.audio_router.audio_rng = self.world.audio_rng
+            self.world.audio_router.demo_mode_active = self.world.demo_mode_active
+        if self.world.ground is not None:
+            self.world._sync_ground_settings()
+            self.world.ground.process_pending()
+        session.detail_preset = self.config.detail_preset
+        session.fx_toggle = self.config.fx_toggle
+
+        for tick_offset in range(int(ticks_to_run)):
+            inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
+            if recorder is not None:
+                tick_index: int | None = recorder.record_tick(inputs)
+            else:
+                tick_index = None
+            tick = session.step_tick(
+                dt_frame=float(dt_tick),
+                inputs=inputs,
+            )
+            self.world.apply_step_result(
+                tick.step,
+                game_tune_started=bool(session.game_tune_started),
+                apply_audio=True,
+                update_camera=True,
+            )
+            if on_tick(tick, tick_index):
+                break
