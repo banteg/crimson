@@ -256,10 +256,12 @@ class LanRuntime:
                 stall_ms = 0
                 if waiting_for > 0:
                     stall_ms = max(0, int(now_ms) - int(lockstep.last_progress_ms))
+                target_lead = int(self.host_capture_tick) + int(delay_ticks) - int(lockstep.next_emit_tick)
                 lines.append(
                     "lockstep(host): "
                     f"capture={int(self.host_capture_tick)} "
                     f"emit={int(lockstep.next_emit_tick)} "
+                    f"target_lead={int(target_lead)} "
                     f"ready_frames={len(self.host_ready_frames)} "
                     f"buffered_ticks={int(lockstep.buffered_tick_count)} "
                     f"waiting_for={int(waiting_for)} "
@@ -774,6 +776,7 @@ class LanRuntime:
             emit_tick = int(lockstep.next_emit_tick) if lockstep is not None else 0
             ready_frames = int(len(self.host_ready_frames))
             buffered_ticks = int(lockstep.buffered_tick_count) if lockstep is not None else 0
+            target_lead_ticks = int(capture_tick) + int(delay_ticks) - int(emit_tick)
 
             rtts = [int(peer.link.rtt_last_ms) for peer in self.host_peers.values() if peer.link.rtt_last_ms > 0]
             rtt_min = min(rtts) if rtts else 0
@@ -791,6 +794,7 @@ class LanRuntime:
                 capture_tick=int(capture_tick),
                 emit_tick=int(emit_tick),
                 lead_ticks=int(capture_tick) - int(emit_tick),
+                target_lead_ticks=int(target_lead_ticks),
                 ready_frames=int(ready_frames),
                 buffered_ticks=int(buffered_ticks),
                 waiting_for=int(waiting_for),
