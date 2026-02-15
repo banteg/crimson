@@ -205,6 +205,14 @@ class GroundRenderer:
     def debug_stamp_log(self) -> tuple[dict[str, object], ...]:
         return tuple(self._debug_stamp_log)
 
+    def generation_pending(self) -> bool:
+        """True while a scheduled terrain generate is still pending."""
+        return bool(self._pending_generate)
+
+    def render_target_ready(self) -> bool:
+        """True when the terrain render target exists and is ready for drawing."""
+        return self.render_target is not None and bool(self._render_target_ready)
+
     def _debug_stamp(self, kind: str, **payload: object) -> None:
         if not self.debug_log_stamps:
             return

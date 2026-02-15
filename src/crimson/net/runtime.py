@@ -50,6 +50,11 @@ CLIENT_LOG_FORWARD_MAX_LINES_PER_BATCH = 50
 # Keep under common MTU to avoid fragmentation (msgpack overhead not accounted).
 CLIENT_LOG_FORWARD_MAX_CHARS_PER_BATCH = 900
 
+# `LINK_TIMEOUT_MS` is tuned for responsive LAN failure detection, but gameplay
+# view transitions can include multi-second stalls (e.g. terrain generation).
+# Use a more forgiving timeout until lockstep traffic is flowing.
+LOADING_LINK_TIMEOUT_MS = 10_000
+
 
 @dataclass(slots=True)
 class LanRuntimeConfig:
@@ -99,6 +104,7 @@ class LanRuntime:
     client_last_seen_ms: int = field(init=False, default=0)
     client_lockstep: ClientLockstepState | None = field(init=False, default=None)
     client_pause_state: PauseState | None = field(init=False, default=None)
+    _client_seen_tick_frame: bool = field(init=False, default=False)
 
     # Instrumentation (debug overlay + lan debug logs).
     _metrics_last_log_ms: int = field(init=False, default=0)
@@ -159,6 +165,7 @@ class LanRuntime:
         self._client_log_forward_dropped = 0
         self._client_log_forward_enabled = False
         self._host_remote_log_paths.clear()
+        self._client_seen_tick_frame = False
         lan_debug_log(
             "net_open",
             role=str(self.cfg.role),
@@ -256,6 +263,7 @@ class LanRuntime:
                 set_lan_debug_forwarder(None)
             self._client_log_forward_enabled = False
             self._host_remote_log_paths.clear()
+            self._client_seen_tick_frame = False
             self.started = False
             self.error = ""
             lan_debug_log("net_close", role=str(self.cfg.role))
@@ -636,12 +644,21 @@ class LanRuntime:
                 self._handle_host_message(addr, message, now_ms=int(now_ms))
 
         # Drop timed-out peers.
+        timeout_ms = int(LINK_TIMEOUT_MS)
+        if bool(lobby.started) and (not bool(self.host_remote_inputs_ready())):
+            timeout_ms = int(LOADING_LINK_TIMEOUT_MS)
         for addr, peer in list(self.host_peers.items()):
-            if (int(now_ms) - int(peer.last_seen_ms)) < int(LINK_TIMEOUT_MS):
+            if (int(now_ms) - int(peer.last_seen_ms)) < int(timeout_ms):
                 continue
             self.host_peers.pop(addr, None)
             lobby.peers_by_addr.pop(addr, None)
-            lan_debug_log("net_timeout", role="host", addr=f"{addr[0]}:{addr[1]}")
+            lan_debug_log(
+                "net_timeout",
+                role="host",
+                addr=f"{addr[0]}:{addr[1]}",
+                timeout_ms=int(timeout_ms),
+                started=bool(lobby.started),
+            )
 
         # Broadcast lobby state periodically.
         if (not lobby.started) and (int(now_ms) - int(self.host_last_broadcast_ms)) >= 250:
@@ -874,10 +891,20 @@ class LanRuntime:
             for message in messages:
                 self._handle_client_message(message, now_ms=int(now_ms))
 
-        if (int(now_ms) - int(self.client_last_seen_ms)) >= int(LINK_TIMEOUT_MS):
+        timeout_ms = int(LINK_TIMEOUT_MS)
+        if bool(self.started) and (not bool(self._client_seen_tick_frame)):
+            timeout_ms = int(LOADING_LINK_TIMEOUT_MS)
+        if (int(now_ms) - int(self.client_last_seen_ms)) >= int(timeout_ms):
             if not self.error:
                 self.error = "timeout"
-                lan_debug_log("net_timeout", role="join", addr=f"{host[0]}:{host[1]}")
+                lan_debug_log(
+                    "net_timeout",
+                    role="join",
+                    addr=f"{host[0]}:{host[1]}",
+                    timeout_ms=int(timeout_ms),
+                    started=bool(self.started),
+                    seen_tick_frame=bool(self._client_seen_tick_frame),
+                )
 
         self._client_flush_forwarded_logs(now_ms=int(now_ms))
 
@@ -1020,6 +1047,7 @@ class LanRuntime:
             self._client_init_lockstep(message)
             return
         if isinstance(message, TickFrame):
+            self._client_seen_tick_frame = True
             lockstep = self.client_lockstep
             if lockstep is None:
                 return
@@ -1224,6 +1252,7 @@ class LanRuntime:
             input_delay_ticks=int(self.cfg.input_delay_ticks),
         )
         self.client_pause_state = None
+        self._client_seen_tick_frame = False
 
 
 __all__ = ["LanRuntime", "LanRuntimeConfig"]

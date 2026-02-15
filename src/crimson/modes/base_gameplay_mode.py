@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import random
+import time
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Protocol
 
@@ -143,6 +144,9 @@ class BaseGameplayMode:
         self._lan_connected_players = 1
         self._lan_waiting_for_players = False
         self._lan_trace_last_ms = -1000.0
+        self._lan_terrain_pending_last = False
+        self._lan_terrain_pending_since_ms = 0
+        self._lan_initial_terrain_ready = False
 
     def bind_lan_runtime(self, runtime: LanRuntime | None) -> None:
         self._lan_runtime = runtime
@@ -319,6 +323,59 @@ class BaseGameplayMode:
         if not bool(self._lan_waiting_for_players):
             return False
         return int(self._lan_connected_players) < int(self._lan_expected_players)
+
+    def _lan_terrain_generation_pending(self) -> bool:
+        if not bool(self._lan_enabled):
+            return False
+        if bool(self._lan_initial_terrain_ready):
+            return False
+        ground = getattr(self.world, "ground", None)
+        if ground is None:
+            return False
+        pending_fn = getattr(ground, "generation_pending", None)
+        if not callable(pending_fn):
+            return False
+        return bool(pending_fn())
+
+    def _trace_lan_terrain_generation(self) -> None:
+        if not bool(self._lan_enabled):
+            self._lan_terrain_pending_last = False
+            self._lan_initial_terrain_ready = False
+            return
+        ground = getattr(self.world, "ground", None)
+        if ground is None:
+            self._lan_terrain_pending_last = False
+            self._lan_initial_terrain_ready = True
+            return
+
+        pending = bool(self._lan_terrain_generation_pending())
+        now_ms = int(time.monotonic() * 1000.0)
+        if pending and (not bool(self._lan_terrain_pending_last)):
+            self._lan_terrain_pending_since_ms = int(now_ms)
+            lan_debug_log(
+                "lan_terrain_generate_begin",
+                mode=self.__class__.__name__,
+                role=str(self._lan_role),
+                slot=int(self._lan_local_slot_index),
+            )
+        if (not pending) and bool(self._lan_terrain_pending_last):
+            duration_ms = max(0, int(now_ms) - int(self._lan_terrain_pending_since_ms))
+            rt_ready = False
+            rt_ready_fn = getattr(ground, "render_target_ready", None)
+            if callable(rt_ready_fn):
+                rt_ready = bool(rt_ready_fn())
+            lan_debug_log(
+                "lan_terrain_generate_done",
+                mode=self.__class__.__name__,
+                role=str(self._lan_role),
+                slot=int(self._lan_local_slot_index),
+                duration_ms=int(duration_ms),
+                render_target_ready=bool(rt_ready),
+                texture_failed=bool(getattr(ground, "texture_failed", False)),
+            )
+        self._lan_terrain_pending_last = bool(pending)
+        if not pending:
+            self._lan_initial_terrain_ready = True
 
     def _update_lan_wait_gate_debug_override(self) -> None:
         if not self._lan_wait_gate_active():
@@ -555,6 +612,9 @@ class BaseGameplayMode:
 
         self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
         self._cursor_pulse_time = 0.0
+        self._lan_terrain_pending_last = False
+        self._lan_terrain_pending_since_ms = 0
+        self._lan_initial_terrain_ready = False
 
     def close(self) -> None:
         self._game_over_ui.close()

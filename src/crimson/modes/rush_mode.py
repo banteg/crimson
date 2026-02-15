@@ -395,13 +395,6 @@ class RushMode(BaseGameplayMode):
 
         runtime.update()
         role = str(self._lan_role)
-        if role == "host" and (not bool(runtime.host_remote_inputs_ready())):
-            return
-
-        if bool(self._paused):
-            self._sim_clock.reset()
-            return
-
         if self.world.audio_router is not None:
             self.world.audio_router.audio = self.world.audio
             self.world.audio_router.audio_rng = self.world.audio_rng
@@ -409,6 +402,17 @@ class RushMode(BaseGameplayMode):
         if self.world.ground is not None:
             self.world._sync_ground_settings()
             self.world.ground.process_pending()
+        self._trace_lan_terrain_generation()
+        if bool(self._lan_terrain_generation_pending()):
+            self._lan_capture_clock.reset()
+            return
+
+        if role == "host" and (not bool(runtime.host_remote_inputs_ready())):
+            return
+
+        if bool(self._paused):
+            self._sim_clock.reset()
+            return
         session.detail_preset = self.config.detail_preset
         session.fx_toggle = self.config.fx_toggle
 
