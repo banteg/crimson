@@ -201,6 +201,14 @@ class BaseGameplayMode:
     def _hud_small_indicators(self) -> bool:
         return self._cvar_float("cv_uiSmallIndicators", 0.0) != 0.0
 
+    def _lan_player_rings_enabled(self) -> bool:
+        if not bool(self._lan_enabled):
+            return False
+        return self._cvar_float("cv_lanPlayerRings", 0.0) != 0.0
+
+    def _sync_lan_visual_flags(self) -> None:
+        self.world.lan_player_rings_enabled = self._lan_player_rings_enabled()
+
     def _config_game_mode_id(self) -> int:
         return self.config.game_mode
 
@@ -341,12 +349,14 @@ class BaseGameplayMode:
             and int(self._lan_connected_players) == int(connected_players)
             and bool(self._lan_waiting_for_players) == bool(waiting_for_players)
         ):
+            self._sync_lan_visual_flags()
             return
         self._lan_enabled = bool(enabled)
         self._lan_role = role
         self._lan_expected_players = int(expected_players)
         self._lan_connected_players = int(connected_players)
         self._lan_waiting_for_players = bool(waiting_for_players)
+        self._sync_lan_visual_flags()
         self._lan_trace_last_ms = -1000.0
         if bool(prev_enabled) != bool(self._lan_enabled):
             self._refresh_effective_status(reset_lan_status=True)
@@ -358,6 +368,7 @@ class BaseGameplayMode:
             expected_players=int(self._lan_expected_players),
             connected_players=int(self._lan_connected_players),
             waiting_for_players=bool(self._lan_waiting_for_players),
+            player_rings=bool(self.world.lan_player_rings_enabled),
         )
 
     def _lan_wait_gate_active(self) -> bool:

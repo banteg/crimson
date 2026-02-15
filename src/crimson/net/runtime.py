@@ -62,8 +62,16 @@ CLIENT_LOG_FORWARD_MAX_CHARS_PER_BATCH = 900
 LOADING_LINK_TIMEOUT_MS = 10_000
 KEEPALIVE_INTERVAL_MS = 250
 
+# During intentional gameplay pauses (e.g. perk selection) peers can stop
+# producing fresh inputs for longer than the normal 1s failure timeout.
+PAUSED_LINK_TIMEOUT_MS = 60_000
+
 # Bound socket drain work per update to avoid frame-time spikes under burst traffic.
 MAX_RECV_PACKETS_PER_UPDATE = 512
+
+# When gameplay is paused and no new inputs are generated, periodically send a
+# tiny no-op batch so ACK progression and timeout tracking stay alive.
+IDLE_HEARTBEAT_MS = 250
 
 
 @dataclass(slots=True)
@@ -113,6 +121,7 @@ class LanRuntime:
     client_host_addr: PeerAddr | None = field(init=False, default=None)
     client_last_hello_ms: int = field(init=False, default=0)
     client_last_seen_ms: int = field(init=False, default=0)
+    _client_last_send_ms: int = field(init=False, default=0)
     client_lockstep: ClientLockstepState | None = field(init=False, default=None)
     client_pause_state: PauseState | None = field(init=False, default=None)
     _client_seen_tick_frame: bool = field(init=False, default=False)
@@ -237,6 +246,7 @@ class LanRuntime:
             self.client_lobby = ClientLobby(build_id=str(self.build_id), hello=hello)
             self.client_last_hello_ms = 0
             self.client_last_seen_ms = _now_ms()
+            self._client_last_send_ms = 0
 
     def close(self) -> None:
         try:
@@ -252,6 +262,7 @@ class LanRuntime:
             self.client_host_addr = None
             self.client_last_hello_ms = 0
             self.client_last_seen_ms = 0
+            self._client_last_send_ms = 0
             self.host_lockstep = None
             self.host_capture_tick = 0
             self.host_ready_frames.clear()
@@ -309,7 +320,7 @@ class LanRuntime:
         return int(self.transport.bound_port)
 
     def debug_overlay_lines(self) -> list[str]:
-        """Return short debug HUD lines for in-game overlays (guarded by --debug)."""
+        """Return compact LAN debug HUD lines for in-game overlays."""
         lines: list[str] = []
         role = str(self.cfg.role)
         now_ms = _now_ms()
@@ -330,84 +341,84 @@ class LanRuntime:
             )
 
         if role == "host":
-            lines.append(
-                "net(host): "
-                f"bind={self.cfg.bind_host}:{self.bound_port} "
-                f"peers={len(self.host_peers)}/{max(0, int(self.cfg.player_count) - 1)} "
-                f"started={int(self.started)}"
-            )
+            peer_total = max(0, int(self.cfg.player_count) - 1)
             lockstep = self.host_lockstep
+            emit_tick = 0
+            lead_ticks = 0
+            waiting_for = 0
+            stall_ms = 0
             if lockstep is not None:
+                emit_tick = int(lockstep.next_emit_tick)
+                lead_ticks = int(self.host_capture_tick) - int(emit_tick)
                 waiting_for = int(lockstep.waiting_for_inputs())
-                stall_ms = 0
                 if waiting_for > 0:
                     stall_ms = max(0, int(now_ms) - int(lockstep.last_progress_ms))
-                target_lead = int(self.host_capture_tick) + int(delay_ticks) - int(lockstep.next_emit_tick)
-                lines.append(
-                    "lockstep(host): "
-                    f"capture={int(self.host_capture_tick)} "
-                    f"emit={int(lockstep.next_emit_tick)} "
-                    f"target_lead={int(target_lead)} "
-                    f"ready_frames={len(self.host_ready_frames)} "
-                    f"buffered_ticks={int(lockstep.buffered_tick_count)} "
-                    f"waiting_for={int(waiting_for)} "
-                    f"paused={int(lockstep.paused)} "
-                    f"stall_ms={int(stall_ms)}"
-                )
-                rtts = [int(peer.link.rtt_last_ms) for peer in self.host_peers.values() if peer.link.rtt_last_ms > 0]
-                rtt_label = "?"
-                if rtts:
-                    rtt_label = f"{min(rtts)}..{max(rtts)}"
-                pending_max = max((int(peer.link.pending_count) for peer in self.host_peers.values()), default=0)
-                resends_total = sum(int(peer.link.resend_count) for peer in self.host_peers.values())
-                input_ms = int(self._host_local_input_latency_ms)
-                input_ewma_ms = int(self._host_local_input_latency_ewma_ms)
-                lines.append(
-                    "lat(host): "
-                    f"delay={delay_ticks}t({delay_ms}ms) "
-                    f"input_ms={input_ms}/{input_ewma_ms} "
-                    f"rtt_ms={rtt_label} "
-                    f"pending={pending_max} "
-                    f"resends={resends_total}"
-                )
+            rtts = [int(peer.link.rtt_last_ms) for peer in self.host_peers.values() if peer.link.rtt_last_ms > 0]
+            rtt_label = "?"
+            if rtts:
+                rtt_label = f"{min(rtts)}..{max(rtts)}"
+            pending_max = max((int(peer.link.pending_count) for peer in self.host_peers.values()), default=0)
+            lines.append(
+                "net(host): "
+                f"peers={len(self.host_peers)}/{int(peer_total)} "
+                f"emit={int(emit_tick)} "
+                f"lead={int(lead_ticks)} "
+                f"wait={int(waiting_for)} "
+                f"stall={int(stall_ms)}ms"
+            )
+            lines.append(
+                "link(host): "
+                f"delay={delay_ticks}t({delay_ms}ms) "
+                f"rtt={rtt_label}ms "
+                f"pending={int(pending_max)}"
+            )
             return lines
 
         lobby = self.client_lobby
         host = self.client_host_addr
-        host_label = f"{host[0]}:{host[1]}" if host is not None else "?"
+        host_label = f"{host[0]}:{host[1]}" if host is not None else "?:?"
         joined = bool(lobby.joined) if lobby is not None else False
         started = bool(lobby.started) if lobby is not None else False
         slot = int(lobby.slot_index) if lobby is not None else -1
-        lines.append(
-            "net(join): "
-            f"host={host_label} local_port={self.bound_port} slot={slot} joined={int(joined)} started={int(started)}"
-        )
 
         lockstep = self.client_lockstep
+        consume_tick = 0
+        buffered_frames = 0
+        stall_ms = 0
+        paused = 0
         if lockstep is not None:
-            stall_ms = 0
+            consume_tick = int(lockstep.next_consume_tick)
+            buffered_frames = int(lockstep.buffered_frame_count)
+            paused = int(lockstep.paused)
             if int(lockstep.buffered_frame_count) <= 0:
                 stall_ms = max(0, int(now_ms) - int(lockstep.last_progress_ms))
-            lines.append(
-                "lockstep(join): "
-                f"capture={int(lockstep.capture_tick)} "
-                f"consume={int(lockstep.next_consume_tick)} "
-                f"buffered_frames={int(lockstep.buffered_frame_count)} "
-                f"paused={int(lockstep.paused)} "
-                f"stall_ms={int(stall_ms)}"
-            )
+
         link = self.client_link
+        rtt_last = 0
+        rtt_ewma = 0
+        pending = 0
         if link is not None:
-            input_ms = int(self._client_local_input_latency_ms)
-            input_ewma_ms = int(self._client_local_input_latency_ewma_ms)
-            lines.append(
-                "lat(join): "
-                f"delay={delay_ticks}t({delay_ms}ms) "
-                f"input_ms={input_ms}/{input_ewma_ms} "
-                f"rtt_ms={int(link.rtt_last_ms)}/{int(link.rtt_ewma_ms)} "
-                f"pending={int(link.pending_count)} "
-                f"resends={int(link.resend_count)}"
-            )
+            rtt_last = int(link.rtt_last_ms)
+            rtt_ewma = int(link.rtt_ewma_ms)
+            pending = int(link.pending_count)
+
+        lines.append(
+            "net(join): "
+            f"host={host_label} "
+            f"slot={int(slot)} "
+            f"joined={int(joined)} "
+            f"started={int(started)} "
+            f"consume={int(consume_tick)} "
+            f"buf={int(buffered_frames)} "
+            f"stall={int(stall_ms)}ms "
+            f"pause={int(paused)}"
+        )
+        lines.append(
+            "link(join): "
+            f"delay={delay_ticks}t({delay_ms}ms) "
+            f"rtt={int(rtt_last)}/{int(rtt_ewma)}ms "
+            f"pending={int(pending)}"
+        )
         pause = self.client_pause_state
         if pause is not None and bool(pause.paused):
             lines.append(f"pause: {str(pause.reason or '')}")
@@ -743,6 +754,9 @@ class LanRuntime:
         timeout_ms = int(LINK_TIMEOUT_MS)
         if bool(lobby.started) and (not bool(self.host_remote_inputs_ready())):
             timeout_ms = int(LOADING_LINK_TIMEOUT_MS)
+        lockstep = self.host_lockstep
+        if bool(lobby.started) and lockstep is not None and bool(lockstep.paused):
+            timeout_ms = max(int(timeout_ms), int(PAUSED_LINK_TIMEOUT_MS))
         for addr, peer in list(self.host_peers.items()):
             if (int(now_ms) - int(peer.last_seen_ms)) < int(timeout_ms):
                 continue
@@ -1115,6 +1129,14 @@ class LanRuntime:
         timeout_ms = int(LINK_TIMEOUT_MS)
         if bool(self.started) and (not bool(self._client_seen_tick_frame)):
             timeout_ms = int(LOADING_LINK_TIMEOUT_MS)
+        pause_state = self.client_pause_state
+        if (
+            bool(self.started)
+            and pause_state is not None
+            and bool(getattr(pause_state, "paused", False))
+            and str(getattr(pause_state, "reason", "") or "") == "waiting_input"
+        ):
+            timeout_ms = max(int(timeout_ms), int(PAUSED_LINK_TIMEOUT_MS))
         if (int(now_ms) - int(self.client_last_seen_ms)) >= int(timeout_ms):
             if not self.error:
                 self._set_client_error("timeout")
@@ -1136,6 +1158,7 @@ class LanRuntime:
             except OSError:
                 continue
             self._last_send_ms = int(now_ms)
+            self._client_last_send_ms = int(now_ms)
 
         # Prevent timeouts during stalls/pauses by sending best-effort keepalives.
         if bool(self.started):
@@ -1147,6 +1170,8 @@ class LanRuntime:
                 if self.client_lockstep is not None:
                     tick_index = int(getattr(self.client_lockstep, "next_consume_tick", 0) or 0)
                 self._client_send(KeepAlive(tick_index=int(tick_index)), reliable=False, now_ms=int(now_ms))
+
+        self._client_send_idle_heartbeat(now_ms=int(now_ms))
 
     def _handle_client_message(self, message: NetMessage, *, now_ms: int) -> None:
         lobby = self.client_lobby
@@ -1417,6 +1442,7 @@ class LanRuntime:
         except OSError:
             return
         self._last_send_ms = int(now_ms)
+        self._client_last_send_ms = int(now_ms)
         if isinstance(message, KeepAlive):
             return
         if isinstance(message, DebugLogBatch):
@@ -1443,6 +1469,30 @@ class LanRuntime:
             return
         kind = getattr(message, "kind", type(message).__name__)
         lan_debug_log("net_send", role="join", kind=str(kind), reliable=bool(reliable))
+
+    def _client_send_idle_heartbeat(self, *, now_ms: int) -> None:
+        if not bool(self.started):
+            return
+        pause_state = self.client_pause_state
+        if (
+            pause_state is None
+            or (not bool(getattr(pause_state, "paused", False)))
+            or str(getattr(pause_state, "reason", "") or "") != "waiting_input"
+        ):
+            return
+        if (int(now_ms) - int(self._client_last_send_ms)) < int(IDLE_HEARTBEAT_MS):
+            return
+        lobby = self.client_lobby
+        link = self.client_link
+        if lobby is None or link is None:
+            return
+        if int(link.pending_count) > 0:
+            return
+        self._client_send(
+            InputBatch(slot_index=int(lobby.slot_index), samples=[]),
+            reliable=False,
+            now_ms=int(now_ms),
+        )
 
     def _trace_metrics(self, *, now_ms: int) -> None:
         if (int(now_ms) - int(self._metrics_last_log_ms)) < 1000:

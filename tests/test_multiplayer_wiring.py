@@ -10,6 +10,7 @@ from crimson.game_world import GameWorld
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
+from grim.console import create_console, register_core_cvars
 from grim.config import ensure_crimson_cfg
 from grim.geom import Vec2
 from grim.view import ViewContext
@@ -209,3 +210,42 @@ def test_rush_mode_debug_f10_releases_lan_wait_gate(monkeypatch, tmp_path: Path)
 
     assert clock.advance_calls == 1
     assert mode._lan_wait_gate_active() is False
+
+
+def test_lan_player_rings_follow_lan_state_and_cvar(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    assets_dir = repo_root / "artifacts" / "assets"
+
+    cfg = ensure_crimson_cfg(tmp_path)
+    console = create_console(tmp_path, assets_dir=assets_dir)
+    register_core_cvars(console, width=1024, height=768)
+    ctx = ViewContext(assets_dir=assets_dir)
+    mode = RushMode(ctx, config=cfg, console=console)
+
+    mode.set_lan_runtime(
+        enabled=True,
+        role="host",
+        expected_players=3,
+        connected_players=1,
+        waiting_for_players=True,
+    )
+    assert mode.world.lan_player_rings_enabled is False
+
+    console.exec_line("cv_lanPlayerRings 1")
+    mode.set_lan_runtime(
+        enabled=True,
+        role="host",
+        expected_players=3,
+        connected_players=1,
+        waiting_for_players=True,
+    )
+    assert mode.world.lan_player_rings_enabled is True
+
+    mode.set_lan_runtime(
+        enabled=False,
+        role="",
+        expected_players=1,
+        connected_players=1,
+        waiting_for_players=False,
+    )
+    assert mode.world.lan_player_rings_enabled is False
