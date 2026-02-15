@@ -465,11 +465,37 @@ def _creature_interaction_plaguebearer_contact_flag(ctx: _CreatureInteractionCtx
             creature.plague_infected = True
 
 
+def _creature_interaction_contact_kill_small(ctx: _CreatureInteractionCtx) -> None:
+    """Kill small creatures that make contact, matching native `creature_update_all`.
+
+    Native logic (see decompile around 0x004276d6) sets `health = 0.0` and
+    decrements hitbox_size by frame_dt whenever:
+    - distance to the target player is < 30.0, and
+    - creature `size` is <= 30.0.
+
+    This path does not call `creature_handle_death`, so it intentionally skips XP
+    awards + bonus spawns. The corpse staging still increments kill_count later.
+    """
+
+    creature = ctx.creature
+    if creature.hitbox_size != CREATURE_HITBOX_ALIVE:
+        return
+    if ctx.contact_dist_sq >= 30.0 * 30.0:
+        return
+    if float(creature.size) > 30.0:
+        return
+
+    creature.hp = 0.0
+    creature.hitbox_size = f32(float(creature.hitbox_size) - float(ctx.dt))
+    ctx.skip_creature = True
+
+
 _CREATURE_INTERACTION_STEPS: tuple[_CreatureInteractionStep, ...] = (
     _creature_interaction_plaguebearer_spread,
     _creature_interaction_energizer_eat,
     _creature_interaction_contact_damage,
     _creature_interaction_plaguebearer_contact_flag,
+    _creature_interaction_contact_kill_small,
 )
 
 
