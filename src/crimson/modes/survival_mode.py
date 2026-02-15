@@ -46,7 +46,7 @@ from ..replay.checkpoints import (
     resolve_checkpoint_sample_rate,
 )
 from ..sim.clock import FixedStepClock
-from ..sim.sessions import SurvivalDeterministicSession
+from ..sim.sessions import DeterministicSessionTick, SurvivalDeterministicSession
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
@@ -488,33 +488,8 @@ class SurvivalMode(BaseGameplayMode):
         session = self._sim_session
         if session is None:
             return
-        if self.world.audio_router is not None:
-            self.world.audio_router.audio = self.world.audio
-            self.world.audio_router.audio_rng = self.world.audio_rng
-            self.world.audio_router.demo_mode_active = self.world.demo_mode_active
-        if self.world.ground is not None:
-            self.world._sync_ground_settings()
-            self.world.ground.process_pending()
-        session.detail_preset = self.config.detail_preset
-        session.fx_toggle = self.config.fx_toggle
 
-        for tick_offset in range(int(ticks_to_run)):
-            inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
-            recorder = self._replay_recorder
-            if recorder is not None:
-                tick_index = recorder.record_tick(inputs)
-            else:
-                tick_index = None
-            tick = session.step_tick(
-                dt_frame=dt_tick,
-                inputs=inputs,
-            )
-            self.world.apply_step_result(
-                tick.step,
-                game_tune_started=bool(session.game_tune_started),
-                apply_audio=True,
-                update_camera=True,
-            )
+        def _on_tick(tick: DeterministicSessionTick, tick_index: int | None) -> bool:
             self._survival.elapsed_ms = float(session.elapsed_ms)
             self._survival.stage = int(session.stage)
             self._survival.spawn_cooldown = float(session.spawn_cooldown_ms)
@@ -531,7 +506,17 @@ class SurvivalMode(BaseGameplayMode):
 
             if self._death_transition_ready():
                 self._enter_game_over()
-                break
+                return True
+            return False
+
+        self._run_deterministic_session_ticks(
+            ticks_to_run=int(ticks_to_run),
+            dt_tick=dt_tick,
+            input_frame=input_frame,
+            session=session,
+            recorder=self._replay_recorder,
+            on_tick=_on_tick,
+        )
 
     def _draw_perk_prompt(self) -> None:
         if self._game_over_active:
