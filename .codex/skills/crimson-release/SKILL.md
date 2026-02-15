@@ -1,13 +1,13 @@
 ---
 name: crimson-release
-description: Run the Crimson release/dev bump checklist (ruff, pytest, uv version bump, uv lock), then create a conventional-commit release commit, tag it, and push. Use when cutting a release/tag for this repo or doing the post-release dev bump.
+description: Run the Crimson release checklist (just check, uv version bump, uv lock), then create a conventional-commit release commit, tag it, and push. Default bump is minor (use dev bump when needed).
 ---
 
 # Crimson Release
 
 ## Goal
 
-Produce a clean release/dev-bump commit + tag for this repo by running the checklist below in order.
+Produce a clean release commit + tag for this repo by running the checklist below in order.
 
 ## Workflow
 
@@ -17,31 +17,29 @@ Produce a clean release/dev-bump commit + tag for this repo by running the check
 - Ensure the branch is correct (usually `master`).
 - Ask for confirmation before any of: `git commit`, `git tag`, `git push`.
 
-### 0) Lint
+### 0) Checks
 
-Run: `ruff check src tests`
+Run: `just check`
 
-### 1) Tests
+### 1) Bump version (default: minor)
 
-Run: `uv run pytest`
+Run: `uv version --bump minor`
 
-### 2) Bump dev version
-
-Run: `uv version --bump dev`
+If you need a dev-only bump instead (e.g., `0.1.0.dev29 -> 0.1.0.dev30`), run: `uv version --bump dev`
 
 Capture the resulting version string (use `uv version` if needed).
 
-### 3) Refresh lockfile
+### 2) Refresh lockfile
 
 Run: `uv lock`
 
-### 4) Commit
+### 3) Commit
 
 - Verify the diff is expected: `git diff --stat`.
 - Stage: `git add -A`.
-- Commit using conventional commits (example): `git commit -m "chore(release): bump dev version to <version>"`.
+- Commit using conventional commits (example): `git commit -m "chore(release): bump version to <version>"`.
 
-### 5) Tag
+### 4) Tag
 
 - Prefer an annotated tag.
 - Derive the tag from the version (common pattern): `v<version>`.
@@ -53,7 +51,7 @@ Example:
 git tag -a "v<version>" -m "v<version>"
 ```
 
-### 6) Push
+### 5) Push
 
 - Push branch and tag.
 - Prefer: `git push --follow-tags`.
