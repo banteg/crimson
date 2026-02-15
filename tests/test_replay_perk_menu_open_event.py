@@ -10,8 +10,8 @@ from crimson.original.capture import (
     CAPTURE_PERK_APPLY_EVENT_KIND,
     CAPTURE_PERK_PENDING_EVENT_KIND,
 )
-from crimson.sim.runners.common import reset_players
-from crimson.sim.runners.survival import _apply_tick_events
+from crimson.sim.driver.replay_events import apply_replay_tick_events
+from crimson.sim.driver.setup import reset_players
 from crimson.sim.world_state import WorldState
 
 
@@ -32,11 +32,12 @@ def test_perk_menu_open_event_consumes_rng_for_choices() -> None:
     perks_rebuild_available(state)
 
     before = int(state.rng.state)
-    _apply_tick_events(
+    apply_replay_tick_events(
         [PerkMenuOpenEvent(tick_index=0, player_index=0)],
         tick_index=0,
         dt_frame=1.0 / 60.0,
         world=world,
+        game_mode_id=int(GameMode.SURVIVAL),
         strict_events=True,
     )
     assert int(state.rng.state) != before
@@ -62,21 +63,23 @@ def test_perk_pick_event_refreshes_choices_for_ui_transition_parity() -> None:
     state.perk_selection.pending_count = 1
     state.perk_selection.choices_dirty = True
 
-    _apply_tick_events(
+    apply_replay_tick_events(
         [PerkMenuOpenEvent(tick_index=0, player_index=0)],
         tick_index=0,
         dt_frame=1.0 / 60.0,
         world=world,
+        game_mode_id=int(GameMode.SURVIVAL),
         strict_events=True,
     )
     choices_before_pick = list(state.perk_selection.choices)
     assert choices_before_pick
 
-    _apply_tick_events(
+    apply_replay_tick_events(
         [PerkPickEvent(tick_index=1, player_index=0, choice_index=0)],
         tick_index=1,
         dt_frame=1.0 / 60.0,
         world=world,
+        game_mode_id=int(GameMode.SURVIVAL),
         strict_events=True,
     )
 
@@ -101,7 +104,7 @@ def test_original_capture_pending_event_sets_pending_without_pick_side_effects()
     state.perk_selection.choices_dirty = False
     before_rng = int(state.rng.state)
 
-    _apply_tick_events(
+    apply_replay_tick_events(
         [
             UnknownEvent(
                 tick_index=5,
@@ -112,6 +115,7 @@ def test_original_capture_pending_event_sets_pending_without_pick_side_effects()
         tick_index=5,
         dt_frame=1.0 / 60.0,
         world=world,
+        game_mode_id=int(GameMode.SURVIVAL),
         strict_events=True,
     )
 
@@ -135,7 +139,7 @@ def test_original_capture_perk_apply_event_applies_perk_without_rng_for_non_rand
     state.perk_selection.pending_count = 1
     before_rng = int(state.rng.state)
 
-    _apply_tick_events(
+    apply_replay_tick_events(
         [
             UnknownEvent(
                 tick_index=7,
@@ -146,6 +150,7 @@ def test_original_capture_perk_apply_event_applies_perk_without_rng_for_non_rand
         tick_index=7,
         dt_frame=1.0 / 60.0,
         world=world,
+        game_mode_id=int(GameMode.SURVIVAL),
         strict_events=True,
     )
 
@@ -169,7 +174,7 @@ def test_original_capture_outside_before_bandage_does_not_shift_rng_state() -> N
     state.rng.srand(0x1234)
     before_rng = int(state.rng.state)
 
-    _apply_tick_events(
+    apply_replay_tick_events(
         [
             UnknownEvent(
                 tick_index=9,
@@ -180,6 +185,7 @@ def test_original_capture_outside_before_bandage_does_not_shift_rng_state() -> N
         tick_index=9,
         dt_frame=1.0 / 60.0,
         world=world,
+        game_mode_id=int(GameMode.SURVIVAL),
         strict_events=True,
     )
 

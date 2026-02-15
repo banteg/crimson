@@ -4,7 +4,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass, replace
 
 from ..game_modes import GameMode
-from ..sim.runners import RunResult, run_rush_replay, run_survival_replay
+from ..sim.driver.replay_runner import run_rush_replay, run_survival_replay
+from ..sim.driver.setup import RunResult
 from ..replay.checkpoints import ReplayCheckpoint
 from .capture import (
     CaptureFile,

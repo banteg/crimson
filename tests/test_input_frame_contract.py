@@ -9,7 +9,7 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder
 from crimson.sim.input_frame import normalize_input_frame
-from crimson.sim.runners import run_survival_replay
+from crimson.sim.driver.replay_runner import run_survival_replay
 from crimson.sim.world_state import WorldState
 from crimson.effects import FxQueue, FxQueueRotated
 

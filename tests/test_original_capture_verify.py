@@ -25,7 +25,7 @@ from crimson.original.verify import _allow_capture_sample_creature_count
 from crimson.original.verify import _allow_one_tick_kills_lag
 from crimson.replay import ReplayHeader, ReplayRecorder
 from crimson.replay.checkpoints import ReplayCheckpoint
-from crimson.sim.runners import run_survival_replay
+from crimson.sim.driver.replay_runner import run_survival_replay
 
 
 def _single_tick_survival_checkpoint(*, seed: int = 0xBEEF):

@@ -1,20 +1,18 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 from dataclasses import dataclass
 import math
 from pathlib import Path
 
+from grim.geom import Vec2
+
 from ...effects import FxQueue, FxQueueRotated
-from ...weapon_runtime import (
-    most_used_weapon_id_for_player,
-    weapon_assign_player,
-)
+from ...math_parity import f32
 from ...persistence.save_status import WEAPON_USAGE_COUNT, GameStatus, default_status_data
+from ...weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
 from ...weapons import WEAPON_TABLE
-from ..step_pipeline import time_scale_reflex_boost_bonus as _time_scale_reflex_boost_bonus
 from ..state_types import GameplayState, PlayerState
+from ..step_pipeline import time_scale_reflex_boost_bonus as _time_scale_reflex_boost_bonus
 
 
 class ReplayRunnerError(ValueError):
@@ -121,3 +119,10 @@ def time_scale_reflex_boost_bonus(state: GameplayState, dt: float) -> float:
         time_scale_active=bool(state.time_scale_active),
         dt=float(dt),
     )
+
+
+def time_scale_reflex_boost_bonus_f32(state: GameplayState, dt: float) -> float:
+    """Time scale, preserving native float32 input rounding (dt_f32)."""
+    dt_f32 = f32(float(dt))
+    return time_scale_reflex_boost_bonus(state, float(dt_f32))
+

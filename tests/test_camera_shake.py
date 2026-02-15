@@ -13,7 +13,7 @@ from crimson.game_world import GameWorld
 from crimson.gameplay import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
-from crimson.sim.runners.common import build_damage_scale_by_type, build_empty_fx_queues, reset_players
+from crimson.sim.driver.setup import build_damage_scale_by_type, build_empty_fx_queues, reset_players
 from crimson.sim.sessions import RushDeterministicSession, SurvivalDeterministicSession
 from crimson.sim.world_state import WorldState
 

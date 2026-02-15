@@ -11,7 +11,8 @@ from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests import quest_by_level
 from crimson.quests.types import QuestContext
 from crimson.perks import PerkId
-from crimson.sim.runners import ReplayRunnerError, run_quest_replay, run_rush_replay, run_survival_replay
+from crimson.sim.driver.replay_runner import run_quest_replay, run_rush_replay, run_survival_replay
+from crimson.sim.driver.setup import ReplayRunnerError
 
 
 def _blank_survival_replay(*, ticks: int, seed: int = 0xBEEF, game_version: str = "0.0.0") -> tuple[ReplayHeader, ReplayRecorder]:

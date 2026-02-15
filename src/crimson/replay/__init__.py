@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .bootstrap import AppliedReplayBootstrap, ReplayBootstrapError, apply_replay_bootstrap
 from .codec import ReplayCodecError, dump_replay, dump_replay_file, load_replay, load_replay_file
+from .input_codec import pack_player_input, pack_tick_inputs, unpack_player_input, unpack_tick_inputs
 from .recorder import ReplayRecorder
 from .types import (
     FIRE_DOWN_FLAG,
@@ -19,6 +20,8 @@ from .types import (
     ReplayStatusSnapshot,
     UnknownEvent,
     pack_input_flags,
+    PackedPlayerInput,
+    PackedTickInputs,
     unpack_packed_player_input,
     unpack_input_flags,
     unpack_input_move_key_flags,
@@ -34,6 +37,8 @@ __all__ = [
     "RELOAD_PRESSED_FLAG",
     "TURN_LEFT_FLAG",
     "TURN_RIGHT_FLAG",
+    "PackedPlayerInput",
+    "PackedTickInputs",
     "PerkMenuOpenEvent",
     "PerkPickEvent",
     "Replay",
@@ -49,10 +54,14 @@ __all__ = [
     "dump_replay_file",
     "load_replay",
     "load_replay_file",
+    "pack_player_input",
     "apply_replay_bootstrap",
     "pack_input_flags",
+    "pack_tick_inputs",
+    "unpack_player_input",
     "unpack_packed_player_input",
     "unpack_input_flags",
     "unpack_input_move_key_flags",
+    "unpack_tick_inputs",
     "warn_on_game_version_mismatch",
 ]

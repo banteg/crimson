@@ -1,24 +1,18 @@
 from __future__ import annotations
 
-import struct
 from typing import Sequence
 
 from ..sim.input import PlayerInput
+from .input_codec import pack_tick_inputs
 from .types import (
-    PackedPlayerInput,
-    PackedTickInputs,
     PerkMenuOpenEvent,
     PerkPickEvent,
+    PackedTickInputs,
     Replay,
     ReplayEvent,
     ReplayHeader,
     REPLAY_FORMAT_VERSION,
-    pack_input_flags,
 )
-
-
-def _quantize_f32(value: float) -> float:
-    return struct.unpack("<f", struct.pack("<f", float(value)))[0]
 
 
 class ReplayRecorder:
@@ -49,29 +43,7 @@ class ReplayRecorder:
         if len(inputs) != player_count:
             raise ValueError(f"expected {player_count} player inputs, got {len(inputs)}")
 
-        quant = self._header.input_quantization
-        tick: PackedTickInputs = []
-        for inp in inputs:
-            mx = inp.move.x
-            my = inp.move.y
-            ax = inp.aim.x
-            ay = inp.aim.y
-            if quant == "f32":
-                mx = _quantize_f32(mx)
-                my = _quantize_f32(my)
-                ax = _quantize_f32(ax)
-                ay = _quantize_f32(ay)
-            flags = pack_input_flags(
-                fire_down=bool(inp.fire_down),
-                fire_pressed=bool(inp.fire_pressed),
-                reload_pressed=bool(inp.reload_pressed),
-                move_forward_pressed=inp.move_forward_pressed,
-                move_backward_pressed=inp.move_backward_pressed,
-                turn_left_pressed=inp.turn_left_pressed,
-                turn_right_pressed=inp.turn_right_pressed,
-            )
-            packed_input: PackedPlayerInput = [mx, my, [ax, ay], flags]
-            tick.append(packed_input)
+        tick = pack_tick_inputs(inputs, quant=self._header.input_quantization)
 
         tick_index = int(self._tick_index)
         self._inputs.append(tick)
