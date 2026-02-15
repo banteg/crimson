@@ -473,8 +473,11 @@ class HighScoresView:
             scale=scale,
         )
         if player_selected is not None:
-            self.state.config.player_count = int(player_selected) + 1
-            self._dirty = True
+            new_count = int(player_selected) + 1
+            if self.state.config.player_count != new_count:
+                self.state.config.player_count = new_count
+                self._dirty = True
+                self._reload_records()
         if consumed:
             if self._player_count_open:
                 self._game_mode_open = False

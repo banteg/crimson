@@ -77,6 +77,7 @@ def load_records(state: GameState, request: HighScoresRequest) -> list:
         hardcore=state.config.hardcore,
         quest_stage_major=int(request.quest_stage_major),
         quest_stage_minor=int(request.quest_stage_minor),
+        player_count=state.config.player_count,
     )
     try:
         records = read_highscore_table(path, game_mode_id=int(request.game_mode_id))

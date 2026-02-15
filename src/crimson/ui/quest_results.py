@@ -228,6 +228,7 @@ class QuestResultsUi:
             hardcore=hardcore,
             quest_stage_major=int(self.quest_stage_major),
             quest_stage_minor=int(self.quest_stage_minor),
+            player_count=self.config.player_count,
         )
 
         try:
