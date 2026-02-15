@@ -12,7 +12,7 @@ from grim.geom import Vec2
 from ..bonuses import BonusId
 from ..game_modes import GameMode
 from ..replay.checkpoints import (
-    FORMAT_VERSION,
+    FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
     ReplayCheckpoint,
     ReplayCheckpoints,
     ReplayDeathLedgerEntry,
@@ -25,6 +25,7 @@ from ..replay.types import (
     Replay,
     ReplayHeader,
     ReplayStatusSnapshot,
+    REPLAY_FORMAT_VERSION,
     UnknownEvent,
     WEAPON_USAGE_COUNT,
     pack_input_flags,
@@ -1216,7 +1217,7 @@ def convert_capture_to_checkpoints(capture: CaptureFile, *, replay_sha256: str =
         )
 
     return ReplayCheckpoints(
-        version=FORMAT_VERSION,
+        version=CHECKPOINTS_FORMAT_VERSION,
         replay_sha256=str(replay_sha256),
         sample_rate=_capture_sample_rate(capture),
         checkpoints=checkpoints,
@@ -1502,7 +1503,7 @@ def convert_capture_to_replay(
             previous_pending = int(pending_i)
 
     return Replay(
-        version=FORMAT_VERSION,
+        version=REPLAY_FORMAT_VERSION,
         header=ReplayHeader(
             game_mode_id=int(resolved_mode_id),
             seed=int(resolved_seed),

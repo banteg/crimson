@@ -1,0 +1,15 @@
+id: no-gameplay-rng-out-of-band
+valid:
+  - |
+    def foo(self) -> None:
+      self.state.rng.srand(0xBEEF)
+  - |
+    def foo(self) -> None:
+      terrain_seed = int(self.world.terrain_rng.randrange(0, 10_000))
+invalid:
+  - |
+    def foo(self) -> None:
+      terrain_seed = int(self.state.rng.rand() % 10_000)
+  - |
+    def foo(self) -> None:
+      do(rand=self.state.rng.rand)

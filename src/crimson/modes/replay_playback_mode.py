@@ -18,6 +18,7 @@ from ..perks.selection import perk_selection_current_choices, perk_selection_pic
 from ..replay import (
     PerkMenuOpenEvent,
     PerkPickEvent,
+    apply_replay_bootstrap,
     Replay,
     UnknownEvent,
     load_replay_file,
@@ -106,16 +107,28 @@ class ReplayPlaybackMode:
             audio=None,
             audio_rng=None,
         )
-        world.reset(seed=0xBEEF, player_count=int(replay.header.player_count))
+        seed_for_reset = int(replay.header.seed)
+        if str(replay.header.bootstrap_kind) != "none":
+            seed_for_reset = int(replay.header.bootstrap_seed)
+        world.reset(seed=int(seed_for_reset), player_count=int(replay.header.player_count))
         world.open()
         world.state.status = status_from_snapshot(
             quest_unlock_index=int(replay.header.status.quest_unlock_index),
             quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
             weapon_usage_counts=replay.header.status.weapon_usage_counts,
         )
-        # Important: `GameWorld.open()` consumes RNG for terrain generation. Treat `replay.header.seed` as the
-        # gameplay RNG state at tick 0 and set it after `open()` to keep headless verification deterministic.
-        world.state.rng.srand(int(replay.header.seed))
+        bootstrap = apply_replay_bootstrap(
+            replay.header,
+            rng=world.state.rng,
+            world_size=float(world_size),
+            strict=True,
+        )
+        if bootstrap is not None:
+            world.apply_bootstrap_terrain(
+                terrain_ids=bootstrap.terrain.terrain_ids,
+                seed=int(bootstrap.terrain.terrain_seed),
+                layers=3,
+            )
 
         self._world = world
 
@@ -126,8 +139,8 @@ class ReplayPlaybackMode:
                 damage_scale_by_type=self._damage_scale_by_type,
                 fx_queue=world.fx_queue,
                 fx_queue_rotated=world.fx_queue_rotated,
-                detail_preset=5,
-                fx_toggle=0,
+                detail_preset=int(replay.header.detail_preset),
+                fx_toggle=int(replay.header.fx_toggle),
                 game_tune_started=bool(world._game_tune_started),
                 clear_fx_queues_each_tick=False,
             )
@@ -145,8 +158,8 @@ class ReplayPlaybackMode:
                 damage_scale_by_type=self._damage_scale_by_type,
                 fx_queue=world.fx_queue,
                 fx_queue_rotated=world.fx_queue_rotated,
-                detail_preset=5,
-                fx_toggle=0,
+                detail_preset=int(replay.header.detail_preset),
+                fx_toggle=int(replay.header.fx_toggle),
                 game_tune_started=bool(world._game_tune_started),
                 clear_fx_queues_each_tick=False,
                 enforce_loadout=self._enforce_rush_loadout,

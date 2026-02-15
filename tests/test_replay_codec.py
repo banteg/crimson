@@ -53,7 +53,7 @@ def test_replay_codec_roundtrip() -> None:
     blob = dump_replay(replay)
     decoded = load_replay(blob)
 
-    assert decoded.version == 1
+    assert decoded.version == 3
     assert decoded.header == header
     assert decoded.inputs == replay.inputs
     assert decoded.events == [PerkPickEvent(tick_index=1, player_index=0, choice_index=2)]
@@ -73,7 +73,7 @@ def test_replay_codec_roundtrip_perk_menu_open_event() -> None:
 
 def test_replay_codec_validates_event_tick_index_bounds() -> None:
     replay_obj = {
-        "v": 1,
+        "v": 3,
         "header": {"game_mode_id": 1, "seed": 1, "player_count": 1},
         "inputs": [[[0.0, 0.0, [0.0, 0.0], 0]]],
         "events": [[2, "perk_menu_open", 0]],
@@ -84,7 +84,7 @@ def test_replay_codec_validates_event_tick_index_bounds() -> None:
 
 def test_replay_codec_rejects_negative_event_tick_index() -> None:
     replay_obj = {
-        "v": 1,
+        "v": 3,
         "header": {"game_mode_id": 1, "seed": 1, "player_count": 1},
         "inputs": [[[0.0, 0.0, [0.0, 0.0], 0]]],
         "events": [[-1, "perk_menu_open", 0]],

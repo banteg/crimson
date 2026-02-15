@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from grim.geom import Vec2
 
 from dataclasses import dataclass, field
@@ -14,6 +15,7 @@ from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.terrain_render import GroundRenderer
 
+from .terrain_assets import terrain_texture_by_id
 from .creatures.anim import creature_corpse_frame_for_type
 from .creatures.runtime import CreaturePool
 from .creatures.spawn import SpawnEnv
@@ -163,7 +165,9 @@ class GameWorld:
             self.players.append(player)
         self.camera = Vec2(-1.0, -1.0)
         if self.ground is not None:
-            terrain_seed = int(self.state.rng.rand() % 10_000)
+            # Terrain generation seed should be stable across headless/interactive and must not
+            # advance the authoritative gameplay RNG stream.
+            terrain_seed = int(self.state.rng.state)
             self.ground.schedule_generate(seed=terrain_seed, layers=3)
 
     def _ensure_texture_loader(self) -> TextureLoader:
@@ -205,6 +209,63 @@ class GameWorld:
         self.ground.texture_scale = self.config.texture_scale
         self.ground.screen_width = float(self.config.screen_width)
         self.ground.screen_height = float(self.config.screen_height)
+
+    def apply_bootstrap_terrain(
+        self,
+        *,
+        terrain_ids: tuple[int, int, int],
+        seed: int,
+        layers: int = 3,
+    ) -> None:
+        """Apply a deterministic terrain selection/seed without consuming gameplay RNG."""
+
+        base_id, overlay_id, detail_id = (int(terrain_ids[0]), int(terrain_ids[1]), int(terrain_ids[2]))
+        base_spec = terrain_texture_by_id(int(base_id))
+        overlay_spec = terrain_texture_by_id(int(overlay_id))
+        detail_spec = terrain_texture_by_id(int(detail_id))
+
+        def _load(spec: tuple[str, str] | None) -> rl.Texture | None:
+            if spec is None:
+                return None
+            key, rel_path = spec
+            return self._load_texture(
+                str(key),
+                cache_path=str(rel_path),
+                file_path=self._png_path_for(str(rel_path)),
+            )
+
+        base = _load(base_spec)
+        overlay = _load(overlay_spec)
+        detail = _load(detail_spec) or overlay or base
+
+        if base is None and (base_id, overlay_id, detail_id) != (0, 1, 0):
+            # Fall back to default terrain if the chosen one is unavailable.
+            base = _load(terrain_texture_by_id(0))
+            overlay = _load(terrain_texture_by_id(1))
+            detail = _load(terrain_texture_by_id(0)) or overlay or base
+            base_id, overlay_id, detail_id = (0, 1, 0)
+
+        if base is None:
+            return
+
+        if self.ground is None:
+            self.ground = GroundRenderer(
+                texture=base,
+                overlay=overlay,
+                overlay_detail=detail,
+                width=int(self.world_size),
+                height=int(self.world_size),
+                texture_scale=1.0,
+                screen_width=None,
+                screen_height=None,
+            )
+        else:
+            self.ground.texture = base
+            self.ground.overlay = overlay
+            self.ground.overlay_detail = detail
+
+        self._sync_ground_settings()
+        self.ground.schedule_generate(seed=int(seed), layers=int(layers))
 
     def set_terrain(
         self,
@@ -253,7 +314,7 @@ class GameWorld:
             self.ground.overlay = overlay
             self.ground.overlay_detail = detail
         self._sync_ground_settings()
-        terrain_seed = int(self.state.rng.rand() % 10_000)
+        terrain_seed = int(self.state.rng.state)
         self.ground.schedule_generate(seed=terrain_seed, layers=3)
 
     def open(self) -> None:
@@ -289,7 +350,7 @@ class GameWorld:
                 self.ground.overlay = overlay
                 self.ground.overlay_detail = detail
             self._sync_ground_settings()
-            terrain_seed = int(self.state.rng.rand() % 10_000)
+            terrain_seed = int(self.state.rng.state)
             self.ground.schedule_generate(seed=terrain_seed, layers=3)
 
         for asset in sorted(set(CREATURE_ASSET.values())):
@@ -472,7 +533,7 @@ class GameWorld:
         if update_camera:
             self.update_camera(step.dt_sim)
 
-    def _queue_projectile_decals(self, hits: list[ProjectileHit]) -> None:
+    def _queue_projectile_decals(self, hits: list[ProjectileHit], *, rand: Callable[[], int]) -> None:
         fx_toggle = 0
         detail_preset = 5
         if self.config is not None:
@@ -483,7 +544,7 @@ class GameWorld:
             players=self.players,
             fx_queue=self.fx_queue,
             hits=hits,
-            rand=self.state.rng.rand,
+            rand=rand,
             detail_preset=detail_preset,
             fx_toggle=fx_toggle,
         )

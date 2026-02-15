@@ -27,6 +27,7 @@ from crimson.original.capture import (
     load_capture,
     parse_player_int_overrides,
 )
+from crimson.replay import apply_replay_bootstrap
 from crimson.replay.types import (
     UnknownEvent,
     unpack_input_flags,
@@ -683,7 +684,12 @@ def trace_focus_tick(
         quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
         weapon_usage_counts=replay.header.status.weapon_usage_counts,
     )
-    world.state.rng.srand(int(replay.header.seed))
+    apply_replay_bootstrap(
+        replay.header,
+        rng=world.state.rng,
+        world_size=float(world_size),
+        strict=True,
+    )
 
     fx_queue, fx_queue_rotated = build_empty_fx_queues()
     session = SurvivalDeterministicSession(

@@ -131,6 +131,8 @@ class BaseGameplayMode:
         self._last_dt_ms = 0.0
         self._screen_fade: _ScreenFade | None = None
         self._local_input = LocalInputInterpreter()
+        self._terrain_regen_counter = 0
+        self._bootstrap_seed = 0
         self._lan_runtime: LanRuntime | None = None
         self._lan_local_slot_index = 0
         self._lan_seed_override: int | None = None
@@ -526,6 +528,7 @@ class BaseGameplayMode:
             seed = int(self._lan_seed_override)
         else:
             seed = random.getrandbits(32)
+        self._bootstrap_seed = int(seed) & 0xFFFFFFFF
         self.world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self.world.open()
         self._bind_world()
@@ -563,7 +566,7 @@ class BaseGameplayMode:
             record=record,
             player_name_default=self._player_name_default(),
             play_sfx=self.world.audio_router.play_sfx,
-            rand=self.state.rng.rand,
+            rand=None,
             mouse=self._ui_mouse_pos(),
         )
         if action == "play_again":
@@ -613,7 +616,9 @@ class BaseGameplayMode:
     def regenerate_terrain_for_console(self) -> None:
         if self.world.ground is None:
             return
-        terrain_seed = int(self.state.rng.rand() % 10_000)
+        # Keep this deterministic without consuming gameplay RNG.
+        self._terrain_regen_counter = (int(self._terrain_regen_counter) + 1) & 0xFFFFFFFF
+        terrain_seed = (int(self.state.rng.state) + int(self._terrain_regen_counter)) & 0xFFFFFFFF
         self.world.ground.schedule_generate(seed=terrain_seed, layers=3)
 
     def _draw_screen_fade(self) -> None:

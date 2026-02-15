@@ -3,7 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Literal, TypeAlias
 
-ReplayFormatVersion: TypeAlias = Literal[1]
+REPLAY_FORMAT_VERSION = 3
+ReplayFormatVersion: TypeAlias = Literal[3]
+
+BootstrapKind: TypeAlias = Literal["none", "terrain_v1"]
 
 WEAPON_USAGE_COUNT = 53
 
@@ -136,11 +139,15 @@ class ReplayStatusSnapshot:
 class ReplayHeader:
     game_mode_id: int
     seed: int
+    bootstrap_kind: BootstrapKind = "none"
+    bootstrap_seed: int = 0
     game_version: str = field(default_factory=_default_game_version)
     tick_rate: int = 60
     difficulty_level: int = 0
     hardcore: bool = False
     preserve_bugs: bool = False
+    detail_preset: int = 5
+    fx_toggle: int = 0
     world_size: float = 1024.0
     player_count: int = 1
     status: ReplayStatusSnapshot = field(default_factory=ReplayStatusSnapshot)

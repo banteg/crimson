@@ -129,26 +129,6 @@ class TypoShooterMode(BaseGameplayMode):
         fire_pressed = False
         reload_pressed = False
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
-            self._typing.backspace()
-            if self.world.audio_router is not None:
-                key = "sfx_ui_typeclick_01" if (self.state.rng.rand() & 1) == 0 else "sfx_ui_typeclick_02"
-                self.world.audio_router.play_sfx(key)
-
-        codepoint = int(rl.get_char_pressed())
-        while codepoint > 0:
-            if codepoint not in (13, 8) and 0x20 <= codepoint <= 0xFF:
-                try:
-                    ch = chr(codepoint)
-                except ValueError:
-                    ch = ""
-                if ch:
-                    self._typing.push_char(ch)
-                    if self.world.audio_router is not None:
-                        key = "sfx_ui_typeclick_01" if (self.state.rng.rand() & 1) == 0 else "sfx_ui_typeclick_02"
-                        self.world.audio_router.play_sfx(key)
-            codepoint = int(rl.get_char_pressed())
-
         enter_pressed = rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
         if enter_pressed:
             had_text = bool(self._typing.text)
@@ -159,7 +139,7 @@ class TypoShooterMode(BaseGameplayMode):
 
             result = self._typing.enter(find_target=_find_target)
             if had_text and self.world.audio_router is not None:
-                self.world.audio_router.play_sfx("sfx_ui_typeenter")
+                self.world.audio_router.play_sfx_resolved("sfx_ui_typeenter")
             if result.fire_requested and result.target_creature_idx is not None:
                 target_idx = int(result.target_creature_idx)
                 if 0 <= target_idx < len(self.creatures.entries):
@@ -169,6 +149,31 @@ class TypoShooterMode(BaseGameplayMode):
                 fire_pressed = True
             if result.reload_requested:
                 reload_pressed = True
+
+        def _typeclick_key() -> str:
+            # Native Typ-o + ui_text_input_update pick click variants via `crt_rand() % 2`.
+            if (int(self.state.rng.rand()) & 1) == 0:
+                return "sfx_ui_typeclick_01"
+            return "sfx_ui_typeclick_02"
+
+        # Native processes at most one keychar per frame via `console_input_poll`.
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE) or rl.is_key_pressed_repeat(rl.KeyboardKey.KEY_BACKSPACE):
+            self._typing.backspace()
+            key = _typeclick_key()
+            if self.world.audio_router is not None:
+                self.world.audio_router.play_sfx_resolved(key)
+        else:
+            codepoint = int(rl.get_char_pressed())
+            if codepoint not in (13, 8) and 0x20 <= codepoint <= 0xFF:
+                try:
+                    ch = chr(codepoint)
+                except ValueError:
+                    ch = ""
+                if ch:
+                    self._typing.push_char(ch)
+                    key = _typeclick_key()
+                    if self.world.audio_router is not None:
+                        self.world.audio_router.play_sfx_resolved(key)
 
         return fire_pressed, reload_pressed
 

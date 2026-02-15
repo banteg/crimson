@@ -8,12 +8,14 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from .types import (
+    BootstrapKind,
     PackedPlayerInput,
     PackedTickInputs,
     PerkMenuOpenEvent,
     PerkPickEvent,
     Replay,
     ReplayEvent,
+    REPLAY_FORMAT_VERSION,
     ReplayHeader,
     ReplayStatusSnapshot,
     WEAPON_USAGE_COUNT,
@@ -21,7 +23,6 @@ from .types import (
 )
 
 _GZIP_MAGIC = b"\x1f\x8b"
-_FORMAT_VERSION = 1
 
 
 class ReplayCodecError(ValueError):
@@ -69,14 +70,24 @@ def _header_from_dict(data: dict[str, Any]) -> ReplayHeader:
     input_quant = data.get("input_quantization", "raw")
     if input_quant not in ("raw", "f32"):
         raise ReplayCodecError(f"unknown input_quantization: {input_quant!r}")
+
+    bootstrap_kind_raw = data.get("bootstrap_kind", "none")
+    if bootstrap_kind_raw not in ("none", "terrain_v1"):
+        raise ReplayCodecError(f"unknown bootstrap_kind: {bootstrap_kind_raw!r}")
+    bootstrap_kind: BootstrapKind = "terrain_v1" if bootstrap_kind_raw == "terrain_v1" else "none"
+
     return ReplayHeader(
         game_mode_id=int(data["game_mode_id"]),
         seed=int(data["seed"]),
+        bootstrap_kind=bootstrap_kind,
+        bootstrap_seed=int(data.get("bootstrap_seed", 0)),
         game_version=game_version_str,
         tick_rate=int(data.get("tick_rate", 60)),
         difficulty_level=int(data.get("difficulty_level", 0)),
         hardcore=bool(data.get("hardcore", False)),
         preserve_bugs=bool(data.get("preserve_bugs", False)),
+        detail_preset=int(data.get("detail_preset", 5)),
+        fx_toggle=int(data.get("fx_toggle", 0)),
         world_size=float(data.get("world_size", 1024.0)),
         player_count=int(data.get("player_count", 1)),
         status=status,
@@ -149,7 +160,7 @@ def replay_to_obj(replay: Replay) -> dict[str, Any]:
 
 def replay_from_obj(obj: dict[str, Any]) -> Replay:
     version = int(obj.get("v", 0))
-    if version != _FORMAT_VERSION:
+    if version != int(REPLAY_FORMAT_VERSION):
         raise ReplayCodecError(f"unsupported replay version: {version}")
 
     header_in = obj.get("header")

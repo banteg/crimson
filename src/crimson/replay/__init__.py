@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .bootstrap import AppliedReplayBootstrap, ReplayBootstrapError, apply_replay_bootstrap
 from .codec import ReplayCodecError, dump_replay, dump_replay_file, load_replay, load_replay_file
 from .recorder import ReplayRecorder
 from .types import (
@@ -37,6 +38,8 @@ __all__ = [
     "PerkPickEvent",
     "Replay",
     "ReplayCodecError",
+    "AppliedReplayBootstrap",
+    "ReplayBootstrapError",
     "ReplayHeader",
     "ReplayRecorder",
     "ReplayStatusSnapshot",
@@ -46,6 +49,7 @@ __all__ = [
     "dump_replay_file",
     "load_replay",
     "load_replay_file",
+    "apply_replay_bootstrap",
     "pack_input_flags",
     "unpack_packed_player_input",
     "unpack_input_flags",

@@ -12,10 +12,9 @@ from .types import (
     Replay,
     ReplayEvent,
     ReplayHeader,
+    REPLAY_FORMAT_VERSION,
     pack_input_flags,
 )
-
-_FORMAT_VERSION = 1
 
 
 def _quantize_f32(value: float) -> float:
@@ -23,8 +22,8 @@ def _quantize_f32(value: float) -> float:
 
 
 class ReplayRecorder:
-    def __init__(self, header: ReplayHeader, *, version: int = _FORMAT_VERSION) -> None:
-        if int(version) != _FORMAT_VERSION:
+    def __init__(self, header: ReplayHeader, *, version: int = REPLAY_FORMAT_VERSION) -> None:
+        if int(version) != int(REPLAY_FORMAT_VERSION):
             raise ValueError(f"unsupported replay version: {version}")
         self._version = int(version)
         self._header = header

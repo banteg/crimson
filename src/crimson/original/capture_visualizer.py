@@ -32,6 +32,7 @@ from crimson.original.capture import (
 )
 from crimson.original.schema import CaptureTick
 from crimson.perks import perk_label
+from crimson.replay import apply_replay_bootstrap
 from crimson.replay.types import (
     Replay,
     UnknownEvent,
@@ -377,7 +378,12 @@ class CaptureVisualizerView:
             quest_unlock_index_full=int(self._replay.header.status.quest_unlock_index_full),
             weapon_usage_counts=self._replay.header.status.weapon_usage_counts,
         )
-        world.state.rng.srand(int(self._replay.header.seed))
+        apply_replay_bootstrap(
+            self._replay.header,
+            rng=world.state.rng,
+            world_size=float(self._world_size),
+            strict=True,
+        )
 
         fx_queue, fx_queue_rotated = build_empty_fx_queues()
         session = SurvivalDeterministicSession(
