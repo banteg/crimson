@@ -402,6 +402,9 @@ class RushMode(BaseGameplayMode):
 
         runtime.update()
         role = str(self._lan_role)
+        if str(getattr(runtime, "error", "") or ""):
+            self.close_requested = True
+            return
         if self.world.audio_router is not None:
             self.world.audio_router.audio = self.world.audio
             self.world.audio_router.audio_rng = self.world.audio_rng

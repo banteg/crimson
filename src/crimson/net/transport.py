@@ -48,12 +48,15 @@ class UdpTransport:
         blob = encode_packet(packet)
         sock.sendto(blob, (str(addr[0]), int(addr[1])))
 
-    def recv_packets(self) -> list[tuple[PeerAddr, Packet]]:
+    def recv_packets(self, *, max_packets: int | None = None) -> list[tuple[PeerAddr, Packet]]:
         sock = self._sock
         if sock is None:
             return []
         out: list[tuple[PeerAddr, Packet]] = []
+        cap = None if max_packets is None else max(0, int(max_packets))
         while True:
+            if cap is not None and len(out) >= int(cap):
+                break
             try:
                 blob, raw_addr = sock.recvfrom(int(self.recv_buffer_size))
             except BlockingIOError:

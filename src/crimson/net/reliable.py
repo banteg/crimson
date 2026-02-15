@@ -47,6 +47,17 @@ class ReliableLink:
     def resend_count(self) -> int:
         return int(self._resend_count)
 
+    def prime_recv_seq(self, seq: int) -> None:
+        """Record a reliable seq as already delivered.
+
+        Used when a trusted message is handled out-of-band (for example an
+        initial handshake packet) so ACK progression remains contiguous.
+        """
+        value = int(seq)
+        if value <= int(self._recv_highest_seq):
+            return
+        self._recv_highest_seq = int(value)
+
     def build_packet(self, message: NetMessage, *, reliable: bool, now_ms: int) -> Packet:
         seq = 0
         if reliable:
