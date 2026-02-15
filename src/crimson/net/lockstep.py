@@ -38,6 +38,10 @@ class HostLockstepState:
     def paused(self) -> bool:
         return bool(self._paused)
 
+    @property
+    def last_progress_ms(self) -> int:
+        return int(self._last_progress_ms)
+
     def waiting_for_inputs(self, *, tick_index: int | None = None) -> int:
         if tick_index is None:
             tick_index = int(self._next_emit_tick)
@@ -140,6 +144,10 @@ class ClientLockstepState:
     @property
     def paused(self) -> bool:
         return bool(self._paused)
+
+    @property
+    def last_progress_ms(self) -> int:
+        return int(self._last_progress_ms)
 
     def queue_local_input(self, packed_input: PackedPlayerInput) -> InputBatch:
         target_tick = int(self._capture_tick + int(self.input_delay_ticks))

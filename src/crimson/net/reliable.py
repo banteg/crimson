@@ -22,10 +22,30 @@ class ReliableLink:
     _pending: dict[int, _PendingReliable] = field(default_factory=dict)
     # Out-of-order reliable packets (seq > _recv_highest_seq + 1).
     _recv_buffer: dict[int, Packet] = field(default_factory=dict)
+    # Very rough RTT estimate based on ACK turnaround. Useful for debugging only.
+    _rtt_last_ms: int = 0
+    _rtt_ewma_ms: float = 0.0
+    _resend_count: int = 0
 
     @property
     def recv_highest_seq(self) -> int:
         return int(self._recv_highest_seq)
+
+    @property
+    def pending_count(self) -> int:
+        return int(len(self._pending))
+
+    @property
+    def rtt_last_ms(self) -> int:
+        return int(self._rtt_last_ms)
+
+    @property
+    def rtt_ewma_ms(self) -> float:
+        return float(self._rtt_ewma_ms)
+
+    @property
+    def resend_count(self) -> int:
+        return int(self._resend_count)
 
     def build_packet(self, message: NetMessage, *, reliable: bool, now_ms: int) -> Packet:
         seq = 0
@@ -42,14 +62,14 @@ class ReliableLink:
             self._pending[int(seq)] = _PendingReliable(packet=packet, sent_at_ms=int(now_ms))
         return packet
 
-    def ingest_packet(self, packet: Packet) -> tuple[list[NetMessage], bool]:
+    def ingest_packet(self, packet: Packet, *, now_ms: int) -> tuple[list[NetMessage], bool]:
         """Return `(messages, is_duplicate_reliable_packet)`.
 
         Reliable delivery uses a cumulative ACK of the highest contiguous reliable
         sequence that has been received and delivered. Out-of-order packets are
         buffered and only delivered once gaps are filled.
         """
-        self._apply_ack(int(packet.ack))
+        self._apply_ack(int(packet.ack), now_ms=int(now_ms))
         if not bool(packet.reliable):
             return [packet.message], False
 
@@ -74,10 +94,25 @@ class ReliableLink:
 
         return delivered, False
 
-    def _apply_ack(self, ack: int) -> None:
+    def _apply_ack(self, ack: int, *, now_ms: int) -> None:
         if int(ack) <= 0:
             return
         to_drop = [seq for seq in self._pending if int(seq) <= int(ack)]
+        if not to_drop:
+            return
+
+        # RTT sample: use the newest pending seq that got ACKed in this packet.
+        newest_seq = max(int(seq) for seq in to_drop)
+        pending = self._pending.get(int(newest_seq))
+        if pending is not None:
+            sample_ms = max(0, int(now_ms) - int(pending.sent_at_ms))
+            self._rtt_last_ms = int(sample_ms)
+            if self._rtt_ewma_ms <= 0.0:
+                self._rtt_ewma_ms = float(sample_ms)
+            else:
+                # Heavily smoothed; this is for HUD/debug, not congestion control.
+                self._rtt_ewma_ms = float(self._rtt_ewma_ms * 0.9 + float(sample_ms) * 0.1)
+
         for seq in to_drop:
             self._pending.pop(int(seq), None)
 
@@ -95,4 +130,5 @@ class ReliableLink:
             )
             self._pending[int(seq)] = _PendingReliable(packet=refreshed, sent_at_ms=int(now_ms))
             out.append(refreshed)
+            self._resend_count += 1
         return out

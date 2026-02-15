@@ -82,6 +82,18 @@ class LanRuntime:
     client_lockstep: ClientLockstepState | None = field(init=False, default=None)
     client_pause_state: PauseState | None = field(init=False, default=None)
 
+    # Instrumentation (debug overlay + lan debug logs).
+    _metrics_last_log_ms: int = field(init=False, default=0)
+    _metrics_last_resends_total: int = field(init=False, default=0)
+
+    _host_input_queued_at_ms: dict[int, int] = field(init=False, default_factory=dict)
+    _host_local_input_latency_ms: int = field(init=False, default=0)
+    _host_local_input_latency_ewma_ms: float = field(init=False, default=0.0)
+
+    _client_input_queued_at_ms: dict[int, int] = field(init=False, default_factory=dict)
+    _client_local_input_latency_ms: int = field(init=False, default=0)
+    _client_local_input_latency_ewma_ms: float = field(init=False, default=0.0)
+
     _neutral_input: PackedPlayerInput = field(
         init=False,
         default_factory=lambda: [0.0, 0.0, [0.0, 0.0], 0],
@@ -95,6 +107,14 @@ class LanRuntime:
         if self.host_lobby is not None or self.client_lobby is not None:
             return
         self.transport.open()
+        self._metrics_last_log_ms = 0
+        self._metrics_last_resends_total = 0
+        self._host_input_queued_at_ms.clear()
+        self._host_local_input_latency_ms = 0
+        self._host_local_input_latency_ewma_ms = 0.0
+        self._client_input_queued_at_ms.clear()
+        self._client_local_input_latency_ms = 0
+        self._client_local_input_latency_ewma_ms = 0.0
         lan_debug_log(
             "net_open",
             role=str(self.cfg.role),
@@ -168,6 +188,14 @@ class LanRuntime:
             self.host_ready_frames.clear()
             self.client_lockstep = None
             self.client_pause_state = None
+            self._metrics_last_log_ms = 0
+            self._metrics_last_resends_total = 0
+            self._host_input_queued_at_ms.clear()
+            self._host_local_input_latency_ms = 0
+            self._host_local_input_latency_ewma_ms = 0.0
+            self._client_input_queued_at_ms.clear()
+            self._client_local_input_latency_ms = 0
+            self._client_local_input_latency_ewma_ms = 0.0
             self.started = False
             self.error = ""
             lan_debug_log("net_close", role=str(self.cfg.role))
@@ -180,6 +208,10 @@ class LanRuntime:
         """Return short debug HUD lines for in-game overlays (guarded by --debug)."""
         lines: list[str] = []
         role = str(self.cfg.role)
+        now_ms = _now_ms()
+        tick_rate = max(1, int(self.cfg.tick_rate) or 1)
+        delay_ticks = max(0, int(self.cfg.input_delay_ticks))
+        delay_ms = int(round(float(delay_ticks) * 1000.0 / float(tick_rate)))
 
         if self.error:
             lines.append(f"net: error={self.error}")
@@ -193,14 +225,35 @@ class LanRuntime:
             )
             lockstep = self.host_lockstep
             if lockstep is not None:
+                waiting_for = int(lockstep.waiting_for_inputs())
+                stall_ms = 0
+                if waiting_for > 0:
+                    stall_ms = max(0, int(now_ms) - int(lockstep.last_progress_ms))
                 lines.append(
                     "lockstep(host): "
                     f"capture={int(self.host_capture_tick)} "
                     f"emit={int(lockstep.next_emit_tick)} "
                     f"ready_frames={len(self.host_ready_frames)} "
                     f"buffered_ticks={int(lockstep.buffered_tick_count)} "
-                    f"waiting_for={int(lockstep.waiting_for_inputs())} "
-                    f"paused={int(lockstep.paused)}"
+                    f"waiting_for={int(waiting_for)} "
+                    f"paused={int(lockstep.paused)} "
+                    f"stall_ms={int(stall_ms)}"
+                )
+                rtts = [int(peer.link.rtt_last_ms) for peer in self.host_peers.values() if peer.link.rtt_last_ms > 0]
+                rtt_label = "?"
+                if rtts:
+                    rtt_label = f"{min(rtts)}..{max(rtts)}"
+                pending_max = max((int(peer.link.pending_count) for peer in self.host_peers.values()), default=0)
+                resends_total = sum(int(peer.link.resend_count) for peer in self.host_peers.values())
+                input_ms = int(self._host_local_input_latency_ms)
+                input_ewma_ms = int(self._host_local_input_latency_ewma_ms)
+                lines.append(
+                    "lat(host): "
+                    f"delay={delay_ticks}t({delay_ms}ms) "
+                    f"input_ms={input_ms}/{input_ewma_ms} "
+                    f"rtt_ms={rtt_label} "
+                    f"pending={pending_max} "
+                    f"resends={resends_total}"
                 )
             return lines
 
@@ -217,12 +270,28 @@ class LanRuntime:
 
         lockstep = self.client_lockstep
         if lockstep is not None:
+            stall_ms = 0
+            if int(lockstep.buffered_frame_count) <= 0:
+                stall_ms = max(0, int(now_ms) - int(lockstep.last_progress_ms))
             lines.append(
                 "lockstep(join): "
                 f"capture={int(lockstep.capture_tick)} "
                 f"consume={int(lockstep.next_consume_tick)} "
                 f"buffered_frames={int(lockstep.buffered_frame_count)} "
-                f"paused={int(lockstep.paused)}"
+                f"paused={int(lockstep.paused)} "
+                f"stall_ms={int(stall_ms)}"
+            )
+        link = self.client_link
+        if link is not None:
+            input_ms = int(self._client_local_input_latency_ms)
+            input_ewma_ms = int(self._client_local_input_latency_ewma_ms)
+            lines.append(
+                "lat(join): "
+                f"delay={delay_ticks}t({delay_ms}ms) "
+                f"input_ms={input_ms}/{input_ewma_ms} "
+                f"rtt_ms={int(link.rtt_last_ms)}/{int(link.rtt_ewma_ms)} "
+                f"pending={int(link.pending_count)} "
+                f"resends={int(link.resend_count)}"
             )
         pause = self.client_pause_state
         if pause is not None and bool(pause.paused):
@@ -266,6 +335,7 @@ class LanRuntime:
             if lockstep is None:
                 return
             target_tick = int(self.host_capture_tick) + int(self.cfg.input_delay_ticks)
+            self._host_input_queued_at_ms[int(target_tick)] = int(now_ms)
             lockstep.submit_input_sample(
                 slot_index=0,
                 tick_index=int(target_tick),
@@ -277,6 +347,8 @@ class LanRuntime:
         lockstep = self.client_lockstep
         if lockstep is None:
             return
+        target_tick = int(lockstep.capture_tick) + int(lockstep.input_delay_ticks)
+        self._client_input_queued_at_ms[int(target_tick)] = int(now_ms)
         batch = lockstep.queue_local_input(list(packed_input))
         self._client_send(batch, reliable=False, now_ms=int(now_ms))
 
@@ -304,6 +376,7 @@ class LanRuntime:
             self._update_host(now_ms=int(now_ms))
         else:
             self._update_client(now_ms=int(now_ms))
+        self._trace_metrics(now_ms=int(now_ms))
 
     def _update_host(self, *, now_ms: int) -> None:
         lobby = self.host_lobby
@@ -317,7 +390,7 @@ class LanRuntime:
                 self.host_peers[addr] = peer_link
             peer_link.last_seen_ms = int(now_ms)
 
-            messages, dup = peer_link.link.ingest_packet(packet)
+            messages, dup = peer_link.link.ingest_packet(packet, now_ms=int(now_ms))
             if dup:
                 lan_debug_log("net_recv_dup", role="host", addr=f"{addr[0]}:{addr[1]}", seq=int(packet.seq))
             for message in messages:
@@ -352,6 +425,17 @@ class LanRuntime:
                 self._host_broadcast(pause, reliable=True, now_ms=int(now_ms))
             frames = self.host_lockstep.pop_ready_frames(now_ms=int(now_ms))
             for frame in frames:
+                tick = int(getattr(frame, "tick_index", 0) or 0)
+                queued_at = self._host_input_queued_at_ms.pop(int(tick), None)
+                if queued_at is not None:
+                    latency_ms = max(0, int(now_ms) - int(queued_at))
+                    self._host_local_input_latency_ms = int(latency_ms)
+                    if self._host_local_input_latency_ewma_ms <= 0.0:
+                        self._host_local_input_latency_ewma_ms = float(latency_ms)
+                    else:
+                        self._host_local_input_latency_ewma_ms = float(
+                            self._host_local_input_latency_ewma_ms * 0.9 + float(latency_ms) * 0.1
+                        )
                 self.host_ready_frames.append(frame)
 
         # Resend reliable packets.
@@ -489,7 +573,7 @@ class LanRuntime:
             if addr != host:
                 continue
             self.client_last_seen_ms = int(now_ms)
-            messages, dup = link.ingest_packet(packet)
+            messages, dup = link.ingest_packet(packet, now_ms=int(now_ms))
             if dup:
                 lan_debug_log("net_recv_dup", role="join", addr=f"{addr[0]}:{addr[1]}", seq=int(packet.seq))
             for message in messages:
@@ -569,6 +653,16 @@ class LanRuntime:
                     command_hash=str(getattr(message, "command_hash", "") or ""),
                 )
             lockstep.ingest_tick_frame(message, now_ms=int(now_ms), local_command_hash="")
+            queued_at = self._client_input_queued_at_ms.pop(int(tick), None)
+            if queued_at is not None:
+                latency_ms = max(0, int(now_ms) - int(queued_at))
+                self._client_local_input_latency_ms = int(latency_ms)
+                if self._client_local_input_latency_ewma_ms <= 0.0:
+                    self._client_local_input_latency_ewma_ms = float(latency_ms)
+                else:
+                    self._client_local_input_latency_ewma_ms = float(
+                        self._client_local_input_latency_ewma_ms * 0.9 + float(latency_ms) * 0.1
+                    )
             return
         if isinstance(message, PauseState):
             lan_debug_log(
@@ -619,6 +713,72 @@ class LanRuntime:
             return
         kind = getattr(message, "kind", type(message).__name__)
         lan_debug_log("net_send", role="join", kind=str(kind), reliable=bool(reliable))
+
+    def _trace_metrics(self, *, now_ms: int) -> None:
+        if (int(now_ms) - int(self._metrics_last_log_ms)) < 1000:
+            return
+        self._metrics_last_log_ms = int(now_ms)
+
+        tick_rate = max(1, int(self.cfg.tick_rate) or 1)
+        delay_ticks = max(0, int(self.cfg.input_delay_ticks))
+        delay_ms = int(round(float(delay_ticks) * 1000.0 / float(tick_rate)))
+
+        role = str(self.cfg.role)
+        if role == "host":
+            lockstep = self.host_lockstep
+            waiting_for = int(lockstep.waiting_for_inputs()) if lockstep is not None else 0
+            stall_ms = 0
+            if lockstep is not None and waiting_for > 0:
+                stall_ms = max(0, int(now_ms) - int(lockstep.last_progress_ms))
+
+            rtts = [int(peer.link.rtt_last_ms) for peer in self.host_peers.values() if peer.link.rtt_last_ms > 0]
+            rtt_min = min(rtts) if rtts else 0
+            rtt_max = max(rtts) if rtts else 0
+            pending_max = max((int(peer.link.pending_count) for peer in self.host_peers.values()), default=0)
+            resends_total = sum(int(peer.link.resend_count) for peer in self.host_peers.values())
+            resends_delta = max(0, int(resends_total) - int(self._metrics_last_resends_total))
+            self._metrics_last_resends_total = int(resends_total)
+
+            lan_debug_log(
+                "net_metrics",
+                role="host",
+                delay_ticks=int(delay_ticks),
+                delay_ms=int(delay_ms),
+                waiting_for=int(waiting_for),
+                stall_ms=int(stall_ms),
+                rtt_min_ms=int(rtt_min),
+                rtt_max_ms=int(rtt_max),
+                pending_max=int(pending_max),
+                resends_s=int(resends_delta),
+                input_latency_ms=int(self._host_local_input_latency_ms),
+                input_latency_ewma_ms=int(self._host_local_input_latency_ewma_ms),
+            )
+            return
+
+        link = self.client_link
+        lockstep = self.client_lockstep
+        pending = int(link.pending_count) if link is not None else 0
+        resends_total = int(link.resend_count) if link is not None else 0
+        resends_delta = max(0, int(resends_total) - int(self._metrics_last_resends_total))
+        self._metrics_last_resends_total = int(resends_total)
+
+        stall_ms = 0
+        if lockstep is not None and int(lockstep.buffered_frame_count) <= 0:
+            stall_ms = max(0, int(now_ms) - int(lockstep.last_progress_ms))
+
+        lan_debug_log(
+            "net_metrics",
+            role="join",
+            delay_ticks=int(delay_ticks),
+            delay_ms=int(delay_ms),
+            stall_ms=int(stall_ms),
+            rtt_ms=int(link.rtt_last_ms) if link is not None else 0,
+            rtt_ewma_ms=int(link.rtt_ewma_ms) if link is not None else 0,
+            pending=int(pending),
+            resends_s=int(resends_delta),
+            input_latency_ms=int(self._client_local_input_latency_ms),
+            input_latency_ewma_ms=int(self._client_local_input_latency_ewma_ms),
+        )
 
     def _host_init_lockstep(self, event: MatchStart) -> None:
         player_count = max(1, min(4, int(getattr(event, "player_count", 1) or 1)))
