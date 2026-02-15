@@ -125,8 +125,8 @@ class ReplayPlaybackMode:
         )
         if bootstrap is not None:
             world.apply_bootstrap_terrain(
-                terrain_ids=replay.header.bootstrap_terrain_ids,
-                seed=int(replay.header.bootstrap_terrain_seed),
+                terrain_ids=bootstrap.terrain.terrain_ids,
+                seed=int(bootstrap.terrain.terrain_seed),
                 layers=3,
             )
 

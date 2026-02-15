@@ -41,9 +41,9 @@ def apply_replay_bootstrap(
 ) -> AppliedReplayBootstrap | None:
     """Seed/advance `rng` to tick-0 state for a replay header.
 
-    - If `header.bootstrap_kind` is `none` (or `bootstrap_seed` is missing), this seeds directly from `header.seed`.
+    - If `header.bootstrap_kind` is `none`, this seeds directly from `header.seed`.
     - If `bootstrap_kind` is `terrain_v1`, this seeds from `header.bootstrap_seed` and consumes the deterministic
-      terrain bootstrap window, then (optionally) validates stored header metadata.
+      terrain bootstrap window, then (optionally) validates `header.seed` matches the computed tick-0 RNG state.
     """
 
     kind = str(header.bootstrap_kind)
@@ -74,27 +74,6 @@ def apply_replay_bootstrap(
         if int(header.seed) != int(terrain.seed_after):
             raise ReplayBootstrapError(
                 f"bootstrap seed mismatch: header.seed={int(header.seed)} != computed={int(terrain.seed_after)}"
-            )
-        if tuple(int(x) for x in header.bootstrap_terrain_ids) != tuple(int(x) for x in terrain.terrain_ids):
-            raise ReplayBootstrapError(
-                "bootstrap terrain_ids mismatch: "
-                f"header={tuple(int(x) for x in header.bootstrap_terrain_ids)} "
-                f"computed={tuple(int(x) for x in terrain.terrain_ids)}"
-            )
-        if int(header.bootstrap_terrain_seed) != int(terrain.terrain_seed):
-            raise ReplayBootstrapError(
-                f"bootstrap terrain_seed mismatch: header={int(header.bootstrap_terrain_seed)} "
-                f"computed={int(terrain.terrain_seed)}"
-            )
-        if int(header.bootstrap_selection_draws) != int(terrain.selection_draws):
-            raise ReplayBootstrapError(
-                f"bootstrap selection_draws mismatch: header={int(header.bootstrap_selection_draws)} "
-                f"computed={int(terrain.selection_draws)}"
-            )
-        if int(header.bootstrap_stamping_draws) != int(terrain.stamping_draws):
-            raise ReplayBootstrapError(
-                f"bootstrap stamping_draws mismatch: header={int(header.bootstrap_stamping_draws)} "
-                f"computed={int(terrain.stamping_draws)}"
             )
 
     return AppliedReplayBootstrap(terrain=terrain)

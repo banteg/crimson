@@ -141,10 +141,6 @@ class ReplayHeader:
     seed: int
     bootstrap_kind: BootstrapKind = "none"
     bootstrap_seed: int = 0
-    bootstrap_terrain_seed: int = 0
-    bootstrap_terrain_ids: tuple[int, int, int] = (0, 1, 0)
-    bootstrap_selection_draws: int = 0
-    bootstrap_stamping_draws: int = 0
     game_version: str = field(default_factory=_default_game_version)
     tick_rate: int = 60
     difficulty_level: int = 0
