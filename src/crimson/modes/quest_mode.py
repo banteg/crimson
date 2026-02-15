@@ -653,25 +653,9 @@ class QuestMode(BaseGameplayMode):
             return
 
         runtime.update()
-        if str(self._lan_role) == "host" and (not bool(runtime.host_remote_inputs_ready())):
+        role = str(self._lan_role)
+        if role == "host" and (not bool(runtime.host_remote_inputs_ready())):
             return
-
-        ticks_to_capture = self._lan_capture_clock.advance(dt_frame)
-        if ticks_to_capture > 0:
-            input_frame = self._build_local_inputs(dt_frame=dt_frame)
-            # In LAN sessions each peer is a single local player, so always sample
-            # inputs using the configured Player 1 bindings (index 0). The network
-            # slot mapping is handled by the lockstep runtime.
-            local_input_index = 0
-            for tick_offset in range(int(ticks_to_capture)):
-                inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
-                local_input = PlayerInput()
-                if 0 <= local_input_index < len(inputs):
-                    local_input = inputs[local_input_index]
-                runtime.queue_local_input(self._pack_player_input_for_net(local_input))
-        # Pump networking again after queuing local inputs so the host can emit frames
-        # in the same render frame (reduces perceived host-side input latency).
-        runtime.update()
 
         if bool(self._paused):
             self._sim_clock.reset()
@@ -690,92 +674,116 @@ class QuestMode(BaseGameplayMode):
             self.world.ground.process_pending()
 
         dt_tick = float(self._lan_capture_clock.dt_tick)
-        while True:
-            frame = runtime.pop_tick_frame()
-            if frame is None:
-                break
+        def _consume_lan_frames() -> bool:
+            while True:
+                frame = runtime.pop_tick_frame()
+                if frame is None:
+                    return False
 
-            packed_inputs = list(getattr(frame, "frame_inputs", []) or [])
-            player_inputs = [self._unpack_player_input_from_net(packed) for packed in packed_inputs]
+                packed_inputs = list(getattr(frame, "frame_inputs", []) or [])
+                player_inputs = [self._unpack_player_input_from_net(packed) for packed in packed_inputs]
 
-            session.detail_preset = self.config.detail_preset
-            session.fx_toggle = self.config.fx_toggle
-            session.spawn_entries = tuple(self._quest.spawn_entries)
-            session.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
-            session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
-            session.completion_transition_ms = float(self._quest.completion_transition_ms)
+                session.detail_preset = self.config.detail_preset
+                session.fx_toggle = self.config.fx_toggle
+                session.spawn_entries = tuple(self._quest.spawn_entries)
+                session.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
+                session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
+                session.completion_transition_ms = float(self._quest.completion_transition_ms)
 
-            tick = session.step_tick(
-                dt_frame=float(dt_tick),
-                inputs=player_inputs,
-            )
-            self.world.apply_step_result(
-                tick.step,
-                game_tune_started=False,
-                apply_audio=True,
-                update_camera=True,
-            )
-            self._quest.spawn_entries = tuple(session.spawn_entries)
-            self._quest.spawn_timeline_ms = float(tick.spawn_timeline_ms)
-            self._quest.no_creatures_timer_ms = float(tick.no_creatures_timer_ms)
-            self._quest.completion_transition_ms = float(tick.completion_transition_ms)
-            self._quest.quest_name_timer_ms += float(dt_tick) * 1000.0
-
-            if tick.play_hit_sfx:
-                self.world.audio_router.play_sfx("sfx_questhit")
-            if tick.play_completion_music and self.world.audio is not None:
-                play_music(self.world.audio, "crimsonquest")
-                playback = self.world.audio.music.playbacks.get("crimsonquest")
-                if playback is not None:
-                    playback.volume = 0.0
-                    try:
-                        rl.set_music_volume(playback.music, 0.0)
-                    except RuntimeError:
-                        playback.volume = 0.0
-
-            if str(self._lan_role) == "host":
-                runtime.broadcast_tick_frame(
-                    TickFrame(
-                        tick_index=int(frame.tick_index),
-                        frame_inputs=list(frame.frame_inputs),
-                        command_hash=str(tick.step.command_hash),
-                        state_hash="",
-                    )
+                tick = session.step_tick(
+                    dt_frame=float(dt_tick),
+                    inputs=player_inputs,
                 )
+                self.world.apply_step_result(
+                    tick.step,
+                    game_tune_started=False,
+                    apply_audio=True,
+                    update_camera=True,
+                )
+                self._quest.spawn_entries = tuple(session.spawn_entries)
+                self._quest.spawn_timeline_ms = float(tick.spawn_timeline_ms)
+                self._quest.no_creatures_timer_ms = float(tick.no_creatures_timer_ms)
+                self._quest.completion_transition_ms = float(tick.completion_transition_ms)
+                self._quest.quest_name_timer_ms += float(dt_tick) * 1000.0
 
-            if tick.completed:
-                if self._outcome is None:
-                    fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
-                    most_used_weapon_id = most_used_weapon_id_for_player(
-                        self.state,
-                        player_index=int(self.player.index),
-                        fallback_weapon_id=int(self.player.weapon_id),
-                    )
-                    player_health_values = tuple(float(player.health) for player in self.world.players)
-                    player2_health = None
-                    if len(player_health_values) >= 2:
-                        player2_health = float(player_health_values[1])
-                    self._outcome = QuestRunOutcome(
-                        kind="completed",
-                        level=str(self._quest.level),
-                        base_time_ms=int(self._quest.spawn_timeline_ms),
-                        player_health=float(player_health_values[0] if player_health_values else self.player.health),
-                        player2_health=player2_health,
-                        player_health_values=player_health_values,
-                        pending_perk_count=int(self.state.perk_selection.pending_count),
-                        experience=int(self.player.experience),
-                        kill_count=int(self.creatures.kill_count),
-                        weapon_id=int(self.player.weapon_id),
-                        shots_fired=fired,
-                        shots_hit=hit,
-                        most_used_weapon_id=int(most_used_weapon_id),
-                    )
-                self.close_requested = True
-                break
+                if tick.play_hit_sfx:
+                    self.world.audio_router.play_sfx("sfx_questhit")
+                if tick.play_completion_music and self.world.audio is not None:
+                    play_music(self.world.audio, "crimsonquest")
+                    playback = self.world.audio.music.playbacks.get("crimsonquest")
+                    if playback is not None:
+                        playback.volume = 0.0
+                        try:
+                            rl.set_music_volume(playback.music, 0.0)
+                        except RuntimeError:
+                            playback.volume = 0.0
 
-            if self._death_transition_ready():
-                self._close_failed_run()
-                break
+                if role == "host":
+                    runtime.broadcast_tick_frame(
+                        TickFrame(
+                            tick_index=int(frame.tick_index),
+                            frame_inputs=list(frame.frame_inputs),
+                            command_hash=str(tick.step.command_hash),
+                            state_hash="",
+                        )
+                    )
+
+                if tick.completed:
+                    if self._outcome is None:
+                        fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
+                        most_used_weapon_id = most_used_weapon_id_for_player(
+                            self.state,
+                            player_index=int(self.player.index),
+                            fallback_weapon_id=int(self.player.weapon_id),
+                        )
+                        player_health_values = tuple(float(player.health) for player in self.world.players)
+                        player2_health = None
+                        if len(player_health_values) >= 2:
+                            player2_health = float(player_health_values[1])
+                        self._outcome = QuestRunOutcome(
+                            kind="completed",
+                            level=str(self._quest.level),
+                            base_time_ms=int(self._quest.spawn_timeline_ms),
+                            player_health=float(player_health_values[0] if player_health_values else self.player.health),
+                            player2_health=player2_health,
+                            player_health_values=player_health_values,
+                            pending_perk_count=int(self.state.perk_selection.pending_count),
+                            experience=int(self.player.experience),
+                            kill_count=int(self.creatures.kill_count),
+                            weapon_id=int(self.player.weapon_id),
+                            shots_fired=fired,
+                            shots_hit=hit,
+                            most_used_weapon_id=int(most_used_weapon_id),
+                        )
+                    self.close_requested = True
+                    return True
+
+                if self._death_transition_ready():
+                    self._close_failed_run()
+                    return True
+
+        if role == "join":
+            if _consume_lan_frames():
+                return
+
+        ticks_to_capture = self._lan_capture_clock.advance(dt_frame)
+        if ticks_to_capture > 0:
+            input_frame = self._build_local_inputs(dt_frame=dt_frame)
+            # In LAN sessions each peer is a single local player, so always sample
+            # inputs using the configured Player 1 bindings (index 0). The network
+            # slot mapping is handled by the lockstep runtime.
+            local_input_index = 0
+            for tick_offset in range(int(ticks_to_capture)):
+                inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
+                local_input = PlayerInput()
+                if 0 <= local_input_index < len(inputs):
+                    local_input = inputs[local_input_index]
+                runtime.queue_local_input(self._pack_player_input_for_net(local_input))
+        # Pump networking again after queuing local inputs so the host can emit frames
+        # in the same render frame (reduces perceived host-side input latency).
+        runtime.update()
+
+        _consume_lan_frames()
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active

@@ -14,6 +14,8 @@ from .protocol import (
     TickFrame,
 )
 
+CLIENT_MAX_CAPTURE_LEAD_TICKS = 1
+
 
 @dataclass(slots=True)
 class HostLockstepState:
@@ -150,6 +152,12 @@ class ClientLockstepState:
         return int(self._last_progress_ms)
 
     def queue_local_input(self, packed_input: PackedPlayerInput) -> InputBatch:
+        # Keep the joiner's "capture clock" close to lockstep progress to avoid
+        # scheduling inputs far in the future (which manifests as extra input lag).
+        max_capture_tick = int(self._next_consume_tick) + int(CLIENT_MAX_CAPTURE_LEAD_TICKS)
+        if int(self._capture_tick) > int(max_capture_tick):
+            self._capture_tick = int(max_capture_tick)
+
         target_tick = int(self._capture_tick + int(self.input_delay_ticks))
         self._sent_inputs[int(target_tick)] = list(packed_input)
 
@@ -162,10 +170,10 @@ class ClientLockstepState:
 
         # Keep memory bounded: we only ever re-send the last 3 ticks in the rolling window above.
         min_keep_tick = int(target_tick) - 2
-        if min_keep_tick > 0:
-            for tick in list(self._sent_inputs):
-                if int(tick) < int(min_keep_tick):
-                    self._sent_inputs.pop(int(tick), None)
+        max_keep_tick = int(target_tick)
+        for tick in list(self._sent_inputs):
+            if int(tick) < int(min_keep_tick) or int(tick) > int(max_keep_tick):
+                self._sent_inputs.pop(int(tick), None)
 
         self._capture_tick += 1
         return InputBatch(slot_index=int(self.local_slot_index), samples=samples)

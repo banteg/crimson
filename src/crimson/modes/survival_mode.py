@@ -544,25 +544,9 @@ class SurvivalMode(BaseGameplayMode):
             return
 
         runtime.update()
-        if str(self._lan_role) == "host" and (not bool(runtime.host_remote_inputs_ready())):
+        role = str(self._lan_role)
+        if role == "host" and (not bool(runtime.host_remote_inputs_ready())):
             return
-
-        ticks_to_capture = self._lan_capture_clock.advance(dt_frame)
-        if ticks_to_capture > 0:
-            input_frame = self._build_local_inputs(dt_frame=dt_frame)
-            # In LAN sessions each peer is a single local player, so always sample
-            # inputs using the configured Player 1 bindings (index 0). The network
-            # slot mapping is handled by the lockstep runtime.
-            local_input_index = 0
-            for tick_offset in range(int(ticks_to_capture)):
-                inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
-                local_input = PlayerInput()
-                if 0 <= local_input_index < len(inputs):
-                    local_input = inputs[local_input_index]
-                runtime.queue_local_input(self._pack_player_input_for_net(local_input))
-        # Pump networking again after queuing local inputs so the host can emit frames
-        # in the same render frame (reduces perceived host-side input latency).
-        runtime.update()
 
         if bool(self._paused):
             self._sim_clock.reset()
@@ -581,56 +565,80 @@ class SurvivalMode(BaseGameplayMode):
         session.fx_toggle = self.config.fx_toggle
 
         dt_tick = float(self._lan_capture_clock.dt_tick)
-        while True:
-            frame = runtime.pop_tick_frame()
-            if frame is None:
-                break
+        def _consume_lan_frames() -> bool:
+            while True:
+                frame = runtime.pop_tick_frame()
+                if frame is None:
+                    return False
 
-            packed_inputs = list(getattr(frame, "frame_inputs", []) or [])
-            player_inputs = [self._unpack_player_input_from_net(packed) for packed in packed_inputs]
-            recorder = self._replay_recorder
-            if recorder is not None:
-                tick_index = recorder.record_tick(player_inputs)
-            else:
-                tick_index = None
+                packed_inputs = list(getattr(frame, "frame_inputs", []) or [])
+                player_inputs = [self._unpack_player_input_from_net(packed) for packed in packed_inputs]
+                recorder = self._replay_recorder
+                if recorder is not None:
+                    tick_index = recorder.record_tick(player_inputs)
+                else:
+                    tick_index = None
 
-            tick = session.step_tick(
-                dt_frame=float(dt_tick),
-                inputs=player_inputs,
-            )
-            self.world.apply_step_result(
-                tick.step,
-                game_tune_started=bool(session.game_tune_started),
-                apply_audio=True,
-                update_camera=True,
-            )
-            self._survival.elapsed_ms = float(session.elapsed_ms)
-            self._survival.stage = int(session.stage)
-            self._survival.spawn_cooldown = float(session.spawn_cooldown_ms)
-            world_events = tick.step.events
-
-            if tick_index is not None:
-                self._record_replay_checkpoint(
-                    int(tick_index),
-                    rng_marks=tick.rng_marks,
-                    deaths=world_events.deaths,
-                    events=world_events,
-                    command_hash=str(tick.step.command_hash),
+                tick = session.step_tick(
+                    dt_frame=float(dt_tick),
+                    inputs=player_inputs,
                 )
+                self.world.apply_step_result(
+                    tick.step,
+                    game_tune_started=bool(session.game_tune_started),
+                    apply_audio=True,
+                    update_camera=True,
+                )
+                self._survival.elapsed_ms = float(session.elapsed_ms)
+                self._survival.stage = int(session.stage)
+                self._survival.spawn_cooldown = float(session.spawn_cooldown_ms)
+                world_events = tick.step.events
 
-            if str(self._lan_role) == "host":
-                runtime.broadcast_tick_frame(
-                    TickFrame(
-                        tick_index=int(frame.tick_index),
-                        frame_inputs=list(frame.frame_inputs),
+                if tick_index is not None:
+                    self._record_replay_checkpoint(
+                        int(tick_index),
+                        rng_marks=tick.rng_marks,
+                        deaths=world_events.deaths,
+                        events=world_events,
                         command_hash=str(tick.step.command_hash),
-                        state_hash="",
                     )
-                )
 
-            if self._death_transition_ready():
-                self._enter_game_over()
-                break
+                if role == "host":
+                    runtime.broadcast_tick_frame(
+                        TickFrame(
+                            tick_index=int(frame.tick_index),
+                            frame_inputs=list(frame.frame_inputs),
+                            command_hash=str(tick.step.command_hash),
+                            state_hash="",
+                        )
+                    )
+
+                if self._death_transition_ready():
+                    self._enter_game_over()
+                    return True
+
+        if role == "join":
+            if _consume_lan_frames():
+                return
+
+        ticks_to_capture = self._lan_capture_clock.advance(dt_frame)
+        if ticks_to_capture > 0:
+            input_frame = self._build_local_inputs(dt_frame=dt_frame)
+            # In LAN sessions each peer is a single local player, so always sample
+            # inputs using the configured Player 1 bindings (index 0). The network
+            # slot mapping is handled by the lockstep runtime.
+            local_input_index = 0
+            for tick_offset in range(int(ticks_to_capture)):
+                inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
+                local_input = PlayerInput()
+                if 0 <= local_input_index < len(inputs):
+                    local_input = inputs[local_input_index]
+                runtime.queue_local_input(self._pack_player_input_for_net(local_input))
+        # Pump networking again after queuing local inputs so the host can emit frames
+        # in the same render frame (reduces perceived host-side input latency).
+        runtime.update()
+
+        _consume_lan_frames()
 
     def _draw_perk_prompt(self) -> None:
         if self._game_over_active:

@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 from ..replay.types import PackedPlayerInput
 from .lockstep import ClientLockstepState, HostLockstepState
-from .protocol import InputBatch, PauseState, TickFrame
+from .protocol import INPUT_DELAY_TICKS, InputBatch, PauseState, TickFrame
 
 
 @dataclass(slots=True)
@@ -23,7 +23,7 @@ class ResyncFailureTracker:
 @dataclass(slots=True)
 class HostLanAdapter:
     player_count: int
-    input_delay_ticks: int = 2
+    input_delay_ticks: int = INPUT_DELAY_TICKS
     input_stall_timeout_ms: int = 250
     state_hash_period_ticks: int = 120
     local_slot_index: int = 0
@@ -68,7 +68,7 @@ class HostLanAdapter:
 @dataclass(slots=True)
 class ClientLanAdapter:
     local_slot_index: int
-    input_delay_ticks: int = 2
+    input_delay_ticks: int = INPUT_DELAY_TICKS
     input_stall_timeout_ms: int = 250
     lockstep: ClientLockstepState = field(init=False)
     resync_failures: ResyncFailureTracker = field(default_factory=ResyncFailureTracker)

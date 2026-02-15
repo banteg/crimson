@@ -8,7 +8,11 @@ def test_client_input_batch_uses_three_tick_rolling_window() -> None:
     client = ClientLockstepState(local_slot_index=1, input_delay_ticks=2)
 
     batch0 = client.queue_local_input([0.0, 0.0, [1.0, 2.0], 1])
+    client.ingest_tick_frame(TickFrame(tick_index=0, frame_inputs=[], command_hash="", state_hash=""), now_ms=0)
+    assert client.pop_canonical_frame() is not None
     batch1 = client.queue_local_input([0.0, 0.0, [1.0, 2.0], 2])
+    client.ingest_tick_frame(TickFrame(tick_index=1, frame_inputs=[], command_hash="", state_hash=""), now_ms=0)
+    assert client.pop_canonical_frame() is not None
     batch2 = client.queue_local_input([0.0, 0.0, [1.0, 2.0], 3])
 
     assert [sample.tick_index for sample in batch0.samples] == [2]

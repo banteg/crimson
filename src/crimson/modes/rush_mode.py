@@ -350,8 +350,78 @@ class RushMode(BaseGameplayMode):
             return
 
         runtime.update()
-        if str(self._lan_role) == "host" and (not bool(runtime.host_remote_inputs_ready())):
+        role = str(self._lan_role)
+        if role == "host" and (not bool(runtime.host_remote_inputs_ready())):
             return
+
+        if bool(self._paused):
+            self._sim_clock.reset()
+            return
+
+        if self.world.audio_router is not None:
+            self.world.audio_router.audio = self.world.audio
+            self.world.audio_router.audio_rng = self.world.audio_rng
+            self.world.audio_router.demo_mode_active = self.world.demo_mode_active
+        if self.world.ground is not None:
+            self.world._sync_ground_settings()
+            self.world.ground.process_pending()
+        session.detail_preset = self.config.detail_preset
+        session.fx_toggle = self.config.fx_toggle
+
+        dt_tick = float(self._lan_capture_clock.dt_tick)
+        def _consume_lan_frames() -> bool:
+            while True:
+                frame = runtime.pop_tick_frame()
+                if frame is None:
+                    return False
+
+                packed_inputs = list(getattr(frame, "frame_inputs", []) or [])
+                player_inputs = [self._unpack_player_input_from_net(packed) for packed in packed_inputs]
+                recorder = self._replay_recorder
+                if recorder is not None:
+                    tick_index = recorder.record_tick(player_inputs)
+                else:
+                    tick_index = None
+                tick = session.step_tick(
+                    dt_frame=float(dt_tick),
+                    inputs=player_inputs,
+                )
+                self.world.apply_step_result(
+                    tick.step,
+                    game_tune_started=bool(session.game_tune_started),
+                    apply_audio=True,
+                    update_camera=True,
+                )
+                self._rush.elapsed_ms = float(session.elapsed_ms)
+                self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
+                world_events = tick.step.events
+
+                if tick_index is not None:
+                    self._record_replay_checkpoint(
+                        int(tick_index),
+                        rng_marks=tick.rng_marks,
+                        deaths=world_events.deaths,
+                        events=world_events,
+                        command_hash=str(tick.step.command_hash),
+                    )
+
+                if role == "host":
+                    runtime.broadcast_tick_frame(
+                        TickFrame(
+                            tick_index=int(frame.tick_index),
+                            frame_inputs=list(frame.frame_inputs),
+                            command_hash=str(tick.step.command_hash),
+                            state_hash="",
+                        )
+                    )
+
+                if not any(player.health > 0.0 for player in self.world.players):
+                    self._enter_game_over()
+                    return True
+
+        if role == "join":
+            if _consume_lan_frames():
+                return
 
         ticks_to_capture = self._lan_capture_clock.advance(dt_frame)
         if ticks_to_capture > 0:
@@ -370,69 +440,7 @@ class RushMode(BaseGameplayMode):
         # in the same render frame (reduces perceived host-side input latency).
         runtime.update()
 
-        if bool(self._paused):
-            self._sim_clock.reset()
-            return
-
-        if self.world.audio_router is not None:
-            self.world.audio_router.audio = self.world.audio
-            self.world.audio_router.audio_rng = self.world.audio_rng
-            self.world.audio_router.demo_mode_active = self.world.demo_mode_active
-        if self.world.ground is not None:
-            self.world._sync_ground_settings()
-            self.world.ground.process_pending()
-        session.detail_preset = self.config.detail_preset
-        session.fx_toggle = self.config.fx_toggle
-
-        dt_tick = float(self._lan_capture_clock.dt_tick)
-        while True:
-            frame = runtime.pop_tick_frame()
-            if frame is None:
-                break
-
-            packed_inputs = list(getattr(frame, "frame_inputs", []) or [])
-            player_inputs = [self._unpack_player_input_from_net(packed) for packed in packed_inputs]
-            recorder = self._replay_recorder
-            if recorder is not None:
-                tick_index = recorder.record_tick(player_inputs)
-            else:
-                tick_index = None
-            tick = session.step_tick(
-                dt_frame=float(dt_tick),
-                inputs=player_inputs,
-            )
-            self.world.apply_step_result(
-                tick.step,
-                game_tune_started=bool(session.game_tune_started),
-                apply_audio=True,
-                update_camera=True,
-            )
-            self._rush.elapsed_ms = float(session.elapsed_ms)
-            self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
-            world_events = tick.step.events
-
-            if tick_index is not None:
-                self._record_replay_checkpoint(
-                    int(tick_index),
-                    rng_marks=tick.rng_marks,
-                    deaths=world_events.deaths,
-                    events=world_events,
-                    command_hash=str(tick.step.command_hash),
-                )
-
-            if str(self._lan_role) == "host":
-                runtime.broadcast_tick_frame(
-                    TickFrame(
-                        tick_index=int(frame.tick_index),
-                        frame_inputs=list(frame.frame_inputs),
-                        command_hash=str(tick.step.command_hash),
-                        state_hash="",
-                    )
-                )
-
-            if not any(player.health > 0.0 for player in self.world.players):
-                self._enter_game_over()
-                break
+        _consume_lan_frames()
 
     def _draw_game_cursor(self) -> None:
         mouse_pos = self._ui_mouse

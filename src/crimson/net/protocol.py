@@ -13,7 +13,9 @@ from ..replay.types import PackedPlayerInput
 PROTOCOL_VERSION = 1
 DEFAULT_PORT = 31993
 TICK_RATE = 60
-INPUT_DELAY_TICKS = 2
+# LAN runs on a good network and doesn't need a large buffer; keeping this low
+# reduces perceived input latency.
+INPUT_DELAY_TICKS = 1
 MAX_PLAYERS = 4
 RELIABLE_RESEND_MS = 40
 LINK_TIMEOUT_MS = 1000

@@ -368,9 +368,12 @@ class LanRuntime:
         lockstep = self.client_lockstep
         if lockstep is None:
             return
-        target_tick = int(lockstep.capture_tick) + int(lockstep.input_delay_ticks)
-        self._client_input_queued_at_ms[int(target_tick)] = int(now_ms)
         batch = lockstep.queue_local_input(list(packed_input))
+        # The client lockstep can clamp its internal capture tick to stay close to
+        # lockstep progress, so compute the actual target tick after enqueuing.
+        used_capture_tick = int(lockstep.capture_tick) - 1
+        target_tick = int(used_capture_tick) + int(lockstep.input_delay_ticks)
+        self._client_input_queued_at_ms[int(target_tick)] = int(now_ms)
         self._client_send(batch, reliable=False, now_ms=int(now_ms))
 
     def pop_tick_frame(self) -> TickFrame | None:
@@ -790,12 +793,19 @@ class LanRuntime:
         if lockstep is not None and int(lockstep.buffered_frame_count) <= 0:
             stall_ms = max(0, int(now_ms) - int(lockstep.last_progress_ms))
 
+        capture_tick = int(lockstep.capture_tick) if lockstep is not None else 0
+        consume_tick = int(lockstep.next_consume_tick) if lockstep is not None else 0
+        buffered_frames = int(lockstep.buffered_frame_count) if lockstep is not None else 0
         lan_debug_log(
             "net_metrics",
             role="join",
             delay_ticks=int(delay_ticks),
             delay_ms=int(delay_ms),
             stall_ms=int(stall_ms),
+            capture_tick=int(capture_tick),
+            consume_tick=int(consume_tick),
+            lead_ticks=int(capture_tick) - int(consume_tick),
+            buffered_frames=int(buffered_frames),
             rtt_ms=int(link.rtt_last_ms) if link is not None else 0,
             rtt_ewma_ms=int(link.rtt_ewma_ms) if link is not None else 0,
             pending=int(pending),

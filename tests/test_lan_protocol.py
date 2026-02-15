@@ -34,7 +34,7 @@ def test_protocol_constants_match_spec() -> None:
     assert protocol.PROTOCOL_VERSION == 1
     assert protocol.DEFAULT_PORT == 31993
     assert protocol.TICK_RATE == 60
-    assert protocol.INPUT_DELAY_TICKS == 2
+    assert protocol.INPUT_DELAY_TICKS == 1
     assert protocol.MAX_PLAYERS == 4
     assert protocol.RELIABLE_RESEND_MS == 40
     assert protocol.LINK_TIMEOUT_MS == 1000
