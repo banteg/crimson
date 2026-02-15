@@ -34,6 +34,12 @@ def _now_ms() -> int:
     return int(time.monotonic() * 1000.0)
 
 
+# The host is authoritative and doesn't need to queue inputs far ahead. Keeping
+# the host capture clock close to lockstep progress avoids persistent host-side
+# input lag if the host stalls briefly and then "runs behind" real time.
+HOST_MAX_CAPTURE_LEAD_TICKS = 1
+
+
 @dataclass(slots=True)
 class LanRuntimeConfig:
     role: str
@@ -355,6 +361,12 @@ class LanRuntime:
             lockstep = self.host_lockstep
             if lockstep is None:
                 return
+            # Keep the host capture clock close to lockstep progress. Otherwise
+            # even short stalls can cause the host to queue inputs far in the
+            # future, which shows up as persistent host-side input latency.
+            max_capture_tick = int(lockstep.next_emit_tick) + int(HOST_MAX_CAPTURE_LEAD_TICKS)
+            if int(self.host_capture_tick) > int(max_capture_tick):
+                self.host_capture_tick = int(max_capture_tick)
             target_tick = int(self.host_capture_tick) + int(self.cfg.input_delay_ticks)
             self._host_input_queued_at_ms[int(target_tick)] = int(now_ms)
             lockstep.submit_input_sample(
@@ -758,6 +770,11 @@ class LanRuntime:
             if lockstep is not None and waiting_for > 0:
                 stall_ms = max(0, int(now_ms) - int(lockstep.last_progress_ms))
 
+            capture_tick = int(self.host_capture_tick)
+            emit_tick = int(lockstep.next_emit_tick) if lockstep is not None else 0
+            ready_frames = int(len(self.host_ready_frames))
+            buffered_ticks = int(lockstep.buffered_tick_count) if lockstep is not None else 0
+
             rtts = [int(peer.link.rtt_last_ms) for peer in self.host_peers.values() if peer.link.rtt_last_ms > 0]
             rtt_min = min(rtts) if rtts else 0
             rtt_max = max(rtts) if rtts else 0
@@ -771,6 +788,11 @@ class LanRuntime:
                 role="host",
                 delay_ticks=int(delay_ticks),
                 delay_ms=int(delay_ms),
+                capture_tick=int(capture_tick),
+                emit_tick=int(emit_tick),
+                lead_ticks=int(capture_tick) - int(emit_tick),
+                ready_frames=int(ready_frames),
+                buffered_ticks=int(buffered_ticks),
                 waiting_for=int(waiting_for),
                 stall_ms=int(stall_ms),
                 rtt_min_ms=int(rtt_min),
