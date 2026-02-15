@@ -131,6 +131,7 @@ class BaseGameplayMode:
         self._last_dt_ms = 0.0
         self._screen_fade: _ScreenFade | None = None
         self._local_input = LocalInputInterpreter()
+        self._terrain_regen_counter = 0
         self._lan_runtime: LanRuntime | None = None
         self._lan_local_slot_index = 0
         self._lan_seed_override: int | None = None
@@ -558,18 +559,12 @@ class BaseGameplayMode:
         if record is None:
             return
 
-        rand = None
-        audio_rng = self.world.audio_rng
-        if audio_rng is not None:
-            def rand() -> int:
-                return int(audio_rng.randrange(0, 0x8000))
-
         action = self._game_over_ui.update(
             dt,
             record=record,
             player_name_default=self._player_name_default(),
             play_sfx=self.world.audio_router.play_sfx,
-            rand=rand,
+            rand=None,
             mouse=self._ui_mouse_pos(),
         )
         if action == "play_again":
@@ -619,7 +614,9 @@ class BaseGameplayMode:
     def regenerate_terrain_for_console(self) -> None:
         if self.world.ground is None:
             return
-        terrain_seed = int(self.world.terrain_rng.randrange(0, 10_000))
+        # Keep this deterministic without consuming gameplay RNG.
+        self._terrain_regen_counter = (int(self._terrain_regen_counter) + 1) & 0xFFFFFFFF
+        terrain_seed = (int(self.state.rng.state) + int(self._terrain_regen_counter)) & 0xFFFFFFFF
         self.world.ground.schedule_generate(seed=terrain_seed, layers=3)
 
     def _draw_screen_fade(self) -> None:

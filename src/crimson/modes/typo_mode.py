@@ -128,12 +128,9 @@ class TypoShooterMode(BaseGameplayMode):
     def _handle_typing_input(self) -> tuple[bool, bool]:
         fire_pressed = False
         reload_pressed = False
-        audio_rng = self.world.audio_rng
 
         def _typeclick_key() -> str:
-            if audio_rng is None:
-                return "sfx_ui_typeclick_01"
-            return "sfx_ui_typeclick_01" if (int(audio_rng.randrange(0, 0x8000)) & 1) == 0 else "sfx_ui_typeclick_02"
+            return "sfx_ui_typeclick_01"
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
             self._typing.backspace()
