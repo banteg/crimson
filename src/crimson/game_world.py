@@ -85,6 +85,7 @@ class GameWorld:
     last_events: WorldEvents = field(init=False)
     last_presentation: PresentationStepCommands = field(init=False)
     last_command_hash: str = field(init=False, default="")
+    lan_player_rings_enabled: bool = field(init=False, default=False)
 
     def __post_init__(self) -> None:
         self.world_state = WorldState.build(
