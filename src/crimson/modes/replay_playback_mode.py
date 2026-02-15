@@ -106,16 +106,14 @@ class ReplayPlaybackMode:
             audio=None,
             audio_rng=None,
         )
-        world.reset(seed=0xBEEF, player_count=int(replay.header.player_count))
+        world.reset(seed=int(replay.header.seed), player_count=int(replay.header.player_count))
         world.open()
         world.state.status = status_from_snapshot(
             quest_unlock_index=int(replay.header.status.quest_unlock_index),
             quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
             weapon_usage_counts=replay.header.status.weapon_usage_counts,
         )
-        # Important: `GameWorld.open()` consumes RNG for terrain generation. Treat `replay.header.seed` as the
-        # gameplay RNG state at tick 0 and set it after `open()` to keep headless verification deterministic.
-        world.state.rng.srand(int(replay.header.seed))
+        # `replay.header.seed` is the gameplay RNG state at tick 0; presentation systems must not consume it.
 
         self._world = world
 
@@ -126,8 +124,8 @@ class ReplayPlaybackMode:
                 damage_scale_by_type=self._damage_scale_by_type,
                 fx_queue=world.fx_queue,
                 fx_queue_rotated=world.fx_queue_rotated,
-                detail_preset=5,
-                fx_toggle=0,
+                detail_preset=int(replay.header.detail_preset),
+                fx_toggle=int(replay.header.fx_toggle),
                 game_tune_started=bool(world._game_tune_started),
                 clear_fx_queues_each_tick=False,
             )
@@ -145,8 +143,8 @@ class ReplayPlaybackMode:
                 damage_scale_by_type=self._damage_scale_by_type,
                 fx_queue=world.fx_queue,
                 fx_queue_rotated=world.fx_queue_rotated,
-                detail_preset=5,
-                fx_toggle=0,
+                detail_preset=int(replay.header.detail_preset),
+                fx_toggle=int(replay.header.fx_toggle),
                 game_tune_started=bool(world._game_tune_started),
                 clear_fx_queues_each_tick=False,
                 enforce_loadout=self._enforce_rush_loadout,

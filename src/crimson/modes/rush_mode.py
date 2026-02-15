@@ -183,6 +183,8 @@ class RushMode(BaseGameplayMode):
                     difficulty_level=int(self.world.difficulty_level),
                     hardcore=bool(self.world.hardcore),
                     preserve_bugs=bool(self.world.preserve_bugs),
+                    detail_preset=self.config.detail_preset,
+                    fx_toggle=self.config.fx_toggle,
                     world_size=float(self.world.world_size),
                     player_count=len(self.world.players),
                     status=status_snapshot,

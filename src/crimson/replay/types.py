@@ -3,7 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Literal, TypeAlias
 
-ReplayFormatVersion: TypeAlias = Literal[1]
+REPLAY_FORMAT_VERSION = 2
+ReplayFormatVersion: TypeAlias = Literal[2]
 
 WEAPON_USAGE_COUNT = 53
 
@@ -141,6 +142,8 @@ class ReplayHeader:
     difficulty_level: int = 0
     hardcore: bool = False
     preserve_bugs: bool = False
+    detail_preset: int = 5
+    fx_toggle: int = 0
     world_size: float = 1024.0
     player_count: int = 1
     status: ReplayStatusSnapshot = field(default_factory=ReplayStatusSnapshot)

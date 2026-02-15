@@ -14,6 +14,7 @@ from .types import (
     PerkPickEvent,
     Replay,
     ReplayEvent,
+    REPLAY_FORMAT_VERSION,
     ReplayHeader,
     ReplayStatusSnapshot,
     WEAPON_USAGE_COUNT,
@@ -21,7 +22,6 @@ from .types import (
 )
 
 _GZIP_MAGIC = b"\x1f\x8b"
-_FORMAT_VERSION = 1
 
 
 class ReplayCodecError(ValueError):
@@ -77,6 +77,8 @@ def _header_from_dict(data: dict[str, Any]) -> ReplayHeader:
         difficulty_level=int(data.get("difficulty_level", 0)),
         hardcore=bool(data.get("hardcore", False)),
         preserve_bugs=bool(data.get("preserve_bugs", False)),
+        detail_preset=int(data.get("detail_preset", 5)),
+        fx_toggle=int(data.get("fx_toggle", 0)),
         world_size=float(data.get("world_size", 1024.0)),
         player_count=int(data.get("player_count", 1)),
         status=status,
@@ -149,7 +151,7 @@ def replay_to_obj(replay: Replay) -> dict[str, Any]:
 
 def replay_from_obj(obj: dict[str, Any]) -> Replay:
     version = int(obj.get("v", 0))
-    if version != _FORMAT_VERSION:
+    if version != int(REPLAY_FORMAT_VERSION):
         raise ReplayCodecError(f"unsupported replay version: {version}")
 
     header_in = obj.get("header")
