@@ -320,7 +320,7 @@ class LanRuntime:
         return int(self.transport.bound_port)
 
     def debug_overlay_lines(self) -> list[str]:
-        """Return short debug HUD lines for in-game overlays (guarded by --debug)."""
+        """Return compact LAN debug HUD lines for in-game overlays."""
         lines: list[str] = []
         role = str(self.cfg.role)
         now_ms = _now_ms()
@@ -341,84 +341,84 @@ class LanRuntime:
             )
 
         if role == "host":
-            lines.append(
-                "net(host): "
-                f"bind={self.cfg.bind_host}:{self.bound_port} "
-                f"peers={len(self.host_peers)}/{max(0, int(self.cfg.player_count) - 1)} "
-                f"started={int(self.started)}"
-            )
+            peer_total = max(0, int(self.cfg.player_count) - 1)
             lockstep = self.host_lockstep
+            emit_tick = 0
+            lead_ticks = 0
+            waiting_for = 0
+            stall_ms = 0
             if lockstep is not None:
+                emit_tick = int(lockstep.next_emit_tick)
+                lead_ticks = int(self.host_capture_tick) - int(emit_tick)
                 waiting_for = int(lockstep.waiting_for_inputs())
-                stall_ms = 0
                 if waiting_for > 0:
                     stall_ms = max(0, int(now_ms) - int(lockstep.last_progress_ms))
-                target_lead = int(self.host_capture_tick) + int(delay_ticks) - int(lockstep.next_emit_tick)
-                lines.append(
-                    "lockstep(host): "
-                    f"capture={int(self.host_capture_tick)} "
-                    f"emit={int(lockstep.next_emit_tick)} "
-                    f"target_lead={int(target_lead)} "
-                    f"ready_frames={len(self.host_ready_frames)} "
-                    f"buffered_ticks={int(lockstep.buffered_tick_count)} "
-                    f"waiting_for={int(waiting_for)} "
-                    f"paused={int(lockstep.paused)} "
-                    f"stall_ms={int(stall_ms)}"
-                )
-                rtts = [int(peer.link.rtt_last_ms) for peer in self.host_peers.values() if peer.link.rtt_last_ms > 0]
-                rtt_label = "?"
-                if rtts:
-                    rtt_label = f"{min(rtts)}..{max(rtts)}"
-                pending_max = max((int(peer.link.pending_count) for peer in self.host_peers.values()), default=0)
-                resends_total = sum(int(peer.link.resend_count) for peer in self.host_peers.values())
-                input_ms = int(self._host_local_input_latency_ms)
-                input_ewma_ms = int(self._host_local_input_latency_ewma_ms)
-                lines.append(
-                    "lat(host): "
-                    f"delay={delay_ticks}t({delay_ms}ms) "
-                    f"input_ms={input_ms}/{input_ewma_ms} "
-                    f"rtt_ms={rtt_label} "
-                    f"pending={pending_max} "
-                    f"resends={resends_total}"
-                )
+            rtts = [int(peer.link.rtt_last_ms) for peer in self.host_peers.values() if peer.link.rtt_last_ms > 0]
+            rtt_label = "?"
+            if rtts:
+                rtt_label = f"{min(rtts)}..{max(rtts)}"
+            pending_max = max((int(peer.link.pending_count) for peer in self.host_peers.values()), default=0)
+            lines.append(
+                "net(host): "
+                f"peers={len(self.host_peers)}/{int(peer_total)} "
+                f"emit={int(emit_tick)} "
+                f"lead={int(lead_ticks)} "
+                f"wait={int(waiting_for)} "
+                f"stall={int(stall_ms)}ms"
+            )
+            lines.append(
+                "link(host): "
+                f"delay={delay_ticks}t({delay_ms}ms) "
+                f"rtt={rtt_label}ms "
+                f"pending={int(pending_max)}"
+            )
             return lines
 
         lobby = self.client_lobby
         host = self.client_host_addr
-        host_label = f"{host[0]}:{host[1]}" if host is not None else "?"
+        host_label = f"{host[0]}:{host[1]}" if host is not None else "?:?"
         joined = bool(lobby.joined) if lobby is not None else False
         started = bool(lobby.started) if lobby is not None else False
         slot = int(lobby.slot_index) if lobby is not None else -1
-        lines.append(
-            "net(join): "
-            f"host={host_label} local_port={self.bound_port} slot={slot} joined={int(joined)} started={int(started)}"
-        )
 
         lockstep = self.client_lockstep
+        consume_tick = 0
+        buffered_frames = 0
+        stall_ms = 0
+        paused = 0
         if lockstep is not None:
-            stall_ms = 0
+            consume_tick = int(lockstep.next_consume_tick)
+            buffered_frames = int(lockstep.buffered_frame_count)
+            paused = int(lockstep.paused)
             if int(lockstep.buffered_frame_count) <= 0:
                 stall_ms = max(0, int(now_ms) - int(lockstep.last_progress_ms))
-            lines.append(
-                "lockstep(join): "
-                f"capture={int(lockstep.capture_tick)} "
-                f"consume={int(lockstep.next_consume_tick)} "
-                f"buffered_frames={int(lockstep.buffered_frame_count)} "
-                f"paused={int(lockstep.paused)} "
-                f"stall_ms={int(stall_ms)}"
-            )
+
         link = self.client_link
+        rtt_last = 0
+        rtt_ewma = 0
+        pending = 0
         if link is not None:
-            input_ms = int(self._client_local_input_latency_ms)
-            input_ewma_ms = int(self._client_local_input_latency_ewma_ms)
-            lines.append(
-                "lat(join): "
-                f"delay={delay_ticks}t({delay_ms}ms) "
-                f"input_ms={input_ms}/{input_ewma_ms} "
-                f"rtt_ms={int(link.rtt_last_ms)}/{int(link.rtt_ewma_ms)} "
-                f"pending={int(link.pending_count)} "
-                f"resends={int(link.resend_count)}"
-            )
+            rtt_last = int(link.rtt_last_ms)
+            rtt_ewma = int(link.rtt_ewma_ms)
+            pending = int(link.pending_count)
+
+        lines.append(
+            "net(join): "
+            f"host={host_label} "
+            f"slot={int(slot)} "
+            f"joined={int(joined)} "
+            f"started={int(started)} "
+            f"consume={int(consume_tick)} "
+            f"buf={int(buffered_frames)} "
+            f"stall={int(stall_ms)}ms "
+            f"pause={int(paused)}"
+        )
+        lines.append(
+            "link(join): "
+            f"delay={delay_ticks}t({delay_ms}ms) "
+            f"rtt={int(rtt_last)}/{int(rtt_ewma)}ms "
+            f"pending={int(pending)}"
+        )
         pause = self.client_pause_state
         if pause is not None and bool(pause.paused):
             lines.append(f"pause: {str(pause.reason or '')}")
