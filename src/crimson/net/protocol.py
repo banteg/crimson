@@ -201,6 +201,13 @@ class DesyncNotice(msgspec.Struct, tag_field="kind", tag="desync_notice", forbid
     actual_command_hash: str = ""
 
 
+class DebugLogBatch(msgspec.Struct, tag_field="kind", tag="debug_log_batch", forbid_unknown_fields=True):
+    """Client-to-host debug log forwarding payload (best-effort)."""
+
+    slot_index: int = -1
+    lines: list[str] = msgspec.field(default_factory=list)
+
+
 class ResyncBegin(msgspec.Struct, tag_field="kind", tag="resync_begin", forbid_unknown_fields=True):
     stream_id: str = ""
     total_chunks: int = 0
@@ -233,6 +240,7 @@ NetMessage: TypeAlias = (
     | TickFrame
     | PauseState
     | DesyncNotice
+    | DebugLogBatch
     | ResyncBegin
     | ResyncChunk
     | ResyncCommit

@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass, field
+import datetime as dt
+from pathlib import Path
 import socket
 import time
 
-from .debug_log import lan_debug_log
+from .debug_log import lan_debug_log, lan_debug_log_path, set_lan_debug_forwarder
 from .lobby import ClientLobby, HostLobby
 from .lockstep import ClientLockstepState, HostLockstepState
 from .protocol import (
@@ -13,6 +15,7 @@ from .protocol import (
     LINK_TIMEOUT_MS,
     PROTOCOL_VERSION,
     TICK_RATE,
+    DebugLogBatch,
     DesyncNotice,
     Disconnect,
     Hello,
@@ -39,6 +42,13 @@ def _now_ms() -> int:
 # the host capture clock close to lockstep progress avoids persistent host-side
 # input lag if the host stalls briefly and then "runs behind" real time.
 HOST_MAX_CAPTURE_LEAD_TICKS = 1
+
+# Best-effort debug log mirroring from clients to host.
+CLIENT_LOG_FORWARD_FLUSH_MS = 200
+CLIENT_LOG_FORWARD_MAX_QUEUE_LINES = 5000
+CLIENT_LOG_FORWARD_MAX_LINES_PER_BATCH = 50
+# Keep under common MTU to avoid fragmentation (msgpack overhead not accounted).
+CLIENT_LOG_FORWARD_MAX_CHARS_PER_BATCH = 900
 
 
 @dataclass(slots=True)
@@ -109,6 +119,13 @@ class LanRuntime:
     last_desync_actual: str = field(init=False, default="")
     _last_desync_notice_sent_tick: int = field(init=False, default=-10**9)
 
+    _client_log_forward_queue: deque[str] = field(init=False, default_factory=deque)
+    _client_log_forward_last_flush_ms: int = field(init=False, default=0)
+    _client_log_forward_dropped: int = field(init=False, default=0)
+    _client_log_forward_enabled: bool = field(init=False, default=False)
+
+    _host_remote_log_paths: dict[int, Path] = field(init=False, default_factory=dict)
+
     _neutral_input: PackedPlayerInput = field(
         init=False,
         default_factory=lambda: [0.0, 0.0, [0.0, 0.0], 0],
@@ -137,6 +154,11 @@ class LanRuntime:
         self.last_desync_expected = ""
         self.last_desync_actual = ""
         self._last_desync_notice_sent_tick = -10**9
+        self._client_log_forward_queue.clear()
+        self._client_log_forward_last_flush_ms = 0
+        self._client_log_forward_dropped = 0
+        self._client_log_forward_enabled = False
+        self._host_remote_log_paths.clear()
         lan_debug_log(
             "net_open",
             role=str(self.cfg.role),
@@ -176,6 +198,8 @@ class LanRuntime:
                 port=int(self.cfg.port),
             )
             self.client_link = ReliableLink()
+            set_lan_debug_forwarder(self._client_forward_log_line)
+            self._client_log_forward_enabled = True
             hello = Hello(
                 protocol_version=int(PROTOCOL_VERSION),
                 build_id=str(self.build_id),
@@ -225,6 +249,13 @@ class LanRuntime:
             self.last_desync_expected = ""
             self.last_desync_actual = ""
             self._last_desync_notice_sent_tick = -10**9
+            self._client_log_forward_queue.clear()
+            self._client_log_forward_last_flush_ms = 0
+            self._client_log_forward_dropped = 0
+            if self._client_log_forward_enabled:
+                set_lan_debug_forwarder(None)
+            self._client_log_forward_enabled = False
+            self._host_remote_log_paths.clear()
             self.started = False
             self.error = ""
             lan_debug_log("net_close", role=str(self.cfg.role))
@@ -425,6 +456,106 @@ class LanRuntime:
             )
         except Exception:
             return
+
+    def _client_forward_log_line(self, line: str) -> None:
+        # Best-effort: keep a bounded queue of recent log lines.
+        if not bool(self._client_log_forward_enabled):
+            return
+        if str(self.cfg.role) != "join":
+            return
+        if len(self._client_log_forward_queue) >= int(CLIENT_LOG_FORWARD_MAX_QUEUE_LINES):
+            self._client_log_forward_queue.popleft()
+            self._client_log_forward_dropped = int(self._client_log_forward_dropped) + 1
+        self._client_log_forward_queue.append(str(line))
+
+    def _client_flush_forwarded_logs(self, *, now_ms: int) -> None:
+        if not bool(self._client_log_forward_enabled):
+            return
+        if (int(now_ms) - int(self._client_log_forward_last_flush_ms)) < int(CLIENT_LOG_FORWARD_FLUSH_MS):
+            return
+
+        if (not self._client_log_forward_queue) and int(self._client_log_forward_dropped) <= 0:
+            return
+
+        lobby = self.client_lobby
+        if lobby is None:
+            return
+        welcome = getattr(lobby, "welcome", None)
+        if welcome is None or not bool(getattr(welcome, "accepted", False)):
+            return
+        slot_index = int(getattr(welcome, "slot_index", -1) or -1)
+        if int(slot_index) <= 0:
+            return
+
+        lines: list[str] = []
+        chars = 0
+        dropped = int(self._client_log_forward_dropped)
+        if dropped > 0:
+            timestamp = dt.datetime.now(dt.timezone.utc).isoformat(timespec="milliseconds")
+            drop_line = f"{timestamp} event=log_forward_drop dropped={int(dropped)}\n"
+            lines.append(drop_line)
+            chars += len(drop_line)
+            self._client_log_forward_dropped = 0
+
+        while self._client_log_forward_queue and len(lines) < int(CLIENT_LOG_FORWARD_MAX_LINES_PER_BATCH):
+            next_line = str(self._client_log_forward_queue[0])
+            if lines and (int(chars) + len(next_line)) > int(CLIENT_LOG_FORWARD_MAX_CHARS_PER_BATCH):
+                break
+            if (not lines) and len(next_line) > int(CLIENT_LOG_FORWARD_MAX_CHARS_PER_BATCH):
+                # Oversized line: still forward it (single line batch).
+                lines.append(str(self._client_log_forward_queue.popleft()))
+                break
+            lines.append(str(self._client_log_forward_queue.popleft()))
+            chars += len(lines[-1])
+
+        if not lines:
+            return
+
+        self._client_log_forward_last_flush_ms = int(now_ms)
+        try:
+            self._client_send(
+                DebugLogBatch(slot_index=int(slot_index), lines=lines),
+                reliable=False,
+                now_ms=int(now_ms),
+            )
+        except Exception:
+            # Don't let debug log forwarding affect gameplay.
+            return
+
+    def _host_write_remote_log_batch(self, *, addr: PeerAddr, slot_index: int, lines: list[str]) -> None:
+        if int(slot_index) <= 0:
+            return
+        if not lines:
+            return
+
+        path = self._host_remote_log_paths.get(int(slot_index))
+        if path is None:
+            host_path = lan_debug_log_path()
+            if host_path is None:
+                return
+            safe_ip = str(addr[0]).replace(":", "_").replace("/", "_")
+            timestamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
+            path = host_path.parent / f"lan-client-slot{int(slot_index)}-from{safe_ip}-{int(addr[1])}-{timestamp}.log"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            session_id = ""
+            lobby = self.host_lobby
+            if lobby is not None:
+                session_id = str(getattr(lobby, "session_id", "") or "")
+            init_ts = dt.datetime.now(dt.timezone.utc).isoformat(timespec="milliseconds")
+            init_line = (
+                f"{init_ts} event=remote_log_init slot_index={int(slot_index)} "
+                f"addr={addr[0]}:{int(addr[1])} session_id={session_id}\n"
+            )
+            with path.open("a", encoding="utf-8") as handle:
+                handle.write(init_line)
+            self._host_remote_log_paths[int(slot_index)] = path
+
+        with path.open("a", encoding="utf-8") as handle:
+            for line in lines:
+                text = str(line)
+                if not text.endswith("\n"):
+                    text += "\n"
+                handle.write(text)
 
     def queue_local_input(self, packed_input: PackedPlayerInput, *, now_ms: int | None = None) -> None:
         if now_ms is None:
@@ -636,6 +767,15 @@ class LanRuntime:
                 actual=str(message.actual_command_hash or ""),
             )
             return
+        if isinstance(message, DebugLogBatch):
+            mapped_slot = lobby.slot_for_addr(addr)
+            msg_slot = int(getattr(message, "slot_index", -1) or -1)
+            slot_index = int(mapped_slot) if mapped_slot is not None else int(msg_slot)
+            if int(slot_index) <= 0:
+                return
+            lines = list(getattr(message, "lines", []) or [])
+            self._host_write_remote_log_batch(addr=addr, slot_index=int(slot_index), lines=lines)
+            return
         if isinstance(message, InputBatch):
             lockstep = self.host_lockstep
             if lockstep is None:
@@ -738,6 +878,8 @@ class LanRuntime:
             if not self.error:
                 self.error = "timeout"
                 lan_debug_log("net_timeout", role="join", addr=f"{host[0]}:{host[1]}")
+
+        self._client_flush_forwarded_logs(now_ms=int(now_ms))
 
         for resend in link.poll_resends(now_ms=int(now_ms)):
             try:
@@ -944,6 +1086,9 @@ class LanRuntime:
         try:
             self.transport.send_packet(host, packet)
         except OSError:
+            return
+        if isinstance(message, DebugLogBatch):
+            # Avoid recursive log forwarding (sending logs would itself get logged).
             return
         if isinstance(message, InputBatch):
             max_tick = -1
