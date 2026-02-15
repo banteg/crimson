@@ -161,7 +161,8 @@ class PerkMenuDebugView:
             bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
             local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
             local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
-            src = rl.Rectangle(float(tex.width), 0.0, -float(tex.width), float(tex.height))
+            # Keep the flipped UVs within range so CLAMP wrap doesn't collapse to the edge texel.
+            src = rl.Rectangle(0.0, 0.0, -float(tex.width), float(tex.height))
             dst = rl.Rectangle(hinge.x, hinge.y, bar_w, bar_h)
             origin = rl.Vector2(float(-local_x), float(-local_y))
             rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
