@@ -4,7 +4,7 @@ from pathlib import Path
 
 from crimson.net.debug_log import close_lan_debug_log, init_lan_debug_log
 from crimson.net.lobby import HostLobby
-from crimson.net.protocol import DebugLogBatch, Hello, INPUT_DELAY_TICKS, TICK_RATE
+from crimson.net.protocol import DebugLogBatch, Hello, INPUT_DELAY_TICKS, PROTOCOL_VERSION, TICK_RATE
 from crimson.net.runtime import LanRuntime, LanRuntimeConfig
 
 
@@ -43,7 +43,7 @@ def test_host_writes_remote_client_log_batches(tmp_path: Path) -> None:
     welcome = lobby.process_hello(
         addr,
         Hello(
-            protocol_version=1,
+            protocol_version=int(PROTOCOL_VERSION),
             build_id="0.1.0",
             mode_id=1,
             player_count=2,
@@ -70,4 +70,3 @@ def test_host_writes_remote_client_log_batches(tmp_path: Path) -> None:
     assert "event=test" in text
 
     close_lan_debug_log()
-

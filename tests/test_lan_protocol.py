@@ -46,7 +46,7 @@ def test_debug_log_batch_msgpack_round_trip() -> None:
 
 
 def test_protocol_constants_match_spec() -> None:
-    assert protocol.PROTOCOL_VERSION == 1
+    assert protocol.PROTOCOL_VERSION == 2
     assert protocol.DEFAULT_PORT == 31993
     assert protocol.TICK_RATE == 60
     assert protocol.INPUT_DELAY_TICKS == 1

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from crimson.net.lobby import HostLobby
-from crimson.net.protocol import Hello, Ready, TICK_RATE, INPUT_DELAY_TICKS
+from crimson.net.protocol import Hello, INPUT_DELAY_TICKS, PROTOCOL_VERSION, Ready, TICK_RATE
 
 
 def _hello(*, build_id: str = "b1", mode_id: int = 1, player_count: int = 2) -> Hello:
     return Hello(
-        protocol_version=1,
+        protocol_version=int(PROTOCOL_VERSION),
         build_id=build_id,
         mode_id=mode_id,
         player_count=player_count,
@@ -91,7 +91,7 @@ def test_host_lobby_accepts_mismatched_client_mode_and_players() -> None:
     welcome = lobby.process_hello(
         ("127.0.0.1", 32001),
         Hello(
-            protocol_version=1,
+            protocol_version=int(PROTOCOL_VERSION),
             build_id="b1",
             mode_id=0,
             player_count=1,

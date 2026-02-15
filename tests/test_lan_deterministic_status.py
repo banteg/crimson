@@ -4,7 +4,7 @@ from pathlib import Path
 
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
-from crimson.net.deterministic_status import build_lan_deterministic_status
+from crimson.net.deterministic_status import build_lan_deterministic_status, status_snapshot_from_status
 from crimson.persistence.save_status import (
     QUEST_PLAY_COUNT,
     UNKNOWN_TAIL_SIZE,
@@ -51,7 +51,7 @@ def _make_state(*, status: GameStatus, rng: _SeqRng) -> GameplayState:
     return state
 
 
-def test_lan_deterministic_status_ignores_save_weapon_usage_counts() -> None:
+def test_lan_deterministic_status_uses_host_save_snapshot() -> None:
     # Craft a sequence where the first pick is pistol (weapon_id=1). If pistol
     # usage count is non-zero, native logic has a 50% chance to reroll and will
     # consume extra RNG draws.
@@ -73,17 +73,18 @@ def test_lan_deterministic_status_ignores_save_weapon_usage_counts() -> None:
     assert rng_a.calls == 3
     assert rng_b.calls == 1
 
-    lan_status_a = build_lan_deterministic_status(base=status_used)
-    lan_status_b = build_lan_deterministic_status(base=status_fresh)
+    host_snapshot = status_snapshot_from_status(status_used)
+    lan_status_a = build_lan_deterministic_status(snapshot=host_snapshot)
+    lan_status_b = build_lan_deterministic_status(snapshot=host_snapshot)
 
-    # LAN sim status starts with zero usage counts for all peers, so both runs
-    # should take the same path and consume the same RNG.
+    # LAN sim status uses the host's save snapshot for all peers, so both runs
+    # should take the same path and consume the same RNG regardless of local saves.
     rng_c = _SeqRng(list(seq))
     rng_d = _SeqRng(list(seq))
     state_c = _make_state(status=lan_status_a, rng=rng_c)
     state_d = _make_state(status=lan_status_b, rng=rng_d)
 
-    assert weapon_pick_random_available(state_c) == 1
-    assert weapon_pick_random_available(state_d) == 1
-    assert rng_c.calls == 1
-    assert rng_d.calls == 1
+    assert weapon_pick_random_available(state_c) == 2
+    assert weapon_pick_random_available(state_d) == 2
+    assert rng_c.calls == 3
+    assert rng_d.calls == 3

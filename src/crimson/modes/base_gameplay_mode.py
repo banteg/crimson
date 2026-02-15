@@ -41,6 +41,7 @@ from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_asset
 if TYPE_CHECKING:
     from ..persistence.save_status import GameStatus
     from ..net.runtime import LanRuntime
+    from ..net.protocol import StatusSnapshot
 
 
 class _ScreenFade(Protocol):
@@ -112,6 +113,7 @@ class BaseGameplayMode:
         self._status_base: GameStatus | None = None
         self._status_sim: GameStatus | None = None
         self._lan_status: GameStatus | None = None
+        self._lan_status_snapshot: StatusSnapshot | None = None
 
         self.world = GameWorld(
             assets_dir=ctx.assets_dir,
@@ -161,10 +163,11 @@ class BaseGameplayMode:
     def _refresh_effective_status(self, *, reset_lan_status: bool) -> None:
         if bool(self._lan_enabled):
             if bool(reset_lan_status) or self._lan_status is None:
-                self._lan_status = build_lan_deterministic_status(base=self._status_base)
+                self._lan_status = build_lan_deterministic_status(snapshot=self._lan_status_snapshot)
             self._status_sim = self._lan_status
         else:
             self._lan_status = None
+            self._lan_status_snapshot = None
             self._status_sim = self._status_base
 
         # Keep the currently-bound world state in sync (note that `open()` resets
@@ -179,9 +182,19 @@ class BaseGameplayMode:
             slot_index = int(getattr(runtime, "local_slot_index", 0))
         self._lan_local_slot_index = max(0, min(3, int(slot_index)))
 
-    def set_lan_match_start(self, *, seed: int, start_tick: int = 0) -> None:
+    def set_lan_match_start(
+        self,
+        *,
+        seed: int,
+        start_tick: int = 0,
+        status_snapshot: StatusSnapshot | None = None,
+    ) -> None:
         self._lan_seed_override = int(seed)
         self._lan_start_tick = int(start_tick)
+        if status_snapshot is not None:
+            self._lan_status_snapshot = status_snapshot
+            if bool(self._lan_enabled):
+                self._refresh_effective_status(reset_lan_status=True)
 
     def _cvar_float(self, name: str, default: float = 0.0) -> float:
         console = self._console
