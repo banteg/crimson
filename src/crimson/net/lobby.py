@@ -52,6 +52,8 @@ class HostLobby:
             return Welcome(accepted=False, reason="protocol_mismatch")
         if str(hello.build_id) != str(self.build_id):
             return Welcome(accepted=False, reason="build_mismatch")
+        if bool(getattr(hello, "host", False)):
+            return Welcome(accepted=False, reason="hello_host_flag")
 
         peer = self.peers_by_addr.get(addr)
         if peer is None:

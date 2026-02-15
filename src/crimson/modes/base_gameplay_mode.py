@@ -524,6 +524,7 @@ class BaseGameplayMode:
         self._game_over_ui.close()
 
         player_count = self.config.player_count
+        seed_source = "lan_override" if self._lan_seed_override is not None else "random"
         if self._lan_seed_override is not None:
             seed = int(self._lan_seed_override)
         else:
@@ -532,6 +533,24 @@ class BaseGameplayMode:
         self.world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self.world.open()
         self._bind_world()
+        ground = self.world.ground
+        lan_debug_log(
+            "mode_world_reset",
+            mode=self.__class__.__name__,
+            seed=int(self._bootstrap_seed),
+            seed_source=str(seed_source),
+            rng_state=int(getattr(self.world.state.rng, "state", 0) or 0),
+            world_size=float(getattr(self.world, "world_size", 0.0) or 0.0),
+            player_count=int(len(getattr(self.world, "players", []) or [])),
+            lan_enabled=bool(self._lan_enabled),
+            lan_role=str(self._lan_role),
+            lan_slot=int(self._lan_local_slot_index),
+            screen_w=int(rl.get_screen_width()),
+            screen_h=int(rl.get_screen_height()),
+            render_w=int(rl.get_render_width()),
+            render_h=int(rl.get_render_height()),
+            terrain_texture_scale=float(getattr(ground, "texture_scale", 0.0) or 0.0) if ground is not None else 0.0,
+        )
         self._local_input.reset(players=self.world.players)
 
         self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)

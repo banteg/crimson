@@ -367,6 +367,7 @@ class GameLoopView:
             lan_debug_log("net_open_error", role=str(pending.role), error=str(exc))
             return
         runtime.update()
+        self.state.lan_desync_count = int(getattr(runtime, "desync_count", 0) or 0)
         lobby_state = runtime.lobby_state()
         if lobby_state is not None:
             expected = max(1, min(4, int(lobby_state.player_count)))

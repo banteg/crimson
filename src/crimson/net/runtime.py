@@ -13,6 +13,7 @@ from .protocol import (
     LINK_TIMEOUT_MS,
     PROTOCOL_VERSION,
     TICK_RATE,
+    DesyncNotice,
     Disconnect,
     Hello,
     InputBatch,
@@ -101,6 +102,13 @@ class LanRuntime:
     _client_local_input_latency_ms: int = field(init=False, default=0)
     _client_local_input_latency_ewma_ms: float = field(init=False, default=0.0)
 
+    desync_count: int = field(init=False, default=0)
+    last_desync_tick: int = field(init=False, default=-1)
+    last_desync_kind: str = field(init=False, default="")
+    last_desync_expected: str = field(init=False, default="")
+    last_desync_actual: str = field(init=False, default="")
+    _last_desync_notice_sent_tick: int = field(init=False, default=-10**9)
+
     _neutral_input: PackedPlayerInput = field(
         init=False,
         default_factory=lambda: [0.0, 0.0, [0.0, 0.0], 0],
@@ -123,6 +131,12 @@ class LanRuntime:
         self._client_local_input_latency_ms = 0
         self._client_local_input_latency_ewma_ms = 0.0
         self._host_seen_input_slots.clear()
+        self.desync_count = 0
+        self.last_desync_tick = -1
+        self.last_desync_kind = ""
+        self.last_desync_expected = ""
+        self.last_desync_actual = ""
+        self._last_desync_notice_sent_tick = -10**9
         lan_debug_log(
             "net_open",
             role=str(self.cfg.role),
@@ -205,6 +219,12 @@ class LanRuntime:
             self._client_local_input_latency_ms = 0
             self._client_local_input_latency_ewma_ms = 0.0
             self._host_seen_input_slots.clear()
+            self.desync_count = 0
+            self.last_desync_tick = -1
+            self.last_desync_kind = ""
+            self.last_desync_expected = ""
+            self.last_desync_actual = ""
+            self._last_desync_notice_sent_tick = -10**9
             self.started = False
             self.error = ""
             lan_debug_log("net_close", role=str(self.cfg.role))
@@ -242,6 +262,15 @@ class LanRuntime:
 
         if self.error:
             lines.append(f"net: error={self.error}")
+        if int(self.desync_count) > 0:
+            exp = str(self.last_desync_expected or "")[:8]
+            act = str(self.last_desync_actual or "")[:8]
+            lines.append(
+                "desyncs: "
+                f"{int(self.desync_count)} "
+                f"last={str(self.last_desync_kind or '?')}@{int(self.last_desync_tick)} "
+                f"{exp}!={act}"
+            )
 
         if role == "host":
             lines.append(
@@ -356,6 +385,47 @@ class LanRuntime:
             return -1
         return int(lobby.slot_index)
 
+    def note_desync(self, *, kind: str, tick_index: int, expected: str, actual: str) -> None:
+        """Record a desync event and (optionally) notify the host.
+
+        For now, desync detection is driven by gameplay modes comparing local
+        hashes with those embedded in host tick frames.
+        """
+        self.desync_count = int(self.desync_count) + 1
+        self.last_desync_tick = int(tick_index)
+        self.last_desync_kind = str(kind)
+        self.last_desync_expected = str(expected)
+        self.last_desync_actual = str(actual)
+        lan_debug_log(
+            "lan_desync",
+            role=str(self.cfg.role),
+            kind=str(kind),
+            tick_index=int(tick_index),
+            expected=str(expected),
+            actual=str(actual),
+        )
+
+        # Best-effort: send a notice to the host so both logs can be correlated.
+        if str(self.cfg.role) != "join":
+            return
+        if str(kind) != "command_hash":
+            return
+        if (int(tick_index) - int(self._last_desync_notice_sent_tick)) < 60:
+            return
+        self._last_desync_notice_sent_tick = int(tick_index)
+        try:
+            self._client_send(
+                DesyncNotice(
+                    tick_index=int(tick_index),
+                    expected_command_hash=str(expected),
+                    actual_command_hash=str(actual),
+                ),
+                reliable=True,
+                now_ms=_now_ms(),
+            )
+        except Exception:
+            return
+
     def queue_local_input(self, packed_input: PackedPlayerInput, *, now_ms: int | None = None) -> None:
         if now_ms is None:
             now_ms = _now_ms()
@@ -455,7 +525,19 @@ class LanRuntime:
             self.host_match_start = event
             self._host_init_lockstep(event)
             self._host_seen_input_slots.clear()
-            lan_debug_log("net_match_start", role="host", seed=int(event.seed), player_count=int(event.player_count))
+            lan_debug_log(
+                "net_match_start",
+                role="host",
+                session_id=str(getattr(event, "session_id", "") or ""),
+                mode_id=int(getattr(event, "mode_id", 0) or 0),
+                player_count=int(getattr(event, "player_count", 1) or 1),
+                seed=int(getattr(event, "seed", 0) or 0),
+                start_tick=int(getattr(event, "start_tick", 0) or 0),
+                quest_level=str(getattr(event, "quest_level", "") or ""),
+                preserve_bugs=bool(getattr(event, "preserve_bugs", False)),
+                tick_rate=int(self.cfg.tick_rate),
+                input_delay_ticks=int(self.cfg.input_delay_ticks),
+            )
             self._host_broadcast(event, reliable=True, now_ms=int(now_ms))
 
         if self.host_lockstep is not None:
@@ -490,7 +572,21 @@ class LanRuntime:
         if lobby is None:
             return
         if isinstance(message, Hello):
-            lan_debug_log("net_recv", role="host", kind="hello", addr=f"{addr[0]}:{addr[1]}")
+            lan_debug_log(
+                "net_recv",
+                role="host",
+                kind="hello",
+                addr=f"{addr[0]}:{addr[1]}",
+                protocol_version=int(getattr(message, "protocol_version", 0) or 0),
+                build_id=str(getattr(message, "build_id", "") or ""),
+                mode_id=int(getattr(message, "mode_id", 0) or 0),
+                player_count=int(getattr(message, "player_count", 1) or 1),
+                tick_rate=int(getattr(message, "tick_rate", 0) or 0),
+                input_delay_ticks=int(getattr(message, "input_delay_ticks", 0) or 0),
+                quest_level=str(getattr(message, "quest_level", "") or ""),
+                preserve_bugs=bool(getattr(message, "preserve_bugs", False)),
+                host=bool(getattr(message, "host", False)),
+            )
             welcome = lobby.process_hello(addr, message)
             lan_debug_log(
                 "lobby_welcome",
@@ -522,6 +618,23 @@ class LanRuntime:
             self.host_peers.pop(addr, None)
             lobby.peers_by_addr.pop(addr, None)
             self._host_broadcast_lobby_state(now_ms=int(now_ms))
+            return
+        if isinstance(message, DesyncNotice):
+            lan_debug_log(
+                "net_recv",
+                role="host",
+                kind="desync_notice",
+                addr=f"{addr[0]}:{addr[1]}",
+                tick_index=int(message.tick_index),
+                expected_command_hash=str(message.expected_command_hash or ""),
+                actual_command_hash=str(message.actual_command_hash or ""),
+            )
+            self.note_desync(
+                kind="command_hash",
+                tick_index=int(message.tick_index),
+                expected=str(message.expected_command_hash or ""),
+                actual=str(message.actual_command_hash or ""),
+            )
             return
         if isinstance(message, InputBatch):
             lockstep = self.host_lockstep
@@ -576,6 +689,7 @@ class LanRuntime:
                     reliable=bool(reliable),
                     tick_index=int(tick),
                     command_hash=str(getattr(message, "command_hash", "") or ""),
+                    state_hash=str(getattr(message, "state_hash", "") or ""),
                 )
             return
         kind = getattr(message, "kind", type(message).__name__)
@@ -644,11 +758,57 @@ class LanRuntime:
                 reason=str(message.reason or ""),
                 slot_index=int(message.slot_index),
                 session_id=str(message.session_id),
+                protocol_version=int(getattr(message, "protocol_version", 0) or 0),
+                build_id=str(getattr(message, "build_id", "") or ""),
+                mode_id=int(getattr(message, "mode_id", 0) or 0),
+                player_count=int(getattr(message, "player_count", 1) or 1),
+                tick_rate=int(getattr(message, "tick_rate", 0) or 0),
+                input_delay_ticks=int(getattr(message, "input_delay_ticks", 0) or 0),
+                quest_level=str(getattr(message, "quest_level", "") or ""),
+                preserve_bugs=bool(getattr(message, "preserve_bugs", False)),
+                started=bool(getattr(message, "started", False)),
             )
             lobby.ingest_welcome(message)
             if not bool(message.accepted):
                 self.error = str(message.reason or "rejected")
                 return
+            hello = getattr(lobby, "hello", None)
+            if hello is not None:
+                mismatched = (
+                    int(getattr(message, "mode_id", 0) or 0) != int(getattr(hello, "mode_id", 0) or 0)
+                    or int(getattr(message, "player_count", 1) or 1) != int(getattr(hello, "player_count", 1) or 1)
+                    or int(getattr(message, "tick_rate", 0) or 0) != int(getattr(hello, "tick_rate", 0) or 0)
+                    or int(getattr(message, "input_delay_ticks", 0) or 0)
+                    != int(getattr(hello, "input_delay_ticks", 0) or 0)
+                    or str(getattr(message, "quest_level", "") or "") != str(getattr(hello, "quest_level", "") or "")
+                    or bool(getattr(message, "preserve_bugs", False)) != bool(getattr(hello, "preserve_bugs", False))
+                )
+                if mismatched:
+                    lan_debug_log(
+                        "net_welcome_override",
+                        role="join",
+                        hello_mode_id=int(getattr(hello, "mode_id", 0) or 0),
+                        welcome_mode_id=int(getattr(message, "mode_id", 0) or 0),
+                        hello_player_count=int(getattr(hello, "player_count", 1) or 1),
+                        welcome_player_count=int(getattr(message, "player_count", 1) or 1),
+                        hello_tick_rate=int(getattr(hello, "tick_rate", 0) or 0),
+                        welcome_tick_rate=int(getattr(message, "tick_rate", 0) or 0),
+                        hello_input_delay_ticks=int(getattr(hello, "input_delay_ticks", 0) or 0),
+                        welcome_input_delay_ticks=int(getattr(message, "input_delay_ticks", 0) or 0),
+                        hello_quest_level=str(getattr(hello, "quest_level", "") or ""),
+                        welcome_quest_level=str(getattr(message, "quest_level", "") or ""),
+                        hello_preserve_bugs=bool(getattr(hello, "preserve_bugs", False)),
+                        welcome_preserve_bugs=bool(getattr(message, "preserve_bugs", False)),
+                    )
+
+            # Host is authoritative; adopt its config so lockstep + validation use
+            # canonical values (CLI joiners may start with placeholders).
+            self.cfg.mode_id = int(getattr(message, "mode_id", 0) or 0)
+            self.cfg.player_count = max(1, min(4, int(getattr(message, "player_count", 1) or 1)))
+            self.cfg.tick_rate = max(1, int(getattr(message, "tick_rate", 0) or 0))
+            self.cfg.input_delay_ticks = max(0, int(getattr(message, "input_delay_ticks", 0) or 0))
+            self.cfg.quest_level = str(getattr(message, "quest_level", "") or "")
+            self.cfg.preserve_bugs = bool(getattr(message, "preserve_bugs", False))
             ready = Ready(slot_index=int(message.slot_index), ready=True)
             self._client_send(ready, reliable=True, now_ms=int(now_ms))
             return
@@ -675,7 +835,44 @@ class LanRuntime:
                 mode_id=int(message.mode_id),
                 player_count=int(message.player_count),
                 seed=int(message.seed),
+                start_tick=int(getattr(message, "start_tick", 0) or 0),
+                quest_level=str(getattr(message, "quest_level", "") or ""),
+                preserve_bugs=bool(getattr(message, "preserve_bugs", False)),
             )
+            welcome = getattr(lobby, "welcome", None)
+            if welcome is not None and str(getattr(welcome, "session_id", "") or ""):
+                if str(getattr(message, "session_id", "") or "") != str(getattr(welcome, "session_id", "") or ""):
+                    self.error = "session_id_mismatch"
+                    lan_debug_log(
+                        "net_sanity_mismatch",
+                        role="join",
+                        kind="match_start",
+                        expected_session_id=str(getattr(welcome, "session_id", "") or ""),
+                        actual_session_id=str(getattr(message, "session_id", "") or ""),
+                    )
+                    return
+            mismatched = (
+                int(getattr(message, "mode_id", 0) or 0) != int(self.cfg.mode_id)
+                or int(getattr(message, "player_count", 1) or 1) != int(self.cfg.player_count)
+                or str(getattr(message, "quest_level", "") or "") != str(self.cfg.quest_level or "")
+                or bool(getattr(message, "preserve_bugs", False)) != bool(self.cfg.preserve_bugs)
+            )
+            if mismatched:
+                self.error = "match_start_mismatch"
+                lan_debug_log(
+                    "net_sanity_mismatch",
+                    role="join",
+                    kind="match_start",
+                    expected_mode_id=int(self.cfg.mode_id),
+                    actual_mode_id=int(getattr(message, "mode_id", 0) or 0),
+                    expected_player_count=int(self.cfg.player_count),
+                    actual_player_count=int(getattr(message, "player_count", 1) or 1),
+                    expected_quest_level=str(self.cfg.quest_level or ""),
+                    actual_quest_level=str(getattr(message, "quest_level", "") or ""),
+                    expected_preserve_bugs=bool(self.cfg.preserve_bugs),
+                    actual_preserve_bugs=bool(getattr(message, "preserve_bugs", False)),
+                )
+                return
             lobby.ingest_match_start(message)
             self.started = True
             self._client_init_lockstep(message)
@@ -685,6 +882,20 @@ class LanRuntime:
             if lockstep is None:
                 return
             tick = int(getattr(message, "tick_index", 0) or 0)
+            if int(tick) < 0:
+                lan_debug_log("net_sanity_error", role="join", kind="tick_frame", reason="negative_tick", tick_index=int(tick))
+                return
+            inputs_len = int(len(getattr(message, "frame_inputs", []) or []))
+            if int(inputs_len) != int(self.cfg.player_count):
+                lan_debug_log(
+                    "net_sanity_error",
+                    role="join",
+                    kind="tick_frame",
+                    reason="frame_inputs_len",
+                    tick_index=int(tick),
+                    inputs_len=int(inputs_len),
+                    expected_len=int(self.cfg.player_count),
+                )
             if int(tick) < 5 or (int(tick) % 60) == 0:
                 lan_debug_log(
                     "net_recv",
@@ -692,6 +903,7 @@ class LanRuntime:
                     kind="tick_frame",
                     tick_index=int(tick),
                     command_hash=str(getattr(message, "command_hash", "") or ""),
+                    state_hash=str(getattr(message, "state_hash", "") or ""),
                 )
             lockstep.ingest_tick_frame(message, now_ms=int(now_ms), local_command_hash="")
             queued_at = self._client_input_queued_at_ms.pop(int(tick), None)

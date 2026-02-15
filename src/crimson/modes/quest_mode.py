@@ -41,10 +41,11 @@ from ..terrain_assets import terrain_texture_by_id
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
+from ..replay.checkpoints import build_checkpoint
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.sessions import QuestDeterministicSession
-from ..net.protocol import TickFrame
+from ..net.protocol import STATE_HASH_PERIOD_TICKS, TickFrame
 from ..views.quest_title_overlay import draw_quest_title_overlay
 from ..weapons import WEAPON_BY_ID
 from .base_gameplay_mode import BaseGameplayMode
@@ -694,6 +695,48 @@ class QuestMode(BaseGameplayMode):
                     dt_frame=float(dt_tick),
                     inputs=player_inputs,
                 )
+
+                remote_command_hash = str(getattr(frame, "command_hash", "") or "")
+                remote_state_hash = str(getattr(frame, "state_hash", "") or "")
+                local_command_hash = str(tick.step.command_hash)
+                local_state_hash = ""
+                if role == "join":
+                    if remote_command_hash and remote_command_hash != local_command_hash:
+                        runtime.note_desync(
+                            kind="command_hash",
+                            tick_index=int(frame.tick_index),
+                            expected=str(remote_command_hash),
+                            actual=str(local_command_hash),
+                        )
+                    if remote_state_hash:
+                        local_state_hash = str(
+                            build_checkpoint(
+                                tick_index=int(frame.tick_index),
+                                world=self.world.world_state,
+                                elapsed_ms=float(tick.elapsed_ms),
+                                creature_count_override=int(tick.creature_count_world_step),
+                            ).state_hash
+                        )
+                        if local_state_hash != remote_state_hash:
+                            runtime.note_desync(
+                                kind="state_hash",
+                                tick_index=int(frame.tick_index),
+                                expected=str(remote_state_hash),
+                                actual=str(local_state_hash),
+                            )
+
+                state_hash = ""
+                if role == "host":
+                    tick_i = int(frame.tick_index)
+                    if int(tick_i) < 5 or (int(tick_i) % int(STATE_HASH_PERIOD_TICKS)) == 0:
+                        state_hash = str(
+                            build_checkpoint(
+                                tick_index=int(frame.tick_index),
+                                world=self.world.world_state,
+                                elapsed_ms=float(tick.elapsed_ms),
+                                creature_count_override=int(tick.creature_count_world_step),
+                            ).state_hash
+                        )
                 self.world.apply_step_result(
                     tick.step,
                     game_tune_started=False,
@@ -723,8 +766,8 @@ class QuestMode(BaseGameplayMode):
                         TickFrame(
                             tick_index=int(frame.tick_index),
                             frame_inputs=list(frame.frame_inputs),
-                            command_hash=str(tick.step.command_hash),
-                            state_hash="",
+                            command_hash=str(local_command_hash),
+                            state_hash=str(state_hash),
                         )
                     )
 
