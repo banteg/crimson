@@ -23,6 +23,7 @@ just frida-sync-share
 - `scripts/frida/screen_fade_trace.js`
 - `scripts/frida/perk_prompt_trace.js`
 - `scripts/frida/ui_render_trace.js`
+- `scripts/frida/panel_state_resolution_sweep.js`
 - `scripts/frida/gameplay_state_capture.js`
 - `scripts/frida/gameplay_diff_capture.js`
 - `scripts/frida/survival_autoplay.js`
@@ -59,6 +60,19 @@ UI render trace (menus/panels/widgets, JSONL to `ui_render_trace.jsonl`):
 
 ```text
 frida -n crimsonland.exe -l C:\share\frida\ui_render_trace.js
+```
+
+Panel-state resolution sweep (issue #165 capture: automatic state forcing +
+panel/text capture; writes resolution-scoped JSONL):
+
+```text
+frida -n crimsonland.exe -l C:\share\frida\panel_state_resolution_sweep.js
+```
+
+Just shortcut (Windows VM):
+
+```text
+just frida-panel-state-resolution-sweep
 ```
 
 Comprehensive gameplay/state capture (automatic snapshots + write tracing, JSONL to
@@ -136,6 +150,7 @@ Default logs written by the scripts:
 - `C:\share\frida\survival_autoplay.jsonl` (if you ran `survival_autoplay.js`)
 - `C:\share\frida\creature_anim_trace.jsonl`
 - `C:\share\frida\ui_render_trace.jsonl`
+- `C:\share\frida\panel_state_resolution_capture_<WIDTH>x<HEIGHT>_<RUNID>.jsonl` (if you ran `panel_state_resolution_sweep.js`)
 - `C:\share\frida\demo_trial_overlay_trace.jsonl` (if you ran `demo_trial_overlay_trace.js`)
 - `C:\share\frida\demo_idle_threshold_trace.jsonl` (if you ran `demo_idle_threshold_trace.js`)
 - `C:\share\frida\azk_verify_no_unlock.jsonl` (if you ran `azk_verify_no_unlock.js`)
