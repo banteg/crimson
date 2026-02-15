@@ -566,8 +566,8 @@ class QuestMode(BaseGameplayMode):
                 self._close_failed_run()
             return
 
-        session.detail_preset = self.config.detail_preset
-        session.fx_toggle = self.config.fx_toggle
+        session.detail_preset = int(self._deterministic_detail_preset())
+        session.fx_toggle = int(self._deterministic_fx_toggle())
         session.spawn_entries = tuple(self._quest.spawn_entries)
         session.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
         session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
@@ -688,8 +688,8 @@ class QuestMode(BaseGameplayMode):
                 packed_inputs = list(getattr(frame, "frame_inputs", []) or [])
                 player_inputs = [self._unpack_player_input_from_net(packed) for packed in packed_inputs]
 
-                session.detail_preset = self.config.detail_preset
-                session.fx_toggle = self.config.fx_toggle
+                session.detail_preset = int(self._deterministic_detail_preset())
+                session.fx_toggle = int(self._deterministic_fx_toggle())
                 session.spawn_entries = tuple(self._quest.spawn_entries)
                 session.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
                 session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
