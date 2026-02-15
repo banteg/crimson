@@ -223,10 +223,6 @@ def run_rush_replay(
             draws = max(0, int(inter_tick_rand_draws))
             for _ in range(draws):
                 world.state.rng.rand()
-
-        if not any(player.health > 0.0 for player in world.players):
-            tick_index += 1
-            break
     else:
         tick_index = tick_limit
 

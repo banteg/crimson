@@ -541,9 +541,13 @@ def cmd_replay_verify(
                 hardcore=bool(replay.header.hardcore),
                 full_version=True,
             )
+            start_weapon_id = max(1, int(quest.start_weapon_id))
             result = run_quest_replay(
                 replay,
                 spawn_entries=tuple(spawn_entries),
+                quest_stage_major=int(quest.level_key[0]),
+                quest_stage_minor=int(quest.level_key[1]),
+                start_weapon_id=int(start_weapon_id),
                 max_ticks=max_ticks,
                 strict_events=bool(strict_events),
                 trace_rng=bool(trace_rng),
