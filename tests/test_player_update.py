@@ -4,6 +4,7 @@ from grim.geom import Vec2
 
 from dataclasses import dataclass
 import math
+import struct
 
 from grim.rand import Crand
 from crimson.bonuses import BonusId
@@ -11,6 +12,8 @@ from crimson.bonuses.apply import bonus_apply
 from crimson.bonuses.hud import bonus_hud_update
 from crimson.gameplay import (
     GameplayState,
+    _RELATIVE_MOVE_HEADING_LEFT,
+    _player_heading_approach_target_with_delta,
     player_update,
 )
 from crimson.sim.input import PlayerInput
@@ -631,6 +634,26 @@ def test_player_update_wraps_negative_target_heading_before_turning() -> None:
     # `player_heading_approach_target`; x movement should continue left here.
     assert player.pos.x < 796.2267
     assert player.heading < math.tau
+
+
+def test_player_heading_approach_target_spills_scaled_product_to_float32() -> None:
+    def _f32_from_bits(bits: int) -> float:
+        return struct.unpack("<f", struct.pack("<I", int(bits) & 0xFFFFFFFF))[0]
+
+    def _bits_f32(value: float) -> int:
+        return struct.unpack("<I", struct.pack("<f", float(value)))[0]
+
+    # Tick 137 boundary from gameplay_diff_capture:
+    # without a float32 spill of `frame_dt * diff` this turns 1 ULP too far.
+    heading_before = _f32_from_bits(0x40966A37)
+    dt = _f32_from_bits(0x3D75C290)
+
+    player = PlayerState(index=0, pos=Vec2(), heading=heading_before)
+    diff, turn_delta = _player_heading_approach_target_with_delta(player, float(_RELATIVE_MOVE_HEADING_LEFT), dt)
+
+    assert _bits_f32(diff) == 0x3C435A00
+    assert _bits_f32(turn_delta) == 0x3B6A6C00
+    assert _bits_f32(player.heading) == 0x40968784
 
 
 def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
