@@ -100,16 +100,16 @@ def draw_main_panel(
             tint = rl.Color(255, 255, 255, int(255 * 0.51))
 
             if global_index > 0:
-                # state_14 draws ui_arrow.jaz flipped to point left.
-                # Keep src.x in-range; with CLAMP wrap, raylib can collapse flipped UVs
-                # when the rect starts at x=tex.width.
-                src = rl.Rectangle(0.0, 0.0, -float(arrow.width), float(arrow.height))
+                src = rl.Rectangle(0.0, 0.0, float(arrow.width), float(arrow.height))
                 arrow_pos = left_panel_top_left + Vec2((HS_QUEST_ARROW_X - 255.0) * scale, HS_QUEST_ARROW_Y * scale)
                 dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
                 rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
             if global_index < max_index:
-                src = rl.Rectangle(0.0, 0.0, float(arrow.width), float(arrow.height))
+                # state_14 flips ui_arrow.jaz (uv 1..0) for the right arrow.
+                # Keep src.x in-range; with CLAMP wrap, raylib can collapse flipped UVs
+                # when the rect starts at x=tex.width.
+                src = rl.Rectangle(0.0, 0.0, -float(arrow.width), float(arrow.height))
                 arrow_pos = left_panel_top_left + Vec2(HS_QUEST_ARROW_X * scale, HS_QUEST_ARROW_Y * scale)
                 dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
                 rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
