@@ -20,7 +20,7 @@ Run `just check` before commits.
 For structural search / codemods, prefer ast-grep over regex-only edits:
 - Project config: [`sgconfig.yml`](sgconfig.yml)
 - Rules/tests location: [`tools/ast-grep/`](tools/ast-grep/)
-- Run scans/tests with `just ast-grep-scan` and `just ast-grep-test`
+- Run checks with `just check`
 
 When creating pull requests with `gh`:
 - Do not pass multiline bodies via `--body` with escaped `\n` inside shell quotes.
