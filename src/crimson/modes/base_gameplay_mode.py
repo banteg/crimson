@@ -240,10 +240,20 @@ class BaseGameplayMode:
         self.state = self.world.state
         self.creatures = self.world.creatures
         self.player = self.world.players[0]
+        # `GameplayState.status` is the simulation status (LAN may override it
+        # with a deterministic session-local status to avoid split brain).
         self.state.status = self._status_sim
 
     def _any_player_alive(self) -> bool:
         return any(player.health > 0.0 for player in self.world.players)
+
+    @property
+    def save_status(self) -> GameStatus | None:
+        return self._status_base
+
+    @property
+    def sim_status(self) -> GameStatus | None:
+        return self._status_sim
 
     def bind_status(self, status: GameStatus | None) -> None:
         self._status_base = status

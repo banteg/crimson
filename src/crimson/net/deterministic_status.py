@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import tempfile
 
 from ..persistence.save_status import (
     QUEST_PLAY_COUNT,
@@ -25,7 +26,10 @@ def build_lan_deterministic_status(*, base: GameStatus | None = None) -> GameSta
       preexisting save data.
     """
 
-    path = base.path if base is not None else Path()
+    # This status object should never overwrite the on-disk save. Give it a
+    # safe temp path so accidental `save_if_dirty()` calls don't clobber
+    # `game.cfg`.
+    path = Path(tempfile.gettempdir()) / "crimson-lan-sim-game.cfg"
     data = {
         "quest_unlock_index": int(LAN_DETERMINISTIC_QUEST_UNLOCK_INDEX),
         "quest_unlock_index_full": int(LAN_DETERMINISTIC_QUEST_UNLOCK_INDEX),
@@ -39,4 +43,3 @@ def build_lan_deterministic_status(*, base: GameStatus | None = None) -> GameSta
         "unknown_tail": b"\x00" * int(UNKNOWN_TAIL_SIZE),
     }
     return GameStatus(path=path, data=data, dirty=False)
-

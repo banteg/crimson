@@ -141,7 +141,7 @@ class RushMode(BaseGameplayMode):
         self._lan_capture_clock.reset()
 
         status = self.state.status
-        base_status = self._status_base
+        base_status = self.save_status
         sim_unlock_index = int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0
         sim_unlock_index_full = int(getattr(status, "quest_unlock_index_full", 0) or 0) if status is not None else 0
         status_unlock_index = (
@@ -153,11 +153,6 @@ class RushMode(BaseGameplayMode):
             else int(sim_unlock_index_full)
         )
         quest_unlock_index = int(sim_unlock_index)
-        if bool(self._lan_enabled):
-            # LAN lockstep peers may have different save progress. Terrain bootstrap
-            # consumes the authoritative gameplay RNG stream, so use a fixed unlock
-            # index to keep host/client RNG in sync.
-            quest_unlock_index = 0x28
         bootstrap = run_terrain_bootstrap(
             self.state.rng,
             quest_unlock_index=int(quest_unlock_index),
