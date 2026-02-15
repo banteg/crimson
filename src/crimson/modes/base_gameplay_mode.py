@@ -21,13 +21,6 @@ from ..sim.input import PlayerInput
 from ..debug import debug_enabled
 from ..net.debug_log import lan_debug_log
 from ..net.deterministic_status import build_lan_deterministic_status
-from ..replay.types import (
-    PackedPlayerInput,
-    pack_input_flags,
-    unpack_input_flags,
-    unpack_input_move_key_flags,
-    unpack_packed_player_input,
-)
 from ..perks.runtime.effects import _creature_find_in_radius
 from ..perks.helpers import perk_count_get
 from ..game_world import GameWorld
