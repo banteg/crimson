@@ -260,14 +260,18 @@ class SurvivalMode(BaseGameplayMode):
         self._survival = _SurvivalState()
 
         status = self.state.status
-        quest_unlock_index = int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0
-        status_unlock_index = int(quest_unlock_index)
-        status_unlock_index_full = int(getattr(status, "quest_unlock_index_full", 0) or 0) if status is not None else 0
-        if bool(self._lan_enabled):
-            # LAN lockstep peers may have different save progress. Terrain bootstrap
-            # consumes the authoritative gameplay RNG stream, so use a fixed unlock
-            # index to keep host/client RNG in sync.
-            quest_unlock_index = 0x28
+        base_status = self.save_status
+        sim_unlock_index = int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0
+        sim_unlock_index_full = int(getattr(status, "quest_unlock_index_full", 0) or 0) if status is not None else 0
+        status_unlock_index = (
+            int(getattr(base_status, "quest_unlock_index", 0) or 0) if base_status is not None else int(sim_unlock_index)
+        )
+        status_unlock_index_full = (
+            int(getattr(base_status, "quest_unlock_index_full", 0) or 0)
+            if base_status is not None
+            else int(sim_unlock_index_full)
+        )
+        quest_unlock_index = int(sim_unlock_index)
         bootstrap = run_terrain_bootstrap(
             self.state.rng,
             quest_unlock_index=int(quest_unlock_index),
@@ -282,6 +286,8 @@ class SurvivalMode(BaseGameplayMode):
             lan_role=str(self._lan_role),
             status_quest_unlock_index=int(status_unlock_index),
             status_quest_unlock_index_full=int(status_unlock_index_full),
+            sim_quest_unlock_index=int(sim_unlock_index),
+            sim_quest_unlock_index_full=int(sim_unlock_index_full),
             quest_unlock_index=int(quest_unlock_index),
             seed_before=int(bootstrap.seed_before),
             seed_after=int(bootstrap.seed_after),

@@ -11,7 +11,7 @@ import msgspec
 from .. import __version__
 from ..replay.types import PackedPlayerInput
 
-PROTOCOL_VERSION = 1
+PROTOCOL_VERSION = 2
 DEFAULT_PORT = 31993
 TICK_RATE = 60
 # LAN runs on a good network and doesn't need a large buffer; keeping this low
@@ -163,6 +163,25 @@ class Ready(msgspec.Struct, tag_field="kind", tag="ready", forbid_unknown_fields
     ready: bool = False
 
 
+class StatusSnapshot(msgspec.Struct, forbid_unknown_fields=True):
+    """Status snapshot shipped from host to all peers for deterministic simulation.
+
+    This intentionally mirrors the fields in `persistence.save_status.GAME_STATUS_STRUCT`
+    so LAN simulation doesn't depend on local save progress.
+    """
+
+    quest_unlock_index: int = 0
+    quest_unlock_index_full: int = 0
+    weapon_usage_counts: list[int] = msgspec.field(default_factory=list)
+    quest_play_counts: list[int] = msgspec.field(default_factory=list)
+    mode_play_survival: int = 0
+    mode_play_rush: int = 0
+    mode_play_typo: int = 0
+    mode_play_other: int = 0
+    game_sequence_id: int = 0
+    unknown_tail: bytes = b""
+
+
 class MatchStart(msgspec.Struct, tag_field="kind", tag="match_start", forbid_unknown_fields=True):
     session_id: str = ""
     mode_id: int = 0
@@ -171,6 +190,8 @@ class MatchStart(msgspec.Struct, tag_field="kind", tag="match_start", forbid_unk
     start_tick: int = 0
     quest_level: str = ""
     preserve_bugs: bool = False
+    status_snapshot: StatusSnapshot | None = None
+    status_hash: str = ""
 
 
 class InputSample(msgspec.Struct, forbid_unknown_fields=True):

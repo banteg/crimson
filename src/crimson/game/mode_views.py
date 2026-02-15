@@ -88,7 +88,11 @@ class _BaseModeGameView:
             if callable(match_start):
                 event = match_start()
                 if event is not None:
-                    set_lan_match_start(seed=int(event.seed), start_tick=int(event.start_tick))
+                    set_lan_match_start(
+                        seed=int(event.seed),
+                        start_tick=int(event.start_tick),
+                        status_snapshot=event.status_snapshot,
+                    )
 
     def close(self) -> None:
         if self.state.audio is not None:

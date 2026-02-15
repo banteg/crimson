@@ -304,6 +304,12 @@ class GameLoopView:
 
         from ..net.runtime import LanRuntime, LanRuntimeConfig
 
+        sim_status_snapshot = None
+        if str(pending.role) == "host":
+            from ..net.deterministic_status import status_snapshot_from_status
+
+            sim_status_snapshot = status_snapshot_from_status(self.state.status)
+
         runtime = getattr(self.state, "lan_runtime", None)
         if runtime is not None:
             runtime.close()
@@ -319,6 +325,7 @@ class GameLoopView:
                 # LAN lockstep is a rewrite-only feature; keep gameplay rules consistent
                 # and do not expose preserve_bugs in multiplayer.
                 preserve_bugs=False,
+                sim_status_snapshot=sim_status_snapshot,
             )
         )
         self.state.lan_runtime = runtime

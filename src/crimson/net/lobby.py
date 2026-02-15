@@ -11,6 +11,7 @@ from .protocol import (
     MatchStart,
     PROTOCOL_VERSION,
     Ready,
+    StatusSnapshot,
     Welcome,
 )
 from .transport import PeerAddr
@@ -156,7 +157,14 @@ class HostLobby:
             quest_level=str(self.quest_level),
         )
 
-    def start_match(self, *, seed: int, start_tick: int = 0) -> MatchStart:
+    def start_match(
+        self,
+        *,
+        seed: int,
+        start_tick: int = 0,
+        status_snapshot: StatusSnapshot | None = None,
+        status_hash: str = "",
+    ) -> MatchStart:
         self.started = True
         return MatchStart(
             session_id=str(self.session_id),
@@ -166,6 +174,8 @@ class HostLobby:
             start_tick=int(start_tick),
             quest_level=str(self.quest_level),
             preserve_bugs=bool(self.preserve_bugs),
+            status_snapshot=status_snapshot,
+            status_hash=str(status_hash or ""),
         )
 
 
