@@ -469,7 +469,9 @@ def _infer_game_mode_id(capture: CaptureFile) -> int:
         mode_hint = str(tick.mode_hint)
         if mode_hint in mode_hint_to_game_mode:
             return int(mode_hint_to_game_mode[mode_hint])
-    return int(GameMode.SURVIVAL)
+    raise ValueError(
+        "cannot infer replay game_mode_id from capture; pass an explicit game_mode_id override"
+    )
 
 
 def _tick_quest_stage(tick: CaptureTick) -> tuple[int, int] | None:
@@ -506,12 +508,18 @@ def _infer_quest_level(capture: CaptureFile, *, game_mode_id: int) -> str:
 
 
 def _infer_player_count(capture: CaptureFile) -> int:
-    player_count = 1
+    player_count = 0
     for tick in capture.ticks:
         player_count = max(player_count, int(len(tick.checkpoint.players)))
         for sample in tick.input_approx:
             player_count = max(player_count, int(sample.player_index) + 1)
-    return max(1, int(player_count))
+        for key_row in tick.input_player_keys:
+            player_count = max(player_count, int(key_row.player_index) + 1)
+    if int(player_count) <= 0:
+        raise ValueError(
+            "cannot infer replay player_count from capture; pass an explicit player_count override"
+        )
+    return int(player_count)
 
 
 def _infer_digital_move_enabled_by_player(capture: CaptureFile, *, player_count: int) -> list[bool]:
@@ -810,13 +818,18 @@ def _infer_status_snapshot(capture: CaptureFile) -> ReplayStatusSnapshot:
         if int(unlock_index) >= 0 and int(unlock_index_full) >= 0 and usage_counts:
             break
 
+    if int(unlock_index) < 0 or int(unlock_index_full) < 0:
+        raise ValueError(
+            "cannot infer replay status unlock indices from capture checkpoint status telemetry"
+        )
+
     counts = list(usage_counts[:WEAPON_USAGE_COUNT])
     if len(counts) < WEAPON_USAGE_COUNT:
         counts.extend([0] * (WEAPON_USAGE_COUNT - len(counts)))
 
     return ReplayStatusSnapshot(
-        quest_unlock_index=max(0, int(unlock_index)),
-        quest_unlock_index_full=max(0, int(unlock_index_full)),
+        quest_unlock_index=int(unlock_index),
+        quest_unlock_index_full=int(unlock_index_full),
         weapon_usage_counts=tuple(int(value) & 0xFFFFFFFF for value in counts),
     )
 
@@ -1094,8 +1107,8 @@ def apply_capture_bootstrap_payload(
                 try:
                     if int(getattr(player, "weapon_id", 0)) != int(weapon_id):
                         weapon_assign_player(player, int(weapon_id), state=state)  # ty:ignore[invalid-argument-type]
-                except Exception:
-                    pass
+                except (AttributeError, TypeError, ValueError) as exc:
+                    raise ValueError(f"invalid bootstrap weapon assignment payload for player[{idx}]") from exc
 
             pos_raw = raw_player.get("pos")  # ty:ignore[invalid-argument-type]
             if isinstance(pos_raw, dict):
@@ -1128,8 +1141,8 @@ def apply_capture_bootstrap_payload(
                         setattr(player, "fire_bullets_timer", max(0.0, float(fire_bullets_ms) / 1000.0))
                     if speed_bonus_ms is not None:
                         setattr(player, "speed_bonus_timer", max(0.0, float(speed_bonus_ms) / 1000.0))
-                except Exception:
-                    pass
+                except (AttributeError, TypeError, ValueError) as exc:
+                    raise ValueError(f"invalid bootstrap bonus_timers_ms payload for player[{idx}]") from exc
 
     perk_payload = payload.get("perk")
     pending = _coerce_int_like(payload.get("perk_pending"))
@@ -1162,8 +1175,8 @@ def apply_capture_bootstrap_payload(
                 state.perk_selection.choices_dirty = bool(perk_choices_dirty)  # ty:ignore[unresolved-attribute]
             elif perk_choices is None:
                 state.perk_selection.choices_dirty = True  # ty:ignore[unresolved-attribute]
-        except Exception:
-            pass
+        except (AttributeError, TypeError, ValueError) as exc:
+            raise ValueError("invalid bootstrap perk payload") from exc
 
     timers_raw = payload.get("bonus_timers_ms")
     if isinstance(timers_raw, dict):
@@ -1184,8 +1197,8 @@ def apply_capture_bootstrap_payload(
             if freeze_ms is not None:
                 state.bonuses.freeze = max(0.0, float(freeze_ms) / 1000.0)  # ty:ignore[unresolved-attribute]
             state.time_scale_active = float(state.bonuses.reflex_boost) > 0.0  # ty:ignore[unresolved-attribute]
-        except Exception:
-            pass
+        except (AttributeError, TypeError, ValueError) as exc:
+            raise ValueError("invalid bootstrap global bonus_timers_ms payload") from exc
 
     return elapsed_ms
 
@@ -1275,16 +1288,19 @@ def convert_capture_to_replay(
     capture: CaptureFile,
     *,
     seed: int | None = None,
+    player_count: int | None = None,
     tick_rate: int = 60,
     world_size: float = 1024.0,
     game_mode_id: int | None = None,
     aim_scheme_overrides_by_player: Mapping[int, int] | None = None,
 ) -> Replay:
     resolved_seed = infer_capture_seed(capture) if seed is None else int(seed)
-    player_count = _infer_player_count(capture)
+    resolved_player_count = _infer_player_count(capture) if player_count is None else int(player_count)
+    if int(resolved_player_count) <= 0:
+        raise ValueError(f"replay player_count must be > 0 (got {resolved_player_count})")
     digital_move_enabled_by_player = _infer_digital_move_enabled_by_player(
         capture,
-        player_count=int(player_count),
+        player_count=int(resolved_player_count),
     )
     resolved_mode_id = _infer_game_mode_id(capture) if game_mode_id is None else int(game_mode_id)
     resolved_quest_level = _infer_quest_level(capture, game_mode_id=int(resolved_mode_id))
@@ -1297,10 +1313,10 @@ def convert_capture_to_replay(
         total_ticks = 0
 
     inputs: list[list[list[float | int | list[float]]]] = [
-        [[0.0, 0.0, [0.0, 0.0], 0] for _ in range(player_count)] for _ in range(total_ticks)
+        [[0.0, 0.0, [0.0, 0.0], 0] for _ in range(int(resolved_player_count))] for _ in range(total_ticks)
     ]
-    previous_checkpoint_ammo: list[float | None] = [None for _ in range(player_count)]
-    previous_checkpoint_weapon_id: list[int | None] = [None for _ in range(player_count)]
+    previous_checkpoint_ammo: list[float | None] = [None for _ in range(int(resolved_player_count))]
+    previous_checkpoint_weapon_id: list[int | None] = [None for _ in range(int(resolved_player_count))]
     normalized_aim_scheme_overrides = dict(aim_scheme_overrides_by_player or {})
 
     for tick in sorted(capture.ticks, key=lambda item: int(item.tick_index)):
@@ -1310,7 +1326,7 @@ def convert_capture_to_replay(
         approx_by_player = {int(sample.player_index): sample for sample in tick.input_approx}
         keys_by_player = {int(row.player_index): row for row in tick.input_player_keys}
         checkpoint_players = tick.checkpoint.players
-        for player_index in range(player_count):
+        for player_index in range(int(resolved_player_count)):
             sample = approx_by_player.get(int(player_index))
             key_row = keys_by_player.get(int(player_index))
             if normalized_aim_scheme_overrides:
@@ -1466,7 +1482,7 @@ def convert_capture_to_replay(
             if _should_synthesize_computer_fire_down(
                 tick=tick,
                 player_index=int(player_index),
-                player_count=int(player_count),
+                player_count=int(resolved_player_count),
                 aim_scheme=aim_scheme_value,
                 sample=sample,
                 fire_down_raw=fire_down_raw,
@@ -1556,7 +1572,7 @@ def convert_capture_to_replay(
             seed=int(resolved_seed),
             quest_level=str(resolved_quest_level),
             tick_rate=max(1, int(tick_rate)),
-            player_count=int(player_count),
+            player_count=int(resolved_player_count),
             preserve_bugs=True,
             world_size=float(world_size),
             status=status_snapshot,

@@ -21,6 +21,7 @@ from crimson.original.schema import (
     CaptureTick,
     CaptureVec2,
 )
+from crimson.replay.types import ReplayStatusSnapshot
 from crimson.original.verify import verify_capture
 from crimson.original.verify import _allow_capture_sample_creature_count
 from crimson.original.verify import _allow_one_tick_kills_lag
@@ -83,8 +84,10 @@ def _capture_from_checkpoint(
     mode_hint: str = "survival_update",
     quest_stage_major: int = -1,
     quest_stage_minor: int = -1,
+    status: ReplayStatusSnapshot | None = None,
 ) -> CaptureFile:
     ckpt = checkpoint
+    replay_status = status or ReplayStatusSnapshot()
     capture_players = [
         CapturePlayerCheckpoint(
             pos=CaptureVec2(float(player.pos.x), float(player.pos.y)),
@@ -136,7 +139,11 @@ def _capture_from_checkpoint(
         creature_count=int(ckpt.creature_count),
         perk_pending=int(ckpt.perk_pending),
         players=capture_players,
-        status=CaptureStatusSnapshot(),
+        status=CaptureStatusSnapshot(
+            quest_unlock_index=int(replay_status.quest_unlock_index),
+            quest_unlock_index_full=int(replay_status.quest_unlock_index_full),
+            weapon_usage_counts=[int(value) for value in replay_status.weapon_usage_counts],
+        ),
         bonus_timers={str(key): int(value) for key, value in ckpt.bonus_timers.items()},
         rng_marks=rng_marks,
         deaths=capture_deaths,
@@ -294,7 +301,7 @@ def test_verify_capture_quest_uses_capture_inter_tick_rand_draw_overrides(
             strict_events=True,
         )
 
-    assert int(seen.get("inter_tick_rand_draws", -1)) == 0
+    assert int(seen.get("inter_tick_rand_draws", -1)) == 1
     assert seen.get("inter_tick_rand_draws_by_tick") == {0: 0, 1: 1}
 
 

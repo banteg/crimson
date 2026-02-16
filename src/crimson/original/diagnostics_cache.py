@@ -361,7 +361,7 @@ class _FocusRuntime:
                         import inspect
 
                         frame = inspect.currentframe()
-                    except Exception:
+                    except (TypeError, ValueError):
                         frame = None
                     caller = frame.f_back if frame is not None else None
                     key = "<unknown>"
@@ -406,7 +406,7 @@ class _FocusRuntime:
                         import inspect
 
                         frame = inspect.currentframe().f_back  # ty:ignore[possibly-missing-attribute]
-                    except Exception:
+                    except (TypeError, ValueError):
                         frame = None
                     if frame is not None:
                         step = _optional_int(frame.f_locals.get("step") if "step" in frame.f_locals else None)
@@ -419,7 +419,7 @@ class _FocusRuntime:
                             try:
                                 proj_type = int(getattr(proj, "type_id"))
                                 proj_life = float(getattr(proj, "life_timer"))
-                            except Exception:
+                            except (TypeError, ValueError):
                                 proj_type = None
                                 proj_life = None
 
@@ -665,7 +665,7 @@ def _int_or(value: object, default: int = -1) -> int:
         if value is None:
             return int(default)
         return int(value)  # ty:ignore[invalid-argument-type]
-    except Exception:
+    except (TypeError, ValueError):
         return int(default)
 
 
@@ -674,7 +674,7 @@ def _optional_int(value: object) -> int | None:
         return None
     try:
         return int(cast(Any, value))
-    except Exception:
+    except (TypeError, ValueError):
         return None
 
 
@@ -683,7 +683,7 @@ def _float_or(value: object, default: float = 0.0) -> float:
         if value is None:
             return float(default)
         return float(value)  # ty:ignore[invalid-argument-type]
-    except Exception:
+    except (TypeError, ValueError):
         return float(default)
 
 
@@ -704,7 +704,7 @@ def _meta_matches(path: Path, fingerprint: CaptureFingerprint) -> bool:
     try:
         meta_obj = json.loads(path.read_text(encoding="utf-8"))
         meta = msgspec.convert(meta_obj, type=_CaptureMeta, strict=False)
-    except Exception:
+    except (TypeError, ValueError):
         return False
     if int(meta.schema_version) != int(_CACHE_SCHEMA_VERSION):
         return False
@@ -1284,7 +1284,7 @@ class CaptureSession:
         if _meta_matches(meta_path, self.fingerprint) and capture_blob_path.exists():
             try:
                 return _read_msgpack_gz(capture_blob_path, type=CaptureFile)
-            except Exception:
+            except (TypeError, ValueError):
                 pass
 
         capture = _read_capture(self.capture_path)
@@ -1300,7 +1300,7 @@ class CaptureSession:
             try:
                 blob = _read_msgpack_gz(tick_blob_path, type=_TickLiteBlob)
                 return {int(row.tick_index): dict(row.row) for row in blob.rows}
-            except Exception:
+            except (TypeError, ValueError):
                 pass
 
         rows: list[TickLite] = []

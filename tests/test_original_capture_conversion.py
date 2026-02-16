@@ -70,8 +70,8 @@ def _base_checkpoint(
         "perk_pending": int(perk_pending),
         "players": [_base_player()],
         "status": {
-            "quest_unlock_index": -1,
-            "quest_unlock_index_full": -1,
+            "quest_unlock_index": 0,
+            "quest_unlock_index_full": 0,
             "weapon_usage_counts": [],
         },
         "bonus_timers": {},
@@ -114,8 +114,8 @@ def _base_checkpoint(
             "creature_lifecycle": None,
             "before_players": [],
             "before_status": {
-                "quest_unlock_index": -1,
-                "quest_unlock_index_full": -1,
+                "quest_unlock_index": 0,
+                "quest_unlock_index_full": 0,
             },
         },
     }
@@ -464,6 +464,47 @@ def test_convert_capture_to_replay_infers_quest_level_from_tick_stage(tmp_path: 
 
     assert int(replay.header.game_mode_id) == int(GameMode.QUESTS)
     assert str(replay.header.quest_level) == "2.4"
+
+
+def test_convert_capture_to_replay_raises_when_game_mode_unavailable(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    tick["mode_hint"] = ""
+    tick["game_mode_id"] = -1
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    with pytest.raises(ValueError, match="cannot infer replay game_mode_id"):
+        convert_capture_to_replay(capture, seed=0)
+
+
+def test_convert_capture_to_replay_raises_when_status_unlock_missing(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    checkpoint = tick.get("checkpoint")
+    assert isinstance(checkpoint, dict)
+    status = checkpoint.get("status")
+    assert isinstance(status, dict)
+    status["quest_unlock_index"] = -1
+    status["quest_unlock_index_full"] = -1
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    with pytest.raises(ValueError, match="cannot infer replay status unlock indices"):
+        convert_capture_to_replay(capture, seed=0)
+
+
+def test_convert_capture_to_replay_rejects_non_positive_player_count_override(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    with pytest.raises(ValueError, match="player_count must be > 0"):
+        convert_capture_to_replay(capture, seed=0, player_count=0)
 
 
 def test_load_capture_stream_accepts_forward_compatible_config_fields(tmp_path: Path) -> None:

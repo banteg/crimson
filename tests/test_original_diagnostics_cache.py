@@ -40,8 +40,8 @@ def _checkpoint_tick(tick: int, *, level: int, weapon_id: int, experience: int, 
             }
         ],
         "status": {
-            "quest_unlock_index": -1,
-            "quest_unlock_index_full": -1,
+            "quest_unlock_index": 0,
+            "quest_unlock_index_full": 0,
             "weapon_usage_counts": [],
         },
         "bonus_timers": {},
@@ -78,7 +78,7 @@ def _checkpoint_tick(tick: int, *, level: int, weapon_id: int, experience: int, 
             "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
             "creature_lifecycle": None,
             "before_players": [],
-            "before_status": {"quest_unlock_index": -1, "quest_unlock_index_full": -1},
+            "before_status": {"quest_unlock_index": 0, "quest_unlock_index_full": 0},
         },
     }
 

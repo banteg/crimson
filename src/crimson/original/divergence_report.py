@@ -147,7 +147,7 @@ def _int_or(value: object, default: int = -1) -> int:
         if value is None:
             return int(default)
         return int(value)  # ty:ignore[invalid-argument-type]
-    except Exception:
+    except (TypeError, ValueError):
         return int(default)
 
 
@@ -156,7 +156,7 @@ def _float_or(value: object, default: float = 0.0) -> float:
         if value is None:
             return float(default)
         return float(value)  # ty:ignore[invalid-argument-type]
-    except Exception:
+    except (TypeError, ValueError):
         return float(default)
 
 
@@ -284,7 +284,7 @@ def _fmt_opt_int(value: object, *, width: int = 0, unknown: str = "na") -> str:
         return f"{unknown:>{width}}" if width > 0 else unknown
     try:
         ivalue = int(value)  # ty:ignore[invalid-argument-type]
-    except Exception:
+    except (TypeError, ValueError):
         return f"{unknown:>{width}}" if width > 0 else unknown
     return f"{ivalue:{width}d}" if width > 0 else str(ivalue)
 
@@ -1175,12 +1175,6 @@ def _run_actual_checkpoints(
     actual: list[ReplayCheckpoint] = []
 
     mode = int(replay.header.game_mode_id)
-    quest_inter_tick_rand_draws = int(inter_tick_rand_draws)
-    quest_inter_tick_rand_draws_by_tick = inter_tick_rand_draws_by_tick
-    if mode == int(GameMode.QUESTS):
-        # Quest captures infer replay seed from sampled tick-state; keep fallback
-        # inter-tick injection at 0 while preserving capture override telemetry.
-        quest_inter_tick_rand_draws = 0
 
     if mode == int(GameMode.SURVIVAL):
         run_result = run_survival_replay(
@@ -1215,8 +1209,8 @@ def _run_actual_checkpoints(
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
             dt_frame_overrides=dt_frame_overrides,
-            inter_tick_rand_draws=int(quest_inter_tick_rand_draws),
-            inter_tick_rand_draws_by_tick=quest_inter_tick_rand_draws_by_tick,
+            inter_tick_rand_draws=max(0, int(inter_tick_rand_draws)),
+            inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
         )
     else:
         raise ValueError(f"unsupported game mode for original capture verification: {mode}")
@@ -1641,7 +1635,7 @@ def _parse_hex_u32(value: object) -> int | None:
         return None
     try:
         return int(text, 16) & 0xFFFFFFFF
-    except Exception:
+    except (TypeError, ValueError):
         return None
 
 
