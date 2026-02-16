@@ -14,6 +14,18 @@ def update_regeneration(ctx: PerksUpdateEffectsCtx) -> None:
     if (ctx.state.rng.rand() & 1) == 0:
         return
 
+    if bool(ctx.state.preserve_bugs):
+        # Native `perks_update_effects` applies the regen tick to player 1 only,
+        # and repeats that write loop by `config_player_count`.
+        player0 = ctx.players[0]
+        for _ in range(len(ctx.players)):
+            if not (0.0 < float(player0.health) < 100.0):
+                continue
+            player0.health = float(player0.health) + ctx.dt
+            if player0.health > 100.0:
+                player0.health = 100.0
+        return
+
     heal_amount = ctx.dt
     # Native no-ops Greater Regeneration. In default rewrite mode we apply the
     # intended upgrade and keep the no-op behind `--preserve-bugs`.

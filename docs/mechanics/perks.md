@@ -269,6 +269,11 @@ Unlocked by quest 3.1 (*The Blighting*).
 Heals each alive player toward 100 HP at 0.5 HP/s. Every frame has a 50%
 chance to heal +dt HP. Only triggers between 0 and 100 HP.
 
+!!! bug "Original bug"
+    In the original executable, regen checks player 1 perk ownership, heals
+    player 1 only, and repeats that heal step by player count. Use
+    `--preserve-bugs` to keep that native co-op asymmetry.
+
 Unlocks [Greater Regeneration](#45-greater-regeneration).
 Unlocked by quest 3.3 (*The Killing*).
 
