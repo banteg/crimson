@@ -255,7 +255,7 @@ def test_local_input_relative_mode_multiplayer_does_not_use_alt_arrow_fallback(
     assert out.move == Vec2()
 
 
-def test_local_input_reload_pressed_allowed_only_for_single_player(
+def test_local_input_reload_pressed_is_available_in_multiplayer(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _patch_no_user_input(monkeypatch)
@@ -294,7 +294,38 @@ def test_local_input_reload_pressed_allowed_only_for_single_player(
     )
 
     assert single_player.reload_pressed is True
-    assert multiplayer.reload_pressed is False
+    assert multiplayer.reload_pressed is True
+
+
+def test_local_input_reload_pressed_reads_per_player_input_slot(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_no_user_input(monkeypatch)
+    monkeypatch.setattr(
+        local_input,
+        "input_code_is_pressed_for_player",
+        lambda key, **kwargs: int(key) == 0x102 and int(kwargs.get("player_index", -1)) == 1,
+    )
+    monkeypatch.setattr(
+        local_input.LocalInputInterpreter,
+        "_safe_controls_modes",
+        staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.STATIC)),
+    )
+    interpreter = local_input.LocalInputInterpreter()
+    player = PlayerState(index=1, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
+
+    out = interpreter.build_player_input(
+        player_index=1,
+        player=player,
+        config=_test_config(player_count=2),
+        mouse_screen=Vec2(),
+        mouse_world=Vec2(),
+        screen_center=Vec2(),
+        dt_frame=0.1,
+        creatures=[],
+    )
+
+    assert out.reload_pressed is True
 
 
 def test_local_input_mouse_point_click_marks_move_to_cursor_press(
@@ -494,6 +525,87 @@ def test_local_input_joystick_aim_turns_with_pov_input(
         screen_center=Vec2(),
         dt_frame=0.1,
         creatures=[],
+    )
+
+    expected = player.pos + Vec2.from_heading(0.4) * 60.0
+    assert float(out.aim.x) == pytest.approx(float(expected.x), abs=1e-6)
+    assert float(out.aim.y) == pytest.approx(float(expected.y), abs=1e-6)
+
+
+def test_local_input_joystick_aim_reads_player_pov_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        local_input,
+        "input_code_is_down_for_player",
+        lambda key, **kwargs: int(key) == 0x134 and int(kwargs.get("player_index", -1)) == 1,
+    )
+    monkeypatch.setattr(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
+    monkeypatch.setattr(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
+    monkeypatch.setattr(
+        local_input,
+        "_load_player_bind_block",
+        lambda _config, *, player_index: tuple(range(16)),
+    )
+    monkeypatch.setattr(
+        local_input.LocalInputInterpreter,
+        "_safe_controls_modes",
+        staticmethod(lambda _config, *, player_index: (AimScheme.JOYSTICK, MovementControlType.STATIC)),
+    )
+
+    interpreter = local_input.LocalInputInterpreter()
+    player = PlayerState(index=1, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
+
+    out = interpreter.build_player_input(
+        player_index=1,
+        player=player,
+        config=_test_config(player_count=2),
+        mouse_screen=Vec2(),
+        mouse_world=Vec2(),
+        screen_center=Vec2(),
+        dt_frame=0.1,
+        creatures=[],
+    )
+
+    expected = player.pos + Vec2.from_heading(0.4) * 60.0
+    assert float(out.aim.x) == pytest.approx(float(expected.x), abs=1e-6)
+    assert float(out.aim.y) == pytest.approx(float(expected.y), abs=1e-6)
+
+
+def test_local_input_joystick_aim_preserve_bugs_uses_player1_pov_slot(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        local_input,
+        "input_code_is_down_for_player",
+        lambda key, **kwargs: int(key) == 0x134 and int(kwargs.get("player_index", -1)) == 0,
+    )
+    monkeypatch.setattr(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
+    monkeypatch.setattr(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
+    monkeypatch.setattr(
+        local_input,
+        "_load_player_bind_block",
+        lambda _config, *, player_index: tuple(range(16)),
+    )
+    monkeypatch.setattr(
+        local_input.LocalInputInterpreter,
+        "_safe_controls_modes",
+        staticmethod(lambda _config, *, player_index: (AimScheme.JOYSTICK, MovementControlType.STATIC)),
+    )
+
+    interpreter = local_input.LocalInputInterpreter()
+    player = PlayerState(index=1, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
+
+    out = interpreter.build_player_input(
+        player_index=1,
+        player=player,
+        config=_test_config(player_count=2),
+        mouse_screen=Vec2(),
+        mouse_world=Vec2(),
+        screen_center=Vec2(),
+        dt_frame=0.1,
+        creatures=[],
+        preserve_bugs=True,
     )
 
     expected = player.pos + Vec2.from_heading(0.4) * 60.0

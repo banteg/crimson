@@ -50,6 +50,30 @@ def test_pistol_extra_gate_allows_spawn_without_bonus_magnet() -> None:
     assert entry is not None
 
 
+def test_pistol_extra_gate_uses_any_player_by_default() -> None:
+    state = GameplayState()
+    state.rng = _SequenceRng([3, 0, 1, 0])
+    state.bonus_pool = BonusPool()
+
+    player1 = PlayerState(index=0, pos=Vec2(), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player2 = PlayerState(index=1, pos=Vec2(300.0, 300.0), weapon_id=int(WeaponId.PISTOL))
+
+    entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(100.0, 100.0), state=state, players=[player1, player2])
+    assert entry is not None
+
+
+def test_pistol_extra_gate_preserve_bugs_uses_player1_only() -> None:
+    state = GameplayState(preserve_bugs=True)
+    state.rng = _SequenceRng([3, 0, 1, 0])
+    state.bonus_pool = BonusPool()
+
+    player1 = PlayerState(index=0, pos=Vec2(), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player2 = PlayerState(index=1, pos=Vec2(300.0, 300.0), weapon_id=int(WeaponId.PISTOL))
+
+    entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(100.0, 100.0), state=state, players=[player1, player2])
+    assert entry is None
+
+
 def test_weapon_drop_near_player2_converts_to_points_by_default() -> None:
     state = GameplayState()
     state.rng = _SequenceRng([1, 13, 1, 4])
@@ -107,3 +131,29 @@ def test_spawn_gate_consumes_pick_rng_when_spacing_rejects_slot() -> None:
     assert rng.consumed == 3
     active = [slot for slot in state.bonus_pool.entries if slot.bonus_id != 0]
     assert len(active) == 1
+
+
+def test_weapon_drop_suppression_checks_all_carried_weapons_by_default() -> None:
+    state = GameplayState()
+    state.rng = _SequenceRng([1, 13, 1, 2])
+    state.bonus_pool = BonusPool()
+
+    player1 = PlayerState(index=0, pos=Vec2(), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player2 = PlayerState(index=1, pos=Vec2(500.0, 500.0), weapon_id=int(WeaponId.SHOTGUN))
+
+    entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player1, player2])
+    assert entry is None
+
+
+def test_weapon_drop_suppression_preserve_bugs_checks_player1_weapon_only() -> None:
+    state = GameplayState(preserve_bugs=True)
+    state.rng = _SequenceRng([1, 13, 1, 2])
+    state.bonus_pool = BonusPool()
+
+    player1 = PlayerState(index=0, pos=Vec2(), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player2 = PlayerState(index=1, pos=Vec2(500.0, 500.0), weapon_id=int(WeaponId.SHOTGUN))
+
+    entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player1, player2])
+    assert entry is not None
+    assert entry.bonus_id == int(BonusId.WEAPON)
+    assert entry.amount == int(WeaponId.SHOTGUN)

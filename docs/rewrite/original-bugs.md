@@ -35,7 +35,8 @@ Examples of the accidental hard bans (native metadata):
 
 Rewrite behavior:
 
-- Default: only suppress `Weapon` drops that match the current weapon id.
+- Default: only suppress `Weapon` drops that match a currently carried weapon id
+  (primary/alternate across co-op players).
 - With `--preserve-bugs`: re-enable the exe’s `amount == weapon_id` suppression
   rule for all bonus types.
 
@@ -334,3 +335,44 @@ Rewrite behavior:
 
 - Default: in co-op, allow Pyromaniac when any alive player has Flamethrower.
 - With `--preserve-bugs`: keep native player-1-only weapon gating.
+
+## 15) Joystick POV aim reads player 1 POV only in co-op
+
+Native behavior:
+
+- In `input_aim_pov_left_active` / `input_aim_pov_right_active`, POV input is
+  read from joystick POV slot 0 only.
+- In co-op, player 2 joystick aim can ignore player 2 POV input and instead
+  respond to player 1 POV state.
+
+Why it’s likely a bug:
+
+- Joystick aim is evaluated per player, but the POV read is hard-wired to one
+  slot.
+- This creates direct input asymmetry in co-op.
+
+Rewrite behavior:
+
+- Default: read POV input from the current player's input slot.
+- With `--preserve-bugs`: keep native slot-0 POV sourcing.
+
+## 16) Pistol no-magnet fallback gate checks player 1 only in co-op
+
+Native behavior:
+
+- In `bonus_try_spawn_on_kill` (`0x0041f8d0`), when the base 1-in-9 spawn roll
+  fails, the extra pistol fallback (`rand % 5 == 1`) is gated by player 1
+  holding Pistol.
+- In co-op, player 2 holding Pistol does not enable this fallback unless player
+  1 also has Pistol.
+
+Why it’s likely a bug:
+
+- The earlier pistol safety-net path already scans all players.
+- Using player-1-only state in the fallback path creates inconsistent,
+  asymmetric co-op drop behavior.
+
+Rewrite behavior:
+
+- Default: allow the pistol fallback when any player currently holds Pistol.
+- With `--preserve-bugs`: keep native player-1-only fallback gating.

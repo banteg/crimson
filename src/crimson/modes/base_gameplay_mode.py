@@ -767,6 +767,7 @@ class BaseGameplayMode:
             screen_to_world=self.world.screen_to_world,
             dt_frame=float(dt_frame),
             creatures=self.creatures.entries,
+            preserve_bugs=bool(self.state.preserve_bugs),
         )
 
     @staticmethod
