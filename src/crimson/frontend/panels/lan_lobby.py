@@ -246,10 +246,11 @@ class LanLobbyPanelView(PanelMenuView):
             pending = getattr(self.state, "pending_lan_session", None)
         role = str(getattr(pending, "role", "") or "")
         cfg = getattr(pending, "config", None)
-        host_ip = str(getattr(cfg, "room_code", "") or "")
-        if not host_ip:
-            host_ip = str(getattr(cfg, "host_ip", "") or "")
-        bind_host = str(getattr(cfg, "bind_host", "") or "")
+        room_code = str(getattr(cfg, "room_code", "") or "").upper().strip()
+        relay_host = str(getattr(cfg, "relay_host", "") or "").strip()
+        if not relay_host:
+            relay_host = str(getattr(cfg, "host_ip", "") or "").strip()
+        bind_host = str(getattr(cfg, "bind_host", "") or "").strip()
         port = int(getattr(cfg, "relay_port", getattr(cfg, "port", 0)) or 0)
 
         runtime = getattr(self.state, "net_runtime", None)
@@ -257,6 +258,9 @@ class LanLobbyPanelView(PanelMenuView):
             runtime = getattr(self.state, "lan_runtime", None)
         lobby_state_fn = getattr(runtime, "lobby_state", None) if runtime is not None else None
         lobby_state = lobby_state_fn() if callable(lobby_state_fn) else None
+        lobby_room_code = str(getattr(lobby_state, "room_code", "") or "").upper().strip()
+        if lobby_room_code:
+            room_code = lobby_room_code
 
         session_id = str(getattr(lobby_state, "session_id", "") or "")
         expected = int(
@@ -279,13 +283,15 @@ class LanLobbyPanelView(PanelMenuView):
         dots = "." * int((self._cursor_pulse_time * 2.5) % 4)
         connected_text = f"{connected}/{expected}{dots}"
         role_label = "Host" if role == "host" else "Client"
-        addr_text = f"{bind_host}:{port}" if role == "host" else f"{host_ip}:{port}"
-        addr_label = "Bind:" if role == "host" else "Code:"
+        code_text = room_code if room_code else "-"
+        relay_addr = bind_host if role == "host" else relay_host
+        relay_text = f"{relay_addr}:{port}" if relay_addr else f"127.0.0.1:{port}"
 
         label_w = max(
             measure_small_text_width(font, "Connected:", text_scale),
             measure_small_text_width(font, "Role:", text_scale),
-            measure_small_text_width(font, addr_label, text_scale),
+            measure_small_text_width(font, "Code:", text_scale),
+            measure_small_text_width(font, "Relay:", text_scale),
             measure_small_text_width(font, "Session:", text_scale),
         )
         value_x = base_pos.x + label_w + 10.0 * scale
@@ -299,8 +305,12 @@ class LanLobbyPanelView(PanelMenuView):
         draw_small_text(font, role_label, Vec2(value_x, y), text_scale, value_color)
         y += line_h
 
-        draw_small_text(font, addr_label, Vec2(base_pos.x, y), text_scale, label_color)
-        draw_small_text(font, addr_text, Vec2(value_x, y), text_scale, value_color)
+        draw_small_text(font, "Code:", Vec2(base_pos.x, y), text_scale, label_color)
+        draw_small_text(font, code_text, Vec2(value_x, y), text_scale, value_color)
+        y += line_h
+
+        draw_small_text(font, "Relay:", Vec2(base_pos.x, y), text_scale, label_color)
+        draw_small_text(font, relay_text, Vec2(value_x, y), text_scale, value_color)
         y += line_h
 
         if session_id:

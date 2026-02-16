@@ -23,7 +23,7 @@ DEFAULT_PORT = 31993
 INPUT_DELAY_TICKS = 1
 ROLLBACK_MAX_TICKS = 8
 RECONNECT_TIMEOUT_MS = 15_000
-ROOM_CODE_LENGTH = 6
+ROOM_CODE_LENGTH = 4
 
 NetcodeMode = Literal["rollback", "lockstep", "lockstep_legacy"]
 

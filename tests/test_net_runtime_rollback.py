@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from crimson.net.net_runtime import NetRuntime, NetRuntimeConfig
-from crimson.net.relay_protocol import RbInputBatch, RbInputSample, RbResyncRequest, RoomStart
+from crimson.net.relay_protocol import RbInputBatch, RbInputSample, RbResyncRequest, RoomStart, RoomState
 
 
 def _start_runtime(monkeypatch, *, rollback_max_ticks: int = 8) -> tuple[NetRuntime, list[tuple[tuple[str, int], Any]]]:
@@ -93,3 +93,33 @@ def test_runtime_requests_resync_when_correction_exceeds_rollback_cap(monkeypatc
     assert runtime.resync_count == 1
     assert runtime.pop_tick_frame() is None
     assert any(isinstance(packet.message, RbResyncRequest) for _addr, packet in sent)
+
+
+def test_runtime_prints_host_invite_code_once(monkeypatch) -> None:
+    runtime = NetRuntime(
+        NetRuntimeConfig(
+            role="host",
+            mode_id=1,
+            player_count=2,
+            relay_host="127.0.0.1",
+            relay_port=31993,
+            room_code="",
+        )
+    )
+    printed: list[str] = []
+
+    def _capture_print(*args: object, **_kwargs: object) -> None:
+        printed.append(" ".join(str(item) for item in args))
+
+    monkeypatch.setattr("builtins.print", _capture_print)
+
+    runtime._handle_message(
+        message=RoomState(room_code="AB12", player_count=2),
+        now_ms=1000,
+    )
+    runtime._handle_message(
+        message=RoomState(room_code="AB12", player_count=2),
+        now_ms=1001,
+    )
+
+    assert printed == ["[crimson] Invite code: AB12"]

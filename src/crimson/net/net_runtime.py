@@ -83,6 +83,7 @@ class NetRuntime:
     _last_send_ms: int = field(init=False, default=0)
     _reconnect_token: str = field(init=False, default="")
     _paused_for_reconnect: bool = field(init=False, default=False)
+    _announced_room_code: str = field(init=False, default="")
 
     _rollback: RollbackController | None = field(init=False, default=None)
     _frame_queue: deque[TickFrame] = field(init=False, default_factory=deque)
@@ -142,6 +143,7 @@ class NetRuntime:
         self._last_send_ms = 0
         self._reconnect_token = ""
         self._paused_for_reconnect = False
+        self._announced_room_code = ""
         self._rollback = None
         self._frame_queue.clear()
         self._remote_seen_slots.clear()
@@ -360,6 +362,7 @@ class NetRuntime:
                     self._paused_for_reconnect = False
             if str(self.cfg.role) == "host":
                 self.cfg.room_code = str(message.room_code or "")
+                self._announce_room_code(self.cfg.room_code)
                 self._joined_room = True
             return
 
@@ -373,6 +376,8 @@ class NetRuntime:
             self._sent_ready = True
             if str(self.cfg.room_code or "") != str(message.room_code or ""):
                 self.cfg.room_code = str(message.room_code or "")
+            if str(self.cfg.role) == "host":
+                self._announce_room_code(self.cfg.room_code)
             return
 
         if isinstance(message, PeerDisconnect):
@@ -461,6 +466,15 @@ class NetRuntime:
                 reliable=bool(reliable),
                 room_code=str(self.cfg.room_code or ""),
             )
+
+    def _announce_room_code(self, room_code: str) -> None:
+        code = str(room_code or "").strip().upper()
+        if not code:
+            return
+        if code == str(self._announced_room_code):
+            return
+        self._announced_room_code = code
+        print(f"[crimson] Invite code: {code}", flush=True)
 
 
 __all__ = ["NetRuntime", "NetRuntimeConfig"]

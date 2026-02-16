@@ -4,6 +4,7 @@ from typing import Any
 
 from crimson.net.relay_protocol import (
     PROTOCOL_VERSION,
+    ROOM_CODE_LENGTH,
     ClientHello,
     ClientWelcome,
     RoomCreate,
@@ -93,6 +94,8 @@ def test_room_create_join_ready_start_flow(monkeypatch) -> None:
     )
     room_code = str(host_peer.room_code)
     assert room_code
+    assert len(room_code) == int(ROOM_CODE_LENGTH)
+    assert room_code.isalnum()
     assert room_code in server._rooms
     assert any(isinstance(packet.message, RoomState) for _addr, packet in sent)
     sent.clear()

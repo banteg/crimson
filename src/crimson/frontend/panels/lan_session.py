@@ -9,6 +9,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim.geom import Vec2
 
 from ...game.types import LanSessionConfig, LanSessionMode, NetcodeMode, PendingLanSession
+from ...net.relay_protocol import ROOM_CODE_LENGTH
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from ...ui.text_input import poll_text_input
 from ..menu import MENU_PANEL_OFFSET_Y, MENU_PANEL_WIDTH, MenuEntry, MenuView
@@ -76,7 +77,9 @@ class LanSessionPanelView(PanelMenuView):
             relay_host = str(getattr(cfg, "relay_host", "") or "").strip()
             self._bind_host = relay_host or str(cfg.bind_host or "127.0.0.1")
             self._host_ip = relay_host or str(cfg.host_ip or "127.0.0.1")
-            self._room_code = str(getattr(cfg, "room_code", "") or "").upper()
+            self._room_code = "".join(
+                ch for ch in str(getattr(cfg, "room_code", "") or "").upper() if ch.isalnum()
+            )[: int(ROOM_CODE_LENGTH)]
             netcode_raw = str(getattr(cfg, "netcode_mode", "rollback") or "rollback").strip().lower()
             self._netcode_mode = "lockstep_legacy" if netcode_raw in {"lockstep", "lockstep_legacy"} else "rollback"
             relay_port = int(getattr(cfg, "relay_port", int(cfg.port)))
@@ -151,7 +154,9 @@ class LanSessionPanelView(PanelMenuView):
             elif self._active_field == "host_ip":
                 self._host_ip = (self._host_ip + typed)[:64]
             elif self._active_field == "room_code":
-                self._room_code = "".join(ch for ch in (self._room_code + typed).upper() if ch.isalnum())[:8]
+                self._room_code = "".join(ch for ch in (self._room_code + typed).upper() if ch.isalnum())[
+                    : int(ROOM_CODE_LENGTH)
+                ]
             elif self._active_field == "port":
                 self._port_text = "".join(ch for ch in (self._port_text + typed) if ch.isdigit())[:5]
 

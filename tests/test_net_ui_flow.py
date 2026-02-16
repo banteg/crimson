@@ -3,13 +3,16 @@ from __future__ import annotations
 from pathlib import Path
 import random
 import time
+from types import SimpleNamespace
 
+from crimson.frontend.panels.lan_lobby import LanLobbyPanelView
 from crimson.frontend.panels.lan_session import LanSessionPanelView
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import GameState, LanSessionConfig, PendingLanSession
 from crimson.persistence import save_status
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
+from grim.geom import Vec2
 
 
 def _build_state(tmp_path: Path) -> GameState:
@@ -104,3 +107,61 @@ def test_loop_view_uses_pending_net_session_when_lan_alias_is_unset(tmp_path: Pa
     assert state.lan_runtime is state.net_runtime
     assert state.net_in_lobby is True
     assert state.lan_in_lobby is True
+
+
+def test_network_lobby_panel_shows_room_code_not_session_id(monkeypatch, tmp_path: Path) -> None:
+    state = _build_state(tmp_path)
+    pending = PendingLanSession(
+        role="host",
+        config=LanSessionConfig(
+            mode="survival",
+            player_count=2,
+            quest_level="",
+            bind_host="0.0.0.0",
+            relay_host="127.0.0.1",
+            relay_port=31993,
+            room_code="ZZ99",
+            host_ip="127.0.0.1",
+            port=31993,
+            netcode_mode="rollback",
+            rollback_max_ticks=8,
+            reconnect_timeout_ms=15_000,
+            input_delay_ticks=1,
+            preserve_bugs=False,
+        ),
+    )
+    state.pending_net_session = pending
+    state.pending_lan_session = pending
+    state.net_runtime = SimpleNamespace(
+        lobby_state=lambda: SimpleNamespace(room_code="AB12", session_id="session123", player_count=2, slots=[])
+    )
+    state.lan_runtime = state.net_runtime
+
+    panel = LanLobbyPanelView(state)
+    captured: list[str] = []
+    monkeypatch.setattr(
+        "crimson.frontend.panels.lan_lobby.draw_small_text",
+        lambda _font, text, _pos, _scale, _color: captured.append(str(text)),
+    )
+    monkeypatch.setattr(
+        "crimson.frontend.panels.lan_lobby.measure_small_text_width",
+        lambda _font, text, _scale: float(len(str(text)) * 8),
+    )
+    monkeypatch.setattr(panel, "_ensure_small_font", lambda: SimpleNamespace(cell_size=8))
+    monkeypatch.setattr(
+        panel,
+        "_layout",
+        lambda: SimpleNamespace(
+            scale=1.0,
+            panel_top_left=Vec2(0.0, 0.0),
+            base_pos=Vec2(0.0, 0.0),
+            back_pos=Vec2(0.0, 0.0),
+            back_w=64.0,
+        ),
+    )
+
+    panel._draw_contents()
+
+    code_label_index = captured.index("Code:")
+    assert captured[code_label_index + 1] == "AB12"
+    assert "Session:" in captured
