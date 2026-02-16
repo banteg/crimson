@@ -274,11 +274,11 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
     obj = json.loads(data.decode("utf-8"))
     if not isinstance(obj, dict):
         raise ReplayCheckpointsError("checkpoints root must be an object")
-    version = int(obj.get("v", 0))
+    version = int(obj.get("v") or 0)
     if version != FORMAT_VERSION:
         raise ReplayCheckpointsError(f"unsupported checkpoints version: {version}")
-    replay_sha256 = str(obj.get("replay_sha256", ""))
-    sample_rate = int(obj.get("sample_rate", 0) or 0)
+    replay_sha256 = str(obj.get("replay_sha256") or "")
+    sample_rate = int(obj.get("sample_rate") or 0)
     raw_ckpts = obj.get("checkpoints") or []
     if not isinstance(raw_ckpts, list):
         raise ReplayCheckpointsError("checkpoints must be a list")
@@ -297,16 +297,16 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
             pos_raw = p.get("pos")
             if not isinstance(pos_raw, dict):
                 raise ReplayCheckpointsError("checkpoint player pos must be an object")
-            px = float(pos_raw.get("x", 0.0))
-            py = float(pos_raw.get("y", 0.0))
+            px = float(pos_raw.get("x") or 0.0)
+            py = float(pos_raw.get("y") or 0.0)
             players.append(
                 ReplayPlayerCheckpoint(
                     pos=Vec2(px, py),
-                    health=float(p.get("health", 0.0)),
-                    weapon_id=int(p.get("weapon_id", 0)),
-                    ammo=float(p.get("ammo", 0.0)),
-                    experience=int(p.get("experience", 0)),
-                    level=int(p.get("level", 0)),
+                    health=float(p.get("health") or 0.0),
+                    weapon_id=int(p.get("weapon_id") or 0),
+                    ammo=float(p.get("ammo") or 0.0),
+                    experience=int(p.get("experience") or 0),
+                    level=int(p.get("level") or 0),
                 )
             )
         bonus_timers_in = item.get("bonus_timers") or {}
@@ -326,17 +326,17 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
                 raise ReplayCheckpointsError(f"checkpoint death must be an object: {death!r}")
             deaths.append(
                 ReplayDeathLedgerEntry(
-                    creature_index=int(death.get("creature_index", -1)),
-                    type_id=int(death.get("type_id", 0)),
-                    reward_value=float(death.get("reward_value", 0.0)),
-                    xp_awarded=int(death.get("xp_awarded", 0)),
-                    owner_id=int(death.get("owner_id", -100)),
+                    creature_index=int(death.get("creature_index") if "creature_index" in death else -1),
+                    type_id=int(death.get("type_id") or 0),
+                    reward_value=float(death.get("reward_value") or 0.0),
+                    xp_awarded=int(death.get("xp_awarded") or 0),
+                    owner_id=int(death.get("owner_id") if "owner_id" in death else -100),
                 )
             )
 
         perk_in = item.get("perk")
         if perk_in is None:
-            perk = ReplayPerkSnapshot(pending_count=int(item.get("perk_pending", 0)))
+            perk = ReplayPerkSnapshot(pending_count=int(item.get("perk_pending") or 0))
         else:
             if not isinstance(perk_in, dict):
                 raise ReplayCheckpointsError("checkpoint perk must be an object")
@@ -359,8 +359,12 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
                     rows.append([int(row[0]), int(row[1])])
                 player_nonzero_counts.append(rows)
             perk = ReplayPerkSnapshot(
-                pending_count=int(perk_in.get("pending_count", item.get("perk_pending", 0))),
-                choices_dirty=bool(perk_in.get("choices_dirty", False)),
+                pending_count=(
+                    int(perk_in["pending_count"])
+                    if "pending_count" in perk_in
+                    else int(item.get("perk_pending") or 0)
+                ),
+                choices_dirty=(bool(perk_in["choices_dirty"]) if "choices_dirty" in perk_in else False),
                 choices=[int(perk_id) for perk_id in raw_choices],
                 player_nonzero_counts=player_nonzero_counts,
             )
@@ -380,25 +384,25 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
             if not isinstance(raw_sfx_head, list):
                 raise ReplayCheckpointsError("checkpoint events sfx_head must be a list")
             events = ReplayEventSummary(
-                hit_count=int(events_in.get("hit_count", 0)),
-                pickup_count=int(events_in.get("pickup_count", 0)),
-                sfx_count=int(events_in.get("sfx_count", 0)),
+                hit_count=(int(events_in["hit_count"]) if "hit_count" in events_in else 0),
+                pickup_count=(int(events_in["pickup_count"]) if "pickup_count" in events_in else 0),
+                sfx_count=(int(events_in["sfx_count"]) if "sfx_count" in events_in else 0),
                 sfx_head=[str(key) for key in raw_sfx_head],
             )
 
         checkpoints.append(
             ReplayCheckpoint(
-                tick_index=int(item.get("tick_index", 0)),
-                rng_state=int(item.get("rng_state", 0)),
-                elapsed_ms=int(item.get("elapsed_ms", 0)),
-                score_xp=int(item.get("score_xp", 0)),
-                kills=int(item.get("kills", 0)),
-                creature_count=int(item.get("creature_count", 0)),
-                perk_pending=int(item.get("perk_pending", 0)),
+                tick_index=int(item.get("tick_index") or 0),
+                rng_state=int(item.get("rng_state") or 0),
+                elapsed_ms=int(item.get("elapsed_ms") or 0),
+                score_xp=int(item.get("score_xp") or 0),
+                kills=int(item.get("kills") or 0),
+                creature_count=int(item.get("creature_count") or 0),
+                perk_pending=int(item.get("perk_pending") or 0),
                 players=players,
                 bonus_timers={str(k): int(v) for k, v in bonus_timers_in.items()},
-                state_hash=str(item.get("state_hash", "")),
-                command_hash=str(item.get("command_hash", "")),
+                state_hash=str(item.get("state_hash") or ""),
+                command_hash=str(item.get("command_hash") or ""),
                 rng_marks={str(k): int(v) for k, v in rng_marks_in.items()},
                 deaths=deaths,
                 perk=perk,

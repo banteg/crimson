@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 import random
 
+from construct import ConstructError
+
 from grim.audio import AudioState, init_audio_state
 from grim.config import CrimsonConfig, ensure_crimson_cfg
 from grim.console import ConsoleLog, ConsoleState
@@ -25,7 +27,7 @@ def init_view_audio(assets_dir: Path, *, seed: int = 0xBEEF) -> ViewAudioBootstr
     runtime_dir.mkdir(parents=True, exist_ok=True)
     try:
         config = ensure_crimson_cfg(runtime_dir)
-    except Exception:
+    except (ConstructError, OSError, ValueError):
         return ViewAudioBootstrap(None, None, None, None)
 
     console = ConsoleState(
@@ -35,13 +37,13 @@ def init_view_audio(assets_dir: Path, *, seed: int = 0xBEEF) -> ViewAudioBootstr
     )
     try:
         download_missing_paqs(assets_dir, console)
-    except Exception as exc:
+    except (OSError, ValueError) as exc:
         console.log.log(f"assets: download failed: {exc}")
         console.log.flush()
 
     try:
         audio = init_audio_state(config, assets_dir, console)
-    except Exception:
+    except (ConstructError, OSError, RuntimeError, ValueError):
         return ViewAudioBootstrap(config, console, None, None)
 
     return ViewAudioBootstrap(config, console, audio, random.Random(seed))

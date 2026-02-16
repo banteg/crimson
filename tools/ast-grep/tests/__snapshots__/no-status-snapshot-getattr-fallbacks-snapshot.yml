@@ -1,0 +1,18 @@
+id: no-status-snapshot-getattr-fallbacks
+snapshots:
+  ? |
+    data = {
+      "quest_unlock_index": int(getattr(snapshot, "quest_unlock_index", 0) or 0),
+    }
+  : labels:
+    - source: getattr(snapshot, "quest_unlock_index", 0)
+      style: primary
+      start: 37
+      end: 79
+  ? |
+    weapon_counts = list(getattr(snap, "weapon_usage_counts", []) or [])
+  : labels:
+    - source: getattr(snap, "weapon_usage_counts", [])
+      style: primary
+      start: 21
+      end: 61

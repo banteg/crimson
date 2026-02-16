@@ -1,0 +1,16 @@
+id: no-replay-checkpoints-get-fallbacks
+snapshots:
+  ? |
+    score_xp = int(item.get("score_xp", 0))
+  : labels:
+    - source: item.get("score_xp", 0)
+      style: primary
+      start: 15
+      end: 38
+  ? |
+    version = int(obj.get("v", 0))
+  : labels:
+    - source: obj.get("v", 0)
+      style: primary
+      start: 14
+      end: 29

@@ -2,7 +2,19 @@ from __future__ import annotations
 
 from pathlib import Path
 import random
-from typing import Any, Protocol
+from typing import TYPE_CHECKING, Protocol
+
+if TYPE_CHECKING:
+    from grim.audio import AudioState
+    from grim.assets import LogoAssets, PaqTextureCache
+    from grim.config import CrimsonConfig
+    from grim.console import ConsoleState
+    from grim.geom import Vec2
+    from grim.terrain_render import GroundRenderer
+
+    from ..game.types import PendingLanSession
+    from ..net.runtime import LanRuntime
+    from ..persistence.save_status import GameStatus
 
 
 class PauseBackground(Protocol):
@@ -15,21 +27,21 @@ class GameState(Protocol):
     base_dir: Path
     assets_dir: Path
     rng: random.Random
-    config: Any
-    status: Any
+    config: CrimsonConfig
+    status: GameStatus
     preserve_bugs: bool
 
-    texture_cache: Any
-    audio: Any
+    texture_cache: PaqTextureCache | None
+    audio: AudioState | None
     resource_paq: Path
-    logos: Any
-    console: Any
+    logos: LogoAssets | None
+    console: ConsoleState
 
-    menu_ground: Any
-    menu_ground_camera: Any
+    menu_ground: GroundRenderer | None
+    menu_ground_camera: Vec2 | None
     pause_background: PauseBackground | None
-    pending_lan_session: Any
-    lan_runtime: Any
+    pending_lan_session: PendingLanSession | None
+    lan_runtime: LanRuntime | None
     lan_in_lobby: bool
     lan_waiting_for_players: bool
     lan_expected_players: int
@@ -37,7 +49,7 @@ class GameState(Protocol):
     lan_desync_count: int
     lan_resync_failure_count: int
     lan_last_error: str
-    pending_quest_level: Any
+    pending_quest_level: str | None
 
     demo_enabled: bool
     skip_intro: bool

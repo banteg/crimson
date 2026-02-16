@@ -897,7 +897,7 @@ def trace_focus_tick(
                     hook_index += 1
                     return bool(handled)
 
-                world.state.rng.rand = traced_rand
+                setattr(world.state.rng, "rand", traced_rand)
                 world.state.particles._rand = traced_rand
                 world.state.sprite_effects._rand = traced_rand
                 projectiles_mod._within_native_find_radius = traced_within_native_find_radius  # type: ignore[assignment]
@@ -929,7 +929,7 @@ def trace_focus_tick(
                 )
 
             if int(tick_index) == int(tick):
-                world.state.rng.rand = orig_rand
+                setattr(world.state.rng, "rand", orig_rand)
                 world.state.particles._rand = orig_particles_rand
                 world.state.sprite_effects._rand = orig_sprite_effects_rand
                 projectiles_mod._within_native_find_radius = orig_within
@@ -942,7 +942,7 @@ def trace_focus_tick(
                 for _ in range(draws):
                     world.state.rng.rand()
     finally:
-        world.state.rng.rand = orig_rand
+        setattr(world.state.rng, "rand", orig_rand)
         world.state.particles._rand = orig_particles_rand
         world.state.sprite_effects._rand = orig_sprite_effects_rand
         projectiles_mod._within_native_find_radius = orig_within

@@ -3,6 +3,8 @@ from __future__ import annotations
 import socket
 from dataclasses import dataclass, field
 
+import msgspec
+
 from .protocol import decode_packet, encode_packet, Packet
 
 
@@ -66,7 +68,7 @@ class UdpTransport:
             addr: PeerAddr = (str(raw_addr[0]), int(raw_addr[1]))
             try:
                 packet = decode_packet(blob)
-            except Exception:
+            except (msgspec.DecodeError, msgspec.ValidationError):
                 # Ignore malformed datagrams.
                 continue
             out.append((addr, packet))

@@ -5,6 +5,7 @@ from pathlib import Path
 import os
 import shutil
 import tempfile
+import urllib.error
 import urllib.request
 
 from grim.console import ConsoleState
@@ -41,10 +42,7 @@ def _download_file(url: str, dest: Path) -> None:
         tmp_path.replace(dest)
     finally:
         if tmp_path is not None:
-            try:
-                tmp_path.unlink()
-            except FileNotFoundError:
-                pass
+            tmp_path.unlink(missing_ok=True)
 
 
 def download_missing_paqs(
@@ -65,7 +63,7 @@ def download_missing_paqs(
         dest = assets_dir / name
         try:
             _download_file(url, dest)
-        except Exception as exc:
+        except (OSError, RuntimeError, urllib.error.URLError) as exc:
             results.append(DownloadResult(name=name, ok=False, error=str(exc)))
             console.log.log(f"assets: failed to download {name}: {exc}")
             continue

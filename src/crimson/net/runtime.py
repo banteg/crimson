@@ -491,7 +491,7 @@ class LanRuntime:
                 reliable=True,
                 now_ms=_now_ms(),
             )
-        except Exception:
+        except OSError:
             return
 
     def _set_client_error(self, reason: str) -> None:
@@ -542,10 +542,10 @@ class LanRuntime:
         lobby = self.client_lobby
         if lobby is None:
             return
-        welcome = getattr(lobby, "welcome", None)
-        if welcome is None or not bool(getattr(welcome, "accepted", False)):
+        welcome = lobby.welcome
+        if welcome is None or not bool(welcome.accepted):
             return
-        slot_index = int(getattr(welcome, "slot_index", -1) or -1)
+        slot_index = int(welcome.slot_index)
         if int(slot_index) <= 0:
             return
 
@@ -580,7 +580,7 @@ class LanRuntime:
                 reliable=False,
                 now_ms=int(now_ms),
             )
-        except Exception:
+        except OSError:
             # Don't let debug log forwarding affect gameplay.
             return
 
@@ -875,15 +875,15 @@ class LanRuntime:
                 role="host",
                 kind="hello",
                 addr=f"{addr[0]}:{addr[1]}",
-                protocol_version=int(getattr(message, "protocol_version", 0) or 0),
-                build_id=str(getattr(message, "build_id", "") or ""),
-                mode_id=int(getattr(message, "mode_id", 0) or 0),
-                player_count=int(getattr(message, "player_count", 1) or 1),
-                tick_rate=int(getattr(message, "tick_rate", 0) or 0),
-                input_delay_ticks=int(getattr(message, "input_delay_ticks", 0) or 0),
-                quest_level=str(getattr(message, "quest_level", "") or ""),
-                preserve_bugs=bool(getattr(message, "preserve_bugs", False)),
-                host=bool(getattr(message, "host", False)),
+                protocol_version=int(message.protocol_version),
+                build_id=str(message.build_id or ""),
+                mode_id=int(message.mode_id),
+                player_count=int(message.player_count),
+                tick_rate=int(message.tick_rate),
+                input_delay_ticks=int(message.input_delay_ticks),
+                quest_level=str(message.quest_level or ""),
+                preserve_bugs=bool(message.preserve_bugs),
+                host=bool(message.host),
             )
             welcome = lobby.process_hello(addr, message)
             lan_debug_log(
@@ -953,11 +953,11 @@ class LanRuntime:
             return
         if isinstance(message, DebugLogBatch):
             mapped_slot = lobby.slot_for_addr(addr)
-            msg_slot = int(getattr(message, "slot_index", -1) or -1)
+            msg_slot = int(message.slot_index)
             slot_index = int(mapped_slot) if mapped_slot is not None else int(msg_slot)
             if int(slot_index) <= 0:
                 return
-            lines = list(getattr(message, "lines", []) or [])
+            lines = list(message.lines)
             self._host_write_remote_log_batch(addr=addr, slot_index=int(slot_index), lines=lines)
             return
         if isinstance(message, InputBatch):
@@ -1018,7 +1018,7 @@ class LanRuntime:
         if isinstance(message, KeepAlive):
             return
         if isinstance(message, TickFrame):
-            tick = int(getattr(message, "tick_index", 0) or 0)
+            tick = int(message.tick_index)
             if int(tick) < 5 or (int(tick) % 60) == 0:
                 lan_debug_log(
                     "net_send",
@@ -1027,8 +1027,8 @@ class LanRuntime:
                     addr=f"{addr[0]}:{addr[1]}",
                     reliable=bool(reliable),
                     tick_index=int(tick),
-                    command_hash=str(getattr(message, "command_hash", "") or ""),
-                    state_hash=str(getattr(message, "state_hash", "") or ""),
+                    command_hash=str(message.command_hash or ""),
+                    state_hash=str(message.state_hash or ""),
                 )
             return
         if isinstance(message, PauseState):
@@ -1076,11 +1076,11 @@ class LanRuntime:
                 choice_index=int(message.choice_index),
             )
             return
-        kind = getattr(message, "kind", type(message).__name__)
+        kind = type(message).__name__
         lan_debug_log(
             "net_send",
             role="host",
-            kind=str(kind),
+            kind=kind,
             addr=f"{addr[0]}:{addr[1]}",
             reliable=bool(reliable),
         )
@@ -1219,57 +1219,56 @@ class LanRuntime:
                 reason=str(message.reason or ""),
                 slot_index=int(message.slot_index),
                 session_id=str(message.session_id),
-                protocol_version=int(getattr(message, "protocol_version", 0) or 0),
-                build_id=str(getattr(message, "build_id", "") or ""),
-                mode_id=int(getattr(message, "mode_id", 0) or 0),
-                player_count=int(getattr(message, "player_count", 1) or 1),
-                tick_rate=int(getattr(message, "tick_rate", 0) or 0),
-                input_delay_ticks=int(getattr(message, "input_delay_ticks", 0) or 0),
-                quest_level=str(getattr(message, "quest_level", "") or ""),
-                preserve_bugs=bool(getattr(message, "preserve_bugs", False)),
-                started=bool(getattr(message, "started", False)),
+                protocol_version=int(message.protocol_version),
+                build_id=str(message.build_id or ""),
+                mode_id=int(message.mode_id),
+                player_count=int(message.player_count),
+                tick_rate=int(message.tick_rate),
+                input_delay_ticks=int(message.input_delay_ticks),
+                quest_level=str(message.quest_level or ""),
+                preserve_bugs=bool(message.preserve_bugs),
+                started=bool(message.started),
             )
             lobby.ingest_welcome(message)
             if not bool(message.accepted):
                 self._set_client_error(str(message.reason or "rejected"))
                 return
-            hello = getattr(lobby, "hello", None)
+            hello = lobby.hello
             if hello is not None:
                 mismatched = (
-                    int(getattr(message, "mode_id", 0) or 0) != int(getattr(hello, "mode_id", 0) or 0)
-                    or int(getattr(message, "player_count", 1) or 1) != int(getattr(hello, "player_count", 1) or 1)
-                    or int(getattr(message, "tick_rate", 0) or 0) != int(getattr(hello, "tick_rate", 0) or 0)
-                    or int(getattr(message, "input_delay_ticks", 0) or 0)
-                    != int(getattr(hello, "input_delay_ticks", 0) or 0)
-                    or str(getattr(message, "quest_level", "") or "") != str(getattr(hello, "quest_level", "") or "")
-                    or bool(getattr(message, "preserve_bugs", False)) != bool(getattr(hello, "preserve_bugs", False))
+                    int(message.mode_id) != int(hello.mode_id)
+                    or int(message.player_count) != int(hello.player_count)
+                    or int(message.tick_rate) != int(hello.tick_rate)
+                    or int(message.input_delay_ticks) != int(hello.input_delay_ticks)
+                    or str(message.quest_level or "") != str(hello.quest_level or "")
+                    or bool(message.preserve_bugs) != bool(hello.preserve_bugs)
                 )
                 if mismatched:
                     lan_debug_log(
                         "net_welcome_override",
                         role="join",
-                        hello_mode_id=int(getattr(hello, "mode_id", 0) or 0),
-                        welcome_mode_id=int(getattr(message, "mode_id", 0) or 0),
-                        hello_player_count=int(getattr(hello, "player_count", 1) or 1),
-                        welcome_player_count=int(getattr(message, "player_count", 1) or 1),
-                        hello_tick_rate=int(getattr(hello, "tick_rate", 0) or 0),
-                        welcome_tick_rate=int(getattr(message, "tick_rate", 0) or 0),
-                        hello_input_delay_ticks=int(getattr(hello, "input_delay_ticks", 0) or 0),
-                        welcome_input_delay_ticks=int(getattr(message, "input_delay_ticks", 0) or 0),
-                        hello_quest_level=str(getattr(hello, "quest_level", "") or ""),
-                        welcome_quest_level=str(getattr(message, "quest_level", "") or ""),
-                        hello_preserve_bugs=bool(getattr(hello, "preserve_bugs", False)),
-                        welcome_preserve_bugs=bool(getattr(message, "preserve_bugs", False)),
+                        hello_mode_id=int(hello.mode_id),
+                        welcome_mode_id=int(message.mode_id),
+                        hello_player_count=int(hello.player_count),
+                        welcome_player_count=int(message.player_count),
+                        hello_tick_rate=int(hello.tick_rate),
+                        welcome_tick_rate=int(message.tick_rate),
+                        hello_input_delay_ticks=int(hello.input_delay_ticks),
+                        welcome_input_delay_ticks=int(message.input_delay_ticks),
+                        hello_quest_level=str(hello.quest_level or ""),
+                        welcome_quest_level=str(message.quest_level or ""),
+                        hello_preserve_bugs=bool(hello.preserve_bugs),
+                        welcome_preserve_bugs=bool(message.preserve_bugs),
                     )
 
             # Host is authoritative; adopt its config so lockstep + validation use
             # canonical values (CLI joiners may start with placeholders).
-            self.cfg.mode_id = int(getattr(message, "mode_id", 0) or 0)
-            self.cfg.player_count = max(1, min(4, int(getattr(message, "player_count", 1) or 1)))
-            self.cfg.tick_rate = max(1, int(getattr(message, "tick_rate", 0) or 0))
-            self.cfg.input_delay_ticks = max(0, int(getattr(message, "input_delay_ticks", 0) or 0))
-            self.cfg.quest_level = str(getattr(message, "quest_level", "") or "")
-            self.cfg.preserve_bugs = bool(getattr(message, "preserve_bugs", False))
+            self.cfg.mode_id = int(message.mode_id)
+            self.cfg.player_count = max(1, min(4, int(message.player_count)))
+            self.cfg.tick_rate = max(1, int(message.tick_rate))
+            self.cfg.input_delay_ticks = max(0, int(message.input_delay_ticks))
+            self.cfg.quest_level = str(message.quest_level or "")
+            self.cfg.preserve_bugs = bool(message.preserve_bugs)
             ready = Ready(slot_index=int(message.slot_index), ready=True)
             self._client_send(ready, reliable=True, now_ms=int(now_ms))
             return
@@ -1309,23 +1308,23 @@ class LanRuntime:
                 status_quest_unlock_index=int(status_unlock),
                 status_quest_unlock_index_full=int(status_unlock_full),
             )
-            welcome = getattr(lobby, "welcome", None)
-            if welcome is not None and str(getattr(welcome, "session_id", "") or ""):
-                if str(getattr(message, "session_id", "") or "") != str(getattr(welcome, "session_id", "") or ""):
+            welcome = lobby.welcome
+            if welcome is not None and str(welcome.session_id or ""):
+                if str(message.session_id or "") != str(welcome.session_id or ""):
                     self._set_client_error("session_id_mismatch")
                     lan_debug_log(
                         "net_sanity_mismatch",
                         role="join",
                         kind="match_start",
-                        expected_session_id=str(getattr(welcome, "session_id", "") or ""),
-                        actual_session_id=str(getattr(message, "session_id", "") or ""),
+                        expected_session_id=str(welcome.session_id or ""),
+                        actual_session_id=str(message.session_id or ""),
                     )
                     return
             mismatched = (
-                int(getattr(message, "mode_id", 0) or 0) != int(self.cfg.mode_id)
-                or int(getattr(message, "player_count", 1) or 1) != int(self.cfg.player_count)
-                or str(getattr(message, "quest_level", "") or "") != str(self.cfg.quest_level or "")
-                or bool(getattr(message, "preserve_bugs", False)) != bool(self.cfg.preserve_bugs)
+                int(message.mode_id) != int(self.cfg.mode_id)
+                or int(message.player_count) != int(self.cfg.player_count)
+                or str(message.quest_level or "") != str(self.cfg.quest_level or "")
+                or bool(message.preserve_bugs) != bool(self.cfg.preserve_bugs)
             )
             if mismatched:
                 self._set_client_error("match_start_mismatch")
@@ -1334,13 +1333,13 @@ class LanRuntime:
                     role="join",
                     kind="match_start",
                     expected_mode_id=int(self.cfg.mode_id),
-                    actual_mode_id=int(getattr(message, "mode_id", 0) or 0),
+                    actual_mode_id=int(message.mode_id),
                     expected_player_count=int(self.cfg.player_count),
-                    actual_player_count=int(getattr(message, "player_count", 1) or 1),
+                    actual_player_count=int(message.player_count),
                     expected_quest_level=str(self.cfg.quest_level or ""),
-                    actual_quest_level=str(getattr(message, "quest_level", "") or ""),
+                    actual_quest_level=str(message.quest_level or ""),
                     expected_preserve_bugs=bool(self.cfg.preserve_bugs),
-                    actual_preserve_bugs=bool(getattr(message, "preserve_bugs", False)),
+                    actual_preserve_bugs=bool(message.preserve_bugs),
                 )
                 return
 
@@ -1354,7 +1353,7 @@ class LanRuntime:
                     reason=str(self.error),
                 )
                 return
-            expected_hash = str(getattr(message, "status_hash", "") or "")
+            expected_hash = str(message.status_hash or "")
             if expected_hash:
                 actual_hash = hash_status_snapshot(status_snapshot)
                 if str(actual_hash) != str(expected_hash):
@@ -1377,11 +1376,11 @@ class LanRuntime:
             lockstep = self.client_lockstep
             if lockstep is None:
                 return
-            tick = int(getattr(message, "tick_index", 0) or 0)
+            tick = int(message.tick_index)
             if int(tick) < 0:
                 lan_debug_log("net_sanity_error", role="join", kind="tick_frame", reason="negative_tick", tick_index=int(tick))
                 return
-            inputs_len = int(len(getattr(message, "frame_inputs", []) or []))
+            inputs_len = int(len(message.frame_inputs))
             if int(inputs_len) != int(self.cfg.player_count):
                 lan_debug_log(
                     "net_sanity_error",
@@ -1398,8 +1397,8 @@ class LanRuntime:
                     role="join",
                     kind="tick_frame",
                     tick_index=int(tick),
-                    command_hash=str(getattr(message, "command_hash", "") or ""),
-                    state_hash=str(getattr(message, "state_hash", "") or ""),
+                    command_hash=str(message.command_hash or ""),
+                    state_hash=str(message.state_hash or ""),
                 )
             lockstep.ingest_tick_frame(message, now_ms=int(now_ms), local_command_hash="")
             queued_at = self._client_input_queued_at_ms.pop(int(tick), None)
@@ -1428,8 +1427,7 @@ class LanRuntime:
             lan_debug_log("net_recv", role="join", kind="disconnect", reason=str(message.reason or ""))
             self._set_client_error(str(message.reason or "disconnect"))
             return
-        kind = getattr(message, "kind", type(message).__name__)
-        lan_debug_log("net_recv", role="join", kind=str(kind))
+        lan_debug_log("net_recv", role="join", kind=type(message).__name__)
 
     def _client_send(self, message: NetMessage, *, reliable: bool, now_ms: int) -> None:
         link = self.client_link
@@ -1467,8 +1465,7 @@ class LanRuntime:
                     tick_max=int(max_tick),
                 )
             return
-        kind = getattr(message, "kind", type(message).__name__)
-        lan_debug_log("net_send", role="join", kind=str(kind), reliable=bool(reliable))
+        lan_debug_log("net_send", role="join", kind=type(message).__name__, reliable=bool(reliable))
 
     def _client_send_idle_heartbeat(self, *, now_ms: int) -> None:
         if not bool(self.started):

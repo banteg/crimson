@@ -1,0 +1,10 @@
+id: no-status-snapshot-getattr-fallbacks
+language: python
+severity: error
+message: Deterministic status snapshots are typed; avoid `getattr` fallback access.
+files:
+  - src/crimson/net/deterministic_status.py
+rule:
+  any:
+    - pattern: getattr(snapshot, $ATTR, $DEFAULT)
+    - pattern: getattr(snap, $ATTR, $DEFAULT)

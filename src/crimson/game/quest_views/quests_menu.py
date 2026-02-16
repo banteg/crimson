@@ -458,12 +458,12 @@ class QuestsMenuView:
         completed_idx = 41 + count_index
         try:
             games = int(status.quest_play_count(games_idx))
-        except Exception:
+        except IndexError:
             return None
 
         try:
             completed = int(status.quest_play_count(completed_idx))
-        except Exception:
+        except IndexError:
             # Stage-5 completed reads into trailing fields (and beyond).
             if int(stage) != 5:
                 return None

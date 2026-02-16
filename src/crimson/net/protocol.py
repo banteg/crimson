@@ -108,7 +108,7 @@ def current_build_id() -> str:
                 return f"{version}.g{build}"
             return f"{version}+g{build}"
     except (OSError, subprocess.CalledProcessError):
-        pass
+        return version
     return version
 
 

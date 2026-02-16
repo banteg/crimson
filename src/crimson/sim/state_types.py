@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, TypeAlias
+from typing import TYPE_CHECKING, TypeAlias
 
 from grim.geom import Vec2
 
@@ -75,4 +75,7 @@ class BonusPickupEvent:
     pos: Vec2
 
 
-GameplayState: TypeAlias = Any
+if TYPE_CHECKING:
+    from ..gameplay import GameplayState as GameplayState
+else:
+    GameplayState: TypeAlias = object

@@ -121,7 +121,7 @@ class SpawnPlanView:
             )
             self._reset_sim()
             self._error = None
-        except Exception as exc:
+        except NotImplementedError as exc:
             self._plan = None
             self._plan_summary = None
             self._error = str(exc)
