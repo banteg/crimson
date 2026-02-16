@@ -491,7 +491,7 @@ class LanRuntime:
                 reliable=True,
                 now_ms=_now_ms(),
             )
-        except Exception:
+        except OSError:
             return
 
     def _set_client_error(self, reason: str) -> None:
@@ -580,7 +580,7 @@ class LanRuntime:
                 reliable=False,
                 now_ms=int(now_ms),
             )
-        except Exception:
+        except OSError:
             # Don't let debug log forwarding affect gameplay.
             return
 

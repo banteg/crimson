@@ -68,7 +68,7 @@ class ModsMenuView(PanelMenuView):
         dlls: list[Path] = []
         try:
             dlls = sorted(mods_dir.glob("*.dll"))
-        except Exception:
+        except OSError:
             dlls = []
 
         if not dlls:

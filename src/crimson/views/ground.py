@@ -179,7 +179,7 @@ class GroundView:
                     float(cfg.screen_width),
                     float(cfg.screen_height),
                 )
-            except Exception:
+            except (OSError, ValueError):
                 return 1.0, None, None
         return 1.0, None, None
 

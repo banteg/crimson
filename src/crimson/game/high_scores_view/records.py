@@ -61,7 +61,7 @@ def _passes_date_filter(entry: object, *, date_mode: int, now: dt.date) -> bool:
 
         try:
             stored = int(getattr(entry, "data")[0x41])
-        except Exception:
+        except (AttributeError, IndexError, TypeError, ValueError):
             return False
         checksum = int(highscore_date_checksum(now.year, now.month, now.day))
         return int(stored) == int(checksum) and int(year) == int(now.year)

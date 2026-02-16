@@ -953,7 +953,7 @@ def _run_original_tool_cached(
             sys.stderr.write(str(response.stderr))
             sys.stderr.flush()
         return int(response.exit_code)
-    except Exception as exc:
+    except (ConnectionError, OSError, RuntimeError) as exc:
         typer.echo(f"warning: diagnostics cache unavailable ({exc}); falling back to local execution", err=True)
         return int(fallback(args))
 

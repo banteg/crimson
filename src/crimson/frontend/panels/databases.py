@@ -542,7 +542,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             try:
                 weapon_refresh_available(stub)
                 available = stub.weapon_available
-            except Exception:
+            except (AttributeError, IndexError, TypeError, ValueError):
                 available = None
 
         status = self.state.status
@@ -561,7 +561,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
                 else:
                     try:
                         include = bool(status.weapon_usage_count(weapon_id) != 0)
-                    except Exception:
+                    except IndexError:
                         include = False
             if include:
                 used.append(weapon_id)
