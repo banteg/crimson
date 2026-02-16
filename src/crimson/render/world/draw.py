@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Protocol
 
 import pyray as rl
 
@@ -23,6 +23,16 @@ from .mixin_base import WorldRendererMixinBase
 
 if TYPE_CHECKING:
     from ...sim.state_types import PlayerState
+
+
+class _CreatureDrawContract(Protocol):
+    active: bool
+    pos: Vec2
+    size: float
+    hitbox_size: float
+    type_id: int
+    flags: int
+    plague_infected: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -184,7 +194,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
                 continue
             self._draw_player(player, ctx=ctx)
 
-    def _sorted_active_creatures(self) -> list[tuple[int, Any]]:
+    def _sorted_active_creatures(self) -> list[tuple[int, _CreatureDrawContract]]:
         creature_type_order = {
             int(CreatureTypeId.ZOMBIE): 0,
             int(CreatureTypeId.SPIDER_SP1): 1,
@@ -200,7 +210,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
 
     def _draw_creature_overlays(
         self,
-        creature: Any,
+        creature: _CreatureDrawContract,
         *,
         screen: Vec2,
         hitbox_size: float,

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Protocol, cast
 
 from grim.audio import stop_music
 from grim.view import ViewContext
@@ -10,6 +10,44 @@ from .types import GameState, HighScoresRequest
 if TYPE_CHECKING:
     from grim.geom import Vec2
     from grim.terrain_render import GroundRenderer
+
+    from .types import QuestRunOutcome
+
+
+class _ModeRuntime(Protocol):
+    close_requested: bool
+
+    def bind_status(self, status: object) -> None: ...
+
+    def bind_audio(self, audio: object | None, rng: object) -> None: ...
+
+    def bind_screen_fade(self, state: GameState) -> None: ...
+
+    def open(self) -> None: ...
+
+    def close(self) -> None: ...
+
+    def update(self, dt: float) -> None: ...
+
+    def draw(self) -> None: ...
+
+    def take_action(self) -> str | None: ...
+
+    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None: ...
+
+    def steal_ground_for_menu(self) -> GroundRenderer | None: ...
+
+    def menu_ground_camera(self) -> Vec2: ...
+
+
+class _ModeSupportsAdoptGround(Protocol):
+    def adopt_ground_from_menu(self, ground: GroundRenderer | None) -> None: ...
+
+
+class _QuestModeRuntime(_ModeRuntime, Protocol):
+    def prepare_new_run(self, level: str, *, status: object) -> None: ...
+
+    def consume_outcome(self) -> QuestRunOutcome | None: ...
 
 
 def _mode_view_context(state: GameState) -> ViewContext:
@@ -22,7 +60,7 @@ def _mode_view_context(state: GameState) -> ViewContext:
 
 
 class _BaseModeGameView:
-    def __init__(self, state: GameState, mode: Any) -> None:
+    def __init__(self, state: GameState, mode: _ModeRuntime) -> None:
         self.state = state
         self._mode = mode
         self._action: str | None = None
@@ -151,7 +189,7 @@ class _BaseModeGameView:
 
 
 class _ArcadeModeGameView(_BaseModeGameView):
-    def __init__(self, state: GameState, mode: Any, *, game_mode_id: int) -> None:
+    def __init__(self, state: GameState, mode: _ModeRuntime, *, game_mode_id: int) -> None:
         super().__init__(state, mode)
         self._game_mode_id = game_mode_id
 
@@ -183,10 +221,10 @@ class SurvivalGameView(_ArcadeModeGameView):
             audio=state.audio,
             audio_rng=state.rng,
         )
-        super().__init__(state, mode, game_mode_id=1)
+        super().__init__(state, cast(_ModeRuntime, mode), game_mode_id=1)
 
     def adopt_menu_ground(self, ground: GroundRenderer | None) -> None:
-        self._mode.adopt_ground_from_menu(ground)
+        cast(_ModeSupportsAdoptGround, self._mode).adopt_ground_from_menu(ground)
 
 
 class RushGameView(_ArcadeModeGameView):
@@ -203,10 +241,10 @@ class RushGameView(_ArcadeModeGameView):
             audio=state.audio,
             audio_rng=state.rng,
         )
-        super().__init__(state, mode, game_mode_id=2)
+        super().__init__(state, cast(_ModeRuntime, mode), game_mode_id=2)
 
     def adopt_menu_ground(self, ground: GroundRenderer | None) -> None:
-        self._mode.adopt_ground_from_menu(ground)
+        cast(_ModeSupportsAdoptGround, self._mode).adopt_ground_from_menu(ground)
 
 
 class TypoShooterGameView(_ArcadeModeGameView):
@@ -223,7 +261,7 @@ class TypoShooterGameView(_ArcadeModeGameView):
             audio=state.audio,
             audio_rng=state.rng,
         )
-        super().__init__(state, mode, game_mode_id=4)
+        super().__init__(state, cast(_ModeRuntime, mode), game_mode_id=4)
 
 
 class TutorialGameView(_BaseModeGameView):
@@ -241,7 +279,7 @@ class TutorialGameView(_BaseModeGameView):
             audio_rng=state.rng,
             demo_mode_active=state.demo_enabled,
         )
-        super().__init__(state, mode)
+        super().__init__(state, cast(_ModeRuntime, mode))
 
 
 class QuestGameView(_BaseModeGameView):
@@ -259,7 +297,7 @@ class QuestGameView(_BaseModeGameView):
             audio_rng=state.rng,
             demo_mode_active=state.demo_enabled,
         )
-        super().__init__(state, mode)
+        super().__init__(state, cast(_ModeRuntime, mode))
 
     def _on_open_begin(self) -> None:
         self.state.quest_outcome = None
@@ -267,10 +305,10 @@ class QuestGameView(_BaseModeGameView):
     def _on_open_end(self) -> None:
         level = self.state.pending_quest_level
         if level is not None:
-            self._mode.prepare_new_run(level, status=self.state.status)
+            cast(_QuestModeRuntime, self._mode).prepare_new_run(level, status=self.state.status)
 
     def _handle_close_requested(self) -> None:
-        outcome = self._mode.consume_outcome()
+        outcome = cast(_QuestModeRuntime, self._mode).consume_outcome()
         if outcome is not None:
             self.state.quest_outcome = outcome
             if outcome.kind == "completed":
