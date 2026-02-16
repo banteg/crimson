@@ -191,3 +191,23 @@ Rewrite behavior:
 - Default: heal each alive player by `+dt` per triggered tick
   (or `+2*dt` with Greater Regeneration).
 - With `--preserve-bugs`: keep native player-1-only, player-count-scaled ticks.
+
+## 8) Co-op heart pulse speed inherits player 1 low-health state
+
+Native behavior:
+
+- In multiplayer HUD render (`hud_update_and_render`), player 1 pulse speed
+  (`2.0` or `5.0`) is reused as the baseline for later heart icons.
+- If player 1 is below 30 HP, player 2’s heart pulse runs at the “low health”
+  speed even when player 2 is healthy.
+
+Why it’s likely a bug:
+
+- Health pulse speed should be per-player and tied to each player’s own health.
+- This only affects presentation and creates asymmetric low-health cues in co-op.
+
+Rewrite behavior:
+
+- Default: pulse speed is computed per player from that player’s health.
+- With `--preserve-bugs`: keep native coupling where player 1 low health forces
+  low-health pulse speed for subsequent player heart icons.
