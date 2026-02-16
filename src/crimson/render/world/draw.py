@@ -54,8 +54,8 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
 
     def _draw_with_active_frame(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         entity_alpha = clamp(float(entity_alpha), 0.0, 1.0)
-        camera, view_scale, scale, screen_size = self._compute_view_transform()
-        self._draw_background(camera=camera, screen_size=screen_size, view_scale=view_scale)
+        camera, view_scale, scale, screen_size, out_size = self._compute_view_transform()
+        self._draw_background(camera=camera, screen_size=screen_size, out_size=out_size, view_scale=view_scale)
         if entity_alpha <= 1e-3:
             return
 
@@ -73,23 +73,30 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
             self._draw_projectiles_and_effects(ctx=ctx)
             self._draw_bonus_and_ui(ctx=ctx, draw_aim_indicators=draw_aim_indicators)
 
-    def _compute_view_transform(self) -> tuple[Vec2, Vec2, float, Vec2]:
-        screen_size = self._camera_screen_size()
-        camera = self._clamp_camera(self.camera, screen_size)
+    def _compute_view_transform(self) -> tuple[Vec2, Vec2, float, Vec2, Vec2]:
         out_w = float(rl.get_screen_width())
         out_h = float(rl.get_screen_height())
+        out_size = Vec2(out_w, out_h)
+        screen_size = self._camera_screen_size(runtime_w=out_w, runtime_h=out_h)
+        camera = self._clamp_camera(self.camera, screen_size)
         scale_x = out_w / screen_size.x if screen_size.x > 0 else 1.0
         scale_y = out_h / screen_size.y if screen_size.y > 0 else 1.0
         view_scale = Vec2(scale_x, scale_y)
         scale = self._view_scale_avg(view_scale)
-        return camera, view_scale, scale, screen_size
+        return camera, view_scale, scale, screen_size, out_size
 
-    def _draw_background(self, *, camera: Vec2, screen_size: Vec2, view_scale: Vec2) -> None:
+    def _draw_background(self, *, camera: Vec2, screen_size: Vec2, out_size: Vec2, view_scale: Vec2) -> None:
         clear_color = rl.Color(10, 10, 12, 255)
         ground = self.ground
         rl.clear_background(clear_color)
         if ground is not None:
-            ground.draw(camera, screen_w=screen_size.x, screen_h=screen_size.y)
+            ground.draw(
+                camera,
+                screen_w=screen_size.x,
+                screen_h=screen_size.y,
+                out_w=out_size.x,
+                out_h=out_size.y,
+            )
             return
 
         # World bounds for debug if terrain is missing.
@@ -311,6 +318,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
                 mirror_long=bool(info.mirror) and hitbox_size >= 16.0,
                 shadow_alpha=shadow_alpha,
                 pos=creature.pos,
+                screen_pos=screen,
                 rotation_rad=float(creature.heading) - math.pi / 2.0,
                 scale=ctx.scale,
                 size_scale=size_scale,

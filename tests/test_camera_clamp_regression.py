@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 from types import SimpleNamespace
 
+import grim.terrain_render as terrain_render
 from crimson.render.world import WorldRenderer
+from crimson.render.world import context as world_context
 import pytest
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
@@ -31,3 +34,63 @@ def test_world_camera_screen_size_fits_widescreen_uniformly() -> None:
     size = renderer._camera_screen_size()
     assert size.x == pytest.approx(1024.0)
     assert size.y == pytest.approx(576.0)
+
+
+def test_world_camera_screen_size_prefers_runtime_dimensions_over_stale_config(monkeypatch) -> None:
+    world = SimpleNamespace(
+        world_size=1024.0,
+        config=SimpleNamespace(screen_width=1024, screen_height=768),
+    )
+    renderer = WorldRenderer(world)
+    monkeypatch.setattr(world_context.rl, "get_screen_width", lambda: 1280)
+    monkeypatch.setattr(world_context.rl, "get_screen_height", lambda: 720)
+    size = renderer._camera_screen_size()
+    assert size.x == pytest.approx(1024.0)
+    assert size.y == pytest.approx(576.0)
+
+
+def test_world_camera_screen_size_uses_frame_snapshot_when_provided(monkeypatch) -> None:
+    world = SimpleNamespace(
+        world_size=1024.0,
+        config=SimpleNamespace(screen_width=1024, screen_height=768),
+    )
+    renderer = WorldRenderer(world)
+    monkeypatch.setattr(world_context.rl, "get_screen_width", lambda: 1024)
+    monkeypatch.setattr(world_context.rl, "get_screen_height", lambda: 768)
+    size = renderer._camera_screen_size(runtime_w=1280.0, runtime_h=720.0)
+    assert size.x == pytest.approx(1024.0)
+    assert size.y == pytest.approx(576.0)
+
+
+def test_ground_draw_uses_explicit_output_dimensions(monkeypatch) -> None:
+    texture = SimpleNamespace(id=1, width=16, height=16)
+    ground = GroundRenderer(texture=texture, width=1024, height=1024)
+    ground.render_target = SimpleNamespace(
+        id=1,
+        texture=SimpleNamespace(id=2, width=1024, height=1024),
+    )
+    ground._render_target_ready = True
+
+    @contextmanager
+    def _noop_blend(*_args, **_kwargs):
+        yield
+
+    calls: list[tuple[float, float]] = []
+    monkeypatch.setattr(terrain_render.rl, "get_screen_width", lambda: 1024)
+    monkeypatch.setattr(terrain_render.rl, "get_screen_height", lambda: 768)
+    monkeypatch.setattr(terrain_render, "_blend_custom", _noop_blend)
+    monkeypatch.setattr(
+        terrain_render.rl,
+        "draw_texture_pro",
+        lambda _texture, _src, dst, _origin, _rotation, _tint: calls.append((float(dst.width), float(dst.height))),
+    )
+
+    ground.draw(
+        Vec2(-1.0, -1.0),
+        screen_w=1024.0,
+        screen_h=576.0,
+        out_w=1280.0,
+        out_h=720.0,
+    )
+
+    assert calls == [(1280.0, 720.0)]

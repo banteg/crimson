@@ -570,9 +570,21 @@ class GroundRenderer:
         *,
         screen_w: float | None = None,
         screen_h: float | None = None,
+        out_w: float | None = None,
+        out_h: float | None = None,
     ) -> None:
-        out_w = float(rl.get_screen_width())
-        out_h = float(rl.get_screen_height())
+        if out_w is None:
+            out_w = float(rl.get_screen_width())
+        else:
+            out_w = float(out_w)
+        if out_h is None:
+            out_h = float(rl.get_screen_height())
+        else:
+            out_h = float(out_h)
+        if out_w <= 0.0:
+            out_w = float(rl.get_screen_width())
+        if out_h <= 0.0:
+            out_h = float(rl.get_screen_height())
         if screen_w is None:
             screen_w = float(self.screen_width or out_w)
         if screen_h is None:
