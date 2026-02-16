@@ -106,6 +106,59 @@ def test_perks_update_effects_jinxed_accident_damages_player_and_spawns_fx() -> 
     assert state.sfx_queue == []
 
 
+def test_perks_update_effects_jinxed_default_accident_can_hit_other_alive_players() -> None:
+    dt = 0.2
+
+    state = GameplayState(preserve_bugs=False)
+    state.rng = _ScriptedRng(
+        [
+            3,  # accident roll
+            1,  # alive-player selection: choose player index 1
+            0,  # timer roll
+        ]
+    )
+    state.bonuses.freeze = 1.0
+
+    player0 = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=50.0)
+    player0.perk_counts[int(PerkId.JINXED)] = 1
+    player1 = PlayerState(index=1, pos=Vec2(20.0, 20.0), health=70.0)
+
+    fx_queue = FxQueue(capacity=8, max_count=8)
+
+    perks_update_effects(state, [player0, player1], dt, creatures=[], fx_queue=fx_queue)
+
+    assert math.isclose(state.jinxed_timer, 1.8, abs_tol=1e-8)
+    assert math.isclose(player0.health, 50.0, abs_tol=1e-9)
+    assert math.isclose(player1.health, 65.0, abs_tol=1e-9)
+    assert fx_queue.count == 2
+
+
+def test_perks_update_effects_jinxed_preserve_bugs_keeps_accident_on_player0() -> None:
+    dt = 0.2
+
+    state = GameplayState(preserve_bugs=True)
+    state.rng = _ScriptedRng(
+        [
+            3,  # accident roll
+            0,  # timer roll
+        ]
+    )
+    state.bonuses.freeze = 1.0
+
+    player0 = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=50.0)
+    player0.perk_counts[int(PerkId.JINXED)] = 1
+    player1 = PlayerState(index=1, pos=Vec2(20.0, 20.0), health=70.0)
+
+    fx_queue = FxQueue(capacity=8, max_count=8)
+
+    perks_update_effects(state, [player0, player1], dt, creatures=[], fx_queue=fx_queue)
+
+    assert math.isclose(state.jinxed_timer, 1.8, abs_tol=1e-8)
+    assert math.isclose(player0.health, 45.0, abs_tol=1e-9)
+    assert math.isclose(player1.health, 70.0, abs_tol=1e-9)
+    assert fx_queue.count == 2
+
+
 def test_perks_update_effects_jinxed_default_uses_full_384_slot_pool() -> None:
     dt = 0.2
     creatures = [CreatureState() for _ in range(0x180)]

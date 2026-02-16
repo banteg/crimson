@@ -43,6 +43,7 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
         angle=angle,
         type_id=ProjectileTypeId.FIRE_BULLETS,
         owner_id=owner_id,
+        owner_player_index=ctx.player.index,
     )
 
     vel = Vec2.from_angle(aim_heading) * 25.0

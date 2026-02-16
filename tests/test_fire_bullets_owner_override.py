@@ -1,0 +1,173 @@
+from __future__ import annotations
+
+from grim.geom import Vec2
+
+from crimson.bonuses import BonusId
+from crimson.bonuses.apply import bonus_apply
+from crimson.gameplay import GameplayState
+from crimson.perks import PerkId
+from crimson.projectiles import ProjectileTypeId
+from crimson.sim.input import PlayerInput
+from crimson.sim.state_types import PlayerState
+from crimson.gameplay import player_update
+from crimson.weapon_runtime.spawn import projectile_spawn
+
+
+def _spawn_type(
+    state: GameplayState,
+    *,
+    players: list[PlayerState],
+    owner_id: int,
+    owner_player_index: int | None = None,
+) -> int:
+    proj_id = projectile_spawn(
+        state,
+        players=players,
+        pos=Vec2(100.0, 100.0),
+        angle=0.0,
+        type_id=int(ProjectileTypeId.PISTOL),
+        owner_id=int(owner_id),
+        owner_player_index=owner_player_index,
+    )
+    assert proj_id >= 0
+    return int(state.projectiles.entries[proj_id].type_id)
+
+
+def _active_type_ids(state: GameplayState) -> list[int]:
+    return [int(entry.type_id) for entry in state.projectiles.entries if bool(entry.active)]
+
+
+def test_projectile_spawn_fire_bullets_default_uses_owner_timer() -> None:
+    state = GameplayState(preserve_bugs=False)
+    player0 = PlayerState(index=0, pos=Vec2(), fire_bullets_timer=1.0)
+    player1 = PlayerState(index=1, pos=Vec2(), fire_bullets_timer=0.0)
+    players = [player0, player1]
+
+    player1_type = _spawn_type(state, players=players, owner_id=-2)
+    player0_type = _spawn_type(state, players=players, owner_id=-1)
+
+    assert player1_type == int(ProjectileTypeId.PISTOL)
+    assert player0_type == int(ProjectileTypeId.FIRE_BULLETS)
+
+
+def test_projectile_spawn_fire_bullets_default_resolves_owner_index_in_player_slice() -> None:
+    state = GameplayState(preserve_bugs=False)
+    player1 = PlayerState(index=1, pos=Vec2(), fire_bullets_timer=1.0)
+
+    player1_type = _spawn_type(state, players=[player1], owner_id=-100, owner_player_index=1)
+
+    assert player1_type == int(ProjectileTypeId.FIRE_BULLETS)
+
+
+def test_projectile_spawn_fire_bullets_default_uses_owner_player_index_with_owner_minus_100() -> None:
+    state = GameplayState(preserve_bugs=False)
+    player0 = PlayerState(index=0, pos=Vec2(), fire_bullets_timer=1.0)
+    player1 = PlayerState(index=1, pos=Vec2(), fire_bullets_timer=0.0)
+    players = [player0, player1]
+
+    player1_type = _spawn_type(state, players=players, owner_id=-100, owner_player_index=1)
+    player0_type = _spawn_type(state, players=players, owner_id=-100, owner_player_index=0)
+
+    assert player1_type == int(ProjectileTypeId.PISTOL)
+    assert player0_type == int(ProjectileTypeId.FIRE_BULLETS)
+
+
+def test_projectile_spawn_fire_bullets_preserve_bugs_keeps_global_gate() -> None:
+    state = GameplayState(preserve_bugs=True)
+    player0 = PlayerState(index=0, pos=Vec2(), fire_bullets_timer=1.0)
+    player1 = PlayerState(index=1, pos=Vec2(), fire_bullets_timer=0.0)
+    players = [player0, player1]
+
+    player1_type = _spawn_type(state, players=players, owner_id=-2)
+
+    assert player1_type == int(ProjectileTypeId.FIRE_BULLETS)
+
+
+def test_nuke_fire_bullets_default_is_owner_scoped_but_still_converts_for_owner() -> None:
+    state = GameplayState(preserve_bugs=False)
+    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
+    player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0)
+    players = [player0, player1]
+
+    bonus_apply(state, player1, BonusId.NUKE, origin=player1, players=players, detail_preset=5)
+    non_owner_types = _active_type_ids(state)
+
+    assert int(ProjectileTypeId.FIRE_BULLETS) not in non_owner_types
+    assert set(non_owner_types) <= {int(ProjectileTypeId.PISTOL), int(ProjectileTypeId.GAUSS_GUN)}
+
+    state = GameplayState(preserve_bugs=False)
+    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=0.0)
+    player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=1.0)
+    players = [player0, player1]
+
+    bonus_apply(state, player1, BonusId.NUKE, origin=player1, players=players, detail_preset=5)
+    owner_types = _active_type_ids(state)
+
+    assert owner_types
+    assert set(owner_types) == {int(ProjectileTypeId.FIRE_BULLETS)}
+
+
+def test_hot_tempered_and_man_bomb_fire_bullets_default_are_owner_scoped() -> None:
+    state = GameplayState(preserve_bugs=False)
+    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
+    player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0, hot_tempered_timer=1.95)
+    player1.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
+    player_update(state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.1, players=[player0, player1])
+    hot_types_non_owner = _active_type_ids(state)
+    assert int(ProjectileTypeId.FIRE_BULLETS) not in hot_types_non_owner
+
+    state = GameplayState(preserve_bugs=False)
+    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=0.0)
+    player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=1.0, hot_tempered_timer=1.95)
+    player1.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
+    player_update(state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.1, players=[player0, player1])
+    hot_types_owner = _active_type_ids(state)
+    assert hot_types_owner
+    assert set(hot_types_owner) == {int(ProjectileTypeId.FIRE_BULLETS)}
+
+    state = GameplayState(preserve_bugs=False)
+    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
+    player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0, man_bomb_timer=3.9)
+    player1.perk_counts[int(PerkId.MAN_BOMB)] = 1
+    player_update(state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.2, players=[player0, player1])
+    man_bomb_types_non_owner = _active_type_ids(state)
+    assert int(ProjectileTypeId.FIRE_BULLETS) not in man_bomb_types_non_owner
+
+    state = GameplayState(preserve_bugs=False)
+    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=0.0)
+    player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=1.0, man_bomb_timer=3.9)
+    player1.perk_counts[int(PerkId.MAN_BOMB)] = 1
+    player_update(state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.2, players=[player0, player1])
+    man_bomb_types_owner = _active_type_ids(state)
+    assert man_bomb_types_owner
+    assert set(man_bomb_types_owner) == {int(ProjectileTypeId.FIRE_BULLETS)}
+
+
+def test_nuke_and_perk_fire_bullets_preserve_bugs_keeps_global_conversion() -> None:
+    state = GameplayState(preserve_bugs=True)
+    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
+    player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0)
+    players = [player0, player1]
+
+    bonus_apply(state, player1, BonusId.NUKE, origin=player1, players=players, detail_preset=5)
+    nuke_types = _active_type_ids(state)
+    assert nuke_types
+    assert set(nuke_types) == {int(ProjectileTypeId.FIRE_BULLETS)}
+
+    state = GameplayState(preserve_bugs=True)
+    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
+    player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0, hot_tempered_timer=1.95)
+    player1.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
+    player_update(state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.1, players=[player0, player1])
+    hot_types = _active_type_ids(state)
+    assert hot_types
+    assert set(hot_types) == {int(ProjectileTypeId.FIRE_BULLETS)}
+
+    state = GameplayState(preserve_bugs=True)
+    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
+    player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0, man_bomb_timer=3.9)
+    player1.perk_counts[int(PerkId.MAN_BOMB)] = 1
+    player_update(state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.2, players=[player0, player1])
+    man_bomb_types = _active_type_ids(state)
+    assert man_bomb_types
+    assert set(man_bomb_types) == {int(ProjectileTypeId.FIRE_BULLETS)}

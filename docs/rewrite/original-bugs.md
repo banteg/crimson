@@ -251,3 +251,65 @@ Rewrite behavior:
 
 - Default: use the full `0x180` creature slot range for Jinxed random kills.
 - With `--preserve-bugs`: keep native `% 0x17f` behavior.
+
+## 11) Cursor-target perks read player 1 aim only in co-op
+
+Native behavior:
+
+- In `perks_update_effects` (`0x00406b40`), Doctor targeting, Pyrokinetic
+  hit lookup, and Evil Eyes target selection all source aim from
+  `player_state_table.aim_x/aim_y` (player 1) regardless of which player is
+  alive/aiming.
+- In co-op, if player 1 dies, these effects can keep using stale aim data and
+  ignore surviving-player aim.
+
+Why it’s likely a bug:
+
+- These are cursor/aim-driven effects but are hard-wired to player 1 state.
+- The behavior is asymmetric in co-op and can leave the surviving player unable
+  to steer these perks as expected.
+
+Rewrite behavior:
+
+- Default: evaluate cursor-target perks per alive player, so Doctor/Pyrokinetic/
+  Evil Eyes can use each player’s own aim in co-op.
+- With `--preserve-bugs`: keep native player-1-only aim sourcing.
+
+## 12) Jinxed self-damage always hits player 1 in co-op
+
+Native behavior:
+
+- In the Jinxed “accident” branch (`rand % 10 == 3`), `perks_update_effects`
+  subtracts 5 HP from `player_state_table.health` directly.
+- In co-op, the health penalty always applies to player 1.
+
+Why it’s likely a bug:
+
+- The perk downside is framed as self-harm, but the implementation is hard-wired
+  to one player slot regardless of co-op state.
+- This creates asymmetric risk where one player always pays the cost.
+
+Rewrite behavior:
+
+- Default: apply the 5 HP accident to a random alive player in co-op.
+- With `--preserve-bugs`: keep native player-1-only self-damage.
+
+## 13) Fire Bullets projectile override is globally coupled in co-op
+
+Native behavior:
+
+- In `projectile_spawn` (`0x00420440`), Fire Bullets conversion checks only
+  whether player 1 or player 2 has an active Fire Bullets timer.
+- The check is not owner-aware, so one player's timer can convert the other
+  player's spawned projectiles.
+
+Why it’s likely a bug:
+
+- Fire Bullets timers are per-player in co-op.
+- Global conversion couples projectile type to unrelated player state.
+
+Rewrite behavior:
+
+- Default: Fire Bullets conversion is owner-aware; spawned projectiles only
+  convert when the firing player's timer is active.
+- With `--preserve-bugs`: keep native player-1/player-2 global coupling.

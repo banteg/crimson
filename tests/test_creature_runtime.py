@@ -789,3 +789,55 @@ def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
     assert creature.link_index == 83
     assert creature.force_target == 0
     assert stub_rand._idx == 0
+
+
+def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
+    state = GameplayState(rng=Crand(0xBEEF), preserve_bugs=False)
+
+    player0 = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    player0.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    player0.evil_eyes_target_creature = 0
+
+    player1 = PlayerState(index=1, pos=Vec2(520.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    player1.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    player1.evil_eyes_target_creature = 1
+
+    pool = CreaturePool()
+
+    creature0 = pool.entries[0]
+    creature0.active = True
+    creature0.hp = 50.0
+    creature0.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature0.flags = CreatureFlags.AI7_LINK_TIMER
+    creature0.ai_mode = 7
+    creature0.link_index = 100
+    creature0.target_player = 0
+    creature0.pos = Vec2(640.0, 512.0)
+    creature0.vel = Vec2(2.0, -3.0)
+    creature0.attack_cooldown = 1.0
+    creature0.move_speed = 0.0
+    creature0.size = 45.0
+
+    creature1 = pool.entries[1]
+    creature1.active = True
+    creature1.hp = 50.0
+    creature1.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature1.flags = CreatureFlags.AI7_LINK_TIMER
+    creature1.ai_mode = 7
+    creature1.link_index = 100
+    creature1.target_player = 0
+    creature1.pos = Vec2(680.0, 512.0)
+    creature1.vel = Vec2(2.0, -3.0)
+    creature1.attack_cooldown = 1.0
+    creature1.move_speed = 0.0
+    creature1.size = 45.0
+
+    stub_rand = _StubRand([0x2A, 0x2B])
+    pool.update(1.0 / 60.0, state=state, players=[player0, player1], rand=stub_rand.rand)
+
+    assert creature0.attack_cooldown == pytest.approx(1.0, abs=1e-9)
+    assert creature1.attack_cooldown == pytest.approx(1.0, abs=1e-9)
+    assert creature0.vel == Vec2(2.0, -3.0)
+    assert creature1.vel == Vec2(2.0, -3.0)
+    assert creature0.force_target == 0
+    assert creature1.force_target == 0

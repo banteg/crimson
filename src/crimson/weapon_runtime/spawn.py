@@ -31,15 +31,49 @@ def projectile_meta_for_type_id(type_id: int) -> float:
     return float(meta if meta is not None else 45.0)
 
 
-def _fire_bullets_active(players: list[PlayerState] | None) -> bool:
-    # Native `projectile_spawn` checks `player_state_table.fire_bullets_timer` and `player2_fire_bullets_timer`
-    # (i.e. the first two players).
+def _resolve_player_slot(players: list[PlayerState], *, player_index: int) -> int | None:
+    target_index = int(player_index)
+    if 0 <= target_index < len(players):
+        direct = players[target_index]
+        if int(direct.index) == target_index:
+            return int(target_index)
+    for slot, player in enumerate(players):
+        if int(player.index) == target_index:
+            return int(slot)
+    return None
+
+
+def _fire_bullets_active(
+    players: list[PlayerState] | None,
+    *,
+    state: GameplayState,
+    owner_id: int,
+    owner_player_index: int | None,
+) -> bool:
     if not players:
         return False
-    for player in players[:2]:
-        if float(player.fire_bullets_timer) > 0.0:
-            return True
-    return False
+
+    # Native `projectile_spawn` checks player-1/player-2 Fire Bullets timers
+    # globally, regardless of projectile ownership.
+    if bool(state.preserve_bugs):
+        return any(float(player.fire_bullets_timer) > 0.0 for player in players[:2])
+
+    resolved_owner_slot: int | None = None
+    if owner_player_index is not None:
+        resolved_owner_slot = _resolve_player_slot(players, player_index=int(owner_player_index))
+    elif owner_id < 0 and owner_id != -100:
+        owner_index = -1 - int(owner_id)
+        resolved_owner_slot = _resolve_player_slot(players, player_index=int(owner_index))
+    elif len(players) == 1:
+        # Callers that only pass one player are explicitly indicating the owner
+        # context (for example owner_id -100 with friendly fire disabled).
+        resolved_owner_slot = 0
+
+    if resolved_owner_slot is None:
+        return False
+    if not (0 <= resolved_owner_slot < len(players)):
+        return False
+    return float(players[resolved_owner_slot].fire_bullets_timer) > 0.0
 
 
 def projectile_spawn(
@@ -50,6 +84,7 @@ def projectile_spawn(
     angle: float,
     type_id: int,
     owner_id: int,
+    owner_player_index: int | None = None,
     hits_players: bool = False,
 ) -> int:
     # Mirror `projectile_spawn` (0x00420440) Fire Bullets override.
@@ -59,7 +94,12 @@ def projectile_spawn(
         (not state.bonus_spawn_guard)
         and owner_id in (-100, -1, -2, -3)
         and type_id != int(ProjectileTypeId.FIRE_BULLETS)
-        and _fire_bullets_active(players)
+        and _fire_bullets_active(
+            players,
+            state=state,
+            owner_id=owner_id,
+            owner_player_index=owner_player_index,
+        )
     ):
         type_id = int(ProjectileTypeId.FIRE_BULLETS)
 
@@ -82,6 +122,7 @@ def spawn_projectile_ring(
     angle_offset: float,
     type_id: int,
     owner_id: int,
+    owner_player_index: int | None = None,
     players: list[PlayerState] | None = None,
 ) -> None:
     if count <= 0:
@@ -95,4 +136,5 @@ def spawn_projectile_ring(
             angle=float(idx) * step + float(angle_offset),
             type_id=int(type_id),
             owner_id=int(owner_id),
+            owner_player_index=owner_player_index,
         )

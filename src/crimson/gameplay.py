@@ -651,6 +651,7 @@ def player_update(
                     angle_offset=0.1,
                     type_id=ProjectileTypeId.PLASMA_MINIGUN,
                     owner_id=_owner_id_for_player_projectiles(state, player.index),
+                    owner_player_index=player.index,
                     players=players,
                 )
                 state.bonus_spawn_guard = False

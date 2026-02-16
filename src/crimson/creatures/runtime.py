@@ -772,9 +772,22 @@ class CreaturePool:
         sfx: list[str] = []
         self._update_tick = int(self._update_tick) + 1
 
-        evil_target = -1
-        if players and perk_active(players[0], PerkId.EVIL_EYES):
-            evil_target = int(players[0].evil_eyes_target_creature)
+        evil_targets: set[int] = set()
+        if players:
+            if bool(state.preserve_bugs):
+                if perk_active(players[0], PerkId.EVIL_EYES):
+                    evil_target = int(players[0].evil_eyes_target_creature)
+                    if evil_target >= 0:
+                        evil_targets.add(int(evil_target))
+            else:
+                for player in players:
+                    if float(player.health) <= 0.0:
+                        continue
+                    if not perk_active(player, PerkId.EVIL_EYES):
+                        continue
+                    evil_target = int(player.evil_eyes_target_creature)
+                    if evil_target >= 0:
+                        evil_targets.add(int(evil_target))
 
         # Movement + AI. Dead creatures keep updating (death slide + corpse decals)
         # even when `players` is empty so debug views remain deterministic.
@@ -925,7 +938,7 @@ class CreaturePool:
                                 creature.hitbox_size -= float(dt)
                                 continue
 
-            frozen_by_evil_eyes = idx == evil_target
+            frozen_by_evil_eyes = idx in evil_targets
             # Native order in creature_update_all:
             # AI7 link timer (flag 0x80) is updated before Evil Eyes freeze handling.
             # Keeping this outside the freeze branch preserves rand-call timing parity
