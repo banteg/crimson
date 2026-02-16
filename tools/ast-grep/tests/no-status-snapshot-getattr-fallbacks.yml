@@ -1,0 +1,16 @@
+id: no-status-snapshot-getattr-fallbacks
+valid:
+  - |
+    data = {
+      "quest_unlock_index": int(snapshot.quest_unlock_index) & 0xFFFF,
+      "quest_unlock_index_full": int(snapshot.quest_unlock_index_full) & 0xFFFF,
+    }
+  - |
+    weapon_counts = list(snap.weapon_usage_counts)
+invalid:
+  - |
+    data = {
+      "quest_unlock_index": int(getattr(snapshot, "quest_unlock_index", 0) or 0),
+    }
+  - |
+    weapon_counts = list(getattr(snap, "weapon_usage_counts", []) or [])

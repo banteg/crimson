@@ -1,0 +1,14 @@
+id: no-replay-checkpoints-get-fallbacks
+valid:
+  - |
+    if "v" not in obj:
+      raise ReplayCheckpointsError("missing version")
+    version = int(obj["v"])
+  - |
+    if "score_xp" in item:
+      score_xp = int(item["score_xp"])
+invalid:
+  - |
+    version = int(obj.get("v", 0))
+  - |
+    score_xp = int(item.get("score_xp", 0))

@@ -1,0 +1,32 @@
+id: no-any-contract-gaps
+snapshots:
+  ? |
+    from typing import Any
+
+    config: Any
+  : labels:
+    - source: 'config: Any'
+      style: primary
+      start: 24
+      end: 35
+  ? |
+    from typing import Any
+
+    def bind_mode(mode: Any) -> None:
+      return
+  : labels:
+    - source: |-
+        def bind_mode(mode: Any) -> None:
+          return
+      style: primary
+      start: 24
+      end: 66
+  ? |
+    from typing import Any, TypeAlias
+
+    GameplayState: TypeAlias = Any
+  : labels:
+    - source: 'GameplayState: TypeAlias = Any'
+      style: primary
+      start: 35
+      end: 65

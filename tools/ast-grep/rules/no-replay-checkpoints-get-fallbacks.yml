@@ -1,0 +1,8 @@
+id: no-replay-checkpoints-get-fallbacks
+language: python
+severity: error
+message: Replay checkpoint decoding should validate required keys explicitly instead of defaulting with `.get(..., default)`.
+files:
+  - src/crimson/replay/checkpoints.py
+rule:
+  pattern: $OBJ.get($KEY, $DEFAULT)
