@@ -473,6 +473,9 @@ def run_quest_replay(
     checkpoint_use_world_step_creature_count: bool = False,
     checkpoints_out: list[ReplayCheckpoint] | None = None,
     checkpoint_ticks: set[int] | None = None,
+    dt_frame_overrides: dict[int, float] | None = None,
+    inter_tick_rand_draws: int = 0,
+    inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.QUESTS):
         raise ReplayRunnerError(
@@ -545,8 +548,15 @@ def run_quest_replay(
         weapon_assign_player(player, weapon_id)
 
     events_by_tick: dict[int, list[object]] = {}
+    original_capture_replay = False
+    bootstrap_start_tick: int | None = None
     for event in replay.events:
         events_by_tick.setdefault(int(event.tick_index), []).append(event)
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
+            original_capture_replay = True
+            tick_index = int(event.tick_index)
+            if bootstrap_start_tick is None or tick_index < int(bootstrap_start_tick):
+                bootstrap_start_tick = int(tick_index)
 
     fx_queue, fx_queue_rotated = build_empty_fx_queues()
     damage_scale_by_type = build_damage_scale_by_type()
@@ -564,18 +574,36 @@ def run_quest_replay(
 
     inputs = replay.inputs
     tick_limit = len(inputs) if max_ticks is None else min(len(inputs), max(0, int(max_ticks)))
+    tick_start = max(0, int(bootstrap_start_tick)) if bootstrap_start_tick is not None else 0
 
-    for tick_index in range(tick_limit):
+    for tick_index in range(int(tick_start), int(tick_limit)):
         state = world.state
         state.game_mode = int(GameMode.QUESTS)
         state.demo_mode_active = False
 
+        if inter_tick_rand_draws_by_tick is not None:
+            draws = inter_tick_rand_draws_by_tick.get(int(tick_index))
+            if draws is None:
+                draws = int(inter_tick_rand_draws)
+            for _ in range(max(0, int(draws))):
+                world.state.rng.rand()
+
+        dt_tick = resolve_dt_frame(
+            tick_index=int(tick_index),
+            default_dt_frame=float(dt_frame),
+            dt_frame_overrides=dt_frame_overrides,
+        )
+
         tick_events = events_by_tick.get(int(tick_index), [])
+        pre_step_events, post_step_events = partition_tick_events(
+            tick_events,
+            defer_menu_open=bool(original_capture_replay),
+        )
         rng_before_events = int(state.rng.state)
         apply_replay_tick_events(
-            tick_events,
+            pre_step_events,
             tick_index=int(tick_index),
-            dt_frame=float(dt_frame),
+            dt_frame=float(dt_tick),
             world=world,
             game_mode_id=int(GameMode.QUESTS),
             strict_events=bool(strict_events),
@@ -585,17 +613,34 @@ def run_quest_replay(
         player_inputs = unpack_tick_inputs(inputs[tick_index])
 
         tick = session.step_tick(
-            dt_frame=float(dt_frame),
+            dt_frame=float(dt_tick),
             inputs=player_inputs,
             trace_rng=bool(trace_rng),
         )
         step = tick.step
         events = step.events
 
+        rng_before_post_events = int(state.rng.state)
+        if post_step_events:
+            apply_replay_tick_events(
+                post_step_events,
+                tick_index=int(tick_index),
+                dt_frame=float(dt_tick),
+                world=world,
+                game_mode_id=int(GameMode.QUESTS),
+                strict_events=bool(strict_events),
+            )
+        rng_after_post_events = int(state.rng.state)
+
         if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
             checkpoint_rng_marks = dict(tick.rng_marks)
             checkpoint_rng_marks["before_events"] = int(rng_before_events)
-            checkpoint_rng_marks["after_events"] = int(rng_after_events)
+            checkpoint_rng_marks["after_events"] = (
+                int(rng_after_post_events) if post_step_events else int(rng_after_events)
+            )
+            if post_step_events:
+                checkpoint_rng_marks["before_post_events"] = int(rng_before_post_events)
+                checkpoint_rng_marks["after_post_events"] = int(rng_after_post_events)
             checkpoints_out.append(
                 build_checkpoint(
                     tick_index=int(tick_index),
@@ -611,14 +656,24 @@ def run_quest_replay(
                 )
             )
 
+        if inter_tick_rand_draws_by_tick is None:
+            draws = max(0, int(inter_tick_rand_draws))
+            for _ in range(draws):
+                world.state.rng.rand()
+
     else:
         tick_index = tick_limit
 
     if int(tick_index) == int(len(inputs)):
+        dt_tick = resolve_dt_frame(
+            tick_index=int(tick_index),
+            default_dt_frame=float(dt_frame),
+            dt_frame_overrides=dt_frame_overrides,
+        )
         apply_replay_tick_events(
             events_by_tick.get(int(tick_index), []),
             tick_index=int(tick_index),
-            dt_frame=float(dt_frame),
+            dt_frame=float(dt_tick),
             world=world,
             game_mode_id=int(GameMode.QUESTS),
             strict_events=bool(strict_events),

@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, replace
 
 from ..game_modes import GameMode
-from ..sim.driver.replay_runner import run_rush_replay, run_survival_replay
+from ..sim.driver.replay_runner import run_quest_replay, run_rush_replay, run_survival_replay
 from ..sim.driver.setup import RunResult
 from ..replay.checkpoints import ReplayCheckpoint
 from .capture import (
@@ -223,6 +223,12 @@ def verify_capture(
     mode = int(replay.header.game_mode_id)
     inter_tick_rand_draws = 1
     inter_tick_rand_draws_by_tick = build_capture_inter_tick_rand_draws_overrides(capture)
+    if mode == int(GameMode.QUESTS):
+        # Quest captures already infer seed at sampled tick state; applying capture
+        # outside-before counters as inter-tick draws shifts the RNG stream early.
+        inter_tick_rand_draws = 0
+        inter_tick_rand_draws_by_tick = None
+
     if mode == int(GameMode.SURVIVAL):
         run_result = run_survival_replay(
             replay,
@@ -241,6 +247,19 @@ def verify_capture(
         run_result = run_rush_replay(
             replay,
             max_ticks=max_ticks,
+            trace_rng=bool(trace_rng),
+            checkpoint_use_world_step_creature_count=False,
+            checkpoints_out=actual,
+            checkpoint_ticks=checkpoint_ticks,
+            dt_frame_overrides=dt_frame_overrides,
+            inter_tick_rand_draws=int(inter_tick_rand_draws),
+            inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
+        )
+    elif mode == int(GameMode.QUESTS):
+        run_result = run_quest_replay(
+            replay,
+            max_ticks=max_ticks,
+            strict_events=bool(strict_events),
             trace_rng=bool(trace_rng),
             checkpoint_use_world_step_creature_count=False,
             checkpoints_out=actual,

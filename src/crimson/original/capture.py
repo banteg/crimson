@@ -5,6 +5,7 @@ import gzip
 import math
 from pathlib import Path
 import struct
+from typing import cast
 
 import msgspec
 from grim.geom import Vec2
@@ -470,6 +471,39 @@ def _infer_game_mode_id(capture: CaptureFile) -> int:
         if mode_hint in mode_hint_to_game_mode:
             return int(mode_hint_to_game_mode[mode_hint])
     return int(GameMode.SURVIVAL)
+
+
+def _tick_quest_stage(tick: CaptureTick) -> tuple[int, int] | None:
+    major = _coerce_int_like(getattr(tick, "quest_stage_major", None))
+    minor = _coerce_int_like(getattr(tick, "quest_stage_minor", None))
+    if major is not None and minor is not None and int(major) > 0 and int(minor) > 0:
+        return int(major), int(minor)
+
+    after_globals = tick.after.globals if tick.after is not None else {}
+    major = _coerce_int_like(after_globals.get("quest_stage_major")) if isinstance(after_globals, dict) else None
+    minor = _coerce_int_like(after_globals.get("quest_stage_minor")) if isinstance(after_globals, dict) else None
+    if major is not None and minor is not None and int(major) > 0 and int(minor) > 0:
+        return int(major), int(minor)
+
+    before_globals = tick.before.globals if tick.before is not None else {}
+    major = _coerce_int_like(before_globals.get("quest_stage_major")) if isinstance(before_globals, dict) else None
+    minor = _coerce_int_like(before_globals.get("quest_stage_minor")) if isinstance(before_globals, dict) else None
+    if major is not None and minor is not None and int(major) > 0 and int(minor) > 0:
+        return int(major), int(minor)
+
+    return None
+
+
+def _infer_quest_level(capture: CaptureFile, *, game_mode_id: int) -> str:
+    if int(game_mode_id) != int(GameMode.QUESTS):
+        return ""
+    for tick in capture.ticks:
+        stage = _tick_quest_stage(tick)
+        if stage is None:
+            continue
+        major, minor = stage
+        return f"{int(major)}.{int(minor)}"
+    return ""
 
 
 def _infer_player_count(capture: CaptureFile) -> int:
@@ -975,6 +1009,7 @@ def _capture_bootstrap_payload(
     *,
     digital_move_enabled_by_player: list[bool] | None = None,
 ) -> dict[str, object]:
+    perk = tick.checkpoint.perk
     players: list[dict[str, object]] = []
     for player in tick.checkpoint.players:
         players.append(
@@ -993,6 +1028,11 @@ def _capture_bootstrap_payload(
         "elapsed_ms": int(tick.checkpoint.elapsed_ms),
         "score_xp": int(tick.checkpoint.score_xp),
         "perk_pending": int(tick.checkpoint.perk_pending),
+        "perk": {
+            "pending_count": int(perk.pending_count),
+            "choices_dirty": bool(perk.choices_dirty),
+            "choices": [int(value) for value in perk.choices],
+        },
         "bonus_timers_ms": dict(tick.checkpoint.bonus_timers),
         "players": players,
         "digital_move_enabled_by_player": (
@@ -1110,11 +1150,37 @@ def apply_capture_bootstrap_payload(
                 except Exception:
                     pass
 
+    perk_payload = payload.get("perk")
     pending = _coerce_int_like(payload.get("perk_pending"))
+    perk_choices: list[int] | None = None
+    perk_choices_dirty: bool | None = None
+    if isinstance(perk_payload, dict):
+        perk_payload_map = cast(Mapping[object, object], perk_payload)
+        perk_pending = _coerce_int_like(perk_payload_map.get("pending_count"))
+        if perk_pending is not None and int(perk_pending) >= 0:
+            pending = int(perk_pending)
+        raw_choices = perk_payload_map.get("choices")
+        if isinstance(raw_choices, list):
+            parsed_choices: list[int] = []
+            for value in raw_choices:
+                perk_id = _coerce_int_like(value)
+                if perk_id is None:
+                    continue
+                parsed_choices.append(int(perk_id))
+            perk_choices = parsed_choices
+        raw_choices_dirty = perk_payload_map.get("choices_dirty")
+        if isinstance(raw_choices_dirty, bool):
+            perk_choices_dirty = bool(raw_choices_dirty)
+
     if pending is not None and int(pending) >= 0:
         try:
             state.perk_selection.pending_count = int(pending)  # ty:ignore[unresolved-attribute]
-            state.perk_selection.choices_dirty = True  # ty:ignore[unresolved-attribute]
+            if perk_choices is not None:
+                state.perk_selection.choices = [int(perk_id) for perk_id in perk_choices]  # ty:ignore[unresolved-attribute]
+            if perk_choices_dirty is not None:
+                state.perk_selection.choices_dirty = bool(perk_choices_dirty)  # ty:ignore[unresolved-attribute]
+            elif perk_choices is None:
+                state.perk_selection.choices_dirty = True  # ty:ignore[unresolved-attribute]
         except Exception:
             pass
 
@@ -1240,6 +1306,7 @@ def convert_capture_to_replay(
         player_count=int(player_count),
     )
     resolved_mode_id = _infer_game_mode_id(capture) if game_mode_id is None else int(game_mode_id)
+    resolved_quest_level = _infer_quest_level(capture, game_mode_id=int(resolved_mode_id))
     status_snapshot = _infer_status_snapshot(capture)
 
     if capture.ticks:
@@ -1507,6 +1574,7 @@ def convert_capture_to_replay(
         header=ReplayHeader(
             game_mode_id=int(resolved_mode_id),
             seed=int(resolved_seed),
+            quest_level=str(resolved_quest_level),
             tick_rate=max(1, int(tick_rate)),
             player_count=int(player_count),
             preserve_bugs=True,

@@ -101,9 +101,9 @@ def apply_replay_tick_events(
                 continue
 
             if kind == CAPTURE_PERK_APPLY_EVENT_KIND:
-                if int(game_mode_id) != int(GameMode.SURVIVAL):
+                if int(game_mode_id) == int(GameMode.RUSH):
                     if strict_events:
-                        raise ReplayRunnerError(f"unsupported perk_apply event outside survival at tick={tick_index}")
+                        raise ReplayRunnerError(f"unsupported perk_apply event in rush replay at tick={tick_index}")
                     continue
 
                 parsed_perk_apply = capture_perk_apply_from_event_payload(list(event.payload))
@@ -151,9 +151,9 @@ def apply_replay_tick_events(
                 continue
 
             if kind == CAPTURE_PERK_PENDING_EVENT_KIND:
-                if int(game_mode_id) != int(GameMode.SURVIVAL):
+                if int(game_mode_id) == int(GameMode.RUSH):
                     if strict_events:
-                        raise ReplayRunnerError(f"unsupported perk_pending event outside survival at tick={tick_index}")
+                        raise ReplayRunnerError(f"unsupported perk_pending event in rush replay at tick={tick_index}")
                     continue
 
                 pending = capture_perk_pending_from_event_payload(list(event.payload))

@@ -28,7 +28,7 @@ from crimson.original.capture import (
     parse_player_int_overrides,
 )
 from crimson.original.schema import CaptureFile
-from crimson.sim.driver.replay_runner import run_rush_replay, run_survival_replay
+from crimson.sim.driver.replay_runner import run_quest_replay, run_rush_replay, run_survival_replay
 from crimson.weapons import WEAPON_BY_ID
 
 
@@ -1175,6 +1175,14 @@ def _run_actual_checkpoints(
     actual: list[ReplayCheckpoint] = []
 
     mode = int(replay.header.game_mode_id)
+    quest_inter_tick_rand_draws = int(inter_tick_rand_draws)
+    quest_inter_tick_rand_draws_by_tick = inter_tick_rand_draws_by_tick
+    if mode == int(GameMode.QUESTS):
+        # Quest captures infer replay seed from sampled tick-state; replaying
+        # capture outside-before counters as inter-tick draws over-advances RNG.
+        quest_inter_tick_rand_draws = 0
+        quest_inter_tick_rand_draws_by_tick = None
+
     if mode == int(GameMode.SURVIVAL):
         run_result = run_survival_replay(
             replay,
@@ -1198,6 +1206,18 @@ def _run_actual_checkpoints(
             dt_frame_overrides=dt_frame_overrides,
             inter_tick_rand_draws=int(inter_tick_rand_draws),
             inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
+        )
+    elif mode == int(GameMode.QUESTS):
+        run_result = run_quest_replay(
+            replay,
+            max_ticks=max_ticks,
+            strict_events=False,
+            trace_rng=True,
+            checkpoints_out=actual,
+            checkpoint_ticks=checkpoint_ticks,
+            dt_frame_overrides=dt_frame_overrides,
+            inter_tick_rand_draws=int(quest_inter_tick_rand_draws),
+            inter_tick_rand_draws_by_tick=quest_inter_tick_rand_draws_by_tick,
         )
     else:
         raise ValueError(f"unsupported game mode for original capture verification: {mode}")
