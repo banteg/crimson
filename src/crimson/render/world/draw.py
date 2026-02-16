@@ -389,7 +389,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
         self._draw_effect_pool(camera=ctx.camera, view_scale=ctx.view_scale, alpha=ctx.entity_alpha)
 
     def _draw_aim_indicators(self, *, ctx: _WorldDrawContext) -> None:
-        for player in self.players:
+        for player in self._iter_visible_aim_players():
             if player.health <= 0.0:
                 continue
             aim = player.aim
@@ -412,11 +412,18 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
                     )
 
     def _draw_aim_enhancements(self, *, ctx: _WorldDrawContext) -> None:
-        for player in self.players:
+        for player in self._iter_visible_aim_players():
             if player.health <= 0.0:
                 continue
             aim_screen = self._world_to_screen_with(player.aim, camera=ctx.camera, view_scale=ctx.view_scale)
             draw_aim_cursor(ctx.particles_texture, self.aim_texture, pos=aim_screen)
+
+    def _iter_visible_aim_players(self) -> tuple[PlayerState, ...]:
+        players = self.players
+        if not bool(self.lan_local_aim_indicators_only):
+            return tuple(players)
+        local_slot = int(self.lan_local_player_slot_index)
+        return tuple(player for player in players if int(player.index) == local_slot)
 
     def _draw_bonus_and_ui(self, *, ctx: _WorldDrawContext, draw_aim_indicators: bool) -> None:
         self._draw_bonus_pickups(

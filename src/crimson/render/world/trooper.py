@@ -43,7 +43,7 @@ class WorldRendererTrooperMixin(WorldRendererMixinBase):
         scale: float,
         alpha: float,
     ) -> None:
-        if not bool(getattr(self._world, "lan_player_rings_enabled", False)):
+        if not bool(self.lan_player_rings_enabled):
             return
         if len(self.players) <= 1:
             return

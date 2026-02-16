@@ -190,6 +190,27 @@ class WorldRendererContextMixin(WorldRendererMixinBase):
             return frame.bonus_anim_phase
         return float(self._world._bonus_anim_phase)
 
+    @property
+    def lan_player_rings_enabled(self) -> bool:
+        frame = self._render_frame
+        if frame is not None:
+            return bool(frame.lan_player_rings_enabled)
+        return bool(getattr(self._world, "lan_player_rings_enabled", False))
+
+    @property
+    def lan_local_aim_indicators_only(self) -> bool:
+        frame = self._render_frame
+        if frame is not None:
+            return bool(frame.lan_local_aim_indicators_only)
+        return bool(getattr(self._world, "lan_local_aim_indicators_only", False))
+
+    @property
+    def lan_local_player_slot_index(self) -> int:
+        frame = self._render_frame
+        if frame is not None:
+            return int(frame.lan_local_player_slot_index)
+        return int(getattr(self._world, "lan_local_player_slot_index", 0))
+
     def _ensure_small_font(self) -> SmallFontData | None:
         if self._small_font is not None:
             return self._small_font
