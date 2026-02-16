@@ -20,7 +20,7 @@ from ..typo.player import build_typo_player_input, enforce_typo_player_frame
 from ..typo.names import CreatureNameTable, load_typo_dictionary
 from ..typo.spawns import tick_typo_spawns
 from ..typo.typing import TypingBuffer
-from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
+from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
 from .base_gameplay_mode import BaseGameplayMode
@@ -317,11 +317,6 @@ class TypoShooterMode(BaseGameplayMode):
             pulse_time=float(self._cursor_pulse_time),
         )
 
-    def _draw_aim_cursor(self) -> None:
-        mouse_pos = self._ui_mouse
-        aim_tex = self._ui_assets.aim if self._ui_assets is not None else None
-        draw_aim_cursor(self.world.particles_texture, aim_tex, pos=mouse_pos)
-
     def _draw_name_labels(self) -> None:
         names = self._names.names
         if not names:
@@ -442,9 +437,7 @@ class TypoShooterMode(BaseGameplayMode):
             warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
             self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
 
-        if show_gameplay_ui:
-            self._draw_aim_cursor()
-        elif self._game_over_active:
+        if self._game_over_active:
             self._draw_game_cursor()
             if self._game_over_record is not None:
                 self._game_over_ui.draw(

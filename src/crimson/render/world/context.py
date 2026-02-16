@@ -163,6 +163,13 @@ class WorldRendererContextMixin(WorldRendererMixinBase):
         return self._world.clock_pointer_texture
 
     @property
+    def aim_texture(self) -> rl.Texture | None:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.aim_texture
+        return self._world.aim_texture
+
+    @property
     def muzzle_flash_texture(self) -> rl.Texture | None:
         frame = self._render_frame
         if frame is not None:

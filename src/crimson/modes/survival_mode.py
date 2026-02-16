@@ -25,7 +25,7 @@ from ..gameplay import survival_check_level_up
 from ..weapon_runtime import weapon_assign_player
 from ..perks.state import CreatureForPerks
 from ..perks.selection import perk_selection_pick
-from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
+from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..input_codes import (
     config_keybinds_for_player,
@@ -978,11 +978,6 @@ class SurvivalMode(BaseGameplayMode):
             pulse_time=float(self._cursor_pulse_time),
         )
 
-    def _draw_aim_cursor(self) -> None:
-        mouse_pos = self._ui_mouse
-        aim_tex = self._perk_menu_assets.aim if self._perk_menu_assets is not None else None
-        draw_aim_cursor(self.world.particles_texture, aim_tex, pos=mouse_pos)
-
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
         self.world.draw(
@@ -1060,8 +1055,6 @@ class SurvivalMode(BaseGameplayMode):
             self._perk_menu.draw(self._perk_menu_context())
         if (not self._game_over_active) and perk_menu_active:
             self._draw_game_cursor()
-        if (not self._game_over_active) and (not perk_menu_active):
-            self._draw_aim_cursor()
 
         if self._game_over_active and self._game_over_record is not None:
             self._game_over_ui.draw(

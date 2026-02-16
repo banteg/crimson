@@ -17,7 +17,7 @@ from grim.view import ViewContext
 
 from ..game_modes import GameMode
 from ..weapon_runtime import weapon_assign_player
-from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
+from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
 from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
@@ -552,11 +552,6 @@ class RushMode(BaseGameplayMode):
             pulse_time=float(self._cursor_pulse_time),
         )
 
-    def _draw_aim_cursor(self) -> None:
-        mouse_pos = self._ui_mouse
-        aim_tex = self._ui_assets.aim if self._ui_assets is not None else None
-        draw_aim_cursor(self.world.particles_texture, aim_tex, pos=mouse_pos)
-
     def draw(self) -> None:
         self.world.draw(
             draw_aim_indicators=(not self._game_over_active),
@@ -610,9 +605,7 @@ class RushMode(BaseGameplayMode):
             warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
             self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
 
-        if not self._game_over_active:
-            self._draw_aim_cursor()
-        else:
+        if self._game_over_active:
             self._draw_game_cursor()
             if self._game_over_record is not None:
                 self._game_over_ui.draw(

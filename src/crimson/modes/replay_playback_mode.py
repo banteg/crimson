@@ -6,7 +6,6 @@ import random
 
 import pyray as rl
 
-from grim.assets import TextureLoader
 from grim import music as grim_music
 from grim.audio import AudioState, init_audio_state, play_music, shutdown_audio, update_audio
 from grim.config import CrimsonConfig
@@ -35,7 +34,6 @@ from ..replay import (
 from ..sim.driver.replay_events import apply_replay_tick_events, partition_tick_events
 from ..sim.driver.setup import build_damage_scale_by_type, status_from_snapshot
 from ..sim.sessions import QuestDeterministicSession, RushDeterministicSession, SurvivalDeterministicSession
-from ..ui.cursor import draw_aim_cursor
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
     HUD_AMMO_TEXT_OFFSET,
@@ -94,7 +92,6 @@ class ReplayPlaybackMode:
         self._hud_assets: HudAssets | None = None
         self._hud_state = HudState()
         self._hud_missing: list[str] = []
-        self._aim_texture: rl.Texture | None = None
 
         self._tick_rate = 60
         self._dt_frame = 1.0 / 60.0
@@ -257,25 +254,11 @@ class ReplayPlaybackMode:
             scale=text_scale,
         )
 
-    def _draw_replay_aim_enhancement(self) -> None:
-        world = self._world
-        if world is None:
-            return
-        for player in world.players:
-            if float(player.health) <= 0.0:
-                continue
-            aim_screen = world.world_to_screen(player.aim)
-            draw_aim_cursor(world.particles_texture, self._aim_texture, pos=aim_screen)
-
     def open(self) -> None:
         self._missing_assets.clear()
         self._hud_missing.clear()
         self._small = load_small_font(self._ctx.assets_dir, self._missing_assets)
         self._hud_assets = load_hud_assets(self._ctx.assets_dir)
-        self._aim_texture = TextureLoader.from_assets_root(self._ctx.assets_dir).get(
-            name="ui_aim",
-            paq_rel="ui/ui_aim.jaz",
-        )
         if self._hud_assets.missing:
             self._hud_missing = list(self._hud_assets.missing)
         self._hud_state = HudState()
@@ -455,7 +438,6 @@ class ReplayPlaybackMode:
             rl.unload_texture(self._small.texture)
             self._small = None
         self._hud_assets = None
-        self._aim_texture = None
         world = self._world
         self._world = None
         if world is not None:
@@ -704,7 +686,6 @@ class ReplayPlaybackMode:
         world = self._world
         if world is not None:
             world.draw(draw_aim_indicators=True)
-            self._draw_replay_aim_enhancement()
         else:
             rl.clear_background(rl.BLACK)
 
