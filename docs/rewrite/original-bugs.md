@@ -171,3 +171,23 @@ Rewrite behavior:
 - Default: convert Weapon drops to 100-point bonuses when they spawn within
   56 units of **any** player.
 - With `--preserve-bugs`: keep native player-1-only proximity conversion.
+
+## 7) Regeneration applies to player 1 only in co-op
+
+Native behavior:
+
+- `perks_update_effects` checks `Regeneration` via player-1-owned perk state.
+- On a regen tick, it updates only `player1.health`.
+- In co-op, that same player-1 heal step is repeated `config_player_count` times.
+
+Why it’s likely a bug:
+
+- The perk text describes a player heal-over-time effect, and multiplayer systems
+  otherwise operate on per-player health state.
+- This creates asymmetric co-op behavior and over-heals player 1 as player count grows.
+
+Rewrite behavior:
+
+- Default: heal each alive player by `+dt` per triggered tick
+  (or `+2*dt` with Greater Regeneration).
+- With `--preserve-bugs`: keep native player-1-only, player-count-scaled ticks.

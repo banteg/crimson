@@ -68,3 +68,33 @@ def test_perks_update_effects_greater_regeneration_keeps_noop_with_preserve_bugs
     perks_update_effects(state, [player], 0.2)
 
     assert math.isclose(player.health, 90.2, abs_tol=1e-9)
+
+
+def test_perks_update_effects_regeneration_heals_all_alive_players_by_default() -> None:
+    state = GameplayState()
+    state.rng = _FixedRng(1)
+    state.preserve_bugs = False
+
+    player0 = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=90.0)
+    player1 = PlayerState(index=1, pos=Vec2(30.0, 40.0), health=80.0)
+    player0.perk_counts[int(PerkId.REGENERATION)] = 1
+
+    perks_update_effects(state, [player0, player1], 0.2)
+
+    assert math.isclose(player0.health, 90.2, abs_tol=1e-9)
+    assert math.isclose(player1.health, 80.2, abs_tol=1e-9)
+
+
+def test_perks_update_effects_regeneration_preserve_bugs_keeps_player1_only_scaled_tick() -> None:
+    state = GameplayState()
+    state.rng = _FixedRng(1)
+    state.preserve_bugs = True
+
+    player0 = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=90.0)
+    player1 = PlayerState(index=1, pos=Vec2(30.0, 40.0), health=80.0)
+    player0.perk_counts[int(PerkId.REGENERATION)] = 1
+
+    perks_update_effects(state, [player0, player1], 0.2)
+
+    assert math.isclose(player0.health, 90.4, abs_tol=1e-9)
+    assert math.isclose(player1.health, 80.0, abs_tol=1e-9)
