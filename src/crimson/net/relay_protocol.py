@@ -1,0 +1,256 @@
+from __future__ import annotations
+
+import msgspec
+from typing import Literal, TypeAlias
+
+from ..replay.types import PackedPlayerInput
+from .legacy_protocol import (
+    INPUT_STALL_TIMEOUT_MS,
+    LINK_TIMEOUT_MS,
+    MAX_PLAYERS,
+    RELIABLE_RESEND_MS,
+    STATE_HASH_PERIOD_TICKS,
+    StatusSnapshot,
+    TICK_RATE,
+    build_git_hash,
+    build_public_version,
+    builds_compatible,
+    current_build_id,
+)
+
+PROTOCOL_VERSION = 4
+DEFAULT_PORT = 31993
+INPUT_DELAY_TICKS = 1
+ROLLBACK_MAX_TICKS = 8
+RECONNECT_TIMEOUT_MS = 15_000
+ROOM_CODE_LENGTH = 6
+
+NetcodeMode = Literal["rollback", "lockstep", "lockstep_legacy"]
+
+
+class RelaySlot(msgspec.Struct, forbid_unknown_fields=True):
+    slot_index: int = -1
+    connected: bool = False
+    ready: bool = False
+    is_host: bool = False
+    peer_name: str = ""
+
+
+class ClientHello(msgspec.Struct, tag_field="kind", tag="client_hello", forbid_unknown_fields=True):
+    protocol_version: int = PROTOCOL_VERSION
+    build_id: str = ""
+    peer_name: str = ""
+
+
+class ClientWelcome(msgspec.Struct, tag_field="kind", tag="client_welcome", forbid_unknown_fields=True):
+    accepted: bool = False
+    reason: str = ""
+    protocol_version: int = PROTOCOL_VERSION
+    build_id: str = ""
+    peer_id: str = ""
+
+
+class RoomCreate(msgspec.Struct, tag_field="kind", tag="room_create", forbid_unknown_fields=True):
+    mode_id: int = 0
+    player_count: int = 1
+    quest_level: str = ""
+    preserve_bugs: bool = False
+    tick_rate: int = TICK_RATE
+    input_delay_ticks: int = INPUT_DELAY_TICKS
+    rollback_max_ticks: int = ROLLBACK_MAX_TICKS
+    netcode_mode: NetcodeMode = "rollback"
+    status_snapshot: StatusSnapshot | None = None
+
+
+class RoomJoin(msgspec.Struct, tag_field="kind", tag="room_join", forbid_unknown_fields=True):
+    room_code: str = ""
+    reconnect_token: str = ""
+
+
+class RoomReady(msgspec.Struct, tag_field="kind", tag="room_ready", forbid_unknown_fields=True):
+    slot_index: int = -1
+    ready: bool = False
+
+
+class RoomState(msgspec.Struct, tag_field="kind", tag="room_state", forbid_unknown_fields=True):
+    room_code: str = ""
+    session_id: str = ""
+    mode_id: int = 0
+    player_count: int = 1
+    quest_level: str = ""
+    preserve_bugs: bool = False
+    tick_rate: int = TICK_RATE
+    input_delay_ticks: int = INPUT_DELAY_TICKS
+    rollback_max_ticks: int = ROLLBACK_MAX_TICKS
+    netcode_mode: NetcodeMode = "rollback"
+    slots: list[RelaySlot] = msgspec.field(default_factory=list)
+    all_ready: bool = False
+    started: bool = False
+
+
+class RoomStart(msgspec.Struct, tag_field="kind", tag="room_start", forbid_unknown_fields=True):
+    room_code: str = ""
+    session_id: str = ""
+    seed: int = 0
+    start_tick: int = 0
+    mode_id: int = 0
+    player_count: int = 1
+    quest_level: str = ""
+    preserve_bugs: bool = False
+    tick_rate: int = TICK_RATE
+    input_delay_ticks: int = INPUT_DELAY_TICKS
+    rollback_max_ticks: int = ROLLBACK_MAX_TICKS
+    netcode_mode: NetcodeMode = "rollback"
+    slot_index: int = -1
+    host_slot_index: int = 0
+    reconnect_token: str = ""
+    status_snapshot: StatusSnapshot | None = None
+
+
+class PeerDisconnect(msgspec.Struct, tag_field="kind", tag="peer_disconnect", forbid_unknown_fields=True):
+    slot_index: int = -1
+    reason: str = ""
+
+
+class RelayError(msgspec.Struct, tag_field="kind", tag="relay_error", forbid_unknown_fields=True):
+    reason: str = ""
+
+
+class Ping(msgspec.Struct, tag_field="kind", tag="ping", forbid_unknown_fields=True):
+    stamp_ms: int = 0
+
+
+class Pong(msgspec.Struct, tag_field="kind", tag="pong", forbid_unknown_fields=True):
+    stamp_ms: int = 0
+
+
+class RbInputSample(msgspec.Struct, forbid_unknown_fields=True):
+    tick_index: int = 0
+    packed_input: PackedPlayerInput = msgspec.field(default_factory=list)
+
+
+class RbInputBatch(msgspec.Struct, tag_field="kind", tag="rb_input_sample", forbid_unknown_fields=True):
+    slot_index: int = -1
+    samples: list[RbInputSample] = msgspec.field(default_factory=list)
+
+
+class RbResyncRequest(msgspec.Struct, tag_field="kind", tag="rb_resync_request", forbid_unknown_fields=True):
+    from_tick: int = 0
+    reason: str = ""
+
+
+class RbResyncBegin(msgspec.Struct, tag_field="kind", tag="rb_resync_begin", forbid_unknown_fields=True):
+    stream_id: str = ""
+    total_chunks: int = 0
+    compressed_size: int = 0
+
+
+class RbResyncChunk(msgspec.Struct, tag_field="kind", tag="rb_resync_chunk", forbid_unknown_fields=True):
+    stream_id: str = ""
+    chunk_index: int = 0
+    payload: bytes = b""
+
+
+class RbResyncCommit(msgspec.Struct, tag_field="kind", tag="rb_resync_commit", forbid_unknown_fields=True):
+    stream_id: str = ""
+    tick_index: int = 0
+
+
+class LegacyLockstepInputBatch(msgspec.Struct, tag_field="kind", tag="legacy_lockstep_input_batch", forbid_unknown_fields=True):
+    payload: bytes = b""
+
+
+class LegacyLockstepTickFrame(msgspec.Struct, tag_field="kind", tag="legacy_lockstep_tick_frame", forbid_unknown_fields=True):
+    payload: bytes = b""
+
+
+class LegacyLockstepControl(msgspec.Struct, tag_field="kind", tag="legacy_lockstep_control", forbid_unknown_fields=True):
+    payload: bytes = b""
+
+
+NetMessage: TypeAlias = (
+    ClientHello
+    | ClientWelcome
+    | RoomCreate
+    | RoomJoin
+    | RoomReady
+    | RoomState
+    | RoomStart
+    | PeerDisconnect
+    | RelayError
+    | Ping
+    | Pong
+    | RbInputBatch
+    | RbResyncRequest
+    | RbResyncBegin
+    | RbResyncChunk
+    | RbResyncCommit
+    | LegacyLockstepInputBatch
+    | LegacyLockstepTickFrame
+    | LegacyLockstepControl
+)
+
+
+class Packet(msgspec.Struct, forbid_unknown_fields=True):
+    seq: int = 0
+    ack: int = 0
+    reliable: bool = False
+    message: NetMessage = msgspec.field(default_factory=Ping)
+
+
+_PACKET_DECODER = msgspec.msgpack.Decoder(type=Packet)
+
+
+def encode_packet(packet: Packet) -> bytes:
+    return msgspec.msgpack.encode(packet)
+
+
+def decode_packet(blob: bytes) -> Packet:
+    return _PACKET_DECODER.decode(blob)
+
+
+__all__ = [
+    "DEFAULT_PORT",
+    "INPUT_DELAY_TICKS",
+    "INPUT_STALL_TIMEOUT_MS",
+    "LINK_TIMEOUT_MS",
+    "MAX_PLAYERS",
+    "PROTOCOL_VERSION",
+    "RELIABLE_RESEND_MS",
+    "RECONNECT_TIMEOUT_MS",
+    "ROLLBACK_MAX_TICKS",
+    "ROOM_CODE_LENGTH",
+    "STATE_HASH_PERIOD_TICKS",
+    "TICK_RATE",
+    "ClientHello",
+    "ClientWelcome",
+    "LegacyLockstepControl",
+    "LegacyLockstepInputBatch",
+    "LegacyLockstepTickFrame",
+    "NetMessage",
+    "NetcodeMode",
+    "Packet",
+    "PeerDisconnect",
+    "Ping",
+    "Pong",
+    "RbInputBatch",
+    "RbInputSample",
+    "RbResyncBegin",
+    "RbResyncChunk",
+    "RbResyncCommit",
+    "RbResyncRequest",
+    "RelayError",
+    "RelaySlot",
+    "RoomCreate",
+    "RoomJoin",
+    "RoomReady",
+    "RoomStart",
+    "RoomState",
+    "StatusSnapshot",
+    "build_git_hash",
+    "build_public_version",
+    "builds_compatible",
+    "current_build_id",
+    "decode_packet",
+    "encode_packet",
+]
