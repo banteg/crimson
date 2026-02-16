@@ -25,6 +25,7 @@ from ..math_parity import f32
 from grim.rand import Crand
 
 __all__ = [
+    "CreatureAiMode",
     "BurstEffect",
     "CreatureFlags",
     "CreatureInit",
@@ -68,6 +69,18 @@ class CreatureTypeId(IntEnum):
     SPIDER_SP1 = 3
     SPIDER_SP2 = 4
     TROOPER = 5
+
+
+class CreatureAiMode(IntEnum):
+    ORBIT_PLAYER = 0
+    ORBIT_PLAYER_TIGHT = 1
+    CHASE_PLAYER = 2
+    FOLLOW_LINK = 3
+    LINK_GUARD = 4
+    FOLLOW_LINK_TETHERED = 5
+    ORBIT_LINK = 6
+    HOLD_TIMER = 7
+    ORBIT_PLAYER_WIDE = 8
 
 
 class CreatureFlags(IntFlag):
@@ -872,7 +885,7 @@ class ConstantSpawnSpec:
     size: float
     contact_damage: float
     flags: CreatureFlags = CreatureFlags(0)
-    ai_mode: int = 0
+    ai_mode: int = CreatureAiMode.ORBIT_PLAYER
     orbit_angle: float | None = None
     orbit_radius: float | None = None
     ranged_projectile_type: int | None = None
@@ -1057,7 +1070,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         tint=(0.0, 0.9, 0.8, 1.0),
         size=38.0,
         contact_damage=3.0,
-        ai_mode=2,
+        ai_mode=CreatureAiMode.CHASE_PLAYER,
     ),
     SpawnId.LIZARD_CONST_GREY_2F: ConstantSpawnSpec(
         type_id=CreatureTypeId.LIZARD,
@@ -1107,7 +1120,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=40.0,
         contact_damage=20.0,
         flags=CreatureFlags.RANGED_ATTACK_VARIANT,
-        ai_mode=2,
+        ai_mode=CreatureAiMode.CHASE_PLAYER,
         orbit_angle=0.4,
         ranged_projectile_type=26,
     ),
@@ -1168,9 +1181,9 @@ GRID_FORMATIONS: dict[int, GridFormationSpec] = {
             tint=(0.7, 0.8, 0.31, 1.0),
             size=50.0,
             contact_damage=40.0,
-            ai_mode=2,
+            ai_mode=CreatureAiMode.CHASE_PLAYER,
         ),
-        child_ai_mode=5,
+        child_ai_mode=CreatureAiMode.FOLLOW_LINK_TETHERED,
         child_spec=FormationChildSpec(
             type_id=CreatureTypeId.ALIEN,
             health=40.0,
@@ -1193,9 +1206,9 @@ GRID_FORMATIONS: dict[int, GridFormationSpec] = {
             tint=(1.0, 1.0, 1.0, 1.0),
             size=60.0,
             contact_damage=40.0,
-            ai_mode=2,
+            ai_mode=CreatureAiMode.CHASE_PLAYER,
         ),
-        child_ai_mode=4,
+        child_ai_mode=CreatureAiMode.LINK_GUARD,
         child_spec=FormationChildSpec(
             type_id=CreatureTypeId.ALIEN,
             health=40.0,
@@ -1218,9 +1231,9 @@ GRID_FORMATIONS: dict[int, GridFormationSpec] = {
             tint=(1.0, 1.0, 1.0, 1.0),
             size=64.0,
             contact_damage=40.0,
-            ai_mode=2,
+            ai_mode=CreatureAiMode.CHASE_PLAYER,
         ),
-        child_ai_mode=4,
+        child_ai_mode=CreatureAiMode.LINK_GUARD,
         child_spec=FormationChildSpec(
             type_id=CreatureTypeId.LIZARD,
             health=40.0,
@@ -1243,9 +1256,9 @@ GRID_FORMATIONS: dict[int, GridFormationSpec] = {
             tint=(1.0, 1.0, 1.0, 1.0),
             size=60.0,
             contact_damage=40.0,
-            ai_mode=2,
+            ai_mode=CreatureAiMode.CHASE_PLAYER,
         ),
-        child_ai_mode=4,
+        child_ai_mode=CreatureAiMode.LINK_GUARD,
         child_spec=FormationChildSpec(
             type_id=CreatureTypeId.SPIDER_SP1,
             health=40.0,
@@ -1268,9 +1281,9 @@ GRID_FORMATIONS: dict[int, GridFormationSpec] = {
             tint=(0.7, 0.8, 0.31, 1.0),
             size=40.0,
             contact_damage=40.0,
-            ai_mode=2,
+            ai_mode=CreatureAiMode.CHASE_PLAYER,
         ),
-        child_ai_mode=3,
+        child_ai_mode=CreatureAiMode.FOLLOW_LINK,
         child_spec=FormationChildSpec(
             type_id=CreatureTypeId.ALIEN,
             health=260.0,
@@ -1296,7 +1309,7 @@ RING_FORMATIONS: dict[int, RingFormationSpec] = {
             size=55.0,
             contact_damage=14.0,
         ),
-        child_ai_mode=3,
+        child_ai_mode=CreatureAiMode.FOLLOW_LINK,
         child_spec=FormationChildSpec(
             type_id=CreatureTypeId.ALIEN,
             health=40.0,
@@ -1321,7 +1334,7 @@ RING_FORMATIONS: dict[int, RingFormationSpec] = {
             size=55.0,
             contact_damage=40.0,
         ),
-        child_ai_mode=5,
+        child_ai_mode=CreatureAiMode.FOLLOW_LINK_TETHERED,
         child_spec=FormationChildSpec(
             type_id=CreatureTypeId.ALIEN,
             health=220.0,
@@ -1379,7 +1392,7 @@ class CreatureInit:
 
     type_id: CreatureTypeId | None = None
     flags: CreatureFlags = CreatureFlags(0)
-    ai_mode: int = 0
+    ai_mode: int = CreatureAiMode.ORBIT_PLAYER
 
     health: float | None = None
     max_health: float | None = None
@@ -1783,7 +1796,7 @@ def build_survival_spawn_creature(pos: Vec2, rng: Crand, *, player_experience: i
     xp = int(player_experience)
 
     c = alloc_creature(-1, pos, rng)
-    c.ai_mode = 0
+    c.ai_mode = CreatureAiMode.ORBIT_PLAYER
 
     r10 = rng.rand() % 10
 
@@ -1871,7 +1884,12 @@ def build_survival_spawn_creature(pos: Vec2, rng: Crand, *, player_experience: i
     c.contact_damage = float(c.size or 0.0) * (2.0 / 21.0)
 
     # reward_value is always 0.0 at this point in the original.
-    c.reward_value = float(c.health or 0.0) * 0.4 + float(c.contact_damage or 0.0) * 0.8 + move_speed * 5.0 + float(rng.rand() % 10 + 10)
+    c.reward_value = (
+        float(c.health or 0.0) * 0.4
+        + float(c.contact_damage or 0.0) * 0.8
+        + move_speed * 5.0
+        + float(rng.rand() % 10 + 10)
+    )
 
     # Rare stat overrides (color-coded variants).
     r = rng.rand()
@@ -2008,15 +2026,25 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             if level < 5:
                 break
             stage = 1
-            spawns.append(SpawnTemplateCall(template_id=SpawnId.FORMATION_RING_ALIEN_8_12, pos=Vec2(-164.0, 512.0), heading=heading))
-            spawns.append(SpawnTemplateCall(template_id=SpawnId.FORMATION_RING_ALIEN_8_12, pos=Vec2(1188.0, 512.0), heading=heading))
+            spawns.append(
+                SpawnTemplateCall(
+                    template_id=SpawnId.FORMATION_RING_ALIEN_8_12, pos=Vec2(-164.0, 512.0), heading=heading
+                )
+            )
+            spawns.append(
+                SpawnTemplateCall(
+                    template_id=SpawnId.FORMATION_RING_ALIEN_8_12, pos=Vec2(1188.0, 512.0), heading=heading
+                )
+            )
             continue
 
         if stage == 1:
             if level < 9:
                 break
             stage = 2
-            spawns.append(SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_RED_BOSS_2C, pos=Vec2(1088.0, 512.0), heading=heading))
+            spawns.append(
+                SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_RED_BOSS_2C, pos=Vec2(1088.0, 512.0), heading=heading)
+            )
             continue
 
         if stage == 2:
@@ -2026,7 +2054,11 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             step = 128.0 / 3.0
             for i in range(12):
                 spawns.append(
-                    SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_RANDOM_35, pos=Vec2(1088.0, float(i) * step + 256.0), heading=heading)
+                    SpawnTemplateCall(
+                        template_id=SpawnId.SPIDER_SP2_RANDOM_35,
+                        pos=Vec2(1088.0, float(i) * step + 256.0),
+                        heading=heading,
+                    )
                 )
             continue
 
@@ -2036,7 +2068,11 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             stage = 4
             for i in range(4):
                 spawns.append(
-                    SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_RED_FAST_2B, pos=Vec2(1088.0, float(i) * 64.0 + 384.0), heading=heading)
+                    SpawnTemplateCall(
+                        template_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
+                        pos=Vec2(1088.0, float(i) * 64.0 + 384.0),
+                        heading=heading,
+                    )
                 )
             continue
 
@@ -2046,11 +2082,19 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             stage = 5
             for i in range(4):
                 spawns.append(
-                    SpawnTemplateCall(template_id=SpawnId.SPIDER_SP1_AI7_TIMER_38, pos=Vec2(1088.0, float(i) * 64.0 + 384.0), heading=heading)
+                    SpawnTemplateCall(
+                        template_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
+                        pos=Vec2(1088.0, float(i) * 64.0 + 384.0),
+                        heading=heading,
+                    )
                 )
             for i in range(4):
                 spawns.append(
-                    SpawnTemplateCall(template_id=SpawnId.SPIDER_SP1_AI7_TIMER_38, pos=Vec2(-64.0, float(i) * 64.0 + 384.0), heading=heading)
+                    SpawnTemplateCall(
+                        template_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
+                        pos=Vec2(-64.0, float(i) * 64.0 + 384.0),
+                        heading=heading,
+                    )
                 )
             continue
 
@@ -2058,22 +2102,32 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             if level < 17:
                 break
             stage = 6
-            spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=Vec2(1088.0, 512.0), heading=heading))
+            spawns.append(
+                SpawnTemplateCall(
+                    template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=Vec2(1088.0, 512.0), heading=heading
+                )
+            )
             continue
 
         if stage == 6:
             if level < 19:
                 break
             stage = 7
-            spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=Vec2(640.0, 512.0), heading=heading))
+            spawns.append(
+                SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=Vec2(640.0, 512.0), heading=heading)
+            )
             continue
 
         if stage == 7:
             if level < 21:
                 break
             stage = 8
-            spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=Vec2(384.0, 256.0), heading=heading))
-            spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=Vec2(640.0, 768.0), heading=heading))
+            spawns.append(
+                SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=Vec2(384.0, 256.0), heading=heading)
+            )
+            spawns.append(
+                SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=Vec2(640.0, 768.0), heading=heading)
+            )
             continue
 
         if stage == 8:
@@ -2102,8 +2156,16 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             if level <= 31:
                 break
             stage = 10
-            spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=Vec2(1088.0, 512.0), heading=heading))
-            spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=Vec2(-64.0, 512.0), heading=heading))
+            spawns.append(
+                SpawnTemplateCall(
+                    template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=Vec2(1088.0, 512.0), heading=heading
+                )
+            )
+            spawns.append(
+                SpawnTemplateCall(
+                    template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=Vec2(-64.0, 512.0), heading=heading
+                )
+            )
             for i in range(4):
                 spawns.append(
                     SpawnTemplateCall(
@@ -2140,7 +2202,7 @@ def build_rush_mode_spawn_creature(
 
     c = alloc_creature(-1, pos, rng)
     c.type_id = CreatureTypeId(type_id)
-    c.ai_mode = 0
+    c.ai_mode = CreatureAiMode.ORBIT_PLAYER
 
     c.health = float(elapsed_ms) * 1e-4 + 10.0
     c.heading = float(rng.rand() % 314) * 0.01
@@ -2187,11 +2249,11 @@ def tick_rush_mode_spawns(
         spawn_left = Vec2(-64.0, terrain_height * 0.5 + math.sin(theta) * 256.0)
 
         c = build_rush_mode_spawn_creature(spawn_right, tint, rng, type_id=2, survival_elapsed_ms=elapsed_ms)
-        c.ai_mode = 8
+        c.ai_mode = CreatureAiMode.ORBIT_PLAYER_WIDE
         spawns.append(c)
 
         c = build_rush_mode_spawn_creature(spawn_left, tint, rng, type_id=3, survival_elapsed_ms=elapsed_ms)
-        c.ai_mode = 8
+        c.ai_mode = CreatureAiMode.ORBIT_PLAYER_WIDE
         c.flags |= CreatureFlags.AI7_LINK_TIMER
         if c.move_speed is not None:
             c.move_speed *= 1.4
@@ -2240,17 +2302,33 @@ def build_tutorial_stage5_repeat_spawns(repeat_spawn_count: int) -> tuple[SpawnT
     if (n & 1) == 0:
         # Even: right-side spawn pack (with an off-screen bottom-right spawn).
         if n < 6:
-            spawns.append(SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, pos=Vec2(1056.0, 1056.0), heading=heading))
-        spawns.append(SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(1188.0, 1136.0), heading=heading))
-        spawns.append(SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, pos=Vec2(1208.0, 512.0), heading=heading))
-        spawns.append(SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(1178.0, 612.0), heading=heading))
+            spawns.append(
+                SpawnTemplateCall(
+                    template_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, pos=Vec2(1056.0, 1056.0), heading=heading
+                )
+            )
+        spawns.append(
+            SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(1188.0, 1136.0), heading=heading)
+        )
+        spawns.append(
+            SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, pos=Vec2(1208.0, 512.0), heading=heading)
+        )
+        spawns.append(
+            SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(1178.0, 612.0), heading=heading)
+        )
         if n == 4:
-            spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, pos=Vec2(512.0, 1056.0), heading=heading))
+            spawns.append(
+                SpawnTemplateCall(
+                    template_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, pos=Vec2(512.0, 1056.0), heading=heading
+                )
+            )
         return tuple(spawns)
 
     # Odd: left-side spawn pack.
     if n < 6:
-        spawns.append(SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, pos=Vec2(-32.0, 1056.0), heading=heading))
+        spawns.append(
+            SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, pos=Vec2(-32.0, 1056.0), heading=heading)
+        )
     spawns.extend(build_tutorial_stage3_fire_spawns())
     return tuple(spawns)
 
@@ -2277,20 +2355,15 @@ def apply_tail(
     c = plan_creatures[primary_idx]
 
     # Demo-burst effect (skipped when demo_mode_active != 0).
-    if (
-        not env.demo_mode_active
-        and 0.0 < c.pos.x < env.terrain_width
-        and 0.0 < c.pos.y < env.terrain_height
-    ):
+    if not env.demo_mode_active and 0.0 < c.pos.x < env.terrain_width and 0.0 < c.pos.y < env.terrain_height:
         plan_effects.append(BurstEffect(pos=c.pos, count=8))
 
     if c.health is not None:
         c.max_health = c.health
 
     # Spider_sp1 "AI7 timer" auto-enable (applies to the *return* creature).
-    if (
-        c.type_id == CreatureTypeId.SPIDER_SP1
-        and not (c.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.AI7_LINK_TIMER))
+    if c.type_id == CreatureTypeId.SPIDER_SP1 and not (
+        c.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.AI7_LINK_TIMER)
     ):
         c.flags |= CreatureFlags.AI7_LINK_TIMER
         c.ai_link_parent = None
@@ -2317,7 +2390,12 @@ def apply_tail(
 
         if env.difficulty_level > 0:
             d = env.difficulty_level
-            if c.reward_value is not None and c.move_speed is not None and c.contact_damage is not None and c.health is not None:
+            if (
+                c.reward_value is not None
+                and c.move_speed is not None
+                and c.contact_damage is not None
+                and c.health is not None
+            ):
                 if d == 1:
                     c.reward_value *= 0.9
                     c.move_speed *= 0.95
@@ -2510,7 +2588,7 @@ def template_0e_alien_spawner_ring_24(ctx: PlanBuilder) -> None:
         count=24,
         angle_step=math.pi / 12.0,
         radius=100.0,
-        ai_mode=3,
+        ai_mode=CreatureAiMode.FOLLOW_LINK,
         child_spec=child_spec,
         heading_override=0.0,
     )
@@ -2520,7 +2598,7 @@ def template_0e_alien_spawner_ring_24(ctx: PlanBuilder) -> None:
 def template_11_formation_chain_lizard_4(ctx: PlanBuilder) -> None:
     parent = ctx.base
     parent.type_id = CreatureTypeId.LIZARD
-    parent.ai_mode = 1
+    parent.ai_mode = CreatureAiMode.ORBIT_PLAYER_TIGHT
     apply_tint(parent, (0.99, 0.99, 0.21, 1.0))
     parent.health = 1500.0
     parent.max_health = 1500.0
@@ -2540,6 +2618,7 @@ def template_11_formation_chain_lizard_4(ctx: PlanBuilder) -> None:
         contact_damage=14.0,
         tint=(0.6, 0.6, 0.31, 1.0),
     )
+
     def setup_child(child: CreatureInit, idx: int) -> None:
         child.target_offset = Vec2(-256.0 + float(idx) * 64.0, -256.0)
         angle = float(2 + idx * 2) * (math.pi / 8.0)
@@ -2547,7 +2626,7 @@ def template_11_formation_chain_lizard_4(ctx: PlanBuilder) -> None:
 
     chain_prev = ctx.chain_children(
         count=4,
-        ai_mode=3,
+        ai_mode=CreatureAiMode.FOLLOW_LINK,
         child_spec=child_spec,
         setup_child=setup_child,
     )
@@ -2561,7 +2640,7 @@ def template_11_formation_chain_lizard_4(ctx: PlanBuilder) -> None:
 def template_13_formation_chain_alien_10(ctx: PlanBuilder) -> None:
     parent = ctx.base
     parent.type_id = CreatureTypeId.ALIEN
-    parent.ai_mode = 6
+    parent.ai_mode = CreatureAiMode.ORBIT_LINK
     parent.pos = ctx.pos.offset(dx=256.0)
     apply_tint(parent, (0.6, 0.8, 0.91, 1.0))
     parent.health = 200.0
@@ -2582,6 +2661,7 @@ def template_13_formation_chain_alien_10(ctx: PlanBuilder) -> None:
         orbit_angle=math.pi,
         orbit_radius=10.0,
     )
+
     def setup_child(child: CreatureInit, idx: int) -> None:
         angle_idx = 2 + idx * 2
         angle = float(angle_idx) * math.radians(20.0)
@@ -2589,7 +2669,7 @@ def template_13_formation_chain_alien_10(ctx: PlanBuilder) -> None:
 
     chain_prev = ctx.chain_children(
         count=10,
-        ai_mode=6,
+        ai_mode=CreatureAiMode.ORBIT_LINK,
         child_spec=child_spec,
         setup_child=setup_child,
     )
@@ -2609,7 +2689,7 @@ AI1_BLUE_TINT_TEMPLATES: dict[int, tuple[CreatureTypeId, float]] = {
 @register_template(SpawnId.AI1_ALIEN_BLUE_TINT_1A, SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B, SpawnId.AI1_LIZARD_BLUE_TINT_1C)
 def template_1a_1b_1c_ai1_blue_tint(ctx: PlanBuilder) -> None:
     c = ctx.base
-    c.ai_mode = 1
+    c.ai_mode = CreatureAiMode.ORBIT_PLAYER_TIGHT
     c.size = 50.0
     c.move_speed = 2.4
     c.reward_value = 125.0
@@ -2774,7 +2854,7 @@ def template_36_alien_ai7_orbiter(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
     c.size = 50.0
-    c.ai_mode = 7
+    c.ai_mode = CreatureAiMode.HOLD_TIMER
     c.orbit_radius = 1.5
     c.health = 10.0
     c.move_speed = 1.8

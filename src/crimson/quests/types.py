@@ -6,6 +6,7 @@ from typing import Callable
 from grim.geom import Vec2
 
 from ..creatures.spawn import SpawnId
+from ..terrain_assets import TerrainTextureId
 
 
 @dataclass(frozen=True, slots=True)
@@ -52,7 +53,7 @@ def terrain_ids_for(level_or_major: str | int, minor: int | None = None) -> tupl
         if quest < 6:
             return base, alt, base
         return base, base, alt
-    return quest & 0x3, 1, 3
+    return quest & 0x3, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q2_OVERLAY
 
 
 def terrain_id_for(level_or_major: str | int, minor: int | None = None) -> int:
@@ -78,11 +79,18 @@ class QuestDefinition:
         minor = int(self.minor)
         object.__setattr__(self, "major", major)
         object.__setattr__(self, "minor", minor)
+        object.__setattr__(self, "start_weapon_id", int(self.start_weapon_id))
+
+        if self.unlock_weapon_id is not None:
+            object.__setattr__(self, "unlock_weapon_id", int(self.unlock_weapon_id))
+        if self.terrain_id is not None:
+            object.__setattr__(self, "terrain_id", int(self.terrain_id))
 
         terrain_ids = self.terrain_ids
         if terrain_ids is None:
             terrain_ids = terrain_ids_for(major, minor)
-            object.__setattr__(self, "terrain_ids", terrain_ids)
+        terrain_ids = (int(terrain_ids[0]), int(terrain_ids[1]), int(terrain_ids[2]))
+        object.__setattr__(self, "terrain_ids", terrain_ids)
         if self.terrain_id is None:
             object.__setattr__(self, "terrain_id", terrain_ids[0])
 

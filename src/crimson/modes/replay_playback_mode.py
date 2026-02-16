@@ -20,7 +20,7 @@ from ..original.capture import CAPTURE_BOOTSTRAP_EVENT_KIND
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table
 from ..quests.types import QuestContext
-from ..terrain_assets import terrain_texture_by_id
+from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 from ..replay import (
@@ -278,7 +278,8 @@ class ReplayPlaybackMode:
             events_by_tick.setdefault(int(event.tick_index), []).append(event)
         self._events_by_tick = events_by_tick
         self._defer_menu_open = any(
-            isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND for event in replay.events
+            isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+            for event in replay.events
         )
 
         world_size = float(replay.header.world_size)
@@ -354,7 +355,11 @@ class ReplayPlaybackMode:
 
             world.state.quest_stage_major, world.state.quest_stage_minor = quest.level_key
 
-            base_id, overlay_id, detail_id = quest.terrain_ids or (0, 1, 0)
+            base_id, overlay_id, detail_id = quest.terrain_ids or (
+                TerrainTextureId.Q1_BASE,
+                TerrainTextureId.Q1_OVERLAY,
+                TerrainTextureId.Q1_BASE,
+            )
             base = terrain_texture_by_id(int(base_id))
             overlay = terrain_texture_by_id(int(overlay_id))
             detail = terrain_texture_by_id(int(detail_id))
@@ -516,7 +521,9 @@ class ReplayPlaybackMode:
 
         self._apply_tick_events(self._events_by_tick.get(int(tick_index), []), tick_index=tick_index, dt_frame=dt_frame)
 
-        player_inputs = [replace(inp, reload_pressed=False) for inp in unpack_tick_inputs(replay.inputs[int(tick_index)])]
+        player_inputs = [
+            replace(inp, reload_pressed=False) for inp in unpack_tick_inputs(replay.inputs[int(tick_index)])
+        ]
         tick = session.step_tick(
             dt_frame=float(dt_frame),
             inputs=player_inputs,
@@ -697,7 +704,11 @@ class ReplayPlaybackMode:
                 player=world.players[0],
                 players=world.players,
                 bonus_hud=world.state.bonus_hud,
-                elapsed_ms=float(self._quest_spawn_timeline_ms if int(replay.header.game_mode_id) == int(GameMode.QUESTS) else world._elapsed_ms),
+                elapsed_ms=float(
+                    self._quest_spawn_timeline_ms
+                    if int(replay.header.game_mode_id) == int(GameMode.QUESTS)
+                    else world._elapsed_ms
+                ),
                 font=self._small,
                 frame_dt_ms=float(max(0.0, rl.get_frame_time()) * 1000.0),
                 show_health=bool(hud_flags.show_health),

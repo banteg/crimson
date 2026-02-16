@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Protocol
 
+from ..terrain_assets import TerrainTextureId
+
 
 class RandStream(Protocol):
     @property
@@ -15,11 +17,15 @@ BOOTSTRAP_KIND_NONE = "none"
 BOOTSTRAP_KIND_TERRAIN_V1 = "terrain_v1"
 
 # Mirror classic `terrain_generate_random` menu selection rules.
-TERRAIN_DEFAULT_IDS: tuple[int, int, int] = (0, 1, 0)
+TERRAIN_DEFAULT_IDS: tuple[int, int, int] = (
+    TerrainTextureId.Q1_BASE,
+    TerrainTextureId.Q1_OVERLAY,
+    TerrainTextureId.Q1_BASE,
+)
 TERRAIN_UNLOCK_RULES: tuple[tuple[int, tuple[int, int, int]], ...] = (
-    (0x28, (6, 7, 6)),
-    (0x1E, (4, 5, 4)),
-    (0x14, (2, 3, 2)),
+    (0x28, (TerrainTextureId.Q4_BASE, TerrainTextureId.Q4_OVERLAY, TerrainTextureId.Q4_BASE)),
+    (0x1E, (TerrainTextureId.Q3_BASE, TerrainTextureId.Q3_OVERLAY, TerrainTextureId.Q3_BASE)),
+    (0x14, (TerrainTextureId.Q2_BASE, TerrainTextureId.Q2_OVERLAY, TerrainTextureId.Q2_BASE)),
 )
 
 # Terrain stamping RNG consumption mirrors `grim/terrain_render.py` + `docs/crimsonland-exe/terrain.md`.

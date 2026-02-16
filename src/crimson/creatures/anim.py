@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import struct
 
-from .spawn import CreatureFlags
+from .spawn import CreatureAiMode, CreatureFlags
 
 
 def _f32(value: float) -> float:
@@ -52,7 +52,7 @@ def creature_anim_phase_step(
     size: float,
     local_scale: float = 1.0,
     flags: CreatureFlags = CreatureFlags(0),
-    ai_mode: int = 0,
+    ai_mode: int = CreatureAiMode.ORBIT_PLAYER,
     quantize_f32: bool = True,
 ) -> float:
     """Compute the per-frame animation phase increment (creature_update_all)."""
@@ -70,7 +70,7 @@ def creature_anim_phase_step(
     strip_mul = _f32(25.0) if quantize_f32 else 25.0
     if not creature_anim_is_long_strip(flags):
         strip_mul = _f32(22.0) if quantize_f32 else 22.0
-    elif ai_mode == 7:
+    elif ai_mode == CreatureAiMode.HOLD_TIMER:
         # Long-strip creatures stop advancing animation phase in ai_mode == 7.
         return 0.0
 
@@ -87,7 +87,7 @@ def creature_anim_advance_phase(
     size: float,
     local_scale: float = 1.0,
     flags: CreatureFlags = CreatureFlags(0),
-    ai_mode: int = 0,
+    ai_mode: int = CreatureAiMode.ORBIT_PLAYER,
     quantize_f32: bool = True,
 ) -> tuple[float, float]:
     """Advance anim_phase and wrap it the same way as creature_update_all.

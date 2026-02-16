@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import IntEnum
 import math
 from typing import Callable, Protocol, Sequence
 
@@ -26,6 +27,7 @@ __all__ = [
     "EffectEntry",
     "EffectPool",
     "Particle",
+    "ParticleStyleId",
     "ParticlePool",
     "SpriteEffect",
     "SpriteEffectPool",
@@ -44,6 +46,13 @@ FX_QUEUE_ROTATED_MAX_COUNT = 0x3F
 
 def _default_rand() -> int:
     return 0
+
+
+class ParticleStyleId(IntEnum):
+    FLAMETHROWER = 0
+    BLOW_TORCH = 1
+    HR_FLAMER = 2
+    BUBBLEGUN = 8
 
 
 class _CreatureForParticles(Protocol):
@@ -72,7 +81,7 @@ class Particle:
     intensity: float = 0.0
     angle: float = 0.0
     spin: float = 0.0
-    style_id: int = 0
+    style_id: int = ParticleStyleId.FLAMETHROWER
     target_id: int = -1
     owner_id: int = -100
 
@@ -122,7 +131,7 @@ class ParticlePool:
         entry.intensity = float(intensity)
         entry.angle = float(angle)
         entry.spin = float(int(self._rand()) % 0x274) * 0.01
-        entry.style_id = 0
+        entry.style_id = ParticleStyleId.FLAMETHROWER
         entry.target_id = -1
         entry.owner_id = int(owner_id)
         return idx
@@ -149,7 +158,7 @@ class ParticlePool:
         entry.intensity = 1.0
         entry.angle = float(angle)
         entry.spin = float(int(self._rand()) % 0x274) * 0.01
-        entry.style_id = 8
+        entry.style_id = ParticleStyleId.BUBBLEGUN
         entry.target_id = -1
         entry.owner_id = int(owner_id)
         return idx
@@ -217,7 +226,7 @@ class ParticlePool:
 
             style = int(entry.style_id) & 0xFF
 
-            if style == 8:
+            if style == int(ParticleStyleId.BUBBLEGUN):
                 entry.intensity = f32(float(entry.intensity) - float(dt) * 0.11)
                 entry.spin = f32(float(entry.spin) + float(dt) * 5.0)
                 move_scale = float(entry.intensity)
@@ -238,11 +247,11 @@ class ParticlePool:
                     f32(float(entry.pos.y) + float(move.y)),
                 )
 
-            alive = entry.intensity > (0.0 if style == 0 else 0.8)
+            alive = entry.intensity > (0.0 if style == int(ParticleStyleId.FLAMETHROWER) else 0.8)
             if not alive:
                 entry.active = False
                 expired.append(idx)
-                if style == 8 and entry.target_id != -1:
+                if style == int(ParticleStyleId.BUBBLEGUN) and entry.target_id != -1:
                     target_id = int(entry.target_id)
                     entry.target_id = -1
                     if kill_creature is not None:
@@ -255,10 +264,10 @@ class ParticlePool:
             if entry.render_flag:
                 # Random walk drift (native adjusts angle based on `crt_rand`).
                 jitter = f32(float(int(rand()) % 100 - 50) * 0.06 * max(float(entry.intensity), 0.0) * float(dt))
-                if style == 0:
+                if style == int(ParticleStyleId.FLAMETHROWER):
                     jitter = f32(float(jitter) * 1.96)
                     speed = 82.0
-                elif style == 8:
+                elif style == int(ParticleStyleId.BUBBLEGUN):
                     jitter = f32(float(jitter) * 1.1)
                     speed = 62.0
                 else:
@@ -278,7 +287,12 @@ class ParticlePool:
             entry.scale_y = shade
             # Native only updates scale_x/scale_y; scale_z stays at its spawn value (1.0).
 
-            if style == 8 and (not entry.render_flag) and entry.target_id != -1 and creatures is not None:
+            if (
+                style == int(ParticleStyleId.BUBBLEGUN)
+                and (not entry.render_flag)
+                and entry.target_id != -1
+                and creatures is not None
+            ):
                 target_id = int(entry.target_id)
                 if 0 <= target_id < len(creatures) and creatures[target_id].active:
                     entry.pos = creatures[target_id].pos
@@ -288,7 +302,7 @@ class ParticlePool:
                 if hit_idx != -1:
                     entry.render_flag = False
                     creature = creatures[hit_idx]
-                    if style == 8:
+                    if style == int(ParticleStyleId.BUBBLEGUN):
                         entry.target_id = int(hit_idx)
                         entry.pos = creature.pos
                         entry.vel = Vec2()
@@ -506,7 +520,9 @@ class FxQueueRotatedEntry:
 class FxQueueRotated:
     """Rotated corpse queue (`fx_queue_rotated` / `fx_queue_add_rotated`)."""
 
-    def __init__(self, *, capacity: int = FX_QUEUE_ROTATED_CAPACITY, max_count: int = FX_QUEUE_ROTATED_MAX_COUNT) -> None:
+    def __init__(
+        self, *, capacity: int = FX_QUEUE_ROTATED_CAPACITY, max_count: int = FX_QUEUE_ROTATED_MAX_COUNT
+    ) -> None:
         capacity = max(0, int(capacity))
         max_count = max(0, min(int(max_count), capacity))
         self._entries = [FxQueueRotatedEntry() for _ in range(capacity)]

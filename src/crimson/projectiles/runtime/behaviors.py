@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Callable, MutableSequence, Sequence
 
 from grim.geom import Vec2
 
+from ...creatures.damage_types import CreatureDamageType
 from ...creatures.spawn import CreatureFlags
 from ...math_parity import f32
 from ...weapons import weapon_entry_for_projectile_type_id
@@ -27,6 +28,7 @@ from .collision import _apply_damage_to_creature, _hit_radius_for
 
 if TYPE_CHECKING:
     from .projectile_pool import ProjectilePool
+
 
 @dataclass(slots=True)
 class _ProjectileUpdateCtx:
@@ -111,7 +113,7 @@ def _linger_ion_minigun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
                 ctx.creatures,
                 creature_idx,
                 damage,
-                damage_type=7,
+                damage_type=CreatureDamageType.ION,
                 impulse=Vec2(),
                 owner_id=int(proj.owner_id),
                 apply_creature_damage=ctx.apply_creature_damage,
@@ -134,7 +136,7 @@ def _linger_ion_rifle(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
                 ctx.creatures,
                 creature_idx,
                 damage,
-                damage_type=7,
+                damage_type=CreatureDamageType.ION,
                 impulse=Vec2(),
                 owner_id=int(proj.owner_id),
                 apply_creature_damage=ctx.apply_creature_damage,
@@ -157,7 +159,7 @@ def _linger_ion_cannon(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
                 ctx.creatures,
                 creature_idx,
                 damage,
-                damage_type=7,
+                damage_type=CreatureDamageType.ION,
                 impulse=Vec2(),
                 owner_id=int(proj.owner_id),
                 apply_creature_damage=ctx.apply_creature_damage,
@@ -260,7 +262,11 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
     ring_radius = size * 0.5 + 1.0
 
     plasma_entry = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.PLASMA_RIFLE))
-    plasma_meta = float(plasma_entry.projectile_meta) if plasma_entry and plasma_entry.projectile_meta is not None else hit.proj.base_damage
+    plasma_meta = (
+        float(plasma_entry.projectile_meta)
+        if plasma_entry and plasma_entry.projectile_meta is not None
+        else hit.proj.base_damage
+    )
 
     runtime_state = ctx.runtime_state
     prev_guard = False
@@ -306,7 +312,7 @@ def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) ->
             ctx.creatures,
             int(hit.hit_idx),
             float(creature.hp) + 1.0,
-            damage_type=1,
+            damage_type=CreatureDamageType.BULLET,
             impulse=Vec2(),
             owner_id=int(hit.proj.owner_id),
             apply_creature_damage=ctx.apply_creature_damage,
@@ -336,15 +342,27 @@ PROJECTILE_BEHAVIOR_BY_TYPE_ID: dict[int, ProjectileBehavior] = {
     int(ProjectileTypeId.PLASMA_RIFLE): _DEFAULT_BEHAVIOR,
     int(ProjectileTypeId.PLASMA_MINIGUN): _DEFAULT_BEHAVIOR,
     int(ProjectileTypeId.PULSE_GUN): ProjectileBehavior(linger=_linger_default, post_hit_creature=_post_hit_pulse_gun),
-    int(ProjectileTypeId.ION_RIFLE): ProjectileBehavior(linger=_linger_ion_rifle, post_hit_creature=_post_hit_ion_rifle),
-    int(ProjectileTypeId.ION_MINIGUN): ProjectileBehavior(linger=_linger_ion_minigun, post_hit_creature=_post_hit_ion_common),
-    int(ProjectileTypeId.ION_CANNON): ProjectileBehavior(linger=_linger_ion_cannon, post_hit_creature=_post_hit_ion_common),
-    int(ProjectileTypeId.SHRINKIFIER): ProjectileBehavior(linger=_linger_default, post_hit_creature=_post_hit_shrinkifier),
+    int(ProjectileTypeId.ION_RIFLE): ProjectileBehavior(
+        linger=_linger_ion_rifle, post_hit_creature=_post_hit_ion_rifle
+    ),
+    int(ProjectileTypeId.ION_MINIGUN): ProjectileBehavior(
+        linger=_linger_ion_minigun, post_hit_creature=_post_hit_ion_common
+    ),
+    int(ProjectileTypeId.ION_CANNON): ProjectileBehavior(
+        linger=_linger_ion_cannon, post_hit_creature=_post_hit_ion_common
+    ),
+    int(ProjectileTypeId.SHRINKIFIER): ProjectileBehavior(
+        linger=_linger_default, post_hit_creature=_post_hit_shrinkifier
+    ),
     int(ProjectileTypeId.BLADE_GUN): _DEFAULT_BEHAVIOR,
     int(ProjectileTypeId.SPIDER_PLASMA): _DEFAULT_BEHAVIOR,
-    int(ProjectileTypeId.PLASMA_CANNON): ProjectileBehavior(linger=_linger_default, post_hit_creature=_post_hit_plasma_cannon),
+    int(ProjectileTypeId.PLASMA_CANNON): ProjectileBehavior(
+        linger=_linger_default, post_hit_creature=_post_hit_plasma_cannon
+    ),
     int(ProjectileTypeId.SPLITTER_GUN): ProjectileBehavior(linger=_linger_default, pre_hit_creature=_pre_hit_splitter),
-    int(ProjectileTypeId.PLAGUE_SPREADER): ProjectileBehavior(linger=_linger_default, post_hit_creature=_post_hit_plague_spreader),
+    int(ProjectileTypeId.PLAGUE_SPREADER): ProjectileBehavior(
+        linger=_linger_default, post_hit_creature=_post_hit_plague_spreader
+    ),
     int(ProjectileTypeId.RAINBOW_GUN): _DEFAULT_BEHAVIOR,
     int(ProjectileTypeId.FIRE_BULLETS): _DEFAULT_BEHAVIOR,
 }

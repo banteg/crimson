@@ -16,6 +16,7 @@ from grim.terrain_render import GroundRenderer
 from ..paths import default_runtime_dir
 from ..quests import all_quests
 from ..quests.types import QuestDefinition
+from ..terrain_assets import TerrainTextureId
 from ._ui_helpers import draw_ui_text
 from .quest_title_overlay import draw_quest_title_overlay
 from .registry import register_view
@@ -36,14 +37,14 @@ class GroundAssets:
 
 
 TERRAIN_TEXTURES: list[tuple[int, str]] = [
-    (0, "ter/ter_q1_base.png"),
-    (1, "ter/ter_q1_tex1.png"),
-    (2, "ter/ter_q2_base.png"),
-    (3, "ter/ter_q2_tex1.png"),
-    (4, "ter/ter_q3_base.png"),
-    (5, "ter/ter_q3_tex1.png"),
-    (6, "ter/ter_q4_base.png"),
-    (7, "ter/ter_q4_tex1.png"),
+    (TerrainTextureId.Q1_BASE, "ter/ter_q1_base.png"),
+    (TerrainTextureId.Q1_OVERLAY, "ter/ter_q1_tex1.png"),
+    (TerrainTextureId.Q2_BASE, "ter/ter_q2_base.png"),
+    (TerrainTextureId.Q2_OVERLAY, "ter/ter_q2_tex1.png"),
+    (TerrainTextureId.Q3_BASE, "ter/ter_q3_base.png"),
+    (TerrainTextureId.Q3_OVERLAY, "ter/ter_q3_tex1.png"),
+    (TerrainTextureId.Q4_BASE, "ter/ter_q4_base.png"),
+    (TerrainTextureId.Q4_OVERLAY, "ter/ter_q4_tex1.png"),
 ]
 
 
@@ -187,7 +188,11 @@ class GroundView:
         if not self._quests or self._assets is None:
             return
         quest = self._quests[self._quest_index]
-        base_id, overlay_id, detail_id = quest.terrain_ids or (0, 1, 0)
+        base_id, overlay_id, detail_id = quest.terrain_ids or (
+            TerrainTextureId.Q1_BASE,
+            TerrainTextureId.Q1_OVERLAY,
+            TerrainTextureId.Q1_BASE,
+        )
         textures = self._assets.textures
         base = textures.get(base_id)
         if base is None:

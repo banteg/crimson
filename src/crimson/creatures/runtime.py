@@ -40,7 +40,9 @@ from ..projectiles import ProjectileTypeId
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import weapon_entry_for_projectile_type_id
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
+from .damage_types import CreatureDamageType
 from .spawn import (
+    CreatureAiMode,
     CreatureFlags,
     CreatureInit,
     CreatureTypeId,
@@ -229,7 +231,7 @@ class CreatureState:
     force_target: int = 0
     target: Vec2 = field(default_factory=Vec2)
     target_player: int = 0
-    ai_mode: int = 0
+    ai_mode: int = CreatureAiMode.ORBIT_PLAYER
     flags: CreatureFlags = CreatureFlags(0)
 
     # Native `creature_alloc_slot` does not clear `link_index`; many spawn paths
@@ -310,7 +312,11 @@ _CreatureInteractionStep = Callable[[_CreatureInteractionCtx], None]
 
 
 def _creature_interaction_plaguebearer_spread(ctx: _CreatureInteractionCtx) -> None:
-    if ctx.players and perk_active(ctx.players[0], PerkId.PLAGUEBEARER) and int(ctx.state.plaguebearer_infection_count) < 0x3C:
+    if (
+        ctx.players
+        and perk_active(ctx.players[0], PerkId.PLAGUEBEARER)
+        and int(ctx.state.plaguebearer_infection_count) < 0x3C
+    ):
         ctx.pool._plaguebearer_spread_infection(ctx.creature_index)
 
 
@@ -404,7 +410,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
         mr_melee_killed = creature_apply_damage(
             creature,
             damage_amount=25.0,
-            damage_type=2,
+            damage_type=CreatureDamageType.MELEE,
             impulse=Vec2(),
             owner_id=-1 - int(ctx.player.index),
             dt=ctx.dt,
@@ -418,7 +424,9 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
         elif perk_active(ctx.player, PerkId.VEINS_OF_POISON):
             creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
-    player_take_damage(ctx.state, ctx.player, float(creature.contact_damage), dt=ctx.dt, rand=ctx.rand, players=ctx.players)
+    player_take_damage(
+        ctx.state, ctx.player, float(creature.contact_damage), dt=ctx.dt, rand=ctx.rand, players=ctx.players
+    )
 
     if ctx.fx_queue is not None:
         push_dir = (ctx.player.pos - creature.pos).normalized()
@@ -459,7 +467,11 @@ def _creature_interaction_plaguebearer_contact_flag(ctx: _CreatureInteractionCtx
         return
 
     creature = ctx.creature
-    if bool(ctx.player.plaguebearer_active) and float(creature.hp) < 150.0 and int(ctx.state.plaguebearer_infection_count) < 0x32:
+    if (
+        bool(ctx.player.plaguebearer_active)
+        and float(creature.hp) < 150.0
+        and int(ctx.state.plaguebearer_infection_count) < 0x32
+    ):
         if ctx.contact_dist_sq < 30.0 * 30.0:
             creature.plague_infected = True
 
@@ -814,7 +826,7 @@ class CreaturePool:
             return creature_apply_damage(
                 creature,
                 damage_amount=float(damage_amount),
-                damage_type=0,
+                damage_type=CreatureDamageType.SELF_TICK,
                 impulse=Vec2(),
                 owner_id=int(creature.last_hit_owner_id),
                 dt=dt,
@@ -830,11 +842,7 @@ class CreaturePool:
                 _apply_self_damage_tick(creature)
                 # Native still ticks AI7 link-timer state (and its RNG draws) for
                 # dead creatures inside `creature_update_all`.
-                if (
-                    dt > 0.0
-                    and float(state.bonuses.freeze) <= 0.0
-                    and (creature.flags & CreatureFlags.AI7_LINK_TIMER)
-                ):
+                if dt > 0.0 and float(state.bonuses.freeze) <= 0.0 and (creature.flags & CreatureFlags.AI7_LINK_TIMER):
                     creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
                 if creature.hitbox_size == CREATURE_HITBOX_ALIVE:
                     creature.hitbox_size = f32(float(creature.hitbox_size) - float(dt))
@@ -988,7 +996,7 @@ class CreaturePool:
 
             turn_rate = f32(float(creature.move_speed) * CREATURE_TURN_RATE_SCALE)
             if (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0:
-                if creature.ai_mode != 7:
+                if creature.ai_mode != CreatureAiMode.HOLD_TIMER:
                     creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
                     move_delta = _movement_delta_from_heading_f32(
                         creature.heading,
@@ -1053,7 +1061,9 @@ class CreaturePool:
             if interaction_ctx.skip_creature:
                 continue
 
-            if (not frozen_by_evil_eyes) and (creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)):
+            if (not frozen_by_evil_eyes) and (
+                creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)
+            ):
                 # Ported from creature_update_all (see `analysis/ghidra/raw/crimsonland.exe_decompiled.c`
                 # around the 0x004276xx ranged-fire branch).
                 dist = (creature.pos - player.pos).length()
@@ -1232,7 +1242,9 @@ class CreaturePool:
         entry.attack_cooldown = 0.0
 
         entry.bonus_id = int(init.bonus_id) if init.bonus_id is not None else None
-        entry.bonus_duration_override = int(init.bonus_duration_override) if init.bonus_duration_override is not None else None
+        entry.bonus_duration_override = (
+            int(init.bonus_duration_override) if init.bonus_duration_override is not None else None
+        )
 
         entry.tint = RGBA.from_rgba(resolve_tint(init.tint))
 
@@ -1274,7 +1286,9 @@ class CreaturePool:
             creature.hitbox_size = f32(hitbox - f32(float(dt) * CREATURE_CORPSE_FADE_DECAY))
             return
 
-        long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (creature.flags & CreatureFlags.ANIM_LONG_STRIP) != 0
+        long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (
+            creature.flags & CreatureFlags.ANIM_LONG_STRIP
+        ) != 0
 
         new_hitbox = f32(hitbox - f32(float(dt) * CREATURE_DEATH_TIMER_DECAY))
         creature.hitbox_size = f32(new_hitbox)
@@ -1387,7 +1401,9 @@ class CreaturePool:
                 spawned_bonus = state.bonus_pool.spawn_at(
                     pos=creature.pos,
                     bonus_id=int(creature.bonus_id),
-                    duration_override=int(creature.bonus_duration_override) if creature.bonus_duration_override is not None else -1,
+                    duration_override=int(creature.bonus_duration_override)
+                    if creature.bonus_duration_override is not None
+                    else -1,
                     state=state,
                     world_width=world_width,
                     world_height=world_height,

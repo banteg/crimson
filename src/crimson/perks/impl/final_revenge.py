@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
 
+from ...creatures.damage_types import CreatureDamageType
 from ...effects import FxQueue
 from ...sim.state_types import GameplayState, PlayerState
 from ..helpers import perk_active
@@ -63,7 +64,7 @@ def apply_final_revenge_on_player_death(
         killed = creature_apply_damage(
             creature,
             damage_amount=damage,
-            damage_type=3,
+            damage_type=CreatureDamageType.EXPLOSION,
             impulse=Vec2(),
             owner_id=-1 - int(player.index),
             dt=float(dt),

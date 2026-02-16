@@ -6,6 +6,7 @@ from grim.geom import Vec2
 
 from ..perks import PerkId
 from ..creatures.spawn import SpawnId
+from ..weapons import WeaponId
 from .helpers import (
     center_point,
     edge_midpoints,
@@ -24,7 +25,7 @@ from .types import QuestContext, SpawnEntry
     level="2.1",
     title="Everred Pastures",
     time_limit_ms=300000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.BONUS_ECONOMIST,
     builder_address=0x004375A0,
 )
@@ -96,8 +97,8 @@ def build_2_1_everred_pastures(ctx: QuestContext) -> list[SpawnEntry]:
     level="2.2",
     title="Spider Spawns",
     time_limit_ms=300000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x09,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.PLASMA_RIFLE,
     builder_address=0x00436D70,
 )
 def build_2_2_spider_spawns(ctx: QuestContext) -> list[SpawnEntry]:
@@ -186,7 +187,7 @@ def build_2_2_spider_spawns(ctx: QuestContext) -> list[SpawnEntry]:
     level="2.3",
     title="Arachnoid Farm",
     time_limit_ms=240000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.THICK_SKINNED,
     builder_address=0x00436820,
 )
@@ -237,8 +238,8 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
     level="2.4",
     title="Two Fronts",
     time_limit_ms=240000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x15,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.ION_RIFLE,
     builder_address=0x00436EE0,
 )
 def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
@@ -312,7 +313,7 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
     level="2.5",
     title="Sweep Stakes",
     time_limit_ms=35000,
-    start_weapon_id=6,
+    start_weapon_id=WeaponId.GAUSS_GUN,
     unlock_perk_id=PerkId.BARREL_GREASER,
     builder_address=0x00437810,
 )
@@ -344,8 +345,8 @@ def build_2_5_sweep_stakes(ctx: QuestContext, rng: random.Random | None = None) 
     level="2.6",
     title="Evil Zombies At Large",
     time_limit_ms=180000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x07,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.MEAN_MINIGUN,
     builder_address=0x004374A0,
 )
 def build_2_6_evil_zombies_at_large(ctx: QuestContext) -> list[SpawnEntry]:
@@ -399,7 +400,7 @@ def build_2_6_evil_zombies_at_large(ctx: QuestContext) -> list[SpawnEntry]:
     level="2.7",
     title="Survival Of The Fastest",
     time_limit_ms=120000,
-    start_weapon_id=5,
+    start_weapon_id=WeaponId.SUBMACHINE_GUN,
     unlock_perk_id=PerkId.AMMUNITION_WITHIN,
     builder_address=0x00437060,
 )
@@ -464,8 +465,8 @@ def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
     level="2.8",
     title="Land Of Lizards",
     time_limit_ms=180000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x04,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.SAWED_OFF_SHOTGUN,
     builder_address=0x00437BA0,
 )
 def build_2_8_land_of_lizards(ctx: QuestContext) -> list[SpawnEntry]:
@@ -505,7 +506,7 @@ def build_2_8_land_of_lizards(ctx: QuestContext) -> list[SpawnEntry]:
     level="2.9",
     title="Ghost Patrols",
     time_limit_ms=180000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.VEINS_OF_POISON,
     builder_address=0x00436200,
 )
@@ -555,8 +556,8 @@ def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
     level="2.10",
     title="Spideroids",
     time_limit_ms=360000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x0B,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.PLASMA_MINIGUN,
     builder_address=0x004373C0,
 )
 def build_2_10_spideroids(ctx: QuestContext, full_version: bool = True) -> list[SpawnEntry]:

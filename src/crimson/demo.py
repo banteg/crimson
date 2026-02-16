@@ -19,6 +19,7 @@ from grim.math import clamp
 
 from grim.rand import Crand
 from .creatures.spawn import RANDOM_HEADING_SENTINEL
+from .game_modes import GameMode
 from .game_world import GameWorld
 from .sim.input import PlayerInput
 from .sim.state_types import PlayerState
@@ -685,7 +686,13 @@ class DemoView:
         if not self._world.players:
             return
         inputs = self._build_demo_inputs(dt)
-        self._world.update(dt, inputs=inputs, auto_pick_perks=False, game_mode=0, perk_progression_enabled=False)
+        self._world.update(
+            dt,
+            inputs=inputs,
+            auto_pick_perks=False,
+            game_mode=int(GameMode.DEMO),
+            perk_progression_enabled=False,
+        )
 
     def _build_demo_inputs(self, dt: float) -> list[PlayerInput]:
         players = self._world.players

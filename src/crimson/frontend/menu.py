@@ -11,7 +11,7 @@ from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.geom import Rect, Vec2
 from grim.terrain_render import GroundRenderer
 
-from ..terrain_assets import terrain_texture_by_id
+from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.shadow import UI_SHADOW_OFFSET, UI_SHADOW_TINT, draw_ui_quad_shadow  # noqa: F401
 from .assets import MenuAssets, _ensure_texture_cache, load_menu_assets
@@ -63,11 +63,11 @@ MENU_SIGN_POS_X_PAD = 4.0
 # Measured in the shareware/demo attract loop trace:
 # {"event":"demo_mode_start","dt_since_start_ms":23024,"game_state_id":0,"demo_mode_active":0,...}
 MENU_DEMO_IDLE_START_MS = 23_000
-MENU_DEFAULT_TERRAIN_IDS = (0, 1, 0)
+MENU_DEFAULT_TERRAIN_IDS = (TerrainTextureId.Q1_BASE, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q1_BASE)
 MENU_UNLOCK_TERRAIN_RULES: tuple[tuple[int, tuple[int, int, int]], ...] = (
-    (0x28, (6, 7, 6)),
-    (0x1E, (4, 5, 4)),
-    (0x14, (2, 3, 2)),
+    (0x28, (TerrainTextureId.Q4_BASE, TerrainTextureId.Q4_OVERLAY, TerrainTextureId.Q4_BASE)),
+    (0x1E, (TerrainTextureId.Q3_BASE, TerrainTextureId.Q3_OVERLAY, TerrainTextureId.Q3_BASE)),
+    (0x14, (TerrainTextureId.Q2_BASE, TerrainTextureId.Q2_OVERLAY, TerrainTextureId.Q2_BASE)),
 )
 
 

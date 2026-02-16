@@ -13,6 +13,7 @@ from grim.geom import Vec2
 from grim.view import View, ViewContext
 
 from ..creatures.spawn import CreatureFlags
+from ..game_modes import GameMode
 from ..game_world import GameWorld
 from ..gameplay import player_update
 from ..sim.input import PlayerInput
@@ -260,7 +261,7 @@ class ProjectileRenderDebugView:
             self._world._queue_projectile_decals(hits, rand=self._world.state.rng.rand)
             self._world.audio_router.play_hit_sfx(
                 hits,
-                game_mode=1,
+                game_mode=int(GameMode.SURVIVAL),
                 rand=self._world.state.rng.rand,
                 beam_types=BEAM_TYPES,
             )

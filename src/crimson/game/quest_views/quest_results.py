@@ -9,6 +9,7 @@ from grim.terrain_render import GroundRenderer
 
 from ...frontend.menu import ensure_menu_ground, menu_ground_camera
 from ...frontend.transitions import _draw_screen_fade
+from ...game_modes import GameMode
 from ...quests.types import parse_level
 from ..types import GameState, HighScoresRequest
 from .shared import _next_quest_level, _player_name_default
@@ -102,7 +103,7 @@ class QuestResultsView:
                     self._unlock_perk_name = f"perk_{perk_id}"
 
         record = HighScoreRecord.blank()
-        record.game_mode_id = 3
+        record.game_mode_id = int(GameMode.QUESTS)
         record.quest_stage_major = major
         record.quest_stage_minor = minor
         record.score_xp = int(outcome.experience)
@@ -254,7 +255,7 @@ class QuestResultsView:
         if self._ui is not None:
             highlight_rank = self._ui.highlight_rank
         self.state.pending_high_scores = HighScoresRequest(
-            game_mode_id=3,
+            game_mode_id=int(GameMode.QUESTS),
             quest_stage_major=int(self._quest_stage_major),
             quest_stage_minor=int(self._quest_stage_minor),
             highlight_rank=highlight_rank,
@@ -263,7 +264,7 @@ class QuestResultsView:
 
     def _set_pending_quest_level(self, level: str) -> None:
         self.state.pending_quest_level = str(level or "")
-        self.state.config.game_mode = 3
+        self.state.config.game_mode = int(GameMode.QUESTS)
         self.state.config.quest_level = str(level or "")
         try:
             major, minor = parse_level(str(level or ""))

@@ -4,6 +4,7 @@ import math
 
 from ..perks import PerkId
 from ..creatures.spawn import SpawnId
+from ..weapons import WeaponId
 from .helpers import (
     center_point,
     ring_points,
@@ -18,8 +19,8 @@ from grim.geom import Vec2
     level="5.1",
     title="The Beating",
     time_limit_ms=480000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x1F,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.ION_SHOTGUN,
     builder_address=0x00435610,
 )
 def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
@@ -111,7 +112,7 @@ def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
     level="5.2",
     title="The Spanking Of The Dead",
     time_limit_ms=480000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.DEATH_CLOCK,
     builder_address=0x004358A0,
 )
@@ -165,7 +166,7 @@ def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
     level="5.3",
     title="The Fortress",
     time_limit_ms=480000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.MY_FAVOURITE_WEAPON,
     builder_address=0x004352D0,
 )
@@ -224,8 +225,8 @@ def build_5_3_the_fortress(ctx: QuestContext) -> list[SpawnEntry]:
     level="5.4",
     title="The Gang Wars",
     time_limit_ms=480000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x1E,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.GAUSS_SHOTGUN,
     builder_address=0x00435120,
 )
 def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
@@ -298,7 +299,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
     level="5.5",
     title="Knee-deep in the Dead",
     time_limit_ms=480000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.BANDAGE,
     builder_address=0x00434F00,
 )
@@ -386,7 +387,7 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
     level="5.6",
     title="Cross Fire",
     time_limit_ms=480000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.ANGRY_RELOADER,
     builder_address=0x00435480,
 )
@@ -448,7 +449,7 @@ def build_5_6_cross_fire(ctx: QuestContext) -> list[SpawnEntry]:
     level="5.7",
     title="Army of Three",
     time_limit_ms=480000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     builder_address=0x00434CA0,
 )
 def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
@@ -531,7 +532,7 @@ def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
     level="5.8",
     title="Monster Blues",
     time_limit_ms=480000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.ION_GUN_MASTER,
     builder_address=0x00434860,
 )
@@ -593,7 +594,7 @@ def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
     level="5.9",
     title="Nagolipoli",
     time_limit_ms=480000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.STATIONARY_RELOADER,
     builder_address=0x00434480,
 )
@@ -602,18 +603,10 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
 
     center = center_point(ctx.width, ctx.height)
     for pos, angle in ring_points(center, 128.0, 8, step=0.7853982):
-        entries.append(
-            spawn(
-                pos, heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=2000, count=1
-            )
-        )
+        entries.append(spawn(pos, heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=2000, count=1))
 
     for pos, angle in ring_points(center, 178.0, 12, step=0.5235988):
-        entries.append(
-            spawn(
-                pos, heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=8000, count=1
-            )
-        )
+        entries.append(spawn(pos, heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=8000, count=1))
 
     trigger = 13000
     wave = 0
@@ -729,8 +722,8 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
     level="5.10",
     title="The Gathering",
     time_limit_ms=480000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x1C,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.PLASMA_CANNON,
     builder_address=0x004349C0,
 )
 def build_5_10_the_gathering(ctx: QuestContext) -> list[SpawnEntry]:

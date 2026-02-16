@@ -5,7 +5,14 @@ from dataclasses import dataclass
 import pyray as rl
 
 from ..creatures.anim import creature_anim_advance_phase, creature_anim_select_frame
-from ..creatures.spawn import CreatureFlags, CreatureTypeId, SPAWN_TEMPLATES, SpawnTemplate, resolve_tint
+from ..creatures.spawn import (
+    CreatureAiMode,
+    CreatureFlags,
+    CreatureTypeId,
+    SPAWN_TEMPLATES,
+    SpawnTemplate,
+    resolve_tint,
+)
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 from grim.fonts.small import SmallFontData, load_small_font
@@ -100,7 +107,7 @@ class CreatureAnimationView:
             size=self._size,
             local_scale=self._local_scale,
             flags=flags,
-            ai_mode=0,
+            ai_mode=CreatureAiMode.ORBIT_PLAYER,
         )
 
     def _current_template(self) -> SpawnTemplate | None:

@@ -9,6 +9,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim.geom import Rect, Vec2
 
 from ...debug import debug_enabled
+from ...game_modes import GameMode
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 
 from ..menu import (
@@ -281,7 +282,7 @@ class PlayGameMenuView(PanelMenuView):
                     label="Tutorial",
                     tooltip="Learn how to play Crimsonland.",
                     action="start_tutorial",
-                    game_mode=8,
+                    game_mode=int(GameMode.TUTORIAL),
                 )
             )
 
@@ -299,7 +300,7 @@ class PlayGameMenuView(PanelMenuView):
                     label="  Rush  ",
                     tooltip="Face a rush of aliens in Rush mode.",
                     action="start_rush",
-                    game_mode=2,
+                    game_mode=int(GameMode.RUSH),
                     show_count=True,
                 ),
                 _PlayGameModeEntry(
@@ -307,7 +308,7 @@ class PlayGameMenuView(PanelMenuView):
                     label="Survival",
                     tooltip="Gain perks and weapons and fight back.",
                     action="start_survival",
-                    game_mode=1,
+                    game_mode=int(GameMode.SURVIVAL),
                     show_count=True,
                 ),
             ]
@@ -320,7 +321,7 @@ class PlayGameMenuView(PanelMenuView):
                     label="Typ'o'Shooter",
                     tooltip="Use your typing skills as the weapon to lay\nthem down.",
                     action="start_typo",
-                    game_mode=4,
+                    game_mode=int(GameMode.TYPO),
                     show_count=True,
                 )
             )
@@ -332,7 +333,7 @@ class PlayGameMenuView(PanelMenuView):
                     label="Tutorial",
                     tooltip="Learn how to play Crimsonland.",
                     action="start_tutorial",
-                    game_mode=8,
+                    game_mode=int(GameMode.TUTORIAL),
                 )
             )
 

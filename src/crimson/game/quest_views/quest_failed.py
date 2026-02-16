@@ -9,6 +9,7 @@ from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
+from ...game_modes import GameMode
 from ...frontend.assets import _ensure_texture_cache
 from ...frontend.menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
 from ...frontend.transitions import _draw_screen_fade
@@ -41,6 +42,7 @@ from .shared import (
 if TYPE_CHECKING:
     from ...modes.quest_mode import QuestRunOutcome
     from ...persistence.highscores import HighScoreRecord
+
 
 class QuestFailedView:
     def __init__(self, state: GameState) -> None:
@@ -346,7 +348,7 @@ class QuestFailedView:
 
         record = HighScoreRecord.blank()
         record.set_name(_player_name_default(self.state.config) or "Player")
-        record.game_mode_id = 3
+        record.game_mode_id = int(GameMode.QUESTS)
         record.quest_stage_major = major
         record.quest_stage_minor = minor
         record.survival_elapsed_ms = max(1, int(outcome.base_time_ms))
@@ -367,7 +369,7 @@ class QuestFailedView:
         self.state.quest_fail_retry_count = int(self.state.quest_fail_retry_count) + 1
         level = str(outcome.level or "")
         self.state.pending_quest_level = level
-        self.state.config.game_mode = 3
+        self.state.config.game_mode = int(GameMode.QUESTS)
         self.state.config.quest_level = level
         try:
             major, minor = parse_level(level)

@@ -6,6 +6,7 @@ from collections.abc import Sequence
 from grim.color import RGBA
 from grim.geom import Vec2
 
+from ..effects import ParticleStyleId
 from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..projectiles import Damageable, ProjectileTypeId, SecondaryProjectileTypeId
@@ -250,12 +251,12 @@ def player_fire_weapon(
     elif weapon_id == WeaponId.BLOW_TORCH:
         # Blow Torch -> fast particle weapon (style 1), fractional ammo drain.
         particle_id = state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner_id)
-        state.particles.entries[particle_id].style_id = 1
+        state.particles.entries[particle_id].style_id = ParticleStyleId.BLOW_TORCH
         ammo_cost = 0.05
     elif weapon_id == WeaponId.HR_FLAMER:
         # HR Flamer -> fast particle weapon (style 2), fractional ammo drain.
         particle_id = state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner_id)
-        state.particles.entries[particle_id].style_id = 2
+        state.particles.entries[particle_id].style_id = ParticleStyleId.HR_FLAMER
         ammo_cost = 0.1
     elif weapon_id == WeaponId.BUBBLEGUN:
         # Bubblegun -> slow particle weapon (style 8), fractional ammo drain.

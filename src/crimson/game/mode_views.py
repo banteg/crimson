@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Protocol, cast
 from grim.audio import stop_music
 from grim.view import ViewContext
 
+from ..game_modes import GameMode
 from .types import GameState, HighScoresRequest
 
 if TYPE_CHECKING:
@@ -221,7 +222,7 @@ class SurvivalGameView(_ArcadeModeGameView):
             audio=state.audio,
             audio_rng=state.rng,
         )
-        super().__init__(state, cast(_ModeRuntime, mode), game_mode_id=1)
+        super().__init__(state, cast(_ModeRuntime, mode), game_mode_id=int(GameMode.SURVIVAL))
 
     def adopt_menu_ground(self, ground: GroundRenderer | None) -> None:
         cast(_ModeSupportsAdoptGround, self._mode).adopt_ground_from_menu(ground)
@@ -241,7 +242,7 @@ class RushGameView(_ArcadeModeGameView):
             audio=state.audio,
             audio_rng=state.rng,
         )
-        super().__init__(state, cast(_ModeRuntime, mode), game_mode_id=2)
+        super().__init__(state, cast(_ModeRuntime, mode), game_mode_id=int(GameMode.RUSH))
 
     def adopt_menu_ground(self, ground: GroundRenderer | None) -> None:
         cast(_ModeSupportsAdoptGround, self._mode).adopt_ground_from_menu(ground)
@@ -261,7 +262,7 @@ class TypoShooterGameView(_ArcadeModeGameView):
             audio=state.audio,
             audio_rng=state.rng,
         )
-        super().__init__(state, cast(_ModeRuntime, mode), game_mode_id=4)
+        super().__init__(state, cast(_ModeRuntime, mode), game_mode_id=int(GameMode.TYPO))
 
 
 class TutorialGameView(_BaseModeGameView):
