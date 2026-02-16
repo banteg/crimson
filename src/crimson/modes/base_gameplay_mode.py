@@ -206,6 +206,8 @@ class BaseGameplayMode:
 
     def _sync_lan_visual_flags(self) -> None:
         self.world.lan_player_rings_enabled = self._lan_player_rings_enabled()
+        self.world.lan_local_aim_indicators_only = bool(self._lan_enabled)
+        self.world.lan_local_player_slot_index = max(0, min(3, int(self._lan_local_slot_index)))
 
     def _config_game_mode_id(self) -> int:
         return self.config.game_mode

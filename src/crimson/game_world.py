@@ -86,6 +86,8 @@ class GameWorld:
     last_presentation: PresentationStepCommands = field(init=False)
     last_command_hash: str = field(init=False, default="")
     lan_player_rings_enabled: bool = field(init=False, default=False)
+    lan_local_aim_indicators_only: bool = field(init=False, default=False)
+    lan_local_player_slot_index: int = field(init=False, default=0)
 
     def __post_init__(self) -> None:
         self.world_state = WorldState.build(
@@ -580,6 +582,9 @@ class GameWorld:
             wicons_texture=self.wicons_texture,
             elapsed_ms=float(self._elapsed_ms),
             bonus_anim_phase=float(self._bonus_anim_phase),
+            lan_player_rings_enabled=bool(self.lan_player_rings_enabled),
+            lan_local_aim_indicators_only=bool(self.lan_local_aim_indicators_only),
+            lan_local_player_slot_index=int(self.lan_local_player_slot_index),
         )
 
     def update_camera(self, _dt: float) -> None:

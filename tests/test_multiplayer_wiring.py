@@ -221,6 +221,7 @@ def test_lan_player_rings_follow_lan_state_and_cvar(tmp_path: Path) -> None:
     register_core_cvars(console, width=1024, height=768)
     ctx = ViewContext(assets_dir=assets_dir)
     mode = RushMode(ctx, config=cfg, console=console)
+    mode.bind_lan_runtime(SimpleNamespace(local_slot_index=2))
 
     mode.set_lan_runtime(
         enabled=True,
@@ -230,6 +231,8 @@ def test_lan_player_rings_follow_lan_state_and_cvar(tmp_path: Path) -> None:
         waiting_for_players=True,
     )
     assert mode.world.lan_player_rings_enabled is False
+    assert mode.world.lan_local_aim_indicators_only is True
+    assert mode.world.lan_local_player_slot_index == 2
 
     console.exec_line("cv_lanPlayerRings 1")
     mode.set_lan_runtime(
@@ -249,3 +252,4 @@ def test_lan_player_rings_follow_lan_state_and_cvar(tmp_path: Path) -> None:
         waiting_for_players=False,
     )
     assert mode.world.lan_player_rings_enabled is False
+    assert mode.world.lan_local_aim_indicators_only is False
