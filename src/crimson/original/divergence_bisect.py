@@ -30,7 +30,7 @@ def _int_or(value: object, default: int = -1) -> int:
         if value is None:
             return int(default)
         return int(value)  # ty:ignore[invalid-argument-type]
-    except Exception:
+    except (TypeError, ValueError):
         return int(default)
 
 

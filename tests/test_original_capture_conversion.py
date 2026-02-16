@@ -70,8 +70,8 @@ def _base_checkpoint(
         "perk_pending": int(perk_pending),
         "players": [_base_player()],
         "status": {
-            "quest_unlock_index": -1,
-            "quest_unlock_index_full": -1,
+            "quest_unlock_index": 0,
+            "quest_unlock_index_full": 0,
             "weapon_usage_counts": [],
         },
         "bonus_timers": {},
@@ -114,8 +114,8 @@ def _base_checkpoint(
             "creature_lifecycle": None,
             "before_players": [],
             "before_status": {
-                "quest_unlock_index": -1,
-                "quest_unlock_index_full": -1,
+                "quest_unlock_index": 0,
+                "quest_unlock_index_full": 0,
             },
         },
     }
@@ -466,6 +466,47 @@ def test_convert_capture_to_replay_infers_quest_level_from_tick_stage(tmp_path: 
     assert str(replay.header.quest_level) == "2.4"
 
 
+def test_convert_capture_to_replay_raises_when_game_mode_unavailable(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    tick["mode_hint"] = ""
+    tick["game_mode_id"] = -1
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    with pytest.raises(ValueError, match="cannot infer replay game_mode_id"):
+        convert_capture_to_replay(capture, seed=0)
+
+
+def test_convert_capture_to_replay_raises_when_status_unlock_missing(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    checkpoint = tick.get("checkpoint")
+    assert isinstance(checkpoint, dict)
+    status = checkpoint.get("status")
+    assert isinstance(status, dict)
+    status["quest_unlock_index"] = -1
+    status["quest_unlock_index_full"] = -1
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    with pytest.raises(ValueError, match="cannot infer replay status unlock indices"):
+        convert_capture_to_replay(capture, seed=0)
+
+
+def test_convert_capture_to_replay_rejects_non_positive_player_count_override(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    with pytest.raises(ValueError, match="player_count must be > 0"):
+        convert_capture_to_replay(capture, seed=0, player_count=0)
+
+
 def test_load_capture_stream_accepts_forward_compatible_config_fields(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick])
@@ -682,7 +723,7 @@ def test_convert_capture_to_replay_heading_fallback_uses_checkpoint_pos(tmp_path
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     aim = replay.inputs[0][0][2]
     expected = Vec2(512.0, 512.0) + Vec2.from_heading(0.0) * 256.0
@@ -707,7 +748,7 @@ def test_convert_capture_to_replay_does_not_fallback_to_primary_query_stats(tmp_
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     flags = int(replay.inputs[0][0][3])
     fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
@@ -727,7 +768,7 @@ def test_convert_capture_to_replay_infers_pending_drop_events(tmp_path: Path) ->
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     kinds = [
         type(event).__name__ if not isinstance(event, UnknownEvent) else str(event.kind)
@@ -753,7 +794,7 @@ def test_convert_capture_to_replay_infers_pending_drop_events_from_perk_delta(tm
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     pending_events = [
         event
@@ -786,7 +827,7 @@ def test_convert_capture_to_replay_bootstrap_payload_includes_perk_snapshot(tmp_
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     bootstrap = next(
         event
@@ -820,7 +861,7 @@ def test_convert_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> No
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     perk_events = [
         event
@@ -990,7 +1031,7 @@ def test_build_capture_inter_tick_rand_draws_overrides_returns_none_when_missing
     assert overrides is None
 
 
-def test_convert_capture_to_replay_infers_seed_from_rng_head(tmp_path: Path) -> None:
+def test_convert_capture_to_replay_raises_when_rng_state_before_missing(tmp_path: Path) -> None:
     seed = 0x1234
     outputs = _crt_rand_outputs(seed, 8)
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
@@ -1014,9 +1055,8 @@ def test_convert_capture_to_replay_infers_seed_from_rng_head(tmp_path: Path) -> 
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
-
-    assert replay.header.seed == int(seed) & 0x7FFFFFFF
+    with pytest.raises(ValueError, match="cannot infer replay seed"):
+        convert_capture_to_replay(capture)
 
 
 def test_convert_capture_to_replay_prefers_rng_state_before_seed(tmp_path: Path) -> None:
@@ -1115,7 +1155,7 @@ def test_convert_capture_to_replay_prefers_input_player_keys_for_digital_move(tm
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     move_x, move_y, _aim, flags = replay.inputs[0][0]
     assert move_x == -1.0
@@ -1164,7 +1204,7 @@ def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capabil
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     move_x, move_y, _aim, flags = replay.inputs[0][0]
     assert move_x == pytest.approx(0.25, abs=1e-6)
@@ -1229,7 +1269,7 @@ def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_preceden
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     move_x0, move_y0, _aim0, flags0 = replay.inputs[0][0]
     move_x1, move_y1, _aim1, flags1 = replay.inputs[1][0]
@@ -1285,7 +1325,7 @@ def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_preceden
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     move_x0, move_y0, _aim0, flags0 = replay.inputs[0][0]
     move_x1, move_y1, _aim1, flags1 = replay.inputs[1][0]
@@ -1341,7 +1381,7 @@ def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     move_x0, move_y0, _aim0, _flags0 = replay.inputs[0][0]
     move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
@@ -1367,7 +1407,7 @@ def test_convert_capture_to_replay_uses_player_key_fire_reload_edges(tmp_path: P
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     flags = int(replay.inputs[0][0][3])
     fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
@@ -1403,7 +1443,7 @@ def test_convert_capture_to_replay_synthesizes_computer_aim_fire_down_from_proje
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     flags = int(replay.inputs[0][0][3])
     fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
@@ -1443,7 +1483,7 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_non_wea
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     flags = int(replay.inputs[0][0][3])
     fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
@@ -1479,7 +1519,7 @@ def test_convert_capture_to_replay_does_not_synthesize_non_computer_fire_down(tm
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     flags = int(replay.inputs[0][0][3])
     fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
@@ -1505,7 +1545,7 @@ def test_convert_capture_to_replay_synthesizes_computer_fire_when_mode_missing_b
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     flags0 = int(replay.inputs[0][0][3])
     flags1 = int(replay.inputs[1][0][3])
@@ -1537,7 +1577,7 @@ def test_convert_capture_to_replay_synthesizes_computer_fire_when_reload_complet
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     flags1 = int(replay.inputs[1][0][3])
     fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
@@ -1567,7 +1607,7 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_fire_bullet
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     flags1 = int(replay.inputs[1][0][3])
     fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
@@ -1595,7 +1635,7 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_secondary_p
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     flags1 = int(replay.inputs[1][0][3])
     fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
@@ -1627,7 +1667,7 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_bonus_p
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     flags = int(replay.inputs[0][0][3])
     fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
@@ -1662,7 +1702,7 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_nuke_fi
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     flags = int(replay.inputs[0][0][3])
     fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
@@ -1698,7 +1738,7 @@ def test_convert_capture_to_replay_does_not_synthesize_secondary_spawn_without_o
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     flags10 = int(replay.inputs[1][0][3])
     flags11 = int(replay.inputs[1][1][3])
@@ -1721,8 +1761,8 @@ def test_convert_capture_to_replay_does_not_synthesize_fire_from_fired_events_on
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay_default = convert_capture_to_replay(capture)
-    replay_override = convert_capture_to_replay(capture, aim_scheme_overrides_by_player={0: 5})
+    replay_default = convert_capture_to_replay(capture, seed=0)
+    replay_override = convert_capture_to_replay(capture, seed=0, aim_scheme_overrides_by_player={0: 5})
 
     flags_default = int(replay_default.inputs[0][0][3])
     flags_override = int(replay_override.inputs[0][0][3])
@@ -1761,7 +1801,7 @@ def test_convert_capture_to_replay_does_not_synthesize_unknown_mode_without_weap
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     flags1 = int(replay.inputs[1][0][3])
     fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
@@ -1793,7 +1833,7 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_mapped_weap
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     flags1 = int(replay.inputs[1][0][3])
     fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
@@ -1825,7 +1865,7 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_when_weapon_swi
     _write_capture(path, obj)
 
     capture = load_capture(path)
-    replay = convert_capture_to_replay(capture)
+    replay = convert_capture_to_replay(capture, seed=0)
 
     flags1 = int(replay.inputs[1][0][3])
     fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)

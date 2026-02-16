@@ -132,7 +132,7 @@ def test_run_actual_checkpoints_quest_uses_capture_inter_tick_rand_draw_override
             inter_tick_rand_draws=1,
         )
 
-    assert int(seen.get("inter_tick_rand_draws", -1)) == 0
+    assert int(seen.get("inter_tick_rand_draws", -1)) == 1
     assert seen.get("inter_tick_rand_draws_by_tick") == {0: 24021, 1: 1}
 
 
@@ -446,7 +446,7 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
             "creature_count": 0,
             "perk_pending": 0,
             "players": [],
-            "status": {"quest_unlock_index": -1, "quest_unlock_index_full": -1, "weapon_usage_counts": []},
+            "status": {"quest_unlock_index": 0, "quest_unlock_index_full": 0, "weapon_usage_counts": []},
             "bonus_timers": {},
             "rng_marks": {
                 "rand_calls": 0,
@@ -481,7 +481,7 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
                 "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
                 "creature_lifecycle": None,
                 "before_players": [],
-                "before_status": {"quest_unlock_index": -1, "quest_unlock_index_full": -1},
+                "before_status": {"quest_unlock_index": 0, "quest_unlock_index_full": 0},
             },
         },
         "event_counts": {

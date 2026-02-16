@@ -223,10 +223,6 @@ def verify_capture(
     mode = int(replay.header.game_mode_id)
     inter_tick_rand_draws = 1
     inter_tick_rand_draws_by_tick = build_capture_inter_tick_rand_draws_overrides(capture)
-    if mode == int(GameMode.QUESTS):
-        # Quest captures infer seed at sampled tick state; keep fallback injection at 0.
-        # Per-tick outside-before overrides remain enabled via capture-side heuristic.
-        inter_tick_rand_draws = 0
 
     if mode == int(GameMode.SURVIVAL):
         run_result = run_survival_replay(

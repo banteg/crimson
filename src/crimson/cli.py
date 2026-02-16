@@ -864,6 +864,14 @@ def cmd_replay_convert_capture(
         None,
         help="seed override for replay reconstruction (default: infer from capture rng telemetry)",
     ),
+    player_count: int | None = typer.Option(
+        None,
+        help="player count override for replay reconstruction (default: infer from capture telemetry)",
+    ),
+    game_mode_id: int | None = typer.Option(
+        None,
+        help="game mode override for replay reconstruction (default: infer from capture telemetry)",
+    ),
     aim_scheme_player: list[str] = typer.Option(
         [],
         "--aim-scheme-player",
@@ -895,11 +903,17 @@ def cmd_replay_convert_capture(
     except ValueError as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=2) from exc
-    replay = convert_capture_to_replay(
-        capture,
-        seed=seed,
-        aim_scheme_overrides_by_player=aim_scheme_overrides,
-    )
+    try:
+        replay = convert_capture_to_replay(
+            capture,
+            seed=seed,
+            player_count=player_count,
+            game_mode_id=game_mode_id,
+            aim_scheme_overrides_by_player=aim_scheme_overrides,
+        )
+    except ValueError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=2) from exc
     replay_path = (
         Path(replay_file) if replay_file is not None else default_capture_replay_path(Path(output_file))
     )
