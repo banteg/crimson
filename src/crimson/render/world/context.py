@@ -211,11 +211,13 @@ class WorldRendererContextMixin(WorldRendererMixinBase):
         else:
             screen_w = float(rl.get_screen_width())
             screen_h = float(rl.get_screen_height())
-        if screen_w > self.world_size:
-            screen_w = float(self.world_size)
-        if screen_h > self.world_size:
-            screen_h = float(self.world_size)
-        return Vec2(screen_w, screen_h)
+        world = float(self.world_size)
+        if world <= 0.0:
+            return Vec2(max(1.0, screen_w), max(1.0, screen_h))
+        out_w = max(1.0, screen_w)
+        out_h = max(1.0, screen_h)
+        scale = max(out_w / world, out_h / world, 1.0)
+        return Vec2(min(world, out_w / scale), min(world, out_h / scale))
 
     def _clamp_camera(self, camera: Vec2, screen_size: Vec2) -> Vec2:
         cam_x = camera.x

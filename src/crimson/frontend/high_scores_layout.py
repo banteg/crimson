@@ -18,6 +18,19 @@ HS_RIGHT_PANEL_POS_Y = 200.0
 HS_RIGHT_PANEL_HEIGHT = 254.0
 
 
+def hs_left_panel_pos_x(screen_width: float) -> float:
+    """
+    Return left-panel base X for state 14/15/16.
+
+    Native callbacks keep the regular x at widths above 640 and shift the
+    whole left stack 50px left in 640-wide mode.
+    """
+
+    if int(screen_width) <= 640:
+        return HS_LEFT_PANEL_POS_X - 50.0
+    return HS_LEFT_PANEL_POS_X
+
+
 def hs_right_panel_pos_x(screen_width: float) -> float:
     """
     Return the classic right-panel base X for high-scores/databases screens.
@@ -30,16 +43,9 @@ def hs_right_panel_pos_x(screen_width: float) -> float:
           x -= 65
 
     At 1024 this resolves to 609 (our original constant).
-    For non-native mid-wide widths (e.g. 1366), we bucket to the classic 1280
-    layout path so panel placement matches legacy runtime captures.
     """
 
     w = int(screen_width)
-    # Classic layout code only had explicit menu tuning for a small set of
-    # display widths; modern 1366-wide windows otherwise push the panel too far
-    # right. Bucket those mid-wide unsupported widths to the classic 1280 path.
-    if 1280 < w < 1600:
-        w = 1280
     x = float(w - 350)
     if w <= 800:
         if w <= 640:
@@ -49,6 +55,54 @@ def hs_right_panel_pos_x(screen_width: float) -> float:
     else:
         x -= 65.0
     return x
+
+
+def hs_right_options_x_shift(screen_width: float) -> float:
+    """
+    Additional right-panel options-column X shift in highscore state (14).
+
+    `highscore_screen_update` nudges this block by +10 at 640 width.
+    """
+
+    if int(screen_width) <= 640:
+        return 10.0
+    return 0.0
+
+
+def hs_right_local_card_x_shift(screen_width: float) -> float:
+    """
+    Additional right-panel local-score card X shift in highscore state (14).
+
+    Capture-backed effective offset at 640 width.
+    """
+
+    if int(screen_width) <= 640:
+        return 12.0
+    return 0.0
+
+
+def weapons_db_right_detail_x_shift(screen_width: float) -> float:
+    """
+    Additional right-panel detail X shift in weapons DB state (15).
+
+    `unlocked_weapons_database_update` adds +20 at 640 width.
+    """
+
+    if int(screen_width) <= 640:
+        return 20.0
+    return 0.0
+
+
+def perks_db_right_detail_x_shift(screen_width: float) -> float:
+    """
+    Additional right-panel detail X shift in perks DB state (16).
+
+    `unlocked_perks_database_update` subtracts 10 at 640 width.
+    """
+
+    if int(screen_width) <= 640:
+        return -10.0
+    return 0.0
 
 # Buttons inside the left panel (relative to the left panel top-left).
 HS_BUTTON_X = 234.0  # x0=136 at 1024x768

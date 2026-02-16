@@ -43,3 +43,15 @@ def test_effective_texture_scale_halves_with_double_render_resolution(monkeypatc
     monkeypatch.setattr(terrain_render.rl, "get_render_width", lambda: 2048)
     monkeypatch.setattr(terrain_render.rl, "get_render_height", lambda: 1536)
     assert _renderer()._normalized_texture_scale() == 0.5
+
+
+def test_view_window_fits_widescreen_without_nonuniform_stretch() -> None:
+    view_w, view_h = _renderer()._fit_view_window(1280.0, 720.0)
+    assert view_w == pytest.approx(1024.0)
+    assert view_h == pytest.approx(576.0)
+
+
+def test_view_window_keeps_native_size_for_supported_legacy_resolution() -> None:
+    view_w, view_h = _renderer()._fit_view_window(1024.0, 768.0)
+    assert view_w == pytest.approx(1024.0)
+    assert view_h == pytest.approx(768.0)
