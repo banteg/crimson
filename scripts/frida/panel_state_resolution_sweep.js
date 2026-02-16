@@ -809,9 +809,11 @@ function mainTick() {
   if (!attached || sweep.done) return;
 
   const snap = snapshotNow();
-  maybeRotateOutput(snap);
-
   if (!snap || !snap.game) return;
+
+  // Delay output file selection until the sweep begins so launcher-time
+  // resolution transitions do not create handoff artifacts.
+  if (sweep.phase !== 'waiting_boot') maybeRotateOutput(snap);
 
   if (sweep.phase === 'waiting_boot') {
     if (snap.game.state_id == null) return;
@@ -1053,7 +1055,6 @@ function attachOnce() {
   baseGrim = grim.base;
 
   snapshotNow();
-  maybeRotateOutput(latestSnapshot);
   refreshUiElementIndexMap();
 
   attached = installHooks();
