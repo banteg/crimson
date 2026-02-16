@@ -98,6 +98,52 @@ def test_local_input_computer_aim_without_target_points_away_from_center(monkeyp
     assert float(out.aim.y) == pytest.approx(452.0, abs=1e-6)
 
 
+def test_local_input_computer_target_state_tracks_player_identity_not_call_slot(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_no_user_input(monkeypatch)
+    monkeypatch.setattr(
+        local_input.LocalInputInterpreter,
+        "_safe_controls_modes",
+        staticmethod(lambda _config, *, player_index: (AimScheme.COMPUTER, MovementControlType.STATIC)),
+    )
+
+    interpreter = local_input.LocalInputInterpreter()
+    player0 = PlayerState(index=0, pos=Vec2(0.0, 0.0), aim=Vec2(0.0, 0.0))
+    player1 = PlayerState(index=1, pos=Vec2(128.0, 0.0), aim=Vec2(128.0, 0.0))
+    creatures = [
+        _DummyCreature(pos=Vec2(100.0, 0.0), active=True, hp=20.0),  # nearest to player0
+        _DummyCreature(pos=Vec2(130.0, 0.0), active=True, hp=20.0),  # nearest to player1
+    ]
+
+    # Simulate a subset call where player1 is fed through slot 0 first.
+    interpreter.build_player_input(
+        player_index=0,
+        player=player1,
+        config=None,
+        mouse_screen=Vec2(),
+        mouse_world=Vec2(),
+        screen_center=Vec2(),
+        dt_frame=0.1,
+        creatures=creatures,
+    )
+
+    out = interpreter.build_player_input(
+        player_index=0,
+        player=player0,
+        config=None,
+        mouse_screen=Vec2(),
+        mouse_world=Vec2(),
+        screen_center=Vec2(),
+        dt_frame=0.1,
+        creatures=creatures,
+    )
+
+    # Must track toward player0's nearest creature (x=100) not player1's target (x=130).
+    assert float(out.aim.x) == pytest.approx(60.0, abs=1e-6)
+    assert float(out.aim.y) == pytest.approx(0.0, abs=1e-6)
+
+
 @pytest.mark.parametrize(
     ("down_codes", "expected_move"),
     (
