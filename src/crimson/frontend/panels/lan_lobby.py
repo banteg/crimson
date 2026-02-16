@@ -284,7 +284,7 @@ class LanLobbyPanelView(PanelMenuView):
         connected_text = f"{connected}/{expected}{dots}"
         role_label = "Host" if role == "host" else "Client"
         code_text = room_code if room_code else "-"
-        relay_addr = bind_host if role == "host" else relay_host
+        relay_addr = relay_host if relay_host else bind_host
         relay_text = f"{relay_addr}:{port}" if relay_addr else f"127.0.0.1:{port}"
 
         label_w = max(

@@ -45,7 +45,7 @@ class LanSessionPanelView(PanelMenuView):
         self._mode_idx: int = 0
         self._player_count: int = 2
         self._quest_level: str = "1.1"
-        self._bind_host: str = "0.0.0.0"
+        self._bind_host: str = "127.0.0.1"
         self._host_ip: str = "127.0.0.1"
         self._room_code: str = ""
         self._netcode_mode: NetcodeMode = "rollback"
@@ -279,7 +279,7 @@ class LanSessionPanelView(PanelMenuView):
                     mode=mode,
                     player_count=max(1, min(4, int(self._player_count))),
                     quest_level=str(self._quest_level.strip()),
-                    bind_host=str(self._bind_host.strip() or "0.0.0.0"),
+                    bind_host="0.0.0.0",
                     relay_host=str(self._bind_host.strip() or "127.0.0.1"),
                     relay_port=int(port),
                     room_code=str(self._room_code.strip().upper()),

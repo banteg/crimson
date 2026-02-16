@@ -76,6 +76,7 @@ class NetRuntime:
     _peer_id: str = field(init=False, default="")
     _accepted: bool = field(init=False, default=False)
     _created_room: bool = field(init=False, default=False)
+    _sent_join_request: bool = field(init=False, default=False)
     _joined_room: bool = field(init=False, default=False)
     _sent_ready: bool = field(init=False, default=False)
     _last_hello_ms: int = field(init=False, default=0)
@@ -136,6 +137,7 @@ class NetRuntime:
         self._peer_id = ""
         self._accepted = False
         self._created_room = False
+        self._sent_join_request = False
         self._joined_room = False
         self._sent_ready = False
         self._last_hello_ms = 0
@@ -278,7 +280,7 @@ class NetRuntime:
                 self._send(RoomReady(slot_index=max(0, int(self.local_slot_index)), ready=True), reliable=True, now_ms=int(now))
                 self._sent_ready = True
 
-        if self.started:
+        if self._accepted:
             if self._last_send_ms <= 0 or (int(now) - int(self._last_send_ms)) >= 250:
                 self._send(Ping(stamp_ms=int(now)), reliable=False, now_ms=int(now))
 
@@ -313,9 +315,9 @@ class NetRuntime:
                 )
                 return
             if str(self.cfg.role) != "host":
-                if self._joined_room:
+                if self._sent_join_request:
                     return
-                self._joined_room = True
+                self._sent_join_request = True
                 self._send(
                     RoomJoin(room_code=str(self.cfg.room_code), reconnect_token=""),
                     reliable=True,
@@ -355,6 +357,7 @@ class NetRuntime:
 
         if isinstance(message, RoomState):
             self.lobby_state_latest = message
+            self._joined_room = True
             if self._reconnect_deadline_ms > 0:
                 connected = sum(1 for slot in message.slots if bool(slot.connected))
                 if int(connected) >= max(1, int(message.player_count)):
@@ -363,7 +366,8 @@ class NetRuntime:
             if str(self.cfg.role) == "host":
                 self.cfg.room_code = str(message.room_code or "")
                 self._announce_room_code(self.cfg.room_code)
-                self._joined_room = True
+            elif str(self.cfg.room_code or "") != str(message.room_code or ""):
+                self.cfg.room_code = str(message.room_code or "")
             return
 
         if isinstance(message, RoomStart):
