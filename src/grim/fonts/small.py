@@ -22,7 +22,7 @@ SMALL_FONT_FILTER = rl.TextureFilter.TEXTURE_FILTER_POINT
 SMALL_FONT_RENDER_SCALE = 1.0
 
 
-def load_small_font(assets_root: Path, missing_assets: list[str]) -> SmallFontData:
+def load_small_font(assets_root: Path) -> SmallFontData:
     # Prefer crimson.paq (runtime source-of-truth), but fall back to extracted
     # assets when present for development convenience.
     paq_path = find_paq_path(assets_root)
@@ -44,7 +44,6 @@ def load_small_font(assets_root: Path, missing_assets: list[str]) -> SmallFontDa
     atlas_png = assets_root / "crimson" / "load" / "smallWhite.png"
     atlas_tga = assets_root / "crimson" / "load" / "smallWhite.tga"
     if not widths_path.is_file() or (not atlas_png.is_file() and not atlas_tga.is_file()):
-        missing_assets.append("small font assets")
         raise FileNotFoundError(f"Missing small font assets: {widths_path} and {atlas_png} or {atlas_tga}")
     widths = list(widths_path.read_bytes())
     texture = rl.load_texture(str(atlas_png if atlas_png.is_file() else atlas_tga))

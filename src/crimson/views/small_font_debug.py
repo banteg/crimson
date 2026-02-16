@@ -43,7 +43,7 @@ class SmallFontDebugView:
 
     def open(self) -> None:
         self._missing_assets.clear()
-        self._small = load_small_font(self._assets_root, self._missing_assets)
+        self._small = load_small_font(self._assets_root)
         self._vector_font = None
         self._vector_font_path = None
         self._vector_font_alt = None

@@ -38,8 +38,7 @@ class ModsMenuView(PanelMenuView):
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:
             return self._small_font
-        missing_assets: list[str] = []
-        self._small_font = load_small_font(self.state.assets_dir, missing_assets)
+        self._small_font = load_small_font(self.state.assets_dir)
         return self._small_font
 
     def _content_layout(self) -> _ModsContentLayout:

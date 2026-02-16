@@ -47,7 +47,6 @@ def resolve_asset_path(assets_root: Path, rel_path: str) -> Path | None:
 class TextureLoader:
     assets_root: Path
     cache: PaqTextureCache | None = None
-    missing: list[str] = field(default_factory=list)
     _fs_textures: dict[str, rl.Texture] = field(default_factory=dict)
 
     @classmethod
@@ -65,9 +64,6 @@ class TextureLoader:
     def resolve_path(self, rel_path: str) -> Path | None:
         return resolve_asset_path(self.assets_root, rel_path)
 
-    def _record_missing(self, rel_path: str) -> None:
-        raise FileNotFoundError(f"Missing asset: {rel_path}")
-
     def load_from_cache(self, name: str, rel_path: str) -> rl.Texture | None:
         if self.cache is None:
             return None
@@ -84,8 +80,7 @@ class TextureLoader:
             return self._fs_textures[name]
         path = resolve_asset_path(self.assets_root, rel_path)
         if path is None:
-            self._record_missing(rel_path)
-            return None
+            raise FileNotFoundError(f"Missing asset: {rel_path}")
         texture = rl.load_texture(str(path))
         if _is_ui_sprite(rel_path):
             rl.set_texture_wrap(texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
@@ -100,12 +95,6 @@ class TextureLoader:
         if fs_rel is None:
             fs_rel = paq_rel
         return self.load_from_path(name, fs_rel)
-
-    def get_optional(self, *, name: str, paq_rel: str, fs_rel: str | None = None) -> rl.Texture | None:
-        try:
-            return self.get_required(name=name, paq_rel=paq_rel, fs_rel=fs_rel)
-        except FileNotFoundError:
-            return None
 
     def get(self, *, name: str, paq_rel: str, fs_rel: str | None = None) -> rl.Texture | None:
         return self.get_required(name=name, paq_rel=paq_rel, fs_rel=fs_rel)

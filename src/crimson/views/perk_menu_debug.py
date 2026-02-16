@@ -78,13 +78,8 @@ class PerkMenuDebugView:
 
     def open(self) -> None:
         self._missing_assets.clear()
-        try:
-            self._small = load_small_font(self._assets_root, self._missing_assets)
-        except Exception:
-            self._small = None
+        self._small = load_small_font(self._assets_root)
         self._assets = load_perk_menu_assets(self._assets_root)
-        if self._assets.missing:
-            self._missing_assets.extend(self._assets.missing)
         rl.hide_cursor()
 
     def close(self) -> None:

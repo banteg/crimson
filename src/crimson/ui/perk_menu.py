@@ -182,7 +182,6 @@ class PerkMenuAssets:
     button_md: rl.Texture | None
     cursor: rl.Texture | None
     aim: rl.Texture | None
-    missing: list[str] = field(default_factory=list)
 
 
 def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
@@ -205,7 +204,6 @@ def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
         ),
         cursor=loader.get(name="ui_cursor", paq_rel="ui/ui_cursor.jaz"),
         aim=loader.get(name="ui_aim", paq_rel="ui/ui_aim.jaz"),
-        missing=loader.missing,
     )
 
 

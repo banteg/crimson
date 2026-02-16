@@ -48,7 +48,7 @@ class TerrainView:
     def open(self) -> None:
         self._missing_assets.clear()
         self._textures.clear()
-        self._small = load_small_font(self._assets_root, self._missing_assets)
+        self._small = load_small_font(self._assets_root)
         for terrain_id, name, rel_path in TERRAIN_TEXTURES:
             path = self._assets_root / "crimson" / rel_path
             if not path.is_file():

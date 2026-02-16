@@ -104,10 +104,7 @@ class AimDebugView:
 
     def open(self) -> None:
         self._missing_assets.clear()
-        try:
-            self._small = load_small_font(self._assets_root, self._missing_assets)
-        except Exception:
-            self._small = None
+        self._small = load_small_font(self._assets_root)
 
         runtime_dir = default_runtime_dir()
         if runtime_dir.is_dir():

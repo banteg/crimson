@@ -30,13 +30,6 @@ class WorldRendererContextMixin(WorldRendererMixinBase):
         return self._world.assets_dir
 
     @property
-    def missing_assets(self) -> list[str]:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.missing_assets
-        return self._world.missing_assets
-
-    @property
     def world_size(self) -> float:
         frame = self._render_frame
         if frame is not None:
@@ -201,7 +194,7 @@ class WorldRendererContextMixin(WorldRendererMixinBase):
         if self._small_font is not None:
             return self._small_font
         # Keep UI text consistent with the HUD/menu font when available.
-        self._small_font = load_small_font(self.assets_dir, self.missing_assets)
+        self._small_font = load_small_font(self.assets_dir)
         return self._small_font
 
     def _camera_screen_size(

@@ -214,8 +214,7 @@ class DemoView:
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:
             return self._small_font
-        missing_assets: list[str] = []
-        self._small_font = load_small_font(self.state.assets_dir, missing_assets)
+        self._small_font = load_small_font(self.state.assets_dir)
         return self._small_font
 
     def _purchase_var_28_2(self) -> float:
@@ -630,8 +629,7 @@ class DemoView:
     def _ensure_upsell_font(self) -> GrimMonoFont:
         if self._upsell_font is not None:
             return self._upsell_font
-        missing_assets: list[str] = []
-        self._upsell_font = load_grim_mono_font(self.state.assets_dir, missing_assets)
+        self._upsell_font = load_grim_mono_font(self.state.assets_dir)
         return self._upsell_font
 
     def _draw_demo_upsell_overlay(self) -> None:

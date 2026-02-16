@@ -49,7 +49,7 @@ class DemoTrialOverlayUi:
     def _ensure_loaded(self) -> None:
         if self._font is None:
             self._missing_assets.clear()
-            self._font = load_small_font(self._assets_root, self._missing_assets)
+            self._font = load_small_font(self._assets_root)
 
         cache = self._cache
         if cache is None:
@@ -68,7 +68,6 @@ class DemoTrialOverlayUi:
                 button_md=button_md,
                 cursor=cursor,
                 aim=None,
-                missing=[],
             )
 
         if self._cl_logo is None:

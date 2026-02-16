@@ -56,7 +56,7 @@ class SpriteSheetView:
     def open(self) -> None:
         self._missing_assets.clear()
         self._sheets.clear()
-        self._small = load_small_font(self._assets_root, self._missing_assets)
+        self._small = load_small_font(self._assets_root)
         for spec in SPRITE_SHEETS:
             path = self._assets_root / "crimson" / spec.rel_path
             if not path.is_file():
