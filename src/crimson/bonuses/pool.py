@@ -63,6 +63,21 @@ def _bonus_amount_for_weapon_id_suppression(*, bonus_id: int, amount: int) -> in
     return int(_BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION.get(int(bonus_id), int(amount)))
 
 
+def _all_carried_weapon_ids(players: Sequence[PlayerState]) -> set[int]:
+    carried: set[int] = set()
+    for player in players:
+        weapon_id = int(player.weapon_id)
+        if weapon_id > 0:
+            carried.add(weapon_id)
+        alt_weapon_id = player.alt_weapon_id
+        if alt_weapon_id is None:
+            continue
+        alt = int(alt_weapon_id)
+        if alt > 0:
+            carried.add(alt)
+    return carried
+
+
 class BonusPool:
     def __init__(self, *, size: int = BONUS_POOL_SIZE) -> None:
         self._entries = [BonusEntry() for _ in range(int(size))]
@@ -249,11 +264,23 @@ class BonusPool:
         base_roll = int(rng.rand())
         if base_roll % 9 != 1:
             allow_without_magnet = False
-            if players and int(players[0].weapon_id) == int(WeaponId.PISTOL):
-                allow_without_magnet = int(rng.rand()) % 5 == 1
+            if players:
+                has_pistol = False
+                if bool(state.preserve_bugs):
+                    has_pistol = int(players[0].weapon_id) == int(WeaponId.PISTOL)
+                else:
+                    has_pistol = any(int(player.weapon_id) == int(WeaponId.PISTOL) for player in players)
+                if has_pistol:
+                    allow_without_magnet = int(rng.rand()) % 5 == 1
 
             if not allow_without_magnet:
-                if not (players and perk_active(players[0], PerkId.BONUS_MAGNET)):
+                has_bonus_magnet = False
+                if players:
+                    if bool(state.preserve_bugs):
+                        has_bonus_magnet = perk_active(players[0], PerkId.BONUS_MAGNET)
+                    else:
+                        has_bonus_magnet = any(perk_active(player, PerkId.BONUS_MAGNET) for player in players)
+                if not has_bonus_magnet:
                     return None
                 if int(rng.rand()) % 10 != 2:
                     return None
@@ -286,14 +313,15 @@ class BonusPool:
                 return None
 
         if players:
-            weapon_id = int(players[0].weapon_id)
             if bool(state.preserve_bugs):
+                weapon_id = int(players[0].weapon_id)
                 amount = _bonus_amount_for_weapon_id_suppression(bonus_id=int(entry.bonus_id), amount=int(entry.amount))
                 if amount == weapon_id:
                     self._clear_entry(entry)
                     return None
             else:
-                if entry.bonus_id == int(BonusId.WEAPON) and int(entry.amount) == weapon_id:
+                carried_weapon_ids = _all_carried_weapon_ids(players)
+                if entry.bonus_id == int(BonusId.WEAPON) and int(entry.amount) in carried_weapon_ids:
                     self._clear_entry(entry)
                     return None
 
