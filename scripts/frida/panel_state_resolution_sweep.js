@@ -26,9 +26,12 @@
 //   CRIMSON_FRIDA_LINK_BASE=0x00400000
 //   CRIMSON_PANEL_SWEEP_STATES=0,1,2,3,4,11,14,15,16,17,20,26,5,6,7,8,12,21
 //   CRIMSON_PANEL_SWEEP_START_DELAY_MS=1800
+//   CRIMSON_PANEL_SWEEP_MIN_UI_FRAMES=8
 //   CRIMSON_PANEL_SWEEP_ENTER_TIMEOUT_MS=3500
 //   CRIMSON_PANEL_SWEEP_SETTLE_MS=300
 //   CRIMSON_PANEL_SWEEP_DWELL_MS=1200
+//   CRIMSON_PANEL_SWEEP_HOVER_STATES=14,15,16
+//   CRIMSON_PANEL_SWEEP_HOVER_STEP_MS=140
 //   CRIMSON_PANEL_SWEEP_MAX_UNIQUE_PANELS=1200
 //   CRIMSON_PANEL_SWEEP_MAX_UNIQUE_TEXTS=1800
 //   CRIMSON_PANEL_SWEEP_ZERO_SIGNAL_RETRIES=1
@@ -39,6 +42,7 @@ const DEFAULT_EXE_MODULE = 'crimsonland.exe';
 const DEFAULT_GRIM_MODULE = 'grim.dll';
 
 const DEFAULT_SWEEP_STATES = [0, 1, 2, 3, 4, 11, 14, 15, 16, 17, 20, 26, 5, 6, 7, 8, 12, 21];
+const DEFAULT_HOVER_STATES = [14, 15, 16];
 
 const STATE_LABELS = {
   0: 'main_menu',
@@ -85,6 +89,9 @@ const ADDR = {
   config_screen_width: 0x00480504,
   config_screen_height: 0x00480508,
   config_windowed: 0x0048050c,
+
+  ui_mouse_x: 0x004871ec,
+  ui_mouse_y: 0x004871f0,
 
   ui_element_table_base: 0x0048f168,
 };
@@ -179,15 +186,25 @@ const CONFIG = {
   sweepStates: parseStateList(getEnv('CRIMSON_PANEL_SWEEP_STATES', null), DEFAULT_SWEEP_STATES),
 
   startDelayMs: Math.max(0, getIntEnv('CRIMSON_PANEL_SWEEP_START_DELAY_MS', 1800)),
+  minUiFramesBeforeStart: Math.max(0, getIntEnv('CRIMSON_PANEL_SWEEP_MIN_UI_FRAMES', 8)),
   enterTimeoutMs: Math.max(500, getIntEnv('CRIMSON_PANEL_SWEEP_ENTER_TIMEOUT_MS', 3500)),
   settleMs: Math.max(0, getIntEnv('CRIMSON_PANEL_SWEEP_SETTLE_MS', 300)),
   dwellMs: Math.max(200, getIntEnv('CRIMSON_PANEL_SWEEP_DWELL_MS', 1200)),
+  hoverStates: parseStateList(getEnv('CRIMSON_PANEL_SWEEP_HOVER_STATES', null), DEFAULT_HOVER_STATES),
+  hoverStepMs: Math.max(30, getIntEnv('CRIMSON_PANEL_SWEEP_HOVER_STEP_MS', 140)),
+  hoverMaxPointsPerState: Math.max(2, getIntEnv('CRIMSON_PANEL_SWEEP_HOVER_MAX_POINTS', 12)),
 
   maxUniquePanelsPerState: Math.max(64, getIntEnv('CRIMSON_PANEL_SWEEP_MAX_UNIQUE_PANELS', 1200)),
   maxUniqueTextsPerState: Math.max(64, getIntEnv('CRIMSON_PANEL_SWEEP_MAX_UNIQUE_TEXTS', 1800)),
   zeroSignalRetries: Math.max(0, getIntEnv('CRIMSON_PANEL_SWEEP_ZERO_SIGNAL_RETRIES', 1)),
   logToConsole: getBoolEnv('CRIMSON_PANEL_SWEEP_CONSOLE', false),
 };
+
+const HOVER_STATE_SET = {};
+for (let i = 0; i < CONFIG.hoverStates.length; i++) {
+  const id = CONFIG.hoverStates[i] | 0;
+  HOVER_STATE_SET[String(id)] = 1;
+}
 
 let LINK_BASE = ptr('0x00400000');
 {
@@ -229,12 +246,23 @@ const selfStateSetWindow = {
 const sweep = {
   phase: 'waiting_boot',
   phaseSinceMs: 0,
+  bootDetected: false,
   startEligibleAtMs: 0,
   currentIndex: -1,
   currentTarget: null,
   currentStats: null,
   results: [],
   done: false,
+};
+
+const hoverCapture = {
+  activeState: null,
+  points: [],
+  source: null,
+  nextStepAtMs: 0,
+  nextRebuildAtMs: 0,
+  stepIndex: 0,
+  appliedSteps: 0,
 };
 
 function nowMs() {
@@ -303,6 +331,16 @@ function safeReadF32(p) {
     return p ? p.readFloat() : null;
   } catch (_) {
     return null;
+  }
+}
+
+function safeWriteF32(p, value) {
+  try {
+    if (!p || !Number.isFinite(value)) return false;
+    p.writeFloat(value);
+    return true;
+  } catch (_) {
+    return false;
   }
 }
 
@@ -376,6 +414,13 @@ function sanitizeText(raw) {
   return s;
 }
 
+function clamp(v, lo, hi) {
+  if (!Number.isFinite(v)) return lo;
+  if (v < lo) return lo;
+  if (v > hi) return hi;
+  return v;
+}
+
 function readRuntimeSnapshot() {
   if (!baseExe) return null;
   return {
@@ -412,6 +457,243 @@ function resolutionKeyOf(snapshot) {
   const h = snapshot.res.h;
   if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) return 'unknown';
   return String(w | 0) + 'x' + String(h | 0);
+}
+
+function isHoverCaptureState(stateId) {
+  if (stateId == null) return false;
+  return HOVER_STATE_SET[String(stateId | 0)] === 1;
+}
+
+function setUiMousePosition(x, y, snapshot) {
+  if (!snapshot || !snapshot.res) return false;
+  const w = snapshot.res.w;
+  const h = snapshot.res.h;
+  if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) return false;
+
+  const safeX = clamp(x, 4.0, Math.max(4.0, w - 4.0));
+  const safeY = clamp(y, 4.0, Math.max(4.0, h - 4.0));
+  const px = staticPtr(ADDR.ui_mouse_x);
+  const py = staticPtr(ADDR.ui_mouse_y);
+  const okX = safeWriteF32(px, safeX);
+  const okY = safeWriteF32(py, safeY);
+  return okX && okY;
+}
+
+function fallbackHoverPoints(stateId, snapshot) {
+  if (!snapshot || !snapshot.res) return [];
+  const w = snapshot.res.w;
+  const h = snapshot.res.h;
+  if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) return [];
+
+  const out = [];
+  function push(nx, ny) {
+    out.push({
+      x: round3(clamp(nx * w, 6.0, Math.max(6.0, w - 6.0))),
+      y: round3(clamp(ny * h, 6.0, Math.max(6.0, h - 6.0))),
+    });
+  }
+
+  if ((stateId | 0) === 14) {
+    push(0.20, 0.40);
+    push(0.20, 0.45);
+    push(0.20, 0.50);
+    push(0.20, 0.55);
+    push(0.73, 0.38);
+    push(0.73, 0.47);
+  } else if ((stateId | 0) === 15 || (stateId | 0) === 16) {
+    push(0.18, 0.46);
+    push(0.18, 0.50);
+    push(0.18, 0.54);
+    push(0.18, 0.58);
+    push(0.18, 0.62);
+  }
+
+  return out;
+}
+
+function collectHoverCandidatesFromUi(stateId, snapshot) {
+  if (!baseExe || !snapshot || !snapshot.res) return [];
+  const w = snapshot.res.w;
+  const h = snapshot.res.h;
+  if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) return [];
+
+  const tableBase = staticPtr(ADDR.ui_element_table_base);
+  if (!tableBase) return [];
+
+  const candidates = [];
+  for (let i = 0; i < UI_ELEMENT_TABLE_COUNT; i++) {
+    const slot = tableBase.add(i * Process.pointerSize);
+    const elemPtr = safeReadPtr(slot);
+    if (!elemPtr || elemPtr.isNull()) continue;
+
+    if ((safeReadU8(elemPtr.add(UI_OFF.active)) | 0) === 0) continue;
+    if ((safeReadU8(elemPtr.add(UI_OFF.disabled)) | 0) !== 0) continue;
+
+    const l = safeReadF32(elemPtr.add(UI_OFF.bounds_l));
+    const t = safeReadF32(elemPtr.add(UI_OFF.bounds_t));
+    const r = safeReadF32(elemPtr.add(UI_OFF.bounds_r));
+    const b = safeReadF32(elemPtr.add(UI_OFF.bounds_b));
+    if (!Number.isFinite(l) || !Number.isFinite(t) || !Number.isFinite(r) || !Number.isFinite(b)) continue;
+    if (!(r > l && b > t)) continue;
+
+    const width = r - l;
+    const height = b - t;
+    if (width < 36.0 || height < 10.0) continue;
+    if (width > w * 0.68 || height > h * 0.24) continue;
+
+    const cx = (l + r) * 0.5;
+    const cy = (t + b) * 0.5;
+    if (!Number.isFinite(cx) || !Number.isFinite(cy)) continue;
+    if (cx < 8.0 || cy < 8.0 || cx > w - 8.0 || cy > h - 8.0) continue;
+
+    if ((stateId | 0) === 14 || (stateId | 0) === 15 || (stateId | 0) === 16) {
+      if (cx > w * 0.48) continue;
+      if (cy < h * 0.28 || cy > h * 0.77) continue;
+    }
+
+    candidates.push({
+      index: i,
+      x: round3(cx),
+      y: round3(cy),
+      width: round3(width),
+      height: round3(height),
+    });
+  }
+
+  candidates.sort((a, b) => {
+    if (a.y !== b.y) return a.y - b.y;
+    return a.x - b.x;
+  });
+
+  const deduped = [];
+  for (let i = 0; i < candidates.length; i++) {
+    const c = candidates[i];
+    let near = false;
+    for (let j = 0; j < deduped.length; j++) {
+      const d = deduped[j];
+      if (Math.abs(d.x - c.x) <= 8.0 && Math.abs(d.y - c.y) <= 8.0) {
+        near = true;
+        break;
+      }
+    }
+    if (near) continue;
+    deduped.push({ x: c.x, y: c.y, ui_index: c.index });
+    if (deduped.length >= CONFIG.hoverMaxPointsPerState) break;
+  }
+
+  return deduped;
+}
+
+function buildHoverPlan(stateId, snapshot) {
+  const uiCandidates = collectHoverCandidatesFromUi(stateId, snapshot);
+  if (uiCandidates.length > 0) {
+    return {
+      source: 'ui_bounds',
+      points: uiCandidates,
+    };
+  }
+
+  const fallback = fallbackHoverPoints(stateId, snapshot);
+  return {
+    source: fallback.length > 0 ? 'fallback' : 'none',
+    points: fallback,
+  };
+}
+
+function resetHoverCapture() {
+  hoverCapture.activeState = null;
+  hoverCapture.points = [];
+  hoverCapture.source = null;
+  hoverCapture.nextStepAtMs = 0;
+  hoverCapture.nextRebuildAtMs = 0;
+  hoverCapture.stepIndex = 0;
+  hoverCapture.appliedSteps = 0;
+}
+
+function startHoverCapture(stats, snapshot) {
+  resetHoverCapture();
+  if (!stats) return;
+  if (!isHoverCaptureState(stats.target_state)) return;
+
+  const plan = buildHoverPlan(stats.target_state, snapshot || latestSnapshot);
+  hoverCapture.activeState = stats.target_state;
+  hoverCapture.points = plan.points;
+  hoverCapture.source = plan.source;
+  hoverCapture.nextStepAtMs = 0;
+  hoverCapture.nextRebuildAtMs = nowMs() + 200;
+
+  stats.hover_points_planned = plan.points.length;
+  stats.hover_steps_applied = 0;
+  stats.hover_path_source = plan.source;
+
+  writeEvent({
+    event: 'capture_hover_plan',
+    target_state: stats.target_state,
+    target_label: stats.target_label,
+    source: plan.source,
+    point_count: plan.points.length,
+    points: plan.points,
+  });
+}
+
+function maybeApplyHoverStep(snapshot) {
+  if (sweep.phase !== 'capture') return;
+  const stats = sweep.currentStats;
+  if (!stats) return;
+  if (!isHoverCaptureState(stats.target_state)) return;
+
+  const stateId = stats.target_state | 0;
+  const now = nowMs();
+  const snap = snapshot || latestSnapshot || readRuntimeSnapshot();
+
+  if (hoverCapture.activeState !== stateId) {
+    startHoverCapture(stats, snap);
+  }
+
+  if (hoverCapture.points.length === 0) {
+    if (now < hoverCapture.nextRebuildAtMs) return;
+    const plan = buildHoverPlan(stateId, snap);
+    hoverCapture.points = plan.points;
+    hoverCapture.source = plan.source;
+    hoverCapture.nextRebuildAtMs = now + 200;
+    stats.hover_points_planned = plan.points.length;
+    stats.hover_path_source = plan.source;
+    if (plan.points.length > 0) {
+      writeEvent({
+        event: 'capture_hover_plan',
+        target_state: stats.target_state,
+        target_label: stats.target_label,
+        source: plan.source,
+        point_count: plan.points.length,
+        points: plan.points,
+      });
+    }
+    return;
+  }
+
+  if (now < hoverCapture.nextStepAtMs) return;
+  const pointIndex = hoverCapture.stepIndex % hoverCapture.points.length;
+  const point = hoverCapture.points[pointIndex];
+  const ok = setUiMousePosition(point.x, point.y, snap);
+
+  hoverCapture.stepIndex += 1;
+  hoverCapture.appliedSteps += 1;
+  hoverCapture.nextStepAtMs = now + CONFIG.hoverStepMs;
+  stats.hover_steps_applied = hoverCapture.appliedSteps;
+
+  if (hoverCapture.appliedSteps <= 6 || hoverCapture.appliedSteps % 10 === 0) {
+    writeEvent({
+      event: 'capture_hover_step',
+      target_state: stats.target_state,
+      target_label: stats.target_label,
+      source: hoverCapture.source,
+      step: hoverCapture.appliedSteps,
+      point_index: pointIndex,
+      x: round3(point.x),
+      y: round3(point.y),
+      write_ok: ok,
+    });
+  }
 }
 
 function openOutputForResolution(resKey) {
@@ -658,6 +940,7 @@ function requestStateSet(stateId) {
 function beginNextState() {
   sweep.currentIndex += 1;
   if (sweep.currentIndex >= CONFIG.sweepStates.length) {
+    resetHoverCapture();
     sweep.done = true;
     sweep.phase = 'done';
     sweep.phaseSinceMs = nowMs();
@@ -672,6 +955,7 @@ function beginNextState() {
   }
 
   const target = CONFIG.sweepStates[sweep.currentIndex] | 0;
+  resetHoverCapture();
   sweep.currentTarget = target;
   sweep.currentStats = {
     target_state: target,
@@ -696,6 +980,9 @@ function beginNextState() {
     sample_texts: [],
     panel_keys: {},
     text_keys: {},
+    hover_points_planned: 0,
+    hover_steps_applied: 0,
+    hover_path_source: null,
   };
 
   const ok = requestStateSet(target);
@@ -727,11 +1014,16 @@ function resetCaptureAccumulators(stats) {
   stats.sample_texts = [];
   stats.panel_keys = {};
   stats.text_keys = {};
+  stats.hover_points_planned = 0;
+  stats.hover_steps_applied = 0;
+  stats.hover_path_source = null;
+  resetHoverCapture();
 }
 
 function endCurrentState(result, note) {
   const stats = sweep.currentStats;
   if (!stats) return;
+  resetHoverCapture();
 
   const zeroSignalCaptured =
     result === 'captured' &&
@@ -787,6 +1079,9 @@ function endCurrentState(result, note) {
     panel_dropped: stats.panel_dropped,
     text_dropped: stats.text_dropped,
     sample_texts: stats.sample_texts,
+    hover_points_planned: stats.hover_points_planned,
+    hover_steps_applied: stats.hover_steps_applied,
+    hover_path_source: stats.hover_path_source,
   };
 
   sweep.results.push(row);
@@ -817,15 +1112,28 @@ function mainTick() {
 
   if (sweep.phase === 'waiting_boot') {
     if (snap.game.state_id == null) return;
-    if (sweep.startEligibleAtMs === 0) {
-      sweep.startEligibleAtMs = nowMs() + CONFIG.startDelayMs;
+    if (!sweep.bootDetected) {
+      sweep.bootDetected = true;
       writeEvent({
         event: 'boot_detected',
         start_delay_ms: CONFIG.startDelayMs,
+        min_ui_frames_before_start: CONFIG.minUiFramesBeforeStart,
+      });
+    }
+
+    if (uiFrameSeq < CONFIG.minUiFramesBeforeStart) return;
+
+    if (sweep.startEligibleAtMs === 0) {
+      sweep.startEligibleAtMs = nowMs() + CONFIG.startDelayMs;
+      writeEvent({
+        event: 'boot_ready',
+        start_delay_ms: CONFIG.startDelayMs,
+        ui_frames_seen: uiFrameSeq,
         start_at_ms: sweep.startEligibleAtMs,
       });
       return;
     }
+
     if (nowMs() < sweep.startEligibleAtMs) return;
     sweep.phase = 'advance';
     sweep.phaseSinceMs = nowMs();
@@ -879,6 +1187,7 @@ function mainTick() {
     if (nowMs() - sweep.phaseSinceMs < CONFIG.settleMs) return;
 
     stats.capture_start_ts_ms = nowMs();
+    startHoverCapture(stats, snap);
     sweep.phase = 'capture';
     sweep.phaseSinceMs = nowMs();
     writeEvent({
@@ -886,6 +1195,9 @@ function mainTick() {
       target_state: stats.target_state,
       target_label: stats.target_label,
       dwell_ms: CONFIG.dwellMs,
+      hover_enabled: isHoverCaptureState(stats.target_state),
+      hover_point_count: stats.hover_points_planned,
+      hover_path_source: stats.hover_path_source,
     });
     return;
   }
@@ -950,7 +1262,8 @@ function installHooks() {
   Interceptor.attach(uiUpdateAndRenderPtr, {
     onEnter() {
       uiFrameSeq += 1;
-      snapshotNow();
+      const snap = snapshotNow();
+      maybeApplyHoverStep(snap);
 
       if (shouldCaptureCurrentState() && sweep.currentStats) {
         sweep.currentStats.frames += 1;
@@ -1102,6 +1415,7 @@ globalThis.panelSweepStatus = function panelSweepStatus() {
 globalThis.panelSweepStop = function panelSweepStop(reason) {
   if (sweep.done) return true;
   sweep.done = true;
+  resetHoverCapture();
   sweep.phase = 'done';
   sweep.phaseSinceMs = nowMs();
   writeEvent({
