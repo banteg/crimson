@@ -31,6 +31,7 @@
 //   CRIMSON_PANEL_SWEEP_DWELL_MS=1200
 //   CRIMSON_PANEL_SWEEP_MAX_UNIQUE_PANELS=1200
 //   CRIMSON_PANEL_SWEEP_MAX_UNIQUE_TEXTS=1800
+//   CRIMSON_PANEL_SWEEP_ZERO_SIGNAL_RETRIES=1
 //   CRIMSON_PANEL_SWEEP_CONSOLE=1
 
 const DEFAULT_LOG_DIR = 'C:\\share\\frida';
@@ -184,6 +185,7 @@ const CONFIG = {
 
   maxUniquePanelsPerState: Math.max(64, getIntEnv('CRIMSON_PANEL_SWEEP_MAX_UNIQUE_PANELS', 1200)),
   maxUniqueTextsPerState: Math.max(64, getIntEnv('CRIMSON_PANEL_SWEEP_MAX_UNIQUE_TEXTS', 1800)),
+  zeroSignalRetries: Math.max(0, getIntEnv('CRIMSON_PANEL_SWEEP_ZERO_SIGNAL_RETRIES', 1)),
   logToConsole: getBoolEnv('CRIMSON_PANEL_SWEEP_CONSOLE', false),
 };
 
@@ -352,10 +354,25 @@ function sanitizeText(raw) {
   if (raw == null) return null;
   let s = String(raw);
   if (!s) return null;
-  s = s.replace(/[\r\n\t]+/g, ' ');
-  s = s.replace(/\s+/g, ' ').trim();
+  const out = [];
+  for (let i = 0; i < s.length; i++) {
+    const ch = s.charAt(i);
+    const code = s.charCodeAt(i);
+    if (ch === '\ufffd') break;
+    if (code < 0x20) {
+      if (ch === ' ' || ch === '\t') {
+        out.push(' ');
+      } else {
+        break;
+      }
+      continue;
+    }
+    if (code > 0x7e) break;
+    out.push(ch);
+    if (out.length >= 256) break;
+  }
+  s = out.join('').replace(/\s+/g, ' ').trim();
   if (s.length === 0) return null;
-  if (s.length > 256) s = s.slice(0, 256);
   return s;
 }
 
@@ -659,6 +676,8 @@ function beginNextState() {
   sweep.currentStats = {
     target_state: target,
     target_label: labelForState(target),
+    attempt: 1,
+    retries: 0,
     request_ts_ms: nowMs(),
     entered_ts_ms: null,
     capture_start_ts_ms: null,
@@ -690,9 +709,55 @@ function beginNextState() {
   });
 }
 
+function resetCaptureAccumulators(stats) {
+  stats.entered_ts_ms = null;
+  stats.capture_start_ts_ms = null;
+  stats.capture_end_ts_ms = null;
+  stats.enter_elapsed_ms = null;
+  stats.capture_elapsed_ms = null;
+  stats.result = 'pending';
+  stats.result_note = null;
+  stats.frames = 0;
+  stats.unique_panel_count = 0;
+  stats.unique_text_count = 0;
+  stats.panel_duplicates = 0;
+  stats.text_duplicates = 0;
+  stats.panel_dropped = 0;
+  stats.text_dropped = 0;
+  stats.sample_texts = [];
+  stats.panel_keys = {};
+  stats.text_keys = {};
+}
+
 function endCurrentState(result, note) {
   const stats = sweep.currentStats;
   if (!stats) return;
+
+  const zeroSignalCaptured =
+    result === 'captured' &&
+    stats.frames === 0 &&
+    stats.unique_panel_count === 0 &&
+    stats.unique_text_count === 0;
+
+  if (zeroSignalCaptured && stats.retries < CONFIG.zeroSignalRetries) {
+    stats.retries += 1;
+    stats.attempt += 1;
+    resetCaptureAccumulators(stats);
+    stats.request_ts_ms = nowMs();
+    const ok = requestStateSet(stats.target_state);
+    sweep.phase = 'wait_enter';
+    sweep.phaseSinceMs = nowMs();
+    writeEvent({
+      event: 'state_retry',
+      target_state: stats.target_state,
+      target_label: stats.target_label,
+      reason: 'zero_signal_capture',
+      retry: stats.retries,
+      attempt: stats.attempt,
+      request_ok: ok,
+    });
+    return;
+  }
 
   stats.result = result;
   stats.result_note = note || null;
@@ -704,6 +769,8 @@ function endCurrentState(result, note) {
   const row = {
     target_state: stats.target_state,
     target_label: stats.target_label,
+    attempt: stats.attempt,
+    retries: stats.retries,
     request_ts_ms: stats.request_ts_ms,
     entered_ts_ms: stats.entered_ts_ms,
     capture_start_ts_ms: stats.capture_start_ts_ms,

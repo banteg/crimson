@@ -322,6 +322,10 @@ game-over-panel-reduce log="artifacts/frida/share/game_over_panel_trace.jsonl" o
     uv run scripts/game_over_panel_trace_reduce.py --log {{log}} --out {{out}}
 
 [unix]
+panel-state-resolution-reduce glob="artifacts/frida/share/panel_state_resolution_capture_*.jsonl" out_json="analysis/frida/panel_state_resolution_capture_summary.json" out_md="analysis/frida/panel_state_resolution_capture_report.md":
+    uv run scripts/panel_state_resolution_capture_reduce.py --glob "{{glob}}" --out-json "{{out_json}}" --out-md "{{out_md}}"
+
+[unix]
 demo-trial-validate log="analysis/frida/raw/demo_trial_overlay_trace.jsonl":
     uv run scripts/demo_trial_overlay_validate.py {{log}}
 

@@ -66,6 +66,31 @@ Each row includes:
 - per-state summary rows (`state_result`)
 - run summary row (`sweep_done`)
 
+## Post-capture triage
+
+Reduce one or more `panel_state_resolution_capture_*.jsonl` files into a run/resolution summary:
+
+```bash
+uv run scripts/panel_state_resolution_capture_reduce.py
+```
+
+or:
+
+```bash
+just panel-state-resolution-reduce
+```
+
+Outputs:
+
+- `analysis/frida/panel_state_resolution_capture_summary.json`
+- `analysis/frida/panel_state_resolution_capture_report.md`
+
+The reducer classifies files as:
+
+- `complete`: sweep finished with captured signal in all requested states.
+- `degraded`: sweep finished but has non-captured states and/or captured states with zero panel/text/frame signal.
+- `partial`: no `sweep_done` (often a startup handoff file if resolution changed immediately after attach).
+
 ## Useful env overrides
 
 - `CRIMSON_PANEL_SWEEP_STATES=...` override state list.
@@ -75,4 +100,5 @@ Each row includes:
 - `CRIMSON_PANEL_SWEEP_DWELL_MS=...` capture duration per state.
 - `CRIMSON_PANEL_SWEEP_MAX_UNIQUE_PANELS=...` per-state panel event cap.
 - `CRIMSON_PANEL_SWEEP_MAX_UNIQUE_TEXTS=...` per-state text event cap.
+- `CRIMSON_PANEL_SWEEP_ZERO_SIGNAL_RETRIES=...` retry count for states that capture zero frames/panels/text.
 - `CRIMSON_PANEL_SWEEP_CONSOLE=1` mirror JSONL rows to console.
