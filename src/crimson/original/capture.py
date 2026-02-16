@@ -870,57 +870,15 @@ def _seed_matches_rng_marks(seed: int, *, rng_head: list[int], rand_calls: objec
     return True
 
 
-def _infer_seed_from_rng_head(*, rng_head: list[int], rand_calls: object, rand_last: object) -> int | None:
-    if not rng_head:
-        return None
-
-    first_rand = int(rng_head[0])
-    if first_rand < 0 or first_rand > 0x7FFF:
-        return None
-
-    best: int | None = None
-    for high_word in (int(first_rand), int(first_rand) | 0x8000):
-        state_prefix = int(high_word) << 16
-        for state_low in range(0x10000):
-            state_after_first = (int(state_prefix) | int(state_low)) & _CRT_RAND_MOD_MASK
-            seed = ((int(state_after_first) - _CRT_RAND_INC) * _CRT_RAND_INV_MULT) & _CRT_RAND_MOD_MASK
-            if not _seed_matches_rng_marks(
-                int(seed),
-                rng_head=rng_head,
-                rand_calls=rand_calls,
-                rand_last=rand_last,
-            ):
-                continue
-            canonical_seed = int(seed) & 0x7FFFFFFF
-            if best is None or int(canonical_seed) < int(best):
-                best = int(canonical_seed)
-    return best
-
-
 def infer_capture_seed(capture: CaptureFile) -> int:
     for tick in sorted(capture.ticks, key=lambda item: int(item.tick_index)):
         seed_from_state = _infer_seed_from_rng_state_before(tick)
         if seed_from_state is not None:
             return int(seed_from_state)
-
-        rng_head = _rng_head_values(tick)
-        if not rng_head:
-            continue
-        marks = tick.checkpoint.rng_marks
-        rand_calls: object = int(marks.rand_calls)
-        rand_last: object = marks.rand_last
-        if int(rand_calls) <= 0 and int(tick.rng.calls) > 0:
-            rand_calls = int(tick.rng.calls)
-        if rand_last is None:
-            rand_last = tick.rng.last_value
-        seed = _infer_seed_from_rng_head(
-            rng_head=rng_head,
-            rand_calls=rand_calls,
-            rand_last=rand_last,
-        )
-        if seed is not None:
-            return int(seed)
-    return 0
+    raise ValueError(
+        "cannot infer replay seed from capture: missing rng `state_before_u32` telemetry; "
+        "pass an explicit seed override"
+    )
 
 
 def build_capture_dt_frame_overrides(capture: CaptureFile, *, tick_rate: int = 60) -> dict[int, float]:
