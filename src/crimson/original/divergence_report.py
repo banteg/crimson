@@ -1178,10 +1178,9 @@ def _run_actual_checkpoints(
     quest_inter_tick_rand_draws = int(inter_tick_rand_draws)
     quest_inter_tick_rand_draws_by_tick = inter_tick_rand_draws_by_tick
     if mode == int(GameMode.QUESTS):
-        # Quest captures infer replay seed from sampled tick-state; replaying
-        # capture outside-before counters as inter-tick draws over-advances RNG.
+        # Quest captures infer replay seed from sampled tick-state; keep fallback
+        # inter-tick injection at 0 while preserving capture override telemetry.
         quest_inter_tick_rand_draws = 0
-        quest_inter_tick_rand_draws_by_tick = None
 
     if mode == int(GameMode.SURVIVAL):
         run_result = run_survival_replay(

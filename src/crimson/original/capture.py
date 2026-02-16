@@ -986,20 +986,44 @@ def build_capture_dt_frame_ms_i32_overrides(capture: CaptureFile) -> dict[int, i
 
 
 def build_capture_inter_tick_rand_draws_overrides(capture: CaptureFile) -> dict[int, int] | None:
+    quest_capture = any(
+        int(getattr(tick, "game_mode_id", -1)) == int(GameMode.QUESTS)
+        or str(getattr(tick, "mode_hint", "")).strip() == "quest_mode_update"
+        for tick in capture.ticks
+    )
     out: dict[int, int] = {}
-    for tick in capture.ticks:
+    first_in_tick_rand_tick: int | None = None
+    for tick in sorted(capture.ticks, key=lambda item: int(item.tick_index)):
+        tick_index = int(tick.tick_index)
         outside_before_calls = getattr(tick, "rng_outside_before_calls", None)
         if outside_before_calls is None:
             outside_before_calls = tick.checkpoint.rng_marks.rand_outside_before_calls
         calls = _coerce_int_like(outside_before_calls)
         if calls is None or int(calls) < 0:
             continue
-        out[int(tick.tick_index)] = int(calls)
+        out[int(tick_index)] = int(calls)
+
+        if quest_capture and first_in_tick_rand_tick is None:
+            in_tick_calls_candidates = [
+                _coerce_int_like(getattr(tick.rng, "calls", None)),
+                _coerce_int_like(tick.checkpoint.rng_marks.rand_calls),
+            ]
+            in_tick_calls = max((int(value) for value in in_tick_calls_candidates if value is not None), default=None)
+            if in_tick_calls is not None and int(in_tick_calls) > 0:
+                first_in_tick_rand_tick = int(tick_index)
 
     if out:
         first_tick_index = min(out)
         # Inferred replay seed already matches the first sampled tick state.
         out[int(first_tick_index)] = 0
+        if quest_capture:
+            if first_in_tick_rand_tick is None:
+                for tick_index in tuple(out):
+                    out[int(tick_index)] = 0
+            else:
+                for tick_index in tuple(out):
+                    if int(tick_index) < int(first_in_tick_rand_tick):
+                        out[int(tick_index)] = 0
         return out
     return None
 

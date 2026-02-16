@@ -937,6 +937,40 @@ def test_build_capture_inter_tick_rand_draws_overrides_uses_checkpoint_marks(tmp
     assert overrides == {10: 0, 11: 3}
 
 
+def test_build_capture_inter_tick_rand_draws_overrides_quest_delays_until_first_in_tick_rand(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=0)
+    tick1 = _base_tick(tick_index=1, elapsed_ms=16)
+    tick2 = _base_tick(tick_index=2, elapsed_ms=32)
+    tick3 = _base_tick(tick_index=3, elapsed_ms=48)
+    for tick in (tick0, tick1, tick2, tick3):
+        tick["mode_hint"] = "quest_mode_update"
+        tick["game_mode_id"] = int(GameMode.QUESTS)
+        assert isinstance(tick["checkpoint"], dict)
+        rng_marks = tick["checkpoint"]["rng_marks"]
+        assert isinstance(rng_marks, dict)
+        rng_marks["rand_outside_before_calls"] = 1
+        rng_marks["rand_calls"] = 0
+
+    assert isinstance(tick0["checkpoint"], dict)
+    assert isinstance(tick0["checkpoint"]["rng_marks"], dict)
+    tick0["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = 24021
+
+    assert isinstance(tick2["checkpoint"], dict)
+    assert isinstance(tick2["checkpoint"]["rng_marks"], dict)
+    tick2["checkpoint"]["rng_marks"]["rand_calls"] = 2
+
+    obj = _capture_obj(ticks=[tick0, tick1, tick2, tick3])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    overrides = build_capture_inter_tick_rand_draws_overrides(capture)
+
+    assert overrides == {0: 0, 1: 0, 2: 1, 3: 1}
+
+
 def test_build_capture_inter_tick_rand_draws_overrides_returns_none_when_missing(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=0)
     tick1 = _base_tick(tick_index=1, elapsed_ms=16)
