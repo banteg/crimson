@@ -7,11 +7,12 @@ from ..ids import PerkId
 
 
 def update_pyrokinetic(ctx: PerksUpdateEffectsCtx) -> None:
-    if not ctx.players:
+    source_player = ctx.aim_source_player()
+    if source_player is None:
         return
     if ctx.creatures is None:
         return
-    if not perk_active(ctx.players[0], PerkId.PYROKINETIC):
+    if not perk_active(source_player, PerkId.PYROKINETIC):
         return
 
     target = ctx.aim_target()

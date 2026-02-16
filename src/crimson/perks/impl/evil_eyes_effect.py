@@ -10,9 +10,14 @@ def update_evil_eyes_target(ctx: PerksUpdateEffectsCtx) -> None:
     if not ctx.players:
         return
 
-    target = ctx.aim_target()
+    source_player = ctx.aim_source_player()
     player0 = ctx.players[0]
-    player0.evil_eyes_target_creature = target if perk_active(player0, PerkId.EVIL_EYES) else -1
+    if source_player is None or not perk_active(source_player, PerkId.EVIL_EYES):
+        player0.evil_eyes_target_creature = -1
+        return
+
+    target = ctx.aim_target()
+    player0.evil_eyes_target_creature = target
 
 
 HOOKS = PerkHooks(

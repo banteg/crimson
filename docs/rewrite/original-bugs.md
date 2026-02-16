@@ -251,3 +251,27 @@ Rewrite behavior:
 
 - Default: use the full `0x180` creature slot range for Jinxed random kills.
 - With `--preserve-bugs`: keep native `% 0x17f` behavior.
+
+## 11) Cursor-target perks read player 1 aim only in co-op
+
+Native behavior:
+
+- In `perks_update_effects` (`0x00406b40`), Doctor targeting, Pyrokinetic
+  hit lookup, and Evil Eyes target selection all source aim from
+  `player_state_table.aim_x/aim_y` (player 1) regardless of which player is
+  alive/aiming.
+- In co-op, if player 1 dies, these effects can keep using stale aim data and
+  ignore surviving-player aim.
+
+Why it’s likely a bug:
+
+- These are cursor/aim-driven effects but are hard-wired to player 1 state.
+- The behavior is asymmetric in co-op and can leave the surviving player unable
+  to steer these perks as expected.
+
+Rewrite behavior:
+
+- Default: source cursor-target perk aim from the first alive player (player 1,
+  then player 2, etc.), which keeps Doctor/Pyrokinetic/Evil Eyes responsive in
+  co-op after player 1 death.
+- With `--preserve-bugs`: keep native player-1-only aim sourcing.

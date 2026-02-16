@@ -217,12 +217,24 @@ class BaseGameplayMode:
         if not creatures:
             return
 
-        if perk_count_get(self.player, PerkId.DOCTOR) <= 0:
-            return
+        target_player = self.player
+        if bool(self.state.preserve_bugs):
+            if perk_count_get(target_player, PerkId.DOCTOR) <= 0:
+                return
+        else:
+            target_player = None
+            for player in self.world.players:
+                if float(player.health) <= 0.0:
+                    continue
+                if perk_count_get(player, PerkId.DOCTOR) > 0:
+                    target_player = player
+                    break
+            if target_player is None:
+                return
 
         target_idx = _creature_find_in_radius(
             creatures,
-            pos=self.player.aim,
+            pos=target_player.aim,
             radius=12.0,
             start_index=0,
         )
