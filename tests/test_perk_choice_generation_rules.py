@@ -12,6 +12,7 @@ from crimson.persistence import save_status
 from crimson.perks import PerkId
 from crimson.perks.availability import perks_rebuild_available
 from crimson.perks.selection import PERK_ID_MAX, perk_generate_choices
+from crimson.weapons import WeaponId
 
 
 class _SeqRng:
@@ -64,6 +65,60 @@ def test_perk_generate_choices_rejects_pyromaniac_without_flamethrower() -> None
 
     player = PlayerState(index=0, pos=Vec2(), weapon_id=1)
     choices = perk_generate_choices(state, player, game_mode=int(GameMode.SURVIVAL), player_count=1)
+    assert PerkId.PYROMANIAC not in choices
+
+
+def test_perk_generate_choices_default_allows_pyromaniac_when_any_alive_player_has_flamethrower() -> None:
+    state = GameplayState(rng=_SeqRng([38, 1, 2, 3, 4, 5, 6, 7]), preserve_bugs=False)
+    state._perk_available_unlock_index = 0
+    for perk_id in (
+        PerkId.PYROMANIAC,
+        PerkId.SHARPSHOOTER,
+        PerkId.FASTLOADER,
+        PerkId.LEAN_MEAN_EXP_MACHINE,
+        PerkId.LONG_DISTANCE_RUNNER,
+        PerkId.PYROKINETIC,
+        PerkId.INSTANT_WINNER,
+        PerkId.GRIM_DEAL,
+    ):
+        state.perk_available[int(perk_id)] = True
+
+    player0 = PlayerState(index=0, pos=Vec2(), weapon_id=1)
+    player1 = PlayerState(index=1, pos=Vec2(), weapon_id=int(WeaponId.FLAMETHROWER))
+    choices = perk_generate_choices(
+        state,
+        player0,
+        players=[player0, player1],
+        game_mode=int(GameMode.SURVIVAL),
+        player_count=2,
+    )
+    assert PerkId.PYROMANIAC in choices
+
+
+def test_perk_generate_choices_preserve_bugs_keeps_player1_pyromaniac_gate() -> None:
+    state = GameplayState(rng=_SeqRng([38, 1, 2, 3, 4, 5, 6, 7]), preserve_bugs=True)
+    state._perk_available_unlock_index = 0
+    for perk_id in (
+        PerkId.PYROMANIAC,
+        PerkId.SHARPSHOOTER,
+        PerkId.FASTLOADER,
+        PerkId.LEAN_MEAN_EXP_MACHINE,
+        PerkId.LONG_DISTANCE_RUNNER,
+        PerkId.PYROKINETIC,
+        PerkId.INSTANT_WINNER,
+        PerkId.GRIM_DEAL,
+    ):
+        state.perk_available[int(perk_id)] = True
+
+    player0 = PlayerState(index=0, pos=Vec2(), weapon_id=1)
+    player1 = PlayerState(index=1, pos=Vec2(), weapon_id=int(WeaponId.FLAMETHROWER))
+    choices = perk_generate_choices(
+        state,
+        player0,
+        players=[player0, player1],
+        game_mode=int(GameMode.SURVIVAL),
+        player_count=2,
+    )
     assert PerkId.PYROMANIAC not in choices
 
 

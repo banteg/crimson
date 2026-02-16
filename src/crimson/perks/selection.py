@@ -92,6 +92,7 @@ def perk_generate_choices(
     state: GameplayState,
     player: PlayerState,
     *,
+    players: list[PlayerState] | None = None,
     game_mode: int,
     player_count: int,
     count: int | None = None,
@@ -110,6 +111,18 @@ def perk_generate_choices(
     player_perk_counts = player.perk_counts
     player_weapon_id = int(player.weapon_id)
     death_clock_active = int(player_perk_counts[int(PerkId.DEATH_CLOCK)]) > 0
+    flamethrower_id = int(WeaponId.FLAMETHROWER)
+
+    pyromaniac_allowed = player_weapon_id == flamethrower_id
+    if not bool(state.preserve_bugs) and int(player_count) > 1:
+        pyromaniac_allowed = False
+        source_players = players if players is not None else [player]
+        for source_player in source_players:
+            if float(source_player.health) <= 0.0:
+                continue
+            if int(source_player.weapon_id) == flamethrower_id:
+                pyromaniac_allowed = True
+                break
 
     def _select_random_offer() -> PerkId:
         for _ in range(1000):
@@ -139,8 +152,9 @@ def perk_generate_choices(
             attempts += 1
             perk_id = _select_random_offer()
 
-            # Pyromaniac can only be offered if the current weapon is Flamethrower.
-            if perk_id == PerkId.PYROMANIAC and player_weapon_id != int(WeaponId.FLAMETHROWER):
+            # Native gates this on player-1 weapon only. In default mode, allow
+            # it in co-op when any alive player has Flamethrower equipped.
+            if perk_id == PerkId.PYROMANIAC and not pyromaniac_allowed:
                 continue
 
             if death_clock_active and perk_id in _DEATH_CLOCK_BLOCKED:
@@ -204,6 +218,7 @@ def perk_auto_pick(
                 for perk in perk_generate_choices(
                     state,
                     players[0],
+                    players=players,
                     game_mode=game_mode,
                     player_count=player_count,
                     count=7,
@@ -249,6 +264,7 @@ def perk_selection_current_choices(
             for perk in perk_generate_choices(
                 state,
                 players[0],
+                players=players,
                 game_mode=game_mode,
                 player_count=player_count,
                 count=7,

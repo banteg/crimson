@@ -183,17 +183,26 @@ class LocalInputInterpreter:
     def __init__(self) -> None:
         self._states: list[_PerPlayerInputState] = [_PerPlayerInputState() for _ in range(4)]
 
+    @staticmethod
+    def _state_slot_for_player(*, player_index: int, player: PlayerState | None = None) -> int:
+        slot = int(player_index)
+        if player is not None:
+            slot = int(getattr(player, "index", slot))
+        return max(0, min(3, slot))
+
     def reset(self, *, players: Sequence[PlayerState] | None = None) -> None:
         for idx in range(4):
             state = self._states[idx]
             state.move_target = Vec2(-1.0, -1.0)
             state.computer_target_creature_index = -1
-            heading = 0.0
-            if players is not None and idx < len(players):
-                candidate = float(getattr(players[idx], "aim_heading", 0.0))
-                if _is_finite(candidate):
-                    heading = candidate
-            state.aim_heading = float(heading)
+            state.aim_heading = 0.0
+        if players is None:
+            return
+        for idx, player in enumerate(players):
+            slot = self._state_slot_for_player(player_index=int(idx), player=player)
+            candidate = float(getattr(player, "aim_heading", 0.0))
+            if _is_finite(candidate):
+                self._states[slot].aim_heading = float(candidate)
 
     @staticmethod
     def _nearest_living_creature_index(pos: Vec2, creatures: Sequence[_ComputerAimCreature]) -> int | None:
@@ -217,8 +226,8 @@ class LocalInputInterpreter:
         player: PlayerState,
         creatures: Sequence[_ComputerAimCreature],
     ) -> int | None:
-        idx = max(0, min(3, int(player_index)))
-        state = self._states[idx]
+        slot = self._state_slot_for_player(player_index=int(player_index), player=player)
+        state = self._states[slot]
         candidate = self._nearest_living_creature_index(player.pos, creatures)
         current = int(state.computer_target_creature_index)
 
@@ -248,8 +257,8 @@ class LocalInputInterpreter:
         return int(current)
 
     def _state_for_player(self, player_index: int, *, player: PlayerState | None = None) -> _PerPlayerInputState:
-        idx = max(0, min(3, int(player_index)))
-        state = self._states[idx]
+        slot = self._state_slot_for_player(player_index=int(player_index), player=player)
+        state = self._states[slot]
         if player is not None and (not _is_finite(state.aim_heading)):
             state.aim_heading = float(getattr(player, "aim_heading", 0.0) or 0.0)
         return state
