@@ -125,6 +125,95 @@ def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
     assert creature.pos.y == pytest.approx(1088.0)
 
 
+def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    pool = CreaturePool()
+
+    start_pos = Vec2(120.0, 160.0)
+    for idx, type_id in enumerate((CreatureTypeId.ZOMBIE, CreatureTypeId.SPIDER_SP2)):
+        creature = pool.entries[idx]
+        creature.active = True
+        creature.type_id = int(type_id)
+        creature.hp = 50.0
+        creature.hitbox_size = CREATURE_HITBOX_ALIVE
+        creature.flags = CreatureFlags(0)
+        creature.ai_mode = 0
+        creature.move_speed = 2.0
+        creature.size = 45.0
+        creature.pos = start_pos
+        creature.contact_damage = 0.0
+
+    pool.update(1.0 / 60.0, state=state, players=[player], rand=lambda: 0)
+
+    base = pool.entries[0]
+    variant = pool.entries[1]
+    base_delta = base.pos - start_pos
+    variant_delta = variant.pos - start_pos
+
+    assert variant_delta.x == pytest.approx(base_delta.x, abs=1e-9)
+    assert variant_delta.y == pytest.approx(base_delta.y, abs=1e-9)
+    assert variant.vel.x == pytest.approx(base.vel.x, abs=1e-9)
+    assert variant.vel.y == pytest.approx(base.vel.y, abs=1e-9)
+
+
+def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(900.0, 900.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    pool = CreaturePool()
+
+    link = pool.entries[0]
+    link.active = True
+    link.type_id = int(CreatureTypeId.ZOMBIE)
+    link.hp = 100.0
+    link.hitbox_size = CREATURE_HITBOX_ALIVE
+    link.flags = CreatureFlags(0)
+    link.ai_mode = 0
+    link.move_speed = 0.0
+    link.size = 45.0
+    link.pos = Vec2(100.0, 100.0)
+
+    near = pool.entries[1]
+    near.active = True
+    near.type_id = int(CreatureTypeId.ZOMBIE)
+    near.hp = 100.0
+    near.hitbox_size = CREATURE_HITBOX_ALIVE
+    near.flags = CreatureFlags(0)
+    near.ai_mode = 5
+    near.link_index = 0
+    near.target_offset = Vec2()
+    near.move_speed = 2.0
+    near.size = 45.0
+    near.pos = Vec2(100.0, 50.0)  # dist to link = 50 -> local_scale = 50 / 64
+    near.contact_damage = 0.0
+
+    far = pool.entries[2]
+    far.active = True
+    far.type_id = int(CreatureTypeId.ZOMBIE)
+    far.hp = 100.0
+    far.hitbox_size = CREATURE_HITBOX_ALIVE
+    far.flags = CreatureFlags(0)
+    far.ai_mode = 5
+    far.link_index = 0
+    far.target_offset = Vec2()
+    far.move_speed = 2.0
+    far.size = 45.0
+    far.pos = Vec2(100.0, 20.0)  # dist to link = 80 -> local_scale = 1.0
+    far.contact_damage = 0.0
+
+    near_start = near.pos
+    far_start = far.pos
+    pool.update(1.0 / 60.0, state=state, players=[player], rand=lambda: 0)
+
+    near_step = (near.pos - near_start).length()
+    far_step = (far.pos - far_start).length()
+
+    assert near.move_scale == pytest.approx(50.0 * 0.015625, abs=1e-6)
+    assert far.move_scale == pytest.approx(1.0, abs=1e-6)
+    assert near_step < far_step
+    assert near_step == pytest.approx(far_step * near.move_scale, rel=5e-6, abs=2e-6)
+
+
 def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
     state = GameplayState()
     pool = CreaturePool()

@@ -66,8 +66,7 @@ CREATURE_POOL_SIZE = 0x180
 
 CONTACT_DAMAGE_PERIOD = 0.5
 
-# The native uses per-type speed scaling; until we port the exact table, keep a
-# single global factor (native multiplies `move_speed * 30.0` in creature_update_all).
+# Native movement path multiplies by a fixed `30.0` factor in `creature_update_all`.
 CREATURE_SPEED_SCALE = 30.0
 
 # Base heading turn rate multiplier (angle_approach clamps by frame_dt internally).
