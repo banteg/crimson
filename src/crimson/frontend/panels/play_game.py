@@ -242,7 +242,7 @@ class PlayGameMenuView(PanelMenuView):
     def _lan_lockstep_enabled(self) -> bool:
         cvar = self.state.console.cvars.get("cv_lanLockstepEnabled")
         if cvar is None:
-            return False
+            return True
         return bool(cvar.value_f)
 
     def _mode_entries(self) -> tuple[list[_PlayGameModeEntry], float, float, float]:
@@ -340,8 +340,8 @@ class PlayGameMenuView(PanelMenuView):
             entries.append(
                 _PlayGameModeEntry(
                     key="lan",
-                    label=" LAN ",
-                    tooltip="Host or join a deterministic LAN lockstep session.",
+                    label=" Network ",
+                    tooltip="Host or join a rollback-first network session.",
                     action="open_lan_session",
                 )
             )
