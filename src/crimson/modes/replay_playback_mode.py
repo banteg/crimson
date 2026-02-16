@@ -197,7 +197,7 @@ class ReplayPlaybackMode:
             center_y = icon_y + icon_h * 0.5
             dst = rl.Rectangle(center_x, center_y, icon_w, icon_h)
             origin = rl.Vector2(icon_w * 0.5, icon_h * 0.5)
-            rotation = float(max(0, int(elapsed_seconds))) * 6.0
+            rotation = max(0.0, float(elapsed_seconds)) * 6.0
             rl.draw_texture_pro(
                 assets.clock_pointer,
                 src,
