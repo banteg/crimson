@@ -151,14 +151,16 @@ def _key_down_with_single_player_alt(
     return False
 
 
-def _aim_pov_left_active() -> bool:
-    # Native `input_aim_pov_left_active` reads joystick POV index 0.
-    return bool(input_code_is_down_for_player(_AIM_POV_LEFT_CODE, player_index=0))
+def _aim_pov_left_active(*, player_index: int, preserve_bugs: bool) -> bool:
+    # Native `input_aim_pov_left_active` always reads joystick POV index 0.
+    pov_index = 0 if bool(preserve_bugs) else int(player_index)
+    return bool(input_code_is_down_for_player(_AIM_POV_LEFT_CODE, player_index=pov_index))
 
 
-def _aim_pov_right_active() -> bool:
-    # Native `input_aim_pov_right_active` reads joystick POV index 0.
-    return bool(input_code_is_down_for_player(_AIM_POV_RIGHT_CODE, player_index=0))
+def _aim_pov_right_active(*, player_index: int, preserve_bugs: bool) -> bool:
+    # Native `input_aim_pov_right_active` always reads joystick POV index 0.
+    pov_index = 0 if bool(preserve_bugs) else int(player_index)
+    return bool(input_code_is_down_for_player(_AIM_POV_RIGHT_CODE, player_index=pov_index))
 
 
 def clear_input_edges(inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
@@ -287,6 +289,7 @@ class LocalInputInterpreter:
         screen_center: Vec2,
         dt_frame: float,
         creatures: Sequence[_ComputerAimCreature] | None = None,
+        preserve_bugs: bool = False,
     ) -> PlayerInput:
         idx = max(0, min(3, int(player_index)))
         state = self._state_for_player(idx, player=player)
@@ -459,9 +462,9 @@ class LocalInputInterpreter:
             else:
                 aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.JOYSTICK:
-            if _aim_pov_right_active():
+            if _aim_pov_right_active(player_index=idx, preserve_bugs=bool(preserve_bugs)):
                 heading = float(heading + float(dt_frame) * _AIM_JOYSTICK_TURN_RATE)
-            if _aim_pov_left_active():
+            if _aim_pov_left_active(player_index=idx, preserve_bugs=bool(preserve_bugs)):
                 heading = float(heading - float(dt_frame) * _AIM_JOYSTICK_TURN_RATE)
             aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.COMPUTER:
@@ -501,11 +504,7 @@ class LocalInputInterpreter:
         fire_pressed = bool(input_code_is_pressed_for_player(fire_key, player_index=idx))
         if aim_scheme is AimScheme.COMPUTER and computer_auto_fire:
             fire_down = True
-        reload_pressed = (
-            bool(input_code_is_pressed_for_player(reload_key, player_index=idx))
-            if _single_player_alt_keys_enabled(config, player_index=idx)
-            else False
-        )
+        reload_pressed = bool(input_code_is_pressed_for_player(reload_key, player_index=idx))
 
         return PlayerInput(
             move=move_vec,
@@ -529,6 +528,7 @@ class LocalInputInterpreter:
         screen_to_world: Callable[[Vec2], Vec2],
         dt_frame: float,
         creatures: Sequence[_ComputerAimCreature] | None = None,
+        preserve_bugs: bool = False,
     ) -> list[PlayerInput]:
         mouse_world = screen_to_world(mouse_screen)
         screen_center = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
@@ -544,6 +544,7 @@ class LocalInputInterpreter:
                     screen_center=screen_center,
                     dt_frame=float(dt_frame),
                     creatures=creatures,
+                    preserve_bugs=bool(preserve_bugs),
                 )
             )
         return out
