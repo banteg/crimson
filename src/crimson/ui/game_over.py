@@ -36,7 +36,7 @@ from .perk_menu import (
 )
 from .cursor import draw_menu_cursor
 from .menu_panel import draw_classic_menu_panel
-from .text_input import poll_text_input
+from .text_input import flush_text_input_events, poll_text_input
 
 GAME_OVER_PANEL_X = -45.0
 # `ui_menu_layout_init` sets game-over panel pos to (-45, 110):
@@ -310,6 +310,10 @@ class GameOverUi:
             records = read_highscore_table(path, game_mode_id=game_mode_id)
             idx = rank_index(records, candidate)
             self.rank = int(idx)
+            flush_text_input_events()
+            # Match native `grim_was_key_pressed(ENTER)` after the input flush.
+            rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
+            rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
             if idx < TABLE_MAX:
                 self.phase = 0
                 self.input_text = player_name_default[:NAME_MAX_EDIT]

@@ -18,3 +18,10 @@ def poll_text_input(max_len: int, *, allow_space: bool = True) -> str:
         out += chr(int(value))
     return out
 
+
+def flush_text_input_events() -> None:
+    # Native flows call `grim_flush_input()` before entering high-score name input.
+    while rl.get_char_pressed():
+        pass
+    while rl.get_key_pressed():
+        pass
