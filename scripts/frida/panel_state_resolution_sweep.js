@@ -584,19 +584,60 @@ function collectHoverCandidatesFromUi(stateId, snapshot) {
   return deduped;
 }
 
+function dedupeHoverPoints(points, maxPoints) {
+  const out = [];
+  const cap = Math.max(1, maxPoints | 0);
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i];
+    if (!p) continue;
+    const x = p.x;
+    const y = p.y;
+    if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+
+    let near = false;
+    for (let j = 0; j < out.length; j++) {
+      const d = out[j];
+      if (Math.abs(d.x - x) <= 8.0 && Math.abs(d.y - y) <= 8.0) {
+        near = true;
+        break;
+      }
+    }
+    if (near) continue;
+
+    const row = { x: round3(x), y: round3(y) };
+    if (p.ui_index != null && Number.isFinite(p.ui_index)) row.ui_index = p.ui_index | 0;
+    out.push(row);
+    if (out.length >= cap) break;
+  }
+  return out;
+}
+
 function buildHoverPlan(stateId, snapshot) {
+  const sid = stateId | 0;
   const uiCandidates = collectHoverCandidatesFromUi(stateId, snapshot);
+  const fallback = fallbackHoverPoints(stateId, snapshot);
+
+  const merged = [];
+  const source = [];
+  const preferFallback = sid === 14 || sid === 15 || sid === 16;
+
+  if (preferFallback && fallback.length > 0) {
+    for (let i = 0; i < fallback.length; i++) merged.push(fallback[i]);
+    source.push('fallback');
+  }
   if (uiCandidates.length > 0) {
-    return {
-      source: 'ui_bounds',
-      points: uiCandidates,
-    };
+    for (let i = 0; i < uiCandidates.length; i++) merged.push(uiCandidates[i]);
+    source.push('ui_bounds');
+  }
+  if (!preferFallback && fallback.length > 0) {
+    for (let i = 0; i < fallback.length; i++) merged.push(fallback[i]);
+    source.push('fallback');
   }
 
-  const fallback = fallbackHoverPoints(stateId, snapshot);
+  const points = dedupeHoverPoints(merged, CONFIG.hoverMaxPointsPerState);
   return {
-    source: fallback.length > 0 ? 'fallback' : 'none',
-    points: fallback,
+    source: points.length > 0 ? source.join('+') : 'none',
+    points: points,
   };
 }
 
@@ -944,10 +985,12 @@ function beginNextState() {
     sweep.done = true;
     sweep.phase = 'done';
     sweep.phaseSinceMs = nowMs();
+    const resultCounts = summarizeResultCounts(sweep.results);
     writeEvent({
       event: 'sweep_done',
       states_total: CONFIG.sweepStates.length,
-      results: sweep.results,
+      states_completed: sweep.results.length,
+      result_counts: resultCounts,
       output_files: outPathsByResolution,
     });
     requestStateSet(0);
@@ -1098,6 +1141,18 @@ function endCurrentState(result, note) {
   sweep.currentStats = null;
   sweep.phase = 'advance';
   sweep.phaseSinceMs = nowMs();
+}
+
+function summarizeResultCounts(rows) {
+  const out = {};
+  if (!Array.isArray(rows)) return out;
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row || typeof row !== 'object') continue;
+    const key = String(row.result || 'unknown');
+    out[key] = (out[key] || 0) + 1;
+  }
+  return out;
 }
 
 function mainTick() {
@@ -1418,10 +1473,12 @@ globalThis.panelSweepStop = function panelSweepStop(reason) {
   resetHoverCapture();
   sweep.phase = 'done';
   sweep.phaseSinceMs = nowMs();
+  const resultCounts = summarizeResultCounts(sweep.results);
   writeEvent({
     event: 'sweep_stopped',
     reason: reason == null ? 'manual_stop' : String(reason),
-    results: sweep.results,
+    states_completed: sweep.results.length,
+    result_counts: resultCounts,
     output_files: outPathsByResolution,
   });
   return true;
