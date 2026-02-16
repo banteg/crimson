@@ -689,6 +689,7 @@ def player_update(
         state,
         detail_preset=int(detail_preset),
         creatures=creatures,
+        players=players,
     )
 
     while player.move_phase > 14.0:

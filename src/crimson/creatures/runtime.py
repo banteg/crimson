@@ -419,7 +419,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
         elif perk_active(ctx.player, PerkId.VEINS_OF_POISON):
             creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
-    player_take_damage(ctx.state, ctx.player, float(creature.contact_damage), dt=ctx.dt, rand=ctx.rand)
+    player_take_damage(ctx.state, ctx.player, float(creature.contact_damage), dt=ctx.dt, rand=ctx.rand, players=ctx.players)
 
     if ctx.fx_queue is not None:
         push_dir = (ctx.player.pos - creature.pos).normalized()

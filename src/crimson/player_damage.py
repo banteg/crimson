@@ -6,6 +6,7 @@ This is a minimal, rewrite-focused port of `player_take_damage` (0x00425e50).
 See: `docs/crimsonland-exe/player-damage.md`.
 """
 
+from collections.abc import Sequence
 from typing import Callable
 
 from .perks import PerkId
@@ -29,6 +30,7 @@ def player_take_damage(
     *,
     dt: float | None = None,
     rand: Callable[[], int] | None = None,
+    players: Sequence[PlayerState] | None = None,
 ) -> float:
     """Apply damage to a player, returning the actual damage applied."""
 
@@ -52,7 +54,12 @@ def player_take_damage(
     if float(player.shield_timer) > 0.0:
         return 0.0
 
-    was_alive = float(player.health) > 0.0
+    was_alive_source = player
+    # Native bug: the pre-hit alive flag is read from player 1 health even when
+    # damaging player 2; preserve this under `--preserve-bugs`.
+    if bool(state.preserve_bugs) and players:
+        was_alive_source = players[0]
+    was_alive = float(was_alive_source.health) > 0.0
 
     if perk_active(player, PerkId.THICK_SKINNED):
         # Native uses an f32 constant (`~0.666`) here, not exact 2/3.

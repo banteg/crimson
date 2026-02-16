@@ -106,3 +106,29 @@ def test_player_take_damage_sets_survival_damage_seen_even_when_shielded() -> No
 
     assert applied == 0.0
     assert state.survival_reward_damage_seen is True
+
+
+def test_player_take_damage_uses_target_player_alive_guard_by_default() -> None:
+    state = GameplayState(preserve_bugs=False)
+    player1 = PlayerState(index=0, pos=Vec2(), health=-1.0)
+    player2 = PlayerState(index=1, pos=Vec2(), health=5.0, death_timer=16.0)
+
+    applied = player_take_damage(state, player2, 10.0, dt=0.1, rand=lambda: 0, players=[player1, player2])
+
+    assert applied == 10.0
+    assert player2.health == -5.0
+    assert player2.death_timer == 16.0 - 0.1 * 28.0
+    assert state.sfx_queue == ["sfx_trooper_die_01"]
+
+
+def test_player_take_damage_preserve_bugs_uses_player1_alive_guard() -> None:
+    state = GameplayState(preserve_bugs=True)
+    player1 = PlayerState(index=0, pos=Vec2(), health=-1.0)
+    player2 = PlayerState(index=1, pos=Vec2(), health=5.0, death_timer=16.0)
+
+    applied = player_take_damage(state, player2, 10.0, dt=0.1, rand=lambda: 0, players=[player1, player2])
+
+    assert applied == 10.0
+    assert player2.health == -5.0
+    assert player2.death_timer == 16.0 - 0.1 * 28.0
+    assert state.sfx_queue == []
