@@ -389,9 +389,14 @@ def draw_hud_overlay(
             heart_center_base = Vec2(27.0, 12.0)
             heart_step = Vec2(0.0, 15.0)
             heart_scale = 0.5
+        player0_low_health = player_count > 0 and float(hud_players[0].health) < 30.0
 
         for idx, hud_player in enumerate(hud_players):
             pulse_speed = 5.0 if hud_player.health < 30.0 else 2.0
+            if bool(preserve_bugs) and player_count > 1 and idx > 0 and player0_low_health:
+                # Native 2-player HUD uses player 1 low-health pulse speed as a
+                # shared baseline for later player heart pulses.
+                pulse_speed = 5.0
             phase = float(idx) * (math.pi * 0.5)
             pulse = ((math.sin(t * pulse_speed + phase) ** 4) * 4.0 + 14.0) * heart_scale
             size = pulse * 2.0

@@ -90,3 +90,76 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch) -> Non
     assert (64.0, 22.0, 120.0, 9.0) in health_bars
     assert (64.0, 6.0, 96.0, 9.0) in health_bars
     assert (64.0, 22.0, 60.0, 9.0) in health_bars
+
+
+def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeypatch) -> None:
+    monkeypatch.setattr("crimson.ui.hud.rl.get_screen_width", lambda: 1024)
+    monkeypatch.setattr("crimson.ui.hud.rl.get_screen_height", lambda: 768)
+    monkeypatch.setattr("crimson.ui.hud.rl.draw_text", lambda *args, **kwargs: None)  # noqa: ARG005
+
+    life_heart = _TextureStub(32, 32)
+    assets = HudAssets(
+        game_top=None,
+        life_heart=life_heart,
+        ind_life=None,
+        ind_panel=None,
+        ind_bullet=None,
+        ind_fire=None,
+        ind_rocket=None,
+        ind_electric=None,
+        wicons=None,
+        clock_table=None,
+        clock_pointer=None,
+        bonuses=None,
+        missing=[],
+    )
+
+    player0 = PlayerState(index=0, pos=Vec2(), health=20.0)
+    player1 = PlayerState(index=1, pos=Vec2(), health=100.0)
+
+    draws: list[tuple[object, float, float, float, float]] = []
+
+    def _draw_texture_pro(texture, _src, dst, _origin, _rotation, _tint) -> None:  # noqa: ANN001,ARG001
+        draws.append((texture, float(dst.x), float(dst.y), float(dst.width), float(dst.height)))
+
+    monkeypatch.setattr("crimson.ui.hud.rl.draw_texture_pro", _draw_texture_pro)
+
+    draws.clear()
+    draw_hud_overlay(
+        assets,
+        state=HudState(),
+        player=player0,
+        players=[player0, player1],
+        bonus_hud=None,
+        elapsed_ms=300.0,
+        score=0,
+        font=None,
+        alpha=1.0,
+        show_weapon=False,
+        show_xp=False,
+        show_time=False,
+        preserve_bugs=False,
+    )
+    default_hearts = [tuple(dst) for tex, *dst in draws if tex is life_heart]
+
+    draws.clear()
+    draw_hud_overlay(
+        assets,
+        state=HudState(),
+        player=player0,
+        players=[player0, player1],
+        bonus_hud=None,
+        elapsed_ms=300.0,
+        score=0,
+        font=None,
+        alpha=1.0,
+        show_weapon=False,
+        show_xp=False,
+        show_time=False,
+        preserve_bugs=True,
+    )
+    preserve_hearts = [tuple(dst) for tex, *dst in draws if tex is life_heart]
+
+    assert len(default_hearts) == 2
+    assert len(preserve_hearts) == 2
+    assert preserve_hearts[1][2] < default_hearts[1][2] - 1.0
