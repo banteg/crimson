@@ -51,8 +51,8 @@ class FontView:
 
     def open(self) -> None:
         self._missing_assets.clear()
-        self._small = load_small_font(self._assets_root, self._missing_assets)
-        self._grim_mono = load_grim_mono_font(self._assets_root, self._missing_assets)
+        self._small = load_small_font(self._assets_root)
+        self._grim_mono = load_grim_mono_font(self._assets_root)
         self._apply_grim_filter()
 
     def update(self, dt: float) -> None:

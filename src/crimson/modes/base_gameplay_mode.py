@@ -82,8 +82,6 @@ class BaseGameplayMode:
         audio_rng: random.Random | None = None,
     ) -> None:
         self._assets_root = ctx.assets_dir
-        self._missing_assets: list[str] = []
-        self._hud_missing: list[str] = []
         self._small: SmallFontData | None = None
         self._hud_assets: HudAssets | None = None
         self._hud_state = HudState()
@@ -593,13 +591,9 @@ class BaseGameplayMode:
         self.close_requested = False
         self._action = None
         self._paused = False
-        self._missing_assets.clear()
-        self._hud_missing.clear()
-        self._small = load_small_font(self._assets_root, self._missing_assets)
+        self._small = load_small_font(self._assets_root)
 
         self._hud_assets = load_hud_assets(self._assets_root)
-        if self._hud_assets.missing:
-            self._hud_missing = list(self._hud_assets.missing)
         self._hud_state = HudState()
 
         self._game_over_active = False

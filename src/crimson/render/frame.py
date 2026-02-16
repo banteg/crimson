@@ -23,7 +23,6 @@ class RenderFrame:
     """
 
     assets_dir: Path
-    missing_assets: list[str]
 
     world_size: float
     demo_mode_active: bool

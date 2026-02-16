@@ -315,10 +315,7 @@ class ArsenalDebugView:
         self._world.audio = self._audio
         self._world.audio_rng = self._audio_rng
 
-        try:
-            self._small = load_small_font(self._assets_root, self._missing_assets)
-        except Exception:
-            self._small = None
+        self._small = load_small_font(self._assets_root)
 
         self._world.open()
         self._aim_texture = self._world._load_texture(
@@ -381,14 +378,6 @@ class ArsenalDebugView:
             draw_ui_text(
                 self._small,
                 "Missing assets (ui): " + ", ".join(self._missing_assets),
-                Vec2(warn_x, warn_y),
-                color=UI_ERROR,
-            )
-            warn_y += warn_line
-        if self._world.missing_assets:
-            draw_ui_text(
-                self._small,
-                "Missing assets (world): " + ", ".join(self._world.missing_assets),
                 Vec2(warn_x, warn_y),
                 color=UI_ERROR,
             )

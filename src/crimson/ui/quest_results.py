@@ -92,7 +92,6 @@ class QuestResultsAssets:
     particles: rl.Texture | None
     wicons: rl.Texture | None
     perk_menu_assets: PerkMenuAssets
-    missing: list[str]
 
 
 @dataclass(frozen=True, slots=True)
@@ -125,15 +124,12 @@ def load_quest_results_assets(assets_root: Path) -> QuestResultsAssets:
     )
     particles = loader.get(name="particles", paq_rel="game/particles.jaz")
     wicons = loader.get(name="ui_wicons", paq_rel="ui/ui_wicons.jaz")
-    missing: list[str] = list(perk_menu_assets.missing)
-    missing.extend(loader.missing)
     return QuestResultsAssets(
         menu_panel=perk_menu_assets.menu_panel,
         text_well_done=text_well_done,
         particles=particles,
         wicons=wicons,
         perk_menu_assets=perk_menu_assets,
-        missing=missing,
     )
 
 
@@ -146,7 +142,6 @@ class QuestResultsUi:
 
     assets: QuestResultsAssets | None = None
     font: SmallFontData | None = None
-    missing_assets: list[str] = None  # type: ignore[assignment]
 
     phase: int = -1  # -1 init, 0 breakdown, 1 name entry (if qualifies), 2 results/buttons
     rank: int = TABLE_MAX
@@ -195,11 +190,8 @@ class QuestResultsUi:
         player_name_default: str,
     ) -> None:
         self.close()
-        self.missing_assets = []
-        self.font = load_small_font(self.assets_root, self.missing_assets)
+        self.font = load_small_font(self.assets_root)
         self.assets = load_quest_results_assets(self.assets_root)
-        if self.assets.missing:
-            self.missing_assets.extend(self.assets.missing)
 
         self.phase = -1
         self.rank = TABLE_MAX

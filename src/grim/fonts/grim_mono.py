@@ -24,7 +24,7 @@ class GrimMonoFont:
     advance: float = GRIM_MONO_ADVANCE
 
 
-def load_grim_mono_font(assets_root: Path, missing_assets: list[str]) -> GrimMonoFont:
+def load_grim_mono_font(assets_root: Path) -> GrimMonoFont:
     # Prefer crimson.paq (runtime source-of-truth), but fall back to extracted
     # assets when present for development convenience.
     paq_path = find_paq_path(assets_root)
@@ -48,7 +48,6 @@ def load_grim_mono_font(assets_root: Path, missing_assets: list[str]) -> GrimMon
         elif atlas_tga.is_file():
             texture = rl.load_texture(str(atlas_tga))
         else:
-            missing_assets.append("load/default_font_courier.tga")
             raise FileNotFoundError(
                 "Missing grim mono font (expected load/default_font_courier.tga in crimson.paq "
                 "or extracted crimson/load/default_font_courier.(png|tga))"

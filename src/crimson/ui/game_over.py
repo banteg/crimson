@@ -95,7 +95,6 @@ class GameOverAssets:
     text_well_done: rl.Texture | None
     particles: rl.Texture | None
     perk_menu_assets: PerkMenuAssets
-    missing: list[str]
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,15 +113,12 @@ def load_game_over_assets(assets_root: Path) -> GameOverAssets:
         paq_rel="ui/ui_textWellDone.jaz",
     )
     particles = loader.get(name="particles", paq_rel="game/particles.jaz")
-    missing: list[str] = list(perk_menu_assets.missing)
-    missing.extend(loader.missing)
     return GameOverAssets(
         menu_panel=menu_panel,
         text_reaper=text_reaper,
         text_well_done=text_well_done,
         particles=particles,
         perk_menu_assets=perk_menu_assets,
-        missing=missing,
     )
 
 
@@ -148,7 +144,6 @@ class GameOverUi:
 
     assets: GameOverAssets | None = None
     font: SmallFontData | None = None
-    missing_assets: list[str] = None  # type: ignore[assignment]
 
     input_text: str = ""
     input_caret: int = 0
@@ -177,11 +172,8 @@ class GameOverUi:
 
     def open(self) -> None:
         self.close()
-        self.missing_assets = []
-        self.font = load_small_font(self.assets_root, self.missing_assets)
+        self.font = load_small_font(self.assets_root)
         self.assets = load_game_over_assets(self.assets_root)
-        if self.assets.missing:
-            self.missing_assets.extend(self.assets.missing)
         self.phase = -1
         self.rank = TABLE_MAX
         self._candidate_record = None

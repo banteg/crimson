@@ -106,7 +106,7 @@ class CameraDebugView:
     def open(self) -> None:
         rl.set_window_size(WINDOW_W, WINDOW_H)
         self._missing_assets.clear()
-        self._small = load_small_font(self._assets_root, self._missing_assets)
+        self._small = load_small_font(self._assets_root)
         base_path = resolve_asset_path(self._assets_root, "ter/ter_q1_base.png")
         overlay_path = resolve_asset_path(self._assets_root, "ter/ter_q1_tex1.png")
         if base_path is None:

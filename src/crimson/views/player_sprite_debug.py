@@ -93,7 +93,7 @@ class PlayerSpriteDebugView:
     def open(self) -> None:
         rl.set_window_size(WINDOW_W, WINDOW_H)
         self._missing_assets.clear()
-        self._small = load_small_font(self._assets_root, self._missing_assets)
+        self._small = load_small_font(self._assets_root)
         trooper_path = resolve_asset_path(self._assets_root, "game/trooper.png")
         if trooper_path is None:
             self._missing_assets.append("game/trooper.png")

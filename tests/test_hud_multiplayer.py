@@ -37,7 +37,6 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch) -> Non
         clock_table=None,
         clock_pointer=None,
         bonuses=None,
-        missing=[],
     )
 
     player0 = PlayerState(index=0, pos=Vec2(), health=80.0)
@@ -111,7 +110,6 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeyp
         clock_table=None,
         clock_pointer=None,
         bonuses=None,
-        missing=[],
     )
 
     player0 = PlayerState(index=0, pos=Vec2(), health=20.0)

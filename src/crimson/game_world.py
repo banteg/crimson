@@ -61,7 +61,6 @@ class GameWorld:
     creatures: CreaturePool = field(init=False)
     camera: Vec2 = field(init=False, default_factory=lambda: Vec2(-1.0, -1.0))
     _damage_scale_by_type: dict[int, float] = field(init=False, default_factory=dict)
-    missing_assets: list[str] = field(init=False, default_factory=list)
     ground: GroundRenderer | None = field(init=False, default=None)
     fx_queue: FxQueue = field(init=False)
     fx_queue_rotated: FxQueueRotated = field(init=False)
@@ -179,11 +178,9 @@ class GameWorld:
             loader = TextureLoader(
                 assets_root=self.assets_dir,
                 cache=self.texture_cache,
-                missing=self.missing_assets,
             )
         else:
             loader = TextureLoader.from_assets_root(self.assets_dir)
-            loader.missing = self.missing_assets
             if loader.cache is not None:
                 self.texture_cache = loader.cache
         self._texture_loader = loader
@@ -310,7 +307,6 @@ class GameWorld:
 
     def open(self) -> None:
         self.close()
-        self.missing_assets.clear()
         self.creature_textures.clear()
 
         base = self._load_texture(
@@ -561,7 +557,6 @@ class GameWorld:
     def build_render_frame(self) -> RenderFrame:
         return RenderFrame(
             assets_dir=self.assets_dir,
-            missing_assets=self.missing_assets,
             world_size=float(self.world_size),
             demo_mode_active=bool(self.demo_mode_active),
             config=self.config,

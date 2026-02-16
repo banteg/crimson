@@ -88,10 +88,8 @@ class ReplayPlaybackMode:
         self._defer_menu_open = False
         self._damage_scale_by_type = build_damage_scale_by_type()
         self._small: SmallFontData | None = None
-        self._missing_assets: list[str] = []
         self._hud_assets: HudAssets | None = None
         self._hud_state = HudState()
-        self._hud_missing: list[str] = []
 
         self._tick_rate = 60
         self._dt_frame = 1.0 / 60.0
@@ -255,12 +253,8 @@ class ReplayPlaybackMode:
         )
 
     def open(self) -> None:
-        self._missing_assets.clear()
-        self._hud_missing.clear()
-        self._small = load_small_font(self._ctx.assets_dir, self._missing_assets)
+        self._small = load_small_font(self._ctx.assets_dir)
         self._hud_assets = load_hud_assets(self._ctx.assets_dir)
-        if self._hud_assets.missing:
-            self._hud_missing = list(self._hud_assets.missing)
         self._hud_state = HudState()
 
         replay = load_replay_file(self._replay_path)
@@ -717,12 +711,3 @@ class ReplayPlaybackMode:
             )
 
         self._draw_replay_widget()
-
-        warn_y = float(rl.get_screen_height()) - 28.0
-        if world is not None and world.missing_assets:
-            warn = "Missing world assets: " + ", ".join(world.missing_assets)
-            self._draw_ui_text(warn, Vec2(24.0, warn_y), rl.Color(240, 80, 80, 255), scale=0.8)
-            warn_y -= 18.0
-        if self._hud_missing:
-            warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
-            self._draw_ui_text(warn, Vec2(24.0, warn_y), rl.Color(240, 80, 80, 255), scale=0.8)

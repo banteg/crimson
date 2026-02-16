@@ -195,9 +195,7 @@ class ConsoleState:
     quit_requested: bool = False
     prompt_string: str = "> %s"
     _mono_font: GrimMonoFont | None = field(default=None, init=False, repr=False)
-    _mono_font_error: str | None = field(default=None, init=False, repr=False)
     _small_font: SmallFontData | None = field(default=None, init=False, repr=False)
-    _small_font_error: str | None = field(default=None, init=False, repr=False)
     _slide_t: float = 1.0
     _offset_y: float = field(default=0.0, init=False)
     _blink_time: float = 0.0
@@ -534,33 +532,17 @@ class ConsoleState:
     def _ensure_mono_font(self) -> GrimMonoFont | None:
         if self._mono_font is not None:
             return self._mono_font
-        if self._mono_font_error is not None:
-            return None
         if self.assets_dir is None:
-            self._mono_font_error = "missing assets dir"
-            return None
-        missing_assets: list[str] = []
-        try:
-            self._mono_font = load_grim_mono_font(self.assets_dir, missing_assets)
-        except FileNotFoundError as exc:
-            self._mono_font_error = str(exc)
-            self._mono_font = None
+            raise FileNotFoundError("missing assets dir")
+        self._mono_font = load_grim_mono_font(self.assets_dir)
         return self._mono_font
 
     def _ensure_small_font(self) -> SmallFontData | None:
         if self._small_font is not None:
             return self._small_font
-        if self._small_font_error is not None:
-            return None
         if self.assets_dir is None:
-            self._small_font_error = "missing assets dir"
-            return None
-        missing_assets: list[str] = []
-        try:
-            self._small_font = load_small_font(self.assets_dir, missing_assets)
-        except FileNotFoundError as exc:
-            self._small_font_error = str(exc)
-            self._small_font = None
+            raise FileNotFoundError("missing assets dir")
+        self._small_font = load_small_font(self.assets_dir)
         return self._small_font
 
     def _draw_mono_text(self, text: str, pos: Vec2, color: rl.Color) -> None:

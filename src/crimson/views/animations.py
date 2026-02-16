@@ -58,7 +58,7 @@ class CreatureAnimationView:
     def open(self) -> None:
         self._missing_assets.clear()
         self._textures.clear()
-        self._small = load_small_font(self._assets_root, self._missing_assets)
+        self._small = load_small_font(self._assets_root)
         for entry in self._templates:
             if entry.creature is None:
                 continue

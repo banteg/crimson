@@ -308,7 +308,7 @@ class DecalsDebugView:
         self._fx_queue_rotated.clear()
         self._creatures.reset()
 
-        self._small = load_small_font(self._assets_root, self._missing_assets)
+        self._small = load_small_font(self._assets_root)
 
         for terrain_id, rel_path in TERRAIN_TEXTURES:
             path = resolve_asset_path(self._assets_root, rel_path)

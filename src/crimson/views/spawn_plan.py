@@ -85,10 +85,7 @@ class SpawnPlanView:
 
     def open(self) -> None:
         self._missing_assets.clear()
-        try:
-            self._small = load_small_font(self._assets_root, self._missing_assets)
-        except FileNotFoundError:
-            self._small = None
+        self._small = load_small_font(self._assets_root)
 
     def close(self) -> None:
         if self._small is not None:

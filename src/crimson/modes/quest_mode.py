@@ -210,10 +210,8 @@ class QuestMode(BaseGameplayMode):
         self._quest = _QuestRunState()
         self._outcome = None
         self._perk_menu_assets = load_perk_menu_assets(self._assets_root)
-        if self._perk_menu_assets.missing:
-            self._missing_assets.extend(self._perk_menu_assets.missing)
         self._quest_complete_texture = self._load_quest_complete_texture()
-        self._grim_mono = load_grim_mono_font(self._assets_root, self._missing_assets)
+        self._grim_mono = load_grim_mono_font(self._assets_root)
 
         self._perk_prompt_timer_ms = 0.0
         self._perk_prompt_hover = False
@@ -250,14 +248,13 @@ class QuestMode(BaseGameplayMode):
 
     def _load_quest_complete_texture(self) -> rl.Texture | None:
         loader = TextureLoader(
-            assets_root=self._assets_root, cache=self.world.texture_cache, missing=self._missing_assets
+            assets_root=self._assets_root,
+            cache=self.world.texture_cache,
         )
-        texture = loader.get_optional(
+        texture = loader.get(
             name="ui_textLevComp",
             paq_rel="ui/ui_textLevComp.jaz",
         )
-        if texture is None and "ui/ui_textLevComp.jaz" not in self._missing_assets:
-            self._missing_assets.append("ui/ui_textLevComp.jaz")
         return texture
 
     def _reset_perk_prompt(self) -> None:
@@ -1083,15 +1080,6 @@ class QuestMode(BaseGameplayMode):
 
         self._draw_quest_title()
         self._draw_quest_complete_banner()
-
-        warn_y = float(rl.get_screen_height()) - 28.0
-        if self.world.missing_assets:
-            warn = "Missing world assets: " + ", ".join(self.world.missing_assets)
-            self._draw_ui_text(warn, Vec2(24.0, warn_y), rl.Color(240, 80, 80, 255), scale=0.8)
-            warn_y -= float(self._ui_line_height(scale=0.8)) + 2.0
-        if self._hud_missing:
-            warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
-            self._draw_ui_text(warn, Vec2(24.0, warn_y), rl.Color(240, 80, 80, 255), scale=0.8)
 
         self._draw_perk_prompt()
         self._perk_menu.draw(self._perk_menu_context())

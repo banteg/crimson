@@ -33,7 +33,7 @@ class UiTextureView:
     def open(self) -> None:
         self._missing_assets.clear()
         self._textures.clear()
-        self._small = load_small_font(self._assets_root, self._missing_assets)
+        self._small = load_small_font(self._assets_root)
         ui_dir = self._assets_root / "crimson" / "ui"
         if not ui_dir.is_dir():
             self._missing_assets.append("ui/")

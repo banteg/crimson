@@ -272,8 +272,6 @@ class SurvivalMode(BaseGameplayMode):
         super().open()
 
         self._perk_menu_assets = load_perk_menu_assets(self._assets_root)
-        if self._perk_menu_assets.missing:
-            self._missing_assets.extend(self._perk_menu_assets.missing)
         self._perk_menu.reset()
         self._cursor_time = 0.0
         self._cursor_pulse_time = 0.0
@@ -1041,15 +1039,6 @@ class SurvivalMode(BaseGameplayMode):
                 self._draw_ui_text("game over", Vec2(x, y_extra), UI_ERROR_COLOR)
                 y_extra += line
             self._draw_lan_debug_info(x=x, y=y_extra, line_h=line)
-        warn_y = float(rl.get_screen_height()) - 28.0
-        if self.world.missing_assets:
-            warn = "Missing world assets: " + ", ".join(self.world.missing_assets)
-            self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
-            warn_y -= float(self._ui_line_height(scale=0.8)) + 2.0
-        if self._hud_missing:
-            warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
-            self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
-
         self._draw_perk_prompt()
         if not self._game_over_active:
             self._perk_menu.draw(self._perk_menu_context())

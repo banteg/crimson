@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 import math
 
@@ -75,7 +75,6 @@ class HudAssets:
     clock_table: rl.Texture | None
     clock_pointer: rl.Texture | None
     bonuses: rl.Texture | None
-    missing: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True, slots=True)
@@ -210,7 +209,6 @@ def load_hud_assets(assets_root: Path) -> HudAssets:
             paq_rel="ui/ui_clockPointer.jaz",
         ),
         bonuses=loader.get(name="bonuses", paq_rel="game/bonuses.jaz"),
-        missing=loader.missing,
     )
 
 

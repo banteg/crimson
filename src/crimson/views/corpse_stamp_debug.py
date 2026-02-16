@@ -172,10 +172,7 @@ class CorpseStampDebugView:
         self.close_requested = False
         self._step_index = 0
 
-        try:
-            self._small = load_small_font(self._assets_root, self._missing_assets)
-        except Exception:
-            self._small = None
+        self._small = load_small_font(self._assets_root)
 
         base_path = resolve_asset_path(self._assets_root, "ter/ter_q1_base.png")
         bodyset_path = resolve_asset_path(self._assets_root, "game/bodyset.png")

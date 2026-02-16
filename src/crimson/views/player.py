@@ -62,7 +62,6 @@ class PlayerSandboxView:
         self._creatures: list[DummyCreature] = []
 
         self._hud_assets: HudAssets | None = None
-        self._hud_missing: list[str] = []
         self._hud_state = HudState()
         self._elapsed_ms = 0.0
         self._last_dt_ms = 0.0
@@ -113,11 +112,8 @@ class PlayerSandboxView:
 
     def open(self) -> None:
         self._missing_assets.clear()
-        self._hud_missing.clear()
-        self._small = load_small_font(self._assets_root, self._missing_assets)
+        self._small = load_small_font(self._assets_root)
         self._hud_assets = load_hud_assets(self._assets_root)
-        if self._hud_assets.missing:
-            self._hud_missing = list(self._hud_assets.missing)
         self._hud_state = HudState()
 
         self.state.rng.srand(0xBEEF)
@@ -337,10 +333,6 @@ class PlayerSandboxView:
                 frame_dt_ms=self._last_dt_ms,
                 preserve_bugs=bool(self._preserve_bugs),
             )
-
-        if self._hud_missing:
-            warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
-            draw_ui_text(self._small, warn, Vec2(24, rl.get_screen_height() - 28), scale=0.8, color=UI_ERROR_COLOR)
 
         # UI.
         scale = hud_ui_scale(float(rl.get_screen_width()), float(rl.get_screen_height()))

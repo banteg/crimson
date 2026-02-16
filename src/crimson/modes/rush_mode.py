@@ -134,8 +134,6 @@ class RushMode(BaseGameplayMode):
     def open(self) -> None:
         super().open()
         self._ui_assets = load_perk_menu_assets(self._assets_root)
-        if self._ui_assets.missing:
-            self._missing_assets.extend(self._ui_assets.missing)
         self._rush = _RushState()
         self._sim_clock.reset()
         self._lan_capture_clock.reset()
@@ -595,15 +593,6 @@ class RushMode(BaseGameplayMode):
                 self._draw_ui_text("game over", Vec2(x, y_extra), UI_ERROR_COLOR)
                 y_extra += line
             self._draw_lan_debug_info(x=x, y=y_extra, line_h=line)
-
-        warn_y = float(rl.get_screen_height()) - 28.0
-        if self.world.missing_assets:
-            warn = "Missing world assets: " + ", ".join(self.world.missing_assets)
-            self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
-            warn_y -= float(self._ui_line_height(scale=0.8)) + 2.0
-        if self._hud_missing:
-            warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
-            self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
 
         if self._game_over_active:
             self._draw_game_cursor()

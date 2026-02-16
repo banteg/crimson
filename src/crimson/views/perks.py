@@ -83,10 +83,8 @@ class PerkSelectionView:
     def open(self) -> None:
         self.close_requested = False
         self._missing_assets.clear()
-        self._small = load_small_font(self._assets_root, self._missing_assets)
+        self._small = load_small_font(self._assets_root)
         self._ui_assets = load_perk_menu_assets(self._assets_root)
-        if self._ui_assets.missing:
-            self._missing_assets.extend(self._ui_assets.missing)
         rl.hide_cursor()
         self._reset()
 

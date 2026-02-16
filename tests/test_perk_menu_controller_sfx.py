@@ -18,7 +18,6 @@ def _dummy_assets() -> PerkMenuAssets:
         button_md=None,
         cursor=None,
         aim=None,
-        missing=[],
     )
 
 

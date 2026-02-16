@@ -441,10 +441,7 @@ class CaptureVisualizerView:
 
     def open(self) -> None:
         self._missing_assets.clear()
-        try:
-            self._small = load_small_font(self._assets_root, self._missing_assets)
-        except Exception:
-            self._small = None
+        self._small = load_small_font(self._assets_root)
 
     def close(self) -> None:
         self._unload_trace_layers()
