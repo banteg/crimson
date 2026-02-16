@@ -204,18 +204,34 @@ class WorldRendererContextMixin(WorldRendererMixinBase):
         self._small_font = load_small_font(self.assets_dir, self.missing_assets)
         return self._small_font
 
-    def _camera_screen_size(self) -> Vec2:
-        if self.config is not None:
+    def _camera_screen_size(
+        self,
+        *,
+        runtime_w: float | None = None,
+        runtime_h: float | None = None,
+    ) -> Vec2:
+        if runtime_w is None:
+            runtime_w = float(rl.get_screen_width())
+        if runtime_h is None:
+            runtime_h = float(rl.get_screen_height())
+        if runtime_w > 0.0 and runtime_h > 0.0:
+            # Prefer live framebuffer dimensions. Config values can lag behind
+            # the actual game window resolution during launcher/state handoff.
+            screen_w = runtime_w
+            screen_h = runtime_h
+        elif self.config is not None:
             screen_w = float(self.config.screen_width)
             screen_h = float(self.config.screen_height)
         else:
-            screen_w = float(rl.get_screen_width())
-            screen_h = float(rl.get_screen_height())
-        if screen_w > self.world_size:
-            screen_w = float(self.world_size)
-        if screen_h > self.world_size:
-            screen_h = float(self.world_size)
-        return Vec2(screen_w, screen_h)
+            screen_w = max(1.0, runtime_w)
+            screen_h = max(1.0, runtime_h)
+        world = float(self.world_size)
+        if world <= 0.0:
+            return Vec2(max(1.0, screen_w), max(1.0, screen_h))
+        out_w = max(1.0, screen_w)
+        out_h = max(1.0, screen_h)
+        scale = max(out_w / world, out_h / world, 1.0)
+        return Vec2(min(world, out_w / scale), min(world, out_h / scale))
 
     def _clamp_camera(self, camera: Vec2, screen_size: Vec2) -> Vec2:
         cam_x = camera.x
@@ -234,7 +250,7 @@ class WorldRendererContextMixin(WorldRendererMixinBase):
 
     def _world_params(self) -> tuple[Vec2, Vec2]:
         out_size = Vec2(float(rl.get_screen_width()), float(rl.get_screen_height()))
-        screen_size = self._camera_screen_size()
+        screen_size = self._camera_screen_size(runtime_w=out_size.x, runtime_h=out_size.y)
         camera = self._clamp_camera(self.camera, screen_size)
         scale_x = out_size.x / screen_size.x if screen_size.x > 0 else 1.0
         scale_y = out_size.y / screen_size.y if screen_size.y > 0 else 1.0

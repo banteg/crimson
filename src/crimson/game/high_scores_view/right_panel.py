@@ -74,6 +74,8 @@ from ...frontend.high_scores_layout import (
     HS_RIGHT_SHOW_SCORES_WIDGET_Y,
     HS_RIGHT_SHOW_SCORES_X,
     HS_RIGHT_SHOW_SCORES_Y,
+    hs_right_local_card_x_shift,
+    hs_right_options_x_shift,
 )
 from .shared import format_elapsed_mm_ss, format_score_date, ordinal
 
@@ -222,6 +224,8 @@ def _draw_right_panel_quest_options(
     right_top_left: Vec2,
     scale: float,
 ) -> None:
+    options_shift_x = hs_right_options_x_shift(float(view.state.config.screen_width))
+    options_top_left = right_top_left + Vec2(options_shift_x * scale, 0.0)
     text_scale = 1.0 * scale
     text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
@@ -234,8 +238,8 @@ def _draw_right_panel_quest_options(
             check_tex,
             rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
             rl.Rectangle(
-                right_top_left.x + HS_RIGHT_CHECK_X * scale,
-                right_top_left.y + HS_RIGHT_CHECK_Y * scale,
+                options_top_left.x + HS_RIGHT_CHECK_X * scale,
+                options_top_left.y + HS_RIGHT_CHECK_Y * scale,
                 check_w,
                 check_h,
             ),
@@ -246,35 +250,35 @@ def _draw_right_panel_quest_options(
     draw_small_text(
         font,
         "Show internet scores",
-        right_top_left + Vec2(HS_RIGHT_SHOW_INTERNET_X * scale, HS_RIGHT_SHOW_INTERNET_Y * scale),
+        options_top_left + Vec2(HS_RIGHT_SHOW_INTERNET_X * scale, HS_RIGHT_SHOW_INTERNET_Y * scale),
         text_scale,
         text_color,
     )
     draw_small_text(
         font,
         "Number of players",
-        right_top_left + Vec2(HS_RIGHT_NUMBER_PLAYERS_X * scale, HS_RIGHT_NUMBER_PLAYERS_Y * scale),
+        options_top_left + Vec2(HS_RIGHT_NUMBER_PLAYERS_X * scale, HS_RIGHT_NUMBER_PLAYERS_Y * scale),
         text_scale,
         text_color,
     )
     draw_small_text(
         font,
         "Game mode",
-        right_top_left + Vec2(HS_RIGHT_GAME_MODE_X * scale, HS_RIGHT_GAME_MODE_Y * scale),
+        options_top_left + Vec2(HS_RIGHT_GAME_MODE_X * scale, HS_RIGHT_GAME_MODE_Y * scale),
         text_scale,
         text_color,
     )
     draw_small_text(
         font,
         "Show scores:",
-        right_top_left + Vec2(HS_RIGHT_SHOW_SCORES_X * scale, HS_RIGHT_SHOW_SCORES_Y * scale),
+        options_top_left + Vec2(HS_RIGHT_SHOW_SCORES_X * scale, HS_RIGHT_SHOW_SCORES_Y * scale),
         text_scale,
         text_color,
     )
     draw_small_text(
         font,
         "Selected score list:",
-        right_top_left + Vec2(HS_RIGHT_SCORE_LIST_X * scale, HS_RIGHT_SCORE_LIST_Y * scale),
+        options_top_left + Vec2(HS_RIGHT_SCORE_LIST_X * scale, HS_RIGHT_SCORE_LIST_Y * scale),
         text_scale,
         text_color,
     )
@@ -347,12 +351,12 @@ def _draw_right_panel_quest_options(
         _draw_dropdown(
             view,
             font=font,
-            widget_pos=right_top_left + widget_offset * scale,
+            widget_pos=options_top_left + widget_offset * scale,
             widget_w=widget_w * scale,
             items=items,
             selected_index=selected_index,
-            value_pos=right_top_left + value_offset * scale,
-            arrow_pos=right_top_left + arrow_offset * scale,
+            value_pos=options_top_left + value_offset * scale,
+            arrow_pos=options_top_left + arrow_offset * scale,
             is_open=is_open,
             enabled=bool(enabled),
             scale=scale,
@@ -363,12 +367,12 @@ def _draw_right_panel_quest_options(
         _draw_dropdown(
             view,
             font=font,
-            widget_pos=right_top_left + widget_offset * scale,
+            widget_pos=options_top_left + widget_offset * scale,
             widget_w=widget_w * scale,
             items=items,
             selected_index=selected_index,
-            value_pos=right_top_left + value_offset * scale,
-            arrow_pos=right_top_left + arrow_offset * scale,
+            value_pos=options_top_left + value_offset * scale,
+            arrow_pos=options_top_left + arrow_offset * scale,
             is_open=is_open,
             enabled=bool(enabled),
             scale=scale,
@@ -383,6 +387,8 @@ def _draw_right_panel_local_score(
     scale: float,
     highlight_rank: int | None,
 ) -> None:
+    local_shift_x = hs_right_local_card_x_shift(float(view.state.config.screen_width))
+    card_top_left = right_top_left + Vec2(local_shift_x * scale, 0.0)
     if not view._records:
         return
     idx = int(highlight_rank) if highlight_rank is not None else int(view._scroll_index)
@@ -405,22 +411,22 @@ def _draw_right_panel_local_score(
     draw_small_text(
         font,
         name,
-        right_top_left + Vec2(HS_LOCAL_NAME_X * scale, HS_LOCAL_NAME_Y * scale),
+        card_top_left + Vec2(HS_LOCAL_NAME_X * scale, HS_LOCAL_NAME_Y * scale),
         text_scale,
         text_color,
     )
     draw_small_text(
         font,
         "Local score",
-        right_top_left + Vec2(HS_LOCAL_LABEL_X * scale, HS_LOCAL_LABEL_Y * scale),
+        card_top_left + Vec2(HS_LOCAL_LABEL_X * scale, HS_LOCAL_LABEL_Y * scale),
         text_scale,
         text_color,
     )
     rl.draw_line(
-        int(right_top_left.x + 78.0 * scale),
-        int(right_top_left.y + 57.0 * scale),
-        int(right_top_left.x + 117.0 * scale),
-        int(right_top_left.y + 57.0 * scale),
+        int(card_top_left.x + 78.0 * scale),
+        int(card_top_left.y + 57.0 * scale),
+        int(card_top_left.x + 117.0 * scale),
+        int(card_top_left.y + 57.0 * scale),
         separator_color,
     )
 
@@ -429,22 +435,22 @@ def _draw_right_panel_local_score(
         draw_small_text(
             font,
             date_text,
-            right_top_left + Vec2(HS_LOCAL_DATE_X * scale, HS_LOCAL_DATE_Y * scale),
+            card_top_left + Vec2(HS_LOCAL_DATE_X * scale, HS_LOCAL_DATE_Y * scale),
             text_scale,
             text_color,
         )
     rl.draw_line(
-        int(right_top_left.x + 74.0 * scale),
-        int(right_top_left.y + 72.0 * scale),
-        int(right_top_left.x + 266.0 * scale),
-        int(right_top_left.y + 72.0 * scale),
+        int(card_top_left.x + 74.0 * scale),
+        int(card_top_left.y + 72.0 * scale),
+        int(card_top_left.x + 266.0 * scale),
+        int(card_top_left.y + 72.0 * scale),
         separator_color,
     )
 
     draw_small_text(
         font,
         "Score",
-        right_top_left + Vec2(HS_LOCAL_SCORE_LABEL_X * scale, HS_LOCAL_SCORE_LABEL_Y * scale),
+        card_top_left + Vec2(HS_LOCAL_SCORE_LABEL_X * scale, HS_LOCAL_SCORE_LABEL_Y * scale),
         text_scale,
         text_color,
     )
@@ -456,15 +462,15 @@ def _draw_right_panel_local_score(
     draw_small_text(
         font,
         "Experience" if mode_id == 3 else "Game time",
-        right_top_left + Vec2(HS_LOCAL_TIME_LABEL_X * scale, HS_LOCAL_TIME_LABEL_Y * scale),
+        card_top_left + Vec2(HS_LOCAL_TIME_LABEL_X * scale, HS_LOCAL_TIME_LABEL_Y * scale),
         text_scale,
         game_time_color,
     )
     rl.draw_line(
-        int(right_top_left.x + 170.0 * scale),
-        int(right_top_left.y + 90.0 * scale),
-        int(right_top_left.x + 170.0 * scale),
-        int(right_top_left.y + 138.0 * scale),
+        int(card_top_left.x + 170.0 * scale),
+        int(card_top_left.y + 90.0 * scale),
+        int(card_top_left.x + 170.0 * scale),
+        int(card_top_left.y + 138.0 * scale),
         separator_color,
     )
 
@@ -475,10 +481,18 @@ def _draw_right_panel_local_score(
         score_value = f"{max(0, elapsed_ms) * 0.001:.2f} secs"
     else:
         score_value = f"{score_xp}"
+    score_value_pos = Vec2(HS_LOCAL_SCORE_VALUE_X * scale, HS_LOCAL_SCORE_VALUE_Y * scale)
+    if mode_id in (2, 3):
+        # Quest/Rush scores are variable-width second labels ("%.2f secs") and are
+        # centered in the left score column in native.
+        score_label_w = measure_small_text_width(font, "Score", text_scale)
+        score_value_w = measure_small_text_width(font, score_value, text_scale)
+        score_col_center_x = HS_LOCAL_SCORE_LABEL_X * scale + score_label_w * 0.5
+        score_value_pos = Vec2(score_col_center_x - score_value_w * 0.5, HS_LOCAL_SCORE_VALUE_Y * scale)
     draw_small_text(
         font,
         score_value,
-        right_top_left + Vec2(HS_LOCAL_SCORE_VALUE_X * scale, HS_LOCAL_SCORE_VALUE_Y * scale),
+        card_top_left + score_value_pos,
         text_scale,
         value_color,
     )
@@ -487,7 +501,7 @@ def _draw_right_panel_local_score(
         draw_small_text(
             font,
             f"{score_xp}",
-            right_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
+            card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
             text_scale,
             game_time_color,
         )
@@ -495,13 +509,13 @@ def _draw_right_panel_local_score(
         _draw_clock_gauge(
             view,
             elapsed_ms=elapsed_ms,
-            pos=right_top_left + Vec2(HS_LOCAL_CLOCK_X * scale, HS_LOCAL_CLOCK_Y * scale),
+            pos=card_top_left + Vec2(HS_LOCAL_CLOCK_X * scale, HS_LOCAL_CLOCK_Y * scale),
             scale=scale,
         )
         draw_small_text(
             font,
             format_elapsed_mm_ss(elapsed_ms),
-            right_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
+            card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
             text_scale,
             game_time_color,
         )
@@ -509,7 +523,7 @@ def _draw_right_panel_local_score(
     draw_small_text(
         font,
         f"Rank: {ordinal(idx + 1)}",
-        right_top_left + Vec2(HS_LOCAL_RANK_X * scale, HS_LOCAL_RANK_Y * scale),
+        card_top_left + Vec2(HS_LOCAL_RANK_X * scale, HS_LOCAL_RANK_Y * scale),
         text_scale,
         text_color,
     )
@@ -522,10 +536,10 @@ def _draw_right_panel_local_score(
     if shots_fired > 0:
         hit_pct = int((shots_hit * 100) // shots_fired)
     rl.draw_line(
-        int(right_top_left.x + 74.0 * scale),
-        int(right_top_left.y + 142.0 * scale),
-        int(right_top_left.x + 266.0 * scale),
-        int(right_top_left.y + 142.0 * scale),
+        int(card_top_left.x + 74.0 * scale),
+        int(card_top_left.y + 142.0 * scale),
+        int(card_top_left.x + 266.0 * scale),
+        int(card_top_left.y + 142.0 * scale),
         separator_color,
     )
 
@@ -535,7 +549,7 @@ def _draw_right_panel_local_score(
         _draw_wicon(
             view,
             icon_index,
-            pos=right_top_left + Vec2(HS_LOCAL_WICON_X * scale, HS_LOCAL_WICON_Y * scale),
+            pos=card_top_left + Vec2(HS_LOCAL_WICON_X * scale, HS_LOCAL_WICON_Y * scale),
             scale=scale,
         )
     weapon_name_x = HS_LOCAL_WICON_X * scale + max(
@@ -545,29 +559,29 @@ def _draw_right_panel_local_score(
     draw_small_text(
         font,
         weapon_name,
-        right_top_left + Vec2(weapon_name_x, HS_LOCAL_WEAPON_Y * scale),
+        card_top_left + Vec2(weapon_name_x, HS_LOCAL_WEAPON_Y * scale),
         text_scale,
         lower_section_color,
     )
     draw_small_text(
         font,
         f"Frags: {frags}",
-        right_top_left + Vec2(HS_LOCAL_FRAGS_X * scale, HS_LOCAL_FRAGS_Y * scale),
+        card_top_left + Vec2(HS_LOCAL_FRAGS_X * scale, HS_LOCAL_FRAGS_Y * scale),
         text_scale,
         lower_section_color,
     )
     draw_small_text(
         font,
         f"Hit %: {hit_pct}%",
-        right_top_left + Vec2(HS_LOCAL_HIT_X * scale, HS_LOCAL_HIT_Y * scale),
+        card_top_left + Vec2(HS_LOCAL_HIT_X * scale, HS_LOCAL_HIT_Y * scale),
         text_scale,
         lower_section_color,
     )
     rl.draw_line(
-        int(right_top_left.x + 74.0 * scale),
-        int(right_top_left.y + 194.0 * scale),
-        int(right_top_left.x + 266.0 * scale),
-        int(right_top_left.y + 194.0 * scale),
+        int(card_top_left.x + 74.0 * scale),
+        int(card_top_left.y + 194.0 * scale),
+        int(card_top_left.x + 266.0 * scale),
+        int(card_top_left.y + 194.0 * scale),
         separator_color,
     )
 

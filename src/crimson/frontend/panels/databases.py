@@ -13,6 +13,12 @@ from grim.terrain_render import GroundRenderer
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from ..high_scores_layout import (
+    hs_left_panel_pos_x,
+    hs_right_panel_pos_x,
+    perks_db_right_detail_x_shift,
+    weapons_db_right_detail_x_shift,
+)
 from ..menu import (
     MENU_PANEL_OFFSET_X,
     MENU_PANEL_OFFSET_Y,
@@ -208,8 +214,10 @@ class _DatabaseBaseView:
         if not enabled:
             return
 
-        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
-        left_top_left = self._panel_top_left(pos=Vec2(LEFT_PANEL_POS_X, LEFT_PANEL_POS_Y), scale=scale)
+        screen_width = float(self.state.config.screen_width)
+        scale = 1.0
+        left_panel_pos_x = hs_left_panel_pos_x(screen_width)
+        left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, LEFT_PANEL_POS_Y), scale=scale)
         font = self._ensure_small_font()
 
         mouse = rl.get_mouse_position()
@@ -243,7 +251,8 @@ class _DatabaseBaseView:
         assets = self._assets
         assert assets is not None, "Database panel assets must be loaded before draw()"
 
-        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
+        screen_width = float(self.state.config.screen_width)
+        scale = 1.0
         fx_detail = self.state.config.fx_detail(level=0, default=False)
 
         panel_w = MENU_PANEL_WIDTH * scale
@@ -264,8 +273,10 @@ class _DatabaseBaseView:
             direction_flag=1,
         )
 
-        left_top_left = self._panel_top_left(pos=Vec2(LEFT_PANEL_POS_X, LEFT_PANEL_POS_Y), scale=scale)
-        right_top_left = self._panel_top_left(pos=Vec2(RIGHT_PANEL_POS_X, RIGHT_PANEL_POS_Y), scale=scale)
+        left_panel_pos_x = hs_left_panel_pos_x(screen_width)
+        left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, LEFT_PANEL_POS_Y), scale=scale)
+        right_panel_pos_x = hs_right_panel_pos_x(screen_width)
+        right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, RIGHT_PANEL_POS_Y), scale=scale)
         left_panel_top_left = left_top_left.offset(dx=float(left_slide_x))
         right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
 
@@ -347,6 +358,8 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
     def _draw_contents(self, left_top_left: Vec2, right_top_left: Vec2, *, scale: float, font: SmallFontData) -> None:
         left = left_top_left
         right = right_top_left
+        detail_shift_x = weapons_db_right_detail_x_shift(float(self.state.config.screen_width))
+        detail_top_left = right + Vec2(detail_shift_x * scale, 0.0)
         text_scale = 1.0 * scale
         dim_color = rl.Color(255, 255, 255, int(255 * 0.7))
         text_color = rl.WHITE
@@ -436,13 +449,13 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         draw_small_text(
             font,
             f"{weapon_no_label} #{weapon_id}",
-            right + Vec2(240.0 * scale, 32.0 * scale),
+            detail_top_left + Vec2(240.0 * scale, 32.0 * scale),
             text_scale,
             rl.Color(255, 255, 255, int(255 * 0.4)),
         )
-        draw_small_text(font, name, right + Vec2(50.0 * scale, 50.0 * scale), text_scale, text_color)
+        draw_small_text(font, name, detail_top_left + Vec2(50.0 * scale, 50.0 * scale), text_scale, text_color)
         if icon_index is not None:
-            self._draw_wicon(icon_index, pos=right + Vec2(82.0 * scale, 82.0 * scale), scale=scale)
+            self._draw_wicon(icon_index, pos=detail_top_left + Vec2(82.0 * scale, 82.0 * scale), scale=scale)
 
         if weapon is not None:
             rpm = self._weapon_rpm(weapon)
@@ -457,12 +470,18 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             else:
                 firerate_text = None
             if firerate_text is not None:
-                draw_small_text(font, firerate_text, right + Vec2(66.0 * scale, 128.0 * scale), text_scale, text_color)
+                draw_small_text(
+                    font,
+                    firerate_text,
+                    detail_top_left + Vec2(66.0 * scale, 128.0 * scale),
+                    text_scale,
+                    text_color,
+                )
             if reload_time is not None:
                 draw_small_text(
                     font,
                     f"Reload time: {reload_time:.1f} secs",
-                    right + Vec2(66.0 * scale, 146.0 * scale),
+                    detail_top_left + Vec2(66.0 * scale, 146.0 * scale),
                     text_scale,
                     text_color,
                 )
@@ -470,7 +489,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
                 draw_small_text(
                     font,
                     f"Clip size: {clip_size}",
-                    right + Vec2(66.0 * scale, 164.0 * scale),
+                    detail_top_left + Vec2(66.0 * scale, 164.0 * scale),
                     text_scale,
                     text_color,
                 )
@@ -665,6 +684,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         text_color = rl.WHITE
         dim_color = rl.Color(255, 255, 255, int(255 * 0.7))
         fx_toggle = self._fx_toggle()
+        detail_shift_x = perks_db_right_detail_x_shift(float(self.state.config.screen_width))
 
         # state_16 title at (163,244) => relative to left panel (-98,194): (261,50)
         title_pos = left + Vec2(261.0 * scale, 50.0 * scale)
@@ -777,7 +797,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             return
         perk_id = int(hovered_perk_id)
         perk_name = self._perk_name(perk_id, fx_toggle=fx_toggle, preserve_bugs=preserve_bugs)
-        detail_anchor = right + Vec2(34.0 * scale, 72.0 * scale)
+        detail_anchor = right + Vec2((34.0 + detail_shift_x) * scale, 72.0 * scale)
         perk_no_label = "perkno" if preserve_bugs else "perk"
         draw_small_text(
             font,

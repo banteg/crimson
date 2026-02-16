@@ -570,21 +570,38 @@ class GroundRenderer:
         *,
         screen_w: float | None = None,
         screen_h: float | None = None,
+        out_w: float | None = None,
+        out_h: float | None = None,
     ) -> None:
-        out_w = float(rl.get_screen_width())
-        out_h = float(rl.get_screen_height())
+        if out_w is None:
+            out_w = float(rl.get_screen_width())
+        else:
+            out_w = float(out_w)
+        if out_h is None:
+            out_h = float(rl.get_screen_height())
+        else:
+            out_h = float(out_h)
+        if out_w <= 0.0:
+            out_w = float(rl.get_screen_width())
+        if out_h <= 0.0:
+            out_h = float(rl.get_screen_height())
         if screen_w is None:
-            screen_w = float(self.screen_width or out_w)
+            # Prefer live output dimensions by default. Cached config-sized
+            # values can lag during gameplay/menu handoffs.
+            if out_w > 0.0:
+                screen_w = out_w
+            else:
+                screen_w = float(self.screen_width or out_w)
         if screen_h is None:
-            screen_h = float(self.screen_height or out_h)
+            if out_h > 0.0:
+                screen_h = out_h
+            else:
+                screen_h = float(self.screen_height or out_h)
         if screen_w <= 0.0:
-            screen_w = out_w
+            screen_w = out_w if out_w > 0.0 else float(self.screen_width or 1.0)
         if screen_h <= 0.0:
-            screen_h = out_h
-        if screen_w > self.width:
-            screen_w = float(self.width)
-        if screen_h > self.height:
-            screen_h = float(self.height)
+            screen_h = out_h if out_h > 0.0 else float(self.screen_height or 1.0)
+        screen_w, screen_h = self._fit_view_window(screen_w, screen_h)
         cam = self._clamp_camera(camera, screen_w, screen_h)
 
         if self.render_target is None or not self._render_target_ready:
@@ -612,6 +629,27 @@ class GroundRenderer:
             rl.draw_texture_pro(target.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
         if self.terrain_filter == 2.0:
             rl.set_texture_filter(target.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+
+    def _fit_view_window(self, screen_w: float, screen_h: float) -> tuple[float, float]:
+        """
+        Convert output dimensions into a world-space camera window.
+
+        Keep a uniform pixel scale and never request a camera window larger than
+        the terrain dimensions. This avoids non-uniform stretch on widescreen
+        outputs where only one axis exceeds world size.
+        """
+
+        world_w = float(self.width)
+        world_h = float(self.height)
+        if world_w <= 0.0 or world_h <= 0.0:
+            return max(1.0, float(screen_w)), max(1.0, float(screen_h))
+
+        out_w = max(1.0, float(screen_w))
+        out_h = max(1.0, float(screen_h))
+        scale = max(out_w / world_w, out_h / world_h, 1.0)
+        view_w = min(world_w, out_w / scale)
+        view_h = min(world_h, out_h / scale)
+        return view_w, view_h
 
     def _scatter_texture(
         self,

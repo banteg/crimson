@@ -23,6 +23,7 @@ class WorldRendererCreaturesMixin(WorldRendererMixinBase):
         mirror_long: bool | None = None,
         shadow_alpha: int | None = None,
         pos: Vec2,
+        screen_pos: Vec2 | None = None,
         rotation_rad: float,
         scale: float,
         size_scale: float,
@@ -43,7 +44,8 @@ class WorldRendererCreaturesMixin(WorldRendererMixinBase):
         if index < 0:
             return
 
-        screen_pos = self.world_to_screen(pos)
+        if screen_pos is None:
+            screen_pos = self.world_to_screen(pos)
         width = float(texture.width) / 8.0 * size_scale * scale
         height = float(texture.height) / 8.0 * size_scale * scale
         src_x = float((index % 8) * (texture.width // 8))

@@ -17,7 +17,6 @@ from ...frontend.high_scores_layout import (
     HS_BUTTON_X,
     HS_BUTTON_Y0,
     HS_LEFT_PANEL_HEIGHT,
-    HS_LEFT_PANEL_POS_X,
     HS_LEFT_PANEL_POS_Y,
     HS_QUEST_ARROW_X,
     HS_QUEST_ARROW_Y,
@@ -37,7 +36,9 @@ from ...frontend.high_scores_layout import (
     HS_RIGHT_SHOW_SCORES_WIDGET_W,
     HS_RIGHT_SHOW_SCORES_WIDGET_X,
     HS_RIGHT_SHOW_SCORES_WIDGET_Y,
+    hs_left_panel_pos_x,
     hs_right_panel_pos_x,
+    hs_right_options_x_shift,
 )
 from ...frontend.menu import (
     MENU_PANEL_OFFSET_X,
@@ -219,7 +220,8 @@ class HighScoresView:
             self._begin_close_transition("back_to_previous")
             return
 
-        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
+        screen_width = float(self.state.config.screen_width)
+        scale = 1.0
         # Defer small font loading to draw(); update() should be able to run
         # in unit tests without extracted font assets present.
         font = self._small_font
@@ -242,8 +244,9 @@ class HighScoresView:
             width=panel_w,
             direction_flag=1,
         )
-        left_top_left = self._panel_top_left(pos=Vec2(HS_LEFT_PANEL_POS_X, HS_LEFT_PANEL_POS_Y), scale=scale)
-        right_panel_pos_x = hs_right_panel_pos_x(float(self.state.config.screen_width))
+        left_panel_pos_x = hs_left_panel_pos_x(screen_width)
+        left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, HS_LEFT_PANEL_POS_Y), scale=scale)
+        right_panel_pos_x = hs_right_panel_pos_x(screen_width)
         right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, HS_RIGHT_PANEL_POS_Y), scale=scale)
         left_panel_top_left = left_top_left.offset(dx=float(left_slide_x))
         right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
@@ -403,13 +406,15 @@ class HighScoresView:
         # Widgets are only shown in the "options" right panel (not the local-score detail panel).
         # We don't explicitly track which right panel is active; hit tests are enough.
         dropdown_blocked = self._player_count_open or self._game_mode_open or self._show_scores_open or self._score_list_open
+        small_width_shift_x = hs_right_options_x_shift(float(self.state.config.screen_width))
+        shifted_right_top_left = right_top_left + Vec2(small_width_shift_x * scale, 0.0)
 
         # Checkbox: "Show internet scores" (config.score_load_gate).
         if not dropdown_blocked:
             check_tex = self._check_on if self.state.config.score_load_gate else self._check_off
             if check_tex is not None:
                 label = "Show internet scores"
-                check_pos = right_top_left + Vec2(HS_RIGHT_CHECK_X * scale, HS_RIGHT_CHECK_Y * scale)
+                check_pos = shifted_right_top_left + Vec2(HS_RIGHT_CHECK_X * scale, HS_RIGHT_CHECK_Y * scale)
                 if font is None:
                     label_w = float(rl.measure_text(label, int(20 * scale)))
                     font_h = 16.0 * scale
@@ -428,7 +433,7 @@ class HighScoresView:
 
         # Dropdown: show scores date filter (config.highscore_date_mode).
         show_scores_items = ("Best of all time", "Best of month", "Best of week", "Best of day")
-        show_scores_pos = right_top_left + Vec2(HS_RIGHT_SHOW_SCORES_WIDGET_X * scale, HS_RIGHT_SHOW_SCORES_WIDGET_Y * scale)
+        show_scores_pos = shifted_right_top_left + Vec2(HS_RIGHT_SHOW_SCORES_WIDGET_X * scale, HS_RIGHT_SHOW_SCORES_WIDGET_Y * scale)
         show_scores_layout = self._dropdown_layout(
             pos=show_scores_pos,
             width=float(HS_RIGHT_SHOW_SCORES_WIDGET_W) * scale,
@@ -457,7 +462,7 @@ class HighScoresView:
 
         # Dropdown: player count (config.player_count).
         player_items = ("1 player", "2 players", "3 players", "4 players")
-        player_pos = right_top_left + Vec2(HS_RIGHT_PLAYER_COUNT_WIDGET_X * scale, HS_RIGHT_PLAYER_COUNT_WIDGET_Y * scale)
+        player_pos = shifted_right_top_left + Vec2(HS_RIGHT_PLAYER_COUNT_WIDGET_X * scale, HS_RIGHT_PLAYER_COUNT_WIDGET_Y * scale)
         player_layout = self._dropdown_layout(
             pos=player_pos,
             width=float(HS_RIGHT_PLAYER_COUNT_WIDGET_W) * scale,
@@ -490,7 +495,7 @@ class HighScoresView:
         mode_items: list[tuple[str, int]] = [("Quests", 3), ("Rush", 2), ("Survival", 1)]
         if int(self.state.status.quest_unlock_index) >= 0x28:
             mode_items.append(("Typ'o'Shooter", 4))
-        game_mode_pos = right_top_left + Vec2(HS_RIGHT_GAME_MODE_WIDGET_X * scale, HS_RIGHT_GAME_MODE_WIDGET_Y * scale)
+        game_mode_pos = shifted_right_top_left + Vec2(HS_RIGHT_GAME_MODE_WIDGET_X * scale, HS_RIGHT_GAME_MODE_WIDGET_Y * scale)
         game_mode_layout = self._dropdown_layout(
             pos=game_mode_pos,
             width=float(HS_RIGHT_GAME_MODE_WIDGET_W) * scale,
@@ -537,7 +542,7 @@ class HighScoresView:
             entry = names_blob[i * 0x1B : (i + 1) * 0x1B]
             label = entry.split(b"\x00", 1)[0].decode("latin-1", errors="ignore").strip() or f"slot_{i}"
             names.append(label)
-        score_list_pos = right_top_left + Vec2(HS_RIGHT_SCORE_LIST_WIDGET_X * scale, HS_RIGHT_SCORE_LIST_WIDGET_Y * scale)
+        score_list_pos = shifted_right_top_left + Vec2(HS_RIGHT_SCORE_LIST_WIDGET_X * scale, HS_RIGHT_SCORE_LIST_WIDGET_Y * scale)
         score_list_layout = self._dropdown_layout(
             pos=score_list_pos,
             width=float(HS_RIGHT_SCORE_LIST_WIDGET_W) * scale,
@@ -638,7 +643,8 @@ class HighScoresView:
         quest_major = int(request.quest_stage_major) if request is not None else 0
         quest_minor = int(request.quest_stage_minor) if request is not None else 0
 
-        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
+        screen_width = float(self.state.config.screen_width)
+        scale = 1.0
         fx_detail = self.state.config.fx_detail(level=0, default=False)
         panel_w = MENU_PANEL_WIDTH * scale
         _angle_rad, left_slide_x = MenuView._ui_element_anim(
@@ -658,8 +664,9 @@ class HighScoresView:
             direction_flag=1,
         )
 
-        left_top_left = self._panel_top_left(pos=Vec2(HS_LEFT_PANEL_POS_X, HS_LEFT_PANEL_POS_Y), scale=scale)
-        right_panel_pos_x = hs_right_panel_pos_x(float(self.state.config.screen_width))
+        left_panel_pos_x = hs_left_panel_pos_x(screen_width)
+        left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, HS_LEFT_PANEL_POS_Y), scale=scale)
+        right_panel_pos_x = hs_right_panel_pos_x(screen_width)
         right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, HS_RIGHT_PANEL_POS_Y), scale=scale)
         left_panel_top_left = left_top_left.offset(dx=float(left_slide_x))
         right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))

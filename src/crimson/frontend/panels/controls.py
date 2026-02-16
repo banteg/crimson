@@ -52,6 +52,51 @@ CONTROLS_REBIND_ACTIVE_COLOR = rl.Color(255, 228, 170, 255)
 _AXIS_REBIND_SLOTS = frozenset((9, 10, 11, 12))
 
 
+def _controls_left_panel_pos_x(screen_width: float) -> float:
+    """
+    Left controls panel X in panel-pos space.
+
+    Native `ui_menu_layout_init` nudges the controls left panel 18px further left
+    at 640-wide layouts.
+    """
+
+    if int(screen_width) <= 640:
+        return CONTROLS_LEFT_PANEL_POS_X - 18.0
+    return CONTROLS_LEFT_PANEL_POS_X
+
+
+def _controls_right_panel_pos_x(screen_width: float) -> float:
+    """
+    Right controls panel X in panel-pos space.
+
+    Native `ui_menu_layout_init` uses:
+      slot40_pos_x = screen_width - 350  (+80 at <=640)
+
+    Our panel-pos abstraction differs by a fixed -84 offset from that slot-space,
+    so this becomes:
+      x = screen_width - 434  (+80 at <=640).
+    """
+
+    w = int(screen_width)
+    x = float(w - 434)
+    if w <= 640:
+        x += 80.0
+    return x
+
+
+def _controls_right_panel_pos_y(screen_width: float) -> float:
+    """
+    Right controls panel Y in panel-pos space.
+
+    Native slot40 y moves from 200 to 186 at <=640. In panel-pos coordinates this
+    is 110 -> 96.
+    """
+
+    if int(screen_width) <= 640:
+        return CONTROLS_RIGHT_PANEL_POS_Y - 14.0
+    return CONTROLS_RIGHT_PANEL_POS_Y
+
+
 @dataclass(frozen=True, slots=True)
 class _DropdownLayout:
     pos: Vec2
@@ -228,7 +273,7 @@ class ControlsMenuView(PanelMenuView):
         )
         return (
             Vec2(
-                self._panel_pos.x + slide_x,
+                _controls_left_panel_pos_x(float(self.state.config.screen_width)) + slide_x,
                 self._panel_pos.y + self._widescreen_y_shift,
             )
             + self._panel_offset * panel_scale
@@ -246,8 +291,8 @@ class ControlsMenuView(PanelMenuView):
         )
         return (
             Vec2(
-                CONTROLS_RIGHT_PANEL_POS_X + slide_x,
-                CONTROLS_RIGHT_PANEL_POS_Y + self._widescreen_y_shift,
+                _controls_right_panel_pos_x(float(self.state.config.screen_width)) + slide_x,
+                _controls_right_panel_pos_y(float(self.state.config.screen_width)) + self._widescreen_y_shift,
             )
             + self._panel_offset * panel_scale
         )
