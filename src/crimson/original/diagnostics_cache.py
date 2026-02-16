@@ -462,7 +462,7 @@ class _FocusRuntime:
                     hook_index += 1
                     return bool(handled)
 
-                self.world.state.rng.rand = traced_rand
+                setattr(self.world.state.rng, "rand", traced_rand)
                 self.world.state.particles._rand = traced_rand
                 self.world.state.sprite_effects._rand = traced_rand
                 projectiles_mod._within_native_find_radius = traced_within_native_find_radius  # type: ignore[assignment]
@@ -493,7 +493,7 @@ class _FocusRuntime:
                     strict_events=False,
                 )
         finally:
-            self.world.state.rng.rand = orig_rand
+            setattr(self.world.state.rng, "rand", orig_rand)
             self.world.state.particles._rand = orig_particles_rand
             self.world.state.sprite_effects._rand = orig_sprite_effects_rand
             projectiles_mod._within_native_find_radius = orig_within
