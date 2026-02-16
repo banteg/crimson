@@ -481,10 +481,18 @@ def _draw_right_panel_local_score(
         score_value = f"{max(0, elapsed_ms) * 0.001:.2f} secs"
     else:
         score_value = f"{score_xp}"
+    score_value_pos = Vec2(HS_LOCAL_SCORE_VALUE_X * scale, HS_LOCAL_SCORE_VALUE_Y * scale)
+    if mode_id in (2, 3):
+        # Quest/Rush scores are variable-width second labels ("%.2f secs") and are
+        # centered in the left score column in native.
+        score_label_w = measure_small_text_width(font, "Score", text_scale)
+        score_value_w = measure_small_text_width(font, score_value, text_scale)
+        score_col_center_x = HS_LOCAL_SCORE_LABEL_X * scale + score_label_w * 0.5
+        score_value_pos = Vec2(score_col_center_x - score_value_w * 0.5, HS_LOCAL_SCORE_VALUE_Y * scale)
     draw_small_text(
         font,
         score_value,
-        card_top_left + Vec2(HS_LOCAL_SCORE_VALUE_X * scale, HS_LOCAL_SCORE_VALUE_Y * scale),
+        card_top_left + score_value_pos,
         text_scale,
         value_color,
     )
