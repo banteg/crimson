@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Protocol, Sequence
 
 from grim.geom import Vec2
 
 from ...effects import FxQueue
 from ...sim.state_types import GameplayState, PlayerState
-from ..helpers import perk_active
-from ..ids import PerkId
 
 
 class CreatureForPerks(Protocol):
@@ -56,42 +54,40 @@ class PerksUpdateEffectsCtx:
     dt: float
     creatures: Sequence[CreatureForPerks] | None
     fx_queue: FxQueue | None
-    _aim_target: int | None = None
-    _aim_source_player_index: int | None = None
+    _aim_target_by_player_index: dict[int, int] = field(default_factory=dict)
 
-    def aim_source_player(self) -> PlayerState | None:
-        if self._aim_source_player_index is None:
-            source_index = -1
-            if self.players:
-                if bool(self.state.preserve_bugs):
-                    source_index = 0
-                else:
-                    for idx, player in enumerate(self.players):
-                        if float(player.health) > 0.0:
-                            source_index = int(idx)
-                            break
-            self._aim_source_player_index = int(source_index)
-        source_index = int(self._aim_source_player_index)
-        if source_index < 0 or source_index >= len(self.players):
-            return None
-        return self.players[source_index]
-
-    def aim_target(self) -> int:
-        if self._aim_target is not None:
-            return int(self._aim_target)
+    def aim_target_for_player(self, player_index: int) -> int:
+        player_index = int(player_index)
+        if player_index in self._aim_target_by_player_index:
+            return int(self._aim_target_by_player_index[player_index])
 
         target = -1
-        source_player = self.aim_source_player()
-        if (
-            source_player is not None
-            and self.creatures is not None
-            and (perk_active(source_player, PerkId.PYROKINETIC) or perk_active(source_player, PerkId.EVIL_EYES))
-        ):
-            target = creature_find_in_radius(
-                self.creatures,
-                pos=source_player.aim,
-                radius=12.0,
-                start_index=0,
-            )
-        self._aim_target = int(target)
+        if self.creatures is None:
+            self._aim_target_by_player_index[player_index] = int(target)
+            return int(target)
+
+        if bool(self.state.preserve_bugs) and player_index != 0:
+            self._aim_target_by_player_index[player_index] = int(target)
+            return int(target)
+
+        if not (0 <= player_index < len(self.players)):
+            self._aim_target_by_player_index[player_index] = int(target)
+            return int(target)
+
+        player = self.players[player_index]
+        if not bool(self.state.preserve_bugs) and float(player.health) <= 0.0:
+            self._aim_target_by_player_index[player_index] = int(target)
+            return int(target)
+
+        target = creature_find_in_radius(
+            self.creatures,
+            pos=player.aim,
+            radius=12.0,
+            start_index=0,
+        )
+        self._aim_target_by_player_index[player_index] = int(target)
         return int(target)
+
+    # Backward-compatible alias for player 1 targeting.
+    def aim_target(self) -> int:
+        return self.aim_target_for_player(0)

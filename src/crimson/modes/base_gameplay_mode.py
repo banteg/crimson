@@ -217,50 +217,46 @@ class BaseGameplayMode:
         if not creatures:
             return
 
-        target_player = self.player
-        if bool(self.state.preserve_bugs):
+        target_indices: list[int] = []
+        target_players = self.world.players[:1] if bool(self.state.preserve_bugs) else self.world.players
+        for target_player in target_players:
+            if not bool(self.state.preserve_bugs) and float(target_player.health) <= 0.0:
+                continue
             if perk_count_get(target_player, PerkId.DOCTOR) <= 0:
-                return
-        else:
-            target_player = None
-            for player in self.world.players:
-                if float(player.health) <= 0.0:
-                    continue
-                if perk_count_get(player, PerkId.DOCTOR) > 0:
-                    target_player = player
-                    break
-            if target_player is None:
-                return
+                continue
+            target_idx = _creature_find_in_radius(
+                creatures,
+                pos=target_player.aim,
+                radius=12.0,
+                start_index=0,
+            )
+            if target_idx == -1:
+                continue
+            if target_idx in target_indices:
+                continue
+            target_indices.append(int(target_idx))
 
-        target_idx = _creature_find_in_radius(
-            creatures,
-            pos=target_player.aim,
-            radius=12.0,
-            start_index=0,
-        )
-        if target_idx == -1:
-            return
+        for target_idx in target_indices:
+            creature = creatures[target_idx]
+            if not bool(getattr(creature, "active", False)):
+                continue
+            hp = float(getattr(creature, "hp", 0.0))
+            max_hp = float(getattr(creature, "max_hp", 0.0))
+            if max_hp <= 0.0:
+                continue
 
-        creature = creatures[target_idx]
-        if not bool(getattr(creature, "active", False)):
-            return
-        hp = float(getattr(creature, "hp", 0.0))
-        max_hp = float(getattr(creature, "max_hp", 0.0))
-        if max_hp <= 0.0:
-            return
+            ratio = hp / max_hp
+            if ratio < 0.0:
+                ratio = 0.0
+            if ratio > 1.0:
+                ratio = 1.0
 
-        ratio = hp / max_hp
-        if ratio < 0.0:
-            ratio = 0.0
-        if ratio > 1.0:
-            ratio = 1.0
-
-        screen_left = self.world.world_to_screen(creature.pos + Vec2(-32.0, 32.0))
-        screen_right = self.world.world_to_screen(creature.pos + Vec2(32.0, 32.0))
-        width = screen_right.x - screen_left.x
-        if width <= 1e-3:
-            return
-        draw_target_health_bar(pos=screen_left, width=width, ratio=ratio, alpha=alpha, scale=width / 64.0)
+            screen_left = self.world.world_to_screen(creature.pos + Vec2(-32.0, 32.0))
+            screen_right = self.world.world_to_screen(creature.pos + Vec2(32.0, 32.0))
+            width = screen_right.x - screen_left.x
+            if width <= 1e-3:
+                continue
+            draw_target_health_bar(pos=screen_left, width=width, ratio=ratio, alpha=alpha, scale=width / 64.0)
 
     def _bind_world(self) -> None:
         self.state = self.world.state

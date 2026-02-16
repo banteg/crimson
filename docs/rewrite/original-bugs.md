@@ -271,9 +271,8 @@ Why it’s likely a bug:
 
 Rewrite behavior:
 
-- Default: source cursor-target perk aim from the first alive player (player 1,
-  then player 2, etc.), which keeps Doctor/Pyrokinetic/Evil Eyes responsive in
-  co-op after player 1 death.
+- Default: evaluate cursor-target perks per alive player, so Doctor/Pyrokinetic/
+  Evil Eyes can use each player’s own aim in co-op.
 - With `--preserve-bugs`: keep native player-1-only aim sourcing.
 
 ## 12) Jinxed self-damage always hits player 1 in co-op
