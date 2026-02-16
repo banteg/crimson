@@ -26,7 +26,6 @@ from ..replay.types import (
     Replay,
     ReplayHeader,
     ReplayStatusSnapshot,
-    REPLAY_FORMAT_VERSION,
     UnknownEvent,
     WEAPON_USAGE_COUNT,
     pack_input_flags,
@@ -1594,7 +1593,6 @@ def convert_capture_to_replay(
             previous_pending = int(pending_i)
 
     return Replay(
-        version=REPLAY_FORMAT_VERSION,
         header=ReplayHeader(
             game_mode_id=int(resolved_mode_id),
             seed=int(resolved_seed),

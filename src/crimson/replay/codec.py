@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import gzip
-import json
 import struct
-from dataclasses import asdict
 from pathlib import Path
-from typing import Any, Iterable
+
+import msgspec
 
 from .types import (
     BootstrapKind,
+    InputQuantization,
     PackedPlayerInput,
     PackedTickInputs,
     PerkMenuOpenEvent,
@@ -29,200 +29,309 @@ class ReplayCodecError(ValueError):
     pass
 
 
+class _ReplayStatusWire(msgspec.Struct, forbid_unknown_fields=True):
+    quest_unlock_index: int = 0
+    quest_unlock_index_full: int = 0
+    weapon_usage_counts: list[int] = msgspec.field(default_factory=list)
+
+
+class _ReplayHeaderWire(msgspec.Struct, forbid_unknown_fields=True):
+    game_mode_id: int
+    seed: int
+    replay_format_version: int
+    quest_level: str = ""
+    bootstrap_kind: str = "none"
+    bootstrap_seed: int = 0
+    game_version: str = ""
+    tick_rate: int = 60
+    difficulty_level: int = 0
+    hardcore: bool = False
+    preserve_bugs: bool = False
+    detail_preset: int = 5
+    fx_toggle: int = 0
+    world_size: float = 1024.0
+    player_count: int = 1
+    status: _ReplayStatusWire = msgspec.field(default_factory=_ReplayStatusWire)
+    input_quantization: str = "raw"
+
+
+class _ReplayInputWire(msgspec.Struct, array_like=True, forbid_unknown_fields=True):
+    move_x: float
+    move_y: float
+    aim_x: float
+    aim_y: float
+    flags: int
+
+
+class _ReplayEventWire(msgspec.Struct, array_like=True, forbid_unknown_fields=True):
+    tick_index: int
+    kind: str
+    player_index: int = -1
+    choice_index: int = -1
+    payload: list[object] = msgspec.field(default_factory=list)
+
+
+class _ReplayWire(msgspec.Struct, forbid_unknown_fields=True):
+    header: _ReplayHeaderWire
+    inputs: list[list[_ReplayInputWire]]
+    events: list[_ReplayEventWire] = msgspec.field(default_factory=list)
+
+
+_REPLAY_DECODER = msgspec.msgpack.Decoder(type=_ReplayWire)
+
+
 def _is_gzip(data: bytes) -> bool:
     return data.startswith(_GZIP_MAGIC)
 
 
 def _quantize_f32(value: float) -> float:
     # Convert via IEEE754 float32. This is useful for matching the original input
-    # precision, but may produce "f32 artifact" decimals in JSON.
+    # precision, but may produce "f32 artifact" decimals in serialized captures.
     return struct.unpack("<f", struct.pack("<f", float(value)))[0]
 
 
-def _validate_header_dict(header: dict[str, Any]) -> None:
-    required = ("game_mode_id", "seed")
-    missing = [key for key in required if key not in header]
-    if missing:
-        raise ReplayCodecError(f"replay header missing fields: {', '.join(missing)}")
+def _validate_usage_counts(counts: tuple[int, ...] | list[int]) -> None:
+    if len(counts) != int(WEAPON_USAGE_COUNT):
+        raise ReplayCodecError(
+            f"replay header status.weapon_usage_counts must have {int(WEAPON_USAGE_COUNT)} entries"
+        )
 
 
-def _header_from_dict(data: dict[str, Any]) -> ReplayHeader:
-    _validate_header_dict(data)
-    status_in = data.get("status") or {}
-    weapon_usage_counts = [0] * WEAPON_USAGE_COUNT
-    raw_weapon_usage_counts = status_in.get("weapon_usage_counts")
-    if isinstance(raw_weapon_usage_counts, list):
-        for idx, value in enumerate(raw_weapon_usage_counts[:WEAPON_USAGE_COUNT]):
-            try:
-                weapon_usage_counts[idx] = int(value)
-            except (TypeError, ValueError, OverflowError):
-                weapon_usage_counts[idx] = 0
-    status = ReplayStatusSnapshot(
-        quest_unlock_index=int(status_in.get("quest_unlock_index", 0)),
-        quest_unlock_index_full=int(status_in.get("quest_unlock_index_full", 0)),
-        weapon_usage_counts=tuple(weapon_usage_counts),
+def _header_to_wire(header: ReplayHeader) -> _ReplayHeaderWire:
+    if int(header.replay_format_version) != int(REPLAY_FORMAT_VERSION):
+        raise ReplayCodecError(
+            f"unsupported replay format version in header: {int(header.replay_format_version)}"
+        )
+    if int(header.player_count) <= 0:
+        raise ReplayCodecError(f"replay header player_count must be positive, got {int(header.player_count)}")
+    _validate_usage_counts(header.status.weapon_usage_counts)
+    if str(header.input_quantization) not in ("raw", "f32"):
+        raise ReplayCodecError(f"unknown input_quantization: {header.input_quantization!r}")
+    if str(header.bootstrap_kind) not in ("none", "terrain_v1"):
+        raise ReplayCodecError(f"unknown bootstrap_kind: {header.bootstrap_kind!r}")
+
+    return _ReplayHeaderWire(
+        game_mode_id=int(header.game_mode_id),
+        seed=int(header.seed),
+        replay_format_version=int(header.replay_format_version),
+        quest_level=str(header.quest_level),
+        bootstrap_kind=str(header.bootstrap_kind),
+        bootstrap_seed=int(header.bootstrap_seed),
+        game_version=str(header.game_version),
+        tick_rate=int(header.tick_rate),
+        difficulty_level=int(header.difficulty_level),
+        hardcore=bool(header.hardcore),
+        preserve_bugs=bool(header.preserve_bugs),
+        detail_preset=int(header.detail_preset),
+        fx_toggle=int(header.fx_toggle),
+        world_size=float(header.world_size),
+        player_count=int(header.player_count),
+        status=_ReplayStatusWire(
+            quest_unlock_index=int(header.status.quest_unlock_index),
+            quest_unlock_index_full=int(header.status.quest_unlock_index_full),
+            weapon_usage_counts=[int(value) for value in header.status.weapon_usage_counts],
+        ),
+        input_quantization=str(header.input_quantization),
     )
-    game_version = data.get("game_version")
-    if game_version is None:
-        game_version_str = ""
-    else:
-        game_version_str = str(game_version)
-    input_quant = data.get("input_quantization", "raw")
-    if input_quant not in ("raw", "f32"):
-        raise ReplayCodecError(f"unknown input_quantization: {input_quant!r}")
 
-    bootstrap_kind_raw = data.get("bootstrap_kind", "none")
+
+def _header_from_wire(data: _ReplayHeaderWire) -> ReplayHeader:
+    if int(data.replay_format_version) != int(REPLAY_FORMAT_VERSION):
+        raise ReplayCodecError(f"unsupported replay format version: {int(data.replay_format_version)}")
+    if int(data.player_count) <= 0:
+        raise ReplayCodecError(f"replay header player_count must be positive, got {int(data.player_count)}")
+
+    input_quant_raw = str(data.input_quantization)
+    if input_quant_raw not in ("raw", "f32"):
+        raise ReplayCodecError(f"unknown input_quantization: {input_quant_raw!r}")
+    input_quant: InputQuantization = "f32" if input_quant_raw == "f32" else "raw"
+
+    bootstrap_kind_raw = str(data.bootstrap_kind)
     if bootstrap_kind_raw not in ("none", "terrain_v1"):
         raise ReplayCodecError(f"unknown bootstrap_kind: {bootstrap_kind_raw!r}")
     bootstrap_kind: BootstrapKind = "terrain_v1" if bootstrap_kind_raw == "terrain_v1" else "none"
 
-    quest_level_raw = data.get("quest_level", "")
-    quest_level = "" if quest_level_raw is None else str(quest_level_raw)
+    weapon_usage_counts = tuple(int(value) for value in data.status.weapon_usage_counts)
+    _validate_usage_counts(weapon_usage_counts)
+    status = ReplayStatusSnapshot(
+        quest_unlock_index=int(data.status.quest_unlock_index),
+        quest_unlock_index_full=int(data.status.quest_unlock_index_full),
+        weapon_usage_counts=weapon_usage_counts,
+    )
 
     return ReplayHeader(
-        game_mode_id=int(data["game_mode_id"]),
-        seed=int(data["seed"]),
-        quest_level=quest_level,
+        game_mode_id=int(data.game_mode_id),
+        seed=int(data.seed),
+        replay_format_version=int(data.replay_format_version),
+        quest_level=str(data.quest_level),
         bootstrap_kind=bootstrap_kind,
-        bootstrap_seed=int(data.get("bootstrap_seed", 0)),
-        game_version=game_version_str,
-        tick_rate=int(data.get("tick_rate", 60)),
-        difficulty_level=int(data.get("difficulty_level", 0)),
-        hardcore=bool(data.get("hardcore", False)),
-        preserve_bugs=bool(data.get("preserve_bugs", False)),
-        detail_preset=int(data.get("detail_preset", 5)),
-        fx_toggle=int(data.get("fx_toggle", 0)),
-        world_size=float(data.get("world_size", 1024.0)),
-        player_count=int(data.get("player_count", 1)),
+        bootstrap_seed=int(data.bootstrap_seed),
+        game_version=str(data.game_version),
+        tick_rate=int(data.tick_rate),
+        difficulty_level=int(data.difficulty_level),
+        hardcore=bool(data.hardcore),
+        preserve_bugs=bool(data.preserve_bugs),
+        detail_preset=int(data.detail_preset),
+        fx_toggle=int(data.fx_toggle),
+        world_size=float(data.world_size),
+        player_count=int(data.player_count),
         status=status,
         input_quantization=input_quant,
     )
 
 
-def _event_from_array(value: list[Any]) -> ReplayEvent:
-    if len(value) < 2:
-        raise ReplayCodecError(f"replay event must have at least 2 fields: {value!r}")
-    tick_index = int(value[0])
-    kind = str(value[1])
+def _packed_input_to_wire(
+    packed: PackedPlayerInput,
+    *,
+    tick_idx: int,
+    player_idx: int,
+) -> _ReplayInputWire:
+    if len(packed) < 4:
+        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} must have 4 fields")
+    move_x_raw, move_y_raw, aim_vec_raw, flags_raw = packed[:4]
+    if not isinstance(move_x_raw, (int, float)):
+        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} move_x must be numeric")
+    if not isinstance(move_y_raw, (int, float)):
+        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} move_y must be numeric")
+    if not isinstance(aim_vec_raw, list) or len(aim_vec_raw) < 2:
+        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} must encode aim as [x, y]")
+    if not isinstance(aim_vec_raw[0], (int, float)) or not isinstance(aim_vec_raw[1], (int, float)):
+        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} aim must contain numeric values")
+    if not isinstance(flags_raw, (int, float)):
+        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} flags must be numeric")
+    return _ReplayInputWire(
+        move_x=float(move_x_raw),
+        move_y=float(move_y_raw),
+        aim_x=float(aim_vec_raw[0]),
+        aim_y=float(aim_vec_raw[1]),
+        flags=int(flags_raw),
+    )
+
+
+def _event_to_wire(event: ReplayEvent) -> _ReplayEventWire:
+    if isinstance(event, PerkPickEvent):
+        return _ReplayEventWire(
+            tick_index=int(event.tick_index),
+            kind="perk_pick",
+            player_index=int(event.player_index),
+            choice_index=int(event.choice_index),
+            payload=[],
+        )
+    if isinstance(event, PerkMenuOpenEvent):
+        return _ReplayEventWire(
+            tick_index=int(event.tick_index),
+            kind="perk_menu_open",
+            player_index=int(event.player_index),
+            choice_index=-1,
+            payload=[],
+        )
+    if isinstance(event, UnknownEvent):
+        return _ReplayEventWire(
+            tick_index=int(event.tick_index),
+            kind=str(event.kind),
+            player_index=-1,
+            choice_index=-1,
+            payload=list(event.payload),
+        )
+    raise ReplayCodecError(f"unsupported event type: {type(event).__name__}")  # pragma: no cover
+
+
+def _event_from_wire(event: _ReplayEventWire) -> ReplayEvent:
+    kind = str(event.kind)
+    tick_index = int(event.tick_index)
     if kind == "perk_pick":
-        if len(value) < 4:
-            raise ReplayCodecError(f"perk_pick must have [tick, kind, player, choice]: {value!r}")
+        if int(event.player_index) < 0 or int(event.choice_index) < 0:
+            raise ReplayCodecError(
+                f"perk_pick must have non-negative player/choice indexes: {event.player_index}, {event.choice_index}"
+            )
+        if event.payload:
+            raise ReplayCodecError("perk_pick payload must be empty")
         return PerkPickEvent(
             tick_index=tick_index,
-            player_index=int(value[2]),
-            choice_index=int(value[3]),
+            player_index=int(event.player_index),
+            choice_index=int(event.choice_index),
         )
     if kind == "perk_menu_open":
-        if len(value) < 3:
-            raise ReplayCodecError(f"perk_menu_open must have [tick, kind, player]: {value!r}")
+        if int(event.player_index) < 0:
+            raise ReplayCodecError(f"perk_menu_open must have non-negative player index: {event.player_index}")
+        if event.payload:
+            raise ReplayCodecError("perk_menu_open payload must be empty")
         return PerkMenuOpenEvent(
             tick_index=tick_index,
-            player_index=int(value[2]),
+            player_index=int(event.player_index),
         )
-    return UnknownEvent(tick_index=tick_index, kind=kind, payload=list(value[2:]))
+    return UnknownEvent(
+        tick_index=tick_index,
+        kind=kind,
+        payload=list(event.payload),
+    )
 
 
-def _events_to_arrays(events: Iterable[ReplayEvent]) -> list[list[object]]:
-    out: list[list[object]] = []
-    for event in events:
-        if isinstance(event, PerkPickEvent):
-            out.append(
-                [
-                    int(event.tick_index),
-                    "perk_pick",
-                    int(event.player_index),
-                    int(event.choice_index),
-                ]
-            )
-        elif isinstance(event, PerkMenuOpenEvent):
-            out.append(
-                [
-                    int(event.tick_index),
-                    "perk_menu_open",
-                    int(event.player_index),
-                ]
-            )
-        elif isinstance(event, UnknownEvent):
-            out.append([int(event.tick_index), str(event.kind), *event.payload])
-        else:  # pragma: no cover
-            raise ReplayCodecError(f"unsupported event type: {type(event).__name__}")
-    return out
+def dump_replay(replay: Replay) -> bytes:
+    """Serialize a replay as a gzipped msgpack blob.
 
+    The gzip header is written with mtime=0 for stable content hashing.
+    """
 
-def replay_to_obj(replay: Replay) -> dict[str, Any]:
-    header = asdict(replay.header)
-    # Normalize nested dataclass keys.
-    header["status"] = asdict(replay.header.status)
-    header["input_quantization"] = str(replay.header.input_quantization)
-    return {
-        "v": int(replay.version),
-        "header": header,
-        "inputs": replay.inputs,
-        "events": _events_to_arrays(replay.events),
-    }
-
-
-def replay_from_obj(obj: dict[str, Any]) -> Replay:
-    version = int(obj.get("v", 0))
-    if version != int(REPLAY_FORMAT_VERSION):
-        raise ReplayCodecError(f"unsupported replay version: {version}")
-
-    header_in = obj.get("header")
-    if not isinstance(header_in, dict):
-        raise ReplayCodecError("replay header must be an object")
-    header = _header_from_dict(header_in)
-
-    inputs_in = obj.get("inputs")
-    if not isinstance(inputs_in, list):
-        raise ReplayCodecError("replay inputs must be a list")
-
-    # Keep inputs in compact array form:
-    # inputs[tick][player] == [move_x, move_y, [aim_x, aim_y], flags]
-    inputs: list[PackedTickInputs] = []
-    for tick_idx, tick in enumerate(inputs_in):
-        if not isinstance(tick, list):
-            raise ReplayCodecError(f"replay inputs tick {tick_idx} must be a list")
-        if len(tick) != int(header.player_count):
+    header_wire = _header_to_wire(replay.header)
+    inputs_wire: list[list[_ReplayInputWire]] = []
+    expected_players = int(replay.header.player_count)
+    for tick_idx, tick in enumerate(replay.inputs):
+        if len(tick) != expected_players:
             raise ReplayCodecError(
-                f"replay tick {tick_idx} has {len(tick)} players, expected {int(header.player_count)}"
+                f"replay tick {tick_idx} has {len(tick)} players, expected {expected_players}"
+            )
+        inputs_wire.append(
+            [
+                _packed_input_to_wire(packed, tick_idx=int(tick_idx), player_idx=int(player_idx))
+                for player_idx, packed in enumerate(tick)
+            ]
+        )
+
+    events_wire = [_event_to_wire(event) for event in replay.events]
+    wire = _ReplayWire(header=header_wire, inputs=inputs_wire, events=events_wire)
+    raw = msgspec.msgpack.encode(wire)
+    return gzip.compress(raw, compresslevel=9, mtime=0)
+
+
+def load_replay(data: bytes) -> Replay:
+    if _is_gzip(data):
+        data = gzip.decompress(data)
+
+    stripped = data.lstrip()
+    if stripped.startswith((b"{", b"[")):
+        raise ReplayCodecError("legacy JSON replay format is unsupported; regenerate the replay")
+
+    try:
+        wire = _REPLAY_DECODER.decode(data)
+    except (msgspec.DecodeError, msgspec.ValidationError) as exc:
+        raise ReplayCodecError("invalid replay msgpack payload") from exc
+
+    header = _header_from_wire(wire.header)
+
+    expected_players = int(header.player_count)
+    inputs: list[PackedTickInputs] = []
+    for tick_idx, tick in enumerate(wire.inputs):
+        if len(tick) != expected_players:
+            raise ReplayCodecError(
+                f"replay tick {tick_idx} has {len(tick)} players, expected {expected_players}"
             )
         packed_tick: PackedTickInputs = []
-        for player_idx, packed in enumerate(tick):
-            if not isinstance(packed, list):
-                raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} must be a list")
-            if len(packed) < 4:
-                raise ReplayCodecError(
-                    f"replay input tick {tick_idx} player {player_idx} must have 4 fields"
-                )
-            mx, my, aim_vec, flags = packed[:4]
-            if not isinstance(aim_vec, list) or len(aim_vec) < 2:
-                raise ReplayCodecError(
-                    f"replay input tick {tick_idx} player {player_idx} must encode aim as [x, y]"
-                )
-            ax, ay = aim_vec[:2]
-            mx_f = float(mx)
-            my_f = float(my)
-            ax_f = float(ax)
-            ay_f = float(ay)
-            flags_i = int(flags)
+        for packed in tick:
+            move_x = float(packed.move_x)
+            move_y = float(packed.move_y)
+            aim_x = float(packed.aim_x)
+            aim_y = float(packed.aim_y)
+            flags = int(packed.flags)
             if header.input_quantization == "f32":
-                mx_f = _quantize_f32(mx_f)
-                my_f = _quantize_f32(my_f)
-                ax_f = _quantize_f32(ax_f)
-                ay_f = _quantize_f32(ay_f)
-            packed_input: PackedPlayerInput = [mx_f, my_f, [ax_f, ay_f], flags_i]
-            packed_tick.append(packed_input)
+                move_x = _quantize_f32(move_x)
+                move_y = _quantize_f32(move_y)
+                aim_x = _quantize_f32(aim_x)
+                aim_y = _quantize_f32(aim_y)
+            packed_tick.append([move_x, move_y, [aim_x, aim_y], flags])
         inputs.append(packed_tick)
 
-    events_in = obj.get("events") or []
-    if not isinstance(events_in, list):
-        raise ReplayCodecError("replay events must be a list")
-    events: list[ReplayEvent] = []
-    for raw in events_in:
-        if not isinstance(raw, list):
-            raise ReplayCodecError(f"replay event must be a list: {raw!r}")
-        events.append(_event_from_array(raw))
-
+    events = [_event_from_wire(event) for event in wire.events]
     input_len = len(inputs)
     for event in events:
         tick_index = int(getattr(event, "tick_index", 0))
@@ -231,27 +340,7 @@ def replay_from_obj(obj: dict[str, Any]) -> Replay:
         if tick_index > input_len:
             raise ReplayCodecError(f"replay event tick_index out of bounds: {tick_index} > {input_len}")
 
-    return Replay(version=version, header=header, inputs=inputs, events=events)
-
-
-def dump_replay(replay: Replay) -> bytes:
-    """Serialize a replay as a gzipped JSON blob.
-
-    The gzip header is written with mtime=0 for stable content hashing.
-    """
-
-    obj = replay_to_obj(replay)
-    raw = json.dumps(obj, separators=(",", ":"), sort_keys=True).encode("utf-8")
-    return gzip.compress(raw, compresslevel=9, mtime=0)
-
-
-def load_replay(data: bytes) -> Replay:
-    if _is_gzip(data):
-        data = gzip.decompress(data)
-    obj = json.loads(data.decode("utf-8"))
-    if not isinstance(obj, dict):
-        raise ReplayCodecError("replay root must be an object")
-    return replay_from_obj(obj)
+    return Replay(header=header, inputs=inputs, events=events)
 
 
 def dump_replay_file(path: Path, replay: Replay) -> None:

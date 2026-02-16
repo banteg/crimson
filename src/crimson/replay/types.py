@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Literal, TypeAlias
 
-REPLAY_FORMAT_VERSION = 3
-ReplayFormatVersion: TypeAlias = Literal[3]
+REPLAY_FORMAT_VERSION = 4
+ReplayFormatVersion: TypeAlias = Literal[4]
 
 BootstrapKind: TypeAlias = Literal["none", "terrain_v1"]
 
@@ -139,6 +139,7 @@ class ReplayStatusSnapshot:
 class ReplayHeader:
     game_mode_id: int
     seed: int
+    replay_format_version: int = REPLAY_FORMAT_VERSION
     # Quests can recover their spawn script deterministically from the level id.
     # Leave empty for non-quest modes or legacy replays.
     quest_level: str = ""
@@ -182,7 +183,6 @@ ReplayEvent: TypeAlias = PerkPickEvent | PerkMenuOpenEvent | UnknownEvent
 
 @dataclass(slots=True)
 class Replay:
-    version: int
     header: ReplayHeader
     inputs: list[PackedTickInputs]
     events: list[ReplayEvent] = field(default_factory=list)
