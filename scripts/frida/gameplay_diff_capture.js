@@ -10,9 +10,13 @@
 //   frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
 //
 // Output:
-//   C:\share\frida\gameplay_diff_capture.json (or CRIMSON_FRIDA_DIR override)
+//   C:\share\frida\gameplay_diff_capture.json (non-quest fallback)
+//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.json (quests)
+//   (or CRIMSON_FRIDA_DIR / CRIMSON_FRIDA_OUT_PATH overrides)
 
 const DEFAULT_LOG_DIR = "C:\\share\\frida";
+const DEFAULT_OUT_NAME = "gameplay_diff_capture.json";
+const DEFAULT_QUEST_OUT_PREFIX = "gameplay_diff_capture.quest_";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
@@ -20,6 +24,7 @@ const CAPTURE_FORMAT_VERSION = 4;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
+const GAME_MODE_QUESTS = 3;
 
 function getEnv(key) {
   try {
@@ -107,7 +112,11 @@ function toHex(value, width) {
 const LOG_DIR = getEnv("CRIMSON_FRIDA_DIR") || DEFAULT_LOG_DIR;
 
 const CONFIG = {
-  outPath: joinPath(LOG_DIR, "gameplay_diff_capture.json"),
+  outPath: getEnv("CRIMSON_FRIDA_OUT_PATH") || joinPath(LOG_DIR, DEFAULT_OUT_NAME),
+  // Quest-mode captures are split to one file per quest stage by default.
+  splitQuestFiles: true,
+  questOutDir: getEnv("CRIMSON_FRIDA_QUEST_OUT_DIR") || LOG_DIR,
+  questOutPrefix: getEnv("CRIMSON_FRIDA_QUEST_OUT_PREFIX") || DEFAULT_QUEST_OUT_PREFIX,
   logMode: getEnv("CRIMSON_FRIDA_APPEND") === "1" ? "append" : "truncate",
   consoleAllEvents: parseBoolEnv("CRIMSON_FRIDA_CONSOLE_ALL_EVENTS", false),
   consoleEvents: parseStringSet(getEnv("CRIMSON_FRIDA_CONSOLE_EVENTS"), DEFAULT_CONSOLE_EVENTS),
@@ -223,6 +232,8 @@ const DATA = {
   shock_chain_projectile_id: 0x00486fc0,
   creature_active_count: 0x00486fcc,
   quest_spawn_timeline: 0x00486fd0,
+  quest_stage_major: 0x00487004,
+  quest_stage_minor: 0x00487008,
   bonus_reflex_boost_timer: 0x00487014,
   bonus_freeze_timer: 0x00487018,
   bonus_weapon_power_up_timer: 0x0048701c,
@@ -354,9 +365,13 @@ const angleApproachContextByTid = {};
 const outState = {
   outFile: null,
   outWarned: false,
+  currentOutPath: null,
+  captureMetaTemplate: null,
   captureStarted: false,
   captureClosed: false,
   captureTickCount: 0,
+  captureTickCountCurrentFile: 0,
+  captureFilesWritten: [],
   shutdownComplete: false,
   gameplayFrame: 0,
   currentStatePrev: null,
@@ -399,11 +414,48 @@ const UNKNOWN_DEATH = {
   owner_id: -1,
 };
 
+function questLevelKey(major, minor) {
+  const stageMajor = major == null ? -1 : major | 0;
+  const stageMinor = minor == null ? -1 : minor | 0;
+  if (stageMajor <= 0 || stageMinor <= 0) return null;
+  return String(stageMajor) + "_" + String(stageMinor);
+}
+
+function resolveCaptureOutPathForTick(tickObj) {
+  if (!CONFIG.splitQuestFiles || !tickObj) return CONFIG.outPath;
+  const gameModeId = tickObj.game_mode_id == null ? -1 : tickObj.game_mode_id | 0;
+  if (gameModeId !== GAME_MODE_QUESTS) return CONFIG.outPath;
+  const levelKey = questLevelKey(tickObj.quest_stage_major, tickObj.quest_stage_minor);
+  if (!levelKey) return CONFIG.outPath;
+  return joinPath(CONFIG.questOutDir, CONFIG.questOutPrefix + levelKey + ".json");
+}
+
+function appendRunSuffix(path, runIndex) {
+  const idx = String(path).lastIndexOf(".");
+  if (idx <= 0) return String(path) + ".run" + String(runIndex);
+  return String(path).slice(0, idx) + ".run" + String(runIndex) + String(path).slice(idx);
+}
+
+function ensureUniqueCaptureOutPath(path) {
+  if (!CONFIG.splitQuestFiles || CONFIG.logMode === "append") return String(path);
+  const used = outState.captureFilesWritten || [];
+  if (used.indexOf(path) < 0) return String(path);
+  let runIndex = 2;
+  let candidate = appendRunSuffix(path, runIndex);
+  while (used.indexOf(candidate) >= 0) {
+    runIndex += 1;
+    candidate = appendRunSuffix(path, runIndex);
+  }
+  return candidate;
+}
+
 function openOutFile() {
   if (outState.outFile) return;
+  const outPath = outState.currentOutPath || CONFIG.outPath;
+  if (!outPath) return;
   const mode = CONFIG.logMode === "append" ? "a" : "w";
   try {
-    outState.outFile = new File(CONFIG.outPath, mode);
+    outState.outFile = new File(outPath, mode);
   } catch (_) {
     outState.outFile = null;
   }
@@ -438,23 +490,67 @@ function _captureWriteJsonLine(obj, flushNow) {
   return _captureWrite(JSON.stringify(obj) + "\n", flushNow);
 }
 
-function startCaptureFile(meta) {
-  if (outState.captureStarted) return;
-  const started = _captureWriteJsonLine({ event: "capture_meta", capture: meta }, true);
-  outState.captureStarted = started;
+function startCaptureFile(meta, outPath) {
+  const targetOutPath = outPath || CONFIG.outPath;
+  outState.currentOutPath = targetOutPath;
+  outState.outFile = null;
+  outState.outWarned = false;
+  outState.captureStarted = false;
   outState.captureClosed = false;
-  outState.captureTickCount = 0;
+  outState.captureTickCountCurrentFile = 0;
+  const captureMeta = Object.assign({}, meta || {}, { out_path: targetOutPath });
+  const started = _captureWriteJsonLine({ event: "capture_meta", capture: captureMeta }, true);
+  outState.captureStarted = started;
+  outState.captureClosed = !started;
+  if (started) {
+    outState.captureFilesWritten.push(targetOutPath);
+  }
   if (!started && !outState.outWarned) {
     outState.outWarned = true;
     console.log("gameplay_diff_capture: file logging unavailable; capture file not writable");
   }
 }
 
+function switchCaptureFile(outPath, reason, tickObj) {
+  const requestedOutPath = outPath || CONFIG.outPath;
+  const samePath = outState.currentOutPath === requestedOutPath;
+  if (samePath && outState.captureStarted && !outState.captureClosed) return;
+  const prevOutPath = outState.currentOutPath;
+  if (outState.captureStarted && !outState.captureClosed) {
+    closeCaptureFile();
+  }
+  const targetOutPath = ensureUniqueCaptureOutPath(requestedOutPath);
+  startCaptureFile(outState.captureMetaTemplate || {}, targetOutPath);
+  if (!samePath || targetOutPath !== requestedOutPath) {
+    writeLine({
+      event: "capture_file_switch",
+      reason: reason || "switch",
+      from_out_path: prevOutPath,
+      requested_out_path: requestedOutPath,
+      to_out_path: targetOutPath,
+      tick_index: tickObj && tickObj.tick_index != null ? tickObj.tick_index : null,
+      game_mode_id: tickObj && tickObj.game_mode_id != null ? tickObj.game_mode_id : null,
+      quest_stage_major: tickObj && tickObj.quest_stage_major != null ? tickObj.quest_stage_major : null,
+      quest_stage_minor: tickObj && tickObj.quest_stage_minor != null ? tickObj.quest_stage_minor : null,
+    });
+  }
+}
+
+function ensureCaptureFileForTick(tickObj) {
+  const outPath = resolveCaptureOutPathForTick(tickObj);
+  if (!outState.captureStarted || outState.captureClosed || outState.currentOutPath !== outPath) {
+    switchCaptureFile(outPath, "tick_route", tickObj);
+  }
+}
+
 function writeCaptureTick(tickObj) {
-  if (!outState.captureStarted || outState.captureClosed || !tickObj) return;
+  if (!tickObj) return;
+  ensureCaptureFileForTick(tickObj);
+  if (!outState.captureStarted || outState.captureClosed) return;
   const wrote = _captureWriteJsonLine({ event: "tick", tick: tickObj }, true);
   if (wrote) {
     outState.captureTickCount += 1;
+    outState.captureTickCountCurrentFile += 1;
     return;
   }
   if (!outState.outWarned) {
@@ -465,17 +561,15 @@ function writeCaptureTick(tickObj) {
 
 function closeCaptureFile() {
   if (!outState.captureStarted || outState.captureClosed) return;
-  let closed = false;
   try {
     if (outState.outFile) {
       if (CONFIG.flushCaptureWrites) outState.outFile.flush();
       outState.outFile.close();
-      closed = true;
     }
   } catch (_) {
   }
   outState.outFile = null;
-  outState.captureClosed = closed;
+  outState.captureClosed = true;
 }
 
 function shutdownCapture(reason) {
@@ -499,9 +593,11 @@ function shutdownCapture(reason) {
       event: "capture_shutdown",
       reason: why,
       ticks_written: outState.captureTickCount,
+      ticks_written_current_file: outState.captureTickCountCurrentFile,
       capture_started: outState.captureStarted,
       capture_closed: outState.captureClosed,
-      out_path: CONFIG.outPath,
+      out_path: outState.currentOutPath || CONFIG.outPath,
+      capture_files_written: outState.captureFilesWritten,
     });
   } catch (_) {}
 }
@@ -930,6 +1026,8 @@ function readGameplayGlobalsCompact() {
     shock_chain_links_left: readDataI32("shock_chain_links_left"),
     shock_chain_projectile_id: readDataI32("shock_chain_projectile_id"),
     quest_spawn_timeline: readDataI32("quest_spawn_timeline"),
+    quest_stage_major: readDataI32("quest_stage_major"),
+    quest_stage_minor: readDataI32("quest_stage_minor"),
     quest_spawn_stall_timer_ms: readDataI32("quest_spawn_stall_timer_ms"),
     quest_transition_timer_ms: readDataI32("quest_transition_timer_ms"),
     quest_stage_banner_timer_ms: readDataI32("quest_stage_banner_timer_ms"),
@@ -2646,6 +2744,8 @@ function finalizeTick() {
       perk_pending_count: globals.perk_pending_count,
       perk_choices_dirty: perkChoicesDirty,
       quest_spawn_timeline: globals.quest_spawn_timeline,
+      quest_stage_major: globals.quest_stage_major,
+      quest_stage_minor: globals.quest_stage_minor,
       perk_doctor_target_creature_id: globals.perk_doctor_target_creature_id,
       shock_chain_links_left: globals.shock_chain_links_left,
       shock_chain_projectile_id: globals.shock_chain_projectile_id,
@@ -2825,6 +2925,8 @@ function finalizeTick() {
     state_pending_leave: outState.currentStatePending,
     mode_hint: tick.mode_hint == null ? "" : String(tick.mode_hint),
     game_mode_id: globals.config_game_mode == null ? -1 : globals.config_game_mode,
+    quest_stage_major: globals.quest_stage_major == null ? -1 : globals.quest_stage_major,
+    quest_stage_minor: globals.quest_stage_minor == null ? -1 : globals.quest_stage_minor,
     ts_enter_ms: tick.ts_enter_ms,
     ts_leave_ms: tsLeave,
     duration_ms: tsLeave - tick.ts_enter_ms,
@@ -4333,6 +4435,10 @@ function main() {
   outState.sessionId = outState.sessionFingerprint.session_id;
 
   const captureConfig = {
+    out_path: CONFIG.outPath,
+    split_quest_files: CONFIG.splitQuestFiles,
+    quest_out_dir: CONFIG.questOutDir,
+    quest_out_prefix: CONFIG.questOutPrefix,
     log_mode: CONFIG.logMode,
     console_all_events: CONFIG.consoleAllEvents,
     console_events: Array.from(CONFIG.consoleEvents.values()),
@@ -4401,13 +4507,16 @@ function main() {
       : null,
     pointers_resolved: ptrs,
   };
-  startCaptureFile(captureMeta);
+  outState.captureMetaTemplate = captureMeta;
+  if (!CONFIG.splitQuestFiles) {
+    startCaptureFile(captureMeta, CONFIG.outPath);
+  }
 
   writeLine({
     event: "start",
     capture_format_version: CAPTURE_FORMAT_VERSION,
     session_id: outState.sessionId,
-    out_path: CONFIG.outPath,
+    out_path: outState.currentOutPath || CONFIG.outPath,
     capture_file_started: outState.captureStarted,
     config: captureConfig,
     session_fingerprint: outState.sessionFingerprint,

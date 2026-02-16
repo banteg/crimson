@@ -429,6 +429,26 @@ def test_load_capture_supports_jsonl_stream_rows(tmp_path: Path) -> None:
     assert int(capture.ticks[0].tick_index) == 0
 
 
+def test_load_capture_accepts_quest_stage_tick_fields(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    tick["mode_hint"] = "quest_mode_update"
+    tick["game_mode_id"] = int(GameMode.QUESTS)
+    tick["quest_stage_major"] = 2
+    tick["quest_stage_minor"] = 7
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+
+    assert capture.script == "gameplay_diff_capture"
+    assert len(capture.ticks) == 1
+    loaded_tick = capture.ticks[0]
+    assert int(loaded_tick.game_mode_id) == int(GameMode.QUESTS)
+    assert int(loaded_tick.quest_stage_major) == 2
+    assert int(loaded_tick.quest_stage_minor) == 7
+
+
 def test_load_capture_stream_accepts_forward_compatible_config_fields(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick])

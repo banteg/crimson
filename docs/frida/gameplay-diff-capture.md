@@ -13,9 +13,10 @@ JSONL event stream designed for robust incremental writes.
 If you are starting from only a fresh capture artifact, follow
 `docs/frida/differential-playbook.md` first.
 
-Primary output:
+Primary outputs:
 
-- `C:\share\frida\gameplay_diff_capture.json`
+- default / non-quest fallback: `C:\share\frida\gameplay_diff_capture.json`
+- quest mode: one file per stage, e.g. `C:\share\frida\gameplay_diff_capture.quest_1_1.json`
 
 Attach:
 
@@ -34,6 +35,22 @@ Just shortcut (Windows VM):
 ```text
 just frida-gameplay-diff-capture
 ```
+
+## Quest campaign captures
+
+Quest-mode ticks are routed automatically into per-stage files by default.
+This lets you play through all quests in one Frida session and keep each quest
+capture isolated.
+
+Examples:
+
+- `gameplay_diff_capture.quest_1_1.json`
+- `gameplay_diff_capture.quest_1_2.json`
+- `gameplay_diff_capture.quest_5_10.json`
+
+If the same quest stage is recorded multiple times in one attach session, the
+script appends a run suffix to avoid overwriting earlier runs
+(`...quest_1_1.run2.json`, `...quest_1_1.run3.json`, etc.).
 
 ## Capture format
 
@@ -78,6 +95,8 @@ Notes:
   and `aim_scheme` sampled from config globals. Legacy captures may contain
   `null` for these fields; use CLI `--aim-scheme-player <PLAYER=SCHEME>`
   overrides when replay synthesis needs known config values.
+- Quest tick rows include `quest_stage_major` / `quest_stage_minor` so tooling
+  can map each file/tick back to a specific quest.
 
 ## Convert to checkpoints + replay
 
@@ -160,6 +179,9 @@ captured by default for differential parity sessions.
 
 - `CRIMSON_FRIDA_STATES=6,9,10`
 - `CRIMSON_FRIDA_ALL_STATES=1`
+- `CRIMSON_FRIDA_OUT_PATH=C:\share\frida\gameplay_diff_capture.json`
+- `CRIMSON_FRIDA_QUEST_OUT_DIR=C:\share\frida`
+- `CRIMSON_FRIDA_QUEST_OUT_PREFIX=gameplay_diff_capture.quest_`
 - `CRIMSON_FRIDA_CONSOLE_ALL_EVENTS=1`
 - `CRIMSON_FRIDA_CONSOLE_EVENTS=start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event`
 - `CRIMSON_FRIDA_TICK_DETAILS_EVERY=30`
