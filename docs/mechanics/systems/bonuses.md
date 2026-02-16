@@ -42,6 +42,10 @@ When a Weapon bonus spawns within 56 units of a player, it is converted
 into a 100-point bonus instead. Weapon bonuses are suppressed entirely
 when [My Favourite Weapon](../perks.md#48-my-favourite-weapon) is active.
 
+!!! bug "Original bug"
+    In the original executable, the 56-unit conversion check uses player 1
+    position only. Run with `--preserve-bugs` to keep that co-op asymmetry.
+
 ## 4. Weapon Power Up
 
 Duration: 10 seconds.

@@ -268,7 +268,14 @@ class BonusPool:
 
         if entry.bonus_id == int(BonusId.WEAPON):
             near_sq = BONUS_WEAPON_NEAR_RADIUS * BONUS_WEAPON_NEAR_RADIUS
-            if players and Vec2.distance_sq(pos, players[0].pos) < near_sq:
+            near_player = False
+            if players:
+                if bool(state.preserve_bugs):
+                    # Native checks player 1 position only.
+                    near_player = Vec2.distance_sq(pos, players[0].pos) < near_sq
+                else:
+                    near_player = any(Vec2.distance_sq(pos, player.pos) < near_sq for player in players)
+            if near_player:
                 entry.bonus_id = int(BonusId.POINTS)
                 entry.amount = 100
 

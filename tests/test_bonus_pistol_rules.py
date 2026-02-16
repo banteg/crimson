@@ -50,8 +50,22 @@ def test_pistol_extra_gate_allows_spawn_without_bonus_magnet() -> None:
     assert entry is not None
 
 
-def test_weapon_drop_suppression_is_player1_only_in_coop() -> None:
+def test_weapon_drop_near_player2_converts_to_points_by_default() -> None:
     state = GameplayState()
+    state.rng = _SequenceRng([1, 13, 1, 4])
+    state.bonus_pool = BonusPool()
+
+    player1 = PlayerState(index=0, pos=Vec2(), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player2 = PlayerState(index=1, pos=Vec2(500.0, 500.0), weapon_id=int(WeaponId.SUBMACHINE_GUN))
+
+    entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(500.0, 500.0), state=state, players=[player1, player2])
+    assert entry is not None
+    assert entry.bonus_id == int(BonusId.POINTS)
+    assert entry.amount == 100
+
+
+def test_weapon_drop_near_player2_stays_player1_only_with_preserve_bugs() -> None:
+    state = GameplayState(preserve_bugs=True)
     state.rng = _SequenceRng([1, 13, 1, 4])
     state.bonus_pool = BonusPool()
 

@@ -150,3 +150,24 @@ Rewrite behavior:
 - Default: use the scaled reload decrement (`reload_scale * frame_dt`) for the preload
   check so ammo is always refilled when Stationary Reloader causes same-tick completion.
 - With `--preserve-bugs`: keep the native unscaled preload check (and the empty-reload loop).
+
+## 6) Weapon-drop proximity conversion checks player 1 only
+
+Native behavior:
+
+- In `bonus_try_spawn_on_kill` (`0x0041f8d0`), when the spawned bonus is
+  `Weapon`, the 56-unit proximity check uses only `player1.pos`.
+- In co-op, a weapon drop near only player 2 does **not** convert to a
+  100-point bonus.
+
+Why it’s likely a bug:
+
+- The conversion mechanic is otherwise positional and player-agnostic.
+- In co-op this creates asymmetric drop behavior based only on which player is
+  index 0.
+
+Rewrite behavior:
+
+- Default: convert Weapon drops to 100-point bonuses when they spawn within
+  56 units of **any** player.
+- With `--preserve-bugs`: keep native player-1-only proximity conversion.
