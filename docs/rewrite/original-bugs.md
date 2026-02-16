@@ -275,3 +275,22 @@ Rewrite behavior:
   then player 2, etc.), which keeps Doctor/Pyrokinetic/Evil Eyes responsive in
   co-op after player 1 death.
 - With `--preserve-bugs`: keep native player-1-only aim sourcing.
+
+## 12) Jinxed self-damage always hits player 1 in co-op
+
+Native behavior:
+
+- In the Jinxed “accident” branch (`rand % 10 == 3`), `perks_update_effects`
+  subtracts 5 HP from `player_state_table.health` directly.
+- In co-op, the health penalty always applies to player 1.
+
+Why it’s likely a bug:
+
+- The perk downside is framed as self-harm, but the implementation is hard-wired
+  to one player slot regardless of co-op state.
+- This creates asymmetric risk where one player always pays the cost.
+
+Rewrite behavior:
+
+- Default: apply the 5 HP accident to a random alive player in co-op.
+- With `--preserve-bugs`: keep native player-1-only self-damage.
