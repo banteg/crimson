@@ -34,9 +34,11 @@ def apply_replay_tick_events(
     players = world.players
     perk_state = state.perk_selection
     bootstrap_elapsed_ms: int | None = None
+    menu_open_seen = False
 
     for event in events:
         if isinstance(event, PerkMenuOpenEvent):
+            menu_open_seen = True
             if int(game_mode_id) == int(GameMode.RUSH):
                 if strict_events:
                     raise ReplayRunnerError(f"unsupported perk_menu_open in rush replay at tick={tick_index}")
@@ -67,6 +69,10 @@ def apply_replay_tick_events(
             )
             if picked is None:
                 if strict_events:
+                    # Some captures include a stale same-tick pick after a menu-open
+                    # transition with no pending perks left. Treat it as a no-op.
+                    if menu_open_seen and int(perk_state.pending_count) <= 0:
+                        continue
                     raise ReplayRunnerError(f"perk_pick failed at tick={tick_index} choice_index={event.choice_index}")
                 continue
             # UI parity quirk: after closing the menu, draw/update may query choices once more
@@ -191,4 +197,3 @@ def partition_tick_events(
             continue
         pre_step.append(event)
     return pre_step, post_step
-

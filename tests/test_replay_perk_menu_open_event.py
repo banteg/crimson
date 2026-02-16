@@ -88,6 +88,55 @@ def test_perk_pick_event_refreshes_choices_for_ui_transition_parity() -> None:
     assert state.perk_selection.choices
 
 
+def test_same_tick_stale_perk_pick_after_menu_open_is_noop_in_strict_mode() -> None:
+    def _build_world() -> WorldState:
+        world = WorldState.build(
+            world_size=1024.0,
+            demo_mode_active=False,
+            hardcore=False,
+            difficulty_level=0,
+            preserve_bugs=False,
+        )
+        reset_players(world.players, world_size=1024.0, player_count=1)
+        state = world.state
+        state.game_mode = int(GameMode.SURVIVAL)
+        state.rng.srand(0x1234)
+        weapon_refresh_available(state)
+        perks_rebuild_available(state)
+        state.perk_selection.pending_count = 0
+        state.perk_selection.choices_dirty = True
+        return world
+
+    menu_only_world = _build_world()
+    stale_pick_world = _build_world()
+
+    apply_replay_tick_events(
+        [PerkMenuOpenEvent(tick_index=0, player_index=0)],
+        tick_index=0,
+        dt_frame=1.0 / 60.0,
+        world=menu_only_world,
+        game_mode_id=int(GameMode.SURVIVAL),
+        strict_events=True,
+    )
+
+    apply_replay_tick_events(
+        [
+            PerkMenuOpenEvent(tick_index=0, player_index=0),
+            PerkPickEvent(tick_index=0, player_index=0, choice_index=1),
+        ],
+        tick_index=0,
+        dt_frame=1.0 / 60.0,
+        world=stale_pick_world,
+        game_mode_id=int(GameMode.SURVIVAL),
+        strict_events=True,
+    )
+
+    assert int(stale_pick_world.state.rng.state) == int(menu_only_world.state.rng.state)
+    assert int(stale_pick_world.state.perk_selection.pending_count) == int(menu_only_world.state.perk_selection.pending_count)
+    assert bool(stale_pick_world.state.perk_selection.choices_dirty) == bool(menu_only_world.state.perk_selection.choices_dirty)
+    assert stale_pick_world.state.perk_selection.choices == menu_only_world.state.perk_selection.choices
+
+
 def test_original_capture_pending_event_sets_pending_without_pick_side_effects() -> None:
     world = WorldState.build(
         world_size=1024.0,

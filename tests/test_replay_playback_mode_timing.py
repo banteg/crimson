@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 
 def test_replay_playback_mode_tick_loop_decrements_accum(monkeypatch) -> None:
@@ -46,3 +47,36 @@ def test_replay_playback_mode_tick_loop_decrements_accum(monkeypatch) -> None:
     # 0.05s at 60Hz should advance exactly 3 ticks (0.0166.. * 3 == 0.05).
     assert calls == 3
 
+
+def test_replay_tick_one_does_not_stop_on_player_death() -> None:
+    import crimson.modes.replay_playback_mode as replay_playback_mode
+    from grim.config import CrimsonConfig
+    from grim.console import ConsoleLog, ConsoleState
+    from grim.view import ViewContext
+
+    cfg = CrimsonConfig(path=Path("crimson.cfg"), data={})
+    console = ConsoleState(base_dir=Path("."), log=ConsoleLog(base_dir=Path(".")))
+
+    view = replay_playback_mode.ReplayPlaybackMode(
+        ViewContext(assets_dir=Path("."), preserve_bugs=False),
+        replay_path=Path("dummy.crdemo.gz"),
+        config=cfg,
+        console=console,
+    )
+
+    view._replay = SimpleNamespace(inputs=[0, 0])
+    view._world = SimpleNamespace(
+        update_camera=lambda _dt: None,
+        players=[SimpleNamespace(health=0.0)],
+    )
+    view._survival = object()
+    view._rush = None
+    view._quest = None
+    view._tick_index = 0
+    view._finished = False
+    view._tick_survival = lambda **_kwargs: 1.0 / 60.0  # type: ignore[method-assign]
+
+    view._tick_one()
+
+    assert view._tick_index == 1
+    assert not view._finished

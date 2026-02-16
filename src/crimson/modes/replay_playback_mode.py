@@ -6,10 +6,11 @@ import random
 
 import pyray as rl
 
+from grim import music as grim_music
 from grim.audio import AudioState, init_audio_state, play_music, shutdown_audio, update_audio
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.view import ViewContext
 
@@ -33,13 +34,39 @@ from ..replay import (
 from ..sim.driver.replay_events import apply_replay_tick_events, partition_tick_events
 from ..sim.driver.setup import build_damage_scale_by_type, status_from_snapshot
 from ..sim.sessions import QuestDeterministicSession, RushDeterministicSession, SurvivalDeterministicSession
-from ..ui.hud import HudAssets, HudState, draw_hud_overlay, hud_flags_for_game_mode, load_hud_assets
+from ..ui.hud import (
+    HUD_AMMO_BASE_POS,
+    HUD_AMMO_TEXT_OFFSET,
+    HudAssets,
+    HudState,
+    draw_hud_overlay,
+    hud_flags_for_game_mode,
+    hud_ui_scale,
+    load_hud_assets,
+)
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
 _PLAYBACK_SPEED_STEPS: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0)
 _DEFAULT_SPEED_INDEX = 2
 _SKIP_SHORT_SECONDS = 5.0
 _SKIP_LONG_SECONDS = 30.0
+_REPLAY_WIDGET_PANEL_SIZE = Vec2(182.0, 53.0)
+_REPLAY_WIDGET_ICON_SIZE = Vec2(32.0, 32.0)
+_REPLAY_WIDGET_BAR_HEIGHT = 4.0
+_REPLAY_WIDGET_X_SHIFT = 10.0
+_REPLAY_WIDGET_TEXT_LINE1_Y = HUD_AMMO_BASE_POS[1] + HUD_AMMO_TEXT_OFFSET[1]
+_REPLAY_WIDGET_PANEL_TO_LINE1_Y = -7.0
+_REPLAY_WIDGET_PANEL_OFFSET_X = 0.0
+_REPLAY_WIDGET_PANEL_OFFSET_Y = 0.0
+_REPLAY_WIDGET_CLOCK_OFFSET_X = 0.0
+_REPLAY_WIDGET_CLOCK_OFFSET_Y = 0.0
+_REPLAY_WIDGET_TEXT_OFFSET_X = 0.0
+_REPLAY_WIDGET_TEXT_OFFSET_Y = 0.0
+_REPLAY_WIDGET_BAR_OFFSET_X = 0.0
+_REPLAY_WIDGET_BAR_OFFSET_Y = 0.0
+_REPLAY_WIDGET_LAYOUT_NUDGE_STEP = 1.0
+_REPLAY_WIDGET_LAYOUT_NUDGE_STEP_COARSE = 4.0
+_REPLAY_WIDGET_LAYOUT_TARGETS: tuple[str, ...] = ("panel", "clock", "text", "bar")
 
 
 class ReplayPlaybackMode:
@@ -87,6 +114,355 @@ class ReplayPlaybackMode:
         self._audio: AudioState | None = None
         self._audio_rng: random.Random | None = None
 
+        self._widget_panel_offset_x = float(_REPLAY_WIDGET_PANEL_OFFSET_X)
+        self._widget_panel_offset_y = float(_REPLAY_WIDGET_PANEL_OFFSET_Y)
+        self._widget_clock_offset_x = float(_REPLAY_WIDGET_CLOCK_OFFSET_X)
+        self._widget_clock_offset_y = float(_REPLAY_WIDGET_CLOCK_OFFSET_Y)
+        self._widget_text_offset_x = float(_REPLAY_WIDGET_TEXT_OFFSET_X)
+        self._widget_text_offset_y = float(_REPLAY_WIDGET_TEXT_OFFSET_Y)
+        self._widget_bar_offset_x = float(_REPLAY_WIDGET_BAR_OFFSET_X)
+        self._widget_bar_offset_y = float(_REPLAY_WIDGET_BAR_OFFSET_Y)
+        self._widget_layout_debug = False
+        self._widget_layout_target_index = 0
+        self._widget_drag_active = False
+        self._widget_drag_start_mouse_x = 0.0
+        self._widget_drag_start_mouse_y = 0.0
+        self._widget_drag_start_target_offset_x = 0.0
+        self._widget_drag_start_target_offset_y = 0.0
+        self._widget_layout_notice_seconds = 0.0
+
+    @staticmethod
+    def _format_time_text(seconds: float) -> str:
+        total_seconds = max(0, int(seconds))
+        minutes = total_seconds // 60
+        rem_seconds = total_seconds % 60
+        return f"{minutes}:{rem_seconds:02d}"
+
+    def _replay_progress_ratio(self) -> float:
+        replay = self._replay
+        if replay is None:
+            return 0.0
+        total_ticks = len(replay.inputs)
+        if total_ticks <= 0:
+            return 1.0
+        ratio = float(self._tick_index) / float(total_ticks)
+        if ratio < 0.0:
+            return 0.0
+        if ratio > 1.0:
+            return 1.0
+        return ratio
+
+    def _register_replay_audio_commands(self) -> None:
+        console = self._console
+
+        def cmd_snd_add_game_tune(args: list[str]) -> None:
+            if len(args) != 1:
+                console.log.log("snd_addGameTune <tuneName.ogg>")
+                return
+            audio = self._audio
+            if audio is None:
+                return
+            rel_path = f"music/{args[0]}"
+            result = grim_music.load_music_track(audio.music, self._ctx.assets_dir, rel_path, console=console)
+            if result is None:
+                return
+            track_key, _track_id = result
+            grim_music.queue_track(audio.music, track_key)
+
+        console.register_command("snd_addGameTune", cmd_snd_add_game_tune)
+
+    def _load_game_tune_queue(self) -> None:
+        if self._audio is None:
+            return
+        self._console.exec_line("exec music/game_tunes.txt")
+
+    def _replay_widget_metrics(self) -> tuple[float, float, float, float, float, float]:
+        screen_w = float(rl.get_screen_width())
+        screen_h = float(rl.get_screen_height())
+        scale = hud_ui_scale(screen_w, screen_h)
+
+        panel_w = _REPLAY_WIDGET_PANEL_SIZE.x * scale
+        panel_h = _REPLAY_WIDGET_PANEL_SIZE.y * scale
+        panel_x = screen_w - panel_w - float(_REPLAY_WIDGET_X_SHIFT) * scale
+        line1_y = float(_REPLAY_WIDGET_TEXT_LINE1_Y) * scale
+        panel_y = max(2.0 * scale, line1_y + _REPLAY_WIDGET_PANEL_TO_LINE1_Y * scale)
+        return scale, panel_x, panel_y, panel_w, panel_h, line1_y
+
+    def _selected_widget_layout_target(self) -> str:
+        count = len(_REPLAY_WIDGET_LAYOUT_TARGETS)
+        if count <= 0:
+            return "panel"
+        idx = int(self._widget_layout_target_index) % count
+        return str(_REPLAY_WIDGET_LAYOUT_TARGETS[idx])
+
+    def _widget_layout_target_offsets(self, target: str) -> tuple[float, float]:
+        if target == "panel":
+            return float(self._widget_panel_offset_x), float(self._widget_panel_offset_y)
+        if target == "clock":
+            return float(self._widget_clock_offset_x), float(self._widget_clock_offset_y)
+        if target == "text":
+            return float(self._widget_text_offset_x), float(self._widget_text_offset_y)
+        if target == "bar":
+            return float(self._widget_bar_offset_x), float(self._widget_bar_offset_y)
+        return 0.0, 0.0
+
+    def _set_widget_layout_target_offsets(self, target: str, x: float, y: float) -> None:
+        if target == "panel":
+            self._widget_panel_offset_x = float(x)
+            self._widget_panel_offset_y = float(y)
+            return
+        if target == "clock":
+            self._widget_clock_offset_x = float(x)
+            self._widget_clock_offset_y = float(y)
+            return
+        if target == "text":
+            self._widget_text_offset_x = float(x)
+            self._widget_text_offset_y = float(y)
+            return
+        if target == "bar":
+            self._widget_bar_offset_x = float(x)
+            self._widget_bar_offset_y = float(y)
+            return
+
+    def _reset_widget_layout_offsets(self) -> None:
+        self._widget_panel_offset_x = float(_REPLAY_WIDGET_PANEL_OFFSET_X)
+        self._widget_panel_offset_y = float(_REPLAY_WIDGET_PANEL_OFFSET_Y)
+        self._widget_clock_offset_x = float(_REPLAY_WIDGET_CLOCK_OFFSET_X)
+        self._widget_clock_offset_y = float(_REPLAY_WIDGET_CLOCK_OFFSET_Y)
+        self._widget_text_offset_x = float(_REPLAY_WIDGET_TEXT_OFFSET_X)
+        self._widget_text_offset_y = float(_REPLAY_WIDGET_TEXT_OFFSET_Y)
+        self._widget_bar_offset_x = float(_REPLAY_WIDGET_BAR_OFFSET_X)
+        self._widget_bar_offset_y = float(_REPLAY_WIDGET_BAR_OFFSET_Y)
+
+    def _log_widget_layout_offsets(self) -> None:
+        self._console.log.log("replay_widget_layout:")
+        self._console.log.log(f"_REPLAY_WIDGET_PANEL_OFFSET_X = {self._widget_panel_offset_x:.1f}")
+        self._console.log.log(f"_REPLAY_WIDGET_PANEL_OFFSET_Y = {self._widget_panel_offset_y:.1f}")
+        self._console.log.log(f"_REPLAY_WIDGET_CLOCK_OFFSET_X = {self._widget_clock_offset_x:.1f}")
+        self._console.log.log(f"_REPLAY_WIDGET_CLOCK_OFFSET_Y = {self._widget_clock_offset_y:.1f}")
+        self._console.log.log(f"_REPLAY_WIDGET_TEXT_OFFSET_X = {self._widget_text_offset_x:.1f}")
+        self._console.log.log(f"_REPLAY_WIDGET_TEXT_OFFSET_Y = {self._widget_text_offset_y:.1f}")
+        self._console.log.log(f"_REPLAY_WIDGET_BAR_OFFSET_X = {self._widget_bar_offset_x:.1f}")
+        self._console.log.log(f"_REPLAY_WIDGET_BAR_OFFSET_Y = {self._widget_bar_offset_y:.1f}")
+        self._console.log.log("# snippet:")
+        self._console.log.log(f"_REPLAY_WIDGET_PANEL_OFFSET_X = {self._widget_panel_offset_x:.1f}")
+        self._console.log.log(f"_REPLAY_WIDGET_PANEL_OFFSET_Y = {self._widget_panel_offset_y:.1f}")
+        self._console.log.log(f"_REPLAY_WIDGET_CLOCK_OFFSET_X = {self._widget_clock_offset_x:.1f}")
+        self._console.log.log(f"_REPLAY_WIDGET_CLOCK_OFFSET_Y = {self._widget_clock_offset_y:.1f}")
+        self._console.log.log(f"_REPLAY_WIDGET_TEXT_OFFSET_X = {self._widget_text_offset_x:.1f}")
+        self._console.log.log(f"_REPLAY_WIDGET_TEXT_OFFSET_Y = {self._widget_text_offset_y:.1f}")
+        self._console.log.log(f"_REPLAY_WIDGET_BAR_OFFSET_X = {self._widget_bar_offset_x:.1f}")
+        self._console.log.log(f"_REPLAY_WIDGET_BAR_OFFSET_Y = {self._widget_bar_offset_y:.1f}")
+        self._widget_layout_notice_seconds = 2.0
+
+    def _update_replay_widget_layout_debug(self, dt: float) -> None:
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
+            cycle_delta = -1 if (
+                rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(rl.KeyboardKey.KEY_RIGHT_SHIFT)
+            ) else 1
+            self._widget_layout_target_index = (
+                int(self._widget_layout_target_index) + int(cycle_delta)
+            ) % max(1, len(_REPLAY_WIDGET_LAYOUT_TARGETS))
+            self._widget_layout_notice_seconds = 1.0
+            self._console.log.log(f"replay widget target: {self._selected_widget_layout_target()}")
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_R):
+            self._reset_widget_layout_offsets()
+            self._widget_layout_notice_seconds = 1.2
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_C):
+            self._log_widget_layout_offsets()
+
+        coarse = bool(
+            rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(rl.KeyboardKey.KEY_RIGHT_SHIFT)
+        )
+        step = _REPLAY_WIDGET_LAYOUT_NUDGE_STEP_COARSE if coarse else _REPLAY_WIDGET_LAYOUT_NUDGE_STEP
+
+        move_x = 0.0
+        move_y = 0.0
+        if rl.is_key_down(rl.KeyboardKey.KEY_LEFT):
+            move_x -= float(step)
+        if rl.is_key_down(rl.KeyboardKey.KEY_RIGHT):
+            move_x += float(step)
+        if rl.is_key_down(rl.KeyboardKey.KEY_UP):
+            move_y -= float(step)
+        if rl.is_key_down(rl.KeyboardKey.KEY_DOWN):
+            move_y += float(step)
+        if (move_x != 0.0) or (move_y != 0.0):
+            target = self._selected_widget_layout_target()
+            base_x, base_y = self._widget_layout_target_offsets(target)
+            self._set_widget_layout_target_offsets(target, base_x + move_x, base_y + move_y)
+
+        scale, panel_x, panel_y, panel_w, panel_h, _line1_y = self._replay_widget_metrics()
+        panel_x += float(self._widget_panel_offset_x) * scale
+        panel_y += float(self._widget_panel_offset_y) * scale
+        mouse = rl.get_mouse_position()
+        inside_widget = (
+            float(mouse.x) >= float(panel_x)
+            and float(mouse.x) <= float(panel_x + panel_w)
+            and float(mouse.y) >= float(panel_y)
+            and float(mouse.y) <= float(panel_y + panel_h)
+        )
+        if (not self._widget_drag_active) and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT) and inside_widget:
+            self._widget_drag_active = True
+            self._widget_drag_start_mouse_x = float(mouse.x)
+            self._widget_drag_start_mouse_y = float(mouse.y)
+            target = self._selected_widget_layout_target()
+            off_x, off_y = self._widget_layout_target_offsets(target)
+            self._widget_drag_start_target_offset_x = float(off_x)
+            self._widget_drag_start_target_offset_y = float(off_y)
+
+        if self._widget_drag_active:
+            if rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT):
+                dx = float(mouse.x) - float(self._widget_drag_start_mouse_x)
+                dy = float(mouse.y) - float(self._widget_drag_start_mouse_y)
+                if scale > 0.0:
+                    target = self._selected_widget_layout_target()
+                    self._set_widget_layout_target_offsets(
+                        target,
+                        float(self._widget_drag_start_target_offset_x) + dx / float(scale),
+                        float(self._widget_drag_start_target_offset_y) + dy / float(scale),
+                    )
+            else:
+                self._widget_drag_active = False
+
+        if self._widget_layout_notice_seconds > 0.0:
+            self._widget_layout_notice_seconds = max(0.0, float(self._widget_layout_notice_seconds) - float(dt))
+
+    def _draw_replay_widget_layout_debug(self) -> None:
+        if not self._widget_layout_debug:
+            return
+        scale, panel_x, panel_y, panel_w, panel_h, line1_y = self._replay_widget_metrics()
+        panel_x += float(self._widget_panel_offset_x) * scale
+        panel_y += float(self._widget_panel_offset_y) * scale
+        line1_y += float(self._widget_text_offset_y) * scale
+        rl.draw_rectangle_lines(
+            int(panel_x) - 1,
+            int(panel_y) - 1,
+            int(panel_w) + 2,
+            int(panel_h) + 2,
+            rl.Color(220, 220, 90, 220),
+        )
+        rl.draw_line(
+            int(panel_x),
+            int(line1_y + 6.0 * scale),
+            int(panel_x + panel_w),
+            int(line1_y + 6.0 * scale),
+            rl.Color(90, 200, 255, 170),
+        )
+
+        x = 24.0
+        y = 24.0
+        w = 520.0
+        h = 94.0
+        rl.draw_rectangle(int(x - 4.0), int(y - 4.0), int(w), int(h), rl.Color(0, 0, 0, 150))
+        selected_target = self._selected_widget_layout_target()
+        self._draw_ui_text(
+            "widget tune F8: TAB cycle | drag LMB | arrows move | shift coarse | R reset | C print offsets",
+            Vec2(x, y),
+            rl.Color(230, 230, 230, 230),
+            scale=1.0,
+        )
+        self._draw_ui_text(f"selected: {selected_target}", Vec2(x, y + 16.0), rl.Color(220, 220, 170, 230), scale=1.0)
+        line_y = y + 32.0
+        for target in _REPLAY_WIDGET_LAYOUT_TARGETS:
+            ox, oy = self._widget_layout_target_offsets(str(target))
+            color = rl.Color(255, 230, 110, 230) if str(target) == selected_target else rl.Color(210, 210, 210, 230)
+            self._draw_ui_text(f"{target:>5} dx={ox:+.1f} dy={oy:+.1f}", Vec2(x, line_y), color, scale=1.0)
+            line_y += 14.0
+        if self._widget_layout_notice_seconds > 0.0:
+            self._draw_ui_text(
+                "offset snippet printed to console log",
+                Vec2(x, line_y),
+                rl.Color(140, 220, 140, 230),
+                scale=1.0,
+            )
+
+    def _draw_replay_widget(self) -> None:
+        replay = self._replay
+        if replay is None:
+            return
+
+        scale, panel_x, panel_y, panel_w, panel_h, line1_y = self._replay_widget_metrics()
+        panel_x += float(self._widget_panel_offset_x) * scale
+        panel_y += float(self._widget_panel_offset_y) * scale
+
+        assets = self._hud_assets
+
+        icon_w = _REPLAY_WIDGET_ICON_SIZE.x * scale
+        icon_h = _REPLAY_WIDGET_ICON_SIZE.y * scale
+        icon_x = panel_x + 2.0 * scale + float(self._widget_clock_offset_x) * scale
+        icon_y = panel_y + 8.0 * scale + float(self._widget_clock_offset_y) * scale
+
+        if assets is not None and assets.clock_table is not None:
+            src = rl.Rectangle(0.0, 0.0, float(assets.clock_table.width), float(assets.clock_table.height))
+            dst = rl.Rectangle(icon_x, icon_y, icon_w, icon_h)
+            rl.draw_texture_pro(assets.clock_table, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.Color(255, 255, 255, 230))
+
+        elapsed_seconds = float(self._tick_index) / float(self._tick_rate)
+
+        if assets is not None and assets.clock_pointer is not None:
+            src = rl.Rectangle(0.0, 0.0, float(assets.clock_pointer.width), float(assets.clock_pointer.height))
+            center_x = icon_x + icon_w * 0.5
+            center_y = icon_y + icon_h * 0.5
+            dst = rl.Rectangle(center_x, center_y, icon_w, icon_h)
+            origin = rl.Vector2(icon_w * 0.5, icon_h * 0.5)
+            rotation = float(max(0, int(elapsed_seconds))) * 6.0
+            rl.draw_texture_pro(
+                assets.clock_pointer,
+                src,
+                dst,
+                origin,
+                rotation,
+                rl.Color(255, 255, 255, 220),
+            )
+
+        total_ticks = len(replay.inputs)
+        total_seconds = float(total_ticks) / float(self._tick_rate)
+        progress_ratio = self._replay_progress_ratio()
+
+        text_x = icon_x + icon_w + 6.0 * scale + float(self._widget_text_offset_x) * scale
+        line1_y = line1_y + float(self._widget_text_offset_y) * scale
+        text_scale = 1.0
+        status = "PAUSE" if self._paused else "REPLAY"
+        status_color = rl.Color(245, 210, 120, 230) if self._paused else rl.Color(230, 230, 230, 220)
+        self._draw_ui_text(
+            f"{status} {self._playback_speed():.2f}x",
+            Vec2(text_x, line1_y),
+            status_color,
+            scale=text_scale,
+        )
+
+        elapsed_text = self._format_time_text(elapsed_seconds)
+        total_text = self._format_time_text(total_seconds)
+        elapsed_w = self._measure_ui_text_width(elapsed_text, scale=text_scale)
+        total_w = self._measure_ui_text_width(total_text, scale=text_scale)
+        line2_y = line1_y + 18.0 * scale
+
+        right_limit = panel_x + panel_w - 4.0 * scale + float(self._widget_text_offset_x) * scale
+        total_x = right_limit - total_w
+        bar_x_base = text_x + elapsed_w + 6.0 * scale
+        bar_w = max(8.0 * scale, total_x - 6.0 * scale - bar_x_base)
+        bar_x = bar_x_base + float(self._widget_bar_offset_x) * scale
+        bar_y = line2_y + 5.0 * scale + float(self._widget_bar_offset_y) * scale
+        bar_h = _REPLAY_WIDGET_BAR_HEIGHT * scale
+        rl.draw_rectangle(int(bar_x), int(bar_y), int(bar_w), int(bar_h), rl.Color(46, 67, 96, 150))
+        fill_w = bar_w * progress_ratio
+        if fill_w > 0.0:
+            rl.draw_rectangle(int(bar_x), int(bar_y), int(fill_w), int(bar_h), rl.Color(70, 130, 220, 225))
+
+        self._draw_ui_text(
+            elapsed_text,
+            Vec2(text_x, line2_y),
+            rl.Color(220, 220, 220, 210),
+            scale=text_scale,
+        )
+        self._draw_ui_text(
+            total_text,
+            Vec2(total_x, line2_y),
+            rl.Color(220, 220, 220, 210),
+            scale=text_scale,
+        )
+
     def open(self) -> None:
         self._missing_assets.clear()
         self._hud_missing.clear()
@@ -125,6 +501,8 @@ class ReplayPlaybackMode:
         audio_rng = random.Random(int(replay.header.seed) & 0xFFFFFFFF)
         self._audio = audio
         self._audio_rng = audio_rng
+        self._register_replay_audio_commands()
+        self._load_game_tune_queue()
 
         world = GameWorld(
             assets_dir=self._ctx.assets_dir,
@@ -284,6 +662,11 @@ class ReplayPlaybackMode:
         else:
             rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 
+    def _measure_ui_text_width(self, text: str, *, scale: float = 1.0) -> float:
+        if self._small is not None:
+            return float(measure_small_text_width(self._small, text, scale))
+        return float(len(text)) * 8.0 * float(scale)
+
     def _enforce_rush_loadout(self) -> None:
         world = self._world
         if world is None:
@@ -428,8 +811,6 @@ class ReplayPlaybackMode:
         world.update_camera(float(dt_sim))
 
         self._tick_index += 1
-        if not any(player.health > 0.0 for player in world.players):
-            self._finished = True
 
     def _playback_speed(self) -> float:
         return float(_PLAYBACK_SPEED_STEPS[int(self._speed_index)])
@@ -447,8 +828,27 @@ class ReplayPlaybackMode:
         if ticks <= 0:
             return
         target = min(len(replay.inputs), int(self._tick_index) + int(ticks))
-        while self._tick_index < target and not self._finished:
-            self._tick_one()
+        world = self._world
+        prev_sfx_enabled: bool | None = None
+        if world is not None and world.audio_router is not None:
+            prev_sfx_enabled = bool(world.audio_router.sfx_enabled)
+            world.audio_router.sfx_enabled = False
+        try:
+            while self._tick_index < target and not self._finished:
+                self._tick_one()
+                # Gameplay clears decal queues during render (`draw()` -> `_bake_fx_queues`).
+                # Fast-seek runs many ticks without drawing, so clear explicitly to avoid
+                # queue saturation changing simulation-side corpse/death flow.
+                if world is not None:
+                    fx_queue = getattr(world, "fx_queue", None)
+                    if fx_queue is not None:
+                        fx_queue.clear()
+                    fx_queue_rotated = getattr(world, "fx_queue_rotated", None)
+                    if fx_queue_rotated is not None:
+                        fx_queue_rotated.clear()
+        finally:
+            if prev_sfx_enabled is not None and world is not None and world.audio_router is not None:
+                world.audio_router.sfx_enabled = bool(prev_sfx_enabled)
         # Avoid accidental overshoot from stale accumulated frame time after seek.
         self._dt_accum = 0.0
 
@@ -525,27 +925,7 @@ class ReplayPlaybackMode:
                 preserve_bugs=bool(world.preserve_bugs),
             )
 
-        self._draw_ui_text("REPLAY", Vec2(18.0, 18.0), rl.Color(255, 255, 255, 220), scale=1.0)
-        if replay is not None:
-            total = len(replay.inputs)
-            elapsed_s = float(self._tick_index) / float(self._tick_rate)
-            total_s = float(total) / float(self._tick_rate)
-            self._draw_ui_text(
-                f"{self._tick_index}/{total}  {elapsed_s:.1f}s/{total_s:.1f}s",
-                Vec2(18.0, 42.0),
-                rl.Color(220, 220, 220, 200),
-                scale=0.9,
-            )
-        status = "PAUSED" if self._paused else "PLAYING"
-        self._draw_ui_text(f"{status}  {self._playback_speed():.2f}x", Vec2(18.0, 66.0), rl.Color(220, 220, 220, 200), scale=0.9)
-        self._draw_ui_text(
-            "[/] speed  1 reset  SPACE pause  RIGHT +5s  PGDN +30s",
-            Vec2(18.0, 90.0),
-            rl.Color(190, 190, 190, 200),
-            scale=0.9,
-        )
-        if self._finished:
-            self._draw_ui_text("REPLAY ENDED (ESC)", Vec2(18.0, 114.0), rl.Color(220, 220, 220, 200), scale=0.9)
+        self._draw_replay_widget()
 
         warn_y = float(rl.get_screen_height()) - 28.0
         if world is not None and world.missing_assets:

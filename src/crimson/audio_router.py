@@ -69,6 +69,7 @@ class AudioRouter:
     audio: AudioState | None = None
     audio_rng: random.Random | None = None
     demo_mode_active: bool = False
+    sfx_enabled: bool = True
 
     @staticmethod
     def _rand_choice(rand: Callable[[], int], options: tuple[str, ...]) -> str | None:
@@ -78,12 +79,12 @@ class AudioRouter:
         return options[idx]
 
     def play_sfx(self, key: str | None) -> None:
-        if self.audio is None:
+        if self.audio is None or (not self.sfx_enabled):
             return
         play_sfx(self.audio, key, rng=self.audio_rng)
 
     def play_sfx_resolved(self, key: str | None) -> None:
-        if self.audio is None:
+        if self.audio is None or (not self.sfx_enabled):
             return
         play_sfx(self.audio, key, rng=self.audio_rng, allow_variants=False)
 
