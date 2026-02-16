@@ -55,7 +55,8 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
     ctx.state.jinxed_timer = float(int(ctx.state.rng.rand()) % 0x14) * 0.1 + float(ctx.state.jinxed_timer) + 2.0
 
     if float(ctx.state.bonuses.freeze) <= 0.0 and ctx.creatures is not None:
-        pool_mod = min(0x17F, len(ctx.creatures))
+        pool_limit = 0x17F if bool(ctx.state.preserve_bugs) else 0x180
+        pool_mod = min(pool_limit, len(ctx.creatures))
         if pool_mod <= 0:
             return
 

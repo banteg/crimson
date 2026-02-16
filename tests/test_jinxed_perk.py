@@ -104,6 +104,62 @@ def test_perks_update_effects_jinxed_accident_damages_player_and_spawns_fx() -> 
     assert math.isclose(player.health, 45.0, abs_tol=1e-9)
     assert fx_queue.count == 2
     assert state.sfx_queue == []
+
+
+def test_perks_update_effects_jinxed_default_uses_full_384_slot_pool() -> None:
+    dt = 0.2
+    creatures = [CreatureState() for _ in range(0x180)]
+    creatures[0x17F].active = True
+    creatures[0x17F].hp = 100.0
+    creatures[0x17F].hitbox_size = 16.0
+    creatures[0x17F].reward_value = 12.7
+
+    state = GameplayState(preserve_bugs=False)
+    state.rng = _ScriptedRng(
+        [
+            0,  # accident roll: rand%10 != 3
+            0,  # timer roll: (rand%0x14)*0.1
+            0x17F,  # creature index: rand%0x180
+        ]
+    )
+
+    player = PlayerState(index=0, pos=Vec2(10.0, 20.0), experience=100, health=50.0)
+    player.perk_counts[int(PerkId.JINXED)] = 1
+
+    perks_update_effects(state, [player], dt, creatures=creatures)
+
+    assert creatures[0x17F].hp == -1.0
+    assert player.experience == 112
+    assert state.sfx_queue == ["sfx_trooper_inpain_01"]
+
+
+def test_perks_update_effects_jinxed_preserve_bugs_keeps_383_slot_rolls() -> None:
+    dt = 0.2
+    creatures = [CreatureState() for _ in range(0x180)]
+    creatures[0x17F].active = True
+    creatures[0x17F].hp = 100.0
+    creatures[0x17F].hitbox_size = 16.0
+    creatures[0x17F].reward_value = 12.7
+
+    state = GameplayState(preserve_bugs=True)
+    state.rng = _ScriptedRng(
+        [
+            0,  # accident roll: rand%10 != 3
+            0,  # timer roll: (rand%0x14)*0.1
+            0x17F,  # creature index: rand%0x17f -> 0
+        ]
+    )
+
+    player = PlayerState(index=0, pos=Vec2(10.0, 20.0), experience=100, health=50.0)
+    player.perk_counts[int(PerkId.JINXED)] = 1
+
+    perks_update_effects(state, [player], dt, creatures=creatures)
+
+    assert creatures[0x17F].hp == 100.0
+    assert player.experience == 100
+    assert state.sfx_queue == []
+
+
 def test_perks_update_effects_jinxed_timer_uses_f32_underflow_threshold() -> None:
     # Capture boundary from gameplay_diff_capture tick 5163:
     # native decrements to a tiny positive value and does not proc Jinxed this tick.
