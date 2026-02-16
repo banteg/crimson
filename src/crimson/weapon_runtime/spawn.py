@@ -31,6 +31,18 @@ def projectile_meta_for_type_id(type_id: int) -> float:
     return float(meta if meta is not None else 45.0)
 
 
+def _resolve_player_slot(players: list[PlayerState], *, player_index: int) -> int | None:
+    target_index = int(player_index)
+    if 0 <= target_index < len(players):
+        direct = players[target_index]
+        if int(direct.index) == target_index:
+            return int(target_index)
+    for slot, player in enumerate(players):
+        if int(player.index) == target_index:
+            return int(slot)
+    return None
+
+
 def _fire_bullets_active(
     players: list[PlayerState] | None,
     *,
@@ -46,21 +58,22 @@ def _fire_bullets_active(
     if bool(state.preserve_bugs):
         return any(float(player.fire_bullets_timer) > 0.0 for player in players[:2])
 
-    resolved_owner_index: int | None = None
+    resolved_owner_slot: int | None = None
     if owner_player_index is not None:
-        resolved_owner_index = int(owner_player_index)
+        resolved_owner_slot = _resolve_player_slot(players, player_index=int(owner_player_index))
     elif owner_id < 0 and owner_id != -100:
-        resolved_owner_index = -1 - int(owner_id)
+        owner_index = -1 - int(owner_id)
+        resolved_owner_slot = _resolve_player_slot(players, player_index=int(owner_index))
     elif len(players) == 1:
         # Callers that only pass one player are explicitly indicating the owner
         # context (for example owner_id -100 with friendly fire disabled).
-        resolved_owner_index = 0
+        resolved_owner_slot = 0
 
-    if resolved_owner_index is None:
+    if resolved_owner_slot is None:
         return False
-    if not (0 <= resolved_owner_index < len(players)):
+    if not (0 <= resolved_owner_slot < len(players)):
         return False
-    return float(players[resolved_owner_index].fire_bullets_timer) > 0.0
+    return float(players[resolved_owner_slot].fire_bullets_timer) > 0.0
 
 
 def projectile_spawn(
