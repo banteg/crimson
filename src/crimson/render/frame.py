@@ -45,6 +45,7 @@ class RenderFrame:
     bodyset_texture: rl.Texture | None
     clock_table_texture: rl.Texture | None
     clock_pointer_texture: rl.Texture | None
+    aim_texture: rl.Texture | None
     muzzle_flash_texture: rl.Texture | None
     wicons_texture: rl.Texture | None
 

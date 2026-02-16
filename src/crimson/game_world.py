@@ -76,6 +76,7 @@ class GameWorld:
     bodyset_texture: rl.Texture | None = field(init=False, default=None)
     clock_table_texture: rl.Texture | None = field(init=False, default=None)
     clock_pointer_texture: rl.Texture | None = field(init=False, default=None)
+    aim_texture: rl.Texture | None = field(init=False, default=None)
     muzzle_flash_texture: rl.Texture | None = field(init=False, default=None)
     wicons_texture: rl.Texture | None = field(init=False, default=None)
     _elapsed_ms: float = field(init=False, default=0.0)
@@ -389,6 +390,10 @@ class GameWorld:
             "ui_clockPointer",
             cache_path="ui/ui_clockPointer.jaz",
         )
+        self.aim_texture = self._load_texture(
+            "ui_aim",
+            cache_path="ui/ui_aim.jaz",
+        )
         self.muzzle_flash_texture = self._load_texture(
             "muzzleFlash",
             cache_path="game/muzzleFlash.jaz",
@@ -421,6 +426,7 @@ class GameWorld:
         self.bodyset_texture = None
         self.clock_table_texture = None
         self.clock_pointer_texture = None
+        self.aim_texture = None
         self.muzzle_flash_texture = None
         self.fx_textures = None
         self.fx_queue.clear()
@@ -574,6 +580,7 @@ class GameWorld:
             bodyset_texture=self.bodyset_texture,
             clock_table_texture=self.clock_table_texture,
             clock_pointer_texture=self.clock_pointer_texture,
+            aim_texture=self.aim_texture,
             muzzle_flash_texture=self.muzzle_flash_texture,
             wicons_texture=self.wicons_texture,
             elapsed_ms=float(self._elapsed_ms),

@@ -16,6 +16,7 @@ from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GR
 from ...perks import PerkId
 from ...perks.helpers import perk_active
 from ...sim.world_defs import CREATURE_ANIM, CREATURE_ASSET
+from ...ui.cursor import draw_aim_cursor
 from ..frame import RenderFrame
 from .constants import _RAD_TO_DEG, monster_vision_fade_alpha
 from .mixin_base import WorldRendererMixinBase
@@ -392,6 +393,13 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
                         alpha=ctx.entity_alpha,
                     )
 
+    def _draw_aim_enhancements(self, *, ctx: _WorldDrawContext) -> None:
+        for player in self.players:
+            if player.health <= 0.0:
+                continue
+            aim_screen = self._world_to_screen_with(player.aim, camera=ctx.camera, view_scale=ctx.view_scale)
+            draw_aim_cursor(ctx.particles_texture, self.aim_texture, pos=aim_screen)
+
     def _draw_bonus_and_ui(self, *, ctx: _WorldDrawContext, draw_aim_indicators: bool) -> None:
         self._draw_bonus_pickups(
             camera=ctx.camera,
@@ -400,7 +408,8 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
             alpha=ctx.entity_alpha,
         )
         self._draw_bonus_hover_labels(camera=ctx.camera, view_scale=ctx.view_scale, alpha=ctx.entity_alpha)
-        if draw_aim_indicators and (not self.demo_mode_active):
+        draw_world_aim = draw_aim_indicators and (not self.demo_mode_active)
+        if draw_world_aim:
             self._draw_aim_indicators(ctx=ctx)
         self._draw_direction_arrows(
             camera=ctx.camera,
@@ -408,3 +417,5 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
             scale=ctx.scale,
             alpha=ctx.entity_alpha,
         )
+        if draw_world_aim:
+            self._draw_aim_enhancements(ctx=ctx)

@@ -41,7 +41,7 @@ from ..quests.timeline import quest_spawn_table_empty as _legacy_quest_spawn_tab
 from ..quests.timeline import tick_quest_mode_spawns as _legacy_tick_quest_mode_spawns
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..terrain_assets import terrain_texture_by_id
-from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
+from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
 from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
@@ -1104,8 +1104,6 @@ class QuestMode(BaseGameplayMode):
             y = max(18.0, hud_bottom + 10.0)
             y += float(debug_overlay_height)
             self._draw_ui_text("paused (TAB)", Vec2(x, y), UI_HINT_COLOR)
-        else:
-            self._draw_aim_cursor()
         self._draw_lan_wait_overlay()
 
     def _draw_game_cursor(self) -> None:
@@ -1117,16 +1115,6 @@ class QuestMode(BaseGameplayMode):
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
-        )
-
-    def _draw_aim_cursor(self) -> None:
-        assets = self._perk_menu_assets
-        aim_tex = assets.aim if assets is not None else None
-        mouse_pos = self._ui_mouse
-        draw_aim_cursor(
-            self.world.particles_texture,
-            aim_tex,
-            pos=mouse_pos,
         )
 
     def _draw_quest_title(self) -> None:
