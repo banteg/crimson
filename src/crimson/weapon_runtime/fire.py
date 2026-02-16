@@ -73,6 +73,7 @@ def player_fire_weapon(
     *,
     detail_preset: int = 5,
     creatures: Sequence[Damageable] | None = None,
+    players: Sequence[PlayerState] | None = None,
 ) -> None:
     dt = float(dt)
 
@@ -105,7 +106,7 @@ def player_fire_weapon(
             from ..player_damage import player_take_damage
 
             cost = 0.15 if ammo_class == 1 else 1.0
-            player_take_damage(state, player, cost, dt=dt, rand=state.rng.rand)
+            player_take_damage(state, player, cost, dt=dt, rand=state.rng.rand, players=players)
         else:
             return
 

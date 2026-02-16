@@ -211,3 +211,24 @@ Rewrite behavior:
 - Default: pulse speed is computed per player from that player’s health.
 - With `--preserve-bugs`: keep native coupling where player 1 low health forces
   low-health pulse speed for subsequent player heart icons.
+
+## 9) Co-op damage/death SFX guard reads player 1 health
+
+Native behavior:
+
+- In `player_take_damage` (`0x00425e50`), the "was alive before this hit" guard
+  is computed from `player1.health` even when damage is being applied to player 2.
+- In co-op, if player 1 is already dead, player 2 damage can skip expected
+  post-hit handling paths (pain/death SFX and related branches guarded by that
+  pre-hit alive flag).
+
+Why it’s likely a bug:
+
+- The function otherwise applies damage and health checks to the indexed player.
+- Reading player 1 health for this guard creates asymmetric co-op behavior that
+  depends on unrelated player state.
+
+Rewrite behavior:
+
+- Default: compute the pre-hit alive guard from the target player's own health.
+- With `--preserve-bugs`: keep native player-1-sourced guard behavior.
