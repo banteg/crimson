@@ -44,6 +44,7 @@ def apply_shock_chain(ctx: BonusApplyCtx) -> None:
         angle=angle,
         type_id=int(ProjectileTypeId.ION_RIFLE),
         owner_id=int(owner_id),
+        owner_player_index=ctx.player.index,
     )
     ctx.state.bonus_spawn_guard = False
     ctx.state.sfx_queue.append("sfx_shock_hit_01")

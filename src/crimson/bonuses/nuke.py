@@ -29,6 +29,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
             angle=float(angle),
             type_id=int(ProjectileTypeId.PISTOL),
             owner_id=-100,
+            owner_player_index=ctx.player.index,
         )
         if proj_id != -1:
             speed_scale = float(int(rand()) % 0x32) * 0.01 + 0.5
@@ -43,6 +44,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
             angle=float(angle),
             type_id=int(ProjectileTypeId.GAUSS_GUN),
             owner_id=-100,
+            owner_player_index=ctx.player.index,
         )
 
     ctx.state.effects.spawn_explosion_burst(

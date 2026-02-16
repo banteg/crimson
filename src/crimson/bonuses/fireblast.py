@@ -16,6 +16,7 @@ def apply_fireblast(ctx: BonusApplyCtx) -> None:
         angle_offset=0.0,
         type_id=ProjectileTypeId.PLASMA_RIFLE,
         owner_id=int(owner_id),
+        owner_player_index=ctx.player.index,
         players=ctx.players,
     )
     ctx.state.bonus_spawn_guard = False

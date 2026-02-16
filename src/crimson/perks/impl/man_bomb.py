@@ -27,6 +27,7 @@ def tick_man_bomb(ctx: PlayerPerkTickCtx) -> None:
                 angle=angle,
                 type_id=type_id,
                 owner_id=owner_id,
+                owner_player_index=ctx.player.index,
             )
         ctx.state.sfx_queue.append("sfx_explosion_small")
 

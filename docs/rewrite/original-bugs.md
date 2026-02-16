@@ -294,3 +294,23 @@ Rewrite behavior:
 
 - Default: apply the 5 HP accident to a random alive player in co-op.
 - With `--preserve-bugs`: keep native player-1-only self-damage.
+
+## 13) Fire Bullets projectile override is globally coupled in co-op
+
+Native behavior:
+
+- In `projectile_spawn` (`0x00420440`), Fire Bullets conversion checks only
+  whether player 1 or player 2 has an active Fire Bullets timer.
+- The check is not owner-aware, so one player's timer can convert the other
+  player's spawned projectiles.
+
+Why it’s likely a bug:
+
+- Fire Bullets timers are per-player in co-op.
+- Global conversion couples projectile type to unrelated player state.
+
+Rewrite behavior:
+
+- Default: Fire Bullets conversion is owner-aware; spawned projectiles only
+  convert when the firing player's timer is active.
+- With `--preserve-bugs`: keep native player-1/player-2 global coupling.
