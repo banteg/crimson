@@ -260,7 +260,9 @@ def test_verify_capture_quest_nonzero_start_tick_bootstraps_perk_choices() -> No
     assert run_result.ticks == 124
 
 
-def test_verify_capture_quest_disables_inter_tick_rand_draw_injection(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_verify_capture_quest_uses_capture_inter_tick_rand_draw_overrides(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     checkpoint = _single_tick_quest_checkpoint(quest_level="1.1", seed=0xCAFE)
     capture = _capture_from_checkpoint(
         checkpoint=checkpoint,
@@ -279,6 +281,10 @@ def test_verify_capture_quest_disables_inter_tick_rand_draw_injection(monkeypatc
         seen.update(kwargs)
         raise _Stop("stop after capturing kwargs")
 
+    monkeypatch.setattr(
+        "crimson.original.verify.build_capture_inter_tick_rand_draws_overrides",
+        lambda _capture: {0: 0, 1: 1},
+    )
     monkeypatch.setattr("crimson.original.verify.run_quest_replay", _fake_run_quest_replay)
 
     with pytest.raises(_Stop):
@@ -289,7 +295,7 @@ def test_verify_capture_quest_disables_inter_tick_rand_draw_injection(monkeypatc
         )
 
     assert int(seen.get("inter_tick_rand_draws", -1)) == 0
-    assert seen.get("inter_tick_rand_draws_by_tick") is None
+    assert seen.get("inter_tick_rand_draws_by_tick") == {0: 0, 1: 1}
 
 
 def test_allow_capture_sample_creature_count_prefers_sample_stream() -> None:

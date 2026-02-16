@@ -224,10 +224,9 @@ def verify_capture(
     inter_tick_rand_draws = 1
     inter_tick_rand_draws_by_tick = build_capture_inter_tick_rand_draws_overrides(capture)
     if mode == int(GameMode.QUESTS):
-        # Quest captures already infer seed at sampled tick state; applying capture
-        # outside-before counters as inter-tick draws shifts the RNG stream early.
+        # Quest captures infer seed at sampled tick state; keep fallback injection at 0.
+        # Per-tick outside-before overrides remain enabled via capture-side heuristic.
         inter_tick_rand_draws = 0
-        inter_tick_rand_draws_by_tick = None
 
     if mode == int(GameMode.SURVIVAL):
         run_result = run_survival_replay(

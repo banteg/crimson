@@ -77,7 +77,9 @@ def _checkpoint(
     )
 
 
-def test_run_actual_checkpoints_quest_disables_inter_tick_rand_draw_injection(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_run_actual_checkpoints_quest_uses_capture_inter_tick_rand_draw_overrides(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     report = _load_report_module()
     replay = SimpleNamespace(
         header=SimpleNamespace(
@@ -131,7 +133,7 @@ def test_run_actual_checkpoints_quest_disables_inter_tick_rand_draw_injection(mo
         )
 
     assert int(seen.get("inter_tick_rand_draws", -1)) == 0
-    assert seen.get("inter_tick_rand_draws_by_tick") is None
+    assert seen.get("inter_tick_rand_draws_by_tick") == {0: 24021, 1: 1}
 
 
 def test_infer_rand_calls_between_states_and_stage_breakdown() -> None:
