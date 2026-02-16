@@ -232,3 +232,22 @@ Rewrite behavior:
 
 - Default: compute the pre-hit alive guard from the target player's own health.
 - With `--preserve-bugs`: keep native player-1-sourced guard behavior.
+
+## 10) Jinxed random creature kill excludes slot 383
+
+Native behavior:
+
+- In `perks_update_effects` (`0x00406b40`), Jinxed chooses a random creature
+  slot with `rand % 0x17f` (383), then retries up to 10 times if inactive.
+- The creature pool has `0x180` (384) entries, so index `383` is never picked
+  by the Jinxed kill roll.
+
+Why it’s likely a bug:
+
+- Other creature-slot random selection paths use the full 384-entry pool.
+- The off-by-one modulo silently excludes one valid slot from the perk effect.
+
+Rewrite behavior:
+
+- Default: use the full `0x180` creature slot range for Jinxed random kills.
+- With `--preserve-bugs`: keep native `% 0x17f` behavior.
