@@ -176,6 +176,8 @@ If the selected type is suppressed (see below), the game rerolls up to
 - **Shield**: rerolled if any player has an active shield.
 - **Weapon**: rerolled if [My Favourite Weapon](../perks.md#48-my-favourite-weapon) is active, or if a Fire
   Bullets bonus is already sitting in the pickup pool.
+- **Weapon (spawn-time suppression)**: canceled if the rolled weapon matches
+  any currently carried weapon (primary or alternate) across co-op players.
 - **MediKit**: rerolled if [Death Clock](../perks.md#47-death-clock) is active.
 - **Nuke**: suppressed in quests 2.10, 4.10, 5.10, and also 3.10 on
   hardcore.
