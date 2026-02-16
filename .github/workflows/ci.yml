@@ -19,26 +19,32 @@ jobs:
       matrix:
         include:
           - task: lint-imports
+            use_uv: true
             do_sync: true
             command: uv run --no-sync lint-imports
             sync_args: --group dev
           - task: docs-check
+            use_uv: true
             do_sync: false
             command: uv run --no-sync python scripts/check_docs.py
             sync_args: ""
           - task: ast-grep
+            use_uv: false
             do_sync: false
             command: sg scan && sg test
             sync_args: ""
           - task: ty
+            use_uv: true
             do_sync: true
             command: uv run --no-sync ty check src
             sync_args: --group dev
           - task: pytest
+            use_uv: true
             do_sync: true
             command: uv run --no-sync pytest
             sync_args: --group dev
           - task: build
+            use_uv: true
             do_sync: false
             command: uv build
             sync_args: ""
@@ -48,15 +54,16 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install uv
+        if: matrix.use_uv
         uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.13"
           enable-cache: true
 
       - name: Ensure uv cache dir exists
+        if: matrix.use_uv
         run: |
-          # setup-uv enables caching via UV_CACHE_DIR, but jobs that don't invoke uv (e.g. ast-grep)
-          # may never create the directory, causing the post-job cache step to fail.
+          # setup-uv enables caching via UV_CACHE_DIR; create it eagerly for prune stability.
           if [[ -n "${UV_CACHE_DIR:-}" ]]; then
             mkdir -p "$UV_CACHE_DIR"
           fi
