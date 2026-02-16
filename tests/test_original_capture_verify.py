@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+import pytest
 from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
@@ -25,7 +26,7 @@ from crimson.original.verify import _allow_capture_sample_creature_count
 from crimson.original.verify import _allow_one_tick_kills_lag
 from crimson.replay import ReplayHeader, ReplayRecorder
 from crimson.replay.checkpoints import ReplayCheckpoint
-from crimson.sim.driver.replay_runner import run_survival_replay
+from crimson.sim.driver.replay_runner import run_quest_replay, run_survival_replay
 
 
 def _single_tick_survival_checkpoint(*, seed: int = 0xBEEF):
@@ -51,7 +52,38 @@ def _single_tick_survival_checkpoint(*, seed: int = 0xBEEF):
     return checkpoints[0]
 
 
-def _capture_from_checkpoint(*, checkpoint: ReplayCheckpoint) -> CaptureFile:
+def _single_tick_quest_checkpoint(*, quest_level: str = "1.1", seed: int = 0xBEEF) -> ReplayCheckpoint:
+    header = ReplayHeader(
+        game_mode_id=int(GameMode.QUESTS),
+        seed=int(seed),
+        quest_level=str(quest_level),
+        tick_rate=60,
+        player_count=1,
+    )
+    rec = ReplayRecorder(header)
+    rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
+    replay = rec.finish()
+
+    checkpoints: list[ReplayCheckpoint] = []
+    run_quest_replay(
+        replay,
+        strict_events=True,
+        checkpoint_use_world_step_creature_count=False,
+        checkpoints_out=checkpoints,
+        checkpoint_ticks={0},
+    )
+    assert len(checkpoints) == 1
+    return checkpoints[0]
+
+
+def _capture_from_checkpoint(
+    *,
+    checkpoint: ReplayCheckpoint,
+    game_mode_id: int = int(GameMode.SURVIVAL),
+    mode_hint: str = "survival_update",
+    quest_stage_major: int = -1,
+    quest_stage_minor: int = -1,
+) -> CaptureFile:
     ckpt = checkpoint
     capture_players = [
         CapturePlayerCheckpoint(
@@ -114,8 +146,10 @@ def _capture_from_checkpoint(*, checkpoint: ReplayCheckpoint) -> CaptureFile:
     tick = CaptureTick(
         tick_index=int(ckpt.tick_index),
         gameplay_frame=int(ckpt.tick_index) + 1,
-        mode_hint="survival_update",
-        game_mode_id=int(GameMode.SURVIVAL),
+        mode_hint=str(mode_hint),
+        game_mode_id=int(game_mode_id),
+        quest_stage_major=int(quest_stage_major),
+        quest_stage_minor=int(quest_stage_minor),
         checkpoint=capture_checkpoint,
     )
     return CaptureFile(
@@ -142,6 +176,120 @@ def test_verify_capture_matches_state_ignoring_hash_domains() -> None:
     assert result.elapsed_baseline_tick == 0
     assert result.elapsed_offset_ms is not None
     assert run_result.ticks == 1
+
+
+def test_verify_capture_supports_quest_mode() -> None:
+    checkpoint = _single_tick_quest_checkpoint(quest_level="1.1", seed=0xCAFE)
+    capture = _capture_from_checkpoint(
+        checkpoint=checkpoint,
+        game_mode_id=int(GameMode.QUESTS),
+        mode_hint="quest_mode_update",
+        quest_stage_major=1,
+        quest_stage_minor=1,
+    )
+
+    result, run_result = verify_capture(
+        capture,
+        seed=0xCAFE,
+        strict_events=True,
+    )
+
+    assert result.ok is True
+    assert result.failure is None
+    assert result.checked_count == 1
+    assert run_result.game_mode_id == int(GameMode.QUESTS)
+    assert run_result.ticks == 1
+
+
+def test_verify_capture_supports_quest_mode_nonzero_start_tick() -> None:
+    checkpoint = _single_tick_quest_checkpoint(quest_level="1.1", seed=0xCAFE)
+    checkpoint = replace(checkpoint, tick_index=123)
+    capture = _capture_from_checkpoint(
+        checkpoint=checkpoint,
+        game_mode_id=int(GameMode.QUESTS),
+        mode_hint="quest_mode_update",
+        quest_stage_major=1,
+        quest_stage_minor=1,
+    )
+
+    result, run_result = verify_capture(
+        capture,
+        seed=0xCAFE,
+        strict_events=True,
+    )
+
+    assert result.ok is True
+    assert result.failure is None
+    assert result.checked_count == 1
+    assert result.elapsed_baseline_tick == 123
+    assert run_result.game_mode_id == int(GameMode.QUESTS)
+    assert run_result.ticks == 124
+
+
+def test_verify_capture_quest_nonzero_start_tick_bootstraps_perk_choices() -> None:
+    checkpoint = _single_tick_quest_checkpoint(quest_level="1.1", seed=0xCAFE)
+    checkpoint = replace(
+        checkpoint,
+        tick_index=123,
+        perk=replace(
+            checkpoint.perk,
+            pending_count=0,
+            choices_dirty=False,
+            choices=[11, 22, 33, 44, 55, 66, 77],
+        ),
+    )
+    capture = _capture_from_checkpoint(
+        checkpoint=checkpoint,
+        game_mode_id=int(GameMode.QUESTS),
+        mode_hint="quest_mode_update",
+        quest_stage_major=1,
+        quest_stage_minor=1,
+    )
+
+    result, run_result = verify_capture(
+        capture,
+        seed=0xCAFE,
+        strict_events=True,
+    )
+
+    assert result.ok is True
+    assert result.failure is None
+    assert result.checked_count == 1
+    assert result.elapsed_baseline_tick == 123
+    assert run_result.game_mode_id == int(GameMode.QUESTS)
+    assert run_result.ticks == 124
+
+
+def test_verify_capture_quest_disables_inter_tick_rand_draw_injection(monkeypatch: pytest.MonkeyPatch) -> None:
+    checkpoint = _single_tick_quest_checkpoint(quest_level="1.1", seed=0xCAFE)
+    capture = _capture_from_checkpoint(
+        checkpoint=checkpoint,
+        game_mode_id=int(GameMode.QUESTS),
+        mode_hint="quest_mode_update",
+        quest_stage_major=1,
+        quest_stage_minor=1,
+    )
+
+    seen: dict[str, object] = {}
+
+    class _Stop(RuntimeError):
+        pass
+
+    def _fake_run_quest_replay(*_args: object, **kwargs: object):
+        seen.update(kwargs)
+        raise _Stop("stop after capturing kwargs")
+
+    monkeypatch.setattr("crimson.original.verify.run_quest_replay", _fake_run_quest_replay)
+
+    with pytest.raises(_Stop):
+        verify_capture(
+            capture,
+            seed=0xCAFE,
+            strict_events=True,
+        )
+
+    assert int(seen.get("inter_tick_rand_draws", -1)) == 0
+    assert seen.get("inter_tick_rand_draws_by_tick") is None
 
 
 def test_allow_capture_sample_creature_count_prefers_sample_stream() -> None:

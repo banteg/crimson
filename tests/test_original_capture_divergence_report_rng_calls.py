@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
+import pytest
 from grim.geom import Vec2
 
+from crimson.game_modes import GameMode
 from crimson.original.schema import CAPTURE_FORMAT_VERSION
 from crimson.replay.checkpoints import (
     ReplayCheckpoint,
@@ -72,6 +75,63 @@ def _checkpoint(
         perk=ReplayPerkSnapshot(),
         events=events if events is not None else ReplayEventSummary(),
     )
+
+
+def test_run_actual_checkpoints_quest_disables_inter_tick_rand_draw_injection(monkeypatch: pytest.MonkeyPatch) -> None:
+    report = _load_report_module()
+    replay = SimpleNamespace(
+        header=SimpleNamespace(
+            game_mode_id=int(GameMode.QUESTS),
+            tick_rate=60,
+        )
+    )
+    seen: dict[str, object] = {}
+
+    class _Stop(RuntimeError):
+        pass
+
+    monkeypatch.setattr(
+        report,
+        "convert_capture_to_checkpoints",
+        lambda _capture: SimpleNamespace(checkpoints=[]),
+    )
+    monkeypatch.setattr(
+        report,
+        "convert_capture_to_replay",
+        lambda _capture, seed=None, aim_scheme_overrides_by_player=None: replay,
+    )
+    monkeypatch.setattr(
+        report,
+        "build_capture_dt_frame_overrides",
+        lambda _capture, tick_rate: {},
+    )
+    monkeypatch.setattr(
+        report,
+        "build_capture_dt_frame_ms_i32_overrides",
+        lambda _capture: {},
+    )
+    monkeypatch.setattr(
+        report,
+        "build_capture_inter_tick_rand_draws_overrides",
+        lambda _capture: {0: 24021, 1: 1},
+    )
+
+    def _fake_run_quest_replay(*_args: object, **kwargs: object):
+        seen.update(kwargs)
+        raise _Stop("stop after capturing kwargs")
+
+    monkeypatch.setattr(report, "run_quest_replay", _fake_run_quest_replay)
+
+    with pytest.raises(_Stop):
+        report._run_actual_checkpoints(
+            object(),
+            max_ticks=None,
+            seed=None,
+            inter_tick_rand_draws=1,
+        )
+
+    assert int(seen.get("inter_tick_rand_draws", -1)) == 0
+    assert seen.get("inter_tick_rand_draws_by_tick") is None
 
 
 def test_infer_rand_calls_between_states_and_stage_breakdown() -> None:

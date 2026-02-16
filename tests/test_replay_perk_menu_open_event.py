@@ -173,6 +173,42 @@ def test_original_capture_pending_event_sets_pending_without_pick_side_effects()
     assert int(state.rng.state) == before_rng
 
 
+def test_original_capture_pending_event_supported_in_quest_mode() -> None:
+    world = WorldState.build(
+        world_size=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=0,
+        preserve_bugs=False,
+    )
+    reset_players(world.players, world_size=1024.0, player_count=1)
+
+    state = world.state
+    state.game_mode = int(GameMode.QUESTS)
+    state.perk_selection.pending_count = 2
+    state.perk_selection.choices_dirty = False
+    before_rng = int(state.rng.state)
+
+    apply_replay_tick_events(
+        [
+            UnknownEvent(
+                tick_index=5,
+                kind=CAPTURE_PERK_PENDING_EVENT_KIND,
+                payload=[{"perk_pending": 0}],
+            )
+        ],
+        tick_index=5,
+        dt_frame=1.0 / 60.0,
+        world=world,
+        game_mode_id=int(GameMode.QUESTS),
+        strict_events=True,
+    )
+
+    assert int(state.perk_selection.pending_count) == 0
+    assert bool(state.perk_selection.choices_dirty)
+    assert int(state.rng.state) == before_rng
+
+
 def test_original_capture_perk_apply_event_applies_perk_without_rng_for_non_random_perks() -> None:
     world = WorldState.build(
         world_size=1024.0,
@@ -200,6 +236,41 @@ def test_original_capture_perk_apply_event_applies_perk_without_rng_for_non_rand
         dt_frame=1.0 / 60.0,
         world=world,
         game_mode_id=int(GameMode.SURVIVAL),
+        strict_events=True,
+    )
+
+    assert perk_count_get(world.players[0], PerkId.FASTSHOT) == 1
+    assert int(state.perk_selection.pending_count) == 1
+    assert int(state.rng.state) == before_rng
+
+
+def test_original_capture_perk_apply_event_supported_in_quest_mode() -> None:
+    world = WorldState.build(
+        world_size=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=0,
+        preserve_bugs=False,
+    )
+    reset_players(world.players, world_size=1024.0, player_count=1)
+
+    state = world.state
+    state.game_mode = int(GameMode.QUESTS)
+    state.perk_selection.pending_count = 1
+    before_rng = int(state.rng.state)
+
+    apply_replay_tick_events(
+        [
+            UnknownEvent(
+                tick_index=7,
+                kind=CAPTURE_PERK_APPLY_EVENT_KIND,
+                payload=[{"perk_id": int(PerkId.FASTSHOT)}],
+            )
+        ],
+        tick_index=7,
+        dt_frame=1.0 / 60.0,
+        world=world,
+        game_mode_id=int(GameMode.QUESTS),
         strict_events=True,
     )
 

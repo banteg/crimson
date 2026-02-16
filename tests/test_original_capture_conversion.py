@@ -449,6 +449,23 @@ def test_load_capture_accepts_quest_stage_tick_fields(tmp_path: Path) -> None:
     assert int(loaded_tick.quest_stage_minor) == 7
 
 
+def test_convert_capture_to_replay_infers_quest_level_from_tick_stage(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    tick["mode_hint"] = "quest_mode_update"
+    tick["game_mode_id"] = int(GameMode.QUESTS)
+    tick["quest_stage_major"] = 2
+    tick["quest_stage_minor"] = 4
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0xBEEF)
+
+    assert int(replay.header.game_mode_id) == int(GameMode.QUESTS)
+    assert str(replay.header.quest_level) == "2.4"
+
+
 def test_load_capture_stream_accepts_forward_compatible_config_fields(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick])
@@ -751,6 +768,39 @@ def test_convert_capture_to_replay_infers_pending_drop_events_from_perk_delta(tm
         for event in replay.events
     ]
     assert "PerkMenuOpenEvent" in kinds
+
+
+def test_convert_capture_to_replay_bootstrap_payload_includes_perk_snapshot(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16, perk_pending=3)
+    checkpoint = tick0.get("checkpoint")
+    assert isinstance(checkpoint, dict)
+    checkpoint["perk"] = {
+        "pending_count": 3,
+        "choices_dirty": False,
+        "choices": [11, 22, 33, 44, 55, 66, 77],
+        "player_nonzero_counts": [],
+    }
+
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture)
+
+    bootstrap = next(
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+    )
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    assert payload is not None
+    assert payload.get("perk_pending") == 3
+    assert payload.get("perk") == {
+        "pending_count": 3,
+        "choices_dirty": False,
+        "choices": [11, 22, 33, 44, 55, 66, 77],
+    }
 
 
 def test_convert_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> None:
