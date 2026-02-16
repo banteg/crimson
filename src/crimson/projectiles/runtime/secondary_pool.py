@@ -6,6 +6,7 @@ from typing import MutableSequence, Sequence
 from grim.color import RGBA
 from grim.geom import Vec2
 
+from ...creatures.damage_types import CreatureDamageType
 from ...effects_atlas import EffectId
 from ...math_parity import f32
 from ..types import (
@@ -22,6 +23,7 @@ from ..types import (
     _rng_zero,
 )
 from .collision import _apply_damage_to_creature, _creature_find_nearest_for_secondary, _within_native_find_radius
+
 
 class SecondaryProjectilePool:
     def __init__(self, *, size: int = SECONDARY_PROJECTILE_POOL_SIZE) -> None:
@@ -128,7 +130,7 @@ class SecondaryProjectilePool:
                 creatures,
                 int(creature_index),
                 float(damage),
-                damage_type=3,
+                damage_type=CreatureDamageType.EXPLOSION,
                 impulse=impulse,
                 owner_id=int(owner_id),
                 apply_creature_damage=apply_creature_damage,
@@ -313,11 +315,7 @@ class SecondaryProjectilePool:
                             rand=rand,
                         )
 
-                if (
-                    entry.type_id == SecondaryProjectileTypeId.ROCKET
-                    and effects is not None
-                    and int(detail_preset) > 2
-                ):
+                if entry.type_id == SecondaryProjectileTypeId.ROCKET and effects is not None and int(detail_preset) > 2:
                     effects.spawn_explosion_burst(
                         pos=entry.pos,
                         scale=0.4,

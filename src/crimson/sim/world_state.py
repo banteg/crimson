@@ -12,7 +12,7 @@ from ..camera import camera_shake_update
 from ..creatures.damage import creature_apply_damage
 from ..creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureDeath, CreaturePool
 from ..creatures.anim import creature_anim_advance_phase
-from ..creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
+from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import (
     build_gameplay_state,
@@ -339,12 +339,9 @@ class WorldState:
                 self.state,
                 detail_preset=int(detail_preset),
                 world_size=float(world_size),
-                players=self.players,
-                creatures=self.creatures.entries, spawn_slots=self.creatures.spawn_slots,
+                players=self.players, creatures=self.creatures.entries, spawn_slots=self.creatures.spawn_slots,
             )
-            dt = player_frame_dt_after_roundtrip(
-                dt=dt, time_scale_active=bool(self.state.time_scale_active), reflex_boost_timer=float(self.state.bonuses.reflex_boost)
-            )
+            dt = player_frame_dt_after_roundtrip(dt=dt, time_scale_active=bool(self.state.time_scale_active), reflex_boost_timer=float(self.state.bonuses.reflex_boost))
             if idx == 0:
                 _mark("ws_after_player_update_p0")
         _mark("ws_after_player_update")
@@ -513,5 +510,5 @@ class WorldState:
                 size=float(player.size),
                 local_scale=1.0,
                 flags=CreatureFlags(0),
-                ai_mode=0,
+                ai_mode=CreatureAiMode.ORBIT_PLAYER,
             )

@@ -10,6 +10,8 @@ from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
 from grim.geom import Vec2
 
+from ..terrain_assets import TerrainTextureId
+
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
@@ -23,18 +25,18 @@ class TerrainTexture:
 
 
 TERRAIN_TEXTURES: list[tuple[int, str, str]] = [
-    (0, "ter_q1_base", "ter/ter_q1_base.png"),
-    (1, "ter_q1_tex1", "ter/ter_q1_tex1.png"),
-    (2, "ter_q2_base", "ter/ter_q2_base.png"),
-    (3, "ter_q2_tex1", "ter/ter_q2_tex1.png"),
-    (4, "ter_q3_base", "ter/ter_q3_base.png"),
-    (5, "ter_q3_tex1", "ter/ter_q3_tex1.png"),
-    (6, "ter_q4_base", "ter/ter_q4_base.png"),
-    (7, "ter_q4_tex1", "ter/ter_q4_tex1.png"),
-    (8, "fb_q1", "ter/fb_q1.png"),
-    (9, "fb_q2", "ter/fb_q2.png"),
-    (10, "fb_q3", "ter/fb_q3.png"),
-    (11, "fb_q4", "ter/fb_q4.png"),
+    (TerrainTextureId.Q1_BASE, "ter_q1_base", "ter/ter_q1_base.png"),
+    (TerrainTextureId.Q1_OVERLAY, "ter_q1_tex1", "ter/ter_q1_tex1.png"),
+    (TerrainTextureId.Q2_BASE, "ter_q2_base", "ter/ter_q2_base.png"),
+    (TerrainTextureId.Q2_OVERLAY, "ter_q2_tex1", "ter/ter_q2_tex1.png"),
+    (TerrainTextureId.Q3_BASE, "ter_q3_base", "ter/ter_q3_base.png"),
+    (TerrainTextureId.Q3_OVERLAY, "ter_q3_tex1", "ter/ter_q3_tex1.png"),
+    (TerrainTextureId.Q4_BASE, "ter_q4_base", "ter/ter_q4_base.png"),
+    (TerrainTextureId.Q4_OVERLAY, "ter_q4_tex1", "ter/ter_q4_tex1.png"),
+    (TerrainTextureId.FB_Q1, "fb_q1", "ter/fb_q1.png"),
+    (TerrainTextureId.FB_Q2, "fb_q2", "ter/fb_q2.png"),
+    (TerrainTextureId.FB_Q3, "fb_q3", "ter/fb_q3.png"),
+    (TerrainTextureId.FB_Q4, "fb_q4", "ter/fb_q4.png"),
 ]
 
 

@@ -15,7 +15,7 @@ from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.terrain_render import GroundRenderer
 
-from .terrain_assets import terrain_texture_by_id
+from .terrain_assets import TerrainTextureId, terrain_texture_by_id
 from .creatures.anim import creature_corpse_frame_for_type
 from .creatures.runtime import CreaturePool
 from .creatures.spawn import SpawnEnv
@@ -231,12 +231,13 @@ class GameWorld:
         overlay = _load(overlay_spec)
         detail = _load(detail_spec) or overlay or base
 
-        if base is None and (base_id, overlay_id, detail_id) != (0, 1, 0):
+        default_terrain = (TerrainTextureId.Q1_BASE, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q1_BASE)
+        if base is None and (base_id, overlay_id, detail_id) != default_terrain:
             # Fall back to default terrain if the chosen one is unavailable.
-            base = _load(terrain_texture_by_id(0))
-            overlay = _load(terrain_texture_by_id(1))
-            detail = _load(terrain_texture_by_id(0)) or overlay or base
-            base_id, overlay_id, detail_id = (0, 1, 0)
+            base = _load(terrain_texture_by_id(TerrainTextureId.Q1_BASE))
+            overlay = _load(terrain_texture_by_id(TerrainTextureId.Q1_OVERLAY))
+            detail = _load(terrain_texture_by_id(TerrainTextureId.Q1_BASE)) or overlay or base
+            base_id, overlay_id, detail_id = default_terrain
 
         if base is None:
             return

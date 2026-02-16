@@ -5,6 +5,7 @@ from typing import Callable, MutableSequence, Sequence
 
 from grim.geom import Vec2
 
+from ...creatures.damage_types import CreatureDamageType
 from ...math_parity import NATIVE_HALF_PI, f32
 from ...perks import PerkId
 from ...weapons import weapon_entry_for_projectile_type_id
@@ -29,6 +30,7 @@ from .behaviors import (
     _ProjectileUpdateCtx,
 )
 from .collision import _apply_damage_to_creature, _hit_radius_for, _within_native_find_radius
+
 
 class ProjectilePool:
     def __init__(self, *, size: int = MAIN_PROJECTILE_POOL_SIZE) -> None:
@@ -185,7 +187,7 @@ class ProjectilePool:
             return float(value)
 
         def _damage_type_for() -> int:
-            return 1
+            return int(CreatureDamageType.BULLET)
 
         ctx = _ProjectileUpdateCtx(
             pool=self,
@@ -283,7 +285,9 @@ class ProjectilePool:
 
                     if hit_idx is None:
                         can_hit_players = True
-                        if runtime_state is not None and int(proj_index) == int(runtime_state.shock_chain_projectile_id):
+                        if runtime_state is not None and int(proj_index) == int(
+                            runtime_state.shock_chain_projectile_id
+                        ):
                             # Native skips `player_find_in_radius` for the currently tracked
                             # shock-chain projectile slot in this branch.
                             can_hit_players = False
@@ -482,8 +486,7 @@ class ProjectilePool:
         speed_by_type: dict[int, float],
         damage_by_type: dict[int, float],
     ) -> list[ProjectileHit]:
-        """Update a small projectile subset for the demo view.
-        """
+        """Update a small projectile subset for the demo view."""
 
         if dt <= 0.0:
             return []

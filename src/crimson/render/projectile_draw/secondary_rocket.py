@@ -9,6 +9,7 @@ from grim.geom import Vec2
 from grim.math import clamp
 
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRID
+from ...projectiles import SecondaryProjectileTypeId
 from .types import SecondaryProjectileDrawCtx
 
 
@@ -21,19 +22,19 @@ class SecondaryRocketStyle:
 
 
 _ROCKET_STYLE_BY_TYPE: dict[int, SecondaryRocketStyle] = {
-    1: SecondaryRocketStyle(
+    int(SecondaryProjectileTypeId.ROCKET): SecondaryRocketStyle(
         base_size=14.0,
         glow_size=60.0,
         glow_rgb=(1.0, 1.0, 1.0),
         glow_alpha_mul=0.68,
     ),
-    2: SecondaryRocketStyle(
+    int(SecondaryProjectileTypeId.HOMING_ROCKET): SecondaryRocketStyle(
         base_size=10.0,
         glow_size=40.0,
         glow_rgb=(1.0, 1.0, 1.0),
         glow_alpha_mul=0.58,
     ),
-    4: SecondaryRocketStyle(
+    int(SecondaryProjectileTypeId.ROCKET_MINIGUN): SecondaryRocketStyle(
         base_size=8.0,
         glow_size=30.0,
         glow_rgb=(0.7, 0.7, 1.0),
@@ -76,7 +77,7 @@ def draw_secondary_rocket(ctx: SecondaryProjectileDrawCtx) -> bool:
 
 
 def draw_secondary_type4_fallback(ctx: SecondaryProjectileDrawCtx) -> bool:
-    if int(ctx.proj_type) != 4:
+    if int(ctx.proj_type) != int(SecondaryProjectileTypeId.ROCKET_MINIGUN):
         return False
     rl.draw_circle(
         int(ctx.screen_pos.x),

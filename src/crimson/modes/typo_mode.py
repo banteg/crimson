@@ -14,7 +14,7 @@ from grim.config import CrimsonConfig
 from grim.geom import Vec2
 from grim.view import ViewContext
 
-from ..creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId
+from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
 from ..game_modes import GameMode
 from ..typo.player import build_typo_player_input, enforce_typo_player_frame
 from ..typo.names import CreatureNameTable, load_typo_dictionary
@@ -175,9 +175,7 @@ class TypoShooterMode(BaseGameplayMode):
 
         return fire_pressed, reload_pressed
 
-    def _spawn_tinted_creature(
-        self, *, type_id: CreatureTypeId, pos: Vec2, tint_rgba: RGBA
-    ) -> int:
+    def _spawn_tinted_creature(self, *, type_id: CreatureTypeId, pos: Vec2, tint_rgba: RGBA) -> int:
         rand = self.state.rng.rand
         heading = float(int(rand()) % 314) * 0.01
         size = float(int(rand()) % 20 + 47)
@@ -196,7 +194,7 @@ class TypoShooterMode(BaseGameplayMode):
             phase_seed=0.0,
             type_id=type_id,
             flags=flags,
-            ai_mode=2,
+            ai_mode=CreatureAiMode.CHASE_PLAYER,
             health=1.0,
             max_health=1.0,
             move_speed=float(move_speed),

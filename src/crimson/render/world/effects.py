@@ -4,6 +4,7 @@ import math
 
 import pyray as rl
 
+from ...effects import ParticleStyleId
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
@@ -61,7 +62,7 @@ class WorldRendererEffectsMixin(WorldRendererMixinBase):
             alpha_byte = int(clamp(alpha * 0.065, 0.0, 1.0) * 255.0 + 0.5)
             tint = rl.Color(255, 255, 255, alpha_byte)
             for idx, entry in enumerate(particles):
-                if not entry.active or (idx % 2) or int(entry.style_id) == 8:
+                if not entry.active or (idx % 2) or int(entry.style_id) == int(ParticleStyleId.BUBBLEGUN):
                     continue
                 radius = (math.sin((1.0 - float(entry.intensity)) * 1.5707964) + 0.1) * 55.0 + 4.0
                 radius = max(radius, 16.0)
@@ -74,10 +75,10 @@ class WorldRendererEffectsMixin(WorldRendererMixinBase):
                 rl.draw_texture_pro(texture, src_large, dst, origin, 0.0, tint)
 
         for entry in particles:
-            if not entry.active or int(entry.style_id) == 8:
+            if not entry.active or int(entry.style_id) == int(ParticleStyleId.BUBBLEGUN):
                 continue
             radius = math.sin((1.0 - float(entry.intensity)) * 1.5707964) * 24.0
-            if int(entry.style_id) == 1:
+            if int(entry.style_id) == int(ParticleStyleId.BLOW_TORCH):
                 radius *= 0.8
             radius = max(radius, 2.0)
             size = max(0.0, radius * 2.0 * scale)
@@ -92,7 +93,7 @@ class WorldRendererEffectsMixin(WorldRendererMixinBase):
 
         alpha_byte = int(clamp(alpha, 0.0, 1.0) * 255.0 + 0.5)
         for entry in particles:
-            if not entry.active or int(entry.style_id) != 8:
+            if not entry.active or int(entry.style_id) != int(ParticleStyleId.BUBBLEGUN):
                 continue
             wobble = math.sin(float(entry.spin)) * 3.0
             half_h = (wobble + 15.0) * float(entry.scale_x) * 7.0

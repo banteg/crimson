@@ -6,6 +6,7 @@ from grim.geom import Vec2
 
 from ..perks import PerkId
 from ..creatures.spawn import SpawnId
+from ..weapons import WeaponId
 from .helpers import (
     center_point,
     edge_midpoints,
@@ -24,7 +25,7 @@ from .types import QuestContext, SpawnEntry
     level="3.1",
     title="The Blighting",
     time_limit_ms=300000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.TOXIC_AVENGER,
     builder_address=0x00438050,
 )
@@ -130,8 +131,8 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
     level="3.2",
     title="Lizard Kings",
     time_limit_ms=180000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x0A,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.MULTI_PLASMA,
     builder_address=0x00437710,
 )
 def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
@@ -178,7 +179,7 @@ def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
     level="3.3",
     title="The Killing",
     time_limit_ms=300000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.REGENERATION,
     builder_address=0x004384A0,
 )
@@ -261,8 +262,8 @@ def build_3_3_the_killing(ctx: QuestContext, rng: random.Random | None = None) -
     level="3.4",
     title="Hidden Evil",
     time_limit_ms=300000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x0D,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.SEEKER_ROCKETS,
     builder_address=0x00435A30,
 )
 def build_3_4_hidden_evil(ctx: QuestContext) -> list[SpawnEntry]:
@@ -284,7 +285,7 @@ def build_3_4_hidden_evil(ctx: QuestContext) -> list[SpawnEntry]:
     level="3.5",
     title="Surrounded By Reptiles",
     time_limit_ms=300000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.PYROMANIAC,
     builder_address=0x00438940,
 )
@@ -340,8 +341,8 @@ def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
     level="3.6",
     title="The Lizquidation",
     time_limit_ms=300000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x0F,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.BLOW_TORCH,
     builder_address=0x00437C70,
 )
 def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
@@ -386,7 +387,7 @@ def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
     level="3.7",
     title="Spiders Inc.",
     time_limit_ms=300000,
-    start_weapon_id=11,
+    start_weapon_id=WeaponId.PLASMA_MINIGUN,
     unlock_perk_id=PerkId.NINJA,
     builder_address=0x004390D0,
 )
@@ -436,8 +437,8 @@ def build_3_7_spiders_inc(ctx: QuestContext) -> list[SpawnEntry]:
     level="3.8",
     title="Lizard Raze",
     time_limit_ms=300000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x12,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.ROCKET_MINIGUN,
     builder_address=0x00438840,
 )
 def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
@@ -496,7 +497,7 @@ def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
     level="3.9",
     title="Deja vu",
     time_limit_ms=120000,
-    start_weapon_id=6,
+    start_weapon_id=WeaponId.GAUSS_GUN,
     unlock_perk_id=PerkId.HIGHLANDER,
     builder_address=0x00437920,
 )
@@ -527,8 +528,8 @@ def build_3_9_deja_vu(ctx: QuestContext, rng: random.Random | None = None) -> li
     level="3.10",
     title="Zombie Masters",
     time_limit_ms=300000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x14,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.JACKHAMMER,
     builder_address=0x004360A0,
 )
 def build_3_10_zombie_masters(ctx: QuestContext) -> list[SpawnEntry]:

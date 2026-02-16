@@ -11,6 +11,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 
 from ...debug import debug_enabled
 from ...frontend.assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from ...game_modes import GameMode
 from ...frontend.menu import (
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
@@ -62,6 +63,7 @@ from .shared import (
     QUEST_TITLE_Y_OFFSET,
     _QuestMenuLayout,
 )
+
 
 class QuestsMenuView:
     """Quest selection menu.
@@ -410,7 +412,7 @@ class QuestsMenuView:
             return
         level = f"{int(stage)}.{int(row) + 1}"
         self.state.pending_quest_level = level
-        self.state.config.game_mode = 3
+        self.state.config.game_mode = int(GameMode.QUESTS)
         self.state.config.quest_level = level
         self.state.config.quest_stage_major = int(stage)
         self.state.config.quest_stage_minor = int(row) + 1
@@ -693,7 +695,6 @@ class QuestsMenuView:
             play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._closing = True
         self._close_action = action
-
 
 
 __all__ = ["QuestsMenuView"]

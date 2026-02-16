@@ -17,7 +17,7 @@ from crimson.creatures.anim import (
     creature_corpse_frame_for_type,
 )
 from crimson.creatures.runtime import CreaturePool
-from crimson.creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId, SpawnEnv
+from crimson.creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId, SpawnEnv
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.effects_atlas import EffectId
 from crimson.gameplay import GameplayState
@@ -28,6 +28,7 @@ from grim.config import ensure_crimson_cfg
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.terrain_render import GroundRenderer
 from grim.view import View, ViewContext
+from crimson.terrain_assets import TerrainTextureId
 
 from ..paths import default_runtime_dir
 from ._ui_helpers import draw_ui_text, ui_line_height
@@ -75,14 +76,14 @@ _CREATURE_ASSET: dict[CreatureTypeId, str] = {
 
 
 TERRAIN_TEXTURES: list[tuple[int, str]] = [
-    (0, "ter/ter_q1_base.png"),
-    (1, "ter/ter_q1_tex1.png"),
-    (2, "ter/ter_q2_base.png"),
-    (3, "ter/ter_q2_tex1.png"),
-    (4, "ter/ter_q3_base.png"),
-    (5, "ter/ter_q3_tex1.png"),
-    (6, "ter/ter_q4_base.png"),
-    (7, "ter/ter_q4_tex1.png"),
+    (TerrainTextureId.Q1_BASE, "ter/ter_q1_base.png"),
+    (TerrainTextureId.Q1_OVERLAY, "ter/ter_q1_tex1.png"),
+    (TerrainTextureId.Q2_BASE, "ter/ter_q2_base.png"),
+    (TerrainTextureId.Q2_OVERLAY, "ter/ter_q2_tex1.png"),
+    (TerrainTextureId.Q3_BASE, "ter/ter_q3_base.png"),
+    (TerrainTextureId.Q3_OVERLAY, "ter/ter_q3_tex1.png"),
+    (TerrainTextureId.Q4_BASE, "ter/ter_q4_base.png"),
+    (TerrainTextureId.Q4_OVERLAY, "ter/ter_q4_tex1.png"),
 ]
 
 
@@ -287,7 +288,7 @@ class DecalsDebugView:
             phase_seed=float(int(self.state.rng.rand()) & 0xFF),
             type_id=type_id,
             flags=CreatureFlags(0),
-            ai_mode=0,
+            ai_mode=CreatureAiMode.ORBIT_PLAYER,
             health=hp,
             max_health=hp,
             move_speed=move_speed,

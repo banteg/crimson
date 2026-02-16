@@ -7,6 +7,7 @@ from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 
+from ...game_modes import GameMode
 from ...frontend.assets import _ensure_texture_cache
 from ...frontend.menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
 from ...frontend.panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
@@ -31,6 +32,7 @@ from .shared import (
     END_NOTE_PANEL_POS_Y,
     END_NOTE_PANEL_W,
 )
+
 
 class EndNoteView:
     """Final quest "Show End Note" flow.
@@ -138,7 +140,7 @@ class EndNoteView:
             mouse=mouse,
             click=click,
         ):
-            self.state.config.game_mode = 1
+            self.state.config.game_mode = int(GameMode.SURVIVAL)
             self._begin_close_transition("start_survival")
             return
 
@@ -152,7 +154,7 @@ class EndNoteView:
             mouse=mouse,
             click=click,
         ):
-            self.state.config.game_mode = 2
+            self.state.config.game_mode = int(GameMode.RUSH)
             self._begin_close_transition("start_rush")
             return
 
@@ -166,7 +168,7 @@ class EndNoteView:
             mouse=mouse,
             click=click,
         ):
-            self.state.config.game_mode = 4
+            self.state.config.game_mode = int(GameMode.TYPO)
             self._begin_close_transition("start_typo", fade_to_black=True)
             return
 
@@ -315,7 +317,6 @@ class EndNoteView:
             play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._closing = True
         self._close_action = action
-
 
 
 __all__ = ["EndNoteView"]

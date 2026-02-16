@@ -12,7 +12,7 @@ from typing import Callable, Protocol, Sequence
 from grim.geom import Vec2
 
 from ..math_parity import NATIVE_PI, f32, f32_vec2, heading_from_delta_f32
-from .spawn import CreatureFlags
+from .spawn import CreatureAiMode, CreatureFlags
 
 __all__ = [
     "CreatureAIUpdate",
@@ -63,7 +63,7 @@ def creature_ai7_tick_link_timer(creature: CreatureAIStateLike, *, dt_ms: int, r
     if creature.link_index < 0:
         creature.link_index += dt_ms
         if creature.link_index >= 0:
-            creature.ai_mode = 7
+            creature.ai_mode = CreatureAiMode.HOLD_TIMER
             creature.link_index = (rand() & 0x1FF) + 500
         return
 
@@ -132,7 +132,7 @@ def creature_ai_update_target(
     creature.force_target = 0
 
     ai_mode = creature.ai_mode
-    if ai_mode == 0:
+    if ai_mode == CreatureAiMode.ORBIT_PLAYER:
         if dist_to_player > 800.0:
             creature.target = f32_vec2(player_pos)
         else:
@@ -142,14 +142,14 @@ def creature_ai_update_target(
                 dist=dist_to_player,
                 scale=0.85,
             )
-    elif ai_mode == 8:
+    elif ai_mode == CreatureAiMode.ORBIT_PLAYER_WIDE:
         creature.target = _orbit_target_f32(
             player_pos=player_pos,
             orbit_phase=orbit_phase,
             dist=dist_to_player,
             scale=0.9,
         )
-    elif ai_mode == 1:
+    elif ai_mode == CreatureAiMode.ORBIT_PLAYER_TIGHT:
         if dist_to_player > 800.0:
             creature.target = f32_vec2(player_pos)
         else:
@@ -159,13 +159,13 @@ def creature_ai_update_target(
                 dist=dist_to_player,
                 scale=0.55,
             )
-    elif ai_mode == 3:
+    elif ai_mode == CreatureAiMode.FOLLOW_LINK:
         link = resolve_live_link(creatures, creature.link_index)
         if link is not None:
             creature.target = _link_target_f32(link_pos=link.pos, offset=(creature.target_offset or Vec2()))
         else:
-            creature.ai_mode = 0
-    elif ai_mode == 5:
+            creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    elif ai_mode == CreatureAiMode.FOLLOW_LINK_TETHERED:
         link = resolve_live_link(creatures, creature.link_index)
         if link is not None:
             creature.target = _link_target_f32(link_pos=link.pos, offset=(creature.target_offset or Vec2()))
@@ -173,14 +173,14 @@ def creature_ai_update_target(
             if dist_to_target <= 64.0:
                 move_scale = f32(dist_to_target * 0.015625)
         else:
-            creature.ai_mode = 0
+            creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
             self_damage = 1000.0
 
     ai_mode = creature.ai_mode
-    if ai_mode == 4:
+    if ai_mode == CreatureAiMode.LINK_GUARD:
         link = resolve_live_link(creatures, creature.link_index)
         if link is None:
-            creature.ai_mode = 0
+            creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
             self_damage = 1000.0
         elif dist_to_player > 800.0:
             creature.target = f32_vec2(player_pos)
@@ -191,18 +191,18 @@ def creature_ai_update_target(
                 dist=dist_to_player,
                 scale=0.85,
             )
-    elif ai_mode == 7:
+    elif ai_mode == CreatureAiMode.HOLD_TIMER:
         if (creature.flags & CreatureFlags.AI7_LINK_TIMER) and creature.link_index > 0:
             creature.target = f32_vec2(creature.pos)
         elif not (creature.flags & CreatureFlags.AI7_LINK_TIMER) and creature.orbit_radius > 0.0:
             creature.target = f32_vec2(creature.pos)
             creature.orbit_radius = f32(float(creature.orbit_radius) - float(dt))
         else:
-            creature.ai_mode = 0
-    elif ai_mode == 6:
+            creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    elif ai_mode == CreatureAiMode.ORBIT_LINK:
         link = resolve_live_link(creatures, creature.link_index)
         if link is None:
-            creature.ai_mode = 0
+            creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
         else:
             angle = float(creature.orbit_angle) + float(creature.heading)
             orbit_radius = float(creature.orbit_radius)
@@ -215,7 +215,7 @@ def creature_ai_update_target(
     if dist_to_target < 40.0 or dist_to_target > 400.0:
         creature.force_target = 1
 
-    if creature.force_target or creature.ai_mode == 2:
+    if creature.force_target or creature.ai_mode == CreatureAiMode.CHASE_PLAYER:
         creature.target = f32_vec2(player_pos)
 
     # Native stores dx/dy deltas into float locals before calling atan2.

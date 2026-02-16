@@ -9,6 +9,7 @@ from grim.geom import Vec2
 from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..sim.state_types import PlayerState
+from .damage_types import CreatureDamageType
 from .runtime import CREATURE_HITBOX_ALIVE, CreatureState
 from .spawn import CreatureFlags
 
@@ -85,7 +86,7 @@ def _damage_type4_pyromaniac(ctx: _CreatureDamageCtx) -> None:
 
 
 _CREATURE_DAMAGE_PRE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] = {
-    1: (
+    CreatureDamageType.BULLET: (
         _damage_type1_uranium_filled_bullets,
         _damage_type1_living_fortress,
         _damage_type1_barrel_greaser,
@@ -94,12 +95,12 @@ _CREATURE_DAMAGE_PRE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] = {
 }
 
 _CREATURE_DAMAGE_GLOBAL_PRE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] = {
-    7: (_damage_type7_ion_gun_master,),
+    CreatureDamageType.ION: (_damage_type7_ion_gun_master,),
 }
 
 
 _CREATURE_DAMAGE_ALIVE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] = {
-    4: (_damage_type4_pyromaniac,),
+    CreatureDamageType.FIRE: (_damage_type4_pyromaniac,),
 }
 
 
@@ -142,7 +143,7 @@ def creature_apply_damage(
 
     for step in _CREATURE_DAMAGE_PRE_STEPS.get(ctx.damage_type, ()):
         step(ctx)
-    if ctx.damage_type == 1:
+    if ctx.damage_type == CreatureDamageType.BULLET:
         _damage_type1_heading_jitter(ctx)
 
     if creature.hp <= 0.0:

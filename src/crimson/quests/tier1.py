@@ -6,6 +6,7 @@ from grim.geom import Vec2
 
 from ..perks import PerkId
 from ..creatures.spawn import SpawnId
+from ..weapons import WeaponId
 from .helpers import (
     center_point,
     corner_points,
@@ -23,8 +24,8 @@ from .types import QuestContext, SpawnEntry
     level="1.1",
     title="Land Hostile",
     time_limit_ms=120000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x02,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.ASSAULT_RIFLE,
     builder_address=0x00435BD0,
 )
 def build_1_1_land_hostile(ctx: QuestContext) -> list[SpawnEntry]:
@@ -42,8 +43,8 @@ def build_1_1_land_hostile(ctx: QuestContext) -> list[SpawnEntry]:
     level="1.2",
     title="Minor Alien Breach",
     time_limit_ms=120000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x03,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.SHOTGUN,
     builder_address=0x00435CC0,
 )
 def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
@@ -113,7 +114,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
     level="1.3",
     title="Target Practice",
     time_limit_ms=65000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.URANIUM_FILLED_BULLETS,
     builder_address=0x00437A00,
 )
@@ -148,8 +149,8 @@ def build_1_3_target_practice(ctx: QuestContext, rng: random.Random | None = Non
     level="1.4",
     title="Frontline Assault",
     time_limit_ms=300000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x08,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.FLAMETHROWER,
     builder_address=0x00437E10,
 )
 def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
@@ -222,7 +223,7 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
     level="1.5",
     title="Alien Dens",
     time_limit_ms=180000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.DOCTOR,
     builder_address=0x00436720,
 )
@@ -262,8 +263,8 @@ def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
     level="1.6",
     title="The Random Factor",
     time_limit_ms=300000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x05,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.SUBMACHINE_GUN,
     builder_address=0x00436350,
 )
 def build_1_6_the_random_factor(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
@@ -309,7 +310,7 @@ def build_1_6_the_random_factor(ctx: QuestContext, rng: random.Random | None = N
     level="1.7",
     title="Spider Wave Syndrome",
     time_limit_ms=240000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.MONSTER_VISION,
     builder_address=0x00436440,
 )
@@ -335,8 +336,8 @@ def build_1_7_spider_wave_syndrome(ctx: QuestContext) -> list[SpawnEntry]:
     level="1.8",
     title="Alien Squads",
     time_limit_ms=180000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x06,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.GAUSS_GUN,
     builder_address=0x00435EA0,
 )
 def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
@@ -426,7 +427,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
     level="1.9",
     title="Nesting Grounds",
     time_limit_ms=240000,
-    start_weapon_id=1,
+    start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.HOT_TEMPERED,
     builder_address=0x004364A0,
 )
@@ -526,8 +527,8 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
     level="1.10",
     title="8-legged Terror",
     time_limit_ms=240000,
-    start_weapon_id=1,
-    unlock_weapon_id=0x0C,
+    start_weapon_id=WeaponId.PISTOL,
+    unlock_weapon_id=WeaponId.ROCKET_LAUNCHER,
     builder_address=0x00436120,
 )
 def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:

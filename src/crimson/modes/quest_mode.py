@@ -40,7 +40,7 @@ from ..quests.runtime import tick_quest_completion_transition as _legacy_tick_qu
 from ..quests.timeline import quest_spawn_table_empty as _legacy_quest_spawn_table_empty
 from ..quests.timeline import tick_quest_mode_spawns as _legacy_tick_quest_mode_spawns
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
-from ..terrain_assets import terrain_texture_by_id
+from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
@@ -401,7 +401,11 @@ class QuestMode(BaseGameplayMode):
         self.bind_status(status)
         self.state.quest_stage_major, self.state.quest_stage_minor = quest.level_key
 
-        base_id, overlay_id, detail_id = quest.terrain_ids or (0, 1, 0)
+        base_id, overlay_id, detail_id = quest.terrain_ids or (
+            TerrainTextureId.Q1_BASE,
+            TerrainTextureId.Q1_OVERLAY,
+            TerrainTextureId.Q1_BASE,
+        )
         base = terrain_texture_by_id(int(base_id))
         overlay = terrain_texture_by_id(int(overlay_id))
         detail = terrain_texture_by_id(int(detail_id))
@@ -865,6 +869,7 @@ class QuestMode(BaseGameplayMode):
             return
 
         dt_tick = float(self._lan_capture_clock.dt_tick)
+
         def _consume_lan_frames() -> bool:
             while True:
                 frame = runtime.pop_tick_frame()
@@ -992,7 +997,9 @@ class QuestMode(BaseGameplayMode):
                             kind="completed",
                             level=str(self._quest.level),
                             base_time_ms=int(self._quest.spawn_timeline_ms),
-                            player_health=float(player_health_values[0] if player_health_values else self.player.health),
+                            player_health=float(
+                                player_health_values[0] if player_health_values else self.player.health
+                            ),
                             player2_health=player2_health,
                             player_health_values=player_health_values,
                             pending_perk_count=int(self.state.perk_selection.pending_count),
