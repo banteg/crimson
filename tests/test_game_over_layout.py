@@ -63,6 +63,51 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, tmp_pa
     assert captured_x[0] == 242.0
 
 
+def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, tmp_path: Path) -> None:
+    ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config(game_mode=1))
+    ui.assets = object()
+    ui.phase = -1
+    ui._intro_ms = PANEL_SLIDE_DURATION_MS
+
+    record = HighScoreRecord.blank()
+    record.game_mode_id = 1
+
+    char_events = [ord("w"), ord("w"), 0]
+    key_events = [0]
+
+    def _get_char_pressed() -> int:
+        if char_events:
+            return int(char_events.pop(0))
+        return 0
+
+    def _get_key_pressed() -> int:
+        if key_events:
+            return int(key_events.pop(0))
+        return 0
+
+    monkeypatch.setattr("crimson.ui.game_over.read_highscore_table", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr("crimson.ui.game_over.rank_index", lambda _records, _candidate: 0)
+    monkeypatch.setattr("crimson.ui.game_over.scores_path_for_config", lambda *_args, **_kwargs: tmp_path / "scores.hi")
+    monkeypatch.setattr("crimson.ui.game_over.button_update", lambda *args, **kwargs: False)  # noqa: ARG005
+    monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_width", lambda: 640)
+    monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_height", lambda: 480)
+    monkeypatch.setattr("crimson.ui.game_over.rl.is_mouse_button_pressed", lambda _button: False)
+    monkeypatch.setattr("crimson.ui.game_over.rl.is_key_pressed", lambda _key: False)
+    monkeypatch.setattr("crimson.ui.game_over.rl.get_char_pressed", _get_char_pressed)
+    monkeypatch.setattr("crimson.ui.game_over.rl.get_key_pressed", _get_key_pressed)
+
+    ui.update(
+        0.0,
+        record=record,
+        player_name_default="player",
+        mouse=rl.Vector2(0.0, 0.0),
+    )
+
+    assert ui.phase == 0
+    assert ui.input_text == "player"
+    assert ui.input_caret == len("player")
+
+
 def test_game_over_draw_uses_classic_menu_panel(monkeypatch, tmp_path: Path) -> None:
     ui = GameOverUi(
         assets_root=tmp_path,
