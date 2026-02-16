@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import gzip
-import json
 
+import msgspec
 import pytest
 from grim.geom import Vec2
 
@@ -19,6 +19,23 @@ from crimson.replay import (
     load_replay,
     warn_on_game_version_mismatch,
 )
+from crimson.replay.types import REPLAY_FORMAT_VERSION, WEAPON_USAGE_COUNT
+
+
+def _minimal_wire_replay_obj() -> dict[str, object]:
+    return {
+        "header": {
+            "game_mode_id": 1,
+            "seed": 1,
+            "replay_format_version": int(REPLAY_FORMAT_VERSION),
+            "player_count": 1,
+            "status": {
+                "weapon_usage_counts": [0] * int(WEAPON_USAGE_COUNT),
+            },
+        },
+        "inputs": [[[0.0, 0.0, 0.0, 0.0, 0]]],
+        "events": [],
+    }
 
 
 def test_replay_codec_roundtrip() -> None:
@@ -53,7 +70,7 @@ def test_replay_codec_roundtrip() -> None:
     blob = dump_replay(replay)
     decoded = load_replay(blob)
 
-    assert decoded.version == 3
+    assert decoded.header.replay_format_version == int(REPLAY_FORMAT_VERSION)
     assert decoded.header == header
     assert decoded.inputs == replay.inputs
     assert decoded.events == [PerkPickEvent(tick_index=1, player_index=0, choice_index=2)]
@@ -72,25 +89,22 @@ def test_replay_codec_roundtrip_perk_menu_open_event() -> None:
 
 
 def test_replay_codec_validates_event_tick_index_bounds() -> None:
-    replay_obj = {
-        "v": 3,
-        "header": {"game_mode_id": 1, "seed": 1, "player_count": 1},
-        "inputs": [[[0.0, 0.0, [0.0, 0.0], 0]]],
-        "events": [[2, "perk_menu_open", 0]],
-    }
+    replay_obj = _minimal_wire_replay_obj()
+    replay_obj["events"] = [[2, "perk_menu_open", 0, -1, []]]
     with pytest.raises(ReplayCodecError, match="out of bounds"):
-        load_replay(json.dumps(replay_obj).encode("utf-8"))
+        load_replay(msgspec.msgpack.encode(replay_obj))
 
 
 def test_replay_codec_rejects_negative_event_tick_index() -> None:
-    replay_obj = {
-        "v": 3,
-        "header": {"game_mode_id": 1, "seed": 1, "player_count": 1},
-        "inputs": [[[0.0, 0.0, [0.0, 0.0], 0]]],
-        "events": [[-1, "perk_menu_open", 0]],
-    }
+    replay_obj = _minimal_wire_replay_obj()
+    replay_obj["events"] = [[-1, "perk_menu_open", 0, -1, []]]
     with pytest.raises(ReplayCodecError, match="non-negative"):
-        load_replay(json.dumps(replay_obj).encode("utf-8"))
+        load_replay(msgspec.msgpack.encode(replay_obj))
+
+
+def test_replay_codec_rejects_legacy_json_payload() -> None:
+    with pytest.raises(ReplayCodecError, match="legacy JSON replay format is unsupported"):
+        load_replay(b'{"header":{"game_mode_id":1,"seed":1}}')
 
 
 def test_replay_dump_is_stable() -> None:
@@ -102,7 +116,7 @@ def test_replay_dump_is_stable() -> None:
     assert dump_replay(replay) == dump_replay(replay)
 
 
-def test_replay_load_accepts_plain_json_bytes() -> None:
+def test_replay_load_accepts_plain_msgpack_bytes() -> None:
     header = ReplayHeader(game_mode_id=1, seed=1, player_count=1)
     rec = ReplayRecorder(header)
     rec.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(123.0, 456.0))])

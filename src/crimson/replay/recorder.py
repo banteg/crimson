@@ -16,10 +16,9 @@ from .types import (
 
 
 class ReplayRecorder:
-    def __init__(self, header: ReplayHeader, *, version: int = REPLAY_FORMAT_VERSION) -> None:
-        if int(version) != int(REPLAY_FORMAT_VERSION):
-            raise ValueError(f"unsupported replay version: {version}")
-        self._version = int(version)
+    def __init__(self, header: ReplayHeader) -> None:
+        if int(header.replay_format_version) != int(REPLAY_FORMAT_VERSION):
+            raise ValueError(f"unsupported replay format version: {header.replay_format_version}")
         self._header = header
         self._tick_index = 0
         self._inputs: list[PackedTickInputs] = []
@@ -84,7 +83,6 @@ class ReplayRecorder:
 
     def finish(self) -> Replay:
         return Replay(
-            version=int(self._version),
             header=self._header,
             inputs=self._inputs,
             events=list(self._events),
