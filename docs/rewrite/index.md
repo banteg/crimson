@@ -16,8 +16,10 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - `uv run crimson view player` (player_update + weapons/projectiles + HUD sandbox)
 - `uv run crimson quests 1.1` (quest spawn dump)
 - `uv run crimson config` (inspect `crimson.cfg`)
-- `uv run crimson lan host --mode survival --players 2` (host LAN session bring-up path)
-- `uv run crimson lan join --host 127.0.0.1 --port 31993` (join LAN session bring-up path; loopback auto-starts)
+- `uv run crimson relay serve --bind 0.0.0.0 --port 31993` (run UDP relay)
+- `uv run crimson net host --mode survival --players 2 --relay-host 127.0.0.1 --relay-port 31993` (host rollback room)
+- `uv run crimson net join --code <ROOMCODE> --relay-host 127.0.0.1 --relay-port 31993` (join rollback room)
+- `uv run crimson lan host ...` / `uv run crimson lan join ...` (deprecated wrappers for one release cycle)
 
 ## What exists now
 
@@ -123,7 +125,8 @@ See also:
 
 - [Module map (Grim vs Crimson)](module-map.md)
 - [Deterministic step pipeline](deterministic-step-pipeline.md)
-- [LAN lockstep (rewrite)](lan-lockstep.md)
+- [Netplay (rollback primary)](netplay-rollback.md)
+- [LAN lockstep (legacy fallback)](lan-lockstep.md)
 - [Local multiplayer rewrite notes](local-multiplayer.md)
 - [Float parity policy](float-parity-policy.md)
 - [Terrain (rewrite)](terrain.md)
@@ -134,7 +137,7 @@ See also:
 
 - Creature runtime parity gaps: remaining AI edge cases and per-weapon behaviors are still pending.
 - Multiplayer (2-4 players): per-player local input is wired in Survival/Rush/Quest; deep scheme-by-scheme parity validation is still in progress.
-- LAN lockstep transport/runtime integration is staged; protocol/lobby/lockstep core and UI/CLI surfaces are in-tree, with full end-to-end match flow wiring still in progress.
+- Rollback netplay is primary (relay + room codes); remaining hardening work is focused on packet-impairment stress runs and lockstep legacy fallback maintenance.
 - `game.cfg` progression/unlock wiring is in place; some tail fields/counter semantics still need deeper mapping validation.
 - Full Options/Controls parity (video/window mode editing, full widget set).
 - Native online-score submission is out of scope; direction is a more advanced headless verification system.
