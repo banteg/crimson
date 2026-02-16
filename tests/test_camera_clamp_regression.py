@@ -94,3 +94,45 @@ def test_ground_draw_uses_explicit_output_dimensions(monkeypatch) -> None:
     )
 
     assert calls == [(1280.0, 720.0)]
+
+
+def test_ground_draw_prefers_runtime_dimensions_over_stale_cached_size(monkeypatch) -> None:
+    texture = SimpleNamespace(id=1, width=16, height=16)
+    ground = GroundRenderer(
+        texture=texture,
+        width=1024,
+        height=1024,
+        screen_width=1024.0,
+        screen_height=768.0,
+    )
+    ground.render_target = SimpleNamespace(
+        id=1,
+        texture=SimpleNamespace(id=2, width=1024, height=1024),
+    )
+    ground._render_target_ready = True
+
+    @contextmanager
+    def _noop_blend(*_args, **_kwargs):
+        yield
+
+    fit_inputs: list[tuple[float, float]] = []
+
+    monkeypatch.setattr(terrain_render.rl, "get_screen_width", lambda: 1280)
+    monkeypatch.setattr(terrain_render.rl, "get_screen_height", lambda: 720)
+    monkeypatch.setattr(terrain_render, "_blend_custom", _noop_blend)
+    monkeypatch.setattr(
+        terrain_render.rl,
+        "draw_texture_pro",
+        lambda *_args, **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        terrain_render.GroundRenderer,
+        "_fit_view_window",
+        lambda _self, screen_w, screen_h: (
+            fit_inputs.append((float(screen_w), float(screen_h))) or (1024.0, 576.0)
+        ),
+    )
+
+    ground.draw(Vec2(-1.0, -1.0))
+
+    assert fit_inputs == [(1280.0, 720.0)]

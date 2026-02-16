@@ -586,13 +586,21 @@ class GroundRenderer:
         if out_h <= 0.0:
             out_h = float(rl.get_screen_height())
         if screen_w is None:
-            screen_w = float(self.screen_width or out_w)
+            # Prefer live output dimensions by default. Cached config-sized
+            # values can lag during gameplay/menu handoffs.
+            if out_w > 0.0:
+                screen_w = out_w
+            else:
+                screen_w = float(self.screen_width or out_w)
         if screen_h is None:
-            screen_h = float(self.screen_height or out_h)
+            if out_h > 0.0:
+                screen_h = out_h
+            else:
+                screen_h = float(self.screen_height or out_h)
         if screen_w <= 0.0:
-            screen_w = out_w
+            screen_w = out_w if out_w > 0.0 else float(self.screen_width or 1.0)
         if screen_h <= 0.0:
-            screen_h = out_h
+            screen_h = out_h if out_h > 0.0 else float(self.screen_height or 1.0)
         screen_w, screen_h = self._fit_view_window(screen_w, screen_h)
         cam = self._clamp_camera(camera, screen_w, screen_h)
 
