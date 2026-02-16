@@ -281,7 +281,13 @@ Unlocked by quest 3.3 (*The Killing*).
 
 Fire weapon damage is increased by 50% (×1.5).
 
-Only offered when the current weapon is the Flamethrower.
+In single-player, offered only when the current weapon is Flamethrower. In
+co-op, default rewrite behavior allows it when any alive player currently has
+Flamethrower.
+
+!!! bug "Original bug"
+    In the original executable, Pyromaniac offer gating checks player 1 weapon
+    only. Use `--preserve-bugs` to keep that native co-op asymmetry.
 
 Unlocked by quest 3.5 (*Surrounded By Reptiles*).
 

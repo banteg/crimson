@@ -313,3 +313,24 @@ Rewrite behavior:
 - Default: Fire Bullets conversion is owner-aware; spawned projectiles only
   convert when the firing player's timer is active.
 - With `--preserve-bugs`: keep native player-1/player-2 global coupling.
+
+## 14) Pyromaniac offer gating checks player 1 weapon only in co-op
+
+Native behavior:
+
+- In `perks_generate_choices` (`0x004045a0`), when a random pick is
+  `perk_id_pyromaniac`, the gate checks `player_state_table.weapon_id == 8`
+  (Flamethrower).
+- In co-op, this means Pyromaniac offerability depends on player 1 weapon only.
+
+Why it’s likely a bug:
+
+- Perk availability is shared in co-op, but the offer gate ignores other alive
+  players’ current weapon state.
+- This creates asymmetric offers where player 2 carrying Flamethrower does not
+  unlock Pyromaniac unless player 1 also has it.
+
+Rewrite behavior:
+
+- Default: in co-op, allow Pyromaniac when any alive player has Flamethrower.
+- With `--preserve-bugs`: keep native player-1-only weapon gating.
