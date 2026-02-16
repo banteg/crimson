@@ -8,8 +8,9 @@ tags:
 # Differential Playbook
 
 Use this when an agent is only given a new capture file (typically
-`artifacts/frida/share/gameplay_diff_capture.json`) and needs to continue
-original-vs-rewrite investigation.
+`artifacts/frida/share/gameplay_diff_capture.json` or a quest-split file like
+`artifacts/frida/share/gameplay_diff_capture.quest_1_1.json`) and needs to
+continue original-vs-rewrite investigation.
 
 This runbook is based on repeated patterns from Codex session logs under
 `/Users/banteg/.codex/sessions/2026/02` across multiple Crimson worktrees.

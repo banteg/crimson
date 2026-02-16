@@ -307,6 +307,10 @@ frida-import-raw:
         [ -e "{{share_dir}}/$f" ] || continue; \
         cp -av "{{share_dir}}/$f" analysis/frida/raw/; \
     done
+    for f in {{share_dir}}/gameplay_diff_capture.quest_*.json; do \
+        [ -e "$f" ] || continue; \
+        cp -av "$f" analysis/frida/raw/; \
+    done
 
 [unix]
 frida-reduce:
