@@ -157,6 +157,17 @@ Default logs written by the scripts:
 - `C:\share\frida\demo_idle_threshold_trace.jsonl` (if you ran `demo_idle_threshold_trace.js`)
 - `C:\share\frida\azk_verify_no_unlock.jsonl` (if you ran `azk_verify_no_unlock.js`)
 
+Panel-state sweep triage shortcut (issue #165):
+
+```bash
+just panel-state-resolution-reduce
+```
+
+Outputs:
+
+- `analysis/frida/panel_state_resolution_capture_summary.json`
+- `analysis/frida/panel_state_resolution_capture_report.md`
+
 ## 2) Copy logs into the repo
 
 Store raw logs under `analysis/frida/raw/`:

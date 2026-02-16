@@ -1,0 +1,1262 @@
+{
+  "generated_at": "2026-02-16T07:58:41.513180+00:00",
+  "input_glob": "artifacts/frida/share/panel_state_resolution_capture_*.jsonl",
+  "files_scanned": 7,
+  "runs_detected": 4,
+  "file_status_counts": {
+    "degraded": 4,
+    "partial": 3
+  },
+  "runs": [
+    {
+      "run_id": "20260216_074411_946999de",
+      "status": "degraded",
+      "files": [
+        {
+          "path": "artifacts/frida/share/panel_state_resolution_capture_1024x768_20260216_074411_946999de.jsonl",
+          "size_bytes": 1699081,
+          "line_count": 1467,
+          "run_id": "20260216_074411_946999de",
+          "resolution": "1024x768",
+          "event_counts": {
+            "boot_detected": 1,
+            "capture_begin": 16,
+            "capture_frame": 133,
+            "error": 3,
+            "game_state_set_call": 21,
+            "panel_element": 603,
+            "panel_text": 635,
+            "start": 1,
+            "state_entered": 16,
+            "state_request": 18,
+            "state_result": 18,
+            "sweep_begin": 1,
+            "sweep_done": 1
+          },
+          "state_results": [
+            {
+              "target_state": 0,
+              "target_label": "main_menu",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 1,
+              "target_label": "play_menu",
+              "result": "enter_timeout",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 2,
+              "target_label": "options_menu",
+              "result": "enter_timeout",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 3,
+              "target_label": "controls_menu",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 4,
+              "target_label": "statistics",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 11,
+              "target_label": "quest_select",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 14,
+              "target_label": "high_scores",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 15,
+              "target_label": "weapons_database",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 16,
+              "target_label": "perks_database",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 17,
+              "target_label": "credits",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 20,
+              "target_label": "mods_menu",
+              "result": "captured",
+              "frames": 260,
+              "unique_panel_count": 165,
+              "unique_text_count": 189,
+              "panel_duplicates": 10755,
+              "text_duplicates": 591
+            },
+            {
+              "target_state": 26,
+              "target_label": "alien_zookeeper",
+              "result": "captured",
+              "frames": 262,
+              "unique_panel_count": 42,
+              "unique_text_count": 9,
+              "panel_duplicates": 10952,
+              "text_duplicates": 1694
+            },
+            {
+              "target_state": 5,
+              "target_label": "pause_overlay",
+              "result": "captured",
+              "frames": 288,
+              "unique_panel_count": 145,
+              "unique_text_count": 0,
+              "panel_duplicates": 11925,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 6,
+              "target_label": "perk_selection",
+              "result": "captured",
+              "frames": 250,
+              "unique_panel_count": 51,
+              "unique_text_count": 70,
+              "panel_duplicates": 10448,
+              "text_duplicates": 1677
+            },
+            {
+              "target_state": 7,
+              "target_label": "game_over",
+              "result": "captured",
+              "frames": 244,
+              "unique_panel_count": 50,
+              "unique_text_count": 72,
+              "panel_duplicates": 10197,
+              "text_duplicates": 1872
+            },
+            {
+              "target_state": 8,
+              "target_label": "quest_results",
+              "result": "captured",
+              "frames": 271,
+              "unique_panel_count": 52,
+              "unique_text_count": 106,
+              "panel_duplicates": 11330,
+              "text_duplicates": 2065
+            },
+            {
+              "target_state": 12,
+              "target_label": "quest_failed",
+              "result": "captured",
+              "frames": 240,
+              "unique_panel_count": 49,
+              "unique_text_count": 72,
+              "panel_duplicates": 10067,
+              "text_duplicates": 1854
+            },
+            {
+              "target_state": 21,
+              "target_label": "final_quest_end_note",
+              "result": "captured",
+              "frames": 251,
+              "unique_panel_count": 49,
+              "unique_text_count": 117,
+              "panel_duplicates": 10242,
+              "text_duplicates": 3146
+            }
+          ],
+          "has_sweep_done": true,
+          "output_files": {
+            "1024x768": "C:\\share\\frida\\panel_state_resolution_capture_1024x768_20260216_074411_946999de.jsonl"
+          },
+          "config_max_unique_texts": 1800,
+          "text_rows": 635,
+          "text_rows_with_replacement_char": 635,
+          "status": "degraded",
+          "notes": [
+            "error-events:3",
+            "zero-signal-captured-states:8",
+            "text-rows-with-replacement-char:635/635"
+          ]
+        }
+      ],
+      "expected_output_files": {
+        "1024x768": "C:\\share\\frida\\panel_state_resolution_capture_1024x768_20260216_074411_946999de.jsonl"
+      },
+      "resolutions": [
+        "1024x768"
+      ],
+      "primary_by_resolution": {
+        "1024x768": {
+          "path": "artifacts/frida/share/panel_state_resolution_capture_1024x768_20260216_074411_946999de.jsonl",
+          "status": "degraded",
+          "line_count": 1467,
+          "size_bytes": 1699081,
+          "state_overview": {
+            "states_total": 18,
+            "result_counts": {
+              "captured": 16,
+              "enter_timeout": 2
+            },
+            "non_captured_states": [
+              "1:play_menu",
+              "2:options_menu"
+            ],
+            "zero_signal_captured_states": [
+              "0:main_menu",
+              "3:controls_menu",
+              "4:statistics",
+              "11:quest_select",
+              "14:high_scores",
+              "15:weapons_database",
+              "16:perks_database",
+              "17:credits"
+            ],
+            "max_unique_text_count_seen": 189
+          },
+          "notes": [
+            "error-events:3",
+            "zero-signal-captured-states:8",
+            "text-rows-with-replacement-char:635/635"
+          ]
+        }
+      }
+    },
+    {
+      "run_id": "20260216_074532_7029125b",
+      "status": "degraded",
+      "files": [
+        {
+          "path": "artifacts/frida/share/panel_state_resolution_capture_1024x768_20260216_074532_7029125b.jsonl",
+          "size_bytes": 4721,
+          "line_count": 7,
+          "run_id": "20260216_074532_7029125b",
+          "resolution": "1024x768",
+          "event_counts": {
+            "boot_detected": 1,
+            "error": 1,
+            "game_state_set_call": 1,
+            "start": 1,
+            "state_entered": 1,
+            "state_request": 1,
+            "sweep_begin": 1
+          },
+          "state_results": [],
+          "has_sweep_done": false,
+          "output_files": {},
+          "config_max_unique_texts": 1800,
+          "text_rows": 0,
+          "text_rows_with_replacement_char": 0,
+          "status": "partial",
+          "notes": [
+            "sweep-began-without-sweep_done",
+            "error-events:1"
+          ]
+        },
+        {
+          "path": "artifacts/frida/share/panel_state_resolution_capture_800x600_20260216_074532_7029125b.jsonl",
+          "size_bytes": 4476262,
+          "line_count": 3761,
+          "run_id": "20260216_074532_7029125b",
+          "resolution": "800x600",
+          "event_counts": {
+            "capture_begin": 18,
+            "capture_frame": 189,
+            "game_state_set_call": 20,
+            "panel_element": 721,
+            "panel_text": 2760,
+            "state_entered": 17,
+            "state_request": 17,
+            "state_result": 18,
+            "sweep_done": 1
+          },
+          "state_results": [
+            {
+              "target_state": 0,
+              "target_label": "main_menu",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 1,
+              "target_label": "play_menu",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 2,
+              "target_label": "options_menu",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 3,
+              "target_label": "controls_menu",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 4,
+              "target_label": "statistics",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 11,
+              "target_label": "quest_select",
+              "result": "captured",
+              "frames": 22,
+              "unique_panel_count": 83,
+              "unique_text_count": 462,
+              "panel_duplicates": 803,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 14,
+              "target_label": "high_scores",
+              "result": "captured",
+              "frames": 125,
+              "unique_panel_count": 42,
+              "unique_text_count": 46,
+              "panel_duplicates": 5198,
+              "text_duplicates": 5661
+            },
+            {
+              "target_state": 15,
+              "target_label": "weapons_database",
+              "result": "captured",
+              "frames": 223,
+              "unique_panel_count": 42,
+              "unique_text_count": 14,
+              "panel_duplicates": 9323,
+              "text_duplicates": 3108
+            },
+            {
+              "target_state": 16,
+              "target_label": "perks_database",
+              "result": "captured",
+              "frames": 224,
+              "unique_panel_count": 42,
+              "unique_text_count": 14,
+              "panel_duplicates": 9332,
+              "text_duplicates": 3108
+            },
+            {
+              "target_state": 17,
+              "target_label": "credits",
+              "result": "captured",
+              "frames": 218,
+              "unique_panel_count": 42,
+              "unique_text_count": 1800,
+              "panel_duplicates": 9113,
+              "text_duplicates": 223
+            },
+            {
+              "target_state": 20,
+              "target_label": "mods_menu",
+              "result": "captured",
+              "frames": 271,
+              "unique_panel_count": 42,
+              "unique_text_count": 3,
+              "panel_duplicates": 11340,
+              "text_duplicates": 810
+            },
+            {
+              "target_state": 26,
+              "target_label": "alien_zookeeper",
+              "result": "captured",
+              "frames": 259,
+              "unique_panel_count": 42,
+              "unique_text_count": 9,
+              "panel_duplicates": 10846,
+              "text_duplicates": 1680
+            },
+            {
+              "target_state": 5,
+              "target_label": "pause_overlay",
+              "result": "captured",
+              "frames": 288,
+              "unique_panel_count": 138,
+              "unique_text_count": 0,
+              "panel_duplicates": 11932,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 6,
+              "target_label": "perk_selection",
+              "result": "captured",
+              "frames": 265,
+              "unique_panel_count": 50,
+              "unique_text_count": 63,
+              "panel_duplicates": 11052,
+              "text_duplicates": 1785
+            },
+            {
+              "target_state": 7,
+              "target_label": "game_over",
+              "result": "captured",
+              "frames": 257,
+              "unique_panel_count": 50,
+              "unique_text_count": 72,
+              "panel_duplicates": 10744,
+              "text_duplicates": 1976
+            },
+            {
+              "target_state": 8,
+              "target_label": "quest_results",
+              "result": "captured",
+              "frames": 208,
+              "unique_panel_count": 49,
+              "unique_text_count": 88,
+              "panel_duplicates": 8686,
+              "text_duplicates": 2189
+            },
+            {
+              "target_state": 12,
+              "target_label": "quest_failed",
+              "result": "captured",
+              "frames": 251,
+              "unique_panel_count": 50,
+              "unique_text_count": 72,
+              "panel_duplicates": 10492,
+              "text_duplicates": 1932
+            },
+            {
+              "target_state": 21,
+              "target_label": "final_quest_end_note",
+              "result": "captured",
+              "frames": 243,
+              "unique_panel_count": 49,
+              "unique_text_count": 117,
+              "panel_duplicates": 9914,
+              "text_duplicates": 3033
+            }
+          ],
+          "has_sweep_done": true,
+          "output_files": {
+            "1024x768": "C:\\share\\frida\\panel_state_resolution_capture_1024x768_20260216_074532_7029125b.jsonl",
+            "800x600": "C:\\share\\frida\\panel_state_resolution_capture_800x600_20260216_074532_7029125b.jsonl"
+          },
+          "config_max_unique_texts": null,
+          "text_rows": 2760,
+          "text_rows_with_replacement_char": 2760,
+          "status": "degraded",
+          "notes": [
+            "zero-signal-captured-states:5",
+            "max-unique-text-cap-states:1",
+            "text-rows-with-replacement-char:2760/2760"
+          ]
+        }
+      ],
+      "expected_output_files": {
+        "1024x768": "C:\\share\\frida\\panel_state_resolution_capture_1024x768_20260216_074532_7029125b.jsonl",
+        "800x600": "C:\\share\\frida\\panel_state_resolution_capture_800x600_20260216_074532_7029125b.jsonl"
+      },
+      "resolutions": [
+        "800x600",
+        "1024x768"
+      ],
+      "primary_by_resolution": {
+        "800x600": {
+          "path": "artifacts/frida/share/panel_state_resolution_capture_800x600_20260216_074532_7029125b.jsonl",
+          "status": "degraded",
+          "line_count": 3761,
+          "size_bytes": 4476262,
+          "state_overview": {
+            "states_total": 18,
+            "result_counts": {
+              "captured": 18
+            },
+            "non_captured_states": [],
+            "zero_signal_captured_states": [
+              "0:main_menu",
+              "1:play_menu",
+              "2:options_menu",
+              "3:controls_menu",
+              "4:statistics"
+            ],
+            "max_unique_text_count_seen": 1800
+          },
+          "notes": [
+            "zero-signal-captured-states:5",
+            "max-unique-text-cap-states:1",
+            "text-rows-with-replacement-char:2760/2760"
+          ]
+        },
+        "1024x768": {
+          "path": "artifacts/frida/share/panel_state_resolution_capture_1024x768_20260216_074532_7029125b.jsonl",
+          "status": "partial",
+          "line_count": 7,
+          "size_bytes": 4721,
+          "state_overview": {
+            "states_total": 0,
+            "result_counts": {},
+            "non_captured_states": [],
+            "zero_signal_captured_states": [],
+            "max_unique_text_count_seen": 0
+          },
+          "notes": [
+            "sweep-began-without-sweep_done",
+            "error-events:1"
+          ]
+        }
+      }
+    },
+    {
+      "run_id": "20260216_074620_e117148e",
+      "status": "degraded",
+      "files": [
+        {
+          "path": "artifacts/frida/share/panel_state_resolution_capture_640x480_20260216_074620_e117148e.jsonl",
+          "size_bytes": 4629448,
+          "line_count": 3888,
+          "run_id": "20260216_074620_e117148e",
+          "resolution": "640x480",
+          "event_counts": {
+            "capture_begin": 18,
+            "capture_frame": 226,
+            "game_state_set_call": 21,
+            "panel_element": 857,
+            "panel_text": 2710,
+            "state_entered": 18,
+            "state_request": 18,
+            "state_result": 18,
+            "sweep_begin": 1,
+            "sweep_done": 1
+          },
+          "state_results": [
+            {
+              "target_state": 0,
+              "target_label": "main_menu",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 1,
+              "target_label": "play_menu",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 2,
+              "target_label": "options_menu",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 3,
+              "target_label": "controls_menu",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 4,
+              "target_label": "statistics",
+              "result": "captured",
+              "frames": 133,
+              "unique_panel_count": 163,
+              "unique_text_count": 372,
+              "panel_duplicates": 5423,
+              "text_duplicates": 426
+            },
+            {
+              "target_state": 11,
+              "target_label": "quest_select",
+              "result": "captured",
+              "frames": 186,
+              "unique_panel_count": 42,
+              "unique_text_count": 22,
+              "panel_duplicates": 7769,
+              "text_duplicates": 4070
+            },
+            {
+              "target_state": 14,
+              "target_label": "high_scores",
+              "result": "captured",
+              "frames": 128,
+              "unique_panel_count": 42,
+              "unique_text_count": 46,
+              "panel_duplicates": 5340,
+              "text_duplicates": 5863
+            },
+            {
+              "target_state": 15,
+              "target_label": "weapons_database",
+              "result": "captured",
+              "frames": 229,
+              "unique_panel_count": 42,
+              "unique_text_count": 14,
+              "panel_duplicates": 9566,
+              "text_duplicates": 3187
+            },
+            {
+              "target_state": 16,
+              "target_label": "perks_database",
+              "result": "captured",
+              "frames": 241,
+              "unique_panel_count": 42,
+              "unique_text_count": 14,
+              "panel_duplicates": 10090,
+              "text_duplicates": 3373
+            },
+            {
+              "target_state": 17,
+              "target_label": "credits",
+              "result": "captured",
+              "frames": 256,
+              "unique_panel_count": 42,
+              "unique_text_count": 1800,
+              "panel_duplicates": 10738,
+              "text_duplicates": 223
+            },
+            {
+              "target_state": 20,
+              "target_label": "mods_menu",
+              "result": "captured",
+              "frames": 323,
+              "unique_panel_count": 42,
+              "unique_text_count": 3,
+              "panel_duplicates": 13524,
+              "text_duplicates": 967
+            },
+            {
+              "target_state": 26,
+              "target_label": "alien_zookeeper",
+              "result": "captured",
+              "frames": 301,
+              "unique_panel_count": 42,
+              "unique_text_count": 9,
+              "panel_duplicates": 12600,
+              "text_duplicates": 1951
+            },
+            {
+              "target_state": 5,
+              "target_label": "pause_overlay",
+              "result": "captured",
+              "frames": 316,
+              "unique_panel_count": 151,
+              "unique_text_count": 0,
+              "panel_duplicates": 13121,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 6,
+              "target_label": "perk_selection",
+              "result": "captured",
+              "frames": 285,
+              "unique_panel_count": 50,
+              "unique_text_count": 63,
+              "panel_duplicates": 11920,
+              "text_duplicates": 1932
+            },
+            {
+              "target_state": 7,
+              "target_label": "game_over",
+              "result": "captured",
+              "frames": 279,
+              "unique_panel_count": 50,
+              "unique_text_count": 80,
+              "panel_duplicates": 11668,
+              "text_duplicates": 2160
+            },
+            {
+              "target_state": 8,
+              "target_label": "quest_results",
+              "result": "captured",
+              "frames": 294,
+              "unique_panel_count": 51,
+              "unique_text_count": 90,
+              "panel_duplicates": 12296,
+              "text_duplicates": 2259
+            },
+            {
+              "target_state": 12,
+              "target_label": "quest_failed",
+              "result": "captured",
+              "frames": 283,
+              "unique_panel_count": 50,
+              "unique_text_count": 80,
+              "panel_duplicates": 11872,
+              "text_duplicates": 2191
+            },
+            {
+              "target_state": 21,
+              "target_label": "final_quest_end_note",
+              "result": "captured",
+              "frames": 274,
+              "unique_panel_count": 48,
+              "unique_text_count": 117,
+              "panel_duplicates": 11221,
+              "text_duplicates": 3454
+            }
+          ],
+          "has_sweep_done": true,
+          "output_files": {
+            "800x600": "C:\\share\\frida\\panel_state_resolution_capture_800x600_20260216_074620_e117148e.jsonl",
+            "640x480": "C:\\share\\frida\\panel_state_resolution_capture_640x480_20260216_074620_e117148e.jsonl"
+          },
+          "config_max_unique_texts": null,
+          "text_rows": 2710,
+          "text_rows_with_replacement_char": 2710,
+          "status": "degraded",
+          "notes": [
+            "zero-signal-captured-states:4",
+            "max-unique-text-cap-states:1",
+            "text-rows-with-replacement-char:2710/2710"
+          ]
+        },
+        {
+          "path": "artifacts/frida/share/panel_state_resolution_capture_800x600_20260216_074620_e117148e.jsonl",
+          "size_bytes": 2013,
+          "line_count": 2,
+          "run_id": "20260216_074620_e117148e",
+          "resolution": "800x600",
+          "event_counts": {
+            "boot_detected": 1,
+            "start": 1
+          },
+          "state_results": [],
+          "has_sweep_done": false,
+          "output_files": {},
+          "config_max_unique_texts": 1800,
+          "text_rows": 0,
+          "text_rows_with_replacement_char": 0,
+          "status": "partial",
+          "notes": [
+            "startup-handoff-only"
+          ]
+        }
+      ],
+      "expected_output_files": {
+        "800x600": "C:\\share\\frida\\panel_state_resolution_capture_800x600_20260216_074620_e117148e.jsonl",
+        "640x480": "C:\\share\\frida\\panel_state_resolution_capture_640x480_20260216_074620_e117148e.jsonl"
+      },
+      "resolutions": [
+        "640x480",
+        "800x600"
+      ],
+      "primary_by_resolution": {
+        "640x480": {
+          "path": "artifacts/frida/share/panel_state_resolution_capture_640x480_20260216_074620_e117148e.jsonl",
+          "status": "degraded",
+          "line_count": 3888,
+          "size_bytes": 4629448,
+          "state_overview": {
+            "states_total": 18,
+            "result_counts": {
+              "captured": 18
+            },
+            "non_captured_states": [],
+            "zero_signal_captured_states": [
+              "0:main_menu",
+              "1:play_menu",
+              "2:options_menu",
+              "3:controls_menu"
+            ],
+            "max_unique_text_count_seen": 1800
+          },
+          "notes": [
+            "zero-signal-captured-states:4",
+            "max-unique-text-cap-states:1",
+            "text-rows-with-replacement-char:2710/2710"
+          ]
+        },
+        "800x600": {
+          "path": "artifacts/frida/share/panel_state_resolution_capture_800x600_20260216_074620_e117148e.jsonl",
+          "status": "partial",
+          "line_count": 2,
+          "size_bytes": 2013,
+          "state_overview": {
+            "states_total": 0,
+            "result_counts": {},
+            "non_captured_states": [],
+            "zero_signal_captured_states": [],
+            "max_unique_text_count_seen": 0
+          },
+          "notes": [
+            "startup-handoff-only"
+          ]
+        }
+      }
+    },
+    {
+      "run_id": "20260216_074703_db6c8c9b",
+      "status": "degraded",
+      "files": [
+        {
+          "path": "artifacts/frida/share/panel_state_resolution_capture_640x480_20260216_074703_db6c8c9b.jsonl",
+          "size_bytes": 2013,
+          "line_count": 2,
+          "run_id": "20260216_074703_db6c8c9b",
+          "resolution": "640x480",
+          "event_counts": {
+            "boot_detected": 1,
+            "start": 1
+          },
+          "state_results": [],
+          "has_sweep_done": false,
+          "output_files": {},
+          "config_max_unique_texts": 1800,
+          "text_rows": 0,
+          "text_rows_with_replacement_char": 0,
+          "status": "partial",
+          "notes": [
+            "startup-handoff-only"
+          ]
+        },
+        {
+          "path": "artifacts/frida/share/panel_state_resolution_capture_960x600_20260216_074703_db6c8c9b.jsonl",
+          "size_bytes": 5147391,
+          "line_count": 4341,
+          "run_id": "20260216_074703_db6c8c9b",
+          "resolution": "960x600",
+          "event_counts": {
+            "capture_begin": 18,
+            "capture_frame": 209,
+            "error": 1,
+            "game_state_set_call": 21,
+            "panel_element": 778,
+            "panel_text": 3258,
+            "state_entered": 18,
+            "state_request": 18,
+            "state_result": 18,
+            "sweep_begin": 1,
+            "sweep_done": 1
+          },
+          "state_results": [
+            {
+              "target_state": 0,
+              "target_label": "main_menu",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 1,
+              "target_label": "play_menu",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 2,
+              "target_label": "options_menu",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 3,
+              "target_label": "controls_menu",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 4,
+              "target_label": "statistics",
+              "result": "captured",
+              "frames": 0,
+              "unique_panel_count": 0,
+              "unique_text_count": 0,
+              "panel_duplicates": 0,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 11,
+              "target_label": "quest_select",
+              "result": "captured",
+              "frames": 149,
+              "unique_panel_count": 123,
+              "unique_text_count": 924,
+              "panel_duplicates": 6106,
+              "text_duplicates": 2354
+            },
+            {
+              "target_state": 14,
+              "target_label": "high_scores",
+              "result": "captured",
+              "frames": 128,
+              "unique_panel_count": 42,
+              "unique_text_count": 46,
+              "panel_duplicates": 5334,
+              "text_duplicates": 5859
+            },
+            {
+              "target_state": 15,
+              "target_label": "weapons_database",
+              "result": "captured",
+              "frames": 235,
+              "unique_panel_count": 42,
+              "unique_text_count": 14,
+              "panel_duplicates": 9852,
+              "text_duplicates": 3278
+            },
+            {
+              "target_state": 16,
+              "target_label": "perks_database",
+              "result": "captured",
+              "frames": 220,
+              "unique_panel_count": 42,
+              "unique_text_count": 14,
+              "panel_duplicates": 9198,
+              "text_duplicates": 3066
+            },
+            {
+              "target_state": 17,
+              "target_label": "credits",
+              "result": "captured",
+              "frames": 257,
+              "unique_panel_count": 42,
+              "unique_text_count": 1800,
+              "panel_duplicates": 10742,
+              "text_duplicates": 223
+            },
+            {
+              "target_state": 20,
+              "target_label": "mods_menu",
+              "result": "captured",
+              "frames": 301,
+              "unique_panel_count": 42,
+              "unique_text_count": 3,
+              "panel_duplicates": 12600,
+              "text_duplicates": 900
+            },
+            {
+              "target_state": 26,
+              "target_label": "alien_zookeeper",
+              "result": "captured",
+              "frames": 287,
+              "unique_panel_count": 42,
+              "unique_text_count": 9,
+              "panel_duplicates": 11992,
+              "text_duplicates": 1854
+            },
+            {
+              "target_state": 5,
+              "target_label": "pause_overlay",
+              "result": "captured",
+              "frames": 313,
+              "unique_panel_count": 150,
+              "unique_text_count": 0,
+              "panel_duplicates": 12996,
+              "text_duplicates": 0
+            },
+            {
+              "target_state": 6,
+              "target_label": "perk_selection",
+              "result": "captured",
+              "frames": 277,
+              "unique_panel_count": 51,
+              "unique_text_count": 70,
+              "panel_duplicates": 11582,
+              "text_duplicates": 1862
+            },
+            {
+              "target_state": 7,
+              "target_label": "game_over",
+              "result": "captured",
+              "frames": 271,
+              "unique_panel_count": 51,
+              "unique_text_count": 80,
+              "panel_duplicates": 11331,
+              "text_duplicates": 2085
+            },
+            {
+              "target_state": 8,
+              "target_label": "quest_results",
+              "result": "captured",
+              "frames": 282,
+              "unique_panel_count": 52,
+              "unique_text_count": 98,
+              "panel_duplicates": 11791,
+              "text_duplicates": 2154
+            },
+            {
+              "target_state": 12,
+              "target_label": "quest_failed",
+              "result": "captured",
+              "frames": 263,
+              "unique_panel_count": 50,
+              "unique_text_count": 72,
+              "panel_duplicates": 10996,
+              "text_duplicates": 2024
+            },
+            {
+              "target_state": 21,
+              "target_label": "final_quest_end_note",
+              "result": "captured",
+              "frames": 262,
+              "unique_panel_count": 49,
+              "unique_text_count": 128,
+              "panel_duplicates": 10693,
+              "text_duplicates": 3289
+            }
+          ],
+          "has_sweep_done": true,
+          "output_files": {
+            "640x480": "C:\\share\\frida\\panel_state_resolution_capture_640x480_20260216_074703_db6c8c9b.jsonl",
+            "960x600": "C:\\share\\frida\\panel_state_resolution_capture_960x600_20260216_074703_db6c8c9b.jsonl"
+          },
+          "config_max_unique_texts": null,
+          "text_rows": 3258,
+          "text_rows_with_replacement_char": 3258,
+          "status": "degraded",
+          "notes": [
+            "error-events:1",
+            "zero-signal-captured-states:5",
+            "max-unique-text-cap-states:1",
+            "text-rows-with-replacement-char:3258/3258"
+          ]
+        }
+      ],
+      "expected_output_files": {
+        "640x480": "C:\\share\\frida\\panel_state_resolution_capture_640x480_20260216_074703_db6c8c9b.jsonl",
+        "960x600": "C:\\share\\frida\\panel_state_resolution_capture_960x600_20260216_074703_db6c8c9b.jsonl"
+      },
+      "resolutions": [
+        "640x480",
+        "960x600"
+      ],
+      "primary_by_resolution": {
+        "640x480": {
+          "path": "artifacts/frida/share/panel_state_resolution_capture_640x480_20260216_074703_db6c8c9b.jsonl",
+          "status": "partial",
+          "line_count": 2,
+          "size_bytes": 2013,
+          "state_overview": {
+            "states_total": 0,
+            "result_counts": {},
+            "non_captured_states": [],
+            "zero_signal_captured_states": [],
+            "max_unique_text_count_seen": 0
+          },
+          "notes": [
+            "startup-handoff-only"
+          ]
+        },
+        "960x600": {
+          "path": "artifacts/frida/share/panel_state_resolution_capture_960x600_20260216_074703_db6c8c9b.jsonl",
+          "status": "degraded",
+          "line_count": 4341,
+          "size_bytes": 5147391,
+          "state_overview": {
+            "states_total": 18,
+            "result_counts": {
+              "captured": 18
+            },
+            "non_captured_states": [],
+            "zero_signal_captured_states": [
+              "0:main_menu",
+              "1:play_menu",
+              "2:options_menu",
+              "3:controls_menu",
+              "4:statistics"
+            ],
+            "max_unique_text_count_seen": 1800
+          },
+          "notes": [
+            "error-events:1",
+            "zero-signal-captured-states:5",
+            "max-unique-text-cap-states:1",
+            "text-rows-with-replacement-char:3258/3258"
+          ]
+        }
+      }
+    }
+  ],
+  "best_by_resolution": {
+    "640x480": {
+      "run_id": "20260216_074620_e117148e",
+      "status": "degraded",
+      "path": "artifacts/frida/share/panel_state_resolution_capture_640x480_20260216_074620_e117148e.jsonl",
+      "line_count": 3888,
+      "size_bytes": 4629448,
+      "state_overview": {
+        "states_total": 18,
+        "result_counts": {
+          "captured": 18
+        },
+        "non_captured_states": [],
+        "zero_signal_captured_states": [
+          "0:main_menu",
+          "1:play_menu",
+          "2:options_menu",
+          "3:controls_menu"
+        ],
+        "max_unique_text_count_seen": 1800
+      }
+    },
+    "800x600": {
+      "run_id": "20260216_074532_7029125b",
+      "status": "degraded",
+      "path": "artifacts/frida/share/panel_state_resolution_capture_800x600_20260216_074532_7029125b.jsonl",
+      "line_count": 3761,
+      "size_bytes": 4476262,
+      "state_overview": {
+        "states_total": 18,
+        "result_counts": {
+          "captured": 18
+        },
+        "non_captured_states": [],
+        "zero_signal_captured_states": [
+          "0:main_menu",
+          "1:play_menu",
+          "2:options_menu",
+          "3:controls_menu",
+          "4:statistics"
+        ],
+        "max_unique_text_count_seen": 1800
+      }
+    },
+    "960x600": {
+      "run_id": "20260216_074703_db6c8c9b",
+      "status": "degraded",
+      "path": "artifacts/frida/share/panel_state_resolution_capture_960x600_20260216_074703_db6c8c9b.jsonl",
+      "line_count": 4341,
+      "size_bytes": 5147391,
+      "state_overview": {
+        "states_total": 18,
+        "result_counts": {
+          "captured": 18
+        },
+        "non_captured_states": [],
+        "zero_signal_captured_states": [
+          "0:main_menu",
+          "1:play_menu",
+          "2:options_menu",
+          "3:controls_menu",
+          "4:statistics"
+        ],
+        "max_unique_text_count_seen": 1800
+      }
+    },
+    "1024x768": {
+      "run_id": "20260216_074411_946999de",
+      "status": "degraded",
+      "path": "artifacts/frida/share/panel_state_resolution_capture_1024x768_20260216_074411_946999de.jsonl",
+      "line_count": 1467,
+      "size_bytes": 1699081,
+      "state_overview": {
+        "states_total": 18,
+        "result_counts": {
+          "captured": 16,
+          "enter_timeout": 2
+        },
+        "non_captured_states": [
+          "1:play_menu",
+          "2:options_menu"
+        ],
+        "zero_signal_captured_states": [
+          "0:main_menu",
+          "3:controls_menu",
+          "4:statistics",
+          "11:quest_select",
+          "14:high_scores",
+          "15:weapons_database",
+          "16:perks_database",
+          "17:credits"
+        ],
+        "max_unique_text_count_seen": 189
+      }
+    }
+  }
+}
