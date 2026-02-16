@@ -112,7 +112,7 @@ def test_net_join_command_builds_pending_join_session_with_legacy_fallback(monke
     assert pending.config.netcode_mode == "lockstep_legacy"
 
 
-def test_relay_serve_command_constructs_relay_server(monkeypatch) -> None:
+def test_relay_serve_command_constructs_relay_server(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, Any] = {}
 
     class _FakeRelayServer:
@@ -122,6 +122,25 @@ def test_relay_serve_command_constructs_relay_server(monkeypatch) -> None:
         def serve_forever(self, *, tick_ms: int) -> None:
             captured["tick_ms"] = int(tick_ms)
 
+    default_log = tmp_path / "logs" / "relay" / "auto.log"
+    explicit_log = tmp_path / "logs" / "relay" / "relay.log"
+
+    monkeypatch.setattr("crimson.logging.default_component_log_path", lambda **_kwargs: default_log)
+
+    def _fake_configure_component_logging(
+        *,
+        logger_name: str,
+        component: str,
+        log_file: Path,
+        level: str,
+    ) -> Path:
+        captured["logger_name"] = str(logger_name)
+        captured["component"] = str(component)
+        captured["configured_log_file"] = Path(log_file)
+        captured["log_level"] = str(level)
+        return Path(log_file)
+
+    monkeypatch.setattr("crimson.logging.configure_component_logging", _fake_configure_component_logging)
     monkeypatch.setattr("crimson.net.relay_service.RelayServer", _FakeRelayServer)
 
     runner = CliRunner()
@@ -136,6 +155,10 @@ def test_relay_serve_command_constructs_relay_server(monkeypatch) -> None:
             "32021",
             "--tick-ms",
             "11",
+            "--log-level",
+            "info",
+            "--log-file",
+            str(explicit_log),
         ],
     )
 
@@ -144,3 +167,39 @@ def test_relay_serve_command_constructs_relay_server(monkeypatch) -> None:
     assert cfg.bind_host == "127.0.0.1"
     assert cfg.bind_port == 32021
     assert captured["tick_ms"] == 11
+    assert captured["logger_name"] == "crimson.relay"
+    assert captured["component"] == "relay"
+    assert captured["configured_log_file"] == explicit_log
+    assert captured["log_level"] == "info"
+    assert str(explicit_log) in result.output
+
+
+def test_relay_serve_command_rejects_invalid_log_level(monkeypatch, tmp_path: Path) -> None:
+    class _FakeRelayServer:
+        def __init__(self, _cfg) -> None:  # noqa: ANN001
+            pass
+
+        def serve_forever(self, *, tick_ms: int) -> None:
+            _ = tick_ms
+
+    monkeypatch.setattr("crimson.net.relay_service.RelayServer", _FakeRelayServer)
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "relay",
+            "serve",
+            "--bind",
+            "127.0.0.1",
+            "--port",
+            "32021",
+            "--log-level",
+            "chatty",
+            "--base-dir",
+            str(tmp_path),
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert "unsupported log level" in result.output

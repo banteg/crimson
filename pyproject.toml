@@ -9,6 +9,7 @@ dependencies = [
     "pillow>=12.1.0",
     "platformdirs>=4.5.1",
     "raylib>=5.5.0.4",
+    "structlog>=25.1.0",
     "typer>=0.21.1",
 ]
 

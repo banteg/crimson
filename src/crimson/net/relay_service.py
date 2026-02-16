@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-import logging
 import random
 import string
 import time
 import uuid
 
+import structlog
+
+from ..logging import ensure_structlog_stdlib_defaults
 from .relay_protocol import (
     LINK_TIMEOUT_MS,
     PROTOCOL_VERSION,
@@ -126,6 +128,7 @@ class RelayServer:
     """In-memory UDP relay + invite-code lobby service."""
 
     def __init__(self, cfg: RelayServerConfig) -> None:
+        ensure_structlog_stdlib_defaults()
         self.cfg = cfg
         self.transport = RelayUdpTransport(bind_host=str(cfg.bind_host), bind_port=int(cfg.bind_port))
         self._rooms: dict[str, _Room] = {}
@@ -133,7 +136,11 @@ class RelayServer:
         self._peers_by_id: dict[str, _Peer] = {}
         self._room_by_reconnect: dict[str, tuple[str, int]] = {}
         self._rand = random.Random()
-        self.log = logging.getLogger("crimson.relay")
+        self.log = structlog.stdlib.get_logger("crimson.relay").bind(
+            component="relay_service",
+            bind_host=str(cfg.bind_host),
+            bind_port=int(cfg.bind_port),
+        )
 
     @property
     def bound_port(self) -> int:
@@ -141,15 +148,23 @@ class RelayServer:
 
     def open(self) -> None:
         self.transport.open()
-        self.log.info("relay_open bind=%s:%d", self.cfg.bind_host, self.bound_port)
+        self.log.info(
+            "relay_open",
+            bound_port=int(self.bound_port),
+            link_timeout_ms=int(self.cfg.link_timeout_ms),
+            reconnect_timeout_ms=int(self.cfg.reconnect_timeout_ms),
+            max_rooms=int(self.cfg.max_rooms),
+        )
 
     def close(self) -> None:
         self.transport.close()
+        room_count = len(self._rooms)
+        peer_count = len(self._peers_by_id)
         self._rooms.clear()
         self._peers_by_addr.clear()
         self._peers_by_id.clear()
         self._room_by_reconnect.clear()
-        self.log.info("relay_close")
+        self.log.info("relay_close", room_count=int(room_count), peer_count=int(peer_count))
 
     def serve_forever(self, *, tick_ms: int = 8) -> None:
         self.open()
@@ -170,15 +185,35 @@ class RelayServer:
             peer = self._peers_by_addr.get(addr)
             if peer is None:
                 if not isinstance(packet.message, ClientHello):
+                    self.log.debug(
+                        "relay_drop_unregistered_packet",
+                        addr=self._addr_text(addr),
+                        kind=type(packet.message).__name__,
+                        reliable=bool(packet.reliable),
+                        seq=int(packet.seq),
+                    )
                     continue
                 self._handle_client_hello(addr=addr, message=packet.message, now_ms=int(now))
                 peer = self._peers_by_addr.get(addr)
                 if peer is not None and bool(packet.reliable) and int(packet.seq) > 0:
                     peer.link.prime_recv_seq(int(packet.seq))
+                    self.log.debug(
+                        "relay_prime_recv_seq",
+                        peer_id=str(peer.peer_id),
+                        seq=int(packet.seq),
+                    )
                 continue
 
             peer.last_seen_ms = int(now)
-            messages, _dup = peer.link.ingest_packet(packet, now_ms=int(now))
+            messages, duplicate = peer.link.ingest_packet(packet, now_ms=int(now))
+            if bool(duplicate):
+                self.log.debug(
+                    "relay_recv_duplicate",
+                    peer_id=str(peer.peer_id),
+                    addr=self._addr_text(addr),
+                    seq=int(packet.seq),
+                    ack=int(packet.ack),
+                )
             for message in messages:
                 self._handle_message(peer=peer, message=message, now_ms=int(now))
 
@@ -187,6 +222,13 @@ class RelayServer:
 
     def _handle_client_hello(self, *, addr: PeerAddr, message: ClientHello, now_ms: int) -> None:
         if int(message.protocol_version) != int(PROTOCOL_VERSION):
+            self.log.warning(
+                "relay_protocol_mismatch",
+                addr=self._addr_text(addr),
+                peer_protocol=int(message.protocol_version),
+                expected_protocol=int(PROTOCOL_VERSION),
+                build_id=str(message.build_id or ""),
+            )
             temp = RelayReliableLink()
             packet = temp.build_packet(
                 ClientWelcome(
@@ -210,6 +252,14 @@ class RelayServer:
         )
         self._peers_by_addr[addr] = peer
         self._peers_by_id[str(peer_id)] = peer
+        self.log.info(
+            "relay_peer_connected",
+            peer_id=str(peer_id),
+            addr=self._addr_text(addr),
+            build_id=str(message.build_id or ""),
+            peer_name=str(message.peer_name or ""),
+            peer_count=int(len(self._peers_by_id)),
+        )
 
         self._send_peer(
             peer,
@@ -225,6 +275,14 @@ class RelayServer:
         )
 
     def _handle_message(self, *, peer: _Peer, message: NetMessage, now_ms: int) -> None:
+        self.log.debug(
+            "relay_message_received",
+            peer_id=str(peer.peer_id),
+            room_code=str(peer.room_code or ""),
+            slot_index=int(peer.slot_index),
+            kind=type(message).__name__,
+            now_ms=int(now_ms),
+        )
         if isinstance(message, Ping):
             self._send_peer(peer, Pong(stamp_ms=int(message.stamp_ms)), reliable=False, now_ms=int(now_ms))
             return
@@ -249,11 +307,31 @@ class RelayServer:
             self._forward_room_message(peer=peer, message=message, now_ms=int(now_ms))
             return
 
+        self.log.warning(
+            "relay_message_unhandled",
+            peer_id=str(peer.peer_id),
+            kind=type(message).__name__,
+            room_code=str(peer.room_code or ""),
+        )
+
     def _handle_room_create(self, *, peer: _Peer, message: RoomCreate, now_ms: int) -> None:
         if peer.room_code:
+            self.log.warning(
+                "relay_room_create_rejected",
+                reason="already_in_room",
+                peer_id=str(peer.peer_id),
+                room_code=str(peer.room_code or ""),
+            )
             self._send_peer(peer, RelayError(reason="already_in_room"), reliable=True, now_ms=int(now_ms))
             return
         if len(self._rooms) >= int(self.cfg.max_rooms):
+            self.log.warning(
+                "relay_room_create_rejected",
+                reason="room_capacity",
+                peer_id=str(peer.peer_id),
+                room_count=int(len(self._rooms)),
+                max_rooms=int(self.cfg.max_rooms),
+            )
             self._send_peer(peer, RelayError(reason="room_capacity"), reliable=True, now_ms=int(now_ms))
             return
 
@@ -265,6 +343,11 @@ class RelayServer:
             code = candidate
             break
         if not code:
+            self.log.error(
+                "relay_room_create_rejected",
+                reason="room_code_exhausted",
+                peer_id=str(peer.peer_id),
+            )
             self._send_peer(peer, RelayError(reason="room_code_exhausted"), reliable=True, now_ms=int(now_ms))
             return
 
@@ -295,6 +378,15 @@ class RelayServer:
 
         peer.room_code = str(code)
         peer.slot_index = 0
+        self.log.info(
+            "relay_room_created",
+            room_code=str(room.room_code),
+            session_id=str(room.session_id),
+            host_peer_id=str(peer.peer_id),
+            mode_id=int(room.mode_id),
+            player_count=int(room.player_count),
+            netcode_mode=str(room.netcode_mode),
+        )
 
         self._broadcast_room_state(room=room, now_ms=int(now_ms))
 
@@ -303,6 +395,12 @@ class RelayServer:
         reconnect_token = str(message.reconnect_token or "").strip()
 
         if peer.room_code:
+            self.log.warning(
+                "relay_room_join_rejected",
+                reason="already_in_room",
+                peer_id=str(peer.peer_id),
+                room_code=str(peer.room_code or ""),
+            )
             self._send_peer(peer, RelayError(reason="already_in_room"), reliable=True, now_ms=int(now_ms))
             return
 
@@ -318,10 +416,22 @@ class RelayServer:
         if room is None:
             room = self._rooms.get(str(room_code))
             if room is None:
+                self.log.warning(
+                    "relay_room_join_rejected",
+                    reason="room_not_found",
+                    peer_id=str(peer.peer_id),
+                    room_code=str(room_code),
+                )
                 self._send_peer(peer, RelayError(reason="room_not_found"), reliable=True, now_ms=int(now_ms))
                 return
             slot_index = self._next_free_slot(room)
             if slot_index < 0:
+                self.log.warning(
+                    "relay_room_join_rejected",
+                    reason="room_full",
+                    peer_id=str(peer.peer_id),
+                    room_code=str(room.room_code),
+                )
                 self._send_peer(peer, RelayError(reason="room_full"), reliable=True, now_ms=int(now_ms))
                 return
 
@@ -329,6 +439,14 @@ class RelayServer:
         if slot.peer_id and slot.peer_id != str(peer.peer_id):
             age = max(0, int(now_ms) - int(slot.disconnected_ms or 0))
             if age < int(self.cfg.reconnect_timeout_ms):
+                self.log.warning(
+                    "relay_room_join_rejected",
+                    reason="slot_busy",
+                    peer_id=str(peer.peer_id),
+                    room_code=str(room.room_code),
+                    slot_index=int(slot_index),
+                    age_ms=int(age),
+                )
                 self._send_peer(peer, RelayError(reason="slot_busy"), reliable=True, now_ms=int(now_ms))
                 return
 
@@ -336,6 +454,14 @@ class RelayServer:
         host_peer = self._peers_by_id.get(str(host_slot.peer_id))
         if host_peer is not None and host_peer.build_id and peer.build_id:
             if not builds_compatible(str(peer.build_id), str(host_peer.build_id)):
+                self.log.warning(
+                    "relay_room_join_rejected",
+                    reason="build_mismatch",
+                    peer_id=str(peer.peer_id),
+                    room_code=str(room.room_code),
+                    peer_build=str(peer.build_id),
+                    host_build=str(host_peer.build_id),
+                )
                 self._send_peer(peer, RelayError(reason="build_mismatch"), reliable=True, now_ms=int(now_ms))
                 return
 
@@ -349,6 +475,14 @@ class RelayServer:
 
         peer.room_code = str(room.room_code)
         peer.slot_index = int(slot.slot_index)
+        self.log.info(
+            "relay_room_joined",
+            room_code=str(room.room_code),
+            peer_id=str(peer.peer_id),
+            slot_index=int(slot.slot_index),
+            reconnect=bool(reconnect_token),
+            room_started=bool(room.started),
+        )
 
         self._broadcast_room_state(room=room, now_ms=int(now_ms))
 
@@ -358,22 +492,55 @@ class RelayServer:
     def _handle_room_ready(self, *, peer: _Peer, message: RoomReady, now_ms: int) -> None:
         room = self._rooms.get(str(peer.room_code))
         if room is None:
+            self.log.warning(
+                "relay_room_ready_rejected",
+                reason="not_in_room",
+                peer_id=str(peer.peer_id),
+            )
             self._send_peer(peer, RelayError(reason="not_in_room"), reliable=True, now_ms=int(now_ms))
             return
         slot_index = int(peer.slot_index)
         if slot_index < 0 or slot_index >= len(room.slots):
+            self.log.warning(
+                "relay_room_ready_rejected",
+                reason="bad_slot",
+                peer_id=str(peer.peer_id),
+                slot_index=int(slot_index),
+                room_code=str(room.room_code),
+            )
             self._send_peer(peer, RelayError(reason="bad_slot"), reliable=True, now_ms=int(now_ms))
             return
         slot = room.slots[int(slot_index)]
         if slot.peer_id != str(peer.peer_id):
+            self.log.warning(
+                "relay_room_ready_rejected",
+                reason="slot_owner_mismatch",
+                peer_id=str(peer.peer_id),
+                slot_index=int(slot_index),
+                room_code=str(room.room_code),
+            )
             self._send_peer(peer, RelayError(reason="slot_owner_mismatch"), reliable=True, now_ms=int(now_ms))
             return
         slot.ready = bool(message.ready)
+        self.log.debug(
+            "relay_room_ready_updated",
+            room_code=str(room.room_code),
+            peer_id=str(peer.peer_id),
+            slot_index=int(slot_index),
+            ready=bool(slot.ready),
+        )
 
         if (not room.started) and room.all_ready():
             room.started = True
             room.seed = int((now_ms * 1103515245 + 12345) & 0xFFFFFFFF)
             room.start_tick = 0
+            self.log.info(
+                "relay_room_started",
+                room_code=str(room.room_code),
+                session_id=str(room.session_id),
+                seed=int(room.seed),
+                player_count=int(room.player_count),
+            )
             self._broadcast_room_start(room=room, now_ms=int(now_ms))
 
         self._broadcast_room_state(room=room, now_ms=int(now_ms))
@@ -381,11 +548,18 @@ class RelayServer:
     def _forward_room_message(self, *, peer: _Peer, message: NetMessage, now_ms: int) -> None:
         room = self._rooms.get(str(peer.room_code))
         if room is None:
+            self.log.warning(
+                "relay_forward_rejected",
+                reason="not_in_room",
+                peer_id=str(peer.peer_id),
+                kind=type(message).__name__,
+            )
             self._send_peer(peer, RelayError(reason="not_in_room"), reliable=True, now_ms=int(now_ms))
             return
         reliable = isinstance(message, _FORWARD_RELIABLE_TYPES)
         if isinstance(message, LegacyLockstepInputBatch):
             reliable = False
+        forwarded = 0
         for slot in room.slots:
             if (not slot.connected) or slot.peer_id == str(peer.peer_id):
                 continue
@@ -393,6 +567,15 @@ class RelayServer:
             if dst is None:
                 continue
             self._send_peer(dst, message, reliable=bool(reliable), now_ms=int(now_ms))
+            forwarded += 1
+        self.log.debug(
+            "relay_forwarded",
+            room_code=str(room.room_code),
+            from_peer_id=str(peer.peer_id),
+            kind=type(message).__name__,
+            reliable=bool(reliable),
+            recipient_count=int(forwarded),
+        )
 
     def _broadcast_room_state(self, *, room: _Room, now_ms: int) -> None:
         slots = [
@@ -420,13 +603,23 @@ class RelayServer:
             all_ready=bool(room.all_ready()),
             started=bool(room.started),
         )
+        connected = 0
         for slot in room.slots:
             if not slot.connected:
                 continue
             peer = self._peers_by_id.get(str(slot.peer_id))
             if peer is None:
                 continue
+            connected += 1
             self._send_peer(peer, state, reliable=True, now_ms=int(now_ms))
+        self.log.debug(
+            "relay_room_state_broadcast",
+            room_code=str(room.room_code),
+            started=bool(room.started),
+            all_ready=bool(room.all_ready()),
+            connected_players=int(connected),
+            expected_players=int(room.player_count),
+        )
 
     def _broadcast_room_start(self, *, room: _Room, now_ms: int) -> None:
         for slot in room.slots:
@@ -465,21 +658,55 @@ class RelayServer:
             reliable=True,
             now_ms=int(now_ms),
         )
+        self.log.info(
+            "relay_room_start_sent",
+            room_code=str(room.room_code),
+            session_id=str(room.session_id),
+            peer_id=str(peer.peer_id),
+            slot_index=int(slot_index),
+        )
 
     def _send_peer(self, peer: _Peer, message: NetMessage, *, reliable: bool, now_ms: int) -> None:
         packet = peer.link.build_packet(message, reliable=bool(reliable), now_ms=int(now_ms))
         self.transport.send_packet(peer.addr, packet)
+        self.log.debug(
+            "relay_send",
+            peer_id=str(peer.peer_id),
+            addr=self._addr_text(peer.addr),
+            room_code=str(peer.room_code or ""),
+            slot_index=int(peer.slot_index),
+            kind=type(message).__name__,
+            reliable=bool(reliable),
+            seq=int(packet.seq),
+            ack=int(packet.ack),
+        )
 
     def _poll_resends(self, *, now_ms: int) -> None:
         for peer in self._peers_by_id.values():
             for packet in peer.link.poll_resends(now_ms=int(now_ms)):
                 self.transport.send_packet(peer.addr, packet)
+                self.log.debug(
+                    "relay_resend",
+                    peer_id=str(peer.peer_id),
+                    addr=self._addr_text(peer.addr),
+                    kind=type(packet.message).__name__,
+                    seq=int(packet.seq),
+                    ack=int(packet.ack),
+                )
 
     def _prune_timeouts(self, *, now_ms: int) -> None:
         timeout = max(250, int(self.cfg.link_timeout_ms))
         for peer_id, peer in list(self._peers_by_id.items()):
             if (int(now_ms) - int(peer.last_seen_ms)) < int(timeout):
                 continue
+            self.log.info(
+                "relay_peer_timeout",
+                peer_id=str(peer.peer_id),
+                room_code=str(peer.room_code or ""),
+                slot_index=int(peer.slot_index),
+                timeout_ms=int(timeout),
+                silent_ms=int(now_ms) - int(peer.last_seen_ms),
+            )
             self._disconnect_peer(peer=peer, reason="timeout", now_ms=int(now_ms))
             self._peers_by_id.pop(str(peer_id), None)
             self._peers_by_addr.pop(peer.addr, None)
@@ -487,6 +714,11 @@ class RelayServer:
     def _disconnect_peer(self, *, peer: _Peer, reason: str, now_ms: int) -> None:
         room = self._rooms.get(str(peer.room_code))
         if room is None:
+            self.log.info(
+                "relay_peer_disconnected_without_room",
+                peer_id=str(peer.peer_id),
+                reason=str(reason),
+            )
             return
         if 0 <= int(peer.slot_index) < len(room.slots):
             slot = room.slots[int(peer.slot_index)]
@@ -496,6 +728,13 @@ class RelayServer:
                 slot.disconnected_ms = int(now_ms)
                 slot.peer_name = ""
 
+        self.log.info(
+            "relay_peer_disconnected",
+            peer_id=str(peer.peer_id),
+            room_code=str(room.room_code),
+            slot_index=int(peer.slot_index),
+            reason=str(reason),
+        )
         self._broadcast_room_state(room=room, now_ms=int(now_ms))
 
         notice = PeerDisconnect(slot_index=int(peer.slot_index), reason=str(reason))
@@ -509,6 +748,12 @@ class RelayServer:
 
         if all((not slot.connected) for slot in room.slots):
             self._rooms.pop(str(room.room_code), None)
+            self.log.info(
+                "relay_room_evicted",
+                room_code=str(room.room_code),
+                session_id=str(room.session_id),
+                reason="all_peers_disconnected",
+            )
 
     @staticmethod
     def _next_free_slot(room: _Room) -> int:
@@ -516,6 +761,10 @@ class RelayServer:
             if not slot.connected:
                 return int(slot.slot_index)
         return -1
+
+    @staticmethod
+    def _addr_text(addr: PeerAddr) -> str:
+        return f"{addr[0]}:{addr[1]}"
 
 
 __all__ = ["RelayServer", "RelayServerConfig"]
