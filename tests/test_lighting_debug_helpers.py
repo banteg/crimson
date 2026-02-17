@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import math
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
 from grim.geom import Vec2
+from grim.view import ViewContext
 
 from crimson.projectiles import ProjectileTypeId, SecondaryProjectileTypeId
 from crimson.weapons import WEAPON_BY_ID
@@ -13,6 +16,8 @@ from crimson.views.lighting_debug import (
     EmissiveProfile,
     LightingDebugView,
     TransientLight,
+    _build_static_occluders,
+    _profile_light_defaults,
     collect_shadow_lights,
     collect_shadow_occluders,
     tick_transient_lights,
@@ -102,3 +107,40 @@ def test_profile_auto_interval_falls_back_to_profile_interval() -> None:
     interval = LightingDebugView._profile_auto_interval(profile)
 
     assert interval == pytest.approx(0.123)
+
+
+def test_profile_light_defaults_uses_primary_or_secondary_specs() -> None:
+    ion_profile = next(profile for profile in EMISSIVE_PROFILES if profile.name == "Ion Rifle")
+    det_profile = next(profile for profile in EMISSIVE_PROFILES if profile.name == "Explosion")
+
+    ion_radius, ion_strength, ion_focus, ion_stretch = _profile_light_defaults(ion_profile)
+    det_radius, det_strength, det_focus, det_stretch = _profile_light_defaults(det_profile)
+
+    assert ion_radius > 0.0
+    assert ion_strength > 0.0
+    assert ion_focus >= 0.0
+    assert ion_stretch >= 1.0
+    assert det_radius > 0.0
+    assert det_strength > 0.0
+    assert det_focus >= 0.0
+    assert det_stretch >= 1.0
+
+
+def test_build_static_occluders_produces_finite_positive_circles() -> None:
+    occluders = _build_static_occluders()
+
+    assert occluders
+    assert all(occ.radius > 0.0 for occ in occluders)
+    assert all(math.isfinite(float(occ.pos.x)) for occ in occluders)
+    assert all(math.isfinite(float(occ.pos.y)) for occ in occluders)
+
+
+def test_static_scene_collect_shadow_state_uses_static_occluders_and_emitters() -> None:
+    view = LightingDebugView(ViewContext(assets_dir=Path(".") / "artifacts" / "assets"))
+
+    view._set_static_scene_enabled(True)
+    view._collect_shadow_state()
+
+    assert view._static_scene_enabled is True
+    assert len(view._last_occluders) > 0
+    assert len(view._last_lights) > 0
