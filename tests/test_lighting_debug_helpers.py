@@ -50,7 +50,7 @@ def test_collect_shadow_lights_clamps_count_and_is_deterministic() -> None:
         TransientLight(pos=Vec2(110.0, 100.0), radius=40.0, strength=0.8, ttl=0.4, age=0.0),
     ]
     projectiles = [
-        SimpleNamespace(active=True, pos=Vec2(200.0, 100.0), type_id=int(ProjectileTypeId.ION_RIFLE)),
+        SimpleNamespace(active=True, pos=Vec2(200.0, 100.0), angle=0.0, type_id=int(ProjectileTypeId.PISTOL)),
         SimpleNamespace(active=True, pos=Vec2(210.0, 100.0), type_id=int(ProjectileTypeId.PLASMA_RIFLE)),
         SimpleNamespace(active=True, pos=Vec2(220.0, 100.0), type_id=0xDEAD),  # ignored, not emissive
     ]
@@ -67,6 +67,50 @@ def test_collect_shadow_lights_clamps_count_and_is_deterministic() -> None:
         (200.0, 100.0),
         (210.0, 100.0),
     ]
+
+
+def test_ion_lights_are_head_to_tail_omni_with_weaker_tail() -> None:
+    projectiles = [
+        SimpleNamespace(
+            active=True,
+            pos=Vec2(300.0, 100.0),
+            origin=Vec2(80.0, 100.0),
+            angle=0.0,
+            type_id=int(ProjectileTypeId.ION_RIFLE),
+        )
+    ]
+
+    lights = collect_shadow_lights(projectiles, [], [], max_lights=6)
+
+    assert len(lights) == 3
+    assert lights[0].pos.x == pytest.approx(300.0)
+    assert lights[1].pos.x < lights[0].pos.x
+    assert lights[2].pos.x < lights[1].pos.x
+    assert lights[0].strength > lights[1].strength > lights[2].strength
+    assert all(light.focus == pytest.approx(0.0) for light in lights)
+    assert all(light.stretch == pytest.approx(1.0) for light in lights)
+    assert all(light.dir_x == pytest.approx(0.0) for light in lights)
+    assert all(light.dir_y == pytest.approx(0.0) for light in lights)
+
+
+def test_plasma_light_is_omnidirectional() -> None:
+    projectiles = [
+        SimpleNamespace(
+            active=True,
+            pos=Vec2(220.0, 100.0),
+            origin=Vec2(180.0, 100.0),
+            angle=1.2,
+            type_id=int(ProjectileTypeId.PLASMA_RIFLE),
+        )
+    ]
+
+    lights = collect_shadow_lights(projectiles, [], [], max_lights=6)
+
+    assert len(lights) == 1
+    assert lights[0].focus == pytest.approx(0.0)
+    assert lights[0].stretch == pytest.approx(1.0)
+    assert lights[0].dir_x == pytest.approx(0.0)
+    assert lights[0].dir_y == pytest.approx(0.0)
 
 
 def test_tick_transient_lights_decays_and_removes_expired_entries() -> None:

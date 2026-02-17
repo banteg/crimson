@@ -326,10 +326,12 @@ _SECONDARY_PROJECTILE_LIGHTS: dict[int, tuple[float, float]] = {
 
 _PRIMARY_PROJECTILE_DIRECTIONAL: dict[int, tuple[float, float]] = {
     int(ProjectileTypeId.PISTOL): (0.20, 1.15),
-    int(ProjectileTypeId.ION_RIFLE): (0.78, 1.85),
-    int(ProjectileTypeId.ION_MINIGUN): (0.72, 1.70),
-    int(ProjectileTypeId.PLASMA_RIFLE): (0.78, 1.80),
-    int(ProjectileTypeId.PLASMA_CANNON): (0.92, 2.10),
+    # Ion streak emissive is rendered head->tail and is not forward-cone biased.
+    int(ProjectileTypeId.ION_RIFLE): (0.0, 1.0),
+    int(ProjectileTypeId.ION_MINIGUN): (0.0, 1.0),
+    # Plasma glow is omni in the native render path (head + aura/tail sprites).
+    int(ProjectileTypeId.PLASMA_RIFLE): (0.0, 1.0),
+    int(ProjectileTypeId.PLASMA_CANNON): (0.0, 1.0),
     int(ProjectileTypeId.FIRE_BULLETS): (0.55, 1.45),
 }
 
@@ -339,6 +341,30 @@ _SECONDARY_PROJECTILE_DIRECTIONAL: dict[int, tuple[float, float]] = {
     int(SecondaryProjectileTypeId.DETONATION): (0.0, 1.0),
     int(SecondaryProjectileTypeId.ROCKET_MINIGUN): (0.72, 1.80),
 }
+
+_ION_PROJECTILE_TYPES: frozenset[int] = frozenset(
+    {
+        int(ProjectileTypeId.ION_RIFLE),
+        int(ProjectileTypeId.ION_MINIGUN),
+    }
+)
+
+_OMNI_PROJECTILE_TYPES: frozenset[int] = frozenset(
+    {
+        int(ProjectileTypeId.ION_RIFLE),
+        int(ProjectileTypeId.ION_MINIGUN),
+        int(ProjectileTypeId.PLASMA_RIFLE),
+        int(ProjectileTypeId.PLASMA_CANNON),
+    }
+)
+
+# Ion beam visual pass draws only the last 256 units of streak; mirror that for tail lighting.
+_ION_TAIL_MAX_LENGTH = 256.0
+_ION_TAIL_SAMPLES: tuple[tuple[float, float, float], ...] = (
+    # (distance factor from head, strength factor, radius factor)
+    (0.36, 0.52, 0.88),
+    (0.74, 0.30, 0.68),
+)
 
 _TUNE_PARAMS: tuple[_TuneParam, ...] = (
     _TuneParam("ambient_darkness", "ambient darkness", 0.20, 0.95, 0.02, 0.08),
@@ -672,34 +698,36 @@ def collect_shadow_occluders(
     return occluders
 
 
-def _projectile_light(
+def _projectile_lights(
     entry: Any,
     *,
     range_scale: float = DEFAULT_SHADOW_RANGE_SCALE,
     directional_focus: float = DEFAULT_DIRECTIONAL_FOCUS,
     directional_stretch: float = DEFAULT_DIRECTIONAL_STRETCH,
-) -> ShadowLight | None:
+) -> tuple[ShadowLight, ...]:
     if not bool(getattr(entry, "active", False)):
-        return None
+        return ()
     type_id = int(getattr(entry, "type_id", -1))
     spec = _PRIMARY_PROJECTILE_LIGHTS.get(type_id)
     if spec is None:
-        return None
+        return ()
     pos = getattr(entry, "pos", None)
     if pos is None:
-        return None
+        return ()
     if not _is_finite_vec2(pos):
-        return None
+        return ()
     radius, strength = spec
     base_focus, base_stretch = _PRIMARY_PROJECTILE_DIRECTIONAL.get(type_id, (0.0, 1.0))
     dir_x, dir_y = _normalized_dir_from_angle(float(getattr(entry, "angle", 0.0)))
     focus = _clampf(float(base_focus) * float(directional_focus), 0.0, 2.0)
     stretch = _clampf(float(base_stretch) * float(directional_stretch), 1.0, 6.0)
-    if abs(dir_x) <= 1e-6 and abs(dir_y) <= 1e-6:
+    if type_id in _OMNI_PROJECTILE_TYPES or (abs(dir_x) <= 1e-6 and abs(dir_y) <= 1e-6):
+        dir_x = 0.0
+        dir_y = 0.0
         focus = 0.0
         stretch = 1.0
     scaled_radius = min(900.0, float(radius) * float(range_scale))
-    return ShadowLight(
+    head = ShadowLight(
         pos=Vec2(float(pos.x), float(pos.y)),
         radius=scaled_radius,
         strength=float(strength),
@@ -708,6 +736,37 @@ def _projectile_light(
         focus=float(focus),
         stretch=float(stretch),
     )
+
+    if type_id not in _ION_PROJECTILE_TYPES:
+        return (head,)
+
+    origin = getattr(entry, "origin", None)
+    if origin is None or not _is_finite_vec2(origin):
+        return (head,)
+
+    tail_vec = pos - origin
+    tail_dir, tail_dist = tail_vec.normalized_with_length()
+    if tail_dist <= 1e-4:
+        return (head,)
+
+    tail_len = min(float(tail_dist), _ION_TAIL_MAX_LENGTH)
+    lights = [head]
+    for dist_factor, strength_factor, radius_factor in _ION_TAIL_SAMPLES:
+        sample = pos - tail_dir * (tail_len * float(dist_factor))
+        if not _is_finite_vec2(sample):
+            continue
+        sample_strength = float(strength) * float(strength_factor)
+        sample_radius = max(1.0, float(scaled_radius) * float(radius_factor))
+        if sample_strength <= 0.0 or sample_radius <= 0.0:
+            continue
+        lights.append(
+            ShadowLight(
+                pos=Vec2(float(sample.x), float(sample.y)),
+                radius=sample_radius,
+                strength=sample_strength,
+            )
+        )
+    return tuple(lights)
 
 
 def _secondary_projectile_light(
@@ -802,13 +861,15 @@ def collect_shadow_lights(
     for entry in projectiles:
         if len(lights) >= cap:
             return lights
-        light = _projectile_light(
+        extra_lights = _projectile_lights(
             entry,
             range_scale=range_scale,
             directional_focus=directional_focus,
             directional_stretch=directional_stretch,
         )
-        if light is not None:
+        for light in extra_lights:
+            if len(lights) >= cap:
+                return lights
             lights.append(light)
 
     for entry in secondary_projectiles:
