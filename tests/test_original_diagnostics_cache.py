@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+from typing import cast
 
 from crimson.original import divergence_report, focus_trace
 from crimson.original.diagnostics_cache import (
@@ -289,7 +290,11 @@ def test_capture_session_builds_sidecars_and_indexes(tmp_path: Path, monkeypatch
 
     raw_debug = session.get_raw_debug_by_tick()
     assert raw_debug[0]["sample_streams_present"] is True
-    assert int((raw_debug[0]["sample_counts"] or {}).get("creatures", -1)) == 1
+    sample_counts_obj = raw_debug[0]["sample_counts"]
+    sample_counts = cast("dict[str, object]", sample_counts_obj) if isinstance(sample_counts_obj, dict) else {}
+    creatures_count = sample_counts.get("creatures", -1)
+    creatures_count_i = int(creatures_count) if isinstance(creatures_count, int) else -1
+    assert creatures_count_i == 1
 
     run_summary = session.get_run_summary_events()
     assert any(item.kind == "weapon_assign" for item in run_summary)

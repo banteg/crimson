@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.bonuses.hud import bonus_hud_update
+from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import (
     _RELATIVE_MOVE_HEADING_LEFT,
     GameplayState,
@@ -34,7 +35,7 @@ class _Creature:
     size: float = 50.0
     active: bool = True
     hitbox_size: float = 16.0
-    flags: int = 0
+    flags: CreatureFlags = CreatureFlags(0)
     plague_infected: bool = False
 
 

@@ -12,10 +12,12 @@ from crimson.persistence.save_status import (
     GameStatus,
 )
 from crimson.weapon_runtime.availability import weapon_pick_random_available
+from grim.rand import Crand
 
 
-class _SeqRng:
+class _SeqRng(Crand):
     def __init__(self, seq: list[int]) -> None:
+        super().__init__(0)
         self._seq = list(seq)
         self.calls = 0
 

@@ -10,7 +10,7 @@ from ..perks.helpers import perk_active
 from .ids import BONUS_BY_ID, BonusId
 
 if TYPE_CHECKING:
-    from grim.rand import Crand
+    from grim.rand import CrandLike
 
     from ..gameplay import GameplayState
     from ..sim.state_types import PlayerState
@@ -24,7 +24,7 @@ def _bonus_enabled(bonus_id: int) -> bool:
     return meta.bonus_id != BonusId.UNUSED
 
 
-def _bonus_id_from_roll(roll: int, rng: Crand) -> int:
+def _bonus_id_from_roll(roll: int, rng: CrandLike) -> int:
     # Mirrors `bonus_pick_random_type` (0x412470) mapping:
     # - roll = rand() % 162 + 1  (1..162)
     # - Points: roll 1..13

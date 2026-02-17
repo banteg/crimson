@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-from grim.rand import Crand
+from grim.rand import CrandLike
 
 NAME_MAX_CHARS = 16  # creature_name_assign_random enforces strlen < 0x10.
 
@@ -65,7 +65,7 @@ _NAME_PARTS: tuple[str, ...] = (
 )
 
 
-def typo_name_part(rng: Crand, *, allow_the: bool) -> str:
+def typo_name_part(rng: CrandLike, *, allow_the: bool) -> str:
     mod = 52 if allow_the else 51
     idx = int(rng.rand() % mod)
     if idx == 39:
@@ -73,7 +73,7 @@ def typo_name_part(rng: Crand, *, allow_the: bool) -> str:
     return _NAME_PARTS[idx]
 
 
-def typo_build_name(rng: Crand, *, score_xp: int, unique_words: Sequence[str] | None = None) -> str:
+def typo_build_name(rng: CrandLike, *, score_xp: int, unique_words: Sequence[str] | None = None) -> str:
     score_xp = int(score_xp)
     if unique_words:
         return _typo_build_custom_name(rng, score_xp=score_xp, unique_words=unique_words)
@@ -110,11 +110,11 @@ def typo_build_name(rng: Crand, *, score_xp: int, unique_words: Sequence[str] | 
     return typo_name_part(rng, allow_the=False)
 
 
-def _pick_word(rng: Crand, words: Sequence[str]) -> str:
+def _pick_word(rng: CrandLike, words: Sequence[str]) -> str:
     return str(words[int(rng.rand() % len(words))])
 
 
-def _pick_unique_words(rng: Crand, words: Sequence[str], count: int) -> list[str]:
+def _pick_unique_words(rng: CrandLike, words: Sequence[str], count: int) -> list[str]:
     if count <= 1:
         return [_pick_word(rng, words)]
     if len(words) <= count:
@@ -131,7 +131,7 @@ def _pick_unique_words(rng: Crand, words: Sequence[str], count: int) -> list[str
     return picked
 
 
-def _typo_build_custom_name(rng: Crand, *, score_xp: int, unique_words: Sequence[str]) -> str:
+def _typo_build_custom_name(rng: CrandLike, *, score_xp: int, unique_words: Sequence[str]) -> str:
     score_xp = int(score_xp)
     if score_xp > 120:
         if int(rng.rand() % 100) < 10:
@@ -203,7 +203,7 @@ class CreatureNameTable:
     def assign_random(
         self,
         creature_idx: int,
-        rng: Crand,
+        rng: CrandLike,
         *,
         score_xp: int,
         active_mask: Sequence[bool],

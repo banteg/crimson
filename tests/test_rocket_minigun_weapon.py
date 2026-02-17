@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from typing import Any
 
 from crimson.gameplay import GameplayState
 from crimson.sim.input import PlayerInput
@@ -20,8 +21,12 @@ class _FixedRng:
         return int(self._value)
 
 
+def _as_rng(value: object) -> Any:
+    return value
+
+
 def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
-    state = GameplayState(rng=_FixedRng(0))
+    state = GameplayState(rng=_as_rng(_FixedRng(0)))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
@@ -42,4 +47,3 @@ def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     step = float(player.clip_size) * (math.pi / 3.0)
     expected0 = (shot_angle - math.pi) - step * float(player.clip_size) * 0.5
     assert math.isclose(spawned[0].angle, expected0, abs_tol=1e-9)
-

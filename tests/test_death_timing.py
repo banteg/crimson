@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
+
 import crimson.sim.world_state as world_state_mod
 from crimson.creatures.runtime import CreatureDeath, CreatureUpdateResult
 from crimson.creatures.spawn import CreatureFlags
@@ -89,11 +91,15 @@ def test_detonation_followup_does_not_double_plan_death_sfx() -> None:
     calls: list[list[int | None]] = []
     original = world_state_mod.plan_death_sfx_keys
 
-    def _fake_plan(deaths: tuple[object, ...] | list[object], *, rand: object) -> list[str]:
+    def _fake_plan(
+        deaths: Sequence[CreatureDeath] | tuple[object, ...],
+        *,
+        rand: Callable[[], int],
+    ) -> list[str]:
         calls.append([getattr(death, "index", None) for death in deaths])
         return ["death"] if deaths else []
 
-    world_state_mod.plan_death_sfx_keys = _fake_plan
+    setattr(world_state_mod, "plan_death_sfx_keys", _fake_plan)
     try:
         events = world.step(
             0.1,
@@ -108,7 +114,7 @@ def test_detonation_followup_does_not_double_plan_death_sfx() -> None:
             perk_progression_enabled=False,
         )
     finally:
-        world_state_mod.plan_death_sfx_keys = original
+        setattr(world_state_mod, "plan_death_sfx_keys", original)
 
     # Native detonation follow-up re-enters creature death handling for side effects,
     # but does not perform a second death-SFX random pick.
@@ -143,17 +149,20 @@ def test_death_sfx_rand_consumes_past_cap() -> None:
     original_plan = world_state_mod.plan_death_sfx_keys
     original_update = world.creatures.update
 
-    def _fake_plan(deaths_now: tuple[object, ...] | list[object], *, rand: object) -> list[str]:
+    def _fake_plan(
+        deaths_now: Sequence[CreatureDeath] | tuple[object, ...],
+        *,
+        rand: Callable[[], int],
+    ) -> list[str]:
         calls["count"] += 1
-        if callable(rand):
-            rand()
+        rand()
         return ["death"] if deaths_now else []
 
     def _fake_update(*args: object, **kwargs: object) -> CreatureUpdateResult:
         _ = args, kwargs
         return CreatureUpdateResult(deaths=deaths, sfx=())
 
-    world_state_mod.plan_death_sfx_keys = _fake_plan
+    setattr(world_state_mod, "plan_death_sfx_keys", _fake_plan)
     world.creatures.update = _fake_update  # type: ignore[assignment]
     try:
         events = world.step(
@@ -169,7 +178,7 @@ def test_death_sfx_rand_consumes_past_cap() -> None:
             perk_progression_enabled=False,
         )
     finally:
-        world_state_mod.plan_death_sfx_keys = original_plan
+        setattr(world_state_mod, "plan_death_sfx_keys", original_plan)
         world.creatures.update = original_update  # type: ignore[assignment]
 
     assert len(events.deaths) == 7
@@ -198,17 +207,19 @@ def test_freeze_hit_path_still_plans_hit_sfx() -> None:
         game_mode: int,
         demo_mode_active: bool,
         game_tune_started: bool,
-        rand: object,
+        rand: Callable[[], int],
         beam_types: frozenset[int] = frozenset(),
     ) -> tuple[bool, list[str]]:
         _ = hits, game_mode, demo_mode_active, game_tune_started, rand, beam_types
         calls["count"] += 1
         return True, ["sfx_bullet_hit_01"]
 
-    def _fake_projectile_update(*args: object, **kwargs: object) -> list[ProjectileHit]:
-        _ = args
-        on_hit = kwargs["on_hit"]
-        on_hit_post = kwargs["on_hit_post"]
+    def _fake_projectile_update(
+        *_args: object,
+        on_hit: Callable[[ProjectileHit], object | None],
+        on_hit_post: Callable[[ProjectileHit, object | None], None],
+        **_kwargs: object,
+    ) -> list[ProjectileHit]:
         hit = ProjectileHit(
             type_id=int(ProjectileTypeId.PISTOL),
             origin=Vec2(0.0, 0.0),
@@ -219,7 +230,7 @@ def test_freeze_hit_path_still_plans_hit_sfx() -> None:
         on_hit_post(hit, post_ctx)
         return [hit]
 
-    world_state_mod.plan_hit_sfx_keys = _fake_plan
+    setattr(world_state_mod, "plan_hit_sfx_keys", _fake_plan)
     world.state.projectiles.update = _fake_projectile_update  # type: ignore[assignment]
     try:
         events = world.step(
@@ -235,7 +246,7 @@ def test_freeze_hit_path_still_plans_hit_sfx() -> None:
             perk_progression_enabled=False,
         )
     finally:
-        world_state_mod.plan_hit_sfx_keys = original_plan
+        setattr(world_state_mod, "plan_hit_sfx_keys", original_plan)
         world.state.projectiles.update = original_update  # type: ignore[assignment]
 
     assert calls["count"] == 1
@@ -284,7 +295,7 @@ def test_perk_effects_step_uses_previous_aim_before_player_update() -> None:
             perk_progression_enabled=False,
         )
     finally:
-        world_state_mod.perks_update_effects = original_perk_update  # type: ignore[assignment]
+        world_state_mod.perks_update_effects = original_perk_update
 
     assert seen["aim"] == Vec2(128.0, 256.0)
     assert player.aim == Vec2(900.0, 900.0)

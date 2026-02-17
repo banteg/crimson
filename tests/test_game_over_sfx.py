@@ -4,22 +4,72 @@ import random
 import time
 from pathlib import Path
 from types import SimpleNamespace
+from typing import cast
 
 import pyray as rl
 
+from crimson.frontend.assets import MenuAssets
 from crimson.frontend.panels.base import PANEL_TIMELINE_START_MS
 from crimson.game.high_scores_view import HighScoresView
 from crimson.game.types import GameState, HighScoresRequest
 from crimson.persistence import save_status
 from crimson.persistence.highscores import HighScoreRecord
-from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
+from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS, GameOverAssets, GameOverUi
+from crimson.ui.perk_menu import PerkMenuAssets
+from grim.audio import AudioState
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
+from grim.music import init_music_state
+from grim.sfx import init_sfx_state
+
+
+def _audio_state_stub() -> AudioState:
+    return AudioState(
+        ready=False,
+        music=init_music_state(ready=False, enabled=True, volume=1.0),
+        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0),
+    )
+
+
+def _texture_stub() -> rl.Texture:
+    return cast("rl.Texture", SimpleNamespace(width=1, height=1))
+
+
+def _menu_assets_stub(*, tex: rl.Texture | None = None) -> MenuAssets:
+    t = _texture_stub() if tex is None else tex
+    return MenuAssets(sign=t, item=t, panel=t, labels=t)
+
+
+def _game_over_assets_stub() -> GameOverAssets:
+    return GameOverAssets(
+        menu_panel=None,
+        text_reaper=None,
+        text_well_done=None,
+        particles=None,
+        perk_menu_assets=PerkMenuAssets(
+            menu_panel=None,
+            title_pick_perk=None,
+            title_level_up=None,
+            menu_item=None,
+            button_sm=None,
+            button_md=None,
+            cursor=None,
+            aim=None,
+        ),
+    )
+
+
+class _PauseBackgroundStub:
+    def __init__(self, sink: list[float]) -> None:
+        self._sink = sink
+
+    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
+        self._sink.append(float(entity_alpha))
 
 
 def test_game_over_panel_open_plays_panel_click(monkeypatch, tmp_path: Path) -> None:
-    ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=object())
-    ui.assets = object()
+    ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=ensure_crimson_cfg(tmp_path))
+    ui.assets = _game_over_assets_stub()
     ui.phase = 1
     ui._intro_ms = PANEL_SLIDE_DURATION_MS - 60.0
     ui._panel_open_sfx_played = False
@@ -65,7 +115,7 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
         preserve_bugs=False,
         logos=None,
         texture_cache=None,
-        audio=object(),
+        audio=_audio_state_stub(),
         resource_paq=tmp_path / "crimson.paq",
         session_start=time.monotonic(),
     )
@@ -85,7 +135,7 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
     monkeypatch.setattr("crimson.game.high_scores_view.view._ensure_texture_cache", lambda _state: _DummyCache())
     monkeypatch.setattr(
         "crimson.game.high_scores_view.view.load_menu_assets",
-        lambda _state: SimpleNamespace(sign=None, item=None, panel=None, labels=None),
+        lambda _state: _menu_assets_stub(),
     )
 
     view = HighScoresView(state)
@@ -135,20 +185,18 @@ def test_high_scores_view_draw_fades_pause_background_during_close(monkeypatch, 
     )
     state.pending_high_scores = HighScoresRequest(game_mode_id=1)
     captured_alpha: list[float] = []
-    state.pause_background = SimpleNamespace(
-        draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha)),
-    )
+    state.pause_background = _PauseBackgroundStub(captured_alpha)
 
     class _DummyCache:
         def get_or_load(self, *_args, **_kwargs):
             return SimpleNamespace(texture=None)
 
-    dummy_tex = SimpleNamespace(width=1, height=1)
+    dummy_tex = _texture_stub()
     monkeypatch.setattr("crimson.game.high_scores_view.view.update_audio", lambda _audio, _dt: None)
     monkeypatch.setattr("crimson.game.high_scores_view.view._ensure_texture_cache", lambda _state: _DummyCache())
     monkeypatch.setattr(
         "crimson.game.high_scores_view.view.load_menu_assets",
-        lambda _state: SimpleNamespace(sign=dummy_tex, item=dummy_tex, panel=dummy_tex, labels=dummy_tex),
+        lambda _state: _menu_assets_stub(tex=dummy_tex),
     )
     monkeypatch.setattr("crimson.game.high_scores_view.view.rl.clear_background", lambda *_args, **_kwargs: None)
     monkeypatch.setattr("crimson.game.high_scores_view.view._draw_screen_fade", lambda *_args, **_kwargs: None)

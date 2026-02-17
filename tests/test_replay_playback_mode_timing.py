@@ -1,27 +1,26 @@
 from __future__ import annotations
 
-from pathlib import Path
 from types import SimpleNamespace
 
+from crimson.replay import Replay, ReplayHeader
 
-def test_replay_playback_mode_tick_loop_decrements_accum(monkeypatch) -> None:
+
+def _replay_with_ticks(tick_count: int) -> Replay:
+    return Replay(
+        header=ReplayHeader(game_mode_id=0, seed=0),
+        inputs=[[[0.0, 0.0, [0.0, 0.0], 0]] for _ in range(max(0, int(tick_count)))],
+    )
+
+
+def _set_private(view, name: str, value: object) -> None:
+    setattr(view, name, value)
+
+
+def test_replay_playback_mode_tick_loop_decrements_accum(monkeypatch, replay_playback_view) -> None:
     # Regression test: a missing `dt_accum -= dt_frame` inside the playback loop
     # can cause the entire replay to run in a single frame (or an infinite loop).
     import crimson.modes.replay_playback_mode as replay_playback_mode
-    from grim.config import CrimsonConfig
-    from grim.console import ConsoleLog, ConsoleState
-    from grim.view import ViewContext
-
-    # Avoid touching real runtime dirs/logs/audio; this test only exercises timing logic.
-    cfg = CrimsonConfig(path=Path("crimson.cfg"), data={})
-    console = ConsoleState(base_dir=Path("."), log=ConsoleLog(base_dir=Path(".")))
-
-    view = replay_playback_mode.ReplayPlaybackMode(
-        ViewContext(assets_dir=Path("."), preserve_bugs=False),
-        replay_path=Path("dummy.crdemo.gz"),
-        config=cfg,
-        console=console,
-    )
+    view, _console = replay_playback_view
 
     # Prevent key handlers from running.
     monkeypatch.setattr(replay_playback_mode.rl, "is_key_pressed", lambda _key: False)
@@ -35,7 +34,7 @@ def test_replay_playback_mode_tick_loop_decrements_accum(monkeypatch) -> None:
         if calls > 64:
             raise RuntimeError("playback tick loop did not consume accumulated dt")
 
-    view._tick_one = fake_tick_one  # type: ignore[method-assign]
+    _set_private(view, "_tick_one", fake_tick_one)
     view._finished = False
     view._paused = False
     view._tick_rate = 60
@@ -48,33 +47,24 @@ def test_replay_playback_mode_tick_loop_decrements_accum(monkeypatch) -> None:
     assert calls == 3
 
 
-def test_replay_tick_one_does_not_stop_on_player_death() -> None:
-    import crimson.modes.replay_playback_mode as replay_playback_mode
-    from grim.config import CrimsonConfig
-    from grim.console import ConsoleLog, ConsoleState
-    from grim.view import ViewContext
+def test_replay_tick_one_does_not_stop_on_player_death(replay_playback_view) -> None:
+    view, _console = replay_playback_view
 
-    cfg = CrimsonConfig(path=Path("crimson.cfg"), data={})
-    console = ConsoleState(base_dir=Path("."), log=ConsoleLog(base_dir=Path(".")))
-
-    view = replay_playback_mode.ReplayPlaybackMode(
-        ViewContext(assets_dir=Path("."), preserve_bugs=False),
-        replay_path=Path("dummy.crdemo.gz"),
-        config=cfg,
-        console=console,
-    )
-
-    view._replay = SimpleNamespace(inputs=[0, 0])
-    view._world = SimpleNamespace(
+    _set_private(view, "_replay", _replay_with_ticks(2))
+    _set_private(
+        view,
+        "_world",
+        SimpleNamespace(
         update_camera=lambda _dt: None,
         players=[SimpleNamespace(health=0.0)],
+        ),
     )
-    view._survival = object()
+    _set_private(view, "_survival", object())
     view._rush = None
     view._quest = None
     view._tick_index = 0
     view._finished = False
-    view._tick_survival = lambda **_kwargs: 1.0 / 60.0  # type: ignore[method-assign]
+    _set_private(view, "_tick_survival", lambda **_kwargs: 1.0 / 60.0)
 
     view._tick_one()
 

@@ -168,9 +168,11 @@ class BootView:
         cache = self.state.texture_cache
         if cache is None:
             return
+        loaded = 0
         for name, rel_path in COMPANY_LOGOS.items():
-            cache.get_or_load(name, rel_path)
-        loaded = sum(1 for name in COMPANY_LOGOS if cache.get(name) and cache.get(name).texture is not None)
+            asset = cache.get_or_load(name, rel_path)
+            if asset.texture is not None:
+                loaded += 1
         if COMPANY_LOGOS:
             self.state.console.log.log(f"company logos loaded: {loaded}/{len(COMPANY_LOGOS)}")
             self.state.console.log.flush()
@@ -182,9 +184,11 @@ class BootView:
         cache = self.state.texture_cache
         if cache is None:
             return
+        loaded = 0
         for name, rel_path in MENU_PREP_TEXTURES:
-            cache.get_or_load(name, rel_path)
-        loaded = sum(1 for name, _rel in MENU_PREP_TEXTURES if cache.get(name) and cache.get(name).texture is not None)
+            asset = cache.get_or_load(name, rel_path)
+            if asset.texture is not None:
+                loaded += 1
         if MENU_PREP_TEXTURES:
             self.state.console.log.log(f"menu textures loaded: {loaded}/{len(MENU_PREP_TEXTURES)}")
             self.state.console.log.flush()

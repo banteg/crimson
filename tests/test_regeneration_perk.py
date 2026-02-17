@@ -7,10 +7,12 @@ from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from grim.rand import Crand
 
 
-class _FixedRng:
+class _FixedRng(Crand):
     def __init__(self, value: int) -> None:
+        super().__init__(0)
         self._value = int(value)
 
     def rand(self) -> int:

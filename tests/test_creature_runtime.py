@@ -119,7 +119,7 @@ def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
     creature.active = True
     creature.hp = 50.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
-    creature.flags = 0
+    creature.flags = CreatureFlags(0)
     creature.ai_mode = 0
     creature.move_speed = 0.0
     creature.size = 45.0
@@ -231,7 +231,7 @@ def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
     creature.active = True
     creature.hp = 50.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
-    creature.flags = 0
+    creature.flags = CreatureFlags(0)
     creature.ai_mode = 0
     creature.move_speed = 0.0
     creature.size = 45.0
@@ -257,7 +257,7 @@ def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
     creature.active = True
     creature.hp = 50.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
-    creature.flags = 0
+    creature.flags = CreatureFlags(0)
     creature.ai_mode = 0
     creature.move_speed = 0.0
     creature.size = 45.0
@@ -282,7 +282,7 @@ def test_small_creature_dies_on_contact() -> None:
     creature.active = True
     creature.hp = 50.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
-    creature.flags = 0
+    creature.flags = CreatureFlags(0)
     creature.ai_mode = 0
     creature.move_speed = 0.0
     creature.size = 30.0

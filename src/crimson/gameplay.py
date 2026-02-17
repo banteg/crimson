@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
-from grim.rand import Crand
+from grim.rand import Crand, CrandLike
 
 from .bonuses.freeze import DeferredFreezeCorpseFx
 from .bonuses.hud import BonusHudState
@@ -88,7 +88,7 @@ _RELATIVE_MOVE_TURN_ALIGN_SCALE = float(f32(7.957747))
 
 @dataclass(slots=True)
 class GameplayState:
-    rng: Crand = field(default_factory=lambda: Crand(0xBEEF))
+    rng: CrandLike = field(default_factory=lambda: Crand(0xBEEF))
     effects: EffectPool = field(default_factory=EffectPool)
     particles: ParticlePool = field(init=False)
     sprite_effects: SpriteEffectPool = field(init=False)

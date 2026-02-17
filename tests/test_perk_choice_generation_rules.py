@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -26,6 +27,10 @@ class _SeqRng:
         return value
 
 
+def _as_rng(value: object) -> Any:
+    return value
+
+
 def _status_default() -> save_status.GameStatus:
     return save_status.GameStatus(path=Path("game.cfg"), data=save_status.default_status_data(), dirty=False)
 
@@ -48,7 +53,7 @@ def test_perks_rebuild_available_unlocks_base_and_quest_perks() -> None:
 def test_perk_generate_choices_inserts_monster_vision_on_quest_1_7() -> None:
     # `perk_generate_choices` always fills a 7-entry list; provide enough entropy to avoid
     # degenerately selecting from a tiny, repeatedly invalid subset.
-    state = GameplayState(rng=_SeqRng(list(range(2048))))
+    state = GameplayState(rng=_as_rng(_SeqRng(list(range(2048)))))
     state.quest_stage_major = 1
     state.quest_stage_minor = 7
     player = PlayerState(index=0, pos=Vec2())
@@ -58,7 +63,7 @@ def test_perk_generate_choices_inserts_monster_vision_on_quest_1_7() -> None:
 
 
 def test_perk_generate_choices_rejects_pyromaniac_without_flamethrower() -> None:
-    state = GameplayState(rng=_SeqRng([38, 1, 2, 3, 4, 5, 6, 7]))
+    state = GameplayState(rng=_as_rng(_SeqRng([38, 1, 2, 3, 4, 5, 6, 7])))
     state._perk_available_unlock_index = 0
     for perk_id in (PerkId.PYROMANIAC, PerkId.SHARPSHOOTER, PerkId.FASTLOADER, PerkId.LEAN_MEAN_EXP_MACHINE, PerkId.LONG_DISTANCE_RUNNER, PerkId.PYROKINETIC, PerkId.INSTANT_WINNER, PerkId.GRIM_DEAL):
         state.perk_available[int(perk_id)] = True
@@ -69,7 +74,7 @@ def test_perk_generate_choices_rejects_pyromaniac_without_flamethrower() -> None
 
 
 def test_perk_generate_choices_default_allows_pyromaniac_when_any_alive_player_has_flamethrower() -> None:
-    state = GameplayState(rng=_SeqRng([38, 1, 2, 3, 4, 5, 6, 7]), preserve_bugs=False)
+    state = GameplayState(rng=_as_rng(_SeqRng([38, 1, 2, 3, 4, 5, 6, 7])), preserve_bugs=False)
     state._perk_available_unlock_index = 0
     for perk_id in (
         PerkId.PYROMANIAC,
@@ -96,7 +101,7 @@ def test_perk_generate_choices_default_allows_pyromaniac_when_any_alive_player_h
 
 
 def test_perk_generate_choices_preserve_bugs_keeps_player1_pyromaniac_gate() -> None:
-    state = GameplayState(rng=_SeqRng([38, 1, 2, 3, 4, 5, 6, 7]), preserve_bugs=True)
+    state = GameplayState(rng=_as_rng(_SeqRng([38, 1, 2, 3, 4, 5, 6, 7])), preserve_bugs=True)
     state._perk_available_unlock_index = 0
     for perk_id in (
         PerkId.PYROMANIAC,
@@ -123,7 +128,7 @@ def test_perk_generate_choices_preserve_bugs_keeps_player1_pyromaniac_gate() -> 
 
 
 def test_perk_generate_choices_blocks_perks_when_death_clock_active() -> None:
-    state = GameplayState(rng=_SeqRng([41, 1, 2, 3, 4, 5, 6, 9]))
+    state = GameplayState(rng=_as_rng(_SeqRng([41, 1, 2, 3, 4, 5, 6, 9])))
     perks_rebuild_available(state)
     state.perk_available[int(PerkId.JINXED)] = True
 
@@ -136,7 +141,7 @@ def test_perk_generate_choices_blocks_perks_when_death_clock_active() -> None:
 
 def test_perk_generate_choices_applies_rarity_gate() -> None:
     # Anxious Loader is in the global rarity gate; when (rand & 3) == 1 it is rejected.
-    state = GameplayState(rng=_SeqRng([17, 1, 1, 2, 3, 4, 5, 6, 7]))
+    state = GameplayState(rng=_as_rng(_SeqRng([17, 1, 1, 2, 3, 4, 5, 6, 7])))
     state._perk_available_unlock_index = 0
     for perk_id in (PerkId.ANXIOUS_LOADER, PerkId.SHARPSHOOTER, PerkId.FASTLOADER, PerkId.LEAN_MEAN_EXP_MACHINE, PerkId.LONG_DISTANCE_RUNNER, PerkId.PYROKINETIC, PerkId.INSTANT_WINNER, PerkId.GRIM_DEAL):
         state.perk_available[int(perk_id)] = True
@@ -160,7 +165,7 @@ def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -
     status = _status_default()
     status.quest_unlock_index = 40
     rng = _LcgRng(123)
-    state = GameplayState(rng=rng)
+    state = GameplayState(rng=_as_rng(rng))
     state.status = status
     state.quest_stage_major = 4
     state.quest_stage_minor = 10
@@ -188,7 +193,7 @@ def test_perk_generate_choices_caches_offerability_checks(monkeypatch: pytest.Mo
 
     status = _status_default()
     status.quest_unlock_index = 40
-    state = GameplayState(rng=_SeqRng(list(range(2048))))
+    state = GameplayState(rng=_as_rng(_SeqRng(list(range(2048)))))
     state.status = status
     state.quest_stage_major = 4
     state.quest_stage_minor = 10
@@ -201,7 +206,7 @@ def test_perk_generate_choices_caches_offerability_checks(monkeypatch: pytest.Mo
     original = selection_mod.perk_can_offer
     calls = 0
 
-    def _counting_perk_can_offer(*args, **kwargs):  # type: ignore[no-untyped-def]
+    def _counting_perk_can_offer(*args, **kwargs):
         nonlocal calls
         calls += 1
         return original(*args, **kwargs)

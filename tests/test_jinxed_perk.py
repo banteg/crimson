@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from typing import Any, cast
 
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
@@ -26,6 +27,10 @@ class _ScriptedRng:
         return value
 
 
+def _scripted_rng(values: list[int]) -> Any:
+    return _ScriptedRng(values)
+
+
 def test_perks_update_effects_jinxed_kills_creature_and_awards_base_reward() -> None:
     dt = 0.2
     creatures = [CreatureState() for _ in range(0x17F)]
@@ -35,7 +40,7 @@ def test_perks_update_effects_jinxed_kills_creature_and_awards_base_reward() -> 
     creatures[2].reward_value = 12.7
 
     state = GameplayState()
-    state.rng = _ScriptedRng(
+    state.rng = _scripted_rng(
         [
             0,  # accident roll: rand%10 != 3
             0,  # timer roll: (rand%0x14)*0.1
@@ -64,7 +69,7 @@ def test_perks_update_effects_jinxed_award_uses_float32_sum_before_truncation() 
     creatures[2].reward_value = 97.99636190476191
 
     state = GameplayState()
-    state.rng = _ScriptedRng(
+    state.rng = _scripted_rng(
         [
             0,  # accident roll: rand%10 != 3
             0,  # timer roll: (rand%0x14)*0.1
@@ -84,7 +89,7 @@ def test_perks_update_effects_jinxed_accident_damages_player_and_spawns_fx() -> 
     dt = 0.2
 
     state = GameplayState()
-    state.rng = _ScriptedRng(
+    state.rng = _scripted_rng(
         [
             3,  # accident roll
             0,  # timer roll
@@ -109,7 +114,7 @@ def test_perks_update_effects_jinxed_default_accident_can_hit_other_alive_player
     dt = 0.2
 
     state = GameplayState(preserve_bugs=False)
-    state.rng = _ScriptedRng(
+    state.rng = _scripted_rng(
         [
             3,  # accident roll
             1,  # alive-player selection: choose player index 1
@@ -136,7 +141,7 @@ def test_perks_update_effects_jinxed_preserve_bugs_keeps_accident_on_player0() -
     dt = 0.2
 
     state = GameplayState(preserve_bugs=True)
-    state.rng = _ScriptedRng(
+    state.rng = _scripted_rng(
         [
             3,  # accident roll
             0,  # timer roll
@@ -167,7 +172,7 @@ def test_perks_update_effects_jinxed_default_uses_full_384_slot_pool() -> None:
     creatures[0x17F].reward_value = 12.7
 
     state = GameplayState(preserve_bugs=False)
-    state.rng = _ScriptedRng(
+    state.rng = _scripted_rng(
         [
             0,  # accident roll: rand%10 != 3
             0,  # timer roll: (rand%0x14)*0.1
@@ -194,7 +199,7 @@ def test_perks_update_effects_jinxed_preserve_bugs_keeps_383_slot_rolls() -> Non
     creatures[0x17F].reward_value = 12.7
 
     state = GameplayState(preserve_bugs=True)
-    state.rng = _ScriptedRng(
+    state.rng = _scripted_rng(
         [
             0,  # accident roll: rand%10 != 3
             0,  # timer roll: (rand%0x14)*0.1
@@ -219,7 +224,7 @@ def test_perks_update_effects_jinxed_timer_uses_f32_underflow_threshold() -> Non
 
     state = GameplayState()
     state.jinxed_timer = 0.034000836312770844
-    state.rng = _ScriptedRng([3, 0, 7, 9])
+    state.rng = _scripted_rng([3, 0, 7, 9])
 
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=50.0)
     player.perk_counts[int(PerkId.JINXED)] = 1
@@ -228,4 +233,4 @@ def test_perks_update_effects_jinxed_timer_uses_f32_underflow_threshold() -> Non
 
     assert math.isclose(state.jinxed_timer, 8.344650268554688e-07, abs_tol=1e-15)
     assert math.isclose(player.health, 50.0, abs_tol=1e-9)
-    assert state.rng._index == 0  # ty: ignore[attr-defined]
+    assert cast(_ScriptedRng, state.rng)._index == 0

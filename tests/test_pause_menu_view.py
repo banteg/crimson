@@ -3,13 +3,28 @@ from __future__ import annotations
 import random
 import time
 from pathlib import Path
-from types import SimpleNamespace
+from typing import cast
 
+import pyray as rl
+
+from crimson.frontend.assets import MenuAssets
 from crimson.frontend.pause_menu import PAUSE_MENU_TO_MAIN_MENU_FADE_MS, PauseMenuView
 from crimson.game.types import GameState
 from crimson.persistence import save_status
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.console import create_console
+
+
+def _texture_stub() -> rl.Texture:
+    return cast("rl.Texture", type("_TextureStub", (), {"width": 1, "height": 1})())
+
+
+class _PauseBackgroundStub:
+    def __init__(self, sink: list[float]) -> None:
+        self._sink = sink
+
+    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
+        self._sink.append(float(entity_alpha))
 
 
 def _make_state(tmp_path: Path) -> GameState:
@@ -41,13 +56,11 @@ def _make_state(tmp_path: Path) -> GameState:
 def test_pause_menu_draw_fades_pause_background_on_main_menu_close(monkeypatch, tmp_path: Path) -> None:
     captured_alpha: list[float] = []
     state = _make_state(tmp_path)
-    state.pause_background = SimpleNamespace(
-        draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha)),
-    )
+    state.pause_background = _PauseBackgroundStub(captured_alpha)
     view = PauseMenuView(state)
     view._is_open = True
-    dummy_tex = SimpleNamespace(width=1, height=1)
-    view._assets = SimpleNamespace(sign=dummy_tex, item=dummy_tex, panel=dummy_tex, labels=dummy_tex)
+    dummy_tex = _texture_stub()
+    view._assets = MenuAssets(sign=dummy_tex, item=dummy_tex, panel=dummy_tex, labels=dummy_tex)
     view._closing = True
     view._close_action = "back_to_menu"
     view._timeline_ms = PAUSE_MENU_TO_MAIN_MENU_FADE_MS // 2
@@ -67,13 +80,11 @@ def test_pause_menu_draw_fades_pause_background_on_main_menu_close(monkeypatch, 
 def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(monkeypatch, tmp_path: Path) -> None:
     captured_alpha: list[float] = []
     state = _make_state(tmp_path)
-    state.pause_background = SimpleNamespace(
-        draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha)),
-    )
+    state.pause_background = _PauseBackgroundStub(captured_alpha)
     view = PauseMenuView(state)
     view._is_open = True
-    dummy_tex = SimpleNamespace(width=1, height=1)
-    view._assets = SimpleNamespace(sign=dummy_tex, item=dummy_tex, panel=dummy_tex, labels=dummy_tex)
+    dummy_tex = _texture_stub()
+    view._assets = MenuAssets(sign=dummy_tex, item=dummy_tex, panel=dummy_tex, labels=dummy_tex)
     view._closing = True
     view._close_action = "back_to_previous"
     view._timeline_ms = 0

@@ -4,7 +4,7 @@ import random
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, Protocol
+from typing import TYPE_CHECKING, Any, Literal, Protocol, runtime_checkable
 
 import pyray as rl
 
@@ -22,11 +22,13 @@ from ..game_world import GameWorld
 from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..net.debug_log import lan_debug_log
 from ..net.deterministic_status import build_lan_deterministic_status
+from ..net.protocol import PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
 from ..net.rollback_resync_v5 import decode_mode_snapshot, encode_mode_snapshot
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects import _creature_find_in_radius
 from ..persistence.highscores import HighScoreRecord
+from ..replay.types import PackedPlayerInput
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSessionTick
 from ..ui.game_over import GameOverUi
@@ -34,7 +36,6 @@ from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_asset
 
 if TYPE_CHECKING:
     from ..net.protocol import StatusSnapshot
-    from ..net.runtime import LanRuntime
     from ..persistence.save_status import GameStatus
 
 
@@ -42,7 +43,7 @@ class _ScreenFade(Protocol):
     screen_fade_alpha: float
 
 
-class _DeterministicSession(Protocol):
+class DeterministicSessionLike(Protocol):
     detail_preset: int
     fx_toggle: int
     game_tune_started: bool
@@ -56,7 +57,52 @@ class _DeterministicSession(Protocol):
 
 
 class _ReplayRecorderLike(Protocol):
+    tick_index: int
+    recorded_tick_count: int
+
     def record_tick(self, inputs: list[PlayerInput]) -> int: ...
+
+
+class _LanRuntimeSlotLike(Protocol):
+    local_slot_index: int
+
+
+@runtime_checkable
+class LanRuntimeLike(_LanRuntimeSlotLike, Protocol):
+    error: str
+
+    def update(self) -> None: ...
+    def queue_local_input(self, packed_input: PackedPlayerInput, *, now_ms: int | None = None) -> None: ...
+    def host_remote_inputs_ready(self) -> bool: ...
+    def pop_perk_event(self) -> PerkMenuOpen | PerkMenuClose | PerkPick | None: ...
+    def pop_tick_frame(self) -> TickFrame | None: ...
+    def note_desync(self, *, kind: str, tick_index: int, expected: str, actual: str) -> None: ...
+    def broadcast_tick_frame(self, frame: TickFrame, *, now_ms: int | None = None) -> None: ...
+    def broadcast_perk_menu_open(self, *, tick_index: int, player_index: int = 0, now_ms: int | None = None) -> None: ...
+    def broadcast_perk_menu_close(
+        self,
+        *,
+        tick_index: int,
+        player_index: int = 0,
+        now_ms: int | None = None,
+    ) -> None: ...
+    def broadcast_perk_pick(
+        self,
+        *,
+        tick_index: int,
+        player_index: int = 0,
+        choice_index: int,
+        now_ms: int | None = None,
+    ) -> None: ...
+    def debug_overlay_lines(self) -> list[str]: ...
+
+
+@runtime_checkable
+class _LanRuntimeRollbackLike(Protocol):
+    def store_local_snapshot(self, tick_index: int, snapshot_blob: bytes) -> None: ...
+    def pop_rollback_from(self) -> int | None: ...
+    def pop_resync_snapshot(self) -> tuple[int, bytes] | None: ...
+    def mark_resync_applied(self, tick_index: int) -> None: ...
 
 
 # LAN lockstep must keep presentation-step RNG consumption identical across peers.
@@ -138,7 +184,8 @@ class BaseGameplayMode:
         self._local_input = LocalInputInterpreter()
         self._terrain_regen_counter = 0
         self._bootstrap_seed = 0
-        self._lan_runtime: LanRuntime | None = None
+        self._replay_recorder: _ReplayRecorderLike | None = None
+        self._lan_runtime: LanRuntimeLike | None = None
         self._lan_local_slot_index = 0
         self._lan_seed_override: int | None = None
         self._lan_start_tick = 0
@@ -167,11 +214,11 @@ class BaseGameplayMode:
         if hasattr(self, "state"):
             self.state.status = self._status_sim
 
-    def bind_lan_runtime(self, runtime: LanRuntime | None) -> None:
-        self._lan_runtime = runtime
+    def bind_lan_runtime(self, runtime: LanRuntimeLike | _LanRuntimeSlotLike | None) -> None:
+        self._lan_runtime = runtime if isinstance(runtime, LanRuntimeLike) else None
         slot_index = 0
         if runtime is not None:
-            slot_index = int(getattr(runtime, "local_slot_index", 0))
+            slot_index = int(runtime.local_slot_index)
         self._lan_local_slot_index = max(0, min(3, int(slot_index)))
 
     def set_lan_match_start(
@@ -214,7 +261,7 @@ class BaseGameplayMode:
         return self.config.game_mode
 
     def _draw_target_health_bar(self, *, alpha: float = 1.0) -> None:
-        creatures = getattr(self.creatures, "entries", [])
+        creatures = self.creatures.entries
         if not creatures:
             return
 
@@ -239,10 +286,10 @@ class BaseGameplayMode:
 
         for target_idx in target_indices:
             creature = creatures[target_idx]
-            if not bool(getattr(creature, "active", False)):
+            if not bool(creature.active):
                 continue
-            hp = float(getattr(creature, "hp", 0.0))
-            max_hp = float(getattr(creature, "max_hp", 0.0))
+            hp = float(creature.hp)
+            max_hp = float(creature.max_hp)
             if max_hp <= 0.0:
                 continue
 
@@ -392,20 +439,17 @@ class BaseGameplayMode:
             return False
         if bool(self._lan_initial_terrain_ready):
             return False
-        ground = getattr(self.world, "ground", None)
+        ground = self.world.ground
         if ground is None:
             return False
-        pending_fn = getattr(ground, "generation_pending", None)
-        if not callable(pending_fn):
-            return False
-        return bool(pending_fn())
+        return bool(ground.generation_pending())
 
     def _trace_lan_terrain_generation(self) -> None:
         if not bool(self._lan_enabled):
             self._lan_terrain_pending_last = False
             self._lan_initial_terrain_ready = False
             return
-        ground = getattr(self.world, "ground", None)
+        ground = self.world.ground
         if ground is None:
             self._lan_terrain_pending_last = False
             self._lan_initial_terrain_ready = True
@@ -423,10 +467,7 @@ class BaseGameplayMode:
             )
         if (not pending) and bool(self._lan_terrain_pending_last):
             duration_ms = max(0, int(now_ms) - int(self._lan_terrain_pending_since_ms))
-            rt_ready = False
-            rt_ready_fn = getattr(ground, "render_target_ready", None)
-            if callable(rt_ready_fn):
-                rt_ready = bool(rt_ready_fn())
+            rt_ready = bool(ground.render_target_ready())
             lan_debug_log(
                 "lan_terrain_generate_done",
                 mode=self.__class__.__name__,
@@ -434,7 +475,7 @@ class BaseGameplayMode:
                 slot=int(self._lan_local_slot_index),
                 duration_ms=int(duration_ms),
                 render_target_ready=bool(rt_ready),
-                texture_failed=bool(getattr(ground, "texture_failed", False)),
+                texture_failed=bool(ground.texture_failed),
             )
         self._lan_terrain_pending_last = bool(pending)
         if not pending:
@@ -492,9 +533,8 @@ class BaseGameplayMode:
         y += float(line_h)
 
         runtime = self._lan_runtime
-        debug_lines_fn = getattr(runtime, "debug_overlay_lines", None) if runtime is not None else None
-        if callable(debug_lines_fn):
-            for line in debug_lines_fn():
+        if runtime is not None:
+            for line in runtime.debug_overlay_lines():
                 self._draw_ui_text(
                     str(line),
                     Vec2(float(x), float(y)),
@@ -586,12 +626,12 @@ class BaseGameplayMode:
             )
 
     def _net_replay_snapshot_state(self) -> dict[str, Any] | None:
-        recorder = getattr(self, "_replay_recorder", None)
+        recorder = self._replay_recorder
         if recorder is None:
             return None
         return {
-            "tick_index": int(getattr(recorder, "tick_index", 0)),
-            "recorded_tick_count": int(getattr(recorder, "recorded_tick_count", 0)),
+            "tick_index": int(recorder.tick_index),
+            "recorded_tick_count": int(recorder.recorded_tick_count),
         }
 
     def _store_net_runtime_snapshot(
@@ -603,7 +643,7 @@ class BaseGameplayMode:
         mode_state: dict[str, Any],
     ) -> None:
         runtime = self._lan_runtime
-        if runtime is None:
+        if runtime is None or (not isinstance(runtime, _LanRuntimeRollbackLike)):
             return
         tick = max(0, int(tick_index))
         if (tick % 4) != 0:
@@ -618,16 +658,13 @@ class BaseGameplayMode:
             )
         except Exception:
             return
-        store_snapshot = getattr(runtime, "store_local_snapshot", None)
-        if callable(store_snapshot):
-            store_snapshot(int(tick), payload)
+        runtime.store_local_snapshot(int(tick), payload)
 
     def _consume_net_runtime_recovery(self, *, mode_name: Literal["survival", "rush", "quests"]) -> None:
         runtime = self._lan_runtime
-        if runtime is None:
+        if runtime is None or (not isinstance(runtime, _LanRuntimeRollbackLike)):
             return
-        pop_rollback_from = getattr(runtime, "pop_rollback_from", None)
-        rollback_from = pop_rollback_from() if callable(pop_rollback_from) else None
+        rollback_from = runtime.pop_rollback_from()
         if rollback_from is not None:
             lan_debug_log(
                 "rollback_requested",
@@ -636,8 +673,7 @@ class BaseGameplayMode:
                 from_tick=int(rollback_from),
             )
 
-        pop_resync_snapshot = getattr(runtime, "pop_resync_snapshot", None)
-        pending = pop_resync_snapshot() if callable(pop_resync_snapshot) else None
+        pending = runtime.pop_resync_snapshot()
         if pending is None:
             return
         tick_index, payload = pending
@@ -646,9 +682,7 @@ class BaseGameplayMode:
         except Exception:
             runtime.error = "resync_decode_error"
             return
-        mark_resync_applied = getattr(runtime, "mark_resync_applied", None)
-        if callable(mark_resync_applied):
-            mark_resync_applied(int(tick_index))
+        runtime.mark_resync_applied(int(tick_index))
 
     def _player_name_default(self) -> str:
         return str(self.config.player_name or "")
@@ -698,22 +732,22 @@ class BaseGameplayMode:
             mode=self.__class__.__name__,
             seed=int(self._bootstrap_seed),
             seed_source=str(seed_source),
-            rng_state=int(getattr(self.world.state.rng, "state", 0) or 0),
-            world_size=float(getattr(self.world, "world_size", 0.0) or 0.0),
-            player_count=int(len(getattr(self.world, "players", []) or [])),
+            rng_state=int(self.world.state.rng.state),
+            world_size=float(self.world.world_size),
+            player_count=int(len(self.world.players)),
             lan_enabled=bool(self._lan_enabled),
             lan_role=str(self._lan_role),
             lan_slot=int(self._lan_local_slot_index),
-            base_status_quest_unlock_index=int(getattr(self._status_base, "quest_unlock_index", 0) or 0)
+            base_status_quest_unlock_index=int(self._status_base.quest_unlock_index)
             if self._status_base is not None
             else 0,
-            base_status_quest_unlock_index_full=int(getattr(self._status_base, "quest_unlock_index_full", 0) or 0)
+            base_status_quest_unlock_index_full=int(self._status_base.quest_unlock_index_full)
             if self._status_base is not None
             else 0,
-            sim_status_quest_unlock_index=int(getattr(self._status_sim, "quest_unlock_index", 0) or 0)
+            sim_status_quest_unlock_index=int(self._status_sim.quest_unlock_index)
             if self._status_sim is not None
             else 0,
-            sim_status_quest_unlock_index_full=int(getattr(self._status_sim, "quest_unlock_index_full", 0) or 0)
+            sim_status_quest_unlock_index_full=int(self._status_sim.quest_unlock_index_full)
             if self._status_sim is not None
             else 0,
             detail_preset=self.config.detail_preset,
@@ -724,7 +758,7 @@ class BaseGameplayMode:
             screen_h=int(rl.get_screen_height()),
             render_w=int(rl.get_render_width()),
             render_h=int(rl.get_render_height()),
-            terrain_texture_scale=float(getattr(ground, "texture_scale", 0.0) or 0.0) if ground is not None else 0.0,
+            terrain_texture_scale=float(ground.texture_scale) if ground is not None else 0.0,
         )
         self._local_input.reset(players=self.world.players)
 
@@ -848,7 +882,7 @@ class BaseGameplayMode:
         ticks_to_run: int,
         dt_tick: float,
         input_frame: list[PlayerInput],
-        session: _DeterministicSession,
+        session: DeterministicSessionLike,
         recorder: _ReplayRecorderLike | None,
         on_tick: Callable[[DeterministicSessionTick, int | None], bool],
     ) -> None:

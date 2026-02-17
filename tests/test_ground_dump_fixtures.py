@@ -4,8 +4,10 @@ import json
 import os
 import shutil
 import sys
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
+from typing import cast
 
 import pyray as rl
 import pytest
@@ -39,7 +41,8 @@ DEFAULT_ARTIFACTS_DIR = REPO_ROOT / "artifacts" / "tests" / "ground_dumps"
 DOWNSAMPLE_FACTOR = int(os.environ.get("CRIMSON_GROUND_DUMP_DOWNSAMPLE", "4"))
 MAX_DELTA_TOL = int(os.environ.get("CRIMSON_GROUND_DUMP_MAX_DELTA", "40"))
 MEAN_DELTA_TOL = float(os.environ.get("CRIMSON_GROUND_DUMP_MEAN_DELTA", "3.0"))
-RESAMPLE_BOX = getattr(Image, "Resampling", Image).BOX
+_RESAMPLING = getattr(Image, "Resampling", None)
+RESAMPLE_BOX = cast(int, getattr(_RESAMPLING, "BOX", getattr(Image, "BOX")))
 
 
 def _artifacts_dir() -> Path:
@@ -116,19 +119,19 @@ def _can_init_raylib() -> bool:
 
 
 @pytest.fixture(scope="module")
-def raylib_context() -> None:
+def raylib_context() -> Iterator[None]:
     if not _can_init_raylib():
         pytest.skip("raylib requires an active display")
-    rl.set_config_flags(rl.FLAG_WINDOW_HIDDEN)
+    rl.set_config_flags(int(getattr(rl, "FLAG_WINDOW_HIDDEN", 0)))
     rl.init_window(16, 16, "ground-fixtures")
     try:
-        yield None
+        yield
     finally:
         rl.close_window()
 
 
 @pytest.fixture(scope="module")
-def terrain_textures(raylib_context) -> dict[int, TextureAsset]:
+def terrain_textures(raylib_context) -> Iterator[dict[int, TextureAsset]]:
     if not PAQ_PATH.exists():
         pytest.skip(f"missing game assets: {PAQ_PATH}")
     entries = load_paq_entries(PAQ_DIR)
@@ -185,6 +188,9 @@ def test_ground_dumps_match_fixtures(terrain_textures: dict[int, TextureAsset]) 
         base = terrain_textures[case.tex0_index].texture
         overlay = terrain_textures[case.tex1_index].texture
         detail = terrain_textures[case.tex2_index].texture
+        assert base is not None
+        assert overlay is not None
+        assert detail is not None
         renderer = GroundRenderer(
             texture=base,
             overlay=overlay,

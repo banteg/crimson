@@ -47,6 +47,21 @@ def test_game_loop_consumes_terrain_regenerate_request(monkeypatch, tmp_path: Pa
     class _FakeView:
         called = 0
 
+        def open(self) -> None:
+            return
+
+        def close(self) -> None:
+            return
+
+        def update(self, dt: float) -> None:
+            _ = dt
+
+        def draw(self) -> None:
+            return
+
+        def take_action(self) -> str | None:
+            return None
+
         def regenerate_terrain_for_console(self) -> None:
             self.called += 1
 

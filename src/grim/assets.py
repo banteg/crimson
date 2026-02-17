@@ -3,7 +3,7 @@ from __future__ import annotations
 import io
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import cast
+from typing import Protocol, cast
 
 import pyray as rl
 from PIL import Image
@@ -11,6 +11,16 @@ from PIL import Image
 from . import jaz, paq
 
 PAQ_NAME = "crimson.paq"
+
+
+class TextureAssetLike(Protocol):
+    texture: rl.Texture | None
+
+
+class TextureCacheLike(Protocol):
+    def texture(self, name: str) -> rl.Texture | None: ...
+
+    def get_or_load(self, name: str, rel_path: str) -> TextureAssetLike: ...
 
 
 def find_paq_path(assets_root: Path, *, paq_name: str = PAQ_NAME) -> Path | None:

@@ -7,6 +7,7 @@ from pathlib import Path
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.camera import camera_shake_update
+from crimson.creatures.spawn import CreatureFlags
 from crimson.game_world import GameWorld
 from crimson.gameplay import GameplayState
 from crimson.sim.driver.setup import build_damage_scale_by_type, build_empty_fx_queues, reset_players
@@ -24,7 +25,7 @@ class _Creature:
     active: bool = True
     hitbox_size: float = 16.0
     size: float = 50.0
-    flags: int = 0
+    flags: CreatureFlags = CreatureFlags(0)
     plague_infected: bool = False
 
 

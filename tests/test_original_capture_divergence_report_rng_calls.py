@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
@@ -87,7 +88,8 @@ def test_run_actual_checkpoints_quest_uses_capture_inter_tick_rand_draw_override
             tick_rate=60,
         ),
     )
-    seen: dict[str, object] = {}
+    seen_inter_tick_rand_draws = -1
+    seen_inter_tick_rand_draws_by_tick: dict[int, int] = {}
 
     class _Stop(RuntimeError):
         pass
@@ -119,7 +121,10 @@ def test_run_actual_checkpoints_quest_uses_capture_inter_tick_rand_draw_override
     )
 
     def _fake_run_quest_replay(*_args: object, **kwargs: object):
-        seen.update(kwargs)
+        nonlocal seen_inter_tick_rand_draws, seen_inter_tick_rand_draws_by_tick
+        inter_tick_draws_obj = kwargs.get("inter_tick_rand_draws", -1)
+        seen_inter_tick_rand_draws = int(inter_tick_draws_obj) if isinstance(inter_tick_draws_obj, int) else -1
+        seen_inter_tick_rand_draws_by_tick = cast("dict[int, int]", kwargs.get("inter_tick_rand_draws_by_tick", {}))
         raise _Stop("stop after capturing kwargs")
 
     monkeypatch.setattr(report, "run_quest_replay", _fake_run_quest_replay)
@@ -132,8 +137,8 @@ def test_run_actual_checkpoints_quest_uses_capture_inter_tick_rand_draw_override
             inter_tick_rand_draws=1,
         )
 
-    assert int(seen.get("inter_tick_rand_draws", -1)) == 1
-    assert seen.get("inter_tick_rand_draws_by_tick") == {0: 24021, 1: 1}
+    assert seen_inter_tick_rand_draws == 1
+    assert seen_inter_tick_rand_draws_by_tick == {0: 24021, 1: 1}
 
 
 def test_infer_rand_calls_between_states_and_stage_breakdown() -> None:

@@ -5,7 +5,7 @@ import hashlib
 import random
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import cast
+from typing import Protocol, cast
 
 import pyray as rl
 
@@ -53,7 +53,7 @@ from ..replay.input_codec import pack_player_input, unpack_player_input
 from ..replay.types import WEAPON_USAGE_COUNT
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
-from ..sim.sessions import QuestDeterministicSession
+from ..sim.sessions import QuestDeterministicSession, QuestDeterministicSessionTick
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
@@ -93,6 +93,23 @@ QUEST_COMPLETE_BANNER_FADE_OUT_END_MS = 2000.0
 tick_quest_mode_spawns = _legacy_tick_quest_mode_spawns
 tick_quest_completion_transition = _legacy_tick_quest_completion_transition
 quest_spawn_table_empty = _legacy_quest_spawn_table_empty
+
+
+class QuestSessionLike(Protocol):
+    detail_preset: int
+    fx_toggle: int
+    spawn_entries: tuple[SpawnEntry, ...]
+    spawn_timeline_ms: float
+    no_creatures_timer_ms: float
+    completion_transition_ms: float
+
+    def step_tick(
+        self,
+        *,
+        dt_frame: float,
+        inputs: list[PlayerInput] | None,
+        trace_rng: bool = False,
+    ) -> QuestDeterministicSessionTick: ...
 
 
 @dataclass(slots=True)
@@ -201,7 +218,7 @@ class QuestMode(BaseGameplayMode):
         self._perk_menu = PerkMenuController(on_close=self._reset_perk_prompt, on_pick=self._record_perk_pick)
         self._sim_clock = FixedStepClock(tick_rate=60)
         self._lan_capture_clock = FixedStepClock(tick_rate=60)
-        self._sim_session: QuestDeterministicSession | None = None
+        self._sim_session: QuestSessionLike | None = None
         self._replay_recorder: ReplayRecorder | None = None
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         self._replay_checkpoints_sample_rate: int = 60
@@ -318,7 +335,7 @@ class QuestMode(BaseGameplayMode):
         replay = recorder.finish()
         self._record_replay_checkpoint(max(0, recorder.tick_index - 1), force=True)
         terminal_tick = int(recorder.tick_index)
-        if any(int(getattr(event, "tick_index", -1)) == terminal_tick for event in replay.events):
+        if any(int(event.tick_index) == terminal_tick for event in replay.events):
             self._record_replay_checkpoint(terminal_tick, force=True)
         data = dump_replay(replay)
         digest = hashlib.sha256(data).hexdigest()
@@ -326,7 +343,7 @@ class QuestMode(BaseGameplayMode):
         replay_dir = self._base_dir / "replays"
         replay_dir.mkdir(parents=True, exist_ok=True)
         level = str(self._quest.level) if self._quest.level else str(replay.header.quest_level or "quest")
-        kind = str(getattr(self._outcome, "kind", "quest")) if self._outcome is not None else "quest"
+        kind = str(self._outcome.kind) if self._outcome is not None else "quest"
         base_time_ms = int(self._quest.spawn_timeline_ms)
         base_name = f"quest_{level}_{stamp}_{kind}_t{base_time_ms}"
         path = replay_dir / f"{base_name}.crdemo.gz"
@@ -486,8 +503,8 @@ class QuestMode(BaseGameplayMode):
             )
             weapon_usage_counts = weapon_usage_counts[:WEAPON_USAGE_COUNT]
         status_snapshot = ReplayStatusSnapshot(
-            quest_unlock_index=int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0,
-            quest_unlock_index_full=int(getattr(status, "quest_unlock_index_full", 0) or 0)
+            quest_unlock_index=int(status.quest_unlock_index) if status is not None else 0,
+            quest_unlock_index_full=int(status.quest_unlock_index_full)
             if status is not None
             else 0,
             weapon_usage_counts=weapon_usage_counts,
@@ -845,7 +862,7 @@ class QuestMode(BaseGameplayMode):
         runtime.update()
         role = str(self._lan_role)
         self._consume_net_runtime_recovery(mode_name="quests")
-        if str(getattr(runtime, "error", "") or ""):
+        if str(runtime.error or ""):
             self.close_requested = True
             return
         if self.world.audio_router is not None:
@@ -879,7 +896,7 @@ class QuestMode(BaseGameplayMode):
                 if frame is None:
                     return False
 
-                packed_inputs = list(getattr(frame, "frame_inputs", []) or [])
+                packed_inputs = list(frame.frame_inputs)
                 player_inputs = [unpack_player_input(packed) for packed in packed_inputs]
                 recorder = self._replay_recorder
                 if recorder is not None:
@@ -899,8 +916,8 @@ class QuestMode(BaseGameplayMode):
                     inputs=player_inputs,
                 )
 
-                remote_command_hash = str(getattr(frame, "command_hash", "") or "")
-                remote_state_hash = str(getattr(frame, "state_hash", "") or "")
+                remote_command_hash = str(frame.command_hash or "")
+                remote_state_hash = str(frame.state_hash or "")
                 local_command_hash = str(tick.step.command_hash)
                 local_state_hash = ""
                 if role == "join":

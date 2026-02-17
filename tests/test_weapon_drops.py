@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
@@ -23,6 +24,10 @@ class _SeqRng:
         value = int(self._values[self._idx])
         self._idx += 1
         return value
+
+
+def _as_rng(value: object) -> Any:
+    return value
 
 
 def _status_default() -> save_status.GameStatus:
@@ -61,7 +66,7 @@ def test_weapon_pick_random_available_enforces_unlocked() -> None:
     status = _status_default()
     status.quest_unlock_index = 0
 
-    state = GameplayState(rng=_SeqRng([1, 0]))
+    state = GameplayState(rng=_as_rng(_SeqRng([1, 0])))
     state.status = status
     state.game_mode = int(GameMode.QUESTS)
 
@@ -72,9 +77,8 @@ def test_weapon_pick_random_available_rerolls_used_weapons() -> None:
     status = _status_default()
     status.increment_weapon_usage(int(WeaponId.PISTOL))
 
-    state = GameplayState(rng=_SeqRng([0, 0, 1]))
+    state = GameplayState(rng=_as_rng(_SeqRng([0, 0, 1])))
     state.status = status
     state.game_mode = int(GameMode.SURVIVAL)
 
     assert weapon_pick_random_available(state) == int(WeaponId.ASSAULT_RIFLE)
-

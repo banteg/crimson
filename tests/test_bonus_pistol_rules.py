@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusPool
 from crimson.gameplay import GameplayState
@@ -25,9 +27,13 @@ class _SequenceRng:
         return int(self._idx)
 
 
+def _sequence_rng(values: list[int]) -> Any:
+    return _SequenceRng(values)
+
+
 def test_pistol_safety_net_forces_weapon_drop() -> None:
     state = GameplayState()
-    state.rng = _SequenceRng([0, 0, 0, 1])
+    state.rng = _sequence_rng([0, 0, 0, 1])
     state.bonus_pool = BonusPool()
 
     player = PlayerState(index=0, pos=Vec2(256.0, 256.0))
@@ -40,7 +46,7 @@ def test_pistol_safety_net_forces_weapon_drop() -> None:
 
 def test_pistol_extra_gate_allows_spawn_without_bonus_magnet() -> None:
     state = GameplayState()
-    state.rng = _SequenceRng([3, 0, 1, 0, 0])
+    state.rng = _sequence_rng([3, 0, 1, 0, 0])
     state.bonus_pool = BonusPool()
 
     player = PlayerState(index=0, pos=Vec2())
@@ -51,7 +57,7 @@ def test_pistol_extra_gate_allows_spawn_without_bonus_magnet() -> None:
 
 def test_pistol_extra_gate_uses_any_player_by_default() -> None:
     state = GameplayState()
-    state.rng = _SequenceRng([3, 0, 1, 0])
+    state.rng = _sequence_rng([3, 0, 1, 0])
     state.bonus_pool = BonusPool()
 
     player1 = PlayerState(index=0, pos=Vec2(), weapon_id=int(WeaponId.ASSAULT_RIFLE))
@@ -63,7 +69,7 @@ def test_pistol_extra_gate_uses_any_player_by_default() -> None:
 
 def test_pistol_extra_gate_preserve_bugs_uses_player1_only() -> None:
     state = GameplayState(preserve_bugs=True)
-    state.rng = _SequenceRng([3, 0, 1, 0])
+    state.rng = _sequence_rng([3, 0, 1, 0])
     state.bonus_pool = BonusPool()
 
     player1 = PlayerState(index=0, pos=Vec2(), weapon_id=int(WeaponId.ASSAULT_RIFLE))
@@ -75,7 +81,7 @@ def test_pistol_extra_gate_preserve_bugs_uses_player1_only() -> None:
 
 def test_weapon_drop_near_player2_converts_to_points_by_default() -> None:
     state = GameplayState()
-    state.rng = _SequenceRng([1, 13, 1, 4])
+    state.rng = _sequence_rng([1, 13, 1, 4])
     state.bonus_pool = BonusPool()
 
     player1 = PlayerState(index=0, pos=Vec2(), weapon_id=int(WeaponId.ASSAULT_RIFLE))
@@ -89,7 +95,7 @@ def test_weapon_drop_near_player2_converts_to_points_by_default() -> None:
 
 def test_weapon_drop_near_player2_stays_player1_only_with_preserve_bugs() -> None:
     state = GameplayState(preserve_bugs=True)
-    state.rng = _SequenceRng([1, 13, 1, 4])
+    state.rng = _sequence_rng([1, 13, 1, 4])
     state.bonus_pool = BonusPool()
 
     player1 = PlayerState(index=0, pos=Vec2(), weapon_id=int(WeaponId.ASSAULT_RIFLE))
@@ -103,7 +109,7 @@ def test_weapon_drop_near_player2_stays_player1_only_with_preserve_bugs() -> Non
 
 def test_pistol_safety_net_consumes_weapon_rng_when_spawn_pos_is_blocked() -> None:
     state = GameplayState()
-    rng = _SequenceRng([0, 0, 2])
+    rng = _sequence_rng([0, 0, 2])
     state.rng = rng
     state.bonus_pool = BonusPool()
 
@@ -117,7 +123,7 @@ def test_pistol_safety_net_consumes_weapon_rng_when_spawn_pos_is_blocked() -> No
 
 def test_spawn_gate_consumes_pick_rng_when_spacing_rejects_slot() -> None:
     state = GameplayState()
-    rng = _SequenceRng([1, 0, 0])
+    rng = _sequence_rng([1, 0, 0])
     state.rng = rng
     state.bonus_pool = BonusPool()
 
@@ -134,7 +140,7 @@ def test_spawn_gate_consumes_pick_rng_when_spacing_rejects_slot() -> None:
 
 def test_weapon_drop_suppression_checks_all_carried_weapons_by_default() -> None:
     state = GameplayState()
-    state.rng = _SequenceRng([1, 13, 1, 2])
+    state.rng = _sequence_rng([1, 13, 1, 2])
     state.bonus_pool = BonusPool()
 
     player1 = PlayerState(index=0, pos=Vec2(), weapon_id=int(WeaponId.ASSAULT_RIFLE))
@@ -146,7 +152,7 @@ def test_weapon_drop_suppression_checks_all_carried_weapons_by_default() -> None
 
 def test_weapon_drop_suppression_preserve_bugs_checks_player1_weapon_only() -> None:
     state = GameplayState(preserve_bugs=True)
-    state.rng = _SequenceRng([1, 13, 1, 2])
+    state.rng = _sequence_rng([1, 13, 1, 2])
     state.bonus_pool = BonusPool()
 
     player1 = PlayerState(index=0, pos=Vec2(), weapon_id=int(WeaponId.ASSAULT_RIFLE))

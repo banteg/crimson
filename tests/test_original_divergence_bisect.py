@@ -129,8 +129,9 @@ def test_build_repro_tick_row_includes_rng_stream_and_branch_events() -> None:
 
     assert int(row["tick"]) == 25
     align = row["rng_stream_alignment"]
-    assert isinstance(align, dict)
-    assert int(align["first_mismatch_idx"]) == 1
+    first_mismatch_idx = align["first_mismatch_idx"]
+    assert first_mismatch_idx is not None
+    assert first_mismatch_idx == 1
     assert align["first_mismatch_reason"] == "value"
     assert align["first_mismatch_capture_branch_id"] == "0x00420fd7"
     capture_rows = row["capture_rng_stream_rows"]

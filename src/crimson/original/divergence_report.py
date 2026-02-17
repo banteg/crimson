@@ -9,7 +9,7 @@ from collections import Counter
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, TypedDict, cast
 
 import msgspec
 
@@ -140,6 +140,25 @@ _CRT_RAND_MASK = 0xFFFFFFFF
 _CRT_RAND_CALL_SEARCH_LIMIT = 4096
 _JSON_OUT_AUTO = "__AUTO__"
 _DEFAULT_JSON_OUT_PATH = Path("artifacts/frida/reports/divergence_report_latest.json")
+
+
+class RngStreamAlignment(TypedDict):
+    capture_head_len: int
+    actual_calls: int | None
+    prefix_match: int | None
+    compared: int | None
+    missing_tail: int | None
+    first_mismatch_idx: int | None
+    first_mismatch_reason: str | None
+    first_mismatch_capture: int | None
+    first_mismatch_actual: int | None
+    first_mismatch_capture_state_before: int | None
+    first_mismatch_capture_state_after: int | None
+    first_mismatch_actual_state_before: int | None
+    first_mismatch_actual_state_after: int | None
+    first_mismatch_capture_caller_static: str | None
+    first_mismatch_capture_branch_id: str | None
+    first_mismatch_capture_seq: int | None
 
 
 def _int_or(value: object, default: int = -1) -> int:
@@ -1438,7 +1457,7 @@ def _compute_rng_stream_alignment(
     act: ReplayCheckpoint,
     capture_stream_rows: list[dict[str, object]],
     capture_head_len: int,
-) -> dict[str, object]:
+) -> RngStreamAlignment:
     capture_rows = _coerce_rng_stream_rows(capture_stream_rows)
     cap_len = max(int(capture_head_len), len(capture_rows))
     actual_rows, actual_calls = _actual_rng_stream_rows_for_checkpoint(

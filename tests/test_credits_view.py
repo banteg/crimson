@@ -75,7 +75,7 @@ def test_credits_unlock_secret_lines_sets_flags_and_text() -> None:
 
 
 def test_credits_secret_button_visible_in_debug_or_after_unlock(monkeypatch) -> None:
-    view = CreditsView(SimpleNamespace())  # type: ignore[arg-type]
+    view = CreditsView(SimpleNamespace())
 
     view._secret_unlock = False
     monkeypatch.setattr(credits_panel, "debug_enabled", lambda: False)

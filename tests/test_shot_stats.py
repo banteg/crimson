@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
@@ -19,7 +20,7 @@ class _DummyCreature:
     size: float = 200.0
     active: bool = True
     hitbox_size: float = 16.0
-    flags: int = 0
+    flags: CreatureFlags = CreatureFlags(0)
     plague_infected: bool = False
 
 

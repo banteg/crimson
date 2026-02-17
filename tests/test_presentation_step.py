@@ -64,7 +64,7 @@ def test_plan_death_sfx_allows_five_randomized_deaths() -> None:
         draws["count"] += 1
         return 0
 
-    deaths = [SimpleNamespace(type_id=int(CreatureTypeId.ZOMBIE)) for _ in range(5)]
+    deaths = tuple(SimpleNamespace(type_id=int(CreatureTypeId.ZOMBIE)) for _ in range(5))
     keys = plan_death_sfx_keys(deaths, rand=rand)
 
     assert len(keys) == 5
