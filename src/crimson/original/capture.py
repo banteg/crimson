@@ -1596,7 +1596,7 @@ def default_capture_replay_path(checkpoints_path: Path) -> Path:
         stem = name[: -len(".json")]
     else:
         stem = name
-    return checkpoints_path.with_name(f"{stem}.crdemo.gz")
+    return checkpoints_path.with_name(f"{stem}.crd")
 
 
 def _validate_capture_path(path: Path) -> None:

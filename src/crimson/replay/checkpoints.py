@@ -90,8 +90,8 @@ class ReplayCheckpoints:
 def default_checkpoints_path(replay_path: Path) -> Path:
     replay_path = Path(replay_path)
     name = replay_path.name
-    if name.endswith(".crdemo.gz"):
-        stem = name[: -len(".crdemo.gz")]
+    if name.endswith(".crd"):
+        stem = name[: -len(".crd")]
         return replay_path.with_name(f"{stem}.checkpoints.json.gz")
     return replay_path.with_name(f"{name}.checkpoints.json.gz")
 

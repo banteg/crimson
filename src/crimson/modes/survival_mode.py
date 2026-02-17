@@ -207,10 +207,10 @@ class SurvivalMode(BaseGameplayMode):
         replay_dir.mkdir(parents=True, exist_ok=True)
         score = int(self.player.experience)
         base_name = f"survival_{stamp}_score{score}"
-        path = replay_dir / f"{base_name}.crdemo.gz"
+        path = replay_dir / f"{base_name}.crd"
         counter = 1
         while path.exists():
-            path = replay_dir / f"{base_name}_{counter}.crdemo.gz"
+            path = replay_dir / f"{base_name}_{counter}.crd"
             counter += 1
         path.write_bytes(data)
         checkpoints_path = default_checkpoints_path(path)

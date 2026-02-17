@@ -106,7 +106,7 @@ uv run crimson original convert-capture \
   analysis/frida/gameplay_diff_capture.checkpoints.json.gz
 ```
 
-This also writes `analysis/frida/gameplay_diff_capture.crdemo.gz` by default
+This also writes `analysis/frida/gameplay_diff_capture.crd` by default
 (override with `--replay`).
 
 ## Verify capture directly against rewrite sim

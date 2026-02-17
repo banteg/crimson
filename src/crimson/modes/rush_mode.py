@@ -298,10 +298,10 @@ class RushMode(BaseGameplayMode):
         replay_dir.mkdir(parents=True, exist_ok=True)
         kills = int(self.creatures.kill_count)
         base_name = f"rush_{stamp}_kills{kills}"
-        path = replay_dir / f"{base_name}.crdemo.gz"
+        path = replay_dir / f"{base_name}.crd"
         counter = 1
         while path.exists():
-            path = replay_dir / f"{base_name}_{counter}.crdemo.gz"
+            path = replay_dir / f"{base_name}_{counter}.crd"
             counter += 1
         path.write_bytes(data)
         checkpoints_path = default_checkpoints_path(path)

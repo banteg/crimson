@@ -898,7 +898,7 @@ def test_convert_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> No
 def test_default_capture_replay_path_derives_expected_name() -> None:
     checkpoints = Path("/tmp/gameplay_diff_capture.checkpoints.json.gz")
     replay = default_capture_replay_path(checkpoints)
-    assert replay.name == "gameplay_diff_capture.crdemo.gz"
+    assert replay.name == "gameplay_diff_capture.crd"
 
 
 def test_build_capture_dt_frame_overrides_distributes_gaps(tmp_path: Path) -> None:

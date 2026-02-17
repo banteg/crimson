@@ -50,7 +50,7 @@ def replay_playback_view() -> tuple["replay_playback_mode.ReplayPlaybackMode", "
     console = ConsoleState(base_dir=Path("."), log=ConsoleLog(base_dir=Path(".")))
     view = replay_playback_mode.ReplayPlaybackMode(
         ViewContext(assets_dir=Path("."), preserve_bugs=False),
-        replay_path=Path("dummy.crdemo.gz"),
+        replay_path=Path("dummy.crd"),
         config=cfg,
         console=console,
     )

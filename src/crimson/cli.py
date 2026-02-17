@@ -720,7 +720,7 @@ def cmd_lan_join(
 def cmd_replay_play(
     replay_file: Path = typer.Argument(
         ...,
-        help="replay file path (.crdemo.gz); if a filename is provided, also search base-dir/replays",
+        help="replay file path (.crd); if a filename is provided, also search base-dir/replays",
     ),
     width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
     height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
@@ -781,7 +781,7 @@ def cmd_replay_list(
     """List replay files under base-dir/replays."""
     replays_dir = Path(base_dir) / "replays"
     replay_files = sorted(
-        (path for path in replays_dir.rglob("*.crdemo.gz") if path.is_file()),
+        (path for path in replays_dir.rglob("*.crd") if path.is_file()),
         key=lambda path: str(path.relative_to(replays_dir)),
     )
     if not replay_files:
@@ -797,7 +797,7 @@ def cmd_replay_list(
 def cmd_replay_verify(
     replay_file: Path = typer.Argument(
         ...,
-        help="replay file path (.crdemo.gz); if a filename is provided, also search base-dir/replays",
+        help="replay file path (.crd); if a filename is provided, also search base-dir/replays",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
     strict_events: bool = typer.Option(
@@ -925,7 +925,7 @@ def cmd_replay_verify(
 def cmd_replay_verify_checkpoints(
     replay_file: Path = typer.Argument(
         ...,
-        help="replay file path (.crdemo.gz); if a filename is provided, also search base-dir/replays",
+        help="replay file path (.crd); if a filename is provided, also search base-dir/replays",
     ),
     checkpoints_file: Path | None = typer.Option(
         None,
@@ -1259,7 +1259,7 @@ def cmd_replay_convert_capture(
     replay_file: Path | None = typer.Option(
         None,
         "--replay",
-        help="output replay path (.crdemo.gz); default: derive from checkpoints path",
+        help="output replay path (.crd); default: derive from checkpoints path",
     ),
     replay_sha256: str = typer.Option(
         "",
