@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
 import random
 import time
+from pathlib import Path
 from typing import cast
 
 import crimson.frontend.panels.databases as perk_db
@@ -83,7 +83,7 @@ def test_prewrapped_perk_desc_uses_cache(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
         UnlockedPerksDatabaseView,
         "_perk_desc",
-        staticmethod(lambda _perk_id, *, fx_toggle=0, preserve_bugs=False: "alpha beta gamma"),  # noqa: ARG005
+        staticmethod(lambda _perk_id, *, fx_toggle=0, preserve_bugs=False: "alpha beta gamma"),
     )
 
     view = UnlockedPerksDatabaseView(_make_state(tmp_path))

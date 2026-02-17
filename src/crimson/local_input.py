@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import math
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-import math
 from typing import Protocol
 
 import pyray as rl
@@ -10,17 +10,17 @@ import pyray as rl
 from grim.config import CrimsonConfig, default_player_keybind_block
 from grim.geom import Vec2
 
+from .aim_schemes import AimScheme
 from .frontend.panels.controls_labels import controls_method_values
-from .sim.input import PlayerInput
-from .sim.state_types import PlayerState
 from .input_codes import (
     config_keybinds_for_player,
     input_axis_value_for_player,
     input_code_is_down_for_player,
     input_code_is_pressed_for_player,
 )
-from .aim_schemes import AimScheme
 from .movement_controls import MovementControlType
+from .sim.input import PlayerInput
+from .sim.state_types import PlayerState
 
 _AIM_RADIUS_KEYBOARD = 60.0
 _AIM_RADIUS_PAD_BASE = 42.0
@@ -545,6 +545,6 @@ class LocalInputInterpreter:
                     dt_frame=float(dt_frame),
                     creatures=creatures,
                     preserve_bugs=bool(preserve_bugs),
-                )
+                ),
             )
         return out

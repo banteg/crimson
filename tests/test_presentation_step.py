@@ -6,7 +6,6 @@ from crimson.creatures.spawn import CreatureTypeId
 from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
 from crimson.projectiles import ProjectileHit, ProjectileTypeId
 from crimson.sim.presentation_step import (
     apply_world_presentation_step,
@@ -14,7 +13,7 @@ from crimson.sim.presentation_step import (
     plan_hit_sfx_keys,
     queue_projectile_decals,
 )
-from crimson.sim.state_types import BonusPickupEvent
+from crimson.sim.state_types import BonusPickupEvent, PlayerState
 from grim.geom import Vec2
 
 
@@ -27,7 +26,7 @@ def _hits(count: int, *, type_id: int = int(ProjectileTypeId.PISTOL)) -> list[Pr
                 origin=Vec2(0.0, 0.0),
                 hit=Vec2(1.0, 1.0),
                 target=Vec2(1.0, 1.0),
-            )
+            ),
         )
     return hits
 
@@ -92,7 +91,7 @@ def test_apply_world_presentation_step_orders_sfx() -> None:
                 bonus_id=1,
                 amount=100,
                 pos=Vec2(),
-            )
+            ),
         ],
         event_sfx=["sfx_custom_1", "sfx_custom_2", "sfx_custom_3", "sfx_custom_4", "sfx_custom_5"],
         prev_audio=[(0, False, 0.0)],
@@ -181,7 +180,7 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_six_shard_iterations()
 
     orig_spawn_freeze_shard = state.effects.spawn_freeze_shard
 
-    def _spawn_freeze_shard(**kwargs):  # noqa: ANN003
+    def _spawn_freeze_shard(**kwargs):
         shard_calls["count"] += 1
         return orig_spawn_freeze_shard(**kwargs)
 

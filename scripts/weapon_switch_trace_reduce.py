@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import struct
 from collections import Counter, defaultdict
+from collections.abc import Iterator
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterator
-import struct
+from typing import Any
 
 
 def iter_jsonl(path: Path) -> Iterator[dict[str, Any]]:
@@ -170,7 +171,7 @@ def summarize(log_path: Path) -> dict[str, Any]:
                     "from": _as_int(obj.get("from")),
                     "to": _as_int(obj.get("to")),
                     "direction": _as_int(obj.get("direction")),
-                }
+                },
             )
         elif event == "weapon_fire" and weapon_id is not None:
             weapon_fire_counts[weapon_id] += 1
@@ -289,7 +290,7 @@ def summarize(log_path: Path) -> dict[str, Any]:
                 "effect_ids": sorted(effect_ids_by_weapon.get(weapon_id, set())),
                 "sfx_count": sfx_counts_by_weapon.get(weapon_id, 0),
                 "sfx_ids": sorted(sfx_ids_by_weapon.get(weapon_id, set())),
-            }
+            },
         )
 
     duration_ms = None

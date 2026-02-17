@@ -9,6 +9,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from grim.geom import Vec2
+
 from ..bonuses import BonusId
 from ..sim.state_types import PlayerState
 from ..sim.world_state import WorldState
@@ -141,7 +142,7 @@ def build_checkpoint(
                 ammo=round(player.ammo, 4),
                 experience=int(player.experience),
                 level=int(player.level),
-            )
+            ),
         )
 
     bonus_timers = {
@@ -177,7 +178,7 @@ def build_checkpoint(
                 reward_value=float(getattr(death, "reward_value", 0.0)),
                 xp_awarded=int(getattr(death, "xp_awarded", 0)),
                 owner_id=int(getattr(death, "owner_id", -100)),
-            )
+            ),
         )
 
     marks: dict[str, int] = {}
@@ -235,7 +236,7 @@ def build_checkpoint(
         "bonus_timers": dict(bonus_timers),
     }
     state_hash = hashlib.sha256(
-        json.dumps(hash_obj, separators=(",", ":"), sort_keys=True).encode("utf-8")
+        json.dumps(hash_obj, separators=(",", ":"), sort_keys=True).encode("utf-8"),
     ).hexdigest()[:16]
 
     return ReplayCheckpoint(
@@ -307,7 +308,7 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
                     ammo=float(p.get("ammo") or 0.0),
                     experience=int(p.get("experience") or 0),
                     level=int(p.get("level") or 0),
-                )
+                ),
             )
         bonus_timers_in = item.get("bonus_timers") or {}
         if not isinstance(bonus_timers_in, dict):
@@ -331,7 +332,7 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
                     reward_value=float(death.get("reward_value") or 0.0),
                     xp_awarded=int(death.get("xp_awarded") or 0),
                     owner_id=int(death.get("owner_id") if "owner_id" in death else -100),
-                )
+                ),
             )
 
         perk_in = item.get("perk")
@@ -407,7 +408,7 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
                 deaths=deaths,
                 perk=perk,
                 events=events,
-            )
+            ),
         )
 
     return ReplayCheckpoints(

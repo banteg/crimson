@@ -28,7 +28,7 @@ def _install_minimal_sim_session(mode: SurvivalMode, monkeypatch) -> None:
             self.detail_preset = 5
             self.fx_toggle = 0
 
-        def step_tick(self, *, dt_frame: float, inputs):  # noqa: ANN001
+        def step_tick(self, *, dt_frame: float, inputs):
             _ = inputs
             self.elapsed_ms += float(dt_frame) * 1000.0
             for player in mode.world.players:
@@ -43,7 +43,7 @@ def _install_minimal_sim_session(mode: SurvivalMode, monkeypatch) -> None:
 
 def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_menu_transition(monkeypatch) -> None:
     mode = _make_survival_mode()
-    monkeypatch.setattr("crimson.ui.game_over.GameOverUi.open", lambda self: None)  # noqa: ARG005
+    monkeypatch.setattr("crimson.ui.game_over.GameOverUi.open", lambda self: None)
     _install_minimal_sim_session(mode, monkeypatch)
 
     assert mode.player.health > 0.0

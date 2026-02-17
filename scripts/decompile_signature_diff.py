@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
 
-
 GHIDRA_HEADER_RE = re.compile(r"^/\*\s+(?P<name>[^\s]+)\s+@\s+(?P<addr>[0-9A-Fa-f]+)\s+\*/\s*$")
 IDA_HEADER_RE = re.compile(r"^//\s+(?P<name>.+?)\s+@\s+0x(?P<addr>[0-9A-Fa-f]+)\s*$")
 IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -422,7 +421,7 @@ def format_signature_from_ida(
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Compare IDA/Ghidra decompile signatures and rank Ghidra callsites by decompiler artifacts."
+        description="Compare IDA/Ghidra decompile signatures and rank Ghidra callsites by decompiler artifacts.",
     )
     parser.add_argument(
         "--ghidra-decompiled",
@@ -509,7 +508,7 @@ def main() -> int:
                 concat_callsites=int(calls.get("calls_with_concat", 0)),
                 addr=addr,
                 name=name,
-            )
+            ),
         )
 
     rows.sort(key=lambda row: (row.score, row.in_calls, row.callsites), reverse=True)
@@ -527,7 +526,7 @@ def main() -> int:
                 calls_with_concat=row.concat_callsites,
                 addr=format_addr(addr),
                 name=name,
-            )
+            ),
         )
 
         map_sig = map_by_addr.get(addr, {}).get("signature")

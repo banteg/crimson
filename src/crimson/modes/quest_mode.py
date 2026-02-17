@@ -1,37 +1,34 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
-from dataclasses import dataclass
 import datetime as dt
 import hashlib
 import random
+from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import cast
 
 import pyray as rl
 
 from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState, play_music
-from grim.console import ConsoleState
 from grim.config import (
     CrimsonConfig,
 )
-from grim.geom import Rect, Vec2
+from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
+from grim.geom import Rect, Vec2
 from grim.math import clamp
 from grim.view import ViewContext
 
 from ..debug import debug_enabled
 from ..game_modes import GameMode
-from ..weapon_runtime import (
-    most_used_weapon_id_for_player,
-    weapon_assign_player,
-)
 from ..input_codes import (
     config_keybinds_for_player,
     input_code_is_down_for_player,
     input_code_is_pressed_for_player,
     input_primary_just_pressed,
 )
+from ..net.protocol import STATE_HASH_PERIOD_TICKS, TickFrame
 from ..perks.state import CreatureForPerks
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
@@ -40,15 +37,11 @@ from ..quests.runtime import tick_quest_completion_transition as _legacy_tick_qu
 from ..quests.timeline import quest_spawn_table_empty as _legacy_quest_spawn_table_empty
 from ..quests.timeline import tick_quest_mode_spawns as _legacy_tick_quest_mode_spawns
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
-from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
-from ..ui.cursor import draw_menu_cursor
-from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
-from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
 from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
-from ..replay.input_codec import pack_player_input, unpack_player_input
-from ..replay.types import WEAPON_USAGE_COUNT
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
+)
+from ..replay.checkpoints import (
     ReplayCheckpoint,
     ReplayCheckpoints,
     build_checkpoint,
@@ -56,11 +49,20 @@ from ..replay.checkpoints import (
     dump_checkpoints_file,
     resolve_checkpoint_sample_rate,
 )
+from ..replay.input_codec import pack_player_input, unpack_player_input
+from ..replay.types import WEAPON_USAGE_COUNT
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.sessions import QuestDeterministicSession
-from ..net.protocol import STATE_HASH_PERIOD_TICKS, TickFrame
+from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
+from ..ui.cursor import draw_menu_cursor
+from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
+from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
 from ..views.quest_title_overlay import draw_quest_title_overlay
+from ..weapon_runtime import (
+    most_used_weapon_id_for_player,
+    weapon_assign_player,
+)
 from ..weapons import WEAPON_BY_ID
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import shots_from_state
@@ -298,7 +300,7 @@ class QuestMode(BaseGameplayMode):
                 deaths=deaths,
                 events=events,
                 command_hash=command_hash,
-            )
+            ),
         )
         self._replay_checkpoints_last_tick = int(tick_index)
 
@@ -480,7 +482,7 @@ class QuestMode(BaseGameplayMode):
                 weapon_usage_counts = tuple(coerced)
         if len(weapon_usage_counts) != WEAPON_USAGE_COUNT:
             weapon_usage_counts = tuple(weapon_usage_counts) + (0,) * max(
-                0, WEAPON_USAGE_COUNT - len(weapon_usage_counts)
+                0, WEAPON_USAGE_COUNT - len(weapon_usage_counts),
             )
             weapon_usage_counts = weapon_usage_counts[:WEAPON_USAGE_COUNT]
         status_snapshot = ReplayStatusSnapshot(
@@ -506,7 +508,7 @@ class QuestMode(BaseGameplayMode):
                     world_size=float(self.world.world_size),
                     player_count=len(self.world.players),
                     status=status_snapshot,
-                )
+                ),
             )
             tick_rate = int(self._replay_recorder.header.tick_rate)
             self._replay_checkpoints_sample_rate = resolve_checkpoint_sample_rate(tick_rate)
@@ -915,7 +917,7 @@ class QuestMode(BaseGameplayMode):
                                 world=self.world.world_state,
                                 elapsed_ms=float(tick.elapsed_ms),
                                 creature_count_override=int(tick.creature_count_world_step),
-                            ).state_hash
+                            ).state_hash,
                         )
                         if local_state_hash != remote_state_hash:
                             runtime.note_desync(
@@ -935,7 +937,7 @@ class QuestMode(BaseGameplayMode):
                                 world=self.world.world_state,
                                 elapsed_ms=float(tick.elapsed_ms),
                                 creature_count_override=int(tick.creature_count_world_step),
-                            ).state_hash
+                            ).state_hash,
                         )
                 self.world.apply_step_result(
                     tick.step,
@@ -978,7 +980,7 @@ class QuestMode(BaseGameplayMode):
                             frame_inputs=list(frame.frame_inputs),
                             command_hash=str(local_command_hash),
                             state_hash=str(state_hash),
-                        )
+                        ),
                     )
 
                 if tick.completed:
@@ -998,7 +1000,7 @@ class QuestMode(BaseGameplayMode):
                             level=str(self._quest.level),
                             base_time_ms=int(self._quest.spawn_timeline_ms),
                             player_health=float(
-                                player_health_values[0] if player_health_values else self.player.health
+                                player_health_values[0] if player_health_values else self.player.health,
                             ),
                             player2_health=player2_health,
                             player_health_values=player_health_values,

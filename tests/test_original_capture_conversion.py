@@ -11,8 +11,8 @@ from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     CAPTURE_PERK_APPLY_EVENT_KIND,
     CAPTURE_PERK_PENDING_EVENT_KIND,
-    build_capture_dt_frame_overrides,
     build_capture_dt_frame_ms_i32_overrides,
+    build_capture_dt_frame_overrides,
     build_capture_inter_tick_rand_draws_overrides,
     capture_bootstrap_payload_from_event_payload,
     capture_perk_apply_from_event_payload,
@@ -402,7 +402,7 @@ def test_load_capture_accepts_projectile_find_query_event_head(tmp_path: Path) -
                 "result_kind": "miss",
                 "caller_static": "0x00420e52",
             },
-        }
+        },
     ]
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
@@ -548,7 +548,7 @@ def test_load_capture_accepts_player_fire_debug_payloads(tmp_path: Path) -> None
             "top_direct_events_by_player": [{"player_index": 0, "count": 4}],
             "top_fallback_events_by_player": [],
             "top_player_projectile_spawns_by_player": [],
-        }
+        },
     }
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json.gz"
@@ -663,7 +663,7 @@ def test_convert_capture_to_checkpoints_roundtrip(tmp_path: Path) -> None:
         ticks=[
             _base_tick(tick_index=0, elapsed_ms=16, score_xp=10, rng_state=100),
             _base_tick(tick_index=2, elapsed_ms=48, score_xp=30, rng_state=200),
-        ]
+        ],
     )
     path = tmp_path / "capture.json.gz"
     _write_capture(path, obj)
@@ -687,7 +687,7 @@ def test_convert_capture_to_replay_from_ticks(tmp_path: Path) -> None:
             "fire_down": True,
             "fire_pressed": True,
             "reload_pressed": False,
-        }
+        },
     ]
     tick0["input_approx"] = [
         {
@@ -696,7 +696,7 @@ def test_convert_capture_to_replay_from_ticks(tmp_path: Path) -> None:
             "move_dy": -1.0,
             "aim_x": 540.0,
             "aim_y": 500.0,
-        }
+        },
     ]
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -854,7 +854,7 @@ def test_convert_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> No
             "caller": None,
             "caller_static": None,
             "backtrace": None,
-        }
+        },
     ]
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -884,7 +884,7 @@ def test_build_capture_dt_frame_overrides_distributes_gaps(tmp_path: Path) -> No
             _base_tick(tick_index=0, elapsed_ms=0),
             _base_tick(tick_index=2, elapsed_ms=40),
             _base_tick(tick_index=5, elapsed_ms=100),
-        ]
+        ],
     )
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -1074,7 +1074,7 @@ def test_convert_capture_to_replay_prefers_rng_state_before_seed(tmp_path: Path)
             "value": int(outputs[0]),
             "value_15": int(outputs[0]),
             "state_before_u32": int(seed),
-        }
+        },
     ]
     tick0["rng"] = {
         "calls": 8,
@@ -1084,7 +1084,7 @@ def test_convert_capture_to_replay_prefers_rng_state_before_seed(tmp_path: Path)
                 "value": int(outputs[0]),
                 "value_15": int(outputs[0]),
                 "state_before_u32": int(seed),
-            }
+            },
         ],
     }
 
@@ -1137,7 +1137,7 @@ def test_convert_capture_to_replay_prefers_input_player_keys_for_digital_move(tm
             "fire_down": False,
             "fire_pressed": False,
             "reload_pressed": False,
-        }
+        },
     ]
     tick0["input_approx"] = [
         {
@@ -1148,7 +1148,7 @@ def test_convert_capture_to_replay_prefers_input_player_keys_for_digital_move(tm
             "aim_y": 500.0,
             "fired_events": 0,
             "reload_active": False,
-        }
+        },
     ]
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -1197,7 +1197,7 @@ def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capabil
             "aim_y": 500.0,
             "fired_events": 0,
             "reload_active": False,
-        }
+        },
     ]
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -1234,7 +1234,7 @@ def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_preceden
             "move_backward_pressed": False,
             "turn_left_pressed": False,
             "turn_right_pressed": True,
-        }
+        },
     ]
     tick0["input_approx"] = [
         {
@@ -1243,7 +1243,7 @@ def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_preceden
             "move_dy": 5.0,
             "aim_x": 306.0,
             "aim_y": 309.0,
-        }
+        },
     ]
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
     tick1["input_player_keys"] = [
@@ -1253,7 +1253,7 @@ def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_preceden
             "move_backward_pressed": True,
             "turn_left_pressed": True,
             "turn_right_pressed": True,
-        }
+        },
     ]
     tick1["input_approx"] = [
         {
@@ -1262,7 +1262,7 @@ def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_preceden
             "move_dy": 11.0,
             "aim_x": 308.0,
             "aim_y": 311.0,
-        }
+        },
     ]
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -1290,7 +1290,7 @@ def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_preceden
             "move_backward_pressed": True,
             "turn_left_pressed": False,
             "turn_right_pressed": False,
-        }
+        },
     ]
     tick0["input_approx"] = [
         {
@@ -1299,7 +1299,7 @@ def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_preceden
             "move_dy": 66.0,
             "aim_x": 306.0,
             "aim_y": 309.0,
-        }
+        },
     ]
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
     tick1["input_player_keys"] = [
@@ -1309,7 +1309,7 @@ def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_preceden
             "move_backward_pressed": True,
             "turn_left_pressed": True,
             "turn_right_pressed": False,
-        }
+        },
     ]
     tick1["input_approx"] = [
         {
@@ -1318,7 +1318,7 @@ def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_preceden
             "move_dy": -55.0,
             "aim_x": 307.0,
             "aim_y": 310.0,
-        }
+        },
     ]
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -1346,7 +1346,7 @@ def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_
             "move_backward_pressed": False,
             "turn_left_pressed": True,
             "turn_right_pressed": True,
-        }
+        },
     ]
     tick0["input_approx"] = [
         {
@@ -1355,7 +1355,7 @@ def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_
             "move_dy": 8.0,
             "aim_x": 400.0,
             "aim_y": 410.0,
-        }
+        },
     ]
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
     tick1["input_player_keys"] = [
@@ -1365,7 +1365,7 @@ def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_
             "move_backward_pressed": True,
             "turn_left_pressed": False,
             "turn_right_pressed": False,
-        }
+        },
     ]
     tick1["input_approx"] = [
         {
@@ -1374,7 +1374,7 @@ def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_
             "move_dy": -73.0,
             "aim_x": 402.0,
             "aim_y": 412.0,
-        }
+        },
     ]
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -1399,7 +1399,7 @@ def test_convert_capture_to_replay_uses_player_key_fire_reload_edges(tmp_path: P
             "fire_down": True,
             "fire_pressed": True,
             "reload_pressed": True,
-        }
+        },
     ]
     tick0["input_approx"] = [{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "fired_events": 0}]
     obj = _capture_obj(ticks=[tick0])
@@ -1432,11 +1432,11 @@ def test_convert_capture_to_replay_synthesizes_computer_aim_fire_down_from_proje
             "fire_down": False,
             "fire_pressed": False,
             "reload_pressed": False,
-        }
+        },
     ]
     tick0["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 0}]
     tick0["event_heads"] = [
-        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 1, "actual_type_id": 1}}
+        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 1, "actual_type_id": 1}},
     ]
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -1471,7 +1471,7 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_non_wea
             "fire_down": False,
             "fire_pressed": False,
             "reload_pressed": False,
-        }
+        },
     ]
     tick0["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 29, "fired_events": 1}]
     tick0["event_heads"] = [
@@ -1508,11 +1508,11 @@ def test_convert_capture_to_replay_does_not_synthesize_non_computer_fire_down(tm
             "fire_down": False,
             "fire_pressed": False,
             "reload_pressed": False,
-        }
+        },
     ]
     tick0["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 0}]
     tick0["event_heads"] = [
-        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 1, "actual_type_id": 1}}
+        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 1, "actual_type_id": 1}},
     ]
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -1569,7 +1569,7 @@ def test_convert_capture_to_replay_synthesizes_computer_fire_when_reload_complet
     tick1["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick1["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 1}]
     tick1["event_heads"] = [
-        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 1, "actual_type_id": 1}}
+        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 1, "actual_type_id": 1}},
     ]
 
     obj = _capture_obj(ticks=[tick0, tick1])
@@ -1599,7 +1599,7 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_fire_bullet
     tick1["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick1["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 3}]
     tick1["event_heads"] = [
-        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 45, "actual_type_id": 45}}
+        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 45, "actual_type_id": 45}},
     ]
 
     obj = _capture_obj(ticks=[tick0, tick1])
@@ -1793,7 +1793,7 @@ def test_convert_capture_to_replay_does_not_synthesize_unknown_mode_without_weap
     tick1["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick1["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 1}]
     tick1["event_heads"] = [
-        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 7, "actual_type_id": 7}}
+        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 7, "actual_type_id": 7}},
     ]
 
     obj = _capture_obj(ticks=[tick0, tick1])
@@ -1825,7 +1825,7 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_mapped_weap
     tick1["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick1["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 14}]
     tick1["event_heads"] = [
-        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 11, "actual_type_id": 11}}
+        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 11, "actual_type_id": 11}},
     ]
 
     obj = _capture_obj(ticks=[tick0, tick1])

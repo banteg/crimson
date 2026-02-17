@@ -3,22 +3,29 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from grim.geom import Vec2
 
 from crimson.creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
 from crimson.game_modes import GameMode
-from crimson.sim.input import PlayerInput
-from crimson.weapon_runtime import weapon_assign_player
 from crimson.game_world import GameWorld
 from crimson.quests import quest_by_level
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
-from crimson.replay import Replay, ReplayGameVersionWarning, ReplayHeader, ReplayRecorder, unpack_input_flags, unpack_packed_player_input
+from crimson.replay import (
+    Replay,
+    ReplayGameVersionWarning,
+    ReplayHeader,
+    ReplayRecorder,
+    unpack_input_flags,
+    unpack_packed_player_input,
+)
 from crimson.replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from crimson.sim.driver.replay_runner import run_quest_replay, run_rush_replay, run_survival_replay
 from crimson.sim.driver.setup import status_from_snapshot
+from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import QuestDeterministicSession
+from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
+from grim.geom import Vec2
 
 
 def _build_replay(*, mode: int, ticks: int, seed: int = 0x1234) -> Replay:
@@ -38,8 +45,8 @@ def _build_replay(*, mode: int, ticks: int, seed: int = 0x1234) -> Replay:
                     fire_down=bool(idx % 2 == 0),
                     fire_pressed=bool(idx % 3 == 0),
                     reload_pressed=bool(idx == int(ticks) - 1),
-                )
-            ]
+                ),
+            ],
         )
     return rec.finish()
 
@@ -57,7 +64,7 @@ def _inputs_for_tick(replay: Replay, tick_index: int) -> list[PlayerInput]:
                 fire_down=bool(fire_down),
                 fire_pressed=bool(fire_pressed),
                 reload_pressed=bool(reload_pressed),
-            )
+            ),
         )
     return inputs
 
@@ -144,7 +151,7 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
                 deaths=world_events.deaths,
                 events=world_events,
                 command_hash=str(world.last_command_hash),
-            )
+            ),
         )
 
     return checkpoints
@@ -220,7 +227,7 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
                 deaths=world_events.deaths,
                 events=world_events,
                 command_hash=str(world.last_command_hash),
-            )
+            ),
         )
 
     return checkpoints
@@ -237,7 +244,7 @@ def _quest_spawn_entries(*, level: str, player_count: int, seed: int) -> tuple:
             seed=int(seed),
             hardcore=False,
             full_version=True,
-        )
+        ),
     )
 
 
@@ -290,7 +297,7 @@ def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[Rep
                 deaths=step.events.deaths,
                 events=step.events,
                 command_hash=str(step.command_hash),
-            )
+            ),
         )
 
     return checkpoints

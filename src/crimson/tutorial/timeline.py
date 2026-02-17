@@ -171,7 +171,7 @@ def _tick_hint(
             (
                 SpawnTemplateCall(template_id=0x24, pos=Vec2(128.0, 128.0), heading=3.1415927),
                 SpawnTemplateCall(template_id=0x26, pos=Vec2(152.0, 160.0), heading=3.1415927),
-            )
+            ),
         )
 
     delta = int(frame_dt_ms) * 3
@@ -261,7 +261,7 @@ def tick_tutorial_timeline(
                     BonusSpawnCall(bonus_id=int(BonusId.POINTS), amount=500, pos=Vec2(260.0, 260.0)),
                     BonusSpawnCall(bonus_id=int(BonusId.POINTS), amount=1000, pos=Vec2(600.0, 400.0)),
                     BonusSpawnCall(bonus_id=int(BonusId.POINTS), amount=500, pos=Vec2(300.0, 400.0)),
-                )
+                ),
             )
     elif stage_index == 2:
         if bool(bonus_pool_empty) and state.stage_transition_timer_ms == -1:

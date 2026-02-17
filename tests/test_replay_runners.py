@@ -1,18 +1,18 @@
 from __future__ import annotations
 
 import pytest
-from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
-from crimson.sim.input import PlayerInput
-from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder, UnknownEvent
 from crimson.original.capture import CAPTURE_BOOTSTRAP_EVENT_KIND, CAPTURE_PERK_APPLY_EVENT_KIND
-from crimson.quests.runtime import build_quest_spawn_table
-from crimson.quests import quest_by_level
-from crimson.quests.types import QuestContext
 from crimson.perks import PerkId
+from crimson.quests import quest_by_level
+from crimson.quests.runtime import build_quest_spawn_table
+from crimson.quests.types import QuestContext
+from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder, UnknownEvent
 from crimson.sim.driver.replay_runner import run_quest_replay, run_rush_replay, run_survival_replay
 from crimson.sim.driver.setup import ReplayRunnerError
+from crimson.sim.input import PlayerInput
+from grim.geom import Vec2
 
 
 def _blank_survival_replay(*, ticks: int, seed: int = 0xBEEF, game_version: str = "0.0.0") -> tuple[ReplayHeader, ReplayRecorder]:
@@ -278,11 +278,11 @@ def test_survival_runner_applies_original_capture_bootstrap_event() -> None:
                             "ammo": 4.0,
                             "experience": 321,
                             "level": 5,
-                        }
+                        },
                     ],
-                }
+                },
             ],
-        )
+        ),
     )
 
     with pytest.warns(ReplayGameVersionWarning):
@@ -300,7 +300,7 @@ def test_survival_runner_does_not_stop_early_on_death_for_original_capture_repla
             tick_index=0,
             kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
             payload=[{"players": [{"health": -1.0}]}],
-        )
+        ),
     )
 
     with pytest.warns(ReplayGameVersionWarning):
@@ -327,14 +327,14 @@ def test_survival_runner_skips_world_dt_perk_steps_for_original_capture_dt_overr
                     tick_index=0,
                     kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
                     payload=[{"digital_move_enabled_by_player": [True]}],
-                )
+                ),
             )
         replay.events.append(
             UnknownEvent(
                 tick_index=0,
                 kind=CAPTURE_PERK_APPLY_EVENT_KIND,
                 payload=[{"perk_id": int(PerkId.REFLEX_BOOSTED), "outside_before": False}],
-            )
+            ),
         )
 
         checkpoints = []
@@ -365,9 +365,9 @@ def test_survival_runner_original_capture_reflex_scaled_dt_ms_uses_scaled_float_
                 {
                     "bonus_timers_ms": {"9": 124},
                     "digital_move_enabled_by_player": [True],
-                }
+                },
             ],
-        )
+        ),
     )
 
     with pytest.warns(ReplayGameVersionWarning):
@@ -399,7 +399,7 @@ def test_survival_runner_original_capture_uses_packed_move_vector_for_turn_only_
             tick_index=0,
             kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
             payload=[{"digital_move_enabled_by_player": [True]}],
-        )
+        ),
     )
 
     checkpoints = []
@@ -492,11 +492,11 @@ def test_rush_runner_applies_original_capture_bootstrap_event() -> None:
                             "ammo": 8.0,
                             "experience": 77,
                             "level": 3,
-                        }
+                        },
                     ],
-                }
+                },
             ],
-        )
+        ),
     )
 
     with pytest.warns(ReplayGameVersionWarning):
@@ -522,7 +522,7 @@ def test_rush_runner_original_capture_uses_packed_move_vector_for_turn_only_keys
             tick_index=0,
             kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
             payload=[{"digital_move_enabled_by_player": [True]}],
-        )
+        ),
     )
 
     checkpoints = []

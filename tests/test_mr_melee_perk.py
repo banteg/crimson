@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import pytest
 
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
+from crimson.sim.state_types import PlayerState
+from grim.geom import Vec2
 
 
 def test_mr_melee_hits_attacking_creature_on_contact_damage_tick() -> None:

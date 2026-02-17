@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import argparse
 import copy
-from collections import Counter, OrderedDict
-from collections.abc import Mapping
-from dataclasses import dataclass
 import gzip
 import hashlib
 import json
 import os
+from collections import Counter, OrderedDict
+from collections.abc import Mapping
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, TypeVar, cast
 
@@ -38,8 +38,8 @@ from crimson.sim.world_state import WorldState
 from crimson.weapons import WEAPON_BY_ID
 
 from .capture import (
-    build_capture_dt_frame_overrides,
     build_capture_dt_frame_ms_i32_overrides,
+    build_capture_dt_frame_overrides,
     convert_capture_to_replay,
     load_capture,
 )
@@ -286,7 +286,7 @@ class _FocusRuntime:
                         "hp": float(item.hp),
                         "hitbox_size": float(item.hitbox_size),
                         "pos": {"x": float(item.pos.x), "y": float(item.pos.y)},
-                    }
+                    },
                 )
             for item in tick.samples.projectiles:
                 capture_projectiles.append(
@@ -297,7 +297,7 @@ class _FocusRuntime:
                         "life_timer": float(item.life_timer),
                         "damage_pool": float(item.damage_pool),
                         "pos": {"x": float(item.pos.x), "y": float(item.pos.y)},
-                    }
+                    },
                 )
 
         capture_rng_head = [_rng_head_entry_to_row(entry) for entry in tick.rng.head]
@@ -412,7 +412,7 @@ class _FocusRuntime:
                         step = _optional_int(frame.f_locals.get("step") if "step" in frame.f_locals else None)
                         creature_idx = _optional_int(frame.f_locals.get("idx") if "idx" in frame.f_locals else None)
                         proj_index = _optional_int(
-                            frame.f_locals.get("proj_index") if "proj_index" in frame.f_locals else None
+                            frame.f_locals.get("proj_index") if "proj_index" in frame.f_locals else None,
                         )
                         proj = frame.f_locals.get("proj")
                         if proj is not None:
@@ -457,7 +457,7 @@ class _FocusRuntime:
                             rng_draws=max(0, int(after - before)),
                             target_x=float(hit.target.x),
                             target_y=float(hit.target.y),
-                        )
+                        ),
                     )
                     hook_index += 1
                     return bool(handled)
@@ -546,7 +546,7 @@ class _FocusRuntime:
 
         trace_ctx.near_misses.sort(key=lambda row: float(row.margin))
         trace_ctx.collision_hits.sort(
-            key=lambda row: (int(row.proj_index or -1), int(row.step or -1), int(row.creature_idx or -1))
+            key=lambda row: (int(row.proj_index or -1), int(row.step or -1), int(row.creature_idx or -1)),
         )
 
         capture_creatures, capture_projectiles, capture_rng_head, capture_rng_calls = self._build_capture_tick_payload(capture_tick)
@@ -693,7 +693,7 @@ def _cache_id_for_fingerprint(fingerprint: CaptureFingerprint) -> str:
             str(fingerprint.resolved_path),
             str(int(fingerprint.size)),
             str(int(fingerprint.mtime_ns)),
-        )
+        ),
     ).encode("utf-8")
     return hashlib.sha256(key).hexdigest()[:24]
 
@@ -871,7 +871,7 @@ def _build_sample_secondary_head(tick: CaptureTick) -> list[dict[str, object]]:
                 "target_id": int(item.target_id),
                 "life_timer": float(item.life_timer),
                 "pos": {"x": float(item.pos.x), "y": float(item.pos.y)},
-            }
+            },
         )
     return out
 
@@ -1102,7 +1102,7 @@ def _append_run_summary_event(
             tick_index=int(tick),
             kind=str(kind),
             detail=str(detail),
-        )
+        ),
     )
 
 

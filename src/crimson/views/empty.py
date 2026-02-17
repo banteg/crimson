@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import pyray as rl
 
-from .registry import register_view
 from grim.view import View
+
+from .registry import register_view
 
 
 class EmptyView:

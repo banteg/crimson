@@ -11,8 +11,8 @@ File layout:
       - payload: raw file bytes of length `size`
 """
 
+from collections.abc import Iterable, Iterator
 from pathlib import Path
-from typing import Iterable, Iterator
 
 from construct import Bytes, Const, CString, GreedyRange, Int32ul, Struct
 
@@ -62,7 +62,7 @@ def build_entries(entries: Iterable[tuple[str, bytes]]) -> bytes:
                 "name": str(name),
                 "size": len(data),
                 "payload": bytes(data),
-            }
+            },
         )
     return PAQ.build({"magic": MAGIC, "entries": built_entries})
 

@@ -11,9 +11,10 @@ from ..gameplay import (
     GameplayState,
     survival_check_level_up,
 )
-from ..sim.state_types import PlayerState
 from ..perks import PERK_BY_ID, PerkId, perk_display_description, perk_display_name
 from ..perks.selection import perk_selection_current_choices, perk_selection_pick
+from ..sim.state_types import PlayerState
+from ..ui.layout import ui_origin, ui_scale
 from ..ui.menu_panel import draw_classic_menu_panel
 from ..ui.perk_menu import (
     PerkMenuLayout,
@@ -29,7 +30,6 @@ from ..ui.perk_menu import (
     menu_item_hit_rect,
     perk_menu_compute_layout,
 )
-from ..ui.layout import ui_origin, ui_scale
 from .registry import register_view
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -146,7 +146,7 @@ class PerkSelectionView:
                 self._player.perk_counts[int(PerkId.PERK_MASTER)] = 0
             else:
                 self._player.perk_counts[int(PerkId.PERK_EXPERT)] = max(
-                    1, int(self._player.perk_counts[int(PerkId.PERK_EXPERT)])
+                    1, int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]),
                 )
                 self._player.perk_counts[int(PerkId.PERK_MASTER)] = 1
             self.state.perk_selection.choices_dirty = True
@@ -221,7 +221,7 @@ class PerkSelectionView:
                 break
 
         cancel_w = button_width(
-            self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide
+            self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide,
         )
         cancel_clicked = button_update(
             self._cancel_button,
@@ -344,7 +344,7 @@ class PerkSelectionView:
         )
 
         cancel_w = button_width(
-            self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide
+            self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide,
         )
         button_draw(
             self._ui_assets,

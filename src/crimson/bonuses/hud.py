@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from .ids import BonusId
 from ..sim.state_types import GameplayState, PlayerState
+from .ids import BonusId
 
 
 @dataclass(frozen=True, slots=True)

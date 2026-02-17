@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 from .types import QuestBuilder, QuestDefinition, parse_level
 
@@ -41,7 +41,7 @@ def register_quest(
         existing = _QUESTS.get(key)
         if existing is not None:
             raise ValueError(
-                f"duplicate quest level {quest.level}: {_builder_name(existing.builder)} vs {_builder_name(builder)}"
+                f"duplicate quest level {quest.level}: {_builder_name(existing.builder)} vs {_builder_name(builder)}",
             )
         _QUESTS[key] = quest
         return builder

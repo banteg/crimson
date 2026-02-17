@@ -1,23 +1,23 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
 import random
+from dataclasses import dataclass
 
 import pyray as rl
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.color import RGBA
-from grim.console import ConsoleState
 from grim.config import CrimsonConfig
+from grim.console import ConsoleState
 from grim.geom import Vec2
 from grim.view import ViewContext
 
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
 from ..game_modes import GameMode
-from ..typo.player import build_typo_player_input, enforce_typo_player_frame
 from ..typo.names import CreatureNameTable, load_typo_dictionary
+from ..typo.player import build_typo_player_input, enforce_typo_player_frame
 from ..typo.spawns import tick_typo_spawns
 from ..typo.typing import TypingBuffer
 from ..ui.cursor import draw_menu_cursor

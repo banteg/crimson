@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import datetime as dt
 
-from .shared import parse_quest_level
 from ..types import GameState, HighScoresRequest
+from .shared import parse_quest_level
 
 
 def resolve_request(state: GameState) -> HighScoresRequest:

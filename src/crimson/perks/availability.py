@@ -53,7 +53,7 @@ def perks_rebuild_available(state: GameplayState) -> None:
 
 
 def perk_can_offer(
-    state: GameplayState, player: PlayerState, perk_id: PerkId, *, game_mode: int, player_count: int
+    state: GameplayState, player: PlayerState, perk_id: PerkId, *, game_mode: int, player_count: int,
 ) -> bool:
     """Return whether `perk_id` is eligible for selection.
 

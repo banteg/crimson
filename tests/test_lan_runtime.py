@@ -3,16 +3,16 @@ from __future__ import annotations
 import time
 
 from crimson.net.protocol import (
+    INPUT_DELAY_TICKS,
+    LINK_TIMEOUT_MS,
+    PROTOCOL_VERSION,
+    TICK_RATE,
     Disconnect,
     Hello,
-    INPUT_DELAY_TICKS,
     InputBatch,
-    LINK_TIMEOUT_MS,
     PauseState,
-    PROTOCOL_VERSION,
     Ready,
     StatusSnapshot,
-    TICK_RATE,
     Welcome,
 )
 from crimson.net.reliable import ReliableLink
@@ -30,7 +30,7 @@ def test_join_hello_retries_keep_reliable_backlog_bounded() -> None:
             bind_host="0.0.0.0",
             host_ip="10.255.255.1",
             port=31993,
-        )
+        ),
     )
     runtime.open()
 
@@ -56,7 +56,7 @@ def test_host_does_not_track_unknown_non_hello_packets(monkeypatch) -> None:
             host_ip="",
             port=0,
             sim_status_snapshot=StatusSnapshot(),
-        )
+        ),
     )
     runtime.open()
 
@@ -84,7 +84,7 @@ def test_host_timeout_aborts_started_match() -> None:
             host_ip="",
             port=0,
             sim_status_snapshot=StatusSnapshot(),
-        )
+        ),
     )
     runtime.open()
 
@@ -129,7 +129,7 @@ def test_host_waiting_input_pause_uses_extended_timeout() -> None:
             host_ip="",
             port=0,
             sim_status_snapshot=StatusSnapshot(),
-        )
+        ),
     )
     runtime.open()
 
@@ -185,7 +185,7 @@ def test_client_waiting_input_sends_idle_heartbeat(monkeypatch) -> None:
             bind_host="127.0.0.1",
             host_ip="127.0.0.1",
             port=31993,
-        )
+        ),
     )
     runtime.open()
     now = int(time.monotonic() * 1000.0)

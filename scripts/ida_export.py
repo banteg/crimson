@@ -3,19 +3,19 @@ import os
 import re
 import sys
 
+import ida_typeinf
 import idaapi
 import idautils
 import idc
-import ida_typeinf
 
 _FAILED_SIGNATURES = set()
 
 _HEADER_PATHS = (
     os.path.normpath(
-        os.path.join(os.path.dirname(__file__), "..", "third_party", "headers", "crimsonland_ida_types.h")
+        os.path.join(os.path.dirname(__file__), "..", "third_party", "headers", "crimsonland_ida_types.h"),
     ),
     os.path.normpath(
-        os.path.join(os.path.dirname(__file__), "..", "third_party", "headers", "crimsonland_types.h")
+        os.path.join(os.path.dirname(__file__), "..", "third_party", "headers", "crimsonland_types.h"),
     ),
 )
 
@@ -120,7 +120,7 @@ def _collect_functions():
                 "library": is_lib,
                 "thunk": is_thunk,
                 "calls": sorted(calls),
-            }
+            },
         )
     return funcs
 
@@ -145,7 +145,7 @@ def _collect_strings():
                 )
                 else "ascii",
                 "value": str(item),
-            }
+            },
         )
     return strings
 
@@ -159,13 +159,13 @@ def _collect_imports():
             continue
         entries = []
 
-        def cb(ea, imp_name, ordinal):
-            entries.append(
+        def cb(ea, imp_name, ordinal, _entries=entries):
+            _entries.append(
                 {
                     "address": _ea_hex(ea),
                     "name": imp_name or "",
                     "ordinal": ordinal,
-                }
+                },
             )
             return True
 
@@ -186,7 +186,7 @@ def _collect_exports():
                 "address": _ea_hex(ea),
                 "name": name or "",
                 "ordinal": ordinal,
-            }
+            },
         )
     return exports
 
@@ -203,7 +203,7 @@ def _collect_segments():
                 "start": _ea_hex(seg.start_ea),
                 "end": _ea_hex(seg.end_ea),
                 "perm": idc.get_segm_attr(seg.start_ea, idc.SEGATTR_PERM),
-            }
+            },
         )
     return segs
 

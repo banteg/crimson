@@ -11,5 +11,5 @@ def apply_shield(ctx: BonusApplyCtx) -> None:
     if should_register:
         ctx.register_player("shield_timer")
     ctx.player.shield_timer = float(
-        f32(float(ctx.player.shield_timer) + float(ctx.amount) * float(ctx.economist_multiplier))
+        f32(float(ctx.player.shield_timer) + float(ctx.amount) * float(ctx.economist_multiplier)),
     )

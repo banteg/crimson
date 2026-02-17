@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from grim.geom import Vec2
 from crimson.projectiles import ProjectileTypeId
 from crimson.render.projectile_draw import ProjectileDrawCtx, draw_projectile_from_registry
+from grim.geom import Vec2
 
 
 class _TextureStub:

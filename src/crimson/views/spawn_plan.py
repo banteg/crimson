@@ -1,15 +1,18 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 
 import pyray as rl
 
+from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.rand import Crand
+from grim.view import View, ViewContext
+
 from ..creatures.spawn import (
-    CreatureTypeId,
     SPAWN_TEMPLATES,
+    CreatureTypeId,
     SpawnEnv,
     SpawnSlotInit,
     build_spawn_plan,
@@ -18,9 +21,6 @@ from ..creatures.spawn import (
 )
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
-from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
-from grim.view import View, ViewContext
-
 
 BASE_POS = Vec2(512.0, 512.0)
 
@@ -140,7 +140,7 @@ class SpawnPlanView:
                     limit=slot.limit,
                     interval=slot.interval,
                     child_template_id=slot.child_template_id,
-                )
+                ),
             )
 
     def _advance_template(self, delta: int) -> None:
@@ -209,7 +209,7 @@ class SpawnPlanView:
                 if child_template_id is None:
                     continue
                 self._sim_events.append(
-                    f"t={self._sim_time:6.2f}  slot={idx:02d}  spawn=0x{child_template_id:02x} ({spawn_id_label(child_template_id)})"
+                    f"t={self._sim_time:6.2f}  slot={idx:02d}  spawn=0x{child_template_id:02x} ({spawn_id_label(child_template_id)})",
                 )
             if len(self._sim_events) > 12:
                 self._sim_events = self._sim_events[-12:]
@@ -299,7 +299,7 @@ class SpawnPlanView:
                 y += line_h
 
         # Link lines.
-        for idx, c in enumerate(self._plan.creatures):
+        for c in self._plan.creatures:
             if c.ai_link_parent is None:
                 continue
             if not (0 <= c.ai_link_parent < len(self._plan.creatures)):
@@ -327,7 +327,7 @@ class SpawnPlanView:
                 OFFSET_COLOR,
             )
             rl.draw_circle_lines(
-                int(target_screen.x), int(target_screen.y), max(2.0, 4.0 * self._world_scale), OFFSET_COLOR
+                int(target_screen.x), int(target_screen.y), max(2.0, 4.0 * self._world_scale), OFFSET_COLOR,
             )
 
         # Creature dots.

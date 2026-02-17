@@ -50,7 +50,7 @@ def load_grim_mono_font(assets_root: Path) -> GrimMonoFont:
         else:
             raise FileNotFoundError(
                 "Missing grim mono font (expected load/default_font_courier.tga in crimson.paq "
-                "or extracted crimson/load/default_font_courier.(png|tga))"
+                "or extracted crimson/load/default_font_courier.(png|tga))",
             )
 
     rl.set_texture_filter(texture, GRIM_MONO_TEXTURE_FILTER)

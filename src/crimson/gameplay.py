@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import math
-from typing import TYPE_CHECKING, Sequence
+from collections.abc import Sequence
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
 from grim.rand import Crand
+
 from .bonuses.freeze import DeferredFreezeCorpseFx
 from .bonuses.hud import BonusHudState
 from .bonuses.pool import BonusPool
@@ -23,19 +25,35 @@ from .projectiles import (
     ProjectileTypeId,
     SecondaryProjectilePool,
 )
+from .sim.state_types import PERK_COUNT_SIZE
 from .weapon_runtime import (
     owner_id_for_player as _owner_id_for_player,
+)
+from .weapon_runtime import (
     owner_id_for_player_projectiles as _owner_id_for_player_projectiles,
+)
+from .weapon_runtime import (
     player_fire_weapon as _player_fire_weapon,
+)
+from .weapon_runtime import (
     player_start_reload as _player_start_reload,
+)
+from .weapon_runtime import (
     player_swap_alt_weapon as _player_swap_alt_weapon,
+)
+from .weapon_runtime import (
     projectile_spawn as _projectile_spawn,
+)
+from .weapon_runtime import (
     spawn_projectile_ring as _spawn_projectile_ring,
-    weapon_entry as _weapon_entry,
+)
+from .weapon_runtime import (
     weapon_assign_player as _weapon_assign_player,
 )
+from .weapon_runtime import (
+    weapon_entry as _weapon_entry,
+)
 from .weapons import WEAPON_TABLE, WeaponId
-from .sim.state_types import PERK_COUNT_SIZE
 
 if TYPE_CHECKING:
     from .persistence.save_status import GameStatus
@@ -346,7 +364,7 @@ def _player_apply_move_with_spawn_avoidance(
                 continue
 
             radius = float(
-                f32((float(getattr(owner, "size", 0.0)) + float(player.size)) * 0.33333334)
+                f32((float(getattr(owner, "size", 0.0)) + float(player.size)) * 0.33333334),
             )
             if _distance_f32_xy(float(owner_pos.x), float(owner_pos.y), float(pos_x), float(pos_y)) > float(radius):
                 continue
@@ -367,7 +385,7 @@ def _player_apply_move_with_spawn_avoidance(
                     pos_x = float(f32(float(x_candidate) - float(dx)))
                     pos_y = y_candidate
                     if _distance_f32_xy(float(owner_pos.x), float(owner_pos.y), float(pos_x), float(pos_y)) <= float(
-                        radius
+                        radius,
                     ):
                         pos_y = float(f32(float(y_candidate) - float(dy)))
             else:
@@ -520,10 +538,10 @@ def player_update(
                 * float(_RELATIVE_MOVE_TURN_ALIGN_SCALE)
             )
             move_dx = float(
-                f32(float(move.x) * float(player.move_speed) * float(turn_align))
+                f32(float(move.x) * float(player.move_speed) * float(turn_align)),
             )
             move_dy = float(
-                f32(float(move.y) * float(player.move_speed) * float(turn_align))
+                f32(float(move.y) * float(player.move_speed) * float(turn_align)),
             )
 
         move_delta_override = Vec2(

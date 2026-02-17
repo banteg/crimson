@@ -5,8 +5,7 @@ from dataclasses import dataclass, field
 
 import msgspec
 
-from .protocol import decode_packet, encode_packet, Packet
-
+from .protocol import Packet, decode_packet, encode_packet
 
 PeerAddr = tuple[str, int]
 

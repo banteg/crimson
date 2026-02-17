@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from ..ids import PerkId
 from ..runtime.apply_context import PerkApplyCtx
 from ..runtime.hook_types import PerkHooks
-from ..ids import PerkId
 
 
 def apply_fatal_lottery(ctx: PerkApplyCtx) -> None:

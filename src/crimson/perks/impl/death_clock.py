@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+from ..helpers import perk_active, perk_count_get
+from ..ids import PerkId
 from ..runtime.apply_context import PerkApplyCtx
 from ..runtime.counts import adjust_perk_count
 from ..runtime.effects_context import PerksUpdateEffectsCtx
-from ..helpers import perk_active, perk_count_get
 from ..runtime.hook_types import PerkHooks
-from ..ids import PerkId
 
 
 def apply_death_clock(ctx: PerkApplyCtx) -> None:

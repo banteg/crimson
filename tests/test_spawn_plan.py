@@ -5,16 +5,16 @@ import math
 import pytest
 
 from crimson.bonuses import BonusId
-from grim.geom import Vec2
-from grim.rand import Crand
 from crimson.creatures.spawn import (
+    SPAWN_TEMPLATES,
     CreatureFlags,
     CreatureTypeId,
-    SPAWN_TEMPLATES,
-    SpawnId,
     SpawnEnv,
+    SpawnId,
     build_spawn_plan,
 )
+from grim.geom import Vec2
+from grim.rand import Crand
 
 
 def _step_msvcrt(state: int, n: int) -> int:

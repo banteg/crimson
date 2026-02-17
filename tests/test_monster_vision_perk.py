@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import math
 
-from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 from crimson.perks.helpers import perk_active
 from crimson.render.world import monster_vision_fade_alpha
+from crimson.sim.state_types import PlayerState
+from grim.geom import Vec2
 
 
 def test_monster_vision_fade_alpha_matches_death_stage_clamp() -> None:

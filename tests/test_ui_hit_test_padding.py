@@ -1,6 +1,5 @@
-from grim.geom import Vec2
-
 from crimson.frontend.panels.hit_test import mouse_inside_rect_with_padding
+from grim.geom import Vec2
 
 
 def test_mouse_inside_rect_with_padding_matches_native_edges() -> None:

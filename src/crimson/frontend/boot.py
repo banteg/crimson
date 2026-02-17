@@ -5,12 +5,11 @@ import os
 
 import pyray as rl
 
-from grim.audio import init_audio_state, play_music, stop_music, update_audio, shutdown_audio
 from grim.assets import LogoAssets, PaqTextureCache, load_logo_assets
+from grim.audio import init_audio_state, play_music, shutdown_audio, stop_music, update_audio
 
 from .assets import _load_resource_entries
 from .types import GameState
-
 
 TEXTURE_LOAD_STAGES: dict[int, tuple[tuple[str, str], ...]] = {
     0: (

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 """Deterministic per-tick player input frame normalization."""
 
-from dataclasses import dataclass
 from collections.abc import Sequence
+from dataclasses import dataclass
 
 from .input import PlayerInput
 

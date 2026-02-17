@@ -5,14 +5,14 @@ from typing import TYPE_CHECKING
 import pyray as rl
 
 from grim.audio import play_sfx, update_audio
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
-from ...game_modes import GameMode
 from ...frontend.assets import _ensure_texture_cache
 from ...frontend.menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
 from ...frontend.transitions import _draw_screen_fade
+from ...game_modes import GameMode
 from ...quests.types import parse_level
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
@@ -244,7 +244,7 @@ class QuestFailedView:
             button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
 
             retry_w = button_width(
-                font, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide
+                font, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide,
             )
             button_draw(textures, font, self._retry_button, pos=button_pos, width=retry_w, scale=scale)
             button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)

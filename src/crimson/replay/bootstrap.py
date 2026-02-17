@@ -73,7 +73,7 @@ def apply_replay_bootstrap(
     if strict:
         if int(header.seed) != int(terrain.seed_after):
             raise ReplayBootstrapError(
-                f"bootstrap seed mismatch: header.seed={int(header.seed)} != computed={int(terrain.seed_after)}"
+                f"bootstrap seed mismatch: header.seed={int(header.seed)} != computed={int(terrain.seed_after)}",
             )
 
     return AppliedReplayBootstrap(terrain=terrain)

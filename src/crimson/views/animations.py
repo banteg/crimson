@@ -4,21 +4,22 @@ from dataclasses import dataclass
 
 import pyray as rl
 
+from grim.color import RGBA
+from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
+from grim.view import View, ViewContext
+
 from ..creatures.anim import creature_anim_advance_phase, creature_anim_select_frame
 from ..creatures.spawn import (
+    SPAWN_TEMPLATES,
     CreatureAiMode,
     CreatureFlags,
     CreatureTypeId,
-    SPAWN_TEMPLATES,
     SpawnTemplate,
     resolve_tint,
 )
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
-from grim.fonts.small import SmallFontData, load_small_font
-from grim.view import View, ViewContext
-from grim.color import RGBA
-from grim.geom import Vec2
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -159,7 +160,7 @@ class CreatureAnimationView:
             return
         if not self._templates:
             draw_ui_text(
-                self._small, "No spawn templates loaded.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+                self._small, "No spawn templates loaded.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR,
             )
             return
 
@@ -171,7 +172,7 @@ class CreatureAnimationView:
         texture = self._textures.get(template.creature)
         if texture is None:
             draw_ui_text(
-                self._small, "Missing texture for creature.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+                self._small, "Missing texture for creature.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR,
             )
             return
         info = TYPE_ANIM.get(template.type_id)

@@ -4,9 +4,7 @@ import gzip
 
 import msgspec
 import pytest
-from grim.geom import Vec2
 
-from crimson.sim.input import PlayerInput
 from crimson.replay import (
     PerkMenuOpenEvent,
     PerkPickEvent,
@@ -20,6 +18,8 @@ from crimson.replay import (
     warn_on_game_version_mismatch,
 )
 from crimson.replay.types import REPLAY_FORMAT_VERSION, WEAPON_USAGE_COUNT
+from crimson.sim.input import PlayerInput
+from grim.geom import Vec2
 
 
 def _minimal_wire_replay_obj() -> dict[str, object]:
@@ -56,14 +56,14 @@ def test_replay_codec_roundtrip() -> None:
         [
             PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(10.25, 20.5), fire_down=True),
             PlayerInput(move=Vec2(0.0, -1.0), aim=Vec2(99.0, 42.75), reload_pressed=True),
-        ]
+        ],
     )
     rec.record_perk_pick(player_index=0, choice_index=2, tick_index=1)
     rec.record_tick(
         [
             PlayerInput(move=Vec2(), aim=Vec2(11.0, 21.0), fire_pressed=True),
             PlayerInput(move=Vec2(-1.0, 0.0), aim=Vec2(100.0, 43.0)),
-        ]
+        ],
     )
     replay = rec.finish()
 

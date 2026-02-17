@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import MutableSequence, Sequence
+from collections.abc import MutableSequence, Sequence
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -10,17 +10,17 @@ from ...creatures.damage_types import CreatureDamageType
 from ...effects_atlas import EffectId
 from ...math_parity import f32
 from ..types import (
+    SECONDARY_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
     Damageable,
     FxQueueLike,
     ProjectileRuntimeState,
-    SECONDARY_PROJECTILE_POOL_SIZE,
     SecondaryDetonationKillHandler,
     SecondaryProjectile,
     SecondaryProjectileTypeId,
     _EffectsLike,
-    _SpriteEffectsLike,
     _rng_zero,
+    _SpriteEffectsLike,
 )
 from .collision import _apply_damage_to_creature, _creature_find_nearest_for_secondary, _within_native_find_radius
 

@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 
 import pyray as rl
 
-from grim.geom import Vec2
 from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
 
 from .constants import _RAD_TO_DEG
 from .mixin_base import WorldRendererMixinBase

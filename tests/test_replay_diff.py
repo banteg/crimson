@@ -2,17 +2,16 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from grim.geom import Vec2
-
-from crimson.sim.state_types import PlayerState
+from crimson.original.diff import checkpoint_field_diffs, compare_checkpoints
 from crimson.replay.checkpoints import (
     ReplayDeathLedgerEntry,
     ReplayEventSummary,
     ReplayPerkSnapshot,
     build_checkpoint,
 )
-from crimson.original.diff import checkpoint_field_diffs, compare_checkpoints
+from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
+from grim.geom import Vec2
 
 
 def _base_world() -> WorldState:
@@ -135,7 +134,7 @@ def test_compare_checkpoints_treats_unknown_sentinels_as_wildcards() -> None:
                 reward_value=100.0,
                 xp_awarded=50,
                 owner_id=0,
-            )
+            ),
         ],
         perk=ReplayPerkSnapshot(
             pending_count=0,
@@ -156,7 +155,7 @@ def test_compare_checkpoints_treats_unknown_sentinels_as_wildcards() -> None:
                 reward_value=0.0,
                 xp_awarded=-1,
                 owner_id=-1,
-            )
+            ),
         ],
         perk=ReplayPerkSnapshot(pending_count=-1),
         events=ReplayEventSummary(hit_count=-1, pickup_count=-1, sfx_count=-1, sfx_head=[]),
@@ -233,7 +232,7 @@ def test_checkpoint_field_diffs_reports_nested_paths() -> None:
             replace(
                 expected.players[0],
                 health=float(expected.players[0].health) - 5.0,
-            )
+            ),
         ],
     )
 

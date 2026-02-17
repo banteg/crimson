@@ -5,9 +5,10 @@ from __future__ import annotations
 Ported from `creature_update_all` (`FUN_00426220`).
 """
 
-from dataclasses import dataclass
 import math
-from typing import Callable, Protocol, Sequence
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass
+from typing import Protocol
 
 from grim.geom import Vec2
 

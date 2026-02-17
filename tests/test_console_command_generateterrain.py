@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
 import random
 import time
+from pathlib import Path
 
 import crimson.game.loop_view as loop_view
 from crimson.game.loop_view import GameLoopView

@@ -1,20 +1,26 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 from dataclasses import dataclass
 
 import pytest
 
+from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
+from crimson.creatures.spawn import (
+    CreatureFlags,
+    CreatureInit,
+    CreatureTypeId,
+    SpawnEnv,
+    SpawnSlotInit,
+    build_spawn_plan,
+)
 from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
-from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
-from crimson.creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId, SpawnEnv, SpawnSlotInit, build_spawn_plan
 from crimson.weapons import WeaponId
+from grim.geom import Vec2
 from grim.rand import Crand
 
 
@@ -69,7 +75,7 @@ def test_spawn_plan_remaps_spawn_slot_indices() -> None:
             limit=0,
             interval=1.0,
             child_template_id=0,
-        )
+        ),
     )
 
     mapping, primary = pool.spawn_plan(plan)
@@ -383,7 +389,7 @@ def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random() -> None:
     calls = 0
     orig_add_random = fx_queue.add_random
 
-    def _add_random(**kwargs):  # noqa: ANN003
+    def _add_random(**kwargs):
         nonlocal calls
         calls += 1
         return orig_add_random(**kwargs)
@@ -418,7 +424,7 @@ def test_handle_death_freeze_enqueues_fx_queue_random_once() -> None:
     calls = 0
     orig_add_random = fx_queue.add_random
 
-    def _add_random(**kwargs):  # noqa: ANN003
+    def _add_random(**kwargs):
         nonlocal calls
         calls += 1
         return orig_add_random(**kwargs)
@@ -454,7 +460,7 @@ def test_handle_death_inactive_entry_skips_reentrant_side_effects() -> None:
     calls = 0
     orig_add_random = fx_queue.add_random
 
-    def _add_random(**kwargs):  # noqa: ANN003
+    def _add_random(**kwargs):
         nonlocal calls
         calls += 1
         return orig_add_random(**kwargs)
@@ -493,8 +499,8 @@ def test_spawn_inits_resets_native_spawn_state_fields() -> None:
                 reward_value=12.0,
                 size=45.0,
                 contact_damage=6.0,
-            )
-        ]
+            ),
+        ],
     )
     entry = pool.entries[idx]
 
@@ -527,7 +533,7 @@ def test_spawn_init_preserves_stale_link_index_for_implicit_ai7_timer() -> None:
             reward_value=0.0,
             size=56.0,
             contact_damage=5.0,
-        )
+        ),
     )
 
     assert idx == 0
@@ -553,7 +559,7 @@ def test_spawn_init_preserves_stale_target_heading_from_recycled_slot() -> None:
             reward_value=43.0,
             size=44.0,
             contact_damage=4.0,
-        )
+        ),
     )
 
     assert idx == 0
@@ -581,7 +587,7 @@ def test_spawn_init_ai_timer_still_overrides_link_index() -> None:
             reward_value=433.0,
             size=43.0,
             contact_damage=10.0,
-        )
+        ),
     )
 
     assert idx == 0
@@ -597,7 +603,7 @@ def test_tick_dead_defers_corpse_deactivation_until_post_render_cleanup() -> Non
     corpse.pos = Vec2(588.6516, 379.7685)
     corpse.flags = CreatureFlags.AI7_LINK_TIMER
 
-    pool._tick_dead(  # noqa: SLF001 - validate native timing detail.
+    pool._tick_dead(
         corpse,
         dt=0.018,
         world_width=1024.0,
@@ -649,7 +655,7 @@ def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> 
     pool.entries[22].hitbox_size = -10.21
     pool.entries[22].hp = -45.9623
 
-    pool._tick_dead(  # noqa: SLF001 - validate native timing detail.
+    pool._tick_dead(
         corpse,
         dt=0.018,
         world_width=1024.0,
@@ -671,7 +677,7 @@ def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> 
             reward_value=0.0,
             size=50.0,
             contact_damage=4.0,
-        )
+        ),
     )
     assert spawned_idx == 22
 

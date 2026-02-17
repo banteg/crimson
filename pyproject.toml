@@ -44,6 +44,7 @@ dev = [
 line-length = 120
 
 [tool.ruff.lint]
+extend-select = ["B007", "B023", "B904", "COM812", "I001", "RUF100", "UP035"]
 extend-ignore = ["E402"]
 
 [tool.pytest.ini_options]

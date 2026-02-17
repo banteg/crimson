@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 from pathlib import Path
 
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
-from crimson.persistence.highscores import HighScoreRecord, rank_index, scores_path_for_config, sort_highscores
 from crimson.perks import PERK_BY_ID, PerkFlags, PerkId
 from crimson.perks.availability import perk_can_offer
+from crimson.persistence.highscores import HighScoreRecord, rank_index, scores_path_for_config, sort_highscores
+from crimson.sim.state_types import PlayerState
 from grim.config import CrimsonConfig
+from grim.geom import Vec2
 
 
 def _record(*, mode: int, time_ms: int) -> HighScoreRecord:

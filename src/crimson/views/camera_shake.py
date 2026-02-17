@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 
 import pyray as rl
 from construct import ConstructError
@@ -15,11 +15,10 @@ from ..bonuses import BonusId
 from ..bonuses.apply import bonus_apply
 from ..creatures.spawn import CreatureInit, CreatureTypeId
 from ..game_world import GameWorld
-from ..sim.input import PlayerInput
 from ..paths import default_runtime_dir
+from ..sim.input import PlayerInput
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
-
 
 WORLD_SIZE = 1024.0
 

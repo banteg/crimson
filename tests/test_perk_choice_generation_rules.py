@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-import pytest
-
 from pathlib import Path
+
+import pytest
 
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
-from crimson.persistence import save_status
 from crimson.perks import PerkId
 from crimson.perks.availability import perks_rebuild_available
 from crimson.perks.selection import PERK_ID_MAX, perk_generate_choices
+from crimson.persistence import save_status
+from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
+from grim.geom import Vec2
 
 
 class _SeqRng:

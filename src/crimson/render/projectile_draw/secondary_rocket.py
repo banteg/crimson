@@ -8,7 +8,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
 
-from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRID
+from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...projectiles import SecondaryProjectileTypeId
 from .types import SecondaryProjectileDrawCtx
 

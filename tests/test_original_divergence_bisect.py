@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 from crimson.original import divergence_bisect
 from crimson.replay.checkpoints import (
     ReplayCheckpoint,
@@ -10,6 +8,7 @@ from crimson.replay.checkpoints import (
     ReplayPerkSnapshot,
     ReplayPlayerCheckpoint,
 )
+from grim.geom import Vec2
 
 
 def _step_crt_state(state: int, calls: int) -> int:
@@ -51,7 +50,7 @@ def _checkpoint(
                 ammo=12.0,
                 experience=0,
                 level=1,
-            )
+            ),
         ],
         bonus_timers={},
         state_hash="state",

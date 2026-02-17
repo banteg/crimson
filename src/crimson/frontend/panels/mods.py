@@ -1,21 +1,19 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
-
-from grim.geom import Vec2
-
 from pathlib import Path
 
 import pyray as rl
 
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.geom import Vec2
 
 from ..menu import (
     MENU_PANEL_WIDTH,
     MenuView,
 )
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
-
 from ..types import GameState
+from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 
 
 @dataclass(frozen=True, slots=True)

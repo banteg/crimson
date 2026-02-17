@@ -1,31 +1,30 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
-from dataclasses import dataclass
 import math
 import struct
+from dataclasses import dataclass
 
-from grim.rand import Crand
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.bonuses.hud import bonus_hud_update
 from crimson.gameplay import (
-    GameplayState,
     _RELATIVE_MOVE_HEADING_LEFT,
+    GameplayState,
     _player_heading_approach_target_with_delta,
     player_update,
 )
+from crimson.perks import PerkId
+from crimson.perks.runtime.effects import perks_update_effects
+from crimson.projectiles import ProjectilePool, ProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (
     player_fire_weapon,
     weapon_assign_player,
 )
-from crimson.perks import PerkId
-from crimson.perks.runtime.effects import perks_update_effects
-from crimson.projectiles import ProjectilePool, ProjectileTypeId
 from crimson.weapons import WeaponId
+from grim.geom import Vec2
+from grim.rand import Crand
 
 
 @dataclass(slots=True)

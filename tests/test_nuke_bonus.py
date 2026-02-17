@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import math
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.creatures.runtime import CreaturePool
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
 from crimson.projectiles import ProjectileTypeId
+from crimson.sim.state_types import PlayerState
+from grim.geom import Vec2
 
 
 class _FixedRng:

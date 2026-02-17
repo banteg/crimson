@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
+from crimson.creatures.spawn import BurstEffect, SpawnEnv, build_spawn_plan
 from grim.geom import Vec2
 from grim.rand import Crand
-from crimson.creatures.spawn import BurstEffect, SpawnEnv, build_spawn_plan
 
 
 def test_spawn_plan_tail_burst_effect_is_gated_by_demo_and_bounds() -> None:

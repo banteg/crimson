@@ -4,8 +4,8 @@ import math
 
 import pytest
 
-from grim.rand import Crand
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, tick_rush_mode_spawns
+from grim.rand import Crand
 
 
 def test_tick_rush_mode_spawns_no_trigger() -> None:

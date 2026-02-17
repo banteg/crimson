@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 from ..game_modes import GameMode
 from ..perks import PerkId
@@ -9,10 +10,11 @@ from ..perks.helpers import perk_active
 from .ids import BONUS_BY_ID, BonusId
 
 if TYPE_CHECKING:
-    from .pool import BonusPool
+    from grim.rand import Crand
+
     from ..gameplay import GameplayState
     from ..sim.state_types import PlayerState
-    from grim.rand import Crand
+    from .pool import BonusPool
 
 
 def _bonus_enabled(bonus_id: int) -> bool:

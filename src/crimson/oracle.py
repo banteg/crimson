@@ -6,18 +6,18 @@ and emits game state to stdout each frame for comparison with other implementati
 
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import hashlib
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from .sim.input import PlayerInput
-from .sim.state_types import PlayerState
+from grim.geom import Vec2
+
 from .sim.driver.setup import build_damage_scale_by_type
+from .sim.input import PlayerInput
 from .sim.sessions import SurvivalDeterministicSession
+from .sim.state_types import PlayerState
 from .sim.world_state import WorldState
 
 
@@ -81,7 +81,7 @@ def load_inputs(path: Path) -> list[FrameInput]:
                 fire_down=bool(entry.get("fire_down", False)),
                 fire_pressed=bool(entry.get("fire_pressed", False)),
                 reload_pressed=bool(entry.get("reload_pressed", False)),
-            )
+            ),
         )
     return sorted(inputs, key=lambda i: i.frame)
 
@@ -356,7 +356,7 @@ def run_headless(config: OracleConfig) -> None:
                 fire_down=current_input.fire_down,
                 fire_pressed=current_input.fire_pressed,
                 reload_pressed=current_input.reload_pressed,
-            )
+            ),
         ]
 
         tick = session.step_tick(dt_frame=dt, inputs=player_inputs)

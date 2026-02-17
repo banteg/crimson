@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+from ...weapon_runtime.assign import weapon_assign_player
+from ..ids import PerkId
 from ..runtime.apply_context import PerkApplyCtx
 from ..runtime.hook_types import PerkHooks
-from ..ids import PerkId
-from ...weapon_runtime.assign import weapon_assign_player
 
 
 def apply_ammo_maniac(ctx: PerkApplyCtx) -> None:

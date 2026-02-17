@@ -18,7 +18,6 @@ from ..paths import default_runtime_dir
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 
-
 WORLD_SIZE = 1024.0
 WINDOW_W = 1024
 WINDOW_H = 768
@@ -254,7 +253,7 @@ class CorpseStampDebugView:
 
         if self._missing_assets:
             draw_ui_text(
-                self._small, "Missing assets: " + ", ".join(self._missing_assets), Vec2(24, 24), color=UI_ERROR
+                self._small, "Missing assets: " + ", ".join(self._missing_assets), Vec2(24, 24), color=UI_ERROR,
             )
             return
 
@@ -288,7 +287,7 @@ class CorpseStampDebugView:
         )
         y += line
         draw_ui_text(
-            self._small, f"step {self._step_index + 1}/{len(_STEPS)}: {step.description}", Vec2(x, y), color=UI_HINT
+            self._small, f"step {self._step_index + 1}/{len(_STEPS)}: {step.description}", Vec2(x, y), color=UI_HINT,
         )
         y += line
         draw_ui_text(

@@ -2,32 +2,32 @@ from __future__ import annotations
 
 import argparse
 import bisect
-from collections.abc import Mapping
-from collections import Counter
 import functools
 import json
+import re
+from collections import Counter
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
-import re
 from typing import Any, cast
 
 import msgspec
 
 from crimson.bonuses import bonus_label
 from crimson.game_modes import GameMode
-from crimson.perks import perk_label
-from crimson.replay.checkpoints import ReplayCheckpoint
-from crimson.original.diff import ReplayFieldDiff, checkpoint_field_diffs
 from crimson.original.capture import (
-    build_capture_dt_frame_overrides,
     build_capture_dt_frame_ms_i32_overrides,
+    build_capture_dt_frame_overrides,
     build_capture_inter_tick_rand_draws_overrides,
     convert_capture_to_checkpoints,
     convert_capture_to_replay,
     load_capture,
     parse_player_int_overrides,
 )
+from crimson.original.diff import ReplayFieldDiff, checkpoint_field_diffs
 from crimson.original.schema import CaptureFile
+from crimson.perks import perk_label
+from crimson.replay.checkpoints import ReplayCheckpoint
 from crimson.sim.driver.replay_runner import run_quest_replay, run_rush_replay, run_survival_replay
 from crimson.weapons import WEAPON_BY_ID
 
@@ -606,7 +606,7 @@ def _append_run_summary_event(
             tick_index=int(tick),
             kind=str(kind),
             detail=str(detail),
-        )
+        ),
     )
 
 
@@ -1036,7 +1036,7 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
                         "x": _float_or(pos_obj.get("x")),
                         "y": _float_or(pos_obj.get("y")),
                     },
-                }
+                },
             )
 
         out[int(tick)] = {
@@ -1427,7 +1427,7 @@ def _actual_rng_stream_rows_for_checkpoint(
                 "value_15": int(value_15),
                 "state_before_u32": int(state_before_u32),
                 "state_after_u32": int(state_after_u32),
-            }
+            },
         )
         state = int(state_after_u32)
     return out, int(total_calls)
@@ -2128,7 +2128,7 @@ def _build_investigation_leads(
                     "scripts/frida/gameplay_diff_capture.js",
                     "docs/frida/gameplay-diff-capture.md",
                 ),
-            )
+            ),
         )
     else:
         creature_micro_count = _int_or(focus_raw.get("creature_update_micro_count"), -1)
@@ -2155,7 +2155,7 @@ def _build_investigation_leads(
                         "scripts/frida/gameplay_diff_capture.js",
                         "docs/frida/gameplay-diff-capture.md",
                     ),
-                )
+                ),
             )
 
     rng_head_shortfall = _find_first_rng_head_shortfall(
@@ -2193,7 +2193,7 @@ def _build_investigation_leads(
             -1,
         )
         stream_first_mismatch_capture_branch_id = str(
-            rng_head_shortfall.get("stream_first_mismatch_capture_branch_id") or ""
+            rng_head_shortfall.get("stream_first_mismatch_capture_branch_id") or "",
         ).strip()
         stream_first_mismatch_capture_seq = _int_or(
             rng_head_shortfall.get("stream_first_mismatch_capture_seq"),
@@ -2229,7 +2229,7 @@ def _build_investigation_leads(
                 "capture-vs-rewrite RNG stream diverges at "
                 f"idx={int(stream_first_mismatch_idx)} (capture={int(stream_first_mismatch_capture)}, "
                 f"rewrite={int(stream_first_mismatch_actual)}) with prefix_match="
-                f"{int(stream_prefix_match)}/{int(stream_compared)}"
+                f"{int(stream_prefix_match)}/{int(stream_compared)}",
             )
             if stream_first_mismatch_reason:
                 evidence.append(f"first mismatch reason: {stream_first_mismatch_reason}")
@@ -2237,13 +2237,13 @@ def _build_investigation_leads(
                 evidence.append(
                     "first mismatch state_before: "
                     f"capture={int(stream_first_mismatch_capture_state_before)} "
-                    f"rewrite={int(stream_first_mismatch_actual_state_before)}"
+                    f"rewrite={int(stream_first_mismatch_actual_state_before)}",
                 )
             if stream_first_mismatch_capture_state_after >= 0 or stream_first_mismatch_actual_state_after >= 0:
                 evidence.append(
                     "first mismatch state_after: "
                     f"capture={int(stream_first_mismatch_capture_state_after)} "
-                    f"rewrite={int(stream_first_mismatch_actual_state_after)}"
+                    f"rewrite={int(stream_first_mismatch_actual_state_after)}",
                 )
             if stream_first_mismatch_capture_branch_id:
                 evidence.append(
@@ -2253,29 +2253,29 @@ def _build_investigation_leads(
                         f" (seq={int(stream_first_mismatch_capture_seq)})"
                         if stream_first_mismatch_capture_seq >= 0
                         else ""
-                    )
+                    ),
                 )
         if stream_missing_tail > 0:
             evidence.append(
                 f"capture RNG head exceeds rewrite stream at that tick: capture_head_len={int(expected_head_len)} "
-                f"rewrite_calls={int(actual_rand_calls)} missing_tail={int(stream_missing_tail)}"
+                f"rewrite_calls={int(actual_rand_calls)} missing_tail={int(stream_missing_tail)}",
             )
         if missing_draws > 0 and stream_first_mismatch_idx < 0:
             evidence.append(
                 f"first pre-focus RNG-head shortfall details: expected_head_len={int(expected_head_len)} "
-                f"actual_rand_calls={int(actual_rand_calls)} missing={int(missing_draws)}"
+                f"actual_rand_calls={int(actual_rand_calls)} missing={int(missing_draws)}",
             )
         if expected_rand_calls >= 0 and expected_head_len >= 0:
             evidence.append(
-                f"capture rand_calls at that tick: {int(expected_rand_calls)} (head_len={int(expected_head_len)})"
+                f"capture rand_calls at that tick: {int(expected_rand_calls)} (head_len={int(expected_head_len)})",
             )
         if seq_first >= 0 or seq_last >= 0:
             evidence.append(
-                f"capture RNG sequence range at shortfall tick: seq_first={int(seq_first)} seq_last={int(seq_last)}"
+                f"capture RNG sequence range at shortfall tick: seq_first={int(seq_first)} seq_last={int(seq_last)}",
             )
         if seed_epoch_enter >= 0 or seed_epoch_last >= 0:
             evidence.append(
-                f"capture RNG seed epoch at shortfall tick: enter={int(seed_epoch_enter)} leave={int(seed_epoch_last)}"
+                f"capture RNG seed epoch at shortfall tick: enter={int(seed_epoch_enter)} leave={int(seed_epoch_last)}",
             )
         if top_callers:
             evidence.append(f"dominant native caller_static at shortfall tick: {top_callers}")
@@ -2304,7 +2304,7 @@ def _build_investigation_leads(
                         "src/crimson/effects.py",
                     ),
                 ),
-            )
+            ),
         )
 
     projectile_hit_shortfall = _find_first_projectile_hit_shortfall(
@@ -2381,7 +2381,7 @@ def _build_investigation_leads(
         if query_owner_collision_count >= 0:
             evidence.append(
                 "capture projectile_find owner-collision queries at that tick: "
-                f"{int(query_owner_collision_count)}"
+                f"{int(query_owner_collision_count)}",
             )
         if corpse_hits >= 0:
             evidence.append(f"capture projectile hit resolves marked as corpse hits at that tick: {int(corpse_hits)}")
@@ -2407,7 +2407,7 @@ def _build_investigation_leads(
                         "scripts/frida/gameplay_diff_capture.js",
                     ),
                 ),
-            )
+            ),
         )
 
     if focus_exp is not None and focus_act is not None:
@@ -2448,7 +2448,7 @@ def _build_investigation_leads(
                         "focus tick RNG stream mismatch: "
                         f"idx={int(first_mismatch_idx)} capture={_int_or(focus_stream.get('first_mismatch_capture'))} "
                         f"rewrite={_int_or(focus_stream.get('first_mismatch_actual'))} "
-                        f"prefix_match={_int_or(focus_stream.get('prefix_match'))}/{_int_or(focus_stream.get('compared'))}"
+                        f"prefix_match={_int_or(focus_stream.get('prefix_match'))}/{_int_or(focus_stream.get('compared'))}",
                     )
                     mismatch_reason = str(focus_stream.get("first_mismatch_reason") or "").strip()
                     if mismatch_reason:
@@ -2461,23 +2461,23 @@ def _build_investigation_leads(
                         "focus tick RNG stream shortfall: "
                         f"capture_head_len={_int_or(focus_stream.get('capture_head_len'))} "
                         f"rewrite_calls={_int_or(focus_stream.get('actual_calls'))} "
-                        f"missing_tail={int(missing_tail)}"
+                        f"missing_tail={int(missing_tail)}",
                     )
                 if top_stages:
                     evidence.append(
                         "rewrite stage-local rand call totals: "
-                        + ", ".join(f"{name}={calls}" for name, calls in top_stages[:6])
+                        + ", ".join(f"{name}={calls}" for name, calls in top_stages[:6]),
                     )
                 capture_deaths = _int_or(focus_raw.get("spawn_death_count"), -1)
                 if int(capture_deaths) == 0 and len(focus_act.deaths) > 0:
                     evidence.append(
                         "capture has 0 creature_death events at focus tick while rewrite produced "
-                        f"{len(focus_act.deaths)} death ledger entries"
+                        f"{len(focus_act.deaths)} death ledger entries",
                     )
                 capture_damage = _int_or(focus_raw.get("creature_damage_count"), -1)
                 if int(capture_damage) == 0 and len(focus_act.deaths) > 0:
                     evidence.append(
-                        "capture has 0 creature_apply_damage events at focus tick while rewrite resolved a kill branch"
+                        "capture has 0 creature_apply_damage events at focus tick while rewrite resolved a kill branch",
                     )
 
                 focus_callers = focus_raw.get("rng_callers")
@@ -2505,8 +2505,8 @@ def _build_investigation_leads(
                 if not stage_paths:
                     stage_paths = list(
                         _port_paths_for_native_functions(
-                            ("projectile_update", "creature_apply_damage", "creature_update_all")
-                        )
+                            ("projectile_update", "creature_apply_damage", "creature_update_all"),
+                        ),
                     )
 
                 leads.append(
@@ -2515,7 +2515,7 @@ def _build_investigation_leads(
                         evidence=tuple(evidence),
                         native_functions=("projectile_update", "creature_apply_damage", "creature_update_all"),
                         code_paths=tuple(stage_paths),
-                    )
+                    ),
                 )
 
     rng_zero_ticks = _ticks_rng_zero_but_changed(
@@ -2575,7 +2575,7 @@ def _build_investigation_leads(
             evidence.append(
                 "native creature_apply_damage hooks are present on zero-rand ticks: "
                 + damage_sample
-                + (" ..." if len(zero_rand_damage_ticks) > 8 else "")
+                + (" ..." if len(zero_rand_damage_ticks) > 8 else ""),
             )
         fallback_native = (
             "creature_update_all",
@@ -2596,7 +2596,7 @@ def _build_investigation_leads(
                         "src/crimson/sim/presentation_step.py",
                     ),
                 ),
-            )
+            ),
         )
 
     pos_onsets = [onsets[key] for key in ("players[0].pos.x", "players[0].pos.y") if key in onsets]
@@ -2612,7 +2612,7 @@ def _build_investigation_leads(
         if xp_onset is not None and int(xp_onset.tick) > int(first_pos.tick):
             evidence.append(
                 f"XP divergence begins later at tick={int(xp_onset.tick)} "
-                f"(delta={xp_onset.delta!r}), suggesting movement/targeting drift is upstream"
+                f"(delta={xp_onset.delta!r}), suggesting movement/targeting drift is upstream",
             )
         leads.append(
             InvestigationLead(
@@ -2620,7 +2620,7 @@ def _build_investigation_leads(
                 evidence=tuple(evidence),
                 native_functions=("creature_update_all",),
                 code_paths=_port_paths_for_native_functions(("creature_update_all",)),
-            )
+            ),
         )
 
     input_conflict_ticks = _find_input_conflict_ticks(
@@ -2644,7 +2644,7 @@ def _build_investigation_leads(
                 evidence=tuple(evidence),
                 native_functions=("player_update",),
                 code_paths=_port_paths_for_native_functions(("player_update",)),
-            )
+            ),
         )
 
     if xp_onset is not None:
@@ -2673,7 +2673,7 @@ def _build_investigation_leads(
                         + "/type="
                         + str(_int_or(item.get("damage_type"), -1))  # ty:ignore[invalid-argument-type]
                         + "/k="
-                        + str(1 if bool(item.get("killed")) else 0)  # ty:ignore[invalid-argument-type]
+                        + str(1 if bool(item.get("killed")) else 0),  # ty:ignore[invalid-argument-type]
                     )
                 if preview:
                     evidence.append("native creature_apply_damage head: " + ", ".join(preview))
@@ -2699,7 +2699,7 @@ def _build_investigation_leads(
                 evidence=tuple(evidence),
                 native_functions=names,
                 code_paths=_port_paths_for_native_functions(names),
-            )
+            ),
         )
 
     if divergence.field_diffs:
@@ -2711,7 +2711,7 @@ def _build_investigation_leads(
                 evidence=tuple(evidence),
                 native_functions=(),
                 code_paths=(),
-            )
+            ),
         )
 
     return leads
@@ -2793,7 +2793,7 @@ def _build_window_rows(
                 "capture_projectile_find_hits": _int_or(raw.get("projectile_find_hit_count"), -1),
                 "actual_deaths": int(len(act.deaths)),
                 "actual_hits": int(act.events.hit_count),
-            }
+            },
         )
     return rows
 
@@ -2820,7 +2820,7 @@ def _print_window(rows: list[dict[str, object]]) -> None:
     print()
     print(
         "tick  w(e/a)   ammo(e/a)  xp(e/a)   score(e/a)  creatures(e/a)"
-        "  rand_calls(e/a/d)  rng_stream(p/c/status)  ps_draws(a)  rng_changed(a)  bonus_spawn(e)  deaths(e/a)  p_hits(e/a)  pickups(e/a)  sfx(e/a)"
+        "  rand_calls(e/a/d)  rng_stream(p/c/status)  ps_draws(a)  rng_changed(a)  bonus_spawn(e)  deaths(e/a)  p_hits(e/a)  pickups(e/a)  sfx(e/a)",
     )
     for row in rows:
         expected_rand_calls = _int_or(row.get("expected_rand_calls"), -1)
@@ -2843,7 +2843,7 @@ def _print_window(rows: list[dict[str, object]]) -> None:
             f"{int(row['capture_death_events']):3d}/{int(row['actual_deaths']):3d}      "  # ty:ignore[invalid-argument-type]
             f"{int(row['capture_projectile_find_hits']):3d}/{int(row['actual_hits']):3d}      "  # ty:ignore[invalid-argument-type]
             f"{int(row['expected_pickups']):3d}/{int(row['actual_pickups']):3d}      "  # ty:ignore[invalid-argument-type]
-            f"{int(row['expected_sfx']):3d}/{int(row['actual_sfx']):3d}"  # ty:ignore[invalid-argument-type]
+            f"{int(row['expected_sfx']):3d}/{int(row['actual_sfx']):3d}",  # ty:ignore[invalid-argument-type]
         )
 
 
@@ -3033,18 +3033,18 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
     print(
         f"ticks(expected/actual)={len(expected)}/{len(actual)}"
         f" sample_rate={int(sample_rate)} run_ticks={int(run_result.ticks)}"  # ty:ignore[unresolved-attribute]
-        f" run_score_xp={int(run_result.score_xp)} run_kills={int(run_result.creature_kill_count)}"  # ty:ignore[unresolved-attribute]
+        f" run_score_xp={int(run_result.score_xp)} run_kills={int(run_result.creature_kill_count)}",  # ty:ignore[unresolved-attribute]
     )
 
     print(
         f"mode={int(replay.header.game_mode_id)} tick_rate={int(replay.header.tick_rate)}"
-        f" player_count={int(replay.header.player_count)} seed={int(replay.header.seed)}"
+        f" player_count={int(replay.header.player_count)} seed={int(replay.header.seed)}",
     )
     print(
         "status="
         f"(quest_unlock_index={int(replay.header.status.quest_unlock_index)}, "
         f"quest_unlock_index_full={int(replay.header.status.quest_unlock_index_full)}, "
-        f"weapon_usage_counts_len={len(replay.header.status.weapon_usage_counts)})"
+        f"weapon_usage_counts_len={len(replay.header.status.weapon_usage_counts)})",
     )
 
     run_summary_events: list[RunSummaryEvent] = []
@@ -3153,7 +3153,7 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
             f"spawn_death_events={_int_or(focus_raw.get('spawn_death_count'))} "
             f"creature_damage_events={_int_or(focus_raw.get('creature_damage_count'))} "
             f"rand_calls={_int_or(focus_raw.get('rng_rand_calls'))} "
-            f"rand_last={focus_raw.get('rng_rand_last')!r}"
+            f"rand_last={focus_raw.get('rng_rand_last')!r}",
         )
         rng_seq_first = _int_or(focus_raw.get("rng_seq_first"), -1)
         rng_seq_last = _int_or(focus_raw.get("rng_seq_last"), -1)
@@ -3174,7 +3174,7 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
                 f"capture_rng_seq_range={int(rng_seq_first)}..{int(rng_seq_last)} "
                 f"capture_rng_seed_epoch={int(rng_seed_epoch_enter)}..{int(rng_seed_epoch_last)} "
                 f"capture_rng_outside_before_calls={int(rng_outside_before_calls)} "
-                f"capture_rng_mirror_mismatch_total={int(rng_mirror_mismatch_total)}"
+                f"capture_rng_mirror_mismatch_total={int(rng_mirror_mismatch_total)}",
             )
         callers = focus_raw.get("rng_callers")
         if isinstance(callers, list) and callers:
@@ -3193,7 +3193,7 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
             print(
                 "  "
                 f"capture_projectile_find_hit_count={int(projectile_find_hit_count)} "
-                f"capture_projectile_find_hit_corpse_count={_int_or(focus_raw.get('projectile_find_hit_corpse_count'), -1)}"
+                f"capture_projectile_find_hit_corpse_count={_int_or(focus_raw.get('projectile_find_hit_corpse_count'), -1)}",
             )
         projectile_find_query_count = _int_or(focus_raw.get("projectile_find_query_count"), -1)
         if projectile_find_query_count >= 0:
@@ -3202,7 +3202,7 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
                 f"capture_projectile_find_query_count={int(projectile_find_query_count)} "
                 f"capture_projectile_find_query_miss_count={_int_or(focus_raw.get('projectile_find_query_miss_count'), -1)} "
                 "capture_projectile_find_query_owner_collision_count="
-                f"{_int_or(focus_raw.get('projectile_find_query_owner_collision_count'), -1)}"
+                f"{_int_or(focus_raw.get('projectile_find_query_owner_collision_count'), -1)}",
             )
         top_projectile_queries = focus_raw.get("spawn_top_projectile_find_query_callers")
         if isinstance(top_projectile_queries, list) and top_projectile_queries:
@@ -3255,7 +3255,7 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
         print(
             "  "
             f"rewrite_rand_calls={actual_rand_calls!r} "
-            f"rewrite_rand_stage_calls={stage_calls!r}"
+            f"rewrite_rand_stage_calls={stage_calls!r}",
         )
         print(
             "  "
@@ -3266,7 +3266,7 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
             f"capture_mismatch={focus_stream.get('first_mismatch_capture')!r} "
             f"rewrite_mismatch={focus_stream.get('first_mismatch_actual')!r} "
             f"capture_branch_id={focus_stream.get('first_mismatch_capture_branch_id')!r} "
-            f"missing_tail={focus_stream.get('missing_tail')!r}"
+            f"missing_tail={focus_stream.get('missing_tail')!r}",
         )
         if focus_actual_ckpt.deaths:
             death_head = [
@@ -3289,7 +3289,7 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
         print()
         print(
             "hint: expected rand_calls=0 but actual RNG state changed on ticks: "
-            + ", ".join(str(int(row["tick"])) for row in zero_rand_consumed[:12])  # ty:ignore[invalid-argument-type]
+            + ", ".join(str(int(row["tick"])) for row in zero_rand_consumed[:12]),  # ty:ignore[invalid-argument-type]
         )
 
     if json_out_path is not None:

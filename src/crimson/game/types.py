@@ -1,19 +1,20 @@
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass, field
 from pathlib import Path
-import random
 from typing import TYPE_CHECKING, Literal, Protocol
 
 from ..paths import default_runtime_dir
 
 if TYPE_CHECKING:
-    from grim.audio import AudioState
     from grim.assets import LogoAssets, PaqTextureCache
+    from grim.audio import AudioState
     from grim.config import CrimsonConfig
     from grim.console import ConsoleState
     from grim.geom import Vec2
     from grim.terrain_render import GroundRenderer
+
     from ..modes.quest_mode import QuestRunOutcome
     from ..net.runtime import LanRuntime
     from ..persistence.save_status import GameStatus

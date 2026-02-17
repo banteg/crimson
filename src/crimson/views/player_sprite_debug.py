@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 
 import pyray as rl
 
@@ -9,9 +9,9 @@ from grim.assets import resolve_asset_path
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
 from grim.view import View, ViewContext
+
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
-
 
 WORLD_SIZE = 1024.0
 WINDOW_W = 640
@@ -177,7 +177,7 @@ class PlayerSpriteDebugView:
         rl.clear_background(rl.Color(10, 10, 12, 255))
         if self._assets is None:
             draw_ui_text(
-                self._small, "Trooper sprite not loaded.", Vec2(16, 16), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR
+                self._small, "Trooper sprite not loaded.", Vec2(16, 16), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR,
             )
             return
 

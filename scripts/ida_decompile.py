@@ -3,10 +3,10 @@ import os
 import re
 import sys
 
+import ida_typeinf
 import idaapi
 import idautils
 import idc
-import ida_typeinf
 
 try:
     import ida_hexrays
@@ -19,10 +19,10 @@ _FAILED_SIGNATURES = set()
 
 _HEADER_PATHS = (
     os.path.normpath(
-        os.path.join(os.path.dirname(__file__), "..", "third_party", "headers", "crimsonland_ida_types.h")
+        os.path.join(os.path.dirname(__file__), "..", "third_party", "headers", "crimsonland_ida_types.h"),
     ),
     os.path.normpath(
-        os.path.join(os.path.dirname(__file__), "..", "third_party", "headers", "crimsonland_types.h")
+        os.path.join(os.path.dirname(__file__), "..", "third_party", "headers", "crimsonland_types.h"),
     ),
 )
 

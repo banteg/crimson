@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from grim.rand import Crand
 from crimson.creatures.spawn import CreatureTypeId, tick_survival_wave_spawns
+from grim.rand import Crand
 
 
 def test_tick_survival_wave_spawns_no_trigger() -> None:

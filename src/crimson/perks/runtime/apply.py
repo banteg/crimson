@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from ...sim.state_types import GameplayState, PlayerState
+from ..ids import PerkId
+from ..state import CreatureForPerks, PerkSelectionState
 from .apply_context import PerkApplyCtx
 from .counts import adjust_perk_count
-from ..ids import PerkId
 from .manifest import PERK_APPLY_HANDLERS
-from ..state import CreatureForPerks, PerkSelectionState
 
 
 def perk_apply(
@@ -37,7 +37,7 @@ def perk_apply(
                     perk_state=perk_state,
                     dt=dt,
                     creatures=creatures,
-                )
+                ),
             )
     finally:
         if len(players) > 1:

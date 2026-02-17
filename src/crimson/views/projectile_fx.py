@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 
 import pyray as rl
 
 from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.view import View, ViewContext
 
@@ -16,8 +15,8 @@ from ..bonuses.apply import bonus_apply
 from ..creatures.spawn import CreatureFlags
 from ..effects_atlas import EffectId, effect_src_rect
 from ..gameplay import GameplayState
-from ..sim.state_types import PlayerState
 from ..projectiles import ProjectileTypeId
+from ..sim.state_types import PlayerState
 from ..weapons import (
     WEAPON_BY_ID,
     WEAPON_TABLE,
@@ -83,7 +82,7 @@ _BEAM_TYPES = frozenset(
         ProjectileTypeId.FIRE_BULLETS,
         ProjectileTypeId.BLADE_GUN,
         ProjectileTypeId.SPLITTER_GUN,
-    }
+    },
 )
 
 
@@ -215,7 +214,7 @@ class ProjectileFxView:
                 life=float(duration),
                 rotation=float(int(self.state.rng.rand()) % 0x274) * 0.01,
                 scale=float(scale),
-            )
+            ),
         )
 
     def _spawn_projectile(self, *, type_id: int, angle: float, owner_id: int = -100) -> None:
@@ -428,7 +427,7 @@ class ProjectileFxView:
         alpha = int(clamp(life / 0.4, 0.0, 1.0) * 255)
         tint = rl.Color(color.r, color.g, color.b, alpha)
         self._draw_atlas_sprite(
-            texture, grid=grid, frame=frame, pos=screen_pos, scale=0.6, rotation_rad=angle, tint=tint
+            texture, grid=grid, frame=frame, pos=screen_pos, scale=0.6, rotation_rad=angle, tint=tint,
         )
 
     def draw(self) -> None:
@@ -460,7 +459,7 @@ class ProjectileFxView:
             color = rl.Color(220, 90, 90, 255) if not creature.plague_infected else rl.Color(240, 180, 90, 255)
             rl.draw_circle(int(screen_pos.x), int(screen_pos.y), float(creature.size * 0.5), color)
             rl.draw_circle_lines(
-                int(screen_pos.x), int(screen_pos.y), float(creature.size * 0.5), rl.Color(40, 40, 55, 255)
+                int(screen_pos.x), int(screen_pos.y), float(creature.size * 0.5), rl.Color(40, 40, 55, 255),
             )
 
         # AOE rings for ion linger types.
@@ -577,7 +576,7 @@ class ProjectileFxView:
             )
             y += line + 2
             draw_ui_text(
-                self._small, "- mouse wheel: select type", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR
+                self._small, "- mouse wheel: select type", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR,
             )
             y += line + 2
             draw_ui_text(
@@ -601,7 +600,7 @@ class ProjectileFxView:
             )
             y += line + 2
             draw_ui_text(
-                self._small, "- S: apply Shock Chain bonus", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR
+                self._small, "- S: apply Shock Chain bonus", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR,
             )
             y += line + 2
             draw_ui_text(

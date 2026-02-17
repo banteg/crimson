@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from grim.rand import Crand
-from grim.geom import Vec2
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, build_survival_spawn_creature
 from crimson.math_parity import f32
+from grim.geom import Vec2
+from grim.rand import Crand
 
 
 def test_survival_spawn_creature_baseline_seed1_xp0() -> None:

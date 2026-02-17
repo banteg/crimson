@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
 import os
 import shutil
 import tempfile
 import urllib.error
 import urllib.request
+from dataclasses import dataclass
+from pathlib import Path
 
 from grim.console import ConsoleState
 

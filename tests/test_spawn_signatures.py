@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 from collections import Counter
 
 from crimson.bonuses import BonusId
@@ -10,10 +8,11 @@ from crimson.gameplay import (
     GameplayState,
     player_update,
 )
-from crimson.sim.input import PlayerInput
-from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
+from crimson.sim.input import PlayerInput
+from crimson.sim.state_types import PlayerState
+from grim.geom import Vec2
 
 
 def _signature(pool: ProjectilePool) -> Counter[int]:

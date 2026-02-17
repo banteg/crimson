@@ -3,9 +3,9 @@ from __future__ import annotations
 import pytest
 
 from crimson.creatures.spawn import SpawnId
-from grim.geom import Vec2
 from crimson.quests.timeline import tick_quest_mode_spawns
 from crimson.quests.types import SpawnEntry
+from grim.geom import Vec2
 
 
 def test_tick_quest_mode_spawns_advances_timeline_when_creatures_active() -> None:

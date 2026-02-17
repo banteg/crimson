@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
 import os
-from pathlib import Path
 import shutil
 import sys
+from dataclasses import dataclass
+from pathlib import Path
 
-from PIL import Image, ImageChops, ImageStat
-import pytest
 import pyray as rl
+import pytest
+from PIL import Image, ImageChops, ImageStat
 
 from grim.assets import TextureAsset, _load_texture_asset_from_bytes, load_paq_entries
 from grim.terrain_render import GroundRenderer
@@ -76,7 +76,7 @@ def _load_cases() -> list[GroundDumpCase]:
                 tex0_index=int(row["tex0_index"]),
                 tex1_index=int(row["tex1_index"]),
                 tex2_index=int(row["tex2_index"]),
-            )
+            ),
         )
     return cases[-3:]
 
@@ -254,7 +254,7 @@ def test_ground_dumps_match_fixtures(terrain_textures: dict[int, TextureAsset]) 
             failures.append(
                 f"fixture mismatch for {case.fixture} seed={case.seed} "
                 f"(downsample={DOWNSAMPLE_FACTOR}, max_delta={max_delta} (tol={MAX_DELTA_TOL}), "
-                f"mean_delta={mean_delta:.3f} (tol={MEAN_DELTA_TOL:.3f})); out={case_dir}"
+                f"mean_delta={mean_delta:.3f} (tol={MEAN_DELTA_TOL:.3f})); out={case_dir}",
             )
         else:
             # Avoid stale artifacts from previous failing runs.

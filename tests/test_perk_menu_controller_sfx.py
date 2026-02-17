@@ -64,7 +64,7 @@ def test_perk_menu_pick_plays_button_click(monkeypatch) -> None:
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.perk_selection_current_choices", lambda *args, **kwargs: [1])
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.perk_selection_pick", lambda *args, **kwargs: object())
 
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.button_update", lambda *args, **kwargs: False)  # noqa: ARG005
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.button_update", lambda *args, **kwargs: False)
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.get_screen_width", lambda: 640)
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.get_screen_height", lambda: 480)
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.is_mouse_button_pressed", lambda _button: False)
@@ -109,7 +109,7 @@ def test_perk_menu_pick_invokes_on_pick(monkeypatch) -> None:
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.perk_selection_current_choices", lambda *args, **kwargs: [1])
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.perk_selection_pick", lambda *args, **kwargs: object())
 
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.button_update", lambda *args, **kwargs: False)  # noqa: ARG005
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.button_update", lambda *args, **kwargs: False)
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.get_screen_width", lambda: 640)
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.get_screen_height", lambda: 480)
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.is_mouse_button_pressed", lambda _button: False)
@@ -152,7 +152,7 @@ def test_perk_menu_cancel_plays_button_click(monkeypatch) -> None:
 
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.perk_selection_current_choices", lambda *args, **kwargs: [1])
 
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.button_update", lambda *args, **kwargs: True)  # noqa: ARG005
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.button_update", lambda *args, **kwargs: True)
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.get_screen_width", lambda: 640)
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.get_screen_height", lambda: 480)
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.is_mouse_button_pressed", lambda _button: False)
@@ -202,7 +202,7 @@ def test_prewrapped_perk_desc_uses_cache(monkeypatch) -> None:
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.measure_small_text_width", _fake_measure)
     monkeypatch.setattr(
         "crimson.modes.components.perk_menu_controller.perk_display_description",
-        lambda _perk_id, *, fx_toggle=0, preserve_bugs=False: "alpha beta gamma",  # noqa: ARG005
+        lambda _perk_id, *, fx_toggle=0, preserve_bugs=False: "alpha beta gamma",
     )
 
     first = menu._prewrapped_perk_desc(5, object(), fx_toggle=0, preserve_bugs=False)  # type: ignore[arg-type]

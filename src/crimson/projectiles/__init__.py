@@ -8,17 +8,17 @@ from .runtime import (
     _within_native_find_radius,
 )
 from .types import (
+    MAIN_PROJECTILE_POOL_SIZE,
+    SECONDARY_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
     Damageable,
     FxQueueLike,
-    MAIN_PROJECTILE_POOL_SIZE,
     PlayerDamageable,
     Projectile,
     ProjectileHit,
     ProjectileRuntimeState,
     ProjectileTypeId,
     SecondaryDetonationKillHandler,
-    SECONDARY_PROJECTILE_POOL_SIZE,
     SecondaryProjectile,
     SecondaryProjectileTypeId,
 )

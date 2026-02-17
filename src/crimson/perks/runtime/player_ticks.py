@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from ...sim.state_types import GameplayState, PlayerState
+from .manifest import PLAYER_PERK_TICK_STEPS
 from .player_tick_context import (
     OwnerIdForPlayerFn,
     OwnerIdForPlayerProjectilesFn,
     PlayerPerkTickCtx,
     ProjectileSpawnFn,
 )
-from .manifest import PLAYER_PERK_TICK_STEPS
 
 _PLAYER_PERK_TICK_STEPS = PLAYER_PERK_TICK_STEPS
 

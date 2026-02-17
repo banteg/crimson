@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import math
-from typing import Callable, Sequence
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass, field
 
 from grim.geom import Vec2
 
@@ -339,7 +339,7 @@ def queue_projectile_decals_post_hit(
             rand=rand,
             freeze_origin=hit.hit if bool(post_ctx.freeze_active) else None,
             spawn_freeze_shard=post_ctx.freeze_shard_spawn,
-        )
+        ),
     )
 
     if bool(hook_handled) or bool(post_ctx.freeze_active):
@@ -431,7 +431,7 @@ def apply_world_presentation_step(
                 prev_shot_seq=int(prev_shot_seq),
                 prev_reload_active=bool(prev_reload_active),
                 prev_reload_timer=float(prev_reload_timer),
-            )
+            ),
         )
     if deaths and not death_sfx_preplanned:
         commands.sfx_keys.extend(plan_death_sfx_keys(deaths, rand=rand_for("death_sfx")))

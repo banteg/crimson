@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
-from crimson.creatures.runtime import CreatureDeath
-from crimson.creatures.runtime import CreatureUpdateResult
+import crimson.sim.world_state as world_state_mod
+from crimson.creatures.runtime import CreatureDeath, CreatureUpdateResult
 from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
+from crimson.projectiles import ProjectileHit, ProjectileTypeId, SecondaryProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
-from crimson.projectiles import ProjectileHit, ProjectileTypeId, SecondaryProjectileTypeId
-import crimson.sim.world_state as world_state_mod
 from crimson.sim.world_state import WorldState
+from grim.geom import Vec2
 
 
 def test_projectile_kill_awards_xp_same_step() -> None:

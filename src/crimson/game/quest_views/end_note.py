@@ -3,15 +3,15 @@ from __future__ import annotations
 import pyray as rl
 
 from grim.audio import play_sfx, update_audio
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 
-from ...game_modes import GameMode
 from ...frontend.assets import _ensure_texture_cache
 from ...frontend.menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
 from ...frontend.panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ...frontend.transitions import _draw_screen_fade
+from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from ..types import GameState
@@ -130,7 +130,7 @@ class EndNoteView:
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
         survival_w = button_width(
-            font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide
+            font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide,
         )
         if button_update(
             self._survival_button,
@@ -174,7 +174,7 @@ class EndNoteView:
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
         main_w = button_width(
-            font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
+            font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
         )
         if button_update(
             self._main_menu_button,
@@ -266,7 +266,7 @@ class EndNoteView:
         if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
             button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET * scale, END_NOTE_BUTTON_Y_OFFSET * scale)
             survival_w = button_width(
-                font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide
+                font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide,
             )
             button_draw(textures, font, self._survival_button, pos=button_pos, width=survival_w, scale=scale)
             button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
@@ -277,7 +277,7 @@ class EndNoteView:
             button_draw(textures, font, self._typo_button, pos=button_pos, width=typo_w, scale=scale)
             button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
             main_w = button_width(
-                font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
+                font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
             )
             button_draw(textures, font, self._main_menu_button, pos=button_pos, width=main_w, scale=scale)
 

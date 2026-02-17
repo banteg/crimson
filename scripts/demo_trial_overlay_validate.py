@@ -81,7 +81,7 @@ def validate_demo_trial_overlay_events(events: list[dict], *, source: str) -> li
 
         if remaining_ms is not None and int(remaining_ms) != int(info.remaining_ms):
             errors.append(
-                f"{source}:{idx}: remaining_ms mismatch: log={remaining_ms} expected={info.remaining_ms} kind={info.kind}"
+                f"{source}:{idx}: remaining_ms mismatch: log={remaining_ms} expected={info.remaining_ms} kind={info.kind}",
             )
 
         expected_tier_locked = (mode_id == 3) and (quest_major > 1 or quest_minor > 10)

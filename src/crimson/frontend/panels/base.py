@@ -38,9 +38,7 @@ from ..menu import (
     menu_ground_camera,
 )
 from ..transitions import _draw_screen_fade
-
 from ..types import GameState
-
 
 PANEL_POS_X = -45.0
 PANEL_POS_Y = 210.0
@@ -56,7 +54,7 @@ FADE_TO_GAME_ACTIONS = frozenset(
         "start_typo",
         "start_tutorial",
         "start_quest",
-    }
+    },
 )
 
 

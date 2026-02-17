@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from pathlib import Path
-import math
 
 import pyray as rl
 
@@ -10,6 +10,7 @@ from grim.assets import TextureLoader
 from grim.color import RGBA
 from grim.fonts.small import SmallFontData, draw_small_text
 from grim.geom import Vec2
+
 from ..bonuses.hud import BonusHudState
 from ..game_modes import GameMode
 from ..gameplay import survival_level_threshold

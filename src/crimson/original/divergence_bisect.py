@@ -2,24 +2,23 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 from crimson.replay.checkpoints import ReplayCheckpoint
 
-from .capture import load_capture
+from .capture import load_capture, parse_player_int_overrides
 from .divergence_report import (
     Divergence,
     _actual_rng_stream_rows_for_checkpoint,
     _build_window_rows,
+    _compute_rng_stream_alignment,
     _find_first_divergence,
     _load_capture_sample_creature_counts,
     _load_raw_tick_debug,
-    _compute_rng_stream_alignment,
-    _run_actual_checkpoints,
     _rng_stream_rows_for_raw_row,
+    _run_actual_checkpoints,
 )
-from .capture import parse_player_int_overrides
 
 _JSON_OUT_AUTO = "__AUTO__"
 _DEFAULT_JSON_OUT_PATH = Path("artifacts/frida/reports/divergence_bisect_latest.json")
@@ -237,7 +236,7 @@ def main(argv: list[str] | None = None) -> int:
                 "diverged": bool(divergence is not None),
                 "divergence_tick": (int(divergence.tick_index) if divergence is not None else None),
                 "divergence_kind": (str(divergence.kind) if divergence is not None else None),
-            }
+            },
         )
         result = (expected, actual, divergence)
         probe_cache[key] = result
@@ -276,7 +275,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print(
         f"result=diverged first_bad_tick={int(first_bad_tick)} "
-        f"kind={first_divergence.kind} divergence_tick={int(first_divergence.tick_index)}"
+        f"kind={first_divergence.kind} divergence_tick={int(first_divergence.tick_index)}",
     )
 
     window_before = max(0, int(args.window_before))
@@ -313,7 +312,7 @@ def main(argv: list[str] | None = None) -> int:
                 raw=raw,
                 rng_row_limit=max(1, int(args.rng_row_limit)),
                 branch_event_limit=max(1, int(args.branch_event_limit)),
-            )
+            ),
         )
 
     if json_out_path is not None:

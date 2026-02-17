@@ -8,7 +8,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
 
-from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRID
+from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...sim.world_defs import PLASMA_PARTICLE_TYPES
 from ..projectile_render_registry import plasma_projectile_render_config
 from .types import ProjectileDrawCtx

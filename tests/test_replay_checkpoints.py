@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import gzip
 import json
 
-from crimson.sim.state_types import PlayerState
 from crimson.replay.checkpoints import (
     FORMAT_VERSION,
     ReplayCheckpoints,
@@ -14,7 +11,9 @@ from crimson.replay.checkpoints import (
     load_checkpoints,
     resolve_checkpoint_sample_rate,
 )
+from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
+from grim.geom import Vec2
 
 
 class _Death:
@@ -103,7 +102,7 @@ def test_load_checkpoints_supports_legacy_without_perk_object() -> None:
                 "players": [],
                 "bonus_timers": {},
                 "state_hash": "deadbeefcafebabe",
-            }
+            },
         ],
     }
     payload = gzip.compress(json.dumps(legacy_obj, separators=(",", ":"), sort_keys=True).encode("utf-8"), mtime=0)

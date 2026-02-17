@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 from dataclasses import dataclass
 
 import pyray as rl
 
-from .registry import register_view
 from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.view import View, ViewContext
 
@@ -19,13 +17,14 @@ from ..gameplay import (
     GameplayState,
     player_update,
 )
+from ..perks import PerkId
 from ..sim.input import PlayerInput
 from ..sim.state_types import PlayerState
-from ..weapon_runtime import weapon_assign_player
-from ..perks import PerkId
 from ..ui.hud import HudAssets, HudState, draw_hud_overlay, hud_ui_scale, load_hud_assets
+from ..weapon_runtime import weapon_assign_player
 from ..weapons import WEAPON_TABLE, weapon_display_name
 from ._ui_helpers import draw_ui_text, ui_line_height
+from .registry import register_view
 
 WORLD_SIZE = 1024.0
 
@@ -344,7 +343,7 @@ class PlayerSandboxView:
         weapon_id = self._player.weapon_id
         weapon_name = weapon_display_name(int(weapon_id), preserve_bugs=bool(self._preserve_bugs))
         draw_ui_text(
-            self._small, f"{weapon_name} (id {weapon_id})", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+            self._small, f"{weapon_name} (id {weapon_id})", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR,
         )
         y += line + 4
         draw_ui_text(
