@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 from crimson.persistence.save_status import (
     BLOB_SIZE,

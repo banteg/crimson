@@ -1,11 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
 
 from grim.rand import Crand
-
 
 NAME_MAX_CHARS = 16  # creature_name_assign_random enforces strlen < 0x10.
 
@@ -88,7 +87,7 @@ def typo_build_name(rng: Crand, *, score_xp: int, unique_words: Sequence[str] | 
                     typo_name_part(rng, allow_the=False),
                     typo_name_part(rng, allow_the=False),
                     typo_name_part(rng, allow_the=False),
-                ]
+                ],
             )
 
     if (score_xp > 80 and int(rng.rand() % 100) < 80) or (score_xp > 60 and int(rng.rand() % 100) < 40):
@@ -97,7 +96,7 @@ def typo_build_name(rng: Crand, *, score_xp: int, unique_words: Sequence[str] | 
                 typo_name_part(rng, allow_the=True),
                 typo_name_part(rng, allow_the=False),
                 typo_name_part(rng, allow_the=False),
-            ]
+            ],
         )
 
     if (score_xp > 40 and int(rng.rand() % 100) < 80) or (score_xp > 20 and int(rng.rand() % 100) < 40):
@@ -105,7 +104,7 @@ def typo_build_name(rng: Crand, *, score_xp: int, unique_words: Sequence[str] | 
             [
                 typo_name_part(rng, allow_the=True),
                 typo_name_part(rng, allow_the=False),
-            ]
+            ],
         )
 
     return typo_name_part(rng, allow_the=False)

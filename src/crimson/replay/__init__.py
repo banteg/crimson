@@ -13,6 +13,8 @@ from .types import (
     RELOAD_PRESSED_FLAG,
     TURN_LEFT_FLAG,
     TURN_RIGHT_FLAG,
+    PackedPlayerInput,
+    PackedTickInputs,
     PerkMenuOpenEvent,
     PerkPickEvent,
     Replay,
@@ -20,11 +22,9 @@ from .types import (
     ReplayStatusSnapshot,
     UnknownEvent,
     pack_input_flags,
-    PackedPlayerInput,
-    PackedTickInputs,
-    unpack_packed_player_input,
     unpack_input_flags,
     unpack_input_move_key_flags,
+    unpack_packed_player_input,
 )
 from .versioning import ReplayGameVersionWarning, warn_on_game_version_mismatch
 

@@ -14,7 +14,7 @@ def apply_reflex_boost(ctx: BonusApplyCtx) -> None:
     if old <= 0.0:
         ctx.register_global("reflex_boost")
     ctx.state.bonuses.reflex_boost = float(
-        f32(float(old) + float(ctx.amount) * float(ctx.economist_multiplier))
+        f32(float(old) + float(ctx.amount) * float(ctx.economist_multiplier)),
     )
 
     targets = ctx.players if ctx.players is not None else [ctx.player]

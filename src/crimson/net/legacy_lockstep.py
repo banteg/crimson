@@ -101,7 +101,7 @@ class HostLockstepState:
                     frame_inputs=ordered_inputs,
                     command_hash=str(command_hash),
                     state_hash=str(state_hash),
-                )
+                ),
             )
             self._next_emit_tick += 1
             self._last_progress_ms = int(now_ms)

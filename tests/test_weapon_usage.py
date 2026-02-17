@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 from crimson.gameplay import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
@@ -10,6 +8,7 @@ from crimson.weapon_runtime import (
     player_fire_weapon,
     weapon_assign_player,
 )
+from grim.geom import Vec2
 
 
 def test_weapon_usage_tracks_most_used_weapon() -> None:

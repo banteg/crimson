@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import math
-from typing import Sequence
+from collections.abc import Sequence
 
 from grim.geom import Vec2
 
-from ..types import CreatureDamageApplier, Damageable, _CREATURE_HITBOX_ALIVE, _SizeLike
+from ..types import _CREATURE_HITBOX_ALIVE, CreatureDamageApplier, Damageable, _SizeLike
 
 _NATIVE_FIND_RADIUS_MARGIN_EPS = 0.001
 

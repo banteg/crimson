@@ -9,5 +9,5 @@ def apply_double_experience(ctx: BonusApplyCtx) -> None:
     if old <= 0.0:
         ctx.register_global("double_experience")
     ctx.state.bonuses.double_experience = float(
-        f32(float(old) + bonus_apply_seconds(ctx) * float(ctx.economist_multiplier))
+        f32(float(old) + bonus_apply_seconds(ctx) * float(ctx.economist_multiplier)),
     )

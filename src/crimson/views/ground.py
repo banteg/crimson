@@ -11,8 +11,12 @@ from crimson.render.terrain_fx import FxQueueTextures, bake_fx_queues
 from grim.assets import resolve_asset_path
 from grim.color import RGBA
 from grim.config import ensure_crimson_cfg
+from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
+from grim.view import View, ViewContext
+
 from ..paths import default_runtime_dir
 from ..quests import all_quests
 from ..quests.types import QuestDefinition
@@ -20,10 +24,6 @@ from ..terrain_assets import TerrainTextureId
 from ._ui_helpers import draw_ui_text
 from .quest_title_overlay import draw_quest_title_overlay
 from .registry import register_view
-from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
-from grim.fonts.small import SmallFontData, load_small_font
-from grim.view import View, ViewContext
-
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -164,7 +164,7 @@ class GroundView:
             return
         if self._renderer is None:
             draw_ui_text(
-                self._small, "Ground renderer not initialized.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR
+                self._small, "Ground renderer not initialized.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR,
             )
             return
         self._renderer.draw(self._camera)

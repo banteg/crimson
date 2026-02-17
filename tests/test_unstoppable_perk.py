@@ -1,17 +1,16 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import math
 
 from crimson.gameplay import (
     GameplayState,
     player_update,
 )
-from crimson.sim.input import PlayerInput
-from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
+from crimson.sim.input import PlayerInput
+from crimson.sim.state_types import PlayerState
+from grim.geom import Vec2
 
 
 def test_player_take_damage_applies_heading_jitter_and_spread_heat_without_unstoppable() -> None:

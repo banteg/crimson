@@ -1,17 +1,16 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import math
 
 import pytest
 
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
-from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
+from crimson.sim.state_types import PlayerState
 from crimson.weapons import WEAPON_BY_ID
+from grim.geom import Vec2
 
 
 def test_barrel_greaser_increases_bullet_damage() -> None:

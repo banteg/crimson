@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import random
 import string
 import time
 import uuid
+from dataclasses import dataclass, field
 
 import structlog
 
@@ -13,13 +13,14 @@ from .relay_protocol import (
     LINK_TIMEOUT_MS,
     PROTOCOL_VERSION,
     RECONNECT_TIMEOUT_MS,
+    ROOM_CODE_LENGTH,
     ClientHello,
     ClientWelcome,
     LegacyLockstepControl,
     LegacyLockstepInputBatch,
     LegacyLockstepTickFrame,
-    NetMessage,
     NetcodeMode,
+    NetMessage,
     PeerDisconnect,
     Ping,
     Pong,
@@ -35,7 +36,6 @@ from .relay_protocol import (
     RoomReady,
     RoomStart,
     RoomState,
-    ROOM_CODE_LENGTH,
     StatusSnapshot,
     builds_compatible,
 )

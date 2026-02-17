@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import io
-from pathlib import Path
 import urllib.request
+from pathlib import Path
 
 from crimson.assets_fetch import _download_file
 

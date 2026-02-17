@@ -3,10 +3,11 @@ from __future__ import annotations
 import argparse
 import json
 from collections import Counter, defaultdict
+from collections.abc import Iterator
 from dataclasses import dataclass
 from math import inf
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 
 @dataclass
@@ -164,7 +165,7 @@ def main() -> int:
                         "frame_obs": frame_obs,
                         "frame_pred": frame_pred,
                         "hitbox": hitbox,
-                    }
+                    },
                 )
 
         color = _get_float_list(obj, "color")
@@ -182,7 +183,7 @@ def main() -> int:
                         "alpha_obs": alpha_obs,
                         "alpha_pred": alpha_pred,
                         "hitbox": hitbox,
-                    }
+                    },
                 )
 
     per_type: dict[str, Any] = {}

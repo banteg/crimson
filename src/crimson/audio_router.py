@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import random
-from typing import Callable
+from collections.abc import Callable
+from dataclasses import dataclass
 
 from grim.audio import AudioState, play_sfx, trigger_game_tune
 

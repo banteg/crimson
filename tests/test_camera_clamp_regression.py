@@ -3,10 +3,11 @@ from __future__ import annotations
 from contextlib import contextmanager
 from types import SimpleNamespace
 
+import pytest
+
 import grim.terrain_render as terrain_render
 from crimson.render.world import WorldRenderer
 from crimson.render.world import context as world_context
-import pytest
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 

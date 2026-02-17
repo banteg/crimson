@@ -4,11 +4,12 @@ from dataclasses import dataclass
 
 import pyray as rl
 
+from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
+from grim.view import View, ViewContext
+
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
-from grim.fonts.small import SmallFontData, load_small_font
-from grim.view import View, ViewContext
-from grim.geom import Vec2
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -93,7 +94,7 @@ class ProjectileView:
             return
         if self._texture is None:
             draw_ui_text(
-                self._small, "No projectile texture loaded.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+                self._small, "No projectile texture loaded.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR,
             )
             return
 
@@ -174,7 +175,7 @@ class ProjectileView:
         )
         info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6
         draw_ui_text(
-            self._small, "2/4: grid  G: toggle", Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR
+            self._small, "2/4: grid  G: toggle", Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR,
         )
         info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 12
 
@@ -200,7 +201,7 @@ class ProjectileView:
                     info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 4
             else:
                 draw_ui_text(
-                    self._small, "no known mapping", Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR
+                    self._small, "no known mapping", Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR,
                 )
                 info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 4
             info_y += 8

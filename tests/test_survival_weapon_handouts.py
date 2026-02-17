@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 from crimson.creatures.runtime import CreaturePool
 from crimson.gameplay import (
     GameplayState,
@@ -11,6 +9,7 @@ from crimson.gameplay import (
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
+from grim.geom import Vec2
 
 
 def test_survival_handout_time_gate_assigns_shrinkifier() -> None:

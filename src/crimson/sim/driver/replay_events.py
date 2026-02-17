@@ -3,11 +3,6 @@ from __future__ import annotations
 from typing import cast
 
 from ...game_modes import GameMode
-from ...perks import PerkId
-from ...perks.runtime.apply import perk_apply
-from ...perks.selection import perk_selection_current_choices, perk_selection_pick
-from ...perks.state import CreatureForPerks
-from ...replay import PerkMenuOpenEvent, PerkPickEvent, UnknownEvent
 from ...original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     CAPTURE_PERK_APPLY_EVENT_KIND,
@@ -17,6 +12,11 @@ from ...original.capture import (
     capture_perk_apply_from_event_payload,
     capture_perk_pending_from_event_payload,
 )
+from ...perks import PerkId
+from ...perks.runtime.apply import perk_apply
+from ...perks.selection import perk_selection_current_choices, perk_selection_pick
+from ...perks.state import CreatureForPerks
+from ...replay import PerkMenuOpenEvent, PerkPickEvent, UnknownEvent
 from ..world_state import WorldState
 from .setup import ReplayRunnerError
 
@@ -120,9 +120,9 @@ def apply_replay_tick_events(
                     continue
                 try:
                     perk_enum = PerkId(int(perk_id))
-                except ValueError:
+                except ValueError as err:
                     if strict_events:
-                        raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}")
+                        raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}") from err
                     continue
 
                 # `perk_apply_outside_before` draws are already accounted for by

@@ -6,12 +6,12 @@ from typing import cast
 
 from grim.geom import Vec2
 
-from ..bonuses.update import bonus_update, bonus_update_pre_pickup_timers
 from ..bonuses.pickup_fx import emit_bonus_pickup_effects
+from ..bonuses.update import bonus_update, bonus_update_pre_pickup_timers
 from ..camera import camera_shake_update
+from ..creatures.anim import creature_anim_advance_phase
 from ..creatures.damage import creature_apply_damage
 from ..creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureDeath, CreaturePool
-from ..creatures.anim import creature_anim_advance_phase
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import (

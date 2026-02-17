@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import pytest
 
 from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
+from crimson.sim.state_types import PlayerState
+from grim.geom import Vec2
 
 
 def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:

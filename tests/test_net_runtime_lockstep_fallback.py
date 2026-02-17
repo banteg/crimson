@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
 import random
 import time
+from pathlib import Path
 
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import GameState, LanSessionConfig, PendingLanSession

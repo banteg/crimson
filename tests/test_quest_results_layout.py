@@ -47,7 +47,7 @@ def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
     return ui
 
 
-def _patch_draw_environment(  # noqa: ANN001
+def _patch_draw_environment(
     monkeypatch,
     captured_text: list[str],
     texture_draws: list[object],

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
 import random
 import time
+from pathlib import Path
 from types import SimpleNamespace
 
 import pyray as rl
@@ -11,9 +11,9 @@ from crimson.game.quest_views import QUEST_FAILED_PANEL_SLIDE_DURATION_MS, QUEST
 from crimson.game.types import GameState
 from crimson.modes.quest_mode import QuestRunOutcome
 from crimson.persistence import save_status
-from grim.geom import Vec2
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
+from grim.geom import Vec2
 
 
 def _make_state(tmp_path: Path) -> GameState:
@@ -103,11 +103,11 @@ def test_quest_failed_enter_retries_current_quest(monkeypatch, tmp_path: Path) -
 
     played: list[str] = []
 
-    def _play_sfx(_audio, key, *, rng=None, allow_variants=True) -> None:  # noqa: ARG001
+    def _play_sfx(_audio, key, *, rng=None, allow_variants=True) -> None:
         played.append(key)
 
     class _DummyCache:
-        def get_or_load(self, *_args, **_kwargs):  # noqa: ANN001
+        def get_or_load(self, *_args, **_kwargs):
             return SimpleNamespace(texture=None)
 
     monkeypatch.setattr("crimson.game.quest_views.quest_failed.update_audio", lambda _audio, _dt: None)
@@ -139,11 +139,11 @@ def test_quest_failed_q_opens_quest_list(monkeypatch, tmp_path: Path) -> None:
 
     played: list[str] = []
 
-    def _play_sfx(_audio, key, *, rng=None, allow_variants=True) -> None:  # noqa: ARG001
+    def _play_sfx(_audio, key, *, rng=None, allow_variants=True) -> None:
         played.append(key)
 
     class _DummyCache:
-        def get_or_load(self, *_args, **_kwargs):  # noqa: ANN001
+        def get_or_load(self, *_args, **_kwargs):
             return SimpleNamespace(texture=None)
 
     monkeypatch.setattr("crimson.game.quest_views.quest_failed.update_audio", lambda _audio, _dt: None)
@@ -174,11 +174,11 @@ def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, tmp_path:
 
     played: list[str] = []
 
-    def _play_sfx(_audio, key, *, rng=None, allow_variants=True) -> None:  # noqa: ARG001
+    def _play_sfx(_audio, key, *, rng=None, allow_variants=True) -> None:
         played.append(key)
 
     class _DummyCache:
-        def get_or_load(self, *_args, **_kwargs):  # noqa: ANN001
+        def get_or_load(self, *_args, **_kwargs):
             return SimpleNamespace(texture=None)
 
     monkeypatch.setattr("crimson.game.quest_views.quest_failed.update_audio", lambda _audio, _dt: None)
@@ -208,7 +208,7 @@ def test_quest_failed_score_block_matches_native_fields(monkeypatch, tmp_path: P
     view = QuestFailedView(state)
 
     class _DummyCache:
-        def get_or_load(self, *_args, **_kwargs):  # noqa: ANN001
+        def get_or_load(self, *_args, **_kwargs):
             return SimpleNamespace(texture=None)
 
     monkeypatch.setattr("crimson.game.quest_views.quest_failed._ensure_texture_cache", lambda _state: _DummyCache())
@@ -218,13 +218,13 @@ def test_quest_failed_score_block_matches_native_fields(monkeypatch, tmp_path: P
     drawn_lines: list[tuple[int, int, int, int]] = []
     drawn_rects: list[tuple[int, int, int, int]] = []
 
-    def _draw_small_text(_font, text, pos, scale, color):  # noqa: ANN001, ARG001
+    def _draw_small_text(_font, text, pos, scale, color):
         drawn_text.append(str(text))
 
-    def _draw_line(x1, y1, x2, y2, color):  # noqa: ANN001, ARG001
+    def _draw_line(x1, y1, x2, y2, color):
         drawn_lines.append((int(x1), int(y1), int(x2), int(y2)))
 
-    def _draw_rect(x, y, w, h, color):  # noqa: ANN001, ARG001
+    def _draw_rect(x, y, w, h, color):
         drawn_rects.append((int(x), int(y), int(w), int(h)))
 
     monkeypatch.setattr("crimson.game.quest_views.quest_failed.draw_small_text", _draw_small_text)
@@ -249,11 +249,11 @@ def test_quest_failed_draw_fades_pause_background_during_close(monkeypatch, tmp_
     state.quest_outcome = _failed_outcome()
     captured_alpha: list[float] = []
     state.pause_background = SimpleNamespace(
-        draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha))
+        draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha)),
     )
 
     class _DummyCache:
-        def get_or_load(self, *_args, **_kwargs):  # noqa: ANN001
+        def get_or_load(self, *_args, **_kwargs):
             return SimpleNamespace(texture=None)
 
     view = QuestFailedView(state)

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
-from typing import TYPE_CHECKING, Callable, MutableSequence, Sequence
+from collections.abc import Callable, MutableSequence, Sequence
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
 
@@ -343,25 +344,25 @@ PROJECTILE_BEHAVIOR_BY_TYPE_ID: dict[int, ProjectileBehavior] = {
     int(ProjectileTypeId.PLASMA_MINIGUN): _DEFAULT_BEHAVIOR,
     int(ProjectileTypeId.PULSE_GUN): ProjectileBehavior(linger=_linger_default, post_hit_creature=_post_hit_pulse_gun),
     int(ProjectileTypeId.ION_RIFLE): ProjectileBehavior(
-        linger=_linger_ion_rifle, post_hit_creature=_post_hit_ion_rifle
+        linger=_linger_ion_rifle, post_hit_creature=_post_hit_ion_rifle,
     ),
     int(ProjectileTypeId.ION_MINIGUN): ProjectileBehavior(
-        linger=_linger_ion_minigun, post_hit_creature=_post_hit_ion_common
+        linger=_linger_ion_minigun, post_hit_creature=_post_hit_ion_common,
     ),
     int(ProjectileTypeId.ION_CANNON): ProjectileBehavior(
-        linger=_linger_ion_cannon, post_hit_creature=_post_hit_ion_common
+        linger=_linger_ion_cannon, post_hit_creature=_post_hit_ion_common,
     ),
     int(ProjectileTypeId.SHRINKIFIER): ProjectileBehavior(
-        linger=_linger_default, post_hit_creature=_post_hit_shrinkifier
+        linger=_linger_default, post_hit_creature=_post_hit_shrinkifier,
     ),
     int(ProjectileTypeId.BLADE_GUN): _DEFAULT_BEHAVIOR,
     int(ProjectileTypeId.SPIDER_PLASMA): _DEFAULT_BEHAVIOR,
     int(ProjectileTypeId.PLASMA_CANNON): ProjectileBehavior(
-        linger=_linger_default, post_hit_creature=_post_hit_plasma_cannon
+        linger=_linger_default, post_hit_creature=_post_hit_plasma_cannon,
     ),
     int(ProjectileTypeId.SPLITTER_GUN): ProjectileBehavior(linger=_linger_default, pre_hit_creature=_pre_hit_splitter),
     int(ProjectileTypeId.PLAGUE_SPREADER): ProjectileBehavior(
-        linger=_linger_default, post_hit_creature=_post_hit_plague_spreader
+        linger=_linger_default, post_hit_creature=_post_hit_plague_spreader,
     ),
     int(ProjectileTypeId.RAINBOW_GUN): _DEFAULT_BEHAVIOR,
     int(ProjectileTypeId.FIRE_BULLETS): _DEFAULT_BEHAVIOR,

@@ -8,8 +8,8 @@ from ...creatures.damage_types import CreatureDamageType
 from ...effects import FxQueue
 from ...sim.state_types import GameplayState, PlayerState
 from ..helpers import perk_active
-from ..runtime.hook_types import PerkHooks
 from ..ids import PerkId
+from ..runtime.hook_types import PerkHooks
 
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureDeath, CreaturePool
@@ -83,7 +83,7 @@ def apply_final_revenge_on_player_death(
                     world_width=float(world_size),
                     world_height=float(world_size),
                     fx_queue=fx_queue,
-                )
+                ),
             )
 
     state.bonus_spawn_guard = prev_guard

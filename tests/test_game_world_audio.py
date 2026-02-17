@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from pathlib import Path
 import random
+from pathlib import Path
 
 from crimson.bonuses import BonusId
-from crimson.gameplay import player_update
-from crimson.sim.input import PlayerInput
 from crimson.game_world import GameWorld
+from crimson.gameplay import player_update
 from crimson.perks import PerkId
+from crimson.sim.input import PlayerInput
 from grim.geom import Vec2
 
 
@@ -17,7 +17,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(monkeypatch) -> None:
 
     played: list[str | None] = []
 
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:  # noqa: ARG001
+    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
@@ -63,7 +63,7 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(monkeypatch) -> None:
 
     played: list[str | None] = []
 
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:  # noqa: ARG001
+    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
@@ -109,7 +109,7 @@ def test_pending_perk_increase_plays_levelup_sfx(monkeypatch) -> None:
 
     played: list[str | None] = []
 
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:  # noqa: ARG001
+    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
@@ -135,7 +135,7 @@ def test_bonus_pickup_plays_bonus_sfx(monkeypatch) -> None:
 
     played: list[str | None] = []
 
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:  # noqa: ARG001
+    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
@@ -158,7 +158,7 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(monkeypatch) -> None:
 
     played: list[str | None] = []
 
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:  # noqa: ARG001
+    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
@@ -181,7 +181,7 @@ def test_perk_bursts_play_explosion_small_sfx(monkeypatch) -> None:
 
     played: list[str | None] = []
 
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:  # noqa: ARG001
+    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)

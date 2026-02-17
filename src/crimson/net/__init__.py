@@ -13,8 +13,8 @@ from .protocol import (
     STATE_HASH_PERIOD_TICKS,
     TICK_RATE,
 )
-from .reliable import ReliableLink
 from .relay_service import RelayServer, RelayServerConfig
+from .reliable import ReliableLink
 from .resync import ResyncAssembler, ResyncBuildError, build_resync_messages
 from .transport import PeerAddr, UdpTransport
 

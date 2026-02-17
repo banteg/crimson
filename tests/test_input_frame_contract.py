@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 import pytest
-from grim.geom import Vec2
 
+from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.net.lockstep import HostLockstepState
-from crimson.sim.input import PlayerInput
-from crimson.sim.state_types import PlayerState
 from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder
-from crimson.sim.input_frame import normalize_input_frame
 from crimson.sim.driver.replay_runner import run_survival_replay
+from crimson.sim.input import PlayerInput
+from crimson.sim.input_frame import normalize_input_frame
+from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
-from crimson.effects import FxQueue, FxQueueRotated
+from grim.geom import Vec2
 
 
 def test_normalize_input_frame_is_player_index_ordered_and_fixed_size() -> None:
@@ -91,7 +91,7 @@ def test_survival_runner_multiplayer_input_contract_is_deterministic() -> None:
                     aim=Vec2(512.0 - float(tick), 512.0),
                     reload_pressed=bool(tick % 3 == 0),
                 ),
-            ]
+            ],
         )
     replay = recorder.finish()
     checkpoints0 = []

@@ -1,14 +1,15 @@
 from __future__ import annotations
 
+import shutil
+import subprocess
 from functools import lru_cache
 from pathlib import Path
-import subprocess
 
 from .. import __version__
 
 # Compatibility re-export.
 # Legacy LAN lockstep modules continue to import `crimson.net.protocol`.
-from .legacy_protocol import *  # noqa: F401,F403
+from .legacy_protocol import *  # noqa: F403
 
 
 @lru_cache(maxsize=1)
@@ -22,8 +23,11 @@ def current_build_id() -> str:
     version = str(__version__)
     try:
         repo_root = Path(__file__).resolve().parents[3]
+        git_exe = shutil.which("git")
+        if git_exe is None:
+            return version
         out = subprocess.check_output(
-            ["git", "rev-parse", "--short=12", "HEAD"],
+            [git_exe, "rev-parse", "--short=12", "HEAD"],
             cwd=repo_root,
             stderr=subprocess.DEVNULL,
         )

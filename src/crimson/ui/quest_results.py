@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import math
 from collections.abc import Callable
 from dataclasses import dataclass, field
-import math
 from pathlib import Path
 
 import pyray as rl
@@ -24,10 +24,10 @@ from ..persistence.highscores import (
 )
 from ..quests.results import QuestFinalTime, QuestResultsBreakdownAnim, tick_quest_results_breakdown_anim
 from ..weapons import WEAPON_BY_ID, weapon_display_name
+from .cursor import draw_menu_cursor
 from .formatting import format_ordinal, format_time_mm_ss
 from .layout import menu_widescreen_y_shift, ui_scale
 from .menu_panel import draw_classic_menu_panel
-from .cursor import draw_menu_cursor
 from .perk_menu import (
     PerkMenuAssets,
     UiButtonState,
@@ -391,7 +391,7 @@ class QuestResultsUi:
         layout_w = screen_w / scale if scale else screen_w
         widescreen_shift_y = menu_widescreen_y_shift(layout_w)
         panel_pos = Vec2(
-            panel_pos.x, (QUEST_RESULTS_PANEL_GEOM_Y0 + QUEST_RESULTS_PANEL_POS_Y + widescreen_shift_y) * scale
+            panel_pos.x, (QUEST_RESULTS_PANEL_GEOM_Y0 + QUEST_RESULTS_PANEL_POS_Y + widescreen_shift_y) * scale,
         )
         panel = Rect.from_top_left(panel_pos, QUEST_RESULTS_PANEL_W * scale, QUEST_RESULTS_PANEL_H * scale)
         return _QuestResultsPanelLayout(panel=panel, top_left=panel_pos)
@@ -559,7 +559,7 @@ class QuestResultsUi:
             button_pos = Vec2(score_card_pos.x + 20.0 * scale, var_c_14 + 6.0 * scale)
 
             play_next_w = button_width(
-                self.font, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide
+                self.font, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide,
             )
             if button_update(
                 self._play_next_button,
@@ -576,7 +576,7 @@ class QuestResultsUi:
             button_pos = button_pos.offset(dy=32.0 * scale)
 
             play_again_w = button_width(
-                self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide
+                self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
             )
             if button_update(
                 self._play_again_button,
@@ -593,7 +593,7 @@ class QuestResultsUi:
             button_pos = button_pos.offset(dy=32.0 * scale)
 
             high_scores_w = button_width(
-                self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide
+                self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide,
             )
             if button_update(
                 self._high_scores_button,
@@ -610,7 +610,7 @@ class QuestResultsUi:
             button_pos = button_pos.offset(dy=32.0 * scale)
 
             main_menu_w = button_width(
-                self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
+                self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
             )
             if button_update(
                 self._main_menu_button,
@@ -654,7 +654,7 @@ class QuestResultsUi:
         banner_pos = content_pos + Vec2(QUEST_RESULTS_BANNER_X_FROM_CONTENT * scale, 36.0 * scale)
         if self.assets.text_well_done is not None:
             src = rl.Rectangle(
-                0.0, 0.0, float(self.assets.text_well_done.width), float(self.assets.text_well_done.height)
+                0.0, 0.0, float(self.assets.text_well_done.width), float(self.assets.text_well_done.height),
             )
             dst = rl.Rectangle(banner_pos.x, banner_pos.y, TEXTURE_TOP_BANNER_W * scale, TEXTURE_TOP_BANNER_H * scale)
             rl.draw_texture_pro(self.assets.text_well_done, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
@@ -734,7 +734,7 @@ class QuestResultsUi:
 
             input_pos = content_pos.offset(dy=150.0 * scale)
             rl.draw_rectangle_lines(
-                int(input_pos.x), int(input_pos.y), int(INPUT_BOX_W * scale), int(INPUT_BOX_H * scale), rl.WHITE
+                int(input_pos.x), int(input_pos.y), int(INPUT_BOX_W * scale), int(INPUT_BOX_H * scale), rl.WHITE,
             )
             rl.draw_rectangle(
                 int(input_pos.x + 1.0 * scale),
@@ -756,7 +756,7 @@ class QuestResultsUi:
             caret_color = rl.Color(255, 255, 255, int(255 * caret_alpha))
             caret_x = input_pos.x + 4.0 * scale + self._text_width(self.input_text[: self.input_caret], 1.0 * scale)
             rl.draw_rectangle(
-                int(caret_x), int(input_pos.y + 2.0 * scale), int(1.0 * scale), int(14.0 * scale), caret_color
+                int(caret_x), int(input_pos.y + 2.0 * scale), int(1.0 * scale), int(14.0 * scale), caret_color,
             )
 
             ok_pos = input_pos + Vec2(170.0 * scale, -8.0 * scale)
@@ -780,14 +780,14 @@ class QuestResultsUi:
 
             card_y = var_c_12 + 16.0 * scale
             self._draw_name_entry_stats(
-                pos=Vec2(score_card_pos.x, card_y), scale=scale, alpha=1.0, show_weapon_row=False
+                pos=Vec2(score_card_pos.x, card_y), scale=scale, alpha=1.0, show_weapon_row=False,
             )
 
             # Unlock lines (their presence shifts the buttons down in native).
             var_c_14 = var_c_12 + 84.0 * scale
             if self.unlock_weapon_name:
                 self._draw_small(
-                    "Weapon unlocked:", Vec2(score_card_pos.x, var_c_14 + 1.0 * scale), 1.0 * scale, COLOR_TEXT_SUBTLE
+                    "Weapon unlocked:", Vec2(score_card_pos.x, var_c_14 + 1.0 * scale), 1.0 * scale, COLOR_TEXT_SUBTLE,
                 )
                 self._draw_small(
                     self.unlock_weapon_name,
@@ -798,7 +798,7 @@ class QuestResultsUi:
                 var_c_14 += 30.0 * scale
             if self.unlock_perk_name:
                 self._draw_small(
-                    "Perk unlocked:", Vec2(score_card_pos.x, var_c_14 + 1.0 * scale), 1.0 * scale, COLOR_TEXT_SUBTLE
+                    "Perk unlocked:", Vec2(score_card_pos.x, var_c_14 + 1.0 * scale), 1.0 * scale, COLOR_TEXT_SUBTLE,
                 )
                 self._draw_small(
                     self.unlock_perk_name,
@@ -811,7 +811,7 @@ class QuestResultsUi:
             # Buttons
             button_pos = Vec2(score_card_pos.x + 20.0 * scale, var_c_14 + 6.0 * scale)
             play_next_w = button_width(
-                self.font, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide
+                self.font, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide,
             )
             button_draw(
                 self.assets.perk_menu_assets,
@@ -823,7 +823,7 @@ class QuestResultsUi:
             )
             button_pos = button_pos.offset(dy=32.0 * scale)
             play_again_w = button_width(
-                self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide
+                self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
             )
             button_draw(
                 self.assets.perk_menu_assets,
@@ -835,7 +835,7 @@ class QuestResultsUi:
             )
             button_pos = button_pos.offset(dy=32.0 * scale)
             high_scores_w = button_width(
-                self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide
+                self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide,
             )
             button_draw(
                 self.assets.perk_menu_assets,
@@ -847,7 +847,7 @@ class QuestResultsUi:
             )
             button_pos = button_pos.offset(dy=32.0 * scale)
             main_menu_w = button_width(
-                self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
+                self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
             )
             button_draw(
                 self.assets.perk_menu_assets,

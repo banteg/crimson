@@ -28,14 +28,13 @@ from ..frontend.panels.stats import StatisticsMenuView
 from ..frontend.pause_menu import PauseMenuView
 from ..frontend.transitions import _update_screen_fade
 from ..input_codes import input_begin_frame
+from ..net.debug_log import init_lan_debug_log, lan_debug_log, lan_debug_log_path
 from ..quests.types import parse_level
 from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
-from ..net.debug_log import init_lan_debug_log, lan_debug_log, lan_debug_log_path
 from .high_scores_view import HighScoresView
 from .mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
 from .quest_views import EndNoteView, QuestFailedView, QuestResultsView, QuestsMenuView
 from .types import FrontView, GameState, PauseBackground
-
 
 _GAMMA_RAMP_SHADER: rl.Shader | None = None
 _GAMMA_RAMP_SHADER_GAIN_LOC: int = -1
@@ -176,7 +175,7 @@ class GameLoopView:
                 self._front_views["start_typo"],
                 self._front_views["start_tutorial"],
                 self._front_views["start_quest"],
-            }
+            },
         )
 
     def _pending_session(self):
@@ -356,7 +355,7 @@ class GameLoopView:
                     preserve_bugs=False,
                     input_delay_ticks=max(0, int(getattr(cfg, "input_delay_ticks", 1))),
                     sim_status_snapshot=sim_status_snapshot,
-                )
+                ),
             )
         else:
             runtime = NetRuntime(
@@ -374,7 +373,7 @@ class GameLoopView:
                     rollback_max_ticks=max(1, int(getattr(cfg, "rollback_max_ticks", 8))),
                     reconnect_timeout_ms=max(1000, int(getattr(cfg, "reconnect_timeout_ms", 15_000))),
                     sim_status_snapshot=sim_status_snapshot,
-                )
+                ),
             )
         self.state.lan_runtime = runtime
         self.state.net_runtime = runtime

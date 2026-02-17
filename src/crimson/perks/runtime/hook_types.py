@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Callable, Protocol
+from typing import TYPE_CHECKING, Protocol
 
+from ..ids import PerkId
 from .apply_context import PerkApplyHandler
 from .effects_context import PerksUpdateEffectsCtx
-from ..ids import PerkId
 from .player_tick_context import PlayerPerkTickCtx
 
 if TYPE_CHECKING:

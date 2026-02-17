@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from collections import OrderedDict, deque
-from dataclasses import dataclass, field
 import socket
 import time
-from typing import Literal
 import uuid
+from collections import OrderedDict, deque
+from dataclasses import dataclass, field
+from typing import Literal
 
 from ..replay.types import PackedPlayerInput
 from .debug_log import lan_debug_log
+from .legacy_protocol import PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
 from .relay_protocol import (
     DEFAULT_PORT,
     INPUT_DELAY_TICKS,
@@ -19,8 +20,8 @@ from .relay_protocol import (
     ROLLBACK_MAX_TICKS,
     ClientHello,
     ClientWelcome,
-    NetMessage,
     NetcodeMode,
+    NetMessage,
     PeerDisconnect,
     Ping,
     Pong,
@@ -47,7 +48,6 @@ from .rollback_resync_v5 import (
     build_rb_resync_messages,
     decode_mode_snapshot,
 )
-from .legacy_protocol import PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
 
 
 def _now_ms() -> int:
@@ -589,7 +589,7 @@ class NetRuntime:
                     frame_inputs=[list(item) for item in frame.frame_inputs],
                     command_hash="",
                     state_hash="",
-                )
+                ),
             )
 
     def _sync_rollback_metrics(self, controller: RollbackController) -> None:
@@ -620,7 +620,7 @@ class NetRuntime:
                         frame_inputs=[list(item) for item in frame.frame_inputs],
                         command_hash="",
                         state_hash="",
-                    )
+                    ),
                 )
             self._frame_queue = rebuilt_queue
 

@@ -86,7 +86,7 @@ def test_protocol_constants_match_spec() -> None:
 def test_current_build_id_falls_back_to_package_version(monkeypatch) -> None:
     protocol.current_build_id.cache_clear()
 
-    def _raise(*_args, **_kwargs):  # noqa: ANN001
+    def _raise(*_args, **_kwargs):
         raise subprocess.CalledProcessError(returncode=1, cmd=["git"])
 
     monkeypatch.setattr(protocol.subprocess, "check_output", _raise)

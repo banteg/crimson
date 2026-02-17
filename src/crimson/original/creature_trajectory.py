@@ -8,14 +8,12 @@ from pathlib import Path
 from typing import Any
 
 import msgspec
-from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
-from crimson.sim.input import PlayerInput
 from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
-    build_capture_dt_frame_overrides,
     build_capture_dt_frame_ms_i32_overrides,
+    build_capture_dt_frame_overrides,
     build_capture_inter_tick_rand_draws_overrides,
     convert_capture_to_replay,
     load_capture,
@@ -39,8 +37,10 @@ from crimson.sim.driver.setup import (
     reset_players,
     status_from_snapshot,
 )
+from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import SurvivalDeterministicSession
 from crimson.sim.world_state import WorldState
+from grim.geom import Vec2
 
 _JSON_OUT_AUTO = "__AUTO__"
 _DEFAULT_JSON_OUT_DIR = Path("artifacts/frida/reports")
@@ -159,7 +159,7 @@ def _decode_inputs_for_tick(
                 move_backward_pressed=move_backward_pressed,
                 turn_left_pressed=turn_left_pressed,
                 turn_right_pressed=turn_right_pressed,
-            )
+            ),
         )
     return out
 
@@ -330,7 +330,7 @@ def trace_creature_trajectory(
                     dx=dx,
                     dy=dy,
                     drift_mag=math.hypot(dx, dy),
-                )
+                ),
             )
 
         if inter_tick_rand_draws_by_tick is None:
@@ -360,7 +360,7 @@ def _print_summary(rows: list[CreatureTrajectoryRow], *, print_every: int) -> No
     print(
         "max_drift="
         f"{max_row.drift_mag:.6f} tick={max_row.tick} "
-        f"dx={max_row.dx:.6f} dy={max_row.dy:.6f}"
+        f"dx={max_row.dx:.6f} dy={max_row.dy:.6f}",
     )
 
     transitions = 0
@@ -376,7 +376,7 @@ def _print_summary(rows: list[CreatureTrajectoryRow], *, print_every: int) -> No
                 f"ai_mode {prev_mode}->{row.rw_ai_mode} "
                 f"target_player {prev_target}->{row.rw_target_player} "
                 f"flags {prev_flags}->{row.rw_flags} "
-                f"drift={row.drift_mag:.6f}"
+                f"drift={row.drift_mag:.6f}",
             )
             prev_mode = row.rw_ai_mode
             prev_target = row.rw_target_player
@@ -394,7 +394,7 @@ def _print_summary(rows: list[CreatureTrajectoryRow], *, print_every: int) -> No
                 f"hp(e/a)={row.cap_hp:.3f}/{row.rw_hp:.3f} "
                 f"hitbox(e/a)={row.cap_hitbox:.6f}/{row.rw_hitbox:.6f} "
                 f"active(e/a)={int(row.cap_active)}/{int(row.rw_active)} "
-                f"ai_mode={row.rw_ai_mode} target_player={row.rw_target_player}"
+                f"ai_mode={row.rw_ai_mode} target_player={row.rw_target_player}",
             )
 
 

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from collections import deque
-from dataclasses import dataclass, field
 import datetime as dt
-from pathlib import Path
 import socket
 import time
+from collections import deque
+from dataclasses import dataclass, field
+from pathlib import Path
 
+from ..replay.types import PackedPlayerInput
 from .debug_log import lan_debug_log, lan_debug_log_path, set_lan_debug_forwarder
 from .deterministic_status import hash_status_snapshot
 from .lobby import ClientLobby, HostLobby
@@ -20,14 +21,14 @@ from .protocol import (
     DesyncNotice,
     Disconnect,
     Hello,
-    KeepAlive,
     InputBatch,
+    KeepAlive,
     LobbyState,
     MatchStart,
     NetMessage,
     PauseState,
-    PerkMenuOpen,
     PerkMenuClose,
+    PerkMenuOpen,
     PerkPick,
     Ready,
     StatusSnapshot,
@@ -37,7 +38,6 @@ from .protocol import (
 )
 from .reliable import ReliableLink
 from .transport import PeerAddr, UdpTransport
-from ..replay.types import PackedPlayerInput
 
 
 def _now_ms() -> int:
@@ -337,7 +337,7 @@ class LanRuntime:
                 "desyncs: "
                 f"{int(self.desync_count)} "
                 f"last={str(self.last_desync_kind or '?')}@{int(self.last_desync_tick)} "
-                f"{exp}!={act}"
+                f"{exp}!={act}",
             )
 
         if role == "host":
@@ -364,13 +364,13 @@ class LanRuntime:
                 f"emit={int(emit_tick)} "
                 f"lead={int(lead_ticks)} "
                 f"wait={int(waiting_for)} "
-                f"stall={int(stall_ms)}ms"
+                f"stall={int(stall_ms)}ms",
             )
             lines.append(
                 "link(host): "
                 f"delay={delay_ticks}t({delay_ms}ms) "
                 f"rtt={rtt_label}ms "
-                f"pending={int(pending_max)}"
+                f"pending={int(pending_max)}",
             )
             return lines
 
@@ -411,13 +411,13 @@ class LanRuntime:
             f"consume={int(consume_tick)} "
             f"buf={int(buffered_frames)} "
             f"stall={int(stall_ms)}ms "
-            f"pause={int(paused)}"
+            f"pause={int(paused)}",
         )
         lines.append(
             "link(join): "
             f"delay={delay_ticks}t({delay_ms}ms) "
             f"rtt={int(rtt_last)}/{int(rtt_ewma)}ms "
-            f"pending={int(pending)}"
+            f"pending={int(pending)}",
         )
         pause = self.client_pause_state
         if pause is not None and bool(pause.paused):
@@ -836,7 +836,7 @@ class LanRuntime:
                         self._host_local_input_latency_ewma_ms = float(latency_ms)
                     else:
                         self._host_local_input_latency_ewma_ms = float(
-                            self._host_local_input_latency_ewma_ms * 0.9 + float(latency_ms) * 0.1
+                            self._host_local_input_latency_ewma_ms * 0.9 + float(latency_ms) * 0.1,
                         )
                 self.host_ready_frames.append(frame)
 
@@ -1409,7 +1409,7 @@ class LanRuntime:
                     self._client_local_input_latency_ewma_ms = float(latency_ms)
                 else:
                     self._client_local_input_latency_ewma_ms = float(
-                        self._client_local_input_latency_ewma_ms * 0.9 + float(latency_ms) * 0.1
+                        self._client_local_input_latency_ewma_ms * 0.9 + float(latency_ms) * 0.1,
                     )
             return
         if isinstance(message, PauseState):

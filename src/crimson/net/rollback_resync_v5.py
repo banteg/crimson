@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import hashlib
 import math
-from typing import Any, Literal
 import zlib
+from dataclasses import dataclass, field
+from typing import Any, Literal
 
 import msgspec
 
@@ -15,7 +15,6 @@ from .relay_protocol import (
     RbResyncChunk,
     RbResyncCommit,
 )
-
 
 SCHEMA_VERSION = 1
 SNAPSHOT_CODEC = "msgpack_state_v1"
@@ -117,7 +116,7 @@ def build_rb_resync_messages(
                 request_id=str(request_id),
                 chunk_index=int(chunk_index),
                 payload=bytes(compressed[start:end]),
-            )
+            ),
         )
 
     commit = RbResyncCommit(

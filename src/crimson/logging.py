@@ -3,11 +3,10 @@ from __future__ import annotations
 import datetime as dt
 import logging
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import structlog
-
 
 _LEVELS: dict[str, int] = {
     "debug": logging.DEBUG,

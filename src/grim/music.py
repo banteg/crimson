@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from collections.abc import Callable
-from pathlib import Path
 import random
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import cast
 
 import pyray as rl
 
-from .console import ConsoleState
 from . import paq
-
+from .console import ConsoleState
 
 MUSIC_PAK_NAME = "music.paq"
 MUSIC_TRACKS: dict[str, tuple[str, ...]] = {

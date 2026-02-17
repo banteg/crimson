@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from collections.abc import Callable
-from pathlib import Path
 import random
+from collections.abc import Callable
+from dataclasses import dataclass
+from pathlib import Path
 
 import pyray as rl
 
+from . import music, sfx
 from .config import CrimsonConfig
 from .console import ConsoleState
-from . import music, sfx
 
 
 @dataclass(slots=True)

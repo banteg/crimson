@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import hashlib
 import json
-from typing import Callable
+from collections.abc import Callable
+from dataclasses import dataclass, field
 
 from ..effects import FxQueue, FxQueueRotated
-from ..weapon_runtime import weapon_refresh_available
 from ..math_parity import f32
 from ..perks.availability import perks_rebuild_available
+from ..weapon_runtime import weapon_refresh_available
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .presentation_step import PresentationStepCommands, apply_world_presentation_step
@@ -60,7 +60,7 @@ def presentation_commands_hash(commands: PresentationStepCommands) -> str:
         "sfx_keys": [str(key) for key in commands.sfx_keys],
     }
     return hashlib.sha256(
-        json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
+        json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8"),
     ).hexdigest()[:16]
 
 

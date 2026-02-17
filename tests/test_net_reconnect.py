@@ -3,7 +3,15 @@ from __future__ import annotations
 from typing import Any
 
 from crimson.net.net_runtime import NetRuntime, NetRuntimeConfig
-from crimson.net.relay_protocol import ClientHello, ClientWelcome, PeerDisconnect, RelaySlot, RoomJoin, RoomStart, RoomState
+from crimson.net.relay_protocol import (
+    ClientHello,
+    ClientWelcome,
+    PeerDisconnect,
+    RelaySlot,
+    RoomJoin,
+    RoomStart,
+    RoomState,
+)
 
 
 def _started_runtime(monkeypatch) -> tuple[NetRuntime, list[tuple[tuple[str, int], Any]]]:
@@ -17,7 +25,7 @@ def _started_runtime(monkeypatch) -> tuple[NetRuntime, list[tuple[tuple[str, int
             room_code="ABCD12",
             input_delay_ticks=0,
             reconnect_timeout_ms=500,
-        )
+        ),
     )
     sent: list[tuple[tuple[str, int], Any]] = []
     monkeypatch.setattr(

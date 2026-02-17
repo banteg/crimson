@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import pytest
 
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
 from crimson.perks.runtime.effects import perks_update_effects
 from crimson.player_damage import player_take_damage, player_take_projectile_damage
+from crimson.sim.state_types import PlayerState
+from grim.geom import Vec2
 
 
 def test_death_clock_clears_regeneration_and_restores_health() -> None:

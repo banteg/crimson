@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from crimson.net.rollback import RollbackController
 from crimson.net.relay_protocol import RbInputSample
+from crimson.net.rollback import RollbackController
 
 
 def test_prediction_uses_hold_last_or_neutral_for_missing_remote_inputs() -> None:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import Callable, MutableSequence
+from collections.abc import Callable, MutableSequence
 
 from grim.color import RGBA
 from grim.geom import Vec2

@@ -1,10 +1,9 @@
 from __future__ import annotations
 
+import pickle
 from collections import OrderedDict
 from dataclasses import dataclass, field
-import pickle
 from typing import Generic, TypeVar
-
 
 SnapshotT = TypeVar("SnapshotT")
 

@@ -1,19 +1,22 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
 import gzip
 import math
-from pathlib import Path
 import struct
+from collections.abc import Iterable, Mapping
+from pathlib import Path
 from typing import cast
 
 import msgspec
+
 from grim.geom import Vec2
 
 from ..bonuses import BonusId
 from ..game_modes import GameMode
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
+)
+from ..replay.checkpoints import (
     ReplayCheckpoint,
     ReplayCheckpoints,
     ReplayDeathLedgerEntry,
@@ -22,12 +25,12 @@ from ..replay.checkpoints import (
     ReplayPlayerCheckpoint,
 )
 from ..replay.types import (
+    WEAPON_USAGE_COUNT,
     PerkMenuOpenEvent,
     Replay,
     ReplayHeader,
     ReplayStatusSnapshot,
     UnknownEvent,
-    WEAPON_USAGE_COUNT,
     pack_input_flags,
 )
 from ..weapons import projectile_type_ids_from_weapon_id
@@ -60,7 +63,7 @@ _PROJECTILE_SPAWNING_BONUS_IDS = frozenset(
         int(BonusId.FIREBLAST),
         int(BonusId.SHOCK_CHAIN),
         int(BonusId.NUKE),
-    }
+    },
 )
 
 
@@ -124,7 +127,7 @@ def parse_player_int_overrides(entries: Iterable[str] | None, *, option_name: st
             player_text, value_text = entry.split(":", 1)
         else:
             raise ValueError(
-                f"{option_name} expects PLAYER=VALUE (or PLAYER:VALUE), got {entry!r}"
+                f"{option_name} expects PLAYER=VALUE (or PLAYER:VALUE), got {entry!r}",
             )
 
         player_index = _coerce_int_like(player_text.strip())
@@ -470,7 +473,7 @@ def _infer_game_mode_id(capture: CaptureFile) -> int:
         if mode_hint in mode_hint_to_game_mode:
             return int(mode_hint_to_game_mode[mode_hint])
     raise ValueError(
-        "cannot infer replay game_mode_id from capture; pass an explicit game_mode_id override"
+        "cannot infer replay game_mode_id from capture; pass an explicit game_mode_id override",
     )
 
 
@@ -517,7 +520,7 @@ def _infer_player_count(capture: CaptureFile) -> int:
             player_count = max(player_count, int(key_row.player_index) + 1)
     if int(player_count) <= 0:
         raise ValueError(
-            "cannot infer replay player_count from capture; pass an explicit player_count override"
+            "cannot infer replay player_count from capture; pass an explicit player_count override",
         )
     return int(player_count)
 
@@ -820,7 +823,7 @@ def _infer_status_snapshot(capture: CaptureFile) -> ReplayStatusSnapshot:
 
     if int(unlock_index) < 0 or int(unlock_index_full) < 0:
         raise ValueError(
-            "cannot infer replay status unlock indices from capture checkpoint status telemetry"
+            "cannot infer replay status unlock indices from capture checkpoint status telemetry",
         )
 
     counts = list(usage_counts[:WEAPON_USAGE_COUNT])
@@ -890,7 +893,7 @@ def infer_capture_seed(capture: CaptureFile) -> int:
             return int(seed_from_state)
     raise ValueError(
         "cannot infer replay seed from capture: missing rng `state_before_u32` telemetry; "
-        "pass an explicit seed override"
+        "pass an explicit seed override",
     )
 
 
@@ -1015,7 +1018,7 @@ def _capture_bootstrap_payload(
                 "experience": int(player.experience),
                 "level": int(player.level),
                 "bonus_timers_ms": {str(key): int(value) for key, value in player.bonus_timers.items()},
-            }
+            },
         )
     return {
         "tick_index": int(tick.tick_index),
@@ -1273,7 +1276,7 @@ def convert_capture_to_checkpoints(capture: CaptureFile, *, replay_sha256: str =
                 deaths=[_replay_death(item) for item in ckpt.deaths],
                 perk=_replay_perk(ckpt.perk),
                 events=_replay_events(ckpt.events),
-            )
+            ),
         )
 
     return ReplayCheckpoints(
@@ -1379,7 +1382,7 @@ def convert_capture_to_replay(
                 use_digital_move = bool(
                     has_digital_move
                     and 0 <= int(player_index) < len(digital_move_enabled_by_player)
-                    and bool(digital_move_enabled_by_player[int(player_index)])
+                    and bool(digital_move_enabled_by_player[int(player_index)]),
                 )
                 if use_digital_move:
                     turn_left = bool(turn_left_raw)
@@ -1520,9 +1523,9 @@ def convert_capture_to_replay(
                     _capture_bootstrap_payload(
                         first_tick,
                         digital_move_enabled_by_player=digital_move_enabled_by_player,
-                    )
+                    ),
                 ],
-            )
+            ),
         )
 
         sorted_ticks = sorted(capture.ticks, key=lambda item: int(item.tick_index))
@@ -1540,7 +1543,7 @@ def convert_capture_to_replay(
                             tick_index=int(tick.tick_index),
                             kind=CAPTURE_PERK_APPLY_EVENT_KIND,
                             payload=[{"perk_id": int(perk_id), "outside_before": bool(outside_before)}],
-                        )
+                        ),
                     )
 
             pending = _tick_perk_pending_count(tick)
@@ -1554,7 +1557,7 @@ def convert_capture_to_replay(
                         tick_index=int(menu_tick),
                         kind=CAPTURE_PERK_PENDING_EVENT_KIND,
                         payload=[{"perk_pending": int(previous_pending)}],
-                    )
+                    ),
                 )
                 events.append(PerkMenuOpenEvent(tick_index=int(menu_tick), player_index=0))
                 events.append(
@@ -1562,7 +1565,7 @@ def convert_capture_to_replay(
                         tick_index=int(tick.tick_index),
                         kind=CAPTURE_PERK_PENDING_EVENT_KIND,
                         payload=[{"perk_pending": int(pending_i)}],
-                    )
+                    ),
                 )
             previous_pending = int(pending_i)
 
@@ -1609,7 +1612,7 @@ def _validate_capture_format_version(capture: CaptureFile, path: Path) -> None:
         return
     raise CaptureError(
         "unsupported capture format version for "
-        f"{path}: got {version}, expected {int(CAPTURE_FORMAT_VERSION)}"
+        f"{path}: got {version}, expected {int(CAPTURE_FORMAT_VERSION)}",
     )
 
 

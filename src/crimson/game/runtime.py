@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from pathlib import Path
 import datetime as dt
 import faulthandler
 import random
 import time
 import traceback
 import webbrowser
+from pathlib import Path
 
 import pyray as rl
 
@@ -31,8 +31,8 @@ from ..demo_trial import (
     demo_trial_overlay_info,
     format_demo_trial_time,
 )
-from ..net.debug_log import close_lan_debug_log, init_lan_debug_log, lan_debug_log
 from ..frontend.assets import _ensure_texture_cache
+from ..net.debug_log import close_lan_debug_log, init_lan_debug_log, lan_debug_log
 from ..persistence.save_status import ensure_game_status
 from ..quests.types import parse_level
 from .loop_view import GameLoopView
@@ -253,7 +253,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
             f"grace={int(state.demo_trial_elapsed_ms)}ms "
             f"visible={int(info.visible)} "
             f"kind={info.kind} "
-            f"remaining={remaining}"
+            f"remaining={remaining}",
         )
 
     return {
@@ -323,7 +323,7 @@ def run_game(config: GameConfig) -> None:
             host = str(
                 getattr(pending.config, "relay_host", "")
                 or pending.config.host_ip
-                or pending.config.bind_host
+                or pending.config.bind_host,
             )
             port = int(getattr(pending.config, "relay_port", pending.config.port))
             log_path = init_lan_debug_log(

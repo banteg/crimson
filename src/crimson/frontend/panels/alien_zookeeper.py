@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 
 import pyray as rl
 
@@ -36,7 +36,6 @@ from ..menu import (
 from ..transitions import _draw_screen_fade
 from ..types import GameState
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
-
 
 _BOARD_SIDE = 6
 _BOARD_CELLS = _BOARD_SIDE * _BOARD_SIDE

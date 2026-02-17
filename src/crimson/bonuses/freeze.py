@@ -25,7 +25,7 @@ def apply_freeze(ctx: BonusApplyCtx) -> None:
     if old <= 0.0:
         ctx.register_global("freeze")
     ctx.state.bonuses.freeze = float(
-        f32(float(old) + float(ctx.amount) * float(ctx.economist_multiplier))
+        f32(float(old) + float(ctx.amount) * float(ctx.economist_multiplier)),
     )
 
     creatures = ctx.creatures
@@ -50,7 +50,7 @@ def apply_freeze(ctx: BonusApplyCtx) -> None:
                     DeferredFreezeCorpseFx(
                         pos=Vec2(float(pos.x), float(pos.y)),
                         detail_preset=int(ctx.detail_preset),
-                    )
+                    ),
                 )
             elif allow_shatter_fx:
                 for _ in range(8):

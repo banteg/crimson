@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import math
 
 from crimson.creatures.runtime import CreatureState
@@ -12,6 +10,7 @@ from crimson.weapon_runtime import (
     player_fire_weapon,
     weapon_assign_player,
 )
+from grim.geom import Vec2
 
 
 class _FixedRng:

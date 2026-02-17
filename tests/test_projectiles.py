@@ -1,17 +1,15 @@
 from __future__ import annotations
 
+import math
+from dataclasses import dataclass
+
+from crimson.effects import FxQueue
+from crimson.gameplay import GameplayState
+from crimson.math_parity import f32
+from crimson.projectiles import ProjectileHit, ProjectilePool, ProjectileTypeId, SecondaryProjectilePool
+from crimson.sim.state_types import PlayerState
 from grim.color import RGBA
 from grim.geom import Vec2
-
-from dataclasses import dataclass
-import math
-
-from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
-from crimson.effects import FxQueue
-from crimson.math_parity import f32
-from crimson.projectiles import ProjectileHit, ProjectilePool, SecondaryProjectilePool
-from crimson.projectiles import ProjectileTypeId
 
 
 @dataclass(slots=True)
@@ -763,7 +761,7 @@ def test_secondary_projectile_pool_freeze_spawns_extra_shards_and_burst() -> Non
         def __init__(self) -> None:
             self.calls: list[tuple[float, float]] = []
 
-        def spawn_freeze_shard(self, *, pos: Vec2, angle: float, rand, detail_preset: int) -> None:  # noqa: ANN001
+        def spawn_freeze_shard(self, *, pos: Vec2, angle: float, rand, detail_preset: int) -> None:
             self.calls.append((float(pos.x), float(pos.y)))
 
     @dataclass(slots=True)

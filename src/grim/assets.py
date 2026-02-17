@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import io
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import cast
 
@@ -9,7 +9,6 @@ import pyray as rl
 from PIL import Image
 
 from . import jaz, paq
-
 
 PAQ_NAME = "crimson.paq"
 
@@ -229,11 +228,11 @@ def load_logo_assets(assets_dir: Path, *, entries: dict[str, bytes] | None = Non
         entries = load_paq_entries(assets_dir)
     return LogoAssets(
         backplasma=_load_texture_asset_from_bytes(
-            "backplasma", "load/backplasma.jaz", entries.get("load/backplasma.jaz")
+            "backplasma", "load/backplasma.jaz", entries.get("load/backplasma.jaz"),
         ),
         mockup=_load_texture_asset_from_bytes("mockup", "load/mockup.jaz", entries.get("load/mockup.jaz")),
         logo_esrb=_load_texture_asset_from_bytes(
-            "logo_esrb", "load/esrb_mature.jaz", entries.get("load/esrb_mature.jaz")
+            "logo_esrb", "load/esrb_mature.jaz", entries.get("load/esrb_mature.jaz"),
         ),
         loading=_load_texture_asset_from_bytes("loading", "load/loading.jaz", entries.get("load/loading.jaz")),
         cl_logo=_load_texture_asset_from_bytes(

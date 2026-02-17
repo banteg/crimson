@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from crimson.persistence.highscores import HighScoreRecord, read_highscore_table, scores_path_for_config, upsert_highscore_record
+from crimson.persistence.highscores import (
+    HighScoreRecord,
+    read_highscore_table,
+    scores_path_for_config,
+    upsert_highscore_record,
+)
 from grim.config import CrimsonConfig
 
 

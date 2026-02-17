@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from grim.geom import Vec2
-
 from crimson.game_world import GameWorld
 from crimson.quests import quest_by_level
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import QuestDeterministicSession
+from grim.geom import Vec2
 
 
 def _build_session(*, seed: int = 101, level: str = "1.1") -> QuestDeterministicSession:
@@ -25,7 +24,7 @@ def _build_session(*, seed: int = 101, level: str = "1.1") -> QuestDeterministic
             seed=int(seed),
             hardcore=False,
             full_version=True,
-        )
+        ),
     )
     return QuestDeterministicSession(
         world=world.world_state,
@@ -73,7 +72,7 @@ def test_quest_session_is_deterministic_for_same_seed_and_inputs() -> None:
                 float(tick0.spawn_timeline_ms),
                 float(tick0.no_creatures_timer_ms),
                 float(tick0.completion_transition_ms),
-            )
+            ),
         )
 
         tick1 = session1.step_tick(dt_frame=1.0 / 60.0, inputs=inputs)
@@ -84,7 +83,7 @@ def test_quest_session_is_deterministic_for_same_seed_and_inputs() -> None:
                 float(tick1.spawn_timeline_ms),
                 float(tick1.no_creatures_timer_ms),
                 float(tick1.completion_transition_ms),
-            )
+            ),
         )
 
     assert trace0 == trace1

@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from ..sim.input import PlayerInput
 from .input_codec import pack_tick_inputs
 from .types import (
+    REPLAY_FORMAT_VERSION,
+    PackedTickInputs,
     PerkMenuOpenEvent,
     PerkPickEvent,
-    PackedTickInputs,
     Replay,
     ReplayEvent,
     ReplayHeader,
-    REPLAY_FORMAT_VERSION,
 )
 
 
@@ -95,7 +95,7 @@ class ReplayRecorder:
                 tick_index=int(tick_index),
                 player_index=int(player_index),
                 choice_index=int(choice_index),
-            )
+            ),
         )
 
     def record_perk_menu_open(
@@ -110,7 +110,7 @@ class ReplayRecorder:
             PerkMenuOpenEvent(
                 tick_index=int(tick_index),
                 player_index=int(player_index),
-            )
+            ),
         )
 
     def finish(self) -> Replay:

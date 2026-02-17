@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from ..helpers import perk_active
-from ..runtime.hook_types import PerkHooks
 from ..ids import PerkId
+from ..runtime.hook_types import PerkHooks
 from ..runtime.player_tick_context import PlayerPerkTickCtx
 
 

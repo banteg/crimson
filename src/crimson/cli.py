@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-import io
 import inspect
+import io
 import ipaddress
 import json
 import random
 import re
 import sys
-from pathlib import Path
 from dataclasses import fields, is_dataclass
+from pathlib import Path
 from typing import Any, Literal, cast
 
 import typer
@@ -17,11 +17,11 @@ from PIL import Image
 from grim import jaz, paq
 from grim.geom import Vec2
 from grim.rand import Crand
-from .paths import default_runtime_dir
+
 from .creatures.spawn import SpawnEnv, build_spawn_plan, spawn_id_label
+from .paths import default_runtime_dir
 from .quests import all_quests
 from .quests.types import QuestContext, QuestDefinition, SpawnEntry
-
 
 app = typer.Typer(add_completion=False)
 replay_app = typer.Typer(add_completion=False)
@@ -262,6 +262,7 @@ def cmd_view(
     """Launch a Raylib debug view."""
     from grim.app import run_view
     from grim.view import ViewContext
+
     from .views import all_views, view_by_name
 
     view_def = view_by_name(name)
@@ -302,7 +303,7 @@ def _run_game_with_pending_session(
             preserve_bugs=False,
             pending_net_session=pending,
             pending_lan_session=pending,
-        )
+        ),
     )
 
 
@@ -348,7 +349,7 @@ def cmd_relay_serve(
         RelayServerConfig(
             bind_host=str(bind).strip() or "0.0.0.0",
             bind_port=int(port),
-        )
+        ),
     )
     server.serve_forever(tick_ms=max(1, int(tick_ms)))
 
@@ -646,8 +647,8 @@ def cmd_replay_play(
 ) -> None:
     """Play back a recorded replay."""
     from grim.app import run_view
-    from grim.console import create_console
     from grim.config import ensure_crimson_cfg
+    from grim.console import create_console
     from grim.view import ViewContext
 
     from .assets_fetch import download_missing_paqs
@@ -828,8 +829,8 @@ def cmd_replay_diff_checkpoints(
     actual_file: Path = typer.Argument(..., help="actual checkpoints sidecar (.json.gz)"),
 ) -> None:
     """Compare two checkpoint sidecars and report the first divergence."""
-    from .replay.checkpoints import load_checkpoints_file
     from .original.diff import compare_checkpoints
+    from .replay.checkpoints import load_checkpoints_file
 
     expected = load_checkpoints_file(Path(expected_file))
     actual = load_checkpoints_file(Path(actual_file))
@@ -1134,8 +1135,6 @@ def cmd_replay_convert_capture(
     """Convert capture data into replay + checkpoint artifacts."""
     import hashlib
 
-    from .replay import dump_replay
-    from .replay.checkpoints import dump_checkpoints_file
     from .original.capture import (
         convert_capture_to_checkpoints,
         convert_capture_to_replay,
@@ -1143,6 +1142,8 @@ def cmd_replay_convert_capture(
         load_capture,
         parse_player_int_overrides,
     )
+    from .replay import dump_replay
+    from .replay.checkpoints import dump_checkpoints_file
 
     capture = load_capture(Path(capture_file))
     try:
@@ -1235,7 +1236,7 @@ def cmd_replay_divergence_report(ctx: typer.Context) -> None:
             tool="divergence-report",
             argv=list(ctx.args),
             fallback=divergence_report.main,
-        )
+        ),
     )
 
 
@@ -1252,7 +1253,7 @@ def cmd_replay_bisect_divergence(ctx: typer.Context) -> None:
             tool="bisect-divergence",
             argv=list(ctx.args),
             fallback=divergence_bisect.main,
-        )
+        ),
     )
 
 
@@ -1269,7 +1270,7 @@ def cmd_replay_focus_trace(ctx: typer.Context) -> None:
             tool="focus-trace",
             argv=list(ctx.args),
             fallback=focus_trace.main,
-        )
+        ),
     )
 
 
@@ -1456,14 +1457,14 @@ def cmd_spawn_plan(
     typer.echo(f"template_id=0x{template_id:02x} ({template_id}) creature={spawn_id_label(template_id)}")
     typer.echo(
         f"pos=({spawn_pos.x:.1f},{spawn_pos.y:.1f}) "
-        f"heading={heading:.6f} seed=0x{_parse_int_auto(seed):08x} rng_state=0x{rng.state:08x}"
+        f"heading={heading:.6f} seed=0x{_parse_int_auto(seed):08x} rng_state=0x{rng.state:08x}",
     )
     typer.echo(
         "env="
         f"demo_mode_active={demo_mode_active} "
         f"hardcore={hardcore} "
         f"difficulty={difficulty} "
-        f"terrain={terrain_w:.0f}x{terrain_h:.0f}"
+        f"terrain={terrain_w:.0f}x{terrain_h:.0f}",
     )
     typer.echo(f"primary={plan.primary} creatures={len(plan.creatures)} slots={len(plan.spawn_slots)} effects={len(plan.effects)}")
     typer.echo("")
@@ -1473,7 +1474,7 @@ def cmd_spawn_plan(
         typer.echo(
             f"{primary}{idx:02d} type={c.type_id!s:14s} ai={c.ai_mode:2d} flags=0x{int(c.flags):03x} "
             f"pos=({c.pos.x:7.1f},{c.pos.y:7.1f}) health={c.health!s:>6s} size={c.size!s:>6s} link={c.ai_link_parent!s:>3s} "
-            f"slot={c.spawn_slot!s:>3s}"
+            f"slot={c.spawn_slot!s:>3s}",
         )
     if plan.spawn_slots:
         typer.echo("")
@@ -1481,7 +1482,7 @@ def cmd_spawn_plan(
         for idx, slot in enumerate(plan.spawn_slots):
             typer.echo(
                 f"{idx:02d} owner={slot.owner_creature:02d} timer={slot.timer:.2f} count={slot.count:3d} "
-                f"limit={slot.limit:3d} interval={slot.interval:.3f} child=0x{slot.child_template_id:02x}"
+                f"limit={slot.limit:3d} interval={slot.interval:.3f} child=0x{slot.child_template_id:02x}",
             )
     if plan.effects:
         typer.echo("")

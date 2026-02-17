@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
-from typing import Callable
+from collections.abc import Callable
+from dataclasses import dataclass
 
 from grim.geom import Vec2
 

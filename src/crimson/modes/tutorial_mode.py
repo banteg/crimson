@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import random
+from dataclasses import dataclass, field
 from typing import cast
 
 import pyray as rl
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
-from grim.console import ConsoleState
 from grim.config import CrimsonConfig
+from grim.console import ConsoleState
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.view import ViewContext
@@ -17,10 +17,9 @@ from grim.view import ViewContext
 from ..creatures.runtime import CreatureFlags
 from ..game_modes import GameMode
 from ..gameplay import survival_check_level_up
-from ..sim.input import PlayerInput
-from ..weapon_runtime import weapon_assign_player
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
 from ..perks.state import CreatureForPerks
+from ..sim.input import PlayerInput
 from ..tutorial.timeline import TutorialFrameActions, TutorialState, tick_tutorial_timeline
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
@@ -32,9 +31,9 @@ from ..ui.perk_menu import (
     button_width,
     load_perk_menu_assets,
 )
+from ..weapon_runtime import weapon_assign_player
 from .base_gameplay_mode import BaseGameplayMode
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
-
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)

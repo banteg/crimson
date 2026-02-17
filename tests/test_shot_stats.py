@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 from dataclasses import dataclass
 
 from crimson.gameplay import GameplayState
@@ -11,6 +9,7 @@ from crimson.weapon_runtime import (
     player_fire_weapon,
     weapon_assign_player,
 )
+from grim.geom import Vec2
 
 
 @dataclass(slots=True)

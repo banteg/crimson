@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
 from crimson.modes.components.highscore_record_builder import (
     build_highscore_record_for_game_over,
     clamp_shots,
     shots_from_state,
 )
+from crimson.sim.state_types import PlayerState
+from grim.geom import Vec2
 
 
 def test_clamp_shots_clamps_hit_and_nonnegative() -> None:

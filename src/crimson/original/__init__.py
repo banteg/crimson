@@ -37,6 +37,7 @@ from .schema import (
     ProcessInfo,
     SessionFingerprint,
 )
+
 __all__ = [
     "CAPTURE_BOOTSTRAP_EVENT_KIND",
     "CAPTURE_PERK_APPLY_EVENT_KIND",

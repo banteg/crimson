@@ -5,13 +5,13 @@ from types import SimpleNamespace
 
 import pyray as rl
 
-from crimson.sim.input import PlayerInput
 from crimson.game_world import GameWorld
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
-from grim.console import create_console, register_core_cvars
+from crimson.sim.input import PlayerInput
 from grim.config import ensure_crimson_cfg
+from grim.console import create_console, register_core_cvars
 from grim.geom import Vec2
 from grim.view import ViewContext
 
@@ -71,7 +71,7 @@ def test_quest_mode_update_uses_per_player_input_frame(monkeypatch, tmp_path: Pa
             self.no_creatures_timer_ms = 0.0
             self.completion_transition_ms = -1.0
 
-        def step_tick(self, *, dt_frame, inputs, trace_rng=False):  # noqa: ANN001
+        def step_tick(self, *, dt_frame, inputs, trace_rng=False):
             del dt_frame, trace_rng
             captured["inputs"] = inputs
             return SimpleNamespace(
@@ -108,7 +108,7 @@ def test_base_gameplay_build_local_inputs_passes_creatures(monkeypatch, tmp_path
 
     captured: dict[str, object] = {}
 
-    def _fake_build_frame_inputs(  # noqa: ANN001
+    def _fake_build_frame_inputs(
         *,
         players,
         config,

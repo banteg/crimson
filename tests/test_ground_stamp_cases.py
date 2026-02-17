@@ -50,7 +50,7 @@ def test_ground_stamp_cases_match_captured_triplets() -> None:
                     break
             failures.append(
                 f"stamp triplets mismatch for gen_index={case.get('gen_index')} seed_state=0x{seed_state:08x} "
-                f"first_mismatch={first}"
+                f"first_mismatch={first}",
             )
 
     if failures:

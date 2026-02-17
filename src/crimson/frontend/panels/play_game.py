@@ -11,7 +11,6 @@ from grim.geom import Rect, Vec2
 from ...debug import debug_enabled
 from ...game_modes import GameMode
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_PLAY_GAME,
@@ -19,10 +18,9 @@ from ..menu import (
     MENU_PANEL_WIDTH,
     MenuView,
 )
+from ..types import GameState
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .hit_test import mouse_inside_rect_with_padding
-
-from ..types import GameState
 
 
 @dataclass(slots=True)
@@ -283,7 +281,7 @@ class PlayGameMenuView(PanelMenuView):
                     tooltip="Learn how to play Crimsonland.",
                     action="start_tutorial",
                     game_mode=int(GameMode.TUTORIAL),
-                )
+                ),
             )
 
         entries.extend(
@@ -311,7 +309,7 @@ class PlayGameMenuView(PanelMenuView):
                     game_mode=int(GameMode.SURVIVAL),
                     show_count=True,
                 ),
-            ]
+            ],
         )
 
         if has_typo:
@@ -323,7 +321,7 @@ class PlayGameMenuView(PanelMenuView):
                     action="start_typo",
                     game_mode=int(GameMode.TYPO),
                     show_count=True,
-                )
+                ),
             )
 
         if show_tutorial and main_total > 0:
@@ -334,7 +332,7 @@ class PlayGameMenuView(PanelMenuView):
                     tooltip="Learn how to play Crimsonland.",
                     action="start_tutorial",
                     game_mode=int(GameMode.TUTORIAL),
-                )
+                ),
             )
 
         if self._lan_lockstep_enabled():
@@ -344,7 +342,7 @@ class PlayGameMenuView(PanelMenuView):
                     label=" Network ",
                     tooltip="Host or join a rollback-first network session.",
                     action="open_lan_session",
-                )
+                ),
             )
 
         # The y after the last row is used as a tooltip anchor in `sub_44ed80`.
@@ -525,7 +523,7 @@ class PlayGameMenuView(PanelMenuView):
             self._draw_mode_button(mode, Vec2(base_pos.x, y), scale)
             if show_counts and mode.show_count:
                 self._draw_mode_count(
-                    mode.key, Vec2(base_pos.x + 158.0 * scale, y + 8.0 * scale), text_scale, text_color
+                    mode.key, Vec2(base_pos.x + 158.0 * scale, y + 8.0 * scale), text_scale, text_color,
                 )
             y += y_step * scale
 
@@ -600,7 +598,7 @@ class PlayGameMenuView(PanelMenuView):
             if idx == (player_count - 1):
                 alpha = max(alpha, 245)  # 0x3f75c28f
             draw_small_text(
-                font, item, Vec2(layout.text_pos.x, item_y), layout.text_scale, rl.Color(255, 255, 255, alpha)
+                font, item, Vec2(layout.text_pos.x, item_y), layout.text_scale, rl.Color(255, 255, 255, alpha),
             )
 
     def _draw_mode_button(self, mode: _PlayGameModeEntry, pos: Vec2, scale: float) -> None:

@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from grim.geom import Vec2
-
-from dataclasses import dataclass, field
 import math
 import random
+from collections.abc import Callable
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import pyray as rl
@@ -13,30 +11,31 @@ import pyray as rl
 from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
+from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 
-from .terrain_assets import TerrainTextureId, terrain_texture_by_id
+from .audio_router import AudioRouter
 from .creatures.anim import creature_corpse_frame_for_type
 from .creatures.runtime import CreaturePool
 from .creatures.spawn import SpawnEnv
 from .effects import FxQueue, FxQueueRotated
+from .game_modes import GameMode
 from .gameplay import GameplayState
-from .sim.input import PlayerInput
-from .sim.state_types import PlayerState
-from .weapon_runtime import weapon_assign_player
-from .render.terrain_fx import FxQueueTextures, bake_fx_queues
 from .render.frame import RenderFrame
+from .render.terrain_fx import FxQueueTextures, bake_fx_queues
 from .render.world import WorldRenderer
-from .audio_router import AudioRouter
+from .sim.input import PlayerInput
 from .sim.presentation_step import (
     PresentationStepCommands,
     queue_projectile_decals,
 )
+from .sim.state_types import PlayerState
 from .sim.step_pipeline import DeterministicStepResult, run_deterministic_step
 from .sim.world_defs import CREATURE_ASSET
 from .sim.world_state import ProjectileHit, WorldEvents, WorldState
+from .terrain_assets import TerrainTextureId, terrain_texture_by_id
+from .weapon_runtime import weapon_assign_player
 from .weapons import WEAPON_TABLE
-from .game_modes import GameMode
 
 
 @dataclass(slots=True)

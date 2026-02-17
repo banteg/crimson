@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from io import StringIO
 import json
+from io import StringIO
 
 from crimson.oracle import OracleConfig, OutputMode, run_headless
 
@@ -27,7 +27,7 @@ def test_oracle_summary_includes_command_hash() -> None:
             sample_rate=1,
             output_mode=OutputMode.SUMMARY,
             preserve_bugs=False,
-        )
+        ),
     )
     assert rows
     for row in rows:

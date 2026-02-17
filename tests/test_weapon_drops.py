@@ -4,11 +4,11 @@ from pathlib import Path
 
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
+from crimson.persistence import save_status
 from crimson.weapon_runtime import (
     weapon_pick_random_available,
     weapon_refresh_available,
 )
-from crimson.persistence import save_status
 from crimson.weapons import WeaponId
 
 

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Callable, MutableSequence
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Callable, MutableSequence, Protocol
+from typing import Protocol
 
 from grim.color import RGBA
 from grim.geom import Vec2

@@ -4,8 +4,8 @@ import random
 
 from grim.geom import Vec2
 
-from ..perks import PerkId
 from ..creatures.spawn import SpawnId
+from ..perks import PerkId
 from ..weapons import WeaponId
 from .helpers import (
     center_point,
@@ -42,16 +42,16 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
         ),
         spawn_at(edges_wide.left, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B, trigger_ms=1500, count=2),
         spawn(
-            Vec2(896.0, 128.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=2000, count=1
+            Vec2(896.0, 128.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=2000, count=1,
         ),
         spawn(
-            Vec2(128.0, 128.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=2000, count=1
+            Vec2(128.0, 128.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=2000, count=1,
         ),
         spawn(
-            Vec2(128.0, 896.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=2000, count=1
+            Vec2(128.0, 896.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=2000, count=1,
         ),
         spawn(
-            Vec2(896.0, 896.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=2000, count=1
+            Vec2(896.0, 896.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=2000, count=1,
         ),
     ]
 
@@ -65,7 +65,7 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
                     trigger_ms=trigger,
                     count=4,
-                )
+                ),
             )
         if wave in (3, 5):
             entries.append(
@@ -75,7 +75,7 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
                     trigger_ms=trigger,
                     count=4,
-                )
+                ),
             )
         spawn_id = SpawnId.AI1_ALIEN_BLUE_TINT_1A if wave % 2 == 0 else SpawnId.AI1_LIZARD_BLUE_TINT_1C
         edge = wave % 5
@@ -87,7 +87,7 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=spawn_id,
                     trigger_ms=trigger,
                     count=12,
-                )
+                ),
             )
             trigger += 15000
         elif edge == 1:
@@ -98,7 +98,7 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=spawn_id,
                     trigger_ms=trigger,
                     count=12,
-                )
+                ),
             )
             trigger += 15000
         elif edge == 2:
@@ -109,7 +109,7 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=spawn_id,
                     trigger_ms=trigger,
                     count=12,
-                )
+                ),
             )
             trigger += 15000
         elif edge == 3:
@@ -120,7 +120,7 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=spawn_id,
                     trigger_ms=trigger,
                     count=12,
-                )
+                ),
             )
             trigger += 15000
         trigger += 1000
@@ -169,7 +169,7 @@ def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.LIZARD_RANDOM_31,
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 900
     return entries
@@ -208,7 +208,7 @@ def build_3_3_the_killing(ctx: QuestContext, rng: random.Random | None = None) -
                     spawn_id=spawn_id,
                     trigger_ms=trigger,
                     count=12,
-                )
+                ),
             )
         elif edge == 1:
             entries.append(
@@ -218,7 +218,7 @@ def build_3_3_the_killing(ctx: QuestContext, rng: random.Random | None = None) -
                     spawn_id=spawn_id,
                     trigger_ms=trigger,
                     count=12,
-                )
+                ),
             )
         elif edge == 2:
             entries.append(
@@ -228,7 +228,7 @@ def build_3_3_the_killing(ctx: QuestContext, rng: random.Random | None = None) -
                     spawn_id=spawn_id,
                     trigger_ms=trigger,
                     count=12,
-                )
+                ),
             )
         elif edge == 3:
             entries.append(
@@ -238,7 +238,7 @@ def build_3_3_the_killing(ctx: QuestContext, rng: random.Random | None = None) -
                     spawn_id=spawn_id,
                     trigger_ms=trigger,
                     count=12,
-                )
+                ),
             )
         else:
             for offset in (0, 1000, 2000):
@@ -251,7 +251,7 @@ def build_3_3_the_killing(ctx: QuestContext, rng: random.Random | None = None) -
                         spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
                         trigger_ms=trigger + offset,
                         count=3,
-                    )
+                    ),
                 )
 
         trigger += 6000
@@ -272,10 +272,10 @@ def build_3_4_hidden_evil(ctx: QuestContext) -> list[SpawnEntry]:
         spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_PURPLE_GHOST_21, trigger_ms=500, count=50),
         spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_22, trigger_ms=15000, count=30),
         spawn_at(
-            edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_SMALL_23, trigger_ms=25000, count=20
+            edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_SMALL_23, trigger_ms=25000, count=20,
         ),
         spawn_at(
-            edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_SMALL_23, trigger_ms=30000, count=30
+            edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_SMALL_23, trigger_ms=30000, count=30,
         ),
         spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_22, trigger_ms=35000, count=30),
     ]
@@ -300,7 +300,7 @@ def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         entries.append(
             spawn(
@@ -309,7 +309,7 @@ def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 800
 
@@ -322,7 +322,7 @@ def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         entries.append(
             spawn(
@@ -331,7 +331,7 @@ def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 800
     return entries
@@ -358,7 +358,7 @@ def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.LIZARD_RANDOM_2E,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -367,7 +367,7 @@ def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.LIZARD_RANDOM_2E,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         if wave == 4:
             entries.append(
@@ -377,7 +377,7 @@ def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
                     trigger_ms=1500,
                     count=2,
-                )
+                ),
             )
         trigger += 8000
     return entries
@@ -417,7 +417,7 @@ def build_3_7_spiders_inc(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -426,7 +426,7 @@ def build_3_7_spiders_inc(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         trigger += 6000
         step_count += 1
@@ -453,7 +453,7 @@ def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.LIZARD_RANDOM_2E,
                 trigger_ms=trigger,
                 count=6,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -462,7 +462,7 @@ def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.LIZARD_RANDOM_2E,
                 trigger_ms=trigger,
                 count=6,
-            )
+            ),
         )
         trigger += 6000
     entries.extend(
@@ -488,7 +488,7 @@ def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
                 trigger_ms=10000,
                 count=1,
             ),
-        ]
+        ],
     )
     return entries
 
@@ -517,7 +517,7 @@ def build_3_9_deja_vu(ctx: QuestContext, rng: random.Random | None = None) -> li
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
                     trigger_ms=trigger,
                     count=1,
-                )
+                ),
             )
         trigger += step
         step -= 0x50

@@ -6,11 +6,12 @@
 #     "sulguk>=0.11.1",
 # ]
 # ///
-import mistune
-import sulguk
-import requests
 import os
 import re
+
+import mistune
+import requests
+import sulguk
 
 repo = os.environ["REPO"]
 tag = os.environ["TAG_NAME"]
@@ -47,7 +48,7 @@ lines = body.splitlines()
 
 header = f"release **{repo} {tag}**"
 pulls = "\n".join(
-    [PULL_RE.sub(r"[#\2](\1)", line) for line in lines if PULL_RE.search(line)]
+    [PULL_RE.sub(r"[#\2](\1)", line) for line in lines if PULL_RE.search(line)],
 )
 compare_match = COMPARE_RE.search(body)
 compare = ""
@@ -67,7 +68,8 @@ payload = {
     "link_preview_options": {"is_disabled": True},
 }
 resp = requests.post(
-    f"https://api.telegram.org/bot{bot_token}/sendMessage", json=payload
+    f"https://api.telegram.org/bot{bot_token}/sendMessage", json=payload,
+    timeout=30,
 )
 resp.raise_for_status()
 print(f"\nsent to {chat_id}")

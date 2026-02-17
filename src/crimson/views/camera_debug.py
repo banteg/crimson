@@ -1,23 +1,22 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
-from pathlib import Path
 import time
+from dataclasses import dataclass
+from pathlib import Path
 
 import pyray as rl
 
 from grim.assets import resolve_asset_path
 from grim.config import ensure_crimson_cfg
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
-from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
 
 from ..paths import default_runtime_dir
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
-
 
 WORLD_SIZE = 1024.0
 WINDOW_W = 640
@@ -183,7 +182,7 @@ class CameraDebugView:
         move = Vec2(move_x, move_y)
         if move.length_sq() > 0.0:
             self._player = (self._player + move.normalized() * (speed * dt)).clamp_rect(
-                0.0, 0.0, WORLD_SIZE, WORLD_SIZE
+                0.0, 0.0, WORLD_SIZE, WORLD_SIZE,
             )
 
         screen_size = self._camera_screen_size()
@@ -244,7 +243,7 @@ class CameraDebugView:
 
         if self._renderer is None:
             draw_ui_text(
-                self._small, "Ground renderer not initialized.", Vec2(16, 16), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR
+                self._small, "Ground renderer not initialized.", Vec2(16, 16), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR,
             )
             return
 
@@ -338,14 +337,14 @@ class CameraDebugView:
         )
         y += line
         draw_ui_text(
-            self._small, f"camera={camera.x:.1f},{camera.y:.1f}", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+            self._small, f"camera={camera.x:.1f},{camera.y:.1f}", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR,
         )
         y += line
         if self._log_path is not None:
             draw_ui_text(self._small, f"log: {self._log_path}", Vec2(x, y), scale=0.9, color=UI_HINT_COLOR)
             y += line
         draw_ui_text(
-            self._small, "F1: toggle camera size (config/window)", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR
+            self._small, "F1: toggle camera size (config/window)", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR,
         )
 
 

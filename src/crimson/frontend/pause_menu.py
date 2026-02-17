@@ -35,9 +35,7 @@ from .menu import (
     _draw_menu_cursor,
 )
 from .transitions import _draw_screen_fade
-
 from .types import GameState, PauseBackground
-
 
 PAUSE_MENU_TO_MAIN_MENU_FADE_MS = 500
 

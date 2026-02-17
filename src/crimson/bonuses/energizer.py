@@ -10,5 +10,5 @@ def apply_energizer(ctx: BonusApplyCtx) -> None:
         ctx.register_global("energizer")
 
     ctx.state.bonuses.energizer = float(
-        f32(float(old) + bonus_apply_seconds(ctx) * float(ctx.economist_multiplier))
+        f32(float(old) + bonus_apply_seconds(ctx) * float(ctx.economist_multiplier)),
     )

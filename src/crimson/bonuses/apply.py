@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
@@ -22,7 +22,6 @@ from .shock_chain import apply_shock_chain
 from .speed import apply_speed
 from .weapon import apply_weapon
 from .weapon_power_up import apply_weapon_power_up
-
 
 _BONUS_APPLY_HANDLERS: dict[BonusId, BonusApplyHandler] = {
     BonusId.POINTS: apply_points,

@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 
+from crimson.original import divergence_report, focus_trace
 from crimson.original.diagnostics_cache import (
     CaptureSession,
     SessionRegistry,
@@ -14,7 +15,6 @@ from crimson.original.focus_trace import (
     FocusTraceReport,
     RngAlignmentSummary,
 )
-from crimson.original import divergence_report, focus_trace
 from crimson.original.schema import CAPTURE_FORMAT_VERSION
 
 
@@ -37,7 +37,7 @@ def _checkpoint_tick(tick: int, *, level: int, weapon_id: int, experience: int, 
                 "ammo": 12.0,
                 "experience": int(experience),
                 "level": int(level),
-            }
+            },
         ],
         "status": {
             "quest_unlock_index": 0,
@@ -118,7 +118,7 @@ def _capture_tick(
                     "type_id": 7,
                     "target_player": 0,
                     "flags": 0,
-                }
+                },
             ],
             "projectiles": [],
             "secondary_projectiles": [],
@@ -231,7 +231,7 @@ def _write_fixture_capture(path: Path) -> None:
                 perk_pairs=[[20, 1]],
                 event_heads=[],
             ),
-        ]
+        ],
     )
     _write_capture_stream(path, capture)
 
@@ -261,7 +261,7 @@ def test_strip_no_cache_flag() -> None:
             "--no-cache",
             "--json-out",
             "out.json",
-        ]
+        ],
     )
 
     assert no_cache is True

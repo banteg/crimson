@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
+
 from ...quests.types import format_level, parse_level
 
 QUEST_MENU_BASE_X = -5.0

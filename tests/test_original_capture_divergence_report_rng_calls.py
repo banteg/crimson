@@ -5,7 +5,6 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
 from crimson.original.schema import CAPTURE_FORMAT_VERSION
@@ -16,6 +15,7 @@ from crimson.replay.checkpoints import (
     ReplayPerkSnapshot,
     ReplayPlayerCheckpoint,
 )
+from grim.geom import Vec2
 
 
 def _load_report_module():
@@ -65,7 +65,7 @@ def _checkpoint(
                 ammo=12.0,
                 experience=0,
                 level=1,
-            )
+            ),
         ],
         bonus_timers={},
         state_hash="state",
@@ -85,7 +85,7 @@ def test_run_actual_checkpoints_quest_uses_capture_inter_tick_rand_draw_override
         header=SimpleNamespace(
             game_mode_id=int(GameMode.QUESTS),
             tick_rate=60,
-        )
+        ),
     )
     seen: dict[str, object] = {}
 
@@ -245,7 +245,7 @@ def test_window_rows_include_actual_rand_calls_and_delta() -> None:
                 reward_value=41.0,
                 xp_awarded=41,
                 owner_id=-1,
-            )
+            ),
         ],
     )
 
@@ -302,7 +302,7 @@ def test_window_rows_include_rng_stream_mismatch_details() -> None:
                 ],
                 "spawn_bonus_count": 0,
                 "spawn_death_count": 0,
-            }
+            },
         },
         focus_tick=6,
         window=0,
@@ -370,7 +370,7 @@ def test_find_first_divergence_prefers_rng_stream_before_checkpoint_fields() -> 
                         "caller_static": "0x00420fd7",
                     },
                 ],
-            }
+            },
         },
     )
 
@@ -521,7 +521,7 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
                     "type_id": 2,
                     "target_player": 0,
                     "flags": 0,
-                }
+                },
             ],
             "projectiles": [],
             "secondary_projectiles": [
@@ -535,7 +535,7 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
                     "trail_timer": 0.0,
                     "type_id": 1,
                     "target_id": -1,
-                }
+                },
             ],
             "bonuses": [],
         },
@@ -635,7 +635,7 @@ def test_find_first_rng_head_shortfall_detects_pre_focus_gap() -> None:
                 "rng_head_len": 3,
                 "rng_rand_calls": 3,
                 "rng_callers": [{"caller_static": "0x00420fd7", "calls": 3}],
-            }
+            },
         },
         start_tick=0,
         end_tick=16,
@@ -676,7 +676,7 @@ def test_find_first_rng_head_shortfall_detects_stream_value_mismatch() -> None:
                 "rng_rand_calls": 3,
                 "rng_head_values": [values[0] ^ 1, values[1], values[2]],
                 "rng_callers": [{"caller_static": "0x00420fd7", "calls": 3}],
-            }
+            },
         },
         start_tick=0,
         end_tick=16,
@@ -853,7 +853,7 @@ def test_find_first_projectile_hit_shortfall_detects_gap() -> None:
                 "projectile_find_query_owner_collision_count": 1,
                 "spawn_top_projectile_find_query_callers": [{"key": "0x00420e52", "count": 8}],
                 "spawn_top_projectile_find_hit_callers": [{"key": "0x00420fd7", "count": 5}],
-            }
+            },
         },
         start_tick=0,
         end_tick=16,
@@ -910,7 +910,7 @@ def test_investigation_leads_include_projectile_hit_shortfall() -> None:
                 "spawn_top_projectile_find_query_callers": [{"key": "0x00420e52", "count": 9}],
                 "spawn_top_projectile_find_hit_callers": [{"key": "0x00420fd7", "count": 6}],
                 "sample_counts": {"creatures": 1, "projectiles": 1, "secondary_projectiles": 0, "bonuses": 0},
-            }
+            },
         },
         native_ranges=(
             report.NativeFunctionRange(name="projectile_update", start=0x00420B90, end=0x00422C70),

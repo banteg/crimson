@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from pathlib import Path
 import random
+from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    from grim.audio import AudioState
     from grim.assets import LogoAssets, PaqTextureCache
+    from grim.audio import AudioState
     from grim.config import CrimsonConfig
     from grim.console import ConsoleState
     from grim.geom import Vec2

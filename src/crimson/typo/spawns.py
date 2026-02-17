@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
 
 from ..creatures.spawn import CreatureTypeId
+
 
 @dataclass(frozen=True, slots=True)
 class TypoSpawnCall:
@@ -51,14 +52,14 @@ def tick_typo_spawns(
                 pos=Vec2(float(world_width) + 64.0, y),
                 type_id=CreatureTypeId.SPIDER_SP2,
                 tint_rgba=tint,
-            )
+            ),
         )
         spawns.append(
             TypoSpawnCall(
                 pos=Vec2(-64.0, y),
                 type_id=CreatureTypeId.ALIEN,
                 tint_rgba=tint,
-            )
+            ),
         )
 
     return cooldown, spawns

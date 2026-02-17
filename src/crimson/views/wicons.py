@@ -4,12 +4,13 @@ from dataclasses import dataclass
 
 import pyray as rl
 
+from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
+from grim.view import View, ViewContext
+
 from ..weapons import WEAPON_TABLE, Weapon, weapon_display_name
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
-from grim.fonts.small import SmallFontData, load_small_font
-from grim.view import View, ViewContext
-from grim.geom import Vec2
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -146,7 +147,7 @@ class WeaponIconView:
             group = WEAPON_ICON_GROUPS.get(hovered_index)
             if group is None:
                 draw_ui_text(
-                    self._small, "no weapon mapping", Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR
+                    self._small, "no weapon mapping", Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR,
                 )
                 info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6
             else:

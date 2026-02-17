@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import shutil
 import subprocess
 from functools import lru_cache
 from pathlib import Path
@@ -97,8 +98,11 @@ def current_build_id() -> str:
     version = str(__version__)
     try:
         repo_root = Path(__file__).resolve().parents[3]
+        git_exe = shutil.which("git")
+        if git_exe is None:
+            return version
         out = subprocess.check_output(
-            ["git", "rev-parse", "--short=12", "HEAD"],
+            [git_exe, "rev-parse", "--short=12", "HEAD"],
             cwd=repo_root,
             stderr=subprocess.DEVNULL,
         )

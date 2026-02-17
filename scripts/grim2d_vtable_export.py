@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 CALLING_CONVENTIONS = {"__cdecl", "__stdcall", "__thiscall", "__fastcall"}
 
 
@@ -71,7 +70,7 @@ def read_calls_rows(path: Path) -> list[dict[str, str]]:
                 "callsites": to_str(row.get("callsites")),
                 "unique_functions": to_str(row.get("unique_functions")),
                 "sample_calls": join_samples(row.get("sample_calls")),
-            }
+            },
         )
     return rows
 
@@ -90,7 +89,7 @@ def read_entries_rows(path: Path) -> list[dict[str, str]]:
                 "func_addr": to_str(row.get("func_addr")),
                 "func_name": to_str(row.get("func_name")),
                 "section": to_str(row.get("section")),
-            }
+            },
         )
     return rows
 
@@ -117,7 +116,7 @@ def read_map_rows(path: Path) -> list[dict[str, str]]:
                 "param_count": to_str(row.get("param_count")),
                 "signature": to_str(row.get("signature")),
                 "source_type": to_str(row.get("source_type")),
-            }
+            },
         )
     return rows
 
@@ -254,7 +253,7 @@ def to_json_calls(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
                 "callsites": int_or_none(row.get("callsites")) or 0,
                 "unique_functions": int_or_none(row.get("unique_functions")) or 0,
                 "sample_calls": sample_list(row.get("sample_calls")),
-            }
+            },
         )
     return output
 
@@ -270,7 +269,7 @@ def to_json_entries(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
                 "func_addr": row.get("func_addr") or None,
                 "func_name": row.get("func_name") or "",
                 "section": row.get("section") or "",
-            }
+            },
         )
     return output
 
@@ -294,7 +293,7 @@ def to_json_map(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
                 "param_count": int_or_none(row.get("param_count")),
                 "signature": row.get("signature") or "",
                 "source_type": row.get("source_type") or "",
-            }
+            },
         )
     return output
 
@@ -403,13 +402,13 @@ def main() -> int:
     output_dir = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "grim2d_vtable_calls.json").write_text(
-        json.dumps(to_json_calls(call_rows), indent=2) + "\n"
+        json.dumps(to_json_calls(call_rows), indent=2) + "\n",
     )
     (output_dir / "grim2d_vtable_entries.json").write_text(
-        json.dumps(to_json_entries(entry_rows), indent=2) + "\n"
+        json.dumps(to_json_entries(entry_rows), indent=2) + "\n",
     )
     (output_dir / "grim2d_vtable_map.json").write_text(
-        json.dumps(to_json_map(map_rows), indent=2) + "\n"
+        json.dumps(to_json_map(map_rows), indent=2) + "\n",
     )
 
     return 0

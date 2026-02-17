@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import struct
-from typing import Mapping
+from collections.abc import Mapping
 
 from ...aim_schemes import AimScheme, aim_scheme_from_value
 from ...movement_controls import MovementControlType, movement_control_type_from_value
-
 
 PICK_PERK_BIND_SLOT = -1
 RELOAD_BIND_SLOT = -2
@@ -139,7 +138,7 @@ def controls_rebind_slot_plan(
                 ("Move Down:", 1),
                 ("Move Left:", 2),
                 ("Move Right:", 3),
-            )
+            ),
         )
     elif move_mode is MovementControlType.RELATIVE:
         move_rows.extend(
@@ -148,14 +147,14 @@ def controls_rebind_slot_plan(
                 ("Backwards:", 1),
                 ("Turn left:", 2),
                 ("Turn right:", 3),
-            )
+            ),
         )
     elif move_mode is MovementControlType.DUAL_ACTION_PAD:
         move_rows.extend(
             (
                 ("Up/Down Axis:", 11),
                 ("Left/Right Axis:", 12),
-            )
+            ),
         )
     elif move_mode is MovementControlType.MOUSE_POINT_CLICK:
         move_rows.append(("Move to cursor:", RELOAD_BIND_SLOT))

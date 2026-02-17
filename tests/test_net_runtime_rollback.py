@@ -30,7 +30,7 @@ def _start_runtime(monkeypatch, *, rollback_max_ticks: int = 8) -> tuple[NetRunt
             room_code="ABCD12",
             rollback_max_ticks=int(rollback_max_ticks),
             input_delay_ticks=0,
-        )
+        ),
     )
     sent: list[tuple[tuple[str, int], Any]] = []
     monkeypatch.setattr(
@@ -160,7 +160,7 @@ def test_runtime_prints_host_invite_code_once(monkeypatch) -> None:
             relay_host="127.0.0.1",
             relay_port=31993,
             room_code="",
-        )
+        ),
     )
     printed: list[str] = []
 
@@ -190,7 +190,7 @@ def test_client_sends_ready_only_after_room_state(monkeypatch) -> None:
             relay_host="127.0.0.1",
             relay_port=31993,
             room_code="AB12",
-        )
+        ),
     )
     sent: list[tuple[tuple[str, int], Any]] = []
     monkeypatch.setattr(
@@ -224,7 +224,7 @@ def test_host_keeps_lobby_heartbeat_alive(monkeypatch) -> None:
             relay_host="127.0.0.1",
             relay_port=31993,
             room_code="AB12",
-        )
+        ),
     )
     sent: list[tuple[tuple[str, int], Any]] = []
     monkeypatch.setattr(

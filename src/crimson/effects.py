@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import math
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from enum import IntEnum
-import math
-from typing import Callable, Protocol, Sequence
+from typing import Protocol
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -521,7 +522,7 @@ class FxQueueRotated:
     """Rotated corpse queue (`fx_queue_rotated` / `fx_queue_add_rotated`)."""
 
     def __init__(
-        self, *, capacity: int = FX_QUEUE_ROTATED_CAPACITY, max_count: int = FX_QUEUE_ROTATED_MAX_COUNT
+        self, *, capacity: int = FX_QUEUE_ROTATED_CAPACITY, max_count: int = FX_QUEUE_ROTATED_MAX_COUNT,
     ) -> None:
         capacity = max(0, int(capacity))
         max_count = max(0, min(int(max_count), capacity))

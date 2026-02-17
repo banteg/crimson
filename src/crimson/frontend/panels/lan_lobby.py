@@ -269,7 +269,7 @@ class LanLobbyPanelView(PanelMenuView):
                 "player_count",
                 getattr(self.state, "net_expected_players", self.state.lan_expected_players),
             )
-            or 1
+            or 1,
         )
         slots = getattr(lobby_state, "slots", None) if lobby_state is not None else None
         connected = 0

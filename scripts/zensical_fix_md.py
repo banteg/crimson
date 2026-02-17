@@ -4,11 +4,10 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
-from pathlib import Path
 import re
 import sys
-
+from dataclasses import dataclass
+from pathlib import Path
 
 LIST_RE = re.compile(r"^(?P<indent>[ \t]*)(?P<marker>(?:[-+*])|(?:\d+[.)]))\s+")
 FENCE_RE = re.compile(r"^(?P<indent>[ \t]{0,3})(?P<fence>`{3,}|~{3,})")
@@ -111,7 +110,7 @@ def fix_file(path: Path, apply_fixes: bool) -> tuple[list[Issue], bool]:
                 fence_marker = fence
             else:
                 if fence_marker and fence[0] == fence_marker[0] and len(fence) >= len(
-                    fence_marker
+                    fence_marker,
                 ):
                     in_fence = False
                     fence_marker = None
@@ -131,7 +130,7 @@ def fix_file(path: Path, apply_fixes: bool) -> tuple[list[Issue], bool]:
                             path=path,
                             line_no=idx,
                             message="insert blank line before list",
-                        )
+                        ),
                     )
                     if apply_fixes:
                         output.append(newline)
@@ -146,7 +145,7 @@ def fix_file(path: Path, apply_fixes: bool) -> tuple[list[Issue], bool]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Fix common Zensical Markdown issues (blank lines before lists)."
+        description="Fix common Zensical Markdown issues (blank lines before lists).",
     )
     parser.add_argument(
         "paths",

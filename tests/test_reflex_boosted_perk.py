@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import pytest
 
 from crimson.bonuses.update import _REFLEX_TIMER_SUBTRACT_BIAS
@@ -9,10 +7,11 @@ from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.gameplay import player_frame_dt_after_roundtrip
 from crimson.math_parity import f32
+from crimson.perks import PerkId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
-from crimson.perks import PerkId
 from crimson.sim.world_state import WorldState
+from grim.geom import Vec2
 
 
 def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:

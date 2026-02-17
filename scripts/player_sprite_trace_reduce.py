@@ -3,10 +3,11 @@ from __future__ import annotations
 import argparse
 import json
 from collections import Counter
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import mean
-from typing import Any, Iterable, Iterator
+from typing import Any
 
 
 @dataclass(frozen=True)

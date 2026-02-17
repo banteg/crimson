@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-from grim.color import RGBA
-from grim.geom import Vec2
-
-from dataclasses import dataclass
 import json
 import math
-from pathlib import Path
 import time
+from dataclasses import dataclass
+from pathlib import Path
 
 import pyray as rl
 
@@ -21,19 +18,20 @@ from crimson.creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit,
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.effects_atlas import EffectId
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
 from crimson.render.terrain_fx import FxQueueTextures, bake_fx_queues
+from crimson.sim.state_types import PlayerState
+from crimson.terrain_assets import TerrainTextureId
 from grim.assets import resolve_asset_path
+from grim.color import RGBA
 from grim.config import ensure_crimson_cfg
 from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 from grim.view import View, ViewContext
-from crimson.terrain_assets import TerrainTextureId
 
 from ..paths import default_runtime_dir
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
-
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_DARK = rl.Color(30, 30, 30, 255)
@@ -545,7 +543,7 @@ class DecalsDebugView:
                                     "event_idx": idx,
                                     "queue": {"fx": fx_count, "corpse": corpse_count},
                                     **event,
-                                }
+                                },
                             )
 
     def draw(self) -> None:
@@ -563,7 +561,7 @@ class DecalsDebugView:
 
         if self._ground is None:
             draw_ui_text(
-                self._small, "Ground renderer not initialized.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR
+                self._small, "Ground renderer not initialized.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR,
             )
             return
 

@@ -5,13 +5,12 @@ import math
 import pyray as rl
 
 from grim.audio import play_sfx, update_audio
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.terrain_render import GroundRenderer
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
 from ...debug import debug_enabled
 from ...frontend.assets import MenuAssets, _ensure_texture_cache, load_menu_assets
-from ...game_modes import GameMode
 from ...frontend.menu import (
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
@@ -31,6 +30,7 @@ from ...frontend.menu import (
 )
 from ...frontend.panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ...frontend.transitions import _draw_screen_fade
+from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from ..types import GameState

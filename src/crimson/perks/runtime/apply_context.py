@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Callable, Sequence
 
 from ...sim.state_types import GameplayState, PlayerState
 from ..ids import PerkId

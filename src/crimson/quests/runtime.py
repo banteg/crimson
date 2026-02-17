@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import replace
 import inspect
 import random
+from dataclasses import replace
 
 from .types import QuestContext, QuestDefinition, SpawnEntry
 

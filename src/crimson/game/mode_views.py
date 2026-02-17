@@ -127,7 +127,7 @@ class _BaseModeGameView:
             ),
         )
         waiting_for_players = bool(
-            getattr(self.state, "net_waiting_for_players", getattr(self.state, "lan_waiting_for_players", False))
+            getattr(self.state, "net_waiting_for_players", getattr(self.state, "lan_waiting_for_players", False)),
         )
         set_lan_runtime(
             enabled=True,

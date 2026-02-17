@@ -3,8 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-import crimson.modes.replay_playback_mode as replay_playback_mode
 import pytest
+
+import crimson.modes.replay_playback_mode as replay_playback_mode
 from grim.config import CrimsonConfig
 from grim.console import ConsoleLog, ConsoleState
 from grim.view import ViewContext
@@ -30,7 +31,7 @@ def test_replay_playback_registers_snd_add_game_tune_command(monkeypatch) -> Non
     loaded: list[tuple[object, Path, str]] = []
     queued: list[tuple[object, str]] = []
 
-    def fake_load_music_track(_music, assets_dir: Path, rel_path: str, *, console: ConsoleState):  # noqa: ARG001
+    def fake_load_music_track(_music, assets_dir: Path, rel_path: str, *, console: ConsoleState):
         loaded.append((_music, assets_dir, rel_path))
         return "gt1_ingame", 7
 

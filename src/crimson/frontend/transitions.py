@@ -4,7 +4,6 @@ import pyray as rl
 
 from .types import GameState
 
-
 SCREEN_FADE_OUT_RATE = 2.0
 SCREEN_FADE_IN_RATE = 10.0
 

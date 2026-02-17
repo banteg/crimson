@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import uuid
+from dataclasses import dataclass, field
 
 from .protocol import (
-    builds_compatible,
+    PROTOCOL_VERSION,
     Hello,
     LobbySlot,
     LobbyState,
     MatchStart,
-    PROTOCOL_VERSION,
     Ready,
     StatusSnapshot,
     Welcome,
+    builds_compatible,
 )
 from .transport import PeerAddr
 
@@ -123,7 +123,7 @@ class HostLobby:
                         ready=bool(self.host_ready),
                         is_host=True,
                         peer_name="host",
-                    )
+                    ),
                 )
                 continue
             peer = next((p for p in self.peers_by_addr.values() if int(p.slot_index) == slot), None)
@@ -135,7 +135,7 @@ class HostLobby:
                         ready=False,
                         is_host=False,
                         peer_name="",
-                    )
+                    ),
                 )
                 continue
             slots.append(
@@ -145,7 +145,7 @@ class HostLobby:
                     ready=bool(peer.ready),
                     is_host=False,
                     peer_name=str(peer.peer_name),
-                )
+                ),
             )
         return LobbyState(
             session_id=str(self.session_id),

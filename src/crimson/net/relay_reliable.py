@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from .relay_protocol import NetMessage, Packet, RELIABLE_RESEND_MS
+from .relay_protocol import RELIABLE_RESEND_MS, NetMessage, Packet
 
 
 @dataclass(slots=True)

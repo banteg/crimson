@@ -37,7 +37,6 @@ from ..transitions import _draw_screen_fade
 from ..types import GameState
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
-
 # Measured from ui_render_trace_oracle_1024x768.json (state_4:played for # hours # minutes, timeline=300).
 STATISTICS_PANEL_POS_X = -89.0
 STATISTICS_PANEL_POS_Y = 185.0
@@ -327,7 +326,7 @@ class StatisticsMenuView:
         )
         panel_top_left = self._panel_top_left(scale=scale).offset(dx=float(slide_x))
         dst = rl.Rectangle(
-            panel_top_left.x, panel_top_left.y, panel_w, STATISTICS_PANEL_HEIGHT * scale
+            panel_top_left.x, panel_top_left.y, panel_w, STATISTICS_PANEL_HEIGHT * scale,
         )
         fx_detail = self.state.config.fx_detail(level=0, default=False)
         draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)

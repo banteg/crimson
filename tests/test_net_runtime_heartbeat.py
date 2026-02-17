@@ -16,7 +16,7 @@ def _runtime(monkeypatch) -> tuple[NetRuntime, list[tuple[tuple[str, int], Any]]
             relay_port=31993,
             room_code="AB12",
             input_delay_ticks=0,
-        )
+        ),
     )
     sent: list[tuple[tuple[str, int], Any]] = []
     monkeypatch.setattr(

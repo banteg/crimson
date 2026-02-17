@@ -11,7 +11,7 @@ from crimson.cli import app
 def test_net_host_command_builds_pending_network_session(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, Any] = {}
 
-    def _fake_run_game(config):  # noqa: ANN001
+    def _fake_run_game(config):
         captured["config"] = config
 
     monkeypatch.setattr("crimson.game.run_game", _fake_run_game)
@@ -75,7 +75,7 @@ def test_net_host_quests_requires_quest_level(monkeypatch, tmp_path: Path) -> No
 def test_net_join_command_builds_pending_join_session_with_legacy_fallback(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, Any] = {}
 
-    def _fake_run_game(config):  # noqa: ANN001
+    def _fake_run_game(config):
         captured["config"] = config
 
     monkeypatch.setattr("crimson.game.run_game", _fake_run_game)
@@ -116,7 +116,7 @@ def test_relay_serve_command_constructs_relay_server(monkeypatch, tmp_path: Path
     captured: dict[str, Any] = {}
 
     class _FakeRelayServer:
-        def __init__(self, cfg) -> None:  # noqa: ANN001
+        def __init__(self, cfg) -> None:
             captured["cfg"] = cfg
 
         def serve_forever(self, *, tick_ms: int) -> None:
@@ -176,7 +176,7 @@ def test_relay_serve_command_constructs_relay_server(monkeypatch, tmp_path: Path
 
 def test_relay_serve_command_rejects_invalid_log_level(monkeypatch, tmp_path: Path) -> None:
     class _FakeRelayServer:
-        def __init__(self, _cfg) -> None:  # noqa: ANN001
+        def __init__(self, _cfg) -> None:
             pass
 
         def serve_forever(self, *, tick_ms: int) -> None:

@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import math
 
-from ..perks import PerkId
+from grim.geom import Vec2
+
 from ..creatures.spawn import SpawnId
+from ..perks import PerkId
 from ..weapons import WeaponId
 from .helpers import (
     center_point,
@@ -12,7 +14,6 @@ from .helpers import (
 )
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
-from grim.geom import Vec2
 
 
 @register_quest(
@@ -45,7 +46,7 @@ def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ALIEN_CONST_GREEN_SMALL_25,
                 trigger_ms=trigger,
                 count=8,
-            )
+            ),
         )
         trigger += 100
         x_offset += 0x20
@@ -57,7 +58,7 @@ def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
             trigger_ms=18000,
             count=3,
-        )
+        ),
     )
 
     trigger = 20000
@@ -70,7 +71,7 @@ def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ALIEN_CONST_GREEN_SMALL_25,
                 trigger_ms=trigger,
                 count=8,
-            )
+            ),
         )
         trigger += 100
         x -= 32
@@ -85,7 +86,7 @@ def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ALIEN_CONST_BROWN_TRANSPARENT_0F,
                 trigger_ms=trigger,
                 count=4,
-            )
+            ),
         )
         trigger += 100
         y -= 42
@@ -100,7 +101,7 @@ def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
                 trigger_ms=trigger,
                 count=2,
-            )
+            ),
         )
         trigger += 100
         y += 0x20
@@ -135,7 +136,7 @@ def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 300
         step_index += 1
@@ -148,7 +149,7 @@ def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_id=SpawnId.ZOMBIE_CONST_GREY_42,
             trigger_ms=offset + 10000,
             count=16,
-        )
+        ),
     )
     entries.append(
         spawn(
@@ -157,7 +158,7 @@ def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_id=SpawnId.ZOMBIE_CONST_GREY_42,
             trigger_ms=offset + 20000,
             count=16,
-        )
+        ),
     )
     return entries
 
@@ -192,7 +193,7 @@ def build_5_3_the_fortress(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 600
         y_seed += 0x200
@@ -212,7 +213,7 @@ def build_5_3_the_fortress(ctx: QuestContext) -> list[SpawnEntry]:
                         spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                         trigger_ms=trigger,
                         count=1,
-                    )
+                    ),
                 )
                 trigger += 600
                 entry_count += 1
@@ -256,7 +257,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
                 trigger_ms=trigger,
                 count=2,
-            )
+            ),
         )
         trigger += 4000
 
@@ -267,7 +268,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_id=SpawnId.FORMATION_CHAIN_ALIEN_10_13,
             trigger_ms=50500,
             count=1,
-        )
+        ),
     )
 
     trigger = 59500
@@ -279,7 +280,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
                 trigger_ms=trigger,
                 count=2,
-            )
+            ),
         )
         trigger += 4000
 
@@ -290,7 +291,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_id=SpawnId.FORMATION_CHAIN_ALIEN_10_13,
             trigger_ms=107500,
             count=3,
-        )
+        ),
     )
     return entries
 
@@ -325,7 +326,7 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ZOMBIE_CONST_GREEN_BRUTE_43,
                     trigger_ms=trigger - 2,
                     count=1,
-                )
+                ),
             )
         count = 2 if wave > 0x20 else 1
         entries.append(
@@ -335,7 +336,7 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         if trigger > 0x30D4:
             entries.append(
@@ -345,7 +346,7 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                     trigger_ms=trigger + 500,
                     count=1,
-                )
+                ),
             )
         if trigger > 0x5FB4:
             entries.append(
@@ -355,7 +356,7 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                     trigger_ms=trigger + 1000,
                     count=1,
-                )
+                ),
             )
         if trigger > 0x8E94:
             entries.append(
@@ -365,7 +366,7 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ZOMBIE_CONST_GREY_42,
                     trigger_ms=trigger + 0x514,
                     count=1,
-                )
+                ),
             )
         if trigger > 0xBD74:
             entries.append(
@@ -375,7 +376,7 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ZOMBIE_CONST_GREY_42,
                     trigger_ms=trigger + 300,
                     count=1,
-                )
+                ),
             )
         trigger += 0x5DC
         wave += 1
@@ -584,7 +585,7 @@ def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=spawn_id,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         trigger += 900
     return entries
@@ -642,7 +643,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
                     trigger_ms=trigger,
                     count=count,
                 ),
-            ]
+            ],
         )
         trigger += 800
         wave += 1
@@ -658,7 +659,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                 trigger_ms=base_left,
                 count=1,
-            )
+            ),
         )
         base_left += 100
 
@@ -672,7 +673,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                 trigger_ms=base_right,
                 count=1,
-            )
+            ),
         )
         base_right += 100
 
@@ -684,7 +685,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_3C_SLOW_0B,
             trigger_ms=base_mid,
             count=1,
-        )
+        ),
     )
     entries.append(
         spawn(
@@ -693,7 +694,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_3C_SLOW_0B,
             trigger_ms=base_mid,
             count=1,
-        )
+        ),
     )
 
     base_vertical = wave * 800 + 0x6F54
@@ -704,7 +705,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
             trigger_ms=base_vertical,
             count=8,
-        )
+        ),
     )
     entries.append(
         spawn(
@@ -713,7 +714,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
             trigger_ms=base_vertical,
             count=8,
-        )
+        ),
     )
     return entries
 

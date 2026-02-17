@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 from crimson.gameplay import GameplayState
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
+from grim.geom import Vec2
 
 
 def test_weapon_assign_player_queues_reload_sfx_and_sets_aux_timer() -> None:

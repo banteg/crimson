@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
 
 import pyray as rl
@@ -12,7 +12,7 @@ from grim.math import clamp
 from grim.terrain_render import _maybe_alpha_test
 
 from ...creatures.spawn import CreatureFlags, CreatureTypeId
-from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRID
+from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...perks import PerkId
 from ...perks.helpers import perk_active
 from ...sim.world_defs import CREATURE_ANIM, CREATURE_ASSET
@@ -211,7 +211,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
         }
         creatures = [(idx, creature) for idx, creature in enumerate(self.creatures.entries) if creature.active]
         creatures.sort(
-            key=lambda item: (creature_type_order.get(int(getattr(item[1], "type_id", -1)), 999), item[0])
+            key=lambda item: (creature_type_order.get(int(getattr(item[1], "type_id", -1)), 999), item[0]),
         )
         return creatures
 

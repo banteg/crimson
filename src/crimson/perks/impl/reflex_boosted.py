@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from ...sim.state_types import PlayerState
 from ..helpers import perk_active
-from ..runtime.hook_types import PerkHooks
 from ..ids import PerkId
+from ..runtime.hook_types import PerkHooks
 
 
 def apply_reflex_boosted_dt(*, dt: float, players: list[PlayerState]) -> float:

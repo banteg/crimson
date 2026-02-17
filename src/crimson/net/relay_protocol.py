@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import msgspec
 from typing import Literal, TypeAlias
+
+import msgspec
 
 from ..replay.types import PackedPlayerInput
 from .legacy_protocol import (
@@ -9,8 +10,8 @@ from .legacy_protocol import (
     MAX_PLAYERS,
     RELIABLE_RESEND_MS,
     STATE_HASH_PERIOD_TICKS,
-    StatusSnapshot,
     TICK_RATE,
+    StatusSnapshot,
     build_git_hash,
     build_public_version,
     builds_compatible,

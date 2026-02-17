@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import secrets
 import zlib
+from dataclasses import dataclass, field
 
 import msgspec
 
@@ -128,23 +128,23 @@ class ResyncAssembler:
             raise ResyncBuildError("missing resync_commit")
         if len(self._chunks) != int(begin.total_chunks):
             raise ResyncBuildError(
-                f"missing chunks: have={len(self._chunks)} expected={int(begin.total_chunks)}"
+                f"missing chunks: have={len(self._chunks)} expected={int(begin.total_chunks)}",
             )
 
         ordered = b"".join(self._chunks[idx] for idx in range(int(begin.total_chunks)))
         if len(ordered) != int(begin.compressed_size):
             raise ResyncBuildError(
-                f"compressed size mismatch: have={len(ordered)} expected={int(begin.compressed_size)}"
+                f"compressed size mismatch: have={len(ordered)} expected={int(begin.compressed_size)}",
             )
         packed = zlib.decompress(ordered)
         payload = msgspec.msgpack.decode(packed, type=_ResyncPayload)
         if len(payload.replay_blob) != int(begin.replay_size):
             raise ResyncBuildError(
-                f"replay size mismatch: have={len(payload.replay_blob)} expected={int(begin.replay_size)}"
+                f"replay size mismatch: have={len(payload.replay_blob)} expected={int(begin.replay_size)}",
             )
         if len(payload.checkpoints_blob) != int(begin.checkpoints_size):
             raise ResyncBuildError(
-                f"checkpoint size mismatch: have={len(payload.checkpoints_blob)} expected={int(begin.checkpoints_size)}"
+                f"checkpoint size mismatch: have={len(payload.checkpoints_blob)} expected={int(begin.checkpoints_size)}",
             )
         return (
             bytes(payload.replay_blob),

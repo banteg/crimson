@@ -4,7 +4,6 @@ import pyray as rl
 
 from .shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
 
-
 # Classic menu panel is rendered from the *inset* inner region of ui_menuPanel:
 #   - X inset: 1px on each side (uv 1/512 .. 511/512) => 510px wide
 #   - Y inset: 1px on each side (uv 1/256 .. 255/256) => 254px tall
@@ -87,7 +86,7 @@ def draw_classic_menu_panel(
     # Source slice rects (in texture pixels, with 1px inset).
     src_top = _src(rl.Rectangle(src_x, src_y, src_w, max(0.0, MENU_PANEL_SRC_SLICE_Y1 - inset)))
     src_mid = _src(
-        rl.Rectangle(src_x, MENU_PANEL_SRC_SLICE_Y1, src_w, max(0.0, MENU_PANEL_SRC_SLICE_Y2 - MENU_PANEL_SRC_SLICE_Y1))
+        rl.Rectangle(src_x, MENU_PANEL_SRC_SLICE_Y1, src_w, max(0.0, MENU_PANEL_SRC_SLICE_Y2 - MENU_PANEL_SRC_SLICE_Y1)),
     )
     src_bot = _src(rl.Rectangle(src_x, MENU_PANEL_SRC_SLICE_Y2, src_w, max(0.0, (tex_h - inset) - MENU_PANEL_SRC_SLICE_Y2)))
 

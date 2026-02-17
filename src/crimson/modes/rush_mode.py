@@ -1,30 +1,28 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
-from dataclasses import dataclass
 import datetime as dt
 import hashlib
 import random
+from collections.abc import Sequence
+from dataclasses import dataclass
 
 import pyray as rl
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
-from grim.console import ConsoleState
 from grim.config import CrimsonConfig
+from grim.console import ConsoleState
 from grim.geom import Vec2
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
-from ..weapon_runtime import weapon_assign_player
-from ..ui.cursor import draw_menu_cursor
-from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
-from ..ui.perk_menu import load_perk_menu_assets
+from ..net.debug_log import lan_debug_log
+from ..net.protocol import STATE_HASH_PERIOD_TICKS, TickFrame
 from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
-from ..replay.input_codec import pack_player_input, unpack_player_input
-from ..replay.types import WEAPON_USAGE_COUNT
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
+)
+from ..replay.checkpoints import (
     ReplayCheckpoint,
     ReplayCheckpoints,
     build_checkpoint,
@@ -32,12 +30,16 @@ from ..replay.checkpoints import (
     dump_checkpoints_file,
     resolve_checkpoint_sample_rate,
 )
+from ..replay.input_codec import pack_player_input, unpack_player_input
+from ..replay.types import WEAPON_USAGE_COUNT
 from ..sim.bootstrap import run_terrain_bootstrap
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSessionTick, RushDeterministicSession
-from ..net.debug_log import lan_debug_log
-from ..net.protocol import STATE_HASH_PERIOD_TICKS, TickFrame
+from ..ui.cursor import draw_menu_cursor
+from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
+from ..ui.perk_menu import load_perk_menu_assets
+from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
@@ -120,7 +122,7 @@ class RushMode(BaseGameplayMode):
                 deaths=deaths,
                 events=events,
                 command_hash=command_hash,
-            )
+            ),
         )
         self._replay_checkpoints_last_tick = int(tick_index)
 
@@ -208,7 +210,7 @@ class RushMode(BaseGameplayMode):
                 weapon_usage_counts = tuple(coerced)
         if len(weapon_usage_counts) != WEAPON_USAGE_COUNT:
             weapon_usage_counts = tuple(weapon_usage_counts) + (0,) * max(
-                0, WEAPON_USAGE_COUNT - len(weapon_usage_counts)
+                0, WEAPON_USAGE_COUNT - len(weapon_usage_counts),
             )
             weapon_usage_counts = weapon_usage_counts[:WEAPON_USAGE_COUNT]
         status_snapshot = ReplayStatusSnapshot(
@@ -235,7 +237,7 @@ class RushMode(BaseGameplayMode):
                     world_size=float(self.world.world_size),
                     player_count=len(self.world.players),
                     status=status_snapshot,
-                )
+                ),
             )
             tick_rate = int(self._replay_recorder.header.tick_rate)
             self._replay_checkpoints_sample_rate = resolve_checkpoint_sample_rate(tick_rate)
@@ -463,7 +465,7 @@ class RushMode(BaseGameplayMode):
                                 world=self.world.world_state,
                                 elapsed_ms=float(session.elapsed_ms),
                                 creature_count_override=int(tick.creature_count_world_step),
-                            ).state_hash
+                            ).state_hash,
                         )
                         if local_state_hash != remote_state_hash:
                             runtime.note_desync(
@@ -483,7 +485,7 @@ class RushMode(BaseGameplayMode):
                                 world=self.world.world_state,
                                 elapsed_ms=float(session.elapsed_ms),
                                 creature_count_override=int(tick.creature_count_world_step),
-                            ).state_hash
+                            ).state_hash,
                         )
                 self.world.apply_step_result(
                     tick.step,
@@ -524,7 +526,7 @@ class RushMode(BaseGameplayMode):
                             frame_inputs=list(frame.frame_inputs),
                             command_hash=str(local_command_hash),
                             state_hash=str(state_hash),
-                        )
+                        ),
                     )
 
                 if not any(player.health > 0.0 for player in self.world.players):

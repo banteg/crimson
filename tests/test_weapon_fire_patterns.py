@@ -1,17 +1,16 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import math
 
 from crimson.gameplay import GameplayState
+from crimson.projectiles import ProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (
     player_fire_weapon,
     weapon_assign_player,
 )
-from crimson.projectiles import ProjectileTypeId
+from grim.geom import Vec2
 
 
 class _FixedRng:

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import datetime as dt
-from pathlib import Path
 import warnings
+from dataclasses import dataclass
+from pathlib import Path
 
 from construct import Array, Bytes, ConstructError, Int16ul, Int32ul, Struct
 

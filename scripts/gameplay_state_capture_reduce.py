@@ -174,7 +174,7 @@ def parse_sfx_function_and_id(key: str) -> tuple[str, str, int | None]:
 
 
 def extract_sfx_id_candidates(
-    by_function: Counter[str], by_function_and_id: Counter[str], min_total: int = 20, min_share: float = 0.9
+    by_function: Counter[str], by_function_and_id: Counter[str], min_total: int = 20, min_share: float = 0.9,
 ) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     for fn_key, total in by_function.items():
@@ -201,7 +201,7 @@ def extract_sfx_id_candidates(
                 "count": top_count,
                 "total": total,
                 "share": round(share, 4),
-            }
+            },
         )
     out.sort(key=lambda row: (row["total"], row["count"]), reverse=True)
     return out
@@ -579,7 +579,7 @@ def build_report(summary: dict[str, Any], top_n: int) -> str:
     for key, count in Counter(wp.get("weapon_assign_counts") or {}).most_common(top_n):
         lines.append(f"- weapon assign `{key}`: {count}")
     lines.append(
-        f"- projectile overrides: true={wp.get('projectile_override_true', 0)} false={wp.get('projectile_override_false', 0)}"
+        f"- projectile overrides: true={wp.get('projectile_override_true', 0)} false={wp.get('projectile_override_false', 0)}",
     )
     for key, count in Counter(wp.get("projectile_type_pairs") or {}).most_common(top_n):
         lines.append(f"- projectile type pair `{key}`: {count}")
@@ -620,7 +620,7 @@ def build_report(summary: dict[str, Any], top_n: int) -> str:
         share_text = f"{float(share) * 100:.1f}%" if isinstance(share, (int, float)) else str(share)
         lines.append(
             f"  - {row.get('event')}|{row.get('function')} -> id {sid_text} "
-            f"({row.get('count')}/{row.get('total')}, {share_text})"
+            f"({row.get('count')}/{row.get('total')}, {share_text})",
         )
     lines.append("")
 
@@ -634,10 +634,10 @@ def build_report(summary: dict[str, Any], top_n: int) -> str:
     typing = summary.get("typing_artifacts") or {}
     lines.append("## Type artifact checks")
     lines.append(
-        f"- clip_size bit-pattern samples: {typing.get('clip_bitpattern_samples', 0)} / {typing.get('clip_samples', 0)}"
+        f"- clip_size bit-pattern samples: {typing.get('clip_bitpattern_samples', 0)} / {typing.get('clip_samples', 0)}",
     )
     lines.append(
-        f"- ammo bit-pattern samples: {typing.get('ammo_bitpattern_samples', 0)} / {typing.get('ammo_samples', 0)}"
+        f"- ammo bit-pattern samples: {typing.get('ammo_bitpattern_samples', 0)} / {typing.get('ammo_samples', 0)}",
     )
 
     return "\n".join(lines) + "\n"

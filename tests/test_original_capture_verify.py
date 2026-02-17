@@ -3,10 +3,8 @@ from __future__ import annotations
 from dataclasses import replace
 
 import pytest
-from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
-from crimson.sim.input import PlayerInput
 from crimson.original.capture import convert_capture_to_replay
 from crimson.original.diff import ReplayFieldDiff
 from crimson.original.schema import (
@@ -21,13 +19,13 @@ from crimson.original.schema import (
     CaptureTick,
     CaptureVec2,
 )
-from crimson.replay.types import ReplayStatusSnapshot
-from crimson.original.verify import verify_capture
-from crimson.original.verify import _allow_capture_sample_creature_count
-from crimson.original.verify import _allow_one_tick_kills_lag
+from crimson.original.verify import _allow_capture_sample_creature_count, _allow_one_tick_kills_lag, verify_capture
 from crimson.replay import ReplayHeader, ReplayRecorder
 from crimson.replay.checkpoints import ReplayCheckpoint
+from crimson.replay.types import ReplayStatusSnapshot
 from crimson.sim.driver.replay_runner import run_quest_replay, run_survival_replay
+from crimson.sim.input import PlayerInput
+from grim.geom import Vec2
 
 
 def _single_tick_survival_checkpoint(*, seed: int = 0xBEEF):

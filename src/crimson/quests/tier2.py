@@ -4,16 +4,16 @@ import random
 
 from grim.geom import Vec2
 
-from ..perks import PerkId
 from ..creatures.spawn import SpawnId
+from ..perks import PerkId
 from ..weapons import WeaponId
 from .helpers import (
     center_point,
     edge_midpoints,
     heading_from_center,
     line_points,
-    random_angle,
     radial_points,
+    random_angle,
     spawn,
     spawn_at,
 )
@@ -42,7 +42,7 @@ def build_2_1_everred_pastures(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.SPIDER_SP1_RANDOM_32,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -51,7 +51,7 @@ def build_2_1_everred_pastures(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.SPIDER_SP1_RANDOM_RED_33,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -60,7 +60,7 @@ def build_2_1_everred_pastures(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.SPIDER_SP1_RANDOM_GREEN_34,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -69,7 +69,7 @@ def build_2_1_everred_pastures(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.SPIDER_SP2_RANDOM_35,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         if wave == 4:
             entries.append(
@@ -79,7 +79,7 @@ def build_2_1_everred_pastures(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B,
                     trigger_ms=40500,
                     count=8,
-                )
+                ),
             )
             entries.append(
                 spawn_at(
@@ -88,7 +88,7 @@ def build_2_1_everred_pastures(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B,
                     trigger_ms=40500,
                     count=8,
-                )
+                ),
             )
     return entries
 
@@ -203,7 +203,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
                     count=1,
-                )
+                ),
             )
             trigger += 500
         trigger = 10500
@@ -215,7 +215,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
                     count=1,
-                )
+                ),
             )
             trigger += 500
     if ctx.player_count + 7 >= 0:
@@ -228,7 +228,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
                     trigger_ms=trigger,
                     count=1,
-                )
+                ),
             )
             trigger += 3500
     return entries
@@ -255,7 +255,7 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.AI1_ALIEN_BLUE_TINT_1A,
                 trigger_ms=trigger_a,
                 count=1,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -264,7 +264,7 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B,
                 trigger_ms=trigger_b,
                 count=1,
-            )
+            ),
         )
         if wave in (10, 20):
             trigger = wave * 2000 + 2500
@@ -275,7 +275,7 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
                     count=1,
-                )
+                ),
             )
             entries.append(
                 spawn(
@@ -284,7 +284,7 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
                     trigger_ms=trigger,
                     count=1,
-                )
+                ),
             )
         if wave == 30:
             trigger = 62500
@@ -295,7 +295,7 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
                     count=1,
-                )
+                ),
             )
             entries.append(
                 spawn(
@@ -304,7 +304,7 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
                     trigger_ms=trigger,
                     count=1,
-                )
+                ),
             )
     return entries
 
@@ -334,7 +334,7 @@ def build_2_5_sweep_stakes(ctx: QuestContext, rng: random.Random | None = None) 
                     spawn_id=SpawnId.ALIEN_AI7_ORBITER_36,
                     trigger_ms=trigger,
                     count=1,
-                )
+                ),
             )
         trigger += max(step, 600)
         step -= 0x50
@@ -362,7 +362,7 @@ def build_2_6_evil_zombies_at_large(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -371,7 +371,7 @@ def build_2_6_evil_zombies_at_large(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -380,7 +380,7 @@ def build_2_6_evil_zombies_at_large(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -389,7 +389,7 @@ def build_2_6_evil_zombies_at_large(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         trigger += 5500
         count += 1
@@ -514,7 +514,7 @@ def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width, ctx.height, offset=128.0)
     entries.append(
-        spawn_at(edges.right, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B, trigger_ms=1500, count=2)
+        spawn_at(edges.right, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B, trigger_ms=1500, count=2),
     )
     trigger = 2500
     for i in range(12):
@@ -526,7 +526,7 @@ def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.FORMATION_RING_ALIEN_5_19,
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 2500
     loop_count = 12
@@ -537,7 +537,7 @@ def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
             trigger_ms=(loop_count - 1) * 2500,
             count=1,
-        )
+        ),
     )
     special_trigger = (5 * loop_count + 15) * 500
     entries.append(
@@ -547,7 +547,7 @@ def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_id=SpawnId.FORMATION_GRID_ALIEN_BRONZE_18,
             trigger_ms=special_trigger,
             count=1,
-        )
+        ),
     )
     return entries
 
@@ -586,7 +586,7 @@ def build_2_10_spideroids(ctx: QuestContext, full_version: bool = True) -> list[
                 spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01,
                 trigger_ms=9000,
                 count=1,
-            )
+            ),
         )
         entries.append(
             spawn(
@@ -595,7 +595,7 @@ def build_2_10_spideroids(ctx: QuestContext, full_version: bool = True) -> list[
                 spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01,
                 trigger_ms=9000,
                 count=1,
-            )
+            ),
         )
     if ctx.player_count >= 2 or full_version:
         entries.append(
@@ -605,7 +605,7 @@ def build_2_10_spideroids(ctx: QuestContext, full_version: bool = True) -> list[
                 spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01,
                 trigger_ms=9000,
                 count=1,
-            )
+            ),
         )
     return entries
 

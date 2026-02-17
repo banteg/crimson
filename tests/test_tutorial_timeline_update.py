@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from grim.geom import Vec2
-
 from crimson.bonuses import BonusId
 from crimson.tutorial.timeline import TutorialState, tick_tutorial_timeline, tutorial_stage5_bonus_carrier_config
+from grim.geom import Vec2
 
 
 def test_stage_transition_advances_from_bootstrap() -> None:

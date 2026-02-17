@@ -1,41 +1,41 @@
 from __future__ import annotations
 
-from pathlib import Path
 import random
 import time
 from collections.abc import Callable
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, Protocol
 
 import pyray as rl
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState, update_audio
-from grim.console import ConsoleState
 from grim.config import CrimsonConfig, default_crimson_cfg_data
+from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
-from ..sim.input import PlayerInput
 from ..debug import debug_enabled
-from ..net.debug_log import lan_debug_log
-from ..net.deterministic_status import build_lan_deterministic_status
-from ..perks.runtime.effects import _creature_find_in_radius
-from ..perks.helpers import perk_count_get
 from ..game_world import GameWorld
 from ..local_input import LocalInputInterpreter, clear_input_edges
-from ..persistence.highscores import HighScoreRecord
+from ..net.debug_log import lan_debug_log
+from ..net.deterministic_status import build_lan_deterministic_status
+from ..net.rollback_resync_v5 import decode_mode_snapshot, encode_mode_snapshot
 from ..perks import PerkId
+from ..perks.helpers import perk_count_get
+from ..perks.runtime.effects import _creature_find_in_radius
+from ..persistence.highscores import HighScoreRecord
+from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSessionTick
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
-from ..net.rollback_resync_v5 import decode_mode_snapshot, encode_mode_snapshot
 
 if TYPE_CHECKING:
-    from ..persistence.save_status import GameStatus
-    from ..net.runtime import LanRuntime
     from ..net.protocol import StatusSnapshot
+    from ..net.runtime import LanRuntime
+    from ..persistence.save_status import GameStatus
 
 
 class _ScreenFade(Protocol):

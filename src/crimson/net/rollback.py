@@ -6,7 +6,6 @@ from dataclasses import dataclass, field
 from ..replay.types import PackedPlayerInput
 from .relay_protocol import RbInputBatch, RbInputSample
 
-
 _NEUTRAL_INPUT: PackedPlayerInput = [0.0, 0.0, [0.0, 0.0], 0]
 _MAX_SENT_HISTORY_TICKS = 256
 _MAX_RESEND_SAMPLES = 64
@@ -149,7 +148,7 @@ class RollbackController:
                     tick_index=int(tick),
                     frame_inputs=[list(item) for item in frame_inputs],
                     predicted_slots=tuple(predicted_slots),
-                )
+                ),
             )
         return rebuilt
 
@@ -187,7 +186,7 @@ class RollbackController:
                     tick_index=int(tick),
                     frame_inputs=[list(item) for item in frame_inputs],
                     predicted_slots=tuple(predicted_slots),
-                )
+                ),
             )
             self._emitted_frames[int(tick)] = [list(item) for item in frame_inputs]
             self._next_emit_tick += 1

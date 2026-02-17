@@ -13,5 +13,5 @@ def apply_speed(ctx: BonusApplyCtx) -> None:
     if should_register:
         ctx.register_player("speed_bonus_timer")
     ctx.player.speed_bonus_timer = float(
-        f32(float(ctx.player.speed_bonus_timer) + float(ctx.amount) * float(ctx.economist_multiplier))
+        f32(float(ctx.player.speed_bonus_timer) + float(ctx.amount) * float(ctx.economist_multiplier)),
     )
