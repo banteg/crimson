@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Protocol
 
 import pyray as rl
@@ -36,16 +36,16 @@ class _CreatureDrawContract(Protocol):
 
 
 @dataclass(frozen=True, slots=True)
-class _WorldDrawContext:
-    camera: Vec2
-    view_scale: Vec2
-    scale: float
-    entity_alpha: float
-    trooper_texture: rl.Texture | None
-    particles_texture: rl.Texture | None
-    monster_vision: bool
-    monster_vision_src: rl.Rectangle | None
-    poison_src: rl.Rectangle | None
+class WorldDrawContext:
+    camera: Vec2 = field(default_factory=Vec2)
+    view_scale: Vec2 = field(default_factory=lambda: Vec2(1.0, 1.0))
+    scale: float = 1.0
+    entity_alpha: float = 1.0
+    trooper_texture: rl.Texture | None = None
+    particles_texture: rl.Texture | None = None
+    monster_vision: bool = False
+    monster_vision_src: rl.Rectangle | None = None
+    poison_src: rl.Rectangle | None = None
 
 
 class WorldRendererDrawMixin(WorldRendererMixinBase):
@@ -153,7 +153,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
         view_scale: Vec2,
         scale: float,
         entity_alpha: float,
-    ) -> _WorldDrawContext:
+    ) -> WorldDrawContext:
         trooper_asset = CREATURE_ASSET.get(CreatureTypeId.TROOPER)
         trooper_texture = self.creature_textures.get(trooper_asset) if trooper_asset is not None else None
         particles_texture = self.particles_texture
@@ -166,7 +166,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
             # Native uses `effect_select_texture(0x10)` (EffectId.AURA) for creature overlays
             # (monster vision, shadow, poison aura).
             poison_src = self._effect_src_rect(particles_texture, EffectId.AURA)
-        return _WorldDrawContext(
+        return WorldDrawContext(
             camera=camera,
             view_scale=view_scale,
             scale=scale,
@@ -178,7 +178,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
             poison_src=poison_src,
         )
 
-    def _draw_player(self, player: PlayerState, *, ctx: _WorldDrawContext) -> None:
+    def _draw_player(self, player: PlayerState, *, ctx: WorldDrawContext) -> None:
         if ctx.trooper_texture is not None:
             self._draw_player_trooper_sprite(
                 ctx.trooper_texture,
@@ -193,7 +193,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
         tint = rl.Color(90, 190, 120, int(255 * ctx.entity_alpha + 0.5))
         rl.draw_circle(int(screen.x), int(screen.y), max(1.0, 14.0 * ctx.scale), tint)
 
-    def _draw_players(self, *, ctx: _WorldDrawContext, alive: bool) -> None:
+    def _draw_players(self, *, ctx: WorldDrawContext, alive: bool) -> None:
         for player in self.players:
             if alive and player.health <= 0.0:
                 continue
@@ -221,7 +221,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
         *,
         screen: Vec2,
         hitbox_size: float,
-        ctx: _WorldDrawContext,
+        ctx: WorldDrawContext,
     ) -> None:
         fade = monster_vision_fade_alpha(hitbox_size)
         if ctx.monster_vision and ctx.particles_texture is not None and ctx.monster_vision_src is not None:
@@ -254,7 +254,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
                 tint = rl.Color(255, 0, 0, int(clamp(poison_alpha, 0.0, 1.0) * 255.0 + 0.5))
                 rl.draw_texture_pro(ctx.particles_texture, ctx.poison_src, dst, origin, 0.0, tint)
 
-    def _draw_creatures(self, *, ctx: _WorldDrawContext) -> None:
+    def _draw_creatures(self, *, ctx: WorldDrawContext) -> None:
         for _idx, creature in self._sorted_active_creatures():
             screen = self._world_to_screen_with(creature.pos, camera=ctx.camera, view_scale=ctx.view_scale)
             hitbox_size = float(creature.hitbox_size)
@@ -336,7 +336,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
                 shadow=shadow,
             )
 
-    def _draw_freeze_overlay(self, *, ctx: _WorldDrawContext) -> None:
+    def _draw_freeze_overlay(self, *, ctx: WorldDrawContext) -> None:
         if ctx.particles_texture is None:
             return
         freeze_timer = float(self.state.bonuses.freeze)
@@ -369,7 +369,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
             rl.draw_texture_pro(ctx.particles_texture, src, dst, origin, rotation_deg, tint)
         rl.end_blend_mode()
 
-    def _draw_projectiles_and_effects(self, *, ctx: _WorldDrawContext) -> None:
+    def _draw_projectiles_and_effects(self, *, ctx: WorldDrawContext) -> None:
         self._draw_sharpshooter_laser_sight(
             camera=ctx.camera,
             view_scale=ctx.view_scale,
@@ -388,7 +388,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
         self._draw_sprite_effect_pool(camera=ctx.camera, view_scale=ctx.view_scale, alpha=ctx.entity_alpha)
         self._draw_effect_pool(camera=ctx.camera, view_scale=ctx.view_scale, alpha=ctx.entity_alpha)
 
-    def _draw_aim_indicators(self, *, ctx: _WorldDrawContext) -> None:
+    def _draw_aim_indicators(self, *, ctx: WorldDrawContext) -> None:
         for player in self._iter_visible_aim_players():
             if player.health <= 0.0:
                 continue
@@ -411,7 +411,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
                         alpha=ctx.entity_alpha,
                     )
 
-    def _draw_aim_enhancements(self, *, ctx: _WorldDrawContext) -> None:
+    def _draw_aim_enhancements(self, *, ctx: WorldDrawContext) -> None:
         for player in self._iter_visible_aim_players():
             if player.health <= 0.0:
                 continue
@@ -425,7 +425,7 @@ class WorldRendererDrawMixin(WorldRendererMixinBase):
         local_slot = int(self.lan_local_player_slot_index)
         return tuple(player for player in players if int(player.index) == local_slot)
 
-    def _draw_bonus_and_ui(self, *, ctx: _WorldDrawContext, draw_aim_indicators: bool) -> None:
+    def _draw_bonus_and_ui(self, *, ctx: WorldDrawContext, draw_aim_indicators: bool) -> None:
         self._draw_bonus_pickups(
             camera=ctx.camera,
             view_scale=ctx.view_scale,

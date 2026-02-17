@@ -3,13 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Protocol, cast
 
-from crimson.render.world import WorldRenderer
+from crimson.render.world import WorldDrawContext, WorldRenderer
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 
 if TYPE_CHECKING:
     from crimson.game_world import GameWorld
-    from crimson.render.world.draw import _WorldDrawContext
 
 
 class _AimWorldLike(Protocol):
@@ -27,15 +26,6 @@ class _AimWorldStub(_AimWorldLike):
     lan_player_rings_enabled: bool = False
     lan_local_aim_indicators_only: bool = False
     lan_local_player_slot_index: int = 0
-
-
-@dataclass(slots=True)
-class _DrawCtxStub:
-    camera: Vec2 = field(default_factory=Vec2)
-    view_scale: Vec2 = field(default_factory=lambda: Vec2(1.0, 1.0))
-    scale: float = 1.0
-    entity_alpha: float = 1.0
-    particles_texture: object | None = None
 
 
 def _as_world(world: _AimWorldLike) -> GameWorld:
@@ -60,8 +50,8 @@ def _make_renderer(*, players: list[PlayerState], local_only: bool, local_slot: 
     return WorldRenderer(_world=_as_world(world))
 
 
-def _draw_ctx() -> _WorldDrawContext:
-    return cast("_WorldDrawContext", _DrawCtxStub())
+def _draw_ctx() -> WorldDrawContext:
+    return WorldDrawContext()
 
 
 def test_lan_aim_indicators_draw_local_player_only(monkeypatch) -> None:

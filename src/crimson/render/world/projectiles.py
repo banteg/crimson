@@ -23,7 +23,7 @@ from .mixin_base import WorldRendererMixinBase
 
 if TYPE_CHECKING:
     from ...projectiles import Projectile, SecondaryProjectile
-    from .renderer import WorldRenderer
+    from ..projectile_draw import ProjectileRendererLike
 
 
 class WorldRendererProjectilesMixin(WorldRendererMixinBase):
@@ -39,7 +39,7 @@ class WorldRendererProjectilesMixin(WorldRendererMixinBase):
         angle = float(proj.angle)
 
         ctx = ProjectileDrawCtx(
-            renderer=cast("WorldRenderer", self),
+            renderer=cast("ProjectileRendererLike", self),
             proj=proj,
             proj_index=int(proj_index),
             texture=texture,
@@ -246,7 +246,7 @@ class WorldRendererProjectilesMixin(WorldRendererMixinBase):
         angle = float(proj.angle)
 
         ctx = SecondaryProjectileDrawCtx(
-            renderer=cast("WorldRenderer", self),
+            renderer=cast("ProjectileRendererLike", self),
             proj=proj,
             proj_type=int(proj_type),
             screen_pos=screen,
