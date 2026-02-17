@@ -42,7 +42,7 @@ class _ScreenFade(Protocol):
     screen_fade_alpha: float
 
 
-class _DeterministicSession(Protocol):
+class DeterministicSessionLike(Protocol):
     detail_preset: int
     fx_toggle: int
     game_tune_started: bool
@@ -848,7 +848,7 @@ class BaseGameplayMode:
         ticks_to_run: int,
         dt_tick: float,
         input_frame: list[PlayerInput],
-        session: _DeterministicSession,
+        session: DeterministicSessionLike,
         recorder: _ReplayRecorderLike | None,
         on_tick: Callable[[DeterministicSessionTick, int | None], bool],
     ) -> None:

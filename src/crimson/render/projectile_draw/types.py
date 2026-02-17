@@ -14,25 +14,41 @@ if TYPE_CHECKING:
 
 
 class ProjectileLike(Protocol):
-    origin: Vec2
-    speed_scale: float
-    base_damage: float
+    @property
+    def origin(self) -> Vec2: ...
+
+    @property
+    def speed_scale(self) -> float: ...
+
+    @property
+    def base_damage(self) -> float: ...
 
 
 class SecondaryProjectileLike(Protocol):
-    detonation_t: float
-    detonation_scale: float
+    @property
+    def detonation_t(self) -> float: ...
+
+    @property
+    def detonation_scale(self) -> float: ...
 
 
 class _CreatureLike(Protocol):
-    active: bool
-    hitbox_size: float
-    size: float
-    pos: Vec2
+    @property
+    def active(self) -> bool: ...
+
+    @property
+    def hitbox_size(self) -> float: ...
+
+    @property
+    def size(self) -> float: ...
+
+    @property
+    def pos(self) -> Vec2: ...
 
 
 class _CreaturePoolLike(Protocol):
-    entries: Sequence[_CreatureLike]
+    @property
+    def entries(self) -> Sequence[_CreatureLike]: ...
 
 
 class _FxDetailConfigLike(Protocol):
@@ -40,14 +56,29 @@ class _FxDetailConfigLike(Protocol):
 
 
 class ProjectileRendererLike(Protocol):
-    bullet_trail_texture: rl.Texture | None
-    bullet_texture: rl.Texture | None
-    particles_texture: rl.Texture | None
-    projs_texture: rl.Texture | None
-    config: _FxDetailConfigLike | None
-    players: Sequence[PlayerState]
-    creatures: _CreaturePoolLike
-    elapsed_ms: float
+    @property
+    def bullet_trail_texture(self) -> rl.Texture | None: ...
+
+    @property
+    def bullet_texture(self) -> rl.Texture | None: ...
+
+    @property
+    def particles_texture(self) -> rl.Texture | None: ...
+
+    @property
+    def projs_texture(self) -> rl.Texture | None: ...
+
+    @property
+    def config(self) -> _FxDetailConfigLike | None: ...
+
+    @property
+    def players(self) -> Sequence[PlayerState]: ...
+
+    @property
+    def creatures(self) -> _CreaturePoolLike: ...
+
+    @property
+    def elapsed_ms(self) -> float: ...
 
     def _is_bullet_trail_type(self, type_id: int) -> bool: ...
 

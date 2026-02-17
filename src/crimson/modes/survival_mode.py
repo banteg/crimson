@@ -55,7 +55,7 @@ from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, load_perk_menu_assets
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WEAPON_BY_ID
-from .base_gameplay_mode import BaseGameplayMode
+from .base_gameplay_mode import BaseGameplayMode, DeterministicSessionLike
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
 from .components.perk_prompt_ui import PERK_PROMPT_MAX_TIMER_MS, PerkPromptUi
@@ -117,7 +117,7 @@ class SurvivalMode(BaseGameplayMode):
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         self._replay_checkpoints_sample_rate: int = 60
         self._replay_checkpoints_last_tick: int | None = None
-        self._sim_session: SurvivalDeterministicSession | None = None
+        self._sim_session: DeterministicSessionLike | None = None
         self._lan_last_tick_index: int = -1
         self._lan_perk_events: list[PerkMenuOpen | PerkMenuClose | PerkPick] = []
         self._lan_perk_close_suppress: bool = False
@@ -585,9 +585,13 @@ class SurvivalMode(BaseGameplayMode):
             return
 
         def _on_tick(tick: DeterministicSessionTick, tick_index: int | None) -> bool:
-            self._survival.elapsed_ms = float(session.elapsed_ms)
-            self._survival.stage = int(session.stage)
-            self._survival.spawn_cooldown = float(session.spawn_cooldown_ms)
+            self._survival.elapsed_ms = float(
+                getattr(session, "elapsed_ms", getattr(tick, "elapsed_ms", self._survival.elapsed_ms)),
+            )
+            self._survival.stage = int(getattr(session, "stage", self._survival.stage))
+            self._survival.spawn_cooldown = float(
+                getattr(session, "spawn_cooldown_ms", self._survival.spawn_cooldown),
+            )
             world_events = tick.step.events
 
             if tick_index is not None:
@@ -831,6 +835,7 @@ class SurvivalMode(BaseGameplayMode):
                 remote_command_hash = str(getattr(frame, "command_hash", "") or "")
                 remote_state_hash = str(getattr(frame, "state_hash", "") or "")
                 local_command_hash = str(tick.step.command_hash)
+                tick_elapsed_ms = float(getattr(tick, "elapsed_ms", getattr(session, "elapsed_ms", 0.0)))
                 local_state_hash = ""
                 if role == "join":
                     if remote_command_hash and remote_command_hash != local_command_hash:
@@ -845,7 +850,7 @@ class SurvivalMode(BaseGameplayMode):
                             build_checkpoint(
                                 tick_index=int(frame.tick_index),
                                 world=self.world.world_state,
-                                elapsed_ms=float(session.elapsed_ms),
+                                elapsed_ms=float(tick_elapsed_ms),
                                 creature_count_override=int(tick.creature_count_world_step),
                             ).state_hash,
                         )
@@ -865,7 +870,7 @@ class SurvivalMode(BaseGameplayMode):
                             build_checkpoint(
                                 tick_index=int(frame.tick_index),
                                 world=self.world.world_state,
-                                elapsed_ms=float(session.elapsed_ms),
+                                elapsed_ms=float(tick_elapsed_ms),
                                 creature_count_override=int(tick.creature_count_world_step),
                             ).state_hash,
                         )
@@ -875,9 +880,16 @@ class SurvivalMode(BaseGameplayMode):
                     apply_audio=True,
                     update_camera=True,
                 )
-                self._survival.elapsed_ms = float(session.elapsed_ms)
-                self._survival.stage = int(session.stage)
-                self._survival.spawn_cooldown = float(session.spawn_cooldown_ms)
+                session_elapsed_ms = float(
+                    getattr(session, "elapsed_ms", getattr(tick, "elapsed_ms", self._survival.elapsed_ms)),
+                )
+                session_stage = int(getattr(session, "stage", self._survival.stage))
+                session_spawn_cooldown_ms = float(
+                    getattr(session, "spawn_cooldown_ms", self._survival.spawn_cooldown),
+                )
+                self._survival.elapsed_ms = session_elapsed_ms
+                self._survival.stage = session_stage
+                self._survival.spawn_cooldown = session_spawn_cooldown_ms
                 world_events = tick.step.events
 
                 self._lan_last_tick_index = int(frame.tick_index)
@@ -885,9 +897,9 @@ class SurvivalMode(BaseGameplayMode):
                     mode_name="survival",
                     tick_index=int(frame.tick_index),
                     session_state={
-                        "elapsed_ms": float(session.elapsed_ms),
-                        "stage": int(session.stage),
-                        "spawn_cooldown_ms": float(session.spawn_cooldown_ms),
+                        "elapsed_ms": float(session_elapsed_ms),
+                        "stage": int(session_stage),
+                        "spawn_cooldown_ms": float(session_spawn_cooldown_ms),
                     },
                     mode_state={
                         "survival_elapsed_ms": float(self._survival.elapsed_ms),
