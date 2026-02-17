@@ -37,6 +37,12 @@ UI_ERROR = rl.Color(240, 80, 80, 255)
 OCCLUDER_COLOR = rl.Color(60, 180, 255, 220)
 LIGHT_RING_COLOR = rl.Color(255, 180, 80, 190)
 LIGHT_CORE_COLOR = rl.Color(255, 235, 160, 240)
+LIGHT_SELECTED_COLOR = rl.Color(255, 255, 120, 255)
+LIGHT_HANDLE_MOVE = rl.Color(120, 220, 255, 255)
+LIGHT_HANDLE_RADIUS = rl.Color(255, 200, 90, 255)
+LIGHT_HANDLE_DIR = rl.Color(255, 245, 185, 255)
+LIGHT_HANDLE_STRENGTH = rl.Color(255, 130, 170, 255)
+LIGHT_HANDLE_STRETCH = rl.Color(130, 255, 170, 255)
 SHADOW_PREVIEW_BG = rl.Color(14, 14, 18, 220)
 SHADOW_PREVIEW_BORDER = rl.Color(90, 90, 110, 240)
 SHADOW_PREVIEW_CANVAS = rl.Color(176, 176, 176, 255)
@@ -65,6 +71,17 @@ RT_SCALE_MAX = 0.75
 PLAYER_SPEED_MULTIPLIER = 4.0
 PLAYER_INVULNERABLE_SHIELD_TIMER = 1e-3
 ENEMY_RING_RADIUS = 280.0
+STATIC_LIGHT_RADIUS_MIN = 24.0
+STATIC_LIGHT_RADIUS_MAX = 900.0
+STATIC_LIGHT_STRENGTH_MIN = 0.05
+STATIC_LIGHT_STRENGTH_MAX = 2.25
+STATIC_LIGHT_FOCUS_MIN = 0.0
+STATIC_LIGHT_FOCUS_MAX = 2.0
+STATIC_LIGHT_STRETCH_MIN = 1.0
+STATIC_LIGHT_STRETCH_MAX = 4.0
+
+STATIC_HANDLE_HIT_RADIUS_PX = 14.0
+STATIC_HANDLE_DRAW_RADIUS_PX = 6.0
 
 AUTODIAG_ENV = "CRIMSON_LIGHTING_DEBUG_AUTODIAG"
 AUTODIAG_FRAMES_DEFAULT = 300
@@ -135,6 +152,26 @@ class SpawnPreset:
     name: str
     spawn_id: int
     ring_count: int = 10
+
+
+@dataclass(slots=True)
+class StaticEmitter:
+    pos: Vec2
+    angle: float
+    radius: float
+    strength: float
+    focus: float
+    stretch: float
+
+
+@dataclass(slots=True)
+class _StaticDragState:
+    kind: str
+    emitter_index: int
+    mouse_start_world: Vec2
+    mouse_start_screen: Vec2
+    pos_offset: Vec2
+    value_start: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -256,6 +293,18 @@ SPAWN_PRESETS: tuple[SpawnPreset, ...] = (
     SpawnPreset(name="Alien Brute", spawn_id=int(SpawnId.ALIEN_CONST_GREY_BRUTE_29), ring_count=9),
     SpawnPreset(name="Spider SP1", spawn_id=int(SpawnId.SPIDER_SP1_CONST_BLUE_40), ring_count=11),
     SpawnPreset(name="Spider SP2", spawn_id=int(SpawnId.SPIDER_SP2_RANDOM_35), ring_count=11),
+)
+
+STATIC_OCCLUDER_LAYOUT: tuple[tuple[float, float, float], ...] = (
+    (286.0, 246.0, 50.0),
+    (460.0, 222.0, 44.0),
+    (630.0, 252.0, 58.0),
+    (760.0, 398.0, 64.0),
+    (690.0, 564.0, 52.0),
+    (510.0, 610.0, 70.0),
+    (342.0, 536.0, 56.0),
+    (258.0, 392.0, 48.0),
+    (518.0, 404.0, 80.0),
 )
 
 
@@ -545,6 +594,37 @@ def _normalized_dir_from_vec(vec: Vec2 | None) -> tuple[float, float]:
     return float(vec.x) * inv, float(vec.y) * inv
 
 
+def _screen_distance_sq(a: Vec2, b: Vec2) -> float:
+    dx = float(a.x) - float(b.x)
+    dy = float(a.y) - float(b.y)
+    return dx * dx + dy * dy
+
+
+def _profile_light_defaults(profile: EmissiveProfile) -> tuple[float, float, float, float]:
+    if profile.primary_type_id is not None:
+        type_id = int(profile.primary_type_id)
+        spec = _PRIMARY_PROJECTILE_LIGHTS.get(type_id)
+        if spec is not None:
+            radius, strength = spec
+            focus, stretch = _PRIMARY_PROJECTILE_DIRECTIONAL.get(type_id, (0.0, 1.0))
+            return float(radius), float(strength), float(focus), float(stretch)
+    if profile.secondary_type_id is not None:
+        type_id = int(profile.secondary_type_id)
+        spec = _SECONDARY_PROJECTILE_LIGHTS.get(type_id)
+        if spec is not None:
+            radius, strength = spec
+            focus, stretch = _SECONDARY_PROJECTILE_DIRECTIONAL.get(type_id, (0.0, 1.0))
+            return float(radius), float(strength), float(focus), float(stretch)
+    return float(profile.flash_radius), float(profile.flash_strength), 0.0, 1.0
+
+
+def _build_static_occluders() -> list[CircleOccluder]:
+    occluders: list[CircleOccluder] = []
+    for x, y, radius in STATIC_OCCLUDER_LAYOUT:
+        occluders.append(CircleOccluder(pos=Vec2(float(x), float(y)), radius=float(radius)))
+    return occluders
+
+
 def _shadow_occluder_radius(size: float, hitbox_size: float) -> float:
     blended = max(float(hitbox_size), float(size) * 0.35)
     return max(6.0, min(128.0, float(blended)))
@@ -816,6 +896,11 @@ class LightingDebugView:
         self._auto_emit_enabled = False
         self._auto_emit_timer = 0.0
         self._transient_lights: list[TransientLight] = []
+        self._static_scene_enabled = False
+        self._static_occluders = _build_static_occluders()
+        self._static_emitters: list[StaticEmitter] = []
+        self._static_selected_emitter = -1
+        self._static_drag: _StaticDragState | None = None
 
         self._shadow_enabled = True
         self._show_debug_overlays = True
@@ -959,6 +1044,8 @@ class LightingDebugView:
 
         if not self._autodiag_started:
             self._autodiag_started = True
+            if self._static_scene_enabled:
+                self._set_static_scene_enabled(False)
             self._shadow_enabled = True
             self._show_debug_overlays = True
             self._show_help = False
@@ -1005,6 +1092,8 @@ class LightingDebugView:
 
         if not self._dump_modes_started:
             self._dump_modes_started = True
+            if self._static_scene_enabled:
+                self._set_static_scene_enabled(False)
             self._shadow_enabled = True
             self._show_debug_overlays = True
             self._show_help = False
@@ -1121,11 +1210,250 @@ class LightingDebugView:
         self._transient_lights.clear()
         self._invalidate_shadow_history()
 
+    @staticmethod
+    def _clamp_world_pos(pos: Vec2, *, margin: float = 12.0) -> Vec2:
+        return pos.clamp_rect(float(margin), float(margin), WORLD_SIZE - float(margin), WORLD_SIZE - float(margin))
+
+    @staticmethod
+    def _mouse_screen() -> Vec2:
+        return Vec2.from_xy(rl.get_mouse_position())
+
+    def _mouse_world(self) -> Vec2:
+        return self._world.screen_to_world(self._mouse_screen())
+
+    def _set_static_scene_enabled(self, enabled: bool) -> None:
+        next_enabled = bool(enabled)
+        if self._static_scene_enabled == next_enabled:
+            return
+        self._static_scene_enabled = next_enabled
+        self._static_drag = None
+        self._static_selected_emitter = -1
+        self._auto_emit_enabled = False
+        self._auto_emit_timer = 0.0
+        self._invalidate_shadow_history()
+
+        if self._static_scene_enabled:
+            self._clear_scene_contents()
+            self._seed_static_scene()
+            self._world.update_camera(0.0)
+            return
+
+        self._reset_scene()
+
+    def _seed_static_scene(self) -> None:
+        self._static_emitters = []
+        profile = self._selected_profile()
+        radius, strength, focus, stretch = _profile_light_defaults(profile)
+        self._static_emitters.append(
+            StaticEmitter(
+                pos=Vec2(510.0, 400.0),
+                angle=-2.55,
+                radius=_clampf(radius, STATIC_LIGHT_RADIUS_MIN, STATIC_LIGHT_RADIUS_MAX),
+                strength=_clampf(strength, STATIC_LIGHT_STRENGTH_MIN, STATIC_LIGHT_STRENGTH_MAX),
+                focus=_clampf(focus, STATIC_LIGHT_FOCUS_MIN, STATIC_LIGHT_FOCUS_MAX),
+                stretch=_clampf(stretch, STATIC_LIGHT_STRETCH_MIN, STATIC_LIGHT_STRETCH_MAX),
+            )
+        )
+        self._static_selected_emitter = 0
+
+    def _make_static_emitter(self, pos: Vec2) -> StaticEmitter:
+        profile = self._selected_profile()
+        radius, strength, focus, stretch = _profile_light_defaults(profile)
+        return StaticEmitter(
+            pos=self._clamp_world_pos(pos),
+            angle=0.0,
+            radius=_clampf(radius, STATIC_LIGHT_RADIUS_MIN, STATIC_LIGHT_RADIUS_MAX),
+            strength=_clampf(strength, STATIC_LIGHT_STRENGTH_MIN, STATIC_LIGHT_STRENGTH_MAX),
+            focus=_clampf(focus, STATIC_LIGHT_FOCUS_MIN, STATIC_LIGHT_FOCUS_MAX),
+            stretch=_clampf(stretch, STATIC_LIGHT_STRETCH_MIN, STATIC_LIGHT_STRETCH_MAX),
+        )
+
+    def _static_handle_positions(self, emitter: StaticEmitter) -> dict[str, Vec2]:
+        dir_vec = Vec2.from_heading(float(emitter.angle))
+        dir_len = max(24.0, min(float(emitter.radius) * 0.55, 180.0))
+        return {
+            "move": emitter.pos,
+            "radius": emitter.pos + Vec2(float(emitter.radius), 0.0),
+            "direction": emitter.pos + dir_vec * dir_len,
+            "strength": emitter.pos + Vec2(0.0, -34.0),
+            "stretch": emitter.pos + Vec2(0.0, 34.0),
+        }
+
+    def _nearest_static_emitter(self, mouse_screen: Vec2, *, max_dist_px: float) -> int:
+        if not self._static_emitters:
+            return -1
+        best_index = -1
+        best_d2 = float(max_dist_px) * float(max_dist_px)
+        for idx, emitter in enumerate(self._static_emitters):
+            screen = self._world.world_to_screen(emitter.pos)
+            d2 = _screen_distance_sq(screen, mouse_screen)
+            if d2 <= best_d2:
+                best_d2 = d2
+                best_index = idx
+        return best_index
+
+    def _set_static_emitter(self, index: int, emitter: StaticEmitter) -> None:
+        if 0 <= index < len(self._static_emitters):
+            self._static_emitters[index] = emitter
+            self._invalidate_shadow_history()
+
+    def _place_static_emitter_at_mouse(self) -> None:
+        pos = self._mouse_world()
+        self._static_emitters.append(self._make_static_emitter(pos))
+        if len(self._static_emitters) > MAX_LIGHTS:
+            self._static_emitters = self._static_emitters[-MAX_LIGHTS:]
+        self._static_selected_emitter = len(self._static_emitters) - 1
+        self._invalidate_shadow_history()
+
+    def _remove_static_emitter_at_mouse(self) -> None:
+        mouse_screen = self._mouse_screen()
+        idx = self._nearest_static_emitter(mouse_screen, max_dist_px=18.0)
+        if idx < 0:
+            return
+        del self._static_emitters[idx]
+        if not self._static_emitters:
+            self._static_selected_emitter = -1
+        else:
+            self._static_selected_emitter = max(0, min(self._static_selected_emitter, len(self._static_emitters) - 1))
+        self._invalidate_shadow_history()
+
+    def _begin_static_drag(self, *, kind: str, index: int) -> None:
+        if not (0 <= index < len(self._static_emitters)):
+            self._static_drag = None
+            return
+        emitter = self._static_emitters[index]
+        mouse_world = self._mouse_world()
+        mouse_screen = self._mouse_screen()
+        value_start = 0.0
+        if kind == "strength":
+            value_start = float(emitter.strength)
+        elif kind == "stretch":
+            value_start = float(emitter.stretch)
+        self._static_drag = _StaticDragState(
+            kind=str(kind),
+            emitter_index=int(index),
+            mouse_start_world=mouse_world,
+            mouse_start_screen=mouse_screen,
+            pos_offset=emitter.pos - mouse_world,
+            value_start=value_start,
+        )
+
+    def _update_static_drag(self) -> None:
+        drag = self._static_drag
+        if drag is None:
+            return
+        if not rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT):
+            self._static_drag = None
+            return
+        index = int(drag.emitter_index)
+        if not (0 <= index < len(self._static_emitters)):
+            self._static_drag = None
+            return
+        emitter = self._static_emitters[index]
+        mouse_world = self._mouse_world()
+        mouse_screen = self._mouse_screen()
+
+        kind = drag.kind
+        if kind == "move":
+            next_pos = self._clamp_world_pos(mouse_world + drag.pos_offset)
+            self._set_static_emitter(index, StaticEmitter(next_pos, emitter.angle, emitter.radius, emitter.strength, emitter.focus, emitter.stretch))
+            return
+        if kind == "radius":
+            radius = _clampf((mouse_world - emitter.pos).length(), STATIC_LIGHT_RADIUS_MIN, STATIC_LIGHT_RADIUS_MAX)
+            self._set_static_emitter(index, StaticEmitter(emitter.pos, emitter.angle, radius, emitter.strength, emitter.focus, emitter.stretch))
+            return
+        if kind == "direction":
+            delta = mouse_world - emitter.pos
+            length = delta.length()
+            if length > 1e-4:
+                angle = float(delta.to_heading())
+                focus = _clampf(length / max(1.0, float(emitter.radius) * 0.55), STATIC_LIGHT_FOCUS_MIN, STATIC_LIGHT_FOCUS_MAX)
+                self._set_static_emitter(
+                    index,
+                    StaticEmitter(emitter.pos, angle, emitter.radius, emitter.strength, focus, emitter.stretch),
+                )
+            return
+        if kind == "strength":
+            delta_x = float(mouse_screen.x - drag.mouse_start_screen.x)
+            strength = _clampf(
+                float(drag.value_start) + delta_x * 0.010,
+                STATIC_LIGHT_STRENGTH_MIN,
+                STATIC_LIGHT_STRENGTH_MAX,
+            )
+            self._set_static_emitter(index, StaticEmitter(emitter.pos, emitter.angle, emitter.radius, strength, emitter.focus, emitter.stretch))
+            return
+        if kind == "stretch":
+            delta_x = float(mouse_screen.x - drag.mouse_start_screen.x)
+            stretch = _clampf(
+                float(drag.value_start) + delta_x * 0.010,
+                STATIC_LIGHT_STRETCH_MIN,
+                STATIC_LIGHT_STRETCH_MAX,
+            )
+            self._set_static_emitter(index, StaticEmitter(emitter.pos, emitter.angle, emitter.radius, emitter.strength, emitter.focus, stretch))
+            return
+
+        self._static_drag = None
+
+    def _handle_static_mouse_input(self) -> None:
+        self._update_static_drag()
+        if not rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+            return
+
+        mouse_screen = self._mouse_screen()
+        hit_radius_sq = STATIC_HANDLE_HIT_RADIUS_PX * STATIC_HANDLE_HIT_RADIUS_PX
+
+        selected = self._static_selected_emitter
+        if 0 <= selected < len(self._static_emitters):
+            emitter = self._static_emitters[selected]
+            handles = self._static_handle_positions(emitter)
+            for kind in ("move", "radius", "direction", "strength", "stretch"):
+                screen = self._world.world_to_screen(handles[kind])
+                if _screen_distance_sq(screen, mouse_screen) <= hit_radius_sq:
+                    self._begin_static_drag(kind=kind, index=selected)
+                    return
+
+        nearest = self._nearest_static_emitter(mouse_screen, max_dist_px=STATIC_HANDLE_HIT_RADIUS_PX)
+        if nearest >= 0:
+            self._static_selected_emitter = nearest
+            self._begin_static_drag(kind="move", index=nearest)
+            return
+
+        self._place_static_emitter_at_mouse()
+        self._begin_static_drag(kind="move", index=self._static_selected_emitter)
+
+    def _collect_static_shadow_state(self) -> None:
+        occluders = self._static_occluders[:MAX_OCCLUDERS]
+        self._last_occluders = [CircleOccluder(pos=Vec2(float(occ.pos.x), float(occ.pos.y)), radius=float(occ.radius)) for occ in occluders]
+
+        lights: list[ShadowLight] = []
+        for emitter in self._static_emitters:
+            if len(lights) >= MAX_LIGHTS:
+                break
+            dir_vec = Vec2.from_heading(float(emitter.angle))
+            radius = min(STATIC_LIGHT_RADIUS_MAX, float(emitter.radius) * float(self._range_scale))
+            focus = _clampf(float(emitter.focus) * float(self._directional_focus), 0.0, 2.0)
+            stretch = _clampf(float(emitter.stretch) * float(self._directional_stretch), 1.0, 6.0)
+            lights.append(
+                ShadowLight(
+                    pos=Vec2(float(emitter.pos.x), float(emitter.pos.y)),
+                    radius=float(radius),
+                    strength=_clampf(float(emitter.strength), STATIC_LIGHT_STRENGTH_MIN, STATIC_LIGHT_STRENGTH_MAX),
+                    dir_x=float(dir_vec.x),
+                    dir_y=float(dir_vec.y),
+                    focus=float(focus),
+                    stretch=float(stretch),
+                )
+            )
+        self._last_lights = lights
+
     def _reset_scene(self) -> None:
         self._world.reset(seed=0xBEEF, player_count=1, spawn_pos=WORLD_CENTER)
         self._player = self._world.players[0] if self._world.players else None
         self._apply_debug_player_cheats()
         self._clear_scene_contents()
+        self._static_emitters = []
+        self._static_selected_emitter = -1
+        self._static_drag = None
         # Seed a default occluder ring so shadows are visible immediately on first emission.
         self._spawn_preset_ring()
         self._auto_emit_timer = 0.0
@@ -1267,9 +1595,11 @@ class LightingDebugView:
             self._shadow_enabled = not self._shadow_enabled
         if rl.is_key_pressed(rl.KeyboardKey.KEY_F3):
             self._show_debug_overlays = not self._show_debug_overlays
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_F4):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_F4) and not self._static_scene_enabled:
             self._auto_emit_enabled = not self._auto_emit_enabled
             self._auto_emit_timer = 0.0
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_F5):
+            self._set_static_scene_enabled(not self._static_scene_enabled)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_F6):
             self._set_shadow_debug_mode(self._shadow_debug_mode + 1)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_F7):
@@ -1309,9 +1639,21 @@ class LightingDebugView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_M):
             self._clear_spawned_enemies()
         if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
-            self._reset_scene()
+            if self._static_scene_enabled:
+                self._seed_static_scene()
+                self._clear_scene_contents()
+            else:
+                self._reset_scene()
         if rl.is_key_pressed(rl.KeyboardKey.KEY_P):
             self._screenshot_requested = True
+        if self._static_scene_enabled:
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_DELETE):
+                self._seed_static_scene()
+                self._clear_scene_contents()
+            if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
+                self._remove_static_emitter_at_mouse()
+            self._handle_static_mouse_input()
+            return
 
         if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._emit_profile()
@@ -1341,6 +1683,9 @@ class LightingDebugView:
         return max(0.001, float(profile.auto_interval))
 
     def _collect_shadow_state(self) -> None:
+        if self._static_scene_enabled:
+            self._collect_static_shadow_state()
+            return
         self._last_occluders = collect_shadow_occluders(
             self._player,
             self._world.creatures.entries,
@@ -1893,7 +2238,9 @@ class LightingDebugView:
         if self._paused:
             sim_dt = 0.0
 
-        if self._player is not None:
+        if self._static_scene_enabled:
+            self._world.update_camera(0.0)
+        elif self._player is not None:
             self._apply_debug_player_cheats()
             self._update_auto_emit(sim_dt)
             self._world.update(
@@ -1904,7 +2251,8 @@ class LightingDebugView:
         elif self._world.players:
             self._player = self._world.players[0]
 
-        self._transient_lights = tick_transient_lights(self._transient_lights, sim_dt)
+        if not self._static_scene_enabled:
+            self._transient_lights = tick_transient_lights(self._transient_lights, sim_dt)
         self._collect_shadow_state()
 
         if self._audio is not None:
@@ -1935,6 +2283,67 @@ class LightingDebugView:
                     rl.Vector2(float(tip_x), float(tip_y)),
                     2.0,
                     LIGHT_CORE_COLOR,
+                )
+
+    def _draw_static_emitter_controls(self) -> None:
+        if not self._static_scene_enabled:
+            return
+        scale = self._world_scale()
+        for idx, emitter in enumerate(self._static_emitters):
+            selected = idx == self._static_selected_emitter
+            handles = self._static_handle_positions(emitter)
+            center_screen = self._world.world_to_screen(handles["move"])
+            radius_screen = self._world.world_to_screen(handles["radius"])
+            direction_screen = self._world.world_to_screen(handles["direction"])
+            strength_screen = self._world.world_to_screen(handles["strength"])
+            stretch_screen = self._world.world_to_screen(handles["stretch"])
+
+            if selected:
+                radius = max(1.0, float(emitter.radius) * scale)
+                rl.draw_circle_lines(int(center_screen.x), int(center_screen.y), int(radius), LIGHT_SELECTED_COLOR)
+
+            rl.draw_line_ex(
+                rl.Vector2(float(center_screen.x), float(center_screen.y)),
+                rl.Vector2(float(radius_screen.x), float(radius_screen.y)),
+                1.5,
+                LIGHT_HANDLE_RADIUS,
+            )
+            rl.draw_line_ex(
+                rl.Vector2(float(center_screen.x), float(center_screen.y)),
+                rl.Vector2(float(direction_screen.x), float(direction_screen.y)),
+                2.0,
+                LIGHT_HANDLE_DIR,
+            )
+            rl.draw_line_ex(
+                rl.Vector2(float(center_screen.x), float(center_screen.y)),
+                rl.Vector2(float(strength_screen.x), float(strength_screen.y)),
+                1.5,
+                LIGHT_HANDLE_STRENGTH,
+            )
+            rl.draw_line_ex(
+                rl.Vector2(float(center_screen.x), float(center_screen.y)),
+                rl.Vector2(float(stretch_screen.x), float(stretch_screen.y)),
+                1.5,
+                LIGHT_HANDLE_STRETCH,
+            )
+
+            handle_radius = STATIC_HANDLE_DRAW_RADIUS_PX + (2.0 if selected else 0.0)
+            rl.draw_circle_v(rl.Vector2(float(center_screen.x), float(center_screen.y)), handle_radius, LIGHT_HANDLE_MOVE)
+            rl.draw_circle_v(rl.Vector2(float(radius_screen.x), float(radius_screen.y)), handle_radius, LIGHT_HANDLE_RADIUS)
+            rl.draw_circle_v(rl.Vector2(float(direction_screen.x), float(direction_screen.y)), handle_radius, LIGHT_HANDLE_DIR)
+            rl.draw_circle_v(rl.Vector2(float(strength_screen.x), float(strength_screen.y)), handle_radius, LIGHT_HANDLE_STRENGTH)
+            rl.draw_circle_v(rl.Vector2(float(stretch_screen.x), float(stretch_screen.y)), handle_radius, LIGHT_HANDLE_STRETCH)
+
+            if selected and self._small is not None:
+                draw_ui_text(
+                    self._small,
+                    (
+                        f"light {idx + 1}/{len(self._static_emitters)} "
+                        f"r{emitter.radius:.0f} s{emitter.strength:.2f} "
+                        f"f{emitter.focus:.2f} st{emitter.stretch:.2f}"
+                    ),
+                    Vec2(center_screen.x + 12.0, center_screen.y - 28.0),
+                    color=LIGHT_SELECTED_COLOR,
                 )
 
     def _draw_shadow_preview(self) -> None:
@@ -2038,18 +2447,32 @@ class LightingDebugView:
         y += line
         draw_ui_text(
             self._small,
-            f"profile {self._profile_index + 1}/{len(EMISSIVE_PROFILES)}: {profile.name}  auto {'on' if self._auto_emit_enabled else 'off'} ({self._profile_auto_interval(profile):.3f}s)",
+            f"scene {'static look-dev' if self._static_scene_enabled else 'dynamic sandbox'}",
             Vec2(x, y),
             color=UI_TEXT,
         )
         y += line
         draw_ui_text(
             self._small,
-            f"spawn preset {self._spawn_preset_index + 1}/{len(SPAWN_PRESETS)}: {preset.name}",
+            (
+                f"profile {self._profile_index + 1}/{len(EMISSIVE_PROFILES)}: {profile.name}  "
+                f"new-light defaults"
+                if self._static_scene_enabled
+                else f"profile {self._profile_index + 1}/{len(EMISSIVE_PROFILES)}: {profile.name}  "
+                f"auto {'on' if self._auto_emit_enabled else 'off'} ({self._profile_auto_interval(profile):.3f}s)"
+            ),
             Vec2(x, y),
             color=UI_TEXT,
         )
         y += line
+        if not self._static_scene_enabled:
+            draw_ui_text(
+                self._small,
+                f"spawn preset {self._spawn_preset_index + 1}/{len(SPAWN_PRESETS)}: {preset.name}",
+                Vec2(x, y),
+                color=UI_TEXT,
+            )
+            y += line
         draw_ui_text(
             self._small,
             f"occluders {len(self._last_occluders)}/{MAX_OCCLUDERS}  lights {len(self._last_lights)}/{MAX_LIGHTS}",
@@ -2057,13 +2480,22 @@ class LightingDebugView:
             color=UI_TEXT,
         )
         y += line
-        draw_ui_text(
-            self._small,
-            f"creatures {creatures_alive}  primary {primary_count}  secondary {secondary_count}",
-            Vec2(x, y),
-            color=UI_TEXT,
-        )
-        y += line
+        if self._static_scene_enabled:
+            draw_ui_text(
+                self._small,
+                f"static emitters {len(self._static_emitters)}/{MAX_LIGHTS}",
+                Vec2(x, y),
+                color=UI_TEXT,
+            )
+            y += line
+        else:
+            draw_ui_text(
+                self._small,
+                f"creatures {creatures_alive}  primary {primary_count}  secondary {secondary_count}",
+                Vec2(x, y),
+                color=UI_TEXT,
+            )
+            y += line
         draw_ui_text(
             self._small,
             f"shadows {'on' if self._shadow_enabled else 'off'}  overlays {'on' if self._show_debug_overlays else 'off'}  paused {'yes' if self._paused else 'no'}",
@@ -2093,7 +2525,11 @@ class LightingDebugView:
         y += line
         draw_ui_text(
             self._small,
-            "note: only player + creature hitboxes cast shadows in this pass",
+            (
+                "note: static mode uses fixed circle occluders and manual emitters"
+                if self._static_scene_enabled
+                else "note: only player + creature hitboxes cast shadows in this pass"
+            ),
             Vec2(x, y),
             color=UI_HINT,
         )
@@ -2117,21 +2553,29 @@ class LightingDebugView:
         y = float(rl.get_screen_height()) - line * 5.0
         draw_ui_text(
             self._small,
-            "WASD move  LMB emit  [/] projectile profile  F4 auto emit",
+            (
+                "LMB place/select/drag light  RMB remove light  Del reset lights  [/] profile defaults"
+                if self._static_scene_enabled
+                else "WASD move  LMB emit  [/] projectile profile  F4 auto emit"
+            ),
             Vec2(x, y),
             color=UI_HINT,
         )
         y += line
         draw_ui_text(
             self._small,
-            ",/. spawn preset  N spawn ring  M clear enemies  Backspace reset scene",
+            (
+                "drag handles: blue move  amber radius  white direction/focus  pink strength  green stretch"
+                if self._static_scene_enabled
+                else ",/. spawn preset  N spawn ring  M clear enemies  Backspace reset scene"
+            ),
             Vec2(x, y),
             color=UI_HINT,
         )
         y += line
         draw_ui_text(
             self._small,
-            "F2 shadows  F3 overlays  F6 shader dbg  F7 tune defaults  F8 tuning panel",
+            "F2 shadows  F3 overlays  F5 static scene  F6 shader dbg  F7 tune defaults  F8 tuning panel",
             Vec2(x, y),
             color=UI_HINT,
         )
@@ -2152,6 +2596,7 @@ class LightingDebugView:
 
         if self._show_debug_overlays:
             self._draw_shadow_debug_geometry()
+            self._draw_static_emitter_controls()
             self._draw_shadow_preview()
         self._draw_overlay_ui()
 
