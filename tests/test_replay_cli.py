@@ -286,7 +286,7 @@ def test_replay_verify_rejects_checkpoints_option(tmp_path: Path) -> None:
             "verify",
             str(replay_path),
             "--checkpoints",
-            str(tmp_path / "expected.checkpoints.json.gz"),
+            str(tmp_path / "expected.crd.chk"),
         ],
     )
 
@@ -306,6 +306,30 @@ def test_replay_verify_checkpoints_preserves_success_behavior(tmp_path: Path) ->
     assert "checkpoints match" in result.output
     assert "score_xp=" in result.output
     assert "kills=" in result.output
+
+
+def test_replay_verify_checkpoints_falls_back_to_legacy_sidecar_name(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    checkpoint_ticks = {0}
+    checkpoints = []
+    run_replay(replay, checkpoints_out=checkpoints, checkpoint_ticks=checkpoint_ticks)
+    replay_sha256 = hashlib.sha256(replay_path.read_bytes()).hexdigest()
+    dump_checkpoints_file(
+        tmp_path / "survival.checkpoints.json.gz",
+        ReplayCheckpoints(
+            version=int(FORMAT_VERSION),
+            replay_sha256=str(replay_sha256),
+            sample_rate=1,
+            checkpoints=list(checkpoints),
+        ),
+    )
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["replay", "verify-checkpoints", str(replay_path)])
+
+    assert result.exit_code == 0, result.output
+    assert "checkpoints match" in result.output
 
 
 def test_replay_verify_checkpoints_reports_mismatch(tmp_path: Path) -> None:
@@ -350,7 +374,7 @@ def test_replay_diff_checkpoints_still_reports_success(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     sidecar_a = _write_checkpoint_sidecar(replay_path, replay)
-    sidecar_b = tmp_path / "actual.checkpoints.json.gz"
+    sidecar_b = tmp_path / "actual.crd.chk"
     sidecar_b.write_bytes(sidecar_a.read_bytes())
     runner = CliRunner()
 

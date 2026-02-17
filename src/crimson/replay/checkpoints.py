@@ -89,6 +89,11 @@ class ReplayCheckpoints:
 
 def default_checkpoints_path(replay_path: Path) -> Path:
     replay_path = Path(replay_path)
+    return replay_path.with_name(f"{replay_path.name}.chk")
+
+
+def legacy_checkpoints_path(replay_path: Path) -> Path:
+    replay_path = Path(replay_path)
     name = replay_path.name
     if name.endswith(".crd"):
         stem = name[: -len(".crd")]

@@ -28,7 +28,7 @@ Last reviewed: **2026-02-17**
   - `uv run crimson replay diff-checkpoints <expected> <actual>`
 - Original/capture differential tooling:
   - `uv run crimson original verify-capture <capture.json>`
-  - `uv run crimson original convert-capture <capture.json> <expected.checkpoints.json.gz>`
+  - `uv run crimson original convert-capture <capture.json> <expected.crd.chk>`
   - `uv run crimson original divergence-report <capture.json>`
   - `uv run crimson original bisect-divergence <capture.json>`
   - `uv run crimson original focus-trace <capture.json> --tick <n>`

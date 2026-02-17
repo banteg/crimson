@@ -930,7 +930,7 @@ def cmd_replay_verify_checkpoints(
     checkpoints_file: Path | None = typer.Option(
         None,
         "--checkpoints",
-        help="checkpoint sidecar path (default: <replay>.checkpoints.json.gz)",
+        help="checkpoint sidecar path (default: <replay>.chk)",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
     strict_events: bool = typer.Option(
@@ -960,7 +960,12 @@ def cmd_replay_verify_checkpoints(
 
     from .original.diff import compare_checkpoints
     from .replay import ReplayCodecError, load_replay
-    from .replay.checkpoints import ReplayCheckpointsError, default_checkpoints_path, load_checkpoints_file
+    from .replay.checkpoints import (
+        ReplayCheckpointsError,
+        default_checkpoints_path,
+        legacy_checkpoints_path,
+        load_checkpoints_file,
+    )
     from .sim.driver.replay_runner import ReplayRunnerError, run_replay
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
@@ -980,8 +985,13 @@ def cmd_replay_verify_checkpoints(
         raise typer.Exit(code=1) from exc
 
     if checkpoints_file is None:
-        checkpoints_file = default_checkpoints_path(replay_path)
-    checkpoints_path = Path(checkpoints_file)
+        checkpoints_path = default_checkpoints_path(replay_path)
+        if not checkpoints_path.is_file():
+            legacy_path = legacy_checkpoints_path(replay_path)
+            if legacy_path.is_file():
+                checkpoints_path = legacy_path
+    else:
+        checkpoints_path = Path(checkpoints_file)
     if not checkpoints_path.is_file():
         typer.echo(f"checkpoints file not found: {checkpoints_path}", err=True)
         raise typer.Exit(code=1)
@@ -1032,8 +1042,8 @@ def cmd_replay_verify_checkpoints(
 
 @replay_app.command("diff-checkpoints")
 def cmd_replay_diff_checkpoints(
-    expected_file: Path = typer.Argument(..., help="expected checkpoints sidecar (.json.gz)"),
-    actual_file: Path = typer.Argument(..., help="actual checkpoints sidecar (.json.gz)"),
+    expected_file: Path = typer.Argument(..., help="expected checkpoints sidecar (.crd.chk)"),
+    actual_file: Path = typer.Argument(..., help="actual checkpoints sidecar (.crd.chk)"),
 ) -> None:
     """Compare two checkpoint sidecars and report the first divergence."""
     from .original.diff import compare_checkpoints
@@ -1255,7 +1265,7 @@ def cmd_replay_convert_capture(
         ...,
         help="capture file (.json/.json.gz)",
     ),
-    output_file: Path = typer.Argument(..., help="output checkpoints sidecar (.json.gz)"),
+    output_file: Path = typer.Argument(..., help="output checkpoints sidecar (.crd.chk)"),
     replay_file: Path | None = typer.Option(
         None,
         "--replay",

@@ -103,7 +103,7 @@ Notes:
 ```text
 uv run crimson original convert-capture \
   artifacts/frida/share/gameplay_diff_capture.json \
-  analysis/frida/gameplay_diff_capture.checkpoints.json.gz
+  analysis/frida/gameplay_diff_capture.crd.chk
 ```
 
 This also writes `analysis/frida/gameplay_diff_capture.crd` by default

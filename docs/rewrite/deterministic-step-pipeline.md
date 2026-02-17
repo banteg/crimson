@@ -128,7 +128,7 @@ uv run crimson replay verify-checkpoints replay.crd
 Sidecar-to-sidecar comparator path:
 
 ```bash
-uv run crimson replay diff-checkpoints expected.checkpoints.json.gz actual.checkpoints.json.gz
+uv run crimson replay diff-checkpoints expected.crd.chk actual.crd.chk
 ```
 
 It reports first divergence tick with command/state/rng context.
@@ -148,7 +148,7 @@ domains from the original executable and rewrite RNG mark/state domains.
 Original-capture sidecars now have a dedicated schema + converter:
 
 ```bash
-uv run crimson original convert-capture capture.json.gz expected.checkpoints.json.gz
+uv run crimson original convert-capture capture.json.gz expected.crd.chk
 ```
 
 `convert-capture` accepts canonical gameplay-diff capture files only (`.json` /
