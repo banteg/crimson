@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from types import SimpleNamespace
+from typing import Any, cast
 
 import pytest
 
@@ -14,14 +15,14 @@ from grim.terrain_render import GroundRenderer
 
 def test_ground_clamp_is_stable_when_screen_matches_world_width() -> None:
     texture = SimpleNamespace(id=1, width=16, height=16)
-    ground = GroundRenderer(texture=texture, width=1024, height=1024)
+    ground = GroundRenderer(texture=cast(Any, texture), width=1024, height=1024)
     clamped = ground._clamp_camera(Vec2(-0.25, -5.0), 1024.0, 768.0)
     assert clamped.x == 0.0
 
 
 def test_world_clamp_is_stable_when_screen_matches_world_width() -> None:
     world = SimpleNamespace(world_size=1024.0)
-    renderer = WorldRenderer(world)
+    renderer = WorldRenderer(cast(Any, world))
     clamped = renderer._clamp_camera(Vec2(-0.25, -5.0), Vec2(1024.0, 768.0))
     assert clamped.x == 0.0
 
@@ -31,7 +32,7 @@ def test_world_camera_screen_size_fits_widescreen_uniformly() -> None:
         world_size=1024.0,
         config=SimpleNamespace(screen_width=1280, screen_height=720),
     )
-    renderer = WorldRenderer(world)
+    renderer = WorldRenderer(cast(Any, world))
     size = renderer._camera_screen_size()
     assert size.x == pytest.approx(1024.0)
     assert size.y == pytest.approx(576.0)
@@ -42,7 +43,7 @@ def test_world_camera_screen_size_prefers_runtime_dimensions_over_stale_config(m
         world_size=1024.0,
         config=SimpleNamespace(screen_width=1024, screen_height=768),
     )
-    renderer = WorldRenderer(world)
+    renderer = WorldRenderer(cast(Any, world))
     monkeypatch.setattr(world_context.rl, "get_screen_width", lambda: 1280)
     monkeypatch.setattr(world_context.rl, "get_screen_height", lambda: 720)
     size = renderer._camera_screen_size()
@@ -55,7 +56,7 @@ def test_world_camera_screen_size_uses_frame_snapshot_when_provided(monkeypatch)
         world_size=1024.0,
         config=SimpleNamespace(screen_width=1024, screen_height=768),
     )
-    renderer = WorldRenderer(world)
+    renderer = WorldRenderer(cast(Any, world))
     monkeypatch.setattr(world_context.rl, "get_screen_width", lambda: 1024)
     monkeypatch.setattr(world_context.rl, "get_screen_height", lambda: 768)
     size = renderer._camera_screen_size(runtime_w=1280.0, runtime_h=720.0)
@@ -65,10 +66,13 @@ def test_world_camera_screen_size_uses_frame_snapshot_when_provided(monkeypatch)
 
 def test_ground_draw_uses_explicit_output_dimensions(monkeypatch) -> None:
     texture = SimpleNamespace(id=1, width=16, height=16)
-    ground = GroundRenderer(texture=texture, width=1024, height=1024)
-    ground.render_target = SimpleNamespace(
+    ground = GroundRenderer(texture=cast(Any, texture), width=1024, height=1024)
+    ground.render_target = cast(
+        Any,
+        SimpleNamespace(
         id=1,
         texture=SimpleNamespace(id=2, width=1024, height=1024),
+        ),
     )
     ground._render_target_ready = True
 
@@ -100,15 +104,18 @@ def test_ground_draw_uses_explicit_output_dimensions(monkeypatch) -> None:
 def test_ground_draw_prefers_runtime_dimensions_over_stale_cached_size(monkeypatch) -> None:
     texture = SimpleNamespace(id=1, width=16, height=16)
     ground = GroundRenderer(
-        texture=texture,
+        texture=cast(Any, texture),
         width=1024,
         height=1024,
         screen_width=1024.0,
         screen_height=768.0,
     )
-    ground.render_target = SimpleNamespace(
+    ground.render_target = cast(
+        Any,
+        SimpleNamespace(
         id=1,
         texture=SimpleNamespace(id=2, width=1024, height=1024),
+        ),
     )
     ground._render_target_ready = True
 

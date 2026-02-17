@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
-from typing import ClassVar
+from typing import Any, ClassVar, cast
 
 from crimson.projectiles import ProjectileTypeId
 from crimson.render.projectile_draw import ProjectileDrawCtx, draw_projectile_from_registry
@@ -32,7 +32,7 @@ def test_draw_registry_returns_false_for_bullet_when_nothing_drawn() -> None:
     proj = SimpleNamespace(type_id=0, pos=Vec2(), life_timer=1.0, angle=0.0)
     ctx = ProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]
-        proj=proj,
+        proj=cast(Any, proj),
         proj_index=0,
         texture=None,
         type_id=0,
@@ -51,7 +51,7 @@ def test_draw_registry_returns_false_for_plasma_without_particles_texture() -> N
     proj = SimpleNamespace(type_id=int(ProjectileTypeId.PLASMA_RIFLE), pos=Vec2(), life_timer=1.0, angle=0.0)
     ctx = ProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]
-        proj=proj,
+        proj=cast(Any, proj),
         proj_index=0,
         texture=None,
         type_id=int(ProjectileTypeId.PLASMA_RIFLE),
@@ -76,9 +76,9 @@ def test_draw_registry_returns_true_for_beam_types_even_when_dist_is_zero() -> N
     )
     ctx = ProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]
-        proj=proj,
+        proj=cast(Any, proj),
         proj_index=0,
-        texture=_TextureStub(),
+        texture=cast(Any, _TextureStub()),
         type_id=int(ProjectileTypeId.FIRE_BULLETS),
         pos=Vec2(10.0, 20.0),
         screen_pos=Vec2(10.0, 20.0),
@@ -101,7 +101,7 @@ def test_draw_registry_returns_false_for_beam_types_without_texture() -> None:
     )
     ctx = ProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]
-        proj=proj,
+        proj=cast(Any, proj),
         proj_index=0,
         texture=None,
         type_id=int(ProjectileTypeId.FIRE_BULLETS),
@@ -126,9 +126,9 @@ def test_draw_registry_returns_true_for_pulse_gun_branch() -> None:
     )
     ctx = ProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]
-        proj=proj,
+        proj=cast(Any, proj),
         proj_index=0,
-        texture=_TextureStub(),
+        texture=cast(Any, _TextureStub()),
         type_id=int(ProjectileTypeId.PULSE_GUN),
         pos=Vec2(10.0, 20.0),
         screen_pos=Vec2(10.0, 20.0),
@@ -150,9 +150,9 @@ def test_draw_registry_returns_true_for_plague_spreader_branch() -> None:
     )
     ctx = ProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]
-        proj=proj,
+        proj=cast(Any, proj),
         proj_index=0,
-        texture=_TextureStub(),
+        texture=cast(Any, _TextureStub()),
         type_id=int(ProjectileTypeId.PLAGUE_SPREADER),
         pos=Vec2(10.0, 20.0),
         screen_pos=Vec2(10.0, 20.0),

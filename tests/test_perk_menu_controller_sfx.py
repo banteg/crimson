@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
-
 import pyray as rl
 
+from crimson.gameplay import GameplayState
 from crimson.modes.components.perk_menu_controller import PerkMenuContext, PerkMenuController
+from crimson.perks.state import PerkSelectionState
+from crimson.sim.state_types import PlayerState
 from crimson.ui.perk_menu import PerkMenuAssets
+from grim.geom import Vec2
 
 
 def _dummy_assets() -> PerkMenuAssets:
@@ -21,6 +23,12 @@ def _dummy_assets() -> PerkMenuAssets:
     )
 
 
+def _dummy_player() -> PlayerState:
+    player = PlayerState(index=0, pos=Vec2())
+    player.perk_counts = [0] * 128
+    return player
+
+
 def test_open_perk_menu_plays_panel_click(monkeypatch) -> None:
     menu = PerkMenuController()
 
@@ -32,11 +40,11 @@ def test_open_perk_menu_plays_panel_click(monkeypatch) -> None:
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.perk_selection_current_choices", lambda *args, **kwargs: [1])
 
     ctx = PerkMenuContext(
-        state=SimpleNamespace(),
-        perk_state=SimpleNamespace(),
+        state=GameplayState(),
+        perk_state=PerkSelectionState(),
         players=[],
         creatures=[],
-        player=SimpleNamespace(perk_counts=[0] * 128),
+        player=_dummy_player(),
         game_mode=1,
         player_count=1,
         fx_toggle=0,
@@ -77,11 +85,11 @@ def test_perk_menu_pick_plays_button_click(monkeypatch) -> None:
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.is_key_pressed", _is_key_pressed)
 
     ctx = PerkMenuContext(
-        state=SimpleNamespace(),
-        perk_state=SimpleNamespace(),
+        state=GameplayState(),
+        perk_state=PerkSelectionState(),
         players=[],
         creatures=[],
-        player=SimpleNamespace(perk_counts=[0] * 128),
+        player=_dummy_player(),
         game_mode=1,
         player_count=1,
         fx_toggle=0,
@@ -122,11 +130,11 @@ def test_perk_menu_pick_invokes_on_pick(monkeypatch) -> None:
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.is_key_pressed", _is_key_pressed)
 
     ctx = PerkMenuContext(
-        state=SimpleNamespace(),
-        perk_state=SimpleNamespace(),
+        state=GameplayState(),
+        perk_state=PerkSelectionState(),
         players=[],
         creatures=[],
-        player=SimpleNamespace(perk_counts=[0] * 128),
+        player=_dummy_player(),
         game_mode=1,
         player_count=1,
         fx_toggle=0,
@@ -161,11 +169,11 @@ def test_perk_menu_cancel_plays_button_click(monkeypatch) -> None:
     monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.is_key_pressed", lambda _key: False)
 
     ctx = PerkMenuContext(
-        state=SimpleNamespace(),
-        perk_state=SimpleNamespace(),
+        state=GameplayState(),
+        perk_state=PerkSelectionState(),
         players=[],
         creatures=[],
-        player=SimpleNamespace(perk_counts=[0] * 128),
+        player=_dummy_player(),
         game_mode=1,
         player_count=1,
         fx_toggle=0,

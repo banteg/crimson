@@ -3,6 +3,7 @@ from __future__ import annotations
 import gzip
 import json
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
@@ -274,6 +275,37 @@ def _write_capture_stream(path: Path, *, meta: dict[str, object], ticks: list[di
     path.write_text("\n".join(rows) + "\n", encoding="utf-8")
 
 
+def _as_obj_dict(value: object) -> dict[str, object]:
+    assert isinstance(value, dict)
+    return cast(dict[str, object], value)
+
+
+def _tick_checkpoint(tick: dict[str, object]) -> dict[str, object]:
+    return _as_obj_dict(tick.get("checkpoint"))
+
+
+def _tick_rng_marks(tick: dict[str, object]) -> dict[str, object]:
+    checkpoint = _tick_checkpoint(tick)
+    return _as_obj_dict(checkpoint.get("rng_marks"))
+
+
+def _tick_player(tick: dict[str, object], player_index: int = 0) -> dict[str, object]:
+    checkpoint = _tick_checkpoint(tick)
+    players_obj = checkpoint.get("players")
+    assert isinstance(players_obj, list)
+    player = players_obj[player_index]
+    return _as_obj_dict(player)
+
+
+def _replay_input_flags(replay: object, tick_index: int, player_index: int = 0) -> int:
+    return int(cast(int | float, cast(Any, replay).inputs[tick_index][player_index][3]))
+
+
+def _replay_input_aim_xy(replay: object, tick_index: int, player_index: int = 0) -> tuple[float, float]:
+    aim = cast(tuple[int | float, int | float], cast(Any, replay).inputs[tick_index][player_index][2])
+    return float(aim[0]), float(aim[1])
+
+
 def test_capture_event_payload_helpers_parse_msgspec_payloads() -> None:
     assert capture_bootstrap_payload_from_event_payload([{"elapsed_ms": "123"}]) == {"elapsed_ms": "123"}
     assert capture_perk_apply_from_event_payload([{"perk_id": "14"}]) == (14, False)
@@ -327,15 +359,10 @@ def test_load_capture_rejects_unsupported_capture_format_version(tmp_path: Path)
 
 def test_load_capture_decodes_f32_tokens(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
-    checkpoint = tick.get("checkpoint")
-    assert isinstance(checkpoint, dict)
-    players = checkpoint.get("players")
-    assert isinstance(players, list)
-    assert isinstance(players[0], dict)
-    pos = players[0].get("pos")
-    assert isinstance(pos, dict)
+    player0 = _tick_player(tick)
+    pos = _as_obj_dict(player0.get("pos"))
     pos["x"] = "f32:3f800000"
-    players[0]["health"] = "f32:42c80000"
+    player0["health"] = "f32:42c80000"
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -348,15 +375,10 @@ def test_load_capture_decodes_f32_tokens(tmp_path: Path) -> None:
 
 def test_load_capture_decodes_f32_tokens_with_0x_prefix(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
-    checkpoint = tick.get("checkpoint")
-    assert isinstance(checkpoint, dict)
-    players = checkpoint.get("players")
-    assert isinstance(players, list)
-    assert isinstance(players[0], dict)
-    pos = players[0].get("pos")
-    assert isinstance(pos, dict)
+    player0 = _tick_player(tick)
+    pos = _as_obj_dict(player0.get("pos"))
     pos["x"] = "f32:0x3f800000"
-    players[0]["health"] = "f32:0X42c80000"
+    player0["health"] = "f32:0X42c80000"
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -369,12 +391,8 @@ def test_load_capture_decodes_f32_tokens_with_0x_prefix(tmp_path: Path) -> None:
 
 def test_load_capture_rejects_invalid_f32_token(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
-    checkpoint = tick.get("checkpoint")
-    assert isinstance(checkpoint, dict)
-    players = checkpoint.get("players")
-    assert isinstance(players, list)
-    assert isinstance(players[0], dict)
-    players[0]["ammo"] = "f32:bad"
+    player0 = _tick_player(tick)
+    player0["ammo"] = "f32:bad"
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -413,7 +431,8 @@ def test_load_capture_accepts_projectile_find_query_event_head(tmp_path: Path) -
 
     assert capture.ticks[0].event_counts.projectile_find_query == 1
     assert capture.ticks[0].event_heads
-    assert capture.ticks[0].event_heads[0].data.get("result_kind") == "miss"
+    head_data = _as_obj_dict(cast(Any, capture.ticks[0].event_heads[0]).data)
+    assert head_data.get("result_kind") == "miss"
 
 
 def test_load_capture_supports_jsonl_stream_rows(tmp_path: Path) -> None:
@@ -482,10 +501,7 @@ def test_convert_capture_to_replay_raises_when_game_mode_unavailable(tmp_path: P
 
 def test_convert_capture_to_replay_raises_when_status_unlock_missing(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
-    checkpoint = tick.get("checkpoint")
-    assert isinstance(checkpoint, dict)
-    status = checkpoint.get("status")
-    assert isinstance(status, dict)
+    status = _as_obj_dict(_tick_checkpoint(tick).get("status"))
     status["quest_unlock_index"] = -1
     status["quest_unlock_index_full"] = -1
     obj = _capture_obj(ticks=[tick])
@@ -533,10 +549,7 @@ def test_load_capture_stream_accepts_forward_compatible_config_fields(tmp_path: 
 
 def test_load_capture_accepts_player_fire_debug_payloads(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
-    checkpoint = tick.get("checkpoint")
-    assert isinstance(checkpoint, dict)
-    debug = checkpoint.get("debug")
-    assert isinstance(debug, dict)
+    debug = _as_obj_dict(_tick_checkpoint(tick).get("debug"))
     debug["player_fire"] = {
         "event_count_player_fire": 3,
         "top_direct_events_by_player": [{"player_index": 0, "count": 1}],
@@ -710,7 +723,7 @@ def test_convert_capture_to_replay_from_ticks(tmp_path: Path) -> None:
     assert replay.header.seed == 0xBEEF
     assert replay.header.tick_rate == 75
     assert len(replay.inputs) == 1
-    flags = int(replay.inputs[0][0][3])
+    flags = _replay_input_flags(replay, 0, 0)
     fire_down, fire_pressed, _reload_pressed = unpack_input_flags(flags)
     assert fire_down is True
     assert fire_pressed is True
@@ -726,10 +739,10 @@ def test_convert_capture_to_replay_heading_fallback_uses_checkpoint_pos(tmp_path
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    aim = replay.inputs[0][0][2]
+    aim_x, aim_y = _replay_input_aim_xy(replay, 0, 0)
     expected = Vec2(512.0, 512.0) + Vec2.from_heading(0.0) * 256.0
-    assert float(aim[0]) == pytest.approx(expected.x)
-    assert float(aim[1]) == pytest.approx(expected.y)
+    assert aim_x == pytest.approx(expected.x)
+    assert aim_y == pytest.approx(expected.y)
 
 
 def test_convert_capture_to_replay_does_not_fallback_to_primary_query_stats(tmp_path: Path) -> None:
@@ -751,7 +764,7 @@ def test_convert_capture_to_replay_does_not_fallback_to_primary_query_stats(tmp_
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    flags = int(replay.inputs[0][0][3])
+    flags = _replay_input_flags(replay, 0, 0)
     fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
     assert fire_down is False
     assert fire_pressed is False
@@ -814,8 +827,7 @@ def test_convert_capture_to_replay_infers_pending_drop_events_from_perk_delta(tm
 
 def test_convert_capture_to_replay_bootstrap_payload_includes_perk_snapshot(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16, perk_pending=3)
-    checkpoint = tick0.get("checkpoint")
-    assert isinstance(checkpoint, dict)
+    checkpoint = _tick_checkpoint(tick0)
     checkpoint["perk"] = {
         "pending_count": 3,
         "choices_dirty": False,
@@ -963,12 +975,12 @@ def test_build_capture_inter_tick_rand_draws_overrides_uses_checkpoint_marks(tmp
     assert isinstance(tick0["checkpoint"], dict)
     assert isinstance(tick1["checkpoint"], dict)
     assert isinstance(tick2["checkpoint"], dict)
-    assert isinstance(tick0["checkpoint"]["rng_marks"], dict)
-    assert isinstance(tick1["checkpoint"]["rng_marks"], dict)
-    assert isinstance(tick2["checkpoint"]["rng_marks"], dict)
-    tick0["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = 7
-    tick1["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = 3
-    tick2["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = -1
+    assert isinstance(_tick_rng_marks(tick0), dict)
+    assert isinstance(_tick_rng_marks(tick1), dict)
+    assert isinstance(_tick_rng_marks(tick2), dict)
+    _tick_rng_marks(tick0)["rand_outside_before_calls"] = 7
+    _tick_rng_marks(tick1)["rand_outside_before_calls"] = 3
+    _tick_rng_marks(tick2)["rand_outside_before_calls"] = -1
     obj = _capture_obj(ticks=[tick0, tick1, tick2])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -990,18 +1002,17 @@ def test_build_capture_inter_tick_rand_draws_overrides_quest_delays_until_first_
         tick["mode_hint"] = "quest_mode_update"
         tick["game_mode_id"] = int(GameMode.QUESTS)
         assert isinstance(tick["checkpoint"], dict)
-        rng_marks = tick["checkpoint"]["rng_marks"]
-        assert isinstance(rng_marks, dict)
+        rng_marks = _tick_rng_marks(tick)
         rng_marks["rand_outside_before_calls"] = 1
         rng_marks["rand_calls"] = 0
 
     assert isinstance(tick0["checkpoint"], dict)
-    assert isinstance(tick0["checkpoint"]["rng_marks"], dict)
-    tick0["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = 24021
+    assert isinstance(_tick_rng_marks(tick0), dict)
+    _tick_rng_marks(tick0)["rand_outside_before_calls"] = 24021
 
     assert isinstance(tick2["checkpoint"], dict)
-    assert isinstance(tick2["checkpoint"]["rng_marks"], dict)
-    tick2["checkpoint"]["rng_marks"]["rand_calls"] = 2
+    assert isinstance(_tick_rng_marks(tick2), dict)
+    _tick_rng_marks(tick2)["rand_calls"] = 2
 
     obj = _capture_obj(ticks=[tick0, tick1, tick2, tick3])
     path = tmp_path / "capture.json"
@@ -1018,10 +1029,10 @@ def test_build_capture_inter_tick_rand_draws_overrides_returns_none_when_missing
     tick1 = _base_tick(tick_index=1, elapsed_ms=16)
     assert isinstance(tick0["checkpoint"], dict)
     assert isinstance(tick1["checkpoint"], dict)
-    assert isinstance(tick0["checkpoint"]["rng_marks"], dict)
-    assert isinstance(tick1["checkpoint"]["rng_marks"], dict)
-    tick0["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = -1
-    tick1["checkpoint"]["rng_marks"]["rand_outside_before_calls"] = -1
+    assert isinstance(_tick_rng_marks(tick0), dict)
+    assert isinstance(_tick_rng_marks(tick1), dict)
+    _tick_rng_marks(tick0)["rand_outside_before_calls"] = -1
+    _tick_rng_marks(tick1)["rand_outside_before_calls"] = -1
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -1036,10 +1047,7 @@ def test_convert_capture_to_replay_raises_when_rng_state_before_missing(tmp_path
     seed = 0x1234
     outputs = _crt_rand_outputs(seed, 8)
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    checkpoint = tick0["checkpoint"]
-    assert isinstance(checkpoint, dict)
-    rng_marks = checkpoint["rng_marks"]
-    assert isinstance(rng_marks, dict)
+    rng_marks = _tick_rng_marks(tick0)
     rng_marks["rand_calls"] = 8
     rng_marks["rand_last"] = outputs[-1]
     rng_marks["rand_head"] = [{"value": int(value), "value_15": int(value)} for value in outputs]
@@ -1064,10 +1072,7 @@ def test_convert_capture_to_replay_prefers_rng_state_before_seed(tmp_path: Path)
     seed = 0x8C6978CC
     outputs = _crt_rand_outputs(seed, 8)
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    checkpoint = tick0["checkpoint"]
-    assert isinstance(checkpoint, dict)
-    rng_marks = checkpoint["rng_marks"]
-    assert isinstance(rng_marks, dict)
+    rng_marks = _tick_rng_marks(tick0)
     rng_marks["rand_calls"] = 8
     rng_marks["rand_last"] = outputs[-1]
     rng_marks["rand_head"] = [
@@ -1103,10 +1108,7 @@ def test_convert_capture_to_replay_explicit_seed_overrides_inferred_seed(tmp_pat
     seed = 0x1234
     outputs = _crt_rand_outputs(seed, 8)
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    checkpoint = tick0["checkpoint"]
-    assert isinstance(checkpoint, dict)
-    rng_marks = checkpoint["rng_marks"]
-    assert isinstance(rng_marks, dict)
+    rng_marks = _tick_rng_marks(tick0)
     rng_marks["rand_calls"] = 8
     rng_marks["rand_last"] = outputs[-1]
     rng_marks["rand_head"] = [{"value": int(value), "value_15": int(value)} for value in outputs]
@@ -1158,14 +1160,15 @@ def test_convert_capture_to_replay_prefers_input_player_keys_for_digital_move(tm
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    move_x, move_y, _aim, flags = replay.inputs[0][0]
+    move_x, move_y, _aim, _flags = replay.inputs[0][0]
+    flags = _replay_input_flags(replay, 0, 0)
     assert move_x == -1.0
     assert move_y == -1.0
-    fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
     assert fire_down is False
     assert fire_pressed is False
     assert reload_pressed is False
-    move_forward, move_backward, turn_left, turn_right = unpack_input_move_key_flags(int(flags))
+    move_forward, move_backward, turn_left, turn_right = unpack_input_move_key_flags(flags)
     assert move_forward is True
     assert move_backward is False
     assert turn_left is True
@@ -1207,10 +1210,11 @@ def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capabil
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    move_x, move_y, _aim, flags = replay.inputs[0][0]
+    move_x, move_y, _aim, _flags = replay.inputs[0][0]
+    flags = _replay_input_flags(replay, 0, 0)
     assert move_x == pytest.approx(0.25, abs=1e-6)
     assert move_y == pytest.approx(0.5, abs=1e-6)
-    move_forward, move_backward, turn_left, turn_right = unpack_input_move_key_flags(int(flags))
+    move_forward, move_backward, turn_left, turn_right = unpack_input_move_key_flags(flags)
     assert move_forward is None
     assert move_backward is None
     assert turn_left is None
@@ -1272,14 +1276,16 @@ def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_preceden
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    move_x0, move_y0, _aim0, flags0 = replay.inputs[0][0]
-    move_x1, move_y1, _aim1, flags1 = replay.inputs[1][0]
+    move_x0, move_y0, _aim0, _flags0 = replay.inputs[0][0]
+    move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
+    flags0 = _replay_input_flags(replay, 0, 0)
+    flags1 = _replay_input_flags(replay, 1, 0)
     assert move_x0 == pytest.approx(1.0, abs=1e-6)
     assert move_y0 == pytest.approx(0.0, abs=1e-6)
     assert move_x1 == pytest.approx(-1.0, abs=1e-6)
     assert move_y1 == pytest.approx(1.0, abs=1e-6)
-    assert unpack_input_move_key_flags(int(flags0)) == (False, False, False, True)
-    assert unpack_input_move_key_flags(int(flags1)) == (False, True, True, True)
+    assert unpack_input_move_key_flags(flags0) == (False, False, False, True)
+    assert unpack_input_move_key_flags(flags1) == (False, True, True, True)
 
 
 def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_precedence(tmp_path: Path) -> None:
@@ -1328,14 +1334,16 @@ def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_preceden
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    move_x0, move_y0, _aim0, flags0 = replay.inputs[0][0]
-    move_x1, move_y1, _aim1, flags1 = replay.inputs[1][0]
+    move_x0, move_y0, _aim0, _flags0 = replay.inputs[0][0]
+    move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
+    flags0 = _replay_input_flags(replay, 0, 0)
+    flags1 = _replay_input_flags(replay, 1, 0)
     assert move_x0 == pytest.approx(0.0, abs=1e-6)
     assert move_y0 == pytest.approx(1.0, abs=1e-6)
     assert move_x1 == pytest.approx(-1.0, abs=1e-6)
     assert move_y1 == pytest.approx(-1.0, abs=1e-6)
-    assert unpack_input_move_key_flags(int(flags0)) == (False, True, False, False)
-    assert unpack_input_move_key_flags(int(flags1)) == (True, True, True, False)
+    assert unpack_input_move_key_flags(flags0) == (False, True, False, False)
+    assert unpack_input_move_key_flags(flags1) == (True, True, True, False)
 
 
 def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_path: Path) -> None:
@@ -1410,7 +1418,7 @@ def test_convert_capture_to_replay_uses_player_key_fire_reload_edges(tmp_path: P
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    flags = int(replay.inputs[0][0][3])
+    flags = _replay_input_flags(replay, 0, 0)
     fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
     assert fire_down is True
     assert fire_pressed is True
@@ -1446,7 +1454,7 @@ def test_convert_capture_to_replay_synthesizes_computer_aim_fire_down_from_proje
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    flags = int(replay.inputs[0][0][3])
+    flags = _replay_input_flags(replay, 0, 0)
     fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
     assert fire_down is True
     assert fire_pressed is False
@@ -1465,7 +1473,7 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_non_wea
         "input": {},
         "input_bindings": {},
     }
-    tick0["checkpoint"]["players"][0]["weapon_id"] = 29
+    _tick_player(tick0)["weapon_id"] = 29
     tick0["input_player_keys"] = [
         {
             "player_index": 0,
@@ -1486,7 +1494,7 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_non_wea
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    flags = int(replay.inputs[0][0][3])
+    flags = _replay_input_flags(replay, 0, 0)
     fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
     assert fire_down is False
     assert fire_pressed is False
@@ -1522,7 +1530,7 @@ def test_convert_capture_to_replay_does_not_synthesize_non_computer_fire_down(tm
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    flags = int(replay.inputs[0][0][3])
+    flags = _replay_input_flags(replay, 0, 0)
     fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
     assert fire_down is False
     assert fire_pressed is False
@@ -1531,12 +1539,12 @@ def test_convert_capture_to_replay_does_not_synthesize_non_computer_fire_down(tm
 
 def test_convert_capture_to_replay_synthesizes_computer_fire_when_mode_missing_but_ammo_drops(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["checkpoint"]["players"][0]["ammo"] = 10.0
+    _tick_player(tick0)["ammo"] = 10.0
     tick0["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick0["input_approx"] = [{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "fired_events": 0}]
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    tick1["checkpoint"]["players"][0]["ammo"] = 9.0
+    _tick_player(tick1)["ammo"] = 9.0
     tick1["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick1["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 0}]
     tick1["event_heads"] = [{"kind": "projectile_spawn", "data": {"owner_id": -100}}]
@@ -1548,8 +1556,8 @@ def test_convert_capture_to_replay_synthesizes_computer_fire_when_mode_missing_b
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    flags0 = int(replay.inputs[0][0][3])
-    flags1 = int(replay.inputs[1][0][3])
+    flags0 = _replay_input_flags(replay, 0, 0)
+    flags1 = _replay_input_flags(replay, 1, 0)
     fire_down0, fire_pressed0, _reload_pressed0 = unpack_input_flags(flags0)
     fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
     assert fire_down0 is False
@@ -1561,12 +1569,12 @@ def test_convert_capture_to_replay_synthesizes_computer_fire_when_mode_missing_b
 
 def test_convert_capture_to_replay_synthesizes_computer_fire_when_reload_completes_then_shot(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["checkpoint"]["players"][0]["ammo"] = 0.0
+    _tick_player(tick0)["ammo"] = 0.0
     tick0["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick0["input_approx"] = [{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 1}]
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    tick1["checkpoint"]["players"][0]["ammo"] = 9.0
+    _tick_player(tick1)["ammo"] = 9.0
     tick1["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick1["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 1}]
     tick1["event_heads"] = [
@@ -1580,7 +1588,7 @@ def test_convert_capture_to_replay_synthesizes_computer_fire_when_reload_complet
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    flags1 = int(replay.inputs[1][0][3])
+    flags1 = _replay_input_flags(replay, 1, 0)
     fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
     assert fire_down1 is True
     assert fire_pressed1 is False
@@ -1589,14 +1597,14 @@ def test_convert_capture_to_replay_synthesizes_computer_fire_when_reload_complet
 
 def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_fire_bullets_projectile(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["checkpoint"]["players"][0]["weapon_id"] = 3
-    tick0["checkpoint"]["players"][0]["ammo"] = 9.0
+    _tick_player(tick0)["weapon_id"] = 3
+    _tick_player(tick0)["ammo"] = 9.0
     tick0["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick0["input_approx"] = [{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 3}]
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    tick1["checkpoint"]["players"][0]["weapon_id"] = 3
-    tick1["checkpoint"]["players"][0]["ammo"] = 9.0
+    _tick_player(tick1)["weapon_id"] = 3
+    _tick_player(tick1)["ammo"] = 9.0
     tick1["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick1["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 3}]
     tick1["event_heads"] = [
@@ -1610,7 +1618,7 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_fire_bullet
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    flags1 = int(replay.inputs[1][0][3])
+    flags1 = _replay_input_flags(replay, 1, 0)
     fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
     assert fire_down1 is True
     assert fire_pressed1 is False
@@ -1619,14 +1627,14 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_fire_bullet
 
 def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_secondary_projectile_spawn(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["checkpoint"]["players"][0]["weapon_id"] = 17
-    tick0["checkpoint"]["players"][0]["ammo"] = 5.0
+    _tick_player(tick0)["weapon_id"] = 17
+    _tick_player(tick0)["ammo"] = 5.0
     tick0["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick0["input_approx"] = [{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 17}]
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    tick1["checkpoint"]["players"][0]["weapon_id"] = 17
-    tick1["checkpoint"]["players"][0]["ammo"] = 5.0
+    _tick_player(tick1)["weapon_id"] = 17
+    _tick_player(tick1)["ammo"] = 5.0
     tick1["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick1["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 17}]
     tick1["event_heads"] = [{"kind": "secondary_projectile_spawn", "data": {"requested_type_id": 2, "actual_type_id": 0}}]
@@ -1638,7 +1646,7 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_secondary_p
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    flags1 = int(replay.inputs[1][0][3])
+    flags1 = _replay_input_flags(replay, 1, 0)
     fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
     assert fire_down1 is True
     assert fire_pressed1 is False
@@ -1655,8 +1663,8 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_bonus_p
         "input": {},
         "input_bindings": {},
     }
-    tick0["checkpoint"]["players"][0]["weapon_id"] = 5
-    tick0["checkpoint"]["players"][0]["ammo"] = 12.0
+    _tick_player(tick0)["weapon_id"] = 5
+    _tick_player(tick0)["ammo"] = 12.0
     tick0["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick0["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 5}]
     tick0["event_heads"] = [
@@ -1670,7 +1678,7 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_bonus_p
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    flags = int(replay.inputs[0][0][3])
+    flags = _replay_input_flags(replay, 0, 0)
     fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
     assert fire_down is False
     assert fire_pressed is False
@@ -1689,8 +1697,8 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_nuke_fi
         "input": {},
         "input_bindings": {},
     }
-    tick0["checkpoint"]["players"][0]["weapon_id"] = 23
-    tick0["checkpoint"]["players"][0]["ammo"] = 6.0
+    _tick_player(tick0)["weapon_id"] = 23
+    _tick_player(tick0)["ammo"] = 6.0
     tick0["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick0["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 23, "fired_events": 0}]
     tick0["event_heads"] = [
@@ -1705,14 +1713,14 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_nuke_fi
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    flags = int(replay.inputs[0][0][3])
+    flags = _replay_input_flags(replay, 0, 0)
     fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
     assert fire_down is False
     assert fire_pressed is False
     assert reload_pressed is False
 def test_convert_capture_to_replay_does_not_synthesize_secondary_spawn_without_owner_in_multiplayer(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["checkpoint"]["players"] = [_base_player(), _base_player()]
+    _tick_checkpoint(tick0)["players"] = [_base_player(), _base_player()]
     tick0["input_player_keys"] = [
         {"player_index": 0, "fire_down": False, "fire_pressed": False},
         {"player_index": 1, "fire_down": False, "fire_pressed": False},
@@ -1723,7 +1731,7 @@ def test_convert_capture_to_replay_does_not_synthesize_secondary_spawn_without_o
     ]
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    tick1["checkpoint"]["players"] = [_base_player(), _base_player()]
+    _tick_checkpoint(tick1)["players"] = [_base_player(), _base_player()]
     tick1["input_player_keys"] = [
         {"player_index": 0, "fire_down": False, "fire_pressed": False},
         {"player_index": 1, "fire_down": False, "fire_pressed": False},
@@ -1741,8 +1749,8 @@ def test_convert_capture_to_replay_does_not_synthesize_secondary_spawn_without_o
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    flags10 = int(replay.inputs[1][0][3])
-    flags11 = int(replay.inputs[1][1][3])
+    flags10 = _replay_input_flags(replay, 1, 0)
+    flags11 = _replay_input_flags(replay, 1, 1)
     fire_down10, fire_pressed10, reload_pressed10 = unpack_input_flags(flags10)
     fire_down11, fire_pressed11, reload_pressed11 = unpack_input_flags(flags11)
     assert fire_down10 is False
@@ -1765,8 +1773,8 @@ def test_convert_capture_to_replay_does_not_synthesize_fire_from_fired_events_on
     replay_default = convert_capture_to_replay(capture, seed=0)
     replay_override = convert_capture_to_replay(capture, seed=0, aim_scheme_overrides_by_player={0: 5})
 
-    flags_default = int(replay_default.inputs[0][0][3])
-    flags_override = int(replay_override.inputs[0][0][3])
+    flags_default = _replay_input_flags(replay_default, 0, 0)
+    flags_override = _replay_input_flags(replay_override, 0, 0)
     fire_down_default, _fire_pressed_default, _reload_pressed_default = unpack_input_flags(flags_default)
     fire_down_override, _fire_pressed_override, _reload_pressed_override = unpack_input_flags(flags_override)
     assert fire_down_default is False
@@ -1785,12 +1793,12 @@ def test_parse_player_int_overrides_rejects_bad_entry() -> None:
 
 def test_convert_capture_to_replay_does_not_synthesize_unknown_mode_without_weapon_match(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["checkpoint"]["players"][0]["ammo"] = 0.0
+    _tick_player(tick0)["ammo"] = 0.0
     tick0["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick0["input_approx"] = [{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 1}]
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    tick1["checkpoint"]["players"][0]["ammo"] = 9.0
+    _tick_player(tick1)["ammo"] = 9.0
     tick1["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick1["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 1}]
     tick1["event_heads"] = [
@@ -1804,7 +1812,7 @@ def test_convert_capture_to_replay_does_not_synthesize_unknown_mode_without_weap
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    flags1 = int(replay.inputs[1][0][3])
+    flags1 = _replay_input_flags(replay, 1, 0)
     fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
     assert fire_down1 is False
     assert fire_pressed1 is False
@@ -1815,14 +1823,14 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_mapped_weap
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["checkpoint"]["players"][0]["weapon_id"] = 14
-    tick0["checkpoint"]["players"][0]["ammo"] = 8.0
+    _tick_player(tick0)["weapon_id"] = 14
+    _tick_player(tick0)["ammo"] = 8.0
     tick0["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick0["input_approx"] = [{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 14}]
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    tick1["checkpoint"]["players"][0]["weapon_id"] = 14
-    tick1["checkpoint"]["players"][0]["ammo"] = 8.0
+    _tick_player(tick1)["weapon_id"] = 14
+    _tick_player(tick1)["ammo"] = 8.0
     tick1["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick1["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 14}]
     tick1["event_heads"] = [
@@ -1836,7 +1844,7 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_mapped_weap
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    flags1 = int(replay.inputs[1][0][3])
+    flags1 = _replay_input_flags(replay, 1, 0)
     fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
     assert fire_down1 is True
     assert fire_pressed1 is False
@@ -1845,14 +1853,14 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_mapped_weap
 
 def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_when_weapon_switches_in_tick(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["checkpoint"]["players"][0]["weapon_id"] = 1
-    tick0["checkpoint"]["players"][0]["ammo"] = 2.0
+    _tick_player(tick0)["weapon_id"] = 1
+    _tick_player(tick0)["ammo"] = 2.0
     tick0["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick0["input_approx"] = [{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 1}]
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    tick1["checkpoint"]["players"][0]["weapon_id"] = 14
-    tick1["checkpoint"]["players"][0]["ammo"] = 8.0
+    _tick_player(tick1)["weapon_id"] = 14
+    _tick_player(tick1)["ammo"] = 8.0
     tick1["input_player_keys"] = [{"player_index": 0, "fire_down": False, "fire_pressed": False}]
     tick1["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 14}]
     tick1["event_heads"] = [
@@ -1868,7 +1876,7 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_when_weapon_swi
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    flags1 = int(replay.inputs[1][0][3])
+    flags1 = _replay_input_flags(replay, 1, 0)
     fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
     assert fire_down1 is True
     assert fire_pressed1 is False

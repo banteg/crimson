@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any, cast
 
 
 def test_replay_playback_mode_tick_loop_decrements_accum(monkeypatch) -> None:
@@ -35,7 +36,7 @@ def test_replay_playback_mode_tick_loop_decrements_accum(monkeypatch) -> None:
         if calls > 64:
             raise RuntimeError("playback tick loop did not consume accumulated dt")
 
-    view._tick_one = fake_tick_one  # type: ignore[method-assign]
+    cast(Any, view)._tick_one = fake_tick_one
     view._finished = False
     view._paused = False
     view._tick_rate = 60
@@ -64,17 +65,17 @@ def test_replay_tick_one_does_not_stop_on_player_death() -> None:
         console=console,
     )
 
-    view._replay = SimpleNamespace(inputs=[0, 0])
-    view._world = SimpleNamespace(
+    cast(Any, view)._replay = SimpleNamespace(inputs=[0, 0])
+    cast(Any, view)._world = SimpleNamespace(
         update_camera=lambda _dt: None,
         players=[SimpleNamespace(health=0.0)],
     )
-    view._survival = object()
+    cast(Any, view)._survival = object()
     view._rush = None
     view._quest = None
     view._tick_index = 0
     view._finished = False
-    view._tick_survival = lambda **_kwargs: 1.0 / 60.0  # type: ignore[method-assign]
+    cast(Any, view)._tick_survival = lambda **_kwargs: 1.0 / 60.0
 
     view._tick_one()
 

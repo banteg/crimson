@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from typing import Any
 
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
@@ -19,9 +20,13 @@ class _FixedRng:
         return int(self._value)
 
 
+def _as_rng(value: object) -> Any:
+    return value
+
+
 def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps() -> None:
     dt = 0.2
-    state = GameplayState(rng=_FixedRng(0))
+    state = GameplayState(rng=_as_rng(_FixedRng(0)))
 
     player = PlayerState(index=0, pos=Vec2())
     player.perk_counts[int(PerkId.PYROKINETIC)] = 1
@@ -49,7 +54,7 @@ def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps
 def test_perks_update_effects_pyrokinetic_uses_f32_timer_threshold_before_wrapping() -> None:
     # Captured survival run (ticks 4055/4056) sits exactly on the timer boundary;
     # float32 math must avoid wrapping one tick early.
-    state = GameplayState(rng=_FixedRng(0))
+    state = GameplayState(rng=_as_rng(_FixedRng(0)))
 
     player = PlayerState(index=0, pos=Vec2())
     player.perk_counts[int(PerkId.PYROKINETIC)] = 1
@@ -88,7 +93,7 @@ def test_perks_update_effects_pyrokinetic_uses_f32_timer_threshold_before_wrappi
 
 
 def test_perks_update_effects_pyrokinetic_defaults_to_first_alive_player_aim() -> None:
-    state = GameplayState(rng=_FixedRng(0), preserve_bugs=False)
+    state = GameplayState(rng=_as_rng(_FixedRng(0)), preserve_bugs=False)
 
     player0 = PlayerState(index=0, pos=Vec2(), health=0.0)
     player1 = PlayerState(index=1, pos=Vec2())
@@ -110,7 +115,7 @@ def test_perks_update_effects_pyrokinetic_defaults_to_first_alive_player_aim() -
 
 
 def test_perks_update_effects_pyrokinetic_preserve_bugs_keeps_player0_only_targeting() -> None:
-    state = GameplayState(rng=_FixedRng(0), preserve_bugs=True)
+    state = GameplayState(rng=_as_rng(_FixedRng(0)), preserve_bugs=True)
 
     player0 = PlayerState(index=0, pos=Vec2(), health=0.0)
     player1 = PlayerState(index=1, pos=Vec2())
@@ -133,7 +138,7 @@ def test_perks_update_effects_pyrokinetic_preserve_bugs_keeps_player0_only_targe
 
 def test_perks_update_effects_pyrokinetic_default_targets_all_alive_players() -> None:
     dt = 0.2
-    state = GameplayState(rng=_FixedRng(0), preserve_bugs=False)
+    state = GameplayState(rng=_as_rng(_FixedRng(0)), preserve_bugs=False)
 
     player0 = PlayerState(index=0, pos=Vec2())
     player1 = PlayerState(index=1, pos=Vec2())

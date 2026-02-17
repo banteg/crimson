@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import Any, cast
 
 from crimson.render.world import WorldRenderer
 from crimson.sim.state_types import PlayerState
@@ -23,10 +24,10 @@ def _make_renderer(*, players: list[PlayerState], local_only: bool, local_slot: 
         lan_local_aim_indicators_only=bool(local_only),
         lan_local_player_slot_index=int(local_slot),
     )
-    return WorldRenderer(_world=world)  # type: ignore[arg-type]
+    return WorldRenderer(_world=cast(Any, world))
 
 
-def _draw_ctx() -> SimpleNamespace:
+def _draw_ctx() -> Any:
     return SimpleNamespace(
         camera=Vec2(),
         view_scale=Vec2(1.0, 1.0),

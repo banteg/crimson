@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any, cast
 
 import pyray as rl
 import pytest
@@ -18,8 +19,12 @@ def _test_config(**updates: object) -> CrimsonConfig:
     return CrimsonConfig(path=Path("<memory>"), data=data)
 
 
+def _set_assets(ui: GameOverUi, assets: object) -> None:
+    cast(Any, ui).assets = assets
+
+
 def test_game_over_panel_layout_uses_native_panel_anchor(tmp_path: Path) -> None:
-    ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=object())
+    ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config())
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
 
     layout_640 = ui._panel_layout(screen_w=640.0, scale=1.0)
@@ -32,8 +37,8 @@ def test_game_over_panel_layout_uses_native_panel_anchor(tmp_path: Path) -> None
 
 
 def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, tmp_path: Path) -> None:
-    ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=object())
-    ui.assets = object()
+    ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config())
+    _set_assets(ui, object())
     ui.phase = 1
     ui.rank = 0
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
@@ -65,7 +70,7 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, tmp_pa
 
 def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, tmp_path: Path) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config(game_mode=1))
-    ui.assets = object()
+    _set_assets(ui, object())
     ui.phase = -1
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
 
@@ -117,15 +122,18 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, tmp_path: Path) -> 
     ui.phase = 1
     ui.rank = 0
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
-    ui.assets = SimpleNamespace(
+    _set_assets(
+        ui,
+        SimpleNamespace(
         menu_panel=SimpleNamespace(width=512, height=256),
         text_reaper=None,
         text_well_done=None,
         particles=None,
         perk_menu_assets=SimpleNamespace(cursor=None),
+        ),
     )
 
-    captured_panel: list[tuple[object, bool]] = []
+    captured_panel: list[tuple[rl.Rectangle, bool]] = []
 
     def _draw_classic_menu_panel(_texture, *, dst, tint, shadow):
         captured_panel.append((dst, bool(shadow)))
@@ -155,7 +163,7 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, tmp_path: Path) -> 
 
 
 def test_game_over_world_entity_alpha_tracks_close_timeline(tmp_path: Path) -> None:
-    ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=object())
+    ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config())
 
     ui._closing = True
     ui._intro_ms = PANEL_SLIDE_DURATION_MS * 0.5
@@ -212,7 +220,7 @@ def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
     ui._draw_score_card(
         pos=Vec2(0.0, 0.0),
         record=record,
-        hud_assets=SimpleNamespace(wicons=SimpleNamespace(width=256, height=256), clock_table=None, clock_pointer=None),
+        hud_assets=cast(Any, SimpleNamespace(wicons=SimpleNamespace(width=256, height=256), clock_table=None, clock_pointer=None)),
         alpha=1.0,
         show_weapon_row=True,
         scale=1.0,

@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any, cast
 
 import pyray as rl
 
 from crimson.persistence.highscores import HighScoreRecord
+from crimson.quests.results import QuestFinalTime
 from crimson.ui.quest_results import PANEL_SLIDE_END_MS, PANEL_SLIDE_START_MS, QuestResultsUi
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 
@@ -14,6 +16,10 @@ def _test_config(**updates: object) -> CrimsonConfig:
     data = default_crimson_cfg_data()
     data.update(updates)
     return CrimsonConfig(path=Path("<memory>"), data=data)
+
+
+def _set_assets(ui: QuestResultsUi, assets: object) -> None:
+    cast(Any, ui).assets = assets
 
 
 def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
@@ -25,15 +31,23 @@ def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
     ui.phase = int(phase)
     ui.rank = 0
     ui._intro_ms = PANEL_SLIDE_START_MS
-    ui.breakdown = object()
+    ui.breakdown = QuestFinalTime(
+        base_time_ms=17_610,
+        life_bonus_ms=0,
+        unpicked_perk_bonus_ms=0,
+        final_time_ms=17_610,
+    )
     ui.input_text = "banteg"
     ui.input_caret = len(ui.input_text)
-    ui.assets = SimpleNamespace(
+    _set_assets(
+        ui,
+        SimpleNamespace(
         menu_panel=None,
         text_well_done=None,
         particles=None,
         wicons=SimpleNamespace(width=256, height=256),
         perk_menu_assets=SimpleNamespace(cursor=None),
+        ),
     )
 
     record = HighScoreRecord.blank()
@@ -52,7 +66,7 @@ def _patch_draw_environment(
     captured_text: list[str],
     texture_draws: list[object],
     *,
-    captured_draws: list[tuple[str, float, float, object]] | None = None,
+    captured_draws: list[tuple[str, float, float, rl.Color]] | None = None,
     line_draws: list[tuple[int, int, int, int, object]] | None = None,
 ) -> None:
     monkeypatch.setattr("crimson.ui.quest_results.rl.get_screen_width", lambda: 640)
@@ -119,7 +133,7 @@ def test_quest_results_name_entry_uses_native_offsets_and_colors(monkeypatch, tm
     ui = _build_ui(tmp_path, phase=1)
     captured_text: list[str] = []
     texture_draws: list[object] = []
-    captured_draws: list[tuple[str, float, float, object]] = []
+    captured_draws: list[tuple[str, float, float, rl.Color]] = []
     line_draws: list[tuple[int, int, int, int, object]] = []
     _patch_draw_environment(
         monkeypatch,

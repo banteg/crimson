@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import Any, cast
 
 from crimson.render.projectile_draw import SecondaryProjectileDrawCtx, draw_secondary_projectile_from_registry
 from grim.geom import Vec2
@@ -24,7 +25,7 @@ def test_secondary_draw_registry_returns_false_when_not_handled() -> None:
     proj = SimpleNamespace(type_id=1, pos=Vec2(), angle=0.0)
     ctx = SecondaryProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]
-        proj=proj,
+        proj=cast(Any, proj),
         proj_type=1,
         screen_pos=Vec2(),
         angle=0.0,
@@ -40,7 +41,7 @@ def test_secondary_draw_registry_returns_true_for_rocket_like_when_texture_inval
     proj = SimpleNamespace(type_id=1, pos=Vec2(), angle=0.0)
     ctx = SecondaryProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]
-        proj=proj,
+        proj=cast(Any, proj),
         proj_type=1,
         screen_pos=Vec2(),
         angle=0.0,
@@ -62,7 +63,7 @@ def test_secondary_draw_registry_renders_type4_fallback_circle(monkeypatch) -> N
 
     ctx = SecondaryProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]
-        proj=proj,
+        proj=cast(Any, proj),
         proj_type=4,
         screen_pos=Vec2(10.0, 20.0),
         angle=0.0,
@@ -85,7 +86,7 @@ def test_secondary_draw_registry_renders_detonation_lines_when_no_particles(monk
 
     ctx = SecondaryProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]
-        proj=proj,
+        proj=cast(Any, proj),
         proj_type=3,
         screen_pos=Vec2(10.0, 20.0),
         angle=0.0,

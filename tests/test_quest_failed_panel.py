@@ -4,6 +4,7 @@ import random
 import time
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any, cast
 
 import pyray as rl
 
@@ -29,12 +30,12 @@ def _make_state(tmp_path: Path) -> GameState:
         preserve_bugs=False,
         logos=None,
         texture_cache=None,
-        audio=object(),
+        audio=cast(Any, object()),
         resource_paq=tmp_path / "crimson.paq",
         session_start=time.monotonic(),
     )
     # Avoid ground/menu asset loading in tests.
-    state.pause_background = SimpleNamespace(draw_pause_background=lambda **_kwargs: None)
+    cast(Any, state).pause_background = SimpleNamespace(draw_pause_background=lambda **_kwargs: None)
     return state
 
 
@@ -248,7 +249,7 @@ def test_quest_failed_draw_fades_pause_background_during_close(monkeypatch, tmp_
     state = _make_state(tmp_path)
     state.quest_outcome = _failed_outcome()
     captured_alpha: list[float] = []
-    state.pause_background = SimpleNamespace(
+    cast(Any, state).pause_background = SimpleNamespace(
         draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha)),
     )
 

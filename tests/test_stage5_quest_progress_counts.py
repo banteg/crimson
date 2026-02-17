@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any, cast
 
 from crimson.game.quest_views import QuestsMenuView
 from crimson.persistence import save_status
@@ -22,7 +23,7 @@ def test_quest_select_f1_counts_stage5_reads_tail_fields() -> None:
     data["quest_play_counts"][60] = 999
 
     status = save_status.GameStatus(path=Path("game.cfg"), data=data, dirty=False)
-    view = QuestsMenuView(SimpleNamespace(status=status))
+    view = QuestsMenuView(cast(Any, SimpleNamespace(status=status)))
 
     assert view._quest_counts(stage=5, row=0) == (111, 123)
     assert view._quest_counts(stage=5, row=1) == (222, int(status.quest_play_count(52)))

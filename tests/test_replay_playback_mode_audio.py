@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any, cast
 
 import pytest
 
@@ -23,10 +24,14 @@ def _build_view() -> tuple[replay_playback_mode.ReplayPlaybackMode, ConsoleState
     return view, console
 
 
+def _set_private(view: replay_playback_mode.ReplayPlaybackMode, name: str, value: object) -> None:
+    setattr(cast(Any, view), name, value)
+
+
 def test_replay_playback_registers_snd_add_game_tune_command(monkeypatch) -> None:
     view, console = _build_view()
     music_state = object()
-    view._audio = SimpleNamespace(music=music_state)
+    _set_private(view, "_audio", SimpleNamespace(music=music_state))
 
     loaded: list[tuple[object, Path, str]] = []
     queued: list[tuple[object, str]] = []
@@ -52,7 +57,7 @@ def test_replay_playback_registers_snd_add_game_tune_command(monkeypatch) -> Non
 
 def test_replay_playback_load_game_tune_queue_execs_script(monkeypatch) -> None:
     view, console = _build_view()
-    view._audio = object()
+    _set_private(view, "_audio", object())
     calls: list[str] = []
 
     def fake_exec_line(_self: ConsoleState, line: str) -> None:
@@ -63,14 +68,14 @@ def test_replay_playback_load_game_tune_queue_execs_script(monkeypatch) -> None:
     view._load_game_tune_queue()
     assert calls == ["exec music/game_tunes.txt"]
 
-    view._audio = None
+    _set_private(view, "_audio", None)
     view._load_game_tune_queue()
     assert calls == ["exec music/game_tunes.txt"]
 
 
 def test_replay_playback_progress_ratio_and_time_formatting() -> None:
     view, _console = _build_view()
-    view._replay = SimpleNamespace(inputs=[0, 0, 0, 0])
+    _set_private(view, "_replay", SimpleNamespace(inputs=[0, 0, 0, 0]))
 
     view._tick_index = 2
     assert view._replay_progress_ratio() == 0.5
@@ -84,8 +89,9 @@ def test_replay_playback_progress_ratio_and_time_formatting() -> None:
 
 def test_skip_forward_temporarily_disables_sfx() -> None:
     view, _console = _build_view()
-    view._replay = SimpleNamespace(inputs=[0, 0, 0, 0, 0])
-    view._world = SimpleNamespace(audio_router=SimpleNamespace(sfx_enabled=True))
+    _set_private(view, "_replay", SimpleNamespace(inputs=[0, 0, 0, 0, 0]))
+    world = SimpleNamespace(audio_router=SimpleNamespace(sfx_enabled=True))
+    _set_private(view, "_world", world)
     view._tick_rate = 60
     view._tick_index = 0
     view._finished = False
@@ -94,22 +100,23 @@ def test_skip_forward_temporarily_disables_sfx() -> None:
     sfx_enabled_during_tick: list[bool] = []
 
     def fake_tick_one() -> None:
-        sfx_enabled_during_tick.append(bool(view._world.audio_router.sfx_enabled))
+        sfx_enabled_during_tick.append(bool(world.audio_router.sfx_enabled))
         view._tick_index += 1
 
-    view._tick_one = fake_tick_one  # type: ignore[method-assign]
+    cast(Any, view)._tick_one = fake_tick_one
 
     view._skip_forward_seconds(2.0 / 60.0)
 
     assert sfx_enabled_during_tick == [False, False]
-    assert bool(view._world.audio_router.sfx_enabled)
+    assert bool(world.audio_router.sfx_enabled)
     assert view._dt_accum == 0.0
 
 
 def test_skip_forward_restores_sfx_flag_when_tick_raises() -> None:
     view, _console = _build_view()
-    view._replay = SimpleNamespace(inputs=[0, 0, 0])
-    view._world = SimpleNamespace(audio_router=SimpleNamespace(sfx_enabled=True))
+    _set_private(view, "_replay", SimpleNamespace(inputs=[0, 0, 0]))
+    world = SimpleNamespace(audio_router=SimpleNamespace(sfx_enabled=True))
+    _set_private(view, "_world", world)
     view._tick_rate = 60
     view._tick_index = 0
     view._finished = False
@@ -117,16 +124,16 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises() -> None:
     sfx_enabled_during_tick: list[bool] = []
 
     def fake_tick_one() -> None:
-        sfx_enabled_during_tick.append(bool(view._world.audio_router.sfx_enabled))
+        sfx_enabled_during_tick.append(bool(world.audio_router.sfx_enabled))
         raise RuntimeError("skip test boom")
 
-    view._tick_one = fake_tick_one  # type: ignore[method-assign]
+    cast(Any, view)._tick_one = fake_tick_one
 
     with pytest.raises(RuntimeError, match="skip test boom"):
         view._skip_forward_seconds(1.0 / 60.0)
 
     assert sfx_enabled_during_tick == [False]
-    assert bool(view._world.audio_router.sfx_enabled)
+    assert bool(world.audio_router.sfx_enabled)
 
 
 def test_skip_forward_clears_fx_queues_each_tick() -> None:
@@ -142,11 +149,15 @@ def test_skip_forward_clears_fx_queues_each_tick() -> None:
 
     fx_queue = _Queue()
     fx_queue_rotated = _Queue()
-    view._replay = SimpleNamespace(inputs=replay_inputs)
-    view._world = SimpleNamespace(
+    _set_private(view, "_replay", SimpleNamespace(inputs=replay_inputs))
+    _set_private(
+        view,
+        "_world",
+        SimpleNamespace(
         audio_router=SimpleNamespace(sfx_enabled=True),
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
+        ),
     )
     view._tick_rate = 60
     view._tick_index = 0
@@ -155,7 +166,7 @@ def test_skip_forward_clears_fx_queues_each_tick() -> None:
     def fake_tick_one() -> None:
         view._tick_index += 1
 
-    view._tick_one = fake_tick_one  # type: ignore[method-assign]
+    cast(Any, view)._tick_one = fake_tick_one
 
     view._skip_forward_seconds(3.0 / 60.0)
 
