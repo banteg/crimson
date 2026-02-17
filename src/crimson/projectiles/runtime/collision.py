@@ -29,7 +29,14 @@ def _within_native_find_radius(*, origin: Vec2, target: Vec2, radius: float, tar
 
     dx = float(target.x) - float(origin.x)
     dy = float(target.y) - float(origin.y)
-    margin = math.sqrt(dx * dx + dy * dy) - float(radius) - (float(target_size) * 0.14285715 + 3.0)
+    radius_f = float(radius)
+    size_margin = float(target_size) * 0.14285715 + 3.0
+    max_axis_delta = float(radius_f) + float(size_margin) + _NATIVE_FIND_RADIUS_MARGIN_EPS
+    # Fast reject for the common case where either axis already exceeds the
+    # maximal accepted Euclidean radius.
+    if abs(float(dx)) > float(max_axis_delta) or abs(float(dy)) > float(max_axis_delta):
+        return False
+    margin = math.sqrt(dx * dx + dy * dy) - float(radius_f) - float(size_margin)
     # Native uses x87-heavy float math in this path; a tiny epsilon avoids
     # branch flips on sub-millimetric drift from float32 replay state.
     return float(margin) < _NATIVE_FIND_RADIUS_MARGIN_EPS

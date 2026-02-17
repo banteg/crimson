@@ -25,6 +25,12 @@ def _f32_from_bits(bits: int) -> float:
     return struct.unpack("<f", struct.pack("<I", int(bits) & 0xFFFFFFFF))[0]
 
 
+# Reuse bound struct methods in the float32 hot path.
+_F32_STRUCT = struct.Struct("<f")
+_F32_PACK = _F32_STRUCT.pack
+_F32_UNPACK = _F32_STRUCT.unpack
+
+
 # Native movement/heading code uses these exact float32 literals.
 NATIVE_PI = _f32_from_bits(0x40490FDB)
 NATIVE_HALF_PI = _f32_from_bits(0x3FC90FDB)
@@ -33,7 +39,7 @@ NATIVE_TURN_RATE_SCALE = _f32_from_bits(0x3FAAAAAB)
 
 
 def f32(value: float) -> float:
-    return struct.unpack("<f", struct.pack("<f", float(value)))[0]
+    return _F32_UNPACK(_F32_PACK(float(value)))[0]
 
 
 _NATIVE_LEFT_AXIS_HEADING_POS = f32(NATIVE_TAU - NATIVE_HALF_PI)

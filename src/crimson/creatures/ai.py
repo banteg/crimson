@@ -21,6 +21,8 @@ __all__ = [
     "creature_ai_update_target",
 ]
 
+_FLAG_AI7_LINK_TIMER = int(CreatureFlags.AI7_LINK_TIMER)
+
 
 class PositionLike(Protocol):
     pos: Vec2
@@ -58,7 +60,7 @@ def creature_ai7_tick_link_timer(creature: CreatureAIStateLike, *, dt_ms: int, r
     flips from negative to non-negative, ai_mode is forced to 7 for a short hold.
     """
 
-    if not (creature.flags & CreatureFlags.AI7_LINK_TIMER):
+    if (int(creature.flags) & _FLAG_AI7_LINK_TIMER) == 0:
         return
 
     if creature.link_index < 0:

@@ -87,6 +87,9 @@ CREATURE_CORPSE_FADE_DECAY = 20.0
 CREATURE_CORPSE_DESPAWN_HITBOX = -10.0
 CREATURE_DEATH_SLIDE_SCALE = 9.0
 _TARGET_REEVAL_PERIOD = 0x46
+_FLAG_SELF_DAMAGE_TICK = int(CreatureFlags.SELF_DAMAGE_TICK)
+_FLAG_SELF_DAMAGE_TICK_STRONG = int(CreatureFlags.SELF_DAMAGE_TICK_STRONG)
+_FLAG_AI7_LINK_TIMER = int(CreatureFlags.AI7_LINK_TIMER)
 
 _CREATURE_CONTACT_SFX: dict[CreatureTypeId, tuple[str, str]] = {
     CreatureTypeId.ZOMBIE: ("sfx_zombie_attack_01", "sfx_zombie_attack_02"),
@@ -816,9 +819,10 @@ class CreaturePool:
             if dt <= 0.0 or float(state.bonuses.freeze) > 0.0:
                 return False
             damage_amount = 0.0
-            if creature.flags & CreatureFlags.SELF_DAMAGE_TICK_STRONG:
+            creature_flags = int(creature.flags)
+            if (creature_flags & _FLAG_SELF_DAMAGE_TICK_STRONG) != 0:
                 damage_amount = dt * 180.0
-            elif creature.flags & CreatureFlags.SELF_DAMAGE_TICK:
+            elif (creature_flags & _FLAG_SELF_DAMAGE_TICK) != 0:
                 damage_amount = dt * 60.0
             if damage_amount <= 0.0:
                 return False
@@ -844,7 +848,11 @@ class CreaturePool:
                 _apply_self_damage_tick(creature)
                 # Native still ticks AI7 link-timer state (and its RNG draws) for
                 # dead creatures inside `creature_update_all`.
-                if dt > 0.0 and float(state.bonuses.freeze) <= 0.0 and (creature.flags & CreatureFlags.AI7_LINK_TIMER):
+                if (
+                    dt > 0.0
+                    and float(state.bonuses.freeze) <= 0.0
+                    and (int(creature.flags) & _FLAG_AI7_LINK_TIMER) != 0
+                ):
                     creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
                 if creature.hitbox_size == CREATURE_HITBOX_ALIVE:
                     creature.hitbox_size = f32(float(creature.hitbox_size) - float(dt))
