@@ -1,9 +1,22 @@
 from __future__ import annotations
 
 import os
+from typing import Protocol, runtime_checkable
 
 CRT_RAND_MULT = 214013
 CRT_RAND_INC = 2531011
+
+
+@runtime_checkable
+class CrandLike(Protocol):
+    """Protocol for RNGs that follow the native CRT rand/srand/state contract."""
+
+    @property
+    def state(self) -> int: ...
+
+    def srand(self, seed: int) -> None: ...
+
+    def rand(self) -> int: ...
 
 
 class CrtRand:

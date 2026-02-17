@@ -10,10 +10,12 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from grim.rand import Crand
 
 
-class _FixedRng:
+class _FixedRng(Crand):
     def __init__(self, value: int) -> None:
+        super().__init__(0)
         self._value = int(value)
 
     def rand(self) -> int:

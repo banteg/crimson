@@ -8,7 +8,18 @@ from crimson.game_world import GameWorld
 from crimson.gameplay import player_update
 from crimson.perks import PerkId
 from crimson.sim.input import PlayerInput
+from grim.audio import AudioState
 from grim.geom import Vec2
+from grim.music import init_music_state
+from grim.sfx import init_sfx_state
+
+
+def _audio_state_stub() -> AudioState:
+    return AudioState(
+        ready=False,
+        music=init_music_state(ready=False, enabled=True, volume=1.0),
+        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0),
+    )
 
 
 def test_reload_finish_and_immediate_shot_plays_fire_sfx(monkeypatch) -> None:
@@ -21,7 +32,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(monkeypatch) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
-    world.audio = object()
+    world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
     world.audio_router.audio = world.audio
     world.audio_router.audio_rng = world.audio_rng
@@ -67,7 +78,7 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(monkeypatch) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
-    world.audio = object()
+    world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
     world.audio_router.audio = world.audio
     world.audio_router.audio_rng = world.audio_rng
@@ -113,7 +124,7 @@ def test_pending_perk_increase_plays_levelup_sfx(monkeypatch) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
-    world.audio = object()
+    world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
 
     player = world.players[0]
@@ -139,7 +150,7 @@ def test_bonus_pickup_plays_bonus_sfx(monkeypatch) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
-    world.audio = object()
+    world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
 
     player = world.players[0]
@@ -162,7 +173,7 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(monkeypatch) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
-    world.audio = object()
+    world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
 
     player = world.players[0]
@@ -185,7 +196,7 @@ def test_perk_bursts_play_explosion_small_sfx(monkeypatch) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
-    world.audio = object()
+    world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
 
     player = world.players[0]

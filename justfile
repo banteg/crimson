@@ -22,18 +22,17 @@ test-cov *args:
 check *args:
     uv run ruff check .
     uv run lint-imports
-    uv run ty check src
-    uv run python scripts/check_ty_tests_budget.py --max-diagnostics 95
+    uv run ty check src tests
     uv run scripts/check_docs.py
     sg scan
     sg test
     uv run pytest {{args}}
 
 ty:
-    uv run ty check src
+    uv run ty check src tests
 
 ty-tests:
-    uv run python scripts/check_ty_tests_budget.py --max-diagnostics 95
+    uv run ty check tests
 
 # Lint
 lint-imports:

@@ -3,7 +3,6 @@ from __future__ import annotations
 import random
 import time
 from pathlib import Path
-from types import SimpleNamespace
 
 import pyray as rl
 
@@ -13,6 +12,14 @@ from crimson.game.types import GameState
 from crimson.persistence import save_status
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
+
+
+class _PauseBackgroundStub:
+    def __init__(self, sink: list[float]) -> None:
+        self._sink = sink
+
+    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
+        self._sink.append(float(entity_alpha))
 
 
 def _make_state(tmp_path: Path, *, audio) -> GameState:
@@ -40,7 +47,10 @@ def test_end_note_escape_waits_for_close_transition(monkeypatch, tmp_path: Path)
 
     class _DummyCache:
         def get_or_load(self, *_args, **_kwargs):
-            return SimpleNamespace(texture=None)
+            class _StubAsset:
+                texture = None
+
+            return _StubAsset()
 
     def _play_sfx(_audio, key, *, rng=None, allow_variants=True) -> None:
         played.append(key)
@@ -78,13 +88,14 @@ def test_end_note_escape_waits_for_close_transition(monkeypatch, tmp_path: Path)
 def test_end_note_draw_fades_pause_background_during_close(monkeypatch, tmp_path: Path) -> None:
     state = _make_state(tmp_path, audio=None)
     captured_alpha: list[float] = []
-    state.pause_background = SimpleNamespace(
-        draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha)),
-    )
+    state.pause_background = _PauseBackgroundStub(captured_alpha)
 
     class _DummyCache:
         def get_or_load(self, *_args, **_kwargs):
-            return SimpleNamespace(texture=None)
+            class _StubAsset:
+                texture = None
+
+            return _StubAsset()
 
     monkeypatch.setattr("crimson.game.quest_views.end_note.update_audio", lambda _audio, _dt: None)
     monkeypatch.setattr("crimson.game.quest_views.end_note._ensure_texture_cache", lambda _state: _DummyCache())

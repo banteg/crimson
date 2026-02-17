@@ -17,7 +17,7 @@ from typing import Protocol
 
 from grim.color import RGBA
 from grim.geom import Vec2
-from grim.rand import Crand
+from grim.rand import CrandLike
 
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import (
@@ -735,7 +735,7 @@ class CreaturePool:
         template_id: int,
         pos: Vec2,
         heading: float,
-        rng: Crand,
+        rng: CrandLike,
         *,
         rand: Callable[[], int] | None = None,
         env: SpawnEnv | None = None,

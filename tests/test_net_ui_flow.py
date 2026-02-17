@@ -4,6 +4,7 @@ import random
 import time
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any, cast
 
 from crimson.frontend.panels.lan_lobby import LanLobbyPanelView
 from crimson.frontend.panels.lan_session import LanSessionPanelView
@@ -132,8 +133,11 @@ def test_network_lobby_panel_shows_room_code_not_session_id(monkeypatch, tmp_pat
     )
     state.pending_net_session = pending
     state.pending_lan_session = pending
-    state.net_runtime = SimpleNamespace(
-        lobby_state=lambda: SimpleNamespace(room_code="AB12", session_id="session123", player_count=2, slots=[]),
+    state.net_runtime = cast(
+        "Any",
+        SimpleNamespace(
+            lobby_state=lambda: SimpleNamespace(room_code="AB12", session_id="session123", player_count=2, slots=[]),
+        ),
     )
     state.lan_runtime = state.net_runtime
 

@@ -11,18 +11,21 @@ from crimson.weapon_runtime import (
     weapon_assign_player,
 )
 from grim.geom import Vec2
+from grim.rand import Crand
 
 
-class _FixedRng:
+class _FixedRng(Crand):
     def __init__(self, value: int) -> None:
+        super().__init__(0)
         self._value = int(value)
 
     def rand(self) -> int:
         return int(self._value)
 
 
-class _SequenceRng:
+class _SequenceRng(Crand):
     def __init__(self, values: list[int]) -> None:
+        super().__init__(0)
         self._values = [int(value) for value in values]
         self._idx = 0
 
@@ -69,7 +72,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
 
 
 def test_flamethrower_particles_spawn_from_barrel_offset_muzzle() -> None:
-    state = GameplayState(rng=_FixedRng(0))  # type: ignore[arg-type]
+    state = GameplayState(rng=_FixedRng(0))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(0.0, 1.0)
     player.spread_heat = 0.0
@@ -101,7 +104,7 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
 
     # Ensure the jittered aim point is significantly off-axis: dir_angle -> pi/2, mag -> near 1.0.
     # The third value is consumed by `spawn_particle` (spin).
-    state = GameplayState(rng=_SequenceRng([128, 511, 0]))  # type: ignore[arg-type]
+    state = GameplayState(rng=_SequenceRng([128, 511, 0]))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.48

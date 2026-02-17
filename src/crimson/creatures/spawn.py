@@ -21,7 +21,7 @@ from enum import IntEnum, IntFlag
 from typing import SupportsInt
 
 from grim.geom import Vec2
-from grim.rand import Crand
+from grim.rand import CrandLike
 
 from ..bonuses import BonusId
 from ..math_parity import f32
@@ -1521,7 +1521,7 @@ def apply_child_spec(child: CreatureInit, spec: FormationChildSpec) -> None:
         child.orbit_radius = spec.orbit_radius
 
 
-def randf(rng: Crand, mod: int, scale: float, base: float) -> float:
+def randf(rng: CrandLike, mod: int, scale: float, base: float) -> float:
     return float(rng.rand() % mod) * scale + base
 
 
@@ -1543,7 +1543,7 @@ def apply_size_health(c: CreatureInit, size: float, *, health_scale: float, heal
     c.health = size * health_scale + health_add
 
 
-def apply_random_move_speed(c: CreatureInit, rng: Crand, mod: int, scale: float, base: float) -> None:
+def apply_random_move_speed(c: CreatureInit, rng: CrandLike, mod: int, scale: float, base: float) -> None:
     c.move_speed = randf(rng, mod, scale, base)
 
 
@@ -1555,7 +1555,7 @@ def spawn_ring_children(
     creatures: list[CreatureInit],
     template_id: int,
     pos: Vec2,
-    rng: Crand,
+    rng: CrandLike,
     *,
     count: int,
     angle_step: float,
@@ -1587,7 +1587,7 @@ def spawn_grid_children(
     creatures: list[CreatureInit],
     template_id: int,
     pos: Vec2,
-    rng: Crand,
+    rng: CrandLike,
     *,
     x_range: range,
     y_range: range,
@@ -1613,7 +1613,7 @@ def spawn_chain_children(
     creatures: list[CreatureInit],
     template_id: int,
     pos: Vec2,
-    rng: Crand,
+    rng: CrandLike,
     *,
     count: int,
     ai_mode: int,
@@ -1637,7 +1637,7 @@ def spawn_chain_children(
 class PlanBuilder:
     template_id: int
     pos: Vec2
-    rng: Crand
+    rng: CrandLike
     env: SpawnEnv
     creatures: list[CreatureInit]
     spawn_slots: list[SpawnSlotInit]
@@ -1650,7 +1650,7 @@ class PlanBuilder:
         template_id: int,
         pos: Vec2,
         heading: float,
-        rng: Crand,
+        rng: CrandLike,
         env: SpawnEnv,
     ) -> tuple["PlanBuilder", float]:
         # creature_alloc_slot() for the base creature.
@@ -1771,7 +1771,7 @@ def tick_spawn_slot(slot: SpawnSlotInit, frame_dt: float) -> int | None:
     return None
 
 
-def alloc_creature(template_id: int, pos: Vec2, rng: Crand) -> CreatureInit:
+def alloc_creature(template_id: int, pos: Vec2, rng: CrandLike) -> CreatureInit:
     # creature_alloc_slot():
     # - clears flags
     # - seeds phase_seed = float(crt_rand() & 0x17f)
@@ -1789,7 +1789,7 @@ def clamp01(value: float) -> float:
     return value
 
 
-def build_survival_spawn_creature(pos: Vec2, rng: Crand, *, player_experience: int) -> CreatureInit:
+def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experience: int) -> CreatureInit:
     """Pure model of `survival_spawn_creature` (crimsonland.exe 0x00407510).
 
     Note: this is not a `creature_spawn_template` spawn id; it picks a `type_id` and stats
@@ -1944,7 +1944,7 @@ def build_survival_spawn_creature(pos: Vec2, rng: Crand, *, player_experience: i
     return c
 
 
-def rand_survival_spawn_pos(rng: Crand, *, terrain_width: int, terrain_height: int) -> Vec2:
+def rand_survival_spawn_pos(rng: CrandLike, *, terrain_width: int, terrain_height: int) -> Vec2:
     match rng.rand() & 3:
         case 0:
             return Vec2(float(rng.rand() % terrain_width), -40.0)
@@ -1959,7 +1959,7 @@ def rand_survival_spawn_pos(rng: Crand, *, terrain_width: int, terrain_height: i
 def tick_survival_wave_spawns(
     spawn_cooldown: float,
     frame_dt_ms: float,
-    rng: Crand,
+    rng: CrandLike,
     *,
     player_count: int,
     survival_elapsed_ms: float,
@@ -2194,7 +2194,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
 def build_rush_mode_spawn_creature(
     pos: Vec2,
     tint_rgba: TintRGBA,
-    rng: Crand,
+    rng: CrandLike,
     *,
     type_id: int,
     survival_elapsed_ms: int,
@@ -2224,7 +2224,7 @@ def build_rush_mode_spawn_creature(
 def tick_rush_mode_spawns(
     spawn_cooldown: float,
     frame_dt_ms: float,
-    rng: Crand,
+    rng: CrandLike,
     *,
     player_count: int,
     survival_elapsed_ms: int,
@@ -2937,7 +2937,7 @@ def build_spawn_plan(
     template_id: SupportsInt,
     pos: Vec2,
     heading: float,
-    rng: Crand,
+    rng: CrandLike,
     env: SpawnEnv,
 ) -> SpawnPlan:
     """Pure plan builder modeled after `creature_spawn_template` (0x00430AF0).

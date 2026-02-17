@@ -14,6 +14,7 @@ from crimson.perks.selection import (
 from crimson.perks.state import PerkSelectionState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from grim.rand import Crand
 
 
 def test_perk_selection_pick_applies_perk_and_marks_dirty() -> None:
@@ -72,7 +73,7 @@ def test_perk_selection_current_choices_keeps_hidden_internal_entries(monkeypatc
     player = PlayerState(index=0, pos=Vec2())
     perk_state = PerkSelectionState(pending_count=1, choices=[], choices_dirty=True)
 
-    def _fake_perk_generate_choices(*args, **kwargs):  # type: ignore[no-untyped-def]
+    def _fake_perk_generate_choices(*_args: object, **_kwargs: object) -> list[PerkId]:
         return [
             PerkId.SHARPSHOOTER,
             PerkId.FASTSHOT,
@@ -148,11 +149,14 @@ def test_perk_auto_pick_uses_visible_choices_only() -> None:
         choices_dirty=False,
     )
 
-    class _FixedRand:
+    class _FixedRand(Crand):
+        def __init__(self) -> None:
+            super().__init__(0)
+
         def rand(self) -> int:
             return 6
 
-    state.rng = _FixedRand()  # ty:ignore[assignment]
+    state.rng = _FixedRand()
 
     picks = perk_auto_pick(
         state,

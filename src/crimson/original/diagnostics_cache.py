@@ -10,7 +10,7 @@ from collections import Counter, OrderedDict
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, TypeVar, cast
+from typing import Any, Protocol, TypeVar, cast
 
 import msgspec
 from platformdirs import PlatformDirs
@@ -158,6 +158,10 @@ class _FocusStepTraceContext:
     focus_hits: int
     focus_deaths: int
     focus_sfx: int
+
+
+class _FocusRuntimeLike(Protocol):
+    def trace_tick(self, *, tick: int, near_miss_threshold: float) -> FocusTraceReport: ...
 
 
 class _FocusRuntime:
@@ -1264,7 +1268,7 @@ class CaptureSession:
             OrderedDict()
         )
         self._divergence_cache: OrderedDict[tuple[ReplayKey, float, int], object] = OrderedDict()
-        self._focus_runtime_by_key: dict[FocusKey, _FocusRuntime] = {}
+        self._focus_runtime_by_key: dict[FocusKey, _FocusRuntimeLike] = {}
         self._focus_report_cache: OrderedDict[tuple[FocusKey, int, float], FocusTraceReport] = OrderedDict()
 
     def matches_current_file(self) -> bool:

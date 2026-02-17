@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from typing import cast
+
+import pyray as rl
+
 from crimson.sim.state_types import PlayerState
 from crimson.ui.hud import HudAssets, HudState, draw_hud_overlay
 from grim.geom import Vec2
@@ -11,17 +15,21 @@ class _TextureStub:
         self.height = int(height)
 
 
+def _texture(width: int, height: int) -> rl.Texture:
+    return cast("rl.Texture", _TextureStub(width, height))
+
+
 def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch) -> None:
     # Force HUD scale = 1.0 for easy coordinate assertions.
     monkeypatch.setattr("crimson.ui.hud.rl.get_screen_width", lambda: 1024)
     monkeypatch.setattr("crimson.ui.hud.rl.get_screen_height", lambda: 768)
 
-    textures: dict[str, _TextureStub] = {
-        "game_top": _TextureStub(512, 64),
-        "life_heart": _TextureStub(32, 32),
-        "ind_life": _TextureStub(120, 9),
-        "wicons": _TextureStub(256, 128),
-        "ind_bullet": _TextureStub(6, 16),
+    textures: dict[str, rl.Texture] = {
+        "game_top": _texture(512, 64),
+        "life_heart": _texture(32, 32),
+        "ind_life": _texture(120, 9),
+        "wicons": _texture(256, 128),
+        "ind_bullet": _texture(6, 16),
     }
     assets = HudAssets(
         game_top=textures["game_top"],
@@ -95,7 +103,7 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeyp
     monkeypatch.setattr("crimson.ui.hud.rl.get_screen_height", lambda: 768)
     monkeypatch.setattr("crimson.ui.hud.rl.draw_text", lambda *args, **kwargs: None)
 
-    life_heart = _TextureStub(32, 32)
+    life_heart = _texture(32, 32)
     assets = HudAssets(
         game_top=None,
         life_heart=life_heart,

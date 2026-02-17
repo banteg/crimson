@@ -4,18 +4,16 @@ import io
 import urllib.request
 from pathlib import Path
 
+import pytest
+
 from crimson.assets_fetch import _download_file
 
 
 class _FakeResponse(io.BytesIO):
-    def __enter__(self) -> "_FakeResponse":
-        return self
-
-    def __exit__(self, exc_type: object, exc: object, tb: object) -> None:
-        self.close()
+    pass
 
 
-def test_download_file_uses_unique_tempfile(monkeypatch: object, tmp_path: Path) -> None:
+def test_download_file_uses_unique_tempfile(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     payload = b"paq payload\n" * 128
 
     def fake_urlopen(req: object, *, timeout: int) -> _FakeResponse:
@@ -39,4 +37,3 @@ def test_download_file_uses_unique_tempfile(monkeypatch: object, tmp_path: Path)
     assert replaced
     assert replaced[0].parent == dest.parent
     assert replaced[0] != dest.with_suffix(dest.suffix + ".tmp")
-

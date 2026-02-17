@@ -18,7 +18,7 @@ def test_perk_apply_breathing_room_reduces_health_and_starts_creature_death_stag
 
     player = PlayerState(index=0, pos=Vec2(), health=90.0)
 
-    creatures = [CreatureState() for _ in range(3)]
+    creatures: list[CreatureState] = [CreatureState() for _ in range(3)]
     creatures[0].active = True
     creatures[0].hitbox_size = CREATURE_HITBOX_ALIVE
     creatures[1].active = False

@@ -1,11 +1,19 @@
 from __future__ import annotations
 
+from typing import cast
+
+import pyray as rl
+
 import grim.music as music
+
+
+def _music_stub() -> rl.Music:
+    return cast("rl.Music", object())
 
 
 def test_play_music_does_not_unmute_track_mid_fade(monkeypatch) -> None:
     state = music.init_music_state(ready=True, enabled=True, volume=1.0)
-    track = object()
+    track = _music_stub()
     state.tracks["crimson_theme"] = track
     state.playbacks["crimson_theme"] = music.TrackPlayback(music=track, volume=0.6, muted=True)
 
@@ -26,8 +34,8 @@ def test_play_music_does_not_unmute_track_mid_fade(monkeypatch) -> None:
 
 def test_play_music_starts_silent_track_and_mutes_other_active_tracks(monkeypatch) -> None:
     state = music.init_music_state(ready=True, enabled=True, volume=0.8)
-    theme = object()
-    game_tune = object()
+    theme = _music_stub()
+    game_tune = _music_stub()
     state.tracks["crimson_theme"] = theme
     state.tracks["gt1_ingame"] = game_tune
     state.playbacks["crimson_theme"] = music.TrackPlayback(music=theme, volume=0.0, muted=True)

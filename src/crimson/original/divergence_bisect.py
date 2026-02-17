@@ -4,12 +4,14 @@ import argparse
 import json
 from collections.abc import Callable
 from pathlib import Path
+from typing import TypedDict
 
 from crimson.replay.checkpoints import ReplayCheckpoint
 
 from .capture import load_capture, parse_player_int_overrides
 from .divergence_report import (
     Divergence,
+    RngStreamAlignment,
     _actual_rng_stream_rows_for_checkpoint,
     _build_window_rows,
     _compute_rng_stream_alignment,
@@ -22,6 +24,47 @@ from .divergence_report import (
 
 _JSON_OUT_AUTO = "__AUTO__"
 _DEFAULT_JSON_OUT_PATH = Path("artifacts/frida/reports/divergence_bisect_latest.json")
+
+
+class _ReproExpectedRow(TypedDict):
+    score_xp: int
+    creature_count: int
+    rand_calls: int
+
+
+class _ReproActualRow(TypedDict):
+    score_xp: int
+    creature_count: int
+    rand_calls: int | None
+    rand_stage_calls: dict[str, int]
+
+
+class _ReproCaptureSeqRange(TypedDict):
+    first: int
+    last: int
+
+
+class _ReproCaptureBranchEvents(TypedDict):
+    creature_damage_head: list[object]
+    creature_death_head: list[object]
+    projectile_find_query_head: list[object]
+    projectile_find_hit_head: list[object]
+    projectile_spawn_head: list[object]
+    secondary_projectile_spawn_head: list[object]
+    bonus_spawn_head: list[object]
+
+
+class ReproTickRow(TypedDict):
+    tick: int
+    expected: _ReproExpectedRow
+    actual: _ReproActualRow
+    rng_stream_alignment: RngStreamAlignment
+    capture_rng_stream_rows: list[dict[str, object]]
+    rewrite_rng_stream_rows: list[dict[str, int]]
+    rewrite_rng_total_calls: int | None
+    capture_rng_total_calls: int
+    capture_rng_seq_range: _ReproCaptureSeqRange
+    capture_branch_events: _ReproCaptureBranchEvents
 
 
 def _int_or(value: object, default: int = -1) -> int:
@@ -68,7 +111,7 @@ def _build_repro_tick_row(
     raw: dict[str, object],
     rng_row_limit: int,
     branch_event_limit: int,
-) -> dict[str, object]:
+) -> ReproTickRow:
     capture_stream_rows = _rng_stream_rows_for_raw_row(raw)
     capture_head_len = _int_or(raw.get("rng_head_len"), len(capture_stream_rows))
     if capture_head_len < 0:
@@ -297,7 +340,7 @@ def main(argv: list[str] | None = None) -> int:
         window=max(int(first_bad_tick) - int(repro_start), int(repro_end) - int(first_bad_tick)),
     )
 
-    repro_rows: list[dict[str, object]] = []
+    repro_rows: list[ReproTickRow] = []
     for tick in range(int(repro_start), int(repro_end) + 1):
         expected_ckpt = expected_by_tick.get(int(tick))
         actual_ckpt = actual_by_tick.get(int(tick))

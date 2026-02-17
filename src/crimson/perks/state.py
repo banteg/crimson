@@ -5,12 +5,14 @@ from typing import Protocol
 
 from grim.geom import Vec2
 
+from ..creatures.spawn import CreatureFlags
+
 
 class CreatureForPerks(Protocol):
     active: bool
     pos: Vec2
     hp: float
-    flags: int
+    flags: CreatureFlags
     hitbox_size: float
     collision_timer: float
     reward_value: float

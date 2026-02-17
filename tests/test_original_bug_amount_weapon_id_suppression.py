@@ -6,10 +6,12 @@ from crimson.gameplay import GameplayState
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from grim.rand import Crand
 
 
-class _SeqRng:
+class _SeqRng(Crand):
     def __init__(self, values: list[int]) -> None:
+        super().__init__(0)
         self._values = [int(v) for v in values] or [0]
         self._idx = 0
 
