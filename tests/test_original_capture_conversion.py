@@ -11,6 +11,7 @@ from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     CAPTURE_PERK_APPLY_EVENT_KIND,
     CAPTURE_PERK_PENDING_EVENT_KIND,
+    CaptureError,
     build_capture_dt_frame_ms_i32_overrides,
     build_capture_dt_frame_overrides,
     build_capture_inter_tick_rand_draws_overrides,
@@ -378,7 +379,7 @@ def test_load_capture_rejects_invalid_f32_token(tmp_path: Path) -> None:
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
 
-    with pytest.raises(Exception):
+    with pytest.raises(CaptureError):
         load_capture(path)
 
 
@@ -387,7 +388,7 @@ def test_load_capture_rejects_legacy_canonical_json(tmp_path: Path) -> None:
     path = tmp_path / "capture.json"
     path.write_text(json.dumps(obj, separators=(",", ":"), sort_keys=True), encoding="utf-8")
 
-    with pytest.raises(Exception):
+    with pytest.raises(CaptureError):
         load_capture(path)
 
 
@@ -574,7 +575,7 @@ def test_load_capture_stream_rejects_truncated_last_line(tmp_path: Path) -> None
     ]
     path.write_text("\n".join(rows), encoding="utf-8")
 
-    with pytest.raises(Exception):
+    with pytest.raises(CaptureError):
         load_capture(path)
 
 
@@ -590,7 +591,7 @@ def test_load_capture_stream_rejects_legacy_capture_end_row(tmp_path: Path) -> N
     ]
     path.write_text("\n".join(rows) + "\n", encoding="utf-8")
 
-    with pytest.raises(Exception):
+    with pytest.raises(CaptureError):
         load_capture(path)
 
 
@@ -600,7 +601,7 @@ def test_load_capture_rejects_unknown_fields(tmp_path: Path) -> None:
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
 
-    with pytest.raises(Exception):
+    with pytest.raises(CaptureError):
         load_capture(path)
 
 
@@ -645,7 +646,7 @@ def test_load_capture_rejects_incomplete_sample_rows(tmp_path: Path) -> None:
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
 
-    with pytest.raises(Exception):
+    with pytest.raises(CaptureError):
         load_capture(path)
 
 
@@ -654,7 +655,7 @@ def test_load_capture_rejects_non_canonical_extension(tmp_path: Path) -> None:
     path = tmp_path / "capture.jsonl"
     _write_capture(path, obj)
 
-    with pytest.raises(Exception):
+    with pytest.raises(CaptureError):
         load_capture(path)
 
 

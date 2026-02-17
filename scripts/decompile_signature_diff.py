@@ -361,7 +361,7 @@ def build_call_index(ghidra_decompiled_path: Path) -> dict[str, dict[str, int]]:
 def load_ghidra_functions(path: Path) -> dict[int, dict]:
     data = load_json(path)
     if not isinstance(data, list):
-        raise ValueError("expected Ghidra functions export to be a list")
+        raise TypeError("expected Ghidra functions export to be a list")
     by_addr: dict[int, dict[str, Any]] = {}
     for item in data:
         if not isinstance(item, dict):

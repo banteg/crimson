@@ -69,6 +69,7 @@ payload = {
 }
 resp = requests.post(
     f"https://api.telegram.org/bot{bot_token}/sendMessage", json=payload,
+    timeout=30,
 )
 resp.raise_for_status()
 print(f"\nsent to {chat_id}")

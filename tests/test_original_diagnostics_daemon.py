@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from crimson.original import diagnostics_daemon
 from crimson.original.diagnostics_cache import DaemonResponse
 
@@ -48,12 +50,8 @@ def test_run_tool_request_raises_when_daemon_does_not_boot(monkeypatch, tmp_path
     monkeypatch.setattr(diagnostics_daemon, "_start_daemon_background", lambda: None)
     monkeypatch.setattr(diagnostics_daemon, "_wait_for_daemon_ready", lambda **kwargs: False)
 
-    try:
+    with pytest.raises(RuntimeError, match="failed to start"):
         diagnostics_daemon.run_tool_request(tool="_ping", args=[], cwd=Path.cwd())
-    except RuntimeError as exc:
-        assert "failed to start" in str(exc)
-    else:
-        raise AssertionError("expected RuntimeError")
 
 
 def test_run_tool_handles_help_without_daemon_frame_abort() -> None:
