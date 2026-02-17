@@ -5,7 +5,7 @@ import hashlib
 import random
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import cast
+from typing import Protocol, cast
 
 import pyray as rl
 
@@ -78,6 +78,12 @@ class _SurvivalState:
     spawn_cooldown: float = 0.0
 
 
+class SurvivalSessionLike(DeterministicSessionLike, Protocol):
+    elapsed_ms: float
+    stage: int
+    spawn_cooldown_ms: float
+
+
 class SurvivalMode(BaseGameplayMode):
     def __init__(
         self,
@@ -117,7 +123,7 @@ class SurvivalMode(BaseGameplayMode):
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         self._replay_checkpoints_sample_rate: int = 60
         self._replay_checkpoints_last_tick: int | None = None
-        self._sim_session: DeterministicSessionLike | None = None
+        self._sim_session: SurvivalSessionLike | None = None
         self._lan_last_tick_index: int = -1
         self._lan_perk_events: list[PerkMenuOpen | PerkMenuClose | PerkPick] = []
         self._lan_perk_close_suppress: bool = False
@@ -192,7 +198,7 @@ class SurvivalMode(BaseGameplayMode):
         replay = recorder.finish()
         self._record_replay_checkpoint(max(0, recorder.tick_index - 1), force=True)
         terminal_tick = int(recorder.tick_index)
-        if any(int(getattr(event, "tick_index", -1)) == terminal_tick for event in replay.events):
+        if any(int(event.tick_index) == terminal_tick for event in replay.events):
             self._record_replay_checkpoint(terminal_tick, force=True)
         data = dump_replay(replay)
         digest = hashlib.sha256(data).hexdigest()
@@ -286,13 +292,11 @@ class SurvivalMode(BaseGameplayMode):
 
         status = self.state.status
         base_status = self.save_status
-        sim_unlock_index = int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0
-        sim_unlock_index_full = int(getattr(status, "quest_unlock_index_full", 0) or 0) if status is not None else 0
-        status_unlock_index = (
-            int(getattr(base_status, "quest_unlock_index", 0) or 0) if base_status is not None else int(sim_unlock_index)
-        )
+        sim_unlock_index = int(status.quest_unlock_index) if status is not None else 0
+        sim_unlock_index_full = int(status.quest_unlock_index_full) if status is not None else 0
+        status_unlock_index = int(base_status.quest_unlock_index) if base_status is not None else int(sim_unlock_index)
         status_unlock_index_full = (
-            int(getattr(base_status, "quest_unlock_index_full", 0) or 0)
+            int(base_status.quest_unlock_index_full)
             if base_status is not None
             else int(sim_unlock_index_full)
         )
@@ -358,8 +362,8 @@ class SurvivalMode(BaseGameplayMode):
             )
             weapon_usage_counts = weapon_usage_counts[:WEAPON_USAGE_COUNT]
         status_snapshot = ReplayStatusSnapshot(
-            quest_unlock_index=int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0,
-            quest_unlock_index_full=int(getattr(status, "quest_unlock_index_full", 0) or 0)
+            quest_unlock_index=int(status.quest_unlock_index) if status is not None else 0,
+            quest_unlock_index_full=int(status.quest_unlock_index_full)
             if status is not None
             else 0,
             weapon_usage_counts=weapon_usage_counts,
@@ -371,7 +375,7 @@ class SurvivalMode(BaseGameplayMode):
                     game_mode_id=int(GameMode.SURVIVAL),
                     seed=int(self.state.rng.state),
                     bootstrap_kind="terrain_v1",
-                    bootstrap_seed=int(getattr(self, "_bootstrap_seed", 0) or 0),
+                    bootstrap_seed=int(self._bootstrap_seed),
                     tick_rate=int(self._sim_clock.tick_rate),
                     difficulty_level=int(self.world.difficulty_level),
                     hardcore=bool(self.world.hardcore),
@@ -585,13 +589,9 @@ class SurvivalMode(BaseGameplayMode):
             return
 
         def _on_tick(tick: DeterministicSessionTick, tick_index: int | None) -> bool:
-            self._survival.elapsed_ms = float(
-                getattr(session, "elapsed_ms", getattr(tick, "elapsed_ms", self._survival.elapsed_ms)),
-            )
-            self._survival.stage = int(getattr(session, "stage", self._survival.stage))
-            self._survival.spawn_cooldown = float(
-                getattr(session, "spawn_cooldown_ms", self._survival.spawn_cooldown),
-            )
+            self._survival.elapsed_ms = float(session.elapsed_ms)
+            self._survival.stage = int(session.stage)
+            self._survival.spawn_cooldown = float(session.spawn_cooldown_ms)
             world_events = tick.step.events
 
             if tick_index is not None:
@@ -628,7 +628,7 @@ class SurvivalMode(BaseGameplayMode):
         runtime.update()
         role = str(self._lan_role)
         self._consume_net_runtime_recovery(mode_name="survival")
-        if str(getattr(runtime, "error", "") or ""):
+        if str(runtime.error or ""):
             self.close_requested = True
             return
 
@@ -669,7 +669,7 @@ class SurvivalMode(BaseGameplayMode):
         perk_ctx = self._perk_menu_context()
 
         def _perk_event_sort_key(ev: PerkMenuOpen | PerkMenuClose | PerkPick) -> tuple[int, int]:
-            tick_index = int(getattr(ev, "tick_index", -1) or -1)
+            tick_index = int(ev.tick_index)
             order = 2
             if isinstance(ev, PerkMenuOpen):
                 order = 0
@@ -685,13 +685,13 @@ class SurvivalMode(BaseGameplayMode):
             self._lan_perk_events.sort(key=_perk_event_sort_key)
             remaining: list[PerkMenuOpen | PerkMenuClose | PerkPick] = []
             for event in self._lan_perk_events:
-                event_tick = int(getattr(event, "tick_index", -1) or -1)
+                event_tick = int(event.tick_index)
                 if event_tick < 0:
                     continue
                 if event_tick > int(self._lan_last_tick_index):
                     remaining.append(event)
                     continue
-                player_index = int(getattr(event, "player_index", 0) or 0)
+                player_index = int(event.player_index)
                 if int(player_index) != 0:
                     continue
                 if isinstance(event, PerkMenuOpen):
@@ -709,7 +709,7 @@ class SurvivalMode(BaseGameplayMode):
                     self._perk_menu.close()
                     continue
                 if isinstance(event, PerkPick):
-                    choice_index = int(getattr(event, "choice_index", 0) or 0)
+                    choice_index = int(event.choice_index)
                     picked = perk_selection_pick(
                         perk_ctx.state,
                         perk_ctx.players,
@@ -819,7 +819,7 @@ class SurvivalMode(BaseGameplayMode):
                 if frame is None:
                     return False
 
-                packed_inputs = list(getattr(frame, "frame_inputs", []) or [])
+                packed_inputs = list(frame.frame_inputs)
                 player_inputs = [unpack_player_input(packed) for packed in packed_inputs]
                 recorder = self._replay_recorder
                 if recorder is not None:
@@ -832,10 +832,10 @@ class SurvivalMode(BaseGameplayMode):
                     inputs=player_inputs,
                 )
 
-                remote_command_hash = str(getattr(frame, "command_hash", "") or "")
-                remote_state_hash = str(getattr(frame, "state_hash", "") or "")
+                remote_command_hash = str(frame.command_hash or "")
+                remote_state_hash = str(frame.state_hash or "")
                 local_command_hash = str(tick.step.command_hash)
-                tick_elapsed_ms = float(getattr(tick, "elapsed_ms", getattr(session, "elapsed_ms", 0.0)))
+                tick_elapsed_ms = float(session.elapsed_ms)
                 local_state_hash = ""
                 if role == "join":
                     if remote_command_hash and remote_command_hash != local_command_hash:
@@ -880,13 +880,9 @@ class SurvivalMode(BaseGameplayMode):
                     apply_audio=True,
                     update_camera=True,
                 )
-                session_elapsed_ms = float(
-                    getattr(session, "elapsed_ms", getattr(tick, "elapsed_ms", self._survival.elapsed_ms)),
-                )
-                session_stage = int(getattr(session, "stage", self._survival.stage))
-                session_spawn_cooldown_ms = float(
-                    getattr(session, "spawn_cooldown_ms", self._survival.spawn_cooldown),
-                )
+                session_elapsed_ms = float(session.elapsed_ms)
+                session_stage = int(session.stage)
+                session_spawn_cooldown_ms = float(session.spawn_cooldown_ms)
                 self._survival.elapsed_ms = session_elapsed_ms
                 self._survival.stage = session_stage
                 self._survival.spawn_cooldown = session_spawn_cooldown_ms

@@ -142,13 +142,11 @@ class RushMode(BaseGameplayMode):
 
         status = self.state.status
         base_status = self.save_status
-        sim_unlock_index = int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0
-        sim_unlock_index_full = int(getattr(status, "quest_unlock_index_full", 0) or 0) if status is not None else 0
-        status_unlock_index = (
-            int(getattr(base_status, "quest_unlock_index", 0) or 0) if base_status is not None else int(sim_unlock_index)
-        )
+        sim_unlock_index = int(status.quest_unlock_index) if status is not None else 0
+        sim_unlock_index_full = int(status.quest_unlock_index_full) if status is not None else 0
+        status_unlock_index = int(base_status.quest_unlock_index) if base_status is not None else int(sim_unlock_index)
         status_unlock_index_full = (
-            int(getattr(base_status, "quest_unlock_index_full", 0) or 0)
+            int(base_status.quest_unlock_index_full)
             if base_status is not None
             else int(sim_unlock_index_full)
         )
@@ -214,8 +212,8 @@ class RushMode(BaseGameplayMode):
             )
             weapon_usage_counts = weapon_usage_counts[:WEAPON_USAGE_COUNT]
         status_snapshot = ReplayStatusSnapshot(
-            quest_unlock_index=int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0,
-            quest_unlock_index_full=int(getattr(status, "quest_unlock_index_full", 0) or 0)
+            quest_unlock_index=int(status.quest_unlock_index) if status is not None else 0,
+            quest_unlock_index_full=int(status.quest_unlock_index_full)
             if status is not None
             else 0,
             weapon_usage_counts=weapon_usage_counts,
@@ -227,7 +225,7 @@ class RushMode(BaseGameplayMode):
                     game_mode_id=int(GameMode.RUSH),
                     seed=int(self.state.rng.state),
                     bootstrap_kind="terrain_v1",
-                    bootstrap_seed=int(getattr(self, "_bootstrap_seed", 0) or 0),
+                    bootstrap_seed=int(self._bootstrap_seed),
                     tick_rate=int(self._sim_clock.tick_rate),
                     difficulty_level=int(self.world.difficulty_level),
                     hardcore=bool(self.world.hardcore),
@@ -403,7 +401,7 @@ class RushMode(BaseGameplayMode):
         runtime.update()
         role = str(self._lan_role)
         self._consume_net_runtime_recovery(mode_name="rush")
-        if str(getattr(runtime, "error", "") or ""):
+        if str(runtime.error or ""):
             self.close_requested = True
             return
         if self.world.audio_router is not None:
@@ -434,7 +432,7 @@ class RushMode(BaseGameplayMode):
                 if frame is None:
                     return False
 
-                packed_inputs = list(getattr(frame, "frame_inputs", []) or [])
+                packed_inputs = list(frame.frame_inputs)
                 player_inputs = [unpack_player_input(packed) for packed in packed_inputs]
                 recorder = self._replay_recorder
                 if recorder is not None:
@@ -446,8 +444,8 @@ class RushMode(BaseGameplayMode):
                     inputs=player_inputs,
                 )
 
-                remote_command_hash = str(getattr(frame, "command_hash", "") or "")
-                remote_state_hash = str(getattr(frame, "state_hash", "") or "")
+                remote_command_hash = str(frame.command_hash or "")
+                remote_state_hash = str(frame.state_hash or "")
                 local_command_hash = str(tick.step.command_hash)
                 local_state_hash = ""
                 if role == "join":

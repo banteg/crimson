@@ -335,7 +335,7 @@ class QuestMode(BaseGameplayMode):
         replay = recorder.finish()
         self._record_replay_checkpoint(max(0, recorder.tick_index - 1), force=True)
         terminal_tick = int(recorder.tick_index)
-        if any(int(getattr(event, "tick_index", -1)) == terminal_tick for event in replay.events):
+        if any(int(event.tick_index) == terminal_tick for event in replay.events):
             self._record_replay_checkpoint(terminal_tick, force=True)
         data = dump_replay(replay)
         digest = hashlib.sha256(data).hexdigest()
@@ -343,7 +343,7 @@ class QuestMode(BaseGameplayMode):
         replay_dir = self._base_dir / "replays"
         replay_dir.mkdir(parents=True, exist_ok=True)
         level = str(self._quest.level) if self._quest.level else str(replay.header.quest_level or "quest")
-        kind = str(getattr(self._outcome, "kind", "quest")) if self._outcome is not None else "quest"
+        kind = str(self._outcome.kind) if self._outcome is not None else "quest"
         base_time_ms = int(self._quest.spawn_timeline_ms)
         base_name = f"quest_{level}_{stamp}_{kind}_t{base_time_ms}"
         path = replay_dir / f"{base_name}.crdemo.gz"
@@ -503,8 +503,8 @@ class QuestMode(BaseGameplayMode):
             )
             weapon_usage_counts = weapon_usage_counts[:WEAPON_USAGE_COUNT]
         status_snapshot = ReplayStatusSnapshot(
-            quest_unlock_index=int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0,
-            quest_unlock_index_full=int(getattr(status, "quest_unlock_index_full", 0) or 0)
+            quest_unlock_index=int(status.quest_unlock_index) if status is not None else 0,
+            quest_unlock_index_full=int(status.quest_unlock_index_full)
             if status is not None
             else 0,
             weapon_usage_counts=weapon_usage_counts,
@@ -862,7 +862,7 @@ class QuestMode(BaseGameplayMode):
         runtime.update()
         role = str(self._lan_role)
         self._consume_net_runtime_recovery(mode_name="quests")
-        if str(getattr(runtime, "error", "") or ""):
+        if str(runtime.error or ""):
             self.close_requested = True
             return
         if self.world.audio_router is not None:
@@ -896,7 +896,7 @@ class QuestMode(BaseGameplayMode):
                 if frame is None:
                     return False
 
-                packed_inputs = list(getattr(frame, "frame_inputs", []) or [])
+                packed_inputs = list(frame.frame_inputs)
                 player_inputs = [unpack_player_input(packed) for packed in packed_inputs]
                 recorder = self._replay_recorder
                 if recorder is not None:
@@ -916,8 +916,8 @@ class QuestMode(BaseGameplayMode):
                     inputs=player_inputs,
                 )
 
-                remote_command_hash = str(getattr(frame, "command_hash", "") or "")
-                remote_state_hash = str(getattr(frame, "state_hash", "") or "")
+                remote_command_hash = str(frame.command_hash or "")
+                remote_state_hash = str(frame.state_hash or "")
                 local_command_hash = str(tick.step.command_hash)
                 local_state_hash = ""
                 if role == "join":
