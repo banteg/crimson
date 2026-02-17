@@ -12,6 +12,7 @@
 // Output:
 //   C:\share\frida\gameplay_diff_capture.json (non-quest fallback)
 //   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.json (quests)
+//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.run<k>.json (repeat attempts)
 //   (or CRIMSON_FRIDA_DIR / CRIMSON_FRIDA_OUT_PATH overrides)
 
 const DEFAULT_LOG_DIR = "C:\\share\\frida";
@@ -190,6 +191,7 @@ const FN = {
   creature_handle_death: 0x0041e910,
   creature_spawn_template: 0x00430af0,
   creature_spawn_tinted: 0x00444810,
+  quest_start_selected: 0x0043a790,
   perks_update_effects: 0x00406b40,
   quest_spawn_timeline_update: 0x00434250,
   effect_spawn_blood_splatter: 0x0042eb10,
@@ -404,6 +406,8 @@ const outState = {
   lastTickElapsedMs: null,
   lastTickGameplayFrame: null,
   lastCreatureDigest: null,
+  questAttemptPendingByLevel: {},
+  questAttemptStartsByLevel: {},
 };
 
 const UNKNOWN_DEATH = {
@@ -419,6 +423,49 @@ function questLevelKey(major, minor) {
   const stageMinor = minor == null ? -1 : minor | 0;
   if (stageMajor <= 0 || stageMinor <= 0) return null;
   return String(stageMajor) + "_" + String(stageMinor);
+}
+
+function noteQuestAttemptStart(source, gameModeId, major, minor) {
+  const modeId = gameModeId == null ? -1 : gameModeId | 0;
+  const levelKey = questLevelKey(major, minor);
+  if (modeId !== GAME_MODE_QUESTS || !levelKey) return null;
+  const pendingMap = outState.questAttemptPendingByLevel;
+  const startsMap = outState.questAttemptStartsByLevel;
+  const pendingCount = pendingMap[levelKey] == null ? 0 : pendingMap[levelKey] | 0;
+  const startsCount = startsMap[levelKey] == null ? 0 : startsMap[levelKey] | 0;
+  pendingMap[levelKey] = pendingCount + 1;
+  startsMap[levelKey] = startsCount + 1;
+  writeLine({
+    event: "quest_attempt_start",
+    source: source || "unknown",
+    game_mode_id: modeId,
+    quest_stage_major: major == null ? null : major | 0,
+    quest_stage_minor: minor == null ? null : minor | 0,
+    quest_level_key: levelKey,
+    attempt_index: startsMap[levelKey],
+    pending_rollovers_for_level: pendingMap[levelKey],
+  });
+  return {
+    level_key: levelKey,
+    attempt_index: startsMap[levelKey],
+  };
+}
+
+function consumeQuestAttemptRolloverForTick(tickObj) {
+  if (!CONFIG.splitQuestFiles || !tickObj) return false;
+  const gameModeId = tickObj.game_mode_id == null ? -1 : tickObj.game_mode_id | 0;
+  if (gameModeId !== GAME_MODE_QUESTS) return false;
+  const levelKey = questLevelKey(tickObj.quest_stage_major, tickObj.quest_stage_minor);
+  if (!levelKey) return false;
+  const pendingMap = outState.questAttemptPendingByLevel;
+  const pendingCount = pendingMap[levelKey] == null ? 0 : pendingMap[levelKey] | 0;
+  if (pendingCount <= 0) return false;
+  if (pendingCount <= 1) {
+    delete pendingMap[levelKey];
+  } else {
+    pendingMap[levelKey] = pendingCount - 1;
+  }
+  return true;
 }
 
 function resolveCaptureOutPathForTick(tickObj) {
@@ -538,8 +585,14 @@ function switchCaptureFile(outPath, reason, tickObj) {
 
 function ensureCaptureFileForTick(tickObj) {
   const outPath = resolveCaptureOutPathForTick(tickObj);
-  if (!outState.captureStarted || outState.captureClosed || outState.currentOutPath !== outPath) {
-    switchCaptureFile(outPath, "tick_route", tickObj);
+  const forceQuestAttemptRollover = consumeQuestAttemptRolloverForTick(tickObj);
+  if (
+    !outState.captureStarted ||
+    outState.captureClosed ||
+    outState.currentOutPath !== outPath ||
+    forceQuestAttemptRollover
+  ) {
+    switchCaptureFile(outPath, forceQuestAttemptRollover ? "quest_attempt" : "tick_route", tickObj);
   }
 }
 
@@ -3064,6 +3117,17 @@ function installHooks() {
       );
       addPhaseMarker("state_set_call", { target_state: payload.target_state });
       emitRawEvent(Object.assign({ event: "game_state_set" }, payload));
+    },
+  });
+
+  attachHook("quest_start_selected", fnPtrs.quest_start_selected, {
+    onEnter() {
+      noteQuestAttemptStart(
+        "quest_start_selected",
+        readDataI32("config_game_mode"),
+        readDataI32("quest_stage_major"),
+        readDataI32("quest_stage_minor")
+      );
     },
   });
 
