@@ -376,3 +376,26 @@ Rewrite behavior:
 
 - Default: allow the pistol fallback when any player currently holds Pistol.
 - With `--preserve-bugs`: keep native player-1-only fallback gating.
+
+## 17) Mini-Rocket Swarmers spread can collapse into clumped rockets
+
+Native behavior:
+
+- In `player_fire_weapon` (`0x00416a50`), Mini-Rocket Swarmers set per-rocket
+  spread step to `ammo * 1.0471976` (`ammo * pi/3`), then spawn `ammo` rockets
+  at `angle += step`.
+- Because heading is periodic (`2*pi`), some clip sizes alias to repeated
+  directions. Example: with clip size `6`, all six rockets get the same heading.
+
+Why it’s likely a bug:
+
+- Swarmers are intended to fire a spread burst, but clip-size modifiers can
+  collapse multiple rockets onto identical trajectories.
+- This makes some bursts look like a single projectile and reduces effective
+  area coverage.
+
+Rewrite behavior:
+
+- Default: Mini-Rocket Swarmers use an even, aim-centered cone spread so each
+  rocket in the burst gets a distinct heading.
+- With `--preserve-bugs`: keep native ammo-scaled stepping (including clumping).

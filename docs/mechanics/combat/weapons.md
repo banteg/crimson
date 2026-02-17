@@ -189,6 +189,13 @@ Clip 5 · Damage 1.0 · Fire 1.8 s · Reload 1.8 s · Rocket
 Dumps the entire clip as individual rockets in a single burst. One
 trigger pull, five rockets, then a full reload.
 
+!!! bug "Original bug"
+    In `crimsonland.exe`, Mini-Rocket Swarmers scale spread step by current
+    ammo count. With clip-size modifiers (for example `Ammo Maniac` pushing
+    clip 5 -> 6), multiple rockets can share the same heading and visually
+    clump into one projectile. By default the rewrite uses an even, aim-centered
+    cone spread; use `--preserve-bugs` to keep native clumping behavior.
+
 ### 18. Rocket Minigun
 
 Clip 16 · Damage 1.0 · Fire 0.12 s · Reload 1.8 s · Rocket
