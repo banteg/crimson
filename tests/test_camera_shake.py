@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 from pathlib import Path
 
 from crimson.bonuses import BonusId
@@ -11,11 +9,12 @@ from crimson.bonuses.apply import bonus_apply
 from crimson.camera import camera_shake_update
 from crimson.game_world import GameWorld
 from crimson.gameplay import GameplayState
-from crimson.sim.input import PlayerInput
-from crimson.sim.state_types import PlayerState
 from crimson.sim.driver.setup import build_damage_scale_by_type, build_empty_fx_queues, reset_players
+from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import RushDeterministicSession, SurvivalDeterministicSession
+from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
+from grim.geom import Vec2
 
 
 @dataclass(slots=True)

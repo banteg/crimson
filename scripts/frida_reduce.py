@@ -6,10 +6,9 @@ import re
 import sys
 from bisect import bisect_right
 from collections import Counter, defaultdict
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, Iterator
-
 
 LINK_BASE_EXE = 0x00400000
 LINK_BASE_GRIM = 0x10000000
@@ -119,7 +118,7 @@ def load_functions(path: Path) -> list[FunctionEntry]:
                 name=name,
                 signature=signature,
                 address_text=addr_text or format_hex(addr) or "",
-            )
+            ),
         )
     return entries
 
@@ -591,7 +590,7 @@ def main() -> int:
                 "textures": bucket.textures.most_common(args.top),
                 "sfx_ids": bucket.sfx_ids.most_common(args.top),
                 "grim_calls": bucket.grim_calls.most_common(args.top),
-            }
+            },
         )
     summary.sort(key=lambda row: sum(row.get("events", {}).values()), reverse=True)
 
@@ -619,7 +618,7 @@ def main() -> int:
                 "address": format_hex(entry.start),
                 "name": name,
                 "comment": build_comment(bucket, args.top),
-            }
+            },
         )
     candidates_path.write_text(json.dumps(candidates, indent=2) + "\n", encoding="utf-8")
 

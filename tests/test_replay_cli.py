@@ -5,15 +5,20 @@ import json
 from dataclasses import replace
 from pathlib import Path
 
-from grim.geom import Vec2
 from typer.testing import CliRunner
 
 from crimson.cli import app
 from crimson.game_modes import GameMode
 from crimson.replay import Replay, ReplayHeader, ReplayRecorder, dump_replay
-from crimson.replay.checkpoints import FORMAT_VERSION, ReplayCheckpoints, default_checkpoints_path, dump_checkpoints_file
+from crimson.replay.checkpoints import (
+    FORMAT_VERSION,
+    ReplayCheckpoints,
+    default_checkpoints_path,
+    dump_checkpoints_file,
+)
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.input import PlayerInput
+from grim.geom import Vec2
 
 
 def _build_replay(*, mode: GameMode, ticks: int, seed: int = 0xBEEF) -> Replay:

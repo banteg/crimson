@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from grim.geom import Vec2
-
-from dataclasses import dataclass, field
 import math
 import random
+from collections.abc import Callable
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import pyray as rl
@@ -13,30 +11,31 @@ import pyray as rl
 from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
+from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 
-from .terrain_assets import TerrainTextureId, terrain_texture_by_id
+from .audio_router import AudioRouter
 from .creatures.anim import creature_corpse_frame_for_type
 from .creatures.runtime import CreaturePool
 from .creatures.spawn import SpawnEnv
 from .effects import FxQueue, FxQueueRotated
+from .game_modes import GameMode
 from .gameplay import GameplayState
-from .sim.input import PlayerInput
-from .sim.state_types import PlayerState
-from .weapon_runtime import weapon_assign_player
-from .render.terrain_fx import FxQueueTextures, bake_fx_queues
 from .render.frame import RenderFrame
+from .render.terrain_fx import FxQueueTextures, bake_fx_queues
 from .render.world import WorldRenderer
-from .audio_router import AudioRouter
+from .sim.input import PlayerInput
 from .sim.presentation_step import (
     PresentationStepCommands,
     queue_projectile_decals,
 )
+from .sim.state_types import PlayerState
 from .sim.step_pipeline import DeterministicStepResult, run_deterministic_step
 from .sim.world_defs import CREATURE_ASSET
 from .sim.world_state import ProjectileHit, WorldEvents, WorldState
+from .terrain_assets import TerrainTextureId, terrain_texture_by_id
+from .weapon_runtime import weapon_assign_player
 from .weapons import WEAPON_TABLE
-from .game_modes import GameMode
 
 
 @dataclass(slots=True)
@@ -172,6 +171,18 @@ class GameWorld:
             # advance the authoritative gameplay RNG stream.
             terrain_seed = int(self.state.rng.state)
             self.ground.schedule_generate(seed=terrain_seed, layers=3)
+
+    def load_world_state(self, world_state: WorldState) -> None:
+        """Atomically swap the authoritative world-state backing references."""
+
+        self.world_state = world_state
+        self.spawn_env = self.world_state.spawn_env
+        self.state = self.world_state.state
+        self.players = self.world_state.players
+        self.creatures = self.world_state.creatures
+        self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
+        self.last_presentation = PresentationStepCommands()
+        self.last_command_hash = ""
 
     def _ensure_texture_loader(self) -> TextureLoader:
         if self._texture_loader is not None:

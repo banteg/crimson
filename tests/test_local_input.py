@@ -6,8 +6,8 @@ import pytest
 
 from crimson import local_input
 from crimson.aim_schemes import AimScheme
-from crimson.sim.state_types import PlayerState
 from crimson.movement_controls import MovementControlType
+from crimson.sim.state_types import PlayerState
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.geom import Vec2
 

@@ -7,6 +7,8 @@ from pathlib import Path
 import msgspec
 
 from .types import (
+    REPLAY_FORMAT_VERSION,
+    WEAPON_USAGE_COUNT,
     BootstrapKind,
     InputQuantization,
     PackedPlayerInput,
@@ -15,10 +17,8 @@ from .types import (
     PerkPickEvent,
     Replay,
     ReplayEvent,
-    REPLAY_FORMAT_VERSION,
     ReplayHeader,
     ReplayStatusSnapshot,
-    WEAPON_USAGE_COUNT,
     UnknownEvent,
 )
 
@@ -93,14 +93,14 @@ def _quantize_f32(value: float) -> float:
 def _validate_usage_counts(counts: tuple[int, ...] | list[int]) -> None:
     if len(counts) != int(WEAPON_USAGE_COUNT):
         raise ReplayCodecError(
-            f"replay header status.weapon_usage_counts must have {int(WEAPON_USAGE_COUNT)} entries"
+            f"replay header status.weapon_usage_counts must have {int(WEAPON_USAGE_COUNT)} entries",
         )
 
 
 def _header_to_wire(header: ReplayHeader) -> _ReplayHeaderWire:
     if int(header.replay_format_version) != int(REPLAY_FORMAT_VERSION):
         raise ReplayCodecError(
-            f"unsupported replay format version in header: {int(header.replay_format_version)}"
+            f"unsupported replay format version in header: {int(header.replay_format_version)}",
         )
     if int(header.player_count) <= 0:
         raise ReplayCodecError(f"replay header player_count must be positive, got {int(header.player_count)}")
@@ -242,7 +242,7 @@ def _event_from_wire(event: _ReplayEventWire) -> ReplayEvent:
     if kind == "perk_pick":
         if int(event.player_index) < 0 or int(event.choice_index) < 0:
             raise ReplayCodecError(
-                f"perk_pick must have non-negative player/choice indexes: {event.player_index}, {event.choice_index}"
+                f"perk_pick must have non-negative player/choice indexes: {event.player_index}, {event.choice_index}",
             )
         if event.payload:
             raise ReplayCodecError("perk_pick payload must be empty")
@@ -279,13 +279,13 @@ def dump_replay(replay: Replay) -> bytes:
     for tick_idx, tick in enumerate(replay.inputs):
         if len(tick) != expected_players:
             raise ReplayCodecError(
-                f"replay tick {tick_idx} has {len(tick)} players, expected {expected_players}"
+                f"replay tick {tick_idx} has {len(tick)} players, expected {expected_players}",
             )
         inputs_wire.append(
             [
                 _packed_input_to_wire(packed, tick_idx=int(tick_idx), player_idx=int(player_idx))
                 for player_idx, packed in enumerate(tick)
-            ]
+            ],
         )
 
     events_wire = [_event_to_wire(event) for event in replay.events]
@@ -314,7 +314,7 @@ def load_replay(data: bytes) -> Replay:
     for tick_idx, tick in enumerate(wire.inputs):
         if len(tick) != expected_players:
             raise ReplayCodecError(
-                f"replay tick {tick_idx} has {len(tick)} players, expected {expected_players}"
+                f"replay tick {tick_idx} has {len(tick)} players, expected {expected_players}",
             )
         packed_tick: PackedTickInputs = []
         for packed in tick:

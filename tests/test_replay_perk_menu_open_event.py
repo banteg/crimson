@@ -1,18 +1,18 @@
 from __future__ import annotations
 
 from crimson.game_modes import GameMode
-from crimson.weapon_runtime import weapon_refresh_available
-from crimson.perks import PerkId
-from crimson.perks.availability import perks_rebuild_available
-from crimson.perks.helpers import perk_count_get
-from crimson.replay import PerkMenuOpenEvent, PerkPickEvent, UnknownEvent
 from crimson.original.capture import (
     CAPTURE_PERK_APPLY_EVENT_KIND,
     CAPTURE_PERK_PENDING_EVENT_KIND,
 )
+from crimson.perks import PerkId
+from crimson.perks.availability import perks_rebuild_available
+from crimson.perks.helpers import perk_count_get
+from crimson.replay import PerkMenuOpenEvent, PerkPickEvent, UnknownEvent
 from crimson.sim.driver.replay_events import apply_replay_tick_events
 from crimson.sim.driver.setup import reset_players
 from crimson.sim.world_state import WorldState
+from crimson.weapon_runtime import weapon_refresh_available
 
 
 def test_perk_menu_open_event_consumes_rng_for_choices() -> None:
@@ -159,7 +159,7 @@ def test_original_capture_pending_event_sets_pending_without_pick_side_effects()
                 tick_index=5,
                 kind=CAPTURE_PERK_PENDING_EVENT_KIND,
                 payload=[{"perk_pending": 0}],
-            )
+            ),
         ],
         tick_index=5,
         dt_frame=1.0 / 60.0,
@@ -195,7 +195,7 @@ def test_original_capture_pending_event_supported_in_quest_mode() -> None:
                 tick_index=5,
                 kind=CAPTURE_PERK_PENDING_EVENT_KIND,
                 payload=[{"perk_pending": 0}],
-            )
+            ),
         ],
         tick_index=5,
         dt_frame=1.0 / 60.0,
@@ -230,7 +230,7 @@ def test_original_capture_perk_apply_event_applies_perk_without_rng_for_non_rand
                 tick_index=7,
                 kind=CAPTURE_PERK_APPLY_EVENT_KIND,
                 payload=[{"perk_id": int(PerkId.FASTSHOT)}],
-            )
+            ),
         ],
         tick_index=7,
         dt_frame=1.0 / 60.0,
@@ -265,7 +265,7 @@ def test_original_capture_perk_apply_event_supported_in_quest_mode() -> None:
                 tick_index=7,
                 kind=CAPTURE_PERK_APPLY_EVENT_KIND,
                 payload=[{"perk_id": int(PerkId.FASTSHOT)}],
-            )
+            ),
         ],
         tick_index=7,
         dt_frame=1.0 / 60.0,
@@ -300,7 +300,7 @@ def test_original_capture_outside_before_bandage_does_not_shift_rng_state() -> N
                 tick_index=9,
                 kind=CAPTURE_PERK_APPLY_EVENT_KIND,
                 payload=[{"perk_id": int(PerkId.BANDAGE), "outside_before": True}],
-            )
+            ),
         ],
         tick_index=9,
         dt_frame=1.0 / 60.0,

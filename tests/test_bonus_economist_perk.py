@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
+from crimson.sim.state_types import PlayerState
+from grim.geom import Vec2
 
 
 def test_bonus_economist_extends_bonus_timers() -> None:

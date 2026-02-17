@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import Callable, MutableSequence, Sequence
+from collections.abc import Callable, MutableSequence, Sequence
 
 from grim.geom import Vec2
 
@@ -10,9 +10,9 @@ from ...math_parity import NATIVE_HALF_PI, f32
 from ...perks import PerkId
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..types import (
+    MAIN_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
     Damageable,
-    MAIN_PROJECTILE_POOL_SIZE,
     PlayerDamageable,
     Projectile,
     ProjectileHit,
@@ -22,9 +22,9 @@ from ..types import (
     _rng_zero,
 )
 from .behaviors import (
-    PROJECTILE_BEHAVIOR_BY_TYPE_ID,
     _DEFAULT_BEHAVIOR,
     _PROJECTILE_HIT_PERK_HOOKS,
+    PROJECTILE_BEHAVIOR_BY_TYPE_ID,
     _ProjectileHitInfo,
     _ProjectileHitPerkCtx,
     _ProjectileUpdateCtx,
@@ -286,7 +286,7 @@ class ProjectilePool:
                     if hit_idx is None:
                         can_hit_players = True
                         if runtime_state is not None and int(proj_index) == int(
-                            runtime_state.shock_chain_projectile_id
+                            runtime_state.shock_chain_projectile_id,
                         ):
                             # Native skips `player_find_in_radius` for the currently tracked
                             # shock-chain projectile slot in this branch.
@@ -558,7 +558,7 @@ class ProjectilePool:
                     origin=proj.origin,
                     hit=proj.pos,
                     target=creature.pos,
-                )
+                ),
             )
 
             creature = creatures[hit_idx]

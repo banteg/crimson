@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from ...gameplay import GameplayState
+from ...persistence.highscores import HighScoreRecord
 from ...sim.state_types import PlayerState
 from ...weapon_runtime import most_used_weapon_id_for_player
-from ...persistence.highscores import HighScoreRecord
 
 
 def clamp_shots(fired: int, hit: int) -> tuple[int, int]:
@@ -38,7 +38,7 @@ def build_highscore_record_for_game_over(
     record.creature_kill_count = int(creature_kill_count)
 
     weapon_id = most_used_weapon_id_for_player(
-        state, player_index=int(player.index), fallback_weapon_id=int(player.weapon_id)
+        state, player_index=int(player.index), fallback_weapon_id=int(player.weapon_id),
     )
     record.most_used_weapon_id = int(weapon_id)
 

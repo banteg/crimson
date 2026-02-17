@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import pytest
 
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
-from crimson.weapon_runtime import weapon_assign_player
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
 from crimson.projectiles import ProjectileTypeId
+from crimson.sim.state_types import PlayerState
+from crimson.weapon_runtime import weapon_assign_player
+from grim.geom import Vec2
 
 
 def test_my_favourite_weapon_increases_clip_size() -> None:

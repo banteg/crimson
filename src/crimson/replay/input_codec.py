@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import struct
-from typing import Sequence
+from collections.abc import Sequence
 
 from grim.geom import Vec2
 
@@ -47,7 +47,7 @@ def unpack_player_input(packed: PackedPlayerInput) -> PlayerInput:
     mx, my, ax, ay, flags = unpack_packed_player_input(packed)
     fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
     move_forward_pressed, move_backward_pressed, turn_left_pressed, turn_right_pressed = unpack_input_move_key_flags(
-        int(flags)
+        int(flags),
     )
     return PlayerInput(
         move=Vec2(float(mx), float(my)),

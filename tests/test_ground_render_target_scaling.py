@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-import grim.terrain_render as terrain_render
 import pytest
+
+import grim.terrain_render as terrain_render
 from grim.terrain_render import GroundRenderer
 
 pytestmark = pytest.mark.terrain

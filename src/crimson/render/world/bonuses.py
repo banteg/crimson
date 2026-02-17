@@ -4,9 +4,9 @@ import math
 
 import pyray as rl
 
+from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.fonts.small import draw_small_text, measure_small_text_width
 
 from ...bonuses import BONUS_BY_ID, BonusId
 from ...bonuses.pool import bonus_find_aim_hover_entry, bonus_label_for_entry

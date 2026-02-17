@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from ..perks import PerkId
+from grim.geom import Vec2
+
 from ..creatures.spawn import SpawnId
+from ..perks import PerkId
 from ..weapons import WeaponId
 from .helpers import (
     center_point,
@@ -12,7 +14,6 @@ from .helpers import (
 )
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
-from grim.geom import Vec2
 
 
 @register_quest(
@@ -35,7 +36,7 @@ def build_4_1_major_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ALIEN_RANDOM_GREEN_20,
                 trigger_ms=trigger,
                 count=2,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -44,7 +45,7 @@ def build_4_1_major_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ALIEN_RANDOM_GREEN_20,
                 trigger_ms=trigger,
                 count=2,
-            )
+            ),
         )
         trigger += 2000 - offset
         if trigger < 1000:
@@ -72,7 +73,7 @@ def build_4_2_zombie_time(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=8,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -81,7 +82,7 @@ def build_4_2_zombie_time(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=8,
-            )
+            ),
         )
         trigger += 8000
     return entries
@@ -108,7 +109,7 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=6,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -117,7 +118,7 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=6,
-            )
+            ),
         )
         if wave % 5 == 0:
             idx = wave // 5
@@ -128,7 +129,7 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_FAST_0C,
                     trigger_ms=trigger,
                     count=idx + 1,
-                )
+                ),
             )
             entries.append(
                 spawn(
@@ -137,7 +138,7 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_FAST_0C,
                     trigger_ms=trigger,
                     count=idx + 2,
-                )
+                ),
             )
         trigger += 7000
         wave += 1
@@ -166,7 +167,7 @@ def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.AI1_ALIEN_BLUE_TINT_1A,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -175,7 +176,7 @@ def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -184,7 +185,7 @@ def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -193,7 +194,7 @@ def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         )
         trigger += 11000
         wave += 1
@@ -222,7 +223,7 @@ def build_4_5_the_massacre(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=wave + 3,
-            )
+            ),
         )
         if wave % 2 == 0:
             entries.append(
@@ -232,7 +233,7 @@ def build_4_5_the_massacre(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
                     trigger_ms=trigger,
                     count=wave + 1,
-                )
+                ),
             )
         trigger += 5000
         wave += 1
@@ -264,7 +265,7 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=spawn_id_for(idx % 2 == 1),
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 1800
         i_var5 += 0x270
@@ -280,7 +281,7 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=spawn_id_for(toggle),
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 1500
         toggle = not toggle
@@ -293,7 +294,7 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
             trigger_ms=trigger,
             count=1,
-        )
+        ),
     )
 
     i_var5 = 0
@@ -307,7 +308,7 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=spawn_id_for(toggle),
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 1200
         toggle = not toggle
@@ -324,7 +325,7 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=spawn_id_for(toggle),
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 800
         toggle = not toggle
@@ -341,7 +342,7 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=spawn_id_for(toggle),
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 800
         toggle = not toggle
@@ -358,7 +359,7 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=spawn_id_for(toggle),
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 700
         toggle = not toggle
@@ -375,7 +376,7 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=spawn_id_for(toggle),
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 700
         toggle = not toggle
@@ -392,7 +393,7 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=spawn_id_for(toggle),
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 800
         toggle = not toggle
@@ -425,7 +426,7 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
                     count=1,
-                )
+                ),
             )
             trigger += 200
 
@@ -439,7 +440,7 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
                     spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                     trigger_ms=trigger,
                     count=count,
-                )
+                ),
             )
             entries.append(
                 spawn_at(
@@ -448,7 +449,7 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
                     spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                     trigger_ms=trigger,
                     count=count,
-                )
+                ),
             )
             entries.append(
                 spawn_at(
@@ -457,7 +458,7 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
                     spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                     trigger_ms=trigger,
                     count=count,
-                )
+                ),
             )
             entries.append(
                 spawn_at(
@@ -466,7 +467,7 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
                     spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                     trigger_ms=trigger,
                     count=count,
-                )
+                ),
             )
             trigger += 5500
 
@@ -481,7 +482,7 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
                     count=1,
-                )
+                ),
             )
             trigger += 500
     return entries
@@ -515,7 +516,7 @@ def build_4_8_syntax_terror(ctx: QuestContext, full_version: bool = True) -> lis
                         spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
                         trigger_ms=trigger,
                         count=1,
-                    )
+                    ),
                 )
                 trigger += 300
                 inner_seed += 0x15
@@ -543,7 +544,7 @@ def build_4_9_the_annihilation(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
             trigger_ms=500,
             count=2,
-        )
+        ),
     )
 
     trigger = 500
@@ -552,7 +553,7 @@ def build_4_9_the_annihilation(ctx: QuestContext) -> list[SpawnEntry]:
         y = float(i_var5 // 12 + 0x80)
         x = 832.0 if idx % 2 == 0 else 896.0
         entries.append(
-            spawn(Vec2(x, y), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=trigger, count=1)
+            spawn(Vec2(x, y), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=trigger, count=1),
         )
         trigger += 500
         i_var5 += 0x300
@@ -564,7 +565,7 @@ def build_4_9_the_annihilation(ctx: QuestContext) -> list[SpawnEntry]:
         y = float(i_var5 // 12 + 0x80)
         x = 832.0 if toggle else 896.0
         entries.append(
-            spawn(Vec2(x, y), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=trigger, count=1)
+            spawn(Vec2(x, y), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=trigger, count=1),
         )
         trigger += 300
         toggle = not toggle
@@ -624,7 +625,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
                 spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 300
 
@@ -635,7 +636,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_3C_SLOW_0B,
             trigger_ms=trigger,
             count=1,
-        )
+        ),
     )
 
     trigger = 18000
@@ -650,7 +651,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
                 spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
                 trigger_ms=trigger,
                 count=2,
-            )
+            ),
         )
         trigger += 1000
         toggle = not toggle
@@ -665,7 +666,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
                 spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 300
 
@@ -679,7 +680,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
                     trigger_ms=trigger,
                     count=1,
-                )
+                ),
             )
             trigger += 500
 
@@ -695,7 +696,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
                 spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
                 trigger_ms=trigger,
                 count=2,
-            )
+            ),
         )
         trigger += 1000
         toggle = not toggle

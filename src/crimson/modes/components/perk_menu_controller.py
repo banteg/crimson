@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Callable, Sequence
 
 import pyray as rl
 
@@ -9,10 +9,11 @@ from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.math import clamp
 
 from ...gameplay import GameplayState
-from ...sim.state_types import PlayerState
 from ...perks import PerkId, perk_display_description, perk_display_name
 from ...perks.selection import perk_selection_current_choices, perk_selection_pick
 from ...perks.state import CreatureForPerks, PerkSelectionState
+from ...sim.state_types import PlayerState
+from ...ui.layout import ui_origin, ui_scale
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import (
     PERK_MENU_TRANSITION_MS,
@@ -28,7 +29,6 @@ from ...ui.perk_menu import (
     perk_menu_compute_layout,
     perk_menu_panel_slide_x,
 )
-from ...ui.layout import ui_origin, ui_scale
 
 PlaySfxFn = Callable[[str], None]
 OnCloseFn = Callable[[], None]
@@ -411,7 +411,7 @@ class PerkMenuController:
         )
 
         cancel_w = button_width(
-            ctx.font, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide
+            ctx.font, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide,
         )
         button_draw(
             ctx.assets,

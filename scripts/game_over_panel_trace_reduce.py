@@ -258,15 +258,15 @@ def main() -> int:
         and panel_bbox_stats.height_max <= 0.0
     ):
         warnings.append(
-            "Panel bbox height never became positive; trace may be reading the wrong element base or offsets."
+            "Panel bbox height never became positive; trace may be reading the wrong element base or offsets.",
         )
     if texture_handles and len(texture_handles) == 1 and 0 in texture_handles:
         warnings.append(
-            "Panel texture_handle stayed 0 for all panel samples; geometry payload likely invalid."
+            "Panel texture_handle stayed 0 for all panel samples; geometry payload likely invalid.",
         )
     if any(abs(int(mode)) > 1000 for mode in render_modes):
         warnings.append(
-            "Outlier render_mode values detected; this usually indicates struct misalignment in the tracer."
+            "Outlier render_mode values detected; this usually indicates struct misalignment in the tracer.",
         )
 
     summary = {

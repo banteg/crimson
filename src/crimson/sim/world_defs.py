@@ -50,7 +50,7 @@ PLASMA_PARTICLE_TYPES = frozenset(
         ProjectileTypeId.PLASMA_CANNON,
         ProjectileTypeId.SPIDER_PLASMA,
         ProjectileTypeId.SHRINKIFIER,
-    }
+    },
 )
 
 ION_TYPES = frozenset(
@@ -58,7 +58,7 @@ ION_TYPES = frozenset(
         ProjectileTypeId.ION_RIFLE,
         ProjectileTypeId.ION_MINIGUN,
         ProjectileTypeId.ION_CANNON,
-    }
+    },
 )
 
 FIRE_BULLETS_TYPES = frozenset({ProjectileTypeId.FIRE_BULLETS})

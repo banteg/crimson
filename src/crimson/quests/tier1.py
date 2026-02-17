@@ -4,8 +4,8 @@ import random
 
 from grim.geom import Vec2
 
-from ..perks import PerkId
 from ..creatures.spawn import SpawnId
+from ..perks import PerkId
 from ..weapons import WeaponId
 from .helpers import (
     center_point,
@@ -75,7 +75,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         if i > 6:
             entries.append(
@@ -85,7 +85,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                     trigger_ms=trigger,
                     count=1,
-                )
+                ),
             )
         if i == 13:
             entries.append(
@@ -95,7 +95,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
                     trigger_ms=39600,
                     count=1,
-                )
+                ),
             )
         if i > 10:
             entries.append(
@@ -105,7 +105,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                     trigger_ms=trigger,
                     count=1,
-                )
+                ),
             )
     return entries
 
@@ -136,7 +136,7 @@ def build_1_3_target_practice(ctx: QuestContext, rng: random.Random | None = Non
                 spawn_id=SpawnId.ALIEN_AI7_ORBITER_36,
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += max(step, 1100)
         step -= 50
@@ -173,7 +173,7 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=spawn_id,
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         if i > 4:
             entries.append(
@@ -183,7 +183,7 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                     trigger_ms=trigger,
                     count=1,
-                )
+                ),
             )
         if i > 10:
             entries.append(
@@ -193,7 +193,7 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                     trigger_ms=trigger,
                     count=1,
-                )
+                ),
             )
         if i == 10:
             burst_trigger = (step * 5 - 2500) * 2
@@ -204,7 +204,7 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
                     trigger_ms=burst_trigger,
                     count=1,
-                )
+                ),
             )
             entries.append(
                 spawn_at(
@@ -213,7 +213,7 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
                     spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
                     trigger_ms=burst_trigger,
                     count=1,
-                )
+                ),
             )
         step = max(step - 50, 1800)
     return entries
@@ -230,10 +230,10 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
 def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
     return [
         spawn(
-            Vec2(256.0, 256.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08, trigger_ms=1500, count=1
+            Vec2(256.0, 256.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08, trigger_ms=1500, count=1,
         ),
         spawn(
-            Vec2(768.0, 768.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08, trigger_ms=1500, count=1
+            Vec2(768.0, 768.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08, trigger_ms=1500, count=1,
         ),
         spawn(
             Vec2(512.0, 512.0),
@@ -281,7 +281,7 @@ def build_1_6_the_random_factor(ctx: QuestContext, rng: random.Random | None = N
                 spawn_id=SpawnId.ALIEN_RANDOM_1D,
                 trigger_ms=trigger,
                 count=ctx.player_count * 2 + 4,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -290,7 +290,7 @@ def build_1_6_the_random_factor(ctx: QuestContext, rng: random.Random | None = N
                 spawn_id=SpawnId.ALIEN_RANDOM_1D,
                 trigger_ms=trigger + 200,
                 count=6,
-            )
+            ),
         )
         if rng.randrange(5) == 3:
             entries.append(
@@ -300,7 +300,7 @@ def build_1_6_the_random_factor(ctx: QuestContext, rng: random.Random | None = N
                     spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
                     trigger_ms=trigger,
                     count=ctx.player_count,
-                )
+                ),
             )
         trigger += 10000
     return entries
@@ -326,7 +326,7 @@ def build_1_7_spider_wave_syndrome(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40,
                 trigger_ms=trigger,
                 count=ctx.player_count * 2 + 6,
-            )
+            ),
         )
         trigger += 5500
     return entries
@@ -408,7 +408,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                 trigger_ms=trigger - 400,
                 count=1,
-            )
+            ),
         )
         entries.append(
             spawn(
@@ -417,7 +417,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 1800
     return entries
@@ -539,7 +539,7 @@ def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A,
             trigger_ms=1000,
             count=1,
-        )
+        ),
     ]
     top_left, top_right, bottom_left, bottom_right = corner_points(ctx.width, ctx.height, offset=25.0)
     trigger = 6000
@@ -551,7 +551,7 @@ def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.SPIDER_SP1_RANDOM_3D,
                 trigger_ms=trigger,
                 count=ctx.player_count,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -560,7 +560,7 @@ def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.SPIDER_SP1_RANDOM_3D,
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -569,7 +569,7 @@ def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.SPIDER_SP1_RANDOM_3D,
                 trigger_ms=trigger,
                 count=ctx.player_count,
-            )
+            ),
         )
         entries.append(
             spawn_at(
@@ -578,7 +578,7 @@ def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_id=SpawnId.SPIDER_SP1_RANDOM_3D,
                 trigger_ms=trigger,
                 count=1,
-            )
+            ),
         )
         trigger += 2200
     return entries

@@ -18,9 +18,10 @@ from __future__ import annotations
 import argparse
 import json
 from collections import Counter
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 
 def _now_iso() -> str:
@@ -202,7 +203,7 @@ def _norm_draw_event(obj: dict[str, Any]) -> dict[str, Any] | None:
                         "y": ys,
                         "uv": v.get("uv"),
                         "color": (v.get("color") or {}).get("u32") if isinstance(v.get("color"), dict) else None,
-                    }
+                    },
                 )
             base.update(
                 {
@@ -212,7 +213,7 @@ def _norm_draw_event(obj: dict[str, Any]) -> dict[str, Any] | None:
                     "matrix": None if mat is None else [mat[0], mat[1], mat[2], mat[3]],
                     "verts_screen": vtx_out,
                     "bbox": _bbox(points),
-                }
+                },
             )
         return base
 
@@ -269,7 +270,7 @@ def _norm_draw_event(obj: dict[str, Any]) -> dict[str, Any] | None:
                 "y": obj.get("y"),
                 "text": txt,
                 "text_clean": clean_title(txt),
-            }
+            },
         )
         return base
 

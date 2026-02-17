@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from ..runtime.effects_context import PerksUpdateEffectsCtx
 from ..helpers import perk_active
-from ..runtime.hook_types import PerkHooks
 from ..ids import PerkId
+from ..runtime.effects_context import PerksUpdateEffectsCtx
+from ..runtime.hook_types import PerkHooks
 
 
 def update_evil_eyes_target(ctx: PerksUpdateEffectsCtx) -> None:

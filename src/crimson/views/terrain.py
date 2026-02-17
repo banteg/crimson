@@ -4,13 +4,13 @@ from dataclasses import dataclass
 
 import pyray as rl
 
-from ._ui_helpers import draw_ui_text, ui_line_height
-from .registry import register_view
 from grim.fonts.small import SmallFontData, load_small_font
-from grim.view import View, ViewContext
 from grim.geom import Vec2
+from grim.view import View, ViewContext
 
 from ..terrain_assets import TerrainTextureId
+from ._ui_helpers import draw_ui_text, ui_line_height
+from .registry import register_view
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -80,7 +80,7 @@ class TerrainView:
             return
         if not self._textures:
             draw_ui_text(
-                self._small, "No terrain textures loaded.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+                self._small, "No terrain textures loaded.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR,
             )
             return
 

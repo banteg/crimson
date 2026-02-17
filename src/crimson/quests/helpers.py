@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
 import random
-from typing import Iterator
+from collections.abc import Iterator
+from dataclasses import dataclass
 
 from grim.geom import Vec2
 

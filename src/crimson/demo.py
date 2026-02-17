@@ -1,31 +1,31 @@
 from __future__ import annotations
 
 import math
-from pathlib import Path
 import random
-from typing import Protocol
 import webbrowser
+from pathlib import Path
+from typing import Protocol
 
 import pyray as rl
 from raylib import defines as rd
 
-from grim.audio import AudioState, update_audio
 from grim.assets import PaqTextureCache, load_paq_entries
+from grim.audio import AudioState, update_audio
 from grim.config import CrimsonConfig
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.math import clamp
-
 from grim.rand import Crand
+
 from .creatures.spawn import RANDOM_HEADING_SENTINEL
 from .game_modes import GameMode
 from .game_world import GameWorld
 from .sim.input import PlayerInput
 from .sim.state_types import PlayerState
-from .weapon_runtime import weapon_assign_player
 from .ui.cursor import draw_menu_cursor
 from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from .weapon_runtime import weapon_assign_player
 from .weapons import weapon_display_name
 
 WORLD_SIZE = 1024.0
@@ -252,7 +252,7 @@ class DemoView:
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         scale = 1.0
         button_w = button_width(
-            font, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide
+            font, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide,
         )
         if button_update(
             self._purchase_button,
@@ -404,7 +404,7 @@ class DemoView:
         button_base_pos = Vec2(screen_w / 2.0 + 128.0, button_base_y + 50.0)
         scale = 1.0
         button_w = button_width(
-            small, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide
+            small, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide,
         )
         button_draw(textures, small, self._purchase_button, pos=button_base_pos, width=button_w, scale=scale)
         button_draw(
@@ -552,7 +552,7 @@ class DemoView:
             [
                 (Vec2(448.0, 384.0), weapon_id),
                 (Vec2(546.0, 654.0), weapon_id),
-            ]
+            ],
         )
         y = 256
         i = 0
@@ -571,7 +571,7 @@ class DemoView:
             [
                 (Vec2(490.0, 448.0), weapon_id),
                 (Vec2(480.0, 576.0), weapon_id),
-            ]
+            ],
         )
         self._world.state.bonuses.weapon_power_up = 15.0
         for idx in range(20):
@@ -770,7 +770,7 @@ class DemoView:
                     fire_down=auto_fire,
                     fire_pressed=auto_fire,
                     reload_pressed=False,
-                )
+                ),
             )
 
         return inputs

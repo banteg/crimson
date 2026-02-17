@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId, perk_display_description, perk_display_name
+from crimson.sim.state_types import PlayerState
+from grim.geom import Vec2
 
 
 def test_creature_handle_death_awards_bloody_mess_quick_learner_xp() -> None:

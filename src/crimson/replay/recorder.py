@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from ..sim.input import PlayerInput
 from .input_codec import pack_tick_inputs
 from .types import (
+    REPLAY_FORMAT_VERSION,
+    PackedTickInputs,
     PerkMenuOpenEvent,
     PerkPickEvent,
-    PackedTickInputs,
     Replay,
     ReplayEvent,
     ReplayHeader,
-    REPLAY_FORMAT_VERSION,
 )
 
 
@@ -32,6 +32,10 @@ class ReplayRecorder:
     def tick_index(self) -> int:
         return int(self._tick_index)
 
+    @property
+    def recorded_tick_count(self) -> int:
+        return int(len(self._inputs))
+
     def record_tick(self, inputs: Sequence[PlayerInput]) -> int:
         """Record a single simulation tick worth of inputs.
 
@@ -49,6 +53,34 @@ class ReplayRecorder:
         self._tick_index += 1
         return tick_index
 
+    def record_tick_at(self, *, tick_index: int, inputs: Sequence[PlayerInput], allow_extend: bool = True) -> int:
+        """Record/overwrite inputs at an explicit tick index.
+
+        When `tick_index` points to an existing entry, that entry is replaced.
+        When it matches the current length and `allow_extend` is true, a new tick
+        is appended.
+        """
+
+        target = int(tick_index)
+        if target < 0:
+            raise ValueError("tick_index must be >= 0")
+
+        player_count = int(self._header.player_count)
+        if len(inputs) != player_count:
+            raise ValueError(f"expected {player_count} player inputs, got {len(inputs)}")
+
+        tick = pack_tick_inputs(inputs, quant=self._header.input_quantization)
+        length = len(self._inputs)
+        if target < length:
+            self._inputs[target] = tick
+        elif target == length and bool(allow_extend):
+            self._inputs.append(tick)
+        else:
+            raise IndexError(f"tick_index {target} out of range for replay length {length}")
+
+        self._tick_index = max(int(self._tick_index), target + 1)
+        return int(target)
+
     def record_perk_pick(
         self,
         *,
@@ -63,7 +95,7 @@ class ReplayRecorder:
                 tick_index=int(tick_index),
                 player_index=int(player_index),
                 choice_index=int(choice_index),
-            )
+            ),
         )
 
     def record_perk_menu_open(
@@ -78,7 +110,7 @@ class ReplayRecorder:
             PerkMenuOpenEvent(
                 tick_index=int(tick_index),
                 player_index=int(player_index),
-            )
+            ),
         )
 
     def finish(self) -> Replay:

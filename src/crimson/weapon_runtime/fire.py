@@ -38,7 +38,7 @@ _NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE: frozenset[int] = frozenset(
     {
         int(WeaponId.PISTOL),
         int(WeaponId.SHRINKIFIER_5K),
-    }
+    },
 )
 
 

@@ -60,7 +60,7 @@ class WorldRendererOverlaysMixin(WorldRendererMixinBase):
         half = size * 0.5
 
         table_src = rl.Rectangle(
-            0.0, 0.0, float(self.clock_table_texture.width), float(self.clock_table_texture.height)
+            0.0, 0.0, float(self.clock_table_texture.width), float(self.clock_table_texture.height),
         )
         table_dst = rl.Rectangle(pos.x, pos.y, size, size)
         rl.draw_texture_pro(self.clock_table_texture, table_src, table_dst, rl.Vector2(0.0, 0.0), 0.0, tint)

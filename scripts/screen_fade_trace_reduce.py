@@ -3,9 +3,10 @@ from __future__ import annotations
 import argparse
 import json
 from collections import Counter
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 
 @dataclass(frozen=True, slots=True)
@@ -142,7 +143,7 @@ def summarize(log_path: Path, *, eps: float = 1e-3) -> dict[str, Any]:
                 "start": start.as_dict(),
                 "end": end.as_dict() if end is not None else None,
                 "duration_ms": duration_ms,
-            }
+            },
         )
         prev = point
 

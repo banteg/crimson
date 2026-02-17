@@ -12,7 +12,6 @@ from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, load_hud_assets
 from .registry import register_view
 
-
 _BASE_DIR = Path("artifacts") / "game_over_debug"
 
 

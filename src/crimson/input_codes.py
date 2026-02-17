@@ -7,7 +7,6 @@ import pyray as rl
 
 from grim.config import CrimsonConfig, default_player_keybind_block, player_keybind_block
 
-
 INPUT_CODE_UNBOUND = 0x17E
 _AXIS_DEADZONE = 0.2
 _AXIS_DOWN_THRESHOLD = 0.5

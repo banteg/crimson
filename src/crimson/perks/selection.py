@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from ..game_modes import GameMode
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WeaponId
-from .runtime.apply import perk_apply
 from .availability import perk_can_offer, perks_rebuild_available
 from .helpers import perk_active
 from .ids import PERK_BY_ID, PerkFlags, PerkId
+from .runtime.apply import perk_apply
 from .state import CreatureForPerks, PerkSelectionState
 
 PERK_ID_MAX = max(PERK_BY_ID)
@@ -26,7 +26,7 @@ _DEATH_CLOCK_BLOCKED: frozenset[PerkId] = frozenset(
         PerkId.GREATER_REGENERATION,
         PerkId.THICK_SKINNED,
         PerkId.BANDAGE,
-    )
+    ),
 )
 
 _PERK_RARITY_GATE: frozenset[PerkId] = frozenset(
@@ -35,7 +35,7 @@ _PERK_RARITY_GATE: frozenset[PerkId] = frozenset(
         PerkId.AMMUNITION_WITHIN,
         PerkId.ANXIOUS_LOADER,
         PerkId.MONSTER_VISION,
-    )
+    ),
 )
 
 

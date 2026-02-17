@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 import pyray as rl
 
@@ -49,7 +49,7 @@ def bake_fx_queues(
                 rotation_rad=entry.rotation,
                 tint=entry.color.to_rl(),
                 centered=True,
-            )
+            ),
         )
 
     corpse_decals: list[GroundCorpseDecal] = []
@@ -61,7 +61,7 @@ def bake_fx_queues(
                 size=entry.scale,
                 rotation_rad=entry.rotation,
                 tint=entry.color.to_rl(),
-            )
+            ),
         )
 
     baked_fx = ground.bake_decals(decals)

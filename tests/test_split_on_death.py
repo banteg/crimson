@@ -4,11 +4,10 @@ import math
 
 import pytest
 
-from grim.geom import Vec2
-
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
+from grim.geom import Vec2
 
 
 class _StubRand:

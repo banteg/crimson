@@ -61,7 +61,7 @@ class WorldRendererProjectilesMixin(WorldRendererMixinBase):
             if life < 0.39:
                 return
             rl.draw_circle(
-                int(screen.x), int(screen.y), max(1.0, 2.0 * scale), rl.Color(180, 180, 180, int(180 * alpha + 0.5))
+                int(screen.x), int(screen.y), max(1.0, 2.0 * scale), rl.Color(180, 180, 180, int(180 * alpha + 0.5)),
             )
             return
         grid, frame = mapping
@@ -257,5 +257,5 @@ class WorldRendererProjectilesMixin(WorldRendererMixinBase):
         if draw_secondary_projectile_from_registry(ctx):
             return
         rl.draw_circle(
-            int(screen.x), int(screen.y), max(1.0, 4.0 * scale), rl.Color(200, 200, 220, int(200 * alpha + 0.5))
+            int(screen.x), int(screen.y), max(1.0, 4.0 * scale), rl.Color(200, 200, 220, int(200 * alpha + 0.5)),
         )

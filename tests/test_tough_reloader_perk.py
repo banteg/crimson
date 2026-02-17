@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import pytest
 
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
+from crimson.sim.state_types import PlayerState
+from grim.geom import Vec2
 
 
 def test_tough_reloader_halves_damage_while_reloading() -> None:

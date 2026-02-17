@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import pytest
 
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.creatures.spawn import CreatureFlags
-from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
+from crimson.sim.state_types import PlayerState
+from grim.geom import Vec2
 
 
 def test_damage_type1_heading_jitter_uses_rand_without_player_attacker() -> None:

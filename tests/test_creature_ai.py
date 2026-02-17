@@ -4,10 +4,10 @@ from dataclasses import dataclass, field
 
 import pytest
 
-from crimson.math_parity import f32
-from grim.geom import Vec2
 from crimson.creatures.ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from crimson.creatures.spawn import CreatureFlags
+from crimson.math_parity import f32
+from grim.geom import Vec2
 
 
 @dataclass(slots=True)

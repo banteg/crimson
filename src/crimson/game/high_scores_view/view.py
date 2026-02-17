@@ -5,9 +5,9 @@ from dataclasses import dataclass
 import pyray as rl
 
 from grim.audio import play_sfx, update_audio
+from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.terrain_render import GroundRenderer
-from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 
 from ...frontend.assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ...frontend.high_scores_layout import (
@@ -37,8 +37,8 @@ from ...frontend.high_scores_layout import (
     HS_RIGHT_SHOW_SCORES_WIDGET_X,
     HS_RIGHT_SHOW_SCORES_WIDGET_Y,
     hs_left_panel_pos_x,
-    hs_right_panel_pos_x,
     hs_right_options_x_shift,
+    hs_right_panel_pos_x,
 )
 from ...frontend.menu import (
     MENU_PANEL_OFFSET_X,
@@ -58,8 +58,8 @@ from ...frontend.menu import (
     ensure_menu_ground,
     menu_ground_camera,
 )
-from ...frontend.panels.hit_test import mouse_inside_rect_with_padding
 from ...frontend.panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
+from ...frontend.panels.hit_test import mouse_inside_rect_with_padding
 from ...frontend.transitions import _draw_screen_fade
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_update, button_width

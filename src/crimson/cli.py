@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-import io
 import inspect
+import io
 import ipaddress
 import json
 import random
 import re
 import sys
-from pathlib import Path
 from dataclasses import fields, is_dataclass
+from pathlib import Path
 from typing import Any, Literal, cast
 
 import typer
@@ -17,20 +17,24 @@ from PIL import Image
 from grim import jaz, paq
 from grim.geom import Vec2
 from grim.rand import Crand
-from .paths import default_runtime_dir
+
 from .creatures.spawn import SpawnEnv, build_spawn_plan, spawn_id_label
 from .game_modes import GameMode
+from .paths import default_runtime_dir
 from .quests import all_quests
 from .quests.types import QuestContext, QuestDefinition, SpawnEntry
-
 
 app = typer.Typer(add_completion=False)
 replay_app = typer.Typer(add_completion=False)
 original_app = typer.Typer(add_completion=False)
 lan_app = typer.Typer(add_completion=False)
+net_app = typer.Typer(add_completion=False)
+relay_app = typer.Typer(add_completion=False)
 app.add_typer(replay_app, name="replay")
 app.add_typer(original_app, name="original")
 app.add_typer(lan_app, name="lan")
+app.add_typer(net_app, name="net")
+app.add_typer(relay_app, name="relay")
 
 _QUEST_DEFS: dict[str, QuestDefinition] = {quest.level: quest for quest in all_quests()}
 _QUEST_BUILDERS = {level: quest.builder for level, quest in _QUEST_DEFS.items()}
@@ -39,6 +43,8 @@ _QUEST_TITLES = {level: quest.title for level, quest in _QUEST_DEFS.items()}
 _SEP_RE = re.compile(r"[\\/]+")
 _REPLAY_VERIFY_SCHEMA_VERSION = 1
 _REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE = 3
+_SessionMode = Literal["survival", "rush", "quests"]
+_ParsedNetcodeMode = Literal["rollback", "lockstep_legacy"]
 
 
 def _is_loopback_host(host: str) -> bool:
@@ -51,6 +57,32 @@ def _is_loopback_host(host: str) -> bool:
         return bool(ipaddress.ip_address(normalized).is_loopback)
     except ValueError:
         return False
+
+
+def _parse_session_mode(mode: str) -> _SessionMode:
+    mode_name = str(mode).strip().lower()
+    if mode_name == "survival":
+        return "survival"
+    if mode_name == "rush":
+        return "rush"
+    if mode_name == "quests":
+        return "quests"
+    raise typer.BadParameter(
+        f"unsupported mode {mode!r}; expected one of: survival, rush, quests",
+        param_hint="--mode",
+    )
+
+
+def _parse_netcode_mode(raw: str) -> _ParsedNetcodeMode:
+    value = str(raw).strip().lower()
+    if value in {"rollback", "rb"}:
+        return "rollback"
+    if value in {"lockstep", "lockstep_legacy", "legacy"}:
+        return "lockstep_legacy"
+    raise typer.BadParameter(
+        f"unsupported netcode {raw!r}; expected rollback|lockstep",
+        param_hint="--netcode",
+    )
 
 
 def _safe_relpath(name: str) -> Path:
@@ -321,6 +353,7 @@ def cmd_view(
     """Launch a Raylib debug view."""
     from grim.app import run_view
     from grim.view import ViewContext
+
     from .views import all_views, view_by_name
 
     view_def = view_by_name(name)
@@ -336,6 +369,227 @@ def cmd_view(
         view = view_def.factory()
     title = f"{view_def.title} — Crimsonland"
     run_view(view, width=width, height=height, title=title, fps=fps)
+
+
+def _run_game_with_pending_session(
+    *,
+    pending,
+    base_dir: Path,
+    assets_dir: Path | None,
+    width: int | None,
+    height: int | None,
+    fps: int,
+    debug: bool,
+) -> None:
+    from .game import GameConfig, run_game
+
+    run_game(
+        GameConfig(
+            base_dir=base_dir,
+            assets_dir=assets_dir,
+            width=width,
+            height=height,
+            fps=fps,
+            debug=bool(debug),
+            preserve_bugs=False,
+            pending_net_session=pending,
+            pending_lan_session=pending,
+        ),
+    )
+
+
+@relay_app.command("serve")
+def cmd_relay_serve(
+    bind: str = typer.Option("0.0.0.0", "--bind", help="relay bind address"),
+    port: int = typer.Option(31993, "--port", min=1, max=65535, help="relay UDP port"),
+    tick_ms: int = typer.Option(8, "--tick-ms", min=1, max=1000, help="relay update tick interval"),
+    log_level: str = typer.Option("debug", "--log-level", help="relay log level (debug|info|warning|error)"),
+    log_file: Path | None = typer.Option(
+        None,
+        "--log-file",
+        help="relay log file path (default: runtime-dir/logs/relay/relay-<pid>-<ts>.log)",
+    ),
+    base_dir: Path = typer.Option(
+        default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
+        help="base path for relay logs (default: per-user OS data dir)",
+    ),
+) -> None:
+    """Serve the in-repo UDP relay."""
+    from .logging import configure_component_logging, default_component_log_path
+    from .net.relay_service import RelayServer, RelayServerConfig
+
+    resolved_log_file = (
+        Path(log_file).expanduser()
+        if log_file is not None
+        else default_component_log_path(base_dir=base_dir, component="relay")
+    )
+    try:
+        configured_log_file = configure_component_logging(
+            logger_name="crimson.relay",
+            component="relay",
+            log_file=resolved_log_file,
+            level=log_level,
+        )
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc), param_hint="--log-level") from exc
+    typer.echo(f"relay logs -> {configured_log_file}")
+
+    server = RelayServer(
+        RelayServerConfig(
+            bind_host=str(bind).strip() or "0.0.0.0",
+            bind_port=int(port),
+        ),
+    )
+    server.serve_forever(tick_ms=max(1, int(tick_ms)))
+
+
+@net_app.command("host")
+def cmd_net_host(
+    mode: str = typer.Option(..., "--mode", help="survival|rush|quests"),
+    quest_level: str = typer.Option("", "--quest-level", help="quest level major.minor (required for quests mode)"),
+    players: int = typer.Option(..., "--players", min=1, max=4, help="player count (1..4)"),
+    bind: str = typer.Option("0.0.0.0", "--bind", help="local bind address"),
+    relay_host: str = typer.Option("127.0.0.1", "--relay-host", help="relay host or IP"),
+    relay_port: int = typer.Option(31993, "--relay-port", min=1, max=65535, help="relay UDP port"),
+    room_code: str = typer.Option("", "--room-code", help="optional room code override"),
+    netcode: str = typer.Option("rollback", "--netcode", help="rollback|lockstep"),
+    rollback_max_ticks: int = typer.Option(8, "--rollback-max-ticks", min=1, max=64, help="rollback cap ticks"),
+    reconnect_timeout_ms: int = typer.Option(
+        15_000,
+        "--reconnect-timeout-ms",
+        min=1_000,
+        max=120_000,
+        help="reconnect timeout in milliseconds",
+    ),
+    input_delay_ticks: int = typer.Option(1, "--input-delay-ticks", min=0, max=8, help="local input delay"),
+    debug: bool = typer.Option(False, "--debug", help="enable debug cheats and overlays"),
+    width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
+    height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
+    fps: int = typer.Option(60, help="target fps"),
+    base_dir: Path = typer.Option(
+        default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
+        help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
+    ),
+    assets_dir: Path | None = typer.Option(
+        None,
+        help="assets root (default: base-dir; missing .paq files are downloaded)",
+    ),
+) -> None:
+    """Host a network session (rollback default)."""
+    from .game.types import LanSessionConfig, PendingLanSession
+    from .quests.types import parse_level
+
+    resolved_mode = _parse_session_mode(mode)
+    normalized_quest_level = str(quest_level).strip()
+    if resolved_mode == "quests":
+        if not normalized_quest_level:
+            raise typer.BadParameter("quest level is required for quests mode", param_hint="--quest-level")
+        try:
+            parse_level(normalized_quest_level)
+        except ValueError as exc:
+            raise typer.BadParameter(str(exc), param_hint="--quest-level") from exc
+    pending = PendingLanSession(
+        role="host",
+        config=LanSessionConfig(
+            mode=resolved_mode,
+            player_count=int(players),
+            quest_level=normalized_quest_level,
+            bind_host=str(bind).strip() or "0.0.0.0",
+            relay_host=str(relay_host).strip() or "127.0.0.1",
+            relay_port=int(relay_port),
+            room_code=str(room_code).strip().upper(),
+            host_ip=str(relay_host).strip() or "127.0.0.1",
+            port=int(relay_port),
+            netcode_mode=_parse_netcode_mode(netcode),
+            rollback_max_ticks=int(rollback_max_ticks),
+            reconnect_timeout_ms=int(reconnect_timeout_ms),
+            input_delay_ticks=int(input_delay_ticks),
+            preserve_bugs=False,
+        ),
+        auto_start=True,
+    )
+    _run_game_with_pending_session(
+        pending=pending,
+        base_dir=base_dir,
+        assets_dir=assets_dir,
+        width=width,
+        height=height,
+        fps=fps,
+        debug=bool(debug),
+    )
+
+
+@net_app.command("join")
+def cmd_net_join(
+    code: str = typer.Option(..., "--code", help="invite room code"),
+    mode: str = typer.Option("survival", "--mode", help="expected mode: survival|rush|quests"),
+    quest_level: str = typer.Option("", "--quest-level", help="quest level major.minor"),
+    relay_host: str = typer.Option("127.0.0.1", "--relay-host", help="relay host or IP"),
+    relay_port: int = typer.Option(31993, "--relay-port", min=1, max=65535, help="relay UDP port"),
+    netcode: str = typer.Option("rollback", "--netcode", help="rollback|lockstep"),
+    rollback_max_ticks: int = typer.Option(8, "--rollback-max-ticks", min=1, max=64, help="rollback cap ticks"),
+    reconnect_timeout_ms: int = typer.Option(
+        15_000,
+        "--reconnect-timeout-ms",
+        min=1_000,
+        max=120_000,
+        help="reconnect timeout in milliseconds",
+    ),
+    input_delay_ticks: int = typer.Option(1, "--input-delay-ticks", min=0, max=8, help="local input delay"),
+    debug: bool = typer.Option(False, "--debug", help="enable debug cheats and overlays"),
+    width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
+    height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
+    fps: int = typer.Option(60, help="target fps"),
+    base_dir: Path = typer.Option(
+        default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
+        help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
+    ),
+    assets_dir: Path | None = typer.Option(
+        None,
+        help="assets root (default: base-dir; missing .paq files are downloaded)",
+    ),
+) -> None:
+    """Join a network session via invite room code."""
+    from .game.types import LanSessionConfig, PendingLanSession
+
+    room_code = str(code).strip().upper()
+    if not room_code:
+        raise typer.BadParameter("room code is required", param_hint="--code")
+    pending = PendingLanSession(
+        role="join",
+        config=LanSessionConfig(
+            mode=_parse_session_mode(mode),
+            player_count=1,
+            quest_level=str(quest_level).strip(),
+            bind_host="0.0.0.0",
+            relay_host=str(relay_host).strip() or "127.0.0.1",
+            relay_port=int(relay_port),
+            room_code=room_code,
+            host_ip=str(relay_host).strip() or "127.0.0.1",
+            port=int(relay_port),
+            netcode_mode=_parse_netcode_mode(netcode),
+            rollback_max_ticks=int(rollback_max_ticks),
+            reconnect_timeout_ms=int(reconnect_timeout_ms),
+            input_delay_ticks=int(input_delay_ticks),
+            preserve_bugs=False,
+        ),
+        auto_start=True,
+    )
+    _run_game_with_pending_session(
+        pending=pending,
+        base_dir=base_dir,
+        assets_dir=assets_dir,
+        width=width,
+        height=height,
+        fps=fps,
+        debug=bool(debug),
+    )
 
 
 @lan_app.command("host")
@@ -360,24 +614,12 @@ def cmd_lan_host(
         help="assets root (default: base-dir; missing .paq files are downloaded)",
     ),
 ) -> None:
-    """Host a LAN lockstep session from CLI."""
-    from .game import GameConfig, run_game
-    from .game.types import LanSessionConfig, LanSessionMode, PendingLanSession
+    """Deprecated wrapper for `net host`."""
+    from .game.types import LanSessionConfig, PendingLanSession
     from .quests.types import parse_level
 
-    mode_name = str(mode).strip().lower()
-    resolved_mode: LanSessionMode
-    if mode_name == "survival":
-        resolved_mode = "survival"
-    elif mode_name == "rush":
-        resolved_mode = "rush"
-    elif mode_name == "quests":
-        resolved_mode = "quests"
-    else:
-        raise typer.BadParameter(
-            f"unsupported mode {mode!r}; expected one of: survival, rush, quests",
-            param_hint="--mode",
-        )
+    typer.echo("warning: `crimson lan host` is deprecated; use `crimson net host`.", err=True)
+    resolved_mode = _parse_session_mode(mode)
     normalized_quest_level = str(quest_level).strip()
     if resolved_mode == "quests":
         if not normalized_quest_level:
@@ -393,23 +635,27 @@ def cmd_lan_host(
             player_count=int(players),
             quest_level=normalized_quest_level,
             bind_host=str(bind).strip() or "0.0.0.0",
+            relay_host=str(bind).strip() or "127.0.0.1",
+            relay_port=int(port),
+            room_code="",
             host_ip="",
             port=int(port),
+            netcode_mode="rollback",
+            rollback_max_ticks=8,
+            reconnect_timeout_ms=15_000,
+            input_delay_ticks=1,
             preserve_bugs=False,
         ),
         auto_start=True,
     )
-    run_game(
-        GameConfig(
-            base_dir=base_dir,
-            assets_dir=assets_dir,
-            width=width,
-            height=height,
-            fps=fps,
-            debug=bool(debug),
-            preserve_bugs=False,
-            pending_lan_session=pending,
-        )
+    _run_game_with_pending_session(
+        pending=pending,
+        base_dir=base_dir,
+        assets_dir=assets_dir,
+        width=width,
+        height=height,
+        fps=fps,
+        debug=bool(debug),
     )
 
 
@@ -432,10 +678,10 @@ def cmd_lan_join(
         help="assets root (default: base-dir; missing .paq files are downloaded)",
     ),
 ) -> None:
-    """Join a LAN lockstep session from CLI."""
-    from .game import GameConfig, run_game
+    """Deprecated wrapper for `net join`."""
     from .game.types import LanSessionConfig, PendingLanSession
 
+    typer.echo("warning: `crimson lan join` is deprecated; use `crimson net join --code`.", err=True)
     host_ip = str(host).strip()
     if not host_ip:
         raise typer.BadParameter("host address is required", param_hint="--host")
@@ -446,22 +692,27 @@ def cmd_lan_join(
             player_count=1,
             quest_level="",
             bind_host="0.0.0.0",
+            relay_host=host_ip,
+            relay_port=int(port),
+            room_code="",
             host_ip=host_ip,
             port=int(port),
+            netcode_mode="lockstep_legacy",
+            rollback_max_ticks=8,
+            reconnect_timeout_ms=15_000,
+            input_delay_ticks=1,
             preserve_bugs=False,
         ),
         auto_start=True,
     )
-    run_game(
-        GameConfig(
-            base_dir=base_dir,
-            assets_dir=assets_dir,
-            width=width,
-            height=height,
-            fps=fps,
-            debug=bool(debug),
-            pending_lan_session=pending,
-        )
+    _run_game_with_pending_session(
+        pending=pending,
+        base_dir=base_dir,
+        assets_dir=assets_dir,
+        width=width,
+        height=height,
+        fps=fps,
+        debug=bool(debug),
     )
 
 
@@ -487,8 +738,8 @@ def cmd_replay_play(
 ) -> None:
     """Play back a recorded replay."""
     from grim.app import run_view
-    from grim.console import create_console
     from grim.config import ensure_crimson_cfg
+    from grim.console import create_console
     from grim.view import ViewContext
 
     from .assets_fetch import download_missing_paqs
@@ -772,8 +1023,8 @@ def cmd_replay_diff_checkpoints(
     actual_file: Path = typer.Argument(..., help="actual checkpoints sidecar (.json.gz)"),
 ) -> None:
     """Compare two checkpoint sidecars and report the first divergence."""
-    from .replay.checkpoints import load_checkpoints_file
     from .original.diff import compare_checkpoints
+    from .replay.checkpoints import load_checkpoints_file
 
     expected = load_checkpoints_file(Path(expected_file))
     actual = load_checkpoints_file(Path(actual_file))
@@ -1025,8 +1276,6 @@ def cmd_replay_convert_capture(
     """Convert capture data into replay + checkpoint artifacts."""
     import hashlib
 
-    from .replay import dump_replay
-    from .replay.checkpoints import dump_checkpoints_file
     from .original.capture import (
         convert_capture_to_checkpoints,
         convert_capture_to_replay,
@@ -1034,6 +1283,8 @@ def cmd_replay_convert_capture(
         load_capture,
         parse_player_int_overrides,
     )
+    from .replay import dump_replay
+    from .replay.checkpoints import dump_checkpoints_file
 
     capture = load_capture(Path(capture_file))
     try:
@@ -1126,7 +1377,7 @@ def cmd_replay_divergence_report(ctx: typer.Context) -> None:
             tool="divergence-report",
             argv=list(ctx.args),
             fallback=divergence_report.main,
-        )
+        ),
     )
 
 
@@ -1143,7 +1394,7 @@ def cmd_replay_bisect_divergence(ctx: typer.Context) -> None:
             tool="bisect-divergence",
             argv=list(ctx.args),
             fallback=divergence_bisect.main,
-        )
+        ),
     )
 
 
@@ -1160,7 +1411,7 @@ def cmd_replay_focus_trace(ctx: typer.Context) -> None:
             tool="focus-trace",
             argv=list(ctx.args),
             fallback=focus_trace.main,
-        )
+        ),
     )
 
 
@@ -1347,14 +1598,14 @@ def cmd_spawn_plan(
     typer.echo(f"template_id=0x{template_id:02x} ({template_id}) creature={spawn_id_label(template_id)}")
     typer.echo(
         f"pos=({spawn_pos.x:.1f},{spawn_pos.y:.1f}) "
-        f"heading={heading:.6f} seed=0x{_parse_int_auto(seed):08x} rng_state=0x{rng.state:08x}"
+        f"heading={heading:.6f} seed=0x{_parse_int_auto(seed):08x} rng_state=0x{rng.state:08x}",
     )
     typer.echo(
         "env="
         f"demo_mode_active={demo_mode_active} "
         f"hardcore={hardcore} "
         f"difficulty={difficulty} "
-        f"terrain={terrain_w:.0f}x{terrain_h:.0f}"
+        f"terrain={terrain_w:.0f}x{terrain_h:.0f}",
     )
     typer.echo(f"primary={plan.primary} creatures={len(plan.creatures)} slots={len(plan.spawn_slots)} effects={len(plan.effects)}")
     typer.echo("")
@@ -1364,7 +1615,7 @@ def cmd_spawn_plan(
         typer.echo(
             f"{primary}{idx:02d} type={c.type_id!s:14s} ai={c.ai_mode:2d} flags=0x{int(c.flags):03x} "
             f"pos=({c.pos.x:7.1f},{c.pos.y:7.1f}) health={c.health!s:>6s} size={c.size!s:>6s} link={c.ai_link_parent!s:>3s} "
-            f"slot={c.spawn_slot!s:>3s}"
+            f"slot={c.spawn_slot!s:>3s}",
         )
     if plan.spawn_slots:
         typer.echo("")
@@ -1372,7 +1623,7 @@ def cmd_spawn_plan(
         for idx, slot in enumerate(plan.spawn_slots):
             typer.echo(
                 f"{idx:02d} owner={slot.owner_creature:02d} timer={slot.timer:.2f} count={slot.count:3d} "
-                f"limit={slot.limit:3d} interval={slot.interval:.3f} child=0x{slot.child_template_id:02x}"
+                f"limit={slot.limit:3d} interval={slot.interval:.3f} child=0x{slot.child_template_id:02x}",
             )
     if plan.effects:
         typer.echo("")

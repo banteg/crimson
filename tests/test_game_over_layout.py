@@ -7,7 +7,7 @@ import pyray as rl
 import pytest
 
 from crimson.persistence.highscores import HighScoreRecord
-from crimson.ui.game_over import GameOverUi, PANEL_SLIDE_DURATION_MS
+from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.geom import Vec2
 
@@ -40,7 +40,7 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, tmp_pa
 
     captured_x: list[float] = []
 
-    def _button_update(_button, *, pos, width, dt_ms, mouse, click):  # noqa: ANN001, ARG001
+    def _button_update(_button, *, pos, width, dt_ms, mouse, click):
         captured_x.append(float(pos.x))
         return False
 
@@ -88,7 +88,7 @@ def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, tmp_path:
     monkeypatch.setattr("crimson.ui.game_over.read_highscore_table", lambda *_args, **_kwargs: [])
     monkeypatch.setattr("crimson.ui.game_over.rank_index", lambda _records, _candidate: 0)
     monkeypatch.setattr("crimson.ui.game_over.scores_path_for_config", lambda *_args, **_kwargs: tmp_path / "scores.hi")
-    monkeypatch.setattr("crimson.ui.game_over.button_update", lambda *args, **kwargs: False)  # noqa: ARG005
+    monkeypatch.setattr("crimson.ui.game_over.button_update", lambda *args, **kwargs: False)
     monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_width", lambda: 640)
     monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_height", lambda: 480)
     monkeypatch.setattr("crimson.ui.game_over.rl.is_mouse_button_pressed", lambda _button: False)
@@ -127,7 +127,7 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, tmp_path: Path) -> 
 
     captured_panel: list[tuple[object, bool]] = []
 
-    def _draw_classic_menu_panel(_texture, *, dst, tint, shadow):  # noqa: ANN001, ARG001
+    def _draw_classic_menu_panel(_texture, *, dst, tint, shadow):
         captured_panel.append((dst, bool(shadow)))
 
     monkeypatch.setattr("crimson.ui.game_over.draw_classic_menu_panel", _draw_classic_menu_panel)
@@ -177,7 +177,7 @@ def test_game_over_world_entity_alpha_tracks_close_timeline(tmp_path: Path) -> N
     ],
 )
 def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
-    monkeypatch, tmp_path: Path, preserve_bugs: bool, expected_tooltip: str
+    monkeypatch, tmp_path: Path, preserve_bugs: bool, expected_tooltip: str,
 ) -> None:
     ui = GameOverUi(
         assets_root=tmp_path,

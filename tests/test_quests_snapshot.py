@@ -50,5 +50,5 @@ def test_quest_builders_snapshot(snapshot: SnapshotAssertion) -> None:
             "entries": _build_entries(quest.builder, ctx, seed=1337),
         }
         snapshot(name=f"quest_{quest.level}", matcher=_round_matcher).assert_match(
-            payload
+            payload,
         )

@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import pytest
 
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
+from crimson.perks import PerkId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
-from crimson.perks import PerkId
 from crimson.sim.world_state import WorldState
+from grim.geom import Vec2
 
 
 def test_final_revenge_triggers_explosion_damage_on_death() -> None:

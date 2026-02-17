@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import math
 
 from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureFlags, CreatureInit
 from crimson.gameplay import GameplayState
 from crimson.sim.state_types import PlayerState
+from grim.geom import Vec2
 
 
 def _wrap_angle(angle: float) -> float:

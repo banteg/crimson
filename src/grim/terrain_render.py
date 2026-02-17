@@ -1,10 +1,9 @@
 from __future__ import annotations
 
+import math
+from collections.abc import Iterable, Iterator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-import math
-from typing import Iterator
-from typing import Iterable, Sequence
 
 import pyray as rl
 from raylib import defines as rd
@@ -715,7 +714,7 @@ class GroundRenderer:
                     rotation_rad=float(angle),
                     tint=tint,
                     centered=True,
-                )
+                ),
             )
 
     def _clamp_camera(self, camera: Vec2, screen_w: float, screen_h: float) -> Vec2:

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import ClassVar
 
-from grim.geom import Vec2
 from crimson.projectiles import ProjectileTypeId
 from crimson.render.projectile_draw import ProjectileDrawCtx, draw_projectile_from_registry
+from grim.geom import Vec2
 
 
 class _TextureStub:
@@ -19,7 +20,7 @@ class _RendererStub:
     bullet_texture = None
     particles_texture = None
     config = None
-    players: list[object] = []
+    players: ClassVar[list[object]] = []
 
     @staticmethod
     def _is_bullet_trail_type(type_id: int) -> bool:

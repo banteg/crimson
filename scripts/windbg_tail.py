@@ -1,7 +1,6 @@
 import os
-from pathlib import Path
 import sys
-
+from pathlib import Path
 
 DEFAULT_WINDOWS_LOG_PATH = r"C:\games\crimsonland_1.9.93\windbg.log"
 

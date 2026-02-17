@@ -13,7 +13,7 @@ def test_survival_high_score_record_uses_player0_stats_in_multiplayer(monkeypatc
     config = CrimsonConfig(path=repo_root / "crimson.cfg", data={"player_count": 2, "game_mode": 1})
 
     mode = SurvivalMode(ctx, config=config)
-    monkeypatch.setattr("crimson.ui.game_over.GameOverUi.open", lambda self: None)  # noqa: ARG005
+    monkeypatch.setattr("crimson.ui.game_over.GameOverUi.open", lambda self: None)
 
     player0, player1 = mode.world.players[:2]
     player0.experience = 1234

@@ -5,9 +5,10 @@ import csv
 import json
 import sys
 from collections import Counter, defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -69,7 +70,7 @@ def parse_build_events(paths: Iterable[Path]) -> list[BuildEvent]:
                 entry_count=entry_count,
                 entries=entries,
                 ts=obj.get("ts"),
-            )
+            ),
         )
     return events
 
@@ -195,7 +196,7 @@ def build_rows(events: list[BuildEvent]) -> list[dict[str, Any]]:
                 "spawn_id_counts": summary.get("spawn_id_counts") if summary else None,
                 "min_trigger_ms": summary.get("min_trigger_ms") if summary else None,
                 "max_trigger_ms": summary.get("max_trigger_ms") if summary else None,
-            }
+            },
         )
     return rows
 

@@ -16,7 +16,6 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-
 LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 
 
@@ -202,7 +201,7 @@ def main() -> int:
 
     print(
         f"Docs checks passed: {len(docs_rel)} markdown files, {len(nav_entries)} nav entries, "
-        f"{len(missing_tags)} allowlisted missing-tags pages."
+        f"{len(missing_tags)} allowlisted missing-tags pages.",
     )
     return 0
 

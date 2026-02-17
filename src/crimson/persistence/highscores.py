@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import datetime as dt
-from pathlib import Path
 import struct
+from dataclasses import dataclass
+from pathlib import Path
 
 from grim.config import CrimsonConfig
-from ..quests.types import parse_level
 
+from ..quests.types import parse_level
 
 RECORD_SIZE = 0x48
 RECORD_WIRE_SIZE = RECORD_SIZE + 4  # record + checksum

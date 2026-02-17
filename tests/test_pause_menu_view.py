@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from pathlib import Path
 import random
-from types import SimpleNamespace
 import time
+from pathlib import Path
+from types import SimpleNamespace
 
 from crimson.frontend.pause_menu import PAUSE_MENU_TO_MAIN_MENU_FADE_MS, PauseMenuView
 from crimson.game.types import GameState
@@ -42,7 +42,7 @@ def test_pause_menu_draw_fades_pause_background_on_main_menu_close(monkeypatch, 
     captured_alpha: list[float] = []
     state = _make_state(tmp_path)
     state.pause_background = SimpleNamespace(
-        draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha))
+        draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha)),
     )
     view = PauseMenuView(state)
     view._is_open = True
@@ -68,7 +68,7 @@ def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(monkeyp
     captured_alpha: list[float] = []
     state = _make_state(tmp_path)
     state.pause_background = SimpleNamespace(
-        draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha))
+        draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha)),
     )
     view = PauseMenuView(state)
     view._is_open = True

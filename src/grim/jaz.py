@@ -23,9 +23,8 @@ import io
 import zlib
 from pathlib import Path
 
-from PIL import Image
 from construct import Bytes, Int8ul, Int32ul, Struct, this
-
+from PIL import Image
 
 JAZ_HEADER = Struct(
     "method" / Int8ul,

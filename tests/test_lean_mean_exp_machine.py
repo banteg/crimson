@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import math
 
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
+from crimson.sim.state_types import PlayerState
+from grim.geom import Vec2
 
 
 def test_perks_update_effects_lean_mean_exp_machine_ticks_xp_without_double_xp() -> None:

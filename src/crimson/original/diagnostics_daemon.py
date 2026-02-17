@@ -4,12 +4,12 @@ import argparse
 import contextlib
 import io
 import os
-from pathlib import Path
 import socket
 import subprocess
 import sys
 import time
 import traceback
+from pathlib import Path
 
 import msgspec
 
@@ -99,10 +99,10 @@ def run_tool_request(
     request = DaemonRequest(tool=str(tool), args=[str(arg) for arg in args], cwd=str(cwd))
     try:
         return _send_request_once(request, timeout_seconds=_CLIENT_TIMEOUT_SECONDS)
-    except Exception:
+    except Exception as err:
         _start_daemon_background()
         if not _wait_for_daemon_ready(timeout_seconds=_DAEMON_BOOT_TIMEOUT_SECONDS):
-            raise RuntimeError("diagnostics daemon failed to start")
+            raise RuntimeError("diagnostics daemon failed to start") from err
         return _send_request_once(request, timeout_seconds=_CLIENT_TIMEOUT_SECONDS)
 
 

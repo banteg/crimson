@@ -18,7 +18,7 @@ def _load_events(jsonl_path: Path) -> list[dict]:
 
 
 def _bgra_raw_to_png(
-    raw_path: Path, *, width: int, height: int, out_path: Path, format_name: str | None
+    raw_path: Path, *, width: int, height: int, out_path: Path, format_name: str | None,
 ) -> None:
     # Raw dumps are locked render target surfaces (X8R8G8B8), i.e. 4 bytes per
     # pixel in BGRA/BGRX order. Treat it as BGRA and write RGBA PNG.
@@ -87,7 +87,7 @@ def main() -> int:
                 "tex1_index": int(indices.get("tex1_index")),
                 "tex2_index": int(indices.get("tex2_index")),
                 "desc_ptr": str(tg.get("desc")) if tg.get("desc") is not None else None,
-            }
+            },
         )
 
     args.cases_out.parent.mkdir(parents=True, exist_ok=True)

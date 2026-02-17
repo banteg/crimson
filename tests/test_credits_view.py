@@ -8,11 +8,11 @@ from crimson.frontend.panels.credits import (
     _FLAG_CLICKED,
     _FLAG_HEADING,
     CreditsView,
-    _CreditsLine,
     _credits_all_round_lines_flagged,
     _credits_build_lines,
     _credits_line_clear_flag,
     _credits_unlock_secret_lines,
+    _CreditsLine,
 )
 
 

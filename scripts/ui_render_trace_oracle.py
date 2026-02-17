@@ -21,9 +21,10 @@ from __future__ import annotations
 import argparse
 import json
 from collections import Counter, defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 
 def _now_iso() -> str:
@@ -193,7 +194,7 @@ def _norm_draw_event(obj: dict[str, Any]) -> dict[str, Any] | None:
                     "kind": obj.get("kind"),
                     "count": obj.get("count"),
                     "bbox": _bbox(points),
-                }
+                },
             )
         return base
 
@@ -249,7 +250,7 @@ def _norm_draw_event(obj: dict[str, Any]) -> dict[str, Any] | None:
                 "x": obj.get("x"),
                 "y": obj.get("y"),
                 "text_clean": clean_title(txt),
-            }
+            },
         )
         return base
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import replace
 
 from ..creatures.spawn import SpawnTemplateCall
-
 from .types import SpawnEntry
 
 

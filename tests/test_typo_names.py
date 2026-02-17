@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from crimson.typo.names import NAME_MAX_CHARS, CreatureNameTable
 from grim.rand import Crand
-
-from crimson.typo.names import CreatureNameTable, NAME_MAX_CHARS
 
 
 def test_creature_name_table_assign_random_unique_and_bounded() -> None:

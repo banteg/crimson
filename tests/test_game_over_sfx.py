@@ -1,19 +1,18 @@
 from __future__ import annotations
 
-from pathlib import Path
 import random
 import time
+from pathlib import Path
 from types import SimpleNamespace
 
 import pyray as rl
 
 from crimson.frontend.panels.base import PANEL_TIMELINE_START_MS
 from crimson.game.high_scores_view import HighScoresView
-from crimson.game.types import HighScoresRequest
-from crimson.game.types import GameState
+from crimson.game.types import GameState, HighScoresRequest
 from crimson.persistence import save_status
 from crimson.persistence.highscores import HighScoreRecord
-from crimson.ui.game_over import GameOverUi, PANEL_SLIDE_DURATION_MS
+from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
 
@@ -30,7 +29,7 @@ def test_game_over_panel_open_plays_panel_click(monkeypatch, tmp_path: Path) -> 
     def _play_sfx(key: str) -> None:
         played.append(key)
 
-    monkeypatch.setattr("crimson.ui.game_over.button_update", lambda *args, **kwargs: False)  # noqa: ARG005
+    monkeypatch.setattr("crimson.ui.game_over.button_update", lambda *args, **kwargs: False)
     monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_width", lambda: 640)
     monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_height", lambda: 480)
     monkeypatch.setattr("crimson.ui.game_over.rl.get_mouse_position", lambda: rl.Vector2(0.0, 0.0))
@@ -74,11 +73,11 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
 
     played: list[str] = []
 
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:  # noqa: ARG001
+    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:
         played.append(key)
 
     class _DummyCache:
-        def get_or_load(self, *_args, **_kwargs):  # noqa: ANN001
+        def get_or_load(self, *_args, **_kwargs):
             return SimpleNamespace(texture=None)
 
     monkeypatch.setattr("crimson.game.high_scores_view.view.update_audio", lambda _audio, _dt: None)
@@ -137,11 +136,11 @@ def test_high_scores_view_draw_fades_pause_background_during_close(monkeypatch, 
     state.pending_high_scores = HighScoresRequest(game_mode_id=1)
     captured_alpha: list[float] = []
     state.pause_background = SimpleNamespace(
-        draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha))
+        draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha)),
     )
 
     class _DummyCache:
-        def get_or_load(self, *_args, **_kwargs):  # noqa: ANN001
+        def get_or_load(self, *_args, **_kwargs):
             return SimpleNamespace(texture=None)
 
     dummy_tex = SimpleNamespace(width=1, height=1)

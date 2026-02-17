@@ -157,7 +157,7 @@ class DemoTrialOverlayUi:
         header = "You have been playing the Demo version of Crimsonland."
         if font is not None:
             draw_small_text(
-                font, header, Vec2(panel_pos.x + 28.0, panel_pos.y + 9.0), 1.0, rl.Color(220, 220, 220, 255)
+                font, header, Vec2(panel_pos.x + 28.0, panel_pos.y + 9.0), 1.0, rl.Color(220, 220, 220, 255),
             )
         else:
             rl.draw_text(header, int(panel_pos.x + 28.0), int(panel_pos.y + 9.0), 16, rl.Color(220, 220, 220, 255))

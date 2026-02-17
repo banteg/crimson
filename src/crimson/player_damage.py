@@ -6,8 +6,7 @@ This is a minimal, rewrite-focused port of `player_take_damage` (0x00425e50).
 See: `docs/crimsonland-exe/player-damage.md`.
 """
 
-from collections.abc import Sequence
-from typing import Callable
+from collections.abc import Callable, Sequence
 
 from .perks import PerkId
 from .perks.helpers import perk_active

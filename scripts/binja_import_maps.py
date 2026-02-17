@@ -441,7 +441,7 @@ def _parse_types_from_source(bv, source: str, *, filename: str | None = None, in
                         (source,),
                         {k: v for k, v in (("filename", filename), ("platform", platform), ("include_dirs", include_dirs)) if v is not None},
                     ),
-                ]
+                ],
             )
         if filename:
             call_variants.append(((source, filename), {}))
@@ -503,7 +503,7 @@ def _seed_repo_headers(bv) -> None:
                 [
                     repo_root / "third_party" / "headers" / "crimsonland_ida_types.h",
                     repo_root / "third_party" / "headers" / "crimsonland_types.h",
-                ]
+                ],
             )
 
     include_dirs = []
@@ -990,8 +990,8 @@ def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
     _log_info(f"Applied name map: {map_path}")
     _log_info(
         "Updated entries: {applied} (renamed {renamed}, signatures {signatures}, comments {comments})".format(
-            **stats
-        )
+            **stats,
+        ),
     )
     _log_info("Missing: {missing}, Skipped: {skipped}".format(**stats))
     return stats
@@ -1098,7 +1098,7 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
                     _log_warn(f"type apply failed for {name or '0x%08x' % addr} ({type_text})")
             else:
                 _log_warn(
-                    f"type not found for {name or '0x%08x' % addr}: {type_text} (no typedef/size hint available)"
+                    f"type not found for {name or '0x%08x' % addr}: {type_text} (no typedef/size hint available)",
                 )
 
         if changed:
@@ -1107,8 +1107,8 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
     _log_info(f"Applied data map: {map_path}")
     _log_info(
         "Updated entries: {applied} (created {created}, renamed {renamed}, comments {comments}, types {types})".format(
-            **stats
-        )
+            **stats,
+        ),
     )
     _log_info("Missing: {missing}, Skipped: {skipped}".format(**stats))
     return stats

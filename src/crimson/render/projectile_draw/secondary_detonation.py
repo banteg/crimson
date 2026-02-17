@@ -5,7 +5,7 @@ import pyray as rl
 from grim.color import RGBA
 from grim.math import clamp
 
-from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRID
+from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from .types import SecondaryProjectileDrawCtx
 
 

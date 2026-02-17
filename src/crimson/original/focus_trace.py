@@ -4,25 +4,23 @@ import argparse
 import inspect
 import json
 import math
-from collections.abc import Mapping
 from collections import Counter
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
 import msgspec
-from grim.geom import Vec2
 
 import crimson.projectiles.runtime.collision as projectiles_mod
 import crimson.projectiles.runtime.projectile_pool as projectile_pool_mod
 import crimson.projectiles.runtime.secondary_pool as secondary_pool_mod
 import crimson.sim.presentation_step as presentation_step_mod
 from crimson.game_modes import GameMode
-from crimson.sim.input import PlayerInput
 from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
-    build_capture_dt_frame_overrides,
     build_capture_dt_frame_ms_i32_overrides,
+    build_capture_dt_frame_overrides,
     convert_capture_to_replay,
     load_capture,
     parse_player_int_overrides,
@@ -46,8 +44,10 @@ from crimson.sim.driver.setup import (
     reset_players,
     status_from_snapshot,
 )
+from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import SurvivalDeterministicSession
 from crimson.sim.world_state import WorldState
+from grim.geom import Vec2
 
 
 @dataclass(slots=True)
@@ -214,7 +214,7 @@ def _projectile_snapshot(world: WorldState) -> list[dict[str, Any]]:
                 "base_damage": float(proj.base_damage),
                 "owner_id": int(proj.owner_id),
                 "pos": {"x": float(proj.pos.x), "y": float(proj.pos.y)},
-            }
+            },
         )
     return out
 
@@ -242,7 +242,7 @@ def _decode_inputs_for_tick(
                 move_backward_pressed=move_backward_pressed,
                 turn_left_pressed=turn_left_pressed,
                 turn_right_pressed=turn_right_pressed,
-            )
+            ),
         )
     return out
 
@@ -280,7 +280,7 @@ def _summarize_creature_diffs(capture_creatures: list[dict[str, Any]], world: Wo
                 "y_delta": float(creature.pos.y) - cap_y,
                 "active_capture": bool(int(cap_row.get("active", 0)) != 0),
                 "active_rewrite": bool(creature.active),
-            }
+            },
         )
     rows.sort(
         key=lambda row: (
@@ -291,7 +291,7 @@ def _summarize_creature_diffs(capture_creatures: list[dict[str, Any]], world: Wo
                 abs(float(row["y_delta"])),
             ),
             int(row["index"]),
-        )
+        ),
     )
     return rows
 
@@ -317,7 +317,7 @@ def _summarize_projectile_diffs(capture_projectiles: list[dict[str, Any]], world
                 "y_delta": float(proj.pos.y) - cap_y,
                 "active_capture": bool(int(cap_row.get("active", 0)) != 0),
                 "active_rewrite": bool(proj.active),
-            }
+            },
         )
     rows.sort(
         key=lambda row: (
@@ -328,7 +328,7 @@ def _summarize_projectile_diffs(capture_projectiles: list[dict[str, Any]], world
                 abs(float(row["y_delta"])),
             ),
             int(row["index"]),
-        )
+        ),
     )
     return rows
 
@@ -354,7 +354,7 @@ def _collect_creature_presence_diffs(
                 "hp": float(row.get("hp", 0.0)),
                 "hitbox_size": float(row.get("hitbox_size", 0.0)),
                 "pos": {"x": float(pos.get("x", 0.0)), "y": float(pos.get("y", 0.0))},  # ty:ignore[possibly-missing-attribute]
-            }
+            },
         )
 
     rewrite_only: list[dict[str, Any]] = []
@@ -367,7 +367,7 @@ def _collect_creature_presence_diffs(
                 "hp": float(creature.hp),
                 "hitbox_size": float(creature.hitbox_size),
                 "pos": {"x": float(creature.pos.x), "y": float(creature.pos.y)},
-            }
+            },
         )
 
     return capture_only, rewrite_only
@@ -394,7 +394,7 @@ def _collect_projectile_presence_diffs(
                 "life_timer": float(row.get("life_timer", 0.0)),
                 "damage_pool": float(row.get("damage_pool", 0.0)),
                 "pos": {"x": float(pos.get("x", 0.0)), "y": float(pos.get("y", 0.0))},  # ty:ignore[possibly-missing-attribute]
-            }
+            },
         )
 
     rewrite_only: list[dict[str, Any]] = []
@@ -407,7 +407,7 @@ def _collect_projectile_presence_diffs(
                 "life_timer": float(proj.life_timer),
                 "damage_pool": float(proj.damage_pool),
                 "pos": {"x": float(proj.pos.x), "y": float(proj.pos.y)},
-            }
+            },
         )
 
     return capture_only, rewrite_only
@@ -491,7 +491,7 @@ def _summarize_rng_alignment(
                 capture_caller_static=caller_static,
                 capture_caller=str(row.get("caller", "")).strip(),
                 inferred_rewrite_callsite=str(caller_best.get(caller_static, "")),
-            )
+            ),
         )
 
     missing_native_tail_count = max(0, int(capture_calls) - int(rewrite_calls))
@@ -532,7 +532,7 @@ def _build_native_caller_gaps(
             str(callsite): int(count)
             for callsite, count in rng_alignment.rewrite_callsite_counts
             if str(callsite)
-        }
+        },
     )
     rows: list[NativeCallerGapRow] = []
     for caller_static, capture_count in rng_alignment.capture_caller_counts:
@@ -552,14 +552,14 @@ def _build_native_caller_gaps(
                 inferred_rewrite_callsite=inferred_rewrite_callsite,
                 rewrite_count=int(rewrite_count),
                 gap=int(gap),
-            )
+            ),
         )
     rows.sort(
         key=lambda row: (
             -int(row.gap),
             -int(row.capture_count),
             str(row.native_caller_static),
-        )
+        ),
     )
     return rows[: max(0, int(limit))]
 
@@ -574,14 +574,14 @@ def _build_fire_bullets_loop_parity(rng_alignment: RngAlignmentSummary) -> FireB
             str(caller_static): int(count)
             for caller_static, count in rng_alignment.capture_caller_counts
             if str(caller_static)
-        }
+        },
     )
     rewrite_counts = Counter(
         {
             str(callsite): int(count)
             for callsite, count in rng_alignment.rewrite_callsite_counts
             if str(callsite)
-        }
+        },
     )
 
     seed_callsite = str(caller_map.get(_FIRE_BULLETS_SEED_CALLER, ""))
@@ -829,7 +829,7 @@ def trace_focus_tick(
                             target=target,
                             radius=float(radius),
                             target_size=float(target_size),
-                        )
+                        ),
                     )
                     frame = inspect.currentframe().f_back  # ty:ignore[possibly-missing-attribute]
                     proj_index: int | None = None
@@ -892,7 +892,7 @@ def trace_focus_tick(
                             rng_draws=max(0, int(after - before)),
                             target_x=float(hit.target.x),
                             target_y=float(hit.target.y),
-                        )
+                        ),
                     )
                     hook_index += 1
                     return bool(handled)
@@ -1002,14 +1002,14 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
     print(
         "  "
         f"capture_calls={int(align.capture_calls)} capture_head_len={int(align.capture_head_len)} "
-        f"rewrite_calls={int(align.rewrite_calls)} prefix_match={int(align.value_prefix_match)}"
+        f"rewrite_calls={int(align.rewrite_calls)} prefix_match={int(align.value_prefix_match)}",
     )
     if align.first_value_mismatch_index is not None:
         print(
             "  "
             f"first_value_mismatch_idx={int(align.first_value_mismatch_index)} "
             f"capture={int(align.first_value_mismatch_capture or 0)} "
-            f"rewrite={int(align.first_value_mismatch_rewrite or 0)}"
+            f"rewrite={int(align.first_value_mismatch_rewrite or 0)}",
         )
     if int(align.missing_native_tail_count) > 0:
         print(f"  missing_native_tail={int(align.missing_native_tail_count)}")
@@ -1028,7 +1028,7 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
                 print(
                     "    "
                     f"idx={int(row.index)} caller={row.capture_caller_static} value={int(row.capture_value)} "
-                    f"inferred={inferred}"
+                    f"inferred={inferred}",
                 )
             if len(align.missing_native_tail_preview) > int(diff_limit):
                 print(f"    ... {len(align.missing_native_tail_preview) - int(diff_limit)} more")
@@ -1042,7 +1042,7 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
                 "  "
                 f"{row.native_caller_static} ({label}) "
                 f"capture={int(row.capture_count)} rewrite={int(row.rewrite_count)} "
-                f"gap={int(row.gap)} inferred={inferred}"
+                f"gap={int(row.gap)} inferred={inferred}",
             )
         if len(report.native_caller_gaps_top) > int(diff_limit):
             print(f"  ... {len(report.native_caller_gaps_top) - int(diff_limit)} more")
@@ -1053,27 +1053,27 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
         print(
             "  "
             f"seed_iterations capture={int(parity.capture_iterations)} rewrite={int(parity.rewrite_iterations)} "
-            f"missing={int(parity.missing_iterations)}"
+            f"missing={int(parity.missing_iterations)}",
         )
         print(
             "  "
             f"estimated_missing_hits={float(parity.estimated_missing_hits):.3f} "
-            f"(iters_per_hit={int(parity.loop_iterations_per_hit)})"
+            f"(iters_per_hit={int(parity.loop_iterations_per_hit)})",
         )
         print(
             "  "
             f"midrange_rerolls capture={int(parity.capture_midrange_rolls)} "
-            f"rewrite={int(parity.rewrite_midrange_rolls)}"
+            f"rewrite={int(parity.rewrite_midrange_rolls)}",
         )
         print(
             "  "
             f"farrange_rerolls capture={int(parity.capture_farrange_rolls)} "
-            f"rewrite={int(parity.rewrite_farrange_rolls)}"
+            f"rewrite={int(parity.rewrite_farrange_rolls)}",
         )
         print(
             "  "
             f"pre_freeze_rolls capture={int(parity.capture_pre_freeze_rolls)} "
-            f"rewrite={int(parity.rewrite_pre_freeze_rolls)}"
+            f"rewrite={int(parity.rewrite_pre_freeze_rolls)}",
         )
 
     print("\nrng_callsites_top:")
@@ -1084,7 +1084,7 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
     for row in report.collision_hits[: max(1, int(near_miss_limit))]:
         print(
             f"  proj={row.proj_index} step={row.step} creature={row.creature_idx} "
-            f"margin={row.margin:.6f} dist={row.dist:.6f} threshold={row.threshold:.6f}"
+            f"margin={row.margin:.6f} dist={row.dist:.6f} threshold={row.threshold:.6f}",
         )
     if len(report.collision_hits) > int(near_miss_limit):
         print(f"  ... {len(report.collision_hits) - int(near_miss_limit)} more")
@@ -1093,7 +1093,7 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
     for row in report.collision_near_misses[: max(1, int(near_miss_limit))]:
         print(
             f"  proj={row.proj_index} step={row.step} creature={row.creature_idx} "
-            f"margin={row.margin:.6f} dist={row.dist:.6f} threshold={row.threshold:.6f}"
+            f"margin={row.margin:.6f} dist={row.dist:.6f} threshold={row.threshold:.6f}",
         )
     if len(report.collision_near_misses) > int(near_miss_limit):
         print(f"  ... {len(report.collision_near_misses) - int(near_miss_limit)} more")
@@ -1104,7 +1104,7 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
             f"  idx={int(row['index']):3d} hp_delta={float(row['hp_delta']):+.6f} "
             f"hitbox_delta={float(row['hitbox_delta']):+.6f} "
             f"x_delta={float(row['x_delta']):+.6f} y_delta={float(row['y_delta']):+.6f} "
-            f"active={bool(row['active_capture'])}/{bool(row['active_rewrite'])}"
+            f"active={bool(row['active_capture'])}/{bool(row['active_rewrite'])}",
         )
 
     print("\ncreature_presence_diffs:")
@@ -1114,7 +1114,7 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
             print(
                 f"    idx={int(row['index']):3d} type={int(row['type_id'])} "
                 f"hp={float(row['hp']):.6f} hitbox={float(row['hitbox_size']):.6f} "
-                f"pos=({float(row['pos']['x']):.4f},{float(row['pos']['y']):.4f})"
+                f"pos=({float(row['pos']['x']):.4f},{float(row['pos']['y']):.4f})",
             )
         if len(report.creature_capture_only) > int(diff_limit):
             print(f"    ... {len(report.creature_capture_only) - int(diff_limit)} more")
@@ -1124,7 +1124,7 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
             print(
                 f"    idx={int(row['index']):3d} type={int(row['type_id'])} "
                 f"hp={float(row['hp']):.6f} hitbox={float(row['hitbox_size']):.6f} "
-                f"pos=({float(row['pos']['x']):.4f},{float(row['pos']['y']):.4f})"
+                f"pos=({float(row['pos']['x']):.4f},{float(row['pos']['y']):.4f})",
             )
         if len(report.creature_rewrite_only) > int(diff_limit):
             print(f"    ... {len(report.creature_rewrite_only) - int(diff_limit)} more")
@@ -1137,7 +1137,7 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
             f"  idx={int(row['index']):3d} life_delta={float(row['life_delta']):+.6f} "
             f"damage_pool_delta={float(row['damage_pool_delta']):+.6f} "
             f"x_delta={float(row['x_delta']):+.6f} y_delta={float(row['y_delta']):+.6f} "
-            f"active={bool(row['active_capture'])}/{bool(row['active_rewrite'])}"
+            f"active={bool(row['active_capture'])}/{bool(row['active_rewrite'])}",
         )
 
     print("\nprojectile_presence_diffs:")
@@ -1147,7 +1147,7 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
             print(
                 f"    idx={int(row['index']):3d} type={int(row['type_id'])} "
                 f"life={float(row['life_timer']):.6f} damage_pool={float(row['damage_pool']):.6f} "
-                f"pos=({float(row['pos']['x']):.4f},{float(row['pos']['y']):.4f})"
+                f"pos=({float(row['pos']['x']):.4f},{float(row['pos']['y']):.4f})",
             )
         if len(report.projectile_capture_only) > int(diff_limit):
             print(f"    ... {len(report.projectile_capture_only) - int(diff_limit)} more")
@@ -1157,7 +1157,7 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
             print(
                 f"    idx={int(row['index']):3d} type={int(row['type_id'])} "
                 f"life={float(row['life_timer']):.6f} damage_pool={float(row['damage_pool']):.6f} "
-                f"pos=({float(row['pos']['x']):.4f},{float(row['pos']['y']):.4f})"
+                f"pos=({float(row['pos']['x']):.4f},{float(row['pos']['y']):.4f})",
             )
         if len(report.projectile_rewrite_only) > int(diff_limit):
             print(f"    ... {len(report.projectile_rewrite_only) - int(diff_limit)} more")
@@ -1169,7 +1169,7 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
         for row in report.decal_hook_rows[: max(1, int(diff_limit))]:
             print(
                 f"  hook={int(row.hook_index):2d} type={int(row.type_id):2d} handled={int(bool(row.handled))} "
-                f"rng_draws={int(row.rng_draws):3d} target=({float(row.target_x):.4f},{float(row.target_y):.4f})"
+                f"rng_draws={int(row.rng_draws):3d} target=({float(row.target_x):.4f},{float(row.target_y):.4f})",
             )
         if len(report.decal_hook_rows) > int(diff_limit):
             print(f"  ... {len(report.decal_hook_rows) - int(diff_limit)} more")

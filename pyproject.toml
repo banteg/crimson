@@ -9,6 +9,7 @@ dependencies = [
     "pillow>=12.1.0",
     "platformdirs>=4.5.1",
     "raylib>=5.5.0.4",
+    "structlog>=25.1.0",
     "typer>=0.21.1",
 ]
 
@@ -44,6 +45,7 @@ dev = [
 line-length = 120
 
 [tool.ruff.lint]
+extend-select = ["B007", "B017", "B023", "B904", "COM812", "I001", "PGH003", "PT017", "RUF012", "RUF100", "S113", "S607", "TRY004", "UP035"]
 extend-ignore = ["E402"]
 
 [tool.pytest.ini_options]

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import re
 import struct
+from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -203,10 +203,10 @@ def main() -> None:
     current_str_offset = 0
 
     str_src_re = re.compile(
-        r"pcVar7\s*=\s*s_[A-Za-z0-9_]+_([0-9A-Fa-f]{8})(?:\s*([+-])\s*(\d+))?"
+        r"pcVar7\s*=\s*s_[A-Za-z0-9_]+_([0-9A-Fa-f]{8})(?:\s*([+-])\s*(\d+))?",
     )
     str_src_dat_re = re.compile(
-        r"pcVar7\s*=\s*&DAT_([0-9A-Fa-f]{8})(?:\s*([+-])\s*(\d+))?"
+        r"pcVar7\s*=\s*&DAT_([0-9A-Fa-f]{8})(?:\s*([+-])\s*(\d+))?",
     )
     str_dst_re = re.compile(r"pcVar8\s*=\s*\(char \*\)&DAT_([0-9A-Fa-f]{8})")
     assign_re = re.compile(r"(?P<dst>_?DAT_[0-9A-Fa-f]{8})\s*=\s*(?P<src>[^;]+);")

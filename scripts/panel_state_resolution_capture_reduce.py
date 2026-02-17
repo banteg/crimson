@@ -473,7 +473,7 @@ def _render_markdown(summary: dict[str, Any]) -> str:
                 zero_signal_count = len(zero_signal) if isinstance(zero_signal, list) else 0
                 lines.append(
                     f"  - `{res}`: {st}, captured={captured}/{states_total}, "
-                    f"non_captured={non_captured_count}, zero_signal={zero_signal_count}"
+                    f"non_captured={non_captured_count}, zero_signal={zero_signal_count}",
                 )
         lines.append("")
 
@@ -503,7 +503,7 @@ def _render_markdown(summary: dict[str, Any]) -> str:
             zero_signal_count = len(zero_signal) if isinstance(zero_signal, list) else 0
             lines.append(
                 f"| `{res}` | `{status}` | `{run_id}` | `{captured}/{states_total}` | "
-                f"`{non_captured_count}` | `{zero_signal_count}` | `{path}` |"
+                f"`{non_captured_count}` | `{zero_signal_count}` | `{path}` |",
             )
     else:
         lines.append("- none")

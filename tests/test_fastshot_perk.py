@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import pytest
 
 from crimson.gameplay import GameplayState
+from crimson.perks import PerkId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import player_fire_weapon
-from crimson.perks import PerkId
+from grim.geom import Vec2
 
 
 def _fire_once(state: GameplayState, player: PlayerState) -> float:

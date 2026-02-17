@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import random
 from dataclasses import replace
 from pathlib import Path
-import random
 
 import pyray as rl
 
@@ -20,13 +20,10 @@ from ..original.capture import CAPTURE_BOOTSTRAP_EVENT_KIND
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table
 from ..quests.types import QuestContext
-from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
-from ..weapon_runtime import weapon_assign_player
-from ..weapons import WeaponId
 from ..replay import (
-    apply_replay_bootstrap,
     Replay,
     UnknownEvent,
+    apply_replay_bootstrap,
     load_replay_file,
     unpack_tick_inputs,
     warn_on_game_version_mismatch,
@@ -34,6 +31,7 @@ from ..replay import (
 from ..sim.driver.replay_events import apply_replay_tick_events, partition_tick_events
 from ..sim.driver.setup import build_damage_scale_by_type, status_from_snapshot
 from ..sim.sessions import QuestDeterministicSession, RushDeterministicSession, SurvivalDeterministicSession
+from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
     HUD_AMMO_TEXT_OFFSET,
@@ -44,6 +42,8 @@ from ..ui.hud import (
     hud_ui_scale,
     load_hud_assets,
 )
+from ..weapon_runtime import weapon_assign_player
+from ..weapons import WeaponId
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
 _PLAYBACK_SPEED_STEPS: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0)
@@ -707,7 +707,7 @@ class ReplayPlaybackMode:
                 elapsed_ms=float(
                     self._quest_spawn_timeline_ms
                     if int(replay.header.game_mode_id) == int(GameMode.QUESTS)
-                    else world._elapsed_ms
+                    else world._elapsed_ms,
                 ),
                 font=self._small,
                 frame_dt_ms=float(max(0.0, rl.get_frame_time()) * 1000.0),

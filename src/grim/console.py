@@ -1,16 +1,13 @@
 from __future__ import annotations
-from grim.color import RGBA
-from grim.geom import Vec2
-
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Callable, Iterable
 
 import math
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass, field
+from pathlib import Path
+
 import pyray as rl
 
-from . import paq
-from grim.math import clamp
+from grim.color import RGBA
 from grim.fonts.grim_mono import (
     GrimMonoFont,
     draw_grim_mono_text,
@@ -22,6 +19,10 @@ from grim.fonts.small import (
     load_small_font,
     measure_small_text_width,
 )
+from grim.geom import Vec2
+from grim.math import clamp
+
+from . import paq
 
 CONSOLE_LOG_NAME = "console.log"
 MAX_CONSOLE_LINES = 0x1000
@@ -612,7 +613,7 @@ def _make_noop_command(console: ConsoleState, name: str) -> CommandHandler:
 
 
 def register_boot_commands(
-    console: ConsoleState, handlers: dict[str, CommandHandler] | None = None
+    console: ConsoleState, handlers: dict[str, CommandHandler] | None = None,
 ) -> None:
     resolved = handlers or {}
     commands = (

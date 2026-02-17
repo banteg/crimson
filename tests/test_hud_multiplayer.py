@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 from crimson.sim.state_types import PlayerState
 from crimson.ui.hud import HudAssets, HudState, draw_hud_overlay
+from grim.geom import Vec2
 
 
 class _TextureStub:
@@ -51,11 +50,11 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch) -> Non
 
     draws: list[tuple[object, float, float, float, float]] = []
 
-    def _draw_texture_pro(texture, _src, dst, _origin, _rotation, _tint) -> None:  # noqa: ANN001,ARG001
+    def _draw_texture_pro(texture, _src, dst, _origin, _rotation, _tint) -> None:
         draws.append((texture, float(dst.x), float(dst.y), float(dst.width), float(dst.height)))
 
     monkeypatch.setattr("crimson.ui.hud.rl.draw_texture_pro", _draw_texture_pro)
-    monkeypatch.setattr("crimson.ui.hud.rl.draw_text", lambda *args, **kwargs: None)  # noqa: ARG005
+    monkeypatch.setattr("crimson.ui.hud.rl.draw_text", lambda *args, **kwargs: None)
 
     draw_hud_overlay(
         assets,
@@ -94,7 +93,7 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch) -> Non
 def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeypatch) -> None:
     monkeypatch.setattr("crimson.ui.hud.rl.get_screen_width", lambda: 1024)
     monkeypatch.setattr("crimson.ui.hud.rl.get_screen_height", lambda: 768)
-    monkeypatch.setattr("crimson.ui.hud.rl.draw_text", lambda *args, **kwargs: None)  # noqa: ARG005
+    monkeypatch.setattr("crimson.ui.hud.rl.draw_text", lambda *args, **kwargs: None)
 
     life_heart = _TextureStub(32, 32)
     assets = HudAssets(
@@ -117,7 +116,7 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeyp
 
     draws: list[tuple[object, float, float, float, float]] = []
 
-    def _draw_texture_pro(texture, _src, dst, _origin, _rotation, _tint) -> None:  # noqa: ANN001,ARG001
+    def _draw_texture_pro(texture, _src, dst, _origin, _rotation, _tint) -> None:
         draws.append((texture, float(dst.x), float(dst.y), float(dst.width), float(dst.height)))
 
     monkeypatch.setattr("crimson.ui.hud.rl.draw_texture_pro", _draw_texture_pro)

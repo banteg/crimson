@@ -9,8 +9,8 @@ from grim.math import clamp
 from grim.view import ViewContext
 
 from ..game_world import GameWorld
-from ..sim.input import PlayerInput
 from ..paths import default_runtime_dir
+from ..sim.input import PlayerInput
 from ..ui.cursor import draw_cursor_glow
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
@@ -155,7 +155,7 @@ class AimDebugView:
                     fire_down=False,
                     fire_pressed=False,
                     reload_pressed=False,
-                )
+                ),
             ],
             auto_pick_perks=False,
             perk_progression_enabled=False,

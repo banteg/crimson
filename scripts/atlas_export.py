@@ -95,7 +95,7 @@ def export_frames(
                 "path": filename,
                 "rect": [x0, y0, x1 - x0, y1 - y0],
                 "uv": [round(uv[0], 6), round(uv[1], 6), round(uv[2], 6), round(uv[3], 6)],
-            }
+            },
         )
 
     manifest = {

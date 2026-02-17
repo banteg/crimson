@@ -1,26 +1,28 @@
 from __future__ import annotations
-from dataclasses import dataclass
-import struct
 
-from grim.geom import Rect, Vec2
+import struct
+from dataclasses import dataclass
+
+import pyray as rl
+
 from grim.config import (
     KEYBIND_UNBOUND_CODE,
     default_player_keybind_block,
 )
-
-import pyray as rl
-
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.geom import Rect, Vec2
 
+from ...aim_schemes import AimScheme
+from ...input_codes import INPUT_CODE_UNBOUND, capture_first_pressed_input_code, input_code_name
+from ...movement_controls import MovementControlType
+from ...ui.menu_panel import draw_classic_menu_panel
 from ..menu import (
     MENU_PANEL_HEIGHT,
     MENU_PANEL_WIDTH,
     MenuView,
 )
-from ...ui.menu_panel import draw_classic_menu_panel
+from ..types import GameState
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
-from ...movement_controls import MovementControlType
-from ...aim_schemes import AimScheme
 from .controls_labels import (
     PICK_PERK_BIND_SLOT,
     RELOAD_BIND_SLOT,
@@ -30,10 +32,7 @@ from .controls_labels import (
     input_configure_for_label,
     input_scheme_label,
 )
-from ...input_codes import INPUT_CODE_UNBOUND, capture_first_pressed_input_code, input_code_name
 from .hit_test import mouse_inside_rect_with_padding
-from ..types import GameState
-
 
 # Measured from ui_render_trace_oracle_1024x768.json (state_3:Configure for:, timeline=300).
 CONTROLS_LEFT_PANEL_POS_X = -165.0
@@ -387,7 +386,7 @@ class ControlsMenuView(PanelMenuView):
                         row_y=float(row_y),
                         value_pos=value_pos,
                         value_rect=value_rect,
-                    )
+                    ),
                 )
                 row_y += 16.0 * panel_scale
             y = row_y + 8.0 * panel_scale
@@ -408,7 +407,7 @@ class ControlsMenuView(PanelMenuView):
             active_slot = int(self._rebind_slot or 0)
             active_player = int(self._rebind_player_index or 0)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or rl.is_mouse_button_pressed(
-                rl.MouseButton.MOUSE_BUTTON_RIGHT
+                rl.MouseButton.MOUSE_BUTTON_RIGHT,
             ):
                 self._clear_rebind_capture()
                 return True
@@ -882,7 +881,7 @@ class ControlsMenuView(PanelMenuView):
                 label = row.label
                 slot = int(row.slot)
                 active_row = rebind_active and int(self._rebind_slot or -1) == slot and int(
-                    self._rebind_player_index or -1
+                    self._rebind_player_index or -1,
                 ) == player_idx
                 hovered_row = (not rebind_active) and (not dropdown_blocked) and row.value_rect.contains(mouse)
                 value_text = (

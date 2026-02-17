@@ -1,18 +1,19 @@
 from __future__ import annotations
 
-from pathlib import Path
 import random
+from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    from grim.audio import AudioState
     from grim.assets import LogoAssets, PaqTextureCache
+    from grim.audio import AudioState
     from grim.config import CrimsonConfig
     from grim.console import ConsoleState
     from grim.geom import Vec2
     from grim.terrain_render import GroundRenderer
 
-    from ..game.types import PendingLanSession
+    from ..game.types import PendingLanSession, PendingNetSession
+    from ..net.net_runtime import NetRuntime
     from ..net.runtime import LanRuntime
     from ..persistence.save_status import GameStatus
 
@@ -40,8 +41,17 @@ class GameState(Protocol):
     menu_ground: GroundRenderer | None
     menu_ground_camera: Vec2 | None
     pause_background: PauseBackground | None
+    pending_net_session: PendingNetSession | None
+    net_runtime: NetRuntime | LanRuntime | None
+    net_in_lobby: bool
+    net_waiting_for_players: bool
+    net_expected_players: int
+    net_connected_players: int
+    net_desync_count: int
+    net_resync_failure_count: int
+    net_last_error: str
     pending_lan_session: PendingLanSession | None
-    lan_runtime: LanRuntime | None
+    lan_runtime: NetRuntime | LanRuntime | None
     lan_in_lobby: bool
     lan_waiting_for_players: bool
     lan_expected_players: int

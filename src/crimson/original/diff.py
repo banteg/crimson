@@ -1,5 +1,4 @@
-# type: ignore
-
+# type: ignore[invalid-assignment,invalid-argument-type,no-matching-overload]
 from __future__ import annotations
 
 import math
@@ -153,7 +152,7 @@ def _collect_field_diffs(
                         field=_path_join(path, key_str),
                         expected=exp_value if has_exp else "<missing>",
                         actual=act_value if has_act else "<missing>",
-                    )
+                    ),
                 )
                 if max_diffs is not None and len(out) >= int(max_diffs):
                     return
@@ -177,7 +176,7 @@ def _collect_field_diffs(
                     field=_path_join(path, "_len"),
                     expected=int(len(expected)),
                     actual=int(len(actual)),
-                )
+                ),
             )
             if max_diffs is not None and len(out) >= int(max_diffs):
                 return
@@ -209,7 +208,7 @@ def _collect_field_diffs(
                 field=path or "<root>",
                 expected=expected,
                 actual=actual,
-            )
+            ),
         )
 
 

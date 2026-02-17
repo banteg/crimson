@@ -4,10 +4,11 @@ import argparse
 import json
 import math
 from collections import Counter
+from collections.abc import Iterator
 from dataclasses import dataclass
 from math import inf
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 
 @dataclass
@@ -348,7 +349,7 @@ def main() -> int:
                             "rotation": r_err,
                             "alpha": a_err,
                         },
-                    }
+                    },
                 )
             continue
 
@@ -382,7 +383,7 @@ def main() -> int:
                             "rot_count": rot_count,
                             "draws_shadow": draws_shadow,
                             "draws_color": draws_color,
-                        }
+                        },
                     )
 
             if rot_count is not None:
@@ -395,7 +396,7 @@ def main() -> int:
                                 "rot_count": rot_count,
                                 "draws_shadow": draws_shadow,
                                 "draws_color": draws_color,
-                            }
+                            },
                         )
             continue
 

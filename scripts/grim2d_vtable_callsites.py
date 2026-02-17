@@ -3,19 +3,18 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
-
 
 FUNC_HEADER_RE = re.compile(r"^/\*\s+(?P<name>[^\s]+)\s+@\s+[0-9A-Fa-f]+\s+\*/\s*$")
 ASSIGN_ALIAS_RE = re.compile(
-    r"\b(?P<var>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:\(int\))?\*DAT_0048083c\b"
+    r"\b(?P<var>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:\(int\))?\*DAT_0048083c\b",
 )
 ALIAS_PROP_RE = re.compile(
-    r"\b(?P<var>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:\(int\))?(?P<src>[A-Za-z_][A-Za-z0-9_]*)\b"
+    r"\b(?P<var>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:\(int\))?(?P<src>[A-Za-z_][A-Za-z0-9_]*)\b",
 )
 CALLSITE_RE = re.compile(
-    r"\(\*\*\(code \*\*\)\((?P<base>[^)]+?)\+\s*(?P<offset>0x[0-9A-Fa-f]+|\d+)\)\)"
+    r"\(\*\*\(code \*\*\)\((?P<base>[^)]+?)\+\s*(?P<offset>0x[0-9A-Fa-f]+|\d+)\)\)",
 )
 
 
@@ -69,7 +68,7 @@ def iter_callsites(lines: list[str]) -> list[dict[str, object]]:
                 "line": idx,
                 "base_expr": base,
                 "line_text": line.rstrip(),
-            }
+            },
         )
 
     return callsites

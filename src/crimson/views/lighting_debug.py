@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import json
 import math
-import random
 import os
-from pathlib import Path
+import random
 from dataclasses import dataclass
+from pathlib import Path
 from typing import cast
 
 import pyray as rl
@@ -18,8 +18,8 @@ from grim.view import ViewContext
 
 from ..creatures.spawn import CreatureInit, CreatureTypeId
 from ..game_world import GameWorld
-from ..sim.input import PlayerInput
 from ..paths import default_runtime_dir
+from ..sim.input import PlayerInput
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 
@@ -345,7 +345,7 @@ class LightingDebugView:
                     range=float(r),
                     source_radius=float(sr),
                     color=c,
-                )
+                ),
             )
 
     def _update_ui_mouse(self) -> None:
@@ -607,7 +607,7 @@ class LightingDebugView:
                     fire_down=False,
                     fire_pressed=False,
                     reload_pressed=False,
-                )
+                ),
             ],
             auto_pick_perks=False,
             perk_progression_enabled=False,
@@ -665,7 +665,7 @@ class LightingDebugView:
                 vel=velocity,
                 age=0.0,
                 ttl=float(self._proj_ttl),
-            )
+            ),
         )
 
     def _dump_debug(self, *, light_pos: Vec2, sdf_ok: bool) -> None:
@@ -938,7 +938,7 @@ class LightingDebugView:
                         float(c.r) / 255.0,
                         float(c.g) / 255.0,
                         float(c.b) / 255.0,
-                    )
+                    ),
                 )
             else:
                 # Debug mode still needs a pass to visualize shader output.
@@ -962,7 +962,7 @@ class LightingDebugView:
                             float(c.r) / 255.0,
                             float(c.g) / 255.0,
                             float(c.b) / 255.0,
-                        )
+                        ),
                     )
 
         def draw_fullscreen() -> None:
@@ -1096,7 +1096,7 @@ class LightingDebugView:
                         1.0,
                         float(self._player.size) * 0.5 * scale * float(self._occluder_radius_mul)
                         + float(self._occluder_radius_pad_px),
-                    )
+                    ),
                 ),
                 rl.Color(80, 220, 120, 180),
             )
@@ -1105,16 +1105,16 @@ class LightingDebugView:
                     continue
                 creature_screen = self._world.world_to_screen(creature.pos)
                 r = float(creature.size) * 0.5 * scale * float(self._occluder_radius_mul) + float(
-                    self._occluder_radius_pad_px
+                    self._occluder_radius_pad_px,
                 )
                 rl.draw_circle_lines(
-                    int(creature_screen.x), int(creature_screen.y), int(max(1.0, r)), rl.Color(220, 80, 80, 180)
+                    int(creature_screen.x), int(creature_screen.y), int(max(1.0, r)), rl.Color(220, 80, 80, 180),
                 )
 
         rl.draw_circle_lines(int(light_pos.x), int(light_pos.y), 6, rl.Color(255, 255, 255, 220))
         if self._cursor_light_enabled:
             rl.draw_circle_lines(
-                int(light_pos.x), int(light_pos.y), int(max(1.0, self._light_radius)), rl.Color(255, 255, 255, 40)
+                int(light_pos.x), int(light_pos.y), int(max(1.0, self._light_radius)), rl.Color(255, 255, 255, 40),
             )
             rl.draw_circle_lines(
                 int(light_pos.x),

@@ -3,8 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from grim.geom import Vec2
-
 from crimson.original.schema import CAPTURE_FORMAT_VERSION
 from crimson.replay.checkpoints import (
     ReplayCheckpoint,
@@ -12,6 +10,7 @@ from crimson.replay.checkpoints import (
     ReplayPerkSnapshot,
     ReplayPlayerCheckpoint,
 )
+from grim.geom import Vec2
 
 
 def _load_report_module():
@@ -39,7 +38,7 @@ def _checkpoint_tick(tick: int, *, level: int, weapon_id: int, experience: int, 
                 "ammo": 12.0,
                 "experience": int(experience),
                 "level": int(level),
-            }
+            },
         ],
         "status": {
             "quest_unlock_index": 0,
@@ -172,7 +171,7 @@ def test_run_summary_events_from_raw_capture(tmp_path: Path) -> None:
                 perk_pairs=[[20, 1]],
                 event_heads=[],
             ),
-        ]
+        ],
     )
     _write_capture_stream(capture_path, capture)
 
@@ -204,7 +203,7 @@ def test_run_summary_events_fall_back_to_checkpoints() -> None:
                     ammo=12.0,
                     experience=0,
                     level=1,
-                )
+                ),
             ],
             bonus_timers={},
             state_hash="a",
@@ -230,7 +229,7 @@ def test_run_summary_events_fall_back_to_checkpoints() -> None:
                     ammo=4.0,
                     experience=100,
                     level=2,
-                )
+                ),
             ],
             bonus_timers={},
             state_hash="b",

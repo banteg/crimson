@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import datetime as dt
 import os
+from collections.abc import Callable
 from pathlib import Path
 from threading import Lock
-from typing import Callable
-
 
 _TRACE_LOCK = Lock()
 _TRACE_PATH: Path | None = None

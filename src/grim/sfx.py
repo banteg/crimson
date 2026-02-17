@@ -1,16 +1,15 @@
 from __future__ import annotations
 
+import random
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-import random
-from typing import Iterable, cast
+from typing import cast
 
 import pyray as rl
 
+from . import paq, sfx_map
 from .console import ConsoleState
-from . import paq
-from . import sfx_map
-
 
 SFX_PAK_NAME = "sfx.paq"
 DEFAULT_VOICE_COUNT = 4

@@ -2,14 +2,14 @@ from __future__ import annotations
 
 """Ordered projectile-decal hooks for presentation planning."""
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 from grim.geom import Vec2
 
+from ...bonuses.fire_bullets import queue_large_hit_decal_streak
 from ...effects import FxQueue
 from ...projectiles import ProjectileHit, ProjectileTypeId
-from ...bonuses.fire_bullets import queue_large_hit_decal_streak
 
 
 @dataclass(slots=True)

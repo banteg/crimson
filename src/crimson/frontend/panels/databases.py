@@ -966,7 +966,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
 
     def _build_perk_database_ids(self) -> list[int]:
         from ...perks.availability import perks_rebuild_available
-        from ...sim.state_types import GameplayState, PERK_COUNT_SIZE
+        from ...sim.state_types import PERK_COUNT_SIZE, GameplayState
 
         # Avoid spinning up a full GameplayState; perks_rebuild_available only needs these fields.
         class _Stub:

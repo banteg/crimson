@@ -15,10 +15,10 @@ from ..bonuses import BONUS_TABLE, BonusId
 from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..game_world import GameWorld
-from ..sim.input import PlayerInput
-from ..weapon_runtime import weapon_assign_player
 from ..projectiles import ProjectileTypeId
+from ..sim.input import PlayerInput
 from ..ui.cursor import draw_aim_cursor
+from ..weapon_runtime import weapon_assign_player
 from ..weapon_sfx import resolve_weapon_sfx_ref
 from ..weapons import (
     WEAPON_BY_ID,
@@ -29,7 +29,6 @@ from ..weapons import (
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .audio_bootstrap import init_view_audio
 from .registry import register_view
-
 
 WORLD_SIZE = 1024.0
 
@@ -169,7 +168,7 @@ class ArsenalDebugView:
             spawn_id = int(self._spawn_ids[idx % len(self._spawn_ids)])
             angle = float(idx) / float(count) * math.tau
             spawn_pos = (player_pos + Vec2.from_angle(angle) * self._spawn_ring_radius).clamp_rect(
-                48.0, 48.0, WORLD_SIZE - 48.0, WORLD_SIZE - 48.0
+                48.0, 48.0, WORLD_SIZE - 48.0, WORLD_SIZE - 48.0,
             )
             heading = angle + math.pi
             self._world.creatures.spawn_template(
@@ -301,7 +300,7 @@ class ArsenalDebugView:
                 f"pellets {_fmt_int(weapon.pellet_count)}  spread_inc {_fmt_float(weapon.spread_heat_inc)}  dmg_scale {_fmt_float(weapon.damage_scale)}  meta {_fmt_int(weapon.projectile_meta)}",
                 f"ammo_class {_fmt_int(weapon.ammo_class)}  flags {_fmt_hex(weapon.flags)}  icon {_fmt_int(weapon.icon_index)}",
                 f"sfx fire {fire_sfx or '—'}  reload {reload_sfx or '—'}",
-            ]
+            ],
         )
         return lines
 

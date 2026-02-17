@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from collections import defaultdict
 import argparse
 import json
 import re
+from collections import defaultdict
 from pathlib import Path
 
 from crimson.atlas import GRID_SIZE_BY_CODE, SPRITE_TABLE
@@ -18,7 +18,7 @@ LOAD_RE = re.compile(
     r"(?P<var>[A-Za-z0-9_]+)\s*=\s*(?:"
     r"FUN_0042a670|FUN_0042a700|texture_get_or_load|texture_get_or_load_alt"
     r"|\(\*\*\(code \*\*\)\(\*DAT_0048083c \+ 0xc0\)\)"
-    r")\(s_[A-Za-z0-9_]+_(?P<addr>[0-9A-Fa-f]{8})\)"
+    r")\(s_[A-Za-z0-9_]+_(?P<addr>[0-9A-Fa-f]{8})\)",
 )
 
 CALL_TEX_MARKER = "+ 0xc4))("
@@ -158,7 +158,7 @@ def main() -> None:
     addr_to_str = parse_strings(args.strings_path)
     var_to_path = parse_texture_symbols(addr_to_str, args.c_path, args.assets_root)
     atlas_calls: dict[str, dict[str, set[tuple[int | str, int | str]] | set[int | str]]] = defaultdict(
-        lambda: {"direct": set(), "table": set()}
+        lambda: {"direct": set(), "table": set()},
     )
 
     current: str | None = None
@@ -215,7 +215,7 @@ def main() -> None:
                 "texture": path,
                 "direct": [{"grid": grid, "index": idx} for grid, idx in direct],
                 "table_indices": table,
-            }
+            },
         )
 
     if args.output_json:

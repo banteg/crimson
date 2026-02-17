@@ -4,10 +4,10 @@ from dataclasses import replace
 from typing import cast
 
 from ...game_modes import GameMode
+from ...original.capture import CAPTURE_BOOTSTRAP_EVENT_KIND
 from ...quests import quest_by_level
 from ...quests.runtime import build_quest_spawn_table
 from ...quests.types import QuestContext, SpawnEntry
-from ...original.capture import CAPTURE_BOOTSTRAP_EVENT_KIND
 from ...replay import Replay, UnknownEvent, apply_replay_bootstrap, unpack_tick_inputs, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from ...weapon_runtime import weapon_assign_player
@@ -55,7 +55,7 @@ def run_survival_replay(
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.SURVIVAL):
         raise ReplayRunnerError(
-            f"replay game_mode_id={int(replay.header.game_mode_id)} does not match survival={int(GameMode.SURVIVAL)}"
+            f"replay game_mode_id={int(replay.header.game_mode_id)} does not match survival={int(GameMode.SURVIVAL)}",
         )
 
     if warn_on_version_mismatch:
@@ -204,7 +204,7 @@ def run_survival_replay(
                     deaths=events.deaths,
                     events=events,
                     command_hash=str(step.command_hash),
-                )
+                ),
             )
 
         if inter_tick_rand_draws_by_tick is None:
@@ -240,7 +240,7 @@ def run_survival_replay(
                     deaths=[],
                     events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
                     command_hash="",
-                )
+                ),
             )
 
     shots_fired, shots_hit = player0_shots(world.state)
@@ -276,7 +276,7 @@ def run_rush_replay(
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.RUSH):
         raise ReplayRunnerError(
-            f"replay game_mode_id={int(replay.header.game_mode_id)} does not match rush={int(GameMode.RUSH)}"
+            f"replay game_mode_id={int(replay.header.game_mode_id)} does not match rush={int(GameMode.RUSH)}",
         )
 
     if warn_on_version_mismatch:
@@ -392,7 +392,7 @@ def run_rush_replay(
                     deaths=events.deaths,
                     events=events,
                     command_hash=str(step.command_hash),
-                )
+                ),
             )
 
         if inter_tick_rand_draws_by_tick is None:
@@ -423,7 +423,7 @@ def run_rush_replay(
                 deaths=[],
                 events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
                 command_hash="",
-            )
+            ),
         )
 
     shots_fired, shots_hit = player0_shots(world.state)
@@ -479,7 +479,7 @@ def run_quest_replay(
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.QUESTS):
         raise ReplayRunnerError(
-            f"replay game_mode_id={int(replay.header.game_mode_id)} does not match quests={int(GameMode.QUESTS)}"
+            f"replay game_mode_id={int(replay.header.game_mode_id)} does not match quests={int(GameMode.QUESTS)}",
         )
 
     if warn_on_version_mismatch:
@@ -533,7 +533,7 @@ def run_quest_replay(
                 seed=int(replay.header.seed),
                 hardcore=bool(replay.header.hardcore),
                 full_version=True,
-            )
+            ),
         )
     else:
         spawn_entries = tuple(spawn_entries)
@@ -653,7 +653,7 @@ def run_quest_replay(
                     deaths=events.deaths,
                     events=events,
                     command_hash=str(step.command_hash),
-                )
+                ),
             )
 
         if inter_tick_rand_draws_by_tick is None:
@@ -688,7 +688,7 @@ def run_quest_replay(
                     deaths=[],
                     events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
                     command_hash="",
-                )
+                ),
             )
 
     shots_fired, shots_hit = player0_shots(world.state)

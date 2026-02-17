@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import hashlib
-from pathlib import Path
 import tempfile
+from pathlib import Path
 from typing import SupportsInt, cast
 
 from ..persistence.save_status import (
@@ -12,7 +12,6 @@ from ..persistence.save_status import (
     GameStatus,
     build_status_blob,
 )
-
 from .protocol import StatusSnapshot
 
 

@@ -105,21 +105,21 @@ class OptionsMenuView(PanelMenuView):
             self._dirty = True
 
         if self._update_slider(
-            "music", self._slider_music, slider_pos.offset(dy=67.0 * scale), rect_on, rect_off, scale
+            "music", self._slider_music, slider_pos.offset(dy=67.0 * scale), rect_on, rect_off, scale,
         ):
             config.music_volume = float(self._slider_music.value) * 0.1
             set_music_volume(self.state.audio, config.music_volume)
             self._dirty = True
 
         if self._update_slider(
-            "detail", self._slider_detail, slider_pos.offset(dy=87.0 * scale), rect_on, rect_off, scale
+            "detail", self._slider_detail, slider_pos.offset(dy=87.0 * scale), rect_on, rect_off, scale,
         ):
             preset = apply_detail_preset(config, self._slider_detail.value)
             self._slider_detail.value = preset
             self._dirty = True
 
         if self._update_slider(
-            "mouse", self._slider_mouse, slider_pos.offset(dy=107.0 * scale), rect_on, rect_off, scale
+            "mouse", self._slider_mouse, slider_pos.offset(dy=107.0 * scale), rect_on, rect_off, scale,
         ):
             sensitivity = float(self._slider_mouse.value) * 0.1
             if sensitivity < 0.1:
@@ -196,10 +196,10 @@ class OptionsMenuView(PanelMenuView):
         mouse_sensitivity = config.mouse_sensitivity
 
         self._slider_sfx.value = max(
-            self._slider_sfx.min_value, min(self._slider_sfx.max_value, int(sfx_volume * 10.0))
+            self._slider_sfx.min_value, min(self._slider_sfx.max_value, int(sfx_volume * 10.0)),
         )
         self._slider_music.value = max(
-            self._slider_music.min_value, min(self._slider_music.max_value, int(music_volume * 10.0))
+            self._slider_music.min_value, min(self._slider_music.max_value, int(music_volume * 10.0)),
         )
         if detail_preset < self._slider_detail.min_value:
             detail_preset = self._slider_detail.min_value
@@ -419,7 +419,7 @@ class OptionsMenuView(PanelMenuView):
         if button is not None and textures is not None:
             button_pos = base_pos.offset(dy=155.0 * scale)
             button_w = button_width(
-                font, self._controls_button.label, scale=scale, force_wide=self._controls_button.force_wide
+                font, self._controls_button.label, scale=scale, force_wide=self._controls_button.force_wide,
             )
             button_draw(
                 textures,

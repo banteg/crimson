@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from ...math_parity import f32
 from ...sim.state_types import PlayerState
-from ..runtime.effects_context import PerksUpdateEffectsCtx
 from ..helpers import perk_active
-from ..runtime.hook_types import PerkHooks
 from ..ids import PerkId
+from ..runtime.effects_context import PerksUpdateEffectsCtx
+from ..runtime.hook_types import PerkHooks
 
 
 def _award_experience_once_from_reward(*, player: PlayerState, reward_value: float) -> int:

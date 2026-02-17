@@ -14,7 +14,7 @@ This module replicates the atlas cutting: given a grid size and frame index,
 compute UVs or crop subimages.
 """
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from PIL import Image
 

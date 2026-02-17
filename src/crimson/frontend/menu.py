@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
 import os
+from dataclasses import dataclass
 from typing import Protocol
 
 import pyray as rl
@@ -13,12 +13,10 @@ from grim.terrain_render import GroundRenderer
 
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
-from ..ui.shadow import UI_SHADOW_OFFSET, UI_SHADOW_TINT, draw_ui_quad_shadow  # noqa: F401
+from ..ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
 from .assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from .transitions import _draw_screen_fade
-
 from .types import GameState
-
 
 MENU_LABEL_WIDTH = 122.0
 MENU_LABEL_HEIGHT = 28.0

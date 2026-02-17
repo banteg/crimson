@@ -163,7 +163,7 @@ def validate_main_menu(oracle: dict[str, Any], *, tol: float) -> list[str]:
         got_item, d_item = _match_bbox(_instances(screen, "ui\\ui_menuItem"), exp_item)
         if got_item is None or d_item > tol:
             errors.append(
-                f"main_menu: menuItem slot={slot} bbox mismatch: expected={exp_item} got={got_item} max_abs_delta={d_item:.3f}"
+                f"main_menu: menuItem slot={slot} bbox mismatch: expected={exp_item} got={got_item} max_abs_delta={d_item:.3f}",
             )
 
         exp_label = _draw_texture_pro_bbox(
@@ -178,7 +178,7 @@ def validate_main_menu(oracle: dict[str, Any], *, tol: float) -> list[str]:
         got_label, d_label = _match_bbox(_instances(screen, "ui\\ui_itemTexts.jaz"), exp_label)
         if got_label is None or d_label > tol:
             errors.append(
-                f"main_menu: label slot={slot} bbox mismatch: expected={exp_label} got={got_label} max_abs_delta={d_label:.3f}"
+                f"main_menu: label slot={slot} bbox mismatch: expected={exp_label} got={got_label} max_abs_delta={d_label:.3f}",
             )
 
     return errors
@@ -304,7 +304,7 @@ def validate_pause_menu(oracle: dict[str, Any], *, tol: float) -> list[str]:
         got_item, d_item = _match_bbox(_instances(screen, "ui\\ui_menuItem"), exp_item)
         if got_item is None or d_item > tol:
             errors.append(
-                f"pause_menu: menuItem slot={slot} bbox mismatch: expected={exp_item} got={got_item} max_abs_delta={d_item:.3f}"
+                f"pause_menu: menuItem slot={slot} bbox mismatch: expected={exp_item} got={got_item} max_abs_delta={d_item:.3f}",
             )
 
         exp_label = _draw_texture_pro_bbox(
@@ -319,7 +319,7 @@ def validate_pause_menu(oracle: dict[str, Any], *, tol: float) -> list[str]:
         got_label, d_label = _match_bbox(_instances(screen, "ui\\ui_itemTexts.jaz"), exp_label)
         if got_label is None or d_label > tol:
             errors.append(
-                f"pause_menu: label slot={slot} bbox mismatch: expected={exp_label} got={got_label} max_abs_delta={d_label:.3f}"
+                f"pause_menu: label slot={slot} bbox mismatch: expected={exp_label} got={got_label} max_abs_delta={d_label:.3f}",
             )
 
     return errors
@@ -702,7 +702,12 @@ def validate_high_scores_screens(oracle: dict[str, Any], *, tol: float) -> list[
 
 def validate_quest_menu_panel(oracle: dict[str, Any], *, tol: float) -> list[str]:
     from crimson.frontend import menu as m
-    from crimson.game.quest_views import QUEST_MENU_BASE_X, QUEST_MENU_BASE_Y, QUEST_MENU_PANEL_OFFSET_X, QUEST_PANEL_HEIGHT
+    from crimson.game.quest_views import (
+        QUEST_MENU_BASE_X,
+        QUEST_MENU_BASE_Y,
+        QUEST_MENU_PANEL_OFFSET_X,
+        QUEST_PANEL_HEIGHT,
+    )
 
     errors: list[str] = []
     screen = _find_screen(oracle, "state_11:#.#")

@@ -6,7 +6,6 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
-
 DATA_LABEL_PATTERN = re.compile(r"\b(?:_?DAT|PTR_DAT)_[0-9A-Fa-f]{8}\b")
 FUNC_HEADER_PATTERN = re.compile(r"/\*\s*(?P<name>[^*]+?)\s*@\s*(?P<addr>[0-9A-Fa-f]{8})\s*\*/")
 
@@ -34,7 +33,7 @@ def iter_tokens(lines: list[str]) -> tuple[Counter[str], dict[str, list[Sample]]
             counts[token] += 1
             if current_func not in sample_funcs[token]:
                 samples[token].append(
-                    Sample(function=current_func, line_number=line_index + 1, line_index=line_index)
+                    Sample(function=current_func, line_number=line_index + 1, line_index=line_index),
                 )
                 sample_funcs[token].add(current_func)
 

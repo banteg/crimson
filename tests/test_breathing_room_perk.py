@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import math
 
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureState
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
+from crimson.sim.state_types import PlayerState
+from grim.geom import Vec2
 
 
 def test_perk_apply_breathing_room_reduces_health_and_starts_creature_death_staging() -> None:

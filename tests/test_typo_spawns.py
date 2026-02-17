@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import math
 
-from crimson.typo.spawns import tick_typo_spawns
 from crimson.creatures.spawn import CreatureTypeId
+from crimson.typo.spawns import tick_typo_spawns
 
 
 def test_tick_typo_spawns_basic_pair() -> None:

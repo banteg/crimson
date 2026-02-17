@@ -11,7 +11,7 @@ from crimson.cli import app
 def test_lan_host_command_builds_pending_session_and_runs_game(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, Any] = {}
 
-    def _fake_run_game(config):  # noqa: ANN001
+    def _fake_run_game(config):
         captured["config"] = config
 
     monkeypatch.setattr("crimson.game.run_game", _fake_run_game)
@@ -71,7 +71,7 @@ def test_lan_host_quests_requires_quest_level(monkeypatch, tmp_path: Path) -> No
 def test_lan_join_command_builds_pending_join_session(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, Any] = {}
 
-    def _fake_run_game(config):  # noqa: ANN001
+    def _fake_run_game(config):
         captured["config"] = config
 
     monkeypatch.setattr("crimson.game.run_game", _fake_run_game)
@@ -105,7 +105,7 @@ def test_lan_join_command_builds_pending_join_session(monkeypatch, tmp_path: Pat
 def test_lan_join_loopback_host_autostarts_session(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, Any] = {}
 
-    def _fake_run_game(config):  # noqa: ANN001
+    def _fake_run_game(config):
         captured["config"] = config
 
     monkeypatch.setattr("crimson.game.run_game", _fake_run_game)

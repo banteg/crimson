@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
 import random
+from dataclasses import dataclass
 
 import pyray as rl
 
@@ -17,14 +17,13 @@ from ..game_modes import GameMode
 from ..game_world import GameWorld
 from ..gameplay import player_update
 from ..sim.input import PlayerInput
-from ..weapon_runtime import weapon_assign_player
 from ..sim.world_defs import BEAM_TYPES
 from ..ui.cursor import draw_aim_cursor
+from ..weapon_runtime import weapon_assign_player
 from ..weapons import WEAPON_TABLE
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .audio_bootstrap import init_view_audio
 from .registry import register_view
-
 
 WORLD_SIZE = 1024.0
 
@@ -96,7 +95,7 @@ class ProjectileRenderDebugView:
         for idx in range(10):
             angle = float(idx) / 10.0 * math.tau
             target_pos = (center + Vec2.from_angle(angle) * ring).clamp_rect(
-                40.0, 40.0, WORLD_SIZE - 40.0, WORLD_SIZE - 40.0
+                40.0, 40.0, WORLD_SIZE - 40.0, WORLD_SIZE - 40.0,
             )
             self._targets.append(TargetDummy(pos=target_pos, hp=260.0, size=64.0, hitbox_size=64.0))
 
@@ -345,7 +344,7 @@ class ProjectileRenderDebugView:
             else:
                 player_screen = self._world.world_to_screen(player.pos)
                 rl.draw_circle(
-                    int(player_screen.x), int(player_screen.y), max(1.0, 14.0 * scale), rl.Color(90, 190, 120, 255)
+                    int(player_screen.x), int(player_screen.y), max(1.0, 14.0 * scale), rl.Color(90, 190, 120, 255),
                 )
 
         if player is not None and player.health > 0.0:

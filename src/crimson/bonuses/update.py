@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from ..math_parity import f32
 from ..perks.helpers import perk_active
@@ -76,7 +76,7 @@ def bonus_telekinetic_update(
                 bonus_id=int(entry.bonus_id),
                 amount=int(entry.amount),
                 pos=entry.pos,
-            )
+            ),
         )
 
         # Match the exe: after a telekinetic pickup, reset the hover accumulator.
@@ -121,7 +121,7 @@ def bonus_update(
             detail_preset=int(detail_preset),
             defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
             freeze_corpse_indices=freeze_corpse_indices,
-        )
+        ),
     )
 
     if dt > 0.0:

@@ -23,7 +23,7 @@ def _make_mode() -> RushMode:
 def test_update_game_over_ui_routes_high_scores(monkeypatch) -> None:
     mode = _make_mode()
 
-    def _update(*_args, **_kwargs):  # noqa: ANN001
+    def _update(*_args, **_kwargs):
         return "high_scores"
 
     monkeypatch.setattr("crimson.ui.game_over.GameOverUi.update", _update)
@@ -37,7 +37,7 @@ def test_update_game_over_ui_routes_high_scores(monkeypatch) -> None:
 def test_update_game_over_ui_routes_main_menu(monkeypatch) -> None:
     mode = _make_mode()
 
-    def _update(*_args, **_kwargs):  # noqa: ANN001
+    def _update(*_args, **_kwargs):
         return "main_menu"
 
     monkeypatch.setattr("crimson.ui.game_over.GameOverUi.update", _update)
@@ -58,7 +58,7 @@ def test_update_game_over_ui_calls_open_on_play_again(monkeypatch) -> None:
 
     monkeypatch.setattr(mode, "open", _open)
 
-    def _update(*_args, **_kwargs):  # noqa: ANN001
+    def _update(*_args, **_kwargs):
         return "play_again"
 
     monkeypatch.setattr("crimson.ui.game_over.GameOverUi.update", _update)

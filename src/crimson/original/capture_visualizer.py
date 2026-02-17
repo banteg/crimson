@@ -9,15 +9,9 @@ from pathlib import Path
 import pyray as rl
 from raylib import defines as rd
 
-from grim.app import run_view
-from grim.assets import find_paq_path
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
-from grim.geom import Vec2
-
 from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusEntry, bonus_label_for_entry
 from crimson.game_modes import GameMode
-from crimson.sim.input import PlayerInput
 from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     CAPTURE_PERK_APPLY_EVENT_KIND,
@@ -31,6 +25,7 @@ from crimson.original.capture import (
     parse_player_int_overrides,
 )
 from crimson.original.schema import CaptureTick
+from crimson.paths import default_runtime_dir
 from crimson.perks import perk_label
 from crimson.replay import apply_replay_bootstrap
 from crimson.replay.types import (
@@ -52,11 +47,14 @@ from crimson.sim.driver.setup import (
     reset_players,
     status_from_snapshot,
 )
+from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import SurvivalDeterministicSession
 from crimson.sim.world_state import WorldEvents, WorldState
 from crimson.weapons import WEAPON_BY_ID
-from crimson.paths import default_runtime_dir
-
+from grim.app import run_view
+from grim.assets import find_paq_path
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.geom import Vec2
 
 _CAPTURE_TRACE_COLOR = rl.Color(74, 205, 255, 220)
 _REWRITE_TRACE_COLOR = rl.Color(255, 143, 70, 220)
@@ -267,7 +265,7 @@ class CaptureVisualizerView:
         self._mode_id = int(self._replay.header.game_mode_id)
         if self._mode_id != int(GameMode.SURVIVAL):
             raise ValueError(
-                f"capture visualizer supports survival mode only (got mode={self._mode_id})"
+                f"capture visualizer supports survival mode only (got mode={self._mode_id})",
             )
 
         self._rows: list[CaptureTick] = sorted(
@@ -283,7 +281,7 @@ class CaptureVisualizerView:
         self._end_tick = min(max_tick, int(req_end_tick))
         if self._end_tick < self._start_tick:
             raise ValueError(
-                f"end_tick must be >= start_tick (got start={self._start_tick}, end={self._end_tick})"
+                f"end_tick must be >= start_tick (got start={self._start_tick}, end={self._end_tick})",
             )
 
         self._visible_start_idx = next(
@@ -297,7 +295,7 @@ class CaptureVisualizerView:
         )
         if self._visible_start_idx >= len(self._rows):
             raise ValueError(
-                f"start_tick={self._start_tick} is beyond last capture tick {max_tick}"
+                f"start_tick={self._start_tick} is beyond last capture tick {max_tick}",
             )
 
         self._world_size = float(self._replay.header.world_size)
@@ -537,7 +535,7 @@ class CaptureVisualizerView:
                     move_backward_pressed=move_backward_pressed,
                     turn_left_pressed=turn_left_pressed,
                     turn_right_pressed=turn_right_pressed,
-                )
+                ),
             )
 
         return out
@@ -704,7 +702,7 @@ class CaptureVisualizerView:
                     perk_label(
                         int(perk_id),
                         preserve_bugs=bool(getattr(self._replay.header, "preserve_bugs", False)),
-                    )
+                    ),
                 ),
                 max_len=18,
             )
@@ -722,7 +720,7 @@ class CaptureVisualizerView:
                     perk_label(
                         int(perk_id),
                         preserve_bugs=bool(getattr(self._replay.header, "preserve_bugs", False)),
-                    )
+                    ),
                 ),
                 max_len=14,
             )
@@ -852,7 +850,7 @@ class CaptureVisualizerView:
                     left_color=_CAPTURE_PLAYER_COLOR,
                     right_text=right_text,
                     right_color=_REWRITE_PLAYER_COLOR,
-                )
+                ),
             )
 
         append_pair(
@@ -873,19 +871,19 @@ class CaptureVisualizerView:
             _GameplayHudLine(
                 left_text="perks:",
                 left_color=_TEXT_DIM_COLOR,
-            )
+            ),
         )
         lines.append(
             _GameplayHudLine(
                 left_text=self._format_perk_counts(capture_counts),
                 left_color=_CAPTURE_PLAYER_COLOR,
-            )
+            ),
         )
         lines.append(
             _GameplayHudLine(
                 left_text=self._format_perk_counts(rewrite_counts),
                 left_color=_REWRITE_PLAYER_COLOR,
-            )
+            ),
         )
 
         capture_bonus_active = self._active_bonus_summary(
@@ -903,19 +901,19 @@ class CaptureVisualizerView:
                 _GameplayHudLine(
                     left_text="bonuses:",
                     left_color=_TEXT_DIM_COLOR,
-                )
+                ),
             )
             lines.append(
                 _GameplayHudLine(
                     left_text=capture_bonus_active,
                     left_color=_CAPTURE_PLAYER_COLOR,
-                )
+                ),
             )
             lines.append(
                 _GameplayHudLine(
                     left_text=rewrite_bonus_active,
                     left_color=_REWRITE_PLAYER_COLOR,
-                )
+                ),
             )
         return tuple(lines)
 
@@ -1079,7 +1077,7 @@ class CaptureVisualizerView:
                 bonus_label_for_entry(
                     entry,
                     preserve_bugs=bool(getattr(self._replay.header, "preserve_bugs", False)),
-                )
+                ),
             )
         except Exception:
             return "Bonus"
@@ -1089,7 +1087,7 @@ class CaptureVisualizerView:
             BonusEntry(
                 bonus_id=int(bonus_id),
                 amount=int(amount_i32),
-            )
+            ),
         )
 
     def _trace_layer_for_key(self, key: str) -> _TraceLayer:
@@ -1476,7 +1474,7 @@ class CaptureVisualizerView:
 
             if self._show_capture_hitboxes and capture is not None and bool(capture.active):
                 cx, cy = self._world_to_screen(
-                    x=float(capture.x), y=float(capture.y), width=width, height=height
+                    x=float(capture.x), y=float(capture.y), width=width, height=height,
                 )
                 rr = self._radius_to_screen(float(capture.radius), width=width, height=height)
                 if bool(capture.filled):
@@ -1485,7 +1483,7 @@ class CaptureVisualizerView:
                     rl.draw_circle_lines(int(cx), int(cy), float(rr), capture_color)
             if self._show_rewrite_hitboxes and rewrite is not None and bool(rewrite.active):
                 rx, ry = self._world_to_screen(
-                    x=float(rewrite.x), y=float(rewrite.y), width=width, height=height
+                    x=float(rewrite.x), y=float(rewrite.y), width=width, height=height,
                 )
                 rr = self._radius_to_screen(float(rewrite.radius), width=width, height=height)
                 if bool(rewrite.filled):
@@ -1501,10 +1499,10 @@ class CaptureVisualizerView:
                 and bool(rewrite.active)
             ):
                 cx, cy = self._world_to_screen(
-                    x=float(capture.x), y=float(capture.y), width=width, height=height
+                    x=float(capture.x), y=float(capture.y), width=width, height=height,
                 )
                 rx, ry = self._world_to_screen(
-                    x=float(rewrite.x), y=float(rewrite.y), width=width, height=height
+                    x=float(rewrite.x), y=float(rewrite.y), width=width, height=height,
                 )
                 rl.draw_line(int(cx), int(cy), int(rx), int(ry), _DIVERGENCE_LINE_COLOR)
                 drift = math.hypot(float(rewrite.x) - float(capture.x), float(rewrite.y) - float(capture.y))
@@ -1574,12 +1572,12 @@ class CaptureVisualizerView:
         for step in range(0, int(self._world_size) + 1, 128):
             x0, y0 = self._world_to_screen(x=float(step), y=0.0, width=width, height=height)
             x1, y1 = self._world_to_screen(
-                x=float(step), y=float(self._world_size), width=width, height=height
+                x=float(step), y=float(self._world_size), width=width, height=height,
             )
             rl.draw_line(int(x0), int(y0), int(x1), int(y1), _GRID_COLOR)
             x2, y2 = self._world_to_screen(x=0.0, y=float(step), width=width, height=height)
             x3, y3 = self._world_to_screen(
-                x=float(self._world_size), y=float(step), width=width, height=height
+                x=float(self._world_size), y=float(step), width=width, height=height,
             )
             rl.draw_line(int(x2), int(y2), int(x3), int(y3), _GRID_COLOR)
 

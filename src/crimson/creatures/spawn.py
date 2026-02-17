@@ -14,15 +14,17 @@ and debug UIs.
 See also: `docs/creatures/spawn_plan.md` (porting model / invariants).
 """
 
+import math
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import IntEnum, IntFlag
-import math
-from typing import Callable, SupportsInt
+from typing import SupportsInt
 
 from grim.geom import Vec2
+from grim.rand import Crand
+
 from ..bonuses import BonusId
 from ..math_parity import f32
-from grim.rand import Crand
 
 __all__ = [
     "CreatureAiMode",
@@ -1460,7 +1462,7 @@ def add_spawn_slot(
             limit=limit,
             interval=interval,
             child_template_id=child_template_id,
-        )
+        ),
     )
     return slot_idx
 
@@ -2028,13 +2030,13 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             stage = 1
             spawns.append(
                 SpawnTemplateCall(
-                    template_id=SpawnId.FORMATION_RING_ALIEN_8_12, pos=Vec2(-164.0, 512.0), heading=heading
-                )
+                    template_id=SpawnId.FORMATION_RING_ALIEN_8_12, pos=Vec2(-164.0, 512.0), heading=heading,
+                ),
             )
             spawns.append(
                 SpawnTemplateCall(
-                    template_id=SpawnId.FORMATION_RING_ALIEN_8_12, pos=Vec2(1188.0, 512.0), heading=heading
-                )
+                    template_id=SpawnId.FORMATION_RING_ALIEN_8_12, pos=Vec2(1188.0, 512.0), heading=heading,
+                ),
             )
             continue
 
@@ -2043,7 +2045,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
                 break
             stage = 2
             spawns.append(
-                SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_RED_BOSS_2C, pos=Vec2(1088.0, 512.0), heading=heading)
+                SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_RED_BOSS_2C, pos=Vec2(1088.0, 512.0), heading=heading),
             )
             continue
 
@@ -2058,7 +2060,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
                         template_id=SpawnId.SPIDER_SP2_RANDOM_35,
                         pos=Vec2(1088.0, float(i) * step + 256.0),
                         heading=heading,
-                    )
+                    ),
                 )
             continue
 
@@ -2072,7 +2074,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
                         template_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
                         pos=Vec2(1088.0, float(i) * 64.0 + 384.0),
                         heading=heading,
-                    )
+                    ),
                 )
             continue
 
@@ -2086,7 +2088,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
                         template_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
                         pos=Vec2(1088.0, float(i) * 64.0 + 384.0),
                         heading=heading,
-                    )
+                    ),
                 )
             for i in range(4):
                 spawns.append(
@@ -2094,7 +2096,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
                         template_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
                         pos=Vec2(-64.0, float(i) * 64.0 + 384.0),
                         heading=heading,
-                    )
+                    ),
                 )
             continue
 
@@ -2104,8 +2106,8 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             stage = 6
             spawns.append(
                 SpawnTemplateCall(
-                    template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=Vec2(1088.0, 512.0), heading=heading
-                )
+                    template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=Vec2(1088.0, 512.0), heading=heading,
+                ),
             )
             continue
 
@@ -2114,7 +2116,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
                 break
             stage = 7
             spawns.append(
-                SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=Vec2(640.0, 512.0), heading=heading)
+                SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=Vec2(640.0, 512.0), heading=heading),
             )
             continue
 
@@ -2123,10 +2125,10 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
                 break
             stage = 8
             spawns.append(
-                SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=Vec2(384.0, 256.0), heading=heading)
+                SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=Vec2(384.0, 256.0), heading=heading),
             )
             spawns.append(
-                SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=Vec2(640.0, 768.0), heading=heading)
+                SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=Vec2(640.0, 768.0), heading=heading),
             )
             continue
 
@@ -2140,7 +2142,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
                         template_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
                         pos=Vec2(1088.0, float(i) * 64.0 + 384.0),
                         heading=heading,
-                    )
+                    ),
                 )
             for i in range(4):
                 spawns.append(
@@ -2148,7 +2150,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
                         template_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
                         pos=Vec2(-64.0, float(i) * 64.0 + 384.0),
                         heading=heading,
-                    )
+                    ),
                 )
             continue
 
@@ -2158,13 +2160,13 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             stage = 10
             spawns.append(
                 SpawnTemplateCall(
-                    template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=Vec2(1088.0, 512.0), heading=heading
-                )
+                    template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=Vec2(1088.0, 512.0), heading=heading,
+                ),
             )
             spawns.append(
                 SpawnTemplateCall(
-                    template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=Vec2(-64.0, 512.0), heading=heading
-                )
+                    template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=Vec2(-64.0, 512.0), heading=heading,
+                ),
             )
             for i in range(4):
                 spawns.append(
@@ -2172,7 +2174,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
                         template_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
                         pos=Vec2(float(i) * 64.0 + 384.0, -64.0),
                         heading=heading,
-                    )
+                    ),
                 )
             for i in range(4):
                 spawns.append(
@@ -2180,7 +2182,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
                         template_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
                         pos=Vec2(float(i) * 64.0 + 384.0, 1088.0),
                         heading=heading,
-                    )
+                    ),
                 )
             continue
 
@@ -2304,30 +2306,30 @@ def build_tutorial_stage5_repeat_spawns(repeat_spawn_count: int) -> tuple[SpawnT
         if n < 6:
             spawns.append(
                 SpawnTemplateCall(
-                    template_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, pos=Vec2(1056.0, 1056.0), heading=heading
-                )
+                    template_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, pos=Vec2(1056.0, 1056.0), heading=heading,
+                ),
             )
         spawns.append(
-            SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(1188.0, 1136.0), heading=heading)
+            SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(1188.0, 1136.0), heading=heading),
         )
         spawns.append(
-            SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, pos=Vec2(1208.0, 512.0), heading=heading)
+            SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, pos=Vec2(1208.0, 512.0), heading=heading),
         )
         spawns.append(
-            SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(1178.0, 612.0), heading=heading)
+            SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(1178.0, 612.0), heading=heading),
         )
         if n == 4:
             spawns.append(
                 SpawnTemplateCall(
-                    template_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, pos=Vec2(512.0, 1056.0), heading=heading
-                )
+                    template_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, pos=Vec2(512.0, 1056.0), heading=heading,
+                ),
             )
         return tuple(spawns)
 
     # Odd: left-side spawn pack.
     if n < 6:
         spawns.append(
-            SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, pos=Vec2(-32.0, 1056.0), heading=heading)
+            SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, pos=Vec2(-32.0, 1056.0), heading=heading),
         )
     spawns.extend(build_tutorial_stage3_fire_spawns())
     return tuple(spawns)

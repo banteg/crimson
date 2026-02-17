@@ -32,7 +32,7 @@ def analyze(functions: list[dict]) -> list[dict]:
                 "signature": fn.get("signature", ""),
                 "in_calls": in_counts.get(name, 0),
                 "out_calls": len(fn.get("calls", [])),
-            }
+            },
         )
     rows.sort(key=lambda r: (r["in_calls"], r["out_calls"]), reverse=True)
     return rows
@@ -88,7 +88,7 @@ def main() -> int:
         print(path.name)
         for row in rows:
             print(
-                f"{row['in_calls']:>4} {row['out_calls']:>4} {row['address']} {row['name']} {row['signature']}"
+                f"{row['in_calls']:>4} {row['out_calls']:>4} {row['address']} {row['name']} {row['signature']}",
             )
         print()
     return 0

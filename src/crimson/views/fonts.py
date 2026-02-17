@@ -1,13 +1,7 @@
 from __future__ import annotations
-from grim.geom import Vec2
 
 import pyray as rl
-from ._ui_helpers import draw_ui_text, ui_line_height
-from .quest_title_overlay import (
-    draw_quest_title_overlay,
-    quest_title_base_scale,
-)
-from .registry import register_view
+
 from grim.fonts.grim_mono import (
     GrimMonoFont,
     draw_grim_mono_text,
@@ -20,7 +14,15 @@ from grim.fonts.small import (
     load_small_font,
     measure_small_text_height,
 )
+from grim.geom import Vec2
 from grim.view import View, ViewContext
+
+from ._ui_helpers import draw_ui_text, ui_line_height
+from .quest_title_overlay import (
+    draw_quest_title_overlay,
+    quest_title_base_scale,
+)
+from .registry import register_view
 
 DEFAULT_SAMPLE = """CRIMSONLAND
 The quick brown fox jumps over the lazy dog.
@@ -80,7 +82,7 @@ class FontView:
         y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 12
         if self._grim_mono is not None:
             draw_ui_text(
-                self._small, f"Filter: {GRIM_MONO_FILTER_NAME}", Vec2(24, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+                self._small, f"Filter: {GRIM_MONO_FILTER_NAME}", Vec2(24, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR,
             )
             y += ui_line_height(self._small, scale=0.9) + 6
             mono_scale = quest_title_base_scale(rl.get_screen_width())

@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
-from crimson.gameplay import GameplayState
+from crimson.gameplay import GameplayState, player_update
 from crimson.perks import PerkId
 from crimson.projectiles import ProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
-from crimson.gameplay import player_update
 from crimson.weapon_runtime.spawn import projectile_spawn
+from grim.geom import Vec2
 
 
 def _spawn_type(

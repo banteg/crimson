@@ -10,13 +10,15 @@ not to perfectly match every edge case in `creature_update_all`.
 See: `docs/creatures/update.md`.
 """
 
-from dataclasses import dataclass, field, replace
 import math
-from typing import Callable, Protocol, Sequence
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass, field, replace
+from typing import Protocol
 
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand
+
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import (
     award_experience,
@@ -366,7 +368,7 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
             world_height=float(ctx.world_height),
             fx_queue=ctx.fx_queue,
             keep_corpse=False,
-        )
+        ),
     )
     ctx.state.bonus_spawn_guard = prev_guard
     ctx.skip_creature = True
@@ -425,7 +427,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
     player_take_damage(
-        ctx.state, ctx.player, float(creature.contact_damage), dt=ctx.dt, rand=ctx.rand, players=ctx.players
+        ctx.state, ctx.player, float(creature.contact_damage), dt=ctx.dt, rand=ctx.rand, players=ctx.players,
     )
 
     if ctx.fx_queue is not None:
@@ -449,7 +451,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
                 world_width=float(ctx.world_width),
                 world_height=float(ctx.world_height),
                 fx_queue=ctx.fx_queue,
-            )
+            ),
         )
         if creature.active:
             ctx.pool._tick_dead(
@@ -551,7 +553,7 @@ class CreaturePool:
         if not origin.active:
             return
 
-        for idx, creature in enumerate(self._entries):
+        for creature in self._entries:
             if not creature.active:
                 continue
 
@@ -688,7 +690,7 @@ class CreaturePool:
                     limit=int(slot.limit),
                     interval=float(slot.interval),
                     child_template_id=int(slot.child_template_id),
-                )
+                ),
             )
             slot_mapping.append(len(self.spawn_slots) - 1)
 
@@ -877,7 +879,7 @@ class CreaturePool:
                         world_width=world_width,
                         world_height=world_height,
                         fx_queue=fx_queue,
-                    )
+                    ),
                 )
                 if creature.active:
                     self._tick_dead(
@@ -910,7 +912,7 @@ class CreaturePool:
                                 world_width=world_width,
                                 world_height=world_height,
                                 fx_queue=fx_queue,
-                            )
+                            ),
                         )
                         if creature.active:
                             self._tick_dead(
@@ -941,7 +943,7 @@ class CreaturePool:
                                 creature.hp = 1.0
                             else:
                                 radioactive_player.experience = int(
-                                    float(radioactive_player.experience) + float(creature.reward_value)
+                                    float(radioactive_player.experience) + float(creature.reward_value),
                                 )
                                 creature.hitbox_size -= float(dt)
                                 continue
@@ -979,7 +981,7 @@ class CreaturePool:
                             world_width=world_width,
                             world_height=world_height,
                             fx_queue=fx_queue,
-                        )
+                        ),
                     )
                     if creature.active:
                         self._tick_dead(
@@ -1027,7 +1029,7 @@ class CreaturePool:
                     )
                     creature.vel = move_delta
                     creature.pos = f32_vec2(
-                        _advance_pos_by_delta_f32(creature.pos, move_delta).clamp_rect(radius, radius, max_x, max_y)
+                        _advance_pos_by_delta_f32(creature.pos, move_delta).clamp_rect(radius, radius, max_x, max_y),
                     )
 
             # Native decrements contact/ranged cooldown before interaction checks,
@@ -1137,7 +1139,7 @@ class CreaturePool:
         world_width: float,
         world_height: float,
         fx_queue: FxQueue | None,
-        keep_corpse: bool = True,  # noqa: FBT001, FBT002
+        keep_corpse: bool = True,
     ) -> CreatureDeath:
         """Run one-shot death side effects and return the `CreatureDeath` event."""
 

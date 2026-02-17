@@ -3,12 +3,12 @@ from __future__ import annotations
 import random
 
 from crimson.creatures.spawn import SpawnId
-from grim.geom import Vec2
 from crimson.quests.runtime import (
     apply_hardcore_spawn_table_adjustment,
     build_quest_spawn_table,
 )
 from crimson.quests.types import QuestContext, QuestDefinition, SpawnEntry
+from grim.geom import Vec2
 
 
 def test_apply_hardcore_spawn_table_adjustment() -> None:
@@ -58,7 +58,7 @@ def test_build_quest_spawn_table_passes_rng_and_full_version() -> None:
                 spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                 trigger_ms=trigger,
                 count=count,
-            )
+            ),
         ]
 
     quest = QuestDefinition(major=1, minor=1, title="dummy", builder=builder, time_limit_ms=1000, start_weapon_id=0)

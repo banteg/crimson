@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
 from crimson.perks import PerkId
+from crimson.sim.state_types import PlayerState
+from grim.geom import Vec2
 
 
 def test_veins_of_poison_sets_self_damage_flag_on_contact_hit() -> None:
