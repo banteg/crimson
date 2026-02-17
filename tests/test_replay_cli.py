@@ -5,6 +5,7 @@ import json
 from dataclasses import replace
 from pathlib import Path
 
+from click import unstyle
 from typer.testing import CliRunner
 
 from crimson.cli import app
@@ -290,7 +291,7 @@ def test_replay_verify_rejects_checkpoints_option(tmp_path: Path) -> None:
     )
 
     assert result.exit_code == 2
-    assert "No such option: --checkpoints" in result.output
+    assert "No such option: --checkpoints" in unstyle(result.output)
 
 
 def test_replay_verify_checkpoints_preserves_success_behavior(tmp_path: Path) -> None:
