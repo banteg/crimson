@@ -4,10 +4,17 @@ import struct
 
 from .spawn import CreatureAiMode, CreatureFlags
 
+_F32_STRUCT = struct.Struct("<f")
+_F32_PACK = _F32_STRUCT.pack
+_F32_UNPACK = _F32_STRUCT.unpack
+_FLAG_ANIM_PING_PONG = int(CreatureFlags.ANIM_PING_PONG)
+_FLAG_ANIM_LONG_STRIP = int(CreatureFlags.ANIM_LONG_STRIP)
+_FLAG_RANGED_ATTACK_SHOCK = int(CreatureFlags.RANGED_ATTACK_SHOCK)
+
 
 def _f32(value: float) -> float:
     """Round-trip through float32 to match the game's stored float behavior."""
-    return struct.unpack("<f", struct.pack("<f", float(value)))[0]
+    return _F32_UNPACK(_F32_PACK(float(value)))[0]
 
 
 def _u32(value: int) -> int:
@@ -41,7 +48,8 @@ def creature_corpse_frame_for_type(type_id: int) -> int:
 def creature_anim_is_long_strip(flags: CreatureFlags) -> bool:
     # From creature_update_all / creature_render_type:
     # long strip when (flags & 4) == 0 OR (flags & 0x40) != 0
-    return (flags & CreatureFlags.ANIM_PING_PONG) == 0 or (flags & CreatureFlags.ANIM_LONG_STRIP) != 0
+    flags_bits = int(flags)
+    return (flags_bits & _FLAG_ANIM_PING_PONG) == 0 or (flags_bits & _FLAG_ANIM_LONG_STRIP) != 0
 
 
 def creature_anim_phase_step(
@@ -67,8 +75,10 @@ def creature_anim_phase_step(
         local_scale = _f32(local_scale)
 
     speed_scale = (_f32(30.0) if quantize_f32 else 30.0) / size
+    flags_bits = int(flags)
+    is_long_strip = (flags_bits & _FLAG_ANIM_PING_PONG) == 0 or (flags_bits & _FLAG_ANIM_LONG_STRIP) != 0
     strip_mul = _f32(25.0) if quantize_f32 else 25.0
-    if not creature_anim_is_long_strip(flags):
+    if not is_long_strip:
         strip_mul = _f32(22.0) if quantize_f32 else 22.0
     elif ai_mode == CreatureAiMode.HOLD_TIMER:
         # Long-strip creatures stop advancing animation phase in ai_mode == 7.
@@ -114,7 +124,9 @@ def creature_anim_advance_phase(
     if quantize_f32:
         phase = _f32(phase)
 
-    if creature_anim_is_long_strip(flags):
+    flags_bits = int(flags)
+    is_long_strip = (flags_bits & _FLAG_ANIM_PING_PONG) == 0 or (flags_bits & _FLAG_ANIM_LONG_STRIP) != 0
+    if is_long_strip:
         limit = _f32(31.0) if quantize_f32 else 31.0
         while phase > limit:
             phase = phase - limit
@@ -145,7 +157,9 @@ def creature_anim_select_frame(
     Note: mirror_applied refers to the long-strip ping-pong index mirroring
     (frame = 0x1f - frame) when the per-type mirror flag is set, not a texture flip.
     """
-    if creature_anim_is_long_strip(flags):
+    flags_bits = int(flags)
+    is_long_strip = (flags_bits & _FLAG_ANIM_PING_PONG) == 0 or (flags_bits & _FLAG_ANIM_LONG_STRIP) != 0
+    if is_long_strip:
         if phase < 0.0:
             # Negative anim_phase is used as a special render state in the game; keep the
             # same fallback frame selection.
@@ -158,7 +172,7 @@ def creature_anim_select_frame(
             if mirror_long and frame > 0x0F:
                 frame = 0x1F - frame
                 mirrored = True
-        if flags & CreatureFlags.RANGED_ATTACK_SHOCK:
+        if (flags_bits & _FLAG_RANGED_ATTACK_SHOCK) != 0:
             frame += 0x20
         return frame, mirrored, "long"
 
