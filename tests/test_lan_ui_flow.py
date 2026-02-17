@@ -33,16 +33,12 @@ def _build_state(tmp_path: Path) -> GameState:
     )
 
 
-def test_play_game_lan_entry_is_gated_by_console_cvar(tmp_path: Path) -> None:
+def test_play_game_network_entry_is_available_by_default(tmp_path: Path) -> None:
     state = _build_state(tmp_path)
     view = PlayGameMenuView(state)
 
-    entries_disabled = view._mode_entries()[0]
-    assert all(entry.action != "open_lan_session" for entry in entries_disabled)
-
-    state.console.register_cvar("cv_lanLockstepEnabled", "1")
-    entries_enabled = view._mode_entries()[0]
-    assert any(entry.action == "open_lan_session" for entry in entries_enabled)
+    entries = view._mode_entries()[0]
+    assert any(entry.action == "open_lan_session" for entry in entries)
 
 
 def test_loop_view_maps_lan_start_action_into_mode_action(tmp_path: Path) -> None:
@@ -120,14 +116,13 @@ def test_lan_match_start_action_does_not_close_runtime(tmp_path: Path) -> None:
     assert state.lan_runtime is runtime
 
 
-def test_open_lan_session_route_requires_feature_cvar(tmp_path: Path) -> None:
+def test_open_lan_session_route_allows_default_and_honors_explicit_cvar(tmp_path: Path) -> None:
     state = _build_state(tmp_path)
     loop = GameLoopView(state)
 
-    assert loop._resolve_lan_action("open_lan_session") == "open_play_game"
-
-    state.console.register_cvar("cv_lanLockstepEnabled", "1")
     assert loop._resolve_lan_action("open_lan_session") == "open_lan_session"
+    state.console.register_cvar("cv_lanLockstepEnabled", "0")
+    assert loop._resolve_lan_action("open_lan_session") == "open_play_game"
 
 
 def test_auto_lan_start_action_consumes_pending_session_once(tmp_path: Path) -> None:

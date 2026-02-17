@@ -311,20 +311,28 @@ def run_game(config: GameConfig) -> None:
             audio=None,
             resource_paq=assets_dir / CRIMSON_PAQ_NAME,
             session_start=time.monotonic(),
+            pending_net_session=config.pending_net_session,
             pending_lan_session=config.pending_lan_session,
         )
-        pending = config.pending_lan_session
+        pending = config.pending_net_session
+        if pending is None:
+            pending = config.pending_lan_session
         if pending is not None:
             from ..net.protocol import current_build_id
 
-            host = str(pending.config.host_ip or pending.config.bind_host)
+            host = str(
+                getattr(pending.config, "relay_host", "")
+                or pending.config.host_ip
+                or pending.config.bind_host,
+            )
+            port = int(getattr(pending.config, "relay_port", pending.config.port))
             log_path = init_lan_debug_log(
                 base_dir=base_dir,
                 role=str(pending.role),
                 mode=str(pending.config.mode),
                 build_id=str(current_build_id()),
                 host=host,
-                port=int(pending.config.port),
+                port=int(port),
                 player_count=pending.config.player_count,
                 auto_start=bool(pending.auto_start),
                 debug_enabled=bool(config.debug),
