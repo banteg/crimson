@@ -2,34 +2,27 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, cast
 
 import pytest
 
 import crimson.modes.replay_playback_mode as replay_playback_mode
-from grim.config import CrimsonConfig
-from grim.console import ConsoleLog, ConsoleState
-from grim.view import ViewContext
+from crimson.replay import Replay, ReplayHeader
+from grim.console import ConsoleState
 
 
-def _build_view() -> tuple[replay_playback_mode.ReplayPlaybackMode, ConsoleState]:
-    cfg = CrimsonConfig(path=Path("crimson.cfg"), data={})
-    console = ConsoleState(base_dir=Path("."), log=ConsoleLog(base_dir=Path(".")))
-    view = replay_playback_mode.ReplayPlaybackMode(
-        ViewContext(assets_dir=Path("."), preserve_bugs=False),
-        replay_path=Path("dummy.crdemo.gz"),
-        config=cfg,
-        console=console,
+def _replay_with_ticks(tick_count: int) -> Replay:
+    return Replay(
+        header=ReplayHeader(game_mode_id=0, seed=0),
+        inputs=[[[0.0, 0.0, [0.0, 0.0], 0]] for _ in range(max(0, int(tick_count)))],
     )
-    return view, console
 
 
 def _set_private(view: replay_playback_mode.ReplayPlaybackMode, name: str, value: object) -> None:
-    setattr(cast(Any, view), name, value)
+    setattr(view, name, value)
 
 
-def test_replay_playback_registers_snd_add_game_tune_command(monkeypatch) -> None:
-    view, console = _build_view()
+def test_replay_playback_registers_snd_add_game_tune_command(monkeypatch, replay_playback_view) -> None:
+    view, console = replay_playback_view
     music_state = object()
     _set_private(view, "_audio", SimpleNamespace(music=music_state))
 
@@ -55,8 +48,8 @@ def test_replay_playback_registers_snd_add_game_tune_command(monkeypatch) -> Non
     assert queued == [(music_state, "gt1_ingame")]
 
 
-def test_replay_playback_load_game_tune_queue_execs_script(monkeypatch) -> None:
-    view, console = _build_view()
+def test_replay_playback_load_game_tune_queue_execs_script(monkeypatch, replay_playback_view) -> None:
+    view, _console = replay_playback_view
     _set_private(view, "_audio", object())
     calls: list[str] = []
 
@@ -73,9 +66,9 @@ def test_replay_playback_load_game_tune_queue_execs_script(monkeypatch) -> None:
     assert calls == ["exec music/game_tunes.txt"]
 
 
-def test_replay_playback_progress_ratio_and_time_formatting() -> None:
-    view, _console = _build_view()
-    _set_private(view, "_replay", SimpleNamespace(inputs=[0, 0, 0, 0]))
+def test_replay_playback_progress_ratio_and_time_formatting(replay_playback_view) -> None:
+    view, _console = replay_playback_view
+    _set_private(view, "_replay", _replay_with_ticks(4))
 
     view._tick_index = 2
     assert view._replay_progress_ratio() == 0.5
@@ -87,9 +80,9 @@ def test_replay_playback_progress_ratio_and_time_formatting() -> None:
     assert replay_playback_mode.ReplayPlaybackMode._format_time_text(65.9) == "1:05"
 
 
-def test_skip_forward_temporarily_disables_sfx() -> None:
-    view, _console = _build_view()
-    _set_private(view, "_replay", SimpleNamespace(inputs=[0, 0, 0, 0, 0]))
+def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
+    view, _console = replay_playback_view
+    _set_private(view, "_replay", _replay_with_ticks(5))
     world = SimpleNamespace(audio_router=SimpleNamespace(sfx_enabled=True))
     _set_private(view, "_world", world)
     view._tick_rate = 60
@@ -103,7 +96,7 @@ def test_skip_forward_temporarily_disables_sfx() -> None:
         sfx_enabled_during_tick.append(bool(world.audio_router.sfx_enabled))
         view._tick_index += 1
 
-    cast(Any, view)._tick_one = fake_tick_one
+    _set_private(view, "_tick_one", fake_tick_one)
 
     view._skip_forward_seconds(2.0 / 60.0)
 
@@ -112,9 +105,9 @@ def test_skip_forward_temporarily_disables_sfx() -> None:
     assert view._dt_accum == 0.0
 
 
-def test_skip_forward_restores_sfx_flag_when_tick_raises() -> None:
-    view, _console = _build_view()
-    _set_private(view, "_replay", SimpleNamespace(inputs=[0, 0, 0]))
+def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -> None:
+    view, _console = replay_playback_view
+    _set_private(view, "_replay", _replay_with_ticks(3))
     world = SimpleNamespace(audio_router=SimpleNamespace(sfx_enabled=True))
     _set_private(view, "_world", world)
     view._tick_rate = 60
@@ -127,7 +120,7 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises() -> None:
         sfx_enabled_during_tick.append(bool(world.audio_router.sfx_enabled))
         raise RuntimeError("skip test boom")
 
-    cast(Any, view)._tick_one = fake_tick_one
+    _set_private(view, "_tick_one", fake_tick_one)
 
     with pytest.raises(RuntimeError, match="skip test boom"):
         view._skip_forward_seconds(1.0 / 60.0)
@@ -136,8 +129,8 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises() -> None:
     assert bool(world.audio_router.sfx_enabled)
 
 
-def test_skip_forward_clears_fx_queues_each_tick() -> None:
-    view, _console = _build_view()
+def test_skip_forward_clears_fx_queues_each_tick(replay_playback_view) -> None:
+    view, _console = replay_playback_view
     replay_inputs = [0, 0, 0, 0]
 
     class _Queue:
@@ -149,7 +142,7 @@ def test_skip_forward_clears_fx_queues_each_tick() -> None:
 
     fx_queue = _Queue()
     fx_queue_rotated = _Queue()
-    _set_private(view, "_replay", SimpleNamespace(inputs=replay_inputs))
+    _set_private(view, "_replay", _replay_with_ticks(len(replay_inputs)))
     _set_private(
         view,
         "_world",
@@ -166,7 +159,7 @@ def test_skip_forward_clears_fx_queues_each_tick() -> None:
     def fake_tick_one() -> None:
         view._tick_index += 1
 
-    cast(Any, view)._tick_one = fake_tick_one
+    _set_private(view, "_tick_one", fake_tick_one)
 
     view._skip_forward_seconds(3.0 / 60.0)
 

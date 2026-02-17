@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from pathlib import Path
-from types import SimpleNamespace
-from typing import Any, cast
 
 import pyray as rl
 
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.quests.results import QuestFinalTime
-from crimson.ui.quest_results import PANEL_SLIDE_END_MS, PANEL_SLIDE_START_MS, QuestResultsUi
+from crimson.ui.perk_menu import PerkMenuAssets
+from crimson.ui.quest_results import PANEL_SLIDE_END_MS, PANEL_SLIDE_START_MS, QuestResultsAssets, QuestResultsUi
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 
 
@@ -18,8 +17,38 @@ def _test_config(**updates: object) -> CrimsonConfig:
     return CrimsonConfig(path=Path("<memory>"), data=data)
 
 
-def _set_assets(ui: QuestResultsUi, assets: object) -> None:
-    cast(Any, ui).assets = assets
+def _texture(*, width: int = 0, height: int = 0) -> rl.Texture:
+    texture = rl.Texture()
+    texture.width = int(width)
+    texture.height = int(height)
+    return texture
+
+
+def _perk_menu_assets() -> PerkMenuAssets:
+    return PerkMenuAssets(
+        menu_panel=None,
+        title_pick_perk=None,
+        title_level_up=None,
+        menu_item=None,
+        button_sm=None,
+        button_md=None,
+        cursor=None,
+        aim=None,
+    )
+
+
+def _quest_results_assets() -> QuestResultsAssets:
+    return QuestResultsAssets(
+        menu_panel=None,
+        text_well_done=None,
+        particles=None,
+        wicons=_texture(width=256, height=256),
+        perk_menu_assets=_perk_menu_assets(),
+    )
+
+
+def _set_assets(ui: QuestResultsUi, assets: QuestResultsAssets) -> None:
+    ui.assets = assets
 
 
 def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
@@ -39,16 +68,7 @@ def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
     )
     ui.input_text = "banteg"
     ui.input_caret = len(ui.input_text)
-    _set_assets(
-        ui,
-        SimpleNamespace(
-        menu_panel=None,
-        text_well_done=None,
-        particles=None,
-        wicons=SimpleNamespace(width=256, height=256),
-        perk_menu_assets=SimpleNamespace(cursor=None),
-        ),
-    )
+    _set_assets(ui, _quest_results_assets())
 
     record = HighScoreRecord.blank()
     record.survival_elapsed_ms = 17_610

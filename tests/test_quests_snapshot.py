@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import inspect
 import random
-from typing import Any, cast
+from typing import cast
 
 from syrupy import SnapshotAssertion
+from syrupy.types import PropertyMatcher
 
 from crimson.quests import QuestContext, all_quests
 
@@ -38,6 +39,7 @@ def _build_entries(builder, ctx: QuestContext, seed: int) -> list[dict[str, obje
 
 def test_quest_builders_snapshot(snapshot: SnapshotAssertion) -> None:
     ctx = QuestContext(width=1024, height=1024, player_count=1)
+    matcher = cast(PropertyMatcher, _round_matcher)
     for quest in all_quests():
         payload = {
             "level": quest.level,
@@ -50,6 +52,6 @@ def test_quest_builders_snapshot(snapshot: SnapshotAssertion) -> None:
             "builder_address": quest.builder_address,
             "entries": _build_entries(quest.builder, ctx, seed=1337),
         }
-        snapshot(name=f"quest_{quest.level}", matcher=cast(Any, _round_matcher)).assert_match(
+        snapshot(name=f"quest_{quest.level}", matcher=matcher).assert_match(
             payload,
         )

@@ -3,7 +3,7 @@ from __future__ import annotations
 import gzip
 import json
 from pathlib import Path
-from typing import Any, cast
+from typing import cast
 
 import pytest
 
@@ -26,8 +26,8 @@ from crimson.original.capture import (
     load_capture,
     parse_player_int_overrides,
 )
-from crimson.original.schema import CAPTURE_FORMAT_VERSION
-from crimson.replay import UnknownEvent, unpack_input_flags, unpack_input_move_key_flags
+from crimson.original.schema import CAPTURE_FORMAT_VERSION, CaptureEventHeadPerkApply
+from crimson.replay import Replay, UnknownEvent, unpack_input_flags, unpack_input_move_key_flags
 from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
 from grim.geom import Vec2
 
@@ -297,13 +297,21 @@ def _tick_player(tick: dict[str, object], player_index: int = 0) -> dict[str, ob
     return _as_obj_dict(player)
 
 
-def _replay_input_flags(replay: object, tick_index: int, player_index: int = 0) -> int:
-    return int(cast(int | float, cast(Any, replay).inputs[tick_index][player_index][3]))
+def _replay_input_flags(replay: Replay, tick_index: int, player_index: int = 0) -> int:
+    raw_flags = replay.inputs[tick_index][player_index][3]
+    assert isinstance(raw_flags, int | float)
+    return int(raw_flags)
 
 
-def _replay_input_aim_xy(replay: object, tick_index: int, player_index: int = 0) -> tuple[float, float]:
-    aim = cast(tuple[int | float, int | float], cast(Any, replay).inputs[tick_index][player_index][2])
-    return float(aim[0]), float(aim[1])
+def _replay_input_aim_xy(replay: Replay, tick_index: int, player_index: int = 0) -> tuple[float, float]:
+    aim = replay.inputs[tick_index][player_index][2]
+    assert isinstance(aim, list)
+    assert len(aim) >= 2
+    aim_x = aim[0]
+    aim_y = aim[1]
+    assert isinstance(aim_x, int | float)
+    assert isinstance(aim_y, int | float)
+    return float(aim_x), float(aim_y)
 
 
 def test_capture_event_payload_helpers_parse_msgspec_payloads() -> None:
@@ -431,7 +439,9 @@ def test_load_capture_accepts_projectile_find_query_event_head(tmp_path: Path) -
 
     assert capture.ticks[0].event_counts.projectile_find_query == 1
     assert capture.ticks[0].event_heads
-    head_data = _as_obj_dict(cast(Any, capture.ticks[0].event_heads[0]).data)
+    head = capture.ticks[0].event_heads[0]
+    assert not isinstance(head, CaptureEventHeadPerkApply)
+    head_data = _as_obj_dict(head.data)
     assert head_data.get("result_kind") == "miss"
 
 

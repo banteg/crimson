@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from pathlib import Path
-from types import SimpleNamespace
-from typing import Any, cast
 
 import pyray as rl
 import pytest
 
 from crimson.persistence.highscores import HighScoreRecord
-from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
+from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS, GameOverAssets, GameOverUi
+from crimson.ui.hud import HudAssets
+from crimson.ui.perk_menu import PerkMenuAssets
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.geom import Vec2
 
@@ -19,8 +19,61 @@ def _test_config(**updates: object) -> CrimsonConfig:
     return CrimsonConfig(path=Path("<memory>"), data=data)
 
 
-def _set_assets(ui: GameOverUi, assets: object) -> None:
-    cast(Any, ui).assets = assets
+def _texture(*, width: int = 0, height: int = 0) -> rl.Texture:
+    texture = rl.Texture()
+    texture.width = int(width)
+    texture.height = int(height)
+    return texture
+
+
+def _perk_menu_assets() -> PerkMenuAssets:
+    return PerkMenuAssets(
+        menu_panel=None,
+        title_pick_perk=None,
+        title_level_up=None,
+        menu_item=None,
+        button_sm=None,
+        button_md=None,
+        cursor=None,
+        aim=None,
+    )
+
+
+def _game_over_assets(
+    *,
+    menu_panel: rl.Texture | None = None,
+    text_reaper: rl.Texture | None = None,
+    text_well_done: rl.Texture | None = None,
+    particles: rl.Texture | None = None,
+) -> GameOverAssets:
+    return GameOverAssets(
+        menu_panel=menu_panel,
+        text_reaper=text_reaper,
+        text_well_done=text_well_done,
+        particles=particles,
+        perk_menu_assets=_perk_menu_assets(),
+    )
+
+
+def _hud_assets_for_score_card() -> HudAssets:
+    return HudAssets(
+        game_top=None,
+        life_heart=None,
+        ind_life=None,
+        ind_panel=None,
+        ind_bullet=None,
+        ind_fire=None,
+        ind_rocket=None,
+        ind_electric=None,
+        wicons=_texture(width=256, height=256),
+        clock_table=None,
+        clock_pointer=None,
+        bonuses=None,
+    )
+
+
+def _set_assets(ui: GameOverUi, assets: GameOverAssets) -> None:
+    ui.assets = assets
 
 
 def test_game_over_panel_layout_uses_native_panel_anchor(tmp_path: Path) -> None:
@@ -38,7 +91,7 @@ def test_game_over_panel_layout_uses_native_panel_anchor(tmp_path: Path) -> None
 
 def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, tmp_path: Path) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config())
-    _set_assets(ui, object())
+    _set_assets(ui, _game_over_assets())
     ui.phase = 1
     ui.rank = 0
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
@@ -70,7 +123,7 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, tmp_pa
 
 def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, tmp_path: Path) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config(game_mode=1))
-    _set_assets(ui, object())
+    _set_assets(ui, _game_over_assets())
     ui.phase = -1
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
 
@@ -122,16 +175,7 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, tmp_path: Path) -> 
     ui.phase = 1
     ui.rank = 0
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
-    _set_assets(
-        ui,
-        SimpleNamespace(
-        menu_panel=SimpleNamespace(width=512, height=256),
-        text_reaper=None,
-        text_well_done=None,
-        particles=None,
-        perk_menu_assets=SimpleNamespace(cursor=None),
-        ),
-    )
+    _set_assets(ui, _game_over_assets(menu_panel=_texture(width=512, height=256)))
 
     captured_panel: list[tuple[rl.Rectangle, bool]] = []
 
@@ -220,7 +264,7 @@ def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
     ui._draw_score_card(
         pos=Vec2(0.0, 0.0),
         record=record,
-        hud_assets=cast(Any, SimpleNamespace(wicons=SimpleNamespace(width=256, height=256), clock_table=None, clock_pointer=None)),
+        hud_assets=_hud_assets_for_score_card(),
         alpha=1.0,
         show_weapon_row=True,
         scale=1.0,

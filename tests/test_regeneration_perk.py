@@ -1,30 +1,27 @@
 from __future__ import annotations
 
 import math
-from typing import Any, cast
 
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from grim.rand import Crand
 
 
-class _FixedRng:
+class _FixedRng(Crand):
     def __init__(self, value: int) -> None:
+        super().__init__(0)
         self._value = int(value)
 
     def rand(self) -> int:
         return int(self._value)
 
 
-def _set_rng(state: GameplayState, rng: object) -> None:
-    state.rng = cast(Any, rng)
-
-
 def test_perks_update_effects_regeneration_heals_when_rng_allows() -> None:
     state = GameplayState()
-    _set_rng(state, _FixedRng(1))  # rand & 1 == 1
+    state.rng = _FixedRng(1)  # rand & 1 == 1
 
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=90.0)
     player.perk_counts[int(PerkId.REGENERATION)] = 1
@@ -36,7 +33,7 @@ def test_perks_update_effects_regeneration_heals_when_rng_allows() -> None:
 
 def test_perks_update_effects_regeneration_skips_when_rng_blocks() -> None:
     state = GameplayState()
-    _set_rng(state, _FixedRng(0))  # rand & 1 == 0
+    state.rng = _FixedRng(0)  # rand & 1 == 0
 
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=90.0)
     player.perk_counts[int(PerkId.REGENERATION)] = 1
@@ -48,7 +45,7 @@ def test_perks_update_effects_regeneration_skips_when_rng_blocks() -> None:
 
 def test_perks_update_effects_greater_regeneration_doubles_heal_by_default() -> None:
     state = GameplayState()
-    _set_rng(state, _FixedRng(1))  # rand & 1 == 1
+    state.rng = _FixedRng(1)  # rand & 1 == 1
     state.preserve_bugs = False
 
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=90.0)
@@ -62,7 +59,7 @@ def test_perks_update_effects_greater_regeneration_doubles_heal_by_default() -> 
 
 def test_perks_update_effects_greater_regeneration_keeps_noop_with_preserve_bugs() -> None:
     state = GameplayState()
-    _set_rng(state, _FixedRng(1))  # rand & 1 == 1
+    state.rng = _FixedRng(1)  # rand & 1 == 1
     state.preserve_bugs = True
 
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=90.0)
@@ -76,7 +73,7 @@ def test_perks_update_effects_greater_regeneration_keeps_noop_with_preserve_bugs
 
 def test_perks_update_effects_regeneration_heals_all_alive_players_by_default() -> None:
     state = GameplayState()
-    _set_rng(state, _FixedRng(1))
+    state.rng = _FixedRng(1)
     state.preserve_bugs = False
 
     player0 = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=90.0)
@@ -91,7 +88,7 @@ def test_perks_update_effects_regeneration_heals_all_alive_players_by_default() 
 
 def test_perks_update_effects_regeneration_preserve_bugs_keeps_player1_only_scaled_tick() -> None:
     state = GameplayState()
-    _set_rng(state, _FixedRng(1))
+    state.rng = _FixedRng(1)
     state.preserve_bugs = True
 
     player0 = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=90.0)

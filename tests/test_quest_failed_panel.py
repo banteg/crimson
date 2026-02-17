@@ -4,7 +4,6 @@ import random
 import time
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, cast
 
 import pyray as rl
 
@@ -12,9 +11,29 @@ from crimson.game.quest_views import QUEST_FAILED_PANEL_SLIDE_DURATION_MS, QUEST
 from crimson.game.types import GameState
 from crimson.modes.quest_mode import QuestRunOutcome
 from crimson.persistence import save_status
+from grim import music as grim_music
+from grim import sfx as grim_sfx
+from grim.audio import AudioState
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
 from grim.geom import Vec2
+
+
+class _PauseBackgroundStub:
+    def __init__(self, captured_alpha: list[float] | None = None) -> None:
+        self._captured_alpha = captured_alpha
+
+    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
+        if self._captured_alpha is not None:
+            self._captured_alpha.append(float(entity_alpha))
+
+
+def _dummy_audio_state() -> AudioState:
+    return AudioState(
+        ready=False,
+        music=grim_music.init_music_state(ready=False, enabled=False, volume=1.0),
+        sfx=grim_sfx.init_sfx_state(ready=False, enabled=False, volume=1.0),
+    )
 
 
 def _make_state(tmp_path: Path) -> GameState:
@@ -30,12 +49,12 @@ def _make_state(tmp_path: Path) -> GameState:
         preserve_bugs=False,
         logos=None,
         texture_cache=None,
-        audio=cast(Any, object()),
+        audio=_dummy_audio_state(),
         resource_paq=tmp_path / "crimson.paq",
         session_start=time.monotonic(),
     )
     # Avoid ground/menu asset loading in tests.
-    cast(Any, state).pause_background = SimpleNamespace(draw_pause_background=lambda **_kwargs: None)
+    state.pause_background = _PauseBackgroundStub()
     return state
 
 
@@ -249,9 +268,7 @@ def test_quest_failed_draw_fades_pause_background_during_close(monkeypatch, tmp_
     state = _make_state(tmp_path)
     state.quest_outcome = _failed_outcome()
     captured_alpha: list[float] = []
-    cast(Any, state).pause_background = SimpleNamespace(
-        draw_pause_background=lambda *, entity_alpha=1.0: captured_alpha.append(float(entity_alpha)),
-    )
+    state.pause_background = _PauseBackgroundStub(captured_alpha)
 
     class _DummyCache:
         def get_or_load(self, *_args, **_kwargs):

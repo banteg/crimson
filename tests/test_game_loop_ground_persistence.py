@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import random
 import time
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, cast
+from typing import cast
 
 import pyray as rl
 
@@ -11,6 +12,7 @@ from crimson.frontend.menu import ensure_menu_ground
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import GameState
 from crimson.persistence import save_status
+from grim.assets import PaqTextureCache
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
 from grim.geom import Vec2
@@ -30,34 +32,73 @@ class _GroundSourceView:
     def menu_ground_camera(self) -> Vec2 | None:
         return self._camera
 
+    def open(self) -> None:
+        return None
+
+    def close(self) -> None:
+        return None
+
+    def update(self, dt: float) -> None:
+        _ = dt
+        return None
+
+    def draw(self) -> None:
+        return None
+
+    def take_action(self) -> str | None:
+        return None
+
+
+@dataclass(slots=True)
+class _TextureAssetStub:
+    texture: rl.Texture | None
+
 
 class _TextureCacheStub:
-    def texture(self, _name: str) -> rl.Texture:
-        return cast(rl.Texture, rl.Texture())
+    def __init__(self) -> None:
+        self._asset = _TextureAssetStub(texture=rl.Texture())
+
+    def texture(self, name: str) -> rl.Texture:
+        _ = name
+        texture = self._asset.texture
+        if texture is None:
+            raise AssertionError("texture should be available in this stub")
+        return texture
+
+    def get_or_load(self, name: str, rel_path: str) -> _TextureAssetStub:
+        _ = (name, rel_path)
+        return self._asset
 
 
 class _TerrainTextureCacheStub:
     def __init__(self) -> None:
         self._textures = {
-            "ter_q1_base": cast(rl.Texture, object()),
-            "ter_q1_tex1": cast(rl.Texture, object()),
-            "ter_q2_base": cast(rl.Texture, object()),
-            "ter_q2_tex1": cast(rl.Texture, object()),
-            "ter_q3_base": cast(rl.Texture, object()),
-            "ter_q3_tex1": cast(rl.Texture, object()),
-            "ter_q4_base": cast(rl.Texture, object()),
-            "ter_q4_tex1": cast(rl.Texture, object()),
+            "ter_q1_base": rl.Texture(),
+            "ter_q1_tex1": rl.Texture(),
+            "ter_q2_base": rl.Texture(),
+            "ter_q2_tex1": rl.Texture(),
+            "ter_q3_base": rl.Texture(),
+            "ter_q3_tex1": rl.Texture(),
+            "ter_q4_base": rl.Texture(),
+            "ter_q4_tex1": rl.Texture(),
         }
 
     def texture(self, name: str) -> rl.Texture | None:
         return self._textures.get(name)
 
+    def get_or_load(self, name: str, rel_path: str) -> _TextureAssetStub:
+        _ = rel_path
+        return _TextureAssetStub(texture=self._textures.get(name))
 
-class _RngStub:
+
+class _RngStub(random.Random):
     def __init__(self, values: list[int]) -> None:
+        super().__init__(0)
         self._values = list(values)
 
-    def randrange(self, start: int, stop: int | None = None) -> int:
+    def randrange(self, start: int, stop: int | None = None, step: int = 1) -> int:
+        if int(step) != 1:
+            raise AssertionError("rng stub only supports step=1")
         if stop is None:
             stop = start
             start = 0
@@ -75,6 +116,40 @@ class _AdoptMenuGroundView:
 
     def adopt_menu_ground(self, ground: GroundRenderer | None) -> None:
         self.adopted = ground
+
+    def open(self) -> None:
+        return None
+
+    def close(self) -> None:
+        return None
+
+    def update(self, dt: float) -> None:
+        _ = dt
+        return None
+
+    def draw(self) -> None:
+        return None
+
+    def take_action(self) -> str | None:
+        return None
+
+
+class _OverlayView:
+    def open(self) -> None:
+        return None
+
+    def close(self) -> None:
+        return None
+
+    def update(self, dt: float) -> None:
+        _ = dt
+        return None
+
+    def draw(self) -> None:
+        return None
+
+    def take_action(self) -> str | None:
+        return None
 
 
 def _build_state(tmp_path: Path) -> GameState:
@@ -128,7 +203,7 @@ def test_capture_gameplay_ground_from_stacked_view(tmp_path: Path) -> None:
     gameplay_ground = GroundRenderer(texture=rl.Texture())
     gameplay_camera = Vec2(-611.0, -322.0)
     gameplay_view = _GroundSourceView(gameplay_ground, gameplay_camera)
-    overlay_view = object()
+    overlay_view = _OverlayView()
 
     state.menu_ground = menu_ground
     state.menu_ground_camera = Vec2(-1.0, -1.0)
@@ -145,7 +220,7 @@ def test_capture_gameplay_ground_from_stacked_view(tmp_path: Path) -> None:
 
 def test_regenerate_menu_ground_resets_menu_camera(tmp_path: Path) -> None:
     state = _build_state(tmp_path)
-    state.texture_cache = cast(Any, _TextureCacheStub())
+    state.texture_cache = cast(PaqTextureCache, _TextureCacheStub())
     state.menu_ground_camera = Vec2(-100.0, -200.0)
 
     ground = ensure_menu_ground(state, regenerate=True)
@@ -157,10 +232,10 @@ def test_regenerate_menu_ground_resets_menu_camera(tmp_path: Path) -> None:
 def test_regenerate_menu_ground_unlock_branch_selects_q4_variant(tmp_path: Path) -> None:
     state = _build_state(tmp_path)
     cache = _TerrainTextureCacheStub()
-    state.texture_cache = cast(Any, cache)
+    state.texture_cache = cast(PaqTextureCache, cache)
     state.status.quest_unlock_index = 0x28
     # unlock>=40 and first (rand & 7)==3 should pick (6,7,6) i.e. q4 base/tex1/base.
-    state.rng = cast(random.Random, _RngStub([3, 1234]))
+    state.rng = _RngStub([3, 1234])
 
     ground = ensure_menu_ground(state, regenerate=True)
 
@@ -177,6 +252,6 @@ def test_start_survival_does_not_adopt_existing_menu_ground(tmp_path: Path) -> N
     adopter = _AdoptMenuGroundView()
     state.menu_ground = menu_ground
 
-    loop._maybe_adopt_menu_ground("start_survival", cast(Any, adopter))
+    loop._maybe_adopt_menu_ground("start_survival", adopter)
 
     assert adopter.adopted is None
