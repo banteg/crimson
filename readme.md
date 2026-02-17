@@ -66,6 +66,7 @@ crimson extract <src> <dst>       extract PAQ archives
 crimson replay list               list replay files under runtime replays dir
 crimson replay play <file>        play back a recorded demo
 crimson replay verify <file>      headlessly simulate replay stats / score claims
+crimson replay benchmark <file>   benchmark replay simulation throughput (+ optional profiling)
 crimson replay verify-checkpoints <file>  compare replay output to checkpoint sidecar
 crimson oracle [--seed N]         headless simulation for differential testing
 ```

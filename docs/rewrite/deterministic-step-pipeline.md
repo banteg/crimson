@@ -108,6 +108,32 @@ By default (`--score-metric auto`), claim comparison is mode-aware:
 - Survival -> `score_xp`
 - Rush / Quests -> `elapsed_ms`
 
+## Replay benchmark (headless throughput + optional hotspots)
+
+`replay benchmark` runs replay simulation multiple times and reports wall-time
+throughput metrics (`wall_ms`, ticks/second, and realtime multiplier).
+
+Timing scope is simulation-only (`run_replay`), so decode/load costs are not
+included in measured samples.
+
+Timing-only run:
+
+```bash
+uv run crimson replay benchmark replay.crd --runs 8 --warmup-runs 2
+```
+
+Machine-readable run:
+
+```bash
+uv run crimson replay benchmark replay.crd --format json --json-out analysis/replay/benchmark.json
+```
+
+Include one `cProfile` pass and hotspot summary:
+
+```bash
+uv run crimson replay benchmark replay.crd --profile --profile-sort cumtime --top 20 --profile-out artifacts/profiling/replay.pstats
+```
+
 ## Replay checkpoints comparison
 
 Checkpoints now store `command_hash` per sampled tick.

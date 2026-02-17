@@ -274,6 +274,199 @@ def test_replay_verify_json_out_works_for_human_and_json_output(tmp_path: Path) 
     assert file_payload == stdout_payload
 
 
+def test_replay_benchmark_human_success_outputs_throughput_stats(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "benchmark",
+            str(replay_path),
+            "--runs",
+            "2",
+            "--warmup-runs",
+            "0",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "ok:" in result.output
+    assert "wall_ms_p50=" in result.output
+    assert "throughput_tps" in result.output
+    assert "realtime_x" in result.output
+
+
+def test_replay_benchmark_json_output_payload_ok(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "benchmark",
+            str(replay_path),
+            "--runs",
+            "2",
+            "--warmup-runs",
+            "0",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["schema_version"] == 1
+    assert payload["status"] == "ok"
+    assert payload["replay"] == str(replay_path)
+    assert isinstance(payload["replay_sha256"], str)
+    assert payload["settings"]["runs"] == 2
+    assert payload["settings"]["warmup_runs"] == 0
+    assert payload["benchmark"]["sample_count"] == 2
+    assert len(payload["benchmark"]["samples"]) == 2
+    assert payload["profile"] is None
+    assert payload["run_result"]["ticks"] == 2
+
+
+def test_replay_benchmark_json_out_works_for_human_and_json_output(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+    human_out = tmp_path / "benchmark-human.json"
+    json_out = tmp_path / "benchmark-json.json"
+
+    human_result = runner.invoke(
+        app,
+        [
+            "replay",
+            "benchmark",
+            str(replay_path),
+            "--runs",
+            "2",
+            "--warmup-runs",
+            "0",
+            "--json-out",
+            str(human_out),
+        ],
+    )
+    assert human_result.exit_code == 0, human_result.output
+    assert "json_report=" in human_result.output
+    assert json.loads(human_out.read_text(encoding="utf-8"))["status"] == "ok"
+
+    json_result = runner.invoke(
+        app,
+        [
+            "replay",
+            "benchmark",
+            str(replay_path),
+            "--runs",
+            "2",
+            "--warmup-runs",
+            "0",
+            "--format",
+            "json",
+            "--json-out",
+            str(json_out),
+        ],
+    )
+    assert json_result.exit_code == 0, json_result.output
+    stdout_payload = json.loads(json_result.output)
+    file_payload = json.loads(json_out.read_text(encoding="utf-8"))
+    assert stdout_payload["status"] == "ok"
+    assert file_payload == stdout_payload
+
+
+def test_replay_benchmark_profile_outputs_hotspots_and_pstats(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+    profile_out = tmp_path / "replay-benchmark.pstats"
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "benchmark",
+            str(replay_path),
+            "--runs",
+            "1",
+            "--warmup-runs",
+            "0",
+            "--format",
+            "json",
+            "--profile",
+            "--top",
+            "5",
+            "--profile-out",
+            str(profile_out),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    profile = payload["profile"]
+    assert profile is not None
+    assert profile["sort"] == "cumtime"
+    assert profile["top"] == 5
+    assert profile["source"] in ("project", "all")
+    assert isinstance(profile["hotspots"], list)
+    assert len(profile["hotspots"]) <= 5
+    assert profile_out.is_file()
+
+
+def test_replay_benchmark_is_strict_by_default(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay.events.append(UnknownEvent(tick_index=0, kind="unknown_event", payload=[]))
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "benchmark",
+            str(replay_path),
+            "--runs",
+            "1",
+            "--warmup-runs",
+            "0",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "replay benchmark failed" in result.output
+    assert "unsupported replay event kind" in result.output
+
+
+def test_replay_benchmark_can_run_lenient_event_mode(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay.events.append(UnknownEvent(tick_index=0, kind="unknown_event", payload=[]))
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "benchmark",
+            str(replay_path),
+            "--runs",
+            "1",
+            "--warmup-runs",
+            "0",
+            "--lenient-events",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "ok:" in result.output
+
+
 def test_replay_verify_rejects_checkpoints_option(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
