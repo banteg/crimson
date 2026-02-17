@@ -4,6 +4,7 @@ import inspect
 import io
 import ipaddress
 import json
+import os
 import random
 import re
 import sys
@@ -347,6 +348,28 @@ def cmd_view(
     width: int = typer.Option(1024, help="window width"),
     height: int = typer.Option(768, help="window height"),
     fps: int = typer.Option(60, help="target fps"),
+    dump_shader_debug_views: bool = typer.Option(
+        False,
+        "--dump-shader-debug-views",
+        help="lighting-debug only: run autodiag and dump screenshots for each shader debug mode",
+    ),
+    dump_shader_debug_frames: int = typer.Option(
+        399,
+        "--dump-shader-debug-frames",
+        min=30,
+        help="lighting-debug only: total autodiag frames used when --dump-shader-debug-views is set",
+    ),
+    autotune_shadow_defaults: bool = typer.Option(
+        False,
+        "--autotune-shadow-defaults",
+        help="lighting-debug only: run an automated quality/perf sweep and print the best tuning preset",
+    ),
+    autotune_shadow_frames: int = typer.Option(
+        96,
+        "--autotune-shadow-frames",
+        min=12,
+        help="lighting-debug only: sampled frames per preset when --autotune-shadow-defaults is set",
+    ),
     preserve_bugs: bool = typer.Option(False, "--preserve-bugs", help="preserve known original exe bugs/quirks"),
     assets_dir: Path = typer.Option(Path("artifacts") / "assets", help="assets root (default: ./artifacts/assets)"),
 ) -> None:
@@ -361,6 +384,23 @@ def cmd_view(
         available = ", ".join(view.name for view in all_views())
         typer.echo(f"unknown view {name!r}. Available: {available}", err=True)
         raise typer.Exit(code=1)
+    if dump_shader_debug_views and autotune_shadow_defaults:
+        typer.echo(
+            "--dump-shader-debug-views and --autotune-shadow-defaults cannot be used together",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    if dump_shader_debug_views:
+        if str(name) != "lighting-debug":
+            typer.echo("--dump-shader-debug-views is only supported for view 'lighting-debug'", err=True)
+            raise typer.Exit(code=1)
+        os.environ["CRIMSON_LIGHTING_DEBUG_DUMP_ALL_MODES"] = "1"
+        os.environ["CRIMSON_LIGHTING_DEBUG_AUTODIAG"] = str(int(dump_shader_debug_frames))
+    if autotune_shadow_defaults:
+        if str(name) != "lighting-debug":
+            typer.echo("--autotune-shadow-defaults is only supported for view 'lighting-debug'", err=True)
+            raise typer.Exit(code=1)
+        os.environ["CRIMSON_LIGHTING_DEBUG_AUTO_TUNE"] = str(int(autotune_shadow_frames))
     ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=bool(preserve_bugs))
     params = inspect.signature(view_def.factory).parameters
     if "ctx" in params:
