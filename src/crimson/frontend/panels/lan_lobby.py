@@ -28,7 +28,7 @@ class LanLobbyPanelView(PanelMenuView):
     def __init__(self, state: GameState) -> None:
         super().__init__(
             state,
-            title="LAN Lobby",
+            title="Network Lobby",
             panel_offset=Vec2(-63.0, MENU_PANEL_OFFSET_Y),
             panel_height=278.0,
             back_action="open_play_game",
@@ -49,14 +49,21 @@ class LanLobbyPanelView(PanelMenuView):
 
     def _begin_close_transition(self, action: str) -> None:
         if action == "open_play_game":
-            runtime = getattr(self.state, "lan_runtime", None)
+            runtime = getattr(self.state, "net_runtime", None)
+            if runtime is None:
+                runtime = getattr(self.state, "lan_runtime", None)
             if runtime is not None:
                 runtime.close()
             self.state.lan_runtime = None
+            self.state.net_runtime = None
             self.state.lan_in_lobby = False
+            self.state.net_in_lobby = False
             self.state.lan_waiting_for_players = False
+            self.state.net_waiting_for_players = False
             self.state.lan_expected_players = 1
+            self.state.net_expected_players = 1
             self.state.lan_connected_players = 1
+            self.state.net_connected_players = 1
         super()._begin_close_transition(action)
 
     def update(self, dt: float) -> None:
@@ -93,10 +100,14 @@ class LanLobbyPanelView(PanelMenuView):
         if self._timeline_ms < self._timeline_max_ms:
             return
 
-        pending = getattr(self.state, "pending_lan_session", None)
-        runtime = getattr(self.state, "lan_runtime", None)
+        pending = getattr(self.state, "pending_net_session", None)
+        if pending is None:
+            pending = getattr(self.state, "pending_lan_session", None)
+        runtime = getattr(self.state, "net_runtime", None)
+        if runtime is None:
+            runtime = getattr(self.state, "lan_runtime", None)
         if pending is None or runtime is None:
-            self._error = "LAN runtime is not running."
+            self._error = "Network runtime is not running."
             return
 
         error = str(getattr(runtime, "error", "") or "")
@@ -116,9 +127,13 @@ class LanLobbyPanelView(PanelMenuView):
         quest_level = str(getattr(event, "quest_level", "") or "")
 
         self.state.lan_in_lobby = True
+        self.state.net_in_lobby = True
         self.state.lan_waiting_for_players = False
+        self.state.net_waiting_for_players = False
         self.state.lan_expected_players = max(1, min(4, int(player_count)))
+        self.state.net_expected_players = int(self.state.lan_expected_players)
         self.state.lan_connected_players = int(self.state.lan_expected_players)
+        self.state.net_connected_players = int(self.state.lan_connected_players)
         self.state.config.player_count = int(self.state.lan_expected_players)
         self.state.config.game_mode = int(mode_id)
         if int(mode_id) == 3:
@@ -215,7 +230,7 @@ class LanLobbyPanelView(PanelMenuView):
         label_color = rl.Color(190, 190, 200, 230)
         value_color = rl.Color(225, 235, 247, 255)
 
-        draw_small_text(font, "LAN Lobby", base_pos, title_scale, title_color)
+        draw_small_text(font, "Network Lobby", base_pos, title_scale, title_color)
         y = base_pos.y + float(font.cell_size) * title_scale + 6.0 * scale
         draw_small_text(
             font,
@@ -226,38 +241,57 @@ class LanLobbyPanelView(PanelMenuView):
         )
         y += float(font.cell_size) * 0.9 * scale + 10.0 * scale
 
-        pending = getattr(self.state, "pending_lan_session", None)
+        pending = getattr(self.state, "pending_net_session", None)
+        if pending is None:
+            pending = getattr(self.state, "pending_lan_session", None)
         role = str(getattr(pending, "role", "") or "")
         cfg = getattr(pending, "config", None)
-        host_ip = str(getattr(cfg, "host_ip", "") or "")
-        bind_host = str(getattr(cfg, "bind_host", "") or "")
-        port = int(getattr(cfg, "port", 0) or 0)
+        room_code = str(getattr(cfg, "room_code", "") or "").upper().strip()
+        relay_host = str(getattr(cfg, "relay_host", "") or "").strip()
+        if not relay_host:
+            relay_host = str(getattr(cfg, "host_ip", "") or "").strip()
+        bind_host = str(getattr(cfg, "bind_host", "") or "").strip()
+        port = int(getattr(cfg, "relay_port", getattr(cfg, "port", 0)) or 0)
 
-        runtime = getattr(self.state, "lan_runtime", None)
+        runtime = getattr(self.state, "net_runtime", None)
+        if runtime is None:
+            runtime = getattr(self.state, "lan_runtime", None)
         lobby_state_fn = getattr(runtime, "lobby_state", None) if runtime is not None else None
         lobby_state = lobby_state_fn() if callable(lobby_state_fn) else None
+        lobby_room_code = str(getattr(lobby_state, "room_code", "") or "").upper().strip()
+        if lobby_room_code:
+            room_code = lobby_room_code
 
         session_id = str(getattr(lobby_state, "session_id", "") or "")
-        expected = int(getattr(lobby_state, "player_count", self.state.lan_expected_players) or 1)
+        expected = int(
+            getattr(
+                lobby_state,
+                "player_count",
+                getattr(self.state, "net_expected_players", self.state.lan_expected_players),
+            )
+            or 1
+        )
         slots = getattr(lobby_state, "slots", None) if lobby_state is not None else None
         connected = 0
         if isinstance(slots, list):
             connected = sum(1 for slot in slots if bool(getattr(slot, "connected", False)))
         else:
-            connected = int(getattr(self.state, "lan_connected_players", 0) or 0)
+            connected = int(getattr(self.state, "net_connected_players", getattr(self.state, "lan_connected_players", 0)) or 0)
         connected = max(0, min(4, int(connected)))
         expected = max(1, min(4, int(expected)))
 
         dots = "." * int((self._cursor_pulse_time * 2.5) % 4)
         connected_text = f"{connected}/{expected}{dots}"
         role_label = "Host" if role == "host" else "Client"
-        addr_text = f"{bind_host}:{port}" if role == "host" else f"{host_ip}:{port}"
-        addr_label = "Bind:" if role == "host" else "Host:"
+        code_text = room_code if room_code else "-"
+        relay_addr = relay_host if relay_host else bind_host
+        relay_text = f"{relay_addr}:{port}" if relay_addr else f"127.0.0.1:{port}"
 
         label_w = max(
             measure_small_text_width(font, "Connected:", text_scale),
             measure_small_text_width(font, "Role:", text_scale),
-            measure_small_text_width(font, addr_label, text_scale),
+            measure_small_text_width(font, "Code:", text_scale),
+            measure_small_text_width(font, "Relay:", text_scale),
             measure_small_text_width(font, "Session:", text_scale),
         )
         value_x = base_pos.x + label_w + 10.0 * scale
@@ -271,8 +305,12 @@ class LanLobbyPanelView(PanelMenuView):
         draw_small_text(font, role_label, Vec2(value_x, y), text_scale, value_color)
         y += line_h
 
-        draw_small_text(font, addr_label, Vec2(base_pos.x, y), text_scale, label_color)
-        draw_small_text(font, addr_text, Vec2(value_x, y), text_scale, value_color)
+        draw_small_text(font, "Code:", Vec2(base_pos.x, y), text_scale, label_color)
+        draw_small_text(font, code_text, Vec2(value_x, y), text_scale, value_color)
+        y += line_h
+
+        draw_small_text(font, "Relay:", Vec2(base_pos.x, y), text_scale, label_color)
+        draw_small_text(font, relay_text, Vec2(value_x, y), text_scale, value_color)
         y += line_h
 
         if session_id:

@@ -53,7 +53,7 @@ class _QuestModeRuntime(_ModeRuntime, Protocol):
 
 def _mode_view_context(state: GameState) -> ViewContext:
     preserve_bugs = bool(state.preserve_bugs)
-    if bool(getattr(state, "lan_in_lobby", False)):
+    if bool(getattr(state, "net_in_lobby", False)) or bool(getattr(state, "lan_in_lobby", False)):
         # LAN lockstep is a rewrite-only feature; force preserve_bugs off to keep
         # simulation rules consistent across peers.
         preserve_bugs = False
@@ -96,8 +96,11 @@ class _BaseModeGameView:
         if not callable(set_lan_runtime):
             return
 
-        pending = self.state.pending_lan_session
-        if (not bool(self.state.lan_in_lobby)) or pending is None:
+        pending = getattr(self.state, "pending_net_session", None)
+        if pending is None:
+            pending = self.state.pending_lan_session
+        in_lobby = bool(getattr(self.state, "net_in_lobby", False)) or bool(getattr(self.state, "lan_in_lobby", False))
+        if (not in_lobby) or pending is None:
             set_lan_runtime(
                 enabled=False,
                 role="",
@@ -109,9 +112,23 @@ class _BaseModeGameView:
                 bind_lan_runtime(None)
             return
 
-        expected_players = max(1, min(4, int(getattr(self.state, "lan_expected_players", 1))))
-        connected_players = max(0, min(expected_players, int(getattr(self.state, "lan_connected_players", 1))))
-        waiting_for_players = bool(getattr(self.state, "lan_waiting_for_players", False))
+        expected_players = max(
+            1,
+            min(
+                4,
+                int(getattr(self.state, "net_expected_players", getattr(self.state, "lan_expected_players", 1))),
+            ),
+        )
+        connected_players = max(
+            0,
+            min(
+                expected_players,
+                int(getattr(self.state, "net_connected_players", getattr(self.state, "lan_connected_players", 1))),
+            ),
+        )
+        waiting_for_players = bool(
+            getattr(self.state, "net_waiting_for_players", getattr(self.state, "lan_waiting_for_players", False))
+        )
         set_lan_runtime(
             enabled=True,
             role=str(pending.role),
@@ -119,7 +136,9 @@ class _BaseModeGameView:
             connected_players=int(connected_players),
             waiting_for_players=bool(waiting_for_players),
         )
-        runtime = getattr(self.state, "lan_runtime", None)
+        runtime = getattr(self.state, "net_runtime", None)
+        if runtime is None:
+            runtime = getattr(self.state, "lan_runtime", None)
         if callable(bind_lan_runtime):
             bind_lan_runtime(runtime)
         if callable(set_lan_match_start) and runtime is not None:

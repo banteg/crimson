@@ -4,7 +4,7 @@ from pathlib import Path
 import random
 import time
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Any, Literal, Protocol
 
 import pyray as rl
 
@@ -30,6 +30,7 @@ from ..perks import PerkId
 from ..sim.sessions import DeterministicSessionTick
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
+from ..net.rollback_resync_v5 import decode_mode_snapshot, encode_mode_snapshot
 
 if TYPE_CHECKING:
     from ..persistence.save_status import GameStatus
@@ -583,6 +584,71 @@ class BaseGameplayMode:
                 rl.Color(232, 197, 117, 255),
                 scale=0.8,
             )
+
+    def _net_replay_snapshot_state(self) -> dict[str, Any] | None:
+        recorder = getattr(self, "_replay_recorder", None)
+        if recorder is None:
+            return None
+        return {
+            "tick_index": int(getattr(recorder, "tick_index", 0)),
+            "recorded_tick_count": int(getattr(recorder, "recorded_tick_count", 0)),
+        }
+
+    def _store_net_runtime_snapshot(
+        self,
+        *,
+        mode_name: Literal["survival", "rush", "quests"],
+        tick_index: int,
+        session_state: dict[str, Any],
+        mode_state: dict[str, Any],
+    ) -> None:
+        runtime = self._lan_runtime
+        if runtime is None:
+            return
+        tick = max(0, int(tick_index))
+        if (tick % 4) != 0:
+            return
+        try:
+            payload = encode_mode_snapshot(
+                mode=mode_name,
+                tick_index=int(tick),
+                session_state=dict(session_state),
+                mode_state=dict(mode_state),
+                replay_state=self._net_replay_snapshot_state(),
+            )
+        except Exception:
+            return
+        store_snapshot = getattr(runtime, "store_local_snapshot", None)
+        if callable(store_snapshot):
+            store_snapshot(int(tick), payload)
+
+    def _consume_net_runtime_recovery(self, *, mode_name: Literal["survival", "rush", "quests"]) -> None:
+        runtime = self._lan_runtime
+        if runtime is None:
+            return
+        pop_rollback_from = getattr(runtime, "pop_rollback_from", None)
+        rollback_from = pop_rollback_from() if callable(pop_rollback_from) else None
+        if rollback_from is not None:
+            lan_debug_log(
+                "rollback_requested",
+                mode=str(mode_name),
+                role=str(self._lan_role),
+                from_tick=int(rollback_from),
+            )
+
+        pop_resync_snapshot = getattr(runtime, "pop_resync_snapshot", None)
+        pending = pop_resync_snapshot() if callable(pop_resync_snapshot) else None
+        if pending is None:
+            return
+        tick_index, payload = pending
+        try:
+            decode_mode_snapshot(payload)
+        except Exception:
+            runtime.error = "resync_decode_error"
+            return
+        mark_resync_applied = getattr(runtime, "mark_resync_applied", None)
+        if callable(mark_resync_applied):
+            mark_resync_applied(int(tick_index))
 
     def _player_name_default(self) -> str:
         return str(self.config.player_name or "")

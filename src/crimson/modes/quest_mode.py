@@ -842,6 +842,7 @@ class QuestMode(BaseGameplayMode):
 
         runtime.update()
         role = str(self._lan_role)
+        self._consume_net_runtime_recovery(mode_name="quests")
         if str(getattr(runtime, "error", "") or ""):
             self.close_requested = True
             return
@@ -948,6 +949,23 @@ class QuestMode(BaseGameplayMode):
                 self._quest.no_creatures_timer_ms = float(tick.no_creatures_timer_ms)
                 self._quest.completion_transition_ms = float(tick.completion_transition_ms)
                 self._quest.quest_name_timer_ms += float(dt_tick) * 1000.0
+                self._store_net_runtime_snapshot(
+                    mode_name="quests",
+                    tick_index=int(frame.tick_index),
+                    session_state={
+                        "elapsed_ms": float(tick.elapsed_ms),
+                        "spawn_timeline_ms": float(tick.spawn_timeline_ms),
+                        "no_creatures_timer_ms": float(tick.no_creatures_timer_ms),
+                        "completion_transition_ms": float(tick.completion_transition_ms),
+                    },
+                    mode_state={
+                        "quest_spawn_timeline_ms": float(self._quest.spawn_timeline_ms),
+                        "quest_no_creatures_timer_ms": float(self._quest.no_creatures_timer_ms),
+                        "quest_completion_transition_ms": float(self._quest.completion_transition_ms),
+                        "quest_name_timer_ms": float(self._quest.quest_name_timer_ms),
+                        "perk_pending_count": int(self.state.perk_selection.pending_count),
+                    },
+                )
 
                 if tick_index is not None:
                     world_events = tick.step.events

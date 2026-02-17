@@ -400,6 +400,7 @@ class RushMode(BaseGameplayMode):
 
         runtime.update()
         role = str(self._lan_role)
+        self._consume_net_runtime_recovery(mode_name="rush")
         if str(getattr(runtime, "error", "") or ""):
             self.close_requested = True
             return
@@ -492,6 +493,19 @@ class RushMode(BaseGameplayMode):
                 )
                 self._rush.elapsed_ms = float(session.elapsed_ms)
                 self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
+                self._store_net_runtime_snapshot(
+                    mode_name="rush",
+                    tick_index=int(frame.tick_index),
+                    session_state={
+                        "elapsed_ms": float(session.elapsed_ms),
+                        "spawn_cooldown_ms": float(session.spawn_cooldown_ms),
+                    },
+                    mode_state={
+                        "rush_elapsed_ms": float(self._rush.elapsed_ms),
+                        "rush_spawn_cooldown_ms": float(self._rush.spawn_cooldown_ms),
+                        "kill_count": int(self.creatures.kill_count),
+                    },
+                )
                 world_events = tick.step.events
 
                 if tick_index is not None:
