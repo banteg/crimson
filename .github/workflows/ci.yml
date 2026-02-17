@@ -38,6 +38,11 @@ jobs:
             do_sync: true
             command: uv run --no-sync ty check src
             sync_args: --group dev
+          - task: ty-tests-budget
+            use_uv: true
+            do_sync: true
+            command: uv run --no-sync python scripts/check_ty_tests_budget.py --max-diagnostics 95
+            sync_args: --group dev
           - task: pytest
             use_uv: true
             do_sync: true
