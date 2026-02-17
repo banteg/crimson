@@ -1588,15 +1588,21 @@ def convert_capture_to_replay(
 def default_capture_replay_path(checkpoints_path: Path) -> Path:
     checkpoints_path = Path(checkpoints_path)
     name = checkpoints_path.name
-    if name.endswith(".checkpoints.json.gz"):
+    if name.endswith(".crd.chk"):
+        stem = name[: -len(".crd.chk")]
+    elif name.endswith(".checkpoints.json.gz"):
         stem = name[: -len(".checkpoints.json.gz")]
+    elif name.endswith(".chk"):
+        stem = name[: -len(".chk")]
     elif name.endswith(".json.gz"):
         stem = name[: -len(".json.gz")]
     elif name.endswith(".json"):
         stem = name[: -len(".json")]
+    elif name.endswith(".crd"):
+        stem = name[: -len(".crd")]
     else:
         stem = name
-    return checkpoints_path.with_name(f"{stem}.crdemo.gz")
+    return checkpoints_path.with_name(f"{stem}.crd")
 
 
 def _validate_capture_path(path: Path) -> None:

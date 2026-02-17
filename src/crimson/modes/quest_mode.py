@@ -346,10 +346,10 @@ class QuestMode(BaseGameplayMode):
         kind = str(self._outcome.kind) if self._outcome is not None else "quest"
         base_time_ms = int(self._quest.spawn_timeline_ms)
         base_name = f"quest_{level}_{stamp}_{kind}_t{base_time_ms}"
-        path = replay_dir / f"{base_name}.crdemo.gz"
+        path = replay_dir / f"{base_name}.crd"
         counter = 1
         while path.exists():
-            path = replay_dir / f"{base_name}_{counter}.crdemo.gz"
+            path = replay_dir / f"{base_name}_{counter}.crd"
             counter += 1
         path.write_bytes(data)
         checkpoints_path = default_checkpoints_path(path)

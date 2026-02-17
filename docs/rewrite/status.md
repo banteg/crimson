@@ -22,13 +22,13 @@ Last reviewed: **2026-02-17**
   - `uv run crimson net join --code <invite> --relay-host <ip> --relay-port 31993`
   - `uv run crimson lan host ...` / `uv run crimson lan join ...` (deprecated wrappers)
 - Replay tooling:
-  - `uv run crimson replay play <replay.crdemo.gz>`
-  - `uv run crimson replay verify <replay.crdemo.gz>`
-  - `uv run crimson replay verify-checkpoints <replay.crdemo.gz>`
+  - `uv run crimson replay play <replay.crd>`
+  - `uv run crimson replay verify <replay.crd>`
+  - `uv run crimson replay verify-checkpoints <replay.crd>`
   - `uv run crimson replay diff-checkpoints <expected> <actual>`
 - Original/capture differential tooling:
   - `uv run crimson original verify-capture <capture.json>`
-  - `uv run crimson original convert-capture <capture.json> <expected.checkpoints.json.gz>`
+  - `uv run crimson original convert-capture <capture.json> <expected.crd.chk>`
   - `uv run crimson original divergence-report <capture.json>`
   - `uv run crimson original bisect-divergence <capture.json>`
   - `uv run crimson original focus-trace <capture.json> --tick <n>`

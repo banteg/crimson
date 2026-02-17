@@ -74,9 +74,9 @@ def _write_checkpoint_sidecar(
 
 def test_replay_list_shows_replays_under_base_dir(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    _write_replay(tmp_path / "replays", replay=replay, name="zeta.crdemo.gz")
-    _write_replay(tmp_path / "replays", replay=replay, name="alpha.crdemo.gz")
-    _write_replay(tmp_path / "replays" / "nested", replay=replay, name="nested.crdemo.gz")
+    _write_replay(tmp_path / "replays", replay=replay, name="zeta.crd")
+    _write_replay(tmp_path / "replays", replay=replay, name="alpha.crd")
+    _write_replay(tmp_path / "replays" / "nested", replay=replay, name="nested.crd")
     (tmp_path / "replays" / "ignore.txt").write_text("x", encoding="utf-8")
     runner = CliRunner()
 
@@ -87,7 +87,7 @@ def test_replay_list_shows_replays_under_base_dir(tmp_path: Path) -> None:
 
     assert result.exit_code == 0, result.output
     lines = [line.strip() for line in result.output.splitlines() if line.strip()]
-    assert lines == ["alpha.crdemo.gz", "nested/nested.crdemo.gz", "zeta.crdemo.gz", "count=3"]
+    assert lines == ["alpha.crd", "nested/nested.crd", "zeta.crd", "count=3"]
 
 
 def test_replay_list_reports_when_no_replays_found(tmp_path: Path) -> None:
@@ -104,7 +104,7 @@ def test_replay_list_reports_when_no_replays_found(tmp_path: Path) -> None:
 
 def test_replay_verify_human_success_outputs_run_stats(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 
     result = runner.invoke(app, ["replay", "verify", str(replay_path)])
@@ -118,7 +118,7 @@ def test_replay_verify_human_success_outputs_run_stats(tmp_path: Path) -> None:
 
 def test_replay_verify_json_output_payload_ok(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 
     result = runner.invoke(app, ["replay", "verify", str(replay_path), "--format", "json"])
@@ -136,7 +136,7 @@ def test_replay_verify_json_output_payload_ok(tmp_path: Path) -> None:
 
 def test_replay_verify_submitted_score_match_exit_zero(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 
     result = runner.invoke(
@@ -161,7 +161,7 @@ def test_replay_verify_submitted_score_match_exit_zero(tmp_path: Path) -> None:
 
 def test_replay_verify_submitted_score_mismatch_exit_three(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 
     result = runner.invoke(
@@ -187,7 +187,7 @@ def test_replay_verify_submitted_score_mismatch_exit_three(tmp_path: Path) -> No
 def test_replay_verify_is_strict_by_default(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
     replay.events.append(UnknownEvent(tick_index=0, kind="unknown_event", payload=[]))
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 
     result = runner.invoke(app, ["replay", "verify", str(replay_path)])
@@ -199,7 +199,7 @@ def test_replay_verify_is_strict_by_default(tmp_path: Path) -> None:
 def test_replay_verify_can_run_lenient_event_mode(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
     replay.events.append(UnknownEvent(tick_index=0, kind="unknown_event", payload=[]))
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 
     result = runner.invoke(app, ["replay", "verify", str(replay_path), "--lenient-events"])
@@ -210,7 +210,7 @@ def test_replay_verify_can_run_lenient_event_mode(tmp_path: Path) -> None:
 
 def test_replay_verify_auto_metric_uses_elapsed_ms_for_rush(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.RUSH, ticks=3)
-    replay_path = _write_replay(tmp_path, replay=replay, name="rush.crdemo.gz")
+    replay_path = _write_replay(tmp_path, replay=replay, name="rush.crd")
     expected_elapsed_ms = run_replay(replay).elapsed_ms
     runner = CliRunner()
 
@@ -236,7 +236,7 @@ def test_replay_verify_auto_metric_uses_elapsed_ms_for_rush(tmp_path: Path) -> N
 
 def test_replay_verify_json_out_works_for_human_and_json_output(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
     human_out = tmp_path / "verify-human.json"
     json_out = tmp_path / "verify-json.json"
@@ -276,7 +276,7 @@ def test_replay_verify_json_out_works_for_human_and_json_output(tmp_path: Path) 
 
 def test_replay_verify_rejects_checkpoints_option(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 
     result = runner.invoke(
@@ -286,7 +286,7 @@ def test_replay_verify_rejects_checkpoints_option(tmp_path: Path) -> None:
             "verify",
             str(replay_path),
             "--checkpoints",
-            str(tmp_path / "expected.checkpoints.json.gz"),
+            str(tmp_path / "expected.crd.chk"),
         ],
     )
 
@@ -296,7 +296,7 @@ def test_replay_verify_rejects_checkpoints_option(tmp_path: Path) -> None:
 
 def test_replay_verify_checkpoints_preserves_success_behavior(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     _write_checkpoint_sidecar(replay_path, replay)
     runner = CliRunner()
 
@@ -308,9 +308,33 @@ def test_replay_verify_checkpoints_preserves_success_behavior(tmp_path: Path) ->
     assert "kills=" in result.output
 
 
+def test_replay_verify_checkpoints_falls_back_to_legacy_sidecar_name(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    checkpoint_ticks = {0}
+    checkpoints = []
+    run_replay(replay, checkpoints_out=checkpoints, checkpoint_ticks=checkpoint_ticks)
+    replay_sha256 = hashlib.sha256(replay_path.read_bytes()).hexdigest()
+    dump_checkpoints_file(
+        tmp_path / "survival.checkpoints.json.gz",
+        ReplayCheckpoints(
+            version=int(FORMAT_VERSION),
+            replay_sha256=str(replay_sha256),
+            sample_rate=1,
+            checkpoints=list(checkpoints),
+        ),
+    )
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["replay", "verify-checkpoints", str(replay_path)])
+
+    assert result.exit_code == 0, result.output
+    assert "checkpoints match" in result.output
+
+
 def test_replay_verify_checkpoints_reports_mismatch(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     _write_checkpoint_sidecar(replay_path, replay, mutate_command_hash=True)
     runner = CliRunner()
 
@@ -322,7 +346,7 @@ def test_replay_verify_checkpoints_reports_mismatch(tmp_path: Path) -> None:
 
 def test_replay_verify_checkpoints_fails_on_sha_mismatch_by_default(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     _write_checkpoint_sidecar(replay_path, replay, mutate_replay_sha256=True)
     runner = CliRunner()
 
@@ -334,7 +358,7 @@ def test_replay_verify_checkpoints_fails_on_sha_mismatch_by_default(tmp_path: Pa
 
 def test_replay_verify_checkpoints_can_run_lenient_integrity(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     sidecar = _write_checkpoint_sidecar(replay_path, replay, mutate_replay_sha256=True)
     runner = CliRunner()
 
@@ -348,9 +372,9 @@ def test_replay_verify_checkpoints_can_run_lenient_integrity(tmp_path: Path) -> 
 
 def test_replay_diff_checkpoints_still_reports_success(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     sidecar_a = _write_checkpoint_sidecar(replay_path, replay)
-    sidecar_b = tmp_path / "actual.checkpoints.json.gz"
+    sidecar_b = tmp_path / "actual.crd.chk"
     sidecar_b.write_bytes(sidecar_a.read_bytes())
     runner = CliRunner()
 

@@ -82,7 +82,7 @@ The pipeline now uses one authoritative RNG stream:
 Replay checkpoint verification exposes `--trace-rng`:
 
 ```bash
-uv run crimson replay verify-checkpoints replay.crdemo.gz --trace-rng
+uv run crimson replay verify-checkpoints replay.crd --trace-rng
 ```
 
 When enabled, checkpoints include presentation draw counters (e.g. `ps_draws_total`, per-consumer marks) to help localize drift.
@@ -94,13 +94,13 @@ When enabled, checkpoints include presentation draw counters (e.g. `ps_draws_tot
 Server-oriented / machine-readable flow:
 
 ```bash
-uv run crimson replay verify replay.crdemo.gz --format json
+uv run crimson replay verify replay.crd --format json
 ```
 
 Claim validation flow (returns exit code `3` when claim mismatches):
 
 ```bash
-uv run crimson replay verify replay.crdemo.gz --submitted-score 12345
+uv run crimson replay verify replay.crd --submitted-score 12345
 ```
 
 By default (`--score-metric auto`), claim comparison is mode-aware:
@@ -122,13 +122,13 @@ This keeps replay verification focused on the same command stream that feeds bot
 Replay-to-sidecar verification path:
 
 ```bash
-uv run crimson replay verify-checkpoints replay.crdemo.gz
+uv run crimson replay verify-checkpoints replay.crd
 ```
 
 Sidecar-to-sidecar comparator path:
 
 ```bash
-uv run crimson replay diff-checkpoints expected.checkpoints.json.gz actual.checkpoints.json.gz
+uv run crimson replay diff-checkpoints expected.crd.chk actual.crd.chk
 ```
 
 It reports first divergence tick with command/state/rng context.
@@ -148,14 +148,14 @@ domains from the original executable and rewrite RNG mark/state domains.
 Original-capture sidecars now have a dedicated schema + converter:
 
 ```bash
-uv run crimson original convert-capture capture.json.gz expected.checkpoints.json.gz
+uv run crimson original convert-capture capture.json.gz expected.crd.chk
 ```
 
 `convert-capture` accepts canonical gameplay-diff capture files only (`.json` /
 `.json.gz`).
 
 The same command now also writes a replay file next to the checkpoints
-(default: `expected.crdemo.gz`, override with `--replay`).
+(default: `expected.crd`, override with `--replay`).
 This replay is reconstructed from captured input telemetry and is intended for
 inspection/debugging. It also bootstraps initial state from the first captured
 tick, but checkpoint sidecars remain the authoritative verification artifact.
