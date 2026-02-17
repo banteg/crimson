@@ -24,6 +24,7 @@ Last reviewed: **2026-02-17**
 - Replay tooling:
   - `uv run crimson replay play <replay.crdemo.gz>`
   - `uv run crimson replay verify <replay.crdemo.gz>`
+  - `uv run crimson replay verify-checkpoints <replay.crdemo.gz>`
   - `uv run crimson replay diff-checkpoints <expected> <actual>`
 - Original/capture differential tooling:
   - `uv run crimson original verify-capture <capture.json>`

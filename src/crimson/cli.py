@@ -19,6 +19,7 @@ from grim.geom import Vec2
 from grim.rand import Crand
 
 from .creatures.spawn import SpawnEnv, build_spawn_plan, spawn_id_label
+from .game_modes import GameMode
 from .paths import default_runtime_dir
 from .quests import all_quests
 from .quests.types import QuestContext, QuestDefinition, SpawnEntry
@@ -40,6 +41,8 @@ _QUEST_BUILDERS = {level: quest.builder for level, quest in _QUEST_DEFS.items()}
 _QUEST_TITLES = {level: quest.title for level, quest in _QUEST_DEFS.items()}
 
 _SEP_RE = re.compile(r"[\\/]+")
+_REPLAY_VERIFY_SCHEMA_VERSION = 1
+_REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE = 3
 _SessionMode = Literal["survival", "rush", "quests"]
 _ParsedNetcodeMode = Literal["rollback", "lockstep_legacy"]
 
@@ -112,6 +115,94 @@ def _resolve_replay_path(replay_file: Path, *, base_dir: Path) -> tuple[Path, tu
                 return under_replays, tuple(tried)
 
     return path, tuple(tried)
+
+
+def _render_checkpoint_diff_failure(diff: object) -> None:
+    diff_obj = cast("Any", diff)
+    failure = diff_obj.failure
+    assert failure is not None
+    exp = failure.expected
+    act = failure.actual
+
+    if failure.kind == "missing_checkpoint":
+        typer.echo(f"checkpoint missing at tick={int(failure.tick_index)}", err=True)
+        raise typer.Exit(code=1)
+
+    if failure.kind == "command_mismatch":
+        assert act is not None
+        typer.echo(f"checkpoint command mismatch at tick={int(failure.tick_index)}", err=True)
+        typer.echo(f"  command_hash expected={exp.command_hash} actual={act.command_hash}", err=True)
+        if int(exp.events.hit_count) >= 0:
+            typer.echo(
+                "  events "
+                f"expected=(hits={exp.events.hit_count}, pickups={exp.events.pickup_count}, sfx={exp.events.sfx_count}, head={exp.events.sfx_head}) "
+                f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
+                err=True,
+            )
+        raise typer.Exit(code=1)
+
+    assert act is not None
+    typer.echo(f"checkpoint mismatch at tick={int(failure.tick_index)}", err=True)
+    typer.echo(f"  state_hash expected={exp.state_hash} actual={act.state_hash}", err=True)
+    typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
+    typer.echo(f"  score_xp expected={exp.score_xp} actual={act.score_xp}", err=True)
+    typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)
+    typer.echo(f"  creature_count expected={exp.creature_count} actual={act.creature_count}", err=True)
+    typer.echo(f"  perk_pending expected={exp.perk_pending} actual={act.perk_pending}", err=True)
+    if failure.first_rng_mark is not None:
+        key = str(failure.first_rng_mark)
+        typer.echo(
+            f"  rng_mark[{key}] expected={exp.rng_marks.get(key)} actual={act.rng_marks.get(key)}",
+            err=True,
+        )
+    typer.echo(f"  deaths expected={len(exp.deaths)} actual={len(act.deaths)}", err=True)
+    if exp.deaths or act.deaths:
+        typer.echo(f"  first death expected={exp.deaths[:1]} actual={act.deaths[:1]}", err=True)
+    if int(exp.events.hit_count) >= 0:
+        typer.echo(
+            "  events "
+            f"expected=(hits={exp.events.hit_count}, pickups={exp.events.pickup_count}, sfx={exp.events.sfx_count}, head={exp.events.sfx_head}) "
+            f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
+            err=True,
+        )
+    if exp.perk != act.perk:
+        typer.echo(
+            "  perk snapshot differs "
+            f"(expected pending={exp.perk.pending_count} choices={exp.perk.choices}, "
+            f"actual pending={act.perk.pending_count} choices={act.perk.choices})",
+            err=True,
+        )
+    raise typer.Exit(code=1)
+
+
+def _resolve_replay_verify_metric(
+    *,
+    game_mode_id: int,
+    score_metric: Literal["auto", "score_xp", "elapsed_ms"],
+) -> Literal["score_xp", "elapsed_ms"]:
+    if str(score_metric) == "score_xp":
+        return "score_xp"
+    if str(score_metric) == "elapsed_ms":
+        return "elapsed_ms"
+    if int(game_mode_id) in (int(GameMode.RUSH), int(GameMode.QUESTS)):
+        return "elapsed_ms"
+    return "score_xp"
+
+
+def _run_result_payload(run_result: object) -> dict[str, int]:
+    result = cast("Any", run_result)
+    return {
+        "game_mode_id": int(result.game_mode_id),
+        "tick_rate": int(result.tick_rate),
+        "ticks": int(result.ticks),
+        "elapsed_ms": int(result.elapsed_ms),
+        "score_xp": int(result.score_xp),
+        "creature_kill_count": int(result.creature_kill_count),
+        "most_used_weapon_id": int(result.most_used_weapon_id),
+        "shots_fired": int(result.shots_fired),
+        "shots_hit": int(result.shots_hit),
+        "rng_state": int(result.rng_state),
+    }
 
 
 def _extract_one(paq_path: Path, assets_root: Path) -> int:
@@ -678,8 +769,160 @@ def cmd_replay_play(
     run_view(view, width=width, height=height, title=title, fps=fps)
 
 
+@replay_app.command("list")
+def cmd_replay_list(
+    base_dir: Path = typer.Option(
+        default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
+        help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
+    ),
+) -> None:
+    """List replay files under base-dir/replays."""
+    replays_dir = Path(base_dir) / "replays"
+    replay_files = sorted(
+        (path for path in replays_dir.rglob("*.crdemo.gz") if path.is_file()),
+        key=lambda path: str(path.relative_to(replays_dir)),
+    )
+    if not replay_files:
+        typer.echo(f"no replay files found under {replays_dir}")
+        return
+    for replay_path in replay_files:
+        rel = replay_path.relative_to(replays_dir)
+        typer.echo(str(rel))
+    typer.echo(f"count={len(replay_files)}")
+
+
 @replay_app.command("verify")
 def cmd_replay_verify(
+    replay_file: Path = typer.Argument(
+        ...,
+        help="replay file path (.crdemo.gz); if a filename is provided, also search base-dir/replays",
+    ),
+    max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
+    strict_events: bool = typer.Option(
+        False,
+        "--strict-events/--lenient-events",
+        help="fail on unsupported replay events/perk picks (default: lenient)",
+    ),
+    trace_rng: bool = typer.Option(
+        False,
+        "--trace-rng",
+        help="enable replay RNG trace mode during simulation",
+    ),
+    output_format: Literal["human", "json"] = typer.Option(
+        "human",
+        "--format",
+        help="output format",
+    ),
+    json_out: Path | None = typer.Option(
+        None,
+        "--json-out",
+        help="optional JSON output path for verify result payload",
+    ),
+    submitted_score: int | None = typer.Option(
+        None,
+        "--submitted-score",
+        help="optional submitted score/time to compare against simulated result",
+    ),
+    score_metric: Literal["auto", "score_xp", "elapsed_ms"] = typer.Option(
+        "auto",
+        "--score-metric",
+        help="score metric for submitted score validation",
+    ),
+    base_dir: Path = typer.Option(
+        default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
+        help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
+    ),
+) -> None:
+    """Headlessly simulate a replay and report resulting run stats."""
+    import hashlib
+
+    from .replay import ReplayCodecError, load_replay
+    from .sim.driver.replay_runner import ReplayRunnerError, run_replay
+
+    replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
+    if not replay_path.is_file():
+        message = f"replay file not found: {tried[0]}"
+        if len(tried) > 1:
+            message += f" (also tried: {tried[1]})"
+        typer.echo(message, err=True)
+        raise typer.Exit(code=1)
+
+    replay_bytes = Path(replay_path).read_bytes()
+    replay_sha256 = hashlib.sha256(replay_bytes).hexdigest()
+    try:
+        replay = load_replay(replay_bytes)
+        result = run_replay(
+            replay,
+            max_ticks=max_ticks,
+            strict_events=bool(strict_events),
+            trace_rng=bool(trace_rng),
+        )
+    except (ReplayCodecError, ReplayRunnerError) as exc:
+        typer.echo(f"replay verification failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    resolved_metric = _resolve_replay_verify_metric(
+        game_mode_id=int(result.game_mode_id),
+        score_metric=score_metric,
+    )
+    score_claim_payload: dict[str, object] | None = None
+    status = "ok"
+    claim_matches = True
+    if submitted_score is not None:
+        simulated_value = int(result.score_xp) if resolved_metric == "score_xp" else int(result.elapsed_ms)
+        claim_matches = int(submitted_score) == int(simulated_value)
+        if not claim_matches:
+            status = "score_mismatch"
+        score_claim_payload = {
+            "metric": str(resolved_metric),
+            "submitted_score": int(submitted_score),
+            "simulated_value": int(simulated_value),
+            "match": bool(claim_matches),
+        }
+
+    payload: dict[str, object] = {
+        "schema_version": int(_REPLAY_VERIFY_SCHEMA_VERSION),
+        "status": str(status),
+        "replay": str(replay_path),
+        "replay_sha256": str(replay_sha256),
+        "run_result": _run_result_payload(result),
+        "score_claim": score_claim_payload,
+    }
+
+    if json_out is not None:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+        if str(output_format) == "human":
+            typer.echo(f"json_report={json_out}")
+
+    if str(output_format) == "json":
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    else:
+        message = (
+            f"{'ok' if status == 'ok' else 'score_mismatch'}: "
+            f"ticks={result.ticks} elapsed_ms={result.elapsed_ms} score_xp={result.score_xp} "
+            f"kills={result.creature_kill_count} most_used_weapon_id={result.most_used_weapon_id} "
+            f"shots_fired={result.shots_fired} shots_hit={result.shots_hit} rng_state={result.rng_state}"
+        )
+        if score_claim_payload is not None:
+            message += (
+                f"; score_claim metric={score_claim_payload['metric']} "
+                f"submitted={score_claim_payload['submitted_score']} "
+                f"simulated={score_claim_payload['simulated_value']} "
+                f"match={score_claim_payload['match']}"
+            )
+        typer.echo(message)
+
+    if not claim_matches:
+        raise typer.Exit(code=int(_REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE))
+
+
+@replay_app.command("verify-checkpoints")
+def cmd_replay_verify_checkpoints(
     replay_file: Path = typer.Argument(
         ...,
         help="replay file path (.crdemo.gz); if a filename is provided, also search base-dir/replays",
@@ -711,7 +954,7 @@ def cmd_replay_verify(
     import hashlib
 
     from .original.diff import compare_checkpoints
-    from .replay import load_replay
+    from .replay import ReplayCodecError, load_replay
     from .replay.checkpoints import default_checkpoints_path, load_checkpoints_file
     from .sim.driver.replay_runner import ReplayRunnerError, run_replay
 
@@ -725,7 +968,11 @@ def cmd_replay_verify(
 
     replay_bytes = Path(replay_path).read_bytes()
     replay_sha256 = hashlib.sha256(replay_bytes).hexdigest()
-    replay = load_replay(replay_bytes)
+    try:
+        replay = load_replay(replay_bytes)
+    except ReplayCodecError as exc:
+        typer.echo(f"replay verification failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
 
     if checkpoints_file is None:
         checkpoints_file = default_checkpoints_path(replay_path)
@@ -759,60 +1006,7 @@ def cmd_replay_verify(
 
     diff = compare_checkpoints(expected.checkpoints, actual)
     if not diff.ok:
-        failure = diff.failure
-        assert failure is not None
-        exp = failure.expected
-        act = failure.actual
-
-        if failure.kind == "missing_checkpoint":
-            typer.echo(f"checkpoint missing at tick={int(failure.tick_index)}", err=True)
-            raise typer.Exit(code=1)
-
-        if failure.kind == "command_mismatch":
-            assert act is not None
-            typer.echo(f"checkpoint command mismatch at tick={int(failure.tick_index)}", err=True)
-            typer.echo(f"  command_hash expected={exp.command_hash} actual={act.command_hash}", err=True)
-            if int(exp.events.hit_count) >= 0:
-                typer.echo(
-                    "  events "
-                    f"expected=(hits={exp.events.hit_count}, pickups={exp.events.pickup_count}, sfx={exp.events.sfx_count}, head={exp.events.sfx_head}) "
-                    f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
-                    err=True,
-                )
-            raise typer.Exit(code=1)
-
-        assert act is not None
-        typer.echo(f"checkpoint mismatch at tick={int(failure.tick_index)}", err=True)
-        typer.echo(f"  state_hash expected={exp.state_hash} actual={act.state_hash}", err=True)
-        typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
-        typer.echo(f"  score_xp expected={exp.score_xp} actual={act.score_xp}", err=True)
-        typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)
-        typer.echo(f"  creature_count expected={exp.creature_count} actual={act.creature_count}", err=True)
-        typer.echo(f"  perk_pending expected={exp.perk_pending} actual={act.perk_pending}", err=True)
-        if failure.first_rng_mark is not None:
-            key = str(failure.first_rng_mark)
-            typer.echo(
-                f"  rng_mark[{key}] expected={exp.rng_marks.get(key)} actual={act.rng_marks.get(key)}",
-                err=True,
-            )
-        typer.echo(f"  deaths expected={len(exp.deaths)} actual={len(act.deaths)}", err=True)
-        if exp.deaths or act.deaths:
-            typer.echo(f"  first death expected={exp.deaths[:1]} actual={act.deaths[:1]}", err=True)
-        if int(exp.events.hit_count) >= 0:
-            typer.echo(
-                "  events "
-                f"expected=(hits={exp.events.hit_count}, pickups={exp.events.pickup_count}, sfx={exp.events.sfx_count}, head={exp.events.sfx_head}) "
-                f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
-                err=True,
-            )
-        if exp.perk != act.perk:
-            typer.echo(
-                "  perk snapshot differs "
-                f"(expected pending={exp.perk.pending_count} choices={exp.perk.choices}, "
-                f"actual pending={act.perk.pending_count} choices={act.perk.choices})",
-                err=True,
-            )
-        raise typer.Exit(code=1)
+        _render_checkpoint_diff_failure(diff)
 
     message = (
         f"ok: {len(expected.checkpoints)} checkpoints match; ticks={result.ticks} "
@@ -836,60 +1030,7 @@ def cmd_replay_diff_checkpoints(
     actual = load_checkpoints_file(Path(actual_file))
     diff = compare_checkpoints(expected.checkpoints, actual.checkpoints)
     if not diff.ok:
-        failure = diff.failure
-        assert failure is not None
-        exp = failure.expected
-        act = failure.actual
-
-        if failure.kind == "missing_checkpoint":
-            typer.echo(f"checkpoint missing at tick={int(failure.tick_index)}", err=True)
-            raise typer.Exit(code=1)
-
-        if failure.kind == "command_mismatch":
-            assert act is not None
-            typer.echo(f"checkpoint command mismatch at tick={int(failure.tick_index)}", err=True)
-            typer.echo(f"  command_hash expected={exp.command_hash} actual={act.command_hash}", err=True)
-            if int(exp.events.hit_count) >= 0:
-                typer.echo(
-                    "  events "
-                    f"expected=(hits={exp.events.hit_count}, pickups={exp.events.pickup_count}, sfx={exp.events.sfx_count}, head={exp.events.sfx_head}) "
-                    f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
-                    err=True,
-                )
-            raise typer.Exit(code=1)
-
-        assert act is not None
-        typer.echo(f"checkpoint mismatch at tick={int(failure.tick_index)}", err=True)
-        typer.echo(f"  state_hash expected={exp.state_hash} actual={act.state_hash}", err=True)
-        typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
-        typer.echo(f"  score_xp expected={exp.score_xp} actual={act.score_xp}", err=True)
-        typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)
-        typer.echo(f"  creature_count expected={exp.creature_count} actual={act.creature_count}", err=True)
-        typer.echo(f"  perk_pending expected={exp.perk_pending} actual={act.perk_pending}", err=True)
-        if failure.first_rng_mark is not None:
-            key = str(failure.first_rng_mark)
-            typer.echo(
-                f"  rng_mark[{key}] expected={exp.rng_marks.get(key)} actual={act.rng_marks.get(key)}",
-                err=True,
-            )
-        typer.echo(f"  deaths expected={len(exp.deaths)} actual={len(act.deaths)}", err=True)
-        if exp.deaths or act.deaths:
-            typer.echo(f"  first death expected={exp.deaths[:1]} actual={act.deaths[:1]}", err=True)
-        if int(exp.events.hit_count) >= 0:
-            typer.echo(
-                "  events "
-                f"expected=(hits={exp.events.hit_count}, pickups={exp.events.pickup_count}, sfx={exp.events.sfx_count}, head={exp.events.sfx_head}) "
-                f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
-                err=True,
-            )
-        if exp.perk != act.perk:
-            typer.echo(
-                "  perk snapshot differs "
-                f"(expected pending={exp.perk.pending_count} choices={exp.perk.choices}, "
-                f"actual pending={act.perk.pending_count} choices={act.perk.choices})",
-                err=True,
-            )
-        raise typer.Exit(code=1)
+        _render_checkpoint_diff_failure(diff)
 
     message = f"ok: {len(expected.checkpoints)} checkpoints match"
     if diff.first_rng_only_tick is not None:

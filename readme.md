@@ -63,8 +63,10 @@ crimson view <name>               debug views / sandboxes
 crimson quests <level>            print quest spawn script
 crimson config                    inspect crimson.cfg
 crimson extract <src> <dst>       extract PAQ archives
+crimson replay list               list replay files under runtime replays dir
 crimson replay play <file>        play back a recorded demo
-crimson replay verify <file>      headlessly verify score from a replay
+crimson replay verify <file>      headlessly simulate replay stats / score claims
+crimson replay verify-checkpoints <file>  compare replay output to checkpoint sidecar
 crimson oracle [--seed N]         headless simulation for differential testing
 ```
 

@@ -75,19 +75,40 @@ The pipeline now uses one authoritative RNG stream:
 
 - simulation + presentation RNG: `state.rng`
 
-`WorldState.step` and `apply_world_presentation_step` consume this same stream in a stable per-tick order across live/headless/playback paths. Replay verification can still trace presentation-phase draw counts per consumer label.
+`WorldState.step` and `apply_world_presentation_step` consume this same stream in a stable per-tick order across live/headless/playback paths.
 
 ### RNG trace mode
 
-Replay verification exposes `--trace-rng`:
+Replay checkpoint verification exposes `--trace-rng`:
 
 ```bash
-uv run crimson replay verify replay.crdemo.gz --trace-rng
+uv run crimson replay verify-checkpoints replay.crdemo.gz --trace-rng
 ```
 
 When enabled, checkpoints include presentation draw counters (e.g. `ps_draws_total`, per-consumer marks) to help localize drift.
 
-## Replay checkpoints and verification
+## Replay verify (headless score validation)
+
+`replay verify` is simulation-first: it runs the replay headlessly and emits resulting run stats (ticks, elapsed time, score, kills, weapon/shots stats, RNG state).
+
+Server-oriented / machine-readable flow:
+
+```bash
+uv run crimson replay verify replay.crdemo.gz --format json
+```
+
+Claim validation flow (returns exit code `3` when claim mismatches):
+
+```bash
+uv run crimson replay verify replay.crdemo.gz --submitted-score 12345
+```
+
+By default (`--score-metric auto`), claim comparison is mode-aware:
+
+- Survival -> `score_xp`
+- Rush / Quests -> `elapsed_ms`
+
+## Replay checkpoints comparison
 
 Checkpoints now store `command_hash` per sampled tick.
 
@@ -98,7 +119,13 @@ Verification order is:
 
 This keeps replay verification focused on the same command stream that feeds both presentation and headless validation.
 
-There is also a sidecar-to-sidecar comparator path:
+Replay-to-sidecar verification path:
+
+```bash
+uv run crimson replay verify-checkpoints replay.crdemo.gz
+```
+
+Sidecar-to-sidecar comparator path:
 
 ```bash
 uv run crimson replay diff-checkpoints expected.checkpoints.json.gz actual.checkpoints.json.gz
