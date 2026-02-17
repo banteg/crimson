@@ -44,6 +44,8 @@ def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     assert state.weapon_shots_fired[0][17] == player.clip_size
 
     shot_angle = math.pi / 2.0
-    step = float(player.clip_size) * (math.pi / 3.0)
-    expected0 = (shot_angle - math.pi) - step * float(player.clip_size) * 0.5
+    spread = math.pi * (2.0 / 3.0)
+    step = spread / float(player.clip_size - 1)
+    expected0 = shot_angle - spread * 0.5
     assert math.isclose(spawned[0].angle, expected0, abs_tol=1e-9)
+    assert math.isclose(spawned[1].angle - spawned[0].angle, step, abs_tol=1e-9)
