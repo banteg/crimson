@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
 import math
 import os
 import random
+import time
+from dataclasses import dataclass, replace
 from typing import Any
 
 import pyray as rl
@@ -48,22 +49,22 @@ SHADOW_PREVIEW_BORDER = rl.Color(90, 90, 110, 240)
 SHADOW_PREVIEW_CANVAS = rl.Color(176, 176, 176, 255)
 SHADOW_PREVIEW_TEXT = rl.Color(215, 215, 215, 255)
 
-SHADOW_RT_SCALE = 0.25
+SHADOW_RT_SCALE = 0.30
 MAX_LIGHTS = 6
 MAX_OCCLUDERS = 20
 MAX_STEPS = 56
 
-DEFAULT_LIGHT_SIZE_W = 0.30
-DEFAULT_SHADOW_STRENGTH = 1.02
-DEFAULT_MIN_T = 3.0
-DEFAULT_SHADOW_RANGE_SCALE = 1.55
-DEFAULT_AMBIENT_DARKNESS = 0.78
-DEFAULT_DIRECTIONAL_FOCUS = 1.15
-DEFAULT_DIRECTIONAL_STRETCH = 1.25
+DEFAULT_LIGHT_SIZE_W = 0.33
+DEFAULT_SHADOW_STRENGTH = 1.01
+DEFAULT_MIN_T = 2.6
+DEFAULT_SHADOW_RANGE_SCALE = 1.52
+DEFAULT_AMBIENT_DARKNESS = 0.76
+DEFAULT_DIRECTIONAL_FOCUS = 1.12
+DEFAULT_DIRECTIONAL_STRETCH = 1.22
 # Keep temporal accumulation off by default; some backends/drivers produce stale
 # blends with the secondary sampler path and hide shadows entirely.
 DEFAULT_TEMPORAL_RESPONSE = 1.00
-DEFAULT_JITTER_AMOUNT = 1.0
+DEFAULT_JITTER_AMOUNT = 0.78
 
 RT_SCALE_MIN = 0.15
 RT_SCALE_MAX = 0.75
@@ -90,6 +91,11 @@ AUTODIAG_LOG_INTERVAL = 15
 DUMP_ALL_MODES_ENV = "CRIMSON_LIGHTING_DEBUG_DUMP_ALL_MODES"
 DUMP_ALL_SETTLE_FRAMES = 12
 DUMP_ALL_EMIT_INTERVAL = 6
+AUTO_TUNE_ENV = "CRIMSON_LIGHTING_DEBUG_AUTO_TUNE"
+AUTO_TUNE_SAMPLE_FRAMES_DEFAULT = 96
+AUTO_TUNE_WARMUP_FRAMES = 28
+AUTO_TUNE_METRIC_GRID = 84
+AUTO_TUNE_TARGET_SHADOW_MS = 2.8
 
 SHADOW_DEBUG_MODE_NAMES: tuple[str, ...] = (
     "off",
@@ -208,6 +214,70 @@ class _TuneParam:
     maximum: float
     step: float
     coarse_step: float
+
+
+@dataclass(frozen=True, slots=True)
+class _AutoTunePreset:
+    name: str
+    ambient_darkness: float
+    shadow_strength: float
+    light_size_w: float
+    min_t: float
+    range_scale: float
+    directional_focus: float
+    directional_stretch: float
+    jitter_amount: float
+    temporal_response: float
+    rt_scale: float
+
+    def as_tune_values(self) -> dict[str, float]:
+        return {
+            "ambient_darkness": float(self.ambient_darkness),
+            "shadow_strength": float(self.shadow_strength),
+            "light_size_w": float(self.light_size_w),
+            "min_t": float(self.min_t),
+            "range_scale": float(self.range_scale),
+            "directional_focus": float(self.directional_focus),
+            "directional_stretch": float(self.directional_stretch),
+            "jitter_amount": float(self.jitter_amount),
+            "temporal_response": float(self.temporal_response),
+            "rt_scale": float(self.rt_scale),
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class _ShadowFrameMetrics:
+    mean_alpha: float
+    std_alpha: float
+    contrast: float
+    coverage: float
+    banding: float
+
+
+@dataclass(slots=True)
+class _AutoTuneAccumulator:
+    sample_count: int = 0
+    flicker_count: int = 0
+    shadow_ms_sum: float = 0.0
+    mean_sum: float = 0.0
+    std_sum: float = 0.0
+    contrast_sum: float = 0.0
+    coverage_sum: float = 0.0
+    banding_sum: float = 0.0
+    flicker_sum: float = 0.0
+
+
+@dataclass(frozen=True, slots=True)
+class _AutoTuneResult:
+    preset: _AutoTunePreset
+    score: float
+    shadow_ms: float
+    mean_alpha: float
+    std_alpha: float
+    contrast: float
+    coverage: float
+    banding: float
+    flicker: float
 
 
 EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
@@ -346,7 +416,7 @@ _ION_PROJECTILE_TYPES: frozenset[int] = frozenset(
     {
         int(ProjectileTypeId.ION_RIFLE),
         int(ProjectileTypeId.ION_MINIGUN),
-    }
+    },
 )
 
 _OMNI_PROJECTILE_TYPES: frozenset[int] = frozenset(
@@ -355,7 +425,7 @@ _OMNI_PROJECTILE_TYPES: frozenset[int] = frozenset(
         int(ProjectileTypeId.ION_MINIGUN),
         int(ProjectileTypeId.PLASMA_RIFLE),
         int(ProjectileTypeId.PLASMA_CANNON),
-    }
+    },
 )
 
 # Ion beam visual pass draws only the last 256 units of streak; mirror that for tail lighting.
@@ -391,6 +461,95 @@ _TUNE_DEFAULTS: dict[str, float] = {
     "temporal_response": DEFAULT_TEMPORAL_RESPONSE,
     "rt_scale": SHADOW_RT_SCALE,
 }
+
+_AUTO_TUNE_PRESETS: tuple[_AutoTunePreset, ...] = (
+    _AutoTunePreset(
+        name="baseline",
+        ambient_darkness=0.78,
+        shadow_strength=1.02,
+        light_size_w=0.30,
+        min_t=3.0,
+        range_scale=1.55,
+        directional_focus=1.15,
+        directional_stretch=1.25,
+        jitter_amount=1.00,
+        temporal_response=1.00,
+        rt_scale=0.25,
+    ),
+    _AutoTunePreset(
+        name="balanced_smooth",
+        ambient_darkness=0.75,
+        shadow_strength=1.00,
+        light_size_w=0.34,
+        min_t=2.5,
+        range_scale=1.58,
+        directional_focus=1.10,
+        directional_stretch=1.22,
+        jitter_amount=0.65,
+        temporal_response=1.00,
+        rt_scale=0.30,
+    ),
+    _AutoTunePreset(
+        name="quality_soft",
+        ambient_darkness=0.72,
+        shadow_strength=0.98,
+        light_size_w=0.36,
+        min_t=2.2,
+        range_scale=1.62,
+        directional_focus=1.05,
+        directional_stretch=1.20,
+        jitter_amount=0.60,
+        temporal_response=1.00,
+        rt_scale=0.33,
+    ),
+    _AutoTunePreset(
+        name="perf_balanced",
+        ambient_darkness=0.76,
+        shadow_strength=1.01,
+        light_size_w=0.33,
+        min_t=2.6,
+        range_scale=1.52,
+        directional_focus=1.12,
+        directional_stretch=1.22,
+        jitter_amount=0.78,
+        temporal_response=1.00,
+        rt_scale=0.30,
+    ),
+    _AutoTunePreset(
+        name="long_penumbra",
+        ambient_darkness=0.74,
+        shadow_strength=0.98,
+        light_size_w=0.39,
+        min_t=2.0,
+        range_scale=1.68,
+        directional_focus=1.00,
+        directional_stretch=1.16,
+        jitter_amount=0.55,
+        temporal_response=1.00,
+        rt_scale=0.36,
+    ),
+    _AutoTunePreset(
+        name="perf_safe",
+        ambient_darkness=0.77,
+        shadow_strength=1.00,
+        light_size_w=0.32,
+        min_t=2.9,
+        range_scale=1.50,
+        directional_focus=1.10,
+        directional_stretch=1.20,
+        jitter_amount=0.82,
+        temporal_response=1.00,
+        rt_scale=0.28,
+    ),
+)
+
+_AUTO_TUNE_STATIC_EMITTERS: tuple[tuple[float, float, float, float, float, float, float], ...] = (
+    # (x, y, angle, radius, strength, focus, stretch)
+    (386.0, 286.0, 0.45, 240.0, 1.00, 0.0, 1.0),
+    (596.0, 322.0, 2.70, 215.0, 0.96, 1.20, 1.40),
+    (522.0, 552.0, -1.25, 286.0, 1.04, 0.28, 1.10),
+    (730.0, 486.0, -2.55, 206.0, 0.90, 1.45, 1.70),
+)
 
 _SHADOW_VS_330 = """
 #version 330
@@ -626,6 +785,111 @@ def _screen_distance_sq(a: Vec2, b: Vec2) -> float:
     return dx * dx + dy * dy
 
 
+def _shadow_frame_metrics(alpha_values: list[int], sample_w: int, sample_h: int) -> _ShadowFrameMetrics | None:
+    count = int(len(alpha_values))
+    if count <= 0:
+        return None
+    if int(sample_w) <= 0 or int(sample_h) <= 0:
+        return None
+    if int(sample_w) * int(sample_h) != count:
+        return None
+
+    total = 0.0
+    min_alpha = 255
+    max_alpha = 0
+    covered = 0
+    for value in alpha_values:
+        alpha = max(0, min(255, int(value)))
+        total += float(alpha)
+        min_alpha = min(min_alpha, alpha)
+        max_alpha = max(max_alpha, alpha)
+        if 6 <= alpha <= 245:
+            covered += 1
+
+    mean = total / float(count)
+    variance = 0.0
+    for value in alpha_values:
+        diff = float(int(value)) - mean
+        variance += diff * diff
+    variance /= float(count)
+    std = math.sqrt(max(0.0, variance))
+
+    transitions = 0
+    flat = 0
+    hard = 0
+    width = int(sample_w)
+    height = int(sample_h)
+    for y in range(height):
+        row = y * width
+        for x in range(width):
+            idx = row + x
+            if x + 1 < width:
+                diff = abs(int(alpha_values[idx]) - int(alpha_values[idx + 1]))
+                transitions += 1
+                if diff <= 2:
+                    flat += 1
+                if diff >= 16:
+                    hard += 1
+            if y + 1 < height:
+                diff = abs(int(alpha_values[idx]) - int(alpha_values[idx + width]))
+                transitions += 1
+                if diff <= 2:
+                    flat += 1
+                if diff >= 16:
+                    hard += 1
+
+    transition_denom = float(max(1, transitions))
+    flat_ratio = float(flat) / transition_denom
+    hard_ratio = float(hard) / transition_denom
+    banding = _clampf(flat_ratio * hard_ratio * 4.0, 0.0, 1.0)
+
+    return _ShadowFrameMetrics(
+        mean_alpha=float(mean),
+        std_alpha=float(std),
+        contrast=_clampf(float(max_alpha - min_alpha) / 255.0, 0.0, 1.0),
+        coverage=_clampf(float(covered) / float(count), 0.0, 1.0),
+        banding=float(banding),
+    )
+
+
+def _shadow_quality_score(
+    metrics: _ShadowFrameMetrics,
+    *,
+    shadow_ms: float,
+    flicker: float,
+    target_shadow_ms: float = AUTO_TUNE_TARGET_SHADOW_MS,
+) -> float:
+    mean_normalized = _clampf(float(metrics.mean_alpha) / 255.0, 0.0, 1.0)
+    mean_target = 0.58
+    mean_score = 1.0 - _clampf(abs(mean_normalized - mean_target) / 0.45, 0.0, 1.0)
+    spread_score = _clampf((float(metrics.std_alpha) / 255.0) / 0.32, 0.0, 1.0)
+    contrast_score = _clampf(float(metrics.contrast) / 0.70, 0.0, 1.0)
+    coverage_score = 1.0 - _clampf(abs(float(metrics.coverage) - 0.58) / 0.58, 0.0, 1.0)
+    banding_score = 1.0 - _clampf(float(metrics.banding) / 0.12, 0.0, 1.0)
+    flicker_score = 1.0 - _clampf((float(flicker) / 255.0) / 0.18, 0.0, 1.0)
+    perf_score = _clampf(float(target_shadow_ms) / max(1e-3, float(shadow_ms)), 0.0, 1.0)
+
+    score = (
+        0.05 * mean_score
+        + 0.15 * spread_score
+        + 0.08 * contrast_score
+        + 0.05 * coverage_score
+        + 0.40 * banding_score
+        + 0.07 * flicker_score
+        + 0.20 * perf_score
+    )
+    return _clampf(float(score), 0.0, 1.0)
+
+
+def _auto_tune_selection_score(result: _AutoTuneResult) -> float:
+    score = float(result.score)
+    # Prefer smoother penumbras over raw contrast/brightness if quality scores are close.
+    score += (0.15 - float(result.banding)) * 0.9
+    if float(result.contrast) < 0.50:
+        score -= (0.50 - float(result.contrast)) * 0.7
+    return float(score)
+
+
 def _profile_light_defaults(profile: EmissiveProfile) -> tuple[float, float, float, float]:
     if profile.primary_type_id is not None:
         type_id = int(profile.primary_type_id)
@@ -764,7 +1028,7 @@ def _projectile_lights(
                 pos=Vec2(float(sample.x), float(sample.y)),
                 radius=sample_radius,
                 strength=sample_strength,
-            )
+            ),
         )
     return tuple(lights)
 
@@ -983,6 +1247,7 @@ class LightingDebugView:
         self._last_shadow_rt_resolution = Vec2(1.0, 1.0)
         self._shadow_output_rt_for_preview: rl.RenderTexture | None = None
         self._shadow_frame_index = 0
+        self._last_shadow_draw_ms = 0.0
 
         self._light_size_w = float(DEFAULT_LIGHT_SIZE_W)
         self._shadow_strength = float(DEFAULT_SHADOW_STRENGTH)
@@ -1016,6 +1281,14 @@ class LightingDebugView:
         self._dump_mode_emitter_timer = 0
         self._dump_modes_started = False
 
+        self._auto_tune_enabled, self._auto_tune_sample_frames = self._auto_tune_config_from_env()
+        self._auto_tune_started = False
+        self._auto_tune_preset_index = 0
+        self._auto_tune_preset_frame = 0
+        self._auto_tune_accum = _AutoTuneAccumulator()
+        self._auto_tune_prev_samples: list[int] | None = None
+        self._auto_tune_results: list[_AutoTuneResult] = []
+
         self.close_requested = False
         self._paused = False
         self._screenshot_requested = False
@@ -1035,6 +1308,22 @@ class LightingDebugView:
         except ValueError:
             frames = AUTODIAG_FRAMES_DEFAULT
         return True, max(30, frames)
+
+    @staticmethod
+    def _auto_tune_config_from_env() -> tuple[bool, int]:
+        raw = os.getenv(AUTO_TUNE_ENV)
+        if raw is None or raw.strip() == "":
+            return False, 0
+        value = raw.strip().lower()
+        if value in {"0", "false", "off", "no"}:
+            return False, 0
+        if value in {"1", "true", "on", "yes"}:
+            return True, int(AUTO_TUNE_SAMPLE_FRAMES_DEFAULT)
+        try:
+            frames = int(value)
+        except ValueError:
+            frames = int(AUTO_TUNE_SAMPLE_FRAMES_DEFAULT)
+        return True, max(12, frames)
 
     @staticmethod
     def _bool_env(name: str) -> bool:
@@ -1111,6 +1400,9 @@ class LightingDebugView:
         return max(1, frames_left // modes_left)
 
     def _run_autodiag(self) -> None:
+        if self._auto_tune_enabled:
+            self._run_auto_tune()
+            return
         if self._dump_all_modes_enabled:
             self._run_dump_all_modes()
             return
@@ -1129,7 +1421,7 @@ class LightingDebugView:
             self._spawn_preset_ring()
             print(
                 "[lighting-debug] autodiag start "
-                f"frames={self._autodiag_total_frames} seg={AUTODIAG_SEGMENT_FRAMES}"
+                f"frames={self._autodiag_total_frames} seg={AUTODIAG_SEGMENT_FRAMES}",
             )
 
         segment = max(0, self._autodiag_frame // AUTODIAG_SEGMENT_FRAMES)
@@ -1145,7 +1437,7 @@ class LightingDebugView:
                 "[lighting-debug] autodiag segment "
                 f"{segment} frame={self._autodiag_frame} "
                 f"profile={self._selected_profile().name} "
-                f"mode={self._shadow_debug_mode}({_shadow_debug_mode_name(self._shadow_debug_mode)})"
+                f"mode={self._shadow_debug_mode}({_shadow_debug_mode_name(self._shadow_debug_mode)})",
             )
 
         if self._autodiag_frame >= self._autodiag_next_emit_frame:
@@ -1188,7 +1480,7 @@ class LightingDebugView:
             print(
                 "[lighting-debug] dump-all start "
                 f"modes={','.join(str(mode) for mode in self._dump_mode_sequence)} "
-                f"total_frames={self._dump_total_frames}"
+                f"total_frames={self._dump_total_frames}",
             )
 
         self._dump_mode_emitter_timer += 1
@@ -1216,32 +1508,234 @@ class LightingDebugView:
             return
         self._dump_mode_target = self._next_dump_mode_target_frames()
 
-    def _shadow_rt_alpha_stats(self) -> tuple[int, float, int] | None:
-        rt = self._shadow_rt
-        if rt is None or not _render_texture_valid(rt):
+    def _apply_auto_tune_preset(self, preset: _AutoTunePreset) -> None:
+        for key, value in preset.as_tune_values().items():
+            self._set_tune_value(key, value, invalidate_history=key != "rt_scale")
+            if key == "rt_scale":
+                self._shadow_rt_size = (0, 0)
+        self._invalidate_shadow_history()
+
+    def _seed_auto_tune_scene(self) -> None:
+        self._static_emitters = []
+        for x, y, angle, radius, strength, focus, stretch in _AUTO_TUNE_STATIC_EMITTERS:
+            self._static_emitters.append(
+                StaticEmitter(
+                    pos=Vec2(float(x), float(y)),
+                    angle=float(angle),
+                    radius=_clampf(float(radius), STATIC_LIGHT_RADIUS_MIN, STATIC_LIGHT_RADIUS_MAX),
+                    strength=_clampf(float(strength), STATIC_LIGHT_STRENGTH_MIN, STATIC_LIGHT_STRENGTH_MAX),
+                    focus=_clampf(float(focus), STATIC_LIGHT_FOCUS_MIN, STATIC_LIGHT_FOCUS_MAX),
+                    stretch=_clampf(float(stretch), STATIC_LIGHT_STRETCH_MIN, STATIC_LIGHT_STRETCH_MAX),
+                ),
+            )
+        self._static_selected_emitter = 0 if self._static_emitters else -1
+        self._static_drag = None
+        self._invalidate_shadow_history()
+
+    def _start_auto_tune(self) -> None:
+        self._auto_tune_started = True
+        self._auto_tune_results = []
+        self._auto_tune_preset_index = 0
+        self._auto_tune_preset_frame = 0
+        self._auto_tune_accum = _AutoTuneAccumulator()
+        self._auto_tune_prev_samples = None
+
+        self._shadow_enabled = True
+        self._show_debug_overlays = False
+        self._show_help = False
+        self._show_tuning_panel = False
+        self._paused = False
+        self._auto_emit_enabled = False
+        self._set_shadow_debug_mode(0)
+        if not self._static_scene_enabled:
+            self._set_static_scene_enabled(True)
+        self._seed_auto_tune_scene()
+
+        preset = _AUTO_TUNE_PRESETS[0]
+        self._apply_auto_tune_preset(preset)
+        print(
+            "[lighting-debug] autotune start "
+            f"presets={len(_AUTO_TUNE_PRESETS)} "
+            f"warmup={AUTO_TUNE_WARMUP_FRAMES} sample={self._auto_tune_sample_frames}",
+        )
+        print(f"[lighting-debug] autotune preset=1/{len(_AUTO_TUNE_PRESETS)} name={preset.name}")
+
+    def _run_auto_tune(self) -> None:
+        if not self._auto_tune_enabled:
+            return
+        if not _AUTO_TUNE_PRESETS:
+            self._auto_tune_enabled = False
+            return
+        if not self._auto_tune_started:
+            self._start_auto_tune()
+
+    def _shadow_rt_alpha_grid(
+        self,
+        *,
+        rt: rl.RenderTexture,
+        max_side: int = AUTO_TUNE_METRIC_GRID,
+    ) -> tuple[list[int], int, int] | None:
+        if not _render_texture_valid(rt):
             return None
         image = rl.load_image_from_texture(rt.texture)
         try:
             width = max(1, int(image.width))
             height = max(1, int(image.height))
-            step_x = max(1, width // 64)
-            step_y = max(1, height // 64)
-            count = 0
-            total = 0.0
-            min_alpha = 255
-            max_alpha = 0
-            for y in range(0, height, step_y):
-                for x in range(0, width, step_x):
-                    alpha = int(rl.get_image_color(image, x, y).a)
-                    min_alpha = min(min_alpha, alpha)
-                    max_alpha = max(max_alpha, alpha)
-                    total += float(alpha)
-                    count += 1
-            if count <= 0:
+            step_x = max(1, width // max(1, int(max_side)))
+            step_y = max(1, height // max(1, int(max_side)))
+            xs = list(range(0, width, step_x))
+            ys = list(range(0, height, step_y))
+            if not xs or not ys:
                 return None
-            return min_alpha, total / float(count), max_alpha
+            sample_w = len(xs)
+            sample_h = len(ys)
+            values: list[int] = []
+            for y in ys:
+                for x in xs:
+                    values.append(int(rl.get_image_color(image, x, y).a))
+            return values, sample_w, sample_h
         finally:
             rl.unload_image(image)
+
+    def _auto_tune_capture_frame(self, output_rt: rl.RenderTexture | None) -> None:
+        if not self._auto_tune_enabled or not self._auto_tune_started:
+            return
+        if self._auto_tune_preset_index >= len(_AUTO_TUNE_PRESETS):
+            return
+
+        self._auto_tune_preset_frame += 1
+        if self._auto_tune_preset_frame <= int(AUTO_TUNE_WARMUP_FRAMES):
+            return
+        if output_rt is None:
+            return
+
+        sampled = self._shadow_rt_alpha_grid(rt=output_rt)
+        if sampled is None:
+            return
+        alpha_values, sample_w, sample_h = sampled
+        metrics = _shadow_frame_metrics(alpha_values, sample_w, sample_h)
+        if metrics is None:
+            return
+
+        self._auto_tune_accum.sample_count += 1
+        self._auto_tune_accum.shadow_ms_sum += float(self._last_shadow_draw_ms)
+        self._auto_tune_accum.mean_sum += float(metrics.mean_alpha)
+        self._auto_tune_accum.std_sum += float(metrics.std_alpha)
+        self._auto_tune_accum.contrast_sum += float(metrics.contrast)
+        self._auto_tune_accum.coverage_sum += float(metrics.coverage)
+        self._auto_tune_accum.banding_sum += float(metrics.banding)
+
+        if self._auto_tune_prev_samples is not None and len(self._auto_tune_prev_samples) == len(alpha_values):
+            diff_total = 0.0
+            for prev, curr in zip(self._auto_tune_prev_samples, alpha_values, strict=False):
+                diff_total += abs(float(curr) - float(prev))
+            self._auto_tune_accum.flicker_sum += diff_total / float(len(alpha_values))
+            self._auto_tune_accum.flicker_count += 1
+        self._auto_tune_prev_samples = list(alpha_values)
+
+        if self._auto_tune_accum.sample_count < int(self._auto_tune_sample_frames):
+            return
+        self._auto_tune_finalize_preset()
+
+    def _auto_tune_finalize_preset(self) -> None:
+        if self._auto_tune_preset_index >= len(_AUTO_TUNE_PRESETS):
+            return
+        preset = _AUTO_TUNE_PRESETS[self._auto_tune_preset_index]
+        accum = self._auto_tune_accum
+        sample_count = max(1, int(accum.sample_count))
+        flicker_count = max(1, int(accum.flicker_count))
+        metrics = _ShadowFrameMetrics(
+            mean_alpha=float(accum.mean_sum) / float(sample_count),
+            std_alpha=float(accum.std_sum) / float(sample_count),
+            contrast=float(accum.contrast_sum) / float(sample_count),
+            coverage=float(accum.coverage_sum) / float(sample_count),
+            banding=float(accum.banding_sum) / float(sample_count),
+        )
+        avg_shadow_ms = float(accum.shadow_ms_sum) / float(sample_count)
+        avg_flicker = float(accum.flicker_sum) / float(flicker_count)
+        score = _shadow_quality_score(metrics, shadow_ms=avg_shadow_ms, flicker=avg_flicker)
+        result = _AutoTuneResult(
+            preset=preset,
+            score=float(score),
+            shadow_ms=float(avg_shadow_ms),
+            mean_alpha=float(metrics.mean_alpha),
+            std_alpha=float(metrics.std_alpha),
+            contrast=float(metrics.contrast),
+            coverage=float(metrics.coverage),
+            banding=float(metrics.banding),
+            flicker=float(avg_flicker),
+        )
+        self._auto_tune_results.append(result)
+
+        print(
+            "[lighting-debug] autotune result "
+            f"name={preset.name} score={result.score:.3f} "
+            f"shadow_ms={result.shadow_ms:.3f} mean={result.mean_alpha:.1f} "
+            f"std={result.std_alpha:.1f} contrast={result.contrast:.3f} "
+            f"coverage={result.coverage:.3f} banding={result.banding:.3f} flicker={result.flicker:.2f}",
+        )
+        self._screenshot_requested = True
+
+        self._auto_tune_preset_index += 1
+        if self._auto_tune_preset_index >= len(_AUTO_TUNE_PRESETS):
+            self._auto_tune_enabled = False
+            self._auto_tune_started = False
+            if not self._auto_tune_results:
+                self.close_requested = True
+                return
+            ranked = sorted(self._auto_tune_results, key=_auto_tune_selection_score, reverse=True)
+            for rank, item in enumerate(ranked, start=1):
+                print(
+                    "[lighting-debug] autotune rank "
+                    f"{rank}/{len(ranked)} name={item.preset.name} score={item.score:.3f} "
+                    f"select={_auto_tune_selection_score(item):.3f} "
+                    f"shadow_ms={item.shadow_ms:.3f} banding={item.banding:.3f}",
+                )
+            best = ranked[0]
+            self._apply_auto_tune_preset(best.preset)
+            print(
+                "[lighting-debug] autotune best "
+                f"name={best.preset.name} score={best.score:.3f} "
+                "values="
+                f"ambient={best.preset.ambient_darkness:.3f} "
+                f"reveal={best.preset.shadow_strength:.3f} "
+                f"light_w={best.preset.light_size_w:.3f} "
+                f"min_t={best.preset.min_t:.3f} "
+                f"range={best.preset.range_scale:.3f} "
+                f"dir_focus={best.preset.directional_focus:.3f} "
+                f"dir_stretch={best.preset.directional_stretch:.3f} "
+                f"jitter={best.preset.jitter_amount:.3f} "
+                f"temporal={best.preset.temporal_response:.3f} "
+                f"rt_scale={best.preset.rt_scale:.3f}",
+            )
+            self._screenshot_requested = True
+            self.close_requested = True
+            return
+
+        self._auto_tune_preset_frame = 0
+        self._auto_tune_accum = _AutoTuneAccumulator()
+        self._auto_tune_prev_samples = None
+        next_preset = _AUTO_TUNE_PRESETS[self._auto_tune_preset_index]
+        self._apply_auto_tune_preset(next_preset)
+        print(
+            f"[lighting-debug] autotune preset={self._auto_tune_preset_index + 1}/{len(_AUTO_TUNE_PRESETS)} "
+            f"name={next_preset.name}",
+        )
+
+    def _shadow_rt_alpha_stats(self) -> tuple[int, float, int] | None:
+        rt = self._shadow_rt
+        if rt is None or not _render_texture_valid(rt):
+            return None
+        sampled = self._shadow_rt_alpha_grid(rt=rt, max_side=64)
+        if sampled is None:
+            return None
+        alpha_values, _sample_w, _sample_h = sampled
+        if not alpha_values:
+            return None
+        min_alpha = min(alpha_values)
+        max_alpha = max(alpha_values)
+        avg = sum(float(alpha) for alpha in alpha_values) / float(len(alpha_values))
+        return int(min_alpha), float(avg), int(max_alpha)
 
     def _autodiag_log_shadow_stats(self) -> None:
         if not self._autodiag_enabled:
@@ -1264,7 +1758,7 @@ class LightingDebugView:
             f"scale=({self._last_shadow_view_scale.x:.4f},{self._last_shadow_view_scale.y:.4f}) "
             f"res=({self._last_shadow_resolution.x:.0f},{self._last_shadow_resolution.y:.0f}) "
             f"rt=({self._last_shadow_rt_resolution.x:.0f},{self._last_shadow_rt_resolution.y:.0f}) "
-            f"alpha(min/avg/max)=({min_alpha},{avg_alpha:.1f},{max_alpha})"
+            f"alpha(min/avg/max)=({min_alpha},{avg_alpha:.1f},{max_alpha})",
         )
 
     def _selected_profile(self) -> EmissiveProfile:
@@ -1334,7 +1828,7 @@ class LightingDebugView:
                 strength=_clampf(strength, STATIC_LIGHT_STRENGTH_MIN, STATIC_LIGHT_STRENGTH_MAX),
                 focus=_clampf(focus, STATIC_LIGHT_FOCUS_MIN, STATIC_LIGHT_FOCUS_MAX),
                 stretch=_clampf(stretch, STATIC_LIGHT_STRETCH_MIN, STATIC_LIGHT_STRETCH_MAX),
-            )
+            ),
         )
         self._static_selected_emitter = 0
 
@@ -1524,7 +2018,7 @@ class LightingDebugView:
                     dir_y=float(dir_vec.y),
                     focus=float(focus),
                     stretch=float(stretch),
-                )
+                ),
             )
         self._last_lights = lights
 
@@ -1575,12 +2069,12 @@ class LightingDebugView:
             aim_dir = Vec2(1.0, 0.0)
         heading = aim_dir.to_heading()
         muzzle_pos = (player.pos + aim_dir * float(profile.spawn_distance)).clamp_rect(
-            8.0, 8.0, WORLD_SIZE - 8.0, WORLD_SIZE - 8.0
+            8.0, 8.0, WORLD_SIZE - 8.0, WORLD_SIZE - 8.0,
         )
 
         if profile.secondary_type_id == int(SecondaryProjectileTypeId.DETONATION):
             impact = (player.pos + aim_dir * float(profile.explosion_distance)).clamp_rect(
-                16.0, 16.0, WORLD_SIZE - 16.0, WORLD_SIZE - 16.0
+                16.0, 16.0, WORLD_SIZE - 16.0, WORLD_SIZE - 16.0,
             )
             self._world.state.secondary_projectiles.spawn(
                 pos=impact,
@@ -1652,7 +2146,7 @@ class LightingDebugView:
         for idx in range(count):
             angle = float(idx) / float(count) * math.tau
             pos = (player.pos + Vec2.from_angle(angle) * ENEMY_RING_RADIUS).clamp_rect(
-                48.0, 48.0, WORLD_SIZE - 48.0, WORLD_SIZE - 48.0
+                48.0, 48.0, WORLD_SIZE - 48.0, WORLD_SIZE - 48.0,
             )
             heading = angle + math.pi
             self._world.creatures.spawn_template(
@@ -1688,6 +2182,14 @@ class LightingDebugView:
             self._reset_tuning_defaults()
         if rl.is_key_pressed(rl.KeyboardKey.KEY_F8):
             self._show_tuning_panel = not self._show_tuning_panel
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_F9):
+            if self._auto_tune_enabled:
+                self._auto_tune_enabled = False
+                self._auto_tune_started = False
+            else:
+                self._auto_tune_enabled = True
+                self._auto_tune_started = False
+                self._auto_tune_sample_frames = int(AUTO_TUNE_SAMPLE_FRAMES_DEFAULT)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_T):
             self._tune_param_index = (self._tune_param_index + 1) % len(_TUNE_PARAMS)
@@ -1898,7 +2400,7 @@ class LightingDebugView:
                 f"occ0={uniforms.occluders[0] if uniforms.occluders else -1} "
                 f"occ1={uniforms.occluders[1] if len(uniforms.occluders) > 1 else -1} "
                 f"light0={uniforms.lights[0] if uniforms.lights else -1} "
-                f"light1={uniforms.lights[1] if len(uniforms.lights) > 1 else -1}"
+                f"light1={uniforms.lights[1] if len(uniforms.lights) > 1 else -1}",
             )
         missing: list[str] = []
         for name in (
@@ -2274,20 +2776,27 @@ class LightingDebugView:
         return self._shadow_accum_rt
 
     def _draw_shadow_overlay(self) -> None:
+        start_time = time.perf_counter()
+        output_rt: rl.RenderTexture | None = None
         if not self._shadow_enabled:
             self._shadow_output_rt_for_preview = None
+            self._last_shadow_draw_ms = (time.perf_counter() - start_time) * 1000.0
             return
         if not self._ensure_shadow_shader():
+            self._last_shadow_draw_ms = (time.perf_counter() - start_time) * 1000.0
             return
         if not self._ensure_shadow_rt():
+            self._last_shadow_draw_ms = (time.perf_counter() - start_time) * 1000.0
             return
         if self._shadow_rt is None or self._shadow_shader is None:
+            self._last_shadow_draw_ms = (time.perf_counter() - start_time) * 1000.0
             return
 
         try:
             self._set_shadow_uniforms(occluders=self._last_occluders, lights=self._last_lights)
         except (RuntimeError, ValueError, TypeError) as exc:
             self._shadow_warning = f"shadow uniform update failed: {exc}"
+            self._last_shadow_draw_ms = (time.perf_counter() - start_time) * 1000.0
             return
 
         rt_w, rt_h = self._shadow_rt_size
@@ -2304,12 +2813,16 @@ class LightingDebugView:
         if output_rt is None:
             output_rt = self._shadow_rt
         if output_rt is None:
+            self._last_shadow_draw_ms = (time.perf_counter() - start_time) * 1000.0
             return
         src = rl.Rectangle(0.0, 0.0, float(rt_w), -float(rt_h))
         dst = rl.Rectangle(0.0, 0.0, float(rl.get_screen_width()), float(rl.get_screen_height()))
         rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
         rl.draw_texture_pro(output_rt.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
         rl.end_blend_mode()
+
+        self._last_shadow_draw_ms = (time.perf_counter() - start_time) * 1000.0
+        self._auto_tune_capture_frame(output_rt)
 
     def update(self, dt: float) -> None:
         self._player = self._world.players[0] if self._world.players else None
@@ -2622,6 +3135,22 @@ class LightingDebugView:
             Vec2(x, y),
             color=UI_TEXT,
         )
+        y += line
+        if self._auto_tune_enabled:
+            preset_count = len(_AUTO_TUNE_PRESETS)
+            if self._auto_tune_started and 0 <= self._auto_tune_preset_index < preset_count:
+                preset = _AUTO_TUNE_PRESETS[self._auto_tune_preset_index]
+                draw_ui_text(
+                    self._small,
+                    (
+                        f"autotune {self._auto_tune_preset_index + 1}/{preset_count} {preset.name}  "
+                        f"frame {self._auto_tune_preset_frame}/{AUTO_TUNE_WARMUP_FRAMES + self._auto_tune_sample_frames}"
+                    ),
+                    Vec2(x, y),
+                    color=UI_HINT,
+                )
+            else:
+                draw_ui_text(self._small, "autotune pending", Vec2(x, y), color=UI_HINT)
 
         warn_x = 16.0
         warn_y = float(rl.get_screen_height()) - line * 3.0
@@ -2657,7 +3186,7 @@ class LightingDebugView:
         y += line
         draw_ui_text(
             self._small,
-            "F2 shadows  F3 overlays  F5 static scene  F6 shader dbg  F7 tune defaults  F8 tuning panel",
+            "F2 shadows  F3 overlays  F5 static scene  F6 shader dbg  F7 tune defaults  F8 tuning panel  F9 autotune",
             Vec2(x, y),
             color=UI_HINT,
         )

@@ -6,22 +6,26 @@ from types import SimpleNamespace
 
 import pytest
 
-from grim.geom import Vec2
-from grim.view import ViewContext
-
 from crimson.projectiles import ProjectileTypeId, SecondaryProjectileTypeId
-from crimson.weapons import WEAPON_BY_ID
 from crimson.views.lighting_debug import (
     EMISSIVE_PROFILES,
     EmissiveProfile,
     LightingDebugView,
     TransientLight,
+    _auto_tune_selection_score,
+    _AutoTunePreset,
+    _AutoTuneResult,
     _build_static_occluders,
     _profile_light_defaults,
+    _shadow_frame_metrics,
+    _shadow_quality_score,
     collect_shadow_lights,
     collect_shadow_occluders,
     tick_transient_lights,
 )
+from crimson.weapons import WEAPON_BY_ID
+from grim.geom import Vec2
+from grim.view import ViewContext
 
 
 def test_collect_shadow_occluders_filters_invalid_entities_and_clamps_count() -> None:
@@ -77,7 +81,7 @@ def test_ion_lights_are_head_to_tail_omni_with_weaker_tail() -> None:
             origin=Vec2(80.0, 100.0),
             angle=0.0,
             type_id=int(ProjectileTypeId.ION_RIFLE),
-        )
+        ),
     ]
 
     lights = collect_shadow_lights(projectiles, [], [], max_lights=6)
@@ -101,7 +105,7 @@ def test_plasma_light_is_omnidirectional() -> None:
             origin=Vec2(180.0, 100.0),
             angle=1.2,
             type_id=int(ProjectileTypeId.PLASMA_RIFLE),
-        )
+        ),
     ]
 
     lights = collect_shadow_lights(projectiles, [], [], max_lights=6)
@@ -228,3 +232,83 @@ def test_dump_all_modes_honors_autodiag_frame_budget(monkeypatch: pytest.MonkeyP
     assert view.close_requested is True
     assert view._dump_total_frames == 30
     assert view._dump_total_frame == 30
+
+
+def test_shadow_frame_metrics_reports_higher_banding_for_step_pattern() -> None:
+    smooth = [int((idx / 63.0) * 255.0) for idx in range(64)]
+    stepped = []
+    for idx in range(64):
+        stepped.append((idx // 8) * 32)
+
+    smooth_metrics = _shadow_frame_metrics(smooth, 8, 8)
+    stepped_metrics = _shadow_frame_metrics(stepped, 8, 8)
+
+    assert smooth_metrics is not None
+    assert stepped_metrics is not None
+    assert stepped_metrics.banding > smooth_metrics.banding
+
+
+def test_shadow_quality_score_penalizes_banding_and_slow_shadow_pass() -> None:
+    clean_metrics = _shadow_frame_metrics([int((idx / 63.0) * 255.0) for idx in range(64)], 8, 8)
+    banded_metrics = _shadow_frame_metrics([(idx // 8) * 32 for idx in range(64)], 8, 8)
+
+    assert clean_metrics is not None
+    assert banded_metrics is not None
+
+    clean_score = _shadow_quality_score(clean_metrics, shadow_ms=1.2, flicker=3.0)
+    banded_score = _shadow_quality_score(banded_metrics, shadow_ms=5.2, flicker=22.0)
+
+    assert clean_score > banded_score
+
+
+def test_auto_tune_selection_score_prefers_smoother_penumbras() -> None:
+    preset_a = _AutoTunePreset(
+        name="a",
+        ambient_darkness=0.78,
+        shadow_strength=1.02,
+        light_size_w=0.30,
+        min_t=3.0,
+        range_scale=1.55,
+        directional_focus=1.15,
+        directional_stretch=1.25,
+        jitter_amount=1.0,
+        temporal_response=1.0,
+        rt_scale=0.25,
+    )
+    preset_b = _AutoTunePreset(
+        name="b",
+        ambient_darkness=0.76,
+        shadow_strength=1.00,
+        light_size_w=0.34,
+        min_t=2.6,
+        range_scale=1.52,
+        directional_focus=1.12,
+        directional_stretch=1.22,
+        jitter_amount=0.78,
+        temporal_response=1.0,
+        rt_scale=0.30,
+    )
+    noisy = _AutoTuneResult(
+        preset=preset_a,
+        score=0.49,
+        shadow_ms=0.25,
+        mean_alpha=130.0,
+        std_alpha=44.0,
+        contrast=0.58,
+        coverage=0.94,
+        banding=0.17,
+        flicker=0.1,
+    )
+    smooth = _AutoTuneResult(
+        preset=preset_b,
+        score=0.47,
+        shadow_ms=0.22,
+        mean_alpha=126.0,
+        std_alpha=42.0,
+        contrast=0.56,
+        coverage=0.94,
+        banding=0.12,
+        flicker=0.1,
+    )
+
+    assert _auto_tune_selection_score(smooth) > _auto_tune_selection_score(noisy)
