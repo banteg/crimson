@@ -43,6 +43,7 @@ _QUEST_TITLES = {level: quest.title for level, quest in _QUEST_DEFS.items()}
 
 _SEP_RE = re.compile(r"[\\/]+")
 _REPLAY_VERIFY_SCHEMA_VERSION = 1
+_REPLAY_BENCHMARK_SCHEMA_VERSION = 1
 _REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE = 3
 _SessionMode = Literal["survival", "rush", "quests"]
 _ParsedNetcodeMode = Literal["rollback", "lockstep_legacy"]
@@ -204,6 +205,31 @@ def _run_result_payload(run_result: object) -> dict[str, int]:
         "shots_hit": int(result.shots_hit),
         "rng_state": int(result.rng_state),
     }
+
+
+def _benchmark_aggregate_payload(aggregate: object) -> dict[str, float]:
+    entry = cast("Any", aggregate)
+    return {
+        "min": float(entry.min),
+        "p50": float(entry.p50),
+        "mean": float(entry.mean),
+        "p95": float(entry.p95),
+        "max": float(entry.max),
+        "stdev": float(entry.stdev),
+    }
+
+
+def _fmt_metric_agg(name: str, aggregate: object, *, digits: int) -> str:
+    entry = cast("Any", aggregate)
+    return (
+        f"{name} "
+        f"min={float(entry.min):.{digits}f} "
+        f"p50={float(entry.p50):.{digits}f} "
+        f"mean={float(entry.mean):.{digits}f} "
+        f"p95={float(entry.p95):.{digits}f} "
+        f"max={float(entry.max):.{digits}f} "
+        f"stdev={float(entry.stdev):.{digits}f}"
+    )
 
 
 def _extract_one(paq_path: Path, assets_root: Path) -> int:
@@ -959,6 +985,213 @@ def cmd_replay_verify(
 
     if not claim_matches:
         raise typer.Exit(code=int(_REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE))
+
+
+@replay_app.command("benchmark")
+def cmd_replay_benchmark(
+    replay_file: Path = typer.Argument(
+        ...,
+        help="replay file path (.crd); if a filename is provided, also search base-dir/replays",
+    ),
+    runs: int = typer.Option(5, "--runs", min=1, help="number of measured benchmark runs"),
+    warmup_runs: int = typer.Option(1, "--warmup-runs", min=0, help="warmup runs before measured timing"),
+    mode: Literal["headless", "render"] = typer.Option(
+        "headless",
+        "--mode",
+        help="benchmark mode: headless|render",
+    ),
+    max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
+    strict_events: bool = typer.Option(
+        True,
+        "--strict-events/--lenient-events",
+        help="fail on unsupported replay events/perk picks (default: strict)",
+    ),
+    trace_rng: bool = typer.Option(
+        False,
+        "--trace-rng",
+        help="enable replay RNG trace mode during simulation",
+    ),
+    profile: bool = typer.Option(False, "--profile", help="run one cProfile pass and include hotspot summary"),
+    profile_sort: Literal["cumtime", "tottime"] = typer.Option(
+        "cumtime",
+        "--profile-sort",
+        help="hotspot sort key",
+    ),
+    top: int = typer.Option(20, "--top", min=1, help="maximum hotspot rows to include"),
+    profile_out: Path | None = typer.Option(
+        None,
+        "--profile-out",
+        help="optional cProfile .pstats output path (used only with --profile)",
+    ),
+    output_format: Literal["human", "json"] = typer.Option(
+        "human",
+        "--format",
+        help="output format",
+    ),
+    json_out: Path | None = typer.Option(
+        None,
+        "--json-out",
+        help="optional JSON output path for benchmark payload",
+    ),
+    base_dir: Path = typer.Option(
+        default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
+        help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
+    ),
+) -> None:
+    """Benchmark replay throughput, with optional profiler hotspots."""
+    import hashlib
+
+    from .replay import ReplayCodecError, load_replay
+    from .sim.driver.replay_benchmark import (
+        ReplayBenchmarkError,
+        run_replay_benchmark,
+        run_replay_render_benchmark,
+    )
+    from .sim.driver.replay_runner import ReplayRunnerError
+
+    replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
+    if not replay_path.is_file():
+        message = f"replay file not found: {tried[0]}"
+        if len(tried) > 1:
+            message += f" (also tried: {tried[1]})"
+        typer.echo(message, err=True)
+        raise typer.Exit(code=1)
+
+    replay_bytes = Path(replay_path).read_bytes()
+    replay_sha256 = hashlib.sha256(replay_bytes).hexdigest()
+
+    try:
+        replay = load_replay(replay_bytes)
+        if str(mode) == "render":
+            benchmark = run_replay_render_benchmark(
+                replay,
+                replay_path=Path(replay_path),
+                base_dir=Path(base_dir),
+                runs=int(runs),
+                warmup_runs=int(warmup_runs),
+                max_ticks=max_ticks,
+                strict_events=bool(strict_events),
+                trace_rng=bool(trace_rng),
+                profile=bool(profile),
+                profile_sort=profile_sort,
+                top=int(top),
+                profile_out=profile_out,
+            )
+        else:
+            benchmark = run_replay_benchmark(
+                replay,
+                runs=int(runs),
+                warmup_runs=int(warmup_runs),
+                max_ticks=max_ticks,
+                strict_events=bool(strict_events),
+                trace_rng=bool(trace_rng),
+                profile=bool(profile),
+                profile_sort=profile_sort,
+                top=int(top),
+                profile_out=profile_out,
+            )
+    except (ReplayCodecError, ReplayBenchmarkError, ReplayRunnerError) as exc:
+        typer.echo(f"replay benchmark failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    profile_payload: dict[str, object] | None = None
+    if benchmark.profile is not None:
+        profile_payload = {
+            "sort": str(benchmark.profile.sort),
+            "top": int(benchmark.profile.top),
+            "source": str(benchmark.profile.source),
+            "hotspots": [
+                {
+                    "file": str(row.file),
+                    "line": int(row.line),
+                    "function": str(row.function),
+                    "primitive_calls": int(row.primitive_calls),
+                    "total_calls": int(row.total_calls),
+                    "tottime": float(row.tottime),
+                    "cumtime": float(row.cumtime),
+                }
+                for row in benchmark.profile.hotspots
+            ],
+        }
+
+    payload: dict[str, object] = {
+        "schema_version": int(_REPLAY_BENCHMARK_SCHEMA_VERSION),
+        "status": "ok",
+        "replay": str(replay_path),
+        "replay_sha256": str(replay_sha256),
+        "settings": {
+            "mode": str(mode),
+            "runs": int(runs),
+            "warmup_runs": int(warmup_runs),
+            "max_ticks": (int(max_ticks) if max_ticks is not None else None),
+            "strict_events": bool(strict_events),
+            "trace_rng": bool(trace_rng),
+            "profile": bool(profile),
+            "profile_sort": str(profile_sort),
+            "top": int(top),
+            "profile_out": (str(profile_out) if profile_out is not None else None),
+        },
+        "run_result": _run_result_payload(benchmark.run_result),
+        "benchmark": {
+            "sample_count": len(benchmark.samples),
+            "samples": [
+                {
+                    "wall_ms": float(sample.wall_ms),
+                    "ticks_per_second": float(sample.ticks_per_second),
+                    "realtime_x": float(sample.realtime_x),
+                }
+                for sample in benchmark.samples
+            ],
+            "wall_ms": _benchmark_aggregate_payload(benchmark.wall_ms),
+            "ticks_per_second": _benchmark_aggregate_payload(benchmark.ticks_per_second),
+            "realtime_x": _benchmark_aggregate_payload(benchmark.realtime_x),
+        },
+        "profile": profile_payload,
+    }
+
+    if json_out is not None:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+        if str(output_format) == "human":
+            typer.echo(f"json_report={json_out}")
+
+    if str(output_format) == "json":
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        return
+
+    typer.echo(
+        "ok: "
+        f"mode={mode} "
+        f"runs={len(benchmark.samples)} warmup_runs={int(warmup_runs)} "
+        f"ticks={int(benchmark.run_result.ticks)} "
+        f"wall_ms_p50={float(benchmark.wall_ms.p50):.3f} "
+        f"tps_p50={float(benchmark.ticks_per_second.p50):.2f} "
+        f"realtime_x_p50={float(benchmark.realtime_x.p50):.2f}",
+    )
+    typer.echo(_fmt_metric_agg("wall_ms", benchmark.wall_ms, digits=3))
+    typer.echo(
+        _fmt_metric_agg("throughput_tps", benchmark.ticks_per_second, digits=2)
+        + " | "
+        + _fmt_metric_agg("realtime_x", benchmark.realtime_x, digits=2),
+    )
+    if benchmark.profile is None:
+        return
+    typer.echo(
+        f"profile: sort={benchmark.profile.sort} source={benchmark.profile.source} "
+        f"top={benchmark.profile.top}",
+    )
+    typer.echo("hotspots:")
+    if not benchmark.profile.hotspots:
+        typer.echo("  (none)")
+        return
+    for idx, row in enumerate(benchmark.profile.hotspots, start=1):
+        typer.echo(
+            f"  {idx:02d} cum={float(row.cumtime):.6f}s tot={float(row.tottime):.6f}s "
+            f"calls={int(row.primitive_calls)}/{int(row.total_calls)} "
+            f"{row.file}:{int(row.line)}::{row.function}",
+        )
 
 
 @replay_app.command("verify-checkpoints")
