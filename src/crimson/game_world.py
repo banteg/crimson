@@ -171,6 +171,18 @@ class GameWorld:
             terrain_seed = int(self.state.rng.state)
             self.ground.schedule_generate(seed=terrain_seed, layers=3)
 
+    def load_world_state(self, world_state: WorldState) -> None:
+        """Atomically swap the authoritative world-state backing references."""
+
+        self.world_state = world_state
+        self.spawn_env = self.world_state.spawn_env
+        self.state = self.world_state.state
+        self.players = self.world_state.players
+        self.creatures = self.world_state.creatures
+        self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
+        self.last_presentation = PresentationStepCommands()
+        self.last_command_hash = ""
+
     def _ensure_texture_loader(self) -> TextureLoader:
         if self._texture_loader is not None:
             return self._texture_loader

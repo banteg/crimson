@@ -6,7 +6,6 @@ from typing import Literal, TypeAlias
 from ..replay.types import PackedPlayerInput
 from .legacy_protocol import (
     INPUT_STALL_TIMEOUT_MS,
-    LINK_TIMEOUT_MS,
     MAX_PLAYERS,
     RELIABLE_RESEND_MS,
     STATE_HASH_PERIOD_TICKS,
@@ -18,12 +17,16 @@ from .legacy_protocol import (
     current_build_id,
 )
 
-PROTOCOL_VERSION = 4
+PROTOCOL_VERSION = 5
 DEFAULT_PORT = 31993
 INPUT_DELAY_TICKS = 1
 ROLLBACK_MAX_TICKS = 8
 RECONNECT_TIMEOUT_MS = 15_000
 ROOM_CODE_LENGTH = 4
+LINK_TIMEOUT_MS = 5_000
+PING_INTERVAL_MS = 250
+RESYNC_CHUNK_PAYLOAD_BYTES = 1_024
+RESYNC_MAX_SNAPSHOT_BYTES = 2_097_152
 
 NetcodeMode = Literal["rollback", "lockstep", "lockstep_legacy"]
 
@@ -135,25 +138,32 @@ class RbInputBatch(msgspec.Struct, tag_field="kind", tag="rb_input_sample", forb
 
 
 class RbResyncRequest(msgspec.Struct, tag_field="kind", tag="rb_resync_request", forbid_unknown_fields=True):
+    request_id: str = ""
     from_tick: int = 0
     reason: str = ""
+    requested_by_slot: int = -1
 
 
 class RbResyncBegin(msgspec.Struct, tag_field="kind", tag="rb_resync_begin", forbid_unknown_fields=True):
-    stream_id: str = ""
+    request_id: str = ""
+    snapshot_tick: int = 0
+    codec: str = "msgpack_state_v1"
     total_chunks: int = 0
     compressed_size: int = 0
+    uncompressed_size: int = 0
+    payload_sha256: str = ""
 
 
 class RbResyncChunk(msgspec.Struct, tag_field="kind", tag="rb_resync_chunk", forbid_unknown_fields=True):
-    stream_id: str = ""
+    request_id: str = ""
     chunk_index: int = 0
     payload: bytes = b""
 
 
 class RbResyncCommit(msgspec.Struct, tag_field="kind", tag="rb_resync_commit", forbid_unknown_fields=True):
-    stream_id: str = ""
-    tick_index: int = 0
+    request_id: str = ""
+    snapshot_tick: int = 0
+    payload_sha256: str = ""
 
 
 class LegacyLockstepInputBatch(msgspec.Struct, tag_field="kind", tag="legacy_lockstep_input_batch", forbid_unknown_fields=True):
@@ -215,9 +225,12 @@ __all__ = [
     "INPUT_STALL_TIMEOUT_MS",
     "LINK_TIMEOUT_MS",
     "MAX_PLAYERS",
+    "PING_INTERVAL_MS",
     "PROTOCOL_VERSION",
     "RELIABLE_RESEND_MS",
     "RECONNECT_TIMEOUT_MS",
+    "RESYNC_CHUNK_PAYLOAD_BYTES",
+    "RESYNC_MAX_SNAPSHOT_BYTES",
     "ROLLBACK_MAX_TICKS",
     "ROOM_CODE_LENGTH",
     "STATE_HASH_PERIOD_TICKS",

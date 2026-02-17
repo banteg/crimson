@@ -8,11 +8,15 @@ from crimson.net.relay_protocol import (
     Ping,
     RbInputBatch,
     RbInputSample,
+    RbResyncBegin,
+    RbResyncChunk,
+    RbResyncCommit,
     RbResyncRequest,
     RoomReady,
     RoomStart,
     RoomState,
 )
+from crimson.net.rollback_resync_v5 import encode_mode_snapshot
 
 
 def _start_runtime(monkeypatch, *, rollback_max_ticks: int = 8) -> tuple[NetRuntime, list[tuple[tuple[str, int], Any]]]:
@@ -69,19 +73,31 @@ def test_runtime_tracks_prediction_mismatches_and_rollbacks(monkeypatch) -> None
     runtime, _sent = _start_runtime(monkeypatch)
     runtime.queue_local_input([0.0, 0.0, [0.0, 0.0], 1], now_ms=1100)
     assert runtime.pop_tick_frame() is not None
+    runtime.store_local_snapshot(
+        0,
+        encode_mode_snapshot(
+            mode="survival",
+            tick_index=0,
+            session_state={"elapsed_ms": 0.0},
+            mode_state={"stage": 1},
+        ),
+    )
+    runtime.queue_local_input([0.0, 0.0, [0.0, 0.0], 2], now_ms=1101)
+    assert runtime.pop_tick_frame() is not None
 
     runtime._handle_message(
         message=RbInputBatch(
             slot_index=1,
-            samples=[RbInputSample(tick_index=0, packed_input=[1.0, 0.0, [0.0, 0.0], 9])],
+            samples=[RbInputSample(tick_index=1, packed_input=[1.0, 0.0, [0.0, 0.0], 9])],
         ),
-        now_ms=1101,
+        now_ms=1102,
     )
 
     assert runtime.rollback_count == 1
     assert runtime.prediction_mismatches == 1
     assert runtime.max_rollback_ticks_seen >= 1
     assert runtime.resync_count == 0
+    assert runtime.pop_rollback_from() == 1
 
 
 def test_runtime_requests_resync_when_correction_exceeds_rollback_cap(monkeypatch) -> None:
@@ -102,6 +118,37 @@ def test_runtime_requests_resync_when_correction_exceeds_rollback_cap(monkeypatc
     assert runtime.resync_count == 1
     assert runtime.pop_tick_frame() is None
     assert any(isinstance(packet.message, RbResyncRequest) for _addr, packet in sent)
+
+
+def test_runtime_accepts_resync_stream_and_exposes_pending_snapshot(monkeypatch) -> None:
+    runtime, _sent = _start_runtime(monkeypatch)
+    payload = encode_mode_snapshot(
+        mode="survival",
+        tick_index=12,
+        session_state={"elapsed_ms": 12.0},
+        mode_state={"stage": 2},
+    )
+
+    # Build a valid stream with the real metadata through runtime's host helper.
+    host_runtime, sent_packets = _start_runtime(monkeypatch)
+    host_runtime.store_local_snapshot(12, payload)
+    host_runtime._handle_message(
+        message=RbResyncRequest(request_id="rq1", from_tick=4, reason="overflow", requested_by_slot=1),
+        now_ms=1501,
+    )
+    begin = next(packet.message for _addr, packet in sent_packets if isinstance(packet.message, RbResyncBegin))
+    chunks = [packet.message for _addr, packet in sent_packets if isinstance(packet.message, RbResyncChunk)]
+    commit = next(packet.message for _addr, packet in sent_packets if isinstance(packet.message, RbResyncCommit))
+
+    runtime._handle_message(message=begin, now_ms=1502)
+    for chunk in chunks:
+        runtime._handle_message(message=chunk, now_ms=1503)
+    runtime._handle_message(message=commit, now_ms=1504)
+
+    snapshot = runtime.pop_resync_snapshot()
+    assert snapshot is not None
+    assert snapshot[0] == 12
+    runtime.mark_resync_applied(snapshot[0])
 
 
 def test_runtime_prints_host_invite_code_once(monkeypatch) -> None:

@@ -7,6 +7,11 @@ from crimson.net.relay_protocol import (
     ROOM_CODE_LENGTH,
     ClientHello,
     ClientWelcome,
+    RbResyncBegin,
+    RbResyncChunk,
+    RbResyncCommit,
+    RbResyncRequest,
+    RelayError,
     RoomCreate,
     RoomJoin,
     RoomReady,
@@ -148,3 +153,95 @@ def test_reconnect_token_reclaims_slot_and_receives_room_start(monkeypatch) -> N
     assert str(room.slots[1].peer_id) == str(new_peer.peer_id)
     assert any(addr == new_addr and isinstance(packet.message, RoomStart) for addr, packet in sent)
     assert str(room.slots[0].peer_id) == str(host_peer.peer_id)
+
+
+def test_protocol_mismatch_requires_v5(monkeypatch) -> None:
+    server = RelayServer(RelayServerConfig(bind_host="127.0.0.1", bind_port=0))
+    sent = _patch_send_capture(monkeypatch, server)
+
+    server._handle_client_hello(
+        addr=("127.0.0.1", 50901),
+        message=ClientHello(protocol_version=4, build_id="0.1.0", peer_name=""),
+        now_ms=1000,
+    )
+
+    assert any(
+        isinstance(packet.message, ClientWelcome)
+        and packet.message.accepted is False
+        and packet.message.reason == "protocol_mismatch_v5_required"
+        for _addr, packet in sent
+    )
+
+
+def test_resync_sender_role_validation(monkeypatch) -> None:
+    server = RelayServer(RelayServerConfig(bind_host="127.0.0.1", bind_port=0))
+    sent = _patch_send_capture(monkeypatch, server)
+    host_peer, join_peer, _room_code = _start_two_peer_room(server, now_ms=6000)
+
+    sent.clear()
+    server._handle_message(
+        peer=host_peer,
+        message=RbResyncRequest(request_id="rq1", from_tick=10, reason="overflow", requested_by_slot=0),
+        now_ms=6005,
+    )
+    assert any(
+        addr == host_peer.addr and isinstance(packet.message, RelayError) and packet.message.reason == "invalid_resync_sender"
+        for addr, packet in sent
+    )
+
+    sent.clear()
+    server._handle_message(
+        peer=join_peer,
+        message=RbResyncBegin(
+            request_id="rq2",
+            snapshot_tick=12,
+            codec="msgpack_state_v1",
+            total_chunks=1,
+            compressed_size=3,
+            uncompressed_size=3,
+            payload_sha256="abc",
+        ),
+        now_ms=6006,
+    )
+    assert any(
+        addr == join_peer.addr and isinstance(packet.message, RelayError) and packet.message.reason == "invalid_resync_sender"
+        for addr, packet in sent
+    )
+
+
+def test_host_resync_stream_is_forwarded(monkeypatch) -> None:
+    server = RelayServer(RelayServerConfig(bind_host="127.0.0.1", bind_port=0))
+    sent = _patch_send_capture(monkeypatch, server)
+    host_peer, join_peer, _room_code = _start_two_peer_room(server, now_ms=7000)
+
+    sent.clear()
+    server._handle_message(
+        peer=join_peer,
+        message=RbResyncRequest(request_id="rq3", from_tick=20, reason="overflow", requested_by_slot=1),
+        now_ms=7001,
+    )
+    assert any(
+        addr == host_peer.addr and isinstance(packet.message, RbResyncRequest) and packet.message.request_id == "rq3"
+        for addr, packet in sent
+    )
+
+    sent.clear()
+    server._handle_message(
+        peer=host_peer,
+        message=RbResyncChunk(request_id="rq3", chunk_index=0, payload=b"abc"),
+        now_ms=7002,
+    )
+    server._handle_message(
+        peer=host_peer,
+        message=RbResyncCommit(request_id="rq3", snapshot_tick=20, payload_sha256="abc"),
+        now_ms=7003,
+    )
+
+    assert any(
+        addr == join_peer.addr and isinstance(packet.message, RbResyncChunk) and packet.message.request_id == "rq3"
+        for addr, packet in sent
+    )
+    assert any(
+        addr == join_peer.addr and isinstance(packet.message, RbResyncCommit) and packet.message.request_id == "rq3"
+        for addr, packet in sent
+    )

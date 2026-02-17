@@ -233,7 +233,7 @@ class RelayServer:
             packet = temp.build_packet(
                 ClientWelcome(
                     accepted=False,
-                    reason="protocol_mismatch",
+                    reason="protocol_mismatch_v5_required",
                     protocol_version=int(PROTOCOL_VERSION),
                 ),
                 reliable=True,
@@ -281,6 +281,7 @@ class RelayServer:
             room_code=str(peer.room_code or ""),
             slot_index=int(peer.slot_index),
             kind=type(message).__name__,
+            request_id=str(getattr(message, "request_id", "") or ""),
             now_ms=int(now_ms),
         )
         if isinstance(message, Ping):
@@ -556,6 +557,51 @@ class RelayServer:
             )
             self._send_peer(peer, RelayError(reason="not_in_room"), reliable=True, now_ms=int(now_ms))
             return
+
+        sender_slot = int(peer.slot_index)
+        host_slot = 0
+        if int(sender_slot) < 0 or int(sender_slot) >= len(room.slots):
+            self.log.warning(
+                "relay_forward_rejected",
+                reason="bad_sender_slot",
+                room_code=str(room.room_code),
+                from_peer_id=str(peer.peer_id),
+                kind=type(message).__name__,
+                sender_slot=int(sender_slot),
+            )
+            self._send_peer(peer, RelayError(reason="bad_sender_slot"), reliable=True, now_ms=int(now_ms))
+            return
+
+        request_id = ""
+        if isinstance(message, RbResyncRequest):
+            request_id = str(message.request_id or "")
+            if int(sender_slot) == int(host_slot):
+                self.log.warning(
+                    "relay_forward_rejected",
+                    reason="invalid_resync_sender",
+                    room_code=str(room.room_code),
+                    from_peer_id=str(peer.peer_id),
+                    kind=type(message).__name__,
+                    sender_slot=int(sender_slot),
+                    request_id=str(request_id),
+                )
+                self._send_peer(peer, RelayError(reason="invalid_resync_sender"), reliable=True, now_ms=int(now_ms))
+                return
+        elif isinstance(message, (RbResyncBegin, RbResyncChunk, RbResyncCommit)):
+            request_id = str(getattr(message, "request_id", "") or "")
+            if int(sender_slot) != int(host_slot):
+                self.log.warning(
+                    "relay_forward_rejected",
+                    reason="invalid_resync_sender",
+                    room_code=str(room.room_code),
+                    from_peer_id=str(peer.peer_id),
+                    kind=type(message).__name__,
+                    sender_slot=int(sender_slot),
+                    request_id=str(request_id),
+                )
+                self._send_peer(peer, RelayError(reason="invalid_resync_sender"), reliable=True, now_ms=int(now_ms))
+                return
+
         reliable = isinstance(message, _FORWARD_RELIABLE_TYPES)
         if isinstance(message, LegacyLockstepInputBatch):
             reliable = False
@@ -575,6 +621,7 @@ class RelayServer:
             kind=type(message).__name__,
             reliable=bool(reliable),
             recipient_count=int(forwarded),
+            request_id=str(request_id),
         )
 
     def _broadcast_room_state(self, *, room: _Room, now_ms: int) -> None:

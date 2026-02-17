@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from collections import deque
+from collections import OrderedDict, deque
 from dataclasses import dataclass, field
 import socket
 import time
+from typing import Literal
+import uuid
 
 from ..replay.types import PackedPlayerInput
 from .debug_log import lan_debug_log
@@ -11,6 +13,7 @@ from .relay_protocol import (
     DEFAULT_PORT,
     INPUT_DELAY_TICKS,
     LINK_TIMEOUT_MS,
+    PING_INTERVAL_MS,
     PROTOCOL_VERSION,
     RECONNECT_TIMEOUT_MS,
     ROLLBACK_MAX_TICKS,
@@ -22,6 +25,9 @@ from .relay_protocol import (
     Ping,
     Pong,
     RbInputBatch,
+    RbResyncBegin,
+    RbResyncChunk,
+    RbResyncCommit,
     RbResyncRequest,
     RelayError,
     RoomCreate,
@@ -35,6 +41,12 @@ from .relay_protocol import (
 from .relay_reliable import RelayReliableLink
 from .relay_transport import PeerAddr, RelayUdpTransport
 from .rollback import RollbackController
+from .rollback_resync_v5 import (
+    RbResyncAssemblerV5,
+    RollbackResyncV5Error,
+    build_rb_resync_messages,
+    decode_mode_snapshot,
+)
 from .legacy_protocol import PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
 
 
@@ -60,6 +72,9 @@ class NetRuntimeConfig:
     sim_status_snapshot: StatusSnapshot | None = None
 
 
+ReconnectState = Literal["idle", "waiting_for_peer_reconnect", "self_reconnecting"]
+
+
 @dataclass(slots=True)
 class NetRuntime:
     cfg: NetRuntimeConfig
@@ -82,15 +97,25 @@ class NetRuntime:
     _last_hello_ms: int = field(init=False, default=0)
     _last_seen_ms: int = field(init=False, default=0)
     _last_send_ms: int = field(init=False, default=0)
+    _last_ping_ms: int = field(init=False, default=0)
     _reconnect_token: str = field(init=False, default="")
     _paused_for_reconnect: bool = field(init=False, default=False)
     _announced_room_code: str = field(init=False, default="")
+    _reconnect_state: ReconnectState = field(init=False, default="idle")
 
     _rollback: RollbackController | None = field(init=False, default=None)
     _frame_queue: deque[TickFrame] = field(init=False, default_factory=deque)
     _remote_seen_slots: set[int] = field(init=False, default_factory=set)
+    _pending_rollback_from: int | None = field(init=False, default=None)
 
     _client_perk_events: deque[PerkMenuOpen | PerkMenuClose | PerkPick] = field(init=False, default_factory=deque)
+
+    _local_snapshot_blobs: OrderedDict[int, bytes] = field(init=False, default_factory=OrderedDict)
+    _pending_resync_snapshot: tuple[int, bytes] | None = field(init=False, default=None)
+    _pending_resync_snapshot_delivered: bool = field(init=False, default=False)
+    _resync_assembler: RbResyncAssemblerV5 | None = field(init=False, default=None)
+    _active_resync_request_id: str = field(init=False, default="")
+    _handled_resync_request_ids: set[str] = field(init=False, default_factory=set)
 
     desync_count: int = field(init=False, default=0)
     last_desync_tick: int = field(init=False, default=-1)
@@ -143,13 +168,22 @@ class NetRuntime:
         self._last_hello_ms = 0
         self._last_seen_ms = 0
         self._last_send_ms = 0
+        self._last_ping_ms = 0
         self._reconnect_token = ""
         self._paused_for_reconnect = False
+        self._reconnect_state = "idle"
         self._announced_room_code = ""
         self._rollback = None
         self._frame_queue.clear()
         self._remote_seen_slots.clear()
+        self._pending_rollback_from = None
         self._client_perk_events.clear()
+        self._local_snapshot_blobs.clear()
+        self._pending_resync_snapshot = None
+        self._pending_resync_snapshot_delivered = False
+        self._resync_assembler = None
+        self._active_resync_request_id = ""
+        self._handled_resync_request_ids.clear()
         self.started = False
         self.error = ""
 
@@ -194,6 +228,51 @@ class NetRuntime:
         if not self._client_perk_events:
             return None
         return self._client_perk_events.popleft()
+
+    def store_local_snapshot(self, tick_index: int, snapshot_blob: bytes) -> None:
+        tick = max(0, int(tick_index))
+        blob = bytes(snapshot_blob)
+        self._local_snapshot_blobs[tick] = blob
+        self._local_snapshot_blobs.move_to_end(tick, last=True)
+
+        keep_from = int(tick) - 64
+        for key in list(self._local_snapshot_blobs.keys()):
+            if int(key) >= int(keep_from):
+                continue
+            self._local_snapshot_blobs.pop(int(key), None)
+
+    def pop_rollback_from(self) -> int | None:
+        value = self._pending_rollback_from
+        self._pending_rollback_from = None
+        return None if value is None else int(value)
+
+    def pop_resync_snapshot(self) -> tuple[int, bytes] | None:
+        snapshot = self._pending_resync_snapshot
+        if snapshot is None:
+            return None
+        if bool(self._pending_resync_snapshot_delivered):
+            return None
+        self._pending_resync_snapshot_delivered = True
+        return int(snapshot[0]), bytes(snapshot[1])
+
+    def mark_resync_applied(self, tick_index: int) -> None:
+        tick = max(0, int(tick_index))
+        self._pending_resync_snapshot = None
+        self._pending_resync_snapshot_delivered = False
+        self._active_resync_request_id = ""
+        controller = self._rollback
+        if controller is not None:
+            controller.reset_to_tick(int(tick) + 1)
+        self._frame_queue.clear()
+        self._paused_for_reconnect = False
+        if self._reconnect_state != "self_reconnecting":
+            self._reconnect_state = "idle"
+        lan_debug_log(
+            "resync_commit_applied",
+            role=str(self.cfg.role),
+            room_code=str(self.cfg.room_code or ""),
+            tick_index=int(tick),
+        )
 
     def queue_local_input(self, packed_input: PackedPlayerInput, *, now_ms: int | None = None) -> None:
         if bool(self._paused_for_reconnect):
@@ -281,14 +360,26 @@ class NetRuntime:
                 self._sent_ready = True
 
         if self._accepted:
-            if self._last_send_ms <= 0 or (int(now) - int(self._last_send_ms)) >= 250:
+            if self._last_ping_ms <= 0 or (int(now) - int(self._last_ping_ms)) >= int(PING_INTERVAL_MS):
                 self._send(Ping(stamp_ms=int(now)), reliable=False, now_ms=int(now))
+                self._last_ping_ms = int(now)
 
-        if self._last_seen_ms > 0 and (int(now) - int(self._last_seen_ms)) >= int(LINK_TIMEOUT_MS):
-            self.error = "timeout"
+        silent_ms = int(now) - int(self._last_seen_ms)
+        if self._last_seen_ms > 0 and silent_ms >= int(LINK_TIMEOUT_MS):
+            if self._can_self_reconnect():
+                self._start_self_reconnect(now_ms=int(now), reason="timeout")
+            elif not self._paused_for_reconnect:
+                self.error = "timeout"
 
         if self._reconnect_deadline_ms > 0 and int(now) >= int(self._reconnect_deadline_ms):
             self.error = "reconnect_timeout"
+            lan_debug_log(
+                "reconnect_fail",
+                role=str(self.cfg.role),
+                room_code=str(self.cfg.room_code or ""),
+                state=str(self._reconnect_state),
+                reason="deadline",
+            )
 
         self._drain_frames()
 
@@ -296,6 +387,19 @@ class NetRuntime:
         if self._accepted:
             if self._joined_room:
                 return
+
+            reconnecting = bool(self._reconnect_token) and str(self._reconnect_state) == "self_reconnecting"
+            if reconnecting:
+                if self._sent_join_request:
+                    return
+                self._sent_join_request = True
+                self._send(
+                    RoomJoin(room_code=str(self.cfg.room_code), reconnect_token=str(self._reconnect_token)),
+                    reliable=True,
+                    now_ms=int(now_ms),
+                )
+                return
+
             if str(self.cfg.role) == "host" and (not self._created_room):
                 self._created_room = True
                 self._send(
@@ -340,6 +444,13 @@ class NetRuntime:
         )
 
     def _handle_message(self, *, message: object, now_ms: int) -> None:
+        lan_debug_log(
+            "net_recv",
+            role=str(self.cfg.role),
+            kind=type(message).__name__,
+            room_code=str(self.cfg.room_code or ""),
+        )
+
         if isinstance(message, Pong):
             return
 
@@ -349,6 +460,8 @@ class NetRuntime:
                 return
             self._accepted = True
             self._peer_id = str(message.peer_id or "")
+            if str(self._reconnect_state) == "self_reconnecting":
+                self._sent_join_request = False
             return
 
         if isinstance(message, RelayError):
@@ -358,11 +471,8 @@ class NetRuntime:
         if isinstance(message, RoomState):
             self.lobby_state_latest = message
             self._joined_room = True
-            if self._reconnect_deadline_ms > 0:
-                connected = sum(1 for slot in message.slots if bool(slot.connected))
-                if int(connected) >= max(1, int(message.player_count)):
-                    self._reconnect_deadline_ms = 0
-                    self._paused_for_reconnect = False
+            if self._is_reconnect_in_progress() and self._room_state_has_local_slot(message):
+                self._finish_reconnect(now_ms=int(now_ms))
             if str(self.cfg.role) == "host":
                 self.cfg.room_code = str(message.room_code or "")
                 self._announce_room_code(self.cfg.room_code)
@@ -371,12 +481,15 @@ class NetRuntime:
             return
 
         if isinstance(message, RoomStart):
+            first_start = not bool(self.started)
             self.match_start_event = message
             self.started = True
             self._reconnect_deadline_ms = 0
             self._reconnect_token = str(message.reconnect_token or "")
             self._paused_for_reconnect = False
-            self._init_rollback(message)
+            self._reconnect_state = "idle"
+            if first_start:
+                self._init_rollback(message)
             self._sent_ready = True
             if str(self.cfg.room_code or "") != str(message.room_code or ""):
                 self.cfg.room_code = str(message.room_code or "")
@@ -385,10 +498,21 @@ class NetRuntime:
             return
 
         if isinstance(message, PeerDisconnect):
+            if not bool(self.started):
+                self.error = str(message.reason or "peer_disconnect")
+                return
             if self._reconnect_deadline_ms <= 0:
                 self.reconnect_count = int(self.reconnect_count) + 1
             self._reconnect_deadline_ms = int(now_ms) + int(self.cfg.reconnect_timeout_ms)
             self._paused_for_reconnect = True
+            self._reconnect_state = "waiting_for_peer_reconnect"
+            lan_debug_log(
+                "reconnect_start",
+                role=str(self.cfg.role),
+                room_code=str(self.cfg.room_code or ""),
+                state=str(self._reconnect_state),
+                reason=str(message.reason or "peer_disconnect"),
+            )
             return
 
         if isinstance(message, RbInputBatch):
@@ -400,20 +524,41 @@ class NetRuntime:
                 self._remote_seen_slots.add(int(slot))
             controller.ingest_remote_samples(slot_index=int(slot), samples=list(message.samples))
             self._sync_rollback_metrics(controller)
+
+            rollback_from = controller.drain_rollback_from()
+            if rollback_from is not None:
+                self._apply_rollback_from(controller=controller, from_tick=int(rollback_from), now_ms=int(now_ms))
+
             resync_from = controller.drain_resync_from()
             if resync_from is not None:
-                self.resync_count = int(self.resync_count) + 1
-                self._paused_for_reconnect = True
-                self._send(
-                    RbResyncRequest(from_tick=int(resync_from), reason="rollback_window_overflow"),
-                    reliable=True,
-                    now_ms=int(now_ms),
-                )
+                self._send_resync_request(from_tick=int(resync_from), reason="rollback_window_overflow", now_ms=int(now_ms))
+            return
+
+        if isinstance(message, RbResyncRequest):
+            self._handle_resync_request(message=message, now_ms=int(now_ms))
+            return
+
+        if isinstance(message, RbResyncBegin):
+            self._handle_resync_begin(message=message)
+            return
+
+        if isinstance(message, RbResyncChunk):
+            self._handle_resync_chunk(message=message)
+            return
+
+        if isinstance(message, RbResyncCommit):
+            self._handle_resync_commit(message=message, now_ms=int(now_ms))
             return
 
     def _init_rollback(self, event: RoomStart) -> None:
         self._frame_queue.clear()
         self._remote_seen_slots.clear()
+        self._pending_rollback_from = None
+        self._local_snapshot_blobs.clear()
+        self._pending_resync_snapshot = None
+        self._pending_resync_snapshot_delivered = False
+        self._resync_assembler = None
+        self._active_resync_request_id = ""
         self._rollback = RollbackController(
             player_count=max(1, int(event.player_count)),
             local_slot_index=max(0, int(event.slot_index)),
@@ -451,6 +596,239 @@ class NetRuntime:
         self.rollback_count = int(controller.rollback_count)
         self.prediction_mismatches = int(controller.prediction_mismatches)
         self.max_rollback_ticks_seen = int(controller.max_rollback_distance)
+
+    def _apply_rollback_from(self, *, controller: RollbackController, from_tick: int, now_ms: int) -> None:
+        tick = max(0, int(from_tick))
+        pending = self._pending_rollback_from
+        if pending is None:
+            self._pending_rollback_from = int(tick)
+        else:
+            self._pending_rollback_from = min(int(pending), int(tick))
+
+        snapshot_tick = int(tick) - 1
+        if self._latest_snapshot_at_or_before(snapshot_tick) is None:
+            self._send_resync_request(from_tick=int(tick), reason="rollback_snapshot_missing", now_ms=int(now_ms))
+            return
+
+        rebuilt = controller.rebuild_emitted_from(int(tick))
+        if rebuilt:
+            rebuilt_queue = deque(frame for frame in self._frame_queue if int(frame.tick_index) < int(tick))
+            for frame in rebuilt:
+                rebuilt_queue.append(
+                    TickFrame(
+                        tick_index=int(frame.tick_index),
+                        frame_inputs=[list(item) for item in frame.frame_inputs],
+                        command_hash="",
+                        state_hash="",
+                    )
+                )
+            self._frame_queue = rebuilt_queue
+
+        lan_debug_log(
+            "rollback_applied",
+            role=str(self.cfg.role),
+            room_code=str(self.cfg.room_code or ""),
+            from_tick=int(tick),
+            rebuilt_frames=int(len(rebuilt)),
+        )
+
+    def _send_resync_request(self, *, from_tick: int, reason: str, now_ms: int) -> None:
+        request_id = uuid.uuid4().hex[:12]
+        self.resync_count = int(self.resync_count) + 1
+        self._paused_for_reconnect = True
+        self._active_resync_request_id = str(request_id)
+        self._send(
+            RbResyncRequest(
+                request_id=str(request_id),
+                from_tick=max(0, int(from_tick)),
+                reason=str(reason),
+                requested_by_slot=max(0, int(self.local_slot_index)),
+            ),
+            reliable=True,
+            now_ms=int(now_ms),
+        )
+        lan_debug_log(
+            "resync_request_sent",
+            role=str(self.cfg.role),
+            room_code=str(self.cfg.room_code or ""),
+            request_id=str(request_id),
+            from_tick=max(0, int(from_tick)),
+            reason=str(reason),
+        )
+
+    def _handle_resync_request(self, *, message: RbResyncRequest, now_ms: int) -> None:
+        if not self._is_host_slot():
+            return
+
+        request_id = str(message.request_id or "").strip()
+        if not request_id:
+            request_id = uuid.uuid4().hex[:12]
+        if request_id in self._handled_resync_request_ids:
+            return
+        self._handled_resync_request_ids.add(str(request_id))
+
+        snapshot = self._latest_snapshot_any()
+        if snapshot is None:
+            self._send(RelayError(reason="resync_snapshot_unavailable"), reliable=True, now_ms=int(now_ms))
+            return
+        snapshot_tick, payload = snapshot
+
+        try:
+            stream = build_rb_resync_messages(
+                request_id=str(request_id),
+                snapshot_tick=int(snapshot_tick),
+                snapshot_blob=bytes(payload),
+            )
+        except RollbackResyncV5Error:
+            self._send(RelayError(reason="resync_snapshot_invalid"), reliable=True, now_ms=int(now_ms))
+            return
+
+        self._send(stream.begin, reliable=True, now_ms=int(now_ms))
+        for chunk in stream.chunks:
+            self._send(chunk, reliable=True, now_ms=int(now_ms))
+        self._send(stream.commit, reliable=True, now_ms=int(now_ms))
+
+    def _handle_resync_begin(self, *, message: RbResyncBegin) -> None:
+        request_id = str(message.request_id or "")
+        if not request_id:
+            return
+        if self._active_resync_request_id and request_id != str(self._active_resync_request_id):
+            return
+
+        assembler = RbResyncAssemblerV5()
+        try:
+            assembler.begin(message)
+        except RollbackResyncV5Error:
+            return
+        self._resync_assembler = assembler
+        self._active_resync_request_id = str(request_id)
+        self._paused_for_reconnect = True
+        lan_debug_log(
+            "resync_begin_recv",
+            role=str(self.cfg.role),
+            room_code=str(self.cfg.room_code or ""),
+            request_id=str(request_id),
+            snapshot_tick=int(message.snapshot_tick),
+            chunks=int(message.total_chunks),
+        )
+
+    def _handle_resync_chunk(self, *, message: RbResyncChunk) -> None:
+        assembler = self._resync_assembler
+        if assembler is None:
+            return
+        if str(message.request_id or "") != str(assembler.request_id):
+            return
+        try:
+            assembler.push_chunk(message)
+        except RollbackResyncV5Error:
+            self._resync_assembler = None
+            self.error = "resync_chunk_error"
+
+    def _handle_resync_commit(self, *, message: RbResyncCommit, now_ms: int) -> None:
+        assembler = self._resync_assembler
+        if assembler is None:
+            return
+        if str(message.request_id or "") != str(assembler.request_id):
+            return
+
+        try:
+            snapshot_tick, payload = assembler.finalize(message)
+            decode_mode_snapshot(payload)
+        except RollbackResyncV5Error:
+            self._resync_assembler = None
+            self.error = "resync_commit_error"
+            return
+
+        self._resync_assembler = None
+        self._pending_resync_snapshot = (int(snapshot_tick), bytes(payload))
+        self._pending_resync_snapshot_delivered = False
+        self._paused_for_reconnect = True
+        self._reconnect_deadline_ms = int(now_ms) + int(self.cfg.reconnect_timeout_ms)
+
+    def _start_self_reconnect(self, *, now_ms: int, reason: str) -> None:
+        if not self._can_self_reconnect():
+            return
+        if str(self._reconnect_state) == "self_reconnecting":
+            return
+
+        self.reconnect_count = int(self.reconnect_count) + 1
+        self._paused_for_reconnect = True
+        self._reconnect_state = "self_reconnecting"
+        self._reconnect_deadline_ms = int(now_ms) + int(self.cfg.reconnect_timeout_ms)
+
+        self._accepted = False
+        self._joined_room = False
+        self._created_room = False
+        self._sent_join_request = False
+        self._sent_ready = False
+        self._peer_id = ""
+        self._last_hello_ms = 0
+        self._last_ping_ms = 0
+        self.link = RelayReliableLink()
+
+        lan_debug_log(
+            "reconnect_start",
+            role=str(self.cfg.role),
+            room_code=str(self.cfg.room_code or ""),
+            state=str(self._reconnect_state),
+            reason=str(reason),
+        )
+
+    def _finish_reconnect(self, *, now_ms: int) -> None:
+        self._reconnect_deadline_ms = 0
+        self._paused_for_reconnect = False
+        previous = str(self._reconnect_state)
+        self._reconnect_state = "idle"
+        lan_debug_log(
+            "reconnect_success",
+            role=str(self.cfg.role),
+            room_code=str(self.cfg.room_code or ""),
+            previous_state=previous,
+            now_ms=int(now_ms),
+        )
+
+    def _is_reconnect_in_progress(self) -> bool:
+        return str(self._reconnect_state) in {"waiting_for_peer_reconnect", "self_reconnecting"}
+
+    def _can_self_reconnect(self) -> bool:
+        return bool(self.started) and bool(str(self._reconnect_token or "").strip())
+
+    def _room_state_has_local_slot(self, room_state: RoomState) -> bool:
+        slot_index = int(self.local_slot_index)
+        if slot_index < 0 or slot_index >= len(room_state.slots):
+            return False
+        slot = room_state.slots[int(slot_index)]
+        return bool(slot.connected)
+
+    def _is_host_slot(self) -> bool:
+        event = self.match_start_event
+        if event is None:
+            return str(self.cfg.role) == "host"
+        return int(event.slot_index) == int(event.host_slot_index)
+
+    def _latest_snapshot_any(self) -> tuple[int, bytes] | None:
+        if not self._local_snapshot_blobs:
+            return None
+        tick = next(reversed(self._local_snapshot_blobs.keys()))
+        payload = self._local_snapshot_blobs.get(int(tick))
+        if payload is None:
+            return None
+        return int(tick), bytes(payload)
+
+    def _latest_snapshot_at_or_before(self, tick_index: int) -> tuple[int, bytes] | None:
+        target = int(tick_index)
+        selected_tick: int | None = None
+        for tick in self._local_snapshot_blobs.keys():
+            if int(tick) <= int(target):
+                selected_tick = int(tick)
+            else:
+                break
+        if selected_tick is None:
+            return None
+        payload = self._local_snapshot_blobs.get(int(selected_tick))
+        if payload is None:
+            return None
+        return int(selected_tick), bytes(payload)
 
     def _send(self, message: NetMessage, *, reliable: bool, now_ms: int) -> None:
         addr = self._server_addr

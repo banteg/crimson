@@ -11,7 +11,7 @@ tags:
 Legacy lockstep is retained as a compatibility fallback mode while rollback is
 primary for network play.
 
-Last reviewed: **2026-02-16**
+Last reviewed: **2026-02-17**
 
 ## Current role
 
@@ -23,6 +23,11 @@ Last reviewed: **2026-02-16**
 Primary architecture doc:
 
 - [`docs/rewrite/netplay-rollback.md`](netplay-rollback.md)
+
+Protocol note:
+
+- Rollback/relay wire protocol is now v5. Legacy v4 peers are rejected with
+  `relay_error` / `client_welcome.reason=protocol_mismatch_v5_required`.
 
 ## Runtime surfaces
 

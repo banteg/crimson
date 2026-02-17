@@ -3,8 +3,12 @@ from __future__ import annotations
 from crimson.net.relay_protocol import (
     DEFAULT_PORT,
     INPUT_DELAY_TICKS,
+    LINK_TIMEOUT_MS,
+    PING_INTERVAL_MS,
     PROTOCOL_VERSION,
     RECONNECT_TIMEOUT_MS,
+    RESYNC_CHUNK_PAYLOAD_BYTES,
+    RESYNC_MAX_SNAPSHOT_BYTES,
     ROLLBACK_MAX_TICKS,
     ClientHello,
     LegacyLockstepControl,
@@ -12,6 +16,7 @@ from crimson.net.relay_protocol import (
     RelayError,
     RbInputBatch,
     RbInputSample,
+    RbResyncRequest,
     RoomCreate,
     decode_packet,
     encode_packet,
@@ -75,12 +80,16 @@ def test_relay_packet_round_trip_for_legacy_tunnel_message() -> None:
     assert decoded.message.payload == b"legacy"
 
 
-def test_relay_protocol_constants_match_v4_spec() -> None:
-    assert PROTOCOL_VERSION == 4
+def test_relay_protocol_constants_match_v5_spec() -> None:
+    assert PROTOCOL_VERSION == 5
     assert DEFAULT_PORT == 31993
     assert INPUT_DELAY_TICKS == 1
     assert ROLLBACK_MAX_TICKS == 8
     assert RECONNECT_TIMEOUT_MS == 15_000
+    assert LINK_TIMEOUT_MS == 5_000
+    assert PING_INTERVAL_MS == 250
+    assert RESYNC_CHUNK_PAYLOAD_BYTES == 1_024
+    assert RESYNC_MAX_SNAPSHOT_BYTES == 2_097_152
 
 
 def test_relay_error_round_trip() -> None:
@@ -104,3 +113,24 @@ def test_client_hello_round_trip() -> None:
 
     assert isinstance(decoded.message, ClientHello)
     assert decoded.message.build_id == "dev"
+
+
+def test_rb_resync_request_round_trip_v5_fields() -> None:
+    packet = Packet(
+        seq=2,
+        ack=1,
+        reliable=True,
+        message=RbResyncRequest(
+            request_id="rq123",
+            from_tick=12,
+            reason="rollback_window_overflow",
+            requested_by_slot=1,
+        ),
+    )
+
+    decoded = decode_packet(encode_packet(packet))
+
+    assert isinstance(decoded.message, RbResyncRequest)
+    assert decoded.message.request_id == "rq123"
+    assert decoded.message.from_tick == 12
+    assert decoded.message.requested_by_slot == 1

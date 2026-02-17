@@ -11,7 +11,7 @@ tags:
 Rollback netcode is the primary multiplayer path for the rewrite, for both LAN
 and internet sessions. Network sessions are room-code based and relay-backed.
 
-Last reviewed: **2026-02-16**
+Last reviewed: **2026-02-17**
 
 ## Locked product decisions
 
@@ -23,7 +23,7 @@ Last reviewed: **2026-02-16**
 - Rollback cap: fixed `8` ticks.
 - Input delay default: `1` tick.
 - Reconnect timeout default: `15_000` ms.
-- Compatibility: relay protocol v4; old LAN protocol compatibility is intentionally broken.
+- Compatibility: relay protocol v5; old LAN/relay compatibility is intentionally broken.
 
 ## Runtime surfaces
 
@@ -51,7 +51,7 @@ Legacy wrappers (deprecated for one release cycle):
   implementation.
 - `src/crimson/game/loop_view.py` selects runtime strategy via `netcode_mode`.
 
-## Relay protocol v4
+## Relay protocol v5
 
 Implemented in `src/crimson/net/relay_protocol.py` and
 `src/crimson/net/relay_reliable.py`.
@@ -64,6 +64,9 @@ Implemented in `src/crimson/net/relay_protocol.py` and
     `rb_resync_chunk`, `rb_resync_commit`
   - legacy tunnel: `legacy_lockstep_input_batch`,
     `legacy_lockstep_tick_frame`, `legacy_lockstep_control`
+- `rb_resync_*` carries `request_id`; begin/commit include snapshot tick and
+  sha256 checksum; begin includes codec + compressed/uncompressed size.
+- Runtime timeout policy: `LINK_TIMEOUT_MS=5000`, `PING_INTERVAL_MS=250`.
 - Reliable control uses seq/ack/resend via `RelayReliableLink`.
 - Rollback input batches are mostly unreliable with local resend history.
 
@@ -96,7 +99,10 @@ Primary tests:
 - `tests/test_relay_protocol.py`
 - `tests/test_relay_service.py`
 - `tests/test_rollback_core.py`
+- `tests/test_rollback_resync_v5.py`
+- `tests/test_net_runtime_heartbeat.py`
 - `tests/test_net_runtime_rollback.py`
+- `tests/test_net_runtime_resync.py`
 - `tests/test_net_runtime_modes.py`
 - `tests/test_net_reconnect.py`
 - `tests/test_net_runtime_lockstep_fallback.py`

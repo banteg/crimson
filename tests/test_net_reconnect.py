@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from crimson.net.net_runtime import NetRuntime, NetRuntimeConfig
-from crimson.net.relay_protocol import PeerDisconnect, RelaySlot, RoomStart, RoomState
+from crimson.net.relay_protocol import ClientHello, ClientWelcome, PeerDisconnect, RelaySlot, RoomJoin, RoomStart, RoomState
 
 
 def _started_runtime(monkeypatch) -> tuple[NetRuntime, list[tuple[tuple[str, int], Any]]]:
@@ -40,6 +40,7 @@ def _started_runtime(monkeypatch) -> tuple[NetRuntime, list[tuple[tuple[str, int
             input_delay_ticks=0,
             rollback_max_ticks=8,
             netcode_mode="rollback",
+            reconnect_token="tok123",
         ),
         now_ms=1000,
     )
@@ -86,3 +87,21 @@ def test_reconnect_room_state_clears_pause_and_resumes(monkeypatch) -> None:
     frame = runtime.pop_tick_frame()
     assert frame is not None
     assert runtime.error == ""
+
+
+def test_link_timeout_starts_self_reconnect_join_with_token(monkeypatch) -> None:
+    runtime, sent = _started_runtime(monkeypatch)
+    runtime._last_seen_ms = 1000
+
+    runtime.update(now_ms=6201)
+    assert runtime._reconnect_state == "self_reconnecting"
+
+    runtime.update(now_ms=6202)
+    messages = [packet.message for _addr, packet in sent]
+    assert any(isinstance(message, ClientHello) for message in messages)
+
+    sent.clear()
+    runtime._handle_message(message=ClientWelcome(accepted=True, peer_id="p1"), now_ms=6203)
+    runtime.update(now_ms=6204)
+    join_messages = [packet.message for _addr, packet in sent]
+    assert any(isinstance(message, RoomJoin) and message.reconnect_token == "tok123" for message in join_messages)

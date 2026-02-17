@@ -4,7 +4,7 @@ This page tracks the current code-level state of the rewrite under `src/`, and t
 largest remaining parity gaps vs the classic Windows build (v1.9.93) documented in
 [`docs/crimsonland-exe/`](../crimsonland-exe/).
 
-Last reviewed: **2026-02-16**
+Last reviewed: **2026-02-17**
 
 ## What you can run today
 
@@ -81,8 +81,9 @@ Last reviewed: **2026-02-16**
   - Code: `src/crimson/quests/tier*.py`, `src/crimson/quests/runtime.py`
 - **Multiplayer**: local 2-4 player input-frame flow is implemented for Survival/Rush/Quest.
   - Code: `src/crimson/modes/base_gameplay_mode.py`, `src/crimson/local_input.py`
-- **Rollback-primary netplay**: relay protocol v4 + relay service + rollback runtime are in-tree and selected by default for network sessions.
+- **Rollback-primary netplay**: relay protocol v5 + relay service + rollback runtime are in-tree and selected by default for network sessions.
   - Code: `src/crimson/net/relay_protocol.py`, `src/crimson/net/relay_service.py`, `src/crimson/net/net_runtime.py`, `src/crimson/net/rollback.py`, `src/crimson/game/loop_view.py`
+  - v5 adds end-to-end `rb_resync_request/begin/chunk/commit` fields (`request_id`, checksum, codec, snapshot tick), 5s link timeout + dedicated 250ms ping cadence, and reconnect/resync completion hooks.
   - Docs: [`docs/rewrite/netplay-rollback.md`](netplay-rollback.md), [`docs/rewrite/lan-lockstep.md`](lan-lockstep.md)
 - **Progression/unlocks/persistence**: quest unlock indices, mode play counters, and status persistence are wired.
   - Code: `src/crimson/persistence/save_status.py`, `src/crimson/gameplay.py`
@@ -103,7 +104,7 @@ Last reviewed: **2026-02-16**
   - Tests: `tests/test_step_pipeline_parity.py`, `tests/test_replay_runners.py`
   - Code: `src/crimson/sim/sessions.py`, `src/crimson/sim/runners/*.py`
 - Network protocol/runtime behavior is covered by unit and wiring tests.
-  - Tests: `tests/test_relay_protocol.py`, `tests/test_relay_service.py`, `tests/test_rollback_core.py`, `tests/test_net_runtime_rollback.py`, `tests/test_net_runtime_modes.py`, `tests/test_net_reconnect.py`, `tests/test_net_runtime_lockstep_fallback.py`, `tests/test_net_cli.py`, `tests/test_net_ui_flow.py`, plus legacy suites `tests/test_lan_protocol.py`, `tests/test_lan_lockstep_host.py`, `tests/test_lan_lockstep_client.py`
+  - Tests: `tests/test_relay_protocol.py`, `tests/test_relay_service.py`, `tests/test_rollback_core.py`, `tests/test_rollback_resync_v5.py`, `tests/test_net_runtime_heartbeat.py`, `tests/test_net_runtime_rollback.py`, `tests/test_net_runtime_resync.py`, `tests/test_net_runtime_modes.py`, `tests/test_net_reconnect.py`, `tests/test_net_runtime_lockstep_fallback.py`, `tests/test_net_cli.py`, `tests/test_net_ui_flow.py`, plus legacy suites `tests/test_lan_protocol.py`, `tests/test_lan_lockstep_host.py`, `tests/test_lan_lockstep_client.py`
 - Replay-side checkpoint differential comparison is reusable via CLI and library helpers.
   - Code: `src/crimson/original/diff.py`
   - Command: `uv run crimson replay diff-checkpoints <expected> <actual>`

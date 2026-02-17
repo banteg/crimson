@@ -621,6 +621,7 @@ class SurvivalMode(BaseGameplayMode):
 
         runtime.update()
         role = str(self._lan_role)
+        self._consume_net_runtime_recovery(mode_name="survival")
         if str(getattr(runtime, "error", "") or ""):
             self.close_requested = True
             return
@@ -878,6 +879,21 @@ class SurvivalMode(BaseGameplayMode):
                 world_events = tick.step.events
 
                 self._lan_last_tick_index = int(frame.tick_index)
+                self._store_net_runtime_snapshot(
+                    mode_name="survival",
+                    tick_index=int(frame.tick_index),
+                    session_state={
+                        "elapsed_ms": float(session.elapsed_ms),
+                        "stage": int(session.stage),
+                        "spawn_cooldown_ms": float(session.spawn_cooldown_ms),
+                    },
+                    mode_state={
+                        "survival_elapsed_ms": float(self._survival.elapsed_ms),
+                        "survival_stage": int(self._survival.stage),
+                        "survival_spawn_cooldown": float(self._survival.spawn_cooldown),
+                        "perk_pending_count": int(self.state.perk_selection.pending_count),
+                    },
+                )
                 _apply_due_perk_events()
                 if self._perk_menu.active:
                     return False

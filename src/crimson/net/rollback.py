@@ -127,6 +127,49 @@ class RollbackController:
         self._pending_resync_from = None
         return None if value is None else int(value)
 
+    def rebuild_emitted_from(self, from_tick: int) -> list[RollbackFrame]:
+        start = max(0, int(from_tick))
+        head = int(self._next_emit_tick)
+        if start >= int(head):
+            return []
+
+        rebuilt: list[RollbackFrame] = []
+        for tick in range(int(start), int(head)):
+            predicted_slots: list[int] = []
+            frame_inputs: list[PackedPlayerInput] = []
+            for slot in range(int(self.player_count)):
+                value = self._known_for_tick(int(slot), int(tick))
+                if value is None:
+                    predicted_slots.append(int(slot))
+                    value = self._predict_for_tick(int(slot), int(tick))
+                frame_inputs.append(list(value))
+            self._emitted_frames[int(tick)] = [list(item) for item in frame_inputs]
+            rebuilt.append(
+                RollbackFrame(
+                    tick_index=int(tick),
+                    frame_inputs=[list(item) for item in frame_inputs],
+                    predicted_slots=tuple(predicted_slots),
+                )
+            )
+        return rebuilt
+
+    def reset_to_tick(self, tick_index: int) -> None:
+        target = max(0, int(tick_index))
+        self._capture_tick = max(int(self._capture_tick), int(target))
+        self._next_emit_tick = max(int(self._next_emit_tick), int(target))
+        self._pending_frames.clear()
+        self._pending_rollback_from = None
+        self._pending_resync_from = None
+        for slot_map in self._known_by_slot.values():
+            for tick in list(slot_map.keys()):
+                if int(tick) >= int(target):
+                    continue
+                slot_map.pop(int(tick), None)
+        for tick in list(self._emitted_frames.keys()):
+            if int(tick) >= int(target):
+                continue
+            self._emitted_frames.pop(int(tick), None)
+
     def _emit_ready_frames(self) -> None:
         local_known = self._known_by_slot[int(self.local_slot_index)]
         while int(self._next_emit_tick) in local_known:
