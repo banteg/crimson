@@ -188,3 +188,43 @@ def test_static_scene_collect_shadow_state_uses_static_occluders_and_emitters() 
     assert view._static_scene_enabled is True
     assert len(view._last_occluders) > 0
     assert len(view._last_lights) > 0
+
+
+def test_adjust_selected_tune_rt_scale_resets_shadow_rt_size() -> None:
+    view = LightingDebugView(ViewContext(assets_dir=Path(".") / "artifacts" / "assets"))
+    rt_param_index = 0
+    for i in range(32):
+        view._tune_param_index = i
+        if view._selected_tune_param().key == "rt_scale":
+            rt_param_index = i
+            break
+
+    view._tune_param_index = int(rt_param_index)
+    assert view._selected_tune_param().key == "rt_scale"
+    view._shadow_rt_size = (320, 180)
+    view._shadow_accum_ready = True
+    view._adjust_selected_tune(+1)
+
+    assert view._shadow_rt_size == (0, 0)
+    assert view._shadow_accum_ready is False
+
+
+def test_dump_all_modes_honors_autodiag_frame_budget(monkeypatch: pytest.MonkeyPatch) -> None:
+    view = LightingDebugView(ViewContext(assets_dir=Path(".") / "artifacts" / "assets"))
+    view._dump_all_modes_enabled = True
+    view._dump_mode_sequence = (0, 1, 2, 3)
+    view._autodiag_enabled = True
+    view._autodiag_total_frames = 30
+
+    monkeypatch.setattr(view, "_reset_scene", lambda: None)
+    monkeypatch.setattr(view, "_emit_profile", lambda: None)
+    monkeypatch.setattr(view, "_set_tune_value", lambda key, value, **kwargs: None)
+
+    safety = 0
+    while not view.close_requested and safety < 200:
+        view._run_dump_all_modes()
+        safety += 1
+
+    assert view.close_requested is True
+    assert view._dump_total_frames == 30
+    assert view._dump_total_frame == 30

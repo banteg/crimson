@@ -1010,6 +1010,9 @@ class LightingDebugView:
         self._dump_mode_sequence: tuple[int, ...] = tuple(range(len(SHADOW_DEBUG_MODE_NAMES)))
         self._dump_mode_index = 0
         self._dump_mode_frame = 0
+        self._dump_mode_target = max(1, int(DUMP_ALL_SETTLE_FRAMES))
+        self._dump_total_frames = 0
+        self._dump_total_frame = 0
         self._dump_mode_emitter_timer = 0
         self._dump_modes_started = False
 
@@ -1092,9 +1095,20 @@ class LightingDebugView:
             param.maximum,
         )
         self._set_tune_value(param.key, next_value, invalidate_history=param.key != "rt_scale")
-        if param.key == "shadow_rt_scale":
+        if param.key == "rt_scale":
             self._shadow_rt_size = (0, 0)
             self._invalidate_shadow_history()
+
+    def _dump_all_total_frames(self) -> int:
+        mode_count = max(1, int(len(self._dump_mode_sequence)))
+        if self._autodiag_enabled:
+            return max(mode_count, int(self._autodiag_total_frames))
+        return mode_count * int(DUMP_ALL_SETTLE_FRAMES)
+
+    def _next_dump_mode_target_frames(self) -> int:
+        modes_left = max(1, int(len(self._dump_mode_sequence)) - int(self._dump_mode_index))
+        frames_left = max(modes_left, int(self._dump_total_frames) - int(self._dump_total_frame))
+        return max(1, frames_left // modes_left)
 
     def _run_autodiag(self) -> None:
         if self._dump_all_modes_enabled:
@@ -1165,10 +1179,16 @@ class LightingDebugView:
             self._reset_scene()
             self._profile_index = 1
             self._spawn_preset_index = 0
+            self._dump_total_frames = self._dump_all_total_frames()
+            self._dump_total_frame = 0
+            self._dump_mode_frame = 0
+            self._dump_mode_index = 0
+            self._dump_mode_target = self._next_dump_mode_target_frames()
+            self._dump_mode_emitter_timer = 0
             print(
                 "[lighting-debug] dump-all start "
                 f"modes={','.join(str(mode) for mode in self._dump_mode_sequence)} "
-                f"settle={DUMP_ALL_SETTLE_FRAMES}"
+                f"total_frames={self._dump_total_frames}"
             )
 
         self._dump_mode_emitter_timer += 1
@@ -1181,19 +1201,20 @@ class LightingDebugView:
             self._set_shadow_debug_mode(mode)
 
         self._dump_mode_frame += 1
-        if self._dump_mode_frame == DUMP_ALL_SETTLE_FRAMES:
-            self._screenshot_requested = True
-            print(f"[lighting-debug] dump-all capture mode={mode} ({_shadow_debug_mode_name(mode)})")
-            return
-        if self._dump_mode_frame < DUMP_ALL_SETTLE_FRAMES:
+        self._dump_total_frame += 1
+        if self._dump_mode_frame < self._dump_mode_target:
             return
 
+        self._screenshot_requested = True
+        print(f"[lighting-debug] dump-all capture mode={mode} ({_shadow_debug_mode_name(mode)})")
         self._dump_mode_frame = 0
         self._dump_mode_index += 1
         if self._dump_mode_index >= len(self._dump_mode_sequence):
             self._screenshot_requested = True
             self.close_requested = True
             print("[lighting-debug] dump-all done")
+            return
+        self._dump_mode_target = self._next_dump_mode_target_frames()
 
     def _shadow_rt_alpha_stats(self) -> tuple[int, float, int] | None:
         rt = self._shadow_rt
