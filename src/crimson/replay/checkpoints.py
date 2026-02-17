@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import gzip
 import hashlib
+import io
 import json
 import os
 from collections.abc import Sequence
@@ -15,6 +16,8 @@ from ..sim.state_types import PlayerState
 from ..sim.world_state import WorldState
 
 FORMAT_VERSION = 1
+_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES = 64 * 1024 * 1024
+_MAX_CHECKPOINTS_PAYLOAD_ENV = "CRIMSON_REPLAY_CHECKPOINTS_MAX_DECOMPRESSED_BYTES"
 
 
 class ReplayCheckpointsError(ValueError):
@@ -102,6 +105,32 @@ def resolve_checkpoint_sample_rate(default_rate: int) -> int:
         return max(1, int(raw))
     except ValueError:
         return rate
+
+
+def _max_checkpoints_payload_bytes() -> int:
+    raw = os.environ.get(_MAX_CHECKPOINTS_PAYLOAD_ENV)
+    if raw is None:
+        return int(_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES)
+    try:
+        parsed = int(raw)
+    except ValueError:
+        return int(_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES)
+    if parsed <= 0:
+        return int(_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES)
+    return int(parsed)
+
+
+def _decompress_gzip_checkpoints(data: bytes, *, max_output_bytes: int) -> bytes:
+    try:
+        with gzip.GzipFile(fileobj=io.BytesIO(data), mode="rb") as stream:
+            payload = stream.read(int(max_output_bytes) + 1)
+    except OSError as exc:
+        raise ReplayCheckpointsError("invalid checkpoints gzip payload") from exc
+    if len(payload) > int(max_output_bytes):
+        raise ReplayCheckpointsError(
+            f"checkpoints payload too large after gzip decompression (> {int(max_output_bytes)} bytes)",
+        )
+    return payload
 
 
 def _bonus_timer_ms(value: float) -> int:
@@ -270,9 +299,15 @@ def dump_checkpoints(checkpoints: ReplayCheckpoints) -> bytes:
 
 
 def load_checkpoints(data: bytes) -> ReplayCheckpoints:
+    max_payload_bytes = int(_max_checkpoints_payload_bytes())
     if data.startswith(b"\x1f\x8b"):
-        data = gzip.decompress(data)
-    obj = json.loads(data.decode("utf-8"))
+        data = _decompress_gzip_checkpoints(data, max_output_bytes=max_payload_bytes)
+    if len(data) > int(max_payload_bytes):
+        raise ReplayCheckpointsError(f"checkpoints payload too large (> {int(max_payload_bytes)} bytes)")
+    try:
+        obj = json.loads(data.decode("utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ReplayCheckpointsError("invalid checkpoints JSON payload") from exc
     if not isinstance(obj, dict):
         raise ReplayCheckpointsError("checkpoints root must be an object")
     version = int(obj.get("v") or 0)

@@ -3,9 +3,12 @@ from __future__ import annotations
 import gzip
 import json
 
+import pytest
+
 from crimson.replay.checkpoints import (
     FORMAT_VERSION,
     ReplayCheckpoints,
+    ReplayCheckpointsError,
     build_checkpoint,
     dump_checkpoints,
     load_checkpoints,
@@ -115,6 +118,18 @@ def test_load_checkpoints_supports_legacy_without_perk_object() -> None:
     assert loaded.checkpoints[0].events.hit_count == -1
     assert loaded.checkpoints[0].events.pickup_count == -1
     assert loaded.checkpoints[0].events.sfx_count == -1
+
+
+def test_load_checkpoints_rejects_invalid_gzip_payload() -> None:
+    with pytest.raises(ReplayCheckpointsError, match="invalid checkpoints gzip payload"):
+        load_checkpoints(b"\x1f\x8bnot-a-gzip-stream")
+
+
+def test_load_checkpoints_rejects_gzip_payload_over_size_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("CRIMSON_REPLAY_CHECKPOINTS_MAX_DECOMPRESSED_BYTES", "4")
+    payload = gzip.compress(b"12345", mtime=0)
+    with pytest.raises(ReplayCheckpointsError, match="payload too large"):
+        load_checkpoints(payload)
 
 
 def test_resolve_checkpoint_sample_rate_env_override(monkeypatch) -> None:

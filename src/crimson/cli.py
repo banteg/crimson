@@ -801,9 +801,9 @@ def cmd_replay_verify(
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
     strict_events: bool = typer.Option(
-        False,
+        True,
         "--strict-events/--lenient-events",
-        help="fail on unsupported replay events/perk picks (default: lenient)",
+        help="fail on unsupported replay events/perk picks (default: strict)",
     ),
     trace_rng: bool = typer.Option(
         False,
@@ -934,9 +934,14 @@ def cmd_replay_verify_checkpoints(
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
     strict_events: bool = typer.Option(
-        False,
+        True,
         "--strict-events/--lenient-events",
-        help="fail on unsupported replay events/perk picks (default: lenient)",
+        help="fail on unsupported replay events/perk picks (default: strict)",
+    ),
+    strict_integrity: bool = typer.Option(
+        True,
+        "--strict-integrity/--lenient-integrity",
+        help="fail if checkpoints replay_sha256 differs from replay file (default: strict)",
     ),
     trace_rng: bool = typer.Option(
         False,
@@ -955,7 +960,7 @@ def cmd_replay_verify_checkpoints(
 
     from .original.diff import compare_checkpoints
     from .replay import ReplayCodecError, load_replay
-    from .replay.checkpoints import default_checkpoints_path, load_checkpoints_file
+    from .replay.checkpoints import ReplayCheckpointsError, default_checkpoints_path, load_checkpoints_file
     from .sim.driver.replay_runner import ReplayRunnerError, run_replay
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
@@ -981,12 +986,20 @@ def cmd_replay_verify_checkpoints(
         typer.echo(f"checkpoints file not found: {checkpoints_path}", err=True)
         raise typer.Exit(code=1)
 
-    expected = load_checkpoints_file(checkpoints_path)
+    try:
+        expected = load_checkpoints_file(checkpoints_path)
+    except ReplayCheckpointsError as exc:
+        typer.echo(f"replay verification failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
     if expected.replay_sha256 and str(expected.replay_sha256) != str(replay_sha256):
-        typer.echo(
-            f"warning: checkpoints replay_sha256 mismatch (checkpoints={expected.replay_sha256!r}, replay={replay_sha256!r})",
-            err=True,
+        mismatch = (
+            "checkpoints replay_sha256 mismatch "
+            f"(checkpoints={expected.replay_sha256!r}, replay={replay_sha256!r})"
         )
+        if strict_integrity:
+            typer.echo(f"replay verification failed: {mismatch}", err=True)
+            raise typer.Exit(code=1)
+        typer.echo(f"warning: {mismatch}", err=True)
 
     checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected.checkpoints}
     actual = []

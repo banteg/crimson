@@ -9,12 +9,13 @@ from typer.testing import CliRunner
 
 from crimson.cli import app
 from crimson.game_modes import GameMode
-from crimson.replay import Replay, ReplayHeader, ReplayRecorder, dump_replay
+from crimson.replay import Replay, ReplayHeader, ReplayRecorder, UnknownEvent, dump_replay
 from crimson.replay.checkpoints import (
     FORMAT_VERSION,
     ReplayCheckpoints,
     default_checkpoints_path,
     dump_checkpoints_file,
+    load_checkpoints_file,
 )
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.input import PlayerInput
@@ -41,7 +42,13 @@ def _write_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
     return replay_path
 
 
-def _write_checkpoint_sidecar(replay_path: Path, replay: Replay, *, mutate_command_hash: bool = False) -> Path:
+def _write_checkpoint_sidecar(
+    replay_path: Path,
+    replay: Replay,
+    *,
+    mutate_command_hash: bool = False,
+    mutate_replay_sha256: bool = False,
+) -> Path:
     checkpoint_ticks = {0}
     checkpoints = []
     run_replay(replay, checkpoints_out=checkpoints, checkpoint_ticks=checkpoint_ticks)
@@ -54,6 +61,11 @@ def _write_checkpoint_sidecar(replay_path: Path, replay: Replay, *, mutate_comma
         sample_rate=1,
         checkpoints=list(checkpoints),
     )
+    if mutate_replay_sha256:
+        mismatch = "0" * 64
+        if mismatch == str(replay_sha256):
+            mismatch = "f" * 64
+        payload = replace(payload, replay_sha256=mismatch)
     sidecar_path = default_checkpoints_path(replay_path)
     dump_checkpoints_file(sidecar_path, payload)
     return sidecar_path
@@ -171,6 +183,30 @@ def test_replay_verify_submitted_score_mismatch_exit_three(tmp_path: Path) -> No
     assert payload["score_claim"]["match"] is False
 
 
+def test_replay_verify_is_strict_by_default(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay.events.append(UnknownEvent(tick_index=0, kind="unknown_event", payload=[]))
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["replay", "verify", str(replay_path)])
+
+    assert result.exit_code == 1
+    assert "unsupported replay event kind" in result.output
+
+
+def test_replay_verify_can_run_lenient_event_mode(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay.events.append(UnknownEvent(tick_index=0, kind="unknown_event", payload=[]))
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["replay", "verify", str(replay_path), "--lenient-events"])
+
+    assert result.exit_code == 0, result.output
+    assert "ok:" in result.output
+
+
 def test_replay_verify_auto_metric_uses_elapsed_ms_for_rush(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.RUSH, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="rush.crdemo.gz")
@@ -281,6 +317,32 @@ def test_replay_verify_checkpoints_reports_mismatch(tmp_path: Path) -> None:
 
     assert result.exit_code == 1
     assert "checkpoint command mismatch at tick=0" in result.output
+
+
+def test_replay_verify_checkpoints_fails_on_sha_mismatch_by_default(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    _write_checkpoint_sidecar(replay_path, replay, mutate_replay_sha256=True)
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["replay", "verify-checkpoints", str(replay_path)])
+
+    assert result.exit_code == 1
+    assert "replay_sha256 mismatch" in result.output
+
+
+def test_replay_verify_checkpoints_can_run_lenient_integrity(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crdemo.gz")
+    sidecar = _write_checkpoint_sidecar(replay_path, replay, mutate_replay_sha256=True)
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["replay", "verify-checkpoints", str(replay_path), "--lenient-integrity"])
+
+    assert result.exit_code == 0, result.output
+    assert "warning: checkpoints replay_sha256 mismatch" in result.output
+    loaded = load_checkpoints_file(sidecar)
+    assert loaded.replay_sha256 != hashlib.sha256(replay_path.read_bytes()).hexdigest()
 
 
 def test_replay_diff_checkpoints_still_reports_success(tmp_path: Path) -> None:

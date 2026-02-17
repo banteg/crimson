@@ -107,6 +107,18 @@ def test_replay_codec_rejects_legacy_json_payload() -> None:
         load_replay(b'{"header":{"game_mode_id":1,"seed":1}}')
 
 
+def test_replay_codec_rejects_invalid_gzip_payload() -> None:
+    with pytest.raises(ReplayCodecError, match="invalid replay gzip payload"):
+        load_replay(b"\x1f\x8bnot-a-gzip-stream")
+
+
+def test_replay_codec_rejects_gzip_payload_over_size_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("CRIMSON_REPLAY_MAX_DECOMPRESSED_BYTES", "4")
+    payload = gzip.compress(b"12345", mtime=0)
+    with pytest.raises(ReplayCodecError, match="payload too large"):
+        load_replay(payload)
+
+
 def test_replay_dump_is_stable() -> None:
     header = ReplayHeader(game_mode_id=1, seed=1, player_count=1)
     rec = ReplayRecorder(header)

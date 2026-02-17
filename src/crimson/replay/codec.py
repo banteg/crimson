@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import gzip
+import io
+import os
 import struct
 from pathlib import Path
 
@@ -23,6 +25,8 @@ from .types import (
 )
 
 _GZIP_MAGIC = b"\x1f\x8b"
+_DEFAULT_MAX_REPLAY_PAYLOAD_BYTES = 64 * 1024 * 1024
+_MAX_REPLAY_PAYLOAD_ENV = "CRIMSON_REPLAY_MAX_DECOMPRESSED_BYTES"
 
 
 class ReplayCodecError(ValueError):
@@ -82,6 +86,32 @@ _REPLAY_DECODER = msgspec.msgpack.Decoder(type=_ReplayWire)
 
 def _is_gzip(data: bytes) -> bool:
     return data.startswith(_GZIP_MAGIC)
+
+
+def _max_replay_payload_bytes() -> int:
+    raw = os.environ.get(_MAX_REPLAY_PAYLOAD_ENV)
+    if raw is None:
+        return int(_DEFAULT_MAX_REPLAY_PAYLOAD_BYTES)
+    try:
+        parsed = int(raw)
+    except ValueError:
+        return int(_DEFAULT_MAX_REPLAY_PAYLOAD_BYTES)
+    if parsed <= 0:
+        return int(_DEFAULT_MAX_REPLAY_PAYLOAD_BYTES)
+    return int(parsed)
+
+
+def _decompress_gzip_replay(data: bytes, *, max_output_bytes: int) -> bytes:
+    try:
+        with gzip.GzipFile(fileobj=io.BytesIO(data), mode="rb") as stream:
+            payload = stream.read(int(max_output_bytes) + 1)
+    except OSError as exc:
+        raise ReplayCodecError("invalid replay gzip payload") from exc
+    if len(payload) > int(max_output_bytes):
+        raise ReplayCodecError(
+            f"replay payload too large after gzip decompression (> {int(max_output_bytes)} bytes)",
+        )
+    return payload
 
 
 def _quantize_f32(value: float) -> float:
@@ -295,8 +325,11 @@ def dump_replay(replay: Replay) -> bytes:
 
 
 def load_replay(data: bytes) -> Replay:
+    max_payload_bytes = int(_max_replay_payload_bytes())
     if _is_gzip(data):
-        data = gzip.decompress(data)
+        data = _decompress_gzip_replay(data, max_output_bytes=max_payload_bytes)
+    if len(data) > int(max_payload_bytes):
+        raise ReplayCodecError(f"replay payload too large (> {int(max_payload_bytes)} bytes)")
 
     stripped = data.lstrip()
     if stripped.startswith((b"{", b"[")):
