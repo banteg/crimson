@@ -995,6 +995,11 @@ def cmd_replay_benchmark(
     ),
     runs: int = typer.Option(5, "--runs", min=1, help="number of measured benchmark runs"),
     warmup_runs: int = typer.Option(1, "--warmup-runs", min=0, help="warmup runs before measured timing"),
+    mode: Literal["headless", "render"] = typer.Option(
+        "headless",
+        "--mode",
+        help="benchmark mode: headless|render",
+    ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
     strict_events: bool = typer.Option(
         True,
@@ -1035,11 +1040,15 @@ def cmd_replay_benchmark(
         help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
     ),
 ) -> None:
-    """Benchmark headless replay simulation throughput, with optional profiler hotspots."""
+    """Benchmark replay throughput, with optional profiler hotspots."""
     import hashlib
 
     from .replay import ReplayCodecError, load_replay
-    from .sim.driver.replay_benchmark import ReplayBenchmarkError, run_replay_benchmark
+    from .sim.driver.replay_benchmark import (
+        ReplayBenchmarkError,
+        run_replay_benchmark,
+        run_replay_render_benchmark,
+    )
     from .sim.driver.replay_runner import ReplayRunnerError
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
@@ -1055,18 +1064,34 @@ def cmd_replay_benchmark(
 
     try:
         replay = load_replay(replay_bytes)
-        benchmark = run_replay_benchmark(
-            replay,
-            runs=int(runs),
-            warmup_runs=int(warmup_runs),
-            max_ticks=max_ticks,
-            strict_events=bool(strict_events),
-            trace_rng=bool(trace_rng),
-            profile=bool(profile),
-            profile_sort=profile_sort,
-            top=int(top),
-            profile_out=profile_out,
-        )
+        if str(mode) == "render":
+            benchmark = run_replay_render_benchmark(
+                replay,
+                replay_path=Path(replay_path),
+                base_dir=Path(base_dir),
+                runs=int(runs),
+                warmup_runs=int(warmup_runs),
+                max_ticks=max_ticks,
+                strict_events=bool(strict_events),
+                trace_rng=bool(trace_rng),
+                profile=bool(profile),
+                profile_sort=profile_sort,
+                top=int(top),
+                profile_out=profile_out,
+            )
+        else:
+            benchmark = run_replay_benchmark(
+                replay,
+                runs=int(runs),
+                warmup_runs=int(warmup_runs),
+                max_ticks=max_ticks,
+                strict_events=bool(strict_events),
+                trace_rng=bool(trace_rng),
+                profile=bool(profile),
+                profile_sort=profile_sort,
+                top=int(top),
+                profile_out=profile_out,
+            )
     except (ReplayCodecError, ReplayBenchmarkError, ReplayRunnerError) as exc:
         typer.echo(f"replay benchmark failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
@@ -1097,6 +1122,7 @@ def cmd_replay_benchmark(
         "replay": str(replay_path),
         "replay_sha256": str(replay_sha256),
         "settings": {
+            "mode": str(mode),
             "runs": int(runs),
             "warmup_runs": int(warmup_runs),
             "max_ticks": (int(max_ticks) if max_ticks is not None else None),
@@ -1137,6 +1163,7 @@ def cmd_replay_benchmark(
 
     typer.echo(
         "ok: "
+        f"mode={mode} "
         f"runs={len(benchmark.samples)} warmup_runs={int(warmup_runs)} "
         f"ticks={int(benchmark.run_result.ticks)} "
         f"wall_ms_p50={float(benchmark.wall_ms.p50):.3f} "

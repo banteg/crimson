@@ -74,11 +74,17 @@ class ReplayPlaybackMode:
         replay_path: Path,
         config: CrimsonConfig,
         console: ConsoleState,
+        max_ticks: int | None = None,
+        strict_events: bool = True,
+        trace_rng: bool = False,
     ) -> None:
         self._ctx = ctx
         self._replay_path = Path(replay_path)
         self._config = config
         self._console = console
+        self._max_ticks = (max(0, int(max_ticks)) if max_ticks is not None else None)
+        self._strict_events = bool(strict_events)
+        self._trace_rng = bool(trace_rng)
 
         self.close_requested = False
 
@@ -108,6 +114,14 @@ class ReplayPlaybackMode:
 
         self._audio: AudioState | None = None
         self._audio_rng: random.Random | None = None
+
+    @property
+    def tick_index(self) -> int:
+        return int(self._tick_index)
+
+    @property
+    def finished(self) -> bool:
+        return bool(self._finished)
 
     @staticmethod
     def _format_time_text(seconds: float) -> str:
@@ -477,7 +491,7 @@ class ReplayPlaybackMode:
             dt_frame=float(dt_frame),
             world=world.world_state,
             game_mode_id=int(replay.header.game_mode_id),
-            strict_events=True,
+            strict_events=bool(self._strict_events),
         )
         if bootstrap_elapsed_ms is not None:
             world._elapsed_ms = float(bootstrap_elapsed_ms)
@@ -500,6 +514,7 @@ class ReplayPlaybackMode:
         tick = session.step_tick(
             dt_frame=float(dt_frame),
             inputs=player_inputs,
+            trace_rng=bool(self._trace_rng),
         )
         if post_step_events:
             self._apply_tick_events(post_step_events, tick_index=tick_index, dt_frame=dt_frame)
@@ -527,6 +542,7 @@ class ReplayPlaybackMode:
         tick = session.step_tick(
             dt_frame=float(dt_frame),
             inputs=player_inputs,
+            trace_rng=bool(self._trace_rng),
         )
         world.apply_step_result(
             tick.step,
@@ -549,6 +565,7 @@ class ReplayPlaybackMode:
         tick = session.step_tick(
             dt_frame=float(dt_frame),
             inputs=player_inputs,
+            trace_rng=bool(self._trace_rng),
         )
         world.apply_step_result(
             tick.step,
@@ -586,6 +603,9 @@ class ReplayPlaybackMode:
                     dt_frame=float(self._dt_frame),
                 )
                 self._terminal_events_applied = True
+            self._finished = True
+            return
+        if self._max_ticks is not None and tick_index >= int(self._max_ticks):
             self._finished = True
             return
 

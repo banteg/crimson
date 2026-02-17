@@ -108,18 +108,25 @@ By default (`--score-metric auto`), claim comparison is mode-aware:
 - Survival -> `score_xp`
 - Rush / Quests -> `elapsed_ms`
 
-## Replay benchmark (headless throughput + optional hotspots)
+## Replay benchmark (headless/render throughput + optional hotspots)
 
 `replay benchmark` runs replay simulation multiple times and reports wall-time
 throughput metrics (`wall_ms`, ticks/second, and realtime multiplier).
 
-Timing scope is simulation-only (`run_replay`), so decode/load costs are not
-included in measured samples.
+Use `--mode headless` (default) for simulation-only timings (`run_replay`), or
+`--mode render` to include update/draw presentation cost from replay playback.
+Decode/load costs are still outside measured samples in both modes.
 
 Timing-only run:
 
 ```bash
 uv run crimson replay benchmark replay.crd --runs 8 --warmup-runs 2
+```
+
+Render-mode timing run:
+
+```bash
+uv run crimson replay benchmark replay.crd --mode render --runs 8 --warmup-runs 2
 ```
 
 Machine-readable run:

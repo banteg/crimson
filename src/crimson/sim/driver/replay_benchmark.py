@@ -9,9 +9,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal, cast
 
+from ...game_modes import GameMode
 from ...replay import Replay
 from .replay_runner import run_replay
-from .setup import RunResult
+from .setup import RunResult, player0_most_used_weapon_id, player0_shots
 
 ProfileSortKey = Literal["cumtime", "tottime"]
 HotspotSource = Literal["project", "all"]
@@ -67,6 +68,160 @@ class ReplayBenchmarkResult:
     profile: ReplayProfileResult | None
 
 
+def run_replay_render_benchmark(
+    replay: Replay,
+    *,
+    replay_path: Path,
+    base_dir: Path,
+    assets_dir: Path | None = None,
+    width: int | None = None,
+    height: int | None = None,
+    runs: int = 5,
+    warmup_runs: int = 1,
+    max_ticks: int | None = None,
+    strict_events: bool = True,
+    trace_rng: bool = False,
+    profile: bool = False,
+    profile_sort: ProfileSortKey = "cumtime",
+    top: int = 20,
+    profile_out: Path | None = None,
+    mute_audio: bool = True,
+) -> ReplayBenchmarkResult:
+    import pyray as rl
+
+    from grim.config import ensure_crimson_cfg
+    from grim.console import create_console
+    from grim.view import ViewContext
+
+    from ...assets_fetch import download_missing_paqs
+
+    _validate_args(runs=int(runs), warmup_runs=int(warmup_runs), top=int(top))
+
+    baseline_result = run_replay(
+        replay,
+        max_ticks=max_ticks,
+        strict_events=bool(strict_events),
+        trace_rng=bool(trace_rng),
+    )
+
+    runtime_base_dir = Path(base_dir)
+    runtime_assets_dir = Path(assets_dir) if assets_dir is not None else runtime_base_dir
+    runtime_base_dir.mkdir(parents=True, exist_ok=True)
+    cfg = ensure_crimson_cfg(runtime_base_dir)
+    if bool(mute_audio):
+        cfg.set_bool_value("sound_disable", True)
+        cfg.set_bool_value("music_disable", True)
+
+    render_width = int(width) if width is not None else cfg.screen_width
+    render_height = int(height) if height is not None else cfg.screen_height
+    if int(render_width) <= 0 or int(render_height) <= 0:
+        raise ReplayBenchmarkError(
+            f"invalid render resolution: {render_width}x{render_height}; width/height must be > 0",
+        )
+
+    console = create_console(runtime_base_dir, assets_dir=runtime_assets_dir)
+    download_missing_paqs(runtime_assets_dir, console)
+    ctx = ViewContext(assets_dir=runtime_assets_dir, preserve_bugs=False)
+
+    config_flags = int(getattr(rl, "FLAG_WINDOW_HIDDEN", 0))
+    if int(config_flags) != 0:
+        rl.set_config_flags(int(config_flags))
+    try:
+        rl.init_window(int(render_width), int(render_height), f"Replay Benchmark - {Path(replay_path).name}")
+    except RuntimeError as exc:
+        raise ReplayBenchmarkError(f"render benchmark could not initialize window: {exc}") from exc
+
+    try:
+        for _ in range(int(warmup_runs)):
+            _run_render_once(
+                ctx=ctx,
+                replay_path=Path(replay_path),
+                cfg=cfg,
+                console=console,
+                max_ticks=max_ticks,
+                strict_events=bool(strict_events),
+                trace_rng=bool(trace_rng),
+            )
+
+        samples: list[BenchmarkSample] = []
+        for sample_idx in range(int(runs)):
+            start_ns = time.perf_counter_ns()
+            render_result = _run_render_once(
+                ctx=ctx,
+                replay_path=Path(replay_path),
+                cfg=cfg,
+                console=console,
+                max_ticks=max_ticks,
+                strict_events=bool(strict_events),
+                trace_rng=bool(trace_rng),
+            )
+            elapsed_ns = max(1, int(time.perf_counter_ns()) - int(start_ns))
+            wall_ms = float(elapsed_ns) / 1_000_000.0
+            wall_s = float(elapsed_ns) / 1_000_000_000.0
+            ticks_per_second = float(render_result.ticks) / wall_s
+            realtime_x = float(render_result.elapsed_ms) / wall_ms
+            samples.append(
+                BenchmarkSample(
+                    wall_ms=float(wall_ms),
+                    ticks_per_second=float(ticks_per_second),
+                    realtime_x=float(realtime_x),
+                ),
+            )
+            _assert_consistent_run_result(
+                baseline_result,
+                render_result,
+                where=f"render run {sample_idx + 1}",
+            )
+
+        profile_result: ReplayProfileResult | None = None
+        if bool(profile):
+            prof = cProfile.Profile()
+            prof.enable()
+            profiled_render_result = _run_render_once(
+                ctx=ctx,
+                replay_path=Path(replay_path),
+                cfg=cfg,
+                console=console,
+                max_ticks=max_ticks,
+                strict_events=bool(strict_events),
+                trace_rng=bool(trace_rng),
+            )
+            prof.disable()
+            _assert_consistent_run_result(
+                baseline_result,
+                profiled_render_result,
+                where="render profiled run",
+            )
+
+            if profile_out is not None:
+                out_path = Path(profile_out)
+                out_path.parent.mkdir(parents=True, exist_ok=True)
+                prof.dump_stats(str(out_path))
+
+            source, hotspots = _extract_hotspots(prof, sort_key=profile_sort, top=int(top))
+            profile_result = ReplayProfileResult(
+                sort=profile_sort,
+                top=int(top),
+                source=source,
+                hotspots=tuple(hotspots),
+            )
+    finally:
+        rl.close_window()
+
+    wall_values = [sample.wall_ms for sample in samples]
+    tps_values = [sample.ticks_per_second for sample in samples]
+    realtime_values = [sample.realtime_x for sample in samples]
+
+    return ReplayBenchmarkResult(
+        run_result=baseline_result,
+        samples=tuple(samples),
+        wall_ms=_aggregate(wall_values),
+        ticks_per_second=_aggregate(tps_values),
+        realtime_x=_aggregate(realtime_values),
+        profile=profile_result,
+    )
+
+
 def run_replay_benchmark(
     replay: Replay,
     *,
@@ -80,12 +235,7 @@ def run_replay_benchmark(
     top: int = 20,
     profile_out: Path | None = None,
 ) -> ReplayBenchmarkResult:
-    if int(runs) < 1:
-        raise ReplayBenchmarkError("runs must be >= 1")
-    if int(warmup_runs) < 0:
-        raise ReplayBenchmarkError("warmup_runs must be >= 0")
-    if int(top) < 1:
-        raise ReplayBenchmarkError("top must be >= 1")
+    _validate_args(runs=int(runs), warmup_runs=int(warmup_runs), top=int(top))
 
     for _ in range(int(warmup_runs)):
         run_replay(
@@ -160,6 +310,88 @@ def run_replay_benchmark(
         ticks_per_second=_aggregate(tps_values),
         realtime_x=_aggregate(realtime_values),
         profile=profile_result,
+    )
+
+
+def _validate_args(*, runs: int, warmup_runs: int, top: int) -> None:
+    if int(runs) < 1:
+        raise ReplayBenchmarkError("runs must be >= 1")
+    if int(warmup_runs) < 0:
+        raise ReplayBenchmarkError("warmup_runs must be >= 0")
+    if int(top) < 1:
+        raise ReplayBenchmarkError("top must be >= 1")
+
+
+def _run_render_once(
+    *,
+    ctx: object,
+    replay_path: Path,
+    cfg: object,
+    console: object,
+    max_ticks: int | None,
+    strict_events: bool,
+    trace_rng: bool,
+) -> RunResult:
+    import pyray as rl
+
+    from ...modes.replay_playback_mode import ReplayPlaybackMode
+
+    mode = ReplayPlaybackMode(
+        cast("Any", ctx),
+        replay_path=Path(replay_path),
+        config=cast("Any", cfg),
+        console=cast("Any", console),
+        max_ticks=max_ticks,
+        strict_events=bool(strict_events),
+        trace_rng=bool(trace_rng),
+    )
+    mode.open()
+    try:
+        replay = cast("Replay | None", getattr(mode, "_replay", None))
+        if replay is None:
+            raise ReplayBenchmarkError("render benchmark failed: replay playback did not initialize replay state")
+
+        step_dt = float(getattr(mode, "_dt_frame", 1.0 / 60.0))
+        if float(step_dt) <= 0.0:
+            step_dt = 1.0 / 60.0
+
+        while not bool(mode.finished):
+            mode.update(float(step_dt))
+            rl.begin_drawing()
+            mode.draw()
+            rl.end_drawing()
+            if bool(mode.close_requested):
+                raise ReplayBenchmarkError("render benchmark aborted: replay playback requested close")
+
+        return _run_result_from_replay_mode(mode=mode, replay=replay)
+    finally:
+        mode.close()
+
+
+def _run_result_from_replay_mode(*, mode: object, replay: Replay) -> RunResult:
+    world = cast("Any", getattr(mode, "_world", None))
+    if world is None:
+        raise ReplayBenchmarkError("render benchmark failed: replay playback world was not available")
+
+    if int(replay.header.game_mode_id) == int(GameMode.QUESTS):
+        elapsed_ms = int(float(getattr(mode, "_quest_spawn_timeline_ms", 0.0)))
+    else:
+        elapsed_ms = int(float(getattr(world, "_elapsed_ms", 0.0)))
+
+    shots_fired, shots_hit = player0_shots(world.state)
+    most_used_weapon_id = player0_most_used_weapon_id(world.state, world.players)
+    score_xp = int(world.players[0].experience) if world.players else 0
+    return RunResult(
+        game_mode_id=int(replay.header.game_mode_id),
+        tick_rate=int(replay.header.tick_rate),
+        ticks=int(getattr(mode, "tick_index", 0)),
+        elapsed_ms=int(elapsed_ms),
+        score_xp=int(score_xp),
+        creature_kill_count=int(world.creatures.kill_count),
+        most_used_weapon_id=int(most_used_weapon_id),
+        shots_fired=int(shots_fired),
+        shots_hit=int(shots_hit),
+        rng_state=int(world.state.rng.state),
     )
 
 

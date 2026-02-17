@@ -18,7 +18,9 @@ from crimson.replay.checkpoints import (
     dump_checkpoints_file,
     load_checkpoints_file,
 )
+from crimson.sim.driver.replay_benchmark import BenchmarkAggregate, BenchmarkSample, ReplayBenchmarkResult
 from crimson.sim.driver.replay_runner import run_replay
+from crimson.sim.driver.setup import RunResult
 from crimson.sim.input import PlayerInput
 from grim.geom import Vec2
 
@@ -327,10 +329,78 @@ def test_replay_benchmark_json_output_payload_ok(tmp_path: Path) -> None:
     assert isinstance(payload["replay_sha256"], str)
     assert payload["settings"]["runs"] == 2
     assert payload["settings"]["warmup_runs"] == 0
+    assert payload["settings"]["mode"] == "headless"
     assert payload["benchmark"]["sample_count"] == 2
     assert len(payload["benchmark"]["samples"]) == 2
     assert payload["profile"] is None
     assert payload["run_result"]["ticks"] == 2
+
+
+def test_replay_benchmark_render_mode_uses_render_runner(tmp_path: Path, monkeypatch) -> None:
+    import crimson.sim.driver.replay_benchmark as replay_benchmark_mod
+
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+    calls: list[dict[str, object]] = []
+
+    def fake_render_benchmark(_replay: Replay, **kwargs: object) -> ReplayBenchmarkResult:
+        calls.append(dict(kwargs))
+        run_result = RunResult(
+            game_mode_id=int(GameMode.SURVIVAL),
+            tick_rate=60,
+            ticks=3,
+            elapsed_ms=50,
+            score_xp=42,
+            creature_kill_count=1,
+            most_used_weapon_id=1,
+            shots_fired=2,
+            shots_hit=1,
+            rng_state=123,
+        )
+        sample = BenchmarkSample(wall_ms=1.5, ticks_per_second=2000.0, realtime_x=33.3)
+        aggregate = BenchmarkAggregate(min=1.5, p50=1.5, mean=1.5, p95=1.5, max=1.5, stdev=0.0)
+        return ReplayBenchmarkResult(
+            run_result=run_result,
+            samples=(sample,),
+            wall_ms=aggregate,
+            ticks_per_second=aggregate,
+            realtime_x=aggregate,
+            profile=None,
+        )
+
+    monkeypatch.setattr(replay_benchmark_mod, "run_replay_render_benchmark", fake_render_benchmark)
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "benchmark",
+            str(replay_path),
+            "--mode",
+            "render",
+            "--base-dir",
+            str(tmp_path),
+            "--runs",
+            "1",
+            "--warmup-runs",
+            "0",
+            "--lenient-events",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["settings"]["mode"] == "render"
+    assert payload["run_result"]["score_xp"] == 42
+    assert calls
+    assert calls[0]["strict_events"] is False
+    assert calls[0]["runs"] == 1
+    assert calls[0]["warmup_runs"] == 0
+    assert calls[0]["replay_path"] == replay_path
+    assert calls[0]["base_dir"] == tmp_path
 
 
 def test_replay_benchmark_json_out_works_for_human_and_json_output(tmp_path: Path) -> None:
