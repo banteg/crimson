@@ -130,6 +130,7 @@ nav = [
         { "Panel state resolution sweep" = "frida/panel-state-resolution-sweep.md" },
         { "Differential playbook" = "frida/differential-playbook.md" },
         { "Differential sessions" = "frida/differential-sessions.md" },
+        { "Creature update static audit triage" = "frida/creature-update-static-audit-triage.md" },
         { "Gameplay/state capture" = "frida/gameplay-state-capture.md" },
         { "Gameplay differential capture" = "frida/gameplay-diff-capture.md" },
         { "Survival autoplay" = "frida/survival-autoplay.md" },

@@ -6,6 +6,7 @@ Runtime instrumentation for evidence collection using Frida.
 - [Panel state resolution sweep](panel-state-resolution-sweep.md) — Automatic panel/text capture across UI states per resolution
 - [Differential playbook](differential-playbook.md) — What to do when handed only a fresh capture file
 - [Differential capture sessions](differential-sessions.md) — Replay/sidecar verification runs, findings, and fixes
+- [Creature update static audit triage](creature-update-static-audit-triage.md) — Checklist for validating static parity findings with before/after divergence runs
 - [Gameplay/state capture](gameplay-state-capture.md) — automatic large-run capture script
 - [Gameplay differential capture](gameplay-diff-capture.md) — deterministic tick + verifier-oriented telemetry
 - [Survival autoplay sidecar](survival-autoplay.md) — unattended Survival runs for repeated differential recordings
