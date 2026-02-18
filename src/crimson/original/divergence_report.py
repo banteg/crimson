@@ -1228,6 +1228,7 @@ def _run_actual_checkpoints(
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
             dt_frame_overrides=dt_frame_overrides,
+            dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
             inter_tick_rand_draws=max(0, int(inter_tick_rand_draws)),
             inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
         )

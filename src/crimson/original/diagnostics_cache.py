@@ -31,7 +31,11 @@ from crimson.replay import apply_replay_bootstrap
 from crimson.replay.checkpoints import ReplayCheckpoint
 from crimson.replay.types import UnknownEvent
 from crimson.sim.driver.replay_events import apply_replay_tick_events, partition_tick_events
-from crimson.sim.driver.replay_timing import resolve_dt_frame, should_apply_world_dt_steps_for_replay
+from crimson.sim.driver.replay_timing import (
+    resolve_dt_frame,
+    resolve_dt_frame_ms_i32,
+    should_apply_world_dt_steps_for_replay,
+)
 from crimson.sim.driver.setup import (
     build_damage_scale_by_type,
     build_empty_fx_queues,
@@ -45,6 +49,7 @@ from crimson.weapons import WEAPON_BY_ID, WeaponId
 
 from .capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
+    build_capture_inter_tick_rand_draws_overrides,
     build_capture_dt_frame_ms_i32_overrides,
     build_capture_dt_frame_overrides,
     capture_bootstrap_payload_from_event_payload,
@@ -198,9 +203,8 @@ class _FocusRuntime:
         self.bootstrap_start_tick = self.events_meta.bootstrap_start_tick
         self.has_capture_creature_spawn_events = bool(self.events_meta.has_capture_creature_spawn_events)
         self.dt_frame_overrides = build_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
-        self.dt_frame_ms_i32_overrides: dict[int, int] = {}
+        self.dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
         if self.mode == int(GameMode.SURVIVAL):
-            self.dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
             self.apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
                 original_capture_replay=bool(self.original_capture_replay),
                 dt_frame_overrides=self.dt_frame_overrides,
@@ -210,17 +214,11 @@ class _FocusRuntime:
             self.apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
                 original_capture_replay=bool(self.original_capture_replay),
                 dt_frame_overrides=self.dt_frame_overrides,
-                dt_frame_ms_i32_overrides=None,
+                dt_frame_ms_i32_overrides=self.dt_frame_ms_i32_overrides,
             )
         self.default_dt_frame = 1.0 / float(int(replay.header.tick_rate))
-        self.outside_draws_by_tick = {
-            int(item.tick_index): int(item.rng.outside_before_calls)
-            for item in capture.ticks
-            if int(item.rng.outside_before_calls) >= 0
-        }
-        if self.outside_draws_by_tick:
-            first_tick_index = min(self.outside_draws_by_tick)
-            self.outside_draws_by_tick[int(first_tick_index)] = 0
+        outside_draws_overrides = build_capture_inter_tick_rand_draws_overrides(capture)
+        self.outside_draws_by_tick = dict(outside_draws_overrides or {})
         self.use_outside_draws = bool(self.outside_draws_by_tick)
 
         self.capture_ticks_by_index: dict[int, CaptureTick] = {
@@ -272,8 +270,8 @@ class _FocusRuntime:
                 damage_scale_by_type=damage_scale_by_type,
                 fx_queue=fx_queue,
                 fx_queue_rotated=fx_queue_rotated,
-                detail_preset=5,
-                fx_toggle=0,
+                detail_preset=int(self.replay.header.detail_preset),
+                fx_toggle=int(self.replay.header.fx_toggle),
                 game_tune_started=False,
                 apply_world_dt_steps=bool(self.apply_world_dt_steps),
                 clear_fx_queues_each_tick=True,
@@ -320,10 +318,11 @@ class _FocusRuntime:
             fx_queue=fx_queue,
             fx_queue_rotated=fx_queue_rotated,
             spawn_entries=tuple(session_spawn_entries),
-            detail_preset=5,
-            fx_toggle=0,
+            detail_preset=int(self.replay.header.detail_preset),
+            fx_toggle=int(self.replay.header.fx_toggle),
             apply_world_dt_steps=bool(self.apply_world_dt_steps),
             clear_fx_queues_each_tick=True,
+            finalize_post_render_lifecycle_each_tick=False,
         )
         return world, session
 
@@ -533,9 +532,11 @@ class _FocusRuntime:
             default_dt_frame=float(self.default_dt_frame),
             dt_frame_overrides=self.dt_frame_overrides,
         )
-        dt_tick_ms_i32 = None
-        if self.mode == int(GameMode.SURVIVAL):
-            dt_tick_ms_i32 = self.dt_frame_ms_i32_overrides.get(int(tick_index))
+        dt_tick_ms_i32 = resolve_dt_frame_ms_i32(
+            tick_index=int(tick_index),
+            dt_frame=float(dt_tick),
+            dt_frame_ms_i32_overrides=self.dt_frame_ms_i32_overrides,
+        )
 
         tick_events = self.events_by_tick.get(int(tick_index), [])
         pre_step_events, post_step_events = partition_tick_events(
@@ -700,6 +701,7 @@ class _FocusRuntime:
                     raise ValueError("missing quest focus trace runtime session")
                 tick_result = self.session.step_tick(
                     dt_frame=float(dt_tick),
+                    dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
                     inputs=player_inputs,
                     trace_rng=False,
                 )
@@ -722,6 +724,8 @@ class _FocusRuntime:
                         self._on_capture_state_transition if self.mode == int(GameMode.QUESTS) else None
                     ),
                 )
+            if self.mode == int(GameMode.QUESTS):
+                self.world.creatures.finalize_post_render_lifecycle()
         finally:
             setattr(self.world.state.rng, "rand", orig_rand)
             self.world.state.particles._rand = orig_particles_rand

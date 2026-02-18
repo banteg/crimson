@@ -479,6 +479,7 @@ def run_quest_replay(
     checkpoints_out: list[ReplayCheckpoint] | None = None,
     checkpoint_ticks: set[int] | None = None,
     dt_frame_overrides: dict[int, float] | None = None,
+    dt_frame_ms_i32_overrides: dict[int, int] | None = None,
     inter_tick_rand_draws: int = 0,
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
 ) -> RunResult:
@@ -572,7 +573,7 @@ def run_quest_replay(
     apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
         original_capture_replay=bool(original_capture_replay),
         dt_frame_overrides=dt_frame_overrides,
-        dt_frame_ms_i32_overrides=None,
+        dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
     )
 
     session_spawn_entries = tuple(spawn_entries)
@@ -594,6 +595,7 @@ def run_quest_replay(
         fx_toggle=int(replay.header.fx_toggle),
         apply_world_dt_steps=bool(apply_world_dt_steps),
         clear_fx_queues_each_tick=True,
+        finalize_post_render_lifecycle_each_tick=False,
     )
     reset_spawn_entries = tuple(session_spawn_entries)
     pending_capture_state_reset = False
@@ -720,6 +722,11 @@ def run_quest_replay(
             default_dt_frame=float(dt_frame),
             dt_frame_overrides=dt_frame_overrides,
         )
+        dt_tick_ms_i32 = resolve_dt_frame_ms_i32(
+            tick_index=int(tick_index),
+            dt_frame=float(dt_tick),
+            dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
+        )
 
         tick_events = events_by_tick.get(int(tick_index), [])
         pre_step_events, post_step_events = partition_tick_events(
@@ -745,6 +752,7 @@ def run_quest_replay(
 
         tick = session.step_tick(
             dt_frame=float(dt_tick),
+            dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
             inputs=player_inputs,
             trace_rng=bool(trace_rng),
         )
@@ -762,6 +770,7 @@ def run_quest_replay(
                 strict_events=bool(strict_events),
                 on_capture_state_transition=_on_capture_state_transition,
             )
+        world.creatures.finalize_post_render_lifecycle()
         rng_after_post_events = int(state.rng.state)
 
         if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:

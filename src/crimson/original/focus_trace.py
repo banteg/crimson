@@ -21,6 +21,7 @@ from crimson.gameplay import build_gameplay_state
 from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     CAPTURE_CREATURE_SPAWN_EVENT_KIND,
+    build_capture_inter_tick_rand_draws_overrides,
     build_capture_dt_frame_ms_i32_overrides,
     build_capture_dt_frame_overrides,
     capture_bootstrap_payload_from_event_payload,
@@ -735,17 +736,10 @@ def trace_focus_tick(
     bootstrap_start_tick = events_meta.bootstrap_start_tick
 
     dt_frame_overrides = build_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
-    dt_frame_ms_i32_overrides: dict[int, int] = {}
+    dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
     default_dt_frame = 1.0 / float(int(replay.header.tick_rate))
-    outside_draws_by_tick = {
-        int(item.tick_index): int(item.rng.outside_before_calls)
-        for item in capture.ticks
-        if int(item.rng.outside_before_calls) >= 0
-    }
-    if outside_draws_by_tick:
-        first_tick_index = min(outside_draws_by_tick)
-        # The inferred replay seed already matches the first sampled capture tick.
-        outside_draws_by_tick[int(first_tick_index)] = 0
+    outside_draws_overrides = build_capture_inter_tick_rand_draws_overrides(capture)
+    outside_draws_by_tick = dict(outside_draws_overrides or {})
     use_outside_draws = bool(outside_draws_by_tick)
 
     fx_queue, fx_queue_rotated = build_empty_fx_queues()
@@ -763,7 +757,6 @@ def trace_focus_tick(
             world_size=float(world_size),
             strict=True,
         )
-        dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
         apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
             original_capture_replay=bool(original_capture_replay),
             dt_frame_overrides=dt_frame_overrides,
@@ -775,8 +768,8 @@ def trace_focus_tick(
             damage_scale_by_type=damage_scale_by_type,
             fx_queue=fx_queue,
             fx_queue_rotated=fx_queue_rotated,
-            detail_preset=5,
-            fx_toggle=0,
+            detail_preset=int(replay.header.detail_preset),
+            fx_toggle=int(replay.header.fx_toggle),
             game_tune_started=False,
             apply_world_dt_steps=bool(apply_world_dt_steps),
             clear_fx_queues_each_tick=True,
@@ -816,7 +809,7 @@ def trace_focus_tick(
         apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
             original_capture_replay=bool(original_capture_replay),
             dt_frame_overrides=dt_frame_overrides,
-            dt_frame_ms_i32_overrides=None,
+            dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
         )
         session_quest = QuestDeterministicSession(
             world=world,
@@ -825,10 +818,11 @@ def trace_focus_tick(
             fx_queue=fx_queue,
             fx_queue_rotated=fx_queue_rotated,
             spawn_entries=tuple(session_spawn_entries),
-            detail_preset=5,
-            fx_toggle=0,
+            detail_preset=int(replay.header.detail_preset),
+            fx_toggle=int(replay.header.fx_toggle),
             apply_world_dt_steps=bool(apply_world_dt_steps),
             clear_fx_queues_each_tick=True,
+            finalize_post_render_lifecycle_each_tick=False,
         )
         reset_spawn_entries = tuple(session_spawn_entries)
 
@@ -985,13 +979,11 @@ def trace_focus_tick(
                 default_dt_frame=float(default_dt_frame),
                 dt_frame_overrides=dt_frame_overrides,
             )
-            dt_tick_ms_i32 = None
-            if mode == int(GameMode.SURVIVAL):
-                dt_tick_ms_i32 = resolve_dt_frame_ms_i32(
-                    tick_index=int(tick_index),
-                    dt_frame=float(dt_tick),
-                    dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
-                )
+            dt_tick_ms_i32 = resolve_dt_frame_ms_i32(
+                tick_index=int(tick_index),
+                dt_frame=float(dt_tick),
+                dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
+            )
             tick_events = events_by_tick.get(int(tick_index), [])
             pre_step_events, post_step_events = partition_tick_events(
                 tick_events,
@@ -1148,6 +1140,7 @@ def trace_focus_tick(
                     raise ValueError("missing quest focus trace runtime session")
                 tick_result = session_quest.step_tick(
                     dt_frame=float(dt_tick),
+                    dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
                     inputs=player_inputs,
                     trace_rng=False,
                 )
@@ -1168,6 +1161,8 @@ def trace_focus_tick(
                     strict_events=False,
                     on_capture_state_transition=on_capture_state_transition,
                 )
+            if mode == int(GameMode.QUESTS):
+                world.creatures.finalize_post_render_lifecycle()
 
             if int(tick_index) == int(tick):
                 setattr(world.state.rng, "rand", orig_rand)
