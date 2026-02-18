@@ -35,7 +35,7 @@ from crimson.original.capture import (
     parse_player_int_overrides,
 )
 from crimson.original.schema import CAPTURE_FORMAT_VERSION, CaptureEventHeadPerkApply
-from crimson.replay import Replay, UnknownEvent, unpack_input_flags, unpack_input_move_key_flags
+from crimson.replay import PerkMenuOpenEvent, Replay, UnknownEvent, unpack_input_flags, unpack_input_move_key_flags
 from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
@@ -843,6 +843,37 @@ def test_convert_capture_to_replay_infers_pending_drop_events_from_perk_delta(tm
         for event in replay.events
     ]
     assert "PerkMenuOpenEvent" in kinds
+
+
+def test_convert_capture_to_replay_skips_menu_open_for_terminal_pending_drop_transition(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16, perk_pending=2)
+    tick0["event_heads"] = [
+        {
+            "kind": "state_transition",
+            "data": {
+                "target_state": 12,
+                "before": {"id": 9},
+                "after": {"id": 12},
+            },
+        },
+    ]
+    tick1 = _base_tick(tick_index=1, elapsed_ms=32, perk_pending=0)
+
+    obj = _capture_obj(ticks=[tick0, tick1])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    pending_events = [
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_PERK_PENDING_EVENT_KIND
+    ]
+    assert [event.tick_index for event in pending_events] == [0, 1]
+    assert [capture_perk_pending_from_event_payload(list(event.payload)) for event in pending_events] == [2, 0]
+    assert not any(isinstance(event, PerkMenuOpenEvent) for event in replay.events)
 
 
 def test_convert_capture_to_replay_bootstrap_payload_includes_perk_snapshot(tmp_path: Path) -> None:

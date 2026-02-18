@@ -2217,6 +2217,13 @@ def _tick_state_transition_rows(tick: CaptureTick) -> tuple[dict[str, int], ...]
     return tuple(out)
 
 
+def _has_terminal_state_transition(rows: tuple[dict[str, int], ...]) -> bool:
+    for row in rows:
+        if int(row.get("target_state", -1)) == 12:
+            return True
+    return False
+
+
 def _tick_perk_pending_count(tick: CaptureTick) -> int | None:
     pending = int(tick.checkpoint.perk_pending)
     if pending >= 0:
@@ -2549,9 +2556,11 @@ def convert_capture_to_replay(
         )
 
         sorted_ticks = sorted(capture.ticks, key=lambda item: int(item.tick_index))
+        transition_rows_by_tick: dict[int, tuple[dict[str, int], ...]] = {}
         previous_pending: int | None = None
         for tick in sorted_ticks:
             state_transition_rows = _tick_state_transition_rows(tick)
+            transition_rows_by_tick[int(tick.tick_index)] = state_transition_rows
             if state_transition_rows:
                 events.append(
                     UnknownEvent(
@@ -2597,6 +2606,10 @@ def convert_capture_to_replay(
             pending_i = int(pending)
             if previous_pending is not None and pending_i < previous_pending:
                 menu_tick = max(0, int(tick.tick_index) - 1)
+                menu_tick_rows = transition_rows_by_tick.get(int(menu_tick), ())
+                suppress_menu_open = _has_terminal_state_transition(menu_tick_rows) or _has_terminal_state_transition(
+                    state_transition_rows,
+                )
                 events.append(
                     UnknownEvent(
                         tick_index=int(menu_tick),
@@ -2604,7 +2617,8 @@ def convert_capture_to_replay(
                         payload=[{"perk_pending": int(previous_pending)}],
                     ),
                 )
-                events.append(PerkMenuOpenEvent(tick_index=int(menu_tick), player_index=0))
+                if not bool(suppress_menu_open):
+                    events.append(PerkMenuOpenEvent(tick_index=int(menu_tick), player_index=0))
                 events.append(
                     UnknownEvent(
                         tick_index=int(tick.tick_index),
