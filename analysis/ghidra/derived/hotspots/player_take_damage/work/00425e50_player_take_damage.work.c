@@ -22,6 +22,7 @@ void __cdecl player_take_damage(int player_index,float damage)
   float damage_scale;
   float zero_impulse [2];
   
+  /* Hard pre-gates: death-clock immunity and tough-reloader mitigation. */
   iVar4 = perk_count_get(perk_id_death_clock);
   if (iVar4 != 0) {
     return;
@@ -32,6 +33,7 @@ void __cdecl player_take_damage(int player_index,float damage)
   }
   survival_reward_damage_seen = 1;
   damage_scale = 1.0;
+  /* Shielded hits are consumed here and skip health/dodge/death branches. */
   if (0.0 < (&player_state_table)[player_index].shield_timer) {
     survival_reward_damage_seen = 1;
     return;
@@ -41,6 +43,7 @@ void __cdecl player_take_damage(int player_index,float damage)
   if (iVar4 != 0) {
     damage_scale = 0.666;
   }
+  /* Dodge evaluation: ninja and dodger can short-circuit direct health subtraction. */
   dodge_triggered = false;
   iVar4 = perk_count_get(perk_id_ninja);
   if (iVar4 == 0) {
@@ -57,6 +60,7 @@ void __cdecl player_take_damage(int player_index,float damage)
       goto LAB_00425fa1;
     }
   }
+  /* Apply incoming damage or highlander one-shot roulette. */
   iVar4 = perk_count_get(perk_id_highlander);
   if (iVar4 == 0) {
     (&player_state_table)[player_index].health =
@@ -69,6 +73,7 @@ void __cdecl player_take_damage(int player_index,float damage)
     }
   }
 LAB_00425fa1:
+  /* Post-hit branch: alive pain reaction vs lethal branch and final-revenge resolution. */
   if (0.0 <= (&player_state_table)[player_index].health) {
     iVar4 = crt_rand();
     sfx_play_panned((float)(iVar4 % 3 + sfx_trooper_inpain_01));
@@ -115,6 +120,7 @@ LAB_00425fa1:
       sfx_play_panned(sfx_shockwave);
     }
   }
+  /* Non-dodged hits can add heading/spread penalties and low-health bleed trigger. */
   if (!dodge_triggered) {
     iVar4 = perk_count_get(perk_id_unstoppable);
     if (iVar4 == 0) {
