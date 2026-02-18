@@ -15,13 +15,15 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `pbVar3` -> `bonus_scan_ptr`
 - `uVar4` -> `rng_value`
 - `iVar5` -> `effect_scale_rand`
+- `iVar1` -> split by role in work copy (`random_roll`, `duplicate_count`, `picked_weapon_id`, `bonus_magnet_count`, `effect_spawn_count`)
 
-## Suggested section comments
+## Section Map (Current Work Copy)
 
-- mode and demo gates (skip bonus drops)
-- forced weapon drop branch when pistol-only
-- duplicate/drop suppression (`bonus_pool` scan)
-- spawn FX burst for accepted drops
+- line 24: mode/demo gates that disable kill drops
+- line 37: pistol branch with forced-weapon and suppression checks
+- line 68: general drop path with bonus-magnet fallback chance
+- line 88: duplicate suppression scan and same-weapon rejection
+- line 106: accepted-drop burst FX spawn loop
 
 ## Notes
 

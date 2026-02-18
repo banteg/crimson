@@ -11,12 +11,17 @@
 void bonus_try_spawn_on_kill(float *kill_pos_ptr)
 
 {
-  int iVar1;
+  int random_roll;
+  int duplicate_count;
+  int picked_weapon_id;
+  int bonus_magnet_count;
+  int effect_spawn_count;
   bonus_entry_t *spawned_bonus_ptr;
   bonus_entry_t *bonus_scan_ptr;
   uint rng_value;
   int effect_scale_rand;
   
+  /* Mode/demo gates where kill-based bonus drops are disabled. */
   if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {
     return;
   }
@@ -29,45 +34,47 @@ void bonus_try_spawn_on_kill(float *kill_pos_ptr)
   if (config_game_mode == GAME_MODE_TUTORIAL) {
     return;
   }
+  /* Pistol branch can force weapon drops, then runs duplicate/favourite-weapon suppression. */
   if (((player_state_table.weapon_id == 1) ||
       ((player2_weapon_id == 1 && (_config_player_count == 2)))) &&
-     (iVar1 = crt_rand(), ((byte)iVar1 & 3) < 3)) {
+     (random_roll = crt_rand(), ((byte)random_roll & 3) < 3)) {
     spawned_bonus_ptr = bonus_spawn_at_pos(kill_pos_ptr);
     spawned_bonus_ptr->bonus_id = BONUS_ID_WEAPON;
-    iVar1 = weapon_pick_random_available();
-    (spawned_bonus_ptr->time).amount = iVar1;
-    if (iVar1 == 1) {
-      iVar1 = weapon_pick_random_available();
-      (spawned_bonus_ptr->time).amount = iVar1;
+    picked_weapon_id = weapon_pick_random_available();
+    (spawned_bonus_ptr->time).amount = picked_weapon_id;
+    if (picked_weapon_id == 1) {
+      picked_weapon_id = weapon_pick_random_available();
+      (spawned_bonus_ptr->time).amount = picked_weapon_id;
     }
-    iVar1 = 0;
+    duplicate_count = 0;
     if (spawned_bonus_ptr->bonus_id != BONUS_ID_POINTS) {
       bonus_scan_ptr = bonus_pool;
       do {
         if (bonus_scan_ptr->bonus_id == spawned_bonus_ptr->bonus_id) {
-          iVar1 = iVar1 + 1;
+          duplicate_count = duplicate_count + 1;
         }
         bonus_scan_ptr = bonus_scan_ptr + 1;
       } while ((int)bonus_scan_ptr < 0x482b08);
-      if (1 < iVar1) goto LAB_0041f998;
+      if (1 < duplicate_count) goto LAB_0041f998;
     }
     if (((spawned_bonus_ptr->time).amount == 1) ||
-       (iVar1 = perk_count_get(perk_id_my_favourite_weapon), iVar1 != 0)) {
+       (random_roll = perk_count_get(perk_id_my_favourite_weapon), random_roll != 0)) {
 LAB_0041f998:
       spawned_bonus_ptr->bonus_id = BONUS_ID_NONE;
       return;
     }
   }
   else {
-    iVar1 = crt_rand();
-    if ((iVar1 % 9 != 1) &&
-       ((player_state_table.weapon_id != 1 || (iVar1 = crt_rand(), iVar1 % 5 != 1)))) {
-      iVar1 = perk_count_get(perk_id_bonus_magnet);
-      if (iVar1 == 0) {
+    /* General drop path with extra bonus-magnet retry chance. */
+    random_roll = crt_rand();
+    if ((random_roll % 9 != 1) &&
+       ((player_state_table.weapon_id != 1 || (random_roll = crt_rand(), random_roll % 5 != 1)))) {
+      bonus_magnet_count = perk_count_get(perk_id_bonus_magnet);
+      if (bonus_magnet_count == 0) {
         return;
       }
-      iVar1 = crt_rand();
-      if (iVar1 % 10 != 2) {
+      random_roll = crt_rand();
+      if (random_roll % 10 != 2) {
         return;
       }
     }
@@ -78,16 +85,16 @@ LAB_0041f998:
       spawned_bonus_ptr->bonus_id = BONUS_ID_POINTS;
       (spawned_bonus_ptr->time).amount = 100;
     }
-    iVar1 = 0;
+    duplicate_count = 0;
     if (spawned_bonus_ptr->bonus_id != BONUS_ID_POINTS) {
       bonus_scan_ptr = bonus_pool;
       do {
         if (bonus_scan_ptr->bonus_id == spawned_bonus_ptr->bonus_id) {
-          iVar1 = iVar1 + 1;
+          duplicate_count = duplicate_count + 1;
         }
         bonus_scan_ptr = bonus_scan_ptr + 1;
       } while ((int)bonus_scan_ptr < 0x482b08);
-      if (1 < iVar1) goto LAB_0041fa76;
+      if (1 < duplicate_count) goto LAB_0041fa76;
     }
     if ((spawned_bonus_ptr->time).amount == player_state_table.weapon_id) {
 LAB_0041fa76:
@@ -96,6 +103,7 @@ LAB_0041fa76:
     }
   }
   if ((spawned_bonus_ptr != (bonus_entry_t *)0x0) && (spawned_bonus_ptr != &bonus_pool_sentinel)) {
+    /* Accepted drop gets a blue burst effect fan-out at kill position. */
     _effect_template_color_r = 0x3ecccccd;
     _effect_template_flags = 0x1d;
     _effect_template_color_g = 0x3f000000;
@@ -104,7 +112,7 @@ LAB_0041fa76:
     _effect_template_lifetime = 0x3f000000;
     _effect_template_half_width = 0x42000000;
     _effect_template_half_height = 0x42000000;
-    iVar1 = 0x10;
+    effect_spawn_count = 0x10;
     do {
       rng_value = crt_rand();
       _effect_template_rotation = (float)(rng_value & 0x7f) * 0.049087387;
@@ -123,8 +131,8 @@ LAB_0041fa76:
       effect_scale_rand = crt_rand();
       _effect_template_scale_step = (float)(effect_scale_rand % 100) * 0.01 + 0.1;
       effect_spawn(0,kill_pos_ptr);
-      iVar1 = iVar1 + -1;
-    } while (iVar1 != 0);
+      effect_spawn_count = effect_spawn_count + -1;
+    } while (effect_spawn_count != 0);
   }
   return;
 }
