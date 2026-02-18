@@ -12,11 +12,16 @@ void effect_spawn_explosion_burst(float *pos, float scale)
 
 {
   float *burst_pos_ptr;
-  int iVar1;
-  int iVar2;
+  int high_detail_ring_index;
+  int ring_rotation_roll;
+  int streak_count;
+  int streak_angle_roll;
+  int streak_scale_roll;
+  int streak_rotation_step_roll;
   uint rng_value;
   
   burst_pos_ptr = pos;
+  /* Core explosion flash ring. */
   _effect_template_scale_step = scale * 25.0;
   _effect_template_color_r = 0x3f19999a;
   _effect_template_flags = 0x19;
@@ -31,6 +36,7 @@ void effect_spawn_explosion_burst(float *pos, float scale)
   effect_template_vel_x = 0.0;
   effect_template_vel_y = 0.0;
   effect_spawn(1,pos);
+  /* Secondary soft halo overlay. */
   _effect_template_color_b = 0x3dcccccd;
   _effect_template_color_r = 0x3dcccccd;
   _effect_template_flags = 0x5d;
@@ -39,21 +45,23 @@ void effect_spawn_explosion_burst(float *pos, float scale)
   _effect_template_rotation = 0.0;
   effect_template_vel_x = 0.0;
   effect_template_vel_y = 0.0;
+  /* High-detail branch adds two delayed outer rings. */
   if (3 < _config_detail_preset) {
-    pos = (float *)0x0;
+    high_detail_ring_index = 0;
     do {
       _effect_template_half_width = 0x42000000;
       _effect_template_half_height = 0x42000000;
-      _effect_template_age = (float)(int)pos * 0.2 - 0.5;
-      _effect_template_lifetime = (float)(int)pos * 0.2 + 0.6;
-      iVar1 = crt_rand();
+      _effect_template_age = (float)high_detail_ring_index * 0.2 - 0.5;
+      _effect_template_lifetime = (float)high_detail_ring_index * 0.2 + 0.6;
+      ring_rotation_roll = crt_rand();
       _effect_template_rotation_step = 1.4;
-      _effect_template_rotation = (float)(iVar1 % 0x266) * 0.02;
+      _effect_template_rotation = (float)(ring_rotation_roll % 0x266) * 0.02;
       _effect_template_scale_step = scale * 5.0;
       effect_spawn(0x11,burst_pos_ptr);
-      pos = (float *)((int)pos + 1);
-    } while ((int)pos < 2);
+      high_detail_ring_index = high_detail_ring_index + 1;
+    } while (high_detail_ring_index < 2);
   }
+  /* Shockwave core pulse and streak fan-out setup. */
   _effect_template_scale_step = scale * 45.0;
   _effect_template_color_r = 0x3f800000;
   _effect_template_flags = 0x19;
@@ -78,22 +86,22 @@ void effect_spawn_explosion_burst(float *pos, float scale)
   _effect_template_half_width = 0x42000000;
   _effect_template_half_height = 0x42000000;
   if (_config_detail_preset < 2) {
-    iVar1 = 1;
+    streak_count = 1;
   }
   else {
-    iVar1 = (3 < _config_detail_preset) + 3;
+    streak_count = (3 < _config_detail_preset) + 3;
   }
-  for (; iVar1 != 0; iVar1 = iVar1 + -1) {
-    iVar2 = crt_rand();
-    _effect_template_rotation = (float)(iVar2 % 0x13a) * 0.02;
+  for (; streak_count != 0; streak_count = streak_count + -1) {
+    streak_angle_roll = crt_rand();
+    _effect_template_rotation = (float)(streak_angle_roll % 0x13a) * 0.02;
     rng_value = crt_rand();
     effect_template_vel_x = (float)(int)((rng_value & 0x3f) * 2 + -0x40);
     rng_value = crt_rand();
     effect_template_vel_y = (float)(int)((rng_value & 0x3f) * 2 + -0x40);
-    iVar2 = crt_rand();
-    _effect_template_scale_step = (float)(iVar2 - 3U & 7) * scale;
-    iVar2 = crt_rand();
-    _effect_template_rotation_step = (float)(iVar2 + 3U & 7);
+    streak_scale_roll = crt_rand();
+    _effect_template_scale_step = (float)(streak_scale_roll - 3U & 7) * scale;
+    streak_rotation_step_roll = crt_rand();
+    _effect_template_rotation_step = (float)(streak_rotation_step_roll + 3U & 7);
     effect_spawn(0xc,burst_pos_ptr);
   }
   return;

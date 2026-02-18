@@ -14,9 +14,11 @@ void * __cdecl effect_spawn_shrinkifier_hit(float *pos)
 {
   uint rng_value;
   int scale_rand;
-  void *effect_ptr;
+  void *last_effect_ptr;
+  int detail_preset;
   int spark_count;
   
+  /* Core shrinkifier pulse (effect id 1). */
   _effect_template_color_r = 0x3e99999a;
   _effect_template_flags = 0x19;
   _effect_template_color_g = 0x3f19999a;
@@ -31,6 +33,7 @@ void * __cdecl effect_spawn_shrinkifier_hit(float *pos)
   effect_template_vel_y = 0.0;
   _effect_template_scale_step = -4.0;
   effect_spawn(1,pos);
+  /* Follow-up spark setup (effect id 0). */
   _effect_template_color_b = 0x3f800000;
   _effect_template_color_r = 0x3ecccccd;
   _effect_template_flags = 0x1d;
@@ -41,10 +44,12 @@ void * __cdecl effect_spawn_shrinkifier_hit(float *pos)
   _effect_template_half_width = 0x42000000;
   _effect_template_half_height = 0x42000000;
   spark_count = 4;
-  effect_ptr = _config_detail_preset;
-  if ((int)_config_detail_preset < 3) {
+  detail_preset = (int)_config_detail_preset;
+  last_effect_ptr = (void *)(long)detail_preset;
+  if (detail_preset < 3) {
     spark_count = 2;
   }
+  /* Detail-scaled random spark fan-out. */
   for (; spark_count != 0; spark_count = spark_count + -1) {
     rng_value = crt_rand();
     _effect_template_rotation = (float)(rng_value & 0x7f) * 0.049087387;
@@ -54,9 +59,9 @@ void * __cdecl effect_spawn_shrinkifier_hit(float *pos)
     effect_template_vel_y = (float)(int)((rng_value & 0x7f) - 0x40) * 1.4;
     scale_rand = crt_rand();
     _effect_template_scale_step = (float)(scale_rand % 100) * 0.01 + 0.1;
-    effect_ptr = effect_spawn(0,pos);
+    last_effect_ptr = effect_spawn(0,pos);
   }
-  return effect_ptr;
+  return last_effect_ptr;
 }
 
 

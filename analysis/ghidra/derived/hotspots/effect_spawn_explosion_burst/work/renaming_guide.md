@@ -1,7 +1,7 @@
 # `effect_spawn_explosion_burst` renaming guide
 
 This guide is for `work/0042f6c0_effect_spawn_explosion_burst.work.c`.
-Use it as a consistent first-pass naming scheme while preserving branch labels.
+Use it as a consistent naming scheme while preserving branch labels.
 
 ## Scripted renames
 
@@ -13,12 +13,19 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `pos_00` -> `burst_pos_ptr`
 - `uVar3` -> `rng_value`
 
+## Deeper pass notes
+
+- `iVar1` is split in the work copy into `high_detail_ring_index` and `streak_count`.
+- `iVar2` is split in the work copy into per-use rolls:
+  `ring_rotation_roll`, `streak_angle_roll`, `streak_scale_roll`, `streak_rotation_step_roll`.
+
 ## Section Map (Current Work Copy)
 
-- line 20: core flash ring setup and first spawn
-- line 42: high-detail extra-ring branch
-- line 57: shockwave core setup pass
-- line 80: detail-scaled shockwave streak loop
+- line 24: core explosion flash ring setup and spawn
+- line 39: secondary halo overlay setup
+- line 48: high-detail delayed outer-ring branch
+- line 64: shockwave core pulse setup
+- line 94: detail-scaled shockwave streak loop
 
 ## Notes
 

@@ -1,7 +1,7 @@
 # `effect_spawn_ion_hit_sparks` renaming guide
 
 This guide is for `work/0042f540_effect_spawn_ion_hit_sparks.work.c`.
-Use it as a consistent first-pass naming scheme while preserving branch labels.
+Use it as a consistent naming scheme while preserving branch labels.
 
 ## Scripted renames
 
@@ -11,17 +11,22 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 ## High-confidence locals
 
 - `fVar1` -> `spark_scale`
-- `pvVar2` -> `effect_ptr`
+- `pvVar2` -> `last_effect_ptr`
 - `uVar3` -> `rng_value`
 - `iVar4` -> `scale_rand`
-- `pvVar5` -> `sparks_left`
 - `lVar6` -> `spark_count_i64`
+
+## Deeper pass notes
+
+- Work copy converts pointer countdown `pvVar5` into integer `spark_count`.
+- Work copy snapshots `_config_detail_preset` into `detail_preset` before
+  applying the low-detail spark halving rule.
 
 ## Section Map (Current Work Copy)
 
-- line 21: lifetime/size setup from incoming scale
-- line 34: spark-count conversion and detail downscale
-- line 41: randomized spark spawn loop
+- line 22: shared spark template setup from incoming scale
+- line 36: spark-count conversion and detail downscale
+- line 44: randomized spark spawn loop
 
 ## Notes
 

@@ -12,24 +12,26 @@
 void * __cdecl effect_spawn_splitter_hit_burst(float *pos,float radius,int count)
 
 {
-  float fVar1;
+  float angle_radians;
   uint rng_value;
   int radius_rand;
-  void *effect_ptr;
-  float10 fVar5;
-  float10 fVar6;
+  void *last_effect_ptr;
+  float10 sampled_radius;
+  float10 cos_component;
+  float10 sin_component;
   longlong radius_i64;
   float spawn_x;
   float spawn_y;
-  undefined4 local_8;
-  undefined4 local_4;
+  undefined4 legacy_color_seed_b;
+  undefined4 legacy_color_seed_a;
   
+  /* Legacy stack seeds mirrored from the original template setup. */
   spawn_x = 1.0;
   spawn_y = 0.9;
-  local_8 = 0x3dcccccd;
-  local_4 = 0x3f800000;
+  legacy_color_seed_b = 0x3dcccccd;
+  legacy_color_seed_a = 0x3f800000;
   _effect_template_color_r = 0x3f800000;
-  effect_ptr = (void *)0x3f800000;
+  last_effect_ptr = (void *)0x3f800000;
   _effect_template_flags = 0x19;
   _effect_template_color_g = 0x3f666666;
   _effect_template_color_b = 0x3dcccccd;
@@ -40,25 +42,26 @@ void * __cdecl effect_spawn_splitter_hit_burst(float *pos,float radius,int count
   effect_template_vel_x = 0;
   effect_template_vel_y = 0;
   _effect_template_scale_step = 0x425c0000;
+  /* Spawn `count` particles by randomizing polar angle + radius around the hit point. */
   if (0 < count) {
     radius_i64 = __ftol();
     do {
       rng_value = crt_rand();
-      fVar1 = (float)(rng_value & 0x1ff) * 0.001953125 * 6.2831855;
+      angle_radians = (float)(rng_value & 0x1ff) * 0.001953125 * 6.2831855;
       radius_rand = crt_rand();
-      fVar5 = (float10)(radius_rand % (int)radius_i64);
-      fVar6 = (float10)fcos((float10)fVar1);
-      spawn_x = (float)(fVar6 * fVar5 + (float10)*pos);
-      fVar6 = (float10)fsin((float10)fVar1);
-      spawn_y = (float)(fVar6 * fVar5 + (float10)pos[1]);
+      sampled_radius = (float10)(radius_rand % (int)radius_i64);
+      cos_component = (float10)fcos((float10)angle_radians);
+      spawn_x = (float)(cos_component * sampled_radius + (float10)*pos);
+      sin_component = (float10)fsin((float10)angle_radians);
+      spawn_y = (float)(sin_component * sampled_radius + (float10)pos[1]);
       rng_value = crt_rand();
       _effect_template_age = (float)(int)-(rng_value & 0xff) * 0.0012;
       _effect_template_lifetime = 0.1 - _effect_template_age;
-      effect_ptr = effect_spawn(0,&spawn_x);
+      last_effect_ptr = effect_spawn(0,&spawn_x);
       count = count + -1;
     } while (count != 0);
   }
-  return effect_ptr;
+  return last_effect_ptr;
 }
 
 
