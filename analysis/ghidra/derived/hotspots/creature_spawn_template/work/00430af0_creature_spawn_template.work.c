@@ -26,6 +26,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
   int local_48;
   float local_4;
   
+  /* Shared root-slot init used by every template branch below. */
   origin_pos_ptr = pos;
   root_slot_idx = creature_alloc_slot();
   if (heading == -100.0) {
@@ -48,6 +49,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
   iVar7 = crt_rand();
   (&creature_pool)[root_slot_idx].attack_cooldown = 0.0;
   (&creature_pool)[root_slot_idx].heading = (float)(iVar7 % 0x13a) * 0.01;
+  /* Multi-body template: root + 8 linked satellites in a full ring. */
   if (template_id == 0x12) {
     (&creature_pool)[root_slot_idx].tint_r = 0.65;
     (&creature_pool)[root_slot_idx].type_id = 2;
@@ -95,6 +97,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
     } while ((int)pos < 8);
   }
   else if (template_id == 0x19) {
+    /* Multi-body template: root + 5 linked escorts in a pentagon ring. */
     (&creature_pool)[root_slot_idx].tint_r = 0.95;
     (&creature_pool)[root_slot_idx].type_id = 2;
     (&creature_pool)[root_slot_idx].tint_g = 0.55;
@@ -145,6 +148,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
     } while ((int)pos < 5);
   }
   else {
+    /* Hand-authored boss/layout templates and the large generic-id dispatch ladder. */
     if (template_id == 0x11) {
       (&creature_pool)[root_slot_idx].type_id = 1;
       (&creature_pool)[root_slot_idx].pos_x = *pos;
@@ -201,6 +205,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
     }
     else {
       if (template_id != 0x13) {
+        /* Grid/ring variants and spawner-controller archetypes. */
         if (template_id == 0x14) {
           (&creature_pool)[root_slot_idx].type_id = 2;
           (&creature_pool)[root_slot_idx].pos_x = *pos;
@@ -501,6 +506,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
               goto LAB_004310b8;
             }
             if (template_id == 1) {
+              /* Boss-class single entities and spawner-controller roots. */
               (&creature_pool)[root_slot_idx].type_id = 4;
               (&creature_pool)[root_slot_idx].flags = 8;
               (&creature_pool)[root_slot_idx].size = 80.0;
@@ -684,6 +690,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
                   }
                   else {
                     if (template_id != 8) {
+                      /* Procedural baseline enemy families (size/health/tint randomized). */
                       if (template_id == 0x1a) {
                         (&creature_pool)[root_slot_idx].type_id = 2;
                         (&creature_pool)[root_slot_idx].size = 50.0;
@@ -708,6 +715,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
                       }
                       else {
                         if (template_id != 0x1c) {
+                          /* Spawn-slot child templates (0x31+ range and add variants). */
                           if (template_id == 0x41) {
                             (&creature_pool)[root_slot_idx].type_id = 0;
                             iVar7 = crt_rand();
@@ -1121,6 +1129,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
                                 ;
                                 goto LAB_004310b8;
                               }
+                              /* Fixed-stat encounter templates and special behavior flags. */
                               if (template_id == 0x24) {
                                 (&creature_pool)[root_slot_idx].type_id = 2;
                                 (&creature_pool)[root_slot_idx].health = 20.0;
@@ -1303,6 +1312,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
                                       (&creature_pool)[root_slot_idx].contact_damage = 10.0;
                                       goto LAB_004310b8;
                                     }
+                                    /* Late-game boss/special templates (0x3b-0x43). */
                                     if (template_id == 0x3b) {
                                       (&creature_pool)[root_slot_idx].type_id = 3;
                                       (&creature_pool)[root_slot_idx].health = 1200.0;
@@ -1364,6 +1374,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
                                       (&creature_pool)[root_slot_idx].contact_damage = 40.0;
                                       goto LAB_004310b8;
                                     }
+                                    /* Campaign apex root template with an internal spawn slot. */
                                     if (template_id == 0) {
                                       (&creature_pool)[root_slot_idx].type_id = 0;
                                       (&creature_pool)[root_slot_idx].flags = 0x44;
@@ -1632,6 +1643,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
         }
         goto LAB_00431094;
       }
+      /* Template 0x13: serpent-style linked chain rooted on an orbit anchor. */
       (&creature_pool)[root_slot_idx].type_id = 2;
       iVar7 = _terrain_texture_height / 2;
       (&creature_pool)[root_slot_idx].ai_mode = 2;
@@ -1694,10 +1706,12 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
     (&creature_pool)[root_slot_idx].link_index = child_slot_idx;
   }
 LAB_00431094:
+  /* Unknown template_id fallback keeps game running and emits console diagnostics. */
   creature_ptr->type_id = 2;
   creature_ptr->health = 20.0;
   console_printf(&console_log_queue,s_Unhandled_creatureType__00477758);
 LAB_004310b8:
+  /* Shared post-dispatch normalization and difficulty scaling adjustments. */
   if ((((demo_mode_active == '\0') && (0.0 < creature_ptr->pos_x)) &&
       (creature_ptr->pos_x < (float)_terrain_texture_width)) &&
      ((0.0 < creature_ptr->pos_y && (creature_ptr->pos_y < (float)_terrain_texture_height)))) {
@@ -1714,6 +1728,7 @@ LAB_004310b8:
     creature_ptr->move_speed = creature_ptr->move_speed * 0.7;
   }
   creature_ptr->heading = heading;
+  /* Non-hardcore branch applies quest retry dampening, hardcore boosts stats instead. */
   if ((config_hardcore == '\0') &&
      (((creature_ptr->flags & 4) == 0 ||
       ((&creature_spawn_slot_table)[creature_ptr->link_index].interval_s =
