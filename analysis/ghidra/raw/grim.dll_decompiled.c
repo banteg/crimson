@@ -964,6 +964,25 @@ int __fastcall FUN_10002fc0(char *arg1)
 
 
 
+/* thunk_FUN_10002f60 @ 10003080 */
+
+bool __fastcall thunk_FUN_10002f60(void *arg1)
+
+{
+  undefined1 uVar1;
+  WINBOOL WVar2;
+  
+  uVar1 = 0;
+  if (*(HGDIOBJ *)((int)arg1 + 0x1c) != (HGDIOBJ)0x0) {
+    WVar2 = DeleteObject(*(HGDIOBJ *)((int)arg1 + 0x1c));
+    uVar1 = (undefined1)WVar2;
+    *(undefined4 *)((int)arg1 + 0x1c) = 0;
+  }
+  return (bool)uVar1;
+}
+
+
+
 /* FUN_10003090 @ 10003090 */
 
 /* [binja] int32_t sub_10003090() */
@@ -6811,6 +6830,89 @@ char * FUN_1000a880(char *arg1,uint *arg2)
 
 
 
+/* sprintf @ 1000a8d0 */
+
+int __cdecl sprintf(char *_Dest,char *_Format,...)
+
+{
+  int iVar1;
+  
+                    /* WARNING: Could not recover jumptable at 0x1000a8d0. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  iVar1 = sprintf(_Dest,_Format);
+  return iVar1;
+}
+
+
+
+/* operator_delete @ 1000a8d6 */
+
+void __cdecl operator_delete(void *param_1)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000a8d6. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  operator_delete(param_1);
+  return;
+}
+
+
+
+/* operator_new @ 1000a8dc */
+
+void * __cdecl operator_new(uint param_1)
+
+{
+  void *pvVar1;
+  
+                    /* WARNING: Could not recover jumptable at 0x1000a8dc. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  pvVar1 = operator_new(param_1);
+  return pvVar1;
+}
+
+
+
+/* setjmp3 @ 1000a8e8 */
+
+void __cdecl setjmp3(void)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000a8e8. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  setjmp3();
+  return;
+}
+
+
+
+/* longjmp @ 1000a8f4 */
+
+void __cdecl longjmp(int *_Buf,int _Value)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000a8f4. Too many branches */
+                    /* WARNING: Subroutine does not return */
+                    /* WARNING: Treating indirect jump as call */
+  longjmp(_Buf,_Value);
+  return;
+}
+
+
+
+/* ftol @ 1000a8fa */
+
+void __cdecl ftol(void)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000a8fa. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  ftol();
+  return;
+}
+
+
+
 /* FUN_1000a900 @ 1000a900 */
 
 void __cdecl FUN_1000a900(_onexit_t param_1)
@@ -6936,6 +7038,78 @@ LAB_1000aa31:
     return arg2;
   }
   return 0;
+}
+
+
+
+/* __dllonexit @ 1000aa86 */
+
+void __dllonexit(void)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000aa86. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  __dllonexit();
+  return;
+}
+
+
+
+/* free @ 1000aa8c */
+
+void __cdecl free(void *_Memory)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000aa8c. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  free(_Memory);
+  return;
+}
+
+
+
+/* initterm @ 1000aa92 */
+
+void __cdecl initterm(void)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000aa92. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  initterm();
+  return;
+}
+
+
+
+/* malloc @ 1000aa98 */
+
+void * __cdecl malloc(size_t _Size)
+
+{
+  void *pvVar1;
+  
+                    /* WARNING: Could not recover jumptable at 0x1000aa98. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  pvVar1 = malloc(_Size);
+  return pvVar1;
+}
+
+
+
+/* Direct3DCreate8 @ 1000aaa0 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
+
+IDirect3D8 * Direct3DCreate8(UINT SDKVersion)
+
+{
+  IDirect3D8 *pIVar1;
+  
+                    /* WARNING: Could not recover jumptable at 0x1000aaa0. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  pIVar1 = Direct3DCreate8(SDKVersion);
+  return pIVar1;
 }
 
 
@@ -9205,6 +9379,21 @@ void FUN_1000cc2c(void)
 
 
 
+/* thunk_FUN_1000cc2c @ 1000cc39 */
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+void thunk_FUN_1000cc2c(void)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000cc39. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  (*_DAT_10053d10)();
+  return;
+}
+
+
+
 /* FUN_1000cc3f @ 1000cc3f */
 
 /* [binja] int32_t __stdcall sub_1000cc3f(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4,
@@ -9337,6 +9526,19 @@ void FUN_1000ce69(void)
 
 
 
+/* thunk_FUN_1000ce69 @ 1000ce76 */
+
+void thunk_FUN_1000ce69(void)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000ce76. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  (*(code *)PTR_FUN_10053c74)();
+  return;
+}
+
+
+
 /* FUN_1000cea6 @ 1000cea6 */
 
 /* [binja] float* __stdcall sub_1000cea6(float* arg1, float* arg2, float* arg3, float* arg4, float*
@@ -9450,6 +9652,19 @@ void FUN_1000d173(void)
 {
   grim_select_renderer_backend(1);
                     /* WARNING: Could not recover jumptable at 0x1000d17a. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  (*(code *)PTR_FUN_10053c80)();
+  return;
+}
+
+
+
+/* thunk_FUN_1000d173 @ 1000d180 */
+
+void thunk_FUN_1000d173(void)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000d180. Too many branches */
                     /* WARNING: Treating indirect jump as call */
   (*(code *)PTR_FUN_10053c80)();
   return;
@@ -9594,6 +9809,19 @@ void FUN_1000d766(void)
 
 
 
+/* thunk_FUN_1000d766 @ 1000d773 */
+
+void thunk_FUN_1000d766(void)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000d773. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  (*(code *)PTR_FUN_10053c64)();
+  return;
+}
+
+
+
 /* FUN_1000d9af @ 1000d9af */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
@@ -9610,6 +9838,21 @@ void FUN_1000d9af(void)
 
 
 
+/* thunk_FUN_1000d9af @ 1000d9bc */
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+void thunk_FUN_1000d9af(void)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000d9bc. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  (*_DAT_10053cec)();
+  return;
+}
+
+
+
 /* FUN_1000dc72 @ 1000dc72 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
@@ -9619,6 +9862,21 @@ void FUN_1000dc72(void)
 {
   grim_select_renderer_backend(1);
                     /* WARNING: Could not recover jumptable at 0x1000dc79. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  (*_DAT_10053ca0)();
+  return;
+}
+
+
+
+/* thunk_FUN_1000dc72 @ 1000dc7f */
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+void thunk_FUN_1000dc72(void)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000dc7f. Too many branches */
                     /* WARNING: Treating indirect jump as call */
   (*_DAT_10053ca0)();
   return;
@@ -9895,6 +10153,21 @@ void FUN_1000e40d(void)
 
 
 
+/* thunk_FUN_1000e40d @ 1000e41a */
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+void thunk_FUN_1000e40d(void)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000e41a. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  (*_DAT_10053cf0)();
+  return;
+}
+
+
+
 /* FUN_1000e502 @ 1000e502 */
 
 /* [binja] int32_t __stdcall sub_1000e502(float arg1, float arg2, float arg3) */
@@ -10053,6 +10326,21 @@ int FUN_1000e8cf(float arg1,float arg2,float arg3)
 
 
 
+/* thunk_FUN_1000e8cf @ 1000e8fd */
+
+int thunk_FUN_1000e8cf(float arg1,float arg2,float arg3)
+
+{
+  int iVar1;
+  
+                    /* WARNING: Could not recover jumptable at 0x1000e8fd. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  iVar1 = (*(code *)PTR_FUN_10053cbc)();
+  return iVar1;
+}
+
+
+
 /* FUN_1000e9dc @ 1000e9dc */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
@@ -10069,6 +10357,21 @@ void FUN_1000e9dc(void)
 
 
 
+/* thunk_FUN_1000e9dc @ 1000e9e9 */
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+void thunk_FUN_1000e9dc(void)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000e9e9. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  (*_DAT_10053ca4)();
+  return;
+}
+
+
+
 /* FUN_1000eb4b @ 1000eb4b */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
@@ -10078,6 +10381,21 @@ void FUN_1000eb4b(void)
 {
   grim_select_renderer_backend(1);
                     /* WARNING: Could not recover jumptable at 0x1000eb52. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  (*_DAT_10053d08)();
+  return;
+}
+
+
+
+/* thunk_FUN_1000eb4b @ 1000eb58 */
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+void thunk_FUN_1000eb4b(void)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000eb58. Too many branches */
                     /* WARNING: Treating indirect jump as call */
   (*_DAT_10053d08)();
   return;
@@ -10127,6 +10445,21 @@ int FUN_1000ed37(int arg1,int arg2,float arg3)
   
   grim_select_renderer_backend(1);
   iVar1 = (*(code *)PTR_FUN_10053ce4)(arg1,arg2,arg3,in_stack_00000010);
+  return iVar1;
+}
+
+
+
+/* thunk_FUN_1000ed37 @ 1000ed5b */
+
+int thunk_FUN_1000ed37(int arg1,int arg2,float arg3)
+
+{
+  int iVar1;
+  
+                    /* WARNING: Could not recover jumptable at 0x1000ed5b. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  iVar1 = (*(code *)PTR_FUN_10053ce4)();
   return iVar1;
 }
 
@@ -10220,6 +10553,19 @@ void FUN_1000ef90(void)
 {
   grim_select_renderer_backend(1);
                     /* WARNING: Could not recover jumptable at 0x1000ef97. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  (*(code *)PTR_FUN_10053cac)();
+  return;
+}
+
+
+
+/* thunk_FUN_1000ef90 @ 1000ef9d */
+
+void thunk_FUN_1000ef90(void)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1000ef9d. Too many branches */
                     /* WARNING: Treating indirect jump as call */
   (*(code *)PTR_FUN_10053cac)();
   return;
@@ -16647,6 +16993,23 @@ LAB_10016511:
 
 
 
+/* thunk_FUN_100161a0 @ 100165ce */
+
+int __fastcall thunk_FUN_100161a0(int *arg1)
+
+{
+  int *piVar1;
+  
+  piVar1 = (int *)*arg1;
+  if (piVar1 != (int *)0x0) {
+    (**(code **)(*piVar1 + 0x28))(piVar1);
+  }
+  *arg1 = 0;
+  return 0;
+}
+
+
+
 /* FUN_100165d3 @ 100165d3 */
 
 /* WARNING: Type propagation algorithm not settling */
@@ -19780,6 +20143,18 @@ void * __thiscall grim_pixel_format_ctor_x8r8g8b8(void *this,uint *desc)
 
 
 
+/* grim_vertex_space_converter_destroy @ 1001a574 */
+
+void __fastcall grim_vertex_space_converter_destroy(void *this)
+
+{
+  *(undefined ***)this = &PTR_FUN_1004cae4;
+  operator_delete(*(void **)((int)this + 0x104c));
+  return;
+}
+
+
+
 /* grim_pixel_format_ctor_r5g6b5 @ 1001a579 */
 
 /* pixel format ctor for D3DFMT_R5G6B5 */
@@ -20767,6 +21142,45 @@ void *** __thiscall FUN_1001b472(void *this,void ***arg1,char arg2)
 
 
 
+/* thunk_FUN_10016c3c @ 1001b48e */
+
+int thunk_FUN_10016c3c(void ***arg1)
+
+{
+  int extraout_EAX;
+  undefined4 *this;
+  uint uVar1;
+  int unaff_EBP;
+  uint uVar2;
+  
+  seh_prolog();
+  *(undefined4 **)(unaff_EBP + -0x14) = this;
+  *this = &PTR_FUN_1004caf8;
+  *(undefined4 *)(unaff_EBP + -4) = 0;
+  if ((this[0x42f] != 0) && (this[0x430] != 0)) {
+    uVar1 = this[0x427];
+    uVar2 = this[0x428];
+    *(undefined4 *)(unaff_EBP + -0x10) = this[0x430];
+    if (uVar1 < uVar2) {
+      do {
+        for (uVar2 = this[0x424]; uVar2 < (uint)this[0x426]; uVar2 = uVar2 + 4) {
+          operator_delete(*(void **)(*(int *)(unaff_EBP + -0x10) + 4));
+          *(int *)(unaff_EBP + -0x10) = *(int *)(unaff_EBP + -0x10) + 8;
+        }
+        uVar1 = uVar1 + 1;
+      } while (uVar1 < (uint)this[0x428]);
+    }
+  }
+  operator_delete((void *)this[0x42e]);
+  operator_delete((void *)this[0x430]);
+  *(undefined4 *)(unaff_EBP + -4) = 0xffffffff;
+  grim_vertex_space_converter_destroy(this);
+  ExceptionList = *(void **)(unaff_EBP + -0xc);
+  return extraout_EAX;
+}
+
+
+
 /* FUN_1001b493 @ 1001b493 */
 
 /* [binja] int32_t __fastcall sub_1001b493(void*** arg1) */
@@ -21152,6 +21566,31 @@ void *** __thiscall FUN_1001bc84(void *this,void ***arg1,char arg2)
     operator_delete(this);
   }
   return this;
+}
+
+
+
+/* thunk_FUN_1001b493 @ 1001bca0 */
+
+int thunk_FUN_1001b493(void ***arg1)
+
+{
+  int extraout_EAX;
+  undefined4 *this;
+  int unaff_EBP;
+  
+  seh_prolog();
+  *(undefined4 **)(unaff_EBP + -0x10) = this;
+  *this = &PTR_LAB_1004cb7c;
+  *(undefined4 *)(unaff_EBP + -4) = 0;
+  grim_pixel_format_flush_yuv_cache(this);
+  if ((void *)this[0x41b] != (void *)0x0) {
+    operator_delete((void *)this[0x41b]);
+  }
+  *(undefined4 *)(unaff_EBP + -4) = 0xffffffff;
+  grim_vertex_space_converter_destroy(this);
+  ExceptionList = *(void **)(unaff_EBP + -0xc);
+  return extraout_EAX;
 }
 
 
@@ -21690,6 +22129,21 @@ void __cdecl FUN_1001c265(int *param_1,int param_2,int param_3)
     DAT_100554e8 = (char)iVar3;
   }
   param_1[4] = 200;
+  return;
+}
+
+
+
+/* thunk_FUN_10023bc5 @ 1001c325 */
+
+void __cdecl thunk_FUN_10023bc5(int param_1)
+
+{
+  if (*(int *)(param_1 + 4) != 0) {
+    (**(code **)(*(int *)(param_1 + 4) + 0x28))(param_1);
+  }
+  *(undefined4 *)(param_1 + 4) = 0;
+  *(undefined4 *)(param_1 + 0x10) = 0;
   return;
 }
 
@@ -25873,6 +26327,21 @@ undefined4 * __cdecl FUN_1002052b(png_structp png_ptr,int param_2,int param_3)
     }
   }
   return puVar2;
+}
+
+
+
+/* png_free_thunk @ 1002057e */
+
+/* thunk to png_free (jmp 0x10024777) */
+
+void __cdecl png_free_thunk(png_structp png_ptr,void *ptr)
+
+{
+  if ((png_ptr != (png_structp)0x0) && (ptr != (void *)0x0)) {
+    free(ptr);
+  }
+  return;
 }
 
 
@@ -43813,6 +44282,39 @@ LAB_10038e41:
 
 
 
+/* DirectInput8Create @ 100398c0 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+
+HRESULT DirectInput8Create(HINSTANCE param_1,DWORD param_2,REFIID param_3,LPVOID *param_4,
+                          LPUNKNOWN param_5)
+
+{
+  HRESULT HVar1;
+  
+                    /* WARNING: Could not recover jumptable at 0x100398c0. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  HVar1 = DirectInput8Create(param_1,param_2,param_3,param_4,param_5);
+  return HVar1;
+}
+
+
+
+/* HlinkNavigateString @ 1003a980 */
+
+HRESULT HlinkNavigateString(IUnknown *pUnk,LPCWSTR szTarget)
+
+{
+  HRESULT HVar1;
+  
+                    /* WARNING: Could not recover jumptable at 0x1003a980. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  HVar1 = HlinkNavigateString(pUnk,szTarget);
+  return HVar1;
+}
+
+
+
 /* FUN_1003a990 @ 1003a990 */
 
 void __cdecl FUN_1003a990(int param_1,undefined4 param_2,undefined4 param_3)
@@ -50257,6 +50759,92 @@ void FUN_1004b72d(void)
 
 
 
+/* _CIacos @ 1004b746 */
+
+void _CIacos(void)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1004b746. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  _CIacos();
+  return;
+}
+
+
+
+/* _finite @ 1004b74c */
+
+int __cdecl _finite(double _X)
+
+{
+  int iVar1;
+  
+                    /* WARNING: Could not recover jumptable at 0x1004b74c. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  iVar1 = _finite(_X);
+  return iVar1;
+}
+
+
+
+/* isdigit @ 1004b752 */
+
+int __cdecl isdigit(int _C)
+
+{
+  int iVar1;
+  
+                    /* WARNING: Could not recover jumptable at 0x1004b752. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  iVar1 = isdigit(_C);
+  return iVar1;
+}
+
+
+
+/* isspace @ 1004b758 */
+
+int __cdecl isspace(int _C)
+
+{
+  int iVar1;
+  
+                    /* WARNING: Could not recover jumptable at 0x1004b758. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  iVar1 = isspace(_C);
+  return iVar1;
+}
+
+
+
+/* _CIpow @ 1004b75e */
+
+void _CIpow(void)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1004b75e. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  _CIpow();
+  return;
+}
+
+
+
+/* floor @ 1004b764 */
+
+double __cdecl floor(double _X)
+
+{
+  double dVar1;
+  
+                    /* WARNING: Could not recover jumptable at 0x1004b764. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  dVar1 = floor(_X);
+  return dVar1;
+}
+
+
+
 /* __aullshr @ 1004b770 */
 
 /* Library Function - Single Match
@@ -50298,6 +50886,35 @@ void FUN_1004b790(void)
   }
   *(undefined4 *)(puVar1 + (-4 - in_EAX)) = unaff_retaddr;
   return;
+}
+
+
+
+/* exit @ 1004b7c0 */
+
+void __cdecl exit(int _Code)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x1004b7c0. Too many branches */
+                    /* WARNING: Subroutine does not return */
+                    /* WARNING: Treating indirect jump as call */
+  exit(_Code);
+  return;
+}
+
+
+
+/* calloc @ 1004b7c6 */
+
+void * __cdecl calloc(size_t _NumOfElements,size_t _SizeOfElements)
+
+{
+  void *pvVar1;
+  
+                    /* WARNING: Could not recover jumptable at 0x1004b7c6. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  pvVar1 = calloc(_NumOfElements,_SizeOfElements);
+  return pvVar1;
 }
 
 
