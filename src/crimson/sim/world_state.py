@@ -149,6 +149,7 @@ class WorldState:
             state=self.state,
             players=self.players,
             detail_preset=detail_preset,
+            fx_toggle=int(fx_toggle),
             world_width=float(world_size),
             world_height=float(world_size),
             fx_queue=fx_queue,
