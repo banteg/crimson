@@ -51,6 +51,7 @@ void player_update(void)
   undefined4 uStack_8;
   undefined4 uStack_4;
   
+  /* Early frame gate: UI/console and alive-state short-circuits. */
   player_idx = render_overlay_player_index;
   if (console_open_flag != '\0') {
     return;
@@ -65,6 +66,7 @@ void player_update(void)
          (&player_state_table)[player_idx].death_timer - frame_dt * 20.0;
     return;
   }
+  /* Always-on upkeep timers and low-health bleed FX pulse. */
   if (0.0 < (&player_state_table)[player_idx].speed_bonus_timer) {
     (&player_state_table)[player_idx].speed_multiplier =
          (&player_state_table)[player_idx].speed_multiplier + 1.0;
@@ -103,6 +105,7 @@ void player_update(void)
   if ((&player_state_table)[player_idx].shot_cooldown < 0.0) {
     (&player_state_table)[player_idx].shot_cooldown = 0.0;
   }
+  /* Periodic perk procs that spawn projectiles/effects on internal timers. */
   iVar10 = perk_count_get(perk_id_man_bomb);
   if (iVar10 == 0) {
     (&player_state_table)[player_idx].man_bomb_timer = 0.0;
@@ -251,6 +254,7 @@ void player_update(void)
       perk_hot_tempered_trigger_interval_s = (float)(int)local_30[0] + 2.0;
     }
   }
+  /* Global spread damping gate toggles between decay and clamp floors. */
   if (player_spread_damping_gate <= 0.0) {
     player_spread_damping_scalar = frame_dt * 0.8 + player_spread_damping_scalar;
     if (1.0 < player_spread_damping_scalar) {
@@ -274,6 +278,7 @@ void player_update(void)
   if (((demo_mode_active == '\0') &&
       (*(int *)(&config_player_mode_flags + render_overlay_player_index * 4) != 5)) &&
      (*(int *)(&config_aim_scheme + render_overlay_player_index * 4) != 5)) {
+    /* Player-controlled movement branch ladder keyed by mode flag. */
 LAB_00413f2d:
     iVar10 = *(int *)(&config_player_mode_flags + render_overlay_player_index * 4);
     if (iVar10 == 5) goto LAB_00414c7f;
@@ -705,6 +710,7 @@ LAB_00414750:
     }
   }
   else {
+    /* Demo/auto path: retarget nearest creature and steer movement toward target/arena center. */
     if ((&player_state_table)[player_idx].auto_target < 0) {
       (&player_state_table)[player_idx].auto_target = 0;
     }
@@ -816,6 +822,7 @@ LAB_00414f2d:
   if (time_scale_active != '\0') {
     frame_dt = _time_scale_factor * frame_dt * 1.6666666;
   }
+  /* Post-move weapon readiness: spread cooloff, reload timers, and reload side perks. */
   iVar10 = perk_count_get(perk_id_sharpshooter);
   if (iVar10 == 0) {
     fVar14 = (&player_state_table)[player_idx].spread_heat - frame_dt * 0.4;
@@ -899,6 +906,7 @@ LAB_00414f2d:
      (_config_player_count == 1)) {
     player_start_reload();
   }
+  /* Aim vector update by configured aim scheme (mouse/stick/keys/demo assist). */
   bVar4 = false;
   if ((demo_mode_active == '\0') &&
      (iVar10 = *(int *)(&config_aim_scheme + render_overlay_player_index * 4), iVar10 != 5)) {
@@ -1034,6 +1042,7 @@ LAB_00414f2d:
     }
   }
 LAB_0041572e:
+  /* Fire gate: cooldown/reload checks, ammo-to-health perks, and alt-weapon swap flow. */
   fVar17 = (float10)fpatan((float10)(&player_state_table)[player_idx].pos_y -
                            (float10)(&player_state_table)[player_idx].aim_y,
                            (float10)*player_pos_ptr - (float10)(&player_state_table)[player_idx].aim_x);
@@ -1091,6 +1100,7 @@ LAB_0041572e:
       }
     }
   }
+  /* Fire execution: either regular weapon dispatch or fire_bullets fallback stream. */
   if ((!bVar8) && (!bVar5)) goto LAB_0041753e;
   fVar14 = (&player_state_table)[player_idx].aim_heading;
   iVar10 = (*grim_interface_ptr->vtable->grim_is_key_active)
@@ -1201,6 +1211,7 @@ LAB_0041572e:
   if ((char)iVar10 != '\0') {
     (&player_state_table)[player_idx].fire_bullets_timer = 10.0;
   }
+  /* Main weapon-id dispatch: spawn projectile/effects and apply per-weapon ammo/spread costs. */
   if ((&player_state_table)[player_idx].fire_bullets_timer <= 0.0) {
     (&player_state_table)[player_idx].shot_cooldown =
          (&weapon_table)[(&player_state_table)[player_idx].weapon_id].shot_cooldown;
@@ -1722,6 +1733,7 @@ LAB_0041600e:
     }
   }
   else {
+    /* Fallback fire_bullets profile uses pellet count + fallback spread/cooldown. */
     sfx_play_panned((float)fire_bullets_primary_shot_sfx_id);
     sfx_play_panned((float)fire_bullets_secondary_shot_sfx_id);
     if ((&weapon_table)[(&player_state_table)[player_idx].weapon_id].pellet_count == 1) {
@@ -1776,6 +1788,7 @@ LAB_0041600e:
     player_start_reload();
   }
 LAB_0041753e:
+  /* End-of-frame normalization: move phase wrap, speed bonus rollback, world bounds clamp. */
   fVar14 = (&player_state_table)[player_idx].move_phase;
   while (14.0 < fVar14) {
     fVar14 = (&player_state_table)[player_idx].move_phase - 14.0;

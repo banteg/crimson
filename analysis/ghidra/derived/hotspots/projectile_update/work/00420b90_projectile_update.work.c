@@ -87,15 +87,18 @@ void projectile_update(void)
   float local_14;
   float local_10 [4];
   
+  /* Frame-level scalar setup for ion-family projectile tuning. */
   projectile_update_tick = projectile_update_tick + 1;
   local_c0 = 1.0;
   iVar7 = perk_count_get(perk_id_ion_gun_master);
   if (iVar7 != 0) {
     local_c0 = 1.2;
   }
+  /* Primary projectile pool sweep. */
   slot_idx = 0;
   do {
     if (projectile_pool[slot_idx].active != '\0') {
+      /* Lifetime + bounds gates before expensive collision stepping. */
       if (projectile_pool[slot_idx].pos.tail.vy.life_timer <= 0.0) {
         projectile_pool[slot_idx].active = '\0';
       }
@@ -126,6 +129,7 @@ LAB_004219f8:
           substep_dy = 0.0;
           substep_dx = 0.0;
           local_c4 = 0.0;
+          /* Integrate in coarse substeps and resolve hit targets along the swept path. */
           if (0 < (int)local_dc) {
             do {
               fVar11 = local_c4;
@@ -160,6 +164,7 @@ LAB_004219f8:
                   if ((iVar12 != 0) && (iVar12 = crt_rand(), ((byte)iVar12 & 7) == 1)) {
                     (&creature_pool)[iVar7].flags = (&creature_pool)[iVar7].flags | 1;
                   }
+                  /* Projectile-type-specific hit FX and special behavior. */
                   projectile_type = projectile_pool[slot_idx].pos.tail.vy.type_id;
                   if (projectile_type == PROJECTILE_TYPE_BLADE_GUN) {
                     iVar12 = 8;
@@ -336,6 +341,7 @@ LAB_004219f8:
                   else if (projectile_type == PROJECTILE_TYPE_PLAGUE_SPREADER) {
                     (&creature_pool)[iVar7].collision_flag = '\x01';
                   }
+                  /* Damage pool accounting and impact response on the struck creature. */
                   fVar11 = ((100.0 / fVar11) * fVar23 * 30.0 + 10.0) * 0.95;
                   if ((0.0 < fVar11) && (0.0 < (&creature_pool)[iVar7].health)) {
                     fVar23 = projectile_pool[slot_idx].pos.tail.vy.damage_pool - 1.0;
@@ -469,6 +475,7 @@ LAB_004219f8:
         }
       }
       else {
+        /* Expiring ion/gauss projectiles still emit radius damage while decaying. */
         projectile_type = projectile_pool[slot_idx].pos.tail.vy.type_id;
         if ((projectile_type == PROJECTILE_TYPE_ION_RIFLE) || (projectile_type == PROJECTILE_TYPE_ION_MINIGUN)) {
           if (slot_idx == shock_chain_projectile_id) {
@@ -502,6 +509,7 @@ LAB_004219f8:
     }
     slot_idx = slot_idx + 1;
   } while (slot_idx < 0x60);
+  /* Secondary projectile pool: rockets, seekers, and explosion lifecycles. */
   secondary_proj_ptr = &secondary_projectile_pool[0].pos.vx.vy;
   do {
     if (*(char *)((int)(secondary_proj_ptr + -2) + 0x10) != '\0') {
@@ -801,6 +809,7 @@ LAB_00421d65:
     }
     secondary_proj_ptr = (secondary_projectile_vel_y_block_t *)((int)(secondary_proj_ptr + 2) + 4);
   } while ((int)secondary_proj_ptr < 0x4965f0);
+  /* Sprite-effect pool housekeeping. */
   pfVar13 = &sprite_effect_pool.pos_y;
   do {
     if ((char)((sprite_effect_t *)(pfVar13 + -7))->active != '\0') {
@@ -818,6 +827,7 @@ LAB_00421d65:
     }
     pfVar13 = pfVar13 + 0xb;
   } while ((int)pfVar13 < 0x49aa3c);
+  /* Particle pool simulation, including sticky/freeze variants and on-contact logic. */
   slot_idx = 0;
   pfVar13 = &particle_pool.vel_y;
   do {
