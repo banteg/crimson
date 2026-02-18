@@ -284,6 +284,9 @@ class QuestDeterministicSession:
     ) -> QuestDeterministicSessionTick:
         dt_frame = float(dt_frame)
         dt_frame_ms = float(dt_frame) * 1000.0
+        if dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
+            # Keep quest spawn timeline/counters on captured integer-ms cadence.
+            dt_frame_ms = float(int(dt_frame_ms_i32))
         self.elapsed_ms += float(dt_frame_ms)
 
         state = self.world.state
