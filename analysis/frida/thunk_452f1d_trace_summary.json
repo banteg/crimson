@@ -1,0 +1,51 @@
+{
+  "log_path": "artifacts/frida/share/thunk_452f1d_trace.jsonl",
+  "thunk_static": "0x00452f1d",
+  "thunk_callback_ptr_static": "0x00479658",
+  "call_count": 1,
+  "callers": [
+    {
+      "caller_static": "0x004156ca",
+      "count": 1
+    }
+  ],
+  "callback_target_after_counts": [
+    {
+      "target_static": "0x00455587",
+      "count": 1
+    }
+  ],
+  "callback_transition_counts": [
+    {
+      "from": "0x00452f1d",
+      "to": "0x00455587",
+      "count": 1
+    }
+  ],
+  "vector_length_observations": {
+    "sample_count": 1,
+    "unit_after_count": 1,
+    "len_before_min": 180.9181909863671,
+    "len_before_max": 180.9181909863671,
+    "len_after_min": 1.0000000589791558,
+    "len_after_max": 1.0000000589791558
+  },
+  "selected_vector_samples": [
+    {
+      "source": "stack_arg0",
+      "ptr": "0x19fa0c",
+      "before": {
+        "x": 128.00091552734375,
+        "y": 127.85600280761719
+      },
+      "after": {
+        "x": 0.7075071930885315,
+        "y": 0.7067062258720398
+      },
+      "len_before": 180.9181909863671,
+      "len_after": 1.0000000589791558,
+      "seq": 1,
+      "caller_static": "0x004156ca"
+    }
+  ]
+}

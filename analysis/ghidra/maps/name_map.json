@@ -3325,9 +3325,16 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00452f1d",
-    "name": "FUN_00452f1d",
-    "signature": "int FUN_00452f1d(void)",
-    "comment": "[binja] int32_t sub_452f1d()"
+    "name": "vec2_normalize_dispatch_init",
+    "signature": "float * vec2_normalize_dispatch_init(float *dst, float *src)",
+    "comment": "dispatch initializer: calls renderer_select_backend(1), then tail-jumps via DAT_00479658; runtime trace (2026-02-18) showed first-call retarget 0x00452f1d -> 0x00455587 and vec2 length ~180.918 -> ~1.0"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00452f2a",
+    "name": "vec2_normalize_dispatch",
+    "signature": "float * vec2_normalize_dispatch(float *dst, float *src)",
+    "comment": "hot-path thunk: jmp [DAT_00479658] after lazy init; used by player_update, projectile_update, and creature_update_all callsites"
   },
   {
     "program": "crimsonland.exe",
@@ -3535,9 +3542,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00455587",
-    "name": "FUN_00455587",
-    "signature": "int * FUN_00455587(int *arg1, float arg2)",
-    "comment": "[binja] int32_t* __stdcall sub_455587(int32_t* arg1, float arg2)"
+    "name": "vec2_normalize_safe",
+    "signature": "float * vec2_normalize_safe(float *dst, float *src)",
+    "comment": "normalizes src into dst, preserves near-unit vectors, and writes zero vector when length <= FLT_MIN; observed as DAT_00479658 target after vec2_normalize_dispatch_init (2026-02-18 capture)"
   },
   {
     "program": "crimsonland.exe",

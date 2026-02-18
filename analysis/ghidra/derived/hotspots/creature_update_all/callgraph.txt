@@ -16,5 +16,5 @@ creature_update_all -> creature_update_all (0x00426220)
   -> player_take_damage [extracted]
   -> projectile_spawn [extracted]
   -> sfx_play_panned [extracted]
-  -> thunk_FUN_00452f1d [missing]
+  -> vec2_normalize_dispatch [extracted]
   -> vec2_add_inplace [extracted]

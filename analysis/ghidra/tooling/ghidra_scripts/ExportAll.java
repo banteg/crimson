@@ -121,7 +121,9 @@ public class ExportAll extends GhidraScript {
 
             while (functions.hasNext() && !monitor.isCancelled()) {
                 Function func = functions.next();
-                if (func.isExternal() || func.isThunk()) continue;
+                // Keep thunks in decompiled export so dispatch stubs are visible
+                // to downstream extraction/refactor workflows.
+                if (func.isExternal()) continue;
 
                 DecompileResults results = decompiler.decompileFunction(func, 30, monitor);
                 if (results.decompileCompleted()) {

@@ -3,13 +3,12 @@
 This folder is analysis-only and does not alter runtime code.
 
 - source: `analysis/ghidra/raw/crimsonland.exe_decompiled.c`
-- extracted functions: `17`
+- extracted functions: `18`
 - requested targets: `creature_update_all`
 - resolved targets: `creature_update_all`
 - call depth: `1`
 - name map: `analysis/ghidra/maps/name_map.json`
 - local renames: `analysis/ghidra/derived/hotspots/creature_update_all/work/local_renames.json`
-- missing extracted functions: `thunk_FUN_00452f1d`
 - direct callgraph: `callgraph.txt`
 
 ## Files
@@ -29,6 +28,7 @@ This folder is analysis-only and does not alter runtime code.
 - `analysis/ghidra/derived/hotspots/creature_update_all/functions/0042fcf0_perk_count_get.c` (0x0042fcf0)
 - `analysis/ghidra/derived/hotspots/creature_update_all/functions/00430af0_creature_spawn_template.c` (0x00430af0)
 - `analysis/ghidra/derived/hotspots/creature_update_all/functions/0043d260_sfx_play_panned.c` (0x0043d260)
+- `analysis/ghidra/derived/hotspots/creature_update_all/functions/00452f2a_vec2_normalize_dispatch.c` (0x00452f2a) (manual thunk supplement)
 - `analysis/ghidra/derived/hotspots/creature_update_all/functions/00461054___ftol.c` (0x00461054)
 - `analysis/ghidra/derived/hotspots/creature_update_all/functions/00461746_crt_rand.c` (0x00461746)
 

@@ -189,6 +189,7 @@ cp /mnt/c/share/frida/gameplay_diff_capture.json analysis/frida/raw/  # optional
 cp /mnt/c/share/frida/gameplay_diff_capture.quest_*.json analysis/frida/raw/  # optional
 cp /mnt/c/share/frida/demo_trial_overlay_trace.jsonl analysis/frida/raw/  # optional
 cp /mnt/c/share/frida/demo_idle_threshold_trace.jsonl analysis/frida/raw/  # optional
+cp /mnt/c/share/frida/thunk_452f1d_trace.jsonl analysis/frida/raw/  # optional
 ```
 
 Shortcut:
@@ -223,6 +224,26 @@ Outputs:
 - `analysis/frida/name_map_candidates.json` — suggested rename candidates (review only).
 - `analysis/frida/player_unknown_offsets.json` — hot unknown player offsets, if tracker ran.
 - `analysis/frida/unmapped_calls.json` — callsites we couldn’t map to functions.
+
+If you captured `thunk_452f1d_trace.jsonl`, reduce it separately:
+
+```bash
+uv run scripts/thunk_452f1d_trace_reduce.py \
+  --log artifacts/frida/share/thunk_452f1d_trace.jsonl \
+  --out-summary analysis/frida/thunk_452f1d_trace_summary.json \
+  --out-candidates analysis/frida/thunk_452f1d_name_map_candidates.json
+```
+
+Shortcut:
+
+```bash
+just thunk-452f1d-reduce
+```
+
+Additional outputs:
+
+- `analysis/frida/thunk_452f1d_trace_summary.json` — caller/callback and vector-length summary for thunk dispatch init.
+- `analysis/frida/thunk_452f1d_name_map_candidates.json` — suggested map entries for `0x00452f1d`, `0x00452f2a`, and `0x00455587`.
 
 Optional: validate `demo_trial_overlay_trace.jsonl` (or the reduced `facts.jsonl`) against the Python demo trial model:
 
