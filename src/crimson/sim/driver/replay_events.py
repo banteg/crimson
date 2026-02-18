@@ -6,6 +6,7 @@ from typing import cast
 from grim.geom import Vec2
 
 from ...game_modes import GameMode
+from ...math_parity import f32
 from ...original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     CAPTURE_CREATURE_SPAWN_EVENT_KIND,
@@ -14,6 +15,7 @@ from ...original.capture import (
     CAPTURE_STATE_TRANSITION_EVENT_KIND,
     apply_capture_bootstrap_payload,
     capture_bootstrap_payload_from_event_payload,
+    capture_creature_spawn_added_head_from_event_payload,
     capture_creature_spawns_from_event_payload,
     capture_perk_apply_from_event_payload,
     capture_perk_pending_from_event_payload,
@@ -179,7 +181,12 @@ def apply_replay_tick_events(
 
             if kind == CAPTURE_CREATURE_SPAWN_EVENT_KIND:
                 spawns = capture_creature_spawns_from_event_payload(list(event.payload))
+                added_rows = capture_creature_spawn_added_head_from_event_payload(list(event.payload))
                 if spawns is None:
+                    if strict_events:
+                        raise ReplayRunnerError(f"invalid creature_spawn payload at tick={tick_index}")
+                    continue
+                if added_rows is None:
                     if strict_events:
                         raise ReplayRunnerError(f"invalid creature_spawn payload at tick={tick_index}")
                     continue
@@ -191,6 +198,21 @@ def apply_replay_tick_events(
                         state.rng,
                         rand=state.rng.rand,
                     )
+                for index, heading, target_heading, ai_mode, link_index in added_rows:
+                    idx = int(index)
+                    if not (0 <= idx < len(world.creatures.entries)):
+                        continue
+                    entry = world.creatures.entries[idx]
+                    if not entry.active:
+                        continue
+                    if heading is not None:
+                        entry.heading = float(f32(float(heading)))
+                    if target_heading is not None:
+                        entry.target_heading = float(f32(float(target_heading)))
+                    if ai_mode is not None:
+                        entry.ai_mode = int(ai_mode)
+                    if link_index is not None:
+                        entry.link_index = int(link_index)
                 continue
 
             if kind == CAPTURE_STATE_TRANSITION_EVENT_KIND:

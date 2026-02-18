@@ -37,6 +37,7 @@ from ..weapons import WeaponId, projectile_type_ids_from_weapon_id
 from .schema import (
     CAPTURE_FORMAT_VERSION,
     CaptureEventHeadBonusApply,
+    CaptureEventHeadCreatureLifecycle,
     CaptureEventHeadCreatureSpawn,
     CaptureEventHeadPerkApply,
     CaptureEventHeadPerkDelta,
@@ -1686,6 +1687,34 @@ def capture_creature_spawns_from_event_payload(
     return tuple(out)
 
 
+def capture_creature_spawn_added_head_from_event_payload(
+    payload: list[object],
+) -> tuple[tuple[int, float | None, float | None, int | None, int | None], ...] | None:
+    event_payload = _event_payload_object(payload)
+    if event_payload is None:
+        return None
+    rows_raw = event_payload.get("added_head")
+    if rows_raw is None:
+        return ()
+    if not isinstance(rows_raw, list):
+        return None
+
+    out: list[tuple[int, float | None, float | None, int | None, int | None]] = []
+    for row in rows_raw:
+        if not isinstance(row, dict):
+            return None
+        row_obj = cast(dict[str, object], row)
+        index = _coerce_int_like(row_obj.get("index"))
+        if index is None or int(index) < 0:
+            return None
+        heading = _finite_float_or_none(row_obj.get("heading"))
+        target_heading = _finite_float_or_none(row_obj.get("target_heading"))
+        ai_mode = _coerce_int_like(row_obj.get("ai_mode"))
+        link_index = _coerce_int_like(row_obj.get("link_index"))
+        out.append((int(index), heading, target_heading, ai_mode, link_index))
+    return tuple(out)
+
+
 def capture_state_transitions_from_event_payload(
     payload: list[object],
 ) -> tuple[tuple[int, int | None, int | None], ...] | None:
@@ -2033,6 +2062,43 @@ def _tick_creature_spawn_rows(tick: CaptureTick) -> tuple[dict[str, object], ...
                 "heading": float(heading),
             },
         )
+    return tuple(out)
+
+
+def _tick_creature_spawn_added_rows(tick: CaptureTick) -> tuple[dict[str, object], ...]:
+    out: list[dict[str, object]] = []
+    for head in tick.event_heads:
+        if not isinstance(head, CaptureEventHeadCreatureLifecycle):
+            continue
+        data: dict[str, object]
+        if isinstance(head.data, dict):
+            data = head.data
+        else:
+            data = {}
+        added_head = data.get("added_head")
+        if not isinstance(added_head, list):
+            continue
+        for raw_row in added_head:
+            if not isinstance(raw_row, dict):
+                continue
+            row = cast(dict[str, object], raw_row)
+            index = _coerce_int_like(row.get("index"))
+            if index is None or int(index) < 0:
+                continue
+            heading = _finite_float_or_none(row.get("heading"))
+            target_heading = _finite_float_or_none(row.get("target_heading"))
+            ai_mode = _coerce_int_like(row.get("ai_mode"))
+            link_index = _coerce_int_like(row.get("link_index"))
+            row_out: dict[str, object] = {"index": int(index)}
+            if heading is not None:
+                row_out["heading"] = float(heading)
+            if target_heading is not None:
+                row_out["target_heading"] = float(target_heading)
+            if ai_mode is not None:
+                row_out["ai_mode"] = int(ai_mode)
+            if link_index is not None:
+                row_out["link_index"] = int(link_index)
+            out.append(row_out)
     return tuple(out)
 
 
@@ -2412,12 +2478,16 @@ def convert_capture_to_replay(
 
             if int(resolved_mode_id) == int(GameMode.QUESTS):
                 spawn_rows = _tick_creature_spawn_rows(tick)
-                if spawn_rows:
+                added_rows = _tick_creature_spawn_added_rows(tick)
+                if spawn_rows or added_rows:
+                    spawn_payload: dict[str, object] = {"spawns": list(spawn_rows)}
+                    if added_rows:
+                        spawn_payload["added_head"] = list(added_rows)
                     events.append(
                         UnknownEvent(
                             tick_index=int(tick.tick_index),
                             kind=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
-                            payload=[{"spawns": list(spawn_rows)}],
+                            payload=[spawn_payload],
                         ),
                     )
 

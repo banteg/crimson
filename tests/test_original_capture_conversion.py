@@ -21,6 +21,7 @@ from crimson.original.capture import (
     build_capture_dt_frame_overrides,
     build_capture_inter_tick_rand_draws_overrides,
     capture_bootstrap_payload_from_event_payload,
+    capture_creature_spawn_added_head_from_event_payload,
     capture_creature_spawns_from_event_payload,
     capture_perk_apply_from_event_payload,
     capture_perk_apply_id_from_event_payload,
@@ -1146,6 +1147,20 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(tmp_path: P
                 "caller_static": "0x00434373",
             },
         },
+        {
+            "kind": "creature_lifecycle",
+            "data": {
+                "added_head": [
+                    {
+                        "index": 18,
+                        "heading": 1.1278764009475708,
+                        "target_heading": 0.621416449546814,
+                        "ai_mode": 3,
+                        "link_index": 0,
+                    },
+                ],
+            },
+        },
     ]
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -1163,6 +1178,48 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(tmp_path: P
     assert spawn_events[0].tick_index == 0
     assert capture_creature_spawns_from_event_payload(spawn_events[0].payload) == (
         (54, 434.3393859863281, 455.56573486328125, -4.083981990814209),
+    )
+    assert capture_creature_spawn_added_head_from_event_payload(spawn_events[0].payload) == (
+        (18, 1.1278764009475708, 0.621416449546814, 3, 0),
+    )
+
+
+def test_convert_capture_to_replay_emits_quest_added_head_without_spawn_rows(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["mode_hint"] = "quest_mode_update"
+    tick0["game_mode_id"] = int(GameMode.QUESTS)
+    tick0["event_heads"] = [
+        {
+            "kind": "creature_lifecycle",
+            "data": {
+                "added_head": [
+                    {
+                        "index": 7,
+                        "heading": 0.28999999165534973,
+                        "target_heading": 0.521416425704956,
+                        "ai_mode": 0,
+                        "link_index": 1,
+                    },
+                ],
+            },
+        },
+    ]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    spawn_events = [
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_CREATURE_SPAWN_EVENT_KIND
+    ]
+    assert len(spawn_events) == 1
+    assert capture_creature_spawns_from_event_payload(spawn_events[0].payload) == ()
+    assert capture_creature_spawn_added_head_from_event_payload(spawn_events[0].payload) == (
+        (7, 0.28999999165534973, 0.521416425704956, 0, 1),
     )
 
 

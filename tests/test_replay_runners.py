@@ -17,9 +17,11 @@ from crimson.quests import quest_by_level
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext, SpawnEntry
 from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder, UnknownEvent
+from crimson.sim.driver.replay_events import apply_replay_tick_events
 from crimson.sim.driver.replay_runner import run_quest_replay, run_rush_replay, run_survival_replay
-from crimson.sim.driver.setup import ReplayRunnerError
+from crimson.sim.driver.setup import ReplayRunnerError, reset_players
 from crimson.sim.input import PlayerInput
+from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 
 
@@ -217,6 +219,106 @@ def test_quest_runner_uses_capture_creature_spawn_events_for_original_capture_re
         )
     assert len(checkpoints) == 1
     assert int(checkpoints[0].creature_count) == 1
+
+
+def test_capture_creature_spawn_event_applies_added_head_overrides() -> None:
+    world = WorldState.build(
+        world_size=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=1,
+    )
+    reset_players(world.players, world_size=1024.0, player_count=1)
+    event = UnknownEvent(
+        tick_index=0,
+        kind=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
+        payload=[
+            {
+                "spawns": [
+                    {
+                        "template_id": int(SpawnId.FORMATION_GRID_ALIEN_BRONZE_18),
+                        "pos": {"x": -256.0, "y": 256.0},
+                        "heading": -4.083981990814209,
+                    },
+                ],
+                "added_head": [
+                    {
+                        "index": 1,
+                        "heading": 1.1278764009475708,
+                        "target_heading": 0.621416449546814,
+                        "ai_mode": 3,
+                        "link_index": 0,
+                    },
+                ],
+            },
+        ],
+    )
+    apply_replay_tick_events(
+        [event],
+        tick_index=0,
+        dt_frame=1.0 / 60.0,
+        world=world,
+        game_mode_id=int(GameMode.QUESTS),
+        strict_events=True,
+    )
+    creature = world.creatures.entries[1]
+    assert creature.active
+    assert float(creature.heading) == pytest.approx(1.1278764009475708, abs=1e-6)
+    assert float(creature.target_heading) == pytest.approx(0.621416449546814, abs=1e-6)
+    assert int(creature.ai_mode) == 3
+    assert int(creature.link_index) == 0
+
+
+def test_capture_creature_spawn_event_applies_added_head_without_spawn_rows() -> None:
+    world = WorldState.build(
+        world_size=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=1,
+    )
+    reset_players(world.players, world_size=1024.0, player_count=1)
+    spawned, _ = world.creatures.spawn_template(
+        int(SpawnId.ALIEN_AI7_ORBITER_36),
+        Vec2(256.0, 256.0),
+        0.0,
+        world.state.rng,
+        rand=world.state.rng.rand,
+    )
+    assert spawned
+    idx = int(spawned[0])
+
+    event = UnknownEvent(
+        tick_index=0,
+        kind=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
+        payload=[
+            {
+                "spawns": [],
+                "added_head": [
+                    {
+                        "index": idx,
+                        "heading": 0.28999999165534973,
+                        "target_heading": 0.521416425704956,
+                        "ai_mode": 0,
+                        "link_index": 1,
+                    },
+                ],
+            },
+        ],
+    )
+    apply_replay_tick_events(
+        [event],
+        tick_index=0,
+        dt_frame=1.0 / 60.0,
+        world=world,
+        game_mode_id=int(GameMode.QUESTS),
+        strict_events=True,
+    )
+    creature = world.creatures.entries[idx]
+    assert creature.active
+    assert float(creature.heading) == pytest.approx(0.28999999165534973, abs=1e-6)
+    assert float(creature.target_heading) == pytest.approx(0.521416425704956, abs=1e-6)
+    assert int(creature.ai_mode) == 0
+    assert int(creature.link_index) == 1
 
 
 def test_quest_runner_disables_world_dt_steps_for_original_capture_dt_overrides() -> None:
