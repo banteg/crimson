@@ -1128,3 +1128,64 @@ When the capture SHA is unchanged, append updates to the same session.
 ### Outcome / Next Probe
 
 - Capture `999bd055` is now clean end-to-end (`4818/4818` ticks, no divergence).
+
+---
+
+## Session 17 (2026-02-18)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.quest_*.json`
+- **Capture Family:** split quest captures from `session_id=0xc75a5b93`
+- **Capture SHA256:** per-file SHA set (32 files, all valid); representative focus file:
+  - `gameplay_diff_capture.quest_1_7.json`: `2d7c0c864cd378dd34194f2a2ed2de41e8478808f9c75a3a38395bbab1b002e4`
+- **Baseline verifier command (sweep):**
+  `for f in artifacts/frida/share/gameplay_diff_capture.quest_*.json; do uv run crimson original divergence-report "$f" --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 10 --no-cache --json-out "analysis/frida/reports/session20_sweep_current/${f##*/}_baseline_nocache.json"; done`
+- **First mismatch progression:**
+  - early baseline in this family: `quest_1_6 tick 6177 (rng_stream_mismatch)`, `quest_1_7 tick 7880 (rng_stream_mismatch)`
+  - after landed fixes in this session: `quest_1_6 clean`, earliest unresolved moved to `quest_1_7 tick 8529 (rng_stream_mismatch)`
+  - current full sweep: `9/32` captures clean; earliest unresolved remains `quest_1_7 tick 8529`
+
+### Key Findings
+
+- Capture quality gate passed for all 32 quest files:
+  - JSON parse/load succeeds for every file,
+  - `creature_update_micro_rows > 0`, `angle_approach > 0`, and `creature_update_window > 0` in all files.
+- Remaining frontier is stable at `quest_1_7`:
+  - pre-divergence tail at `tick 8528`: `rand_calls capture/rewrite = 157/166` with stream prefix match for the captured head,
+  - first stream value mismatch at `tick 8529` (`idx=0`, capture branch id `0x004263b1`).
+- Divergence-report evidence points to projectile presentation/decal branch skew near the `8528 -> 8529` handoff, with downstream XP/perk drift in later quest splits.
+- `original focus-trace` currently rejects quest-mode captures (`mode=3`), so we cannot obtain rewrite-side per-callsite attribution at the frontier from existing tooling.
+
+### Landed Changes
+
+- Replay/capture conversion parity:
+  - added quest capture event replay for creature spawns and state transitions,
+  - expanded bootstrap payload/apply to include richer pre-tick player/runtime fields, perk nonzero counts, perk intervals, and quest session timers,
+  - added fire/reload synthesis fixes for alt-weapon swap, fractional-ammo weapons, and zero-cooldown `player_fire` proc rows.
+- Quest replay runtime parity:
+  - original-capture quest replays now consume capture spawn hooks as authoritative,
+  - added capture-driven state-transition reset path,
+  - aligned original-capture dt-step application behavior in quest session wiring.
+- Gameplay/perk parity:
+  - preserved same-tick fire gate across alt-weapon swap,
+  - hot-tempered perk projectiles now spawn from pre-move player position.
+- Creature/runtime parity:
+  - owner spawn-slot tick moved into creature loop tail with random heading sentinel for child spawn plan parity,
+  - added native-like ping-pong corpse blood burst RNG budget path,
+  - threaded `fx_toggle` through creature update/decal spawn paths.
+- Perk selection parity:
+  - quest `1-7` Monster Vision forced insert now respects capture certainty of player perk counts.
+
+### Validation
+
+- `just check`
+- Full quest sweep summary written to:
+  - `analysis/frida/reports/session20_sweep_current/_summary.tsv`
+- Focused unresolved frontier probe:
+  - `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_7.json --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 6 --run-summary-short-max-rows 40 --no-cache --json-out analysis/frida/reports/session20_sweep_current/gameplay_diff_capture.quest_1_7_focusctx_nocache.json` *(expected non-zero exit while diverged)*
+
+### Outcome / Next Probe
+
+- **Current wall for this capture family:** earliest unresolved divergence (`quest_1_7 tick 8529`) needs rewrite-side per-callsite RNG attribution in quest mode; current tooling cannot provide that because `focus-trace` is survival-only.
+- Next probe should be tooling-first before more gameplay patches:
+  - add quest-mode support to `original focus-trace`, or
+  - add rewrite-side RNG callsite/branch-id trace capture for quest ticks around `8528..8530`.
