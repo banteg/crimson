@@ -9,11 +9,30 @@ tags:
 
 This file tracks static parity findings from the hotspot review and the capture-driven verification loop for each fix.
 
-## Working Capture
+## Branch-Targeted Canaries
 
-Use this capture as the primary canary unless a finding clearly points elsewhere:
+Signal matrix source:
 
-- `artifacts/frida/share/gameplay_diff_capture.quest_1_8.json`
+- `analysis/frida/reports/triage/capture_branch_signal_summary.tsv`
+
+Recommended primary canary per branch:
+
+- Freeze gate ordering: `artifacts/frida/share/gameplay_diff_capture.quest_3_3.json`
+  - `freeze_creature_ticks=349`, `freeze_damage_ticks=33`, `freeze_ticks=377`
+- Radioactive branch ordering: `artifacts/frida/share/gameplay_diff_capture.quest_3_7.json`
+  - `radioactive_ticks=1617`, `radioactive_proximity_ticks=217`, `radioactive_prox_damage_ticks=22`
+- Ranged-vs-contact ordering: `artifacts/frida/share/gameplay_diff_capture.quest_3_10.json`
+  - `creature_proj_spawn_ticks=105`, `player_damage_ticks=28`, `mixed_ranged_contact_ticks=1`
+  - nearest ranged-vs-contact distance analysis: `spawn_within3=5`, `spawn_within5=7`
+- Hit-flash decay: `artifacts/frida/share/gameplay_diff_capture.quest_3_10.json`
+  - `hit_flash_candidate_ticks=1033`, `creature_damage_events=1281`
+
+Secondary confirmers:
+
+- Freeze: `artifacts/frida/share/gameplay_diff_capture.quest_1_7.json`, `artifacts/frida/share/gameplay_diff_capture.quest_4_1.json`
+- Radioactive: `artifacts/frida/share/gameplay_diff_capture.quest_2_9.json`
+- Ranged-vs-contact: `artifacts/frida/share/gameplay_diff_capture.quest_1_6.json`
+- Hit-flash decay: `artifacts/frida/share/gameplay_diff_capture.quest_1_6.json`, `artifacts/frida/share/gameplay_diff_capture.quest_4_1.json`
 
 Create output folder once:
 
@@ -26,13 +45,14 @@ mkdir -p analysis/frida/reports/triage
 ### 1) Freeze gate ordering in `creature_update_all` port
 
 - [ ] Status: Open
+- Primary canary: `artifacts/frida/share/gameplay_diff_capture.quest_3_3.json`
 - Rewrite location: `src/crimson/creatures/runtime.py:871`, `src/crimson/creatures/runtime.py:899`
 - Native evidence: `analysis/ghidra/derived/hotspots/creature_update_all/work/00426220_creature_update_all.work.c:56`, `analysis/ghidra/derived/hotspots/creature_update_all/work/00426220_creature_update_all.work.c:560`
 - Hypothesis: rewrite processes dead/corpse stages during freeze where native skips the full body under freeze gate.
 - Baseline:
 
 ```bash
-uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json \
+uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_3_3.json \
   --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 \
   --run-summary-short --run-summary-focus-context \
   --run-summary-focus-before 8 --run-summary-focus-after 6 \
@@ -43,7 +63,7 @@ uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_ca
 - After fix:
 
 ```bash
-uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json \
+uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_3_3.json \
   --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 \
   --run-summary-short --run-summary-focus-context \
   --run-summary-focus-before 8 --run-summary-focus-after 6 \
@@ -54,13 +74,14 @@ uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_ca
 ### 2) Radioactive branch phase/order drift
 
 - [ ] Status: Open
+- Primary canary: `artifacts/frida/share/gameplay_diff_capture.quest_3_7.json`
 - Rewrite location: `src/crimson/creatures/runtime.py:974`, `src/crimson/creatures/runtime.py:993`
 - Native evidence: `analysis/ghidra/derived/hotspots/creature_update_all/work/00426220_creature_update_all.work.c:442`, `analysis/ghidra/derived/hotspots/creature_update_all/work/00426220_creature_update_all.work.c:454`
 - Hypothesis: rewrite executes radioactive before AI/movement/cooldown and can early-continue on kill; native evaluates this branch later in the creature body.
 - Baseline:
 
 ```bash
-uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json \
+uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_3_7.json \
   --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 \
   --run-summary-short --run-summary-focus-context \
   --run-summary-focus-before 8 --run-summary-focus-after 6 \
@@ -71,7 +92,7 @@ uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_ca
 - After fix:
 
 ```bash
-uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json \
+uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_3_7.json \
   --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 \
   --run-summary-short --run-summary-focus-context \
   --run-summary-focus-before 8 --run-summary-focus-after 6 \
@@ -82,13 +103,14 @@ uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_ca
 ### 3) Ranged-vs-contact branch ordering drift
 
 - [ ] Status: Open
+- Primary canary: `artifacts/frida/share/gameplay_diff_capture.quest_3_10.json`
 - Rewrite location: `src/crimson/creatures/runtime.py:1089`, `src/crimson/creatures/runtime.py:1114`
 - Native evidence: `analysis/ghidra/derived/hotspots/creature_update_all/work/00426220_creature_update_all.work.c:474`, `analysis/ghidra/derived/hotspots/creature_update_all/work/00426220_creature_update_all.work.c:493`
 - Hypothesis: rewrite executes near-contact/contact before ranged fire, while native evaluates ranged branch first.
 - Baseline:
 
 ```bash
-uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json \
+uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_3_10.json \
   --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 \
   --run-summary-short --run-summary-focus-context \
   --run-summary-focus-before 8 --run-summary-focus-after 6 \
@@ -99,7 +121,7 @@ uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_ca
 - After fix:
 
 ```bash
-uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json \
+uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_3_10.json \
   --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 \
   --run-summary-short --run-summary-focus-context \
   --run-summary-focus-before 8 --run-summary-focus-after 6 \
@@ -110,13 +132,14 @@ uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_ca
 ### 4) Missing `hit_flash_timer` decay
 
 - [ ] Status: Open
+- Primary canary: `artifacts/frida/share/gameplay_diff_capture.quest_3_10.json`
 - Rewrite location: `src/crimson/creatures/runtime.py:867` (loop has no decay), producer at `src/crimson/creatures/damage.py:128`
 - Native evidence: `analysis/ghidra/derived/hotspots/creature_update_all/work/00426220_creature_update_all.work.c:51`
 - Hypothesis: presentation timer persists longer than native and can alter downstream render-phase parity signals.
 - Baseline:
 
 ```bash
-uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json \
+uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_3_10.json \
   --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 \
   --run-summary-short --run-summary-focus-context \
   --run-summary-focus-before 8 --run-summary-focus-after 6 \
@@ -127,7 +150,7 @@ uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_ca
 - After fix:
 
 ```bash
-uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json \
+uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_3_10.json \
   --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 \
   --run-summary-short --run-summary-focus-context \
   --run-summary-focus-before 8 --run-summary-focus-after 6 \
