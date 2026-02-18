@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+import struct
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,6 +15,12 @@ from .console import ConsoleState
 SFX_PAK_NAME = "sfx.paq"
 DEFAULT_VOICE_COUNT = 4
 _SFX_RUNTIME_EXCEPTIONS = (RuntimeError, OSError, ValueError)
+_SFX_PITCH_RUNTIME_EXCEPTIONS = _SFX_RUNTIME_EXCEPTIONS + (AttributeError, TypeError)
+_F32_STRUCT = struct.Struct("<f")
+_F32_PACK = _F32_STRUCT.pack
+_F32_UNPACK = _F32_STRUCT.unpack
+_SFX_RATE_BASE_HZ = 44100
+_SFX_RATE_MIN_HZ = 22050
 
 
 def _stop_sound_safe(sound: rl.Sound) -> bool:
@@ -38,6 +45,38 @@ def _unload_sound_safe(sound: rl.Sound) -> bool:
         return True
     except _SFX_RUNTIME_EXCEPTIONS:
         return False
+
+
+def _set_sound_pitch_safe(sound: rl.Sound, pitch: float) -> bool:
+    try:
+        rl.set_sound_pitch(sound, float(pitch))
+        return True
+    except _SFX_PITCH_RUNTIME_EXCEPTIONS:
+        return False
+
+
+def _f32(value: float) -> float:
+    return _F32_UNPACK(_F32_PACK(float(value)))[0]
+
+
+def _next_rate_scale_hz(*, current_rate_scale_hz: int, reflex_boost_timer: float) -> int:
+    # Native `sfx_play` / `sfx_play_panned` update a global rate scalar from
+    # `bonus_reflex_boost_timer` before each voice start.
+    reflex_f32 = _f32(float(reflex_boost_timer))
+    if reflex_f32 <= 0.0:
+        return int(_SFX_RATE_BASE_HZ)
+    if reflex_f32 <= 1.0:
+        if reflex_f32 < 1.0:
+            rate_expr = _f32((_f32(1.0) - reflex_f32 + _f32(1.0)) * _f32(float(_SFX_RATE_MIN_HZ)))
+            # `__ftol` follows host FP rounding mode (nearest on native defaults).
+            return int(round(float(rate_expr)))
+        # Native keeps prior `sfx_rate_scale` when timer is exactly 1.0.
+        return int(current_rate_scale_hz)
+    return int(_SFX_RATE_MIN_HZ)
+
+
+def _pitch_scale_from_rate_hz(rate_scale_hz: int) -> float:
+    return float(_f32(float(rate_scale_hz) / float(_SFX_RATE_BASE_HZ)))
 
 
 @dataclass(slots=True)
@@ -73,6 +112,7 @@ class SfxState:
     variants: dict[str, tuple[str, ...]]
     samples: dict[str, SfxSample]
     missing_keys: set[str]
+    rate_scale_hz: int
 
 
 def init_sfx_state(
@@ -93,6 +133,7 @@ def init_sfx_state(
         variants={},
         samples={},
         missing_keys=set(),
+        rate_scale_hz=int(_SFX_RATE_BASE_HZ),
     )
 
 
@@ -223,6 +264,7 @@ def play_sfx(
     *,
     rng: random.Random | None = None,
     allow_variants: bool = True,
+    reflex_boost_timer: float = 0.0,
 ) -> None:
     if state is None or not state.ready or not state.enabled:
         return
@@ -245,7 +287,13 @@ def play_sfx(
     if sample is None:
         state.missing_keys.add(resolved)
         return
-    rl.play_sound(sample.acquire_voice())
+    state.rate_scale_hz = _next_rate_scale_hz(
+        current_rate_scale_hz=int(state.rate_scale_hz),
+        reflex_boost_timer=float(reflex_boost_timer),
+    )
+    voice = sample.acquire_voice()
+    _set_sound_pitch_safe(voice, _pitch_scale_from_rate_hz(int(state.rate_scale_hz)))
+    rl.play_sound(voice)
 
 
 def sfx_key_for_id(sfx_id: int) -> str | None:

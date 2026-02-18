@@ -110,6 +110,7 @@ class GameWorld:
             audio=self.audio,
             audio_rng=self.audio_rng,
             demo_mode_active=self.demo_mode_active,
+            reflex_boost_timer_source=lambda: float(self.state.bonuses.reflex_boost),
         )
         self.renderer = WorldRenderer(self)
         self._damage_scale_by_type = {}
