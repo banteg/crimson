@@ -25,7 +25,7 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
         ctx.projectile_spawn(
             ctx.state,
             players=ctx.players,
-            pos=ctx.player.pos,
+            pos=ctx.player_pos_before_move,
             angle=angle,
             type_id=type_id,
             owner_id=owner_id,
