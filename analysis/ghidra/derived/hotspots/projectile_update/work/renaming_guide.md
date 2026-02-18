@@ -21,13 +21,18 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `sVar5` -> `secondary_type`
 - `psVar14` -> `secondary_proj_ptr`
 
-## Suggested section comments
+## Section Map (Current Work Copy)
 
-- projectile slot iteration and lifetime gates
-- collision/hit target resolution
-- damage, death, and effect dispatch
-- split/spawn child projectile behavior
-- perk/bonus interactions and audio cues
+- line 90: frame scalar setup (ion master modifier)
+- line 97: primary projectile pool sweep
+- line 101: lifetime/bounds gates before stepping
+- line 132: substep integration and collision probing
+- line 167: projectile-type hit FX/special behavior
+- line 344: damage pool accounting and impact response
+- line 478: expiring ion/gauss radius-damage path
+- line 512: secondary projectile lifecycle loop
+- line 812: sprite effect housekeeping pass
+- line 830: particle simulation and on-contact logic
 
 ## Notes
 

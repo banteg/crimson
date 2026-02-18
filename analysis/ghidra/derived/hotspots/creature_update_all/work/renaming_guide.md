@@ -32,21 +32,20 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `uVar8` -> `tmp_u32_a`
 - `cVar10` -> `tmp_player_slot`
 
-## Suggested section comments
+## Section Map (Current Work Copy)
 
-- tick prologue (`creature_update_tick`, active count, hit flash)
-- freeze gate + poison/self-damage flags
-- AI7 link timer update (`flags & 0x80`)
-- target player selection + auto-target updates
-- collision timer and damage branch
-- AI mode target synthesis (`ai_mode` switch-like ladder)
-- heading/movement integration (`angle_approach`, vel, vec2_add_inplace)
-- spawn-slot tick branch (`flags & 4`)
-- plaguebearer infection spread
-- animation phase advance and wrap
-- ranged attack gates (`flags & 0x10`, `flags & 0x100`)
-- contact resolution + perk-mediated side effects
-- death slide / corpse FX / deactivate
+- line 46: master creature pool sweep
+- line 55: freeze gate for live AI updates
+- line 58: flag-driven periodic self/poison damage
+- line 81: AI7 pulse timer oscillation (`flags & 0x80`)
+- line 106: target-player retarget and auto-target feedback
+- line 147: active-body branch main update body
+- line 178: AI mode target synthesis ladder
+- line 333: heading/movement integration + spawner tick lane
+- line 410: animation/cooldown and ranged-attack gates
+- line 493: near-contact melee/perk resolution
+- line 559: death/corpse shrink/slide branch
+- line 614: spawner-class death burst and culling path
 
 ## Notes
 

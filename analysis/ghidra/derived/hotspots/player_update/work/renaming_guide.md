@@ -19,13 +19,20 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `pfVar1` -> `spread_heat_ptr` (behavior matches spread heat accumulation/cooling; decompile field label may lag)
 - `local_24` -> `player_start_pos_y`
 
-## Suggested section comments
+## Section Map (Current Work Copy)
 
-- input/state gate and alive checks
-- aim target/heading updates
-- movement and collision responses
-- fire/reload gating
-- perk and bonus side effects
+- line 54: early frame gate (console/death short-circuit)
+- line 69: always-on upkeep timers + low-health bleed pulse
+- line 108: timed perk proc projectiles/effects
+- line 257: spread damping gate behavior
+- line 281: player-controlled movement mode ladder
+- line 713: demo/auto-target movement path
+- line 825: post-move spread/reload handling
+- line 909: aim scheme updates (mouse/stick/keys)
+- line 1045: fire gate (cooldown/reload/alt swap)
+- line 1214: main weapon-id dispatch ladder
+- line 1736: fire-bullets fallback stream
+- line 1791: end-of-frame normalization/clamps
 
 ## Notes
 
