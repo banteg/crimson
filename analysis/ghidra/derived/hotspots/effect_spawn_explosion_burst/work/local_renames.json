@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "effect_spawn_explosion_burst": {
+      "pos_00": "burst_pos_ptr",
+      "uVar3": "rng_value"
+    }
+  }
+}
