@@ -127,6 +127,7 @@ def test_spawn_slot_update_uses_random_heading_sentinel(monkeypatch: pytest.Monk
     owner.active = True
     owner.hp = 100.0
     owner.hitbox_size = CREATURE_HITBOX_ALIVE
+    owner.flags = CreatureFlags.HAS_SPAWN_SLOT
     owner.heading = 1.234
     owner.pos = Vec2(200.0, 300.0)
     owner.spawn_slot_index = 0
@@ -164,6 +165,47 @@ def test_spawn_slot_update_uses_random_heading_sentinel(monkeypatch: pytest.Monk
     assert child_template_id == 0x1D
     assert heading == pytest.approx(RANDOM_HEADING_SENTINEL)
     assert env_arg is env
+
+
+def test_spawn_slot_update_requires_spawner_flag() -> None:
+    state = GameplayState()
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    pool = CreaturePool(env=env)
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+
+    owner = pool.entries[0]
+    owner.active = True
+    owner.hp = 100.0
+    owner.hitbox_size = CREATURE_HITBOX_ALIVE
+    owner.flags = CreatureFlags(0)
+    owner.ai_mode = 0
+    owner.move_speed = 0.0
+    owner.size = 45.0
+    owner.pos = Vec2(256.0, 256.0)
+    owner.spawn_slot_index = 0
+
+    pool.spawn_slots.append(
+        SpawnSlotInit(
+            owner_creature=0,
+            timer=0.0,
+            count=0,
+            limit=1,
+            interval=1.0,
+            child_template_id=0x1D,
+        ),
+    )
+
+    pool.update(1.0 / 60.0, state=state, players=[player])
+
+    assert pool.spawn_slots[0].count == 0
+    assert pool.spawn_slots[0].timer == pytest.approx(0.0)
+    assert [idx for idx, creature in enumerate(pool.entries) if idx != 0 and creature.active] == []
 
 
 def test_spawn_slot_child_can_update_in_same_tick() -> None:

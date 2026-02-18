@@ -1156,7 +1156,12 @@ class CreaturePool:
 
             # Tick owner-bound spawn slots at creature-loop tail so spawned children
             # can still be visited later in the same update pass.
-            if dt > 0.0 and float(state.bonuses.freeze) <= 0.0 and spawn_env is not None:
+            if (
+                dt > 0.0
+                and float(state.bonuses.freeze) <= 0.0
+                and spawn_env is not None
+                and (creature.flags & CreatureFlags.HAS_SPAWN_SLOT) != 0
+            ):
                 slot_index = creature.spawn_slot_index
                 if slot_index is not None and 0 <= int(slot_index) < len(self.spawn_slots):
                     slot = self.spawn_slots[int(slot_index)]
