@@ -11,59 +11,68 @@
 int creature_apply_damage(int creature_id, float damage, int damage_type, float *impulse)
 
 {
-  float fVar1;
-  int iVar2;
+  float heading_jitter;
+  float impulse_y;
+  int perk_count;
   uint rng_value;
-  int iVar4;
+  int scale_roll;
+  int living_fortress_scan_count;
+  int debris_spawn_count;
   float *living_fortress_timer_ptr;
   
   (&creature_pool)[creature_id].hit_flash_timer = 0.2;
-  /* Damage-type perk modifiers are applied before touching health. */
+  /* Damage-type 1 path: stack perk modifiers before touching health. */
   if (damage_type == 1) {
-    iVar2 = perk_count_get(perk_id_uranium_filled_bullets);
-    if (iVar2 != 0) {
+    perk_count = perk_count_get(perk_id_uranium_filled_bullets);
+    if (perk_count != 0) {
       damage = damage + damage;
     }
-    iVar2 = perk_count_get(perk_id_living_fortress);
-    if ((iVar2 != 0) && (0 < _config_player_count)) {
+    perk_count = perk_count_get(perk_id_living_fortress);
+    if ((perk_count != 0) && (0 < _config_player_count)) {
       living_fortress_timer_ptr = &player_state_table.living_fortress_timer;
-      iVar2 = _config_player_count;
+      living_fortress_scan_count = _config_player_count;
       do {
         if (0.0 < living_fortress_timer_ptr[-0x20]) {
           damage = (*living_fortress_timer_ptr * 0.05 + 1.0) * damage;
         }
         living_fortress_timer_ptr = living_fortress_timer_ptr + 0xd8;
-        iVar2 = iVar2 + -1;
-      } while (iVar2 != 0);
+        living_fortress_scan_count = living_fortress_scan_count + -1;
+      } while (living_fortress_scan_count != 0);
     }
-    iVar2 = perk_count_get(perk_id_barrel_greaser);
-    if (iVar2 != 0) {
+    perk_count = perk_count_get(perk_id_barrel_greaser);
+    if (perk_count != 0) {
       damage = damage * 1.4;
     }
-    iVar2 = perk_count_get(perk_id_doctor);
-    if (iVar2 != 0) {
+    perk_count = perk_count_get(perk_id_doctor);
+    if (perk_count != 0) {
       damage = damage * 1.2;
     }
+    /* Non-heavy targets receive a randomized heading kick when hit. */
     if (((&creature_pool)[creature_id].flags & 4) == 0) {
       rng_value = crt_rand();
-      fVar1 = ((float)(int)((rng_value & 0x7f) - 0x40) * 0.002) /
-              ((&creature_pool)[creature_id].size * 0.025);
-      if (1.5707964 < fVar1) {
-        fVar1 = 1.5707964;
+      heading_jitter = ((float)(int)((rng_value & 0x7f) - 0x40) * 0.002) /
+                       ((&creature_pool)[creature_id].size * 0.025);
+      if (1.5707964 < heading_jitter) {
+        heading_jitter = 1.5707964;
       }
-      (&creature_pool)[creature_id].heading = fVar1 + (&creature_pool)[creature_id].heading;
+      (&creature_pool)[creature_id].heading =
+           heading_jitter + (&creature_pool)[creature_id].heading;
     }
   }
-  else if ((damage_type == 7) && (iVar2 = perk_count_get(perk_id_ion_gun_master), iVar2 != 0)) {
+  /* Damage-type 7 path: ion-gun mastery multiplier. */
+  else if ((damage_type == 7) &&
+          (perk_count = perk_count_get(perk_id_ion_gun_master), perk_count != 0)) {
     damage = damage * 1.2;
   }
+  /* Already-dead targets only shrink the lingering hitbox each frame. */
   if ((&creature_pool)[creature_id].health <= 0.0) {
     (&creature_pool)[creature_id].hitbox_size =
          (&creature_pool)[creature_id].hitbox_size - frame_dt * 15.0;
   }
   else {
-    /* Live target path: subtract health, apply impulse, then evaluate lethal branch. */
-    if ((damage_type == 4) && (iVar2 = perk_count_get(perk_id_pyromaniac), iVar2 != 0)) {
+    /* Live target path: optional fire bonus, then health + knockback apply. */
+    if ((damage_type == 4) &&
+       (perk_count = perk_count_get(perk_id_pyromaniac), perk_count != 0)) {
       damage = damage * 1.5;
       crt_rand();
     }
@@ -75,10 +84,11 @@ int creature_apply_damage(int creature_id, float damage, int damage_type, float 
       (&creature_pool)[creature_id].hitbox_size =
            (&creature_pool)[creature_id].hitbox_size - frame_dt;
       creature_handle_death(creature_id,true);
-      fVar1 = impulse[1];
+      impulse_y = impulse[1];
       (&creature_pool)[creature_id].vel_x =
            (&creature_pool)[creature_id].vel_x - (*impulse + *impulse);
-      (&creature_pool)[creature_id].vel_y = (&creature_pool)[creature_id].vel_y - (fVar1 + fVar1);
+      (&creature_pool)[creature_id].vel_y =
+           (&creature_pool)[creature_id].vel_y - (impulse_y + impulse_y);
       if (((&creature_pool)[creature_id].flags & 0x10) == 0) {
         rng_value = crt_rand();
         rng_value = rng_value & 0x80000003;
@@ -89,6 +99,7 @@ int creature_apply_damage(int creature_id, float damage, int damage_type, float 
                                [rng_value]);
       }
       else {
+        /* Armored death branch spawns five tinted debris effects. */
         _effect_template_color_r = 0x3f4ccccd;
         _effect_template_flags = 0x1d;
         _effect_template_color_g = 0x3f4ccccd;
@@ -97,7 +108,7 @@ int creature_apply_damage(int creature_id, float damage, int damage_type, float 
         _effect_template_lifetime = 0x3f333333;
         _effect_template_half_width = 0x42100000;
         _effect_template_half_height = 0x42100000;
-        iVar2 = 5;
+        debris_spawn_count = 5;
         do {
           rng_value = crt_rand();
           _effect_template_rotation = (float)(rng_value & 0x7f) * 0.049087387;
@@ -105,11 +116,11 @@ int creature_apply_damage(int creature_id, float damage, int damage_type, float 
           effect_template_vel_x = (float)(int)((rng_value & 0x7f) - 0x40);
           rng_value = crt_rand();
           effect_template_vel_y = (float)(int)((rng_value & 0x7f) - 0x40);
-          iVar4 = crt_rand();
-          _effect_template_scale_step = (float)(iVar4 % 0x8c) * 0.01 + 0.3;
+          scale_roll = crt_rand();
+          _effect_template_scale_step = (float)(scale_roll % 0x8c) * 0.01 + 0.3;
           effect_spawn(0,&(&creature_pool)[creature_id].pos_x);
-          iVar2 = iVar2 + -1;
-        } while (iVar2 != 0);
+          debris_spawn_count = debris_spawn_count + -1;
+        } while (debris_spawn_count != 0);
       }
     }
   }

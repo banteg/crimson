@@ -12,12 +12,18 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 
 - `uVar3` -> `rng_value`
 - `pfVar5` -> `living_fortress_timer_ptr`
+- `iVar2` -> split by role in work copy (`perk_count`, `living_fortress_scan_count`, `debris_spawn_count`)
+- `iVar4` -> `scale_roll`
+- `fVar1` -> split by role in work copy (`heading_jitter`, `impulse_y`)
 
-## Suggested section comments
+## Section Map (Current Work Copy)
 
-- perk-scaled incoming damage modifiers
-- post-hit velocity impulse apply
-- lethal branch (death handling + death SFX/FX)
+- line 24: damage-type 1 perk stack
+- line 51: non-heavy heading jitter on hit
+- line 65: ion-gun mastery multiplier path (`damage_type == 7`)
+- line 70: already-dead shrink-only path
+- line 77: live-target apply (`pyromaniac`, health, impulse)
+- line 87: lethal resolution (death bookkeeping + SFX/debris FX)
 
 ## Notes
 
