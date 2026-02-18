@@ -31,7 +31,9 @@ def test_radioactive_tick_deals_damage_and_spawns_fx() -> None:
 
     pool.update(dt, state=state, players=[player], rand=lambda: 0, fx_queue=fx_queue)
 
-    expected_damage = (100.0 - 46.0) * 0.3
+    # Radioactive pulse evaluates after movement/clamp in the live-creature body.
+    dist_after_move = (creature.pos - player.pos).length()
+    expected_damage = (100.0 - dist_after_move) * 0.3
     assert math.isclose(creature.collision_timer, 0.5, abs_tol=1e-9)
     assert math.isclose(creature.hp, 50.0 - expected_damage, abs_tol=1e-6)
     assert fx_queue.count == 1
@@ -51,7 +53,7 @@ def test_radioactive_kill_awards_base_xp_and_bypasses_death_multipliers() -> Non
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
     creature.pos = Vec2(46.0, 0.0)
-    creature.hp = 10.0
+    creature.hp = 5.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
     creature.reward_value = 12.7
     creature.collision_timer = 0.1
@@ -79,7 +81,7 @@ def test_radioactive_sets_hp_to_one_for_type_id_one_creatures() -> None:
     creature.type_id = 1
     creature.flags = CreatureFlags.ANIM_PING_PONG
     creature.pos = Vec2(46.0, 0.0)
-    creature.hp = 10.0
+    creature.hp = 5.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
     creature.reward_value = 12.7
     creature.collision_timer = 0.1

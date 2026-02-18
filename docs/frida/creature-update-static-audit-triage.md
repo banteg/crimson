@@ -49,6 +49,7 @@ mkdir -p analysis/frida/reports/triage
 - Rewrite location: `src/crimson/creatures/runtime.py:871`, `src/crimson/creatures/runtime.py:899`
 - Native evidence: `analysis/ghidra/derived/hotspots/creature_update_all/work/00426220_creature_update_all.work.c:56`, `analysis/ghidra/derived/hotspots/creature_update_all/work/00426220_creature_update_all.work.c:560`
 - Hypothesis: rewrite processes dead/corpse stages during freeze where native skips the full body under freeze gate.
+- Latest run delta: no change (`state_mismatch` at tick `30330` in both before/after).
 - Baseline:
 
 ```bash
@@ -78,6 +79,7 @@ uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_ca
 - Rewrite location: `src/crimson/creatures/runtime.py:974`, `src/crimson/creatures/runtime.py:993`
 - Native evidence: `analysis/ghidra/derived/hotspots/creature_update_all/work/00426220_creature_update_all.work.c:442`, `analysis/ghidra/derived/hotspots/creature_update_all/work/00426220_creature_update_all.work.c:454`
 - Hypothesis: rewrite executes radioactive before AI/movement/cooldown and can early-continue on kill; native evaluates this branch later in the creature body.
+- Latest run delta: improved first mismatch from tick `35131` to `35573` (`rng_stream_mismatch`).
 - Baseline:
 
 ```bash
@@ -107,6 +109,7 @@ uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_ca
 - Rewrite location: `src/crimson/creatures/runtime.py:1089`, `src/crimson/creatures/runtime.py:1114`
 - Native evidence: `analysis/ghidra/derived/hotspots/creature_update_all/work/00426220_creature_update_all.work.c:474`, `analysis/ghidra/derived/hotspots/creature_update_all/work/00426220_creature_update_all.work.c:493`
 - Hypothesis: rewrite executes near-contact/contact before ranged fire, while native evaluates ranged branch first.
+- Latest run delta: no change (`rng_stream_mismatch` at tick `40323` in both before/after).
 - Baseline:
 
 ```bash
@@ -136,6 +139,7 @@ uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_ca
 - Rewrite location: `src/crimson/creatures/runtime.py:867` (loop has no decay), producer at `src/crimson/creatures/damage.py:128`
 - Native evidence: `analysis/ghidra/derived/hotspots/creature_update_all/work/00426220_creature_update_all.work.c:51`
 - Hypothesis: presentation timer persists longer than native and can alter downstream render-phase parity signals.
+- Latest run delta: no change (`rng_stream_mismatch` at tick `40323` in both before/after).
 - Baseline:
 
 ```bash
