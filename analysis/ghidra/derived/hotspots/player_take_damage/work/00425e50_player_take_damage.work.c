@@ -12,10 +12,14 @@ void __cdecl player_take_damage(int player_index,float damage)
 
 {
   float *player_pos_ptr;
-  float fVar1;
-  float fVar2;
+  float blast_delta_x;
+  float blast_delta_y;
+  float blast_falloff;
+  float next_spread_heat;
   bool dodge_triggered;
-  int iVar4;
+  int perk_count;
+  int rand_roll;
+  int creature_idx;
   uint rng_value;
   creature_t *creature_ptr;
   bool was_dead_before_hit;
@@ -23,12 +27,12 @@ void __cdecl player_take_damage(int player_index,float damage)
   float zero_impulse [2];
   
   /* Hard pre-gates: death-clock immunity and tough-reloader mitigation. */
-  iVar4 = perk_count_get(perk_id_death_clock);
-  if (iVar4 != 0) {
+  perk_count = perk_count_get(perk_id_death_clock);
+  if (perk_count != 0) {
     return;
   }
-  iVar4 = perk_count_get(perk_id_tough_reloader);
-  if ((iVar4 != 0) && ((char)(&player_state_table)[player_index].reload_active != '\0')) {
+  perk_count = perk_count_get(perk_id_tough_reloader);
+  if ((perk_count != 0) && ((char)(&player_state_table)[player_index].reload_active != '\0')) {
     damage = damage * 0.5;
   }
   survival_reward_damage_seen = 1;
@@ -39,44 +43,44 @@ void __cdecl player_take_damage(int player_index,float damage)
     return;
   }
   was_dead_before_hit = player_state_table.health <= 0.0;
-  iVar4 = perk_count_get(perk_id_thick_skinned);
-  if (iVar4 != 0) {
+  perk_count = perk_count_get(perk_id_thick_skinned);
+  if (perk_count != 0) {
     damage_scale = 0.666;
   }
   /* Dodge evaluation: ninja and dodger can short-circuit direct health subtraction. */
   dodge_triggered = false;
-  iVar4 = perk_count_get(perk_id_ninja);
-  if (iVar4 == 0) {
-    iVar4 = perk_count_get(perk_id_dodger);
-    if ((iVar4 != 0) && (iVar4 = crt_rand(), iVar4 % 5 == 0)) {
+  perk_count = perk_count_get(perk_id_ninja);
+  if (perk_count == 0) {
+    perk_count = perk_count_get(perk_id_dodger);
+    if ((perk_count != 0) && (rand_roll = crt_rand(), rand_roll % 5 == 0)) {
       dodge_triggered = true;
       goto LAB_00425fa1;
     }
   }
   else {
-    iVar4 = crt_rand();
-    if (iVar4 % 3 == 0) {
+    rand_roll = crt_rand();
+    if (rand_roll % 3 == 0) {
       dodge_triggered = true;
       goto LAB_00425fa1;
     }
   }
   /* Apply incoming damage or highlander one-shot roulette. */
-  iVar4 = perk_count_get(perk_id_highlander);
-  if (iVar4 == 0) {
+  perk_count = perk_count_get(perk_id_highlander);
+  if (perk_count == 0) {
     (&player_state_table)[player_index].health =
          (&player_state_table)[player_index].health - damage_scale * damage;
   }
   else {
-    iVar4 = crt_rand();
-    if (iVar4 % 10 == 0) {
+    rand_roll = crt_rand();
+    if (rand_roll % 10 == 0) {
       (&player_state_table)[player_index].health = 0.0;
     }
   }
 LAB_00425fa1:
   /* Post-hit branch: alive pain reaction vs lethal branch and final-revenge resolution. */
   if (0.0 <= (&player_state_table)[player_index].health) {
-    iVar4 = crt_rand();
-    sfx_play_panned((float)(iVar4 % 3 + sfx_trooper_inpain_01));
+    rand_roll = crt_rand();
+    sfx_play_panned((float)(rand_roll % 3 + sfx_trooper_inpain_01));
     if (was_dead_before_hit) {
       return;
     }
@@ -87,8 +91,8 @@ LAB_00425fa1:
     if (was_dead_before_hit) {
       return;
     }
-    iVar4 = perk_count_get(perk_id_final_revenge);
-    if (iVar4 == 0) {
+    perk_count = perk_count_get(perk_id_final_revenge);
+    if (perk_count == 0) {
       rng_value = crt_rand();
       rng_value = rng_value & 0x80000001;
       if ((int)rng_value < 0) {
@@ -100,20 +104,21 @@ LAB_00425fa1:
       player_pos_ptr = &(&player_state_table)[player_index].pos_x;
       effect_spawn_explosion_burst(player_pos_ptr,1.8);
       bonus_spawn_guard._0_1_ = 1;
-      iVar4 = 0;
+      creature_idx = 0;
       creature_ptr = &creature_pool;
       do {
         if ((((creature_ptr->active != '\0') && (ABS(creature_ptr->pos_x - *player_pos_ptr) <= 512.0)) &&
             (ABS(creature_ptr->pos_y - (&player_state_table)[player_index].pos_y) <= 512.0)) &&
-           (fVar1 = creature_ptr->pos_x - *player_pos_ptr,
-           fVar2 = creature_ptr->pos_y - (&player_state_table)[player_index].pos_y,
-           fVar1 = 512.0 - SQRT(fVar1 * fVar1 + fVar2 * fVar2), 0.0 < fVar1)) {
+           (blast_delta_x = creature_ptr->pos_x - *player_pos_ptr,
+           blast_delta_y = creature_ptr->pos_y - (&player_state_table)[player_index].pos_y,
+           blast_falloff = 512.0 - SQRT(blast_delta_x * blast_delta_x + blast_delta_y * blast_delta_y),
+           0.0 < blast_falloff)) {
           zero_impulse[0] = 0.0;
           zero_impulse[1] = 0.0;
-          creature_apply_damage(iVar4,fVar1 * 5.0,3,zero_impulse);
+          creature_apply_damage(creature_idx,blast_falloff * 5.0,3,zero_impulse);
         }
         creature_ptr = creature_ptr + 1;
-        iVar4 = iVar4 + 1;
+        creature_idx = creature_idx + 1;
       } while ((int)creature_ptr < 0x4aa338);
       bonus_spawn_guard._0_1_ = 0;
       sfx_play_panned(sfx_explosion_large);
@@ -122,19 +127,19 @@ LAB_00425fa1:
   }
   /* Non-dodged hits can add heading/spread penalties and low-health bleed trigger. */
   if (!dodge_triggered) {
-    iVar4 = perk_count_get(perk_id_unstoppable);
-    if (iVar4 == 0) {
-      iVar4 = crt_rand();
+    perk_count = perk_count_get(perk_id_unstoppable);
+    if (perk_count == 0) {
+      rand_roll = crt_rand();
       (&player_state_table)[player_index].heading =
-           (float)(iVar4 % 100 + -0x32) * 0.04 + (&player_state_table)[player_index].heading;
-      fVar1 = damage * 0.01 + (&player_state_table)[player_index].spread_heat;
-      (&player_state_table)[player_index].spread_heat = fVar1;
-      if (0.48 < fVar1) {
+           (float)(rand_roll % 100 + -0x32) * 0.04 + (&player_state_table)[player_index].heading;
+      next_spread_heat = damage * 0.01 + (&player_state_table)[player_index].spread_heat;
+      (&player_state_table)[player_index].spread_heat = next_spread_heat;
+      if (0.48 < next_spread_heat) {
         (&player_state_table)[player_index].spread_heat = 0.48;
       }
     }
     if (((&player_state_table)[player_index].health <= 20.0) &&
-       (iVar4 = crt_rand(), ((byte)iVar4 & 7) == 3)) {
+       (rand_roll = crt_rand(), ((byte)rand_roll & 7) == 3)) {
       (&player_state_table)[player_index].low_health_timer = 0.0;
     }
   }
