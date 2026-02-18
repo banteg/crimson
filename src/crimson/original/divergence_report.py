@@ -72,6 +72,12 @@ class RunSummaryEvent:
     detail: str
 
 
+@dataclass(frozen=True, slots=True)
+class DivergenceCategory:
+    id: str
+    evidence: tuple[str, ...]
+
+
 RUN_SUMMARY_SHORT_KINDS = {
     "bonus_pickup",
     "weapon_assign",
@@ -190,13 +196,6 @@ def _capture_config_value(config: object | None, key: str) -> object | None:
 
 def _capture_config_int(config: object | None, key: str, default: int = -1) -> int:
     return _int_or(_capture_config_value(config, key), default)
-
-
-def _capture_config_slot_count(config: object | None) -> int:
-    raw = _capture_config_value(config, "creature_micro_slots")
-    if not isinstance(raw, (list, tuple, set)):
-        return 0
-    return sum(1 for value in raw if _int_or(value, -1) >= 0)
 
 
 def _coerce_u32(value: object) -> int | None:
@@ -2145,9 +2144,6 @@ def _build_investigation_leads(
     focus_act = actual_by_tick.get(int(focus_tick))
     focus_raw = raw_debug_by_tick.get(int(focus_tick), {})
     micro_cap = _capture_config_int(capture_config, "creature_micro_max_head_per_tick", -1)
-    micro_tick_start = _capture_config_int(capture_config, "creature_micro_tick_start", -1)
-    micro_tick_end = _capture_config_int(capture_config, "creature_micro_tick_end", -1)
-    micro_slot_count = _capture_config_slot_count(capture_config)
     sample_counts = focus_raw.get("sample_counts") if isinstance(focus_raw.get("sample_counts"), dict) else {}
     sample_counts_int = [
         _int_or(sample_counts.get(key), -1)  # ty:ignore[unresolved-attribute]
@@ -2203,29 +2199,21 @@ def _build_investigation_leads(
                 ),
             )
         elif micro_cap > 0 and creature_micro_count >= micro_cap:
-            scope_parts: list[str] = []
-            if micro_slot_count > 0:
-                scope_parts.append(f"slots={int(micro_slot_count)}")
-            if micro_tick_start >= 0 or micro_tick_end >= 0:
-                scope_parts.append(f"tick_window={int(micro_tick_start)}..{int(micro_tick_end)}")
-            scope_text = ", ".join(scope_parts) if scope_parts else "all-slots/default-window"
             leads.append(
                 InvestigationLead(
                     title="Capture creature-update micro telemetry likely head-capped at focus tick",
                     evidence=(
                         (
                             "focus tick creature_update_micro_count hit the configured head cap: "
-                            f"count={int(creature_micro_count)} cap={int(micro_cap)} "
-                            f"(scope={scope_text})"
+                            f"count={int(creature_micro_count)} cap={int(micro_cap)}"
                         ),
                         (
                             "slot-level movement ancestry near the frontier can be truncated when the cap is hit, "
                             "which can hide the first causative branch split"
                         ),
                         (
-                            "re-capture with a higher `CRIMSON_FRIDA_CREATURE_MICRO_MAX_HEAD_PER_TICK` and, "
-                            "if needed, focus window/slot filters (`CRIMSON_FRIDA_CREATURE_MICRO_TICK_START/END`, "
-                            "`CRIMSON_FRIDA_CREATURE_MICRO_SLOTS`)"
+                            "treat this as movement-telemetry saturation and compare divergence category/signatures "
+                            "across captures rather than absolute tick alignment"
                         ),
                     ),
                     native_functions=(
@@ -2799,6 +2787,108 @@ def _build_investigation_leads(
     return leads
 
 
+def _classify_divergence_category(
+    *,
+    divergence: Divergence,
+    leads: list[InvestigationLead],
+    focus_raw: dict[str, object],
+    focus_actual_ckpt: ReplayCheckpoint | None,
+) -> DivergenceCategory:
+    lead_titles = {lead.title for lead in leads}
+
+    capture_hits = _int_or(focus_raw.get("projectile_find_hit_count"), -1)
+    actual_hits = _int_or(focus_actual_ckpt.events.hit_count if focus_actual_ckpt is not None else None, -1)
+    if (
+        "Native projectile hit resolves exceed rewrite hit events" in lead_titles
+        or (capture_hits >= 0 and actual_hits >= 0 and capture_hits > actual_hits)
+    ):
+        return DivergenceCategory(
+            id="rng.projectile_hit_resolution_shortfall",
+            evidence=(
+                (
+                    "capture projectile hit resolves exceed rewrite hit events at focus "
+                    f"(capture_hits={int(capture_hits)}, rewrite_hits={int(actual_hits)})"
+                ),
+                "category is stable across dynamic runs and maps to projectile-hit/rng-consumption parity work",
+            ),
+        )
+
+    if divergence.kind == "rng_stream_mismatch":
+        focus_stream = (
+            _compute_rng_stream_alignment(
+                act=focus_actual_ckpt,
+                capture_stream_rows=_rng_stream_rows_for_raw_row(focus_raw),
+                capture_head_len=_int_or(
+                    focus_raw.get("rng_head_len"),
+                    len(_rng_stream_rows_for_raw_row(focus_raw)),
+                ),
+            )
+            if focus_actual_ckpt is not None
+            else cast(RngStreamAlignment, {})
+        )
+        missing_tail = _int_or(focus_stream.get("missing_tail"), 0)
+        first_mismatch_idx = _int_or(focus_stream.get("first_mismatch_idx"), -1)
+        if missing_tail > 0:
+            return DivergenceCategory(
+                id="rng.tail_shortfall",
+                evidence=(
+                    f"rewrite consumed fewer RNG draws than capture at focus (missing_tail={int(missing_tail)})",
+                    "category emphasizes missing RNG-consuming branch paths before/at the frontier",
+                ),
+            )
+        if first_mismatch_idx >= 0:
+            return DivergenceCategory(
+                id="rng.value_stream_mismatch",
+                evidence=(
+                    f"capture/rewrite RNG streams disagree at shared draw index {int(first_mismatch_idx)}",
+                    "category emphasizes branch-selection/value-stream mismatch instead of draw-count shortfall",
+                ),
+            )
+        if "Pre-focus RNG stream mismatch indicates branch divergence" in lead_titles:
+            return DivergenceCategory(
+                id="rng.prefocus_branch_divergence",
+                evidence=(
+                    "pre-focus RNG stream mismatch lead indicates branch divergence before the reported focus tick",
+                    "category should be tracked by caller/callsite signatures across captures",
+                ),
+            )
+        if "Pre-focus RNG-head shortfall indicates missing RNG-consuming branch" in lead_titles:
+            return DivergenceCategory(
+                id="rng.prefocus_consumption_shortfall",
+                evidence=(
+                    "pre-focus RNG-head shortfall lead indicates a missing RNG-consuming path before the focus tick",
+                    "category should be tracked by dominant caller signatures across captures",
+                ),
+            )
+        return DivergenceCategory(
+            id="rng.stream_mismatch",
+            evidence=("RNG stream mismatch without a more specific signature bucket",),
+        )
+
+    field_names = {str(diff.field) for diff in divergence.field_diffs}
+    if any(name.startswith("players[0].pos.") for name in field_names):
+        return DivergenceCategory(
+            id="state.player_motion_precision_drift",
+            evidence=(
+                "first state mismatch includes player position drift fields",
+                "category points to movement/input precision ancestry rather than downstream combat effects",
+            ),
+        )
+    if any(name in {"score_xp", "players[0].experience", "players[0].level"} for name in field_names):
+        return DivergenceCategory(
+            id="state.progression_timing_drift",
+            evidence=(
+                "first state mismatch includes XP/score/level progression fields",
+                "category points to progression timing/order divergence",
+            ),
+        )
+
+    return DivergenceCategory(
+        id=f"state.{divergence.kind}",
+        evidence=("no specific divergence signature was detected; use the base divergence kind bucket",),
+    )
+
+
 def _build_window_rows(
     *,
     expected_by_tick: dict[int, ReplayCheckpoint],
@@ -3226,6 +3316,18 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
 
     focus_raw = raw_debug_by_tick.get(focus_tick, {})
     focus_actual_ckpt = actual_by_tick.get(int(focus_tick))
+    divergence_category = _classify_divergence_category(
+        divergence=divergence,
+        leads=leads,
+        focus_raw=focus_raw,
+        focus_actual_ckpt=focus_actual_ckpt,
+    )
+    print()
+    print(f"divergence_category={divergence_category.id}")
+    if divergence_category.evidence:
+        print("category_evidence:")
+        for line in divergence_category.evidence:
+            print(f"  - {line}")
     if focus_raw or focus_actual_ckpt is not None:
         print()
         print("focus_capture_debug:")
@@ -3399,6 +3501,7 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
                 "focus_tick": int(focus_tick),
                 "field_diffs": [asdict(diff) for diff in divergence.field_diffs],
             },
+            "divergence_category": asdict(divergence_category),
             "window_rows": rows,
             "investigation_leads": [asdict(lead) for lead in leads],
             "focus_capture_debug": focus_raw,

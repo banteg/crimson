@@ -670,6 +670,67 @@ def test_investigation_leads_flag_focus_micro_head_cap() -> None:
     assert any("count=128 cap=128" in line for line in lead.evidence)
 
 
+def test_divergence_category_prefers_projectile_hit_shortfall_signature() -> None:
+    report = _load_report_module()
+    expected_ckpt = _checkpoint(tick=10, rng_marks={"rand_calls": 0})
+    actual_ckpt = _checkpoint(
+        tick=10,
+        rng_marks={
+            "before_world_step": 0x12345678,
+            "after_world_step": 0x12345678,
+            "after_wave_spawns": 0x12345678,
+        },
+        events=ReplayEventSummary(hit_count=1, pickup_count=0, sfx_count=0, sfx_head=[]),
+    )
+    divergence = report.Divergence(
+        tick_index=10,
+        kind="rng_stream_mismatch",
+        field_diffs=tuple(),
+        expected=expected_ckpt,
+        actual=actual_ckpt,
+    )
+
+    category = report._classify_divergence_category(
+        divergence=divergence,
+        leads=[],
+        focus_raw={"projectile_find_hit_count": 2, "rng_head_len": 0},
+        focus_actual_ckpt=actual_ckpt,
+    )
+
+    assert category.id == "rng.projectile_hit_resolution_shortfall"
+
+
+def test_divergence_category_marks_player_motion_precision_drift() -> None:
+    report = _load_report_module()
+    expected_ckpt = _checkpoint(tick=12, rng_marks={"rand_calls": 0})
+    actual_ckpt = _checkpoint(
+        tick=12,
+        rng_marks={
+            "before_world_step": 0x87654321,
+            "after_world_step": 0x87654321,
+            "after_wave_spawns": 0x87654321,
+        },
+    )
+    divergence = report.Divergence(
+        tick_index=12,
+        kind="state_mismatch",
+        field_diffs=(
+            report.ReplayFieldDiff(field="players[0].pos.x", expected=10.0, actual=10.125),
+        ),
+        expected=expected_ckpt,
+        actual=actual_ckpt,
+    )
+
+    category = report._classify_divergence_category(
+        divergence=divergence,
+        leads=[],
+        focus_raw={},
+        focus_actual_ckpt=actual_ckpt,
+    )
+
+    assert category.id == "state.player_motion_precision_drift"
+
+
 def test_find_first_rng_head_shortfall_detects_pre_focus_gap() -> None:
     report = _load_report_module()
     start = 0x10203040

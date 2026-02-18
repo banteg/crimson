@@ -47,7 +47,7 @@ class CaptureConfig(msgspec.Struct):
     creature_micro_slots: list[int] = msgspec.field(default_factory=list)
     creature_micro_tick_start: int = -1
     creature_micro_tick_end: int = -1
-    creature_micro_max_head_per_tick: int = 128
+    creature_micro_max_head_per_tick: int = 256
 
 
 class SessionFingerprint(msgspec.Struct, forbid_unknown_fields=True):

@@ -224,15 +224,12 @@ require non-zero `creature_update_micro_rows` and both non-zero
 the target tick window.
 
 If focus-tick `creature_update_micro_count` is pinned at the configured cap
-(`capture.config.creature_micro_max_head_per_tick`), treat that as likely
-head truncation and recapture with a bounded window plus targeted slots, e.g.:
+(`capture.config.creature_micro_max_head_per_tick`), treat it as movement
+telemetry saturation and track the divergence by category/signature:
 
-```bash
-CRIMSON_FRIDA_CREATURE_MICRO_TICK_START=9400 \
-CRIMSON_FRIDA_CREATURE_MICRO_TICK_END=9800 \
-CRIMSON_FRIDA_CREATURE_MICRO_SLOTS=0,3,7,12,14,15 \
-CRIMSON_FRIDA_CREATURE_MICRO_MAX_HEAD_PER_TICK=1024
-```
+- `divergence_category` from `original divergence-report`
+- projectile-hit shortfall profile (`capture_hits` vs `rewrite_hits`)
+- dominant native caller clusters in investigation leads
 
 ## 6) Common mismatch classes
 

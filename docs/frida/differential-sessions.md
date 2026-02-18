@@ -1381,3 +1381,35 @@ When the capture SHA is unchanged, append updates to the same session.
 
 - Tooling now supports high-signal recaptures for the known wall instead of repeating low-head-budget captures.
 - Next required artifact to continue gameplay fixes is a recapture of `quest_1_8` drift ancestry window (`~9400..9760`) using targeted slots + raised micro cap.
+
+### Session 17 (continued: recapture-strategy correction)
+
+- **Capture family:** `artifacts/frida/share/gameplay_diff_capture.quest_*.json`
+- **Branch:** `feat/diff-quests`
+- **Correction scope:** follow-up on session tooling notes to align with dynamic-capture constraints.
+
+### Key Findings
+
+- Quest captures are not replayable apples-to-apples by absolute tick timeline; gameplay divergence in earlier moments shifts later tick-local events.
+- Investigation should therefore track **divergence category/signatures** (for example projectile hit shortfall + RNG tail profile + caller clusters), not fixed tick windows.
+- Frida script micro slot/tick override knobs are counterproductive for this workflow and were removed.
+
+### Landed Changes
+
+- `scripts/frida/gameplay_diff_capture.js`
+  - removed newly added creature-micro slot/tick/cap env overrides,
+  - widened default micro head budget from `128` to `256` for broader parity coverage without per-run tuning.
+- `src/crimson/original/divergence_report.py`
+  - added `divergence_category` classification output (console + JSON) so investigations can compare mismatches by class/signature across different captures,
+  - retained and reframed micro-cap saturation lead as a category-level signal, not a tick-window recapture prescription.
+- Docs:
+  - `docs/frida/gameplay-diff-capture.md`
+  - `docs/frida/differential-playbook.md`
+  - updated to emphasize category/signature tracking over absolute tick targeting.
+
+### Outcome / Next Probe
+
+- Continue from the unresolved `quest_1_8` frontier by matching category signatures across new captures:
+  - `divergence_category`
+  - projectile hit shortfall profile
+  - dominant caller clusters near first sustained mismatch.

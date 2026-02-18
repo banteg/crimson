@@ -89,24 +89,6 @@ function parseStringSet(raw, fallbackCsv) {
   return out;
 }
 
-function parseIntSetEnv(key) {
-  const raw = getEnv(key);
-  const out = new Set();
-  if (!raw) return out;
-  const parts = String(raw)
-    .split(/[;,]/)
-    .map((v) => v.trim())
-    .filter((v) => v.length > 0);
-  for (let i = 0; i < parts.length; i++) {
-    const value = parseInt(parts[i], 0);
-    if (!Number.isFinite(value)) continue;
-    const idx = value | 0;
-    if (idx < 0) continue;
-    out.add(idx);
-  }
-  return out;
-}
-
 function joinPath(base, leaf) {
   if (!base) return leaf;
   const sep = base.endsWith("\\") || base.endsWith("/") ? "" : "\\";
@@ -177,27 +159,12 @@ const CONFIG = {
   enableCreatureLifecycleDigest: parseBoolEnv("CRIMSON_FRIDA_CREATURE_LIFECYCLE", true),
   // Always-on by default for parity sessions; no extra env config required.
   enableCreatureMicroHooks: true,
-  creatureMicroSlots: parseIntSetEnv("CRIMSON_FRIDA_CREATURE_MICRO_SLOTS"),
-  creatureMicroTickStart: parseIntEnv("CRIMSON_FRIDA_CREATURE_MICRO_TICK_START", -1),
-  creatureMicroTickEnd: parseIntEnv("CRIMSON_FRIDA_CREATURE_MICRO_TICK_END", -1),
-  creatureMicroMaxHeadPerTick: parseLimitEnv(
-    "CRIMSON_FRIDA_CREATURE_MICRO_MAX_HEAD_PER_TICK",
-    128,
-    0
-  ),
+  creatureMicroSlots: new Set(),
+  creatureMicroTickStart: -1,
+  creatureMicroTickEnd: -1,
+  // Wider default net for parity recaptures while keeping bounded per-tick cost.
+  creatureMicroMaxHeadPerTick: 256,
 };
-
-if ((CONFIG.creatureMicroTickStart | 0) < 0) CONFIG.creatureMicroTickStart = -1;
-if ((CONFIG.creatureMicroTickEnd | 0) < 0) CONFIG.creatureMicroTickEnd = -1;
-if (
-  (CONFIG.creatureMicroTickStart | 0) >= 0 &&
-  (CONFIG.creatureMicroTickEnd | 0) >= 0 &&
-  (CONFIG.creatureMicroTickEnd | 0) < (CONFIG.creatureMicroTickStart | 0)
-) {
-  const start = CONFIG.creatureMicroTickStart | 0;
-  CONFIG.creatureMicroTickStart = CONFIG.creatureMicroTickEnd | 0;
-  CONFIG.creatureMicroTickEnd = start;
-}
 
 const FN = {
   perk_apply: 0x004055e0,
