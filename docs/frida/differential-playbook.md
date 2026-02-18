@@ -223,6 +223,17 @@ require non-zero `creature_update_micro_rows` and both non-zero
 `creature_update_micro_angle_rows` and `creature_update_micro_window_rows` in
 the target tick window.
 
+If focus-tick `creature_update_micro_count` is pinned at the configured cap
+(`capture.config.creature_micro_max_head_per_tick`), treat that as likely
+head truncation and recapture with a bounded window plus targeted slots, e.g.:
+
+```bash
+CRIMSON_FRIDA_CREATURE_MICRO_TICK_START=9400 \
+CRIMSON_FRIDA_CREATURE_MICRO_TICK_END=9800 \
+CRIMSON_FRIDA_CREATURE_MICRO_SLOTS=0,3,7,12,14,15 \
+CRIMSON_FRIDA_CREATURE_MICRO_MAX_HEAD_PER_TICK=1024
+```
+
 ## 6) Common mismatch classes
 
 - Early position drift (`players[0].pos.*`): usually input reconstruction quality.

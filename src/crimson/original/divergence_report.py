@@ -179,6 +179,26 @@ def _float_or(value: object, default: float = 0.0) -> float:
         return float(default)
 
 
+def _capture_config_value(config: object | None, key: str) -> object | None:
+    if config is None:
+        return None
+    if isinstance(config, Mapping):
+        config_map = cast("Mapping[str, object]", config)
+        return config_map.get(key)
+    return getattr(config, key, None)
+
+
+def _capture_config_int(config: object | None, key: str, default: int = -1) -> int:
+    return _int_or(_capture_config_value(config, key), default)
+
+
+def _capture_config_slot_count(config: object | None) -> int:
+    raw = _capture_config_value(config, "creature_micro_slots")
+    if not isinstance(raw, (list, tuple, set)):
+        return 0
+    return sum(1 for value in raw if _int_or(value, -1) >= 0)
+
+
 def _coerce_u32(value: object) -> int | None:
     parsed = _int_or(value, -1)
     if parsed < 0:
@@ -2110,6 +2130,7 @@ def _build_investigation_leads(
     actual_by_tick: dict[int, ReplayCheckpoint],
     raw_debug_by_tick: dict[int, dict[str, object]],
     native_ranges: tuple[NativeFunctionRange, ...],
+    capture_config: object | None = None,
 ) -> list[InvestigationLead]:
     leads: list[InvestigationLead] = []
     lookback_start = max(0, int(focus_tick) - max(1, int(lookback_ticks)))
@@ -2123,6 +2144,10 @@ def _build_investigation_leads(
     focus_exp = expected_by_tick.get(int(focus_tick))
     focus_act = actual_by_tick.get(int(focus_tick))
     focus_raw = raw_debug_by_tick.get(int(focus_tick), {})
+    micro_cap = _capture_config_int(capture_config, "creature_micro_max_head_per_tick", -1)
+    micro_tick_start = _capture_config_int(capture_config, "creature_micro_tick_start", -1)
+    micro_tick_end = _capture_config_int(capture_config, "creature_micro_tick_end", -1)
+    micro_slot_count = _capture_config_slot_count(capture_config)
     sample_counts = focus_raw.get("sample_counts") if isinstance(focus_raw.get("sample_counts"), dict) else {}
     sample_counts_int = [
         _int_or(sample_counts.get(key), -1)  # ty:ignore[unresolved-attribute]
@@ -2174,6 +2199,43 @@ def _build_investigation_leads(
                     code_paths=(
                         "scripts/frida/gameplay_diff_capture.js",
                         "docs/frida/gameplay-diff-capture.md",
+                    ),
+                ),
+            )
+        elif micro_cap > 0 and creature_micro_count >= micro_cap:
+            scope_parts: list[str] = []
+            if micro_slot_count > 0:
+                scope_parts.append(f"slots={int(micro_slot_count)}")
+            if micro_tick_start >= 0 or micro_tick_end >= 0:
+                scope_parts.append(f"tick_window={int(micro_tick_start)}..{int(micro_tick_end)}")
+            scope_text = ", ".join(scope_parts) if scope_parts else "all-slots/default-window"
+            leads.append(
+                InvestigationLead(
+                    title="Capture creature-update micro telemetry likely head-capped at focus tick",
+                    evidence=(
+                        (
+                            "focus tick creature_update_micro_count hit the configured head cap: "
+                            f"count={int(creature_micro_count)} cap={int(micro_cap)} "
+                            f"(scope={scope_text})"
+                        ),
+                        (
+                            "slot-level movement ancestry near the frontier can be truncated when the cap is hit, "
+                            "which can hide the first causative branch split"
+                        ),
+                        (
+                            "re-capture with a higher `CRIMSON_FRIDA_CREATURE_MICRO_MAX_HEAD_PER_TICK` and, "
+                            "if needed, focus window/slot filters (`CRIMSON_FRIDA_CREATURE_MICRO_TICK_START/END`, "
+                            "`CRIMSON_FRIDA_CREATURE_MICRO_SLOTS`)"
+                        ),
+                    ),
+                    native_functions=(
+                        "creature_update_all",
+                        "angle_approach",
+                    ),
+                    code_paths=(
+                        "scripts/frida/gameplay_diff_capture.js",
+                        "docs/frida/gameplay-diff-capture.md",
+                        "docs/frida/differential-playbook.md",
                     ),
                 ),
             )
@@ -3158,6 +3220,7 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
         actual_by_tick=actual_by_tick,
         raw_debug_by_tick=raw_debug_by_tick,
         native_ranges=native_ranges,
+        capture_config=capture.config,
     )
     _print_investigation_leads(leads)
 

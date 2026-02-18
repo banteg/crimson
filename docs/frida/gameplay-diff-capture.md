@@ -170,12 +170,12 @@ Without extra env vars, the script captures full per-tick detail:
 - perk-apply diagnostics and input query/key snapshots
 - creature movement micro telemetry (`creature_update_window` +
   `angle_approach`) with per-kind per-tick head cap (`128`) and no slot/window
-  filtering
+  filtering unless explicitly configured
 
 ## Optional env knobs
 
-Creature micro hooks are not controlled via env knobs anymore; they are always
-captured by default for differential parity sessions.
+Creature micro hooks stay enabled by default for differential parity sessions,
+but you can narrow capture scope or raise the head cap for targeted recaptures.
 
 - `CRIMSON_FRIDA_STATES=6,9,10`
 - `CRIMSON_FRIDA_ALL_STATES=1`
@@ -206,6 +206,14 @@ captured by default for differential parity sessions.
 - `CRIMSON_FRIDA_RNG_STATE_MIRROR=0`
 - `CRIMSON_FRIDA_INCLUDE_BT=1`
 - `CRIMSON_FRIDA_INCLUDE_CALLER=0`
+- `CRIMSON_FRIDA_CREATURE_MICRO_SLOTS=0,3,7,12`
+- `CRIMSON_FRIDA_CREATURE_MICRO_TICK_START=9400`
+- `CRIMSON_FRIDA_CREATURE_MICRO_TICK_END=9800`
+- `CRIMSON_FRIDA_CREATURE_MICRO_MAX_HEAD_PER_TICK=1024`
+
+For drift-ancestry probes, prefer a bounded tick window plus explicit slot set
+and a higher micro head cap so `creature_update_micro` rows are not truncated at
+the focus frontier.
 
 Capture loading in Python accepts `.json` and `.json.gz` only, with JSONL
 row-stream capture rows as the canonical format.

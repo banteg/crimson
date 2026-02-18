@@ -1336,3 +1336,48 @@ When the capture SHA is unchanged, append updates to the same session.
 - **Current wall remains:** `quest_1_8 tick 9760` with unchanged missing RNG-tail/hit profile.
 - Existing capture data is still insufficient to isolate the first causative arithmetic branch across the full drift ancestry.
 - Next recapture should add targeted player+creature movement internals in the `9400..9760` ancestry window (not only head-capped micro rows) so the first precision split can be attributed deterministically.
+
+### Session 17 (continued: creature micro recapture tooling)
+
+- **Capture family:** `artifacts/frida/share/gameplay_diff_capture.quest_*.json`
+- **Branch:** `feat/diff-quests`
+- **First mismatch progression:**
+  - before this tooling update: `quest_1_8 tick 9760 (rng_stream_mismatch)`,
+  - after this tooling update: earliest unresolved remains `quest_1_8 tick 9760`.
+
+### Key Findings
+
+- The active gameplay wall is capture quality at the frontier, not missing replay hooks:
+  - `quest_1_7` is clean with current code/tooling,
+  - `quest_1_8` remains stable at `tick 9760` (`missing_tail=98`), with branch ancestry already traced back to earlier movement precision drift.
+- Existing default micro capture settings can saturate per-tick head budgets in dense windows, which obscures first-cause attribution for slot-level drift ancestry.
+- Differential tooling should explicitly call out likely head-capped focus ticks and provide a direct recapture path.
+
+### Landed Changes
+
+- `scripts/frida/gameplay_diff_capture.js`
+  - added env knobs for targeted creature micro recaptures:
+    - `CRIMSON_FRIDA_CREATURE_MICRO_SLOTS`
+    - `CRIMSON_FRIDA_CREATURE_MICRO_TICK_START`
+    - `CRIMSON_FRIDA_CREATURE_MICRO_TICK_END`
+    - `CRIMSON_FRIDA_CREATURE_MICRO_MAX_HEAD_PER_TICK`
+  - kept defaults unchanged (always-on micro hooks; default cap `128`) while enabling focused high-detail probes.
+- `src/crimson/original/divergence_report.py`
+  - investigation leads now flag likely focus-tick micro head-cap saturation when `creature_update_micro_count` reaches configured cap,
+  - lead text points directly to recapture knobs and capture docs/playbook paths.
+- Docs:
+  - `docs/frida/gameplay-diff-capture.md`
+  - `docs/frida/differential-playbook.md`
+  - documented targeted micro recapture workflow for drift-ancestry investigations.
+
+### Validation
+
+- `uv run pytest tests/test_original_capture_divergence_report_rng_calls.py::test_investigation_leads_flag_focus_micro_head_cap`
+- `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_7.json --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 10 --no-cache --json-out analysis/frida/reports/session21/gameplay_diff_capture.quest_1_7_recheck_nocache.json`
+- `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 6 --run-summary-short-max-rows 40 --no-cache --json-out analysis/frida/reports/session21/gameplay_diff_capture.quest_1_8_baseline_nocache_after_fix5.json` *(expected non-zero exit while diverged)*
+- `just check`
+
+### Outcome / Next Probe
+
+- Tooling now supports high-signal recaptures for the known wall instead of repeating low-head-budget captures.
+- Next required artifact to continue gameplay fixes is a recapture of `quest_1_8` drift ancestry window (`~9400..9760`) using targeted slots + raised micro cap.

@@ -614,6 +614,62 @@ def test_investigation_leads_flag_missing_focus_samples() -> None:
     assert any(lead.title == "Capture lacks entity samples at the focus tick" for lead in leads)
 
 
+def test_investigation_leads_flag_focus_micro_head_cap() -> None:
+    report = _load_report_module()
+    expected_ckpt = _checkpoint(
+        tick=5,
+        rng_marks={"rand_calls": 0},
+    )
+    actual_ckpt = _checkpoint(
+        tick=5,
+        rng_marks={
+            "before_world_step": 0x11111111,
+            "after_world_step": 0x11111111,
+            "after_wave_spawns": 0x11111111,
+        },
+    )
+    divergence = report.Divergence(
+        tick_index=5,
+        kind="state_mismatch",
+        field_diffs=tuple(),
+        expected=expected_ckpt,
+        actual=actual_ckpt,
+    )
+
+    leads = report._build_investigation_leads(
+        divergence=divergence,
+        focus_tick=5,
+        lookback_ticks=32,
+        float_abs_tol=1e-3,
+        expected_by_tick={5: expected_ckpt},
+        actual_by_tick={5: actual_ckpt},
+        raw_debug_by_tick={
+            5: {
+                "sample_counts": {"creatures": 1, "projectiles": 1, "secondary_projectiles": 0, "bonuses": 0},
+                "creature_update_micro_count": 128,
+            },
+        },
+        native_ranges=tuple(),
+        capture_config={
+            "creature_micro_max_head_per_tick": 128,
+            "creature_micro_slots": [],
+            "creature_micro_tick_start": -1,
+            "creature_micro_tick_end": -1,
+        },
+    )
+
+    lead = next(
+        (
+            item
+            for item in leads
+            if item.title == "Capture creature-update micro telemetry likely head-capped at focus tick"
+        ),
+        None,
+    )
+    assert lead is not None
+    assert any("count=128 cap=128" in line for line in lead.evidence)
+
+
 def test_find_first_rng_head_shortfall_detects_pre_focus_gap() -> None:
     report = _load_report_module()
     start = 0x10203040
