@@ -17,11 +17,11 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `local_10` -> `spawn_x`
 - `local_c` -> `spawn_y`
 
-## Suggested section comments
+## Section Map (Current Work Copy)
 
-- effect-template setup for splitter burst particles
-- random polar sampling loop inside input radius
-- age/lifetime jitter assignment before `effect_spawn`
+- line 31: splitter burst template setup
+- line 44: random polar sampling loop within radius
+- line 55: age/lifetime jitter before each spawn
 
 ## Notes
 

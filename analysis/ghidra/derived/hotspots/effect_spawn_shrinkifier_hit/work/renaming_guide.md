@@ -15,11 +15,11 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `pvVar3` -> `effect_ptr`
 - `iVar4` -> `spark_count`
 
-## Suggested section comments
+## Section Map (Current Work Copy)
 
-- core shrinkifier pulse setup (`effect id 1`)
-- detail-dependent spark count selection
-- random spark burst loop (`effect id 0`)
+- line 20: core shrinkifier pulse setup (`effect id 1`)
+- line 43: detail-dependent spark-count selection
+- line 48: randomized spark burst loop (`effect id 0`)
 
 ## Notes
 

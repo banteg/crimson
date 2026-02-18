@@ -17,11 +17,11 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `pvVar5` -> `sparks_left`
 - `lVar6` -> `spark_count_i64`
 
-## Suggested section comments
+## Section Map (Current Work Copy)
 
-- lifetime/size setup from incoming scale
-- detail-preset spark-count downscale
-- randomized spark spawn loop
+- line 21: lifetime/size setup from incoming scale
+- line 34: spark-count conversion and detail downscale
+- line 41: randomized spark spawn loop
 
 ## Notes
 

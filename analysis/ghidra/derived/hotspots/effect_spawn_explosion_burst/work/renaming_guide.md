@@ -13,11 +13,12 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `pos_00` -> `burst_pos_ptr`
 - `uVar3` -> `rng_value`
 
-## Suggested section comments
+## Section Map (Current Work Copy)
 
-- core flash ring setup
-- high-detail extra rings branch
-- shockwave streak loop (detail-scaled count)
+- line 20: core flash ring setup and first spawn
+- line 42: high-detail extra-ring branch
+- line 57: shockwave core setup pass
+- line 80: detail-scaled shockwave streak loop
 
 ## Notes
 
