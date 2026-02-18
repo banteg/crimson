@@ -22,6 +22,7 @@ from crimson.original.capture import (
     build_capture_inter_tick_rand_draws_overrides,
     capture_bootstrap_payload_from_event_payload,
     capture_creature_spawn_added_head_from_event_payload,
+    capture_creature_spawn_added_head_rows_from_event_payload,
     capture_creature_spawns_from_event_payload,
     capture_perk_apply_from_event_payload,
     capture_perk_apply_id_from_event_payload,
@@ -1157,6 +1158,13 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(tmp_path: P
                         "target_heading": 0.621416449546814,
                         "ai_mode": 3,
                         "link_index": 0,
+                        "hp": 200.0,
+                        "hitbox_size": 16.0,
+                        "orbit_angle": 0.25,
+                        "orbit_radius": 0.5,
+                        "flags": 12,
+                        "type_id": 2,
+                        "pos": {"x": -256.0, "y": 256.0},
                     },
                 ],
             },
@@ -1181,6 +1189,22 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(tmp_path: P
     )
     assert capture_creature_spawn_added_head_from_event_payload(spawn_events[0].payload) == (
         (18, 1.1278764009475708, 0.621416449546814, 3, 0),
+    )
+    assert capture_creature_spawn_added_head_rows_from_event_payload(spawn_events[0].payload) == (
+        {
+            "index": 18,
+            "heading": 1.1278764009475708,
+            "target_heading": 0.621416449546814,
+            "ai_mode": 3,
+            "link_index": 0,
+            "hp": 200.0,
+            "hitbox_size": 16.0,
+            "orbit_angle": 0.25,
+            "orbit_radius": 0.5,
+            "flags": 12,
+            "type_id": 2,
+            "pos": {"x": -256.0, "y": 256.0},
+        },
     )
 
 

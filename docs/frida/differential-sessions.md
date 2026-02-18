@@ -1235,3 +1235,104 @@ When the capture SHA is unchanged, append updates to the same session.
 
 - The quest tooling wall is removed; `focus-trace` now produces actionable quest tick reports at the frontier.
 - Next probe remains the unresolved gameplay divergence at `quest_1_7 tick 8529`, now using quest-mode focus traces for per-callsite attribution around `8528..8530`.
+
+### Session 17 (continued: quest split follow-up)
+
+- **Capture family:** `artifacts/frida/share/gameplay_diff_capture.quest_*.json`
+- **Branch:** `feat/diff-quests`
+- **First mismatch progression:**
+  - before this follow-up: `quest_1_8 tick 9760 (rng_stream_mismatch)` after `quest_1_7` was cleared,
+  - after landed fixes in this update: earliest unresolved remains `quest_1_8 tick 9760`,
+  - full no-cache sweep after commits: `10/32` captures clean.
+
+### Key Findings
+
+- `quest_1_8` remains stable at `tick 9760` with:
+  - missing projectile hit resolve (`capture_hits=2`, `rewrite_hits=1`),
+  - capture RNG tail shortfall (`capture_calls=198`, `rewrite_calls=100`, missing `98` calls),
+  - dominant missing native RNG callers from blood/ion-hit FX (`fx_queue_add_random`, `effect_spawn_blood_splatter`, `effect_spawn_ion_hit_sparks`).
+- Sequential `_FocusRuntime` sweep localized pre-focus drift:
+  - slot `0` (`ai_mode=0`, `link_index=-802`) accumulates tiny heading/position deltas from early in the run,
+  - first large branch split appears at `tick 9694` when near-`2pi` heading normalization flips to a different turn branch,
+  - this yields the missing second hit at `tick 9760`.
+- `angle_approach` implementation is not the direct culprit:
+  - replay helper output matches captured `creature_update_micro.angle_approach` rows when fed captured inputs,
+  - drift therefore starts upstream (state/input precision accumulation before the callsite branch flip).
+
+### Landed Changes
+
+- `fix(tooling): align quest diagnostics with dt and lifecycle timing` (`01fce35e`)
+  - threaded quest `dt_frame_ms_i32` overrides through replay runner and focus runtimes,
+  - aligned no-cache/cached focus runtimes with replay header `detail_preset`/`fx_toggle`,
+  - unified inter-tick RNG draw overrides via capture helper,
+  - deferred quest creature `finalize_post_render_lifecycle` to runner/focus post-event phase for parity.
+- `fix(replay): carry quest added_head lifecycle overrides` (`22113f6e`)
+  - capture conversion now emits quest spawn replay events when lifecycle `added_head` rows exist even without `creature_spawn` rows,
+  - replay event application now applies `added_head` overrides (`heading`, `target_heading`, `ai_mode`, `link_index`) to active indexed entries,
+  - added conversion/runtime regression tests for both spawn+added and added-only payloads.
+
+### Validation
+
+- Targeted tests:
+  - `uv run pytest tests/test_original_capture_conversion.py::test_convert_capture_to_replay_emits_quest_creature_spawn_events tests/test_original_capture_conversion.py::test_convert_capture_to_replay_emits_quest_added_head_without_spawn_rows tests/test_replay_runners.py::test_capture_creature_spawn_event_applies_added_head_overrides tests/test_replay_runners.py::test_capture_creature_spawn_event_applies_added_head_without_spawn_rows`
+  - `uv run pytest tests/test_replay_runners.py::test_quest_runner_disables_world_dt_steps_for_original_capture_dt_overrides tests/test_replay_runners.py::test_quest_runner_uses_capture_creature_spawn_events_for_original_capture_replay`
+- Focused frontier recheck:
+  - `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 6 --run-summary-short-max-rows 40 --no-cache --json-out analysis/frida/reports/session20_sweep_current/gameplay_diff_capture.quest_1_8_after_added_head_lifecycle_fix_nocache.json` *(expected non-zero exit while diverged)*
+- Full post-commit sweep:
+  - `for f in artifacts/frida/share/gameplay_diff_capture.quest_*.json; do uv run crimson original divergence-report "$f" --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-short-max-rows 10 --no-cache --json-out "analysis/frida/reports/session20_sweep_after_commits/${f##*/}_baseline_nocache_after_commits.json"; done`
+  - summary: `analysis/frida/reports/session20_sweep_after_commits/_summary.tsv`
+
+### Outcome / Next Probe
+
+- **Current wall with this capture data:** earliest unresolved frontier (`quest_1_8 tick 9760`) is driven by sub-ULP cumulative movement/heading drift that flips a branch before focus; existing telemetry is head-capped and insufficient to isolate the first causative arithmetic branch for all relevant slots.
+- Required next capture probe:
+  - increase `creature_update_micro` head budget (or targeted-slot capture) around `tick 9400..9760`,
+  - include deterministic per-slot pre/post movement internals for all candidate slots in the drift ancestry window.
+
+### Session 17 (continued: full added-head replay fields)
+
+- **Capture family:** `artifacts/frida/share/gameplay_diff_capture.quest_*.json`
+- **Branch:** `feat/diff-quests`
+- **First mismatch progression:**
+  - before this update: `quest_1_8 tick 9760 (rng_stream_mismatch)`,
+  - after this update: earliest unresolved remains `quest_1_8 tick 9760`.
+
+### Key Findings
+
+- Replay previously carried only a subset of lifecycle `added_head` fields (`heading/target_heading/ai_mode/link_index`).
+- Extending conversion+replay application to include full `added_head` row state (`pos/hp/hitbox/orbit/flags/type_id`) is structurally required for parity across capture families, even though it does not move this specific frontier.
+- `quest_1_8` remains stable at `tick 9760` after the full-field patch.
+- Focused quest probes show the same dominant profile:
+  - slot `0` branch split near `tick 9694`,
+  - missing second projectile hit and missing RNG tail (`-98`) at `tick 9760`.
+- Additional player-movement precision probes identified a one-ULP player `pos.y` drift beginning at `tick 9402`, but source-level movement-rounding experiments did not move the first divergence tick and were not kept.
+
+### Landed Changes
+
+- `src/crimson/original/capture.py`
+  - added `capture_creature_spawn_added_head_rows_from_event_payload(...)` to preserve full row objects,
+  - retained tuple parser compatibility via `capture_creature_spawn_added_head_from_event_payload(...)`,
+  - expanded emitted quest `added_head` payload rows to carry optional `pos/hp/hitbox_size/orbit_angle/orbit_radius/flags/type_id`.
+- `src/crimson/sim/driver/replay_events.py`
+  - switched quest `creature_spawn` replay handling to full-row parser,
+  - applied full optional `added_head` overrides to active creature entries (`pos/heading/target_heading/ai_mode/link_index/hp/hitbox/orbit/flags/type_id`).
+- Tests:
+  - `tests/test_original_capture_conversion.py`
+  - `tests/test_replay_runners.py`
+  - expanded to cover richer `added_head` payload parse + application paths.
+
+### Validation
+
+- Targeted regression tests:
+  - `uv run pytest tests/test_original_capture_conversion.py::test_convert_capture_to_replay_emits_quest_creature_spawn_events tests/test_original_capture_conversion.py::test_convert_capture_to_replay_emits_quest_added_head_without_spawn_rows tests/test_replay_runners.py::test_capture_creature_spawn_event_applies_added_head_overrides tests/test_replay_runners.py::test_capture_creature_spawn_event_applies_added_head_without_spawn_rows`
+- Frontier probes:
+  - `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.quest_1_8.json --tick 9694 --near-miss-threshold 0.35 --top-rng 10 --near-miss-limit 8 --diff-limit 8 --no-cache --json-out analysis/frida/reports/session20_sweep_current/gameplay_diff_capture.quest_1_8_focus_9694_post_full_added_head_nocache.json`
+  - `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json --float-abs-tol 1e-3 --window 24 --lead-lookback 2048 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 6 --run-summary-short-max-rows 40 --no-cache --json-out analysis/frida/reports/session20_sweep_current/gameplay_diff_capture.quest_1_8_after_added_head_full_override_probe_nocache.json` *(expected non-zero exit while diverged)*
+- Repository checks:
+  - `just check`
+
+### Outcome / Next Probe
+
+- **Current wall remains:** `quest_1_8 tick 9760` with unchanged missing RNG-tail/hit profile.
+- Existing capture data is still insufficient to isolate the first causative arithmetic branch across the full drift ancestry.
+- Next recapture should add targeted player+creature movement internals in the `9400..9760` ancestry window (not only head-capped micro rows) so the first precision split can be attributed deterministically.

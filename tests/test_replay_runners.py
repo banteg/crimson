@@ -248,6 +248,13 @@ def test_capture_creature_spawn_event_applies_added_head_overrides() -> None:
                         "target_heading": 0.621416449546814,
                         "ai_mode": 3,
                         "link_index": 0,
+                        "hp": 123.5,
+                        "hitbox_size": 9.5,
+                        "orbit_angle": 0.25,
+                        "orbit_radius": 0.75,
+                        "flags": 17,
+                        "type_id": 7,
+                        "pos": {"x": 12.25, "y": 34.5},
                     },
                 ],
             },
@@ -267,6 +274,14 @@ def test_capture_creature_spawn_event_applies_added_head_overrides() -> None:
     assert float(creature.target_heading) == pytest.approx(0.621416449546814, abs=1e-6)
     assert int(creature.ai_mode) == 3
     assert int(creature.link_index) == 0
+    assert float(creature.hp) == pytest.approx(123.5, abs=1e-6)
+    assert float(creature.hitbox_size) == pytest.approx(9.5, abs=1e-6)
+    assert float(creature.orbit_angle) == pytest.approx(0.25, abs=1e-6)
+    assert float(creature.orbit_radius) == pytest.approx(0.75, abs=1e-6)
+    assert int(creature.flags) == 17
+    assert int(creature.type_id) == 7
+    assert float(creature.pos.x) == pytest.approx(12.25, abs=1e-6)
+    assert float(creature.pos.y) == pytest.approx(34.5, abs=1e-6)
 
 
 def test_capture_creature_spawn_event_applies_added_head_without_spawn_rows() -> None:
@@ -300,6 +315,8 @@ def test_capture_creature_spawn_event_applies_added_head_without_spawn_rows() ->
                         "target_heading": 0.521416425704956,
                         "ai_mode": 0,
                         "link_index": 1,
+                        "orbit_radius": 1.25,
+                        "flags": 5,
                     },
                 ],
             },
@@ -319,6 +336,8 @@ def test_capture_creature_spawn_event_applies_added_head_without_spawn_rows() ->
     assert float(creature.target_heading) == pytest.approx(0.521416425704956, abs=1e-6)
     assert int(creature.ai_mode) == 0
     assert int(creature.link_index) == 1
+    assert float(creature.orbit_radius) == pytest.approx(1.25, abs=1e-6)
+    assert int(creature.flags) == 5
 
 
 def test_quest_runner_disables_world_dt_steps_for_original_capture_dt_overrides() -> None:

@@ -5,6 +5,7 @@ from typing import cast
 
 from grim.geom import Vec2
 
+from ...creatures.spawn import CreatureFlags
 from ...game_modes import GameMode
 from ...math_parity import f32
 from ...original.capture import (
@@ -15,7 +16,7 @@ from ...original.capture import (
     CAPTURE_STATE_TRANSITION_EVENT_KIND,
     apply_capture_bootstrap_payload,
     capture_bootstrap_payload_from_event_payload,
-    capture_creature_spawn_added_head_from_event_payload,
+    capture_creature_spawn_added_head_rows_from_event_payload,
     capture_creature_spawns_from_event_payload,
     capture_perk_apply_from_event_payload,
     capture_perk_pending_from_event_payload,
@@ -181,7 +182,7 @@ def apply_replay_tick_events(
 
             if kind == CAPTURE_CREATURE_SPAWN_EVENT_KIND:
                 spawns = capture_creature_spawns_from_event_payload(list(event.payload))
-                added_rows = capture_creature_spawn_added_head_from_event_payload(list(event.payload))
+                added_rows = capture_creature_spawn_added_head_rows_from_event_payload(list(event.payload))
                 if spawns is None:
                     if strict_events:
                         raise ReplayRunnerError(f"invalid creature_spawn payload at tick={tick_index}")
@@ -198,21 +199,54 @@ def apply_replay_tick_events(
                         state.rng,
                         rand=state.rng.rand,
                     )
-                for index, heading, target_heading, ai_mode, link_index in added_rows:
+                for row in added_rows:
+                    index = row.get("index")
+                    if not isinstance(index, int):
+                        continue
                     idx = int(index)
                     if not (0 <= idx < len(world.creatures.entries)):
                         continue
                     entry = world.creatures.entries[idx]
                     if not entry.active:
                         continue
-                    if heading is not None:
+                    heading = row.get("heading")
+                    target_heading = row.get("target_heading")
+                    ai_mode = row.get("ai_mode")
+                    link_index = row.get("link_index")
+                    hp = row.get("hp")
+                    hitbox_size = row.get("hitbox_size")
+                    orbit_angle = row.get("orbit_angle")
+                    orbit_radius = row.get("orbit_radius")
+                    flags = row.get("flags")
+                    type_id = row.get("type_id")
+                    pos_raw = row.get("pos")
+
+                    if isinstance(pos_raw, dict):
+                        pos_obj = cast(dict[str, object], pos_raw)
+                        pos_x = pos_obj.get("x")
+                        pos_y = pos_obj.get("y")
+                        if isinstance(pos_x, (int, float)) and isinstance(pos_y, (int, float)):
+                            entry.pos = Vec2(float(f32(float(pos_x))), float(f32(float(pos_y))))
+                    if isinstance(heading, (int, float)):
                         entry.heading = float(f32(float(heading)))
-                    if target_heading is not None:
+                    if isinstance(target_heading, (int, float)):
                         entry.target_heading = float(f32(float(target_heading)))
-                    if ai_mode is not None:
+                    if isinstance(ai_mode, (int, float)):
                         entry.ai_mode = int(ai_mode)
-                    if link_index is not None:
+                    if isinstance(link_index, (int, float)):
                         entry.link_index = int(link_index)
+                    if isinstance(hp, (int, float)):
+                        entry.hp = float(f32(float(hp)))
+                    if isinstance(hitbox_size, (int, float)):
+                        entry.hitbox_size = float(f32(float(hitbox_size)))
+                    if isinstance(orbit_angle, (int, float)):
+                        entry.orbit_angle = float(f32(float(orbit_angle)))
+                    if isinstance(orbit_radius, (int, float)):
+                        entry.orbit_radius = float(f32(float(orbit_radius)))
+                    if isinstance(flags, (int, float)):
+                        entry.flags = CreatureFlags(int(flags))
+                    if isinstance(type_id, (int, float)):
+                        entry.type_id = int(type_id)
                 continue
 
             if kind == CAPTURE_STATE_TRANSITION_EVENT_KIND:

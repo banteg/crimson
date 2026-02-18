@@ -1690,6 +1690,26 @@ def capture_creature_spawns_from_event_payload(
 def capture_creature_spawn_added_head_from_event_payload(
     payload: list[object],
 ) -> tuple[tuple[int, float | None, float | None, int | None, int | None], ...] | None:
+    rows = capture_creature_spawn_added_head_rows_from_event_payload(payload)
+    if rows is None:
+        return None
+
+    out: list[tuple[int, float | None, float | None, int | None, int | None]] = []
+    for row in rows:
+        index = _coerce_int_like(row.get("index"))
+        if index is None or int(index) < 0:
+            return None
+        heading = _finite_float_or_none(row.get("heading"))
+        target_heading = _finite_float_or_none(row.get("target_heading"))
+        ai_mode = _coerce_int_like(row.get("ai_mode"))
+        link_index = _coerce_int_like(row.get("link_index"))
+        out.append((int(index), heading, target_heading, ai_mode, link_index))
+    return tuple(out)
+
+
+def capture_creature_spawn_added_head_rows_from_event_payload(
+    payload: list[object],
+) -> tuple[dict[str, object], ...] | None:
     event_payload = _event_payload_object(payload)
     if event_payload is None:
         return None
@@ -1699,7 +1719,7 @@ def capture_creature_spawn_added_head_from_event_payload(
     if not isinstance(rows_raw, list):
         return None
 
-    out: list[tuple[int, float | None, float | None, int | None, int | None]] = []
+    out: list[dict[str, object]] = []
     for row in rows_raw:
         if not isinstance(row, dict):
             return None
@@ -1707,11 +1727,51 @@ def capture_creature_spawn_added_head_from_event_payload(
         index = _coerce_int_like(row_obj.get("index"))
         if index is None or int(index) < 0:
             return None
+
+        row_out: dict[str, object] = {"index": int(index)}
         heading = _finite_float_or_none(row_obj.get("heading"))
         target_heading = _finite_float_or_none(row_obj.get("target_heading"))
         ai_mode = _coerce_int_like(row_obj.get("ai_mode"))
         link_index = _coerce_int_like(row_obj.get("link_index"))
-        out.append((int(index), heading, target_heading, ai_mode, link_index))
+        hp = _finite_float_or_none(row_obj.get("hp"))
+        hitbox_size = _finite_float_or_none(row_obj.get("hitbox_size"))
+        orbit_angle = _finite_float_or_none(row_obj.get("orbit_angle"))
+        orbit_radius = _finite_float_or_none(row_obj.get("orbit_radius"))
+        flags = _coerce_int_like(row_obj.get("flags"))
+        type_id = _coerce_int_like(row_obj.get("type_id"))
+        pos_raw = row_obj.get("pos")
+
+        if heading is not None:
+            row_out["heading"] = float(heading)
+        if target_heading is not None:
+            row_out["target_heading"] = float(target_heading)
+        if ai_mode is not None:
+            row_out["ai_mode"] = int(ai_mode)
+        if link_index is not None:
+            row_out["link_index"] = int(link_index)
+        if hp is not None:
+            row_out["hp"] = float(hp)
+        if hitbox_size is not None:
+            row_out["hitbox_size"] = float(hitbox_size)
+        if orbit_angle is not None:
+            row_out["orbit_angle"] = float(orbit_angle)
+        if orbit_radius is not None:
+            row_out["orbit_radius"] = float(orbit_radius)
+        if flags is not None:
+            row_out["flags"] = int(flags)
+        if type_id is not None:
+            row_out["type_id"] = int(type_id)
+        if pos_raw is not None:
+            if not isinstance(pos_raw, dict):
+                return None
+            pos_obj = cast(dict[str, object], pos_raw)
+            pos_x = _finite_float_or_none(pos_obj.get("x"))
+            pos_y = _finite_float_or_none(pos_obj.get("y"))
+            if pos_x is None or pos_y is None:
+                return None
+            row_out["pos"] = {"x": float(pos_x), "y": float(pos_y)}
+
+        out.append(row_out)
     return tuple(out)
 
 
@@ -2089,6 +2149,13 @@ def _tick_creature_spawn_added_rows(tick: CaptureTick) -> tuple[dict[str, object
             target_heading = _finite_float_or_none(row.get("target_heading"))
             ai_mode = _coerce_int_like(row.get("ai_mode"))
             link_index = _coerce_int_like(row.get("link_index"))
+            hp = _finite_float_or_none(row.get("hp"))
+            hitbox_size = _finite_float_or_none(row.get("hitbox_size"))
+            orbit_angle = _finite_float_or_none(row.get("orbit_angle"))
+            orbit_radius = _finite_float_or_none(row.get("orbit_radius"))
+            flags = _coerce_int_like(row.get("flags"))
+            type_id = _coerce_int_like(row.get("type_id"))
+            pos_raw = row.get("pos")
             row_out: dict[str, object] = {"index": int(index)}
             if heading is not None:
                 row_out["heading"] = float(heading)
@@ -2098,6 +2165,24 @@ def _tick_creature_spawn_added_rows(tick: CaptureTick) -> tuple[dict[str, object
                 row_out["ai_mode"] = int(ai_mode)
             if link_index is not None:
                 row_out["link_index"] = int(link_index)
+            if hp is not None:
+                row_out["hp"] = float(hp)
+            if hitbox_size is not None:
+                row_out["hitbox_size"] = float(hitbox_size)
+            if orbit_angle is not None:
+                row_out["orbit_angle"] = float(orbit_angle)
+            if orbit_radius is not None:
+                row_out["orbit_radius"] = float(orbit_radius)
+            if flags is not None:
+                row_out["flags"] = int(flags)
+            if type_id is not None:
+                row_out["type_id"] = int(type_id)
+            if isinstance(pos_raw, dict):
+                pos_obj = cast(dict[str, object], pos_raw)
+                pos_x = _finite_float_or_none(pos_obj.get("x"))
+                pos_y = _finite_float_or_none(pos_obj.get("y"))
+                if pos_x is not None and pos_y is not None:
+                    row_out["pos"] = {"x": float(pos_x), "y": float(pos_y)}
             out.append(row_out)
     return tuple(out)
 
