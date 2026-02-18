@@ -91,11 +91,18 @@ def _run_ast_grep_functions(source: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def _parse_function_name(signature_line: str) -> str:
-    head = signature_line.split("(", 1)[0]
+def _parse_function_name(function_text: str) -> str:
+    # Some decompiler signatures split calling convention and function name
+    # across lines (e.g. "int __cdecl" + "\nfoo(...)"), so parse from the
+    # full declaration block rather than only the first line.
+    head = function_text.split("{", 1)[0]
+    normalized = " ".join(head.split())
+    match = re.search(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(", normalized)
+    if match is not None:
+        return match.group(1)
     tokens = IDENTIFIER_RE.findall(head)
     if not tokens:
-        raise ValueError(f"could not parse function name from signature: {signature_line!r}")
+        raise ValueError(f"could not parse function name from declaration: {head!r}")
     return tokens[-1]
 
 
@@ -156,8 +163,8 @@ def build_function_slices(source: Path) -> dict[str, FunctionSlice]:
     rows = _run_ast_grep_functions(source)
     out: dict[str, FunctionSlice] = {}
     for row in rows:
-        signature = str(row["text"]).splitlines()[0]
-        name = _parse_function_name(signature)
+        function_text = str(row["text"])
+        name = _parse_function_name(function_text)
         rng = row["range"]
         start = int(rng["byteOffset"]["start"])
         end = int(rng["byteOffset"]["end"])
