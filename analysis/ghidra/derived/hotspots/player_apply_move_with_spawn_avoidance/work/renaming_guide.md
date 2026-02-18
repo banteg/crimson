@@ -14,12 +14,14 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `pcVar3` -> `spawn_owner_ptr`
 - `fVar4` -> `collision_radius`
 - `pcVar7` -> `spawn_slot_ptr`
+- `fVar1`/`fVar2`/`fVar5` -> split by role in work copy (`dx_to_owner`, `dy_to_owner`, `candidate_x`, `candidate_y`, `delta_y`)
 
-## Suggested section comments
+## Section Map (Current Work Copy)
 
-- alternate-weapon movement dampening
-- per-slot overlap check against spawn owners
-- axis-separated rollback fallback when overlap occurs
+- line 24: alternate-weapon move dampening
+- line 35: per-slot overlap test against spawn owners
+- line 40: collision rollback plus axis probe retries
+- line 64: legacy full-move restore fallback branch
 
 ## Notes
 

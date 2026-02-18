@@ -11,14 +11,17 @@
 void __cdecl player_apply_move_with_spawn_avoidance(int player_index,float *pos,float *delta)
 
 {
-  float fVar1;
-  float fVar2;
+  float dx_to_owner;
+  float dy_to_owner;
+  float candidate_x;
+  float candidate_y;
+  float delta_y;
   creature_t *spawn_owner_ptr;
   float collision_radius;
-  float fVar5;
   int alternate_weapon_perk_count;
   creature_spawn_slot_t *spawn_slot_ptr;
   
+  /* Alternate-weapon perk dampens move delta before any collision checks. */
   alternate_weapon_perk_count = perk_count_get(perk_id_alternate_weapon);
   if (alternate_weapon_perk_count != 0) {
     *delta = *delta * 0.8;
@@ -29,35 +32,38 @@ void __cdecl player_apply_move_with_spawn_avoidance(int player_index,float *pos,
   pos[1] = delta[1] + pos[1];
   do {
     spawn_owner_ptr = spawn_slot_ptr->owner;
+    /* Overlap test against spawn owner using reduced combined radius. */
     if ((spawn_owner_ptr != (creature_t *)0x0) &&
        (collision_radius = (spawn_owner_ptr->size + (&player_state_table)[player_index].size) * 0.33333334,
-       fVar1 = spawn_owner_ptr->pos_x - *pos, fVar2 = spawn_owner_ptr->pos_y - pos[1],
-       SQRT(fVar1 * fVar1 + fVar2 * fVar2) <= collision_radius)) {
+       dx_to_owner = spawn_owner_ptr->pos_x - *pos, dy_to_owner = spawn_owner_ptr->pos_y - pos[1],
+       SQRT(dx_to_owner * dx_to_owner + dy_to_owner * dy_to_owner) <= collision_radius)) {
+      /* Collision resolution tries rollback then axis-reapply fallbacks. */
       *pos = *pos - *delta;
-      fVar1 = pos[1];
-      fVar2 = delta[1];
-      pos[1] = fVar1 - fVar2;
-      fVar5 = spawn_owner_ptr->pos_x - *pos;
-      fVar1 = spawn_owner_ptr->pos_y - (fVar1 - fVar2);
-      fVar2 = *pos + *delta;
-      if (collision_radius < SQRT(fVar5 * fVar5 + fVar1 * fVar1)) {
-        *pos = fVar2;
-        fVar1 = spawn_owner_ptr->pos_x - fVar2;
-        fVar5 = spawn_owner_ptr->pos_y - pos[1];
-        if (SQRT(fVar1 * fVar1 + fVar5 * fVar5) <= collision_radius) {
-          *pos = fVar2 - *delta;
-          fVar1 = delta[1] + pos[1];
-          pos[1] = fVar1;
-          fVar5 = spawn_owner_ptr->pos_x - *pos;
-          fVar2 = spawn_owner_ptr->pos_y - fVar1;
-          if (SQRT(fVar5 * fVar5 + fVar2 * fVar2) <= collision_radius) {
-            pos[1] = fVar1 - delta[1];
+      delta_y = delta[1];
+      candidate_y = pos[1] - delta_y;
+      pos[1] = candidate_y;
+      dx_to_owner = spawn_owner_ptr->pos_x - *pos;
+      dy_to_owner = spawn_owner_ptr->pos_y - candidate_y;
+      candidate_x = *pos + *delta;
+      if (collision_radius < SQRT(dx_to_owner * dx_to_owner + dy_to_owner * dy_to_owner)) {
+        *pos = candidate_x;
+        dx_to_owner = spawn_owner_ptr->pos_x - candidate_x;
+        dy_to_owner = spawn_owner_ptr->pos_y - pos[1];
+        if (SQRT(dx_to_owner * dx_to_owner + dy_to_owner * dy_to_owner) <= collision_radius) {
+          *pos = candidate_x - *delta;
+          candidate_y = delta_y + pos[1];
+          pos[1] = candidate_y;
+          dx_to_owner = spawn_owner_ptr->pos_x - *pos;
+          dy_to_owner = spawn_owner_ptr->pos_y - candidate_y;
+          if (SQRT(dx_to_owner * dx_to_owner + dy_to_owner * dy_to_owner) <= collision_radius) {
+            pos[1] = candidate_y - delta_y;
           }
         }
       }
       else {
-        *pos = fVar2;
-        pos[1] = delta[1] + pos[1];
+        /* Legacy fallback: restore the original full move when probes fail. */
+        *pos = candidate_x;
+        pos[1] = delta_y + pos[1];
       }
     }
     spawn_slot_ptr = spawn_slot_ptr + 1;
