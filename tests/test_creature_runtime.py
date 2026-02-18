@@ -872,6 +872,30 @@ def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
     assert stub_rand._idx == 1
 
 
+def test_ai7_link_timer_still_ticks_when_live_self_damage_kills_creature() -> None:
+    state = GameplayState(rng=Crand(0xBEEF))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 1.0
+    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.flags = CreatureFlags.AI7_LINK_TIMER | CreatureFlags.SELF_DAMAGE_TICK_STRONG
+    creature.ai_mode = 0
+    creature.link_index = -10
+    creature.target_player = 0
+    creature.pos = Vec2(640.0, 512.0)
+    creature.move_speed = 0.0
+    creature.size = 45.0
+
+    pool.update(0.01, state=state, players=[player], rand=lambda: 0)
+
+    # Native runs AI7 timer update before live-branch kill handling.
+    assert creature.link_index == 500
+    assert creature.ai_mode == 7
+
+
 def test_ai7_non_spawner_idle_keeps_previous_velocity() -> None:
     state = GameplayState(rng=Crand(0xBEEF))
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))

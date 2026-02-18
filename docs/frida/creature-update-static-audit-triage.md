@@ -79,7 +79,8 @@ uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_ca
 - Rewrite location: `src/crimson/creatures/runtime.py:974`, `src/crimson/creatures/runtime.py:993`
 - Native evidence: `analysis/ghidra/derived/hotspots/creature_update_all/work/00426220_creature_update_all.work.c:442`, `analysis/ghidra/derived/hotspots/creature_update_all/work/00426220_creature_update_all.work.c:454`
 - Hypothesis: rewrite executes radioactive before AI/movement/cooldown and can early-continue on kill; native evaluates this branch later in the creature body.
-- Latest run delta: improved first mismatch from tick `35131` to `35573` (`rng_stream_mismatch`).
+- Latest run delta: improved first mismatch from tick `35131` to `35975` (`rng_stream_mismatch`).
+- New lead: hidden AI7 timer-state drift at tick `35963` (slot `10`/`17` `link_index` mismatch despite RNG value-prefix parity); see `analysis/frida/reports/triage/02_focus_trace_35963_probe.json`.
 - Baseline:
 
 ```bash

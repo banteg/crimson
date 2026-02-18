@@ -904,6 +904,9 @@ class CreaturePool:
                 continue
 
             poison_killed = _apply_self_damage_tick(creature)
+            # Native order runs AI7 link timer update after periodic self-damage
+            # and before any live-branch kill handling/retargeting.
+            creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
             if poison_killed:
                 deaths.append(
                     self.handle_death(
@@ -974,11 +977,6 @@ class CreaturePool:
                 player = single_player_dead_target
 
             frozen_by_evil_eyes = idx in evil_targets
-            # Native order in creature_update_all:
-            # AI7 link timer (flag 0x80) is updated before Evil Eyes freeze handling.
-            # Keeping this outside the freeze branch preserves rand-call timing parity
-            # for link_index transitions (e.g. 0x004263ac/0x0042637c paths).
-            creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
             if frozen_by_evil_eyes:
                 # Native branch (`creature_update_all`, around 0x0042665f): when the
                 # current creature is the Evil Eyes target, the update path jumps to
