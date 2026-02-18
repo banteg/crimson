@@ -10,14 +10,17 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 
 ## High-confidence locals
 
-- `ppVar1` -> `slot_ptr`
-- `iVar2` -> `slot_idx`
+- `ppVar1` -> `projectile_slot_ptr`
+- `iVar2` -> `projectile_slot_idx`
+- `fVar3` -> split by role in work copy (`cos_component`, `sin_component`)
 
-## Suggested section comments
+## Section Map (Current Work Copy)
 
-- owner-id scoreboard gate + Fire Bullets override
-- free-slot scan and fallback policy
-- type-specific hit-radius / damage-pool init
+- line 21: owner-class Fire Bullets override gate
+- line 30: free-slot scan with slot `0x5f` fallback
+- line 40: shared spawn initialization and initial velocity setup
+- line 68: hit-radius branch (ion/plasma heavy radius vs default radius)
+- line 74: special damage-pool overrides (`gauss`, `fire_bullets`, `blade`)
 
 ## Notes
 
