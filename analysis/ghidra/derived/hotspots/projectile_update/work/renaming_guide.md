@@ -8,6 +8,19 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `work/local_renames.json` is applied by `scripts/extract_decompile_functions.py` on each rerun.
 - Update that JSON, then rerun extraction to apply renames consistently.
 
+## High-confidence locals
+
+- `local_e8` -> `slot_idx` (shared loop index across projectile/particle sweeps)
+- `local_ec` -> `loop_idx`
+- `local_e4` -> `plasma_ring_idx`
+- `local_d8` -> `spray_max_offset`
+- `local_cc` -> `substep_dx`
+- `local_c8` -> `substep_dy`
+- `cVar3` -> `particle_kind`
+- `pVar4` -> `projectile_type`
+- `sVar5` -> `secondary_type`
+- `psVar14` -> `secondary_proj_ptr`
+
 ## Suggested section comments
 
 - projectile slot iteration and lifetime gates

@@ -1,6 +1,6 @@
-# `player_update` renaming guide
+# `creature_apply_damage` renaming guide
 
-This guide is for `work/004136b0_player_update.work.c`.
+This guide is for `work/004207c0_creature_apply_damage.work.c`.
 Use it as a consistent first-pass naming scheme while preserving branch labels.
 
 ## Scripted renames
@@ -10,22 +10,14 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 
 ## High-confidence locals
 
-- `iVar7` -> `player_idx`
-- `pfVar16` -> `player_pos_ptr`
-- `ppVar6` -> `player_ptr`
-- `uVar9` -> `rng_value`
-- `pVar21` -> `projectile_type`
-- `pcVar13` -> `creature_ptr`
-- `pfVar1` -> `spread_heat_ptr` (behavior matches spread heat accumulation/cooling; decompile field label may lag)
-- `local_24` -> `player_start_pos_y`
+- `uVar3` -> `rng_value`
+- `pfVar5` -> `living_fortress_timer_ptr`
 
 ## Suggested section comments
 
-- input/state gate and alive checks
-- aim target/heading updates
-- movement and collision responses
-- fire/reload gating
-- perk and bonus side effects
+- perk-scaled incoming damage modifiers
+- post-hit velocity impulse apply
+- lethal branch (death handling + death SFX/FX)
 
 ## Notes
 

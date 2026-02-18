@@ -15,8 +15,8 @@ void creature_update_all(void)
   uchar *collision_flag_ptr;
   float *attack_cooldown_ptr;
   int *target_player_ptr;
-  int iVar5;
-  float fVar6;
+  int spawn_limit;
+  float target_delta_y;
   int iVar7;
   uint uVar8;
   int iVar9;
@@ -238,8 +238,8 @@ LAB_0042676e:
                 (&creature_pool)[creature_idx].target_y =
                      (&creature_pool)[iVar7].pos_y + (&creature_pool)[creature_idx].target_offset_y;
                 fVar15 = (&creature_pool)[creature_idx].target_x - *pfVar16;
-                fVar6 = (&creature_pool)[creature_idx].target_y - (&creature_pool)[creature_idx].pos_y;
-                fVar15 = SQRT(fVar15 * fVar15 + fVar6 * fVar6);
+                target_delta_y = (&creature_pool)[creature_idx].target_y - (&creature_pool)[creature_idx].pos_y;
+                fVar15 = SQRT(fVar15 * fVar15 + target_delta_y * target_delta_y);
                 if (fVar15 <= 64.0) {
                   move_scale = fVar15 * 0.015625;
                 }
@@ -389,10 +389,10 @@ LAB_00426ac8:
               (&creature_spawn_slot_table)[iVar7].timer_s = fVar17;
               if (fVar17 < 0.0) {
                 iVar9 = (&creature_spawn_slot_table)[iVar7].count;
-                iVar5 = (&creature_spawn_slot_table)[iVar7].limit;
+                spawn_limit = (&creature_spawn_slot_table)[iVar7].limit;
                 (&creature_spawn_slot_table)[iVar7].timer_s =
                      fVar17 + (&creature_spawn_slot_table)[iVar7].interval_s;
-                if (iVar9 < iVar5) {
+                if (iVar9 < spawn_limit) {
                   (&creature_spawn_slot_table)[iVar7].count = iVar9 + 1;
                   creature_spawn_template
                             ((&creature_spawn_slot_table)[iVar7].template_id,pfVar16,-100.0);

@@ -16,6 +16,8 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `puVar2` -> `collision_flag_ptr`
 - `pfVar3` -> `attack_cooldown_ptr`
 - `piVar4` -> `target_player_ptr`
+- `iVar5` -> `spawn_limit`
+- `fVar6` -> `target_delta_y`
 - `local_78` -> `dist_to_target_player`
 - `local_70` -> `move_scale`
 - `local_6c` -> `alt_player_dist`
