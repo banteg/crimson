@@ -53,8 +53,9 @@ public class ExportDecompiled extends GhidraScript {
             while (functions.hasNext() && !monitor.isCancelled()) {
                 Function func = functions.next();
 
-                // Skip external/thunk functions
-                if (func.isExternal() || func.isThunk()) {
+                // Skip external functions; include thunks so tiny dispatch helpers
+                // are available in decompile-derived hotspot extraction.
+                if (func.isExternal()) {
                     continue;
                 }
 
