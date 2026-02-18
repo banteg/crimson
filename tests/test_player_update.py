@@ -710,6 +710,30 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
     assert type_ids.count(0x09) == 4
 
 
+def test_player_update_hot_tempered_spawns_from_pre_move_position() -> None:
+    pool = ProjectilePool(size=16)
+    state = GameplayState(projectiles=pool)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.95)
+    player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
+
+    player_update(
+        player,
+        PlayerInput(
+            aim=Vec2(101.0, 100.0),
+            move_forward_pressed=True,
+            move_backward_pressed=False,
+            turn_left_pressed=False,
+            turn_right_pressed=False,
+        ),
+        0.1,
+        state,
+    )
+
+    assert not math.isclose(player.pos.y, 100.0, abs_tol=1e-9)
+    origins = {(entry.origin.x, entry.origin.y) for entry in pool.entries if entry.active}
+    assert origins == {(100.0, 100.0)}
+
+
 def test_player_update_hot_tempered_converts_to_fire_bullets_when_active() -> None:
     pool = ProjectilePool(size=16)
     state = GameplayState(projectiles=pool)

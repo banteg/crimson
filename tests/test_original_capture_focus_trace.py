@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
+import pytest
+
+from crimson.game_modes import GameMode
+
 
 def _load_focus_trace_module():
     from crimson.original import focus_trace
@@ -99,3 +105,21 @@ def test_rng_alignment_reports_native_caller_gap_and_fire_bullets_loop_parity() 
     assert int(parity.rewrite_midrange_rolls) == 1
     assert int(parity.capture_pre_freeze_rolls) == 3
     assert int(parity.rewrite_pre_freeze_rolls) == 2
+
+
+def test_trace_focus_tick_accepts_quest_mode_before_tick_lookup(monkeypatch, tmp_path) -> None:
+    focus = _load_focus_trace_module()
+    capture = object()
+    replay = SimpleNamespace(header=SimpleNamespace(game_mode_id=int(GameMode.QUESTS)))
+
+    monkeypatch.setattr(focus, "load_capture", lambda _path: capture)
+    monkeypatch.setattr(focus, "convert_capture_to_replay", lambda *_args, **_kwargs: replay)
+    monkeypatch.setattr(focus, "_read_capture_tick", lambda *_args, **_kwargs: None)
+
+    with pytest.raises(ValueError, match=r"capture tick 0 not found"):
+        focus.trace_focus_tick(
+            capture_path=tmp_path / "capture.json",
+            tick=0,
+            near_miss_threshold=0.35,
+            inter_tick_rand_draws=0,
+        )

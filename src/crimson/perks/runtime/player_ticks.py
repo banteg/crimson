@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from ...sim.state_types import GameplayState, PlayerState
 from .manifest import PLAYER_PERK_TICK_STEPS
 from .player_tick_context import (
@@ -15,6 +17,7 @@ _PLAYER_PERK_TICK_STEPS = PLAYER_PERK_TICK_STEPS
 def apply_player_perk_ticks(
     *,
     player: PlayerState,
+    player_pos_before_move: Vec2,
     dt: float,
     state: GameplayState,
     players: list[PlayerState] | None,
@@ -26,6 +29,7 @@ def apply_player_perk_ticks(
     ctx = PlayerPerkTickCtx(
         state=state,
         player=player,
+        player_pos_before_move=player_pos_before_move,
         players=players,
         dt=dt,
         stationary=stationary,

@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from grim.geom import Vec2
+
 from ...sim.state_types import GameplayState, PlayerState
 
 ProjectileSpawnFn = Callable[..., int]
@@ -14,6 +16,7 @@ OwnerIdForPlayerProjectilesFn = Callable[[GameplayState, int], int]
 class PlayerPerkTickCtx:
     state: GameplayState
     player: PlayerState
+    player_pos_before_move: Vec2
     players: list[PlayerState] | None
     dt: float
     stationary: bool

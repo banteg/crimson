@@ -5,10 +5,12 @@ import os
 from pathlib import Path
 from typing import cast
 
+from crimson.game_modes import GameMode
 from crimson.original import divergence_report, focus_trace
 from crimson.original.diagnostics_cache import (
     CaptureSession,
     SessionRegistry,
+    _FocusRuntime,
     build_focus_key,
     cache_enabled,
 )
@@ -16,7 +18,10 @@ from crimson.original.focus_trace import (
     FocusTraceReport,
     RngAlignmentSummary,
 )
-from crimson.original.schema import CAPTURE_FORMAT_VERSION
+from crimson.original.schema import CAPTURE_FORMAT_VERSION, CaptureFile, CaptureTick
+from crimson.replay import ReplayHeader, ReplayRecorder
+from crimson.sim.input import PlayerInput
+from grim.geom import Vec2
 
 
 def _checkpoint_tick(tick: int, *, level: int, weapon_id: int, experience: int, perk_pairs: list[list[int]]) -> dict[str, object]:
@@ -345,6 +350,44 @@ def test_focus_report_cache_short_circuits_runtime(tmp_path: Path, monkeypatch) 
     assert a is report
     assert b is report
     assert stub.calls == [(1, 0.35)]
+
+
+def test_focus_runtime_traces_quest_tick() -> None:
+    header = ReplayHeader(
+        game_mode_id=int(GameMode.QUESTS),
+        seed=101,
+        quest_level="1.1",
+        tick_rate=60,
+        player_count=1,
+    )
+    rec = ReplayRecorder(header)
+    rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
+    replay = rec.finish()
+
+    capture = CaptureFile(
+        script="gameplay_diff_capture",
+        session_id="quest-focus-runtime",
+        out_path="capture.json",
+        ticks=[
+            CaptureTick(
+                tick_index=0,
+                gameplay_frame=1,
+                mode_hint="quest_mode_update",
+                game_mode_id=int(GameMode.QUESTS),
+                quest_stage_major=1,
+                quest_stage_minor=1,
+            ),
+        ],
+    )
+
+    runtime = _FocusRuntime(
+        capture=capture,
+        replay=replay,
+        inter_tick_rand_draws=0,
+    )
+    report = runtime.trace_tick(tick=0, near_miss_threshold=0.35)
+
+    assert int(report.tick) == 0
 
 
 def test_divergence_and_focus_main_accept_session(tmp_path: Path, monkeypatch) -> None:

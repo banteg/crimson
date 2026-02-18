@@ -223,6 +223,14 @@ require non-zero `creature_update_micro_rows` and both non-zero
 `creature_update_micro_angle_rows` and `creature_update_micro_window_rows` in
 the target tick window.
 
+If focus-tick `creature_update_micro_count` is pinned at the configured cap
+(`capture.config.creature_micro_max_head_per_tick`), treat it as movement
+telemetry saturation and track the divergence by category/signature:
+
+- `divergence_category` from `original divergence-report`
+- projectile-hit shortfall profile (`capture_hits` vs `rewrite_hits`)
+- dominant native caller clusters in investigation leads
+
 ## 6) Common mismatch classes
 
 - Early position drift (`players[0].pos.*`): usually input reconstruction quality.

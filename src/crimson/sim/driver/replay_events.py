@@ -1,16 +1,26 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import cast
 
+from grim.geom import Vec2
+
+from ...creatures.spawn import CreatureFlags
 from ...game_modes import GameMode
+from ...math_parity import f32
 from ...original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
+    CAPTURE_CREATURE_SPAWN_EVENT_KIND,
     CAPTURE_PERK_APPLY_EVENT_KIND,
     CAPTURE_PERK_PENDING_EVENT_KIND,
+    CAPTURE_STATE_TRANSITION_EVENT_KIND,
     apply_capture_bootstrap_payload,
     capture_bootstrap_payload_from_event_payload,
+    capture_creature_spawn_added_head_rows_from_event_payload,
+    capture_creature_spawns_from_event_payload,
     capture_perk_apply_from_event_payload,
     capture_perk_pending_from_event_payload,
+    capture_state_transitions_from_event_payload,
 )
 from ...perks import PerkId
 from ...perks.runtime.apply import perk_apply
@@ -29,6 +39,7 @@ def apply_replay_tick_events(
     world: WorldState,
     game_mode_id: int,
     strict_events: bool,
+    on_capture_state_transition: Callable[[int, int | None, int | None], None] | None = None,
 ) -> int | None:
     state = world.state
     players = world.players
@@ -169,6 +180,86 @@ def apply_replay_tick_events(
                 perk_state.choices_dirty = True
                 continue
 
+            if kind == CAPTURE_CREATURE_SPAWN_EVENT_KIND:
+                spawns = capture_creature_spawns_from_event_payload(list(event.payload))
+                added_rows = capture_creature_spawn_added_head_rows_from_event_payload(list(event.payload))
+                if spawns is None:
+                    if strict_events:
+                        raise ReplayRunnerError(f"invalid creature_spawn payload at tick={tick_index}")
+                    continue
+                if added_rows is None:
+                    if strict_events:
+                        raise ReplayRunnerError(f"invalid creature_spawn payload at tick={tick_index}")
+                    continue
+                for template_id, pos_x, pos_y, heading in spawns:
+                    world.creatures.spawn_template(
+                        int(template_id),
+                        Vec2(float(pos_x), float(pos_y)),
+                        float(heading),
+                        state.rng,
+                        rand=state.rng.rand,
+                    )
+                for row in added_rows:
+                    index = row.get("index")
+                    if not isinstance(index, int):
+                        continue
+                    idx = int(index)
+                    if not (0 <= idx < len(world.creatures.entries)):
+                        continue
+                    entry = world.creatures.entries[idx]
+                    if not entry.active:
+                        continue
+                    heading = row.get("heading")
+                    target_heading = row.get("target_heading")
+                    ai_mode = row.get("ai_mode")
+                    link_index = row.get("link_index")
+                    hp = row.get("hp")
+                    hitbox_size = row.get("hitbox_size")
+                    orbit_angle = row.get("orbit_angle")
+                    orbit_radius = row.get("orbit_radius")
+                    flags = row.get("flags")
+                    type_id = row.get("type_id")
+                    pos_raw = row.get("pos")
+
+                    if isinstance(pos_raw, dict):
+                        pos_obj = cast(dict[str, object], pos_raw)
+                        pos_x = pos_obj.get("x")
+                        pos_y = pos_obj.get("y")
+                        if isinstance(pos_x, (int, float)) and isinstance(pos_y, (int, float)):
+                            entry.pos = Vec2(float(f32(float(pos_x))), float(f32(float(pos_y))))
+                    if isinstance(heading, (int, float)):
+                        entry.heading = float(f32(float(heading)))
+                    if isinstance(target_heading, (int, float)):
+                        entry.target_heading = float(f32(float(target_heading)))
+                    if isinstance(ai_mode, (int, float)):
+                        entry.ai_mode = int(ai_mode)
+                    if isinstance(link_index, (int, float)):
+                        entry.link_index = int(link_index)
+                    if isinstance(hp, (int, float)):
+                        entry.hp = float(f32(float(hp)))
+                    if isinstance(hitbox_size, (int, float)):
+                        entry.hitbox_size = float(f32(float(hitbox_size)))
+                    if isinstance(orbit_angle, (int, float)):
+                        entry.orbit_angle = float(f32(float(orbit_angle)))
+                    if isinstance(orbit_radius, (int, float)):
+                        entry.orbit_radius = float(f32(float(orbit_radius)))
+                    if isinstance(flags, (int, float)):
+                        entry.flags = CreatureFlags(int(flags))
+                    if isinstance(type_id, (int, float)):
+                        entry.type_id = int(type_id)
+                continue
+
+            if kind == CAPTURE_STATE_TRANSITION_EVENT_KIND:
+                transitions = capture_state_transitions_from_event_payload(list(event.payload))
+                if transitions is None:
+                    if strict_events:
+                        raise ReplayRunnerError(f"invalid state_transition payload at tick={tick_index}")
+                    continue
+                if on_capture_state_transition is not None:
+                    for target_state, before_state, after_state in transitions:
+                        on_capture_state_transition(int(target_state), before_state, after_state)
+                continue
+
             if strict_events:
                 raise ReplayRunnerError(f"unsupported replay event kind={event.kind!r} at tick={tick_index}")
             continue
@@ -193,6 +284,14 @@ def partition_tick_events(
         if isinstance(event, PerkMenuOpenEvent):
             # Original-capture traces call perk selection RNG on the transition to
             # menu state at the tail of the gameplay tick, after survival_update.
+            post_step.append(event)
+            continue
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_CREATURE_SPAWN_EVENT_KIND:
+            # Original capture spawn hooks fire during quest_mode_update tail.
+            post_step.append(event)
+            continue
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_STATE_TRANSITION_EVENT_KIND:
+            # Native state transitions are processed after the gameplay mode tick.
             post_step.append(event)
             continue
         pre_step.append(event)

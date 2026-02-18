@@ -4,8 +4,10 @@ from dataclasses import dataclass
 
 import pytest
 
+import crimson.creatures.runtime as creature_runtime
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import (
+    RANDOM_HEADING_SENTINEL,
     CreatureFlags,
     CreatureInit,
     CreatureTypeId,
@@ -108,6 +110,103 @@ def test_spawn_plan_materialization_spawns_burst_fx() -> None:
     active = state.effects.iter_active()
     assert len(active) == 8
     assert all(int(entry.effect_id) == 0 for entry in active)
+
+
+def test_spawn_slot_update_uses_random_heading_sentinel(monkeypatch: pytest.MonkeyPatch) -> None:
+    state = GameplayState()
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    pool = CreaturePool(env=env)
+
+    owner = pool.entries[0]
+    owner.active = True
+    owner.hp = 100.0
+    owner.hitbox_size = CREATURE_HITBOX_ALIVE
+    owner.heading = 1.234
+    owner.pos = Vec2(200.0, 300.0)
+    owner.spawn_slot_index = 0
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+
+    pool.spawn_slots.append(
+        SpawnSlotInit(
+            owner_creature=0,
+            timer=0.0,
+            count=0,
+            limit=1,
+            interval=1.0,
+            child_template_id=0x1D,
+        ),
+    )
+
+    seen_calls: list[tuple[int, float, Vec2, SpawnEnv]] = []
+
+    def _fake_build_spawn_plan(template_id: int, pos: Vec2, heading: float, rng: object, env_arg: SpawnEnv) -> object:
+        del rng
+        seen_calls.append((int(template_id), float(heading), pos, env_arg))
+        return object()
+
+    def _fake_spawn_plan(self: CreaturePool, plan: object, **kwargs: object) -> tuple[list[int], int | None]:
+        del self, plan, kwargs
+        return [], None
+
+    monkeypatch.setattr(creature_runtime, "build_spawn_plan", _fake_build_spawn_plan)
+    monkeypatch.setattr(CreaturePool, "spawn_plan", _fake_spawn_plan)
+
+    pool.update(1.0 / 60.0, state=state, players=[player])
+
+    assert len(seen_calls) == 1
+    child_template_id, heading, _, env_arg = seen_calls[0]
+    assert child_template_id == 0x1D
+    assert heading == pytest.approx(RANDOM_HEADING_SENTINEL)
+    assert env_arg is env
+
+
+def test_spawn_slot_child_can_update_in_same_tick() -> None:
+    state = GameplayState()
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    pool = CreaturePool(env=env)
+    player = PlayerState(index=0, pos=Vec2(640.0, 700.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+
+    owner = pool.entries[0]
+    owner.active = True
+    owner.hp = 100.0
+    owner.hitbox_size = CREATURE_HITBOX_ALIVE
+    owner.pos = Vec2(256.0, 256.0)
+    owner.flags = CreatureFlags.HAS_SPAWN_SLOT
+    owner.ai_mode = 0
+    owner.move_speed = 0.0
+    owner.size = 45.0
+    owner.spawn_slot_index = 0
+
+    pool.spawn_slots.append(
+        SpawnSlotInit(
+            owner_creature=0,
+            timer=0.0,
+            count=0,
+            limit=1,
+            interval=1.0,
+            child_template_id=0x29,
+        ),
+    )
+
+    pool.update(1.0 / 60.0, state=state, players=[player])
+
+    child_indices = [idx for idx, creature in enumerate(pool.entries) if idx != 0 and creature.active]
+    assert child_indices
+    child = pool.entries[child_indices[0]]
+    assert child.target_heading != pytest.approx(0.0, abs=1e-6)
+    assert child.pos != Vec2(256.0, 256.0)
 
 
 def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
@@ -616,6 +715,41 @@ def test_tick_dead_defers_corpse_deactivation_until_post_render_cleanup() -> Non
 
     pool.finalize_post_render_lifecycle()
     assert corpse.active is False
+
+
+def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> None:
+    state = GameplayState()
+    pool = CreaturePool(effects=state.effects)
+    corpse = pool.entries[0]
+    corpse.active = True
+    corpse.hp = -5.0
+    corpse.hitbox_size = 1.0
+    corpse.pos = Vec2(320.0, 240.0)
+    corpse.flags = CreatureFlags.ANIM_PING_PONG
+    corpse.size = 24.0
+
+    rand_calls = 0
+
+    def _rand() -> int:
+        nonlocal rand_calls
+        rand_calls += 1
+        return 0
+
+    pool._tick_dead(
+        corpse,
+        dt=0.1,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue_rotated=None,
+        rand=_rand,
+        detail_preset=5,
+        fx_toggle=0,
+    )
+
+    # Native branch: 19 angle draws + 19 calls to effect_spawn_blood_splatter
+    # (10 draws each in our parity model) = 209 total.
+    assert rand_calls == 209
+    assert len(state.effects.iter_active()) == 38
 
 
 def test_dead_self_damage_tick_flags_still_shrink_hitbox_before_dead_decay() -> None:

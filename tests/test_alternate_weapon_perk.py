@@ -80,3 +80,57 @@ def test_alternate_weapon_reload_pressed_still_swaps_in_move_to_cursor_mode() ->
     assert player.weapon_id == 1
     assert player.alt_weapon_id == 2
     assert player.shot_cooldown == pytest.approx(0.1)
+
+
+def test_alternate_weapon_swap_preserves_same_tick_fire_gate() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    weapon_assign_player(player, 1)
+    player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+    bonus_apply(state, player, BonusId.WEAPON, amount=11)
+
+    assert player.weapon_id == 11
+    assert player.alt_weapon_id == 1
+    starting_alt_ammo = float(player.alt_ammo)
+
+    player.shot_cooldown = 0.05
+    player_update(
+        player,
+        PlayerInput(aim=Vec2(700.0, 512.0), reload_pressed=True, fire_down=True),
+        dt=0.06,
+        state=state,
+    )
+
+    assert player.weapon_id == 1
+    assert player.ammo < starting_alt_ammo
+
+
+def test_alternate_weapon_swap_allows_same_tick_fire_with_swapped_reload_timer() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    weapon_assign_player(player, 29)
+    player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+    player.ammo = 2.0
+    player.reload_timer = 0.0
+    player.reload_active = False
+    player.alt_weapon_id = 11
+    player.alt_ammo = 0.0
+    player.alt_clip_size = 30
+    player.alt_reload_active = True
+    player.alt_reload_timer = 0.85
+    player.alt_reload_timer_max = 1.3
+    player.alt_shot_cooldown = 0.0
+
+    player.shot_cooldown = 0.05
+    player_update(
+        player,
+        PlayerInput(aim=Vec2(700.0, 512.0), reload_pressed=True, fire_down=True),
+        dt=0.06,
+        state=state,
+    )
+
+    assert player.weapon_id == 11
+    assert player.reload_timer > 0.0
+    assert player.reload_timer == pytest.approx(player.reload_timer_max, abs=1e-6)
+    assert player.ammo < 0.0
+    assert player.shot_seq >= 1

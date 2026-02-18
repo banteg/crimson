@@ -44,6 +44,7 @@ from ..weapons import weapon_entry_for_projectile_type_id
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .damage_types import CreatureDamageType
 from .spawn import (
+    RANDOM_HEADING_SENTINEL,
     CreatureAiMode,
     CreatureFlags,
     CreatureInit,
@@ -101,6 +102,17 @@ _CREATURE_CONTACT_SFX: dict[CreatureTypeId, tuple[str, str]] = {
 
 
 class _EffectsForCreatureSpawns(Protocol):
+    def spawn_blood_splatter(
+        self,
+        *,
+        pos: Vec2,
+        angle: float,
+        age: float,
+        rand: Callable[[], int],
+        detail_preset: int,
+        fx_toggle: int,
+    ) -> None: ...
+
     def spawn_burst(
         self,
         *,
@@ -303,6 +315,7 @@ class _CreatureInteractionCtx:
     dt: float
     rand: Callable[[], int]
     detail_preset: int
+    fx_toggle: int
     world_width: float
     world_height: float
     fx_queue: FxQueue | None
@@ -463,6 +476,9 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
                 world_width=float(ctx.world_width),
                 world_height=float(ctx.world_height),
                 fx_queue_rotated=ctx.fx_queue_rotated,
+                rand=ctx.rand,
+                detail_preset=int(ctx.detail_preset),
+                fx_toggle=int(ctx.fx_toggle),
             )
         ctx.skip_creature = True
 
@@ -767,6 +783,7 @@ class CreaturePool:
         players: list[PlayerState],
         rand: Callable[[], int] | None = None,
         detail_preset: int = 5,
+        fx_toggle: int = 0,
         env: SpawnEnv | None = None,
         world_width: float = 1024.0,
         world_height: float = 1024.0,
@@ -788,6 +805,13 @@ class CreaturePool:
         spawned: list[int] = []
         sfx: list[str] = []
         self._update_tick = int(self._update_tick) + 1
+        single_player_dead_target: PlayerState | None = None
+        if len(players) == 1:
+            single_player_dead_target = PlayerState(
+                index=1,
+                pos=Vec2(float(world_width) * (27.0 / 64.0), float(world_height) * (27.0 / 64.0)),
+                health=0.0,
+            )
 
         evil_targets: set[int] = set()
         if players:
@@ -863,6 +887,9 @@ class CreaturePool:
                         world_width=world_width,
                         world_height=world_height,
                         fx_queue_rotated=fx_queue_rotated,
+                        rand=rand,
+                        detail_preset=int(detail_preset),
+                        fx_toggle=int(fx_toggle),
                     )
                 continue
 
@@ -896,6 +923,9 @@ class CreaturePool:
                         world_width=world_width,
                         world_height=world_height,
                         fx_queue_rotated=fx_queue_rotated,
+                        rand=rand,
+                        detail_preset=int(detail_preset),
+                        fx_toggle=int(fx_toggle),
                     )
                 continue
 
@@ -929,11 +959,17 @@ class CreaturePool:
                                 world_width=world_width,
                                 world_height=world_height,
                                 fx_queue_rotated=fx_queue_rotated,
+                                rand=rand,
+                                detail_preset=int(detail_preset),
+                                fx_toggle=int(fx_toggle),
                             )
                         continue
 
             target_player = self._resolve_target_player_index(creature, players)
             player = players[target_player]
+            if single_player_dead_target is not None and float(players[0].health) <= 0.0:
+                creature.target_player = 1
+                player = single_player_dead_target
 
             if players and perk_active(players[0], PerkId.RADIOACTIVE):
                 radioactive_player = players[0]
@@ -998,6 +1034,9 @@ class CreaturePool:
                             world_width=world_width,
                             world_height=world_height,
                             fx_queue_rotated=fx_queue_rotated,
+                            rand=rand,
+                            detail_preset=int(detail_preset),
+                            fx_toggle=int(fx_toggle),
                         )
                     continue
 
@@ -1057,6 +1096,7 @@ class CreaturePool:
                 dt=dt,
                 rand=rand,
                 detail_preset=int(detail_preset),
+                fx_toggle=int(fx_toggle),
                 world_width=float(world_width),
                 world_height=float(world_height),
                 fx_queue=fx_queue,
@@ -1106,32 +1146,28 @@ class CreaturePool:
                             float(rand() & 3) * 0.1 + float(creature.orbit_angle) + float(creature.attack_cooldown)
                         )
 
-        # Spawn-slot ticking (spawns child templates while owner stays alive).
-        if dt > 0.0 and float(state.bonuses.freeze) <= 0.0 and spawn_env is not None and self.spawn_slots:
-            for slot in self.spawn_slots:
-                owner_idx = int(slot.owner_creature)
-                if not (0 <= owner_idx < len(self._entries)):
-                    continue
-                owner = self._entries[owner_idx]
-                if not (owner.active and owner.hp > 0.0):
-                    continue
-                child_template_id = tick_spawn_slot(slot, dt)
-                if child_template_id is None:
-                    continue
-
-                plan = build_spawn_plan(
-                    int(child_template_id),
-                    owner.pos,
-                    float(owner.heading),
-                    state.rng,
-                    spawn_env,
-                )
-                mapping, _ = self.spawn_plan(
-                    plan,
-                    rand=rand,
-                    detail_preset=int(detail_preset),
-                )
-                spawned.extend(mapping)
+            # Tick owner-bound spawn slots at creature-loop tail so spawned children
+            # can still be visited later in the same update pass.
+            if dt > 0.0 and float(state.bonuses.freeze) <= 0.0 and spawn_env is not None:
+                slot_index = creature.spawn_slot_index
+                if slot_index is not None and 0 <= int(slot_index) < len(self.spawn_slots):
+                    slot = self.spawn_slots[int(slot_index)]
+                    if int(slot.owner_creature) == int(idx):
+                        child_template_id = tick_spawn_slot(slot, dt)
+                        if child_template_id is not None:
+                            plan = build_spawn_plan(
+                                int(child_template_id),
+                                creature.pos,
+                                float(RANDOM_HEADING_SENTINEL),
+                                state.rng,
+                                spawn_env,
+                            )
+                            mapping, _ = self.spawn_plan(
+                                plan,
+                                rand=rand,
+                                detail_preset=int(detail_preset),
+                            )
+                            spawned.extend(mapping)
 
         return CreatureUpdateResult(deaths=tuple(deaths), spawned=tuple(spawned), sfx=tuple(sfx))
 
@@ -1280,6 +1316,9 @@ class CreaturePool:
         world_width: float,
         world_height: float,
         fx_queue_rotated: FxQueueRotated | None,
+        rand: Callable[[], int] | None = None,
+        detail_preset: int = 5,
+        fx_toggle: int = 0,
     ) -> None:
         """Advance the post-death hitbox_size ramp and queue corpse decals.
 
@@ -1335,6 +1374,26 @@ class CreaturePool:
                 return
 
         self.kill_count += 1
+
+        # Native `creature_update_all` emits a 19-splatter blood burst when a
+        # ping-pong corpse first reaches this staged kill point.
+        if (
+            int(fx_toggle) == 0
+            and (creature.flags & CreatureFlags.ANIM_PING_PONG) != 0
+            and rand is not None
+            and self.effects is not None
+        ):
+            for count, age in ((8, 0.0), (6, -0.07), (5, -0.12)):
+                for _ in range(int(count)):
+                    angle = float(int(rand()) % 0x264) * 0.01
+                    self.effects.spawn_blood_splatter(
+                        pos=creature.pos,
+                        angle=float(angle),
+                        age=float(age),
+                        rand=rand,
+                        detail_preset=int(detail_preset),
+                        fx_toggle=int(fx_toggle),
+                    )
 
     def finalize_post_render_lifecycle(self) -> None:
         """Mirror render-time corpse culling from native `creature_render_type`.

@@ -614,6 +614,7 @@ def player_update(
 
     apply_player_perk_ticks(
         player=player,
+        player_pos_before_move=prev_pos,
         dt=dt,
         state=state,
         players=players,
@@ -680,13 +681,17 @@ def player_update(
     if player.reload_timer < 0.0:
         player.reload_timer = 0.0
 
+    fire_gate_open_pre_reload = player.shot_cooldown <= 0.0 and player.reload_timer == 0.0
+
     # Native clears `reload_active` whenever the cooldown/timer gates are open,
     # even if ammo is empty and perk firing paths can still proceed.
-    if player.shot_cooldown <= 0.0 and player.reload_timer == 0.0:
+    if fire_gate_open_pre_reload:
         player.reload_active = False
 
+    swapped_alt_weapon = False
     if input_state.reload_pressed:
         if perk_active(player, PerkId.ALTERNATE_WEAPON) and _player_swap_alt_weapon(player):
+            swapped_alt_weapon = True
             weapon = _weapon_entry(player.weapon_id)
             if weapon is not None and weapon.reload_sound is not None:
                 from .weapon_sfx import resolve_weapon_sfx_ref
@@ -697,6 +702,12 @@ def player_update(
             player.shot_cooldown = float(player.shot_cooldown) + 0.1
         elif player.reload_timer == 0.0 and not input_state.move_to_cursor_pressed:
             _player_start_reload(player, state)
+
+    # Native computes the fire gate (`shot_cooldown <= 0 && reload_timer == 0`)
+    # before alt-weapon swap mutates cooldown; preserve same-tick fire eligibility.
+    force_pre_swap_fire_gate = swapped_alt_weapon and fire_gate_open_pre_reload and input_state.fire_down
+    if force_pre_swap_fire_gate:
+        player.shot_cooldown = 0.0
 
     if input_state.fire_down:
         state.survival_reward_fire_seen = True
@@ -709,6 +720,7 @@ def player_update(
         detail_preset=int(detail_preset),
         creatures=creatures,
         players=players,
+        force_pre_swap_fire_gate=bool(force_pre_swap_fire_gate),
     )
 
     while player.move_phase > 14.0:

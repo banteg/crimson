@@ -75,6 +75,7 @@ def player_fire_weapon(
     detail_preset: int = 5,
     creatures: Sequence[Damageable] | None = None,
     players: Sequence[PlayerState] | None = None,
+    force_pre_swap_fire_gate: bool = False,
 ) -> None:
     dt = float(dt)
 
@@ -83,14 +84,14 @@ def player_fire_weapon(
     if weapon is None:
         return
 
-    if player.shot_cooldown > 0.0:
+    if not bool(force_pre_swap_fire_gate) and player.shot_cooldown > 0.0:
         return
     if not input_state.fire_down:
         return
 
     ammo_cost = 1.0
     is_fire_bullets = float(player.fire_bullets_timer) > 0.0
-    if player.reload_timer > 0.0:
+    if not bool(force_pre_swap_fire_gate) and player.reload_timer > 0.0:
         if player.experience <= 0:
             return
         if perk_active(player, PerkId.REGRESSION_BULLETS):
@@ -393,5 +394,10 @@ def player_fire_weapon(
         # Native allows ammo to cross below zero for reload-time firing paths
         # (for example Regression Bullets), and replay checkpoints rely on that.
         player.ammo = float(player.ammo) - float(ammo_cost)
-    if player.ammo <= 0.0 and player.reload_timer <= 0.0:
+    reload_start_gate_open = bool(player.reload_timer <= 0.0)
+    if bool(force_pre_swap_fire_gate):
+        # Alt-weapon same-tick fire uses the pre-swap gate (reload_timer==0) for
+        # reload restart eligibility after ammo drains below zero.
+        reload_start_gate_open = True
+    if player.ammo <= 0.0 and reload_start_gate_open:
         player_start_reload(player, state)

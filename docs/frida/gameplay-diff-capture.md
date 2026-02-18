@@ -169,13 +169,12 @@ Without extra env vars, the script captures full per-tick detail:
 - blood-splatter effect diagnostics (`effect_spawn_blood_splatter`) with per-tick caller and RNG-draw attribution
 - perk-apply diagnostics and input query/key snapshots
 - creature movement micro telemetry (`creature_update_window` +
-  `angle_approach`) with per-kind per-tick head cap (`128`) and no slot/window
+  `angle_approach`) with per-kind per-tick head cap (`256`) and no slot/window
   filtering
 
 ## Optional env knobs
 
-Creature micro hooks are not controlled via env knobs anymore; they are always
-captured by default for differential parity sessions.
+Creature micro hooks stay enabled by default for differential parity sessions.
 
 - `CRIMSON_FRIDA_STATES=6,9,10`
 - `CRIMSON_FRIDA_ALL_STATES=1`
@@ -206,6 +205,10 @@ captured by default for differential parity sessions.
 - `CRIMSON_FRIDA_RNG_STATE_MIRROR=0`
 - `CRIMSON_FRIDA_INCLUDE_BT=1`
 - `CRIMSON_FRIDA_INCLUDE_CALLER=0`
+
+For dynamic-gameplay investigations, prioritize divergence category/signatures
+(`divergence_category`, dominant caller sets, hit shortfall profile) over
+absolute tick alignment across captures.
 
 Capture loading in Python accepts `.json` and `.json.gz` only, with JSONL
 row-stream capture rows as the canonical format.

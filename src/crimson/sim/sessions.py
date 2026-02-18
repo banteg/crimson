@@ -266,7 +266,9 @@ class QuestDeterministicSession:
     spawn_entries: tuple[SpawnEntry, ...] = ()
     detail_preset: int = 5
     fx_toggle: int = 0
+    apply_world_dt_steps: bool = True
     clear_fx_queues_each_tick: bool = False
+    finalize_post_render_lifecycle_each_tick: bool = True
     elapsed_ms: float = 0.0
     spawn_timeline_ms: float = 0.0
     no_creatures_timer_ms: float = 0.0
@@ -276,6 +278,7 @@ class QuestDeterministicSession:
         self,
         *,
         dt_frame: float,
+        dt_frame_ms_i32: int | None = None,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
     ) -> QuestDeterministicSessionTick:
@@ -289,6 +292,8 @@ class QuestDeterministicSession:
         step = run_deterministic_step(
             world=self.world,
             dt_frame=float(dt_frame),
+            dt_frame_ms_i32=(int(dt_frame_ms_i32) if dt_frame_ms_i32 is not None else None),
+            apply_world_dt_steps=bool(self.apply_world_dt_steps),
             inputs=inputs,
             world_size=float(self.world_size),
             damage_scale_by_type=self.damage_scale_by_type,
@@ -352,7 +357,8 @@ class QuestDeterministicSession:
         creature_count_world_step = sum(1 for creature in self.world.creatures.entries if creature.active)
         rng_marks["after_world_step"] = int(state.rng.state)
         rng_marks["after_camera_update"] = int(rng_marks.get("ws_after_camera_update", state.rng.state))
-        self.world.creatures.finalize_post_render_lifecycle()
+        if bool(self.finalize_post_render_lifecycle_each_tick):
+            self.world.creatures.finalize_post_render_lifecycle()
 
         return QuestDeterministicSessionTick(
             step=step,

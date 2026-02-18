@@ -162,7 +162,8 @@ const CONFIG = {
   creatureMicroSlots: new Set(),
   creatureMicroTickStart: -1,
   creatureMicroTickEnd: -1,
-  creatureMicroMaxHeadPerTick: 128,
+  // Wider default net for parity recaptures while keeping bounded per-tick cost.
+  creatureMicroMaxHeadPerTick: 256,
 };
 
 const FN = {
