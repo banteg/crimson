@@ -17,13 +17,14 @@ int __cdecl projectile_spawn(float *pos,float angle,projectile_type_id_t type_id
   float10 cos_component;
   float10 sin_component;
   
-  /* Owner-class and timer gate for Fire Bullets rewrite (with shots-fired side effect). */
+  /* Owner-class Fire Bullets rewrite preserves the original looped shots-fired side effect. */
   if ((char)bonus_spawn_guard == '\0') {
-    while (((((owner_id == -100 || (owner_id == -1)) || (owner_id == -2)) || (owner_id == -3)) &&
-           ((_highscore_record_shots_fired = _highscore_record_shots_fired + 1,
-            type_id != PROJECTILE_TYPE_FIRE_BULLETS &&
-            ((0.0 < player_state_table.fire_bullets_timer || (0.0 < player2_fire_bullets_timer))))))
-          ) {
+    while ((((owner_id == -100 || (owner_id == -1)) || (owner_id == -2)) || (owner_id == -3)) {
+      _highscore_record_shots_fired = _highscore_record_shots_fired + 1;
+      if ((type_id == PROJECTILE_TYPE_FIRE_BULLETS) ||
+         ((player_state_table.fire_bullets_timer <= 0.0) && (player2_fire_bullets_timer <= 0.0))) {
+        break;
+      }
       type_id = PROJECTILE_TYPE_FIRE_BULLETS;
     }
   }
