@@ -1,7 +1,7 @@
 # `creature_update_all` renaming guide
 
 This guide is for `work/00426220_creature_update_all.work.c`.
-Use it as a consistent first-pass naming scheme while preserving branch labels.
+Use it as a consistent naming scheme while preserving branch labels.
 
 ## Scripted renames
 
@@ -31,6 +31,13 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `iVar9` -> `tmp_i32_b`
 - `uVar8` -> `tmp_u32_a`
 - `cVar10` -> `tmp_player_slot`
+
+## Deeper pass notes
+
+- Current work copy already has phase comments and stable pointer locals for the
+  AI/movement/death lanes.
+- Best next cleanup lead remains splitting `tmp_i32_a`/`tmp_f32_a` by narrower
+  AI-mode sub-branches without changing control flow.
 
 ## Section Map (Current Work Copy)
 

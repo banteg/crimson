@@ -18,7 +18,7 @@ void creature_handle_death(int creature_id, bool keep_corpse)
   int split_clone_id;
   uint rng_value;
   int copy_word_count;
-  int perk_id_bloody_mess;
+  int bloody_mess_perk_id;
   int freeze_spawn_count;
   int freeze_angle_roll;
   creature_t *copy_src_ptr;
@@ -116,8 +116,8 @@ void creature_handle_death(int creature_id, bool keep_corpse)
       creature_ptr->active = '\0';
     }
     /* XP grant uses the same conversion path for base and double-XP bonus. */
-    perk_id_bloody_mess = perk_id_bloody_mess_quick_learner;
-    if (player_state_table.perk_counts[perk_id_bloody_mess_quick_learner] < 1) {
+    bloody_mess_perk_id = perk_id_bloody_mess_quick_learner;
+    if (player_state_table.perk_counts[bloody_mess_perk_id] < 1) {
       xp_gain_i64 = __ftol();
       player_state_table.experience = (int)xp_gain_i64;
     }
@@ -126,7 +126,7 @@ void creature_handle_death(int creature_id, bool keep_corpse)
       player_state_table.experience = player_state_table.experience + (int)xp_gain_i64;
     }
     if (0.0 < bonus_double_xp_timer) {
-      if (player_state_table.perk_counts[perk_id_bloody_mess] < 1) {
+      if (player_state_table.perk_counts[bloody_mess_perk_id] < 1) {
         xp_gain_i64 = __ftol();
         player_state_table.experience = (int)xp_gain_i64;
       }

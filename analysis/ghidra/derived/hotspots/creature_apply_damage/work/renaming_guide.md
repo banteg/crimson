@@ -1,7 +1,7 @@
 # `creature_apply_damage` renaming guide
 
 This guide is for `work/004207c0_creature_apply_damage.work.c`.
-Use it as a consistent first-pass naming scheme while preserving branch labels.
+Use it as a consistent naming scheme while preserving branch labels.
 
 ## Scripted renames
 
@@ -15,6 +15,11 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `iVar2` -> split by role in work copy (`perk_count`, `living_fortress_scan_count`, `debris_spawn_count`)
 - `iVar4` -> `scale_roll`
 - `fVar1` -> split by role in work copy (`heading_jitter`, `impulse_y`)
+
+## Deeper pass notes
+
+- Work copy keeps the damage-type perk stacks and lethal FX branch separated by
+  role-specific temps so parity reads stay local to each phase.
 
 ## Section Map (Current Work Copy)
 

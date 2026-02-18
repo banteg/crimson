@@ -18,6 +18,8 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
   float *origin_pos_ptr;
   int root_slot_idx;
   int iVar7;
+  int random_heading_roll;
+  int ring_member_idx;
   int child_slot_idx;
   uint rng_value;
   creature_t *creature_ptr;
@@ -30,8 +32,8 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
   origin_pos_ptr = pos;
   root_slot_idx = creature_alloc_slot();
   if (heading == -100.0) {
-    iVar7 = crt_rand();
-    heading = (float)(iVar7 % 0x274) * 0.01;
+    random_heading_roll = crt_rand();
+    heading = (float)(random_heading_roll % 0x274) * 0.01;
   }
   creature_ptr = &creature_pool + root_slot_idx;
   (&creature_pool)[root_slot_idx].ai_mode = 0;
@@ -46,9 +48,9 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
   (&creature_pool)[root_slot_idx].state_flag = '\x01';
   (&creature_pool)[root_slot_idx].hitbox_size = 16.0;
   (&creature_pool)[root_slot_idx].vel_y = 0.0;
-  iVar7 = crt_rand();
+  random_heading_roll = crt_rand();
   (&creature_pool)[root_slot_idx].attack_cooldown = 0.0;
-  (&creature_pool)[root_slot_idx].heading = (float)(iVar7 % 0x13a) * 0.01;
+  (&creature_pool)[root_slot_idx].heading = (float)(random_heading_roll % 0x13a) * 0.01;
   /* Multi-body template: root + 8 linked satellites in a full ring. */
   if (template_id == 0x12) {
     (&creature_pool)[root_slot_idx].tint_r = 0.65;
@@ -62,15 +64,15 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
     (&creature_pool)[root_slot_idx].tint_a = 1.0;
     (&creature_pool)[root_slot_idx].contact_damage = 14.0;
     (&creature_pool)[root_slot_idx].max_health = 200.0;
-    pos = (float *)0x0;
+    ring_member_idx = 0;
     do {
       iVar7 = creature_alloc_slot();
-      fVar11 = (float10)fcos((float10)(int)pos * (float10)0.7853982);
+      fVar11 = (float10)fcos((float10)ring_member_idx * (float10)0.7853982);
       creature_ptr = &creature_pool + iVar7;
       (&creature_pool)[iVar7].ai_mode = 3;
       (&creature_pool)[iVar7].link_index = root_slot_idx;
       (&creature_pool)[iVar7].target_offset_x = (float)(fVar11 * (float10)100.0);
-      fVar11 = (float10)fsin((float10)(int)pos * (float10)0.7853982);
+      fVar11 = (float10)fsin((float10)ring_member_idx * (float10)0.7853982);
       (&creature_pool)[iVar7].target_offset_y = (float)(fVar11 * (float10)100.0);
       (&creature_pool)[iVar7].pos_x = *origin_pos_ptr;
       (&creature_pool)[iVar7].pos_y = origin_pos_ptr[1];
@@ -81,7 +83,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
       (&creature_pool)[iVar7].health = 40.0;
       (&creature_pool)[iVar7].max_health = 40.0;
       (&creature_pool)[iVar7].tint_g = 0.58800006;
-      pos = (float *)((int)pos + 1);
+      ring_member_idx = ring_member_idx + 1;
       (&creature_pool)[iVar7].tint_b = 0.426;
       (&creature_pool)[iVar7].collision_timer = 0.0;
       creature_ptr->active = '\x01';
@@ -94,7 +96,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
       (&creature_pool)[iVar7].tint_a = 1.0;
       (&creature_pool)[iVar7].size = 50.0;
       (&creature_pool)[iVar7].contact_damage = 4.0;
-    } while ((int)pos < 8);
+    } while (ring_member_idx < 8);
   }
   else if (template_id == 0x19) {
     /* Multi-body template: root + 5 linked escorts in a pentagon ring. */
@@ -109,15 +111,15 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
     (&creature_pool)[root_slot_idx].tint_a = 1.0;
     (&creature_pool)[root_slot_idx].contact_damage = 40.0;
     (&creature_pool)[root_slot_idx].max_health = 50.0;
-    pos = (float *)0x0;
+    ring_member_idx = 0;
     do {
       iVar7 = creature_alloc_slot();
-      fVar11 = (float10)fcos((float10)(int)pos * (float10)1.2566371);
+      fVar11 = (float10)fcos((float10)ring_member_idx * (float10)1.2566371);
       creature_ptr = &creature_pool + iVar7;
       (&creature_pool)[iVar7].ai_mode = 5;
       (&creature_pool)[iVar7].link_index = root_slot_idx;
       (&creature_pool)[iVar7].target_offset_x = (float)(fVar11 * (float10)110.0);
-      fVar11 = (float10)fsin((float10)(int)pos * (float10)1.2566371);
+      fVar11 = (float10)fsin((float10)ring_member_idx * (float10)1.2566371);
       (&creature_pool)[iVar7].target_offset_y = (float)(fVar11 * (float10)110.0);
       fVar4 = (&creature_pool)[iVar7].target_offset_x;
       fVar1 = *origin_pos_ptr;
@@ -130,7 +132,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
       (&creature_pool)[iVar7].health = 220.0;
       (&creature_pool)[iVar7].max_health = 220.0;
       (&creature_pool)[iVar7].tint_r = 0.7125;
-      pos = (float *)((int)pos + 1);
+      ring_member_idx = ring_member_idx + 1;
       (&creature_pool)[iVar7].tint_g = 0.41250002;
       (&creature_pool)[iVar7].collision_flag = '\0';
       (&creature_pool)[iVar7].tint_b = 0.2775;
@@ -145,7 +147,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
       (&creature_pool)[iVar7].tint_a = 0.6;
       (&creature_pool)[iVar7].size = 50.0;
       (&creature_pool)[iVar7].contact_damage = 35.0;
-    } while ((int)pos < 5);
+    } while (ring_member_idx < 5);
   }
   else {
     /* Hand-authored boss/layout templates and the large generic-id dispatch ladder. */

@@ -1,7 +1,7 @@
 # `player_apply_move_with_spawn_avoidance` renaming guide
 
 This guide is for `work/0041e290_player_apply_move_with_spawn_avoidance.work.c`.
-Use it as a consistent first-pass naming scheme while preserving branch labels.
+Use it as a consistent naming scheme while preserving branch labels.
 
 ## Scripted renames
 
@@ -15,6 +15,11 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `fVar4` -> `collision_radius`
 - `pcVar7` -> `spawn_slot_ptr`
 - `fVar1`/`fVar2`/`fVar5` -> split by role in work copy (`dx_to_owner`, `dy_to_owner`, `candidate_x`, `candidate_y`, `delta_y`)
+
+## Deeper pass notes
+
+- Axis-probe rollback (`full rollback`, `x-only retry`, `y-only retry`) is now
+  documented directly in the work copy comments.
 
 ## Section Map (Current Work Copy)
 

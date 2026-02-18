@@ -1,7 +1,7 @@
 # `projectile_update` renaming guide
 
 This guide is for `work/00420b90_projectile_update.work.c`.
-Use it as a consistent first-pass naming scheme while preserving branch labels.
+Use it as a consistent naming scheme while preserving branch labels.
 
 ## Scripted renames
 
@@ -20,6 +20,13 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `pVar4` -> `projectile_type`
 - `sVar5` -> `secondary_type`
 - `psVar14` -> `secondary_proj_ptr`
+
+## Deeper pass notes
+
+- Primary/secondary/particle passes are now section-mapped and stable for trace
+  navigation.
+- Highest-yield next split is the primary hit-resolution lane (`line 167+`),
+  where one temp integer still carries several role transitions.
 
 ## Section Map (Current Work Copy)
 

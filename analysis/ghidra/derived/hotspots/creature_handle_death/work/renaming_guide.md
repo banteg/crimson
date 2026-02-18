@@ -1,7 +1,7 @@
 # `creature_handle_death` renaming guide
 
 This guide is for `work/0041e910_creature_handle_death.work.c`.
-Use it as a consistent first-pass naming scheme while preserving branch labels.
+Use it as a consistent naming scheme while preserving branch labels.
 
 ## Scripted renames
 
@@ -17,7 +17,12 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `pcVar9` -> `copy_dst_ptr`
 - `lVar10` -> `xp_gain_i64`
 - `uVar2`/`uVar3`/`uVar4` -> `copy_pad_byte0`/`copy_pad_byte1`/`copy_pad_byte2`
-- `iVar5`/`iVar7` -> split by role in work copy (`split_clone_id`, `copy_word_count`, `perk_id_bloody_mess`, `freeze_spawn_count`, `freeze_angle_roll`)
+- `iVar5`/`iVar7` -> split by role in work copy (`split_clone_id`, `copy_word_count`, `bloody_mess_perk_id`, `freeze_spawn_count`, `freeze_angle_roll`)
+
+## Deeper pass notes
+
+- XP and double-XP checks now share `bloody_mess_perk_id` for consistent
+  perk-count indexing.
 
 ## Section Map (Current Work Copy)
 

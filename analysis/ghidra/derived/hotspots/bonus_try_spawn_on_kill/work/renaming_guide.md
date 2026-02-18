@@ -1,7 +1,7 @@
 # `bonus_try_spawn_on_kill` renaming guide
 
 This guide is for `work/0041f8d0_bonus_try_spawn_on_kill.work.c`.
-Use it as a consistent first-pass naming scheme while preserving branch labels.
+Use it as a consistent naming scheme while preserving branch labels.
 
 ## Scripted renames
 
@@ -16,6 +16,11 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `uVar4` -> `rng_value`
 - `iVar5` -> `effect_scale_rand`
 - `iVar1` -> split by role in work copy (`random_roll`, `duplicate_count`, `picked_weapon_id`, `bonus_magnet_count`, `effect_spawn_count`)
+
+## Deeper pass notes
+
+- Duplicate-suppression and weapon-rejection branches now read in terms of
+  role-specific counters instead of shared temp integers.
 
 ## Section Map (Current Work Copy)
 

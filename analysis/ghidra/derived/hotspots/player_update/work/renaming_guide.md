@@ -1,7 +1,7 @@
 # `player_update` renaming guide
 
 This guide is for `work/004136b0_player_update.work.c`.
-Use it as a consistent first-pass naming scheme while preserving branch labels.
+Use it as a consistent naming scheme while preserving branch labels.
 
 ## Scripted renames
 
@@ -18,6 +18,12 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `pcVar13` -> `creature_ptr`
 - `pfVar1` -> `spread_heat_ptr` (behavior matches spread heat accumulation/cooling; decompile field label may lag)
 - `local_24` -> `player_start_pos_y`
+
+## Deeper pass notes
+
+- Existing sectioning is stable for movement/aim/fire phases.
+- Remaining readability lead is splitting reused scalar temps inside the weapon
+  dispatch ladder (`line 1214+`) into per-weapon role names.
 
 ## Section Map (Current Work Copy)
 
