@@ -306,7 +306,7 @@ frida-sync-share:
 [unix]
 frida-import-raw:
     mkdir -p analysis/frida/raw
-    for f in grim_hits.jsonl crimsonland_frida_hits.jsonl gameplay_state_capture.jsonl gameplay_diff_capture.json demo_trial_overlay_trace.jsonl demo_idle_threshold_trace.jsonl screen_fade_trace.jsonl ui_render_trace.jsonl game_over_panel_trace.jsonl thunk_452f1d_trace.jsonl; do \
+    for f in grim_hits.jsonl crimsonland_frida_hits.jsonl gameplay_state_capture.jsonl gameplay_diff_capture.json demo_trial_overlay_trace.jsonl demo_idle_threshold_trace.jsonl screen_fade_trace.jsonl ui_render_trace.jsonl game_over_panel_trace.jsonl; do \
         [ -e "{{share_dir}}/$f" ] || continue; \
         cp -av "{{share_dir}}/$f" analysis/frida/raw/; \
     done
@@ -323,10 +323,6 @@ frida-reduce:
       --log analysis/frida/raw/demo_trial_overlay_trace.jsonl \
       --log analysis/frida/raw/demo_idle_threshold_trace.jsonl \
       --out-dir analysis/frida
-
-[unix]
-thunk-452f1d-reduce log="artifacts/frida/share/thunk_452f1d_trace.jsonl" out_summary="analysis/frida/thunk_452f1d_trace_summary.json" out_candidates="analysis/frida/thunk_452f1d_name_map_candidates.json":
-    uv run scripts/thunk_452f1d_trace_reduce.py --log {{log}} --out-summary {{out_summary}} --out-candidates {{out_candidates}}
 
 [unix]
 game-over-panel-reduce log="artifacts/frida/share/game_over_panel_trace.jsonl" out="analysis/frida/game_over_panel_trace_summary.json":

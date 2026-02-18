@@ -10,4 +10,3 @@ Runtime instrumentation for evidence collection using Frida.
 - [Gameplay differential capture](gameplay-diff-capture.md) — deterministic tick + verifier-oriented telemetry
 - [Survival autoplay sidecar](survival-autoplay.md) — unattended Survival runs for repeated differential recordings
 - [RNG divergence root cause](rng-divergence-root-cause.md) — Guidance for isolating first RNG call-order drift
-- [thunk_FUN_00452f1d capture task](thunk-452f1d-capture-task.md) — Windows runbook for thunk runtime contract tracing
