@@ -2,7 +2,7 @@
 /* function_original: vec2_add_inplace */
 /* function_mapped: vec2_add_inplace */
 /* address: 0x0041e400 */
-/* byte_range: [608148, 608376) */
+/* byte_range: [607573, 607801) */
 /* vec2_add_inplace @ 0041e400 */
 
 /* adds delta XY into pos; unused param_1 in decompile */

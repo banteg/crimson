@@ -2,7 +2,7 @@
 /* function_original: creature_spawn_template */
 /* function_mapped: creature_spawn_template */
 /* address: 0x00430af0 */
-/* byte_range: [969363, 1070877) */
+/* byte_range: [969338, 1070852) */
 /* creature_spawn_template @ 00430af0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */

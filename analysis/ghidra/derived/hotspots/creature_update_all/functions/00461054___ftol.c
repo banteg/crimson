@@ -2,7 +2,7 @@
 /* function_original: __ftol */
 /* function_mapped: __ftol */
 /* address: 0x00461054 */
-/* byte_range: [1996999, 1997191) */
+/* byte_range: [2013116, 2013308) */
 /* __ftol @ 00461054 */
 
 /* Library Function - Single Match

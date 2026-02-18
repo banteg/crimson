@@ -2,7 +2,7 @@
 /* function_original: effect_spawn_burst */
 /* function_mapped: effect_spawn_burst */
 /* address: 0x0042ef60 */
-/* byte_range: [933864, 934979) */
+/* byte_range: [933839, 934954) */
 /* effect_spawn_burst @ 0042ef60 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */

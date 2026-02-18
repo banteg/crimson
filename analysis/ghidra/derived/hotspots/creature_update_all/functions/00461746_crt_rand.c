@@ -2,7 +2,7 @@
 /* function_original: crt_rand */
 /* function_mapped: crt_rand */
 /* address: 0x00461746 */
-/* byte_range: [2007230, 2007528) */
+/* byte_range: [2023347, 2023645) */
 /* crt_rand @ 00461746 */
 
 /* returns a pseudo-random value using the per-thread seed (rand) */

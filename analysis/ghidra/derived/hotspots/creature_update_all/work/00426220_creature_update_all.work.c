@@ -528,7 +528,7 @@ LAB_00426ac8:
                   }
 LAB_0042733a:
                   player_take_damage((int)(char)*target_player_ptr,(&creature_pool)[creature_idx].contact_damage);
-                  thunk_FUN_00452f1d();
+                  vec2_normalize_dispatch();
                   tmp_vec_scratch[9] = (float)collision_flag_ptr * 3.0 + (&player_state_table)[(char)*target_player_ptr].pos_y;
                   tmp_vec_scratch[8] = local_60 * 3.0 + (&player_state_table)[(char)*target_player_ptr].pos_x;
                   fx_queue_add_random(tmp_vec_scratch + 8);

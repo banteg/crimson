@@ -2,7 +2,7 @@
 /* function_original: player_take_damage */
 /* function_mapped: player_take_damage */
 /* address: 0x00425e50 */
-/* byte_range: [757036, 761012) */
+/* byte_range: [756752, 760728) */
 /* player_take_damage @ 00425e50 */
 
 /* applies player damage with perk modifiers, SFX, and retaliation effects. Runtime capture

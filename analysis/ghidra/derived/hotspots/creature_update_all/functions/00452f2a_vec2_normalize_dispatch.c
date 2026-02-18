@@ -1,15 +1,25 @@
-/* source: analysis/ghidra/raw/crimsonland.exe_functions.json + Binary Ninja disasm */
-/* function_original: thunk_FUN_00452f1d */
+/* source: analysis/ghidra/raw/crimsonland.exe_decompiled.c */
+/* function_original: vec2_normalize_dispatch */
 /* function_mapped: vec2_normalize_dispatch */
 /* address: 0x00452f2a */
-/* byte_range: manual-thunk */
-/* manual supplement until regenerated decompiled export includes thunk bodies */
+/* byte_range: [1797448, 1798017) */
+/* vec2_normalize_dispatch @ 00452f2a */
 
-extern float *(*DAT_00479658)(float *dst, float *src);
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* hot-path thunk: jmp [DAT_00479658] after lazy init; used by player_update, projectile_update, and
+   creature_update_all callsites */
 
-/* tail thunk: jmp [DAT_00479658] */
-float *vec2_normalize_dispatch(float *dst, float *src)
+float * vec2_normalize_dispatch(float *dst,float *src)
 
 {
-  return (*DAT_00479658)(dst, src);
+  float *pfVar1;
+  
+                    /* WARNING: Could not recover jumptable at 0x00452f2a. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  pfVar1 = (float *)(*_DAT_00479658)();
+  return pfVar1;
 }
+
+
+
+/*

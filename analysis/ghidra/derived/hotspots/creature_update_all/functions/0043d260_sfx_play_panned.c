@@ -2,7 +2,7 @@
 /* function_original: sfx_play_panned */
 /* function_mapped: sfx_play_panned */
 /* address: 0x0043d260 */
-/* byte_range: [1289961, 1291443) */
+/* byte_range: [1301311, 1302793) */
 /* sfx_play_panned @ 0043d260 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */

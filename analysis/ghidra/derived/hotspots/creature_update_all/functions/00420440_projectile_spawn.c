@@ -2,7 +2,7 @@
 /* function_original: projectile_spawn */
 /* function_mapped: projectile_spawn */
 /* address: 0x00420440 */
-/* byte_range: [651765, 654777) */
+/* byte_range: [651190, 654202) */
 /* projectile_spawn @ 00420440 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */

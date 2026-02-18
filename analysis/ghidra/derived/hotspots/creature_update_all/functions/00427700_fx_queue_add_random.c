@@ -2,7 +2,7 @@
 /* function_original: fx_queue_add_random */
 /* function_mapped: fx_queue_add_random */
 /* address: 0x00427700 */
-/* byte_range: [791320, 792662) */
+/* byte_range: [791231, 792573) */
 /* fx_queue_add_random @ 00427700 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */

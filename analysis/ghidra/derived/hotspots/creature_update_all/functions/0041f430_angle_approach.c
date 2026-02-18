@@ -2,7 +2,7 @@
 /* function_original: angle_approach */
 /* function_mapped: angle_approach */
 /* address: 0x0041f430 */
-/* byte_range: [628994, 630045) */
+/* byte_range: [628419, 629470) */
 /* angle_approach @ 0041f430 */
 
 /* wraps angle into [0,2pi] and steps toward target using shortest arc */

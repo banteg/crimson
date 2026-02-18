@@ -2,7 +2,7 @@
 /* function_original: effect_spawn_blood_splatter */
 /* function_mapped: effect_spawn_blood_splatter */
 /* address: 0x0042eb10 */
-/* byte_range: [929371, 930927) */
+/* byte_range: [929346, 930902) */
 /* effect_spawn_blood_splatter @ 0042eb10 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */

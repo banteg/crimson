@@ -2,7 +2,7 @@
 /* function_original: creature_apply_damage */
 /* function_mapped: creature_apply_damage */
 /* address: 0x004207c0 */
-/* byte_range: [657661, 661840) */
+/* byte_range: [657086, 661265) */
 /* creature_apply_damage @ 004207c0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */

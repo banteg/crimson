@@ -2,7 +2,7 @@
 /* function_original: creature_handle_death */
 /* function_mapped: creature_handle_death */
 /* address: 0x0041e910 */
-/* byte_range: [610141, 615583) */
+/* byte_range: [609566, 615008) */
 /* creature_handle_death @ 0041e910 */
 
 /* death handler: bonus spawns, split-on-death, score, and cleanup */
