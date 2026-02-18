@@ -8,18 +8,24 @@ from typing import cast
 import pytest
 
 from crimson.game_modes import GameMode
+from crimson.gameplay import GameplayState
 from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
+    CAPTURE_CREATURE_SPAWN_EVENT_KIND,
     CAPTURE_PERK_APPLY_EVENT_KIND,
     CAPTURE_PERK_PENDING_EVENT_KIND,
+    CAPTURE_STATE_TRANSITION_EVENT_KIND,
     CaptureError,
+    apply_capture_bootstrap_payload,
     build_capture_dt_frame_ms_i32_overrides,
     build_capture_dt_frame_overrides,
     build_capture_inter_tick_rand_draws_overrides,
     capture_bootstrap_payload_from_event_payload,
+    capture_creature_spawns_from_event_payload,
     capture_perk_apply_from_event_payload,
     capture_perk_apply_id_from_event_payload,
     capture_perk_pending_from_event_payload,
+    capture_state_transitions_from_event_payload,
     convert_capture_to_checkpoints,
     convert_capture_to_replay,
     default_capture_replay_path,
@@ -29,6 +35,8 @@ from crimson.original.capture import (
 from crimson.original.schema import CAPTURE_FORMAT_VERSION, CaptureEventHeadPerkApply
 from crimson.replay import Replay, UnknownEvent, unpack_input_flags, unpack_input_move_key_flags
 from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
+from crimson.sim.state_types import PlayerState
+from crimson.weapons import WeaponId
 from grim.geom import Vec2
 
 
@@ -864,7 +872,236 @@ def test_convert_capture_to_replay_bootstrap_payload_includes_perk_snapshot(tmp_
         "pending_count": 3,
         "choices_dirty": False,
         "choices": [11, 22, 33, 44, 55, 66, 77],
+        "player_nonzero_counts": [],
     }
+
+
+def test_apply_capture_bootstrap_payload_marks_perk_counts_unknown_when_nonzero_counts_are_missing() -> None:
+    state = GameplayState()
+    players = [PlayerState(index=0, pos=Vec2())]
+    payload = {
+        "elapsed_ms": 0,
+        "perk": {
+            "pending_count": 0,
+            "choices_dirty": False,
+            "choices": [11, 22, 33, 44, 55, 66, 77],
+            "player_nonzero_counts": [[]],
+        },
+    }
+
+    apply_capture_bootstrap_payload(payload, state=state, players=players)
+
+    assert state.perk_selection.capture_player_perk_counts_known is False
+
+
+def test_convert_capture_to_replay_bootstrap_payload_includes_quest_session_timers(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=10, elapsed_ms=1600)
+    tick0["mode_hint"] = "quest_mode_update"
+    tick0["game_mode_id"] = int(GameMode.QUESTS)
+    tick0["event_heads"] = [
+        {
+            "kind": "quest_timeline_delta",
+            "data": {
+                "quest_spawn_timeline": 1718,
+                "quest_spawn_stall_timer_ms": 4745,
+                "quest_transition_timer_ms": -1,
+            },
+        },
+    ]
+
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    bootstrap = next(
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+    )
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    assert payload is not None
+    assert payload.get("quest_session") == {
+        "spawn_timeline_ms": 1718.0,
+        "no_creatures_timer_ms": 4745.0,
+        "completion_transition_ms": -1.0,
+    }
+
+
+def test_convert_capture_to_replay_bootstrap_payload_prefers_before_player_runtime_snapshot(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=42, elapsed_ms=7000, perk_pending=2, score_xp=11)
+    _tick_player(tick0)["ammo"] = 11.0
+    _tick_player(tick0)["experience"] = 11
+    tick0["before"] = {
+        "globals": {
+            "time_played_ms": 6951,
+            "perk_pending_count": 1,
+            "bonus_weapon_power_up_timer": 0.25,
+        },
+        "status": {},
+        "player_count": 1,
+        "players": [
+            {
+                "pos_x": 500.0,
+                "pos_y": 501.0,
+                "health": 90.0,
+                "weapon_id": 1,
+                "ammo_f32": 12.0,
+                "experience": 7,
+                "level": 2,
+                "clip_size_f32": 12.0,
+                "reload_active_i32": 1,
+                "reload_timer": 0.5,
+                "reload_timer_max": 1.0,
+                "shot_cooldown": 0.25,
+                "spread_heat": 0.0,
+                "aim_x": 300.0,
+                "aim_y": 320.0,
+                "aim_heading": 1.2,
+                "bonus_timers": {"speed_bonus": 1.2, "shield": 0.5, "fire_bullets": 0.0},
+                "perk_timers": {"hot_tempered": 1.36, "man_bomb": 0.0, "living_fortress": 0.0, "fire_cough": 0.0},
+                "alt_weapon": {
+                    "weapon_id": 4,
+                    "clip_size_i32": 0x41200000,  # 10.0f
+                    "reload_active_i32": 1,
+                    "ammo_i32": 0x40E00000,  # 7.0f
+                    "reload_timer": 0.2,
+                    "shot_cooldown": 0.1,
+                    "reload_timer_max": 1.2,
+                },
+            },
+        ],
+        "input": {},
+        "input_bindings": {},
+    }
+
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    bootstrap = next(
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+    )
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    assert payload is not None
+    assert payload.get("elapsed_ms") == 6951
+    assert payload.get("perk_pending") == 1
+    assert payload.get("score_xp") == 7
+
+    assert isinstance(payload.get("bonus_timers_ms"), dict)
+    assert cast(dict[str, int], payload["bonus_timers_ms"])["4"] == 250
+
+    players = cast(list[dict[str, object]], payload.get("players"))
+    assert len(players) == 1
+    player = players[0]
+    assert player["ammo"] == 12.0
+    assert player["experience"] == 7
+    assert player["level"] == 2
+    assert player["clip_size"] == 12
+    assert player["reload_active"] is True
+    assert player["reload_timer"] == pytest.approx(0.5, abs=1e-6)
+    assert player["reload_timer_max"] == pytest.approx(1.0, abs=1e-6)
+    assert player["shot_cooldown"] == pytest.approx(0.25, abs=1e-6)
+    assert player["spread_heat"] == pytest.approx(0.0, abs=1e-6)
+    assert player["bonus_timers_ms"] == {"speed_bonus": 1200, "shield": 500, "fire_bullets": 0}
+    assert player["aim"] == {"x": 300.0, "y": 320.0, "heading": pytest.approx(1.2, abs=1e-6)}
+    assert player["alt_weapon"] == {
+        "weapon_id": 4,
+        "clip_size": 10,
+        "ammo": pytest.approx(7.0, abs=1e-6),
+        "reload_active": True,
+        "reload_timer": pytest.approx(0.2, abs=1e-6),
+        "shot_cooldown": pytest.approx(0.1, abs=1e-6),
+        "reload_timer_max": pytest.approx(1.2, abs=1e-6),
+    }
+    assert player["perk_timers"] == {
+        "hot_tempered": pytest.approx(1.36, abs=1e-6),
+        "man_bomb": pytest.approx(0.0, abs=1e-6),
+        "living_fortress": pytest.approx(0.0, abs=1e-6),
+        "fire_cough": pytest.approx(0.0, abs=1e-6),
+    }
+
+
+def test_convert_capture_to_replay_bootstrap_payload_infers_perk_intervals_from_timer_wrap(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=10, elapsed_ms=1000)
+    tick1 = _base_tick(tick_index=11, elapsed_ms=1083)
+    tick0["before"] = {
+        "globals": {},
+        "status": {},
+        "player_count": 1,
+        "players": [{"perk_timers": {"hot_tempered": 1.3659999, "man_bomb": 0.0, "living_fortress": 0.0, "fire_cough": 0.0}}],
+        "input": {},
+        "input_bindings": {},
+    }
+    tick1["before"] = {
+        "globals": {},
+        "status": {},
+        "player_count": 1,
+        "players": [{"perk_timers": {"hot_tempered": 0.0489999, "man_bomb": 0.0, "living_fortress": 0.0, "fire_cough": 0.0}}],
+        "input": {},
+        "input_bindings": {},
+    }
+
+    obj = _capture_obj(ticks=[tick0, tick1])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+    bootstrap = next(
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+    )
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    assert payload is not None
+
+    assert isinstance(payload.get("perk_intervals"), dict)
+    perk_intervals = cast(dict[str, float], payload["perk_intervals"])
+    assert perk_intervals["hot_tempered"] == pytest.approx(1.4, abs=1e-3)
+
+
+def test_apply_capture_bootstrap_payload_applies_perk_intervals_and_player_perk_timers() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
+    payload = {
+        "players": [
+            {
+                "perk_timers": {
+                    "hot_tempered": 1.36,
+                    "man_bomb": 0.5,
+                    "living_fortress": 0.25,
+                    "fire_cough": 0.75,
+                },
+            },
+        ],
+        "perk_intervals": {
+            "hot_tempered": 1.4,
+            "man_bomb": 6.0,
+            "fire_cough": 3.0,
+        },
+    }
+
+    elapsed = apply_capture_bootstrap_payload(payload, state=state, players=[player])
+    assert elapsed is None
+    assert player.hot_tempered_timer == pytest.approx(1.36, abs=1e-6)
+    assert player.man_bomb_timer == pytest.approx(0.5, abs=1e-6)
+    assert player.living_fortress_timer == pytest.approx(0.25, abs=1e-6)
+    assert player.fire_cough_timer == pytest.approx(0.75, abs=1e-6)
+    assert state.perk_intervals.hot_tempered == pytest.approx(1.4, abs=1e-6)
+    assert state.perk_intervals.man_bomb == pytest.approx(6.0, abs=1e-6)
+    assert state.perk_intervals.fire_cough == pytest.approx(3.0, abs=1e-6)
 
 
 def test_convert_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> None:
@@ -893,6 +1130,69 @@ def test_convert_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> No
     ]
     assert len(perk_events) == 1
     assert perk_events[0].tick_index == 0
+
+
+def test_convert_capture_to_replay_emits_quest_creature_spawn_events(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["mode_hint"] = "quest_mode_update"
+    tick0["game_mode_id"] = int(GameMode.QUESTS)
+    tick0["event_heads"] = [
+        {
+            "kind": "creature_spawn",
+            "data": {
+                "template_id": 54,
+                "pos": {"x": 434.3393859863281, "y": 455.56573486328125},
+                "heading": -4.083981990814209,
+                "caller_static": "0x00434373",
+            },
+        },
+    ]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    spawn_events = [
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_CREATURE_SPAWN_EVENT_KIND
+    ]
+    assert len(spawn_events) == 1
+    assert spawn_events[0].tick_index == 0
+    assert capture_creature_spawns_from_event_payload(spawn_events[0].payload) == (
+        (54, 434.3393859863281, 455.56573486328125, -4.083981990814209),
+    )
+
+
+def test_convert_capture_to_replay_emits_state_transition_events(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["event_heads"] = [
+        {
+            "kind": "state_transition",
+            "data": {
+                "target_state": 12,
+                "before": {"id": 9},
+                "after": {"id": 12},
+            },
+        },
+    ]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    state_events = [
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_STATE_TRANSITION_EVENT_KIND
+    ]
+    assert len(state_events) == 1
+    assert state_events[0].tick_index == 0
+    assert capture_state_transitions_from_event_payload(state_events[0].payload) == ((12, 9, 12),)
 
 
 def test_default_capture_replay_path_derives_expected_name() -> None:
@@ -1037,7 +1337,36 @@ def test_build_capture_inter_tick_rand_draws_overrides_quest_delays_until_first_
     capture = load_capture(path)
     overrides = build_capture_inter_tick_rand_draws_overrides(capture)
 
-    assert overrides == {0: 0, 1: 0, 2: 1, 3: 1}
+    assert overrides == {0: 0, 1: 0, 2: 0, 3: 1}
+
+
+def test_build_capture_inter_tick_rand_draws_overrides_quest_nonzero_start_zeroes_seed_tick(
+    tmp_path: Path,
+) -> None:
+    tick10 = _base_tick(tick_index=10, elapsed_ms=0)
+    tick11 = _base_tick(tick_index=11, elapsed_ms=16)
+    tick12 = _base_tick(tick_index=12, elapsed_ms=32)
+    tick13 = _base_tick(tick_index=13, elapsed_ms=48)
+    for tick in (tick10, tick11, tick12, tick13):
+        tick["mode_hint"] = "quest_mode_update"
+        tick["game_mode_id"] = int(GameMode.QUESTS)
+        assert isinstance(tick["checkpoint"], dict)
+        rng_marks = _tick_rng_marks(tick)
+        rng_marks["rand_outside_before_calls"] = 3
+        rng_marks["rand_calls"] = 0
+
+    assert isinstance(tick12["checkpoint"], dict)
+    assert isinstance(_tick_rng_marks(tick12), dict)
+    _tick_rng_marks(tick12)["rand_calls"] = 4
+
+    obj = _capture_obj(ticks=[tick10, tick11, tick12, tick13])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    overrides = build_capture_inter_tick_rand_draws_overrides(capture)
+
+    assert overrides == {10: 0, 11: 0, 12: 0, 13: 3}
 
 
 def test_build_capture_inter_tick_rand_draws_overrides_returns_none_when_missing(tmp_path: Path) -> None:
@@ -1439,6 +1768,393 @@ def test_convert_capture_to_replay_uses_player_key_fire_reload_edges(tmp_path: P
     assert fire_down is True
     assert fire_pressed is True
     assert reload_pressed is True
+
+
+def test_convert_capture_to_replay_synthesizes_reload_for_alt_weapon_swap_from_before_snapshot(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    _tick_player(tick0)["weapon_id"] = 1
+    _tick_player(tick0)["ammo"] = 12.0
+    tick0["input_player_keys"] = [{"player_index": 0}]
+    tick0["before"] = {
+        "globals": {},
+        "status": {},
+        "player_count": 1,
+        "players": [
+            {
+                "weapon_id": 11,
+                "ammo_i32": 0,
+                "clip_size_i32": 1106247680,
+                "reload_active_i32": 1,
+                "reload_timer": 0.9989999,
+                "reload_timer_max": 1.3,
+                "shot_cooldown": 0.0,
+                "alt_weapon": {
+                    "weapon_id": 1,
+                    "clip_size_i32": 1094713344,
+                    "reload_active_i32": 0,
+                    "ammo_i32": 1094713344,
+                    "reload_timer": 0.0,
+                    "shot_cooldown": 0.0,
+                    "reload_timer_max": 1.2,
+                },
+            },
+        ],
+        "input": {},
+        "input_bindings": {},
+    }
+
+    tick1 = _base_tick(tick_index=1, elapsed_ms=32)
+    _tick_player(tick1)["weapon_id"] = 1
+    _tick_player(tick1)["ammo"] = 12.0
+    tick1["input_player_keys"] = [{"player_index": 0}]
+    tick1["before"] = {
+        "globals": {},
+        "status": {},
+        "player_count": 1,
+        "players": [
+            {
+                "weapon_id": 1,
+                "ammo_i32": 1094713344,
+                "clip_size_i32": 1094713344,
+                "reload_active_i32": 0,
+                "reload_timer": 0.0,
+                "reload_timer_max": 1.2,
+                "shot_cooldown": 0.1,
+                "alt_weapon": {
+                    "weapon_id": 11,
+                    "clip_size_i32": 1106247680,
+                    "reload_active_i32": 1,
+                    "ammo_i32": 0,
+                    "reload_timer": 0.9409999,
+                    "shot_cooldown": 0.0,
+                    "reload_timer_max": 1.3,
+                },
+            },
+        ],
+        "input": {},
+        "input_bindings": {},
+    }
+
+    obj = _capture_obj(ticks=[tick0, tick1])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    _fire_down0, _fire_pressed0, reload_pressed0 = unpack_input_flags(_replay_input_flags(replay, 0, 0))
+    _fire_down1, _fire_pressed1, reload_pressed1 = unpack_input_flags(_replay_input_flags(replay, 1, 0))
+    assert reload_pressed0 is True
+    assert reload_pressed1 is False
+
+
+def test_convert_capture_to_replay_synthesizes_fire_down_from_player_fire_event_with_false_key_state(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "fire_down": False,
+            "fire_pressed": None,
+            "reload_pressed": None,
+        },
+    ]
+    tick0["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 0}]
+    tick0["event_heads"] = [
+        {
+            "kind": "player_fire",
+            "data": {
+                "player_index": 0,
+                "owner_id": -100,
+                "weapon_before": 29,
+                "weapon_after": 11,
+                "ammo_before": 2.0,
+                "ammo_after": 0.0,
+                "shot_cooldown_after": 0.11,
+            },
+        },
+        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 11, "actual_type_id": 11}},
+    ]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    flags = _replay_input_flags(replay, 0, 0)
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    assert fire_down is True
+    assert fire_pressed is False
+    assert reload_pressed is False
+
+
+def test_convert_capture_to_replay_does_not_synthesize_fire_down_from_zero_cooldown_player_fire_event(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "fire_down": False,
+            "fire_pressed": None,
+            "reload_pressed": None,
+        },
+    ]
+    tick0["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 0}]
+    tick0["event_heads"] = [
+        {
+            "kind": "player_fire",
+            "data": {
+                "player_index": 0,
+                "owner_id": -100,
+                "weapon_before": int(WeaponId.FLAMETHROWER),
+                "weapon_after": int(WeaponId.FLAMETHROWER),
+                "ammo_before": 29.4,
+                "ammo_after": 29.4,
+                "requested_type_id": 11,
+                "actual_type_id": 11,
+                "shot_cooldown_after": 0.0,
+            },
+        },
+        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 11, "actual_type_id": 11}},
+    ]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    flags = _replay_input_flags(replay, 0, 0)
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    assert fire_down is False
+    assert fire_pressed is False
+    assert reload_pressed is False
+
+
+def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_ammo_drain(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    _tick_player(tick0)["weapon_id"] = int(WeaponId.FLAMETHROWER)
+    _tick_player(tick0)["ammo"] = 29.9
+    tick0["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "fire_down": False,
+            "fire_pressed": None,
+            "reload_pressed": None,
+        },
+    ]
+    tick0["input_approx"] = [
+        {
+            "player_index": 0,
+            "aim_x": 520.0,
+            "aim_y": 500.0,
+            "weapon_id": int(WeaponId.FLAMETHROWER),
+            "fired_events": 0,
+        },
+    ]
+    tick0["before"] = {
+        "globals": {},
+        "status": {},
+        "player_count": 1,
+        "players": [
+            {
+                "weapon_id": int(WeaponId.FLAMETHROWER),
+                "ammo_f32": 30.0,
+                "reload_active_i32": 0,
+                "reload_timer": 0.0,
+                "shot_cooldown": 0.0,
+            },
+        ],
+        "input": {},
+        "input_bindings": {},
+    }
+
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(_replay_input_flags(replay, 0, 0))
+    assert fire_down is True
+    assert fire_pressed is False
+    assert reload_pressed is False
+
+
+def test_convert_capture_to_replay_synthesizes_fire_down_when_fractional_weapon_finishes_reload(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    _tick_player(tick0)["weapon_id"] = int(WeaponId.FLAMETHROWER)
+    _tick_player(tick0)["ammo"] = 29.9
+    tick0["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "fire_down": False,
+            "fire_pressed": None,
+            "reload_pressed": None,
+        },
+    ]
+    tick0["input_approx"] = [
+        {
+            "player_index": 0,
+            "aim_x": 520.0,
+            "aim_y": 500.0,
+            "weapon_id": int(WeaponId.FLAMETHROWER),
+            "fired_events": 0,
+        },
+    ]
+    tick0["before"] = {
+        "globals": {},
+        "status": {},
+        "player_count": 1,
+        "players": [
+            {
+                "weapon_id": int(WeaponId.FLAMETHROWER),
+                "ammo_f32": -7.8e-5,
+                "clip_size_f32": 30.0,
+                "reload_active_i32": 1,
+                "reload_timer": 0.046,
+                "reload_timer_max": 2.0,
+                "shot_cooldown": 0.0,
+            },
+        ],
+        "input": {},
+        "input_bindings": {},
+    }
+
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(_replay_input_flags(replay, 0, 0))
+    assert fire_down is True
+    assert fire_pressed is False
+    assert reload_pressed is False
+
+
+def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_weapon_fire_sfx(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    _tick_player(tick0)["weapon_id"] = int(WeaponId.FLAMETHROWER)
+    _tick_player(tick0)["ammo"] = 30.0
+    tick0["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "fire_down": False,
+            "fire_pressed": None,
+            "reload_pressed": None,
+        },
+    ]
+    tick0["before"] = {
+        "globals": {},
+        "status": {},
+        "player_count": 1,
+        "players": [
+            {
+                "weapon_id": int(WeaponId.FLAMETHROWER),
+                "ammo_f32": 6.4,
+                "reload_active_i32": 0,
+                "reload_timer": 0.0,
+            },
+        ],
+        "input": {},
+        "input_bindings": {},
+    }
+    tick0["event_heads"] = [
+        {
+            "kind": "sfx",
+            "data": {
+                "kind": "sfx_play_panned",
+                "id_i32": 43,
+                "caller": "crimsonland.exe+0x15f1c",
+            },
+        },
+        {
+            "kind": "bonus_apply",
+            "data": {
+                "bonus_id": 9,
+                "amount": 8,
+                "player_index": 0,
+            },
+        },
+    ]
+
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(_replay_input_flags(replay, 0, 0))
+    assert fire_down is True
+    assert fire_pressed is False
+    assert reload_pressed is False
+
+
+def test_convert_capture_to_replay_synthesizes_fire_pressed_from_primary_edge_when_reload_active(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["before"] = {
+        "globals": {"config_aim_scheme": [5]},
+        "status": {},
+        "player_count": 1,
+        "players": [],
+        "input": {},
+        "input_bindings": {},
+    }
+    tick0["input_queries"] = {
+        "stats": {
+            "primary_edge": {"calls": 1, "true_calls": 1},
+            "primary_down": {"calls": 1, "true_calls": 0},
+            "any_key": {"calls": 0, "true_calls": 0},
+        },
+        "query_hash": "",
+    }
+    tick0["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "fire_down": None,
+            "fire_pressed": None,
+            "reload_pressed": None,
+        },
+    ]
+    tick0["input_approx"] = [
+        {
+            "player_index": 0,
+            "aim_x": 520.0,
+            "aim_y": 500.0,
+            "aim_scheme": 5,
+            "reload_active": True,
+            "fired_events": 0,
+        },
+    ]
+
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(_replay_input_flags(replay, 0, 0))
+    assert fire_down is False
+    assert fire_pressed is True
+    assert reload_pressed is False
 
 
 def test_convert_capture_to_replay_synthesizes_computer_aim_fire_down_from_projectile_spawn(tmp_path: Path) -> None:

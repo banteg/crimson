@@ -1,16 +1,23 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import cast
+
+from grim.geom import Vec2
 
 from ...game_modes import GameMode
 from ...original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
+    CAPTURE_CREATURE_SPAWN_EVENT_KIND,
     CAPTURE_PERK_APPLY_EVENT_KIND,
     CAPTURE_PERK_PENDING_EVENT_KIND,
+    CAPTURE_STATE_TRANSITION_EVENT_KIND,
     apply_capture_bootstrap_payload,
     capture_bootstrap_payload_from_event_payload,
+    capture_creature_spawns_from_event_payload,
     capture_perk_apply_from_event_payload,
     capture_perk_pending_from_event_payload,
+    capture_state_transitions_from_event_payload,
 )
 from ...perks import PerkId
 from ...perks.runtime.apply import perk_apply
@@ -29,6 +36,7 @@ def apply_replay_tick_events(
     world: WorldState,
     game_mode_id: int,
     strict_events: bool,
+    on_capture_state_transition: Callable[[int, int | None, int | None], None] | None = None,
 ) -> int | None:
     state = world.state
     players = world.players
@@ -169,6 +177,33 @@ def apply_replay_tick_events(
                 perk_state.choices_dirty = True
                 continue
 
+            if kind == CAPTURE_CREATURE_SPAWN_EVENT_KIND:
+                spawns = capture_creature_spawns_from_event_payload(list(event.payload))
+                if spawns is None:
+                    if strict_events:
+                        raise ReplayRunnerError(f"invalid creature_spawn payload at tick={tick_index}")
+                    continue
+                for template_id, pos_x, pos_y, heading in spawns:
+                    world.creatures.spawn_template(
+                        int(template_id),
+                        Vec2(float(pos_x), float(pos_y)),
+                        float(heading),
+                        state.rng,
+                        rand=state.rng.rand,
+                    )
+                continue
+
+            if kind == CAPTURE_STATE_TRANSITION_EVENT_KIND:
+                transitions = capture_state_transitions_from_event_payload(list(event.payload))
+                if transitions is None:
+                    if strict_events:
+                        raise ReplayRunnerError(f"invalid state_transition payload at tick={tick_index}")
+                    continue
+                if on_capture_state_transition is not None:
+                    for target_state, before_state, after_state in transitions:
+                        on_capture_state_transition(int(target_state), before_state, after_state)
+                continue
+
             if strict_events:
                 raise ReplayRunnerError(f"unsupported replay event kind={event.kind!r} at tick={tick_index}")
             continue
@@ -193,6 +228,14 @@ def partition_tick_events(
         if isinstance(event, PerkMenuOpenEvent):
             # Original-capture traces call perk selection RNG on the transition to
             # menu state at the tail of the gameplay tick, after survival_update.
+            post_step.append(event)
+            continue
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_CREATURE_SPAWN_EVENT_KIND:
+            # Original capture spawn hooks fire during quest_mode_update tail.
+            post_step.append(event)
+            continue
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_STATE_TRANSITION_EVENT_KIND:
+            # Native state transitions are processed after the gameplay mode tick.
             post_step.append(event)
             continue
         pre_step.append(event)

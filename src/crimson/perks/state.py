@@ -37,3 +37,4 @@ class PerkSelectionState:
     pending_count: int = 0
     choices: list[int] = field(default_factory=list)
     choices_dirty: bool = True
+    capture_player_perk_counts_known: bool = True

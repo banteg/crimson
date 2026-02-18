@@ -266,6 +266,7 @@ class QuestDeterministicSession:
     spawn_entries: tuple[SpawnEntry, ...] = ()
     detail_preset: int = 5
     fx_toggle: int = 0
+    apply_world_dt_steps: bool = True
     clear_fx_queues_each_tick: bool = False
     elapsed_ms: float = 0.0
     spawn_timeline_ms: float = 0.0
@@ -289,6 +290,7 @@ class QuestDeterministicSession:
         step = run_deterministic_step(
             world=self.world,
             dt_frame=float(dt_frame),
+            apply_world_dt_steps=bool(self.apply_world_dt_steps),
             inputs=inputs,
             world_size=float(self.world_size),
             damage_scale_by_type=self.damage_scale_by_type,

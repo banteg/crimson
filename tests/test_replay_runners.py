@@ -1,13 +1,21 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 
+from crimson.creatures.spawn import SpawnId
 from crimson.game_modes import GameMode
-from crimson.original.capture import CAPTURE_BOOTSTRAP_EVENT_KIND, CAPTURE_PERK_APPLY_EVENT_KIND
+from crimson.original.capture import (
+    CAPTURE_BOOTSTRAP_EVENT_KIND,
+    CAPTURE_CREATURE_SPAWN_EVENT_KIND,
+    CAPTURE_PERK_APPLY_EVENT_KIND,
+    CAPTURE_STATE_TRANSITION_EVENT_KIND,
+)
 from crimson.perks import PerkId
 from crimson.quests import quest_by_level
 from crimson.quests.runtime import build_quest_spawn_table
-from crimson.quests.types import QuestContext
+from crimson.quests.types import QuestContext, SpawnEntry
 from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder, UnknownEvent
 from crimson.sim.driver.replay_runner import run_quest_replay, run_rush_replay, run_survival_replay
 from crimson.sim.driver.setup import ReplayRunnerError
@@ -112,6 +120,216 @@ def test_quest_runner_is_deterministic() -> None:
     assert result0.elapsed_ms >= 0
     assert result0.score_xp == 0
     assert result0.creature_kill_count == 0
+
+
+def test_quest_runner_applies_original_capture_bootstrap_session_timers() -> None:
+    _header, rec = _blank_quest_replay(ticks=20, seed=101, game_version="0.0.0")
+    replay_base = rec.finish()
+    base_entry = _quest_spawn_entries("1.3", player_count=1, seed=int(replay_base.header.seed))[0]
+    spawn_entries = (replace(base_entry, trigger_ms=5000, count=1),)
+    dt_overrides = {tick: 0.1 for tick in range(20)}
+
+    baseline_checkpoints = []
+    with pytest.warns(ReplayGameVersionWarning):
+        run_quest_replay(
+            replay_base,
+            spawn_entries=spawn_entries,
+            dt_frame_overrides=dt_overrides,
+            checkpoints_out=baseline_checkpoints,
+            checkpoint_ticks={19},
+        )
+    assert len(baseline_checkpoints) == 1
+    assert int(baseline_checkpoints[0].creature_count) == 0
+
+    replay_bootstrapped = rec.finish()
+    replay_bootstrapped.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
+            payload=[
+                {
+                    "quest_session": {
+                        "spawn_timeline_ms": 1701.0,
+                        "no_creatures_timer_ms": 3100.0,
+                        "completion_transition_ms": -1.0,
+                    },
+                },
+            ],
+        ),
+    )
+    bootstrapped_checkpoints = []
+    with pytest.warns(ReplayGameVersionWarning):
+        run_quest_replay(
+            replay_bootstrapped,
+            spawn_entries=spawn_entries,
+            dt_frame_overrides=dt_overrides,
+            checkpoints_out=bootstrapped_checkpoints,
+            checkpoint_ticks={19},
+        )
+    assert len(bootstrapped_checkpoints) == 1
+    assert int(bootstrapped_checkpoints[0].creature_count) > 0
+
+
+def test_quest_runner_uses_capture_creature_spawn_events_for_original_capture_replay() -> None:
+    _header, rec = _blank_quest_replay(ticks=1, seed=101, game_version="0.0.0")
+    replay = rec.finish()
+    replay.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
+            payload=[{"quest_session": {"spawn_timeline_ms": 0.0, "no_creatures_timer_ms": 0.0}}],
+        ),
+    )
+    replay.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
+            payload=[
+                {
+                    "spawns": [
+                        {
+                            "template_id": int(SpawnId.ALIEN_AI7_ORBITER_36),
+                            "pos": {"x": 434.3393859863281, "y": 455.56573486328125},
+                            "heading": -4.083981990814209,
+                        },
+                    ],
+                },
+            ],
+        ),
+    )
+    spawn_entries = (
+        SpawnEntry(
+            pos=Vec2(900.0, 900.0),
+            heading=0.0,
+            spawn_id=SpawnId.ALIEN_AI7_ORBITER_36,
+            trigger_ms=0,
+            count=1,
+        ),
+    )
+
+    checkpoints = []
+    with pytest.warns(ReplayGameVersionWarning):
+        run_quest_replay(
+            replay,
+            spawn_entries=spawn_entries,
+            checkpoints_out=checkpoints,
+            checkpoint_ticks={0},
+        )
+    assert len(checkpoints) == 1
+    assert int(checkpoints[0].creature_count) == 1
+
+
+def test_quest_runner_disables_world_dt_steps_for_original_capture_dt_overrides() -> None:
+    def _run(*, include_reflex_boosted: bool, dt_overrides: dict[int, float] | None) -> tuple[float, float]:
+        header = ReplayHeader(
+            game_mode_id=int(GameMode.QUESTS),
+            seed=101,
+            tick_rate=60,
+            player_count=1,
+            game_version="0.0.0",
+        )
+        rec = ReplayRecorder(header)
+        rec.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(700.0, 512.0))])
+        replay = rec.finish()
+        replay.events.append(
+            UnknownEvent(
+                tick_index=0,
+                kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
+                payload=[{"tick_index": 0}],
+            ),
+        )
+        if include_reflex_boosted:
+            replay.events.append(
+                UnknownEvent(
+                    tick_index=0,
+                    kind=CAPTURE_PERK_APPLY_EVENT_KIND,
+                    payload=[{"perk_id": int(PerkId.REFLEX_BOOSTED), "outside_before": True}],
+                ),
+            )
+
+        checkpoints = []
+        with pytest.warns(ReplayGameVersionWarning):
+            run_quest_replay(
+                replay,
+                spawn_entries=(),
+                dt_frame_overrides=dt_overrides,
+                checkpoints_out=checkpoints,
+                checkpoint_ticks={0},
+            )
+        assert len(checkpoints) == 1
+        player = checkpoints[0].players[0]
+        return float(player.pos.x), float(player.pos.y)
+
+    no_override_without_perk = _run(include_reflex_boosted=False, dt_overrides=None)
+    no_override_with_perk = _run(include_reflex_boosted=True, dt_overrides=None)
+    assert no_override_with_perk[0] != pytest.approx(no_override_without_perk[0], abs=1e-4)
+
+    dt_overrides = {0: 0.1}
+    override_without_perk = _run(include_reflex_boosted=False, dt_overrides=dt_overrides)
+    override_with_perk = _run(include_reflex_boosted=True, dt_overrides=dt_overrides)
+    assert override_with_perk[0] == pytest.approx(override_without_perk[0], abs=1e-6)
+    assert override_with_perk[1] == pytest.approx(override_without_perk[1], abs=1e-6)
+
+
+def test_quest_runner_resets_run_on_capture_state_transition_to_12() -> None:
+    _header, rec = _blank_quest_replay(ticks=2, seed=101, game_version="0.0.0")
+    replay = rec.finish()
+    replay.inputs[1][0] = [0.0, 0.0, [700.0, 512.0], 1]
+    replay.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
+            payload=[
+                {
+                    "players": [
+                        {
+                            "weapon_id": 17,
+                            "ammo": 6.0,
+                            "experience": 11581,
+                            "level": 4,
+                            "health": 0.0,
+                        },
+                    ],
+                    "score_xp": 11581,
+                    "bonus_timers_ms": {"9": 1769},
+                    "perk": {
+                        "pending_count": 0,
+                        "choices_dirty": False,
+                        "choices": [],
+                        "player_nonzero_counts": [[[12, 1], [34, 1], [44, 1]]],
+                    },
+                },
+            ],
+        ),
+    )
+    replay.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=CAPTURE_STATE_TRANSITION_EVENT_KIND,
+            payload=[{"transitions": [{"target_state": 12, "before_state": 9, "after_state": 12}]}],
+        ),
+    )
+
+    checkpoints = []
+    with pytest.warns(ReplayGameVersionWarning):
+        run_quest_replay(
+            replay,
+            spawn_entries=(),
+            dt_frame_overrides={0: 0.1, 1: 0.1},
+            checkpoints_out=checkpoints,
+            checkpoint_ticks={1},
+        )
+    assert len(checkpoints) == 1
+    checkpoint = checkpoints[0]
+    player = checkpoint.players[0]
+    assert int(player.weapon_id) == 1
+    assert float(player.ammo) == pytest.approx(11.0, abs=1e-6)
+    assert int(player.experience) == 0
+    assert int(player.level) == 1
+    assert int(checkpoint.score_xp) == 0
+    assert int(checkpoint.creature_count) == 0
+    assert int(checkpoint.bonus_timers.get("9", 0)) == 0
+    assert checkpoint.perk.player_nonzero_counts[0] == []
 
 
 def test_survival_runner_honors_dt_frame_overrides_for_elapsed_ms() -> None:
@@ -290,6 +508,122 @@ def test_survival_runner_applies_original_capture_bootstrap_event() -> None:
 
     assert result.ticks == 1
     assert result.score_xp == 321
+
+
+def test_survival_runner_bootstrap_player_shot_cooldown_blocks_first_tick_fire() -> None:
+    def _run(*, include_shot_cooldown: bool) -> float:
+        header = ReplayHeader(
+            game_mode_id=int(GameMode.SURVIVAL),
+            seed=0x1234,
+            tick_rate=60,
+            player_count=1,
+            game_version="0.0.0",
+        )
+        recorder = ReplayRecorder(header)
+        recorder.record_tick([PlayerInput(aim=Vec2(700.0, 512.0), fire_down=True)])
+        replay = recorder.finish()
+        bootstrap_player: dict[str, object] = {
+            "weapon_id": 1,
+            "ammo": 12.0,
+            "reload_active": False,
+            "reload_timer": 0.0,
+            "reload_timer_max": 1.0,
+            "spread_heat": 0.0,
+        }
+        if include_shot_cooldown:
+            bootstrap_player["shot_cooldown"] = 0.5
+        replay.events.append(
+            UnknownEvent(
+                tick_index=0,
+                kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
+                payload=[{"players": [bootstrap_player]}],
+            ),
+        )
+
+        checkpoints = []
+        with pytest.warns(ReplayGameVersionWarning):
+            run_survival_replay(
+                replay,
+                strict_events=True,
+                max_ticks=1,
+                checkpoints_out=checkpoints,
+                checkpoint_ticks={0},
+            )
+        assert len(checkpoints) == 1
+        return float(checkpoints[0].players[0].ammo)
+
+    ammo_without_shot_cooldown = _run(include_shot_cooldown=False)
+    ammo_with_shot_cooldown = _run(include_shot_cooldown=True)
+    assert ammo_without_shot_cooldown < ammo_with_shot_cooldown
+    assert ammo_with_shot_cooldown == pytest.approx(12.0, abs=1e-6)
+
+
+def test_survival_runner_bootstrap_perk_counts_enable_alternate_weapon_swap() -> None:
+    def _run(*, include_perk_counts: bool) -> tuple[int, float]:
+        header = ReplayHeader(
+            game_mode_id=int(GameMode.SURVIVAL),
+            seed=0x1234,
+            tick_rate=60,
+            player_count=1,
+            game_version="0.0.0",
+        )
+        rec = ReplayRecorder(header)
+        rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0), reload_pressed=True)])
+        replay = rec.finish()
+        payload: dict[str, object] = {
+            "players": [
+                {
+                    "weapon_id": 11,
+                    "ammo": 0.0,
+                    "reload_active": False,
+                    "reload_timer": 0.0,
+                    "reload_timer_max": 1.0,
+                    "alt_weapon": {
+                        "weapon_id": 1,
+                        "clip_size": 12,
+                        "ammo": 12.0,
+                        "reload_active": False,
+                        "reload_timer": 0.0,
+                        "shot_cooldown": 0.0,
+                        "reload_timer_max": 1.2,
+                    },
+                },
+            ],
+        }
+        if include_perk_counts:
+            payload["perk"] = {
+                "pending_count": 0,
+                "choices_dirty": False,
+                "choices": [],
+                "player_nonzero_counts": [[[int(PerkId.ALTERNATE_WEAPON), 1]]],
+            }
+        replay.events.append(
+            UnknownEvent(
+                tick_index=0,
+                kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
+                payload=[payload],
+            ),
+        )
+
+        checkpoints = []
+        with pytest.warns(ReplayGameVersionWarning):
+            run_survival_replay(
+                replay,
+                strict_events=True,
+                max_ticks=1,
+                checkpoints_out=checkpoints,
+                checkpoint_ticks={0},
+            )
+        assert len(checkpoints) == 1
+        player = checkpoints[0].players[0]
+        return int(player.weapon_id), float(player.ammo)
+
+    weapon_without_perk, ammo_without_perk = _run(include_perk_counts=False)
+    weapon_with_perk, ammo_with_perk = _run(include_perk_counts=True)
+    assert weapon_without_perk == 11
+    assert ammo_without_perk == pytest.approx(0.0, abs=1e-6)
+    assert weapon_with_perk == 1
+    assert ammo_with_perk == pytest.approx(12.0, abs=1e-6)
 
 
 def test_survival_runner_does_not_stop_early_on_death_for_original_capture_replay() -> None:

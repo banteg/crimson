@@ -62,6 +62,17 @@ def test_perk_generate_choices_inserts_monster_vision_on_quest_1_7() -> None:
     assert choices and choices[0] == PerkId.MONSTER_VISION
 
 
+def test_perk_generate_choices_skips_monster_vision_insert_when_capture_counts_unknown() -> None:
+    state = GameplayState(rng=_as_rng(_SeqRng(list(range(2048)))))
+    state.quest_stage_major = 1
+    state.quest_stage_minor = 7
+    state.perk_selection.capture_player_perk_counts_known = False
+    player = PlayerState(index=0, pos=Vec2())
+
+    choices = perk_generate_choices(state, player, game_mode=int(GameMode.QUESTS), player_count=1)
+    assert choices and choices[0] != PerkId.MONSTER_VISION
+
+
 def test_perk_generate_choices_rejects_pyromaniac_without_flamethrower() -> None:
     state = GameplayState(rng=_as_rng(_SeqRng([38, 1, 2, 3, 4, 5, 6, 7])))
     state._perk_available_unlock_index = 0
