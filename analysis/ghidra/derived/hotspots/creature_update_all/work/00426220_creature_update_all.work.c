@@ -43,6 +43,7 @@ void creature_update_all(void)
   
   creature_update_tick = creature_update_tick + 1;
   creature_active_count = 0;
+  /* Master creature pool sweep (one update per active slot). */
   creature_idx = 0;
   do {
     if ((&creature_pool)[creature_idx].active != '\0') {
@@ -51,8 +52,10 @@ void creature_update_all(void)
         (&creature_pool)[creature_idx].hit_flash_timer =
              (&creature_pool)[creature_idx].hit_flash_timer - frame_dt;
       }
+      /* Freeze bonus pauses most live-AI behavior when active. */
       if (bonus_freeze_timer <= 0.0) {
         health_ptr = &(&creature_pool)[creature_idx].health;
+        /* Flag-driven periodic damage (poison/self-harm lanes). */
         if (((&creature_pool)[creature_idx].health <= 0.0) &&
            ((&creature_pool)[creature_idx].hitbox_size == 16.0)) {
           (&creature_pool)[creature_idx].hitbox_size = (&creature_pool)[creature_idx].hitbox_size - frame_dt
@@ -75,6 +78,7 @@ void creature_update_all(void)
 LAB_0042634c:
           creature_apply_damage(creature_idx,fVar17,0,pfVar16);
         }
+        /* AI7 pulse timer toggles between roaming and orbit-style phases. */
         if (((&creature_pool)[creature_idx].flags & 0x80) != 0) {
           iVar7 = (&creature_pool)[creature_idx].link_index;
           if (iVar7 < 0) {
@@ -99,6 +103,7 @@ LAB_0042634c:
           (&creature_pool)[creature_idx].hitbox_size = (&creature_pool)[creature_idx].hitbox_size - frame_dt
           ;
         }
+        /* Retarget logic: choose nearest live player and update player auto-target feedback. */
         cVar10 = (char)(&creature_pool)[creature_idx].target_player;
         iVar7 = (int)cVar10;
         pfVar16 = &(&creature_pool)[creature_idx].pos_x;
@@ -139,6 +144,7 @@ LAB_0042634c:
           *(char *)&(&creature_pool)[creature_idx].target_player = '\x01' - cVar10;
         }
         hitbox_size_ptr = &(&creature_pool)[creature_idx].hitbox_size;
+        /* Active-body branch: collision pulses, AI target synthesis, movement, and attacks. */
         if ((&creature_pool)[creature_idx].hitbox_size == 16.0) {
           collision_flag_ptr = &(&creature_pool)[creature_idx].collision_flag;
           if ((&creature_pool)[creature_idx].collision_flag != '\0') {
@@ -169,6 +175,7 @@ LAB_0042634c:
           move_scale = 1.0;
           fVar17 = (float)(int)fVar17 * 3.7 * 3.1415927;
           if (creature_idx != iVar7) {
+            /* AI mode dispatch for target point generation (follow/orbit/link/idle variants). */
             iVar7 = (&creature_pool)[creature_idx].ai_mode;
             if (iVar7 == 0) {
               iVar7 = (int)(char)(&creature_pool)[creature_idx].target_player;
@@ -323,6 +330,7 @@ LAB_00426ac8:
               (&creature_pool)[creature_idx].target_x = (&player_state_table)[cVar10].pos_x;
               (&creature_pool)[creature_idx].target_y = (&player_state_table)[cVar10].pos_y;
             }
+            /* Heading approach + velocity integration; spawner roots run spawn-slot timers too. */
             fVar11 = (float10)fpatan((float10)(&creature_pool)[creature_idx].target_y -
                                      (float10)(&creature_pool)[creature_idx].pos_y,
                                      (float10)(&creature_pool)[creature_idx].target_x -
@@ -399,6 +407,7 @@ LAB_00426ac8:
                 }
               }
             }
+            /* Animation, cooldown decay, and ranged attack gates (flags 0x10 / 0x100). */
             iVar7 = perk_count_get(perk_id_plaguebearer);
             if ((iVar7 != 0) && (plaguebearer_infection_count < 0x3c)) {
               plaguebearer_spread_infection(creature_idx);
@@ -481,6 +490,7 @@ LAB_00426ac8:
                 sfx_play_panned(fVar15);
               }
             }
+            /* Near-contact resolution: melee hits, perk hooks, infection propagation. */
             if (fVar17 < 20.0) {
               *pfVar16 = *pfVar16 - (&creature_pool)[creature_idx].vel_x;
               (&creature_pool)[creature_idx].pos_y =
@@ -546,6 +556,7 @@ LAB_0042733a:
             }
           }
         }
+        /* Death/corpse branch: shrink, slide, spawn corpse FX, and eventually deactivate. */
         else if (*hitbox_size_ptr <= 0.0) {
           *hitbox_size_ptr = *hitbox_size_ptr - frame_dt * 20.0;
         }
@@ -600,6 +611,7 @@ LAB_0042733a:
               }
             }
             creature_kill_count = creature_kill_count + 1;
+            /* Spawner-class deaths burst extra blood and can be culled immediately. */
             if ((config_fx_toggle == '\0') && (((&creature_pool)[creature_idx].flags & 4) != 0)) {
               iVar7 = 8;
               do {
