@@ -809,7 +809,7 @@ class CreaturePool:
             single_player_dead_target = PlayerState(
                 index=1,
                 pos=Vec2(float(world_width) * (27.0 / 64.0), float(world_height) * (27.0 / 64.0)),
-                health=0.0,
+                health=100.0,
             )
 
         evil_targets: set[int] = set()
@@ -939,9 +939,7 @@ class CreaturePool:
                 if creature.collision_timer < 0.0:
                     creature.collision_timer += CONTACT_DAMAGE_PERIOD
                     creature.hp -= 15.0
-                    if fx_queue is not None:
-                        fx_queue.add_random(pos=creature.pos, rand=rand)
-
+                    plague_killed = False
                     if creature.hp < 0.0:
                         state.plaguebearer_infection_count += 1
                         deaths.append(
@@ -957,6 +955,22 @@ class CreaturePool:
                                 fx_queue=fx_queue,
                             ),
                         )
+                        # Native plague-kill path consumes one rand draw for
+                        # creature attack SFX bank-b selection after death side effects.
+                        try:
+                            creature_type = CreatureTypeId(int(creature.type_id))
+                        except ValueError:
+                            creature_type = None
+                        if creature_type is not None:
+                            options = _CREATURE_CONTACT_SFX.get(creature_type)
+                            if options is not None:
+                                sfx.append(options[int(rand()) & 1])
+                        plague_killed = True
+
+                    if fx_queue is not None:
+                        fx_queue.add_random(pos=creature.pos, rand=rand)
+
+                    if plague_killed:
                         if creature.active:
                             self._tick_dead(
                                 creature,
