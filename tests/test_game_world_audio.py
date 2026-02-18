@@ -28,7 +28,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(monkeypatch) -> None:
 
     played: list[str | None] = []
 
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:
+    def _play_sfx(_state, key, *, rng=None, allow_variants=True, reflex_boost_timer=0.0) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
@@ -74,7 +74,7 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(monkeypatch) -> None:
 
     played: list[str | None] = []
 
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:
+    def _play_sfx(_state, key, *, rng=None, allow_variants=True, reflex_boost_timer=0.0) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
@@ -120,7 +120,7 @@ def test_pending_perk_increase_plays_levelup_sfx(monkeypatch) -> None:
 
     played: list[str | None] = []
 
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:
+    def _play_sfx(_state, key, *, rng=None, allow_variants=True, reflex_boost_timer=0.0) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
@@ -146,7 +146,7 @@ def test_bonus_pickup_plays_bonus_sfx(monkeypatch) -> None:
 
     played: list[str | None] = []
 
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:
+    def _play_sfx(_state, key, *, rng=None, allow_variants=True, reflex_boost_timer=0.0) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
@@ -169,7 +169,7 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(monkeypatch) -> None:
 
     played: list[str | None] = []
 
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:
+    def _play_sfx(_state, key, *, rng=None, allow_variants=True, reflex_boost_timer=0.0) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
@@ -192,7 +192,7 @@ def test_perk_bursts_play_explosion_small_sfx(monkeypatch) -> None:
 
     played: list[str | None] = []
 
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:
+    def _play_sfx(_state, key, *, rng=None, allow_variants=True, reflex_boost_timer=0.0) -> None:
         played.append(key)
 
     monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
@@ -227,3 +227,25 @@ def test_perk_bursts_play_explosion_small_sfx(monkeypatch) -> None:
     player.ammo = 0
     world.update(0.2, inputs=[aim], perk_progression_enabled=False)
     assert played == ["sfx_explosion_small"]
+
+
+def test_audio_router_forwards_live_reflex_timer(monkeypatch) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+
+    reflex_seen: list[float] = []
+
+    def _play_sfx(_state, _key, *, rng=None, allow_variants=True, reflex_boost_timer=0.0) -> None:
+        del rng, allow_variants
+        reflex_seen.append(float(reflex_boost_timer))
+
+    monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
+    world.audio = _audio_state_stub()
+    world.audio_rng = random.Random(0)
+    world.audio_router.audio = world.audio
+    world.audio_router.audio_rng = world.audio_rng
+
+    world.state.bonuses.reflex_boost = 0.75
+    world.audio_router.play_sfx("sfx_pistol_fire")
+
+    assert reflex_seen == [0.75]

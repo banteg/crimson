@@ -76,10 +76,17 @@ def play_sfx(
     *,
     rng: random.Random | None = None,
     allow_variants: bool = True,
+    reflex_boost_timer: float = 0.0,
 ) -> None:
     if state is None:
         return
-    sfx.play_sfx(state.sfx, key, rng=rng, allow_variants=allow_variants)
+    sfx.play_sfx(
+        state.sfx,
+        key,
+        rng=rng,
+        allow_variants=allow_variants,
+        reflex_boost_timer=float(reflex_boost_timer),
+    )
 
 
 def set_sfx_volume(state: AudioState | None, volume: float) -> None:

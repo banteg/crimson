@@ -70,6 +70,7 @@ class AudioRouter:
     audio_rng: random.Random | None = None
     demo_mode_active: bool = False
     sfx_enabled: bool = True
+    reflex_boost_timer_source: Callable[[], float] | None = None
 
     @staticmethod
     def _rand_choice(rand: Callable[[], int], options: tuple[str, ...]) -> str | None:
@@ -78,15 +79,32 @@ class AudioRouter:
         idx = int(rand()) % len(options)
         return options[idx]
 
+    def _reflex_boost_timer(self) -> float:
+        source = self.reflex_boost_timer_source
+        if source is None:
+            return 0.0
+        return float(source())
+
     def play_sfx(self, key: str | None) -> None:
         if self.audio is None or (not self.sfx_enabled):
             return
-        play_sfx(self.audio, key, rng=self.audio_rng)
+        play_sfx(
+            self.audio,
+            key,
+            rng=self.audio_rng,
+            reflex_boost_timer=self._reflex_boost_timer(),
+        )
 
     def play_sfx_resolved(self, key: str | None) -> None:
         if self.audio is None or (not self.sfx_enabled):
             return
-        play_sfx(self.audio, key, rng=self.audio_rng, allow_variants=False)
+        play_sfx(
+            self.audio,
+            key,
+            rng=self.audio_rng,
+            allow_variants=False,
+            reflex_boost_timer=self._reflex_boost_timer(),
+        )
 
     def trigger_game_tune(self) -> str | None:
         if self.audio is None:
