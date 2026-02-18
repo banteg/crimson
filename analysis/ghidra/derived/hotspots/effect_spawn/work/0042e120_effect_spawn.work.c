@@ -20,6 +20,7 @@ void * effect_spawn(int effect_id, float *pos)
   float *pfVar7;
   float *effect_write_ptr;
   
+  /* Low detail presets skip every other spawn to reduce overdraw. */
   if (_config_detail_preset < 3) {
     detail_skip_bit = effect_spawn_detail_skip_counter & 1;
     effect_spawn_detail_skip_counter = effect_spawn_detail_skip_counter + 1;
@@ -29,6 +30,7 @@ void * effect_spawn(int effect_id, float *pos)
   }
   size_code = (&effect_id_table)[effect_id].size_code;
   frame_idx = (&effect_id_table)[effect_id].frame;
+  /* Pop one entry from the free list and clone the active effect template payload. */
   effect_ptr = effect_free_list_head;
   pfVar7 = (float *)effect_free_list_head[0x2e];
   if ((float *)effect_free_list_head[0x2e] == (float *)0x0) {
@@ -46,7 +48,9 @@ void * effect_spawn(int effect_id, float *pos)
   *effect_ptr = *pos;
   effect_ptr[1] = pos[1];
   *(char *)(effect_ptr + 2) = (char)effect_id;
+  /* Size-code dispatch picks UV atlas table/step while writing the same quad layout. */
   if (size_code == 0x10) {
+    /* 16x16 atlas lane. */
     effect_ptr[0x17] = (&effect_uv16)[frame_idx].u;
     effect_ptr[0x18] = (&effect_uv16)[frame_idx].v;
     fVar1 = -_effect_template_half_height;
@@ -73,6 +77,7 @@ void * effect_spawn(int effect_id, float *pos)
     return effect_ptr;
   }
   if (size_code == 0x20) {
+    /* 8x8 atlas lane. */
     effect_ptr[0x17] = (&effect_uv8)[frame_idx].u;
     effect_ptr[0x18] = (&effect_uv8)[frame_idx].v;
     fVar1 = -_effect_template_half_height;
@@ -100,6 +105,7 @@ void * effect_spawn(int effect_id, float *pos)
   }
   if (size_code != 0x40) {
     if (size_code == 0x80) {
+      /* 2x2 atlas lane. */
       effect_ptr[0x17] = (&effect_uv2)[frame_idx].u;
       effect_ptr[0x18] = (&effect_uv2)[frame_idx].v;
       fVar1 = -_effect_template_half_height;
@@ -126,6 +132,7 @@ void * effect_spawn(int effect_id, float *pos)
     }
     return effect_ptr;
   }
+  /* 4x4 atlas lane. */
   effect_ptr[0x17] = (&effect_uv4)[frame_idx].u;
   effect_ptr[0x18] = (&effect_uv4)[frame_idx].v;
   fVar1 = -_effect_template_half_height;

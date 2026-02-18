@@ -17,11 +17,15 @@ Use it as a consistent first-pass naming scheme while preserving branch labels.
 - `iVar6` -> `copy_word_idx`
 - `pfVar8` -> `effect_write_ptr`
 
-## Suggested section comments
+## Section Map (Current Work Copy)
 
-- detail-preset skip gate
-- free-list pop and template copy
-- UV/layout setup by size-code bucket (`0x10/0x20/0x40/0x80`)
+- line 23: detail-preset skip gate
+- line 33: free-list pop + template clone
+- line 51: size-code UV dispatch shared shape
+- line 53: `0x10` atlas lane
+- line 80: `0x20` atlas lane
+- line 108: `0x80` atlas lane
+- line 135: `0x40` atlas lane
 
 ## Notes
 
