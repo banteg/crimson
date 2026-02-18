@@ -28,6 +28,7 @@ just frida-sync-share
 - `scripts/frida/gameplay_diff_capture.js`
 - `scripts/frida/survival_autoplay.js`
 - `scripts/frida/creature_anim_trace.js`
+- `scripts/frida/thunk_452f1d_trace.js`
 - `scripts/frida/creature_render_trace.js`
 - `scripts/frida/fx_queue_render_trace.js`
 - `scripts/frida/azk_verify_no_unlock.js`
@@ -123,6 +124,12 @@ Creature animation phase trace (focused, JSONL to `creature_anim_trace.jsonl`):
 frida -n crimsonland.exe -l C:\share\frida\creature_anim_trace.js
 ```
 
+Thunk runtime contract trace (`thunk_FUN_00452f1d`, JSONL to `thunk_452f1d_trace.jsonl`):
+
+```text
+frida -n crimsonland.exe -l C:\share\frida\thunk_452f1d_trace.js
+```
+
 Creature render trace (draw calls + alpha for dying creatures, JSONL to `creature_render_trace.jsonl`):
 
 ```text
@@ -151,6 +158,7 @@ Default logs written by the scripts:
 - `C:\share\frida\gameplay_diff_capture.quest_<MAJOR>_<MINOR>.json` (quest-mode runs)
 - `C:\share\frida\survival_autoplay.jsonl` (if you ran `survival_autoplay.js`)
 - `C:\share\frida\creature_anim_trace.jsonl`
+- `C:\share\frida\thunk_452f1d_trace.jsonl` (if you ran `thunk_452f1d_trace.js`)
 - `C:\share\frida\ui_render_trace.jsonl`
 - `C:\share\frida\panel_state_resolution_capture_<WIDTH>x<HEIGHT>_<RUNID>.jsonl` (if you ran `panel_state_resolution_sweep.js`)
 - `C:\share\frida\demo_trial_overlay_trace.jsonl` (if you ran `demo_trial_overlay_trace.js`)
