@@ -1189,3 +1189,49 @@ When the capture SHA is unchanged, append updates to the same session.
 - Next probe should be tooling-first before more gameplay patches:
   - add quest-mode support to `original focus-trace`, or
   - add rewrite-side RNG callsite/branch-id trace capture for quest ticks around `8528..8530`.
+
+### Session 17 (continued: tooling update)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.quest_1_7.json`
+- **Baseline verifier command:**
+  `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.quest_1_7.json --tick 8528 --near-miss-threshold 0.35 --top-rng 5 --near-miss-limit 3 --diff-limit 3 --no-cache`
+- **Tooling status change:**
+  - before: `focus-trace` rejected quest captures (`mode=3`),
+  - after: quest mode is supported in both no-cache and cached focus-trace paths.
+
+### Key Findings
+
+- The blockage noted above was tooling-only and reproducible in both runtime paths:
+  - direct `focus-trace --no-cache`,
+  - cached diagnostics runtime (`CaptureSession.get_focus_report`).
+- Quest-mode focus tracing requires parity with replay-runner quest bootstrap semantics:
+  - quest spawn-table/session bootstrap,
+  - capture bootstrap timer offsets,
+  - capture state-transition reset callback,
+  - authoritative capture creature spawn hooks for original-capture quest replays.
+
+### Landed Changes
+
+- `src/crimson/original/focus_trace.py`
+  - extended `trace_focus_tick` to support quest mode (`GameMode.QUESTS`) end-to-end.
+  - added richer replay-event metadata (`bootstrap_start_tick`, quest spawn-event presence).
+  - mirrored quest bootstrap/session-reset logic from quest replay runner.
+- `src/crimson/original/diagnostics_cache.py`
+  - generalized `_FocusRuntime` to support both survival and quest modes.
+  - added quest bootstrap timer handling, capture state reset flow, and quest session stepping.
+  - fixed anchor restore to preserve pending quest state-reset flag.
+- Tests:
+  - `tests/test_original_capture_focus_trace.py`
+  - `tests/test_original_diagnostics_cache.py`
+  - added quest-mode coverage for focus tooling entry/runtime paths.
+
+### Validation
+
+- `just check`
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.quest_1_7.json --tick 8528 --near-miss-threshold 0.35 --top-rng 5 --near-miss-limit 3 --diff-limit 3 --no-cache`
+- `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.quest_1_7.json --tick 8528 --near-miss-threshold 0.35 --top-rng 5 --near-miss-limit 3 --diff-limit 3`
+
+### Outcome / Next Probe
+
+- The quest tooling wall is removed; `focus-trace` now produces actionable quest tick reports at the frontier.
+- Next probe remains the unresolved gameplay divergence at `quest_1_7 tick 8529`, now using quest-mode focus traces for per-callsite attribution around `8528..8530`.
