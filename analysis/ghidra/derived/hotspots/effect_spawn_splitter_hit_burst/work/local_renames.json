@@ -1,0 +1,12 @@
+{
+  "functions": {
+    "effect_spawn_splitter_hit_burst": {
+      "uVar2": "rng_value",
+      "iVar3": "radius_rand",
+      "pvVar4": "effect_ptr",
+      "lVar7": "radius_i64",
+      "local_10": "spawn_x",
+      "local_c": "spawn_y"
+    }
+  }
+}
