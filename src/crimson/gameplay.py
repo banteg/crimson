@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 from grim.geom import Vec2
 from grim.rand import Crand, CrandLike
@@ -89,6 +89,10 @@ _RELATIVE_MOVE_TURN_ALIGN_SCALE = float(f32(7.957747))
 _AIM_POINT_RADIUS = 60.0
 _AIM_KEYBOARD_TURN_RATE = 3.0
 _AIM_JOYSTICK_TURN_RATE = 4.0
+
+
+class _SpawnSlotLike(Protocol):
+    owner_creature: int
 
 
 @dataclass(slots=True)
@@ -344,7 +348,7 @@ def _player_apply_move_with_spawn_avoidance(
     player: PlayerState,
     *,
     delta: Vec2,
-    spawn_slots: Sequence[object] | None,
+    spawn_slots: Sequence[_SpawnSlotLike] | None,
     creatures: Sequence[Damageable] | None,
 ) -> None:
     """Port of native `player_apply_move_with_spawn_avoidance` (0x0041e290)."""
@@ -360,16 +364,14 @@ def _player_apply_move_with_spawn_avoidance(
 
     if spawn_slots and creatures:
         for slot in spawn_slots:
-            owner_index = int(getattr(slot, "owner_creature", -1))
+            owner_index = int(slot.owner_creature)
             if not (0 <= owner_index < len(creatures)):
                 continue
             owner = creatures[owner_index]
-            owner_pos = getattr(owner, "pos", None)
-            if owner_pos is None:
-                continue
+            owner_pos = owner.pos
 
             radius = float(
-                f32((float(getattr(owner, "size", 0.0)) + float(player.size)) * 0.33333334),
+                f32((float(owner.size) + float(player.size)) * 0.33333334),
             )
             if _distance_f32_xy(float(owner_pos.x), float(owner_pos.y), float(pos_x), float(pos_y)) > float(radius):
                 continue
@@ -527,7 +529,7 @@ def player_update(
     world_size: float = 1024.0,
     players: list[PlayerState] | None = None,
     creatures: Sequence[Damageable] | None = None,
-    spawn_slots: Sequence[object] | None = None,
+    spawn_slots: Sequence[_SpawnSlotLike] | None = None,
 ) -> None:
     """Port of `player_update` (0x004136b0) for the rewrite runtime."""
 

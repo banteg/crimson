@@ -295,15 +295,13 @@ def draw_sharpshooter_laser_sight(
     rl.rl_begin(rd.RL_QUADS)
 
     for player in players:
-        if float(getattr(player, "health", 0.0)) <= 0.0:
+        if float(player.health) <= 0.0:
             continue
         if not perk_active(player, PerkId.SHARPSHOOTER):
             continue
-        player_pos = getattr(player, "pos", None)
-        if not isinstance(player_pos, Vec2):
-            continue
+        player_pos = player.pos
 
-        aim_heading = float(getattr(player, "aim_heading", 0.0))
+        aim_heading = float(player.aim_heading)
         aim_dir = Vec2.from_heading(aim_heading)
         start = player_pos + aim_dir * 15.0
         end = player_pos + aim_dir * 512.0

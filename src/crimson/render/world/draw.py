@@ -241,7 +241,7 @@ def sorted_active_creatures(render_ctx: WorldRenderCtx) -> list[tuple[int, _Crea
         if creature.active
     ]
     creatures.sort(
-        key=lambda item: (creature_type_order.get(int(getattr(item[1], "type_id", -1)), 999), item[0]),
+        key=lambda item: (creature_type_order.get(int(item[1].type_id), 999), item[0]),
     )
     return creatures
 
@@ -264,7 +264,7 @@ def draw_creature_overlays(
             tint = rl.Color(255, 255, 0, int(clamp(mv_alpha, 0.0, 1.0) * 255.0 + 0.5))
             rl.draw_texture_pro(ctx.particles_texture, ctx.monster_vision_src, dst, origin, 0.0, tint)
 
-    if ctx.particles_texture is not None and ctx.poison_src is not None and bool(getattr(creature, "plague_infected", False)):
+    if ctx.particles_texture is not None and ctx.poison_src is not None and bool(creature.plague_infected):
         # creature_render_all: collision_flag overlay (black 80x80 aura), drawn before red poison flag.
         plague_alpha = fade * ctx.entity_alpha
         if plague_alpha > 1e-3:
@@ -318,7 +318,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
         # Mirrors `creature_render_type` (0x00418b60) branch when
         # `_bonus_energizer_timer > 0` and `max_health < 500`.
         energizer_timer = float(render_ctx.state.bonuses.energizer)
-        if energizer_timer > 0.0 and float(getattr(creature, "max_hp", 0.0)) < 500.0:
+        if energizer_timer > 0.0 and float(creature.max_hp) < 500.0:
             # Native clamps to 1.0, then blends towards (0.5, 0.5, 1.0, 1.0).
             # Effect is full strength while timer >= 1 and fades out during the last second.
             t = energizer_timer
@@ -520,13 +520,13 @@ def draw_aim_indicators(
 
         aim = player.aim
         dist = player.pos.distance_to(player.aim)
-        radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
+        radius = max(6.0, dist * float(player.spread_heat) * 0.5)
         aim_screen = transform(aim, ctx.camera, ctx.view_scale)
         screen_radius = max(1.0, radius * ctx.scale)
         draw_circle(aim_screen, screen_radius, ctx.entity_alpha)
 
-        reload_timer = float(getattr(player, "reload_timer", 0.0))
-        reload_max = float(getattr(player, "reload_timer_max", 0.0))
+        reload_timer = float(player.reload_timer)
+        reload_max = float(player.reload_timer_max)
         if reload_max > 1e-6 and reload_timer > 1e-6:
             progress = reload_timer / reload_max
             if progress > 0.0:
