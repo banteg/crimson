@@ -827,7 +827,7 @@ class LanRuntime:
                 self._host_broadcast(pause, reliable=True, now_ms=int(now_ms))
             frames = self.host_lockstep.pop_ready_frames(now_ms=int(now_ms))
             for frame in frames:
-                tick = int(getattr(frame, "tick_index", 0) or 0)
+                tick = int(frame.tick_index)
                 queued_at = self._host_input_queued_at_ms.pop(int(tick), None)
                 if queued_at is not None:
                     latency_ms = max(0, int(now_ms) - int(queued_at))
@@ -857,7 +857,7 @@ class LanRuntime:
             elif (int(now_ms) - int(last_send)) >= int(KEEPALIVE_INTERVAL_MS):
                 tick_index = 0
                 if self.host_lockstep is not None:
-                    tick_index = int(getattr(self.host_lockstep, "next_emit_tick", 0) or 0)
+                    tick_index = int(self.host_lockstep.next_emit_tick)
                 self._host_broadcast(KeepAlive(tick_index=int(tick_index)), reliable=False, now_ms=int(now_ms))
 
     def _handle_host_message(self, addr: PeerAddr, message: NetMessage, *, now_ms: int) -> None:
@@ -975,7 +975,7 @@ class LanRuntime:
             max_tick = -1
             min_tick = 2**31 - 1
             for sample in batch.samples:
-                tick = int(getattr(sample, "tick_index", 0) or 0)
+                tick = int(sample.tick_index)
                 max_tick = max(int(max_tick), int(tick))
                 min_tick = min(int(min_tick), int(tick))
             if max_tick >= 0 and (int(max_tick) < 5 or (int(max_tick) % 60) == 0):
@@ -1133,8 +1133,8 @@ class LanRuntime:
         if (
             bool(self.started)
             and pause_state is not None
-            and bool(getattr(pause_state, "paused", False))
-            and str(getattr(pause_state, "reason", "") or "") == "waiting_input"
+            and bool(pause_state.paused)
+            and str(pause_state.reason or "") == "waiting_input"
         ):
             timeout_ms = max(int(timeout_ms), int(PAUSED_LINK_TIMEOUT_MS))
         if (int(now_ms) - int(self.client_last_seen_ms)) >= int(timeout_ms):
@@ -1168,7 +1168,7 @@ class LanRuntime:
             elif (int(now_ms) - int(last_send)) >= int(KEEPALIVE_INTERVAL_MS):
                 tick_index = 0
                 if self.client_lockstep is not None:
-                    tick_index = int(getattr(self.client_lockstep, "next_consume_tick", 0) or 0)
+                    tick_index = int(self.client_lockstep.next_consume_tick)
                 self._client_send(KeepAlive(tick_index=int(tick_index)), reliable=False, now_ms=int(now_ms))
 
         self._client_send_idle_heartbeat(now_ms=int(now_ms))
@@ -1450,7 +1450,7 @@ class LanRuntime:
             max_tick = -1
             min_tick = 2**31 - 1
             for sample in message.samples:
-                tick = int(getattr(sample, "tick_index", 0) or 0)
+                tick = int(sample.tick_index)
                 max_tick = max(int(max_tick), int(tick))
                 min_tick = min(int(min_tick), int(tick))
             if max_tick >= 0 and (int(max_tick) < 5 or (int(max_tick) % 60) == 0):
@@ -1473,8 +1473,8 @@ class LanRuntime:
         pause_state = self.client_pause_state
         if (
             pause_state is None
-            or (not bool(getattr(pause_state, "paused", False)))
-            or str(getattr(pause_state, "reason", "") or "") != "waiting_input"
+            or (not bool(pause_state.paused))
+            or str(pause_state.reason or "") != "waiting_input"
         ):
             return
         if (int(now_ms) - int(self._client_last_send_ms)) < int(IDLE_HEARTBEAT_MS):
@@ -1577,7 +1577,7 @@ class LanRuntime:
         )
 
     def _host_init_lockstep(self, event: MatchStart) -> None:
-        player_count = max(1, min(4, int(getattr(event, "player_count", 1) or 1)))
+        player_count = max(1, min(4, int(event.player_count)))
         self.host_lockstep = HostLockstepState(
             player_count=int(player_count),
             input_delay_ticks=int(self.cfg.input_delay_ticks),

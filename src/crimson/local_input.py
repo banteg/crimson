@@ -189,7 +189,7 @@ class LocalInputInterpreter:
     def _state_slot_for_player(*, player_index: int, player: PlayerState | None = None) -> int:
         slot = int(player_index)
         if player is not None:
-            slot = int(getattr(player, "index", slot))
+            slot = int(player.index)
         return max(0, min(3, slot))
 
     def reset(self, *, players: Sequence[PlayerState] | None = None) -> None:
@@ -202,7 +202,7 @@ class LocalInputInterpreter:
             return
         for idx, player in enumerate(players):
             slot = self._state_slot_for_player(player_index=int(idx), player=player)
-            candidate = float(getattr(player, "aim_heading", 0.0))
+            candidate = float(player.aim_heading)
             if _is_finite(candidate):
                 self._states[slot].aim_heading = float(candidate)
 
@@ -211,9 +211,9 @@ class LocalInputInterpreter:
         best_idx: int | None = None
         best_dist_sq = 0.0
         for idx, creature in enumerate(creatures):
-            if not bool(getattr(creature, "active", False)):
+            if not bool(creature.active):
                 continue
-            if float(getattr(creature, "hp", 0.0)) <= 0.0:
+            if float(creature.hp) <= 0.0:
                 continue
             dist_sq = Vec2.distance_sq(pos, creature.pos)
             if best_idx is None or float(dist_sq) < float(best_dist_sq):
@@ -241,14 +241,14 @@ class LocalInputInterpreter:
             return int(candidate)
 
         current_creature = creatures[current]
-        if not bool(getattr(current_creature, "active", False)) or float(getattr(current_creature, "hp", 0.0)) <= 0.0:
+        if not bool(current_creature.active) or float(current_creature.hp) <= 0.0:
             state.computer_target_creature_index = int(candidate)
             return int(candidate)
         if int(candidate) == int(current):
             return int(current)
 
         candidate_creature = creatures[int(candidate)]
-        if not bool(getattr(candidate_creature, "active", False)) or float(getattr(candidate_creature, "hp", 0.0)) <= 0.0:
+        if not bool(candidate_creature.active) or float(candidate_creature.hp) <= 0.0:
             return int(current)
 
         current_dist = (current_creature.pos - player.pos).length()
@@ -262,7 +262,7 @@ class LocalInputInterpreter:
         slot = self._state_slot_for_player(player_index=int(player_index), player=player)
         state = self._states[slot]
         if player is not None and (not _is_finite(state.aim_heading)):
-            state.aim_heading = float(getattr(player, "aim_heading", 0.0) or 0.0)
+            state.aim_heading = float(player.aim_heading)
         return state
 
     @staticmethod
@@ -433,7 +433,7 @@ class LocalInputInterpreter:
 
         heading = float(state.aim_heading)
         if not _is_finite(heading):
-            heading = float(getattr(player, "aim_heading", 0.0) or 0.0)
+            heading = float(player.aim_heading)
         aim = Vec2(float(player.aim.x), float(player.aim.y))
         computer_auto_fire = False
         if aim_scheme is AimScheme.MOUSE:
