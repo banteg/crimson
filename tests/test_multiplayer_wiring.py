@@ -116,7 +116,6 @@ def test_base_gameplay_build_local_inputs_passes_creatures(monkeypatch, tmp_path
         screen_to_world,
         dt_frame,
         creatures,
-        preserve_bugs,
     ):
         captured["players"] = players
         captured["config"] = config
@@ -124,7 +123,6 @@ def test_base_gameplay_build_local_inputs_passes_creatures(monkeypatch, tmp_path
         captured["screen_to_world"] = screen_to_world
         captured["dt_frame"] = dt_frame
         captured["creatures"] = creatures
-        captured["preserve_bugs"] = preserve_bugs
         return [PlayerInput() for _ in players]
 
     monkeypatch.setattr(mode._local_input, "build_frame_inputs", _fake_build_frame_inputs)
@@ -133,7 +131,7 @@ def test_base_gameplay_build_local_inputs_passes_creatures(monkeypatch, tmp_path
 
     assert len(frame) == len(mode.world.players)
     assert captured["creatures"] is mode.creatures.entries
-    assert captured["preserve_bugs"] == bool(mode.state.preserve_bugs)
+    assert bool(mode._local_input._preserve_bugs) == bool(mode.state.preserve_bugs)
 
 
 def test_rush_mode_pauses_sim_while_lan_wait_gate_is_active(monkeypatch, tmp_path: Path) -> None:

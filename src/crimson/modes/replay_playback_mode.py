@@ -343,6 +343,7 @@ class ReplayPlaybackMode:
             seed_for_reset = int(replay.header.bootstrap_seed)
         world.reset(seed=int(seed_for_reset), player_count=int(replay.header.player_count))
         world.open()
+        self._hud_state.preserve_bugs = bool(world.state.preserve_bugs)
         world.state.status = status_from_snapshot(
             quest_unlock_index=int(replay.header.status.quest_unlock_index),
             quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
@@ -803,7 +804,6 @@ class ReplayPlaybackMode:
                 show_quest_hud=bool(hud_flags.show_quest_hud),
                 quest_progress_ratio=quest_progress_ratio,
                 small_indicators=False,
-                preserve_bugs=bool(world.preserve_bugs),
             )
 
         self._draw_quest_title()

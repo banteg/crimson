@@ -310,6 +310,12 @@ class BaseGameplayMode:
         self.state = self.world.state
         self.creatures = self.world.creatures
         self.player = self.world.players[0]
+        preserve_bugs = bool(self.state.preserve_bugs)
+        if hasattr(self, "_local_input"):
+            self._local_input.set_preserve_bugs(preserve_bugs)
+        self._hud_state.preserve_bugs = preserve_bugs
+        if hasattr(self, "_game_over_ui"):
+            self._game_over_ui.preserve_bugs = preserve_bugs
         # `GameplayState.status` is the simulation status (LAN may override it
         # with a deterministic session-local status to avoid split brain).
         self.state.status = self._status_sim
@@ -869,7 +875,6 @@ class BaseGameplayMode:
             screen_to_world=self.world.screen_to_world,
             dt_frame=float(dt_frame),
             creatures=self.creatures.entries,
-            preserve_bugs=bool(self.state.preserve_bugs),
         )
 
     @staticmethod

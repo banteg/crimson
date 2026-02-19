@@ -72,7 +72,7 @@ class TutorialMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._tutorial = TutorialState()
+        self._tutorial = TutorialState(preserve_bugs=bool(self.state.preserve_bugs))
         self._tutorial_actions = TutorialFrameActions()
 
         self._ui_assets: PerkMenuAssets | None = None
@@ -94,7 +94,7 @@ class TutorialMode(BaseGameplayMode):
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._repeat_button = UiButtonState("Repeat tutorial", force_wide=True)
 
-        self._tutorial = TutorialState()
+        self._tutorial = TutorialState(preserve_bugs=bool(self.state.preserve_bugs))
         self._tutorial_actions = TutorialFrameActions()
 
         self.state.perk_selection.pending_count = 0
@@ -287,6 +287,7 @@ class TutorialMode(BaseGameplayMode):
         creatures_none_active = not bool(self.creatures.iter_active())
         bonus_pool_empty = not bool(self.state.bonus_pool.iter_active())
         perk_pending_count = int(self.state.perk_selection.pending_count)
+        self._tutorial.preserve_bugs = bool(self.state.preserve_bugs)
 
         self._tutorial, actions = tick_tutorial_timeline(
             self._tutorial,
@@ -297,7 +298,6 @@ class TutorialMode(BaseGameplayMode):
             bonus_pool_empty=bonus_pool_empty,
             perk_pending_count=perk_pending_count,
             hint_bonus_died=hint_bonus_died,
-            preserve_bugs=bool(self.world.preserve_bugs),
         )
         self._tutorial_actions = actions
 
@@ -377,7 +377,6 @@ class TutorialMode(BaseGameplayMode):
                 show_time=hud_flags.show_time,
                 show_quest_hud=hud_flags.show_quest_hud,
                 small_indicators=self._hud_small_indicators(),
-                preserve_bugs=bool(self.world.preserve_bugs),
             )
 
         self._draw_tutorial_prompts(hud_bottom=hud_bottom)
