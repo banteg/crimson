@@ -119,6 +119,10 @@ def _resolve_replay_path(replay_file: Path, *, base_dir: Path) -> tuple[Path, tu
     return path, tuple(tried)
 
 
+def _default_replay_render_output_path(replay_path: Path) -> Path:
+    return Path(replay_path).with_suffix(".render.mp4")
+
+
 def _render_checkpoint_diff_failure(diff: object) -> None:
     diff_obj = cast("Any", diff)
     failure = diff_obj.failure
@@ -1192,6 +1196,126 @@ def cmd_replay_benchmark(
             f"calls={int(row.primitive_calls)}/{int(row.total_calls)} "
             f"{row.file}:{int(row.line)}::{row.function}",
         )
+
+
+@replay_app.command("render")
+def cmd_replay_render(
+    replay_file: Path = typer.Argument(
+        ...,
+        help="replay file path (.crd); if a filename is provided, also search base-dir/replays",
+    ),
+    out: Path | None = typer.Option(
+        None,
+        "--out",
+        "-o",
+        help="output video path (default: <replay>.render.mp4)",
+    ),
+    width: int | None = typer.Option(None, help="render width (default: use crimson.cfg)"),
+    height: int | None = typer.Option(None, help="render height (default: use crimson.cfg)"),
+    fps: int = typer.Option(60, "--fps", min=1, help="output video fps"),
+    max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
+    strict_events: bool = typer.Option(
+        True,
+        "--strict-events/--lenient-events",
+        help="fail on unsupported replay events/perk picks (default: strict)",
+    ),
+    trace_rng: bool = typer.Option(
+        False,
+        "--trace-rng",
+        help="enable replay RNG trace mode during simulation",
+    ),
+    ffmpeg_bin: Path | None = typer.Option(
+        None,
+        "--ffmpeg-bin",
+        help="ffmpeg executable path (default: discover from PATH)",
+    ),
+    crf: int = typer.Option(
+        16,
+        "--crf",
+        min=0,
+        max=51,
+        help="ffmpeg quality factor (libx264: lower is higher quality)",
+    ),
+    preset: Literal[
+        "ultrafast",
+        "superfast",
+        "veryfast",
+        "faster",
+        "fast",
+        "medium",
+        "slow",
+        "slower",
+        "veryslow",
+    ] = typer.Option("slow", "--preset", help="ffmpeg libx264 preset"),
+    pixel_format: str = typer.Option(
+        "yuv420p",
+        "--pixel-format",
+        help="ffmpeg output pixel format",
+    ),
+    overwrite: bool = typer.Option(
+        False,
+        "--overwrite",
+        help="overwrite output if it already exists",
+    ),
+    base_dir: Path = typer.Option(
+        default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
+        help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
+    ),
+    assets_dir: Path | None = typer.Option(
+        None,
+        help="assets root (default: base-dir; missing .paq files are downloaded)",
+    ),
+) -> None:
+    """Render replay playback to video using ffmpeg."""
+    from .replay import ReplayCodecError, load_replay
+    from .sim.driver.replay_render import ReplayRenderError, run_replay_render_video
+    from .sim.driver.replay_runner import ReplayRunnerError
+
+    replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
+    if not replay_path.is_file():
+        message = f"replay file not found: {tried[0]}"
+        if len(tried) > 1:
+            message += f" (also tried: {tried[1]})"
+        typer.echo(message, err=True)
+        raise typer.Exit(code=1)
+
+    output_path = Path(out) if out is not None else _default_replay_render_output_path(replay_path)
+
+    replay_bytes = Path(replay_path).read_bytes()
+    try:
+        replay = load_replay(replay_bytes)
+        render = run_replay_render_video(
+            replay,
+            replay_path=Path(replay_path),
+            output_path=Path(output_path),
+            base_dir=Path(base_dir),
+            assets_dir=(Path(assets_dir) if assets_dir is not None else None),
+            width=width,
+            height=height,
+            fps=int(fps),
+            max_ticks=max_ticks,
+            strict_events=bool(strict_events),
+            trace_rng=bool(trace_rng),
+            ffmpeg_bin=(Path(ffmpeg_bin) if ffmpeg_bin is not None else None),
+            crf=int(crf),
+            preset=preset,
+            pixel_format=str(pixel_format),
+            overwrite=bool(overwrite),
+        )
+    except (ReplayCodecError, ReplayRenderError, ReplayRunnerError) as exc:
+        typer.echo(f"replay render failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    message = (
+        f"ok: output={render.output_path} "
+        f"frames={render.frame_count} fps={render.fps} "
+        f"resolution={render.width}x{render.height} "
+        f"ticks={render.run_result.ticks} elapsed_ms={render.run_result.elapsed_ms} "
+        f"score_xp={render.run_result.score_xp} kills={render.run_result.creature_kill_count}"
+    )
+    typer.echo(message)
 
 
 @replay_app.command("verify-checkpoints")
