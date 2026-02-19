@@ -1294,6 +1294,11 @@ def cmd_replay_render(
         "--overwrite",
         help="overwrite output if it already exists",
     ),
+    audio: bool = typer.Option(
+        True,
+        "--audio/--mute-audio",
+        help="include in-game audio in output video",
+    ),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
         "--base-dir",
@@ -1345,6 +1350,7 @@ def cmd_replay_render(
             preset=preset,
             pixel_format=str(pixel_format),
             overwrite=bool(overwrite),
+            mute_audio=not bool(audio),
             progress=cast("Any", progress_callback),
         )
     except (ReplayCodecError, ReplayRenderError, ReplayRunnerError) as exc:

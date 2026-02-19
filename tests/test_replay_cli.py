@@ -469,6 +469,7 @@ def test_replay_render_uses_render_video_runner(tmp_path: Path, monkeypatch) -> 
     assert calls[0]["preset"] == "slow"
     assert calls[0]["pixel_format"] == "yuv420p"
     assert calls[0]["overwrite"] is True
+    assert calls[0]["mute_audio"] is False
     assert calls[0]["replay_path"] == replay_path
     assert calls[0]["base_dir"] == tmp_path
     assert calls[0]["output_path"] == replay_path.with_suffix(".render.mp4")
@@ -527,6 +528,57 @@ def test_replay_render_uses_custom_output_and_ffmpeg_bin(tmp_path: Path, monkeyp
     assert calls
     assert calls[0]["output_path"] == out_path
     assert calls[0]["ffmpeg_bin"] == ffmpeg_path
+    assert calls[0]["mute_audio"] is False
+
+
+def test_replay_render_supports_mute_audio_flag(tmp_path: Path, monkeypatch) -> None:
+    import crimson.sim.driver.replay_render as replay_render_mod
+
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+    calls: list[dict[str, object]] = []
+
+    def fake_render(_replay: Replay, **kwargs: object) -> ReplayRenderResult:
+        calls.append(dict(kwargs))
+        run_result = RunResult(
+            game_mode_id=int(GameMode.SURVIVAL),
+            tick_rate=60,
+            ticks=2,
+            elapsed_ms=33,
+            score_xp=0,
+            creature_kill_count=0,
+            most_used_weapon_id=1,
+            shots_fired=0,
+            shots_hit=0,
+            rng_state=123,
+        )
+        return ReplayRenderResult(
+            output_path=cast("Path", kwargs["output_path"]),
+            frame_count=2,
+            fps=60,
+            width=1024,
+            height=768,
+            run_result=run_result,
+        )
+
+    monkeypatch.setattr(replay_render_mod, "run_replay_render_video", fake_render)
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "render",
+            str(replay_path),
+            "--base-dir",
+            str(tmp_path),
+            "--mute-audio",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert calls
+    assert calls[0]["mute_audio"] is True
 
 
 def test_replay_benchmark_json_out_works_for_human_and_json_output(tmp_path: Path) -> None:
