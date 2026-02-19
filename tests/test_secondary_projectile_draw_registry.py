@@ -8,7 +8,7 @@ from crimson.render.projectile_draw import SecondaryProjectileDrawCtx, draw_seco
 from grim.geom import Vec2
 
 if TYPE_CHECKING:
-    from crimson.render.world import WorldRenderer
+    from crimson.render.projectile_draw import ProjectileRendererLike
 
 
 class _TextureLike(Protocol):
@@ -23,8 +23,8 @@ class _RendererLike(Protocol):
     config: object | None
 
 
-def _as_renderer(renderer: _RendererLike) -> WorldRenderer:
-    return cast("WorldRenderer", renderer)
+def _as_renderer(renderer: _RendererLike) -> ProjectileRendererLike:
+    return cast("ProjectileRendererLike", renderer)
 
 
 @dataclass(slots=True)

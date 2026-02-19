@@ -16,6 +16,10 @@ from ..creatures.spawn import CreatureFlags
 from ..game_modes import GameMode
 from ..game_world import GameWorld
 from ..gameplay import player_update
+from ..render.world.context import build_world_render_ctx
+from ..render.world.overlays import draw_aim_circle
+from ..render.world.projectiles import draw_projectile, draw_secondary_projectile
+from ..render.world.trooper import draw_player_trooper_sprite
 from ..sim.input import PlayerInput
 from ..sim.world_defs import BEAM_TYPES
 from ..ui.cursor import draw_aim_cursor
@@ -292,6 +296,7 @@ class ProjectileRenderDebugView:
         rl.clear_background(BG)
 
         renderer = self._world.renderer
+        render_ctx = build_world_render_ctx(renderer)
         camera, view_scale = renderer._world_params()
         screen_size = renderer._camera_screen_size()
 
@@ -325,16 +330,17 @@ class ProjectileRenderDebugView:
         for proj_index, proj in enumerate(self._world.state.projectiles.entries):
             if not proj.active:
                 continue
-            renderer._draw_projectile(proj, proj_index=proj_index, scale=scale)
+            draw_projectile(render_ctx, proj, proj_index=proj_index, scale=scale)
         for proj in self._world.state.secondary_projectiles.iter_active():
-            renderer._draw_secondary_projectile(proj, scale=scale)
+            draw_secondary_projectile(render_ctx, proj, scale=scale)
 
         # Player.
         player = self._player
         if player is not None:
             texture = self._world.creature_textures.get("trooper")
             if texture is not None:
-                renderer._draw_player_trooper_sprite(
+                draw_player_trooper_sprite(
+                    render_ctx,
                     texture,
                     player,
                     camera=camera,
@@ -353,7 +359,7 @@ class ProjectileRenderDebugView:
             radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
             screen_radius = max(1.0, radius * scale)
             aim_screen = self._world.world_to_screen(aim)
-            renderer._draw_aim_circle(center=aim_screen, radius=screen_radius)
+            draw_aim_circle(render_ctx, center=aim_screen, radius=screen_radius)
 
         # UI.
         x = 16.0
