@@ -43,6 +43,31 @@ def _resolve_player_slot(players: list[PlayerState], *, player_index: int) -> in
     return None
 
 
+def _shots_fired_player_index(
+    *,
+    state: GameplayState,
+    players: list[PlayerState] | None,
+    owner_id: int,
+    owner_player_index: int | None,
+) -> int | None:
+    if owner_player_index is not None:
+        player_index = int(owner_player_index)
+        if 0 <= player_index < len(state.shots_fired):
+            return int(player_index)
+
+    if owner_id in (-1, -2, -3):
+        player_index = -1 - int(owner_id)
+        if 0 <= player_index < len(state.shots_fired):
+            return int(player_index)
+
+    if owner_id == -100 and players and len(players) == 1:
+        player_index = int(players[0].index)
+        if 0 <= player_index < len(state.shots_fired):
+            return int(player_index)
+
+    return None
+
+
 def _fire_bullets_active(
     players: list[PlayerState] | None,
     *,
@@ -90,6 +115,16 @@ def projectile_spawn(
     # Mirror `projectile_spawn` (0x00420440) Fire Bullets override.
     type_id = int(type_id)
     owner_id = int(owner_id)
+    if (not state.bonus_spawn_guard) and owner_id in (-100, -1, -2, -3):
+        player_index = _shots_fired_player_index(
+            state=state,
+            players=players,
+            owner_id=owner_id,
+            owner_player_index=owner_player_index,
+        )
+        if player_index is not None:
+            state.shots_fired[player_index] += 1
+
     if (
         (not state.bonus_spawn_guard)
         and owner_id in (-100, -1, -2, -3)

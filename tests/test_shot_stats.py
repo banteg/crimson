@@ -4,12 +4,14 @@ from dataclasses import dataclass
 
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
+from crimson.projectiles import ProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (
     player_fire_weapon,
     weapon_assign_player,
 )
+from crimson.weapon_runtime.spawn import projectile_spawn
 from grim.geom import Vec2
 
 
@@ -52,3 +54,58 @@ def test_shots_fired_and_hit_increment() -> None:
     )
     assert hits
     assert state.shots_hit[0] == 1
+
+
+def test_projectile_spawn_increments_shots_fired_for_owner_minus_100_with_owner_index() -> None:
+    state = GameplayState()
+    player0 = PlayerState(index=0, pos=Vec2())
+    player1 = PlayerState(index=1, pos=Vec2())
+
+    projectile_spawn(
+        state,
+        players=[player0, player1],
+        pos=Vec2(),
+        angle=0.0,
+        type_id=int(ProjectileTypeId.PISTOL),
+        owner_id=-100,
+        owner_player_index=1,
+    )
+
+    assert state.shots_fired[0] == 0
+    assert state.shots_fired[1] == 1
+
+
+def test_projectile_spawn_increments_shots_fired_for_owner_minus_2() -> None:
+    state = GameplayState()
+    player0 = PlayerState(index=0, pos=Vec2())
+    player1 = PlayerState(index=1, pos=Vec2())
+
+    projectile_spawn(
+        state,
+        players=[player0, player1],
+        pos=Vec2(),
+        angle=0.0,
+        type_id=int(ProjectileTypeId.PISTOL),
+        owner_id=-2,
+    )
+
+    assert state.shots_fired[0] == 0
+    assert state.shots_fired[1] == 1
+
+
+def test_projectile_spawn_does_not_increment_shots_fired_when_bonus_guard_is_on() -> None:
+    state = GameplayState()
+    state.bonus_spawn_guard = True
+    player = PlayerState(index=0, pos=Vec2())
+
+    projectile_spawn(
+        state,
+        players=[player],
+        pos=Vec2(),
+        angle=0.0,
+        type_id=int(ProjectileTypeId.PISTOL),
+        owner_id=-100,
+        owner_player_index=0,
+    )
+
+    assert state.shots_fired[0] == 0
