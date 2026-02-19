@@ -1495,9 +1495,8 @@ class CreaturePool:
                 xp_awarded = award_experience_from_reward(state, killer, float(creature.reward_value))
 
         if players:
-            spawned_bonus = None
             if (creature.flags & CreatureFlags.BONUS_ON_DEATH) and creature.bonus_id is not None:
-                spawned_bonus = state.bonus_pool.spawn_at(
+                state.bonus_pool.spawn_at(
                     pos=creature.pos,
                     bonus_id=int(creature.bonus_id),
                     duration_override=int(creature.bonus_duration_override)
@@ -1507,14 +1506,13 @@ class CreaturePool:
                     world_width=world_width,
                     world_height=world_height,
                 )
-            else:
-                spawned_bonus = state.bonus_pool.try_spawn_on_kill(
-                    pos=creature.pos,
-                    state=state,
-                    players=players,
-                    world_width=world_width,
-                    world_height=world_height,
-                )
+            spawned_bonus = state.bonus_pool.try_spawn_on_kill(
+                pos=creature.pos,
+                state=state,
+                players=players,
+                world_width=world_width,
+                world_height=world_height,
+            )
             if spawned_bonus is not None:
                 state.effects.spawn_burst(
                     pos=spawned_bonus.pos,
