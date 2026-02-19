@@ -10,6 +10,7 @@ from ...creatures.damage_types import CreatureDamageType
 from ...effects_atlas import EffectId
 from ...math_parity import f32
 from ..types import (
+    _CREATURE_HITBOX_ALIVE,
     SECONDARY_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
     Damageable,
@@ -289,6 +290,14 @@ class SecondaryProjectilePool:
                     hit_idx = idx
                     break
             if hit_idx is not None:
+                if runtime_state is not None:
+                    owner_id = int(entry.owner_id)
+                    if owner_id < 0 and float(creatures[int(hit_idx)].hitbox_size) == _CREATURE_HITBOX_ALIVE:
+                        shots_hit = runtime_state.shots_hit
+                        player_index = 0 if owner_id == -100 else (-1 - owner_id)
+                        if 0 <= player_index < len(shots_hit):
+                            shots_hit[player_index] += 1
+
                 if sfx_queue is not None:
                     sfx_queue.append("sfx_explosion_medium")
 

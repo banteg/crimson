@@ -10,6 +10,7 @@ from ...math_parity import NATIVE_HALF_PI, f32
 from ...perks import PerkId
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..types import (
+    _CREATURE_HITBOX_ALIVE,
     MAIN_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
     Damageable,
@@ -357,7 +358,7 @@ class ProjectilePool:
 
                     if runtime_state is not None:
                         owner_id = int(proj.owner_id)
-                        if owner_id < 0:
+                        if owner_id < 0 and float(creature.hitbox_size) == _CREATURE_HITBOX_ALIVE:
                             shots_hit = runtime_state.shots_hit
                             player_index = 0 if owner_id == -100 else (-1 - owner_id)
                             if 0 <= player_index < len(shots_hit):

@@ -786,6 +786,7 @@ def test_secondary_projectile_pool_freeze_spawns_extra_shards_and_burst() -> Non
             self.effects = _Effects()
             self.sprite_effects = _Sprites()
             self.sfx_queue: list[str] = []
+            self.shots_hit: list[int] = [0, 0, 0, 0]
 
     runtime = _RuntimeState()
 
