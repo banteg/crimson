@@ -594,6 +594,7 @@ def test_local_input_joystick_aim_preserve_bugs_uses_player1_pov_slot(
     )
 
     interpreter = local_input.LocalInputInterpreter()
+    interpreter.set_preserve_bugs(True)
     player = PlayerState(index=1, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
 
     out = interpreter.build_player_input(
@@ -605,7 +606,6 @@ def test_local_input_joystick_aim_preserve_bugs_uses_player1_pov_slot(
         screen_center=Vec2(),
         dt_frame=0.1,
         creatures=[],
-        preserve_bugs=True,
     )
 
     expected = player.pos + Vec2.from_heading(0.4) * 60.0

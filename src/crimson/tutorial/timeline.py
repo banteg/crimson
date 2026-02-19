@@ -56,6 +56,7 @@ class TutorialState:
     hint_fade_in: bool = False
     repeat_spawn_count: int = 0
     hint_bonus_creature_ref: int | None = None
+    preserve_bugs: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -160,7 +161,6 @@ def _tick_hint(
     *,
     frame_dt_ms: int,
     hint_bonus_died: bool,
-    preserve_bugs: bool,
 ) -> tuple[tuple[SpawnTemplateCall, ...], str, float]:
     hint_spawns: list[SpawnTemplateCall] = []
 
@@ -181,7 +181,7 @@ def _tick_hint(
     elif state.hint_alpha > 1000:
         state.hint_alpha = 1000
 
-    hint_text_table = _TUTORIAL_HINT_TEXT_BUGS if bool(preserve_bugs) else _TUTORIAL_HINT_TEXT
+    hint_text_table = _TUTORIAL_HINT_TEXT_BUGS if bool(state.preserve_bugs) else _TUTORIAL_HINT_TEXT
     idx = int(state.hint_index)
     text = hint_text_table[idx] if 0 <= idx < len(hint_text_table) else ""
     alpha = float(state.hint_alpha) * 0.001 if text else 0.0
@@ -198,7 +198,6 @@ def tick_tutorial_timeline(
     bonus_pool_empty: bool,
     perk_pending_count: int,
     hint_bonus_died: bool = False,
-    preserve_bugs: bool = False,
 ) -> tuple[TutorialState, TutorialFrameActions]:
     """Pure model of the tutorial director (`tutorial_timeline_update` / 0x00408990).
 
@@ -224,7 +223,6 @@ def tick_tutorial_timeline(
         state,
         frame_dt_ms=dt_ms,
         hint_bonus_died=bool(hint_bonus_died),
-        preserve_bugs=bool(preserve_bugs),
     )
 
     actions = TutorialFrameActions(

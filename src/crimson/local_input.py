@@ -182,8 +182,12 @@ def clear_input_edges(inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
 
 
 class LocalInputInterpreter:
-    def __init__(self) -> None:
+    def __init__(self, *, preserve_bugs: bool = False) -> None:
         self._states: list[_PerPlayerInputState] = [_PerPlayerInputState() for _ in range(4)]
+        self._preserve_bugs = bool(preserve_bugs)
+
+    def set_preserve_bugs(self, enabled: bool) -> None:
+        self._preserve_bugs = bool(enabled)
 
     @staticmethod
     def _state_slot_for_player(*, player_index: int, player: PlayerState | None = None) -> int:
@@ -289,7 +293,6 @@ class LocalInputInterpreter:
         screen_center: Vec2,
         dt_frame: float,
         creatures: Sequence[_ComputerAimCreature] | None = None,
-        preserve_bugs: bool = False,
     ) -> PlayerInput:
         idx = max(0, min(3, int(player_index)))
         state = self._state_for_player(idx, player=player)
@@ -466,9 +469,9 @@ class LocalInputInterpreter:
             else:
                 aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.JOYSTICK:
-            if _aim_pov_right_active(player_index=idx, preserve_bugs=bool(preserve_bugs)):
+            if _aim_pov_right_active(player_index=idx, preserve_bugs=bool(self._preserve_bugs)):
                 heading = float(heading + float(dt_frame) * _AIM_JOYSTICK_TURN_RATE)
-            if _aim_pov_left_active(player_index=idx, preserve_bugs=bool(preserve_bugs)):
+            if _aim_pov_left_active(player_index=idx, preserve_bugs=bool(self._preserve_bugs)):
                 heading = float(heading - float(dt_frame) * _AIM_JOYSTICK_TURN_RATE)
             aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.COMPUTER:
@@ -534,7 +537,6 @@ class LocalInputInterpreter:
         screen_to_world: Callable[[Vec2], Vec2],
         dt_frame: float,
         creatures: Sequence[_ComputerAimCreature] | None = None,
-        preserve_bugs: bool = False,
     ) -> list[PlayerInput]:
         mouse_world = screen_to_world(mouse_screen)
         screen_center = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
@@ -550,7 +552,6 @@ class LocalInputInterpreter:
                     screen_center=screen_center,
                     dt_frame=float(dt_frame),
                     creatures=creatures,
-                    preserve_bugs=bool(preserve_bugs),
                 ),
             )
         return out

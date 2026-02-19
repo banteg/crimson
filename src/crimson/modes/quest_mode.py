@@ -490,7 +490,7 @@ class QuestMode(BaseGameplayMode):
                     tick_rate=int(self._sim_clock.tick_rate),
                     difficulty_level=int(self.world.difficulty_level),
                     hardcore=bool(self.world.hardcore),
-                    preserve_bugs=bool(self.world.preserve_bugs),
+                    preserve_bugs=bool(self.state.preserve_bugs),
                     detail_preset=self.config.detail_preset,
                     fx_toggle=self.config.fx_toggle,
                     world_size=float(self.world.world_size),
@@ -1081,7 +1081,6 @@ class QuestMode(BaseGameplayMode):
                 show_quest_hud=hud_flags.show_quest_hud,
                 quest_progress_ratio=quest_progress_ratio,
                 small_indicators=self._hud_small_indicators(),
-                preserve_bugs=bool(self.world.preserve_bugs),
             )
 
         if debug_enabled() and (not perk_menu_active):

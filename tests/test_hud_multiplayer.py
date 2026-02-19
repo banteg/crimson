@@ -132,7 +132,7 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeyp
     draws.clear()
     draw_hud_overlay(
         assets,
-        state=HudState(),
+        state=HudState(preserve_bugs=False),
         player=player0,
         players=[player0, player1],
         bonus_hud=None,
@@ -143,14 +143,13 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeyp
         show_weapon=False,
         show_xp=False,
         show_time=False,
-        preserve_bugs=False,
     )
     default_hearts = [tuple(dst) for tex, *dst in draws if tex is life_heart]
 
     draws.clear()
     draw_hud_overlay(
         assets,
-        state=HudState(),
+        state=HudState(preserve_bugs=True),
         player=player0,
         players=[player0, player1],
         bonus_hud=None,
@@ -161,7 +160,6 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeyp
         show_weapon=False,
         show_xp=False,
         show_time=False,
-        preserve_bugs=True,
     )
     preserve_hearts = [tuple(dst) for tex, *dst in draws if tex is life_heart]
 

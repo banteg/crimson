@@ -61,7 +61,7 @@ class PlayerSandboxView:
         self._creatures: list[DummyCreature] = []
 
         self._hud_assets: HudAssets | None = None
-        self._hud_state = HudState()
+        self._hud_state = HudState(preserve_bugs=bool(self._preserve_bugs))
         self._elapsed_ms = 0.0
         self._last_dt_ms = 0.0
 
@@ -113,7 +113,7 @@ class PlayerSandboxView:
         self._missing_assets.clear()
         self._small = load_small_font(self._assets_root)
         self._hud_assets = load_hud_assets(self._assets_root)
-        self._hud_state = HudState()
+        self._hud_state = HudState(preserve_bugs=bool(self._preserve_bugs))
 
         self.state.rng.srand(0xBEEF)
         self._creatures.clear()
@@ -330,7 +330,6 @@ class PlayerSandboxView:
                 score=self._player.experience,
                 font=self._small,
                 frame_dt_ms=self._last_dt_ms,
-                preserve_bugs=bool(self._preserve_bugs),
             )
 
         # UI.

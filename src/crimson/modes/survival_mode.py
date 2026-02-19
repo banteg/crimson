@@ -379,7 +379,7 @@ class SurvivalMode(BaseGameplayMode):
                     tick_rate=int(self._sim_clock.tick_rate),
                     difficulty_level=int(self.world.difficulty_level),
                     hardcore=bool(self.world.hardcore),
-                    preserve_bugs=bool(self.world.preserve_bugs),
+                    preserve_bugs=bool(self.state.preserve_bugs),
                     detail_preset=int(self._deterministic_detail_preset()),
                     fx_toggle=int(self._deterministic_fx_toggle()),
                     world_size=float(self.world.world_size),
@@ -1032,7 +1032,6 @@ class SurvivalMode(BaseGameplayMode):
                 show_time=hud_flags.show_time,
                 show_quest_hud=hud_flags.show_quest_hud,
                 small_indicators=self._hud_small_indicators(),
-                preserve_bugs=bool(self.world.preserve_bugs),
             )
 
         if debug_enabled() and (not self._game_over_active) and (not perk_menu_active):
