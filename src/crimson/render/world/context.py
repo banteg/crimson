@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import pyray as rl
@@ -8,7 +9,6 @@ from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
 
 from .constants import _RAD_TO_DEG
-from .mixin_base import WorldRendererMixinBase
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -19,204 +19,182 @@ if TYPE_CHECKING:
     from ...creatures.runtime import CreaturePool
     from ...gameplay import GameplayState
     from ...sim.state_types import PlayerState
+    from ..frame import RenderFrame
+    from .renderer import WorldRenderer
 
 
-class WorldRendererContextMixin(WorldRendererMixinBase):
+@dataclass(slots=True)
+class WorldRenderCtx:
+    renderer: WorldRenderer
+    frame: RenderFrame | None = None
+
     @property
     def assets_dir(self) -> Path:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.assets_dir
-        return self._world.assets_dir
+        if self.frame is not None:
+            return self.frame.assets_dir
+        return self.renderer._world.assets_dir
 
     @property
     def world_size(self) -> float:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.world_size
-        return self._world.world_size
+        if self.frame is not None:
+            return self.frame.world_size
+        return self.renderer._world.world_size
 
     @property
     def demo_mode_active(self) -> bool:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.demo_mode_active
-        return self._world.demo_mode_active
+        if self.frame is not None:
+            return self.frame.demo_mode_active
+        return self.renderer._world.demo_mode_active
 
     @property
     def config(self) -> CrimsonConfig | None:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.config
-        return self._world.config
+        if self.frame is not None:
+            return self.frame.config
+        return self.renderer._world.config
 
     @property
     def camera(self) -> Vec2:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.camera
-        return self._world.camera
+        if self.frame is not None:
+            return self.frame.camera
+        return self.renderer._world.camera
 
     @property
     def ground(self) -> GroundRenderer | None:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.ground
-        return self._world.ground
+        if self.frame is not None:
+            return self.frame.ground
+        return self.renderer._world.ground
 
     @property
     def state(self) -> GameplayState:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.state
-        return self._world.state
+        if self.frame is not None:
+            return self.frame.state
+        return self.renderer._world.state
 
     @property
     def players(self) -> list[PlayerState]:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.players
-        return self._world.players
+        if self.frame is not None:
+            return self.frame.players
+        return self.renderer._world.players
 
     @property
     def creatures(self) -> CreaturePool:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.creatures
-        return self._world.creatures
+        if self.frame is not None:
+            return self.frame.creatures
+        return self.renderer._world.creatures
 
     @property
     def creature_textures(self) -> dict[str, rl.Texture]:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.creature_textures
-        return self._world.creature_textures
+        if self.frame is not None:
+            return self.frame.creature_textures
+        return self.renderer._world.creature_textures
 
     @property
     def projs_texture(self) -> rl.Texture | None:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.projs_texture
-        return self._world.projs_texture
+        if self.frame is not None:
+            return self.frame.projs_texture
+        return self.renderer._world.projs_texture
 
     @property
     def particles_texture(self) -> rl.Texture | None:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.particles_texture
-        return self._world.particles_texture
+        if self.frame is not None:
+            return self.frame.particles_texture
+        return self.renderer._world.particles_texture
 
     @property
     def bullet_texture(self) -> rl.Texture | None:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.bullet_texture
-        return self._world.bullet_texture
+        if self.frame is not None:
+            return self.frame.bullet_texture
+        return self.renderer._world.bullet_texture
 
     @property
     def bullet_trail_texture(self) -> rl.Texture | None:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.bullet_trail_texture
-        return self._world.bullet_trail_texture
+        if self.frame is not None:
+            return self.frame.bullet_trail_texture
+        return self.renderer._world.bullet_trail_texture
 
     @property
     def arrow_texture(self) -> rl.Texture | None:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.arrow_texture
-        return self._world.arrow_texture
+        if self.frame is not None:
+            return self.frame.arrow_texture
+        return self.renderer._world.arrow_texture
 
     @property
     def bonuses_texture(self) -> rl.Texture | None:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.bonuses_texture
-        return self._world.bonuses_texture
+        if self.frame is not None:
+            return self.frame.bonuses_texture
+        return self.renderer._world.bonuses_texture
 
     @property
     def bodyset_texture(self) -> rl.Texture | None:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.bodyset_texture
-        return self._world.bodyset_texture
+        if self.frame is not None:
+            return self.frame.bodyset_texture
+        return self.renderer._world.bodyset_texture
 
     @property
     def clock_table_texture(self) -> rl.Texture | None:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.clock_table_texture
-        return self._world.clock_table_texture
+        if self.frame is not None:
+            return self.frame.clock_table_texture
+        return self.renderer._world.clock_table_texture
 
     @property
     def clock_pointer_texture(self) -> rl.Texture | None:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.clock_pointer_texture
-        return self._world.clock_pointer_texture
+        if self.frame is not None:
+            return self.frame.clock_pointer_texture
+        return self.renderer._world.clock_pointer_texture
 
     @property
     def aim_texture(self) -> rl.Texture | None:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.aim_texture
-        return self._world.aim_texture
+        if self.frame is not None:
+            return self.frame.aim_texture
+        return self.renderer._world.aim_texture
 
     @property
     def muzzle_flash_texture(self) -> rl.Texture | None:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.muzzle_flash_texture
-        return self._world.muzzle_flash_texture
+        if self.frame is not None:
+            return self.frame.muzzle_flash_texture
+        return self.renderer._world.muzzle_flash_texture
 
     @property
     def wicons_texture(self) -> rl.Texture | None:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.wicons_texture
-        return self._world.wicons_texture
+        if self.frame is not None:
+            return self.frame.wicons_texture
+        return self.renderer._world.wicons_texture
 
     @property
     def elapsed_ms(self) -> float:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.elapsed_ms
-        return float(self._world._elapsed_ms)
+        if self.frame is not None:
+            return self.frame.elapsed_ms
+        return float(self.renderer._world._elapsed_ms)
 
     @property
     def bonus_anim_phase(self) -> float:
-        frame = self._render_frame
-        if frame is not None:
-            return frame.bonus_anim_phase
-        return float(self._world._bonus_anim_phase)
+        if self.frame is not None:
+            return self.frame.bonus_anim_phase
+        return float(self.renderer._world._bonus_anim_phase)
 
     @property
     def lan_player_rings_enabled(self) -> bool:
-        frame = self._render_frame
-        if frame is not None:
-            return bool(frame.lan_player_rings_enabled)
-        return bool(getattr(self._world, "lan_player_rings_enabled", False))
+        if self.frame is not None:
+            return bool(self.frame.lan_player_rings_enabled)
+        return bool(getattr(self.renderer._world, "lan_player_rings_enabled", False))
 
     @property
     def lan_local_aim_indicators_only(self) -> bool:
-        frame = self._render_frame
-        if frame is not None:
-            return bool(frame.lan_local_aim_indicators_only)
-        return bool(getattr(self._world, "lan_local_aim_indicators_only", False))
+        if self.frame is not None:
+            return bool(self.frame.lan_local_aim_indicators_only)
+        return bool(getattr(self.renderer._world, "lan_local_aim_indicators_only", False))
 
     @property
     def lan_local_player_slot_index(self) -> int:
-        frame = self._render_frame
-        if frame is not None:
-            return int(frame.lan_local_player_slot_index)
-        return int(getattr(self._world, "lan_local_player_slot_index", 0))
+        if self.frame is not None:
+            return int(self.frame.lan_local_player_slot_index)
+        return int(getattr(self.renderer._world, "lan_local_player_slot_index", 0))
 
     def _ensure_small_font(self) -> SmallFontData | None:
-        if self._small_font is not None:
-            return self._small_font
-        # Keep UI text consistent with the HUD/menu font when available.
-        self._small_font = load_small_font(self.assets_dir)
-        return self._small_font
+        if self.renderer._small_font is not None:
+            return self.renderer._small_font
+        self.renderer._small_font = load_small_font(self.assets_dir)
+        return self.renderer._small_font
 
     def _camera_screen_size(
         self,
@@ -301,6 +279,7 @@ class WorldRendererContextMixin(WorldRendererMixinBase):
         dst = rl.Rectangle(pos.x, pos.y, w, h)
         origin = rl.Vector2(w * 0.5, h * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), tint)
+
     def world_to_screen(self, pos: Vec2) -> Vec2:
         camera, view_scale = self._world_params()
         return self._world_to_screen_with(pos, camera=camera, view_scale=view_scale)
@@ -312,3 +291,11 @@ class WorldRendererContextMixin(WorldRendererMixinBase):
             view_scale.y if view_scale.y > 0.0 else 1.0,
         )
         return pos.div_components(safe_scale) - camera
+
+
+def build_world_render_ctx(
+    renderer: WorldRenderer,
+    *,
+    render_frame: RenderFrame | None = None,
+) -> WorldRenderCtx:
+    return WorldRenderCtx(renderer=renderer, frame=render_frame)
