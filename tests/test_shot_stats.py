@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
-from crimson.projectiles import ProjectileTypeId
+from crimson.projectiles import ProjectileTypeId, SecondaryProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (
@@ -54,6 +54,64 @@ def test_shots_fired_and_hit_increment() -> None:
     )
     assert hits
     assert state.shots_hit[0] == 1
+
+
+def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    weapon_assign_player(player, 1)
+    player.spread_heat = 0.0
+    player.aim_dir = Vec2(1.0, 0.0)
+
+    player_fire_weapon(
+        player,
+        PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
+        dt=0.016,
+        state=state,
+    )
+
+    corpse = _DummyCreature(pos=Vec2(22.0, 0.0), hitbox_size=8.0)
+    hits = state.projectiles.update(
+        0.1,
+        [corpse],
+        world_size=1024.0,
+        damage_scale_by_type={},
+        rng=state.rng.rand,
+        runtime_state=state,
+    )
+
+    assert hits
+    assert state.shots_hit[0] == 0
+
+
+def test_secondary_projectile_direct_hit_increments_shots_hit_for_alive_targets() -> None:
+    state = GameplayState()
+    state.secondary_projectiles.spawn(
+        pos=Vec2(),
+        angle=0.0,
+        type_id=int(SecondaryProjectileTypeId.ROCKET),
+        owner_id=-100,
+    )
+    creatures = [_DummyCreature(pos=Vec2(0.0, -9.0), hp=1000.0, hitbox_size=16.0)]
+
+    state.secondary_projectiles.update_pulse_gun(0.1, creatures, runtime_state=state)
+
+    assert state.shots_hit[0] == 1
+
+
+def test_secondary_projectile_direct_hit_on_corpse_does_not_increment_shots_hit() -> None:
+    state = GameplayState()
+    state.secondary_projectiles.spawn(
+        pos=Vec2(),
+        angle=0.0,
+        type_id=int(SecondaryProjectileTypeId.ROCKET),
+        owner_id=-100,
+    )
+    creatures = [_DummyCreature(pos=Vec2(0.0, -9.0), hp=1000.0, hitbox_size=12.0)]
+
+    state.secondary_projectiles.update_pulse_gun(0.1, creatures, runtime_state=state)
+
+    assert state.shots_hit[0] == 0
 
 
 def test_projectile_spawn_increments_shots_fired_for_owner_minus_100_with_owner_index() -> None:
