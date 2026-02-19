@@ -341,7 +341,6 @@ def draw_hud_overlay(
     if frame_dt_ms is None:
         frame_dt_ms = max(0.0, float(rl.get_frame_time()) * 1000.0)
     state = state or HudState()
-    effective_preserve_bugs = bool(state.preserve_bugs)
     hud_players = list(players) if players is not None else [player]
     if not hud_players:
         hud_players = [player]
@@ -399,7 +398,7 @@ def draw_hud_overlay(
 
         for idx, hud_player in enumerate(hud_players):
             pulse_speed = 5.0 if hud_player.health < 30.0 else 2.0
-            if bool(effective_preserve_bugs) and player_count > 1 and idx > 0 and player0_low_health:
+            if bool(state.preserve_bugs) and player_count > 1 and idx > 0 and player0_low_health:
                 # Native 2-player HUD uses player 1 low-health pulse speed as a
                 # shared baseline for later player heart pulses.
                 pulse_speed = 5.0
@@ -955,7 +954,7 @@ def draw_hud_overlay(
 
             weapon_name = weapon_display_name(
                 int(hud_player.weapon_id),
-                preserve_bugs=bool(effective_preserve_bugs),
+                preserve_bugs=bool(state.preserve_bugs),
             )
             weapon_color = _with_alpha(HUD_TEXT_COLOR, text_alpha)
             text_pos = aux_text_base_pos + aux_step * float(idx)
