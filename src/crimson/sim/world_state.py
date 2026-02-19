@@ -10,8 +10,8 @@ from ..bonuses.pickup_fx import emit_bonus_pickup_effects
 from ..bonuses.update import bonus_update, bonus_update_pre_pickup_timers
 from ..camera import camera_shake_update
 from ..creatures.anim import creature_anim_advance_phase
-from ..creatures.damage import creature_apply_damage
-from ..creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureDeath, CreaturePool
+from ..creatures.damage import creature_apply_damage_with_lethal_followup
+from ..creatures.runtime import CreatureDeath, CreaturePool
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import (
@@ -185,8 +185,7 @@ class WorldState:
             creature = self.creatures.entries[idx]
             if not creature.active:
                 return
-            death_start_needed = creature.hp > 0.0 and creature.hitbox_size == CREATURE_HITBOX_ALIVE
-            killed = creature_apply_damage(
+            creature_apply_damage_with_lethal_followup(
                 creature,
                 damage_amount=float(damage),
                 damage_type=int(damage_type),
@@ -195,9 +194,7 @@ class WorldState:
                 dt=float(dt),
                 players=self.players,
                 rand=self.state.rng.rand,
-            )
-            if killed and death_start_needed:
-                self._record_creature_death(
+                on_lethal=lambda: self._record_creature_death(
                     creature_index=idx,
                     dt=float(dt),
                     detail_preset=int(detail_preset),
@@ -205,7 +202,8 @@ class WorldState:
                     fx_queue=fx_queue,
                     deaths=deaths,
                     plan_death_sfx_now=_plan_death_sfx_now,
-                )
+                ),
+            )
         def _on_secondary_detonation_kill(creature_index: int) -> None:
             idx = int(creature_index)
             if not (0 <= idx < len(self.creatures.entries)) or float(self.creatures.entries[idx].hp) > 0.0:

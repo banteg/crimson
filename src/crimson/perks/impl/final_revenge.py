@@ -28,8 +28,7 @@ def apply_final_revenge_on_player_death(
     deaths: list[CreatureDeath],
 ) -> None:
     """Apply Final Revenge perk behavior when a player dies."""
-    from ...creatures.damage import creature_apply_damage
-    from ...creatures.runtime import CREATURE_HITBOX_ALIVE
+    from ...creatures.damage import creature_apply_damage_with_lethal_followup
 
     if not perk_active(player, PerkId.FINAL_REVENGE):
         return
@@ -60,8 +59,8 @@ def apply_final_revenge_on_player_death(
             continue
 
         damage = remaining * 5.0
-        death_start_needed = float(creature.hp) > 0.0 and float(creature.hitbox_size) == CREATURE_HITBOX_ALIVE
-        killed = creature_apply_damage(
+        death_creature_idx = int(creature_idx)
+        creature_apply_damage_with_lethal_followup(
             creature,
             damage_amount=damage,
             damage_type=CreatureDamageType.EXPLOSION,
@@ -70,11 +69,9 @@ def apply_final_revenge_on_player_death(
             dt=float(dt),
             players=players,
             rand=rand,
-        )
-        if killed and death_start_needed:
-            deaths.append(
+            on_lethal=lambda death_creature_idx=death_creature_idx: deaths.append(
                 creatures.handle_death(
-                    int(creature_idx),
+                    int(death_creature_idx),
                     state=state,
                     players=players,
                     rand=rand,
@@ -84,7 +81,8 @@ def apply_final_revenge_on_player_death(
                     world_height=float(world_size),
                     fx_queue=fx_queue,
                 ),
-            )
+            ),
+        )
 
     state.bonus_spawn_guard = prev_guard
     state.sfx_queue.append("sfx_explosion_large")
