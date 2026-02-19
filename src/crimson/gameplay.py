@@ -144,6 +144,8 @@ class GameplayState:
     camera_shake_pulses: int = 0
     shots_fired: list[int] = field(default_factory=lambda: [0] * 4)
     shots_hit: list[int] = field(default_factory=lambda: [0] * 4)
+    player_spread_damping_scalar: float = 1.0
+    player_spread_damping_gate: float = 0.0
     weapon_shots_fired: list[list[int]] = field(default_factory=lambda: [[0] * WEAPON_COUNT_SIZE for _ in range(4)])
     debug_god_mode: bool = False
 
@@ -570,6 +572,17 @@ def player_update(
                 )
             state.sfx_queue.append(_LOW_HEALTH_BLOODSPILL_SFX[int(rand()) & 1])
             player.low_health_timer = 1.0
+
+    damping_scalar = float(f32(float(state.player_spread_damping_scalar)))
+    if float(state.player_spread_damping_gate) <= 0.0:
+        damping_scalar = float(f32(float(damping_scalar) + float(f32(float(dt) * 0.8))))
+        if damping_scalar > 1.0:
+            damping_scalar = 1.0
+    else:
+        damping_scalar = float(f32(float(damping_scalar) - float(dt)))
+        if damping_scalar < 0.3:
+            damping_scalar = 0.3
+    state.player_spread_damping_scalar = float(damping_scalar)
 
     player.muzzle_flash_alpha = max(0.0, player.muzzle_flash_alpha - dt * 2.0)
     cooldown_decay = float(f32(float(dt) * (1.5 if state.bonuses.weapon_power_up > 0.0 else 1.0)))

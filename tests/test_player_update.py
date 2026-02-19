@@ -126,6 +126,24 @@ def test_player_update_low_health_timer_100_sentinel_skips_bleed_fx() -> None:
     assert state.sfx_queue == []
 
 
+def test_player_update_spread_damping_scalar_recovers_toward_one_when_gate_non_positive() -> None:
+    state = GameplayState(player_spread_damping_scalar=0.5, player_spread_damping_gate=0.0)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.5, state)
+
+    assert math.isclose(state.player_spread_damping_scalar, 0.9, abs_tol=1e-6)
+
+
+def test_player_update_spread_damping_scalar_decays_to_floor_when_gate_positive() -> None:
+    state = GameplayState(player_spread_damping_scalar=0.35, player_spread_damping_gate=1.0)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state)
+
+    assert math.isclose(state.player_spread_damping_scalar, 0.3, abs_tol=1e-6)
+
+
 def test_player_update_stationary_reloader_tripples_reload_decay() -> None:
     state = GameplayState()
     player = PlayerState(
