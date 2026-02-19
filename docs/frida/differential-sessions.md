@@ -1683,3 +1683,41 @@ When the capture SHA is unchanged, append updates to the same session.
 
 - `quest_1_9` is cleared and unlinked from `artifacts/frida/share/`.
 - Earliest unresolved frontier in this set remains `quest_1_8` at `tick 7722`; continue by isolating the first RNG/value stream fork there.
+
+## Session 18 (continued: `angle_approach` decompile-order parity)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.quest_1_8.json.gz`
+- **Capture family:** post-master-rebase quest split set (`session18_alt_leads`)
+- **Baseline verifier command:**
+  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache`
+- **First mismatch progression:**
+  - before this fix: `tick 7722` (`state_mismatch`, progression-timing drift)
+  - after this fix: `tick 7756` (`rng_stream_mismatch`, projectile-hit-resolution shortfall)
+
+### Key Findings
+
+- Native `angle_approach` (`0x0041f430`) updates the wrapped heading arc in decompile order and does not enforce extra float32 truncation on intermediate turn-delta arithmetic.
+- The rewrite helper had over-quantized turn-step intermediates; this amplified slot-level heading drift before the frontier window and flipped kill timing.
+- Moving `_angle_approach(...)` to the decompile-faithful arithmetic order moved two active frontiers later with no earlier regressions in the linked no-cache quest sweep:
+  - `quest_1_8`: `7722 -> 7756` (`+34` ticks),
+  - `quest_4_5`: `46214 -> 46308` (`+94` ticks; category moved from `rng.value_stream_mismatch` to `rng.tail_shortfall`).
+
+### Landed Changes
+
+- `src/crimson/creatures/runtime.py`
+  - rewrote `_angle_approach(...)` to mirror native wrap/direct-vs-wrapped arc selection and step-direction logic in decompile order.
+
+### Validation
+
+- Targeted no-cache rechecks:
+  - `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache --json-out analysis/frida/reports/session18_alt_leads_recheck/quest_1_8_nocache_with_angle_probe_v3.json`
+  - `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_2_1.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache --json-out analysis/frida/reports/session18_alt_leads_recheck/quest_2_1_nocache_with_angle_probe_v3.json`
+- Full linked-capture no-cache canary sweep summary:
+  - `analysis/frida/reports/session18_alt_leads_recheck_angle_v3_nocache/_summary.tsv`
+- Repository checks:
+  - `just check`
+
+### Outcome / Next Probe
+
+- No linked captures are clean in this pass, so there are no new capture unlinks.
+- Earliest unresolved frontier moved to `quest_1_8 tick 7756`; next probe remains projectile-hit/kill-resolution parity at the first missing native tail branch in that window.

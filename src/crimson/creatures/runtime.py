@@ -131,50 +131,49 @@ def _wrap_angle(angle: float) -> float:
 def _angle_approach(current: float, target: float, rate: float, dt: float) -> float:
     """Native `angle_approach` (0x0041f430).
 
-    The original code uses float locals throughout and reads the frame delta from
-    the global `frame_dt` float. Mirror the float32 store boundaries here to avoid
-    1-ULP turn drift that can amplify over long capture replays.
+    Keep this close to the decompile:
+    - wrap angle into [0, 2pi]
+    - choose direct-vs-wrapped arc
+    - clamp arc scale to <= 1.0
+    - step by `frame_dt * arc_scale * rate`
     """
 
-    angle = float(f32(float(current)))
-    target_f32 = float(f32(float(target)))
-    rate_f32 = float(f32(float(rate)))
-    dt_f32 = float(f32(float(dt)))
-    tau = float(NATIVE_TAU)
+    angle = float(current)
+    target_f = float(target)
+    rate_f = float(rate)
+    dt_f = float(dt)
+    tau = 6.2831855
 
     while angle < 0.0:
-        angle = float(f32(float(angle) + float(tau)))
-    while float(tau) < float(angle):
-        angle = float(f32(float(angle) - float(tau)))
+        angle = angle + tau
+    while tau < angle:
+        angle = angle - tau
 
-    direct_delta = float(f32(float(target_f32) - float(angle)))
-    direct = float(f32(abs(float(direct_delta))))
+    direct = abs(target_f - angle)
 
-    hi = float(angle)
-    if float(angle) < float(target_f32):
-        hi = float(target_f32)
-    lo = float(angle)
-    if float(target_f32) < float(angle):
-        lo = float(target_f32)
+    hi = angle
+    if angle < target_f:
+        hi = target_f
+    lo = angle
+    if target_f < angle:
+        lo = target_f
+    wrapped = abs((tau - hi) + lo)
 
-    wrap_delta = float(f32(float(tau) - float(hi)))
-    wrapped = float(f32(abs(float(f32(float(wrap_delta) + float(lo))))))
-
-    step_scale = float(wrapped)
-    if float(direct) < float(wrapped):
-        step_scale = float(direct)
-    if 1.0 < float(step_scale):
+    step_scale = wrapped
+    if direct < wrapped:
+        step_scale = direct
+    if 1.0 < step_scale:
         step_scale = 1.0
 
-    step_delta = float(f32(float(dt_f32) * float(step_scale) * float(rate_f32)))
+    step_delta = dt_f * step_scale * rate_f
 
-    if float(direct) <= float(wrapped):
-        if float(angle) < float(target_f32):
-            return float(f32(float(step_delta) + float(angle)))
+    if direct <= wrapped:
+        if angle < target_f:
+            return angle + step_delta
     else:
-        if float(target_f32) < float(angle):
-            return float(f32(float(step_delta) + float(angle)))
-    return float(f32(float(angle) - float(step_delta)))
+        if target_f < angle:
+            return angle + step_delta
+    return angle - step_delta
 
 
 def _movement_delta_from_heading_f32(
