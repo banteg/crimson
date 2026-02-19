@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from collections import defaultdict
 from collections.abc import Callable, MutableSequence, Sequence
 
 from grim.geom import Vec2
@@ -30,6 +31,11 @@ from .behaviors import (
     _ProjectileUpdateCtx,
 )
 from .collision import _apply_damage_to_creature, _hit_radius_for, _within_native_find_radius
+
+_SPATIAL_BUCKET_SIZE = 64.0
+_NATIVE_FIND_SIZE_SCALE = 0.14285715
+_NATIVE_FIND_BASE_MARGIN = 3.0
+_NATIVE_FIND_RADIUS_MARGIN_EPS = 0.001
 
 
 class ProjectilePool:
@@ -179,6 +185,60 @@ class ProjectilePool:
 
         hits: list[ProjectileHit] = []
         margin = 64.0
+        creature_cells: dict[tuple[int, int], list[int]] = defaultdict(list)
+        creature_cell_by_index: list[tuple[int, int] | None] = [None] * len(creatures)
+        max_creature_find_margin = 0.0
+
+        def _creature_is_collidable(creature: Damageable) -> bool:
+            if not creature.active:
+                return False
+            if creature.hitbox_size <= 5.0:
+                return False
+            return True
+
+        def _cell_for_pos(pos: Vec2) -> tuple[int, int]:
+            cell_x = int(math.floor(float(pos.x) / _SPATIAL_BUCKET_SIZE))
+            cell_y = int(math.floor(float(pos.y) / _SPATIAL_BUCKET_SIZE))
+            return (cell_x, cell_y)
+
+        def _remove_creature_from_cell(index: int, cell: tuple[int, int]) -> None:
+            bucket = creature_cells.get(cell)
+            if bucket is None:
+                return
+            try:
+                bucket.remove(int(index))
+            except ValueError:
+                return
+            if not bucket:
+                creature_cells.pop(cell, None)
+
+        def _sync_creature_cell(index: int) -> None:
+            if not (0 <= index < len(creatures)):
+                return
+            creature = creatures[index]
+            previous_cell = creature_cell_by_index[index]
+            if not _creature_is_collidable(creature):
+                if previous_cell is not None:
+                    _remove_creature_from_cell(int(index), previous_cell)
+                    creature_cell_by_index[index] = None
+                return
+            next_cell = _cell_for_pos(creature.pos)
+            if previous_cell == next_cell:
+                return
+            if previous_cell is not None:
+                _remove_creature_from_cell(int(index), previous_cell)
+            creature_cells[next_cell].append(int(index))
+            creature_cell_by_index[index] = next_cell
+
+        for idx, creature in enumerate(creatures):
+            if not _creature_is_collidable(creature):
+                continue
+            cell = _cell_for_pos(creature.pos)
+            creature_cells[cell].append(int(idx))
+            creature_cell_by_index[int(idx)] = cell
+            creature_find_margin = float(creature.size) * _NATIVE_FIND_SIZE_SCALE + _NATIVE_FIND_BASE_MARGIN
+            if creature_find_margin > max_creature_find_margin:
+                max_creature_find_margin = float(creature_find_margin)
 
         def _damage_scale(type_id: int) -> float:
             value = damage_scale_by_type.get(type_id)
@@ -262,19 +322,38 @@ class ProjectilePool:
 
                     hit_idx = None
                     owner_creature_idx = int(proj.owner_id)
-                    for idx, creature in enumerate(creatures):
-                        if not creature.active:
-                            continue
-                        if creature.hitbox_size <= 5.0:
-                            continue
-                        if _within_native_find_radius(
-                            origin=proj.pos,
-                            target=creature.pos,
-                            radius=float(proj.hit_radius),
-                            target_size=float(creature.size),
-                        ):
-                            hit_idx = idx
-                            break
+                    if creature_cells:
+                        proj_cell_x = int(math.floor(float(proj.pos.x) / _SPATIAL_BUCKET_SIZE))
+                        proj_cell_y = int(math.floor(float(proj.pos.y) / _SPATIAL_BUCKET_SIZE))
+                        max_axis_delta = (
+                            float(proj.hit_radius) + float(max_creature_find_margin) + _NATIVE_FIND_RADIUS_MARGIN_EPS
+                        )
+                        cell_span = int(math.ceil(float(max_axis_delta) / _SPATIAL_BUCKET_SIZE))
+
+                        candidate_indices: list[int] = []
+                        for cell_y in range(proj_cell_y - cell_span, proj_cell_y + cell_span + 1):
+                            for cell_x in range(proj_cell_x - cell_span, proj_cell_x + cell_span + 1):
+                                bucket = creature_cells.get((int(cell_x), int(cell_y)))
+                                if bucket is not None:
+                                    candidate_indices.extend(bucket)
+
+                        if len(candidate_indices) > 1:
+                            candidate_indices.sort()
+
+                        for idx in candidate_indices:
+                            creature = creatures[idx]
+                            if not creature.active:
+                                continue
+                            if creature.hitbox_size <= 5.0:
+                                continue
+                            if _within_native_find_radius(
+                                origin=proj.pos,
+                                target=creature.pos,
+                                radius=float(proj.hit_radius),
+                                target_size=float(creature.size),
+                            ):
+                                hit_idx = idx
+                                break
 
                     owner_collision = hit_idx is not None and int(hit_idx) == owner_creature_idx
                     if owner_collision:
@@ -415,6 +494,7 @@ class ProjectilePool:
                                 owner_id=int(proj.owner_id),
                                 apply_creature_damage=apply_creature_damage,
                             )
+                            _sync_creature_cell(int(hit_idx))
                             if proj.life_timer != 0.25:
                                 proj.life_timer = 0.25
                         else:
@@ -427,6 +507,7 @@ class ProjectilePool:
                                 owner_id=int(proj.owner_id),
                                 apply_creature_damage=apply_creature_damage,
                             )
+                            _sync_creature_cell(int(hit_idx))
                             proj.damage_pool -= float(creature.hp)
 
                     # Native `projectile_update` has projectile-type specific freeze-hit
