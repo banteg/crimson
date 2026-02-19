@@ -23,6 +23,7 @@ from ..types import (
     _SpriteEffectsLike,
 )
 from .collision import _apply_damage_to_creature, _creature_find_nearest_for_secondary, _within_native_find_radius
+from .spatial_hash import CreatureSpatialHash
 
 
 class SecondaryProjectilePool:
@@ -148,6 +149,13 @@ class SecondaryProjectilePool:
             sprite_effects = runtime_state.sprite_effects
             sfx_queue = runtime_state.sfx_queue
 
+        def _creature_is_collidable(creature: Damageable) -> bool:
+            if not creature.active:
+                return False
+            return float(creature.hitbox_size) > 5.0
+
+        creature_spatial = CreatureSpatialHash(creatures=creatures, is_collidable=_creature_is_collidable)
+
         for entry in self._entries:
             if not entry.active:
                 continue
@@ -174,8 +182,9 @@ class SecondaryProjectilePool:
                 radius = scale * t * 80.0
                 radius_sq = radius * radius
                 damage = dt * scale * 700.0
-                for creature_idx, creature in enumerate(creatures):
-                    if not creature.active:
+                for creature_idx in creature_spatial.candidate_indices(pos=entry.pos, radius=float(radius)):
+                    creature = creatures[int(creature_idx)]
+                    if not _creature_is_collidable(creature):
                         continue
                     if creature.hp <= 0.0:
                         continue
@@ -190,6 +199,7 @@ class SecondaryProjectilePool:
                             owner_id=int(entry.owner_id),
                             impulse=impulse,
                         )
+                        creature_spatial.sync_index(int(creature_idx))
                         if on_detonation_kill is not None and hp_before > 0.0 and float(creature.hp) <= 0.0:
                             # Native detonation AoE does an extra two random decals and a
                             # second `creature_handle_death` call after the killing hit.
@@ -266,11 +276,9 @@ class SecondaryProjectilePool:
 
             # projectile_update uses creature_find_in_radius(..., 8.0, ...)
             hit_idx: int | None = None
-            for idx, creature in enumerate(creatures):
-                if not creature.active:
-                    continue
-                # Native `creature_find_in_radius` also gates on `hitbox_size > 5.0`.
-                if float(creature.hitbox_size) <= 5.0:
+            for idx in creature_spatial.candidate_indices(pos=entry.pos, radius=8.0):
+                creature = creatures[int(idx)]
+                if not _creature_is_collidable(creature):
                     continue
                 if _within_native_find_radius(
                     origin=entry.pos,
@@ -338,6 +346,7 @@ class SecondaryProjectilePool:
                     owner_id=int(entry.owner_id),
                     impulse=entry.vel / float(dt),
                 )
+                creature_spatial.sync_index(int(hit_idx))
 
                 entry.type_id = SecondaryProjectileTypeId.DETONATION
                 entry.vel = Vec2()
