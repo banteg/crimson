@@ -1721,3 +1721,41 @@ When the capture SHA is unchanged, append updates to the same session.
 
 - No linked captures are clean in this pass, so there are no new capture unlinks.
 - Earliest unresolved frontier moved to `quest_1_8 tick 7756`; next probe remains projectile-hit/kill-resolution parity at the first missing native tail branch in that window.
+
+## Session 18 (continued: `man_bomb` bootstrap interval inference false-wrap fix)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.quest_2_1.json.gz` *(now unlinked after verification)*
+- **Capture family:** post-master-rebase quest split set (`session18_alt_leads`)
+- **Baseline verifier command (pre-fix):**
+  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_2_1.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache`
+- **First mismatch progression:**
+  - before this fix: `tick 11417` (`rng_stream_mismatch`)
+  - after this fix: `result=ok (no divergence found with current settings)` *(no-cache run)*
+
+### Key Findings
+
+- Replay bootstrap interval inference treated the first observed active `man_bomb` timer drop as a trigger wrap.
+- In this capture, the first drop (`11380 -> 11381`, `1.225 -> 0.0`) was a movement-gated reset, not a trigger wrap; inferred interval became `~1.301s`.
+- With that wrong interval, rewrite incorrectly triggered Man Bomb at `tick 11416` (`8` extra RNG calls/projectiles), creating the `tick 11417` RNG stream fork.
+- True man-bomb trigger wraps later in the same capture infer `~4.0s`, consistent with native post-trigger behavior.
+
+### Landed Changes
+
+- `src/crimson/original/capture.py`
+  - stopped inferring bootstrap `man_bomb` interval from timer drops in `_infer_bootstrap_perk_intervals(...)`;
+  - kept inference for `hot_tempered` and `fire_cough`.
+- `tests/test_original_capture_conversion.py`
+  - added `test_convert_capture_to_replay_bootstrap_payload_does_not_infer_man_bomb_from_timer_drop`.
+
+### Validation
+
+- Targeted tests:
+  - `uv run pytest tests/test_original_capture_conversion.py -k "bootstrap_payload_infer or man_bomb_from_timer_drop" -q`
+- Divergence recheck:
+  - `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_2_1.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache --json-out analysis/frida/reports/session18_alt_leads_continue_pass/quest_2_1_after_bootstrap_interval_fix_nocache.json`
+    - `result=ok (no divergence found with current settings)`
+
+### Outcome / Next Probe
+
+- `quest_2_1` is cleared and unlinked from `artifacts/frida/share/`.
+- Remaining earliest unresolved frontier in the active set remains `quest_1_8 tick 7756`.

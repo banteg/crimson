@@ -1468,7 +1468,11 @@ def _infer_bootstrap_perk_intervals(capture: CaptureFile, *, tick_rate: int) -> 
                 dt_by_tick.get(int(next_tick.tick_index), float(default_dt)),
             ),
         )
-        for key in ("hot_tempered", "man_bomb", "fire_cough"):
+        # `man_bomb` timer frequently drops to zero from movement gating while the
+        # perk remains active; those drops are not interval wraps and produce
+        # false interval inference (for example ~1.30s). Keep bootstrap default
+        # (`4.0`) unless the capture explicitly provides global interval telemetry.
+        for key in ("hot_tempered", "fire_cough"):
             if key in out:
                 continue
             perk_id = _PERK_INTERVAL_PERK_IDS.get(str(key))
