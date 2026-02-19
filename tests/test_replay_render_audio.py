@@ -146,7 +146,10 @@ def test_capture_audio_track_clears_fx_queues_and_reports_progress(monkeypatch, 
     ]
 
 
-def test_mux_raw_audio_with_video_uses_sync_filter_without_time_warp(monkeypatch, tmp_path: Path) -> None:
+def test_mux_raw_audio_with_video_uses_output_safety_and_sync_filter_without_time_warp(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
     import crimson.sim.driver.replay_render as replay_render_mod
 
     video_path = tmp_path / "video.mp4"
@@ -179,6 +182,9 @@ def test_mux_raw_audio_with_video_uses_sync_filter_without_time_warp(monkeypatch
     assert captured_cmd
     af_index = captured_cmd.index("-af")
     audio_filter = captured_cmd[af_index + 1]
-    assert audio_filter == "atrim=end_sample=90000,asetpts=N/SR/TB"
+    assert (
+        audio_filter
+        == "asoftclip=type=atan:threshold=1:output=1,volume=-1dB,atrim=end_sample=90000,asetpts=N/SR/TB"
+    )
     assert "atempo" not in audio_filter
     assert "alimiter" not in audio_filter

@@ -37,6 +37,7 @@ _AUDIO_CAPTURE_SAMPLE_RATE = 48_000
 _AUDIO_CAPTURE_CHANNELS = 2
 _AUDIO_INFERRED_SAMPLE_RATE_MIN = 8_000
 _AUDIO_INFERRED_SAMPLE_RATE_MAX = 384_000
+_AUDIO_OUTPUT_SAFETY_FILTER = "asoftclip=type=atan:threshold=1:output=1,volume=-1dB"
 
 
 @dataclass(frozen=True, slots=True)
@@ -481,10 +482,13 @@ def _mux_raw_audio_with_video(
             f"captured_frames={int(captured_audio_frames)} target_audio_frames={int(target_audio_frames)} "
             f"audio_sample_rate={int(audio_sample_rate)}",
         )
-    audio_filter = _build_audio_sync_filter(
+    audio_sync_filter = _build_audio_sync_filter(
         captured_frames=int(captured_audio_frames),
         target_frames=int(target_audio_frames),
     )
+    # Mixed bus output can exceed full scale during dense overlaps; apply a
+    # gentle soft clip with small headroom before AAC encode.
+    audio_filter = f"{_AUDIO_OUTPUT_SAFETY_FILTER},{audio_sync_filter}"
 
     cmd = [
         str(ffmpeg_path),
@@ -533,7 +537,8 @@ def _mux_raw_audio_with_video(
         "ffmpeg audio mux failed "
         f"(exit {proc.returncode}): captured_frames={int(captured_audio_frames)} "
         f"target_audio_frames={int(target_audio_frames)} audio_sample_rate={int(audio_sample_rate)} "
-        f"audio_channels={int(audio_channels)} filter={audio_filter!r} detail={detail}",
+        f"audio_channels={int(audio_channels)} output_safety_filter={_AUDIO_OUTPUT_SAFETY_FILTER!r} "
+        f"sync_filter={audio_sync_filter!r} detail={detail}",
     )
 
 
