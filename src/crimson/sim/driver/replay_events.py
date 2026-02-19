@@ -136,29 +136,22 @@ def apply_replay_tick_events(
                         raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}") from err
                     continue
 
-                # `perk_apply_outside_before` draws are already accounted for by
-                # capture inter-tick RNG overrides. Replaying Bandage RNG work a
-                # second time here shifts gameplay RNG and causes later hit drift.
-                if bool(outside_before) and perk_enum == PerkId.BANDAGE:
+                # `perk_apply_outside_before` RNG draws are already replayed via
+                # capture inter-tick RNG overrides. Apply perk side-effects but
+                # keep RNG state anchored so we do not double-consume.
+                rng_state_before: int | None = None
+                if bool(outside_before):
                     rng_state_before = int(state.rng.state)
-                    perk_apply(
-                        state,
-                        players,
-                        perk_enum,
-                        perk_state=perk_state,
-                        dt=float(dt_frame),
-                        creatures=cast("list[CreatureForPerks]", world.creatures.entries),
-                    )
+                perk_apply(
+                    state,
+                    players,
+                    perk_enum,
+                    perk_state=perk_state,
+                    dt=float(dt_frame),
+                    creatures=cast("list[CreatureForPerks]", world.creatures.entries),
+                )
+                if rng_state_before is not None:
                     state.rng.srand(int(rng_state_before))
-                else:
-                    perk_apply(
-                        state,
-                        players,
-                        perk_enum,
-                        perk_state=perk_state,
-                        dt=float(dt_frame),
-                        creatures=cast("list[CreatureForPerks]", world.creatures.entries),
-                    )
                 continue
 
             if kind == CAPTURE_PERK_PENDING_EVENT_KIND:

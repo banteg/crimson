@@ -12,6 +12,7 @@ from crimson.replay import PerkMenuOpenEvent, PerkPickEvent, UnknownEvent
 from crimson.sim.driver.replay_events import apply_replay_tick_events
 from crimson.sim.driver.setup import reset_players
 from crimson.sim.world_state import WorldState
+from crimson.weapons import WeaponId
 from crimson.weapon_runtime import weapon_refresh_available
 
 
@@ -310,4 +311,41 @@ def test_original_capture_outside_before_bandage_does_not_shift_rng_state() -> N
     )
 
     assert perk_count_get(world.players[0], PerkId.BANDAGE) == 1
+    assert int(state.rng.state) == before_rng
+
+
+def test_original_capture_outside_before_random_weapon_does_not_shift_rng_state() -> None:
+    world = WorldState.build(
+        world_size=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=0,
+        preserve_bugs=False,
+    )
+    reset_players(world.players, world_size=1024.0, player_count=1)
+
+    state = world.state
+    state.game_mode = int(GameMode.SURVIVAL)
+    world.players[0].weapon_id = int(WeaponId.ASSAULT_RIFLE)
+    state.rng.srand(0x1234)
+    before_rng = int(state.rng.state)
+    before_weapon = int(world.players[0].weapon_id)
+
+    apply_replay_tick_events(
+        [
+            UnknownEvent(
+                tick_index=9,
+                kind=CAPTURE_PERK_APPLY_EVENT_KIND,
+                payload=[{"perk_id": int(PerkId.RANDOM_WEAPON), "outside_before": True}],
+            ),
+        ],
+        tick_index=9,
+        dt_frame=1.0 / 60.0,
+        world=world,
+        game_mode_id=int(GameMode.SURVIVAL),
+        strict_events=True,
+    )
+
+    assert perk_count_get(world.players[0], PerkId.RANDOM_WEAPON) == 1
+    assert int(world.players[0].weapon_id) != before_weapon
     assert int(state.rng.state) == before_rng
