@@ -1,24 +1,35 @@
 from __future__ import annotations
 
-import pickle
 from collections import OrderedDict
 from dataclasses import dataclass, field
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar, cast
+
+import msgspec
 
 SnapshotT = TypeVar("SnapshotT")
 
 
 @dataclass(slots=True)
 class RollbackSnapshotCodec(Generic[SnapshotT]):
-    """Serialize rollback snapshots as deterministic pickle blobs."""
+    """Serialize rollback snapshots as deterministic msgpack blobs."""
 
-    protocol: int = pickle.HIGHEST_PROTOCOL
+    snapshot_type: type[SnapshotT] | None = None
+    _encoder: msgspec.msgpack.Encoder = field(init=False)
+    _decoder: msgspec.msgpack.Decoder = field(init=False)
+
+    def __post_init__(self) -> None:
+        self._encoder = msgspec.msgpack.Encoder()
+        snapshot_type = self.snapshot_type
+        if snapshot_type is None:
+            self._decoder = msgspec.msgpack.Decoder()
+            return
+        self._decoder = msgspec.msgpack.Decoder(type=cast(Any, snapshot_type))
 
     def dumps(self, snapshot: SnapshotT) -> bytes:
-        return pickle.dumps(snapshot, protocol=int(self.protocol))
+        return self._encoder.encode(snapshot)
 
     def loads(self, blob: bytes) -> SnapshotT:
-        return pickle.loads(blob)
+        return cast(SnapshotT, self._decoder.decode(blob))
 
 
 @dataclass(slots=True)
