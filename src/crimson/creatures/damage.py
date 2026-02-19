@@ -3,9 +3,12 @@ from __future__ import annotations
 import math
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Protocol
 
+from grim.color import RGBA
 from grim.geom import Vec2
 
+from ..effects_atlas import EffectId
 from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..sim.state_types import PlayerState
@@ -31,6 +34,27 @@ class _CreatureDamageCtx:
 
 
 _CreatureDamageStep = Callable[[_CreatureDamageCtx], None]
+
+
+class _EffectsLike(Protocol):
+    def spawn(
+        self,
+        *,
+        effect_id: int,
+        pos: Vec2,
+        vel: Vec2,
+        rotation: float,
+        scale: float,
+        half_width: float,
+        half_height: float,
+        age: float,
+        lifetime: float,
+        flags: int,
+        color: RGBA,
+        rotation_step: float,
+        scale_step: float,
+        detail_preset: int,
+    ) -> int | None: ...
 
 
 def _damage_type1_uranium_filled_bullets(ctx: _CreatureDamageCtx) -> None:
@@ -85,6 +109,43 @@ def _damage_type4_pyromaniac(ctx: _CreatureDamageCtx) -> None:
     ctx.rand()
 
 
+def _damage_lethal_ranged_shock_burst(
+    *,
+    creature: CreatureState,
+    rand: Callable[[], int],
+    effects: _EffectsLike | None,
+    detail_preset: int,
+) -> None:
+    """Port the `creature_apply_damage` lethal branch for `flags & 0x10`."""
+    if (creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK) == 0:
+        return
+    for _ in range(5):
+        rotation = float(int(rand()) & 0x7F) * 0.049087387
+        vel = Vec2(
+            float((int(rand()) & 0x7F) - 0x40),
+            float((int(rand()) & 0x7F) - 0x40),
+        )
+        scale_step = float(int(rand()) % 0x8C) * 0.01 + 0.3
+        if effects is None:
+            continue
+        effects.spawn(
+            effect_id=int(EffectId.BURST),
+            pos=creature.pos,
+            vel=vel,
+            rotation=rotation,
+            scale=1.0,
+            half_width=36.0,
+            half_height=36.0,
+            age=0.0,
+            lifetime=0.7,
+            flags=0x1D,
+            color=RGBA(0.8, 0.8, 0.3, 0.5),
+            rotation_step=0.0,
+            scale_step=scale_step,
+            detail_preset=int(detail_preset),
+        )
+
+
 _CREATURE_DAMAGE_PRE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] = {
     CreatureDamageType.BULLET: (
         _damage_type1_uranium_filled_bullets,
@@ -114,6 +175,8 @@ def creature_apply_damage(
     dt: float,
     players: list[PlayerState],
     rand: Callable[[], int],
+    effects: _EffectsLike | None = None,
+    detail_preset: int = 5,
 ) -> bool:
     """Apply damage to a creature, returning True if the hit killed it.
 
@@ -163,6 +226,12 @@ def creature_apply_damage(
         else:
             creature.hitbox_size = float(creature.hitbox_size) - 0.001
         creature.vel = creature.vel - impulse * 2.0
+        _damage_lethal_ranged_shock_burst(
+            creature=creature,
+            rand=rand,
+            effects=effects,
+            detail_preset=int(detail_preset),
+        )
         return True
 
     if creature.hitbox_size != CREATURE_HITBOX_ALIVE and dt > 0.0:
@@ -181,6 +250,8 @@ def creature_apply_damage_with_lethal_followup(
     dt: float,
     players: list[PlayerState],
     rand: Callable[[], int],
+    effects: _EffectsLike | None = None,
+    detail_preset: int = 5,
     on_lethal: Callable[[], None],
 ) -> bool:
     """Apply damage and run a required lethal follow-up exactly on death transition.
@@ -199,6 +270,8 @@ def creature_apply_damage_with_lethal_followup(
         dt=float(dt),
         players=players,
         rand=rand,
+        effects=effects,
+        detail_preset=int(detail_preset),
     )
     if killed and death_start_needed:
         on_lethal()

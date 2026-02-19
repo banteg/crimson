@@ -428,6 +428,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
         from .damage import creature_apply_damage_with_lethal_followup
 
         def _on_mr_melee_lethal() -> None:
+            suppress_death_sfx = bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK)
             ctx.deaths.append(
                 ctx.pool.handle_death(
                     ctx.creature_index,
@@ -439,6 +440,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
                     world_width=float(ctx.world_width),
                     world_height=float(ctx.world_height),
                     fx_queue=ctx.fx_queue,
+                    plan_death_sfx=not bool(suppress_death_sfx),
                 ),
             )
             if creature.active:
@@ -462,6 +464,8 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             dt=ctx.dt,
             players=ctx.players,
             rand=ctx.rand,
+            effects=ctx.state.effects,
+            detail_preset=int(ctx.detail_preset),
             on_lethal=_on_mr_melee_lethal,
         )
 
@@ -857,6 +861,7 @@ class CreaturePool:
 
             from .damage import creature_apply_damage_with_lethal_followup
 
+            suppress_death_sfx = bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK)
             return creature_apply_damage_with_lethal_followup(
                 creature,
                 damage_amount=float(damage_amount),
@@ -866,7 +871,9 @@ class CreaturePool:
                 dt=dt,
                 players=players,
                 rand=rand,
-                on_lethal=lambda: deaths.append(
+                effects=state.effects,
+                detail_preset=int(detail_preset),
+                on_lethal=lambda suppress_death_sfx=suppress_death_sfx: deaths.append(
                     self.handle_death(
                         int(creature_index),
                         state=state,
@@ -877,6 +884,7 @@ class CreaturePool:
                         world_width=world_width,
                         world_height=world_height,
                         fx_queue=fx_queue,
+                        plan_death_sfx=not bool(suppress_death_sfx),
                     ),
                 ),
             )

@@ -1550,3 +1550,55 @@ When the capture SHA is unchanged, append updates to the same session.
 
 - Fire Cough pre-move spawn parity removed the early `quest_1_9` branch split and pushed the first sustained mismatch significantly later (`9259 -> 9482`).
 - Next probe should focus `quest_1_9` at `tick 9482`, where first mismatch now maps to native `player_update` RNG callers (`0x00415a6d` cluster), to identify the next branch-order/source-of-draw divergence.
+
+## Session 18 (continued: ranged-shock lethal death branch parity)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.quest_1_10.json.gz`
+- **Capture family:** post-master-rebase quest split set (`session18_alt_leads`)
+- **Baseline verifier command:**
+  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_10.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache`
+- **First mismatch progression:**
+  - before this fix set: `tick 10018` (`rng.projectile_hit_resolution_shortfall`, missing tail `20`)
+  - after lethal burst branch only: `tick 10018` (state mismatch with RNG overrun `+1`)
+  - after death-SFX suppression for this path: `tick 10018` (state mismatch; focus RNG stream aligned `328/328`)
+
+### Key Findings
+
+- Native `creature_apply_damage` has a lethal branch for `flags & 0x10` that consumes 20 RNG draws (5 iterations x 4 draws) and spawns burst effects instead of random death-SFX selection.
+- Rewrite was missing that lethal burst branch, then after adding it still consumed one extra RNG draw due world-level death-SFX planning on the same death.
+- Suppressing death-SFX planning for lethal kills of `RANGED_ATTACK_SHOCK` creatures removed the extra RNG draw and restored focus-tick RNG alignment.
+
+### Landed Changes
+
+- `src/crimson/creatures/damage.py`
+  - added lethal `RANGED_ATTACK_SHOCK` burst path to mirror native RNG/effect semantics,
+  - threaded optional effect context through damage helpers.
+- `src/crimson/sim/world_state.py`
+  - pass effect context into projectile damage apply path,
+  - suppress death-SFX planning on lethal `RANGED_ATTACK_SHOCK` damage follow-up,
+  - forward `plan_death_sfx` into `handle_death(...)`.
+- `src/crimson/creatures/runtime.py`
+  - pass effect context into lethal-followup callsites,
+  - suppress death-SFX planning for lethal `RANGED_ATTACK_SHOCK` callback deaths.
+- `src/crimson/perks/impl/final_revenge.py`
+  - pass effect context into lethal-followup callsite,
+  - suppress death-SFX planning for lethal `RANGED_ATTACK_SHOCK` callback deaths.
+- `tests/test_death_timing.py`
+  - added regression `test_ranged_shock_lethal_skips_world_death_sfx_planning`.
+
+### Validation
+
+- Targeted checks:
+  - `uv run pytest tests/test_creature_damage.py tests/test_creature_damage_callsite_guardrails.py tests/test_projectile_hit_effects.py tests/test_death_timing.py -q`
+- Repository checks:
+  - `just check`
+- Divergence rechecks:
+  - `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_10.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache --json-out analysis/frida/reports/session18_alt_leads/quest_1_10_after_ranged_shock_lethal_burst_fix_nocache.json`
+    - `result=diverged kind=state_mismatch tick=10018` with focus RNG overrun `+1`
+  - `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_10.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache --json-out analysis/frida/reports/session18_alt_leads/quest_1_10_after_ranged_shock_death_sfx_suppression_nocache.json`
+    - `result=diverged kind=state_mismatch tick=10018` with focus RNG stream fully aligned (`328/328`, `missing_tail=0`)
+
+### Outcome / Next Probe
+
+- The `quest_1_10` focus RNG shortfall at `tick 10018` is resolved; the remaining mismatch at that tick is now state-only (`perk.pending_count`, `players[0].level`) with aligned RNG stream.
+- Next probe should move earlier in this capture to the still-reported projectile-hit-resolution lead (`tick 9757`) and isolate the missing rewrite hit-resolve path.

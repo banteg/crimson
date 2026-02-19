@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from grim.geom import Vec2
 
 from ...creatures.damage_types import CreatureDamageType
+from ...creatures.spawn import CreatureFlags
 from ...effects import FxQueue
 from ...sim.state_types import GameplayState, PlayerState
 from ..helpers import perk_active
@@ -60,6 +61,7 @@ def apply_final_revenge_on_player_death(
 
         damage = remaining * 5.0
         death_creature_idx = int(creature_idx)
+        suppress_death_sfx = bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK)
         creature_apply_damage_with_lethal_followup(
             creature,
             damage_amount=damage,
@@ -69,7 +71,9 @@ def apply_final_revenge_on_player_death(
             dt=float(dt),
             players=players,
             rand=rand,
-            on_lethal=lambda death_creature_idx=death_creature_idx: deaths.append(
+            effects=state.effects,
+            detail_preset=int(detail_preset),
+            on_lethal=lambda death_creature_idx=death_creature_idx, suppress_death_sfx=suppress_death_sfx: deaths.append(
                 creatures.handle_death(
                     int(death_creature_idx),
                     state=state,
@@ -80,6 +84,7 @@ def apply_final_revenge_on_player_death(
                     world_width=float(world_size),
                     world_height=float(world_size),
                     fx_queue=fx_queue,
+                    plan_death_sfx=not bool(suppress_death_sfx),
                 ),
             ),
         )
