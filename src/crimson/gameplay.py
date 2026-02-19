@@ -89,6 +89,8 @@ _RELATIVE_MOVE_TURN_ALIGN_SCALE = float(f32(7.957747))
 _AIM_POINT_RADIUS = 60.0
 _AIM_KEYBOARD_TURN_RATE = 3.0
 _AIM_JOYSTICK_TURN_RATE = 4.0
+_LOW_HEALTH_BLEED_DIR_OFFSET = 1.5707964 - 0.5
+_LOW_HEALTH_BLOODSPILL_SFX: tuple[str, str] = ("sfx_bloodspill_01", "sfx_bloodspill_02")
 
 
 class _SpawnSlotLike(Protocol):
@@ -542,6 +544,32 @@ def player_update(
     if player.health <= 0.0:
         player.death_timer -= dt * 20.0
         return
+
+    # Native low-health warning pulse (`player_update` @ 0x004136b0): once
+    # `player_take_damage` has armed `low_health_timer` (!= 100.0), count down
+    # while HP < 20 and emit a 3x blood splatter + bloodspill SFX burst.
+    if player.low_health_timer != 100.0 and player.health < 20.0:
+        next_low_health_timer = float(f32(float(player.low_health_timer) - float(dt)))
+        player.low_health_timer = next_low_health_timer
+        if next_low_health_timer < 0.0:
+            bleed_dir_angle = float(player.aim_heading) + _LOW_HEALTH_BLEED_DIR_OFFSET
+            bleed_pos = Vec2(
+                f32(math.cos(bleed_dir_angle) * -6.0 + float(player.pos.x)),
+                f32(math.sin(bleed_dir_angle) * -6.0 + float(player.pos.y)),
+            )
+            aim_heading = float(player.aim_heading)
+            rand = state.rng.rand
+            for _ in range(3):
+                state.effects.spawn_blood_splatter(
+                    pos=bleed_pos,
+                    angle=aim_heading,
+                    age=0.0,
+                    rand=rand,
+                    detail_preset=int(detail_preset),
+                    fx_toggle=0,
+                )
+            state.sfx_queue.append(_LOW_HEALTH_BLOODSPILL_SFX[int(rand()) & 1])
+            player.low_health_timer = 1.0
 
     player.muzzle_flash_alpha = max(0.0, player.muzzle_flash_alpha - dt * 2.0)
     cooldown_decay = float(f32(float(dt) * (1.5 if state.bonuses.weapon_power_up > 0.0 else 1.0)))

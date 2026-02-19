@@ -64,6 +64,68 @@ def test_player_update_shot_cooldown_decay_snaps_tiny_residual_to_zero() -> None
     assert player.shot_cooldown == 0.0
 
 
+def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer() -> None:
+    state = GameplayState()
+    aim_heading_before = 1.25
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 200.0),
+        health=19.0,
+        low_health_timer=0.0,
+        aim_heading=aim_heading_before,
+    )
+    blood_calls: list[dict[str, object]] = []
+
+    def _spawn_blood_splatter(**kwargs):
+        blood_calls.append(kwargs)
+
+    state.effects.spawn_blood_splatter = _spawn_blood_splatter  # type: ignore[method-assign]
+
+    player_update(player, PlayerInput(aim=Vec2(101.0, 200.0)), 0.016, state)
+
+    expected_angle = float(aim_heading_before)
+    expected_bleed_dir_angle = float(aim_heading_before) + (1.5707964 - 0.5)
+    expected_x = math.cos(expected_bleed_dir_angle) * -6.0 + 100.0
+    expected_y = math.sin(expected_bleed_dir_angle) * -6.0 + 200.0
+
+    assert len(blood_calls) == 3
+    for call in blood_calls:
+        pos = call["pos"]
+        assert isinstance(pos, Vec2)
+        assert math.isclose(pos.x, expected_x, abs_tol=1e-5)
+        assert math.isclose(pos.y, expected_y, abs_tol=1e-5)
+        assert call["angle"] == expected_angle
+        assert call["age"] == 0.0
+        assert call["detail_preset"] == 5
+        assert call["fx_toggle"] == 0
+
+    assert player.low_health_timer == 1.0
+    assert len(state.sfx_queue) == 1
+    assert state.sfx_queue[0] in {"sfx_bloodspill_01", "sfx_bloodspill_02"}
+
+
+def test_player_update_low_health_timer_100_sentinel_skips_bleed_fx() -> None:
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 200.0),
+        health=19.0,
+        low_health_timer=100.0,
+    )
+    blood_calls: list[dict[str, object]] = []
+
+    def _spawn_blood_splatter(**kwargs):
+        blood_calls.append(kwargs)
+
+    state.effects.spawn_blood_splatter = _spawn_blood_splatter  # type: ignore[method-assign]
+
+    player_update(player, PlayerInput(aim=Vec2(101.0, 200.0)), 0.016, state)
+
+    assert blood_calls == []
+    assert player.low_health_timer == 100.0
+    assert state.sfx_queue == []
+
+
 def test_player_update_stationary_reloader_tripples_reload_decay() -> None:
     state = GameplayState()
     player = PlayerState(
