@@ -10,9 +10,9 @@ from crimson.replay import Replay, ReplayHeader
 from grim.console import ConsoleState
 
 
-def _replay_with_ticks(tick_count: int) -> Replay:
+def _replay_with_ticks(tick_count: int, *, game_mode_id: int = 0) -> Replay:
     return Replay(
-        header=ReplayHeader(game_mode_id=0, seed=0),
+        header=ReplayHeader(game_mode_id=int(game_mode_id), seed=0),
         inputs=[[[0.0, 0.0, [0.0, 0.0], 0]] for _ in range(max(0, int(tick_count)))],
     )
 
@@ -165,3 +165,50 @@ def test_skip_forward_clears_fx_queues_each_tick(replay_playback_view) -> None:
 
     assert fx_queue.clear_calls == 3
     assert fx_queue_rotated.clear_calls == 3
+
+
+def test_draw_quest_title_uses_shared_overlay_helper(monkeypatch, replay_playback_view) -> None:
+    view, _console = replay_playback_view
+    _set_private(
+        view,
+        "_replay",
+        _replay_with_ticks(1, game_mode_id=int(replay_playback_mode.GameMode.QUESTS)),
+    )
+    _set_private(view, "_grim_mono", object())
+    _set_private(view, "_quest_title", "Castle Keep")
+    _set_private(view, "_quest_level", "4.7")
+    view._quest_name_timer_ms = 123.0
+
+    calls: list[tuple[object, str, str, float]] = []
+
+    def fake_draw(font, title: str, number: str, *, timer_ms: float) -> None:
+        calls.append((font, title, number, timer_ms))
+
+    monkeypatch.setattr(replay_playback_mode, "draw_quest_title_timer_overlay", fake_draw)
+
+    view._draw_quest_title()
+
+    assert calls == [(view._grim_mono, "Castle Keep", "4.7", 123.0)]
+
+
+def test_draw_quest_complete_banner_uses_shared_overlay_helper(monkeypatch, replay_playback_view) -> None:
+    view, _console = replay_playback_view
+    _set_private(
+        view,
+        "_replay",
+        _replay_with_ticks(1, game_mode_id=int(replay_playback_mode.GameMode.QUESTS)),
+    )
+    texture = object()
+    _set_private(view, "_quest_complete_texture", texture)
+    view._quest_completion_transition_ms = 777.0
+
+    calls: list[tuple[object, float]] = []
+
+    def fake_draw(tex, *, timer_ms: float) -> None:
+        calls.append((tex, timer_ms))
+
+    monkeypatch.setattr(replay_playback_mode, "draw_quest_complete_banner_overlay", fake_draw)
+
+    view._draw_quest_complete_banner()
+
+    assert calls == [(texture, 777.0)]

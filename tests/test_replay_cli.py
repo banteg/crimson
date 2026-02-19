@@ -4,6 +4,7 @@ import hashlib
 import json
 from dataclasses import replace
 from pathlib import Path
+from typing import cast
 
 from click import unstyle
 from typer.testing import CliRunner
@@ -19,6 +20,7 @@ from crimson.replay.checkpoints import (
     load_checkpoints_file,
 )
 from crimson.sim.driver.replay_benchmark import BenchmarkAggregate, BenchmarkSample, ReplayBenchmarkResult
+from crimson.sim.driver.replay_render import ReplayRenderResult
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.driver.setup import RunResult
 from crimson.sim.input import PlayerInput
@@ -401,6 +403,241 @@ def test_replay_benchmark_render_mode_uses_render_runner(tmp_path: Path, monkeyp
     assert calls[0]["warmup_runs"] == 0
     assert calls[0]["replay_path"] == replay_path
     assert calls[0]["base_dir"] == tmp_path
+
+
+def test_replay_render_uses_render_video_runner(tmp_path: Path, monkeypatch) -> None:
+    import crimson.sim.driver.replay_render as replay_render_mod
+
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+    calls: list[dict[str, object]] = []
+
+    def fake_render(_replay: Replay, **kwargs: object) -> ReplayRenderResult:
+        calls.append(dict(kwargs))
+        run_result = RunResult(
+            game_mode_id=int(GameMode.SURVIVAL),
+            tick_rate=60,
+            ticks=3,
+            elapsed_ms=50,
+            score_xp=42,
+            creature_kill_count=1,
+            most_used_weapon_id=1,
+            shots_fired=2,
+            shots_hit=1,
+            rng_state=123,
+        )
+        return ReplayRenderResult(
+            output_path=cast("Path", kwargs["output_path"]),
+            frame_count=120,
+            fps=60,
+            width=1280,
+            height=720,
+            run_result=run_result,
+        )
+
+    monkeypatch.setattr(replay_render_mod, "run_replay_render_video", fake_render)
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "render",
+            str(replay_path),
+            "--base-dir",
+            str(tmp_path),
+            "--fps",
+            "60",
+            "--crf",
+            "14",
+            "--preset",
+            "slow",
+            "--pixel-format",
+            "yuv420p",
+            "--overwrite",
+            "--lenient-events",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "ok: output=" in result.output
+    assert "frames=120" in result.output
+    assert calls
+    assert calls[0]["strict_events"] is False
+    assert calls[0]["fps"] == 60
+    assert calls[0]["crf"] == 14
+    assert calls[0]["preset"] == "slow"
+    assert calls[0]["pixel_format"] == "yuv420p"
+    assert calls[0]["overwrite"] is True
+    assert calls[0]["mute_audio"] is False
+    assert calls[0]["replay_path"] == replay_path
+    assert calls[0]["base_dir"] == tmp_path
+    assert calls[0]["output_path"] == replay_path.with_suffix(".render.mp4")
+
+
+def test_replay_render_progress_callback_uses_separate_video_audio_bars(monkeypatch) -> None:
+    import crimson.cli as cli_mod
+
+    class _FakeBar:
+        def __init__(self, *, total: int, desc: str) -> None:
+            self.total = int(total)
+            self.desc = str(desc)
+            self.updates: list[int] = []
+            self.postfixes: list[dict[str, int]] = []
+            self.closed = False
+
+        def update(self, value: int) -> None:
+            self.updates.append(int(value))
+
+        def set_postfix(self, **kwargs: int) -> None:
+            self.postfixes.append(dict(kwargs))
+
+        def close(self) -> None:
+            self.closed = True
+
+    bars: list[_FakeBar] = []
+
+    def fake_tqdm(*, total: int, unit: str, desc: str, leave: bool):
+        assert unit == "tick"
+        assert leave is True
+        bar = _FakeBar(total=int(total), desc=str(desc))
+        bars.append(bar)
+        return bar
+
+    monkeypatch.setattr(cli_mod, "tqdm", fake_tqdm)
+
+    callback, close = cli_mod._replay_render_progress_callback(total_ticks=10, render_audio=True)
+    assert callback is not None
+    assert close is not None
+    assert len(bars) == 1
+    video_bar = bars[0]
+
+    callback("video", 3, 5, 10)
+    callback("audio", 0, 4, 10)
+    callback("video", 4, 10, 10)
+    callback("audio", 0, 10, 10)
+    close()
+
+    assert len(bars) == 2
+    audio_bar = bars[1]
+
+    assert video_bar.desc == "replay video"
+    assert video_bar.total == 10
+    assert video_bar.updates == [5, 5]
+    assert video_bar.postfixes[-1]["frames"] == 4
+    assert video_bar.closed is True
+
+    assert audio_bar.desc == "replay audio"
+    assert audio_bar.total == 10
+    assert audio_bar.updates == [4, 6]
+    assert audio_bar.postfixes == []
+    assert audio_bar.closed is True
+
+
+def test_replay_render_uses_custom_output_and_ffmpeg_bin(tmp_path: Path, monkeypatch) -> None:
+    import crimson.sim.driver.replay_render as replay_render_mod
+
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    out_path = tmp_path / "exports" / "clip.mp4"
+    ffmpeg_path = tmp_path / "bin" / "ffmpeg"
+    runner = CliRunner()
+    calls: list[dict[str, object]] = []
+
+    def fake_render(_replay: Replay, **kwargs: object) -> ReplayRenderResult:
+        calls.append(dict(kwargs))
+        run_result = RunResult(
+            game_mode_id=int(GameMode.SURVIVAL),
+            tick_rate=60,
+            ticks=2,
+            elapsed_ms=33,
+            score_xp=0,
+            creature_kill_count=0,
+            most_used_weapon_id=1,
+            shots_fired=0,
+            shots_hit=0,
+            rng_state=123,
+        )
+        return ReplayRenderResult(
+            output_path=cast("Path", kwargs["output_path"]),
+            frame_count=2,
+            fps=60,
+            width=1024,
+            height=768,
+            run_result=run_result,
+        )
+
+    monkeypatch.setattr(replay_render_mod, "run_replay_render_video", fake_render)
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "render",
+            str(replay_path),
+            "--out",
+            str(out_path),
+            "--ffmpeg-bin",
+            str(ffmpeg_path),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "output=" in result.output
+    assert calls
+    assert calls[0]["output_path"] == out_path
+    assert calls[0]["ffmpeg_bin"] == ffmpeg_path
+    assert calls[0]["mute_audio"] is False
+
+
+def test_replay_render_supports_mute_audio_flag(tmp_path: Path, monkeypatch) -> None:
+    import crimson.sim.driver.replay_render as replay_render_mod
+
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+    calls: list[dict[str, object]] = []
+
+    def fake_render(_replay: Replay, **kwargs: object) -> ReplayRenderResult:
+        calls.append(dict(kwargs))
+        run_result = RunResult(
+            game_mode_id=int(GameMode.SURVIVAL),
+            tick_rate=60,
+            ticks=2,
+            elapsed_ms=33,
+            score_xp=0,
+            creature_kill_count=0,
+            most_used_weapon_id=1,
+            shots_fired=0,
+            shots_hit=0,
+            rng_state=123,
+        )
+        return ReplayRenderResult(
+            output_path=cast("Path", kwargs["output_path"]),
+            frame_count=2,
+            fps=60,
+            width=1024,
+            height=768,
+            run_result=run_result,
+        )
+
+    monkeypatch.setattr(replay_render_mod, "run_replay_render_video", fake_render)
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "render",
+            str(replay_path),
+            "--base-dir",
+            str(tmp_path),
+            "--mute-audio",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert calls
+    assert calls[0]["mute_audio"] is True
 
 
 def test_replay_benchmark_json_out_works_for_human_and_json_output(tmp_path: Path) -> None:

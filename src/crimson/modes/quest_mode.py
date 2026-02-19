@@ -16,7 +16,7 @@ from grim.config import (
 )
 from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
-from grim.geom import Rect, Vec2
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.view import ViewContext
 
@@ -58,7 +58,12 @@ from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
-from ..views.quest_title_overlay import draw_quest_title_overlay
+from ..views.quest_run_overlay import (
+    draw_quest_complete_banner_overlay,
+    draw_quest_title_timer_overlay,
+    quest_complete_banner_alpha,
+    quest_level_label,
+)
 from ..weapon_runtime import (
     most_used_weapon_id_for_player,
     weapon_assign_player,
@@ -70,10 +75,6 @@ from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
 from .components.perk_prompt_ui import PERK_PROMPT_MAX_TIMER_MS, PerkPromptUi
 
 WORLD_SIZE = 1024.0
-QUEST_TITLE_FADE_IN_MS = 500.0
-QUEST_TITLE_HOLD_MS = 1000.0
-QUEST_TITLE_FADE_OUT_MS = 500.0
-QUEST_TITLE_TOTAL_MS = QUEST_TITLE_FADE_IN_MS + QUEST_TITLE_HOLD_MS + QUEST_TITLE_FADE_OUT_MS
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -81,18 +82,13 @@ UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 
 _DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
-QUEST_COMPLETE_BANNER_BASE_W = 256.0
-QUEST_COMPLETE_BANNER_BASE_H = 32.0
-QUEST_COMPLETE_BANNER_SCALE_BASE = 0.95
-QUEST_COMPLETE_BANNER_SCALE_RATE = 0.0004 * 0.13
-QUEST_COMPLETE_BANNER_FADE_IN_MS = 500.0
-QUEST_COMPLETE_BANNER_HOLD_END_MS = 1500.0
-QUEST_COMPLETE_BANNER_FADE_OUT_END_MS = 2000.0
 
 # Compatibility aliases used by existing monkeypatch-based tests.
 tick_quest_mode_spawns = _legacy_tick_quest_mode_spawns
 tick_quest_completion_transition = _legacy_tick_quest_completion_transition
 quest_spawn_table_empty = _legacy_quest_spawn_table_empty
+_quest_complete_banner_alpha = quest_complete_banner_alpha
+_quest_level_label = quest_level_label
 
 
 class QuestSessionLike(Protocol):
@@ -153,31 +149,6 @@ def _quest_attempt_counter_index(major: int, minor: int) -> int | None:
     if not (0 <= global_index < 40):
         return None
     return global_index + 11
-
-
-def _quest_level_label(major: int, minor: int) -> str:
-    major = int(major)
-    minor = int(minor)
-
-    # Match `ui_render_hud` (0x0041bf94): quest minor can temporarily exceed 10
-    # (e.g. after incrementing), and the HUD carries it into the major.
-    while minor > 10:
-        major += 1
-        minor -= 10
-    return f"{major}.{minor}"
-
-
-def _quest_complete_banner_alpha(timer_ms: float) -> float:
-    t = float(timer_ms)
-    if t <= 0.0:
-        return 0.0
-    if t < QUEST_COMPLETE_BANNER_FADE_IN_MS:
-        return clamp(t / QUEST_COMPLETE_BANNER_FADE_IN_MS, 0.0, 1.0)
-    if t < QUEST_COMPLETE_BANNER_HOLD_END_MS:
-        return 1.0
-    if t < QUEST_COMPLETE_BANNER_FADE_OUT_END_MS:
-        return clamp((QUEST_COMPLETE_BANNER_FADE_OUT_END_MS - t) / QUEST_COMPLETE_BANNER_FADE_IN_MS, 0.0, 1.0)
-    return 0.0
 
 
 class QuestMode(BaseGameplayMode):
@@ -1154,33 +1125,18 @@ class QuestMode(BaseGameplayMode):
         quest = self._quest.quest
         if font is None or quest is None:
             return
-        timer_ms = float(self._quest.quest_name_timer_ms)
-        if timer_ms <= 0.0 or timer_ms > QUEST_TITLE_TOTAL_MS:
-            return
-        if timer_ms < QUEST_TITLE_FADE_IN_MS and QUEST_TITLE_FADE_IN_MS > 1e-3:
-            alpha = timer_ms / QUEST_TITLE_FADE_IN_MS
-        elif timer_ms < (QUEST_TITLE_FADE_IN_MS + QUEST_TITLE_HOLD_MS):
-            alpha = 1.0
-        else:
-            t = timer_ms - (QUEST_TITLE_FADE_IN_MS + QUEST_TITLE_HOLD_MS)
-            alpha = max(0.0, 1.0 - (t / max(1e-3, QUEST_TITLE_FADE_OUT_MS)))
-
-        draw_quest_title_overlay(font, quest.title, _quest_level_label(quest.major, quest.minor), alpha=alpha)
+        draw_quest_title_timer_overlay(
+            font,
+            quest.title,
+            _quest_level_label(quest.major, quest.minor),
+            timer_ms=float(self._quest.quest_name_timer_ms),
+        )
 
     def _draw_quest_complete_banner(self) -> None:
         tex = self._quest_complete_texture
-        timer_ms = float(self._quest.completion_transition_ms)
-        if tex is None or timer_ms <= 0.0:
+        if tex is None:
             return
-        alpha = _quest_complete_banner_alpha(timer_ms)
-        if alpha <= 0.0:
-            return
-        scale = QUEST_COMPLETE_BANNER_SCALE_BASE + timer_ms * QUEST_COMPLETE_BANNER_SCALE_RATE
-        width = QUEST_COMPLETE_BANNER_BASE_W * scale
-        height = QUEST_COMPLETE_BANNER_BASE_H * scale
-        center_x = float(rl.get_screen_width()) * 0.5
-        center_y = float(rl.get_screen_height()) * 0.5
-        src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-        dst = Rect.from_center(Vec2(center_x, center_y), width, height).to_rl()
-        tint = rl.Color(255, 255, 255, int(clamp(alpha, 0.0, 1.0) * 255.0))
-        rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+        draw_quest_complete_banner_overlay(
+            tex,
+            timer_ms=float(self._quest.completion_transition_ms),
+        )

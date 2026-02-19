@@ -141,6 +141,23 @@ Include one `cProfile` pass and hotspot summary:
 uv run crimson replay benchmark replay.crd --profile --profile-sort cumtime --top 20 --profile-out artifacts/profiling/replay.pstats
 ```
 
+## Replay render (ffmpeg video export)
+
+`replay render` plays back a replay offscreen, captures each frame, and encodes
+an MP4 with `ffmpeg` (default 60fps, `libx264`, `crf=16`, `preset=slow`).
+
+Default export:
+
+```bash
+uv run crimson replay render replay.crd
+```
+
+Custom output/quality:
+
+```bash
+uv run crimson replay render replay.crd --out artifacts/replay.mp4 --fps 60 --crf 14 --preset slow --overwrite
+```
+
 ## Replay checkpoints comparison
 
 Checkpoints now store `command_hash` per sampled tick.

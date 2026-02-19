@@ -25,6 +25,7 @@ Last reviewed: **2026-02-17**
   - `uv run crimson replay play <replay.crd>`
   - `uv run crimson replay verify <replay.crd>`
   - `uv run crimson replay benchmark <replay.crd>` (default `--mode headless`, optional `--mode render`)
+  - `uv run crimson replay render <replay.crd>` (ffmpeg-backed 60fps MP4 export, quality via `--crf/--preset`)
   - `uv run crimson replay verify-checkpoints <replay.crd>`
   - `uv run crimson replay diff-checkpoints <expected> <actual>`
 - Original/capture differential tooling:
