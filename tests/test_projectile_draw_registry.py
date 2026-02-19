@@ -10,7 +10,7 @@ from grim.geom import Vec2
 if TYPE_CHECKING:
     import pyray as rl
 
-    from crimson.render.world import WorldRenderer
+    from crimson.render.projectile_draw import ProjectileRendererLike
 
 
 class _TextureLike(Protocol):
@@ -29,8 +29,8 @@ class _RendererLike(Protocol):
     def _is_bullet_trail_type(self, type_id: int) -> bool: ...
 
 
-def _as_renderer(renderer: _RendererLike) -> WorldRenderer:
-    return cast("WorldRenderer", renderer)
+def _as_renderer(renderer: _RendererLike) -> ProjectileRendererLike:
+    return cast("ProjectileRendererLike", renderer)
 
 
 def _as_texture(texture: _TextureLike) -> rl.Texture:

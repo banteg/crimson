@@ -4,32 +4,60 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from grim.fonts.small import SmallFontData
+from grim.geom import Vec2
 
 from ..frame import RenderFrame
-from .bonuses import WorldRendererBonusesMixin
-from .context import WorldRendererContextMixin
-from .creatures import WorldRendererCreaturesMixin
-from .draw import WorldRendererDrawMixin
-from .effects import WorldRendererEffectsMixin
-from .overlays import WorldRendererOverlaysMixin
-from .projectiles import WorldRendererProjectilesMixin
-from .trooper import WorldRendererTrooperMixin
+from .context import WorldRenderCtx, build_world_render_ctx
+from .draw import draw_world
 
 if TYPE_CHECKING:
     from ...game_world import GameWorld
 
 
-@dataclass(slots=True)
-class WorldRenderer(
-    WorldRendererDrawMixin,
-    WorldRendererEffectsMixin,
-    WorldRendererProjectilesMixin,
-    WorldRendererTrooperMixin,
-    WorldRendererCreaturesMixin,
-    WorldRendererOverlaysMixin,
-    WorldRendererBonusesMixin,
-    WorldRendererContextMixin,
-):
+@dataclass
+class WorldRenderer:
     _world: GameWorld
     _render_frame: RenderFrame | None = None
     _small_font: SmallFontData | None = None
+
+    def _active_render_ctx(self) -> WorldRenderCtx:
+        return build_world_render_ctx(self, render_frame=self._render_frame)
+
+    def draw(
+        self,
+        *,
+        render_frame: RenderFrame | None = None,
+        draw_aim_indicators: bool = True,
+        entity_alpha: float = 1.0,
+    ) -> None:
+        frame = render_frame if render_frame is not None else self._world.build_render_frame()
+        self._render_frame = frame
+        try:
+            render_ctx = build_world_render_ctx(self, render_frame=frame)
+            draw_world(
+                render_ctx,
+                draw_aim_indicators=draw_aim_indicators,
+                entity_alpha=entity_alpha,
+            )
+        finally:
+            self._render_frame = None
+
+    def _camera_screen_size(
+        self,
+        *,
+        runtime_w: float | None = None,
+        runtime_h: float | None = None,
+    ) -> Vec2:
+        return self._active_render_ctx()._camera_screen_size(runtime_w=runtime_w, runtime_h=runtime_h)
+
+    def _clamp_camera(self, camera: Vec2, screen_size: Vec2) -> Vec2:
+        return self._active_render_ctx()._clamp_camera(camera, screen_size)
+
+    def _world_params(self) -> tuple[Vec2, Vec2]:
+        return self._active_render_ctx()._world_params()
+
+    def world_to_screen(self, pos: Vec2) -> Vec2:
+        return self._active_render_ctx().world_to_screen(pos)
+
+    def screen_to_world(self, pos: Vec2) -> Vec2:
+        return self._active_render_ctx().screen_to_world(pos)

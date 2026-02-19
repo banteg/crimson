@@ -10,6 +10,8 @@ from grim.view import ViewContext
 
 from ..game_world import GameWorld
 from ..paths import default_runtime_dir
+from ..render.world.context import build_world_render_ctx
+from ..render.world.overlays import draw_aim_circle
 from ..sim.input import PlayerInput
 from ..ui.cursor import draw_cursor_glow
 from ._ui_helpers import draw_ui_text, ui_line_height
@@ -175,7 +177,8 @@ class AimDebugView:
         if self._draw_test_circle:
             cx = float(rl.get_screen_width()) * 0.5
             cy = float(rl.get_screen_height()) * 0.5
-            self._world.renderer._draw_aim_circle(center=Vec2(cx, cy), radius=self._test_circle_radius)
+            render_ctx = build_world_render_ctx(self._world.renderer)
+            draw_aim_circle(render_ctx, center=Vec2(cx, cy), radius=self._test_circle_radius)
             rl.draw_circle_lines(int(cx), int(cy), int(max(1.0, self._test_circle_radius)), rl.Color(255, 80, 80, 220))
 
         if self._show_cursor_glow:

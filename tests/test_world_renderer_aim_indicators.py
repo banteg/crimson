@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Protocol, cast
 
 from crimson.render.world import WorldDrawContext, WorldRenderer
+from crimson.render.world.context import build_world_render_ctx
+from crimson.render.world.draw import draw_aim_enhancements, draw_aim_indicators
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 
@@ -58,22 +60,26 @@ def test_lan_aim_indicators_draw_local_player_only(monkeypatch) -> None:
     renderer = _make_renderer(players=_make_players(), local_only=True, local_slot=1)
     circles: list[float] = []
     cursors: list[float] = []
+    render_ctx = build_world_render_ctx(renderer)
     ctx = _draw_ctx()
 
-    monkeypatch.setattr(renderer, "_world_to_screen_with", lambda pos, **_kwargs: pos)
-    monkeypatch.setattr(
-        renderer,
-        "_draw_aim_circle",
-        lambda *, center, radius, alpha=1.0: circles.append(float(center.x)),
-    )
-    monkeypatch.setattr(renderer, "_draw_clock_gauge", lambda **_kwargs: None)
     monkeypatch.setattr(
         "crimson.render.world.draw.draw_aim_cursor",
         lambda _particles, _aim, pos: cursors.append(float(pos.x)),
     )
 
-    renderer._draw_aim_indicators(ctx=ctx)
-    renderer._draw_aim_enhancements(ctx=ctx)
+    draw_aim_indicators(
+        render_ctx,
+        ctx=ctx,
+        world_to_screen_with=lambda pos, _camera, _view_scale: pos,
+        draw_aim_circle_fn=lambda center, _radius, _alpha: circles.append(float(center.x)),
+        draw_clock_gauge_fn=lambda _pos, _ms, _scale, _alpha: None,
+    )
+    draw_aim_enhancements(
+        render_ctx,
+        ctx=ctx,
+        world_to_screen_with=lambda pos, _camera, _view_scale: pos,
+    )
 
     assert circles == [20.0]
     assert cursors == [20.0]
@@ -83,22 +89,26 @@ def test_non_lan_aim_indicators_draw_all_players(monkeypatch) -> None:
     renderer = _make_renderer(players=_make_players(), local_only=False, local_slot=1)
     circles: list[float] = []
     cursors: list[float] = []
+    render_ctx = build_world_render_ctx(renderer)
     ctx = _draw_ctx()
 
-    monkeypatch.setattr(renderer, "_world_to_screen_with", lambda pos, **_kwargs: pos)
-    monkeypatch.setattr(
-        renderer,
-        "_draw_aim_circle",
-        lambda *, center, radius, alpha=1.0: circles.append(float(center.x)),
-    )
-    monkeypatch.setattr(renderer, "_draw_clock_gauge", lambda **_kwargs: None)
     monkeypatch.setattr(
         "crimson.render.world.draw.draw_aim_cursor",
         lambda _particles, _aim, pos: cursors.append(float(pos.x)),
     )
 
-    renderer._draw_aim_indicators(ctx=ctx)
-    renderer._draw_aim_enhancements(ctx=ctx)
+    draw_aim_indicators(
+        render_ctx,
+        ctx=ctx,
+        world_to_screen_with=lambda pos, _camera, _view_scale: pos,
+        draw_aim_circle_fn=lambda center, _radius, _alpha: circles.append(float(center.x)),
+        draw_clock_gauge_fn=lambda _pos, _ms, _scale, _alpha: None,
+    )
+    draw_aim_enhancements(
+        render_ctx,
+        ctx=ctx,
+        world_to_screen_with=lambda pos, _camera, _view_scale: pos,
+    )
 
     assert circles == [10.0, 20.0, 30.0]
     assert cursors == [10.0, 20.0, 30.0]
