@@ -7,7 +7,8 @@ from grim.geom import Vec2
 
 from ..types import _CREATURE_HITBOX_ALIVE, CreatureDamageApplier, Damageable, _SizeLike
 
-_NATIVE_FIND_RADIUS_MARGIN_EPS = 0.001
+# Keep strict native boundary semantics for collision acceptance.
+_NATIVE_FIND_RADIUS_MARGIN_EPS = 0.0
 
 
 def _hit_radius_for(creature: _SizeLike) -> float:
@@ -37,8 +38,8 @@ def _within_native_find_radius(*, origin: Vec2, target: Vec2, radius: float, tar
     if abs(float(dx)) > float(max_axis_delta) or abs(float(dy)) > float(max_axis_delta):
         return False
     margin = math.sqrt(dx * dx + dy * dy) - float(radius_f) - float(size_margin)
-    # Native uses x87-heavy float math in this path; a tiny epsilon avoids
-    # branch flips on sub-millimetric drift from float32 replay state.
+    # Native compares against zero; keep strict threshold to avoid rewrite-only
+    # near-edge hits that can cascade into RNG/XP timing drift.
     return float(margin) < _NATIVE_FIND_RADIUS_MARGIN_EPS
 
 

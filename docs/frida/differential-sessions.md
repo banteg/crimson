@@ -1466,3 +1466,44 @@ When the capture SHA is unchanged, append updates to the same session.
 
 - `quest_1_6` in this post-rebase capture family is clean again.
 - Continue the remaining quest split frontier from the earliest unresolved file/tick in the current sweep.
+
+## Session 18 (continued: strict projectile radius boundary)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.quest_1_8.json.gz`
+- **Capture family:** post-master-rebase quest split set (`session18_quest_gz_followup`)
+- **Baseline verifier command:**
+  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache`
+- **First mismatch progression:**
+  - before this fix: `tick 7655` (`players[0].experience`, `score_xp`, creature-count drift)
+  - after this fix: `tick 7722` (`players[0].experience`, `score_xp`, creature-count drift)
+
+### Key Findings
+
+- Focus tracing at the previous frontier showed a rewrite-only projectile hit accepted with positive margin (`+0.000928`) by `_within_native_find_radius(...)`.
+- The acceptance was caused by a local positive epsilon (`0.001`) that allowed near-edge non-native hits.
+- That rewrite-only hit/death path created an immediate XP/score overcount and pushed subsequent RNG/collision timing off the native track.
+
+### Landed Changes
+
+- `src/crimson/projectiles/runtime/collision.py`
+  - set `_NATIVE_FIND_RADIUS_MARGIN_EPS` to `0.0`,
+  - kept strict native boundary semantics for hit acceptance.
+- `tests/test_projectiles.py`
+  - added `test_within_native_find_radius_uses_strict_boundary` to lock the regression case where a tiny positive over-margin must not count as a hit.
+
+### Validation
+
+- Targeted tests:
+  - `uv run pytest tests/test_projectiles.py`
+- Repository checks:
+  - `just check`
+- Divergence rechecks:
+  - `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache`
+    - `result=diverged kind=state_mismatch tick=7722`
+  - `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_3_2.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache`
+    - `result=ok (no divergence found with current settings)`
+
+### Outcome / Next Probe
+
+- This fix cleared `quest_3_2` and moved the earliest unresolved frontier later in `quest_1_8` (`7655 -> 7722`).
+- Next probe should focus `quest_1_8` at `tick 7722` and isolate the first rewrite-only kill/death branch now driving creature-count and XP drift.
