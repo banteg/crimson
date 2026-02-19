@@ -1646,3 +1646,40 @@ When the capture SHA is unchanged, append updates to the same session.
 
 - `quest_1_10` is now cleared and can be unlinked from the active divergence set.
 - Remaining unresolved capture fronts should continue from currently outstanding quest files (`quest_1_9`, `quest_2_1`, `quest_4_5` in this family).
+
+## Session 18 (continued: quest_1_9 Fire Cough spread cooldown ordering parity)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.quest_1_9.json.gz` *(now unlinked after verification)*
+- **Capture family:** post-master-rebase quest split set (`session18_alt_leads`)
+- **Baseline verifier command (pre-unlink):**
+  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_9.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --no-cache`
+- **First mismatch progression:**
+  - before this fix: `tick 9482` (`rng_stream_mismatch`)
+  - after this fix: `result=ok (no divergence found with current settings)` *(pre-unlink no-cache run)*
+
+### Key Findings
+
+- Fire Cough samples `player.spread_heat` inside perk tick execution.
+- Rewrite was decaying spread heat before `apply_player_perk_ticks(...)`; native ordering cools spread after perk ticks/movement while still before weapon fire.
+- On the trigger tick in this capture, the sampled spread differed by exactly `dt * 0.4`, which shifted Fire Cough jitter angle enough to flip downstream projectile hit acceptance and RNG tail alignment.
+
+### Landed Changes
+
+- `src/crimson/gameplay.py`
+  - moved the spread-heat cooldown block to after perk ticks/aim update and before fire-gate + `_player_fire_weapon(...)`:
+    - `Sharpshooter`: clamp to `0.02`,
+    - otherwise: `max(0.01, spread_heat - dt * 0.4)`.
+
+### Validation
+
+- Repository checks:
+  - `just check`
+- Divergence checks:
+  - `quest_1_9` (pre-unlink no-cache): `result=ok`.
+  - `quest_1_8` remains diverged at `tick 7722` (see `analysis/frida/reports/session18_alt_leads/quest_1_8_after_spread_decay_reorder_nocache.json`).
+  - `quest_2_1` remains diverged at `tick 11417` (see `analysis/frida/reports/session18_alt_leads/quest_2_1_after_spread_decay_reorder_nocache.json`).
+
+### Outcome / Next Probe
+
+- `quest_1_9` is cleared and unlinked from `artifacts/frida/share/`.
+- Earliest unresolved frontier in this set remains `quest_1_8` at `tick 7722`; continue by isolating the first RNG/value stream fork there.

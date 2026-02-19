@@ -592,11 +592,6 @@ def player_update(
     if 0.0 < float(player.shot_cooldown) < 1e-6:
         player.shot_cooldown = 0.0
 
-    if perk_active(player, PerkId.SHARPSHOOTER):
-        player.spread_heat = 0.02
-    else:
-        player.spread_heat = max(0.01, player.spread_heat - dt * 0.4)
-
     speed_bonus_active = player.speed_bonus_timer > 0.0
     if player.aux_timer > 0.0:
         aux_decay = 1.4 if player.aux_timer >= 1.0 else 0.5
@@ -924,6 +919,14 @@ def player_update(
         aim_scheme=int(aim_scheme),
         demo_mode_active=bool(state.demo_mode_active),
     )
+
+    # Native cools spread after perk timers/movement but before weapon fire.
+    # Keeping this below `apply_player_perk_ticks` preserves Fire Cough spread
+    # sampling order while still applying cooldown before `player_fire_weapon`.
+    if perk_active(player, PerkId.SHARPSHOOTER):
+        player.spread_heat = 0.02
+    else:
+        player.spread_heat = max(0.01, player.spread_heat - dt * 0.4)
 
     fire_gate_open_pre_reload = player.shot_cooldown <= 0.0 and player.reload_timer == 0.0
 
