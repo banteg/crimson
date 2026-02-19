@@ -109,6 +109,7 @@ def test_plaguebearer_infection_kill_increments_global_count() -> None:
 
     assert state.plaguebearer_infection_count == 1
     assert len(result.deaths) == 1
+    assert result.deaths[0].plan_death_sfx is False
 
 
 def test_plaguebearer_infection_kill_does_not_apply_immediate_dead_decay() -> None:

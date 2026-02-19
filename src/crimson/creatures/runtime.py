@@ -297,6 +297,9 @@ class CreatureDeath:
     xp_awarded: int
     owner_id: int
     suppress_death_sfx: bool = False
+    # Some native death paths already consume/use their own SFX randomness
+    # (for example plague timer kills). Skip world-level death-SFX planning there.
+    plan_death_sfx: bool = True
 
 
 @dataclass(frozen=True, slots=True)
@@ -955,6 +958,7 @@ class CreaturePool:
                                 world_width=world_width,
                                 world_height=world_height,
                                 fx_queue=fx_queue,
+                                plan_death_sfx=False,
                             ),
                         )
                         # Native plague-kill path consumes one rand draw for
@@ -1204,6 +1208,7 @@ class CreaturePool:
         world_height: float,
         fx_queue: FxQueue | None,
         keep_corpse: bool = True,
+        plan_death_sfx: bool = True,
     ) -> CreatureDeath:
         """Run one-shot death side effects and return the `CreatureDeath` event."""
 
@@ -1222,6 +1227,7 @@ class CreaturePool:
                 xp_awarded=0,
                 owner_id=int(creature.last_hit_owner_id),
                 suppress_death_sfx=bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK),
+                plan_death_sfx=bool(plan_death_sfx),
             )
         death = self._start_death(
             int(idx),
@@ -1262,6 +1268,9 @@ class CreaturePool:
                 fx_queue.add_random(pos=creature_pos, rand=rand)
             self.kill_count += 1
             creature.active = False
+
+        if not bool(plan_death_sfx):
+            death = replace(death, plan_death_sfx=False)
 
         return death
 

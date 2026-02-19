@@ -1413,3 +1413,56 @@ When the capture SHA is unchanged, append updates to the same session.
   - `divergence_category`
   - projectile hit shortfall profile
   - dominant caller clusters near first sustained mismatch.
+
+---
+
+## Session 18 (2026-02-19)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.quest_1_6.json.gz`
+- **Capture family:** post-master-rebase quest split set (`session18_quest_gz_post_master_rebase`)
+- **Baseline verifier command:**
+  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_6.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache`
+- **First mismatch progression:**
+  - before this fix: `tick 5384 (rng_stream_mismatch)` with downstream one-tick projectile hit timing slip at `5386/5387`
+  - after this fix: `ok (no divergence found with current settings)`
+
+### Key Findings
+
+- The `5384` RNG drift was caused by rewrite-only RNG work on `tick 5383`, not by the `5384` fire path itself:
+  - focus trace before fix: `tick 5383 capture/rewrite calls = 100/102` with full value-prefix match,
+  - rewrite consumed two extra values (`14154`, `19675`), shifting all `tick 5384` weapon-fire rolls.
+- The extra draws came from world-level death-SFX planning for plague-timer kills:
+  - plague kill path in `creatures.runtime` already consumes native contact-SFX RNG,
+  - `world_state.step` additionally ran `plan_death_sfx_keys` for those same deaths, adding two rewrite-only draws.
+- After skipping world death-SFX planning for plague deaths:
+  - `focus-trace` realigned at both `tick 5383` and `tick 5384` (`prefix_match = capture_calls`),
+  - `quest_1_6` baseline report went fully clean.
+
+### Landed Changes
+
+- `src/crimson/creatures/runtime.py`
+  - added `CreatureDeath.plan_death_sfx: bool = True`,
+  - threaded `plan_death_sfx` through `handle_death`,
+  - set `plan_death_sfx=False` for plague timer kills.
+- `src/crimson/sim/world_state.py`
+  - `_plan_death_sfx_now(...)` now skips deaths with `plan_death_sfx=False`.
+- Tests:
+  - `tests/test_plaguebearer_perk.py` now asserts plague kills mark `plan_death_sfx=False`,
+  - `tests/test_death_timing.py` adds `test_plague_kill_death_event_skips_world_death_sfx_planning`.
+
+### Validation
+
+- Targeted tests:
+  - `uv run pytest tests/test_plaguebearer_perk.py::test_plaguebearer_infection_kill_increments_global_count tests/test_death_timing.py::test_plague_kill_death_event_skips_world_death_sfx_planning tests/test_death_timing.py::test_death_sfx_rand_consumes_past_cap tests/test_death_timing.py::test_detonation_followup_does_not_double_plan_death_sfx`
+- Focus traces:
+  - `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.quest_1_6.json.gz --tick 5383 --near-miss-threshold 0.35 --no-cache --json-out analysis/frida/reports/session18_quest_gz_post_master_rebase/gameplay_diff_capture.quest_1_6_focus_5383_after_plague_sfx_fix_nocache.json`
+  - `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.quest_1_6.json.gz --tick 5384 --near-miss-threshold 0.35 --no-cache --json-out analysis/frida/reports/session18_quest_gz_post_master_rebase/gameplay_diff_capture.quest_1_6_focus_5384_after_plague_sfx_fix_nocache.json`
+- Baseline recheck:
+  - `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_6.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache` → `result=ok (no divergence found with current settings)`
+- Repository checks:
+  - `just check`
+
+### Outcome / Next Probe
+
+- `quest_1_6` in this post-rebase capture family is clean again.
+- Continue the remaining quest split frontier from the earliest unresolved file/tick in the current sweep.
