@@ -13,6 +13,7 @@ from grim.geom import Vec2
 
 from ..bonuses import BonusId
 from ..game_modes import GameMode
+from ..perks.ids import PerkId
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
 )
@@ -80,6 +81,11 @@ _PERK_INTERVAL_GLOBAL_KEYS: dict[str, str] = {
     "man_bomb": "perk_man_bomb_trigger_interval_s",
     "fire_cough": "perk_fire_cough_trigger_interval_s",
     "hot_tempered": "perk_hot_tempered_trigger_interval_s",
+}
+_PERK_INTERVAL_PERK_IDS: dict[str, int] = {
+    "man_bomb": int(PerkId.MAN_BOMB),
+    "fire_cough": int(PerkId.FIRE_CAUGH),
+    "hot_tempered": int(PerkId.HOT_TEMPERED),
 }
 _PROJECTILE_SPAWNING_BONUS_IDS = frozenset(
     {
@@ -1365,6 +1371,29 @@ def _before_global_perk_intervals(tick: CaptureTick) -> dict[str, float] | None:
     return out
 
 
+def _checkpoint_player_perk_active(
+    tick: CaptureTick,
+    *,
+    player_index: int,
+    perk_id: int,
+) -> bool | None:
+    player_nonzero_counts = tick.checkpoint.perk.player_nonzero_counts
+    if int(player_index) < 0 or int(player_index) >= len(player_nonzero_counts):
+        return None
+    rows = player_nonzero_counts[int(player_index)]
+    for row in rows:
+        if len(row) < 2:
+            continue
+        row_perk_id = _coerce_int_like(row[0])
+        row_count = _coerce_int_like(row[1])
+        if row_perk_id is None or row_count is None:
+            continue
+        if int(row_perk_id) != int(perk_id):
+            continue
+        return int(row_count) > 0
+    return False
+
+
 def _infer_bootstrap_perk_intervals(capture: CaptureFile, *, tick_rate: int) -> dict[str, float]:
     ticks = sorted(capture.ticks, key=lambda item: int(item.tick_index))
     if len(ticks) < 2:
@@ -1395,6 +1424,22 @@ def _infer_bootstrap_perk_intervals(capture: CaptureFile, *, tick_rate: int) -> 
         for key in ("hot_tempered", "man_bomb", "fire_cough"):
             if key in out:
                 continue
+            perk_id = _PERK_INTERVAL_PERK_IDS.get(str(key))
+            if perk_id is not None:
+                perk_active_now = _checkpoint_player_perk_active(
+                    tick,
+                    player_index=0,
+                    perk_id=int(perk_id),
+                )
+                perk_active_next = _checkpoint_player_perk_active(
+                    next_tick,
+                    player_index=0,
+                    perk_id=int(perk_id),
+                )
+                # Ignore timer drops when both snapshots explicitly report the
+                # perk inactive; these are reset artifacts, not interval wraps.
+                if perk_active_now is False and perk_active_next is False:
+                    continue
             before_value = _finite_float_or_none(before_timers.get(str(key)))
             after_value = _finite_float_or_none(after_timers.get(str(key)))
             if before_value is None or after_value is None:

@@ -644,11 +644,12 @@ def player_update(
         preload_dt = float(f32(float(reload_scale) * float(dt_f32)))
 
     reload_preload_underflow = float(f32(reload_timer_now - preload_dt))
-    if (
-        player.reload_active
-        and reload_timer_now > 0.0
-        and reload_preload_underflow < -_RELOAD_PRELOAD_UNDERFLOW_EPS
-    ):
+    # Native can complete reload and fire on the same frame when held fire
+    # meets an almost-zero reload boundary. Treat near-zero underflow as
+    # completion for fire-held ticks to avoid a spurious empty-shot reload loop.
+    preload_crossed = reload_preload_underflow < -_RELOAD_PRELOAD_UNDERFLOW_EPS
+    preload_fire_boundary = input_state.fire_down and reload_preload_underflow <= _RELOAD_PRELOAD_UNDERFLOW_EPS
+    if player.reload_active and reload_timer_now > 0.0 and (preload_crossed or preload_fire_boundary):
         player.ammo = float(player.clip_size)
 
     if player.reload_timer > 0.0:
