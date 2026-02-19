@@ -20,6 +20,7 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 
 from ..effects import FxQueue, FxQueueRotated
+from ..effects_atlas import EffectId
 from ..gameplay import (
     award_experience,
     award_experience_from_reward,
@@ -295,6 +296,7 @@ class CreatureDeath:
     reward_value: float
     xp_awarded: int
     owner_id: int
+    suppress_death_sfx: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -1228,6 +1230,7 @@ class CreaturePool:
                 reward_value=float(creature.reward_value),
                 xp_awarded=0,
                 owner_id=int(creature.last_hit_owner_id),
+                suppress_death_sfx=bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK),
             )
         death = self._start_death(
             int(idx),
@@ -1520,6 +1523,30 @@ class CreaturePool:
                     detail_preset=int(detail_preset),
                 )
 
+        armored_death = bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK)
+        if armored_death:
+            for _ in range(5):
+                rotation = float(int(rand()) & 0x7F) * 0.049087387
+                vel_x = float((int(rand()) & 0x7F) - 0x40)
+                vel_y = float((int(rand()) & 0x7F) - 0x40)
+                scale_step = float(int(rand()) % 0x8C) * 0.01 + 0.3
+                state.effects.spawn(
+                    effect_id=int(EffectId.BURST),
+                    pos=creature.pos,
+                    vel=Vec2(vel_x, vel_y),
+                    rotation=float(rotation),
+                    scale=1.0,
+                    half_width=36.0,
+                    half_height=36.0,
+                    age=0.0,
+                    lifetime=0.699999988079071,
+                    flags=0x1D,
+                    color=RGBA(0.800000011920929, 0.800000011920929, 0.30000001192092896, 0.5),
+                    rotation_step=0.0,
+                    scale_step=float(scale_step),
+                    detail_preset=int(detail_preset),
+                )
+
         return CreatureDeath(
             index=int(idx),
             pos=creature.pos,
@@ -1527,4 +1554,5 @@ class CreaturePool:
             reward_value=float(creature.reward_value),
             xp_awarded=int(xp_awarded),
             owner_id=int(creature.last_hit_owner_id),
+            suppress_death_sfx=bool(armored_death),
         )

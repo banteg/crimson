@@ -16,6 +16,7 @@ from crimson.creatures.spawn import (
     build_spawn_plan,
 )
 from crimson.effects import FxQueue
+from crimson.effects_atlas import EffectId
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
@@ -487,6 +488,34 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert any(entry.bonus_id != 0 for entry in state.bonus_pool.entries)
     # Successful spawn-on-kill emits a 16-particle burst (4 RNG draws each).
     assert state.rng._idx == 67  # type: ignore[attr-defined]
+
+
+def test_handle_death_shock_flag_spawns_armored_debris_and_suppresses_death_sfx() -> None:
+    state = GameplayState()
+    state.rng = _StubRand([0] * 20)  # type: ignore[assignment]
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.flags = CreatureFlags.RANGED_ATTACK_SHOCK
+    creature.pos = Vec2(100.0, 100.0)
+    creature.hp = 0.0
+
+    death = pool.handle_death(
+        0,
+        state=state,
+        players=[],
+        rand=state.rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=None,
+    )
+
+    assert death.suppress_death_sfx is True
+    active = state.effects.iter_active()
+    assert len(active) == 5
+    assert all(int(entry.effect_id) == int(EffectId.BURST) for entry in active)
+    assert state.rng._idx == 20  # type: ignore[attr-defined]
 
 
 def test_death_award_uses_float32_sum_before_truncation() -> None:

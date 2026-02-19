@@ -177,6 +177,8 @@ def plan_death_sfx_keys(
 
     for idx in range(min(len(deaths), _MAX_DEATH_SFX_PER_FRAME)):
         death = deaths[idx]
+        if bool(getattr(death, "suppress_death_sfx", False)):
+            continue
         type_id = getattr(death, "type_id", None)
         if type_id is None:
             continue
