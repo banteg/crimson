@@ -4,6 +4,7 @@ import queue
 import shutil
 import subprocess
 import tempfile
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -96,8 +97,9 @@ def run_replay_render_video(
     runtime_base_dir.mkdir(parents=True, exist_ok=True)
     cfg = ensure_crimson_cfg(runtime_base_dir)
     capture_audio = not bool(mute_audio)
-    cfg.set_bool_value("sound_disable", bool(mute_audio))
-    cfg.set_bool_value("music_disable", bool(mute_audio))
+    # Always mute during the video pass: it is faster and prevents local playback.
+    cfg.set_bool_value("sound_disable", True)
+    cfg.set_bool_value("music_disable", True)
 
     render_width = int(width) if width is not None else cfg.screen_width
     render_height = int(height) if height is not None else cfg.screen_height
@@ -114,7 +116,6 @@ def run_replay_render_video(
     mode: ReplayPlaybackMode | None = None
     window_open = False
     ffmpeg_proc: subprocess.Popen[bytes] | None = None
-    audio_capture: _MixedAudioCapture | None = None
     capture_width = 0
     capture_height = 0
     frame_bytes = 0
@@ -156,15 +157,6 @@ def run_replay_render_video(
             )
             mode.open()
 
-            if bool(capture_audio):
-                audio_capture = _MixedAudioCapture(
-                    rl=rl,
-                    output_path=audio_raw_path,
-                    sample_rate=int(_AUDIO_CAPTURE_SAMPLE_RATE),
-                    channels=int(_AUDIO_CAPTURE_CHANNELS),
-                )
-                audio_capture.start()
-
             ffmpeg_proc = _spawn_ffmpeg_raw_video_process(
                 ffmpeg_path=ffmpeg_path,
                 output_path=video_out_path,
@@ -196,22 +188,36 @@ def run_replay_render_video(
                 finally:
                     rl.unload_image(image)
                 frame_count += 1
-                if audio_capture is not None:
-                    audio_capture.flush_pending()
                 if progress is not None:
                     progress(int(frame_count), int(mode.tick_index), int(total_ticks))
 
             if int(frame_count) <= 0:
                 raise ReplayRenderError("replay render produced no frames")
 
-            if audio_capture is not None:
-                audio_capture.stop()
-
             if progress is not None:
                 progress(int(frame_count), int(total_ticks), int(total_ticks))
             _finalize_ffmpeg_process(ffmpeg_proc)
+            ffmpeg_proc = None
+            if mode is not None:
+                mode.close()
+                mode = None
 
-            if audio_capture is not None:
+            if bool(capture_audio):
+                replay_tick_rate = int(replay.header.tick_rate)
+                if int(replay_tick_rate) <= 0:
+                    raise ReplayRenderError(f"invalid replay tick_rate for audio pass: {replay_tick_rate}")
+                captured_audio = _capture_replay_audio_track(
+                    rl=rl,
+                    ctx=ctx,
+                    replay_path=Path(replay_path),
+                    config=cfg,
+                    console=console,
+                    max_ticks=max_ticks,
+                    strict_events=bool(strict_events),
+                    trace_rng=bool(trace_rng),
+                    output_path=audio_raw_path,
+                    replay_tick_rate=int(replay_tick_rate),
+                )
                 _mux_raw_audio_with_video(
                     ffmpeg_path=ffmpeg_path,
                     video_path=video_out_path,
@@ -219,11 +225,10 @@ def run_replay_render_video(
                     output_path=out_path,
                     overwrite=bool(overwrite),
                     expected_video_duration_s=float(frame_count) / float(fps),
-                    audio_sample_rate=int(audio_capture.sample_rate),
-                    audio_channels=int(audio_capture.channels),
-                    captured_audio_frames=int(audio_capture.captured_frames),
+                    audio_sample_rate=int(captured_audio.sample_rate),
+                    audio_channels=int(captured_audio.channels),
+                    captured_audio_frames=int(captured_audio.captured_frames),
                 )
-                audio_capture = None
         except ReplayRenderError:
             _abort_ffmpeg_process(ffmpeg_proc)
             raise
@@ -234,11 +239,6 @@ def run_replay_render_video(
             _abort_ffmpeg_process(ffmpeg_proc)
             raise ReplayRenderError(f"ffmpeg streaming failed: {exc}") from exc
         finally:
-            if audio_capture is not None:
-                try:
-                    audio_capture.close()
-                except ReplayRenderError:
-                    pass
             if mode is not None:
                 mode.close()
             if bool(window_open):
@@ -334,6 +334,89 @@ class _MixedAudioCapture:
         finally:
             self._closed = True
             self._file.close()
+
+
+@dataclass(frozen=True, slots=True)
+class _CapturedAudioTrack:
+    sample_rate: int
+    channels: int
+    captured_frames: int
+
+
+def _capture_replay_audio_track(
+    *,
+    rl,
+    ctx,
+    replay_path: Path,
+    config,
+    console,
+    max_ticks: int | None,
+    strict_events: bool,
+    trace_rng: bool,
+    output_path: Path,
+    replay_tick_rate: int,
+) -> _CapturedAudioTrack:
+    from ...modes.replay_playback_mode import ReplayPlaybackMode
+
+    cfg = config
+    cfg.set_bool_value("sound_disable", False)
+    cfg.set_bool_value("music_disable", False)
+
+    mode: ReplayPlaybackMode | None = None
+    capture = _MixedAudioCapture(
+        rl=rl,
+        output_path=Path(output_path),
+        sample_rate=int(_AUDIO_CAPTURE_SAMPLE_RATE),
+        channels=int(_AUDIO_CAPTURE_CHANNELS),
+    )
+    prior_master_volume = 1.0
+    try:
+        mode = ReplayPlaybackMode(
+            ctx,
+            replay_path=Path(replay_path),
+            config=cfg,
+            console=console,
+            max_ticks=max_ticks,
+            strict_events=bool(strict_events),
+            trace_rng=bool(trace_rng),
+            show_replay_widget=False,
+        )
+        mode.open()
+        try:
+            prior_master_volume = float(rl.get_master_volume())
+        except RuntimeError:
+            prior_master_volume = 1.0
+        rl.set_master_volume(0.0)
+        capture.start()
+
+        tick_dt = 1.0 / float(replay_tick_rate)
+        next_tick_deadline = time.perf_counter()
+        while not bool(mode.finished):
+            mode.update(float(tick_dt))
+            if bool(mode.close_requested):
+                raise ReplayRenderError("audio capture aborted: replay playback requested close")
+            capture.flush_pending()
+            next_tick_deadline += tick_dt
+            sleep_s = float(next_tick_deadline) - float(time.perf_counter())
+            if float(sleep_s) > 0.0:
+                time.sleep(float(sleep_s))
+        capture.stop()
+        return _CapturedAudioTrack(
+            sample_rate=int(capture.sample_rate),
+            channels=int(capture.channels),
+            captured_frames=int(capture.captured_frames),
+        )
+    finally:
+        try:
+            rl.set_master_volume(float(prior_master_volume))
+        except RuntimeError:
+            pass
+        try:
+            capture.close()
+        except ReplayRenderError:
+            pass
+        if mode is not None:
+            mode.close()
 
 
 def _mux_raw_audio_with_video(
