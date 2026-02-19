@@ -109,3 +109,28 @@ def test_plaguebearer_infection_kill_increments_global_count() -> None:
 
     assert state.plaguebearer_infection_count == 1
     assert len(result.deaths) == 1
+
+
+def test_plaguebearer_infection_kill_does_not_apply_immediate_dead_decay() -> None:
+    dt = 0.063
+    state = GameplayState()
+    state.bonus_spawn_guard = True
+    player = PlayerState(index=0, pos=Vec2(500.0, 500.0))
+
+    pool = CreaturePool()
+    creature = pool.entries[0]
+    creature.active = True
+    creature.flags = CreatureFlags(0)
+    creature.plague_infected = True
+    creature.collision_timer = 0.01
+    creature.pos = Vec2(120.0, 370.0)
+    creature.hp = 10.0
+    creature.reward_value = 10.0
+    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+
+    result = pool.update(dt, state=state, players=[player])
+
+    assert len(result.deaths) == 1
+    # Native plague timer kills call creature_handle_death, then continue the
+    # live branch without an immediate `_tick_dead` pass.
+    assert creature.hitbox_size == CREATURE_HITBOX_ALIVE - dt

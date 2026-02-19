@@ -971,20 +971,11 @@ class CreaturePool:
 
                     if fx_queue is not None:
                         fx_queue.add_random(pos=creature.pos, rand=rand)
-
                     if plague_killed:
-                        if creature.active:
-                            self._tick_dead(
-                                creature,
-                                dt=dt,
-                                world_width=world_width,
-                                world_height=world_height,
-                                fx_queue_rotated=fx_queue_rotated,
-                                rand=rand,
-                                detail_preset=int(detail_preset),
-                                fx_toggle=int(fx_toggle),
-                            )
-                        continue
+                        # Native keeps executing the current live-branch body after
+                        # `creature_handle_death` in this timer-wrap kill path.
+                        # Do not run `_tick_dead` immediately here.
+                        pass
 
             target_player = self._resolve_target_player_index(creature, players)
             player = players[target_player]
