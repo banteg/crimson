@@ -50,27 +50,62 @@ def test_perks_rebuild_available_unlocks_base_and_quest_perks() -> None:
     assert state.perk_available[int(PerkId.URANIUM_FILLED_BULLETS)]
 
 
-def test_perk_generate_choices_inserts_monster_vision_on_quest_1_7() -> None:
+def test_perk_generate_choices_inserts_monster_vision_on_quest_3_4() -> None:
     # `perk_generate_choices` always fills a 7-entry list; provide enough entropy to avoid
     # degenerately selecting from a tiny, repeatedly invalid subset.
     state = GameplayState(rng=_as_rng(_SeqRng(list(range(2048)))))
-    state.quest_stage_major = 1
-    state.quest_stage_minor = 7
+    state.quest_stage_major = 3
+    state.quest_stage_minor = 4
     player = PlayerState(index=0, pos=Vec2())
 
     choices = perk_generate_choices(state, player, game_mode=int(GameMode.QUESTS), player_count=1)
     assert choices and choices[0] == PerkId.MONSTER_VISION
 
 
-def test_perk_generate_choices_skips_monster_vision_insert_when_capture_counts_unknown() -> None:
+def test_perk_generate_choices_inserts_monster_vision_when_capture_counts_unknown() -> None:
     state = GameplayState(rng=_as_rng(_SeqRng(list(range(2048)))))
-    state.quest_stage_major = 1
-    state.quest_stage_minor = 7
+    state.quest_stage_major = 3
+    state.quest_stage_minor = 4
     state.perk_selection.capture_player_perk_counts_known = False
     player = PlayerState(index=0, pos=Vec2())
 
     choices = perk_generate_choices(state, player, game_mode=int(GameMode.QUESTS), player_count=1)
-    assert choices and choices[0] != PerkId.MONSTER_VISION
+    assert choices and choices[0] == PerkId.MONSTER_VISION
+
+
+def test_perk_generate_choices_monster_vision_forced_slot_preserves_native_order() -> None:
+    # Capture quest_3_4 focus tick 25380 draws:
+    #   7x perk_select_random (0x0042fbdc), 2x rarity gate (0x004046d4).
+    # Native force-inserts Monster Vision first for this quest, so the later
+    # random Monster Vision candidate is skipped as a duplicate and the visible
+    # first three remain [30, 18, 36].
+    state = GameplayState(
+        rng=_as_rng(_SeqRng([7142, 17282, 1460, 25337, 13003, 21224, 12422, 22458, 29730])),
+    )
+    status = _status_default()
+    status.quest_unlock_index = 49
+    status.quest_unlock_index_full = 49
+    state.status = status
+    state.quest_stage_major = 3
+    state.quest_stage_minor = 4
+    player = PlayerState(index=0, pos=Vec2())
+
+    choices = perk_generate_choices(
+        state,
+        player,
+        game_mode=int(GameMode.QUESTS),
+        player_count=1,
+        count=7,
+    )
+    assert choices == [
+        PerkId.MONSTER_VISION,
+        PerkId.ANXIOUS_LOADER,
+        PerkId.VEINS_OF_POISON,
+        PerkId.PERK_EXPERT,
+        PerkId.FIRE_CAUGH,
+        PerkId.BLOODY_MESS_QUICK_LEARNER,
+        PerkId.BARREL_GREASER,
+    ]
 
 
 def test_perk_generate_choices_rejects_pyromaniac_without_flamethrower() -> None:
