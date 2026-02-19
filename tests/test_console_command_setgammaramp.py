@@ -1,41 +1,12 @@
 from __future__ import annotations
 
-import random
-import time
-from pathlib import Path
-
 import crimson.game.loop_view as loop_view
 from crimson.game.loop_view import GameLoopView
 from crimson.game.runtime import _boot_command_handlers
-from crimson.game.types import GameState
-from crimson.persistence import save_status
-from grim.config import ensure_crimson_cfg
-from grim.console import create_console
 
 
-def _make_state(tmp_path: Path) -> GameState:
-    repo_root = Path(__file__).resolve().parents[1]
-    assets_dir = repo_root / "artifacts" / "assets"
-    cfg = ensure_crimson_cfg(tmp_path)
-    return GameState(
-        base_dir=tmp_path,
-        assets_dir=assets_dir,
-        rng=random.Random(0),
-        config=cfg,
-        status=save_status.ensure_game_status(tmp_path),
-        console=create_console(tmp_path, assets_dir=assets_dir),
-        demo_enabled=False,
-        preserve_bugs=False,
-        logos=None,
-        texture_cache=None,
-        audio=None,
-        resource_paq=assets_dir / "crimson.paq",
-        session_start=time.monotonic(),
-    )
-
-
-def test_setgammaramp_updates_state_and_logs(tmp_path: Path) -> None:
-    state = _make_state(tmp_path)
+def test_setgammaramp_updates_state_and_logs(make_game_state) -> None:
+    state = make_game_state()
     handlers = _boot_command_handlers(state)
 
     handlers["setGammaRamp"](["1.25"])
@@ -44,8 +15,8 @@ def test_setgammaramp_updates_state_and_logs(tmp_path: Path) -> None:
     assert state.console.log.lines[-1] == "Gamma ramp regenerated and multiplied with 1.250000"
 
 
-def test_setgammaramp_prints_usage_on_bad_arity(tmp_path: Path) -> None:
-    state = _make_state(tmp_path)
+def test_setgammaramp_prints_usage_on_bad_arity(make_game_state) -> None:
+    state = make_game_state()
     handlers = _boot_command_handlers(state)
 
     handlers["setGammaRamp"]([])
@@ -56,9 +27,9 @@ def test_setgammaramp_prints_usage_on_bad_arity(tmp_path: Path) -> None:
     ]
 
 
-def test_game_loop_draw_applies_gamma_shader_when_gain_non_default(monkeypatch, tmp_path: Path) -> None:
+def test_game_loop_draw_applies_gamma_shader_when_gain_non_default(monkeypatch, make_game_state) -> None:
     calls: list[object] = []
-    state = _make_state(tmp_path)
+    state = make_game_state()
     state.gamma_ramp = 1.4
     view = GameLoopView(state)
     monkeypatch.setattr(view, "_draw_scene_layers", lambda: calls.append("scene"))
@@ -79,9 +50,9 @@ def test_game_loop_draw_applies_gamma_shader_when_gain_non_default(monkeypatch, 
     assert calls == [("gain", sentinel_shader, 7, 1.4), ("begin", sentinel_shader), "scene", "end"]
 
 
-def test_game_loop_draw_skips_gamma_shader_for_default_gain(monkeypatch, tmp_path: Path) -> None:
+def test_game_loop_draw_skips_gamma_shader_for_default_gain(monkeypatch, make_game_state) -> None:
     calls: list[object] = []
-    state = _make_state(tmp_path)
+    state = make_game_state()
     state.gamma_ramp = 1.0
     view = GameLoopView(state)
     monkeypatch.setattr(view, "_draw_scene_layers", lambda: calls.append("scene"))

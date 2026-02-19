@@ -1,44 +1,17 @@
 from __future__ import annotations
 
-import random
-import time
-from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
 
 from crimson.frontend.panels.lan_lobby import LanLobbyPanelView
 from crimson.frontend.panels.lan_session import LanSessionPanelView
 from crimson.game.loop_view import GameLoopView
-from crimson.game.types import GameState, LanSessionConfig, PendingLanSession
-from crimson.persistence import save_status
-from grim.config import ensure_crimson_cfg
-from grim.console import create_console
+from crimson.game.types import LanSessionConfig, PendingLanSession
 from grim.geom import Vec2
 
 
-def _build_state(tmp_path: Path) -> GameState:
-    repo_root = Path(__file__).resolve().parents[1]
-    assets_dir = repo_root / "artifacts" / "assets"
-    cfg = ensure_crimson_cfg(tmp_path)
-    return GameState(
-        base_dir=tmp_path,
-        assets_dir=assets_dir,
-        rng=random.Random(0),
-        config=cfg,
-        status=save_status.ensure_game_status(tmp_path),
-        console=create_console(tmp_path, assets_dir=assets_dir),
-        demo_enabled=False,
-        preserve_bugs=False,
-        logos=None,
-        texture_cache=None,
-        audio=None,
-        resource_paq=assets_dir / "crimson.paq",
-        session_start=time.monotonic(),
-    )
-
-
-def test_network_session_panel_requires_room_code_for_join(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
+def test_network_session_panel_requires_room_code_for_join(make_game_state) -> None:
+    state = make_game_state()
     panel = LanSessionPanelView(state)
     panel._role = "join"
     panel._host_ip = "127.0.0.1"
@@ -51,8 +24,8 @@ def test_network_session_panel_requires_room_code_for_join(tmp_path: Path) -> No
     assert state.pending_lan_session is None
 
 
-def test_network_session_panel_writes_pending_net_and_legacy_alias(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
+def test_network_session_panel_writes_pending_net_and_legacy_alias(make_game_state) -> None:
+    state = make_game_state()
     panel = LanSessionPanelView(state)
     panel._role = "host"
     panel._mode_idx = 1  # rush
@@ -76,8 +49,8 @@ def test_network_session_panel_writes_pending_net_and_legacy_alias(tmp_path: Pat
     assert pending.config.netcode_mode == "lockstep_legacy"
 
 
-def test_loop_view_uses_pending_net_session_when_lan_alias_is_unset(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
+def test_loop_view_uses_pending_net_session_when_lan_alias_is_unset(make_game_state) -> None:
+    state = make_game_state()
     state.pending_net_session = PendingLanSession(
         role="host",
         config=LanSessionConfig(
@@ -110,8 +83,8 @@ def test_loop_view_uses_pending_net_session_when_lan_alias_is_unset(tmp_path: Pa
     assert state.lan_in_lobby is True
 
 
-def test_network_lobby_panel_shows_room_code_not_session_id(monkeypatch, tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
+def test_network_lobby_panel_shows_room_code_not_session_id(monkeypatch, make_game_state) -> None:
+    state = make_game_state()
     pending = PendingLanSession(
         role="host",
         config=LanSessionConfig(

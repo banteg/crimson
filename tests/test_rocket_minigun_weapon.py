@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-from typing import Any
 
 from crimson.gameplay import GameplayState
 from crimson.sim.input import PlayerInput
@@ -10,28 +9,18 @@ from crimson.weapon_runtime import (
     player_fire_weapon,
     weapon_assign_player,
 )
+from crimson.weapons import WeaponId
 from grim.geom import Vec2
-
-
-class _FixedRng:
-    def __init__(self, value: int) -> None:
-        self._value = int(value)
-
-    def rand(self) -> int:
-        return int(self._value)
-
-
-def _as_rng(value: object) -> Any:
-    return value
+from tests.helpers import MockCrand
 
 
 def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
-    state = GameplayState(rng=_as_rng(_FixedRng(0)))
+    state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, 17)
+    weapon_assign_player(player, int(WeaponId.MINI_ROCKET_SWARMERS))
     assert player.ammo == player.clip_size
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
@@ -41,7 +30,7 @@ def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     assert player.ammo == 0
     assert player.reload_active is True
 
-    assert state.weapon_shots_fired[0][17] == player.clip_size
+    assert state.weapon_shots_fired[0][int(WeaponId.MINI_ROCKET_SWARMERS)] == player.clip_size
 
     shot_angle = math.pi / 2.0
     spread = math.pi * (2.0 / 3.0)

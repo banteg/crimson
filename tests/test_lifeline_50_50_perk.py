@@ -7,20 +7,11 @@ from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from grim.rand import Crand
-
-
-class _FixedRng(Crand):
-    def __init__(self, value: int) -> None:
-        super().__init__(0)
-        self._value = int(value)
-
-    def rand(self) -> int:
-        return int(self._value)
+from tests.helpers import MockCrand
 
 
 def test_perk_apply_lifeline_50_50_deactivates_every_other_eligible_creature_slot() -> None:
-    state = GameplayState(rng=_FixedRng(0))
+    state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2())
 
     creatures: list[CreatureState] = [CreatureState() for _ in range(8)]

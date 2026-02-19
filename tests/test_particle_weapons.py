@@ -10,45 +10,21 @@ from crimson.weapon_runtime import (
     player_fire_weapon,
     weapon_assign_player,
 )
+from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from grim.rand import Crand
-
-
-class _FixedRng(Crand):
-    def __init__(self, value: int) -> None:
-        super().__init__(0)
-        self._value = int(value)
-
-    def rand(self) -> int:
-        return int(self._value)
-
-
-class _SequenceRng(Crand):
-    def __init__(self, values: list[int]) -> None:
-        super().__init__(0)
-        self._values = [int(value) for value in values]
-        self._idx = 0
-
-    def rand(self) -> int:
-        if not self._values:
-            return 0
-        if self._idx >= len(self._values):
-            return int(self._values[-1])
-        value = int(self._values[self._idx])
-        self._idx += 1
-        return value
+from tests.helpers import MockCrand
 
 
 def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
     cases = (
-        (8, 0, 0.1),  # Flamethrower
-        (15, 1, 0.05),  # Blow Torch
-        (16, 2, 0.1),  # HR Flamer
-        (42, 8, 0.15),  # Bubblegun (slow particle)
+        (int(WeaponId.FLAMETHROWER), 0, 0.1),
+        (int(WeaponId.BLOW_TORCH), 1, 0.05),
+        (int(WeaponId.HR_FLAMER), 2, 0.1),
+        (int(WeaponId.BUBBLEGUN), 8, 0.15),
     )
 
     for weapon_id, expected_style, ammo_cost in cases:
-        state = GameplayState(rng=_FixedRng(1))
+        state = GameplayState(rng=MockCrand(1))
         player = PlayerState(index=0, pos=Vec2())
         player.aim_dir = Vec2(1.0, 0.0)
         player.spread_heat = 0.0
@@ -72,12 +48,12 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
 
 
 def test_flamethrower_particles_spawn_from_barrel_offset_muzzle() -> None:
-    state = GameplayState(rng=_FixedRng(0))
+    state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(0.0, 1.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, 8)
+    weapon_assign_player(player, int(WeaponId.FLAMETHROWER))
 
     aim_x = 200.0
     aim_y = 0.0
@@ -104,12 +80,12 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
 
     # Ensure the jittered aim point is significantly off-axis: dir_angle -> pi/2, mag -> near 1.0.
     # The third value is consumed by `spawn_particle` (spin).
-    state = GameplayState(rng=_SequenceRng([128, 511, 0]))
+    state = GameplayState(rng=MockCrand([128, 511, 0], fallback="repeat_last"))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.48
 
-    weapon_assign_player(player, 8)
+    weapon_assign_player(player, int(WeaponId.FLAMETHROWER))
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)), dt=0.016, state=state)
 
     particles = [entry for entry in state.particles.entries if entry.active]
@@ -132,12 +108,12 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
 
 
 def test_particle_hits_damage_creatures() -> None:
-    state = GameplayState(rng=_FixedRng(0))
+    state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, 8)
+    weapon_assign_player(player, int(WeaponId.FLAMETHROWER))
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     creature = CreatureState()
@@ -156,12 +132,12 @@ def test_particle_hits_damage_creatures() -> None:
 
 
 def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
-    state = GameplayState(rng=_FixedRng(0))
+    state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, 42)
+    weapon_assign_player(player, int(WeaponId.BUBBLEGUN))
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     creature = CreatureState()

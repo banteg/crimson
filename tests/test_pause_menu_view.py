@@ -1,18 +1,11 @@
 from __future__ import annotations
 
-import random
-import time
-from pathlib import Path
 from typing import cast
 
 import pyray as rl
 
 from crimson.frontend.assets import MenuAssets
 from crimson.frontend.pause_menu import PAUSE_MENU_TO_MAIN_MENU_FADE_MS, PauseMenuView
-from crimson.game.types import GameState
-from crimson.persistence import save_status
-from grim.config import CrimsonConfig, default_crimson_cfg_data
-from grim.console import create_console
 
 
 def _texture_stub() -> rl.Texture:
@@ -27,35 +20,14 @@ class _PauseBackgroundStub:
         self._sink.append(float(entity_alpha))
 
 
-def _make_state(tmp_path: Path) -> GameState:
-    repo_root = Path(__file__).resolve().parents[1]
-    assets_dir = repo_root / "artifacts" / "assets"
-    data = default_crimson_cfg_data()
-    data["screen_width"] = 640
-    config = CrimsonConfig(path=tmp_path / "game.cfg", data=data)
-    return GameState(
-        base_dir=tmp_path,
-        assets_dir=assets_dir,
-        rng=random.Random(0),
-        config=config,
-        status=save_status.ensure_game_status(tmp_path),
-        console=create_console(tmp_path, assets_dir=assets_dir),
-        demo_enabled=False,
-        preserve_bugs=False,
-        logos=None,
-        texture_cache=None,
-        audio=None,
-        resource_paq=assets_dir / "crimson.paq",
-        session_start=time.monotonic(),
+def test_pause_menu_draw_fades_pause_background_on_main_menu_close(monkeypatch, make_game_state) -> None:
+    captured_alpha: list[float] = []
+    state = make_game_state(
+        config_updates={"screen_width": 640},
         menu_sign_locked=False,
         screen_fade_alpha=0.0,
         screen_fade_ramp=False,
     )
-
-
-def test_pause_menu_draw_fades_pause_background_on_main_menu_close(monkeypatch, tmp_path: Path) -> None:
-    captured_alpha: list[float] = []
-    state = _make_state(tmp_path)
     state.pause_background = _PauseBackgroundStub(captured_alpha)
     view = PauseMenuView(state)
     view._is_open = True
@@ -77,9 +49,14 @@ def test_pause_menu_draw_fades_pause_background_on_main_menu_close(monkeypatch, 
     assert captured_alpha[-1] == 0.5
 
 
-def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(monkeypatch, tmp_path: Path) -> None:
+def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(monkeypatch, make_game_state) -> None:
     captured_alpha: list[float] = []
-    state = _make_state(tmp_path)
+    state = make_game_state(
+        config_updates={"screen_width": 640},
+        menu_sign_locked=False,
+        screen_fade_alpha=0.0,
+        screen_fade_ramp=False,
+    )
     state.pause_background = _PauseBackgroundStub(captured_alpha)
     view = PauseMenuView(state)
     view._is_open = True

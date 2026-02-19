@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-from typing import Any
 
 from crimson.gameplay import GameplayState
 from crimson.projectiles import ProjectileTypeId
@@ -11,19 +10,9 @@ from crimson.weapon_runtime import (
     player_fire_weapon,
     weapon_assign_player,
 )
+from crimson.weapons import WeaponId
 from grim.geom import Vec2
-
-
-class _FixedRng:
-    def __init__(self, value: int) -> None:
-        self._value = int(value)
-
-    def rand(self) -> int:
-        return int(self._value)
-
-
-def _as_rng(value: object) -> Any:
-    return value
+from tests.helpers import MockCrand
 
 
 def _active_projectiles(state: GameplayState) -> list[object]:
@@ -31,17 +20,17 @@ def _active_projectiles(state: GameplayState) -> list[object]:
 
 
 def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
-    state = GameplayState(rng=_as_rng(_FixedRng(0)))
+    state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, 10)
+    weapon_assign_player(player, int(WeaponId.MULTI_PLASMA))
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 5
-    assert state.weapon_shots_fired[0][10] == 5
+    assert state.weapon_shots_fired[0][int(WeaponId.MULTI_PLASMA)] == 5
 
     shot_angle = math.pi / 2.0
     spread_small = math.pi / 10.0
@@ -61,17 +50,17 @@ def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
 def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
     # Use a value where (rand & 0xff) and (rand % 200 - 100) differ in sign, so we
     # catch the decompile-accurate mask behavior.
-    state = GameplayState(rng=_as_rng(_FixedRng(255)))
+    state = GameplayState(rng=MockCrand(255))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, 14)
+    weapon_assign_player(player, int(WeaponId.PLASMA_SHOTGUN))
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 14
-    assert state.weapon_shots_fired[0][14] == 14
+    assert state.weapon_shots_fired[0][int(WeaponId.PLASMA_SHOTGUN)] == 14
 
     shot_angle = math.pi / 2.0
     expected_angle = shot_angle + (127.0 * 0.002)
@@ -83,12 +72,12 @@ def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
 
 
 def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
-    state = GameplayState(rng=_as_rng(_FixedRng(0)))
+    state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, 14)
+    weapon_assign_player(player, int(WeaponId.PLASMA_SHOTGUN))
     start_ammo = float(player.ammo)
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
@@ -96,17 +85,17 @@ def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
 
 
 def test_jackhammer_spawns_4_shotgun_pellets_with_jitter_and_speed_scale() -> None:
-    state = GameplayState(rng=_as_rng(_FixedRng(0)))
+    state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, 20)
+    weapon_assign_player(player, int(WeaponId.JACKHAMMER))
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 4
-    assert state.weapon_shots_fired[0][20] == 4
+    assert state.weapon_shots_fired[0][int(WeaponId.JACKHAMMER)] == 4
 
     expected_angle = math.pi / 2.0 + (-100.0 * 0.0013)
     for proj in spawned:
@@ -116,17 +105,17 @@ def test_jackhammer_spawns_4_shotgun_pellets_with_jitter_and_speed_scale() -> No
 
 
 def test_gauss_shotgun_fires_6_gauss_pellets() -> None:
-    state = GameplayState(rng=_as_rng(_FixedRng(0)))
+    state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, 30)
+    weapon_assign_player(player, int(WeaponId.GAUSS_SHOTGUN))
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 6
-    assert state.weapon_shots_fired[0][30] == 6
+    assert state.weapon_shots_fired[0][int(WeaponId.GAUSS_SHOTGUN)] == 6
 
     expected_angle = math.pi / 2.0 + (-100.0 * 0.002)
     for proj in spawned:
@@ -136,17 +125,17 @@ def test_gauss_shotgun_fires_6_gauss_pellets() -> None:
 
 
 def test_ion_shotgun_fires_8_ion_minigun_pellets() -> None:
-    state = GameplayState(rng=_as_rng(_FixedRng(0)))
+    state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, 31)
+    weapon_assign_player(player, int(WeaponId.ION_SHOTGUN))
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 8
-    assert state.weapon_shots_fired[0][31] == 8
+    assert state.weapon_shots_fired[0][int(WeaponId.ION_SHOTGUN)] == 8
 
     expected_angle = math.pi / 2.0 + (-100.0 * 0.0026)
     for proj in spawned:

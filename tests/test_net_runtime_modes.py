@@ -1,60 +1,33 @@
 from __future__ import annotations
 
-import random
-import time
-from pathlib import Path
-
 import pytest
 
 from crimson.game.loop_view import GameLoopView
-from crimson.game.types import GameState, LanSessionConfig, PendingLanSession
+from crimson.game.types import LanSessionConfig, LanSessionMode, PendingLanSession
+from crimson.game_modes import GameMode
 from crimson.net.net_runtime import NetRuntime
-from crimson.persistence import save_status
-from grim.config import ensure_crimson_cfg
-from grim.console import create_console
-
-
-def _build_state(tmp_path: Path) -> GameState:
-    repo_root = Path(__file__).resolve().parents[1]
-    assets_dir = repo_root / "artifacts" / "assets"
-    cfg = ensure_crimson_cfg(tmp_path)
-    return GameState(
-        base_dir=tmp_path,
-        assets_dir=assets_dir,
-        rng=random.Random(0),
-        config=cfg,
-        status=save_status.ensure_game_status(tmp_path),
-        console=create_console(tmp_path, assets_dir=assets_dir),
-        demo_enabled=False,
-        preserve_bugs=False,
-        logos=None,
-        texture_cache=None,
-        audio=None,
-        resource_paq=assets_dir / "crimson.paq",
-        session_start=time.monotonic(),
-    )
 
 
 @pytest.mark.parametrize(
     ("mode", "action", "mode_id", "quest_level"),
     [
-        ("survival", "start_survival_lan", 1, ""),
-        ("rush", "start_rush_lan", 2, ""),
-        ("quests", "start_quest_lan", 3, "1.1"),
+        ("survival", "start_survival_lan", int(GameMode.SURVIVAL), ""),
+        ("rush", "start_rush_lan", int(GameMode.RUSH), ""),
+        ("quests", "start_quest_lan", int(GameMode.QUESTS), "1.1"),
     ],
 )
 def test_rollback_runtime_is_selected_for_all_network_modes(
-    tmp_path: Path,
-    mode: str,
+    make_game_state,
+    mode: LanSessionMode,
     action: str,
     mode_id: int,
     quest_level: str,
 ) -> None:
-    state = _build_state(tmp_path)
+    state = make_game_state()
     pending = PendingLanSession(
         role="host",
         config=LanSessionConfig(
-            mode=mode,  # type: ignore[arg-type]
+            mode=mode,
             player_count=2,
             quest_level=quest_level,
             bind_host="0.0.0.0",

@@ -9,25 +9,11 @@ from crimson.replay.checkpoints import (
     ReplayPerkSnapshot,
     build_checkpoint,
 )
-from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
-from grim.geom import Vec2
 
 
-def _base_world() -> WorldState:
-    world = WorldState.build(
-        world_size=1024.0,
-        demo_mode_active=False,
-        hardcore=False,
-        difficulty_level=0,
-        preserve_bugs=False,
-    )
-    world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
-    return world
-
-
-def test_compare_checkpoints_ok() -> None:
-    world = _base_world()
+def test_compare_checkpoints_ok(base_world: WorldState) -> None:
+    world = base_world
     ckpt = build_checkpoint(
         tick_index=0,
         world=world,
@@ -43,8 +29,8 @@ def test_compare_checkpoints_ok() -> None:
     assert result.first_rng_only_tick is None
 
 
-def test_compare_checkpoints_reports_missing_tick() -> None:
-    world = _base_world()
+def test_compare_checkpoints_reports_missing_tick(base_world: WorldState) -> None:
+    world = base_world
     expected = build_checkpoint(tick_index=3, world=world, elapsed_ms=100.0)
 
     result = compare_checkpoints([expected], [])
@@ -55,8 +41,8 @@ def test_compare_checkpoints_reports_missing_tick() -> None:
     assert result.failure.tick_index == 3
 
 
-def test_compare_checkpoints_reports_command_mismatch() -> None:
-    world = _base_world()
+def test_compare_checkpoints_reports_command_mismatch(base_world: WorldState) -> None:
+    world = base_world
     expected = build_checkpoint(tick_index=1, world=world, elapsed_ms=16.0, command_hash="aaaaaaaaaaaaaaaa")
     actual = replace(expected, command_hash="bbbbbbbbbbbbbbbb")
 
@@ -68,8 +54,8 @@ def test_compare_checkpoints_reports_command_mismatch() -> None:
     assert result.failure.tick_index == 1
 
 
-def test_compare_checkpoints_reports_state_mismatch_with_rng_mark() -> None:
-    world = _base_world()
+def test_compare_checkpoints_reports_state_mismatch_with_rng_mark(base_world: WorldState) -> None:
+    world = base_world
     expected = build_checkpoint(
         tick_index=7,
         world=world,
@@ -93,8 +79,8 @@ def test_compare_checkpoints_reports_state_mismatch_with_rng_mark() -> None:
     assert result.failure.first_rng_mark == "before_world_step"
 
 
-def test_compare_checkpoints_tracks_rng_only_drift() -> None:
-    world = _base_world()
+def test_compare_checkpoints_tracks_rng_only_drift(base_world: WorldState) -> None:
+    world = base_world
     expected = build_checkpoint(
         tick_index=2,
         world=world,
@@ -116,8 +102,8 @@ def test_compare_checkpoints_tracks_rng_only_drift() -> None:
     assert result.first_rng_only_tick == 2
 
 
-def test_compare_checkpoints_treats_unknown_sentinels_as_wildcards() -> None:
-    world = _base_world()
+def test_compare_checkpoints_treats_unknown_sentinels_as_wildcards(base_world: WorldState) -> None:
+    world = base_world
     base = build_checkpoint(
         tick_index=5,
         world=world,
@@ -168,8 +154,8 @@ def test_compare_checkpoints_treats_unknown_sentinels_as_wildcards() -> None:
     assert result.first_rng_only_tick == 5
 
 
-def test_checkpoint_field_diffs_can_ignore_hash_rng_domains() -> None:
-    world = _base_world()
+def test_checkpoint_field_diffs_can_ignore_hash_rng_domains(base_world: WorldState) -> None:
+    world = base_world
     expected = build_checkpoint(
         tick_index=4,
         world=world,
@@ -195,8 +181,8 @@ def test_checkpoint_field_diffs_can_ignore_hash_rng_domains() -> None:
     assert diffs == []
 
 
-def test_checkpoint_field_diffs_normalizes_elapsed_to_baseline() -> None:
-    world = _base_world()
+def test_checkpoint_field_diffs_normalizes_elapsed_to_baseline(base_world: WorldState) -> None:
+    world = base_world
     expected = build_checkpoint(
         tick_index=9,
         world=world,
@@ -219,8 +205,8 @@ def test_checkpoint_field_diffs_normalizes_elapsed_to_baseline() -> None:
     assert diffs == []
 
 
-def test_checkpoint_field_diffs_reports_nested_paths() -> None:
-    world = _base_world()
+def test_checkpoint_field_diffs_reports_nested_paths(base_world: WorldState) -> None:
+    world = base_world
     expected = build_checkpoint(
         tick_index=1,
         world=world,
@@ -247,8 +233,8 @@ def test_checkpoint_field_diffs_reports_nested_paths() -> None:
     assert diffs[0].field == "players[0].health"
 
 
-def test_checkpoint_field_diffs_ignores_one_ms_reflex_timer_jitter() -> None:
-    world = _base_world()
+def test_checkpoint_field_diffs_ignores_one_ms_reflex_timer_jitter(base_world: WorldState) -> None:
+    world = base_world
     expected = build_checkpoint(
         tick_index=3,
         world=world,
@@ -286,8 +272,8 @@ def test_checkpoint_field_diffs_ignores_one_ms_reflex_timer_jitter() -> None:
     assert strict[0].field == "bonus_timers.9"
 
 
-def test_checkpoint_field_diffs_ignores_one_ms_weapon_power_up_timer_jitter() -> None:
-    world = _base_world()
+def test_checkpoint_field_diffs_ignores_one_ms_weapon_power_up_timer_jitter(base_world: WorldState) -> None:
+    world = base_world
     expected = build_checkpoint(
         tick_index=4,
         world=world,

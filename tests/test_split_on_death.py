@@ -8,24 +8,12 @@ from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
 from grim.geom import Vec2
-
-
-class _StubRand:
-    def __init__(self, values: list[int]) -> None:
-        self._values = list(values)
-        self._idx = 0
-
-    def rand(self) -> int:
-        if self._idx >= len(self._values):
-            return 0
-        value = int(self._values[self._idx])
-        self._idx += 1
-        return value
+from tests.helpers import MockCrand
 
 
 def test_split_on_death_spawns_two_smaller_children() -> None:
     state = GameplayState()
-    rng = _StubRand([0x123, 0x456])
+    rng = MockCrand([0x123, 0x456], fallback="zero")
 
     pool = CreaturePool()
     parent = pool.entries[0]

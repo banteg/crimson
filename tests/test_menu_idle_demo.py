@@ -1,43 +1,14 @@
 from __future__ import annotations
 
-import random
-import time
-from pathlib import Path
 from types import SimpleNamespace
 
 from crimson.frontend.menu import MENU_DEMO_IDLE_START_MS, MenuEntry, MenuView
-from crimson.game.types import GameState
-from crimson.persistence import save_status
-from grim.config import ensure_crimson_cfg
-from grim.console import create_console
 
 
-def _make_state(*, tmp_path: Path, demo_enabled: bool) -> GameState:
-    repo_root = Path(__file__).resolve().parents[1]
-    assets_dir = repo_root / "artifacts" / "assets"
-
-    cfg = ensure_crimson_cfg(tmp_path)
-    return GameState(
-        base_dir=tmp_path,
-        assets_dir=assets_dir,
-        rng=random.Random(0),
-        config=cfg,
-        status=save_status.ensure_game_status(tmp_path),
-        console=create_console(tmp_path, assets_dir=assets_dir),
-        demo_enabled=demo_enabled,
-        preserve_bugs=False,
-        logos=None,
-        texture_cache=None,
-        audio=None,
-        resource_paq=assets_dir / "crimson.paq",
-        session_start=time.monotonic(),
-    )
-
-
-def test_menu_demo_idle_starts_demo(monkeypatch, tmp_path: Path) -> None:
+def test_menu_demo_idle_starts_demo(monkeypatch, make_game_state) -> None:
     import crimson.frontend.menu as menu_mod
 
-    state = _make_state(tmp_path=tmp_path, demo_enabled=True)
+    state = make_game_state(demo_enabled=True)
     view = MenuView(state)
     view._is_open = True
     view._menu_entries = [MenuEntry(slot=0, row=1, y=0.0)]
@@ -56,10 +27,10 @@ def test_menu_demo_idle_starts_demo(monkeypatch, tmp_path: Path) -> None:
     assert view.take_action() == "start_demo"
 
 
-def test_menu_idle_does_not_start_demo_in_full_version(monkeypatch, tmp_path: Path) -> None:
+def test_menu_idle_does_not_start_demo_in_full_version(monkeypatch, make_game_state) -> None:
     import crimson.frontend.menu as menu_mod
 
-    state = _make_state(tmp_path=tmp_path, demo_enabled=False)
+    state = make_game_state(demo_enabled=False)
     view = MenuView(state)
     view._is_open = True
     view._menu_entries = [MenuEntry(slot=0, row=1, y=0.0)]
@@ -76,10 +47,10 @@ def test_menu_idle_does_not_start_demo_in_full_version(monkeypatch, tmp_path: Pa
     assert view._closing is False
 
 
-def test_menu_idle_resets_on_key_press(monkeypatch, tmp_path: Path) -> None:
+def test_menu_idle_resets_on_key_press(monkeypatch, make_game_state) -> None:
     import crimson.frontend.menu as menu_mod
 
-    state = _make_state(tmp_path=tmp_path, demo_enabled=True)
+    state = make_game_state(demo_enabled=True)
     view = MenuView(state)
     view._is_open = True
     view._menu_entries = [MenuEntry(slot=0, row=1, y=0.0)]
