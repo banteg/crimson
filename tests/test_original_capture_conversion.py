@@ -1288,7 +1288,11 @@ def test_convert_capture_to_replay_carries_outside_before_pending_bounds(tmp_pat
     assert capture_perk_apply_pending_bounds_from_event_payload(payload) == (1, 4)
 
 
-def test_convert_capture_to_replay_emits_quest_creature_spawn_events(tmp_path: Path) -> None:
+@pytest.mark.parametrize("caller_static", ["0x00434373", "0x00426d56"])
+def test_convert_capture_to_replay_emits_quest_creature_spawn_events(
+    tmp_path: Path,
+    caller_static: str,
+) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0["mode_hint"] = "quest_mode_update"
     tick0["game_mode_id"] = int(GameMode.QUESTS)
@@ -1299,7 +1303,7 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(tmp_path: P
                 "template_id": 54,
                 "pos": {"x": 434.3393859863281, "y": 455.56573486328125},
                 "heading": -4.083981990814209,
-                "caller_static": "0x00434373",
+                "caller_static": caller_static,
             },
         },
         {

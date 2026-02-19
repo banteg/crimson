@@ -304,11 +304,15 @@ class _FocusRuntime:
                 full_version=True,
             ),
         )
+        capture_spawn_events_authoritative = bool(self.original_capture_replay) and bool(
+            self.has_capture_creature_spawn_events,
+        )
         session_spawn_entries = tuple(spawn_entries)
-        if bool(self.original_capture_replay) and bool(self.has_capture_creature_spawn_events):
+        if capture_spawn_events_authoritative:
             # Mid-capture quest replays do not encode native quest spawn-table RNG seed/state.
             # Use captured spawn hooks as authoritative and disable local quest-table spawning.
             session_spawn_entries = ()
+        world.creatures.capture_spawn_events_authoritative = bool(capture_spawn_events_authoritative)
         self.reset_spawn_entries = tuple(session_spawn_entries)
 
         session = QuestDeterministicSession(
@@ -428,6 +432,9 @@ class _FocusRuntime:
         self.world.creatures.env = self.world.spawn_env
         self.world.creatures.effects = self.world.state.effects
         self.world.creatures.reset()
+        self.world.creatures.capture_spawn_events_authoritative = bool(
+            self.original_capture_replay and self.has_capture_creature_spawn_events,
+        )
 
         self.session.fx_queue.clear()
         self.session.fx_queue_rotated.clear()

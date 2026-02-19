@@ -76,7 +76,14 @@ _FRACTIONAL_AMMO_DRAIN_WEAPON_IDS = frozenset(
     },
 )
 _FRACTIONAL_WEAPON_FIRE_SFX_CALLER_SUFFIXES = frozenset({"+0x15f1c"})
-_QUEST_CAPTURE_SPAWN_CALLERS = frozenset({"0x00434373"})
+_QUEST_CAPTURE_SPAWN_CALLERS = frozenset(
+    {
+        # quest timeline script-driven spawns
+        "0x00434373",
+        # creature_update_all owner-slot spawn path
+        "0x00426d56",
+    },
+)
 _PERK_INTERVAL_GLOBAL_KEYS: dict[str, str] = {
     "man_bomb": "perk_man_bomb_trigger_interval_s",
     "fire_cough": "perk_fire_cough_trigger_interval_s",
@@ -2223,8 +2230,8 @@ def _tick_creature_spawn_rows(tick: CaptureTick) -> tuple[dict[str, object], ...
         caller_static = data.get("caller_static")
         caller_static_s = str(caller_static).strip().lower() if isinstance(caller_static, str) else ""
         if caller_static_s not in _QUEST_CAPTURE_SPAWN_CALLERS:
-            # Creature runtime can emit spawn hooks for spawner-child paths that
-            # are already simulated in rewrite; replay only quest-timeline spawns.
+            # Keep quest original-capture replay on a known caller set and skip
+            # unrelated/noisy spawn hooks.
             continue
         template_id = _coerce_int_like(data.get("template_id"))
         heading = _finite_float_or_none(data.get("heading"))

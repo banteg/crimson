@@ -313,10 +313,12 @@ def trace_creature_trajectory(
                 full_version=True,
             ),
         )
+        capture_spawn_events_authoritative = bool(original_capture_replay) and bool(has_capture_creature_spawn_events)
         session_spawn_entries: tuple[Any, ...] = tuple(spawn_entries)
-        if bool(original_capture_replay) and bool(has_capture_creature_spawn_events):
+        if capture_spawn_events_authoritative:
             # Mid-capture quest timelines rely on capture spawn hooks.
             session_spawn_entries = ()
+        world.creatures.capture_spawn_events_authoritative = bool(capture_spawn_events_authoritative)
         reset_spawn_entries = tuple(session_spawn_entries)
 
         session_quest = QuestDeterministicSession(
@@ -384,6 +386,7 @@ def trace_creature_trajectory(
             world.creatures.env = world.spawn_env
             world.creatures.effects = world.state.effects
             world.creatures.reset()
+            world.creatures.capture_spawn_events_authoritative = bool(capture_spawn_events_authoritative)
 
             fx_queue.clear()
             fx_queue_rotated.clear()

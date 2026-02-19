@@ -550,6 +550,7 @@ class CreaturePool:
         self.spawn_slots: list[SpawnSlotInit] = []
         self.env = env
         self.effects = effects
+        self.capture_spawn_events_authoritative = False
         self.kill_count = 0
         self.spawned_count = 0
         self._update_tick = 0
@@ -1178,6 +1179,7 @@ class CreaturePool:
                 dt > 0.0
                 and float(state.bonuses.freeze) <= 0.0
                 and spawn_env is not None
+                and not bool(self.capture_spawn_events_authoritative)
                 and (creature.flags & CreatureFlags.HAS_SPAWN_SLOT) != 0
             ):
                 slot_index = creature.spawn_slot_index

@@ -221,6 +221,50 @@ def test_quest_runner_uses_capture_creature_spawn_events_for_original_capture_re
     assert int(checkpoints[0].creature_count) == 1
 
 
+def test_quest_runner_disables_runtime_spawn_slot_ticks_when_capture_spawns_are_authoritative() -> None:
+    _header, rec = _blank_quest_replay(ticks=40, seed=101, game_version="0.0.0")
+    replay = rec.finish()
+    replay.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
+            payload=[{"quest_session": {"spawn_timeline_ms": 0.0, "no_creatures_timer_ms": 0.0}}],
+        ),
+    )
+    replay.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
+            payload=[
+                {
+                    "spawns": [
+                        {
+                            "template_id": int(SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A),
+                            "pos": {"x": 900.0, "y": 900.0},
+                            "heading": 0.0,
+                        },
+                    ],
+                },
+            ],
+        ),
+    )
+    dt_overrides = {tick: 0.1 for tick in range(40)}
+
+    checkpoints = []
+    with pytest.warns(ReplayGameVersionWarning):
+        run_quest_replay(
+            replay,
+            spawn_entries=(),
+            dt_frame_overrides=dt_overrides,
+            checkpoints_out=checkpoints,
+            checkpoint_ticks={39},
+        )
+    assert len(checkpoints) == 1
+    # Capture spawn hooks are authoritative in original-capture quest replays.
+    # Local runtime spawn-slot ticking must stay disabled to avoid duplicate children.
+    assert int(checkpoints[0].creature_count) == 1
+
+
 def test_capture_creature_spawn_event_applies_added_head_overrides() -> None:
     world = WorldState.build(
         world_size=1024.0,
