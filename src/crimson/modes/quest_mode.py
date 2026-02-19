@@ -445,7 +445,7 @@ class QuestMode(BaseGameplayMode):
         # Quest metadata already stores native (1-based) weapon ids.
         start_weapon_id = max(1, int(quest.start_weapon_id))
         for player in self.world.players:
-            weapon_assign_player(player, start_weapon_id)
+            weapon_assign_player(player, start_weapon_id, state=self.state)
 
         ctx = QuestContext(
             width=int(self.world.world_size),
