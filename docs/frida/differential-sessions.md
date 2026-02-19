@@ -1759,3 +1759,48 @@ When the capture SHA is unchanged, append updates to the same session.
 
 - `quest_2_1` is cleared and unlinked from `artifacts/frida/share/`.
 - Remaining earliest unresolved frontier in the active set remains `quest_1_8 tick 7756`.
+
+## Session 18 (continued: projectile-hit shortfall owner-collision normalization)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.quest_1_8.json.gz`
+- **Capture family:** post-master-rebase quest split set (`session18_alt_leads`)
+- **Baseline verifier command:**
+  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache`
+- **First mismatch progression:**
+  - before this tooling fix: `tick 7756` (`rng_stream_mismatch`, categorized as `rng.projectile_hit_resolution_shortfall` via pre-focus lead at `tick 7753`)
+  - after this tooling fix: `tick 7756` (`rng_stream_mismatch`, categorized as `rng.tail_shortfall`; projectile-hit shortfall lead removed)
+
+### Key Findings
+
+- In this capture family, `projectile_find_hit_count` can include owner-collision query rows; at the old lead tick (`7753`), capture reported `hit_count=3` with `owner_collision=2` while rewrite reported `actual_hits=1`, so effective capture hits matched rewrite hits.
+- Using raw `projectile_find_hit_count` for lead/category detection produced false projectile-hit shortfall signatures and misdirected follow-up probes.
+
+### Landed Changes
+
+- `src/crimson/original/divergence_report.py`
+  - added `_effective_capture_projectile_hit_count(...)` helper,
+  - updated `_find_first_projectile_hit_shortfall(...)` to compare rewrite hit count against effective capture hits (`raw_hits - owner_collision_queries`, clamped at `>= 0`),
+  - updated `_classify_divergence_category(...)` to use the same effective-hit metric,
+  - updated focus diagnostics printout to show both raw and effective capture projectile-hit counts.
+- `tests/test_original_capture_divergence_report_rng_calls.py`
+  - added owner-collision guardrail tests for shortfall detection and category classification,
+  - updated existing projectile-hit shortfall fixtures to assert both raw and effective hit semantics.
+
+### Validation
+
+- Targeted tests:
+  - `uv run pytest tests/test_original_capture_divergence_report_rng_calls.py -q`
+- Focus recheck:
+  - `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache --json-out analysis/frida/reports/session18_unlink_continue_pass6/quest_1_8_after_owner_collision_shortfall_fix_nocache.json` *(expected non-zero exit while diverged)*
+    - `result=diverged kind=rng_stream_mismatch tick=7756 focus_tick=7756`
+    - `divergence_category.id = rng.tail_shortfall`
+    - no `Native projectile hit resolves exceed rewrite hit events` lead in `investigation_leads`
+- Full linked-capture no-cache sweep summary:
+  - `analysis/frida/reports/session18_unlink_continue_pass6/_summary.tsv` (`21 total`, `0 ok`, `21 diverged`)
+- Repository checks:
+  - `just check`
+
+### Outcome / Next Probe
+
+- No linked captures are clear in this pass, so there are no new capture unlinks.
+- Earliest unresolved frontier remains `quest_1_8 tick 7756`; next probe should continue from movement-drift ancestry and the remaining RNG tail shortfall branch in the `7753-7756` window.
