@@ -475,6 +475,53 @@ def test_replay_render_uses_render_video_runner(tmp_path: Path, monkeypatch) -> 
     assert calls[0]["output_path"] == replay_path.with_suffix(".render.mp4")
 
 
+def test_replay_render_progress_callback_expands_total(monkeypatch) -> None:
+    import crimson.cli as cli_mod
+
+    class _FakeBar:
+        def __init__(self, total: int) -> None:
+            self.total = int(total)
+            self.updates: list[int] = []
+            self.postfixes: list[dict[str, int]] = []
+            self.closed = False
+
+        def update(self, value: int) -> None:
+            self.updates.append(int(value))
+
+        def set_postfix(self, **kwargs: int) -> None:
+            self.postfixes.append(dict(kwargs))
+
+        def close(self) -> None:
+            self.closed = True
+
+    bars: list[_FakeBar] = []
+
+    def fake_tqdm(*, total: int, unit: str, desc: str, leave: bool):
+        assert unit == "tick"
+        assert desc == "replay render"
+        assert leave is True
+        bar = _FakeBar(total=int(total))
+        bars.append(bar)
+        return bar
+
+    monkeypatch.setattr(cli_mod, "tqdm", fake_tqdm)
+
+    callback, close = cli_mod._replay_render_progress_callback(total_ticks=10)
+    assert callback is not None
+    assert close is not None
+    assert len(bars) == 1
+    bar = bars[0]
+
+    callback(3, 5, 20)
+    callback(4, 17, 20)
+    close()
+
+    assert bar.total == 20
+    assert bar.updates == [5, 12]
+    assert bar.postfixes[-1]["frames"] == 4
+    assert bar.closed is True
+
+
 def test_replay_render_uses_custom_output_and_ffmpeg_bin(tmp_path: Path, monkeypatch) -> None:
     import crimson.sim.driver.replay_render as replay_render_mod
 

@@ -7,9 +7,11 @@ from pathlib import Path
 import pyray as rl
 
 from grim import music as grim_music
+from grim.assets import TextureLoader
 from grim.audio import AudioState, init_audio_state, play_music, shutdown_audio, update_audio
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
+from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.view import ViewContext
@@ -42,6 +44,11 @@ from ..ui.hud import (
     hud_ui_scale,
     load_hud_assets,
 )
+from ..views.quest_run_overlay import (
+    draw_quest_complete_banner_overlay,
+    draw_quest_title_timer_overlay,
+    quest_level_label,
+)
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 
@@ -64,7 +71,6 @@ _REPLAY_WIDGET_TEXT_OFFSET_X = 0.0
 _REPLAY_WIDGET_TEXT_OFFSET_Y = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_X = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_Y = 0.0
-
 
 class ReplayPlaybackMode:
     def __init__(
@@ -98,6 +104,12 @@ class ReplayPlaybackMode:
         self._small: SmallFontData | None = None
         self._hud_assets: HudAssets | None = None
         self._hud_state = HudState()
+        self._grim_mono: GrimMonoFont | None = None
+        self._quest_complete_texture: rl.Texture | None = None
+        self._quest_title = ""
+        self._quest_level = ""
+        self._quest_name_timer_ms = 0.0
+        self._quest_completion_transition_ms = -1.0
 
         self._tick_rate = 60
         self._dt_frame = 1.0 / 60.0
@@ -272,6 +284,14 @@ class ReplayPlaybackMode:
         self._small = load_small_font(self._ctx.assets_dir)
         self._hud_assets = load_hud_assets(self._ctx.assets_dir)
         self._hud_state = HudState()
+        if self._grim_mono is not None:
+            rl.unload_texture(self._grim_mono.texture)
+            self._grim_mono = None
+        self._quest_complete_texture = None
+        self._quest_title = ""
+        self._quest_level = ""
+        self._quest_name_timer_ms = 0.0
+        self._quest_completion_transition_ms = -1.0
 
         replay = load_replay_file(self._replay_path)
         self._replay = replay
@@ -369,6 +389,10 @@ class ReplayPlaybackMode:
             if quest is None:
                 raise ValueError(f"unsupported quest replay: unknown quest_level={quest_level!r}")
 
+            self._quest_title = str(quest.title)
+            self._quest_level = quest_level_label(quest.major, quest.minor)
+            self._grim_mono = load_grim_mono_font(self._ctx.assets_dir)
+            self._quest_complete_texture = self._load_quest_complete_texture(world)
             world.state.quest_stage_major, world.state.quest_stage_minor = quest.level_key
 
             base_id, overlay_id, detail_id = quest.terrain_ids or (
@@ -452,6 +476,10 @@ class ReplayPlaybackMode:
         if self._small is not None:
             rl.unload_texture(self._small.texture)
             self._small = None
+        if self._grim_mono is not None:
+            rl.unload_texture(self._grim_mono.texture)
+            self._grim_mono = None
+        self._quest_complete_texture = None
         self._hud_assets = None
         world = self._world
         self._world = None
@@ -472,6 +500,16 @@ class ReplayPlaybackMode:
         if self._small is not None:
             return float(measure_small_text_width(self._small, text, scale))
         return float(len(text)) * 8.0 * float(scale)
+
+    def _load_quest_complete_texture(self, world: GameWorld | None = None) -> rl.Texture | None:
+        loader = TextureLoader(
+            assets_root=self._ctx.assets_dir,
+            cache=world.texture_cache if world is not None else None,
+        )
+        return loader.get(
+            name="ui_textLevComp",
+            paq_rel="ui/ui_textLevComp.jaz",
+        )
 
     def _enforce_rush_loadout(self) -> None:
         world = self._world
@@ -576,6 +614,8 @@ class ReplayPlaybackMode:
             update_camera=False,
         )
         self._quest_spawn_timeline_ms = float(tick.spawn_timeline_ms)
+        self._quest_name_timer_ms += float(dt_frame) * 1000.0
+        self._quest_completion_transition_ms = float(tick.completion_transition_ms)
         if tick.play_hit_sfx:
             world.audio_router.play_sfx("sfx_questhit")
         if tick.play_completion_music and world.audio is not None:
@@ -705,6 +745,29 @@ class ReplayPlaybackMode:
         if world is not None and world.ground is not None:
             world.ground.process_pending()
 
+    def _draw_quest_title(self) -> None:
+        replay = self._replay
+        if replay is None or int(replay.header.game_mode_id) != int(GameMode.QUESTS):
+            return
+        font = self._grim_mono
+        if font is None:
+            return
+        title = str(self._quest_title or "")
+        level = str(self._quest_level or "")
+        if not title or not level:
+            return
+
+        draw_quest_title_timer_overlay(font, title, level, timer_ms=float(self._quest_name_timer_ms))
+
+    def _draw_quest_complete_banner(self) -> None:
+        replay = self._replay
+        if replay is None or int(replay.header.game_mode_id) != int(GameMode.QUESTS):
+            return
+        tex = self._quest_complete_texture
+        if tex is None:
+            return
+        draw_quest_complete_banner_overlay(tex, timer_ms=float(self._quest_completion_transition_ms))
+
     def draw(self) -> None:
         world = self._world
         if world is not None:
@@ -742,6 +805,9 @@ class ReplayPlaybackMode:
                 small_indicators=False,
                 preserve_bugs=bool(world.preserve_bugs),
             )
+
+        self._draw_quest_title()
+        self._draw_quest_complete_banner()
 
         if bool(self._show_replay_widget):
             self._draw_replay_widget()

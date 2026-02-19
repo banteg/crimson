@@ -122,6 +122,7 @@ def run_replay_render_video(
     total_ticks = int(len(replay.inputs))
     if max_ticks is not None:
         total_ticks = min(int(total_ticks), max(0, int(max_ticks)))
+    progress_total_ticks = int(total_ticks) * (2 if bool(capture_audio) else 1)
     config_flags = int(getattr(rl, "FLAG_WINDOW_HIDDEN", 0))
     if int(config_flags) != 0:
         rl.set_config_flags(int(config_flags))
@@ -189,13 +190,13 @@ def run_replay_render_video(
                     rl.unload_image(image)
                 frame_count += 1
                 if progress is not None:
-                    progress(int(frame_count), int(mode.tick_index), int(total_ticks))
+                    progress(int(frame_count), int(mode.tick_index), int(progress_total_ticks))
 
             if int(frame_count) <= 0:
                 raise ReplayRenderError("replay render produced no frames")
 
             if progress is not None:
-                progress(int(frame_count), int(total_ticks), int(total_ticks))
+                progress(int(frame_count), int(total_ticks), int(progress_total_ticks))
             _finalize_ffmpeg_process(ffmpeg_proc)
             ffmpeg_proc = None
             if mode is not None:
@@ -217,6 +218,10 @@ def run_replay_render_video(
                     trace_rng=bool(trace_rng),
                     output_path=audio_raw_path,
                     replay_tick_rate=int(replay_tick_rate),
+                    progress=progress,
+                    progress_frame_count=int(frame_count),
+                    progress_tick_offset=int(total_ticks),
+                    progress_total_ticks=int(progress_total_ticks),
                 )
                 _mux_raw_audio_with_video(
                     ffmpeg_path=ffmpeg_path,
@@ -229,6 +234,8 @@ def run_replay_render_video(
                     audio_channels=int(captured_audio.channels),
                     captured_audio_frames=int(captured_audio.captured_frames),
                 )
+                if progress is not None:
+                    progress(int(frame_count), int(progress_total_ticks), int(progress_total_ticks))
         except ReplayRenderError:
             _abort_ffmpeg_process(ffmpeg_proc)
             raise
@@ -355,6 +362,10 @@ def _capture_replay_audio_track(
     trace_rng: bool,
     output_path: Path,
     replay_tick_rate: int,
+    progress: Callable[[int, int, int], None] | None = None,
+    progress_frame_count: int = 0,
+    progress_tick_offset: int = 0,
+    progress_total_ticks: int = 0,
 ) -> _CapturedAudioTrack:
     from ...modes.replay_playback_mode import ReplayPlaybackMode
 
@@ -395,7 +406,23 @@ def _capture_replay_audio_track(
             mode.update(float(tick_dt))
             if bool(mode.close_requested):
                 raise ReplayRenderError("audio capture aborted: replay playback requested close")
+            # Gameplay clears decal queues during draw(); audio-only rendering has no draw pass,
+            # so clear here to avoid queue saturation changing deterministic outcomes.
+            world = getattr(mode, "_world", None)
+            if world is not None:
+                fx_queue = getattr(world, "fx_queue", None)
+                if fx_queue is not None:
+                    fx_queue.clear()
+                fx_queue_rotated = getattr(world, "fx_queue_rotated", None)
+                if fx_queue_rotated is not None:
+                    fx_queue_rotated.clear()
             capture.flush_pending()
+            if progress is not None and int(progress_total_ticks) > 0:
+                progress(
+                    int(progress_frame_count),
+                    int(progress_tick_offset) + int(mode.tick_index),
+                    int(progress_total_ticks),
+                )
             next_tick_deadline += tick_dt
             sleep_s = float(next_tick_deadline) - float(time.perf_counter())
             if float(sleep_s) > 0.0:

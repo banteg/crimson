@@ -146,6 +146,8 @@ def _replay_render_progress_callback(
             resolved_total = int(callback_total_ticks)
         if int(resolved_total) <= 0:
             return
+        if int(getattr(bar, "total", 0) or 0) != int(resolved_total):
+            bar.total = int(resolved_total)
         tick = min(int(resolved_total), max(0, int(tick_index)))
         delta = int(tick) - int(last_tick)
         if int(delta) <= 0:
