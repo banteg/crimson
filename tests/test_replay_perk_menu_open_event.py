@@ -12,8 +12,8 @@ from crimson.replay import PerkMenuOpenEvent, PerkPickEvent, UnknownEvent
 from crimson.sim.driver.replay_events import apply_replay_tick_events
 from crimson.sim.driver.setup import reset_players
 from crimson.sim.world_state import WorldState
-from crimson.weapons import WeaponId
 from crimson.weapon_runtime import weapon_refresh_available
+from crimson.weapons import WeaponId
 
 
 def test_perk_menu_open_event_consumes_rng_for_choices() -> None:

@@ -2152,6 +2152,52 @@ def test_convert_capture_to_replay_does_not_synthesize_fire_down_from_zero_coold
     assert reload_pressed is False
 
 
+def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_zero_cooldown_player_fire_spawn(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    _tick_player(tick0)["weapon_id"] = 11
+    _tick_player(tick0)["ammo"] = 21.0
+    tick0["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "fire_down": False,
+            "fire_pressed": None,
+            "reload_pressed": None,
+        },
+    ]
+    tick0["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 11, "fired_events": 1}]
+    tick0["event_heads"] = [
+        {
+            "kind": "player_fire",
+            "data": {
+                "player_index": 0,
+                "owner_id": -100,
+                "weapon_before": 11,
+                "weapon_after": 11,
+                "ammo_before": 21.0,
+                "ammo_after": 21.0,
+                "requested_type_id": 45,
+                "actual_type_id": 45,
+                "shot_cooldown_after": 0.0,
+            },
+        },
+        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 45, "actual_type_id": 45}},
+    ]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    flags = _replay_input_flags(replay, 0, 0)
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    assert fire_down is False
+    assert fire_pressed is False
+    assert reload_pressed is False
+
+
 def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_ammo_drain(
     tmp_path: Path,
 ) -> None:

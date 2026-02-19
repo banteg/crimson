@@ -956,23 +956,60 @@ def _should_synthesize_fire_down_from_player_fire_event(
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadPlayerFire):
             continue
+        if not _player_fire_head_matches_player(
+            head,
+            player_index=int(player_index),
+            player_count=int(player_count),
+        ):
+            continue
         shot_cooldown_after = _finite_float_or_none(head.data.get("shot_cooldown_after"))
         if shot_cooldown_after is not None and float(shot_cooldown_after) <= 0.0:
             # Perk/proc-driven projectile bursts can emit `player_fire` debug rows
             # without a real trigger pull (`shot_cooldown_after` stays 0).
             continue
-        fired_player_index = _coerce_int_like(head.data.get("player_index"))
-        if fired_player_index is not None:
-            if int(fired_player_index) == int(player_index):
-                return True
-            continue
-        owner_id = _coerce_int_like(head.data.get("owner_id"))
-        if owner_id is None:
-            continue
-        owner_player_index = _owner_id_to_player_index(int(owner_id), player_count=int(player_count))
-        if owner_player_index is not None and int(owner_player_index) == int(player_index):
-            return True
+        return True
     return False
+
+
+def _player_fire_head_matches_player(
+    head: CaptureEventHeadPlayerFire,
+    *,
+    player_index: int,
+    player_count: int,
+) -> bool:
+    fired_player_index = _coerce_int_like(head.data.get("player_index"))
+    if fired_player_index is not None:
+        return int(fired_player_index) == int(player_index)
+    owner_id = _coerce_int_like(head.data.get("owner_id"))
+    if owner_id is None:
+        return False
+    owner_player_index = _owner_id_to_player_index(int(owner_id), player_count=int(player_count))
+    return owner_player_index is not None and int(owner_player_index) == int(player_index)
+
+
+def _tick_player_has_only_zero_cooldown_player_fire_events(
+    tick: CaptureTick,
+    *,
+    player_index: int,
+    player_count: int,
+) -> bool:
+    matched = False
+    for head in tick.event_heads:
+        if not isinstance(head, CaptureEventHeadPlayerFire):
+            continue
+        if not _player_fire_head_matches_player(
+            head,
+            player_index=int(player_index),
+            player_count=int(player_count),
+        ):
+            continue
+        matched = True
+        shot_cooldown_after = _finite_float_or_none(head.data.get("shot_cooldown_after"))
+        if shot_cooldown_after is None:
+            return False
+        if float(shot_cooldown_after) > 0.0:
+            return False
+    return matched
 
 
 def _should_synthesize_fire_pressed_from_primary_edge(
@@ -1043,6 +1080,14 @@ def _should_synthesize_computer_fire_down(
         return True
     if bool(player_secondary_spawned):
         return True
+    if _tick_player_has_only_zero_cooldown_player_fire_events(
+        tick,
+        player_index=int(player_index),
+        player_count=int(player_count),
+    ):
+        # If native reports only zero-cooldown `player_fire` rows for this player,
+        # treat the projectile spawns as proc-driven and avoid synthesizing fire.
+        return False
     if _tick_player_projectile_bonus_apply(
         tick,
         player_index=int(player_index),
