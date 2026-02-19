@@ -210,31 +210,31 @@ class WorldRendererTrooperMixin(WorldRendererMixinBase):
                         strength = (math.sin(t) + 1.0) * 0.25 + timer
                         if timer < 1.0:
                             strength *= timer
-                            strength = min(1.0, strength) * alpha
-                            if strength > 1e-3:
-                                offset_dir = float(player.aim_heading) - math.pi / 2.0
-                                center = screen_pos + Vec2.from_polar(offset_dir, 3.0 * scale)
+                        strength = min(1.0, strength) * alpha
+                        if strength > 1e-3:
+                            offset_dir = float(player.aim_heading) - math.pi / 2.0
+                            center = screen_pos + Vec2.from_polar(offset_dir, 3.0 * scale)
 
-                                half = math.sin(t * 3.0) + 17.5
-                                size = half * 2.0 * scale
-                                a = int(clamp(strength * 0.4, 0.0, 1.0) * 255.0 + 0.5)
-                                tint = rl.Color(91, 180, 255, a)
-                                dst = rl.Rectangle(center.x, center.y, float(size), float(size))
-                                origin = rl.Vector2(size * 0.5, size * 0.5)
-                                rotation_deg = float((t + t) * _RAD_TO_DEG)
+                            half = math.sin(t * 3.0) + 17.5
+                            size = half * 2.0 * scale
+                            a = int(clamp(strength * 0.4, 0.0, 1.0) * 255.0 + 0.5)
+                            tint = rl.Color(91, 180, 255, a)
+                            dst = rl.Rectangle(center.x, center.y, float(size), float(size))
+                            origin = rl.Vector2(size * 0.5, size * 0.5)
+                            rotation_deg = float((t + t) * _RAD_TO_DEG)
 
-                                half = math.sin(t * 3.0) * 4.0 + 24.0
-                                size2 = half * 2.0 * scale
-                                a2 = int(clamp(strength * 0.3, 0.0, 1.0) * 255.0 + 0.5)
-                                tint2 = rl.Color(91, 180, 255, a2)
-                                dst2 = rl.Rectangle(center.x, center.y, float(size2), float(size2))
-                                origin2 = rl.Vector2(size2 * 0.5, size2 * 0.5)
-                                rotation2_deg = float((t * -2.0) * _RAD_TO_DEG)
+                            half = math.sin(t * 3.0) * 4.0 + 24.0
+                            size2 = half * 2.0 * scale
+                            a2 = int(clamp(strength * 0.3, 0.0, 1.0) * 255.0 + 0.5)
+                            tint2 = rl.Color(91, 180, 255, a2)
+                            dst2 = rl.Rectangle(center.x, center.y, float(size2), float(size2))
+                            origin2 = rl.Vector2(size2 * 0.5, size2 * 0.5)
+                            rotation2_deg = float((t * -2.0) * _RAD_TO_DEG)
 
-                                rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-                                rl.draw_texture_pro(self.particles_texture, src, dst, origin, rotation_deg, tint)
-                                rl.draw_texture_pro(self.particles_texture, src, dst2, origin2, rotation2_deg, tint2)
-                                rl.end_blend_mode()
+                            rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
+                            rl.draw_texture_pro(self.particles_texture, src, dst, origin, rotation_deg, tint)
+                            rl.draw_texture_pro(self.particles_texture, src, dst2, origin2, rotation2_deg, tint2)
+                            rl.end_blend_mode()
 
             if self.muzzle_flash_texture is not None and float(player.muzzle_flash_alpha) > 1e-3 and alpha > 1e-3:
                 weapon = WEAPON_BY_ID.get(int(player.weapon_id))
