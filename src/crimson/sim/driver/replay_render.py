@@ -106,7 +106,9 @@ def run_replay_render_video(
     mode: ReplayPlaybackMode | None = None
     window_open = False
     ffmpeg_proc: subprocess.Popen[bytes] | None = None
-    frame_bytes = int(render_width) * int(render_height) * 4
+    capture_width = 0
+    capture_height = 0
+    frame_bytes = 0
     total_ticks = int(len(replay.inputs))
     if max_ticks is not None:
         total_ticks = min(int(total_ticks), max(0, int(max_ticks)))
@@ -121,6 +123,14 @@ def run_replay_render_video(
         except RuntimeError as exc:
             raise ReplayRenderError(f"replay render could not initialize window: {exc}") from exc
 
+        capture_width = int(rl.get_render_width())
+        capture_height = int(rl.get_render_height())
+        if int(capture_width) <= 0 or int(capture_height) <= 0:
+            raise ReplayRenderError(
+                f"invalid framebuffer size from raylib: {capture_width}x{capture_height}; expected > 0",
+            )
+        frame_bytes = int(capture_width) * int(capture_height) * 4
+
         mode = ReplayPlaybackMode(
             ctx,
             replay_path=Path(replay_path),
@@ -129,13 +139,14 @@ def run_replay_render_video(
             max_ticks=max_ticks,
             strict_events=bool(strict_events),
             trace_rng=bool(trace_rng),
+            show_replay_widget=False,
         )
         mode.open()
         ffmpeg_proc = _spawn_ffmpeg_raw_video_process(
             ffmpeg_path=ffmpeg_path,
             output_path=out_path,
-            width=int(render_width),
-            height=int(render_height),
+            width=int(capture_width),
+            height=int(capture_height),
             fps=int(fps),
             crf=int(crf),
             preset=str(preset),
@@ -190,8 +201,8 @@ def run_replay_render_video(
         output_path=Path(out_path),
         frame_count=int(frame_count),
         fps=int(fps),
-        width=int(render_width),
-        height=int(render_height),
+        width=int(capture_width),
+        height=int(capture_height),
         run_result=baseline_result,
     )
 
@@ -244,18 +255,22 @@ def _spawn_ffmpeg_raw_video_process(
         str(int(fps)),
         "-i",
         "-",
-        "-c:v",
-        "libx264",
-        "-preset",
-        str(preset),
-        "-crf",
-        str(int(crf)),
-        "-pix_fmt",
-        str(pixel_format),
-        "-movflags",
-        "+faststart",
-        str(output_path),
     ]
+    cmd.extend(
+        [
+            "-c:v",
+            "libx264",
+            "-preset",
+            str(preset),
+            "-crf",
+            str(int(crf)),
+            "-pix_fmt",
+            str(pixel_format),
+            "-movflags",
+            "+faststart",
+            str(output_path),
+        ],
+    )
     return subprocess.Popen(
         cmd,
         stdin=subprocess.PIPE,

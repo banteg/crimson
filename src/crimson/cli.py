@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib
 import inspect
 import io
 import ipaddress
@@ -15,6 +14,7 @@ from typing import Any, Literal, cast
 
 import typer
 from PIL import Image
+from tqdm import tqdm
 
 from grim import jaz, paq
 from grim.geom import Vec2
@@ -131,25 +131,16 @@ def _replay_render_progress_callback(
     if int(total_ticks) <= 0:
         return None, None
 
-    bar: object | None = None
-    try:
-        tqdm_module = importlib.import_module("tqdm")
-        tqdm_ctor = getattr(tqdm_module, "tqdm", None)
-        if callable(tqdm_ctor):
-            bar = tqdm_ctor(
-            total=int(total_ticks),
-            unit="tick",
-            desc="replay render",
-            leave=True,
-        )
-    except ModuleNotFoundError:
-        bar = None
-
+    bar = tqdm(
+        total=int(total_ticks),
+        unit="tick",
+        desc="replay render",
+        leave=True,
+    )
     last_tick = 0
-    next_percent = 5
 
     def callback(frame_count: int, tick_index: int, callback_total_ticks: int) -> None:
-        nonlocal last_tick, next_percent
+        nonlocal last_tick
         resolved_total = int(total_ticks)
         if int(callback_total_ticks) > 0:
             resolved_total = int(callback_total_ticks)
@@ -159,25 +150,12 @@ def _replay_render_progress_callback(
         delta = int(tick) - int(last_tick)
         if int(delta) <= 0:
             return
-        if bar is not None:
-            bar_obj = cast("Any", bar)
-            bar_obj.update(int(delta))
-            bar_obj.set_postfix(frames=int(frame_count), refresh=False)
-        else:
-            percent = int((int(tick) * 100) / int(resolved_total))
-            if int(percent) >= int(next_percent) or int(tick) >= int(resolved_total):
-                typer.echo(
-                    f"render progress: {percent}% "
-                    f"({int(tick)}/{int(resolved_total)} ticks, {int(frame_count)} frames)",
-                    err=True,
-                )
-                while int(next_percent) <= int(percent):
-                    next_percent += 5
+        bar.update(int(delta))
+        bar.set_postfix(frames=int(frame_count), refresh=False)
         last_tick = int(tick)
 
     def close() -> None:
-        if bar is not None:
-            cast("Any", bar).close()
+        bar.close()
 
     return callback, close
 

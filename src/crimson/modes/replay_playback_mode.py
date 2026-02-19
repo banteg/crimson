@@ -77,6 +77,7 @@ class ReplayPlaybackMode:
         max_ticks: int | None = None,
         strict_events: bool = True,
         trace_rng: bool = False,
+        show_replay_widget: bool = True,
     ) -> None:
         self._ctx = ctx
         self._replay_path = Path(replay_path)
@@ -85,6 +86,7 @@ class ReplayPlaybackMode:
         self._max_ticks = (max(0, int(max_ticks)) if max_ticks is not None else None)
         self._strict_events = bool(strict_events)
         self._trace_rng = bool(trace_rng)
+        self._show_replay_widget = bool(show_replay_widget)
 
         self.close_requested = False
 
@@ -741,4 +743,5 @@ class ReplayPlaybackMode:
                 preserve_bugs=bool(world.preserve_bugs),
             )
 
-        self._draw_replay_widget()
+        if bool(self._show_replay_widget):
+            self._draw_replay_widget()
