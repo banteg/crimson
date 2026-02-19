@@ -1507,3 +1507,46 @@ When the capture SHA is unchanged, append updates to the same session.
 
 - This fix cleared `quest_3_2` and moved the earliest unresolved frontier later in `quest_1_8` (`7655 -> 7722`).
 - Next probe should focus `quest_1_8` at `tick 7722` and isolate the first rewrite-only kill/death branch now driving creature-count and XP drift.
+
+## Session 18 (continued: Fire Cough pre-move spawn origin parity)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.quest_1_9.json.gz`
+- **Capture family:** post-master-rebase quest split set (`session18_quest_gz_after_unlink_sweep`)
+- **Baseline verifier command:**
+  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_9.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --no-cache`
+- **First mismatch progression:**
+  - before this fix: `tick 9259` (`rng.value_stream_mismatch`)
+  - after this fix: `tick 9482` (`rng.value_stream_mismatch`)
+
+### Key Findings
+
+- `quest_1_9` showed a rewrite-only RNG burst at `tick 9257` (`+68` draws) with one extra projectile hit (`capture=6`, `rewrite=7`), then first value-stream mismatch at `tick 9259`.
+- Focus traces localized the first projectile trajectory split to projectile `idx=2` at `tick 9254`, with rewrite projectile position offset by about `(+1.923, +1.923)`.
+- That offset exactly matched the player movement delta in the same tick, proving rewrite spawned the Fire Cough projectile from post-move player position while native capture spawned from pre-move position.
+
+### Landed Changes
+
+- `src/crimson/perks/impl/fire_cough.py`
+  - switched Fire Cough projectile origin math to `ctx.player_pos_before_move` for:
+    - muzzle position,
+    - spread-distance basis,
+    - jitter-to-angle vector.
+- `tests/test_player_update.py`
+  - added `test_player_update_fire_cough_uses_pre_move_position_for_spawn` regression to lock moving-frame pre-move spawn semantics.
+
+### Validation
+
+- Targeted tests:
+  - `uv run pytest tests/test_player_update.py -k "fire_cough"`
+- Divergence recheck:
+  - `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_9.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --no-cache --json-out analysis/frida/reports/session18_alt_leads/quest_1_9_after_fire_cough_pre_move_fix.json`
+    - `result=diverged kind=rng_stream_mismatch tick=9482` (frontier moved later from `9259`)
+- Spot checks on unrelated fronts remained stable:
+  - `quest_1_10` remains at `tick 10018` (`rng.projectile_hit_resolution_shortfall`)
+  - `quest_2_1` remains at `tick 11417` (`rng.value_stream_mismatch`)
+  - `quest_4_5` remains at `tick 46214` (`rng.value_stream_mismatch`)
+
+### Outcome / Next Probe
+
+- Fire Cough pre-move spawn parity removed the early `quest_1_9` branch split and pushed the first sustained mismatch significantly later (`9259 -> 9482`).
+- Next probe should focus `quest_1_9` at `tick 9482`, where first mismatch now maps to native `player_update` RNG callers (`0x00415a6d` cluster), to identify the next branch-order/source-of-draw divergence.
