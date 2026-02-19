@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import pytest
 
 import crimson.creatures.runtime as creature_runtime
+from crimson.bonuses.pool import BonusEntry
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import (
     RANDOM_HEADING_SENTINEL,
@@ -16,6 +17,7 @@ from crimson.creatures.spawn import (
     build_spawn_plan,
 )
 from crimson.effects import FxQueue
+from crimson.effects_atlas import EffectId
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
@@ -487,6 +489,116 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert any(entry.bonus_id != 0 for entry in state.bonus_pool.entries)
     # Successful spawn-on-kill emits a 16-particle burst (4 RNG draws each).
     assert state.rng._idx == 67  # type: ignore[attr-defined]
+
+
+def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.flags = CreatureFlags.BONUS_ON_DEATH
+    creature.bonus_id = 1
+    creature.bonus_duration_override = 5
+    creature.pos = Vec2(100.0, 100.0)
+    creature.hp = 0.0
+
+    calls = {"forced": 0, "organic": 0}
+    organic_pos = Vec2(200.0, 200.0)
+
+    def _spawn_at(**kwargs):
+        calls["forced"] += 1
+        _ = kwargs
+        return BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5)
+
+    def _try_spawn_on_kill(**kwargs):
+        calls["organic"] += 1
+        _ = kwargs
+        return BonusEntry(bonus_id=2, pos=organic_pos, time_left=10.0, time_max=10.0, amount=1)
+
+    state.bonus_pool.spawn_at = _spawn_at  # type: ignore[method-assign]
+    state.bonus_pool.try_spawn_on_kill = _try_spawn_on_kill  # type: ignore[method-assign]
+
+    pool.handle_death(
+        0,
+        state=state,
+        players=[player],
+        rand=state.rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=None,
+    )
+
+    assert calls["forced"] == 1
+    assert calls["organic"] == 1
+    active = state.effects.iter_active()
+    assert len(active) == 16
+    assert all(entry.pos == organic_pos for entry in active)
+
+
+def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.flags = CreatureFlags.BONUS_ON_DEATH
+    creature.bonus_id = 1
+    creature.pos = Vec2(100.0, 100.0)
+    creature.hp = 0.0
+
+    def _spawn_at(**kwargs):
+        _ = kwargs
+        return BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5)
+
+    def _try_spawn_on_kill(**kwargs):
+        _ = kwargs
+        return None
+
+    state.bonus_pool.spawn_at = _spawn_at  # type: ignore[method-assign]
+    state.bonus_pool.try_spawn_on_kill = _try_spawn_on_kill  # type: ignore[method-assign]
+
+    pool.handle_death(
+        0,
+        state=state,
+        players=[player],
+        rand=state.rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=None,
+    )
+
+    assert state.effects.iter_active() == []
+
+
+def test_handle_death_shock_flag_spawns_armored_debris_and_suppresses_death_sfx() -> None:
+    state = GameplayState()
+    state.rng = _StubRand([0] * 20)  # type: ignore[assignment]
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.flags = CreatureFlags.RANGED_ATTACK_SHOCK
+    creature.pos = Vec2(100.0, 100.0)
+    creature.hp = 0.0
+
+    death = pool.handle_death(
+        0,
+        state=state,
+        players=[],
+        rand=state.rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=None,
+    )
+
+    assert death.suppress_death_sfx is True
+    active = state.effects.iter_active()
+    assert len(active) == 5
+    assert all(int(entry.effect_id) == int(EffectId.BURST) for entry in active)
+    assert state.rng._idx == 20  # type: ignore[attr-defined]
 
 
 def test_death_award_uses_float32_sum_before_truncation() -> None:

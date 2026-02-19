@@ -773,11 +773,8 @@ def test_spawn_plan_template_12_spawns_formation_children() -> None:
         assert child.type_id == CreatureTypeId.ALIEN
         assert child.ai_mode == 3
         assert child.ai_link_parent == 0
-        # The original falls through a debug "Unhandled creatureType.\n" block, overwriting
-        # the return creature's health to 20.0 (primary == last child).
-        expected_health = 20.0 if i == 7 else 40.0
-        assert child.health == expected_health
-        assert child.max_health == expected_health
+        assert child.health == 40.0
+        assert child.max_health == 40.0
         assert child.move_speed == 2.4
         assert child.size == 50.0
         assert child.tint == (0.32, 0.588, 0.426, 1.0)
@@ -1138,9 +1135,8 @@ def test_spawn_plan_template_19_spawns_formation_children() -> None:
         assert child.type_id == CreatureTypeId.ALIEN
         assert child.ai_mode == 5
         assert child.ai_link_parent == 0
-        expected_health = 20.0 if i == 4 else 220.0
-        assert child.health == expected_health
-        assert child.max_health == expected_health
+        assert child.health == 220.0
+        assert child.max_health == 220.0
         assert child.move_speed == 3.8
         assert child.size == 50.0
         assert child.tint == (0.7125, 0.4125, 0.2775, 0.6)

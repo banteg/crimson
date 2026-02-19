@@ -71,6 +71,23 @@ def test_plan_death_sfx_allows_five_randomized_deaths() -> None:
     assert draws["count"] == 5
 
 
+def test_plan_death_sfx_skips_suppressed_deaths() -> None:
+    draws = {"count": 0}
+
+    def rand() -> int:
+        draws["count"] += 1
+        return 0
+
+    deaths = (
+        SimpleNamespace(type_id=int(CreatureTypeId.ZOMBIE), suppress_death_sfx=True),
+        SimpleNamespace(type_id=int(CreatureTypeId.ZOMBIE), suppress_death_sfx=False),
+    )
+    keys = plan_death_sfx_keys(deaths, rand=rand)
+
+    assert len(keys) == 1
+    assert draws["count"] == 1
+
+
 def test_apply_world_presentation_step_orders_sfx() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
