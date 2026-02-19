@@ -9,6 +9,7 @@ from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
 from crimson.projectiles import ProjectileHit, ProjectilePool, ProjectileTypeId, SecondaryProjectilePool
+from crimson.projectiles.runtime.collision import _within_native_find_radius
 from crimson.projectiles.types import ProjectileRuntimeState
 from crimson.sim.state_types import PlayerState
 from grim.color import RGBA
@@ -45,6 +46,34 @@ def _hit(*, type_id: int, origin_x: float, origin_y: float, hit_x: float, hit_y:
         origin=Vec2(origin_x, origin_y),
         hit=Vec2(hit_x, hit_y),
         target=Vec2(target_x, target_y),
+    )
+
+
+def test_within_native_find_radius_uses_strict_boundary() -> None:
+    origin = Vec2()
+    radius = 30.0
+    target_size = 50.0
+    threshold = radius + target_size * 0.14285715 + 3.0
+
+    assert (
+        _within_native_find_radius(
+            origin=origin,
+            target=Vec2(threshold - 0.0001, 0.0),
+            radius=radius,
+            target_size=target_size,
+        )
+        is True
+    )
+    # Exact-threshold comparisons can round slightly negative in float math;
+    # assert the intended regression case: a tiny positive over-margin is not a hit.
+    assert (
+        _within_native_find_radius(
+            origin=origin,
+            target=Vec2(threshold + 0.0006, 0.0),
+            radius=radius,
+            target_size=target_size,
+        )
+        is False
     )
 
 

@@ -474,6 +474,35 @@ def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
     assert type_ids == [int(ProjectileTypeId.FIRE_BULLETS)]
 
 
+def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
+    pool = ProjectilePool(size=8)
+    state = GameplayState(projectiles=pool)
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        aim=Vec2(200.0, 100.0),
+        aim_heading=0.0,
+        fire_cough_timer=1.95,
+    )
+    player.perk_counts[int(PerkId.FIRE_CAUGH)] = 1
+
+    before_pos = Vec2(float(player.pos.x), float(player.pos.y))
+    player_update(
+        player,
+        PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(200.0, 100.0)),
+        0.1,
+        state,
+    )
+
+    assert float(player.pos.x) > float(before_pos.x)
+    entry = next(e for e in pool.entries if e.active)
+    assert int(entry.type_id) == int(ProjectileTypeId.FIRE_BULLETS)
+
+    expected = before_pos + Vec2.from_heading(0.0).rotated(-0.150915) * 16.0
+    assert math.isclose(float(entry.pos.x), float(expected.x), abs_tol=1e-5)
+    assert math.isclose(float(entry.pos.y), float(expected.y), abs_tol=1e-5)
+
+
 def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)

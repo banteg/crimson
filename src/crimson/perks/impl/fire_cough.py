@@ -26,16 +26,17 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
     ctx.state.sfx_queue.append("sfx_plasmaminigun_fire")
 
     aim_heading = float(ctx.player.aim_heading)
-    muzzle = ctx.player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
+    origin_pos = ctx.player_pos_before_move
+    muzzle = origin_pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
 
     aim = ctx.player.aim
-    dist = (aim - ctx.player.pos).length()
+    dist = (aim - origin_pos).length()
     max_offset = dist * float(ctx.player.spread_heat) * 0.5
     dir_angle = float(int(ctx.state.rng.rand()) & 0x1FF) * (math.tau / 512.0)
     mag = float(int(ctx.state.rng.rand()) & 0x1FF) * (1.0 / 512.0)
     offset = max_offset * mag
     jitter = aim + Vec2.from_angle(dir_angle) * offset
-    angle = (jitter - ctx.player.pos).to_heading()
+    angle = (jitter - origin_pos).to_heading()
     ctx.projectile_spawn(
         ctx.state,
         players=[ctx.player],

@@ -131,50 +131,49 @@ def _wrap_angle(angle: float) -> float:
 def _angle_approach(current: float, target: float, rate: float, dt: float) -> float:
     """Native `angle_approach` (0x0041f430).
 
-    The original code uses float locals throughout and reads the frame delta from
-    the global `frame_dt` float. Mirror the float32 store boundaries here to avoid
-    1-ULP turn drift that can amplify over long capture replays.
+    Keep this close to the decompile:
+    - wrap angle into [0, 2pi]
+    - choose direct-vs-wrapped arc
+    - clamp arc scale to <= 1.0
+    - step by `frame_dt * arc_scale * rate`
     """
 
-    angle = float(f32(float(current)))
-    target_f32 = float(f32(float(target)))
-    rate_f32 = float(f32(float(rate)))
-    dt_f32 = float(f32(float(dt)))
-    tau = float(NATIVE_TAU)
+    angle = float(current)
+    target_f = float(target)
+    rate_f = float(rate)
+    dt_f = float(dt)
+    tau = 6.2831855
 
     while angle < 0.0:
-        angle = float(f32(float(angle) + float(tau)))
-    while float(tau) < float(angle):
-        angle = float(f32(float(angle) - float(tau)))
+        angle = angle + tau
+    while tau < angle:
+        angle = angle - tau
 
-    direct_delta = float(f32(float(target_f32) - float(angle)))
-    direct = float(f32(abs(float(direct_delta))))
+    direct = abs(target_f - angle)
 
-    hi = float(angle)
-    if float(angle) < float(target_f32):
-        hi = float(target_f32)
-    lo = float(angle)
-    if float(target_f32) < float(angle):
-        lo = float(target_f32)
+    hi = angle
+    if angle < target_f:
+        hi = target_f
+    lo = angle
+    if target_f < angle:
+        lo = target_f
+    wrapped = abs((tau - hi) + lo)
 
-    wrap_delta = float(f32(float(tau) - float(hi)))
-    wrapped = float(f32(abs(float(f32(float(wrap_delta) + float(lo))))))
-
-    step_scale = float(wrapped)
-    if float(direct) < float(wrapped):
-        step_scale = float(direct)
-    if 1.0 < float(step_scale):
+    step_scale = wrapped
+    if direct < wrapped:
+        step_scale = direct
+    if 1.0 < step_scale:
         step_scale = 1.0
 
-    step_delta = float(f32(float(dt_f32) * float(step_scale) * float(rate_f32)))
+    step_delta = dt_f * step_scale * rate_f
 
-    if float(direct) <= float(wrapped):
-        if float(angle) < float(target_f32):
-            return float(f32(float(step_delta) + float(angle)))
+    if direct <= wrapped:
+        if angle < target_f:
+            return angle + step_delta
     else:
-        if float(target_f32) < float(angle):
-            return float(f32(float(step_delta) + float(angle)))
-    return float(f32(float(angle) - float(step_delta)))
+        if target_f < angle:
+            return angle + step_delta
+    return angle - step_delta
 
 
 def _movement_delta_from_heading_f32(
@@ -297,6 +296,9 @@ class CreatureDeath:
     xp_awarded: int
     owner_id: int
     suppress_death_sfx: bool = False
+    # Some native death paths already consume/use their own SFX randomness
+    # (for example plague timer kills). Skip world-level death-SFX planning there.
+    plan_death_sfx: bool = True
 
 
 @dataclass(frozen=True, slots=True)
@@ -425,6 +427,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
         from .damage import creature_apply_damage_with_lethal_followup
 
         def _on_mr_melee_lethal() -> None:
+            suppress_death_sfx = bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK)
             ctx.deaths.append(
                 ctx.pool.handle_death(
                     ctx.creature_index,
@@ -436,6 +439,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
                     world_width=float(ctx.world_width),
                     world_height=float(ctx.world_height),
                     fx_queue=ctx.fx_queue,
+                    plan_death_sfx=not bool(suppress_death_sfx),
                 ),
             )
             if creature.active:
@@ -459,6 +463,8 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             dt=ctx.dt,
             players=ctx.players,
             rand=ctx.rand,
+            effects=ctx.state.effects,
+            detail_preset=int(ctx.detail_preset),
             on_lethal=_on_mr_melee_lethal,
         )
 
@@ -544,6 +550,7 @@ class CreaturePool:
         self.spawn_slots: list[SpawnSlotInit] = []
         self.env = env
         self.effects = effects
+        self.capture_spawn_events_authoritative = False
         self.kill_count = 0
         self.spawned_count = 0
         self._update_tick = 0
@@ -854,6 +861,7 @@ class CreaturePool:
 
             from .damage import creature_apply_damage_with_lethal_followup
 
+            suppress_death_sfx = bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK)
             return creature_apply_damage_with_lethal_followup(
                 creature,
                 damage_amount=float(damage_amount),
@@ -863,7 +871,9 @@ class CreaturePool:
                 dt=dt,
                 players=players,
                 rand=rand,
-                on_lethal=lambda: deaths.append(
+                effects=state.effects,
+                detail_preset=int(detail_preset),
+                on_lethal=lambda suppress_death_sfx=suppress_death_sfx: deaths.append(
                     self.handle_death(
                         int(creature_index),
                         state=state,
@@ -874,6 +884,7 @@ class CreaturePool:
                         world_width=world_width,
                         world_height=world_height,
                         fx_queue=fx_queue,
+                        plan_death_sfx=not bool(suppress_death_sfx),
                     ),
                 ),
             )
@@ -955,6 +966,7 @@ class CreaturePool:
                                 world_width=world_width,
                                 world_height=world_height,
                                 fx_queue=fx_queue,
+                                plan_death_sfx=False,
                             ),
                         )
                         # Native plague-kill path consumes one rand draw for
@@ -971,20 +983,11 @@ class CreaturePool:
 
                     if fx_queue is not None:
                         fx_queue.add_random(pos=creature.pos, rand=rand)
-
                     if plague_killed:
-                        if creature.active:
-                            self._tick_dead(
-                                creature,
-                                dt=dt,
-                                world_width=world_width,
-                                world_height=world_height,
-                                fx_queue_rotated=fx_queue_rotated,
-                                rand=rand,
-                                detail_preset=int(detail_preset),
-                                fx_toggle=int(fx_toggle),
-                            )
-                        continue
+                        # Native keeps executing the current live-branch body after
+                        # `creature_handle_death` in this timer-wrap kill path.
+                        # Do not run `_tick_dead` immediately here.
+                        pass
 
             target_player = self._resolve_target_player_index(creature, players)
             player = players[target_player]
@@ -1176,6 +1179,7 @@ class CreaturePool:
                 dt > 0.0
                 and float(state.bonuses.freeze) <= 0.0
                 and spawn_env is not None
+                and not bool(self.capture_spawn_events_authoritative)
                 and (creature.flags & CreatureFlags.HAS_SPAWN_SLOT) != 0
             ):
                 slot_index = creature.spawn_slot_index
@@ -1213,6 +1217,7 @@ class CreaturePool:
         world_height: float,
         fx_queue: FxQueue | None,
         keep_corpse: bool = True,
+        plan_death_sfx: bool = True,
     ) -> CreatureDeath:
         """Run one-shot death side effects and return the `CreatureDeath` event."""
 
@@ -1231,6 +1236,7 @@ class CreaturePool:
                 xp_awarded=0,
                 owner_id=int(creature.last_hit_owner_id),
                 suppress_death_sfx=bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK),
+                plan_death_sfx=bool(plan_death_sfx),
             )
         death = self._start_death(
             int(idx),
@@ -1271,6 +1277,9 @@ class CreaturePool:
                 fx_queue.add_random(pos=creature_pos, rand=rand)
             self.kill_count += 1
             creature.active = False
+
+        if not bool(plan_death_sfx):
+            death = replace(death, plan_death_sfx=False)
 
         return death
 

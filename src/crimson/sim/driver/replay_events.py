@@ -19,6 +19,7 @@ from ...original.capture import (
     capture_creature_spawn_added_head_rows_from_event_payload,
     capture_creature_spawns_from_event_payload,
     capture_perk_apply_from_event_payload,
+    capture_perk_apply_pending_bounds_from_event_payload,
     capture_perk_pending_from_event_payload,
     capture_state_transitions_from_event_payload,
 )
@@ -123,6 +124,7 @@ def apply_replay_tick_events(
                         raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}")
                     continue
                 perk_id, outside_before = parsed_perk_apply
+                pending_before, pending_after = capture_perk_apply_pending_bounds_from_event_payload(list(event.payload))
                 if perk_id <= 0:
                     if strict_events:
                         raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}")
@@ -136,29 +138,29 @@ def apply_replay_tick_events(
                         raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}") from err
                     continue
 
-                # `perk_apply_outside_before` draws are already accounted for by
-                # capture inter-tick RNG overrides. Replaying Bandage RNG work a
-                # second time here shifts gameplay RNG and causes later hit drift.
-                if bool(outside_before) and perk_enum == PerkId.BANDAGE:
+                # `perk_apply_outside_before` RNG draws are already replayed via
+                # capture inter-tick RNG overrides. Apply perk side-effects but
+                # keep RNG state anchored so we do not double-consume.
+                rng_state_before: int | None = None
+                if bool(outside_before):
+                    if pending_before is not None:
+                        perk_state.pending_count = int(pending_before)
                     rng_state_before = int(state.rng.state)
-                    perk_apply(
-                        state,
-                        players,
-                        perk_enum,
-                        perk_state=perk_state,
-                        dt=float(dt_frame),
-                        creatures=cast("list[CreatureForPerks]", world.creatures.entries),
-                    )
+                perk_apply(
+                    state,
+                    players,
+                    perk_enum,
+                    perk_state=perk_state,
+                    dt=float(dt_frame),
+                    creatures=cast("list[CreatureForPerks]", world.creatures.entries),
+                )
+                if bool(outside_before):
+                    if pending_after is not None:
+                        perk_state.pending_count = int(pending_after)
+                    if int(perk_state.pending_count) > 0:
+                        perk_state.pending_count -= 1
+                if rng_state_before is not None:
                     state.rng.srand(int(rng_state_before))
-                else:
-                    perk_apply(
-                        state,
-                        players,
-                        perk_enum,
-                        perk_state=perk_state,
-                        dt=float(dt_frame),
-                        creatures=cast("list[CreatureForPerks]", world.creatures.entries),
-                    )
                 continue
 
             if kind == CAPTURE_PERK_PENDING_EVENT_KIND:
@@ -191,14 +193,17 @@ def apply_replay_tick_events(
                     if strict_events:
                         raise ReplayRunnerError(f"invalid creature_spawn payload at tick={tick_index}")
                     continue
+                spawned_indices: set[int] = set()
                 for template_id, pos_x, pos_y, heading in spawns:
-                    world.creatures.spawn_template(
+                    spawned, _ = world.creatures.spawn_template(
                         int(template_id),
                         Vec2(float(pos_x), float(pos_y)),
                         float(heading),
                         state.rng,
                         rand=state.rng.rand,
                     )
+                    for spawned_idx in spawned:
+                        spawned_indices.add(int(spawned_idx))
                 for row in added_rows:
                     index = row.get("index")
                     if not isinstance(index, int):
@@ -220,6 +225,22 @@ def apply_replay_tick_events(
                     flags = row.get("flags")
                     type_id = row.get("type_id")
                     pos_raw = row.get("pos")
+
+                    # Spawn hooks are deferred to post-step in original-capture quest replay.
+                    # For freshly spawned AI7 creatures, native consumed one RNG draw in
+                    # `creature_update_all` when the timer rolled from `0` to a negative
+                    # cooldown (`link_index = -700 - (rand & 0x3ff)`), but replay applies
+                    # `added_head.link_index` directly. Backfill that RNG draw here so
+                    # stream parity stays aligned with capture.
+                    flags_i = int(flags) if isinstance(flags, (int, float)) else int(entry.flags)
+                    link_index_i = int(link_index) if isinstance(link_index, (int, float)) else None
+                    if (
+                        idx in spawned_indices
+                        and link_index_i is not None
+                        and -1723 <= int(link_index_i) <= -700
+                        and (flags_i & int(CreatureFlags.AI7_LINK_TIMER)) != 0
+                    ):
+                        state.rng.rand()
 
                     if isinstance(pos_raw, dict):
                         pos_obj = cast(dict[str, object], pos_raw)

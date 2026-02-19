@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
+from typing import cast
 
 import crimson.sim.world_state as world_state_mod
 from crimson.creatures.runtime import CreatureDeath, CreatureUpdateResult
@@ -121,6 +122,133 @@ def test_detonation_followup_does_not_double_plan_death_sfx() -> None:
     assert len(events.deaths) == 2
     assert calls == [[0]]
     assert events.sfx == ["death"]
+
+
+def test_plague_kill_death_event_skips_world_death_sfx_planning() -> None:
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=True,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
+
+    death = CreatureDeath(
+        index=0,
+        pos=Vec2(256.0, 256.0),
+        type_id=2,
+        reward_value=0.0,
+        xp_awarded=0,
+        owner_id=-1,
+        plan_death_sfx=False,
+    )
+
+    calls = {"count": 0}
+    original_plan = world_state_mod.plan_death_sfx_keys
+    original_update = world.creatures.update
+
+    def _fake_plan(
+        deaths_now: Sequence[CreatureDeath] | tuple[object, ...],
+        *,
+        rand: Callable[[], int],
+    ) -> list[str]:
+        _ = deaths_now
+        calls["count"] += 1
+        rand()
+        return ["death"]
+
+    def _fake_update(*args: object, **kwargs: object) -> CreatureUpdateResult:
+        _ = args, kwargs
+        return CreatureUpdateResult(deaths=(death,), sfx=("plague_contact",))
+
+    setattr(world_state_mod, "plan_death_sfx_keys", _fake_plan)
+    world.creatures.update = _fake_update  # type: ignore[assignment]
+    try:
+        events = world.step(
+            0.016,
+            inputs=None,
+            world_size=world_size,
+            damage_scale_by_type={},
+            detail_preset=5,
+            fx_queue=FxQueue(),
+            fx_queue_rotated=FxQueueRotated(),
+            auto_pick_perks=False,
+            game_mode=int(GameMode.SURVIVAL),
+            perk_progression_enabled=False,
+        )
+    finally:
+        setattr(world_state_mod, "plan_death_sfx_keys", original_plan)
+        world.creatures.update = original_update  # type: ignore[assignment]
+
+    assert len(events.deaths) == 1
+    assert calls["count"] == 0
+    assert events.sfx == ["plague_contact"]
+
+
+def test_ranged_shock_lethal_skips_world_death_sfx_planning() -> None:
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=True,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
+
+    creature = world.creatures.entries[0]
+    creature.active = True
+    creature.type_id = 2
+    creature.pos = Vec2(256.0, 256.0)
+    creature.flags = CreatureFlags.RANGED_ATTACK_SHOCK
+    creature.hp = 25.0
+    creature.max_hp = 25.0
+    creature.hitbox_size = 16.0
+    creature.reward_value = 0.0
+
+    calls = {"count": 0}
+    original_plan = world_state_mod.plan_death_sfx_keys
+    original_projectile_update = world.state.projectiles.update
+
+    def _fake_plan(
+        deaths_now: Sequence[CreatureDeath] | tuple[object, ...],
+        *,
+        rand: Callable[[], int],
+    ) -> list[str]:
+        _ = deaths_now
+        calls["count"] += 1
+        rand()
+        return ["death"]
+
+    def _fake_projectile_update(*args: object, **kwargs: object) -> list[ProjectileHit]:
+        _ = args
+        apply_creature_damage = cast(Callable[[int, float, int, Vec2, int], None] | None, kwargs.get("apply_creature_damage"))
+        if apply_creature_damage is not None:
+            apply_creature_damage(0, 1000.0, int(ProjectileTypeId.PISTOL), Vec2(), -1)
+        return []
+
+    setattr(world_state_mod, "plan_death_sfx_keys", _fake_plan)
+    world.state.projectiles.update = _fake_projectile_update  # type: ignore[assignment]
+    try:
+        events = world.step(
+            0.016,
+            inputs=None,
+            world_size=world_size,
+            damage_scale_by_type={},
+            detail_preset=5,
+            fx_queue=FxQueue(),
+            fx_queue_rotated=FxQueueRotated(),
+            auto_pick_perks=False,
+            game_mode=int(GameMode.SURVIVAL),
+            perk_progression_enabled=False,
+        )
+    finally:
+        setattr(world_state_mod, "plan_death_sfx_keys", original_plan)
+        world.state.projectiles.update = original_projectile_update  # type: ignore[assignment]
+
+    assert len(events.deaths) == 1
+    assert events.deaths[0].plan_death_sfx is False
+    assert calls["count"] == 0
 
 
 def test_death_sfx_rand_consumes_past_cap() -> None:

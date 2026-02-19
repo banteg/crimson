@@ -76,7 +76,14 @@ _FRACTIONAL_AMMO_DRAIN_WEAPON_IDS = frozenset(
     },
 )
 _FRACTIONAL_WEAPON_FIRE_SFX_CALLER_SUFFIXES = frozenset({"+0x15f1c"})
-_QUEST_CAPTURE_SPAWN_CALLERS = frozenset({"0x00434373"})
+_QUEST_CAPTURE_SPAWN_CALLERS = frozenset(
+    {
+        # quest timeline script-driven spawns
+        "0x00434373",
+        # creature_update_all owner-slot spawn path
+        "0x00426d56",
+    },
+)
 _PERK_INTERVAL_GLOBAL_KEYS: dict[str, str] = {
     "man_bomb": "perk_man_bomb_trigger_interval_s",
     "fire_cough": "perk_fire_cough_trigger_interval_s",
@@ -103,6 +110,8 @@ class CaptureError(ValueError):
 class _CapturePerkApplyPayload(msgspec.Struct, forbid_unknown_fields=True):
     perk_id: int
     outside_before: bool = False
+    pending_before: int | None = None
+    pending_after: int | None = None
 
 
 class _CapturePerkPendingPayload(msgspec.Struct, forbid_unknown_fields=True):
@@ -954,23 +963,60 @@ def _should_synthesize_fire_down_from_player_fire_event(
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadPlayerFire):
             continue
+        if not _player_fire_head_matches_player(
+            head,
+            player_index=int(player_index),
+            player_count=int(player_count),
+        ):
+            continue
         shot_cooldown_after = _finite_float_or_none(head.data.get("shot_cooldown_after"))
         if shot_cooldown_after is not None and float(shot_cooldown_after) <= 0.0:
             # Perk/proc-driven projectile bursts can emit `player_fire` debug rows
             # without a real trigger pull (`shot_cooldown_after` stays 0).
             continue
-        fired_player_index = _coerce_int_like(head.data.get("player_index"))
-        if fired_player_index is not None:
-            if int(fired_player_index) == int(player_index):
-                return True
-            continue
-        owner_id = _coerce_int_like(head.data.get("owner_id"))
-        if owner_id is None:
-            continue
-        owner_player_index = _owner_id_to_player_index(int(owner_id), player_count=int(player_count))
-        if owner_player_index is not None and int(owner_player_index) == int(player_index):
-            return True
+        return True
     return False
+
+
+def _player_fire_head_matches_player(
+    head: CaptureEventHeadPlayerFire,
+    *,
+    player_index: int,
+    player_count: int,
+) -> bool:
+    fired_player_index = _coerce_int_like(head.data.get("player_index"))
+    if fired_player_index is not None:
+        return int(fired_player_index) == int(player_index)
+    owner_id = _coerce_int_like(head.data.get("owner_id"))
+    if owner_id is None:
+        return False
+    owner_player_index = _owner_id_to_player_index(int(owner_id), player_count=int(player_count))
+    return owner_player_index is not None and int(owner_player_index) == int(player_index)
+
+
+def _tick_player_has_only_zero_cooldown_player_fire_events(
+    tick: CaptureTick,
+    *,
+    player_index: int,
+    player_count: int,
+) -> bool:
+    matched = False
+    for head in tick.event_heads:
+        if not isinstance(head, CaptureEventHeadPlayerFire):
+            continue
+        if not _player_fire_head_matches_player(
+            head,
+            player_index=int(player_index),
+            player_count=int(player_count),
+        ):
+            continue
+        matched = True
+        shot_cooldown_after = _finite_float_or_none(head.data.get("shot_cooldown_after"))
+        if shot_cooldown_after is None:
+            return False
+        if float(shot_cooldown_after) > 0.0:
+            return False
+    return matched
 
 
 def _should_synthesize_fire_pressed_from_primary_edge(
@@ -1041,6 +1087,14 @@ def _should_synthesize_computer_fire_down(
         return True
     if bool(player_secondary_spawned):
         return True
+    if _tick_player_has_only_zero_cooldown_player_fire_events(
+        tick,
+        player_index=int(player_index),
+        player_count=int(player_count),
+    ):
+        # If native reports only zero-cooldown `player_fire` rows for this player,
+        # treat the projectile spawns as proc-driven and avoid synthesizing fire.
+        return False
     if _tick_player_projectile_bonus_apply(
         tick,
         player_index=int(player_index),
@@ -1421,7 +1475,11 @@ def _infer_bootstrap_perk_intervals(capture: CaptureFile, *, tick_rate: int) -> 
                 dt_by_tick.get(int(next_tick.tick_index), float(default_dt)),
             ),
         )
-        for key in ("hot_tempered", "man_bomb", "fire_cough"):
+        # `man_bomb` timer frequently drops to zero from movement gating while the
+        # perk remains active; those drops are not interval wraps and produce
+        # false interval inference (for example ~1.30s). Keep bootstrap default
+        # (`4.0`) unless the capture explicitly provides global interval telemetry.
+        for key in ("hot_tempered", "fire_cough"):
             if key in out:
                 continue
             perk_id = _PERK_INTERVAL_PERK_IDS.get(str(key))
@@ -1690,6 +1748,22 @@ def capture_perk_apply_from_event_payload(payload: list[object]) -> tuple[int, b
     except msgspec.ValidationError:
         return None
     return int(parsed.perk_id), bool(parsed.outside_before)
+
+
+def capture_perk_apply_pending_bounds_from_event_payload(payload: list[object]) -> tuple[int | None, int | None]:
+    event_payload = _event_payload_object(payload)
+    if event_payload is None:
+        return (None, None)
+    try:
+        parsed = msgspec.convert(event_payload, type=_CapturePerkApplyPayload, strict=False)
+    except msgspec.ValidationError:
+        return (None, None)
+    pending_before = _coerce_int_like(parsed.pending_before)
+    pending_after = _coerce_int_like(parsed.pending_after)
+    return (
+        int(pending_before) if pending_before is not None and int(pending_before) >= 0 else None,
+        int(pending_after) if pending_after is not None and int(pending_after) >= 0 else None,
+    )
 
 
 def capture_perk_pending_from_event_payload(payload: list[object]) -> int | None:
@@ -2103,34 +2177,43 @@ def apply_capture_bootstrap_payload(
     return elapsed_ms
 
 
-def _perk_apply_rows_in_tick(tick: CaptureTick) -> tuple[tuple[int, bool], ...]:
-    out: list[tuple[int, bool]] = []
+def _perk_apply_rows_in_tick(tick: CaptureTick) -> tuple[tuple[int, bool, int | None, int | None], ...]:
+    out: list[tuple[int, bool, int | None, int | None]] = []
 
     for item in tick.perk_apply_outside_before.head:
         perk_id = item.perk_id
         if perk_id is None or int(perk_id) <= 0:
             continue
-        out.append((int(perk_id), True))
+        pending_before = _coerce_int_like(item.pending_before)
+        pending_after = _coerce_int_like(item.pending_after)
+        out.append(
+            (
+                int(perk_id),
+                True,
+                int(pending_before) if pending_before is not None and int(pending_before) >= 0 else None,
+                int(pending_after) if pending_after is not None and int(pending_after) >= 0 else None,
+            ),
+        )
 
     for item in tick.perk_apply_in_tick:
         perk_id = item.perk_id
         if perk_id is None or int(perk_id) <= 0:
             continue
-        out.append((int(perk_id), False))
+        out.append((int(perk_id), False, None, None))
 
     if not tick.perk_apply_in_tick:
         for head in tick.event_heads:
             if isinstance(head, CaptureEventHeadPerkApply):
                 if head.perk_id is not None and int(head.perk_id) > 0:
-                    out.append((int(head.perk_id), False))
+                    out.append((int(head.perk_id), False, None, None))
 
-    deduped: list[tuple[int, bool]] = []
+    deduped: list[tuple[int, bool, int | None, int | None]] = []
     seen: set[int] = set()
-    for perk_id, outside_before in out:
+    for perk_id, outside_before, pending_before, pending_after in out:
         if int(perk_id) in seen:
             continue
         seen.add(int(perk_id))
-        deduped.append((int(perk_id), bool(outside_before)))
+        deduped.append((int(perk_id), bool(outside_before), pending_before, pending_after))
     return tuple(deduped)
 
 
@@ -2147,8 +2230,8 @@ def _tick_creature_spawn_rows(tick: CaptureTick) -> tuple[dict[str, object], ...
         caller_static = data.get("caller_static")
         caller_static_s = str(caller_static).strip().lower() if isinstance(caller_static, str) else ""
         if caller_static_s not in _QUEST_CAPTURE_SPAWN_CALLERS:
-            # Creature runtime can emit spawn hooks for spawner-child paths that
-            # are already simulated in rewrite; replay only quest-timeline spawns.
+            # Keep quest original-capture replay on a known caller set and skip
+            # unrelated/noisy spawn hooks.
             continue
         template_id = _coerce_int_like(data.get("template_id"))
         heading = _finite_float_or_none(data.get("heading"))
@@ -2612,6 +2695,7 @@ def convert_capture_to_replay(
 
         sorted_ticks = sorted(capture.ticks, key=lambda item: int(item.tick_index))
         transition_rows_by_tick: dict[int, tuple[dict[str, int], ...]] = {}
+        menu_open_ticks: set[int] = set()
         previous_pending: int | None = None
         for tick in sorted_ticks:
             state_transition_rows = _tick_state_transition_rows(tick)
@@ -2624,6 +2708,12 @@ def convert_capture_to_replay(
                         payload=[{"transitions": list(state_transition_rows)}],
                     ),
                 )
+                if int(resolved_mode_id) != int(GameMode.RUSH):
+                    if any(int(row.get("target_state", -1)) == 6 for row in state_transition_rows):
+                        menu_tick = int(tick.tick_index)
+                        if menu_tick not in menu_open_ticks:
+                            events.append(PerkMenuOpenEvent(tick_index=menu_tick, player_index=0))
+                            menu_open_ticks.add(menu_tick)
 
             if int(resolved_mode_id) == int(GameMode.QUESTS):
                 spawn_rows = _tick_creature_spawn_rows(tick)
@@ -2643,15 +2733,23 @@ def convert_capture_to_replay(
             captured_perk_apply_rows = list(_perk_apply_rows_in_tick(tick))
             if captured_perk_apply_rows:
                 seen_perk_apply_ids: set[int] = set()
-                for perk_id, outside_before in captured_perk_apply_rows:
+                for perk_id, outside_before, pending_before, pending_after in captured_perk_apply_rows:
                     if int(perk_id) <= 0 or int(perk_id) in seen_perk_apply_ids:
                         continue
                     seen_perk_apply_ids.add(int(perk_id))
+                    payload: dict[str, object] = {
+                        "perk_id": int(perk_id),
+                        "outside_before": bool(outside_before),
+                    }
+                    if pending_before is not None:
+                        payload["pending_before"] = int(pending_before)
+                    if pending_after is not None:
+                        payload["pending_after"] = int(pending_after)
                     events.append(
                         UnknownEvent(
                             tick_index=int(tick.tick_index),
                             kind=CAPTURE_PERK_APPLY_EVENT_KIND,
-                            payload=[{"perk_id": int(perk_id), "outside_before": bool(outside_before)}],
+                            payload=[payload],
                         ),
                     )
 
@@ -2673,7 +2771,10 @@ def convert_capture_to_replay(
                     ),
                 )
                 if not bool(suppress_menu_open):
-                    events.append(PerkMenuOpenEvent(tick_index=int(menu_tick), player_index=0))
+                    menu_tick_i = int(menu_tick)
+                    if menu_tick_i not in menu_open_ticks:
+                        events.append(PerkMenuOpenEvent(tick_index=menu_tick_i, player_index=0))
+                        menu_open_ticks.add(menu_tick_i)
                 events.append(
                     UnknownEvent(
                         tick_index=int(tick.tick_index),

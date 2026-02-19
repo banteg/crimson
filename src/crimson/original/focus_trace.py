@@ -805,11 +805,15 @@ def trace_focus_tick(
                 full_version=True,
             ),
         )
+        capture_spawn_events_authoritative = bool(original_capture_replay) and bool(
+            events_meta.has_capture_creature_spawn_events,
+        )
         session_spawn_entries = tuple(spawn_entries)
-        if bool(original_capture_replay) and bool(events_meta.has_capture_creature_spawn_events):
+        if capture_spawn_events_authoritative:
             # Mid-capture quest replays do not encode native quest spawn-table RNG seed/state.
             # Use captured spawn hooks as authoritative and disable local quest-table spawning.
             session_spawn_entries = ()
+        world.creatures.capture_spawn_events_authoritative = bool(capture_spawn_events_authoritative)
         apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
             original_capture_replay=bool(original_capture_replay),
             dt_frame_overrides=dt_frame_overrides,
@@ -882,6 +886,7 @@ def trace_focus_tick(
             world.creatures.env = world.spawn_env
             world.creatures.effects = world.state.effects
             world.creatures.reset()
+            world.creatures.capture_spawn_events_authoritative = bool(capture_spawn_events_authoritative)
 
             fx_queue.clear()
             fx_queue_rotated.clear()

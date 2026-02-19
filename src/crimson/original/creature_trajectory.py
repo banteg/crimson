@@ -3,21 +3,27 @@ from __future__ import annotations
 import argparse
 import json
 import math
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import msgspec
 
 from crimson.game_modes import GameMode
+from crimson.gameplay import build_gameplay_state
 from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
+    CAPTURE_CREATURE_SPAWN_EVENT_KIND,
     build_capture_dt_frame_ms_i32_overrides,
     build_capture_dt_frame_overrides,
     build_capture_inter_tick_rand_draws_overrides,
+    capture_bootstrap_payload_from_event_payload,
     convert_capture_to_replay,
     load_capture,
 )
+from crimson.quests import quest_by_level
+from crimson.quests.runtime import build_quest_spawn_table
+from crimson.quests.types import QuestContext
 from crimson.replay import apply_replay_bootstrap
 from crimson.replay.types import (
     UnknownEvent,
@@ -39,8 +45,10 @@ from crimson.sim.driver.setup import (
     status_from_snapshot,
 )
 from crimson.sim.input import PlayerInput
-from crimson.sim.sessions import SurvivalDeterministicSession
+from crimson.sim.sessions import QuestDeterministicSession, SurvivalDeterministicSession
 from crimson.sim.world_state import WorldState
+from crimson.weapon_runtime import weapon_assign_player
+from crimson.weapons import WeaponId
 from grim.geom import Vec2
 
 _JSON_OUT_AUTO = "__AUTO__"
@@ -68,8 +76,14 @@ class CreatureTrajectoryRow:
     rw_plague_infected: bool
     rw_attack_cooldown: float
     rw_move_scale: float
+    cap_heading: float
+    cap_target_heading: float
     rw_heading: float
     rw_target_heading: float
+    rw_force_target: int
+    rw_target_x: float
+    rw_target_y: float
+    rw_target_dist: float
     rw_orbit_radius: float
     cap_x: float
     cap_y: float
@@ -126,14 +140,36 @@ def _read_capture_creature_samples(
     return out
 
 
-def _load_capture_events(replay: Any) -> tuple[dict[int, list[object]], bool]:
+def _load_capture_events(
+    replay: Any,
+) -> tuple[dict[int, list[object]], bool, int | None, bool]:
     events_by_tick: dict[int, list[object]] = {}
     original_capture_replay = False
+    bootstrap_start_tick: int | None = None
+    has_capture_creature_spawn_events = False
     for event in replay.events:
+        tick_index = int(event.tick_index)
         if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
             original_capture_replay = True
-        events_by_tick.setdefault(int(event.tick_index), []).append(event)
-    return events_by_tick, original_capture_replay
+            if bootstrap_start_tick is None or tick_index < int(bootstrap_start_tick):
+                bootstrap_start_tick = int(tick_index)
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_CREATURE_SPAWN_EVENT_KIND:
+            has_capture_creature_spawn_events = True
+        events_by_tick.setdefault(tick_index, []).append(event)
+    return events_by_tick, original_capture_replay, bootstrap_start_tick, has_capture_creature_spawn_events
+
+
+def _resolve_quest_level(replay: Any) -> str:
+    quest_level = str(getattr(replay.header, "quest_level", "") or "")
+    if quest_level:
+        return str(quest_level)
+
+    seed = int(replay.header.seed)
+    major = seed // 100
+    minor = seed % 100
+    if 1 <= int(major) <= 5 and 1 <= int(minor) <= 10:
+        return f"{major}.{minor}"
+    return ""
 
 
 def _decode_inputs_for_tick(
@@ -187,8 +223,11 @@ def trace_creature_trajectory(
         return []
     replay = convert_capture_to_replay(capture)
     mode = int(replay.header.game_mode_id)
-    if mode != int(GameMode.SURVIVAL):
-        raise ValueError(f"trajectory trace currently supports survival mode only (got mode={mode})")
+    if mode not in {int(GameMode.SURVIVAL), int(GameMode.QUESTS)}:
+        raise ValueError(
+            "trajectory trace currently supports survival/quests only "
+            f"(got mode={mode})",
+        )
 
     world_size = float(replay.header.world_size)
     world = WorldState.build(
@@ -204,41 +243,216 @@ def trace_creature_trajectory(
         quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
         weapon_usage_counts=replay.header.status.weapon_usage_counts,
     )
-    apply_replay_bootstrap(
-        replay.header,
-        rng=world.state.rng,
-        world_size=float(world_size),
-        strict=True,
-    )
 
     fx_queue, fx_queue_rotated = build_empty_fx_queues()
-    session = SurvivalDeterministicSession(
-        world=world,
-        world_size=world_size,
-        damage_scale_by_type=build_damage_scale_by_type(),
-        fx_queue=fx_queue,
-        fx_queue_rotated=fx_queue_rotated,
-        detail_preset=5,
-        fx_toggle=0,
-        game_tune_started=False,
-        clear_fx_queues_each_tick=True,
-    )
+    damage_scale_by_type = build_damage_scale_by_type()
+    session_survival: SurvivalDeterministicSession | None = None
+    session_quest: QuestDeterministicSession | None = None
 
-    events_by_tick, original_capture_replay = _load_capture_events(replay)
+    events_by_tick, original_capture_replay, bootstrap_start_tick, has_capture_creature_spawn_events = _load_capture_events(
+        replay,
+    )
     dt_frame_overrides = build_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
     dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
     inter_tick_rand_draws_by_tick = build_capture_inter_tick_rand_draws_overrides(capture)
-    session.apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
+    default_dt_frame = 1.0 / float(int(replay.header.tick_rate))
+    apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
         original_capture_replay=bool(original_capture_replay),
         dt_frame_overrides=dt_frame_overrides,
         dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
     )
-    default_dt_frame = 1.0 / float(int(replay.header.tick_rate))
+
+    tick_begin = 0
+    pending_capture_state_reset = False
+    reset_spawn_entries: tuple[Any, ...] = ()
+    quest_start_weapon_id = int(WeaponId.PISTOL)
+
+    if mode == int(GameMode.SURVIVAL):
+        apply_replay_bootstrap(
+            replay.header,
+            rng=world.state.rng,
+            world_size=float(world_size),
+            strict=True,
+        )
+        session_survival = SurvivalDeterministicSession(
+            world=world,
+            world_size=world_size,
+            damage_scale_by_type=damage_scale_by_type,
+            fx_queue=fx_queue,
+            fx_queue_rotated=fx_queue_rotated,
+            detail_preset=5,
+            fx_toggle=0,
+            game_tune_started=False,
+            clear_fx_queues_each_tick=True,
+            apply_world_dt_steps=bool(apply_world_dt_steps),
+        )
+    else:
+        world.state.rng.srand(int(replay.header.seed))
+        quest_level = _resolve_quest_level(replay)
+        quest = quest_by_level(quest_level) if quest_level else None
+        if quest is None:
+            raise ValueError(f"trajectory trace unsupported quest replay: unknown quest_level={quest_level!r}")
+
+        world.state.quest_stage_major, world.state.quest_stage_minor = quest.level_key
+        weapon_id = max(1, int(getattr(quest, "start_weapon_id", 1) or 1))
+        quest_start_weapon_id = int(weapon_id)
+        for player in world.players:
+            weapon_assign_player(player, int(weapon_id))
+
+        ctx = QuestContext(
+            width=int(world_size),
+            height=int(world_size),
+            player_count=int(replay.header.player_count),
+        )
+        spawn_entries = tuple(
+            build_quest_spawn_table(
+                quest,
+                ctx,
+                seed=int(replay.header.seed),
+                hardcore=bool(replay.header.hardcore),
+                full_version=True,
+            ),
+        )
+        capture_spawn_events_authoritative = bool(original_capture_replay) and bool(has_capture_creature_spawn_events)
+        session_spawn_entries: tuple[Any, ...] = tuple(spawn_entries)
+        if capture_spawn_events_authoritative:
+            # Mid-capture quest timelines rely on capture spawn hooks.
+            session_spawn_entries = ()
+        world.creatures.capture_spawn_events_authoritative = bool(capture_spawn_events_authoritative)
+        reset_spawn_entries = tuple(session_spawn_entries)
+
+        session_quest = QuestDeterministicSession(
+            world=world,
+            world_size=float(world_size),
+            damage_scale_by_type=damage_scale_by_type,
+            fx_queue=fx_queue,
+            fx_queue_rotated=fx_queue_rotated,
+            spawn_entries=tuple(session_spawn_entries),
+            detail_preset=5,
+            fx_toggle=0,
+            apply_world_dt_steps=bool(apply_world_dt_steps),
+            clear_fx_queues_each_tick=True,
+            finalize_post_render_lifecycle_each_tick=False,
+        )
+
+        def _apply_capture_state_reset() -> None:
+            nonlocal pending_capture_state_reset
+
+            rng_state = int(world.state.rng.state)
+            status = world.state.status
+            demo_mode_active = bool(world.state.demo_mode_active)
+            hardcore = bool(world.state.hardcore)
+            preserve_bugs = bool(world.state.preserve_bugs)
+            quest_stage_major_state = int(world.state.quest_stage_major)
+            quest_stage_minor_state = int(world.state.quest_stage_minor)
+            perk_pending = int(world.state.perk_selection.pending_count)
+            perk_choices = list(world.state.perk_selection.choices)
+            perk_choices_dirty = bool(world.state.perk_selection.choices_dirty)
+            man_bomb_interval = float(world.state.perk_intervals.man_bomb)
+            fire_cough_interval = float(world.state.perk_intervals.fire_cough)
+            hot_tempered_interval = float(world.state.perk_intervals.hot_tempered)
+
+            world.state = build_gameplay_state()
+            world.state.rng.srand(int(rng_state))
+            world.state.status = status
+            world.state.game_mode = int(GameMode.QUESTS)
+            world.state.demo_mode_active = bool(demo_mode_active)
+            world.state.hardcore = bool(hardcore)
+            world.state.preserve_bugs = bool(preserve_bugs)
+            world.state.quest_stage_major = int(quest_stage_major_state)
+            world.state.quest_stage_minor = int(quest_stage_minor_state)
+            world.state.perk_selection.pending_count = int(perk_pending)
+            world.state.perk_selection.choices = list(perk_choices)
+            world.state.perk_selection.choices_dirty = bool(perk_choices_dirty)
+            world.state.perk_intervals.man_bomb = float(man_bomb_interval)
+            world.state.perk_intervals.fire_cough = float(fire_cough_interval)
+            world.state.perk_intervals.hot_tempered = float(hot_tempered_interval)
+
+            reset_players(
+                world.players,
+                world_size=float(world_size),
+                player_count=int(replay.header.player_count),
+            )
+            for player in world.players:
+                weapon_assign_player(player, int(quest_start_weapon_id))
+                if int(quest_start_weapon_id) == int(WeaponId.PISTOL):
+                    player.clip_size = max(12, int(player.clip_size))
+                    if float(player.ammo) < 12.0:
+                        player.ammo = 12.0
+            world.spawn_env = replace(
+                world.spawn_env,
+                difficulty_level=max(1, int(world.spawn_env.difficulty_level)),
+            )
+            world.creatures.env = world.spawn_env
+            world.creatures.effects = world.state.effects
+            world.creatures.reset()
+            world.creatures.capture_spawn_events_authoritative = bool(capture_spawn_events_authoritative)
+
+            fx_queue.clear()
+            fx_queue_rotated.clear()
+
+            if session_quest is not None:
+                session_quest.spawn_entries = tuple(reset_spawn_entries)
+                session_quest.spawn_timeline_ms = 0.0
+                session_quest.no_creatures_timer_ms = 0.0
+                session_quest.completion_transition_ms = -1.0
+            pending_capture_state_reset = False
+
+        def _on_capture_state_transition(
+            target_state: int,
+            _before_state: int | None,
+            _after_state: int | None,
+        ) -> None:
+            nonlocal pending_capture_state_reset
+            if int(target_state) != 12:
+                return
+            pending_capture_state_reset = True
+
+        tick_begin = max(0, int(bootstrap_start_tick)) if bootstrap_start_tick is not None else 0
+
+        if bootstrap_start_tick is not None and session_quest is not None:
+            bootstrap_dt = resolve_dt_frame(
+                tick_index=int(bootstrap_start_tick),
+                default_dt_frame=float(default_dt_frame),
+                dt_frame_overrides=dt_frame_overrides,
+            )
+            bootstrap_dt_ms = float(bootstrap_dt) * 1000.0
+            for event in events_by_tick.get(int(bootstrap_start_tick), []):
+                if not (isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND):
+                    continue
+                payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
+                if payload is None:
+                    break
+                quest_session = payload.get("quest_session")
+                if isinstance(quest_session, dict):
+                    quest_session_obj = msgspec.to_builtins(quest_session)
+                    if not isinstance(quest_session_obj, dict):
+                        continue
+                    quest_session_data = cast(dict[str, object], quest_session_obj)
+                    timeline_ms = quest_session_data.get("spawn_timeline_ms")
+                    if isinstance(timeline_ms, (int, float)):
+                        session_quest.spawn_timeline_ms = max(0.0, float(timeline_ms) - float(bootstrap_dt_ms))
+                    no_creatures_timer_ms = quest_session_data.get("no_creatures_timer_ms")
+                    if isinstance(no_creatures_timer_ms, (int, float)):
+                        session_quest.no_creatures_timer_ms = max(
+                            0.0,
+                            float(no_creatures_timer_ms) - float(bootstrap_dt_ms),
+                        )
+                    completion_transition_ms = quest_session_data.get("completion_transition_ms")
+                    if isinstance(completion_transition_ms, (int, float)):
+                        completion_value = float(completion_transition_ms)
+                        if completion_value >= 0.0:
+                            completion_value = max(0.0, float(completion_value) - float(bootstrap_dt_ms))
+                        session_quest.completion_transition_ms = float(completion_value)
+                break
 
     out: list[CreatureTrajectoryRow] = []
-    for tick_index in range(int(end_tick) + 1):
+    for tick_index in range(int(tick_begin), int(end_tick) + 1):
+        if mode == int(GameMode.QUESTS) and pending_capture_state_reset:
+            _apply_capture_state_reset()
+
         state = world.state
-        state.game_mode = int(GameMode.SURVIVAL)
+        state.game_mode = int(mode)
         state.demo_mode_active = False
         if inter_tick_rand_draws_by_tick is not None:
             draws = inter_tick_rand_draws_by_tick.get(int(tick_index))
@@ -266,28 +480,44 @@ def trace_creature_trajectory(
             tick_index=int(tick_index),
             dt_frame=float(dt_tick),
             world=world,
-            game_mode_id=int(GameMode.SURVIVAL),
+            game_mode_id=int(mode),
             strict_events=False,
+            on_capture_state_transition=(_on_capture_state_transition if mode == int(GameMode.QUESTS) else None),
         )
+        if mode == int(GameMode.QUESTS) and pending_capture_state_reset:
+            _apply_capture_state_reset()
+
         player_inputs = _decode_inputs_for_tick(
             replay=replay,
             tick_index=int(tick_index),
         )
-        session.step_tick(
-            dt_frame=float(dt_tick),
-            dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
-            inputs=player_inputs,
-            trace_rng=False,
-        )
+        if session_survival is not None:
+            session_survival.step_tick(
+                dt_frame=float(dt_tick),
+                dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
+                inputs=player_inputs,
+                trace_rng=False,
+            )
+        elif session_quest is not None:
+            session_quest.step_tick(
+                dt_frame=float(dt_tick),
+                dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
+                inputs=player_inputs,
+                trace_rng=False,
+            )
+
         if post_step_events:
             apply_replay_tick_events(
                 post_step_events,
                 tick_index=int(tick_index),
                 dt_frame=float(dt_tick),
                 world=world,
-                game_mode_id=int(GameMode.SURVIVAL),
+                game_mode_id=int(mode),
                 strict_events=False,
+                on_capture_state_transition=(_on_capture_state_transition if mode == int(GameMode.QUESTS) else None),
             )
+        if mode == int(GameMode.QUESTS):
+            world.creatures.finalize_post_render_lifecycle()
 
         sample = capture_rows.get(int(tick_index))
         if sample is not None and int(tick_index) >= int(start_tick):
@@ -324,8 +554,14 @@ def trace_creature_trajectory(
                     rw_plague_infected=bool(creature.plague_infected),
                     rw_attack_cooldown=float(creature.attack_cooldown),
                     rw_move_scale=float(creature.move_scale),
+                    cap_heading=float(sample.get("heading", 0.0)),
+                    cap_target_heading=float(sample.get("target_heading", 0.0)),
                     rw_heading=float(creature.heading),
                     rw_target_heading=float(creature.target_heading),
+                    rw_force_target=int(creature.force_target),
+                    rw_target_x=float(creature.target.x),
+                    rw_target_y=float(creature.target.y),
+                    rw_target_dist=float((creature.target - creature.pos).length()),
                     rw_orbit_radius=float(creature.orbit_radius),
                     cap_x=cap_x,
                     cap_y=cap_y,

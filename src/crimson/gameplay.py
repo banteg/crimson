@@ -229,13 +229,14 @@ def survival_level_threshold(level: int) -> int:
 def survival_check_level_up(player: PlayerState, perk_state: PerkSelectionState) -> int:
     """Advance survival levels if XP exceeds thresholds, returning number of level-ups."""
 
-    advanced = 0
-    while player.experience > survival_level_threshold(player.level):
+    # Native progression advances at most one level per update tick even when
+    # XP jumps across multiple thresholds in a single frame.
+    if player.experience > survival_level_threshold(player.level):
         player.level += 1
         perk_state.pending_count += 1
         perk_state.choices_dirty = True
-        advanced += 1
-    return advanced
+        return 1
+    return 0
 
 
 def survival_progression_update(
@@ -591,11 +592,6 @@ def player_update(
     if 0.0 < float(player.shot_cooldown) < 1e-6:
         player.shot_cooldown = 0.0
 
-    if perk_active(player, PerkId.SHARPSHOOTER):
-        player.spread_heat = 0.02
-    else:
-        player.spread_heat = max(0.01, player.spread_heat - dt * 0.4)
-
     speed_bonus_active = player.speed_bonus_timer > 0.0
     if player.aux_timer > 0.0:
         aux_decay = 1.4 if player.aux_timer >= 1.0 else 0.5
@@ -923,6 +919,14 @@ def player_update(
         aim_scheme=int(aim_scheme),
         demo_mode_active=bool(state.demo_mode_active),
     )
+
+    # Native cools spread after perk timers/movement but before weapon fire.
+    # Keeping this below `apply_player_perk_ticks` preserves Fire Cough spread
+    # sampling order while still applying cooldown before `player_fire_weapon`.
+    if perk_active(player, PerkId.SHARPSHOOTER):
+        player.spread_heat = 0.02
+    else:
+        player.spread_heat = max(0.01, player.spread_heat - dt * 0.4)
 
     fire_gate_open_pre_reload = player.shot_cooldown <= 0.0 and player.reload_timer == 0.0
 

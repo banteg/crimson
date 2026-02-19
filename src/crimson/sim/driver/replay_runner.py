@@ -576,11 +576,13 @@ def run_quest_replay(
         dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
     )
 
+    capture_spawn_events_authoritative = bool(original_capture_replay) and bool(has_capture_creature_spawn_events)
     session_spawn_entries = tuple(spawn_entries)
-    if bool(original_capture_replay) and bool(has_capture_creature_spawn_events):
+    if capture_spawn_events_authoritative:
         # Mid-capture quest replays do not encode native quest spawn-table RNG seed/state.
         # Use captured spawn hooks as authoritative and disable local quest-table spawning.
         session_spawn_entries = ()
+    world.creatures.capture_spawn_events_authoritative = bool(capture_spawn_events_authoritative)
 
     fx_queue, fx_queue_rotated = build_empty_fx_queues()
     damage_scale_by_type = build_damage_scale_by_type()
@@ -649,6 +651,7 @@ def run_quest_replay(
         world.creatures.env = world.spawn_env
         world.creatures.effects = world.state.effects
         world.creatures.reset()
+        world.creatures.capture_spawn_events_authoritative = bool(capture_spawn_events_authoritative)
 
         fx_queue.clear()
         fx_queue_rotated.clear()

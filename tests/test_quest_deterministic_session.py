@@ -87,3 +87,20 @@ def test_quest_session_is_deterministic_for_same_seed_and_inputs() -> None:
         )
 
     assert trace0 == trace1
+
+
+def test_quest_session_clears_reflex_boost_when_quest_is_idle_complete() -> None:
+    session = _build_session(seed=101)
+    session.spawn_entries = ()
+    session.world.state.bonuses.reflex_boost = 0.25471345
+    session.world.state.time_scale_active = True
+
+    tick = session.step_tick(
+        dt_frame=0.054,
+        dt_frame_ms_i32=54,
+        inputs=[PlayerInput()],
+    )
+
+    assert tick.spawn_timeline_ms == 0.0
+    assert session.world.state.bonuses.reflex_boost == 0.0
+    assert session.world.state.time_scale_active is False

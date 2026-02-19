@@ -117,7 +117,6 @@ class WorldState:
             if rng_marks is None:
                 return
             rng_marks[str(name)] = int(self.state.rng.state)
-
         dt = float(dt)
         if bool(apply_world_dt_steps):
             for step in _WORLD_DT_STEPS:
@@ -160,6 +159,8 @@ class WorldState:
         planned_death_sfx: list[str] = []
         planned_death_sfx_cap = 5
         def _plan_death_sfx_now(death: CreatureDeath) -> None:
+            if not bool(getattr(death, "plan_death_sfx", True)):
+                return
             keys = plan_death_sfx_keys([death], rand=self.state.rng.rand)
             if not keys:
                 return
@@ -185,6 +186,7 @@ class WorldState:
             creature = self.creatures.entries[idx]
             if not creature.active:
                 return
+            suppress_death_sfx = bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK)
             creature_apply_damage_with_lethal_followup(
                 creature,
                 damage_amount=float(damage),
@@ -194,6 +196,8 @@ class WorldState:
                 dt=float(dt),
                 players=self.players,
                 rand=self.state.rng.rand,
+                effects=self.state.effects,
+                detail_preset=int(detail_preset),
                 on_lethal=lambda: self._record_creature_death(
                     creature_index=idx,
                     dt=float(dt),
@@ -202,6 +206,7 @@ class WorldState:
                     fx_queue=fx_queue,
                     deaths=deaths,
                     plan_death_sfx_now=_plan_death_sfx_now,
+                    plan_death_sfx=not bool(suppress_death_sfx),
                 ),
             )
         def _on_secondary_detonation_kill(creature_index: int) -> None:
@@ -302,7 +307,6 @@ class WorldState:
                 return
             if float(creature.hp) <= 0.0:
                 return
-
             creature.last_hit_owner_id = int(owner_id)
             self._record_creature_death(
                 creature_index=idx,
@@ -432,6 +436,7 @@ class WorldState:
             world_height=float(world_size),
             fx_queue=fx_queue,
             keep_corpse=bool(keep_corpse),
+            plan_death_sfx=bool(plan_death_sfx),
         )
         deaths.append(death)
         if bool(plan_death_sfx):

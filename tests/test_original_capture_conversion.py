@@ -26,6 +26,7 @@ from crimson.original.capture import (
     capture_creature_spawns_from_event_payload,
     capture_perk_apply_from_event_payload,
     capture_perk_apply_id_from_event_payload,
+    capture_perk_apply_pending_bounds_from_event_payload,
     capture_perk_pending_from_event_payload,
     capture_state_transitions_from_event_payload,
     convert_capture_to_checkpoints,
@@ -1150,6 +1151,49 @@ def test_convert_capture_to_replay_bootstrap_payload_ignores_inactive_timer_rese
         assert "hot_tempered" not in perk_intervals_obj
 
 
+def test_convert_capture_to_replay_bootstrap_payload_does_not_infer_man_bomb_from_timer_drop(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=10, elapsed_ms=1000)
+    tick1 = _base_tick(tick_index=11, elapsed_ms=1076)
+    tick0["before"] = {
+        "globals": {},
+        "status": {},
+        "player_count": 1,
+        "players": [{"perk_timers": {"hot_tempered": 0.0, "man_bomb": 1.225, "living_fortress": 0.0, "fire_cough": 0.0}}],
+        "input": {},
+        "input_bindings": {},
+    }
+    tick1["before"] = {
+        "globals": {},
+        "status": {},
+        "player_count": 1,
+        "players": [{"perk_timers": {"hot_tempered": 0.0, "man_bomb": 0.0, "living_fortress": 0.0, "fire_cough": 0.0}}],
+        "input": {},
+        "input_bindings": {},
+    }
+    _as_obj_dict(_tick_checkpoint(tick0)["perk"])["player_nonzero_counts"] = [[[53, 1]]]
+    _as_obj_dict(_tick_checkpoint(tick1)["perk"])["player_nonzero_counts"] = [[[53, 1]]]
+
+    obj = _capture_obj(ticks=[tick0, tick1])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+    bootstrap = next(
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+    )
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    assert payload is not None
+
+    perk_intervals_obj = payload.get("perk_intervals")
+    if isinstance(perk_intervals_obj, dict):
+        assert "man_bomb" not in perk_intervals_obj
+
+
 def test_apply_capture_bootstrap_payload_applies_perk_intervals_and_player_perk_timers() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
@@ -1210,7 +1254,45 @@ def test_convert_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> No
     assert perk_events[0].tick_index == 0
 
 
-def test_convert_capture_to_replay_emits_quest_creature_spawn_events(tmp_path: Path) -> None:
+def test_convert_capture_to_replay_carries_outside_before_pending_bounds(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["perk_apply_outside_before"] = {
+        "calls": 1,
+        "dropped": 0,
+        "head": [
+            {
+                "perk_id": 16,
+                "pending_before": 1,
+                "pending_after": 4,
+                "caller": None,
+                "caller_static": None,
+                "backtrace": None,
+            },
+        ],
+    }
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    perk_events = [
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_PERK_APPLY_EVENT_KIND
+    ]
+    assert len(perk_events) == 1
+    payload = list(perk_events[0].payload)
+    assert capture_perk_apply_from_event_payload(payload) == (16, True)
+    assert capture_perk_apply_pending_bounds_from_event_payload(payload) == (1, 4)
+
+
+@pytest.mark.parametrize("caller_static", ["0x00434373", "0x00426d56"])
+def test_convert_capture_to_replay_emits_quest_creature_spawn_events(
+    tmp_path: Path,
+    caller_static: str,
+) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0["mode_hint"] = "quest_mode_update"
     tick0["game_mode_id"] = int(GameMode.QUESTS)
@@ -1221,7 +1303,7 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(tmp_path: P
                 "template_id": 54,
                 "pos": {"x": 434.3393859863281, "y": 455.56573486328125},
                 "heading": -4.083981990814209,
-                "caller_static": "0x00434373",
+                "caller_static": caller_static,
             },
         },
         {
@@ -1350,6 +1432,30 @@ def test_convert_capture_to_replay_emits_state_transition_events(tmp_path: Path)
     assert len(state_events) == 1
     assert state_events[0].tick_index == 0
     assert capture_state_transitions_from_event_payload(state_events[0].payload) == ((12, 9, 12),)
+
+
+def test_convert_capture_to_replay_emits_menu_open_on_state_6_transition(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16, perk_pending=0)
+    tick0["event_heads"] = [
+        {
+            "kind": "state_transition",
+            "data": {
+                "target_state": 6,
+                "before": {"id": 9},
+                "after": {"id": 6},
+            },
+        },
+    ]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    menu_open_events = [event for event in replay.events if isinstance(event, PerkMenuOpenEvent)]
+    assert len(menu_open_events) == 1
+    assert menu_open_events[0].tick_index == 0
 
 
 def test_default_capture_replay_path_derives_expected_name() -> None:
@@ -2078,6 +2184,52 @@ def test_convert_capture_to_replay_does_not_synthesize_fire_down_from_zero_coold
             },
         },
         {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 11, "actual_type_id": 11}},
+    ]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    flags = _replay_input_flags(replay, 0, 0)
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    assert fire_down is False
+    assert fire_pressed is False
+    assert reload_pressed is False
+
+
+def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_zero_cooldown_player_fire_spawn(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    _tick_player(tick0)["weapon_id"] = 11
+    _tick_player(tick0)["ammo"] = 21.0
+    tick0["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "fire_down": False,
+            "fire_pressed": None,
+            "reload_pressed": None,
+        },
+    ]
+    tick0["input_approx"] = [{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 11, "fired_events": 1}]
+    tick0["event_heads"] = [
+        {
+            "kind": "player_fire",
+            "data": {
+                "player_index": 0,
+                "owner_id": -100,
+                "weapon_before": 11,
+                "weapon_after": 11,
+                "ammo_before": 21.0,
+                "ammo_after": 21.0,
+                "requested_type_id": 45,
+                "actual_type_id": 45,
+                "shot_cooldown_after": 0.0,
+            },
+        },
+        {"kind": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 45, "actual_type_id": 45}},
     ]
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"

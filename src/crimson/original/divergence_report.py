@@ -185,6 +185,16 @@ def _float_or(value: object, default: float = 0.0) -> float:
         return float(default)
 
 
+def _effective_capture_projectile_hit_count(raw: Mapping[str, object]) -> int:
+    capture_hits = _int_or(raw.get("projectile_find_hit_count"), -1)
+    if capture_hits < 0:
+        return -1
+    owner_collision_count = _int_or(raw.get("projectile_find_query_owner_collision_count"), -1)
+    if owner_collision_count < 0:
+        return int(capture_hits)
+    return max(0, int(capture_hits) - int(owner_collision_count))
+
+
 def _capture_config_value(config: object | None, key: str) -> object | None:
     if config is None:
         return None
@@ -1991,9 +2001,10 @@ def _find_first_projectile_hit_shortfall(
 ) -> dict[str, object] | None:
     for tick in range(max(0, int(start_tick)), int(end_tick) + 1):
         raw = raw_debug_by_tick.get(int(tick), {})
-        capture_hits = _int_or(raw.get("projectile_find_hit_count"), -1)
-        if capture_hits < 0:
+        capture_hits_raw = _int_or(raw.get("projectile_find_hit_count"), -1)
+        if capture_hits_raw < 0:
             continue
+        capture_hits = _effective_capture_projectile_hit_count(raw)
         act = actual_by_tick.get(int(tick))
         if act is None:
             continue
@@ -2040,6 +2051,7 @@ def _find_first_projectile_hit_shortfall(
             ]
         return {
             "tick": int(tick),
+            "capture_hits_raw": int(capture_hits_raw),
             "capture_hits": int(capture_hits),
             "actual_hits": int(actual_hits),
             "missing_hits": int(capture_hits) - int(actual_hits),
@@ -2386,6 +2398,7 @@ def _build_investigation_leads(
     if projectile_hit_shortfall is not None:
         shortfall_tick = _int_or(projectile_hit_shortfall.get("tick"), -1)
         capture_hits = _int_or(projectile_hit_shortfall.get("capture_hits"), -1)
+        capture_hits_raw = _int_or(projectile_hit_shortfall.get("capture_hits_raw"), capture_hits)
         actual_hits = _int_or(projectile_hit_shortfall.get("actual_hits"), -1)
         missing_hits = _int_or(projectile_hit_shortfall.get("missing_hits"), -1)
         corpse_hits = _int_or(projectile_hit_shortfall.get("capture_corpse_hits"), -1)
@@ -2436,12 +2449,13 @@ def _build_investigation_leads(
 
         evidence = [
             (
-                f"first tick where native projectile hit resolves exceed rewrite hits: tick={int(shortfall_tick)} "
-                f"(capture_hits={int(capture_hits)}, actual_hits={int(actual_hits)}, missing={int(missing_hits)})"
+                f"first tick where native effective projectile hit resolves exceed rewrite hits: tick={int(shortfall_tick)} "
+                f"(capture_effective_hits={int(capture_hits)}, capture_raw_hits={int(capture_hits_raw)}, "
+                f"actual_hits={int(actual_hits)}, missing={int(missing_hits)})"
             ),
             (
-                "this points to a missing rewrite hit-resolution path (often corpse hits that consume RNG/presentation "
-                "without creating extra creature_damage events)"
+                "this points to a missing rewrite hit-resolution path after excluding owner-collision projectile_find "
+                "queries from capture-side hit totals"
             ),
         ]
         if query_counts >= 0:
@@ -2796,7 +2810,9 @@ def _classify_divergence_category(
 ) -> DivergenceCategory:
     lead_titles = {lead.title for lead in leads}
 
-    capture_hits = _int_or(focus_raw.get("projectile_find_hit_count"), -1)
+    capture_hits_raw = _int_or(focus_raw.get("projectile_find_hit_count"), -1)
+    capture_hits = _effective_capture_projectile_hit_count(focus_raw)
+    capture_owner_collision_count = _int_or(focus_raw.get("projectile_find_query_owner_collision_count"), -1)
     actual_hits = _int_or(focus_actual_ckpt.events.hit_count if focus_actual_ckpt is not None else None, -1)
     if (
         "Native projectile hit resolves exceed rewrite hit events" in lead_titles
@@ -2806,8 +2822,9 @@ def _classify_divergence_category(
             id="rng.projectile_hit_resolution_shortfall",
             evidence=(
                 (
-                    "capture projectile hit resolves exceed rewrite hit events at focus "
-                    f"(capture_hits={int(capture_hits)}, rewrite_hits={int(actual_hits)})"
+                    "capture effective projectile hit resolves exceed rewrite hit events at focus "
+                    f"(capture_effective_hits={int(capture_hits)}, capture_raw_hits={int(capture_hits_raw)}, "
+                    f"owner_collision_queries={int(capture_owner_collision_count)}, rewrite_hits={int(actual_hits)})"
                 ),
                 "category is stable across dynamic runs and maps to projectile-hit/rng-consumption parity work",
             ),
@@ -3374,10 +3391,12 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
         if isinstance(damage_head, list) and damage_head:
             print(f"  capture_creature_damage_head={damage_head[:6]!r}")
         projectile_find_hit_count = _int_or(focus_raw.get("projectile_find_hit_count"), -1)
+        projectile_find_hit_count_effective = _effective_capture_projectile_hit_count(focus_raw)
         if projectile_find_hit_count >= 0:
             print(
                 "  "
                 f"capture_projectile_find_hit_count={int(projectile_find_hit_count)} "
+                f"capture_projectile_find_hit_count_effective={int(projectile_find_hit_count_effective)} "
                 f"capture_projectile_find_hit_corpse_count={_int_or(focus_raw.get('projectile_find_hit_corpse_count'), -1)}",
             )
         projectile_find_query_count = _int_or(focus_raw.get("projectile_find_query_count"), -1)

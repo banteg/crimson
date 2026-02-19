@@ -314,7 +314,9 @@ class QuestDeterministicSession:
             trace_presentation_rng=bool(trace_rng),
         )
 
-        creatures_none_active = not bool(self.world.creatures.iter_active())
+        # Native `creatures_none_active` checks slot `active` flags only; corpses
+        # still count as active until lifecycle finalization clears the slot.
+        creatures_none_active = not any(creature.active for creature in self.world.creatures.entries)
         entries, timeline_ms, creatures_none_active, no_creatures_timer_ms, spawns = tick_quest_mode_spawns(
             self.spawn_entries,
             quest_spawn_timeline_ms=float(self.spawn_timeline_ms),
@@ -326,6 +328,12 @@ class QuestDeterministicSession:
         self.spawn_entries = entries
         self.spawn_timeline_ms = float(timeline_ms)
         self.no_creatures_timer_ms = float(no_creatures_timer_ms)
+        spawn_table_empty_now = quest_spawn_table_empty(self.spawn_entries)
+        # Native quest_mode_update (0x004070e0) clears Reflex Boost while the
+        # quest is idle-complete (no active creatures and no pending spawns).
+        if (not bool(state.demo_mode_active)) and bool(creatures_none_active) and bool(spawn_table_empty_now):
+            state.bonuses.reflex_boost = 0.0
+            state.time_scale_active = False
         for call in spawns:
             self.world.creatures.spawn_template(
                 int(call.template_id),
@@ -345,7 +353,7 @@ class QuestDeterministicSession:
                 float(self.completion_transition_ms),
                 frame_dt_ms=float(dt_frame_ms),
                 creatures_none_active=bool(creatures_none_active),
-                spawn_table_empty=quest_spawn_table_empty(self.spawn_entries),
+                spawn_table_empty=bool(spawn_table_empty_now),
             )
             self.completion_transition_ms = float(completion_ms)
         else:

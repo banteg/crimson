@@ -700,6 +700,40 @@ def test_divergence_category_prefers_projectile_hit_shortfall_signature() -> Non
     assert category.id == "rng.projectile_hit_resolution_shortfall"
 
 
+def test_divergence_category_ignores_owner_collision_queries_for_shortfall_signature() -> None:
+    report = _load_report_module()
+    expected_ckpt = _checkpoint(tick=10, rng_marks={"rand_calls": 0})
+    actual_ckpt = _checkpoint(
+        tick=10,
+        rng_marks={
+            "before_world_step": 0x12345678,
+            "after_world_step": 0x12345678,
+            "after_wave_spawns": 0x12345678,
+        },
+        events=ReplayEventSummary(hit_count=1, pickup_count=0, sfx_count=0, sfx_head=[]),
+    )
+    divergence = report.Divergence(
+        tick_index=10,
+        kind="rng_stream_mismatch",
+        field_diffs=tuple(),
+        expected=expected_ckpt,
+        actual=actual_ckpt,
+    )
+
+    category = report._classify_divergence_category(
+        divergence=divergence,
+        leads=[],
+        focus_raw={
+            "projectile_find_hit_count": 3,
+            "projectile_find_query_owner_collision_count": 2,
+            "rng_head_len": 0,
+        },
+        focus_actual_ckpt=actual_ckpt,
+    )
+
+    assert category.id == "rng.stream_mismatch"
+
+
 def test_divergence_category_marks_player_motion_precision_drift() -> None:
     report = _load_report_module()
     expected_ckpt = _checkpoint(tick=12, rng_marks={"rand_calls": 0})
@@ -968,7 +1002,7 @@ def test_find_first_projectile_hit_shortfall_detects_gap() -> None:
         actual_by_tick={12: actual_ckpt},
         raw_debug_by_tick={
             12: {
-                "projectile_find_hit_count": 5,
+                "projectile_find_hit_count": 6,
                 "projectile_find_hit_corpse_count": 1,
                 "projectile_find_query_count": 8,
                 "projectile_find_query_miss_count": 2,
@@ -984,11 +1018,39 @@ def test_find_first_projectile_hit_shortfall_detects_gap() -> None:
     assert shortfall is not None
     assert int(shortfall["tick"]) == 12
     assert int(shortfall["capture_hits"]) == 5
+    assert int(shortfall["capture_hits_raw"]) == 6
     assert int(shortfall["actual_hits"]) == 4
     assert int(shortfall["missing_hits"]) == 1
     assert int(shortfall["query_counts"]) == 8
     assert int(shortfall["query_miss_count"]) == 2
     assert int(shortfall["query_owner_collision_count"]) == 1
+
+
+def test_find_first_projectile_hit_shortfall_ignores_owner_collision_queries() -> None:
+    report = _load_report_module()
+    actual_ckpt = _checkpoint(
+        tick=12,
+        rng_marks={
+            "before_world_step": 0x11111111,
+            "after_world_step": 0x11111111,
+            "after_wave_spawns": 0x11111111,
+        },
+        events=ReplayEventSummary(hit_count=3, pickup_count=0, sfx_count=0, sfx_head=[]),
+    )
+
+    shortfall = report._find_first_projectile_hit_shortfall(
+        actual_by_tick={12: actual_ckpt},
+        raw_debug_by_tick={
+            12: {
+                "projectile_find_hit_count": 5,
+                "projectile_find_query_owner_collision_count": 2,
+            },
+        },
+        start_tick=0,
+        end_tick=16,
+    )
+
+    assert shortfall is None
 
 
 def test_investigation_leads_include_projectile_hit_shortfall() -> None:
@@ -1024,7 +1086,7 @@ def test_investigation_leads_include_projectile_hit_shortfall() -> None:
         raw_debug_by_tick={
             10: {
                 "rng_rand_calls": 0,
-                "projectile_find_hit_count": 6,
+                "projectile_find_hit_count": 7,
                 "projectile_find_hit_corpse_count": 2,
                 "projectile_find_query_count": 9,
                 "projectile_find_query_miss_count": 2,

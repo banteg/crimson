@@ -137,12 +137,11 @@ def perk_generate_choices(
     choices: list[PerkId] = [PerkId.ANTIPERK] * 7
     choice_index = 0
 
-    # Quest 1-7 special-case: force Monster Vision as the first choice if not owned.
-    capture_perk_counts_known = bool(getattr(state.perk_selection, "capture_player_perk_counts_known", True))
+    # Native `quest_monster_vision_meta` points to quest 3-4 (Hidden Evil):
+    # force Monster Vision as the first choice if not owned.
     if (
-        int(state.quest_stage_major) == 1
-        and int(state.quest_stage_minor) == 7
-        and bool(capture_perk_counts_known)
+        int(state.quest_stage_major) == 3
+        and int(state.quest_stage_minor) == 4
         and int(player_perk_counts[int(PerkId.MONSTER_VISION)]) == 0
     ):
         choices[0] = PerkId.MONSTER_VISION
