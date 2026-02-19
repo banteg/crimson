@@ -229,13 +229,14 @@ def survival_level_threshold(level: int) -> int:
 def survival_check_level_up(player: PlayerState, perk_state: PerkSelectionState) -> int:
     """Advance survival levels if XP exceeds thresholds, returning number of level-ups."""
 
-    advanced = 0
-    while player.experience > survival_level_threshold(player.level):
+    # Native progression advances at most one level per update tick even when
+    # XP jumps across multiple thresholds in a single frame.
+    if player.experience > survival_level_threshold(player.level):
         player.level += 1
         perk_state.pending_count += 1
         perk_state.choices_dirty = True
-        advanced += 1
-    return advanced
+        return 1
+    return 0
 
 
 def survival_progression_update(

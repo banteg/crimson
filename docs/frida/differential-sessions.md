@@ -1602,3 +1602,47 @@ When the capture SHA is unchanged, append updates to the same session.
 
 - The `quest_1_10` focus RNG shortfall at `tick 10018` is resolved; the remaining mismatch at that tick is now state-only (`perk.pending_count`, `players[0].level`) with aligned RNG stream.
 - Next probe should move earlier in this capture to the still-reported projectile-hit-resolution lead (`tick 9757`) and isolate the missing rewrite hit-resolve path.
+
+## Session 18 (continued: quest_1_10 progression pacing and idle-complete reflex parity)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.quest_1_10.json.gz`
+- **Capture family:** post-master-rebase quest split set (`session18_alt_leads`)
+- **Baseline verifier command:**
+  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_10.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache`
+- **First mismatch progression:**
+  - before this fix set: `tick 10018` (state mismatch: `perk.pending_count`, `players[0].level`)
+  - after single-step survival level-up pacing: `tick 10477` (`bonus_timers.9`: expected `0`, actual `210`)
+  - after quest idle-complete active-slot parity fix: `result=ok (no divergence found with current settings)`
+
+### Key Findings
+
+- Native survival progression advances at most one level threshold per update tick; rewrite looped multiple thresholds in one tick, over-incrementing quest perk pending state.
+- Native `creatures_none_active` checks creature slot `active` flags, not `hp > 0`; corpses remain "active" until lifecycle finalization.
+- Quest-mode idle-complete reflex clear (`bonus_reflex_boost_timer = 0`) is correct only when native-style active-slot emptiness and empty spawn table are both true.
+
+### Landed Changes
+
+- `src/crimson/gameplay.py`
+  - changed `survival_check_level_up` to advance at most one threshold per tick.
+- `tests/test_gameplay_progression.py`
+  - added `test_survival_level_up_advances_one_threshold_per_tick`.
+- `src/crimson/sim/sessions.py`
+  - switched quest `creatures_none_active` computation to native active-slot semantics (`creature.active`),
+  - preserved quest idle-complete reflex clear and completion-transition gating using the same `spawn_table_empty_now` evaluation.
+- `tests/test_quest_deterministic_session.py`
+  - added `test_quest_session_clears_reflex_boost_when_quest_is_idle_complete`.
+
+### Validation
+
+- Targeted checks:
+  - `uv run pytest tests/test_quest_deterministic_session.py tests/test_reflex_boosted_perk.py tests/test_gameplay_progression.py -q`
+- Divergence recheck:
+  - `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_10.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache --json-out analysis/frida/reports/session18_alt_leads/quest_1_10_after_idle_complete_reflex_clear_fix_nocache.json`
+    - `result=ok (no divergence found with current settings)`
+- Repository checks:
+  - `just check`
+
+### Outcome / Next Probe
+
+- `quest_1_10` is now cleared and can be unlinked from the active divergence set.
+- Remaining unresolved capture fronts should continue from currently outstanding quest files (`quest_1_9`, `quest_2_1`, `quest_4_5` in this family).
