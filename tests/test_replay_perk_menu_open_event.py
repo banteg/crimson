@@ -349,3 +349,47 @@ def test_original_capture_outside_before_random_weapon_does_not_shift_rng_state(
     assert perk_count_get(world.players[0], PerkId.RANDOM_WEAPON) == 1
     assert int(world.players[0].weapon_id) != before_weapon
     assert int(state.rng.state) == before_rng
+
+
+def test_original_capture_outside_before_perk_apply_consumes_one_pending_after_payload() -> None:
+    world = WorldState.build(
+        world_size=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=0,
+        preserve_bugs=False,
+    )
+    reset_players(world.players, world_size=1024.0, player_count=1)
+
+    state = world.state
+    state.game_mode = int(GameMode.SURVIVAL)
+    state.perk_selection.pending_count = 1
+    world.players[0].weapon_id = int(WeaponId.ASSAULT_RIFLE)
+    state.rng.srand(0x1234)
+    before_rng = int(state.rng.state)
+
+    apply_replay_tick_events(
+        [
+            UnknownEvent(
+                tick_index=9,
+                kind=CAPTURE_PERK_APPLY_EVENT_KIND,
+                payload=[
+                    {
+                        "perk_id": int(PerkId.RANDOM_WEAPON),
+                        "outside_before": True,
+                        "pending_before": 1,
+                        "pending_after": 4,
+                    },
+                ],
+            ),
+        ],
+        tick_index=9,
+        dt_frame=1.0 / 60.0,
+        world=world,
+        game_mode_id=int(GameMode.SURVIVAL),
+        strict_events=True,
+    )
+
+    assert perk_count_get(world.players[0], PerkId.RANDOM_WEAPON) == 1
+    assert int(state.perk_selection.pending_count) == 3
+    assert int(state.rng.state) == before_rng

@@ -19,6 +19,7 @@ from ...original.capture import (
     capture_creature_spawn_added_head_rows_from_event_payload,
     capture_creature_spawns_from_event_payload,
     capture_perk_apply_from_event_payload,
+    capture_perk_apply_pending_bounds_from_event_payload,
     capture_perk_pending_from_event_payload,
     capture_state_transitions_from_event_payload,
 )
@@ -123,6 +124,7 @@ def apply_replay_tick_events(
                         raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}")
                     continue
                 perk_id, outside_before = parsed_perk_apply
+                pending_before, pending_after = capture_perk_apply_pending_bounds_from_event_payload(list(event.payload))
                 if perk_id <= 0:
                     if strict_events:
                         raise ReplayRunnerError(f"invalid perk_apply payload at tick={tick_index}")
@@ -141,6 +143,8 @@ def apply_replay_tick_events(
                 # keep RNG state anchored so we do not double-consume.
                 rng_state_before: int | None = None
                 if bool(outside_before):
+                    if pending_before is not None:
+                        perk_state.pending_count = int(pending_before)
                     rng_state_before = int(state.rng.state)
                 perk_apply(
                     state,
@@ -150,6 +154,11 @@ def apply_replay_tick_events(
                     dt=float(dt_frame),
                     creatures=cast("list[CreatureForPerks]", world.creatures.entries),
                 )
+                if bool(outside_before):
+                    if pending_after is not None:
+                        perk_state.pending_count = int(pending_after)
+                    if int(perk_state.pending_count) > 0:
+                        perk_state.pending_count -= 1
                 if rng_state_before is not None:
                     state.rng.srand(int(rng_state_before))
                 continue

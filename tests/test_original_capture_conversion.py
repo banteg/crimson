@@ -26,6 +26,7 @@ from crimson.original.capture import (
     capture_creature_spawns_from_event_payload,
     capture_perk_apply_from_event_payload,
     capture_perk_apply_id_from_event_payload,
+    capture_perk_apply_pending_bounds_from_event_payload,
     capture_perk_pending_from_event_payload,
     capture_state_transitions_from_event_payload,
     convert_capture_to_checkpoints,
@@ -1210,6 +1211,40 @@ def test_convert_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> No
     assert perk_events[0].tick_index == 0
 
 
+def test_convert_capture_to_replay_carries_outside_before_pending_bounds(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0["perk_apply_outside_before"] = {
+        "calls": 1,
+        "dropped": 0,
+        "head": [
+            {
+                "perk_id": 16,
+                "pending_before": 1,
+                "pending_after": 4,
+                "caller": None,
+                "caller_static": None,
+                "backtrace": None,
+            },
+        ],
+    }
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    perk_events = [
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_PERK_APPLY_EVENT_KIND
+    ]
+    assert len(perk_events) == 1
+    payload = list(perk_events[0].payload)
+    assert capture_perk_apply_from_event_payload(payload) == (16, True)
+    assert capture_perk_apply_pending_bounds_from_event_payload(payload) == (1, 4)
+
+
 def test_convert_capture_to_replay_emits_quest_creature_spawn_events(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0["mode_hint"] = "quest_mode_update"
@@ -1350,6 +1385,30 @@ def test_convert_capture_to_replay_emits_state_transition_events(tmp_path: Path)
     assert len(state_events) == 1
     assert state_events[0].tick_index == 0
     assert capture_state_transitions_from_event_payload(state_events[0].payload) == ((12, 9, 12),)
+
+
+def test_convert_capture_to_replay_emits_menu_open_on_state_6_transition(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16, perk_pending=0)
+    tick0["event_heads"] = [
+        {
+            "kind": "state_transition",
+            "data": {
+                "target_state": 6,
+                "before": {"id": 9},
+                "after": {"id": 6},
+            },
+        },
+    ]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    menu_open_events = [event for event in replay.events if isinstance(event, PerkMenuOpenEvent)]
+    assert len(menu_open_events) == 1
+    assert menu_open_events[0].tick_index == 0
 
 
 def test_default_capture_replay_path_derives_expected_name() -> None:
