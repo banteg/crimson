@@ -32,6 +32,7 @@ from crimson.replay.types import (
     Replay,
     UnknownEvent,
     unpack_input_flags,
+    unpack_input_mode_flags,
     unpack_input_move_key_flags,
     unpack_packed_player_input,
 )
@@ -509,6 +510,7 @@ class CaptureVisualizerView:
             if int(player_index) < len(packed_tick):
                 mx, my, ax, ay, flags = unpack_packed_player_input(packed_tick[int(player_index)])
                 fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
+                move_mode, aim_scheme = unpack_input_mode_flags(int(flags))
                 move_forward_pressed, move_backward_pressed, turn_left_pressed, turn_right_pressed = (
                     unpack_input_move_key_flags(int(flags))
                 )
@@ -520,6 +522,8 @@ class CaptureVisualizerView:
                 fire_down = False
                 fire_pressed = False
                 reload_pressed = False
+                move_mode = None
+                aim_scheme = None
                 move_forward_pressed = None
                 move_backward_pressed = None
                 turn_left_pressed = None
@@ -528,6 +532,8 @@ class CaptureVisualizerView:
                 PlayerInput(
                     move=Vec2(float(mx), float(my)),
                     aim=Vec2(float(ax), float(ay)),
+                    move_mode=move_mode,
+                    aim_scheme=aim_scheme,
                     fire_down=bool(fire_down),
                     fire_pressed=bool(fire_pressed),
                     reload_pressed=bool(reload_pressed),

@@ -419,13 +419,36 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             ctx.sfx.append(options[int(ctx.rand()) & 1])
 
     mr_melee_killed = False
-    mr_melee_death_start_needed = False
     if perk_active(ctx.player, PerkId.MR_MELEE):
-        mr_melee_death_start_needed = creature.hp > 0.0 and creature.hitbox_size == CREATURE_HITBOX_ALIVE
+        from .damage import creature_apply_damage_with_lethal_followup
 
-        from .damage import creature_apply_damage
+        def _on_mr_melee_lethal() -> None:
+            ctx.deaths.append(
+                ctx.pool.handle_death(
+                    ctx.creature_index,
+                    state=ctx.state,
+                    players=ctx.players,
+                    rand=ctx.rand,
+                    dt=float(ctx.dt),
+                    detail_preset=int(ctx.detail_preset),
+                    world_width=float(ctx.world_width),
+                    world_height=float(ctx.world_height),
+                    fx_queue=ctx.fx_queue,
+                ),
+            )
+            if creature.active:
+                ctx.pool._tick_dead(
+                    creature,
+                    dt=ctx.dt,
+                    world_width=float(ctx.world_width),
+                    world_height=float(ctx.world_height),
+                    fx_queue_rotated=ctx.fx_queue_rotated,
+                    rand=ctx.rand,
+                    detail_preset=int(ctx.detail_preset),
+                    fx_toggle=int(ctx.fx_toggle),
+                )
 
-        mr_melee_killed = creature_apply_damage(
+        mr_melee_killed = creature_apply_damage_with_lethal_followup(
             creature,
             damage_amount=25.0,
             damage_type=CreatureDamageType.MELEE,
@@ -434,6 +457,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             dt=ctx.dt,
             players=ctx.players,
             rand=ctx.rand,
+            on_lethal=_on_mr_melee_lethal,
         )
 
     if float(ctx.player.shield_timer) <= 0.0:
@@ -455,31 +479,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
 
     creature.attack_cooldown = float(creature.attack_cooldown) + 1.0
 
-    if mr_melee_killed and mr_melee_death_start_needed:
-        ctx.deaths.append(
-            ctx.pool.handle_death(
-                ctx.creature_index,
-                state=ctx.state,
-                players=ctx.players,
-                rand=ctx.rand,
-                dt=float(ctx.dt),
-                detail_preset=int(ctx.detail_preset),
-                world_width=float(ctx.world_width),
-                world_height=float(ctx.world_height),
-                fx_queue=ctx.fx_queue,
-            ),
-        )
-        if creature.active:
-            ctx.pool._tick_dead(
-                creature,
-                dt=ctx.dt,
-                world_width=float(ctx.world_width),
-                world_height=float(ctx.world_height),
-                fx_queue_rotated=ctx.fx_queue_rotated,
-                rand=ctx.rand,
-                detail_preset=int(ctx.detail_preset),
-                fx_toggle=int(ctx.fx_toggle),
-            )
+    if mr_melee_killed:
         ctx.skip_creature = True
 
 
@@ -838,7 +838,7 @@ class CreaturePool:
         else:
             dt_ms = int(round(dt * 1000.0)) if dt > 0.0 else 0
 
-        def _apply_self_damage_tick(creature: CreatureState) -> bool:
+        def _apply_self_damage_tick(creature_index: int, creature: CreatureState) -> bool:
             if dt <= 0.0 or float(state.bonuses.freeze) > 0.0:
                 return False
             damage_amount = 0.0
@@ -850,9 +850,9 @@ class CreaturePool:
             if damage_amount <= 0.0:
                 return False
 
-            from .damage import creature_apply_damage
+            from .damage import creature_apply_damage_with_lethal_followup
 
-            return creature_apply_damage(
+            return creature_apply_damage_with_lethal_followup(
                 creature,
                 damage_amount=float(damage_amount),
                 damage_type=CreatureDamageType.SELF_TICK,
@@ -861,6 +861,19 @@ class CreaturePool:
                 dt=dt,
                 players=players,
                 rand=rand,
+                on_lethal=lambda: deaths.append(
+                    self.handle_death(
+                        int(creature_index),
+                        state=state,
+                        players=players,
+                        rand=rand,
+                        dt=float(dt),
+                        detail_preset=int(detail_preset),
+                        world_width=world_width,
+                        world_height=world_height,
+                        fx_queue=fx_queue,
+                    ),
+                ),
             )
 
         for idx, creature in enumerate(self._entries):
@@ -876,7 +889,7 @@ class CreaturePool:
                 continue
 
             if creature.hitbox_size != CREATURE_HITBOX_ALIVE or creature.hp <= 0.0:
-                _apply_self_damage_tick(creature)
+                _apply_self_damage_tick(idx, creature)
                 # Native still ticks AI7 link-timer state (and its RNG draws) for
                 # dead creatures inside `creature_update_all`.
                 if (
@@ -903,24 +916,11 @@ class CreaturePool:
             if dt <= 0.0 or not players:
                 continue
 
-            poison_killed = _apply_self_damage_tick(creature)
+            poison_killed = _apply_self_damage_tick(idx, creature)
             # Native order runs AI7 link timer update after periodic self-damage
             # and before any live-branch kill handling/retargeting.
             creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
             if poison_killed:
-                deaths.append(
-                    self.handle_death(
-                        idx,
-                        state=state,
-                        players=players,
-                        rand=rand,
-                        dt=float(dt),
-                        detail_preset=int(detail_preset),
-                        world_width=world_width,
-                        world_height=world_height,
-                        fx_queue=fx_queue,
-                    ),
-                )
                 if creature.active:
                     self._tick_dead(
                         creature,

@@ -22,6 +22,7 @@ from crimson.replay import apply_replay_bootstrap
 from crimson.replay.types import (
     UnknownEvent,
     unpack_input_flags,
+    unpack_input_mode_flags,
     unpack_input_move_key_flags,
     unpack_packed_player_input,
 )
@@ -145,6 +146,7 @@ def _decode_inputs_for_tick(
     for packed in packed_tick:
         mx, my, ax, ay, flags = unpack_packed_player_input(packed)
         fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
+        move_mode, aim_scheme = unpack_input_mode_flags(int(flags))
         move_forward_pressed, move_backward_pressed, turn_left_pressed, turn_right_pressed = (
             unpack_input_move_key_flags(int(flags))
         )
@@ -152,6 +154,8 @@ def _decode_inputs_for_tick(
             PlayerInput(
                 move=Vec2(float(mx), float(my)),
                 aim=Vec2(float(ax), float(ay)),
+                move_mode=move_mode,
+                aim_scheme=aim_scheme,
                 fire_down=bool(fire_down),
                 fire_pressed=bool(fire_pressed),
                 reload_pressed=bool(reload_pressed),

@@ -8,12 +8,14 @@ from typing import TYPE_CHECKING
 from grim.geom import Vec2
 from grim.rand import Crand, CrandLike
 
+from .aim_schemes import AimScheme
 from .bonuses.freeze import DeferredFreezeCorpseFx
 from .bonuses.hud import BonusHudState
 from .bonuses.pool import BonusPool
 from .effects import EffectPool, ParticlePool, SpriteEffectPool
 from .game_modes import GameMode
 from .math_parity import NATIVE_HALF_PI, NATIVE_PI, NATIVE_TAU, f32
+from .movement_controls import MovementControlType
 from .perks import PerkId
 from .perks.helpers import perk_active
 from .perks.runtime.player_ticks import apply_player_perk_ticks
@@ -84,6 +86,9 @@ _RELATIVE_MOVE_HEADING_BACKWARD_LEFT = float(f32(3.926991))
 _RELATIVE_MOVE_HEADING_LEFT = float(f32(4.712389))
 _RELATIVE_MOVE_HEADING_FORWARD_LEFT = float(f32(5.4977875))
 _RELATIVE_MOVE_TURN_ALIGN_SCALE = float(f32(7.957747))
+_AIM_POINT_RADIUS = 60.0
+_AIM_KEYBOARD_TURN_RATE = 3.0
+_AIM_JOYSTICK_TURN_RATE = 4.0
 
 
 @dataclass(slots=True)
@@ -401,6 +406,117 @@ def _direction_from_heading_native(heading: float) -> Vec2:
     return Vec2(math.cos(radians), math.sin(radians))
 
 
+def _resolve_move_mode_for_update(input_state: PlayerInput, state: GameplayState) -> int:
+    move_mode = input_state.move_mode
+    if move_mode is not None:
+        return int(move_mode)
+    if state.demo_mode_active:
+        return int(MovementControlType.COMPUTER)
+    if (
+        input_state.move_forward_pressed is not None
+        and input_state.move_backward_pressed is not None
+        and input_state.turn_left_pressed is not None
+        and input_state.turn_right_pressed is not None
+    ):
+        return int(MovementControlType.STATIC)
+    if bool(input_state.move_to_cursor_pressed):
+        return int(MovementControlType.MOUSE_POINT_CLICK)
+    return int(MovementControlType.DUAL_ACTION_PAD)
+
+
+def _resolve_aim_scheme_for_update(input_state: PlayerInput, state: GameplayState) -> int:
+    aim_scheme = input_state.aim_scheme
+    if aim_scheme is not None:
+        return int(aim_scheme)
+    if state.demo_mode_active:
+        return int(AimScheme.COMPUTER)
+    return int(AimScheme.MOUSE)
+
+
+def _player_accelerate_move_speed(player: PlayerState, dt: float) -> None:
+    dt = float(f32(float(dt)))
+    if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
+        if player.move_speed < 2.0:
+            player.move_speed = float(f32(float(player.move_speed) + float(dt) * 4.0))
+        player.move_speed = float(f32(float(player.move_speed) + float(dt)))
+        if player.move_speed > 2.8:
+            player.move_speed = 2.8
+    else:
+        player.move_speed = float(f32(float(player.move_speed) + float(dt) * 5.0))
+        if player.move_speed > 2.0:
+            player.move_speed = 2.0
+
+
+def _player_decelerate_move_speed(player: PlayerState, dt: float) -> None:
+    dt = float(f32(float(dt)))
+    player.move_speed = float(f32(float(player.move_speed) - float(dt) * 15.0))
+    if player.move_speed < 0.0:
+        player.move_speed = 0.0
+
+
+def _player_apply_move_speed_caps(player: PlayerState) -> None:
+    if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
+        player.move_speed = 0.8
+
+
+def _player_move_delta_from_heading(
+    *,
+    player: PlayerState,
+    movement_dt: float,
+    speed_scale: float,
+) -> Vec2:
+    move = _direction_from_heading_native(float(player.heading))
+    move_dx = float(f32(float(move.x) * float(player.move_speed) * float(speed_scale)))
+    move_dy = float(f32(float(move.y) * float(player.move_speed) * float(speed_scale)))
+    return Vec2(
+        f32(float(movement_dt) * float(move_dx)),
+        f32(float(movement_dt) * float(move_dy)),
+    )
+
+
+def _player_aim_point_from_heading(player: PlayerState, heading: float, *, radius: float = _AIM_POINT_RADIUS) -> Vec2:
+    aim_dir = _direction_from_heading_native(float(heading))
+    return Vec2(
+        f32(float(player.pos.x) + float(aim_dir.x) * float(radius)),
+        f32(float(player.pos.y) + float(aim_dir.y) * float(radius)),
+    )
+
+
+def _player_update_aim_by_scheme(
+    *,
+    player: PlayerState,
+    input_state: PlayerInput,
+    dt: float,
+    movement_mode: int,
+    aim_scheme: int,
+    demo_mode_active: bool,
+) -> None:
+    target_aim = input_state.aim
+
+    if not bool(demo_mode_active) and int(aim_scheme) != int(AimScheme.COMPUTER):
+        if int(aim_scheme) == int(AimScheme.KEYBOARD):
+            if int(movement_mode) in (int(MovementControlType.RELATIVE), int(MovementControlType.STATIC)):
+                if bool(input_state.turn_right_pressed):
+                    player.aim_heading = float(f32(float(player.aim_heading) + float(f32(float(dt) * _AIM_KEYBOARD_TURN_RATE))))
+                if bool(input_state.turn_left_pressed):
+                    player.aim_heading = float(f32(float(player.aim_heading) - float(f32(float(dt) * _AIM_KEYBOARD_TURN_RATE))))
+                target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
+        elif int(aim_scheme) == int(AimScheme.JOYSTICK):
+            if bool(input_state.turn_right_pressed):
+                player.aim_heading = float(f32(float(player.aim_heading) + float(f32(float(dt) * _AIM_JOYSTICK_TURN_RATE))))
+            if bool(input_state.turn_left_pressed):
+                player.aim_heading = float(f32(float(player.aim_heading) - float(f32(float(dt) * _AIM_JOYSTICK_TURN_RATE))))
+            target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
+        elif int(aim_scheme) == int(AimScheme.UNKNOWN):
+            target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
+
+    player.aim = target_aim
+    aim_dir = (player.aim - player.pos).normalized()
+    if aim_dir.length_sq() > 0.0:
+        player.aim_dir = aim_dir
+        player.aim_heading = aim_dir.to_heading()
+
+
 def player_update(
     player: PlayerState,
     input_state: PlayerInput,
@@ -442,12 +558,8 @@ def player_update(
         aux_decay = 1.4 if player.aux_timer >= 1.0 else 0.5
         player.aux_timer = max(0.0, player.aux_timer - dt * aux_decay)
 
-    # Aim: compute direction from (player -> aim point).
-    player.aim = input_state.aim
-    aim_dir = (player.aim - player.pos).normalized()
-    if aim_dir.length_sq() > 0.0:
-        player.aim_dir = aim_dir
-        player.aim_heading = aim_dir.to_heading()
+    move_mode = _resolve_move_mode_for_update(input_state, state)
+    aim_scheme = _resolve_aim_scheme_for_update(input_state, state)
 
     speed_multiplier = float(player.speed_multiplier)
     if speed_bonus_active:
@@ -467,87 +579,164 @@ def player_update(
     # Movement.
     raw_move = input_state.move
     raw_mag = raw_move.length()
-    use_digital_move = (
-        input_state.move_forward_pressed is not None
-        and input_state.move_backward_pressed is not None
-        and input_state.turn_left_pressed is not None
-        and input_state.turn_right_pressed is not None
-    )
     phase_sign = 1.0
+    move = _direction_from_heading_native(float(player.heading))
+    speed = 0.0
     move_delta_override: Vec2 | None = None
-    if use_digital_move:
-        # Native `player_update` relative keyboard movement path (`mode == 2`).
-        moving_forward = bool(input_state.move_forward_pressed)
-        moving_backward = bool(input_state.move_backward_pressed)
-        turning_left = bool(input_state.turn_left_pressed)
-        turning_right = bool(input_state.turn_right_pressed)
-        target_heading = float(_RELATIVE_MOVE_HEADING_NONE)
-        if turning_left:
-            target_heading = float(_RELATIVE_MOVE_HEADING_LEFT)
-        if turning_right:
-            target_heading = float(_RELATIVE_MOVE_HEADING_RIGHT)
+    player_controlled_movement = (
+        (not state.demo_mode_active)
+        and int(move_mode) != int(MovementControlType.COMPUTER)
+        and int(aim_scheme) != int(AimScheme.COMPUTER)
+    )
+    if player_controlled_movement:
+        if int(move_mode) == int(MovementControlType.RELATIVE):
+            turning_left = bool(input_state.turn_left_pressed)
+            turning_right = bool(input_state.turn_right_pressed)
+            moving_forward = bool(input_state.move_forward_pressed)
+            moving_backward = bool(input_state.move_backward_pressed)
+            turned = False
 
-        if moving_forward:
-            if turning_left:
-                target_heading = float(_RELATIVE_MOVE_HEADING_FORWARD_LEFT)
-            elif turning_right:
-                target_heading = float(_RELATIVE_MOVE_HEADING_FORWARD_RIGHT)
-            else:
-                target_heading = float(_RELATIVE_MOVE_HEADING_FORWARD)
-        if moving_backward:
-            if turning_left:
-                target_heading = float(_RELATIVE_MOVE_HEADING_BACKWARD_LEFT)
-            elif turning_right:
-                target_heading = float(_RELATIVE_MOVE_HEADING_BACKWARD_RIGHT)
-            else:
-                target_heading = float(_RELATIVE_MOVE_HEADING_BACKWARD)
+            if player.turn_speed < 1.0:
+                player.turn_speed = 1.0
+            if player.turn_speed > 7.0:
+                player.turn_speed = 7.0
 
-        if (not moving_backward) and target_heading == float(_RELATIVE_MOVE_HEADING_NONE):
-            player.move_speed = float(f32(float(player.move_speed) - float(movement_dt) * 15.0))
-            if player.move_speed < 0.0:
-                player.move_speed = 0.0
-            move = _direction_from_heading_native(float(player.heading))
-            move_dx = float(f32(float(move.x) * float(player.move_speed) * float(speed_multiplier) * 25.0))
-            move_dy = float(f32(float(move.y) * float(player.move_speed) * float(speed_multiplier) * 25.0))
+            if turning_left:
+                player.turn_speed = float(f32(float(player.turn_speed) + float(movement_dt) * 10.0))
+                turn_step = float(f32(float(player.turn_speed) * float(movement_dt) * 0.5))
+                player.heading = float(f32(float(player.heading) - float(turn_step)))
+                player.aim_heading = float(f32(float(player.aim_heading) - float(turn_step)))
+                turned = True
+            elif turning_right:
+                player.turn_speed = float(f32(float(player.turn_speed) + float(movement_dt) * 10.0))
+                turn_step = float(f32(float(player.turn_speed) * float(movement_dt) * 0.5))
+                player.heading = float(f32(float(player.heading) + float(turn_step)))
+                player.aim_heading = float(f32(float(player.aim_heading) + float(turn_step)))
+                turned = True
+
+            if moving_forward:
+                _player_accelerate_move_speed(player, movement_dt)
+                _player_apply_move_speed_caps(player)
+                move_delta_override = _player_move_delta_from_heading(
+                    player=player,
+                    movement_dt=movement_dt,
+                    speed_scale=25.0,
+                )
+            elif moving_backward:
+                _player_accelerate_move_speed(player, movement_dt)
+                phase_sign = -1.0
+                move_delta_override = _player_move_delta_from_heading(
+                    player=player,
+                    movement_dt=movement_dt,
+                    speed_scale=-25.0,
+                )
+            else:
+                if not turned:
+                    player.turn_speed = 1.0
+                _player_decelerate_move_speed(player, movement_dt)
+                move_delta_override = _player_move_delta_from_heading(
+                    player=player,
+                    movement_dt=movement_dt,
+                    speed_scale=25.0,
+                )
+        elif int(move_mode) == int(MovementControlType.STATIC):
+            moving_forward = (
+                bool(input_state.move_forward_pressed)
+                if input_state.move_forward_pressed is not None
+                else bool(raw_move.y < -0.5)
+            )
+            moving_backward = (
+                bool(input_state.move_backward_pressed)
+                if input_state.move_backward_pressed is not None
+                else bool(raw_move.y > 0.5)
+            )
+            turning_left = (
+                bool(input_state.turn_left_pressed)
+                if input_state.turn_left_pressed is not None
+                else bool(raw_move.x < -0.5)
+            )
+            turning_right = (
+                bool(input_state.turn_right_pressed)
+                if input_state.turn_right_pressed is not None
+                else bool(raw_move.x > 0.5)
+            )
+
+            target_heading = float(_RELATIVE_MOVE_HEADING_NONE)
+            if turning_left:
+                target_heading = float(_RELATIVE_MOVE_HEADING_LEFT)
+            if turning_right:
+                target_heading = float(_RELATIVE_MOVE_HEADING_RIGHT)
+
+            if moving_forward:
+                if turning_left:
+                    target_heading = float(_RELATIVE_MOVE_HEADING_FORWARD_LEFT)
+                elif turning_right:
+                    target_heading = float(_RELATIVE_MOVE_HEADING_FORWARD_RIGHT)
+                else:
+                    target_heading = float(_RELATIVE_MOVE_HEADING_FORWARD)
+            if moving_backward:
+                if turning_left:
+                    target_heading = float(_RELATIVE_MOVE_HEADING_BACKWARD_LEFT)
+                elif turning_right:
+                    target_heading = float(_RELATIVE_MOVE_HEADING_BACKWARD_RIGHT)
+                else:
+                    target_heading = float(_RELATIVE_MOVE_HEADING_BACKWARD)
+
+            if (not moving_backward) and target_heading == float(_RELATIVE_MOVE_HEADING_NONE):
+                _player_decelerate_move_speed(player, movement_dt)
+                move = _direction_from_heading_native(float(player.heading))
+                move_dx = float(f32(float(move.x) * float(player.move_speed) * float(speed_multiplier) * 25.0))
+                move_dy = float(f32(float(move.y) * float(player.move_speed) * float(speed_multiplier) * 25.0))
+            else:
+                angle_diff, turn_delta = _player_heading_approach_target_with_delta(
+                    player,
+                    float(target_heading),
+                    float(movement_dt),
+                )
+                player.aim_heading = float(f32(float(player.aim_heading) + float(turn_delta)))
+                _player_accelerate_move_speed(player, movement_dt)
+                _player_apply_move_speed_caps(player)
+                move = _direction_from_heading_native(float(player.heading))
+                turn_align = (
+                    (float(NATIVE_PI) - float(angle_diff))
+                    * float(speed_multiplier)
+                    * float(_RELATIVE_MOVE_TURN_ALIGN_SCALE)
+                )
+                move_dx = float(
+                    f32(float(move.x) * float(player.move_speed) * float(turn_align)),
+                )
+                move_dy = float(
+                    f32(float(move.y) * float(player.move_speed) * float(turn_align)),
+                )
+
+            move_delta_override = Vec2(
+                f32(float(movement_dt) * float(move_dx)),
+                f32(float(movement_dt) * float(move_dy)),
+            )
         else:
-            angle_diff, turn_delta = _player_heading_approach_target_with_delta(
-                player,
-                float(target_heading),
-                float(movement_dt),
+            moving_input = raw_mag > (
+                0.0
+                if int(move_mode) == int(MovementControlType.MOUSE_POINT_CLICK)
+                else 0.2
             )
-            player.aim_heading = float(f32(float(player.aim_heading) + float(turn_delta)))
-
-            if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
-                if player.move_speed < 2.0:
-                    player.move_speed = float(f32(float(player.move_speed) + float(movement_dt) * 4.0))
-                player.move_speed = float(f32(float(player.move_speed) + float(movement_dt)))
-                if player.move_speed > 2.8:
-                    player.move_speed = 2.8
+            turn_alignment_scale = 1.0
+            if moving_input:
+                inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0
+                move = raw_move * inv
+                target_heading = _normalize_heading_angle(move.to_heading())
+                angle_diff = _player_heading_approach_target(player, target_heading, movement_dt)
+                move = _direction_from_heading_native(float(player.heading))
+                turn_alignment_scale = max(0.0, (math.pi - angle_diff) / math.pi)
+                _player_accelerate_move_speed(player, movement_dt)
             else:
-                player.move_speed = float(f32(float(player.move_speed) + float(movement_dt) * 5.0))
-                if player.move_speed > 2.0:
-                    player.move_speed = 2.0
+                _player_decelerate_move_speed(player, movement_dt)
+                move = _direction_from_heading_native(float(player.heading))
 
-            if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
-                player.move_speed = 0.8
-
-            move = _direction_from_heading_native(float(player.heading))
-            turn_align = (
-                (float(NATIVE_PI) - float(angle_diff))
-                * float(speed_multiplier)
-                * float(_RELATIVE_MOVE_TURN_ALIGN_SCALE)
-            )
-            move_dx = float(
-                f32(float(move.x) * float(player.move_speed) * float(turn_align)),
-            )
-            move_dy = float(
-                f32(float(move.y) * float(player.move_speed) * float(turn_align)),
-            )
-
-        move_delta_override = Vec2(
-            f32(float(movement_dt) * float(move_dx)),
-            f32(float(movement_dt) * float(move_dy)),
-        )
+            _player_apply_move_speed_caps(player)
+            speed = float(player.move_speed) * float(speed_multiplier) * 25.0
+            if moving_input:
+                speed *= min(1.0, raw_mag)
+                speed *= turn_alignment_scale
     else:
         # Demo/autoplay uses very small analog magnitudes to represent turn-in-place and
         # heading alignment slowdown; don't apply a deadzone there.
@@ -563,26 +752,14 @@ def player_update(
             angle_diff = _player_heading_approach_target(player, target_heading, movement_dt)
             move = _direction_from_heading_native(float(player.heading))
             turn_alignment_scale = max(0.0, (math.pi - angle_diff) / math.pi)
-            if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
-                if player.move_speed < 2.0:
-                    player.move_speed = float(player.move_speed + movement_dt * 4.0)
-                player.move_speed = float(player.move_speed + movement_dt)
-                if player.move_speed > 2.8:
-                    player.move_speed = 2.8
-            else:
-                player.move_speed = float(player.move_speed + movement_dt * 5.0)
-                if player.move_speed > 2.0:
-                    player.move_speed = 2.0
+            _player_accelerate_move_speed(player, movement_dt)
         else:
-            player.move_speed = float(player.move_speed - movement_dt * 15.0)
-            if player.move_speed < 0.0:
-                player.move_speed = 0.0
+            _player_decelerate_move_speed(player, movement_dt)
             move = _direction_from_heading_native(float(player.heading))
 
-        if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
-            player.move_speed = 0.8
+        _player_apply_move_speed_caps(player)
 
-        speed = player.move_speed * speed_multiplier * 25.0
+        speed = float(player.move_speed) * float(speed_multiplier) * 25.0
         if moving_input:
             speed *= min(1.0, raw_mag)
             speed *= turn_alignment_scale
@@ -682,6 +859,28 @@ def player_update(
     if player.reload_timer < 0.0:
         player.reload_timer = 0.0
 
+    has_alt_weapon_perk = perk_active(player, PerkId.ALTERNATE_WEAPON)
+    single_player_mode = (len(players) == 1) if players is not None else True
+    manual_reload_allowed = (
+        bool(input_state.reload_pressed)
+        and (not state.demo_mode_active)
+        and (not has_alt_weapon_perk)
+        and int(move_mode) != int(MovementControlType.MOUSE_POINT_CLICK)
+        and float(player.reload_timer) == 0.0
+        and bool(single_player_mode)
+    )
+    if manual_reload_allowed:
+        _player_start_reload(player, state)
+
+    _player_update_aim_by_scheme(
+        player=player,
+        input_state=input_state,
+        dt=dt,
+        movement_mode=int(move_mode),
+        aim_scheme=int(aim_scheme),
+        demo_mode_active=bool(state.demo_mode_active),
+    )
+
     fire_gate_open_pre_reload = player.shot_cooldown <= 0.0 and player.reload_timer == 0.0
 
     # Native clears `reload_active` whenever the cooldown/timer gates are open,
@@ -690,8 +889,8 @@ def player_update(
         player.reload_active = False
 
     swapped_alt_weapon = False
-    if input_state.reload_pressed:
-        if perk_active(player, PerkId.ALTERNATE_WEAPON) and _player_swap_alt_weapon(player):
+    if input_state.reload_pressed and has_alt_weapon_perk:
+        if _player_swap_alt_weapon(player):
             swapped_alt_weapon = True
             weapon = _weapon_entry(player.weapon_id)
             if weapon is not None and weapon.reload_sound is not None:
@@ -701,8 +900,6 @@ def player_update(
                 if key is not None:
                     state.sfx_queue.append(key)
             player.shot_cooldown = float(player.shot_cooldown) + 0.1
-        elif player.reload_timer == 0.0 and not input_state.move_to_cursor_pressed:
-            _player_start_reload(player, state)
 
     # Native computes the fire gate (`shot_cooldown <= 0 && reload_timer == 0`)
     # before alt-weapon swap mutates cooldown; preserve same-tick fire eligibility.

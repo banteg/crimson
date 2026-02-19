@@ -2570,6 +2570,16 @@ def convert_capture_to_replay(
                 fire_down=bool(fire_down),
                 fire_pressed=bool(fire_pressed),
                 reload_pressed=bool(reload_pressed),
+                move_mode=(
+                    _coerce_int_like(getattr(sample, "move_mode", None))
+                    if sample is not None
+                    else None
+                ),
+                aim_scheme=(
+                    int(aim_scheme_value)
+                    if aim_scheme_value is not None
+                    else None
+                ),
                 move_forward_pressed=move_forward_pressed,
                 move_backward_pressed=move_backward_pressed,
                 turn_left_pressed=turn_left_pressed,

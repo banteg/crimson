@@ -169,3 +169,38 @@ def creature_apply_damage(
         creature.hitbox_size = CREATURE_HITBOX_ALIVE
 
     return False
+
+
+def creature_apply_damage_with_lethal_followup(
+    creature: CreatureState,
+    *,
+    damage_amount: float,
+    damage_type: int,
+    impulse: Vec2,
+    owner_id: int,
+    dt: float,
+    players: list[PlayerState],
+    rand: Callable[[], int],
+    on_lethal: Callable[[], None],
+) -> bool:
+    """Apply damage and run a required lethal follow-up exactly on death transition.
+
+    This helper keeps lethal bookkeeping adjacent to damage application so runtime
+    call sites cannot accidentally skip death handling side effects.
+    """
+
+    death_start_needed = float(creature.hp) > 0.0 and float(creature.hitbox_size) == CREATURE_HITBOX_ALIVE
+    killed = creature_apply_damage(
+        creature,
+        damage_amount=float(damage_amount),
+        damage_type=int(damage_type),
+        impulse=impulse,
+        owner_id=int(owner_id),
+        dt=float(dt),
+        players=players,
+        rand=rand,
+    )
+    if killed and death_start_needed:
+        on_lethal()
+        return True
+    return False
