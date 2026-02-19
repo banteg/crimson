@@ -475,12 +475,13 @@ def test_replay_render_uses_render_video_runner(tmp_path: Path, monkeypatch) -> 
     assert calls[0]["output_path"] == replay_path.with_suffix(".render.mp4")
 
 
-def test_replay_render_progress_callback_expands_total(monkeypatch) -> None:
+def test_replay_render_progress_callback_uses_separate_video_audio_bars(monkeypatch) -> None:
     import crimson.cli as cli_mod
 
     class _FakeBar:
-        def __init__(self, total: int) -> None:
+        def __init__(self, *, total: int, desc: str) -> None:
             self.total = int(total)
+            self.desc = str(desc)
             self.updates: list[int] = []
             self.postfixes: list[dict[str, int]] = []
             self.closed = False
@@ -498,28 +499,39 @@ def test_replay_render_progress_callback_expands_total(monkeypatch) -> None:
 
     def fake_tqdm(*, total: int, unit: str, desc: str, leave: bool):
         assert unit == "tick"
-        assert desc == "replay render"
         assert leave is True
-        bar = _FakeBar(total=int(total))
+        bar = _FakeBar(total=int(total), desc=str(desc))
         bars.append(bar)
         return bar
 
     monkeypatch.setattr(cli_mod, "tqdm", fake_tqdm)
 
-    callback, close = cli_mod._replay_render_progress_callback(total_ticks=10)
+    callback, close = cli_mod._replay_render_progress_callback(total_ticks=10, render_audio=True)
     assert callback is not None
     assert close is not None
     assert len(bars) == 1
-    bar = bars[0]
+    video_bar = bars[0]
 
-    callback(3, 5, 20)
-    callback(4, 17, 20)
+    callback("video", 3, 5, 10)
+    callback("audio", 0, 4, 10)
+    callback("video", 4, 10, 10)
+    callback("audio", 0, 10, 10)
     close()
 
-    assert bar.total == 20
-    assert bar.updates == [5, 12]
-    assert bar.postfixes[-1]["frames"] == 4
-    assert bar.closed is True
+    assert len(bars) == 2
+    audio_bar = bars[1]
+
+    assert video_bar.desc == "replay video"
+    assert video_bar.total == 10
+    assert video_bar.updates == [5, 5]
+    assert video_bar.postfixes[-1]["frames"] == 4
+    assert video_bar.closed is True
+
+    assert audio_bar.desc == "replay audio"
+    assert audio_bar.total == 10
+    assert audio_bar.updates == [4, 6]
+    assert audio_bar.postfixes == []
+    assert audio_bar.closed is True
 
 
 def test_replay_render_uses_custom_output_and_ffmpeg_bin(tmp_path: Path, monkeypatch) -> None:

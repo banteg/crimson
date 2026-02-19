@@ -10,7 +10,7 @@ import re
 import sys
 from dataclasses import fields, is_dataclass
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Any, Literal, Protocol, cast
 
 import typer
 from PIL import Image
@@ -48,6 +48,16 @@ _REPLAY_BENCHMARK_SCHEMA_VERSION = 1
 _REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE = 3
 _SessionMode = Literal["survival", "rush", "quests"]
 _ParsedNetcodeMode = Literal["rollback", "lockstep_legacy"]
+
+
+class _ProgressBarLike(Protocol):
+    total: int
+
+    def update(self, value: int) -> None: ...
+
+    def set_postfix(self, *, refresh: bool = True, **kwargs: Any) -> None: ...
+
+    def close(self) -> None: ...
 
 
 def _is_loopback_host(host: str) -> bool:
@@ -127,24 +137,55 @@ def _default_replay_render_output_path(replay_path: Path) -> Path:
 def _replay_render_progress_callback(
     *,
     total_ticks: int,
+    render_audio: bool,
 ) -> tuple[object | None, object | None]:
     if int(total_ticks) <= 0:
         return None, None
 
-    bar = tqdm(
-        total=int(total_ticks),
-        unit="tick",
-        desc="replay render",
-        leave=True,
+    video_bar = cast(
+        _ProgressBarLike,
+        tqdm(
+            total=int(total_ticks),
+            unit="tick",
+            desc="replay video",
+            leave=True,
+        ),
     )
-    last_tick = 0
+    audio_bar: _ProgressBarLike | None = None
+    video_last_tick = 0
+    audio_last_tick = 0
 
-    def callback(frame_count: int, tick_index: int, callback_total_ticks: int) -> None:
-        nonlocal last_tick
+    def _ensure_audio_bar(total: int) -> _ProgressBarLike:
+        nonlocal audio_bar
+        if audio_bar is not None:
+            return audio_bar
+        audio_bar = cast(
+            _ProgressBarLike,
+            tqdm(
+                total=int(total),
+                unit="tick",
+                desc="replay audio",
+                leave=True,
+            ),
+        )
+        return audio_bar
+
+    def callback(phase: str, frame_count: int, tick_index: int, callback_total_ticks: int) -> None:
+        nonlocal video_last_tick, audio_last_tick
         resolved_total = int(total_ticks)
         if int(callback_total_ticks) > 0:
             resolved_total = int(callback_total_ticks)
         if int(resolved_total) <= 0:
+            return
+        if str(phase) == "video":
+            bar = video_bar
+            last_tick = int(video_last_tick)
+        elif str(phase) == "audio":
+            if not bool(render_audio):
+                return
+            bar = _ensure_audio_bar(int(resolved_total))
+            last_tick = int(audio_last_tick)
+        else:
             return
         if int(getattr(bar, "total", 0) or 0) != int(resolved_total):
             bar.total = int(resolved_total)
@@ -153,11 +194,16 @@ def _replay_render_progress_callback(
         if int(delta) <= 0:
             return
         bar.update(int(delta))
-        bar.set_postfix(frames=int(frame_count), refresh=False)
-        last_tick = int(tick)
+        if str(phase) == "video":
+            bar.set_postfix(frames=int(frame_count), refresh=False)
+            video_last_tick = int(tick)
+        else:
+            audio_last_tick = int(tick)
 
     def close() -> None:
-        bar.close()
+        video_bar.close()
+        if audio_bar is not None:
+            audio_bar.close()
 
     return callback, close
 
@@ -1334,7 +1380,10 @@ def cmd_replay_render(
         total_ticks = int(len(replay.inputs))
         if max_ticks is not None:
             total_ticks = min(int(total_ticks), max(0, int(max_ticks)))
-        progress_callback, progress_close = _replay_render_progress_callback(total_ticks=total_ticks)
+        progress_callback, progress_close = _replay_render_progress_callback(
+            total_ticks=total_ticks,
+            render_audio=bool(audio),
+        )
         render = run_replay_render_video(
             replay,
             replay_path=Path(replay_path),

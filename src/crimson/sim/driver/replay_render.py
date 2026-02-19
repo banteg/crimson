@@ -25,6 +25,7 @@ X264Preset = Literal[
     "slower",
     "veryslow",
 ]
+ReplayRenderPhase = Literal["video", "audio"]
 
 
 class ReplayRenderError(ValueError):
@@ -34,7 +35,8 @@ class ReplayRenderError(ValueError):
 _AUDIO_CAPTURE_SAMPLE_FORMAT = "f32le"
 _AUDIO_CAPTURE_SAMPLE_RATE = 48_000
 _AUDIO_CAPTURE_CHANNELS = 2
-_AUDIO_TEMPO_EPSILON = 1e-3
+_AUDIO_INFERRED_SAMPLE_RATE_MIN = 8_000
+_AUDIO_INFERRED_SAMPLE_RATE_MAX = 384_000
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,7 +68,7 @@ def run_replay_render_video(
     pixel_format: str = "yuv420p",
     overwrite: bool = False,
     mute_audio: bool = True,
-    progress: Callable[[int, int, int], None] | None = None,
+    progress: Callable[[ReplayRenderPhase, int, int, int], None] | None = None,
 ) -> ReplayRenderResult:
     import pyray as rl
 
@@ -122,7 +124,6 @@ def run_replay_render_video(
     total_ticks = int(len(replay.inputs))
     if max_ticks is not None:
         total_ticks = min(int(total_ticks), max(0, int(max_ticks)))
-    progress_total_ticks = int(total_ticks) * (2 if bool(capture_audio) else 1)
     config_flags = int(getattr(rl, "FLAG_WINDOW_HIDDEN", 0))
     if int(config_flags) != 0:
         rl.set_config_flags(int(config_flags))
@@ -190,13 +191,13 @@ def run_replay_render_video(
                     rl.unload_image(image)
                 frame_count += 1
                 if progress is not None:
-                    progress(int(frame_count), int(mode.tick_index), int(progress_total_ticks))
+                    progress("video", int(frame_count), int(mode.tick_index), int(total_ticks))
 
             if int(frame_count) <= 0:
                 raise ReplayRenderError("replay render produced no frames")
 
             if progress is not None:
-                progress(int(frame_count), int(total_ticks), int(progress_total_ticks))
+                progress("video", int(frame_count), int(total_ticks), int(total_ticks))
             _finalize_ffmpeg_process(ffmpeg_proc)
             ffmpeg_proc = None
             if mode is not None:
@@ -219,9 +220,7 @@ def run_replay_render_video(
                     output_path=audio_raw_path,
                     replay_tick_rate=int(replay_tick_rate),
                     progress=progress,
-                    progress_frame_count=int(frame_count),
-                    progress_tick_offset=int(total_ticks),
-                    progress_total_ticks=int(progress_total_ticks),
+                    total_ticks=int(total_ticks),
                 )
                 _mux_raw_audio_with_video(
                     ffmpeg_path=ffmpeg_path,
@@ -229,13 +228,19 @@ def run_replay_render_video(
                     audio_path=audio_raw_path,
                     output_path=out_path,
                     overwrite=bool(overwrite),
-                    expected_video_duration_s=float(frame_count) / float(fps),
-                    audio_sample_rate=int(captured_audio.sample_rate),
+                    audio_sample_rate=int(captured_audio.effective_sample_rate),
                     audio_channels=int(captured_audio.channels),
                     captured_audio_frames=int(captured_audio.captured_frames),
+                    target_audio_frames=int(
+                        round(
+                            float(frame_count)
+                            * float(captured_audio.effective_sample_rate)
+                            / float(fps),
+                        ),
+                    ),
                 )
                 if progress is not None:
-                    progress(int(frame_count), int(progress_total_ticks), int(progress_total_ticks))
+                    progress("audio", int(frame_count), int(total_ticks), int(total_ticks))
         except ReplayRenderError:
             _abort_ffmpeg_process(ffmpeg_proc)
             raise
@@ -348,6 +353,8 @@ class _CapturedAudioTrack:
     sample_rate: int
     channels: int
     captured_frames: int
+    captured_ticks: int
+    effective_sample_rate: int
 
 
 def _capture_replay_audio_track(
@@ -362,10 +369,8 @@ def _capture_replay_audio_track(
     trace_rng: bool,
     output_path: Path,
     replay_tick_rate: int,
-    progress: Callable[[int, int, int], None] | None = None,
-    progress_frame_count: int = 0,
-    progress_tick_offset: int = 0,
-    progress_total_ticks: int = 0,
+    progress: Callable[[ReplayRenderPhase, int, int, int], None] | None = None,
+    total_ticks: int = 0,
 ) -> _CapturedAudioTrack:
     from ...modes.replay_playback_mode import ReplayPlaybackMode
 
@@ -417,21 +422,25 @@ def _capture_replay_audio_track(
                 if fx_queue_rotated is not None:
                     fx_queue_rotated.clear()
             capture.flush_pending()
-            if progress is not None and int(progress_total_ticks) > 0:
-                progress(
-                    int(progress_frame_count),
-                    int(progress_tick_offset) + int(mode.tick_index),
-                    int(progress_total_ticks),
-                )
+            if progress is not None and int(total_ticks) > 0:
+                progress("audio", 0, int(mode.tick_index), int(total_ticks))
             next_tick_deadline += tick_dt
             sleep_s = float(next_tick_deadline) - float(time.perf_counter())
             if float(sleep_s) > 0.0:
                 time.sleep(float(sleep_s))
         capture.stop()
+        captured_ticks = int(mode.tick_index)
+        effective_sample_rate = _infer_effective_capture_sample_rate(
+            captured_frames=int(capture.captured_frames),
+            captured_ticks=int(captured_ticks),
+            replay_tick_rate=int(replay_tick_rate),
+        )
         return _CapturedAudioTrack(
             sample_rate=int(capture.sample_rate),
             channels=int(capture.channels),
             captured_frames=int(capture.captured_frames),
+            captured_ticks=int(captured_ticks),
+            effective_sample_rate=int(effective_sample_rate),
         )
     finally:
         try:
@@ -453,13 +462,11 @@ def _mux_raw_audio_with_video(
     audio_path: Path,
     output_path: Path,
     overwrite: bool,
-    expected_video_duration_s: float,
     audio_sample_rate: int,
     audio_channels: int,
     captured_audio_frames: int,
+    target_audio_frames: int,
 ) -> None:
-    if float(expected_video_duration_s) <= 0.0:
-        raise ReplayRenderError(f"invalid video duration for audio mux: {expected_video_duration_s}")
     if int(audio_sample_rate) <= 0:
         raise ReplayRenderError(f"invalid audio sample rate: {audio_sample_rate}")
     if int(audio_channels) <= 0:
@@ -468,13 +475,16 @@ def _mux_raw_audio_with_video(
         raise ReplayRenderError(
             "audio capture produced no frames; if your system has no audio device, pass --mute-audio",
         )
-    captured_audio_duration_s = float(captured_audio_frames) / float(audio_sample_rate)
-    tempo = float(captured_audio_duration_s) / float(expected_video_duration_s)
-
-    filter_steps = _build_atempo_filters(float(tempo))
-    filter_steps.append(f"atrim=duration={float(expected_video_duration_s):.9f}")
-    filter_steps.append("asetpts=N/SR/TB")
-    audio_filter = ",".join(filter_steps)
+    if int(target_audio_frames) <= 0:
+        raise ReplayRenderError(
+            "invalid target audio frame count for mux: "
+            f"captured_frames={int(captured_audio_frames)} target_audio_frames={int(target_audio_frames)} "
+            f"audio_sample_rate={int(audio_sample_rate)}",
+        )
+    audio_filter = _build_audio_sync_filter(
+        captured_frames=int(captured_audio_frames),
+        target_frames=int(target_audio_frames),
+    )
 
     cmd = [
         str(ffmpeg_path),
@@ -519,26 +529,56 @@ def _mux_raw_audio_with_video(
         return
     stderr = proc.stderr.decode("utf-8", errors="replace").strip() if proc.stderr is not None else ""
     detail = stderr or "unknown ffmpeg error"
-    raise ReplayRenderError(f"ffmpeg audio mux failed (exit {proc.returncode}): {detail}")
+    raise ReplayRenderError(
+        "ffmpeg audio mux failed "
+        f"(exit {proc.returncode}): captured_frames={int(captured_audio_frames)} "
+        f"target_audio_frames={int(target_audio_frames)} audio_sample_rate={int(audio_sample_rate)} "
+        f"audio_channels={int(audio_channels)} filter={audio_filter!r} detail={detail}",
+    )
 
 
-def _build_atempo_filters(tempo: float) -> list[str]:
-    if float(tempo) <= 0.0:
-        raise ReplayRenderError(f"invalid audio tempo factor: {tempo}")
-    if abs(float(tempo) - 1.0) <= float(_AUDIO_TEMPO_EPSILON):
-        return []
+def _build_audio_sync_filter(*, captured_frames: int, target_frames: int) -> str:
+    captured = int(captured_frames)
+    target = int(target_frames)
+    if int(captured) <= 0:
+        raise ReplayRenderError(f"audio sync filter requires captured_frames > 0 (got {captured})")
+    if int(target) <= 0:
+        raise ReplayRenderError(f"audio sync filter requires target_frames > 0 (got {target})")
+    if int(captured) == int(target):
+        return "asetpts=N/SR/TB"
+    if int(captured) > int(target):
+        return f"atrim=end_sample={int(target)},asetpts=N/SR/TB"
+    pad = int(target) - int(captured)
+    return f"apad=pad_len={int(pad)},atrim=end_sample={int(target)},asetpts=N/SR/TB"
 
-    remaining = float(tempo)
-    factors: list[float] = []
-    while remaining > 2.0:
-        factors.append(2.0)
-        remaining /= 2.0
-    while remaining < 0.5:
-        factors.append(0.5)
-        remaining /= 0.5
-    if abs(remaining - 1.0) > float(_AUDIO_TEMPO_EPSILON):
-        factors.append(remaining)
-    return [f"atempo={factor:.9f}" for factor in factors]
+
+def _infer_effective_capture_sample_rate(*, captured_frames: int, captured_ticks: int, replay_tick_rate: int) -> int:
+    frames = int(captured_frames)
+    ticks = int(captured_ticks)
+    tick_rate = int(replay_tick_rate)
+    fallback_rate = int(_AUDIO_CAPTURE_SAMPLE_RATE)
+    if int(frames) <= 0:
+        raise ReplayRenderError(
+            "invalid audio capture for sample-rate inference: "
+            f"captured_frames={int(frames)} captured_ticks={int(ticks)} replay_tick_rate={int(tick_rate)} "
+            f"fallback_sample_rate={int(fallback_rate)}",
+        )
+    if int(ticks) <= 0 or int(tick_rate) <= 0:
+        raise ReplayRenderError(
+            "invalid replay timing for audio sample-rate inference: "
+            f"captured_frames={int(frames)} captured_ticks={int(ticks)} replay_tick_rate={int(tick_rate)} "
+            f"fallback_sample_rate={int(fallback_rate)}",
+        )
+    inferred = int(round(float(frames) * float(tick_rate) / float(ticks)))
+    if _AUDIO_INFERRED_SAMPLE_RATE_MIN <= int(inferred) <= _AUDIO_INFERRED_SAMPLE_RATE_MAX:
+        return int(inferred)
+    raise ReplayRenderError(
+        "inferred effective audio sample rate out of range: "
+        f"captured_frames={int(frames)} captured_ticks={int(ticks)} replay_tick_rate={int(tick_rate)} "
+        f"inferred_sample_rate={int(inferred)} allowed_range="
+        f"{_AUDIO_INFERRED_SAMPLE_RATE_MIN}-{_AUDIO_INFERRED_SAMPLE_RATE_MAX} "
+        f"fallback_sample_rate={int(fallback_rate)}",
+    )
 
 
 def _validate_args(*, fps: int, crf: int) -> None:
