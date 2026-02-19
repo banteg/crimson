@@ -9,6 +9,8 @@ from grim.geom import Vec2
 class PlayerInput:
     move: Vec2 = field(default_factory=Vec2)
     aim: Vec2 = field(default_factory=Vec2)
+    move_mode: int | None = None
+    aim_scheme: int | None = None
     fire_down: bool = False
     fire_pressed: bool = False
     reload_pressed: bool = False

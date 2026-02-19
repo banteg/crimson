@@ -413,6 +413,10 @@ class LocalInputInterpreter:
                 config=config,
                 player_index=idx,
             )
+            move_forward_pressed = bool(move_up_pressed)
+            move_backward_pressed = bool(move_down_pressed)
+            turn_left_pressed = bool(move_left_pressed)
+            turn_right_pressed = bool(move_right_pressed)
             move_vec = _resolve_static_move_vector(
                 move_up=move_up_pressed,
                 move_down=move_down_pressed,
@@ -509,6 +513,8 @@ class LocalInputInterpreter:
         return PlayerInput(
             move=move_vec,
             aim=aim,
+            move_mode=int(move_mode_type.value),
+            aim_scheme=int(aim_scheme.value),
             fire_down=fire_down,
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,

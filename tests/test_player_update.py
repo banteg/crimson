@@ -4,6 +4,7 @@ import math
 import struct
 from dataclasses import dataclass
 
+from crimson.aim_schemes import AimScheme
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.bonuses.hud import bonus_hud_update
@@ -14,6 +15,7 @@ from crimson.gameplay import (
     _player_heading_approach_target_with_delta,
     player_update,
 )
+from crimson.movement_controls import MovementControlType
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
@@ -261,6 +263,43 @@ def test_player_update_move_to_cursor_reload_key_does_not_start_reload() -> None
 
     assert player.reload_active is False
     assert player.reload_timer == 0.0
+
+
+def test_player_update_mode4_reload_gate_blocks_manual_reload_without_cursor_key_state() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(50.0, 50.0), clip_size=10, ammo=0.0)
+
+    player_update(
+        player,
+        PlayerInput(
+            aim=Vec2(51.0, 50.0),
+            reload_pressed=True,
+            move_mode=int(MovementControlType.MOUSE_POINT_CLICK),
+            move_to_cursor_pressed=False,
+        ),
+        0.1,
+        state,
+    )
+
+    assert player.reload_active is False
+    assert player.reload_timer == 0.0
+
+
+def test_player_update_manual_reload_requires_single_player() -> None:
+    state = GameplayState()
+    player0 = PlayerState(index=0, pos=Vec2(50.0, 50.0), clip_size=10, ammo=0.0)
+    player1 = PlayerState(index=1, pos=Vec2(60.0, 50.0), clip_size=10, ammo=10.0)
+
+    player_update(
+        player0,
+        PlayerInput(aim=Vec2(51.0, 50.0), reload_pressed=True),
+        0.1,
+        state,
+        players=[player0, player1],
+    )
+
+    assert player0.reload_active is False
+    assert player0.reload_timer == 0.0
 
 
 def test_player_update_speed_bonus_expires_before_player_update_step() -> None:
@@ -559,6 +598,24 @@ def test_player_update_w_then_up_left_converges_to_diagonal_heading() -> None:
     assert end_diff < 0.4
 
 
+def test_player_update_relative_mode_dispatch_updates_turn_speed() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, aim_heading=0.0, move_speed=0.5, turn_speed=1.0)
+    input_state = PlayerInput(
+        aim=Vec2(200.0, 100.0),
+        move_mode=int(MovementControlType.RELATIVE),
+        move_forward_pressed=False,
+        move_backward_pressed=False,
+        turn_left_pressed=False,
+        turn_right_pressed=True,
+    )
+
+    player_update(player, input_state, 0.1, state)
+
+    assert player.turn_speed > 1.0
+    assert player.heading > 0.0
+
+
 def test_player_update_digital_turn_only_rotates_and_accelerates() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, aim_heading=0.0, move_speed=0.0, turn_speed=1.0)
@@ -596,7 +653,7 @@ def test_player_update_digital_forward_turn_moves_in_heading_direction() -> None
     player_update(player, input_state, 0.1, state)
 
     assert player.heading < 0.0
-    assert 0.0 < player.aim_heading < (math.pi / 2.0)
+    assert math.isclose(player.aim_heading, (player.aim - player.pos).to_heading(), abs_tol=1e-9)
     assert math.isclose(player.turn_speed, 1.0, abs_tol=1e-9)
     assert player.move_speed > 0.0
     assert player.pos.x < 100.0
@@ -642,6 +699,26 @@ def test_player_update_digital_move_conflict_prefers_backward() -> None:
     assert math.isclose(player.pos.x, 100.0, abs_tol=1e-9)
     assert math.isclose(player.pos.y, 100.0, abs_tol=1e-9)
     assert player.heading > 0.0
+
+
+def test_player_update_keyboard_aim_scheme_uses_heading_dispatch() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, aim_heading=0.0)
+    input_state = PlayerInput(
+        move=Vec2(),
+        aim=Vec2(500.0, 500.0),
+        move_mode=int(MovementControlType.STATIC),
+        aim_scheme=int(AimScheme.KEYBOARD),
+        turn_left_pressed=False,
+        turn_right_pressed=True,
+        move_forward_pressed=False,
+        move_backward_pressed=False,
+    )
+
+    player_update(player, input_state, 0.1, state)
+
+    assert player.aim != Vec2(500.0, 500.0)
+    assert math.isclose((player.aim - player.pos).length(), 60.0, abs_tol=1e-5)
 
 
 def test_player_update_wraps_negative_target_heading_before_turning() -> None:

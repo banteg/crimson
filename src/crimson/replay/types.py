@@ -18,6 +18,12 @@ MOVE_FORWARD_FLAG = 1 << 4
 MOVE_BACKWARD_FLAG = 1 << 5
 TURN_LEFT_FLAG = 1 << 6
 TURN_RIGHT_FLAG = 1 << 7
+MOVE_MODE_PRESENT_FLAG = 1 << 8
+MOVE_MODE_SHIFT = 9
+MOVE_MODE_MASK = 0x7
+AIM_SCHEME_PRESENT_FLAG = 1 << 12
+AIM_SCHEME_SHIFT = 13
+AIM_SCHEME_MASK = 0x7
 
 InputQuantization: TypeAlias = Literal["raw", "f32"]
 
@@ -33,6 +39,8 @@ def pack_input_flags(
     fire_down: bool,
     fire_pressed: bool,
     reload_pressed: bool,
+    move_mode: int | None = None,
+    aim_scheme: int | None = None,
     move_forward_pressed: bool | None = None,
     move_backward_pressed: bool | None = None,
     turn_left_pressed: bool | None = None,
@@ -61,6 +69,12 @@ def pack_input_flags(
             flags |= TURN_LEFT_FLAG
         if bool(turn_right_pressed):
             flags |= TURN_RIGHT_FLAG
+    if move_mode is not None:
+        flags |= MOVE_MODE_PRESENT_FLAG
+        flags |= (int(move_mode) & MOVE_MODE_MASK) << MOVE_MODE_SHIFT
+    if aim_scheme is not None:
+        flags |= AIM_SCHEME_PRESENT_FLAG
+        flags |= (int(aim_scheme) & AIM_SCHEME_MASK) << AIM_SCHEME_SHIFT
     return int(flags)
 
 
@@ -83,6 +97,19 @@ def unpack_input_move_key_flags(flags: int) -> tuple[bool | None, bool | None, b
         bool(flags & TURN_LEFT_FLAG),
         bool(flags & TURN_RIGHT_FLAG),
     )
+
+
+def unpack_input_mode_flags(flags: int) -> tuple[int | None, int | None]:
+    flags = int(flags)
+    move_mode: int | None = None
+    aim_scheme: int | None = None
+    if bool(flags & MOVE_MODE_PRESENT_FLAG):
+        move_mode = (flags >> MOVE_MODE_SHIFT) & MOVE_MODE_MASK
+    if bool(flags & AIM_SCHEME_PRESENT_FLAG):
+        aim_scheme = (flags >> AIM_SCHEME_SHIFT) & AIM_SCHEME_MASK
+        if aim_scheme == AIM_SCHEME_MASK:
+            aim_scheme = -1
+    return move_mode, aim_scheme
 
 
 PackedPlayerInput: TypeAlias = list[float | int | list[float]]
