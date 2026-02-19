@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import inspect
 import io
 import ipaddress
@@ -121,6 +122,64 @@ def _resolve_replay_path(replay_file: Path, *, base_dir: Path) -> tuple[Path, tu
 
 def _default_replay_render_output_path(replay_path: Path) -> Path:
     return Path(replay_path).with_suffix(".render.mp4")
+
+
+def _replay_render_progress_callback(
+    *,
+    total_ticks: int,
+) -> tuple[object | None, object | None]:
+    if int(total_ticks) <= 0:
+        return None, None
+
+    bar: object | None = None
+    try:
+        tqdm_module = importlib.import_module("tqdm")
+        tqdm_ctor = getattr(tqdm_module, "tqdm", None)
+        if callable(tqdm_ctor):
+            bar = tqdm_ctor(
+            total=int(total_ticks),
+            unit="tick",
+            desc="replay render",
+            leave=True,
+        )
+    except ModuleNotFoundError:
+        bar = None
+
+    last_tick = 0
+    next_percent = 5
+
+    def callback(frame_count: int, tick_index: int, callback_total_ticks: int) -> None:
+        nonlocal last_tick, next_percent
+        resolved_total = int(total_ticks)
+        if int(callback_total_ticks) > 0:
+            resolved_total = int(callback_total_ticks)
+        if int(resolved_total) <= 0:
+            return
+        tick = min(int(resolved_total), max(0, int(tick_index)))
+        delta = int(tick) - int(last_tick)
+        if int(delta) <= 0:
+            return
+        if bar is not None:
+            bar_obj = cast("Any", bar)
+            bar_obj.update(int(delta))
+            bar_obj.set_postfix(frames=int(frame_count), refresh=False)
+        else:
+            percent = int((int(tick) * 100) / int(resolved_total))
+            if int(percent) >= int(next_percent) or int(tick) >= int(resolved_total):
+                typer.echo(
+                    f"render progress: {percent}% "
+                    f"({int(tick)}/{int(resolved_total)} ticks, {int(frame_count)} frames)",
+                    err=True,
+                )
+                while int(next_percent) <= int(percent):
+                    next_percent += 5
+        last_tick = int(tick)
+
+    def close() -> None:
+        if bar is not None:
+            cast("Any", bar).close()
+
+    return callback, close
 
 
 def _render_checkpoint_diff_failure(diff: object) -> None:
@@ -1284,8 +1343,13 @@ def cmd_replay_render(
     output_path = Path(out) if out is not None else _default_replay_render_output_path(replay_path)
 
     replay_bytes = Path(replay_path).read_bytes()
+    progress_close: object | None = None
     try:
         replay = load_replay(replay_bytes)
+        total_ticks = int(len(replay.inputs))
+        if max_ticks is not None:
+            total_ticks = min(int(total_ticks), max(0, int(max_ticks)))
+        progress_callback, progress_close = _replay_render_progress_callback(total_ticks=total_ticks)
         render = run_replay_render_video(
             replay,
             replay_path=Path(replay_path),
@@ -1303,10 +1367,14 @@ def cmd_replay_render(
             preset=preset,
             pixel_format=str(pixel_format),
             overwrite=bool(overwrite),
+            progress=cast("Any", progress_callback),
         )
     except (ReplayCodecError, ReplayRenderError, ReplayRunnerError) as exc:
         typer.echo(f"replay render failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
+    finally:
+        if progress_close is not None:
+            cast("Any", progress_close)()
 
     message = (
         f"ok: output={render.output_path} "

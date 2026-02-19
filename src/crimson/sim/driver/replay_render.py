@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
@@ -56,6 +57,7 @@ def run_replay_render_video(
     pixel_format: str = "yuv420p",
     overwrite: bool = False,
     mute_audio: bool = True,
+    progress: Callable[[int, int, int], None] | None = None,
 ) -> ReplayRenderResult:
     import pyray as rl
 
@@ -105,6 +107,9 @@ def run_replay_render_video(
     window_open = False
     ffmpeg_proc: subprocess.Popen[bytes] | None = None
     frame_bytes = int(render_width) * int(render_height) * 4
+    total_ticks = int(len(replay.inputs))
+    if max_ticks is not None:
+        total_ticks = min(int(total_ticks), max(0, int(max_ticks)))
     config_flags = int(getattr(rl, "FLAG_WINDOW_HIDDEN", 0))
     if int(config_flags) != 0:
         rl.set_config_flags(int(config_flags))
@@ -157,10 +162,14 @@ def run_replay_render_video(
             finally:
                 rl.unload_image(image)
             frame_count += 1
+            if progress is not None:
+                progress(int(frame_count), int(mode.tick_index), int(total_ticks))
 
         if int(frame_count) <= 0:
             raise ReplayRenderError("replay render produced no frames")
 
+        if progress is not None:
+            progress(int(frame_count), int(total_ticks), int(total_ticks))
         _finalize_ffmpeg_process(ffmpeg_proc)
     except ReplayRenderError:
         _abort_ffmpeg_process(ffmpeg_proc)
