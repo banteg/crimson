@@ -193,14 +193,17 @@ def apply_replay_tick_events(
                     if strict_events:
                         raise ReplayRunnerError(f"invalid creature_spawn payload at tick={tick_index}")
                     continue
+                spawned_indices: set[int] = set()
                 for template_id, pos_x, pos_y, heading in spawns:
-                    world.creatures.spawn_template(
+                    spawned, _ = world.creatures.spawn_template(
                         int(template_id),
                         Vec2(float(pos_x), float(pos_y)),
                         float(heading),
                         state.rng,
                         rand=state.rng.rand,
                     )
+                    for spawned_idx in spawned:
+                        spawned_indices.add(int(spawned_idx))
                 for row in added_rows:
                     index = row.get("index")
                     if not isinstance(index, int):
@@ -222,6 +225,22 @@ def apply_replay_tick_events(
                     flags = row.get("flags")
                     type_id = row.get("type_id")
                     pos_raw = row.get("pos")
+
+                    # Spawn hooks are deferred to post-step in original-capture quest replay.
+                    # For freshly spawned AI7 creatures, native consumed one RNG draw in
+                    # `creature_update_all` when the timer rolled from `0` to a negative
+                    # cooldown (`link_index = -700 - (rand & 0x3ff)`), but replay applies
+                    # `added_head.link_index` directly. Backfill that RNG draw here so
+                    # stream parity stays aligned with capture.
+                    flags_i = int(flags) if isinstance(flags, (int, float)) else int(entry.flags)
+                    link_index_i = int(link_index) if isinstance(link_index, (int, float)) else None
+                    if (
+                        idx in spawned_indices
+                        and link_index_i is not None
+                        and -1723 <= int(link_index_i) <= -700
+                        and (flags_i & int(CreatureFlags.AI7_LINK_TIMER)) != 0
+                    ):
+                        state.rng.rand()
 
                     if isinstance(pos_raw, dict):
                         pos_obj = cast(dict[str, object], pos_raw)

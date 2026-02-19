@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from typing import cast
 
 import pytest
 
-from crimson.creatures.spawn import SpawnId
+from crimson.creatures.spawn import CreatureFlags, SpawnId
 from crimson.game_modes import GameMode
 from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
@@ -382,6 +383,66 @@ def test_capture_creature_spawn_event_applies_added_head_without_spawn_rows() ->
     assert int(creature.link_index) == 1
     assert float(creature.orbit_radius) == pytest.approx(1.25, abs=1e-6)
     assert int(creature.flags) == 5
+
+
+def test_capture_creature_spawn_event_backfills_ai7_rollover_rng_draw_for_spawned_rows() -> None:
+    def _rng_state_after(payload: dict[str, object]) -> tuple[int, WorldState]:
+        world = WorldState.build(
+            world_size=1024.0,
+            demo_mode_active=False,
+            hardcore=False,
+            difficulty_level=1,
+        )
+        reset_players(world.players, world_size=1024.0, player_count=1)
+        world.state.rng.srand(0x1234ABCD)
+        event = UnknownEvent(
+            tick_index=0,
+            kind=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
+            payload=[payload],
+        )
+        apply_replay_tick_events(
+            [event],
+            tick_index=0,
+            dt_frame=1.0 / 60.0,
+            world=world,
+            game_mode_id=int(GameMode.QUESTS),
+            strict_events=True,
+        )
+        return int(world.state.rng.state), world
+
+    base_payload: dict[str, object] = {
+        "spawns": [
+            {
+                "template_id": int(SpawnId.SPIDER_SP1_RANDOM_32),
+                "pos": {"x": 256.0, "y": 256.0},
+                "heading": -100.0,
+            },
+        ],
+    }
+    with_rollover_payload: dict[str, object] = {
+        "spawns": list(cast(list[dict[str, object]], base_payload["spawns"])),
+        "added_head": [
+            {
+                "index": 0,
+                "flags": int(CreatureFlags.AI7_LINK_TIMER),
+                "link_index": -975,
+            },
+        ],
+    }
+
+    state_without_rollover, _ = _rng_state_after(base_payload)
+    state_with_rollover, world_with_rollover = _rng_state_after(with_rollover_payload)
+
+    probe = WorldState.build(
+        world_size=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=1,
+    )
+    probe.state.rng.srand(state_without_rollover)
+    probe.state.rng.rand()
+    assert state_with_rollover == int(probe.state.rng.state)
+    assert int(world_with_rollover.creatures.entries[0].link_index) == -975
 
 
 def test_quest_runner_disables_world_dt_steps_for_original_capture_dt_overrides() -> None:
