@@ -7,15 +7,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-
-
-class _CountRand:
-    def __init__(self) -> None:
-        self.calls = 0
-
-    def __call__(self) -> int:
-        self.calls += 1
-        return 0
+from tests.helpers import MockCrand
 
 
 def test_pyromaniac_increases_fire_damage_and_consumes_rng() -> None:
@@ -23,7 +15,7 @@ def test_pyromaniac_increases_fire_damage_and_consumes_rng() -> None:
     player = PlayerState(index=0, pos=Vec2())
     player.perk_counts[int(PerkId.PYROMANIAC)] = 1
 
-    rand = _CountRand()
+    rand = MockCrand(0)
     killed = creature_apply_damage(
         creature,
         damage_amount=10.0,

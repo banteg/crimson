@@ -7,21 +7,7 @@ from crimson.effects import EffectPool, FxQueue, FxQueueRotated, ParticlePool, S
 from crimson.effects_atlas import effect_src_rect
 from grim.color import RGBA
 from grim.geom import Vec2
-
-
-class _SequenceRng:
-    def __init__(self, values: list[int]) -> None:
-        self._values = [int(value) for value in values]
-        self._idx = 0
-
-    def rand(self) -> int:
-        if not self._values:
-            return 0
-        if self._idx >= len(self._values):
-            return int(self._values[-1])
-        value = int(self._values[self._idx])
-        self._idx += 1
-        return value
+from tests.helpers import MockCrand
 
 
 def test_effect_src_rect_uses_grid_and_frame() -> None:
@@ -120,7 +106,7 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     # - hit: speed_scale
     # - hit: sprite_vel_x, sprite_vel_y
     # - fx_queue.add_random: gray, w, rotation, effect_id
-    rng = _SequenceRng([0, 50, 7, 0, 0, 0, 0, 0, 0])
+    rng = MockCrand([0, 50, 7, 0, 0, 0, 0, 0, 0], fallback="repeat_last")
     pool = ParticlePool(size=1, rand=rng.rand)
     fx_queue = FxQueue(capacity=1, max_count=1)
     sprite_effects = SpriteEffectPool(size=1, rand=lambda: 0)

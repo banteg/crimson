@@ -344,7 +344,7 @@ def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
     owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
     assert owner_ids == {-100}
     type_ids = _active_type_ids(pool)
-    assert type_ids.count(0x0B) == 15
+    assert type_ids.count(int(ProjectileTypeId.PLASMA_MINIGUN)) == 15
 
 
 def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
@@ -361,8 +361,8 @@ def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
     assert owner_ids == {-100}
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
-    assert type_ids.count(0x16) == 4
-    assert type_ids.count(0x15) == 4
+    assert type_ids.count(int(ProjectileTypeId.ION_MINIGUN)) == 4
+    assert type_ids.count(int(ProjectileTypeId.ION_RIFLE)) == 4
 
 
 def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> None:
@@ -391,20 +391,27 @@ def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
     owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
     assert owner_ids == {-100}
     type_ids = _active_type_ids(pool)
-    assert type_ids == [0x2D]
+    assert type_ids == [int(ProjectileTypeId.FIRE_BULLETS)]
 
 
 def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), weapon_id=3, clip_size=10, ammo=10, fire_bullets_timer=1.0)
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        weapon_id=int(WeaponId.SHOTGUN),
+        clip_size=10,
+        ammo=10,
+        fire_bullets_timer=1.0,
+    )
     player.aim_dir = Vec2(1.0, 0.0)
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
-    assert set(type_ids) == {0x2D}
+    assert set(type_ids) == {int(ProjectileTypeId.FIRE_BULLETS)}
 
 
 def test_player_fire_weapon_fire_bullets_overrides_rocket_weapons() -> None:
@@ -442,7 +449,14 @@ def test_player_fire_weapon_fire_bullets_overrides_rocket_weapons() -> None:
 def test_player_fire_weapon_fire_bullets_does_not_consume_ammo() -> None:
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), weapon_id=3, clip_size=10, ammo=10, fire_bullets_timer=1.0)
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        weapon_id=int(WeaponId.SHOTGUN),
+        clip_size=10,
+        ammo=10,
+        fire_bullets_timer=1.0,
+    )
     player.aim_dir = Vec2(1.0, 0.0)
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
@@ -453,14 +467,21 @@ def test_player_fire_weapon_fire_bullets_does_not_consume_ammo() -> None:
 def test_player_fire_weapon_fire_bullets_can_fire_at_zero_ammo_and_then_reload() -> None:
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), weapon_id=3, clip_size=10, ammo=0, fire_bullets_timer=1.0)
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        weapon_id=int(WeaponId.SHOTGUN),
+        clip_size=10,
+        ammo=0,
+        fire_bullets_timer=1.0,
+    )
     player.aim_dir = Vec2(1.0, 0.0)
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
-    assert set(type_ids) == {0x2D}
+    assert set(type_ids) == {int(ProjectileTypeId.FIRE_BULLETS)}
     assert player.reload_active
     assert player.reload_timer > 0.0
 
@@ -493,7 +514,14 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_p
 
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), weapon_id=3, clip_size=10, ammo=10, fire_bullets_timer=1.0)
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        weapon_id=int(WeaponId.SHOTGUN),
+        clip_size=10,
+        ammo=10,
+        fire_bullets_timer=1.0,
+    )
     player.aim_dir = Vec2(1.0, 0.0)
 
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.FIRE_BULLETS))
@@ -514,7 +542,14 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_s
 
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), weapon_id=2, clip_size=25, ammo=25, fire_bullets_timer=1.0)
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        weapon_id=int(WeaponId.ASSAULT_RIFLE),
+        clip_size=25,
+        ammo=25,
+        fire_bullets_timer=1.0,
+    )
     player.aim_dir = Vec2(1.0, 0.0)
 
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.FIRE_BULLETS))
@@ -532,14 +567,14 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_s
 def test_player_fire_weapon_shotgun_spawns_pellets() -> None:
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), weapon_id=3, clip_size=10, ammo=10)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), weapon_id=int(WeaponId.SHOTGUN), clip_size=10, ammo=10)
     player.aim_dir = Vec2(1.0, 0.0)
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
-    assert set(type_ids) == {3}
+    assert set(type_ids) == {int(ProjectileTypeId.SHOTGUN)}
 
 
 def test_player_update_tracks_aim_point() -> None:
@@ -766,7 +801,14 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     seed = 0xBEEF
     state.rng.srand(seed)
 
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), weapon_id=1, clip_size=10, ammo=10, spread_heat=0.2)
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        weapon_id=int(WeaponId.PISTOL),
+        clip_size=10,
+        ammo=10,
+        spread_heat=0.2,
+    )
 
     aim_x = 200.0
     aim_y = 100.0
@@ -809,8 +851,8 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
     assert owner_ids == {-100}
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
-    assert type_ids.count(0x0B) == 4
-    assert type_ids.count(0x09) == 4
+    assert type_ids.count(int(ProjectileTypeId.PLASMA_MINIGUN)) == 4
+    assert type_ids.count(int(ProjectileTypeId.PLASMA_RIFLE)) == 4
 
 
 def test_player_update_hot_tempered_spawns_from_pre_move_position() -> None:

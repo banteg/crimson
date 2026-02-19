@@ -19,17 +19,26 @@ def test_tick_quest_completion_transition_resets_when_not_idle_complete() -> Non
 
 def test_tick_quest_completion_transition_completes_after_delay() -> None:
     timer = -1.0
-    completed = False
-    for _ in range(30):
+    for _ in range(26):
         timer, completed, _play_hit_sfx, _play_completion_music = tick_quest_completion_transition(
             timer,
             frame_dt_ms=100.0,
             creatures_none_active=True,
             spawn_table_empty=True,
         )
-        if completed:
-            break
-    assert timer > QUEST_COMPLETION_TRANSITION_MS
+        assert completed is False
+
+    # One frame before completion: timer has crossed the threshold, but completion still
+    # checks the pre-increment value for this frame.
+    assert timer == QUEST_COMPLETION_TRANSITION_MS + 100.0
+
+    timer, completed, _play_hit_sfx, _play_completion_music = tick_quest_completion_transition(
+        timer,
+        frame_dt_ms=100.0,
+        creatures_none_active=True,
+        spawn_table_empty=True,
+    )
+    assert timer == QUEST_COMPLETION_TRANSITION_MS + 200.0
     assert completed is True
 
 

@@ -10,16 +10,7 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
-from grim.rand import Crand
-
-
-class _FixedRng(Crand):
-    def __init__(self, value: int) -> None:
-        super().__init__(0)
-        self._value = int(value)
-
-    def rand(self) -> int:
-        return int(self._value)
+from tests.helpers import MockCrand
 
 
 def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
@@ -30,7 +21,7 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    world.state.rng = _FixedRng(1)  # rand & 7 == 1
+    world.state.rng = MockCrand(1)  # rand & 7 == 1
 
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     player.perk_counts[int(PerkId.POISON_BULLETS)] = 1
@@ -75,7 +66,7 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    world.state.rng = _FixedRng(0)  # rand & 7 != 1
+    world.state.rng = MockCrand(0)  # rand & 7 != 1
 
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     player.perk_counts[int(PerkId.POISON_BULLETS)] = 1
@@ -120,7 +111,7 @@ def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    world.state.rng = _FixedRng(1)  # rand & 7 == 1
+    world.state.rng = MockCrand(1)  # rand & 7 == 1
 
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
     player.perk_counts[int(PerkId.POISON_BULLETS)] = 1
@@ -158,7 +149,7 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
         hardcore=False,
         difficulty_level=0,
     )
-    world.state.rng = _FixedRng(1)  # rand & 7 == 1
+    world.state.rng = MockCrand(1)  # rand & 7 == 1
 
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     player.perk_counts[int(PerkId.POISON_BULLETS)] = 1

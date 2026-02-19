@@ -9,16 +9,7 @@ from crimson.gameplay import GameplayState
 from crimson.projectiles import ProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from grim.rand import Crand
-
-
-class _FixedRng(Crand):
-    def __init__(self, value: int) -> None:
-        super().__init__(0)
-        self._value = int(value)
-
-    def rand(self) -> int:
-        return int(self._value)
+from tests.helpers import MockCrand
 
 
 def test_nuke_damage_is_limited_to_radius() -> None:
@@ -53,7 +44,7 @@ def test_nuke_damage_is_limited_to_radius() -> None:
 
 
 def test_nuke_spawns_projectiles_with_weapon_meta_speed() -> None:
-    state = GameplayState(rng=_FixedRng(0))
+    state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
 
     bonus_apply(state, player, BonusId.NUKE, origin=player, detail_preset=5)

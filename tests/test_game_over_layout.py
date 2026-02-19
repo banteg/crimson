@@ -89,7 +89,7 @@ def test_game_over_panel_layout_uses_native_panel_anchor(tmp_path: Path) -> None
     assert layout_1024.panel.y == 119.0
 
 
-def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, tmp_path: Path) -> None:
+def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, patch_raylib_module, tmp_path: Path) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config())
     _set_assets(ui, _game_over_assets())
     ui.phase = 1
@@ -103,11 +103,7 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, tmp_pa
         return False
 
     monkeypatch.setattr("crimson.ui.game_over.button_update", _button_update)
-    monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_width", lambda: 640)
-    monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_height", lambda: 480)
-    monkeypatch.setattr("crimson.ui.game_over.rl.is_mouse_button_pressed", lambda _button: False)
-    monkeypatch.setattr("crimson.ui.game_over.rl.is_key_pressed", lambda _key: False)
-    monkeypatch.setattr("crimson.ui.game_over.rl.check_collision_point_rec", lambda _pos, _rect: False)
+    patch_raylib_module("crimson.ui.game_over")
 
     ui.update(
         0.0,
@@ -121,7 +117,7 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, tmp_pa
     assert captured_x[0] == 242.0
 
 
-def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, tmp_path: Path) -> None:
+def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, patch_raylib_module, tmp_path: Path) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config(game_mode=1))
     _set_assets(ui, _game_over_assets())
     ui.phase = -1
@@ -147,10 +143,7 @@ def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, tmp_path:
     monkeypatch.setattr("crimson.ui.game_over.rank_index", lambda _records, _candidate: 0)
     monkeypatch.setattr("crimson.ui.game_over.scores_path_for_config", lambda *_args, **_kwargs: tmp_path / "scores.hi")
     monkeypatch.setattr("crimson.ui.game_over.button_update", lambda *args, **kwargs: False)
-    monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_width", lambda: 640)
-    monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_height", lambda: 480)
-    monkeypatch.setattr("crimson.ui.game_over.rl.is_mouse_button_pressed", lambda _button: False)
-    monkeypatch.setattr("crimson.ui.game_over.rl.is_key_pressed", lambda _key: False)
+    patch_raylib_module("crimson.ui.game_over")
     monkeypatch.setattr("crimson.ui.game_over.rl.get_char_pressed", _get_char_pressed)
     monkeypatch.setattr("crimson.ui.game_over.rl.get_key_pressed", _get_key_pressed)
 
@@ -166,7 +159,7 @@ def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, tmp_path:
     assert ui.input_caret == len("player")
 
 
-def test_game_over_draw_uses_classic_menu_panel(monkeypatch, tmp_path: Path) -> None:
+def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module, tmp_path: Path) -> None:
     ui = GameOverUi(
         assets_root=tmp_path,
         base_dir=tmp_path,
@@ -187,8 +180,7 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, tmp_path: Path) -> 
     monkeypatch.setattr("crimson.ui.game_over.button_draw", lambda *_args, **_kwargs: None)
     monkeypatch.setattr("crimson.ui.game_over.button_width", lambda *_args, **_kwargs: 82.0)
     monkeypatch.setattr("crimson.ui.game_over.GameOverUi._draw_score_card", lambda _self, **_kwargs: None)
-    monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_width", lambda: 640)
-    monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_height", lambda: 480)
+    patch_raylib_module("crimson.ui.game_over")
 
     ui.draw(
         record=HighScoreRecord.blank(),

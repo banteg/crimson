@@ -1,48 +1,21 @@
 from __future__ import annotations
 
-import random
-import time
-from pathlib import Path
-
 from crimson.frontend.panels.play_game import PlayGameMenuView
 from crimson.game.loop_view import GameLoopView
-from crimson.game.types import GameState, LanSessionConfig, PendingLanSession
-from crimson.persistence import save_status
-from grim.config import ensure_crimson_cfg
-from grim.console import create_console
+from crimson.game.types import LanSessionConfig, PendingLanSession
+from crimson.game_modes import GameMode
 
 
-def _build_state(tmp_path: Path) -> GameState:
-    repo_root = Path(__file__).resolve().parents[1]
-    assets_dir = repo_root / "artifacts" / "assets"
-    cfg = ensure_crimson_cfg(tmp_path)
-    return GameState(
-        base_dir=tmp_path,
-        assets_dir=assets_dir,
-        rng=random.Random(0),
-        config=cfg,
-        status=save_status.ensure_game_status(tmp_path),
-        console=create_console(tmp_path, assets_dir=assets_dir),
-        demo_enabled=False,
-        preserve_bugs=False,
-        logos=None,
-        texture_cache=None,
-        audio=None,
-        resource_paq=assets_dir / "crimson.paq",
-        session_start=time.monotonic(),
-    )
-
-
-def test_play_game_network_entry_is_available_by_default(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
+def test_play_game_network_entry_is_available_by_default(make_game_state) -> None:
+    state = make_game_state()
     view = PlayGameMenuView(state)
 
     entries = view._mode_entries()[0]
     assert any(entry.action == "open_lan_session" for entry in entries)
 
 
-def test_loop_view_maps_lan_start_action_into_mode_action(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
+def test_loop_view_maps_lan_start_action_into_mode_action(make_game_state) -> None:
+    state = make_game_state()
     state.pending_lan_session = PendingLanSession(
         role="host",
         config=LanSessionConfig(
@@ -61,7 +34,7 @@ def test_loop_view_maps_lan_start_action_into_mode_action(tmp_path: Path) -> Non
     action = loop._resolve_lan_action("start_quest_lan")
 
     assert action == "open_lan_lobby"
-    assert state.config.game_mode == 3
+    assert state.config.game_mode == int(GameMode.QUESTS)
     assert state.config.player_count == 3
     assert state.pending_quest_level == "1.1"
     assert state.lan_in_lobby is True
@@ -71,8 +44,8 @@ def test_loop_view_maps_lan_start_action_into_mode_action(tmp_path: Path) -> Non
     assert state.lan_runtime is not None
 
 
-def test_non_lan_start_resets_lobby_wait_state(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
+def test_non_lan_start_resets_lobby_wait_state(make_game_state) -> None:
+    state = make_game_state()
     state.lan_in_lobby = True
     state.lan_waiting_for_players = True
     state.lan_expected_players = 4
@@ -88,8 +61,8 @@ def test_non_lan_start_resets_lobby_wait_state(tmp_path: Path) -> None:
     assert state.lan_connected_players == 1
 
 
-def test_lan_match_start_action_does_not_close_runtime(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
+def test_lan_match_start_action_does_not_close_runtime(make_game_state) -> None:
+    state = make_game_state()
     state.pending_lan_session = PendingLanSession(
         role="host",
         config=LanSessionConfig(
@@ -116,8 +89,8 @@ def test_lan_match_start_action_does_not_close_runtime(tmp_path: Path) -> None:
     assert state.lan_runtime is runtime
 
 
-def test_open_lan_session_route_allows_default_and_honors_explicit_cvar(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
+def test_open_lan_session_route_allows_default_and_honors_explicit_cvar(make_game_state) -> None:
+    state = make_game_state()
     loop = GameLoopView(state)
 
     assert loop._resolve_lan_action("open_lan_session") == "open_lan_session"
@@ -125,8 +98,8 @@ def test_open_lan_session_route_allows_default_and_honors_explicit_cvar(tmp_path
     assert loop._resolve_lan_action("open_lan_session") == "open_play_game"
 
 
-def test_auto_lan_start_action_consumes_pending_session_once(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
+def test_auto_lan_start_action_consumes_pending_session_once(make_game_state) -> None:
+    state = make_game_state()
     state.pending_lan_session = PendingLanSession(
         role="host",
         config=LanSessionConfig(
@@ -147,8 +120,8 @@ def test_auto_lan_start_action_consumes_pending_session_once(tmp_path: Path) -> 
     assert loop._auto_lan_start_action() is None
 
 
-def test_cli_autostart_host_does_not_block_on_wait_gate(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
+def test_cli_autostart_host_does_not_block_on_wait_gate(make_game_state) -> None:
+    state = make_game_state()
     state.pending_lan_session = PendingLanSession(
         role="host",
         config=LanSessionConfig(

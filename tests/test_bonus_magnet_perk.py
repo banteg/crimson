@@ -6,26 +6,12 @@ from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from grim.rand import Crand
-
-
-class _SequenceRng(Crand):
-    def __init__(self, values: list[int]) -> None:
-        super().__init__(0)
-        self._values = [int(v) for v in values]
-        self._idx = 0
-
-    def rand(self) -> int:
-        if self._idx >= len(self._values):
-            return 0
-        value = self._values[self._idx]
-        self._idx += 1
-        return int(value)
+from tests.helpers import MockCrand
 
 
 def test_bonus_magnet_allows_bonus_spawn_on_secondary_roll() -> None:
     base_state = GameplayState()
-    base_state.rng = _SequenceRng([0])
+    base_state.rng = MockCrand([0], fallback="zero")
     base_state.bonus_pool = BonusPool()
     base_player = PlayerState(index=0, pos=Vec2(), weapon_id=int(WeaponId.ASSAULT_RIFLE))
 
@@ -35,7 +21,7 @@ def test_bonus_magnet_allows_bonus_spawn_on_secondary_roll() -> None:
     )
 
     perk_state = GameplayState()
-    perk_state.rng = _SequenceRng([0, 2, 0, 0])
+    perk_state.rng = MockCrand([0, 2, 0, 0], fallback="zero")
     perk_state.bonus_pool = BonusPool()
     perk_player = PlayerState(index=0, pos=Vec2(), weapon_id=int(WeaponId.ASSAULT_RIFLE))
     perk_player.perk_counts[int(PerkId.BONUS_MAGNET)] = 1

@@ -1,21 +1,15 @@
 from __future__ import annotations
 
-import random
-import time
-from pathlib import Path
 from types import SimpleNamespace
 
 import pyray as rl
+import pytest
 
 from crimson.game.quest_views import QUEST_FAILED_PANEL_SLIDE_DURATION_MS, QUEST_FAILED_PANEL_W, QuestFailedView
-from crimson.game.types import GameState
 from crimson.modes.quest_mode import QuestRunOutcome
-from crimson.persistence import save_status
 from grim import music as grim_music
 from grim import sfx as grim_sfx
 from grim.audio import AudioState
-from grim.config import ensure_crimson_cfg
-from grim.console import create_console
 from grim.geom import Vec2
 
 
@@ -36,23 +30,9 @@ def _dummy_audio_state() -> AudioState:
     )
 
 
-def _make_state(tmp_path: Path) -> GameState:
-    cfg = ensure_crimson_cfg(tmp_path)
-    state = GameState(
-        base_dir=tmp_path,
-        assets_dir=tmp_path,
-        rng=random.Random(0),
-        config=cfg,
-        status=save_status.ensure_game_status(tmp_path),
-        console=create_console(tmp_path, assets_dir=tmp_path),
-        demo_enabled=False,
-        preserve_bugs=False,
-        logos=None,
-        texture_cache=None,
-        audio=_dummy_audio_state(),
-        resource_paq=tmp_path / "crimson.paq",
-        session_start=time.monotonic(),
-    )
+@pytest.fixture
+def quest_failed_state(make_game_state, tmp_path):
+    state = make_game_state(assets_root=tmp_path, audio=_dummy_audio_state())
     # Avoid ground/menu asset loading in tests.
     state.pause_background = _PauseBackgroundStub()
     return state
@@ -75,9 +55,8 @@ def _failed_outcome() -> QuestRunOutcome:
     )
 
 
-def test_quest_failed_panel_layout_uses_native_anchor(monkeypatch, tmp_path: Path) -> None:
-    state = _make_state(tmp_path)
-    view = QuestFailedView(state)
+def test_quest_failed_panel_layout_uses_native_anchor(monkeypatch, quest_failed_state) -> None:
+    view = QuestFailedView(quest_failed_state)
 
     monkeypatch.setattr("crimson.game.quest_views.quest_failed.rl.get_screen_width", lambda: 640)
     panel_640 = view._panel_origin()
@@ -90,9 +69,8 @@ def test_quest_failed_panel_layout_uses_native_anchor(monkeypatch, tmp_path: Pat
     assert panel_1024.y == 119.0
 
 
-def test_quest_failed_panel_slides_in_from_left(monkeypatch, tmp_path: Path) -> None:
-    state = _make_state(tmp_path)
-    view = QuestFailedView(state)
+def test_quest_failed_panel_slides_in_from_left(monkeypatch, quest_failed_state) -> None:
+    view = QuestFailedView(quest_failed_state)
 
     monkeypatch.setattr("crimson.game.quest_views.quest_failed.rl.get_screen_width", lambda: 640)
     base = view._panel_origin()
@@ -104,8 +82,8 @@ def test_quest_failed_panel_slides_in_from_left(monkeypatch, tmp_path: Path) -> 
     assert view._panel_top_left().x == base.x
 
 
-def test_quest_failed_retry_message_respects_preserve_bugs(tmp_path: Path) -> None:
-    state = _make_state(tmp_path)
+def test_quest_failed_retry_message_respects_preserve_bugs(quest_failed_state) -> None:
+    state = quest_failed_state
     state.quest_fail_retry_count = 4
     view = QuestFailedView(state)
 
@@ -116,8 +94,8 @@ def test_quest_failed_retry_message_respects_preserve_bugs(tmp_path: Path) -> No
     assert view._failure_message() == "Persistence will be rewared."
 
 
-def test_quest_failed_enter_retries_current_quest(monkeypatch, tmp_path: Path) -> None:
-    state = _make_state(tmp_path)
+def test_quest_failed_enter_retries_current_quest(monkeypatch, quest_failed_state) -> None:
+    state = quest_failed_state
     state.quest_outcome = _failed_outcome()
     state.quest_fail_retry_count = 2
 
@@ -152,8 +130,8 @@ def test_quest_failed_enter_retries_current_quest(monkeypatch, tmp_path: Path) -
     assert action == "start_quest"
 
 
-def test_quest_failed_q_opens_quest_list(monkeypatch, tmp_path: Path) -> None:
-    state = _make_state(tmp_path)
+def test_quest_failed_q_opens_quest_list(monkeypatch, quest_failed_state) -> None:
+    state = quest_failed_state
     state.quest_outcome = _failed_outcome()
     state.quest_fail_retry_count = 4
 
@@ -187,8 +165,8 @@ def test_quest_failed_q_opens_quest_list(monkeypatch, tmp_path: Path) -> None:
     assert action == "open_quests"
 
 
-def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, tmp_path: Path) -> None:
-    state = _make_state(tmp_path)
+def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, quest_failed_state) -> None:
+    state = quest_failed_state
     state.quest_outcome = _failed_outcome()
     state.quest_fail_retry_count = 4
 
@@ -222,8 +200,8 @@ def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, tmp_path:
     assert action == "back_to_menu"
 
 
-def test_quest_failed_score_block_matches_native_fields(monkeypatch, tmp_path: Path) -> None:
-    state = _make_state(tmp_path)
+def test_quest_failed_score_block_matches_native_fields(monkeypatch, quest_failed_state) -> None:
+    state = quest_failed_state
     state.quest_outcome = _failed_outcome()
     view = QuestFailedView(state)
 
@@ -264,8 +242,8 @@ def test_quest_failed_score_block_matches_native_fields(monkeypatch, tmp_path: P
     assert any(w == 192 and h == 1 for (_x, _y, w, h) in drawn_rects)  # horizontal separator
 
 
-def test_quest_failed_draw_fades_pause_background_during_close(monkeypatch, tmp_path: Path) -> None:
-    state = _make_state(tmp_path)
+def test_quest_failed_draw_fades_pause_background_during_close(monkeypatch, quest_failed_state) -> None:
+    state = quest_failed_state
     state.quest_outcome = _failed_outcome()
     captured_alpha: list[float] = []
     state.pause_background = _PauseBackgroundStub(captured_alpha)

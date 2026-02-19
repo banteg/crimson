@@ -14,9 +14,7 @@ from crimson.replay.checkpoints import (
     load_checkpoints,
     resolve_checkpoint_sample_rate,
 )
-from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
-from grim.geom import Vec2
 
 
 class _Death:
@@ -35,20 +33,8 @@ class _Events:
         self.sfx = list(sfx)
 
 
-def _base_world() -> WorldState:
-    world = WorldState.build(
-        world_size=1024.0,
-        demo_mode_active=False,
-        hardcore=False,
-        difficulty_level=0,
-        preserve_bugs=False,
-    )
-    world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
-    return world
-
-
-def test_checkpoints_codec_roundtrip_is_stable() -> None:
-    world = _base_world()
+def test_checkpoints_codec_roundtrip_is_stable(base_world: WorldState) -> None:
+    world = base_world
     player = world.players[0]
     player.experience = 123
     player.level = 2
@@ -67,8 +53,8 @@ def test_checkpoints_codec_roundtrip_is_stable() -> None:
     assert decoded == checkpoints
 
 
-def test_checkpoints_codec_roundtrip_preserves_debug_fields() -> None:
-    world = _base_world()
+def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldState) -> None:
+    world = base_world
     world.state.perk_selection.pending_count = 2
     world.state.perk_selection.choices_dirty = False
     world.state.perk_selection.choices = [7, 10, 25]

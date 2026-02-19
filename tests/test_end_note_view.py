@@ -1,17 +1,9 @@
 from __future__ import annotations
 
-import random
-import time
-from pathlib import Path
-
 import pyray as rl
 
 from crimson.frontend.panels.base import PANEL_TIMELINE_START_MS
 from crimson.game.quest_views import EndNoteView
-from crimson.game.types import GameState
-from crimson.persistence import save_status
-from grim.config import ensure_crimson_cfg
-from grim.console import create_console
 
 
 class _PauseBackgroundStub:
@@ -22,27 +14,8 @@ class _PauseBackgroundStub:
         self._sink.append(float(entity_alpha))
 
 
-def _make_state(tmp_path: Path, *, audio) -> GameState:
-    cfg = ensure_crimson_cfg(tmp_path)
-    return GameState(
-        base_dir=tmp_path,
-        assets_dir=tmp_path,
-        rng=random.Random(0),
-        config=cfg,
-        status=save_status.ensure_game_status(tmp_path),
-        console=create_console(tmp_path, assets_dir=tmp_path),
-        demo_enabled=False,
-        preserve_bugs=False,
-        logos=None,
-        texture_cache=None,
-        audio=audio,
-        resource_paq=tmp_path / "crimson.paq",
-        session_start=time.monotonic(),
-    )
-
-
-def test_end_note_escape_waits_for_close_transition(monkeypatch, tmp_path: Path) -> None:
-    state = _make_state(tmp_path, audio=object())
+def test_end_note_escape_waits_for_close_transition(monkeypatch, make_game_state, tmp_path) -> None:
+    state = make_game_state(assets_root=tmp_path, audio=object())
     played: list[str] = []
 
     class _DummyCache:
@@ -85,8 +58,8 @@ def test_end_note_escape_waits_for_close_transition(monkeypatch, tmp_path: Path)
     assert action == "back_to_menu"
 
 
-def test_end_note_draw_fades_pause_background_during_close(monkeypatch, tmp_path: Path) -> None:
-    state = _make_state(tmp_path, audio=None)
+def test_end_note_draw_fades_pause_background_during_close(monkeypatch, make_game_state, tmp_path) -> None:
+    state = make_game_state(assets_root=tmp_path, audio=None)
     captured_alpha: list[float] = []
     state.pause_background = _PauseBackgroundStub(captured_alpha)
 
