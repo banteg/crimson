@@ -130,11 +130,12 @@ nav = [
         { "Panel state resolution sweep" = "frida/panel-state-resolution-sweep.md" },
         { "Differential playbook" = "frida/differential-playbook.md" },
         { "Differential sessions" = "frida/differential-sessions.md" },
+        { "Creature update static audit triage" = "frida/creature-update-static-audit-triage.md" },
+        { "Player update + damage static audit triage" = "frida/player-update-damage-static-audit-triage.md" },
         { "Gameplay/state capture" = "frida/gameplay-state-capture.md" },
         { "Gameplay differential capture" = "frida/gameplay-diff-capture.md" },
         { "Survival autoplay" = "frida/survival-autoplay.md" },
         { "RNG divergence root cause" = "frida/rng-divergence-root-cause.md" },
-        { "thunk_FUN_00452f1d capture task" = "frida/thunk-452f1d-capture-task.md" },
       ]},
       { "WinDbg" = [
         { "Overview" = "windbg/index.md" },

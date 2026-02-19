@@ -2,7 +2,7 @@
 /* function_original: plaguebearer_spread_infection */
 /* function_mapped: plaguebearer_spread_infection */
 /* address: 0x00425d80 */
-/* byte_range: [755966, 757032) */
+/* byte_range: [755682, 756748) */
 /* plaguebearer_spread_infection @ 00425d80 */
 
 /* propagates collision_flag infection between nearby creatures (radius 45, hp < 150) */

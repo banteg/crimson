@@ -1,0 +1,3 @@
+# direct callgraph
+
+effect_spawn -> effect_spawn (0x0042e120)

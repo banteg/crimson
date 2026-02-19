@@ -523,7 +523,6 @@ def _creature_interaction_contact_kill_small(ctx: _CreatureInteractionCtx) -> No
 
 
 _CREATURE_INTERACTION_STEPS: tuple[_CreatureInteractionStep, ...] = (
-    _creature_interaction_plaguebearer_spread,
     _creature_interaction_energizer_eat,
     _creature_interaction_contact_damage,
     _creature_interaction_plaguebearer_contact_flag,
@@ -810,7 +809,7 @@ class CreaturePool:
             single_player_dead_target = PlayerState(
                 index=1,
                 pos=Vec2(float(world_width) * (27.0 / 64.0), float(world_height) * (27.0 / 64.0)),
-                health=0.0,
+                health=100.0,
             )
 
         evil_targets: set[int] = set()
@@ -868,6 +867,14 @@ class CreaturePool:
             if not creature.active:
                 continue
 
+            if float(creature.hit_flash_timer) > 0.0:
+                creature.hit_flash_timer = f32(float(creature.hit_flash_timer) - float(dt))
+
+            # Native `creature_update_all` gates the full per-creature body under
+            # freeze; only bookkeeping outside this branch still advances.
+            if float(state.bonuses.freeze) > 0.0:
+                continue
+
             if creature.hitbox_size != CREATURE_HITBOX_ALIVE or creature.hp <= 0.0:
                 _apply_self_damage_tick(creature)
                 # Native still ticks AI7 link-timer state (and its RNG draws) for
@@ -896,12 +903,10 @@ class CreaturePool:
             if dt <= 0.0 or not players:
                 continue
 
-            if float(state.bonuses.freeze) > 0.0:
-                creature.move_scale = 0.0
-                creature.vel = Vec2()
-                continue
-
             poison_killed = _apply_self_damage_tick(creature)
+            # Native order runs AI7 link timer update after periodic self-damage
+            # and before any live-branch kill handling/retargeting.
+            creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
             if poison_killed:
                 deaths.append(
                     self.handle_death(
@@ -934,9 +939,7 @@ class CreaturePool:
                 if creature.collision_timer < 0.0:
                     creature.collision_timer += CONTACT_DAMAGE_PERIOD
                     creature.hp -= 15.0
-                    if fx_queue is not None:
-                        fx_queue.add_random(pos=creature.pos, rand=rand)
-
+                    plague_killed = False
                     if creature.hp < 0.0:
                         state.plaguebearer_infection_count += 1
                         deaths.append(
@@ -952,6 +955,22 @@ class CreaturePool:
                                 fx_queue=fx_queue,
                             ),
                         )
+                        # Native plague-kill path consumes one rand draw for
+                        # creature attack SFX bank-b selection after death side effects.
+                        try:
+                            creature_type = CreatureTypeId(int(creature.type_id))
+                        except ValueError:
+                            creature_type = None
+                        if creature_type is not None:
+                            options = _CREATURE_CONTACT_SFX.get(creature_type)
+                            if options is not None:
+                                sfx.append(options[int(rand()) & 1])
+                        plague_killed = True
+
+                    if fx_queue is not None:
+                        fx_queue.add_random(pos=creature.pos, rand=rand)
+
+                    if plague_killed:
                         if creature.active:
                             self._tick_dead(
                                 creature,
@@ -971,33 +990,7 @@ class CreaturePool:
                 creature.target_player = 1
                 player = single_player_dead_target
 
-            if players and perk_active(players[0], PerkId.RADIOACTIVE):
-                radioactive_player = players[0]
-                dist = (creature.pos - radioactive_player.pos).length()
-                if dist < 100.0:
-                    creature.collision_timer -= float(dt) * 1.5
-                    if creature.collision_timer < 0.0:
-                        creature.collision_timer = CONTACT_DAMAGE_PERIOD
-                        creature.hp -= (100.0 - dist) * 0.3
-                        if fx_queue is not None:
-                            fx_queue.add_random(pos=creature.pos, rand=rand)
-
-                        if creature.hp < 0.0:
-                            if creature.type_id == 1:
-                                creature.hp = 1.0
-                            else:
-                                radioactive_player.experience = int(
-                                    float(radioactive_player.experience) + float(creature.reward_value),
-                                )
-                                creature.hitbox_size -= float(dt)
-                                continue
-
             frozen_by_evil_eyes = idx in evil_targets
-            # Native order in creature_update_all:
-            # AI7 link timer (flag 0x80) is updated before Evil Eyes freeze handling.
-            # Keeping this outside the freeze branch preserves rand-call timing parity
-            # for link_index transitions (e.g. 0x004263ac/0x0042637c paths).
-            creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
             if frozen_by_evil_eyes:
                 # Native branch (`creature_update_all`, around 0x0042665f): when the
                 # current creature is the Evil Eyes target, the update path jumps to
@@ -1079,6 +1072,13 @@ class CreaturePool:
                         _advance_pos_by_delta_f32(creature.pos, move_delta).clamp_rect(radius, radius, max_x, max_y),
                     )
 
+            if (
+                players
+                and perk_active(players[0], PerkId.PLAGUEBEARER)
+                and int(state.plaguebearer_infection_count) < 0x3C
+            ):
+                self._plaguebearer_spread_infection(int(idx))
+
             # Native decrements contact/ranged cooldown before interaction checks,
             # then lets contact hits raise it back by +1.0 in the same frame.
             if creature.attack_cooldown <= 0.0:
@@ -1086,30 +1086,27 @@ class CreaturePool:
             else:
                 creature.attack_cooldown -= dt
 
-            interaction_ctx = _CreatureInteractionCtx(
-                pool=self,
-                creature_index=int(idx),
-                creature=creature,
-                state=state,
-                players=players,
-                player=player,
-                dt=dt,
-                rand=rand,
-                detail_preset=int(detail_preset),
-                fx_toggle=int(fx_toggle),
-                world_width=float(world_width),
-                world_height=float(world_height),
-                fx_queue=fx_queue,
-                fx_queue_rotated=fx_queue_rotated,
-                deaths=deaths,
-                sfx=sfx,
-            )
-            for step in _CREATURE_INTERACTION_STEPS:
-                step(interaction_ctx)
-                if interaction_ctx.skip_creature:
-                    break
-            if interaction_ctx.skip_creature:
-                continue
+            # Native radioactive contact pulse runs after movement/AI/cooldown
+            # synthesis inside the live-creature branch.
+            if players and perk_active(players[0], PerkId.RADIOACTIVE):
+                radioactive_player = players[0]
+                dist = (creature.pos - radioactive_player.pos).length()
+                if dist < 100.0:
+                    creature.collision_timer -= float(dt) * 1.5
+                    if creature.collision_timer < 0.0:
+                        creature.collision_timer = CONTACT_DAMAGE_PERIOD
+                        creature.hp -= (100.0 - dist) * 0.3
+                        if fx_queue is not None:
+                            fx_queue.add_random(pos=creature.pos, rand=rand)
+
+                        if creature.hp < 0.0:
+                            if creature.type_id == 1:
+                                creature.hp = 1.0
+                            else:
+                                radioactive_player.experience = int(
+                                    float(radioactive_player.experience) + float(creature.reward_value),
+                                )
+                                creature.hitbox_size -= float(dt)
 
             if (not frozen_by_evil_eyes) and (
                 creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)
@@ -1146,9 +1143,39 @@ class CreaturePool:
                             float(rand() & 3) * 0.1 + float(creature.orbit_angle) + float(creature.attack_cooldown)
                         )
 
+            interaction_ctx = _CreatureInteractionCtx(
+                pool=self,
+                creature_index=int(idx),
+                creature=creature,
+                state=state,
+                players=players,
+                player=player,
+                dt=dt,
+                rand=rand,
+                detail_preset=int(detail_preset),
+                fx_toggle=int(fx_toggle),
+                world_width=float(world_width),
+                world_height=float(world_height),
+                fx_queue=fx_queue,
+                fx_queue_rotated=fx_queue_rotated,
+                deaths=deaths,
+                sfx=sfx,
+            )
+            for step in _CREATURE_INTERACTION_STEPS:
+                step(interaction_ctx)
+                if interaction_ctx.skip_creature:
+                    break
+            if interaction_ctx.skip_creature:
+                continue
+
             # Tick owner-bound spawn slots at creature-loop tail so spawned children
             # can still be visited later in the same update pass.
-            if dt > 0.0 and float(state.bonuses.freeze) <= 0.0 and spawn_env is not None:
+            if (
+                dt > 0.0
+                and float(state.bonuses.freeze) <= 0.0
+                and spawn_env is not None
+                and (creature.flags & CreatureFlags.HAS_SPAWN_SLOT) != 0
+            ):
                 slot_index = creature.spawn_slot_index
                 if slot_index is not None and 0 <= int(slot_index) < len(self.spawn_slots):
                     slot = self.spawn_slots[int(slot_index)]

@@ -164,6 +164,32 @@ def test_player_update_empty_reload_fire_tick_keeps_underflow_and_restarts_reloa
     assert math.isclose(player.reload_timer, player.reload_timer_max, abs_tol=1e-9)
 
 
+def test_player_update_fire_held_at_reload_boundary_preloads_clip_before_shot() -> None:
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(50.0, 50.0),
+        weapon_id=int(WeaponId.SUBMACHINE_GUN),
+        clip_size=30,
+        ammo=0.0,
+        reload_active=True,
+        reload_timer=0.09999996426701546,
+        reload_timer_max=1.2,
+        shot_cooldown=0.0,
+    )
+
+    player_update(
+        player,
+        PlayerInput(aim=Vec2(51.0, 50.0), fire_down=True),
+        0.10000000149011612,
+        state,
+    )
+
+    assert math.isclose(player.reload_timer, 0.0, abs_tol=1e-9)
+    assert player.reload_active is False
+    assert math.isclose(player.ammo, 29.0, abs_tol=1e-6)
+
+
 def test_player_update_tops_up_when_stationary_reload_finishes_same_tick() -> None:
     state = GameplayState()
     player = PlayerState(

@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "projectile_spawn": {
+      "ppVar1": "slot_ptr",
+      "iVar2": "slot_idx"
+    }
+  }
+}

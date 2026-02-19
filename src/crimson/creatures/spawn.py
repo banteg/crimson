@@ -1762,9 +1762,13 @@ def tick_spawn_slot(slot: SpawnSlotInit, frame_dt: float) -> int | None:
 
     Note: the original only adds `interval` once (no loop), so large dt can keep the timer negative.
     """
-    slot.timer -= frame_dt
+    timer = float(f32(float(slot.timer)))
+    interval = float(f32(float(slot.interval)))
+    dt = float(f32(float(frame_dt)))
+    timer = float(f32(timer - dt))
+    slot.timer = timer
     if slot.timer < 0.0:
-        slot.timer += slot.interval
+        slot.timer = float(f32(float(slot.timer) + interval))
         if slot.count < slot.limit:
             slot.count += 1
             return slot.child_template_id

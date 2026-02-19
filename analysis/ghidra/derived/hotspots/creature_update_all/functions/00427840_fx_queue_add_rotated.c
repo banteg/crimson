@@ -2,7 +2,7 @@
 /* function_original: fx_queue_add_rotated */
 /* function_mapped: fx_queue_add_rotated */
 /* address: 0x00427840 */
-/* byte_range: [792666, 794219) */
+/* byte_range: [792577, 794130) */
 /* fx_queue_add_rotated @ 00427840 */
 
 /* pushes a rotated sprite into DAT_004aaf3c (capped at 0x40); returns 1 on success */

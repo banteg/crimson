@@ -35,7 +35,7 @@ from crimson.original.capture import (
     parse_player_int_overrides,
 )
 from crimson.original.schema import CAPTURE_FORMAT_VERSION, CaptureEventHeadPerkApply
-from crimson.replay import Replay, UnknownEvent, unpack_input_flags, unpack_input_move_key_flags
+from crimson.replay import PerkMenuOpenEvent, Replay, UnknownEvent, unpack_input_flags, unpack_input_move_key_flags
 from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
@@ -845,6 +845,37 @@ def test_convert_capture_to_replay_infers_pending_drop_events_from_perk_delta(tm
     assert "PerkMenuOpenEvent" in kinds
 
 
+def test_convert_capture_to_replay_skips_menu_open_for_terminal_pending_drop_transition(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16, perk_pending=2)
+    tick0["event_heads"] = [
+        {
+            "kind": "state_transition",
+            "data": {
+                "target_state": 12,
+                "before": {"id": 9},
+                "after": {"id": 12},
+            },
+        },
+    ]
+    tick1 = _base_tick(tick_index=1, elapsed_ms=32, perk_pending=0)
+
+    obj = _capture_obj(ticks=[tick0, tick1])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    pending_events = [
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_PERK_PENDING_EVENT_KIND
+    ]
+    assert [event.tick_index for event in pending_events] == [0, 1]
+    assert [capture_perk_pending_from_event_payload(list(event.payload)) for event in pending_events] == [2, 0]
+    assert not any(isinstance(event, PerkMenuOpenEvent) for event in replay.events)
+
+
 def test_convert_capture_to_replay_bootstrap_payload_includes_perk_snapshot(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16, perk_pending=3)
     checkpoint = _tick_checkpoint(tick0)
@@ -1054,6 +1085,8 @@ def test_convert_capture_to_replay_bootstrap_payload_infers_perk_intervals_from_
         "input": {},
         "input_bindings": {},
     }
+    _as_obj_dict(_tick_checkpoint(tick0)["perk"])["player_nonzero_counts"] = [[[31, 1]]]
+    _as_obj_dict(_tick_checkpoint(tick1)["perk"])["player_nonzero_counts"] = [[[31, 1]]]
 
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -1072,6 +1105,49 @@ def test_convert_capture_to_replay_bootstrap_payload_infers_perk_intervals_from_
     assert isinstance(payload.get("perk_intervals"), dict)
     perk_intervals = cast(dict[str, float], payload["perk_intervals"])
     assert perk_intervals["hot_tempered"] == pytest.approx(1.4, abs=1e-3)
+
+
+def test_convert_capture_to_replay_bootstrap_payload_ignores_inactive_timer_reset_interval_inference(
+    tmp_path: Path,
+) -> None:
+    tick0 = _base_tick(tick_index=10, elapsed_ms=1000)
+    tick1 = _base_tick(tick_index=11, elapsed_ms=1083)
+    tick0["before"] = {
+        "globals": {},
+        "status": {},
+        "player_count": 1,
+        "players": [{"perk_timers": {"hot_tempered": 2.63, "man_bomb": 0.0, "living_fortress": 0.0, "fire_cough": 0.0}}],
+        "input": {},
+        "input_bindings": {},
+    }
+    tick1["before"] = {
+        "globals": {},
+        "status": {},
+        "player_count": 1,
+        "players": [{"perk_timers": {"hot_tempered": 0.0, "man_bomb": 0.0, "living_fortress": 0.0, "fire_cough": 0.0}}],
+        "input": {},
+        "input_bindings": {},
+    }
+    _as_obj_dict(_tick_checkpoint(tick0)["perk"])["player_nonzero_counts"] = [[]]
+    _as_obj_dict(_tick_checkpoint(tick1)["perk"])["player_nonzero_counts"] = [[]]
+
+    obj = _capture_obj(ticks=[tick0, tick1])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+    bootstrap = next(
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+    )
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    assert payload is not None
+
+    perk_intervals_obj = payload.get("perk_intervals")
+    if isinstance(perk_intervals_obj, dict):
+        assert "hot_tempered" not in perk_intervals_obj
 
 
 def test_apply_capture_bootstrap_payload_applies_perk_intervals_and_player_perk_timers() -> None:

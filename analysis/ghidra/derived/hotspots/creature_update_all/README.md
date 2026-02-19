@@ -28,7 +28,7 @@ This folder is analysis-only and does not alter runtime code.
 - `analysis/ghidra/derived/hotspots/creature_update_all/functions/0042fcf0_perk_count_get.c` (0x0042fcf0)
 - `analysis/ghidra/derived/hotspots/creature_update_all/functions/00430af0_creature_spawn_template.c` (0x00430af0)
 - `analysis/ghidra/derived/hotspots/creature_update_all/functions/0043d260_sfx_play_panned.c` (0x0043d260)
-- `analysis/ghidra/derived/hotspots/creature_update_all/functions/00452f2a_vec2_normalize_dispatch.c` (0x00452f2a) (manual thunk supplement)
+- `analysis/ghidra/derived/hotspots/creature_update_all/functions/00452f2a_vec2_normalize_dispatch.c` (0x00452f2a)
 - `analysis/ghidra/derived/hotspots/creature_update_all/functions/00461054___ftol.c` (0x00461054)
 - `analysis/ghidra/derived/hotspots/creature_update_all/functions/00461746_crt_rand.c` (0x00461746)
 

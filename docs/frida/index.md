@@ -6,8 +6,9 @@ Runtime instrumentation for evidence collection using Frida.
 - [Panel state resolution sweep](panel-state-resolution-sweep.md) — Automatic panel/text capture across UI states per resolution
 - [Differential playbook](differential-playbook.md) — What to do when handed only a fresh capture file
 - [Differential capture sessions](differential-sessions.md) — Replay/sidecar verification runs, findings, and fixes
+- [Creature update static audit triage](creature-update-static-audit-triage.md) — Checklist for validating static parity findings with before/after divergence runs
+- [Player update + damage static audit triage](player-update-damage-static-audit-triage.md) — Confirmed player-update and lethal-damage parity findings queued for follow-up PR work
 - [Gameplay/state capture](gameplay-state-capture.md) — automatic large-run capture script
 - [Gameplay differential capture](gameplay-diff-capture.md) — deterministic tick + verifier-oriented telemetry
 - [Survival autoplay sidecar](survival-autoplay.md) — unattended Survival runs for repeated differential recordings
 - [RNG divergence root cause](rng-divergence-root-cause.md) — Guidance for isolating first RNG call-order drift
-- [thunk_FUN_00452f1d capture task](thunk-452f1d-capture-task.md) — Windows runbook for thunk runtime contract tracing

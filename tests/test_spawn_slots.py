@@ -16,7 +16,7 @@ def test_tick_spawn_slot_no_trigger() -> None:
     )
 
     assert tick_spawn_slot(slot, 0.3) is None
-    assert slot.timer == pytest.approx(0.7, abs=1e-9)
+    assert slot.timer == pytest.approx(0.7, abs=1e-6)
     assert slot.count == 0
 
 
@@ -31,7 +31,7 @@ def test_tick_spawn_slot_triggers_and_increments_count() -> None:
     )
 
     assert tick_spawn_slot(slot, 0.3) == 0x41
-    assert slot.timer == pytest.approx(0.5, abs=1e-9)
+    assert slot.timer == pytest.approx(0.5, abs=1e-6)
     assert slot.count == 1
 
 
@@ -46,7 +46,7 @@ def test_tick_spawn_slot_resets_timer_even_when_at_limit() -> None:
     )
 
     assert tick_spawn_slot(slot, 0.3) is None
-    assert slot.timer == pytest.approx(0.5, abs=1e-9)
+    assert slot.timer == pytest.approx(0.5, abs=1e-6)
     assert slot.count == 10
 
 
@@ -61,6 +61,24 @@ def test_tick_spawn_slot_does_not_loop_when_dt_is_large() -> None:
     )
 
     assert tick_spawn_slot(slot, 2.0) == 0x41
-    assert slot.timer == pytest.approx(-1.2, abs=1e-9)
+    assert slot.timer == pytest.approx(-1.2, abs=1e-6)
     assert slot.count == 1
 
+
+def test_tick_spawn_slot_uses_float32_cadence_at_boundary() -> None:
+    slot = SpawnSlotInit(
+        owner_creature=0,
+        timer=2.4,
+        count=0,
+        limit=10,
+        interval=2.4,
+        child_template_id=0x41,
+    )
+
+    spawn_ticks: list[int] = []
+    for tick in range(1, 26):
+        if tick_spawn_slot(slot, 0.1) is not None:
+            spawn_ticks.append(tick)
+
+    # Native float32 timer arithmetic crosses this boundary on tick 25, not 24.
+    assert spawn_ticks == [25]
