@@ -9,7 +9,6 @@ ignores:
   # Raw decoded capture/debug maps still under active refactor.
   - src/crimson/original/capture.py
   - src/crimson/original/creature_trajectory.py
-  - src/crimson/original/diagnostics_cache.py
   - src/crimson/original/diff.py
   - src/crimson/original/divergence_bisect.py
   - src/crimson/original/divergence_report.py

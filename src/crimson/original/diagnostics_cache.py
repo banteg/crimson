@@ -346,13 +346,16 @@ class _FocusRuntime:
         if not isinstance(self.session, QuestDeterministicSession):
             return
 
+        bootstrap_tick = int(self.bootstrap_start_tick)
         bootstrap_dt = resolve_dt_frame(
-            tick_index=int(self.bootstrap_start_tick),
+            tick_index=bootstrap_tick,
             default_dt_frame=float(self.default_dt_frame),
             dt_frame_overrides=self.dt_frame_overrides,
         )
         bootstrap_dt_ms = float(bootstrap_dt) * 1000.0
-        for event in self.events_by_tick.get(int(self.bootstrap_start_tick), []):
+        if bootstrap_tick not in self.events_by_tick:
+            return
+        for event in self.events_by_tick[bootstrap_tick]:
             if not (isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND):
                 continue
             payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
@@ -524,6 +527,7 @@ class _FocusRuntime:
         tick_index: int,
         trace: _FocusStepTraceContext | None,
     ) -> None:
+        tick_key = int(tick_index)
         if self.mode == int(GameMode.QUESTS) and self.pending_capture_state_reset:
             self._apply_capture_state_reset()
 
@@ -531,22 +535,28 @@ class _FocusRuntime:
         self.world.state.demo_mode_active = False
 
         if self.use_outside_draws:
-            draws = self.outside_draws_by_tick.get(int(tick_index), self.inter_tick_rand_draws)
+            if tick_key in self.outside_draws_by_tick:
+                draws = self.outside_draws_by_tick[tick_key]
+            else:
+                draws = self.inter_tick_rand_draws
             for _ in range(max(0, int(draws))):
                 self.world.state.rng.rand()
 
         dt_tick = resolve_dt_frame(
-            tick_index=int(tick_index),
+            tick_index=tick_key,
             default_dt_frame=float(self.default_dt_frame),
             dt_frame_overrides=self.dt_frame_overrides,
         )
         dt_tick_ms_i32 = resolve_dt_frame_ms_i32(
-            tick_index=int(tick_index),
+            tick_index=tick_key,
             dt_frame=float(dt_tick),
             dt_frame_ms_i32_overrides=self.dt_frame_ms_i32_overrides,
         )
 
-        tick_events = self.events_by_tick.get(int(tick_index), [])
+        if tick_key in self.events_by_tick:
+            tick_events = self.events_by_tick[tick_key]
+        else:
+            tick_events = []
         pre_step_events, post_step_events = partition_tick_events(
             tick_events,
             defer_menu_open=bool(self.original_capture_replay),
@@ -554,7 +564,7 @@ class _FocusRuntime:
 
         apply_replay_tick_events(
             pre_step_events,
-            tick_index=int(tick_index),
+            tick_index=tick_key,
             dt_frame=float(dt_tick),
             world=self.world,
             game_mode_id=int(self.mode),
@@ -565,7 +575,7 @@ class _FocusRuntime:
         )
         if self.mode == int(GameMode.QUESTS) and self.pending_capture_state_reset:
             self._apply_capture_state_reset()
-        player_inputs = _decode_inputs_for_tick(self.replay, int(tick_index))
+        player_inputs = _decode_inputs_for_tick(self.replay, tick_key)
 
         orig_rand = self.world.state.rng.rand
         orig_particles_rand = self.world.state.particles._rand
@@ -841,7 +851,11 @@ class _FocusRuntime:
 
 
 def cache_enabled() -> bool:
-    raw = str(os.environ.get("CRIMSON_ORIGINAL_CACHE", "1")).strip().lower()
+    if "CRIMSON_ORIGINAL_CACHE" in os.environ:
+        raw_value = os.environ["CRIMSON_ORIGINAL_CACHE"]
+    else:
+        raw_value = "1"
+    raw = str(raw_value).strip().lower()
     return raw not in {"0", "false", "off", "no"}
 
 
@@ -1169,14 +1183,38 @@ def _build_tick_lite_row(tick: CaptureTick) -> dict[str, object]:
         rng_head_rows = [_rng_head_entry_to_row(item) for item in rng_top.head]
     rng_head_values = [_int_or(item.get("value_15"), -1) for item in rng_head_rows if _int_or(item.get("value_15"), -1) >= 0]
 
-    creature_damage_head_obj = list(event_heads_obj.get("creature_damage", []))
-    projectile_spawn_head_obj = list(event_heads_obj.get("projectile_spawn", []))
-    secondary_projectile_spawn_head_obj = list(event_heads_obj.get("secondary_projectile_spawn", []))
-    creature_death_head_obj = list(event_heads_obj.get("creature_death", []))
-    bonus_spawn_head_obj = list(event_heads_obj.get("bonus_spawn", []))
-    projectile_find_query_head_obj = list(event_heads_obj.get("projectile_find_query", []))
-    projectile_find_hit_head_obj = list(event_heads_obj.get("projectile_find_hit", []))
-    creature_update_micro_head_obj = list(event_heads_obj.get("creature_update_micro", []))
+    if "creature_damage" in event_heads_obj:
+        creature_damage_head_obj = list(event_heads_obj["creature_damage"])
+    else:
+        creature_damage_head_obj = []
+    if "projectile_spawn" in event_heads_obj:
+        projectile_spawn_head_obj = list(event_heads_obj["projectile_spawn"])
+    else:
+        projectile_spawn_head_obj = []
+    if "secondary_projectile_spawn" in event_heads_obj:
+        secondary_projectile_spawn_head_obj = list(event_heads_obj["secondary_projectile_spawn"])
+    else:
+        secondary_projectile_spawn_head_obj = []
+    if "creature_death" in event_heads_obj:
+        creature_death_head_obj = list(event_heads_obj["creature_death"])
+    else:
+        creature_death_head_obj = []
+    if "bonus_spawn" in event_heads_obj:
+        bonus_spawn_head_obj = list(event_heads_obj["bonus_spawn"])
+    else:
+        bonus_spawn_head_obj = []
+    if "projectile_find_query" in event_heads_obj:
+        projectile_find_query_head_obj = list(event_heads_obj["projectile_find_query"])
+    else:
+        projectile_find_query_head_obj = []
+    if "projectile_find_hit" in event_heads_obj:
+        projectile_find_hit_head_obj = list(event_heads_obj["projectile_find_hit"])
+    else:
+        projectile_find_hit_head_obj = []
+    if "creature_update_micro" in event_heads_obj:
+        creature_update_micro_head_obj = list(event_heads_obj["creature_update_micro"])
+    else:
+        creature_update_micro_head_obj = []
 
     projectile_find_query_miss_count = _int_or(
         spawn_obj.get("event_count_projectile_find_query_miss"),
@@ -1381,7 +1419,10 @@ def _build_run_summary_events_from_capture(capture: CaptureFile) -> list[RunSumm
         tick_index = int(tick.tick_index)
         event_heads = _build_event_heads_by_kind(tick)
 
-        bonus_apply = event_heads.get("bonus_apply", [])
+        if "bonus_apply" in event_heads:
+            bonus_apply = event_heads["bonus_apply"]
+        else:
+            bonus_apply = []
         for item in bonus_apply:
             player_index = _int_or(item.get("player_index"), 0)
             bonus_id = _int_or(item.get("bonus_id"), -1)
@@ -1398,7 +1439,10 @@ def _build_run_summary_events_from_capture(capture: CaptureFile) -> list[RunSumm
                 detail=detail,
             )
 
-        weapon_assign = event_heads.get("weapon_assign", [])
+        if "weapon_assign" in event_heads:
+            weapon_assign = event_heads["weapon_assign"]
+        else:
+            weapon_assign = []
         for item in weapon_assign:
             player_index = _int_or(item.get("player_index"), 0)
             weapon_before = _int_or(item.get("weapon_before"), -1)
@@ -1414,7 +1458,10 @@ def _build_run_summary_events_from_capture(capture: CaptureFile) -> list[RunSumm
                 ),
             )
 
-        state_transition = event_heads.get("state_transition", [])
+        if "state_transition" in event_heads:
+            state_transition = event_heads["state_transition"]
+        else:
+            state_transition = []
         for item in state_transition:
             before_obj = item.get("before")
             before = cast(dict[str, object], before_obj) if isinstance(before_obj, dict) else None
@@ -1451,9 +1498,17 @@ def _build_run_summary_events_from_capture(capture: CaptureFile) -> list[RunSumm
 
         perk_counts = _parse_player_perk_counts(tick)
         for player_index, player_counts in perk_counts.items():
-            previous = prev_perk_counts.get(int(player_index), Counter())
+            player_key = int(player_index)
+            if player_key in prev_perk_counts:
+                previous = prev_perk_counts[player_key]
+            else:
+                previous = Counter()
             for perk_id, perk_count in sorted(player_counts.items()):
-                previous_count = int(previous.get(int(perk_id), 0))
+                perk_key = int(perk_id)
+                if perk_key in previous:
+                    previous_count = int(previous[perk_key])
+                else:
+                    previous_count = 0
                 if int(perk_count) <= int(previous_count):
                     continue
                 _append_run_summary_event(
@@ -1466,7 +1521,7 @@ def _build_run_summary_events_from_capture(capture: CaptureFile) -> list[RunSumm
                         f"x{int(perk_count)}"
                     ),
                 )
-            prev_perk_counts[int(player_index)] = Counter(player_counts)
+            prev_perk_counts[player_key] = Counter(player_counts)
 
     events.sort(key=lambda item: (int(item.tick_index), str(item.kind), str(item.detail)))
     return events
