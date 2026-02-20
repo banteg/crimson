@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import json
+import copy
 from pathlib import Path
 
 import msgspec
@@ -13,7 +13,13 @@ from crimson.replay.checkpoints import (
     ReplayPlayerCheckpoint,
 )
 from grim.geom import Vec2
-from tests.builders.capture import build_capture_file, build_capture_tick, capture_file_to_dict
+from tests.builders.capture import (
+    build_capture_event_head_bonus_apply,
+    build_capture_event_head_state_transition,
+    build_capture_event_head_weapon_assign,
+    build_capture_file,
+    build_capture_tick,
+)
 
 
 def _load_report_module():
@@ -29,7 +35,7 @@ def _capture_tick(
     weapon_id: int,
     experience: int,
     perk_pairs: list[list[int]],
-    event_heads: list[dict[str, object]],
+    event_heads: list[CaptureEventHead],
 ) -> CaptureTick:
     tick_obj = build_capture_tick(tick_index=int(tick), elapsed_ms=int(tick) * 16)
 
@@ -46,7 +52,7 @@ def _capture_tick(
     checkpoint.players[0].level = int(level)
     checkpoint.perk.player_nonzero_counts = [[list(map(int, pair)) for pair in perk_pairs]]
 
-    tick_obj.event_heads = msgspec.convert(event_heads, type=list[CaptureEventHead], strict=True)
+    tick_obj.event_heads = list(event_heads)
     return tick_obj
 
 
@@ -55,13 +61,10 @@ def _capture_obj(*, ticks: list[CaptureTick]) -> CaptureFile:
 
 
 def _write_capture_stream(path: Path, capture: CaptureFile) -> None:
-    payload = capture_file_to_dict(capture)
-    meta = {k: v for k, v in payload.items() if k != "ticks"}
-    meta["ticks"] = []
-    ticks_obj = payload.get("ticks")
-    ticks = ticks_obj if isinstance(ticks_obj, list) else []
-    rows = [json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True)]
-    rows.extend(json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True) for tick in ticks)
+    meta_capture = copy.deepcopy(capture)
+    meta_capture.ticks = []
+    rows = [msgspec.json.encode({"event": "capture_meta", "capture": meta_capture}).decode("utf-8")]
+    rows.extend(msgspec.json.encode({"event": "tick", "tick": tick}).decode("utf-8") for tick in capture.ticks)
     path.write_text("\n".join(rows) + "\n", encoding="utf-8")
 
 
@@ -77,37 +80,24 @@ def test_run_summary_events_from_raw_capture(tmp_path: Path) -> None:
                 experience=0,
                 perk_pairs=[],
                 event_heads=[
-                    {
-                        "type": "bonus_apply",
-                        "data": {
-                            "player_index": 0,
-                            "bonus_id": 3,
-                            "entry_state": None,
-                            "amount_i32": 12,
-                            "amount_f32": 12.0,
-                            "caller": None,
-                        },
-                    },
-                    {
-                        "type": "weapon_assign",
-                        "data": {
-                            "player_index": 0,
-                            "weapon_id": 12,
-                            "weapon_before": 1,
-                            "weapon_after": 12,
-                            "caller": None,
-                        },
-                    },
-                    {
-                        "type": "state_transition",
-                        "data": {
-                            "target_state": 6,
-                            "before": {"prev": None, "id": 9, "pending": None},
-                            "after": {"prev": None, "id": 6, "pending": None},
-                            "caller": None,
-                            "backtrace": None,
-                        },
-                    },
+                    build_capture_event_head_bonus_apply(
+                        player_index=0,
+                        bonus_id=3,
+                        entry_state=None,
+                        amount_i32=12,
+                        amount_f32=12.0,
+                    ),
+                    build_capture_event_head_weapon_assign(
+                        player_index=0,
+                        weapon_id=12,
+                        weapon_before=1,
+                        weapon_after=12,
+                    ),
+                    build_capture_event_head_state_transition(
+                        target_state=6,
+                        before_id=9,
+                        after_id=6,
+                    ),
                 ],
             ),
             _capture_tick(

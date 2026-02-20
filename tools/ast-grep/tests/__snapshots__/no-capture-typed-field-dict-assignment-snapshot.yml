@@ -1,0 +1,23 @@
+id: no-capture-typed-field-dict-assignment
+snapshots:
+  ? |
+    tick.input_player_keys = [{"player_index": 0, "fire_down": True}]
+  : labels:
+    - source: 'tick.input_player_keys = [{"player_index": 0, "fire_down": True}]'
+      style: primary
+      start: 0
+      end: 65
+  ? |
+    tick.input_approx = [{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0}]
+  : labels:
+    - source: 'tick.input_approx = [{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0}]'
+      style: primary
+      start: 0
+      end: 73
+  ? |
+    tick.perk_apply_outside_before = {"calls": 1, "dropped": 0, "head": []}
+  : labels:
+    - source: 'tick.perk_apply_outside_before = {"calls": 1, "dropped": 0, "head": []}'
+      style: primary
+      start: 0
+      end: 71

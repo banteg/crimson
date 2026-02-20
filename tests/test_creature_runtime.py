@@ -25,7 +25,7 @@ from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
-from tests.helpers import assert_float_close
+from tests.helpers import MockCrand, assert_float_close, assert_rng_progression
 
 
 def test_spawn_plan_remaps_ai_links_with_pool_offset() -> None:
@@ -852,12 +852,9 @@ def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> 
     corpse.flags = CreatureFlags.ANIM_PING_PONG
     corpse.size = 24.0
 
-    rand_calls = 0
-
-    def _rand() -> int:
-        nonlocal rand_calls
-        rand_calls += 1
-        return 0
+    rng = MockCrand(0, fallback="repeat_last")
+    before_calls = rng.calls
+    before_state = rng.state
 
     pool._tick_dead(
         corpse,
@@ -865,14 +862,21 @@ def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> 
         world_width=1024.0,
         world_height=1024.0,
         fx_queue_rotated=None,
-        rand=_rand,
+        rand=rng,
         detail_preset=5,
         fx_toggle=0,
     )
 
     # Native branch: 19 angle draws + 19 calls to effect_spawn_blood_splatter
     # (10 draws each in our parity model) = 209 total.
-    assert rand_calls == 209
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=209,
+        expected_after_state=0,
+        expected_hash="b44cf392af3c0e88",
+    )
     assert len(state.effects.iter_active()) == 38
 
 

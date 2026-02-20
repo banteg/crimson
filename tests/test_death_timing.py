@@ -13,6 +13,7 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from tests.helpers import MockCrand, assert_rng_progression
 
 
 def test_projectile_kill_awards_xp_same_step() -> None:
@@ -60,7 +61,7 @@ def test_projectile_kill_awards_xp_same_step() -> None:
     assert events.deaths[0].xp_awarded == 10
 
 
-def test_detonation_followup_does_not_double_plan_death_sfx() -> None:
+def test_detonation_followup_does_not_double_plan_death_sfx(mocker) -> None:
     world_size = 1024.0
     world = WorldState.build(
         world_size=world_size,
@@ -89,42 +90,37 @@ def test_detonation_followup_does_not_double_plan_death_sfx() -> None:
         owner_id=-1,
     )
 
-    calls: list[list[int | None]] = []
-    original = world_state_mod.plan_death_sfx_keys
-
     def _fake_plan(
         deaths: Sequence[CreatureDeath] | tuple[object, ...],
         *,
         rand: Callable[[], int],
     ) -> list[str]:
-        calls.append([getattr(death, "index", None) for death in deaths])
+        _ = rand
         return ["death"] if deaths else []
-
-    setattr(world_state_mod, "plan_death_sfx_keys", _fake_plan)
-    try:
-        events = world.step(
-            0.1,
-            inputs=None,
-            world_size=world_size,
-            damage_scale_by_type={},
-            detail_preset=5,
-            fx_queue=FxQueue(),
-            fx_queue_rotated=FxQueueRotated(),
-            auto_pick_perks=False,
-            game_mode=int(GameMode.SURVIVAL),
-            perk_progression_enabled=False,
-        )
-    finally:
-        setattr(world_state_mod, "plan_death_sfx_keys", original)
+    plan_death_sfx = mocker.patch.object(world_state_mod, "plan_death_sfx_keys", side_effect=_fake_plan)
+    events = world.step(
+        0.1,
+        inputs=None,
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        auto_pick_perks=False,
+        game_mode=int(GameMode.SURVIVAL),
+        perk_progression_enabled=False,
+    )
 
     # Native detonation follow-up re-enters creature death handling for side effects,
     # but does not perform a second death-SFX random pick.
     assert len(events.deaths) == 2
-    assert calls == [[0]]
+    plan_death_sfx.assert_called_once()
+    called_deaths = cast("Sequence[CreatureDeath]", plan_death_sfx.call_args.args[0])
+    assert [death.index for death in called_deaths] == [0]
     assert events.sfx == ["death"]
 
 
-def test_plague_kill_death_event_skips_world_death_sfx_planning() -> None:
+def test_plague_kill_death_event_skips_world_death_sfx_planning(mocker) -> None:
     world_size = 1024.0
     world = WorldState.build(
         world_size=world_size,
@@ -144,49 +140,48 @@ def test_plague_kill_death_event_skips_world_death_sfx_planning() -> None:
         plan_death_sfx=False,
     )
 
-    calls = {"count": 0}
-    original_plan = world_state_mod.plan_death_sfx_keys
-    original_update = world.creatures.update
-
-    def _fake_plan(
-        deaths_now: Sequence[CreatureDeath] | tuple[object, ...],
-        *,
-        rand: Callable[[], int],
-    ) -> list[str]:
-        _ = deaths_now
-        calls["count"] += 1
-        rand()
-        return ["death"]
+    plan_death_sfx = mocker.patch.object(
+        world_state_mod,
+        "plan_death_sfx_keys",
+        wraps=world_state_mod.plan_death_sfx_keys,
+    )
 
     def _fake_update(*args: object, **kwargs: object) -> CreatureUpdateResult:
         _ = args, kwargs
         return CreatureUpdateResult(deaths=(death,), sfx=("plague_contact",))
 
-    setattr(world_state_mod, "plan_death_sfx_keys", _fake_plan)
-    world.creatures.update = _fake_update  # type: ignore[assignment]
-    try:
-        events = world.step(
-            0.016,
-            inputs=None,
-            world_size=world_size,
-            damage_scale_by_type={},
-            detail_preset=5,
-            fx_queue=FxQueue(),
-            fx_queue_rotated=FxQueueRotated(),
-            auto_pick_perks=False,
-            game_mode=int(GameMode.SURVIVAL),
-            perk_progression_enabled=False,
-        )
-    finally:
-        setattr(world_state_mod, "plan_death_sfx_keys", original_plan)
-        world.creatures.update = original_update  # type: ignore[assignment]
+    mocker.patch.object(world.creatures, "update", side_effect=_fake_update)
+    rng = MockCrand(0, fallback="repeat_last")
+    world.state.rng = rng
+    before_calls = rng.calls
+    before_state = rng.state
+    events = world.step(
+        0.016,
+        inputs=None,
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        auto_pick_perks=False,
+        game_mode=int(GameMode.SURVIVAL),
+        perk_progression_enabled=False,
+    )
 
     assert len(events.deaths) == 1
-    assert calls["count"] == 0
+    assert plan_death_sfx.call_count == 0
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=0,
+        expected_after_state=0,
+        expected_hash="da39a3ee5e6b4b0d",
+    )
     assert events.sfx == ["plague_contact"]
 
 
-def test_ranged_shock_lethal_skips_world_death_sfx_planning() -> None:
+def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
     world_size = 1024.0
     world = WorldState.build(
         world_size=world_size,
@@ -206,19 +201,11 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning() -> None:
     creature.hitbox_size = 16.0
     creature.reward_value = 0.0
 
-    calls = {"count": 0}
-    original_plan = world_state_mod.plan_death_sfx_keys
-    original_projectile_update = world.state.projectiles.update
-
-    def _fake_plan(
-        deaths_now: Sequence[CreatureDeath] | tuple[object, ...],
-        *,
-        rand: Callable[[], int],
-    ) -> list[str]:
-        _ = deaths_now
-        calls["count"] += 1
-        rand()
-        return ["death"]
+    plan_death_sfx = mocker.patch.object(
+        world_state_mod,
+        "plan_death_sfx_keys",
+        wraps=world_state_mod.plan_death_sfx_keys,
+    )
 
     def _fake_projectile_update(*args: object, **kwargs: object) -> list[ProjectileHit]:
         _ = args
@@ -227,31 +214,38 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning() -> None:
             apply_creature_damage(0, 1000.0, int(ProjectileTypeId.PISTOL), Vec2(), -1)
         return []
 
-    setattr(world_state_mod, "plan_death_sfx_keys", _fake_plan)
-    world.state.projectiles.update = _fake_projectile_update  # type: ignore[assignment]
-    try:
-        events = world.step(
-            0.016,
-            inputs=None,
-            world_size=world_size,
-            damage_scale_by_type={},
-            detail_preset=5,
-            fx_queue=FxQueue(),
-            fx_queue_rotated=FxQueueRotated(),
-            auto_pick_perks=False,
-            game_mode=int(GameMode.SURVIVAL),
-            perk_progression_enabled=False,
-        )
-    finally:
-        setattr(world_state_mod, "plan_death_sfx_keys", original_plan)
-        world.state.projectiles.update = original_projectile_update  # type: ignore[assignment]
+    mocker.patch.object(world.state.projectiles, "update", side_effect=_fake_projectile_update)
+    rng = MockCrand(0, fallback="repeat_last")
+    world.state.rng = rng
+    before_calls = rng.calls
+    before_state = rng.state
+    events = world.step(
+        0.016,
+        inputs=None,
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        auto_pick_perks=False,
+        game_mode=int(GameMode.SURVIVAL),
+        perk_progression_enabled=False,
+    )
 
     assert len(events.deaths) == 1
     assert events.deaths[0].plan_death_sfx is False
-    assert calls["count"] == 0
+    assert plan_death_sfx.call_count == 0
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=41,
+        expected_after_state=0,
+        expected_hash="3ba5b0d89c1cec5a",
+    )
 
 
-def test_death_sfx_rand_consumes_past_cap() -> None:
+def test_death_sfx_rand_consumes_past_cap(mocker) -> None:
     world_size = 1024.0
     world = WorldState.build(
         world_size=world_size,
@@ -273,48 +267,41 @@ def test_death_sfx_rand_consumes_past_cap() -> None:
         for idx in range(7)
     )
 
-    calls = {"count": 0}
-    original_plan = world_state_mod.plan_death_sfx_keys
-    original_update = world.creatures.update
-
-    def _fake_plan(
-        deaths_now: Sequence[CreatureDeath] | tuple[object, ...],
-        *,
-        rand: Callable[[], int],
-    ) -> list[str]:
-        calls["count"] += 1
-        rand()
-        return ["death"] if deaths_now else []
-
     def _fake_update(*args: object, **kwargs: object) -> CreatureUpdateResult:
         _ = args, kwargs
         return CreatureUpdateResult(deaths=deaths, sfx=())
 
-    setattr(world_state_mod, "plan_death_sfx_keys", _fake_plan)
-    world.creatures.update = _fake_update  # type: ignore[assignment]
-    try:
-        events = world.step(
-            0.016,
-            inputs=None,
-            world_size=world_size,
-            damage_scale_by_type={},
-            detail_preset=5,
-            fx_queue=FxQueue(),
-            fx_queue_rotated=FxQueueRotated(),
-            auto_pick_perks=False,
-            game_mode=int(GameMode.SURVIVAL),
-            perk_progression_enabled=False,
-        )
-    finally:
-        setattr(world_state_mod, "plan_death_sfx_keys", original_plan)
-        world.creatures.update = original_update  # type: ignore[assignment]
+    mocker.patch.object(world.creatures, "update", side_effect=_fake_update)
+    rng = MockCrand(0, fallback="repeat_last")
+    world.state.rng = rng
+    before_calls = rng.calls
+    before_state = rng.state
+    events = world.step(
+        0.016,
+        inputs=None,
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        auto_pick_perks=False,
+        game_mode=int(GameMode.SURVIVAL),
+        perk_progression_enabled=False,
+    )
 
     assert len(events.deaths) == 7
     assert len(events.sfx) == 5
-    assert calls["count"] == 7
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=7,
+        expected_after_state=0,
+        expected_hash="06cb3d45c9fff74c",
+    )
 
 
-def test_freeze_hit_path_still_plans_hit_sfx() -> None:
+def test_freeze_hit_path_still_plans_hit_sfx(mocker) -> None:
     world_size = 1024.0
     world = WorldState.build(
         world_size=world_size,
@@ -325,22 +312,11 @@ def test_freeze_hit_path_still_plans_hit_sfx() -> None:
     world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
     world.state.bonuses.freeze = 1.0
 
-    calls = {"count": 0}
-    original_plan = world_state_mod.plan_hit_sfx_keys
-    original_update = world.state.projectiles.update
-
-    def _fake_plan(
-        hits: list[ProjectileHit],
-        *,
-        game_mode: int,
-        demo_mode_active: bool,
-        game_tune_started: bool,
-        rand: Callable[[], int],
-        beam_types: frozenset[int] = frozenset(),
-    ) -> tuple[bool, list[str]]:
-        _ = hits, game_mode, demo_mode_active, game_tune_started, rand, beam_types
-        calls["count"] += 1
-        return True, ["sfx_bullet_hit_01"]
+    plan_hit_sfx = mocker.patch.object(
+        world_state_mod,
+        "plan_hit_sfx_keys",
+        wraps=world_state_mod.plan_hit_sfx_keys,
+    )
 
     def _fake_projectile_update(
         *_args: object,
@@ -358,26 +334,33 @@ def test_freeze_hit_path_still_plans_hit_sfx() -> None:
         on_hit_post(hit, post_ctx)
         return [hit]
 
-    setattr(world_state_mod, "plan_hit_sfx_keys", _fake_plan)
-    world.state.projectiles.update = _fake_projectile_update  # type: ignore[assignment]
-    try:
-        events = world.step(
-            0.016,
-            inputs=None,
-            world_size=world_size,
-            damage_scale_by_type={},
-            detail_preset=5,
-            fx_queue=FxQueue(),
-            fx_queue_rotated=FxQueueRotated(),
-            auto_pick_perks=False,
-            game_mode=int(GameMode.SURVIVAL),
-            perk_progression_enabled=False,
-        )
-    finally:
-        setattr(world_state_mod, "plan_hit_sfx_keys", original_plan)
-        world.state.projectiles.update = original_update  # type: ignore[assignment]
+    mocker.patch.object(world.state.projectiles, "update", side_effect=_fake_projectile_update)
+    rng = MockCrand(0, fallback="repeat_last")
+    world.state.rng = rng
+    before_calls = rng.calls
+    before_state = rng.state
+    events = world.step(
+        0.016,
+        inputs=None,
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        auto_pick_perks=False,
+        game_mode=int(GameMode.SURVIVAL),
+        perk_progression_enabled=False,
+    )
 
-    assert calls["count"] == 1
+    assert plan_hit_sfx.call_count == 1
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=2,
+        expected_after_state=0,
+        expected_hash="e499ce7a21cd46c8",
+    )
     assert events.hit_sfx == ["sfx_bullet_hit_01"]
     assert events.trigger_game_tune is True
 

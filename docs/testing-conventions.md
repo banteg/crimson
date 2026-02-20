@@ -28,6 +28,14 @@ This project prioritizes deterministic parity with the original executable. The 
 - Use `tests.helpers.assert_float_close(actual, expected)` for scalar float parity checks.
 - The canonical absolute tolerance is `1e-6`.
 
+## RNG Assertions
+
+- Use `tests.helpers.assert_rng_progression(...)` with `MockCrand` for deterministic RNG checks.
+- Assert draw budget (`expected_draws`) when native parity defines an exact call budget.
+- Assert state/hash progression (`expected_after_state`, optional `expected_hash`) when call ordering is behaviorally significant.
+- Use both budget and state/hash in parity-critical paths (projectile/death planning, branch-sensitive effects).
+- Use `min_draws` only when a branch must consume RNG but the exact budget is intentionally non-contractual.
+
 ## Snapshot-First Testing
 
 - Prefer syrupy snapshots for high-structure payloads and broad regressions.
@@ -47,3 +55,4 @@ Ast-grep rules enforce key constraints:
 - no string-target `mocker.patch("...")` in tests
 - no string-target Raylib `monkeypatch.setattr("...rl...")` in tests
 - no list-append side-effect spies inside patch hooks
+- no raw dict payload assignment to typed capture fields in migrated capture tests

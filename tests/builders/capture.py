@@ -12,6 +12,9 @@ from crimson.original.schema import (
     CaptureCheckpointDebug,
     CaptureCheckpointDebugStatus,
     CaptureConfig,
+    CaptureCounterEntry,
+    CaptureCreatureLifecycleDigest,
+    CaptureCreatureLifecycleEntry,
     CaptureCreatureSample,
     CaptureDiagnostics,
     CaptureEventCounts,
@@ -23,6 +26,7 @@ from crimson.original.schema import (
     CaptureInputQueries,
     CaptureInputQueryCounter,
     CaptureInputQueryStats,
+    CapturePerkApplyEntry,
     CapturePerkApplyOutsideBefore,
     CapturePerkSnapshot,
     CapturePhaseMarker,
@@ -209,6 +213,110 @@ def build_capture_rng_head_entry() -> CaptureRngHeadEntry:
     )
 
 
+def build_capture_counter_entry(*, key: str = "", count: int = 0) -> CaptureCounterEntry:
+    return CaptureCounterEntry(key=str(key), count=int(count))
+
+
+def build_capture_perk_apply_entry(
+    *,
+    perk_id: int | None = None,
+    pending_before: int | None = None,
+    pending_after: int | None = None,
+    caller: str | None = None,
+    caller_static: str | None = None,
+    backtrace: list[str] | None = None,
+) -> CapturePerkApplyEntry:
+    return CapturePerkApplyEntry(
+        perk_id=None if perk_id is None else int(perk_id),
+        pending_before=None if pending_before is None else int(pending_before),
+        pending_after=None if pending_after is None else int(pending_after),
+        caller=caller,
+        caller_static=caller_static,
+        backtrace=None if backtrace is None else list(backtrace),
+    )
+
+
+def build_capture_perk_apply_outside_before(
+    *,
+    calls: int = 0,
+    dropped: int = 0,
+    head: list[CapturePerkApplyEntry] | None = None,
+) -> CapturePerkApplyOutsideBefore:
+    return CapturePerkApplyOutsideBefore(
+        calls=int(calls),
+        dropped=int(dropped),
+        head=[] if head is None else list(head),
+    )
+
+
+def build_capture_input_player_keys(
+    *,
+    player_index: int = 0,
+    move_forward_pressed: bool | None = None,
+    move_backward_pressed: bool | None = None,
+    turn_left_pressed: bool | None = None,
+    turn_right_pressed: bool | None = None,
+    fire_down: bool | None = None,
+    fire_pressed: bool | None = None,
+    reload_pressed: bool | None = None,
+) -> CaptureInputPlayerKeys:
+    return CaptureInputPlayerKeys(
+        player_index=int(player_index),
+        move_forward_pressed=move_forward_pressed,
+        move_backward_pressed=move_backward_pressed,
+        turn_left_pressed=turn_left_pressed,
+        turn_right_pressed=turn_right_pressed,
+        fire_down=fire_down,
+        fire_pressed=fire_pressed,
+        reload_pressed=reload_pressed,
+    )
+
+
+def build_capture_input_approx(
+    *,
+    player_index: int = 0,
+    move_dx: float = 0.0,
+    move_dy: float = 0.0,
+    aim_x: float = 0.0,
+    aim_y: float = 0.0,
+    aim_heading: float | None = None,
+    move_mode: int | None = None,
+    aim_scheme: int | None = None,
+    fired_events: int = 0,
+    moving: bool | None = None,
+    reload_active: bool | None = False,
+    weapon_id: int | None = None,
+    move_forward_pressed: bool | None = None,
+    move_backward_pressed: bool | None = None,
+    turn_left_pressed: bool | None = None,
+    turn_right_pressed: bool | None = None,
+    fire_down: bool | None = None,
+    fire_pressed: bool | None = None,
+    reload_pressed: bool | None = None,
+) -> CaptureInputApprox:
+    return CaptureInputApprox(
+        player_index=int(player_index),
+        move_dx=float(move_dx),
+        move_dy=float(move_dy),
+        aim_x=float(aim_x),
+        aim_y=float(aim_y),
+        aim_heading=None if aim_heading is None else float(aim_heading),
+        move_mode=None if move_mode is None else int(move_mode),
+        aim_scheme=None if aim_scheme is None else int(aim_scheme),
+        fired_events=int(fired_events),
+        moving=moving,
+        reload_active=reload_active,
+        weapon_id=None if weapon_id is None else int(weapon_id),
+        move_forward_pressed=move_forward_pressed,
+        move_backward_pressed=move_backward_pressed,
+        turn_left_pressed=turn_left_pressed,
+        turn_right_pressed=turn_right_pressed,
+        fire_down=fire_down,
+        fire_pressed=fire_pressed,
+        reload_pressed=reload_pressed,
+    )
+
+
 def build_capture_snapshot_player(*, index: int = 0) -> CaptureSnapshotPlayer:
     return CaptureSnapshotPlayer(
         index=int(index),
@@ -319,6 +427,434 @@ def build_capture_bonus_sample(*, index: int = 2) -> CaptureBonusSample:
         pos=CaptureVec2(x=300.0, y=310.0),
         amount_f32=1.0,
         amount_i32=1,
+    )
+
+
+def build_capture_creature_lifecycle_entry(*, index: int = -1, active: bool = True) -> CaptureCreatureLifecycleEntry:
+    return CaptureCreatureLifecycleEntry(
+        index=int(index),
+        active=bool(active),
+        active_flag=None,
+        state_flag=None,
+        type_id=None,
+        hp=None,
+        hitbox_size=None,
+        pos=CaptureVec2(x=0.0, y=0.0),
+        flags=None,
+        link_index=None,
+        ai_mode=None,
+        heading=None,
+        target_heading=None,
+        orbit_angle=None,
+        orbit_radius=None,
+        ai7_timer_ms=None,
+    )
+
+
+def build_capture_event_head(*, event_type: str, data: dict[str, object]) -> CaptureEventHead:
+    return msgspec.convert(
+        {"type": str(event_type), "data": dict(data)},
+        type=CaptureEventHead,
+        strict=True,
+    )
+
+
+def build_capture_event_head_projectile_spawn(
+    *,
+    owner_id: int = -100,
+    requested_type_id: int = 0,
+    actual_type_id: int | None = None,
+    index: int = -1,
+    angle_f32: float | None = None,
+    pos: CaptureVec2 | None = None,
+    type_overridden: bool | None = None,
+    caller: str | None = None,
+    caller_static: str | None = None,
+) -> CaptureEventHead:
+    spawn_pos = pos if pos is not None else CaptureVec2(x=0.0, y=0.0)
+    return build_capture_event_head(
+        event_type="projectile_spawn",
+        data={
+            "index": int(index),
+            "requested_type_id": int(requested_type_id),
+            "actual_type_id": None if actual_type_id is None else int(actual_type_id),
+            "spawned": None,
+            "owner_id": int(owner_id),
+            "angle_f32": angle_f32,
+            "pos": spawn_pos,
+            "type_overridden": type_overridden,
+            "caller": caller,
+            "caller_static": caller_static,
+        },
+    )
+
+
+def build_capture_event_head_secondary_projectile_spawn(
+    *,
+    requested_type_id: int = 0,
+    actual_type_id: int | None = None,
+    index: int = -1,
+    angle_f32: float | None = None,
+    pos: CaptureVec2 | None = None,
+    type_overridden: bool | None = None,
+    caller: str | None = None,
+) -> CaptureEventHead:
+    spawn_pos = pos if pos is not None else CaptureVec2(x=0.0, y=0.0)
+    return build_capture_event_head(
+        event_type="secondary_projectile_spawn",
+        data={
+            "index": int(index),
+            "requested_type_id": int(requested_type_id),
+            "actual_type_id": None if actual_type_id is None else int(actual_type_id),
+            "spawned": None,
+            "angle_f32": angle_f32,
+            "pos": spawn_pos,
+            "type_overridden": type_overridden,
+            "caller": caller,
+        },
+    )
+
+
+def build_capture_event_head_player_fire(
+    *,
+    player_index: int | None = 0,
+    owner_id: int | None = -100,
+    weapon_before: int | None = None,
+    weapon_after: int | None = None,
+    ammo_before: float | None = None,
+    ammo_after: float | None = None,
+    shot_cooldown_after: float | None = None,
+    requested_type_id: int | None = None,
+    actual_type_id: int | None = None,
+    source: str | None = None,
+    caller: str | None = None,
+    caller_static: str | None = None,
+) -> CaptureEventHead:
+    return build_capture_event_head(
+        event_type="player_fire",
+        data={
+            "player_index": player_index,
+            "owner_id": owner_id,
+            "weapon_before": weapon_before,
+            "weapon_after": weapon_after,
+            "ammo_before": ammo_before,
+            "ammo_after": ammo_after,
+            "shot_cooldown_after": shot_cooldown_after,
+            "requested_type_id": requested_type_id,
+            "actual_type_id": actual_type_id,
+            "source": source,
+            "caller": caller,
+            "caller_static": caller_static,
+        },
+    )
+
+
+def build_capture_event_head_state_transition(
+    *,
+    target_state: int = -1,
+    before_prev: int | None = None,
+    before_id: int | None = None,
+    before_pending: int | None = None,
+    after_prev: int | None = None,
+    after_id: int | None = None,
+    after_pending: int | None = None,
+    caller: str | None = None,
+    backtrace: list[str] | None = None,
+) -> CaptureEventHead:
+    return build_capture_event_head(
+        event_type="state_transition",
+        data={
+            "target_state": int(target_state),
+            "before": {"prev": before_prev, "id": before_id, "pending": before_pending},
+            "after": {"prev": after_prev, "id": after_id, "pending": after_pending},
+            "caller": caller,
+            "backtrace": None if backtrace is None else list(backtrace),
+        },
+    )
+
+
+def build_capture_event_head_bonus_apply(
+    *,
+    player_index: int | None = 0,
+    bonus_id: int | None = None,
+    entry_state: int | None = None,
+    amount_i32: int | None = None,
+    amount_f32: float | None = None,
+    caller: str | None = None,
+) -> CaptureEventHead:
+    return build_capture_event_head(
+        event_type="bonus_apply",
+        data={
+            "player_index": player_index,
+            "bonus_id": bonus_id,
+            "entry_state": entry_state,
+            "amount_i32": amount_i32,
+            "amount_f32": amount_f32,
+            "caller": caller,
+        },
+    )
+
+
+def build_capture_event_head_weapon_assign(
+    *,
+    player_index: int | None = 0,
+    weapon_id: int | None = None,
+    weapon_before: int | None = None,
+    weapon_after: int | None = None,
+    caller: str | None = None,
+) -> CaptureEventHead:
+    return build_capture_event_head(
+        event_type="weapon_assign",
+        data={
+            "player_index": player_index,
+            "weapon_id": weapon_id,
+            "weapon_before": weapon_before,
+            "weapon_after": weapon_after,
+            "caller": caller,
+        },
+    )
+
+
+def build_capture_event_head_projectile_find_query(
+    *,
+    result_kind: str = "miss",
+    result_creature_index: int | None = None,
+    start_index: int | None = None,
+    radius_f32: float | None = None,
+    query_pos: CaptureVec2 | None = None,
+    projectile_index: int | None = None,
+    projectile_owner_id: int | None = None,
+    projectile_type_id: int | None = None,
+    projectile_hit_radius: float | None = None,
+    owner_collision: bool = False,
+    player_find_skipped: bool = False,
+    shock_chain_projectile_id: int | None = None,
+    shock_chain_links_left: int | None = None,
+    caller: str | None = None,
+    caller_static: str | None = None,
+    backtrace: list[str] | None = None,
+) -> CaptureEventHead:
+    pos = query_pos if query_pos is not None else CaptureVec2(x=0.0, y=0.0)
+    return build_capture_event_head(
+        event_type="projectile_find_query",
+        data={
+            "result_creature_index": result_creature_index,
+            "result_kind": str(result_kind),
+            "start_index": start_index,
+            "radius_f32": radius_f32,
+            "query_pos": pos,
+            "projectile_index": projectile_index,
+            "projectile_owner_id": projectile_owner_id,
+            "projectile_type_id": projectile_type_id,
+            "projectile_hit_radius": projectile_hit_radius,
+            "owner_collision": bool(owner_collision),
+            "player_find_skipped": bool(player_find_skipped),
+            "shock_chain_projectile_id": shock_chain_projectile_id,
+            "shock_chain_links_left": shock_chain_links_left,
+            "caller": caller,
+            "caller_static": caller_static,
+            "backtrace": None if backtrace is None else list(backtrace),
+        },
+    )
+
+
+def build_capture_event_head_projectile_find_hit(
+    *,
+    creature_index: int,
+    result_kind: str = "hit",
+    result_creature_index: int | None = None,
+    start_index: int | None = None,
+    radius_f32: float | None = None,
+    query_pos: CaptureVec2 | None = None,
+    projectile_index: int | None = None,
+    projectile_owner_id: int | None = None,
+    projectile_type_id: int | None = None,
+    projectile_hit_radius: float | None = None,
+    owner_collision: bool = False,
+    player_find_skipped: bool = False,
+    shock_chain_projectile_id: int | None = None,
+    shock_chain_links_left: int | None = None,
+    caller: str | None = None,
+    caller_static: str | None = None,
+    backtrace: list[str] | None = None,
+    creature: CaptureCreatureLifecycleEntry | None = None,
+    corpse_hit: bool | None = None,
+) -> CaptureEventHead:
+    pos = query_pos if query_pos is not None else CaptureVec2(x=0.0, y=0.0)
+    return build_capture_event_head(
+        event_type="projectile_find_hit",
+        data={
+            "result_creature_index": result_creature_index,
+            "result_kind": str(result_kind),
+            "start_index": start_index,
+            "radius_f32": radius_f32,
+            "query_pos": pos,
+            "projectile_index": projectile_index,
+            "projectile_owner_id": projectile_owner_id,
+            "projectile_type_id": projectile_type_id,
+            "projectile_hit_radius": projectile_hit_radius,
+            "owner_collision": bool(owner_collision),
+            "player_find_skipped": bool(player_find_skipped),
+            "shock_chain_projectile_id": shock_chain_projectile_id,
+            "shock_chain_links_left": shock_chain_links_left,
+            "caller": caller,
+            "caller_static": caller_static,
+            "backtrace": None if backtrace is None else list(backtrace),
+            "creature_index": int(creature_index),
+            "creature": creature,
+            "corpse_hit": corpse_hit,
+        },
+    )
+
+
+def build_capture_event_head_creature_spawn(
+    *,
+    template_id: int,
+    pos: CaptureVec2 | None = None,
+    heading: float | None = None,
+    ret_ptr: str | None = None,
+    caller: str | None = None,
+    caller_static: str | None = None,
+) -> CaptureEventHead:
+    spawn_pos = pos if pos is not None else CaptureVec2(x=0.0, y=0.0)
+    return build_capture_event_head(
+        event_type="creature_spawn",
+        data={
+            "template_id": int(template_id),
+            "pos": spawn_pos,
+            "heading": heading,
+            "ret_ptr": ret_ptr,
+            "caller": caller,
+            "caller_static": caller_static,
+        },
+    )
+
+
+def build_capture_event_head_creature_lifecycle(
+    *,
+    before_count: int | None = None,
+    after_count: int | None = None,
+    before_hash: str | None = None,
+    after_hash: str | None = None,
+    added_head: list[CaptureCreatureLifecycleEntry] | None = None,
+    removed_head: list[CaptureCreatureLifecycleEntry] | None = None,
+    added_ids: list[int] | None = None,
+    removed_ids: list[int] | None = None,
+    added_overflow: int = 0,
+    removed_overflow: int = 0,
+) -> CaptureEventHead:
+    added_rows = [] if added_head is None else list(added_head)
+    removed_rows = [] if removed_head is None else list(removed_head)
+    digest = CaptureCreatureLifecycleDigest(
+        before_count=before_count,
+        after_count=after_count,
+        before_hash=before_hash,
+        after_hash=after_hash,
+        added_total=len(added_rows),
+        removed_total=len(removed_rows),
+        added_ids=[int(v) for v in (added_ids if added_ids is not None else [row.index for row in added_rows])],
+        removed_ids=[int(v) for v in (removed_ids if removed_ids is not None else [row.index for row in removed_rows])],
+        added_overflow=int(added_overflow),
+        removed_overflow=int(removed_overflow),
+        added_head=added_rows,
+        removed_head=removed_rows,
+    )
+    return msgspec.convert(
+        {"type": "creature_lifecycle", "data": digest},
+        type=CaptureEventHead,
+        strict=True,
+    )
+
+
+def build_capture_event_head_perk_delta(
+    *,
+    perk_jinxed_proc_timer_s: float | None = None,
+    perk_lean_mean_exp_tick_timer_s: float | None = None,
+    perk_doctor_target_creature_id: int | None = None,
+    perk_pending_count: int | None = None,
+) -> CaptureEventHead:
+    return build_capture_event_head(
+        event_type="perk_delta",
+        data={
+            "perk_jinxed_proc_timer_s": perk_jinxed_proc_timer_s,
+            "perk_lean_mean_exp_tick_timer_s": perk_lean_mean_exp_tick_timer_s,
+            "perk_doctor_target_creature_id": perk_doctor_target_creature_id,
+            "perk_pending_count": perk_pending_count,
+        },
+    )
+
+
+def build_capture_event_head_quest_timeline_delta(
+    *,
+    quest_spawn_timeline: int | None = None,
+    quest_spawn_stall_timer_ms: int | None = None,
+    creature_active_count: int | None = None,
+    quest_transition_timer_ms: int | None = None,
+) -> CaptureEventHead:
+    return build_capture_event_head(
+        event_type="quest_timeline_delta",
+        data={
+            "quest_spawn_timeline": quest_spawn_timeline,
+            "quest_spawn_stall_timer_ms": quest_spawn_stall_timer_ms,
+            "creature_active_count": creature_active_count,
+            "quest_transition_timer_ms": quest_transition_timer_ms,
+        },
+    )
+
+
+def build_capture_event_head_sfx(
+    *,
+    kind: str | None = None,
+    id_i32: int | None = None,
+    caller: str | None = None,
+    backtrace: list[str] | None = None,
+) -> CaptureEventHead:
+    return build_capture_event_head(
+        event_type="sfx",
+        data={
+            "kind": kind,
+            "id_i32": id_i32,
+            "caller": caller,
+            "backtrace": None if backtrace is None else list(backtrace),
+        },
+    )
+
+
+def build_capture_event_head_creature_update_micro(*, data: dict[str, object]) -> CaptureEventHead:
+    return build_capture_event_head(event_type="creature_update_micro", data=data)
+
+
+def build_capture_event_head_creature_update_micro_angle_approach(*, slot: int) -> CaptureEventHead:
+    return build_capture_event_head(
+        event_type="creature_update_micro",
+        data={
+            "event_kind": "angle_approach",
+            "slot": int(slot),
+            "angle_ptr": None,
+            "angle_in": None,
+            "angle_out": None,
+            "target": None,
+            "target_effective": None,
+            "rate": None,
+            "delta_to_target_direct": None,
+            "delta_to_target_effective": None,
+            "step_delta": None,
+            "branch": None,
+            "before": None,
+            "after": None,
+        },
+    )
+
+
+def build_capture_event_head_creature_update_micro_window(*, slot: int) -> CaptureEventHead:
+    return build_capture_event_head(
+        event_type="creature_update_micro",
+        data={
+            "event_kind": "creature_update_window",
+            "slot": int(slot),
+            "before": None,
+            "after": None,
+        },
     )
 
 

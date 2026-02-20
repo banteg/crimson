@@ -14,7 +14,7 @@ from crimson.sim.presentation_step import (
 )
 from crimson.sim.state_types import BonusPickupEvent, PlayerState
 from grim.geom import Vec2
-from tests.helpers import MockCrand
+from tests.helpers import MockCrand, assert_rng_progression
 
 
 def _death(
@@ -75,17 +75,26 @@ def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
 
 def test_plan_death_sfx_allows_five_randomized_deaths() -> None:
     rng = MockCrand(0, fallback="repeat_last")
+    before_calls = rng.calls
+    before_state = rng.state
 
     deaths = tuple(_death(type_id=int(CreatureTypeId.ZOMBIE)) for _ in range(5))
     keys = plan_death_sfx_keys(deaths, rand=rng)
 
     assert len(keys) == 5
-    assert rng.calls == 5
-    assert rng.state == 0
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=5,
+        expected_after_state=0,
+    )
 
 
 def test_plan_death_sfx_skips_suppressed_deaths() -> None:
     rng = MockCrand(0, fallback="repeat_last")
+    before_calls = rng.calls
+    before_state = rng.state
 
     deaths = (
         _death(type_id=int(CreatureTypeId.ZOMBIE), suppress_death_sfx=True),
@@ -94,8 +103,13 @@ def test_plan_death_sfx_skips_suppressed_deaths() -> None:
     keys = plan_death_sfx_keys(deaths, rand=rng)
 
     assert len(keys) == 1
-    assert rng.calls == 1
-    assert rng.state == 0
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=1,
+        expected_after_state=0,
+    )
 
 
 def test_apply_world_presentation_step_orders_sfx() -> None:
@@ -149,6 +163,8 @@ def test_queue_projectile_decals_consumes_rand() -> None:
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     fx_queue = FxQueue()
     rng = MockCrand(0, fallback="repeat_last")
+    before_calls = rng.calls
+    before_state = rng.state
 
     queue_projectile_decals(
         state=state,
@@ -160,8 +176,14 @@ def test_queue_projectile_decals_consumes_rand() -> None:
         fx_toggle=0,
     )
 
-    assert rng.calls > 0
-    assert rng.state == 0
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=74,
+        expected_after_state=0,
+        expected_hash="c4a960b5d558f47f",
+    )
     assert fx_queue.count > 0
 
 
@@ -170,6 +192,8 @@ def test_queue_projectile_decals_native_default_draw_count() -> None:
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     fx_queue = FxQueue()
     rng = MockCrand(0, fallback="repeat_last")
+    before_calls = rng.calls
+    before_state = rng.state
 
     queue_projectile_decals(
         state=state,
@@ -185,8 +209,14 @@ def test_queue_projectile_decals_native_default_draw_count() -> None:
     # - 2x blood splatter calls + 2 branch rolls,
     # - 1 extra throwaway rand,
     # - 3x decal spread rolls + 12x `fx_queue_add_random` draws.
-    assert rng.calls == 74
-    assert rng.state == 0
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=74,
+        expected_after_state=0,
+        expected_hash="c4a960b5d558f47f",
+    )
     assert fx_queue.count == 12
 
 
@@ -201,6 +231,8 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_six_shard_iterations(m
         wraps=state.effects.spawn_freeze_shard,
     )
     rng = MockCrand(0, fallback="repeat_last")
+    before_calls = rng.calls
+    before_state = rng.state
 
     queue_projectile_decals(
         state=state,
@@ -213,8 +245,14 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_six_shard_iterations(m
     )
 
     assert spawn_freeze_shard.call_count == 6
-    assert rng.calls > 0
-    assert rng.state == 0
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=79,
+        expected_after_state=0,
+        expected_hash="56444bb167a4637e",
+    )
     assert fx_queue.count == 6
 
 
@@ -229,6 +267,8 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_hooks_with_fx_toggle_s
         wraps=state.effects.spawn_freeze_shard,
     )
     rng = MockCrand(0, fallback="repeat_last")
+    before_calls = rng.calls
+    before_state = rng.state
 
     queue_projectile_decals(
         state=state,
@@ -241,8 +281,14 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_hooks_with_fx_toggle_s
     )
 
     assert spawn_freeze_shard.call_count == 6
-    assert rng.calls > 0
-    assert rng.state == 0
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=79,
+        expected_after_state=0,
+        expected_hash="56444bb167a4637e",
+    )
     assert fx_queue.count == 6
 
 
@@ -251,6 +297,8 @@ def test_queue_projectile_decals_orders_blood_before_decals() -> None:
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     fx_queue = FxQueue()
     rng = MockCrand(0, fallback="repeat_last")
+    before_calls = rng.calls
+    before_state = rng.state
 
     queue_projectile_decals(
         state=state,
@@ -262,8 +310,14 @@ def test_queue_projectile_decals_orders_blood_before_decals() -> None:
         fx_toggle=0,
     )
 
-    assert rng.calls == 74
-    assert rng.state == 0
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=74,
+        expected_after_state=0,
+        expected_hash="c4a960b5d558f47f",
+    )
     assert fx_queue.count == 12
 
 
@@ -271,6 +325,8 @@ def test_apply_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     rng = MockCrand(0, fallback="repeat_last")
+    before_calls = rng.calls
+    before_state = rng.state
 
     commands = apply_world_presentation_step(
         state=state,
@@ -293,7 +349,13 @@ def test_apply_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
         hit_sfx=["sfx_bullet_hit_01"],
     )
 
-    assert rng.calls == 0
-    assert rng.state == 0
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=0,
+        expected_after_state=0,
+        expected_hash="da39a3ee5e6b4b0d",
+    )
     assert commands.trigger_game_tune is True
     assert commands.sfx_keys == ["sfx_bullet_hit_01"]

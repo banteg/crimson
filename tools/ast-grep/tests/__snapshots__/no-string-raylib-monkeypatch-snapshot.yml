@@ -1,16 +1,16 @@
 id: no-string-raylib-monkeypatch
 snapshots:
   ? |
-    monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_width", lambda: 640)
-  : labels:
-    - source: 'monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_width", lambda: 640)'
-      style: primary
-      start: 0
-      end: 76
-  ? |
     monkeypatch.setattr("crimson.render.world.effects.rl.draw_texture_pro", _draw_texture_pro)
   : labels:
     - source: monkeypatch.setattr("crimson.render.world.effects.rl.draw_texture_pro", _draw_texture_pro)
       style: primary
       start: 0
       end: 90
+  ? |
+    monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_width", lambda: 640)
+  : labels:
+    - source: 'monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_width", lambda: 640)'
+      style: primary
+      start: 0
+      end: 76

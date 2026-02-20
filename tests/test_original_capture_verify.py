@@ -180,10 +180,12 @@ def _capture_from_checkpoint(
         rng_call_count=0,
         input_true_count=0,
     )
+    rand_calls_mark = int(ckpt.rng_marks["rand_calls"]) if "rand_calls" in ckpt.rng_marks else 0
+    rand_last_mark = int(ckpt.rng_marks["rand_last"]) if "rand_last" in ckpt.rng_marks else None
     rng_marks = CaptureRngMarks(
-        rand_calls=int(ckpt.rng_marks.get("rand_calls", 0)),
+        rand_calls=rand_calls_mark,
         rand_hash="",
-        rand_last=int(ckpt.rng_marks.get("rand_last", 0)) if "rand_last" in ckpt.rng_marks else None,
+        rand_last=rand_last_mark,
         rand_head=[], rand_callers=[], rand_caller_overflow=0, rand_seq_first=None, rand_seq_last=None,
         rand_seed_epoch_enter=None, rand_seed_epoch_last=None, rand_outside_before_calls=0,
         rand_outside_before_dropped=0, rand_outside_before_head=[], rand_mirror_mismatch_total=0,

@@ -11,7 +11,7 @@ import crimson.ui.game_over as game_over_module
 from crimson.frontend.assets import MenuAssets
 from crimson.frontend.panels.base import PANEL_TIMELINE_START_MS
 from crimson.game.high_scores_view import HighScoresView
-from crimson.game.types import GameState, HighScoresRequest
+from crimson.game.types import GameState, HighScoresRequest, PauseBackground
 from crimson.persistence import save_status
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS, GameOverAssets, GameOverUi
@@ -60,15 +60,7 @@ def _game_over_assets_stub() -> GameOverAssets:
     )
 
 
-class _PauseBackgroundSpy:
-    def __init__(self, draw_pause_background_mock) -> None:
-        self._draw_pause_background_mock = draw_pause_background_mock
-
-    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
-        self._draw_pause_background_mock(entity_alpha=entity_alpha)
-
-
-def test_game_over_panel_open_plays_panel_click(monkeypatch, tmp_path: Path, mocker) -> None:
+def test_game_over_panel_open_plays_panel_click(tmp_path: Path, mocker) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=ensure_crimson_cfg(tmp_path))
     ui.assets = _game_over_assets_stub()
     ui.phase = 1
@@ -97,7 +89,7 @@ def test_game_over_panel_open_plays_panel_click(monkeypatch, tmp_path: Path, moc
     play_sfx.assert_called_once_with("sfx_ui_panelclick")
 
 
-def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(monkeypatch, tmp_path: Path, mocker) -> None:
+def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(tmp_path: Path, mocker) -> None:
     # Unit test: avoid depending on proprietary assets / PAQ archives.
     assets_dir = tmp_path
 
@@ -177,7 +169,7 @@ def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Pat
     )
     state.pending_high_scores = HighScoresRequest(game_mode_id=1)
     draw_pause_background_mock = mocker.Mock()
-    state.pause_background = _PauseBackgroundSpy(draw_pause_background_mock)
+    state.pause_background = cast("PauseBackground", SimpleNamespace(draw_pause_background=draw_pause_background_mock))
 
     class _DummyCache:
         def get_or_load(self, *_args, **_kwargs):
