@@ -570,7 +570,8 @@ class CaptureVisualizerView:
             dt_frame_ms_i32_overrides=self._dt_frame_ms_i32_overrides,
         )
 
-        tick_events = self._events_by_tick.get(int(tick_index), [])
+        tick_key = int(tick_index)
+        tick_events = self._events_by_tick[tick_key] if tick_key in self._events_by_tick else []
         pre_step_events, post_step_events = partition_tick_events(
             tick_events,
             defer_menu_open=bool(self._original_capture_replay),
