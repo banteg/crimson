@@ -1902,10 +1902,7 @@ def _capture_bootstrap_payload(
 def _event_payload_object(payload: list[object]) -> dict[str, object] | None:
     if not payload:
         return None
-    try:
-        return msgspec.convert(payload[0], type=dict[str, object], strict=False)
-    except msgspec.ValidationError:
-        return None
+    return msgspec.convert(payload[0], type=dict[str, object], strict=True)
 
 
 def capture_bootstrap_payload_from_event_payload(payload: list[object]) -> dict[str, object] | None:
@@ -1924,10 +1921,7 @@ def capture_perk_apply_from_event_payload(payload: list[object]) -> tuple[int, b
     event_payload = _event_payload_object(payload)
     if event_payload is None:
         return None
-    try:
-        parsed = msgspec.convert(event_payload, type=_CapturePerkApplyPayload, strict=False)
-    except msgspec.ValidationError:
-        return None
+    parsed = msgspec.convert(event_payload, type=_CapturePerkApplyPayload, strict=True)
     return int(parsed.perk_id), bool(parsed.outside_before)
 
 
@@ -1935,10 +1929,7 @@ def capture_perk_apply_pending_bounds_from_event_payload(payload: list[object]) 
     event_payload = _event_payload_object(payload)
     if event_payload is None:
         return (None, None)
-    try:
-        parsed = msgspec.convert(event_payload, type=_CapturePerkApplyPayload, strict=False)
-    except msgspec.ValidationError:
-        return (None, None)
+    parsed = msgspec.convert(event_payload, type=_CapturePerkApplyPayload, strict=True)
     pending_before = _coerce_int_like(parsed.pending_before)
     pending_after = _coerce_int_like(parsed.pending_after)
     return (
@@ -1951,10 +1942,7 @@ def capture_perk_pending_from_event_payload(payload: list[object]) -> int | None
     event_payload = _event_payload_object(payload)
     if event_payload is None:
         return None
-    try:
-        parsed = msgspec.convert(event_payload, type=_CapturePerkPendingPayload, strict=False)
-    except msgspec.ValidationError:
-        return None
+    parsed = msgspec.convert(event_payload, type=_CapturePerkPendingPayload, strict=True)
     return int(parsed.perk_pending)
 
 
