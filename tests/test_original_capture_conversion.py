@@ -4,7 +4,7 @@ import copy
 import gzip
 import json
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 import msgspec
 import pytest
@@ -80,6 +80,7 @@ from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.builders.capture import (
     build_capture_bonus_sample,
+    build_capture_counter_entry,
     build_capture_creature_lifecycle_entry,
     build_capture_creature_sample,
     build_capture_event_head_bonus_apply,
@@ -132,17 +133,43 @@ _DEFAULT_CAPTURE_BONUS_SAMPLE = build_capture_bonus_sample()
 _DEFAULT_CAPTURE_RNG_HEAD_ENTRY = build_capture_rng_head_entry()
 
 
-def _as_builtins_dict(value: object) -> dict[str, object]:
-    return cast(dict[str, object], capture_value_to_builtins(value))
+def _require_str_key_dict(value: object) -> dict[str, Any]:
+    assert isinstance(value, dict)
+    out: dict[str, Any] = {}
+    for key, entry in value.items():
+        assert isinstance(key, str)
+        out[key] = entry
+    return out
 
 
-def _capture_meta_dict(capture: CaptureFile) -> dict[str, object]:
+def _require_str_list(value: object) -> list[str]:
+    assert isinstance(value, list)
+    out: list[str] = []
+    for item in value:
+        assert isinstance(item, str)
+        out.append(item)
+    return out
+
+
+def _require_dict_list(value: object) -> list[dict[str, Any]]:
+    assert isinstance(value, list)
+    out: list[dict[str, Any]] = []
+    for item in value:
+        out.append(_require_str_key_dict(item))
+    return out
+
+
+def _as_builtins_dict(value: object) -> dict[str, Any]:
+    return _require_str_key_dict(capture_value_to_builtins(value))
+
+
+def _capture_meta_dict(capture: CaptureFile) -> dict[str, Any]:
     payload = capture_file_to_dict(capture)
     return {k: v for k, v in payload.items() if k != "ticks"}
 
 
 def _base_input_approx(**kwargs: object) -> CaptureInputApprox:
-    updates: dict[str, object] = {"aim_x": 512.0, "aim_y": 512.0}
+    updates: dict[str, Any] = {"aim_x": 512.0, "aim_y": 512.0}
     updates.update(kwargs)
     return msgspec.structs.replace(_DEFAULT_CAPTURE_TICK.input_approx[0], **updates)
 
@@ -384,10 +411,10 @@ def _write_capture(path: Path, capture: CaptureFile) -> None:
         path.write_bytes(encoded)
 
 
-def _write_capture_malformed(path: Path, payload: dict[str, object]) -> None:
+def _write_capture_malformed(path: Path, payload: dict[str, Any]) -> None:
     meta = {k: v for k, v in payload.items() if k != "ticks"}
     meta["ticks"] = []
-    ticks_obj = payload.get("ticks")
+    ticks_obj = payload["ticks"] if "ticks" in payload else []
     ticks = ticks_obj if isinstance(ticks_obj, list) else []
     rows = [json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True)]
     rows.extend(json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True) for tick in ticks)
@@ -406,7 +433,7 @@ def _write_capture_stream(path: Path, *, capture: CaptureFile) -> None:
     path.write_text("\n".join(rows) + "\n", encoding="utf-8")
 
 
-def _write_capture_stream_malformed(path: Path, *, meta: dict[str, object], ticks: list[dict[str, object]]) -> None:
+def _write_capture_stream_malformed(path: Path, *, meta: dict[str, Any], ticks: list[dict[str, Any]]) -> None:
     normalized_meta = dict(meta)
     normalized_meta["ticks"] = []
     rows = [json.dumps({"event": "capture_meta", "capture": normalized_meta}, separators=(",", ":"), sort_keys=True)]
@@ -449,7 +476,7 @@ def _replay_input_aim_xy(replay: Replay, tick_index: int, player_index: int = 0)
     return float(aim_x), float(aim_y)
 
 
-def _minimal_strict_bootstrap_payload() -> dict[str, object]:
+def _minimal_strict_bootstrap_payload_dict() -> dict[str, Any]:
     return {
         "tick_index": 0,
         "elapsed_ms": 0,
@@ -476,8 +503,14 @@ def _minimal_strict_bootstrap_payload() -> dict[str, object]:
     }
 
 
+def _minimal_strict_bootstrap_payload() -> Any:
+    payload = capture_bootstrap_payload_from_event_payload([_minimal_strict_bootstrap_payload_dict()])
+    assert payload is not None
+    return payload
+
+
 def test_capture_event_payload_helpers_parse_msgspec_payloads() -> None:
-    bootstrap_payload = _minimal_strict_bootstrap_payload()
+    bootstrap_payload = _minimal_strict_bootstrap_payload_dict()
     bootstrap_payload["elapsed_ms"] = 123
     bootstrap = capture_bootstrap_payload_from_event_payload([bootstrap_payload])
     assert bootstrap is not None
@@ -724,7 +757,7 @@ def test_summarize_capture_health_flags_missing_micro_rows(tmp_path: Path) -> No
     summary = summarize_capture_health(capture)
 
     assert summary["ok_for_movement_root_cause"] is False
-    issues = cast("list[str]", summary["issues"])
+    issues = _require_str_list(summary["issues"])
     assert "creature_update_micro_rows == 0" in issues
     assert "creature_update_micro_angle_rows == 0" in issues
     assert "creature_update_micro_window_rows == 0" in issues
@@ -759,7 +792,7 @@ def test_summarize_capture_health_counts_micro_and_lifecycle_lineage(tmp_path: P
 
     capture = load_capture(path)
     summary = summarize_capture_health(capture)
-    metrics = cast("dict[str, object]", summary["metrics"])
+    metrics = _require_str_key_dict(summary["metrics"])
 
     assert summary["ok_for_movement_root_cause"] is True
     assert metrics["key_rows_with_any_signal"] == 1
@@ -776,26 +809,18 @@ def test_summarize_capture_health_counts_micro_and_lifecycle_lineage(tmp_path: P
 def test_load_capture_accepts_player_fire_debug_payloads(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     debug = _tick_checkpoint(tick).debug
-    debug.player_fire = msgspec.convert(
-        {
-            "event_count_player_fire": 3,
-            "top_direct_events_by_player": [{"key": "0", "count": 1}],
-            "top_fallback_events_by_player": [{"key": "0", "count": 2}],
-            "top_player_projectile_spawns_by_player": [{"key": "0", "count": 3}],
-        },
-        type=CapturePlayerFireDiagnostics,
-        strict=True,
+    debug.player_fire = _base_player_fire_diagnostics(
+        event_count_player_fire=3,
+        top_direct_events_by_player=[build_capture_counter_entry(key="0", count=1)],
+        top_fallback_events_by_player=[build_capture_counter_entry(key="0", count=2)],
+        top_player_projectile_spawns_by_player=[build_capture_counter_entry(key="0", count=3)],
     )
     diagnostics = _tick_diagnostics(tick)
-    diagnostics.player_fire = msgspec.convert(
-        {
-            "event_count_player_fire": 4,
-            "top_direct_events_by_player": [{"key": "0", "count": 4}],
-            "top_fallback_events_by_player": [],
-            "top_player_projectile_spawns_by_player": [],
-        },
-        type=CapturePlayerFireDiagnostics,
-        strict=True,
+    diagnostics.player_fire = _base_player_fire_diagnostics(
+        event_count_player_fire=4,
+        top_direct_events_by_player=[build_capture_counter_entry(key="0", count=4)],
+        top_fallback_events_by_player=[],
+        top_player_projectile_spawns_by_player=[],
     )
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json.gz"
@@ -881,12 +906,16 @@ def test_load_capture_rejects_incomplete_sample_rows(tmp_path: Path) -> None:
     bad_creature = _as_builtins_dict(_sample_creature())
     del bad_creature["collision_flag"]
     obj = capture_file_to_dict(_capture_obj(ticks=[tick]))
-    tick0 = cast(dict[str, object], cast(list[object], obj["ticks"])[0])
-    samples = cast(dict[str, object], tick0["samples"])
+    ticks_obj = _require_dict_list(obj["ticks"])
+    assert ticks_obj
+    tick0 = ticks_obj[0]
+    samples = _require_str_key_dict(tick0["samples"])
     samples["creatures"] = [bad_creature]
     samples["projectiles"] = []
     samples["secondary_projectiles"] = []
     samples["bonuses"] = []
+    tick0["samples"] = samples
+    obj["ticks"] = ticks_obj
     path = tmp_path / "capture.json"
     _write_capture_malformed(path, obj)
 
@@ -1090,15 +1119,12 @@ def test_convert_capture_to_replay_skips_menu_open_for_terminal_pending_drop_tra
 def test_convert_capture_to_replay_bootstrap_payload_includes_perk_snapshot(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16, perk_pending=3)
     checkpoint = _tick_checkpoint(tick0)
-    checkpoint.perk = msgspec.convert(
-        {
-            "pending_count": 3,
-            "choices_dirty": False,
-            "choices": [11, 22, 33, 44, 55, 66, 77],
-            "player_nonzero_counts": [],
-        },
-        type=type(checkpoint.perk),
-        strict=True,
+    checkpoint.perk = msgspec.structs.replace(
+        checkpoint.perk,
+        pending_count=3,
+        choices_dirty=False,
+        choices=[11, 22, 33, 44, 55, 66, 77],
+        player_nonzero_counts=[],
     )
 
     obj = _capture_obj(ticks=[tick0])
@@ -1619,16 +1645,15 @@ def test_apply_capture_bootstrap_payload_applies_perk_intervals_and_player_perk_
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
     payload = _minimal_strict_bootstrap_payload()
-    payload["elapsed_ms"] = -1
-    payload_players = cast(list[dict[str, object]], payload.get("players"))
-    assert payload_players
-    payload_players[0]["perk_timers"] = {
+    payload.elapsed_ms = -1
+    assert payload.players
+    payload.players[0].perk_timers = {
         "hot_tempered": 1.36,
         "man_bomb": 0.5,
         "living_fortress": 0.25,
         "fire_cough": 0.75,
     }
-    payload["perk_intervals"] = {
+    payload.perk_intervals = {
         "hot_tempered": 1.4,
         "man_bomb": 6.0,
         "fire_cough": 3.0,
@@ -2038,11 +2063,7 @@ def test_convert_capture_to_replay_raises_when_rng_state_before_missing(tmp_path
     rng_marks.rand_calls = 8
     rng_marks.rand_last = outputs[-1]
     rng_marks.rand_head = [
-        msgspec.convert(
-            _base_rng_head_entry(value=int(value), value_15=int(value)),
-            type=CaptureRngHeadEntry,
-            strict=True,
-        )
+        _base_rng_head_entry(value=int(value), value_15=int(value))
         for value in outputs
     ]
 
@@ -2069,14 +2090,10 @@ def test_convert_capture_to_replay_prefers_rng_state_before_seed(tmp_path: Path)
     rng_marks.rand_calls = 8
     rng_marks.rand_last = outputs[-1]
     rng_marks.rand_head = [
-        msgspec.convert(
-            _base_rng_head_entry(
-                value=int(outputs[0]),
-                value_15=int(outputs[0]),
-                state_before_u32=int(seed),
-            ),
-            type=CaptureRngHeadEntry,
-            strict=True,
+        _base_rng_head_entry(
+            value=int(outputs[0]),
+            value_15=int(outputs[0]),
+            state_before_u32=int(seed),
         ),
     ]
     tick0.rng = _base_rng_summary(
@@ -2109,11 +2126,7 @@ def test_convert_capture_to_replay_explicit_seed_overrides_inferred_seed(tmp_pat
     rng_marks.rand_calls = 8
     rng_marks.rand_last = outputs[-1]
     rng_marks.rand_head = [
-        msgspec.convert(
-            _base_rng_head_entry(value=int(value), value_15=int(value)),
-            type=CaptureRngHeadEntry,
-            strict=True,
-        )
+        _base_rng_head_entry(value=int(value), value_15=int(value))
         for value in outputs
     ]
     tick0.rng = _base_rng_summary(

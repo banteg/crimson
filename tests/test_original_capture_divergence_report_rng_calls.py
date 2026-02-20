@@ -404,9 +404,10 @@ def test_run_actual_checkpoints_quest_uses_capture_inter_tick_rand_draw_override
 
     def _fake_run_quest_replay(*_args: object, **kwargs: object):
         nonlocal seen_inter_tick_rand_draws, seen_inter_tick_rand_draws_by_tick
-        inter_tick_draws_obj = kwargs["inter_tick_rand_draws"] if "inter_tick_rand_draws" in kwargs else -1
-        seen_inter_tick_rand_draws = int(inter_tick_draws_obj) if isinstance(inter_tick_draws_obj, int) else -1
-        draws_by_tick_obj = kwargs["inter_tick_rand_draws_by_tick"] if "inter_tick_rand_draws_by_tick" in kwargs else {}
+        inter_tick_draws_obj = kwargs["inter_tick_rand_draws"]
+        assert isinstance(inter_tick_draws_obj, int)
+        seen_inter_tick_rand_draws = int(inter_tick_draws_obj)
+        draws_by_tick_obj = kwargs["inter_tick_rand_draws_by_tick"]
         assert isinstance(draws_by_tick_obj, dict)
         seen_inter_tick_rand_draws_by_tick = {}
         for key, value in draws_by_tick_obj.items():
