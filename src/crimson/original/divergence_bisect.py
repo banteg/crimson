@@ -139,7 +139,7 @@ def _build_repro_tick_row(
         "expected": {
             "score_xp": int(expected.score_xp),
             "creature_count": int(expected.creature_count),
-            "rand_calls": int(expected.rng_marks.get("rand_calls", -1)),
+            "rand_calls": (int(expected.rng_marks["rand_calls"]) if "rand_calls" in expected.rng_marks else -1),
         },
         "actual": {
             "score_xp": int(actual.score_xp),
@@ -346,7 +346,11 @@ def main(argv: list[str] | None = None) -> int:
         actual_ckpt = actual_by_tick.get(int(tick))
         if expected_ckpt is None or actual_ckpt is None:
             continue
-        raw = raw_debug_window.get(int(tick), {})
+        tick_key = int(tick)
+        if tick_key in raw_debug_window:
+            raw = raw_debug_window[tick_key]
+        else:
+            raw = {}
         repro_rows.append(
             _build_repro_tick_row(
                 tick=int(tick),

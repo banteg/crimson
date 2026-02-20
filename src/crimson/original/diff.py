@@ -142,10 +142,20 @@ def _collect_field_diffs(
         keys = sorted({*expected.keys(), *actual.keys()})
         for key in keys:
             key_str = str(key)
-            exp_value = expected.get(key_str, expected.get(key))
-            act_value = actual.get(key_str, actual.get(key))
             has_exp = key in expected or key_str in expected
             has_act = key in actual or key_str in actual
+            if key_str in expected:
+                exp_value = expected[key_str]
+            elif key in expected:
+                exp_value = expected[key]
+            else:
+                exp_value = None
+            if key_str in actual:
+                act_value = actual[key_str]
+            elif key in actual:
+                act_value = actual[key]
+            else:
+                act_value = None
             if not has_exp or not has_act:
                 out.append(
                     ReplayFieldDiff(
@@ -319,7 +329,18 @@ def compare_checkpoints(
             continue
 
         mark_keys = sorted({*exp.rng_marks.keys(), *act.rng_marks.keys()})
-        mark_mismatch = [key for key in mark_keys if int(exp.rng_marks.get(key, -1)) != int(act.rng_marks.get(key, -1))]
+        mark_mismatch: list[str] = []
+        for key in mark_keys:
+            if key in exp.rng_marks:
+                exp_mark = int(exp.rng_marks[key])
+            else:
+                exp_mark = -1
+            if key in act.rng_marks:
+                act_mark = int(act.rng_marks[key])
+            else:
+                act_mark = -1
+            if exp_mark != act_mark:
+                mark_mismatch.append(key)
         first_mark = next((key for key in rng_mark_order if key in mark_mismatch), mark_mismatch[0] if mark_mismatch else None)
         return ReplayDiffResult(
             ok=False,

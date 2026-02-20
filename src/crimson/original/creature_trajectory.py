@@ -131,7 +131,11 @@ def _read_capture_creature_samples(
         for row in creatures:  # ty:ignore[not-iterable]
             if not isinstance(row, dict):
                 continue
-            if int(row.get("index", -1)) != int(creature_index):
+            if "index" in row:
+                row_index = int(row["index"])
+            else:
+                row_index = -1
+            if row_index != int(creature_index):
                 continue
             out[int(tick)] = row
             break
@@ -409,13 +413,18 @@ def trace_creature_trajectory(
         tick_begin = max(0, int(bootstrap_start_tick)) if bootstrap_start_tick is not None else 0
 
         if bootstrap_start_tick is not None and session_quest is not None:
+            bootstrap_tick = int(bootstrap_start_tick)
             bootstrap_dt = resolve_dt_frame(
-                tick_index=int(bootstrap_start_tick),
+                tick_index=bootstrap_tick,
                 default_dt_frame=float(default_dt_frame),
                 dt_frame_overrides=dt_frame_overrides,
             )
             bootstrap_dt_ms = float(bootstrap_dt) * 1000.0
-            for event in events_by_tick.get(int(bootstrap_start_tick), []):
+            if bootstrap_tick in events_by_tick:
+                bootstrap_events = events_by_tick[bootstrap_tick]
+            else:
+                bootstrap_events = []
+            for event in bootstrap_events:
                 if not (isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND):
                     continue
                 payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
@@ -446,6 +455,7 @@ def trace_creature_trajectory(
 
     out: list[CreatureTrajectoryRow] = []
     for tick_index in range(int(tick_begin), int(end_tick) + 1):
+        tick_key = int(tick_index)
         if mode == int(GameMode.QUESTS) and pending_capture_state_reset:
             _apply_capture_state_reset()
 
@@ -459,23 +469,26 @@ def trace_creature_trajectory(
             for _ in range(max(0, int(draws))):
                 state.rng.rand()
         dt_tick = resolve_dt_frame(
-            tick_index=int(tick_index),
+            tick_index=tick_key,
             default_dt_frame=float(default_dt_frame),
             dt_frame_overrides=dt_frame_overrides,
         )
         dt_tick_ms_i32 = resolve_dt_frame_ms_i32(
-            tick_index=int(tick_index),
+            tick_index=tick_key,
             dt_frame=float(dt_tick),
             dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
         )
-        tick_events = events_by_tick.get(int(tick_index), [])
+        if tick_key in events_by_tick:
+            tick_events = events_by_tick[tick_key]
+        else:
+            tick_events = []
         pre_step_events, post_step_events = partition_tick_events(
             tick_events,
             defer_menu_open=bool(original_capture_replay),
         )
         apply_replay_tick_events(
             pre_step_events,
-            tick_index=int(tick_index),
+            tick_index=tick_key,
             dt_frame=float(dt_tick),
             world=world,
             game_mode_id=int(mode),
@@ -487,7 +500,7 @@ def trace_creature_trajectory(
 
         player_inputs = _decode_inputs_for_tick(
             replay=replay,
-            tick_index=int(tick_index),
+            tick_index=tick_key,
         )
         if session_survival is not None:
             session_survival.step_tick(
@@ -507,7 +520,7 @@ def trace_creature_trajectory(
         if post_step_events:
             apply_replay_tick_events(
                 post_step_events,
-                tick_index=int(tick_index),
+                tick_index=tick_key,
                 dt_frame=float(dt_tick),
                 world=world,
                 game_mode_id=int(mode),
@@ -517,14 +530,64 @@ def trace_creature_trajectory(
         if mode == int(GameMode.QUESTS):
             world.creatures.finalize_post_render_lifecycle()
 
-        sample = capture_rows.get(int(tick_index))
+        sample = capture_rows.get(tick_key)
         if sample is not None and int(tick_index) >= int(start_tick):
             if not (0 <= int(creature_index) < len(world.creatures.entries)):
                 break
             creature = world.creatures.entries[int(creature_index)]
-            cap_pos = sample.get("pos") if isinstance(sample.get("pos"), dict) else {}
-            cap_x = float(cap_pos.get("x", 0.0))  # ty:ignore[possibly-missing-attribute]
-            cap_y = float(cap_pos.get("y", 0.0))  # ty:ignore[possibly-missing-attribute]
+            cap_pos_obj = sample.get("pos")
+            if isinstance(cap_pos_obj, dict):
+                cap_pos = cast("dict[str, object]", cap_pos_obj)
+            else:
+                cap_pos = {}
+            if "x" in cap_pos:
+                cap_x = float(cast("Any", cap_pos["x"]))
+            else:
+                cap_x = 0.0
+            if "y" in cap_pos:
+                cap_y = float(cast("Any", cap_pos["y"]))
+            else:
+                cap_y = 0.0
+            if "type_id" in sample:
+                cap_type_id = int(sample["type_id"])
+            else:
+                cap_type_id = -1
+            if "flags" in sample:
+                cap_flags = int(sample["flags"])
+            else:
+                cap_flags = 0
+            if "active" in sample:
+                cap_active = bool(int(sample["active"]) != 0)
+            else:
+                cap_active = False
+            if "target_player" in sample:
+                cap_target_player = int(sample["target_player"])
+            else:
+                cap_target_player = -1
+            if "hp" in sample:
+                cap_hp = float(sample["hp"])
+            else:
+                cap_hp = 0.0
+            if "hitbox_size" in sample:
+                cap_hitbox = float(sample["hitbox_size"])
+            else:
+                cap_hitbox = 0.0
+            if "collision_flag" in sample:
+                cap_collision_flag = int(sample["collision_flag"])
+            else:
+                cap_collision_flag = 0
+            if "state_flag" in sample:
+                cap_state_flag = int(sample["state_flag"])
+            else:
+                cap_state_flag = 0
+            if "heading" in sample:
+                cap_heading = float(sample["heading"])
+            else:
+                cap_heading = 0.0
+            if "target_heading" in sample:
+                cap_target_heading = float(sample["target_heading"])
+            else:
+                cap_target_heading = 0.0
             rw_x = float(creature.pos.x)
             rw_y = float(creature.pos.y)
             dx = rw_x - cap_x
@@ -532,28 +595,28 @@ def trace_creature_trajectory(
             out.append(
                 CreatureTrajectoryRow(
                     tick=int(tick_index),
-                    cap_type_id=int(sample.get("type_id", -1)),
+                    cap_type_id=cap_type_id,
                     rw_type_id=int(creature.type_id),
-                    cap_flags=int(sample.get("flags", 0)),
+                    cap_flags=cap_flags,
                     rw_flags=int(creature.flags),
-                    cap_active=bool(int(sample.get("active", 0)) != 0),
+                    cap_active=cap_active,
                     rw_active=bool(creature.active),
-                    cap_target_player=int(sample.get("target_player", -1)),
+                    cap_target_player=cap_target_player,
                     rw_target_player=int(creature.target_player),
                     rw_ai_mode=int(creature.ai_mode),
-                    cap_hp=float(sample.get("hp", 0.0)),
+                    cap_hp=cap_hp,
                     rw_hp=float(creature.hp),
-                    hp_delta=float(creature.hp) - float(sample.get("hp", 0.0)),
-                    cap_hitbox=float(sample.get("hitbox_size", 0.0)),
+                    hp_delta=float(creature.hp) - cap_hp,
+                    cap_hitbox=cap_hitbox,
                     rw_hitbox=float(creature.hitbox_size),
-                    hitbox_delta=float(creature.hitbox_size) - float(sample.get("hitbox_size", 0.0)),
-                    cap_collision_flag=int(sample.get("collision_flag", 0)),
-                    cap_state_flag=int(sample.get("state_flag", 0)),
+                    hitbox_delta=float(creature.hitbox_size) - cap_hitbox,
+                    cap_collision_flag=cap_collision_flag,
+                    cap_state_flag=cap_state_flag,
                     rw_plague_infected=bool(creature.plague_infected),
                     rw_attack_cooldown=float(creature.attack_cooldown),
                     rw_move_scale=float(creature.move_scale),
-                    cap_heading=float(sample.get("heading", 0.0)),
-                    cap_target_heading=float(sample.get("target_heading", 0.0)),
+                    cap_heading=cap_heading,
+                    cap_target_heading=cap_target_heading,
                     rw_heading=float(creature.heading),
                     rw_target_heading=float(creature.target_heading),
                     rw_force_target=int(creature.force_target),

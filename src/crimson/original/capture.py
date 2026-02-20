@@ -1641,12 +1641,14 @@ def _infer_bootstrap_perk_intervals(capture: CaptureFile, *, tick_rate: int) -> 
         after_timers = _before_player_perk_timers(after_player)
         if before_timers is None or after_timers is None:
             continue
-        dt_frame = float(
-            dt_by_tick.get(
-                int(tick.tick_index),
-                dt_by_tick.get(int(next_tick.tick_index), float(default_dt)),
-            ),
-        )
+        tick_key = int(tick.tick_index)
+        next_tick_key = int(next_tick.tick_index)
+        if tick_key in dt_by_tick:
+            dt_frame = float(dt_by_tick[tick_key])
+        elif next_tick_key in dt_by_tick:
+            dt_frame = float(dt_by_tick[next_tick_key])
+        else:
+            dt_frame = float(default_dt)
         # `man_bomb` timer frequently drops to zero from movement gating while the
         # perk remains active; those drops are not interval wraps and produce
         # false interval inference (for example ~1.30s). Keep bootstrap default
@@ -2507,7 +2509,7 @@ def _tick_state_transition_rows(tick: CaptureTick) -> tuple[dict[str, int], ...]
 
 def _has_terminal_state_transition(rows: tuple[dict[str, int], ...]) -> bool:
     for row in rows:
-        if int(row.get("target_state", -1)) == 12:
+        if "target_state" in row and int(row["target_state"]) == 12:
             return True
     return False
 
@@ -2869,7 +2871,7 @@ def convert_capture_to_replay(
                     ),
                 )
                 if int(resolved_mode_id) != int(GameMode.RUSH):
-                    if any(int(row.get("target_state", -1)) == 6 for row in state_transition_rows):
+                    if any("target_state" in row and int(row["target_state"]) == 6 for row in state_transition_rows):
                         menu_tick = int(tick.tick_index)
                         if menu_tick not in menu_open_ticks:
                             events.append(PerkMenuOpenEvent(tick_index=menu_tick, player_index=0))
@@ -2919,7 +2921,11 @@ def convert_capture_to_replay(
             pending_i = int(pending)
             if previous_pending is not None and pending_i < previous_pending:
                 menu_tick = max(0, int(tick.tick_index) - 1)
-                menu_tick_rows = transition_rows_by_tick.get(int(menu_tick), ())
+                menu_tick_key = int(menu_tick)
+                if menu_tick_key in transition_rows_by_tick:
+                    menu_tick_rows = transition_rows_by_tick[menu_tick_key]
+                else:
+                    menu_tick_rows = ()
                 suppress_menu_open = _has_terminal_state_transition(menu_tick_rows) or _has_terminal_state_transition(
                     state_transition_rows,
                 )
