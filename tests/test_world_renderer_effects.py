@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from types import SimpleNamespace
 
 import crimson.render.world.effects as world_effects
 from crimson.effects import EffectEntry
@@ -51,9 +52,15 @@ def _entry(*, flags: int, pos: Vec2) -> EffectEntry:
 
 
 def test_draw_effect_pool_splits_alpha_and_additive_paths(mocker) -> None:
-    begin_blend_mode = mocker.patch.object(world_effects.rl, "begin_blend_mode")
-    end_blend_mode = mocker.patch.object(world_effects.rl, "end_blend_mode")
-    draw_texture_pro = mocker.patch.object(world_effects.rl, "draw_texture_pro")
+    raylib_stub = SimpleNamespace(
+        BlendMode=rl.BlendMode,
+        Rectangle=rl.Rectangle,
+        Vector2=rl.Vector2,
+        begin_blend_mode=mocker.Mock(),
+        end_blend_mode=mocker.Mock(),
+        draw_texture_pro=mocker.Mock(),
+    )
+    mocker.patch.object(world_effects, "rl", raylib_stub)
 
     entries = [
         _entry(flags=0x40, pos=Vec2(10.0, 20.0)),
@@ -69,10 +76,10 @@ def test_draw_effect_pool_splits_alpha_and_additive_paths(mocker) -> None:
         alpha=1.0,
     )
 
-    assert begin_blend_mode.call_count == 2
-    assert {call.args[0] for call in begin_blend_mode.call_args_list} == {
+    assert raylib_stub.begin_blend_mode.call_count == 2
+    assert {call.args[0] for call in raylib_stub.begin_blend_mode.call_args_list} == {
         int(rl.BlendMode.BLEND_ALPHA),
         int(rl.BlendMode.BLEND_ADDITIVE),
     }
-    assert end_blend_mode.call_count == 2
-    assert draw_texture_pro.call_count == 2
+    assert raylib_stub.end_blend_mode.call_count == 2
+    assert raylib_stub.draw_texture_pro.call_count == 2

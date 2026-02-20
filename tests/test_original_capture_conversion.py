@@ -4,7 +4,7 @@ import copy
 import gzip
 import json
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, TypeVar, cast
 
 import msgspec
 import pytest
@@ -40,18 +40,39 @@ from crimson.original.capture import (
 )
 from crimson.original.schema import (
     CAPTURE_FORMAT_VERSION,
+    CaptureBonusSample,
     CaptureCheckpoint,
+    CaptureConfig,
+    CaptureCreatureLifecycleEntry,
+    CaptureCreatureSample,
     CaptureDiagnostics,
+    CaptureEventCounts,
     CaptureEventHeadPerkApply,
     CaptureEventHeadProjectileFindQuery,
+    CaptureFile,
     CaptureInputApprox,
     CaptureInputPlayerKeys,
     CapturePlayerCheckpoint,
     CapturePlayerFireDiagnostics,
+    CaptureProjectileSample,
+    CaptureRngDiagnostics,
     CaptureRngHeadEntry,
     CaptureRngMarks,
+    CaptureRngSummary,
+    CaptureSecondaryProjectileSample,
     CaptureSnapshot,
+    CaptureSnapshotGlobals,
+    CaptureSnapshotInput,
+    CaptureSnapshotInputBindings,
+    CaptureSnapshotPlayer,
+    CaptureSnapshotPlayerAltWeapon,
+    CaptureSnapshotPlayerBonusTimers,
+    CaptureSnapshotPlayerPerkTimers,
+    CaptureSnapshotStatus,
+    CaptureSpawnDiagnostics,
     CaptureTick,
+    CaptureTimingDiagnostics,
+    CaptureVec2,
 )
 from crimson.replay import PerkMenuOpenEvent, Replay, UnknownEvent, unpack_input_flags, unpack_input_move_key_flags
 from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
@@ -82,65 +103,91 @@ def _crt_rand_outputs(seed: int, calls: int) -> list[int]:
     return out
 
 
-_DEFAULT_CAPTURE_FILE = capture_file_to_dict(
-    build_capture_file(
-        ticks=[build_capture_tick(tick_index=0, elapsed_ms=0)],
-        session_id="defaults",
-    ),
+_T = TypeVar("_T")
+
+
+_DEFAULT_CAPTURE_FILE = build_capture_file(
+    ticks=[build_capture_tick(tick_index=0, elapsed_ms=0)],
+    session_id="defaults",
 )
-_DEFAULT_CAPTURE_TICK = cast(dict[str, object], cast(list[object], _DEFAULT_CAPTURE_FILE["ticks"])[0])
-_DEFAULT_CAPTURE_SNAPSHOT_PLAYER = cast(dict[str, object], capture_value_to_builtins(build_capture_snapshot_player()))
-_DEFAULT_CAPTURE_CREATURE_SAMPLE = cast(dict[str, object], capture_value_to_builtins(build_capture_creature_sample()))
-_DEFAULT_CAPTURE_PROJECTILE_SAMPLE = cast(dict[str, object], capture_value_to_builtins(build_capture_projectile_sample()))
-_DEFAULT_CAPTURE_SECONDARY_PROJECTILE_SAMPLE = cast(
-    dict[str, object],
-    capture_value_to_builtins(build_capture_secondary_projectile_sample()),
+_DEFAULT_CAPTURE_TICK = _DEFAULT_CAPTURE_FILE.ticks[0]
+_DEFAULT_CAPTURE_SNAPSHOT_PLAYER = build_capture_snapshot_player()
+_DEFAULT_CAPTURE_CREATURE_SAMPLE = build_capture_creature_sample()
+_DEFAULT_CAPTURE_PROJECTILE_SAMPLE = build_capture_projectile_sample()
+_DEFAULT_CAPTURE_SECONDARY_PROJECTILE_SAMPLE = build_capture_secondary_projectile_sample()
+_DEFAULT_CAPTURE_BONUS_SAMPLE = build_capture_bonus_sample()
+_DEFAULT_CAPTURE_RNG_HEAD_ENTRY = build_capture_rng_head_entry()
+_DEFAULT_CAPTURE_CREATURE_LIFECYCLE_ENTRY = CaptureCreatureLifecycleEntry(
+    index=-1,
+    active=True,
+    active_flag=None,
+    state_flag=None,
+    type_id=None,
+    hp=None,
+    hitbox_size=None,
+    pos=CaptureVec2(x=0.0, y=0.0),
+    flags=None,
+    link_index=None,
+    ai_mode=None,
+    heading=None,
+    target_heading=None,
+    orbit_angle=None,
+    orbit_radius=None,
+    ai7_timer_ms=None,
 )
-_DEFAULT_CAPTURE_BONUS_SAMPLE = cast(dict[str, object], capture_value_to_builtins(build_capture_bonus_sample()))
-_DEFAULT_CAPTURE_RNG_HEAD_ENTRY = cast(dict[str, object], capture_value_to_builtins(build_capture_rng_head_entry()))
 
 
-def _clone_dict(value: object) -> dict[str, object]:
-    assert isinstance(value, dict)
-    return copy.deepcopy(cast(dict[str, object], value))
+def _copy_with_struct(template: _T, **kwargs: object) -> _T:
+    value = copy.deepcopy(template)
+    for key, override in kwargs.items():
+        current = getattr(value, key)
+        if isinstance(override, dict):
+            setattr(value, key, msgspec.convert(override, type=type(current), strict=True))
+            continue
+        if isinstance(override, list) and isinstance(current, list) and current:
+            item_type = type(current[0])
+            converted = [
+                msgspec.convert(item, type=item_type, strict=True) if isinstance(item, dict) else item for item in override
+            ]
+            setattr(value, key, converted)
+            continue
+        setattr(value, key, override)
+    return value
 
 
-def _base_input_approx(**kwargs: object) -> dict[str, object]:
-    d = _clone_dict(cast(list[object], _DEFAULT_CAPTURE_TICK["input_approx"])[0])
-    d["aim_x"] = 512.0
-    d["aim_y"] = 512.0
-    d.update(kwargs)
-    return d
+def _as_builtins_dict(value: object) -> dict[str, object]:
+    return cast(dict[str, object], capture_value_to_builtins(value))
 
 
-def _base_input_player_keys(**kwargs: object) -> dict[str, object]:
-    d = _clone_dict(cast(list[object], _DEFAULT_CAPTURE_TICK["input_player_keys"])[0])
-    d.update(kwargs)
-    return d
+def _capture_meta_dict(capture: CaptureFile) -> dict[str, object]:
+    payload = capture_file_to_dict(capture)
+    return {k: v for k, v in payload.items() if k != "ticks"}
 
 
-def _base_event_counts(**kwargs: object) -> dict[str, object]:
-    d = _clone_dict(_DEFAULT_CAPTURE_TICK["event_counts"])
-    d.update(kwargs)
-    return d
+def _base_input_approx(**kwargs: object) -> CaptureInputApprox:
+    updates: dict[str, object] = {"aim_x": 512.0, "aim_y": 512.0}
+    updates.update(kwargs)
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.input_approx[0], **updates)
 
 
-def _base_rng_head_entry(**kwargs: object) -> dict[str, object]:
-    d = _clone_dict(_DEFAULT_CAPTURE_RNG_HEAD_ENTRY)
-    d.update(kwargs)
-    return d
+def _base_input_player_keys(**kwargs: object) -> CaptureInputPlayerKeys:
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.input_player_keys[0], **kwargs)
 
 
-def _base_rng_summary(**kwargs: object) -> dict[str, object]:
-    d = _clone_dict(_DEFAULT_CAPTURE_TICK["rng"])
-    d.update(kwargs)
-    return d
+def _base_event_counts(**kwargs: object) -> CaptureEventCounts:
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.event_counts, **kwargs)
 
 
-def _base_config(**kwargs: object) -> dict[str, object]:
-    d = _clone_dict(_DEFAULT_CAPTURE_FILE["config"])
-    d.update(kwargs)
-    return d
+def _base_rng_head_entry(**kwargs: object) -> CaptureRngHeadEntry:
+    return _copy_with_struct(_DEFAULT_CAPTURE_RNG_HEAD_ENTRY, **kwargs)
+
+
+def _base_rng_summary(**kwargs: object) -> CaptureRngSummary:
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.rng, **kwargs)
+
+
+def _base_config(**kwargs: object) -> CaptureConfig:
+    return _copy_with_struct(_DEFAULT_CAPTURE_FILE.config, **kwargs)
 
 
 def _base_player() -> CapturePlayerCheckpoint:
@@ -148,9 +195,8 @@ def _base_player() -> CapturePlayerCheckpoint:
     return copy.deepcopy(tick.checkpoint.players[0])
 
 
-def _base_snapshot_globals(**kwargs: object) -> dict[str, object]:
-    before = _clone_dict(_DEFAULT_CAPTURE_TICK["before"])
-    d = _clone_dict(before["globals"])
+def _base_snapshot_globals(**kwargs: object) -> CaptureSnapshotGlobals:
+    row = copy.deepcopy(_DEFAULT_CAPTURE_TICK.before.globals)
     for key in (
         "config_game_mode",
         "game_state_prev",
@@ -186,99 +232,63 @@ def _base_snapshot_globals(**kwargs: object) -> dict[str, object]:
         "bonus_energizer_timer",
         "bonus_double_xp_timer",
     ):
-        d[key] = None
-    d.update(kwargs)
-    return d
+        setattr(row, key, None)
+    return _copy_with_struct(row, **kwargs)
 
 
-def _base_snapshot_status(**kwargs: object) -> dict[str, object]:
-    before = _clone_dict(_DEFAULT_CAPTURE_TICK["before"])
-    d = _clone_dict(before["status"])
-    d.update(kwargs)
-    return d
+def _base_snapshot_status(**kwargs: object) -> CaptureSnapshotStatus:
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.before.status, **kwargs)
 
 
-def _base_snapshot_input(**kwargs: object) -> dict[str, object]:
-    before = _clone_dict(_DEFAULT_CAPTURE_TICK["before"])
-    d = _clone_dict(before["input"])
-    d.update(kwargs)
-    return d
+def _base_snapshot_input(**kwargs: object) -> CaptureSnapshotInput:
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.before.input, **kwargs)
 
 
-def _base_snapshot_input_bindings(**kwargs: object) -> dict[str, object]:
-    before = _clone_dict(_DEFAULT_CAPTURE_TICK["before"])
-    d = _clone_dict(before["input_bindings"])
-    d.update(kwargs)
-    return d
+def _base_snapshot_input_bindings(**kwargs: object) -> CaptureSnapshotInputBindings:
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.before.input_bindings, **kwargs)
 
 
-def _base_snapshot_player_perk_timers(**kwargs: object) -> dict[str, object]:
-    d = _clone_dict(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER["perk_timers"])
-    d.update(kwargs)
-    return d
+def _base_snapshot_player_perk_timers(**kwargs: object) -> CaptureSnapshotPlayerPerkTimers:
+    return _copy_with_struct(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER.perk_timers, **kwargs)
 
 
-def _base_snapshot_player_bonus_timers(**kwargs: object) -> dict[str, object]:
-    d = _clone_dict(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER["bonus_timers"])
-    d.update(kwargs)
-    return d
+def _base_snapshot_player_bonus_timers(**kwargs: object) -> CaptureSnapshotPlayerBonusTimers:
+    return _copy_with_struct(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER.bonus_timers, **kwargs)
 
 
-def _base_snapshot_player_alt_weapon(**kwargs: object) -> dict[str, object]:
-    d = _clone_dict(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER["alt_weapon"])
-    d.update(kwargs)
-    return d
+def _base_snapshot_player_alt_weapon(**kwargs: object) -> CaptureSnapshotPlayerAltWeapon:
+    return _copy_with_struct(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER.alt_weapon, **kwargs)
 
 
-def _base_snapshot_player(**kwargs: object) -> dict[str, object]:
-    d = _clone_dict(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER)
-    d.update(kwargs)
-    return d
+def _base_snapshot_player(**kwargs: object) -> CaptureSnapshotPlayer:
+    return _copy_with_struct(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER, **kwargs)
 
 
-def _base_snapshot(**kwargs: object) -> dict[str, object]:
-    d: dict[str, object] = {
-        "globals": _base_snapshot_globals(),
-        "status": _base_snapshot_status(),
-        "player_count": 1,
-        "players": [],
-        "input": _base_snapshot_input(),
-        "input_bindings": _base_snapshot_input_bindings(),
-    }
-    d.update(kwargs)
-    return d
+def _base_snapshot(**kwargs: object) -> CaptureSnapshot:
+    snapshot = copy.deepcopy(_DEFAULT_CAPTURE_TICK.before)
+    snapshot.globals = _base_snapshot_globals()
+    snapshot.status = _base_snapshot_status()
+    snapshot.player_count = 1
+    snapshot.players = []
+    snapshot.input = _base_snapshot_input()
+    snapshot.input_bindings = _base_snapshot_input_bindings()
+    return _copy_with_struct(snapshot, **kwargs)
 
 
-def _base_timing_diagnostics(**kwargs: object) -> dict[str, object]:
-    checkpoint = _clone_dict(_DEFAULT_CAPTURE_TICK["checkpoint"])
-    debug = _clone_dict(checkpoint["debug"])
-    d = _clone_dict(debug["timing"])
-    d.update(kwargs)
-    return d
+def _base_timing_diagnostics(**kwargs: object) -> CaptureTimingDiagnostics:
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.checkpoint.debug.timing, **kwargs)
 
 
-def _base_spawn_diagnostics(**kwargs: object) -> dict[str, object]:
-    checkpoint = _clone_dict(_DEFAULT_CAPTURE_TICK["checkpoint"])
-    debug = _clone_dict(checkpoint["debug"])
-    d = _clone_dict(debug["spawn"])
-    d.update(kwargs)
-    return d
+def _base_spawn_diagnostics(**kwargs: object) -> CaptureSpawnDiagnostics:
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.checkpoint.debug.spawn, **kwargs)
 
 
-def _base_rng_diagnostics(**kwargs: object) -> dict[str, object]:
-    checkpoint = _clone_dict(_DEFAULT_CAPTURE_TICK["checkpoint"])
-    debug = _clone_dict(checkpoint["debug"])
-    d = _clone_dict(debug["rng"])
-    d.update(kwargs)
-    return d
+def _base_rng_diagnostics(**kwargs: object) -> CaptureRngDiagnostics:
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.checkpoint.debug.rng, **kwargs)
 
 
-def _base_player_fire_diagnostics(**kwargs: object) -> dict[str, object]:
-    checkpoint = _clone_dict(_DEFAULT_CAPTURE_TICK["checkpoint"])
-    debug = _clone_dict(checkpoint["debug"])
-    d = _clone_dict(debug["player_fire"])
-    d.update(kwargs)
-    return d
+def _base_player_fire_diagnostics(**kwargs: object) -> CapturePlayerFireDiagnostics | None:
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.checkpoint.debug.player_fire, **kwargs)
 
 
 def _base_checkpoint(
@@ -315,15 +325,15 @@ def _base_tick(
         perk_pending=int(perk_pending),
     )
     tick.checkpoint.rng_state = int(rng_state)
-    tick.input_approx = [msgspec.convert(_base_input_approx(**{}), type=CaptureInputApprox, strict=True)]
-    tick.input_player_keys = [msgspec.convert(_base_input_player_keys(**{}), type=CaptureInputPlayerKeys, strict=True)]
+    tick.input_approx = [_base_input_approx()]
+    tick.input_player_keys = [_base_input_player_keys()]
     # Keep legacy sparse snapshot defaults used by these conversion tests.
-    tick.before = msgspec.convert(_base_snapshot(), type=CaptureSnapshot, strict=True)
-    tick.after = msgspec.convert(_base_snapshot(), type=CaptureSnapshot, strict=True)
+    tick.before = _base_snapshot()
+    tick.after = _base_snapshot()
     return tick
 
 
-def _sample_creature(*, index: int = 5) -> dict[str, object]:
+def _sample_creature(*, index: int = 5) -> CaptureCreatureSample:
     row = copy.deepcopy(build_capture_creature_sample(index=int(index)))
     row.pos.x = 10.0
     row.pos.y = 20.0
@@ -334,10 +344,10 @@ def _sample_creature(*, index: int = 5) -> dict[str, object]:
     row.orbit_angle = 0.25
     row.orbit_radius = 10.0
     row.ai7_timer_ms = -733
-    return cast(dict[str, object], capture_value_to_builtins(row))
+    return row
 
 
-def _sample_projectile(*, index: int = 7) -> dict[str, object]:
+def _sample_projectile(*, index: int = 7) -> CaptureProjectileSample:
     row = copy.deepcopy(build_capture_projectile_sample(index=int(index)))
     row.angle = 0.5
     row.pos.x = 15.0
@@ -349,10 +359,10 @@ def _sample_projectile(*, index: int = 7) -> dict[str, object]:
     row.damage_pool = 12.0
     row.hit_radius = 9.0
     row.base_damage = 5.0
-    return cast(dict[str, object], capture_value_to_builtins(row))
+    return row
 
 
-def _sample_secondary_projectile(*, index: int = 9) -> dict[str, object]:
+def _sample_secondary_projectile(*, index: int = 9) -> CaptureSecondaryProjectileSample:
     row = copy.deepcopy(build_capture_secondary_projectile_sample(index=int(index)))
     row.pos.x = 17.0
     row.pos.y = 27.0
@@ -363,10 +373,10 @@ def _sample_secondary_projectile(*, index: int = 9) -> dict[str, object]:
     row.trail_timer = 0.1
     row.type_id = 3
     row.target_id = -1
-    return cast(dict[str, object], capture_value_to_builtins(row))
+    return row
 
 
-def _sample_bonus(*, index: int = 2) -> dict[str, object]:
+def _sample_bonus(*, index: int = 2) -> CaptureBonusSample:
     row = copy.deepcopy(build_capture_bonus_sample(index=int(index)))
     row.bonus_id = 6
     row.state = 0
@@ -376,56 +386,25 @@ def _sample_bonus(*, index: int = 2) -> dict[str, object]:
     row.pos.y = 40.0
     row.amount_f32 = 0.0
     row.amount_i32 = 0
-    return cast(dict[str, object], capture_value_to_builtins(row))
+    return row
 
 
-def _capture_obj(*, ticks: list[CaptureTick | dict[str, object]]) -> dict[str, object]:
-    capture = build_capture_file(ticks=[], session_id="session-1")
-    payload = capture_file_to_dict(capture)
-    payload["ticks"] = [
-        cast(dict[str, object], capture_value_to_builtins(tick)) if isinstance(tick, CaptureTick) else tick
-        for tick in ticks
-    ]
-    return payload
+def _capture_obj(*, ticks: list[CaptureTick]) -> CaptureFile:
+    return build_capture_file(ticks=list(ticks), session_id="session-1")
 
 
 def _normalize_rng_head_rows(rows: list[object]) -> list[object]:
     out: list[object] = []
     for row in rows:
         if isinstance(row, dict):
-            out.append(_base_rng_head_entry(**cast(dict[str, object], row)))
+            out.append(_as_builtins_dict(_base_rng_head_entry(**cast(dict[str, object], row))))
             continue
         out.append(row)
     return out
 
 
-def _int_or_default(value: object, default: int) -> int:
-    if isinstance(value, int) and not isinstance(value, bool):
-        return int(value)
-    return int(default)
-
-
-def _base_creature_lifecycle_row(**kwargs: object) -> dict[str, object]:
-    row = {
-        "index": -1,
-        "active": True,
-        "active_flag": None,
-        "state_flag": None,
-        "type_id": None,
-        "hp": None,
-        "hitbox_size": None,
-        "pos": {"x": 0.0, "y": 0.0},
-        "flags": None,
-        "link_index": None,
-        "ai_mode": None,
-        "heading": None,
-        "target_heading": None,
-        "orbit_angle": None,
-        "orbit_radius": None,
-        "ai7_timer_ms": None,
-    }
-    row.update(kwargs)
-    return row
+def _base_creature_lifecycle_row(**kwargs: object) -> CaptureCreatureLifecycleEntry:
+    return _copy_with_struct(_DEFAULT_CAPTURE_CREATURE_LIFECYCLE_ENTRY, **kwargs)
 
 
 def _normalize_event_head_for_strict_schema(head: dict[str, object]) -> dict[str, object]:
@@ -481,16 +460,18 @@ def _normalize_event_head_for_strict_schema(head: dict[str, object]) -> dict[str
         }
 
     if head_type == "projectile_spawn":
+        index_obj = data.get("index")
+        owner_id_obj = data.get("owner_id")
         requested_type_id = data.get("requested_type_id")
         actual_type_id = data.get("actual_type_id")
         return {
             "type": "projectile_spawn",
             "data": {
-                "index": _int_or_default(data.get("index"), -1),
+                "index": index_obj if isinstance(index_obj, int) else -1,
                 "requested_type_id": int(requested_type_id) if isinstance(requested_type_id, int) else 0,
                 "actual_type_id": int(actual_type_id) if isinstance(actual_type_id, int) else None,
                 "spawned": data.get("spawned"),
-                "owner_id": _int_or_default(data.get("owner_id"), -100),
+                "owner_id": owner_id_obj if isinstance(owner_id_obj, int) else -100,
                 "angle_f32": data.get("angle_f32"),
                 "pos": cast(dict[str, object], data.get("pos"))
                 if isinstance(data.get("pos"), dict)
@@ -502,12 +483,13 @@ def _normalize_event_head_for_strict_schema(head: dict[str, object]) -> dict[str
         }
 
     if head_type == "secondary_projectile_spawn":
+        index_obj = data.get("index")
         requested_type_id = data.get("requested_type_id")
         actual_type_id = data.get("actual_type_id")
         return {
             "type": "secondary_projectile_spawn",
             "data": {
-                "index": _int_or_default(data.get("index"), -1),
+                "index": index_obj if isinstance(index_obj, int) else -1,
                 "requested_type_id": int(requested_type_id) if isinstance(requested_type_id, int) else 0,
                 "actual_type_id": int(actual_type_id) if isinstance(actual_type_id, int) else None,
                 "spawned": data.get("spawned"),
@@ -580,10 +562,11 @@ def _normalize_event_head_for_strict_schema(head: dict[str, object]) -> dict[str
         }
 
     if head_type == "creature_spawn":
+        template_id_obj = data.get("template_id")
         return {
             "type": "creature_spawn",
             "data": {
-                "template_id": _int_or_default(data.get("template_id"), -1),
+                "template_id": template_id_obj if isinstance(template_id_obj, int) else -1,
                 "pos": cast(dict[str, object], data.get("pos")) if isinstance(data.get("pos"), dict) else {"x": 0.0, "y": 0.0},
                 "heading": data.get("heading"),
                 "ret_ptr": data.get("ret_ptr"),
@@ -612,12 +595,20 @@ def _normalize_event_head_for_strict_schema(head: dict[str, object]) -> dict[str
         normalized_added: list[dict[str, object]] = []
         for row in added_rows:
             if isinstance(row, dict):
-                normalized_added.append(_base_creature_lifecycle_row(**cast(dict[str, object], row)))
+                normalized_added.append(
+                    _as_builtins_dict(_base_creature_lifecycle_row(**cast(dict[str, object], row))),
+                )
         normalized_removed: list[dict[str, object]] = []
         for row in removed_rows:
             if isinstance(row, dict):
-                normalized_removed.append(_base_creature_lifecycle_row(**cast(dict[str, object], row)))
+                normalized_removed.append(
+                    _as_builtins_dict(_base_creature_lifecycle_row(**cast(dict[str, object], row))),
+                )
 
+        added_total_obj = data.get("added_total")
+        removed_total_obj = data.get("removed_total")
+        added_overflow_obj = data.get("added_overflow")
+        removed_overflow_obj = data.get("removed_overflow")
         return {
             "type": "creature_lifecycle",
             "data": {
@@ -625,29 +616,30 @@ def _normalize_event_head_for_strict_schema(head: dict[str, object]) -> dict[str
                 "after_count": data.get("after_count"),
                 "before_hash": data.get("before_hash"),
                 "after_hash": data.get("after_hash"),
-                "added_total": _int_or_default(data.get("added_total"), len(normalized_added)),
-                "removed_total": _int_or_default(data.get("removed_total"), len(normalized_removed)),
+                "added_total": added_total_obj if isinstance(added_total_obj, int) else len(normalized_added),
+                "removed_total": removed_total_obj if isinstance(removed_total_obj, int) else len(normalized_removed),
                 "added_ids": data.get("added_ids")
                 if isinstance(data.get("added_ids"), list)
-                else [_int_or_default(row.get("index"), -1) for row in normalized_added],
+                else [row.get("index") if isinstance(row.get("index"), int) else -1 for row in normalized_added],
                 "removed_ids": data.get("removed_ids")
                 if isinstance(data.get("removed_ids"), list)
-                else [_int_or_default(row.get("index"), -1) for row in normalized_removed],
-                "added_overflow": _int_or_default(data.get("added_overflow"), 0),
-                "removed_overflow": _int_or_default(data.get("removed_overflow"), 0),
+                else [row.get("index") if isinstance(row.get("index"), int) else -1 for row in normalized_removed],
+                "added_overflow": added_overflow_obj if isinstance(added_overflow_obj, int) else 0,
+                "removed_overflow": removed_overflow_obj if isinstance(removed_overflow_obj, int) else 0,
                 "added_head": normalized_added,
                 "removed_head": normalized_removed,
             },
         }
 
     if head_type == "creature_update_micro":
+        slot_obj = data.get("slot")
         event_kind = str(data.get("event_kind", ""))
         if event_kind == "angle_approach":
             return {
                 "type": "creature_update_micro",
                 "data": {
                     "event_kind": "angle_approach",
-                    "slot": _int_or_default(data.get("slot"), -1),
+                    "slot": slot_obj if isinstance(slot_obj, int) else -1,
                     "angle_ptr": data.get("angle_ptr"),
                     "angle_in": data.get("angle_in"),
                     "angle_out": data.get("angle_out"),
@@ -666,7 +658,7 @@ def _normalize_event_head_for_strict_schema(head: dict[str, object]) -> dict[str
             "type": "creature_update_micro",
             "data": {
                 "event_kind": "creature_update_window",
-                "slot": _int_or_default(data.get("slot"), -1),
+                "slot": slot_obj if isinstance(slot_obj, int) else -1,
                 "before": data.get("before"),
                 "after": data.get("after"),
             },
@@ -680,19 +672,19 @@ def _normalize_tick_for_strict_schema(tick: dict[str, object]) -> dict[str, obje
 
     event_counts_obj = normalized.get("event_counts")
     if isinstance(event_counts_obj, dict):
-        normalized["event_counts"] = _base_event_counts(**cast(dict[str, object], event_counts_obj))
+        normalized["event_counts"] = _as_builtins_dict(_base_event_counts(**cast(dict[str, object], event_counts_obj)))
 
     input_player_keys_obj = normalized.get("input_player_keys")
     if isinstance(input_player_keys_obj, list):
         normalized["input_player_keys"] = [
-            _base_input_player_keys(**cast(dict[str, object], row)) if isinstance(row, dict) else row
+            _as_builtins_dict(_base_input_player_keys(**cast(dict[str, object], row))) if isinstance(row, dict) else row
             for row in input_player_keys_obj
         ]
 
     input_approx_obj = normalized.get("input_approx")
     if isinstance(input_approx_obj, list):
         normalized["input_approx"] = [
-            _base_input_approx(**cast(dict[str, object], row)) if isinstance(row, dict) else row
+            _as_builtins_dict(_base_input_approx(**cast(dict[str, object], row))) if isinstance(row, dict) else row
             for row in input_approx_obj
         ]
 
@@ -705,7 +697,7 @@ def _normalize_tick_for_strict_schema(tick: dict[str, object]) -> dict[str, obje
 
     rng_obj = normalized.get("rng")
     if isinstance(rng_obj, dict):
-        rng = _base_rng_summary(**cast(dict[str, object], rng_obj))
+        rng = _as_builtins_dict(_base_rng_summary(**cast(dict[str, object], rng_obj)))
         rng_map = cast(dict[str, object], rng_obj)
         head_obj = rng_map.get("head")
         if isinstance(head_obj, list):
@@ -733,10 +725,11 @@ def _normalize_tick_for_strict_schema(tick: dict[str, object]) -> dict[str, obje
     return normalized
 
 
-def _write_capture(path: Path, obj: dict[str, object]) -> None:
-    meta = {k: v for k, v in obj.items() if k != "ticks"}
+def _write_capture(path: Path, obj: CaptureFile | dict[str, object]) -> None:
+    payload = capture_file_to_dict(obj) if isinstance(obj, CaptureFile) else dict(obj)
+    meta = {k: v for k, v in payload.items() if k != "ticks"}
     meta["ticks"] = []
-    ticks_obj = obj.get("ticks")
+    ticks_obj = payload.get("ticks")
     ticks = ticks_obj if isinstance(ticks_obj, list) else []
     normalized_ticks = [
         _normalize_tick_for_strict_schema(cast(dict[str, object], tick)) if isinstance(tick, dict) else tick
@@ -753,10 +746,10 @@ def _write_capture(path: Path, obj: dict[str, object]) -> None:
         path.write_bytes(encoded)
 
 
-def _write_capture_stream(path: Path, *, meta: dict[str, object], ticks: list[CaptureTick | dict[str, object]]) -> None:
+def _write_capture_stream(path: Path, *, meta: dict[str, object], ticks: list[CaptureTick]) -> None:
     normalized_ticks = [
         _normalize_tick_for_strict_schema(
-            cast(dict[str, object], capture_value_to_builtins(tick)) if isinstance(tick, CaptureTick) else tick,
+            cast(dict[str, object], capture_value_to_builtins(tick)),
         )
         for tick in ticks
     ]
@@ -767,11 +760,6 @@ def _write_capture_stream(path: Path, *, meta: dict[str, object], ticks: list[Ca
         json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True) for tick in normalized_ticks
     )
     path.write_text("\n".join(rows) + "\n", encoding="utf-8")
-
-
-def _as_obj_dict(value: object) -> dict[str, object]:
-    assert isinstance(value, dict)
-    return cast(dict[str, object], value)
 
 
 def _tick_checkpoint(tick: CaptureTick) -> CaptureCheckpoint:
@@ -880,7 +868,7 @@ def test_load_capture_supports_plain_json_and_gz(tmp_path: Path) -> None:
 
 
 def test_load_capture_rejects_missing_capture_format_version(tmp_path: Path) -> None:
-    obj = _capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)])
+    obj = capture_file_to_dict(_capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)]))
     obj.pop("capture_format_version", None)
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -890,7 +878,7 @@ def test_load_capture_rejects_missing_capture_format_version(tmp_path: Path) -> 
 
 
 def test_load_capture_rejects_unsupported_capture_format_version(tmp_path: Path) -> None:
-    obj = _capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)])
+    obj = capture_file_to_dict(_capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)]))
     obj["capture_format_version"] = int(CAPTURE_FORMAT_VERSION) - 1
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -902,7 +890,7 @@ def test_load_capture_rejects_unsupported_capture_format_version(tmp_path: Path)
 def test_load_capture_rejects_legacy_canonical_json(tmp_path: Path) -> None:
     obj = _capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)])
     path = tmp_path / "capture.json"
-    path.write_text(json.dumps(obj, separators=(",", ":"), sort_keys=True), encoding="utf-8")
+    path.write_text(json.dumps(capture_file_to_dict(obj), separators=(",", ":"), sort_keys=True), encoding="utf-8")
 
     with pytest.raises(CaptureError):
         load_capture(path)
@@ -939,7 +927,7 @@ def test_load_capture_supports_jsonl_stream_rows(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
-    meta = {k: v for k, v in obj.items() if k != "ticks"}
+    meta = _capture_meta_dict(obj)
     _write_capture_stream(path, meta=meta, ticks=[tick])
 
     capture = load_capture(path)
@@ -1028,18 +1016,20 @@ def test_load_capture_stream_accepts_known_config_fields(tmp_path: Path) -> None
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
-    meta = {k: v for k, v in obj.items() if k != "ticks"}
-    meta["config"] = _base_config(
-        out_path="capture.json",
-        split_quest_files=True,
-        quest_out_dir="C:\\share\\frida",
-        quest_out_prefix="gameplay_diff_capture.quest_",
-        capture_profile="exhaustive_default",
-        config_env_overrides=["CRIMSON_FRIDA_STATES", "CRIMSON_FRIDA_OUT_PATH"],
-        log_mode="truncate",
-        console_all_events=True,
-        console_events=["start", "ready", "capture_shutdown"],
-        include_caller=False,
+    meta = _capture_meta_dict(obj)
+    meta["config"] = _as_builtins_dict(
+        _base_config(
+            out_path="capture.json",
+            split_quest_files=True,
+            quest_out_dir="C:\\share\\frida",
+            quest_out_prefix="gameplay_diff_capture.quest_",
+            capture_profile="exhaustive_default",
+            config_env_overrides=["CRIMSON_FRIDA_STATES", "CRIMSON_FRIDA_OUT_PATH"],
+            log_mode="truncate",
+            console_all_events=True,
+            console_events=["start", "ready", "capture_shutdown"],
+            include_caller=False,
+        ),
     )
     _write_capture_stream(path, meta=meta, ticks=[tick])
 
@@ -1062,10 +1052,12 @@ def test_load_capture_stream_rejects_unknown_config_fields(tmp_path: Path) -> No
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
-    meta = {k: v for k, v in obj.items() if k != "ticks"}
-    config = _base_config(
-        out_path="capture.json",
-        log_mode="truncate",
+    meta = _capture_meta_dict(obj)
+    config = _as_builtins_dict(
+        _base_config(
+            out_path="capture.json",
+            log_mode="truncate",
+        ),
     )
     config["future_knob"] = 12345
     meta["config"] = config
@@ -1095,10 +1087,7 @@ def test_summarize_capture_health_counts_micro_and_lifecycle_lineage(tmp_path: P
     tick = _base_tick(tick_index=7, elapsed_ms=133)
     tick.event_counts = _base_event_counts(mode_tick=1)
     tick.input_player_keys = [
-        {
-            "player_index": 0,
-            "move_forward_pressed": True,
-        },
+        _base_input_player_keys(player_index=0, move_forward_pressed=True),
     ]
     tick.event_heads = [
         {
@@ -1117,12 +1106,10 @@ def test_summarize_capture_health_counts_micro_and_lifecycle_lineage(tmp_path: P
             },
         },
     ]
-    tick.samples = {
-        "creatures": [_sample_creature(index=3)],
-        "projectiles": [],
-        "secondary_projectiles": [],
-        "bonuses": [],
-    }
+    tick.samples.creatures = [_sample_creature(index=3)]
+    tick.samples.projectiles = []
+    tick.samples.secondary_projectiles = []
+    tick.samples.bonuses = []
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -1183,7 +1170,7 @@ def test_load_capture_stream_rejects_truncated_last_line(tmp_path: Path) -> None
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
-    meta = {k: v for k, v in obj.items() if k != "ticks"}
+    meta = _capture_meta_dict(obj)
     rows = [
         json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True),
         json.dumps(
@@ -1203,7 +1190,7 @@ def test_load_capture_stream_rejects_legacy_capture_end_row(tmp_path: Path) -> N
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
-    meta = {k: v for k, v in obj.items() if k != "ticks"}
+    meta = _capture_meta_dict(obj)
     rows = [
         json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True),
         json.dumps(
@@ -1220,7 +1207,7 @@ def test_load_capture_stream_rejects_legacy_capture_end_row(tmp_path: Path) -> N
 
 
 def test_load_capture_rejects_unknown_fields(tmp_path: Path) -> None:
-    obj = _capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)])
+    obj = capture_file_to_dict(_capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)]))
     obj["unexpected"] = 1
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -1231,12 +1218,10 @@ def test_load_capture_rejects_unknown_fields(tmp_path: Path) -> None:
 
 def test_load_capture_accepts_strict_typed_sample_rows(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
-    tick.samples = {
-        "creatures": [_sample_creature()],
-        "projectiles": [_sample_projectile()],
-        "secondary_projectiles": [_sample_secondary_projectile()],
-        "bonuses": [_sample_bonus()],
-    }
+    tick.samples.creatures = [_sample_creature()]
+    tick.samples.projectiles = [_sample_projectile()]
+    tick.samples.secondary_projectiles = [_sample_secondary_projectile()]
+    tick.samples.bonuses = [_sample_bonus()]
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -1258,15 +1243,15 @@ def test_load_capture_accepts_strict_typed_sample_rows(tmp_path: Path) -> None:
 
 def test_load_capture_rejects_incomplete_sample_rows(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
-    bad_creature = _sample_creature()
+    bad_creature = _as_builtins_dict(_sample_creature())
     del bad_creature["collision_flag"]
-    tick.samples = {
-        "creatures": [bad_creature],
-        "projectiles": [],
-        "secondary_projectiles": [],
-        "bonuses": [],
-    }
-    obj = _capture_obj(ticks=[tick])
+    obj = capture_file_to_dict(_capture_obj(ticks=[tick]))
+    tick0 = cast(dict[str, object], cast(list[object], obj["ticks"])[0])
+    samples = cast(dict[str, object], tick0["samples"])
+    samples["creatures"] = [bad_creature]
+    samples["projectiles"] = []
+    samples["secondary_projectiles"] = []
+    samples["bonuses"] = []
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
 
@@ -2484,12 +2469,11 @@ def test_convert_capture_to_replay_raises_when_rng_state_before_missing(tmp_path
         for value in outputs
     ]
 
-    rng = {
-        "calls": 8,
-        "last_value": outputs[-1],
-        "head": [{"value": int(value), "value_15": int(value)} for value in outputs],
-    }
-    tick0.rng = rng
+    tick0.rng = _base_rng_summary(
+        calls=8,
+        last_value=outputs[-1],
+        head=[{"value": int(value), "value_15": int(value)} for value in outputs],
+    )
 
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -2518,17 +2502,17 @@ def test_convert_capture_to_replay_prefers_rng_state_before_seed(tmp_path: Path)
             strict=True,
         ),
     ]
-    tick0.rng = {
-        "calls": 8,
-        "last_value": outputs[-1],
-        "head": [
+    tick0.rng = _base_rng_summary(
+        calls=8,
+        last_value=outputs[-1],
+        head=[
             {
                 "value": int(outputs[0]),
                 "value_15": int(outputs[0]),
                 "state_before_u32": int(seed),
             },
         ],
-    }
+    )
 
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -2555,11 +2539,11 @@ def test_convert_capture_to_replay_explicit_seed_overrides_inferred_seed(tmp_pat
         )
         for value in outputs
     ]
-    tick0.rng = {
-        "calls": 8,
-        "last_value": outputs[-1],
-        "head": [{"value": int(value), "value_15": int(value)} for value in outputs],
-    }
+    tick0.rng = _base_rng_summary(
+        calls=8,
+        last_value=outputs[-1],
+        head=[{"value": int(value), "value_15": int(value)} for value in outputs],
+    )
 
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"

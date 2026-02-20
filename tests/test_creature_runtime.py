@@ -494,7 +494,7 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert state.rng._idx == 67  # type: ignore[attr-defined]
 
 
-def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result() -> None:
+def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result(mocker) -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
@@ -507,21 +507,17 @@ def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result()
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 0.0
 
-    calls = {"forced": 0, "organic": 0}
     organic_pos = Vec2(200.0, 200.0)
-
-    def _spawn_at(**kwargs):
-        calls["forced"] += 1
-        _ = kwargs
-        return BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5)
-
-    def _try_spawn_on_kill(**kwargs):
-        calls["organic"] += 1
-        _ = kwargs
-        return BonusEntry(bonus_id=2, pos=organic_pos, time_left=10.0, time_max=10.0, amount=1)
-
-    state.bonus_pool.spawn_at = _spawn_at  # type: ignore[method-assign]
-    state.bonus_pool.try_spawn_on_kill = _try_spawn_on_kill  # type: ignore[method-assign]
+    spawn_at = mocker.patch.object(
+        state.bonus_pool,
+        "spawn_at",
+        return_value=BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5),
+    )
+    try_spawn_on_kill = mocker.patch.object(
+        state.bonus_pool,
+        "try_spawn_on_kill",
+        return_value=BonusEntry(bonus_id=2, pos=organic_pos, time_left=10.0, time_max=10.0, amount=1),
+    )
 
     pool.handle_death(
         0,
@@ -533,14 +529,14 @@ def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result()
         fx_queue=None,
     )
 
-    assert calls["forced"] == 1
-    assert calls["organic"] == 1
+    spawn_at.assert_called_once()
+    try_spawn_on_kill.assert_called_once()
     active = state.effects.iter_active()
     assert len(active) == 16
     assert all(entry.pos == organic_pos for entry in active)
 
 
-def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails() -> None:
+def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails(mocker) -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
@@ -552,16 +548,12 @@ def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails() -
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 0.0
 
-    def _spawn_at(**kwargs):
-        _ = kwargs
-        return BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5)
-
-    def _try_spawn_on_kill(**kwargs):
-        _ = kwargs
-        return None
-
-    state.bonus_pool.spawn_at = _spawn_at  # type: ignore[method-assign]
-    state.bonus_pool.try_spawn_on_kill = _try_spawn_on_kill  # type: ignore[method-assign]
+    spawn_at = mocker.patch.object(
+        state.bonus_pool,
+        "spawn_at",
+        return_value=BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5),
+    )
+    try_spawn_on_kill = mocker.patch.object(state.bonus_pool, "try_spawn_on_kill", return_value=None)
 
     pool.handle_death(
         0,
@@ -573,6 +565,8 @@ def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails() -
         fx_queue=None,
     )
 
+    spawn_at.assert_called_once()
+    try_spawn_on_kill.assert_called_once()
     assert state.effects.iter_active() == []
 
 
@@ -631,7 +625,7 @@ def test_death_award_uses_float32_sum_before_truncation() -> None:
     assert player.experience == 48_902
 
 
-def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random() -> None:
+def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random(mocker) -> None:
     state = GameplayState()
     state.game_mode = int(GameMode.RUSH)
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
@@ -642,15 +636,7 @@ def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random() -> None:
     creature.pos = Vec2(100.0, 100.0)
 
     fx_queue = FxQueue()
-    calls = 0
-    orig_add_random = fx_queue.add_random
-
-    def _add_random(**kwargs):
-        nonlocal calls
-        calls += 1
-        return orig_add_random(**kwargs)
-
-    fx_queue.add_random = _add_random  # type: ignore[method-assign]
+    add_random = mocker.patch.object(fx_queue, "add_random", wraps=fx_queue.add_random)
 
     pool.handle_death(
         0,
@@ -662,10 +648,10 @@ def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random() -> None:
         fx_queue=fx_queue,
     )
 
-    assert calls == 0
+    add_random.assert_not_called()
 
 
-def test_handle_death_freeze_enqueues_fx_queue_random_once() -> None:
+def test_handle_death_freeze_enqueues_fx_queue_random_once(mocker) -> None:
     state = GameplayState()
     state.game_mode = int(GameMode.RUSH)
     state.bonuses.freeze = 1.0
@@ -677,15 +663,7 @@ def test_handle_death_freeze_enqueues_fx_queue_random_once() -> None:
     creature.pos = Vec2(100.0, 100.0)
 
     fx_queue = FxQueue()
-    calls = 0
-    orig_add_random = fx_queue.add_random
-
-    def _add_random(**kwargs):
-        nonlocal calls
-        calls += 1
-        return orig_add_random(**kwargs)
-
-    fx_queue.add_random = _add_random  # type: ignore[method-assign]
+    add_random = mocker.patch.object(fx_queue, "add_random", wraps=fx_queue.add_random)
 
     pool.handle_death(
         0,
@@ -697,10 +675,10 @@ def test_handle_death_freeze_enqueues_fx_queue_random_once() -> None:
         fx_queue=fx_queue,
     )
 
-    assert calls == 1
+    add_random.assert_called_once()
 
 
-def test_handle_death_inactive_entry_skips_reentrant_side_effects() -> None:
+def test_handle_death_inactive_entry_skips_reentrant_side_effects(mocker) -> None:
     state = GameplayState()
     state.game_mode = int(GameMode.RUSH)
     state.bonuses.freeze = 1.0
@@ -713,15 +691,7 @@ def test_handle_death_inactive_entry_skips_reentrant_side_effects() -> None:
     creature.pos = Vec2(100.0, 100.0)
 
     fx_queue = FxQueue()
-    calls = 0
-    orig_add_random = fx_queue.add_random
-
-    def _add_random(**kwargs):
-        nonlocal calls
-        calls += 1
-        return orig_add_random(**kwargs)
-
-    fx_queue.add_random = _add_random  # type: ignore[method-assign]
+    add_random = mocker.patch.object(fx_queue, "add_random", wraps=fx_queue.add_random)
 
     death = pool.handle_death(
         0,
@@ -735,7 +705,7 @@ def test_handle_death_inactive_entry_skips_reentrant_side_effects() -> None:
 
     assert death.xp_awarded == 0
     assert player.experience == 0
-    assert calls == 0
+    add_random.assert_not_called()
     assert not any(entry.bonus_id != 0 for entry in state.bonus_pool.entries)
 
 

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+from types import SimpleNamespace
+
 import crimson.modes.components.perk_menu_controller as perk_menu_controller_module
 from crimson.gameplay import GameplayState
 from crimson.modes.components.perk_menu_controller import PerkMenuContext, PerkMenuController
@@ -27,6 +30,26 @@ def _dummy_player() -> PlayerState:
     player = PlayerState(index=0, pos=Vec2())
     player.perk_counts = [0] * 128
     return player
+
+
+def _patch_perk_menu_raylib(
+    mocker,
+    *,
+    is_key_pressed: Callable[[int], bool] | None = None,
+) -> SimpleNamespace:
+    key_handler = is_key_pressed if is_key_pressed is not None else (lambda _key: False)
+    stub = SimpleNamespace(
+        KeyboardKey=rl.KeyboardKey,
+        MouseButton=rl.MouseButton,
+        get_screen_width=mocker.Mock(return_value=640),
+        get_screen_height=mocker.Mock(return_value=480),
+        is_mouse_button_pressed=mocker.Mock(side_effect=lambda _button: False),
+        check_collision_point_rec=mocker.Mock(side_effect=lambda _pos, _rect: False),
+        measure_text=mocker.Mock(side_effect=lambda _text, _size: 10),
+        is_key_pressed=mocker.Mock(side_effect=lambda key: bool(key_handler(int(key)))),
+    )
+    mocker.patch.object(perk_menu_controller_module, "rl", stub)
+    return stub
 
 
 def test_open_perk_menu_plays_panel_click(mocker) -> None:
@@ -65,16 +88,10 @@ def test_perk_menu_pick_plays_button_click(mocker) -> None:
     mocker.patch.object(perk_menu_controller_module, "perk_selection_pick", side_effect=lambda *args, **kwargs: object())
 
     mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: False)
-    mocker.patch.object(rl, "get_screen_width", side_effect=lambda: 640)
-    mocker.patch.object(rl, "get_screen_height", side_effect=lambda: 480)
-    mocker.patch.object(rl, "is_mouse_button_pressed", side_effect=lambda _button: False)
-    mocker.patch.object(rl, "check_collision_point_rec", side_effect=lambda _pos, _rect: False)
-    mocker.patch.object(rl, "measure_text", side_effect=lambda _text, _size: 10)
-
-    def _is_key_pressed(key: int) -> bool:
-        return int(key) == int(rl.KeyboardKey.KEY_ENTER)
-
-    mocker.patch.object(rl, "is_key_pressed", side_effect=_is_key_pressed)
+    _patch_perk_menu_raylib(
+        mocker,
+        is_key_pressed=lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER),
+    )
 
     ctx = PerkMenuContext(
         state=GameplayState(),
@@ -106,16 +123,10 @@ def test_perk_menu_pick_invokes_on_pick(mocker) -> None:
     mocker.patch.object(perk_menu_controller_module, "perk_selection_pick", side_effect=lambda *args, **kwargs: object())
 
     mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: False)
-    mocker.patch.object(rl, "get_screen_width", side_effect=lambda: 640)
-    mocker.patch.object(rl, "get_screen_height", side_effect=lambda: 480)
-    mocker.patch.object(rl, "is_mouse_button_pressed", side_effect=lambda _button: False)
-    mocker.patch.object(rl, "check_collision_point_rec", side_effect=lambda _pos, _rect: False)
-    mocker.patch.object(rl, "measure_text", side_effect=lambda _text, _size: 10)
-
-    def _is_key_pressed(key: int) -> bool:
-        return int(key) == int(rl.KeyboardKey.KEY_ENTER)
-
-    mocker.patch.object(rl, "is_key_pressed", side_effect=_is_key_pressed)
+    _patch_perk_menu_raylib(
+        mocker,
+        is_key_pressed=lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER),
+    )
 
     ctx = PerkMenuContext(
         state=GameplayState(),
@@ -145,12 +156,7 @@ def test_perk_menu_cancel_plays_button_click(mocker) -> None:
     mocker.patch.object(perk_menu_controller_module, "perk_selection_current_choices", side_effect=lambda *args, **kwargs: [1])
 
     mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: True)
-    mocker.patch.object(rl, "get_screen_width", side_effect=lambda: 640)
-    mocker.patch.object(rl, "get_screen_height", side_effect=lambda: 480)
-    mocker.patch.object(rl, "is_mouse_button_pressed", side_effect=lambda _button: False)
-    mocker.patch.object(rl, "check_collision_point_rec", side_effect=lambda _pos, _rect: False)
-    mocker.patch.object(rl, "measure_text", side_effect=lambda _text, _size: 10)
-    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda _key: False)
+    _patch_perk_menu_raylib(mocker)
 
     ctx = PerkMenuContext(
         state=GameplayState(),

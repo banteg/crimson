@@ -4,13 +4,22 @@ import copy
 import json
 from pathlib import Path
 from types import SimpleNamespace
-from typing import cast
+from typing import TypeVar, cast
 
 import msgspec
 import pytest
 
 from crimson.game_modes import GameMode
-from crimson.original.schema import CaptureTick
+from crimson.original.schema import (
+    CaptureEventCounts,
+    CaptureEventHead,
+    CaptureFile,
+    CaptureInputPlayerKeys,
+    CaptureRngCallerCount,
+    CaptureRngHeadEntry,
+    CaptureSpawnDiagnostics,
+    CaptureTick,
+)
 from crimson.replay.checkpoints import (
     ReplayCheckpoint,
     ReplayDeathLedgerEntry,
@@ -38,168 +47,193 @@ def _load_report_module():
     return divergence_report
 
 
-_DEFAULT_CAPTURE_FILE = capture_file_to_dict(
-    build_capture_file(
-        ticks=[build_capture_tick(tick_index=0, elapsed_ms=0)],
-        session_id="defaults",
-    ),
-)
-_DEFAULT_CAPTURE_TICK = cast(dict[str, object], cast(list[object], _DEFAULT_CAPTURE_FILE["ticks"])[0])
-_DEFAULT_CAPTURE_RNG_HEAD_ENTRY = cast(dict[str, object], capture_value_to_builtins(build_capture_rng_head_entry()))
-_DEFAULT_CAPTURE_CREATURE_SAMPLE = cast(dict[str, object], capture_value_to_builtins(build_capture_creature_sample()))
-_DEFAULT_CAPTURE_PROJECTILE_SAMPLE = cast(dict[str, object], capture_value_to_builtins(build_capture_projectile_sample()))
-_DEFAULT_CAPTURE_SECONDARY_PROJECTILE_SAMPLE = cast(
-    dict[str, object],
-    capture_value_to_builtins(build_capture_secondary_projectile_sample()),
-)
-_DEFAULT_CAPTURE_BONUS_SAMPLE = cast(dict[str, object], capture_value_to_builtins(build_capture_bonus_sample()))
+_DEFAULT_CAPTURE_TICK = build_capture_tick(tick_index=0, elapsed_ms=0)
+_DEFAULT_CAPTURE_RNG_HEAD_ENTRY = build_capture_rng_head_entry()
+_DEFAULT_CAPTURE_CREATURE_SAMPLE = build_capture_creature_sample()
+_DEFAULT_CAPTURE_PROJECTILE_SAMPLE = build_capture_projectile_sample()
+_DEFAULT_CAPTURE_SECONDARY_PROJECTILE_SAMPLE = build_capture_secondary_projectile_sample()
+_DEFAULT_CAPTURE_BONUS_SAMPLE = build_capture_bonus_sample()
+
+_T = TypeVar("_T")
 
 
-def _clone_dict(value: object) -> dict[str, object]:
-    assert isinstance(value, dict)
-    return copy.deepcopy(cast(dict[str, object], value))
+def _copy_with_struct(template: _T, **kwargs: object) -> _T:
+    value = copy.deepcopy(template)
+    for key, override in kwargs.items():
+        setattr(value, key, override)
+    return value
 
 
-def _clone_list(value: object) -> list[object]:
-    assert isinstance(value, list)
-    return copy.deepcopy(cast(list[object], value))
+def _snapshot_globals(**kwargs: object):
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.before.globals, **kwargs)
 
 
-def _base_config(**kwargs: object) -> dict[str, object]:
-    row = _clone_dict(_DEFAULT_CAPTURE_FILE["config"])
-    row.update(kwargs)
+def _snapshot_status(**kwargs: object):
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.before.status, **kwargs)
+
+
+def _snapshot_input(**kwargs: object):
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.before.input, **kwargs)
+
+
+def _snapshot_input_bindings(**kwargs: object):
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.before.input_bindings, **kwargs)
+
+
+def _timing_diagnostics(**kwargs: object):
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.checkpoint.debug.timing, **kwargs)
+
+
+def _spawn_diagnostics(**kwargs: object):
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.checkpoint.debug.spawn, **kwargs)
+
+
+def _rng_diagnostics(**kwargs: object):
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.checkpoint.debug.rng, **kwargs)
+
+
+def _player_fire_diagnostics(**kwargs: object):
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.checkpoint.debug.player_fire, **kwargs)
+
+
+def _event_counts_dict(**kwargs: object):
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.event_counts, **kwargs)
+
+
+def _rng_head_entry(**kwargs: object):
+    return _copy_with_struct(_DEFAULT_CAPTURE_RNG_HEAD_ENTRY, **kwargs)
+
+
+def _rng_summary_dict(**kwargs: object):
+    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.rng, **kwargs)
+
+
+def _input_player_keys(player_index: int, **kwargs: object):
+    row = _copy_with_struct(_DEFAULT_CAPTURE_TICK.input_player_keys[0], **kwargs)
+    row.player_index = int(player_index)
     return row
 
 
-def _snapshot_globals(**kwargs: object) -> dict[str, object]:
-    before = _clone_dict(_DEFAULT_CAPTURE_TICK["before"])
-    row = _clone_dict(before["globals"])
-    row.update(kwargs)
+def _sample_creature(index: int, **kwargs: object):
+    row = _copy_with_struct(_DEFAULT_CAPTURE_CREATURE_SAMPLE, **kwargs)
+    row.index = int(index)
     return row
 
 
-def _snapshot_status(**kwargs: object) -> dict[str, object]:
-    before = _clone_dict(_DEFAULT_CAPTURE_TICK["before"])
-    row = _clone_dict(before["status"])
-    row.update(kwargs)
+def _sample_projectile(index: int, **kwargs: object):
+    row = _copy_with_struct(_DEFAULT_CAPTURE_PROJECTILE_SAMPLE, **kwargs)
+    row.index = int(index)
     return row
 
 
-def _snapshot_input(**kwargs: object) -> dict[str, object]:
-    before = _clone_dict(_DEFAULT_CAPTURE_TICK["before"])
-    row = _clone_dict(before["input"])
-    row.update(kwargs)
+def _sample_secondary_projectile(index: int, **kwargs: object):
+    row = _copy_with_struct(_DEFAULT_CAPTURE_SECONDARY_PROJECTILE_SAMPLE, **kwargs)
+    row.index = int(index)
     return row
 
 
-def _snapshot_input_bindings(**kwargs: object) -> dict[str, object]:
-    before = _clone_dict(_DEFAULT_CAPTURE_TICK["before"])
-    row = _clone_dict(before["input_bindings"])
-    row.update(kwargs)
+def _sample_bonus(index: int, **kwargs: object):
+    row = _copy_with_struct(_DEFAULT_CAPTURE_BONUS_SAMPLE, **kwargs)
+    row.index = int(index)
     return row
 
 
-def _timing_diagnostics(**kwargs: object) -> dict[str, object]:
-    checkpoint = _clone_dict(_DEFAULT_CAPTURE_TICK["checkpoint"])
-    debug = _clone_dict(checkpoint["debug"])
-    row = _clone_dict(debug["timing"])
-    row.update(kwargs)
-    return row
+def _as_builtins_dict(value: object) -> dict[str, object]:
+    return cast(dict[str, object], capture_value_to_builtins(value))
 
 
-def _spawn_diagnostics(**kwargs: object) -> dict[str, object]:
-    checkpoint = _clone_dict(_DEFAULT_CAPTURE_TICK["checkpoint"])
-    debug = _clone_dict(checkpoint["debug"])
-    row = _clone_dict(debug["spawn"])
-    row.update(kwargs)
-    return row
+def _coerce_rng_head_rows(
+    rows: list[CaptureRngHeadEntry | dict[str, object]],
+) -> list[CaptureRngHeadEntry]:
+    out: list[CaptureRngHeadEntry] = []
+    for row in rows:
+        if isinstance(row, dict):
+            out.append(msgspec.convert(row, type=CaptureRngHeadEntry, strict=True))
+        else:
+            out.append(copy.deepcopy(row))
+    return out
 
 
-def _rng_diagnostics(**kwargs: object) -> dict[str, object]:
-    checkpoint = _clone_dict(_DEFAULT_CAPTURE_TICK["checkpoint"])
-    debug = _clone_dict(checkpoint["debug"])
-    row = _clone_dict(debug["rng"])
-    row.update(kwargs)
-    return row
+def _coerce_rng_caller_rows(
+    rows: list[CaptureRngCallerCount | dict[str, object]],
+) -> list[CaptureRngCallerCount]:
+    out: list[CaptureRngCallerCount] = []
+    for row in rows:
+        if isinstance(row, dict):
+            out.append(msgspec.convert(row, type=CaptureRngCallerCount, strict=True))
+        else:
+            out.append(copy.deepcopy(row))
+    return out
 
 
-def _player_fire_diagnostics(**kwargs: object) -> dict[str, object]:
-    checkpoint = _clone_dict(_DEFAULT_CAPTURE_TICK["checkpoint"])
-    debug = _clone_dict(checkpoint["debug"])
-    row = _clone_dict(debug["player_fire"])
-    row.update(kwargs)
-    return row
+def _coerce_event_counts(
+    counts: CaptureEventCounts | dict[str, int] | None,
+) -> CaptureEventCounts:
+    if counts is None:
+        return copy.deepcopy(_DEFAULT_CAPTURE_TICK.event_counts)
+    if isinstance(counts, dict):
+        base = _as_builtins_dict(_DEFAULT_CAPTURE_TICK.event_counts)
+        base.update(cast("dict[str, object]", counts))
+        return msgspec.convert(base, type=CaptureEventCounts, strict=True)
+    return copy.deepcopy(counts)
 
 
-def _event_counts_dict(**kwargs: object) -> dict[str, object]:
-    row = _clone_dict(_DEFAULT_CAPTURE_TICK["event_counts"])
-    row.update(kwargs)
-    return row
+def _coerce_spawn_diagnostics(
+    spawn: CaptureSpawnDiagnostics | dict[str, object] | None,
+) -> CaptureSpawnDiagnostics:
+    if spawn is None:
+        return copy.deepcopy(_DEFAULT_CAPTURE_TICK.checkpoint.debug.spawn)
+    if isinstance(spawn, dict):
+        base = _as_builtins_dict(_DEFAULT_CAPTURE_TICK.checkpoint.debug.spawn)
+        base.update(dict(spawn))
+        return msgspec.convert(base, type=CaptureSpawnDiagnostics, strict=True)
+    return copy.deepcopy(spawn)
 
 
-def _rng_head_entry(**kwargs: object) -> dict[str, object]:
-    row = _clone_dict(_DEFAULT_CAPTURE_RNG_HEAD_ENTRY)
-    row.update(kwargs)
-    return row
+def _coerce_event_heads(
+    heads: list[CaptureEventHead | dict[str, object]],
+) -> list[CaptureEventHead | dict[str, object]]:
+    out: list[CaptureEventHead | dict[str, object]] = []
+    for row in heads:
+        if isinstance(row, dict):
+            out.append(cast("dict[str, object]", row).copy())
+        else:
+            out.append(copy.deepcopy(row))
+    return out
 
 
-def _rng_summary_dict(**kwargs: object) -> dict[str, object]:
-    row = _clone_dict(_DEFAULT_CAPTURE_TICK["rng"])
-    row.update(kwargs)
-    return row
-
-
-def _input_player_keys(player_index: int, **kwargs: object) -> dict[str, object]:
-    row = _clone_dict(cast(list[object], _DEFAULT_CAPTURE_TICK["input_player_keys"])[0])
-    row["player_index"] = int(player_index)
-    row.update(kwargs)
-    return row
-
-
-def _sample_creature(index: int, **kwargs: object) -> dict[str, object]:
-    row = _clone_dict(_DEFAULT_CAPTURE_CREATURE_SAMPLE)
-    row["index"] = int(index)
-    row.update(kwargs)
-    return row
-
-
-def _sample_projectile(index: int, **kwargs: object) -> dict[str, object]:
-    row = _clone_dict(_DEFAULT_CAPTURE_PROJECTILE_SAMPLE)
-    row["index"] = int(index)
-    row.update(kwargs)
-    return row
-
-
-def _sample_secondary_projectile(index: int, **kwargs: object) -> dict[str, object]:
-    row = _clone_dict(_DEFAULT_CAPTURE_SECONDARY_PROJECTILE_SAMPLE)
-    row["index"] = int(index)
-    row.update(kwargs)
-    return row
-
-
-def _sample_bonus(index: int, **kwargs: object) -> dict[str, object]:
-    row = _clone_dict(_DEFAULT_CAPTURE_BONUS_SAMPLE)
-    row["index"] = int(index)
-    row.update(kwargs)
-    return row
+def _coerce_input_player_keys(
+    rows: list[CaptureInputPlayerKeys | dict[str, object]],
+) -> list[CaptureInputPlayerKeys]:
+    out: list[CaptureInputPlayerKeys] = []
+    for row in rows:
+        if isinstance(row, dict):
+            base = _as_builtins_dict(_DEFAULT_CAPTURE_TICK.input_player_keys[0])
+            base.update(dict(row))
+            out.append(msgspec.convert(base, type=CaptureInputPlayerKeys, strict=True))
+        else:
+            out.append(copy.deepcopy(row))
+    return out
 
 
 def _capture_tick(
     *,
     tick: int,
     rng_rand_calls: int = 0,
-    rng_head: list[dict[str, object]] | None = None,
-    rng_callers: list[dict[str, object]] | None = None,
-    event_counts: dict[str, int] | None = None,
-    spawn: dict[str, object] | None = None,
-    event_heads: list[dict[str, object]] | None = None,
+    rng_head: list[CaptureRngHeadEntry | dict[str, object]] | None = None,
+    rng_callers: list[CaptureRngCallerCount | dict[str, object]] | None = None,
+    event_counts: CaptureEventCounts | dict[str, int] | None = None,
+    spawn: CaptureSpawnDiagnostics | dict[str, object] | None = None,
+    event_heads: list[CaptureEventHead | dict[str, object]] | None = None,
     sample_counts: dict[str, int] | None = None,
-    input_player_keys: list[dict[str, object]] | None = None,
+    input_player_keys: list[CaptureInputPlayerKeys | dict[str, object]] | None = None,
 ) -> CaptureTick:
-    rng_head_rows = list(rng_head or [])
-    rng_caller_rows = list(rng_callers or [])
-    counts_row = _event_counts_dict(**(event_counts or {}))
-    spawn_row = _spawn_diagnostics(**(spawn or {}))
+    rng_head_rows = _coerce_rng_head_rows(list(rng_head or []))
+    rng_caller_rows = _coerce_rng_caller_rows(list(rng_callers or []))
+    counts_row = _coerce_event_counts(event_counts)
+    spawn_row = _coerce_spawn_diagnostics(spawn)
+    event_head_rows = _coerce_event_heads(list(event_heads or []))
+    input_key_rows = _coerce_input_player_keys(list(input_player_keys or [_input_player_keys(player_index=0)]))
     sample_counts_row: dict[str, int] = {
         "creatures": 0,
         "projectiles": 0,
@@ -251,17 +285,10 @@ def _capture_tick(
         type=type(checkpoint.debug),
         strict=True,
     )
-    tick_obj.event_counts = msgspec.convert(counts_row, type=type(tick_obj.event_counts), strict=True)
-    tick_obj.event_heads = list(event_heads or [])
-    tick_obj.input_player_keys = [
-        msgspec.convert(row, type=type(tick_obj.input_player_keys[0]), strict=True)
-        for row in list(input_player_keys or [_input_player_keys(player_index=0)])
-    ]
-    tick_obj.rng = msgspec.convert(
-        _rng_summary_dict(calls=int(rng_rand_calls), head=rng_head_rows, callers=rng_caller_rows),
-        type=type(tick_obj.rng),
-        strict=True,
-    )
+    tick_obj.event_counts = counts_row
+    tick_obj.event_heads = cast("list[CaptureEventHead]", event_head_rows)
+    tick_obj.input_player_keys = input_key_rows
+    tick_obj.rng = _rng_summary_dict(calls=int(rng_rand_calls), head=rng_head_rows, callers=rng_caller_rows)
     tick_obj.diagnostics = msgspec.convert(
         {
             "sampling_phase": "",
@@ -314,6 +341,17 @@ def _capture_tick(
         strict=True,
     )
     return tick_obj
+
+
+def _write_capture_stream(path: Path, capture: CaptureFile) -> None:
+    payload = capture_file_to_dict(capture)
+    meta = {k: v for k, v in payload.items() if k != "ticks"}
+    meta["ticks"] = []
+    ticks_obj = payload.get("ticks")
+    ticks = ticks_obj if isinstance(ticks_obj, list) else []
+    rows = [json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True)]
+    rows.extend(json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True) for tick in ticks)
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
 
 
 def _step_crt_state(state: int, calls: int) -> int:
@@ -807,15 +845,7 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
     tick.samples.creatures[0].index = 5
     tick.samples.secondary_projectiles[0].index = 7
     capture = build_capture_file(ticks=[tick], session_id="s")
-    capture_obj = capture_file_to_dict(capture)
-    meta = {k: v for k, v in capture_obj.items() if k != "ticks"}
-    meta["ticks"] = []
-    tick_row = cast("dict[str, object]", cast("list[object]", capture_obj["ticks"])[0])
-    rows = [
-        json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True),
-        json.dumps({"event": "tick", "tick": tick_row}, separators=(",", ":"), sort_keys=True),
-    ]
-    capture_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    _write_capture_stream(capture_path, capture)
 
     raw = report._load_raw_tick_debug(capture_path, {42})
     assert 42 in raw

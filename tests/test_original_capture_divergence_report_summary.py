@@ -5,7 +5,7 @@ from pathlib import Path
 
 import msgspec
 
-from crimson.original.schema import CaptureEventHead, CaptureTick
+from crimson.original.schema import CaptureEventHead, CaptureFile, CaptureTick
 from crimson.replay.checkpoints import (
     ReplayCheckpoint,
     ReplayEventSummary,
@@ -50,15 +50,15 @@ def _capture_tick(
     return tick_obj
 
 
-def _capture_obj(*, ticks: list[CaptureTick]) -> dict[str, object]:
-    capture = build_capture_file(ticks=ticks, session_id="s")
-    return capture_file_to_dict(capture)
+def _capture_obj(*, ticks: list[CaptureTick]) -> CaptureFile:
+    return build_capture_file(ticks=ticks, session_id="s")
 
 
-def _write_capture_stream(path: Path, capture: dict[str, object]) -> None:
-    meta = {k: v for k, v in capture.items() if k != "ticks"}
+def _write_capture_stream(path: Path, capture: CaptureFile) -> None:
+    payload = capture_file_to_dict(capture)
+    meta = {k: v for k, v in payload.items() if k != "ticks"}
     meta["ticks"] = []
-    ticks_obj = capture.get("ticks")
+    ticks_obj = payload.get("ticks")
     ticks = ticks_obj if isinstance(ticks_obj, list) else []
     rows = [json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True)]
     rows.extend(json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True) for tick in ticks)
