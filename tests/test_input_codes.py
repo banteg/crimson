@@ -32,11 +32,11 @@ def test_axis_z_and_rot_x_bindings_use_distinct_raylib_axes() -> None:
     assert input_codes._AXIS_CODE_TO_AXIS[0x141] != input_codes._AXIS_CODE_TO_AXIS[0x153]
 
 
-def test_pressed_edge_does_not_retrigger_after_unpolled_held_frame(monkeypatch) -> None:
+def test_pressed_edge_does_not_retrigger_after_unpolled_held_frame(mocker) -> None:
     key_down = {"value": False}
 
-    monkeypatch.setattr(input_codes.rl, "is_key_down", lambda _key: bool(key_down["value"]))
-    monkeypatch.setattr(input_codes.rl, "get_mouse_wheel_move", lambda: 0.0)
+    mocker.patch.object(input_codes.rl, "is_key_down", side_effect=lambda _key: bool(key_down["value"]))
+    mocker.patch.object(input_codes.rl, "get_mouse_wheel_move", return_value=0.0)
 
     input_codes._PRESSED_STATE.prev_down.clear()
     input_codes._PRESSED_STATE.down.clear()
@@ -55,14 +55,14 @@ def test_pressed_edge_does_not_retrigger_after_unpolled_held_frame(monkeypatch) 
     assert not input_codes.input_code_is_pressed_for_player(0x11, player_index=0)
 
 
-def test_input_primary_just_pressed_latches_across_multiplayer_fire_keys(monkeypatch) -> None:
+def test_input_primary_just_pressed_latches_across_multiplayer_fire_keys(mocker) -> None:
     down: dict[tuple[int, int], bool] = {}
 
     def _fake_input_code_is_down_for_player(key_code: int, *, player_index: int) -> bool:
         return bool(down.get((int(player_index), int(key_code)), False))
 
-    monkeypatch.setattr(input_codes, "input_code_is_down_for_player", _fake_input_code_is_down_for_player)
-    monkeypatch.setattr(input_codes.rl, "get_mouse_wheel_move", lambda: 0.0)
+    mocker.patch.object(input_codes, "input_code_is_down_for_player", side_effect=_fake_input_code_is_down_for_player)
+    mocker.patch.object(input_codes.rl, "get_mouse_wheel_move", return_value=0.0)
 
     input_codes._PRESSED_STATE.prev_down.clear()
     input_codes._PRESSED_STATE.down.clear()
