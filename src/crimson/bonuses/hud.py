@@ -67,27 +67,30 @@ class BonusHudState:
 def bonus_hud_update(state: GameplayState, players: list[PlayerState], *, dt: float = 0.0) -> None:
     """Refresh HUD slots based on current timer values + advance slide animation."""
 
+    global_timers = {
+        "weapon_power_up": float(state.bonuses.weapon_power_up),
+        "reflex_boost": float(state.bonuses.reflex_boost),
+        "energizer": float(state.bonuses.energizer),
+        "double_experience": float(state.bonuses.double_experience),
+        "freeze": float(state.bonuses.freeze),
+    }
+
     def _global_timer_value(key: str) -> float:
-        if key == "weapon_power_up":
-            return float(state.bonuses.weapon_power_up)
-        if key == "reflex_boost":
-            return float(state.bonuses.reflex_boost)
-        if key == "energizer":
-            return float(state.bonuses.energizer)
-        if key == "double_experience":
-            return float(state.bonuses.double_experience)
-        if key == "freeze":
-            return float(state.bonuses.freeze)
-        raise ValueError(f"Unexpected bonus HUD global timer key: {key}")
+        try:
+            return global_timers[key]
+        except KeyError as exc:
+            raise ValueError(f"Unexpected bonus HUD global timer key: {key}") from exc
 
     def _player_timer_value(player: PlayerState, key: str) -> float:
-        if key == "fire_bullets_timer":
-            return float(player.fire_bullets_timer)
-        if key == "shield_timer":
-            return float(player.shield_timer)
-        if key == "speed_bonus_timer":
-            return float(player.speed_bonus_timer)
-        raise ValueError(f"Unexpected bonus HUD player timer key: {key}")
+        player_timers = {
+            "fire_bullets_timer": float(player.fire_bullets_timer),
+            "shield_timer": float(player.shield_timer),
+            "speed_bonus_timer": float(player.speed_bonus_timer),
+        }
+        try:
+            return player_timers[key]
+        except KeyError as exc:
+            raise ValueError(f"Unexpected bonus HUD player timer key: {key}") from exc
 
     def _timer_value(ref: _TimerRef | None) -> float:
         if ref is None:
