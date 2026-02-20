@@ -144,3 +144,59 @@ def test_network_lobby_panel_shows_room_code_not_session_id(make_game_state, moc
     code_label_index = captured.index("Code:")
     assert captured[code_label_index + 1] == "AB12"
     assert "Session:" in captured
+
+
+def test_network_lobby_panel_update_match_start_applies_state_and_transition(make_game_state) -> None:
+    state = make_game_state()
+    pending = PendingLanSession(
+        role="host",
+        config=LanSessionConfig(
+            mode="quests",
+            player_count=2,
+            quest_level="1.1",
+            bind_host="0.0.0.0",
+            relay_host="127.0.0.1",
+            relay_port=31993,
+            room_code="QZ42",
+            host_ip="127.0.0.1",
+            port=31993,
+            netcode_mode="rollback",
+            rollback_max_ticks=8,
+            reconnect_timeout_ms=15_000,
+            input_delay_ticks=1,
+            preserve_bugs=False,
+        ),
+    )
+    state.pending_net_session = pending
+    state.pending_lan_session = pending
+    event = SimpleNamespace(mode_id=3, player_count=5, quest_level="2.4")
+    state.net_runtime = cast(
+        "Any",
+        SimpleNamespace(
+            error="",
+            match_start=lambda: event,
+        ),
+    )
+    state.lan_runtime = state.net_runtime
+
+    panel = LanLobbyPanelView(state)
+    panel._is_open = True
+    panel._timeline_ms = 0
+    panel._timeline_max_ms = 0
+
+    panel.update(0.0)
+
+    assert state.lan_in_lobby is True
+    assert state.net_in_lobby is True
+    assert state.lan_waiting_for_players is False
+    assert state.net_waiting_for_players is False
+    assert state.lan_expected_players == 4
+    assert state.net_expected_players == 4
+    assert state.lan_connected_players == 4
+    assert state.net_connected_players == 4
+    assert state.config.player_count == 4
+    assert state.config.game_mode == 3
+    assert state.pending_quest_level == "2.4"
+    assert panel._closing is True
+    assert panel._close_action == "start_quest"
+    assert state.screen_fade_ramp is True
