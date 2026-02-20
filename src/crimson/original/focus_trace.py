@@ -305,6 +305,24 @@ def _resolve_quest_level(replay: Any) -> str:
     return ""
 
 
+def _int_field_or(row: Mapping[str, Any], key: str, fallback: int) -> int:
+    if key in row:
+        return int(row[key])
+    return int(fallback)
+
+
+def _float_field_or(row: Mapping[str, Any], key: str, fallback: float) -> float:
+    if key in row:
+        return float(row[key])
+    return float(fallback)
+
+
+def _str_field_or(row: Mapping[str, Any], key: str, fallback: str) -> str:
+    if key in row:
+        return str(row[key])
+    return str(fallback)
+
+
 def _summarize_creature_diffs(capture_creatures: list[dict[str, Any]], world: WorldState) -> list[dict[str, Any]]:
     cap_by_idx: dict[int, dict[str, Any]] = {
         int(row.get("index")): row for row in capture_creatures if isinstance(row, dict) and row.get("index") is not None  # ty:ignore[invalid-argument-type]
@@ -314,11 +332,15 @@ def _summarize_creature_diffs(capture_creatures: list[dict[str, Any]], world: Wo
         if not (0 <= int(idx) < len(world.creatures.entries)):
             continue
         creature = world.creatures.entries[int(idx)]
-        cap_pos = cap_row.get("pos") if isinstance(cap_row.get("pos"), dict) else {}
-        cap_x = float(cap_pos.get("x", 0.0))  # ty:ignore[possibly-missing-attribute]
-        cap_y = float(cap_pos.get("y", 0.0))  # ty:ignore[possibly-missing-attribute]
-        cap_hp = float(cap_row.get("hp", 0.0))
-        cap_hitbox = float(cap_row.get("hitbox_size", 0.0))
+        cap_pos_obj = cap_row.get("pos")
+        if isinstance(cap_pos_obj, dict):
+            cap_pos = cast("dict[str, Any]", cap_pos_obj)
+        else:
+            cap_pos = {}
+        cap_x = _float_field_or(cap_pos, "x", 0.0)
+        cap_y = _float_field_or(cap_pos, "y", 0.0)
+        cap_hp = _float_field_or(cap_row, "hp", 0.0)
+        cap_hitbox = _float_field_or(cap_row, "hitbox_size", 0.0)
         rows.append(
             {
                 "index": int(idx),
@@ -326,7 +348,7 @@ def _summarize_creature_diffs(capture_creatures: list[dict[str, Any]], world: Wo
                 "hitbox_delta": float(creature.hitbox_size) - cap_hitbox,
                 "x_delta": float(creature.pos.x) - cap_x,
                 "y_delta": float(creature.pos.y) - cap_y,
-                "active_capture": bool(int(cap_row.get("active", 0)) != 0),
+                "active_capture": bool(_int_field_or(cap_row, "active", 0) != 0),
                 "active_rewrite": bool(creature.active),
             },
         )
@@ -353,17 +375,23 @@ def _summarize_projectile_diffs(capture_projectiles: list[dict[str, Any]], world
         if not (0 <= int(idx) < len(world.state.projectiles.entries)):
             continue
         proj = world.state.projectiles.entries[int(idx)]
-        cap_pos = cap_row.get("pos") if isinstance(cap_row.get("pos"), dict) else {}
-        cap_x = float(cap_pos.get("x", 0.0))  # ty:ignore[possibly-missing-attribute]
-        cap_y = float(cap_pos.get("y", 0.0))  # ty:ignore[possibly-missing-attribute]
+        cap_pos_obj = cap_row.get("pos")
+        if isinstance(cap_pos_obj, dict):
+            cap_pos = cast("dict[str, Any]", cap_pos_obj)
+        else:
+            cap_pos = {}
+        cap_x = _float_field_or(cap_pos, "x", 0.0)
+        cap_y = _float_field_or(cap_pos, "y", 0.0)
+        cap_life_timer = _float_field_or(cap_row, "life_timer", 0.0)
+        cap_damage_pool = _float_field_or(cap_row, "damage_pool", 0.0)
         rows.append(
             {
                 "index": int(idx),
-                "life_delta": float(proj.life_timer) - float(cap_row.get("life_timer", 0.0)),
-                "damage_pool_delta": float(proj.damage_pool) - float(cap_row.get("damage_pool", 0.0)),
+                "life_delta": float(proj.life_timer) - cap_life_timer,
+                "damage_pool_delta": float(proj.damage_pool) - cap_damage_pool,
                 "x_delta": float(proj.pos.x) - cap_x,
                 "y_delta": float(proj.pos.y) - cap_y,
-                "active_capture": bool(int(cap_row.get("active", 0)) != 0),
+                "active_capture": bool(_int_field_or(cap_row, "active", 0) != 0),
                 "active_rewrite": bool(proj.active),
             },
         )
@@ -388,20 +416,27 @@ def _collect_creature_presence_diffs(
     cap_by_idx: dict[int, dict[str, Any]] = {
         int(row.get("index")): row for row in capture_creatures if isinstance(row, dict) and row.get("index") is not None  # ty:ignore[invalid-argument-type]
     }
-    cap_indices = {idx for idx, row in cap_by_idx.items() if bool(int(row.get("active", 0)) != 0)}
+    cap_indices = {idx for idx, row in cap_by_idx.items() if bool(_int_field_or(row, "active", 0) != 0)}
     rewrite_indices = {idx for idx, creature in enumerate(world.creatures.entries) if bool(creature.active)}
 
     capture_only: list[dict[str, Any]] = []
     for idx in sorted(cap_indices - rewrite_indices):
         row = cap_by_idx[int(idx)]
-        pos = row.get("pos") if isinstance(row.get("pos"), dict) else {}
+        pos_obj = row.get("pos")
+        if isinstance(pos_obj, dict):
+            pos = cast("dict[str, Any]", pos_obj)
+        else:
+            pos = {}
         capture_only.append(
             {
                 "index": int(idx),
-                "type_id": int(row.get("type_id", 0)),
-                "hp": float(row.get("hp", 0.0)),
-                "hitbox_size": float(row.get("hitbox_size", 0.0)),
-                "pos": {"x": float(pos.get("x", 0.0)), "y": float(pos.get("y", 0.0))},  # ty:ignore[possibly-missing-attribute]
+                "type_id": _int_field_or(row, "type_id", 0),
+                "hp": _float_field_or(row, "hp", 0.0),
+                "hitbox_size": _float_field_or(row, "hitbox_size", 0.0),
+                "pos": {
+                    "x": _float_field_or(pos, "x", 0.0),
+                    "y": _float_field_or(pos, "y", 0.0),
+                },
             },
         )
 
@@ -428,20 +463,27 @@ def _collect_projectile_presence_diffs(
     cap_by_idx: dict[int, dict[str, Any]] = {
         int(row.get("index")): row for row in capture_projectiles if isinstance(row, dict) and row.get("index") is not None  # ty:ignore[invalid-argument-type]
     }
-    cap_indices = {idx for idx, row in cap_by_idx.items() if bool(int(row.get("active", 0)) != 0)}
+    cap_indices = {idx for idx, row in cap_by_idx.items() if bool(_int_field_or(row, "active", 0) != 0)}
     rewrite_indices = {idx for idx, proj in enumerate(world.state.projectiles.entries) if bool(proj.active)}
 
     capture_only: list[dict[str, Any]] = []
     for idx in sorted(cap_indices - rewrite_indices):
         row = cap_by_idx[int(idx)]
-        pos = row.get("pos") if isinstance(row.get("pos"), dict) else {}
+        pos_obj = row.get("pos")
+        if isinstance(pos_obj, dict):
+            pos = cast("dict[str, Any]", pos_obj)
+        else:
+            pos = {}
         capture_only.append(
             {
                 "index": int(idx),
-                "type_id": int(row.get("type_id", 0)),
-                "life_timer": float(row.get("life_timer", 0.0)),
-                "damage_pool": float(row.get("damage_pool", 0.0)),
-                "pos": {"x": float(pos.get("x", 0.0)), "y": float(pos.get("y", 0.0))},  # ty:ignore[possibly-missing-attribute]
+                "type_id": _int_field_or(row, "type_id", 0),
+                "life_timer": _float_field_or(row, "life_timer", 0.0),
+                "damage_pool": _float_field_or(row, "damage_pool", 0.0),
+                "pos": {
+                    "x": _float_field_or(pos, "x", 0.0),
+                    "y": _float_field_or(pos, "y", 0.0),
+                },
             },
         )
 
@@ -469,12 +511,18 @@ def _summarize_rng_alignment(
     rewrite_rng_callsites: list[str],
     tail_preview_limit: int = 24,
 ) -> RngAlignmentSummary:
-    capture_values = [int(row.get("value", 0)) for row in capture_rng_head if isinstance(row, dict)]
-    capture_caller_counts = Counter(
-        str(row.get("caller_static", "")).strip()
-        for row in capture_rng_head
-        if isinstance(row, dict) and str(row.get("caller_static", "")).strip()
-    )
+    capture_values: list[int] = []
+    for row in capture_rng_head:
+        if not isinstance(row, dict):
+            continue
+        capture_values.append(_int_field_or(row, "value", 0))
+    capture_caller_counts: Counter[str] = Counter()
+    for row in capture_rng_head:
+        if not isinstance(row, dict):
+            continue
+        caller_static = _str_field_or(row, "caller_static", "").strip()
+        if caller_static:
+            capture_caller_counts[caller_static] += 1
     rewrite_callsite_counts = Counter(str(callsite) for callsite in rewrite_rng_callsites if str(callsite))
     capture_calls = max(int(capture_rng_calls), len(capture_values))
     rewrite_calls = len(rewrite_rng_values)
@@ -500,7 +548,7 @@ def _summarize_rng_alignment(
         row = capture_rng_head[idx]
         if not isinstance(row, dict):
             continue
-        caller_static = str(row.get("caller_static", "")).strip()
+        caller_static = _str_field_or(row, "caller_static", "").strip()
         if not caller_static:
             continue
         bucket = caller_to_rewrite.setdefault(caller_static, Counter())
@@ -515,30 +563,36 @@ def _summarize_rng_alignment(
 
     tail_start = min(rewrite_calls, len(capture_rng_head))
     tail_rows_raw = capture_rng_head[tail_start:]
-    tail_callers = Counter(
-        str(row.get("caller_static", "")).strip()
-        for row in tail_rows_raw
-        if isinstance(row, dict) and str(row.get("caller_static", "")).strip()
-    )
-    tail_inferred_callsites = Counter(
-        str(caller_best.get(caller_static, "<unknown>"))
-        for row in tail_rows_raw
-        if isinstance(row, dict)
-        for caller_static in [str(row.get("caller_static", "")).strip()]
-        if caller_static
-    )
+    tail_callers: Counter[str] = Counter()
+    tail_inferred_callsites: Counter[str] = Counter()
+    for row in tail_rows_raw:
+        if not isinstance(row, dict):
+            continue
+        caller_static = _str_field_or(row, "caller_static", "").strip()
+        if not caller_static:
+            continue
+        tail_callers[caller_static] += 1
+        if caller_static in caller_best:
+            inferred_callsite = str(caller_best[caller_static])
+        else:
+            inferred_callsite = "<unknown>"
+        tail_inferred_callsites[inferred_callsite] += 1
     tail_preview: list[RngAlignmentTailRow] = []
     for offset, row in enumerate(tail_rows_raw[: max(0, int(tail_preview_limit))]):
         if not isinstance(row, dict):
             continue
-        caller_static = str(row.get("caller_static", "")).strip()
+        caller_static = _str_field_or(row, "caller_static", "").strip()
+        if caller_static in caller_best:
+            inferred_rewrite_callsite = str(caller_best[caller_static])
+        else:
+            inferred_rewrite_callsite = ""
         tail_preview.append(
             RngAlignmentTailRow(
                 index=int(tail_start + offset),
-                capture_value=int(row.get("value", 0)),
+                capture_value=_int_field_or(row, "value", 0),
                 capture_caller_static=caller_static,
-                capture_caller=str(row.get("caller", "")).strip(),
-                inferred_rewrite_callsite=str(caller_best.get(caller_static, "")),
+                capture_caller=_str_field_or(row, "caller", "").strip(),
+                inferred_rewrite_callsite=inferred_rewrite_callsite,
             ),
         )
 
@@ -587,15 +641,25 @@ def _build_native_caller_gaps(
         native_caller_static = str(caller_static)
         if not native_caller_static:
             continue
-        inferred_rewrite_callsite = str(caller_map.get(native_caller_static, ""))
-        rewrite_count = int(rewrite_counts.get(inferred_rewrite_callsite, 0)) if inferred_rewrite_callsite else 0
+        if native_caller_static in caller_map:
+            inferred_rewrite_callsite = str(caller_map[native_caller_static])
+        else:
+            inferred_rewrite_callsite = ""
+        if inferred_rewrite_callsite and inferred_rewrite_callsite in rewrite_counts:
+            rewrite_count = int(rewrite_counts[inferred_rewrite_callsite])
+        else:
+            rewrite_count = 0
         gap = int(capture_count) - int(rewrite_count)
         if gap <= 0:
             continue
+        if native_caller_static in _NATIVE_CALLER_LABELS:
+            native_label = str(_NATIVE_CALLER_LABELS[native_caller_static])
+        else:
+            native_label = ""
         rows.append(
             NativeCallerGapRow(
                 native_caller_static=native_caller_static,
-                native_label=str(_NATIVE_CALLER_LABELS.get(native_caller_static, "")),
+                native_label=native_label,
                 capture_count=int(capture_count),
                 inferred_rewrite_callsite=inferred_rewrite_callsite,
                 rewrite_count=int(rewrite_count),
@@ -632,21 +696,57 @@ def _build_fire_bullets_loop_parity(rng_alignment: RngAlignmentSummary) -> FireB
         },
     )
 
-    seed_callsite = str(caller_map.get(_FIRE_BULLETS_SEED_CALLER, ""))
-    seed_capture = int(capture_counts.get(_FIRE_BULLETS_SEED_CALLER, 0))
-    seed_rewrite = int(rewrite_counts.get(seed_callsite, 0)) if seed_callsite else 0
+    if _FIRE_BULLETS_SEED_CALLER in caller_map:
+        seed_callsite = str(caller_map[_FIRE_BULLETS_SEED_CALLER])
+    else:
+        seed_callsite = ""
+    if _FIRE_BULLETS_SEED_CALLER in capture_counts:
+        seed_capture = int(capture_counts[_FIRE_BULLETS_SEED_CALLER])
+    else:
+        seed_capture = 0
+    if seed_callsite and seed_callsite in rewrite_counts:
+        seed_rewrite = int(rewrite_counts[seed_callsite])
+    else:
+        seed_rewrite = 0
 
-    pre_freeze_callsite = str(caller_map.get(_FIRE_BULLETS_PRE_FREEZE_CALLER, ""))
-    pre_freeze_capture = int(capture_counts.get(_FIRE_BULLETS_PRE_FREEZE_CALLER, 0))
-    pre_freeze_rewrite = int(rewrite_counts.get(pre_freeze_callsite, 0)) if pre_freeze_callsite else 0
+    if _FIRE_BULLETS_PRE_FREEZE_CALLER in caller_map:
+        pre_freeze_callsite = str(caller_map[_FIRE_BULLETS_PRE_FREEZE_CALLER])
+    else:
+        pre_freeze_callsite = ""
+    if _FIRE_BULLETS_PRE_FREEZE_CALLER in capture_counts:
+        pre_freeze_capture = int(capture_counts[_FIRE_BULLETS_PRE_FREEZE_CALLER])
+    else:
+        pre_freeze_capture = 0
+    if pre_freeze_callsite and pre_freeze_callsite in rewrite_counts:
+        pre_freeze_rewrite = int(rewrite_counts[pre_freeze_callsite])
+    else:
+        pre_freeze_rewrite = 0
 
-    midrange_callsite = str(caller_map.get(_FIRE_BULLETS_MIDRANGE_CALLER, ""))
-    midrange_capture = int(capture_counts.get(_FIRE_BULLETS_MIDRANGE_CALLER, 0))
-    midrange_rewrite = int(rewrite_counts.get(midrange_callsite, 0)) if midrange_callsite else 0
+    if _FIRE_BULLETS_MIDRANGE_CALLER in caller_map:
+        midrange_callsite = str(caller_map[_FIRE_BULLETS_MIDRANGE_CALLER])
+    else:
+        midrange_callsite = ""
+    if _FIRE_BULLETS_MIDRANGE_CALLER in capture_counts:
+        midrange_capture = int(capture_counts[_FIRE_BULLETS_MIDRANGE_CALLER])
+    else:
+        midrange_capture = 0
+    if midrange_callsite and midrange_callsite in rewrite_counts:
+        midrange_rewrite = int(rewrite_counts[midrange_callsite])
+    else:
+        midrange_rewrite = 0
 
-    farrange_callsite = str(caller_map.get(_FIRE_BULLETS_FARRANGE_CALLER, ""))
-    farrange_capture = int(capture_counts.get(_FIRE_BULLETS_FARRANGE_CALLER, 0))
-    farrange_rewrite = int(rewrite_counts.get(farrange_callsite, 0)) if farrange_callsite else 0
+    if _FIRE_BULLETS_FARRANGE_CALLER in caller_map:
+        farrange_callsite = str(caller_map[_FIRE_BULLETS_FARRANGE_CALLER])
+    else:
+        farrange_callsite = ""
+    if _FIRE_BULLETS_FARRANGE_CALLER in capture_counts:
+        farrange_capture = int(capture_counts[_FIRE_BULLETS_FARRANGE_CALLER])
+    else:
+        farrange_capture = 0
+    if farrange_callsite and farrange_callsite in rewrite_counts:
+        farrange_rewrite = int(rewrite_counts[farrange_callsite])
+    else:
+        farrange_rewrite = 0
 
     if (
         seed_capture <= 0
@@ -714,9 +814,17 @@ def trace_focus_tick(
     samples = raw_tick.get("samples") if isinstance(raw_tick.get("samples"), dict) else {}
     capture_creatures = samples.get("creatures") if isinstance(samples.get("creatures"), list) else []  # ty:ignore[possibly-missing-attribute]
     capture_projectiles = samples.get("projectiles") if isinstance(samples.get("projectiles"), list) else []  # ty:ignore[possibly-missing-attribute]
-    capture_rng = raw_tick.get("rng") if isinstance(raw_tick.get("rng"), dict) else {}
-    capture_rng_head = capture_rng.get("head") if isinstance(capture_rng.get("head"), list) else []  # ty:ignore[possibly-missing-attribute]
-    capture_rng_calls = int(capture_rng.get("calls", len(capture_rng_head)))  # ty:ignore[invalid-argument-type, possibly-missing-attribute]
+    capture_rng_obj = raw_tick.get("rng")
+    if isinstance(capture_rng_obj, dict):
+        capture_rng = cast("dict[str, Any]", capture_rng_obj)
+    else:
+        capture_rng = {}
+    capture_rng_head_obj = capture_rng.get("head")
+    if isinstance(capture_rng_head_obj, list):
+        capture_rng_head = list(capture_rng_head_obj)
+    else:
+        capture_rng_head = []
+    capture_rng_calls = _int_field_or(capture_rng, "calls", len(capture_rng_head))
 
     world_size = float(replay.header.world_size)
     world = WorldState.build(
@@ -914,13 +1022,18 @@ def trace_focus_tick(
             )
 
         if bootstrap_start_tick is not None and session_quest is not None:
+            bootstrap_tick = int(bootstrap_start_tick)
             bootstrap_dt = resolve_dt_frame(
-                tick_index=int(bootstrap_start_tick),
+                tick_index=bootstrap_tick,
                 default_dt_frame=float(default_dt_frame),
                 dt_frame_overrides=dt_frame_overrides,
             )
             bootstrap_dt_ms = float(bootstrap_dt) * 1000.0
-            for event in events_by_tick.get(int(bootstrap_start_tick), []):
+            if bootstrap_tick in events_by_tick:
+                bootstrap_events = events_by_tick[bootstrap_tick]
+            else:
+                bootstrap_events = []
+            for event in bootstrap_events:
                 if not (isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND):
                     continue
                 payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
@@ -970,6 +1083,7 @@ def trace_focus_tick(
 
     try:
         for tick_index in range(int(tick_start), int(tick) + 1):
+            tick_key = int(tick_index)
             if mode == int(GameMode.QUESTS) and pending_capture_state_reset:
                 _apply_capture_state_reset()
 
@@ -982,16 +1096,19 @@ def trace_focus_tick(
                 for _ in range(max(0, int(draws))):
                     world.state.rng.rand()
             dt_tick = resolve_dt_frame(
-                tick_index=int(tick_index),
+                tick_index=tick_key,
                 default_dt_frame=float(default_dt_frame),
                 dt_frame_overrides=dt_frame_overrides,
             )
             dt_tick_ms_i32 = resolve_dt_frame_ms_i32(
-                tick_index=int(tick_index),
+                tick_index=tick_key,
                 dt_frame=float(dt_tick),
                 dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
             )
-            tick_events = events_by_tick.get(int(tick_index), [])
+            if tick_key in events_by_tick:
+                tick_events = events_by_tick[tick_key]
+            else:
+                tick_events = []
             pre_step_events, post_step_events = partition_tick_events(
                 tick_events,
                 defer_menu_open=bool(original_capture_replay),
@@ -999,7 +1116,7 @@ def trace_focus_tick(
 
             apply_replay_tick_events(
                 pre_step_events,
-                tick_index=int(tick_index),
+                tick_index=tick_key,
                 dt_frame=float(dt_tick),
                 world=world,
                 game_mode_id=int(mode),
@@ -1205,7 +1322,7 @@ def trace_focus_tick(
     creature_capture_only, creature_rewrite_only = _collect_creature_presence_diffs(capture_creatures, world)  # ty:ignore[invalid-argument-type]
     projectile_capture_only, projectile_rewrite_only = _collect_projectile_presence_diffs(capture_projectiles, world)  # ty:ignore[invalid-argument-type]
     rng_alignment = _summarize_rng_alignment(
-        capture_rng_head=[row for row in capture_rng_head if isinstance(row, dict)],  # ty:ignore[not-iterable]
+        capture_rng_head=[row for row in capture_rng_head if isinstance(row, dict)],
         capture_rng_calls=int(capture_rng_calls),
         rewrite_rng_values=rng_values,
         rewrite_rng_callsites=rng_values_callsites,

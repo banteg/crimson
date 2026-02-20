@@ -503,14 +503,20 @@ def _event_heads_by_kind(raw_event_heads: object) -> dict[str, list[dict[str, ob
     for item in raw_event_heads:
         if not isinstance(item, dict):
             continue
-        kind = str(item.get("kind", ""))  # ty:ignore[no-matching-overload]
+        item_map = cast("dict[str, object]", item)
+        kind_obj = item_map.get("kind")
+        if kind_obj is None:
+            kind = ""
+        else:
+            kind = str(kind_obj)
         if not kind:
             continue
         payload: dict[str, object]
-        if isinstance(item.get("data"), dict):  # ty:ignore[invalid-argument-type]
-            payload = dict(item["data"])  # ty:ignore[invalid-argument-type, no-matching-overload]
+        if isinstance(item_map.get("data"), dict):
+            payload_data = cast("dict[str, object]", item_map["data"])
+            payload = {str(key): value for key, value in payload_data.items()}
         else:
-            payload = {str(key): value for key, value in item.items() if str(key) != "kind"}
+            payload = {str(key): value for key, value in item_map.items() if str(key) != "kind"}
         out.setdefault(kind, []).append(payload)
     return out
 
@@ -777,9 +783,17 @@ def _build_run_summary_events_from_raw_capture(path: Path) -> list[RunSummaryEve
 
         perk_counts = _parse_raw_player_perk_counts(checkpoint_obj)
         for player_index, player_counts in perk_counts.items():
-            previous = prev_perk_counts.get(int(player_index), Counter())
+            player_key = int(player_index)
+            if player_key in prev_perk_counts:
+                previous = prev_perk_counts[player_key]
+            else:
+                previous = Counter()
             for perk_id, perk_count in sorted(player_counts.items()):
-                previous_count = int(previous.get(int(perk_id), 0))
+                perk_key = int(perk_id)
+                if perk_key in previous:
+                    previous_count = int(previous[perk_key])
+                else:
+                    previous_count = 0
                 if int(perk_count) <= int(previous_count):
                     continue
                 _append_run_summary_event(
@@ -792,7 +806,7 @@ def _build_run_summary_events_from_raw_capture(path: Path) -> list[RunSummaryEve
                         f"x{int(perk_count)}"
                     ),
                 )
-            prev_perk_counts[int(player_index)] = Counter(player_counts)
+            prev_perk_counts[player_key] = Counter(player_counts)
 
     events.sort(key=lambda item: (int(item.tick_index), str(item.kind), str(item.detail)))
     return events
@@ -846,9 +860,17 @@ def _build_run_summary_events_from_checkpoints(expected: list[ReplayCheckpoint])
                 if perk_id < 0 or perk_count <= 0:
                     continue
                 counts[int(perk_id)] = int(perk_count)
-            previous = prev_perk_counts.get(int(player_index), Counter())
+            player_key = int(player_index)
+            if player_key in prev_perk_counts:
+                previous = prev_perk_counts[player_key]
+            else:
+                previous = Counter()
             for perk_id, perk_count in sorted(counts.items()):
-                previous_count = int(previous.get(int(perk_id), 0))
+                perk_key = int(perk_id)
+                if perk_key in previous:
+                    previous_count = int(previous[perk_key])
+                else:
+                    previous_count = 0
                 if int(perk_count) <= int(previous_count):
                     continue
                 _append_run_summary_event(
@@ -861,7 +883,7 @@ def _build_run_summary_events_from_checkpoints(expected: list[ReplayCheckpoint])
                         f"x{int(perk_count)}"
                     ),
                 )
-            prev_perk_counts[int(player_index)] = counts
+            prev_perk_counts[player_key] = counts
 
     events.sort(key=lambda item: (int(item.tick_index), str(item.kind), str(item.detail)))
     return events
@@ -1282,7 +1304,11 @@ def _find_first_divergence(
                 actual=None,
             )
 
-        raw_row = raw_by_tick.get(int(tick), {})
+        tick_key = int(tick)
+        if tick_key in raw_by_tick:
+            raw_row = raw_by_tick[tick_key]
+        else:
+            raw_row = {}
         capture_stream_rows = _rng_stream_rows_for_raw_row(raw_row)
         capture_head_len = _int_or(raw_row.get("rng_head_len"), len(capture_stream_rows))
         if capture_head_len < 0:
@@ -1377,7 +1403,10 @@ def _primary_rng_after(ckpt: ReplayCheckpoint) -> int:
             calls = _infer_rand_calls_between_states(before, after)
             if calls is None:
                 continue
-            rank = int(stage_rank.get(key, -1))
+            if key in stage_rank:
+                rank = int(stage_rank[key])
+            else:
+                rank = -1
             if int(calls) > int(best_calls) or (int(calls) == int(best_calls) and rank > best_rank):
                 best_after = int(after)
                 best_calls = int(calls)
@@ -1808,6 +1837,16 @@ def _first_drift_onsets(
     return onsets
 
 
+def _raw_debug_row_for_tick(
+    rows_by_tick: Mapping[int, dict[str, object]],
+    tick: int,
+) -> dict[str, object]:
+    tick_key = int(tick)
+    if tick_key in rows_by_tick:
+        return rows_by_tick[tick_key]
+    return {}
+
+
 def _ticks_rng_zero_but_changed(
     *,
     expected_by_tick: dict[int, ReplayCheckpoint],
@@ -1821,7 +1860,8 @@ def _ticks_rng_zero_but_changed(
         act = actual_by_tick.get(tick)
         if act is None:
             continue
-        expected_calls = _int_or(raw_debug_by_tick.get(tick, {}).get("rng_rand_calls"), -1)
+        raw_row = _raw_debug_row_for_tick(raw_debug_by_tick, tick)
+        expected_calls = _int_or(raw_row.get("rng_rand_calls"), -1)
         if expected_calls < 0:
             exp = expected_by_tick.get(tick)
             if exp is not None:
@@ -1840,7 +1880,8 @@ def _aggregate_rng_callers(
 ) -> list[tuple[str, int]]:
     counts: dict[str, int] = {}
     for tick in ticks:
-        callers = raw_debug_by_tick.get(int(tick), {}).get("rng_callers")
+        raw_row = _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
+        callers = raw_row.get("rng_callers")
         if not isinstance(callers, list):
             continue
         for caller in callers:
@@ -1853,7 +1894,10 @@ def _aggregate_rng_callers(
             if calls <= 0:
                 continue
             caller_key = str(key)
-            counts[caller_key] = int(counts.get(caller_key, 0)) + int(calls)
+            if caller_key in counts:
+                counts[caller_key] = int(counts[caller_key]) + int(calls)
+            else:
+                counts[caller_key] = int(calls)
     return sorted(counts.items(), key=lambda item: (-int(item[1]), str(item[0])))
 
 
@@ -1870,7 +1914,8 @@ def _aggregate_neighbor_rng_callers_for_ticks(
         for offset in range(0, radius + 1):
             for signed in ((-offset, offset) if offset > 0 else (0,)):
                 probe = int(tick) + int(signed)
-                callers = raw_debug_by_tick.get(probe, {}).get("rng_callers")
+                raw_row = _raw_debug_row_for_tick(raw_debug_by_tick, probe)
+                callers = raw_row.get("rng_callers")
                 if not isinstance(callers, list) or not callers:
                     continue
                 for caller in callers:
@@ -1885,10 +1930,13 @@ def _aggregate_neighbor_rng_callers_for_ticks(
                     picked.append((str(key), int(calls)))
                 if picked:
                     break
-            if picked:
-                break
+                if picked:
+                    break
         for key, calls in picked:
-            counts[key] = int(counts.get(key, 0)) + int(calls)
+            if key in counts:
+                counts[key] = int(counts[key]) + int(calls)
+            else:
+                counts[key] = int(calls)
     return sorted(counts.items(), key=lambda item: (-int(item[1]), str(item[0])))
 
 
@@ -1903,7 +1951,10 @@ def _top_native_functions_from_callers(
         fn = _resolve_native_function_for_addr(caller_static, native_ranges)
         if fn is None:
             continue
-        fn_counts[fn] = int(fn_counts.get(fn, 0)) + int(calls)
+        if fn in fn_counts:
+            fn_counts[fn] = int(fn_counts[fn]) + int(calls)
+        else:
+            fn_counts[fn] = int(calls)
     ranked = sorted(fn_counts.items(), key=lambda item: (-int(item[1]), str(item[0])))
     return ranked[: max(1, int(limit))]
 
@@ -1921,7 +1972,7 @@ def _find_first_rng_head_shortfall(
         act = actual_by_tick.get(int(tick))
         if exp is None or act is None:
             continue
-        raw_row = raw_debug_by_tick.get(int(tick), {})
+        raw_row = _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
         capture_stream_rows = _rng_stream_rows_for_raw_row(raw_row)
         expected_head_len = _int_or(raw_row.get("rng_head_len"), len(capture_stream_rows))
         if expected_head_len <= 0:
@@ -1987,7 +2038,7 @@ def _find_first_projectile_hit_shortfall(
     end_tick: int,
 ) -> dict[str, object] | None:
     for tick in range(max(0, int(start_tick)), int(end_tick) + 1):
-        raw = raw_debug_by_tick.get(int(tick), {})
+        raw = _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
         capture_hits_raw = _int_or(raw.get("projectile_find_hit_count"), -1)
         if capture_hits_raw < 0:
             continue
@@ -2013,7 +2064,11 @@ def _find_first_projectile_hit_shortfall(
                 key = item.get("caller_static")  # ty:ignore[invalid-argument-type]
                 if key is None:
                     continue
-                reduced[str(key)] = int(reduced.get(str(key), 0)) + 1
+                key_str = str(key)
+                if key_str in reduced:
+                    reduced[key_str] = int(reduced[key_str]) + 1
+                else:
+                    reduced[key_str] = 1
             caller_counts = [
                 {"key": key, "count": count}
                 for key, count in sorted(reduced.items(), key=lambda item: (-int(item[1]), str(item[0])))
@@ -2031,7 +2086,11 @@ def _find_first_projectile_hit_shortfall(
                 key = item.get("caller_static")  # ty:ignore[invalid-argument-type]
                 if key is None:
                     continue
-                reduced_query[str(key)] = int(reduced_query.get(str(key), 0)) + 1
+                key_str = str(key)
+                if key_str in reduced_query:
+                    reduced_query[key_str] = int(reduced_query[key_str]) + 1
+                else:
+                    reduced_query[key_str] = 1
             query_caller_counts = [
                 {"key": key, "count": count}
                 for key, count in sorted(reduced_query.items(), key=lambda item: (-int(item[1]), str(item[0])))
@@ -2059,7 +2118,12 @@ def _port_paths_for_native_functions(function_names: list[str] | tuple[str, ...]
     out: list[str] = []
     seen: set[str] = set()
     for name in function_names:
-        for path in NATIVE_FUNCTION_TO_PORT_PATHS.get(str(name), ()):
+        name_key = str(name)
+        if name_key in NATIVE_FUNCTION_TO_PORT_PATHS:
+            candidate_paths = NATIVE_FUNCTION_TO_PORT_PATHS[name_key]
+        else:
+            candidate_paths = ()
+        for path in candidate_paths:
             if path in seen:
                 continue
             seen.add(path)
@@ -2111,7 +2175,7 @@ def _find_input_conflict_ticks(
 ) -> list[int]:
     ticks: list[int] = []
     for tick in range(max(0, int(start_tick)), int(end_tick) + 1):
-        raw = raw_debug_by_tick.get(int(tick), {})
+        raw = _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
         keys = _extract_player_input_keys(raw, player_index=player_index)
         if keys and _input_has_opposite_direction_conflict(keys):
             ticks.append(int(tick))
@@ -2141,7 +2205,7 @@ def _build_investigation_leads(
 
     focus_exp = expected_by_tick.get(int(focus_tick))
     focus_act = actual_by_tick.get(int(focus_tick))
-    focus_raw = raw_debug_by_tick.get(int(focus_tick), {})
+    focus_raw = _raw_debug_row_for_tick(raw_debug_by_tick, int(focus_tick))
     if capture_config is None:
         micro_cap = -1
     elif isinstance(capture_config, Mapping):
@@ -2574,7 +2638,12 @@ def _build_investigation_leads(
                 stage_paths: list[str] = []
                 seen_paths: set[str] = set()
                 for stage_name, _calls in top_stages:
-                    for path in RNG_STAGE_TO_PORT_PATHS.get(str(stage_name), ()):
+                    stage_name_key = str(stage_name)
+                    if stage_name_key in RNG_STAGE_TO_PORT_PATHS:
+                        candidate_paths = RNG_STAGE_TO_PORT_PATHS[stage_name_key]
+                    else:
+                        candidate_paths = ()
+                    for path in candidate_paths:
                         if path in seen_paths:
                             continue
                         seen_paths.add(path)
@@ -2645,7 +2714,7 @@ def _build_investigation_leads(
         zero_rand_damage_ticks = [
             int(tick)
             for tick in rng_zero_ticks
-            if _int_or(raw_debug_by_tick.get(int(tick), {}).get("creature_damage_count"), 0) > 0
+            if _int_or(_raw_debug_row_for_tick(raw_debug_by_tick, int(tick)).get("creature_damage_count"), 0) > 0
         ]
         if zero_rand_damage_ticks:
             damage_sample = ", ".join(str(tick) for tick in zero_rand_damage_ticks[:8])
@@ -2734,7 +2803,7 @@ def _build_investigation_leads(
         ]
         if score_onset is not None and int(score_onset.tick) == int(xp_onset.tick):
             evidence.append("score_xp divergence starts on the same tick, indicating a gameplay award timing mismatch")
-        focus_raw = raw_debug_by_tick.get(int(xp_onset.tick), {})
+        focus_raw = _raw_debug_row_for_tick(raw_debug_by_tick, int(xp_onset.tick))
         focus_damage_count = _int_or(focus_raw.get("creature_damage_count"), 0)
         if focus_damage_count > 0:
             evidence.append(f"native creature_apply_damage count at XP-onset tick: {focus_damage_count}")
@@ -2915,7 +2984,7 @@ def _build_window_rows(
         act = actual_by_tick.get(tick)
         if exp is None or act is None:
             continue
-        raw = raw_debug_by_tick.get(int(tick), {})
+        raw = _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
         exp_player = exp.players[0] if exp.players else None
         act_player = act.players[0] if act.players else None
         before = _int_or(act.rng_marks.get("before_world_step"))
@@ -3324,7 +3393,7 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
     )
     _print_investigation_leads(leads)
 
-    focus_raw = raw_debug_by_tick.get(focus_tick, {})
+    focus_raw = _raw_debug_row_for_tick(raw_debug_by_tick, focus_tick)
     focus_actual_ckpt = actual_by_tick.get(int(focus_tick))
     divergence_category = _classify_divergence_category(
         divergence=divergence,
