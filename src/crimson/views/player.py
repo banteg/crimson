@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 import pyray as rl
 
 from grim.fonts.small import SmallFontData, load_small_font
@@ -12,7 +10,7 @@ from grim.view import View, ViewContext
 from ..bonuses import BonusId
 from ..bonuses.apply import bonus_apply
 from ..bonuses.hud import bonus_hud_update
-from ..creatures.spawn import CreatureFlags
+from ..creatures.runtime import CreatureState
 from ..gameplay import (
     GameplayState,
     player_update,
@@ -34,15 +32,15 @@ UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
 
-@dataclass(slots=True)
-class DummyCreature:
-    pos: Vec2
-    hp: float
-    size: float = 32.0
-    active: bool = True
-    hitbox_size: float = 16.0
-    flags: CreatureFlags = CreatureFlags(0)
-    plague_infected: bool = False
+def _make_sandbox_creature(*, pos: Vec2, hp: float, size: float, hitbox_size: float = 16.0) -> CreatureState:
+    return CreatureState(
+        active=True,
+        pos=pos,
+        hp=float(hp),
+        max_hp=float(hp),
+        size=float(size),
+        hitbox_size=float(hitbox_size),
+    )
 
 
 def _rand_float01(state: GameplayState) -> float:
@@ -58,7 +56,7 @@ class PlayerSandboxView:
 
         self.state = GameplayState()
         self._player = PlayerState(index=0, pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
-        self._creatures: list[DummyCreature] = []
+        self._creatures: list[CreatureState] = []
 
         self._hud_assets: HudAssets | None = None
         self._hud_state = HudState(preserve_bugs=bool(self._preserve_bugs))
@@ -81,7 +79,7 @@ class PlayerSandboxView:
             margin = 40.0
             x = margin + _rand_float01(self.state) * (WORLD_SIZE - margin * 2)
             y = margin + _rand_float01(self.state) * (WORLD_SIZE - margin * 2)
-            self._creatures.append(DummyCreature(pos=Vec2(x, y), hp=80.0, size=28.0))
+            self._creatures.append(_make_sandbox_creature(pos=Vec2(x, y), hp=80.0, size=28.0))
 
     def _weapon_id(self) -> int:
         if not self._weapon_ids:

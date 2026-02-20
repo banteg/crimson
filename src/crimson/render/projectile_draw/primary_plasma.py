@@ -42,7 +42,7 @@ def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
         max(0.0, cell_h - 2.0),
     )
 
-    speed_scale = float(getattr(ctx.proj, "speed_scale", 1.0))
+    speed_scale = float(ctx.proj.speed_scale)
     fx_detail_1 = renderer.config.fx_detail(level=1, default=True) if renderer.config is not None else True
 
     plasma_cfg = plasma_projectile_render_config(type_id)
@@ -58,7 +58,7 @@ def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
 
     if float(ctx.life) >= 0.4:
         # Reconstruct the tail length heuristic used by the native render path.
-        seg_count = int(float(getattr(ctx.proj, "base_damage", 0.0)))
+        seg_count = int(float(ctx.proj.base_damage))
         if seg_count < 0:
             seg_count = 0
         seg_count //= 5

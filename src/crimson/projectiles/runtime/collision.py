@@ -2,16 +2,20 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
 
-from ..types import _CREATURE_HITBOX_ALIVE, CreatureDamageApplier, Damageable, _SizeLike
+from ..types import _CREATURE_HITBOX_ALIVE, CreatureDamageApplier
+
+if TYPE_CHECKING:
+    from ...creatures.runtime import CreatureState
 
 # Keep strict native boundary semantics for collision acceptance.
 _NATIVE_FIND_RADIUS_MARGIN_EPS = 0.0
 
 
-def _hit_radius_for(creature: _SizeLike) -> float:
+def _hit_radius_for(creature: CreatureState) -> float:
     """Approximate `creature_find_in_radius`/`creatures_apply_radius_damage` sizing.
 
     The native code compares `distance - radius < creature.size * 0.14285715 + 3.0`.
@@ -43,7 +47,7 @@ def _within_native_find_radius(*, origin: Vec2, target: Vec2, radius: float, tar
     return float(margin) < _NATIVE_FIND_RADIUS_MARGIN_EPS
 
 
-def _creature_find_nearest_for_secondary(*, creatures: Sequence[Damageable], origin: Vec2) -> int:
+def _creature_find_nearest_for_secondary(*, creatures: Sequence[CreatureState], origin: Vec2) -> int:
     """Port of `creature_find_nearest(origin, -1, 0.0)` for homing secondary targets."""
 
     best_idx = 0
@@ -63,7 +67,7 @@ def _creature_find_nearest_for_secondary(*, creatures: Sequence[Damageable], ori
 
 
 def _apply_damage_to_creature(
-    creatures: Sequence[Damageable],
+    creatures: Sequence[CreatureState],
     creature_index: int,
     damage: float,
     *,

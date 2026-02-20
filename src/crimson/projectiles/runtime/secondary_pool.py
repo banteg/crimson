@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import MutableSequence, Sequence
+from typing import TYPE_CHECKING
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -13,7 +14,6 @@ from ..types import (
     _CREATURE_HITBOX_ALIVE,
     SECONDARY_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
-    Damageable,
     FxQueueLike,
     ProjectileRuntimeState,
     SecondaryDetonationKillHandler,
@@ -25,6 +25,9 @@ from ..types import (
 )
 from .collision import _apply_damage_to_creature, _creature_find_nearest_for_secondary, _within_native_find_radius
 from .spatial_hash import CreatureSpatialHash
+
+if TYPE_CHECKING:
+    from ...creatures.runtime import CreatureState
 
 
 class SecondaryProjectilePool:
@@ -48,7 +51,7 @@ class SecondaryProjectilePool:
         owner_id: int = -100,
         time_to_live: float = 2.0,
         target_hint: Vec2 | None = None,
-        creatures: Sequence[Damageable] | None = None,
+        creatures: Sequence[CreatureState] | None = None,
     ) -> int:
         index = None
         for i, entry in enumerate(self._entries):
@@ -108,7 +111,7 @@ class SecondaryProjectilePool:
     def update_pulse_gun(
         self,
         dt: float,
-        creatures: Sequence[Damageable],
+        creatures: Sequence[CreatureState],
         *,
         apply_creature_damage: CreatureDamageApplier | None = None,
         runtime_state: ProjectileRuntimeState | None = None,
@@ -150,7 +153,7 @@ class SecondaryProjectilePool:
             sprite_effects = runtime_state.sprite_effects
             sfx_queue = runtime_state.sfx_queue
 
-        def _creature_is_collidable(creature: Damageable) -> bool:
+        def _creature_is_collidable(creature: CreatureState) -> bool:
             if not creature.active:
                 return False
             return float(creature.hitbox_size) > 5.0

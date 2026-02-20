@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import math
 import struct
-from dataclasses import dataclass
 
 from crimson.aim_schemes import AimScheme
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.bonuses.hud import bonus_hud_update
+from crimson.creatures.runtime import CreatureState
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import (
     _RELATIVE_MOVE_HEADING_LEFT,
@@ -30,15 +30,26 @@ from grim.geom import Vec2
 from grim.rand import Crand
 
 
-@dataclass(slots=True)
-class _Creature:
-    pos: Vec2
-    hp: float
-    size: float = 50.0
-    active: bool = True
-    hitbox_size: float = 16.0
-    flags: CreatureFlags = CreatureFlags(0)
-    plague_infected: bool = False
+def _creature(
+    *,
+    pos: Vec2,
+    hp: float,
+    size: float = 50.0,
+    active: bool = True,
+    hitbox_size: float = 16.0,
+    flags: CreatureFlags = CreatureFlags(0),
+    plague_infected: bool = False,
+) -> CreatureState:
+    return CreatureState(
+        pos=pos,
+        hp=hp,
+        max_hp=hp,
+        size=size,
+        active=active,
+        hitbox_size=hitbox_size,
+        flags=flags,
+        plague_infected=plague_infected,
+    )
 
 
 def _active_type_ids(pool: ProjectilePool) -> list[int]:
@@ -1025,9 +1036,9 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     player = PlayerState(index=0, pos=Vec2())
     far_y = math.sqrt(100.0 * 100.0 - 50.0 * 50.0)
     creatures = [
-        _Creature(pos=Vec2(50.0, 0.0), hp=100.0),
-        _Creature(pos=Vec2(80.0, 0.0), hp=100.0),
-        _Creature(pos=Vec2(100.0, far_y), hp=100.0),
+        _creature(pos=Vec2(50.0, 0.0), hp=100.0),
+        _creature(pos=Vec2(80.0, 0.0), hp=100.0),
+        _creature(pos=Vec2(100.0, far_y), hp=100.0),
     ]
 
     bonus_apply(state, player, BonusId.SHOCK_CHAIN, origin=player, creatures=creatures)

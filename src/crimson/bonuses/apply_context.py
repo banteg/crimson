@@ -2,14 +2,17 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from grim.geom import Vec2
 
-from ..projectiles import CreatureDamageApplier, Damageable
+from ..projectiles import CreatureDamageApplier
 from ..sim.state_types import GameplayState, PlayerState
 from .hud import _TimerRef
 from .ids import BONUS_BY_ID, BonusId
+
+if TYPE_CHECKING:
+    from ..creatures.runtime import CreatureState
 
 
 class HasPos(Protocol):
@@ -23,7 +26,7 @@ class BonusApplyCtx:
     bonus_id: BonusId
     amount: int
     origin: HasPos | None
-    creatures: Sequence[Damageable] | None
+    creatures: Sequence[CreatureState] | None
     players: list[PlayerState] | None
     apply_creature_damage: CreatureDamageApplier | None
     detail_preset: int

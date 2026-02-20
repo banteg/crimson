@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -9,12 +10,15 @@ from grim.geom import Vec2
 from ..effects import ParticleStyleId
 from ..perks import PerkId
 from ..perks.helpers import perk_active
-from ..projectiles import Damageable, ProjectileTypeId, SecondaryProjectileTypeId
+from ..projectiles import ProjectileTypeId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WEAPON_TABLE, WeaponId, projectile_type_id_from_weapon_id, weapon_entry_for_projectile_type_id
 from .assign import player_start_reload, weapon_entry
 from .spawn import owner_id_for_player, owner_id_for_player_projectiles, projectile_meta_for_type_id
+
+if TYPE_CHECKING:
+    from ..creatures.runtime import CreatureState
 
 WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
 
@@ -73,7 +77,7 @@ def player_fire_weapon(
     state: GameplayState,
     *,
     detail_preset: int = 5,
-    creatures: Sequence[Damageable] | None = None,
+    creatures: Sequence[CreatureState] | None = None,
     players: Sequence[PlayerState] | None = None,
     force_pre_swap_fire_gate: bool = False,
 ) -> None:

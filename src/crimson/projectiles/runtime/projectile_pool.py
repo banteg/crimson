@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, MutableSequence, Sequence
+from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
 
@@ -13,8 +14,6 @@ from ..types import (
     _CREATURE_HITBOX_ALIVE,
     MAIN_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
-    Damageable,
-    PlayerDamageable,
     Projectile,
     ProjectileHit,
     ProjectileRuntimeState,
@@ -32,6 +31,10 @@ from .behaviors import (
 )
 from .collision import _apply_damage_to_creature, _hit_radius_for, _within_native_find_radius
 from .spatial_hash import CreatureSpatialHash
+
+if TYPE_CHECKING:
+    from ...creatures.runtime import CreatureState
+    from ...sim.state_types import PlayerState
 
 
 class ProjectilePool:
@@ -110,7 +113,7 @@ class ProjectilePool:
     def update(
         self,
         dt: float,
-        creatures: Sequence[Damageable],
+        creatures: Sequence[CreatureState],
         *,
         world_size: float,
         damage_scale_by_type: dict[int, float] | None = None,
@@ -119,7 +122,7 @@ class ProjectilePool:
         detail_preset: int = 5,
         rng: Callable[[], int] | None = None,
         runtime_state: ProjectileRuntimeState | None = None,
-        players: Sequence[PlayerDamageable] | None = None,
+        players: Sequence[PlayerState] | None = None,
         apply_player_damage: Callable[[int, float], None] | None = None,
         apply_creature_damage: CreatureDamageApplier | None = None,
         on_hit: Callable[[ProjectileHit], object | None] | None = None,
@@ -182,7 +185,7 @@ class ProjectilePool:
         hits: list[ProjectileHit] = []
         margin = 64.0
 
-        def _creature_is_collidable(creature: Damageable) -> bool:
+        def _creature_is_collidable(creature: CreatureState) -> bool:
             if not creature.active:
                 return False
             if creature.hitbox_size <= 5.0:
@@ -492,7 +495,7 @@ class ProjectilePool:
     def update_demo(
         self,
         dt: float,
-        creatures: Sequence[Damageable],
+        creatures: Sequence[CreatureState],
         *,
         world_size: float,
         speed_by_type: dict[int, float],

@@ -147,7 +147,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             for creature in renderer.creatures.entries[1:]:
                 if not creature.active:
                     continue
-                if float(getattr(creature, "hitbox_size", 0.0)) <= 5.0:
+                if float(creature.hitbox_size) <= 5.0:
                     continue
                 d = ctx.pos.distance_to(creature.pos)
                 threshold = float(creature.size) * 0.14285715 + 3.0

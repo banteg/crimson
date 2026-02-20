@@ -4,10 +4,12 @@ import math
 from collections import defaultdict
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
 
-from ..types import Damageable
+if TYPE_CHECKING:
+    from ...creatures.runtime import CreatureState
 
 _SPATIAL_BUCKET_SIZE = 64.0
 _NATIVE_FIND_SIZE_SCALE = 0.14285715
@@ -21,8 +23,8 @@ def native_find_margin_for_size(size: float) -> float:
 
 @dataclass(slots=True)
 class CreatureSpatialHash:
-    creatures: Sequence[Damageable]
-    is_collidable: Callable[[Damageable], bool]
+    creatures: Sequence[CreatureState]
+    is_collidable: Callable[[CreatureState], bool]
     bucket_size: float = _SPATIAL_BUCKET_SIZE
     _bucket_size: float = field(init=False, default=_SPATIAL_BUCKET_SIZE)
     _cells: dict[tuple[int, int], list[int]] = field(init=False, default_factory=dict)

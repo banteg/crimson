@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
-from crimson.projectiles import ProjectileTypeId, SecondaryProjectileTypeId
+from crimson.creatures.runtime import CreatureState
+from crimson.projectiles import Projectile, ProjectileTypeId, SecondaryProjectile, SecondaryProjectileTypeId
+from crimson.sim.state_types import PlayerState
 from crimson.views.lighting_debug import (
     EMISSIVE_PROFILES,
     EmissiveProfile,
@@ -28,15 +29,73 @@ from grim.geom import Vec2
 from grim.view import ViewContext
 
 
+def _player(*, pos: Vec2, health: float = 100.0, size: float = 48.0) -> PlayerState:
+    return PlayerState(index=0, pos=pos, health=float(health), size=float(size))
+
+
+def _creature(
+    *,
+    pos: Vec2,
+    hp: float = 30.0,
+    active: bool = True,
+    hitbox_size: float = 16.0,
+    size: float = 40.0,
+) -> CreatureState:
+    return CreatureState(
+        active=bool(active),
+        pos=pos,
+        hp=float(hp),
+        max_hp=float(max(hp, 0.0)),
+        hitbox_size=float(hitbox_size),
+        size=float(size),
+    )
+
+
+def _projectile(
+    *,
+    type_id: int,
+    pos: Vec2,
+    active: bool = True,
+    angle: float = 0.0,
+    origin: Vec2 | None = None,
+) -> Projectile:
+    return Projectile(
+        active=bool(active),
+        type_id=int(type_id),
+        pos=pos,
+        origin=pos if origin is None else origin,
+        angle=float(angle),
+    )
+
+
+def _secondary(
+    *,
+    type_id: int,
+    pos: Vec2,
+    active: bool = True,
+    angle: float = 0.0,
+    vel: Vec2 | None = None,
+    detonation_scale: float = 1.0,
+) -> SecondaryProjectile:
+    return SecondaryProjectile(
+        active=bool(active),
+        type_id=int(type_id),
+        pos=pos,
+        angle=float(angle),
+        vel=Vec2() if vel is None else vel,
+        detonation_scale=float(detonation_scale),
+    )
+
+
 def test_collect_shadow_occluders_filters_invalid_entities_and_clamps_count() -> None:
-    player = SimpleNamespace(pos=Vec2(512.0, 512.0), health=100.0, size=48.0)
+    player = _player(pos=Vec2(512.0, 512.0), health=100.0, size=48.0)
     creatures = [
-        SimpleNamespace(active=False, pos=Vec2(540.0, 512.0), hp=30.0, hitbox_size=16.0, size=40.0),
-        SimpleNamespace(active=True, pos=Vec2(560.0, 512.0), hp=30.0, hitbox_size=16.0, size=40.0),
-        SimpleNamespace(active=True, pos=Vec2(580.0, 512.0), hp=0.0, hitbox_size=16.0, size=40.0),
-        SimpleNamespace(active=True, pos=Vec2(float("nan"), 520.0), hp=30.0, hitbox_size=16.0, size=40.0),
-        SimpleNamespace(active=True, pos=Vec2(620.0, 512.0), hp=30.0, hitbox_size=0.0, size=40.0),
-        SimpleNamespace(active=True, pos=Vec2(640.0, 512.0), hp=30.0, hitbox_size=16.0, size=40.0),
+        _creature(active=False, pos=Vec2(540.0, 512.0), hp=30.0, hitbox_size=16.0, size=40.0),
+        _creature(active=True, pos=Vec2(560.0, 512.0), hp=30.0, hitbox_size=16.0, size=40.0),
+        _creature(active=True, pos=Vec2(580.0, 512.0), hp=0.0, hitbox_size=16.0, size=40.0),
+        _creature(active=True, pos=Vec2(float("nan"), 520.0), hp=30.0, hitbox_size=16.0, size=40.0),
+        _creature(active=True, pos=Vec2(620.0, 512.0), hp=30.0, hitbox_size=0.0, size=40.0),
+        _creature(active=True, pos=Vec2(640.0, 512.0), hp=30.0, hitbox_size=16.0, size=40.0),
     ]
 
     occluders = collect_shadow_occluders(player, creatures, max_occluders=2)
@@ -54,12 +113,12 @@ def test_collect_shadow_lights_clamps_count_and_is_deterministic() -> None:
         TransientLight(pos=Vec2(110.0, 100.0), radius=40.0, strength=0.8, ttl=0.4, age=0.0),
     ]
     projectiles = [
-        SimpleNamespace(active=True, pos=Vec2(200.0, 100.0), angle=0.0, type_id=int(ProjectileTypeId.PISTOL)),
-        SimpleNamespace(active=True, pos=Vec2(210.0, 100.0), type_id=int(ProjectileTypeId.PLASMA_RIFLE)),
-        SimpleNamespace(active=True, pos=Vec2(220.0, 100.0), type_id=0xDEAD),  # ignored, not emissive
+        _projectile(active=True, pos=Vec2(200.0, 100.0), angle=0.0, type_id=int(ProjectileTypeId.PISTOL)),
+        _projectile(active=True, pos=Vec2(210.0, 100.0), type_id=int(ProjectileTypeId.PLASMA_RIFLE)),
+        _projectile(active=True, pos=Vec2(220.0, 100.0), type_id=0xDEAD),  # ignored, not emissive
     ]
     secondary = [
-        SimpleNamespace(active=True, pos=Vec2(300.0, 100.0), type_id=int(SecondaryProjectileTypeId.DETONATION)),
+        _secondary(active=True, pos=Vec2(300.0, 100.0), type_id=int(SecondaryProjectileTypeId.DETONATION)),
     ]
 
     lights = collect_shadow_lights(projectiles, secondary, transients, max_lights=4)
@@ -75,7 +134,7 @@ def test_collect_shadow_lights_clamps_count_and_is_deterministic() -> None:
 
 def test_ion_lights_are_head_to_tail_omni_with_weaker_tail() -> None:
     projectiles = [
-        SimpleNamespace(
+        _projectile(
             active=True,
             pos=Vec2(300.0, 100.0),
             origin=Vec2(80.0, 100.0),
@@ -99,7 +158,7 @@ def test_ion_lights_are_head_to_tail_omni_with_weaker_tail() -> None:
 
 def test_plasma_light_is_omnidirectional() -> None:
     projectiles = [
-        SimpleNamespace(
+        _projectile(
             active=True,
             pos=Vec2(220.0, 100.0),
             origin=Vec2(180.0, 100.0),
