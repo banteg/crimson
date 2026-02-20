@@ -44,7 +44,7 @@ def time_scale_reflex_boost_bonus(
     dt_f32 = f32(float(dt))
     if not (float(dt_f32) > 0.0):
         return float(dt_f32)
-    if not bool(time_scale_active):
+    if not time_scale_active:
         return float(dt_f32)
 
     reflex_f32 = f32(float(reflex_boost_timer))
@@ -56,7 +56,7 @@ def time_scale_reflex_boost_bonus(
 
 def presentation_commands_hash(commands: PresentationStepCommands) -> str:
     payload = {
-        "trigger_game_tune": bool(commands.trigger_game_tune),
+        "trigger_game_tune": commands.trigger_game_tune,
         "sfx_keys": [str(key) for key in commands.sfx_keys],
     }
     return hashlib.sha256(
@@ -100,7 +100,7 @@ def run_deterministic_step(
 
     _mark("gw_begin")
     state.game_mode = int(game_mode)
-    state.demo_mode_active = bool(demo_mode_active)
+    state.demo_mode_active = demo_mode_active
 
     weapon_refresh_available(state)
     _mark("gw_after_weapon_refresh")
@@ -109,7 +109,7 @@ def run_deterministic_step(
 
     dt_sim = time_scale_reflex_boost_bonus(
         reflex_boost_timer=float(state.bonuses.reflex_boost),
-        time_scale_active=bool(state.time_scale_active),
+        time_scale_active=state.time_scale_active,
         dt=float(dt_frame),
     )
     _mark("gw_after_time_scale")
@@ -120,7 +120,7 @@ def run_deterministic_step(
     dt_sim_ms_i32: int | None = None
     if dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
         base_dt_ms_i32 = int(dt_frame_ms_i32)
-        if bool(state.time_scale_active) and float(dt_frame) > 0.0:
+        if state.time_scale_active and float(dt_frame) > 0.0:
             # Under Reflex Boost, native integer cadence counters track the scaled
             # float dt path (`frame_dt`) instead of integer-base ms scaling.
             dt_sim_ms_i32 = max(0, int(float(dt_sim) * 1000.0))
@@ -129,10 +129,10 @@ def run_deterministic_step(
 
     events = world.step(
         float(dt_sim),
-        apply_world_dt_steps=bool(apply_world_dt_steps),
+        apply_world_dt_steps=apply_world_dt_steps,
         dt_ms_i32=(int(dt_sim_ms_i32) if dt_sim_ms_i32 is not None else None),
-        defer_camera_shake_update=bool(defer_camera_shake_update),
-        defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
+        defer_camera_shake_update=defer_camera_shake_update,
+        defer_freeze_corpse_fx=defer_freeze_corpse_fx,
         mid_step_hook=mid_step_hook,
         inputs=inputs,
         world_size=float(world_size),
@@ -141,10 +141,10 @@ def run_deterministic_step(
         fx_toggle=int(fx_toggle),
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
-        auto_pick_perks=bool(auto_pick_perks),
+        auto_pick_perks=auto_pick_perks,
         game_mode=int(game_mode),
-        perk_progression_enabled=bool(perk_progression_enabled),
-        game_tune_started=bool(game_tune_started),
+        perk_progression_enabled=perk_progression_enabled,
+        game_tune_started=game_tune_started,
         rng_marks=rng_marks_out,
     )
 
@@ -173,16 +173,16 @@ def run_deterministic_step(
         prev_audio=prev_audio,
         prev_perk_pending=int(prev_perk_pending),
         game_mode=int(game_mode),
-        demo_mode_active=bool(demo_mode_active),
-        perk_progression_enabled=bool(perk_progression_enabled),
+        demo_mode_active=demo_mode_active,
+        perk_progression_enabled=perk_progression_enabled,
         rand=rand,
         rand_for=_rand_for if trace_presentation_rng else None,
         detail_preset=int(detail_preset),
         fx_toggle=int(fx_toggle),
-        game_tune_started=bool(game_tune_started),
-        trigger_game_tune=bool(events.trigger_game_tune),
+        game_tune_started=game_tune_started,
+        trigger_game_tune=events.trigger_game_tune,
         hit_sfx=events.hit_sfx,
-        death_sfx_preplanned=bool(events.death_sfx_preplanned),
+        death_sfx_preplanned=events.death_sfx_preplanned,
     )
 
     command_hash = presentation_commands_hash(presentation)

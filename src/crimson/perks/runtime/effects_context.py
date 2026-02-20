@@ -67,7 +67,7 @@ class PerksUpdateEffectsCtx:
             self._aim_target_by_player_index[player_index] = int(target)
             return int(target)
 
-        if bool(self.state.preserve_bugs) and player_index != 0:
+        if self.state.preserve_bugs and player_index != 0:
             self._aim_target_by_player_index[player_index] = int(target)
             return int(target)
 
@@ -76,7 +76,7 @@ class PerksUpdateEffectsCtx:
             return int(target)
 
         player = self.players[player_index]
-        if not bool(self.state.preserve_bugs) and float(player.health) <= 0.0:
+        if not self.state.preserve_bugs and float(player.health) <= 0.0:
             self._aim_target_by_player_index[player_index] = int(target)
             return int(target)
 

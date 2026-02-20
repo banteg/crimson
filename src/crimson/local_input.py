@@ -146,20 +146,20 @@ def _key_down_with_single_player_alt(
     if input_code_is_down_for_player(primary_key, player_index=int(player_index)):
         return True
     if _single_player_alt_keys_enabled(config, player_index=int(player_index)):
-        return bool(input_code_is_down_for_player(int(alt_key), player_index=int(player_index)))
+        return input_code_is_down_for_player(int(alt_key), player_index=int(player_index))
     return False
 
 
 def _aim_pov_left_active(*, player_index: int, preserve_bugs: bool) -> bool:
     # Native `input_aim_pov_left_active` always reads joystick POV index 0.
-    pov_index = 0 if bool(preserve_bugs) else int(player_index)
-    return bool(input_code_is_down_for_player(_AIM_POV_LEFT_CODE, player_index=pov_index))
+    pov_index = 0 if preserve_bugs else int(player_index)
+    return input_code_is_down_for_player(_AIM_POV_LEFT_CODE, player_index=pov_index)
 
 
 def _aim_pov_right_active(*, player_index: int, preserve_bugs: bool) -> bool:
     # Native `input_aim_pov_right_active` always reads joystick POV index 0.
-    pov_index = 0 if bool(preserve_bugs) else int(player_index)
-    return bool(input_code_is_down_for_player(_AIM_POV_RIGHT_CODE, player_index=pov_index))
+    pov_index = 0 if preserve_bugs else int(player_index)
+    return input_code_is_down_for_player(_AIM_POV_RIGHT_CODE, player_index=pov_index)
 
 
 def clear_input_edges(inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
@@ -167,7 +167,7 @@ def clear_input_edges(inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
         PlayerInput(
             move=inp.move,
             aim=inp.aim,
-            fire_down=bool(inp.fire_down),
+            fire_down=inp.fire_down,
             fire_pressed=False,
             reload_pressed=False,
             move_to_cursor_pressed=False,
@@ -183,10 +183,10 @@ def clear_input_edges(inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
 class LocalInputInterpreter:
     def __init__(self, *, preserve_bugs: bool = False) -> None:
         self._states: list[_PerPlayerInputState] = [_PerPlayerInputState() for _ in range(4)]
-        self._preserve_bugs = bool(preserve_bugs)
+        self._preserve_bugs = preserve_bugs
 
     def set_preserve_bugs(self, enabled: bool) -> None:
-        self._preserve_bugs = bool(enabled)
+        self._preserve_bugs = enabled
 
     @staticmethod
     def _state_slot_for_player(*, player_index: int, player: PlayerState | None = None) -> int:
@@ -214,7 +214,7 @@ class LocalInputInterpreter:
         best_idx: int | None = None
         best_dist_sq = 0.0
         for idx, creature in enumerate(creatures):
-            if not bool(creature.active):
+            if not creature.active:
                 continue
             if float(creature.hp) <= 0.0:
                 continue
@@ -244,14 +244,14 @@ class LocalInputInterpreter:
             return int(candidate)
 
         current_creature = creatures[current]
-        if not bool(current_creature.active) or float(current_creature.hp) <= 0.0:
+        if not current_creature.active or float(current_creature.hp) <= 0.0:
             state.computer_target_creature_index = int(candidate)
             return int(candidate)
         if int(candidate) == int(current):
             return int(current)
 
         candidate_creature = creatures[int(candidate)]
-        if not bool(candidate_creature.active) or float(candidate_creature.hp) <= 0.0:
+        if not candidate_creature.active or float(candidate_creature.hp) <= 0.0:
             return int(current)
 
         current_dist = (current_creature.pos - player.pos).length()
@@ -382,7 +382,7 @@ class LocalInputInterpreter:
             axis_x = -input_axis_value_for_player(move_axis_x, player_index=idx)
             move_vec = Vec2(_clamp_unit(axis_x), _clamp_unit(axis_y))
         elif move_mode_type is MovementControlType.MOUSE_POINT_CLICK:
-            move_to_cursor_pressed = bool(input_code_is_down_for_player(reload_key, player_index=idx))
+            move_to_cursor_pressed = input_code_is_down_for_player(reload_key, player_index=idx)
             if move_to_cursor_pressed:
                 state.move_target = mouse_world
             if float(state.move_target.x) >= 0.0 and float(state.move_target.y) >= 0.0:
@@ -415,10 +415,10 @@ class LocalInputInterpreter:
                 config=config,
                 player_index=idx,
             )
-            move_forward_pressed = bool(move_up_pressed)
-            move_backward_pressed = bool(move_down_pressed)
-            turn_left_pressed = bool(move_left_pressed)
-            turn_right_pressed = bool(move_right_pressed)
+            move_forward_pressed = move_up_pressed
+            move_backward_pressed = move_down_pressed
+            turn_left_pressed = move_left_pressed
+            turn_right_pressed = move_right_pressed
             move_vec = _resolve_static_move_vector(
                 move_up=move_up_pressed,
                 move_down=move_down_pressed,
@@ -468,9 +468,9 @@ class LocalInputInterpreter:
             else:
                 aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.JOYSTICK:
-            if _aim_pov_right_active(player_index=idx, preserve_bugs=bool(self._preserve_bugs)):
+            if _aim_pov_right_active(player_index=idx, preserve_bugs=self._preserve_bugs):
                 heading = float(heading + float(dt_frame) * _AIM_JOYSTICK_TURN_RATE)
-            if _aim_pov_left_active(player_index=idx, preserve_bugs=bool(self._preserve_bugs)):
+            if _aim_pov_left_active(player_index=idx, preserve_bugs=self._preserve_bugs):
                 heading = float(heading - float(dt_frame) * _AIM_JOYSTICK_TURN_RATE)
             aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.COMPUTER:
@@ -506,11 +506,11 @@ class LocalInputInterpreter:
             heading = delta.to_heading()
         state.aim_heading = float(heading)
 
-        fire_down = bool(input_code_is_down_for_player(fire_key, player_index=idx))
-        fire_pressed = bool(input_code_is_pressed_for_player(fire_key, player_index=idx))
+        fire_down = input_code_is_down_for_player(fire_key, player_index=idx)
+        fire_pressed = input_code_is_pressed_for_player(fire_key, player_index=idx)
         if aim_scheme is AimScheme.COMPUTER and computer_auto_fire:
             fire_down = True
-        reload_pressed = bool(input_code_is_pressed_for_player(reload_key, player_index=idx))
+        reload_pressed = input_code_is_pressed_for_player(reload_key, player_index=idx)
 
         return PlayerInput(
             move=move_vec,
@@ -520,7 +520,7 @@ class LocalInputInterpreter:
             fire_down=fire_down,
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,
-            move_to_cursor_pressed=bool(move_to_cursor_pressed),
+            move_to_cursor_pressed=move_to_cursor_pressed,
             move_forward_pressed=move_forward_pressed,
             move_backward_pressed=move_backward_pressed,
             turn_left_pressed=turn_left_pressed,

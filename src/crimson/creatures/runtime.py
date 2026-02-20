@@ -1223,7 +1223,7 @@ class CreaturePool:
 
         creature = self._entries[int(idx)]
         survival_record_recent_death(state, pos=creature.pos)
-        if not bool(creature.active):
+        if not creature.active:
             # Native `creature_handle_death` gates its XP/bonus/freeze body under
             # `if (active != 0)`. Re-entrant callers (notably secondary
             # detonation follow-up) can invoke death handling after the first call

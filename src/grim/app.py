@@ -25,7 +25,7 @@ def _next_screenshot_index(directory: Path) -> int:
 def _view_should_close(view: View) -> bool:
     should_close = getattr(view, "should_close", None)
     if callable(should_close):
-        return bool(should_close())
+        return should_close()
     return bool(getattr(view, "close_requested", False))
 
 

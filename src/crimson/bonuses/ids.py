@@ -180,7 +180,7 @@ def bonus_display_name(bonus_id: int, *, preserve_bugs: bool = False) -> str:
     entry = BONUS_BY_ID.get(bonus_id_i)
     if entry is None:
         return "unknown"
-    if not bool(preserve_bugs):
+    if not preserve_bugs:
         fixed = _BONUS_FIXED_NAMES.get(bonus_id_i)
         if fixed is not None:
             return fixed
@@ -192,7 +192,7 @@ def bonus_display_description(bonus_id: int, *, preserve_bugs: bool = False) -> 
     entry = BONUS_BY_ID.get(bonus_id_i)
     if entry is None:
         return None
-    if not bool(preserve_bugs):
+    if not preserve_bugs:
         fixed = _BONUS_FIXED_DESCRIPTIONS.get(bonus_id_i)
         if fixed is not None:
             return fixed

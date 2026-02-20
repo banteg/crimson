@@ -167,7 +167,7 @@ def player_frame_dt_after_roundtrip(*, dt: float, time_scale_active: bool, refle
     """
 
     dt_f32 = float(f32(float(dt)))
-    if not bool(time_scale_active) or dt_f32 <= 0.0:
+    if not time_scale_active or dt_f32 <= 0.0:
         return float(dt_f32)
 
     reflex_f32 = float(f32(float(reflex_boost_timer)))
@@ -426,7 +426,7 @@ def _resolve_move_mode_for_update(input_state: PlayerInput, state: GameplayState
         and input_state.turn_right_pressed is not None
     ):
         return int(MovementControlType.STATIC)
-    if bool(input_state.move_to_cursor_pressed):
+    if input_state.move_to_cursor_pressed:
         return int(MovementControlType.MOUSE_POINT_CLICK)
     return int(MovementControlType.DUAL_ACTION_PAD)
 
@@ -500,7 +500,7 @@ def _player_update_aim_by_scheme(
 ) -> None:
     target_aim = input_state.aim
 
-    if not bool(demo_mode_active) and int(aim_scheme) != int(AimScheme.COMPUTER):
+    if not demo_mode_active and int(aim_scheme) != int(AimScheme.COMPUTER):
         if int(aim_scheme) == int(AimScheme.KEYBOARD):
             if int(movement_mode) in (int(MovementControlType.RELATIVE), int(MovementControlType.STATIC)):
                 if bool(input_state.turn_right_pressed):
@@ -856,7 +856,7 @@ def player_update(
     # can miss reload completion when Stationary Reloader is active, leaving the
     # clip empty and causing a one-shot reload loop (fixed by default).
     preload_dt = dt_f32
-    if not bool(state.preserve_bugs):
+    if not state.preserve_bugs:
         preload_dt = float(f32(float(reload_scale) * float(dt_f32)))
 
     reload_preload_underflow = float(f32(reload_timer_now - preload_dt))

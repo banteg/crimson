@@ -155,10 +155,10 @@ class BaseGameplayMode:
         self.world = GameWorld(
             assets_dir=ctx.assets_dir,
             world_size=float(world_size),
-            demo_mode_active=bool(demo_mode_active),
+            demo_mode_active=demo_mode_active,
             difficulty_level=int(difficulty_level),
-            hardcore=bool(hardcore),
-            preserve_bugs=bool(ctx.preserve_bugs),
+            hardcore=hardcore,
+            preserve_bugs=ctx.preserve_bugs,
             texture_cache=texture_cache,
             config=self.config,
             audio=audio,
@@ -172,7 +172,7 @@ class BaseGameplayMode:
             assets_root=self._assets_root,
             base_dir=self._base_dir,
             config=self.config,
-            preserve_bugs=bool(ctx.preserve_bugs),
+            preserve_bugs=ctx.preserve_bugs,
         )
         self._game_over_banner = "reaper"
 
@@ -199,8 +199,8 @@ class BaseGameplayMode:
         self._lan_initial_terrain_ready = False
 
     def _refresh_effective_status(self, *, reset_lan_status: bool) -> None:
-        if bool(self._lan_enabled):
-            if bool(reset_lan_status) or self._lan_status is None:
+        if self._lan_enabled:
+            if reset_lan_status or self._lan_status is None:
                 self._lan_status = build_lan_deterministic_status(snapshot=self._lan_status_snapshot)
             self._status_sim = self._lan_status
         else:
@@ -231,7 +231,7 @@ class BaseGameplayMode:
         self._lan_start_tick = int(start_tick)
         if status_snapshot is not None:
             self._lan_status_snapshot = status_snapshot
-            if bool(self._lan_enabled):
+            if self._lan_enabled:
                 self._refresh_effective_status(reset_lan_status=True)
 
     def _cvar_float(self, name: str, default: float = 0.0) -> float:
@@ -247,13 +247,13 @@ class BaseGameplayMode:
         return self._cvar_float("cv_uiSmallIndicators", 0.0) != 0.0
 
     def _lan_player_rings_enabled(self) -> bool:
-        if not bool(self._lan_enabled):
+        if not self._lan_enabled:
             return False
         return self._cvar_float("cv_lanPlayerRings", 0.0) != 0.0
 
     def _sync_lan_visual_flags(self) -> None:
         self.world.lan_player_rings_enabled = self._lan_player_rings_enabled()
-        self.world.lan_local_aim_indicators_only = bool(self._lan_enabled)
+        self.world.lan_local_aim_indicators_only = self._lan_enabled
         self.world.lan_local_player_slot_index = max(0, min(3, int(self._lan_local_slot_index)))
 
     def _config_game_mode_id(self) -> int:
@@ -265,9 +265,9 @@ class BaseGameplayMode:
             return
 
         target_indices: list[int] = []
-        target_players = self.world.players[:1] if bool(self.state.preserve_bugs) else self.world.players
+        target_players = self.world.players[:1] if self.state.preserve_bugs else self.world.players
         for target_player in target_players:
-            if not bool(self.state.preserve_bugs) and float(target_player.health) <= 0.0:
+            if not self.state.preserve_bugs and float(target_player.health) <= 0.0:
                 continue
             if perk_count_get(target_player, PerkId.DOCTOR) <= 0:
                 continue
@@ -285,7 +285,7 @@ class BaseGameplayMode:
 
         for target_idx in target_indices:
             creature = creatures[target_idx]
-            if not bool(creature.active):
+            if not creature.active:
                 continue
             hp = float(creature.hp)
             max_hp = float(creature.max_hp)
@@ -309,7 +309,7 @@ class BaseGameplayMode:
         self.state = self.world.state
         self.creatures = self.world.creatures
         self.player = self.world.players[0]
-        preserve_bugs = bool(self.state.preserve_bugs)
+        preserve_bugs = self.state.preserve_bugs
         if hasattr(self, "_local_input"):
             self._local_input.set_preserve_bugs(preserve_bugs)
         self._hud_state.preserve_bugs = preserve_bugs
@@ -400,57 +400,56 @@ class BaseGameplayMode:
         role = str(role)
         expected_players = max(1, min(4, int(expected_players)))
         connected_players = max(0, min(expected_players, int(connected_players)))
-        waiting_for_players = bool(waiting_for_players)
 
-        prev_enabled = bool(self._lan_enabled)
+        prev_enabled = self._lan_enabled
         if (
-            bool(self._lan_enabled) == bool(enabled)
+            self._lan_enabled == enabled
             and str(self._lan_role) == role
             and int(self._lan_expected_players) == int(expected_players)
             and int(self._lan_connected_players) == int(connected_players)
-            and bool(self._lan_waiting_for_players) == bool(waiting_for_players)
+            and self._lan_waiting_for_players == waiting_for_players
         ):
             self._sync_lan_visual_flags()
             return
-        self._lan_enabled = bool(enabled)
+        self._lan_enabled = enabled
         self._lan_role = role
         self._lan_expected_players = int(expected_players)
         self._lan_connected_players = int(connected_players)
-        self._lan_waiting_for_players = bool(waiting_for_players)
+        self._lan_waiting_for_players = waiting_for_players
         self._sync_lan_visual_flags()
         self._lan_trace_last_ms = -1000.0
-        if bool(prev_enabled) != bool(self._lan_enabled):
+        if prev_enabled != self._lan_enabled:
             self._refresh_effective_status(reset_lan_status=True)
         lan_debug_log(
             "set_lan_runtime",
             mode=self.__class__.__name__,
-            enabled=bool(self._lan_enabled),
+            enabled=self._lan_enabled,
             role=str(self._lan_role),
             expected_players=int(self._lan_expected_players),
             connected_players=int(self._lan_connected_players),
-            waiting_for_players=bool(self._lan_waiting_for_players),
-            player_rings=bool(self.world.lan_player_rings_enabled),
+            waiting_for_players=self._lan_waiting_for_players,
+            player_rings=self.world.lan_player_rings_enabled,
         )
 
     def _lan_wait_gate_active(self) -> bool:
-        if not bool(self._lan_enabled):
+        if not self._lan_enabled:
             return False
-        if not bool(self._lan_waiting_for_players):
+        if not self._lan_waiting_for_players:
             return False
         return int(self._lan_connected_players) < int(self._lan_expected_players)
 
     def _lan_terrain_generation_pending(self) -> bool:
-        if not bool(self._lan_enabled):
+        if not self._lan_enabled:
             return False
-        if bool(self._lan_initial_terrain_ready):
+        if self._lan_initial_terrain_ready:
             return False
         ground = self.world.ground
         if ground is None:
             return False
-        return bool(ground.generation_pending())
+        return ground.generation_pending()
 
     def _trace_lan_terrain_generation(self) -> None:
-        if not bool(self._lan_enabled):
+        if not self._lan_enabled:
             self._lan_terrain_pending_last = False
             self._lan_initial_terrain_ready = False
             return
@@ -460,9 +459,9 @@ class BaseGameplayMode:
             self._lan_initial_terrain_ready = True
             return
 
-        pending = bool(self._lan_terrain_generation_pending())
+        pending = self._lan_terrain_generation_pending()
         now_ms = int(time.monotonic() * 1000.0)
-        if pending and (not bool(self._lan_terrain_pending_last)):
+        if pending and (not self._lan_terrain_pending_last):
             self._lan_terrain_pending_since_ms = int(now_ms)
             lan_debug_log(
                 "lan_terrain_generate_begin",
@@ -470,19 +469,19 @@ class BaseGameplayMode:
                 role=str(self._lan_role),
                 slot=int(self._lan_local_slot_index),
             )
-        if (not pending) and bool(self._lan_terrain_pending_last):
+        if (not pending) and self._lan_terrain_pending_last:
             duration_ms = max(0, int(now_ms) - int(self._lan_terrain_pending_since_ms))
-            rt_ready = bool(ground.render_target_ready())
+            rt_ready = ground.render_target_ready()
             lan_debug_log(
                 "lan_terrain_generate_done",
                 mode=self.__class__.__name__,
                 role=str(self._lan_role),
                 slot=int(self._lan_local_slot_index),
                 duration_ms=int(duration_ms),
-                render_target_ready=bool(rt_ready),
-                texture_failed=bool(ground.texture_failed),
+                render_target_ready=rt_ready,
+                texture_failed=ground.texture_failed,
             )
-        self._lan_terrain_pending_last = bool(pending)
+        self._lan_terrain_pending_last = pending
         if not pending:
             self._lan_initial_terrain_ready = True
 
@@ -502,7 +501,7 @@ class BaseGameplayMode:
         )
 
     def _trace_lan_state_heartbeat(self) -> None:
-        if not bool(self._lan_enabled):
+        if not self._lan_enabled:
             return
         elapsed_ms = float(self.world._elapsed_ms)
         if (elapsed_ms - float(self._lan_trace_last_ms)) < 1000.0:
@@ -515,13 +514,13 @@ class BaseGameplayMode:
             role=str(self._lan_role),
             expected_players=int(self._lan_expected_players),
             connected_players=int(self._lan_connected_players),
-            waiting_for_players=bool(self._lan_waiting_for_players),
-            wait_gate_active=bool(self._lan_wait_gate_active()),
+            waiting_for_players=self._lan_waiting_for_players,
+            wait_gate_active=self._lan_wait_gate_active(),
             local_players=int(len(self.world.players)),
         )
 
     def _draw_lan_debug_info(self, *, x: float, y: float, line_h: float) -> float:
-        if (not debug_enabled()) or (not bool(self._lan_enabled)):
+        if (not debug_enabled()) or (not self._lan_enabled):
             return float(y)
 
         role = str(self._lan_role or "?")
@@ -693,12 +692,12 @@ class BaseGameplayMode:
         return str(self.config.player_name or "")
 
     def _deterministic_detail_preset(self) -> int:
-        if bool(self._lan_enabled):
+        if self._lan_enabled:
             return int(LAN_SIM_DETAIL_PRESET)
         return self.config.detail_preset
 
     def _deterministic_fx_toggle(self) -> int:
-        if bool(self._lan_enabled):
+        if self._lan_enabled:
             return int(LAN_SIM_FX_TOGGLE)
         return self.config.fx_toggle
 
@@ -740,7 +739,7 @@ class BaseGameplayMode:
             rng_state=int(self.world.state.rng.state),
             world_size=float(self.world.world_size),
             player_count=int(len(self.world.players)),
-            lan_enabled=bool(self._lan_enabled),
+            lan_enabled=self._lan_enabled,
             lan_role=str(self._lan_role),
             lan_slot=int(self._lan_local_slot_index),
             base_status_quest_unlock_index=int(self._status_base.quest_unlock_index)
@@ -912,7 +911,7 @@ class BaseGameplayMode:
             )
             self.world.apply_step_result(
                 tick.step,
-                game_tune_started=bool(session.game_tune_started),
+                game_tune_started=session.game_tune_started,
                 apply_audio=True,
                 update_camera=True,
             )

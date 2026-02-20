@@ -44,7 +44,7 @@ class BonusEntry:
 def _bonus_entry_is_empty(entry: BonusEntry) -> bool:
     return (
         int(entry.bonus_id) == 0
-        and not bool(entry.picked)
+        and not entry.picked
         and float(entry.time_left) <= 0.0
         and float(entry.time_max) <= 0.0
         and int(entry.amount) == 0

@@ -74,14 +74,14 @@ class WorldState:
         spawn_env = SpawnEnv(
             terrain_width=float(world_size),
             terrain_height=float(world_size),
-            demo_mode_active=bool(demo_mode_active),
-            hardcore=bool(hardcore),
+            demo_mode_active=demo_mode_active,
+            hardcore=hardcore,
             difficulty_level=int(difficulty_level),
         )
         state = build_gameplay_state()
-        state.demo_mode_active = bool(demo_mode_active)
-        state.hardcore = bool(hardcore)
-        state.preserve_bugs = bool(preserve_bugs)
+        state.demo_mode_active = demo_mode_active
+        state.hardcore = hardcore
+        state.preserve_bugs = preserve_bugs
         players: list[PlayerState] = []
         creatures = CreaturePool(env=spawn_env, effects=state.effects)
         return cls(
@@ -118,7 +118,7 @@ class WorldState:
                 return
             rng_marks[str(name)] = int(self.state.rng.state)
         dt = float(dt)
-        if bool(apply_world_dt_steps):
+        if apply_world_dt_steps:
             for step in _WORLD_DT_STEPS:
                 dt = float(step(dt=dt, players=self.players))
         _mark("ws_begin")
@@ -159,7 +159,7 @@ class WorldState:
         planned_death_sfx: list[str] = []
         planned_death_sfx_cap = 5
         def _plan_death_sfx_now(death: CreatureDeath) -> None:
-            if not bool(death.plan_death_sfx):
+            if not death.plan_death_sfx:
                 return
             keys = plan_death_sfx_keys([death], rand=self.state.rng.rand)
             if not keys:
@@ -172,7 +172,7 @@ class WorldState:
             _plan_death_sfx_now(death)
         trigger_game_tune = False
         hit_sfx: list[str] = []
-        hit_audio_game_tune_started = bool(game_tune_started)
+        hit_audio_game_tune_started = game_tune_started
         def _apply_projectile_damage_to_creature(
             creature_index: int,
             damage: float,
@@ -206,7 +206,7 @@ class WorldState:
                     fx_queue=fx_queue,
                     deaths=deaths,
                     plan_death_sfx_now=_plan_death_sfx_now,
-                    plan_death_sfx=not bool(suppress_death_sfx),
+                    plan_death_sfx=not suppress_death_sfx,
                 ),
             )
         def _on_secondary_detonation_kill(creature_index: int) -> None:
@@ -244,8 +244,8 @@ class WorldState:
             hit_trigger, keys = plan_hit_sfx_keys(
                 [_hit],
                 game_mode=int(game_mode),
-                demo_mode_active=bool(self.state.demo_mode_active),
-                game_tune_started=bool(hit_audio_game_tune_started),
+                demo_mode_active=self.state.demo_mode_active,
+                game_tune_started=hit_audio_game_tune_started,
                 rand=self.state.rng.rand,
             )
             if hit_trigger:

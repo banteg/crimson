@@ -205,11 +205,11 @@ class GroundRenderer:
 
     def generation_pending(self) -> bool:
         """True while a scheduled terrain generate is still pending."""
-        return bool(self._pending_generate)
+        return self._pending_generate
 
     def render_target_ready(self) -> bool:
         """True when the terrain render target exists and is ready for drawing."""
-        return self.render_target is not None and bool(self._render_target_ready)
+        return self.render_target is not None and self._render_target_ready
 
     def _debug_stamp(self, kind: str, **payload: object) -> None:
         if not self.debug_log_stamps:
@@ -410,7 +410,7 @@ class GroundRenderer:
         self.create_render_target()
         if self.render_target is None:
             self._fallback_bodyset_texture = bodyset_texture
-            self._fallback_corpse_shadow = bool(shadow)
+            self._fallback_corpse_shadow = shadow
             self._fallback_corpse_decals.extend(decals)
             return True
 
@@ -418,7 +418,7 @@ class GroundRenderer:
             head = decals[0]
             self._debug_stamp(
                 "bake_corpse_decals",
-                shadow=bool(shadow),
+                shadow=shadow,
                 count=len(decals),
                 frame0=int(head.bodyset_frame),
                 top_left0=head.top_left.to_dict(),

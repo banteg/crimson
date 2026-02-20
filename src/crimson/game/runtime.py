@@ -302,9 +302,9 @@ def run_game(config: GameConfig) -> None:
             config=cfg,
             status=status,
             console=console,
-            demo_enabled=bool(config.demo_enabled),
-            preserve_bugs=bool(config.preserve_bugs),
-            skip_intro=bool(config.no_intro),
+            demo_enabled=config.demo_enabled,
+            preserve_bugs=config.preserve_bugs,
+            skip_intro=config.no_intro,
             logos=None,
             texture_cache=None,
             audio=None,
@@ -333,15 +333,15 @@ def run_game(config: GameConfig) -> None:
                 host=host,
                 port=int(port),
                 player_count=pending.config.player_count,
-                auto_start=bool(pending.auto_start),
-                debug_enabled=bool(config.debug),
+                auto_start=pending.auto_start,
+                debug_enabled=config.debug,
             )
             lan_debug_log(
                 "run_game_session",
                 width=int(width),
                 height=int(height),
                 fps=int(config.fps),
-                preserve_bugs=bool(config.preserve_bugs),
+                preserve_bugs=config.preserve_bugs,
             )
             console.log.log(f"lan debug log: {log_path}")
             print(f"[lan-debug] role={pending.role} log={log_path}")

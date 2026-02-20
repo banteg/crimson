@@ -525,7 +525,7 @@ def perk_display_name(perk_id: int, *, fx_toggle: int = 0, preserve_bugs: bool =
     entry = PERK_BY_ID.get(int(perk_id))
     if entry is None:
         return f"Perk {int(perk_id)}"
-    if not bool(preserve_bugs):
+    if not preserve_bugs:
         fixed = _PERK_FIXED_NAMES.get(int(perk_id))
         if fixed is not None:
             return fixed
@@ -538,7 +538,7 @@ def perk_display_description(perk_id: int, *, fx_toggle: int = 0, preserve_bugs:
     entry = PERK_BY_ID.get(int(perk_id))
     if entry is None:
         return "Unknown perk."
-    if not bool(preserve_bugs):
+    if not preserve_bugs:
         fixed = _PERK_FIXED_DESCRIPTIONS.get(int(perk_id))
         if fixed is not None:
             return fixed

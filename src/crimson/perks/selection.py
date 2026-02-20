@@ -114,7 +114,7 @@ def perk_generate_choices(
     flamethrower_id = int(WeaponId.FLAMETHROWER)
 
     pyromaniac_allowed = player_weapon_id == flamethrower_id
-    if not bool(state.preserve_bugs) and int(player_count) > 1:
+    if not state.preserve_bugs and int(player_count) > 1:
         pyromaniac_allowed = False
         source_players = players if players is not None else [player]
         for source_player in source_players:

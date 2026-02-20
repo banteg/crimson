@@ -38,7 +38,7 @@ def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleSt
 
     if not rl.is_audio_device_ready():
         rl.init_audio_device()
-    ready = bool(rl.is_audio_device_ready())
+    ready = rl.is_audio_device_ready()
     if not ready:
         console.log.log("audio: device init failed")
         console.log.flush()

@@ -108,7 +108,7 @@ def plan_player_audio_sfx(
             if key is not None:
                 keys.append(key)
 
-    reload_active = bool(player.reload_active)
+    reload_active = player.reload_active
     reload_timer = float(player.reload_timer)
     reload_started = (not prev_reload_active and reload_active) or (reload_timer > prev_reload_timer + 1e-6)
     if reload_started:
@@ -177,7 +177,7 @@ def plan_death_sfx_keys(
 
     for idx in range(min(len(deaths), _MAX_DEATH_SFX_PER_FRAME)):
         death = deaths[idx]
-        if bool(death.suppress_death_sfx):
+        if death.suppress_death_sfx:
             continue
         type_id = death.type_id
         if type_id is None:
