@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 from dataclasses import replace
 from pathlib import Path
+from typing import Protocol, runtime_checkable
 
 from grim import music as grim_music
 from grim.assets import TextureLoader
@@ -70,6 +71,13 @@ _REPLAY_WIDGET_TEXT_OFFSET_X = 0.0
 _REPLAY_WIDGET_TEXT_OFFSET_Y = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_X = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_Y = 0.0
+
+
+@runtime_checkable
+class _HasFxQueues(Protocol):
+    fx_queue: object
+    fx_queue_rotated: object
+
 
 class ReplayPlaybackMode:
     def __init__(
@@ -693,13 +701,9 @@ class ReplayPlaybackMode:
                 # Gameplay clears decal queues during render (`draw()` -> `_bake_fx_queues`).
                 # Fast-seek runs many ticks without drawing, so clear explicitly to avoid
                 # queue saturation changing simulation-side corpse/death flow.
-                if world is not None:
-                    fx_queue = getattr(world, "fx_queue", None)
-                    if fx_queue is not None:
-                        fx_queue.clear()
-                    fx_queue_rotated = getattr(world, "fx_queue_rotated", None)
-                    if fx_queue_rotated is not None:
-                        fx_queue_rotated.clear()
+                if isinstance(world, _HasFxQueues):
+                    world.fx_queue.clear()
+                    world.fx_queue_rotated.clear()
         finally:
             if prev_sfx_enabled is not None and world is not None and world.audio_router is not None:
                 world.audio_router.sfx_enabled = bool(prev_sfx_enabled)

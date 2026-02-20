@@ -275,13 +275,16 @@ class RelayServer:
         )
 
     def _handle_message(self, *, peer: _Peer, message: NetMessage, now_ms: int) -> None:
+        request_id = ""
+        if isinstance(message, (RbResyncRequest, RbResyncBegin, RbResyncChunk, RbResyncCommit)):
+            request_id = str(message.request_id)
         self.log.debug(
             "relay_message_received",
             peer_id=str(peer.peer_id),
             room_code=str(peer.room_code or ""),
             slot_index=int(peer.slot_index),
             kind=type(message).__name__,
-            request_id=str(getattr(message, "request_id", "") or ""),
+            request_id=request_id,
             now_ms=int(now_ms),
         )
         if isinstance(message, Ping):
@@ -588,7 +591,7 @@ class RelayServer:
                 self._send_peer(peer, RelayError(reason="invalid_resync_sender"), reliable=True, now_ms=int(now_ms))
                 return
         elif isinstance(message, (RbResyncBegin, RbResyncChunk, RbResyncCommit)):
-            request_id = str(getattr(message, "request_id", "") or "")
+            request_id = str(message.request_id)
             if int(sender_slot) != int(host_slot):
                 self.log.warning(
                     "relay_forward_rejected",

@@ -319,12 +319,8 @@ def run_game(config: GameConfig) -> None:
         if pending is not None:
             from ..net.protocol import current_build_id
 
-            host = str(
-                getattr(pending.config, "relay_host", "")
-                or pending.config.host_ip
-                or pending.config.bind_host,
-            )
-            port = int(getattr(pending.config, "relay_port", pending.config.port))
+            host = pending.config.resolved_relay_host()
+            port = pending.config.resolved_relay_port()
             log_path = init_lan_debug_log(
                 base_dir=base_dir,
                 role=str(pending.role),

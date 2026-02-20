@@ -1174,13 +1174,13 @@ def _shader_array_locations(shader: rl.Shader, name: str, count: int) -> tuple[i
 def _shader_valid(shader: rl.Shader | None) -> bool:
     if shader is None:
         return False
-    return int(getattr(shader, "id", 0)) > 0
+    return int(shader.id) > 0
 
 
 def _render_texture_valid(rt: rl.RenderTexture | None) -> bool:
     if rt is None:
         return False
-    if int(getattr(rt, "id", 0)) <= 0:
+    if int(rt.id) <= 0:
         return False
     validator = getattr(rl, "is_render_texture_valid", None)
     if callable(validator):
