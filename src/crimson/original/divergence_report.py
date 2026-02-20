@@ -11,6 +11,8 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any, TypedDict, cast
 
+import msgspec
+
 from crimson.bonuses import bonus_label
 from crimson.game_modes import GameMode
 from crimson.original.capture import (
@@ -26,9 +28,18 @@ from crimson.original.diff import ReplayFieldDiff, checkpoint_field_diffs
 from crimson.original.schema import (
     CaptureConfig,
     CaptureEventHeadBonusApply,
+    CaptureEventHeadCreatureDamage,
+    CaptureEventHeadCreatureUpdateMicro,
+    CaptureEventHeadProjectileFindHit,
+    CaptureEventHeadProjectileFindQuery,
+    CaptureEventHeadSecondaryProjectileSpawn,
     CaptureEventHeadStateTransition,
     CaptureEventHeadWeaponAssign,
     CaptureFile,
+    CaptureInputPlayerKeys,
+    CaptureRngCallerCount,
+    CaptureRngHeadEntry,
+    CaptureTick,
 )
 from crimson.perks import perk_label
 from crimson.replay.checkpoints import ReplayCheckpoint
@@ -189,122 +200,101 @@ def _float_or(value: object, default: float = 0.0) -> float:
         return float(default)
 
 
-def _effective_capture_projectile_hit_count(raw: Mapping[str, object]) -> int:
-    capture_hits = _int_or(raw.get("projectile_find_hit_count"), -1)
+def _capture_rng_rand_calls(tick: CaptureTick) -> int:
+    calls = int(tick.checkpoint.rng_marks.rand_calls)
+    if calls >= 0:
+        return int(calls)
+    return int(tick.rng.calls)
+
+
+def _capture_rng_seq_first(tick: CaptureTick) -> int:
+    if tick.checkpoint.rng_marks.rand_seq_first is not None:
+        return int(tick.checkpoint.rng_marks.rand_seq_first)
+    if tick.rng.seq_first is not None:
+        return int(tick.rng.seq_first)
+    return -1
+
+
+def _capture_rng_seq_last(tick: CaptureTick) -> int:
+    if tick.checkpoint.rng_marks.rand_seq_last is not None:
+        return int(tick.checkpoint.rng_marks.rand_seq_last)
+    if tick.rng.seq_last is not None:
+        return int(tick.rng.seq_last)
+    return -1
+
+
+def _capture_rng_seed_epoch_enter(tick: CaptureTick) -> int:
+    if tick.checkpoint.rng_marks.rand_seed_epoch_enter is not None:
+        return int(tick.checkpoint.rng_marks.rand_seed_epoch_enter)
+    if tick.rng.seed_epoch_enter is not None:
+        return int(tick.rng.seed_epoch_enter)
+    return -1
+
+
+def _capture_rng_seed_epoch_last(tick: CaptureTick) -> int:
+    if tick.checkpoint.rng_marks.rand_seed_epoch_last is not None:
+        return int(tick.checkpoint.rng_marks.rand_seed_epoch_last)
+    if tick.rng.seed_epoch_last is not None:
+        return int(tick.rng.seed_epoch_last)
+    return -1
+
+
+def _capture_rng_outside_before_calls(tick: CaptureTick) -> int:
+    calls = int(tick.checkpoint.rng_marks.rand_outside_before_calls)
+    if calls >= 0:
+        return int(calls)
+    return int(tick.rng.outside_before_calls)
+
+
+def _capture_rng_mirror_mismatch_total(tick: CaptureTick) -> int:
+    total = int(tick.checkpoint.rng_marks.rand_mirror_mismatch_total)
+    if total >= 0:
+        return int(total)
+    return int(tick.rng.mirror_mismatch_total)
+
+
+def _capture_rng_callers(tick: CaptureTick) -> list[CaptureRngCallerCount]:
+    callers = list(tick.checkpoint.rng_marks.rand_callers)
+    if callers:
+        return callers
+    return list(tick.rng.callers)
+
+
+def _capture_rng_head_rows(tick: CaptureTick) -> list[CaptureRngHeadEntry]:
+    rows = list(tick.checkpoint.rng_marks.rand_head)
+    if rows:
+        return rows
+    return list(tick.rng.head)
+
+
+def _rng_value_15_from_entry(entry: CaptureRngHeadEntry) -> int | None:
+    if entry.value_15 is not None:
+        return int(entry.value_15) & 0x7FFF
+    if entry.value is not None:
+        return int(entry.value) & 0x7FFF
+    return None
+
+
+def _rng_branch_id(entry: CaptureRngHeadEntry) -> str | None:
+    if entry.branch_id:
+        return str(entry.branch_id)
+    if entry.caller_static:
+        return str(entry.caller_static)
+    return None
+
+
+def _rng_stream_rows_for_tick(tick: CaptureTick) -> list[CaptureRngHeadEntry]:
+    return _capture_rng_head_rows(tick)
+
+
+def _effective_capture_projectile_hit_count(tick: CaptureTick) -> int:
+    capture_hits = int(tick.event_counts.projectile_find_hit)
     if capture_hits < 0:
         return -1
-    owner_collision_count = _int_or(raw.get("projectile_find_query_owner_collision_count"), -1)
+    owner_collision_count = int(tick.checkpoint.debug.spawn.event_count_projectile_find_query_owner_collision)
     if owner_collision_count < 0:
         return int(capture_hits)
     return max(0, int(capture_hits) - int(owner_collision_count))
-
-
-def _coerce_u32(value: object) -> int | None:
-    parsed = _int_or(value, -1)
-    if parsed < 0:
-        return None
-    return int(parsed) & 0xFFFFFFFF
-
-
-def _rng_value_15_from_row(row: dict[str, object]) -> int | None:
-    value_15 = _int_or(row.get("value_15"), -1)
-    if 0 <= value_15 <= 0x7FFF:
-        return int(value_15)
-    value = _int_or(row.get("value"), _int_or(row.get("value_i32"), -1))
-    if value < 0:
-        return None
-    return int(value) & 0x7FFF
-
-
-def _coerce_rng_stream_rows(value: object) -> list[dict[str, object]]:
-    if not isinstance(value, list):
-        return []
-    out: list[dict[str, object]] = []
-    for item in value:
-        if isinstance(item, dict):
-            row = cast(dict[str, object], item)
-            value_15 = _rng_value_15_from_row(row)
-            state_before_u32 = _coerce_u32(row.get("state_before_u32"))
-            state_after_u32 = _coerce_u32(row.get("state_after_u32"))
-            caller_static = row.get("caller_static")
-            branch_id = row.get("branch_id")
-            seq = _int_or(row.get("seq"), -1)
-            tick_call_index = _int_or(row.get("tick_call_index"), -1)
-
-            if (
-                value_15 is None
-                and state_before_u32 is None
-                and state_after_u32 is None
-                and caller_static is None
-                and branch_id is None
-                and seq < 0
-                and tick_call_index < 0
-            ):
-                continue
-
-            normalized: dict[str, object] = {}
-            if value_15 is not None:
-                normalized["value_15"] = int(value_15)
-                normalized["value"] = int(value_15)
-            if state_before_u32 is not None:
-                normalized["state_before_u32"] = int(state_before_u32)
-            if state_after_u32 is not None:
-                normalized["state_after_u32"] = int(state_after_u32)
-            if seq >= 0:
-                normalized["seq"] = int(seq)
-            if tick_call_index >= 0:
-                normalized["tick_call_index"] = int(tick_call_index)
-            caller_static_s = str(caller_static) if caller_static is not None else ""
-            branch_id_s = str(branch_id) if branch_id is not None else ""
-            if caller_static_s:
-                normalized["caller_static"] = caller_static_s
-            if branch_id_s:
-                normalized["branch_id"] = branch_id_s
-            elif caller_static_s:
-                normalized["branch_id"] = caller_static_s
-            caller = row.get("caller")
-            if caller is not None and str(caller):
-                normalized["caller"] = str(caller)
-            out.append(normalized)
-            continue
-
-        parsed = _int_or(item, -1)
-        if parsed < 0:
-            continue
-        out.append({"value_15": int(parsed) & 0x7FFF, "value": int(parsed) & 0x7FFF})
-    return out
-
-
-def _extract_rng_head_values(rows: list[object] | list[dict[str, object]]) -> list[int]:
-    out: list[int] = []
-    for row in _coerce_rng_stream_rows(rows):
-        value_15 = _rng_value_15_from_row(row)
-        if value_15 is None:
-            continue
-        out.append(int(value_15))
-    return out
-
-
-def _coerce_nonnegative_int_list(value: object) -> list[int]:
-    if not isinstance(value, list):
-        return []
-    out: list[int] = []
-    for item in value:
-        parsed = _int_or(item, -1)
-        if parsed < 0:
-            continue
-        out.append(int(parsed))
-    return out
-
-
-def _rng_stream_rows_for_raw_row(raw_row: dict[str, object]) -> list[dict[str, object]]:
-    rows = _coerce_rng_stream_rows(raw_row.get("rng_stream_rows"))
-    if rows:
-        return rows
-    values = _coerce_nonnegative_int_list(raw_row.get("rng_head_values"))
-    if not values:
-        return []
-    return [{"value_15": int(value) & 0x7FFF, "value": int(value) & 0x7FFF} for value in values]
 
 
 def _capture_sample_rate(capture: CaptureFile) -> int:
@@ -813,16 +803,14 @@ def _build_focus_run_summary_events(
     return out
 
 
-def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> dict[int, dict[str, object]]:
-    from .diagnostics_cache import _build_tick_lite_row
-
+def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> dict[int, CaptureTick]:
     capture = load_capture(path)
-    out: dict[int, dict[str, object]] = {}
+    out: dict[int, CaptureTick] = {}
     for tick in capture.ticks:
         tick_index = int(tick.tick_index)
         if tick_indices is not None and tick_index not in tick_indices:
             continue
-        out[int(tick_index)] = _build_tick_lite_row(tick)
+        out[int(tick_index)] = tick
     return out
 
 
@@ -906,7 +894,7 @@ def _find_first_divergence(
     max_field_diffs: int,
     capture_sample_creature_counts: dict[int, int] | None = None,
     capture_active_corpse_below_despawn_ticks: set[int] | None = None,
-    raw_debug_by_tick: dict[int, dict[str, object]] | None = None,
+    raw_debug_by_tick: dict[int, CaptureTick] | None = None,
 ) -> Divergence | None:
     expected_by_tick = {int(ckpt.tick_index): ckpt for ckpt in expected}
     actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
@@ -927,14 +915,9 @@ def _find_first_divergence(
             )
 
         tick_key = int(tick)
-        if tick_key in raw_by_tick:
-            raw_row = raw_by_tick[tick_key]
-        else:
-            raw_row = {}
-        capture_stream_rows = _rng_stream_rows_for_raw_row(raw_row)
-        capture_head_len = _int_or(raw_row.get("rng_head_len"), len(capture_stream_rows))
-        if capture_head_len < 0:
-            capture_head_len = len(capture_stream_rows)
+        raw_tick = raw_by_tick.get(tick_key)
+        capture_stream_rows = [] if raw_tick is None else _rng_stream_rows_for_tick(raw_tick)
+        capture_head_len = len(capture_stream_rows)
         if capture_head_len > 0 or capture_stream_rows:
             stream_alignment = _compute_rng_stream_alignment(
                 act=act,
@@ -1123,10 +1106,10 @@ def _actual_rng_stream_rows_for_checkpoint(
 def _compute_rng_stream_alignment(
     *,
     act: ReplayCheckpoint,
-    capture_stream_rows: list[dict[str, object]],
+    capture_stream_rows: list[CaptureRngHeadEntry],
     capture_head_len: int,
 ) -> RngStreamAlignment:
-    capture_rows = _coerce_rng_stream_rows(capture_stream_rows)
+    capture_rows = list(capture_stream_rows)
     cap_len = max(int(capture_head_len), len(capture_rows))
     actual_rows, actual_calls = _actual_rng_stream_rows_for_checkpoint(
         act,
@@ -1191,10 +1174,12 @@ def _compute_rng_stream_alignment(
         capture_row = capture_rows[idx]
         actual_row = actual_rows[idx]
 
-        capture_value = _rng_value_15_from_row(capture_row)
+        capture_value = _rng_value_15_from_entry(capture_row)
         actual_value = int(actual_row["value_15"])
-        capture_before = _coerce_u32(capture_row.get("state_before_u32"))
-        capture_after = _coerce_u32(capture_row.get("state_after_u32"))
+        capture_before = (
+            None if capture_row.state_before_u32 is None else int(capture_row.state_before_u32) & 0xFFFFFFFF
+        )
+        capture_after = None if capture_row.state_after_u32 is None else int(capture_row.state_after_u32) & 0xFFFFFFFF
         actual_before = int(actual_row["state_before_u32"])
         actual_after = int(actual_row["state_after_u32"])
 
@@ -1220,17 +1205,15 @@ def _compute_rng_stream_alignment(
         first_mismatch_capture_state_after = int(capture_after) if capture_after is not None else None
         first_mismatch_actual_state_before = int(actual_before)
         first_mismatch_actual_state_after = int(actual_after)
-        caller_static = capture_row.get("caller_static")
-        if caller_static is not None and str(caller_static):
-            first_mismatch_capture_caller_static = str(caller_static)
-        branch_id = capture_row.get("branch_id")
-        if branch_id is not None and str(branch_id):
-            first_mismatch_capture_branch_id = str(branch_id)
+        if capture_row.caller_static:
+            first_mismatch_capture_caller_static = str(capture_row.caller_static)
+        branch_id = _rng_branch_id(capture_row)
+        if branch_id:
+            first_mismatch_capture_branch_id = branch_id
         elif first_mismatch_capture_caller_static is not None:
             first_mismatch_capture_branch_id = first_mismatch_capture_caller_static
-        seq = _int_or(capture_row.get("seq"), -1)
-        if seq >= 0:
-            first_mismatch_capture_seq = int(seq)
+        if capture_row.seq is not None and int(capture_row.seq) >= 0:
+            first_mismatch_capture_seq = int(capture_row.seq)
         break
 
     return {
@@ -1460,20 +1443,18 @@ def _first_drift_onsets(
 
 
 def _raw_debug_row_for_tick(
-    rows_by_tick: Mapping[int, dict[str, object]],
+    rows_by_tick: Mapping[int, CaptureTick],
     tick: int,
-) -> dict[str, object]:
+) -> CaptureTick | None:
     tick_key = int(tick)
-    if tick_key in rows_by_tick:
-        return rows_by_tick[tick_key]
-    return {}
+    return rows_by_tick.get(tick_key)
 
 
 def _ticks_rng_zero_but_changed(
     *,
     expected_by_tick: dict[int, ReplayCheckpoint],
     actual_by_tick: dict[int, ReplayCheckpoint],
-    raw_debug_by_tick: dict[int, dict[str, object]],
+    raw_debug_by_tick: dict[int, CaptureTick],
     start_tick: int,
     end_tick: int,
 ) -> list[int]:
@@ -1482,8 +1463,8 @@ def _ticks_rng_zero_but_changed(
         act = actual_by_tick.get(tick)
         if act is None:
             continue
-        raw_row = _raw_debug_row_for_tick(raw_debug_by_tick, tick)
-        expected_calls = _int_or(raw_row.get("rng_rand_calls"), -1)
+        raw_tick = _raw_debug_row_for_tick(raw_debug_by_tick, tick)
+        expected_calls = _capture_rng_rand_calls(raw_tick) if raw_tick is not None else -1
         if expected_calls < 0:
             exp = expected_by_tick.get(tick)
             if exp is not None:
@@ -1497,35 +1478,32 @@ def _ticks_rng_zero_but_changed(
 
 def _aggregate_rng_callers(
     *,
-    raw_debug_by_tick: dict[int, dict[str, object]],
+    raw_debug_by_tick: dict[int, CaptureTick],
     ticks: list[int] | set[int],
 ) -> list[tuple[str, int]]:
     counts: dict[str, int] = {}
     for tick in ticks:
-        raw_row = _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
-        callers = raw_row.get("rng_callers")
-        if not isinstance(callers, list):
+        raw_tick = _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
+        if raw_tick is None:
             continue
+        callers = _capture_rng_callers(raw_tick)
         for caller in callers:
-            if not isinstance(caller, dict):
+            key = str(caller.caller_static)
+            if not key:
                 continue
-            key = caller.get("caller_static")  # ty:ignore[invalid-argument-type]
-            if key is None:
-                continue
-            calls = _int_or(caller.get("calls"), 1)  # ty:ignore[invalid-argument-type]
+            calls = int(caller.calls)
             if calls <= 0:
                 continue
-            caller_key = str(key)
-            if caller_key in counts:
-                counts[caller_key] = int(counts[caller_key]) + int(calls)
+            if key in counts:
+                counts[key] = int(counts[key]) + int(calls)
             else:
-                counts[caller_key] = int(calls)
+                counts[key] = int(calls)
     return sorted(counts.items(), key=lambda item: (-int(item[1]), str(item[0])))
 
 
 def _aggregate_neighbor_rng_callers_for_ticks(
     *,
-    raw_debug_by_tick: dict[int, dict[str, object]],
+    raw_debug_by_tick: dict[int, CaptureTick],
     ticks: list[int],
     radius: int = 2,
 ) -> list[tuple[str, int]]:
@@ -1536,20 +1514,20 @@ def _aggregate_neighbor_rng_callers_for_ticks(
         for offset in range(0, radius + 1):
             for signed in (-offset, offset) if offset > 0 else (0,):
                 probe = int(tick) + int(signed)
-                raw_row = _raw_debug_row_for_tick(raw_debug_by_tick, probe)
-                callers = raw_row.get("rng_callers")
-                if not isinstance(callers, list) or not callers:
+                raw_tick = _raw_debug_row_for_tick(raw_debug_by_tick, probe)
+                if raw_tick is None:
+                    continue
+                callers = _capture_rng_callers(raw_tick)
+                if not callers:
                     continue
                 for caller in callers:
-                    if not isinstance(caller, dict):
+                    key = str(caller.caller_static)
+                    if not key:
                         continue
-                    key = caller.get("caller_static")  # ty:ignore[invalid-argument-type]
-                    if key is None:
-                        continue
-                    calls = _int_or(caller.get("calls"), 1)  # ty:ignore[invalid-argument-type]
+                    calls = int(caller.calls)
                     if calls <= 0:
                         continue
-                    picked.append((str(key), int(calls)))
+                    picked.append((key, int(calls)))
                 if picked:
                     break
                 if picked:
@@ -1585,7 +1563,7 @@ def _find_first_rng_head_shortfall(
     *,
     expected_by_tick: dict[int, ReplayCheckpoint],
     actual_by_tick: dict[int, ReplayCheckpoint],
-    raw_debug_by_tick: dict[int, dict[str, object]],
+    raw_debug_by_tick: dict[int, CaptureTick],
     start_tick: int,
     end_tick: int,
 ) -> dict[str, object] | None:
@@ -1594,9 +1572,11 @@ def _find_first_rng_head_shortfall(
         act = actual_by_tick.get(int(tick))
         if exp is None or act is None:
             continue
-        raw_row = _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
-        capture_stream_rows = _rng_stream_rows_for_raw_row(raw_row)
-        expected_head_len = _int_or(raw_row.get("rng_head_len"), len(capture_stream_rows))
+        raw_tick = _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
+        if raw_tick is None:
+            continue
+        capture_stream_rows = _rng_stream_rows_for_tick(raw_tick)
+        expected_head_len = len(capture_stream_rows)
         if expected_head_len <= 0:
             continue
         align = _compute_rng_stream_alignment(
@@ -1612,17 +1592,17 @@ def _find_first_rng_head_shortfall(
         if first_mismatch_idx is None and int(missing_tail) <= 0:
             continue
         expected_rand_calls = _int_or(
-            raw_row.get("rng_rand_calls"),
+            _capture_rng_rand_calls(raw_tick),
             _int_or(exp.rng_marks.get("rand_calls"), -1),
         )
         caller_counts = _aggregate_rng_callers(
             raw_debug_by_tick=raw_debug_by_tick,
             ticks=[int(tick)],
         )
-        seq_first = _int_or(raw_row.get("rng_seq_first"), -1)
-        seq_last = _int_or(raw_row.get("rng_seq_last"), -1)
-        seed_epoch_enter = _int_or(raw_row.get("rng_seed_epoch_enter"), -1)
-        seed_epoch_last = _int_or(raw_row.get("rng_seed_epoch_last"), -1)
+        seq_first = _capture_rng_seq_first(raw_tick)
+        seq_last = _capture_rng_seq_last(raw_tick)
+        seed_epoch_enter = _capture_rng_seed_epoch_enter(raw_tick)
+        seed_epoch_last = _capture_rng_seed_epoch_last(raw_tick)
         return {
             "tick": int(tick),
             "expected_head_len": int(expected_head_len),
@@ -1655,16 +1635,18 @@ def _find_first_rng_head_shortfall(
 def _find_first_projectile_hit_shortfall(
     *,
     actual_by_tick: dict[int, ReplayCheckpoint],
-    raw_debug_by_tick: dict[int, dict[str, object]],
+    raw_debug_by_tick: dict[int, CaptureTick],
     start_tick: int,
     end_tick: int,
 ) -> dict[str, object] | None:
     for tick in range(max(0, int(start_tick)), int(end_tick) + 1):
-        raw = _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
-        capture_hits_raw = _int_or(raw.get("projectile_find_hit_count"), -1)
+        raw_tick = _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
+        if raw_tick is None:
+            continue
+        capture_hits_raw = int(raw_tick.event_counts.projectile_find_hit)
         if capture_hits_raw < 0:
             continue
-        capture_hits = _effective_capture_projectile_hit_count(raw)
+        capture_hits = _effective_capture_projectile_hit_count(raw_tick)
         act = actual_by_tick.get(int(tick))
         if act is None:
             continue
@@ -1673,18 +1655,17 @@ def _find_first_projectile_hit_shortfall(
             continue
         if int(capture_hits) <= int(actual_hits):
             continue
-        caller_counts = raw.get("spawn_top_projectile_find_hit_callers")
-        if not isinstance(caller_counts, list):
-            caller_counts = []
+        caller_counts = [
+            {"key": str(item.key), "count": int(item.count)}
+            for item in raw_tick.checkpoint.debug.spawn.top_projectile_find_hit_callers
+        ]
         if not caller_counts:
-            head = raw.get("projectile_find_hit_head")
-            head_rows = head if isinstance(head, list) else []
             reduced: dict[str, int] = {}
-            for item in head_rows:
-                if not isinstance(item, dict):
+            for head in raw_tick.event_heads:
+                if not isinstance(head, CaptureEventHeadProjectileFindHit):
                     continue
-                key = item.get("caller_static")  # ty:ignore[invalid-argument-type]
-                if key is None:
+                key = head.data.caller_static
+                if not key:
                     continue
                 key_str = str(key)
                 if key_str in reduced:
@@ -1695,18 +1676,17 @@ def _find_first_projectile_hit_shortfall(
                 {"key": key, "count": count}
                 for key, count in sorted(reduced.items(), key=lambda item: (-int(item[1]), str(item[0])))
             ]
-        query_caller_counts = raw.get("spawn_top_projectile_find_query_callers")
-        if not isinstance(query_caller_counts, list):
-            query_caller_counts = []
+        query_caller_counts = [
+            {"key": str(item.key), "count": int(item.count)}
+            for item in raw_tick.checkpoint.debug.spawn.top_projectile_find_query_callers
+        ]
         if not query_caller_counts:
-            query_head = raw.get("projectile_find_query_head")
-            query_rows = query_head if isinstance(query_head, list) else []
             reduced_query: dict[str, int] = {}
-            for item in query_rows:
-                if not isinstance(item, dict):
+            for head in raw_tick.event_heads:
+                if not isinstance(head, CaptureEventHeadProjectileFindQuery):
                     continue
-                key = item.get("caller_static")  # ty:ignore[invalid-argument-type]
-                if key is None:
+                key = head.data.caller_static
+                if not key:
                     continue
                 key_str = str(key)
                 if key_str in reduced_query:
@@ -1723,13 +1703,16 @@ def _find_first_projectile_hit_shortfall(
             "capture_hits": int(capture_hits),
             "actual_hits": int(actual_hits),
             "missing_hits": int(capture_hits) - int(actual_hits),
-            "capture_corpse_hits": _int_or(raw.get("projectile_find_hit_corpse_count"), -1),
+            "capture_corpse_hits": sum(
+                1
+                for head in raw_tick.event_heads
+                if isinstance(head, CaptureEventHeadProjectileFindHit) and bool(head.data.corpse_hit)
+            ),
             "caller_counts": caller_counts,
-            "query_counts": _int_or(raw.get("projectile_find_query_count"), -1),
-            "query_miss_count": _int_or(raw.get("projectile_find_query_miss_count"), -1),
-            "query_owner_collision_count": _int_or(
-                raw.get("projectile_find_query_owner_collision_count"),
-                -1,
+            "query_counts": int(raw_tick.event_counts.projectile_find_query),
+            "query_miss_count": int(raw_tick.checkpoint.debug.spawn.event_count_projectile_find_query_miss),
+            "query_owner_collision_count": int(
+                raw_tick.checkpoint.debug.spawn.event_count_projectile_find_query_owner_collision,
             ),
             "query_caller_counts": query_caller_counts,
         }
@@ -1765,24 +1748,22 @@ def _merge_paths(*groups: tuple[str, ...]) -> tuple[str, ...]:
     return tuple(out)
 
 
-def _extract_player_input_keys(raw: dict[str, object], player_index: int = 0) -> dict[str, object]:
-    rows = raw.get("input_player_keys")
-    if not isinstance(rows, list):
-        return {}
-    for idx, item in enumerate(rows):
-        if not isinstance(item, dict):
-            continue
-        row_player = _int_or(item.get("player_index"), idx)  # ty:ignore[invalid-argument-type]
-        if int(row_player) == int(player_index):
-            return item  # ty:ignore[invalid-return-type]
-    return {}
+def _extract_player_input_keys(raw: CaptureTick | None, player_index: int = 0) -> CaptureInputPlayerKeys | None:
+    if raw is None:
+        return None
+    for item in raw.input_player_keys:
+        if int(item.player_index) == int(player_index):
+            return item
+    return None
 
 
-def _input_has_opposite_direction_conflict(player_keys: dict[str, object]) -> bool:
-    left = player_keys.get("turn_left_pressed")
-    right = player_keys.get("turn_right_pressed")
-    forward = player_keys.get("move_forward_pressed")
-    backward = player_keys.get("move_backward_pressed")
+def _input_has_opposite_direction_conflict(player_keys: CaptureInputPlayerKeys | None) -> bool:
+    if player_keys is None:
+        return False
+    left = player_keys.turn_left_pressed
+    right = player_keys.turn_right_pressed
+    forward = player_keys.move_forward_pressed
+    backward = player_keys.move_backward_pressed
     horizontal_conflict = isinstance(left, bool) and isinstance(right, bool) and left and right
     vertical_conflict = isinstance(forward, bool) and isinstance(backward, bool) and forward and backward
     return bool(horizontal_conflict or vertical_conflict)
@@ -1790,7 +1771,7 @@ def _input_has_opposite_direction_conflict(player_keys: dict[str, object]) -> bo
 
 def _find_input_conflict_ticks(
     *,
-    raw_debug_by_tick: dict[int, dict[str, object]],
+    raw_debug_by_tick: dict[int, CaptureTick],
     start_tick: int,
     end_tick: int,
     player_index: int = 0,
@@ -1812,7 +1793,7 @@ def _build_investigation_leads(
     float_abs_tol: float,
     expected_by_tick: dict[int, ReplayCheckpoint],
     actual_by_tick: dict[int, ReplayCheckpoint],
-    raw_debug_by_tick: dict[int, dict[str, object]],
+    raw_debug_by_tick: dict[int, CaptureTick],
     native_ranges: tuple[NativeFunctionRange, ...],
     capture_config: CaptureConfig | Mapping[str, object] | None = None,
 ) -> list[InvestigationLead]:
@@ -1835,12 +1816,7 @@ def _build_investigation_leads(
         micro_cap = _int_or(config_map.get("creature_micro_max_head_per_tick"), -1)
     else:
         micro_cap = int(capture_config.creature_micro_max_head_per_tick)
-    sample_counts_raw = focus_raw.get("sample_counts")
-    sample_counts = cast(Mapping[object, object], sample_counts_raw) if isinstance(sample_counts_raw, dict) else {}
-    sample_counts_int = [
-        _int_or(sample_counts.get(key), -1) for key in ("creatures", "projectiles", "secondary_projectiles", "bonuses")
-    ]
-    samples_missing = bool(not sample_counts or all(int(value) < 0 for value in sample_counts_int))
+    samples_missing = focus_raw is None
     if samples_missing:
         leads.append(
             InvestigationLead(
@@ -1863,7 +1839,7 @@ def _build_investigation_leads(
             ),
         )
     else:
-        creature_micro_count = _int_or(focus_raw.get("creature_update_micro_count"), -1)
+        creature_micro_count = -1 if focus_raw is None else int(focus_raw.event_counts.creature_update_micro)
         if creature_micro_count <= 0:
             leads.append(
                 InvestigationLead(
@@ -2174,12 +2150,12 @@ def _build_investigation_leads(
 
     if focus_exp is not None and focus_act is not None:
         expected_rand_calls = _int_or(
-            focus_raw.get("rng_rand_calls"),
+            (_capture_rng_rand_calls(focus_raw) if focus_raw is not None else -1),
             _int_or(focus_exp.rng_marks.get("rand_calls"), -1),
         )
         actual_rand_calls = _actual_rand_calls_for_checkpoint(focus_act)
-        focus_stream_rows = _rng_stream_rows_for_raw_row(focus_raw)
-        focus_head_len = _int_or(focus_raw.get("rng_head_len"), len(focus_stream_rows))
+        focus_stream_rows = [] if focus_raw is None else _rng_stream_rows_for_tick(focus_raw)
+        focus_head_len = len(focus_stream_rows)
         focus_stream = _compute_rng_stream_alignment(
             act=focus_act,
             capture_stream_rows=focus_stream_rows,
@@ -2229,25 +2205,25 @@ def _build_investigation_leads(
                         "rewrite stage-local rand call totals: "
                         + ", ".join(f"{name}={calls}" for name, calls in top_stages[:6]),
                     )
-                capture_deaths = _int_or(focus_raw.get("spawn_death_count"), -1)
+                capture_deaths = -1 if focus_raw is None else int(focus_raw.checkpoint.debug.spawn.event_count_death)
                 if int(capture_deaths) == 0 and len(focus_act.deaths) > 0:
                     evidence.append(
                         "capture has 0 creature_death events at focus tick while rewrite produced "
                         f"{len(focus_act.deaths)} death ledger entries",
                     )
-                capture_damage = _int_or(focus_raw.get("creature_damage_count"), -1)
+                capture_damage = -1 if focus_raw is None else int(focus_raw.event_counts.creature_damage)
                 if int(capture_damage) == 0 and len(focus_act.deaths) > 0:
                     evidence.append(
                         "capture has 0 creature_apply_damage events at focus tick while rewrite resolved a kill branch",
                     )
 
-                focus_callers = focus_raw.get("rng_callers")
-                if isinstance(focus_callers, list) and focus_callers:
+                focus_callers = [] if focus_raw is None else _capture_rng_callers(focus_raw)
+                if focus_callers:
                     top = sorted(
                         [
-                            (str(item.get("caller_static")), _int_or(item.get("calls"), 1))  # ty:ignore[invalid-argument-type]
+                            (str(item.caller_static), int(item.calls))
                             for item in focus_callers
-                            if isinstance(item, dict) and item.get("caller_static") is not None  # ty:ignore[invalid-argument-type]
+                            if item.caller_static
                         ],
                         key=lambda item: (-int(item[1]), str(item[0])),
                     )[:6]
@@ -2331,19 +2307,13 @@ def _build_investigation_leads(
             evidence.append(f"dominant native caller_static addresses on those ticks: {top_callers}")
         if native_text:
             evidence.append(f"resolved native functions from caller_static: {native_text}")
-        zero_rand_damage_ticks = [
-            int(tick)
-            for tick in rng_zero_ticks
-            if _int_or(
-                (
-                    _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))["creature_damage_count"]
-                    if "creature_damage_count" in _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
-                    else None
-                ),
-                0,
-            )
-            > 0
-        ]
+        zero_rand_damage_ticks: list[int] = []
+        for tick in rng_zero_ticks:
+            tick_row = _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
+            if tick_row is None:
+                continue
+            if int(tick_row.event_counts.creature_damage) > 0:
+                zero_rand_damage_ticks.append(int(tick))
         if zero_rand_damage_ticks:
             damage_sample = ", ".join(str(tick) for tick in zero_rand_damage_ticks[:8])
             evidence.append(
@@ -2432,34 +2402,36 @@ def _build_investigation_leads(
         if score_onset is not None and int(score_onset.tick) == int(xp_onset.tick):
             evidence.append("score_xp divergence starts on the same tick, indicating a gameplay award timing mismatch")
         focus_raw = _raw_debug_row_for_tick(raw_debug_by_tick, int(xp_onset.tick))
-        focus_damage_count = _int_or(focus_raw.get("creature_damage_count"), 0)
+        focus_damage_count = 0 if focus_raw is None else int(focus_raw.event_counts.creature_damage)
         if focus_damage_count > 0:
             evidence.append(f"native creature_apply_damage count at XP-onset tick: {focus_damage_count}")
-            damage_head = focus_raw.get("creature_damage_head")
-            if isinstance(damage_head, list) and damage_head:
+            damage_head = (
+                [head.data for head in focus_raw.event_heads if isinstance(head, CaptureEventHeadCreatureDamage)]
+                if focus_raw is not None
+                else []
+            )
+            if damage_head:
                 preview = []
                 for item in damage_head[:4]:
-                    if not isinstance(item, dict):
-                        continue
                     preview.append(
                         "idx="
-                        + str(_int_or(item.get("creature_index"), -1))  # ty:ignore[invalid-argument-type]
+                        + str(int(item.creature_index))
                         + "/type="
-                        + str(_int_or(item.get("damage_type"), -1))  # ty:ignore[invalid-argument-type]
+                        + str(-1 if item.damage_type is None else int(item.damage_type))
                         + "/k="
-                        + str(1 if bool(item.get("killed")) else 0),  # ty:ignore[invalid-argument-type]
+                        + str(1 if bool(item.killed) else 0),
                     )
                 if preview:
                     evidence.append("native creature_apply_damage head: " + ", ".join(preview))
         else:
             evidence.append("native creature_apply_damage count at XP-onset tick: 0")
-        focus_callers = focus_raw.get("rng_callers")
-        if isinstance(focus_callers, list) and focus_callers:
+        focus_callers = [] if focus_raw is None else _capture_rng_callers(focus_raw)
+        if focus_callers:
             top = sorted(
                 [
-                    (str(item.get("caller_static")), _int_or(item.get("calls"), 1))  # ty:ignore[invalid-argument-type]
+                    (str(item.caller_static), int(item.calls))
                     for item in focus_callers
-                    if isinstance(item, dict) and item.get("caller_static") is not None  # ty:ignore[invalid-argument-type]
+                    if item.caller_static
                 ],
                 key=lambda item: (-int(item[1]), str(item[0])),
             )[:6]
@@ -2495,14 +2467,16 @@ def _classify_divergence_category(
     *,
     divergence: Divergence,
     leads: list[InvestigationLead],
-    focus_raw: dict[str, object],
+    focus_raw: CaptureTick | None,
     focus_actual_ckpt: ReplayCheckpoint | None,
 ) -> DivergenceCategory:
     lead_titles = {lead.title for lead in leads}
 
-    capture_hits_raw = _int_or(focus_raw.get("projectile_find_hit_count"), -1)
-    capture_hits = _effective_capture_projectile_hit_count(focus_raw)
-    capture_owner_collision_count = _int_or(focus_raw.get("projectile_find_query_owner_collision_count"), -1)
+    capture_hits_raw = -1 if focus_raw is None else int(focus_raw.event_counts.projectile_find_hit)
+    capture_hits = -1 if focus_raw is None else _effective_capture_projectile_hit_count(focus_raw)
+    capture_owner_collision_count = (
+        -1 if focus_raw is None else int(focus_raw.checkpoint.debug.spawn.event_count_projectile_find_query_owner_collision)
+    )
     actual_hits = _int_or(focus_actual_ckpt.events.hit_count if focus_actual_ckpt is not None else None, -1)
     if "Native projectile hit resolves exceed rewrite hit events" in lead_titles or (
         capture_hits >= 0 and actual_hits >= 0 and capture_hits > actual_hits
@@ -2523,13 +2497,10 @@ def _classify_divergence_category(
         focus_stream = (
             _compute_rng_stream_alignment(
                 act=focus_actual_ckpt,
-                capture_stream_rows=_rng_stream_rows_for_raw_row(focus_raw),
-                capture_head_len=_int_or(
-                    focus_raw.get("rng_head_len"),
-                    len(_rng_stream_rows_for_raw_row(focus_raw)),
-                ),
+                capture_stream_rows=([] if focus_raw is None else _rng_stream_rows_for_tick(focus_raw)),
+                capture_head_len=(0 if focus_raw is None else len(_rng_stream_rows_for_tick(focus_raw))),
             )
-            if focus_actual_ckpt is not None
+            if focus_actual_ckpt is not None and focus_raw is not None
             else cast(RngStreamAlignment, {})
         )
         missing_tail = _int_or(focus_stream.get("missing_tail"), 0)
@@ -2599,7 +2570,7 @@ def _build_window_rows(
     *,
     expected_by_tick: dict[int, ReplayCheckpoint],
     actual_by_tick: dict[int, ReplayCheckpoint],
-    raw_debug_by_tick: dict[int, dict[str, object]],
+    raw_debug_by_tick: dict[int, CaptureTick],
     focus_tick: int,
     window: int,
 ) -> list[dict[str, object]]:
@@ -2616,13 +2587,15 @@ def _build_window_rows(
         act_player = act.players[0] if act.players else None
         before = _int_or(act.rng_marks.get("before_world_step"))
         after = _primary_rng_after(act)
-        expected_rand_calls = _int_or(raw.get("rng_rand_calls"), _int_or(exp.rng_marks.get("rand_calls")))
+        expected_rand_calls = (
+            _capture_rng_rand_calls(raw) if raw is not None else _int_or(exp.rng_marks.get("rand_calls"))
+        )
         actual_rand_calls = _actual_rand_calls_for_checkpoint(act)
         rand_calls_delta: int | None = None
         if expected_rand_calls >= 0 and actual_rand_calls is not None:
             rand_calls_delta = int(actual_rand_calls) - int(expected_rand_calls)
-        rng_stream_rows = _rng_stream_rows_for_raw_row(raw)
-        rng_head_len = _int_or(raw.get("rng_head_len"), len(rng_stream_rows))
+        rng_stream_rows = [] if raw is None else _rng_stream_rows_for_tick(raw)
+        rng_head_len = len(rng_stream_rows)
         stream_align = _compute_rng_stream_alignment(
             act=act,
             capture_stream_rows=rng_stream_rows,
@@ -2654,21 +2627,23 @@ def _build_window_rows(
                 "rng_stream_first_mismatch_capture_branch_id": stream_align.get("first_mismatch_capture_branch_id"),
                 "rng_stream_first_mismatch_capture_seq": stream_align.get("first_mismatch_capture_seq"),
                 "rng_stream_missing_tail": stream_align.get("missing_tail"),
-                "capture_rng_seq_first": _int_or(raw.get("rng_seq_first"), -1),
-                "capture_rng_seq_last": _int_or(raw.get("rng_seq_last"), -1),
-                "capture_rng_seed_epoch_enter": _int_or(raw.get("rng_seed_epoch_enter"), -1),
-                "capture_rng_seed_epoch_last": _int_or(raw.get("rng_seed_epoch_last"), -1),
-                "capture_rng_outside_before_calls": _int_or(raw.get("rng_outside_before_calls"), -1),
-                "capture_rng_mirror_mismatch_total": _int_or(raw.get("rng_mirror_mismatch_total"), -1),
+                "capture_rng_seq_first": (-1 if raw is None else _capture_rng_seq_first(raw)),
+                "capture_rng_seq_last": (-1 if raw is None else _capture_rng_seq_last(raw)),
+                "capture_rng_seed_epoch_enter": (-1 if raw is None else _capture_rng_seed_epoch_enter(raw)),
+                "capture_rng_seed_epoch_last": (-1 if raw is None else _capture_rng_seed_epoch_last(raw)),
+                "capture_rng_outside_before_calls": (-1 if raw is None else _capture_rng_outside_before_calls(raw)),
+                "capture_rng_mirror_mismatch_total": (-1 if raw is None else _capture_rng_mirror_mismatch_total(raw)),
                 "actual_ps_draws": _int_or(act.rng_marks.get("ps_draws_total")),
                 "actual_rng_changed": bool(before >= 0 and after >= 0 and before != after),
                 "expected_pickups": int(exp.events.pickup_count),
                 "actual_pickups": int(act.events.pickup_count),
                 "expected_sfx": int(exp.events.sfx_count),
                 "actual_sfx": int(act.events.sfx_count),
-                "capture_bonus_spawn_events": _int_or(raw.get("spawn_bonus_count")),
-                "capture_death_events": _int_or(raw.get("spawn_death_count")),
-                "capture_projectile_find_hits": _int_or(raw.get("projectile_find_hit_count"), -1),
+                "capture_bonus_spawn_events": (
+                    -1 if raw is None else int(raw.checkpoint.debug.spawn.event_count_bonus_spawn)
+                ),
+                "capture_death_events": (-1 if raw is None else int(raw.checkpoint.debug.spawn.event_count_death)),
+                "capture_projectile_find_hits": (-1 if raw is None else int(raw.event_counts.projectile_find_hit)),
                 "actual_deaths": int(len(act.deaths)),
                 "actual_hits": int(act.events.hit_count),
             },
@@ -3040,18 +3015,18 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
     if focus_raw:
         print(
             "  "
-            f"spawn_bonus_events={_int_or(focus_raw.get('spawn_bonus_count'))} "
-            f"spawn_death_events={_int_or(focus_raw.get('spawn_death_count'))} "
-            f"creature_damage_events={_int_or(focus_raw.get('creature_damage_count'))} "
-            f"rand_calls={_int_or(focus_raw.get('rng_rand_calls'))} "
-            f"rand_last={focus_raw.get('rng_rand_last')!r}",
+            f"spawn_bonus_events={int(focus_raw.checkpoint.debug.spawn.event_count_bonus_spawn)} "
+            f"spawn_death_events={int(focus_raw.checkpoint.debug.spawn.event_count_death)} "
+            f"creature_damage_events={int(focus_raw.event_counts.creature_damage)} "
+            f"rand_calls={int(_capture_rng_rand_calls(focus_raw))} "
+            f"rand_last={focus_raw.rng.last_value!r}",
         )
-        rng_seq_first = _int_or(focus_raw.get("rng_seq_first"), -1)
-        rng_seq_last = _int_or(focus_raw.get("rng_seq_last"), -1)
-        rng_seed_epoch_enter = _int_or(focus_raw.get("rng_seed_epoch_enter"), -1)
-        rng_seed_epoch_last = _int_or(focus_raw.get("rng_seed_epoch_last"), -1)
-        rng_outside_before_calls = _int_or(focus_raw.get("rng_outside_before_calls"), -1)
-        rng_mirror_mismatch_total = _int_or(focus_raw.get("rng_mirror_mismatch_total"), -1)
+        rng_seq_first = _capture_rng_seq_first(focus_raw)
+        rng_seq_last = _capture_rng_seq_last(focus_raw)
+        rng_seed_epoch_enter = _capture_rng_seed_epoch_enter(focus_raw)
+        rng_seed_epoch_last = _capture_rng_seed_epoch_last(focus_raw)
+        rng_outside_before_calls = _capture_rng_outside_before_calls(focus_raw)
+        rng_mirror_mismatch_total = _capture_rng_mirror_mismatch_total(focus_raw)
         if (
             rng_seq_first >= 0
             or rng_seq_last >= 0
@@ -3067,83 +3042,100 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
                 f"capture_rng_outside_before_calls={int(rng_outside_before_calls)} "
                 f"capture_rng_mirror_mismatch_total={int(rng_mirror_mismatch_total)}",
             )
-        callers = focus_raw.get("rng_callers")
-        if isinstance(callers, list) and callers:
+        callers = _capture_rng_callers(focus_raw)
+        if callers:
             print(f"  capture_rand_callers_top={callers[:6]!r}")
-        top_bonus = focus_raw.get("spawn_top_bonus_callers")
-        if isinstance(top_bonus, list) and top_bonus:
+        top_bonus = list(focus_raw.checkpoint.debug.spawn.top_bonus_spawn_callers)
+        if top_bonus:
             print(f"  capture_bonus_spawn_callers_top={top_bonus[:6]!r}")
-        top_damage = focus_raw.get("spawn_top_creature_damage_callers")
-        if isinstance(top_damage, list) and top_damage:
+        top_damage = list(focus_raw.checkpoint.debug.spawn.top_creature_damage_callers)
+        if top_damage:
             print(f"  capture_creature_damage_callers_top={top_damage[:6]!r}")
-        damage_head = focus_raw.get("creature_damage_head")
-        if isinstance(damage_head, list) and damage_head:
+        damage_head = [head.data for head in focus_raw.event_heads if isinstance(head, CaptureEventHeadCreatureDamage)]
+        if damage_head:
             print(f"  capture_creature_damage_head={damage_head[:6]!r}")
-        projectile_find_hit_count = _int_or(focus_raw.get("projectile_find_hit_count"), -1)
+        projectile_find_hit_count = int(focus_raw.event_counts.projectile_find_hit)
         projectile_find_hit_count_effective = _effective_capture_projectile_hit_count(focus_raw)
         if projectile_find_hit_count >= 0:
             print(
                 "  "
                 f"capture_projectile_find_hit_count={int(projectile_find_hit_count)} "
                 f"capture_projectile_find_hit_count_effective={int(projectile_find_hit_count_effective)} "
-                f"capture_projectile_find_hit_corpse_count={_int_or(focus_raw.get('projectile_find_hit_corpse_count'), -1)}",
+                "capture_projectile_find_hit_corpse_count="
+                + str(
+                    sum(
+                        1
+                        for head in focus_raw.event_heads
+                        if isinstance(head, CaptureEventHeadProjectileFindHit) and bool(head.data.corpse_hit)
+                    ),
+                ),
             )
-        projectile_find_query_count = _int_or(focus_raw.get("projectile_find_query_count"), -1)
+        projectile_find_query_count = int(focus_raw.event_counts.projectile_find_query)
         if projectile_find_query_count >= 0:
             print(
                 "  "
                 f"capture_projectile_find_query_count={int(projectile_find_query_count)} "
-                f"capture_projectile_find_query_miss_count={_int_or(focus_raw.get('projectile_find_query_miss_count'), -1)} "
+                "capture_projectile_find_query_miss_count="
+                f"{int(focus_raw.checkpoint.debug.spawn.event_count_projectile_find_query_miss)} "
                 "capture_projectile_find_query_owner_collision_count="
-                f"{_int_or(focus_raw.get('projectile_find_query_owner_collision_count'), -1)}",
+                f"{int(focus_raw.checkpoint.debug.spawn.event_count_projectile_find_query_owner_collision)}",
             )
-        top_projectile_queries = focus_raw.get("spawn_top_projectile_find_query_callers")
-        if isinstance(top_projectile_queries, list) and top_projectile_queries:
+        top_projectile_queries = list(focus_raw.checkpoint.debug.spawn.top_projectile_find_query_callers)
+        if top_projectile_queries:
             print(f"  capture_projectile_find_query_callers_top={top_projectile_queries[:6]!r}")
-        top_projectile_hits = focus_raw.get("spawn_top_projectile_find_hit_callers")
-        if isinstance(top_projectile_hits, list) and top_projectile_hits:
+        top_projectile_hits = list(focus_raw.checkpoint.debug.spawn.top_projectile_find_hit_callers)
+        if top_projectile_hits:
             print(f"  capture_projectile_find_hit_callers_top={top_projectile_hits[:6]!r}")
-        projectile_find_query_head = focus_raw.get("projectile_find_query_head")
-        if isinstance(projectile_find_query_head, list) and projectile_find_query_head:
+        projectile_find_query_head = [
+            head.data for head in focus_raw.event_heads if isinstance(head, CaptureEventHeadProjectileFindQuery)
+        ]
+        if projectile_find_query_head:
             print(f"  capture_projectile_find_query_head={projectile_find_query_head[:6]!r}")
-        projectile_find_hit_head = focus_raw.get("projectile_find_hit_head")
-        if isinstance(projectile_find_hit_head, list) and projectile_find_hit_head:
+        projectile_find_hit_head = [
+            head.data for head in focus_raw.event_heads if isinstance(head, CaptureEventHeadProjectileFindHit)
+        ]
+        if projectile_find_hit_head:
             print(f"  capture_projectile_find_hit_head={projectile_find_hit_head[:6]!r}")
-        creature_update_micro_count = _int_or(focus_raw.get("creature_update_micro_count"), -1)
+        creature_update_micro_count = int(focus_raw.event_counts.creature_update_micro)
         if creature_update_micro_count >= 0:
             print(f"  capture_creature_update_micro_count={int(creature_update_micro_count)}")
-        creature_update_micro_head = focus_raw.get("creature_update_micro_head")
-        if isinstance(creature_update_micro_head, list) and creature_update_micro_head:
+        creature_update_micro_head = [
+            head.data for head in focus_raw.event_heads if isinstance(head, CaptureEventHeadCreatureUpdateMicro)
+        ]
+        if creature_update_micro_head:
             print(f"  capture_creature_update_micro_head={creature_update_micro_head[:6]!r}")
-        secondary_spawn_count = _int_or(focus_raw.get("secondary_projectile_spawn_count"), 0)
+        secondary_spawn_count = int(focus_raw.event_counts.secondary_projectile_spawn)
         if secondary_spawn_count > 0:
             print(f"  capture_secondary_projectile_spawn_count={secondary_spawn_count}")
-        secondary_spawn_head = focus_raw.get("secondary_projectile_spawn_head")
-        if isinstance(secondary_spawn_head, list) and secondary_spawn_head:
+        secondary_spawn_head = [
+            head.data for head in focus_raw.event_heads if isinstance(head, CaptureEventHeadSecondaryProjectileSpawn)
+        ]
+        if secondary_spawn_head:
             print(f"  capture_secondary_projectile_spawn_head={secondary_spawn_head[:6]!r}")
-        before_player = focus_raw.get("before_player0")
-        if isinstance(before_player, dict):
-            print(f"  before_player0={before_player!r}")
+        if focus_raw.checkpoint.debug.before_players:
+            print(f"  before_player0={focus_raw.checkpoint.debug.before_players[0]!r}")
         player_keys = _extract_player_input_keys(focus_raw, player_index=0)
         if player_keys:
             print(f"  input_player_keys[0]={player_keys!r}")
-        sample_counts = focus_raw.get("sample_counts")
-        if isinstance(sample_counts, dict) and sample_counts:
-            print(f"  sample_counts={sample_counts!r}")
-        sample_secondary_head = focus_raw.get("sample_secondary_head")
-        if isinstance(sample_secondary_head, list) and sample_secondary_head:
-            print(f"  sample_secondary_head={sample_secondary_head[:6]!r}")
-        sample_creatures_head = focus_raw.get("sample_creatures_head")
-        if isinstance(sample_creatures_head, list) and sample_creatures_head:
-            print(f"  sample_creatures_head={sample_creatures_head[:6]!r}")
+        sample_counts = {
+            "creatures": len(focus_raw.samples.creatures),
+            "projectiles": len(focus_raw.samples.projectiles),
+            "secondary_projectiles": len(focus_raw.samples.secondary_projectiles),
+            "bonuses": len(focus_raw.samples.bonuses),
+        }
+        print(f"  sample_counts={sample_counts!r}")
+        if focus_raw.samples.secondary_projectiles:
+            print(f"  sample_secondary_head={focus_raw.samples.secondary_projectiles[:6]!r}")
+        if focus_raw.samples.creatures:
+            print(f"  sample_creatures_head={focus_raw.samples.creatures[:6]!r}")
     if focus_actual_ckpt is not None:
         actual_rand_calls = _actual_rand_calls_for_checkpoint(focus_actual_ckpt)
         stage_calls = _actual_rand_stage_calls(focus_actual_ckpt)
-        focus_stream_rows = _rng_stream_rows_for_raw_row(focus_raw)
+        focus_stream_rows = [] if focus_raw is None else _rng_stream_rows_for_tick(focus_raw)
         focus_stream = _compute_rng_stream_alignment(
             act=focus_actual_ckpt,
             capture_stream_rows=focus_stream_rows,
-            capture_head_len=_int_or(focus_raw.get("rng_head_len"), len(focus_stream_rows)),
+            capture_head_len=len(focus_stream_rows),
         )
         print(
             f"  rewrite_rand_calls={actual_rand_calls!r} rewrite_rand_stage_calls={stage_calls!r}",
@@ -3210,18 +3202,15 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
             "divergence_category": asdict(divergence_category),
             "window_rows": rows,
             "investigation_leads": [asdict(lead) for lead in leads],
-            "focus_capture_debug": focus_raw,
+            "focus_capture_debug": (None if focus_raw is None else msgspec.to_builtins(focus_raw)),
             "focus_rewrite_debug": (
                 {
                     "rand_calls": _actual_rand_calls_for_checkpoint(focus_actual_ckpt),
                     "rand_stage_calls": _actual_rand_stage_calls(focus_actual_ckpt),
                     "rand_stream_alignment": _compute_rng_stream_alignment(
                         act=focus_actual_ckpt,
-                        capture_stream_rows=_rng_stream_rows_for_raw_row(focus_raw),
-                        capture_head_len=_int_or(
-                            focus_raw.get("rng_head_len"),
-                            len(_rng_stream_rows_for_raw_row(focus_raw)),
-                        ),
+                        capture_stream_rows=([] if focus_raw is None else _rng_stream_rows_for_tick(focus_raw)),
+                        capture_head_len=(0 if focus_raw is None else len(_rng_stream_rows_for_tick(focus_raw))),
                     ),
                     "deaths": [
                         {

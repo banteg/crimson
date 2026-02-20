@@ -947,21 +947,14 @@ function maybeBacktrace(context) {
 
 function captureF32Bits(bits) {
   if (bits == null) return null;
-  const hex = toHex(bits >>> 0, 8);
-  return "f32:" + (hex == null ? "" : String(hex).replace(/^0x/i, ""));
+  return u32ToF32(bits >>> 0);
 }
 
 function decodeCapturedF32(v) {
   if (v == null) return null;
-  if (typeof v === "number") return Number.isFinite(v) ? Number(v) : null;
-  if (typeof v !== "string") return null;
-  if (!v.startsWith("f32:")) return null;
-  let hex = v.slice(4);
-  if (hex.toLowerCase().startsWith("0x")) hex = hex.slice(2);
-  if (hex.length !== 8) return null;
-  const bits = parseInt(hex, 16);
-  if (!Number.isFinite(bits)) return null;
-  return u32ToF32(bits >>> 0);
+  if (typeof v !== "number") return null;
+  if (!Number.isFinite(v)) return null;
+  return Number(v);
 }
 
 function frameDtSource(globalsObj) {
@@ -974,7 +967,6 @@ function frameDtSource(globalsObj) {
 
 function captureNumber(v) {
   if (v == null) return null;
-  if (typeof v === "string" && v.startsWith("f32:")) return v;
   if (!Number.isFinite(v)) return null;
   return captureF32Bits(f32ToU32(v));
 }

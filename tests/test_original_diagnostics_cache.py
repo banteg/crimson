@@ -801,10 +801,8 @@ def test_capture_session_builds_sidecars_and_indexes(tmp_path: Path, monkeypatch
     session = CaptureSession(capture_path)
 
     cache_capture_blobs = list((tmp_path / "cache").glob("*/capture.msgpack.gz"))
-    cache_tick_blobs = list((tmp_path / "cache").glob("*/tick_index.msgpack.gz"))
     cache_meta_files = list((tmp_path / "cache").glob("*/meta.json"))
     assert cache_capture_blobs
-    assert cache_tick_blobs
     assert cache_meta_files
 
     sample_counts = session.get_sample_creature_counts()
@@ -812,12 +810,7 @@ def test_capture_session_builds_sidecars_and_indexes(tmp_path: Path, monkeypatch
     assert sample_counts[1] == 1
 
     raw_debug = session.get_raw_debug_by_tick()
-    assert raw_debug[0]["sample_streams_present"] is True
-    sample_counts_obj = raw_debug[0]["sample_counts"]
-    sample_counts = cast("dict[str, object]", sample_counts_obj) if isinstance(sample_counts_obj, dict) else {}
-    creatures_count = sample_counts.get("creatures", -1)
-    creatures_count_i = int(creatures_count) if isinstance(creatures_count, int) else -1
-    assert creatures_count_i == 1
+    assert len(raw_debug[0].samples.creatures) == 1
 
     run_summary = session.get_run_summary_events()
     assert any(item.kind == "weapon_assign" for item in run_summary)
