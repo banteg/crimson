@@ -7,6 +7,7 @@ import crimson.frontend.panels.lan_lobby as lan_lobby_module
 from crimson.frontend.panels.lan_lobby import LanLobbyPanelView
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LanSessionConfig, PendingLanSession
+from crimson.net.relay_protocol import RoomState
 from grim.geom import Vec2
 
 
@@ -113,7 +114,7 @@ def test_network_lobby_panel_shows_room_code_not_session_id(make_game_state, moc
     state.net_runtime = cast(
         "Any",
         SimpleNamespace(
-            lobby_state=lambda: SimpleNamespace(room_code="AB12", session_id="session123", player_count=2, slots=[]),
+            lobby_state=lambda: RoomState(room_code="AB12", session_id="session123", player_count=2, slots=[]),
         ),
     )
     state.lan_runtime = state.net_runtime

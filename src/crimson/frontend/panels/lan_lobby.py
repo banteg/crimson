@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol, runtime_checkable
 
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
@@ -17,11 +16,6 @@ from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, butt
 from ..menu import MENU_PANEL_OFFSET_Y, MENU_PANEL_WIDTH, MenuEntry, MenuView
 from ..types import GameState
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
-
-
-@runtime_checkable
-class _RoomCodeState(Protocol):
-    room_code: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -258,7 +252,7 @@ class LanLobbyPanelView(PanelMenuView):
         runtime: NetRuntime | LanRuntime | None = self.state.net_runtime or self.state.lan_runtime
         lobby_state: LobbyState | RoomState | None = runtime.lobby_state() if runtime is not None else None
         lobby_room_code = ""
-        if isinstance(lobby_state, _RoomCodeState):
+        if isinstance(lobby_state, RoomState):
             lobby_room_code = str(lobby_state.room_code).upper().strip()
         if lobby_room_code:
             room_code = lobby_room_code

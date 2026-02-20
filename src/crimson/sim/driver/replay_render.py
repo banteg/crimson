@@ -8,7 +8,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal, Protocol, runtime_checkable
+from typing import Literal
 
 from ...replay import Replay
 from .replay_runner import run_replay
@@ -26,12 +26,6 @@ X264Preset = Literal[
     "veryslow",
 ]
 ReplayRenderPhase = Literal["video", "audio"]
-
-
-@runtime_checkable
-class _HasFxQueues(Protocol):
-    fx_queue: object
-    fx_queue_rotated: object
 
 
 class ReplayRenderError(ValueError):
@@ -420,7 +414,7 @@ def _capture_replay_audio_track(
             # Gameplay clears decal queues during draw(); audio-only rendering has no draw pass,
             # so clear here to avoid queue saturation changing deterministic outcomes.
             world = mode._world
-            if isinstance(world, _HasFxQueues):
+            if world is not None:
                 world.fx_queue.clear()
                 world.fx_queue_rotated.clear()
             capture.flush_pending()

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import webbrowser
-from typing import Protocol, cast, runtime_checkable
+from typing import cast
 
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -78,29 +78,7 @@ void main() {
 """
 
 
-@runtime_checkable
-class _HasConsoleElapsedMs(Protocol):
-    def console_elapsed_ms(self) -> float: ...
-
-
-@runtime_checkable
-class _HasRegenerateTerrainForConsole(Protocol):
-    def regenerate_terrain_for_console(self) -> None: ...
-
-
-@runtime_checkable
-class _HasStealGroundForMenu(Protocol):
-    def steal_ground_for_menu(self) -> GroundRenderer | None: ...
-
-
-@runtime_checkable
-class _HasMenuGroundCamera(Protocol):
-    def menu_ground_camera(self) -> Vec2: ...
-
-
-@runtime_checkable
-class _HasReopenFromChild(Protocol):
-    def reopen_from_child(self) -> None: ...
+_GameplayView = QuestGameView | RushGameView | SurvivalGameView | TutorialGameView | TypoShooterGameView
 
 
 def _get_gamma_ramp_shader() -> tuple[rl.Shader | None, int]:
@@ -192,7 +170,7 @@ class GameLoopView:
         self._menu_active = False
         self._quit_after_demo = False
         self._screenshot_requested = False
-        self._gameplay_views = frozenset(
+        self._gameplay_views: frozenset[FrontView] = frozenset(
             {
                 self._front_views["start_survival"],
                 self._front_views["start_rush"],
@@ -517,7 +495,7 @@ class GameLoopView:
                     if self._front_active in self._gameplay_views:
                         self.state.pause_background = None
                     else:
-                        if self._front_active is not None and isinstance(self._front_active, _HasReopenFromChild):
+                        if isinstance(self._front_active, StatisticsMenuView):
                             self._front_active.reopen_from_child()
                     self._active = self._front_active
                     return
@@ -685,8 +663,9 @@ class GameLoopView:
         if self._front_stack:
             views.extend(reversed(self._front_stack))
         for view in views:
-            if isinstance(view, _HasConsoleElapsedMs):
-                self.state.survival_elapsed_ms = max(0.0, float(view.console_elapsed_ms()))
+            gameplay = self._as_gameplay_view(view)
+            if gameplay is not None:
+                self.state.survival_elapsed_ms = max(0.0, float(gameplay.console_elapsed_ms()))
                 return
 
     def _handle_console_requests(self) -> None:
@@ -702,8 +681,9 @@ class GameLoopView:
         if self._front_stack:
             views.extend(reversed(self._front_stack))
         for view in views:
-            if isinstance(view, _HasRegenerateTerrainForConsole):
-                view.regenerate_terrain_for_console()
+            gameplay = self._as_gameplay_view(view)
+            if gameplay is not None:
+                gameplay.regenerate_terrain_for_console()
                 return
 
     def _update_demo_trial_overlay(self, dt: float) -> bool:
@@ -786,24 +766,25 @@ class GameLoopView:
         # but entering a fresh gameplay run must regenerate terrain instead of
         # reusing the captured menu render target.
 
-    @staticmethod
-    def _steal_ground_from_view(view: FrontView | None) -> GroundRenderer | None:
-        if view is None:
+    def _as_gameplay_view(self, view: FrontView | None) -> _GameplayView | None:
+        if view is None or view not in self._gameplay_views:
             return None
-        if not isinstance(view, _HasStealGroundForMenu):
+        return cast(_GameplayView, view)
+
+    def _steal_ground_from_view(self, view: FrontView | None) -> GroundRenderer | None:
+        gameplay = self._as_gameplay_view(view)
+        if gameplay is None:
             return None
-        ground = view.steal_ground_for_menu()
+        ground = gameplay.steal_ground_for_menu()
         if isinstance(ground, GroundRenderer):
             return ground
         return None
 
-    @staticmethod
-    def _menu_ground_camera_from_view(view: FrontView | None) -> Vec2 | None:
-        if view is None:
+    def _menu_ground_camera_from_view(self, view: FrontView | None) -> Vec2 | None:
+        gameplay = self._as_gameplay_view(view)
+        if gameplay is None:
             return None
-        if not isinstance(view, _HasMenuGroundCamera):
-            return None
-        camera = view.menu_ground_camera()
+        camera = gameplay.menu_ground_camera()
         if isinstance(camera, Vec2):
             return camera
         return None

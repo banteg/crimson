@@ -72,7 +72,11 @@ def test_replay_playback_progress_ratio_and_time_formatting(replay_playback_view
 def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
     view, _console = replay_playback_view
     _set_private(view, "_replay", _replay_with_ticks(5))
-    world = SimpleNamespace(audio_router=SimpleNamespace(sfx_enabled=True))
+    world = SimpleNamespace(
+        audio_router=SimpleNamespace(sfx_enabled=True),
+        fx_queue=[],
+        fx_queue_rotated=[],
+    )
     _set_private(view, "_world", world)
     view._tick_rate = 60
     view._tick_index = 0
@@ -101,7 +105,11 @@ def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
 def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -> None:
     view, _console = replay_playback_view
     _set_private(view, "_replay", _replay_with_ticks(3))
-    world = SimpleNamespace(audio_router=SimpleNamespace(sfx_enabled=True))
+    world = SimpleNamespace(
+        audio_router=SimpleNamespace(sfx_enabled=True),
+        fx_queue=[],
+        fx_queue_rotated=[],
+    )
     _set_private(view, "_world", world)
     view._tick_rate = 60
     view._tick_index = 0

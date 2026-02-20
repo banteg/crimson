@@ -45,6 +45,7 @@ def test_game_loop_consumes_terrain_regenerate_request(mocker, make_game_state) 
     view = GameLoopView(state)
     fake = _FakeView()
     view._front_active = fake
+    view._gameplay_views = frozenset({fake})
     state.terrain_regenerate_requested = True
 
     view._handle_console_requests()
