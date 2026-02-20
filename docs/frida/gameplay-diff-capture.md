@@ -75,6 +75,10 @@ Notes:
   `capture_format_version` are accepted.
 - Loader accepts only stream rows (`capture_meta` + `tick`), not legacy
   monolithic JSON captures.
+- `capture_meta.config` now carries routing + provenance markers
+  (`out_path`, `split_quest_files`, `quest_out_dir`, `quest_out_prefix`,
+  `capture_profile`, `config_env_overrides`) so investigation notes can record
+  which environment overrides were active for a run.
 - Current checkpoints include direct kill count, perk snapshot
   (`pending_count`/`choices_dirty`/`choices`/`player_nonzero_counts`), and
   per-player bonus timers in checkpoint player rows.

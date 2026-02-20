@@ -57,6 +57,8 @@ p = Path("artifacts/frida/share/gameplay_diff_capture.json")
 print("sha256", hashlib.sha256(p.read_bytes()).hexdigest())
 cap = load_capture(p)
 print("capture_format_version", int(cap.capture_format_version))
+print("capture_profile", str(cap.config.capture_profile))
+print("config_env_overrides", list(cap.config.config_env_overrides))
 ticks = cap.ticks
 print("ticks", len(ticks))
 if ticks:

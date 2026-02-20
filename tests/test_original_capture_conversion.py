@@ -552,6 +552,12 @@ def test_load_capture_stream_accepts_forward_compatible_config_fields(tmp_path: 
     path = tmp_path / "capture.json"
     meta = {k: v for k, v in obj.items() if k != "ticks"}
     meta["config"] = {
+        "out_path": "capture.json",
+        "split_quest_files": True,
+        "quest_out_dir": "C:\\share\\frida",
+        "quest_out_prefix": "gameplay_diff_capture.quest_",
+        "capture_profile": "exhaustive_default",
+        "config_env_overrides": ["CRIMSON_FRIDA_STATES", "CRIMSON_FRIDA_OUT_PATH"],
         "log_mode": "truncate",
         "console_all_events": True,
         "console_events": ["start", "ready", "capture_shutdown"],
@@ -563,6 +569,12 @@ def test_load_capture_stream_accepts_forward_compatible_config_fields(tmp_path: 
     capture = load_capture(path)
 
     assert capture.script == "gameplay_diff_capture"
+    assert capture.config.out_path == "capture.json"
+    assert capture.config.split_quest_files is True
+    assert capture.config.quest_out_dir == "C:\\share\\frida"
+    assert capture.config.quest_out_prefix == "gameplay_diff_capture.quest_"
+    assert capture.config.capture_profile == "exhaustive_default"
+    assert capture.config.config_env_overrides == ["CRIMSON_FRIDA_STATES", "CRIMSON_FRIDA_OUT_PATH"]
     assert capture.config.console_all_events is True
     assert capture.config.console_events == ["start", "ready", "capture_shutdown"]
     assert capture.config.include_caller is False

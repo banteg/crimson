@@ -8,6 +8,12 @@ CAPTURE_FORMAT_VERSION = 4
 
 
 class CaptureConfig(msgspec.Struct):
+    out_path: str = ""
+    split_quest_files: bool = True
+    quest_out_dir: str = ""
+    quest_out_prefix: str = ""
+    capture_profile: str = ""
+    config_env_overrides: list[str] = msgspec.field(default_factory=list)
     log_mode: str = "truncate"
     # Keep config forward-compatible with evolving capture-script env knobs.
     console_all_events: bool = False

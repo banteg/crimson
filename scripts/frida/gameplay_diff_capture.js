@@ -35,6 +35,11 @@ function getEnv(key) {
   }
 }
 
+function hasNonEmptyEnv(key) {
+  const raw = getEnv(key);
+  return raw != null && String(raw).trim().length > 0;
+}
+
 function parseIntEnv(key, fallback) {
   const raw = getEnv(key);
   if (!raw) return fallback;
@@ -87,6 +92,62 @@ function parseStringSet(raw, fallbackCsv) {
     out.add(String(parts[i]).toLowerCase());
   }
   return out;
+}
+
+const CONFIG_ENV_KEYS = [
+  "CRIMSON_FRIDA_DIR",
+  "CRIMSON_FRIDA_OUT_PATH",
+  "CRIMSON_FRIDA_QUEST_OUT_DIR",
+  "CRIMSON_FRIDA_QUEST_OUT_PREFIX",
+  "CRIMSON_FRIDA_APPEND",
+  "CRIMSON_FRIDA_CONSOLE_ALL_EVENTS",
+  "CRIMSON_FRIDA_CONSOLE_EVENTS",
+  "CRIMSON_FRIDA_INCLUDE_CALLER",
+  "CRIMSON_FRIDA_INCLUDE_BT",
+  "CRIMSON_FRIDA_INCLUDE_TICK_SNAPSHOTS",
+  "CRIMSON_FRIDA_INCLUDE_RAW_EVENTS",
+  "CRIMSON_FRIDA_ALL_STATES",
+  "CRIMSON_FRIDA_STATES",
+  "CRIMSON_FRIDA_PLAYER_COUNT",
+  "CRIMSON_FRIDA_FOCUS_TICK",
+  "CRIMSON_FRIDA_FOCUS_RADIUS",
+  "CRIMSON_FRIDA_TICK_DETAILS_EVERY",
+  "CRIMSON_FRIDA_HEARTBEAT_MS",
+  "CRIMSON_FRIDA_FLUSH_CAPTURE_WRITES",
+  "CRIMSON_FRIDA_MAX_HEAD",
+  "CRIMSON_FRIDA_MAX_EVENTS_PER_TICK",
+  "CRIMSON_FRIDA_RNG_HEAD",
+  "CRIMSON_FRIDA_RNG_CALLERS",
+  "CRIMSON_FRIDA_RNG_ROLL_LOG",
+  "CRIMSON_FRIDA_MAX_RNG_ROLL_LOG_EVENTS",
+  "CRIMSON_FRIDA_RNG_OUTSIDE_TICK_HEAD",
+  "CRIMSON_FRIDA_RNG_STATE_MIRROR",
+  "CRIMSON_FRIDA_CREATURE_DELTA_IDS",
+  "CRIMSON_FRIDA_CREATURE_SAMPLE_LIMIT",
+  "CRIMSON_FRIDA_PROJECTILE_SAMPLE_LIMIT",
+  "CRIMSON_FRIDA_SECONDARY_PROJECTILE_SAMPLE_LIMIT",
+  "CRIMSON_FRIDA_BONUS_SAMPLE_LIMIT",
+  "CRIMSON_FRIDA_INPUT_HOOKS",
+  "CRIMSON_FRIDA_RNG_HOOKS",
+  "CRIMSON_FRIDA_SFX",
+  "CRIMSON_FRIDA_DAMAGE",
+  "CRIMSON_FRIDA_EFFECTS",
+  "CRIMSON_FRIDA_DAMAGE_PROJECTILE_ONLY",
+  "CRIMSON_FRIDA_SPAWNS",
+  "CRIMSON_FRIDA_CREATURE_SPAWN_HOOK",
+  "CRIMSON_FRIDA_CREATURE_DEATH_HOOK",
+  "CRIMSON_FRIDA_BONUS_SPAWN_HOOK",
+  "CRIMSON_FRIDA_CREATURE_LIFECYCLE",
+];
+
+function collectConfigEnvOverrides() {
+  const overrides = [];
+  for (let i = 0; i < CONFIG_ENV_KEYS.length; i++) {
+    const key = CONFIG_ENV_KEYS[i];
+    if (hasNonEmptyEnv(key)) overrides.push(key);
+  }
+  overrides.sort();
+  return overrides;
 }
 
 function joinPath(base, leaf) {
@@ -4580,6 +4641,8 @@ function main() {
     split_quest_files: CONFIG.splitQuestFiles,
     quest_out_dir: CONFIG.questOutDir,
     quest_out_prefix: CONFIG.questOutPrefix,
+    capture_profile: "exhaustive_default",
+    config_env_overrides: collectConfigEnvOverrides(),
     log_mode: CONFIG.logMode,
     console_all_events: CONFIG.consoleAllEvents,
     console_events: Array.from(CONFIG.consoleEvents.values()),
