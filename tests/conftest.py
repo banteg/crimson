@@ -5,6 +5,7 @@ import random
 import sys
 import time
 from collections.abc import Callable, Mapping
+from dataclasses import replace
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -166,6 +167,27 @@ def make_world_state() -> Callable[..., "WorldState"]:
 @pytest.fixture
 def base_world(make_world_state: Callable[..., "WorldState"]) -> "WorldState":
     return make_world_state()
+
+
+@pytest.fixture
+def default_spawn_env():
+    from crimson.creatures.spawn import SpawnEnv
+
+    return SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,
+        hardcore=False,
+        difficulty_level=0,
+    )
+
+
+@pytest.fixture
+def make_spawn_env(default_spawn_env):
+    def _make(**overrides: object):
+        return replace(default_spawn_env, **overrides)
+
+    return _make
 
 
 @pytest.fixture

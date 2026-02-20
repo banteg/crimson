@@ -97,13 +97,7 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, patch_
     ui.rank = 0
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
 
-    captured_x: list[float] = []
-
-    def _button_update(_button, *, pos, width, dt_ms, mouse, click):
-        captured_x.append(float(pos.x))
-        return False
-
-    mocker.patch("crimson.ui.game_over.button_update", side_effect=_button_update)
+    button_update = mocker.patch.object(game_over_module, "button_update", return_value=False)
     patch_raylib_module("crimson.ui.game_over")
 
     ui.update(
@@ -114,8 +108,9 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, patch_
     )
 
     # At 640x480: panel_left = -24, banner_x = panel_left + 214, first button x = banner_x + 52.
-    assert captured_x
-    assert captured_x[0] == 242.0
+    assert button_update.call_count > 0
+    first_pos = button_update.call_args_list[0].kwargs["pos"]
+    assert float(first_pos.x) == 242.0
 
 
 def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, patch_raylib_module, tmp_path: Path, mocker) -> None:
@@ -140,10 +135,10 @@ def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, patch_ray
             return int(key_events.pop(0))
         return 0
 
-    mocker.patch("crimson.ui.game_over.read_highscore_table", side_effect=lambda *_args, **_kwargs: [])
-    mocker.patch("crimson.ui.game_over.rank_index", side_effect=lambda _records, _candidate: 0)
-    mocker.patch("crimson.ui.game_over.scores_path_for_config", side_effect=lambda *_args, **_kwargs: tmp_path / "scores.hi")
-    mocker.patch("crimson.ui.game_over.button_update", side_effect=lambda *args, **kwargs: False)
+    mocker.patch.object(game_over_module, "read_highscore_table", side_effect=lambda *_args, **_kwargs: [])
+    mocker.patch.object(game_over_module, "rank_index", side_effect=lambda _records, _candidate: 0)
+    mocker.patch.object(game_over_module, "scores_path_for_config", side_effect=lambda *_args, **_kwargs: tmp_path / "scores.hi")
+    mocker.patch.object(game_over_module, "button_update", side_effect=lambda *args, **kwargs: False)
     patch_raylib_module("crimson.ui.game_over")
     mocker.patch.object(game_over_module.rl, "get_char_pressed", side_effect=_get_char_pressed)
     mocker.patch.object(game_over_module.rl, "get_key_pressed", side_effect=_get_key_pressed)
@@ -171,16 +166,11 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
     _set_assets(ui, _game_over_assets(menu_panel=_texture(width=512, height=256)))
 
-    captured_panel: list[tuple[rl.Rectangle, bool]] = []
-
-    def _draw_classic_menu_panel(_texture, *, dst, tint, shadow):
-        captured_panel.append((dst, bool(shadow)))
-
-    mocker.patch("crimson.ui.game_over.draw_classic_menu_panel", side_effect=_draw_classic_menu_panel)
-    mocker.patch("crimson.ui.game_over.draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch("crimson.ui.game_over.button_draw", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch("crimson.ui.game_over.button_width", side_effect=lambda *_args, **_kwargs: 82.0)
-    mocker.patch("crimson.ui.game_over.GameOverUi._draw_score_card", return_value=None)
+    draw_classic_menu_panel = mocker.patch.object(game_over_module, "draw_classic_menu_panel")
+    mocker.patch.object(game_over_module, "draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(game_over_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(game_over_module, "button_width", side_effect=lambda *_args, **_kwargs: 82.0)
+    mocker.patch.object(GameOverUi, "_draw_score_card", return_value=None)
     patch_raylib_module("crimson.ui.game_over")
 
     ui.draw(
@@ -190,8 +180,9 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module
         mouse=rl.Vector2(0.0, 0.0),
     )
 
-    assert len(captured_panel) == 1
-    panel_rect, shadow_enabled = captured_panel[0]
+    draw_classic_menu_panel.assert_called_once()
+    panel_rect = draw_classic_menu_panel.call_args.kwargs["dst"]
+    shadow_enabled = bool(draw_classic_menu_panel.call_args.kwargs["shadow"])
     assert panel_rect.x == -24.0
     assert panel_rect.y == 29.0
     assert panel_rect.width == 510.0

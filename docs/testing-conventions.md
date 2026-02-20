@@ -11,7 +11,8 @@ This project prioritizes deterministic parity with the original executable. The 
 ## Mocking and Patching
 
 - Use `pytest-mock` (`mocker`) as the default mechanism for spies and patches.
-- Prefer `mocker.patch(...)` / `mocker.patch.object(...)` over ad-hoc closures plus mutable lists.
+- Prefer `mocker.patch.object(...)` over string-target `mocker.patch(...)`.
+- Prefer mock assertions (`assert_called_once_with`, `mock_calls`) over ad-hoc closures plus mutable lists.
 - Avoid string-target `monkeypatch.setattr("...rl...")` for Raylib calls; use `mocker`-based patches instead.
 - Reserve `monkeypatch` for environment variables, filesystem/path mutation, or object-target overrides where `mocker` is not a fit.
 
@@ -43,4 +44,5 @@ This project prioritizes deterministic parity with the original executable. The 
 Ast-grep rules enforce key constraints:
 
 - no direct `pyray` imports in `src/`
+- no string-target `mocker.patch("...")` in tests
 - no string-target Raylib `monkeypatch.setattr("...rl...")` in tests

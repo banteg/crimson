@@ -9,6 +9,7 @@ from crimson.game_world import GameWorld
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
+from crimson.ui.game_over import GameOverUi
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
@@ -44,7 +45,7 @@ def _install_minimal_sim_session(mode: SurvivalMode, monkeypatch) -> None:
 
 def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_menu_transition(monkeypatch, mocker) -> None:
     mode = _make_survival_mode()
-    mocker.patch("crimson.ui.game_over.GameOverUi.open", return_value=None)
+    mocker.patch.object(GameOverUi, "open", return_value=None)
     _install_minimal_sim_session(mode, monkeypatch)
 
     assert mode.player.health > 0.0

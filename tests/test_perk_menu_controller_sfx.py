@@ -33,10 +33,7 @@ def test_open_perk_menu_plays_panel_click(mocker) -> None:
     menu = PerkMenuController()
     play_sfx = mocker.Mock()
 
-    mocker.patch(
-        "crimson.modes.components.perk_menu_controller.perk_selection_current_choices",
-        side_effect=lambda *args, **kwargs: [1],
-    )
+    mocker.patch.object(perk_menu_controller_module, "perk_selection_current_choices", side_effect=lambda *args, **kwargs: [1])
 
     ctx = PerkMenuContext(
         state=GameplayState(),
@@ -64,16 +61,10 @@ def test_perk_menu_pick_plays_button_click(mocker) -> None:
     menu.open = True
 
     play_sfx = mocker.Mock()
-    mocker.patch(
-        "crimson.modes.components.perk_menu_controller.perk_selection_current_choices",
-        side_effect=lambda *args, **kwargs: [1],
-    )
-    mocker.patch(
-        "crimson.modes.components.perk_menu_controller.perk_selection_pick",
-        side_effect=lambda *args, **kwargs: object(),
-    )
+    mocker.patch.object(perk_menu_controller_module, "perk_selection_current_choices", side_effect=lambda *args, **kwargs: [1])
+    mocker.patch.object(perk_menu_controller_module, "perk_selection_pick", side_effect=lambda *args, **kwargs: object())
 
-    mocker.patch("crimson.modes.components.perk_menu_controller.button_update", side_effect=lambda *args, **kwargs: False)
+    mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: False)
     mocker.patch.object(perk_menu_controller_module.rl, "get_screen_width", side_effect=lambda: 640)
     mocker.patch.object(perk_menu_controller_module.rl, "get_screen_height", side_effect=lambda: 480)
     mocker.patch.object(perk_menu_controller_module.rl, "is_mouse_button_pressed", side_effect=lambda _button: False)
@@ -111,16 +102,10 @@ def test_perk_menu_pick_invokes_on_pick(mocker) -> None:
     menu = PerkMenuController(on_pick=on_pick)
     menu.open = True
 
-    mocker.patch(
-        "crimson.modes.components.perk_menu_controller.perk_selection_current_choices",
-        side_effect=lambda *args, **kwargs: [1],
-    )
-    mocker.patch(
-        "crimson.modes.components.perk_menu_controller.perk_selection_pick",
-        side_effect=lambda *args, **kwargs: object(),
-    )
+    mocker.patch.object(perk_menu_controller_module, "perk_selection_current_choices", side_effect=lambda *args, **kwargs: [1])
+    mocker.patch.object(perk_menu_controller_module, "perk_selection_pick", side_effect=lambda *args, **kwargs: object())
 
-    mocker.patch("crimson.modes.components.perk_menu_controller.button_update", side_effect=lambda *args, **kwargs: False)
+    mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: False)
     mocker.patch.object(perk_menu_controller_module.rl, "get_screen_width", side_effect=lambda: 640)
     mocker.patch.object(perk_menu_controller_module.rl, "get_screen_height", side_effect=lambda: 480)
     mocker.patch.object(perk_menu_controller_module.rl, "is_mouse_button_pressed", side_effect=lambda _button: False)
@@ -157,12 +142,9 @@ def test_perk_menu_cancel_plays_button_click(mocker) -> None:
     menu.open = True
 
     play_sfx = mocker.Mock()
-    mocker.patch(
-        "crimson.modes.components.perk_menu_controller.perk_selection_current_choices",
-        side_effect=lambda *args, **kwargs: [1],
-    )
+    mocker.patch.object(perk_menu_controller_module, "perk_selection_current_choices", side_effect=lambda *args, **kwargs: [1])
 
-    mocker.patch("crimson.modes.components.perk_menu_controller.button_update", side_effect=lambda *args, **kwargs: True)
+    mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: True)
     mocker.patch.object(perk_menu_controller_module.rl, "get_screen_width", side_effect=lambda: 640)
     mocker.patch.object(perk_menu_controller_module.rl, "get_screen_height", side_effect=lambda: 480)
     mocker.patch.object(perk_menu_controller_module.rl, "is_mouse_button_pressed", side_effect=lambda _button: False)
@@ -193,8 +175,9 @@ def test_perk_menu_cancel_plays_button_click(mocker) -> None:
 
 def test_wrap_small_text_native_inserts_newline_at_previous_space(mocker) -> None:
     menu = PerkMenuController()
-    mocker.patch(
-        "crimson.modes.components.perk_menu_controller.measure_small_text_width",
+    mocker.patch.object(
+        perk_menu_controller_module,
+        "measure_small_text_width",
         side_effect=lambda _font, text, _scale: float(len(text)),
     )
     wrapped = menu._wrap_small_text_native(object(), "alpha beta", 6.0, scale=1.0)  # type: ignore[arg-type]
@@ -209,9 +192,10 @@ def test_prewrapped_perk_desc_uses_cache(mocker) -> None:
         calls["count"] += 1
         return float(len(text))
 
-    mocker.patch("crimson.modes.components.perk_menu_controller.measure_small_text_width", side_effect=_fake_measure)
-    mocker.patch(
-        "crimson.modes.components.perk_menu_controller.perk_display_description",
+    mocker.patch.object(perk_menu_controller_module, "measure_small_text_width", side_effect=_fake_measure)
+    mocker.patch.object(
+        perk_menu_controller_module,
+        "perk_display_description",
         side_effect=lambda _perk_id, *, fx_toggle=0, preserve_bugs=False: "alpha beta gamma",
     )
 

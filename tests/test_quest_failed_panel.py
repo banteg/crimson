@@ -15,12 +15,8 @@ from grim.raylib_api import rl
 
 
 class _PauseBackgroundStub:
-    def __init__(self, captured_alpha: list[float] | None = None) -> None:
-        self._captured_alpha = captured_alpha
-
     def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
-        if self._captured_alpha is not None:
-            self._captured_alpha.append(float(entity_alpha))
+        _ = float(entity_alpha)
 
 
 def _dummy_audio_state() -> AudioState:
@@ -106,9 +102,9 @@ def test_quest_failed_enter_retries_current_quest(monkeypatch, quest_failed_stat
         def get_or_load(self, *_args, **_kwargs):
             return SimpleNamespace(texture=None)
 
-    mocker.patch("crimson.game.quest_views.quest_failed.update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch("crimson.game.quest_views.quest_failed._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
-    mocker.patch("crimson.game.quest_views.quest_failed.play_sfx", side_effect=play_sfx)
+    mocker.patch.object(quest_failed_module, "update_audio", side_effect=lambda _audio, _dt: None)
+    mocker.patch.object(quest_failed_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyCache())
+    mocker.patch.object(quest_failed_module, "play_sfx", side_effect=play_sfx)
     mocker.patch.object(quest_failed_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER))
 
     view = QuestFailedView(state)
@@ -139,9 +135,9 @@ def test_quest_failed_q_opens_quest_list(monkeypatch, quest_failed_state, mocker
         def get_or_load(self, *_args, **_kwargs):
             return SimpleNamespace(texture=None)
 
-    mocker.patch("crimson.game.quest_views.quest_failed.update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch("crimson.game.quest_views.quest_failed._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
-    mocker.patch("crimson.game.quest_views.quest_failed.play_sfx", side_effect=play_sfx)
+    mocker.patch.object(quest_failed_module, "update_audio", side_effect=lambda _audio, _dt: None)
+    mocker.patch.object(quest_failed_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyCache())
+    mocker.patch.object(quest_failed_module, "play_sfx", side_effect=play_sfx)
     mocker.patch.object(quest_failed_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_Q))
 
     view = QuestFailedView(state)
@@ -171,9 +167,9 @@ def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, quest_fai
         def get_or_load(self, *_args, **_kwargs):
             return SimpleNamespace(texture=None)
 
-    mocker.patch("crimson.game.quest_views.quest_failed.update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch("crimson.game.quest_views.quest_failed._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
-    mocker.patch("crimson.game.quest_views.quest_failed.play_sfx", side_effect=play_sfx)
+    mocker.patch.object(quest_failed_module, "update_audio", side_effect=lambda _audio, _dt: None)
+    mocker.patch.object(quest_failed_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyCache())
+    mocker.patch.object(quest_failed_module, "play_sfx", side_effect=play_sfx)
     mocker.patch.object(quest_failed_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE))
 
     view = QuestFailedView(state)
@@ -201,7 +197,7 @@ def test_quest_failed_score_block_matches_native_fields(monkeypatch, quest_faile
         def get_or_load(self, *_args, **_kwargs):
             return SimpleNamespace(texture=None)
 
-    mocker.patch("crimson.game.quest_views.quest_failed._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
+    mocker.patch.object(quest_failed_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyCache())
     view.open()
 
     drawn_text: list[str] = []
@@ -217,7 +213,7 @@ def test_quest_failed_score_block_matches_native_fields(monkeypatch, quest_faile
     def _draw_rect(x, y, w, h, color):
         drawn_rects.append((int(x), int(y), int(w), int(h)))
 
-    mocker.patch("crimson.game.quest_views.quest_failed.draw_small_text", side_effect=_draw_small_text)
+    mocker.patch.object(quest_failed_module, "draw_small_text", side_effect=_draw_small_text)
     mocker.patch.object(quest_failed_module.rl, "draw_line", side_effect=_draw_line)
     mocker.patch.object(quest_failed_module.rl, "draw_rectangle", side_effect=_draw_rect)
     mocker.patch.object(quest_failed_module.rl, "measure_text", side_effect=lambda text, _size: len(str(text)) * 8)
@@ -234,32 +230,31 @@ def test_quest_failed_score_block_matches_native_fields(monkeypatch, quest_faile
     assert any(w == 192 and h == 1 for (_x, _y, w, h) in drawn_rects)  # horizontal separator
 
 
-def test_quest_failed_draw_fades_pause_background_during_close(monkeypatch, quest_failed_state, mocker) -> None:
+def test_quest_failed_draw_fades_pause_background_during_close(quest_failed_state, mocker) -> None:
     state = quest_failed_state
     state.quest_outcome = _failed_outcome()
-    captured_alpha: list[float] = []
-    state.pause_background = _PauseBackgroundStub(captured_alpha)
+    pause_background = mocker.Mock()
+    state.pause_background = pause_background
 
     class _DummyCache:
         def get_or_load(self, *_args, **_kwargs):
             return SimpleNamespace(texture=None)
 
     view = QuestFailedView(state)
-    mocker.patch("crimson.game.quest_views.quest_failed._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
+    mocker.patch.object(quest_failed_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyCache())
     mocker.patch.object(quest_failed_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module.rl, "get_screen_width", side_effect=lambda: 640)
-    mocker.patch("crimson.game.quest_views.quest_failed._draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch("crimson.game.quest_views.quest_failed._draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch("crimson.game.quest_views.quest_failed.draw_small_text", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch("crimson.game.quest_views.quest_failed.button_draw", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch("crimson.game.quest_views.quest_failed.button_width", side_effect=lambda *_args, **_kwargs: 82.0)
-    monkeypatch.setattr(view, "_ensure_small_font", lambda: SimpleNamespace())
-    monkeypatch.setattr(view, "_draw_score_preview", lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_failed_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_failed_module, "_draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_failed_module, "draw_small_text", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_failed_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_failed_module, "button_width", side_effect=lambda *_args, **_kwargs: 82.0)
+    mocker.patch.object(view, "_ensure_small_font", side_effect=lambda: SimpleNamespace())
+    mocker.patch.object(view, "_draw_score_preview", side_effect=lambda *_args, **_kwargs: None)
 
     view.open()
     view._closing = True
     view._intro_ms = QUEST_FAILED_PANEL_SLIDE_DURATION_MS * 0.5
     view.draw()
 
-    assert captured_alpha
-    assert captured_alpha[-1] == 0.5
+    pause_background.draw_pause_background.assert_called_once_with(entity_alpha=0.5)

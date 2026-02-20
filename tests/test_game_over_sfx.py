@@ -77,7 +77,7 @@ def test_game_over_panel_open_plays_panel_click(monkeypatch, tmp_path: Path, moc
 
     play_sfx = mocker.Mock()
 
-    mocker.patch("crimson.ui.game_over.button_update", side_effect=lambda *args, **kwargs: False)
+    mocker.patch.object(game_over_module, "button_update", side_effect=lambda *args, **kwargs: False)
     mocker.patch.object(game_over_module.rl, "get_screen_width", side_effect=lambda: 640)
     mocker.patch.object(game_over_module.rl, "get_screen_height", side_effect=lambda: 480)
     mocker.patch.object(game_over_module.rl, "get_mouse_position", side_effect=lambda: rl.Vector2(0.0, 0.0))
@@ -125,9 +125,9 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
         def get_or_load(self, *_args, **_kwargs):
             return SimpleNamespace(texture=None)
 
-    mocker.patch("crimson.game.high_scores_view.view.update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch("crimson.game.high_scores_view.view.play_sfx", side_effect=play_sfx)
-    mocker.patch("crimson.game.high_scores_view.view._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
+    mocker.patch.object(high_scores_view_module, "update_audio", side_effect=lambda _audio, _dt: None)
+    mocker.patch.object(high_scores_view_module, "play_sfx", side_effect=play_sfx)
+    mocker.patch.object(high_scores_view_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyCache())
     mocker.patch.object(high_scores_view_module, "load_menu_assets", side_effect=lambda _state: _menu_assets_stub())
 
     view = HighScoresView(state)
@@ -184,15 +184,15 @@ def test_high_scores_view_draw_fades_pause_background_during_close(monkeypatch, 
             return SimpleNamespace(texture=None)
 
     dummy_tex = _texture_stub()
-    mocker.patch("crimson.game.high_scores_view.view.update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch("crimson.game.high_scores_view.view._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
+    mocker.patch.object(high_scores_view_module, "update_audio", side_effect=lambda _audio, _dt: None)
+    mocker.patch.object(high_scores_view_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyCache())
     mocker.patch.object(high_scores_view_module, "load_menu_assets", side_effect=lambda _state: _menu_assets_stub(tex=dummy_tex))
     mocker.patch.object(high_scores_view_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch("crimson.game.high_scores_view.view._draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch("crimson.game.high_scores_view.view.draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch("crimson.game.high_scores_view.view.draw_main_panel", side_effect=lambda *_args, **_kwargs: 0)
-    mocker.patch("crimson.game.high_scores_view.view.draw_right_panel", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch("crimson.game.high_scores_view.view._draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(high_scores_view_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(high_scores_view_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(high_scores_view_module, "draw_main_panel", side_effect=lambda *_args, **_kwargs: 0)
+    mocker.patch.object(high_scores_view_module, "draw_right_panel", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(high_scores_view_module, "_draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
     monkeypatch.setattr(HighScoresView, "_ensure_small_font", lambda _self: SimpleNamespace(texture=dummy_tex))
     monkeypatch.setattr(HighScoresView, "_draw_sign", lambda _self, _assets: None)
 

@@ -61,74 +61,35 @@ def _crt_rand_outputs(seed: int, calls: int) -> list[int]:
     return out
 
 
+_DEFAULT_CAPTURE_FILE = capture_file_to_dict(
+    build_capture_file(
+        ticks=[build_capture_tick(tick_index=0, elapsed_ms=0)],
+        session_id="defaults",
+    ),
+)
+_DEFAULT_CAPTURE_TICK = cast(dict[str, object], cast(list[object], _DEFAULT_CAPTURE_FILE["ticks"])[0])
+
+
+def _clone_dict(value: object) -> dict[str, object]:
+    return cast(dict[str, object], msgspec.json.decode(msgspec.json.encode(value)))
+
+
 def _base_input_approx(**kwargs: object) -> dict[str, object]:
-    d = {
-        "player_index": 0,
-        "move_dx": 0.0,
-        "move_dy": 0.0,
-        "aim_x": 512.0,
-        "aim_y": 512.0,
-        "aim_heading": None,
-        "move_mode": None,
-        "aim_scheme": None,
-        "fired_events": 0,
-        "moving": None,
-        "reload_active": False,
-        "weapon_id": None,
-        "move_forward_pressed": None,
-        "move_backward_pressed": None,
-        "turn_left_pressed": None,
-        "turn_right_pressed": None,
-        "fire_down": None,
-        "fire_pressed": None,
-        "reload_pressed": None,
-    }
+    d = _clone_dict(cast(list[object], _DEFAULT_CAPTURE_TICK["input_approx"])[0])
+    d["aim_x"] = 512.0
+    d["aim_y"] = 512.0
     d.update(kwargs)
     return d
 
 
 def _base_input_player_keys(**kwargs: object) -> dict[str, object]:
-    d = {
-        "player_index": 0,
-        "move_forward_pressed": None,
-        "move_backward_pressed": None,
-        "turn_left_pressed": None,
-        "turn_right_pressed": None,
-        "fire_down": None,
-        "fire_pressed": None,
-        "reload_pressed": None,
-    }
+    d = _clone_dict(cast(list[object], _DEFAULT_CAPTURE_TICK["input_player_keys"])[0])
     d.update(kwargs)
     return d
 
 
 def _base_event_counts(**kwargs: object) -> dict[str, object]:
-    d = {
-        "state_transition": 0,
-        "player_fire": 0,
-        "weapon_assign": 0,
-        "bonus_apply": 0,
-        "bonus_spawn": 0,
-        "projectile_spawn": 0,
-        "projectile_find_query": 0,
-        "projectile_find_hit": 0,
-        "secondary_projectile_spawn": 0,
-        "player_damage": 0,
-        "creature_damage": 0,
-        "creature_spawn": 0,
-        "creature_spawn_low": 0,
-        "creature_death": 0,
-        "creature_lifecycle": 0,
-        "creature_update_micro": 0,
-        "perk_apply": 0,
-        "sfx": 0,
-        "perk_delta": 0,
-        "quest_timeline_delta": 0,
-        "mode_tick": 0,
-        "input_primary_edge": 0,
-        "input_primary_down": 0,
-        "input_any_key": 0,
-    }
+    d = _clone_dict(_DEFAULT_CAPTURE_TICK["event_counts"])
     d.update(kwargs)
     return d
 
@@ -158,87 +119,20 @@ def _base_rng_head_entry(**kwargs: object) -> dict[str, object]:
 
 
 def _base_rng_summary(**kwargs: object) -> dict[str, object]:
-    d = {
-        "calls": 0,
-        "last_value": None,
-        "hash": "",
-        "head": [],
-        "callers": [],
-        "caller_overflow": 0,
-        "seq_first": None,
-        "seq_last": None,
-        "seed_epoch_enter": None,
-        "seed_epoch_last": None,
-        "outside_before_calls": 0,
-        "outside_before_dropped": 0,
-        "outside_before_head": [],
-        "mirror_mismatch_total": 0,
-        "mirror_unknown_total": 0,
-    }
+    d = _clone_dict(_DEFAULT_CAPTURE_TICK["rng"])
     d.update(kwargs)
     return d
 
 
 def _base_config(**kwargs: object) -> dict[str, object]:
-    d = {
-        "out_path": "",
-        "split_quest_files": True,
-        "quest_out_dir": "",
-        "quest_out_prefix": "",
-        "capture_profile": "",
-        "config_env_overrides": [],
-        "log_mode": "truncate",
-        "console_all_events": False,
-        "console_events": [],
-        "include_caller": True,
-        "include_backtrace": False,
-        "emit_ticks_outside_tracked_states": False,
-        "tracked_states": [],
-        "player_count_override": 0,
-        "focus_tick": -1,
-        "focus_radius": 0,
-        "heartbeat_ms": 1000,
-        "max_head_per_kind": -1,
-        "max_events_per_tick": -1,
-        "max_rng_head_per_tick": -1,
-        "max_rng_caller_kinds": -1,
-        "enable_rng_state_mirror": True,
-        "max_creature_delta_ids": 32,
-        "creature_sample_limit": -1,
-        "projectile_sample_limit": -1,
-        "secondary_projectile_sample_limit": -1,
-        "bonus_sample_limit": -1,
-        "enable_input_hooks": True,
-        "enable_rng_hooks": True,
-        "enable_sfx_hooks": True,
-        "enable_damage_hooks": True,
-        "enable_effect_hooks": True,
-        "creature_damage_projectile_only": True,
-        "enable_spawn_hooks": True,
-        "enable_creature_spawn_hook": True,
-        "enable_creature_death_hook": True,
-        "enable_bonus_spawn_hook": True,
-        "enable_creature_lifecycle_digest": True,
-        "enable_creature_micro_hooks": True,
-        "creature_micro_slots": [],
-        "creature_micro_tick_start": -1,
-        "creature_micro_tick_end": -1,
-        "creature_micro_max_head_per_tick": 256,
-    }
+    d = _clone_dict(_DEFAULT_CAPTURE_FILE["config"])
     d.update(kwargs)
     return d
 
 
 def _base_player() -> dict[str, object]:
-    return {
-        "pos": {"x": 512.0, "y": 512.0},
-        "health": 100.0,
-        "weapon_id": 1,
-        "ammo": 12.0,
-        "experience": 0,
-        "level": 1,
-        "bonus_timers": {},
-    }
+    checkpoint = _clone_dict(_DEFAULT_CAPTURE_TICK["checkpoint"])
+    return _clone_dict(cast(list[object], checkpoint["players"])[0])
 
 
 def _base_snapshot_globals(**kwargs: object) -> dict[str, object]:

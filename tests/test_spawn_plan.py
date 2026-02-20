@@ -7,7 +7,6 @@ from crimson.creatures.spawn import (
     SPAWN_TEMPLATES,
     CreatureFlags,
     CreatureTypeId,
-    SpawnEnv,
     SpawnId,
     build_spawn_plan,
 )
@@ -28,15 +27,9 @@ def _msvcrt_rand(state: int) -> tuple[int, int]:
     return state, (state >> 16) & 0x7FFF
 
 
-def test_spawn_plan_effects_emit_when_demo_mode_disabled() -> None:
+def test_spawn_plan_effects_emit_when_demo_mode_disabled(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=False,
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=False, hardcore=False, difficulty_level=0)
 
     plan = build_spawn_plan(SpawnId.ALIEN_CONST_GREEN_24, Vec2(100.0, 200.0), 0.0, rng, env)
 
@@ -49,15 +42,9 @@ def test_spawn_plan_effects_emit_when_demo_mode_disabled() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_effects_suppressed_in_demo_mode() -> None:
+def test_spawn_plan_effects_suppressed_in_demo_mode(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
 
     plan = build_spawn_plan(SpawnId.ALIEN_CONST_GREEN_24, Vec2(100.0, 200.0), 0.0, rng, env)
 
@@ -65,15 +52,9 @@ def test_spawn_plan_effects_suppressed_in_demo_mode() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_00_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
+def test_spawn_plan_template_00_has_spawn_slot_and_non_hardcore_interval_bump(make_spawn_env) -> None:
     rng = Crand(0)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x00, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -99,20 +80,14 @@ def test_spawn_plan_template_00_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert slot.count == 0
     assert slot.limit == 0x32C
     assert slot.child_template_id == 0x41
-    assert_float_close(slot.interval, 0.9, abs_tol=1e-9)
+    assert_float_close(slot.interval, 0.9)
 
     assert rng.state == _step_msvcrt(0, 2)
 
 
-def test_spawn_plan_template_1_is_constant() -> None:
+def test_spawn_plan_template_1_is_constant(make_spawn_env) -> None:
     rng = Crand(0x1234)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=False,
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=False, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(1, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -137,16 +112,10 @@ def test_spawn_plan_template_1_is_constant() -> None:
     assert rng.state == _step_msvcrt(0x1234, 2)
 
 
-def test_spawn_plan_template_03_is_randomized_and_tail_enables_ai7_timer() -> None:
+def test_spawn_plan_template_03_is_randomized_and_tail_enables_ai7_timer(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x03, Vec2(100.0, 200.0), -100.0, rng, env)
 
     assert plan.primary == 0
@@ -184,22 +153,16 @@ def test_spawn_plan_template_03_is_randomized_and_tail_enables_ai7_timer() -> No
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
     assert c.tint == (0.6, 0.6, expected_tint_b, 1.0)
-    assert_float_close(c.move_speed or 0.0, expected_speed_pre_tail * 1.2, abs_tol=1e-9)
+    assert_float_close(c.move_speed or 0.0, expected_speed_pre_tail * 1.2)
     assert c.heading == expected_heading
 
     assert rng.state == _step_msvcrt(seed, 7)
 
 
-def test_spawn_plan_template_04_is_randomized() -> None:
+def test_spawn_plan_template_04_is_randomized(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x04, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -235,16 +198,10 @@ def test_spawn_plan_template_04_is_randomized() -> None:
     assert rng.state == _step_msvcrt(seed, 5)
 
 
-def test_spawn_plan_template_05_is_randomized() -> None:
+def test_spawn_plan_template_05_is_randomized(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x05, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -284,16 +241,10 @@ def test_spawn_plan_template_05_is_randomized() -> None:
     assert rng.state == _step_msvcrt(seed, 6)
 
 
-def test_spawn_plan_template_06_is_randomized() -> None:
+def test_spawn_plan_template_06_is_randomized(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x06, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -333,15 +284,9 @@ def test_spawn_plan_template_06_is_randomized() -> None:
     assert rng.state == _step_msvcrt(seed, 6)
 
 
-def test_spawn_plan_template_3c_sets_ranged_projectile_type() -> None:
+def test_spawn_plan_template_3c_sets_ranged_projectile_type(make_spawn_env) -> None:
     rng = Crand(0)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
 
     plan = build_spawn_plan(SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C, Vec2(100.0, 200.0), 0.0, rng, env)
 
@@ -355,15 +300,9 @@ def test_spawn_plan_template_3c_sets_ranged_projectile_type() -> None:
     assert c.ranged_projectile_type == 26
 
 
-def test_spawn_plan_template_07_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
+def test_spawn_plan_template_07_has_spawn_slot_and_non_hardcore_interval_bump(make_spawn_env) -> None:
     rng = Crand(0)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=False,
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=False, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x07, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -387,20 +326,14 @@ def test_spawn_plan_template_07_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert slot.limit == 100
     assert slot.child_template_id == 0x1D
     # 2.2 + 0.2 tail bump.
-    assert_float_close(slot.interval, 2.4, abs_tol=1e-9)
+    assert_float_close(slot.interval, 2.4)
 
     assert rng.state == _step_msvcrt(0, 2)
 
 
-def test_spawn_plan_template_08_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
+def test_spawn_plan_template_08_has_spawn_slot_and_non_hardcore_interval_bump(make_spawn_env) -> None:
     rng = Crand(0)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=False,
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=False, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x08, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -429,15 +362,9 @@ def test_spawn_plan_template_08_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert rng.state == _step_msvcrt(0, 2)
 
 
-def test_spawn_plan_template_09_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
+def test_spawn_plan_template_09_has_spawn_slot_and_non_hardcore_interval_bump(make_spawn_env) -> None:
     rng = Crand(0)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=False,
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=False, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x09, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -465,15 +392,9 @@ def test_spawn_plan_template_09_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert rng.state == _step_msvcrt(0, 2)
 
 
-def test_spawn_plan_template_0a_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
+def test_spawn_plan_template_0a_has_spawn_slot_and_non_hardcore_interval_bump(make_spawn_env) -> None:
     rng = Crand(0)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=False,
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=False, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x0A, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -504,15 +425,9 @@ def test_spawn_plan_template_0a_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert rng.state == _step_msvcrt(0, 2)
 
 
-def test_spawn_plan_template_0a_scales_with_difficulty() -> None:
+def test_spawn_plan_template_0a_scales_with_difficulty(make_spawn_env) -> None:
     rng = Crand(0)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=2,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=2)
     plan = build_spawn_plan(0x0A, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -523,29 +438,23 @@ def test_spawn_plan_template_0a_scales_with_difficulty() -> None:
     assert c.type_id == CreatureTypeId.ALIEN
     assert c.flags == CreatureFlags.ANIM_PING_PONG
     assert c.spawn_slot == 0
-    assert_float_close(c.health, 1000.0 * 0.9, abs_tol=1e-9)
+    assert_float_close(c.health, 1000.0 * 0.9)
     assert c.max_health == 1000.0
-    assert_float_close(c.move_speed, 1.5 * 0.9, abs_tol=1e-9)
-    assert_float_close(c.reward_value, 3000.0 * 0.85, abs_tol=1e-9)
+    assert_float_close(c.move_speed, 1.5 * 0.9)
+    assert_float_close(c.reward_value, 3000.0 * 0.85)
     assert c.size == 55.0
     assert c.tint == (0.8, 0.7, 0.4, 1.0)
     assert c.contact_damage == 0.0
 
     slot = plan.spawn_slots[0]
-    assert_float_close(slot.interval, 5.0 + 0.2 + 0.7, abs_tol=1e-9)
+    assert_float_close(slot.interval, 5.0 + 0.2 + 0.7)
 
     assert rng.state == _step_msvcrt(0, 2)
 
 
-def test_spawn_plan_template_0a_hardcore_buffs_and_shortens_interval() -> None:
+def test_spawn_plan_template_0a_hardcore_buffs_and_shortens_interval(make_spawn_env) -> None:
     rng = Crand(0)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=True,
-        difficulty_level=3,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=True, difficulty_level=3)
     plan = build_spawn_plan(0x0A, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -556,29 +465,23 @@ def test_spawn_plan_template_0a_hardcore_buffs_and_shortens_interval() -> None:
     assert c.type_id == CreatureTypeId.ALIEN
     assert c.flags == CreatureFlags.ANIM_PING_PONG
     assert c.spawn_slot == 0
-    assert_float_close(c.health, 1000.0 * 1.2, abs_tol=1e-9)
+    assert_float_close(c.health, 1000.0 * 1.2)
     assert c.max_health == 1000.0
-    assert_float_close(c.move_speed, 1.5 * 1.05, abs_tol=1e-9)
+    assert_float_close(c.move_speed, 1.5 * 1.05)
     assert c.reward_value == 3000.0
     assert c.size == 55.0
     assert c.tint == (0.8, 0.7, 0.4, 1.0)
     assert c.contact_damage == 0.0
 
     slot = plan.spawn_slots[0]
-    assert_float_close(slot.interval, 5.0 - 0.2, abs_tol=1e-9)
+    assert_float_close(slot.interval, 5.0 - 0.2)
 
     assert rng.state == _step_msvcrt(0, 2)
 
 
-def test_spawn_plan_template_0b_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
+def test_spawn_plan_template_0b_has_spawn_slot_and_non_hardcore_interval_bump(make_spawn_env) -> None:
     rng = Crand(0)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=False,
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=False, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x0B, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -605,15 +508,9 @@ def test_spawn_plan_template_0b_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert rng.state == _step_msvcrt(0, 2)
 
 
-def test_spawn_plan_template_0c_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
+def test_spawn_plan_template_0c_has_spawn_slot_and_non_hardcore_interval_bump(make_spawn_env) -> None:
     rng = Crand(0)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=False,
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=False, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x0C, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -641,15 +538,9 @@ def test_spawn_plan_template_0c_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert rng.state == _step_msvcrt(0, 2)
 
 
-def test_spawn_plan_template_0d_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
+def test_spawn_plan_template_0d_has_spawn_slot_and_non_hardcore_interval_bump(make_spawn_env) -> None:
     rng = Crand(0)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=False,
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=False, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x0D, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -677,15 +568,9 @@ def test_spawn_plan_template_0d_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert rng.state == _step_msvcrt(0, 2)
 
 
-def test_spawn_plan_template_0f_is_constant() -> None:
+def test_spawn_plan_template_0f_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x0F, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -711,15 +596,9 @@ def test_spawn_plan_template_0f_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_10_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
+def test_spawn_plan_template_10_has_spawn_slot_and_non_hardcore_interval_bump(make_spawn_env) -> None:
     rng = Crand(0)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=False,
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=False, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x10, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -744,15 +623,9 @@ def test_spawn_plan_template_10_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert rng.state == _step_msvcrt(0, 2)
 
 
-def test_spawn_plan_template_12_spawns_formation_children() -> None:
+def test_spawn_plan_template_12_spawns_formation_children(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x12, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 9
@@ -779,8 +652,8 @@ def test_spawn_plan_template_12_spawns_formation_children() -> None:
         assert child.tint == (0.32, 0.588, 0.426, 1.0)
 
         angle = float(i) * (math.pi / 4.0)
-        assert_float_close(child.target_offset.x if child.target_offset is not None else 0.0, math.cos(angle) * 100.0, abs_tol=1e-4)
-        assert_float_close(child.target_offset.y if child.target_offset is not None else 0.0, math.sin(angle) * 100.0, abs_tol=1e-4)
+        assert_float_close(child.target_offset.x if child.target_offset is not None else 0.0, math.cos(angle) * 100.0)
+        assert_float_close(child.target_offset.y if child.target_offset is not None else 0.0, math.sin(angle) * 100.0)
 
     # Rand consumption:
     # - base alloc: 1
@@ -789,15 +662,9 @@ def test_spawn_plan_template_12_spawns_formation_children() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 10)
 
 
-def test_spawn_plan_template_13_spawns_ring_children_and_links_parent() -> None:
+def test_spawn_plan_template_13_spawns_ring_children_and_links_parent(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x13, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 11
@@ -835,8 +702,8 @@ def test_spawn_plan_template_13_spawns_ring_children_and_links_parent() -> None:
         assert child.tint == (0.4, 0.7, 0.11, 1.0)
 
         angle = float(2 + 2 * i) * math.radians(20.0)
-        assert_float_close(child.pos.x, 100.0 + math.cos(angle) * 256.0, abs_tol=1e-4)
-        assert_float_close(child.pos.y, 200.0 + math.sin(angle) * 256.0, abs_tol=1e-4)
+        assert_float_close(child.pos.x, 100.0 + math.cos(angle) * 256.0)
+        assert_float_close(child.pos.y, 200.0 + math.sin(angle) * 256.0)
 
     # Rand consumption:
     # - base alloc: 1
@@ -845,15 +712,9 @@ def test_spawn_plan_template_13_spawns_ring_children_and_links_parent() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 12)
 
 
-def test_spawn_plan_template_14_spawns_grid_children() -> None:
+def test_spawn_plan_template_14_spawns_grid_children(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x14, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 82
@@ -897,15 +758,9 @@ def test_spawn_plan_template_14_spawns_grid_children() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 83)
 
 
-def test_spawn_plan_template_15_spawns_grid_children() -> None:
+def test_spawn_plan_template_15_spawns_grid_children(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x15, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 82
@@ -949,15 +804,9 @@ def test_spawn_plan_template_15_spawns_grid_children() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 83)
 
 
-def test_spawn_plan_template_16_spawns_grid_children() -> None:
+def test_spawn_plan_template_16_spawns_grid_children(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x16, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 82
@@ -1002,15 +851,9 @@ def test_spawn_plan_template_16_spawns_grid_children() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 83)
 
 
-def test_spawn_plan_template_17_spawns_grid_children() -> None:
+def test_spawn_plan_template_17_spawns_grid_children(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x17, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 82
@@ -1055,15 +898,9 @@ def test_spawn_plan_template_17_spawns_grid_children() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 83)
 
 
-def test_spawn_plan_template_18_spawns_grid_children() -> None:
+def test_spawn_plan_template_18_spawns_grid_children(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x18, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 82
@@ -1107,15 +944,9 @@ def test_spawn_plan_template_18_spawns_grid_children() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 83)
 
 
-def test_spawn_plan_template_19_spawns_formation_children() -> None:
+def test_spawn_plan_template_19_spawns_formation_children(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x19, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 6
@@ -1141,10 +972,10 @@ def test_spawn_plan_template_19_spawns_formation_children() -> None:
         assert child.tint == (0.7125, 0.4125, 0.2775, 0.6)
 
         angle = float(i) * (math.tau / 5.0)
-        assert_float_close(child.target_offset.x if child.target_offset is not None else 0.0, math.cos(angle) * 110.0, abs_tol=1e-4)
-        assert_float_close(child.target_offset.y if child.target_offset is not None else 0.0, math.sin(angle) * 110.0, abs_tol=1e-4)
-        assert_float_close(child.pos.x, 100.0 + (child.target_offset.x if child.target_offset is not None else 0.0), abs_tol=1e-4)
-        assert_float_close(child.pos.y, 200.0 + (child.target_offset.y if child.target_offset is not None else 0.0), abs_tol=1e-4)
+        assert_float_close(child.target_offset.x if child.target_offset is not None else 0.0, math.cos(angle) * 110.0)
+        assert_float_close(child.target_offset.y if child.target_offset is not None else 0.0, math.sin(angle) * 110.0)
+        assert_float_close(child.pos.x, 100.0 + (child.target_offset.x if child.target_offset is not None else 0.0))
+        assert_float_close(child.pos.y, 200.0 + (child.target_offset.y if child.target_offset is not None else 0.0))
 
     # Rand consumption:
     # - base alloc: 1
@@ -1153,16 +984,10 @@ def test_spawn_plan_template_19_spawns_formation_children() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 7)
 
 
-def test_spawn_plan_template_1a_is_randomized_tint() -> None:
+def test_spawn_plan_template_1a_is_randomized_tint(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x1A, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1190,16 +1015,10 @@ def test_spawn_plan_template_1a_is_randomized_tint() -> None:
     assert rng.state == _step_msvcrt(seed, 3)
 
 
-def test_spawn_plan_template_1b_is_randomized_tint_and_tail_enables_ai7_timer() -> None:
+def test_spawn_plan_template_1b_is_randomized_tint_and_tail_enables_ai7_timer(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x1B, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1220,7 +1039,7 @@ def test_spawn_plan_template_1b_is_randomized_tint_and_tail_enables_ai7_timer() 
     assert c.size == 50.0
     assert c.health == 40.0
     assert c.max_health == 40.0
-    assert_float_close(c.move_speed or 0.0, 2.4 * 1.2, abs_tol=1e-9)
+    assert_float_close(c.move_speed or 0.0, 2.4 * 1.2)
     assert c.reward_value == 125.0
     assert c.contact_damage == 5.0
     assert c.tint == (expected_tint, expected_tint, 1.0, 1.0)
@@ -1229,16 +1048,10 @@ def test_spawn_plan_template_1b_is_randomized_tint_and_tail_enables_ai7_timer() 
     assert rng.state == _step_msvcrt(seed, 3)
 
 
-def test_spawn_plan_template_1c_is_randomized_tint() -> None:
+def test_spawn_plan_template_1c_is_randomized_tint(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x1C, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1266,16 +1079,10 @@ def test_spawn_plan_template_1c_is_randomized_tint() -> None:
     assert rng.state == _step_msvcrt(seed, 3)
 
 
-def test_spawn_plan_template_1d_is_randomized() -> None:
+def test_spawn_plan_template_1d_is_randomized(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x1D, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1322,16 +1129,10 @@ def test_spawn_plan_template_1d_is_randomized() -> None:
     assert rng.state == _step_msvcrt(seed, 9)
 
 
-def test_spawn_plan_template_1e_is_randomized() -> None:
+def test_spawn_plan_template_1e_is_randomized(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x1E, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1378,16 +1179,10 @@ def test_spawn_plan_template_1e_is_randomized() -> None:
     assert rng.state == _step_msvcrt(seed, 9)
 
 
-def test_spawn_plan_template_1f_is_randomized() -> None:
+def test_spawn_plan_template_1f_is_randomized(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x1F, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1434,16 +1229,10 @@ def test_spawn_plan_template_1f_is_randomized() -> None:
     assert rng.state == _step_msvcrt(seed, 9)
 
 
-def test_spawn_plan_template_20_is_randomized() -> None:
+def test_spawn_plan_template_20_is_randomized(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x20, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1482,15 +1271,9 @@ def test_spawn_plan_template_20_is_randomized() -> None:
     assert rng.state == _step_msvcrt(seed, 6)
 
 
-def test_spawn_plan_template_21_is_constant() -> None:
+def test_spawn_plan_template_21_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x21, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1511,15 +1294,9 @@ def test_spawn_plan_template_21_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_21_scales_with_difficulty() -> None:
+def test_spawn_plan_template_21_scales_with_difficulty(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=2,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=2)
     plan = build_spawn_plan(0x21, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1528,27 +1305,21 @@ def test_spawn_plan_template_21_scales_with_difficulty() -> None:
 
     c = plan.creatures[0]
     assert c.type_id == CreatureTypeId.ALIEN
-    assert_float_close(c.health, 53.0 * 0.9, abs_tol=1e-9)
+    assert_float_close(c.health, 53.0 * 0.9)
     assert c.max_health == 53.0
-    assert_float_close(c.move_speed, 1.7 * 0.9, abs_tol=1e-9)
-    assert_float_close(c.reward_value, 120.0 * 0.85, abs_tol=1e-9)
+    assert_float_close(c.move_speed, 1.7 * 0.9)
+    assert_float_close(c.reward_value, 120.0 * 0.85)
     assert c.size == 55.0
-    assert_float_close(c.contact_damage, 8.0 * 0.9, abs_tol=1e-9)
+    assert_float_close(c.contact_damage, 8.0 * 0.9)
     assert c.tint == (0.7, 0.1, 0.51, 0.5)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_22_is_constant() -> None:
+def test_spawn_plan_template_22_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x22, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1569,15 +1340,9 @@ def test_spawn_plan_template_22_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_23_is_constant() -> None:
+def test_spawn_plan_template_23_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x23, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1598,15 +1363,9 @@ def test_spawn_plan_template_23_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_24_is_constant() -> None:
+def test_spawn_plan_template_24_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x24, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1627,15 +1386,9 @@ def test_spawn_plan_template_24_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_25_is_constant() -> None:
+def test_spawn_plan_template_25_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x25, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1656,15 +1409,9 @@ def test_spawn_plan_template_25_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_26_is_constant() -> None:
+def test_spawn_plan_template_26_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x26, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1685,15 +1432,9 @@ def test_spawn_plan_template_26_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_27_is_constant() -> None:
+def test_spawn_plan_template_27_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x27, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1717,15 +1458,9 @@ def test_spawn_plan_template_27_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_28_is_constant() -> None:
+def test_spawn_plan_template_28_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x28, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1746,15 +1481,9 @@ def test_spawn_plan_template_28_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_29_is_constant() -> None:
+def test_spawn_plan_template_29_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x29, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1775,15 +1504,9 @@ def test_spawn_plan_template_29_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_2a_is_constant() -> None:
+def test_spawn_plan_template_2a_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x2A, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1804,15 +1527,9 @@ def test_spawn_plan_template_2a_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_2b_is_constant() -> None:
+def test_spawn_plan_template_2b_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x2B, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1833,15 +1550,9 @@ def test_spawn_plan_template_2b_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_2c_is_constant() -> None:
+def test_spawn_plan_template_2c_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x2C, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1862,15 +1573,9 @@ def test_spawn_plan_template_2c_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_2d_is_constant() -> None:
+def test_spawn_plan_template_2d_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x2D, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1892,16 +1597,10 @@ def test_spawn_plan_template_2d_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_2e_is_randomized() -> None:
+def test_spawn_plan_template_2e_is_randomized(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x2E, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1946,15 +1645,9 @@ def test_spawn_plan_template_2e_is_randomized() -> None:
     assert rng.state == _step_msvcrt(seed, 8)
 
 
-def test_spawn_plan_template_2f_is_constant() -> None:
+def test_spawn_plan_template_2f_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x2F, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -1975,15 +1668,9 @@ def test_spawn_plan_template_2f_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_30_is_constant() -> None:
+def test_spawn_plan_template_30_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x30, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -2004,16 +1691,10 @@ def test_spawn_plan_template_30_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_31_is_randomized() -> None:
+def test_spawn_plan_template_31_is_randomized(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x31, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -2051,16 +1732,10 @@ def test_spawn_plan_template_31_is_randomized() -> None:
     assert rng.state == _step_msvcrt(seed, 5)
 
 
-def test_spawn_plan_template_32_is_randomized_and_tail_enables_ai7_timer() -> None:
+def test_spawn_plan_template_32_is_randomized_and_tail_enables_ai7_timer(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x32, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -2091,7 +1766,7 @@ def test_spawn_plan_template_32_is_randomized_and_tail_enables_ai7_timer() -> No
     assert c.size == expected_size
     assert c.health == expected_health
     assert c.max_health == expected_health
-    assert_float_close(c.move_speed or 0.0, expected_speed_pre_tail * 1.2, abs_tol=1e-9)
+    assert_float_close(c.move_speed or 0.0, expected_speed_pre_tail * 1.2)
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
     assert c.tint == (expected_tint, expected_tint, expected_tint, 1.0)
@@ -2100,16 +1775,10 @@ def test_spawn_plan_template_32_is_randomized_and_tail_enables_ai7_timer() -> No
     assert rng.state == _step_msvcrt(seed, 5)
 
 
-def test_spawn_plan_template_33_is_randomized_and_tail_enables_ai7_timer() -> None:
+def test_spawn_plan_template_33_is_randomized_and_tail_enables_ai7_timer(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x33, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -2141,7 +1810,7 @@ def test_spawn_plan_template_33_is_randomized_and_tail_enables_ai7_timer() -> No
     assert c.size == expected_size
     assert c.health == expected_health
     assert c.max_health == expected_health
-    assert_float_close(c.move_speed or 0.0, expected_speed_pre_tail * 1.2, abs_tol=1e-9)
+    assert_float_close(c.move_speed or 0.0, expected_speed_pre_tail * 1.2)
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
     assert c.tint == (expected_tint_r, 0.5, 0.5, 1.0)
@@ -2150,16 +1819,10 @@ def test_spawn_plan_template_33_is_randomized_and_tail_enables_ai7_timer() -> No
     assert rng.state == _step_msvcrt(seed, 6)
 
 
-def test_spawn_plan_template_34_is_randomized_and_tail_enables_ai7_timer() -> None:
+def test_spawn_plan_template_34_is_randomized_and_tail_enables_ai7_timer(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x34, Vec2(100.0, 200.0), -100.0, rng, env)
 
     assert plan.primary == 0
@@ -2196,22 +1859,16 @@ def test_spawn_plan_template_34_is_randomized_and_tail_enables_ai7_timer() -> No
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
     assert c.tint == (0.5, expected_tint_g, 0.5, 1.0)
-    assert_float_close(c.move_speed or 0.0, expected_speed_pre_tail * 1.2, abs_tol=1e-9)
+    assert_float_close(c.move_speed or 0.0, expected_speed_pre_tail * 1.2)
     assert c.heading == expected_heading
 
     assert rng.state == _step_msvcrt(seed, 7)
 
 
-def test_spawn_plan_template_35_is_randomized() -> None:
+def test_spawn_plan_template_35_is_randomized(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x35, Vec2(100.0, 200.0), -100.0, rng, env)
 
     assert plan.primary == 0
@@ -2243,7 +1900,7 @@ def test_spawn_plan_template_35_is_randomized() -> None:
     assert c.size == expected_size
     assert c.health == expected_health
     assert c.max_health == expected_health
-    assert_float_close(c.move_speed or 0.0, expected_speed, abs_tol=1e-9)
+    assert_float_close(c.move_speed or 0.0, expected_speed)
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
     assert c.tint == (0.8, expected_tint_g, 0.8, 1.0)
@@ -2252,16 +1909,10 @@ def test_spawn_plan_template_35_is_randomized() -> None:
     assert rng.state == _step_msvcrt(seed, 7)
 
 
-def test_spawn_plan_template_36_is_randomized_tint() -> None:
+def test_spawn_plan_template_36_is_randomized_tint(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x36, Vec2(100.0, 200.0), 0.0, rng, env)
 
     state = seed
@@ -2290,16 +1941,10 @@ def test_spawn_plan_template_36_is_randomized_tint() -> None:
     assert rng.state == _step_msvcrt(seed, 3)
 
 
-def test_spawn_plan_template_37_is_randomized() -> None:
+def test_spawn_plan_template_37_is_randomized(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x37, Vec2(100.0, 200.0), 0.0, rng, env)
 
     state = seed
@@ -2327,16 +1972,10 @@ def test_spawn_plan_template_37_is_randomized() -> None:
     assert rng.state == _step_msvcrt(seed, 3)
 
 
-def test_spawn_plan_template_38_is_randomized_and_has_ai7_timer_flag() -> None:
+def test_spawn_plan_template_38_is_randomized_and_has_ai7_timer_flag(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x38, Vec2(100.0, 200.0), -100.0, rng, env)
 
     state = seed
@@ -2367,16 +2006,10 @@ def test_spawn_plan_template_38_is_randomized_and_has_ai7_timer_flag() -> None:
     assert rng.state == _step_msvcrt(seed, 4)
 
 
-def test_spawn_plan_template_39_is_randomized_and_has_ai7_timer_flag() -> None:
+def test_spawn_plan_template_39_is_randomized_and_has_ai7_timer_flag(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x39, Vec2(100.0, 200.0), 0.0, rng, env)
 
     state = seed
@@ -2405,15 +2038,9 @@ def test_spawn_plan_template_39_is_randomized_and_has_ai7_timer_flag() -> None:
     assert rng.state == _step_msvcrt(seed, 3)
 
 
-def test_spawn_plan_template_3a_is_constant_and_has_ranged_shock_flag() -> None:
+def test_spawn_plan_template_3a_is_constant_and_has_ranged_shock_flag(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x3A, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -2439,15 +2066,9 @@ def test_spawn_plan_template_3a_is_constant_and_has_ranged_shock_flag() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_3b_is_constant_and_tail_enables_ai7_timer() -> None:
+def test_spawn_plan_template_3b_is_constant_and_tail_enables_ai7_timer(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x3B, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -2460,7 +2081,7 @@ def test_spawn_plan_template_3b_is_constant_and_tail_enables_ai7_timer() -> None
     assert c.ai_timer == 0
     assert c.health == 1200.0
     assert c.max_health == 1200.0
-    assert_float_close(c.move_speed or 0.0, 2.0 * 1.2, abs_tol=1e-9)
+    assert_float_close(c.move_speed or 0.0, 2.0 * 1.2)
     assert c.reward_value == 4000.0
     assert c.size == 70.0
     assert c.contact_damage == 20.0
@@ -2470,15 +2091,9 @@ def test_spawn_plan_template_3b_is_constant_and_tail_enables_ai7_timer() -> None
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_3c_is_constant_and_tail_enables_ai7_timer() -> None:
+def test_spawn_plan_template_3c_is_constant_and_tail_enables_ai7_timer(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x3C, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -2495,7 +2110,7 @@ def test_spawn_plan_template_3c_is_constant_and_tail_enables_ai7_timer() -> None
     assert c.ranged_projectile_type == 26
     assert c.health == 200.0
     assert c.max_health == 200.0
-    assert_float_close(c.move_speed or 0.0, 2.0 * 1.2, abs_tol=1e-9)
+    assert_float_close(c.move_speed or 0.0, 2.0 * 1.2)
     assert c.reward_value == 200.0
     assert c.size == 40.0
     assert c.contact_damage == 20.0
@@ -2505,16 +2120,10 @@ def test_spawn_plan_template_3c_is_constant_and_tail_enables_ai7_timer() -> None
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_3d_is_randomized_and_tail_enables_ai7_timer() -> None:
+def test_spawn_plan_template_3d_is_randomized_and_tail_enables_ai7_timer(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x3D, Vec2(100.0, 200.0), 0.0, rng, env)
 
     state = seed
@@ -2536,25 +2145,19 @@ def test_spawn_plan_template_3d_is_randomized_and_tail_enables_ai7_timer() -> No
     assert c.ai_timer == 0
     assert c.health == 70.0
     assert c.max_health == 70.0
-    assert_float_close(c.move_speed or 0.0, 2.6 * 1.2, abs_tol=1e-9)
+    assert_float_close(c.move_speed or 0.0, 2.6 * 1.2)
     assert c.reward_value == 120.0
     assert c.size == expected_size
-    assert_float_close(c.contact_damage or 0.0, expected_contact, abs_tol=1e-9)
+    assert_float_close(c.contact_damage or 0.0, expected_contact)
     assert c.tint == (expected_tint, expected_tint, expected_tint, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 4)
 
 
-def test_spawn_plan_template_3e_is_constant_and_tail_enables_ai7_timer() -> None:
+def test_spawn_plan_template_3e_is_constant_and_tail_enables_ai7_timer(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x3E, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -2567,7 +2170,7 @@ def test_spawn_plan_template_3e_is_constant_and_tail_enables_ai7_timer() -> None
     assert c.ai_timer == 0
     assert c.health == 1000.0
     assert c.max_health == 1000.0
-    assert_float_close(c.move_speed or 0.0, 2.8 * 1.2, abs_tol=1e-9)
+    assert_float_close(c.move_speed or 0.0, 2.8 * 1.2)
     assert c.reward_value == 500.0
     assert c.size == 64.0
     assert c.contact_damage == 40.0
@@ -2577,15 +2180,9 @@ def test_spawn_plan_template_3e_is_constant_and_tail_enables_ai7_timer() -> None
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_3f_is_constant_and_tail_enables_ai7_timer() -> None:
+def test_spawn_plan_template_3f_is_constant_and_tail_enables_ai7_timer(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x3F, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -2598,7 +2195,7 @@ def test_spawn_plan_template_3f_is_constant_and_tail_enables_ai7_timer() -> None
     assert c.ai_timer == 0
     assert c.health == 200.0
     assert c.max_health == 200.0
-    assert_float_close(c.move_speed or 0.0, 2.3 * 1.2, abs_tol=1e-9)
+    assert_float_close(c.move_speed or 0.0, 2.3 * 1.2)
     assert c.reward_value == 210.0
     assert c.size == 35.0
     assert c.contact_damage == 20.0
@@ -2608,15 +2205,9 @@ def test_spawn_plan_template_3f_is_constant_and_tail_enables_ai7_timer() -> None
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_40_is_constant_and_tail_enables_ai7_timer() -> None:
+def test_spawn_plan_template_40_is_constant_and_tail_enables_ai7_timer(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x40, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -2629,7 +2220,7 @@ def test_spawn_plan_template_40_is_constant_and_tail_enables_ai7_timer() -> None
     assert c.ai_timer == 0
     assert c.health == 70.0
     assert c.max_health == 70.0
-    assert_float_close(c.move_speed or 0.0, 2.2 * 1.2, abs_tol=1e-9)
+    assert_float_close(c.move_speed or 0.0, 2.2 * 1.2)
     assert c.reward_value == 160.0
     assert c.size == 45.0
     assert c.contact_damage == 5.0
@@ -2639,16 +2230,10 @@ def test_spawn_plan_template_40_is_constant_and_tail_enables_ai7_timer() -> None
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_41_is_randomized() -> None:
+def test_spawn_plan_template_41_is_randomized(make_spawn_env) -> None:
     seed = 0xBEEF
     rng = Crand(seed)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x41, Vec2(100.0, 200.0), -100.0, rng, env)
 
     assert plan.primary == 0
@@ -2687,15 +2272,9 @@ def test_spawn_plan_template_41_is_randomized() -> None:
     assert rng.state == _step_msvcrt(seed, 6)
 
 
-def test_spawn_plan_template_42_is_constant() -> None:
+def test_spawn_plan_template_42_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x42, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -2717,15 +2296,9 @@ def test_spawn_plan_template_42_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_43_is_constant() -> None:
+def test_spawn_plan_template_43_is_constant(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x43, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
@@ -2747,15 +2320,9 @@ def test_spawn_plan_template_43_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
-def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot() -> None:
+def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x0E, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 25
@@ -2801,8 +2368,8 @@ def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot() -> Non
         assert child.tint == (1.0, 0.3, 0.3, 1.0)
 
         angle = float(i) * (math.pi / 12.0)
-        assert_float_close(child.target_offset.x if child.target_offset is not None else 0.0, math.cos(angle) * 100.0, abs_tol=1e-4)
-        assert_float_close(child.target_offset.y if child.target_offset is not None else 0.0, math.sin(angle) * 100.0, abs_tol=1e-4)
+        assert_float_close(child.target_offset.x if child.target_offset is not None else 0.0, math.cos(angle) * 100.0)
+        assert_float_close(child.target_offset.y if child.target_offset is not None else 0.0, math.sin(angle) * 100.0)
 
     # Rand consumption:
     # - base alloc: 1
@@ -2811,15 +2378,9 @@ def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot() -> Non
     assert rng.state == _step_msvcrt(0xBEEF, 26)
 
 
-def test_spawn_plan_template_11_spawns_chain_children_and_falls_into_unhandled_override() -> None:
+def test_spawn_plan_template_11_spawns_chain_children_and_falls_into_unhandled_override(make_spawn_env) -> None:
     rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
-        demo_mode_active=True,  # avoid effect noise
-        hardcore=False,
-        difficulty_level=0,
-    )
+    env = make_spawn_env(demo_mode_active=True, hardcore=False, difficulty_level=0)
     plan = build_spawn_plan(0x11, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 5
@@ -2850,8 +2411,8 @@ def test_spawn_plan_template_11_spawns_chain_children_and_falls_into_unhandled_o
         assert child.tint == (0.6, 0.6, 0.31, 1.0)
 
         angle = float(2 + 2 * i) * (math.pi / 8.0)
-        assert_float_close(child.pos.x, 100.0 + math.cos(angle) * 256.0, abs_tol=1e-4)
-        assert_float_close(child.pos.y, 200.0 + math.sin(angle) * 256.0, abs_tol=1e-4)
+        assert_float_close(child.pos.x, 100.0 + math.cos(angle) * 256.0)
+        assert_float_close(child.pos.y, 200.0 + math.sin(angle) * 256.0)
 
     # The original falls into the "Unhandled creatureType.\n" block after the loop, which overwrites
     # the return creature (last child).
@@ -2866,7 +2427,7 @@ def test_spawn_plan_template_11_spawns_chain_children_and_falls_into_unhandled_o
     assert rng.state == _step_msvcrt(0xBEEF, 6)
 
 
-def test_spawn_plan_porting_is_complete() -> None:
+def test_spawn_plan_porting_is_complete(make_spawn_env) -> None:
     # creature_spawn_template uses template ids in range 0x00..0x43 (0x44 total),
     # but 0x02 is not present in the switch/decompile extracts.
     expected = frozenset(set(range(0x44)) - {0x02})

@@ -1,0 +1,11 @@
+id: no-string-mocker-patch
+valid:
+  - |
+    mocker.patch.object(game_over_module, "button_update", side_effect=lambda *_args, **_kwargs: False)
+  - |
+    monkeypatch.setattr("crimson.game.run_game", lambda _config: None)
+invalid:
+  - |
+    mocker.patch("crimson.audio_router.play_sfx")
+  - |
+    mocker.patch("crimson.ui.game_over.button_update", side_effect=lambda *_args, **_kwargs: False)

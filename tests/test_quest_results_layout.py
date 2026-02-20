@@ -94,16 +94,17 @@ def _patch_draw_environment(
     mocker.patch.object(quest_results_module.rl, "get_time", side_effect=lambda: 0.0)
     mocker.patch.object(quest_results_module.rl, "draw_rectangle_lines", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_results_module.rl, "draw_rectangle", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch(
-        "crimson.ui.quest_results.rl.draw_line",
+    mocker.patch.object(
+        quest_results_module.rl,
+        "draw_line",
         side_effect=lambda x1, y1, x2, y2, color: (
             line_draws.append((int(x1), int(y1), int(x2), int(y2), color)) if line_draws is not None else None
         ),
     )
-    mocker.patch("crimson.ui.quest_results.button_draw", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch("crimson.ui.quest_results.button_width", side_effect=lambda *_args, **_kwargs: 82.0)
-    mocker.patch("crimson.ui.quest_results.draw_ui_text", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch("crimson.ui.quest_results.draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_results_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_results_module, "button_width", side_effect=lambda *_args, **_kwargs: 82.0)
+    mocker.patch.object(quest_results_module, "draw_ui_text", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_results_module, "draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(
         QuestResultsUi,
         "_text_width",
@@ -119,8 +120,9 @@ def _patch_draw_environment(
             captured_draws.append((str(text), float(pos.x), float(pos.y), color)) if captured_draws is not None else None,
         ),
     )
-    mocker.patch(
-        "crimson.ui.quest_results.rl.draw_texture_pro",
+    mocker.patch.object(
+        quest_results_module.rl,
+        "draw_texture_pro",
         side_effect=lambda texture, _src, _dst, _origin, _rotation, _tint: texture_draws.append(texture),
     )
 
