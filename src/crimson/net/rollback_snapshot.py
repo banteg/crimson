@@ -13,17 +13,13 @@ SnapshotT = TypeVar("SnapshotT")
 class RollbackSnapshotCodec(Generic[SnapshotT]):
     """Serialize rollback snapshots as deterministic msgpack blobs."""
 
-    snapshot_type: type[SnapshotT] | None = None
+    snapshot_type: type[SnapshotT]
     _encoder: msgspec.msgpack.Encoder = field(init=False)
     _decoder: msgspec.msgpack.Decoder = field(init=False)
 
     def __post_init__(self) -> None:
         self._encoder = msgspec.msgpack.Encoder()
-        snapshot_type = self.snapshot_type
-        if snapshot_type is None:
-            self._decoder = msgspec.msgpack.Decoder()
-            return
-        self._decoder = msgspec.msgpack.Decoder(type=cast(Any, snapshot_type))
+        self._decoder = msgspec.msgpack.Decoder(type=cast(Any, self.snapshot_type))
 
     def dumps(self, snapshot: SnapshotT) -> bytes:
         return self._encoder.encode(snapshot)
@@ -37,8 +33,8 @@ class RollbackSnapshotRing(Generic[SnapshotT]):
     """Store periodic snapshots for rollback and reconnect restore."""
 
     max_ticks: int
+    codec: RollbackSnapshotCodec[SnapshotT]
     interval_ticks: int = 4
-    codec: RollbackSnapshotCodec[SnapshotT] = field(default_factory=RollbackSnapshotCodec)
     _by_tick: OrderedDict[int, bytes] = field(default_factory=OrderedDict)
 
     def clear(self) -> None:

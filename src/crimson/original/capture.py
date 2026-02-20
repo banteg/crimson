@@ -2792,8 +2792,7 @@ def _decode_capture_stream(raw: bytes, path: Path) -> CaptureFile | None:
         if not line:
             continue
         try:
-            row_obj = msgspec.json.decode(line)
-            row = msgspec.convert(row_obj, type=_CaptureStreamRow, strict=True)
+            row = msgspec.json.decode(line, type=_CaptureStreamRow)
         except (msgspec.DecodeError, msgspec.ValidationError) as exc:
             raise CaptureError(f"invalid capture file: {path}") from exc
 
@@ -2919,17 +2918,9 @@ def dump_capture(path: Path, capture: CaptureFile) -> None:
     if lower.endswith(".msgpack.zst"):
         path.write_bytes(zstd.compress(_encode_capture_stream_msgpack(capture)))
         return
-    capture_obj = msgspec.to_builtins(capture)
-    if not isinstance(capture_obj, dict):
-        raise CaptureError("invalid capture object during serialization")
-    ticks_obj = capture_obj["ticks"]
-    if not isinstance(ticks_obj, list):
-        raise CaptureError("invalid capture object during serialization")
-    ticks = ticks_obj
-    meta = dict(capture_obj)
-    meta["ticks"] = []
-    rows: list[bytes] = [msgspec.json.encode({"event": "capture_meta", "capture": meta})]
-    rows.extend(msgspec.json.encode({"event": "tick", "tick": tick}) for tick in ticks)
+    meta_row = _CaptureStreamMetaRow(capture=msgspec.structs.replace(capture, ticks=[]))
+    rows: list[bytes] = [msgspec.json.encode(meta_row)]
+    rows.extend(msgspec.json.encode(_CaptureStreamTickRow(tick=tick)) for tick in capture.ticks)
     encoded = b"\n".join(rows) + b"\n"
     if lower.endswith(".gz"):
         path.write_bytes(gzip.compress(encoded))
