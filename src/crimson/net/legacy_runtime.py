@@ -602,7 +602,7 @@ class LanRuntime:
             session_id = ""
             lobby = self.host_lobby
             if lobby is not None:
-                session_id = str(getattr(lobby, "session_id", "") or "")
+                session_id = str(lobby.session_id)
             init_ts = dt.datetime.now(dt.timezone.utc).isoformat(timespec="milliseconds")
             init_line = (
                 f"{init_ts} event=remote_log_init slot_index={int(slot_index)} "
@@ -732,16 +732,16 @@ class LanRuntime:
         for addr, packet in self.transport.recv_packets(max_packets=int(MAX_RECV_PACKETS_PER_UPDATE)):
             peer_link = self.host_peers.get(addr)
             if peer_link is None:
-                message = getattr(packet, "message", None)
+                message = packet.message
                 if isinstance(message, Hello):
                     self._handle_host_message(addr, message, now_ms=int(now_ms))
                     accepted_peer = self.host_peers.get(addr)
                     if (
                         accepted_peer is not None
-                        and bool(getattr(packet, "reliable", False))
-                        and int(getattr(packet, "seq", 0) or 0) > 0
+                        and bool(packet.reliable)
+                        and int(packet.seq) > 0
                     ):
-                        accepted_peer.link.prime_recv_seq(int(getattr(packet, "seq", 0) or 0))
+                        accepted_peer.link.prime_recv_seq(int(packet.seq))
                 continue
             peer_link.last_seen_ms = int(now_ms)
             messages, dup = peer_link.link.ingest_packet(packet, now_ms=int(now_ms))
