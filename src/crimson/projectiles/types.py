@@ -8,30 +8,6 @@ from typing import Protocol
 from grim.color import RGBA
 from grim.geom import Vec2
 
-from ..creatures.spawn import CreatureFlags
-
-
-class Damageable(Protocol):
-    active: bool
-    pos: Vec2
-    hp: float
-    hitbox_size: float
-    size: float
-    flags: CreatureFlags
-    plague_infected: bool
-
-
-class PlayerDamageable(Protocol):
-    pos: Vec2
-    health: float
-    shield_timer: float
-    size: float
-    perk_counts: list[int]
-
-
-class _SizeLike(Protocol):
-    size: float
-
 
 class _RngLike(Protocol):
     def rand(self) -> int: ...
@@ -208,10 +184,8 @@ class SecondaryProjectile:
 
 __all__ = [
     "CreatureDamageApplier",
-    "Damageable",
     "FxQueueLike",
     "MAIN_PROJECTILE_POOL_SIZE",
-    "PlayerDamageable",
     "Projectile",
     "ProjectileHit",
     "ProjectileRuntimeState",
@@ -223,6 +197,5 @@ __all__ = [
     "_CREATURE_HITBOX_ALIVE",
     "_EffectsLike",
     "_rng_zero",
-    "_SizeLike",
     "_SpriteEffectsLike",
 ]

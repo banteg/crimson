@@ -12,10 +12,10 @@ from grim.view import View, ViewContext
 
 from ..bonuses import BonusId
 from ..bonuses.apply import bonus_apply
-from ..creatures.spawn import CreatureFlags
+from ..creatures.runtime import CreatureState
 from ..effects_atlas import EffectId, effect_src_rect
 from ..gameplay import GameplayState
-from ..projectiles import ProjectileTypeId
+from ..projectiles import Projectile, ProjectileTypeId
 from ..sim.state_types import PlayerState
 from ..weapons import (
     WEAPON_BY_ID,
@@ -33,16 +33,15 @@ UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 UI_ACCENT_COLOR = rl.Color(240, 200, 80, 255)
 
-
-@dataclass(slots=True)
-class DummyCreature:
-    pos: Vec2
-    hp: float
-    size: float = 42.0
-    active: bool = True
-    hitbox_size: float = 16.0
-    flags: CreatureFlags = CreatureFlags(0)
-    plague_infected: bool = False
+def _make_sandbox_creature(*, pos: Vec2, hp: float, size: float, hitbox_size: float = 16.0) -> CreatureState:
+    return CreatureState(
+        active=True,
+        pos=pos,
+        hp=float(hp),
+        max_hp=float(hp),
+        size=float(size),
+        hitbox_size=float(hitbox_size),
+    )
 
 
 @dataclass(slots=True)
@@ -102,7 +101,7 @@ class ProjectileFxView:
 
         self.state = GameplayState()
         self._player = PlayerState(index=0, pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
-        self._creatures: list[DummyCreature] = []
+        self._creatures: list[CreatureState] = []
 
         self._camera = Vec2(-1.0, -1.0)
 
@@ -153,10 +152,10 @@ class ProjectileFxView:
         self._beams.clear()
         self._effects.clear()
         self._creatures = [
-            DummyCreature(pos=self._origin.offset(dx=180.0), hp=140.0, size=38.0),
-            DummyCreature(pos=self._origin + Vec2(260.0, 40.0), hp=140.0, size=42.0),
-            DummyCreature(pos=self._origin + Vec2(-220.0, 140.0), hp=140.0, size=52.0),
-            DummyCreature(pos=self._origin + Vec2(-300.0, -120.0), hp=140.0, size=58.0),
+            _make_sandbox_creature(pos=self._origin.offset(dx=180.0), hp=140.0, size=38.0),
+            _make_sandbox_creature(pos=self._origin + Vec2(260.0, 40.0), hp=140.0, size=42.0),
+            _make_sandbox_creature(pos=self._origin + Vec2(-220.0, 140.0), hp=140.0, size=52.0),
+            _make_sandbox_creature(pos=self._origin + Vec2(-300.0, -120.0), hp=140.0, size=58.0),
         ]
 
     def open(self) -> None:
@@ -230,7 +229,7 @@ class ProjectileFxView:
 
     def _spawn_fire_bullets_volley(self, *, angle: float) -> None:
         base = weapon_entry_for_projectile_type_id(self._selected_type_id())
-        pellet_count = int(getattr(base, "pellet_count", 1) or 1)
+        pellet_count = int(base.pellet_count) if base is not None and base.pellet_count is not None else 1
         pellet_count = max(1, pellet_count)
         meta = self._projectile_meta_for(ProjectileTypeId.FIRE_BULLETS)
         self._spawn_effect(effect_id=int(EffectId.CASING), pos=self._origin, scale=0.6, duration=0.2)
@@ -363,16 +362,14 @@ class ProjectileFxView:
         origin = rl.Vector2(w * 0.5, h * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, float(rotation_rad * 57.29577951308232), tint)
 
-    def _draw_projectile(self, proj: object) -> None:
+    def _draw_projectile(self, proj: Projectile) -> None:
         texture = self._projs
         if texture is None:
             return
 
-        type_id = int(getattr(proj, "type_id", 0))
+        type_id = int(proj.type_id)
         mapping = _KNOWN_PROJ_FRAMES.get(type_id)
-        proj_pos = getattr(proj, "pos", None)
-        if not isinstance(proj_pos, Vec2):
-            return
+        proj_pos = proj.pos
         screen_pos = self._camera_world_to_screen(proj_pos)
 
         if mapping is None:
@@ -382,8 +379,8 @@ class ProjectileFxView:
             return
 
         grid, frame = mapping
-        life = float(getattr(proj, "life_timer", 0.0))
-        angle = float(getattr(proj, "angle", 0.0))
+        life = float(proj.life_timer)
+        angle = float(proj.angle)
 
         color = rl.Color(240, 220, 160, 255)
         if type_id in (ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_MINIGUN, ProjectileTypeId.ION_CANNON):
@@ -397,9 +394,7 @@ class ProjectileFxView:
 
         # Beam-style projectiles get a trail from origin to current position in the flight phase.
         if type_id in _BEAM_TYPES and life >= 0.4:
-            proj_origin = getattr(proj, "origin", None)
-            if not isinstance(proj_origin, Vec2):
-                proj_origin = proj_pos
+            proj_origin = proj.origin
             beam = proj_pos - proj_origin
             direction, dist = beam.normalized_with_length()
             if dist > 1e-6:

@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Protocol, cast
+from typing import TYPE_CHECKING
 
 import pyray as rl
 
@@ -28,22 +28,8 @@ from .projectiles import draw_projectile, draw_secondary_projectile, draw_sharps
 from .trooper import draw_player_trooper_sprite
 
 if TYPE_CHECKING:
+    from ...creatures.runtime import CreatureState
     from ...sim.state_types import PlayerState
-
-
-class _CreatureDrawContract(Protocol):
-    active: bool
-    pos: Vec2
-    size: float
-    hitbox_size: float
-    type_id: int
-    flags: CreatureFlags
-    plague_infected: bool
-    tint: RGBA
-    anim_phase: float
-    heading: float
-    max_hp: float
-
 
 @dataclass(frozen=True, slots=True)
 class WorldDrawContext:
@@ -227,7 +213,7 @@ def draw_players(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext, alive: bo
         draw_player(render_ctx, player, ctx=ctx)
 
 
-def sorted_active_creatures(render_ctx: WorldRenderCtx) -> list[tuple[int, _CreatureDrawContract]]:
+def sorted_active_creatures(render_ctx: WorldRenderCtx) -> list[tuple[int, CreatureState]]:
     creature_type_order = {
         int(CreatureTypeId.ZOMBIE): 0,
         int(CreatureTypeId.SPIDER_SP1): 1,
@@ -235,11 +221,7 @@ def sorted_active_creatures(render_ctx: WorldRenderCtx) -> list[tuple[int, _Crea
         int(CreatureTypeId.ALIEN): 3,
         int(CreatureTypeId.LIZARD): 4,
     }
-    creatures = [
-        (idx, cast(_CreatureDrawContract, creature))
-        for idx, creature in enumerate(render_ctx.creatures.entries)
-        if creature.active
-    ]
+    creatures = [(idx, creature) for idx, creature in enumerate(render_ctx.creatures.entries) if creature.active]
     creatures.sort(
         key=lambda item: (creature_type_order.get(int(item[1].type_id), 999), item[0]),
     )
@@ -248,7 +230,7 @@ def sorted_active_creatures(render_ctx: WorldRenderCtx) -> list[tuple[int, _Crea
 
 def draw_creature_overlays(
     render_ctx: WorldRenderCtx,
-    creature: _CreatureDrawContract,
+    creature: CreatureState,
     *,
     screen: Vec2,
     hitbox_size: float,

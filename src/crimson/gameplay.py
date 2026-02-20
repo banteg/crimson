@@ -22,7 +22,6 @@ from .perks.runtime.player_ticks import apply_player_perk_ticks
 from .perks.selection import perk_auto_pick
 from .perks.state import CreatureForPerks, PerkEffectIntervals, PerkSelectionState
 from .projectiles import (
-    Damageable,
     ProjectilePool,
     ProjectileTypeId,
     SecondaryProjectilePool,
@@ -58,6 +57,7 @@ from .weapon_runtime import (
 from .weapons import WEAPON_TABLE, WeaponId
 
 if TYPE_CHECKING:
+    from .creatures.runtime import CreatureState
     from .persistence.save_status import GameStatus
     from .sim.input import PlayerInput
     from .sim.state_types import PlayerState
@@ -354,7 +354,7 @@ def _player_apply_move_with_spawn_avoidance(
     *,
     delta: Vec2,
     spawn_slots: Sequence[_SpawnSlotLike] | None,
-    creatures: Sequence[Damageable] | None,
+    creatures: Sequence[CreatureState] | None,
 ) -> None:
     """Port of native `player_apply_move_with_spawn_avoidance` (0x0041e290)."""
 
@@ -533,7 +533,7 @@ def player_update(
     detail_preset: int = 5,
     world_size: float = 1024.0,
     players: list[PlayerState] | None = None,
-    creatures: Sequence[Damageable] | None = None,
+    creatures: Sequence[CreatureState] | None = None,
     spawn_slots: Sequence[_SpawnSlotLike] | None = None,
 ) -> None:
     """Port of `player_update` (0x004136b0) for the rewrite runtime."""

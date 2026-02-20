@@ -2,18 +2,22 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
 
 from ..game_modes import GameMode
 from ..perks.helpers import perk_active
-from ..projectiles import CreatureDamageApplier, Damageable
+from ..projectiles import CreatureDamageApplier
 from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
 from ..weapon_runtime.availability import weapon_pick_random_available
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 from .apply import bonus_apply
 from .ids import BONUS_BY_ID, BonusId, bonus_display_name
 from .selection import bonus_pick_random_type
+
+if TYPE_CHECKING:
+    from ..creatures.runtime import CreatureState
 
 BONUS_POOL_SIZE = 16
 BONUS_SPAWN_MARGIN = 32.0
@@ -335,7 +339,7 @@ class BonusPool:
         *,
         state: GameplayState,
         players: list[PlayerState],
-        creatures: Sequence[Damageable] | None = None,
+        creatures: Sequence[CreatureState] | None = None,
         apply_creature_damage: CreatureDamageApplier | None = None,
         detail_preset: int = 5,
         defer_freeze_corpse_fx: bool = False,

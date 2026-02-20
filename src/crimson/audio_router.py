@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import random
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from grim.audio import AudioState, play_sfx, trigger_game_tune
 
@@ -11,6 +12,10 @@ from .game_modes import GameMode
 from .projectiles import ProjectileHit
 from .weapon_sfx import resolve_weapon_sfx_ref
 from .weapons import WEAPON_BY_ID, WeaponId
+
+if TYPE_CHECKING:
+    from .creatures.runtime import CreatureDeath
+    from .sim.state_types import PlayerState
 
 _MAX_HIT_SFX_PER_FRAME = 4
 _MAX_DEATH_SFX_PER_FRAME = 3
@@ -122,7 +127,7 @@ class AudioRouter:
 
     def handle_player_audio(
         self,
-        player: object,
+        player: PlayerState,
         *,
         prev_shot_seq: int,
         prev_reload_active: bool,
@@ -130,12 +135,12 @@ class AudioRouter:
     ) -> None:
         if self.audio is None:
             return
-        weapon = WEAPON_BY_ID.get(int(getattr(player, "weapon_id", 0)))
+        weapon = WEAPON_BY_ID.get(int(player.weapon_id))
         if weapon is None:
             return
 
-        if int(getattr(player, "shot_seq", 0)) > int(prev_shot_seq):
-            if float(getattr(player, "fire_bullets_timer", 0.0)) > 0.0:
+        if int(player.shot_seq) > int(prev_shot_seq):
+            if float(player.fire_bullets_timer) > 0.0:
                 # player_update (crimsonland.exe): when Fire Bullets is active, the regular per-weapon
                 # shot sfx is suppressed and replaced by Fire Bullets + Plasma Minigun fire sfx.
                 fire_bullets = WEAPON_BY_ID.get(int(WeaponId.FIRE_BULLETS))
@@ -147,8 +152,8 @@ class AudioRouter:
             else:
                 self.play_sfx(resolve_weapon_sfx_ref(weapon.fire_sound))
 
-        reload_active = bool(getattr(player, "reload_active", False))
-        reload_timer = float(getattr(player, "reload_timer", 0.0))
+        reload_active = bool(player.reload_active)
+        reload_timer = float(player.reload_timer)
         reload_started = (not prev_reload_active and reload_active) or (reload_timer > prev_reload_timer + 1e-6)
         if reload_started:
             self.play_sfx(resolve_weapon_sfx_ref(weapon.reload_sound))
@@ -185,12 +190,12 @@ class AudioRouter:
             type_id = int(hits[idx].type_id)
             self.play_sfx(self._hit_sfx_for_type(type_id, beam_types=beam_types, rand=rand))
 
-    def play_death_sfx(self, deaths: tuple[object, ...], *, rand: Callable[[], int]) -> None:
+    def play_death_sfx(self, deaths: Sequence[CreatureDeath], *, rand: Callable[[], int]) -> None:
         if self.audio is None or not deaths:
             return
         for idx in range(min(len(deaths), _MAX_DEATH_SFX_PER_FRAME)):
             death = deaths[idx]
-            type_id = getattr(death, "type_id", None)
+            type_id = death.type_id
             if type_id is None:
                 continue
             try:

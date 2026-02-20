@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 import random
-from dataclasses import dataclass
 
 import pyray as rl
 
@@ -12,7 +11,7 @@ from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
 from grim.view import View, ViewContext
 
-from ..creatures.spawn import CreatureFlags
+from ..creatures.runtime import CreatureState
 from ..game_modes import GameMode
 from ..game_world import GameWorld
 from ..gameplay import player_update
@@ -42,15 +41,15 @@ TARGET_FILL = rl.Color(220, 80, 80, 220)
 TARGET_OUTLINE = rl.Color(140, 40, 40, 255)
 
 
-@dataclass(slots=True)
-class TargetDummy:
-    pos: Vec2
-    hp: float
-    size: float = 56.0
-    hitbox_size: float = 56.0
-    active: bool = True
-    flags: CreatureFlags = CreatureFlags(0)
-    plague_infected: bool = False
+def _make_target(*, pos: Vec2, hp: float, size: float, hitbox_size: float) -> CreatureState:
+    return CreatureState(
+        active=True,
+        pos=pos,
+        hp=float(hp),
+        max_hp=float(hp),
+        size=float(size),
+        hitbox_size=float(hitbox_size),
+    )
 
 
 class ProjectileRenderDebugView:
@@ -76,7 +75,7 @@ class ProjectileRenderDebugView:
         self._weapon_ids = [entry.weapon_id for entry in WEAPON_TABLE if entry.name is not None]
         self._weapon_index = 0
 
-        self._targets: list[TargetDummy] = []
+        self._targets: list[CreatureState] = []
 
         self.close_requested = False
         self._paused = False
@@ -101,7 +100,7 @@ class ProjectileRenderDebugView:
             target_pos = (center + Vec2.from_angle(angle) * ring).clamp_rect(
                 40.0, 40.0, WORLD_SIZE - 40.0, WORLD_SIZE - 40.0,
             )
-            self._targets.append(TargetDummy(pos=target_pos, hp=260.0, size=64.0, hitbox_size=64.0))
+            self._targets.append(_make_target(pos=target_pos, hp=260.0, size=64.0, hitbox_size=64.0))
 
     def _reset_scene(self) -> None:
         self._world.reset(seed=0xBEEF, player_count=1, spawn_pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
@@ -356,7 +355,7 @@ class ProjectileRenderDebugView:
         if player is not None and player.health > 0.0:
             aim = player.aim
             dist = (aim - player.pos).length()
-            radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
+            radius = max(6.0, dist * float(player.spread_heat) * 0.5)
             screen_radius = max(1.0, radius * scale)
             aim_screen = self._world.world_to_screen(aim)
             draw_aim_circle(render_ctx, center=aim_screen, radius=screen_radius)

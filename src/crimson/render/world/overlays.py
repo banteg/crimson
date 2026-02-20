@@ -132,13 +132,13 @@ def draw_direction_arrows(
     origin = rl.Vector2(width * 0.5, height * 0.5)
 
     for player in render_ctx.players:
-        if float(getattr(player, "health", 0.0)) <= 0.0:
+        if float(player.health) <= 0.0:
             continue
-        index = int(getattr(player, "index", 0))
+        index = int(player.index)
         if not hud_indicator_enabled(render_ctx, index):
             continue
 
-        heading = float(getattr(player, "heading", 0.0))
+        heading = float(player.heading)
         marker_pos = player.pos + Vec2.from_heading(heading) * 60.0
         screen = render_ctx._world_to_screen_with(marker_pos, camera=camera, view_scale=view_scale)
         dst = rl.Rectangle(screen.x, screen.y, width, height)

@@ -5,7 +5,7 @@ import os
 import random
 import time
 from dataclasses import dataclass, replace
-from typing import Any
+from typing import TYPE_CHECKING
 
 import pyray as rl
 
@@ -25,6 +25,11 @@ from ..weapons import WEAPON_BY_ID, WeaponId
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .audio_bootstrap import init_view_audio
 from .registry import register_view
+
+if TYPE_CHECKING:
+    from ..creatures.runtime import CreatureState
+    from ..projectiles import Projectile, SecondaryProjectile
+    from ..sim.state_types import PlayerState
 
 WORLD_SIZE = 1024.0
 WORLD_CENTER = Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5)
@@ -921,8 +926,8 @@ def _shadow_occluder_radius(size: float, hitbox_size: float) -> float:
 
 
 def collect_shadow_occluders(
-    player: Any,
-    creatures: list[Any],
+    player: PlayerState | None,
+    creatures: list[CreatureState],
     *,
     max_occluders: int = MAX_OCCLUDERS,
 ) -> list[CircleOccluder]:
@@ -940,49 +945,48 @@ def collect_shadow_occluders(
             return
         occluders.append(CircleOccluder(pos=Vec2(float(pos.x), float(pos.y)), radius=radius_f))
 
-    if player is not None and float(getattr(player, "health", 0.0)) > 0.0:
-        player_pos = getattr(player, "pos", None)
-        player_size = float(getattr(player, "size", 48.0))
-        player_hitbox = float(getattr(player, "size", 48.0)) * 0.4
-        _append(player_pos, _shadow_occluder_radius(player_size, player_hitbox))
+    if player is not None and float(player.health) > 0.0:
+        player_size = float(player.size)
+        player_hitbox = float(player.size) * 0.4
+        _append(player.pos, _shadow_occluder_radius(player_size, player_hitbox))
 
     for creature in creatures:
         if len(occluders) >= int(max_occluders):
             break
-        if not bool(getattr(creature, "active", False)):
+        if not creature.active:
             continue
-        if float(getattr(creature, "hp", 0.0)) <= 0.0:
+        if float(creature.hp) <= 0.0:
             continue
-        hitbox_size = float(getattr(creature, "hitbox_size", 0.0))
+        hitbox_size = float(creature.hitbox_size)
         if hitbox_size <= 0.0:
             continue
-        size = float(getattr(creature, "size", 0.0))
-        _append(getattr(creature, "pos", None), _shadow_occluder_radius(size, hitbox_size))
+        size = float(creature.size)
+        _append(creature.pos, _shadow_occluder_radius(size, hitbox_size))
 
     return occluders
 
 
 def _projectile_lights(
-    entry: Any,
+    entry: Projectile,
     *,
     range_scale: float = DEFAULT_SHADOW_RANGE_SCALE,
     directional_focus: float = DEFAULT_DIRECTIONAL_FOCUS,
     directional_stretch: float = DEFAULT_DIRECTIONAL_STRETCH,
 ) -> tuple[ShadowLight, ...]:
-    if not bool(getattr(entry, "active", False)):
+    if not entry.active:
         return ()
-    type_id = int(getattr(entry, "type_id", -1))
+    type_id = int(entry.type_id)
     spec = _PRIMARY_PROJECTILE_LIGHTS.get(type_id)
     if spec is None:
         return ()
-    pos = getattr(entry, "pos", None)
+    pos = entry.pos
     if pos is None:
         return ()
     if not _is_finite_vec2(pos):
         return ()
     radius, strength = spec
     base_focus, base_stretch = _PRIMARY_PROJECTILE_DIRECTIONAL.get(type_id, (0.0, 1.0))
-    dir_x, dir_y = _normalized_dir_from_angle(float(getattr(entry, "angle", 0.0)))
+    dir_x, dir_y = _normalized_dir_from_angle(float(entry.angle))
     focus = _clampf(float(base_focus) * float(directional_focus), 0.0, 2.0)
     stretch = _clampf(float(base_stretch) * float(directional_stretch), 1.0, 6.0)
     if type_id in _OMNI_PROJECTILE_TYPES or (abs(dir_x) <= 1e-6 and abs(dir_y) <= 1e-6):
@@ -1004,7 +1008,7 @@ def _projectile_lights(
     if type_id not in _ION_PROJECTILE_TYPES:
         return (head,)
 
-    origin = getattr(entry, "origin", None)
+    origin = entry.origin
     if origin is None or not _is_finite_vec2(origin):
         return (head,)
 
@@ -1034,30 +1038,30 @@ def _projectile_lights(
 
 
 def _secondary_projectile_light(
-    entry: Any,
+    entry: SecondaryProjectile,
     *,
     range_scale: float = DEFAULT_SHADOW_RANGE_SCALE,
     directional_focus: float = DEFAULT_DIRECTIONAL_FOCUS,
     directional_stretch: float = DEFAULT_DIRECTIONAL_STRETCH,
 ) -> ShadowLight | None:
-    if not bool(getattr(entry, "active", False)):
+    if not entry.active:
         return None
-    type_id = int(getattr(entry, "type_id", -1))
+    type_id = int(entry.type_id)
     spec = _SECONDARY_PROJECTILE_LIGHTS.get(type_id)
     if spec is None:
         return None
-    pos = getattr(entry, "pos", None)
+    pos = entry.pos
     if pos is None:
         return None
     if not _is_finite_vec2(pos):
         return None
     radius, strength = spec
     if type_id == int(SecondaryProjectileTypeId.DETONATION):
-        radius *= max(0.5, float(getattr(entry, "detonation_scale", 1.0)))
+        radius *= max(0.5, float(entry.detonation_scale))
     base_focus, base_stretch = _SECONDARY_PROJECTILE_DIRECTIONAL.get(type_id, (0.0, 1.0))
-    dir_x, dir_y = _normalized_dir_from_vec(getattr(entry, "vel", None))
+    dir_x, dir_y = _normalized_dir_from_vec(entry.vel)
     if abs(dir_x) <= 1e-6 and abs(dir_y) <= 1e-6:
-        dir_x, dir_y = _normalized_dir_from_angle(float(getattr(entry, "angle", 0.0)))
+        dir_x, dir_y = _normalized_dir_from_angle(float(entry.angle))
     focus = _clampf(float(base_focus) * float(directional_focus), 0.0, 2.0)
     stretch = _clampf(float(base_stretch) * float(directional_stretch), 1.0, 6.0)
     if abs(dir_x) <= 1e-6 and abs(dir_y) <= 1e-6:
@@ -1094,8 +1098,8 @@ def tick_transient_lights(lights: list[TransientLight], dt: float) -> list[Trans
 
 
 def collect_shadow_lights(
-    projectiles: list[Any],
-    secondary_projectiles: list[Any],
+    projectiles: list[Projectile],
+    secondary_projectiles: list[SecondaryProjectile],
     transient_lights: list[TransientLight],
     *,
     max_lights: int = MAX_LIGHTS,

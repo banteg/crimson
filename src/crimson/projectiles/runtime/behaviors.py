@@ -19,7 +19,6 @@ from ..effects import (
 )
 from ..types import (
     CreatureDamageApplier,
-    Damageable,
     Projectile,
     ProjectileRuntimeState,
     ProjectileTypeId,
@@ -28,13 +27,14 @@ from ..types import (
 from .collision import _apply_damage_to_creature, _hit_radius_for
 
 if TYPE_CHECKING:
+    from ...creatures.runtime import CreatureState
     from .projectile_pool import ProjectilePool
 
 
 @dataclass(slots=True)
 class _ProjectileUpdateCtx:
     pool: ProjectilePool
-    creatures: Sequence[Damageable]
+    creatures: Sequence[CreatureState]
     dt: float
     ion_scale: float
     detail_preset: int
@@ -57,7 +57,7 @@ class _ProjectileHitInfo:
 @dataclass(slots=True)
 class _ProjectileHitPerkCtx:
     proj: Projectile
-    creature: Damageable
+    creature: CreatureState
     rng: Callable[[], int]
     owner_perk_active: Callable[[int, int], bool]
     poison_idx: int

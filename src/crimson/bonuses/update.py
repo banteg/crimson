@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 from ..math_parity import f32
 from ..perks.helpers import perk_active
-from ..projectiles import CreatureDamageApplier, Damageable
+from ..projectiles import CreatureDamageApplier
 from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
 from .apply import bonus_apply
 from .hud import bonus_hud_update
@@ -13,13 +14,16 @@ from .pool import BONUS_PICKUP_LINGER, BONUS_TELEKINETIC_PICKUP_MS, bonus_find_a
 
 _REFLEX_TIMER_SUBTRACT_BIAS = 4e-9
 
+if TYPE_CHECKING:
+    from ..creatures.runtime import CreatureState
+
 
 def bonus_telekinetic_update(
     state: GameplayState,
     players: list[PlayerState],
     dt: float,
     *,
-    creatures: Sequence[Damageable] | None = None,
+    creatures: Sequence[CreatureState] | None = None,
     apply_creature_damage: CreatureDamageApplier | None = None,
     detail_preset: int = 5,
     defer_freeze_corpse_fx: bool = False,
@@ -92,7 +96,7 @@ def bonus_update(
     players: list[PlayerState],
     dt: float,
     *,
-    creatures: Sequence[Damageable] | None = None,
+    creatures: Sequence[CreatureState] | None = None,
     update_hud: bool = True,
     apply_creature_damage: CreatureDamageApplier | None = None,
     detail_preset: int = 5,

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
-
+from crimson.creatures.runtime import CreatureDeath
 from crimson.creatures.spawn import CreatureTypeId
 from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
@@ -15,6 +14,22 @@ from crimson.sim.presentation_step import (
 )
 from crimson.sim.state_types import BonusPickupEvent, PlayerState
 from grim.geom import Vec2
+
+
+def _death(
+    *,
+    type_id: int,
+    suppress_death_sfx: bool = False,
+) -> CreatureDeath:
+    return CreatureDeath(
+        index=0,
+        pos=Vec2(),
+        type_id=int(type_id),
+        reward_value=0.0,
+        xp_awarded=0,
+        owner_id=-1,
+        suppress_death_sfx=bool(suppress_death_sfx),
+    )
 
 
 def _hits(count: int, *, type_id: int = int(ProjectileTypeId.PISTOL)) -> list[ProjectileHit]:
@@ -64,7 +79,7 @@ def test_plan_death_sfx_allows_five_randomized_deaths() -> None:
         draws["count"] += 1
         return 0
 
-    deaths = tuple(SimpleNamespace(type_id=int(CreatureTypeId.ZOMBIE)) for _ in range(5))
+    deaths = tuple(_death(type_id=int(CreatureTypeId.ZOMBIE)) for _ in range(5))
     keys = plan_death_sfx_keys(deaths, rand=rand)
 
     assert len(keys) == 5
@@ -79,8 +94,8 @@ def test_plan_death_sfx_skips_suppressed_deaths() -> None:
         return 0
 
     deaths = (
-        SimpleNamespace(type_id=int(CreatureTypeId.ZOMBIE), suppress_death_sfx=True),
-        SimpleNamespace(type_id=int(CreatureTypeId.ZOMBIE), suppress_death_sfx=False),
+        _death(type_id=int(CreatureTypeId.ZOMBIE), suppress_death_sfx=True),
+        _death(type_id=int(CreatureTypeId.ZOMBIE), suppress_death_sfx=False),
     )
     keys = plan_death_sfx_keys(deaths, rand=rand)
 

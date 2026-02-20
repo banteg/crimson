@@ -11,9 +11,7 @@ from .types import (
     MAIN_PROJECTILE_POOL_SIZE,
     SECONDARY_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
-    Damageable,
     FxQueueLike,
-    PlayerDamageable,
     Projectile,
     ProjectileHit,
     ProjectileRuntimeState,
@@ -25,10 +23,8 @@ from .types import (
 
 __all__ = [
     "CreatureDamageApplier",
-    "Damageable",
     "FxQueueLike",
     "MAIN_PROJECTILE_POOL_SIZE",
-    "PlayerDamageable",
     "PROJECTILE_BEHAVIOR_BY_TYPE_ID",
     "Projectile",
     "ProjectileBehavior",

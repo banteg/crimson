@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
-from ..projectiles import CreatureDamageApplier, Damageable
+from ..projectiles import CreatureDamageApplier
 from ..sim.state_types import GameplayState, PlayerState
 from .apply_context import BonusApplyCtx, BonusApplyHandler, HasPos
 from .double_experience import apply_double_experience
@@ -22,6 +23,9 @@ from .shock_chain import apply_shock_chain
 from .speed import apply_speed
 from .weapon import apply_weapon
 from .weapon_power_up import apply_weapon_power_up
+
+if TYPE_CHECKING:
+    from ..creatures.runtime import CreatureState
 
 _BONUS_APPLY_HANDLERS: dict[BonusId, BonusApplyHandler] = {
     BonusId.POINTS: apply_points,
@@ -48,7 +52,7 @@ def bonus_apply(
     *,
     amount: int | None = None,
     origin: HasPos | None = None,
-    creatures: Sequence[Damageable] | None = None,
+    creatures: Sequence[CreatureState] | None = None,
     players: list[PlayerState] | None = None,
     apply_creature_damage: CreatureDamageApplier | None = None,
     detail_preset: int = 5,
