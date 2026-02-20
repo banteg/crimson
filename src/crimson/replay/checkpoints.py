@@ -6,9 +6,11 @@ import io
 import json
 import os
 from collections.abc import Sequence
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol, cast
+
+import msgspec
 
 from grim.geom import Vec2
 
@@ -100,6 +102,21 @@ class ReplayCheckpoints:
     replay_sha256: str
     sample_rate: int
     checkpoints: list[ReplayCheckpoint] = field(default_factory=list)
+
+
+def _replay_player_checkpoint_to_obj(player: ReplayPlayerCheckpoint) -> dict[str, object]:
+    return {
+        "pos": {"x": float(player.pos.x), "y": float(player.pos.y)},
+        "health": float(player.health),
+        "weapon_id": int(player.weapon_id),
+        "ammo": float(player.ammo),
+        "experience": int(player.experience),
+        "level": int(player.level),
+    }
+
+
+_CHECKPOINTS_ENCODER = msgspec.json.Encoder(order="deterministic")
+_CHECKPOINTS_DECODER = msgspec.json.Decoder(type=ReplayCheckpoints)
 
 
 def default_checkpoints_path(replay_path: Path) -> Path:
@@ -253,7 +270,7 @@ def build_checkpoint(
         "score_xp": int(score_xp),
         "kills": int(kills),
         "perk_pending": int(state.perk_selection.pending_count),
-        "players": [asdict(p) for p in player_ckpts],
+        "players": [_replay_player_checkpoint_to_obj(player) for player in player_ckpts],
         "creatures": [
             {
                 "type_id": int(creature.type_id),
@@ -310,13 +327,7 @@ def build_checkpoint(
 
 
 def dump_checkpoints(checkpoints: ReplayCheckpoints) -> bytes:
-    obj = {
-        "v": int(checkpoints.version),
-        "replay_sha256": str(checkpoints.replay_sha256),
-        "sample_rate": int(checkpoints.sample_rate),
-        "checkpoints": [asdict(ckpt) for ckpt in checkpoints.checkpoints],
-    }
-    raw = json.dumps(obj, separators=(",", ":"), sort_keys=True).encode("utf-8")
+    raw = _CHECKPOINTS_ENCODER.encode(checkpoints)
     return gzip.compress(raw, compresslevel=9, mtime=0)
 
 
@@ -327,153 +338,13 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
     if len(data) > int(max_payload_bytes):
         raise ReplayCheckpointsError(f"checkpoints payload too large (> {int(max_payload_bytes)} bytes)")
     try:
-        obj = json.loads(data.decode("utf-8"))
-    except json.JSONDecodeError as exc:
+        decoded = _CHECKPOINTS_DECODER.decode(data)
+    except (msgspec.DecodeError, msgspec.ValidationError) as exc:
         raise ReplayCheckpointsError("invalid checkpoints JSON payload") from exc
-    if not isinstance(obj, dict):
-        raise ReplayCheckpointsError("checkpoints root must be an object")
-    version = int(obj.get("v") or 0)
-    if version != FORMAT_VERSION:
-        raise ReplayCheckpointsError(f"unsupported checkpoints version: {version}")
-    replay_sha256 = str(obj.get("replay_sha256") or "")
-    sample_rate = int(obj.get("sample_rate") or 0)
-    raw_ckpts = obj.get("checkpoints") or []
-    if not isinstance(raw_ckpts, list):
-        raise ReplayCheckpointsError("checkpoints must be a list")
 
-    checkpoints: list[ReplayCheckpoint] = []
-    for item in raw_ckpts:
-        if not isinstance(item, dict):
-            raise ReplayCheckpointsError(f"checkpoint must be an object: {item!r}")
-        players_in = item.get("players") or []
-        if not isinstance(players_in, list):
-            raise ReplayCheckpointsError("checkpoint players must be a list")
-        players: list[ReplayPlayerCheckpoint] = []
-        for p in players_in:
-            if not isinstance(p, dict):
-                raise ReplayCheckpointsError(f"checkpoint player must be an object: {p!r}")
-            pos_raw = p.get("pos")
-            if not isinstance(pos_raw, dict):
-                raise ReplayCheckpointsError("checkpoint player pos must be an object")
-            px = float(pos_raw.get("x") or 0.0)
-            py = float(pos_raw.get("y") or 0.0)
-            players.append(
-                ReplayPlayerCheckpoint(
-                    pos=Vec2(px, py),
-                    health=float(p.get("health") or 0.0),
-                    weapon_id=int(p.get("weapon_id") or 0),
-                    ammo=float(p.get("ammo") or 0.0),
-                    experience=int(p.get("experience") or 0),
-                    level=int(p.get("level") or 0),
-                ),
-            )
-        bonus_timers_in = item.get("bonus_timers") or {}
-        if not isinstance(bonus_timers_in, dict):
-            raise ReplayCheckpointsError("checkpoint bonus_timers must be an object")
-
-        rng_marks_in = item.get("rng_marks") or {}
-        if not isinstance(rng_marks_in, dict):
-            raise ReplayCheckpointsError("checkpoint rng_marks must be an object")
-
-        deaths_in = item.get("deaths") or []
-        if not isinstance(deaths_in, list):
-            raise ReplayCheckpointsError("checkpoint deaths must be a list")
-        deaths: list[ReplayDeathLedgerEntry] = []
-        for death in deaths_in:
-            if not isinstance(death, dict):
-                raise ReplayCheckpointsError(f"checkpoint death must be an object: {death!r}")
-            deaths.append(
-                ReplayDeathLedgerEntry(
-                    creature_index=int(death.get("creature_index") if "creature_index" in death else -1),
-                    type_id=int(death.get("type_id") or 0),
-                    reward_value=float(death.get("reward_value") or 0.0),
-                    xp_awarded=int(death.get("xp_awarded") or 0),
-                    owner_id=int(death.get("owner_id") if "owner_id" in death else -100),
-                ),
-            )
-
-        perk_in = item.get("perk")
-        if perk_in is None:
-            perk = ReplayPerkSnapshot(pending_count=int(item.get("perk_pending") or 0))
-        else:
-            if not isinstance(perk_in, dict):
-                raise ReplayCheckpointsError("checkpoint perk must be an object")
-            raw_choices = perk_in.get("choices") or []
-            if not isinstance(raw_choices, list):
-                raise ReplayCheckpointsError("checkpoint perk choices must be a list")
-            raw_nonzero = perk_in.get("player_nonzero_counts") or []
-            if not isinstance(raw_nonzero, list):
-                raise ReplayCheckpointsError("checkpoint perk player_nonzero_counts must be a list")
-            player_nonzero_counts: list[list[list[int]]] = []
-            for player_counts in raw_nonzero:
-                if not isinstance(player_counts, list):
-                    raise ReplayCheckpointsError("checkpoint perk player counts must be a list")
-                rows: list[list[int]] = []
-                for row in player_counts:
-                    if not isinstance(row, list):
-                        raise ReplayCheckpointsError("checkpoint perk row must be a list")
-                    if len(row) < 2:
-                        raise ReplayCheckpointsError("checkpoint perk row must have [perk_id, count]")
-                    rows.append([int(row[0]), int(row[1])])
-                player_nonzero_counts.append(rows)
-            perk = ReplayPerkSnapshot(
-                pending_count=(
-                    int(perk_in["pending_count"])
-                    if "pending_count" in perk_in
-                    else int(item.get("perk_pending") or 0)
-                ),
-                choices_dirty=(bool(perk_in["choices_dirty"]) if "choices_dirty" in perk_in else False),
-                choices=[int(perk_id) for perk_id in raw_choices],
-                player_nonzero_counts=player_nonzero_counts,
-            )
-
-        events_in = item.get("events")
-        if events_in is None:
-            events = ReplayEventSummary(
-                hit_count=-1,
-                pickup_count=-1,
-                sfx_count=-1,
-                sfx_head=[],
-            )
-        else:
-            if not isinstance(events_in, dict):
-                raise ReplayCheckpointsError("checkpoint events must be an object")
-            raw_sfx_head = events_in.get("sfx_head") or []
-            if not isinstance(raw_sfx_head, list):
-                raise ReplayCheckpointsError("checkpoint events sfx_head must be a list")
-            events = ReplayEventSummary(
-                hit_count=(int(events_in["hit_count"]) if "hit_count" in events_in else 0),
-                pickup_count=(int(events_in["pickup_count"]) if "pickup_count" in events_in else 0),
-                sfx_count=(int(events_in["sfx_count"]) if "sfx_count" in events_in else 0),
-                sfx_head=[str(key) for key in raw_sfx_head],
-            )
-
-        checkpoints.append(
-            ReplayCheckpoint(
-                tick_index=int(item.get("tick_index") or 0),
-                rng_state=int(item.get("rng_state") or 0),
-                elapsed_ms=int(item.get("elapsed_ms") or 0),
-                score_xp=int(item.get("score_xp") or 0),
-                kills=int(item.get("kills") or 0),
-                creature_count=int(item.get("creature_count") or 0),
-                perk_pending=int(item.get("perk_pending") or 0),
-                players=players,
-                bonus_timers={str(k): int(v) for k, v in bonus_timers_in.items()},
-                state_hash=str(item.get("state_hash") or ""),
-                command_hash=str(item.get("command_hash") or ""),
-                rng_marks={str(k): int(v) for k, v in rng_marks_in.items()},
-                deaths=deaths,
-                perk=perk,
-                events=events,
-            ),
-        )
-
-    return ReplayCheckpoints(
-        version=version,
-        replay_sha256=replay_sha256,
-        sample_rate=sample_rate,
-        checkpoints=checkpoints,
-    )
+    if int(decoded.version) != FORMAT_VERSION:
+        raise ReplayCheckpointsError(f"unsupported checkpoints version: {int(decoded.version)}")
+    return decoded
 
 
 def dump_checkpoints_file(path: Path, checkpoints: ReplayCheckpoints) -> None:

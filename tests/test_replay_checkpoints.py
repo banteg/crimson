@@ -74,9 +74,9 @@ def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldSta
     assert decoded == checkpoints
 
 
-def test_load_checkpoints_supports_legacy_without_perk_object() -> None:
-    legacy_obj = {
-        "v": FORMAT_VERSION,
+def test_load_checkpoints_defaults_optional_checkpoint_fields() -> None:
+    payload_obj = {
+        "version": FORMAT_VERSION,
         "replay_sha256": "0" * 64,
         "sample_rate": 60,
         "checkpoints": [
@@ -94,16 +94,16 @@ def test_load_checkpoints_supports_legacy_without_perk_object() -> None:
             },
         ],
     }
-    payload = gzip.compress(json.dumps(legacy_obj, separators=(",", ":"), sort_keys=True).encode("utf-8"), mtime=0)
+    payload = gzip.compress(json.dumps(payload_obj, separators=(",", ":"), sort_keys=True).encode("utf-8"), mtime=0)
     loaded = load_checkpoints(payload)
-    assert loaded.checkpoints[0].perk.pending_count == 4
+    assert loaded.checkpoints[0].perk.pending_count == 0
     assert loaded.checkpoints[0].perk.choices == []
     assert loaded.checkpoints[0].rng_marks == {}
     assert loaded.checkpoints[0].command_hash == ""
     assert loaded.checkpoints[0].deaths == []
-    assert loaded.checkpoints[0].events.hit_count == -1
-    assert loaded.checkpoints[0].events.pickup_count == -1
-    assert loaded.checkpoints[0].events.sfx_count == -1
+    assert loaded.checkpoints[0].events.hit_count == 0
+    assert loaded.checkpoints[0].events.pickup_count == 0
+    assert loaded.checkpoints[0].events.sfx_count == 0
 
 
 def test_load_checkpoints_rejects_invalid_gzip_payload() -> None:
