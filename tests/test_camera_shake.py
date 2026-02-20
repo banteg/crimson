@@ -6,8 +6,6 @@ from pathlib import Path
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.camera import camera_shake_update
-from crimson.creatures.runtime import CreatureState
-from crimson.creatures.spawn import CreatureFlags
 from crimson.game_world import GameWorld
 from crimson.gameplay import GameplayState
 from crimson.sim.driver.setup import build_damage_scale_by_type, build_empty_fx_queues, reset_players
@@ -16,28 +14,7 @@ from crimson.sim.sessions import RushDeterministicSession, SurvivalDeterministic
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
-
-
-def _creature(
-    *,
-    pos: Vec2,
-    hp: float,
-    active: bool = True,
-    hitbox_size: float = 16.0,
-    size: float = 50.0,
-    flags: CreatureFlags = CreatureFlags(0),
-    plague_infected: bool = False,
-) -> CreatureState:
-    return CreatureState(
-        active=active,
-        pos=pos,
-        hp=hp,
-        max_hp=hp,
-        hitbox_size=hitbox_size,
-        size=size,
-        flags=flags,
-        plague_infected=plague_infected,
-    )
+from tests.factories import make_creature_state as _creature
 
 
 def test_camera_shake_update_resets_offsets_when_inactive() -> None:

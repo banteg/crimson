@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CreatureState
+from functools import partial
+
 from crimson.gameplay import GameplayState
 from crimson.projectiles import ProjectileTypeId, SecondaryProjectileTypeId
 from crimson.sim.input import PlayerInput
@@ -11,17 +12,9 @@ from crimson.weapon_runtime import (
 )
 from crimson.weapon_runtime.spawn import projectile_spawn
 from grim.geom import Vec2
+from tests.factories import make_creature_state
 
-
-def _creature(*, pos: Vec2, hp: float = 100.0, size: float = 200.0, hitbox_size: float = 16.0) -> CreatureState:
-    return CreatureState(
-        active=True,
-        pos=pos,
-        hp=float(hp),
-        max_hp=float(hp),
-        size=float(size),
-        hitbox_size=float(hitbox_size),
-    )
+_creature = partial(make_creature_state, size=200.0)
 
 
 def test_shots_fired_and_hit_increment() -> None:

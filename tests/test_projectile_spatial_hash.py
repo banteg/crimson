@@ -4,17 +4,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.projectiles import SecondaryProjectilePool
 from crimson.projectiles.runtime.spatial_hash import CreatureSpatialHash
 from grim.geom import Vec2
-
-
-def _creature(*, pos: Vec2, hp: float, active: bool = True, hitbox_size: float = 16.0, size: float = 50.0) -> CreatureState:
-    return CreatureState(
-        active=bool(active),
-        pos=pos,
-        hp=float(hp),
-        max_hp=float(hp),
-        hitbox_size=float(hitbox_size),
-        size=float(size),
-    )
+from tests.factories import make_creature_state as _creature
 
 
 def _is_collidable(creature: CreatureState) -> bool:

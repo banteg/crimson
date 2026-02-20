@@ -7,8 +7,6 @@ from crimson.aim_schemes import AimScheme
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.bonuses.hud import bonus_hud_update
-from crimson.creatures.runtime import CreatureState
-from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import (
     _RELATIVE_MOVE_HEADING_LEFT,
     GameplayState,
@@ -28,28 +26,7 @@ from crimson.weapon_runtime import (
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
-
-
-def _creature(
-    *,
-    pos: Vec2,
-    hp: float,
-    size: float = 50.0,
-    active: bool = True,
-    hitbox_size: float = 16.0,
-    flags: CreatureFlags = CreatureFlags(0),
-    plague_infected: bool = False,
-) -> CreatureState:
-    return CreatureState(
-        pos=pos,
-        hp=hp,
-        max_hp=hp,
-        size=size,
-        active=active,
-        hitbox_size=hitbox_size,
-        flags=flags,
-        plague_infected=plague_infected,
-    )
+from tests.factories import make_creature_state as _creature
 
 
 def _active_type_ids(pool: ProjectilePool) -> list[int]:

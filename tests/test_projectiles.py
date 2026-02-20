@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from typing import cast
 
 from crimson.creatures.runtime import CreatureState
-from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
@@ -15,28 +14,7 @@ from crimson.projectiles.types import ProjectileRuntimeState
 from crimson.sim.state_types import PlayerState
 from grim.color import RGBA
 from grim.geom import Vec2
-
-
-def _creature(
-    *,
-    pos: Vec2,
-    hp: float,
-    active: bool = True,
-    hitbox_size: float = 16.0,
-    size: float = 50.0,
-    flags: CreatureFlags = CreatureFlags(0),
-    plague_infected: bool = False,
-) -> CreatureState:
-    return CreatureState(
-        active=active,
-        pos=pos,
-        hp=hp,
-        max_hp=hp,
-        hitbox_size=hitbox_size,
-        size=size,
-        flags=flags,
-        plague_infected=plague_infected,
-    )
+from tests.factories import make_creature_state as _creature
 
 
 def _fixed_rng(value: int):

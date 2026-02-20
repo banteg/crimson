@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pytest
 
-from crimson.creatures.runtime import CreatureState
 from crimson.projectiles import Projectile, ProjectileTypeId, SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from crimson.views.lighting_debug import (
@@ -27,28 +26,11 @@ from crimson.views.lighting_debug import (
 from crimson.weapons import WEAPON_BY_ID
 from grim.geom import Vec2
 from grim.view import ViewContext
+from tests.factories import make_creature_state as _creature
 
 
 def _player(*, pos: Vec2, health: float = 100.0, size: float = 48.0) -> PlayerState:
     return PlayerState(index=0, pos=pos, health=float(health), size=float(size))
-
-
-def _creature(
-    *,
-    pos: Vec2,
-    hp: float = 30.0,
-    active: bool = True,
-    hitbox_size: float = 16.0,
-    size: float = 40.0,
-) -> CreatureState:
-    return CreatureState(
-        active=bool(active),
-        pos=pos,
-        hp=float(hp),
-        max_hp=float(max(hp, 0.0)),
-        hitbox_size=float(hitbox_size),
-        size=float(size),
-    )
 
 
 def _projectile(
