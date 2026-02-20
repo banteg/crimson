@@ -1,9 +1,0 @@
-id: no-dynamic-attr-setattr-mutations
-language: python
-severity: error
-message: Typed runtime contracts should avoid dynamic `setattr`; assign concrete attributes directly.
-files:
-  # Current rollout scope. Expand with additional module globs as typed contracts harden.
-  - src/crimson/original/**/*.py
-rule:
-  pattern: setattr($OBJ, $ATTR, $VALUE)

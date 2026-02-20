@@ -556,7 +556,7 @@ class CaptureVisualizerView:
         tick_index = int(row.tick_index)
 
         if self._outside_draws_by_tick is not None:
-            draws = (self._outside_draws_by_tick[int(tick_index)] if int(tick_index) in self._outside_draws_by_tick else None)
+            draws = self._outside_draws_by_tick.get(int(tick_index))
             if draws is None:
                 draws = int(self._inter_tick_rand_draws)
             for _ in range(max(0, int(draws))):
@@ -641,7 +641,7 @@ class CaptureVisualizerView:
         )
         out: list[str] = []
         for label, key in fields:
-            out.append(f"{label}={_format_seconds(_int_or((timer_map[str(key)] if str(key) in timer_map else None), 0))}")
+            out.append(f"{label}={_format_seconds(_int_or(timer_map.get(str(key)), 0))}")
         return " ".join(out)
 
     @staticmethod
@@ -740,7 +740,7 @@ class CaptureVisualizerView:
 
     @staticmethod
     def _weapon_name(weapon_id: int) -> str:
-        weapon = (WEAPON_BY_ID[int(weapon_id)] if int(weapon_id) in WEAPON_BY_ID else None)
+        weapon = WEAPON_BY_ID.get(int(weapon_id))
         if weapon is not None and weapon.name:
             return _short_text(str(weapon.name), max_len=22)
         return f"id{int(weapon_id)}"
@@ -775,7 +775,7 @@ class CaptureVisualizerView:
             return {}
         out: dict[str, int] = {}
         for key in ("shield", "fire_bullets", "speed_bonus"):
-            out[str(key)] = max(0, _int_or((raw[str(key)] if str(key) in raw else None), 0))
+            out[str(key)] = max(0, _int_or(raw.get(str(key)), 0))
         return out
 
     def _active_bonus_summary(
@@ -792,7 +792,7 @@ class CaptureVisualizerView:
             ("Speed", "speed_bonus"),
         )
         for label, key in player_fields:
-            ms = _int_or((player_timers[str(key)] if str(key) in player_timers else None), 0)
+            ms = _int_or(player_timers.get(str(key)), 0)
             if int(ms) <= 0:
                 continue
             chunks.append(f"{label} {_format_seconds(int(ms))}s")
@@ -805,7 +805,7 @@ class CaptureVisualizerView:
             int(BonusId.FREEZE),
         )
         for bonus_id in ordered_bonus_ids:
-            ms = _int_or((global_timers[str(int(bonus_id))] if str(int(bonus_id)) in global_timers else None), 0)
+            ms = _int_or(global_timers.get(str(int(bonus_id))), 0)
             if int(ms) <= 0:
                 continue
             label = _short_text(self._bonus_label_from_entry(BonusEntry(bonus_id=int(bonus_id), amount=0)), max_len=18)
@@ -1229,7 +1229,7 @@ class CaptureVisualizerView:
         if capture_active and capture is not None:
             cx = float(capture.x)
             cy = float(capture.y)
-            prev = (self._trace_prev_capture[key] if key in self._trace_prev_capture else None)
+            prev = self._trace_prev_capture.get(key)
             if prev is not None:
                 prev_tick, px, py = prev
                 if int(tick_index) - int(prev_tick) == 1:
@@ -1255,7 +1255,7 @@ class CaptureVisualizerView:
         if rewrite_active and rewrite is not None:
             rx = float(rewrite.x)
             ry = float(rewrite.y)
-            prev = (self._trace_prev_rewrite[key] if key in self._trace_prev_rewrite else None)
+            prev = self._trace_prev_rewrite.get(key)
             if prev is not None:
                 prev_tick, px, py = prev
                 if int(tick_index) - int(prev_tick) == 1:
@@ -1289,8 +1289,8 @@ class CaptureVisualizerView:
 
         for idx in sorted(set(snapshot.capture_players) | set(snapshot.rewrite_players)):
             key = f"p:{int(idx)}"
-            capture = (snapshot.capture_players[int(idx)] if int(idx) in snapshot.capture_players else None)
-            rewrite = (snapshot.rewrite_players[int(idx)] if int(idx) in snapshot.rewrite_players else None)
+            capture = snapshot.capture_players.get(int(idx))
+            rewrite = snapshot.rewrite_players.get(int(idx))
             if capture is not None and bool(capture.active):
                 capture_keys_seen.add(str(key))
             if rewrite is not None and bool(rewrite.active):
@@ -1305,8 +1305,8 @@ class CaptureVisualizerView:
             )
         for idx in sorted(set(snapshot.capture_creatures) | set(snapshot.rewrite_creatures)):
             key = f"c:{int(idx)}"
-            capture = (snapshot.capture_creatures[int(idx)] if int(idx) in snapshot.capture_creatures else None)
-            rewrite = (snapshot.rewrite_creatures[int(idx)] if int(idx) in snapshot.rewrite_creatures else None)
+            capture = snapshot.capture_creatures.get(int(idx))
+            rewrite = snapshot.rewrite_creatures.get(int(idx))
             if capture is not None and bool(capture.active):
                 capture_keys_seen.add(str(key))
             if rewrite is not None and bool(rewrite.active):
@@ -1321,8 +1321,8 @@ class CaptureVisualizerView:
             )
         for idx in sorted(set(snapshot.capture_projectiles) | set(snapshot.rewrite_projectiles)):
             key = f"pr:{int(idx)}"
-            capture = (snapshot.capture_projectiles[int(idx)] if int(idx) in snapshot.capture_projectiles else None)
-            rewrite = (snapshot.rewrite_projectiles[int(idx)] if int(idx) in snapshot.rewrite_projectiles else None)
+            capture = snapshot.capture_projectiles.get(int(idx))
+            rewrite = snapshot.rewrite_projectiles.get(int(idx))
             if capture is not None and bool(capture.active):
                 capture_keys_seen.add(str(key))
             if rewrite is not None and bool(rewrite.active):
@@ -1337,8 +1337,8 @@ class CaptureVisualizerView:
             )
         for idx in sorted(set(snapshot.capture_secondary) | set(snapshot.rewrite_secondary)):
             key = f"spr:{int(idx)}"
-            capture = (snapshot.capture_secondary[int(idx)] if int(idx) in snapshot.capture_secondary else None)
-            rewrite = (snapshot.rewrite_secondary[int(idx)] if int(idx) in snapshot.rewrite_secondary else None)
+            capture = snapshot.capture_secondary.get(int(idx))
+            rewrite = snapshot.rewrite_secondary.get(int(idx))
             if capture is not None and bool(capture.active):
                 capture_keys_seen.add(str(key))
             if rewrite is not None and bool(rewrite.active):
@@ -1479,8 +1479,8 @@ class CaptureVisualizerView:
         max_drift = 0.0
         keys = set(capture_map) | set(rewrite_map)
         for key in keys:
-            capture = (capture_map[int(key)] if int(key) in capture_map else None)
-            rewrite = (rewrite_map[int(key)] if int(key) in rewrite_map else None)
+            capture = capture_map.get(int(key))
+            rewrite = rewrite_map.get(int(key))
 
             if self._show_capture_hitboxes and capture is not None and bool(capture.active):
                 cx, cy = self._world_to_screen(
@@ -1530,8 +1530,8 @@ class CaptureVisualizerView:
     ) -> None:
         bonus_radius = self._radius_to_screen(float(_BONUS_DRAW_RADIUS), width=width, height=height)
         for key in sorted(set(capture_map) | set(rewrite_map)):
-            capture = (capture_map[int(key)] if int(key) in capture_map else None)
-            rewrite = (rewrite_map[int(key)] if int(key) in rewrite_map else None)
+            capture = capture_map.get(int(key))
+            rewrite = rewrite_map.get(int(key))
             if self._show_capture_hitboxes and capture is not None and bool(capture.active):
                 cx, cy = self._world_to_screen(
                     x=float(capture.x),

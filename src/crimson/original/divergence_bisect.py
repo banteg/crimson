@@ -113,7 +113,7 @@ def _build_repro_tick_row(
     branch_event_limit: int,
 ) -> ReproTickRow:
     capture_stream_rows = _rng_stream_rows_for_raw_row(raw)
-    capture_head_len = _int_or((raw["rng_head_len"] if "rng_head_len" in raw else None), len(capture_stream_rows))
+    capture_head_len = _int_or(raw.get("rng_head_len"), len(capture_stream_rows))
     if capture_head_len < 0:
         capture_head_len = len(capture_stream_rows)
     row_limit = max(1, int(rng_row_limit))
@@ -130,7 +130,7 @@ def _build_repro_tick_row(
     branch_limit = max(1, int(branch_event_limit))
 
     def _head(name: str) -> list[object]:
-        rows_obj = (raw[name] if name in raw else None)
+        rows_obj = raw.get(name)
         rows = list(rows_obj) if isinstance(rows_obj, list) else []
         return rows[:branch_limit]
 
@@ -144,7 +144,7 @@ def _build_repro_tick_row(
         "actual": {
             "score_xp": int(actual.score_xp),
             "creature_count": int(actual.creature_count),
-            "rand_calls": (stream_alignment["actual_calls"] if "actual_calls" in stream_alignment else None),
+            "rand_calls": stream_alignment.get("actual_calls"),
             "rand_stage_calls": {
                 key: int(value)
                 for key, value in sorted(actual.rng_marks.items())
@@ -155,10 +155,10 @@ def _build_repro_tick_row(
         "capture_rng_stream_rows": capture_stream_rows[:row_limit],
         "rewrite_rng_stream_rows": rewrite_stream_rows[:row_limit],
         "rewrite_rng_total_calls": rewrite_total_calls,
-        "capture_rng_total_calls": _int_or((raw["rng_rand_calls"] if "rng_rand_calls" in raw else None), -1),
+        "capture_rng_total_calls": _int_or(raw.get("rng_rand_calls"), -1),
         "capture_rng_seq_range": {
-            "first": _int_or((raw["rng_seq_first"] if "rng_seq_first" in raw else None), -1),
-            "last": _int_or((raw["rng_seq_last"] if "rng_seq_last" in raw else None), -1),
+            "first": _int_or(raw.get("rng_seq_first"), -1),
+            "last": _int_or(raw.get("rng_seq_last"), -1),
         },
         "capture_branch_events": {
             "creature_damage_head": _head("creature_damage_head"),
@@ -254,7 +254,7 @@ def main(argv: list[str] | None = None) -> int:
 
     def _run_probe(max_tick: int) -> tuple[list[ReplayCheckpoint], list[ReplayCheckpoint], Divergence | None]:
         key = int(max_tick)
-        cached = (probe_cache[key] if key in probe_cache else None)
+        cached = probe_cache.get(key)
         if cached is not None:
             return cached
 
@@ -342,8 +342,8 @@ def main(argv: list[str] | None = None) -> int:
 
     repro_rows: list[ReproTickRow] = []
     for tick in range(int(repro_start), int(repro_end) + 1):
-        expected_ckpt = (expected_by_tick[int(tick)] if int(tick) in expected_by_tick else None)
-        actual_ckpt = (actual_by_tick[int(tick)] if int(tick) in actual_by_tick else None)
+        expected_ckpt = expected_by_tick.get(int(tick))
+        actual_ckpt = actual_by_tick.get(int(tick))
         if expected_ckpt is None or actual_ckpt is None:
             continue
         tick_key = int(tick)

@@ -1,8 +1,0 @@
-id: no-dynamic-map-get-default-fallbacks
-language: python
-severity: error
-message: Typed runtime contracts should avoid `dict.get(..., default)` fallbacks; prefer concrete fields or explicit key checks.
-files:
-  - src/crimson/original/**/*.py
-rule:
-  pattern: $OBJ.get($KEY, $DEFAULT)

@@ -810,7 +810,7 @@ def trace_focus_tick(
             capture_projectiles.append(cast("dict[str, Any]", msgspec.to_builtins(row)))
     capture_rng_obj = msgspec.to_builtins(capture_tick.rng)
     capture_rng = cast("dict[str, Any]", capture_rng_obj) if isinstance(capture_rng_obj, dict) else {}
-    capture_rng_head_obj = (capture_rng["head"] if "head" in capture_rng else None)
+    capture_rng_head_obj = capture_rng.get("head")
     if isinstance(capture_rng_head_obj, list):
         capture_rng_head = list(capture_rng_head_obj)
     else:
@@ -1030,19 +1030,19 @@ def trace_focus_tick(
                 payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
                 if payload is None:
                     break
-                quest_session = (payload["quest_session"] if "quest_session" in payload else None)
+                quest_session = payload.get("quest_session")
                 if isinstance(quest_session, dict):
                     quest_session_obj = cast("dict[str, object]", quest_session)
-                    timeline_ms = (quest_session_obj["spawn_timeline_ms"] if "spawn_timeline_ms" in quest_session_obj else None)
+                    timeline_ms = quest_session_obj.get("spawn_timeline_ms")
                     if isinstance(timeline_ms, (int, float)):
                         session_quest.spawn_timeline_ms = max(0.0, float(timeline_ms) - float(bootstrap_dt_ms))
-                    no_creatures_timer_ms = (quest_session_obj["no_creatures_timer_ms"] if "no_creatures_timer_ms" in quest_session_obj else None)
+                    no_creatures_timer_ms = quest_session_obj.get("no_creatures_timer_ms")
                     if isinstance(no_creatures_timer_ms, (int, float)):
                         session_quest.no_creatures_timer_ms = max(
                             0.0,
                             float(no_creatures_timer_ms) - float(bootstrap_dt_ms),
                         )
-                    completion_transition_ms = (quest_session_obj["completion_transition_ms"] if "completion_transition_ms" in quest_session_obj else None)
+                    completion_transition_ms = quest_session_obj.get("completion_transition_ms")
                     if isinstance(completion_transition_ms, (int, float)):
                         completion_value = float(completion_transition_ms)
                         if completion_value >= 0.0:
@@ -1081,7 +1081,7 @@ def trace_focus_tick(
             world.state.game_mode = int(mode)
             world.state.demo_mode_active = False
             if use_outside_draws:
-                draws = (outside_draws_by_tick[int(tick_index)] if int(tick_index) in outside_draws_by_tick else None)
+                draws = outside_draws_by_tick.get(int(tick_index))
                 if draws is None:
                     draws = int(inter_tick_rand_draws)
                 for _ in range(max(0, int(draws))):
@@ -1175,18 +1175,18 @@ def trace_focus_tick(
                     creature_idx: int | None = None
                     if frame is not None:
                         try:
-                            step = int((frame.f_locals["step"] if "step" in frame.f_locals else None)) if "step" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
+                            step = int(frame.f_locals.get("step")) if "step" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
                         except (TypeError, ValueError):
                             step = None
                         try:
-                            creature_idx = int((frame.f_locals["idx"] if "idx" in frame.f_locals else None)) if "idx" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
+                            creature_idx = int(frame.f_locals.get("idx")) if "idx" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
                         except (TypeError, ValueError):
                             creature_idx = None
                         try:
-                            proj_index = int((frame.f_locals["proj_index"] if "proj_index" in frame.f_locals else None)) if "proj_index" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
+                            proj_index = int(frame.f_locals.get("proj_index")) if "proj_index" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
                         except (TypeError, ValueError):
                             proj_index = None
-                        proj = (frame.f_locals["proj"] if "proj" in frame.f_locals else None)
+                        proj = frame.f_locals.get("proj")
                         if proj is not None:
                             try:
                                 proj_ref = cast("Any", proj)

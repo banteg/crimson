@@ -186,10 +186,10 @@ def _float_or(value: object, default: float = 0.0) -> float:
 
 
 def _effective_capture_projectile_hit_count(raw: Mapping[str, object]) -> int:
-    capture_hits = _int_or((raw["projectile_find_hit_count"] if "projectile_find_hit_count" in raw else None), -1)
+    capture_hits = _int_or(raw.get("projectile_find_hit_count"), -1)
     if capture_hits < 0:
         return -1
-    owner_collision_count = _int_or((raw["projectile_find_query_owner_collision_count"] if "projectile_find_query_owner_collision_count" in raw else None), -1)
+    owner_collision_count = _int_or(raw.get("projectile_find_query_owner_collision_count"), -1)
     if owner_collision_count < 0:
         return int(capture_hits)
     return max(0, int(capture_hits) - int(owner_collision_count))
@@ -203,10 +203,10 @@ def _coerce_u32(value: object) -> int | None:
 
 
 def _rng_value_15_from_row(row: dict[str, object]) -> int | None:
-    value_15 = _int_or((row["value_15"] if "value_15" in row else None), -1)
+    value_15 = _int_or(row.get("value_15"), -1)
     if 0 <= value_15 <= 0x7FFF:
         return int(value_15)
-    value = _int_or((row["value"] if "value" in row else None), _int_or((row["value_i32"] if "value_i32" in row else None), -1))
+    value = _int_or(row.get("value"), _int_or(row.get("value_i32"), -1))
     if value < 0:
         return None
     return int(value) & 0x7FFF
@@ -220,12 +220,12 @@ def _coerce_rng_stream_rows(value: object) -> list[dict[str, object]]:
         if isinstance(item, dict):
             row = cast(dict[str, object], item)
             value_15 = _rng_value_15_from_row(row)
-            state_before_u32 = _coerce_u32((row["state_before_u32"] if "state_before_u32" in row else None))
-            state_after_u32 = _coerce_u32((row["state_after_u32"] if "state_after_u32" in row else None))
-            caller_static = (row["caller_static"] if "caller_static" in row else None)
-            branch_id = (row["branch_id"] if "branch_id" in row else None)
-            seq = _int_or((row["seq"] if "seq" in row else None), -1)
-            tick_call_index = _int_or((row["tick_call_index"] if "tick_call_index" in row else None), -1)
+            state_before_u32 = _coerce_u32(row.get("state_before_u32"))
+            state_after_u32 = _coerce_u32(row.get("state_after_u32"))
+            caller_static = row.get("caller_static")
+            branch_id = row.get("branch_id")
+            seq = _int_or(row.get("seq"), -1)
+            tick_call_index = _int_or(row.get("tick_call_index"), -1)
 
             if (
                 value_15 is None
@@ -258,7 +258,7 @@ def _coerce_rng_stream_rows(value: object) -> list[dict[str, object]]:
                 normalized["branch_id"] = branch_id_s
             elif caller_static_s:
                 normalized["branch_id"] = caller_static_s
-            caller = (row["caller"] if "caller" in row else None)
+            caller = row.get("caller")
             if caller is not None and str(caller):
                 normalized["caller"] = str(caller)
             out.append(normalized)
@@ -294,10 +294,10 @@ def _coerce_nonnegative_int_list(value: object) -> list[int]:
 
 
 def _rng_stream_rows_for_raw_row(raw_row: dict[str, object]) -> list[dict[str, object]]:
-    rows = _coerce_rng_stream_rows((raw_row["rng_stream_rows"] if "rng_stream_rows" in raw_row else None))
+    rows = _coerce_rng_stream_rows(raw_row.get("rng_stream_rows"))
     if rows:
         return rows
-    values = _coerce_nonnegative_int_list((raw_row["rng_head_values"] if "rng_head_values" in raw_row else None))
+    values = _coerce_nonnegative_int_list(raw_row.get("rng_head_values"))
     if not values:
         return []
     return [{"value_15": int(value) & 0x7FFF, "value": int(value) & 0x7FFF} for value in values]
@@ -344,8 +344,8 @@ def _allow_one_tick_creature_count_lag(
     if any(str(diff.field) != "creature_count" for diff in field_diffs):
         return False
 
-    expected_tick = (expected_by_tick[int(tick)] if int(tick) in expected_by_tick else None)
-    actual_tick = (actual_by_tick[int(tick)] if int(tick) in actual_by_tick else None)
+    expected_tick = expected_by_tick.get(int(tick))
+    actual_tick = actual_by_tick.get(int(tick))
     if expected_tick is None or actual_tick is None:
         return False
 
@@ -356,8 +356,8 @@ def _allow_one_tick_creature_count_lag(
     if abs(expected_count - actual_count) != 1:
         return False
 
-    prev_expected = (expected_by_tick[int(tick) - 1] if int(tick) - 1 in expected_by_tick else None)
-    prev_actual = (actual_by_tick[int(tick) - 1] if int(tick) - 1 in actual_by_tick else None)
+    prev_expected = expected_by_tick.get(int(tick) - 1)
+    prev_actual = actual_by_tick.get(int(tick) - 1)
     if (
         prev_expected is not None
         and prev_actual is not None
@@ -366,8 +366,8 @@ def _allow_one_tick_creature_count_lag(
     ):
         return True
 
-    next_expected = (expected_by_tick[int(tick) + 1] if int(tick) + 1 in expected_by_tick else None)
-    next_actual = (actual_by_tick[int(tick) + 1] if int(tick) + 1 in actual_by_tick else None)
+    next_expected = expected_by_tick.get(int(tick) + 1)
+    next_actual = actual_by_tick.get(int(tick) + 1)
     if (
         next_expected is not None
         and next_actual is not None
@@ -391,12 +391,12 @@ def _allow_one_tick_kills_lag(
     if any(str(diff.field) != "kills" for diff in field_diffs):
         return False
 
-    expected_tick = (expected_by_tick[int(tick)] if int(tick) in expected_by_tick else None)
-    actual_tick = (actual_by_tick[int(tick)] if int(tick) in actual_by_tick else None)
-    prev_expected = (expected_by_tick[int(tick) - 1] if int(tick) - 1 in expected_by_tick else None)
-    prev_actual = (actual_by_tick[int(tick) - 1] if int(tick) - 1 in actual_by_tick else None)
-    next_expected = (expected_by_tick[int(tick) + 1] if int(tick) + 1 in expected_by_tick else None)
-    next_actual = (actual_by_tick[int(tick) + 1] if int(tick) + 1 in actual_by_tick else None)
+    expected_tick = expected_by_tick.get(int(tick))
+    actual_tick = actual_by_tick.get(int(tick))
+    prev_expected = expected_by_tick.get(int(tick) - 1)
+    prev_actual = actual_by_tick.get(int(tick) - 1)
+    next_expected = expected_by_tick.get(int(tick) + 1)
+    next_actual = actual_by_tick.get(int(tick) + 1)
     if (
         expected_tick is None
         or actual_tick is None
@@ -438,12 +438,12 @@ def _allow_capture_sample_creature_count(
     if not capture_sample_creature_counts:
         return False
 
-    sample_count = (capture_sample_creature_counts[int(tick)] if int(tick) in capture_sample_creature_counts else None)
+    sample_count = capture_sample_creature_counts.get(int(tick))
     if sample_count is None or int(sample_count) < 0:
         return False
 
-    expected_tick = (expected_by_tick[int(tick)] if int(tick) in expected_by_tick else None)
-    actual_tick = (actual_by_tick[int(tick)] if int(tick) in actual_by_tick else None)
+    expected_tick = expected_by_tick.get(int(tick))
+    actual_tick = actual_by_tick.get(int(tick))
     if expected_tick is None or actual_tick is None:
         return False
 
@@ -465,9 +465,9 @@ def _allow_capture_sample_creature_count(
     # - current tick sample matches expected checkpoint count,
     # - replay count already stepped to the next sampled count,
     # - next tick keeps the same expected/actual counts.
-    next_sample = (capture_sample_creature_counts[int(tick) + 1] if int(tick) + 1 in capture_sample_creature_counts else None)
-    next_expected_tick = (expected_by_tick[int(tick) + 1] if int(tick) + 1 in expected_by_tick else None)
-    next_actual_tick = (actual_by_tick[int(tick) + 1] if int(tick) + 1 in actual_by_tick else None)
+    next_sample = capture_sample_creature_counts.get(int(tick) + 1)
+    next_expected_tick = expected_by_tick.get(int(tick) + 1)
+    next_actual_tick = actual_by_tick.get(int(tick) + 1)
     if (
         next_sample is not None
         and int(next_sample) >= 0
@@ -504,7 +504,7 @@ def _event_heads_by_kind(raw_event_heads: object) -> dict[str, list[dict[str, ob
         if not isinstance(item, dict):
             continue
         item_map = cast("dict[str, object]", item)
-        kind_obj = (item_map["kind"] if "kind" in item_map else None)
+        kind_obj = item_map.get("kind")
         if kind_obj is None:
             kind = ""
         else:
@@ -512,7 +512,7 @@ def _event_heads_by_kind(raw_event_heads: object) -> dict[str, list[dict[str, ob
         if not kind:
             continue
         payload: dict[str, object]
-        if isinstance((item_map["data"] if "data" in item_map else None), dict):
+        if isinstance(item_map.get("data"), dict):
             payload_data = cast("dict[str, object]", item_map["data"])
             payload = {str(key): value for key, value in payload_data.items()}
         else:
@@ -530,22 +530,22 @@ def _iter_capture_tick_rows(path: Path):
         if not isinstance(row, dict):
             continue
         row["event"] = "tick"
-        row["event_heads"] = _event_heads_by_kind((row["event_heads"] if "event_heads" in row else None))
+        row["event_heads"] = _event_heads_by_kind(row.get("event_heads"))
         yield row
 
 
 def _load_capture_sample_creature_counts(path: Path) -> dict[int, int]:
     out: dict[int, int] = {}
     for obj in _iter_capture_tick_rows(path):
-        if (obj["event"] if "event" in obj else None) != "tick":
+        if obj.get("event") != "tick":
             continue
-        tick_index = _int_or((obj["tick_index"] if "tick_index" in obj else None), -1)
+        tick_index = _int_or(obj.get("tick_index"), -1)
         if tick_index < 0:
             continue
-        samples = (obj["samples"] if "samples" in obj else None)
+        samples = obj.get("samples")
         if not isinstance(samples, dict):
             continue
-        creatures = (samples["creatures"] if "creatures" in samples else None)
+        creatures = samples.get("creatures")
         if not isinstance(creatures, list):
             continue
         out[int(tick_index)] = int(len(creatures))
@@ -571,25 +571,25 @@ def _capture_sample_creature_counts(capture: CaptureFile) -> dict[int, int]:
 def _load_capture_active_corpse_below_despawn_ticks(path: Path) -> set[int]:
     out: set[int] = set()
     for obj in _iter_capture_tick_rows(path):
-        if (obj["event"] if "event" in obj else None) != "tick":
+        if obj.get("event") != "tick":
             continue
-        tick_index = _int_or((obj["tick_index"] if "tick_index" in obj else None), -1)
+        tick_index = _int_or(obj.get("tick_index"), -1)
         if tick_index < 0:
             continue
-        samples = (obj["samples"] if "samples" in obj else None)
+        samples = obj.get("samples")
         if not isinstance(samples, dict):
             continue
-        creatures = (samples["creatures"] if "creatures" in samples else None)
+        creatures = samples.get("creatures")
         if not isinstance(creatures, list):
             continue
         for creature in creatures:
             if not isinstance(creature, dict):
                 continue
-            if _int_or((creature["active"] if "active" in creature else None), 0) == 0:
+            if _int_or(creature.get("active"), 0) == 0:
                 continue
-            if _float_or((creature["hp"] if "hp" in creature else None), 0.0) > 0.0:
+            if _float_or(creature.get("hp"), 0.0) > 0.0:
                 continue
-            if _float_or((creature["hitbox_size"] if "hitbox_size" in creature else None), 0.0) < -10.0:
+            if _float_or(creature.get("hitbox_size"), 0.0) < -10.0:
                 out.add(int(tick_index))
                 break
     return out
@@ -619,7 +619,7 @@ def _capture_active_corpse_below_despawn_ticks(capture: CaptureFile) -> set[int]
 
 
 def _weapon_name(weapon_id: int) -> str:
-    entry = (WEAPON_BY_ID[int(weapon_id)] if int(weapon_id) in WEAPON_BY_ID else None)
+    entry = WEAPON_BY_ID.get(int(weapon_id))
     name = entry.name if entry is not None else None
     if name is None:
         return f"Weapon {int(weapon_id)}"
@@ -654,10 +654,10 @@ def _append_run_summary_event(
 
 
 def _parse_raw_player_perk_counts(checkpoint_obj: dict[str, object]) -> dict[int, Counter[int]]:
-    perk_obj = (checkpoint_obj["perk"] if "perk" in checkpoint_obj else None)
+    perk_obj = checkpoint_obj.get("perk")
     if not isinstance(perk_obj, dict):
         return {}
-    raw_counts = (perk_obj["player_nonzero_counts"] if "player_nonzero_counts" in perk_obj else None)  # ty:ignore[invalid-argument-type]
+    raw_counts = perk_obj.get("player_nonzero_counts")  # ty:ignore[invalid-argument-type]
     if not isinstance(raw_counts, list):
         return {}
 
@@ -672,8 +672,8 @@ def _parse_raw_player_perk_counts(checkpoint_obj: dict[str, object]) -> dict[int
                 perk_count = _int_or(pair[1], 0)
             elif isinstance(pair, dict):
                 pair_map = cast(Mapping[object, object], pair)
-                perk_id = _int_or((pair_map["perk_id"] if "perk_id" in pair_map else None), -1)
-                perk_count = _int_or((pair_map["count"] if "count" in pair_map else None), 0)
+                perk_id = _int_or(pair_map.get("perk_id"), -1)
+                perk_count = _int_or(pair_map.get("count"), 0)
             else:
                 continue
             if perk_id < 0 or perk_count <= 0:
@@ -691,28 +691,28 @@ def _build_run_summary_events_from_raw_capture(path: Path) -> list[RunSummaryEve
     prev_perk_counts: dict[int, Counter[int]] = {}
 
     for obj in _iter_capture_tick_rows(path):
-        if (obj["event"] if "event" in obj else None) != "tick":
+        if obj.get("event") != "tick":
             continue
 
-        raw_checkpoint = (obj["checkpoint"] if "checkpoint" in obj else None)
+        raw_checkpoint = obj.get("checkpoint")
         checkpoint_obj = raw_checkpoint if isinstance(raw_checkpoint, dict) else obj
-        tick = _int_or((checkpoint_obj["tick_index"] if "tick_index" in checkpoint_obj else None), _int_or((obj["tick_index"] if "tick_index" in obj else None), -1))
+        tick = _int_or(checkpoint_obj.get("tick_index"), _int_or(obj.get("tick_index"), -1))
         if tick < 0:
             continue
 
-        event_heads = (obj["event_heads"] if "event_heads" in obj else None)
+        event_heads = obj.get("event_heads")
         heads = event_heads if isinstance(event_heads, dict) else {}
 
-        raw_bonus_apply = (heads["bonus_apply"] if "bonus_apply" in heads else None)
+        raw_bonus_apply = heads.get("bonus_apply")
         bonus_apply = raw_bonus_apply if isinstance(raw_bonus_apply, list) else []
         for item in bonus_apply:
             if not isinstance(item, dict):
                 continue
-            player_index = _int_or((item["player_index"] if "player_index" in item else None), 0)
-            bonus_id = _int_or((item["bonus_id"] if "bonus_id" in item else None), -1)
+            player_index = _int_or(item.get("player_index"), 0)
+            bonus_id = _int_or(item.get("bonus_id"), -1)
             detail = f"p{player_index} picked {_bonus_name(int(bonus_id))}"
             if int(bonus_id) == 3:
-                weapon_id = _int_or((item["amount_i32"] if "amount_i32" in item else None), -1)
+                weapon_id = _int_or(item.get("amount_i32"), -1)
                 if weapon_id >= 0:
                     detail += f" -> {_weapon_name(int(weapon_id))}"
             _append_run_summary_event(
@@ -723,14 +723,14 @@ def _build_run_summary_events_from_raw_capture(path: Path) -> list[RunSummaryEve
                 detail=detail,
             )
 
-        raw_weapon_assign = (heads["weapon_assign"] if "weapon_assign" in heads else None)
+        raw_weapon_assign = heads.get("weapon_assign")
         weapon_assign = raw_weapon_assign if isinstance(raw_weapon_assign, list) else []
         for item in weapon_assign:
             if not isinstance(item, dict):
                 continue
-            player_index = _int_or((item["player_index"] if "player_index" in item else None), 0)
-            weapon_before = _int_or((item["weapon_before"] if "weapon_before" in item else None), -1)
-            weapon_after = _int_or((item["weapon_after"] if "weapon_after" in item else None), _int_or((item["weapon_id"] if "weapon_id" in item else None), -1))
+            player_index = _int_or(item.get("player_index"), 0)
+            weapon_before = _int_or(item.get("weapon_before"), -1)
+            weapon_after = _int_or(item.get("weapon_after"), _int_or(item.get("weapon_id"), -1))
             detail = (
                 f"p{player_index} weapon "
                 f"{_weapon_name(int(weapon_before))} -> {_weapon_name(int(weapon_after))}"
@@ -743,17 +743,17 @@ def _build_run_summary_events_from_raw_capture(path: Path) -> list[RunSummaryEve
                 detail=detail,
             )
 
-        raw_state_transition = (heads["state_transition"] if "state_transition" in heads else None)
+        raw_state_transition = heads.get("state_transition")
         state_transition = raw_state_transition if isinstance(raw_state_transition, list) else []
         for item in state_transition:
             if not isinstance(item, dict):
                 continue
-            before_obj = item["before"] if "before" in item else None
+            before_obj = item.get("before", None)
             if isinstance(before_obj, dict):
                 before = cast("dict[str, object]", before_obj)
             else:
                 before = None
-            after_obj = item["after"] if "after" in item else None
+            after_obj = item.get("after", None)
             if isinstance(after_obj, dict):
                 after = cast("dict[str, object]", after_obj)
             else:
@@ -763,8 +763,8 @@ def _build_run_summary_events_from_raw_capture(path: Path) -> list[RunSummaryEve
                 -1,
             )
             after_state = _int_or(
-                (after["id"] if after is not None and "id" in after else (item["target_state"] if "target_state" in item else None)),
-                _int_or((item["target_state"] if "target_state" in item else None), -1),
+                (after["id"] if after is not None and "id" in after else item.get("target_state")),
+                _int_or(item.get("target_state"), -1),
             )
             _append_run_summary_event(
                 events,
@@ -774,17 +774,17 @@ def _build_run_summary_events_from_raw_capture(path: Path) -> list[RunSummaryEve
                 detail=f"state {before_state} -> {after_state}",
             )
 
-        players_raw = (checkpoint_obj["players"] if "players" in checkpoint_obj else None)
+        players_raw = checkpoint_obj.get("players")
         players = players_raw if isinstance(players_raw, list) else []
         for player_index, player_obj in enumerate(players):
             if not isinstance(player_obj, dict):
                 continue
-            level = _int_or((player_obj["level"] if "level" in player_obj else None), -1)
+            level = _int_or(player_obj.get("level"), -1)
             if level < 0:
                 continue
-            prev_level = (prev_levels[int(player_index)] if int(player_index) in prev_levels else None)
+            prev_level = prev_levels.get(int(player_index))
             if prev_level is not None and int(level) > int(prev_level):
-                experience = _int_or((player_obj["experience"] if "experience" in player_obj else None), -1)
+                experience = _int_or(player_obj.get("experience"), -1)
                 _append_run_summary_event(
                     events,
                     seen=seen,
@@ -837,7 +837,7 @@ def _build_run_summary_events_from_checkpoints(expected: list[ReplayCheckpoint])
 
         for player_index, player in enumerate(checkpoint.players):
             weapon_id = int(player.weapon_id)
-            prev_weapon_id = (prev_weapons[int(player_index)] if int(player_index) in prev_weapons else None)
+            prev_weapon_id = prev_weapons.get(int(player_index))
             if prev_weapon_id is not None and int(prev_weapon_id) != int(weapon_id):
                 _append_run_summary_event(
                     events,
@@ -852,7 +852,7 @@ def _build_run_summary_events_from_checkpoints(expected: list[ReplayCheckpoint])
             prev_weapons[int(player_index)] = int(weapon_id)
 
             level = int(player.level)
-            prev_level = (prev_levels[int(player_index)] if int(player_index) in prev_levels else None)
+            prev_level = prev_levels.get(int(player_index))
             if prev_level is not None and int(level) > int(prev_level):
                 _append_run_summary_event(
                     events,
@@ -959,101 +959,101 @@ def _build_focus_run_summary_events(
 def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> dict[int, dict[str, object]]:
     out: dict[int, dict[str, object]] = {}
     for obj in _iter_capture_tick_rows(path):
-        if (obj["event"] if "event" in obj else None) != "tick":
+        if obj.get("event") != "tick":
             continue
-        checkpoint = (obj["checkpoint"] if "checkpoint" in obj else None)
+        checkpoint = obj.get("checkpoint")
         ckpt = checkpoint if isinstance(checkpoint, dict) else obj
-        tick = _int_or((ckpt["tick_index"] if "tick_index" in ckpt else None), _int_or((obj["tick_index"] if "tick_index" in obj else None), -1))
+        tick = _int_or(ckpt.get("tick_index"), _int_or(obj.get("tick_index"), -1))
         if tick_indices is not None and tick not in tick_indices:
             continue
 
-        rng_marks = (ckpt["rng_marks"] if "rng_marks" in ckpt else None)
+        rng_marks = ckpt.get("rng_marks")
         rng_obj = rng_marks if isinstance(rng_marks, dict) else {}
-        rng_top = (obj["rng"] if "rng" in obj else None)
+        rng_top = obj.get("rng")
         rng_top_obj = rng_top if isinstance(rng_top, dict) else {}
-        debug = (ckpt["debug"] if "debug" in ckpt else None)
+        debug = ckpt.get("debug")
         debug_obj = debug if isinstance(debug, dict) else {}
-        spawn = (debug_obj["spawn"] if "spawn" in debug_obj else None)
+        spawn = debug_obj.get("spawn")
         spawn_obj = spawn if isinstance(spawn, dict) else {}
-        before_players = (debug_obj["before_players"] if "before_players" in debug_obj else None)
+        before_players = debug_obj.get("before_players")
         before_players_obj = before_players if isinstance(before_players, list) else []
         if not before_players_obj:
-            top_before = (obj["before"] if "before" in obj else None)
+            top_before = obj.get("before")
             top_before_obj = top_before if isinstance(top_before, dict) else {}
-            top_before_players = (top_before_obj["players"] if "players" in top_before_obj else None)
+            top_before_players = top_before_obj.get("players")
             if isinstance(top_before_players, list):
                 before_players_obj = top_before_players
-        lifecycle = (debug_obj["creature_lifecycle"] if "creature_lifecycle" in debug_obj else None)
+        lifecycle = debug_obj.get("creature_lifecycle")
         lifecycle_obj = lifecycle if isinstance(lifecycle, dict) else {}
-        event_counts = (obj["event_counts"] if "event_counts" in obj else None)
+        event_counts = obj.get("event_counts")
         event_counts_obj = event_counts if isinstance(event_counts, dict) else {}
-        event_heads = (obj["event_heads"] if "event_heads" in obj else None)
+        event_heads = obj.get("event_heads")
         event_heads_obj = event_heads if isinstance(event_heads, dict) else {}
-        samples = (obj["samples"] if "samples" in obj else None)
+        samples = obj.get("samples")
         samples_obj = samples if isinstance(samples, dict) else {}
-        sample_creatures = (samples_obj["creatures"] if "creatures" in samples_obj else None)
+        sample_creatures = samples_obj.get("creatures")
         sample_creatures_obj = sample_creatures if isinstance(sample_creatures, list) else []
-        sample_projectiles = (samples_obj["projectiles"] if "projectiles" in samples_obj else None)
+        sample_projectiles = samples_obj.get("projectiles")
         sample_projectiles_obj = sample_projectiles if isinstance(sample_projectiles, list) else []
-        sample_secondary = (samples_obj["secondary_projectiles"] if "secondary_projectiles" in samples_obj else None)
+        sample_secondary = samples_obj.get("secondary_projectiles")
         sample_secondary_obj = sample_secondary if isinstance(sample_secondary, list) else []
-        sample_bonuses = (samples_obj["bonuses"] if "bonuses" in samples_obj else None)
+        sample_bonuses = samples_obj.get("bonuses")
         sample_bonuses_obj = sample_bonuses if isinstance(sample_bonuses, list) else []
-        creature_damage_head = (event_heads_obj["creature_damage"] if "creature_damage" in event_heads_obj else None)
+        creature_damage_head = event_heads_obj.get("creature_damage")
         creature_damage_head_obj = creature_damage_head if isinstance(creature_damage_head, list) else []
-        projectile_spawn_head = (event_heads_obj["projectile_spawn"] if "projectile_spawn" in event_heads_obj else None)
+        projectile_spawn_head = event_heads_obj.get("projectile_spawn")
         projectile_spawn_head_obj = projectile_spawn_head if isinstance(projectile_spawn_head, list) else []
-        secondary_projectile_spawn_head = (event_heads_obj["secondary_projectile_spawn"] if "secondary_projectile_spawn" in event_heads_obj else None)
+        secondary_projectile_spawn_head = event_heads_obj.get("secondary_projectile_spawn")
         secondary_projectile_spawn_head_obj = (
             secondary_projectile_spawn_head if isinstance(secondary_projectile_spawn_head, list) else []
         )
-        creature_death_head = (event_heads_obj["creature_death"] if "creature_death" in event_heads_obj else None)
+        creature_death_head = event_heads_obj.get("creature_death")
         creature_death_head_obj = creature_death_head if isinstance(creature_death_head, list) else []
-        bonus_spawn_head = (event_heads_obj["bonus_spawn"] if "bonus_spawn" in event_heads_obj else None)
+        bonus_spawn_head = event_heads_obj.get("bonus_spawn")
         bonus_spawn_head_obj = bonus_spawn_head if isinstance(bonus_spawn_head, list) else []
-        projectile_find_query_head = (event_heads_obj["projectile_find_query"] if "projectile_find_query" in event_heads_obj else None)
+        projectile_find_query_head = event_heads_obj.get("projectile_find_query")
         projectile_find_query_head_obj = (
             projectile_find_query_head if isinstance(projectile_find_query_head, list) else []
         )
-        projectile_find_hit_head = (event_heads_obj["projectile_find_hit"] if "projectile_find_hit" in event_heads_obj else None)
+        projectile_find_hit_head = event_heads_obj.get("projectile_find_hit")
         projectile_find_hit_head_obj = projectile_find_hit_head if isinstance(projectile_find_hit_head, list) else []
-        creature_update_micro_head = (event_heads_obj["creature_update_micro"] if "creature_update_micro" in event_heads_obj else None)
+        creature_update_micro_head = event_heads_obj.get("creature_update_micro")
         creature_update_micro_head_obj = (
             creature_update_micro_head if isinstance(creature_update_micro_head, list) else []
         )
-        rng_callers_top = (rng_top_obj["callers"] if "callers" in rng_top_obj else None)
+        rng_callers_top = rng_top_obj.get("callers")
         rng_callers_top_obj = rng_callers_top if isinstance(rng_callers_top, list) else []
-        rng_rand_calls = _int_or((rng_obj["rand_calls"] if "rand_calls" in rng_obj else None))
+        rng_rand_calls = _int_or(rng_obj.get("rand_calls"))
         if rng_rand_calls < 0:
-            rng_rand_calls = _int_or((rng_top_obj["calls"] if "calls" in rng_top_obj else None))
-        rng_rand_last = (rng_obj["rand_last"] if "rand_last" in rng_obj else None)
+            rng_rand_calls = _int_or(rng_top_obj.get("calls"))
+        rng_rand_last = rng_obj.get("rand_last")
         if rng_rand_last is None:
-            rng_rand_last = (rng_top_obj["last_value"] if "last_value" in rng_top_obj else None)
-        rng_seq_first = _int_or((rng_obj["rand_seq_first"] if "rand_seq_first" in rng_obj else None))
+            rng_rand_last = rng_top_obj.get("last_value")
+        rng_seq_first = _int_or(rng_obj.get("rand_seq_first"))
         if rng_seq_first < 0:
-            rng_seq_first = _int_or((rng_top_obj["seq_first"] if "seq_first" in rng_top_obj else None))
-        rng_seq_last = _int_or((rng_obj["rand_seq_last"] if "rand_seq_last" in rng_obj else None))
+            rng_seq_first = _int_or(rng_top_obj.get("seq_first"))
+        rng_seq_last = _int_or(rng_obj.get("rand_seq_last"))
         if rng_seq_last < 0:
-            rng_seq_last = _int_or((rng_top_obj["seq_last"] if "seq_last" in rng_top_obj else None))
-        rng_seed_epoch_enter = _int_or((rng_obj["rand_seed_epoch_enter"] if "rand_seed_epoch_enter" in rng_obj else None))
+            rng_seq_last = _int_or(rng_top_obj.get("seq_last"))
+        rng_seed_epoch_enter = _int_or(rng_obj.get("rand_seed_epoch_enter"))
         if rng_seed_epoch_enter < 0:
-            rng_seed_epoch_enter = _int_or((rng_top_obj["seed_epoch_enter"] if "seed_epoch_enter" in rng_top_obj else None))
-        rng_seed_epoch_last = _int_or((rng_obj["rand_seed_epoch_last"] if "rand_seed_epoch_last" in rng_obj else None))
+            rng_seed_epoch_enter = _int_or(rng_top_obj.get("seed_epoch_enter"))
+        rng_seed_epoch_last = _int_or(rng_obj.get("rand_seed_epoch_last"))
         if rng_seed_epoch_last < 0:
-            rng_seed_epoch_last = _int_or((rng_top_obj["seed_epoch_last"] if "seed_epoch_last" in rng_top_obj else None))
-        rng_outside_before_calls = _int_or((rng_obj["rand_outside_before_calls"] if "rand_outside_before_calls" in rng_obj else None))
+            rng_seed_epoch_last = _int_or(rng_top_obj.get("seed_epoch_last"))
+        rng_outside_before_calls = _int_or(rng_obj.get("rand_outside_before_calls"))
         if rng_outside_before_calls < 0:
-            rng_outside_before_calls = _int_or((rng_top_obj["outside_before_calls"] if "outside_before_calls" in rng_top_obj else None))
-        rng_mirror_mismatch_total = _int_or((rng_obj["rand_mirror_mismatch_total"] if "rand_mirror_mismatch_total" in rng_obj else None))
+            rng_outside_before_calls = _int_or(rng_top_obj.get("outside_before_calls"))
+        rng_mirror_mismatch_total = _int_or(rng_obj.get("rand_mirror_mismatch_total"))
         if rng_mirror_mismatch_total < 0:
-            rng_mirror_mismatch_total = _int_or((rng_top_obj["mirror_mismatch_total"] if "mirror_mismatch_total" in rng_top_obj else None))
-        rng_callers = (rng_obj["rand_callers"] if "rand_callers" in rng_obj else None) if isinstance((rng_obj["rand_callers"] if "rand_callers" in rng_obj else None), list) else []
+            rng_mirror_mismatch_total = _int_or(rng_top_obj.get("mirror_mismatch_total"))
+        rng_callers = rng_obj.get("rand_callers") if isinstance(rng_obj.get("rand_callers"), list) else []
         if not rng_callers:
             rng_callers = rng_callers_top_obj
-        rng_head = (rng_obj["rand_head"] if "rand_head" in rng_obj else None)
+        rng_head = rng_obj.get("rand_head")
         rng_head_obj = rng_head if isinstance(rng_head, list) else []
         if not rng_head_obj:
-            rng_head_top = (rng_top_obj["head"] if "head" in rng_top_obj else None)
+            rng_head_top = rng_top_obj.get("head")
             if isinstance(rng_head_top, list):
                 rng_head_obj = rng_head_top
         rng_stream_rows = _coerce_rng_stream_rows(rng_head_obj)
@@ -1064,31 +1064,31 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
             if not isinstance(item, dict):
                 continue
             item_map = cast(Mapping[object, object], item)
-            pos_raw = (item_map["pos"] if "pos" in item_map else None)
+            pos_raw = item_map.get("pos")
             pos_obj = cast(Mapping[object, object], pos_raw) if isinstance(pos_raw, dict) else {}
             row: dict[str, object] = {
-                "index": _int_or((item_map["index"] if "index" in item_map else None)),
-                "type_id": _int_or((item_map["type_id"] if "type_id" in item_map else None)),
-                "hp": _float_or((item_map["hp"] if "hp" in item_map else None)),
-                "hitbox_size": _float_or((item_map["hitbox_size"] if "hitbox_size" in item_map else None)),
+                "index": _int_or(item_map.get("index")),
+                "type_id": _int_or(item_map.get("type_id")),
+                "hp": _float_or(item_map.get("hp")),
+                "hitbox_size": _float_or(item_map.get("hitbox_size")),
                 "pos": {
-                    "x": _float_or((pos_obj["x"] if "x" in pos_obj else None)),
-                    "y": _float_or((pos_obj["y"] if "y" in pos_obj else None)),
+                    "x": _float_or(pos_obj.get("x")),
+                    "y": _float_or(pos_obj.get("y")),
                 },
             }
-            ai_mode = (item_map["ai_mode"] if "ai_mode" in item_map else None)
+            ai_mode = item_map.get("ai_mode")
             if ai_mode is not None:
                 row["ai_mode"] = _int_or(ai_mode)
-            link_index = (item_map["link_index"] if "link_index" in item_map else None)
+            link_index = item_map.get("link_index")
             if link_index is not None:
                 row["link_index"] = _int_or(link_index)
-            ai7_timer_ms = (item_map["ai7_timer_ms"] if "ai7_timer_ms" in item_map else None)
+            ai7_timer_ms = item_map.get("ai7_timer_ms")
             if ai7_timer_ms is not None:
                 row["ai7_timer_ms"] = _int_or(ai7_timer_ms)
-            orbit_angle = (item_map["orbit_angle"] if "orbit_angle" in item_map else None)
+            orbit_angle = item_map.get("orbit_angle")
             if orbit_angle is not None:
                 row["orbit_angle"] = _float_or(orbit_angle)
-            orbit_radius = (item_map["orbit_radius"] if "orbit_radius" in item_map else None)
+            orbit_radius = item_map.get("orbit_radius")
             if orbit_radius is not None:
                 row["orbit_radius"] = _float_or(orbit_radius)
             sample_creatures_head.append(row)
@@ -1098,17 +1098,17 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
             if not isinstance(item, dict):
                 continue
             item_map = cast(Mapping[object, object], item)
-            pos_raw = (item_map["pos"] if "pos" in item_map else None)
+            pos_raw = item_map.get("pos")
             pos_obj = cast(Mapping[object, object], pos_raw) if isinstance(pos_raw, dict) else {}
             sample_secondary_head.append(
                 {
-                    "index": _int_or((item_map["index"] if "index" in item_map else None)),
-                    "type_id": _int_or((item_map["type_id"] if "type_id" in item_map else None)),
-                    "target_id": _int_or((item_map["target_id"] if "target_id" in item_map else None)),
-                    "life_timer": _float_or((item_map["life_timer"] if "life_timer" in item_map else None)),
+                    "index": _int_or(item_map.get("index")),
+                    "type_id": _int_or(item_map.get("type_id")),
+                    "target_id": _int_or(item_map.get("target_id")),
+                    "life_timer": _float_or(item_map.get("life_timer")),
                     "pos": {
-                        "x": _float_or((pos_obj["x"] if "x" in pos_obj else None)),
-                        "y": _float_or((pos_obj["y"] if "y" in pos_obj else None)),
+                        "x": _float_or(pos_obj.get("x")),
+                        "y": _float_or(pos_obj.get("y")),
                     },
                 },
             )
@@ -1126,53 +1126,53 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
             "rng_outside_before_calls": rng_outside_before_calls,
             "rng_mirror_mismatch_total": rng_mirror_mismatch_total,
             "rng_callers": rng_callers,
-            "spawn_bonus_count": _int_or((spawn_obj["event_count_bonus_spawn"] if "event_count_bonus_spawn" in spawn_obj else None)),
-            "spawn_death_count": _int_or((spawn_obj["event_count_death"] if "event_count_death" in spawn_obj else None)),
+            "spawn_bonus_count": _int_or(spawn_obj.get("event_count_bonus_spawn")),
+            "spawn_death_count": _int_or(spawn_obj.get("event_count_death")),
             "spawn_top_bonus_callers": (
-                (spawn_obj["top_bonus_spawn_callers"] if "top_bonus_spawn_callers" in spawn_obj else None)
-                if isinstance((spawn_obj["top_bonus_spawn_callers"] if "top_bonus_spawn_callers" in spawn_obj else None), list)
+                spawn_obj.get("top_bonus_spawn_callers")
+                if isinstance(spawn_obj.get("top_bonus_spawn_callers"), list)
                 else []
             ),
             "creature_damage_count": _int_or(
-                (event_counts_obj["creature_damage"] if "creature_damage" in event_counts_obj else None),
-                _int_or((spawn_obj["event_count_creature_damage"] if "event_count_creature_damage" in spawn_obj else None), 0),
+                event_counts_obj.get("creature_damage"),
+                _int_or(spawn_obj.get("event_count_creature_damage"), 0),
             ),
             "creature_damage_head": creature_damage_head_obj,
             "projectile_spawn_head": projectile_spawn_head_obj,
-            "secondary_projectile_spawn_count": _int_or((event_counts_obj["secondary_projectile_spawn"] if "secondary_projectile_spawn" in event_counts_obj else None), 0),
+            "secondary_projectile_spawn_count": _int_or(event_counts_obj.get("secondary_projectile_spawn"), 0),
             "secondary_projectile_spawn_head": secondary_projectile_spawn_head_obj,
             "creature_death_head": creature_death_head_obj,
             "bonus_spawn_head": bonus_spawn_head_obj,
             "projectile_find_hit_count": _int_or(
-                (event_counts_obj["projectile_find_hit"] if "projectile_find_hit" in event_counts_obj else None),
+                event_counts_obj.get("projectile_find_hit"),
                 len(projectile_find_hit_head_obj),
             ),
             "projectile_find_query_count": _int_or(
-                (event_counts_obj["projectile_find_query"] if "projectile_find_query" in event_counts_obj else None),
-                _int_or((spawn_obj["event_count_projectile_find_query"] if "event_count_projectile_find_query" in spawn_obj else None), len(projectile_find_query_head_obj)),
+                event_counts_obj.get("projectile_find_query"),
+                _int_or(spawn_obj.get("event_count_projectile_find_query"), len(projectile_find_query_head_obj)),
             ),
             "projectile_find_query_head": projectile_find_query_head_obj,
             "projectile_find_query_miss_count": _int_or(
-                (spawn_obj["event_count_projectile_find_query_miss"] if "event_count_projectile_find_query_miss" in spawn_obj else None),
+                spawn_obj.get("event_count_projectile_find_query_miss"),
                 sum(
                     1
                     for item in projectile_find_query_head_obj
                     if isinstance(item, dict)
                     and (
-                        str((item["result_kind"] if "result_kind" in item else None)) == "miss"
-                        or _int_or((item["result_creature_index"] if "result_creature_index" in item else None), -1) < 0
+                        str(item.get("result_kind")) == "miss"
+                        or _int_or(item.get("result_creature_index"), -1) < 0
                     )
                 ),
             ),
             "projectile_find_query_owner_collision_count": _int_or(
-                (spawn_obj["event_count_projectile_find_query_owner_collision"] if "event_count_projectile_find_query_owner_collision" in spawn_obj else None),
+                spawn_obj.get("event_count_projectile_find_query_owner_collision"),
                 sum(
                     1
                     for item in projectile_find_query_head_obj
                     if isinstance(item, dict)
                     and (
-                        bool((item["owner_collision"] if "owner_collision" in item else None))
-                        or str((item["result_kind"] if "result_kind" in item else None)) == "owner_collision"
+                        bool(item.get("owner_collision"))
+                        or str(item.get("result_kind")) == "owner_collision"
                     )
                 ),
             ),
@@ -1180,34 +1180,34 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
             "projectile_find_hit_corpse_count": sum(
                 1
                 for item in projectile_find_hit_head_obj
-                if isinstance(item, dict) and bool((item["corpse_hit"] if "corpse_hit" in item else None))
+                if isinstance(item, dict) and bool(item.get("corpse_hit"))
             ),
             "creature_update_micro_count": _int_or(
-                (event_counts_obj["creature_update_micro"] if "creature_update_micro" in event_counts_obj else None),
+                event_counts_obj.get("creature_update_micro"),
                 len(creature_update_micro_head_obj),
             ),
             "creature_update_micro_head": creature_update_micro_head_obj,
             "spawn_top_creature_damage_callers": (
-                (spawn_obj["top_creature_damage_callers"] if "top_creature_damage_callers" in spawn_obj else None)
-                if isinstance((spawn_obj["top_creature_damage_callers"] if "top_creature_damage_callers" in spawn_obj else None), list)
+                spawn_obj.get("top_creature_damage_callers")
+                if isinstance(spawn_obj.get("top_creature_damage_callers"), list)
                 else []
             ),
             "spawn_top_projectile_find_hit_callers": (
-                (spawn_obj["top_projectile_find_hit_callers"] if "top_projectile_find_hit_callers" in spawn_obj else None)
-                if isinstance((spawn_obj["top_projectile_find_hit_callers"] if "top_projectile_find_hit_callers" in spawn_obj else None), list)
+                spawn_obj.get("top_projectile_find_hit_callers")
+                if isinstance(spawn_obj.get("top_projectile_find_hit_callers"), list)
                 else []
             ),
             "spawn_top_projectile_find_query_callers": (
-                (spawn_obj["top_projectile_find_query_callers"] if "top_projectile_find_query_callers" in spawn_obj else None)
-                if isinstance((spawn_obj["top_projectile_find_query_callers"] if "top_projectile_find_query_callers" in spawn_obj else None), list)
+                spawn_obj.get("top_projectile_find_query_callers")
+                if isinstance(spawn_obj.get("top_projectile_find_query_callers"), list)
                 else []
             ),
-            "lifecycle_before_hash": (lifecycle_obj["before_hash"] if "before_hash" in lifecycle_obj else None),
-            "lifecycle_after_hash": (lifecycle_obj["after_hash"] if "after_hash" in lifecycle_obj else None),
-            "lifecycle_before_count": _int_or((lifecycle_obj["before_count"] if "before_count" in lifecycle_obj else None)),
-            "lifecycle_after_count": _int_or((lifecycle_obj["after_count"] if "after_count" in lifecycle_obj else None)),
+            "lifecycle_before_hash": lifecycle_obj.get("before_hash"),
+            "lifecycle_after_hash": lifecycle_obj.get("after_hash"),
+            "lifecycle_before_count": _int_or(lifecycle_obj.get("before_count")),
+            "lifecycle_after_count": _int_or(lifecycle_obj.get("after_count")),
             "before_player0": before_players_obj[0] if before_players_obj else None,
-            "input_player_keys": (obj["input_player_keys"] if "input_player_keys" in obj else None) if isinstance((obj["input_player_keys"] if "input_player_keys" in obj else None), list) else [],
+            "input_player_keys": obj.get("input_player_keys") if isinstance(obj.get("input_player_keys"), list) else [],
             "sample_streams_present": bool(samples_obj),
             "sample_counts": {
                 "creatures": len(sample_creatures_obj) if isinstance(sample_creatures, list) else -1,
@@ -1311,7 +1311,7 @@ def _find_first_divergence(
 
     for exp in expected:
         tick = int(exp.tick_index)
-        act = (actual_by_tick[tick] if tick in actual_by_tick else None)
+        act = actual_by_tick.get(tick)
         if act is None:
             return Divergence(
                 tick_index=int(tick),
@@ -1327,7 +1327,7 @@ def _find_first_divergence(
         else:
             raw_row = {}
         capture_stream_rows = _rng_stream_rows_for_raw_row(raw_row)
-        capture_head_len = _int_or((raw_row["rng_head_len"] if "rng_head_len" in raw_row else None), len(capture_stream_rows))
+        capture_head_len = _int_or(raw_row.get("rng_head_len"), len(capture_stream_rows))
         if capture_head_len < 0:
             capture_head_len = len(capture_stream_rows)
         if capture_head_len > 0 or capture_stream_rows:
@@ -1337,8 +1337,8 @@ def _find_first_divergence(
                 capture_head_len=int(capture_head_len),
             )
             if (
-                _int_or((stream_alignment["first_mismatch_idx"] if "first_mismatch_idx" in stream_alignment else None), -1) >= 0
-                or _int_or((stream_alignment["missing_tail"] if "missing_tail" in stream_alignment else None), 0) > 0
+                _int_or(stream_alignment.get("first_mismatch_idx"), -1) >= 0
+                or _int_or(stream_alignment.get("missing_tail"), 0) > 0
             ):
                 return Divergence(
                     tick_index=int(tick),
@@ -1414,7 +1414,7 @@ def _primary_rng_after(ckpt: ReplayCheckpoint) -> int:
         best_calls = -1
         best_rank = -1
         for key in candidate_keys:
-            after = _int_or((marks[key] if key in marks else None), -1)
+            after = _int_or(marks.get(key), -1)
             if after < 0:
                 continue
             calls = _infer_rand_calls_between_states(before, after)
@@ -1440,15 +1440,15 @@ def _primary_rng_after(ckpt: ReplayCheckpoint) -> int:
         "after_world_step",
     ):
         if key in marks:
-            return _int_or((marks[key] if key in marks else None))
+            return _int_or(marks.get(key))
     return -1
 
 
 def _rng_mark_with_fallback(marks: dict[str, int], key: str) -> int:
     if key in marks:
-        return _int_or((marks[key] if key in marks else None), -1)
+        return _int_or(marks.get(key), -1)
     if key in {"before_events", "after_events"}:
-        return _int_or((marks["before_world_step"] if "before_world_step" in marks else None), -1)
+        return _int_or(marks.get("before_world_step"), -1)
     return -1
 
 
@@ -1588,8 +1588,8 @@ def _compute_rng_stream_alignment(
 
         capture_value = _rng_value_15_from_row(capture_row)
         actual_value = int(actual_row["value_15"])
-        capture_before = _coerce_u32((capture_row["state_before_u32"] if "state_before_u32" in capture_row else None))
-        capture_after = _coerce_u32((capture_row["state_after_u32"] if "state_after_u32" in capture_row else None))
+        capture_before = _coerce_u32(capture_row.get("state_before_u32"))
+        capture_after = _coerce_u32(capture_row.get("state_after_u32"))
         actual_before = int(actual_row["state_before_u32"])
         actual_after = int(actual_row["state_after_u32"])
 
@@ -1615,15 +1615,15 @@ def _compute_rng_stream_alignment(
         first_mismatch_capture_state_after = int(capture_after) if capture_after is not None else None
         first_mismatch_actual_state_before = int(actual_before)
         first_mismatch_actual_state_after = int(actual_after)
-        caller_static = (capture_row["caller_static"] if "caller_static" in capture_row else None)
+        caller_static = capture_row.get("caller_static")
         if caller_static is not None and str(caller_static):
             first_mismatch_capture_caller_static = str(caller_static)
-        branch_id = (capture_row["branch_id"] if "branch_id" in capture_row else None)
+        branch_id = capture_row.get("branch_id")
         if branch_id is not None and str(branch_id):
             first_mismatch_capture_branch_id = str(branch_id)
         elif first_mismatch_capture_caller_static is not None:
             first_mismatch_capture_branch_id = first_mismatch_capture_caller_static
-        seq = _int_or((capture_row["seq"] if "seq" in capture_row else None), -1)
+        seq = _int_or(capture_row.get("seq"), -1)
         if seq >= 0:
             first_mismatch_capture_seq = int(seq)
         break
@@ -1874,15 +1874,15 @@ def _ticks_rng_zero_but_changed(
 ) -> list[int]:
     ticks: list[int] = []
     for tick in range(max(0, int(start_tick)), int(end_tick) + 1):
-        act = (actual_by_tick[tick] if tick in actual_by_tick else None)
+        act = actual_by_tick.get(tick)
         if act is None:
             continue
         raw_row = _raw_debug_row_for_tick(raw_debug_by_tick, tick)
-        expected_calls = _int_or((raw_row["rng_rand_calls"] if "rng_rand_calls" in raw_row else None), -1)
+        expected_calls = _int_or(raw_row.get("rng_rand_calls"), -1)
         if expected_calls < 0:
-            exp = (expected_by_tick[tick] if tick in expected_by_tick else None)
+            exp = expected_by_tick.get(tick)
             if exp is not None:
-                expected_calls = _int_or((exp.rng_marks["rand_calls"] if "rand_calls" in exp.rng_marks else None), -1)
+                expected_calls = _int_or(exp.rng_marks.get("rand_calls"), -1)
         if expected_calls != 0:
             continue
         if _rng_changed(act):
@@ -1898,16 +1898,16 @@ def _aggregate_rng_callers(
     counts: dict[str, int] = {}
     for tick in ticks:
         raw_row = _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
-        callers = (raw_row["rng_callers"] if "rng_callers" in raw_row else None)
+        callers = raw_row.get("rng_callers")
         if not isinstance(callers, list):
             continue
         for caller in callers:
             if not isinstance(caller, dict):
                 continue
-            key = (caller["caller_static"] if "caller_static" in caller else None)  # ty:ignore[invalid-argument-type]
+            key = caller.get("caller_static")  # ty:ignore[invalid-argument-type]
             if key is None:
                 continue
-            calls = _int_or((caller["calls"] if "calls" in caller else None), 1)  # ty:ignore[invalid-argument-type]
+            calls = _int_or(caller.get("calls"), 1)  # ty:ignore[invalid-argument-type]
             if calls <= 0:
                 continue
             caller_key = str(key)
@@ -1932,16 +1932,16 @@ def _aggregate_neighbor_rng_callers_for_ticks(
             for signed in ((-offset, offset) if offset > 0 else (0,)):
                 probe = int(tick) + int(signed)
                 raw_row = _raw_debug_row_for_tick(raw_debug_by_tick, probe)
-                callers = (raw_row["rng_callers"] if "rng_callers" in raw_row else None)
+                callers = raw_row.get("rng_callers")
                 if not isinstance(callers, list) or not callers:
                     continue
                 for caller in callers:
                     if not isinstance(caller, dict):
                         continue
-                    key = (caller["caller_static"] if "caller_static" in caller else None)  # ty:ignore[invalid-argument-type]
+                    key = caller.get("caller_static")  # ty:ignore[invalid-argument-type]
                     if key is None:
                         continue
-                    calls = _int_or((caller["calls"] if "calls" in caller else None), 1)  # ty:ignore[invalid-argument-type]
+                    calls = _int_or(caller.get("calls"), 1)  # ty:ignore[invalid-argument-type]
                     if calls <= 0:
                         continue
                     picked.append((str(key), int(calls)))
@@ -1985,13 +1985,13 @@ def _find_first_rng_head_shortfall(
     end_tick: int,
 ) -> dict[str, object] | None:
     for tick in range(max(0, int(start_tick)), int(end_tick) + 1):
-        exp = (expected_by_tick[int(tick)] if int(tick) in expected_by_tick else None)
-        act = (actual_by_tick[int(tick)] if int(tick) in actual_by_tick else None)
+        exp = expected_by_tick.get(int(tick))
+        act = actual_by_tick.get(int(tick))
         if exp is None or act is None:
             continue
         raw_row = _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
         capture_stream_rows = _rng_stream_rows_for_raw_row(raw_row)
-        expected_head_len = _int_or((raw_row["rng_head_len"] if "rng_head_len" in raw_row else None), len(capture_stream_rows))
+        expected_head_len = _int_or(raw_row.get("rng_head_len"), len(capture_stream_rows))
         if expected_head_len <= 0:
             continue
         align = _compute_rng_stream_alignment(
@@ -1999,43 +1999,43 @@ def _find_first_rng_head_shortfall(
             capture_stream_rows=capture_stream_rows,
             capture_head_len=int(expected_head_len),
         )
-        actual_rand_calls_i = _int_or((align["actual_calls"] if "actual_calls" in align else None), -1)
+        actual_rand_calls_i = _int_or(align.get("actual_calls"), -1)
         if actual_rand_calls_i < 0:
             continue
-        first_mismatch_idx = (align["first_mismatch_idx"] if "first_mismatch_idx" in align else None)
-        missing_tail = _int_or((align["missing_tail"] if "missing_tail" in align else None), 0)
+        first_mismatch_idx = align.get("first_mismatch_idx")
+        missing_tail = _int_or(align.get("missing_tail"), 0)
         if first_mismatch_idx is None and int(missing_tail) <= 0:
             continue
         expected_rand_calls = _int_or(
-            (raw_row["rng_rand_calls"] if "rng_rand_calls" in raw_row else None),
-            _int_or((exp.rng_marks["rand_calls"] if "rand_calls" in exp.rng_marks else None), -1),
+            raw_row.get("rng_rand_calls"),
+            _int_or(exp.rng_marks.get("rand_calls"), -1),
         )
         caller_counts = _aggregate_rng_callers(
             raw_debug_by_tick=raw_debug_by_tick,
             ticks=[int(tick)],
         )
-        seq_first = _int_or((raw_row["rng_seq_first"] if "rng_seq_first" in raw_row else None), -1)
-        seq_last = _int_or((raw_row["rng_seq_last"] if "rng_seq_last" in raw_row else None), -1)
-        seed_epoch_enter = _int_or((raw_row["rng_seed_epoch_enter"] if "rng_seed_epoch_enter" in raw_row else None), -1)
-        seed_epoch_last = _int_or((raw_row["rng_seed_epoch_last"] if "rng_seed_epoch_last" in raw_row else None), -1)
+        seq_first = _int_or(raw_row.get("rng_seq_first"), -1)
+        seq_last = _int_or(raw_row.get("rng_seq_last"), -1)
+        seed_epoch_enter = _int_or(raw_row.get("rng_seed_epoch_enter"), -1)
+        seed_epoch_last = _int_or(raw_row.get("rng_seed_epoch_last"), -1)
         return {
             "tick": int(tick),
             "expected_head_len": int(expected_head_len),
             "actual_rand_calls": int(actual_rand_calls_i),
             "missing_draws": max(0, int(expected_head_len) - int(actual_rand_calls_i)),
-            "stream_prefix_match": (align["prefix_match"] if "prefix_match" in align else None),
-            "stream_compared": (align["compared"] if "compared" in align else None),
+            "stream_prefix_match": align.get("prefix_match"),
+            "stream_compared": align.get("compared"),
             "stream_first_mismatch_idx": first_mismatch_idx,
-            "stream_first_mismatch_reason": (align["first_mismatch_reason"] if "first_mismatch_reason" in align else None),
-            "stream_first_mismatch_capture": (align["first_mismatch_capture"] if "first_mismatch_capture" in align else None),
-            "stream_first_mismatch_actual": (align["first_mismatch_actual"] if "first_mismatch_actual" in align else None),
-            "stream_first_mismatch_capture_state_before": (align["first_mismatch_capture_state_before"] if "first_mismatch_capture_state_before" in align else None),
-            "stream_first_mismatch_capture_state_after": (align["first_mismatch_capture_state_after"] if "first_mismatch_capture_state_after" in align else None),
-            "stream_first_mismatch_actual_state_before": (align["first_mismatch_actual_state_before"] if "first_mismatch_actual_state_before" in align else None),
-            "stream_first_mismatch_actual_state_after": (align["first_mismatch_actual_state_after"] if "first_mismatch_actual_state_after" in align else None),
-            "stream_first_mismatch_capture_caller_static": (align["first_mismatch_capture_caller_static"] if "first_mismatch_capture_caller_static" in align else None),
-            "stream_first_mismatch_capture_branch_id": (align["first_mismatch_capture_branch_id"] if "first_mismatch_capture_branch_id" in align else None),
-            "stream_first_mismatch_capture_seq": (align["first_mismatch_capture_seq"] if "first_mismatch_capture_seq" in align else None),
+            "stream_first_mismatch_reason": align.get("first_mismatch_reason"),
+            "stream_first_mismatch_capture": align.get("first_mismatch_capture"),
+            "stream_first_mismatch_actual": align.get("first_mismatch_actual"),
+            "stream_first_mismatch_capture_state_before": align.get("first_mismatch_capture_state_before"),
+            "stream_first_mismatch_capture_state_after": align.get("first_mismatch_capture_state_after"),
+            "stream_first_mismatch_actual_state_before": align.get("first_mismatch_actual_state_before"),
+            "stream_first_mismatch_actual_state_after": align.get("first_mismatch_actual_state_after"),
+            "stream_first_mismatch_capture_caller_static": align.get("first_mismatch_capture_caller_static"),
+            "stream_first_mismatch_capture_branch_id": align.get("first_mismatch_capture_branch_id"),
+            "stream_first_mismatch_capture_seq": align.get("first_mismatch_capture_seq"),
             "stream_missing_tail": int(missing_tail),
             "expected_rand_calls": int(expected_rand_calls),
             "caller_counts": caller_counts,
@@ -2056,11 +2056,11 @@ def _find_first_projectile_hit_shortfall(
 ) -> dict[str, object] | None:
     for tick in range(max(0, int(start_tick)), int(end_tick) + 1):
         raw = _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
-        capture_hits_raw = _int_or((raw["projectile_find_hit_count"] if "projectile_find_hit_count" in raw else None), -1)
+        capture_hits_raw = _int_or(raw.get("projectile_find_hit_count"), -1)
         if capture_hits_raw < 0:
             continue
         capture_hits = _effective_capture_projectile_hit_count(raw)
-        act = (actual_by_tick[int(tick)] if int(tick) in actual_by_tick else None)
+        act = actual_by_tick.get(int(tick))
         if act is None:
             continue
         actual_hits = _int_or(act.events.hit_count, -1)
@@ -2068,17 +2068,17 @@ def _find_first_projectile_hit_shortfall(
             continue
         if int(capture_hits) <= int(actual_hits):
             continue
-        caller_counts = (raw["spawn_top_projectile_find_hit_callers"] if "spawn_top_projectile_find_hit_callers" in raw else None)
+        caller_counts = raw.get("spawn_top_projectile_find_hit_callers")
         if not isinstance(caller_counts, list):
             caller_counts = []
         if not caller_counts:
-            head = (raw["projectile_find_hit_head"] if "projectile_find_hit_head" in raw else None)
+            head = raw.get("projectile_find_hit_head")
             head_rows = head if isinstance(head, list) else []
             reduced: dict[str, int] = {}
             for item in head_rows:
                 if not isinstance(item, dict):
                     continue
-                key = (item["caller_static"] if "caller_static" in item else None)  # ty:ignore[invalid-argument-type]
+                key = item.get("caller_static")  # ty:ignore[invalid-argument-type]
                 if key is None:
                     continue
                 key_str = str(key)
@@ -2090,17 +2090,17 @@ def _find_first_projectile_hit_shortfall(
                 {"key": key, "count": count}
                 for key, count in sorted(reduced.items(), key=lambda item: (-int(item[1]), str(item[0])))
             ]
-        query_caller_counts = (raw["spawn_top_projectile_find_query_callers"] if "spawn_top_projectile_find_query_callers" in raw else None)
+        query_caller_counts = raw.get("spawn_top_projectile_find_query_callers")
         if not isinstance(query_caller_counts, list):
             query_caller_counts = []
         if not query_caller_counts:
-            query_head = (raw["projectile_find_query_head"] if "projectile_find_query_head" in raw else None)
+            query_head = raw.get("projectile_find_query_head")
             query_rows = query_head if isinstance(query_head, list) else []
             reduced_query: dict[str, int] = {}
             for item in query_rows:
                 if not isinstance(item, dict):
                     continue
-                key = (item["caller_static"] if "caller_static" in item else None)  # ty:ignore[invalid-argument-type]
+                key = item.get("caller_static")  # ty:ignore[invalid-argument-type]
                 if key is None:
                     continue
                 key_str = str(key)
@@ -2118,12 +2118,12 @@ def _find_first_projectile_hit_shortfall(
             "capture_hits": int(capture_hits),
             "actual_hits": int(actual_hits),
             "missing_hits": int(capture_hits) - int(actual_hits),
-            "capture_corpse_hits": _int_or((raw["projectile_find_hit_corpse_count"] if "projectile_find_hit_corpse_count" in raw else None), -1),
+            "capture_corpse_hits": _int_or(raw.get("projectile_find_hit_corpse_count"), -1),
             "caller_counts": caller_counts,
-            "query_counts": _int_or((raw["projectile_find_query_count"] if "projectile_find_query_count" in raw else None), -1),
-            "query_miss_count": _int_or((raw["projectile_find_query_miss_count"] if "projectile_find_query_miss_count" in raw else None), -1),
+            "query_counts": _int_or(raw.get("projectile_find_query_count"), -1),
+            "query_miss_count": _int_or(raw.get("projectile_find_query_miss_count"), -1),
             "query_owner_collision_count": _int_or(
-                (raw["projectile_find_query_owner_collision_count"] if "projectile_find_query_owner_collision_count" in raw else None),
+                raw.get("projectile_find_query_owner_collision_count"),
                 -1,
             ),
             "query_caller_counts": query_caller_counts,
@@ -2161,23 +2161,23 @@ def _merge_paths(*groups: tuple[str, ...]) -> tuple[str, ...]:
 
 
 def _extract_player_input_keys(raw: dict[str, object], player_index: int = 0) -> dict[str, object]:
-    rows = (raw["input_player_keys"] if "input_player_keys" in raw else None)
+    rows = raw.get("input_player_keys")
     if not isinstance(rows, list):
         return {}
     for idx, item in enumerate(rows):
         if not isinstance(item, dict):
             continue
-        row_player = _int_or((item["player_index"] if "player_index" in item else None), idx)  # ty:ignore[invalid-argument-type]
+        row_player = _int_or(item.get("player_index"), idx)  # ty:ignore[invalid-argument-type]
         if int(row_player) == int(player_index):
             return item  # ty:ignore[invalid-return-type]
     return {}
 
 
 def _input_has_opposite_direction_conflict(player_keys: dict[str, object]) -> bool:
-    left = (player_keys["turn_left_pressed"] if "turn_left_pressed" in player_keys else None)
-    right = (player_keys["turn_right_pressed"] if "turn_right_pressed" in player_keys else None)
-    forward = (player_keys["move_forward_pressed"] if "move_forward_pressed" in player_keys else None)
-    backward = (player_keys["move_backward_pressed"] if "move_backward_pressed" in player_keys else None)
+    left = player_keys.get("turn_left_pressed")
+    right = player_keys.get("turn_right_pressed")
+    forward = player_keys.get("move_forward_pressed")
+    backward = player_keys.get("move_backward_pressed")
     horizontal_conflict = isinstance(left, bool) and isinstance(right, bool) and left and right
     vertical_conflict = isinstance(forward, bool) and isinstance(backward, bool) and forward and backward
     return bool(horizontal_conflict or vertical_conflict)
@@ -2220,20 +2220,20 @@ def _build_investigation_leads(
         float_abs_tol=float(float_abs_tol),
     )
 
-    focus_exp = (expected_by_tick[int(focus_tick)] if int(focus_tick) in expected_by_tick else None)
-    focus_act = (actual_by_tick[int(focus_tick)] if int(focus_tick) in actual_by_tick else None)
+    focus_exp = expected_by_tick.get(int(focus_tick))
+    focus_act = actual_by_tick.get(int(focus_tick))
     focus_raw = _raw_debug_row_for_tick(raw_debug_by_tick, int(focus_tick))
     if capture_config is None:
         micro_cap = -1
     elif isinstance(capture_config, Mapping):
         config_map = cast("Mapping[str, object]", capture_config)
-        micro_cap = _int_or((config_map["creature_micro_max_head_per_tick"] if "creature_micro_max_head_per_tick" in config_map else None), -1)
+        micro_cap = _int_or(config_map.get("creature_micro_max_head_per_tick"), -1)
     else:
         micro_cap = int(capture_config.creature_micro_max_head_per_tick)
-    sample_counts_raw = (focus_raw["sample_counts"] if "sample_counts" in focus_raw else None)
+    sample_counts_raw = focus_raw.get("sample_counts")
     sample_counts = cast(Mapping[object, object], sample_counts_raw) if isinstance(sample_counts_raw, dict) else {}
     sample_counts_int = [
-        _int_or((sample_counts[key] if key in sample_counts else None), -1)
+        _int_or(sample_counts.get(key), -1)
         for key in ("creatures", "projectiles", "secondary_projectiles", "bonuses")
     ]
     samples_missing = bool(not sample_counts or all(int(value) < 0 for value in sample_counts_int))
@@ -2259,7 +2259,7 @@ def _build_investigation_leads(
             ),
         )
     else:
-        creature_micro_count = _int_or((focus_raw["creature_update_micro_count"] if "creature_update_micro_count" in focus_raw else None), -1)
+        creature_micro_count = _int_or(focus_raw.get("creature_update_micro_count"), -1)
         if creature_micro_count <= 0:
             leads.append(
                 InvestigationLead(
@@ -2323,47 +2323,47 @@ def _build_investigation_leads(
         end_tick=int(focus_tick),
     )
     if rng_head_shortfall is not None:
-        shortfall_tick = _int_or((rng_head_shortfall["tick"] if "tick" in rng_head_shortfall else None), -1)
-        expected_head_len = _int_or((rng_head_shortfall["expected_head_len"] if "expected_head_len" in rng_head_shortfall else None), -1)
-        actual_rand_calls = _int_or((rng_head_shortfall["actual_rand_calls"] if "actual_rand_calls" in rng_head_shortfall else None), -1)
-        missing_draws = _int_or((rng_head_shortfall["missing_draws"] if "missing_draws" in rng_head_shortfall else None), -1)
-        stream_prefix_match = _int_or((rng_head_shortfall["stream_prefix_match"] if "stream_prefix_match" in rng_head_shortfall else None), -1)
-        stream_compared = _int_or((rng_head_shortfall["stream_compared"] if "stream_compared" in rng_head_shortfall else None), -1)
-        stream_first_mismatch_idx = _int_or((rng_head_shortfall["stream_first_mismatch_idx"] if "stream_first_mismatch_idx" in rng_head_shortfall else None), -1)
-        stream_first_mismatch_reason = str((rng_head_shortfall["stream_first_mismatch_reason"] if "stream_first_mismatch_reason" in rng_head_shortfall else None) or "").strip()
-        stream_first_mismatch_capture = _int_or((rng_head_shortfall["stream_first_mismatch_capture"] if "stream_first_mismatch_capture" in rng_head_shortfall else None), -1)
-        stream_first_mismatch_actual = _int_or((rng_head_shortfall["stream_first_mismatch_actual"] if "stream_first_mismatch_actual" in rng_head_shortfall else None), -1)
+        shortfall_tick = _int_or(rng_head_shortfall.get("tick"), -1)
+        expected_head_len = _int_or(rng_head_shortfall.get("expected_head_len"), -1)
+        actual_rand_calls = _int_or(rng_head_shortfall.get("actual_rand_calls"), -1)
+        missing_draws = _int_or(rng_head_shortfall.get("missing_draws"), -1)
+        stream_prefix_match = _int_or(rng_head_shortfall.get("stream_prefix_match"), -1)
+        stream_compared = _int_or(rng_head_shortfall.get("stream_compared"), -1)
+        stream_first_mismatch_idx = _int_or(rng_head_shortfall.get("stream_first_mismatch_idx"), -1)
+        stream_first_mismatch_reason = str(rng_head_shortfall.get("stream_first_mismatch_reason") or "").strip()
+        stream_first_mismatch_capture = _int_or(rng_head_shortfall.get("stream_first_mismatch_capture"), -1)
+        stream_first_mismatch_actual = _int_or(rng_head_shortfall.get("stream_first_mismatch_actual"), -1)
         stream_first_mismatch_capture_state_before = _int_or(
-            (rng_head_shortfall["stream_first_mismatch_capture_state_before"] if "stream_first_mismatch_capture_state_before" in rng_head_shortfall else None),
+            rng_head_shortfall.get("stream_first_mismatch_capture_state_before"),
             -1,
         )
         stream_first_mismatch_capture_state_after = _int_or(
-            (rng_head_shortfall["stream_first_mismatch_capture_state_after"] if "stream_first_mismatch_capture_state_after" in rng_head_shortfall else None),
+            rng_head_shortfall.get("stream_first_mismatch_capture_state_after"),
             -1,
         )
         stream_first_mismatch_actual_state_before = _int_or(
-            (rng_head_shortfall["stream_first_mismatch_actual_state_before"] if "stream_first_mismatch_actual_state_before" in rng_head_shortfall else None),
+            rng_head_shortfall.get("stream_first_mismatch_actual_state_before"),
             -1,
         )
         stream_first_mismatch_actual_state_after = _int_or(
-            (rng_head_shortfall["stream_first_mismatch_actual_state_after"] if "stream_first_mismatch_actual_state_after" in rng_head_shortfall else None),
+            rng_head_shortfall.get("stream_first_mismatch_actual_state_after"),
             -1,
         )
         stream_first_mismatch_capture_branch_id = str(
-            (rng_head_shortfall["stream_first_mismatch_capture_branch_id"] if "stream_first_mismatch_capture_branch_id" in rng_head_shortfall else None) or "",
+            rng_head_shortfall.get("stream_first_mismatch_capture_branch_id") or "",
         ).strip()
         stream_first_mismatch_capture_seq = _int_or(
-            (rng_head_shortfall["stream_first_mismatch_capture_seq"] if "stream_first_mismatch_capture_seq" in rng_head_shortfall else None),
+            rng_head_shortfall.get("stream_first_mismatch_capture_seq"),
             -1,
         )
-        stream_missing_tail = _int_or((rng_head_shortfall["stream_missing_tail"] if "stream_missing_tail" in rng_head_shortfall else None), -1)
-        expected_rand_calls = _int_or((rng_head_shortfall["expected_rand_calls"] if "expected_rand_calls" in rng_head_shortfall else None), -1)
-        seq_first = _int_or((rng_head_shortfall["seq_first"] if "seq_first" in rng_head_shortfall else None), -1)
-        seq_last = _int_or((rng_head_shortfall["seq_last"] if "seq_last" in rng_head_shortfall else None), -1)
-        seed_epoch_enter = _int_or((rng_head_shortfall["seed_epoch_enter"] if "seed_epoch_enter" in rng_head_shortfall else None), -1)
-        seed_epoch_last = _int_or((rng_head_shortfall["seed_epoch_last"] if "seed_epoch_last" in rng_head_shortfall else None), -1)
+        stream_missing_tail = _int_or(rng_head_shortfall.get("stream_missing_tail"), -1)
+        expected_rand_calls = _int_or(rng_head_shortfall.get("expected_rand_calls"), -1)
+        seq_first = _int_or(rng_head_shortfall.get("seq_first"), -1)
+        seq_last = _int_or(rng_head_shortfall.get("seq_last"), -1)
+        seed_epoch_enter = _int_or(rng_head_shortfall.get("seed_epoch_enter"), -1)
+        seed_epoch_last = _int_or(rng_head_shortfall.get("seed_epoch_last"), -1)
         caller_counts = (
-            (rng_head_shortfall["caller_counts"] if "caller_counts" in rng_head_shortfall else None) if isinstance((rng_head_shortfall["caller_counts"] if "caller_counts" in rng_head_shortfall else None), list) else []
+            rng_head_shortfall.get("caller_counts") if isinstance(rng_head_shortfall.get("caller_counts"), list) else []
         )
         top_native = _top_native_functions_from_callers(
             caller_counts=caller_counts,  # ty:ignore[invalid-argument-type]
@@ -2471,47 +2471,47 @@ def _build_investigation_leads(
         end_tick=int(focus_tick),
     )
     if projectile_hit_shortfall is not None:
-        shortfall_tick = _int_or((projectile_hit_shortfall["tick"] if "tick" in projectile_hit_shortfall else None), -1)
-        capture_hits = _int_or((projectile_hit_shortfall["capture_hits"] if "capture_hits" in projectile_hit_shortfall else None), -1)
-        capture_hits_raw = _int_or((projectile_hit_shortfall["capture_hits_raw"] if "capture_hits_raw" in projectile_hit_shortfall else None), capture_hits)
-        actual_hits = _int_or((projectile_hit_shortfall["actual_hits"] if "actual_hits" in projectile_hit_shortfall else None), -1)
-        missing_hits = _int_or((projectile_hit_shortfall["missing_hits"] if "missing_hits" in projectile_hit_shortfall else None), -1)
-        corpse_hits = _int_or((projectile_hit_shortfall["capture_corpse_hits"] if "capture_corpse_hits" in projectile_hit_shortfall else None), -1)
-        query_counts = _int_or((projectile_hit_shortfall["query_counts"] if "query_counts" in projectile_hit_shortfall else None), -1)
-        query_miss_count = _int_or((projectile_hit_shortfall["query_miss_count"] if "query_miss_count" in projectile_hit_shortfall else None), -1)
-        query_owner_collision_count = _int_or((projectile_hit_shortfall["query_owner_collision_count"] if "query_owner_collision_count" in projectile_hit_shortfall else None), -1)
+        shortfall_tick = _int_or(projectile_hit_shortfall.get("tick"), -1)
+        capture_hits = _int_or(projectile_hit_shortfall.get("capture_hits"), -1)
+        capture_hits_raw = _int_or(projectile_hit_shortfall.get("capture_hits_raw"), capture_hits)
+        actual_hits = _int_or(projectile_hit_shortfall.get("actual_hits"), -1)
+        missing_hits = _int_or(projectile_hit_shortfall.get("missing_hits"), -1)
+        corpse_hits = _int_or(projectile_hit_shortfall.get("capture_corpse_hits"), -1)
+        query_counts = _int_or(projectile_hit_shortfall.get("query_counts"), -1)
+        query_miss_count = _int_or(projectile_hit_shortfall.get("query_miss_count"), -1)
+        query_owner_collision_count = _int_or(projectile_hit_shortfall.get("query_owner_collision_count"), -1)
         caller_counts_raw = (
-            (projectile_hit_shortfall["caller_counts"] if "caller_counts" in projectile_hit_shortfall else None)
-            if isinstance((projectile_hit_shortfall["caller_counts"] if "caller_counts" in projectile_hit_shortfall else None), list)
+            projectile_hit_shortfall.get("caller_counts")
+            if isinstance(projectile_hit_shortfall.get("caller_counts"), list)
             else []
         )
         caller_counts: list[tuple[str, int]] = []
         for item in caller_counts_raw:  # ty:ignore[not-iterable]
             if not isinstance(item, dict):
                 continue
-            key = (item["key"] if "key" in item else None)
+            key = item.get("key")
             if key is None:
-                key = (item["caller_static"] if "caller_static" in item else None)
+                key = item.get("caller_static")
             if key is None:
                 continue
-            caller_counts.append((str(key), _int_or((item["count"] if "count" in item else None), _int_or((item["calls"] if "calls" in item else None), 1))))
+            caller_counts.append((str(key), _int_or(item.get("count"), _int_or(item.get("calls"), 1))))
         caller_counts = sorted(caller_counts, key=lambda entry: (-int(entry[1]), str(entry[0])))
         top_callers = ", ".join(f"{addr} x{calls}" for addr, calls in caller_counts[:6])
         query_caller_counts_raw = (
-            (projectile_hit_shortfall["query_caller_counts"] if "query_caller_counts" in projectile_hit_shortfall else None)
-            if isinstance((projectile_hit_shortfall["query_caller_counts"] if "query_caller_counts" in projectile_hit_shortfall else None), list)
+            projectile_hit_shortfall.get("query_caller_counts")
+            if isinstance(projectile_hit_shortfall.get("query_caller_counts"), list)
             else []
         )
         query_caller_counts: list[tuple[str, int]] = []
         for item in query_caller_counts_raw:  # ty:ignore[not-iterable]
             if not isinstance(item, dict):
                 continue
-            key = (item["key"] if "key" in item else None)
+            key = item.get("key")
             if key is None:
-                key = (item["caller_static"] if "caller_static" in item else None)
+                key = item.get("caller_static")
             if key is None:
                 continue
-            query_caller_counts.append((str(key), _int_or((item["count"] if "count" in item else None), _int_or((item["calls"] if "calls" in item else None), 1))))
+            query_caller_counts.append((str(key), _int_or(item.get("count"), _int_or(item.get("calls"), 1))))
         query_caller_counts = sorted(query_caller_counts, key=lambda entry: (-int(entry[1]), str(entry[0])))
         top_query_callers = ", ".join(f"{addr} x{calls}" for addr, calls in query_caller_counts[:6])
         top_native = _top_native_functions_from_callers(
@@ -2571,20 +2571,20 @@ def _build_investigation_leads(
 
     if focus_exp is not None and focus_act is not None:
         expected_rand_calls = _int_or(
-            (focus_raw["rng_rand_calls"] if "rng_rand_calls" in focus_raw else None),
-            _int_or((focus_exp.rng_marks["rand_calls"] if "rand_calls" in focus_exp.rng_marks else None), -1),
+            focus_raw.get("rng_rand_calls"),
+            _int_or(focus_exp.rng_marks.get("rand_calls"), -1),
         )
         actual_rand_calls = _actual_rand_calls_for_checkpoint(focus_act)
         focus_stream_rows = _rng_stream_rows_for_raw_row(focus_raw)
-        focus_head_len = _int_or((focus_raw["rng_head_len"] if "rng_head_len" in focus_raw else None), len(focus_stream_rows))
+        focus_head_len = _int_or(focus_raw.get("rng_head_len"), len(focus_stream_rows))
         focus_stream = _compute_rng_stream_alignment(
             act=focus_act,
             capture_stream_rows=focus_stream_rows,
             capture_head_len=int(focus_head_len),
         )
         focus_stream_mismatch = (
-            _int_or((focus_stream["first_mismatch_idx"] if "first_mismatch_idx" in focus_stream else None), -1) >= 0
-            or _int_or((focus_stream["missing_tail"] if "missing_tail" in focus_stream else None), 0) > 0
+            _int_or(focus_stream.get("first_mismatch_idx"), -1) >= 0
+            or _int_or(focus_stream.get("missing_tail"), 0) > 0
         )
         if expected_rand_calls >= 0 and actual_rand_calls is not None:
             rand_delta = int(actual_rand_calls) - int(expected_rand_calls)
@@ -2600,26 +2600,26 @@ def _build_investigation_leads(
                         f"actual={int(actual_rand_calls)} delta={int(rand_delta):+d}"
                     ),
                 ]
-                first_mismatch_idx = _int_or((focus_stream["first_mismatch_idx"] if "first_mismatch_idx" in focus_stream else None), -1)
-                missing_tail = _int_or((focus_stream["missing_tail"] if "missing_tail" in focus_stream else None), 0)
+                first_mismatch_idx = _int_or(focus_stream.get("first_mismatch_idx"), -1)
+                missing_tail = _int_or(focus_stream.get("missing_tail"), 0)
                 if first_mismatch_idx >= 0:
                     evidence.append(
                         "focus tick RNG stream mismatch: "
-                        f"idx={int(first_mismatch_idx)} capture={_int_or((focus_stream['first_mismatch_capture'] if 'first_mismatch_capture' in focus_stream else None))} "
-                        f"rewrite={_int_or((focus_stream['first_mismatch_actual'] if 'first_mismatch_actual' in focus_stream else None))} "
-                        f"prefix_match={_int_or((focus_stream['prefix_match'] if 'prefix_match' in focus_stream else None))}/{_int_or((focus_stream['compared'] if 'compared' in focus_stream else None))}",
+                        f"idx={int(first_mismatch_idx)} capture={_int_or(focus_stream.get('first_mismatch_capture'))} "
+                        f"rewrite={_int_or(focus_stream.get('first_mismatch_actual'))} "
+                        f"prefix_match={_int_or(focus_stream.get('prefix_match'))}/{_int_or(focus_stream.get('compared'))}",
                     )
-                    mismatch_reason = str((focus_stream["first_mismatch_reason"] if "first_mismatch_reason" in focus_stream else None) or "").strip()
+                    mismatch_reason = str(focus_stream.get("first_mismatch_reason") or "").strip()
                     if mismatch_reason:
                         evidence.append(f"focus mismatch reason: {mismatch_reason}")
-                    branch_id = str((focus_stream["first_mismatch_capture_branch_id"] if "first_mismatch_capture_branch_id" in focus_stream else None) or "").strip()
+                    branch_id = str(focus_stream.get("first_mismatch_capture_branch_id") or "").strip()
                     if branch_id:
                         evidence.append(f"capture branch_id at focus mismatch: {branch_id}")
                 elif missing_tail > 0:
                     evidence.append(
                         "focus tick RNG stream shortfall: "
-                        f"capture_head_len={_int_or((focus_stream['capture_head_len'] if 'capture_head_len' in focus_stream else None))} "
-                        f"rewrite_calls={_int_or((focus_stream['actual_calls'] if 'actual_calls' in focus_stream else None))} "
+                        f"capture_head_len={_int_or(focus_stream.get('capture_head_len'))} "
+                        f"rewrite_calls={_int_or(focus_stream.get('actual_calls'))} "
                         f"missing_tail={int(missing_tail)}",
                     )
                 if top_stages:
@@ -2627,25 +2627,25 @@ def _build_investigation_leads(
                         "rewrite stage-local rand call totals: "
                         + ", ".join(f"{name}={calls}" for name, calls in top_stages[:6]),
                     )
-                capture_deaths = _int_or((focus_raw["spawn_death_count"] if "spawn_death_count" in focus_raw else None), -1)
+                capture_deaths = _int_or(focus_raw.get("spawn_death_count"), -1)
                 if int(capture_deaths) == 0 and len(focus_act.deaths) > 0:
                     evidence.append(
                         "capture has 0 creature_death events at focus tick while rewrite produced "
                         f"{len(focus_act.deaths)} death ledger entries",
                     )
-                capture_damage = _int_or((focus_raw["creature_damage_count"] if "creature_damage_count" in focus_raw else None), -1)
+                capture_damage = _int_or(focus_raw.get("creature_damage_count"), -1)
                 if int(capture_damage) == 0 and len(focus_act.deaths) > 0:
                     evidence.append(
                         "capture has 0 creature_apply_damage events at focus tick while rewrite resolved a kill branch",
                     )
 
-                focus_callers = (focus_raw["rng_callers"] if "rng_callers" in focus_raw else None)
+                focus_callers = focus_raw.get("rng_callers")
                 if isinstance(focus_callers, list) and focus_callers:
                     top = sorted(
                         [
-                            (str((item["caller_static"] if "caller_static" in item else None)), _int_or((item["calls"] if "calls" in item else None), 1))  # ty:ignore[invalid-argument-type]
+                            (str(item.get("caller_static")), _int_or(item.get("calls"), 1))  # ty:ignore[invalid-argument-type]
                             for item in focus_callers
-                            if isinstance(item, dict) and (item["caller_static"] if "caller_static" in item else None) is not None  # ty:ignore[invalid-argument-type]
+                            if isinstance(item, dict) and item.get("caller_static") is not None  # ty:ignore[invalid-argument-type]
                         ],
                         key=lambda item: (-int(item[1]), str(item[0])),
                     )[:6]
@@ -2764,7 +2764,7 @@ def _build_investigation_leads(
         )
 
     pos_onsets = [onsets[key] for key in ("players[0].pos.x", "players[0].pos.y") if key in onsets]
-    xp_onset = (onsets["players[0].experience"] if "players[0].experience" in onsets else None)
+    xp_onset = onsets.get("players[0].experience")
     if pos_onsets:
         first_pos = min(pos_onsets, key=lambda onset: int(onset.tick))
         evidence = [
@@ -2812,7 +2812,7 @@ def _build_investigation_leads(
         )
 
     if xp_onset is not None:
-        score_onset = (onsets["score_xp"] if "score_xp" in onsets else None)
+        score_onset = onsets.get("score_xp")
         evidence = [
             (
                 f"first XP mismatch at tick={int(xp_onset.tick)}: "
@@ -2822,10 +2822,10 @@ def _build_investigation_leads(
         if score_onset is not None and int(score_onset.tick) == int(xp_onset.tick):
             evidence.append("score_xp divergence starts on the same tick, indicating a gameplay award timing mismatch")
         focus_raw = _raw_debug_row_for_tick(raw_debug_by_tick, int(xp_onset.tick))
-        focus_damage_count = _int_or((focus_raw["creature_damage_count"] if "creature_damage_count" in focus_raw else None), 0)
+        focus_damage_count = _int_or(focus_raw.get("creature_damage_count"), 0)
         if focus_damage_count > 0:
             evidence.append(f"native creature_apply_damage count at XP-onset tick: {focus_damage_count}")
-            damage_head = (focus_raw["creature_damage_head"] if "creature_damage_head" in focus_raw else None)
+            damage_head = focus_raw.get("creature_damage_head")
             if isinstance(damage_head, list) and damage_head:
                 preview = []
                 for item in damage_head[:4]:
@@ -2833,23 +2833,23 @@ def _build_investigation_leads(
                         continue
                     preview.append(
                         "idx="
-                        + str(_int_or((item["creature_index"] if "creature_index" in item else None), -1))  # ty:ignore[invalid-argument-type]
+                        + str(_int_or(item.get("creature_index"), -1))  # ty:ignore[invalid-argument-type]
                         + "/type="
-                        + str(_int_or((item["damage_type"] if "damage_type" in item else None), -1))  # ty:ignore[invalid-argument-type]
+                        + str(_int_or(item.get("damage_type"), -1))  # ty:ignore[invalid-argument-type]
                         + "/k="
-                        + str(1 if bool((item["killed"] if "killed" in item else None)) else 0),  # ty:ignore[invalid-argument-type]
+                        + str(1 if bool(item.get("killed")) else 0),  # ty:ignore[invalid-argument-type]
                     )
                 if preview:
                     evidence.append("native creature_apply_damage head: " + ", ".join(preview))
         else:
             evidence.append("native creature_apply_damage count at XP-onset tick: 0")
-        focus_callers = (focus_raw["rng_callers"] if "rng_callers" in focus_raw else None)
+        focus_callers = focus_raw.get("rng_callers")
         if isinstance(focus_callers, list) and focus_callers:
             top = sorted(
                 [
-                    (str((item["caller_static"] if "caller_static" in item else None)), _int_or((item["calls"] if "calls" in item else None), 1))  # ty:ignore[invalid-argument-type]
+                    (str(item.get("caller_static")), _int_or(item.get("calls"), 1))  # ty:ignore[invalid-argument-type]
                     for item in focus_callers
-                    if isinstance(item, dict) and (item["caller_static"] if "caller_static" in item else None) is not None  # ty:ignore[invalid-argument-type]
+                    if isinstance(item, dict) and item.get("caller_static") is not None  # ty:ignore[invalid-argument-type]
                 ],
                 key=lambda item: (-int(item[1]), str(item[0])),
             )[:6]
@@ -2890,9 +2890,9 @@ def _classify_divergence_category(
 ) -> DivergenceCategory:
     lead_titles = {lead.title for lead in leads}
 
-    capture_hits_raw = _int_or((focus_raw["projectile_find_hit_count"] if "projectile_find_hit_count" in focus_raw else None), -1)
+    capture_hits_raw = _int_or(focus_raw.get("projectile_find_hit_count"), -1)
     capture_hits = _effective_capture_projectile_hit_count(focus_raw)
-    capture_owner_collision_count = _int_or((focus_raw["projectile_find_query_owner_collision_count"] if "projectile_find_query_owner_collision_count" in focus_raw else None), -1)
+    capture_owner_collision_count = _int_or(focus_raw.get("projectile_find_query_owner_collision_count"), -1)
     actual_hits = _int_or(focus_actual_ckpt.events.hit_count if focus_actual_ckpt is not None else None, -1)
     if (
         "Native projectile hit resolves exceed rewrite hit events" in lead_titles
@@ -2916,15 +2916,15 @@ def _classify_divergence_category(
                 act=focus_actual_ckpt,
                 capture_stream_rows=_rng_stream_rows_for_raw_row(focus_raw),
                 capture_head_len=_int_or(
-                    (focus_raw["rng_head_len"] if "rng_head_len" in focus_raw else None),
+                    focus_raw.get("rng_head_len"),
                     len(_rng_stream_rows_for_raw_row(focus_raw)),
                 ),
             )
             if focus_actual_ckpt is not None
             else cast(RngStreamAlignment, {})
         )
-        missing_tail = _int_or((focus_stream["missing_tail"] if "missing_tail" in focus_stream else None), 0)
-        first_mismatch_idx = _int_or((focus_stream["first_mismatch_idx"] if "first_mismatch_idx" in focus_stream else None), -1)
+        missing_tail = _int_or(focus_stream.get("missing_tail"), 0)
+        first_mismatch_idx = _int_or(focus_stream.get("first_mismatch_idx"), -1)
         if missing_tail > 0:
             return DivergenceCategory(
                 id="rng.tail_shortfall",
@@ -2998,22 +2998,22 @@ def _build_window_rows(
     end = int(focus_tick) + int(window)
     rows: list[dict[str, object]] = []
     for tick in range(start, end + 1):
-        exp = (expected_by_tick[tick] if tick in expected_by_tick else None)
-        act = (actual_by_tick[tick] if tick in actual_by_tick else None)
+        exp = expected_by_tick.get(tick)
+        act = actual_by_tick.get(tick)
         if exp is None or act is None:
             continue
         raw = _raw_debug_row_for_tick(raw_debug_by_tick, int(tick))
         exp_player = exp.players[0] if exp.players else None
         act_player = act.players[0] if act.players else None
-        before = _int_or((act.rng_marks["before_world_step"] if "before_world_step" in act.rng_marks else None))
+        before = _int_or(act.rng_marks.get("before_world_step"))
         after = _primary_rng_after(act)
-        expected_rand_calls = _int_or((raw["rng_rand_calls"] if "rng_rand_calls" in raw else None), _int_or((exp.rng_marks["rand_calls"] if "rand_calls" in exp.rng_marks else None)))
+        expected_rand_calls = _int_or(raw.get("rng_rand_calls"), _int_or(exp.rng_marks.get("rand_calls")))
         actual_rand_calls = _actual_rand_calls_for_checkpoint(act)
         rand_calls_delta: int | None = None
         if expected_rand_calls >= 0 and actual_rand_calls is not None:
             rand_calls_delta = int(actual_rand_calls) - int(expected_rand_calls)
         rng_stream_rows = _rng_stream_rows_for_raw_row(raw)
-        rng_head_len = _int_or((raw["rng_head_len"] if "rng_head_len" in raw else None), len(rng_stream_rows))
+        rng_head_len = _int_or(raw.get("rng_head_len"), len(rng_stream_rows))
         stream_align = _compute_rng_stream_alignment(
             act=act,
             capture_stream_rows=rng_stream_rows,
@@ -3036,30 +3036,30 @@ def _build_window_rows(
                 "expected_rand_calls": int(expected_rand_calls),
                 "actual_rand_calls": actual_rand_calls,
                 "rand_calls_delta": rand_calls_delta,
-                "rng_stream_prefix_match": (stream_align["prefix_match"] if "prefix_match" in stream_align else None),
-                "rng_stream_compared": (stream_align["compared"] if "compared" in stream_align else None),
-                "rng_stream_first_mismatch_idx": (stream_align["first_mismatch_idx"] if "first_mismatch_idx" in stream_align else None),
-                "rng_stream_first_mismatch_reason": (stream_align["first_mismatch_reason"] if "first_mismatch_reason" in stream_align else None),
-                "rng_stream_first_mismatch_capture": (stream_align["first_mismatch_capture"] if "first_mismatch_capture" in stream_align else None),
-                "rng_stream_first_mismatch_actual": (stream_align["first_mismatch_actual"] if "first_mismatch_actual" in stream_align else None),
-                "rng_stream_first_mismatch_capture_branch_id": (stream_align["first_mismatch_capture_branch_id"] if "first_mismatch_capture_branch_id" in stream_align else None),
-                "rng_stream_first_mismatch_capture_seq": (stream_align["first_mismatch_capture_seq"] if "first_mismatch_capture_seq" in stream_align else None),
-                "rng_stream_missing_tail": (stream_align["missing_tail"] if "missing_tail" in stream_align else None),
-                "capture_rng_seq_first": _int_or((raw["rng_seq_first"] if "rng_seq_first" in raw else None), -1),
-                "capture_rng_seq_last": _int_or((raw["rng_seq_last"] if "rng_seq_last" in raw else None), -1),
-                "capture_rng_seed_epoch_enter": _int_or((raw["rng_seed_epoch_enter"] if "rng_seed_epoch_enter" in raw else None), -1),
-                "capture_rng_seed_epoch_last": _int_or((raw["rng_seed_epoch_last"] if "rng_seed_epoch_last" in raw else None), -1),
-                "capture_rng_outside_before_calls": _int_or((raw["rng_outside_before_calls"] if "rng_outside_before_calls" in raw else None), -1),
-                "capture_rng_mirror_mismatch_total": _int_or((raw["rng_mirror_mismatch_total"] if "rng_mirror_mismatch_total" in raw else None), -1),
-                "actual_ps_draws": _int_or((act.rng_marks["ps_draws_total"] if "ps_draws_total" in act.rng_marks else None)),
+                "rng_stream_prefix_match": stream_align.get("prefix_match"),
+                "rng_stream_compared": stream_align.get("compared"),
+                "rng_stream_first_mismatch_idx": stream_align.get("first_mismatch_idx"),
+                "rng_stream_first_mismatch_reason": stream_align.get("first_mismatch_reason"),
+                "rng_stream_first_mismatch_capture": stream_align.get("first_mismatch_capture"),
+                "rng_stream_first_mismatch_actual": stream_align.get("first_mismatch_actual"),
+                "rng_stream_first_mismatch_capture_branch_id": stream_align.get("first_mismatch_capture_branch_id"),
+                "rng_stream_first_mismatch_capture_seq": stream_align.get("first_mismatch_capture_seq"),
+                "rng_stream_missing_tail": stream_align.get("missing_tail"),
+                "capture_rng_seq_first": _int_or(raw.get("rng_seq_first"), -1),
+                "capture_rng_seq_last": _int_or(raw.get("rng_seq_last"), -1),
+                "capture_rng_seed_epoch_enter": _int_or(raw.get("rng_seed_epoch_enter"), -1),
+                "capture_rng_seed_epoch_last": _int_or(raw.get("rng_seed_epoch_last"), -1),
+                "capture_rng_outside_before_calls": _int_or(raw.get("rng_outside_before_calls"), -1),
+                "capture_rng_mirror_mismatch_total": _int_or(raw.get("rng_mirror_mismatch_total"), -1),
+                "actual_ps_draws": _int_or(act.rng_marks.get("ps_draws_total")),
                 "actual_rng_changed": bool(before >= 0 and after >= 0 and before != after),
                 "expected_pickups": int(exp.events.pickup_count),
                 "actual_pickups": int(act.events.pickup_count),
                 "expected_sfx": int(exp.events.sfx_count),
                 "actual_sfx": int(act.events.sfx_count),
-                "capture_bonus_spawn_events": _int_or((raw["spawn_bonus_count"] if "spawn_bonus_count" in raw else None)),
-                "capture_death_events": _int_or((raw["spawn_death_count"] if "spawn_death_count" in raw else None)),
-                "capture_projectile_find_hits": _int_or((raw["projectile_find_hit_count"] if "projectile_find_hit_count" in raw else None), -1),
+                "capture_bonus_spawn_events": _int_or(raw.get("spawn_bonus_count")),
+                "capture_death_events": _int_or(raw.get("spawn_death_count")),
+                "capture_projectile_find_hits": _int_or(raw.get("projectile_find_hit_count"), -1),
                 "actual_deaths": int(len(act.deaths)),
                 "actual_hits": int(act.events.hit_count),
             },
@@ -3068,11 +3068,11 @@ def _build_window_rows(
 
 
 def _format_rng_stream_cell(row: dict[str, object], *, width: int = 14) -> str:
-    prefix = _int_or((row["rng_stream_prefix_match"] if "rng_stream_prefix_match" in row else None), -1)
-    compared = _int_or((row["rng_stream_compared"] if "rng_stream_compared" in row else None), -1)
-    mismatch_idx = _int_or((row["rng_stream_first_mismatch_idx"] if "rng_stream_first_mismatch_idx" in row else None), -1)
-    mismatch_reason = str((row["rng_stream_first_mismatch_reason"] if "rng_stream_first_mismatch_reason" in row else None) or "").strip()
-    missing_tail = _int_or((row["rng_stream_missing_tail"] if "rng_stream_missing_tail" in row else None), -1)
+    prefix = _int_or(row.get("rng_stream_prefix_match"), -1)
+    compared = _int_or(row.get("rng_stream_compared"), -1)
+    mismatch_idx = _int_or(row.get("rng_stream_first_mismatch_idx"), -1)
+    mismatch_reason = str(row.get("rng_stream_first_mismatch_reason") or "").strip()
+    missing_tail = _int_or(row.get("rng_stream_missing_tail"), -1)
     if prefix < 0 or compared < 0:
         text = "na"
     elif mismatch_idx >= 0:
@@ -3092,10 +3092,10 @@ def _print_window(rows: list[dict[str, object]]) -> None:
         "  rand_calls(e/a/d)  rng_stream(p/c/status)  ps_draws(a)  rng_changed(a)  bonus_spawn(e)  deaths(e/a)  p_hits(e/a)  pickups(e/a)  sfx(e/a)",
     )
     for row in rows:
-        expected_rand_calls = _int_or((row["expected_rand_calls"] if "expected_rand_calls" in row else None), -1)
+        expected_rand_calls = _int_or(row.get("expected_rand_calls"), -1)
         expected_rand_text = _fmt_opt_int(expected_rand_calls if expected_rand_calls >= 0 else None, width=6)
-        actual_rand_text = _fmt_opt_int((row["actual_rand_calls"] if "actual_rand_calls" in row else None), width=6)
-        rand_delta_text = _fmt_opt_int((row["rand_calls_delta"] if "rand_calls_delta" in row else None), width=6)
+        actual_rand_text = _fmt_opt_int(row.get("actual_rand_calls"), width=6)
+        rand_delta_text = _fmt_opt_int(row.get("rand_calls_delta"), width=6)
         rng_stream_text = _format_rng_stream_cell(row, width=16)
         print(
             f"{int(row['tick']):4d}  "  # ty:ignore[invalid-argument-type]
@@ -3412,7 +3412,7 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
     _print_investigation_leads(leads)
 
     focus_raw = _raw_debug_row_for_tick(raw_debug_by_tick, focus_tick)
-    focus_actual_ckpt = (actual_by_tick[int(focus_tick)] if int(focus_tick) in actual_by_tick else None)
+    focus_actual_ckpt = actual_by_tick.get(int(focus_tick))
     divergence_category = _classify_divergence_category(
         divergence=divergence,
         leads=leads,
@@ -3431,18 +3431,18 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
     if focus_raw:
         print(
             "  "
-            f"spawn_bonus_events={_int_or((focus_raw['spawn_bonus_count'] if 'spawn_bonus_count' in focus_raw else None))} "
-            f"spawn_death_events={_int_or((focus_raw['spawn_death_count'] if 'spawn_death_count' in focus_raw else None))} "
-            f"creature_damage_events={_int_or((focus_raw['creature_damage_count'] if 'creature_damage_count' in focus_raw else None))} "
-            f"rand_calls={_int_or((focus_raw['rng_rand_calls'] if 'rng_rand_calls' in focus_raw else None))} "
-            f"rand_last={(focus_raw['rng_rand_last'] if 'rng_rand_last' in focus_raw else None)!r}",
+            f"spawn_bonus_events={_int_or(focus_raw.get('spawn_bonus_count'))} "
+            f"spawn_death_events={_int_or(focus_raw.get('spawn_death_count'))} "
+            f"creature_damage_events={_int_or(focus_raw.get('creature_damage_count'))} "
+            f"rand_calls={_int_or(focus_raw.get('rng_rand_calls'))} "
+            f"rand_last={focus_raw.get('rng_rand_last')!r}",
         )
-        rng_seq_first = _int_or((focus_raw["rng_seq_first"] if "rng_seq_first" in focus_raw else None), -1)
-        rng_seq_last = _int_or((focus_raw["rng_seq_last"] if "rng_seq_last" in focus_raw else None), -1)
-        rng_seed_epoch_enter = _int_or((focus_raw["rng_seed_epoch_enter"] if "rng_seed_epoch_enter" in focus_raw else None), -1)
-        rng_seed_epoch_last = _int_or((focus_raw["rng_seed_epoch_last"] if "rng_seed_epoch_last" in focus_raw else None), -1)
-        rng_outside_before_calls = _int_or((focus_raw["rng_outside_before_calls"] if "rng_outside_before_calls" in focus_raw else None), -1)
-        rng_mirror_mismatch_total = _int_or((focus_raw["rng_mirror_mismatch_total"] if "rng_mirror_mismatch_total" in focus_raw else None), -1)
+        rng_seq_first = _int_or(focus_raw.get("rng_seq_first"), -1)
+        rng_seq_last = _int_or(focus_raw.get("rng_seq_last"), -1)
+        rng_seed_epoch_enter = _int_or(focus_raw.get("rng_seed_epoch_enter"), -1)
+        rng_seed_epoch_last = _int_or(focus_raw.get("rng_seed_epoch_last"), -1)
+        rng_outside_before_calls = _int_or(focus_raw.get("rng_outside_before_calls"), -1)
+        rng_mirror_mismatch_total = _int_or(focus_raw.get("rng_mirror_mismatch_total"), -1)
         if (
             rng_seq_first >= 0
             or rng_seq_last >= 0
@@ -3458,73 +3458,73 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
                 f"capture_rng_outside_before_calls={int(rng_outside_before_calls)} "
                 f"capture_rng_mirror_mismatch_total={int(rng_mirror_mismatch_total)}",
             )
-        callers = (focus_raw["rng_callers"] if "rng_callers" in focus_raw else None)
+        callers = focus_raw.get("rng_callers")
         if isinstance(callers, list) and callers:
             print(f"  capture_rand_callers_top={callers[:6]!r}")
-        top_bonus = (focus_raw["spawn_top_bonus_callers"] if "spawn_top_bonus_callers" in focus_raw else None)
+        top_bonus = focus_raw.get("spawn_top_bonus_callers")
         if isinstance(top_bonus, list) and top_bonus:
             print(f"  capture_bonus_spawn_callers_top={top_bonus[:6]!r}")
-        top_damage = (focus_raw["spawn_top_creature_damage_callers"] if "spawn_top_creature_damage_callers" in focus_raw else None)
+        top_damage = focus_raw.get("spawn_top_creature_damage_callers")
         if isinstance(top_damage, list) and top_damage:
             print(f"  capture_creature_damage_callers_top={top_damage[:6]!r}")
-        damage_head = (focus_raw["creature_damage_head"] if "creature_damage_head" in focus_raw else None)
+        damage_head = focus_raw.get("creature_damage_head")
         if isinstance(damage_head, list) and damage_head:
             print(f"  capture_creature_damage_head={damage_head[:6]!r}")
-        projectile_find_hit_count = _int_or((focus_raw["projectile_find_hit_count"] if "projectile_find_hit_count" in focus_raw else None), -1)
+        projectile_find_hit_count = _int_or(focus_raw.get("projectile_find_hit_count"), -1)
         projectile_find_hit_count_effective = _effective_capture_projectile_hit_count(focus_raw)
         if projectile_find_hit_count >= 0:
             print(
                 "  "
                 f"capture_projectile_find_hit_count={int(projectile_find_hit_count)} "
                 f"capture_projectile_find_hit_count_effective={int(projectile_find_hit_count_effective)} "
-                f"capture_projectile_find_hit_corpse_count={_int_or((focus_raw['projectile_find_hit_corpse_count'] if 'projectile_find_hit_corpse_count' in focus_raw else None), -1)}",
+                f"capture_projectile_find_hit_corpse_count={_int_or(focus_raw.get('projectile_find_hit_corpse_count'), -1)}",
             )
-        projectile_find_query_count = _int_or((focus_raw["projectile_find_query_count"] if "projectile_find_query_count" in focus_raw else None), -1)
+        projectile_find_query_count = _int_or(focus_raw.get("projectile_find_query_count"), -1)
         if projectile_find_query_count >= 0:
             print(
                 "  "
                 f"capture_projectile_find_query_count={int(projectile_find_query_count)} "
-                f"capture_projectile_find_query_miss_count={_int_or((focus_raw['projectile_find_query_miss_count'] if 'projectile_find_query_miss_count' in focus_raw else None), -1)} "
+                f"capture_projectile_find_query_miss_count={_int_or(focus_raw.get('projectile_find_query_miss_count'), -1)} "
                 "capture_projectile_find_query_owner_collision_count="
-                f"{_int_or((focus_raw['projectile_find_query_owner_collision_count'] if 'projectile_find_query_owner_collision_count' in focus_raw else None), -1)}",
+                f"{_int_or(focus_raw.get('projectile_find_query_owner_collision_count'), -1)}",
             )
-        top_projectile_queries = (focus_raw["spawn_top_projectile_find_query_callers"] if "spawn_top_projectile_find_query_callers" in focus_raw else None)
+        top_projectile_queries = focus_raw.get("spawn_top_projectile_find_query_callers")
         if isinstance(top_projectile_queries, list) and top_projectile_queries:
             print(f"  capture_projectile_find_query_callers_top={top_projectile_queries[:6]!r}")
-        top_projectile_hits = (focus_raw["spawn_top_projectile_find_hit_callers"] if "spawn_top_projectile_find_hit_callers" in focus_raw else None)
+        top_projectile_hits = focus_raw.get("spawn_top_projectile_find_hit_callers")
         if isinstance(top_projectile_hits, list) and top_projectile_hits:
             print(f"  capture_projectile_find_hit_callers_top={top_projectile_hits[:6]!r}")
-        projectile_find_query_head = (focus_raw["projectile_find_query_head"] if "projectile_find_query_head" in focus_raw else None)
+        projectile_find_query_head = focus_raw.get("projectile_find_query_head")
         if isinstance(projectile_find_query_head, list) and projectile_find_query_head:
             print(f"  capture_projectile_find_query_head={projectile_find_query_head[:6]!r}")
-        projectile_find_hit_head = (focus_raw["projectile_find_hit_head"] if "projectile_find_hit_head" in focus_raw else None)
+        projectile_find_hit_head = focus_raw.get("projectile_find_hit_head")
         if isinstance(projectile_find_hit_head, list) and projectile_find_hit_head:
             print(f"  capture_projectile_find_hit_head={projectile_find_hit_head[:6]!r}")
-        creature_update_micro_count = _int_or((focus_raw["creature_update_micro_count"] if "creature_update_micro_count" in focus_raw else None), -1)
+        creature_update_micro_count = _int_or(focus_raw.get("creature_update_micro_count"), -1)
         if creature_update_micro_count >= 0:
             print(f"  capture_creature_update_micro_count={int(creature_update_micro_count)}")
-        creature_update_micro_head = (focus_raw["creature_update_micro_head"] if "creature_update_micro_head" in focus_raw else None)
+        creature_update_micro_head = focus_raw.get("creature_update_micro_head")
         if isinstance(creature_update_micro_head, list) and creature_update_micro_head:
             print(f"  capture_creature_update_micro_head={creature_update_micro_head[:6]!r}")
-        secondary_spawn_count = _int_or((focus_raw["secondary_projectile_spawn_count"] if "secondary_projectile_spawn_count" in focus_raw else None), 0)
+        secondary_spawn_count = _int_or(focus_raw.get("secondary_projectile_spawn_count"), 0)
         if secondary_spawn_count > 0:
             print(f"  capture_secondary_projectile_spawn_count={secondary_spawn_count}")
-        secondary_spawn_head = (focus_raw["secondary_projectile_spawn_head"] if "secondary_projectile_spawn_head" in focus_raw else None)
+        secondary_spawn_head = focus_raw.get("secondary_projectile_spawn_head")
         if isinstance(secondary_spawn_head, list) and secondary_spawn_head:
             print(f"  capture_secondary_projectile_spawn_head={secondary_spawn_head[:6]!r}")
-        before_player = (focus_raw["before_player0"] if "before_player0" in focus_raw else None)
+        before_player = focus_raw.get("before_player0")
         if isinstance(before_player, dict):
             print(f"  before_player0={before_player!r}")
         player_keys = _extract_player_input_keys(focus_raw, player_index=0)
         if player_keys:
             print(f"  input_player_keys[0]={player_keys!r}")
-        sample_counts = (focus_raw["sample_counts"] if "sample_counts" in focus_raw else None)
+        sample_counts = focus_raw.get("sample_counts")
         if isinstance(sample_counts, dict) and sample_counts:
             print(f"  sample_counts={sample_counts!r}")
-        sample_secondary_head = (focus_raw["sample_secondary_head"] if "sample_secondary_head" in focus_raw else None)
+        sample_secondary_head = focus_raw.get("sample_secondary_head")
         if isinstance(sample_secondary_head, list) and sample_secondary_head:
             print(f"  sample_secondary_head={sample_secondary_head[:6]!r}")
-        sample_creatures_head = (focus_raw["sample_creatures_head"] if "sample_creatures_head" in focus_raw else None)
+        sample_creatures_head = focus_raw.get("sample_creatures_head")
         if isinstance(sample_creatures_head, list) and sample_creatures_head:
             print(f"  sample_creatures_head={sample_creatures_head[:6]!r}")
     if focus_actual_ckpt is not None:
@@ -3534,7 +3534,7 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
         focus_stream = _compute_rng_stream_alignment(
             act=focus_actual_ckpt,
             capture_stream_rows=focus_stream_rows,
-            capture_head_len=_int_or((focus_raw["rng_head_len"] if "rng_head_len" in focus_raw else None), len(focus_stream_rows)),
+            capture_head_len=_int_or(focus_raw.get("rng_head_len"), len(focus_stream_rows)),
         )
         print(
             "  "
@@ -3544,13 +3544,13 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
         print(
             "  "
             "rewrite_rng_stream_alignment="
-            f"prefix_match={(focus_stream['prefix_match'] if 'prefix_match' in focus_stream else None)!r}/{(focus_stream['compared'] if 'compared' in focus_stream else None)!r} "
-            f"first_mismatch_idx={(focus_stream['first_mismatch_idx'] if 'first_mismatch_idx' in focus_stream else None)!r} "
-            f"reason={(focus_stream['first_mismatch_reason'] if 'first_mismatch_reason' in focus_stream else None)!r} "
-            f"capture_mismatch={(focus_stream['first_mismatch_capture'] if 'first_mismatch_capture' in focus_stream else None)!r} "
-            f"rewrite_mismatch={(focus_stream['first_mismatch_actual'] if 'first_mismatch_actual' in focus_stream else None)!r} "
-            f"capture_branch_id={(focus_stream['first_mismatch_capture_branch_id'] if 'first_mismatch_capture_branch_id' in focus_stream else None)!r} "
-            f"missing_tail={(focus_stream['missing_tail'] if 'missing_tail' in focus_stream else None)!r}",
+            f"prefix_match={focus_stream.get('prefix_match')!r}/{focus_stream.get('compared')!r} "
+            f"first_mismatch_idx={focus_stream.get('first_mismatch_idx')!r} "
+            f"reason={focus_stream.get('first_mismatch_reason')!r} "
+            f"capture_mismatch={focus_stream.get('first_mismatch_capture')!r} "
+            f"rewrite_mismatch={focus_stream.get('first_mismatch_actual')!r} "
+            f"capture_branch_id={focus_stream.get('first_mismatch_capture_branch_id')!r} "
+            f"missing_tail={focus_stream.get('missing_tail')!r}",
         )
         if focus_actual_ckpt.deaths:
             death_head = [
@@ -3612,7 +3612,7 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
                         act=focus_actual_ckpt,
                         capture_stream_rows=_rng_stream_rows_for_raw_row(focus_raw),
                         capture_head_len=_int_or(
-                            (focus_raw["rng_head_len"] if "rng_head_len" in focus_raw else None),
+                            focus_raw.get("rng_head_len"),
                             len(_rng_stream_rows_for_raw_row(focus_raw)),
                         ),
                     ),

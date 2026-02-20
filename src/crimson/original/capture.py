@@ -450,12 +450,12 @@ def _tick_game_mode_id(tick: CaptureTick) -> int:
         return int(tick.game_mode_id)
 
     after_globals = tick.after.globals if tick.after is not None else {}
-    game_mode = _coerce_int_like((after_globals["config_game_mode"] if "config_game_mode" in after_globals else None)) if isinstance(after_globals, dict) else None
+    game_mode = _coerce_int_like(after_globals.get("config_game_mode")) if isinstance(after_globals, dict) else None
     if game_mode is not None and int(game_mode) >= 0:
         return int(game_mode)
 
     before_globals = tick.before.globals if tick.before is not None else {}
-    game_mode = _coerce_int_like((before_globals["config_game_mode"] if "config_game_mode" in before_globals else None)) if isinstance(before_globals, dict) else None
+    game_mode = _coerce_int_like(before_globals.get("config_game_mode")) if isinstance(before_globals, dict) else None
     if game_mode is not None and int(game_mode) >= 0:
         return int(game_mode)
     return -1
@@ -476,7 +476,7 @@ def _tick_frame_dt_ms(tick: CaptureTick) -> float | None:
 
     timing = tick.diagnostics.timing
     if isinstance(timing, dict):
-        value = (timing["frame_dt_after"] if "frame_dt_after" in timing else None)
+        value = timing.get("frame_dt_after")
         if isinstance(value, (int, float)) and math.isfinite(float(value)) and float(value) > 0.0:
             validated = _valid_dt_ms(float(value) * 1000.0)
             if validated is not None:
@@ -493,7 +493,7 @@ def _tick_frame_dt_ms(tick: CaptureTick) -> float | None:
         if validated is not None:
             return float(validated)
 
-    dt_ms_i32 = _coerce_int_like((globals_obj["frame_dt_ms_i32"] if "frame_dt_ms_i32" in globals_obj else None))
+    dt_ms_i32 = _coerce_int_like(globals_obj.get("frame_dt_ms_i32"))
     if dt_ms_i32 is not None and int(dt_ms_i32) > 0:
         validated = _valid_dt_ms(int(dt_ms_i32))
         if validated is not None:
@@ -503,11 +503,11 @@ def _tick_frame_dt_ms(tick: CaptureTick) -> float | None:
     if validated_tick_dt is not None:
         return float(validated_tick_dt)
 
-    validated_globals_dt = _valid_dt_ms((globals_obj["frame_dt_ms_f32"] if "frame_dt_ms_f32" in globals_obj else None))
+    validated_globals_dt = _valid_dt_ms(globals_obj.get("frame_dt_ms_f32"))
     if validated_globals_dt is not None:
         return float(validated_globals_dt)
 
-    dt_seconds = (globals_obj["frame_dt"] if "frame_dt" in globals_obj else None)
+    dt_seconds = globals_obj.get("frame_dt")
     if isinstance(dt_seconds, (int, float)) and math.isfinite(float(dt_seconds)):
         if 0.0 < float(dt_seconds) <= 1.0:
             validated = _valid_dt_ms(float(dt_seconds) * 1000.0)
@@ -516,7 +516,7 @@ def _tick_frame_dt_ms(tick: CaptureTick) -> float | None:
 
     timing = tick.diagnostics.timing
     if isinstance(timing, dict):
-        value = (timing["frame_dt_after"] if "frame_dt_after" in timing else None)
+        value = timing.get("frame_dt_after")
         if isinstance(value, (int, float)) and math.isfinite(float(value)) and float(value) > 0.0:
             validated = _valid_dt_ms(float(value) * 1000.0)
             if validated is not None:
@@ -535,13 +535,13 @@ def _tick_frame_dt_ms_i32(tick: CaptureTick) -> int | None:
     elif tick.before is not None and isinstance(tick.before.globals, dict):
         globals_obj = tick.before.globals
 
-    value = _coerce_int_like((globals_obj["frame_dt_ms_i32"] if "frame_dt_ms_i32" in globals_obj else None))
+    value = _coerce_int_like(globals_obj.get("frame_dt_ms_i32"))
     if value is not None and int(value) > 0:
         return int(value)
 
     timing = tick.diagnostics.timing
     if isinstance(timing, dict):
-        value = _coerce_int_like((timing["frame_dt_ms_after_i32"] if "frame_dt_ms_after_i32" in timing else None))
+        value = _coerce_int_like(timing.get("frame_dt_ms_after_i32"))
         if value is not None and int(value) > 0:
             return int(value)
 
@@ -588,7 +588,7 @@ def summarize_capture_health(
         mode_tick_event_count_total += int(tick.event_counts.mode_tick)
         timing = tick.diagnostics.timing
         if isinstance(timing, dict):
-            source_obj = (timing["frame_dt_source_after"] if "frame_dt_source_after" in timing else None)
+            source_obj = timing.get("frame_dt_source_after")
             source = str(source_obj).strip() if source_obj is not None else ""
             if source:
                 frame_dt_source_after_counts[source] += 1
@@ -621,12 +621,12 @@ def summarize_capture_health(
         for head in msgspec.to_builtins(tick.event_heads):
             if not isinstance(head, dict):
                 continue
-            kind = str((head["kind"] if "kind" in head else None) or "")
+            kind = str(head.get("kind") or "")
             if kind == "creature_update_micro":
                 creature_update_micro_rows += 1
-                data = (head["data"] if "data" in head else None)
+                data = head.get("data")
                 data_obj = data if isinstance(data, dict) else {}
-                event_kind = str((data_obj["event_kind"] if "event_kind" in data_obj else None) or "")
+                event_kind = str(data_obj.get("event_kind") or "")
                 if event_kind == "angle_approach":
                     creature_update_micro_angle_rows += 1
                 elif event_kind == "creature_update_window":
@@ -635,16 +635,16 @@ def summarize_capture_health(
             if kind != "creature_lifecycle":
                 continue
 
-            data = (head["data"] if "data" in head else None)
+            data = head.get("data")
             data_obj = data if isinstance(data, dict) else {}
             for key in ("added_head", "removed_head"):
-                rows_obj = (data_obj[key] if key in data_obj else None)
+                rows_obj = data_obj.get(key)
                 rows = rows_obj if isinstance(rows_obj, list) else []
                 for row in rows:
                     if not isinstance(row, dict):
                         continue
                     creature_lifecycle_rows += 1
-                    if (row["ai_mode"] if "ai_mode" in row else None) is not None or (row["link_index"] if "link_index" in row else None) is not None:
+                    if row.get("ai_mode") is not None or row.get("link_index") is not None:
                         creature_lifecycle_rows_with_ai_lineage += 1
 
     issues: list[str] = []
@@ -718,14 +718,14 @@ def _tick_quest_stage(tick: CaptureTick) -> tuple[int, int] | None:
         return int(major), int(minor)
 
     after_globals = tick.after.globals if tick.after is not None else {}
-    major = _coerce_int_like((after_globals["quest_stage_major"] if "quest_stage_major" in after_globals else None)) if isinstance(after_globals, dict) else None
-    minor = _coerce_int_like((after_globals["quest_stage_minor"] if "quest_stage_minor" in after_globals else None)) if isinstance(after_globals, dict) else None
+    major = _coerce_int_like(after_globals.get("quest_stage_major")) if isinstance(after_globals, dict) else None
+    minor = _coerce_int_like(after_globals.get("quest_stage_minor")) if isinstance(after_globals, dict) else None
     if major is not None and minor is not None and int(major) > 0 and int(minor) > 0:
         return int(major), int(minor)
 
     before_globals = tick.before.globals if tick.before is not None else {}
-    major = _coerce_int_like((before_globals["quest_stage_major"] if "quest_stage_major" in before_globals else None)) if isinstance(before_globals, dict) else None
-    minor = _coerce_int_like((before_globals["quest_stage_minor"] if "quest_stage_minor" in before_globals else None)) if isinstance(before_globals, dict) else None
+    major = _coerce_int_like(before_globals.get("quest_stage_major")) if isinstance(before_globals, dict) else None
+    minor = _coerce_int_like(before_globals.get("quest_stage_minor")) if isinstance(before_globals, dict) else None
     if major is not None and minor is not None and int(major) > 0 and int(minor) > 0:
         return int(major), int(minor)
 
@@ -737,9 +737,9 @@ def _tick_quest_session_bootstrap_payload(tick: CaptureTick) -> dict[str, float]
         if not isinstance(head, CaptureEventHeadQuestTimelineDelta):
             continue
         data = head.data if isinstance(head.data, dict) else {}
-        timeline_ms = _coerce_int_like((data["quest_spawn_timeline"] if "quest_spawn_timeline" in data else None))
-        stall_timer_ms = _coerce_int_like((data["quest_spawn_stall_timer_ms"] if "quest_spawn_stall_timer_ms" in data else None))
-        transition_timer_ms = _coerce_int_like((data["quest_transition_timer_ms"] if "quest_transition_timer_ms" in data else None))
+        timeline_ms = _coerce_int_like(data.get("quest_spawn_timeline"))
+        stall_timer_ms = _coerce_int_like(data.get("quest_spawn_stall_timer_ms"))
+        transition_timer_ms = _coerce_int_like(data.get("quest_transition_timer_ms"))
         payload: dict[str, float] = {}
         if timeline_ms is not None:
             payload["spawn_timeline_ms"] = float(timeline_ms)
@@ -841,14 +841,14 @@ def _tick_player_aim_scheme(tick: CaptureTick, *, player_index: int) -> int | No
             continue
         globals_obj = snapshot.globals if isinstance(snapshot.globals, dict) else {}
         globals_scheme = _coerce_player_int(
-            (globals_obj["config_aim_scheme"] if "config_aim_scheme" in globals_obj else None),
+            globals_obj.get("config_aim_scheme"),
             player_index=int(player_index),
         )
         if globals_scheme is not None:
             return int(globals_scheme)
         input_obj = snapshot.input if isinstance(snapshot.input, dict) else {}
         input_scheme = _coerce_player_int(
-            (input_obj["config_aim_scheme"] if "config_aim_scheme" in input_obj else None),
+            input_obj.get("config_aim_scheme"),
             player_index=int(player_index),
         )
         if input_scheme is not None:
@@ -872,7 +872,7 @@ def _tick_player_projectile_spawn_count(tick: CaptureTick, *, player_index: int,
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadProjectileSpawn):
             continue
-        owner_id = _coerce_int_like((head.data["owner_id"] if "owner_id" in head.data else None))
+        owner_id = _coerce_int_like(head.data.get("owner_id"))
         if owner_id is None:
             continue
         owner_player_index = _owner_id_to_player_index(int(owner_id), player_count=int(player_count))
@@ -892,7 +892,7 @@ def _tick_player_secondary_projectile_spawn_count(
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadSecondaryProjectileSpawn):
             continue
-        owner_id = _coerce_int_like((head.data["owner_id"] if "owner_id" in head.data else None))
+        owner_id = _coerce_int_like(head.data.get("owner_id"))
         if owner_id is not None:
             owner_player_index = _owner_id_to_player_index(int(owner_id), player_count=int(player_count))
             if owner_player_index is None or int(owner_player_index) != int(player_index):
@@ -918,14 +918,14 @@ def _tick_player_weapon_projectile_spawned(
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadProjectileSpawn):
             continue
-        owner_id = _coerce_int_like((head.data["owner_id"] if "owner_id" in head.data else None))
+        owner_id = _coerce_int_like(head.data.get("owner_id"))
         if owner_id is None:
             continue
         owner_player_index = _owner_id_to_player_index(int(owner_id), player_count=int(player_count))
         if owner_player_index is None or int(owner_player_index) != int(player_index):
             continue
-        requested_type = _coerce_int_like((head.data["requested_type_id"] if "requested_type_id" in head.data else None))
-        actual_type = _coerce_int_like((head.data["actual_type_id"] if "actual_type_id" in head.data else None))
+        requested_type = _coerce_int_like(head.data.get("requested_type_id"))
+        actual_type = _coerce_int_like(head.data.get("actual_type_id"))
         if requested_type is not None and int(requested_type) in target_type_ids:
             return True
         if actual_type is not None and int(actual_type) in target_type_ids:
@@ -942,10 +942,10 @@ def _tick_player_projectile_bonus_apply(
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadBonusApply):
             continue
-        bonus_id = _coerce_int_like((head.data["bonus_id"] if "bonus_id" in head.data else None))
+        bonus_id = _coerce_int_like(head.data.get("bonus_id"))
         if bonus_id is None or int(bonus_id) not in _PROJECTILE_SPAWNING_BONUS_IDS:
             continue
-        applied_player_index = _coerce_int_like((head.data["player_index"] if "player_index" in head.data else None))
+        applied_player_index = _coerce_int_like(head.data.get("player_index"))
         if applied_player_index is None:
             if int(player_count) == 1 and int(player_index) == 0:
                 return True
@@ -966,14 +966,14 @@ def _tick_player_projectile_type_spawned(
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadProjectileSpawn):
             continue
-        owner_id = _coerce_int_like((head.data["owner_id"] if "owner_id" in head.data else None))
+        owner_id = _coerce_int_like(head.data.get("owner_id"))
         if owner_id is None:
             continue
         owner_player_index = _owner_id_to_player_index(int(owner_id), player_count=int(player_count))
         if owner_player_index is None or int(owner_player_index) != int(player_index):
             continue
-        requested_type = _coerce_int_like((head.data["requested_type_id"] if "requested_type_id" in head.data else None))
-        actual_type = _coerce_int_like((head.data["actual_type_id"] if "actual_type_id" in head.data else None))
+        requested_type = _coerce_int_like(head.data.get("requested_type_id"))
+        actual_type = _coerce_int_like(head.data.get("actual_type_id"))
         if requested_type is not None and int(requested_type) == int(target_type_id):
             return True
         if actual_type is not None and int(actual_type) == int(target_type_id):
@@ -994,7 +994,7 @@ def _should_synthesize_reload_pressed_for_alt_swap(
     if int(player_index) < 0 or int(player_index) >= len(checkpoint_players):
         return False
 
-    before_weapon_id = _coerce_int_like((before_player["weapon_id"] if "weapon_id" in before_player else None))
+    before_weapon_id = _coerce_int_like(before_player.get("weapon_id"))
     if before_weapon_id is None or int(before_weapon_id) <= 0:
         return False
 
@@ -1002,11 +1002,11 @@ def _should_synthesize_reload_pressed_for_alt_swap(
     if int(checkpoint_weapon_id) == int(before_weapon_id):
         return False
 
-    alt_weapon_raw = (before_player["alt_weapon"] if "alt_weapon" in before_player else None)
+    alt_weapon_raw = before_player.get("alt_weapon")
     if not isinstance(alt_weapon_raw, dict):
         return False
     alt_weapon = cast(Mapping[object, object], alt_weapon_raw)
-    alt_weapon_id = _coerce_int_like((alt_weapon["weapon_id"] if "weapon_id" in alt_weapon else None))
+    alt_weapon_id = _coerce_int_like(alt_weapon.get("weapon_id"))
     if alt_weapon_id is None or int(alt_weapon_id) <= 0:
         return False
 
@@ -1014,20 +1014,20 @@ def _should_synthesize_reload_pressed_for_alt_swap(
 
 
 def _before_player_ammo_snapshot(before_player: Mapping[object, object]) -> float | None:
-    before_ammo = _finite_float_or_none((before_player["ammo_f32"] if "ammo_f32" in before_player else None))
+    before_ammo = _finite_float_or_none(before_player.get("ammo_f32"))
     if before_ammo is None:
-        before_ammo = _f32_from_i32_bits_or_none((before_player["ammo_i32"] if "ammo_i32" in before_player else None))
+        before_ammo = _f32_from_i32_bits_or_none(before_player.get("ammo_i32"))
     if before_ammo is None:
-        before_ammo = _finite_float_or_none((before_player["ammo"] if "ammo" in before_player else None))
+        before_ammo = _finite_float_or_none(before_player.get("ammo"))
     return before_ammo
 
 
 def _before_player_clip_size_snapshot(before_player: Mapping[object, object]) -> float | None:
-    clip_size = _finite_float_or_none((before_player["clip_size_f32"] if "clip_size_f32" in before_player else None))
+    clip_size = _finite_float_or_none(before_player.get("clip_size_f32"))
     if clip_size is None:
-        clip_size = _f32_from_i32_bits_or_none((before_player["clip_size_i32"] if "clip_size_i32" in before_player else None))
+        clip_size = _f32_from_i32_bits_or_none(before_player.get("clip_size_i32"))
     if clip_size is None:
-        clip_size = _finite_float_or_none((before_player["clip_size"] if "clip_size" in before_player else None))
+        clip_size = _finite_float_or_none(before_player.get("clip_size"))
     return clip_size
 
 
@@ -1048,7 +1048,7 @@ def _should_synthesize_fire_down_from_fractional_ammo_drain(
     if int(player_index) < 0 or int(player_index) >= len(checkpoint_players):
         return False
 
-    before_weapon_id = _coerce_int_like((before_player["weapon_id"] if "weapon_id" in before_player else None))
+    before_weapon_id = _coerce_int_like(before_player.get("weapon_id"))
     if before_weapon_id is None or int(before_weapon_id) <= 0:
         return False
     checkpoint_weapon_id = int(checkpoint_players[int(player_index)].weapon_id)
@@ -1057,8 +1057,8 @@ def _should_synthesize_fire_down_from_fractional_ammo_drain(
     if int(checkpoint_weapon_id) not in _FRACTIONAL_AMMO_DRAIN_WEAPON_IDS:
         return False
 
-    before_reload_active = _coerce_int_like((before_player["reload_active_i32"] if "reload_active_i32" in before_player else None))
-    before_reload_timer = _finite_float_or_none((before_player["reload_timer"] if "reload_timer" in before_player else None))
+    before_reload_active = _coerce_int_like(before_player.get("reload_active_i32"))
+    before_reload_timer = _finite_float_or_none(before_player.get("reload_timer"))
 
     before_ammo = _before_player_ammo_snapshot(before_player)
     if before_ammo is None:
@@ -1115,7 +1115,7 @@ def _should_synthesize_fire_down_from_fractional_weapon_fire_sfx(
     if int(player_index) < 0 or int(player_index) >= len(checkpoint_players):
         return False
 
-    before_weapon_id = _coerce_int_like((before_player["weapon_id"] if "weapon_id" in before_player else None))
+    before_weapon_id = _coerce_int_like(before_player.get("weapon_id"))
     if before_weapon_id is None or int(before_weapon_id) <= 0:
         return False
     checkpoint_weapon_id = int(checkpoint_players[int(player_index)].weapon_id)
@@ -1127,10 +1127,10 @@ def _should_synthesize_fire_down_from_fractional_weapon_fire_sfx(
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadSfx):
             continue
-        kind = (head.data["kind"] if "kind" in head.data else None)
+        kind = head.data.get("kind")
         if isinstance(kind, str) and kind.strip().lower() != "sfx_play_panned":
             continue
-        if _is_fractional_weapon_fire_sfx_caller((head.data["caller"] if "caller" in head.data else None)):
+        if _is_fractional_weapon_fire_sfx_caller(head.data.get("caller")):
             return True
     return False
 
@@ -1154,7 +1154,7 @@ def _should_synthesize_fire_down_from_player_fire_event(
             player_count=int(player_count),
         ):
             continue
-        shot_cooldown_after = _finite_float_or_none((head.data["shot_cooldown_after"] if "shot_cooldown_after" in head.data else None))
+        shot_cooldown_after = _finite_float_or_none(head.data.get("shot_cooldown_after"))
         if shot_cooldown_after is not None and float(shot_cooldown_after) <= 0.0:
             # Perk/proc-driven projectile bursts can emit `player_fire` debug rows
             # without a real trigger pull (`shot_cooldown_after` stays 0).
@@ -1169,10 +1169,10 @@ def _player_fire_head_matches_player(
     player_index: int,
     player_count: int,
 ) -> bool:
-    fired_player_index = _coerce_int_like((head.data["player_index"] if "player_index" in head.data else None))
+    fired_player_index = _coerce_int_like(head.data.get("player_index"))
     if fired_player_index is not None:
         return int(fired_player_index) == int(player_index)
-    owner_id = _coerce_int_like((head.data["owner_id"] if "owner_id" in head.data else None))
+    owner_id = _coerce_int_like(head.data.get("owner_id"))
     if owner_id is None:
         return False
     owner_player_index = _owner_id_to_player_index(int(owner_id), player_count=int(player_count))
@@ -1196,7 +1196,7 @@ def _tick_player_has_only_zero_cooldown_player_fire_events(
         ):
             continue
         matched = True
-        shot_cooldown_after = _finite_float_or_none((head.data["shot_cooldown_after"] if "shot_cooldown_after" in head.data else None))
+        shot_cooldown_after = _finite_float_or_none(head.data.get("shot_cooldown_after"))
         if shot_cooldown_after is None:
             return False
         if float(shot_cooldown_after) > 0.0:
@@ -1533,13 +1533,13 @@ def _tick_before_player_snapshot(tick: CaptureTick, *, player_index: int) -> Map
 def _before_player_bonus_timers_ms(player: Mapping[object, object] | None) -> dict[str, int] | None:
     if player is None:
         return None
-    raw_bonus_timers = (player["bonus_timers"] if "bonus_timers" in player else None)
+    raw_bonus_timers = player.get("bonus_timers")
     if not isinstance(raw_bonus_timers, dict):
         return None
     bonus_timers = cast(Mapping[object, object], raw_bonus_timers)
     out: dict[str, int] = {}
     for key in ("speed_bonus", "shield", "fire_bullets"):
-        timer_seconds = _finite_float_or_none((bonus_timers[str(key)] if str(key) in bonus_timers else None))
+        timer_seconds = _finite_float_or_none(bonus_timers.get(str(key)))
         if timer_seconds is None:
             continue
         out[str(key)] = max(0, int(round(float(timer_seconds) * 1000.0)))
@@ -1551,13 +1551,13 @@ def _before_player_bonus_timers_ms(player: Mapping[object, object] | None) -> di
 def _before_player_perk_timers(player: Mapping[object, object] | None) -> dict[str, float] | None:
     if player is None:
         return None
-    raw_perk_timers = (player["perk_timers"] if "perk_timers" in player else None)
+    raw_perk_timers = player.get("perk_timers")
     if not isinstance(raw_perk_timers, dict):
         return None
     perk_timers = cast(Mapping[object, object], raw_perk_timers)
     out: dict[str, float] = {}
     for key in ("hot_tempered", "man_bomb", "living_fortress", "fire_cough"):
-        timer_seconds = _finite_float_or_none((perk_timers[str(key)] if str(key) in perk_timers else None))
+        timer_seconds = _finite_float_or_none(perk_timers.get(str(key)))
         if timer_seconds is None:
             continue
         out[str(key)] = max(0.0, float(timer_seconds))
@@ -1579,7 +1579,7 @@ def _before_global_bonus_timers_ms(tick: CaptureTick) -> dict[str, int] | None:
         (int(BonusId.DOUBLE_EXPERIENCE), "bonus_double_xp_timer"),
         (int(BonusId.FREEZE), "bonus_freeze_timer"),
     ):
-        timer_seconds = _finite_float_or_none((globals_map[str(globals_key)] if str(globals_key) in globals_map else None))
+        timer_seconds = _finite_float_or_none(globals_map.get(str(globals_key)))
         if timer_seconds is None:
             continue
         out[str(int(bonus_id))] = max(0, int(round(float(timer_seconds) * 1000.0)))
@@ -1595,7 +1595,7 @@ def _before_global_perk_intervals(tick: CaptureTick) -> dict[str, float] | None:
     globals_map = cast(Mapping[object, object], before.globals)
     out: dict[str, float] = {}
     for perk_key, globals_key in _PERK_INTERVAL_GLOBAL_KEYS.items():
-        interval_seconds = _finite_float_or_none((globals_map[str(globals_key)] if str(globals_key) in globals_map else None))
+        interval_seconds = _finite_float_or_none(globals_map.get(str(globals_key)))
         if interval_seconds is None:
             continue
         out[str(perk_key)] = max(0.0, float(interval_seconds))
@@ -1663,7 +1663,7 @@ def _infer_bootstrap_perk_intervals(capture: CaptureFile, *, tick_rate: int) -> 
         for key in ("hot_tempered", "fire_cough"):
             if key in out:
                 continue
-            perk_id = (_PERK_INTERVAL_PERK_IDS[str(key)] if str(key) in _PERK_INTERVAL_PERK_IDS else None)
+            perk_id = _PERK_INTERVAL_PERK_IDS.get(str(key))
             if perk_id is not None:
                 perk_active_now = _checkpoint_player_perk_active(
                     tick,
@@ -1679,8 +1679,8 @@ def _infer_bootstrap_perk_intervals(capture: CaptureFile, *, tick_rate: int) -> 
                 # perk inactive; these are reset artifacts, not interval wraps.
                 if perk_active_now is False and perk_active_next is False:
                     continue
-            before_value = _finite_float_or_none((before_timers[str(key)] if str(key) in before_timers else None))
-            after_value = _finite_float_or_none((after_timers[str(key)] if str(key) in after_timers else None))
+            before_value = _finite_float_or_none(before_timers.get(str(key)))
+            after_value = _finite_float_or_none(after_timers.get(str(key)))
             if before_value is None or after_value is None:
                 continue
             if float(after_value) + 1e-6 >= float(before_value):
@@ -1724,15 +1724,15 @@ def _capture_bootstrap_payload(
         player_bonus_timers_ms = {str(key): int(value) for key, value in player.bonus_timers.items()}
 
         if before_player is not None:
-            before_pos_x = _finite_float_or_none((before_player["pos_x"] if "pos_x" in before_player else None))
-            before_pos_y = _finite_float_or_none((before_player["pos_y"] if "pos_y" in before_player else None))
-            before_health = _finite_float_or_none((before_player["health"] if "health" in before_player else None))
-            before_weapon_id = _coerce_int_like((before_player["weapon_id"] if "weapon_id" in before_player else None))
-            before_ammo = _finite_float_or_none((before_player["ammo_f32"] if "ammo_f32" in before_player else None))
+            before_pos_x = _finite_float_or_none(before_player.get("pos_x"))
+            before_pos_y = _finite_float_or_none(before_player.get("pos_y"))
+            before_health = _finite_float_or_none(before_player.get("health"))
+            before_weapon_id = _coerce_int_like(before_player.get("weapon_id"))
+            before_ammo = _finite_float_or_none(before_player.get("ammo_f32"))
             if before_ammo is None:
-                before_ammo = _finite_float_or_none((before_player["ammo"] if "ammo" in before_player else None))
-            before_experience = _coerce_int_like((before_player["experience"] if "experience" in before_player else None))
-            before_level = _coerce_int_like((before_player["level"] if "level" in before_player else None))
+                before_ammo = _finite_float_or_none(before_player.get("ammo"))
+            before_experience = _coerce_int_like(before_player.get("experience"))
+            before_level = _coerce_int_like(before_player.get("level"))
             before_player_bonus_timers_ms = _before_player_bonus_timers_ms(before_player)
             before_player_perk_timers = _before_player_perk_timers(before_player)
 
@@ -1764,15 +1764,15 @@ def _capture_bootstrap_payload(
         }
 
         if before_player is not None:
-            clip_size = _finite_float_or_none((before_player["clip_size_f32"] if "clip_size_f32" in before_player else None))
-            reload_active = _coerce_int_like((before_player["reload_active_i32"] if "reload_active_i32" in before_player else None))
-            reload_timer = _finite_float_or_none((before_player["reload_timer"] if "reload_timer" in before_player else None))
-            reload_timer_max = _finite_float_or_none((before_player["reload_timer_max"] if "reload_timer_max" in before_player else None))
-            shot_cooldown = _finite_float_or_none((before_player["shot_cooldown"] if "shot_cooldown" in before_player else None))
-            spread_heat = _finite_float_or_none((before_player["spread_heat"] if "spread_heat" in before_player else None))
-            aim_x = _finite_float_or_none((before_player["aim_x"] if "aim_x" in before_player else None))
-            aim_y = _finite_float_or_none((before_player["aim_y"] if "aim_y" in before_player else None))
-            aim_heading = _finite_float_or_none((before_player["aim_heading"] if "aim_heading" in before_player else None))
+            clip_size = _finite_float_or_none(before_player.get("clip_size_f32"))
+            reload_active = _coerce_int_like(before_player.get("reload_active_i32"))
+            reload_timer = _finite_float_or_none(before_player.get("reload_timer"))
+            reload_timer_max = _finite_float_or_none(before_player.get("reload_timer_max"))
+            shot_cooldown = _finite_float_or_none(before_player.get("shot_cooldown"))
+            spread_heat = _finite_float_or_none(before_player.get("spread_heat"))
+            aim_x = _finite_float_or_none(before_player.get("aim_x"))
+            aim_y = _finite_float_or_none(before_player.get("aim_y"))
+            aim_heading = _finite_float_or_none(before_player.get("aim_heading"))
 
             if clip_size is not None:
                 player_payload["clip_size"] = max(0, int(clip_size))
@@ -1792,20 +1792,20 @@ def _capture_bootstrap_payload(
                     aim_payload["heading"] = float(aim_heading)
                 player_payload["aim"] = dict(aim_payload)
 
-            alt_weapon_raw = (before_player["alt_weapon"] if "alt_weapon" in before_player else None)
+            alt_weapon_raw = before_player.get("alt_weapon")
             if isinstance(alt_weapon_raw, dict):
                 alt_weapon = cast(Mapping[object, object], alt_weapon_raw)
-                alt_weapon_id = _coerce_int_like((alt_weapon["weapon_id"] if "weapon_id" in alt_weapon else None))
-                alt_clip_size = _finite_float_or_none((alt_weapon["clip_size_f32"] if "clip_size_f32" in alt_weapon else None))
+                alt_weapon_id = _coerce_int_like(alt_weapon.get("weapon_id"))
+                alt_clip_size = _finite_float_or_none(alt_weapon.get("clip_size_f32"))
                 if alt_clip_size is None:
-                    alt_clip_size = _f32_from_i32_bits_or_none((alt_weapon["clip_size_i32"] if "clip_size_i32" in alt_weapon else None))
-                alt_ammo = _finite_float_or_none((alt_weapon["ammo_f32"] if "ammo_f32" in alt_weapon else None))
+                    alt_clip_size = _f32_from_i32_bits_or_none(alt_weapon.get("clip_size_i32"))
+                alt_ammo = _finite_float_or_none(alt_weapon.get("ammo_f32"))
                 if alt_ammo is None:
-                    alt_ammo = _f32_from_i32_bits_or_none((alt_weapon["ammo_i32"] if "ammo_i32" in alt_weapon else None))
-                alt_reload_active = _coerce_int_like((alt_weapon["reload_active_i32"] if "reload_active_i32" in alt_weapon else None))
-                alt_reload_timer = _finite_float_or_none((alt_weapon["reload_timer"] if "reload_timer" in alt_weapon else None))
-                alt_shot_cooldown = _finite_float_or_none((alt_weapon["shot_cooldown"] if "shot_cooldown" in alt_weapon else None))
-                alt_reload_timer_max = _finite_float_or_none((alt_weapon["reload_timer_max"] if "reload_timer_max" in alt_weapon else None))
+                    alt_ammo = _f32_from_i32_bits_or_none(alt_weapon.get("ammo_i32"))
+                alt_reload_active = _coerce_int_like(alt_weapon.get("reload_active_i32"))
+                alt_reload_timer = _finite_float_or_none(alt_weapon.get("reload_timer"))
+                alt_shot_cooldown = _finite_float_or_none(alt_weapon.get("shot_cooldown"))
+                alt_reload_timer_max = _finite_float_or_none(alt_weapon.get("reload_timer_max"))
                 alt_payload: dict[str, object] = {}
                 if alt_weapon_id is not None and int(alt_weapon_id) > 0:
                     alt_payload["weapon_id"] = int(alt_weapon_id)
@@ -1833,16 +1833,16 @@ def _capture_bootstrap_payload(
     before_globals: Mapping[object, object] | None = None
     if tick.before is not None and isinstance(tick.before.globals, dict):
         before_globals = cast(Mapping[object, object], tick.before.globals)
-        before_elapsed_ms = _coerce_int_like((before_globals["time_played_ms"] if "time_played_ms" in before_globals else None))
+        before_elapsed_ms = _coerce_int_like(before_globals.get("time_played_ms"))
         if before_elapsed_ms is not None and int(before_elapsed_ms) >= 0:
             elapsed_ms = int(before_elapsed_ms)
-        before_perk_pending = _coerce_int_like((before_globals["perk_pending_count"] if "perk_pending_count" in before_globals else None))
+        before_perk_pending = _coerce_int_like(before_globals.get("perk_pending_count"))
         if before_perk_pending is not None and int(before_perk_pending) >= 0:
             perk_pending = int(before_perk_pending)
 
     score_xp = int(tick.checkpoint.score_xp)
     if players:
-        player0_xp = _coerce_int_like((players[0]["experience"] if "experience" in players[0] else None))
+        player0_xp = _coerce_int_like(players[0].get("experience"))
         if player0_xp is not None and int(player0_xp) >= 0:
             score_xp = int(player0_xp)
 
@@ -1964,7 +1964,7 @@ def capture_creature_spawns_from_event_payload(
     event_payload = _event_payload_object(payload)
     if event_payload is None:
         return None
-    spawns_raw = (event_payload["spawns"] if "spawns" in event_payload else None)
+    spawns_raw = event_payload.get("spawns")
     if not isinstance(spawns_raw, list):
         return None
 
@@ -1973,14 +1973,14 @@ def capture_creature_spawns_from_event_payload(
         if not isinstance(row, dict):
             return None
         row_obj = cast(dict[str, object], row)
-        template_id = _coerce_int_like((row_obj["template_id"] if "template_id" in row_obj else None))
-        heading = _finite_float_or_none((row_obj["heading"] if "heading" in row_obj else None))
-        pos_raw = (row_obj["pos"] if "pos" in row_obj else None)
+        template_id = _coerce_int_like(row_obj.get("template_id"))
+        heading = _finite_float_or_none(row_obj.get("heading"))
+        pos_raw = row_obj.get("pos")
         if template_id is None or heading is None or not isinstance(pos_raw, dict):
             return None
         pos_obj = cast(dict[str, object], pos_raw)
-        pos_x = _finite_float_or_none((pos_obj["x"] if "x" in pos_obj else None))
-        pos_y = _finite_float_or_none((pos_obj["y"] if "y" in pos_obj else None))
+        pos_x = _finite_float_or_none(pos_obj.get("x"))
+        pos_y = _finite_float_or_none(pos_obj.get("y"))
         if pos_x is None or pos_y is None:
             return None
         out.append((int(template_id), float(pos_x), float(pos_y), float(heading)))
@@ -1996,13 +1996,13 @@ def capture_creature_spawn_added_head_from_event_payload(
 
     out: list[tuple[int, float | None, float | None, int | None, int | None]] = []
     for row in rows:
-        index = _coerce_int_like((row["index"] if "index" in row else None))
+        index = _coerce_int_like(row.get("index"))
         if index is None or int(index) < 0:
             return None
-        heading = _finite_float_or_none((row["heading"] if "heading" in row else None))
-        target_heading = _finite_float_or_none((row["target_heading"] if "target_heading" in row else None))
-        ai_mode = _coerce_int_like((row["ai_mode"] if "ai_mode" in row else None))
-        link_index = _coerce_int_like((row["link_index"] if "link_index" in row else None))
+        heading = _finite_float_or_none(row.get("heading"))
+        target_heading = _finite_float_or_none(row.get("target_heading"))
+        ai_mode = _coerce_int_like(row.get("ai_mode"))
+        link_index = _coerce_int_like(row.get("link_index"))
         out.append((int(index), heading, target_heading, ai_mode, link_index))
     return tuple(out)
 
@@ -2013,7 +2013,7 @@ def capture_creature_spawn_added_head_rows_from_event_payload(
     event_payload = _event_payload_object(payload)
     if event_payload is None:
         return None
-    rows_raw = (event_payload["added_head"] if "added_head" in event_payload else None)
+    rows_raw = event_payload.get("added_head")
     if rows_raw is None:
         return ()
     if not isinstance(rows_raw, list):
@@ -2024,22 +2024,22 @@ def capture_creature_spawn_added_head_rows_from_event_payload(
         if not isinstance(row, dict):
             return None
         row_obj = cast(dict[str, object], row)
-        index = _coerce_int_like((row_obj["index"] if "index" in row_obj else None))
+        index = _coerce_int_like(row_obj.get("index"))
         if index is None or int(index) < 0:
             return None
 
         row_out: dict[str, object] = {"index": int(index)}
-        heading = _finite_float_or_none((row_obj["heading"] if "heading" in row_obj else None))
-        target_heading = _finite_float_or_none((row_obj["target_heading"] if "target_heading" in row_obj else None))
-        ai_mode = _coerce_int_like((row_obj["ai_mode"] if "ai_mode" in row_obj else None))
-        link_index = _coerce_int_like((row_obj["link_index"] if "link_index" in row_obj else None))
-        hp = _finite_float_or_none((row_obj["hp"] if "hp" in row_obj else None))
-        hitbox_size = _finite_float_or_none((row_obj["hitbox_size"] if "hitbox_size" in row_obj else None))
-        orbit_angle = _finite_float_or_none((row_obj["orbit_angle"] if "orbit_angle" in row_obj else None))
-        orbit_radius = _finite_float_or_none((row_obj["orbit_radius"] if "orbit_radius" in row_obj else None))
-        flags = _coerce_int_like((row_obj["flags"] if "flags" in row_obj else None))
-        type_id = _coerce_int_like((row_obj["type_id"] if "type_id" in row_obj else None))
-        pos_raw = (row_obj["pos"] if "pos" in row_obj else None)
+        heading = _finite_float_or_none(row_obj.get("heading"))
+        target_heading = _finite_float_or_none(row_obj.get("target_heading"))
+        ai_mode = _coerce_int_like(row_obj.get("ai_mode"))
+        link_index = _coerce_int_like(row_obj.get("link_index"))
+        hp = _finite_float_or_none(row_obj.get("hp"))
+        hitbox_size = _finite_float_or_none(row_obj.get("hitbox_size"))
+        orbit_angle = _finite_float_or_none(row_obj.get("orbit_angle"))
+        orbit_radius = _finite_float_or_none(row_obj.get("orbit_radius"))
+        flags = _coerce_int_like(row_obj.get("flags"))
+        type_id = _coerce_int_like(row_obj.get("type_id"))
+        pos_raw = row_obj.get("pos")
 
         if heading is not None:
             row_out["heading"] = float(heading)
@@ -2065,8 +2065,8 @@ def capture_creature_spawn_added_head_rows_from_event_payload(
             if not isinstance(pos_raw, dict):
                 return None
             pos_obj = cast(dict[str, object], pos_raw)
-            pos_x = _finite_float_or_none((pos_obj["x"] if "x" in pos_obj else None))
-            pos_y = _finite_float_or_none((pos_obj["y"] if "y" in pos_obj else None))
+            pos_x = _finite_float_or_none(pos_obj.get("x"))
+            pos_y = _finite_float_or_none(pos_obj.get("y"))
             if pos_x is None or pos_y is None:
                 return None
             row_out["pos"] = {"x": float(pos_x), "y": float(pos_y)}
@@ -2081,7 +2081,7 @@ def capture_state_transitions_from_event_payload(
     event_payload = _event_payload_object(payload)
     if event_payload is None:
         return None
-    transitions_raw = (event_payload["transitions"] if "transitions" in event_payload else None)
+    transitions_raw = event_payload.get("transitions")
     if not isinstance(transitions_raw, list):
         return None
 
@@ -2090,11 +2090,11 @@ def capture_state_transitions_from_event_payload(
         if not isinstance(row, dict):
             return None
         row_obj = cast(dict[str, object], row)
-        target_state = _coerce_int_like((row_obj["target_state"] if "target_state" in row_obj else None))
+        target_state = _coerce_int_like(row_obj.get("target_state"))
         if target_state is None:
             return None
-        before_state = _coerce_int_like((row_obj["before_state"] if "before_state" in row_obj else None))
-        after_state = _coerce_int_like((row_obj["after_state"] if "after_state" in row_obj else None))
+        before_state = _coerce_int_like(row_obj.get("before_state"))
+        after_state = _coerce_int_like(row_obj.get("after_state"))
         out.append(
             (
                 int(target_state),
@@ -2115,10 +2115,10 @@ def apply_capture_bootstrap_payload(
 
     state_obj = cast(_BootstrapState, state)
 
-    elapsed_value = _int_or((payload["elapsed_ms"] if "elapsed_ms" in payload else None), -1)
+    elapsed_value = _int_or(payload.get("elapsed_ms"), -1)
     elapsed_ms: int | None = int(elapsed_value) if int(elapsed_value) >= 0 else None
 
-    players_raw = (payload["players"] if "players" in payload else None)
+    players_raw = payload.get("players")
     if isinstance(players_raw, list):
         for idx, raw_player in enumerate(players_raw):
             if idx >= len(players):
@@ -2128,7 +2128,7 @@ def apply_capture_bootstrap_payload(
             raw_player_map = cast("dict[str, object]", raw_player)
             player = cast(_BootstrapPlayer, players[idx])
 
-            weapon_id = _int_or((raw_player_map["weapon_id"] if "weapon_id" in raw_player_map else None), int(player.weapon_id))
+            weapon_id = _int_or(raw_player_map.get("weapon_id"), int(player.weapon_id))
             if int(weapon_id) > 0:
                 try:
                     if int(player.weapon_id) != int(weapon_id):
@@ -2136,18 +2136,18 @@ def apply_capture_bootstrap_payload(
                 except (TypeError, ValueError) as exc:
                     raise ValueError(f"invalid bootstrap weapon assignment payload for player[{idx}]") from exc
 
-            pos_raw = (raw_player_map["pos"] if "pos" in raw_player_map else None)
+            pos_raw = raw_player_map.get("pos")
             if isinstance(pos_raw, dict):
                 pos_map = cast("dict[str, object]", pos_raw)
-                px = _float_or((pos_map["x"] if "x" in pos_map else None), float(player.pos.x))
-                py = _float_or((pos_map["y"] if "y" in pos_map else None), float(player.pos.y))
+                px = _float_or(pos_map.get("x"), float(player.pos.x))
+                py = _float_or(pos_map.get("y"), float(player.pos.y))
                 if math.isfinite(px) and math.isfinite(py):
                     player.pos = Vec2(float(px), float(py))
 
-            health = _float_or((raw_player_map["health"] if "health" in raw_player_map else None), float(player.health))
-            ammo = _float_or((raw_player_map["ammo"] if "ammo" in raw_player_map else None), float(player.ammo))
-            experience = _int_or((raw_player_map["experience"] if "experience" in raw_player_map else None), int(player.experience))
-            level = _int_or((raw_player_map["level"] if "level" in raw_player_map else None), int(player.level))
+            health = _float_or(raw_player_map.get("health"), float(player.health))
+            ammo = _float_or(raw_player_map.get("ammo"), float(player.ammo))
+            experience = _int_or(raw_player_map.get("experience"), int(player.experience))
+            level = _int_or(raw_player_map.get("level"), int(player.level))
 
             player.health = float(health)
             player.ammo = float(ammo)
@@ -2155,67 +2155,67 @@ def apply_capture_bootstrap_payload(
             if int(level) > 0:
                 player.level = int(level)
 
-            clip_size = _coerce_int_like((raw_player_map["clip_size"] if "clip_size" in raw_player_map else None))
+            clip_size = _coerce_int_like(raw_player_map.get("clip_size"))
             if clip_size is not None and int(clip_size) >= 0:
                 player.clip_size = int(clip_size)
 
-            reload_active = _coerce_int_like((raw_player_map["reload_active"] if "reload_active" in raw_player_map else None))
+            reload_active = _coerce_int_like(raw_player_map.get("reload_active"))
             if reload_active is not None:
                 player.reload_active = bool(reload_active)
 
-            reload_timer = _finite_float_or_none((raw_player_map["reload_timer"] if "reload_timer" in raw_player_map else None))
+            reload_timer = _finite_float_or_none(raw_player_map.get("reload_timer"))
             if reload_timer is not None:
                 player.reload_timer = max(0.0, float(reload_timer))
 
             reload_timer_max = _finite_float_or_none(
-                (raw_player_map["reload_timer_max"] if "reload_timer_max" in raw_player_map else None),
+                raw_player_map.get("reload_timer_max"),
             )
             if reload_timer_max is not None:
                 player.reload_timer_max = max(0.0, float(reload_timer_max))
 
             shot_cooldown = _finite_float_or_none(
-                (raw_player_map["shot_cooldown"] if "shot_cooldown" in raw_player_map else None),
+                raw_player_map.get("shot_cooldown"),
             )
             if shot_cooldown is not None:
                 player.shot_cooldown = max(0.0, float(shot_cooldown))
 
-            spread_heat = _finite_float_or_none((raw_player_map["spread_heat"] if "spread_heat" in raw_player_map else None))
+            spread_heat = _finite_float_or_none(raw_player_map.get("spread_heat"))
             if spread_heat is not None:
                 player.spread_heat = max(0.0, float(spread_heat))
 
-            aim_raw = (raw_player_map["aim"] if "aim" in raw_player_map else None)
+            aim_raw = raw_player_map.get("aim")
             if isinstance(aim_raw, dict):
                 aim_map = cast("dict[str, object]", aim_raw)
-                aim_x = _finite_float_or_none((aim_map["x"] if "x" in aim_map else None))
-                aim_y = _finite_float_or_none((aim_map["y"] if "y" in aim_map else None))
+                aim_x = _finite_float_or_none(aim_map.get("x"))
+                aim_y = _finite_float_or_none(aim_map.get("y"))
                 if aim_x is not None and aim_y is not None:
                     player.aim = Vec2(float(aim_x), float(aim_y))
-                aim_heading = _finite_float_or_none((aim_map["heading"] if "heading" in aim_map else None))
+                aim_heading = _finite_float_or_none(aim_map.get("heading"))
                 if aim_heading is not None:
                     player.aim_heading = float(aim_heading)
                     player.aim_dir = Vec2.from_heading(float(aim_heading))
 
-            alt_weapon_raw = (raw_player_map["alt_weapon"] if "alt_weapon" in raw_player_map else None)
+            alt_weapon_raw = raw_player_map.get("alt_weapon")
             if isinstance(alt_weapon_raw, dict):
                 alt_weapon_map = cast("dict[str, object]", alt_weapon_raw)
                 alt_weapon_id = _coerce_int_like(
-                    (alt_weapon_map["weapon_id"] if "weapon_id" in alt_weapon_map else None),
+                    alt_weapon_map.get("weapon_id"),
                 )
                 alt_clip_size = _coerce_int_like(
-                    (alt_weapon_map["clip_size"] if "clip_size" in alt_weapon_map else None),
+                    alt_weapon_map.get("clip_size"),
                 )
-                alt_ammo = _finite_float_or_none((alt_weapon_map["ammo"] if "ammo" in alt_weapon_map else None))
+                alt_ammo = _finite_float_or_none(alt_weapon_map.get("ammo"))
                 alt_reload_active = _coerce_int_like(
-                    (alt_weapon_map["reload_active"] if "reload_active" in alt_weapon_map else None),
+                    alt_weapon_map.get("reload_active"),
                 )
                 alt_reload_timer = _finite_float_or_none(
-                    (alt_weapon_map["reload_timer"] if "reload_timer" in alt_weapon_map else None),
+                    alt_weapon_map.get("reload_timer"),
                 )
                 alt_reload_timer_max = _finite_float_or_none(
-                    (alt_weapon_map["reload_timer_max"] if "reload_timer_max" in alt_weapon_map else None),
+                    alt_weapon_map.get("reload_timer_max"),
                 )
                 alt_shot_cooldown = _finite_float_or_none(
-                    (alt_weapon_map["shot_cooldown"] if "shot_cooldown" in alt_weapon_map else None),
+                    alt_weapon_map.get("shot_cooldown"),
                 )
                 if alt_weapon_id is not None:
                     player.alt_weapon_id = int(alt_weapon_id) if int(alt_weapon_id) > 0 else None
@@ -2232,16 +2232,16 @@ def apply_capture_bootstrap_payload(
                 if alt_shot_cooldown is not None:
                     player.alt_shot_cooldown = max(0.0, float(alt_shot_cooldown))
 
-            player_timers_raw = (raw_player_map["bonus_timers_ms"] if "bonus_timers_ms" in raw_player_map else None)
+            player_timers_raw = raw_player_map.get("bonus_timers_ms")
             if isinstance(player_timers_raw, dict):
                 player_timers = cast("dict[str, object]", player_timers_raw)
                 try:
-                    shield_ms = _coerce_int_like((player_timers["shield"] if "shield" in player_timers else None))
+                    shield_ms = _coerce_int_like(player_timers.get("shield"))
                     fire_bullets_ms = _coerce_int_like(
-                        (player_timers["fire_bullets"] if "fire_bullets" in player_timers else None),
+                        player_timers.get("fire_bullets"),
                     )
                     speed_bonus_ms = _coerce_int_like(
-                        (player_timers["speed_bonus"] if "speed_bonus" in player_timers else None),
+                        player_timers.get("speed_bonus"),
                     )
                     if shield_ms is not None:
                         player.shield_timer = max(0.0, float(shield_ms) / 1000.0)
@@ -2252,15 +2252,15 @@ def apply_capture_bootstrap_payload(
                 except (TypeError, ValueError) as exc:
                     raise ValueError(f"invalid bootstrap bonus_timers_ms payload for player[{idx}]") from exc
 
-            player_perk_timers_raw = (raw_player_map["perk_timers"] if "perk_timers" in raw_player_map else None)
+            player_perk_timers_raw = raw_player_map.get("perk_timers")
             if isinstance(player_perk_timers_raw, dict):
                 player_perk_timers = cast("dict[str, object]", player_perk_timers_raw)
                 try:
                     hot_tempered_timer = _finite_float_or_none(
-                        (player_perk_timers["hot_tempered"] if "hot_tempered" in player_perk_timers else None),
+                        player_perk_timers.get("hot_tempered"),
                     )
                     man_bomb_timer = _finite_float_or_none(
-                        (player_perk_timers["man_bomb"] if "man_bomb" in player_perk_timers else None),
+                        player_perk_timers.get("man_bomb"),
                     )
                     living_fortress_timer = _finite_float_or_none(
                         (
@@ -2270,7 +2270,7 @@ def apply_capture_bootstrap_payload(
                         ),
                     )
                     fire_cough_timer = _finite_float_or_none(
-                        (player_perk_timers["fire_cough"] if "fire_cough" in player_perk_timers else None),
+                        player_perk_timers.get("fire_cough"),
                     )
                     if hot_tempered_timer is not None:
                         player.hot_tempered_timer = max(0.0, float(hot_tempered_timer))
@@ -2283,18 +2283,18 @@ def apply_capture_bootstrap_payload(
                 except (TypeError, ValueError) as exc:
                     raise ValueError(f"invalid bootstrap perk_timers payload for player[{idx}]") from exc
 
-    perk_payload = (payload["perk"] if "perk" in payload else None)
-    pending = _int_or((payload["perk_pending"] if "perk_pending" in payload else None), int(state_obj.perk_selection.pending_count))
+    perk_payload = payload.get("perk")
+    pending = _int_or(payload.get("perk_pending"), int(state_obj.perk_selection.pending_count))
     perk_choices = [int(perk_id) for perk_id in state_obj.perk_selection.choices]
     perk_choices_dirty = bool(state_obj.perk_selection.choices_dirty)
     perk_player_nonzero_counts: list[list[tuple[int, int]]] = []
     has_perk_player_nonzero_counts = False
     if isinstance(perk_payload, dict):
         perk_payload_map = cast(Mapping[object, object], perk_payload)
-        perk_pending = _int_or((perk_payload_map["pending_count"] if "pending_count" in perk_payload_map else None), pending)
+        perk_pending = _int_or(perk_payload_map.get("pending_count"), pending)
         if int(perk_pending) >= 0:
             pending = int(perk_pending)
-        raw_choices = (perk_payload_map["choices"] if "choices" in perk_payload_map else None)
+        raw_choices = perk_payload_map.get("choices")
         if isinstance(raw_choices, list):
             parsed_choices: list[int] = []
             for value in raw_choices:
@@ -2303,10 +2303,10 @@ def apply_capture_bootstrap_payload(
                     continue
                 parsed_choices.append(int(perk_id))
             perk_choices = parsed_choices
-        raw_choices_dirty = (perk_payload_map["choices_dirty"] if "choices_dirty" in perk_payload_map else None)
+        raw_choices_dirty = perk_payload_map.get("choices_dirty")
         if isinstance(raw_choices_dirty, bool):
             perk_choices_dirty = bool(raw_choices_dirty)
-        raw_player_nonzero_counts = (perk_payload_map["player_nonzero_counts"] if "player_nonzero_counts" in perk_payload_map else None)
+        raw_player_nonzero_counts = perk_payload_map.get("player_nonzero_counts")
         if isinstance(raw_player_nonzero_counts, list):
             parsed_all_players: list[list[tuple[int, int]]] = []
             for raw_player_counts in raw_player_nonzero_counts:
@@ -2344,13 +2344,13 @@ def apply_capture_bootstrap_payload(
                 if 0 <= perk_idx < len(perk_counts):
                     perk_counts[perk_idx] = int(count)
 
-    timers_raw = (payload["bonus_timers_ms"] if "bonus_timers_ms" in payload else None)
+    timers_raw = payload.get("bonus_timers_ms")
     if isinstance(timers_raw, dict):
-        weapon_power_up_ms = _coerce_int_like((timers_raw[str(int(BonusId.WEAPON_POWER_UP))] if str(int(BonusId.WEAPON_POWER_UP)) in timers_raw else None))  # ty:ignore[invalid-argument-type]
-        reflex_boost_ms = _coerce_int_like((timers_raw[str(int(BonusId.REFLEX_BOOST))] if str(int(BonusId.REFLEX_BOOST)) in timers_raw else None))  # ty:ignore[invalid-argument-type]
-        energizer_ms = _coerce_int_like((timers_raw[str(int(BonusId.ENERGIZER))] if str(int(BonusId.ENERGIZER)) in timers_raw else None))  # ty:ignore[invalid-argument-type]
-        double_xp_ms = _coerce_int_like((timers_raw[str(int(BonusId.DOUBLE_EXPERIENCE))] if str(int(BonusId.DOUBLE_EXPERIENCE)) in timers_raw else None))  # ty:ignore[invalid-argument-type]
-        freeze_ms = _coerce_int_like((timers_raw[str(int(BonusId.FREEZE))] if str(int(BonusId.FREEZE)) in timers_raw else None))  # ty:ignore[invalid-argument-type]
+        weapon_power_up_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.WEAPON_POWER_UP))))  # ty:ignore[invalid-argument-type]
+        reflex_boost_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.REFLEX_BOOST))))  # ty:ignore[invalid-argument-type]
+        energizer_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.ENERGIZER))))  # ty:ignore[invalid-argument-type]
+        double_xp_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.DOUBLE_EXPERIENCE))))  # ty:ignore[invalid-argument-type]
+        freeze_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.FREEZE))))  # ty:ignore[invalid-argument-type]
         if weapon_power_up_ms is not None:
             state_obj.bonuses.weapon_power_up = max(0.0, float(weapon_power_up_ms) / 1000.0)
         if reflex_boost_ms is not None:
@@ -2363,12 +2363,12 @@ def apply_capture_bootstrap_payload(
             state_obj.bonuses.freeze = max(0.0, float(freeze_ms) / 1000.0)
         state_obj.time_scale_active = float(state_obj.bonuses.reflex_boost) > 0.0
 
-    perk_intervals_raw = (payload["perk_intervals"] if "perk_intervals" in payload else None)
+    perk_intervals_raw = payload.get("perk_intervals")
     if isinstance(perk_intervals_raw, dict):
         perk_intervals_map = cast(Mapping[object, object], perk_intervals_raw)
-        man_bomb_interval = _finite_float_or_none((perk_intervals_map["man_bomb"] if "man_bomb" in perk_intervals_map else None))
-        fire_cough_interval = _finite_float_or_none((perk_intervals_map["fire_cough"] if "fire_cough" in perk_intervals_map else None))
-        hot_tempered_interval = _finite_float_or_none((perk_intervals_map["hot_tempered"] if "hot_tempered" in perk_intervals_map else None))
+        man_bomb_interval = _finite_float_or_none(perk_intervals_map.get("man_bomb"))
+        fire_cough_interval = _finite_float_or_none(perk_intervals_map.get("fire_cough"))
+        hot_tempered_interval = _finite_float_or_none(perk_intervals_map.get("hot_tempered"))
         if man_bomb_interval is not None:
             state_obj.perk_intervals.man_bomb = max(0.0, float(man_bomb_interval))
         if fire_cough_interval is not None:
@@ -2429,20 +2429,20 @@ def _tick_creature_spawn_rows(tick: CaptureTick) -> tuple[dict[str, object], ...
             data = head.data
         else:
             data = {}
-        caller_static = (data["caller_static"] if "caller_static" in data else None)
+        caller_static = data.get("caller_static")
         caller_static_s = str(caller_static).strip().lower() if isinstance(caller_static, str) else ""
         if caller_static_s not in _QUEST_CAPTURE_SPAWN_CALLERS:
             # Keep quest original-capture replay on a known caller set and skip
             # unrelated/noisy spawn hooks.
             continue
-        template_id = _coerce_int_like((data["template_id"] if "template_id" in data else None))
-        heading = _finite_float_or_none((data["heading"] if "heading" in data else None))
-        pos_raw = (data["pos"] if "pos" in data else None)
+        template_id = _coerce_int_like(data.get("template_id"))
+        heading = _finite_float_or_none(data.get("heading"))
+        pos_raw = data.get("pos")
         if template_id is None or heading is None or not isinstance(pos_raw, dict):
             continue
         pos_obj = cast(dict[str, object], pos_raw)
-        pos_x = _finite_float_or_none((pos_obj["x"] if "x" in pos_obj else None))
-        pos_y = _finite_float_or_none((pos_obj["y"] if "y" in pos_obj else None))
+        pos_x = _finite_float_or_none(pos_obj.get("x"))
+        pos_y = _finite_float_or_none(pos_obj.get("y"))
         if pos_x is None or pos_y is None:
             continue
         out.append(
@@ -2465,27 +2465,27 @@ def _tick_creature_spawn_added_rows(tick: CaptureTick) -> tuple[dict[str, object
             data = head.data
         else:
             data = {}
-        added_head = (data["added_head"] if "added_head" in data else None)
+        added_head = data.get("added_head")
         if not isinstance(added_head, list):
             continue
         for raw_row in added_head:
             if not isinstance(raw_row, dict):
                 continue
             row = cast(dict[str, object], raw_row)
-            index = _coerce_int_like((row["index"] if "index" in row else None))
+            index = _coerce_int_like(row.get("index"))
             if index is None or int(index) < 0:
                 continue
-            heading = _finite_float_or_none((row["heading"] if "heading" in row else None))
-            target_heading = _finite_float_or_none((row["target_heading"] if "target_heading" in row else None))
-            ai_mode = _coerce_int_like((row["ai_mode"] if "ai_mode" in row else None))
-            link_index = _coerce_int_like((row["link_index"] if "link_index" in row else None))
-            hp = _finite_float_or_none((row["hp"] if "hp" in row else None))
-            hitbox_size = _finite_float_or_none((row["hitbox_size"] if "hitbox_size" in row else None))
-            orbit_angle = _finite_float_or_none((row["orbit_angle"] if "orbit_angle" in row else None))
-            orbit_radius = _finite_float_or_none((row["orbit_radius"] if "orbit_radius" in row else None))
-            flags = _coerce_int_like((row["flags"] if "flags" in row else None))
-            type_id = _coerce_int_like((row["type_id"] if "type_id" in row else None))
-            pos_raw = (row["pos"] if "pos" in row else None)
+            heading = _finite_float_or_none(row.get("heading"))
+            target_heading = _finite_float_or_none(row.get("target_heading"))
+            ai_mode = _coerce_int_like(row.get("ai_mode"))
+            link_index = _coerce_int_like(row.get("link_index"))
+            hp = _finite_float_or_none(row.get("hp"))
+            hitbox_size = _finite_float_or_none(row.get("hitbox_size"))
+            orbit_angle = _finite_float_or_none(row.get("orbit_angle"))
+            orbit_radius = _finite_float_or_none(row.get("orbit_radius"))
+            flags = _coerce_int_like(row.get("flags"))
+            type_id = _coerce_int_like(row.get("type_id"))
+            pos_raw = row.get("pos")
             row_out: dict[str, object] = {"index": int(index)}
             if heading is not None:
                 row_out["heading"] = float(heading)
@@ -2509,8 +2509,8 @@ def _tick_creature_spawn_added_rows(tick: CaptureTick) -> tuple[dict[str, object
                 row_out["type_id"] = int(type_id)
             if isinstance(pos_raw, dict):
                 pos_obj = cast(dict[str, object], pos_raw)
-                pos_x = _finite_float_or_none((pos_obj["x"] if "x" in pos_obj else None))
-                pos_y = _finite_float_or_none((pos_obj["y"] if "y" in pos_obj else None))
+                pos_x = _finite_float_or_none(pos_obj.get("x"))
+                pos_y = _finite_float_or_none(pos_obj.get("y"))
                 if pos_x is not None and pos_y is not None:
                     row_out["pos"] = {"x": float(pos_x), "y": float(pos_y)}
             out.append(row_out)
@@ -2527,20 +2527,20 @@ def _tick_state_transition_rows(tick: CaptureTick) -> tuple[dict[str, int], ...]
             data = head.data
         else:
             data = {}
-        target_state = _coerce_int_like((data["target_state"] if "target_state" in data else None))
+        target_state = _coerce_int_like(data.get("target_state"))
         if target_state is None:
             continue
         row: dict[str, int] = {"target_state": int(target_state)}
-        before_raw = (data["before"] if "before" in data else None)
+        before_raw = data.get("before")
         if isinstance(before_raw, dict):
             before_obj = cast(dict[str, object], before_raw)
-            before_state = _coerce_int_like((before_obj["id"] if "id" in before_obj else None))
+            before_state = _coerce_int_like(before_obj.get("id"))
             if before_state is not None:
                 row["before_state"] = int(before_state)
-        after_raw = (data["after"] if "after" in data else None)
+        after_raw = data.get("after")
         if isinstance(after_raw, dict):
             after_obj = cast(dict[str, object], after_raw)
-            after_state = _coerce_int_like((after_obj["id"] if "id" in after_obj else None))
+            after_state = _coerce_int_like(after_obj.get("id"))
             if after_state is not None:
                 row["after_state"] = int(after_state)
         out.append(row)
@@ -2566,7 +2566,7 @@ def _tick_perk_pending_count(tick: CaptureTick) -> int | None:
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadPerkDelta):
             continue
-        pending_value = _coerce_int_like((head.data["perk_pending_count"] if "perk_pending_count" in head.data else None))
+        pending_value = _coerce_int_like(head.data.get("perk_pending_count"))
         if pending_value is not None and int(pending_value) >= 0:
             return int(pending_value)
     return None
@@ -2647,8 +2647,8 @@ def convert_capture_to_replay(
         keys_by_player = {int(row.player_index): row for row in tick.input_player_keys}
         checkpoint_players = tick.checkpoint.players
         for player_index in range(int(resolved_player_count)):
-            sample = (approx_by_player[int(player_index)] if int(player_index) in approx_by_player else None)
-            key_row = (keys_by_player[int(player_index)] if int(player_index) in keys_by_player else None)
+            sample = approx_by_player.get(int(player_index))
+            key_row = keys_by_player.get(int(player_index))
             if normalized_aim_scheme_overrides:
                 aim_scheme_value = _coerce_player_int(
                     normalized_aim_scheme_overrides,
@@ -3103,7 +3103,7 @@ def dump_capture(path: Path, capture: CaptureFile) -> None:
     capture_obj = msgspec.to_builtins(capture)
     if not isinstance(capture_obj, dict):
         raise CaptureError("invalid capture object during serialization")
-    ticks_obj = (capture_obj["ticks"] if "ticks" in capture_obj else None)
+    ticks_obj = capture_obj.get("ticks")
     ticks = ticks_obj if isinstance(ticks_obj, list) else []
     meta = dict(capture_obj)
     meta["ticks"] = []
