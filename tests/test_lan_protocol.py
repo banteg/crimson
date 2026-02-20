@@ -83,14 +83,14 @@ def test_protocol_constants_match_spec() -> None:
     assert protocol.STATE_HASH_PERIOD_TICKS == 120
 
 
-def test_current_build_id_falls_back_to_package_version(monkeypatch) -> None:
+def test_current_build_id_falls_back_to_package_version(mocker) -> None:
     protocol.current_build_id.cache_clear()
 
     def _raise(*_args, **_kwargs):
         raise subprocess.CalledProcessError(returncode=1, cmd=["git"])
 
-    monkeypatch.setattr(protocol.subprocess, "check_output", _raise)
-    monkeypatch.setattr(protocol, "__version__", "9.9.9")
+    mocker.patch.object(protocol.subprocess, "check_output", side_effect=_raise)
+    mocker.patch.object(protocol, "__version__", "9.9.9")
 
     assert protocol.current_build_id() == "9.9.9"
 

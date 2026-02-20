@@ -14,7 +14,7 @@ def test_generateterrain_command_sets_regenerate_request(make_game_state) -> Non
     assert state.terrain_regenerate_requested is True
 
 
-def test_game_loop_consumes_terrain_regenerate_request(monkeypatch, make_game_state) -> None:
+def test_game_loop_consumes_terrain_regenerate_request(mocker, make_game_state) -> None:
     class _FakeView:
         called = 0
 
@@ -39,7 +39,7 @@ def test_game_loop_consumes_terrain_regenerate_request(monkeypatch, make_game_st
     from unittest.mock import Mock
 
     ensure_menu_ground_mock = Mock(return_value=None)
-    monkeypatch.setattr(loop_view, "ensure_menu_ground", ensure_menu_ground_mock)
+    mocker.patch.object(loop_view, "ensure_menu_ground", ensure_menu_ground_mock)
 
     state = make_game_state()
     view = GameLoopView(state)

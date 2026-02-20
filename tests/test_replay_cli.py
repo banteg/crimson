@@ -338,40 +338,38 @@ def test_replay_benchmark_json_output_payload_ok(tmp_path: Path) -> None:
     assert payload["run_result"]["ticks"] == 2
 
 
-def test_replay_benchmark_render_mode_uses_render_runner(tmp_path: Path, monkeypatch) -> None:
+def test_replay_benchmark_render_mode_uses_render_runner(tmp_path: Path, mocker) -> None:
     import crimson.sim.driver.replay_benchmark as replay_benchmark_mod
 
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
-    calls: list[dict[str, object]] = []
-
-    def fake_render_benchmark(_replay: Replay, **kwargs: object) -> ReplayBenchmarkResult:
-        calls.append(dict(kwargs))
-        run_result = RunResult(
-            game_mode_id=int(GameMode.SURVIVAL),
-            tick_rate=60,
-            ticks=3,
-            elapsed_ms=50,
-            score_xp=42,
-            creature_kill_count=1,
-            most_used_weapon_id=1,
-            shots_fired=2,
-            shots_hit=1,
-            rng_state=123,
-        )
-        sample = BenchmarkSample(wall_ms=1.5, ticks_per_second=2000.0, realtime_x=33.3)
-        aggregate = BenchmarkAggregate(min=1.5, p50=1.5, mean=1.5, p95=1.5, max=1.5, stdev=0.0)
-        return ReplayBenchmarkResult(
+    run_result = RunResult(
+        game_mode_id=int(GameMode.SURVIVAL),
+        tick_rate=60,
+        ticks=3,
+        elapsed_ms=50,
+        score_xp=42,
+        creature_kill_count=1,
+        most_used_weapon_id=1,
+        shots_fired=2,
+        shots_hit=1,
+        rng_state=123,
+    )
+    sample = BenchmarkSample(wall_ms=1.5, ticks_per_second=2000.0, realtime_x=33.3)
+    aggregate = BenchmarkAggregate(min=1.5, p50=1.5, mean=1.5, p95=1.5, max=1.5, stdev=0.0)
+    run_replay_render_benchmark = mocker.patch.object(
+        replay_benchmark_mod,
+        "run_replay_render_benchmark",
+        return_value=ReplayBenchmarkResult(
             run_result=run_result,
             samples=(sample,),
             wall_ms=aggregate,
             ticks_per_second=aggregate,
             realtime_x=aggregate,
             profile=None,
-        )
-
-    monkeypatch.setattr(replay_benchmark_mod, "run_replay_render_benchmark", fake_render_benchmark)
+        ),
+    )
 
     result = runner.invoke(
         app,
@@ -397,46 +395,45 @@ def test_replay_benchmark_render_mode_uses_render_runner(tmp_path: Path, monkeyp
     payload = json.loads(result.output)
     assert payload["settings"]["mode"] == "render"
     assert payload["run_result"]["score_xp"] == 42
-    assert calls
-    assert calls[0]["strict_events"] is False
-    assert calls[0]["runs"] == 1
-    assert calls[0]["warmup_runs"] == 0
-    assert calls[0]["replay_path"] == replay_path
-    assert calls[0]["base_dir"] == tmp_path
+    run_replay_render_benchmark.assert_called_once()
+    kwargs = run_replay_render_benchmark.call_args.kwargs
+    assert kwargs["strict_events"] is False
+    assert kwargs["runs"] == 1
+    assert kwargs["warmup_runs"] == 0
+    assert kwargs["replay_path"] == replay_path
+    assert kwargs["base_dir"] == tmp_path
 
 
-def test_replay_render_uses_render_video_runner(tmp_path: Path, monkeypatch) -> None:
+def test_replay_render_uses_render_video_runner(tmp_path: Path, mocker) -> None:
     import crimson.sim.driver.replay_render as replay_render_mod
 
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
-    calls: list[dict[str, object]] = []
-
-    def fake_render(_replay: Replay, **kwargs: object) -> ReplayRenderResult:
-        calls.append(dict(kwargs))
-        run_result = RunResult(
-            game_mode_id=int(GameMode.SURVIVAL),
-            tick_rate=60,
-            ticks=3,
-            elapsed_ms=50,
-            score_xp=42,
-            creature_kill_count=1,
-            most_used_weapon_id=1,
-            shots_fired=2,
-            shots_hit=1,
-            rng_state=123,
-        )
-        return ReplayRenderResult(
+    run_result = RunResult(
+        game_mode_id=int(GameMode.SURVIVAL),
+        tick_rate=60,
+        ticks=3,
+        elapsed_ms=50,
+        score_xp=42,
+        creature_kill_count=1,
+        most_used_weapon_id=1,
+        shots_fired=2,
+        shots_hit=1,
+        rng_state=123,
+    )
+    run_replay_render_video = mocker.patch.object(
+        replay_render_mod,
+        "run_replay_render_video",
+        side_effect=lambda _replay, **kwargs: ReplayRenderResult(
             output_path=cast("Path", kwargs["output_path"]),
             frame_count=120,
             fps=60,
             width=1280,
             height=720,
             run_result=run_result,
-        )
-
-    monkeypatch.setattr(replay_render_mod, "run_replay_render_video", fake_render)
+        ),
+    )
 
     result = runner.invoke(
         app,
@@ -462,20 +459,21 @@ def test_replay_render_uses_render_video_runner(tmp_path: Path, monkeypatch) -> 
     assert result.exit_code == 0, result.output
     assert "ok: output=" in result.output
     assert "frames=120" in result.output
-    assert calls
-    assert calls[0]["strict_events"] is False
-    assert calls[0]["fps"] == 60
-    assert calls[0]["crf"] == 14
-    assert calls[0]["preset"] == "slow"
-    assert calls[0]["pixel_format"] == "yuv420p"
-    assert calls[0]["overwrite"] is True
-    assert calls[0]["mute_audio"] is False
-    assert calls[0]["replay_path"] == replay_path
-    assert calls[0]["base_dir"] == tmp_path
-    assert calls[0]["output_path"] == replay_path.with_suffix(".render.mp4")
+    run_replay_render_video.assert_called_once()
+    kwargs = run_replay_render_video.call_args.kwargs
+    assert kwargs["strict_events"] is False
+    assert kwargs["fps"] == 60
+    assert kwargs["crf"] == 14
+    assert kwargs["preset"] == "slow"
+    assert kwargs["pixel_format"] == "yuv420p"
+    assert kwargs["overwrite"] is True
+    assert kwargs["mute_audio"] is False
+    assert kwargs["replay_path"] == replay_path
+    assert kwargs["base_dir"] == tmp_path
+    assert kwargs["output_path"] == replay_path.with_suffix(".render.mp4")
 
 
-def test_replay_render_progress_callback_uses_separate_video_audio_bars(monkeypatch) -> None:
+def test_replay_render_progress_callback_uses_separate_video_audio_bars(mocker) -> None:
     import crimson.cli as cli_mod
 
     class _FakeBar:
@@ -504,7 +502,7 @@ def test_replay_render_progress_callback_uses_separate_video_audio_bars(monkeypa
         bars.append(bar)
         return bar
 
-    monkeypatch.setattr(cli_mod, "tqdm", fake_tqdm)
+    mocker.patch.object(cli_mod, "tqdm", side_effect=fake_tqdm)
 
     callback, close = cli_mod._replay_render_progress_callback(total_ticks=10, render_audio=True)
     assert callback is not None
@@ -534,7 +532,7 @@ def test_replay_render_progress_callback_uses_separate_video_audio_bars(monkeypa
     assert audio_bar.closed is True
 
 
-def test_replay_render_uses_custom_output_and_ffmpeg_bin(tmp_path: Path, monkeypatch) -> None:
+def test_replay_render_uses_custom_output_and_ffmpeg_bin(tmp_path: Path, mocker) -> None:
     import crimson.sim.driver.replay_render as replay_render_mod
 
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
@@ -542,32 +540,30 @@ def test_replay_render_uses_custom_output_and_ffmpeg_bin(tmp_path: Path, monkeyp
     out_path = tmp_path / "exports" / "clip.mp4"
     ffmpeg_path = tmp_path / "bin" / "ffmpeg"
     runner = CliRunner()
-    calls: list[dict[str, object]] = []
-
-    def fake_render(_replay: Replay, **kwargs: object) -> ReplayRenderResult:
-        calls.append(dict(kwargs))
-        run_result = RunResult(
-            game_mode_id=int(GameMode.SURVIVAL),
-            tick_rate=60,
-            ticks=2,
-            elapsed_ms=33,
-            score_xp=0,
-            creature_kill_count=0,
-            most_used_weapon_id=1,
-            shots_fired=0,
-            shots_hit=0,
-            rng_state=123,
-        )
-        return ReplayRenderResult(
+    run_result = RunResult(
+        game_mode_id=int(GameMode.SURVIVAL),
+        tick_rate=60,
+        ticks=2,
+        elapsed_ms=33,
+        score_xp=0,
+        creature_kill_count=0,
+        most_used_weapon_id=1,
+        shots_fired=0,
+        shots_hit=0,
+        rng_state=123,
+    )
+    run_replay_render_video = mocker.patch.object(
+        replay_render_mod,
+        "run_replay_render_video",
+        side_effect=lambda _replay, **kwargs: ReplayRenderResult(
             output_path=cast("Path", kwargs["output_path"]),
             frame_count=2,
             fps=60,
             width=1024,
             height=768,
             run_result=run_result,
-        )
-
-    monkeypatch.setattr(replay_render_mod, "run_replay_render_video", fake_render)
+        ),
+    )
 
     result = runner.invoke(
         app,
@@ -584,44 +580,43 @@ def test_replay_render_uses_custom_output_and_ffmpeg_bin(tmp_path: Path, monkeyp
 
     assert result.exit_code == 0, result.output
     assert "output=" in result.output
-    assert calls
-    assert calls[0]["output_path"] == out_path
-    assert calls[0]["ffmpeg_bin"] == ffmpeg_path
-    assert calls[0]["mute_audio"] is False
+    run_replay_render_video.assert_called_once()
+    kwargs = run_replay_render_video.call_args.kwargs
+    assert kwargs["output_path"] == out_path
+    assert kwargs["ffmpeg_bin"] == ffmpeg_path
+    assert kwargs["mute_audio"] is False
 
 
-def test_replay_render_supports_mute_audio_flag(tmp_path: Path, monkeypatch) -> None:
+def test_replay_render_supports_mute_audio_flag(tmp_path: Path, mocker) -> None:
     import crimson.sim.driver.replay_render as replay_render_mod
 
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
-    calls: list[dict[str, object]] = []
-
-    def fake_render(_replay: Replay, **kwargs: object) -> ReplayRenderResult:
-        calls.append(dict(kwargs))
-        run_result = RunResult(
-            game_mode_id=int(GameMode.SURVIVAL),
-            tick_rate=60,
-            ticks=2,
-            elapsed_ms=33,
-            score_xp=0,
-            creature_kill_count=0,
-            most_used_weapon_id=1,
-            shots_fired=0,
-            shots_hit=0,
-            rng_state=123,
-        )
-        return ReplayRenderResult(
+    run_result = RunResult(
+        game_mode_id=int(GameMode.SURVIVAL),
+        tick_rate=60,
+        ticks=2,
+        elapsed_ms=33,
+        score_xp=0,
+        creature_kill_count=0,
+        most_used_weapon_id=1,
+        shots_fired=0,
+        shots_hit=0,
+        rng_state=123,
+    )
+    run_replay_render_video = mocker.patch.object(
+        replay_render_mod,
+        "run_replay_render_video",
+        side_effect=lambda _replay, **kwargs: ReplayRenderResult(
             output_path=cast("Path", kwargs["output_path"]),
             frame_count=2,
             fps=60,
             width=1024,
             height=768,
             run_result=run_result,
-        )
-
-    monkeypatch.setattr(replay_render_mod, "run_replay_render_video", fake_render)
+        ),
+    )
 
     result = runner.invoke(
         app,
@@ -636,8 +631,8 @@ def test_replay_render_supports_mute_audio_flag(tmp_path: Path, monkeypatch) -> 
     )
 
     assert result.exit_code == 0, result.output
-    assert calls
-    assert calls[0]["mute_audio"] is True
+    run_replay_render_video.assert_called_once()
+    assert run_replay_render_video.call_args.kwargs["mute_audio"] is True
 
 
 def test_replay_benchmark_json_out_works_for_human_and_json_output(tmp_path: Path) -> None:

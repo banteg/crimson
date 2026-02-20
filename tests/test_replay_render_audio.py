@@ -45,7 +45,7 @@ def test_infer_effective_capture_sample_rate_rejects_out_of_range() -> None:
         _infer_effective_capture_sample_rate(captured_frames=10_000_000, captured_ticks=1, replay_tick_rate=60)
 
 
-def test_capture_audio_track_clears_fx_queues_and_reports_progress(monkeypatch, tmp_path: Path) -> None:
+def test_capture_audio_track_clears_fx_queues_and_reports_progress(mocker, tmp_path: Path) -> None:
     import crimson.modes.replay_playback_mode as replay_playback_mode_mod
     import crimson.sim.driver.replay_render as replay_render_mod
 
@@ -77,7 +77,7 @@ def test_capture_audio_track_clears_fx_queues_and_reports_progress(monkeypatch, 
         def close(self) -> None:
             return
 
-    monkeypatch.setattr(replay_playback_mode_mod, "ReplayPlaybackMode", _FakeMode)
+    mocker.patch.object(replay_playback_mode_mod, "ReplayPlaybackMode", _FakeMode)
 
     class _FakeCapture:
         def __init__(self, *, rl, output_path: Path, sample_rate: int, channels: int) -> None:
@@ -97,8 +97,8 @@ def test_capture_audio_track_clears_fx_queues_and_reports_progress(monkeypatch, 
         def close(self) -> None:
             return
 
-    monkeypatch.setattr(replay_render_mod, "_MixedAudioCapture", _FakeCapture)
-    monkeypatch.setattr(replay_render_mod.time, "sleep", lambda _seconds: None)
+    mocker.patch.object(replay_render_mod, "_MixedAudioCapture", _FakeCapture)
+    mocker.patch.object(replay_render_mod.time, "sleep", side_effect=lambda _seconds: None)
 
     class _FakeRl:
         def __init__(self) -> None:

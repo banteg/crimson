@@ -157,7 +157,7 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
     assert action == "back_to_previous"
 
 
-def test_high_scores_view_draw_fades_pause_background_during_close(monkeypatch, tmp_path: Path, mocker) -> None:
+def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Path, mocker) -> None:
     assets_dir = tmp_path
     cfg = ensure_crimson_cfg(tmp_path)
     state = GameState(
@@ -193,8 +193,8 @@ def test_high_scores_view_draw_fades_pause_background_during_close(monkeypatch, 
     mocker.patch.object(high_scores_view_module, "draw_main_panel", side_effect=lambda *_args, **_kwargs: 0)
     mocker.patch.object(high_scores_view_module, "draw_right_panel", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(high_scores_view_module, "_draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(HighScoresView, "_ensure_small_font", lambda _self: SimpleNamespace(texture=dummy_tex))
-    monkeypatch.setattr(HighScoresView, "_draw_sign", lambda _self, _assets: None)
+    mocker.patch.object(HighScoresView, "_ensure_small_font", return_value=SimpleNamespace(texture=dummy_tex))
+    mocker.patch.object(HighScoresView, "_draw_sign", return_value=None)
 
     view = HighScoresView(state)
     view.open()

@@ -11,6 +11,7 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.original.schema import (
+    CaptureCounterEntry,
     CaptureEventCounts,
     CaptureEventHead,
     CaptureFile,
@@ -37,7 +38,6 @@ from tests.builders.capture import (
     build_capture_secondary_projectile_sample,
     build_capture_tick,
     capture_file_to_dict,
-    capture_value_to_builtins,
 )
 
 
@@ -138,102 +138,42 @@ def _sample_bonus(index: int, **kwargs: object):
     return row
 
 
-def _as_builtins_dict(value: object) -> dict[str, object]:
-    return cast(dict[str, object], capture_value_to_builtins(value))
+def _rng_caller_count(*, caller_static: str, calls: int) -> CaptureRngCallerCount:
+    return msgspec.convert(
+        {"caller_static": str(caller_static), "calls": int(calls)},
+        type=CaptureRngCallerCount,
+        strict=True,
+    )
 
 
-def _coerce_rng_head_rows(
-    rows: list[CaptureRngHeadEntry | dict[str, object]],
-) -> list[CaptureRngHeadEntry]:
-    out: list[CaptureRngHeadEntry] = []
-    for row in rows:
-        if isinstance(row, dict):
-            out.append(msgspec.convert(row, type=CaptureRngHeadEntry, strict=True))
-        else:
-            out.append(copy.deepcopy(row))
-    return out
+def _event_heads(rows: list[dict[str, object]]) -> list[CaptureEventHead]:
+    return msgspec.convert(rows, type=list[CaptureEventHead], strict=True)
 
 
-def _coerce_rng_caller_rows(
-    rows: list[CaptureRngCallerCount | dict[str, object]],
-) -> list[CaptureRngCallerCount]:
-    out: list[CaptureRngCallerCount] = []
-    for row in rows:
-        if isinstance(row, dict):
-            out.append(msgspec.convert(row, type=CaptureRngCallerCount, strict=True))
-        else:
-            out.append(copy.deepcopy(row))
-    return out
-
-
-def _coerce_event_counts(
-    counts: CaptureEventCounts | dict[str, int] | None,
-) -> CaptureEventCounts:
-    if counts is None:
-        return copy.deepcopy(_DEFAULT_CAPTURE_TICK.event_counts)
-    if isinstance(counts, dict):
-        base = _as_builtins_dict(_DEFAULT_CAPTURE_TICK.event_counts)
-        base.update(cast("dict[str, object]", counts))
-        return msgspec.convert(base, type=CaptureEventCounts, strict=True)
-    return copy.deepcopy(counts)
-
-
-def _coerce_spawn_diagnostics(
-    spawn: CaptureSpawnDiagnostics | dict[str, object] | None,
-) -> CaptureSpawnDiagnostics:
-    if spawn is None:
-        return copy.deepcopy(_DEFAULT_CAPTURE_TICK.checkpoint.debug.spawn)
-    if isinstance(spawn, dict):
-        base = _as_builtins_dict(_DEFAULT_CAPTURE_TICK.checkpoint.debug.spawn)
-        base.update(dict(spawn))
-        return msgspec.convert(base, type=CaptureSpawnDiagnostics, strict=True)
-    return copy.deepcopy(spawn)
-
-
-def _coerce_event_heads(
-    heads: list[CaptureEventHead | dict[str, object]],
-) -> list[CaptureEventHead | dict[str, object]]:
-    out: list[CaptureEventHead | dict[str, object]] = []
-    for row in heads:
-        if isinstance(row, dict):
-            out.append(cast("dict[str, object]", row).copy())
-        else:
-            out.append(copy.deepcopy(row))
-    return out
-
-
-def _coerce_input_player_keys(
-    rows: list[CaptureInputPlayerKeys | dict[str, object]],
-) -> list[CaptureInputPlayerKeys]:
-    out: list[CaptureInputPlayerKeys] = []
-    for row in rows:
-        if isinstance(row, dict):
-            base = _as_builtins_dict(_DEFAULT_CAPTURE_TICK.input_player_keys[0])
-            base.update(dict(row))
-            out.append(msgspec.convert(base, type=CaptureInputPlayerKeys, strict=True))
-        else:
-            out.append(copy.deepcopy(row))
-    return out
+def _spawn_top_caller_rows(rows: list[dict[str, object]]) -> list[CaptureCounterEntry]:
+    return msgspec.convert(rows, type=list[CaptureCounterEntry], strict=True)
 
 
 def _capture_tick(
     *,
     tick: int,
     rng_rand_calls: int = 0,
-    rng_head: list[CaptureRngHeadEntry | dict[str, object]] | None = None,
-    rng_callers: list[CaptureRngCallerCount | dict[str, object]] | None = None,
-    event_counts: CaptureEventCounts | dict[str, int] | None = None,
-    spawn: CaptureSpawnDiagnostics | dict[str, object] | None = None,
-    event_heads: list[CaptureEventHead | dict[str, object]] | None = None,
+    rng_head: list[CaptureRngHeadEntry] | None = None,
+    rng_callers: list[CaptureRngCallerCount] | None = None,
+    event_counts: CaptureEventCounts | None = None,
+    spawn: CaptureSpawnDiagnostics | None = None,
+    event_heads: list[CaptureEventHead] | None = None,
     sample_counts: dict[str, int] | None = None,
-    input_player_keys: list[CaptureInputPlayerKeys | dict[str, object]] | None = None,
+    input_player_keys: list[CaptureInputPlayerKeys] | None = None,
 ) -> CaptureTick:
-    rng_head_rows = _coerce_rng_head_rows(list(rng_head or []))
-    rng_caller_rows = _coerce_rng_caller_rows(list(rng_callers or []))
-    counts_row = _coerce_event_counts(event_counts)
-    spawn_row = _coerce_spawn_diagnostics(spawn)
-    event_head_rows = _coerce_event_heads(list(event_heads or []))
-    input_key_rows = _coerce_input_player_keys(list(input_player_keys or [_input_player_keys(player_index=0)]))
+    rng_head_rows = copy.deepcopy(rng_head) if rng_head is not None else []
+    rng_caller_rows = copy.deepcopy(rng_callers) if rng_callers is not None else []
+    counts_row = copy.deepcopy(event_counts) if event_counts is not None else copy.deepcopy(_DEFAULT_CAPTURE_TICK.event_counts)
+    spawn_row = copy.deepcopy(spawn) if spawn is not None else copy.deepcopy(_DEFAULT_CAPTURE_TICK.checkpoint.debug.spawn)
+    event_head_rows = copy.deepcopy(event_heads) if event_heads is not None else []
+    input_key_rows = (
+        copy.deepcopy(input_player_keys) if input_player_keys is not None else [copy.deepcopy(_DEFAULT_CAPTURE_TICK.input_player_keys[0])]
+    )
     sample_counts_row: dict[str, int] = {
         "creatures": 0,
         "projectiles": 0,
@@ -286,7 +226,7 @@ def _capture_tick(
         strict=True,
     )
     tick_obj.event_counts = counts_row
-    tick_obj.event_heads = cast("list[CaptureEventHead]", event_head_rows)
+    tick_obj.event_heads = event_head_rows
     tick_obj.input_player_keys = input_key_rows
     tick_obj.rng = _rng_summary_dict(calls=int(rng_rand_calls), head=rng_head_rows, callers=rng_caller_rows)
     tick_obj.diagnostics = msgspec.convert(
@@ -408,7 +348,7 @@ def _checkpoint(
 
 
 def test_run_actual_checkpoints_quest_uses_capture_inter_tick_rand_draw_overrides(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker,
 ) -> None:
     report = _load_report_module()
     replay = SimpleNamespace(
@@ -423,30 +363,30 @@ def test_run_actual_checkpoints_quest_uses_capture_inter_tick_rand_draw_override
     class _Stop(RuntimeError):
         pass
 
-    monkeypatch.setattr(
+    mocker.patch.object(
         report,
         "convert_capture_to_checkpoints",
-        lambda _capture: SimpleNamespace(checkpoints=[]),
+        side_effect=lambda _capture: SimpleNamespace(checkpoints=[]),
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         report,
         "convert_capture_to_replay",
-        lambda _capture, seed=None, aim_scheme_overrides_by_player=None: replay,
+        side_effect=lambda _capture, seed=None, aim_scheme_overrides_by_player=None: replay,
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         report,
         "build_capture_dt_frame_overrides",
-        lambda _capture, tick_rate: {},
+        side_effect=lambda _capture, tick_rate: {},
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         report,
         "build_capture_dt_frame_ms_i32_overrides",
-        lambda _capture: {},
+        side_effect=lambda _capture: {},
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         report,
         "build_capture_inter_tick_rand_draws_overrides",
-        lambda _capture: {0: 24021, 1: 1},
+        side_effect=lambda _capture: {0: 24021, 1: 1},
     )
 
     def _fake_run_quest_replay(*_args: object, **kwargs: object):
@@ -456,7 +396,7 @@ def test_run_actual_checkpoints_quest_uses_capture_inter_tick_rand_draw_override
         seen_inter_tick_rand_draws_by_tick = cast("dict[int, int]", kwargs.get("inter_tick_rand_draws_by_tick", {}))
         raise _Stop("stop after capturing kwargs")
 
-    monkeypatch.setattr(report, "run_quest_replay", _fake_run_quest_replay)
+    mocker.patch.object(report, "run_quest_replay", side_effect=_fake_run_quest_replay)
 
     with pytest.raises(_Stop):
         report._run_actual_checkpoints(
@@ -765,81 +705,83 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
     capture_path = tmp_path / "capture.json"
     tick = _capture_tick(
         tick=42,
-        event_counts={"projectile_find_query": 3, "projectile_find_hit": 2},
-        spawn={
-            "event_count_projectile_find_query": 3,
-            "event_count_projectile_find_query_miss": 1,
-            "event_count_projectile_find_query_owner_collision": 1,
-            "top_projectile_find_query_callers": [{"key": "0x00420e52", "count": 3}],
-        },
-        event_heads=[
-            {
-                "type": "projectile_find_query",
-                "data": {
-                    "result_creature_index": None,
-                    "result_kind": "miss",
-                    "start_index": None,
-                    "radius_f32": None,
-                    "query_pos": {"x": 0.0, "y": 0.0},
-                    "projectile_index": None,
-                    "projectile_owner_id": None,
-                    "projectile_type_id": None,
-                    "projectile_hit_radius": None,
-                    "owner_collision": False,
-                    "player_find_skipped": False,
-                    "shock_chain_projectile_id": None,
-                    "shock_chain_links_left": None,
-                    "caller": None,
-                    "caller_static": "0x00420e52",
-                    "backtrace": None,
+        event_counts=_event_counts_dict(projectile_find_query=3, projectile_find_hit=2),
+        spawn=_spawn_diagnostics(
+            event_count_projectile_find_query=3,
+            event_count_projectile_find_query_miss=1,
+            event_count_projectile_find_query_owner_collision=1,
+            top_projectile_find_query_callers=_spawn_top_caller_rows([{"key": "0x00420e52", "count": 3}]),
+        ),
+        event_heads=_event_heads(
+            [
+                {
+                    "type": "projectile_find_query",
+                    "data": {
+                        "result_creature_index": None,
+                        "result_kind": "miss",
+                        "start_index": None,
+                        "radius_f32": None,
+                        "query_pos": {"x": 0.0, "y": 0.0},
+                        "projectile_index": None,
+                        "projectile_owner_id": None,
+                        "projectile_type_id": None,
+                        "projectile_hit_radius": None,
+                        "owner_collision": False,
+                        "player_find_skipped": False,
+                        "shock_chain_projectile_id": None,
+                        "shock_chain_links_left": None,
+                        "caller": None,
+                        "caller_static": "0x00420e52",
+                        "backtrace": None,
+                    },
                 },
-            },
-            {
-                "type": "projectile_find_query",
-                "data": {
-                    "result_creature_index": 19,
-                    "result_kind": "owner_collision",
-                    "start_index": None,
-                    "radius_f32": None,
-                    "query_pos": {"x": 0.0, "y": 0.0},
-                    "projectile_index": None,
-                    "projectile_owner_id": None,
-                    "projectile_type_id": None,
-                    "projectile_hit_radius": None,
-                    "owner_collision": True,
-                    "player_find_skipped": False,
-                    "shock_chain_projectile_id": None,
-                    "shock_chain_links_left": None,
-                    "caller": None,
-                    "caller_static": "0x00420e52",
-                    "backtrace": None,
+                {
+                    "type": "projectile_find_query",
+                    "data": {
+                        "result_creature_index": 19,
+                        "result_kind": "owner_collision",
+                        "start_index": None,
+                        "radius_f32": None,
+                        "query_pos": {"x": 0.0, "y": 0.0},
+                        "projectile_index": None,
+                        "projectile_owner_id": None,
+                        "projectile_type_id": None,
+                        "projectile_hit_radius": None,
+                        "owner_collision": True,
+                        "player_find_skipped": False,
+                        "shock_chain_projectile_id": None,
+                        "shock_chain_links_left": None,
+                        "caller": None,
+                        "caller_static": "0x00420e52",
+                        "backtrace": None,
+                    },
                 },
-            },
-            {
-                "type": "projectile_find_hit",
-                "data": {
-                    "result_creature_index": 19,
-                    "result_kind": "hit",
-                    "start_index": None,
-                    "radius_f32": None,
-                    "query_pos": {"x": 0.0, "y": 0.0},
-                    "projectile_index": None,
-                    "projectile_owner_id": None,
-                    "projectile_type_id": None,
-                    "projectile_hit_radius": None,
-                    "owner_collision": False,
-                    "player_find_skipped": False,
-                    "shock_chain_projectile_id": None,
-                    "shock_chain_links_left": None,
-                    "caller": None,
-                    "caller_static": "0x00420e52",
-                    "backtrace": None,
-                    "creature_index": 19,
-                    "creature": None,
-                    "corpse_hit": None,
+                {
+                    "type": "projectile_find_hit",
+                    "data": {
+                        "result_creature_index": 19,
+                        "result_kind": "hit",
+                        "start_index": None,
+                        "radius_f32": None,
+                        "query_pos": {"x": 0.0, "y": 0.0},
+                        "projectile_index": None,
+                        "projectile_owner_id": None,
+                        "projectile_type_id": None,
+                        "projectile_hit_radius": None,
+                        "owner_collision": False,
+                        "player_find_skipped": False,
+                        "shock_chain_projectile_id": None,
+                        "shock_chain_links_left": None,
+                        "caller": None,
+                        "caller_static": "0x00420e52",
+                        "backtrace": None,
+                        "creature_index": 19,
+                        "creature": None,
+                        "corpse_hit": None,
+                    },
                 },
-            },
-        ],
+            ],
+        ),
         sample_counts={"creatures": 1, "secondary_projectiles": 1},
     )
     tick.samples.creatures[0].index = 5
@@ -931,7 +873,7 @@ def test_investigation_leads_flag_focus_micro_head_cap() -> None:
             5: _capture_tick(
                 tick=5,
                 sample_counts={"creatures": 1, "projectiles": 1, "secondary_projectiles": 0, "bonuses": 0},
-                event_counts={"creature_update_micro": 128},
+                event_counts=_event_counts_dict(creature_update_micro=128),
             ),
         },
         native_ranges=tuple(),
@@ -978,7 +920,7 @@ def test_divergence_category_prefers_projectile_hit_shortfall_signature() -> Non
     category = report._classify_divergence_category(
         divergence=divergence,
         leads=[],
-        focus_raw=_capture_tick(tick=10, event_counts={"projectile_find_hit": 2}),
+        focus_raw=_capture_tick(tick=10, event_counts=_event_counts_dict(projectile_find_hit=2)),
         focus_actual_ckpt=actual_ckpt,
     )
 
@@ -1010,8 +952,8 @@ def test_divergence_category_ignores_owner_collision_queries_for_shortfall_signa
         leads=[],
         focus_raw=_capture_tick(
             tick=10,
-            event_counts={"projectile_find_hit": 3},
-            spawn={"event_count_projectile_find_query_owner_collision": 2},
+            event_counts=_event_counts_dict(projectile_find_hit=3),
+            spawn=_spawn_diagnostics(event_count_projectile_find_query_owner_collision=2),
         ),
         focus_actual_ckpt=actual_ckpt,
     )
@@ -1079,7 +1021,7 @@ def test_find_first_rng_head_shortfall_detects_pre_focus_gap() -> None:
                     _rng_head_entry(tick_call_index=2, value_15=values[1], branch_id="0x00420fd7"),
                     _rng_head_entry(tick_call_index=3, value_15=values[2], branch_id="0x00420fd7"),
                 ],
-                rng_callers=[{"caller_static": "0x00420fd7", "calls": 3}],
+                rng_callers=[_rng_caller_count(caller_static="0x00420fd7", calls=3)],
             ),
         },
         start_tick=0,
@@ -1124,7 +1066,7 @@ def test_find_first_rng_head_shortfall_detects_stream_value_mismatch() -> None:
                     _rng_head_entry(tick_call_index=2, value_15=values[1], branch_id="0x00420fd7"),
                     _rng_head_entry(tick_call_index=3, value_15=values[2], branch_id="0x00420fd7"),
                 ],
-                rng_callers=[{"caller_static": "0x00420fd7", "calls": 3}],
+                rng_callers=[_rng_caller_count(caller_static="0x00420fd7", calls=3)],
             ),
         },
         start_tick=0,
@@ -1195,7 +1137,7 @@ def test_investigation_leads_include_rng_head_shortfall() -> None:
                     _rng_head_entry(tick_call_index=2, value_15=values[1], branch_id="0x00420fd7"),
                     _rng_head_entry(tick_call_index=3, value_15=values[2], branch_id="0x00420fd7"),
                 ],
-                rng_callers=[{"caller_static": "0x00420fd7", "calls": 3}],
+                rng_callers=[_rng_caller_count(caller_static="0x00420fd7", calls=3)],
                 sample_counts={"creatures": 1, "projectiles": 1, "secondary_projectiles": 0, "bonuses": 0},
             ),
             10: _capture_tick(
@@ -1271,7 +1213,7 @@ def test_investigation_leads_include_rng_stream_mismatch() -> None:
                     _rng_head_entry(tick_call_index=2, value_15=values[1] ^ 1, branch_id="0x00420fd7"),
                     _rng_head_entry(tick_call_index=3, value_15=values[2], branch_id="0x00420fd7"),
                 ],
-                rng_callers=[{"caller_static": "0x00420fd7", "calls": 3}],
+                rng_callers=[_rng_caller_count(caller_static="0x00420fd7", calls=3)],
                 sample_counts={"creatures": 1, "projectiles": 1, "secondary_projectiles": 0, "bonuses": 0},
             ),
             10: _capture_tick(
@@ -1307,39 +1249,41 @@ def test_find_first_projectile_hit_shortfall_detects_gap() -> None:
         raw_debug_by_tick={
             12: _capture_tick(
                 tick=12,
-                event_counts={"projectile_find_hit": 6, "projectile_find_query": 8},
-                spawn={
-                    "event_count_projectile_find_query_miss": 2,
-                    "event_count_projectile_find_query_owner_collision": 1,
-                    "top_projectile_find_query_callers": [{"key": "0x00420e52", "count": 8}],
-                    "top_projectile_find_hit_callers": [{"key": "0x00420fd7", "count": 5}],
-                },
-                event_heads=[
-                    {
-                        "type": "projectile_find_hit",
-                        "data": {
-                            "result_creature_index": 19,
-                            "result_kind": "hit",
-                            "start_index": None,
-                            "radius_f32": None,
-                            "query_pos": {"x": 0.0, "y": 0.0},
-                            "projectile_index": None,
-                            "projectile_owner_id": None,
-                            "projectile_type_id": None,
-                            "projectile_hit_radius": None,
-                            "owner_collision": False,
-                            "player_find_skipped": False,
-                            "shock_chain_projectile_id": None,
-                            "shock_chain_links_left": None,
-                            "caller": None,
-                            "caller_static": "0x00420fd7",
-                            "backtrace": None,
-                            "creature_index": 19,
-                            "creature": None,
-                            "corpse_hit": True,
+                event_counts=_event_counts_dict(projectile_find_hit=6, projectile_find_query=8),
+                spawn=_spawn_diagnostics(
+                    event_count_projectile_find_query_miss=2,
+                    event_count_projectile_find_query_owner_collision=1,
+                    top_projectile_find_query_callers=_spawn_top_caller_rows([{"key": "0x00420e52", "count": 8}]),
+                    top_projectile_find_hit_callers=_spawn_top_caller_rows([{"key": "0x00420fd7", "count": 5}]),
+                ),
+                event_heads=_event_heads(
+                    [
+                        {
+                            "type": "projectile_find_hit",
+                            "data": {
+                                "result_creature_index": 19,
+                                "result_kind": "hit",
+                                "start_index": None,
+                                "radius_f32": None,
+                                "query_pos": {"x": 0.0, "y": 0.0},
+                                "projectile_index": None,
+                                "projectile_owner_id": None,
+                                "projectile_type_id": None,
+                                "projectile_hit_radius": None,
+                                "owner_collision": False,
+                                "player_find_skipped": False,
+                                "shock_chain_projectile_id": None,
+                                "shock_chain_links_left": None,
+                                "caller": None,
+                                "caller_static": "0x00420fd7",
+                                "backtrace": None,
+                                "creature_index": 19,
+                                "creature": None,
+                                "corpse_hit": True,
+                            },
                         },
-                    },
-                ],
+                    ],
+                ),
             ),
         },
         start_tick=0,
@@ -1374,8 +1318,8 @@ def test_find_first_projectile_hit_shortfall_ignores_owner_collision_queries() -
         raw_debug_by_tick={
             12: _capture_tick(
                 tick=12,
-                event_counts={"projectile_find_hit": 5},
-                spawn={"event_count_projectile_find_query_owner_collision": 2},
+                event_counts=_event_counts_dict(projectile_find_hit=5),
+                spawn=_spawn_diagnostics(event_count_projectile_find_query_owner_collision=2),
             ),
         },
         start_tick=0,
@@ -1419,64 +1363,66 @@ def test_investigation_leads_include_projectile_hit_shortfall() -> None:
             10: _capture_tick(
                 tick=10,
                 rng_rand_calls=0,
-                event_counts={"projectile_find_hit": 7, "projectile_find_query": 9},
-                spawn={
-                    "event_count_projectile_find_query_miss": 2,
-                    "event_count_projectile_find_query_owner_collision": 1,
-                    "top_projectile_find_query_callers": [{"key": "0x00420e52", "count": 9}],
-                    "top_projectile_find_hit_callers": [{"key": "0x00420fd7", "count": 6}],
-                },
+                event_counts=_event_counts_dict(projectile_find_hit=7, projectile_find_query=9),
+                spawn=_spawn_diagnostics(
+                    event_count_projectile_find_query_miss=2,
+                    event_count_projectile_find_query_owner_collision=1,
+                    top_projectile_find_query_callers=_spawn_top_caller_rows([{"key": "0x00420e52", "count": 9}]),
+                    top_projectile_find_hit_callers=_spawn_top_caller_rows([{"key": "0x00420fd7", "count": 6}]),
+                ),
                 sample_counts={"creatures": 1, "projectiles": 1, "secondary_projectiles": 0, "bonuses": 0},
-                event_heads=[
-                    {
-                        "type": "projectile_find_hit",
-                        "data": {
-                            "result_creature_index": 19,
-                            "result_kind": "hit",
-                            "start_index": None,
-                            "radius_f32": None,
-                            "query_pos": {"x": 0.0, "y": 0.0},
-                            "projectile_index": None,
-                            "projectile_owner_id": None,
-                            "projectile_type_id": None,
-                            "projectile_hit_radius": None,
-                            "owner_collision": False,
-                            "player_find_skipped": False,
-                            "shock_chain_projectile_id": None,
-                            "shock_chain_links_left": None,
-                            "caller": None,
-                            "caller_static": "0x00420fd7",
-                            "backtrace": None,
-                            "creature_index": 19,
-                            "creature": None,
-                            "corpse_hit": True,
+                event_heads=_event_heads(
+                    [
+                        {
+                            "type": "projectile_find_hit",
+                            "data": {
+                                "result_creature_index": 19,
+                                "result_kind": "hit",
+                                "start_index": None,
+                                "radius_f32": None,
+                                "query_pos": {"x": 0.0, "y": 0.0},
+                                "projectile_index": None,
+                                "projectile_owner_id": None,
+                                "projectile_type_id": None,
+                                "projectile_hit_radius": None,
+                                "owner_collision": False,
+                                "player_find_skipped": False,
+                                "shock_chain_projectile_id": None,
+                                "shock_chain_links_left": None,
+                                "caller": None,
+                                "caller_static": "0x00420fd7",
+                                "backtrace": None,
+                                "creature_index": 19,
+                                "creature": None,
+                                "corpse_hit": True,
+                            },
                         },
-                    },
-                    {
-                        "type": "projectile_find_hit",
-                        "data": {
-                            "result_creature_index": 20,
-                            "result_kind": "hit",
-                            "start_index": None,
-                            "radius_f32": None,
-                            "query_pos": {"x": 0.0, "y": 0.0},
-                            "projectile_index": None,
-                            "projectile_owner_id": None,
-                            "projectile_type_id": None,
-                            "projectile_hit_radius": None,
-                            "owner_collision": False,
-                            "player_find_skipped": False,
-                            "shock_chain_projectile_id": None,
-                            "shock_chain_links_left": None,
-                            "caller": None,
-                            "caller_static": "0x00420fd7",
-                            "backtrace": None,
-                            "creature_index": 20,
-                            "creature": None,
-                            "corpse_hit": True,
+                        {
+                            "type": "projectile_find_hit",
+                            "data": {
+                                "result_creature_index": 20,
+                                "result_kind": "hit",
+                                "start_index": None,
+                                "radius_f32": None,
+                                "query_pos": {"x": 0.0, "y": 0.0},
+                                "projectile_index": None,
+                                "projectile_owner_id": None,
+                                "projectile_type_id": None,
+                                "projectile_hit_radius": None,
+                                "owner_collision": False,
+                                "player_find_skipped": False,
+                                "shock_chain_projectile_id": None,
+                                "shock_chain_links_left": None,
+                                "caller": None,
+                                "caller_static": "0x00420fd7",
+                                "backtrace": None,
+                                "creature_index": 20,
+                                "creature": None,
+                                "corpse_hit": True,
+                            },
                         },
-                    },
-                ],
+                    ],
+                ),
             ),
         },
         native_ranges=(report.NativeFunctionRange(name="projectile_update", start=0x00420B90, end=0x00422C70),),

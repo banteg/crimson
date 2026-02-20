@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-
-import pytest
+from typing import cast
 
 import crimson.creatures.runtime as creature_runtime
 from crimson.bonuses.pool import BonusEntry
@@ -115,7 +114,7 @@ def test_spawn_plan_materialization_spawns_burst_fx() -> None:
     assert all(int(entry.effect_id) == 0 for entry in active)
 
 
-def test_spawn_slot_update_uses_random_heading_sentinel(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     state = GameplayState()
     env = SpawnEnv(
         terrain_width=1024.0,
@@ -147,27 +146,25 @@ def test_spawn_slot_update_uses_random_heading_sentinel(monkeypatch: pytest.Monk
         ),
     )
 
-    seen_calls: list[tuple[int, float, Vec2, SpawnEnv]] = []
-
-    def _fake_build_spawn_plan(template_id: int, pos: Vec2, heading: float, rng: object, env_arg: SpawnEnv) -> object:
-        del rng
-        seen_calls.append((int(template_id), float(heading), pos, env_arg))
-        return object()
+    sentinel_plan = object()
 
     def _fake_spawn_plan(self: CreaturePool, plan: object, **kwargs: object) -> tuple[list[int], int | None]:
         del self, plan, kwargs
         return [], None
 
-    monkeypatch.setattr(creature_runtime, "build_spawn_plan", _fake_build_spawn_plan)
-    monkeypatch.setattr(CreaturePool, "spawn_plan", _fake_spawn_plan)
+    build_spawn_plan = mocker.patch.object(creature_runtime, "build_spawn_plan", return_value=sentinel_plan)
+    spawn_plan = mocker.patch.object(CreaturePool, "spawn_plan", autospec=True, side_effect=_fake_spawn_plan)
 
     pool.update(1.0 / 60.0, state=state, players=[player])
 
-    assert len(seen_calls) == 1
-    child_template_id, heading, _, env_arg = seen_calls[0]
+    build_spawn_plan.assert_called_once()
+    child_template_id = int(build_spawn_plan.call_args.args[0])
+    heading = float(build_spawn_plan.call_args.args[2])
+    env_arg = cast("SpawnEnv", build_spawn_plan.call_args.args[4])
     assert child_template_id == 0x1D
     assert_float_close(heading, RANDOM_HEADING_SENTINEL)
     assert env_arg is env
+    spawn_plan.assert_called_once()
 
 
 def test_spawn_slot_update_requires_spawner_flag() -> None:

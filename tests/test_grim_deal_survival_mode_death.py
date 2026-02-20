@@ -20,7 +20,7 @@ def _make_survival_mode() -> SurvivalMode:
     return SurvivalMode(ctx)
 
 
-def _install_minimal_sim_session(mode: SurvivalMode, monkeypatch) -> None:
+def _install_minimal_sim_session(mode: SurvivalMode, mocker) -> None:
     class _FakeSession:
         def __init__(self) -> None:
             self.game_tune_started = False
@@ -40,13 +40,13 @@ def _install_minimal_sim_session(mode: SurvivalMode, monkeypatch) -> None:
             return SimpleNamespace(step=step, rng_marks={})
 
     mode._sim_session = _FakeSession()
-    monkeypatch.setattr(GameWorld, "apply_step_result", lambda *_args, **_kwargs: None)
+    mocker.patch.object(GameWorld, "apply_step_result", side_effect=lambda *_args, **_kwargs: None)
 
 
-def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_menu_transition(monkeypatch, mocker) -> None:
+def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_menu_transition(mocker) -> None:
     mode = _make_survival_mode()
     mocker.patch.object(GameOverUi, "open", return_value=None)
-    _install_minimal_sim_session(mode, monkeypatch)
+    _install_minimal_sim_session(mode, mocker)
 
     assert mode.player.health > 0.0
     mode.player.death_timer = 0.3
@@ -57,7 +57,7 @@ def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_
         perk_apply(mode.state, mode.world.players, PerkId.GRIM_DEAL)
         mode._perk_menu.close()
 
-    monkeypatch.setattr(mode._perk_menu, "handle_input", _apply_grim_deal_and_close)
+    mocker.patch.object(mode._perk_menu, "handle_input", side_effect=_apply_grim_deal_and_close)
 
     mocker.patch.object(base_gameplay_mode_module.rl, "get_mouse_position", side_effect=lambda: rl.Vector2(0.0, 0.0))
     mocker.patch.object(base_gameplay_mode_module.rl, "get_screen_width", side_effect=lambda: 640)

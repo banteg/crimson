@@ -35,22 +35,22 @@ def test_hovered_perk_id_returns_none_when_not_hovered(make_game_state) -> None:
     assert view._hovered_perk_id() is None
 
 
-def test_wrap_small_text_native_inserts_newline_at_previous_space(monkeypatch) -> None:
-    monkeypatch.setattr(perk_db, "measure_small_text_width", lambda _font, text, _scale: float(len(text)))
+def test_wrap_small_text_native_inserts_newline_at_previous_space(mocker) -> None:
+    mocker.patch.object(perk_db, "measure_small_text_width", side_effect=lambda _font, text, _scale: float(len(text)))
     fake_font = cast(SmallFontData, object())
     wrapped = UnlockedPerksDatabaseView._wrap_small_text_native(fake_font, "alpha beta", 6.0, scale=1.0)
     assert wrapped == "alpha\nbeta"
 
 
-def test_prewrapped_perk_desc_uses_cache(monkeypatch, make_game_state) -> None:
+def test_prewrapped_perk_desc_uses_cache(mocker, make_game_state) -> None:
     calls = {"count": 0}
 
     def _fake_measure(_font, text: str, _scale: float) -> float:
         calls["count"] += 1
         return float(len(text))
 
-    monkeypatch.setattr(perk_db, "measure_small_text_width", _fake_measure)
-    monkeypatch.setattr(
+    mocker.patch.object(perk_db, "measure_small_text_width", side_effect=_fake_measure)
+    mocker.patch.object(
         UnlockedPerksDatabaseView,
         "_perk_desc",
         staticmethod(lambda _perk_id, *, fx_toggle=0, preserve_bugs=False: "alpha beta gamma"),

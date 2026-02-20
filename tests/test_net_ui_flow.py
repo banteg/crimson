@@ -87,7 +87,7 @@ def test_loop_view_uses_pending_net_session_when_lan_alias_is_unset(make_game_st
     assert state.lan_in_lobby is True
 
 
-def test_network_lobby_panel_shows_room_code_not_session_id(monkeypatch, make_game_state, mocker) -> None:
+def test_network_lobby_panel_shows_room_code_not_session_id(make_game_state, mocker) -> None:
     state = make_game_state()
     pending = PendingLanSession(
         role="host",
@@ -120,16 +120,16 @@ def test_network_lobby_panel_shows_room_code_not_session_id(monkeypatch, make_ga
 
     panel = LanLobbyPanelView(state)
     draw_small_text = mocker.patch.object(lan_lobby_module, "draw_small_text")
-    monkeypatch.setattr(
+    mocker.patch.object(
         lan_lobby_module,
         "measure_small_text_width",
-        lambda _font, text, _scale: float(len(str(text)) * 8),
+        side_effect=lambda _font, text, _scale: float(len(str(text)) * 8),
     )
-    monkeypatch.setattr(panel, "_ensure_small_font", lambda: SimpleNamespace(cell_size=8))
-    monkeypatch.setattr(
+    mocker.patch.object(panel, "_ensure_small_font", side_effect=lambda: SimpleNamespace(cell_size=8))
+    mocker.patch.object(
         panel,
         "_layout",
-        lambda: SimpleNamespace(
+        side_effect=lambda: SimpleNamespace(
             scale=1.0,
             panel_top_left=Vec2(0.0, 0.0),
             base_pos=Vec2(0.0, 0.0),

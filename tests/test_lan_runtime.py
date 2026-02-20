@@ -46,7 +46,7 @@ def test_join_hello_retries_keep_reliable_backlog_bounded() -> None:
     runtime.close()
 
 
-def test_host_does_not_track_unknown_non_hello_packets(monkeypatch) -> None:
+def test_host_does_not_track_unknown_non_hello_packets(mocker) -> None:
     runtime = LanRuntime(
         LanRuntimeConfig(
             role="host",
@@ -63,7 +63,7 @@ def test_host_does_not_track_unknown_non_hello_packets(monkeypatch) -> None:
     sender = ReliableLink()
     packet = sender.build_packet(Disconnect(reason="x"), reliable=True, now_ms=0)
     addr = ("127.0.0.1", 39999)
-    monkeypatch.setattr(UdpTransport, "recv_packets", lambda _self, **_kwargs: [(addr, packet)])
+    mocker.patch.object(UdpTransport, "recv_packets", return_value=[(addr, packet)])
 
     runtime.update(now_ms=int(time.monotonic() * 1000.0))
 

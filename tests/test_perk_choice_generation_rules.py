@@ -3,8 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import pytest
-
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
@@ -234,7 +232,7 @@ def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -
     assert rng.calls == 65860
 
 
-def test_perk_generate_choices_caches_offerability_checks(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_perk_generate_choices_caches_offerability_checks(mocker) -> None:
     import crimson.perks.selection as selection_mod
 
     status = _status_default()
@@ -257,7 +255,7 @@ def test_perk_generate_choices_caches_offerability_checks(monkeypatch: pytest.Mo
         calls += 1
         return original(*args, **kwargs)
 
-    monkeypatch.setattr(selection_mod, "perk_can_offer", _counting_perk_can_offer)
+    mocker.patch.object(selection_mod, "perk_can_offer", side_effect=_counting_perk_can_offer)
     choices = selection_mod.perk_generate_choices(state, player, game_mode=int(GameMode.QUESTS), player_count=1, count=7)
     assert choices == [
         PerkId.INSTANT_WINNER,

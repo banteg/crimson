@@ -3,8 +3,6 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-import pytest
-
 from crimson.projectiles import Projectile, ProjectileTypeId, SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from crimson.views.lighting_debug import (
@@ -256,16 +254,16 @@ def test_adjust_selected_tune_rt_scale_resets_shadow_rt_size() -> None:
     assert view._shadow_accum_ready is False
 
 
-def test_dump_all_modes_honors_autodiag_frame_budget(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_dump_all_modes_honors_autodiag_frame_budget(mocker) -> None:
     view = LightingDebugView(ViewContext(assets_dir=Path(".") / "artifacts" / "assets"))
     view._dump_all_modes_enabled = True
     view._dump_mode_sequence = (0, 1, 2, 3)
     view._autodiag_enabled = True
     view._autodiag_total_frames = 30
 
-    monkeypatch.setattr(view, "_reset_scene", lambda: None)
-    monkeypatch.setattr(view, "_emit_profile", lambda: None)
-    monkeypatch.setattr(view, "_set_tune_value", lambda key, value, **kwargs: None)
+    mocker.patch.object(view, "_reset_scene", side_effect=lambda: None)
+    mocker.patch.object(view, "_emit_profile", side_effect=lambda: None)
+    mocker.patch.object(view, "_set_tune_value", side_effect=lambda key, value, **kwargs: None)
 
     safety = 0
     while not view.close_requested and safety < 200:
