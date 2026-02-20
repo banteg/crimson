@@ -74,34 +74,28 @@ def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
 
 
 def test_plan_death_sfx_allows_five_randomized_deaths() -> None:
-    draws = {"count": 0}
-
-    def rand() -> int:
-        draws["count"] += 1
-        return 0
+    rng = MockCrand(0, fallback="repeat_last")
 
     deaths = tuple(_death(type_id=int(CreatureTypeId.ZOMBIE)) for _ in range(5))
-    keys = plan_death_sfx_keys(deaths, rand=rand)
+    keys = plan_death_sfx_keys(deaths, rand=rng)
 
     assert len(keys) == 5
-    assert draws["count"] == 5
+    assert rng.calls == 5
+    assert rng.state == 0
 
 
 def test_plan_death_sfx_skips_suppressed_deaths() -> None:
-    draws = {"count": 0}
-
-    def rand() -> int:
-        draws["count"] += 1
-        return 0
+    rng = MockCrand(0, fallback="repeat_last")
 
     deaths = (
         _death(type_id=int(CreatureTypeId.ZOMBIE), suppress_death_sfx=True),
         _death(type_id=int(CreatureTypeId.ZOMBIE), suppress_death_sfx=False),
     )
-    keys = plan_death_sfx_keys(deaths, rand=rand)
+    keys = plan_death_sfx_keys(deaths, rand=rng)
 
     assert len(keys) == 1
-    assert draws["count"] == 1
+    assert rng.calls == 1
+    assert rng.state == 0
 
 
 def test_apply_world_presentation_step_orders_sfx() -> None:
@@ -154,24 +148,20 @@ def test_queue_projectile_decals_consumes_rand() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     fx_queue = FxQueue()
-
-    draws = {"count": 0}
-
-    def rand() -> int:
-        draws["count"] += 1
-        return 0
+    rng = MockCrand(0, fallback="repeat_last")
 
     queue_projectile_decals(
         state=state,
         players=[player],
         fx_queue=fx_queue,
         hits=_hits(1),
-        rand=rand,
+        rand=rng,
         detail_preset=5,
         fx_toggle=0,
     )
 
-    assert draws["count"] > 0
+    assert rng.calls > 0
+    assert rng.state == 0
     assert fx_queue.count > 0
 
 
@@ -179,19 +169,14 @@ def test_queue_projectile_decals_native_default_draw_count() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     fx_queue = FxQueue()
-
-    draws = {"count": 0}
-
-    def rand() -> int:
-        draws["count"] += 1
-        return 0
+    rng = MockCrand(0, fallback="repeat_last")
 
     queue_projectile_decals(
         state=state,
         players=[player],
         fx_queue=fx_queue,
         hits=_hits(1),
-        rand=rand,
+        rand=rng,
         detail_preset=5,
         fx_toggle=0,
     )
@@ -200,65 +185,64 @@ def test_queue_projectile_decals_native_default_draw_count() -> None:
     # - 2x blood splatter calls + 2 branch rolls,
     # - 1 extra throwaway rand,
     # - 3x decal spread rolls + 12x `fx_queue_add_random` draws.
-    assert draws["count"] == 74
+    assert rng.calls == 74
+    assert rng.state == 0
     assert fx_queue.count == 12
 
 
-def test_queue_projectile_decals_fire_bullets_freeze_runs_six_shard_iterations() -> None:
+def test_queue_projectile_decals_fire_bullets_freeze_runs_six_shard_iterations(mocker) -> None:
     state = GameplayState()
     state.bonuses.freeze = 1.0
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     fx_queue = FxQueue()
-    shard_calls = {"count": 0}
-
-    orig_spawn_freeze_shard = state.effects.spawn_freeze_shard
-
-    def _spawn_freeze_shard(**kwargs):
-        shard_calls["count"] += 1
-        return orig_spawn_freeze_shard(**kwargs)
-
-    state.effects.spawn_freeze_shard = _spawn_freeze_shard  # type: ignore[method-assign]
+    spawn_freeze_shard = mocker.patch.object(
+        state.effects,
+        "spawn_freeze_shard",
+        wraps=state.effects.spawn_freeze_shard,
+    )
+    rng = MockCrand(0, fallback="repeat_last")
 
     queue_projectile_decals(
         state=state,
         players=[player],
         fx_queue=fx_queue,
         hits=_hits(1, type_id=int(ProjectileTypeId.FIRE_BULLETS)),
-        rand=lambda: 0,
+        rand=rng,
         detail_preset=5,
         fx_toggle=0,
     )
 
-    assert shard_calls["count"] == 6
+    assert spawn_freeze_shard.call_count == 6
+    assert rng.calls > 0
+    assert rng.state == 0
     assert fx_queue.count == 6
 
 
-def test_queue_projectile_decals_fire_bullets_freeze_runs_hooks_with_fx_toggle_set() -> None:
+def test_queue_projectile_decals_fire_bullets_freeze_runs_hooks_with_fx_toggle_set(mocker) -> None:
     state = GameplayState()
     state.bonuses.freeze = 1.0
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     fx_queue = FxQueue()
-    shard_calls = {"count": 0}
-
-    orig_spawn_freeze_shard = state.effects.spawn_freeze_shard
-
-    def _spawn_freeze_shard(**kwargs):
-        shard_calls["count"] += 1
-        return orig_spawn_freeze_shard(**kwargs)
-
-    state.effects.spawn_freeze_shard = _spawn_freeze_shard  # type: ignore[method-assign]
+    spawn_freeze_shard = mocker.patch.object(
+        state.effects,
+        "spawn_freeze_shard",
+        wraps=state.effects.spawn_freeze_shard,
+    )
+    rng = MockCrand(0, fallback="repeat_last")
 
     queue_projectile_decals(
         state=state,
         players=[player],
         fx_queue=fx_queue,
         hits=_hits(1, type_id=int(ProjectileTypeId.FIRE_BULLETS)),
-        rand=lambda: 0,
+        rand=rng,
         detail_preset=5,
         fx_toggle=1,
     )
 
-    assert shard_calls["count"] == 6
+    assert spawn_freeze_shard.call_count == 6
+    assert rng.calls > 0
+    assert rng.state == 0
     assert fx_queue.count == 6
 
 
@@ -286,11 +270,7 @@ def test_queue_projectile_decals_orders_blood_before_decals() -> None:
 def test_apply_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
-    draws = {"count": 0}
-
-    def rand() -> int:
-        draws["count"] += 1
-        return 0
+    rng = MockCrand(0, fallback="repeat_last")
 
     commands = apply_world_presentation_step(
         state=state,
@@ -305,7 +285,7 @@ def test_apply_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
         game_mode=int(GameMode.SURVIVAL),
         demo_mode_active=False,
         perk_progression_enabled=True,
-        rand=rand,
+        rand=rng,
         detail_preset=5,
         fx_toggle=0,
         game_tune_started=False,
@@ -313,6 +293,7 @@ def test_apply_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
         hit_sfx=["sfx_bullet_hit_01"],
     )
 
-    assert draws["count"] == 0
+    assert rng.calls == 0
+    assert rng.state == 0
     assert commands.trigger_game_tune is True
     assert commands.sfx_keys == ["sfx_bullet_hit_01"]
