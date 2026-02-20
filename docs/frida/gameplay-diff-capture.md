@@ -85,8 +85,9 @@ Notes:
   (`ai_mode`, `link_index`, `orbit_angle`, `orbit_radius`, `ai7_timer_ms`)
   to diagnose spawn/link timer drift without replay-side guesswork.
 - `creature_update_micro` event heads provide slot-level movement internals
-  (`creature_update_window` pre/post snapshots + `angle_approach` call traces)
-  and are enabled in default captures.
+  (`creature_update_window` pre/post snapshots + `angle_approach` call traces),
+  including link-lineage fields (`link_index`, `ai7_timer_ms`, link position,
+  and link-distance buckets), and are enabled in default captures.
 - Per-tick timing diagnostics now include mode-step presence and dt provenance
   (`mode_tick_event_count`, `mode_tick_present`, `mode_tick_mode_fn_head`,
   `frame_dt_source_before`, `frame_dt_source_after`) to debug timing-path

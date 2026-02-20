@@ -1420,6 +1420,11 @@ function _readCreatureMicroState(index) {
 
   const activeFlag = safeReadU8(base);
   const stateFlag = safeReadU8(base.add(0x08));
+  const flags = safeReadS32(base.add(0x8c));
+  const linkIndex = safeReadS32(base.add(0x78));
+  const targetPlayer = safeReadS32(base.add(0x70));
+  const hitboxSize = safeReadF32(base.add(0x10));
+  const hp = safeReadF32(base.add(0x24));
   const posX = safeReadF32(base.add(0x14));
   const posY = safeReadF32(base.add(0x18));
   const velX = safeReadF32(base.add(0x1c));
@@ -1431,6 +1436,8 @@ function _readCreatureMicroState(index) {
   const targetY = safeReadF32(base.add(0x54));
   const moveSpeed = safeReadF32(base.add(0x5c));
   const aiMode = safeReadS32(base.add(0x90));
+  const orbitAngle = safeReadF32(base.add(0x84));
+  const orbitRadius = safeReadF32(base.add(0x88));
   const frameDt = dataPtrs.frame_dt ? safeReadF32(dataPtrs.frame_dt) : null;
 
   let distToTarget = null;
@@ -1453,15 +1460,45 @@ function _readCreatureMicroState(index) {
     moveScaleEstimate = speedAbs / (Math.abs(moveSpeed) * 11.0 * Math.abs(frameDt));
   }
 
+  let linkActiveFlag = null;
+  let linkPosX = null;
+  let linkPosY = null;
+  let distToLink = null;
+  const normalizedLinkIndex = linkIndex == null ? null : linkIndex | 0;
+  if (normalizedLinkIndex != null && normalizedLinkIndex >= 0 && normalizedLinkIndex < COUNTS.creatures) {
+    const linkBase = pool.add(normalizedLinkIndex * STRIDES.creature);
+    linkActiveFlag = safeReadU8(linkBase);
+    if (linkActiveFlag) {
+      linkPosX = safeReadF32(linkBase.add(0x14));
+      linkPosY = safeReadF32(linkBase.add(0x18));
+      if (_isFiniteNumber(posX) && _isFiniteNumber(posY) && _isFiniteNumber(linkPosX) && _isFiniteNumber(linkPosY)) {
+        const linkDx = linkPosX - posX;
+        const linkDy = linkPosY - posY;
+        distToLink = Math.sqrt(linkDx * linkDx + linkDy * linkDy);
+      }
+    }
+  }
+
+  const ai7TimerMs =
+    flags != null && linkIndex != null && (flags & CREATURE_FLAG_AI7_LINK_TIMER) !== 0 ? linkIndex : null;
+
   return {
     index: index,
     active: activeFlag == null ? !!stateFlag : !!activeFlag,
     active_flag: activeFlag == null ? null : activeFlag,
     state_flag: stateFlag == null ? null : stateFlag,
     ai_mode: aiMode,
+    flags: flags,
+    link_index: linkIndex,
+    target_player: targetPlayer,
+    hitbox_size: captureNumber(hitboxSize),
+    hp: captureNumber(hp),
     force_target: forceTarget,
+    ai7_timer_ms: ai7TimerMs,
     heading: captureNumber(heading),
     target_heading: captureNumber(targetHeading),
+    orbit_angle: captureNumber(orbitAngle),
+    orbit_radius: captureNumber(orbitRadius),
     target_x: captureNumber(targetX),
     target_y: captureNumber(targetY),
     pos: {
@@ -1476,6 +1513,13 @@ function _readCreatureMicroState(index) {
     dt_frame: captureNumber(frameDt),
     dist_to_target: captureNumber(distToTarget),
     dist_bucket: _distanceBucket(distToTarget),
+    link_active_flag: linkActiveFlag,
+    link_pos: {
+      x: captureNumber(linkPosX),
+      y: captureNumber(linkPosY),
+    },
+    dist_to_link: captureNumber(distToLink),
+    link_dist_bucket: _distanceBucket(distToLink),
     move_scale_estimate: captureNumber(moveScaleEstimate),
   };
 }
