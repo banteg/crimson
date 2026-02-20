@@ -1182,13 +1182,14 @@ def _render_texture_valid(rt: rl.RenderTexture | None) -> bool:
         return False
     if int(rt.id) <= 0:
         return False
-    validator = getattr(rl, "is_render_texture_valid", None)
-    if callable(validator):
-        try:
-            return bool(validator(rt))
-        except (RuntimeError, ValueError):
-            return False
-    return True
+    try:
+        validator = rl.is_render_texture_valid
+    except AttributeError:
+        return True
+    try:
+        return bool(validator(rt))
+    except (RuntimeError, ValueError):
+        return False
 
 
 def _shadow_debug_mode_name(mode: int) -> str:

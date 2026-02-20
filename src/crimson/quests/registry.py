@@ -19,7 +19,7 @@ def register_quest(
     builder_address: int | None = None,
 ) -> Callable[[QuestBuilder], QuestBuilder]:
     def _builder_name(builder_fn: QuestBuilder) -> str:
-        return str(getattr(builder_fn, "__name__", type(builder_fn).__name__))
+        return str(builder_fn.__name__)
 
     def decorator(builder: QuestBuilder) -> QuestBuilder:
         major, minor = parse_level(level)

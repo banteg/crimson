@@ -9,7 +9,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal, cast
 
+from grim.config import CrimsonConfig
+from grim.console import ConsoleState
+from grim.view import ViewContext
+
 from ...game_modes import GameMode
+from ...modes.replay_playback_mode import ReplayPlaybackMode
 from ...replay import Replay
 from .replay_runner import run_replay
 from .setup import RunResult, player0_most_used_weapon_id, player0_shots
@@ -323,35 +328,33 @@ def _validate_args(*, runs: int, warmup_runs: int, top: int) -> None:
 
 def _run_render_once(
     *,
-    ctx: object,
+    ctx: ViewContext,
     replay_path: Path,
-    cfg: object,
-    console: object,
+    cfg: CrimsonConfig,
+    console: ConsoleState,
     max_ticks: int | None,
     strict_events: bool,
     trace_rng: bool,
 ) -> RunResult:
     from grim.raylib_api import rl
 
-    from ...modes.replay_playback_mode import ReplayPlaybackMode
-
     mode = ReplayPlaybackMode(
-        cast("Any", ctx),
+        ctx,
         replay_path=Path(replay_path),
-        config=cast("Any", cfg),
-        console=cast("Any", console),
+        config=cfg,
+        console=console,
         max_ticks=max_ticks,
         strict_events=bool(strict_events),
         trace_rng=bool(trace_rng),
     )
     mode.open()
     try:
-        replay = cast("Replay | None", getattr(mode, "_replay", None))
+        replay = mode._replay
         if replay is None:
             raise ReplayBenchmarkError("render benchmark failed: replay playback did not initialize replay state")
 
-        step_dt = float(getattr(mode, "_dt_frame", 1.0 / 60.0))
-        if float(step_dt) <= 0.0:
+        step_dt = float(mode._dt_frame)
+        if step_dt <= 0.0:
             step_dt = 1.0 / 60.0
 
         while not bool(mode.finished):
@@ -367,15 +370,15 @@ def _run_render_once(
         mode.close()
 
 
-def _run_result_from_replay_mode(*, mode: object, replay: Replay) -> RunResult:
-    world = cast("Any", getattr(mode, "_world", None))
+def _run_result_from_replay_mode(*, mode: ReplayPlaybackMode, replay: Replay) -> RunResult:
+    world = mode._world
     if world is None:
         raise ReplayBenchmarkError("render benchmark failed: replay playback world was not available")
 
-    if int(replay.header.game_mode_id) == int(GameMode.QUESTS):
-        elapsed_ms = int(float(getattr(mode, "_quest_spawn_timeline_ms", 0.0)))
+    if replay.header.game_mode_id == int(GameMode.QUESTS):
+        elapsed_ms = int(mode._quest_spawn_timeline_ms)
     else:
-        elapsed_ms = int(float(getattr(world, "_elapsed_ms", 0.0)))
+        elapsed_ms = int(world._elapsed_ms)
 
     shots_fired, shots_hit = player0_shots(world.state)
     most_used_weapon_id = player0_most_used_weapon_id(world.state, world.players)
@@ -383,7 +386,7 @@ def _run_result_from_replay_mode(*, mode: object, replay: Replay) -> RunResult:
     return RunResult(
         game_mode_id=int(replay.header.game_mode_id),
         tick_rate=int(replay.header.tick_rate),
-        ticks=int(getattr(mode, "tick_index", 0)),
+        ticks=int(mode.tick_index),
         elapsed_ms=int(elapsed_ms),
         score_xp=int(score_xp),
         creature_kill_count=int(world.creatures.kill_count),
@@ -395,21 +398,19 @@ def _run_result_from_replay_mode(*, mode: object, replay: Replay) -> RunResult:
 
 
 def _assert_consistent_run_result(expected: RunResult, actual: RunResult, *, where: str) -> None:
-    fields = (
-        "game_mode_id",
-        "tick_rate",
-        "ticks",
-        "elapsed_ms",
-        "score_xp",
-        "creature_kill_count",
-        "most_used_weapon_id",
-        "shots_fired",
-        "shots_hit",
-        "rng_state",
+    expected_values = (
+        (expected.game_mode_id, actual.game_mode_id, "game_mode_id"),
+        (expected.tick_rate, actual.tick_rate, "tick_rate"),
+        (expected.ticks, actual.ticks, "ticks"),
+        (expected.elapsed_ms, actual.elapsed_ms, "elapsed_ms"),
+        (expected.score_xp, actual.score_xp, "score_xp"),
+        (expected.creature_kill_count, actual.creature_kill_count, "creature_kill_count"),
+        (expected.most_used_weapon_id, actual.most_used_weapon_id, "most_used_weapon_id"),
+        (expected.shots_fired, actual.shots_fired, "shots_fired"),
+        (expected.shots_hit, actual.shots_hit, "shots_hit"),
+        (expected.rng_state, actual.rng_state, "rng_state"),
     )
-    for field_name in fields:
-        exp = int(getattr(expected, field_name))
-        got = int(getattr(actual, field_name))
+    for exp, got, field_name in expected_values:
         if int(exp) != int(got):
             raise ReplayBenchmarkError(
                 "non-deterministic replay result across runs: "
