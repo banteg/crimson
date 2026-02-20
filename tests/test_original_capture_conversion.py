@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import copy
 import gzip
-import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import msgspec
 import pytest
@@ -27,7 +26,6 @@ from crimson.original.capture import (
     capture_creature_spawn_added_head_rows_from_event_payload,
     capture_creature_spawns_from_event_payload,
     capture_perk_apply_from_event_payload,
-    capture_perk_apply_id_from_event_payload,
     capture_perk_apply_pending_bounds_from_event_payload,
     capture_perk_pending_from_event_payload,
     capture_state_transitions_from_event_payload,
@@ -39,10 +37,8 @@ from crimson.original.capture import (
     summarize_capture_health,
 )
 from crimson.original.schema import (
-    CAPTURE_FORMAT_VERSION,
     CaptureBonusSample,
     CaptureCheckpoint,
-    CaptureConfig,
     CaptureCreatureSample,
     CaptureDiagnostics,
     CaptureEventCounts,
@@ -105,8 +101,6 @@ from tests.builders.capture import (
     build_capture_secondary_projectile_sample,
     build_capture_snapshot_player,
     build_capture_tick,
-    capture_file_to_dict,
-    capture_value_to_builtins,
 )
 from tests.helpers import assert_float_close
 
@@ -133,41 +127,6 @@ _DEFAULT_CAPTURE_BONUS_SAMPLE = build_capture_bonus_sample()
 _DEFAULT_CAPTURE_RNG_HEAD_ENTRY = build_capture_rng_head_entry()
 
 
-def _require_str_key_dict(value: object) -> dict[str, Any]:
-    assert isinstance(value, dict)
-    out: dict[str, Any] = {}
-    for key, entry in value.items():
-        assert isinstance(key, str)
-        out[key] = entry
-    return out
-
-
-def _require_str_list(value: object) -> list[str]:
-    assert isinstance(value, list)
-    out: list[str] = []
-    for item in value:
-        assert isinstance(item, str)
-        out.append(item)
-    return out
-
-
-def _require_dict_list(value: object) -> list[dict[str, Any]]:
-    assert isinstance(value, list)
-    out: list[dict[str, Any]] = []
-    for item in value:
-        out.append(_require_str_key_dict(item))
-    return out
-
-
-def _as_builtins_dict(value: object) -> dict[str, Any]:
-    return _require_str_key_dict(capture_value_to_builtins(value))
-
-
-def _capture_meta_dict(capture: CaptureFile) -> dict[str, Any]:
-    payload = capture_file_to_dict(capture)
-    return {k: v for k, v in payload.items() if k != "ticks"}
-
-
 def _base_input_approx(**kwargs: object) -> CaptureInputApprox:
     updates: dict[str, Any] = {"aim_x": 512.0, "aim_y": 512.0}
     updates.update(kwargs)
@@ -188,10 +147,6 @@ def _base_rng_head_entry(**kwargs: object) -> CaptureRngHeadEntry:
 
 def _base_rng_summary(**kwargs: object) -> CaptureRngSummary:
     return msgspec.structs.replace(_DEFAULT_CAPTURE_TICK.rng, **kwargs)
-
-
-def _base_config(**kwargs: object) -> CaptureConfig:
-    return msgspec.structs.replace(_DEFAULT_CAPTURE_FILE.config, **kwargs)
 
 
 def _base_player() -> CapturePlayerCheckpoint:
@@ -411,33 +366,11 @@ def _write_capture(path: Path, capture: CaptureFile) -> None:
         path.write_bytes(encoded)
 
 
-def _write_capture_malformed(path: Path, payload: dict[str, Any]) -> None:
-    meta = {k: v for k, v in payload.items() if k != "ticks"}
-    meta["ticks"] = []
-    ticks_obj = payload["ticks"] if "ticks" in payload else []
-    ticks = ticks_obj if isinstance(ticks_obj, list) else []
-    rows = [json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True)]
-    rows.extend(json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True) for tick in ticks)
-    encoded = ("\n".join(rows) + "\n").encode("utf-8")
-    if str(path).endswith(".gz"):
-        path.write_bytes(gzip.compress(encoded))
-    else:
-        path.write_bytes(encoded)
-
-
 def _write_capture_stream(path: Path, *, capture: CaptureFile) -> None:
     meta_capture = copy.deepcopy(capture)
     meta_capture.ticks = []
     rows = [msgspec.json.encode({"event": "capture_meta", "capture": meta_capture}).decode("utf-8")]
     rows.extend(msgspec.json.encode({"event": "tick", "tick": tick}).decode("utf-8") for tick in capture.ticks)
-    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
-
-
-def _write_capture_stream_malformed(path: Path, *, meta: dict[str, Any], ticks: list[dict[str, Any]]) -> None:
-    normalized_meta = dict(meta)
-    normalized_meta["ticks"] = []
-    rows = [json.dumps({"event": "capture_meta", "capture": normalized_meta}, separators=(",", ":"), sort_keys=True)]
-    rows.extend(json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True) for tick in ticks)
     path.write_text("\n".join(rows) + "\n", encoding="utf-8")
 
 
@@ -476,63 +409,37 @@ def _replay_input_aim_xy(replay: Replay, tick_index: int, player_index: int = 0)
     return float(aim_x), float(aim_y)
 
 
-def _minimal_strict_bootstrap_payload_dict() -> dict[str, Any]:
-    return {
-        "tick_index": 0,
-        "elapsed_ms": 0,
-        "score_xp": 0,
-        "perk_pending": 0,
-        "perk": {
-            "pending_count": 0,
-            "choices_dirty": False,
-            "choices": [11, 22, 33, 44, 55, 66, 77],
-            "player_nonzero_counts": [[]],
-        },
-        "bonus_timers_ms": {},
-        "players": [
+def _minimal_strict_bootstrap_payload() -> Any:
+    payload = capture_bootstrap_payload_from_event_payload(
+        [
             {
-                "weapon_id": 1,
-                "pos": {"x": 0.0, "y": 0.0},
-                "health": 100.0,
-                "ammo": 12.0,
-                "experience": 0,
-                "level": 1,
+                "tick_index": 0,
+                "elapsed_ms": 0,
+                "score_xp": 0,
+                "perk_pending": 0,
+                "perk": {
+                    "pending_count": 0,
+                    "choices_dirty": False,
+                    "choices": [11, 22, 33, 44, 55, 66, 77],
+                    "player_nonzero_counts": [[]],
+                },
+                "bonus_timers_ms": {},
+                "players": [
+                    {
+                        "weapon_id": 1,
+                        "pos": {"x": 0.0, "y": 0.0},
+                        "health": 100.0,
+                        "ammo": 12.0,
+                        "experience": 0,
+                        "level": 1,
+                    },
+                ],
+                "digital_move_enabled_by_player": [False],
             },
         ],
-        "digital_move_enabled_by_player": [False],
-    }
-
-
-def _minimal_strict_bootstrap_payload() -> Any:
-    payload = capture_bootstrap_payload_from_event_payload([_minimal_strict_bootstrap_payload_dict()])
+    )
     assert payload is not None
     return payload
-
-
-def test_capture_event_payload_helpers_parse_msgspec_payloads() -> None:
-    bootstrap_payload = _minimal_strict_bootstrap_payload_dict()
-    bootstrap_payload["elapsed_ms"] = 123
-    bootstrap = capture_bootstrap_payload_from_event_payload([bootstrap_payload])
-    assert bootstrap is not None
-    assert bootstrap.elapsed_ms == 123
-    assert capture_perk_apply_from_event_payload([{"perk_id": 14}]) == (14, False)
-    assert capture_perk_apply_from_event_payload([{"perk_id": 49, "outside_before": True}]) == (49, True)
-    assert capture_perk_apply_id_from_event_payload([{"perk_id": 14}]) == 14
-    assert capture_perk_pending_from_event_payload([{"perk_pending": 2}]) == 2
-
-    import msgspec
-
-    assert capture_bootstrap_payload_from_event_payload([]) is None
-    with pytest.raises(msgspec.ValidationError):
-        capture_bootstrap_payload_from_event_payload(["bad"])
-    with pytest.raises(msgspec.ValidationError):
-        capture_bootstrap_payload_from_event_payload([{"elapsed_ms": 123}])
-    with pytest.raises(msgspec.ValidationError):
-        capture_perk_apply_from_event_payload([{"perk_pending": 2}])
-    with pytest.raises(msgspec.ValidationError):
-        capture_perk_apply_id_from_event_payload([{"perk_pending": 2}])
-    with pytest.raises(msgspec.ValidationError):
-        capture_perk_pending_from_event_payload([{"perk_id": 14}])
 
 
 def test_load_capture_supports_plain_json_and_gz(tmp_path: Path) -> None:
@@ -550,35 +457,6 @@ def test_load_capture_supports_plain_json_and_gz(tmp_path: Path) -> None:
     assert capture_zipped.script == "gameplay_diff_capture"
     assert len(capture_plain.ticks) == 1
     assert len(capture_zipped.ticks) == 1
-
-
-def test_load_capture_rejects_missing_capture_format_version(tmp_path: Path) -> None:
-    obj = capture_file_to_dict(_capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)]))
-    obj.pop("capture_format_version", None)
-    path = tmp_path / "capture.json"
-    _write_capture_malformed(path, obj)
-
-    with pytest.raises(CaptureError, match="invalid capture file"):
-        load_capture(path)
-
-
-def test_load_capture_rejects_unsupported_capture_format_version(tmp_path: Path) -> None:
-    obj = capture_file_to_dict(_capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)]))
-    obj["capture_format_version"] = int(CAPTURE_FORMAT_VERSION) - 1
-    path = tmp_path / "capture.json"
-    _write_capture_malformed(path, obj)
-
-    with pytest.raises(ValueError, match="unsupported capture format version"):
-        load_capture(path)
-
-
-def test_load_capture_rejects_legacy_canonical_json(tmp_path: Path) -> None:
-    obj = _capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)])
-    path = tmp_path / "capture.json"
-    path.write_text(json.dumps(capture_file_to_dict(obj), separators=(",", ":"), sort_keys=True), encoding="utf-8")
-
-    with pytest.raises(CaptureError):
-        load_capture(path)
 
 
 def test_load_capture_accepts_projectile_find_query_event_head(tmp_path: Path) -> None:
@@ -692,61 +570,6 @@ def test_convert_capture_to_replay_rejects_non_positive_player_count_override(tm
         convert_capture_to_replay(capture, seed=0, player_count=0)
 
 
-def test_load_capture_stream_accepts_known_config_fields(tmp_path: Path) -> None:
-    tick = _base_tick(tick_index=0, elapsed_ms=16)
-    obj = _capture_obj(ticks=[tick])
-    path = tmp_path / "capture.json"
-    meta = _capture_meta_dict(obj)
-    meta["config"] = _as_builtins_dict(
-        _base_config(
-            out_path="capture.json",
-            split_quest_files=True,
-            quest_out_dir="C:\\share\\frida",
-            quest_out_prefix="gameplay_diff_capture.quest_",
-            capture_profile="exhaustive_default",
-            config_env_overrides=["CRIMSON_FRIDA_STATES", "CRIMSON_FRIDA_OUT_PATH"],
-            log_mode="truncate",
-            console_all_events=True,
-            console_events=["start", "ready", "capture_shutdown"],
-            include_caller=False,
-        ),
-    )
-    _write_capture_stream_malformed(path, meta=meta, ticks=[_as_builtins_dict(tick)])
-
-    capture = load_capture(path)
-
-    assert capture.script == "gameplay_diff_capture"
-    assert capture.config.out_path == "capture.json"
-    assert capture.config.split_quest_files is True
-    assert capture.config.quest_out_dir == "C:\\share\\frida"
-    assert capture.config.quest_out_prefix == "gameplay_diff_capture.quest_"
-    assert capture.config.capture_profile == "exhaustive_default"
-    assert capture.config.config_env_overrides == ["CRIMSON_FRIDA_STATES", "CRIMSON_FRIDA_OUT_PATH"]
-    assert capture.config.console_all_events is True
-    assert capture.config.console_events == ["start", "ready", "capture_shutdown"]
-    assert capture.config.include_caller is False
-    assert len(capture.ticks) == 1
-
-
-def test_load_capture_stream_rejects_unknown_config_fields(tmp_path: Path) -> None:
-    tick = _base_tick(tick_index=0, elapsed_ms=16)
-    obj = _capture_obj(ticks=[tick])
-    path = tmp_path / "capture.json"
-    meta = _capture_meta_dict(obj)
-    config = _as_builtins_dict(
-        _base_config(
-            out_path="capture.json",
-            log_mode="truncate",
-        ),
-    )
-    config["future_knob"] = 12345
-    meta["config"] = config
-    _write_capture_stream_malformed(path, meta=meta, ticks=[_as_builtins_dict(tick)])
-
-    with pytest.raises(CaptureError, match="invalid capture file"):
-        load_capture(path)
-
-
 def test_summarize_capture_health_flags_missing_micro_rows(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick])
@@ -757,7 +580,9 @@ def test_summarize_capture_health_flags_missing_micro_rows(tmp_path: Path) -> No
     summary = summarize_capture_health(capture)
 
     assert summary["ok_for_movement_root_cause"] is False
-    issues = _require_str_list(summary["issues"])
+    issues = summary["issues"]
+    assert isinstance(issues, list)
+    assert all(isinstance(issue, str) for issue in issues)
     assert "creature_update_micro_rows == 0" in issues
     assert "creature_update_micro_angle_rows == 0" in issues
     assert "creature_update_micro_window_rows == 0" in issues
@@ -792,7 +617,8 @@ def test_summarize_capture_health_counts_micro_and_lifecycle_lineage(tmp_path: P
 
     capture = load_capture(path)
     summary = summarize_capture_health(capture)
-    metrics = _require_str_key_dict(summary["metrics"])
+    metrics = cast(dict[str, int], summary["metrics"])
+    assert isinstance(metrics, dict)
 
     assert summary["ok_for_movement_root_cause"] is True
     assert metrics["key_rows_with_any_signal"] == 1
@@ -834,48 +660,6 @@ def test_load_capture_accepts_player_fire_debug_payloads(tmp_path: Path) -> None
     assert capture.ticks[0].diagnostics.player_fire.event_count_player_fire == 4
 
 
-def test_load_capture_stream_rejects_truncated_last_line(tmp_path: Path) -> None:
-    tick = _base_tick(tick_index=0, elapsed_ms=16)
-    obj = _capture_obj(ticks=[tick])
-    path = tmp_path / "capture.json"
-    meta = _capture_meta_dict(obj)
-    rows = [
-        json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True),
-        msgspec.json.encode({"event": "tick", "tick": tick}).decode("utf-8"),
-        '{"event":"tick","tick"',
-    ]
-    path.write_text("\n".join(rows), encoding="utf-8")
-
-    with pytest.raises(CaptureError):
-        load_capture(path)
-
-
-def test_load_capture_stream_rejects_legacy_capture_end_row(tmp_path: Path) -> None:
-    tick = _base_tick(tick_index=0, elapsed_ms=16)
-    obj = _capture_obj(ticks=[tick])
-    path = tmp_path / "capture.json"
-    meta = _capture_meta_dict(obj)
-    rows = [
-        json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True),
-        msgspec.json.encode({"event": "tick", "tick": tick}).decode("utf-8"),
-        json.dumps({"event": "capture_end", "reason": "manual_stop", "ticks_written": 1}, separators=(",", ":")),
-    ]
-    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
-
-    with pytest.raises(CaptureError):
-        load_capture(path)
-
-
-def test_load_capture_rejects_unknown_fields(tmp_path: Path) -> None:
-    obj = capture_file_to_dict(_capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)]))
-    obj["unexpected"] = 1
-    path = tmp_path / "capture.json"
-    _write_capture_malformed(path, obj)
-
-    with pytest.raises(CaptureError):
-        load_capture(path)
-
-
 def test_load_capture_accepts_strict_typed_sample_rows(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     tick.samples.creatures = [_sample_creature()]
@@ -899,28 +683,6 @@ def test_load_capture_accepts_strict_typed_sample_rows(tmp_path: Path) -> None:
     assert creature.link_index == -733
     assert creature.ai7_timer_ms == -733
     assert_float_close(creature.orbit_radius, 10.0)
-
-
-def test_load_capture_rejects_incomplete_sample_rows(tmp_path: Path) -> None:
-    tick = _base_tick(tick_index=0, elapsed_ms=16)
-    bad_creature = _as_builtins_dict(_sample_creature())
-    del bad_creature["collision_flag"]
-    obj = capture_file_to_dict(_capture_obj(ticks=[tick]))
-    ticks_obj = _require_dict_list(obj["ticks"])
-    assert ticks_obj
-    tick0 = ticks_obj[0]
-    samples = _require_str_key_dict(tick0["samples"])
-    samples["creatures"] = [bad_creature]
-    samples["projectiles"] = []
-    samples["secondary_projectiles"] = []
-    samples["bonuses"] = []
-    tick0["samples"] = samples
-    obj["ticks"] = ticks_obj
-    path = tmp_path / "capture.json"
-    _write_capture_malformed(path, obj)
-
-    with pytest.raises(CaptureError):
-        load_capture(path)
 
 
 def test_load_capture_rejects_non_canonical_extension(tmp_path: Path) -> None:

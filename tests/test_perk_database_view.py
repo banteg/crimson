@@ -43,13 +43,11 @@ def test_wrap_small_text_native_inserts_newline_at_previous_space(mocker) -> Non
 
 
 def test_prewrapped_perk_desc_uses_cache(mocker, make_game_state) -> None:
-    calls = {"count": 0}
-
-    def _fake_measure(_font, text: str, _scale: float) -> float:
-        calls["count"] += 1
-        return float(len(text))
-
-    mocker.patch.object(perk_db, "measure_small_text_width", side_effect=_fake_measure)
+    measure_mock = mocker.patch.object(
+        perk_db,
+        "measure_small_text_width",
+        side_effect=lambda _font, text, _scale: float(len(text)),
+    )
     mocker.patch.object(
         UnlockedPerksDatabaseView,
         "_perk_desc",
@@ -59,11 +57,11 @@ def test_prewrapped_perk_desc_uses_cache(mocker, make_game_state) -> None:
     view = UnlockedPerksDatabaseView(make_game_state(config_updates={"fx_toggle": 0}))
     fake_font = cast(SmallFontData, object())
     first = view._prewrapped_perk_desc(5, fake_font, fx_toggle=0)
-    count_after_first = calls["count"]
+    count_after_first = measure_mock.call_count
     second = view._prewrapped_perk_desc(5, fake_font, fx_toggle=0)
 
     assert first == second
-    assert calls["count"] == count_after_first
+    assert measure_mock.call_count == count_after_first
 
 
 def test_perk_prereq_name_uses_first_prereq_entry() -> None:
