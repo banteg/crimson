@@ -79,7 +79,7 @@ class PresentationStepCommands:
 
 
 def plan_player_audio_sfx(
-    player: object,
+    player: PlayerState,
     *,
     prev_shot_seq: int,
     prev_reload_active: bool,
@@ -87,12 +87,12 @@ def plan_player_audio_sfx(
 ) -> list[str]:
     keys: list[str] = []
 
-    weapon = WEAPON_BY_ID.get(int(getattr(player, "weapon_id", 0)))
+    weapon = WEAPON_BY_ID.get(int(player.weapon_id))
     if weapon is None:
         return keys
 
-    if int(getattr(player, "shot_seq", 0)) > int(prev_shot_seq):
-        if float(getattr(player, "fire_bullets_timer", 0.0)) > 0.0:
+    if int(player.shot_seq) > int(prev_shot_seq):
+        if float(player.fire_bullets_timer) > 0.0:
             fire_bullets = WEAPON_BY_ID.get(int(WeaponId.FIRE_BULLETS))
             plasma_minigun = WEAPON_BY_ID.get(int(WeaponId.PLASMA_MINIGUN))
             if fire_bullets is not None:
@@ -108,8 +108,8 @@ def plan_player_audio_sfx(
             if key is not None:
                 keys.append(key)
 
-    reload_active = bool(getattr(player, "reload_active", False))
-    reload_timer = float(getattr(player, "reload_timer", 0.0))
+    reload_active = bool(player.reload_active)
+    reload_timer = float(player.reload_timer)
     reload_started = (not prev_reload_active and reload_active) or (reload_timer > prev_reload_timer + 1e-6)
     if reload_started:
         key = resolve_weapon_sfx_ref(weapon.reload_sound)
@@ -167,7 +167,7 @@ def plan_hit_sfx_keys(
 
 
 def plan_death_sfx_keys(
-    deaths: Sequence[CreatureDeath] | tuple[object, ...],
+    deaths: Sequence[CreatureDeath],
     *,
     rand: Callable[[], int],
 ) -> list[str]:
@@ -177,9 +177,9 @@ def plan_death_sfx_keys(
 
     for idx in range(min(len(deaths), _MAX_DEATH_SFX_PER_FRAME)):
         death = deaths[idx]
-        if bool(getattr(death, "suppress_death_sfx", False)):
+        if bool(death.suppress_death_sfx):
             continue
-        type_id = getattr(death, "type_id", None)
+        type_id = death.type_id
         if type_id is None:
             continue
         try:

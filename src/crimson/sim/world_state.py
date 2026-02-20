@@ -159,7 +159,7 @@ class WorldState:
         planned_death_sfx: list[str] = []
         planned_death_sfx_cap = 5
         def _plan_death_sfx_now(death: CreatureDeath) -> None:
-            if not bool(getattr(death, "plan_death_sfx", True)):
+            if not bool(death.plan_death_sfx):
                 return
             keys = plan_death_sfx_keys([death], rand=self.state.rng.rand)
             if not keys:

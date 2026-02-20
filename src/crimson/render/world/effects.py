@@ -8,7 +8,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
 
-from ...effects import ParticleStyleId
+from ...effects import EffectEntry, ParticleStyleId
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx
@@ -214,30 +214,24 @@ def draw_effect_pool(
         src_cache[effect_id] = src
         return src
 
-    def draw_entry(entry: object) -> None:
-        effect_id = int(getattr(entry, "effect_id", 0))
+    def draw_entry(entry: EffectEntry) -> None:
+        effect_id = int(entry.effect_id)
         src = src_rect(effect_id)
         if src is None:
             return
 
-        pos = getattr(entry, "pos", None)
-        if not isinstance(pos, Vec2):
-            return
-        screen = render_ctx._world_to_screen_with(pos, camera=camera, view_scale=view_scale)
+        screen = render_ctx._world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
 
-        half_w = float(getattr(entry, "half_width", 0.0))
-        half_h = float(getattr(entry, "half_height", 0.0))
-        local_scale = float(getattr(entry, "scale", 1.0))
+        half_w = float(entry.half_width)
+        half_h = float(entry.half_height)
+        local_scale = float(entry.scale)
         w = max(0.0, half_w * 2.0 * local_scale * scale)
         h = max(0.0, half_h * 2.0 * local_scale * scale)
         if w <= 0.0 or h <= 0.0:
             return
 
-        rotation_deg = float(getattr(entry, "rotation", 0.0)) * _RAD_TO_DEG
-        raw_color = getattr(entry, "color", None)
-        if not isinstance(raw_color, RGBA):
-            return
-        tint = raw_color.scaled_alpha(alpha).to_rl()
+        rotation_deg = float(entry.rotation) * _RAD_TO_DEG
+        tint = entry.color.scaled_alpha(alpha).to_rl()
 
         dst = rl.Rectangle(screen.x, screen.y, float(w), float(h))
         origin = rl.Vector2(float(w) * 0.5, float(h) * 0.5)
