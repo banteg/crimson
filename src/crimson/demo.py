@@ -4,7 +4,7 @@ import math
 import random
 import webbrowser
 from pathlib import Path
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from grim.assets import PaqTextureCache, load_paq_entries
 from grim.audio import AudioState, update_audio
@@ -25,6 +25,9 @@ from .ui.cursor import draw_menu_cursor
 from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from .weapon_runtime import weapon_assign_player
 from .weapons import weapon_display_name
+
+if TYPE_CHECKING:
+    from grim.assets import LogoAssets
 
 WORLD_SIZE = 1024.0
 DEMO_VARIANT_COUNT = 6
@@ -62,7 +65,9 @@ class DemoState(Protocol):
     config: CrimsonConfig
     texture_cache: PaqTextureCache | None
     audio: AudioState | None
+    logos: LogoAssets | None
     preserve_bugs: bool
+    demo_enabled: bool
     quit_requested: bool
 
 
@@ -152,7 +157,7 @@ class DemoView:
 
         if (
             (not self._purchase_active)
-            and getattr(self.state, "demo_enabled", False)
+            and self.state.demo_enabled
             and self._purchase_screen_triggered()
         ):
             self._begin_purchase_screen(DEMO_PURCHASE_SCREEN_LIMIT_MS, reset_timeline=False)
@@ -266,8 +271,7 @@ class DemoView:
                     webbrowser.open(DEMO_PURCHASE_URL)
                 except (OSError, webbrowser.Error):
                     self._purchase_url_opened = True
-            if hasattr(self.state, "quit_requested"):
-                self.state.quit_requested = True
+            self.state.quit_requested = True
 
         if button_update(
             self._maybe_later_button,
@@ -289,8 +293,7 @@ class DemoView:
                     webbrowser.open(DEMO_PURCHASE_URL)
                 except (OSError, webbrowser.Error):
                     self._purchase_url_opened = True
-            if hasattr(self.state, "quit_requested"):
-                self.state.quit_requested = True
+            self.state.quit_requested = True
 
         # Keep referenced to avoid unused warnings if this method grows.
         _ = textures
@@ -298,7 +301,7 @@ class DemoView:
     def _draw_purchase_screen(self) -> None:
         rl.clear_background(rl.BLACK)
 
-        logos = getattr(self.state, "logos", None)
+        logos = self.state.logos
         if logos is None or logos.backplasma.texture is None:
             return
         backplasma = logos.backplasma.texture
@@ -610,7 +613,7 @@ class DemoView:
                 self._spawn(0x25, spawn_pos, heading=0.0)
 
     def _draw_overlay(self) -> None:
-        if getattr(self.state, "demo_enabled", False):
+        if self.state.demo_enabled:
             self._draw_demo_upsell_overlay()
             return
         title = f"DEMO MODE  ({self._variant_index + 1}/{DEMO_VARIANT_COUNT})"
