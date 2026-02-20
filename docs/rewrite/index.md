@@ -11,9 +11,8 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 
 - `uv run crimson` (boot + splash/logo + menu + panels; Survival/Rush/Quests/Typ-o/Tutorial are all fully wired; menu idle triggers demo/attract)
 - `uv run crimson --preserve-bugs` (re-enable known original exe bugs/quirks; useful for parity/diff testing)
-- `uv run crimson view <name>` (debug views + mode views)
-- `uv run crimson view survival` (Survival loop in the view runner)
-- `uv run crimson view player` (player_update + weapons/projectiles + HUD sandbox)
+- `uv run crimson view <name>` (debug views)
+- `uv run crimson view arsenal` (weapon/arsenal sandbox)
 - `uv run crimson quests 1.1` (quest spawn dump)
 - `uv run crimson config` (inspect `crimson.cfg`)
 - `uv run crimson relay serve --bind 0.0.0.0 --port 31993` (run UDP relay)
@@ -77,12 +76,12 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 
 ### Gameplay (sandbox)
 
-These sandboxes are still useful for focused iteration:
+These sandboxes and runtime modules are still useful for focused iteration:
 
 - `player_update` port (movement, aiming, reload, firing, perk timers).
 - Projectile pools (main + secondary) with basic spawn/update/hit logic.
 - Bonus/perk application logic + bonus HUD state.
-- HUD overlay renderer (`src/crimson/ui/hud.py`) exercised in `uv run crimson view player`.
+- HUD overlay renderer (`src/crimson/ui/hud.py`) validated by mode integration tests.
 
 ### Persistence + console
 
@@ -94,29 +93,10 @@ These sandboxes are still useful for focused iteration:
 
 Available via `uv run crimson view <name>`:
 
-- `empty` (empty window)
 - `fonts` (font preview)
-- `animations` (creature animation preview)
-- `sprites` (sprite atlas preview)
-- `terrain` (terrain texture preview)
-- `ground` (procedural ground render)
-- `projectiles` (projectile atlas preview)
-- `projectile-render-debug` (projectile render parity sandbox)
-- `projectile_fx` (projectile effects preview)
-- `bonuses` (bonus icon preview)
-- `wicons` (weapon icon preview)
-- `ui` (UI texture preview)
-- `particles` (particle atlas preview)
-- `player` (player sandbox with weapons/projectiles/HUD)
-- `survival` (survival mode view)
-- `rush` (rush mode view)
 - `game_over` (game over screen preview)
 - `spawn-plan` (spawn plan visualization)
-- `perks` / `perk-menu-debug` (perk selection UI)
-- `camera-debug` / `camera-shake` (camera system)
-- `decals` / `corpse-stamp-debug` (decal system)
-- `aim-debug` (aiming visualization)
-- `player-sprite-debug` (player sprite variants)
+- `perk-menu-debug` (perk selection UI)
 - `small-font-debug` (font glyph testing)
 - `arsenal` (weapon/arsenal sandbox)
 - `lighting-debug` (lighting/SDF sandbox)

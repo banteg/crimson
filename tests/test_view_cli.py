@@ -17,7 +17,7 @@ def test_view_autotune_requires_lighting_debug() -> None:
         app,
         [
             "view",
-            "empty",
+            "arsenal",
             "--autotune-shadow-defaults",
         ],
     )
@@ -26,7 +26,15 @@ def test_view_autotune_requires_lighting_debug() -> None:
     assert "--autotune-shadow-defaults is only supported for view 'lighting-debug'" in result.output
 
 
-def test_view_autotune_and_dump_flags_are_mutually_exclusive() -> None:
+def test_view_autotune_and_dump_flags_are_mutually_exclusive(mocker) -> None:
+    view_def = SimpleNamespace(
+        name="lighting-debug",
+        title="Lighting Debug",
+        factory=lambda ctx: SimpleNamespace(),
+    )
+    mocker.patch.object(views, "view_by_name", side_effect=lambda name: view_def if name == "lighting-debug" else None)
+    mocker.patch.object(views, "all_views", side_effect=lambda: [view_def])
+
     runner = CliRunner()
 
     result = runner.invoke(
