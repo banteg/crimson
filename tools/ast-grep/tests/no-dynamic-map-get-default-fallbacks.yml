@@ -1,0 +1,13 @@
+id: no-dynamic-map-get-default-fallbacks
+valid:
+  - |
+    tier = level_parts["tier"]
+  - |
+    if "world_size" not in payload:
+      raise ValueError("missing world_size")
+    world_size = float(payload["world_size"])
+invalid:
+  - |
+    world_size = float(payload.get("world_size", 1024.0))
+  - |
+    calls = int(rng_row.get("calls", 0))

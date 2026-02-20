@@ -1,0 +1,18 @@
+id: no-dynamic-map-get-default-fallbacks
+language: python
+severity: error
+message: Typed runtime contracts should avoid `dict.get(..., default)` fallbacks; prefer concrete fields or explicit key checks.
+files:
+  # Current rollout scope. Remove ignores incrementally as raw-map paths are tightened.
+  - src/crimson/original/**/*.py
+ignores:
+  # Raw decoded capture/debug maps still under active refactor.
+  - src/crimson/original/capture.py
+  - src/crimson/original/creature_trajectory.py
+  - src/crimson/original/diagnostics_cache.py
+  - src/crimson/original/diff.py
+  - src/crimson/original/divergence_bisect.py
+  - src/crimson/original/divergence_report.py
+  - src/crimson/original/focus_trace.py
+rule:
+  pattern: $OBJ.get($KEY, $DEFAULT)
