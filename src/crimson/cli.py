@@ -60,6 +60,30 @@ class _ProgressBarLike(Protocol):
     def close(self) -> None: ...
 
 
+def _view_run_hooks(view: object):
+    from grim.app import RunViewHooks
+
+    def should_close() -> bool:
+        should_close_fn = getattr(view, "should_close", None)
+        if callable(should_close_fn):
+            return bool(should_close_fn())
+        close_requested = getattr(view, "close_requested", False)
+        if isinstance(close_requested, bool):
+            return close_requested
+        return False
+
+    def consume_screenshot_request() -> bool:
+        consume_fn = getattr(view, "consume_screenshot_request", None)
+        if callable(consume_fn):
+            return bool(consume_fn())
+        return False
+
+    return RunViewHooks(
+        should_close=should_close,
+        consume_screenshot_request=consume_screenshot_request,
+    )
+
+
 def _is_loopback_host(host: str) -> bool:
     normalized = str(host).strip().strip("[]").lower()
     if not normalized:
@@ -523,7 +547,14 @@ def cmd_view(
     else:
         view = view_def.factory()
     title = f"{view_def.title} — Crimsonland"
-    run_view(view, width=width, height=height, title=title, fps=fps)
+    run_view(
+        view,
+        width=width,
+        height=height,
+        title=title,
+        fps=fps,
+        hooks=_view_run_hooks(view),
+    )
 
 
 def _run_game_with_pending_session(
@@ -892,7 +923,7 @@ def cmd_replay_play(
     ),
 ) -> None:
     """Play back a recorded replay."""
-    from grim.app import run_view
+    from grim.app import RunViewHooks, run_view
     from grim.config import ensure_crimson_cfg
     from grim.console import create_console
     from grim.view import ViewContext
@@ -921,7 +952,17 @@ def cmd_replay_play(
     ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=False)
     view = ReplayPlaybackMode(ctx, replay_path=replay_path, config=cfg, console=console)
     title = f"Replay — {replay_path.name}"
-    run_view(view, width=width, height=height, title=title, fps=fps)
+    run_view(
+        view,
+        width=width,
+        height=height,
+        title=title,
+        fps=fps,
+        hooks=RunViewHooks(
+            should_close=view.should_close,
+            consume_screenshot_request=view.consume_screenshot_request,
+        ),
+    )
 
 
 @replay_app.command("list")

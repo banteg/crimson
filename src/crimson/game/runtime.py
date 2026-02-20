@@ -9,7 +9,7 @@ import webbrowser
 from pathlib import Path
 
 from grim import music
-from grim.app import run_view
+from grim.app import RunViewHooks, run_view
 from grim.assets import PaqTextureCache, load_paq_entries_from_path
 from grim.config import ensure_crimson_cfg
 from grim.console import (
@@ -366,6 +366,10 @@ def run_game(config: GameConfig) -> None:
             fps=config.fps,
             config_flags=config_flags,
             exit_key=rl.KeyboardKey.KEY_NULL,
+            hooks=RunViewHooks(
+                should_close=view.should_close,
+                consume_screenshot_request=view.consume_screenshot_request,
+            ),
         )
         if state is not None:
             state.status.save_if_dirty()

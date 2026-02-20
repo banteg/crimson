@@ -49,7 +49,7 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import SurvivalDeterministicSession
 from crimson.sim.world_state import WorldEvents, WorldState
 from crimson.weapons import WEAPON_BY_ID
-from grim.app import run_view
+from grim.app import RunViewHooks, run_view
 from grim.assets import find_paq_path
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
@@ -359,6 +359,9 @@ class CaptureVisualizerView:
 
     def should_close(self) -> bool:
         return bool(self._close_requested)
+
+    def consume_screenshot_request(self) -> bool:
+        return False
 
     def _bootstrap_world(self) -> None:
         world = WorldState.build(
@@ -1827,6 +1830,10 @@ def main(argv: list[str] | None = None) -> int:
         height=max(1, int(args.height)),
         title=f"Capture Visualizer — {Path(args.capture).name}",
         fps=max(1, int(args.fps)),
+        hooks=RunViewHooks(
+            should_close=view.should_close,
+            consume_screenshot_request=view.consume_screenshot_request,
+        ),
     )
     return 0
 

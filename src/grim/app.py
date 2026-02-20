@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import shutil
+from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 
 from grim.raylib_api import rl
@@ -9,6 +11,16 @@ from .view import View
 
 SCREENSHOT_DIR = Path("screenshots")
 SCREENSHOT_KEY = rl.KeyboardKey.KEY_F12
+
+
+def _false_hook() -> bool:
+    return False
+
+
+@dataclass(frozen=True, slots=True)
+class RunViewHooks:
+    should_close: Callable[[], bool] = _false_hook
+    consume_screenshot_request: Callable[[], bool] = _false_hook
 
 
 def _next_screenshot_index(directory: Path) -> int:
@@ -22,23 +34,6 @@ def _next_screenshot_index(directory: Path) -> int:
     return max_index + 1
 
 
-def _view_should_close(view: View) -> bool:
-    should_close = getattr(view, "should_close", None)
-    if callable(should_close):
-        return bool(should_close())
-    close_requested = getattr(view, "close_requested", False)
-    if isinstance(close_requested, bool):
-        return close_requested
-    return False
-
-
-def _consume_screenshot_request(view: View) -> bool:
-    consume = getattr(view, "consume_screenshot_request", None)
-    if callable(consume):
-        return bool(consume())
-    return False
-
-
 def run_view(
     view: View,
     *,
@@ -48,6 +43,7 @@ def run_view(
     fps: int = 60,
     config_flags: int = 0,
     exit_key: int | None = None,
+    hooks: RunViewHooks | None = None,
 ) -> None:
     """Run a Raylib window with a pluggable debug view."""
     if config_flags:
@@ -56,6 +52,7 @@ def run_view(
     if exit_key is not None:
         rl.set_exit_key(exit_key)
     rl.set_target_fps(fps)
+    run_hooks = hooks if hooks is not None else RunViewHooks()
     view.open()
     screenshot_dir = SCREENSHOT_DIR if SCREENSHOT_DIR.is_absolute() else Path.cwd() / SCREENSHOT_DIR
     screenshot_index = _next_screenshot_index(screenshot_dir)
@@ -63,12 +60,12 @@ def run_view(
         dt = rl.get_frame_time()
         view.update(dt)
         take_screenshot = rl.is_key_pressed(SCREENSHOT_KEY)
-        if _consume_screenshot_request(view):
+        if run_hooks.consume_screenshot_request():
             take_screenshot = True
         rl.begin_drawing()
         view.draw()
         rl.end_drawing()
-        if _view_should_close(view):
+        if run_hooks.should_close():
             break
         if take_screenshot:
             screenshot_dir.mkdir(parents=True, exist_ok=True)

@@ -491,6 +491,12 @@ class ReplayPlaybackMode:
             self._audio = None
             self._audio_rng = None
 
+    def should_close(self) -> bool:
+        return bool(self.close_requested)
+
+    def consume_screenshot_request(self) -> bool:
+        return False
+
     def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color, *, scale: float = 1.0) -> None:
         if self._small is not None:
             draw_small_text(self._small, text, pos, scale, color)
