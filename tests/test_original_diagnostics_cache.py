@@ -20,9 +20,20 @@ from crimson.original.schema import (
     CaptureInputQueryStats,
     CapturePerkApplyOutsideBefore,
     CapturePerkSnapshot,
+    CapturePlayerFireDiagnostics,
+    CaptureRngDiagnostics,
     CaptureRngMarks,
     CaptureRngSummary,
+    CaptureSnapshotGlobals,
+    CaptureSnapshotInput,
+    CaptureSnapshotInputAimScreen,
+    CaptureSnapshotInputBindingAlternateSingle,
+    CaptureSnapshotInputBindingPlayer,
+    CaptureSnapshotInputBindings,
+    CaptureSnapshotStatus,
+    CaptureSpawnDiagnostics,
     CaptureStatusSnapshot,
+    CaptureTimingDiagnostics,
     ModuleInfo,
     ProcessInfo,
     SessionFingerprint,
@@ -30,7 +41,84 @@ from crimson.original.schema import (
 
 
 def _empty_snapshot() -> CaptureSnapshot:
-    return CaptureSnapshot(globals={}, status={}, player_count=1, players=[], input={}, input_bindings={})
+    return CaptureSnapshot(
+        globals=CaptureSnapshotGlobals(
+            config_game_mode=int(GameMode.SURVIVAL),
+            config_player_mode_flags=[0],
+            config_aim_scheme=[None],
+            game_state_prev=0,
+            game_state_id=0,
+            game_state_pending=0,
+            frame_dt=None,
+            frame_dt_ms_i32=None,
+            frame_dt_ms_f32=None,
+            time_played_ms=0,
+            creature_active_count=0,
+            creature_kill_count=0,
+            perk_pending_count=0,
+            perk_choices_dirty=0,
+            shock_chain_links_left=0,
+            shock_chain_projectile_id=0,
+            quest_spawn_timeline=0,
+            quest_stage_major=-1,
+            quest_stage_minor=-1,
+            quest_spawn_stall_timer_ms=0,
+            quest_transition_timer_ms=0,
+            quest_stage_banner_timer_ms=0,
+            ui_elements_timeline=0.0,
+            ui_transition_direction=0,
+            ui_transition_alpha=0.0,
+            pause_keybind_help_alpha_ms=0,
+            player_alt_weapon_swap_cooldown_ms=0,
+            perk_jinxed_proc_timer_s=0.0,
+            perk_lean_mean_exp_tick_timer_s=0.0,
+            perk_doctor_target_creature_id=-1,
+            bonus_reflex_boost_timer=0.0,
+            bonus_freeze_timer=0.0,
+            bonus_weapon_power_up_timer=0.0,
+            bonus_energizer_timer=0.0,
+            bonus_double_xp_timer=0.0,
+        ),
+        status=CaptureSnapshotStatus(
+            quest_unlock_index=0,
+            quest_unlock_index_full=0,
+            weapon_usage_counts=[],
+        ),
+        player_count=1,
+        players=[],
+        input=CaptureSnapshotInput(
+            console_open=0,
+            primary_latch=0,
+            mouse_x=0.0,
+            mouse_y=0.0,
+            aim_screen=[CaptureSnapshotInputAimScreen(player_index=0, x=0.0, y=0.0)],
+        ),
+        input_bindings=CaptureSnapshotInputBindings(
+            players=[
+                CaptureSnapshotInputBindingPlayer(
+                    player_index=0,
+                    move_forward=0,
+                    move_backward=0,
+                    turn_left=0,
+                    turn_right=0,
+                    fire=0,
+                    aim_left=0,
+                    aim_right=0,
+                    axis_aim_x=0,
+                    axis_aim_y=0,
+                    axis_move_x=0,
+                    axis_move_y=0,
+                ),
+            ],
+            alternate_single=CaptureSnapshotInputBindingAlternateSingle(
+                move_forward=0,
+                move_backward=0,
+                turn_left=0,
+                turn_right=0,
+                fire=0,
+            ),
+        ),
+    )
 
 def _empty_samples() -> CaptureSamples:
     return CaptureSamples(creatures=[], projectiles=[], secondary_projectiles=[], bonuses=[])
@@ -38,12 +126,77 @@ def _empty_samples() -> CaptureSamples:
 def _empty_debug() -> CaptureCheckpointDebug:
     return CaptureCheckpointDebug(
         sampling_phase="",
-        timing={},
-        spawn={},
-        rng={},
+        timing=CaptureTimingDiagnostics(
+            gameplay_frame=0,
+            gameplay_frame_delta_prev_tick=None,
+            elapsed_ms_before=0,
+            elapsed_ms_after=0,
+            elapsed_delta_in_tick_ms=0,
+            elapsed_delta_prev_tick_ms=None,
+            frame_dt_before=None,
+            frame_dt_after=None,
+            frame_dt_ms_before_i32=None,
+            frame_dt_ms_after_i32=None,
+            frame_dt_ms_before_f32=None,
+            frame_dt_ms_after_f32=None,
+            frame_dt_source_before="none",
+            frame_dt_source_after="none",
+            mode_tick_event_count=0,
+            mode_tick_sample_count=0,
+            mode_tick_mode_fn_head=[],
+            mode_tick_present=False,
+        ),
+        spawn=CaptureSpawnDiagnostics(
+            before_creature_count=0,
+            after_creature_count=0,
+            creature_count_delta=0,
+            event_count_template=0,
+            event_count_low_level=0,
+            event_count_creature_damage=0,
+            event_count_projectile_find_query=0,
+            event_count_projectile_find_hit=0,
+            event_count_projectile_find_query_miss=0,
+            event_count_projectile_find_query_owner_collision=0,
+            event_count_death=0,
+            top_template_callers=[],
+            top_low_level_callers=[],
+            top_low_level_sources=[],
+            top_creature_damage_callers=[],
+            top_projectile_find_query_callers=[],
+            top_projectile_find_hit_callers=[],
+            top_death_callers=[],
+            event_count_blood_splatter=0,
+            blood_splatter_rng_draws=0,
+            blood_splatter_projectile_update_calls=0,
+            top_blood_splatter_callers=[],
+            top_blood_splatter_rng_draw_callers=[],
+            event_count_bonus_spawn=0,
+            top_bonus_spawn_callers=[],
+            mode_samples=[],
+        ),
+        rng=CaptureRngDiagnostics(
+            seq_first=None,
+            seq_last=None,
+            seed_epoch_enter=None,
+            seed_epoch_last=None,
+            outside_before_calls=0,
+            outside_before_dropped=0,
+            outside_before_head=[],
+            mirror_mismatch_total_enter=0,
+            mirror_mismatch_total_leave=0,
+            mirror_unknown_total_enter=0,
+            mirror_unknown_total_leave=0,
+            roll_log_emitted_total=0,
+            roll_log_dropped_total=0,
+        ),
         perk_apply_outside_before=CapturePerkApplyOutsideBefore(calls=0, dropped=0, head=[]),
         creature_lifecycle=None,
-        player_fire=None,
+        player_fire=CapturePlayerFireDiagnostics(
+            event_count_player_fire=0,
+            top_direct_events_by_player=[],
+            top_fallback_events_by_player=[],
+            top_player_projectile_spawns_by_player=[],
+        ),
         before_players=[],
         before_status=CaptureCheckpointDebugStatus(quest_unlock_index=0, quest_unlock_index_full=0),
     )
@@ -76,10 +229,11 @@ def _empty_rng_summary() -> CaptureRngSummary:
     )
 
 def _empty_diagnostics() -> CaptureDiagnostics:
+    debug = _empty_debug()
     return CaptureDiagnostics(
-        sampling_phase="", timing={}, spawn={}, rng={},
+        sampling_phase="", timing=debug.timing, spawn=debug.spawn, rng=debug.rng,
         perk_apply_outside_before=CapturePerkApplyOutsideBefore(calls=0, dropped=0, head=[]),
-        creature_lifecycle=None, player_fire=None,
+        creature_lifecycle=None, player_fire=debug.player_fire,
     )
 
 def _empty_config() -> CaptureConfig:
@@ -275,6 +429,7 @@ from grim.geom import Vec2
 
 
 def _checkpoint_tick(tick: int, *, level: int, weapon_id: int, experience: int, perk_pairs: list[list[int]]) -> dict[str, object]:
+    debug = cast(dict[str, object], msgspec.to_builtins(_empty_debug()))
     return {
         "tick_index": int(tick),
         "state_hash": f"s{tick}",
@@ -334,17 +489,7 @@ def _checkpoint_tick(tick: int, *, level: int, weapon_id: int, experience: int, 
             "rng_call_count": 0,
             "input_true_count": 0,
         },
-        "debug": {
-            "sampling_phase": "",
-            "timing": {},
-            "spawn": {},
-            "rng": {},
-            "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
-            "creature_lifecycle": None,
-            "player_fire": None,
-            "before_players": [],
-            "before_status": {"quest_unlock_index": 0, "quest_unlock_index_full": 0},
-        },
+        "debug": debug,
     }
 
 
@@ -357,6 +502,9 @@ def _capture_tick(
     perk_pairs: list[list[int]],
     event_heads: list[dict[str, object]],
 ) -> dict[str, object]:
+    diagnostics = cast(dict[str, object], msgspec.to_builtins(_empty_diagnostics()))
+    before_snapshot = cast(dict[str, object], msgspec.to_builtins(_empty_snapshot()))
+    after_snapshot = cast(dict[str, object], msgspec.to_builtins(_empty_snapshot()))
     return {
         "tick_index": int(tick),
         "gameplay_frame": int(tick) + 1,
@@ -400,19 +548,11 @@ def _capture_tick(
         "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
         "perk_apply_in_tick": [],
         "rng": _rng_summary_dict(head=[_rng_head_entry(state_before_u32=0)]),
-        "diagnostics": {
-            "sampling_phase": "",
-            "timing": {},
-            "spawn": {},
-            "rng": {},
-            "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
-            "creature_lifecycle": None,
-            "player_fire": None,
-        },
+        "diagnostics": diagnostics,
         "input_player_keys": [_input_player_keys(player_index=0)],
         "input_approx": [_input_approx(player_index=0, aim_x=0.0, aim_y=0.0)],
-        "before": {"globals": {}, "status": {}, "player_count": 1, "players": [], "input": {}, "input_bindings": {}},
-        "after": {"globals": {}, "status": {}, "player_count": 1, "players": [], "input": {}, "input_bindings": {}},
+        "before": before_snapshot,
+        "after": after_snapshot,
         "frame_dt_ms": None,
         "frame_dt_ms_i32": None,
         "creature_lifecycle": None,

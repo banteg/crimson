@@ -42,6 +42,7 @@ from .schema import (
     CaptureEventHeadBonusApply,
     CaptureEventHeadCreatureLifecycle,
     CaptureEventHeadCreatureSpawn,
+    CaptureEventHeadCreatureUpdateMicro,
     CaptureEventHeadPerkApply,
     CaptureEventHeadPerkDelta,
     CaptureEventHeadPlayerFire,
@@ -55,6 +56,7 @@ from .schema import (
     CaptureInputApprox,
     CapturePerkSnapshot,
     CapturePlayerCheckpoint,
+    CaptureSnapshotPlayer,
     CaptureTick,
 )
 
@@ -89,11 +91,6 @@ _QUEST_CAPTURE_SPAWN_CALLERS = frozenset(
         "0x00426d56",
     },
 )
-_PERK_INTERVAL_GLOBAL_KEYS: dict[str, str] = {
-    "man_bomb": "perk_man_bomb_trigger_interval_s",
-    "fire_cough": "perk_fire_cough_trigger_interval_s",
-    "hot_tempered": "perk_hot_tempered_trigger_interval_s",
-}
 _PERK_INTERVAL_PERK_IDS: dict[str, int] = {
     "man_bomb": int(PerkId.MAN_BOMB),
     "fire_cough": int(PerkId.FIRE_CAUGH),
@@ -193,7 +190,6 @@ class _CaptureStreamTickRow(msgspec.Struct, tag="tick", tag_field="event", forbi
 
 
 _CaptureStreamRow = _CaptureStreamMetaRow | _CaptureStreamTickRow
-_F32_TOKEN_PREFIX = "f32:"
 
 
 def _coerce_int_like(value: object) -> int | None:
@@ -247,34 +243,6 @@ def parse_player_int_overrides(entries: Iterable[str] | None, *, option_name: st
 
 def _f32_from_u32(value: int) -> float:
     return struct.unpack("<f", struct.pack("<I", int(value) & 0xFFFFFFFF))[0]
-
-
-def _decode_f32_token(value: object) -> object:
-    if not isinstance(value, str):
-        return value
-    text = value.strip()
-    if not text.startswith(_F32_TOKEN_PREFIX):
-        return value
-    raw = text[len(_F32_TOKEN_PREFIX) :].strip()
-    if raw.lower().startswith("0x"):
-        raw = raw[2:]
-    if len(raw) != 8:
-        raise CaptureError(f"invalid f32 token width: {value!r}")
-    try:
-        bits = int(raw, 16)
-    except ValueError as exc:
-        raise CaptureError(f"invalid f32 token hex: {value!r}") from exc
-    return float(_f32_from_u32(int(bits)))
-
-
-def _decode_f32_tokens(value: object) -> object:
-    if isinstance(value, dict):
-        return {str(k): _decode_f32_tokens(v) for k, v in value.items()}
-    if isinstance(value, list):
-        return [_decode_f32_tokens(item) for item in value]
-    if isinstance(value, tuple):
-        return [_decode_f32_tokens(item) for item in value]
-    return _decode_f32_token(value)
 
 
 def _float_or(value: object, default: float) -> float:
@@ -446,26 +414,12 @@ def _rng_marks_int_map(tick: CaptureTick) -> dict[str, int]:
 
 
 def _tick_game_mode_id(tick: CaptureTick) -> int:
-    if int(tick.game_mode_id) >= 0:
-        return int(tick.game_mode_id)
-
-    after_globals = tick.after.globals if tick.after is not None else {}
-    game_mode = _coerce_int_like(after_globals.get("config_game_mode")) if isinstance(after_globals, dict) else None
-    if game_mode is not None and int(game_mode) >= 0:
-        return int(game_mode)
-
-    before_globals = tick.before.globals if tick.before is not None else {}
-    game_mode = _coerce_int_like(before_globals.get("config_game_mode")) if isinstance(before_globals, dict) else None
-    if game_mode is not None and int(game_mode) >= 0:
-        return int(game_mode)
-    return -1
+    return int(tick.game_mode_id)
 
 
 def _tick_frame_dt_ms(tick: CaptureTick) -> float | None:
-    def _valid_dt_ms(value: object) -> float | None:
+    def _valid_dt_ms(value: float | int | None) -> float | None:
         if value is None:
-            return None
-        if not isinstance(value, (int, float)):
             return None
         candidate = float(value)
         if not math.isfinite(candidate):
@@ -474,28 +428,26 @@ def _tick_frame_dt_ms(tick: CaptureTick) -> float | None:
             return None
         return float(candidate)
 
-    timing = tick.diagnostics.timing
-    if isinstance(timing, dict):
-        value = timing.get("frame_dt_after")
-        if isinstance(value, (int, float)) and math.isfinite(float(value)) and float(value) > 0.0:
-            validated = _valid_dt_ms(float(value) * 1000.0)
-            if validated is not None:
-                return float(validated)
+    frame_dt_after = tick.diagnostics.timing.frame_dt_after
+    if frame_dt_after is not None and float(frame_dt_after) > 0.0:
+        validated = _valid_dt_ms(float(frame_dt_after) * 1000.0)
+        if validated is not None:
+            return float(validated)
 
-    globals_obj: dict[str, object] = {}
-    if tick.after is not None and isinstance(tick.after.globals, dict):
-        globals_obj = tick.after.globals
-    elif tick.before is not None and isinstance(tick.before.globals, dict):
-        globals_obj = tick.before.globals
+    frame_dt_ms_after_i32 = tick.diagnostics.timing.frame_dt_ms_after_i32
+    if frame_dt_ms_after_i32 is not None and int(frame_dt_ms_after_i32) > 0:
+        validated = _valid_dt_ms(int(frame_dt_ms_after_i32))
+        if validated is not None:
+            return float(validated)
 
+    globals_obj = tick.after.globals
     if tick.frame_dt_ms_i32 is not None and int(tick.frame_dt_ms_i32) > 0:
         validated = _valid_dt_ms(int(tick.frame_dt_ms_i32))
         if validated is not None:
             return float(validated)
 
-    dt_ms_i32 = _coerce_int_like(globals_obj.get("frame_dt_ms_i32"))
-    if dt_ms_i32 is not None and int(dt_ms_i32) > 0:
-        validated = _valid_dt_ms(int(dt_ms_i32))
+    if globals_obj.frame_dt_ms_i32 is not None and int(globals_obj.frame_dt_ms_i32) > 0:
+        validated = _valid_dt_ms(int(globals_obj.frame_dt_ms_i32))
         if validated is not None:
             return float(validated)
 
@@ -503,22 +455,14 @@ def _tick_frame_dt_ms(tick: CaptureTick) -> float | None:
     if validated_tick_dt is not None:
         return float(validated_tick_dt)
 
-    validated_globals_dt = _valid_dt_ms(globals_obj.get("frame_dt_ms_f32"))
+    validated_globals_dt = _valid_dt_ms(globals_obj.frame_dt_ms_f32)
     if validated_globals_dt is not None:
         return float(validated_globals_dt)
 
-    dt_seconds = globals_obj.get("frame_dt")
-    if isinstance(dt_seconds, (int, float)) and math.isfinite(float(dt_seconds)):
+    dt_seconds = globals_obj.frame_dt
+    if dt_seconds is not None and math.isfinite(float(dt_seconds)):
         if 0.0 < float(dt_seconds) <= 1.0:
             validated = _valid_dt_ms(float(dt_seconds) * 1000.0)
-            if validated is not None:
-                return float(validated)
-
-    timing = tick.diagnostics.timing
-    if isinstance(timing, dict):
-        value = timing.get("frame_dt_after")
-        if isinstance(value, (int, float)) and math.isfinite(float(value)) and float(value) > 0.0:
-            validated = _valid_dt_ms(float(value) * 1000.0)
             if validated is not None:
                 return float(validated)
 
@@ -529,21 +473,13 @@ def _tick_frame_dt_ms_i32(tick: CaptureTick) -> int | None:
     if tick.frame_dt_ms_i32 is not None and int(tick.frame_dt_ms_i32) > 0:
         return int(tick.frame_dt_ms_i32)
 
-    globals_obj: dict[str, object] = {}
-    if tick.after is not None and isinstance(tick.after.globals, dict):
-        globals_obj = tick.after.globals
-    elif tick.before is not None and isinstance(tick.before.globals, dict):
-        globals_obj = tick.before.globals
+    globals_dt_ms_i32 = tick.after.globals.frame_dt_ms_i32
+    if globals_dt_ms_i32 is not None and int(globals_dt_ms_i32) > 0:
+        return int(globals_dt_ms_i32)
 
-    value = _coerce_int_like(globals_obj.get("frame_dt_ms_i32"))
-    if value is not None and int(value) > 0:
-        return int(value)
-
-    timing = tick.diagnostics.timing
-    if isinstance(timing, dict):
-        value = _coerce_int_like(timing.get("frame_dt_ms_after_i32"))
-        if value is not None and int(value) > 0:
-            return int(value)
+    timing_dt_ms_i32 = tick.diagnostics.timing.frame_dt_ms_after_i32
+    if timing_dt_ms_i32 is not None and int(timing_dt_ms_i32) > 0:
+        return int(timing_dt_ms_i32)
 
     return None
 
@@ -586,12 +522,9 @@ def summarize_capture_health(
 
     for tick in ticks:
         mode_tick_event_count_total += int(tick.event_counts.mode_tick)
-        timing = tick.diagnostics.timing
-        if isinstance(timing, dict):
-            source_obj = timing.get("frame_dt_source_after")
-            source = str(source_obj).strip() if source_obj is not None else ""
-            if source:
-                frame_dt_source_after_counts[source] += 1
+        source = str(tick.diagnostics.timing.frame_dt_source_after).strip()
+        if source:
+            frame_dt_source_after_counts[source] += 1
 
         for row in tick.input_player_keys:
             key_rows += 1
@@ -618,33 +551,37 @@ def summarize_capture_health(
                 if creature.ai_mode is not None or creature.link_index is not None:
                     sample_creature_rows_with_ai_lineage += 1
 
-        for head in msgspec.to_builtins(tick.event_heads):
-            if not isinstance(head, dict):
-                continue
-            kind = str(head.get("kind") or "")
-            if kind == "creature_update_micro":
+        for head in tick.event_heads:
+            if isinstance(head, CaptureEventHeadCreatureUpdateMicro):
                 creature_update_micro_rows += 1
-                data = head.get("data")
-                data_obj = data if isinstance(data, dict) else {}
-                event_kind = str(data_obj.get("event_kind") or "")
+                event_kind_obj = head.data.get("event_kind")
+                event_kind = str(event_kind_obj).strip().lower() if isinstance(event_kind_obj, str) else ""
                 if event_kind == "angle_approach":
                     creature_update_micro_angle_rows += 1
                 elif event_kind == "creature_update_window":
                     creature_update_micro_window_rows += 1
                 continue
-            if kind != "creature_lifecycle":
+
+            if not isinstance(head, CaptureEventHeadCreatureLifecycle):
                 continue
 
-            data = head.get("data")
-            data_obj = data if isinstance(data, dict) else {}
-            for key in ("added_head", "removed_head"):
-                rows_obj = data_obj.get(key)
-                rows = rows_obj if isinstance(rows_obj, list) else []
-                for row in rows:
+            added_head = head.data.get("added_head")
+            removed_head = head.data.get("removed_head")
+            if isinstance(added_head, list):
+                for row in added_head:
                     if not isinstance(row, dict):
                         continue
+                    row_obj = cast(dict[str, object], row)
                     creature_lifecycle_rows += 1
-                    if row.get("ai_mode") is not None or row.get("link_index") is not None:
+                    if row_obj.get("ai_mode") is not None or row_obj.get("link_index") is not None:
+                        creature_lifecycle_rows_with_ai_lineage += 1
+            if isinstance(removed_head, list):
+                for row in removed_head:
+                    if not isinstance(row, dict):
+                        continue
+                    row_obj = cast(dict[str, object], row)
+                    creature_lifecycle_rows += 1
+                    if row_obj.get("ai_mode") is not None or row_obj.get("link_index") is not None:
                         creature_lifecycle_rows_with_ai_lineage += 1
 
     issues: list[str] = []
@@ -712,23 +649,10 @@ def _infer_game_mode_id(capture: CaptureFile) -> int:
 
 
 def _tick_quest_stage(tick: CaptureTick) -> tuple[int, int] | None:
-    major = _coerce_int_like(tick.quest_stage_major)
-    minor = _coerce_int_like(tick.quest_stage_minor)
-    if major is not None and minor is not None and int(major) > 0 and int(minor) > 0:
+    major = int(tick.quest_stage_major)
+    minor = int(tick.quest_stage_minor)
+    if int(major) > 0 and int(minor) > 0:
         return int(major), int(minor)
-
-    after_globals = tick.after.globals if tick.after is not None else {}
-    major = _coerce_int_like(after_globals.get("quest_stage_major")) if isinstance(after_globals, dict) else None
-    minor = _coerce_int_like(after_globals.get("quest_stage_minor")) if isinstance(after_globals, dict) else None
-    if major is not None and minor is not None and int(major) > 0 and int(minor) > 0:
-        return int(major), int(minor)
-
-    before_globals = tick.before.globals if tick.before is not None else {}
-    major = _coerce_int_like(before_globals.get("quest_stage_major")) if isinstance(before_globals, dict) else None
-    minor = _coerce_int_like(before_globals.get("quest_stage_minor")) if isinstance(before_globals, dict) else None
-    if major is not None and minor is not None and int(major) > 0 and int(minor) > 0:
-        return int(major), int(minor)
-
     return None
 
 
@@ -736,7 +660,7 @@ def _tick_quest_session_bootstrap_payload(tick: CaptureTick) -> dict[str, float]
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadQuestTimelineDelta):
             continue
-        data = head.data if isinstance(head.data, dict) else {}
+        data = head.data
         timeline_ms = _coerce_int_like(data.get("quest_spawn_timeline"))
         stall_timer_ms = _coerce_int_like(data.get("quest_spawn_stall_timer_ms"))
         transition_timer_ms = _coerce_int_like(data.get("quest_transition_timer_ms"))
@@ -800,30 +724,22 @@ def _infer_digital_move_enabled_by_player(capture: CaptureFile, *, player_count:
 
 
 def _coerce_player_int(value: object, *, player_index: int) -> int | None:
-    direct = _coerce_int_like(value)
-    if direct is not None:
-        return int(direct)
     if isinstance(value, (list, tuple)):
         if 0 <= int(player_index) < len(value):
             nested = _coerce_int_like(value[int(player_index)])
             if nested is not None:
                 return int(nested)
         return None
-    if isinstance(value, dict):
-        key_text = str(int(player_index))
-        preferred_key_texts = (
-            key_text,
-            f"player_{key_text}",
-            f"player{key_text}",
-            f"p{key_text}",
-        )
-        for raw_key, raw_value in value.items():
-            if raw_key != int(player_index) and str(raw_key) not in preferred_key_texts:
-                continue
-            nested = _coerce_int_like(raw_value)
-            if nested is not None:
-                return int(nested)
-    return None
+    if isinstance(value, Mapping):
+        mapped_value = cast(Mapping[int, object], value)
+        nested = _coerce_int_like(mapped_value.get(int(player_index)))
+        if nested is not None:
+            return int(nested)
+        return None
+    direct = _coerce_int_like(value)
+    if direct is None:
+        return None
+    return int(direct)
 
 
 def _tick_player_aim_scheme(tick: CaptureTick, *, player_index: int) -> int | None:
@@ -837,22 +753,11 @@ def _tick_player_aim_scheme(tick: CaptureTick, *, player_index: int) -> int | No
             return int(parsed)
 
     for snapshot in (tick.after, tick.before):
-        if snapshot is None:
+        if int(player_index) < 0 or int(player_index) >= len(snapshot.globals.config_aim_scheme):
             continue
-        globals_obj = snapshot.globals if isinstance(snapshot.globals, dict) else {}
-        globals_scheme = _coerce_player_int(
-            globals_obj.get("config_aim_scheme"),
-            player_index=int(player_index),
-        )
+        globals_scheme = snapshot.globals.config_aim_scheme[int(player_index)]
         if globals_scheme is not None:
             return int(globals_scheme)
-        input_obj = snapshot.input if isinstance(snapshot.input, dict) else {}
-        input_scheme = _coerce_player_int(
-            input_obj.get("config_aim_scheme"),
-            player_index=int(player_index),
-        )
-        if input_scheme is not None:
-            return int(input_scheme)
     return None
 
 
@@ -893,15 +798,12 @@ def _tick_player_secondary_projectile_spawn_count(
         if not isinstance(head, CaptureEventHeadSecondaryProjectileSpawn):
             continue
         owner_id = _coerce_int_like(head.data.get("owner_id"))
-        if owner_id is not None:
-            owner_player_index = _owner_id_to_player_index(int(owner_id), player_count=int(player_count))
-            if owner_player_index is None or int(owner_player_index) != int(player_index):
-                continue
-            total += 1
+        if owner_id is None:
             continue
-        if int(player_count) == 1 and int(player_index) == 0:
-            # Older captures did not include owner IDs on secondary spawns.
-            total += 1
+        owner_player_index = _owner_id_to_player_index(int(owner_id), player_count=int(player_count))
+        if owner_player_index is None or int(owner_player_index) != int(player_index):
+            continue
+        total += 1
     return int(total)
 
 
@@ -947,8 +849,6 @@ def _tick_player_projectile_bonus_apply(
             continue
         applied_player_index = _coerce_int_like(head.data.get("player_index"))
         if applied_player_index is None:
-            if int(player_count) == 1 and int(player_index) == 0:
-                return True
             continue
         if int(applied_player_index) == int(player_index):
             return True
@@ -994,7 +894,7 @@ def _should_synthesize_reload_pressed_for_alt_swap(
     if int(player_index) < 0 or int(player_index) >= len(checkpoint_players):
         return False
 
-    before_weapon_id = _coerce_int_like(before_player.get("weapon_id"))
+    before_weapon_id = _coerce_int_like(before_player.weapon_id)
     if before_weapon_id is None or int(before_weapon_id) <= 0:
         return False
 
@@ -1002,32 +902,24 @@ def _should_synthesize_reload_pressed_for_alt_swap(
     if int(checkpoint_weapon_id) == int(before_weapon_id):
         return False
 
-    alt_weapon_raw = before_player.get("alt_weapon")
-    if not isinstance(alt_weapon_raw, dict):
-        return False
-    alt_weapon = cast(Mapping[object, object], alt_weapon_raw)
-    alt_weapon_id = _coerce_int_like(alt_weapon.get("weapon_id"))
+    alt_weapon_id = _coerce_int_like(before_player.alt_weapon.weapon_id)
     if alt_weapon_id is None or int(alt_weapon_id) <= 0:
         return False
 
     return int(checkpoint_weapon_id) == int(alt_weapon_id)
 
 
-def _before_player_ammo_snapshot(before_player: Mapping[object, object]) -> float | None:
-    before_ammo = _finite_float_or_none(before_player.get("ammo_f32"))
+def _before_player_ammo_snapshot(before_player: CaptureSnapshotPlayer) -> float | None:
+    before_ammo = _finite_float_or_none(before_player.ammo_f32)
     if before_ammo is None:
-        before_ammo = _f32_from_i32_bits_or_none(before_player.get("ammo_i32"))
-    if before_ammo is None:
-        before_ammo = _finite_float_or_none(before_player.get("ammo"))
+        before_ammo = _f32_from_i32_bits_or_none(before_player.ammo_i32)
     return before_ammo
 
 
-def _before_player_clip_size_snapshot(before_player: Mapping[object, object]) -> float | None:
-    clip_size = _finite_float_or_none(before_player.get("clip_size_f32"))
+def _before_player_clip_size_snapshot(before_player: CaptureSnapshotPlayer) -> float | None:
+    clip_size = _finite_float_or_none(before_player.clip_size_f32)
     if clip_size is None:
-        clip_size = _f32_from_i32_bits_or_none(before_player.get("clip_size_i32"))
-    if clip_size is None:
-        clip_size = _finite_float_or_none(before_player.get("clip_size"))
+        clip_size = _f32_from_i32_bits_or_none(before_player.clip_size_i32)
     return clip_size
 
 
@@ -1048,7 +940,7 @@ def _should_synthesize_fire_down_from_fractional_ammo_drain(
     if int(player_index) < 0 or int(player_index) >= len(checkpoint_players):
         return False
 
-    before_weapon_id = _coerce_int_like(before_player.get("weapon_id"))
+    before_weapon_id = _coerce_int_like(before_player.weapon_id)
     if before_weapon_id is None or int(before_weapon_id) <= 0:
         return False
     checkpoint_weapon_id = int(checkpoint_players[int(player_index)].weapon_id)
@@ -1057,8 +949,8 @@ def _should_synthesize_fire_down_from_fractional_ammo_drain(
     if int(checkpoint_weapon_id) not in _FRACTIONAL_AMMO_DRAIN_WEAPON_IDS:
         return False
 
-    before_reload_active = _coerce_int_like(before_player.get("reload_active_i32"))
-    before_reload_timer = _finite_float_or_none(before_player.get("reload_timer"))
+    before_reload_active = _coerce_int_like(before_player.reload_active_i32)
+    before_reload_timer = _finite_float_or_none(before_player.reload_timer)
 
     before_ammo = _before_player_ammo_snapshot(before_player)
     if before_ammo is None:
@@ -1115,7 +1007,7 @@ def _should_synthesize_fire_down_from_fractional_weapon_fire_sfx(
     if int(player_index) < 0 or int(player_index) >= len(checkpoint_players):
         return False
 
-    before_weapon_id = _coerce_int_like(before_player.get("weapon_id"))
+    before_weapon_id = _coerce_int_like(before_player.weapon_id)
     if before_weapon_id is None or int(before_weapon_id) <= 0:
         return False
     checkpoint_weapon_id = int(checkpoint_players[int(player_index)].weapon_id)
@@ -1515,93 +1407,76 @@ def build_capture_inter_tick_rand_draws_overrides(capture: CaptureFile) -> dict[
     return None
 
 
-def _tick_before_player_snapshot(tick: CaptureTick, *, player_index: int) -> Mapping[object, object] | None:
-    before = tick.before
-    if before is None:
+def _tick_before_player_snapshot(tick: CaptureTick, *, player_index: int) -> CaptureSnapshotPlayer | None:
+    if int(player_index) < 0 or int(player_index) >= len(tick.before.players):
         return None
-    players = before.players
-    if not isinstance(players, list):
-        return None
-    if int(player_index) < 0 or int(player_index) >= len(players):
-        return None
-    raw_player = players[int(player_index)]
-    if not isinstance(raw_player, dict):
-        return None
-    return cast(Mapping[object, object], raw_player)
+    return tick.before.players[int(player_index)]
 
 
-def _before_player_bonus_timers_ms(player: Mapping[object, object] | None) -> dict[str, int] | None:
+def _before_player_bonus_timers_ms(player: CaptureSnapshotPlayer | None) -> dict[str, int] | None:
     if player is None:
         return None
-    raw_bonus_timers = player.get("bonus_timers")
-    if not isinstance(raw_bonus_timers, dict):
-        return None
-    bonus_timers = cast(Mapping[object, object], raw_bonus_timers)
     out: dict[str, int] = {}
-    for key in ("speed_bonus", "shield", "fire_bullets"):
-        timer_seconds = _finite_float_or_none(bonus_timers.get(str(key)))
-        if timer_seconds is None:
-            continue
-        out[str(key)] = max(0, int(round(float(timer_seconds) * 1000.0)))
+    if player.bonus_timers.speed_bonus is not None:
+        out["speed_bonus"] = max(0, int(round(float(player.bonus_timers.speed_bonus) * 1000.0)))
+    if player.bonus_timers.shield is not None:
+        out["shield"] = max(0, int(round(float(player.bonus_timers.shield) * 1000.0)))
+    if player.bonus_timers.fire_bullets is not None:
+        out["fire_bullets"] = max(0, int(round(float(player.bonus_timers.fire_bullets) * 1000.0)))
     if not out:
         return None
     return out
 
 
-def _before_player_perk_timers(player: Mapping[object, object] | None) -> dict[str, float] | None:
+def _before_player_perk_timers(player: CaptureSnapshotPlayer | None) -> dict[str, float] | None:
     if player is None:
         return None
-    raw_perk_timers = player.get("perk_timers")
-    if not isinstance(raw_perk_timers, dict):
-        return None
-    perk_timers = cast(Mapping[object, object], raw_perk_timers)
     out: dict[str, float] = {}
-    for key in ("hot_tempered", "man_bomb", "living_fortress", "fire_cough"):
-        timer_seconds = _finite_float_or_none(perk_timers.get(str(key)))
-        if timer_seconds is None:
-            continue
-        out[str(key)] = max(0.0, float(timer_seconds))
+    if player.perk_timers.hot_tempered is not None:
+        out["hot_tempered"] = max(0.0, float(player.perk_timers.hot_tempered))
+    if player.perk_timers.man_bomb is not None:
+        out["man_bomb"] = max(0.0, float(player.perk_timers.man_bomb))
+    if player.perk_timers.living_fortress is not None:
+        out["living_fortress"] = max(0.0, float(player.perk_timers.living_fortress))
+    if player.perk_timers.fire_cough is not None:
+        out["fire_cough"] = max(0.0, float(player.perk_timers.fire_cough))
     if not out:
         return None
     return out
 
 
 def _before_global_bonus_timers_ms(tick: CaptureTick) -> dict[str, int] | None:
-    before = tick.before
-    if before is None or not isinstance(before.globals, dict):
-        return None
-    globals_map = cast(Mapping[object, object], before.globals)
+    globals_map = tick.before.globals
     out: dict[str, int] = {}
-    for bonus_id, globals_key in (
-        (int(BonusId.WEAPON_POWER_UP), "bonus_weapon_power_up_timer"),
-        (int(BonusId.REFLEX_BOOST), "bonus_reflex_boost_timer"),
-        (int(BonusId.ENERGIZER), "bonus_energizer_timer"),
-        (int(BonusId.DOUBLE_EXPERIENCE), "bonus_double_xp_timer"),
-        (int(BonusId.FREEZE), "bonus_freeze_timer"),
-    ):
-        timer_seconds = _finite_float_or_none(globals_map.get(str(globals_key)))
-        if timer_seconds is None:
-            continue
-        out[str(int(bonus_id))] = max(0, int(round(float(timer_seconds) * 1000.0)))
+    if globals_map.bonus_weapon_power_up_timer is not None:
+        out[str(int(BonusId.WEAPON_POWER_UP))] = max(
+            0,
+            int(round(float(globals_map.bonus_weapon_power_up_timer) * 1000.0)),
+        )
+    if globals_map.bonus_reflex_boost_timer is not None:
+        out[str(int(BonusId.REFLEX_BOOST))] = max(
+            0,
+            int(round(float(globals_map.bonus_reflex_boost_timer) * 1000.0)),
+        )
+    if globals_map.bonus_energizer_timer is not None:
+        out[str(int(BonusId.ENERGIZER))] = max(
+            0,
+            int(round(float(globals_map.bonus_energizer_timer) * 1000.0)),
+        )
+    if globals_map.bonus_double_xp_timer is not None:
+        out[str(int(BonusId.DOUBLE_EXPERIENCE))] = max(
+            0,
+            int(round(float(globals_map.bonus_double_xp_timer) * 1000.0)),
+        )
+    if globals_map.bonus_freeze_timer is not None:
+        out[str(int(BonusId.FREEZE))] = max(0, int(round(float(globals_map.bonus_freeze_timer) * 1000.0)))
     if not out:
         return None
     return out
 
 
 def _before_global_perk_intervals(tick: CaptureTick) -> dict[str, float] | None:
-    before = tick.before
-    if before is None or not isinstance(before.globals, dict):
-        return None
-    globals_map = cast(Mapping[object, object], before.globals)
-    out: dict[str, float] = {}
-    for perk_key, globals_key in _PERK_INTERVAL_GLOBAL_KEYS.items():
-        interval_seconds = _finite_float_or_none(globals_map.get(str(globals_key)))
-        if interval_seconds is None:
-            continue
-        out[str(perk_key)] = max(0.0, float(interval_seconds))
-    if not out:
-        return None
-    return out
+    return None
 
 
 def _checkpoint_player_perk_active(
@@ -1724,15 +1599,15 @@ def _capture_bootstrap_payload(
         player_bonus_timers_ms = {str(key): int(value) for key, value in player.bonus_timers.items()}
 
         if before_player is not None:
-            before_pos_x = _finite_float_or_none(before_player.get("pos_x"))
-            before_pos_y = _finite_float_or_none(before_player.get("pos_y"))
-            before_health = _finite_float_or_none(before_player.get("health"))
-            before_weapon_id = _coerce_int_like(before_player.get("weapon_id"))
-            before_ammo = _finite_float_or_none(before_player.get("ammo_f32"))
+            before_pos_x = _finite_float_or_none(before_player.pos_x)
+            before_pos_y = _finite_float_or_none(before_player.pos_y)
+            before_health = _finite_float_or_none(before_player.health)
+            before_weapon_id = _coerce_int_like(before_player.weapon_id)
+            before_ammo = _finite_float_or_none(before_player.ammo_f32)
             if before_ammo is None:
-                before_ammo = _finite_float_or_none(before_player.get("ammo"))
-            before_experience = _coerce_int_like(before_player.get("experience"))
-            before_level = _coerce_int_like(before_player.get("level"))
+                before_ammo = _f32_from_i32_bits_or_none(before_player.ammo_i32)
+            before_experience = _coerce_int_like(before_player.experience)
+            before_level = _coerce_int_like(before_player.level)
             before_player_bonus_timers_ms = _before_player_bonus_timers_ms(before_player)
             before_player_perk_timers = _before_player_perk_timers(before_player)
 
@@ -1764,15 +1639,17 @@ def _capture_bootstrap_payload(
         }
 
         if before_player is not None:
-            clip_size = _finite_float_or_none(before_player.get("clip_size_f32"))
-            reload_active = _coerce_int_like(before_player.get("reload_active_i32"))
-            reload_timer = _finite_float_or_none(before_player.get("reload_timer"))
-            reload_timer_max = _finite_float_or_none(before_player.get("reload_timer_max"))
-            shot_cooldown = _finite_float_or_none(before_player.get("shot_cooldown"))
-            spread_heat = _finite_float_or_none(before_player.get("spread_heat"))
-            aim_x = _finite_float_or_none(before_player.get("aim_x"))
-            aim_y = _finite_float_or_none(before_player.get("aim_y"))
-            aim_heading = _finite_float_or_none(before_player.get("aim_heading"))
+            clip_size = _finite_float_or_none(before_player.clip_size_f32)
+            if clip_size is None:
+                clip_size = _f32_from_i32_bits_or_none(before_player.clip_size_i32)
+            reload_active = _coerce_int_like(before_player.reload_active_i32)
+            reload_timer = _finite_float_or_none(before_player.reload_timer)
+            reload_timer_max = _finite_float_or_none(before_player.reload_timer_max)
+            shot_cooldown = _finite_float_or_none(before_player.shot_cooldown)
+            spread_heat = _finite_float_or_none(before_player.spread_heat)
+            aim_x = _finite_float_or_none(before_player.aim_x)
+            aim_y = _finite_float_or_none(before_player.aim_y)
+            aim_heading = _finite_float_or_none(before_player.aim_heading)
 
             if clip_size is not None:
                 player_payload["clip_size"] = max(0, int(clip_size))
@@ -1792,37 +1669,31 @@ def _capture_bootstrap_payload(
                     aim_payload["heading"] = float(aim_heading)
                 player_payload["aim"] = dict(aim_payload)
 
-            alt_weapon_raw = before_player.get("alt_weapon")
-            if isinstance(alt_weapon_raw, dict):
-                alt_weapon = cast(Mapping[object, object], alt_weapon_raw)
-                alt_weapon_id = _coerce_int_like(alt_weapon.get("weapon_id"))
-                alt_clip_size = _finite_float_or_none(alt_weapon.get("clip_size_f32"))
-                if alt_clip_size is None:
-                    alt_clip_size = _f32_from_i32_bits_or_none(alt_weapon.get("clip_size_i32"))
-                alt_ammo = _finite_float_or_none(alt_weapon.get("ammo_f32"))
-                if alt_ammo is None:
-                    alt_ammo = _f32_from_i32_bits_or_none(alt_weapon.get("ammo_i32"))
-                alt_reload_active = _coerce_int_like(alt_weapon.get("reload_active_i32"))
-                alt_reload_timer = _finite_float_or_none(alt_weapon.get("reload_timer"))
-                alt_shot_cooldown = _finite_float_or_none(alt_weapon.get("shot_cooldown"))
-                alt_reload_timer_max = _finite_float_or_none(alt_weapon.get("reload_timer_max"))
-                alt_payload: dict[str, object] = {}
-                if alt_weapon_id is not None and int(alt_weapon_id) > 0:
-                    alt_payload["weapon_id"] = int(alt_weapon_id)
-                if alt_clip_size is not None:
-                    alt_payload["clip_size"] = max(0, int(alt_clip_size))
-                if alt_ammo is not None:
-                    alt_payload["ammo"] = float(alt_ammo)
-                if alt_reload_active is not None:
-                    alt_payload["reload_active"] = bool(alt_reload_active)
-                if alt_reload_timer is not None:
-                    alt_payload["reload_timer"] = max(0.0, float(alt_reload_timer))
-                if alt_shot_cooldown is not None:
-                    alt_payload["shot_cooldown"] = max(0.0, float(alt_shot_cooldown))
-                if alt_reload_timer_max is not None:
-                    alt_payload["reload_timer_max"] = max(0.0, float(alt_reload_timer_max))
-                if alt_payload:
-                    player_payload["alt_weapon"] = dict(alt_payload)
+            alt_weapon = before_player.alt_weapon
+            alt_weapon_id = _coerce_int_like(alt_weapon.weapon_id)
+            alt_clip_size = _f32_from_i32_bits_or_none(alt_weapon.clip_size_i32)
+            alt_ammo = _f32_from_i32_bits_or_none(alt_weapon.ammo_i32)
+            alt_reload_active = _coerce_int_like(alt_weapon.reload_active_i32)
+            alt_reload_timer = _finite_float_or_none(alt_weapon.reload_timer)
+            alt_shot_cooldown = _finite_float_or_none(alt_weapon.shot_cooldown)
+            alt_reload_timer_max = _finite_float_or_none(alt_weapon.reload_timer_max)
+            alt_payload: dict[str, object] = {}
+            if alt_weapon_id is not None and int(alt_weapon_id) > 0:
+                alt_payload["weapon_id"] = int(alt_weapon_id)
+            if alt_clip_size is not None:
+                alt_payload["clip_size"] = max(0, int(alt_clip_size))
+            if alt_ammo is not None:
+                alt_payload["ammo"] = float(alt_ammo)
+            if alt_reload_active is not None:
+                alt_payload["reload_active"] = bool(alt_reload_active)
+            if alt_reload_timer is not None:
+                alt_payload["reload_timer"] = max(0.0, float(alt_reload_timer))
+            if alt_shot_cooldown is not None:
+                alt_payload["shot_cooldown"] = max(0.0, float(alt_shot_cooldown))
+            if alt_reload_timer_max is not None:
+                alt_payload["reload_timer_max"] = max(0.0, float(alt_reload_timer_max))
+            if alt_payload:
+                player_payload["alt_weapon"] = dict(alt_payload)
             if before_player_perk_timers is not None:
                 player_payload["perk_timers"] = dict(before_player_perk_timers)
 
@@ -1830,15 +1701,12 @@ def _capture_bootstrap_payload(
 
     elapsed_ms = int(tick.checkpoint.elapsed_ms)
     perk_pending = int(tick.checkpoint.perk_pending)
-    before_globals: Mapping[object, object] | None = None
-    if tick.before is not None and isinstance(tick.before.globals, dict):
-        before_globals = cast(Mapping[object, object], tick.before.globals)
-        before_elapsed_ms = _coerce_int_like(before_globals.get("time_played_ms"))
-        if before_elapsed_ms is not None and int(before_elapsed_ms) >= 0:
-            elapsed_ms = int(before_elapsed_ms)
-        before_perk_pending = _coerce_int_like(before_globals.get("perk_pending_count"))
-        if before_perk_pending is not None and int(before_perk_pending) >= 0:
-            perk_pending = int(before_perk_pending)
+    before_elapsed_ms = _coerce_int_like(tick.before.globals.time_played_ms)
+    if before_elapsed_ms is not None and int(before_elapsed_ms) >= 0:
+        elapsed_ms = int(before_elapsed_ms)
+    before_perk_pending = _coerce_int_like(tick.before.globals.perk_pending_count)
+    if before_perk_pending is not None and int(before_perk_pending) >= 0:
+        perk_pending = int(before_perk_pending)
 
     score_xp = int(tick.checkpoint.score_xp)
     if players:
@@ -2412,11 +2280,7 @@ def _tick_creature_spawn_rows(tick: CaptureTick) -> tuple[dict[str, object], ...
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadCreatureSpawn):
             continue
-        data: dict[str, object]
-        if isinstance(head.data, dict):
-            data = head.data
-        else:
-            data = {}
+        data = head.data
         caller_static = data.get("caller_static")
         caller_static_s = str(caller_static).strip().lower() if isinstance(caller_static, str) else ""
         if caller_static_s not in _QUEST_CAPTURE_SPAWN_CALLERS:
@@ -2448,11 +2312,7 @@ def _tick_creature_spawn_added_rows(tick: CaptureTick) -> tuple[dict[str, object
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadCreatureLifecycle):
             continue
-        data: dict[str, object]
-        if isinstance(head.data, dict):
-            data = head.data
-        else:
-            data = {}
+        data = head.data
         added_head = data.get("added_head")
         if not isinstance(added_head, list):
             continue
@@ -2510,11 +2370,7 @@ def _tick_state_transition_rows(tick: CaptureTick) -> tuple[dict[str, int], ...]
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadStateTransition):
             continue
-        data: dict[str, object]
-        if isinstance(head.data, dict):
-            data = head.data
-        else:
-            data = {}
+        data = head.data
         target_state = _coerce_int_like(data.get("target_state"))
         if target_state is None:
             continue
@@ -3046,7 +2902,6 @@ def _decode_capture_stream(raw: bytes, path: Path) -> CaptureFile | None:
             continue
         try:
             row_obj = msgspec.json.decode(line)
-            row_obj = _decode_f32_tokens(row_obj)
             row = msgspec.convert(row_obj, type=_CaptureStreamRow, strict=True)
         except (msgspec.DecodeError, msgspec.ValidationError) as exc:
             raise CaptureError(f"invalid capture file: {path}") from exc

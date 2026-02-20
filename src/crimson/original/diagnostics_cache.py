@@ -1139,8 +1139,8 @@ def _build_sample_secondary_head(tick: CaptureTick) -> list[dict[str, object]]:
 def _build_tick_lite_row(tick: CaptureTick) -> dict[str, object]:
     checkpoint = tick.checkpoint
     debug = checkpoint.debug
-    spawn_obj = debug.spawn if isinstance(debug.spawn, dict) else {}
-    lifecycle_obj = debug.creature_lifecycle if isinstance(debug.creature_lifecycle, dict) else {}
+    spawn_obj = debug.spawn
+    lifecycle_obj = debug.creature_lifecycle
     event_heads_obj = _build_event_heads_by_kind(tick)
 
     rng_marks = checkpoint.rng_marks
@@ -1214,30 +1214,8 @@ def _build_tick_lite_row(tick: CaptureTick) -> dict[str, object]:
     else:
         creature_update_micro_head_obj = []
 
-    projectile_find_query_miss_count = _int_or(
-        spawn_obj.get("event_count_projectile_find_query_miss"),
-        sum(
-            1
-            for item in projectile_find_query_head_obj
-            if isinstance(item, dict)
-            and (
-                str(item.get("result_kind")) == "miss"
-                or _int_or(item.get("result_creature_index"), -1) < 0
-            )
-        ),
-    )
-    projectile_find_query_owner_collision_count = _int_or(
-        spawn_obj.get("event_count_projectile_find_query_owner_collision"),
-        sum(
-            1
-            for item in projectile_find_query_head_obj
-            if isinstance(item, dict)
-            and (
-                bool(item.get("owner_collision"))
-                or str(item.get("result_kind")) == "owner_collision"
-            )
-        ),
-    )
+    projectile_find_query_miss_count = int(spawn_obj.event_count_projectile_find_query_miss)
+    projectile_find_query_owner_collision_count = int(spawn_obj.event_count_projectile_find_query_owner_collision)
 
     sample_counts = {
         "creatures": (len(tick.samples.creatures) if tick.samples is not None else -1),
@@ -1259,10 +1237,17 @@ def _build_tick_lite_row(tick: CaptureTick) -> dict[str, object]:
             "level": int(player.level),
             "bonus_timers": {str(key): int(value) for key, value in player.bonus_timers.items()},
         }
-    elif tick.before is not None and tick.before.players:
+    elif tick.before.players:
         top_player = tick.before.players[0]
-        if isinstance(top_player, dict):
-            before_player0 = {str(key): value for key, value in top_player.items()}
+        before_player0 = {
+            "pos_x": top_player.pos_x,
+            "pos_y": top_player.pos_y,
+            "health": top_player.health,
+            "weapon_id": top_player.weapon_id,
+            "ammo_f32": top_player.ammo_f32,
+            "experience": top_player.experience,
+            "level": top_player.level,
+        }
 
     input_player_keys = [
         {
@@ -1278,20 +1263,18 @@ def _build_tick_lite_row(tick: CaptureTick) -> dict[str, object]:
         for row in tick.input_player_keys
     ]
 
-    top_bonus_spawn_callers_obj = spawn_obj.get("top_bonus_spawn_callers")
-    top_bonus_spawn_callers = list(top_bonus_spawn_callers_obj) if isinstance(top_bonus_spawn_callers_obj, list) else []
-    top_creature_damage_callers_obj = spawn_obj.get("top_creature_damage_callers")
-    top_creature_damage_callers = (
-        list(top_creature_damage_callers_obj) if isinstance(top_creature_damage_callers_obj, list) else []
-    )
-    top_projectile_find_hit_callers_obj = spawn_obj.get("top_projectile_find_hit_callers")
-    top_projectile_find_hit_callers = (
-        list(top_projectile_find_hit_callers_obj) if isinstance(top_projectile_find_hit_callers_obj, list) else []
-    )
-    top_projectile_find_query_callers_obj = spawn_obj.get("top_projectile_find_query_callers")
-    top_projectile_find_query_callers = (
-        list(top_projectile_find_query_callers_obj) if isinstance(top_projectile_find_query_callers_obj, list) else []
-    )
+    top_bonus_spawn_callers = [
+        {"key": str(item.key), "count": int(item.count)} for item in spawn_obj.top_bonus_spawn_callers
+    ]
+    top_creature_damage_callers = [
+        {"key": str(item.key), "count": int(item.count)} for item in spawn_obj.top_creature_damage_callers
+    ]
+    top_projectile_find_hit_callers = [
+        {"key": str(item.key), "count": int(item.count)} for item in spawn_obj.top_projectile_find_hit_callers
+    ]
+    top_projectile_find_query_callers = [
+        {"key": str(item.key), "count": int(item.count)} for item in spawn_obj.top_projectile_find_query_callers
+    ]
 
     row: dict[str, object] = {
         "rng_rand_calls": int(rng_rand_calls),
@@ -1306,13 +1289,10 @@ def _build_tick_lite_row(tick: CaptureTick) -> dict[str, object]:
         "rng_outside_before_calls": int(rng_outside_before_calls),
         "rng_mirror_mismatch_total": int(rng_mirror_mismatch_total),
         "rng_callers": rng_callers,
-        "spawn_bonus_count": _int_or(spawn_obj.get("event_count_bonus_spawn")),
-        "spawn_death_count": _int_or(spawn_obj.get("event_count_death")),
+        "spawn_bonus_count": int(spawn_obj.event_count_bonus_spawn),
+        "spawn_death_count": int(spawn_obj.event_count_death),
         "spawn_top_bonus_callers": top_bonus_spawn_callers,
-        "creature_damage_count": _int_or(
-            int(tick.event_counts.creature_damage),
-            _int_or(spawn_obj.get("event_count_creature_damage"), 0),
-        ),
+        "creature_damage_count": int(tick.event_counts.creature_damage),
         "creature_damage_head": creature_damage_head_obj,
         "projectile_spawn_head": projectile_spawn_head_obj,
         "secondary_projectile_spawn_count": int(tick.event_counts.secondary_projectile_spawn),
@@ -1320,10 +1300,7 @@ def _build_tick_lite_row(tick: CaptureTick) -> dict[str, object]:
         "creature_death_head": creature_death_head_obj,
         "bonus_spawn_head": bonus_spawn_head_obj,
         "projectile_find_hit_count": _int_or(int(tick.event_counts.projectile_find_hit), len(projectile_find_hit_head_obj)),
-        "projectile_find_query_count": _int_or(
-            int(tick.event_counts.projectile_find_query),
-            _int_or(spawn_obj.get("event_count_projectile_find_query"), len(projectile_find_query_head_obj)),
-        ),
+        "projectile_find_query_count": int(tick.event_counts.projectile_find_query),
         "projectile_find_query_head": projectile_find_query_head_obj,
         "projectile_find_query_miss_count": int(projectile_find_query_miss_count),
         "projectile_find_query_owner_collision_count": int(projectile_find_query_owner_collision_count),
@@ -1333,18 +1310,15 @@ def _build_tick_lite_row(tick: CaptureTick) -> dict[str, object]:
             for item in projectile_find_hit_head_obj
             if isinstance(item, dict) and bool(item.get("corpse_hit"))
         ),
-        "creature_update_micro_count": _int_or(
-            int(tick.event_counts.creature_update_micro),
-            len(creature_update_micro_head_obj),
-        ),
+        "creature_update_micro_count": int(tick.event_counts.creature_update_micro),
         "creature_update_micro_head": creature_update_micro_head_obj,
         "spawn_top_creature_damage_callers": top_creature_damage_callers,
         "spawn_top_projectile_find_hit_callers": top_projectile_find_hit_callers,
         "spawn_top_projectile_find_query_callers": top_projectile_find_query_callers,
-        "lifecycle_before_hash": lifecycle_obj.get("before_hash"),
-        "lifecycle_after_hash": lifecycle_obj.get("after_hash"),
-        "lifecycle_before_count": _int_or(lifecycle_obj.get("before_count")),
-        "lifecycle_after_count": _int_or(lifecycle_obj.get("after_count")),
+        "lifecycle_before_hash": (None if lifecycle_obj is None else lifecycle_obj.before_hash),
+        "lifecycle_after_hash": (None if lifecycle_obj is None else lifecycle_obj.after_hash),
+        "lifecycle_before_count": (-1 if lifecycle_obj is None or lifecycle_obj.before_count is None else int(lifecycle_obj.before_count)),
+        "lifecycle_after_count": (-1 if lifecycle_obj is None or lifecycle_obj.after_count is None else int(lifecycle_obj.after_count)),
         "before_player0": before_player0,
         "input_player_keys": input_player_keys,
         "sample_streams_present": bool(tick.samples is not None),

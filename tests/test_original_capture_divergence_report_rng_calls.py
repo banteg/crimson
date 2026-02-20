@@ -75,6 +75,189 @@ def _base_config(**kwargs: object) -> dict[str, object]:
     return row
 
 
+def _snapshot_globals(**kwargs: object) -> dict[str, object]:
+    row: dict[str, object] = {
+        "config_game_mode": int(GameMode.SURVIVAL),
+        "config_player_mode_flags": [0],
+        "config_aim_scheme": [None],
+        "game_state_prev": 0,
+        "game_state_id": 0,
+        "game_state_pending": 0,
+        "frame_dt": None,
+        "frame_dt_ms_i32": None,
+        "frame_dt_ms_f32": None,
+        "time_played_ms": 0,
+        "creature_active_count": 0,
+        "creature_kill_count": 0,
+        "perk_pending_count": 0,
+        "perk_choices_dirty": 0,
+        "shock_chain_links_left": 0,
+        "shock_chain_projectile_id": 0,
+        "quest_spawn_timeline": 0,
+        "quest_stage_major": -1,
+        "quest_stage_minor": -1,
+        "quest_spawn_stall_timer_ms": 0,
+        "quest_transition_timer_ms": 0,
+        "quest_stage_banner_timer_ms": 0,
+        "ui_elements_timeline": 0.0,
+        "ui_transition_direction": 0,
+        "ui_transition_alpha": 0.0,
+        "pause_keybind_help_alpha_ms": 0,
+        "player_alt_weapon_swap_cooldown_ms": 0,
+        "perk_jinxed_proc_timer_s": 0.0,
+        "perk_lean_mean_exp_tick_timer_s": 0.0,
+        "perk_doctor_target_creature_id": -1,
+        "bonus_reflex_boost_timer": 0.0,
+        "bonus_freeze_timer": 0.0,
+        "bonus_weapon_power_up_timer": 0.0,
+        "bonus_energizer_timer": 0.0,
+        "bonus_double_xp_timer": 0.0,
+    }
+    row.update(kwargs)
+    return row
+
+
+def _snapshot_status(**kwargs: object) -> dict[str, object]:
+    row: dict[str, object] = {
+        "quest_unlock_index": 0,
+        "quest_unlock_index_full": 0,
+        "weapon_usage_counts": [],
+    }
+    row.update(kwargs)
+    return row
+
+
+def _snapshot_input(**kwargs: object) -> dict[str, object]:
+    row: dict[str, object] = {
+        "console_open": 0,
+        "primary_latch": 0,
+        "mouse_x": 0.0,
+        "mouse_y": 0.0,
+        "aim_screen": [{"player_index": 0, "x": 0.0, "y": 0.0}],
+    }
+    row.update(kwargs)
+    return row
+
+
+def _snapshot_input_bindings(**kwargs: object) -> dict[str, object]:
+    row: dict[str, object] = {
+        "players": [
+            {
+                "player_index": 0,
+                "move_forward": 0,
+                "move_backward": 0,
+                "turn_left": 0,
+                "turn_right": 0,
+                "fire": 0,
+                "aim_left": 0,
+                "aim_right": 0,
+                "axis_aim_x": 0,
+                "axis_aim_y": 0,
+                "axis_move_x": 0,
+                "axis_move_y": 0,
+            },
+        ],
+        "alternate_single": {
+            "move_forward": 0,
+            "move_backward": 0,
+            "turn_left": 0,
+            "turn_right": 0,
+            "fire": 0,
+        },
+    }
+    row.update(kwargs)
+    return row
+
+
+def _timing_diagnostics(**kwargs: object) -> dict[str, object]:
+    row: dict[str, object] = {
+        "gameplay_frame": 0,
+        "gameplay_frame_delta_prev_tick": None,
+        "elapsed_ms_before": 0,
+        "elapsed_ms_after": 0,
+        "elapsed_delta_in_tick_ms": 0,
+        "elapsed_delta_prev_tick_ms": None,
+        "frame_dt_before": None,
+        "frame_dt_after": None,
+        "frame_dt_ms_before_i32": None,
+        "frame_dt_ms_after_i32": None,
+        "frame_dt_ms_before_f32": None,
+        "frame_dt_ms_after_f32": None,
+        "frame_dt_source_before": "none",
+        "frame_dt_source_after": "none",
+        "mode_tick_event_count": 0,
+        "mode_tick_sample_count": 0,
+        "mode_tick_mode_fn_head": [],
+        "mode_tick_present": False,
+    }
+    row.update(kwargs)
+    return row
+
+
+def _spawn_diagnostics(**kwargs: object) -> dict[str, object]:
+    row: dict[str, object] = {
+        "before_creature_count": 0,
+        "after_creature_count": 0,
+        "creature_count_delta": 0,
+        "event_count_template": 0,
+        "event_count_low_level": 0,
+        "event_count_creature_damage": 0,
+        "event_count_projectile_find_query": 0,
+        "event_count_projectile_find_hit": 0,
+        "event_count_projectile_find_query_miss": 0,
+        "event_count_projectile_find_query_owner_collision": 0,
+        "event_count_death": 0,
+        "top_template_callers": [],
+        "top_low_level_callers": [],
+        "top_low_level_sources": [],
+        "top_creature_damage_callers": [],
+        "top_projectile_find_query_callers": [],
+        "top_projectile_find_hit_callers": [],
+        "top_death_callers": [],
+        "event_count_blood_splatter": 0,
+        "blood_splatter_rng_draws": 0,
+        "blood_splatter_projectile_update_calls": 0,
+        "top_blood_splatter_callers": [],
+        "top_blood_splatter_rng_draw_callers": [],
+        "event_count_bonus_spawn": 0,
+        "top_bonus_spawn_callers": [],
+        "mode_samples": [],
+    }
+    row.update(kwargs)
+    return row
+
+
+def _rng_diagnostics(**kwargs: object) -> dict[str, object]:
+    row: dict[str, object] = {
+        "seq_first": None,
+        "seq_last": None,
+        "seed_epoch_enter": None,
+        "seed_epoch_last": None,
+        "outside_before_calls": 0,
+        "outside_before_dropped": 0,
+        "outside_before_head": [],
+        "mirror_mismatch_total_enter": 0,
+        "mirror_mismatch_total_leave": 0,
+        "mirror_unknown_total_enter": 0,
+        "mirror_unknown_total_leave": 0,
+        "roll_log_emitted_total": 0,
+        "roll_log_dropped_total": 0,
+    }
+    row.update(kwargs)
+    return row
+
+
+def _player_fire_diagnostics(**kwargs: object) -> dict[str, object]:
+    row: dict[str, object] = {
+        "event_count_player_fire": 0,
+        "top_direct_events_by_player": [],
+        "top_fallback_events_by_player": [],
+        "top_player_projectile_spawns_by_player": [],
+    }
+    row.update(kwargs)
+    return row
+
+
 def _step_crt_state(state: int, calls: int) -> int:
     value = int(state) & 0xFFFFFFFF
     for _ in range(max(0, int(calls))):
@@ -544,17 +727,17 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
             },
             "debug": {
                 "sampling_phase": "",
-                "timing": {},
-                "spawn": {
-                    "event_count_projectile_find_query": 3,
-                    "event_count_projectile_find_query_miss": 1,
-                    "event_count_projectile_find_query_owner_collision": 1,
-                    "top_projectile_find_query_callers": [{"key": "0x00420e52", "count": 3}],
-                },
-                "rng": {},
+                "timing": _timing_diagnostics(),
+                "spawn": _spawn_diagnostics(
+                    event_count_projectile_find_query=3,
+                    event_count_projectile_find_query_miss=1,
+                    event_count_projectile_find_query_owner_collision=1,
+                    top_projectile_find_query_callers=[{"key": "0x00420e52", "count": 3}],
+                ),
+                "rng": _rng_diagnostics(),
                 "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
                 "creature_lifecycle": None,
-                "player_fire": None,
+                "player_fire": _player_fire_diagnostics(),
                 "before_players": [],
                 "before_status": {"quest_unlock_index": 0, "quest_unlock_index_full": 0},
             },
@@ -648,12 +831,12 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
         },
         "diagnostics": {
             "sampling_phase": "",
-            "timing": {},
-            "spawn": {},
-            "rng": {},
+            "timing": _timing_diagnostics(),
+            "spawn": _spawn_diagnostics(),
+            "rng": _rng_diagnostics(),
             "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
             "creature_lifecycle": None,
-            "player_fire": None,
+            "player_fire": _player_fire_diagnostics(),
         },
         "input_approx": [
             {
@@ -678,8 +861,22 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
                 "reload_pressed": None,
             },
         ],
-        "before": {"globals": {}, "status": {}, "player_count": 1, "players": [], "input": {}, "input_bindings": {}},
-        "after": {"globals": {}, "status": {}, "player_count": 1, "players": [], "input": {}, "input_bindings": {}},
+        "before": {
+            "globals": _snapshot_globals(),
+            "status": _snapshot_status(),
+            "player_count": 1,
+            "players": [],
+            "input": _snapshot_input(),
+            "input_bindings": _snapshot_input_bindings(),
+        },
+        "after": {
+            "globals": _snapshot_globals(),
+            "status": _snapshot_status(),
+            "player_count": 1,
+            "players": [],
+            "input": _snapshot_input(),
+            "input_bindings": _snapshot_input_bindings(),
+        },
         "frame_dt_ms": None,
         "frame_dt_ms_i32": None,
         "creature_lifecycle": None,

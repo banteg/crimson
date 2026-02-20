@@ -232,6 +232,269 @@ def _base_player() -> dict[str, object]:
     }
 
 
+def _base_snapshot_globals(**kwargs: object) -> dict[str, object]:
+    d: dict[str, object] = {
+        "config_game_mode": None,
+        "config_player_mode_flags": [0],
+        "config_aim_scheme": [None],
+        "game_state_prev": None,
+        "game_state_id": None,
+        "game_state_pending": None,
+        "frame_dt": None,
+        "frame_dt_ms_i32": None,
+        "frame_dt_ms_f32": None,
+        "time_played_ms": None,
+        "creature_active_count": None,
+        "creature_kill_count": None,
+        "perk_pending_count": None,
+        "perk_choices_dirty": None,
+        "shock_chain_links_left": None,
+        "shock_chain_projectile_id": None,
+        "quest_spawn_timeline": None,
+        "quest_stage_major": None,
+        "quest_stage_minor": None,
+        "quest_spawn_stall_timer_ms": None,
+        "quest_transition_timer_ms": None,
+        "quest_stage_banner_timer_ms": None,
+        "ui_elements_timeline": None,
+        "ui_transition_direction": None,
+        "ui_transition_alpha": None,
+        "pause_keybind_help_alpha_ms": None,
+        "player_alt_weapon_swap_cooldown_ms": None,
+        "perk_jinxed_proc_timer_s": None,
+        "perk_lean_mean_exp_tick_timer_s": None,
+        "perk_doctor_target_creature_id": None,
+        "bonus_reflex_boost_timer": None,
+        "bonus_freeze_timer": None,
+        "bonus_weapon_power_up_timer": None,
+        "bonus_energizer_timer": None,
+        "bonus_double_xp_timer": None,
+    }
+    d.update(kwargs)
+    return d
+
+
+def _base_snapshot_status(**kwargs: object) -> dict[str, object]:
+    d: dict[str, object] = {
+        "quest_unlock_index": 0,
+        "quest_unlock_index_full": 0,
+        "weapon_usage_counts": [],
+    }
+    d.update(kwargs)
+    return d
+
+
+def _base_snapshot_input(**kwargs: object) -> dict[str, object]:
+    d: dict[str, object] = {
+        "console_open": 0,
+        "primary_latch": 0,
+        "mouse_x": 0.0,
+        "mouse_y": 0.0,
+        "aim_screen": [{"player_index": 0, "x": 0.0, "y": 0.0}],
+    }
+    d.update(kwargs)
+    return d
+
+
+def _base_snapshot_input_bindings(**kwargs: object) -> dict[str, object]:
+    d: dict[str, object] = {
+        "players": [
+            {
+                "player_index": 0,
+                "move_forward": 0,
+                "move_backward": 0,
+                "turn_left": 0,
+                "turn_right": 0,
+                "fire": 0,
+                "aim_left": 0,
+                "aim_right": 0,
+                "axis_aim_x": 0,
+                "axis_aim_y": 0,
+                "axis_move_x": 0,
+                "axis_move_y": 0,
+            },
+        ],
+        "alternate_single": {
+            "move_forward": 0,
+            "move_backward": 0,
+            "turn_left": 0,
+            "turn_right": 0,
+            "fire": 0,
+        },
+    }
+    d.update(kwargs)
+    return d
+
+
+def _base_snapshot_player_perk_timers(**kwargs: object) -> dict[str, object]:
+    d: dict[str, object] = {
+        "hot_tempered": None,
+        "man_bomb": None,
+        "living_fortress": None,
+        "fire_cough": None,
+    }
+    d.update(kwargs)
+    return d
+
+
+def _base_snapshot_player_bonus_timers(**kwargs: object) -> dict[str, object]:
+    d: dict[str, object] = {
+        "speed_bonus": None,
+        "shield": None,
+        "fire_bullets": None,
+    }
+    d.update(kwargs)
+    return d
+
+
+def _base_snapshot_player_alt_weapon(**kwargs: object) -> dict[str, object]:
+    d: dict[str, object] = {
+        "weapon_id": None,
+        "clip_size_i32": None,
+        "reload_active_i32": None,
+        "ammo_i32": None,
+        "reload_timer": None,
+        "shot_cooldown": None,
+        "reload_timer_max": None,
+    }
+    d.update(kwargs)
+    return d
+
+
+def _base_snapshot_player(**kwargs: object) -> dict[str, object]:
+    d: dict[str, object] = {
+        "index": 0,
+        "pos_x": None,
+        "pos_y": None,
+        "move_dx": None,
+        "move_dy": None,
+        "health": None,
+        "aim_x": None,
+        "aim_y": None,
+        "aim_heading": None,
+        "weapon_id": None,
+        "clip_size_i32": None,
+        "clip_size_f32": None,
+        "ammo_i32": None,
+        "ammo_f32": None,
+        "reload_active_i32": None,
+        "reload_active_f32": None,
+        "reload_timer": None,
+        "reload_timer_max": None,
+        "shot_cooldown": None,
+        "spread_heat": None,
+        "experience": None,
+        "level": None,
+        "perk_timers": _base_snapshot_player_perk_timers(),
+        "bonus_timers": _base_snapshot_player_bonus_timers(),
+        "alt_weapon": _base_snapshot_player_alt_weapon(),
+    }
+    d.update(kwargs)
+    return d
+
+
+def _base_snapshot(**kwargs: object) -> dict[str, object]:
+    d: dict[str, object] = {
+        "globals": _base_snapshot_globals(),
+        "status": _base_snapshot_status(),
+        "player_count": 1,
+        "players": [],
+        "input": _base_snapshot_input(),
+        "input_bindings": _base_snapshot_input_bindings(),
+    }
+    d.update(kwargs)
+    return d
+
+
+def _base_timing_diagnostics(**kwargs: object) -> dict[str, object]:
+    d: dict[str, object] = {
+        "gameplay_frame": 0,
+        "gameplay_frame_delta_prev_tick": None,
+        "elapsed_ms_before": 0,
+        "elapsed_ms_after": 0,
+        "elapsed_delta_in_tick_ms": 0,
+        "elapsed_delta_prev_tick_ms": None,
+        "frame_dt_before": None,
+        "frame_dt_after": None,
+        "frame_dt_ms_before_i32": None,
+        "frame_dt_ms_after_i32": None,
+        "frame_dt_ms_before_f32": None,
+        "frame_dt_ms_after_f32": None,
+        "frame_dt_source_before": "none",
+        "frame_dt_source_after": "none",
+        "mode_tick_event_count": 0,
+        "mode_tick_sample_count": 0,
+        "mode_tick_mode_fn_head": [],
+        "mode_tick_present": False,
+    }
+    d.update(kwargs)
+    return d
+
+
+def _base_spawn_diagnostics(**kwargs: object) -> dict[str, object]:
+    d: dict[str, object] = {
+        "before_creature_count": 0,
+        "after_creature_count": 0,
+        "creature_count_delta": 0,
+        "event_count_template": 0,
+        "event_count_low_level": 0,
+        "event_count_creature_damage": 0,
+        "event_count_projectile_find_query": 0,
+        "event_count_projectile_find_hit": 0,
+        "event_count_projectile_find_query_miss": 0,
+        "event_count_projectile_find_query_owner_collision": 0,
+        "event_count_death": 0,
+        "top_template_callers": [],
+        "top_low_level_callers": [],
+        "top_low_level_sources": [],
+        "top_creature_damage_callers": [],
+        "top_projectile_find_query_callers": [],
+        "top_projectile_find_hit_callers": [],
+        "top_death_callers": [],
+        "event_count_blood_splatter": 0,
+        "blood_splatter_rng_draws": 0,
+        "blood_splatter_projectile_update_calls": 0,
+        "top_blood_splatter_callers": [],
+        "top_blood_splatter_rng_draw_callers": [],
+        "event_count_bonus_spawn": 0,
+        "top_bonus_spawn_callers": [],
+        "mode_samples": [],
+    }
+    d.update(kwargs)
+    return d
+
+
+def _base_rng_diagnostics(**kwargs: object) -> dict[str, object]:
+    d: dict[str, object] = {
+        "seq_first": None,
+        "seq_last": None,
+        "seed_epoch_enter": None,
+        "seed_epoch_last": None,
+        "outside_before_calls": 0,
+        "outside_before_dropped": 0,
+        "outside_before_head": [],
+        "mirror_mismatch_total_enter": 0,
+        "mirror_mismatch_total_leave": 0,
+        "mirror_unknown_total_enter": 0,
+        "mirror_unknown_total_leave": 0,
+        "roll_log_emitted_total": 0,
+        "roll_log_dropped_total": 0,
+    }
+    d.update(kwargs)
+    return d
+
+
+def _base_player_fire_diagnostics(**kwargs: object) -> dict[str, object]:
+    d: dict[str, object] = {
+        "event_count_player_fire": 0,
+        "top_direct_events_by_player": [],
+        "top_fallback_events_by_player": [],
+        "top_player_projectile_spawns_by_player": [],
+    }
+    d.update(kwargs)
+    return d
+
+
 def _base_checkpoint(
     *,
     tick_index: int,
@@ -291,12 +554,12 @@ def _base_checkpoint(
         },
         "debug": {
             "sampling_phase": "",
-            "timing": {},
-            "spawn": {},
-            "rng": {},
+            "timing": _base_timing_diagnostics(),
+            "spawn": _base_spawn_diagnostics(),
+            "rng": _base_rng_diagnostics(),
             "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
             "creature_lifecycle": None,
-            "player_fire": None,
+            "player_fire": _base_player_fire_diagnostics(),
             "before_players": [],
             "before_status": {
                 "quest_unlock_index": 0,
@@ -336,8 +599,8 @@ def _base_tick(
         },
         "input_player_keys": [_base_input_player_keys(**{})],
         "input_approx": [_base_input_approx(**{})],
-        "before": {"globals": {}, "status": {}, "player_count": 1, "players": [], "input": {}, "input_bindings": {}},
-        "after": {"globals": {}, "status": {}, "player_count": 1, "players": [], "input": {}, "input_bindings": {}},
+        "before": _base_snapshot(),
+        "after": _base_snapshot(),
         "focus_tick": False,
         "state_id_enter": None,
         "state_id_leave": None,
@@ -356,9 +619,13 @@ def _base_tick(
         "perk_apply_in_tick": [],
         "rng": _base_rng_summary(),
         "diagnostics": {
-            "sampling_phase": "", "timing": {}, "spawn": {}, "rng": {},
+            "sampling_phase": "",
+            "timing": _base_timing_diagnostics(),
+            "spawn": _base_spawn_diagnostics(),
+            "rng": _base_rng_diagnostics(),
             "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
-            "creature_lifecycle": None, "player_fire": None,
+            "creature_lifecycle": None,
+            "player_fire": _base_player_fire_diagnostics(),
         },
         "frame_dt_ms": None,
         "frame_dt_ms_i32": None,
@@ -661,42 +928,12 @@ def test_load_capture_rejects_unsupported_capture_format_version(tmp_path: Path)
         load_capture(path)
 
 
-def test_load_capture_decodes_f32_tokens(tmp_path: Path) -> None:
+def test_load_capture_rejects_f32_token_strings(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     player0 = _tick_player(tick)
     pos = _as_obj_dict(player0.get("pos"))
     pos["x"] = "f32:3f800000"
     player0["health"] = "f32:42c80000"
-    obj = _capture_obj(ticks=[tick])
-    path = tmp_path / "capture.json"
-    _write_capture(path, obj)
-
-    capture = load_capture(path)
-
-    assert capture.ticks[0].checkpoint.players[0].pos.x == pytest.approx(1.0)
-    assert capture.ticks[0].checkpoint.players[0].health == pytest.approx(100.0)
-
-
-def test_load_capture_decodes_f32_tokens_with_0x_prefix(tmp_path: Path) -> None:
-    tick = _base_tick(tick_index=0, elapsed_ms=16)
-    player0 = _tick_player(tick)
-    pos = _as_obj_dict(player0.get("pos"))
-    pos["x"] = "f32:0x3f800000"
-    player0["health"] = "f32:0X42c80000"
-    obj = _capture_obj(ticks=[tick])
-    path = tmp_path / "capture.json"
-    _write_capture(path, obj)
-
-    capture = load_capture(path)
-
-    assert capture.ticks[0].checkpoint.players[0].pos.x == pytest.approx(1.0)
-    assert capture.ticks[0].checkpoint.players[0].health == pytest.approx(100.0)
-
-
-def test_load_capture_rejects_invalid_f32_token(tmp_path: Path) -> None:
-    tick = _base_tick(tick_index=0, elapsed_ms=16)
-    player0 = _tick_player(tick)
-    player0["ammo"] = "f32:bad"
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -954,14 +1191,14 @@ def test_load_capture_accepts_player_fire_debug_payloads(tmp_path: Path) -> None
     debug = _as_obj_dict(_tick_checkpoint(tick).get("debug"))
     debug["player_fire"] = {
         "event_count_player_fire": 3,
-        "top_direct_events_by_player": [{"player_index": 0, "count": 1}],
-        "top_fallback_events_by_player": [{"player_index": 0, "count": 2}],
-        "top_player_projectile_spawns_by_player": [{"player_index": 0, "count": 3}],
+        "top_direct_events_by_player": [{"key": "0", "count": 1}],
+        "top_fallback_events_by_player": [{"key": "0", "count": 2}],
+        "top_player_projectile_spawns_by_player": [{"key": "0", "count": 3}],
     }
     diagnostics = _tick_diagnostics(tick)
     diagnostics["player_fire"] = {
         "event_count_player_fire": 4,
-        "top_direct_events_by_player": [{"player_index": 0, "count": 4}],
+        "top_direct_events_by_player": [{"key": "0", "count": 4}],
         "top_fallback_events_by_player": [],
         "top_player_projectile_spawns_by_player": [],
     }
@@ -972,9 +1209,9 @@ def test_load_capture_accepts_player_fire_debug_payloads(tmp_path: Path) -> None
     capture = load_capture(path)
 
     assert capture.ticks[0].checkpoint.debug.player_fire is not None
-    assert capture.ticks[0].checkpoint.debug.player_fire.get("event_count_player_fire") == 3
+    assert capture.ticks[0].checkpoint.debug.player_fire.event_count_player_fire == 3
     assert capture.ticks[0].diagnostics.player_fire is not None
-    assert capture.ticks[0].diagnostics.player_fire.get("event_count_player_fire") == 4
+    assert capture.ticks[0].diagnostics.player_fire.event_count_player_fire == 4
 
 
 def test_load_capture_stream_rejects_truncated_last_line(tmp_path: Path) -> None:
@@ -1350,34 +1587,43 @@ def test_convert_capture_to_replay_bootstrap_payload_prefers_before_player_runti
     tick0 = _base_tick(tick_index=42, elapsed_ms=7000, perk_pending=2, score_xp=11)
     _tick_player(tick0)["ammo"] = 11.0
     _tick_player(tick0)["experience"] = 11
-    tick0["before"] = {
-        "globals": {
-            "time_played_ms": 6951,
-            "perk_pending_count": 1,
-            "bonus_weapon_power_up_timer": 0.25,
-        },
-        "status": {},
-        "player_count": 1,
-        "players": [
+    tick0["before"] = _base_snapshot(
+        globals=_base_snapshot_globals(
+            time_played_ms=6951,
+            perk_pending_count=1,
+            bonus_weapon_power_up_timer=0.25,
+        ),
+        players=[
             {
+                "index": 0,
                 "pos_x": 500.0,
                 "pos_y": 501.0,
+                "move_dx": 0.0,
+                "move_dy": 0.0,
                 "health": 90.0,
+                "aim_x": 300.0,
+                "aim_y": 320.0,
+                "aim_heading": 1.2,
                 "weapon_id": 1,
-                "ammo_f32": 12.0,
-                "experience": 7,
-                "level": 2,
+                "clip_size_i32": 0x41400000,
                 "clip_size_f32": 12.0,
+                "ammo_i32": 0x41400000,
+                "ammo_f32": 12.0,
                 "reload_active_i32": 1,
+                "reload_active_f32": 1.0,
                 "reload_timer": 0.5,
                 "reload_timer_max": 1.0,
                 "shot_cooldown": 0.25,
                 "spread_heat": 0.0,
-                "aim_x": 300.0,
-                "aim_y": 320.0,
-                "aim_heading": 1.2,
+                "experience": 7,
+                "level": 2,
                 "bonus_timers": {"speed_bonus": 1.2, "shield": 0.5, "fire_bullets": 0.0},
-                "perk_timers": {"hot_tempered": 1.36, "man_bomb": 0.0, "living_fortress": 0.0, "fire_cough": 0.0},
+                "perk_timers": {
+                    "hot_tempered": 1.36,
+                    "man_bomb": 0.0,
+                    "living_fortress": 0.0,
+                    "fire_cough": 0.0,
+                },
                 "alt_weapon": {
                     "weapon_id": 4,
                     "clip_size_i32": 0x41200000,  # 10.0f
@@ -1389,9 +1635,7 @@ def test_convert_capture_to_replay_bootstrap_payload_prefers_before_player_runti
                 },
             },
         ],
-        "input": {},
-        "input_bindings": {},
-    }
+    )
 
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -1450,22 +1694,94 @@ def test_convert_capture_to_replay_bootstrap_payload_infers_perk_intervals_from_
 ) -> None:
     tick0 = _base_tick(tick_index=10, elapsed_ms=1000)
     tick1 = _base_tick(tick_index=11, elapsed_ms=1083)
-    tick0["before"] = {
-        "globals": {},
-        "status": {},
-        "player_count": 1,
-        "players": [{"perk_timers": {"hot_tempered": 1.3659999, "man_bomb": 0.0, "living_fortress": 0.0, "fire_cough": 0.0}}],
-        "input": {},
-        "input_bindings": {},
-    }
-    tick1["before"] = {
-        "globals": {},
-        "status": {},
-        "player_count": 1,
-        "players": [{"perk_timers": {"hot_tempered": 0.0489999, "man_bomb": 0.0, "living_fortress": 0.0, "fire_cough": 0.0}}],
-        "input": {},
-        "input_bindings": {},
-    }
+    tick0["before"] = _base_snapshot(
+        players=[
+            {
+                "index": 0,
+                "pos_x": 0.0,
+                "pos_y": 0.0,
+                "move_dx": 0.0,
+                "move_dy": 0.0,
+                "health": 100.0,
+                "aim_x": 0.0,
+                "aim_y": 0.0,
+                "aim_heading": 0.0,
+                "weapon_id": 1,
+                "clip_size_i32": 0,
+                "clip_size_f32": 0.0,
+                "ammo_i32": 0,
+                "ammo_f32": 0.0,
+                "reload_active_i32": 0,
+                "reload_active_f32": 0.0,
+                "reload_timer": 0.0,
+                "reload_timer_max": 0.0,
+                "shot_cooldown": 0.0,
+                "spread_heat": 0.0,
+                "experience": 0,
+                "level": 1,
+                "bonus_timers": {"speed_bonus": 0.0, "shield": 0.0, "fire_bullets": 0.0},
+                "perk_timers": {
+                    "hot_tempered": 1.3659999,
+                    "man_bomb": 0.0,
+                    "living_fortress": 0.0,
+                    "fire_cough": 0.0,
+                },
+                "alt_weapon": {
+                    "weapon_id": 0,
+                    "clip_size_i32": 0,
+                    "reload_active_i32": 0,
+                    "ammo_i32": 0,
+                    "reload_timer": 0.0,
+                    "shot_cooldown": 0.0,
+                    "reload_timer_max": 0.0,
+                },
+            },
+        ],
+    )
+    tick1["before"] = _base_snapshot(
+        players=[
+            {
+                "index": 0,
+                "pos_x": 0.0,
+                "pos_y": 0.0,
+                "move_dx": 0.0,
+                "move_dy": 0.0,
+                "health": 100.0,
+                "aim_x": 0.0,
+                "aim_y": 0.0,
+                "aim_heading": 0.0,
+                "weapon_id": 1,
+                "clip_size_i32": 0,
+                "clip_size_f32": 0.0,
+                "ammo_i32": 0,
+                "ammo_f32": 0.0,
+                "reload_active_i32": 0,
+                "reload_active_f32": 0.0,
+                "reload_timer": 0.0,
+                "reload_timer_max": 0.0,
+                "shot_cooldown": 0.0,
+                "spread_heat": 0.0,
+                "experience": 0,
+                "level": 1,
+                "bonus_timers": {"speed_bonus": 0.0, "shield": 0.0, "fire_bullets": 0.0},
+                "perk_timers": {
+                    "hot_tempered": 0.0489999,
+                    "man_bomb": 0.0,
+                    "living_fortress": 0.0,
+                    "fire_cough": 0.0,
+                },
+                "alt_weapon": {
+                    "weapon_id": 0,
+                    "clip_size_i32": 0,
+                    "reload_active_i32": 0,
+                    "ammo_i32": 0,
+                    "reload_timer": 0.0,
+                    "shot_cooldown": 0.0,
+                    "reload_timer_max": 0.0,
+                },
+            },
+        ],
+    )
     _as_obj_dict(_tick_checkpoint(tick0)["perk"])["player_nonzero_counts"] = [[[31, 1]]]
     _as_obj_dict(_tick_checkpoint(tick1)["perk"])["player_nonzero_counts"] = [[[31, 1]]]
 
@@ -1493,22 +1809,94 @@ def test_convert_capture_to_replay_bootstrap_payload_ignores_inactive_timer_rese
 ) -> None:
     tick0 = _base_tick(tick_index=10, elapsed_ms=1000)
     tick1 = _base_tick(tick_index=11, elapsed_ms=1083)
-    tick0["before"] = {
-        "globals": {},
-        "status": {},
-        "player_count": 1,
-        "players": [{"perk_timers": {"hot_tempered": 2.63, "man_bomb": 0.0, "living_fortress": 0.0, "fire_cough": 0.0}}],
-        "input": {},
-        "input_bindings": {},
-    }
-    tick1["before"] = {
-        "globals": {},
-        "status": {},
-        "player_count": 1,
-        "players": [{"perk_timers": {"hot_tempered": 0.0, "man_bomb": 0.0, "living_fortress": 0.0, "fire_cough": 0.0}}],
-        "input": {},
-        "input_bindings": {},
-    }
+    tick0["before"] = _base_snapshot(
+        players=[
+            {
+                "index": 0,
+                "pos_x": 0.0,
+                "pos_y": 0.0,
+                "move_dx": 0.0,
+                "move_dy": 0.0,
+                "health": 100.0,
+                "aim_x": 0.0,
+                "aim_y": 0.0,
+                "aim_heading": 0.0,
+                "weapon_id": 1,
+                "clip_size_i32": 0,
+                "clip_size_f32": 0.0,
+                "ammo_i32": 0,
+                "ammo_f32": 0.0,
+                "reload_active_i32": 0,
+                "reload_active_f32": 0.0,
+                "reload_timer": 0.0,
+                "reload_timer_max": 0.0,
+                "shot_cooldown": 0.0,
+                "spread_heat": 0.0,
+                "experience": 0,
+                "level": 1,
+                "bonus_timers": {"speed_bonus": 0.0, "shield": 0.0, "fire_bullets": 0.0},
+                "perk_timers": {
+                    "hot_tempered": 2.63,
+                    "man_bomb": 0.0,
+                    "living_fortress": 0.0,
+                    "fire_cough": 0.0,
+                },
+                "alt_weapon": {
+                    "weapon_id": 0,
+                    "clip_size_i32": 0,
+                    "reload_active_i32": 0,
+                    "ammo_i32": 0,
+                    "reload_timer": 0.0,
+                    "shot_cooldown": 0.0,
+                    "reload_timer_max": 0.0,
+                },
+            },
+        ],
+    )
+    tick1["before"] = _base_snapshot(
+        players=[
+            {
+                "index": 0,
+                "pos_x": 0.0,
+                "pos_y": 0.0,
+                "move_dx": 0.0,
+                "move_dy": 0.0,
+                "health": 100.0,
+                "aim_x": 0.0,
+                "aim_y": 0.0,
+                "aim_heading": 0.0,
+                "weapon_id": 1,
+                "clip_size_i32": 0,
+                "clip_size_f32": 0.0,
+                "ammo_i32": 0,
+                "ammo_f32": 0.0,
+                "reload_active_i32": 0,
+                "reload_active_f32": 0.0,
+                "reload_timer": 0.0,
+                "reload_timer_max": 0.0,
+                "shot_cooldown": 0.0,
+                "spread_heat": 0.0,
+                "experience": 0,
+                "level": 1,
+                "bonus_timers": {"speed_bonus": 0.0, "shield": 0.0, "fire_bullets": 0.0},
+                "perk_timers": {
+                    "hot_tempered": 0.0,
+                    "man_bomb": 0.0,
+                    "living_fortress": 0.0,
+                    "fire_cough": 0.0,
+                },
+                "alt_weapon": {
+                    "weapon_id": 0,
+                    "clip_size_i32": 0,
+                    "reload_active_i32": 0,
+                    "ammo_i32": 0,
+                    "reload_timer": 0.0,
+                    "shot_cooldown": 0.0,
+                    "reload_timer_max": 0.0,
+                },
+            },
+        ],
+    )
     _as_obj_dict(_tick_checkpoint(tick0)["perk"])["player_nonzero_counts"] = [[]]
     _as_obj_dict(_tick_checkpoint(tick1)["perk"])["player_nonzero_counts"] = [[]]
 
@@ -1536,22 +1924,94 @@ def test_convert_capture_to_replay_bootstrap_payload_does_not_infer_man_bomb_fro
 ) -> None:
     tick0 = _base_tick(tick_index=10, elapsed_ms=1000)
     tick1 = _base_tick(tick_index=11, elapsed_ms=1076)
-    tick0["before"] = {
-        "globals": {},
-        "status": {},
-        "player_count": 1,
-        "players": [{"perk_timers": {"hot_tempered": 0.0, "man_bomb": 1.225, "living_fortress": 0.0, "fire_cough": 0.0}}],
-        "input": {},
-        "input_bindings": {},
-    }
-    tick1["before"] = {
-        "globals": {},
-        "status": {},
-        "player_count": 1,
-        "players": [{"perk_timers": {"hot_tempered": 0.0, "man_bomb": 0.0, "living_fortress": 0.0, "fire_cough": 0.0}}],
-        "input": {},
-        "input_bindings": {},
-    }
+    tick0["before"] = _base_snapshot(
+        players=[
+            {
+                "index": 0,
+                "pos_x": 0.0,
+                "pos_y": 0.0,
+                "move_dx": 0.0,
+                "move_dy": 0.0,
+                "health": 100.0,
+                "aim_x": 0.0,
+                "aim_y": 0.0,
+                "aim_heading": 0.0,
+                "weapon_id": 1,
+                "clip_size_i32": 0,
+                "clip_size_f32": 0.0,
+                "ammo_i32": 0,
+                "ammo_f32": 0.0,
+                "reload_active_i32": 0,
+                "reload_active_f32": 0.0,
+                "reload_timer": 0.0,
+                "reload_timer_max": 0.0,
+                "shot_cooldown": 0.0,
+                "spread_heat": 0.0,
+                "experience": 0,
+                "level": 1,
+                "bonus_timers": {"speed_bonus": 0.0, "shield": 0.0, "fire_bullets": 0.0},
+                "perk_timers": {
+                    "hot_tempered": 0.0,
+                    "man_bomb": 1.225,
+                    "living_fortress": 0.0,
+                    "fire_cough": 0.0,
+                },
+                "alt_weapon": {
+                    "weapon_id": 0,
+                    "clip_size_i32": 0,
+                    "reload_active_i32": 0,
+                    "ammo_i32": 0,
+                    "reload_timer": 0.0,
+                    "shot_cooldown": 0.0,
+                    "reload_timer_max": 0.0,
+                },
+            },
+        ],
+    )
+    tick1["before"] = _base_snapshot(
+        players=[
+            {
+                "index": 0,
+                "pos_x": 0.0,
+                "pos_y": 0.0,
+                "move_dx": 0.0,
+                "move_dy": 0.0,
+                "health": 100.0,
+                "aim_x": 0.0,
+                "aim_y": 0.0,
+                "aim_heading": 0.0,
+                "weapon_id": 1,
+                "clip_size_i32": 0,
+                "clip_size_f32": 0.0,
+                "ammo_i32": 0,
+                "ammo_f32": 0.0,
+                "reload_active_i32": 0,
+                "reload_active_f32": 0.0,
+                "reload_timer": 0.0,
+                "reload_timer_max": 0.0,
+                "shot_cooldown": 0.0,
+                "spread_heat": 0.0,
+                "experience": 0,
+                "level": 1,
+                "bonus_timers": {"speed_bonus": 0.0, "shield": 0.0, "fire_bullets": 0.0},
+                "perk_timers": {
+                    "hot_tempered": 0.0,
+                    "man_bomb": 0.0,
+                    "living_fortress": 0.0,
+                    "fire_cough": 0.0,
+                },
+                "alt_weapon": {
+                    "weapon_id": 0,
+                    "clip_size_i32": 0,
+                    "reload_active_i32": 0,
+                    "ammo_i32": 0,
+                    "reload_timer": 0.0,
+                    "shot_cooldown": 0.0,
+                    "reload_timer_max": 0.0,
+                },
+            },
+        ],
+    )
     _as_obj_dict(_tick_checkpoint(tick0)["perk"])["player_nonzero_counts"] = [[[53, 1]]]
     _as_obj_dict(_tick_checkpoint(tick1)["perk"])["player_nonzero_counts"] = [[[53, 1]]]
 
@@ -1905,7 +2365,7 @@ def test_build_capture_dt_frame_overrides_prefers_timing_frame_dt_after_over_i32
     tick0["frame_dt_ms_i32"] = 30
     diagnostics = _tick_diagnostics(tick0)
     timing = _as_obj_dict(diagnostics.get("timing"))
-    timing["frame_dt_after"] = "f32:3ced9169"
+    timing["frame_dt_after"] = 0.029000001028180122
     tick1 = _base_tick(tick_index=1, elapsed_ms=29)
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -2422,65 +2882,55 @@ def test_convert_capture_to_replay_synthesizes_reload_for_alt_weapon_swap_from_b
     _tick_player(tick0)["weapon_id"] = 1
     _tick_player(tick0)["ammo"] = 12.0
     tick0["input_player_keys"] = [_base_input_player_keys(**{"player_index": 0})]
-    tick0["before"] = {
-        "globals": {},
-        "status": {},
-        "player_count": 1,
-        "players": [
-            {
-                "weapon_id": 11,
-                "ammo_i32": 0,
-                "clip_size_i32": 1106247680,
-                "reload_active_i32": 1,
-                "reload_timer": 0.9989999,
-                "reload_timer_max": 1.3,
-                "shot_cooldown": 0.0,
-                "alt_weapon": {
-                    "weapon_id": 1,
-                    "clip_size_i32": 1094713344,
-                    "reload_active_i32": 0,
-                    "ammo_i32": 1094713344,
-                    "reload_timer": 0.0,
-                    "shot_cooldown": 0.0,
-                    "reload_timer_max": 1.2,
-                },
-            },
+    tick0["before"] = _base_snapshot(
+        players=[
+            _base_snapshot_player(
+                weapon_id=11,
+                ammo_i32=0,
+                clip_size_i32=1106247680,
+                reload_active_i32=1,
+                reload_timer=0.9989999,
+                reload_timer_max=1.3,
+                shot_cooldown=0.0,
+                alt_weapon=_base_snapshot_player_alt_weapon(
+                    weapon_id=1,
+                    clip_size_i32=1094713344,
+                    reload_active_i32=0,
+                    ammo_i32=1094713344,
+                    reload_timer=0.0,
+                    shot_cooldown=0.0,
+                    reload_timer_max=1.2,
+                ),
+            ),
         ],
-        "input": {},
-        "input_bindings": {},
-    }
+    )
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
     _tick_player(tick1)["weapon_id"] = 1
     _tick_player(tick1)["ammo"] = 12.0
     tick1["input_player_keys"] = [_base_input_player_keys(**{"player_index": 0})]
-    tick1["before"] = {
-        "globals": {},
-        "status": {},
-        "player_count": 1,
-        "players": [
-            {
-                "weapon_id": 1,
-                "ammo_i32": 1094713344,
-                "clip_size_i32": 1094713344,
-                "reload_active_i32": 0,
-                "reload_timer": 0.0,
-                "reload_timer_max": 1.2,
-                "shot_cooldown": 0.1,
-                "alt_weapon": {
-                    "weapon_id": 11,
-                    "clip_size_i32": 1106247680,
-                    "reload_active_i32": 1,
-                    "ammo_i32": 0,
-                    "reload_timer": 0.9409999,
-                    "shot_cooldown": 0.0,
-                    "reload_timer_max": 1.3,
-                },
-            },
+    tick1["before"] = _base_snapshot(
+        players=[
+            _base_snapshot_player(
+                weapon_id=1,
+                ammo_i32=1094713344,
+                clip_size_i32=1094713344,
+                reload_active_i32=0,
+                reload_timer=0.0,
+                reload_timer_max=1.2,
+                shot_cooldown=0.1,
+                alt_weapon=_base_snapshot_player_alt_weapon(
+                    weapon_id=11,
+                    clip_size_i32=1106247680,
+                    reload_active_i32=1,
+                    ammo_i32=0,
+                    reload_timer=0.9409999,
+                    shot_cooldown=0.0,
+                    reload_timer_max=1.3,
+                ),
+            ),
         ],
-        "input": {},
-        "input_bindings": {},
-    }
+    )
 
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -2650,22 +3100,17 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_ammo_dr
             "fired_events": 0,
         },
     ]
-    tick0["before"] = {
-        "globals": {},
-        "status": {},
-        "player_count": 1,
-        "players": [
-            {
-                "weapon_id": int(WeaponId.FLAMETHROWER),
-                "ammo_f32": 30.0,
-                "reload_active_i32": 0,
-                "reload_timer": 0.0,
-                "shot_cooldown": 0.0,
-            },
+    tick0["before"] = _base_snapshot(
+        players=[
+            _base_snapshot_player(
+                weapon_id=int(WeaponId.FLAMETHROWER),
+                ammo_f32=30.0,
+                reload_active_i32=0,
+                reload_timer=0.0,
+                shot_cooldown=0.0,
+            ),
         ],
-        "input": {},
-        "input_bindings": {},
-    }
+    )
 
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -2703,24 +3148,19 @@ def test_convert_capture_to_replay_synthesizes_fire_down_when_fractional_weapon_
             "fired_events": 0,
         },
     ]
-    tick0["before"] = {
-        "globals": {},
-        "status": {},
-        "player_count": 1,
-        "players": [
-            {
-                "weapon_id": int(WeaponId.FLAMETHROWER),
-                "ammo_f32": -7.8e-5,
-                "clip_size_f32": 30.0,
-                "reload_active_i32": 1,
-                "reload_timer": 0.046,
-                "reload_timer_max": 2.0,
-                "shot_cooldown": 0.0,
-            },
+    tick0["before"] = _base_snapshot(
+        players=[
+            _base_snapshot_player(
+                weapon_id=int(WeaponId.FLAMETHROWER),
+                ammo_f32=-7.8e-5,
+                clip_size_f32=30.0,
+                reload_active_i32=1,
+                reload_timer=0.046,
+                reload_timer_max=2.0,
+                shot_cooldown=0.0,
+            ),
         ],
-        "input": {},
-        "input_bindings": {},
-    }
+    )
 
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -2749,21 +3189,16 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_weapon_
             "reload_pressed": None,
         },
     ]
-    tick0["before"] = {
-        "globals": {},
-        "status": {},
-        "player_count": 1,
-        "players": [
-            {
-                "weapon_id": int(WeaponId.FLAMETHROWER),
-                "ammo_f32": 6.4,
-                "reload_active_i32": 0,
-                "reload_timer": 0.0,
-            },
+    tick0["before"] = _base_snapshot(
+        players=[
+            _base_snapshot_player(
+                weapon_id=int(WeaponId.FLAMETHROWER),
+                ammo_f32=6.4,
+                reload_active_i32=0,
+                reload_timer=0.0,
+            ),
         ],
-        "input": {},
-        "input_bindings": {},
-    }
+    )
     tick0["event_heads"] = [
         {
             "kind": "sfx",
@@ -2800,14 +3235,7 @@ def test_convert_capture_to_replay_synthesizes_fire_pressed_from_primary_edge_wh
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["before"] = {
-        "globals": {"config_aim_scheme": [5]},
-        "status": {},
-        "player_count": 1,
-        "players": [],
-        "input": {},
-        "input_bindings": {},
-    }
+    tick0["before"] = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
     tick0["input_queries"] = {
         "stats": {
             "primary_edge": {"calls": 1, "true_calls": 1},
@@ -2850,14 +3278,7 @@ def test_convert_capture_to_replay_synthesizes_fire_pressed_from_primary_edge_wh
 
 def test_convert_capture_to_replay_synthesizes_computer_aim_fire_down_from_projectile_spawn(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["before"] = {
-        "globals": {"config_aim_scheme": [5]},
-        "status": {},
-        "player_count": 1,
-        "players": [],
-        "input": {},
-        "input_bindings": {},
-    }
+    tick0["before"] = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
     tick0["input_player_keys"] = [
         {
             "player_index": 0,
@@ -2888,14 +3309,7 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_non_wea
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["before"] = {
-        "globals": {"config_aim_scheme": [5]},
-        "status": {},
-        "player_count": 1,
-        "players": [],
-        "input": {},
-        "input_bindings": {},
-    }
+    tick0["before"] = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
     _tick_player(tick0)["weapon_id"] = 29
     tick0["input_player_keys"] = [
         {
@@ -2926,14 +3340,7 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_non_wea
 
 def test_convert_capture_to_replay_does_not_synthesize_non_computer_fire_down(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["before"] = {
-        "globals": {"config_aim_scheme": [0]},
-        "status": {},
-        "player_count": 1,
-        "players": [],
-        "input": {},
-        "input_bindings": {},
-    }
+    tick0["before"] = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[0]))
     tick0["input_player_keys"] = [
         {
             "player_index": 0,
@@ -3060,7 +3467,12 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_secondary_p
     _tick_player(tick1)["ammo"] = 5.0
     tick1["input_player_keys"] = [_base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False})]
     tick1["input_approx"] = [_base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 17})]
-    tick1["event_heads"] = [{"kind": "secondary_projectile_spawn", "data": {"requested_type_id": 2, "actual_type_id": 0}}]
+    tick1["event_heads"] = [
+        {
+            "kind": "secondary_projectile_spawn",
+            "data": {"owner_id": -100, "requested_type_id": 2, "actual_type_id": 0},
+        },
+    ]
 
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -3078,14 +3490,7 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_secondary_p
 
 def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_bonus_projectile_spawn(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["before"] = {
-        "globals": {"config_aim_scheme": [5]},
-        "status": {},
-        "player_count": 1,
-        "players": [],
-        "input": {},
-        "input_bindings": {},
-    }
+    tick0["before"] = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
     _tick_player(tick0)["weapon_id"] = 5
     _tick_player(tick0)["ammo"] = 12.0
     tick0["input_player_keys"] = [_base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False})]
@@ -3112,14 +3517,7 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_nuke_fi
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["before"] = {
-        "globals": {"config_aim_scheme": [5]},
-        "status": {},
-        "player_count": 1,
-        "players": [],
-        "input": {},
-        "input_bindings": {},
-    }
+    tick0["before"] = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
     _tick_player(tick0)["weapon_id"] = 23
     _tick_player(tick0)["ammo"] = 6.0
     tick0["input_player_keys"] = [_base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False})]

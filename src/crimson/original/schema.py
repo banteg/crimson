@@ -181,14 +181,147 @@ class CaptureCheckpointDebugStatus(msgspec.Struct, forbid_unknown_fields=True):
     quest_unlock_index_full: int
 
 
+class CaptureCounterEntry(msgspec.Struct, forbid_unknown_fields=True):
+    key: str
+    count: int
+
+
+class CaptureModeTickSamplePoint(msgspec.Struct, forbid_unknown_fields=True):
+    creature_active_count: int | None
+    time_played_ms: int | None
+    frame_dt_ms_i32: int | None
+    frame_dt_ms_f32: float | None
+    quest_spawn_timeline: int | None
+    quest_spawn_stall_timer_ms: int | None
+
+
+class CaptureModeTickSampleDelta(msgspec.Struct, forbid_unknown_fields=True):
+    creature_active_count: int | None
+    time_played_ms: int | None
+
+
+class CaptureModeTickSample(msgspec.Struct, forbid_unknown_fields=True):
+    mode_fn: str
+    before: CaptureModeTickSamplePoint
+    after: CaptureModeTickSamplePoint
+    delta: CaptureModeTickSampleDelta
+
+
+class CaptureTimingDiagnostics(msgspec.Struct, forbid_unknown_fields=True):
+    gameplay_frame: int
+    gameplay_frame_delta_prev_tick: int | None
+    elapsed_ms_before: int | None
+    elapsed_ms_after: int | None
+    elapsed_delta_in_tick_ms: int | None
+    elapsed_delta_prev_tick_ms: int | None
+    frame_dt_before: float | None
+    frame_dt_after: float | None
+    frame_dt_ms_before_i32: int | None
+    frame_dt_ms_after_i32: int | None
+    frame_dt_ms_before_f32: float | None
+    frame_dt_ms_after_f32: float | None
+    frame_dt_source_before: str
+    frame_dt_source_after: str
+    mode_tick_event_count: int
+    mode_tick_sample_count: int
+    mode_tick_mode_fn_head: list[str]
+    mode_tick_present: bool
+
+
+class CaptureSpawnDiagnostics(msgspec.Struct, forbid_unknown_fields=True):
+    before_creature_count: int | None
+    after_creature_count: int | None
+    creature_count_delta: int | None
+    event_count_template: int
+    event_count_low_level: int
+    event_count_creature_damage: int
+    event_count_projectile_find_query: int
+    event_count_projectile_find_hit: int
+    event_count_projectile_find_query_miss: int
+    event_count_projectile_find_query_owner_collision: int
+    event_count_death: int
+    top_template_callers: list[CaptureCounterEntry]
+    top_low_level_callers: list[CaptureCounterEntry]
+    top_low_level_sources: list[CaptureCounterEntry]
+    top_creature_damage_callers: list[CaptureCounterEntry]
+    top_projectile_find_query_callers: list[CaptureCounterEntry]
+    top_projectile_find_hit_callers: list[CaptureCounterEntry]
+    top_death_callers: list[CaptureCounterEntry]
+    event_count_blood_splatter: int
+    blood_splatter_rng_draws: int
+    blood_splatter_projectile_update_calls: int
+    top_blood_splatter_callers: list[CaptureCounterEntry]
+    top_blood_splatter_rng_draw_callers: list[CaptureCounterEntry]
+    event_count_bonus_spawn: int
+    top_bonus_spawn_callers: list[CaptureCounterEntry]
+    mode_samples: list[CaptureModeTickSample]
+
+
+class CaptureRngDiagnostics(msgspec.Struct, forbid_unknown_fields=True):
+    seq_first: int | None
+    seq_last: int | None
+    seed_epoch_enter: int | None
+    seed_epoch_last: int | None
+    outside_before_calls: int
+    outside_before_dropped: int
+    outside_before_head: list[CaptureRngHeadEntry]
+    mirror_mismatch_total_enter: int
+    mirror_mismatch_total_leave: int
+    mirror_unknown_total_enter: int
+    mirror_unknown_total_leave: int
+    roll_log_emitted_total: int
+    roll_log_dropped_total: int
+
+
+class CapturePlayerFireDiagnostics(msgspec.Struct, forbid_unknown_fields=True):
+    event_count_player_fire: int
+    top_direct_events_by_player: list[CaptureCounterEntry]
+    top_fallback_events_by_player: list[CaptureCounterEntry]
+    top_player_projectile_spawns_by_player: list[CaptureCounterEntry]
+
+
+class CaptureCreatureLifecycleEntry(msgspec.Struct, forbid_unknown_fields=True):
+    index: int
+    active: bool
+    active_flag: int | None
+    state_flag: int | None
+    type_id: int | None
+    hp: float | None
+    hitbox_size: float | None
+    pos: CaptureVec2
+    flags: int | None
+    link_index: int | None
+    ai_mode: int | None
+    heading: float | None
+    target_heading: float | None
+    orbit_angle: float | None
+    orbit_radius: float | None
+    ai7_timer_ms: int | None
+
+
+class CaptureCreatureLifecycleDigest(msgspec.Struct, forbid_unknown_fields=True):
+    before_count: int | None
+    after_count: int | None
+    before_hash: str | None
+    after_hash: str | None
+    added_total: int
+    removed_total: int
+    added_ids: list[int]
+    removed_ids: list[int]
+    added_overflow: int
+    removed_overflow: int
+    added_head: list[CaptureCreatureLifecycleEntry]
+    removed_head: list[CaptureCreatureLifecycleEntry]
+
+
 class CaptureCheckpointDebug(msgspec.Struct, forbid_unknown_fields=True):
     sampling_phase: str
-    timing: dict[str, object]
-    spawn: dict[str, object]
-    rng: dict[str, object]
+    timing: CaptureTimingDiagnostics
+    spawn: CaptureSpawnDiagnostics
+    rng: CaptureRngDiagnostics
     perk_apply_outside_before: CapturePerkApplyOutsideBefore
-    creature_lifecycle: dict[str, object] | None
-    player_fire: dict[str, object] | None
+    creature_lifecycle: CaptureCreatureLifecycleDigest | None
+    player_fire: CapturePlayerFireDiagnostics | None
     before_players: list[CapturePlayerCheckpoint]
     before_status: CaptureCheckpointDebugStatus
 
@@ -580,21 +713,158 @@ class CaptureRngSummary(msgspec.Struct, forbid_unknown_fields=True):
 
 class CaptureDiagnostics(msgspec.Struct, forbid_unknown_fields=True):
     sampling_phase: str
-    timing: dict[str, object]
-    spawn: dict[str, object]
-    rng: dict[str, object]
+    timing: CaptureTimingDiagnostics
+    spawn: CaptureSpawnDiagnostics
+    rng: CaptureRngDiagnostics
     perk_apply_outside_before: CapturePerkApplyOutsideBefore
-    creature_lifecycle: dict[str, object] | None
-    player_fire: dict[str, object] | None
+    creature_lifecycle: CaptureCreatureLifecycleDigest | None
+    player_fire: CapturePlayerFireDiagnostics | None
+
+
+class CaptureSnapshotGlobals(msgspec.Struct, forbid_unknown_fields=True):
+    config_game_mode: int | None
+    config_player_mode_flags: list[int | None]
+    config_aim_scheme: list[int | None]
+    game_state_prev: int | None
+    game_state_id: int | None
+    game_state_pending: int | None
+    frame_dt: float | None
+    frame_dt_ms_i32: int | None
+    frame_dt_ms_f32: float | None
+    time_played_ms: int | None
+    creature_active_count: int | None
+    creature_kill_count: int | None
+    perk_pending_count: int | None
+    perk_choices_dirty: int | None
+    shock_chain_links_left: int | None
+    shock_chain_projectile_id: int | None
+    quest_spawn_timeline: int | None
+    quest_stage_major: int | None
+    quest_stage_minor: int | None
+    quest_spawn_stall_timer_ms: int | None
+    quest_transition_timer_ms: int | None
+    quest_stage_banner_timer_ms: int | None
+    ui_elements_timeline: float | None
+    ui_transition_direction: int | None
+    ui_transition_alpha: float | None
+    pause_keybind_help_alpha_ms: int | None
+    player_alt_weapon_swap_cooldown_ms: int | None
+    perk_jinxed_proc_timer_s: float | None
+    perk_lean_mean_exp_tick_timer_s: float | None
+    perk_doctor_target_creature_id: int | None
+    bonus_reflex_boost_timer: float | None
+    bonus_freeze_timer: float | None
+    bonus_weapon_power_up_timer: float | None
+    bonus_energizer_timer: float | None
+    bonus_double_xp_timer: float | None
+
+
+class CaptureSnapshotStatus(msgspec.Struct, forbid_unknown_fields=True):
+    quest_unlock_index: int | None
+    quest_unlock_index_full: int | None
+    weapon_usage_counts: list[int]
+
+
+class CaptureSnapshotPlayerPerkTimers(msgspec.Struct, forbid_unknown_fields=True):
+    hot_tempered: float | None
+    man_bomb: float | None
+    living_fortress: float | None
+    fire_cough: float | None
+
+
+class CaptureSnapshotPlayerBonusTimers(msgspec.Struct, forbid_unknown_fields=True):
+    speed_bonus: float | None
+    shield: float | None
+    fire_bullets: float | None
+
+
+class CaptureSnapshotPlayerAltWeapon(msgspec.Struct, forbid_unknown_fields=True):
+    weapon_id: int | None
+    clip_size_i32: int | None
+    reload_active_i32: int | None
+    ammo_i32: int | None
+    reload_timer: float | None
+    shot_cooldown: float | None
+    reload_timer_max: float | None
+
+
+class CaptureSnapshotPlayer(msgspec.Struct, forbid_unknown_fields=True):
+    index: int
+    pos_x: float | None
+    pos_y: float | None
+    move_dx: float | None
+    move_dy: float | None
+    health: float | None
+    aim_x: float | None
+    aim_y: float | None
+    aim_heading: float | None
+    weapon_id: int | None
+    clip_size_i32: int | None
+    clip_size_f32: float | None
+    ammo_i32: int | None
+    ammo_f32: float | None
+    reload_active_i32: int | None
+    reload_active_f32: float | None
+    reload_timer: float | None
+    reload_timer_max: float | None
+    shot_cooldown: float | None
+    spread_heat: float | None
+    experience: int | None
+    level: int | None
+    perk_timers: CaptureSnapshotPlayerPerkTimers
+    bonus_timers: CaptureSnapshotPlayerBonusTimers
+    alt_weapon: CaptureSnapshotPlayerAltWeapon
+
+
+class CaptureSnapshotInputAimScreen(msgspec.Struct, forbid_unknown_fields=True):
+    player_index: int
+    x: float | None
+    y: float | None
+
+
+class CaptureSnapshotInput(msgspec.Struct, forbid_unknown_fields=True):
+    console_open: int | None
+    primary_latch: int | None
+    mouse_x: float | None
+    mouse_y: float | None
+    aim_screen: list[CaptureSnapshotInputAimScreen]
+
+
+class CaptureSnapshotInputBindingPlayer(msgspec.Struct, forbid_unknown_fields=True):
+    player_index: int
+    move_forward: int | None
+    move_backward: int | None
+    turn_left: int | None
+    turn_right: int | None
+    fire: int | None
+    aim_left: int | None
+    aim_right: int | None
+    axis_aim_x: int | None
+    axis_aim_y: int | None
+    axis_move_x: int | None
+    axis_move_y: int | None
+
+
+class CaptureSnapshotInputBindingAlternateSingle(msgspec.Struct, forbid_unknown_fields=True):
+    move_forward: int | None
+    move_backward: int | None
+    turn_left: int | None
+    turn_right: int | None
+    fire: int | None
+
+
+class CaptureSnapshotInputBindings(msgspec.Struct, forbid_unknown_fields=True):
+    players: list[CaptureSnapshotInputBindingPlayer]
+    alternate_single: CaptureSnapshotInputBindingAlternateSingle
 
 
 class CaptureSnapshot(msgspec.Struct, forbid_unknown_fields=True):
-    globals: dict[str, object]
-    status: dict[str, object]
+    globals: CaptureSnapshotGlobals
+    status: CaptureSnapshotStatus
     player_count: int
-    players: list[dict[str, object]]
-    input: dict[str, object]
-    input_bindings: dict[str, object]
+    players: list[CaptureSnapshotPlayer]
+    input: CaptureSnapshotInput
+    input_bindings: CaptureSnapshotInputBindings
 
 
 class CaptureCreatureSample(msgspec.Struct, forbid_unknown_fields=True):
@@ -687,6 +957,8 @@ class CaptureEventCounts(msgspec.Struct, forbid_unknown_fields=True):
     input_primary_edge: int
     input_primary_down: int
     input_any_key: int
+
+
 class CaptureTick(msgspec.Struct, forbid_unknown_fields=True):
     tick_index: int
     gameplay_frame: int
@@ -719,7 +991,7 @@ class CaptureTick(msgspec.Struct, forbid_unknown_fields=True):
     input_approx: list[CaptureInputApprox]
     frame_dt_ms: float | None
     frame_dt_ms_i32: int | None
-    creature_lifecycle: dict[str, object] | None
+    creature_lifecycle: CaptureCreatureLifecycleDigest | None
 
 
 class CaptureFile(msgspec.Struct, forbid_unknown_fields=True):
