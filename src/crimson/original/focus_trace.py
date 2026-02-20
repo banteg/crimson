@@ -29,7 +29,7 @@ from crimson.original.capture import (
     load_capture,
     parse_player_int_overrides,
 )
-from crimson.original.schema import CaptureFile
+from crimson.original.schema import CaptureFile, CaptureTick
 from crimson.quests import quest_by_level
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
@@ -205,13 +205,11 @@ def _resolve_json_out_path(value: str | None, *, tick: int) -> Path | None:
     return Path(value)
 
 
-def _read_capture_tick(capture: CaptureFile, tick: int) -> dict[str, Any] | None:
+def _read_capture_tick(capture: CaptureFile, tick: int) -> CaptureTick | None:
     for row in capture.ticks:
         if int(row.tick_index) != int(tick):
             continue
-        obj = msgspec.to_builtins(row)
-        if isinstance(obj, dict):
-            return obj
+        return row
     return None
 
 
@@ -272,7 +270,10 @@ def _load_capture_events(replay: Any) -> _CaptureReplayEvents:
     bootstrap_start_tick: int | None = None
     has_capture_creature_spawn_events = False
     for event in replay.events:
-        events_by_tick.setdefault(int(event.tick_index), []).append(event)
+        tick_key = int(event.tick_index)
+        if tick_key not in events_by_tick:
+            events_by_tick[tick_key] = []
+        events_by_tick[tick_key].append(event)
         if not isinstance(event, UnknownEvent):
             continue
         kind = str(event.kind)
@@ -325,18 +326,14 @@ def _str_field_or(row: Mapping[str, Any], key: str, fallback: str) -> str:
 
 def _summarize_creature_diffs(capture_creatures: list[dict[str, Any]], world: WorldState) -> list[dict[str, Any]]:
     cap_by_idx: dict[int, dict[str, Any]] = {
-        int(row.get("index")): row for row in capture_creatures if isinstance(row, dict) and row.get("index") is not None  # ty:ignore[invalid-argument-type]
+        int(row["index"]): row for row in capture_creatures
     }
     rows: list[dict[str, Any]] = []
     for idx, cap_row in cap_by_idx.items():
         if not (0 <= int(idx) < len(world.creatures.entries)):
             continue
         creature = world.creatures.entries[int(idx)]
-        cap_pos_obj = cap_row.get("pos")
-        if isinstance(cap_pos_obj, dict):
-            cap_pos = cast("dict[str, Any]", cap_pos_obj)
-        else:
-            cap_pos = {}
+        cap_pos = cast("dict[str, Any]", cap_row["pos"])
         cap_x = _float_field_or(cap_pos, "x", 0.0)
         cap_y = _float_field_or(cap_pos, "y", 0.0)
         cap_hp = _float_field_or(cap_row, "hp", 0.0)
@@ -368,18 +365,14 @@ def _summarize_creature_diffs(capture_creatures: list[dict[str, Any]], world: Wo
 
 def _summarize_projectile_diffs(capture_projectiles: list[dict[str, Any]], world: WorldState) -> list[dict[str, Any]]:
     cap_by_idx: dict[int, dict[str, Any]] = {
-        int(row.get("index")): row for row in capture_projectiles if isinstance(row, dict) and row.get("index") is not None  # ty:ignore[invalid-argument-type]
+        int(row["index"]): row for row in capture_projectiles
     }
     rows: list[dict[str, Any]] = []
     for idx, cap_row in cap_by_idx.items():
         if not (0 <= int(idx) < len(world.state.projectiles.entries)):
             continue
         proj = world.state.projectiles.entries[int(idx)]
-        cap_pos_obj = cap_row.get("pos")
-        if isinstance(cap_pos_obj, dict):
-            cap_pos = cast("dict[str, Any]", cap_pos_obj)
-        else:
-            cap_pos = {}
+        cap_pos = cast("dict[str, Any]", cap_row["pos"])
         cap_x = _float_field_or(cap_pos, "x", 0.0)
         cap_y = _float_field_or(cap_pos, "y", 0.0)
         cap_life_timer = _float_field_or(cap_row, "life_timer", 0.0)
@@ -414,7 +407,7 @@ def _collect_creature_presence_diffs(
     world: WorldState,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     cap_by_idx: dict[int, dict[str, Any]] = {
-        int(row.get("index")): row for row in capture_creatures if isinstance(row, dict) and row.get("index") is not None  # ty:ignore[invalid-argument-type]
+        int(row["index"]): row for row in capture_creatures
     }
     cap_indices = {idx for idx, row in cap_by_idx.items() if bool(_int_field_or(row, "active", 0) != 0)}
     rewrite_indices = {idx for idx, creature in enumerate(world.creatures.entries) if bool(creature.active)}
@@ -422,11 +415,7 @@ def _collect_creature_presence_diffs(
     capture_only: list[dict[str, Any]] = []
     for idx in sorted(cap_indices - rewrite_indices):
         row = cap_by_idx[int(idx)]
-        pos_obj = row.get("pos")
-        if isinstance(pos_obj, dict):
-            pos = cast("dict[str, Any]", pos_obj)
-        else:
-            pos = {}
+        pos = cast("dict[str, Any]", row["pos"])
         capture_only.append(
             {
                 "index": int(idx),
@@ -461,7 +450,7 @@ def _collect_projectile_presence_diffs(
     world: WorldState,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     cap_by_idx: dict[int, dict[str, Any]] = {
-        int(row.get("index")): row for row in capture_projectiles if isinstance(row, dict) and row.get("index") is not None  # ty:ignore[invalid-argument-type]
+        int(row["index"]): row for row in capture_projectiles
     }
     cap_indices = {idx for idx, row in cap_by_idx.items() if bool(_int_field_or(row, "active", 0) != 0)}
     rewrite_indices = {idx for idx, proj in enumerate(world.state.projectiles.entries) if bool(proj.active)}
@@ -469,11 +458,7 @@ def _collect_projectile_presence_diffs(
     capture_only: list[dict[str, Any]] = []
     for idx in sorted(cap_indices - rewrite_indices):
         row = cap_by_idx[int(idx)]
-        pos_obj = row.get("pos")
-        if isinstance(pos_obj, dict):
-            pos = cast("dict[str, Any]", pos_obj)
-        else:
-            pos = {}
+        pos = cast("dict[str, Any]", row["pos"])
         capture_only.append(
             {
                 "index": int(idx),
@@ -551,7 +536,11 @@ def _summarize_rng_alignment(
         caller_static = _str_field_or(row, "caller_static", "").strip()
         if not caller_static:
             continue
-        bucket = caller_to_rewrite.setdefault(caller_static, Counter())
+        if caller_static in caller_to_rewrite:
+            bucket = caller_to_rewrite[caller_static]
+        else:
+            bucket = Counter()
+            caller_to_rewrite[caller_static] = bucket
         bucket[str(rewrite_rng_callsites[idx])] += 1
 
     caller_best: dict[str, str] = {}
@@ -808,18 +797,20 @@ def trace_focus_tick(
     if mode not in {int(GameMode.SURVIVAL), int(GameMode.QUESTS)}:
         raise ValueError(f"focus trace currently supports survival and quests modes only (got mode={mode})")
 
-    raw_tick = _read_capture_tick(capture, int(tick))
-    if raw_tick is None:
+    capture_tick = _read_capture_tick(capture, int(tick))
+    if capture_tick is None:
         raise ValueError(f"capture tick {tick} not found in {capture_path}")
-    samples = raw_tick.get("samples") if isinstance(raw_tick.get("samples"), dict) else {}
-    capture_creatures = samples.get("creatures") if isinstance(samples.get("creatures"), list) else []  # ty:ignore[possibly-missing-attribute]
-    capture_projectiles = samples.get("projectiles") if isinstance(samples.get("projectiles"), list) else []  # ty:ignore[possibly-missing-attribute]
-    capture_rng_obj = raw_tick.get("rng")
-    if isinstance(capture_rng_obj, dict):
-        capture_rng = cast("dict[str, Any]", capture_rng_obj)
-    else:
-        capture_rng = {}
-    capture_rng_head_obj = capture_rng.get("head")
+    capture_creatures: list[dict[str, Any]] = []
+    capture_projectiles: list[dict[str, Any]] = []
+    samples = capture_tick.samples
+    if samples is not None:
+        for row in samples.creatures:
+            capture_creatures.append(cast("dict[str, Any]", msgspec.to_builtins(row)))
+        for row in samples.projectiles:
+            capture_projectiles.append(cast("dict[str, Any]", msgspec.to_builtins(row)))
+    capture_rng_obj = msgspec.to_builtins(capture_tick.rng)
+    capture_rng = cast("dict[str, Any]", capture_rng_obj) if isinstance(capture_rng_obj, dict) else {}
+    capture_rng_head_obj = (capture_rng["head"] if "head" in capture_rng else None)
     if isinstance(capture_rng_head_obj, list):
         capture_rng_head = list(capture_rng_head_obj)
     else:
@@ -1039,19 +1030,19 @@ def trace_focus_tick(
                 payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
                 if payload is None:
                     break
-                quest_session = payload.get("quest_session")
+                quest_session = (payload["quest_session"] if "quest_session" in payload else None)
                 if isinstance(quest_session, dict):
                     quest_session_obj = cast("dict[str, object]", quest_session)
-                    timeline_ms = quest_session_obj.get("spawn_timeline_ms")
+                    timeline_ms = (quest_session_obj["spawn_timeline_ms"] if "spawn_timeline_ms" in quest_session_obj else None)
                     if isinstance(timeline_ms, (int, float)):
                         session_quest.spawn_timeline_ms = max(0.0, float(timeline_ms) - float(bootstrap_dt_ms))
-                    no_creatures_timer_ms = quest_session_obj.get("no_creatures_timer_ms")
+                    no_creatures_timer_ms = (quest_session_obj["no_creatures_timer_ms"] if "no_creatures_timer_ms" in quest_session_obj else None)
                     if isinstance(no_creatures_timer_ms, (int, float)):
                         session_quest.no_creatures_timer_ms = max(
                             0.0,
                             float(no_creatures_timer_ms) - float(bootstrap_dt_ms),
                         )
-                    completion_transition_ms = quest_session_obj.get("completion_transition_ms")
+                    completion_transition_ms = (quest_session_obj["completion_transition_ms"] if "completion_transition_ms" in quest_session_obj else None)
                     if isinstance(completion_transition_ms, (int, float)):
                         completion_value = float(completion_transition_ms)
                         if completion_value >= 0.0:
@@ -1090,7 +1081,7 @@ def trace_focus_tick(
             world.state.game_mode = int(mode)
             world.state.demo_mode_active = False
             if use_outside_draws:
-                draws = outside_draws_by_tick.get(int(tick_index))
+                draws = (outside_draws_by_tick[int(tick_index)] if int(tick_index) in outside_draws_by_tick else None)
                 if draws is None:
                     draws = int(inter_tick_rand_draws)
                 for _ in range(max(0, int(draws))):
@@ -1184,18 +1175,18 @@ def trace_focus_tick(
                     creature_idx: int | None = None
                     if frame is not None:
                         try:
-                            step = int(frame.f_locals.get("step")) if "step" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
-                        except Exception:
+                            step = int((frame.f_locals["step"] if "step" in frame.f_locals else None)) if "step" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
+                        except (TypeError, ValueError):
                             step = None
                         try:
-                            creature_idx = int(frame.f_locals.get("idx")) if "idx" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
-                        except Exception:
+                            creature_idx = int((frame.f_locals["idx"] if "idx" in frame.f_locals else None)) if "idx" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
+                        except (TypeError, ValueError):
                             creature_idx = None
                         try:
-                            proj_index = int(frame.f_locals.get("proj_index")) if "proj_index" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
-                        except Exception:
+                            proj_index = int((frame.f_locals["proj_index"] if "proj_index" in frame.f_locals else None)) if "proj_index" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
+                        except (TypeError, ValueError):
                             proj_index = None
-                        proj = frame.f_locals.get("proj")
+                        proj = (frame.f_locals["proj"] if "proj" in frame.f_locals else None)
                         if proj is not None:
                             try:
                                 proj_ref = cast("Any", proj)
@@ -1317,10 +1308,10 @@ def trace_focus_tick(
     near_misses.sort(key=lambda row: float(row.margin))
     collision_hits.sort(key=lambda row: (int(row.proj_index or -1), int(row.step or -1), int(row.creature_idx or -1)))
 
-    creature_diffs_top = _summarize_creature_diffs(capture_creatures, world)  # ty:ignore[invalid-argument-type]
-    projectile_diffs_top = _summarize_projectile_diffs(capture_projectiles, world)  # ty:ignore[invalid-argument-type]
-    creature_capture_only, creature_rewrite_only = _collect_creature_presence_diffs(capture_creatures, world)  # ty:ignore[invalid-argument-type]
-    projectile_capture_only, projectile_rewrite_only = _collect_projectile_presence_diffs(capture_projectiles, world)  # ty:ignore[invalid-argument-type]
+    creature_diffs_top = _summarize_creature_diffs(capture_creatures, world)
+    projectile_diffs_top = _summarize_projectile_diffs(capture_projectiles, world)
+    creature_capture_only, creature_rewrite_only = _collect_creature_presence_diffs(capture_creatures, world)
+    projectile_capture_only, projectile_rewrite_only = _collect_projectile_presence_diffs(capture_projectiles, world)
     rng_alignment = _summarize_rng_alignment(
         capture_rng_head=[row for row in capture_rng_head if isinstance(row, dict)],
         capture_rng_calls=int(capture_rng_calls),
@@ -1342,8 +1333,8 @@ def trace_focus_tick(
         collision_near_misses=near_misses,
         pre_projectiles=pre_projectiles,
         post_projectiles=post_projectiles,
-        capture_projectiles=list(capture_projectiles),  # ty:ignore[invalid-argument-type]
-        capture_creatures=list(capture_creatures),  # ty:ignore[invalid-argument-type]
+        capture_projectiles=list(capture_projectiles),
+        capture_creatures=list(capture_creatures),
         creature_diffs_top=creature_diffs_top,
         creature_capture_only=creature_capture_only,
         creature_rewrite_only=creature_rewrite_only,

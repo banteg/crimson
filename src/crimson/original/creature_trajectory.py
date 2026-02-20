@@ -123,21 +123,13 @@ def _read_capture_creature_samples(
         tick = int(tick_row.tick_index)
         if tick < int(start_tick) or tick > int(end_tick):
             continue
-        obj = msgspec.to_builtins(tick_row)
-        if not isinstance(obj, dict):
+        samples = tick_row.samples
+        if samples is None:
             continue
-        samples = obj.get("samples") if isinstance(obj.get("samples"), dict) else {}
-        creatures = samples.get("creatures") if isinstance(samples.get("creatures"), list) else []
-        for row in creatures:  # ty:ignore[not-iterable]
-            if not isinstance(row, dict):
+        for row in samples.creatures:
+            if int(row.index) != int(creature_index):
                 continue
-            if "index" in row:
-                row_index = int(row["index"])
-            else:
-                row_index = -1
-            if row_index != int(creature_index):
-                continue
-            out[int(tick)] = row
+            out[int(tick)] = cast("dict[str, Any]", msgspec.to_builtins(row))
             break
     return out
 
@@ -157,7 +149,9 @@ def _load_capture_events(
                 bootstrap_start_tick = int(tick_index)
         if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_CREATURE_SPAWN_EVENT_KIND:
             has_capture_creature_spawn_events = True
-        events_by_tick.setdefault(tick_index, []).append(event)
+        if tick_index not in events_by_tick:
+            events_by_tick[tick_index] = []
+        events_by_tick[tick_index].append(event)
     return events_by_tick, original_capture_replay, bootstrap_start_tick, has_capture_creature_spawn_events
 
 
@@ -430,22 +424,22 @@ def trace_creature_trajectory(
                 payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
                 if payload is None:
                     break
-                quest_session = payload.get("quest_session")
+                quest_session = (payload["quest_session"] if "quest_session" in payload else None)
                 if isinstance(quest_session, dict):
                     quest_session_obj = msgspec.to_builtins(quest_session)
                     if not isinstance(quest_session_obj, dict):
                         continue
                     quest_session_data = cast(dict[str, object], quest_session_obj)
-                    timeline_ms = quest_session_data.get("spawn_timeline_ms")
+                    timeline_ms = (quest_session_data["spawn_timeline_ms"] if "spawn_timeline_ms" in quest_session_data else None)
                     if isinstance(timeline_ms, (int, float)):
                         session_quest.spawn_timeline_ms = max(0.0, float(timeline_ms) - float(bootstrap_dt_ms))
-                    no_creatures_timer_ms = quest_session_data.get("no_creatures_timer_ms")
+                    no_creatures_timer_ms = (quest_session_data["no_creatures_timer_ms"] if "no_creatures_timer_ms" in quest_session_data else None)
                     if isinstance(no_creatures_timer_ms, (int, float)):
                         session_quest.no_creatures_timer_ms = max(
                             0.0,
                             float(no_creatures_timer_ms) - float(bootstrap_dt_ms),
                         )
-                    completion_transition_ms = quest_session_data.get("completion_transition_ms")
+                    completion_transition_ms = (quest_session_data["completion_transition_ms"] if "completion_transition_ms" in quest_session_data else None)
                     if isinstance(completion_transition_ms, (int, float)):
                         completion_value = float(completion_transition_ms)
                         if completion_value >= 0.0:
@@ -463,7 +457,7 @@ def trace_creature_trajectory(
         state.game_mode = int(mode)
         state.demo_mode_active = False
         if inter_tick_rand_draws_by_tick is not None:
-            draws = inter_tick_rand_draws_by_tick.get(int(tick_index))
+            draws = (inter_tick_rand_draws_by_tick[int(tick_index)] if int(tick_index) in inter_tick_rand_draws_by_tick else None)
             if draws is None:
                 draws = int(inter_tick_rand_draws)
             for _ in range(max(0, int(draws))):
@@ -530,12 +524,12 @@ def trace_creature_trajectory(
         if mode == int(GameMode.QUESTS):
             world.creatures.finalize_post_render_lifecycle()
 
-        sample = capture_rows.get(tick_key)
+        sample = (capture_rows[tick_key] if tick_key in capture_rows else None)
         if sample is not None and int(tick_index) >= int(start_tick):
             if not (0 <= int(creature_index) < len(world.creatures.entries)):
                 break
             creature = world.creatures.entries[int(creature_index)]
-            cap_pos_obj = sample.get("pos")
+            cap_pos_obj = (sample["pos"] if "pos" in sample else None)
             if isinstance(cap_pos_obj, dict):
                 cap_pos = cast("dict[str, object]", cap_pos_obj)
             else:
