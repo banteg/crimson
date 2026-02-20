@@ -1,0 +1,13 @@
+id: no-string-raylib-mocker-patch
+valid:
+  - |
+    mocker.patch.object(game_over_module.rl, "get_screen_width", side_effect=lambda: 640)
+  - |
+    mocker.patch("crimson.audio_router.play_sfx")
+  - |
+    monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_width", lambda: 640)
+invalid:
+  - |
+    mocker.patch("crimson.ui.game_over.rl.get_screen_width", side_effect=lambda: 640)
+  - |
+    mocker.patch("crimson.render.world.effects.rl.draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)

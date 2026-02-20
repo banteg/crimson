@@ -5,6 +5,7 @@ from pathlib import Path
 import pyray as rl
 import pytest
 
+import crimson.ui.game_over as game_over_module
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS, GameOverAssets, GameOverUi
 from crimson.ui.hud import HudAssets
@@ -144,8 +145,8 @@ def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, patch_ray
     mocker.patch("crimson.ui.game_over.scores_path_for_config", side_effect=lambda *_args, **_kwargs: tmp_path / "scores.hi")
     mocker.patch("crimson.ui.game_over.button_update", side_effect=lambda *args, **kwargs: False)
     patch_raylib_module("crimson.ui.game_over")
-    mocker.patch("crimson.ui.game_over.rl.get_char_pressed", side_effect=_get_char_pressed)
-    mocker.patch("crimson.ui.game_over.rl.get_key_pressed", side_effect=_get_key_pressed)
+    mocker.patch.object(game_over_module.rl, "get_char_pressed", side_effect=_get_char_pressed)
+    mocker.patch.object(game_over_module.rl, "get_key_pressed", side_effect=_get_key_pressed)
 
     ui.update(
         0.0,
@@ -245,9 +246,9 @@ def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
     record.most_used_weapon_id = 1
 
     captured_text: list[str] = []
-    mocker.patch("crimson.ui.game_over.rl.measure_text", side_effect=lambda text, _size: len(str(text)) * 8)
-    mocker.patch("crimson.ui.game_over.rl.draw_line", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch("crimson.ui.game_over.rl.draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(game_over_module.rl, "measure_text", side_effect=lambda text, _size: len(str(text)) * 8)
+    mocker.patch.object(game_over_module.rl, "draw_line", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(game_over_module.rl, "draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
         GameOverUi,
         "_draw_small",

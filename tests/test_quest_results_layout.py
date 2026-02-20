@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pyray as rl
 
+import crimson.ui.quest_results as quest_results_module
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.quests.results import QuestFinalTime
 from crimson.ui.perk_menu import PerkMenuAssets
@@ -89,11 +90,11 @@ def _patch_draw_environment(
     captured_draws: list[tuple[str, float, float, rl.Color]] | None = None,
     line_draws: list[tuple[int, int, int, int, object]] | None = None,
 ) -> None:
-    mocker.patch("crimson.ui.quest_results.rl.get_screen_width", side_effect=lambda: 640)
-    mocker.patch("crimson.ui.quest_results.rl.get_screen_height", side_effect=lambda: 480)
-    mocker.patch("crimson.ui.quest_results.rl.get_time", side_effect=lambda: 0.0)
-    mocker.patch("crimson.ui.quest_results.rl.draw_rectangle_lines", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch("crimson.ui.quest_results.rl.draw_rectangle", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_results_module.rl, "get_screen_width", side_effect=lambda: 640)
+    mocker.patch.object(quest_results_module.rl, "get_screen_height", side_effect=lambda: 480)
+    mocker.patch.object(quest_results_module.rl, "get_time", side_effect=lambda: 0.0)
+    mocker.patch.object(quest_results_module.rl, "draw_rectangle_lines", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_results_module.rl, "draw_rectangle", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch(
         "crimson.ui.quest_results.rl.draw_line",
         side_effect=lambda x1, y1, x2, y2, color: (

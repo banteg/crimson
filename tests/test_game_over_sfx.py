@@ -8,6 +8,8 @@ from typing import cast
 
 import pyray as rl
 
+import crimson.game.high_scores_view.view as high_scores_view_module
+import crimson.ui.game_over as game_over_module
 from crimson.frontend.assets import MenuAssets
 from crimson.frontend.panels.base import PANEL_TIMELINE_START_MS
 from crimson.game.high_scores_view import HighScoresView
@@ -80,12 +82,12 @@ def test_game_over_panel_open_plays_panel_click(monkeypatch, tmp_path: Path, moc
         played.append(key)
 
     mocker.patch("crimson.ui.game_over.button_update", side_effect=lambda *args, **kwargs: False)
-    mocker.patch("crimson.ui.game_over.rl.get_screen_width", side_effect=lambda: 640)
-    mocker.patch("crimson.ui.game_over.rl.get_screen_height", side_effect=lambda: 480)
-    mocker.patch("crimson.ui.game_over.rl.get_mouse_position", side_effect=lambda: rl.Vector2(0.0, 0.0))
-    mocker.patch("crimson.ui.game_over.rl.is_mouse_button_pressed", side_effect=lambda _button: False)
-    mocker.patch("crimson.ui.game_over.rl.check_collision_point_rec", side_effect=lambda _pos, _rect: False)
-    mocker.patch("crimson.ui.game_over.rl.is_key_pressed", side_effect=lambda _key: False)
+    mocker.patch.object(game_over_module.rl, "get_screen_width", side_effect=lambda: 640)
+    mocker.patch.object(game_over_module.rl, "get_screen_height", side_effect=lambda: 480)
+    mocker.patch.object(game_over_module.rl, "get_mouse_position", side_effect=lambda: rl.Vector2(0.0, 0.0))
+    mocker.patch.object(game_over_module.rl, "is_mouse_button_pressed", side_effect=lambda _button: False)
+    mocker.patch.object(game_over_module.rl, "check_collision_point_rec", side_effect=lambda _pos, _rect: False)
+    mocker.patch.object(game_over_module.rl, "is_key_pressed", side_effect=lambda _key: False)
 
     ui.update(
         0.1,
@@ -147,10 +149,10 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
         return int(key) == int(rl.KeyboardKey.KEY_ESCAPE)
 
     # High scores view animates in; advance its timeline before pressing escape.
-    mocker.patch("crimson.game.high_scores_view.view.rl.is_key_pressed", side_effect=lambda _key: False)
+    mocker.patch.object(high_scores_view_module.rl, "is_key_pressed", side_effect=lambda _key: False)
     view.update(0.1)
     view.update(0.1)
-    mocker.patch("crimson.game.high_scores_view.view.rl.is_key_pressed", side_effect=_is_key_pressed)
+    mocker.patch.object(high_scores_view_module.rl, "is_key_pressed", side_effect=_is_key_pressed)
 
     view.update(0.1)
 
@@ -198,7 +200,7 @@ def test_high_scores_view_draw_fades_pause_background_during_close(monkeypatch, 
         "crimson.game.high_scores_view.view.load_menu_assets",
         lambda _state: _menu_assets_stub(tex=dummy_tex),
     )
-    mocker.patch("crimson.game.high_scores_view.view.rl.clear_background", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(high_scores_view_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch("crimson.game.high_scores_view.view._draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch("crimson.game.high_scores_view.view.draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch("crimson.game.high_scores_view.view.draw_main_panel", side_effect=lambda *_args, **_kwargs: 0)

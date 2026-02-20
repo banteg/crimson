@@ -9,7 +9,7 @@ import msgspec
 import pytest
 
 from crimson.game_modes import GameMode
-from crimson.original.schema import CAPTURE_FORMAT_VERSION, CaptureTick
+from crimson.original.schema import CaptureTick
 from crimson.replay.checkpoints import (
     ReplayCheckpoint,
     ReplayDeathLedgerEntry,
@@ -18,6 +18,7 @@ from crimson.replay.checkpoints import (
     ReplayPlayerCheckpoint,
 )
 from grim.geom import Vec2
+from tests.builders.capture import build_capture_file, build_capture_tick, capture_file_to_dict
 
 
 def _load_report_module():
@@ -451,127 +452,78 @@ def _capture_tick(
         for key, value in sample_counts.items():
             sample_counts_row[str(key)] = int(value)
 
-    row: dict[str, object] = {
-        "tick_index": int(tick),
-        "gameplay_frame": int(tick) + 1,
-        "mode_hint": "survival_update",
-        "game_mode_id": int(GameMode.SURVIVAL),
-        "quest_stage_major": -1,
-        "quest_stage_minor": -1,
-        "focus_tick": False,
-        "state_id_enter": None,
-        "state_id_leave": None,
-        "state_pending_enter": None,
-        "state_pending_leave": None,
-        "ts_enter_ms": 0,
-        "ts_leave_ms": 0,
-        "duration_ms": 0,
-        "checkpoint": {
-            "tick_index": int(tick),
-            "state_hash": f"s{tick}",
-            "command_hash": f"c{tick}",
-            "rng_state": 0,
-            "elapsed_ms": int(tick) * 16,
-            "score_xp": 0,
-            "kills": 0,
-            "creature_count": 0,
-            "perk_pending": 0,
-            "players": [],
-            "status": {"quest_unlock_index": 0, "quest_unlock_index_full": 0, "weapon_usage_counts": []},
-            "bonus_timers": {},
-            "rng_marks": {
-                "rand_calls": int(rng_rand_calls),
-                "rand_hash": "",
-                "rand_last": None,
-                "rand_head": rng_head_rows,
-                "rand_callers": rng_caller_rows,
-                "rand_caller_overflow": 0,
-                "rand_seq_first": None,
-                "rand_seq_last": None,
-                "rand_seed_epoch_enter": None,
-                "rand_seed_epoch_last": None,
-                "rand_outside_before_calls": 0,
-                "rand_outside_before_dropped": 0,
-                "rand_outside_before_head": [],
-                "rand_mirror_mismatch_total": 0,
-                "rand_mirror_unknown_total": 0,
-            },
-            "deaths": [],
-            "perk": {"pending_count": 0, "choices_dirty": False, "choices": [], "player_nonzero_counts": []},
-            "events": {
-                "hit_count": -1,
-                "pickup_count": -1,
-                "sfx_count": -1,
-                "sfx_head": [],
-                "rng_call_count": 0,
-                "input_true_count": 0,
-            },
-            "debug": {
-                "sampling_phase": "",
-                "timing": _timing_diagnostics(),
-                "spawn": spawn_row,
-                "rng": _rng_diagnostics(),
-                "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
-                "creature_lifecycle": None,
-                "player_fire": _player_fire_diagnostics(),
-                "before_players": [],
-                "before_status": {"quest_unlock_index": 0, "quest_unlock_index_full": 0},
-            },
-        },
-        "event_counts": counts_row,
-        "event_overflow": False,
-        "event_heads": list(event_heads or []),
-        "phase_markers": [],
-        "input_queries": {
-            "stats": {
-                "primary_edge": {"calls": 0, "true_calls": 0},
-                "primary_down": {"calls": 0, "true_calls": 0},
-                "any_key": {"calls": 0, "true_calls": 0},
-            },
-            "query_hash": "",
-        },
-        "input_player_keys": list(input_player_keys or [_input_player_keys(player_index=0)]),
+    base_tick = build_capture_tick(tick_index=int(tick), elapsed_ms=int(tick) * 16)
+    row = cast(dict[str, object], msgspec.json.decode(msgspec.json.encode(base_tick)))
+    checkpoint = cast(dict[str, object], row["checkpoint"])
+    checkpoint["state_hash"] = f"s{tick}"
+    checkpoint["command_hash"] = f"c{tick}"
+    checkpoint["players"] = []
+    checkpoint["rng_marks"] = {
+        "rand_calls": int(rng_rand_calls),
+        "rand_hash": "",
+        "rand_last": None,
+        "rand_head": rng_head_rows,
+        "rand_callers": rng_caller_rows,
+        "rand_caller_overflow": 0,
+        "rand_seq_first": None,
+        "rand_seq_last": None,
+        "rand_seed_epoch_enter": None,
+        "rand_seed_epoch_last": None,
+        "rand_outside_before_calls": 0,
+        "rand_outside_before_dropped": 0,
+        "rand_outside_before_head": [],
+        "rand_mirror_mismatch_total": 0,
+        "rand_mirror_unknown_total": 0,
+    }
+    checkpoint["debug"] = {
+        "sampling_phase": "",
+        "timing": _timing_diagnostics(),
+        "spawn": spawn_row,
+        "rng": _rng_diagnostics(),
         "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
-        "perk_apply_in_tick": [],
-        "rng": _rng_summary_dict(calls=int(rng_rand_calls), head=rng_head_rows, callers=rng_caller_rows),
-        "diagnostics": {
-            "sampling_phase": "",
-            "timing": _timing_diagnostics(),
-            "spawn": _spawn_diagnostics(),
-            "rng": _rng_diagnostics(),
-            "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
-            "creature_lifecycle": None,
-            "player_fire": _player_fire_diagnostics(),
-        },
-        "input_approx": [],
-        "before": {
-            "globals": _snapshot_globals(),
-            "status": _snapshot_status(),
-            "player_count": 1,
-            "players": [],
-            "input": _snapshot_input(),
-            "input_bindings": _snapshot_input_bindings(),
-        },
-        "after": {
-            "globals": _snapshot_globals(),
-            "status": _snapshot_status(),
-            "player_count": 1,
-            "players": [],
-            "input": _snapshot_input(),
-            "input_bindings": _snapshot_input_bindings(),
-        },
-        "frame_dt_ms": None,
-        "frame_dt_ms_i32": None,
         "creature_lifecycle": None,
-        "samples": {
-            "creatures": [_sample_creature(index=i) for i in range(max(0, int(sample_counts_row["creatures"])))],
-            "projectiles": [_sample_projectile(index=i) for i in range(max(0, int(sample_counts_row["projectiles"])))],
-            "secondary_projectiles": [
-                _sample_secondary_projectile(index=i)
-                for i in range(max(0, int(sample_counts_row["secondary_projectiles"])))
-            ],
-            "bonuses": [_sample_bonus(index=i) for i in range(max(0, int(sample_counts_row["bonuses"])))],
-        },
+        "player_fire": _player_fire_diagnostics(),
+        "before_players": [],
+        "before_status": {"quest_unlock_index": 0, "quest_unlock_index_full": 0},
+    }
+    row["event_counts"] = counts_row
+    row["event_heads"] = list(event_heads or [])
+    row["input_player_keys"] = list(input_player_keys or [_input_player_keys(player_index=0)])
+    row["rng"] = _rng_summary_dict(calls=int(rng_rand_calls), head=rng_head_rows, callers=rng_caller_rows)
+    row["diagnostics"] = {
+        "sampling_phase": "",
+        "timing": _timing_diagnostics(),
+        "spawn": _spawn_diagnostics(),
+        "rng": _rng_diagnostics(),
+        "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
+        "creature_lifecycle": None,
+        "player_fire": _player_fire_diagnostics(),
+    }
+    row["input_approx"] = []
+    row["before"] = {
+        "globals": _snapshot_globals(),
+        "status": _snapshot_status(),
+        "player_count": 1,
+        "players": [],
+        "input": _snapshot_input(),
+        "input_bindings": _snapshot_input_bindings(),
+    }
+    row["after"] = {
+        "globals": _snapshot_globals(),
+        "status": _snapshot_status(),
+        "player_count": 1,
+        "players": [],
+        "input": _snapshot_input(),
+        "input_bindings": _snapshot_input_bindings(),
+    }
+    row["samples"] = {
+        "creatures": [_sample_creature(index=i) for i in range(max(0, int(sample_counts_row["creatures"])))],
+        "projectiles": [_sample_projectile(index=i) for i in range(max(0, int(sample_counts_row["projectiles"])))],
+        "secondary_projectiles": [
+            _sample_secondary_projectile(index=i)
+            for i in range(max(0, int(sample_counts_row["secondary_projectiles"])))
+        ],
+        "bonuses": [_sample_bonus(index=i) for i in range(max(0, int(sample_counts_row["bonuses"])))],
     }
     return msgspec.convert(row, type=CaptureTick, strict=True)
 
@@ -985,106 +937,16 @@ def test_find_first_divergence_allows_one_tick_creature_count_sample_lag() -> No
 def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
     report = _load_report_module()
     capture_path = tmp_path / "capture.json"
-    tick = {
-        "tick_index": 42,
-        "gameplay_frame": 43,
-        "mode_hint": "survival_update",
-        "game_mode_id": 6,
-        "quest_stage_major": -1,
-        "quest_stage_minor": -1,
-        "focus_tick": False,
-        "state_id_enter": None,
-        "state_id_leave": None,
-        "state_pending_enter": None,
-        "state_pending_leave": None,
-        "ts_enter_ms": 0,
-        "ts_leave_ms": 0,
-        "duration_ms": 0,
-        "checkpoint": {
-            "tick_index": 42,
-            "state_hash": "s",
-            "command_hash": "c",
-            "rng_state": 0,
-            "elapsed_ms": 0,
-            "score_xp": 0,
-            "kills": 0,
-            "creature_count": 0,
-            "perk_pending": 0,
-            "players": [],
-            "status": {"quest_unlock_index": 0, "quest_unlock_index_full": 0, "weapon_usage_counts": []},
-            "bonus_timers": {},
-            "rng_marks": {
-                "rand_calls": 0,
-                "rand_hash": "",
-                "rand_last": None,
-                "rand_head": [],
-                "rand_callers": [],
-                "rand_caller_overflow": 0,
-                "rand_seq_first": None,
-                "rand_seq_last": None,
-                "rand_seed_epoch_enter": None,
-                "rand_seed_epoch_last": None,
-                "rand_outside_before_calls": 0,
-                "rand_outside_before_dropped": 0,
-                "rand_outside_before_head": [],
-                "rand_mirror_mismatch_total": 0,
-                "rand_mirror_unknown_total": 0,
-            },
-            "deaths": [],
-            "perk": {"pending_count": 0, "choices_dirty": False, "choices": [], "player_nonzero_counts": []},
-            "events": {
-                "hit_count": -1,
-                "pickup_count": -1,
-                "sfx_count": -1,
-                "sfx_head": [],
-                "rng_call_count": 0,
-                "input_true_count": 0,
-            },
-            "debug": {
-                "sampling_phase": "",
-                "timing": _timing_diagnostics(),
-                "spawn": _spawn_diagnostics(
-                    event_count_projectile_find_query=3,
-                    event_count_projectile_find_query_miss=1,
-                    event_count_projectile_find_query_owner_collision=1,
-                    top_projectile_find_query_callers=[{"key": "0x00420e52", "count": 3}],
-                ),
-                "rng": _rng_diagnostics(),
-                "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
-                "creature_lifecycle": None,
-                "player_fire": _player_fire_diagnostics(),
-                "before_players": [],
-                "before_status": {"quest_unlock_index": 0, "quest_unlock_index_full": 0},
-            },
+    tick = _capture_tick(
+        tick=42,
+        event_counts={"projectile_find_query": 3, "projectile_find_hit": 2},
+        spawn={
+            "event_count_projectile_find_query": 3,
+            "event_count_projectile_find_query_miss": 1,
+            "event_count_projectile_find_query_owner_collision": 1,
+            "top_projectile_find_query_callers": [{"key": "0x00420e52", "count": 3}],
         },
-        "event_counts": {
-            "state_transition": 0,
-            "player_fire": 0,
-            "weapon_assign": 0,
-            "bonus_apply": 0,
-            "bonus_spawn": 0,
-            "projectile_spawn": 0,
-            "projectile_find_query": 3,
-            "projectile_find_hit": 2,
-            "secondary_projectile_spawn": 0,
-            "player_damage": 0,
-            "creature_damage": 0,
-            "creature_spawn": 0,
-            "creature_spawn_low": 0,
-            "creature_death": 0,
-            "creature_lifecycle": 0,
-            "creature_update_micro": 0,
-            "perk_apply": 0,
-            "sfx": 0,
-            "perk_delta": 0,
-            "quest_timeline_delta": 0,
-            "mode_tick": 0,
-            "input_primary_edge": 0,
-            "input_primary_down": 0,
-            "input_any_key": 0,
-        },
-        "event_overflow": False,
-        "event_heads": [
+        event_heads=[
             {
                 "type": "projectile_find_query",
                 "data": {
@@ -1152,154 +1014,18 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
                 },
             },
         ],
-        "phase_markers": [],
-        "input_queries": {
-            "stats": {
-                "primary_edge": {"calls": 0, "true_calls": 0},
-                "primary_down": {"calls": 0, "true_calls": 0},
-                "any_key": {"calls": 0, "true_calls": 0},
-            },
-            "query_hash": "",
-        },
-        "input_player_keys": [
-            {
-                "player_index": 0,
-                "move_forward_pressed": None,
-                "move_backward_pressed": None,
-                "turn_left_pressed": None,
-                "turn_right_pressed": None,
-                "fire_down": None,
-                "fire_pressed": None,
-                "reload_pressed": None,
-            },
-        ],
-        "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
-        "perk_apply_in_tick": [],
-        "rng": {
-            "calls": 0,
-            "last_value": None,
-            "hash": "",
-            "head": [],
-            "callers": [],
-            "caller_overflow": 0,
-            "seq_first": None,
-            "seq_last": None,
-            "seed_epoch_enter": None,
-            "seed_epoch_last": None,
-            "outside_before_calls": 0,
-            "outside_before_dropped": 0,
-            "outside_before_head": [],
-            "mirror_mismatch_total": 0,
-            "mirror_unknown_total": 0,
-        },
-        "diagnostics": {
-            "sampling_phase": "",
-            "timing": _timing_diagnostics(),
-            "spawn": _spawn_diagnostics(),
-            "rng": _rng_diagnostics(),
-            "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
-            "creature_lifecycle": None,
-            "player_fire": _player_fire_diagnostics(),
-        },
-        "input_approx": [
-            {
-                "player_index": 0,
-                "move_dx": 0.0,
-                "move_dy": 0.0,
-                "aim_x": 0.0,
-                "aim_y": 0.0,
-                "aim_heading": None,
-                "move_mode": None,
-                "aim_scheme": None,
-                "fired_events": 0,
-                "moving": None,
-                "reload_active": None,
-                "weapon_id": None,
-                "move_forward_pressed": None,
-                "move_backward_pressed": None,
-                "turn_left_pressed": None,
-                "turn_right_pressed": None,
-                "fire_down": None,
-                "fire_pressed": None,
-                "reload_pressed": None,
-            },
-        ],
-        "before": {
-            "globals": _snapshot_globals(),
-            "status": _snapshot_status(),
-            "player_count": 1,
-            "players": [],
-            "input": _snapshot_input(),
-            "input_bindings": _snapshot_input_bindings(),
-        },
-        "after": {
-            "globals": _snapshot_globals(),
-            "status": _snapshot_status(),
-            "player_count": 1,
-            "players": [],
-            "input": _snapshot_input(),
-            "input_bindings": _snapshot_input_bindings(),
-        },
-        "frame_dt_ms": None,
-        "frame_dt_ms_i32": None,
-        "creature_lifecycle": None,
-        "samples": {
-            "creatures": [
-                {
-                    "index": 5,
-                    "active": 1,
-                    "state_flag": 1,
-                    "collision_flag": 1,
-                    "hitbox_size": 16.0,
-                    "pos": {"x": 10.0, "y": 20.0},
-                    "hp": 100.0,
-                    "type_id": 2,
-                    "target_player": 0,
-                    "flags": 0,
-                    "link_index": None,
-                    "ai_mode": None,
-                    "heading": None,
-                    "target_heading": None,
-                    "orbit_angle": None,
-                    "orbit_radius": None,
-                    "ai7_timer_ms": None,
-                },
-            ],
-            "projectiles": [],
-            "secondary_projectiles": [
-                {
-                    "index": 7,
-                    "active": 1,
-                    "pos": {"x": 15.0, "y": 25.0},
-                    "life_timer": 0.9,
-                    "angle": 0.0,
-                    "vel": {"x": 0.0, "y": 0.0},
-                    "trail_timer": 0.0,
-                    "type_id": 1,
-                    "target_id": -1,
-                },
-            ],
-            "bonuses": [],
-        },
-    }
-    capture_obj = {
-        "capture_format_version": int(CAPTURE_FORMAT_VERSION),
-        "script": "gameplay_diff_capture",
-        "session_id": "s",
-        "out_path": "capture.json",
-        "config": _base_config(),
-        "session_fingerprint": {"session_id": "s", "module_hash": "a", "ptrs_hash": "b"},
-        "process": {"pid": 1, "platform": "windows", "arch": "x86", "frida_version": "16", "runtime": "v8"},
-        "exe": {"base": "0x400000", "size": 1, "path": "crimsonland.exe"},
-        "grim": None,
-        "pointers_resolved": {},
-        "ticks": [tick],
-    }
+        sample_counts={"creatures": 1, "secondary_projectiles": 1},
+    )
+    tick.samples.creatures[0].index = 5
+    tick.samples.secondary_projectiles[0].index = 7
+    capture = build_capture_file(ticks=[tick], session_id="s")
+    capture_obj = capture_file_to_dict(capture)
     meta = {k: v for k, v in capture_obj.items() if k != "ticks"}
     meta["ticks"] = []
+    tick_row = cast("dict[str, object]", cast("list[object]", capture_obj["ticks"])[0])
     rows = [
         json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True),
-        json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True),
+        json.dumps({"event": "tick", "tick": tick_row}, separators=(",", ":"), sort_keys=True),
     ]
     capture_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
 

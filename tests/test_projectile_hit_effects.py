@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import GameplayState
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
@@ -36,7 +34,8 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
 
     rings = [entry for entry in runtime_state.effects.iter_active() if int(entry.effect_id) == 1]
     assert len(rings) == 2
-    assert sorted(float(entry.scale_step) for entry in rings) == pytest.approx([45.0, 67.5])
+    for actual, expected in zip(sorted(float(entry.scale_step) for entry in rings), (45.0, 67.5)):
+        assert_float_close(actual, expected)
 
     spawned = [p for p in pool.entries if p.active and int(p.type_id) == int(ProjectileTypeId.PLASMA_RIFLE)]
     assert len(spawned) == 12

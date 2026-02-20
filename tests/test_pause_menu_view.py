@@ -4,6 +4,7 @@ from typing import cast
 
 import pyray as rl
 
+import crimson.frontend.pause_menu as pause_menu_module
 from crimson.frontend.assets import MenuAssets
 from crimson.frontend.pause_menu import PAUSE_MENU_TO_MAIN_MENU_FADE_MS, PauseMenuView
 
@@ -37,7 +38,7 @@ def test_pause_menu_draw_fades_pause_background_on_main_menu_close(monkeypatch, 
     view._close_action = "back_to_menu"
     view._timeline_ms = PAUSE_MENU_TO_MAIN_MENU_FADE_MS // 2
 
-    mocker.patch("crimson.frontend.pause_menu.rl.clear_background", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(pause_menu_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch("crimson.frontend.pause_menu._draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
     monkeypatch.setattr(PauseMenuView, "_draw_menu_items", lambda _self: None)
     monkeypatch.setattr(PauseMenuView, "_draw_menu_sign", lambda _self: None)
@@ -66,7 +67,7 @@ def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(monkeyp
     view._close_action = "back_to_previous"
     view._timeline_ms = 0
 
-    mocker.patch("crimson.frontend.pause_menu.rl.clear_background", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(pause_menu_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch("crimson.frontend.pause_menu._draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
     monkeypatch.setattr(PauseMenuView, "_draw_menu_items", lambda _self: None)
     monkeypatch.setattr(PauseMenuView, "_draw_menu_sign", lambda _self: None)

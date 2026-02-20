@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import crimson.render.world.effects as world_effects
 from crimson.effects import EffectEntry
 from crimson.effects_atlas import EffectId
 from crimson.render.world import WorldRenderer
@@ -50,9 +51,9 @@ def _entry(*, flags: int, pos: Vec2) -> EffectEntry:
 
 
 def test_draw_effect_pool_splits_alpha_and_additive_paths(mocker) -> None:
-    begin_blend_mode = mocker.patch("crimson.render.world.effects.rl.begin_blend_mode")
-    end_blend_mode = mocker.patch("crimson.render.world.effects.rl.end_blend_mode")
-    draw_texture_pro = mocker.patch("crimson.render.world.effects.rl.draw_texture_pro")
+    begin_blend_mode = mocker.patch.object(world_effects.rl, "begin_blend_mode")
+    end_blend_mode = mocker.patch.object(world_effects.rl, "end_blend_mode")
+    draw_texture_pro = mocker.patch.object(world_effects.rl, "draw_texture_pro")
 
     entries = [
         _entry(flags=0x40, pos=Vec2(10.0, 20.0)),

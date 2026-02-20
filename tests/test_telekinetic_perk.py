@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import math
-
 from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusPool
 from crimson.bonuses.update import bonus_telekinetic_update
@@ -45,8 +43,9 @@ def test_telekinetic_nuke_origin_is_bonus_position() -> None:
 
     active = [proj for proj in state.projectiles.entries if proj.active]
     assert active
-    assert all(math.isclose(proj.pos.x, 100.0, abs_tol=1e-9) for proj in active)
-    assert all(math.isclose(proj.pos.y, 100.0, abs_tol=1e-9) for proj in active)
+    for proj in active:
+        assert_float_close(proj.pos.x, 100.0, abs_tol=1e-9)
+        assert_float_close(proj.pos.y, 100.0, abs_tol=1e-9)
 
 
 def test_telekinetic_shock_chain_origin_is_bonus_position() -> None:

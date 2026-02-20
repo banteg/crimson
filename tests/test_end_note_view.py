@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pyray as rl
 
+import crimson.game.quest_views.end_note as end_note_module
 from crimson.frontend.panels.base import PANEL_TIMELINE_START_MS
 from crimson.game.quest_views import EndNoteView
 
@@ -31,7 +32,7 @@ def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, m
     mocker.patch("crimson.game.quest_views.end_note.update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch("crimson.game.quest_views.end_note._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
     mocker.patch("crimson.game.quest_views.end_note.play_sfx", side_effect=_play_sfx)
-    mocker.patch("crimson.game.quest_views.end_note.rl.is_key_pressed", side_effect=lambda _key: False)
+    mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda _key: False)
 
     view = EndNoteView(state)
     view.open()
@@ -39,16 +40,13 @@ def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, m
     view.update(0.1)
     view.update(0.1)
 
-    mocker.patch(
-        "crimson.game.quest_views.end_note.rl.is_key_pressed",
-        side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE),
-    )
+    mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE))
     view.update(0.1)
 
     assert played == ["sfx_ui_buttonclick"]
     assert view.take_action() is None
 
-    mocker.patch("crimson.game.quest_views.end_note.rl.is_key_pressed", side_effect=lambda _key: False)
+    mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda _key: False)
     action = None
     for _ in range(30):
         view.update(1.0 / 60.0)
@@ -72,7 +70,7 @@ def test_end_note_draw_fades_pause_background_during_close(make_game_state, tmp_
 
     mocker.patch("crimson.game.quest_views.end_note.update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch("crimson.game.quest_views.end_note._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
-    mocker.patch("crimson.game.quest_views.end_note.rl.clear_background", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(end_note_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch("crimson.game.quest_views.end_note._draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
 
     view = EndNoteView(state)

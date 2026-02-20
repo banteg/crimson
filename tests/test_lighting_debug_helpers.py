@@ -133,10 +133,11 @@ def test_ion_lights_are_head_to_tail_omni_with_weaker_tail() -> None:
     assert lights[1].pos.x < lights[0].pos.x
     assert lights[2].pos.x < lights[1].pos.x
     assert lights[0].strength > lights[1].strength > lights[2].strength
-    assert all(light.focus == pytest.approx(0.0) for light in lights)
-    assert all(light.stretch == pytest.approx(1.0) for light in lights)
-    assert all(light.dir_x == pytest.approx(0.0) for light in lights)
-    assert all(light.dir_y == pytest.approx(0.0) for light in lights)
+    for light in lights:
+        assert_float_close(light.focus, 0.0)
+        assert_float_close(light.stretch, 1.0)
+        assert_float_close(light.dir_x, 0.0)
+        assert_float_close(light.dir_y, 0.0)
 
 
 def test_plasma_light_is_omnidirectional() -> None:

@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import math
 
-import pytest
-
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, tick_rush_mode_spawns
 from grim.rand import Crand
 from tests.helpers import assert_float_close
@@ -46,7 +44,8 @@ def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:
     assert alien.type_id == CreatureTypeId.ALIEN
     assert alien.ai_mode == 8
     assert alien.flags == CreatureFlags(0)
-    assert (alien.pos.x, alien.pos.y) == (pytest.approx(1088.0, abs=1e-9), pytest.approx(768.0, abs=1e-9))
+    assert_float_close(alien.pos.x, 1088.0, abs_tol=1e-9)
+    assert_float_close(alien.pos.y, 768.0, abs_tol=1e-9)
     assert_float_close(alien.health, 10.0, abs_tol=1e-9)
     assert_float_close(alien.max_health, 10.0, abs_tol=1e-9)
     assert_float_close(alien.move_speed, 2.5, abs_tol=1e-9)
@@ -55,18 +54,27 @@ def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:
     expected_tint_r = 0.3 + 1.0 / 120000.0
     expected_tint_g = 1.0  # clamp01(0.3 + 10000.0)
     expected_tint_b = 0.3 + math.sin(1e-4)
-    assert alien.tint == pytest.approx((expected_tint_r, expected_tint_g, expected_tint_b, 1.0), abs=1e-9)
+    assert alien.tint is not None
+    assert_float_close(alien.tint[0], expected_tint_r, abs_tol=1e-9)
+    assert_float_close(alien.tint[1], expected_tint_g, abs_tol=1e-9)
+    assert_float_close(alien.tint[2], expected_tint_b, abs_tol=1e-9)
+    assert_float_close(alien.tint[3], 1.0, abs_tol=1e-9)
 
     assert spider.type_id == CreatureTypeId.SPIDER_SP1
     assert spider.ai_mode == 8
     assert (spider.flags & CreatureFlags.AI7_LINK_TIMER) != 0
-    assert (spider.pos.x, spider.pos.y) == (pytest.approx(-64.0, abs=1e-9), pytest.approx(512.0, abs=1e-9))
+    assert_float_close(spider.pos.x, -64.0, abs_tol=1e-9)
+    assert_float_close(spider.pos.y, 512.0, abs_tol=1e-9)
     assert_float_close(spider.health, 10.0, abs_tol=1e-9)
     assert_float_close(spider.max_health, 10.0, abs_tol=1e-9)
     assert_float_close(spider.move_speed, 3.5, abs_tol=1e-9)
     assert_float_close(spider.reward_value, 144.0, abs_tol=1e-9)
     assert_float_close(spider.size, 47.0, abs_tol=1e-9)
-    assert spider.tint == pytest.approx((expected_tint_r, expected_tint_g, expected_tint_b, 1.0), abs=1e-9)
+    assert spider.tint is not None
+    assert_float_close(spider.tint[0], expected_tint_r, abs_tol=1e-9)
+    assert_float_close(spider.tint[1], expected_tint_g, abs_tol=1e-9)
+    assert_float_close(spider.tint[2], expected_tint_b, abs_tol=1e-9)
+    assert_float_close(spider.tint[3], 1.0, abs_tol=1e-9)
 
     assert rng.state == 0x3D6C1037
 

@@ -972,7 +972,7 @@ def test_player_update_hot_tempered_spawns_from_pre_move_position() -> None:
         state,
     )
 
-    assert not math.isclose(player.pos.y, 100.0, abs_tol=1e-9)
+    assert abs(player.pos.y - 100.0) > 1e-6
     origins = {(entry.origin.x, entry.origin.y) for entry in pool.entries if entry.active}
     assert origins == {(100.0, 100.0)}
 

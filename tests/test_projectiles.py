@@ -819,8 +819,10 @@ def test_secondary_projectile_pool_freeze_spawns_extra_shards_and_burst() -> Non
 
     # Freeze bonus spawns 4 shards at impact, then 8 more on conversion.
     assert len(runtime.effects.calls) == 12
-    assert all(math.isclose(y, -9.0, abs_tol=1e-9) for _, y in runtime.effects.calls[:4])
-    assert all(math.isclose(y, -4.0, abs_tol=1e-9) for _, y in runtime.effects.calls[4:])
+    for _, y in runtime.effects.calls[:4]:
+        assert_float_close(y, -9.0, abs_tol=1e-9)
+    for _, y in runtime.effects.calls[4:]:
+        assert_float_close(y, -4.0, abs_tol=1e-9)
 
     # The 10-sprite burst happens regardless of freeze.
     assert len(runtime.sprite_effects.entries) == 10

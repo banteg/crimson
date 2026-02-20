@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.creatures.spawn import SpawnId
 from crimson.quests.timeline import tick_quest_spawn_timeline
 from crimson.quests.types import SpawnEntry
@@ -57,11 +55,9 @@ def test_tick_quest_spawn_timeline_triggers_horizontal_spread_when_on_screen() -
     assert creatures_none_active is False
     assert_float_close(idle_ms, 16.0, abs_tol=1e-9)
     assert len(spawns) == 3
-    assert [(s.pos.x, s.pos.y) for s in spawns] == [
-        (pytest.approx(512.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
-        (pytest.approx(472.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
-        (pytest.approx(592.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
-    ]
+    for spawn, (expected_x, expected_y) in zip(spawns, ((512.0, 512.0), (472.0, 512.0), (592.0, 512.0))):
+        assert_float_close(spawn.pos.x, expected_x, abs_tol=1e-9)
+        assert_float_close(spawn.pos.y, expected_y, abs_tol=1e-9)
     for spawn in spawns:
         assert_float_close(spawn.heading, 1.25, abs_tol=1e-9)
 
@@ -85,11 +81,9 @@ def test_tick_quest_spawn_timeline_triggers_vertical_spread_when_offscreen_x() -
         no_creatures_timer_ms=0.0,
     )
 
-    assert [(s.pos.x, s.pos.y) for s in spawns] == [
-        (pytest.approx(-50.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
-        (pytest.approx(-50.0, abs=1e-9), pytest.approx(472.0, abs=1e-9)),
-        (pytest.approx(-50.0, abs=1e-9), pytest.approx(592.0, abs=1e-9)),
-    ]
+    for spawn, (expected_x, expected_y) in zip(spawns, ((-50.0, 512.0), (-50.0, 472.0), (-50.0, 592.0))):
+        assert_float_close(spawn.pos.x, expected_x, abs_tol=1e-9)
+        assert_float_close(spawn.pos.y, expected_y, abs_tol=1e-9)
 
 
 def test_tick_quest_spawn_timeline_fires_only_one_trigger_group_per_tick() -> None:

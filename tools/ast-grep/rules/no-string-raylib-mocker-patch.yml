@@ -1,0 +1,10 @@
+id: no-string-raylib-mocker-patch
+language: python
+severity: error
+message: Prefer object patching; avoid string-target mocker.patch for raylib targets.
+files:
+  - tests/**/*.py
+rule:
+  all:
+    - kind: call
+    - regex: 'mocker\.patch\(".*(?:\.rl\.|pyray).*",'

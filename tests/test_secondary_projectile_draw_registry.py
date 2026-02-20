@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol, cast
 
+import crimson.render.projectile_draw.secondary_detonation as secondary_detonation_module
+import crimson.render.projectile_draw.secondary_rocket as secondary_rocket_module
 from crimson.projectiles import SecondaryProjectile
 from crimson.render.projectile_draw import SecondaryProjectileDrawCtx, draw_secondary_projectile_from_registry
 from grim.geom import Vec2
@@ -80,7 +82,7 @@ def test_secondary_draw_registry_renders_type4_fallback_circle(monkeypatch, mock
     def _draw_circle(x: int, y: int, radius: float, _color) -> None:
         calls.append((int(x), int(y), float(radius)))
 
-    mocker.patch("crimson.render.projectile_draw.secondary_rocket.rl.draw_circle", side_effect=_draw_circle)
+    mocker.patch.object(secondary_rocket_module.rl, "draw_circle", side_effect=_draw_circle)
 
     ctx = SecondaryProjectileDrawCtx(
         renderer=_as_renderer(renderer),
@@ -109,7 +111,7 @@ def test_secondary_draw_registry_renders_detonation_lines_when_no_particles(monk
     def _draw_circle_lines(_x: int, _y: int, radius: float, _color) -> None:
         calls.append(float(radius))
 
-    mocker.patch("crimson.render.projectile_draw.secondary_detonation.rl.draw_circle_lines", side_effect=_draw_circle_lines)
+    mocker.patch.object(secondary_detonation_module.rl, "draw_circle_lines", side_effect=_draw_circle_lines)
 
     ctx = SecondaryProjectileDrawCtx(
         renderer=_as_renderer(renderer),

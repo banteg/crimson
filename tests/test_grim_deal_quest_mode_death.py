@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pyray as rl
 
+import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
+import crimson.modes.quest_mode as quest_mode_module
 from crimson.modes.quest_mode import QuestMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
@@ -34,10 +36,10 @@ def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_tran
 
     monkeypatch.setattr(mode._perk_menu, "handle_input", _apply_grim_deal_and_close)
 
-    mocker.patch("crimson.modes.base_gameplay_mode.rl.get_mouse_position", side_effect=lambda: rl.Vector2(0.0, 0.0))
-    mocker.patch("crimson.modes.base_gameplay_mode.rl.get_screen_width", side_effect=lambda: 640)
-    mocker.patch("crimson.modes.base_gameplay_mode.rl.get_screen_height", side_effect=lambda: 480)
-    mocker.patch("crimson.modes.quest_mode.rl.is_key_pressed", side_effect=lambda _key: False)
+    mocker.patch.object(base_gameplay_mode_module.rl, "get_mouse_position", side_effect=lambda: rl.Vector2(0.0, 0.0))
+    mocker.patch.object(base_gameplay_mode_module.rl, "get_screen_width", side_effect=lambda: 640)
+    mocker.patch.object(base_gameplay_mode_module.rl, "get_screen_height", side_effect=lambda: 480)
+    mocker.patch.object(quest_mode_module.rl, "is_key_pressed", side_effect=lambda _key: False)
 
     mode.update(1.0 / 60.0)
 

@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from typing import cast
 
+import msgspec
 import pytest
 
 from crimson.game_modes import GameMode
@@ -40,13 +41,14 @@ from crimson.original.schema import (
     CAPTURE_FORMAT_VERSION,
     CaptureEventHeadPerkApply,
     CaptureEventHeadProjectileFindQuery,
+    CaptureTick,
 )
 from crimson.replay import PerkMenuOpenEvent, Replay, UnknownEvent, unpack_input_flags, unpack_input_move_key_flags
 from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from tests.builders.capture import build_capture_file, capture_file_to_dict
+from tests.builders.capture import build_capture_file, build_capture_tick, capture_file_to_dict
 from tests.helpers import assert_float_close
 
 
@@ -510,70 +512,16 @@ def _base_checkpoint(
     score_xp: int = 0,
     rng_state: int = 0,
 ) -> dict[str, object]:
-    return {
-        "tick_index": int(tick_index),
-        "state_hash": f"state-{int(tick_index)}",
-        "command_hash": f"cmd-{int(tick_index)}",
-        "rng_state": int(rng_state),
-        "elapsed_ms": int(elapsed_ms),
-        "score_xp": int(score_xp),
-        "kills": 0,
-        "creature_count": 0,
-        "perk_pending": int(perk_pending),
-        "players": [_base_player()],
-        "status": {
-            "quest_unlock_index": 0,
-            "quest_unlock_index_full": 0,
-            "weapon_usage_counts": [],
-        },
-        "bonus_timers": {},
-        "rng_marks": {
-            "rand_calls": 0,
-            "rand_hash": "",
-            "rand_last": None,
-            "rand_head": [],
-            "rand_callers": [],
-            "rand_caller_overflow": 0,
-            "rand_seq_first": None,
-            "rand_seq_last": None,
-            "rand_seed_epoch_enter": None,
-            "rand_seed_epoch_last": None,
-            "rand_outside_before_calls": 0,
-            "rand_outside_before_dropped": 0,
-            "rand_outside_before_head": [],
-            "rand_mirror_mismatch_total": 0,
-            "rand_mirror_unknown_total": 0,
-        },
-        "deaths": [],
-        "perk": {
-            "pending_count": int(perk_pending),
-            "choices_dirty": False,
-            "choices": [],
-            "player_nonzero_counts": [],
-        },
-        "events": {
-            "hit_count": -1,
-            "pickup_count": -1,
-            "sfx_count": -1,
-            "sfx_head": [],
-            "rng_call_count": 0,
-            "input_true_count": 0,
-        },
-        "debug": {
-            "sampling_phase": "",
-            "timing": _base_timing_diagnostics(),
-            "spawn": _base_spawn_diagnostics(),
-            "rng": _base_rng_diagnostics(),
-            "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
-            "creature_lifecycle": None,
-            "player_fire": _base_player_fire_diagnostics(),
-            "before_players": [],
-            "before_status": {
-                "quest_unlock_index": 0,
-                "quest_unlock_index_full": 0,
-            },
-        },
-    }
+    tick = build_capture_tick(
+        tick_index=int(tick_index),
+        elapsed_ms=int(elapsed_ms),
+        score_xp=int(score_xp),
+        perk_pending=int(perk_pending),
+    )
+    payload = msgspec.json.decode(msgspec.json.encode(tick))
+    checkpoint = _as_obj_dict(cast(dict[str, object], payload).get("checkpoint"))
+    checkpoint["rng_state"] = int(rng_state)
+    return checkpoint
 
 
 def _base_tick(
@@ -584,66 +532,21 @@ def _base_tick(
     score_xp: int = 0,
     rng_state: int = 0,
 ) -> dict[str, object]:
-    return {
-        "tick_index": int(tick_index),
-        "gameplay_frame": int(tick_index) + 1,
-        "mode_hint": "survival_update",
-        "game_mode_id": int(GameMode.SURVIVAL),
-        "checkpoint": _base_checkpoint(
-            tick_index=int(tick_index),
-            elapsed_ms=int(elapsed_ms),
-            perk_pending=int(perk_pending),
-            score_xp=int(score_xp),
-            rng_state=int(rng_state),
-        ),
-        "input_queries": {
-            "stats": {
-                "primary_edge": {"calls": 0, "true_calls": 0},
-                "primary_down": {"calls": 0, "true_calls": 0},
-                "any_key": {"calls": 0, "true_calls": 0},
-            },
-            "query_hash": "",
-        },
-        "input_player_keys": [_base_input_player_keys(**{})],
-        "input_approx": [_base_input_approx(**{})],
-        "before": _base_snapshot(),
-        "after": _base_snapshot(),
-        "focus_tick": False,
-        "state_id_enter": None,
-        "state_id_leave": None,
-        "state_pending_enter": None,
-        "state_pending_leave": None,
-        "quest_stage_major": -1,
-        "quest_stage_minor": -1,
-        "ts_enter_ms": 0,
-        "ts_leave_ms": 0,
-        "duration_ms": 0,
-        "event_counts": _base_event_counts(),
-        "event_overflow": False,
-        "event_heads": [],
-        "phase_markers": [],
-        "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
-        "perk_apply_in_tick": [],
-        "rng": _base_rng_summary(),
-        "diagnostics": {
-            "sampling_phase": "",
-            "timing": _base_timing_diagnostics(),
-            "spawn": _base_spawn_diagnostics(),
-            "rng": _base_rng_diagnostics(),
-            "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
-            "creature_lifecycle": None,
-            "player_fire": _base_player_fire_diagnostics(),
-        },
-        "frame_dt_ms": None,
-        "frame_dt_ms_i32": None,
-        "creature_lifecycle": None,
-        "samples": {
-            "creatures": [],
-            "projectiles": [],
-            "secondary_projectiles": [],
-            "bonuses": [],
-        },
-    }
+    tick = build_capture_tick(
+        tick_index=int(tick_index),
+        elapsed_ms=int(elapsed_ms),
+        score_xp=int(score_xp),
+        perk_pending=int(perk_pending),
+    )
+    row = cast(dict[str, object], msgspec.json.decode(msgspec.json.encode(tick)))
+    checkpoint = _as_obj_dict(row.get("checkpoint"))
+    checkpoint["rng_state"] = int(rng_state)
+    row["input_approx"] = [_base_input_approx(**{})]
+    row["input_player_keys"] = [_base_input_player_keys(**{})]
+    # Keep legacy sparse snapshot defaults used by these conversion tests.
+    row["before"] = _base_snapshot()
+    row["after"] = _base_snapshot()
+    return row
 
 
 def _sample_creature(*, index: int = 5) -> dict[str, object]:
@@ -713,10 +616,16 @@ def _sample_bonus(*, index: int = 2) -> dict[str, object]:
 
 
 def _capture_obj(*, ticks: list[dict[str, object]]) -> dict[str, object]:
-    capture = build_capture_file(ticks=[], session_id="session-1")
-    payload = capture_file_to_dict(capture)
-    payload["ticks"] = ticks
-    return payload
+    try:
+        typed_ticks = [msgspec.convert(tick, type=CaptureTick, strict=True) for tick in ticks]
+    except msgspec.ValidationError:
+        # Some conversion tests intentionally exercise invalid/incomplete capture payloads.
+        capture = build_capture_file(ticks=[], session_id="session-1")
+        payload = capture_file_to_dict(capture)
+        payload["ticks"] = ticks
+        return payload
+    capture = build_capture_file(ticks=typed_ticks, session_id="session-1")
+    return capture_file_to_dict(capture)
 
 
 def _normalize_rng_head_rows(rows: list[object]) -> list[object]:
@@ -1997,12 +1906,12 @@ def test_convert_capture_to_replay_bootstrap_payload_prefers_before_player_runti
     assert_float_close(player.alt_weapon.reload_timer, 0.2, abs_tol=1e-6)
     assert_float_close(player.alt_weapon.shot_cooldown, 0.1, abs_tol=1e-6)
     assert_float_close(player.alt_weapon.reload_timer_max, 1.2, abs_tol=1e-6)
-    assert player.perk_timers == {
-        "hot_tempered": pytest.approx(1.36, abs=1e-6),
-        "man_bomb": pytest.approx(0.0, abs=1e-6),
-        "living_fortress": pytest.approx(0.0, abs=1e-6),
-        "fire_cough": pytest.approx(0.0, abs=1e-6),
-    }
+    assert player.perk_timers is not None
+    assert set(player.perk_timers.keys()) == {"hot_tempered", "man_bomb", "living_fortress", "fire_cough"}
+    assert_float_close(player.perk_timers["hot_tempered"], 1.36, abs_tol=1e-6)
+    assert_float_close(player.perk_timers["man_bomb"], 0.0, abs_tol=1e-6)
+    assert_float_close(player.perk_timers["living_fortress"], 0.0, abs_tol=1e-6)
+    assert_float_close(player.perk_timers["fire_cough"], 0.0, abs_tol=1e-6)
 
 
 def test_convert_capture_to_replay_bootstrap_payload_infers_perk_intervals_from_timer_wrap(

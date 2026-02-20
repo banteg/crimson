@@ -1,0 +1,16 @@
+id: no-string-raylib-mocker-patch
+snapshots:
+  ? |
+    mocker.patch("crimson.ui.game_over.rl.get_screen_width", side_effect=lambda: 640)
+  : labels:
+    - source: 'mocker.patch("crimson.ui.game_over.rl.get_screen_width", side_effect=lambda: 640)'
+      style: primary
+      start: 0
+      end: 81
+  ? |
+    mocker.patch("crimson.render.world.effects.rl.draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)
+  : labels:
+    - source: 'mocker.patch("crimson.render.world.effects.rl.draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)'
+      style: primary
+      start: 0
+      end: 108

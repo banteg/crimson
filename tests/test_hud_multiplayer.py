@@ -4,6 +4,7 @@ from typing import cast
 
 import pyray as rl
 
+import crimson.ui.hud as hud_module
 from crimson.sim.state_types import PlayerState
 from crimson.ui.hud import HudAssets, HudState, draw_hud_overlay
 from grim.geom import Vec2
@@ -21,8 +22,8 @@ def _texture(width: int, height: int) -> rl.Texture:
 
 def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch, mocker) -> None:
     # Force HUD scale = 1.0 for easy coordinate assertions.
-    mocker.patch("crimson.ui.hud.rl.get_screen_width", side_effect=lambda: 1024)
-    mocker.patch("crimson.ui.hud.rl.get_screen_height", side_effect=lambda: 768)
+    mocker.patch.object(hud_module.rl, "get_screen_width", side_effect=lambda: 1024)
+    mocker.patch.object(hud_module.rl, "get_screen_height", side_effect=lambda: 768)
 
     textures: dict[str, rl.Texture] = {
         "game_top": _texture(512, 64),
@@ -61,8 +62,8 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch, mocker
     def _draw_texture_pro(texture, _src, dst, _origin, _rotation, _tint) -> None:
         draws.append((texture, float(dst.x), float(dst.y), float(dst.width), float(dst.height)))
 
-    mocker.patch("crimson.ui.hud.rl.draw_texture_pro", side_effect=_draw_texture_pro)
-    mocker.patch("crimson.ui.hud.rl.draw_text", side_effect=lambda *args, **kwargs: None)
+    mocker.patch.object(hud_module.rl, "draw_texture_pro", side_effect=_draw_texture_pro)
+    mocker.patch.object(hud_module.rl, "draw_text", side_effect=lambda *args, **kwargs: None)
 
     draw_hud_overlay(
         assets,
@@ -99,9 +100,9 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch, mocker
 
 
 def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeypatch, mocker) -> None:
-    mocker.patch("crimson.ui.hud.rl.get_screen_width", side_effect=lambda: 1024)
-    mocker.patch("crimson.ui.hud.rl.get_screen_height", side_effect=lambda: 768)
-    mocker.patch("crimson.ui.hud.rl.draw_text", side_effect=lambda *args, **kwargs: None)
+    mocker.patch.object(hud_module.rl, "get_screen_width", side_effect=lambda: 1024)
+    mocker.patch.object(hud_module.rl, "get_screen_height", side_effect=lambda: 768)
+    mocker.patch.object(hud_module.rl, "draw_text", side_effect=lambda *args, **kwargs: None)
 
     life_heart = _texture(32, 32)
     assets = HudAssets(
@@ -127,7 +128,7 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeyp
     def _draw_texture_pro(texture, _src, dst, _origin, _rotation, _tint) -> None:
         draws.append((texture, float(dst.x), float(dst.y), float(dst.width), float(dst.height)))
 
-    mocker.patch("crimson.ui.hud.rl.draw_texture_pro", side_effect=_draw_texture_pro)
+    mocker.patch.object(hud_module.rl, "draw_texture_pro", side_effect=_draw_texture_pro)
 
     draws.clear()
     draw_hud_overlay(

@@ -3,7 +3,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import msgspec
+
 from crimson.game_modes import GameMode
+from crimson.original.schema import CaptureTick
 from crimson.replay.checkpoints import (
     ReplayCheckpoint,
     ReplayEventSummary,
@@ -11,7 +14,7 @@ from crimson.replay.checkpoints import (
     ReplayPlayerCheckpoint,
 )
 from grim.geom import Vec2
-from tests.builders.capture import build_capture_file, capture_file_to_dict
+from tests.builders.capture import build_capture_file, build_capture_tick, capture_file_to_dict
 
 
 def _load_report_module():
@@ -432,87 +435,52 @@ def _capture_tick(
     perk_pairs: list[list[int]],
     event_heads: list[dict[str, object]],
 ) -> dict[str, object]:
-    return {
-        "tick_index": int(tick),
-        "gameplay_frame": int(tick) + 1,
-        "mode_hint": "survival_update",
-        "game_mode_id": 6,
-        "quest_stage_major": -1,
-        "quest_stage_minor": -1,
-        "focus_tick": False,
-        "state_id_enter": None,
-        "state_id_leave": None,
-        "state_pending_enter": None,
-        "state_pending_leave": None,
-        "ts_enter_ms": 0,
-        "ts_leave_ms": 0,
-        "duration_ms": 0,
-        "checkpoint": _checkpoint_tick(
-            tick,
-            level=int(level),
-            weapon_id=int(weapon_id),
-            experience=int(experience),
-            perk_pairs=perk_pairs,
-        ),
-        "event_counts": _event_counts_dict(),
-        "event_overflow": False,
-        "event_heads": list(event_heads),
-        "phase_markers": [],
-        "input_queries": {
-            "stats": {
-                "primary_edge": {"calls": 0, "true_calls": 0},
-                "primary_down": {"calls": 0, "true_calls": 0},
-                "any_key": {"calls": 0, "true_calls": 0},
-            },
-            "query_hash": "",
-        },
-        "input_player_keys": [_input_player_keys(player_index=0)],
+    row = msgspec.json.decode(msgspec.json.encode(build_capture_tick(tick_index=int(tick), elapsed_ms=int(tick) * 16)))
+    tick_row = dict(row)
+    tick_row["checkpoint"] = _checkpoint_tick(
+        tick,
+        level=int(level),
+        weapon_id=int(weapon_id),
+        experience=int(experience),
+        perk_pairs=perk_pairs,
+    )
+    tick_row["event_counts"] = _event_counts_dict()
+    tick_row["event_heads"] = list(event_heads)
+    tick_row["input_player_keys"] = [_input_player_keys(player_index=0)]
+    tick_row["input_approx"] = [_input_approx(player_index=0, aim_x=0.0, aim_y=0.0)]
+    tick_row["rng"] = _rng_summary_dict()
+    tick_row["diagnostics"] = {
+        "sampling_phase": "",
+        "timing": _timing_diagnostics(),
+        "spawn": _spawn_diagnostics(),
+        "rng": _rng_diagnostics(),
         "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
-        "perk_apply_in_tick": [],
-        "rng": _rng_summary_dict(),
-        "diagnostics": {
-            "sampling_phase": "",
-            "timing": _timing_diagnostics(),
-            "spawn": _spawn_diagnostics(),
-            "rng": _rng_diagnostics(),
-            "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
-            "creature_lifecycle": None,
-            "player_fire": _player_fire_diagnostics(),
-        },
-        "input_approx": [_input_approx(player_index=0, aim_x=0.0, aim_y=0.0)],
-        "before": {
-            "globals": _snapshot_globals(),
-            "status": _snapshot_status(),
-            "player_count": 1,
-            "players": [],
-            "input": _snapshot_input(),
-            "input_bindings": _snapshot_input_bindings(),
-        },
-        "after": {
-            "globals": _snapshot_globals(),
-            "status": _snapshot_status(),
-            "player_count": 1,
-            "players": [],
-            "input": _snapshot_input(),
-            "input_bindings": _snapshot_input_bindings(),
-        },
-        "frame_dt_ms": None,
-        "frame_dt_ms_i32": None,
         "creature_lifecycle": None,
-        "samples": {
-            "creatures": [],
-            "projectiles": [],
-            "secondary_projectiles": [],
-            "bonuses": [],
-        },
+        "player_fire": _player_fire_diagnostics(),
     }
+    tick_row["before"] = {
+        "globals": _snapshot_globals(),
+        "status": _snapshot_status(),
+        "player_count": 1,
+        "players": [],
+        "input": _snapshot_input(),
+        "input_bindings": _snapshot_input_bindings(),
+    }
+    tick_row["after"] = {
+        "globals": _snapshot_globals(),
+        "status": _snapshot_status(),
+        "player_count": 1,
+        "players": [],
+        "input": _snapshot_input(),
+        "input_bindings": _snapshot_input_bindings(),
+    }
+    return tick_row
 
 
 def _capture_obj(*, ticks: list[dict[str, object]]) -> dict[str, object]:
-    capture = build_capture_file(ticks=[], session_id="s")
-    payload = capture_file_to_dict(capture)
-    payload["ticks"] = ticks
-    return payload
+    typed_ticks = [msgspec.convert(tick, type=CaptureTick, strict=True) for tick in ticks]
+    capture = build_capture_file(ticks=typed_ticks, session_id="s")
+    return capture_file_to_dict(capture)
 
 
 def _write_capture_stream(path: Path, capture: dict[str, object]) -> None:

@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-import pytest
-
 from crimson.creatures.ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from crimson.creatures.spawn import CreatureFlags
 from crimson.math_parity import f32
@@ -46,7 +44,8 @@ def test_ai_mode_0_orbits_when_close() -> None:
     c = StubCreature(pos=Vec2(), ai_mode=0, phase_seed=0.0)
     ai = creature_ai_update_target(c, player_pos=Vec2(100.0, 0.0), creatures=[c], dt=1.0 / 60.0)
     assert_float_close(ai.move_scale, 1.0)
-    assert (c.target.x, c.target.y) == (pytest.approx(185.0, abs=1e-6), pytest.approx(0.0, abs=1e-6))
+    assert_float_close(c.target.x, 185.0)
+    assert_float_close(c.target.y, 0.0)
     assert c.force_target == 0
 
 
@@ -55,7 +54,8 @@ def test_ai_mode_5_scales_down_near_link() -> None:
     c = StubCreature(pos=Vec2(100.0, 50.0), ai_mode=5, link_index=0, target_offset=Vec2())
     ai = creature_ai_update_target(c, player_pos=Vec2(), creatures=[link, c], dt=1.0 / 60.0)
     assert c.force_target == 0
-    assert (c.target.x, c.target.y) == (pytest.approx(100.0, abs=1e-6), pytest.approx(100.0, abs=1e-6))
+    assert_float_close(c.target.x, 100.0)
+    assert_float_close(c.target.y, 100.0)
     assert_float_close(ai.move_scale, 50.0 * 0.015625, abs_tol=1e-6)
 
 
@@ -74,7 +74,8 @@ def test_ai_mode_6_orbits_linked_creature() -> None:
     assert ai.self_damage is None
     assert c.ai_mode == 6
     assert c.force_target == 0
-    assert (c.target.x, c.target.y) == (pytest.approx(110.0, abs=1e-6), pytest.approx(0.0, abs=1e-6))
+    assert_float_close(c.target.x, 110.0)
+    assert_float_close(c.target.y, 0.0)
 
 
 def test_ai_mode_7_orbit_radius_timer_counts_down() -> None:

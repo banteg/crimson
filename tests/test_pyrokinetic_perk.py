@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import math
-
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
@@ -36,7 +34,8 @@ def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps
     particles = [entry for entry in state.particles.entries if entry.active]
     assert len(particles) == 5
     intensities = [entry.intensity for entry in particles]
-    assert all(math.isclose(actual, expected, abs_tol=1e-9) for actual, expected in zip(intensities, (0.8, 0.6, 0.4, 0.3, 0.2)))
+    for actual, expected in zip(intensities, (0.8, 0.6, 0.4, 0.3, 0.2)):
+        assert_float_close(actual, expected, abs_tol=1e-9)
 
 
 def test_perks_update_effects_pyrokinetic_uses_f32_timer_threshold_before_wrapping() -> None:
