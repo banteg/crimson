@@ -86,6 +86,7 @@ from .schema import (
     CaptureEventHeadStateTransition,
     CaptureEventHeadWeaponAssign,
     CaptureFile,
+    CaptureRngHeadEntry,
     CaptureTick,
 )
 
@@ -285,7 +286,7 @@ class _FocusRuntime:
             raise ValueError(f"focus trace unsupported quest replay: unknown quest_level={quest_level!r}")
 
         world.state.quest_stage_major, world.state.quest_stage_minor = quest.level_key
-        weapon_id = max(1, int(getattr(quest, "start_weapon_id", 1) or 1))
+        weapon_id = max(1, int(quest.start_weapon_id or 1))
         for player in world.players:
             weapon_assign_player(player, int(weapon_id))
         self.quest_start_weapon_id = int(weapon_id)
@@ -641,9 +642,10 @@ class _FocusRuntime:
                         proj = frame.f_locals.get("proj")
                         if proj is not None:
                             try:
-                                proj_type = int(getattr(proj, "type_id"))
-                                proj_life = float(getattr(proj, "life_timer"))
-                            except (TypeError, ValueError):
+                                proj_ref = cast("Any", proj)
+                                proj_type = int(proj_ref.type_id)
+                                proj_life = float(proj_ref.life_timer)
+                            except (AttributeError, TypeError, ValueError):
                                 proj_type = None
                                 proj_life = None
 
@@ -686,7 +688,8 @@ class _FocusRuntime:
                     hook_index += 1
                     return bool(handled)
 
-                setattr(self.world.state.rng, "rand", traced_rand)
+                rng_ref = cast("Any", self.world.state.rng)
+                rng_ref.rand = traced_rand
                 self.world.state.particles._rand = traced_rand
                 self.world.state.sprite_effects._rand = traced_rand
                 projectiles_mod._within_native_find_radius = traced_within_native_find_radius  # type: ignore[assignment]
@@ -734,7 +737,8 @@ class _FocusRuntime:
             if self.mode == int(GameMode.QUESTS):
                 self.world.creatures.finalize_post_render_lifecycle()
         finally:
-            setattr(self.world.state.rng, "rand", orig_rand)
+            rng_ref = cast("Any", self.world.state.rng)
+            rng_ref.rand = orig_rand
             self.world.state.particles._rand = orig_particles_rand
             self.world.state.sprite_effects._rand = orig_sprite_effects_rand
             projectiles_mod._within_native_find_radius = orig_within
@@ -1008,27 +1012,27 @@ def capture_fingerprint(path: Path, *, include_sha256: bool = False) -> CaptureF
     )
 
 
-def _rng_head_entry_to_row(entry: Any) -> dict[str, object]:
+def _rng_head_entry_to_row(entry: CaptureRngHeadEntry) -> dict[str, object]:
     out: dict[str, object] = {}
-    value_15 = _int_or(getattr(entry, "value_15", None), -1)
+    value_15 = _int_or(entry.value_15, -1)
     if 0 <= value_15 <= 0x7FFF:
         out["value_15"] = int(value_15)
         out["value"] = int(value_15)
-    state_before_u32 = _int_or(getattr(entry, "state_before_u32", None), -1)
+    state_before_u32 = _int_or(entry.state_before_u32, -1)
     if state_before_u32 >= 0:
         out["state_before_u32"] = int(state_before_u32) & 0xFFFFFFFF
-    state_after_u32 = _int_or(getattr(entry, "state_after_u32", None), -1)
+    state_after_u32 = _int_or(entry.state_after_u32, -1)
     if state_after_u32 >= 0:
         out["state_after_u32"] = int(state_after_u32) & 0xFFFFFFFF
-    seq = _int_or(getattr(entry, "seq", None), -1)
+    seq = _int_or(entry.seq, -1)
     if seq >= 0:
         out["seq"] = int(seq)
-    tick_call_index = _int_or(getattr(entry, "tick_call_index", None), -1)
+    tick_call_index = _int_or(entry.tick_call_index, -1)
     if tick_call_index >= 0:
         out["tick_call_index"] = int(tick_call_index)
-    caller_static = str(getattr(entry, "caller_static", "") or "")
-    branch_id = str(getattr(entry, "branch_id", "") or "")
-    caller = str(getattr(entry, "caller", "") or "")
+    caller_static = str(entry.caller_static or "")
+    branch_id = str(entry.branch_id or "")
+    caller = str(entry.caller or "")
     if caller_static:
         out["caller_static"] = caller_static
     if branch_id:
@@ -1041,10 +1045,8 @@ def _rng_head_entry_to_row(entry: Any) -> dict[str, object]:
 
 
 def _event_head_payload(head: Any) -> dict[str, object]:
-    data = getattr(head, "data", None)
-    if isinstance(data, dict):
-        return {str(key): value for key, value in data.items()}
-    return {}
+    data = cast("dict[str, object]", head.data)
+    return {str(key): value for key, value in data.items()}
 
 
 def _build_event_heads_by_kind(tick: CaptureTick) -> dict[str, list[dict[str, object]]]:
