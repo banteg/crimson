@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.creatures.anim import (
     creature_anim_advance_phase,
     creature_anim_select_frame,
     creature_corpse_frame_for_type,
 )
 from crimson.creatures.spawn import CreatureFlags
+from tests.helpers import assert_float_close
 
 
 def test_creature_anim_advance_phase_long_strip_matches_formula() -> None:
@@ -23,8 +22,8 @@ def test_creature_anim_advance_phase_long_strip_matches_formula() -> None:
         flags=CreatureFlags(0),
         ai_mode=0,
     )
-    assert step == pytest.approx(0.6, abs=1e-6)
-    assert phase == pytest.approx(0.6, abs=1e-6)
+    assert_float_close(step, 0.6, abs_tol=1e-6)
+    assert_float_close(phase, 0.6, abs_tol=1e-6)
 
 
 def test_creature_anim_advance_phase_ping_pong_uses_22_multiplier() -> None:
@@ -40,8 +39,8 @@ def test_creature_anim_advance_phase_ping_pong_uses_22_multiplier() -> None:
         flags=CreatureFlags.ANIM_PING_PONG,
         ai_mode=0,
     )
-    assert step == pytest.approx(0.528, abs=1e-6)
-    assert phase == pytest.approx(0.528, abs=1e-6)
+    assert_float_close(step, 0.528, abs_tol=1e-6)
+    assert_float_close(phase, 0.528, abs_tol=1e-6)
 
 
 def test_creature_anim_select_frame_ping_pong_basic() -> None:

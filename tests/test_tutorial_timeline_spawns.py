@@ -10,13 +10,14 @@ from crimson.creatures.spawn import (
     build_tutorial_stage5_repeat_spawns,
     build_tutorial_stage6_perks_done_spawns,
 )
+from tests.helpers import assert_float_close
 
 
 def _assert_call(call, *, template_id: int, x: float, y: float) -> None:
     assert call.template_id == template_id
-    assert call.pos.x == pytest.approx(x, abs=1e-9)
-    assert call.pos.y == pytest.approx(y, abs=1e-9)
-    assert call.heading == pytest.approx(math.pi, abs=1e-9)
+    assert_float_close(call.pos.x, x, abs_tol=1e-9)
+    assert_float_close(call.pos.y, y, abs_tol=1e-9)
+    assert_float_close(call.heading, math.pi, abs_tol=1e-9)
 
 
 def test_build_tutorial_stage3_fire_spawns() -> None:

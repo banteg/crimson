@@ -12,6 +12,7 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
@@ -83,4 +84,4 @@ def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> N
         perk_progression_enabled=False,
     )
 
-    assert world.state.bonuses.reflex_boost == pytest.approx(expected_reflex, abs=1e-9)
+    assert_float_close(world.state.bonuses.reflex_boost, expected_reflex, abs_tol=1e-9)

@@ -7,7 +7,7 @@ from crimson.effects import EffectPool, FxQueue, FxQueueRotated, ParticlePool, S
 from crimson.effects_atlas import effect_src_rect
 from grim.color import RGBA
 from grim.geom import Vec2
-from tests.helpers import MockCrand
+from tests.helpers import MockCrand, assert_float_close
 
 
 def test_effect_src_rect_uses_grid_and_frame() -> None:
@@ -37,7 +37,7 @@ def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
         terrain_bodies_transparency=2.0,
     )
     entry = q.entries[0]
-    assert math.isclose(entry.color.a, 0.5, abs_tol=1e-9)
+    assert_float_close(entry.color.a, 0.5, abs_tol=1e-9)
 
     q.clear()
     assert q.add(
@@ -49,7 +49,7 @@ def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
         terrain_bodies_transparency=0.0,
     )
     entry = q.entries[0]
-    assert math.isclose(entry.color.a, 0.8, abs_tol=1e-9)
+    assert_float_close(entry.color.a, 0.8, abs_tol=1e-9)
 
 
 def test_sprite_effect_pool_updates_and_expires() -> None:
@@ -61,11 +61,11 @@ def test_sprite_effect_pool_updates_and_expires() -> None:
     assert fx.rotation == 0.0
 
     pool.update(0.5)
-    assert math.isclose(fx.pos.x, 11.0, abs_tol=1e-9)
-    assert math.isclose(fx.pos.y, 18.5, abs_tol=1e-9)
-    assert math.isclose(fx.rotation, 1.5, abs_tol=1e-9)
-    assert math.isclose(fx.color.a, 0.5, abs_tol=1e-9)
-    assert math.isclose(fx.scale, 31.0, abs_tol=1e-9)
+    assert_float_close(fx.pos.x, 11.0, abs_tol=1e-9)
+    assert_float_close(fx.pos.y, 18.5, abs_tol=1e-9)
+    assert_float_close(fx.rotation, 1.5, abs_tol=1e-9)
+    assert_float_close(fx.color.a, 0.5, abs_tol=1e-9)
+    assert_float_close(fx.scale, 31.0, abs_tol=1e-9)
 
     pool.update(0.6)
     assert not fx.active
@@ -80,7 +80,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     p0.render_flag = False
     pool.update(1.0)
     assert p0.active
-    assert math.isclose(p0.intensity, 0.1, abs_tol=2e-9)
+    assert_float_close(p0.intensity, 0.1, abs_tol=2e-9)
 
     # Style 1 expires once intensity <= 0.8.
     idx1 = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
@@ -96,7 +96,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     p2.render_flag = False
     pool.update(1.0)
     assert p2.active
-    assert math.isclose(p2.intensity, 0.89, abs_tol=2e-8)
+    assert_float_close(p2.intensity, 0.89, abs_tol=2e-8)
 
 
 def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
@@ -127,19 +127,19 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     assert particle.render_flag is False
     assert fx_queue.count == 1
     assert sprite_effects.entries[0].active
-    assert math.isclose(sprite_effects.entries[0].color.a, 0.7, abs_tol=1e-9)
+    assert_float_close(sprite_effects.entries[0].color.a, 0.7, abs_tol=1e-9)
 
     deflect_step = math.tau * 0.2
-    assert math.isclose(float(particle.angle), deflect_step, abs_tol=1e-6)
+    assert_float_close(float(particle.angle), deflect_step, abs_tol=1e-6)
 
     speed_scale = 0.7
     expected_vel_x = math.cos(deflect_step) * 82.0 * speed_scale
     expected_vel_y = math.sin(deflect_step) * 82.0 * speed_scale
-    assert math.isclose(float(particle.vel.x), expected_vel_x, abs_tol=3e-6)
-    assert math.isclose(float(particle.vel.y), expected_vel_y, abs_tol=3e-6)
+    assert_float_close(float(particle.vel.x), expected_vel_x, abs_tol=3e-6)
+    assert_float_close(float(particle.vel.y), expected_vel_y, abs_tol=3e-6)
 
-    assert math.isclose(float(creature.pos.x), expected_vel_x * dt, abs_tol=1e-6)
-    assert math.isclose(float(creature.pos.y), expected_vel_y * dt, abs_tol=1e-6)
+    assert_float_close(float(creature.pos.x), expected_vel_x * dt, abs_tol=1e-6)
+    assert_float_close(float(creature.pos.y), expected_vel_y * dt, abs_tol=1e-6)
 
 
 def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
@@ -166,14 +166,14 @@ def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
 
     first = q.iter_active()[0]
     assert first.effect_id == 7
-    assert math.isclose(first.pos.x, 0.0, abs_tol=1e-9)
-    assert math.isclose(first.pos.y, 20.0, abs_tol=1e-9)
-    assert math.isclose(first.width, 2.0, abs_tol=1e-9)
-    assert math.isclose(first.height, 2.0, abs_tol=1e-9)
-    assert math.isclose(first.color.r, 1.0, abs_tol=1e-9)
-    assert math.isclose(first.color.g, 1.0, abs_tol=1e-9)
-    assert math.isclose(first.color.b, 1.0, abs_tol=1e-9)
-    assert math.isclose(first.color.a, 0.8, abs_tol=1e-9)
+    assert_float_close(first.pos.x, 0.0, abs_tol=1e-9)
+    assert_float_close(first.pos.y, 20.0, abs_tol=1e-9)
+    assert_float_close(first.width, 2.0, abs_tol=1e-9)
+    assert_float_close(first.height, 2.0, abs_tol=1e-9)
+    assert_float_close(first.color.r, 1.0, abs_tol=1e-9)
+    assert_float_close(first.color.g, 1.0, abs_tol=1e-9)
+    assert_float_close(first.color.b, 1.0, abs_tol=1e-9)
+    assert_float_close(first.color.a, 0.8, abs_tol=1e-9)
 
 
 def test_effect_pool_shell_casing_queues_decal_on_expiry() -> None:
@@ -192,16 +192,16 @@ def test_effect_pool_shell_casing_queues_decal_on_expiry() -> None:
     assert len(active) == 1
     assert active[0].effect_id == 0x12
     assert active[0].flags == 0x1C5
-    assert math.isclose(active[0].lifetime, 0.15, abs_tol=1e-9)
+    assert_float_close(active[0].lifetime, 0.15, abs_tol=1e-9)
 
     pool.update(0.2, fx_queue=q)
     assert q.count == 1
 
     entry = q.iter_active()[0]
     assert entry.effect_id == 0x12
-    assert math.isclose(entry.width, 4.0, abs_tol=1e-9)
-    assert math.isclose(entry.height, 4.0, abs_tol=1e-9)
-    assert math.isclose(entry.color.a, 0.35, abs_tol=1e-9)
+    assert_float_close(entry.width, 4.0, abs_tol=1e-9)
+    assert_float_close(entry.height, 4.0, abs_tol=1e-9)
+    assert_float_close(entry.color.a, 0.35, abs_tol=1e-9)
 
 
 def test_effect_pool_spawn_burst_matches_template_defaults() -> None:
@@ -218,11 +218,11 @@ def test_effect_pool_spawn_burst_matches_template_defaults() -> None:
     assert len(active) == 3
     for entry in active:
         assert entry.effect_id == 0
-        assert math.isclose(entry.half_width, 32.0, abs_tol=1e-9)
-        assert math.isclose(entry.half_height, 32.0, abs_tol=1e-9)
+        assert_float_close(entry.half_width, 32.0, abs_tol=1e-9)
+        assert_float_close(entry.half_height, 32.0, abs_tol=1e-9)
         assert entry.flags == 0x1D
-        assert math.isclose(entry.lifetime, 0.5, abs_tol=1e-9)
-        assert math.isclose(entry.scale_step, 0.1, abs_tol=1e-9)
+        assert_float_close(entry.lifetime, 0.5, abs_tol=1e-9)
+        assert_float_close(entry.scale_step, 0.1, abs_tol=1e-9)
 
 
 def test_effect_pool_spawn_ring_spawns_effect_1() -> None:
@@ -239,7 +239,7 @@ def test_effect_pool_spawn_ring_spawns_effect_1() -> None:
     entry = active[0]
     assert entry.effect_id == 1
     assert entry.flags == 0x19
-    assert math.isclose(entry.pos.x, 3.0, abs_tol=1e-9)
-    assert math.isclose(entry.pos.y, 4.0, abs_tol=1e-9)
-    assert math.isclose(entry.lifetime, 0.25, abs_tol=1e-9)
-    assert math.isclose(entry.scale_step, 50.0, abs_tol=1e-9)
+    assert_float_close(entry.pos.x, 3.0, abs_tol=1e-9)
+    assert_float_close(entry.pos.y, 4.0, abs_tol=1e-9)
+    assert_float_close(entry.lifetime, 0.25, abs_tol=1e-9)
+    assert_float_close(entry.scale_step, 50.0, abs_tol=1e-9)

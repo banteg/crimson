@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.helpers import MockCrand
+from tests.helpers import MockCrand, assert_float_close
 
 
 def test_pyromaniac_increases_fire_damage_and_consumes_rng() -> None:
@@ -28,5 +26,5 @@ def test_pyromaniac_increases_fire_damage_and_consumes_rng() -> None:
     )
 
     assert killed is False
-    assert creature.hp == pytest.approx(85.0)
+    assert_float_close(creature.hp, 85.0)
     assert rand.calls == 1

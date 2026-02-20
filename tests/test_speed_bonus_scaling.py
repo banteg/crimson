@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.gameplay import (
     GameplayState,
     player_update,
@@ -9,6 +7,7 @@ from crimson.gameplay import (
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_speed_bonus_adds_one_to_speed_multiplier() -> None:
@@ -19,10 +18,10 @@ def test_speed_bonus_adds_one_to_speed_multiplier() -> None:
     base_state = GameplayState()
     base_player = PlayerState(index=0, pos=Vec2(100.0, 100.0), move_speed=2.0, heading=move_heading)
     player_update(base_player, input_state, dt, base_state)
-    assert base_player.pos.x == pytest.approx(110.0)
+    assert_float_close(base_player.pos.x, 110.0)
 
     boosted_state = GameplayState()
     boosted_player = PlayerState(index=0, pos=Vec2(100.0, 100.0), move_speed=2.0, heading=move_heading)
     boosted_player.speed_bonus_timer = 1.0
     player_update(boosted_player, input_state, dt, boosted_state)
-    assert boosted_player.pos.x == pytest.approx(115.0)
+    assert_float_close(boosted_player.pos.x, 115.0)

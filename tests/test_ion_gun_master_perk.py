@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.perks import PerkId
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_ion_gun_master_increases_ion_damage() -> None:
@@ -27,7 +26,7 @@ def test_ion_gun_master_increases_ion_damage() -> None:
     )
 
     assert killed is False
-    assert creature.hp == pytest.approx(88.0)
+    assert_float_close(creature.hp, 88.0)
 
 
 def test_ion_gun_master_increases_ion_aoe_radius() -> None:
@@ -57,5 +56,5 @@ def test_ion_gun_master_increases_ion_aoe_radius() -> None:
 
         return float(creature.hp)
 
-    assert _step(perk_active=False) == pytest.approx(10.0)
+    assert_float_close(_step(perk_active=False), 10.0)
     assert _step(perk_active=True) < 10.0

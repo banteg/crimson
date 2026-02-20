@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import player_fire_weapon
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def _fire_once(state: GameplayState, player: PlayerState) -> float:
@@ -25,4 +24,4 @@ def test_fastshot_scales_shot_cooldown() -> None:
     perk_player.perk_counts[int(PerkId.FASTSHOT)] = 1
     perk_cd = _fire_once(perk_state, perk_player)
 
-    assert perk_cd == pytest.approx(base_cd * 0.88)
+    assert_float_close(perk_cd, base_cd * 0.88)

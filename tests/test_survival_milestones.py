@@ -5,6 +5,7 @@ import math
 import pytest
 
 from crimson.creatures.spawn import advance_survival_spawn_stage
+from tests.helpers import assert_float_close
 
 
 @pytest.mark.parametrize(
@@ -45,11 +46,11 @@ def test_advance_survival_spawn_stage_stage2_grid_positions() -> None:
     assert {s.template_id for s in spawns} == {0x35}
     assert {s.heading for s in spawns} == {math.pi}
 
-    assert spawns[0].pos.x == pytest.approx(1088.0, abs=1e-9)
-    assert spawns[0].pos.y == pytest.approx(256.0, abs=1e-9)
+    assert_float_close(spawns[0].pos.x, 1088.0, abs_tol=1e-9)
+    assert_float_close(spawns[0].pos.y, 256.0, abs_tol=1e-9)
 
-    assert spawns[-1].pos.x == pytest.approx(1088.0, abs=1e-9)
-    assert spawns[-1].pos.y == pytest.approx(256.0 + 11.0 * (128.0 / 3.0), abs=1e-9)
+    assert_float_close(spawns[-1].pos.x, 1088.0, abs_tol=1e-9)
+    assert_float_close(spawns[-1].pos.y, 256.0 + 11.0 * (128.0 / 3.0), abs_tol=1e-9)
 
 
 def test_advance_survival_spawn_stage_stage9_final_wave() -> None:
@@ -58,16 +59,16 @@ def test_advance_survival_spawn_stage_stage9_final_wave() -> None:
     assert len(spawns) == 10
 
     assert [s.template_id for s in spawns[:2]] == [0x3A, 0x3A]
-    assert spawns[0].pos.x == pytest.approx(1088.0, abs=1e-9)
-    assert spawns[0].pos.y == pytest.approx(512.0, abs=1e-9)
-    assert spawns[1].pos.x == pytest.approx(-64.0, abs=1e-9)
-    assert spawns[1].pos.y == pytest.approx(512.0, abs=1e-9)
+    assert_float_close(spawns[0].pos.x, 1088.0, abs_tol=1e-9)
+    assert_float_close(spawns[0].pos.y, 512.0, abs_tol=1e-9)
+    assert_float_close(spawns[1].pos.x, -64.0, abs_tol=1e-9)
+    assert_float_close(spawns[1].pos.y, 512.0, abs_tol=1e-9)
 
     top = spawns[2:6]
     bottom = spawns[6:10]
     assert {s.template_id for s in top} == {0x3C}
     assert {s.template_id for s in bottom} == {0x3C}
     for y in (s.pos.y for s in top):
-        assert y == pytest.approx(-64.0, abs=1e-9)
+        assert_float_close(y, -64.0, abs_tol=1e-9)
     for y in (s.pos.y for s in bottom):
-        assert y == pytest.approx(1088.0, abs=1e-9)
+        assert_float_close(y, 1088.0, abs_tol=1e-9)

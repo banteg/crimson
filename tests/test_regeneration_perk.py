@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import math
-
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.helpers import MockCrand
+from tests.helpers import MockCrand, assert_float_close
 
 
 def test_perks_update_effects_regeneration_heals_when_rng_allows() -> None:
@@ -19,7 +17,7 @@ def test_perks_update_effects_regeneration_heals_when_rng_allows() -> None:
 
     perks_update_effects(state, [player], 0.2)
 
-    assert math.isclose(player.health, 90.2, abs_tol=1e-9)
+    assert_float_close(player.health, 90.2, abs_tol=1e-9)
 
 
 def test_perks_update_effects_regeneration_skips_when_rng_blocks() -> None:
@@ -31,7 +29,7 @@ def test_perks_update_effects_regeneration_skips_when_rng_blocks() -> None:
 
     perks_update_effects(state, [player], 0.2)
 
-    assert math.isclose(player.health, 90.0, abs_tol=1e-9)
+    assert_float_close(player.health, 90.0, abs_tol=1e-9)
 
 
 def test_perks_update_effects_greater_regeneration_doubles_heal_by_default() -> None:
@@ -45,7 +43,7 @@ def test_perks_update_effects_greater_regeneration_doubles_heal_by_default() -> 
 
     perks_update_effects(state, [player], 0.2)
 
-    assert math.isclose(player.health, 90.4, abs_tol=1e-9)
+    assert_float_close(player.health, 90.4, abs_tol=1e-9)
 
 
 def test_perks_update_effects_greater_regeneration_keeps_noop_with_preserve_bugs() -> None:
@@ -59,7 +57,7 @@ def test_perks_update_effects_greater_regeneration_keeps_noop_with_preserve_bugs
 
     perks_update_effects(state, [player], 0.2)
 
-    assert math.isclose(player.health, 90.2, abs_tol=1e-9)
+    assert_float_close(player.health, 90.2, abs_tol=1e-9)
 
 
 def test_perks_update_effects_regeneration_heals_all_alive_players_by_default() -> None:
@@ -73,8 +71,8 @@ def test_perks_update_effects_regeneration_heals_all_alive_players_by_default() 
 
     perks_update_effects(state, [player0, player1], 0.2)
 
-    assert math.isclose(player0.health, 90.2, abs_tol=1e-9)
-    assert math.isclose(player1.health, 80.2, abs_tol=1e-9)
+    assert_float_close(player0.health, 90.2, abs_tol=1e-9)
+    assert_float_close(player1.health, 80.2, abs_tol=1e-9)
 
 
 def test_perks_update_effects_regeneration_preserve_bugs_keeps_player1_only_scaled_tick() -> None:
@@ -88,5 +86,5 @@ def test_perks_update_effects_regeneration_preserve_bugs_keeps_player1_only_scal
 
     perks_update_effects(state, [player0, player1], 0.2)
 
-    assert math.isclose(player0.health, 90.4, abs_tol=1e-9)
-    assert math.isclose(player1.health, 80.0, abs_tol=1e-9)
+    assert_float_close(player0.health, 90.4, abs_tol=1e-9)
+    assert_float_close(player1.health, 80.0, abs_tol=1e-9)

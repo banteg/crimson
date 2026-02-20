@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.gameplay import (
     GameplayState,
     player_update,
@@ -10,6 +8,7 @@ from crimson.perks import PerkId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_stationary_reloader_triples_reload_speed() -> None:
@@ -29,5 +28,5 @@ def test_stationary_reloader_triples_reload_speed() -> None:
     player_update(base_player, PlayerInput(), dt=0.1, state=state)
     player_update(perk_player, PlayerInput(), dt=0.1, state=state)
 
-    assert base_player.reload_timer == pytest.approx(0.9)
-    assert perk_player.reload_timer == pytest.approx(0.7)
+    assert_float_close(base_player.reload_timer, 0.9)
+    assert_float_close(perk_player.reload_timer, 0.7)

@@ -26,6 +26,7 @@ from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
+from tests.helpers import assert_float_close
 
 
 def test_spawn_plan_remaps_ai_links_with_pool_offset() -> None:
@@ -165,7 +166,7 @@ def test_spawn_slot_update_uses_random_heading_sentinel(monkeypatch: pytest.Monk
     assert len(seen_calls) == 1
     child_template_id, heading, _, env_arg = seen_calls[0]
     assert child_template_id == 0x1D
-    assert heading == pytest.approx(RANDOM_HEADING_SENTINEL)
+    assert_float_close(heading, RANDOM_HEADING_SENTINEL)
     assert env_arg is env
 
 
@@ -206,7 +207,7 @@ def test_spawn_slot_update_requires_spawner_flag() -> None:
     pool.update(1.0 / 60.0, state=state, players=[player])
 
     assert pool.spawn_slots[0].count == 0
-    assert pool.spawn_slots[0].timer == pytest.approx(0.0)
+    assert_float_close(pool.spawn_slots[0].timer, 0.0)
     assert [idx for idx, creature in enumerate(pool.entries) if idx != 0 and creature.active] == []
 
 
@@ -270,8 +271,8 @@ def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
 
     pool.update(1.0 / 60.0, state=state, players=[player])
 
-    assert creature.pos.x == pytest.approx(-64.0)
-    assert creature.pos.y == pytest.approx(1088.0)
+    assert_float_close(creature.pos.x, -64.0)
+    assert_float_close(creature.pos.y, 1088.0)
 
 
 def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
@@ -300,10 +301,10 @@ def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
     base_delta = base.pos - start_pos
     variant_delta = variant.pos - start_pos
 
-    assert variant_delta.x == pytest.approx(base_delta.x, abs=1e-9)
-    assert variant_delta.y == pytest.approx(base_delta.y, abs=1e-9)
-    assert variant.vel.x == pytest.approx(base.vel.x, abs=1e-9)
-    assert variant.vel.y == pytest.approx(base.vel.y, abs=1e-9)
+    assert_float_close(variant_delta.x, base_delta.x, abs_tol=1e-9)
+    assert_float_close(variant_delta.y, base_delta.y, abs_tol=1e-9)
+    assert_float_close(variant.vel.x, base.vel.x, abs_tol=1e-9)
+    assert_float_close(variant.vel.y, base.vel.y, abs_tol=1e-9)
 
 
 def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
@@ -357,8 +358,8 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
     near_step = (near.pos - near_start).length()
     far_step = (far.pos - far_start).length()
 
-    assert near.move_scale == pytest.approx(50.0 * 0.015625, abs=1e-6)
-    assert far.move_scale == pytest.approx(1.0, abs=1e-6)
+    assert_float_close(near.move_scale, 50.0 * 0.015625, abs_tol=1e-6)
+    assert_float_close(far.move_scale, 1.0, abs_tol=1e-6)
     assert near_step < far_step
     assert near_step == pytest.approx(far_step * near.move_scale, rel=5e-6, abs=2e-6)
 
@@ -385,8 +386,8 @@ def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
     pool.update(1.0 / 60.0, state=state, players=[player0, player1], rand=lambda: 0)
 
     assert creature.target_player == 1
-    assert player0.health == pytest.approx(0.0)
-    assert player1.health == pytest.approx(90.0)
+    assert_float_close(player0.health, 0.0)
+    assert_float_close(player1.health, 90.0)
 
 
 def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
@@ -411,8 +412,8 @@ def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
     pool.update(1.0 / 60.0, state=state, players=[player0, player1], rand=lambda: 0)
 
     assert creature.target_player == 1
-    assert player0.health == pytest.approx(100.0)
-    assert player1.health == pytest.approx(90.0)
+    assert_float_close(player0.health, 100.0)
+    assert_float_close(player1.health, 90.0)
 
 
 def test_small_creature_dies_on_contact() -> None:
@@ -436,9 +437,9 @@ def test_small_creature_dies_on_contact() -> None:
     dt = 1.0 / 60.0
     pool.update(dt, state=state, players=[player], rand=lambda: 0)
 
-    assert player.health == pytest.approx(90.0)
-    assert creature.hp == pytest.approx(0.0)
-    assert creature.hitbox_size == pytest.approx(f32(float(CREATURE_HITBOX_ALIVE) - float(dt)))
+    assert_float_close(player.health, 90.0)
+    assert_float_close(creature.hp, 0.0)
+    assert_float_close(creature.hitbox_size, f32(float(CREATURE_HITBOX_ALIVE) - float(dt)))
     assert pool.kill_count == 0
 
 
@@ -760,10 +761,10 @@ def test_spawn_inits_resets_native_spawn_state_fields() -> None:
     assert entry.active is True
     assert entry.vel == Vec2()
     assert entry.force_target == 0
-    assert entry.attack_cooldown == pytest.approx(0.0, abs=1e-9)
-    assert entry.collision_timer == pytest.approx(0.0, abs=1e-9)
-    assert entry.hit_flash_timer == pytest.approx(0.0, abs=1e-9)
-    assert entry.anim_phase == pytest.approx(0.0, abs=1e-9)
+    assert_float_close(entry.attack_cooldown, 0.0, abs_tol=1e-9)
+    assert_float_close(entry.collision_timer, 0.0, abs_tol=1e-9)
+    assert_float_close(entry.hit_flash_timer, 0.0, abs_tol=1e-9)
+    assert_float_close(entry.anim_phase, 0.0, abs_tol=1e-9)
     assert entry.last_hit_owner_id == -100
 
 
@@ -816,8 +817,8 @@ def test_spawn_init_preserves_stale_target_heading_from_recycled_slot() -> None:
     )
 
     assert idx == 0
-    assert pool.entries[idx].heading == pytest.approx(float(f32(0.53)), abs=0.0)
-    assert pool.entries[idx].target_heading == pytest.approx(2.5632283687591553, abs=1e-9)
+    assert_float_close(pool.entries[idx].heading, float(f32(0.53)), abs_tol=0.0)
+    assert_float_close(pool.entries[idx].target_heading, 2.5632283687591553, abs_tol=1e-9)
 
 
 def test_spawn_init_ai_timer_still_overrides_link_index() -> None:
@@ -865,7 +866,7 @@ def test_tick_dead_defers_corpse_deactivation_until_post_render_cleanup() -> Non
     )
 
     assert corpse.active is True
-    assert corpse.hitbox_size == pytest.approx(-10.016, abs=1e-6)
+    assert_float_close(corpse.hitbox_size, -10.016, abs_tol=1e-6)
 
     pool.finalize_post_render_lifecycle()
     assert corpse.active is False
@@ -921,7 +922,7 @@ def test_dead_self_damage_tick_flags_still_shrink_hitbox_before_dead_decay() -> 
     pool.update(0.03800000250339508, state=state, players=[player], rand=lambda: 0)
 
     # Native applies SELF_DAMAGE_TICK via creature_apply_damage even while hp<=0.
-    assert corpse.hitbox_size == pytest.approx(11.006003, abs=1e-5)
+    assert_float_close(corpse.hitbox_size, 11.006003, abs_tol=1e-5)
 
 
 def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> None:
@@ -1101,7 +1102,7 @@ def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
     pool.update(1.0 / 60.0, state=state, players=[player], rand=stub_rand.rand)
 
     # Native Evil Eyes path jumps to loop tail before cooldown/interaction/ranged branches.
-    assert creature.attack_cooldown == pytest.approx(1.0, abs=1e-9)
+    assert_float_close(creature.attack_cooldown, 1.0, abs_tol=1e-9)
     assert creature.vel == Vec2(2.0, -3.0)
     assert creature.pos == Vec2(640.0, 512.0)
     assert creature.link_index == 83
@@ -1153,8 +1154,8 @@ def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
     stub_rand = _StubRand([0x2A, 0x2B])
     pool.update(1.0 / 60.0, state=state, players=[player0, player1], rand=stub_rand.rand)
 
-    assert creature0.attack_cooldown == pytest.approx(1.0, abs=1e-9)
-    assert creature1.attack_cooldown == pytest.approx(1.0, abs=1e-9)
+    assert_float_close(creature0.attack_cooldown, 1.0, abs_tol=1e-9)
+    assert_float_close(creature1.attack_cooldown, 1.0, abs_tol=1e-9)
     assert creature0.vel == Vec2(2.0, -3.0)
     assert creature1.vel == Vec2(2.0, -3.0)
     assert creature0.force_target == 0

@@ -7,6 +7,7 @@ from crimson.gameplay import GameplayState
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
@@ -127,8 +128,8 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
     assert len(bursts) == 4
 
     ring = rings[0]
-    assert float(ring.scale_step) == pytest.approx(-4.0)
-    assert float(ring.lifetime) == pytest.approx(0.3)
-    assert float(ring.half_width) == pytest.approx(36.0)
+    assert_float_close(float(ring.scale_step), -4.0)
+    assert_float_close(float(ring.lifetime), 0.3)
+    assert_float_close(float(ring.half_width), 36.0)
 
-    assert float(creature.size) == pytest.approx(32.5)
+    assert_float_close(float(creature.size), 32.5)

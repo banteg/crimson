@@ -11,6 +11,7 @@ from crimson.projectiles import ProjectilePool, ProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WEAPON_BY_ID
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_barrel_greaser_increases_bullet_damage() -> None:
@@ -30,7 +31,7 @@ def test_barrel_greaser_increases_bullet_damage() -> None:
     )
 
     assert killed is False
-    assert creature.hp == pytest.approx(86.0)
+    assert_float_close(creature.hp, 86.0)
 
 
 def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:

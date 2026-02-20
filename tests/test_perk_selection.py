@@ -15,6 +15,7 @@ from crimson.perks.state import PerkSelectionState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.rand import Crand
+from tests.helpers import assert_float_close
 
 
 def test_perk_selection_pick_applies_perk_and_marks_dirty() -> None:
@@ -128,8 +129,8 @@ def test_perk_selection_pick_syncs_perk_counts_across_players() -> None:
     assert picked == PerkId.THICK_SKINNED
     assert p1.perk_counts[int(PerkId.THICK_SKINNED)] == 1
     assert p2.perk_counts[int(PerkId.THICK_SKINNED)] == 1
-    assert p1.health == pytest.approx(60.0)
-    assert p2.health == pytest.approx(40.0)
+    assert_float_close(p1.health, 60.0)
+    assert_float_close(p2.health, 40.0)
 
 
 def test_perk_auto_pick_uses_visible_choices_only() -> None:

@@ -8,6 +8,7 @@ import pytest
 
 import grim.terrain_render as terrain_render
 from grim.terrain_render import GroundRenderer
+from tests.helpers import assert_float_close
 
 pytestmark = pytest.mark.terrain
 
@@ -50,11 +51,11 @@ def test_effective_texture_scale_halves_with_double_render_resolution(monkeypatc
 
 def test_view_window_fits_widescreen_without_nonuniform_stretch() -> None:
     view_w, view_h = _renderer()._fit_view_window(1280.0, 720.0)
-    assert view_w == pytest.approx(1024.0)
-    assert view_h == pytest.approx(576.0)
+    assert_float_close(view_w, 1024.0)
+    assert_float_close(view_h, 576.0)
 
 
 def test_view_window_keeps_native_size_for_supported_legacy_resolution() -> None:
     view_w, view_h = _renderer()._fit_view_window(1024.0, 768.0)
-    assert view_w == pytest.approx(1024.0)
-    assert view_h == pytest.approx(768.0)
+    assert_float_close(view_w, 1024.0)
+    assert_float_close(view_h, 768.0)

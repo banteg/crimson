@@ -5,6 +5,7 @@ import pytest
 from crimson.creatures.spawn import BurstEffect, SpawnEnv, build_spawn_plan
 from grim.geom import Vec2
 from grim.rand import Crand
+from tests.helpers import assert_float_close
 
 
 def test_spawn_plan_tail_burst_effect_is_gated_by_demo_and_bounds() -> None:
@@ -62,10 +63,10 @@ def test_spawn_plan_tail_applies_difficulty_scaling(
     plan = build_spawn_plan(1, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
     c = plan.creatures[0]
-    assert c.reward_value == pytest.approx(1000.0 * reward_scale, abs=1e-9)
-    assert (c.move_speed or 0.0) == pytest.approx(2.0 * speed_scale, abs=1e-9)
-    assert (c.contact_damage or 0.0) == pytest.approx(17.0 * contact_scale, abs=1e-9)
-    assert (c.health or 0.0) == pytest.approx(400.0 * health_scale, abs=1e-9)
+    assert_float_close(c.reward_value, 1000.0 * reward_scale, abs_tol=1e-9)
+    assert_float_close(c.move_speed or 0.0, 2.0 * speed_scale, abs_tol=1e-9)
+    assert_float_close(c.contact_damage or 0.0, 17.0 * contact_scale, abs_tol=1e-9)
+    assert_float_close(c.health or 0.0, 400.0 * health_scale, abs_tol=1e-9)
     assert c.max_health == 400.0
 
 
@@ -81,9 +82,9 @@ def test_spawn_plan_tail_applies_hardcore_scaling_and_ignores_difficulty() -> No
 
     c = plan.creatures[0]
     assert c.reward_value == 1000.0
-    assert (c.move_speed or 0.0) == pytest.approx(2.0 * 1.05, abs=1e-9)
-    assert (c.contact_damage or 0.0) == pytest.approx(17.0 * 1.4, abs=1e-9)
-    assert (c.health or 0.0) == pytest.approx(400.0 * 1.2, abs=1e-9)
+    assert_float_close(c.move_speed or 0.0, 2.0 * 1.05, abs_tol=1e-9)
+    assert_float_close(c.contact_damage or 0.0, 17.0 * 1.4, abs_tol=1e-9)
+    assert_float_close(c.health or 0.0, 400.0 * 1.2, abs_tol=1e-9)
     assert c.max_health == 400.0
 
 
@@ -105,7 +106,7 @@ def test_spawn_plan_tail_spawn_slot_interval_scales_with_difficulty(difficulty: 
     plan = build_spawn_plan(0x07, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
     assert len(plan.spawn_slots) == 1
-    assert plan.spawn_slots[0].interval == pytest.approx(2.2 + 0.2 + expected_extra, abs=1e-9)
+    assert_float_close(plan.spawn_slots[0].interval, 2.2 + 0.2 + expected_extra, abs_tol=1e-9)
 
 
 def test_spawn_plan_tail_spawn_slot_interval_hardcore_decrease() -> None:
@@ -119,4 +120,4 @@ def test_spawn_plan_tail_spawn_slot_interval_hardcore_decrease() -> None:
     plan = build_spawn_plan(0x07, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
     assert len(plan.spawn_slots) == 1
-    assert plan.spawn_slots[0].interval == pytest.approx(2.2 - 0.2, abs=1e-9)
+    assert_float_close(plan.spawn_slots[0].interval, 2.2 - 0.2, abs_tol=1e-9)

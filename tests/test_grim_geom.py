@@ -3,13 +3,14 @@ from __future__ import annotations
 import math
 
 from grim.geom import Rect, Vec2
+from tests.helpers import assert_float_close
 
 
 def test_vec2_length_and_length_sq() -> None:
     vec = Vec2(3.0, 4.0)
 
-    assert math.isclose(vec.length_sq(), 25.0, abs_tol=1e-9)
-    assert math.isclose(vec.length(), 5.0, abs_tol=1e-9)
+    assert_float_close(vec.length_sq(), 25.0, abs_tol=1e-9)
+    assert_float_close(vec.length(), 5.0, abs_tol=1e-9)
 
 
 def test_vec2_normalized_returns_unit_vector_without_mutating_original() -> None:
@@ -18,11 +19,11 @@ def test_vec2_normalized_returns_unit_vector_without_mutating_original() -> None
     normalized = vec.normalized()
 
     assert normalized is not vec
-    assert math.isclose(normalized.x, 0.6, abs_tol=1e-9)
-    assert math.isclose(normalized.y, 0.8, abs_tol=1e-9)
-    assert math.isclose(normalized.length(), 1.0, abs_tol=1e-9)
-    assert math.isclose(vec.x, 3.0, abs_tol=1e-9)
-    assert math.isclose(vec.y, 4.0, abs_tol=1e-9)
+    assert_float_close(normalized.x, 0.6, abs_tol=1e-9)
+    assert_float_close(normalized.y, 0.8, abs_tol=1e-9)
+    assert_float_close(normalized.length(), 1.0, abs_tol=1e-9)
+    assert_float_close(vec.x, 3.0, abs_tol=1e-9)
+    assert_float_close(vec.y, 4.0, abs_tol=1e-9)
 
 
 def test_vec2_normalization_of_zero_vector_returns_zero() -> None:
@@ -30,8 +31,8 @@ def test_vec2_normalization_of_zero_vector_returns_zero() -> None:
 
     normalized = vec.normalized()
 
-    assert math.isclose(normalized.x, 0.0, abs_tol=1e-9)
-    assert math.isclose(normalized.y, 0.0, abs_tol=1e-9)
+    assert_float_close(normalized.x, 0.0, abs_tol=1e-9)
+    assert_float_close(normalized.y, 0.0, abs_tol=1e-9)
 
 
 def test_vec2_angle_helpers_round_trip() -> None:
@@ -39,7 +40,7 @@ def test_vec2_angle_helpers_round_trip() -> None:
 
     vec = Vec2.from_angle(angle)
 
-    assert math.isclose(vec.to_angle(), angle, abs_tol=1e-9)
+    assert_float_close(vec.to_angle(), angle, abs_tol=1e-9)
 
 
 def test_vec2_polar_helpers_round_trip() -> None:
@@ -49,8 +50,8 @@ def test_vec2_polar_helpers_round_trip() -> None:
     vec = Vec2.from_polar(angle, radius)
     polar_angle, polar_radius = vec.to_polar()
 
-    assert math.isclose(polar_angle, angle, abs_tol=1e-9)
-    assert math.isclose(polar_radius, radius, abs_tol=1e-9)
+    assert_float_close(polar_angle, angle, abs_tol=1e-9)
+    assert_float_close(polar_radius, radius, abs_tol=1e-9)
 
 
 def test_vec2_heading_helpers_round_trip() -> None:
@@ -58,7 +59,7 @@ def test_vec2_heading_helpers_round_trip() -> None:
 
     vec = Vec2.from_heading(heading)
 
-    assert math.isclose(vec.to_heading(), heading, abs_tol=1e-9)
+    assert_float_close(vec.to_heading(), heading, abs_tol=1e-9)
 
 
 def test_vec2_rotated() -> None:
@@ -66,8 +67,8 @@ def test_vec2_rotated() -> None:
 
     rotated = vec.rotated(math.pi / 2.0)
 
-    assert math.isclose(rotated.x, 0.0, abs_tol=1e-9)
-    assert math.isclose(rotated.y, 1.0, abs_tol=1e-9)
+    assert_float_close(rotated.x, 0.0, abs_tol=1e-9)
+    assert_float_close(rotated.y, 1.0, abs_tol=1e-9)
 
 
 def test_vec2_clamp_rect() -> None:
@@ -75,22 +76,22 @@ def test_vec2_clamp_rect() -> None:
 
     clamped = vec.clamp_rect(0.0, 1.0, 10.0, 8.0)
 
-    assert math.isclose(clamped.x, 0.0, abs_tol=1e-9)
-    assert math.isclose(clamped.y, 8.0, abs_tol=1e-9)
+    assert_float_close(clamped.x, 0.0, abs_tol=1e-9)
+    assert_float_close(clamped.y, 8.0, abs_tol=1e-9)
 
 
 def test_vec2_distance_sq() -> None:
     a = Vec2(1.0, 2.0)
     b = Vec2(4.0, 6.0)
 
-    assert math.isclose(Vec2.distance_sq(a, b), 25.0, abs_tol=1e-9)
+    assert_float_close(Vec2.distance_sq(a, b), 25.0, abs_tol=1e-9)
 
 
 def test_vec2_distance_to() -> None:
     a = Vec2(1.0, 2.0)
     b = Vec2(4.0, 6.0)
 
-    assert math.isclose(a.distance_to(b), 5.0, abs_tol=1e-9)
+    assert_float_close(a.distance_to(b), 5.0, abs_tol=1e-9)
 
 
 def test_vec2_direction_to() -> None:
@@ -99,9 +100,9 @@ def test_vec2_direction_to() -> None:
 
     direction = a.direction_to(b)
 
-    assert math.isclose(direction.length(), 1.0, abs_tol=1e-9)
-    assert math.isclose(direction.x, 0.6, abs_tol=1e-9)
-    assert math.isclose(direction.y, 0.8, abs_tol=1e-9)
+    assert_float_close(direction.length(), 1.0, abs_tol=1e-9)
+    assert_float_close(direction.x, 0.6, abs_tol=1e-9)
+    assert_float_close(direction.y, 0.8, abs_tol=1e-9)
 
 
 def test_vec2_direction_to_returns_zero_when_points_are_equal() -> None:
@@ -116,8 +117,8 @@ def test_vec2_lerp() -> None:
 
     lerped = Vec2.lerp(a, b, 0.25)
 
-    assert math.isclose(lerped.x, 2.0, abs_tol=1e-9)
-    assert math.isclose(lerped.y, 4.0, abs_tol=1e-9)
+    assert_float_close(lerped.x, 2.0, abs_tol=1e-9)
+    assert_float_close(lerped.y, 4.0, abs_tol=1e-9)
 
 
 def test_vec2_operator_helpers() -> None:
@@ -137,7 +138,7 @@ def test_vec2_component_helpers() -> None:
 
     assert a.mul_components(b) == Vec2(12.0, 32.0)
     assert a.div_components(b) == Vec2(3.0, 2.0)
-    assert math.isclose(a.avg_component(), 7.0, abs_tol=1e-9)
+    assert_float_close(a.avg_component(), 7.0, abs_tol=1e-9)
 
 
 def test_vec2_perpendicular_helpers() -> None:
@@ -160,22 +161,22 @@ def test_vec2_to_rl() -> None:
 
     assert hasattr(result, "x")
     assert hasattr(result, "y")
-    assert math.isclose(float(result.x), 1.25, abs_tol=1e-9)
-    assert math.isclose(float(result.y), -4.5, abs_tol=1e-9)
+    assert_float_close(float(result.x), 1.25, abs_tol=1e-9)
+    assert_float_close(float(result.y), -4.5, abs_tol=1e-9)
 
 
 def test_rect_properties_and_helpers() -> None:
     rect = Rect(10.0, 20.0, 30.0, 40.0)
 
-    assert math.isclose(rect.left, 10.0, abs_tol=1e-9)
-    assert math.isclose(rect.top, 20.0, abs_tol=1e-9)
+    assert_float_close(rect.left, 10.0, abs_tol=1e-9)
+    assert_float_close(rect.top, 20.0, abs_tol=1e-9)
     assert rect.top_left == Vec2(10.0, 20.0)
     assert rect.top_right == Vec2(40.0, 20.0)
     assert rect.bottom_left == Vec2(10.0, 60.0)
     assert rect.bottom_right == Vec2(40.0, 60.0)
     assert rect.size == Vec2(30.0, 40.0)
-    assert math.isclose(rect.right, 40.0, abs_tol=1e-9)
-    assert math.isclose(rect.bottom, 60.0, abs_tol=1e-9)
+    assert_float_close(rect.right, 40.0, abs_tol=1e-9)
+    assert_float_close(rect.bottom, 60.0, abs_tol=1e-9)
     assert rect.center == Vec2(25.0, 40.0)
 
 

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
@@ -9,6 +7,7 @@ from crimson.projectiles import ProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WEAPON_BY_ID
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_ammo_maniac_reassigns_weapons_and_increases_clip_size() -> None:
@@ -26,8 +25,8 @@ def test_ammo_maniac_reassigns_weapons_and_increases_clip_size() -> None:
     assert owner.clip_size == base_owner + extra_owner
     assert owner.ammo == owner.clip_size
     assert owner.reload_active is False
-    assert owner.reload_timer == pytest.approx(0.0)
-    assert owner.shot_cooldown == pytest.approx(0.0)
+    assert_float_close(owner.reload_timer, 0.0)
+    assert_float_close(owner.shot_cooldown, 0.0)
 
     base_other = int(WEAPON_BY_ID[other_weapon].clip_size or 0)
     extra_other = max(1, int(float(base_other) * 0.25))

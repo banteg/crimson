@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Literal
+from typing import Any, Literal
 
 import pytest
 
@@ -55,5 +55,5 @@ class MockCrand:
         return self.rand()
 
 
-def assert_float_close(actual: float, expected: float) -> None:
-    assert float(actual) == pytest.approx(float(expected), abs=1e-6)
+def assert_float_close(actual: Any, expected: Any, *, abs_tol: float = 1e-6) -> None:
+    assert float(actual) == pytest.approx(float(expected), abs=float(abs_tol))

@@ -4,13 +4,12 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Protocol, cast
 
-import pytest
-
 import grim.terrain_render as terrain_render
 from crimson.render.world import WorldRenderer
 from crimson.render.world import context as world_context
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
+from tests.helpers import assert_float_close
 
 if TYPE_CHECKING:
     import pyray as rl
@@ -97,8 +96,8 @@ def test_world_camera_screen_size_fits_widescreen_uniformly() -> None:
     )
     renderer = WorldRenderer(_as_world(world))
     size = renderer._camera_screen_size()
-    assert size.x == pytest.approx(1024.0)
-    assert size.y == pytest.approx(576.0)
+    assert_float_close(size.x, 1024.0)
+    assert_float_close(size.y, 576.0)
 
 
 def test_world_camera_screen_size_prefers_runtime_dimensions_over_stale_config(monkeypatch) -> None:
@@ -110,8 +109,8 @@ def test_world_camera_screen_size_prefers_runtime_dimensions_over_stale_config(m
     monkeypatch.setattr(world_context.rl, "get_screen_width", lambda: 1280)
     monkeypatch.setattr(world_context.rl, "get_screen_height", lambda: 720)
     size = renderer._camera_screen_size()
-    assert size.x == pytest.approx(1024.0)
-    assert size.y == pytest.approx(576.0)
+    assert_float_close(size.x, 1024.0)
+    assert_float_close(size.y, 576.0)
 
 
 def test_world_camera_screen_size_uses_frame_snapshot_when_provided(monkeypatch) -> None:
@@ -123,8 +122,8 @@ def test_world_camera_screen_size_uses_frame_snapshot_when_provided(monkeypatch)
     monkeypatch.setattr(world_context.rl, "get_screen_width", lambda: 1024)
     monkeypatch.setattr(world_context.rl, "get_screen_height", lambda: 768)
     size = renderer._camera_screen_size(runtime_w=1280.0, runtime_h=720.0)
-    assert size.x == pytest.approx(1024.0)
-    assert size.y == pytest.approx(576.0)
+    assert_float_close(size.x, 1024.0)
+    assert_float_close(size.y, 576.0)
 
 
 def test_ground_draw_uses_explicit_output_dimensions(monkeypatch) -> None:

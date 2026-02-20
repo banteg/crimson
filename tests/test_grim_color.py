@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import math
-
 from grim.color import RGBA
+from tests.helpers import assert_float_close
 
 
 def test_rgba_clamp_and_alpha_helpers() -> None:
@@ -23,10 +22,10 @@ def test_rgba_to_rl_and_from_rl_round_trip() -> None:
     round_trip = RGBA.from_rl(rl_color)
 
     assert (int(rl_color.r), int(rl_color.g), int(rl_color.b), int(rl_color.a)) == (153, 102, 51, 204)
-    assert math.isclose(round_trip.r, 0.6, abs_tol=1.0 / 255.0)
-    assert math.isclose(round_trip.g, 0.4, abs_tol=1.0 / 255.0)
-    assert math.isclose(round_trip.b, 0.2, abs_tol=1.0 / 255.0)
-    assert math.isclose(round_trip.a, 0.8, abs_tol=1.0 / 255.0)
+    assert_float_close(round_trip.r, 0.6, abs_tol=1.0 / 255.0)
+    assert_float_close(round_trip.g, 0.4, abs_tol=1.0 / 255.0)
+    assert_float_close(round_trip.b, 0.2, abs_tol=1.0 / 255.0)
+    assert_float_close(round_trip.a, 0.8, abs_tol=1.0 / 255.0)
 
 
 def test_rgba_lerp() -> None:

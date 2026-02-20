@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.gameplay import (
@@ -13,6 +11,7 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import weapon_assign_player
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_alternate_weapon_slows_movement() -> None:
@@ -25,8 +24,8 @@ def test_alternate_weapon_slows_movement() -> None:
     player_update(base, PlayerInput(move=Vec2(1.0, 0.0)), dt=1.0, state=state)
     player_update(perk, PlayerInput(move=Vec2(1.0, 0.0)), dt=1.0, state=state)
 
-    assert base.pos.x == pytest.approx(100.0)
-    assert perk.pos.x == pytest.approx(80.0)
+    assert_float_close(base.pos.x, 100.0)
+    assert_float_close(perk.pos.x, 80.0)
 
 
 def test_alternate_weapon_stashes_previous_weapon_on_first_weapon_pickup() -> None:
@@ -58,7 +57,7 @@ def test_alternate_weapon_reload_pressed_swaps_and_adds_cooldown() -> None:
 
     assert player.weapon_id == 1
     assert player.alt_weapon_id == 2
-    assert player.shot_cooldown == pytest.approx(0.1)
+    assert_float_close(player.shot_cooldown, 0.1)
 
 
 def test_alternate_weapon_reload_pressed_still_swaps_in_move_to_cursor_mode() -> None:
@@ -79,7 +78,7 @@ def test_alternate_weapon_reload_pressed_still_swaps_in_move_to_cursor_mode() ->
 
     assert player.weapon_id == 1
     assert player.alt_weapon_id == 2
-    assert player.shot_cooldown == pytest.approx(0.1)
+    assert_float_close(player.shot_cooldown, 0.1)
 
 
 def test_alternate_weapon_swap_preserves_same_tick_fire_gate() -> None:
@@ -131,6 +130,6 @@ def test_alternate_weapon_swap_allows_same_tick_fire_with_swapped_reload_timer()
 
     assert player.weapon_id == 11
     assert player.reload_timer > 0.0
-    assert player.reload_timer == pytest.approx(player.reload_timer_max, abs=1e-6)
+    assert_float_close(player.reload_timer, player.reload_timer_max, abs_tol=1e-6)
     assert player.ammo < 0.0
     assert player.shot_seq >= 1

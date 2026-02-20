@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
@@ -9,6 +7,7 @@ from crimson.perks.runtime.effects import perks_update_effects
 from crimson.player_damage import player_take_damage, player_take_projectile_damage
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_death_clock_clears_regeneration_and_restores_health() -> None:
@@ -61,7 +60,7 @@ def test_death_clock_drains_health_over_time() -> None:
 
     perks_update_effects(state, [player], 1.0)
 
-    assert player.health == pytest.approx(96.6666667)
+    assert_float_close(player.health, 96.6666667)
 
 
 def test_death_clock_clamps_dead_health_to_zero() -> None:
@@ -94,5 +93,5 @@ def test_death_clock_tick_applies_to_all_players_when_player0_has_perk() -> None
 
     perks_update_effects(state, [player0, player1], 1.0)
 
-    assert player0.health == pytest.approx(96.6666667)
-    assert player1.health == pytest.approx(96.6666667)
+    assert_float_close(player0.health, 96.6666667)
+    assert_float_close(player1.health, 96.6666667)

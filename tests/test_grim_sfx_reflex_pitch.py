@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 import grim.sfx as grim_sfx
+from tests.helpers import assert_float_close
 
 
 class _FakeSample:
@@ -27,20 +28,20 @@ def test_play_sfx_applies_native_reflex_rate_scaling(monkeypatch: pytest.MonkeyP
 
     grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=0.0)
     assert state.rate_scale_hz == 44100
-    assert pitches[-1] == pytest.approx(1.0, abs=1e-6)
+    assert_float_close(pitches[-1], 1.0, abs_tol=1e-6)
 
     grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=2.0)
     assert state.rate_scale_hz == 22050
-    assert pitches[-1] == pytest.approx(0.5, abs=1e-6)
+    assert_float_close(pitches[-1], 0.5, abs_tol=1e-6)
 
     grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=1.0)
     assert state.rate_scale_hz == 22050
-    assert pitches[-1] == pytest.approx(0.5, abs=1e-6)
+    assert_float_close(pitches[-1], 0.5, abs_tol=1e-6)
 
     grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=0.25)
     assert state.rate_scale_hz == 38588
-    assert pitches[-1] == pytest.approx(38588 / 44100, abs=1e-6)
+    assert_float_close(pitches[-1], 38588 / 44100, abs_tol=1e-6)
 
     grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=-0.1)
     assert state.rate_scale_hz == 44100
-    assert pitches[-1] == pytest.approx(1.0, abs=1e-6)
+    assert_float_close(pitches[-1], 1.0, abs_tol=1e-6)

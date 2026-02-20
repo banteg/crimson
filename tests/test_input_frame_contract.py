@@ -12,6 +12,7 @@ from crimson.sim.input_frame import normalize_input_frame
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_normalize_input_frame_is_player_index_ordered_and_fixed_size() -> None:
@@ -25,9 +26,9 @@ def test_normalize_input_frame_is_player_index_ordered_and_fixed_size() -> None:
     )
 
     assert len(frame.players) == 2
-    assert frame.players[0].move.x == pytest.approx(1.0)
+    assert_float_close(frame.players[0].move.x, 1.0)
     assert frame.players[0].fire_down is True
-    assert frame.players[1].move.x == pytest.approx(-1.0)
+    assert_float_close(frame.players[1].move.x, -1.0)
     assert frame.players[1].reload_pressed is True
 
     padded = normalize_input_frame([PlayerInput(fire_pressed=True)], player_count=3)

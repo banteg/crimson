@@ -47,6 +47,7 @@ from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.builders.capture import build_capture_file, capture_file_to_dict
+from tests.helpers import assert_float_close
 
 
 def _crt_rand_outputs(seed: int, calls: int) -> list[int]:
@@ -1578,7 +1579,7 @@ def test_load_capture_accepts_strict_typed_sample_rows(tmp_path: Path) -> None:
     assert creature.ai_mode == 7
     assert creature.link_index == -733
     assert creature.ai7_timer_ms == -733
-    assert creature.orbit_radius == pytest.approx(10.0)
+    assert_float_close(creature.orbit_radius, 10.0)
 
 
 def test_load_capture_rejects_incomplete_sample_rows(tmp_path: Path) -> None:
@@ -1677,8 +1678,8 @@ def test_convert_capture_to_replay_heading_fallback_uses_checkpoint_pos(tmp_path
 
     aim_x, aim_y = _replay_input_aim_xy(replay, 0, 0)
     expected = Vec2(512.0, 512.0) + Vec2.from_heading(0.0) * 256.0
-    assert aim_x == pytest.approx(expected.x)
-    assert aim_y == pytest.approx(expected.y)
+    assert_float_close(aim_x, expected.x)
+    assert_float_close(aim_y, expected.y)
 
 
 def test_convert_capture_to_replay_does_not_fallback_to_primary_query_stats(tmp_path: Path) -> None:
@@ -1891,9 +1892,9 @@ def test_convert_capture_to_replay_bootstrap_payload_includes_quest_session_time
     payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
     assert payload is not None
     assert payload.quest_session is not None
-    assert payload.quest_session.spawn_timeline_ms == pytest.approx(1718.0, abs=1e-6)
-    assert payload.quest_session.no_creatures_timer_ms == pytest.approx(4745.0, abs=1e-6)
-    assert payload.quest_session.completion_transition_ms == pytest.approx(-1.0, abs=1e-6)
+    assert_float_close(payload.quest_session.spawn_timeline_ms, 1718.0, abs_tol=1e-6)
+    assert_float_close(payload.quest_session.no_creatures_timer_ms, 4745.0, abs_tol=1e-6)
+    assert_float_close(payload.quest_session.completion_transition_ms, -1.0, abs_tol=1e-6)
 
 
 def test_convert_capture_to_replay_bootstrap_payload_prefers_before_player_runtime_snapshot(
@@ -1979,23 +1980,23 @@ def test_convert_capture_to_replay_bootstrap_payload_prefers_before_player_runti
     assert player.level == 2
     assert player.clip_size == 12
     assert player.reload_active is True
-    assert player.reload_timer == pytest.approx(0.5, abs=1e-6)
-    assert player.reload_timer_max == pytest.approx(1.0, abs=1e-6)
-    assert player.shot_cooldown == pytest.approx(0.25, abs=1e-6)
-    assert player.spread_heat == pytest.approx(0.0, abs=1e-6)
+    assert_float_close(player.reload_timer, 0.5, abs_tol=1e-6)
+    assert_float_close(player.reload_timer_max, 1.0, abs_tol=1e-6)
+    assert_float_close(player.shot_cooldown, 0.25, abs_tol=1e-6)
+    assert_float_close(player.spread_heat, 0.0, abs_tol=1e-6)
     assert player.bonus_timers_ms == {"speed_bonus": 1200, "shield": 500, "fire_bullets": 0}
     assert player.aim is not None
-    assert player.aim.x == pytest.approx(300.0, abs=1e-6)
-    assert player.aim.y == pytest.approx(320.0, abs=1e-6)
-    assert player.aim.heading == pytest.approx(1.2, abs=1e-6)
+    assert_float_close(player.aim.x, 300.0, abs_tol=1e-6)
+    assert_float_close(player.aim.y, 320.0, abs_tol=1e-6)
+    assert_float_close(player.aim.heading, 1.2, abs_tol=1e-6)
     assert player.alt_weapon is not None
     assert player.alt_weapon.weapon_id == 4
     assert player.alt_weapon.clip_size == 10
-    assert player.alt_weapon.ammo == pytest.approx(7.0, abs=1e-6)
+    assert_float_close(player.alt_weapon.ammo, 7.0, abs_tol=1e-6)
     assert player.alt_weapon.reload_active is True
-    assert player.alt_weapon.reload_timer == pytest.approx(0.2, abs=1e-6)
-    assert player.alt_weapon.shot_cooldown == pytest.approx(0.1, abs=1e-6)
-    assert player.alt_weapon.reload_timer_max == pytest.approx(1.2, abs=1e-6)
+    assert_float_close(player.alt_weapon.reload_timer, 0.2, abs_tol=1e-6)
+    assert_float_close(player.alt_weapon.shot_cooldown, 0.1, abs_tol=1e-6)
+    assert_float_close(player.alt_weapon.reload_timer_max, 1.2, abs_tol=1e-6)
     assert player.perk_timers == {
         "hot_tempered": pytest.approx(1.36, abs=1e-6),
         "man_bomb": pytest.approx(0.0, abs=1e-6),
@@ -2116,7 +2117,7 @@ def test_convert_capture_to_replay_bootstrap_payload_infers_perk_intervals_from_
 
     assert payload.perk_intervals is not None
     perk_intervals = payload.perk_intervals
-    assert perk_intervals["hot_tempered"] == pytest.approx(1.4, abs=1e-3)
+    assert_float_close(perk_intervals["hot_tempered"], 1.4, abs_tol=1e-3)
 
 
 def test_convert_capture_to_replay_bootstrap_payload_ignores_inactive_timer_reset_interval_inference(
@@ -2368,13 +2369,13 @@ def test_apply_capture_bootstrap_payload_applies_perk_intervals_and_player_perk_
 
     elapsed = apply_capture_bootstrap_payload(payload, state=state, players=[player])
     assert elapsed is None
-    assert player.hot_tempered_timer == pytest.approx(1.36, abs=1e-6)
-    assert player.man_bomb_timer == pytest.approx(0.5, abs=1e-6)
-    assert player.living_fortress_timer == pytest.approx(0.25, abs=1e-6)
-    assert player.fire_cough_timer == pytest.approx(0.75, abs=1e-6)
-    assert state.perk_intervals.hot_tempered == pytest.approx(1.4, abs=1e-6)
-    assert state.perk_intervals.man_bomb == pytest.approx(6.0, abs=1e-6)
-    assert state.perk_intervals.fire_cough == pytest.approx(3.0, abs=1e-6)
+    assert_float_close(player.hot_tempered_timer, 1.36, abs_tol=1e-6)
+    assert_float_close(player.man_bomb_timer, 0.5, abs_tol=1e-6)
+    assert_float_close(player.living_fortress_timer, 0.25, abs_tol=1e-6)
+    assert_float_close(player.fire_cough_timer, 0.75, abs_tol=1e-6)
+    assert_float_close(state.perk_intervals.hot_tempered, 1.4, abs_tol=1e-6)
+    assert_float_close(state.perk_intervals.man_bomb, 6.0, abs_tol=1e-6)
+    assert_float_close(state.perk_intervals.fire_cough, 3.0, abs_tol=1e-6)
 
 
 def test_convert_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> None:
@@ -2504,19 +2505,19 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(
     assert len(rows) == 1
     row = rows[0]
     assert row.index == 18
-    assert row.heading == pytest.approx(1.1278764009475708, abs=1e-6)
-    assert row.target_heading == pytest.approx(0.621416449546814, abs=1e-6)
+    assert_float_close(row.heading, 1.1278764009475708, abs_tol=1e-6)
+    assert_float_close(row.target_heading, 0.621416449546814, abs_tol=1e-6)
     assert row.ai_mode == 3
     assert row.link_index == 0
-    assert row.hp == pytest.approx(200.0, abs=1e-6)
-    assert row.hitbox_size == pytest.approx(16.0, abs=1e-6)
-    assert row.orbit_angle == pytest.approx(0.25, abs=1e-6)
-    assert row.orbit_radius == pytest.approx(0.5, abs=1e-6)
+    assert_float_close(row.hp, 200.0, abs_tol=1e-6)
+    assert_float_close(row.hitbox_size, 16.0, abs_tol=1e-6)
+    assert_float_close(row.orbit_angle, 0.25, abs_tol=1e-6)
+    assert_float_close(row.orbit_radius, 0.5, abs_tol=1e-6)
     assert row.flags == 12
     assert row.type_id == 2
     assert row.pos is not None
-    assert row.pos.x == pytest.approx(-256.0, abs=1e-6)
-    assert row.pos.y == pytest.approx(256.0, abs=1e-6)
+    assert_float_close(row.pos.x, -256.0, abs_tol=1e-6)
+    assert_float_close(row.pos.y, 256.0, abs_tol=1e-6)
 
 
 def test_convert_capture_to_replay_emits_quest_added_head_without_spawn_rows(tmp_path: Path) -> None:
@@ -2637,10 +2638,10 @@ def test_build_capture_dt_frame_overrides_distributes_gaps(tmp_path: Path) -> No
     capture = load_capture(path)
     overrides = build_capture_dt_frame_overrides(capture, tick_rate=60)
 
-    assert overrides[1] == pytest.approx(0.02)
-    assert overrides[2] == pytest.approx(0.02)
-    assert overrides[3] == pytest.approx(0.02)
-    assert overrides[5] == pytest.approx(0.02)
+    assert_float_close(overrides[1], 0.02)
+    assert_float_close(overrides[2], 0.02)
+    assert_float_close(overrides[3], 0.02)
+    assert_float_close(overrides[5], 0.02)
 
 
 def test_build_capture_dt_frame_overrides_prefers_explicit_tick_frame_dt(tmp_path: Path) -> None:
@@ -2654,7 +2655,7 @@ def test_build_capture_dt_frame_overrides_prefers_explicit_tick_frame_dt(tmp_pat
     capture = load_capture(path)
     overrides = build_capture_dt_frame_overrides(capture, tick_rate=60)
 
-    assert overrides[0] == pytest.approx(0.02)
+    assert_float_close(overrides[0], 0.02)
 
 
 def test_build_capture_dt_frame_overrides_ignores_denormal_frame_dt_ms_and_prefers_i32(tmp_path: Path) -> None:
@@ -2669,7 +2670,7 @@ def test_build_capture_dt_frame_overrides_ignores_denormal_frame_dt_ms_and_prefe
     capture = load_capture(path)
     overrides = build_capture_dt_frame_overrides(capture, tick_rate=60)
 
-    assert overrides[0] == pytest.approx(0.032)
+    assert_float_close(overrides[0], 0.032)
 
 
 def test_build_capture_dt_frame_overrides_prefers_timing_frame_dt_after_over_i32(tmp_path: Path) -> None:
@@ -2687,7 +2688,7 @@ def test_build_capture_dt_frame_overrides_prefers_timing_frame_dt_after_over_i32
     capture = load_capture(path)
     overrides = build_capture_dt_frame_overrides(capture, tick_rate=60)
 
-    assert overrides[0] == pytest.approx(0.029000001028180122)
+    assert_float_close(overrides[0], 0.029000001028180122)
 
 
 def test_build_capture_dt_frame_ms_i32_overrides_uses_explicit_values(tmp_path: Path) -> None:
@@ -2977,8 +2978,8 @@ def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capabil
 
     move_x, move_y, _aim, _flags = replay.inputs[0][0]
     flags = _replay_input_flags(replay, 0, 0)
-    assert move_x == pytest.approx(0.25, abs=1e-6)
-    assert move_y == pytest.approx(0.5, abs=1e-6)
+    assert_float_close(move_x, 0.25, abs_tol=1e-6)
+    assert_float_close(move_y, 0.5, abs_tol=1e-6)
     move_forward, move_backward, turn_left, turn_right = unpack_input_move_key_flags(flags)
     assert move_forward is None
     assert move_backward is None
@@ -3045,10 +3046,10 @@ def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_preceden
     move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
     flags0 = _replay_input_flags(replay, 0, 0)
     flags1 = _replay_input_flags(replay, 1, 0)
-    assert move_x0 == pytest.approx(1.0, abs=1e-6)
-    assert move_y0 == pytest.approx(0.0, abs=1e-6)
-    assert move_x1 == pytest.approx(-1.0, abs=1e-6)
-    assert move_y1 == pytest.approx(1.0, abs=1e-6)
+    assert_float_close(move_x0, 1.0, abs_tol=1e-6)
+    assert_float_close(move_y0, 0.0, abs_tol=1e-6)
+    assert_float_close(move_x1, -1.0, abs_tol=1e-6)
+    assert_float_close(move_y1, 1.0, abs_tol=1e-6)
     assert unpack_input_move_key_flags(flags0) == (False, False, False, True)
     assert unpack_input_move_key_flags(flags1) == (False, True, True, True)
 
@@ -3103,10 +3104,10 @@ def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_preceden
     move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
     flags0 = _replay_input_flags(replay, 0, 0)
     flags1 = _replay_input_flags(replay, 1, 0)
-    assert move_x0 == pytest.approx(0.0, abs=1e-6)
-    assert move_y0 == pytest.approx(1.0, abs=1e-6)
-    assert move_x1 == pytest.approx(-1.0, abs=1e-6)
-    assert move_y1 == pytest.approx(-1.0, abs=1e-6)
+    assert_float_close(move_x0, 0.0, abs_tol=1e-6)
+    assert_float_close(move_y0, 1.0, abs_tol=1e-6)
+    assert_float_close(move_x1, -1.0, abs_tol=1e-6)
+    assert_float_close(move_y1, -1.0, abs_tol=1e-6)
     assert unpack_input_move_key_flags(flags0) == (False, True, False, False)
     assert unpack_input_move_key_flags(flags1) == (True, True, True, False)
 
@@ -3159,10 +3160,10 @@ def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_
 
     move_x0, move_y0, _aim0, _flags0 = replay.inputs[0][0]
     move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
-    assert move_x0 == pytest.approx(1.0, abs=1e-6)
-    assert move_y0 == pytest.approx(0.0, abs=1e-6)
-    assert move_x1 == pytest.approx(0.0, abs=1e-6)
-    assert move_y1 == pytest.approx(1.0, abs=1e-6)
+    assert_float_close(move_x0, 1.0, abs_tol=1e-6)
+    assert_float_close(move_y0, 0.0, abs_tol=1e-6)
+    assert_float_close(move_x1, 0.0, abs_tol=1e-6)
+    assert_float_close(move_y1, 1.0, abs_tol=1e-6)
 
 
 def test_convert_capture_to_replay_uses_player_key_fire_reload_edges(tmp_path: Path) -> None:

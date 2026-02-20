@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.creatures.spawn import CreatureFlags
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_damage_type1_heading_jitter_uses_rand_without_player_attacker() -> None:
@@ -33,7 +32,7 @@ def test_damage_type1_heading_jitter_uses_rand_without_player_attacker() -> None
 
     assert killed is False
     assert rand_calls == 1
-    assert creature.heading == pytest.approx(-0.1024, abs=1e-6)
+    assert_float_close(creature.heading, -0.1024, abs_tol=1e-6)
 
 
 def test_damage_type1_heading_jitter_skips_ping_pong_creatures() -> None:
@@ -65,7 +64,7 @@ def test_damage_type1_heading_jitter_skips_ping_pong_creatures() -> None:
 
     assert killed is False
     assert rand_calls == 0
-    assert creature.heading == pytest.approx(0.0)
+    assert_float_close(creature.heading, 0.0)
 
 
 def test_damage_type1_global_perks_apply_with_non_player_owner() -> None:
@@ -86,4 +85,4 @@ def test_damage_type1_global_perks_apply_with_non_player_owner() -> None:
     )
 
     assert killed is True
-    assert creature.hp == pytest.approx(-131.92474, abs=1e-4)
+    assert_float_close(creature.hp, -131.92474, abs_tol=1e-4)

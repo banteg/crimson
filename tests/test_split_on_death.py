@@ -2,13 +2,11 @@ from __future__ import annotations
 
 import math
 
-import pytest
-
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
 from grim.geom import Vec2
-from tests.helpers import MockCrand
+from tests.helpers import MockCrand, assert_float_close
 
 
 def test_split_on_death_spawns_two_smaller_children() -> None:
@@ -45,15 +43,15 @@ def test_split_on_death_spawns_two_smaller_children() -> None:
     assert child2.hitbox_size == CREATURE_HITBOX_ALIVE
     assert child1.phase_seed == float(0x123 & 0xFF)
     assert child2.phase_seed == float(0x456 & 0xFF)
-    assert child1.heading == pytest.approx(-math.pi / 2.0)
-    assert child2.heading == pytest.approx(math.pi / 2.0)
+    assert_float_close(child1.heading, -math.pi / 2.0)
+    assert_float_close(child2.heading, math.pi / 2.0)
     assert child1.hp == parent.max_hp * 0.25
     assert child2.hp == parent.max_hp * 0.25
     assert child1.size == parent.size - 8.0
     assert child2.size == parent.size - 8.0
-    assert child1.move_speed == pytest.approx(parent.move_speed + 0.1)
-    assert child2.move_speed == pytest.approx(parent.move_speed + 0.1)
-    assert child1.contact_damage == pytest.approx(parent.contact_damage * 0.7)
-    assert child2.contact_damage == pytest.approx(parent.contact_damage * 0.7)
-    assert child1.reward_value == pytest.approx(parent.reward_value * (2.0 / 3.0))
-    assert child2.reward_value == pytest.approx(parent.reward_value * (2.0 / 3.0))
+    assert_float_close(child1.move_speed, parent.move_speed + 0.1)
+    assert_float_close(child2.move_speed, parent.move_speed + 0.1)
+    assert_float_close(child1.contact_damage, parent.contact_damage * 0.7)
+    assert_float_close(child2.contact_damage, parent.contact_damage * 0.7)
+    assert_float_close(child1.reward_value, parent.reward_value * (2.0 / 3.0))
+    assert_float_close(child2.reward_value, parent.reward_value * (2.0 / 3.0))

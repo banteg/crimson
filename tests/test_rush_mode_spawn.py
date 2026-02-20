@@ -6,6 +6,7 @@ import pytest
 
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, tick_rush_mode_spawns
 from grim.rand import Crand
+from tests.helpers import assert_float_close
 
 
 def test_tick_rush_mode_spawns_no_trigger() -> None:
@@ -20,7 +21,7 @@ def test_tick_rush_mode_spawns_no_trigger() -> None:
         terrain_height=1024.0,
     )
 
-    assert cooldown == pytest.approx(84.0, abs=1e-9)
+    assert_float_close(cooldown, 84.0, abs_tol=1e-9)
     assert spawns == ()
     assert rng.state == 1
 
@@ -37,7 +38,7 @@ def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:
         terrain_height=1024.0,
     )
 
-    assert cooldown == pytest.approx(249.0, abs=1e-9)
+    assert_float_close(cooldown, 249.0, abs_tol=1e-9)
     assert len(spawns) == 2
 
     alien, spider = spawns
@@ -46,11 +47,11 @@ def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:
     assert alien.ai_mode == 8
     assert alien.flags == CreatureFlags(0)
     assert (alien.pos.x, alien.pos.y) == (pytest.approx(1088.0, abs=1e-9), pytest.approx(768.0, abs=1e-9))
-    assert alien.health == pytest.approx(10.0, abs=1e-9)
-    assert alien.max_health == pytest.approx(10.0, abs=1e-9)
-    assert alien.move_speed == pytest.approx(2.5, abs=1e-9)
-    assert alien.reward_value == pytest.approx(144.0, abs=1e-9)
-    assert alien.size == pytest.approx(47.0, abs=1e-9)
+    assert_float_close(alien.health, 10.0, abs_tol=1e-9)
+    assert_float_close(alien.max_health, 10.0, abs_tol=1e-9)
+    assert_float_close(alien.move_speed, 2.5, abs_tol=1e-9)
+    assert_float_close(alien.reward_value, 144.0, abs_tol=1e-9)
+    assert_float_close(alien.size, 47.0, abs_tol=1e-9)
     expected_tint_r = 0.3 + 1.0 / 120000.0
     expected_tint_g = 1.0  # clamp01(0.3 + 10000.0)
     expected_tint_b = 0.3 + math.sin(1e-4)
@@ -60,11 +61,11 @@ def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:
     assert spider.ai_mode == 8
     assert (spider.flags & CreatureFlags.AI7_LINK_TIMER) != 0
     assert (spider.pos.x, spider.pos.y) == (pytest.approx(-64.0, abs=1e-9), pytest.approx(512.0, abs=1e-9))
-    assert spider.health == pytest.approx(10.0, abs=1e-9)
-    assert spider.max_health == pytest.approx(10.0, abs=1e-9)
-    assert spider.move_speed == pytest.approx(3.5, abs=1e-9)
-    assert spider.reward_value == pytest.approx(144.0, abs=1e-9)
-    assert spider.size == pytest.approx(47.0, abs=1e-9)
+    assert_float_close(spider.health, 10.0, abs_tol=1e-9)
+    assert_float_close(spider.max_health, 10.0, abs_tol=1e-9)
+    assert_float_close(spider.move_speed, 3.5, abs_tol=1e-9)
+    assert_float_close(spider.reward_value, 144.0, abs_tol=1e-9)
+    assert_float_close(spider.size, 47.0, abs_tol=1e-9)
     assert spider.tint == pytest.approx((expected_tint_r, expected_tint_g, expected_tint_b, 1.0), abs=1e-9)
 
     assert rng.state == 0x3D6C1037
@@ -82,7 +83,7 @@ def test_tick_rush_mode_spawns_loops_when_cooldown_is_very_negative() -> None:
         terrain_height=1024.0,
     )
 
-    assert cooldown == pytest.approx(249.0, abs=1e-9)
+    assert_float_close(cooldown, 249.0, abs_tol=1e-9)
     assert len(spawns) == 6
     assert [c.type_id for c in spawns] == [
         CreatureTypeId.ALIEN,

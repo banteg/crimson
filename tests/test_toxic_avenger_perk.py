@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import math
-
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_toxic_avenger_sets_strong_self_damage_flags_on_contact_hit() -> None:
@@ -46,7 +45,7 @@ def test_toxic_avenger_strong_tick_overrides_weak_tick() -> None:
 
     pool.update(dt, state=state, players=[player])
 
-    assert math.isclose(creature.hp, 100.0 - dt * 180.0, abs_tol=1e-9)
+    assert_float_close(creature.hp, 100.0 - dt * 180.0, abs_tol=1e-9)
 
 
 def test_toxic_avenger_skips_when_player_shielded() -> None:

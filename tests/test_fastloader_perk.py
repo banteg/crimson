@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.projectiles import ProjectileTypeId
@@ -9,6 +7,7 @@ from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import player_start_reload
 from crimson.weapons import WEAPON_BY_ID
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_fastloader_scales_reload_timer() -> None:
@@ -28,6 +27,6 @@ def test_fastloader_scales_reload_timer() -> None:
 
     assert base.reload_active is True
     assert perk.reload_active is True
-    assert base.reload_timer == pytest.approx(reload_time)
-    assert perk.reload_timer == pytest.approx(reload_time * 0.7)
-    assert perk.reload_timer_max == pytest.approx(perk.reload_timer)
+    assert_float_close(base.reload_timer, reload_time)
+    assert_float_close(perk.reload_timer, reload_time * 0.7)
+    assert_float_close(perk.reload_timer_max, perk.reload_timer)

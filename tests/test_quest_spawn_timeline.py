@@ -6,6 +6,7 @@ from crimson.creatures.spawn import SpawnId
 from crimson.quests.timeline import tick_quest_spawn_timeline
 from crimson.quests.types import SpawnEntry
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_tick_quest_spawn_timeline_no_trigger_resets_idle_timer_when_creatures_active() -> None:
@@ -29,7 +30,7 @@ def test_tick_quest_spawn_timeline_no_trigger_resets_idle_timer_when_creatures_a
 
     assert updated == entries
     assert creatures_none_active is False
-    assert idle_ms == pytest.approx(0.0, abs=1e-9)
+    assert_float_close(idle_ms, 0.0, abs_tol=1e-9)
     assert spawns == ()
 
 
@@ -54,7 +55,7 @@ def test_tick_quest_spawn_timeline_triggers_horizontal_spread_when_on_screen() -
 
     assert updated[0].count == 0
     assert creatures_none_active is False
-    assert idle_ms == pytest.approx(16.0, abs=1e-9)
+    assert_float_close(idle_ms, 16.0, abs_tol=1e-9)
     assert len(spawns) == 3
     assert [(s.pos.x, s.pos.y) for s in spawns] == [
         (pytest.approx(512.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
@@ -62,7 +63,7 @@ def test_tick_quest_spawn_timeline_triggers_horizontal_spread_when_on_screen() -
         (pytest.approx(592.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
     ]
     for spawn in spawns:
-        assert spawn.heading == pytest.approx(1.25, abs=1e-9)
+        assert_float_close(spawn.heading, 1.25, abs_tol=1e-9)
 
 
 def test_tick_quest_spawn_timeline_triggers_vertical_spread_when_offscreen_x() -> None:
@@ -149,5 +150,5 @@ def test_tick_quest_spawn_timeline_force_fires_after_idle_timeout() -> None:
 
     assert updated[0].count == 0
     assert creatures_none_active is False
-    assert idle_ms == pytest.approx(3001.0, abs=1e-9)
+    assert_float_close(idle_ms, 3001.0, abs_tol=1e-9)
     assert len(spawns) == 1

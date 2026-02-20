@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_living_fortress_scales_bullet_damage_by_stationary_timers() -> None:
@@ -31,4 +30,4 @@ def test_living_fortress_scales_bullet_damage_by_stationary_timers() -> None:
     )
 
     assert killed is False
-    assert creature.hp == pytest.approx(70.0)
+    assert_float_close(creature.hp, 70.0)

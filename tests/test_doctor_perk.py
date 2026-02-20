@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_doctor_increases_bullet_damage_by_20_percent() -> None:
@@ -26,4 +25,4 @@ def test_doctor_increases_bullet_damage_by_20_percent() -> None:
     )
 
     assert killed is False
-    assert creature.hp == pytest.approx(88.0)
+    assert_float_close(creature.hp, 88.0)

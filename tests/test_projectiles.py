@@ -15,6 +15,7 @@ from crimson.sim.state_types import PlayerState
 from grim.color import RGBA
 from grim.geom import Vec2
 from tests.factories import make_creature_state as _creature
+from tests.helpers import assert_float_close
 
 
 def _fixed_rng(value: int):
@@ -83,7 +84,7 @@ def test_projectile_pool_keeps_flight_timer_when_in_bounds() -> None:
     )
     assert proj.active
     assert proj.life_timer == 0.4
-    assert math.isclose(proj.pos.x, 10.0, abs_tol=1e-9)
+    assert_float_close(proj.pos.x, 10.0, abs_tol=1e-9)
 
 
 def test_projectile_pool_update_moves_by_projectile_meta() -> None:
@@ -101,7 +102,7 @@ def test_projectile_pool_update_moves_by_projectile_meta() -> None:
 
     assert proj.active
     assert proj.life_timer == 0.4
-    assert math.isclose(proj.pos.x, 90.0, abs_tol=1e-9)
+    assert_float_close(proj.pos.x, 90.0, abs_tol=1e-9)
 
 
 def test_projectile_pool_update_applies_distance_scaled_damage() -> None:
@@ -118,7 +119,7 @@ def test_projectile_pool_update_applies_distance_scaled_damage() -> None:
     hits = pool.update(0.1, creatures, world_size=1024.0, damage_scale_by_type={4: 1.0})
 
     assert hits == [_hit(type_id=4, origin_x=0.0, origin_y=0.0, hit_x=30.0, hit_y=0.0, target_x=41.1428575, target_y=0.0)]
-    assert math.isclose(creatures[0].hp, 33.5, abs_tol=1e-9)
+    assert_float_close(creatures[0].hp, 33.5, abs_tol=1e-9)
 
 
 def test_projectile_pool_update_applies_rng_jitter_to_hit_position() -> None:
@@ -142,11 +143,11 @@ def test_projectile_pool_update_applies_rng_jitter_to_hit_position() -> None:
 
     assert hits == [_hit(type_id=4, origin_x=0.0, origin_y=0.0, hit_x=60.0, hit_y=0.0, target_x=71.1428574, target_y=0.0)]
     proj = pool.entries[idx]
-    assert math.isclose(proj.pos.x, 62.0, abs_tol=1e-9)
+    assert_float_close(proj.pos.x, 62.0, abs_tol=1e-9)
     assert proj.life_timer == 0.25
 
     expected_damage = _expected_damage(62.0, 1.0)
-    assert math.isclose(creatures[0].hp, 100.0 - expected_damage, abs_tol=1e-6)
+    assert_float_close(creatures[0].hp, 100.0 - expected_damage, abs_tol=1e-6)
 
 
 def test_projectile_pool_update_type_0x0b_does_not_splash_damage() -> None:
@@ -174,10 +175,10 @@ def test_projectile_pool_update_type_0x0b_does_not_splash_damage() -> None:
     )
 
     assert hits == [_hit(type_id=0x0B, origin_x=0.0, origin_y=0.0, hit_x=60.0, hit_y=0.0, target_x=71.1428574, target_y=0.0)]
-    assert math.isclose(creatures[0].hp, 100.0 - _expected_damage(60.0), abs_tol=1e-6)
-    assert math.isclose(creatures[1].hp, 100.0, abs_tol=1e-9)
-    assert math.isclose(creatures[2].hp, 100.0, abs_tol=1e-9)
-    assert math.isclose(creatures[3].hp, 100.0, abs_tol=1e-9)
+    assert_float_close(creatures[0].hp, 100.0 - _expected_damage(60.0), abs_tol=1e-6)
+    assert_float_close(creatures[1].hp, 100.0, abs_tol=1e-9)
+    assert_float_close(creatures[2].hp, 100.0, abs_tol=1e-9)
+    assert_float_close(creatures[3].hp, 100.0, abs_tol=1e-9)
 
 
 def test_projectile_pool_update_type_0x0b_does_not_splash_nearby_creatures() -> None:
@@ -198,8 +199,8 @@ def test_projectile_pool_update_type_0x0b_does_not_splash_nearby_creatures() -> 
     pool.update(0.1, creatures, world_size=1024.0, damage_scale_by_type={0x0B: 1.0})
 
     assert creatures[0].hp < 100.0
-    assert math.isclose(creatures[1].hp, 100.0, abs_tol=1e-9)
-    assert math.isclose(creatures[2].hp, 100.0, abs_tol=1e-9)
+    assert_float_close(creatures[1].hp, 100.0, abs_tol=1e-9)
+    assert_float_close(creatures[2].hp, 100.0, abs_tol=1e-9)
 
 
 def test_projectile_pool_update_ion_minigun_linger_deals_aoe_damage() -> None:
@@ -246,11 +247,11 @@ def test_projectile_pool_update_expired_ion_still_runs_linger_once() -> None:
     )
 
     assert proj.active is False
-    assert math.isclose(float(proj.life_timer), -0.022, abs_tol=1e-9)
+    assert_float_close(float(proj.life_timer), -0.022, abs_tol=1e-9)
     assert len(calls) == 1
     creature_index, damage, damage_type, impulse, owner_id = calls[0]
     assert creature_index == 0
-    assert math.isclose(damage, 2.1, abs_tol=1e-9)
+    assert_float_close(damage, 2.1, abs_tol=1e-9)
     assert damage_type == 7
     assert impulse == Vec2()
     assert owner_id == -100
@@ -276,7 +277,7 @@ def test_projectile_life_timer_f32_decay_delays_deactivate_by_one_tick() -> None
     pool.update(0.1, [], world_size=1024.0)
     assert proj.active is True
     assert proj.life_timer < 0.0
-    assert math.isclose(float(proj.life_timer), -0.09999998658895493, abs_tol=1e-9)
+    assert_float_close(float(proj.life_timer), -0.09999998658895493, abs_tol=1e-9)
 
     pool.update(0.1, [], world_size=1024.0)
     assert proj.active is False
@@ -312,17 +313,17 @@ def test_projectile_pool_update_ion_hit_spawns_ring_and_burst_effects() -> None:
 
     ring = rings[0]
     [proj] = [entry for entry in state.projectiles.entries if entry.active]
-    assert math.isclose(float(ring.pos.x), float(proj.pos.x), abs_tol=1e-9)
-    assert math.isclose(float(ring.pos.y), float(proj.pos.y), abs_tol=1e-9)
-    assert math.isclose(float(ring.half_width), 4.0, abs_tol=1e-9)
-    assert math.isclose(float(ring.half_height), 4.0, abs_tol=1e-9)
-    assert math.isclose(float(ring.scale_step), 67.5, abs_tol=1e-9)
-    assert math.isclose(float(ring.lifetime), 0.08, abs_tol=1e-9)
+    assert_float_close(float(ring.pos.x), float(proj.pos.x), abs_tol=1e-9)
+    assert_float_close(float(ring.pos.y), float(proj.pos.y), abs_tol=1e-9)
+    assert_float_close(float(ring.half_width), 4.0, abs_tol=1e-9)
+    assert_float_close(float(ring.half_height), 4.0, abs_tol=1e-9)
+    assert_float_close(float(ring.scale_step), 67.5, abs_tol=1e-9)
+    assert_float_close(float(ring.lifetime), 0.08, abs_tol=1e-9)
 
     burst = bursts[0]
-    assert math.isclose(float(burst.half_width), 20.48, abs_tol=1e-6)
-    assert math.isclose(float(burst.half_height), 20.48, abs_tol=1e-6)
-    assert math.isclose(float(burst.lifetime), 0.448, abs_tol=1e-6)
+    assert_float_close(float(burst.half_width), 20.48, abs_tol=1e-6)
+    assert_float_close(float(burst.half_height), 20.48, abs_tol=1e-6)
+    assert_float_close(float(burst.lifetime), 0.448, abs_tol=1e-6)
 
 
 def test_projectile_pool_update_owner_collision_blocks_later_candidates() -> None:
@@ -346,8 +347,8 @@ def test_projectile_pool_update_owner_collision_blocks_later_candidates() -> Non
     # owner, and `projectile_update` does not continue searching for a later
     # creature in that branch.
     assert hits == []
-    assert math.isclose(creatures[0].hp, 100.0, abs_tol=1e-9)
-    assert math.isclose(creatures[1].hp, 100.0, abs_tol=1e-9)
+    assert_float_close(creatures[0].hp, 100.0, abs_tol=1e-9)
+    assert_float_close(creatures[1].hp, 100.0, abs_tol=1e-9)
 
 
 def test_projectile_pool_update_player_hit_does_not_break_step_loop() -> None:
@@ -375,8 +376,8 @@ def test_projectile_pool_update_player_hit_does_not_break_step_loop() -> None:
     # Native `projectile_update` keeps advancing after player hits in the same
     # tick, but player hits do not emit projectile-hit presentation events.
     assert hits == []
-    assert math.isclose(players[0].health, 60.0, abs_tol=1e-9)
-    assert math.isclose(proj.life_timer, 0.25, abs_tol=1e-9)
+    assert_float_close(players[0].health, 60.0, abs_tol=1e-9)
+    assert_float_close(proj.life_timer, 0.25, abs_tol=1e-9)
 
 
 def test_projectile_pool_update_clears_unit_damage_pool_even_when_already_hit_state() -> None:
@@ -400,8 +401,8 @@ def test_projectile_pool_update_clears_unit_damage_pool_even_when_already_hit_st
         runtime_state=GameplayState(),
     )
 
-    assert math.isclose(proj.life_timer, 0.25, abs_tol=1e-9)
-    assert math.isclose(proj.damage_pool, 0.0, abs_tol=1e-9)
+    assert_float_close(proj.life_timer, 0.25, abs_tol=1e-9)
+    assert_float_close(proj.damage_pool, 0.0, abs_tol=1e-9)
 
 
 def test_projectile_pool_emits_hit_event_and_enters_hit_state() -> None:
@@ -419,7 +420,7 @@ def test_projectile_pool_emits_hit_event_and_enters_hit_state() -> None:
     )
 
     assert hits == [_hit(type_id=4, origin_x=0.0, origin_y=0.0, hit_x=10.0, hit_y=0.0, target_x=10.0, target_y=0.0)]
-    assert math.isclose(creatures[0].hp, 82.0, abs_tol=1e-9)
+    assert_float_close(creatures[0].hp, 82.0, abs_tol=1e-9)
     assert proj.life_timer == 0.25
 
     pool.update_demo(
@@ -429,7 +430,7 @@ def test_projectile_pool_emits_hit_event_and_enters_hit_state() -> None:
         speed_by_type={4: 100.0},
         damage_by_type={4: 18.0},
     )
-    assert math.isclose(proj.life_timer, 0.15, abs_tol=1e-6)
+    assert_float_close(proj.life_timer, 0.15, abs_tol=1e-6)
 
 
 def test_projectile_pool_demo_type_0x0b_does_not_splash_nearby_creatures() -> None:
@@ -447,9 +448,9 @@ def test_projectile_pool_demo_type_0x0b_does_not_splash_nearby_creatures() -> No
         speed_by_type={0x0B: 100.0},
         damage_by_type={0x0B: 32.0},
     )
-    assert math.isclose(creatures[0].hp, 68.0, abs_tol=1e-9)
-    assert math.isclose(creatures[1].hp, 100.0, abs_tol=1e-9)
-    assert math.isclose(creatures[2].hp, 100.0, abs_tol=1e-9)
+    assert_float_close(creatures[0].hp, 68.0, abs_tol=1e-9)
+    assert_float_close(creatures[1].hp, 100.0, abs_tol=1e-9)
+    assert_float_close(creatures[2].hp, 100.0, abs_tol=1e-9)
 
 
 def test_projectile_pool_demo_ion_minigun_linger_deals_aoe_damage() -> None:
@@ -464,7 +465,7 @@ def test_projectile_pool_demo_ion_minigun_linger_deals_aoe_damage() -> None:
         speed_by_type={0x16: 100.0},
         damage_by_type={0x16: 5.0},
     )
-    assert math.isclose(creatures[0].hp, 95.0, abs_tol=1e-9)
+    assert_float_close(creatures[0].hp, 95.0, abs_tol=1e-9)
 
     pool.update_demo(
         0.1,
@@ -473,7 +474,7 @@ def test_projectile_pool_demo_ion_minigun_linger_deals_aoe_damage() -> None:
         speed_by_type={0x16: 100.0},
         damage_by_type={0x16: 5.0},
     )
-    assert math.isclose(creatures[0].hp, 91.0, abs_tol=1e-9)
+    assert_float_close(creatures[0].hp, 91.0, abs_tol=1e-9)
 
 
 def test_secondary_projectile_pool_pulse_switches_to_detonation() -> None:
@@ -486,9 +487,9 @@ def test_secondary_projectile_pool_pulse_switches_to_detonation() -> None:
     assert entry.active
     assert entry.type_id == 3
     assert entry.vel == Vec2()
-    assert math.isclose(entry.detonation_t, 0.0, abs_tol=1e-9)
-    assert math.isclose(entry.detonation_scale, 0.25, abs_tol=1e-9)
-    assert math.isclose(entry.trail_timer, 0.0, abs_tol=1e-9)
+    assert_float_close(entry.detonation_t, 0.0, abs_tol=1e-9)
+    assert_float_close(entry.detonation_scale, 0.25, abs_tol=1e-9)
+    assert_float_close(entry.trail_timer, 0.0, abs_tol=1e-9)
 
     hp_after_hit = creatures[0].hp
     pool.update_pulse_gun(0.1, creatures)
@@ -508,8 +509,8 @@ def test_secondary_projectile_pool_timeout_switches_to_generic_detonation() -> N
     assert entry.active
     assert entry.type_id == 3
     assert entry.vel == Vec2()
-    assert math.isclose(entry.detonation_t, 0.0, abs_tol=1e-9)
-    assert math.isclose(entry.detonation_scale, 0.5, abs_tol=1e-9)
+    assert_float_close(entry.detonation_t, 0.0, abs_tol=1e-9)
+    assert_float_close(entry.detonation_scale, 0.5, abs_tol=1e-9)
 
 
 def test_secondary_projectile_pool_type1_accelerates_and_counts_down() -> None:
@@ -523,16 +524,16 @@ def test_secondary_projectile_pool_type1_accelerates_and_counts_down() -> None:
     assert entry.type_id == 1
 
     # Movement happens before acceleration in `projectile_update`.
-    assert math.isclose(entry.pos.y, -9.0, abs_tol=1e-9)
+    assert_float_close(entry.pos.y, -9.0, abs_tol=1e-9)
 
     # Seeker Rockets (type 1): accelerate by factor (1.0 + dt * 3.0) while speed < 500.
-    assert math.isclose(entry.vel.y, -117.0, abs_tol=1e-9)
-    assert math.isclose(entry.speed, float(f32(2.0 - 0.1)), abs_tol=1e-9)
+    assert_float_close(entry.vel.y, -117.0, abs_tol=1e-9)
+    assert_float_close(entry.speed, float(f32(2.0 - 0.1)), abs_tol=1e-9)
 
     # No further acceleration once past the 500 speed threshold.
     entry.vel = Vec2(0.0, -600.0)
     pool.update_pulse_gun(0.1, [])
-    assert math.isclose(entry.vel.y, -600.0, abs_tol=1e-9)
+    assert_float_close(entry.vel.y, -600.0, abs_tol=1e-9)
 
 
 def test_secondary_projectile_pool_type1_hit_switches_to_detonation_scale() -> None:
@@ -546,8 +547,8 @@ def test_secondary_projectile_pool_type1_hit_switches_to_detonation_scale() -> N
     assert entry.active
     assert entry.type_id == 3
     assert entry.vel == Vec2()
-    assert math.isclose(entry.detonation_t, 0.0, abs_tol=1e-9)
-    assert math.isclose(entry.detonation_scale, 1.0, abs_tol=1e-9)
+    assert_float_close(entry.detonation_t, 0.0, abs_tol=1e-9)
+    assert_float_close(entry.detonation_scale, 1.0, abs_tol=1e-9)
 
 
 def test_secondary_projectile_pool_type2_picks_nearest_target_and_steers() -> None:
@@ -634,8 +635,8 @@ def test_secondary_projectile_pool_hit_queues_sfx_and_fx() -> None:
     assert entry.active
     assert entry.type_id == 3
     assert entry.vel == Vec2()
-    assert math.isclose(entry.detonation_t, 0.0, abs_tol=1e-9)
-    assert math.isclose(entry.detonation_scale, 0.35, abs_tol=1e-9)
+    assert_float_close(entry.detonation_t, 0.0, abs_tol=1e-9)
+    assert_float_close(entry.detonation_scale, 0.35, abs_tol=1e-9)
 
     assert state.sfx_queue == ["sfx_explosion_medium"]
     assert fx_queue.count == 13
@@ -668,7 +669,7 @@ def test_secondary_projectile_pool_detonation_radius_does_not_pad_creature_radiu
     # Keep the creature just outside the raw radius; old code padded by creature radius.
     creatures: list[CreatureState] = [_creature(pos=Vec2(70.0, 0.0), hp=100.0)]
     pool.update_pulse_gun(0.25, creatures)
-    assert math.isclose(creatures[0].hp, 100.0, abs_tol=1e-9)
+    assert_float_close(creatures[0].hp, 100.0, abs_tol=1e-9)
 
 
 def test_secondary_projectile_pool_detonation_sets_camera_shake_pulses() -> None:
@@ -696,7 +697,7 @@ def test_secondary_projectile_pool_direct_hit_passes_impulse() -> None:
     assert len(calls) == 1
     impulse_x, impulse_y = calls[0]
     assert abs(impulse_x) < 1e-6
-    assert math.isclose(impulse_y, -1170.0, abs_tol=1e-6)
+    assert_float_close(impulse_y, -1170.0, abs_tol=1e-6)
 
 
 def test_secondary_projectile_pool_detonation_aoe_passes_impulse() -> None:
@@ -713,8 +714,8 @@ def test_secondary_projectile_pool_detonation_aoe_passes_impulse() -> None:
 
     assert len(calls) == 1
     impulse_x, impulse_y = calls[0]
-    assert math.isclose(impulse_x, 0.06, abs_tol=1e-9)
-    assert math.isclose(impulse_y, 0.08, abs_tol=1e-9)
+    assert_float_close(impulse_x, 0.06, abs_tol=1e-9)
+    assert_float_close(impulse_y, 0.08, abs_tol=1e-9)
 
 
 def test_secondary_projectile_pool_detonation_kill_triggers_native_followup() -> None:
