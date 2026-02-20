@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import webbrowser
-from typing import cast
+from typing import Protocol, cast, runtime_checkable
 
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -29,7 +29,7 @@ from ..frontend.transitions import _update_screen_fade
 from ..input_codes import input_begin_frame
 from ..net.debug_log import init_lan_debug_log, lan_debug_log, lan_debug_log_path
 from ..quests.types import parse_level
-from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
+from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayInfo, DemoTrialOverlayUi
 from .high_scores_view import HighScoresView
 from .mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
 from .quest_views import EndNoteView, QuestFailedView, QuestResultsView, QuestsMenuView
@@ -78,13 +78,38 @@ void main() {
 """
 
 
+@runtime_checkable
+class _HasConsoleElapsedMs(Protocol):
+    def console_elapsed_ms(self) -> float: ...
+
+
+@runtime_checkable
+class _HasRegenerateTerrainForConsole(Protocol):
+    def regenerate_terrain_for_console(self) -> None: ...
+
+
+@runtime_checkable
+class _HasStealGroundForMenu(Protocol):
+    def steal_ground_for_menu(self) -> GroundRenderer | None: ...
+
+
+@runtime_checkable
+class _HasMenuGroundCamera(Protocol):
+    def menu_ground_camera(self) -> Vec2: ...
+
+
+@runtime_checkable
+class _HasReopenFromChild(Protocol):
+    def reopen_from_child(self) -> None: ...
+
+
 def _get_gamma_ramp_shader() -> tuple[rl.Shader | None, int]:
     global _GAMMA_RAMP_SHADER, _GAMMA_RAMP_SHADER_GAIN_LOC, _GAMMA_RAMP_SHADER_TRIED
     if _GAMMA_RAMP_SHADER_TRIED:
         shader = _GAMMA_RAMP_SHADER
         if shader is None:
             return None, -1
-        if int(getattr(shader, "id", 0)) <= 0:
+        if int(shader.id) <= 0:
             return None, -1
         if _GAMMA_RAMP_SHADER_GAIN_LOC < 0:
             return None, -1
@@ -98,7 +123,7 @@ def _get_gamma_ramp_shader() -> tuple[rl.Shader | None, int]:
         _GAMMA_RAMP_SHADER_GAIN_LOC = -1
         return None, -1
 
-    if int(getattr(shader, "id", 0)) <= 0:
+    if int(shader.id) <= 0:
         _GAMMA_RAMP_SHADER = None
         _GAMMA_RAMP_SHADER_GAIN_LOC = -1
         return None, -1
@@ -162,7 +187,7 @@ class GameLoopView:
         self._front_stack: list[FrontView] = []
         self._active: View = self._boot
         self._demo_trial_overlay = DemoTrialOverlayUi(state.assets_dir)
-        self._demo_trial_info = None
+        self._demo_trial_info: DemoTrialOverlayInfo | None = None
         self._demo_active = False
         self._menu_active = False
         self._quit_after_demo = False
@@ -492,9 +517,8 @@ class GameLoopView:
                     if self._front_active in self._gameplay_views:
                         self.state.pause_background = None
                     else:
-                        reopen_from_child = getattr(self._front_active, "reopen_from_child", None)
-                        if callable(reopen_from_child):
-                            reopen_from_child()
+                        if self._front_active is not None and isinstance(self._front_active, _HasReopenFromChild):
+                            self._front_active.reopen_from_child()
                     self._active = self._front_active
                     return
                 self._front_active.close()
@@ -661,11 +685,9 @@ class GameLoopView:
         if self._front_stack:
             views.extend(reversed(self._front_stack))
         for view in views:
-            getter = getattr(view, "console_elapsed_ms", None)
-            if not callable(getter):
-                continue
-            self.state.survival_elapsed_ms = max(0.0, float(getter()))
-            return
+            if isinstance(view, _HasConsoleElapsedMs):
+                self.state.survival_elapsed_ms = max(0.0, float(view.console_elapsed_ms()))
+                return
 
     def _handle_console_requests(self) -> None:
         if self.state.terrain_regenerate_requested:
@@ -680,9 +702,8 @@ class GameLoopView:
         if self._front_stack:
             views.extend(reversed(self._front_stack))
         for view in views:
-            regenerate = getattr(view, "regenerate_terrain_for_console", None)
-            if callable(regenerate):
-                regenerate()
+            if isinstance(view, _HasRegenerateTerrainForConsole):
+                view.regenerate_terrain_for_console()
                 return
 
     def _update_demo_trial_overlay(self, dt: float) -> bool:
@@ -769,10 +790,9 @@ class GameLoopView:
     def _steal_ground_from_view(view: FrontView | None) -> GroundRenderer | None:
         if view is None:
             return None
-        steal = getattr(view, "steal_ground_for_menu", None)
-        if not callable(steal):
+        if not isinstance(view, _HasStealGroundForMenu):
             return None
-        ground = steal()
+        ground = view.steal_ground_for_menu()
         if isinstance(ground, GroundRenderer):
             return ground
         return None
@@ -781,10 +801,9 @@ class GameLoopView:
     def _menu_ground_camera_from_view(view: FrontView | None) -> Vec2 | None:
         if view is None:
             return None
-        camera_getter = getattr(view, "menu_ground_camera", None)
-        if not callable(camera_getter):
+        if not isinstance(view, _HasMenuGroundCamera):
             return None
-        camera = camera_getter()
+        camera = view.menu_ground_camera()
         if isinstance(camera, Vec2):
             return camera
         return None
@@ -825,7 +844,7 @@ class GameLoopView:
     def _draw_scene_layers(self) -> None:
         self._active.draw()
         info = self._demo_trial_info
-        if info is not None and getattr(info, "visible", False):
+        if info is not None and bool(info.visible):
             self._demo_trial_overlay.bind_cache(self.state.texture_cache)
             self._demo_trial_overlay.draw(info)
         self.state.console.draw()

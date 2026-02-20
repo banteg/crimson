@@ -512,7 +512,7 @@ class DecalsDebugView:
                 move_speed=float(creature.move_speed),
                 dt=dt,
                 size=float(creature.size),
-                local_scale=float(getattr(creature, "move_scale", 1.0)),
+                local_scale=float(creature.move_scale),
                 flags=creature.flags,
                 ai_mode=int(creature.ai_mode),
             )

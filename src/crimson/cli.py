@@ -187,7 +187,7 @@ def _replay_render_progress_callback(
             last_tick = int(audio_last_tick)
         else:
             return
-        if int(getattr(bar, "total", 0) or 0) != int(resolved_total):
+        if int(bar.total) != int(resolved_total):
             bar.total = int(resolved_total)
         tick = min(int(resolved_total), max(0, int(tick_index)))
         delta = int(tick) - int(last_tick)
