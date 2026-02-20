@@ -60,6 +60,25 @@ Completed in current branch (pending merge):
   - Removed `msgspec.to_builtins` sample/bootstrap conversions.
   - Replaced defensive sample-dict probing with strict fixed-shape sample rows.
 
+- `src/crimson/original/capture.py`
+  - Added strict `msgspec.Struct` payload models for replay-side unknown events:
+    - bootstrap payload
+    - creature spawn payload
+    - state transition payload
+  - Removed dict-probing fallback parsing in replay event payload helpers.
+  - Reworked `apply_capture_bootstrap_payload` to strict typed payload application (no legacy optional dict guards).
+  - Removed dead legacy helper usage in bootstrap parsing paths.
+
+- Replay runner/capture tooling strict payload adoption
+  - `src/crimson/sim/driver/replay_events.py`
+    - Switched creature `added_head` application from dict probing to strict typed row access.
+  - `src/crimson/sim/driver/replay_runner.py`
+  - `src/crimson/original/diagnostics_cache.py`
+  - `src/crimson/original/focus_trace.py`
+  - `src/crimson/original/creature_trajectory.py`
+  - `src/crimson/original/capture_visualizer.py`
+    - All bootstrap payload consumers now read strict typed payload objects (including `quest_session`) with no legacy dict parsing branches.
+
 - Tests and fixtures
   - Updated strict capture fixtures to use `type` tags for event heads/phase markers:
     - `tests/test_original_capture_conversion.py`
@@ -67,6 +86,10 @@ Completed in current branch (pending merge):
     - `tests/test_original_capture_divergence_report_summary.py`
     - `tests/test_original_capture_divergence_report_rng_calls.py`
   - Updated strict payload fixture fields for new typed event-head data shapes.
+  - Updated replay-runner bootstrap fixture payloads to full strict bootstrap schema:
+    - `tests/test_replay_runners.py`
+  - Updated capture conversion helper tests/expectations for strict typed bootstrap and creature spawn rows:
+    - `tests/test_original_capture_conversion.py`
 
 - Validation (current branch)
   - `just check` passes.
@@ -74,13 +97,8 @@ Completed in current branch (pending merge):
 
 ## Remaining Work
 
-- Continue defensive-coercion cleanup where hard schema is guaranteed
-  - Major remaining concentration: `src/crimson/original/capture.py` bootstrap/event payload application paths and coercion helpers.
-  - Secondary concentration: remaining dict/coercion wrappers in `src/crimson/original/divergence_report.py` and `src/crimson/original/focus_trace.py`.
-
-- Optional follow-through for full strictness
-  - Type additional event-head/phase-marker payloads that still use generic dict payload structs.
-  - Keep `msgspec.to_builtins` only at explicit serialization boundaries (`capture.py` dump path and cache metadata serialization).
+- None for the strict-capture parsing alignment plan in this branch.
+- Current status: 100% complete for the planned strict-form capture parser cleanup.
 
 ## Notes
 

@@ -621,13 +621,11 @@ def _build_run_summary_events_from_raw_capture(path: Path) -> list[RunSummaryEve
                 continue
 
             if isinstance(head, CaptureEventHeadStateTransition):
-                before_obj = head.data.get("before")
-                after_obj = head.data.get("after")
-                before = cast("dict[str, object]", before_obj) if isinstance(before_obj, dict) else {}
-                after = cast("dict[str, object]", after_obj) if isinstance(after_obj, dict) else {}
-                before_state = _int_or(before.get("id"), -1)
-                target_state_obj = head.data.get("target_state")
-                after_state = _int_or(after.get("id"), _int_or(target_state_obj, -1))
+                before_state = int(head.data.before.id) if head.data.before.id is not None else -1
+                if head.data.after.id is not None:
+                    after_state = int(head.data.after.id)
+                else:
+                    after_state = int(head.data.target_state)
                 _append_run_summary_event(
                     events,
                     seen=seen,

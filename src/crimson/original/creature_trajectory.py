@@ -432,34 +432,19 @@ def trace_creature_trajectory(
                 payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
                 if payload is None:
                     break
-                quest_session = payload["quest_session"] if "quest_session" in payload else None
-                if isinstance(quest_session, dict):
-                    quest_session_data = cast(dict[str, object], quest_session)
-                    timeline_ms = (
-                        quest_session_data["spawn_timeline_ms"] if "spawn_timeline_ms" in quest_session_data else None
+                if payload.quest_session is not None:
+                    session_quest.spawn_timeline_ms = max(
+                        0.0,
+                        float(payload.quest_session.spawn_timeline_ms) - float(bootstrap_dt_ms),
                     )
-                    if isinstance(timeline_ms, (int, float)):
-                        session_quest.spawn_timeline_ms = max(0.0, float(timeline_ms) - float(bootstrap_dt_ms))
-                    no_creatures_timer_ms = (
-                        quest_session_data["no_creatures_timer_ms"]
-                        if "no_creatures_timer_ms" in quest_session_data
-                        else None
+                    session_quest.no_creatures_timer_ms = max(
+                        0.0,
+                        float(payload.quest_session.no_creatures_timer_ms) - float(bootstrap_dt_ms),
                     )
-                    if isinstance(no_creatures_timer_ms, (int, float)):
-                        session_quest.no_creatures_timer_ms = max(
-                            0.0,
-                            float(no_creatures_timer_ms) - float(bootstrap_dt_ms),
-                        )
-                    completion_transition_ms = (
-                        quest_session_data["completion_transition_ms"]
-                        if "completion_transition_ms" in quest_session_data
-                        else None
-                    )
-                    if isinstance(completion_transition_ms, (int, float)):
-                        completion_value = float(completion_transition_ms)
-                        if completion_value >= 0.0:
-                            completion_value = max(0.0, float(completion_value) - float(bootstrap_dt_ms))
-                        session_quest.completion_transition_ms = float(completion_value)
+                    completion_value = float(payload.quest_session.completion_transition_ms)
+                    if completion_value >= 0.0:
+                        completion_value = max(0.0, float(completion_value) - float(bootstrap_dt_ms))
+                    session_quest.completion_transition_ms = float(completion_value)
                 break
 
     out: list[CreatureTrajectoryRow] = []

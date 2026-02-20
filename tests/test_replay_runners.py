@@ -81,6 +81,37 @@ def _quest_spawn_entries(level: str = "1.1", *, player_count: int = 1, seed: int
     )
 
 
+def _strict_bootstrap_player_payload(**overrides: object) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "weapon_id": 1,
+        "pos": {"x": 512.0, "y": 512.0},
+        "health": 100.0,
+        "ammo": 11.0,
+        "experience": 0,
+        "level": 1,
+    }
+    payload.update(overrides)
+    return payload
+
+
+def _strict_bootstrap_payload(*, tick_index: int = 0, player_count: int = 1) -> dict[str, object]:
+    return {
+        "tick_index": int(tick_index),
+        "elapsed_ms": 0,
+        "score_xp": 0,
+        "perk_pending": 0,
+        "perk": {
+            "pending_count": 0,
+            "choices_dirty": False,
+            "choices": [],
+            "player_nonzero_counts": [[] for _ in range(max(0, int(player_count)))],
+        },
+        "bonus_timers_ms": {},
+        "players": [_strict_bootstrap_player_payload() for _ in range(max(0, int(player_count)))],
+        "digital_move_enabled_by_player": [False for _ in range(max(0, int(player_count)))],
+    }
+
+
 def test_survival_runner_is_deterministic() -> None:
     _header, rec = _blank_survival_replay(ticks=10, seed=0x1234, game_version="0.0.0")
     replay = rec.finish()
@@ -145,19 +176,17 @@ def test_quest_runner_applies_original_capture_bootstrap_session_timers() -> Non
     assert int(baseline_checkpoints[0].creature_count) == 0
 
     replay_bootstrapped = rec.finish()
+    bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
+    bootstrap_payload["quest_session"] = {
+        "spawn_timeline_ms": 1701.0,
+        "no_creatures_timer_ms": 3100.0,
+        "completion_transition_ms": -1.0,
+    }
     replay_bootstrapped.events.append(
         UnknownEvent(
             tick_index=0,
             kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[
-                {
-                    "quest_session": {
-                        "spawn_timeline_ms": 1701.0,
-                        "no_creatures_timer_ms": 3100.0,
-                        "completion_transition_ms": -1.0,
-                    },
-                },
-            ],
+            payload=[bootstrap_payload],
         ),
     )
     bootstrapped_checkpoints = []
@@ -176,11 +205,17 @@ def test_quest_runner_applies_original_capture_bootstrap_session_timers() -> Non
 def test_quest_runner_uses_capture_creature_spawn_events_for_original_capture_replay() -> None:
     _header, rec = _blank_quest_replay(ticks=1, seed=101, game_version="0.0.0")
     replay = rec.finish()
+    bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
+    bootstrap_payload["quest_session"] = {
+        "spawn_timeline_ms": 0.0,
+        "no_creatures_timer_ms": 0.0,
+        "completion_transition_ms": -1.0,
+    }
     replay.events.append(
         UnknownEvent(
             tick_index=0,
             kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[{"quest_session": {"spawn_timeline_ms": 0.0, "no_creatures_timer_ms": 0.0}}],
+            payload=[bootstrap_payload],
         ),
     )
     replay.events.append(
@@ -225,11 +260,17 @@ def test_quest_runner_uses_capture_creature_spawn_events_for_original_capture_re
 def test_quest_runner_disables_runtime_spawn_slot_ticks_when_capture_spawns_are_authoritative() -> None:
     _header, rec = _blank_quest_replay(ticks=40, seed=101, game_version="0.0.0")
     replay = rec.finish()
+    bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
+    bootstrap_payload["quest_session"] = {
+        "spawn_timeline_ms": 0.0,
+        "no_creatures_timer_ms": 0.0,
+        "completion_transition_ms": -1.0,
+    }
     replay.events.append(
         UnknownEvent(
             tick_index=0,
             kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[{"quest_session": {"spawn_timeline_ms": 0.0, "no_creatures_timer_ms": 0.0}}],
+            payload=[bootstrap_payload],
         ),
     )
     replay.events.append(
@@ -457,11 +498,12 @@ def test_quest_runner_disables_world_dt_steps_for_original_capture_dt_overrides(
         rec = ReplayRecorder(header)
         rec.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(700.0, 512.0))])
         replay = rec.finish()
+        bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
         replay.events.append(
             UnknownEvent(
                 tick_index=0,
                 kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-                payload=[{"tick_index": 0}],
+                payload=[bootstrap_payload],
             ),
         )
         if include_reflex_boosted:
@@ -501,31 +543,29 @@ def test_quest_runner_resets_run_on_capture_state_transition_to_12() -> None:
     _header, rec = _blank_quest_replay(ticks=2, seed=101, game_version="0.0.0")
     replay = rec.finish()
     replay.inputs[1][0] = [0.0, 0.0, [700.0, 512.0], 1]
+    bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
+    bootstrap_payload["players"] = [
+        _strict_bootstrap_player_payload(
+            weapon_id=17,
+            ammo=6.0,
+            experience=11581,
+            level=4,
+            health=0.0,
+        ),
+    ]
+    bootstrap_payload["score_xp"] = 11581
+    bootstrap_payload["bonus_timers_ms"] = {"9": 1769}
+    bootstrap_payload["perk"] = {
+        "pending_count": 0,
+        "choices_dirty": False,
+        "choices": [],
+        "player_nonzero_counts": [[[12, 1], [34, 1], [44, 1]]],
+    }
     replay.events.append(
         UnknownEvent(
             tick_index=0,
             kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[
-                {
-                    "players": [
-                        {
-                            "weapon_id": 17,
-                            "ammo": 6.0,
-                            "experience": 11581,
-                            "level": 4,
-                            "health": 0.0,
-                        },
-                    ],
-                    "score_xp": 11581,
-                    "bonus_timers_ms": {"9": 1769},
-                    "perk": {
-                        "pending_count": 0,
-                        "choices_dirty": False,
-                        "choices": [],
-                        "player_nonzero_counts": [[[12, 1], [34, 1], [44, 1]]],
-                    },
-                },
-            ],
+            payload=[bootstrap_payload],
         ),
     )
     replay.events.append(
@@ -705,27 +745,25 @@ def test_survival_runner_can_capture_terminal_tick_checkpoint() -> None:
 def test_survival_runner_applies_original_capture_bootstrap_event() -> None:
     _header, rec = _blank_survival_replay(ticks=1, seed=0x1234, game_version="0.0.0")
     replay = rec.finish()
+    bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
+    bootstrap_payload["elapsed_ms"] = 2000
+    bootstrap_payload["perk_pending"] = 2
+    bootstrap_payload["bonus_timers_ms"] = {"4": 1500}
+    bootstrap_payload["players"] = [
+        _strict_bootstrap_player_payload(
+            pos={"x": 600.0, "y": 600.0},
+            health=75.0,
+            weapon_id=9,
+            ammo=4.0,
+            experience=321,
+            level=5,
+        ),
+    ]
     replay.events.append(
         UnknownEvent(
             tick_index=0,
             kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[
-                {
-                    "elapsed_ms": 2000,
-                    "perk_pending": 2,
-                    "bonus_timers_ms": {"4": 1500},
-                    "players": [
-                        {
-                            "pos": {"x": 600.0, "y": 600.0},
-                            "health": 75.0,
-                            "weapon_id": 9,
-                            "ammo": 4.0,
-                            "experience": 321,
-                            "level": 5,
-                        },
-                    ],
-                },
-            ],
+            payload=[bootstrap_payload],
         ),
     )
 
@@ -748,21 +786,23 @@ def test_survival_runner_bootstrap_player_shot_cooldown_blocks_first_tick_fire()
         recorder = ReplayRecorder(header)
         recorder.record_tick([PlayerInput(aim=Vec2(700.0, 512.0), fire_down=True)])
         replay = recorder.finish()
-        bootstrap_player: dict[str, object] = {
-            "weapon_id": 1,
-            "ammo": 12.0,
-            "reload_active": False,
-            "reload_timer": 0.0,
-            "reload_timer_max": 1.0,
-            "spread_heat": 0.0,
-        }
+        bootstrap_player = _strict_bootstrap_player_payload(
+            weapon_id=1,
+            ammo=12.0,
+            reload_active=False,
+            reload_timer=0.0,
+            reload_timer_max=1.0,
+            spread_heat=0.0,
+        )
         if include_shot_cooldown:
             bootstrap_player["shot_cooldown"] = 0.5
+        bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
+        bootstrap_payload["players"] = [bootstrap_player]
         replay.events.append(
             UnknownEvent(
                 tick_index=0,
                 kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-                payload=[{"players": [bootstrap_player]}],
+                payload=[bootstrap_payload],
             ),
         )
 
@@ -796,26 +836,25 @@ def test_survival_runner_bootstrap_perk_counts_enable_alternate_weapon_swap() ->
         rec = ReplayRecorder(header)
         rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0), reload_pressed=True)])
         replay = rec.finish()
-        payload: dict[str, object] = {
-            "players": [
-                {
-                    "weapon_id": 11,
-                    "ammo": 0.0,
+        payload = _strict_bootstrap_payload(tick_index=0)
+        payload["players"] = [
+            _strict_bootstrap_player_payload(
+                weapon_id=11,
+                ammo=0.0,
+                reload_active=False,
+                reload_timer=0.0,
+                reload_timer_max=1.0,
+                alt_weapon={
+                    "weapon_id": 1,
+                    "clip_size": 12,
+                    "ammo": 12.0,
                     "reload_active": False,
                     "reload_timer": 0.0,
-                    "reload_timer_max": 1.0,
-                    "alt_weapon": {
-                        "weapon_id": 1,
-                        "clip_size": 12,
-                        "ammo": 12.0,
-                        "reload_active": False,
-                        "reload_timer": 0.0,
-                        "shot_cooldown": 0.0,
-                        "reload_timer_max": 1.2,
-                    },
+                    "shot_cooldown": 0.0,
+                    "reload_timer_max": 1.2,
                 },
-            ],
-        }
+            ),
+        ]
         if include_perk_counts:
             payload["perk"] = {
                 "pending_count": 0,
@@ -855,11 +894,13 @@ def test_survival_runner_bootstrap_perk_counts_enable_alternate_weapon_swap() ->
 def test_survival_runner_does_not_stop_early_on_death_for_original_capture_replay() -> None:
     _header, rec = _blank_survival_replay(ticks=3, seed=0x1234, game_version="0.0.0")
     replay = rec.finish()
+    bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
+    bootstrap_payload["players"] = [_strict_bootstrap_player_payload(health=-1.0)]
     replay.events.append(
         UnknownEvent(
             tick_index=0,
             kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[{"players": [{"health": -1.0}]}],
+            payload=[bootstrap_payload],
         ),
     )
 
@@ -882,11 +923,13 @@ def test_survival_runner_skips_world_dt_perk_steps_for_original_capture_dt_overr
         recorder.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(600.0, 512.0))])
         replay = recorder.finish()
         if include_bootstrap:
+            bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
+            bootstrap_payload["digital_move_enabled_by_player"] = [True]
             replay.events.append(
                 UnknownEvent(
                     tick_index=0,
                     kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-                    payload=[{"digital_move_enabled_by_player": [True]}],
+                    payload=[bootstrap_payload],
                 ),
             )
         replay.events.append(
@@ -917,16 +960,14 @@ def test_survival_runner_skips_world_dt_perk_steps_for_original_capture_dt_overr
 def test_survival_runner_original_capture_reflex_scaled_dt_ms_uses_scaled_float_dt() -> None:
     _header, rec = _blank_survival_replay(ticks=1, seed=0x1234, game_version="0.0.0")
     replay = rec.finish()
+    bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
+    bootstrap_payload["bonus_timers_ms"] = {"9": 124}
+    bootstrap_payload["digital_move_enabled_by_player"] = [True]
     replay.events.append(
         UnknownEvent(
             tick_index=0,
             kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[
-                {
-                    "bonus_timers_ms": {"9": 124},
-                    "digital_move_enabled_by_player": [True],
-                },
-            ],
+            payload=[bootstrap_payload],
         ),
     )
 
@@ -954,11 +995,13 @@ def test_survival_runner_original_capture_uses_packed_move_vector_for_turn_only_
     recorder = ReplayRecorder(header)
     recorder.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(600.0, 512.0))])
     replay = recorder.finish()
+    bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
+    bootstrap_payload["digital_move_enabled_by_player"] = [True]
     replay.events.append(
         UnknownEvent(
             tick_index=0,
             kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[{"digital_move_enabled_by_player": [True]}],
+            payload=[bootstrap_payload],
         ),
     )
 
@@ -1037,25 +1080,23 @@ def test_rush_runner_rejects_events() -> None:
 def test_rush_runner_applies_original_capture_bootstrap_event() -> None:
     _header, rec = _blank_rush_replay(ticks=1, seed=0x1234, game_version="0.0.0")
     replay = rec.finish()
+    bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
+    bootstrap_payload["elapsed_ms"] = 3000
+    bootstrap_payload["players"] = [
+        _strict_bootstrap_player_payload(
+            pos={"x": 400.0, "y": 450.0},
+            health=90.0,
+            weapon_id=2,
+            ammo=8.0,
+            experience=77,
+            level=3,
+        ),
+    ]
     replay.events.append(
         UnknownEvent(
             tick_index=0,
             kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[
-                {
-                    "elapsed_ms": 3000,
-                    "players": [
-                        {
-                            "pos": {"x": 400.0, "y": 450.0},
-                            "health": 90.0,
-                            "weapon_id": 2,
-                            "ammo": 8.0,
-                            "experience": 77,
-                            "level": 3,
-                        },
-                    ],
-                },
-            ],
+            payload=[bootstrap_payload],
         ),
     )
 
@@ -1077,11 +1118,13 @@ def test_rush_runner_original_capture_uses_packed_move_vector_for_turn_only_keys
     recorder = ReplayRecorder(header)
     recorder.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(600.0, 512.0))])
     replay = recorder.finish()
+    bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
+    bootstrap_payload["digital_move_enabled_by_player"] = [True]
     replay.events.append(
         UnknownEvent(
             tick_index=0,
             kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[{"digital_move_enabled_by_player": [True]}],
+            payload=[bootstrap_payload],
         ),
     )
 

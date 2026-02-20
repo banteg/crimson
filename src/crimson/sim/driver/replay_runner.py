@@ -689,20 +689,19 @@ def run_quest_replay(
             payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
             if payload is None:
                 break
-            quest_session = payload.get("quest_session")
-            if isinstance(quest_session, dict):
-                timeline_ms = quest_session.get("spawn_timeline_ms")
-                if isinstance(timeline_ms, (int, float)):
-                    session.spawn_timeline_ms = max(0.0, float(timeline_ms) - float(bootstrap_dt_ms))
-                no_creatures_timer_ms = quest_session.get("no_creatures_timer_ms")
-                if isinstance(no_creatures_timer_ms, (int, float)):
-                    session.no_creatures_timer_ms = max(0.0, float(no_creatures_timer_ms) - float(bootstrap_dt_ms))
-                completion_transition_ms = quest_session.get("completion_transition_ms")
-                if isinstance(completion_transition_ms, (int, float)):
-                    completion_value = float(completion_transition_ms)
-                    if completion_value >= 0.0:
-                        completion_value = max(0.0, float(completion_value) - float(bootstrap_dt_ms))
-                    session.completion_transition_ms = float(completion_value)
+            if payload.quest_session is not None:
+                session.spawn_timeline_ms = max(
+                    0.0,
+                    float(payload.quest_session.spawn_timeline_ms) - float(bootstrap_dt_ms),
+                )
+                session.no_creatures_timer_ms = max(
+                    0.0,
+                    float(payload.quest_session.no_creatures_timer_ms) - float(bootstrap_dt_ms),
+                )
+                completion_value = float(payload.quest_session.completion_transition_ms)
+                if completion_value >= 0.0:
+                    completion_value = max(0.0, float(completion_value) - float(bootstrap_dt_ms))
+                session.completion_transition_ms = float(completion_value)
             break
 
     for tick_index in range(int(tick_start), int(tick_limit)):

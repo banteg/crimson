@@ -36,7 +36,11 @@ from crimson.original.capture import (
     parse_player_int_overrides,
     summarize_capture_health,
 )
-from crimson.original.schema import CAPTURE_FORMAT_VERSION, CaptureEventHeadPerkApply
+from crimson.original.schema import (
+    CAPTURE_FORMAT_VERSION,
+    CaptureEventHeadPerkApply,
+    CaptureEventHeadProjectileFindQuery,
+)
 from crimson.replay import PerkMenuOpenEvent, Replay, UnknownEvent, unpack_input_flags, unpack_input_move_key_flags
 from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
 from crimson.sim.state_types import PlayerState
@@ -746,6 +750,282 @@ def _normalize_rng_head_rows(rows: list[object]) -> list[object]:
     return out
 
 
+def _int_or_default(value: object, default: int) -> int:
+    if isinstance(value, int) and not isinstance(value, bool):
+        return int(value)
+    return int(default)
+
+
+def _base_creature_lifecycle_row(**kwargs: object) -> dict[str, object]:
+    row = {
+        "index": -1,
+        "active": True,
+        "active_flag": None,
+        "state_flag": None,
+        "type_id": None,
+        "hp": None,
+        "hitbox_size": None,
+        "pos": {"x": 0.0, "y": 0.0},
+        "flags": None,
+        "link_index": None,
+        "ai_mode": None,
+        "heading": None,
+        "target_heading": None,
+        "orbit_angle": None,
+        "orbit_radius": None,
+        "ai7_timer_ms": None,
+    }
+    row.update(kwargs)
+    return row
+
+
+def _normalize_event_head_for_strict_schema(head: dict[str, object]) -> dict[str, object]:
+    head_type = str(head.get("type", ""))
+    data_obj = head.get("data")
+    data = cast(dict[str, object], data_obj) if isinstance(data_obj, dict) else {}
+
+    if head_type == "state_transition":
+        before_obj = data.get("before")
+        before = cast(dict[str, object], before_obj) if isinstance(before_obj, dict) else {}
+        after_obj = data.get("after")
+        after = cast(dict[str, object], after_obj) if isinstance(after_obj, dict) else {}
+        target_state = data.get("target_state")
+        if not isinstance(target_state, int):
+            if isinstance(after.get("id"), int):
+                target_state = int(cast(int, after.get("id")))
+            elif isinstance(before.get("id"), int):
+                target_state = int(cast(int, before.get("id")))
+            else:
+                target_state = -1
+        return {
+            "type": "state_transition",
+            "data": {
+                "target_state": int(target_state),
+                "before": {
+                    "prev": before.get("prev"),
+                    "id": before.get("id"),
+                    "pending": before.get("pending"),
+                },
+                "after": {
+                    "prev": after.get("prev"),
+                    "id": after.get("id"),
+                    "pending": after.get("pending"),
+                },
+                "caller": data.get("caller"),
+                "backtrace": data.get("backtrace"),
+            },
+        }
+
+    if head_type in {"input_primary_edge", "input_primary_down", "input_any_key"}:
+        return {
+            "type": head_type,
+            "data": {
+                "query": str(data.get("query", "")),
+                "pressed": bool(data.get("pressed", False)),
+                "arg0": data.get("arg0"),
+                "caller": data.get("caller"),
+                "caller_static": data.get("caller_static"),
+                "backtrace": data.get("backtrace"),
+                "console_open": data.get("console_open"),
+                "primary_latch": data.get("primary_latch"),
+            },
+        }
+
+    if head_type == "projectile_spawn":
+        requested_type_id = data.get("requested_type_id")
+        actual_type_id = data.get("actual_type_id")
+        return {
+            "type": "projectile_spawn",
+            "data": {
+                "index": _int_or_default(data.get("index"), -1),
+                "requested_type_id": int(requested_type_id) if isinstance(requested_type_id, int) else 0,
+                "actual_type_id": int(actual_type_id) if isinstance(actual_type_id, int) else None,
+                "spawned": data.get("spawned"),
+                "owner_id": _int_or_default(data.get("owner_id"), -100),
+                "angle_f32": data.get("angle_f32"),
+                "pos": cast(dict[str, object], data.get("pos"))
+                if isinstance(data.get("pos"), dict)
+                else {"x": 0.0, "y": 0.0},
+                "type_overridden": data.get("type_overridden"),
+                "caller": data.get("caller"),
+                "caller_static": data.get("caller_static"),
+            },
+        }
+
+    if head_type == "secondary_projectile_spawn":
+        requested_type_id = data.get("requested_type_id")
+        actual_type_id = data.get("actual_type_id")
+        return {
+            "type": "secondary_projectile_spawn",
+            "data": {
+                "index": _int_or_default(data.get("index"), -1),
+                "requested_type_id": int(requested_type_id) if isinstance(requested_type_id, int) else 0,
+                "actual_type_id": int(actual_type_id) if isinstance(actual_type_id, int) else None,
+                "spawned": data.get("spawned"),
+                "angle_f32": data.get("angle_f32"),
+                "pos": cast(dict[str, object], data.get("pos"))
+                if isinstance(data.get("pos"), dict)
+                else {"x": 0.0, "y": 0.0},
+                "type_overridden": data.get("type_overridden"),
+                "caller": data.get("caller"),
+            },
+        }
+
+    if head_type == "projectile_find_query":
+        return {
+            "type": "projectile_find_query",
+            "data": {
+                "result_creature_index": data.get("result_creature_index"),
+                "result_kind": str(data.get("result_kind", "miss")),
+                "start_index": data.get("start_index"),
+                "radius_f32": data.get("radius_f32"),
+                "query_pos": cast(dict[str, object], data.get("query_pos"))
+                if isinstance(data.get("query_pos"), dict)
+                else {"x": 0.0, "y": 0.0},
+                "projectile_index": data.get("projectile_index"),
+                "projectile_owner_id": data.get("projectile_owner_id"),
+                "projectile_type_id": data.get("projectile_type_id"),
+                "projectile_hit_radius": data.get("projectile_hit_radius"),
+                "owner_collision": bool(data.get("owner_collision", False)),
+                "player_find_skipped": bool(data.get("player_find_skipped", False)),
+                "shock_chain_projectile_id": data.get("shock_chain_projectile_id"),
+                "shock_chain_links_left": data.get("shock_chain_links_left"),
+                "caller": data.get("caller"),
+                "caller_static": data.get("caller_static"),
+                "backtrace": data.get("backtrace"),
+            },
+        }
+
+    if head_type == "projectile_find_hit":
+        creature_index = data.get("creature_index")
+        result_creature_index = data.get("result_creature_index")
+        if not isinstance(result_creature_index, int):
+            result_creature_index = int(creature_index) if isinstance(creature_index, int) else None
+        if not isinstance(creature_index, int):
+            creature_index = int(result_creature_index) if isinstance(result_creature_index, int) else -1
+        return {
+            "type": "projectile_find_hit",
+            "data": {
+                "result_creature_index": result_creature_index,
+                "result_kind": str(data.get("result_kind", "hit")),
+                "start_index": data.get("start_index"),
+                "radius_f32": data.get("radius_f32"),
+                "query_pos": cast(dict[str, object], data.get("query_pos"))
+                if isinstance(data.get("query_pos"), dict)
+                else {"x": 0.0, "y": 0.0},
+                "projectile_index": data.get("projectile_index"),
+                "projectile_owner_id": data.get("projectile_owner_id"),
+                "projectile_type_id": data.get("projectile_type_id"),
+                "projectile_hit_radius": data.get("projectile_hit_radius"),
+                "owner_collision": bool(data.get("owner_collision", False)),
+                "player_find_skipped": bool(data.get("player_find_skipped", False)),
+                "shock_chain_projectile_id": data.get("shock_chain_projectile_id"),
+                "shock_chain_links_left": data.get("shock_chain_links_left"),
+                "caller": data.get("caller"),
+                "caller_static": data.get("caller_static"),
+                "backtrace": data.get("backtrace"),
+                "creature_index": int(creature_index),
+                "creature": data.get("creature"),
+                "corpse_hit": data.get("corpse_hit"),
+            },
+        }
+
+    if head_type == "creature_spawn":
+        return {
+            "type": "creature_spawn",
+            "data": {
+                "template_id": _int_or_default(data.get("template_id"), -1),
+                "pos": cast(dict[str, object], data.get("pos")) if isinstance(data.get("pos"), dict) else {"x": 0.0, "y": 0.0},
+                "heading": data.get("heading"),
+                "ret_ptr": data.get("ret_ptr"),
+                "caller": data.get("caller"),
+                "caller_static": data.get("caller_static"),
+            },
+        }
+
+    if head_type == "quest_timeline_delta":
+        return {
+            "type": "quest_timeline_delta",
+            "data": {
+                "quest_spawn_timeline": data.get("quest_spawn_timeline"),
+                "quest_spawn_stall_timer_ms": data.get("quest_spawn_stall_timer_ms"),
+                "creature_active_count": data.get("creature_active_count"),
+                "quest_transition_timer_ms": data.get("quest_transition_timer_ms"),
+            },
+        }
+
+    if head_type == "creature_lifecycle":
+        added_raw = data.get("added_head")
+        removed_raw = data.get("removed_head")
+        added_rows = cast(list[object], added_raw) if isinstance(added_raw, list) else []
+        removed_rows = cast(list[object], removed_raw) if isinstance(removed_raw, list) else []
+
+        normalized_added: list[dict[str, object]] = []
+        for row in added_rows:
+            if isinstance(row, dict):
+                normalized_added.append(_base_creature_lifecycle_row(**cast(dict[str, object], row)))
+        normalized_removed: list[dict[str, object]] = []
+        for row in removed_rows:
+            if isinstance(row, dict):
+                normalized_removed.append(_base_creature_lifecycle_row(**cast(dict[str, object], row)))
+
+        return {
+            "type": "creature_lifecycle",
+            "data": {
+                "before_count": data.get("before_count"),
+                "after_count": data.get("after_count"),
+                "before_hash": data.get("before_hash"),
+                "after_hash": data.get("after_hash"),
+                "added_total": _int_or_default(data.get("added_total"), len(normalized_added)),
+                "removed_total": _int_or_default(data.get("removed_total"), len(normalized_removed)),
+                "added_ids": data.get("added_ids")
+                if isinstance(data.get("added_ids"), list)
+                else [_int_or_default(row.get("index"), -1) for row in normalized_added],
+                "removed_ids": data.get("removed_ids")
+                if isinstance(data.get("removed_ids"), list)
+                else [_int_or_default(row.get("index"), -1) for row in normalized_removed],
+                "added_overflow": _int_or_default(data.get("added_overflow"), 0),
+                "removed_overflow": _int_or_default(data.get("removed_overflow"), 0),
+                "added_head": normalized_added,
+                "removed_head": normalized_removed,
+            },
+        }
+
+    if head_type == "creature_update_micro":
+        event_kind = str(data.get("event_kind", ""))
+        if event_kind == "angle_approach":
+            return {
+                "type": "creature_update_micro",
+                "data": {
+                    "event_kind": "angle_approach",
+                    "slot": _int_or_default(data.get("slot"), -1),
+                    "angle_ptr": data.get("angle_ptr"),
+                    "angle_in": data.get("angle_in"),
+                    "angle_out": data.get("angle_out"),
+                    "target": data.get("target"),
+                    "target_effective": data.get("target_effective"),
+                    "rate": data.get("rate"),
+                    "delta_to_target_direct": data.get("delta_to_target_direct"),
+                    "delta_to_target_effective": data.get("delta_to_target_effective"),
+                    "step_delta": data.get("step_delta"),
+                    "branch": data.get("branch"),
+                    "before": data.get("before"),
+                    "after": data.get("after"),
+                },
+            }
+        return {
+            "type": "creature_update_micro",
+            "data": {
+                "event_kind": "creature_update_window",
+                "slot": _int_or_default(data.get("slot"), -1),
+                "before": data.get("before"),
+                "after": data.get("after"),
+            },
+        }
+
+    return head
+
+
 def _normalize_tick_for_strict_schema(tick: dict[str, object]) -> dict[str, object]:
     normalized = dict(tick)
 
@@ -765,6 +1045,13 @@ def _normalize_tick_for_strict_schema(tick: dict[str, object]) -> dict[str, obje
         normalized["input_approx"] = [
             _base_input_approx(**cast(dict[str, object], row)) if isinstance(row, dict) else row
             for row in input_approx_obj
+        ]
+
+    event_heads_obj = normalized.get("event_heads")
+    if isinstance(event_heads_obj, list):
+        normalized["event_heads"] = [
+            _normalize_event_head_for_strict_schema(cast(dict[str, object], row)) if isinstance(row, dict) else row
+            for row in event_heads_obj
         ]
 
     rng_obj = normalized.get("rng")
@@ -871,8 +1158,39 @@ def _replay_input_aim_xy(replay: Replay, tick_index: int, player_index: int = 0)
     return float(aim_x), float(aim_y)
 
 
+def _minimal_strict_bootstrap_payload() -> dict[str, object]:
+    return {
+        "tick_index": 0,
+        "elapsed_ms": 0,
+        "score_xp": 0,
+        "perk_pending": 0,
+        "perk": {
+            "pending_count": 0,
+            "choices_dirty": False,
+            "choices": [11, 22, 33, 44, 55, 66, 77],
+            "player_nonzero_counts": [[]],
+        },
+        "bonus_timers_ms": {},
+        "players": [
+            {
+                "weapon_id": 1,
+                "pos": {"x": 0.0, "y": 0.0},
+                "health": 100.0,
+                "ammo": 12.0,
+                "experience": 0,
+                "level": 1,
+            },
+        ],
+        "digital_move_enabled_by_player": [False],
+    }
+
+
 def test_capture_event_payload_helpers_parse_msgspec_payloads() -> None:
-    assert capture_bootstrap_payload_from_event_payload([{"elapsed_ms": "123"}]) == {"elapsed_ms": "123"}
+    bootstrap_payload = _minimal_strict_bootstrap_payload()
+    bootstrap_payload["elapsed_ms"] = 123
+    bootstrap = capture_bootstrap_payload_from_event_payload([bootstrap_payload])
+    assert bootstrap is not None
+    assert bootstrap.elapsed_ms == 123
     assert capture_perk_apply_from_event_payload([{"perk_id": 14}]) == (14, False)
     assert capture_perk_apply_from_event_payload([{"perk_id": 49, "outside_before": True}]) == (49, True)
     assert capture_perk_apply_id_from_event_payload([{"perk_id": 14}]) == 14
@@ -883,6 +1201,8 @@ def test_capture_event_payload_helpers_parse_msgspec_payloads() -> None:
     assert capture_bootstrap_payload_from_event_payload([]) is None
     with pytest.raises(msgspec.ValidationError):
         capture_bootstrap_payload_from_event_payload(["bad"])
+    with pytest.raises(msgspec.ValidationError):
+        capture_bootstrap_payload_from_event_payload([{"elapsed_ms": 123}])
     with pytest.raises(msgspec.ValidationError):
         capture_perk_apply_from_event_payload([{"perk_pending": 2}])
     with pytest.raises(msgspec.ValidationError):
@@ -974,8 +1294,8 @@ def test_load_capture_accepts_projectile_find_query_event_head(tmp_path: Path) -
     assert capture.ticks[0].event_heads
     head = capture.ticks[0].event_heads[0]
     assert not isinstance(head, CaptureEventHeadPerkApply)
-    head_data = _as_obj_dict(head.data)
-    assert head_data.get("result_kind") == "miss"
+    assert isinstance(head, CaptureEventHeadProjectileFindQuery)
+    assert head.data.result_kind == "miss"
 
 
 def test_load_capture_supports_jsonl_stream_rows(tmp_path: Path) -> None:
@@ -1546,27 +1866,17 @@ def test_convert_capture_to_replay_bootstrap_payload_includes_perk_snapshot(tmp_
     )
     payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
     assert payload is not None
-    assert payload.get("perk_pending") == 3
-    assert payload.get("perk") == {
-        "pending_count": 3,
-        "choices_dirty": False,
-        "choices": [11, 22, 33, 44, 55, 66, 77],
-        "player_nonzero_counts": [],
-    }
+    assert payload.perk_pending == 3
+    assert payload.perk.pending_count == 3
+    assert payload.perk.choices_dirty is False
+    assert payload.perk.choices == [11, 22, 33, 44, 55, 66, 77]
+    assert payload.perk.player_nonzero_counts == []
 
 
 def test_apply_capture_bootstrap_payload_marks_perk_counts_unknown_when_nonzero_counts_are_missing() -> None:
     state = GameplayState()
     players = [PlayerState(index=0, pos=Vec2())]
-    payload = {
-        "elapsed_ms": 0,
-        "perk": {
-            "pending_count": 0,
-            "choices_dirty": False,
-            "choices": [11, 22, 33, 44, 55, 66, 77],
-            "player_nonzero_counts": [[]],
-        },
-    }
+    payload = _minimal_strict_bootstrap_payload()
 
     apply_capture_bootstrap_payload(payload, state=state, players=players)
 
@@ -1602,11 +1912,10 @@ def test_convert_capture_to_replay_bootstrap_payload_includes_quest_session_time
     )
     payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
     assert payload is not None
-    assert payload.get("quest_session") == {
-        "spawn_timeline_ms": 1718.0,
-        "no_creatures_timer_ms": 4745.0,
-        "completion_transition_ms": -1.0,
-    }
+    assert payload.quest_session is not None
+    assert payload.quest_session.spawn_timeline_ms == pytest.approx(1718.0, abs=1e-6)
+    assert payload.quest_session.no_creatures_timer_ms == pytest.approx(4745.0, abs=1e-6)
+    assert payload.quest_session.completion_transition_ms == pytest.approx(-1.0, abs=1e-6)
 
 
 def test_convert_capture_to_replay_bootstrap_payload_prefers_before_player_runtime_snapshot(
@@ -1679,37 +1988,37 @@ def test_convert_capture_to_replay_bootstrap_payload_prefers_before_player_runti
     )
     payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
     assert payload is not None
-    assert payload.get("elapsed_ms") == 6951
-    assert payload.get("perk_pending") == 1
-    assert payload.get("score_xp") == 7
+    assert payload.elapsed_ms == 6951
+    assert payload.perk_pending == 1
+    assert payload.score_xp == 7
 
-    assert isinstance(payload.get("bonus_timers_ms"), dict)
-    assert cast(dict[str, int], payload["bonus_timers_ms"])["4"] == 250
+    assert payload.bonus_timers_ms["4"] == 250
 
-    players = cast(list[dict[str, object]], payload.get("players"))
-    assert len(players) == 1
-    player = players[0]
-    assert player["ammo"] == 12.0
-    assert player["experience"] == 7
-    assert player["level"] == 2
-    assert player["clip_size"] == 12
-    assert player["reload_active"] is True
-    assert player["reload_timer"] == pytest.approx(0.5, abs=1e-6)
-    assert player["reload_timer_max"] == pytest.approx(1.0, abs=1e-6)
-    assert player["shot_cooldown"] == pytest.approx(0.25, abs=1e-6)
-    assert player["spread_heat"] == pytest.approx(0.0, abs=1e-6)
-    assert player["bonus_timers_ms"] == {"speed_bonus": 1200, "shield": 500, "fire_bullets": 0}
-    assert player["aim"] == {"x": 300.0, "y": 320.0, "heading": pytest.approx(1.2, abs=1e-6)}
-    assert player["alt_weapon"] == {
-        "weapon_id": 4,
-        "clip_size": 10,
-        "ammo": pytest.approx(7.0, abs=1e-6),
-        "reload_active": True,
-        "reload_timer": pytest.approx(0.2, abs=1e-6),
-        "shot_cooldown": pytest.approx(0.1, abs=1e-6),
-        "reload_timer_max": pytest.approx(1.2, abs=1e-6),
-    }
-    assert player["perk_timers"] == {
+    assert len(payload.players) == 1
+    player = payload.players[0]
+    assert player.ammo == 12.0
+    assert player.experience == 7
+    assert player.level == 2
+    assert player.clip_size == 12
+    assert player.reload_active is True
+    assert player.reload_timer == pytest.approx(0.5, abs=1e-6)
+    assert player.reload_timer_max == pytest.approx(1.0, abs=1e-6)
+    assert player.shot_cooldown == pytest.approx(0.25, abs=1e-6)
+    assert player.spread_heat == pytest.approx(0.0, abs=1e-6)
+    assert player.bonus_timers_ms == {"speed_bonus": 1200, "shield": 500, "fire_bullets": 0}
+    assert player.aim is not None
+    assert player.aim.x == pytest.approx(300.0, abs=1e-6)
+    assert player.aim.y == pytest.approx(320.0, abs=1e-6)
+    assert player.aim.heading == pytest.approx(1.2, abs=1e-6)
+    assert player.alt_weapon is not None
+    assert player.alt_weapon.weapon_id == 4
+    assert player.alt_weapon.clip_size == 10
+    assert player.alt_weapon.ammo == pytest.approx(7.0, abs=1e-6)
+    assert player.alt_weapon.reload_active is True
+    assert player.alt_weapon.reload_timer == pytest.approx(0.2, abs=1e-6)
+    assert player.alt_weapon.shot_cooldown == pytest.approx(0.1, abs=1e-6)
+    assert player.alt_weapon.reload_timer_max == pytest.approx(1.2, abs=1e-6)
+    assert player.perk_timers == {
         "hot_tempered": pytest.approx(1.36, abs=1e-6),
         "man_bomb": pytest.approx(0.0, abs=1e-6),
         "living_fortress": pytest.approx(0.0, abs=1e-6),
@@ -1827,8 +2136,8 @@ def test_convert_capture_to_replay_bootstrap_payload_infers_perk_intervals_from_
     payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
     assert payload is not None
 
-    assert isinstance(payload.get("perk_intervals"), dict)
-    perk_intervals = cast(dict[str, float], payload["perk_intervals"])
+    assert payload.perk_intervals is not None
+    perk_intervals = payload.perk_intervals
     assert perk_intervals["hot_tempered"] == pytest.approx(1.4, abs=1e-3)
 
 
@@ -1942,9 +2251,8 @@ def test_convert_capture_to_replay_bootstrap_payload_ignores_inactive_timer_rese
     payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
     assert payload is not None
 
-    perk_intervals_obj = payload.get("perk_intervals")
-    if isinstance(perk_intervals_obj, dict):
-        assert "hot_tempered" not in perk_intervals_obj
+    if payload.perk_intervals is not None:
+        assert "hot_tempered" not in payload.perk_intervals
 
 
 def test_convert_capture_to_replay_bootstrap_payload_does_not_infer_man_bomb_from_timer_drop(
@@ -2057,30 +2365,27 @@ def test_convert_capture_to_replay_bootstrap_payload_does_not_infer_man_bomb_fro
     payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
     assert payload is not None
 
-    perk_intervals_obj = payload.get("perk_intervals")
-    if isinstance(perk_intervals_obj, dict):
-        assert "man_bomb" not in perk_intervals_obj
+    if payload.perk_intervals is not None:
+        assert "man_bomb" not in payload.perk_intervals
 
 
 def test_apply_capture_bootstrap_payload_applies_perk_intervals_and_player_perk_timers() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
-    payload = {
-        "players": [
-            {
-                "perk_timers": {
-                    "hot_tempered": 1.36,
-                    "man_bomb": 0.5,
-                    "living_fortress": 0.25,
-                    "fire_cough": 0.75,
-                },
-            },
-        ],
-        "perk_intervals": {
-            "hot_tempered": 1.4,
-            "man_bomb": 6.0,
-            "fire_cough": 3.0,
-        },
+    payload = _minimal_strict_bootstrap_payload()
+    payload["elapsed_ms"] = -1
+    payload_players = cast(list[dict[str, object]], payload.get("players"))
+    assert payload_players
+    payload_players[0]["perk_timers"] = {
+        "hot_tempered": 1.36,
+        "man_bomb": 0.5,
+        "living_fortress": 0.25,
+        "fire_cough": 0.75,
+    }
+    payload["perk_intervals"] = {
+        "hot_tempered": 1.4,
+        "man_bomb": 6.0,
+        "fire_cough": 3.0,
     }
 
     elapsed = apply_capture_bootstrap_payload(payload, state=state, players=[player])
@@ -2216,22 +2521,24 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(
     assert capture_creature_spawn_added_head_from_event_payload(spawn_events[0].payload) == (
         (18, 1.1278764009475708, 0.621416449546814, 3, 0),
     )
-    assert capture_creature_spawn_added_head_rows_from_event_payload(spawn_events[0].payload) == (
-        {
-            "index": 18,
-            "heading": 1.1278764009475708,
-            "target_heading": 0.621416449546814,
-            "ai_mode": 3,
-            "link_index": 0,
-            "hp": 200.0,
-            "hitbox_size": 16.0,
-            "orbit_angle": 0.25,
-            "orbit_radius": 0.5,
-            "flags": 12,
-            "type_id": 2,
-            "pos": {"x": -256.0, "y": 256.0},
-        },
-    )
+    rows = capture_creature_spawn_added_head_rows_from_event_payload(spawn_events[0].payload)
+    assert rows is not None
+    assert len(rows) == 1
+    row = rows[0]
+    assert row.index == 18
+    assert row.heading == pytest.approx(1.1278764009475708, abs=1e-6)
+    assert row.target_heading == pytest.approx(0.621416449546814, abs=1e-6)
+    assert row.ai_mode == 3
+    assert row.link_index == 0
+    assert row.hp == pytest.approx(200.0, abs=1e-6)
+    assert row.hitbox_size == pytest.approx(16.0, abs=1e-6)
+    assert row.orbit_angle == pytest.approx(0.25, abs=1e-6)
+    assert row.orbit_radius == pytest.approx(0.5, abs=1e-6)
+    assert row.flags == 12
+    assert row.type_id == 2
+    assert row.pos is not None
+    assert row.pos.x == pytest.approx(-256.0, abs=1e-6)
+    assert row.pos.y == pytest.approx(256.0, abs=1e-6)
 
 
 def test_convert_capture_to_replay_emits_quest_added_head_without_spawn_rows(tmp_path: Path) -> None:
@@ -2661,7 +2968,7 @@ def test_convert_capture_to_replay_prefers_input_player_keys_for_digital_move(tm
     )
     payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
     assert payload is not None
-    assert payload.get("digital_move_enabled_by_player") == [True]
+    assert payload.digital_move_enabled_by_player == [True]
 
 
 def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capability(tmp_path: Path) -> None:
@@ -2707,7 +3014,7 @@ def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capabil
     )
     payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
     assert payload is not None
-    assert payload.get("digital_move_enabled_by_player") == [False]
+    assert payload.digital_move_enabled_by_player == [False]
 
 
 def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_precedence(tmp_path: Path) -> None:

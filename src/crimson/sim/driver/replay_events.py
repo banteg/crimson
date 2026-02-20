@@ -205,26 +205,23 @@ def apply_replay_tick_events(
                     for spawned_idx in spawned:
                         spawned_indices.add(int(spawned_idx))
                 for row in added_rows:
-                    index = row.get("index")
-                    if not isinstance(index, int):
-                        continue
-                    idx = int(index)
+                    idx = int(row.index)
                     if not (0 <= idx < len(world.creatures.entries)):
                         continue
                     entry = world.creatures.entries[idx]
                     if not entry.active:
                         continue
-                    heading = row.get("heading")
-                    target_heading = row.get("target_heading")
-                    ai_mode = row.get("ai_mode")
-                    link_index = row.get("link_index")
-                    hp = row.get("hp")
-                    hitbox_size = row.get("hitbox_size")
-                    orbit_angle = row.get("orbit_angle")
-                    orbit_radius = row.get("orbit_radius")
-                    flags = row.get("flags")
-                    type_id = row.get("type_id")
-                    pos_raw = row.get("pos")
+                    heading = row.heading
+                    target_heading = row.target_heading
+                    ai_mode = row.ai_mode
+                    link_index = row.link_index
+                    hp = row.hp
+                    hitbox_size = row.hitbox_size
+                    orbit_angle = row.orbit_angle
+                    orbit_radius = row.orbit_radius
+                    flags = row.flags
+                    type_id = row.type_id
+                    pos_raw = row.pos
 
                     # Spawn hooks are deferred to post-step in original-capture quest replay.
                     # For freshly spawned AI7 creatures, native consumed one RNG draw in
@@ -232,8 +229,8 @@ def apply_replay_tick_events(
                     # cooldown (`link_index = -700 - (rand & 0x3ff)`), but replay applies
                     # `added_head.link_index` directly. Backfill that RNG draw here so
                     # stream parity stays aligned with capture.
-                    flags_i = int(flags) if isinstance(flags, (int, float)) else int(entry.flags)
-                    link_index_i = int(link_index) if isinstance(link_index, (int, float)) else None
+                    flags_i = int(flags) if flags is not None else int(entry.flags)
+                    link_index_i = int(link_index) if link_index is not None else None
                     if (
                         idx in spawned_indices
                         and link_index_i is not None
@@ -242,31 +239,27 @@ def apply_replay_tick_events(
                     ):
                         state.rng.rand()
 
-                    if isinstance(pos_raw, dict):
-                        pos_obj = cast(dict[str, object], pos_raw)
-                        pos_x = pos_obj.get("x")
-                        pos_y = pos_obj.get("y")
-                        if isinstance(pos_x, (int, float)) and isinstance(pos_y, (int, float)):
-                            entry.pos = Vec2(float(f32(float(pos_x))), float(f32(float(pos_y))))
-                    if isinstance(heading, (int, float)):
+                    if pos_raw is not None:
+                        entry.pos = Vec2(float(f32(float(pos_raw.x))), float(f32(float(pos_raw.y))))
+                    if heading is not None:
                         entry.heading = float(f32(float(heading)))
-                    if isinstance(target_heading, (int, float)):
+                    if target_heading is not None:
                         entry.target_heading = float(f32(float(target_heading)))
-                    if isinstance(ai_mode, (int, float)):
+                    if ai_mode is not None:
                         entry.ai_mode = int(ai_mode)
-                    if isinstance(link_index, (int, float)):
+                    if link_index is not None:
                         entry.link_index = int(link_index)
-                    if isinstance(hp, (int, float)):
+                    if hp is not None:
                         entry.hp = float(f32(float(hp)))
-                    if isinstance(hitbox_size, (int, float)):
+                    if hitbox_size is not None:
                         entry.hitbox_size = float(f32(float(hitbox_size)))
-                    if isinstance(orbit_angle, (int, float)):
+                    if orbit_angle is not None:
                         entry.orbit_angle = float(f32(float(orbit_angle)))
-                    if isinstance(orbit_radius, (int, float)):
+                    if orbit_radius is not None:
                         entry.orbit_radius = float(f32(float(orbit_radius)))
-                    if isinstance(flags, (int, float)):
+                    if flags is not None:
                         entry.flags = CreatureFlags(int(flags))
-                    if isinstance(type_id, (int, float)):
+                    if type_id is not None:
                         entry.type_id = int(type_id)
                 continue
 

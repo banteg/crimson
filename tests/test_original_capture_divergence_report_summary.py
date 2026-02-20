@@ -567,7 +567,16 @@ def test_run_summary_events_from_raw_capture(tmp_path: Path) -> None:
                             "caller": None,
                         },
                     },
-                    {"type": "state_transition", "data": {"before": {"id": 9}, "after": {"id": 6}}},
+                    {
+                        "type": "state_transition",
+                        "data": {
+                            "target_state": 6,
+                            "before": {"prev": None, "id": 9, "pending": None},
+                            "after": {"prev": None, "id": 6, "pending": None},
+                            "caller": None,
+                            "backtrace": None,
+                        },
+                    },
                 ],
             ),
             _capture_tick(

@@ -395,44 +395,58 @@ class CaptureInputApprox(msgspec.Struct, forbid_unknown_fields=True):
     reload_pressed: bool | None
 
 
-class _CaptureEventHeadData(msgspec.Struct, forbid_unknown_fields=True):
-    data: dict[str, object]
+class CaptureVec2Nullable(msgspec.Struct, forbid_unknown_fields=True):
+    x: float | None
+    y: float | None
 
 
 class CaptureEventHeadModeTickData(msgspec.Struct, forbid_unknown_fields=True):
     mode_fn: str | None
 
 
-class CaptureEventHeadStateTransition(
-    _CaptureEventHeadData,
-    tag="state_transition",
-):
-    pass
+class CaptureEventHeadStateTransitionSnapshot(msgspec.Struct, forbid_unknown_fields=True):
+    prev: int | None
+    id: int | None
+    pending: int | None
+
+
+class CaptureEventHeadStateTransitionData(msgspec.Struct, forbid_unknown_fields=True):
+    target_state: int
+    before: CaptureEventHeadStateTransitionSnapshot
+    after: CaptureEventHeadStateTransitionSnapshot
+    caller: str | None
+    backtrace: list[str] | None
+
+
+class CaptureEventHeadStateTransition(msgspec.Struct, tag="state_transition", forbid_unknown_fields=True):
+    data: CaptureEventHeadStateTransitionData
 
 
 class CaptureEventHeadModeTick(msgspec.Struct, tag="mode_tick", forbid_unknown_fields=True):
     data: CaptureEventHeadModeTickData
 
 
-class CaptureEventHeadInputPrimaryEdge(
-    _CaptureEventHeadData,
-    tag="input_primary_edge",
-):
-    pass
+class CaptureEventHeadInputQueryData(msgspec.Struct, forbid_unknown_fields=True):
+    query: str
+    pressed: bool
+    arg0: int | None
+    caller: str | None
+    caller_static: str | None
+    backtrace: list[str] | None
+    console_open: int | None
+    primary_latch: int | None
 
 
-class CaptureEventHeadInputPrimaryDown(
-    _CaptureEventHeadData,
-    tag="input_primary_down",
-):
-    pass
+class CaptureEventHeadInputPrimaryEdge(msgspec.Struct, tag="input_primary_edge", forbid_unknown_fields=True):
+    data: CaptureEventHeadInputQueryData
 
 
-class CaptureEventHeadInputAnyKey(
-    _CaptureEventHeadData,
-    tag="input_any_key",
-):
-    pass
+class CaptureEventHeadInputPrimaryDown(msgspec.Struct, tag="input_primary_down", forbid_unknown_fields=True):
+    data: CaptureEventHeadInputQueryData
+
+
+class CaptureEventHeadInputAnyKey(msgspec.Struct, tag="input_any_key", forbid_unknown_fields=True):
+    data: CaptureEventHeadInputQueryData
 
 
 class CaptureEventHeadPlayerFireData(msgspec.Struct, forbid_unknown_fields=True):
@@ -505,67 +519,215 @@ class CaptureEventHeadBonusSpawn(msgspec.Struct, tag="bonus_spawn", forbid_unkno
     data: CaptureEventHeadBonusSpawnData
 
 
+class CaptureEventHeadSecondaryProjectileSpawnData(msgspec.Struct, forbid_unknown_fields=True):
+    index: int
+    requested_type_id: int
+    actual_type_id: int | None
+    spawned: CaptureSecondaryProjectileSample | None
+    angle_f32: float | None
+    pos: CaptureVec2
+    type_overridden: bool | None
+    caller: str | None
+
+
 class CaptureEventHeadSecondaryProjectileSpawn(
-    _CaptureEventHeadData,
+    msgspec.Struct,
     tag="secondary_projectile_spawn",
+    forbid_unknown_fields=True,
 ):
-    pass
+    data: CaptureEventHeadSecondaryProjectileSpawnData
 
 
-class CaptureEventHeadProjectileSpawn(
-    _CaptureEventHeadData,
-    tag="projectile_spawn",
+class CaptureEventHeadProjectileSpawnData(msgspec.Struct, forbid_unknown_fields=True):
+    index: int
+    requested_type_id: int
+    actual_type_id: int | None
+    spawned: CaptureProjectileSample | None
+    owner_id: int
+    angle_f32: float | None
+    pos: CaptureVec2
+    type_overridden: bool | None
+    caller: str | None
+    caller_static: str | None
+
+
+class CaptureEventHeadProjectileSpawn(msgspec.Struct, tag="projectile_spawn", forbid_unknown_fields=True):
+    data: CaptureEventHeadProjectileSpawnData
+
+
+class CaptureEventHeadProjectileFindQueryData(msgspec.Struct, forbid_unknown_fields=True):
+    result_creature_index: int | None
+    result_kind: str
+    start_index: int | None
+    radius_f32: float | None
+    query_pos: CaptureVec2
+    projectile_index: int | None
+    projectile_owner_id: int | None
+    projectile_type_id: int | None
+    projectile_hit_radius: float | None
+    owner_collision: bool
+    player_find_skipped: bool
+    shock_chain_projectile_id: int | None
+    shock_chain_links_left: int | None
+    caller: str | None
+    caller_static: str | None
+    backtrace: list[str] | None
+
+
+class CaptureEventHeadProjectileFindQuery(msgspec.Struct, tag="projectile_find_query", forbid_unknown_fields=True):
+    data: CaptureEventHeadProjectileFindQueryData
+
+
+class CaptureEventHeadProjectileFindHitData(msgspec.Struct, forbid_unknown_fields=True):
+    result_creature_index: int | None
+    result_kind: str
+    start_index: int | None
+    radius_f32: float | None
+    query_pos: CaptureVec2
+    projectile_index: int | None
+    projectile_owner_id: int | None
+    projectile_type_id: int | None
+    projectile_hit_radius: float | None
+    owner_collision: bool
+    player_find_skipped: bool
+    shock_chain_projectile_id: int | None
+    shock_chain_links_left: int | None
+    caller: str | None
+    caller_static: str | None
+    backtrace: list[str] | None
+    creature_index: int
+    creature: CaptureCreatureLifecycleEntry | None
+    corpse_hit: bool | None
+
+
+class CaptureEventHeadProjectileFindHit(msgspec.Struct, tag="projectile_find_hit", forbid_unknown_fields=True):
+    data: CaptureEventHeadProjectileFindHitData
+
+
+class CaptureEventHeadCreatureDamageData(msgspec.Struct, forbid_unknown_fields=True):
+    creature_index: int
+    damage_f32: float | None
+    damage_type: int | None
+    impulse_x: float | None
+    impulse_y: float | None
+    hp_before: float | None
+    hp_after: float | None
+    hp_delta: float | None
+    killed: bool | None
+    kill_return: int | None
+    active_before: bool | None
+    active_after: bool | None
+    caller: str | None
+    caller_static: str | None
+    backtrace: list[str] | None
+
+
+class CaptureEventHeadCreatureDamage(msgspec.Struct, tag="creature_damage", forbid_unknown_fields=True):
+    data: CaptureEventHeadCreatureDamageData
+
+
+class CaptureEventHeadPlayerDamageData(msgspec.Struct, forbid_unknown_fields=True):
+    player_index: int
+    damage_f32: float | None
+    health_before: float | None
+    health_after: float | None
+    health_delta: float | None
+    caller: str | None
+
+
+class CaptureEventHeadPlayerDamage(msgspec.Struct, tag="player_damage", forbid_unknown_fields=True):
+    data: CaptureEventHeadPlayerDamageData
+
+
+class CaptureEventHeadCreatureDeathData(msgspec.Struct, forbid_unknown_fields=True):
+    creature_index: int
+    keep_corpse: bool | None
+    active_before: bool | None
+    active_after: bool | None
+    before: CaptureCreatureLifecycleEntry | None
+    after: CaptureCreatureLifecycleEntry | None
+    caller: str | None
+    caller_static: str | None
+    backtrace: list[str] | None
+
+
+class CaptureEventHeadCreatureDeath(msgspec.Struct, tag="creature_death", forbid_unknown_fields=True):
+    data: CaptureEventHeadCreatureDeathData
+
+
+class CaptureEventHeadCreatureSpawnData(msgspec.Struct, forbid_unknown_fields=True):
+    template_id: int
+    pos: CaptureVec2
+    heading: float | None
+    ret_ptr: str | None
+    caller: str | None
+    caller_static: str | None
+
+
+class CaptureEventHeadCreatureSpawn(msgspec.Struct, tag="creature_spawn", forbid_unknown_fields=True):
+    data: CaptureEventHeadCreatureSpawnData
+
+
+class CaptureEventHeadCreatureSpawnLowTint(msgspec.Struct, forbid_unknown_fields=True):
+    r: float | None
+    g: float | None
+    b: float | None
+    a: float | None
+
+
+class CaptureEventHeadCreatureSpawnLowSurvivalData(
+    msgspec.Struct,
+    tag="survival_spawn_creature",
+    tag_field="source",
+    forbid_unknown_fields=True,
 ):
-    pass
+    pos: CaptureVec2
+    creature_count_before: int | None
+    creature_count_after: int | None
+    creature_count_delta: int | None
+    caller: str | None
+    caller_static: str | None
 
 
-class CaptureEventHeadProjectileFindQuery(
-    _CaptureEventHeadData,
-    tag="projectile_find_query",
-):
-    pass
-
-
-class CaptureEventHeadProjectileFindHit(
-    _CaptureEventHeadData,
-    tag="projectile_find_hit",
-):
-    pass
-
-
-class CaptureEventHeadCreatureDamage(
-    _CaptureEventHeadData,
-    tag="creature_damage",
-):
-    pass
-
-
-class CaptureEventHeadPlayerDamage(
-    _CaptureEventHeadData,
-    tag="player_damage",
-):
-    pass
-
-
-class CaptureEventHeadCreatureDeath(
-    _CaptureEventHeadData,
-    tag="creature_death",
-):
-    pass
-
-
-class CaptureEventHeadCreatureSpawn(
-    _CaptureEventHeadData,
+class CaptureEventHeadCreatureSpawnLowCreatureSpawnData(
+    msgspec.Struct,
     tag="creature_spawn",
+    tag_field="source",
+    forbid_unknown_fields=True,
 ):
-    pass
+    index: int
+    type_id: int
+    pos: CaptureVec2
+    tint: CaptureEventHeadCreatureSpawnLowTint
+    spawned: CaptureCreatureSample | None
+    caller: str | None
+    caller_static: str | None
 
 
-class CaptureEventHeadCreatureSpawnLow(
-    _CaptureEventHeadData,
-    tag="creature_spawn_low",
+class CaptureEventHeadCreatureSpawnLowCreatureSpawnTintedData(
+    msgspec.Struct,
+    tag="creature_spawn_tinted",
+    tag_field="source",
+    forbid_unknown_fields=True,
 ):
-    pass
+    index: int
+    type_id: int
+    pos: CaptureVec2
+    tint: CaptureEventHeadCreatureSpawnLowTint
+    spawned: CaptureCreatureSample | None
+    caller: str | None
+    caller_static: str | None
+
+
+CaptureEventHeadCreatureSpawnLowData: TypeAlias = (
+    CaptureEventHeadCreatureSpawnLowSurvivalData
+    | CaptureEventHeadCreatureSpawnLowCreatureSpawnData
+    | CaptureEventHeadCreatureSpawnLowCreatureSpawnTintedData
+)
+
+
+class CaptureEventHeadCreatureSpawnLow(msgspec.Struct, tag="creature_spawn_low", forbid_unknown_fields=True):
+    data: CaptureEventHeadCreatureSpawnLowData
 
 
 class CaptureEventHeadPerkDeltaData(msgspec.Struct, forbid_unknown_fields=True):
@@ -579,11 +741,15 @@ class CaptureEventHeadPerkDelta(msgspec.Struct, tag="perk_delta", forbid_unknown
     data: CaptureEventHeadPerkDeltaData
 
 
-class CaptureEventHeadQuestTimelineDelta(
-    _CaptureEventHeadData,
-    tag="quest_timeline_delta",
-):
-    pass
+class CaptureEventHeadQuestTimelineDeltaData(msgspec.Struct, forbid_unknown_fields=True):
+    quest_spawn_timeline: int | None
+    quest_spawn_stall_timer_ms: int | None
+    creature_active_count: int | None
+    quest_transition_timer_ms: int | None
+
+
+class CaptureEventHeadQuestTimelineDelta(msgspec.Struct, tag="quest_timeline_delta", forbid_unknown_fields=True):
+    data: CaptureEventHeadQuestTimelineDeltaData
 
 
 class CaptureEventHeadSfxData(msgspec.Struct, forbid_unknown_fields=True):
@@ -597,18 +763,81 @@ class CaptureEventHeadSfx(msgspec.Struct, tag="sfx", forbid_unknown_fields=True)
     data: CaptureEventHeadSfxData
 
 
-class CaptureEventHeadCreatureLifecycle(
-    _CaptureEventHeadData,
-    tag="creature_lifecycle",
-):
-    pass
+class CaptureEventHeadCreatureLifecycle(msgspec.Struct, tag="creature_lifecycle", forbid_unknown_fields=True):
+    data: CaptureCreatureLifecycleDigest
 
 
-class CaptureEventHeadCreatureUpdateMicro(
-    _CaptureEventHeadData,
-    tag="creature_update_micro",
+class CaptureEventHeadCreatureUpdateMicroState(msgspec.Struct, forbid_unknown_fields=True):
+    index: int
+    active: bool
+    active_flag: int | None
+    state_flag: int | None
+    ai_mode: int | None
+    flags: int | None
+    link_index: int | None
+    target_player: int | None
+    hitbox_size: float | None
+    hp: float | None
+    force_target: int | None
+    ai7_timer_ms: int | None
+    heading: float | None
+    target_heading: float | None
+    orbit_angle: float | None
+    orbit_radius: float | None
+    target_x: float | None
+    target_y: float | None
+    pos: CaptureVec2Nullable
+    vel: CaptureVec2Nullable
+    move_speed: float | None
+    dt_frame: float | None
+    dist_to_target: float | None
+    dist_bucket: str | None
+    link_active_flag: int | None
+    link_pos: CaptureVec2Nullable
+    dist_to_link: float | None
+    link_dist_bucket: str | None
+    move_scale_estimate: float | None
+
+
+class CaptureEventHeadCreatureUpdateMicroWindowData(
+    msgspec.Struct,
+    tag="creature_update_window",
+    tag_field="event_kind",
+    forbid_unknown_fields=True,
 ):
-    pass
+    slot: int
+    before: CaptureEventHeadCreatureUpdateMicroState | None
+    after: CaptureEventHeadCreatureUpdateMicroState | None
+
+
+class CaptureEventHeadCreatureUpdateMicroAngleApproachData(
+    msgspec.Struct,
+    tag="angle_approach",
+    tag_field="event_kind",
+    forbid_unknown_fields=True,
+):
+    slot: int
+    angle_ptr: str | None
+    angle_in: float | None
+    angle_out: float | None
+    target: float | None
+    target_effective: float | None
+    rate: float | None
+    delta_to_target_direct: float | None
+    delta_to_target_effective: float | None
+    step_delta: float | None
+    branch: str | None
+    before: CaptureEventHeadCreatureUpdateMicroState | None
+    after: CaptureEventHeadCreatureUpdateMicroState | None
+
+
+CaptureEventHeadCreatureUpdateMicroData: TypeAlias = (
+    CaptureEventHeadCreatureUpdateMicroWindowData | CaptureEventHeadCreatureUpdateMicroAngleApproachData
+)
+
+
+class CaptureEventHeadCreatureUpdateMicro(msgspec.Struct, tag="creature_update_micro", forbid_unknown_fields=True):
+    data: CaptureEventHeadCreatureUpdateMicroData
 
 
 class CaptureEventHeadPerkApply(

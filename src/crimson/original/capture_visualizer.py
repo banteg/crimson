@@ -235,7 +235,7 @@ def _load_capture_events(replay: Replay) -> tuple[dict[int, list[object]], bool]
         if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
             original_capture_replay = True
             payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
-            if not isinstance(payload, dict):
+            if payload is None:
                 continue
         tick_key = int(event.tick_index)
         if tick_key not in events_by_tick:

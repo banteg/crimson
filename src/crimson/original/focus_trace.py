@@ -538,15 +538,9 @@ def _summarize_rng_alignment(
     rewrite_rng_callsites: list[str],
     tail_preview_limit: int = 24,
 ) -> RngAlignmentSummary:
-    capture_values: list[int] = []
-    for row in capture_rng_head:
-        if not isinstance(row, dict):
-            continue
-        capture_values.append(_int_field_or(row, "value", 0))
+    capture_values = [_int_field_or(row, "value", 0) for row in capture_rng_head]
     capture_caller_counts: Counter[str] = Counter()
     for row in capture_rng_head:
-        if not isinstance(row, dict):
-            continue
         caller_static = _str_field_or(row, "caller_static", "").strip()
         if caller_static:
             capture_caller_counts[caller_static] += 1
@@ -573,8 +567,6 @@ def _summarize_rng_alignment(
     aligned = min(prefix, len(rewrite_rng_callsites), len(capture_rng_head))
     for idx in range(aligned):
         row = capture_rng_head[idx]
-        if not isinstance(row, dict):
-            continue
         caller_static = _str_field_or(row, "caller_static", "").strip()
         if not caller_static:
             continue
@@ -597,8 +589,6 @@ def _summarize_rng_alignment(
     tail_callers: Counter[str] = Counter()
     tail_inferred_callsites: Counter[str] = Counter()
     for row in tail_rows_raw:
-        if not isinstance(row, dict):
-            continue
         caller_static = _str_field_or(row, "caller_static", "").strip()
         if not caller_static:
             continue
@@ -610,8 +600,6 @@ def _summarize_rng_alignment(
         tail_inferred_callsites[inferred_callsite] += 1
     tail_preview: list[RngAlignmentTailRow] = []
     for offset, row in enumerate(tail_rows_raw[: max(0, int(tail_preview_limit))]):
-        if not isinstance(row, dict):
-            continue
         caller_static = _str_field_or(row, "caller_static", "").strip()
         if caller_static in caller_best:
             inferred_rewrite_callsite = str(caller_best[caller_static])
@@ -1051,24 +1039,19 @@ def trace_focus_tick(
                 payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
                 if payload is None:
                     break
-                quest_session = payload.get("quest_session")
-                if isinstance(quest_session, dict):
-                    quest_session_obj = cast("dict[str, object]", quest_session)
-                    timeline_ms = quest_session_obj.get("spawn_timeline_ms")
-                    if isinstance(timeline_ms, (int, float)):
-                        session_quest.spawn_timeline_ms = max(0.0, float(timeline_ms) - float(bootstrap_dt_ms))
-                    no_creatures_timer_ms = quest_session_obj.get("no_creatures_timer_ms")
-                    if isinstance(no_creatures_timer_ms, (int, float)):
-                        session_quest.no_creatures_timer_ms = max(
-                            0.0,
-                            float(no_creatures_timer_ms) - float(bootstrap_dt_ms),
-                        )
-                    completion_transition_ms = quest_session_obj.get("completion_transition_ms")
-                    if isinstance(completion_transition_ms, (int, float)):
-                        completion_value = float(completion_transition_ms)
-                        if completion_value >= 0.0:
-                            completion_value = max(0.0, float(completion_value) - float(bootstrap_dt_ms))
-                        session_quest.completion_transition_ms = float(completion_value)
+                if payload.quest_session is not None:
+                    session_quest.spawn_timeline_ms = max(
+                        0.0,
+                        float(payload.quest_session.spawn_timeline_ms) - float(bootstrap_dt_ms),
+                    )
+                    session_quest.no_creatures_timer_ms = max(
+                        0.0,
+                        float(payload.quest_session.no_creatures_timer_ms) - float(bootstrap_dt_ms),
+                    )
+                    completion_value = float(payload.quest_session.completion_transition_ms)
+                    if completion_value >= 0.0:
+                        completion_value = max(0.0, float(completion_value) - float(bootstrap_dt_ms))
+                    session_quest.completion_transition_ms = float(completion_value)
                 break
 
     rng_callsites: Counter[str] = Counter()
@@ -1339,7 +1322,7 @@ def trace_focus_tick(
     creature_capture_only, creature_rewrite_only = _collect_creature_presence_diffs(capture_creatures, world)
     projectile_capture_only, projectile_rewrite_only = _collect_projectile_presence_diffs(capture_projectiles, world)
     rng_alignment = _summarize_rng_alignment(
-        capture_rng_head=[row for row in capture_rng_head if isinstance(row, dict)],
+        capture_rng_head=capture_rng_head,
         capture_rng_calls=int(capture_rng_calls),
         rewrite_rng_values=rng_values,
         rewrite_rng_callsites=rng_values_callsites,
