@@ -336,16 +336,21 @@ def _replay_input_aim_xy(replay: Replay, tick_index: int, player_index: int = 0)
 
 def test_capture_event_payload_helpers_parse_msgspec_payloads() -> None:
     assert capture_bootstrap_payload_from_event_payload([{"elapsed_ms": "123"}]) == {"elapsed_ms": "123"}
-    assert capture_perk_apply_from_event_payload([{"perk_id": "14"}]) == (14, False)
+    assert capture_perk_apply_from_event_payload([{"perk_id": 14}]) == (14, False)
     assert capture_perk_apply_from_event_payload([{"perk_id": 49, "outside_before": True}]) == (49, True)
-    assert capture_perk_apply_id_from_event_payload([{"perk_id": "14"}]) == 14
-    assert capture_perk_pending_from_event_payload([{"perk_pending": "2"}]) == 2
+    assert capture_perk_apply_id_from_event_payload([{"perk_id": 14}]) == 14
+    assert capture_perk_pending_from_event_payload([{"perk_pending": 2}]) == 2
 
+    import msgspec
     assert capture_bootstrap_payload_from_event_payload([]) is None
-    assert capture_bootstrap_payload_from_event_payload(["bad"]) is None
-    assert capture_perk_apply_from_event_payload([{"perk_pending": 2}]) is None
-    assert capture_perk_apply_id_from_event_payload([{"perk_pending": 2}]) is None
-    assert capture_perk_pending_from_event_payload([{"perk_id": 14}]) is None
+    with pytest.raises(msgspec.ValidationError):
+        capture_bootstrap_payload_from_event_payload(["bad"])
+    with pytest.raises(msgspec.ValidationError):
+        capture_perk_apply_from_event_payload([{"perk_pending": 2}])
+    with pytest.raises(msgspec.ValidationError):
+        capture_perk_apply_id_from_event_payload([{"perk_pending": 2}])
+    with pytest.raises(msgspec.ValidationError):
+        capture_perk_pending_from_event_payload([{"perk_id": 14}])
 
 
 def test_load_capture_supports_plain_json_and_gz(tmp_path: Path) -> None:
