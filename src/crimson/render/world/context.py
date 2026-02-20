@@ -175,19 +175,19 @@ class WorldRenderCtx:
     def lan_player_rings_enabled(self) -> bool:
         if self.frame is not None:
             return bool(self.frame.lan_player_rings_enabled)
-        return bool(getattr(self.renderer._world, "lan_player_rings_enabled", False))
+        return bool(self.renderer._world.lan_player_rings_enabled)
 
     @property
     def lan_local_aim_indicators_only(self) -> bool:
         if self.frame is not None:
             return bool(self.frame.lan_local_aim_indicators_only)
-        return bool(getattr(self.renderer._world, "lan_local_aim_indicators_only", False))
+        return bool(self.renderer._world.lan_local_aim_indicators_only)
 
     @property
     def lan_local_player_slot_index(self) -> int:
         if self.frame is not None:
             return int(self.frame.lan_local_player_slot_index)
-        return int(getattr(self.renderer._world, "lan_local_player_slot_index", 0))
+        return int(self.renderer._world.lan_local_player_slot_index)
 
     def _ensure_small_font(self) -> SmallFontData | None:
         if self.renderer._small_font is not None:

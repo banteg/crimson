@@ -61,7 +61,7 @@ class LanSessionPanelView(PanelMenuView):
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
         self._back_button = UiButtonState("Back", force_wide=False)
 
-        pending = getattr(self.state, "pending_net_session", None)
+        pending = self.state.pending_net_session
         if pending is None:
             pending = self.state.pending_lan_session
         if pending is not None:
@@ -73,15 +73,15 @@ class LanSessionPanelView(PanelMenuView):
                 self._mode_idx = 0
             self._player_count = max(1, min(4, int(cfg.player_count)))
             self._quest_level = str(cfg.quest_level or "1.1")
-            relay_host = str(getattr(cfg, "relay_host", "") or "").strip()
+            relay_host = str(cfg.relay_host).strip()
             self._bind_host = relay_host or str(cfg.bind_host or "127.0.0.1")
             self._host_ip = relay_host or str(cfg.host_ip or "127.0.0.1")
             self._room_code = "".join(
-                ch for ch in str(getattr(cfg, "room_code", "") or "").upper() if ch.isalnum()
+                ch for ch in str(cfg.room_code).upper() if ch.isalnum()
             )[: int(ROOM_CODE_LENGTH)]
-            netcode_raw = str(getattr(cfg, "netcode_mode", "rollback") or "rollback").strip().lower()
+            netcode_raw = str(cfg.netcode_mode).strip().lower()
             self._netcode_mode = "lockstep_legacy" if netcode_raw in {"lockstep", "lockstep_legacy"} else "rollback"
-            relay_port = int(getattr(cfg, "relay_port", int(cfg.port)))
+            relay_port = int(cfg.relay_port)
             self._port_text = str(int(relay_port)) if int(relay_port) > 0 else "31993"
 
         self._active_field = ""

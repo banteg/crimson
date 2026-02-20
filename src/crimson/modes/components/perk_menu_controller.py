@@ -246,7 +246,7 @@ class PerkMenuController:
             panel_slide_x=slide_x,
         )
 
-        preserve_bugs = bool(getattr(ctx.state, "preserve_bugs", False))
+        preserve_bugs = bool(ctx.state.preserve_bugs)
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(
                 int(perk_id),
@@ -376,7 +376,7 @@ class PerkMenuController:
         if sponsor:
             draw_ui_text(ctx.font, sponsor, computed.sponsor_pos, scale=scale, color=UI_SPONSOR_COLOR)
 
-        preserve_bugs = bool(getattr(ctx.state, "preserve_bugs", False))
+        preserve_bugs = bool(ctx.state.preserve_bugs)
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(
                 int(perk_id),
