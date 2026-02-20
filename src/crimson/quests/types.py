@@ -56,10 +56,6 @@ def terrain_ids_for(level_or_major: str | int, minor: int | None = None) -> tupl
     return quest & 0x3, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q2_OVERLAY
 
 
-def terrain_id_for(level_or_major: str | int, minor: int | None = None) -> int:
-    return terrain_ids_for(level_or_major, minor)[0]
-
-
 @dataclass(frozen=True, slots=True, kw_only=True)
 class QuestDefinition:
     major: int
@@ -70,29 +66,8 @@ class QuestDefinition:
     start_weapon_id: int
     unlock_perk_id: int | None = None
     unlock_weapon_id: int | None = None
-    terrain_id: int | None = None
     terrain_ids: tuple[int, int, int] | None = None
     builder_address: int | None = None
-
-    def __post_init__(self) -> None:
-        major = int(self.major)
-        minor = int(self.minor)
-        object.__setattr__(self, "major", major)
-        object.__setattr__(self, "minor", minor)
-        object.__setattr__(self, "start_weapon_id", int(self.start_weapon_id))
-
-        if self.unlock_weapon_id is not None:
-            object.__setattr__(self, "unlock_weapon_id", int(self.unlock_weapon_id))
-        if self.terrain_id is not None:
-            object.__setattr__(self, "terrain_id", int(self.terrain_id))
-
-        terrain_ids = self.terrain_ids
-        if terrain_ids is None:
-            terrain_ids = terrain_ids_for(major, minor)
-        terrain_ids = (int(terrain_ids[0]), int(terrain_ids[1]), int(terrain_ids[2]))
-        object.__setattr__(self, "terrain_ids", terrain_ids)
-        if self.terrain_id is None:
-            object.__setattr__(self, "terrain_id", terrain_ids[0])
 
     @property
     def level(self) -> str:
