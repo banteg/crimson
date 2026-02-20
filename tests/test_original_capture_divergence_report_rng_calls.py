@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -55,11 +56,13 @@ _DEFAULT_CAPTURE_BONUS_SAMPLE = cast(dict[str, object], capture_value_to_builtin
 
 
 def _clone_dict(value: object) -> dict[str, object]:
-    return cast(dict[str, object], msgspec.json.decode(msgspec.json.encode(value)))
+    assert isinstance(value, dict)
+    return copy.deepcopy(cast(dict[str, object], value))
 
 
 def _clone_list(value: object) -> list[object]:
-    return cast(list[object], msgspec.json.decode(msgspec.json.encode(value)))
+    assert isinstance(value, list)
+    return copy.deepcopy(cast(list[object], value))
 
 
 def _base_config(**kwargs: object) -> dict[str, object]:
@@ -207,80 +210,110 @@ def _capture_tick(
         for key, value in sample_counts.items():
             sample_counts_row[str(key)] = int(value)
 
-    base_tick = build_capture_tick(tick_index=int(tick), elapsed_ms=int(tick) * 16)
-    row = cast(dict[str, object], msgspec.json.decode(msgspec.json.encode(base_tick)))
-    checkpoint = cast(dict[str, object], row["checkpoint"])
-    checkpoint["state_hash"] = f"s{tick}"
-    checkpoint["command_hash"] = f"c{tick}"
-    checkpoint["players"] = []
-    checkpoint["rng_marks"] = {
-        "rand_calls": int(rng_rand_calls),
-        "rand_hash": "",
-        "rand_last": None,
-        "rand_head": rng_head_rows,
-        "rand_callers": rng_caller_rows,
-        "rand_caller_overflow": 0,
-        "rand_seq_first": None,
-        "rand_seq_last": None,
-        "rand_seed_epoch_enter": None,
-        "rand_seed_epoch_last": None,
-        "rand_outside_before_calls": 0,
-        "rand_outside_before_dropped": 0,
-        "rand_outside_before_head": [],
-        "rand_mirror_mismatch_total": 0,
-        "rand_mirror_unknown_total": 0,
-    }
-    checkpoint["debug"] = {
-        "sampling_phase": "",
-        "timing": _timing_diagnostics(),
-        "spawn": spawn_row,
-        "rng": _rng_diagnostics(),
-        "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
-        "creature_lifecycle": None,
-        "player_fire": _player_fire_diagnostics(),
-        "before_players": [],
-        "before_status": {"quest_unlock_index": 0, "quest_unlock_index_full": 0},
-    }
-    row["event_counts"] = counts_row
-    row["event_heads"] = list(event_heads or [])
-    row["input_player_keys"] = list(input_player_keys or [_input_player_keys(player_index=0)])
-    row["rng"] = _rng_summary_dict(calls=int(rng_rand_calls), head=rng_head_rows, callers=rng_caller_rows)
-    row["diagnostics"] = {
-        "sampling_phase": "",
-        "timing": _timing_diagnostics(),
-        "spawn": _spawn_diagnostics(),
-        "rng": _rng_diagnostics(),
-        "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
-        "creature_lifecycle": None,
-        "player_fire": _player_fire_diagnostics(),
-    }
-    row["input_approx"] = []
-    row["before"] = {
-        "globals": _snapshot_globals(),
-        "status": _snapshot_status(),
-        "player_count": 1,
-        "players": [],
-        "input": _snapshot_input(),
-        "input_bindings": _snapshot_input_bindings(),
-    }
-    row["after"] = {
-        "globals": _snapshot_globals(),
-        "status": _snapshot_status(),
-        "player_count": 1,
-        "players": [],
-        "input": _snapshot_input(),
-        "input_bindings": _snapshot_input_bindings(),
-    }
-    row["samples"] = {
-        "creatures": [_sample_creature(index=i) for i in range(max(0, int(sample_counts_row["creatures"])))],
-        "projectiles": [_sample_projectile(index=i) for i in range(max(0, int(sample_counts_row["projectiles"])))],
-        "secondary_projectiles": [
-            _sample_secondary_projectile(index=i)
-            for i in range(max(0, int(sample_counts_row["secondary_projectiles"])))
-        ],
-        "bonuses": [_sample_bonus(index=i) for i in range(max(0, int(sample_counts_row["bonuses"])))],
-    }
-    return msgspec.convert(row, type=CaptureTick, strict=True)
+    tick_obj = build_capture_tick(tick_index=int(tick), elapsed_ms=int(tick) * 16)
+    checkpoint = tick_obj.checkpoint
+    checkpoint.state_hash = f"s{tick}"
+    checkpoint.command_hash = f"c{tick}"
+    checkpoint.players = []
+    checkpoint.rng_marks = msgspec.convert(
+        {
+            "rand_calls": int(rng_rand_calls),
+            "rand_hash": "",
+            "rand_last": None,
+            "rand_head": rng_head_rows,
+            "rand_callers": rng_caller_rows,
+            "rand_caller_overflow": 0,
+            "rand_seq_first": None,
+            "rand_seq_last": None,
+            "rand_seed_epoch_enter": None,
+            "rand_seed_epoch_last": None,
+            "rand_outside_before_calls": 0,
+            "rand_outside_before_dropped": 0,
+            "rand_outside_before_head": [],
+            "rand_mirror_mismatch_total": 0,
+            "rand_mirror_unknown_total": 0,
+        },
+        type=type(checkpoint.rng_marks),
+        strict=True,
+    )
+    checkpoint.debug = msgspec.convert(
+        {
+            "sampling_phase": "",
+            "timing": _timing_diagnostics(),
+            "spawn": spawn_row,
+            "rng": _rng_diagnostics(),
+            "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
+            "creature_lifecycle": None,
+            "player_fire": _player_fire_diagnostics(),
+            "before_players": [],
+            "before_status": {"quest_unlock_index": 0, "quest_unlock_index_full": 0},
+        },
+        type=type(checkpoint.debug),
+        strict=True,
+    )
+    tick_obj.event_counts = msgspec.convert(counts_row, type=type(tick_obj.event_counts), strict=True)
+    tick_obj.event_heads = list(event_heads or [])
+    tick_obj.input_player_keys = [
+        msgspec.convert(row, type=type(tick_obj.input_player_keys[0]), strict=True)
+        for row in list(input_player_keys or [_input_player_keys(player_index=0)])
+    ]
+    tick_obj.rng = msgspec.convert(
+        _rng_summary_dict(calls=int(rng_rand_calls), head=rng_head_rows, callers=rng_caller_rows),
+        type=type(tick_obj.rng),
+        strict=True,
+    )
+    tick_obj.diagnostics = msgspec.convert(
+        {
+            "sampling_phase": "",
+            "timing": _timing_diagnostics(),
+            "spawn": _spawn_diagnostics(),
+            "rng": _rng_diagnostics(),
+            "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
+            "creature_lifecycle": None,
+            "player_fire": _player_fire_diagnostics(),
+        },
+        type=type(tick_obj.diagnostics),
+        strict=True,
+    )
+    tick_obj.input_approx = []
+    tick_obj.before = msgspec.convert(
+        {
+            "globals": _snapshot_globals(),
+            "status": _snapshot_status(),
+            "player_count": 1,
+            "players": [],
+            "input": _snapshot_input(),
+            "input_bindings": _snapshot_input_bindings(),
+        },
+        type=type(tick_obj.before),
+        strict=True,
+    )
+    tick_obj.after = msgspec.convert(
+        {
+            "globals": _snapshot_globals(),
+            "status": _snapshot_status(),
+            "player_count": 1,
+            "players": [],
+            "input": _snapshot_input(),
+            "input_bindings": _snapshot_input_bindings(),
+        },
+        type=type(tick_obj.after),
+        strict=True,
+    )
+    tick_obj.samples = msgspec.convert(
+        {
+            "creatures": [_sample_creature(index=i) for i in range(max(0, int(sample_counts_row["creatures"])))],
+            "projectiles": [_sample_projectile(index=i) for i in range(max(0, int(sample_counts_row["projectiles"])))],
+            "secondary_projectiles": [
+                _sample_secondary_projectile(index=i)
+                for i in range(max(0, int(sample_counts_row["secondary_projectiles"])))
+            ],
+            "bonuses": [_sample_bonus(index=i) for i in range(max(0, int(sample_counts_row["bonuses"])))],
+        },
+        type=type(tick_obj.samples),
+        strict=True,
+    )
+    return tick_obj
 
 
 def _step_crt_state(state: int, calls: int) -> int:

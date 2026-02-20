@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import gzip
 import json
 from pathlib import Path
@@ -41,6 +42,9 @@ from crimson.original.schema import (
     CAPTURE_FORMAT_VERSION,
     CaptureEventHeadPerkApply,
     CaptureEventHeadProjectileFindQuery,
+    CaptureInputApprox,
+    CaptureInputPlayerKeys,
+    CaptureSnapshot,
     CaptureTick,
 )
 from crimson.replay import PerkMenuOpenEvent, Replay, UnknownEvent, unpack_input_flags, unpack_input_move_key_flags
@@ -91,7 +95,8 @@ _DEFAULT_CAPTURE_RNG_HEAD_ENTRY = cast(dict[str, object], capture_value_to_built
 
 
 def _clone_dict(value: object) -> dict[str, object]:
-    return cast(dict[str, object], msgspec.json.decode(msgspec.json.encode(value)))
+    assert isinstance(value, dict)
+    return copy.deepcopy(cast(dict[str, object], value))
 
 
 def _base_input_approx(**kwargs: object) -> dict[str, object]:
@@ -133,8 +138,8 @@ def _base_config(**kwargs: object) -> dict[str, object]:
 
 
 def _base_player() -> dict[str, object]:
-    checkpoint = _clone_dict(_DEFAULT_CAPTURE_TICK["checkpoint"])
-    return _clone_dict(cast(list[object], checkpoint["players"])[0])
+    tick = build_capture_tick(tick_index=0, elapsed_ms=0)
+    return cast(dict[str, object], capture_value_to_builtins(copy.deepcopy(tick.checkpoint.players[0])))
 
 
 def _base_snapshot_globals(**kwargs: object) -> dict[str, object]:
@@ -284,10 +289,9 @@ def _base_checkpoint(
         score_xp=int(score_xp),
         perk_pending=int(perk_pending),
     )
-    payload = msgspec.json.decode(msgspec.json.encode(tick))
-    checkpoint = _as_obj_dict(cast(dict[str, object], payload).get("checkpoint"))
-    checkpoint["rng_state"] = int(rng_state)
-    return checkpoint
+    checkpoint = copy.deepcopy(tick.checkpoint)
+    checkpoint.rng_state = int(rng_state)
+    return cast(dict[str, object], capture_value_to_builtins(checkpoint))
 
 
 def _base_tick(
@@ -304,98 +308,79 @@ def _base_tick(
         score_xp=int(score_xp),
         perk_pending=int(perk_pending),
     )
-    row = cast(dict[str, object], msgspec.json.decode(msgspec.json.encode(tick)))
-    checkpoint = _as_obj_dict(row.get("checkpoint"))
-    checkpoint["rng_state"] = int(rng_state)
-    row["input_approx"] = [_base_input_approx(**{})]
-    row["input_player_keys"] = [_base_input_player_keys(**{})]
+    tick.checkpoint.rng_state = int(rng_state)
+    tick.input_approx = [msgspec.convert(_base_input_approx(**{}), type=CaptureInputApprox, strict=True)]
+    tick.input_player_keys = [msgspec.convert(_base_input_player_keys(**{}), type=CaptureInputPlayerKeys, strict=True)]
     # Keep legacy sparse snapshot defaults used by these conversion tests.
-    row["before"] = _base_snapshot()
-    row["after"] = _base_snapshot()
-    return row
+    tick.before = msgspec.convert(_base_snapshot(), type=CaptureSnapshot, strict=True)
+    tick.after = msgspec.convert(_base_snapshot(), type=CaptureSnapshot, strict=True)
+    return cast(dict[str, object], capture_value_to_builtins(tick))
 
 
 def _sample_creature(*, index: int = 5) -> dict[str, object]:
-    row = _clone_dict(_DEFAULT_CAPTURE_CREATURE_SAMPLE)
-    row.update(
-        {
-            "index": int(index),
-            "pos": {"x": 10.0, "y": 20.0},
-            "link_index": -733,
-            "ai_mode": 7,
-            "heading": 1.5,
-            "target_heading": 1.6,
-            "orbit_angle": 0.25,
-            "orbit_radius": 10.0,
-            "ai7_timer_ms": -733,
-        },
-    )
-    return row
+    row = copy.deepcopy(build_capture_creature_sample(index=int(index)))
+    row.pos.x = 10.0
+    row.pos.y = 20.0
+    row.link_index = -733
+    row.ai_mode = 7
+    row.heading = 1.5
+    row.target_heading = 1.6
+    row.orbit_angle = 0.25
+    row.orbit_radius = 10.0
+    row.ai7_timer_ms = -733
+    return cast(dict[str, object], capture_value_to_builtins(row))
 
 
 def _sample_projectile(*, index: int = 7) -> dict[str, object]:
-    row = _clone_dict(_DEFAULT_CAPTURE_PROJECTILE_SAMPLE)
-    row.update(
-        {
-            "index": int(index),
-            "angle": 0.5,
-            "pos": {"x": 15.0, "y": 25.0},
-            "vel": {"x": 3.0, "y": -2.0},
-            "type_id": 1,
-            "life_timer": 0.9,
-            "damage_pool": 12.0,
-            "hit_radius": 9.0,
-            "base_damage": 5.0,
-        },
-    )
-    return row
+    row = copy.deepcopy(build_capture_projectile_sample(index=int(index)))
+    row.angle = 0.5
+    row.pos.x = 15.0
+    row.pos.y = 25.0
+    row.vel.x = 3.0
+    row.vel.y = -2.0
+    row.type_id = 1
+    row.life_timer = 0.9
+    row.damage_pool = 12.0
+    row.hit_radius = 9.0
+    row.base_damage = 5.0
+    return cast(dict[str, object], capture_value_to_builtins(row))
 
 
 def _sample_secondary_projectile(*, index: int = 9) -> dict[str, object]:
-    row = _clone_dict(_DEFAULT_CAPTURE_SECONDARY_PROJECTILE_SAMPLE)
-    row.update(
-        {
-            "index": int(index),
-            "pos": {"x": 17.0, "y": 27.0},
-            "life_timer": 0.8,
-            "angle": 0.2,
-            "vel": {"x": 1.0, "y": -1.0},
-            "trail_timer": 0.1,
-            "type_id": 3,
-            "target_id": -1,
-        },
-    )
-    return row
+    row = copy.deepcopy(build_capture_secondary_projectile_sample(index=int(index)))
+    row.pos.x = 17.0
+    row.pos.y = 27.0
+    row.life_timer = 0.8
+    row.angle = 0.2
+    row.vel.x = 1.0
+    row.vel.y = -1.0
+    row.trail_timer = 0.1
+    row.type_id = 3
+    row.target_id = -1
+    return cast(dict[str, object], capture_value_to_builtins(row))
 
 
 def _sample_bonus(*, index: int = 2) -> dict[str, object]:
-    row = _clone_dict(_DEFAULT_CAPTURE_BONUS_SAMPLE)
-    row.update(
-        {
-            "index": int(index),
-            "bonus_id": 6,
-            "state": 0,
-            "time_left": 10.0,
-            "time_max": 10.0,
-            "pos": {"x": 30.0, "y": 40.0},
-            "amount_f32": 0.0,
-            "amount_i32": 0,
-        },
-    )
-    return row
+    row = copy.deepcopy(build_capture_bonus_sample(index=int(index)))
+    row.bonus_id = 6
+    row.state = 0
+    row.time_left = 10.0
+    row.time_max = 10.0
+    row.pos.x = 30.0
+    row.pos.y = 40.0
+    row.amount_f32 = 0.0
+    row.amount_i32 = 0
+    return cast(dict[str, object], capture_value_to_builtins(row))
 
 
-def _capture_obj(*, ticks: list[dict[str, object]]) -> dict[str, object]:
-    try:
-        typed_ticks = [msgspec.convert(tick, type=CaptureTick, strict=True) for tick in ticks]
-    except msgspec.ValidationError:
-        # Some conversion tests intentionally exercise invalid/incomplete capture payloads.
-        capture = build_capture_file(ticks=[], session_id="session-1")
-        payload = capture_file_to_dict(capture)
-        payload["ticks"] = ticks
-        return payload
-    capture = build_capture_file(ticks=typed_ticks, session_id="session-1")
-    return capture_file_to_dict(capture)
+def _capture_obj(*, ticks: list[CaptureTick | dict[str, object]]) -> dict[str, object]:
+    capture = build_capture_file(ticks=[], session_id="session-1")
+    payload = capture_file_to_dict(capture)
+    payload["ticks"] = [
+        cast(dict[str, object], capture_value_to_builtins(tick)) if isinstance(tick, CaptureTick) else tick
+        for tick in ticks
+    ]
+    return payload
 
 
 def _normalize_rng_head_rows(rows: list[object]) -> list[object]:

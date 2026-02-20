@@ -55,7 +55,7 @@ def test_player_update_shot_cooldown_decay_snaps_tiny_residual_to_zero() -> None
     assert player.shot_cooldown == 0.0
 
 
-def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer() -> None:
+def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker) -> None:
     state = GameplayState()
     aim_heading_before = 1.25
     player = PlayerState(
@@ -65,12 +65,8 @@ def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer() -> No
         low_health_timer=0.0,
         aim_heading=aim_heading_before,
     )
-    blood_calls: list[dict[str, object]] = []
-
-    def _spawn_blood_splatter(**kwargs):
-        blood_calls.append(kwargs)
-
-    state.effects.spawn_blood_splatter = _spawn_blood_splatter  # type: ignore[method-assign]
+    spawn_blood_splatter = mocker.Mock()
+    state.effects.spawn_blood_splatter = spawn_blood_splatter
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 200.0)), 0.016, state)
 
@@ -79,23 +75,23 @@ def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer() -> No
     expected_x = f32(math.cos(expected_bleed_dir_angle) * -6.0 + 100.0)
     expected_y = f32(math.sin(expected_bleed_dir_angle) * -6.0 + 200.0)
 
-    assert len(blood_calls) == 3
-    for call in blood_calls:
-        pos = call["pos"]
+    assert spawn_blood_splatter.call_count == 3
+    for call in spawn_blood_splatter.call_args_list:
+        pos = call.kwargs["pos"]
         assert isinstance(pos, Vec2)
         assert_float_close(pos.x, expected_x)
         assert_float_close(pos.y, expected_y)
-        assert call["angle"] == expected_angle
-        assert call["age"] == 0.0
-        assert call["detail_preset"] == 5
-        assert call["fx_toggle"] == 0
+        assert call.kwargs["angle"] == expected_angle
+        assert call.kwargs["age"] == 0.0
+        assert call.kwargs["detail_preset"] == 5
+        assert call.kwargs["fx_toggle"] == 0
 
     assert player.low_health_timer == 1.0
     assert len(state.sfx_queue) == 1
     assert state.sfx_queue[0] in {"sfx_bloodspill_01", "sfx_bloodspill_02"}
 
 
-def test_player_update_low_health_timer_100_sentinel_skips_bleed_fx() -> None:
+def test_player_update_low_health_timer_100_sentinel_skips_bleed_fx(mocker) -> None:
     state = GameplayState()
     player = PlayerState(
         index=0,
@@ -103,16 +99,12 @@ def test_player_update_low_health_timer_100_sentinel_skips_bleed_fx() -> None:
         health=19.0,
         low_health_timer=100.0,
     )
-    blood_calls: list[dict[str, object]] = []
-
-    def _spawn_blood_splatter(**kwargs):
-        blood_calls.append(kwargs)
-
-    state.effects.spawn_blood_splatter = _spawn_blood_splatter  # type: ignore[method-assign]
+    spawn_blood_splatter = mocker.Mock()
+    state.effects.spawn_blood_splatter = spawn_blood_splatter
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 200.0)), 0.016, state)
 
-    assert blood_calls == []
+    spawn_blood_splatter.assert_not_called()
     assert player.low_health_timer == 100.0
     assert state.sfx_queue == []
 
@@ -703,10 +695,19 @@ def test_player_update_turns_toward_move_heading_with_turn_slowdown() -> None:
 
     player_update(player, input_state, 0.1, state)
 
-    # Movement now mirrors native float32 velocity/delta store boundaries.
-    assert_float_close(player.pos.x, 103.53553771972656)
-    assert_float_close(player.pos.y, 96.46446228027344)
-    assert_float_close(player.heading, 0.7853981852531433)
+    # Native turn target here is diagonal right; heading settles at f32(pi/4).
+    expected_heading = f32(math.pi / 4.0)
+    radians = float(expected_heading) - 1.5707964
+    move_x = math.cos(radians)
+    move_y = math.sin(radians)
+    move_dx = f32(move_x * 2.0 * 25.0)
+    move_dy = f32(move_y * 2.0 * 25.0)
+    expected_x = f32(100.0 + float(f32(0.1 * float(move_dx))))
+    expected_y = f32(100.0 + float(f32(0.1 * float(move_dy))))
+
+    assert_float_close(player.pos.x, expected_x)
+    assert_float_close(player.pos.y, expected_y)
+    assert_float_close(player.heading, expected_heading)
 
 
 def test_player_update_w_then_up_left_converges_to_diagonal_heading() -> None:

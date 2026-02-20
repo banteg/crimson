@@ -60,12 +60,12 @@ def _game_over_assets_stub() -> GameOverAssets:
     )
 
 
-class _PauseBackgroundStub:
-    def __init__(self, sink: list[float]) -> None:
-        self._sink = sink
+class _PauseBackgroundSpy:
+    def __init__(self, draw_pause_background_mock) -> None:
+        self._draw_pause_background_mock = draw_pause_background_mock
 
     def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
-        self._sink.append(float(entity_alpha))
+        self._draw_pause_background_mock(entity_alpha=entity_alpha)
 
 
 def test_game_over_panel_open_plays_panel_click(monkeypatch, tmp_path: Path, mocker) -> None:
@@ -176,8 +176,8 @@ def test_high_scores_view_draw_fades_pause_background_during_close(monkeypatch, 
         session_start=time.monotonic(),
     )
     state.pending_high_scores = HighScoresRequest(game_mode_id=1)
-    captured_alpha: list[float] = []
-    state.pause_background = _PauseBackgroundStub(captured_alpha)
+    draw_pause_background_mock = mocker.Mock()
+    state.pause_background = _PauseBackgroundSpy(draw_pause_background_mock)
 
     class _DummyCache:
         def get_or_load(self, *_args, **_kwargs):
@@ -202,5 +202,5 @@ def test_high_scores_view_draw_fades_pause_background_during_close(monkeypatch, 
     view._timeline_ms = PANEL_TIMELINE_START_MS // 2
     view.draw()
 
-    assert captured_alpha
-    assert captured_alpha[-1] == 0.5
+    draw_pause_background_mock.assert_called()
+    assert draw_pause_background_mock.call_args.kwargs["entity_alpha"] == 0.5
