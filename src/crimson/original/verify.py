@@ -58,12 +58,12 @@ def _allow_capture_sample_creature_count(
     if not capture_sample_creature_counts:
         return False
 
-    sample_count = capture_sample_creature_counts.get(int(tick))
+    sample_count = (capture_sample_creature_counts[int(tick)] if int(tick) in capture_sample_creature_counts else None)
     if sample_count is None or int(sample_count) < 0:
         return False
 
-    expected_tick = expected_by_tick.get(int(tick))
-    actual_tick = actual_by_tick.get(int(tick))
+    expected_tick = (expected_by_tick[int(tick)] if int(tick) in expected_by_tick else None)
+    actual_tick = (actual_by_tick[int(tick)] if int(tick) in actual_by_tick else None)
     if expected_tick is None or actual_tick is None:
         return False
 
@@ -79,9 +79,9 @@ def _allow_capture_sample_creature_count(
 
     # Some captures expose a one-tick lead/lag between checkpoint
     # `creature_active_count` and sampled creature slots.
-    next_sample = capture_sample_creature_counts.get(int(tick) + 1)
-    next_expected_tick = expected_by_tick.get(int(tick) + 1)
-    next_actual_tick = actual_by_tick.get(int(tick) + 1)
+    next_sample = (capture_sample_creature_counts[int(tick) + 1] if int(tick) + 1 in capture_sample_creature_counts else None)
+    next_expected_tick = (expected_by_tick[int(tick) + 1] if int(tick) + 1 in expected_by_tick else None)
+    next_actual_tick = (actual_by_tick[int(tick) + 1] if int(tick) + 1 in actual_by_tick else None)
     if (
         next_sample is not None
         and int(next_sample) >= 0
@@ -121,12 +121,12 @@ def _allow_one_tick_kills_lag(
     if any(str(diff.field) != "kills" for diff in field_diffs):
         return False
 
-    expected_tick = expected_by_tick.get(int(tick))
-    actual_tick = actual_by_tick.get(int(tick))
-    prev_expected = expected_by_tick.get(int(tick) - 1)
-    prev_actual = actual_by_tick.get(int(tick) - 1)
-    next_expected = expected_by_tick.get(int(tick) + 1)
-    next_actual = actual_by_tick.get(int(tick) + 1)
+    expected_tick = (expected_by_tick[int(tick)] if int(tick) in expected_by_tick else None)
+    actual_tick = (actual_by_tick[int(tick)] if int(tick) in actual_by_tick else None)
+    prev_expected = (expected_by_tick[int(tick) - 1] if int(tick) - 1 in expected_by_tick else None)
+    prev_actual = (actual_by_tick[int(tick) - 1] if int(tick) - 1 in actual_by_tick else None)
+    next_expected = (expected_by_tick[int(tick) + 1] if int(tick) + 1 in expected_by_tick else None)
+    next_actual = (actual_by_tick[int(tick) + 1] if int(tick) + 1 in actual_by_tick else None)
     if (
         expected_tick is None
         or actual_tick is None
@@ -279,7 +279,7 @@ def verify_capture(
     for exp in expected:
         checked_count += 1
         tick = int(exp.tick_index)
-        act = actual_by_tick.get(tick)
+        act = (actual_by_tick[tick] if tick in actual_by_tick else None)
         if act is None:
             return (
                 CaptureVerifyResult(
