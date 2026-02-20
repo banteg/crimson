@@ -29,6 +29,7 @@ from crimson.original.capture import (
     load_capture,
     parse_player_int_overrides,
 )
+from crimson.original.schema import CaptureFile
 from crimson.quests import quest_by_level
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
@@ -204,12 +205,9 @@ def _resolve_json_out_path(value: str | None, *, tick: int) -> Path | None:
     return Path(value)
 
 
-def _read_capture_tick(capture: object, tick: int) -> dict[str, Any] | None:
-    ticks = getattr(capture, "ticks", None)
-    if not isinstance(ticks, list):
-        return None
-    for row in ticks:
-        if int(getattr(row, "tick_index", -1)) != int(tick):
+def _read_capture_tick(capture: CaptureFile, tick: int) -> dict[str, Any] | None:
+    for row in capture.ticks:
+        if int(row.tick_index) != int(tick):
             continue
         obj = msgspec.to_builtins(row)
         if isinstance(obj, dict):
@@ -295,7 +293,7 @@ def _load_capture_events(replay: Any) -> _CaptureReplayEvents:
 
 
 def _resolve_quest_level(replay: Any) -> str:
-    quest_level = str(getattr(replay.header, "quest_level", "") or "")
+    quest_level = str(replay.header.quest_level or "")
     if quest_level:
         return str(quest_level)
 
@@ -786,7 +784,7 @@ def trace_focus_tick(
             raise ValueError(f"focus trace unsupported quest replay: unknown quest_level={quest_level!r}")
 
         world.state.quest_stage_major, world.state.quest_stage_minor = quest.level_key
-        weapon_id = max(1, int(getattr(quest, "start_weapon_id", 1) or 1))
+        weapon_id = max(1, int(quest.start_weapon_id or 1))
         for player in world.players:
             weapon_assign_player(player, int(weapon_id))
         quest_start_weapon_id = int(weapon_id)
@@ -1083,9 +1081,10 @@ def trace_focus_tick(
                         proj = frame.f_locals.get("proj")
                         if proj is not None:
                             try:
-                                proj_type = int(getattr(proj, "type_id"))
-                                proj_life = float(getattr(proj, "life_timer"))
-                            except Exception:
+                                proj_ref = cast("Any", proj)
+                                proj_type = int(proj_ref.type_id)
+                                proj_life = float(proj_ref.life_timer)
+                            except (AttributeError, TypeError, ValueError):
                                 proj_type = None
                                 proj_life = None
                     row = CollisionRow(
@@ -1127,7 +1126,8 @@ def trace_focus_tick(
                     hook_index += 1
                     return bool(handled)
 
-                setattr(world.state.rng, "rand", traced_rand)
+                rng_ref = cast("Any", world.state.rng)
+                rng_ref.rand = traced_rand
                 world.state.particles._rand = traced_rand
                 world.state.sprite_effects._rand = traced_rand
                 projectiles_mod._within_native_find_radius = traced_within_native_find_radius  # type: ignore[assignment]
@@ -1174,7 +1174,8 @@ def trace_focus_tick(
                 world.creatures.finalize_post_render_lifecycle()
 
             if int(tick_index) == int(tick):
-                setattr(world.state.rng, "rand", orig_rand)
+                rng_ref = cast("Any", world.state.rng)
+                rng_ref.rand = orig_rand
                 world.state.particles._rand = orig_particles_rand
                 world.state.sprite_effects._rand = orig_sprite_effects_rand
                 projectiles_mod._within_native_find_radius = orig_within
@@ -1187,7 +1188,8 @@ def trace_focus_tick(
                 for _ in range(draws):
                     world.state.rng.rand()
     finally:
-        setattr(world.state.rng, "rand", orig_rand)
+        rng_ref = cast("Any", world.state.rng)
+        rng_ref.rand = orig_rand
         world.state.particles._rand = orig_particles_rand
         world.state.sprite_effects._rand = orig_sprite_effects_rand
         projectiles_mod._within_native_find_radius = orig_within

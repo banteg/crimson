@@ -21,6 +21,7 @@ from crimson.original.capture import (
     convert_capture_to_replay,
     load_capture,
 )
+from crimson.original.schema import CaptureFile
 from crimson.quests import quest_by_level
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
@@ -112,17 +113,14 @@ def _resolve_json_out_path(
 
 def _read_capture_creature_samples(
     *,
-    capture: object,
+    capture: CaptureFile,
     creature_index: int,
     start_tick: int,
     end_tick: int,
 ) -> dict[int, dict[str, Any]]:
     out: dict[int, dict[str, Any]] = {}
-    ticks = getattr(capture, "ticks", None)
-    if not isinstance(ticks, list):
-        return out
-    for tick_row in ticks:
-        tick = int(getattr(tick_row, "tick_index", -1))
+    for tick_row in capture.ticks:
+        tick = int(tick_row.tick_index)
         if tick < int(start_tick) or tick > int(end_tick):
             continue
         obj = msgspec.to_builtins(tick_row)
@@ -160,7 +158,7 @@ def _load_capture_events(
 
 
 def _resolve_quest_level(replay: Any) -> str:
-    quest_level = str(getattr(replay.header, "quest_level", "") or "")
+    quest_level = str(replay.header.quest_level or "")
     if quest_level:
         return str(quest_level)
 
@@ -294,7 +292,7 @@ def trace_creature_trajectory(
             raise ValueError(f"trajectory trace unsupported quest replay: unknown quest_level={quest_level!r}")
 
         world.state.quest_stage_major, world.state.quest_stage_minor = quest.level_key
-        weapon_id = max(1, int(getattr(quest, "start_weapon_id", 1) or 1))
+        weapon_id = max(1, int(quest.start_weapon_id or 1))
         quest_start_weapon_id = int(weapon_id)
         for player in world.players:
             weapon_assign_player(player, int(weapon_id))

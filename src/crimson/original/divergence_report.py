@@ -25,7 +25,7 @@ from crimson.original.capture import (
     parse_player_int_overrides,
 )
 from crimson.original.diff import ReplayFieldDiff, checkpoint_field_diffs
-from crimson.original.schema import CaptureFile
+from crimson.original.schema import CaptureConfig, CaptureFile
 from crimson.perks import perk_label
 from crimson.replay.checkpoints import ReplayCheckpoint
 from crimson.sim.driver.replay_runner import run_quest_replay, run_rush_replay, run_survival_replay
@@ -193,19 +193,6 @@ def _effective_capture_projectile_hit_count(raw: Mapping[str, object]) -> int:
     if owner_collision_count < 0:
         return int(capture_hits)
     return max(0, int(capture_hits) - int(owner_collision_count))
-
-
-def _capture_config_value(config: object | None, key: str) -> object | None:
-    if config is None:
-        return None
-    if isinstance(config, Mapping):
-        config_map = cast("Mapping[str, object]", config)
-        return config_map.get(key)
-    return getattr(config, key, None)
-
-
-def _capture_config_int(config: object | None, key: str, default: int = -1) -> int:
-    return _int_or(_capture_config_value(config, key), default)
 
 
 def _coerce_u32(value: object) -> int | None:
@@ -1727,8 +1714,8 @@ def _first_drift_onsets(
         act_player = act.players[0] if act.players else None
 
         if exp_player is not None and act_player is not None:
-            px_exp = float(getattr(exp_player, "pos").x)
-            px_act = float(getattr(act_player, "pos").x)
+            px_exp = float(exp_player.pos.x)
+            px_act = float(act_player.pos.x)
             if "players[0].pos.x" not in onsets and abs(px_exp - px_act) > float_abs_tol:
                 onsets["players[0].pos.x"] = FieldDriftOnset(
                     field="players[0].pos.x",
@@ -1738,8 +1725,8 @@ def _first_drift_onsets(
                     delta=float(px_act - px_exp),
                 )
 
-            py_exp = float(getattr(exp_player, "pos").y)
-            py_act = float(getattr(act_player, "pos").y)
+            py_exp = float(exp_player.pos.y)
+            py_act = float(act_player.pos.y)
             if "players[0].pos.y" not in onsets and abs(py_exp - py_act) > float_abs_tol:
                 onsets["players[0].pos.y"] = FieldDriftOnset(
                     field="players[0].pos.y",
@@ -1749,8 +1736,8 @@ def _first_drift_onsets(
                     delta=float(py_act - py_exp),
                 )
 
-            ammo_exp = float(getattr(exp_player, "ammo"))
-            ammo_act = float(getattr(act_player, "ammo"))
+            ammo_exp = float(exp_player.ammo)
+            ammo_act = float(act_player.ammo)
             if "players[0].ammo" not in onsets and abs(ammo_exp - ammo_act) > float_abs_tol:
                 onsets["players[0].ammo"] = FieldDriftOnset(
                     field="players[0].ammo",
@@ -1760,8 +1747,8 @@ def _first_drift_onsets(
                     delta=float(ammo_act - ammo_exp),
                 )
 
-            health_exp = float(getattr(exp_player, "health"))
-            health_act = float(getattr(act_player, "health"))
+            health_exp = float(exp_player.health)
+            health_act = float(act_player.health)
             if "players[0].health" not in onsets and abs(health_exp - health_act) > float_abs_tol:
                 onsets["players[0].health"] = FieldDriftOnset(
                     field="players[0].health",
@@ -1771,8 +1758,8 @@ def _first_drift_onsets(
                     delta=float(health_act - health_exp),
                 )
 
-            weapon_exp = _int_or(getattr(exp_player, "weapon_id"))
-            weapon_act = _int_or(getattr(act_player, "weapon_id"))
+            weapon_exp = _int_or(exp_player.weapon_id)
+            weapon_act = _int_or(act_player.weapon_id)
             if "players[0].weapon_id" not in onsets and weapon_exp != weapon_act:
                 onsets["players[0].weapon_id"] = FieldDriftOnset(
                     field="players[0].weapon_id",
@@ -1782,8 +1769,8 @@ def _first_drift_onsets(
                     delta=int(weapon_act - weapon_exp),
                 )
 
-            xp_exp = _int_or(getattr(exp_player, "experience"))
-            xp_act = _int_or(getattr(act_player, "experience"))
+            xp_exp = _int_or(exp_player.experience)
+            xp_act = _int_or(act_player.experience)
             if "players[0].experience" not in onsets and xp_exp != xp_act:
                 onsets["players[0].experience"] = FieldDriftOnset(
                     field="players[0].experience",
@@ -2141,7 +2128,7 @@ def _build_investigation_leads(
     actual_by_tick: dict[int, ReplayCheckpoint],
     raw_debug_by_tick: dict[int, dict[str, object]],
     native_ranges: tuple[NativeFunctionRange, ...],
-    capture_config: object | None = None,
+    capture_config: CaptureConfig | Mapping[str, object] | None = None,
 ) -> list[InvestigationLead]:
     leads: list[InvestigationLead] = []
     lookback_start = max(0, int(focus_tick) - max(1, int(lookback_ticks)))
@@ -2155,7 +2142,13 @@ def _build_investigation_leads(
     focus_exp = expected_by_tick.get(int(focus_tick))
     focus_act = actual_by_tick.get(int(focus_tick))
     focus_raw = raw_debug_by_tick.get(int(focus_tick), {})
-    micro_cap = _capture_config_int(capture_config, "creature_micro_max_head_per_tick", -1)
+    if capture_config is None:
+        micro_cap = -1
+    elif isinstance(capture_config, Mapping):
+        config_map = cast("Mapping[str, object]", capture_config)
+        micro_cap = _int_or(config_map.get("creature_micro_max_head_per_tick"), -1)
+    else:
+        micro_cap = int(capture_config.creature_micro_max_head_per_tick)
     sample_counts = focus_raw.get("sample_counts") if isinstance(focus_raw.get("sample_counts"), dict) else {}
     sample_counts_int = [
         _int_or(sample_counts.get(key), -1)  # ty:ignore[unresolved-attribute]
@@ -2943,12 +2936,12 @@ def _build_window_rows(
         rows.append(
             {
                 "tick": int(tick),
-                "expected_weapon": _int_or(getattr(exp_player, "weapon_id", -1)),
-                "actual_weapon": _int_or(getattr(act_player, "weapon_id", -1)),
-                "expected_ammo": _float_or(getattr(exp_player, "ammo", 0.0)),
-                "actual_ammo": _float_or(getattr(act_player, "ammo", 0.0)),
-                "expected_xp": _int_or(getattr(exp_player, "experience", -1)),
-                "actual_xp": _int_or(getattr(act_player, "experience", -1)),
+                "expected_weapon": _int_or(exp_player.weapon_id if exp_player is not None else -1),
+                "actual_weapon": _int_or(act_player.weapon_id if act_player is not None else -1),
+                "expected_ammo": _float_or(exp_player.ammo if exp_player is not None else 0.0),
+                "actual_ammo": _float_or(act_player.ammo if act_player is not None else 0.0),
+                "expected_xp": _int_or(exp_player.experience if exp_player is not None else -1),
+                "actual_xp": _int_or(act_player.experience if act_player is not None else -1),
                 "expected_score": int(exp.score_xp),
                 "actual_score": int(act.score_xp),
                 "expected_creatures": int(exp.creature_count),

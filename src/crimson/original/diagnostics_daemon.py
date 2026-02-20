@@ -126,9 +126,7 @@ def _parse_capture_path(tool: str, args: list[str]) -> Path | None:
             return None
         parser.exit_on_error = False
         parsed = parser.parse_args(list(args))
-        capture = getattr(parsed, "capture", None)
-        if capture is None:
-            return None
+        capture = parsed.capture
         return Path(capture).expanduser().resolve()
     except SystemExit:
         return None
