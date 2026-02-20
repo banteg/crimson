@@ -6,7 +6,7 @@ import struct
 from collections import Counter
 from collections.abc import Iterable, Mapping
 from pathlib import Path
-from typing import cast
+from typing import Protocol, cast
 
 import msgspec
 
@@ -38,6 +38,7 @@ from ..replay.types import (
 from ..weapons import WeaponId, projectile_type_ids_from_weapon_id
 from .schema import (
     CAPTURE_FORMAT_VERSION,
+    CaptureDeath,
     CaptureEventHeadBonusApply,
     CaptureEventHeadCreatureLifecycle,
     CaptureEventHeadCreatureSpawn,
@@ -49,7 +50,10 @@ from .schema import (
     CaptureEventHeadSecondaryProjectileSpawn,
     CaptureEventHeadSfx,
     CaptureEventHeadStateTransition,
+    CaptureEventSummary,
     CaptureFile,
+    CaptureInputApprox,
+    CapturePerkSnapshot,
     CapturePlayerCheckpoint,
     CaptureTick,
 )
@@ -106,6 +110,67 @@ _PROJECTILE_SPAWNING_BONUS_IDS = frozenset(
 
 class CaptureError(ValueError):
     pass
+
+
+class _BootstrapPerkSelection(Protocol):
+    pending_count: int
+    choices: list[int]
+    choices_dirty: bool
+    capture_player_perk_counts_known: bool
+
+
+class _BootstrapBonuses(Protocol):
+    weapon_power_up: float
+    reflex_boost: float
+    energizer: float
+    double_experience: float
+    freeze: float
+
+
+class _BootstrapPerkIntervals(Protocol):
+    man_bomb: float
+    fire_cough: float
+    hot_tempered: float
+
+
+class _BootstrapState(Protocol):
+    perk_selection: _BootstrapPerkSelection
+    bonuses: _BootstrapBonuses
+    perk_intervals: _BootstrapPerkIntervals
+    time_scale_active: bool
+
+
+class _BootstrapPlayer(Protocol):
+    weapon_id: int
+    pos: Vec2
+    health: float
+    ammo: float
+    experience: int
+    level: int
+    clip_size: int
+    reload_active: bool
+    reload_timer: float
+    reload_timer_max: float
+    shot_cooldown: float
+    spread_heat: float
+    aim: Vec2
+    aim_heading: float
+    aim_dir: Vec2
+    alt_weapon_id: int | None
+    alt_clip_size: int
+    alt_ammo: float
+    alt_reload_active: bool
+    alt_reload_timer: float
+    alt_reload_timer_max: float
+    alt_shot_cooldown: float
+    shield_timer: float
+    fire_bullets_timer: float
+    speed_bonus_timer: float
+    hot_tempered_timer: float
+    man_bomb_timer: float
+    living_fortress_timer: float
+    fire_cough_timer: float
+    perk_counts: list[int]
 
 
 class _CapturePerkApplyPayload(msgspec.Struct, forbid_unknown_fields=True):
@@ -265,64 +330,34 @@ def _replay_player(player: CapturePlayerCheckpoint) -> ReplayPlayerCheckpoint:
     )
 
 
-def _replay_death(raw: object) -> ReplayDeathLedgerEntry:
-    if hasattr(raw, "creature_index"):
-        return ReplayDeathLedgerEntry(
-            creature_index=int(getattr(raw, "creature_index")),
-            type_id=int(getattr(raw, "type_id")),
-            reward_value=float(getattr(raw, "reward_value")),
-            xp_awarded=int(getattr(raw, "xp_awarded")),
-            owner_id=int(getattr(raw, "owner_id")),
-        )
+def _replay_death(raw: CaptureDeath) -> ReplayDeathLedgerEntry:
     return ReplayDeathLedgerEntry(
-        creature_index=-1,
-        type_id=-1,
-        reward_value=0.0,
-        xp_awarded=-1,
-        owner_id=-1,
+        creature_index=int(raw.creature_index),
+        type_id=int(raw.type_id),
+        reward_value=float(raw.reward_value),
+        xp_awarded=int(raw.xp_awarded),
+        owner_id=int(raw.owner_id),
     )
 
 
-def _replay_perk(raw: object) -> ReplayPerkSnapshot:
-    if raw is None:
-        return ReplayPerkSnapshot()
-
-    pending_count = int(getattr(raw, "pending_count", 0))
-    choices_dirty = bool(getattr(raw, "choices_dirty", False))
-    choices_raw = getattr(raw, "choices", [])
-    choices = [int(value) for value in choices_raw] if isinstance(choices_raw, list) else []
-
-    player_nonzero_counts: list[list[list[int]]] = []
-    counts_raw = getattr(raw, "player_nonzero_counts", [])
-    if isinstance(counts_raw, list):
-        for player_counts in counts_raw:
-            if not isinstance(player_counts, list):
-                player_nonzero_counts.append([])
-                continue
-            parsed_player: list[list[int]] = []
-            for pair in player_counts:
-                if isinstance(pair, (list, tuple)) and len(pair) == 2:
-                    parsed_player.append([int(pair[0]), int(pair[1])])
-            player_nonzero_counts.append(parsed_player)
-
+def _replay_perk(raw: CapturePerkSnapshot) -> ReplayPerkSnapshot:
     return ReplayPerkSnapshot(
-        pending_count=int(pending_count),
-        choices_dirty=bool(choices_dirty),
-        choices=choices,
-        player_nonzero_counts=player_nonzero_counts,
+        pending_count=int(raw.pending_count),
+        choices_dirty=bool(raw.choices_dirty),
+        choices=[int(value) for value in raw.choices],
+        player_nonzero_counts=[
+            [[int(pair[0]), int(pair[1])] for pair in player_counts]
+            for player_counts in raw.player_nonzero_counts
+        ],
     )
 
 
-def _replay_events(raw: object) -> ReplayEventSummary:
-    if raw is None:
-        return ReplayEventSummary(hit_count=-1, pickup_count=-1, sfx_count=-1, sfx_head=[])
-    sfx_head_raw = getattr(raw, "sfx_head", [])
-    sfx_head = [str(value) for value in sfx_head_raw] if isinstance(sfx_head_raw, list) else []
+def _replay_events(raw: CaptureEventSummary) -> ReplayEventSummary:
     return ReplayEventSummary(
-        hit_count=int(getattr(raw, "hit_count", -1)),
-        pickup_count=int(getattr(raw, "pickup_count", -1)),
-        sfx_count=int(getattr(raw, "sfx_count", -1)),
-        sfx_head=sfx_head[:4],
+        hit_count=int(raw.hit_count),
+        pickup_count=int(raw.pickup_count),
+        sfx_count=int(raw.sfx_count),
+        sfx_head=[str(value) for value in raw.sfx_head[:4]],
     )
 
 
@@ -670,8 +705,8 @@ def _infer_game_mode_id(capture: CaptureFile) -> int:
 
 
 def _tick_quest_stage(tick: CaptureTick) -> tuple[int, int] | None:
-    major = _coerce_int_like(getattr(tick, "quest_stage_major", None))
-    minor = _coerce_int_like(getattr(tick, "quest_stage_minor", None))
+    major = _coerce_int_like(tick.quest_stage_major)
+    minor = _coerce_int_like(tick.quest_stage_minor)
     if major is not None and minor is not None and int(major) > 0 and int(minor) > 0:
         return int(major), int(minor)
 
@@ -1168,7 +1203,7 @@ def _should_synthesize_fire_pressed_from_primary_edge(
     player_index: int,
     player_count: int,
     aim_scheme: int | None,
-    sample: object | None,
+    sample: CaptureInputApprox | None,
     fire_down_raw: object | None,
     fire_pressed_raw: object | None,
 ) -> bool:
@@ -1184,13 +1219,10 @@ def _should_synthesize_fire_pressed_from_primary_edge(
         return False
     if sample is None:
         return False
-    sample_reload_active = _coerce_int_like(getattr(sample, "reload_active", None))
+    sample_reload_active = _coerce_int_like(sample.reload_active)
     if sample_reload_active is not None and int(sample_reload_active) <= 0:
         return False
-    try:
-        true_calls = int(tick.input_queries.stats.primary_edge.true_calls)
-    except (AttributeError, TypeError, ValueError):
-        return False
+    true_calls = int(tick.input_queries.stats.primary_edge.true_calls)
     return int(true_calls) > 0
 
 
@@ -1200,7 +1232,7 @@ def _should_synthesize_computer_fire_down(
     player_index: int,
     player_count: int,
     aim_scheme: int | None,
-    sample: object | None,
+    sample: CaptureInputApprox | None,
     fire_down_raw: object | None,
     fire_pressed_raw: object | None,
     ammo_dropped_since_previous_checkpoint: bool,
@@ -1435,25 +1467,22 @@ def build_capture_dt_frame_ms_i32_overrides(capture: CaptureFile) -> dict[int, i
 
 def build_capture_inter_tick_rand_draws_overrides(capture: CaptureFile) -> dict[int, int] | None:
     quest_capture = any(
-        int(getattr(tick, "game_mode_id", -1)) == int(GameMode.QUESTS)
-        or str(getattr(tick, "mode_hint", "")).strip() == "quest_mode_update"
+        int(tick.game_mode_id) == int(GameMode.QUESTS)
+        or str(tick.mode_hint).strip() == "quest_mode_update"
         for tick in capture.ticks
     )
     out: dict[int, int] = {}
     first_in_tick_rand_tick: int | None = None
     for tick in sorted(capture.ticks, key=lambda item: int(item.tick_index)):
         tick_index = int(tick.tick_index)
-        outside_before_calls = getattr(tick, "rng_outside_before_calls", None)
-        if outside_before_calls is None:
-            outside_before_calls = tick.checkpoint.rng_marks.rand_outside_before_calls
-        calls = _coerce_int_like(outside_before_calls)
+        calls = _coerce_int_like(tick.checkpoint.rng_marks.rand_outside_before_calls)
         if calls is None or int(calls) < 0:
             continue
         out[int(tick_index)] = int(calls)
 
         if quest_capture and first_in_tick_rand_tick is None:
             in_tick_calls_candidates = [
-                _coerce_int_like(getattr(tick.rng, "calls", None)),
+                _coerce_int_like(tick.rng.calls),
                 _coerce_int_like(tick.checkpoint.rng_marks.rand_calls),
             ]
             in_tick_calls = max((int(value) for value in in_tick_calls_candidates if value is not None), default=None)
@@ -2075,6 +2104,8 @@ def apply_capture_bootstrap_payload(
 ) -> int | None:
     from ..weapon_runtime import weapon_assign_player
 
+    state_obj = cast(_BootstrapState, state)
+
     elapsed_ms: int | None = None
     elapsed_raw = _coerce_int_like(payload.get("elapsed_ms"))
     if elapsed_raw is not None and int(elapsed_raw) >= 0:
@@ -2087,69 +2118,69 @@ def apply_capture_bootstrap_payload(
                 break
             if not isinstance(raw_player, dict):
                 continue
-            player = players[idx]
+            player = cast(_BootstrapPlayer, players[idx])
 
             weapon_id = _coerce_int_like(raw_player.get("weapon_id"))  # ty:ignore[invalid-argument-type]
             if weapon_id is not None and int(weapon_id) > 0:
                 try:
-                    if int(getattr(player, "weapon_id", 0)) != int(weapon_id):
+                    if int(player.weapon_id) != int(weapon_id):
                         weapon_assign_player(player, int(weapon_id), state=state)  # ty:ignore[invalid-argument-type]
-                except (AttributeError, TypeError, ValueError) as exc:
+                except (TypeError, ValueError) as exc:
                     raise ValueError(f"invalid bootstrap weapon assignment payload for player[{idx}]") from exc
 
             pos_raw = raw_player.get("pos")  # ty:ignore[invalid-argument-type]
             if isinstance(pos_raw, dict):
-                px = _float_or(pos_raw.get("x"), float(getattr(player, "pos").x))
-                py = _float_or(pos_raw.get("y"), float(getattr(player, "pos").y))
+                px = _float_or(pos_raw.get("x"), float(player.pos.x))
+                py = _float_or(pos_raw.get("y"), float(player.pos.y))
                 if math.isfinite(px) and math.isfinite(py):
-                    setattr(player, "pos", Vec2(float(px), float(py)))
+                    player.pos = Vec2(float(px), float(py))
 
-            health = _float_or(raw_player.get("health"), float(getattr(player, "health")))  # ty:ignore[invalid-argument-type]
-            ammo = _float_or(raw_player.get("ammo"), float(getattr(player, "ammo")))  # ty:ignore[invalid-argument-type]
+            health = _float_or(raw_player.get("health"), float(player.health))  # ty:ignore[invalid-argument-type]
+            ammo = _float_or(raw_player.get("ammo"), float(player.ammo))  # ty:ignore[invalid-argument-type]
             experience = _coerce_int_like(raw_player.get("experience"))  # ty:ignore[invalid-argument-type]
             level = _coerce_int_like(raw_player.get("level"))  # ty:ignore[invalid-argument-type]
 
-            setattr(player, "health", float(health))
-            setattr(player, "ammo", float(ammo))
+            player.health = float(health)
+            player.ammo = float(ammo)
             if experience is not None:
-                setattr(player, "experience", int(experience))
+                player.experience = int(experience)
             if level is not None and int(level) > 0:
-                setattr(player, "level", int(level))
+                player.level = int(level)
 
             clip_size = _coerce_int_like(raw_player.get("clip_size"))  # ty:ignore[invalid-argument-type]
             if clip_size is not None and int(clip_size) >= 0:
-                setattr(player, "clip_size", int(clip_size))
+                player.clip_size = int(clip_size)
 
             reload_active = _coerce_int_like(raw_player.get("reload_active"))  # ty:ignore[invalid-argument-type]
             if reload_active is not None:
-                setattr(player, "reload_active", bool(reload_active))
+                player.reload_active = bool(reload_active)
 
             reload_timer = _finite_float_or_none(raw_player.get("reload_timer"))  # ty:ignore[invalid-argument-type]
             if reload_timer is not None:
-                setattr(player, "reload_timer", max(0.0, float(reload_timer)))
+                player.reload_timer = max(0.0, float(reload_timer))
 
             reload_timer_max = _finite_float_or_none(raw_player.get("reload_timer_max"))  # ty:ignore[invalid-argument-type]
             if reload_timer_max is not None:
-                setattr(player, "reload_timer_max", max(0.0, float(reload_timer_max)))
+                player.reload_timer_max = max(0.0, float(reload_timer_max))
 
             shot_cooldown = _finite_float_or_none(raw_player.get("shot_cooldown"))  # ty:ignore[invalid-argument-type]
             if shot_cooldown is not None:
-                setattr(player, "shot_cooldown", max(0.0, float(shot_cooldown)))
+                player.shot_cooldown = max(0.0, float(shot_cooldown))
 
             spread_heat = _finite_float_or_none(raw_player.get("spread_heat"))  # ty:ignore[invalid-argument-type]
             if spread_heat is not None:
-                setattr(player, "spread_heat", max(0.0, float(spread_heat)))
+                player.spread_heat = max(0.0, float(spread_heat))
 
             aim_raw = raw_player.get("aim")  # ty:ignore[invalid-argument-type]
             if isinstance(aim_raw, dict):
                 aim_x = _finite_float_or_none(aim_raw.get("x"))
                 aim_y = _finite_float_or_none(aim_raw.get("y"))
                 if aim_x is not None and aim_y is not None:
-                    setattr(player, "aim", Vec2(float(aim_x), float(aim_y)))
+                    player.aim = Vec2(float(aim_x), float(aim_y))
                 aim_heading = _finite_float_or_none(aim_raw.get("heading"))
                 if aim_heading is not None:
-                    setattr(player, "aim_heading", float(aim_heading))
-                    setattr(player, "aim_dir", Vec2.from_heading(float(aim_heading)))
+                    player.aim_heading = float(aim_heading)
+                    player.aim_dir = Vec2.from_heading(float(aim_heading))
 
             alt_weapon_raw = raw_player.get("alt_weapon")  # ty:ignore[invalid-argument-type]
             if isinstance(alt_weapon_raw, dict):
@@ -2161,19 +2192,19 @@ def apply_capture_bootstrap_payload(
                 alt_reload_timer_max = _finite_float_or_none(alt_weapon_raw.get("reload_timer_max"))
                 alt_shot_cooldown = _finite_float_or_none(alt_weapon_raw.get("shot_cooldown"))
                 if alt_weapon_id is not None:
-                    setattr(player, "alt_weapon_id", int(alt_weapon_id) if int(alt_weapon_id) > 0 else None)
+                    player.alt_weapon_id = int(alt_weapon_id) if int(alt_weapon_id) > 0 else None
                 if alt_clip_size is not None and int(alt_clip_size) >= 0:
-                    setattr(player, "alt_clip_size", int(alt_clip_size))
+                    player.alt_clip_size = int(alt_clip_size)
                 if alt_ammo is not None:
-                    setattr(player, "alt_ammo", float(alt_ammo))
+                    player.alt_ammo = float(alt_ammo)
                 if alt_reload_active is not None:
-                    setattr(player, "alt_reload_active", bool(alt_reload_active))
+                    player.alt_reload_active = bool(alt_reload_active)
                 if alt_reload_timer is not None:
-                    setattr(player, "alt_reload_timer", max(0.0, float(alt_reload_timer)))
+                    player.alt_reload_timer = max(0.0, float(alt_reload_timer))
                 if alt_reload_timer_max is not None:
-                    setattr(player, "alt_reload_timer_max", max(0.0, float(alt_reload_timer_max)))
+                    player.alt_reload_timer_max = max(0.0, float(alt_reload_timer_max))
                 if alt_shot_cooldown is not None:
-                    setattr(player, "alt_shot_cooldown", max(0.0, float(alt_shot_cooldown)))
+                    player.alt_shot_cooldown = max(0.0, float(alt_shot_cooldown))
 
             player_timers_raw = raw_player.get("bonus_timers_ms")  # ty:ignore[invalid-argument-type]
             if isinstance(player_timers_raw, dict):
@@ -2182,12 +2213,12 @@ def apply_capture_bootstrap_payload(
                     fire_bullets_ms = _coerce_int_like(player_timers_raw.get("fire_bullets"))
                     speed_bonus_ms = _coerce_int_like(player_timers_raw.get("speed_bonus"))
                     if shield_ms is not None:
-                        setattr(player, "shield_timer", max(0.0, float(shield_ms) / 1000.0))
+                        player.shield_timer = max(0.0, float(shield_ms) / 1000.0)
                     if fire_bullets_ms is not None:
-                        setattr(player, "fire_bullets_timer", max(0.0, float(fire_bullets_ms) / 1000.0))
+                        player.fire_bullets_timer = max(0.0, float(fire_bullets_ms) / 1000.0)
                     if speed_bonus_ms is not None:
-                        setattr(player, "speed_bonus_timer", max(0.0, float(speed_bonus_ms) / 1000.0))
-                except (AttributeError, TypeError, ValueError) as exc:
+                        player.speed_bonus_timer = max(0.0, float(speed_bonus_ms) / 1000.0)
+                except (TypeError, ValueError) as exc:
                     raise ValueError(f"invalid bootstrap bonus_timers_ms payload for player[{idx}]") from exc
 
             player_perk_timers_raw = raw_player.get("perk_timers")  # ty:ignore[invalid-argument-type]
@@ -2198,14 +2229,14 @@ def apply_capture_bootstrap_payload(
                     living_fortress_timer = _finite_float_or_none(player_perk_timers_raw.get("living_fortress"))
                     fire_cough_timer = _finite_float_or_none(player_perk_timers_raw.get("fire_cough"))
                     if hot_tempered_timer is not None:
-                        setattr(player, "hot_tempered_timer", max(0.0, float(hot_tempered_timer)))
+                        player.hot_tempered_timer = max(0.0, float(hot_tempered_timer))
                     if man_bomb_timer is not None:
-                        setattr(player, "man_bomb_timer", max(0.0, float(man_bomb_timer)))
+                        player.man_bomb_timer = max(0.0, float(man_bomb_timer))
                     if living_fortress_timer is not None:
-                        setattr(player, "living_fortress_timer", max(0.0, float(living_fortress_timer)))
+                        player.living_fortress_timer = max(0.0, float(living_fortress_timer))
                     if fire_cough_timer is not None:
-                        setattr(player, "fire_cough_timer", max(0.0, float(fire_cough_timer)))
-                except (AttributeError, TypeError, ValueError) as exc:
+                        player.fire_cough_timer = max(0.0, float(fire_cough_timer))
+                except (TypeError, ValueError) as exc:
                     raise ValueError(f"invalid bootstrap perk_timers payload for player[{idx}]") from exc
 
     perk_payload = payload.get("perk")
@@ -2248,74 +2279,60 @@ def apply_capture_bootstrap_payload(
             perk_player_nonzero_counts = parsed_all_players
 
     if pending is not None and int(pending) >= 0:
-        try:
-            state.perk_selection.pending_count = int(pending)  # ty:ignore[unresolved-attribute]
-            if perk_choices is not None:
-                state.perk_selection.choices = [int(perk_id) for perk_id in perk_choices]  # ty:ignore[unresolved-attribute]
-            if perk_choices_dirty is not None:
-                state.perk_selection.choices_dirty = bool(perk_choices_dirty)  # ty:ignore[unresolved-attribute]
-            elif perk_choices is None:
-                state.perk_selection.choices_dirty = True  # ty:ignore[unresolved-attribute]
-        except (AttributeError, TypeError, ValueError) as exc:
-            raise ValueError("invalid bootstrap perk payload") from exc
+        state_obj.perk_selection.pending_count = int(pending)
+        if perk_choices is not None:
+            state_obj.perk_selection.choices = [int(perk_id) for perk_id in perk_choices]
+        if perk_choices_dirty is not None:
+            state_obj.perk_selection.choices_dirty = bool(perk_choices_dirty)
+        elif perk_choices is None:
+            state_obj.perk_selection.choices_dirty = True
 
     if perk_player_nonzero_counts is not None:
-        try:
-            capture_counts_known = any(bool(player_counts) for player_counts in perk_player_nonzero_counts)
-            state.perk_selection.capture_player_perk_counts_known = bool(capture_counts_known)  # ty:ignore[unresolved-attribute]
-            for player_index, player_perk_counts in enumerate(perk_player_nonzero_counts):
-                if player_index >= len(players):
-                    break
-                player = players[int(player_index)]
-                perk_counts = getattr(player, "perk_counts", None)
-                if not isinstance(perk_counts, list):
-                    continue
-                for idx in range(len(perk_counts)):
-                    perk_counts[idx] = 0
-                for perk_id, count in player_perk_counts:
-                    perk_idx = int(perk_id)
-                    if 0 <= perk_idx < len(perk_counts):
-                        perk_counts[perk_idx] = int(count)
-        except (AttributeError, TypeError, ValueError) as exc:
-            raise ValueError("invalid bootstrap perk payload") from exc
+        capture_counts_known = any(bool(player_counts) for player_counts in perk_player_nonzero_counts)
+        state_obj.perk_selection.capture_player_perk_counts_known = bool(capture_counts_known)
+        for player_index, player_perk_counts in enumerate(perk_player_nonzero_counts):
+            if player_index >= len(players):
+                break
+            player = cast(_BootstrapPlayer, players[int(player_index)])
+            perk_counts = player.perk_counts
+            for idx in range(len(perk_counts)):
+                perk_counts[idx] = 0
+            for perk_id, count in player_perk_counts:
+                perk_idx = int(perk_id)
+                if 0 <= perk_idx < len(perk_counts):
+                    perk_counts[perk_idx] = int(count)
 
     timers_raw = payload.get("bonus_timers_ms")
     if isinstance(timers_raw, dict):
-        try:
-            weapon_power_up_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.WEAPON_POWER_UP))))  # ty:ignore[invalid-argument-type]
-            reflex_boost_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.REFLEX_BOOST))))  # ty:ignore[invalid-argument-type]
-            energizer_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.ENERGIZER))))  # ty:ignore[invalid-argument-type]
-            double_xp_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.DOUBLE_EXPERIENCE))))  # ty:ignore[invalid-argument-type]
-            freeze_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.FREEZE))))  # ty:ignore[invalid-argument-type]
-            if weapon_power_up_ms is not None:
-                state.bonuses.weapon_power_up = max(0.0, float(weapon_power_up_ms) / 1000.0)  # ty:ignore[unresolved-attribute]
-            if reflex_boost_ms is not None:
-                state.bonuses.reflex_boost = max(0.0, float(reflex_boost_ms) / 1000.0)  # ty:ignore[unresolved-attribute]
-            if energizer_ms is not None:
-                state.bonuses.energizer = max(0.0, float(energizer_ms) / 1000.0)  # ty:ignore[unresolved-attribute]
-            if double_xp_ms is not None:
-                state.bonuses.double_experience = max(0.0, float(double_xp_ms) / 1000.0)  # ty:ignore[unresolved-attribute]
-            if freeze_ms is not None:
-                state.bonuses.freeze = max(0.0, float(freeze_ms) / 1000.0)  # ty:ignore[unresolved-attribute]
-            state.time_scale_active = float(state.bonuses.reflex_boost) > 0.0  # ty:ignore[unresolved-attribute]
-        except (AttributeError, TypeError, ValueError) as exc:
-            raise ValueError("invalid bootstrap global bonus_timers_ms payload") from exc
+        weapon_power_up_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.WEAPON_POWER_UP))))  # ty:ignore[invalid-argument-type]
+        reflex_boost_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.REFLEX_BOOST))))  # ty:ignore[invalid-argument-type]
+        energizer_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.ENERGIZER))))  # ty:ignore[invalid-argument-type]
+        double_xp_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.DOUBLE_EXPERIENCE))))  # ty:ignore[invalid-argument-type]
+        freeze_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.FREEZE))))  # ty:ignore[invalid-argument-type]
+        if weapon_power_up_ms is not None:
+            state_obj.bonuses.weapon_power_up = max(0.0, float(weapon_power_up_ms) / 1000.0)
+        if reflex_boost_ms is not None:
+            state_obj.bonuses.reflex_boost = max(0.0, float(reflex_boost_ms) / 1000.0)
+        if energizer_ms is not None:
+            state_obj.bonuses.energizer = max(0.0, float(energizer_ms) / 1000.0)
+        if double_xp_ms is not None:
+            state_obj.bonuses.double_experience = max(0.0, float(double_xp_ms) / 1000.0)
+        if freeze_ms is not None:
+            state_obj.bonuses.freeze = max(0.0, float(freeze_ms) / 1000.0)
+        state_obj.time_scale_active = float(state_obj.bonuses.reflex_boost) > 0.0
 
     perk_intervals_raw = payload.get("perk_intervals")
     if isinstance(perk_intervals_raw, dict):
-        try:
-            perk_intervals_map = cast(Mapping[object, object], perk_intervals_raw)
-            man_bomb_interval = _finite_float_or_none(perk_intervals_map.get("man_bomb"))
-            fire_cough_interval = _finite_float_or_none(perk_intervals_map.get("fire_cough"))
-            hot_tempered_interval = _finite_float_or_none(perk_intervals_map.get("hot_tempered"))
-            if man_bomb_interval is not None:
-                state.perk_intervals.man_bomb = max(0.0, float(man_bomb_interval))  # ty:ignore[unresolved-attribute]
-            if fire_cough_interval is not None:
-                state.perk_intervals.fire_cough = max(0.0, float(fire_cough_interval))  # ty:ignore[unresolved-attribute]
-            if hot_tempered_interval is not None:
-                state.perk_intervals.hot_tempered = max(0.0, float(hot_tempered_interval))  # ty:ignore[unresolved-attribute]
-        except (AttributeError, TypeError, ValueError) as exc:
-            raise ValueError("invalid bootstrap perk_intervals payload") from exc
+        perk_intervals_map = cast(Mapping[object, object], perk_intervals_raw)
+        man_bomb_interval = _finite_float_or_none(perk_intervals_map.get("man_bomb"))
+        fire_cough_interval = _finite_float_or_none(perk_intervals_map.get("fire_cough"))
+        hot_tempered_interval = _finite_float_or_none(perk_intervals_map.get("hot_tempered"))
+        if man_bomb_interval is not None:
+            state_obj.perk_intervals.man_bomb = max(0.0, float(man_bomb_interval))
+        if fire_cough_interval is not None:
+            state_obj.perk_intervals.fire_cough = max(0.0, float(fire_cough_interval))
+        if hot_tempered_interval is not None:
+            state_obj.perk_intervals.hot_tempered = max(0.0, float(hot_tempered_interval))
 
     return elapsed_ms
 
@@ -2620,7 +2637,7 @@ def convert_capture_to_replay(
                 previous_ammo = previous_checkpoint_ammo[int(player_index)]
                 if previous_ammo is not None and float(checkpoint_ammo) < float(previous_ammo) - 1e-6:
                     ammo_dropped_since_previous_checkpoint = True
-            sample_weapon_id = _coerce_int_like(getattr(sample, "weapon_id", None))
+            sample_weapon_id = _coerce_int_like(sample.weapon_id) if sample is not None else None
             if sample_weapon_id is not None:
                 weapon_id_hint = int(sample_weapon_id)
 
@@ -2797,7 +2814,7 @@ def convert_capture_to_replay(
                 fire_pressed=bool(fire_pressed),
                 reload_pressed=bool(reload_pressed),
                 move_mode=(
-                    _coerce_int_like(getattr(sample, "move_mode", None))
+                    _coerce_int_like(sample.move_mode)
                     if sample is not None
                     else None
                 ),

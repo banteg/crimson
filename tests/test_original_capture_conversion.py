@@ -546,7 +546,7 @@ def test_convert_capture_to_replay_rejects_non_positive_player_count_override(tm
         convert_capture_to_replay(capture, seed=0, player_count=0)
 
 
-def test_load_capture_stream_accepts_forward_compatible_config_fields(tmp_path: Path) -> None:
+def test_load_capture_stream_accepts_known_config_fields(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
@@ -562,7 +562,6 @@ def test_load_capture_stream_accepts_forward_compatible_config_fields(tmp_path: 
         "console_all_events": True,
         "console_events": ["start", "ready", "capture_shutdown"],
         "include_caller": False,
-        "future_knob": 12345,
     }
     _write_capture_stream(path, meta=meta, ticks=[tick])
 
@@ -579,6 +578,22 @@ def test_load_capture_stream_accepts_forward_compatible_config_fields(tmp_path: 
     assert capture.config.console_events == ["start", "ready", "capture_shutdown"]
     assert capture.config.include_caller is False
     assert len(capture.ticks) == 1
+
+
+def test_load_capture_stream_rejects_unknown_config_fields(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    meta = {k: v for k, v in obj.items() if k != "ticks"}
+    meta["config"] = {
+        "out_path": "capture.json",
+        "log_mode": "truncate",
+        "future_knob": 12345,
+    }
+    _write_capture_stream(path, meta=meta, ticks=[tick])
+
+    with pytest.raises(CaptureError, match="invalid capture file"):
+        load_capture(path)
 
 
 def test_summarize_capture_health_flags_missing_micro_rows(tmp_path: Path) -> None:

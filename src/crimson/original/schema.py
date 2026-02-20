@@ -7,7 +7,7 @@ import msgspec
 CAPTURE_FORMAT_VERSION = 4
 
 
-class CaptureConfig(msgspec.Struct):
+class CaptureConfig(msgspec.Struct, forbid_unknown_fields=True):
     out_path: str = ""
     split_quest_files: bool = True
     quest_out_dir: str = ""
@@ -15,7 +15,6 @@ class CaptureConfig(msgspec.Struct):
     capture_profile: str = ""
     config_env_overrides: list[str] = msgspec.field(default_factory=list)
     log_mode: str = "truncate"
-    # Keep config forward-compatible with evolving capture-script env knobs.
     console_all_events: bool = False
     console_events: list[str] = msgspec.field(default_factory=list)
     include_caller: bool = True
