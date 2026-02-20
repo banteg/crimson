@@ -122,7 +122,7 @@ def _can_init_raylib() -> bool:
 def raylib_context() -> Iterator[None]:
     if not _can_init_raylib():
         pytest.skip("raylib requires an active display")
-    rl.set_config_flags(int(getattr(rl, "FLAG_WINDOW_HIDDEN", 0)))
+    rl.set_config_flags(int(rl.ConfigFlags.FLAG_WINDOW_HIDDEN))
     rl.init_window(16, 16, "ground-fixtures")
     try:
         yield

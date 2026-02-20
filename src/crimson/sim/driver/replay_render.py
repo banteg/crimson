@@ -130,7 +130,7 @@ def run_replay_render_video(
     total_ticks = int(len(replay.inputs))
     if max_ticks is not None:
         total_ticks = min(int(total_ticks), max(0, int(max_ticks)))
-    config_flags = int(getattr(rl, "FLAG_WINDOW_HIDDEN", 0))
+    config_flags = rl.ConfigFlags.FLAG_WINDOW_HIDDEN
     if int(config_flags) != 0:
         rl.set_config_flags(int(config_flags))
 
