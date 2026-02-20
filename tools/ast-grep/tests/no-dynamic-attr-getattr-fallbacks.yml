@@ -1,0 +1,12 @@
+id: no-dynamic-attr-getattr-fallbacks
+valid:
+  - |
+    quest_level = replay.header.quest_level
+  - |
+    config = capture.config
+    micro_cap = int(config.creature_micro_max_head_per_tick)
+invalid:
+  - |
+    quest_level = getattr(replay.header, "quest_level", "")
+  - |
+    weapon_id = int(getattr(quest, "start_weapon_id", 1) or 1)

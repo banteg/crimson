@@ -1,0 +1,15 @@
+id: no-dynamic-attr-hasattr-checks
+valid:
+  - |
+    if mode.close_requested:
+      return True
+  - |
+    if parsed.capture is not None:
+      return parsed.capture
+invalid:
+  - |
+    if hasattr(self._mode, "close_requested"):
+      return True
+  - |
+    if hasattr(parsed, "capture"):
+      return parsed.capture

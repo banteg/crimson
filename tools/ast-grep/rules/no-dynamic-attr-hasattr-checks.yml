@@ -1,0 +1,9 @@
+id: no-dynamic-attr-hasattr-checks
+language: python
+severity: error
+message: Typed runtime contracts should avoid `hasattr` guards; rely on concrete interfaces.
+files:
+  # Current rollout scope. Expand with additional module globs as typed contracts harden.
+  - src/crimson/original/**/*.py
+rule:
+  pattern: hasattr($OBJ, $ATTR)

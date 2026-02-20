@@ -1,0 +1,11 @@
+id: no-dynamic-attr-setattr-mutations
+valid:
+  - |
+    rng_ref.rand = traced_rand
+  - |
+    world.state.sprite_effects._rand = traced_rand
+invalid:
+  - |
+    setattr(world.state.rng, "rand", traced_rand)
+  - |
+    setattr(world.state.rng, "rand", orig_rand)

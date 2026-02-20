@@ -1,0 +1,9 @@
+id: no-dynamic-attr-getattr-fallbacks
+language: python
+severity: error
+message: Typed runtime contracts should use concrete field access instead of `getattr(..., default)`.
+files:
+  # Current rollout scope. Expand with additional module globs as typed contracts harden.
+  - src/crimson/original/**/*.py
+rule:
+  pattern: getattr($OBJ, $ATTR, $DEFAULT)
