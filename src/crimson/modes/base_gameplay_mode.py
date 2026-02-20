@@ -34,8 +34,11 @@ from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
 
 if TYPE_CHECKING:
+    from ..creatures.runtime import CreaturePool
+    from ..gameplay import GameplayState
     from ..net.protocol import StatusSnapshot
     from ..persistence.save_status import GameStatus
+    from ..sim.state_types import PlayerState
 
 
 class _ScreenFade(Protocol):
@@ -151,6 +154,13 @@ class BaseGameplayMode:
         self._status_sim: GameStatus | None = None
         self._lan_status: GameStatus | None = None
         self._lan_status_snapshot: StatusSnapshot | None = None
+        self._local_input: LocalInputInterpreter = LocalInputInterpreter()
+        self._game_over_ui: GameOverUi = GameOverUi(
+            assets_root=self._assets_root,
+            base_dir=self._base_dir,
+            config=self.config,
+            preserve_bugs=ctx.preserve_bugs,
+        )
 
         self.world = GameWorld(
             assets_dir=ctx.assets_dir,
@@ -168,19 +178,12 @@ class BaseGameplayMode:
 
         self._game_over_active = False
         self._game_over_record: HighScoreRecord | None = None
-        self._game_over_ui = GameOverUi(
-            assets_root=self._assets_root,
-            base_dir=self._base_dir,
-            config=self.config,
-            preserve_bugs=ctx.preserve_bugs,
-        )
         self._game_over_banner = "reaper"
 
         self._ui_mouse = Vec2()
         self._cursor_pulse_time = 0.0
         self._last_dt_ms = 0.0
         self._screen_fade: _ScreenFade | None = None
-        self._local_input = LocalInputInterpreter()
         self._terrain_regen_counter = 0
         self._bootstrap_seed = 0
         self._replay_recorder: _ReplayRecorderLike | None = None
@@ -210,8 +213,7 @@ class BaseGameplayMode:
 
         # Keep the currently-bound world state in sync (note that `open()` resets
         # the underlying `GameWorld.state`, so `_bind_world()` also re-applies it).
-        if hasattr(self, "state"):
-            self.state.status = self._status_sim
+        self.state.status = self._status_sim
 
     def bind_lan_runtime(self, runtime: LanRuntimeLike | _LanRuntimeSlotLike | None) -> None:
         self._lan_runtime = runtime if isinstance(runtime, LanRuntimeLike) else None
@@ -306,15 +308,13 @@ class BaseGameplayMode:
             draw_target_health_bar(pos=screen_left, width=width, ratio=ratio, alpha=alpha, scale=width / 64.0)
 
     def _bind_world(self) -> None:
-        self.state = self.world.state
-        self.creatures = self.world.creatures
-        self.player = self.world.players[0]
+        self.state: GameplayState = self.world.state
+        self.creatures: CreaturePool = self.world.creatures
+        self.player: PlayerState = self.world.players[0]
         preserve_bugs = self.state.preserve_bugs
-        if hasattr(self, "_local_input"):
-            self._local_input.set_preserve_bugs(preserve_bugs)
+        self._local_input.set_preserve_bugs(preserve_bugs)
         self._hud_state.preserve_bugs = preserve_bugs
-        if hasattr(self, "_game_over_ui"):
-            self._game_over_ui.preserve_bugs = preserve_bugs
+        self._game_over_ui.preserve_bugs = preserve_bugs
         # `GameplayState.status` is the simulation status (LAN may override it
         # with a deterministic session-local status to avoid split brain).
         self.state.status = self._status_sim
