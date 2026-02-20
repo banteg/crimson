@@ -12,14 +12,13 @@ import pytest
 from pytest_mock import MockerFixture
 
 if TYPE_CHECKING:
-    import pyray as rl
-
     import crimson.modes.replay_playback_mode as replay_playback_mode
     from crimson.game.types import GameState
     from crimson.persistence.save_status import GameStatus
     from crimson.sim.world_state import WorldState
     from grim.audio import AudioState
     from grim.console import ConsoleState
+    from grim.raylib_api import rl
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:

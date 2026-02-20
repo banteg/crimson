@@ -12,9 +12,8 @@ from grim.terrain_render import GroundRenderer
 from tests.helpers import assert_float_close
 
 if TYPE_CHECKING:
-    import pyray as rl
-
     from crimson.game_world import GameWorld
+    from grim.raylib_api import rl
 
 
 class _TextureLike(Protocol):

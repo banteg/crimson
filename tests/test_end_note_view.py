@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import pyray as rl
-
 import crimson.game.quest_views.end_note as end_note_module
 from crimson.frontend.panels.base import PANEL_TIMELINE_START_MS
 from crimson.game.quest_views import EndNoteView
+from grim.raylib_api import rl
 
 
 class _PauseBackgroundStub:
@@ -17,7 +16,7 @@ class _PauseBackgroundStub:
 
 def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, mocker) -> None:
     state = make_game_state(assets_root=tmp_path, audio=object())
-    played: list[str] = []
+    play_sfx = mocker.patch("crimson.game.quest_views.end_note.play_sfx")
 
     class _DummyCache:
         def get_or_load(self, *_args, **_kwargs):
@@ -26,12 +25,8 @@ def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, m
 
             return _StubAsset()
 
-    def _play_sfx(_audio, key, *, rng=None, allow_variants=True) -> None:
-        played.append(key)
-
     mocker.patch("crimson.game.quest_views.end_note.update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch("crimson.game.quest_views.end_note._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
-    mocker.patch("crimson.game.quest_views.end_note.play_sfx", side_effect=_play_sfx)
     mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda _key: False)
 
     view = EndNoteView(state)
@@ -43,7 +38,7 @@ def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, m
     mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE))
     view.update(0.1)
 
-    assert played == ["sfx_ui_buttonclick"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_buttonclick"]
     assert view.take_action() is None
 
     mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda _key: False)

@@ -3,8 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-import pyray as rl
-
 from crimson.game_world import GameWorld
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.rush_mode import RushMode
@@ -13,6 +11,7 @@ from crimson.sim.input import PlayerInput
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console, register_core_cvars
 from grim.geom import Vec2
+from grim.raylib_api import rl
 from grim.view import ViewContext
 
 

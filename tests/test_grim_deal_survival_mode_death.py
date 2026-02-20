@@ -3,14 +3,13 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-import pyray as rl
-
 import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
 import crimson.modes.survival_mode as survival_mode_module
 from crimson.game_world import GameWorld
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
+from grim.raylib_api import rl
 from grim.view import ViewContext
 
 

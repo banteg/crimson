@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import cast
 
-import pyray as rl
-
 import crimson.frontend.pause_menu as pause_menu_module
 from crimson.frontend.assets import MenuAssets
 from crimson.frontend.pause_menu import PAUSE_MENU_TO_MAIN_MENU_FADE_MS, PauseMenuView
+from grim.raylib_api import rl
 
 
 def _texture_stub() -> rl.Texture:

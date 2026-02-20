@@ -6,8 +6,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
-import pyray as rl
-
 from crimson.frontend.menu import ensure_menu_ground
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import GameState
@@ -16,6 +14,7 @@ from grim.assets import PaqTextureCache
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
 from grim.geom import Vec2
+from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 

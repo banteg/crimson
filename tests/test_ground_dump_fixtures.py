@@ -9,11 +9,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
-import pyray as rl
 import pytest
 from PIL import Image, ImageChops, ImageStat
 
 from grim.assets import TextureAsset, _load_texture_asset_from_bytes, load_paq_entries
+from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 pytestmark = pytest.mark.terrain

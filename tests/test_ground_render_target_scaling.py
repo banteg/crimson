@@ -3,10 +3,10 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import cast
 
-import pyray as rl
 import pytest
 
 import grim.terrain_render as terrain_render
+from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 from tests.helpers import assert_float_close
 

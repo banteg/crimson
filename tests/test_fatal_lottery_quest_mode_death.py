@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pyray as rl
-
 import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
 import crimson.modes.quest_mode as quest_mode_module
 from crimson.modes.quest_mode import QuestMode
+from grim.raylib_api import rl
 from grim.view import ViewContext
 
 

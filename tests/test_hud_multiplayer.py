@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from typing import cast
 
-import pyray as rl
-
 import crimson.ui.hud as hud_module
 from crimson.sim.state_types import PlayerState
 from crimson.ui.hud import HudAssets, HudState, draw_hud_overlay
 from grim.geom import Vec2
+from grim.raylib_api import rl
 
 
 class _TextureStub:

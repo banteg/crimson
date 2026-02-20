@@ -4,6 +4,7 @@ severity: error
 message: Import Raylib via grim.raylib_api instead of direct pyray/raylib imports.
 files:
   - src/**/*.py
+  - tests/**/*.py
 ignores:
   - src/grim/raylib_api.py
 rule:

@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import cast
 
-import pyray as rl
-
 import grim.music as music
+from grim.raylib_api import rl
 
 
 def _music_stub() -> rl.Music:

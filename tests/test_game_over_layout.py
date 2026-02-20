@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pyray as rl
 import pytest
 
 import crimson.ui.game_over as game_over_module
@@ -12,6 +11,7 @@ from crimson.ui.hud import HudAssets
 from crimson.ui.perk_menu import PerkMenuAssets
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.geom import Vec2
+from grim.raylib_api import rl
 
 
 def _test_config(**updates: object) -> CrimsonConfig:

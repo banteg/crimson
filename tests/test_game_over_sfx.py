@@ -6,8 +6,6 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import cast
 
-import pyray as rl
-
 import crimson.game.high_scores_view.view as high_scores_view_module
 import crimson.ui.game_over as game_over_module
 from crimson.frontend.assets import MenuAssets
@@ -22,6 +20,7 @@ from grim.audio import AudioState
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
 from grim.music import init_music_state
+from grim.raylib_api import rl
 from grim.sfx import init_sfx_state
 
 
@@ -76,10 +75,7 @@ def test_game_over_panel_open_plays_panel_click(monkeypatch, tmp_path: Path, moc
     ui._intro_ms = PANEL_SLIDE_DURATION_MS - 60.0
     ui._panel_open_sfx_played = False
 
-    played: list[str] = []
-
-    def _play_sfx(key: str) -> None:
-        played.append(key)
+    play_sfx = mocker.Mock()
 
     mocker.patch("crimson.ui.game_over.button_update", side_effect=lambda *args, **kwargs: False)
     mocker.patch.object(game_over_module.rl, "get_screen_width", side_effect=lambda: 640)
@@ -93,12 +89,12 @@ def test_game_over_panel_open_plays_panel_click(monkeypatch, tmp_path: Path, moc
         0.1,
         record=HighScoreRecord.blank(),
         player_name_default="",
-        play_sfx=_play_sfx,
+        play_sfx=play_sfx,
         rand=lambda: 0,
         mouse=rl.Vector2(0.0, 0.0),
     )
 
-    assert played == ["sfx_ui_panelclick"]
+    play_sfx.assert_called_once_with("sfx_ui_panelclick")
 
 
 def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(monkeypatch, tmp_path: Path, mocker) -> None:
@@ -123,27 +119,21 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
     )
     state.pending_high_scores = HighScoresRequest(game_mode_id=1)
 
-    played: list[str] = []
-
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:
-        played.append(key)
+    play_sfx = mocker.Mock()
 
     class _DummyCache:
         def get_or_load(self, *_args, **_kwargs):
             return SimpleNamespace(texture=None)
 
     mocker.patch("crimson.game.high_scores_view.view.update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch("crimson.game.high_scores_view.view.play_sfx", side_effect=_play_sfx)
+    mocker.patch("crimson.game.high_scores_view.view.play_sfx", side_effect=play_sfx)
     mocker.patch("crimson.game.high_scores_view.view._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
-    monkeypatch.setattr(
-        "crimson.game.high_scores_view.view.load_menu_assets",
-        lambda _state: _menu_assets_stub(),
-    )
+    mocker.patch.object(high_scores_view_module, "load_menu_assets", side_effect=lambda _state: _menu_assets_stub())
 
     view = HighScoresView(state)
     view.open()
 
-    assert played == ["sfx_ui_panelclick"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_panelclick"]
 
     def _is_key_pressed(key: int) -> bool:
         return int(key) == int(rl.KeyboardKey.KEY_ESCAPE)
@@ -156,7 +146,7 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
 
     view.update(0.1)
 
-    assert played == ["sfx_ui_panelclick", "sfx_ui_buttonclick"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_panelclick", "sfx_ui_buttonclick"]
     assert view.take_action() is None
     action = None
     for _ in range(30):
@@ -196,10 +186,7 @@ def test_high_scores_view_draw_fades_pause_background_during_close(monkeypatch, 
     dummy_tex = _texture_stub()
     mocker.patch("crimson.game.high_scores_view.view.update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch("crimson.game.high_scores_view.view._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
-    monkeypatch.setattr(
-        "crimson.game.high_scores_view.view.load_menu_assets",
-        lambda _state: _menu_assets_stub(tex=dummy_tex),
-    )
+    mocker.patch.object(high_scores_view_module, "load_menu_assets", side_effect=lambda _state: _menu_assets_stub(tex=dummy_tex))
     mocker.patch.object(high_scores_view_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch("crimson.game.high_scores_view.view._draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch("crimson.game.high_scores_view.view.draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-import pyray as rl
 import pytest
 
 import crimson.game.quest_views.quest_failed as quest_failed_module
@@ -12,6 +11,7 @@ from grim import music as grim_music
 from grim import sfx as grim_sfx
 from grim.audio import AudioState
 from grim.geom import Vec2
+from grim.raylib_api import rl
 
 
 class _PauseBackgroundStub:
@@ -100,10 +100,7 @@ def test_quest_failed_enter_retries_current_quest(monkeypatch, quest_failed_stat
     state.quest_outcome = _failed_outcome()
     state.quest_fail_retry_count = 2
 
-    played: list[str] = []
-
-    def _play_sfx(_audio, key, *, rng=None, allow_variants=True) -> None:
-        played.append(key)
+    play_sfx = mocker.Mock()
 
     class _DummyCache:
         def get_or_load(self, *_args, **_kwargs):
@@ -111,7 +108,7 @@ def test_quest_failed_enter_retries_current_quest(monkeypatch, quest_failed_stat
 
     mocker.patch("crimson.game.quest_views.quest_failed.update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch("crimson.game.quest_views.quest_failed._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
-    mocker.patch("crimson.game.quest_views.quest_failed.play_sfx", side_effect=_play_sfx)
+    mocker.patch("crimson.game.quest_views.quest_failed.play_sfx", side_effect=play_sfx)
     mocker.patch.object(quest_failed_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER))
 
     view = QuestFailedView(state)
@@ -120,7 +117,7 @@ def test_quest_failed_enter_retries_current_quest(monkeypatch, quest_failed_stat
 
     assert state.quest_fail_retry_count == 3
     assert state.pending_quest_level == "5.10"
-    assert played == ["sfx_ui_buttonclick"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_buttonclick"]
     assert view.take_action() is None
     action = None
     for _ in range(120):
@@ -136,10 +133,7 @@ def test_quest_failed_q_opens_quest_list(monkeypatch, quest_failed_state, mocker
     state.quest_outcome = _failed_outcome()
     state.quest_fail_retry_count = 4
 
-    played: list[str] = []
-
-    def _play_sfx(_audio, key, *, rng=None, allow_variants=True) -> None:
-        played.append(key)
+    play_sfx = mocker.Mock()
 
     class _DummyCache:
         def get_or_load(self, *_args, **_kwargs):
@@ -147,7 +141,7 @@ def test_quest_failed_q_opens_quest_list(monkeypatch, quest_failed_state, mocker
 
     mocker.patch("crimson.game.quest_views.quest_failed.update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch("crimson.game.quest_views.quest_failed._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
-    mocker.patch("crimson.game.quest_views.quest_failed.play_sfx", side_effect=_play_sfx)
+    mocker.patch("crimson.game.quest_views.quest_failed.play_sfx", side_effect=play_sfx)
     mocker.patch.object(quest_failed_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_Q))
 
     view = QuestFailedView(state)
@@ -155,7 +149,7 @@ def test_quest_failed_q_opens_quest_list(monkeypatch, quest_failed_state, mocker
     view.update(0.016)
 
     assert state.quest_fail_retry_count == 0
-    assert played == ["sfx_ui_buttonclick"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_buttonclick"]
     assert view.take_action() is None
     action = None
     for _ in range(120):
@@ -171,10 +165,7 @@ def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, quest_fai
     state.quest_outcome = _failed_outcome()
     state.quest_fail_retry_count = 4
 
-    played: list[str] = []
-
-    def _play_sfx(_audio, key, *, rng=None, allow_variants=True) -> None:
-        played.append(key)
+    play_sfx = mocker.Mock()
 
     class _DummyCache:
         def get_or_load(self, *_args, **_kwargs):
@@ -182,7 +173,7 @@ def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, quest_fai
 
     mocker.patch("crimson.game.quest_views.quest_failed.update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch("crimson.game.quest_views.quest_failed._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
-    mocker.patch("crimson.game.quest_views.quest_failed.play_sfx", side_effect=_play_sfx)
+    mocker.patch("crimson.game.quest_views.quest_failed.play_sfx", side_effect=play_sfx)
     mocker.patch.object(quest_failed_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE))
 
     view = QuestFailedView(state)
@@ -190,7 +181,7 @@ def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, quest_fai
     view.update(0.016)
 
     assert state.quest_fail_retry_count == 0
-    assert played == ["sfx_ui_buttonclick"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_buttonclick"]
     assert view.take_action() is None
     action = None
     for _ in range(120):
