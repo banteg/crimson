@@ -1174,21 +1174,22 @@ def _shader_array_locations(shader: rl.Shader, name: str, count: int) -> tuple[i
 def _shader_valid(shader: rl.Shader | None) -> bool:
     if shader is None:
         return False
-    return int(getattr(shader, "id", 0)) > 0
+    return int(shader.id) > 0
 
 
 def _render_texture_valid(rt: rl.RenderTexture | None) -> bool:
     if rt is None:
         return False
-    if int(getattr(rt, "id", 0)) <= 0:
+    if int(rt.id) <= 0:
         return False
-    validator = getattr(rl, "is_render_texture_valid", None)
-    if callable(validator):
-        try:
-            return bool(validator(rt))
-        except (RuntimeError, ValueError):
-            return False
-    return True
+    try:
+        validator = rl.is_render_texture_valid
+    except AttributeError:
+        return True
+    try:
+        return bool(validator(rt))
+    except (RuntimeError, ValueError):
+        return False
 
 
 def _shadow_debug_mode_name(mode: int) -> str:
@@ -1356,7 +1357,27 @@ class LightingDebugView:
         return f"_{key}"
 
     def _get_tune_value(self, key: str) -> float:
-        return float(getattr(self, self._tune_attr_name(key)))
+        if key == "rt_scale":
+            return float(self._shadow_rt_scale)
+        if key == "ambient_darkness":
+            return float(self._ambient_darkness)
+        if key == "shadow_strength":
+            return float(self._shadow_strength)
+        if key == "light_size_w":
+            return float(self._light_size_w)
+        if key == "min_t":
+            return float(self._min_t)
+        if key == "range_scale":
+            return float(self._range_scale)
+        if key == "directional_focus":
+            return float(self._directional_focus)
+        if key == "directional_stretch":
+            return float(self._directional_stretch)
+        if key == "jitter_amount":
+            return float(self._jitter_amount)
+        if key == "temporal_response":
+            return float(self._temporal_response)
+        raise ValueError(f"unknown tune key: {key}")
 
     def _invalidate_shadow_history(self) -> None:
         self._shadow_accum_ready = False
@@ -2421,7 +2442,35 @@ class LightingDebugView:
             "jitter_amount",
             "debug_mode",
         ):
-            if int(getattr(uniforms, name)) < 0:
+            if name == "resolution":
+                value = uniforms.resolution
+            elif name == "rt_resolution":
+                value = uniforms.rt_resolution
+            elif name == "camera":
+                value = uniforms.camera
+            elif name == "view_scale":
+                value = uniforms.view_scale
+            elif name == "occluder_count":
+                value = uniforms.occluder_count
+            elif name == "light_count":
+                value = uniforms.light_count
+            elif name == "light_size_w":
+                value = uniforms.light_size_w
+            elif name == "shadow_strength":
+                value = uniforms.shadow_strength
+            elif name == "ambient_darkness":
+                value = uniforms.ambient_darkness
+            elif name == "min_t":
+                value = uniforms.min_t
+            elif name == "jitter_phase":
+                value = uniforms.jitter_phase
+            elif name == "jitter_amount":
+                value = uniforms.jitter_amount
+            else:
+                if name != "debug_mode":
+                    raise ValueError(f"unknown shadow uniform: {name}")
+                value = uniforms.debug_mode
+            if int(value) < 0:
                 missing.append(name)
         if not uniforms.occluders or int(uniforms.occluders[0]) < 0:
             missing.append("occluders")

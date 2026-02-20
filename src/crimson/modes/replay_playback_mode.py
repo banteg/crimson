@@ -71,6 +71,7 @@ _REPLAY_WIDGET_TEXT_OFFSET_Y = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_X = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_Y = 0.0
 
+
 class ReplayPlaybackMode:
     def __init__(
         self,
@@ -490,6 +491,12 @@ class ReplayPlaybackMode:
             self._audio = None
             self._audio_rng = None
 
+    def should_close(self) -> bool:
+        return bool(self.close_requested)
+
+    def consume_screenshot_request(self) -> bool:
+        return False
+
     def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color, *, scale: float = 1.0) -> None:
         if self._small is not None:
             draw_small_text(self._small, text, pos, scale, color)
@@ -694,12 +701,8 @@ class ReplayPlaybackMode:
                 # Fast-seek runs many ticks without drawing, so clear explicitly to avoid
                 # queue saturation changing simulation-side corpse/death flow.
                 if world is not None:
-                    fx_queue = getattr(world, "fx_queue", None)
-                    if fx_queue is not None:
-                        fx_queue.clear()
-                    fx_queue_rotated = getattr(world, "fx_queue_rotated", None)
-                    if fx_queue_rotated is not None:
-                        fx_queue_rotated.clear()
+                    world.fx_queue.clear()
+                    world.fx_queue_rotated.clear()
         finally:
             if prev_sfx_enabled is not None and world is not None and world.audio_router is not None:
                 world.audio_router.sfx_enabled = bool(prev_sfx_enabled)

@@ -44,8 +44,8 @@ def perks_rebuild_available(state: GameplayState) -> None:
     if unlock_index > 0:
         quests = all_quests()
         for quest in quests[:unlock_index]:
-            perk_id = int(getattr(quest, "unlock_perk_id", 0) or 0)
-            if 0 < perk_id < len(available):
+            perk_id = quest.unlock_perk_id
+            if perk_id is not None and 0 < perk_id < len(available):
                 available[perk_id] = True
 
     available[int(PerkId.ANTIPERK)] = False

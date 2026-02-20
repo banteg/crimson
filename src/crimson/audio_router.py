@@ -152,7 +152,7 @@ class AudioRouter:
             else:
                 self.play_sfx(resolve_weapon_sfx_ref(weapon.fire_sound))
 
-        reload_active = bool(player.reload_active)
+        reload_active = player.reload_active
         reload_timer = float(player.reload_timer)
         reload_started = (not prev_reload_active and reload_active) or (reload_timer > prev_reload_timer + 1e-6)
         if reload_started:

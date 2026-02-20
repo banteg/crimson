@@ -454,9 +454,9 @@ def _draw_right_panel_local_score(
         text_color,
     )
 
-    mode_id = int(getattr(entry, "game_mode_id", 0) or 0)
-    elapsed_ms = int(getattr(entry, "survival_elapsed_ms", 0) or 0)
-    score_xp = int(getattr(entry, "score_xp", 0) or 0)
+    mode_id = int(entry.game_mode_id)
+    elapsed_ms = int(entry.survival_elapsed_ms)
+    score_xp = int(entry.score_xp)
 
     draw_small_text(
         font,
@@ -527,10 +527,10 @@ def _draw_right_panel_local_score(
         text_color,
     )
 
-    frags = int(getattr(entry, "creature_kill_count", 0) or 0)
+    frags = int(entry.creature_kill_count)
 
-    shots_fired = int(getattr(entry, "shots_fired", 0) or 0)
-    shots_hit = int(getattr(entry, "shots_hit", 0) or 0)
+    shots_fired = int(entry.shots_fired)
+    shots_hit = int(entry.shots_hit)
     hit_pct = 0
     if shots_fired > 0:
         hit_pct = int((shots_hit * 100) // shots_fired)
@@ -542,7 +542,7 @@ def _draw_right_panel_local_score(
         separator_color,
     )
 
-    weapon_id = int(getattr(entry, "most_used_weapon_id", 0) or 0)
+    weapon_id = int(entry.most_used_weapon_id)
     weapon_name, icon_index = _weapon_label_and_icon(view, weapon_id)
     if icon_index is not None:
         _draw_wicon(

@@ -44,8 +44,8 @@ def weapon_refresh_available(state: GameplayState) -> None:
     if unlock_index > 0:
         quests = all_quests()
         for quest in quests[:unlock_index]:
-            weapon_id = int(getattr(quest, "unlock_weapon_id", 0) or 0)
-            if 0 < weapon_id < len(available):
+            weapon_id = quest.unlock_weapon_id
+            if weapon_id is not None and 0 < weapon_id < len(available):
                 available[weapon_id] = True
 
     # Survival default loadout: Assault Rifle, Shotgun, Submachine Gun.

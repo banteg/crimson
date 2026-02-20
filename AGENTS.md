@@ -15,52 +15,46 @@ For deterministic gameplay code, prefer native float32 fidelity over readability
 For capture-driven parity investigations (when you are handed only a fresh capture file), start with:
 - [`docs/frida/differential-playbook.md`](docs/frida/differential-playbook.md)
 
+# Pre-commit
+
 Run `just check` before commits.
+
+# Ast-grep
 
 For structural search / codemods, prefer ast-grep over regex-only edits:
 - Project config: [`sgconfig.yml`](sgconfig.yml)
 - Rules/tests location: [`tools/ast-grep/`](tools/ast-grep/)
 - Run checks with `just check`
 
+# Pull Requests
+
 When creating pull requests with `gh`:
 - Do not pass multiline bodies via `--body` with escaped `\n` inside shell quotes.
 - Write the PR description to a markdown file (or heredoc) and use `gh pr create --body-file <file>` / `gh pr edit --body-file <file>`.
 - After creating/updating a PR, verify formatting with `gh pr view`.
 
-# Coding Rules (Strictly-Typed + Fail-Fast)
+# Coding Guidelines (Typed, Fail-Fast, Validate at Edges)
 
-You are working in a modern, **strictly-typed** codebase. You must write code using **Type-Driven Development** and **Fail-Fast** principles. 
+Principles > rules. Don’t make code longer/uglier just to satisfy a guideline.
 
-If you encounter type checker errors, **FIX THE UNDERLYING SCHEMA**. Do not use runtime casting, `getattr`, or `Any` to silence the type checker.
+## Model
+- Validate/parse at **boundaries** (IO/CLI/JSON/msgpack). Inside domain, assume validated objects are correct.
+- Types are design: if ty complains, **fix schema/boundary**, not with casts/`Any`.
+- Fail fast internally; don’t hide impossible states with defaults.
 
-## 1. NO PARANOID TYPE CASTING
-Trust the type hints. If a variable is annotated as `int`, do not wrap it in `int()`. If a function returns a `bool`, do not wrap it in `bool()`.
-*   **BAD:** `int(int(self.index) + 1)`
-*   **BAD:** `if bool(self.is_active):`
-*   **BAD:** `float(f32(float(dt) * float(speed)))`
-*   **GOOD:** `self.index + 1`
-*   **GOOD:** `if self.is_active:`
-*   **GOOD:** `f32(dt * speed)`
+## Do
+- Use values directly (no redundant `int(x)` when `x: int`).
+- Use explicit types for optional data (`T | None`) and handle it intentionally.
+- Keep typed objects typed during computation.
+- Convert to dict/builtins **only at edges** (serialization/logging/tests/interop) using standard helpers/serializers.
 
-## 2. TRUST VALIDATION BOUNDARIES (CRASH ON INVALID DATA)
-Once data passes through our parsers (e.g., `msgspec`), treat it as perfectly valid. 
-*   **NEVER** write custom coercion helpers (e.g., `_int_or_zero`, `_coerce_blob`).
-*   **NEVER** use `try...except ValueError` to return a default value like `0` or `""`. Let the exception bubble up and crash the program.
-*   **NEVER** use `isinstance()` or `hasattr()` to check if a domain object has a field. 
+## Avoid (smells)
+- Defensive runtime checks in domain (`isinstance/hasattr`, “just in case” `try/except ValueError`).
+- `getattr()` / `.get()` on typed models to dodge typing (ok for real dynamic dicts, or narrow tooling).
+- Hand-written field-by-field converters/mappers to comply with style—use serializers or small DTOs.
+- Thin duck typing protocols
 
-## 3. BAN `getattr()` AND `.get()` ON DOMAIN OBJECTS
-Structured data must be accessed via direct dot notation.
-*   **BAD:** `getattr(player, "health", 0.0)`
-*   **BAD:** `message.reason or "rejected"` (If `reason` can be absent, type it as `str | None` and check `if message.reason is not None:`).
-*   **GOOD:** `player.health`
-*   *(Note: `.get()` is only permitted on actual Python `dict` instances acting as dynamic maps, never on typed objects).*
+## Schema changes
+Update callers directly. Keep schemas versioned, only support the latest version.
+If a compat layer is needed, keep it small, local, and temporary (with removal note).
 
-## 4. NO DICTIONARY DEGRADATION
-Keep typed objects typed. Never degrade a `dataclass` or `msgspec.Struct` into a dictionary just to serialize or manipulate it.
-*   **NEVER** use `asdict()`, `msgspec.to_builtins()`, or reflection (`fields(obj)`) to repack data into dictionaries.
-*   **NEVER** type hint a field as `dict[str, Any]` or `dict[str, object]`. Define a strict `Struct` or `dataclass` for the nested shape.
-
-## 5. NO SHIMS OR LEGACY WRAPPERS
-If a schema or interface changes, update the downstream consumers directly. 
-*   **NEVER** create `legacy_*` files.
-*   **NEVER** use `import *` to re-export old modules to satisfy old code.

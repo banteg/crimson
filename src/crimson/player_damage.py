@@ -45,7 +45,7 @@ def player_take_damage(
         return 0.0
 
     damage_scaled = float(raw_damage)
-    if perk_active(player, PerkId.TOUGH_RELOADER) and bool(player.reload_active):
+    if perk_active(player, PerkId.TOUGH_RELOADER) and player.reload_active:
         damage_scaled *= 0.5
 
     state.survival_reward_damage_seen = True
@@ -56,7 +56,7 @@ def player_take_damage(
     was_alive_source = player
     # Native bug: the pre-hit alive flag is read from player 1 health even when
     # damaging player 2; preserve this under `--preserve-bugs`.
-    if bool(state.preserve_bugs) and players:
+    if state.preserve_bugs and players:
         was_alive_source = players[0]
     was_alive = float(was_alive_source.health) > 0.0
 

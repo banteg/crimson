@@ -90,10 +90,10 @@ class GameWorld:
     def __post_init__(self) -> None:
         self.world_state = WorldState.build(
             world_size=float(self.world_size),
-            demo_mode_active=bool(self.demo_mode_active),
-            hardcore=bool(self.hardcore),
+            demo_mode_active=self.demo_mode_active,
+            hardcore=self.hardcore,
             difficulty_level=int(self.difficulty_level),
-            preserve_bugs=bool(self.preserve_bugs),
+            preserve_bugs=self.preserve_bugs,
         )
         self.spawn_env = self.world_state.spawn_env
         self.state = self.world_state.state
@@ -133,10 +133,10 @@ class GameWorld:
     ) -> None:
         self.world_state = WorldState.build(
             world_size=float(self.world_size),
-            demo_mode_active=bool(self.demo_mode_active),
-            hardcore=bool(self.hardcore),
+            demo_mode_active=self.demo_mode_active,
+            hardcore=self.hardcore,
             difficulty_level=int(self.difficulty_level),
-            preserve_bugs=bool(self.preserve_bugs),
+            preserve_bugs=self.preserve_bugs,
         )
         self.spawn_env = self.world_state.spawn_env
         self.state = self.world_state.state
@@ -482,17 +482,17 @@ class GameWorld:
             fx_toggle=int(fx_toggle),
             fx_queue=self.fx_queue,
             fx_queue_rotated=self.fx_queue_rotated,
-            auto_pick_perks=bool(auto_pick_perks),
+            auto_pick_perks=auto_pick_perks,
             game_mode=int(game_mode),
-            demo_mode_active=bool(self.demo_mode_active),
-            perk_progression_enabled=bool(perk_progression_enabled),
-            game_tune_started=bool(self._game_tune_started),
-            defer_camera_shake_update=bool(defer_camera_shake_update),
+            demo_mode_active=self.demo_mode_active,
+            perk_progression_enabled=perk_progression_enabled,
+            game_tune_started=self._game_tune_started,
+            defer_camera_shake_update=defer_camera_shake_update,
             rng_marks_out=rng_marks_out,
         )
         self.apply_step_result(
             step,
-            game_tune_started=bool(self._game_tune_started or step.presentation.trigger_game_tune),
+            game_tune_started=self._game_tune_started or step.presentation.trigger_game_tune,
             apply_audio=True,
             update_camera=True,
         )
@@ -514,7 +514,7 @@ class GameWorld:
             self._elapsed_ms += float(step.dt_sim) * 1000.0
             self._bonus_anim_phase += float(step.dt_sim) * 1.3
 
-        self._game_tune_started = bool(game_tune_started)
+        self._game_tune_started = game_tune_started
 
         if apply_audio and step.presentation.trigger_game_tune:
             self.audio_router.trigger_game_tune()
@@ -572,7 +572,7 @@ class GameWorld:
         return RenderFrame(
             assets_dir=self.assets_dir,
             world_size=float(self.world_size),
-            demo_mode_active=bool(self.demo_mode_active),
+            demo_mode_active=self.demo_mode_active,
             config=self.config,
             camera=self.camera,
             ground=self.ground,
@@ -594,8 +594,8 @@ class GameWorld:
             wicons_texture=self.wicons_texture,
             elapsed_ms=float(self._elapsed_ms),
             bonus_anim_phase=float(self._bonus_anim_phase),
-            lan_player_rings_enabled=bool(self.lan_player_rings_enabled),
-            lan_local_aim_indicators_only=bool(self.lan_local_aim_indicators_only),
+            lan_player_rings_enabled=self.lan_player_rings_enabled,
+            lan_local_aim_indicators_only=self.lan_local_aim_indicators_only,
             lan_local_player_slot_index=int(self.lan_local_player_slot_index),
         )
 

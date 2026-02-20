@@ -67,16 +67,41 @@ class BonusHudState:
 def bonus_hud_update(state: GameplayState, players: list[PlayerState], *, dt: float = 0.0) -> None:
     """Refresh HUD slots based on current timer values + advance slide animation."""
 
+    global_timers = {
+        "weapon_power_up": float(state.bonuses.weapon_power_up),
+        "reflex_boost": float(state.bonuses.reflex_boost),
+        "energizer": float(state.bonuses.energizer),
+        "double_experience": float(state.bonuses.double_experience),
+        "freeze": float(state.bonuses.freeze),
+    }
+
+    def _global_timer_value(key: str) -> float:
+        try:
+            return global_timers[key]
+        except KeyError as exc:
+            raise ValueError(f"Unexpected bonus HUD global timer key: {key}") from exc
+
+    def _player_timer_value(player: PlayerState, key: str) -> float:
+        player_timers = {
+            "fire_bullets_timer": float(player.fire_bullets_timer),
+            "shield_timer": float(player.shield_timer),
+            "speed_bonus_timer": float(player.speed_bonus_timer),
+        }
+        try:
+            return player_timers[key]
+        except KeyError as exc:
+            raise ValueError(f"Unexpected bonus HUD player timer key: {key}") from exc
+
     def _timer_value(ref: _TimerRef | None) -> float:
         if ref is None:
             return 0.0
         if ref.kind == "global":
-            return float(getattr(state.bonuses, ref.key, 0.0) or 0.0)
+            return max(0.0, _global_timer_value(ref.key))
         if ref.kind == "player":
             idx = ref.player_index
             if idx is None or not (0 <= idx < len(players)):
                 return 0.0
-            return float(getattr(players[idx], ref.key, 0.0) or 0.0)
+            return max(0.0, _player_timer_value(players[idx], ref.key))
         return 0.0
 
     player_count = len(players)

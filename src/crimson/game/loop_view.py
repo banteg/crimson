@@ -29,7 +29,7 @@ from ..frontend.transitions import _update_screen_fade
 from ..input_codes import input_begin_frame
 from ..net.debug_log import init_lan_debug_log, lan_debug_log, lan_debug_log_path
 from ..quests.types import parse_level
-from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
+from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayInfo, DemoTrialOverlayUi
 from .high_scores_view import HighScoresView
 from .mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
 from .quest_views import EndNoteView, QuestFailedView, QuestResultsView, QuestsMenuView
@@ -78,13 +78,16 @@ void main() {
 """
 
 
+_GameplayView = QuestGameView | RushGameView | SurvivalGameView | TutorialGameView | TypoShooterGameView
+
+
 def _get_gamma_ramp_shader() -> tuple[rl.Shader | None, int]:
     global _GAMMA_RAMP_SHADER, _GAMMA_RAMP_SHADER_GAIN_LOC, _GAMMA_RAMP_SHADER_TRIED
     if _GAMMA_RAMP_SHADER_TRIED:
         shader = _GAMMA_RAMP_SHADER
         if shader is None:
             return None, -1
-        if int(getattr(shader, "id", 0)) <= 0:
+        if int(shader.id) <= 0:
             return None, -1
         if _GAMMA_RAMP_SHADER_GAIN_LOC < 0:
             return None, -1
@@ -98,7 +101,7 @@ def _get_gamma_ramp_shader() -> tuple[rl.Shader | None, int]:
         _GAMMA_RAMP_SHADER_GAIN_LOC = -1
         return None, -1
 
-    if int(getattr(shader, "id", 0)) <= 0:
+    if int(shader.id) <= 0:
         _GAMMA_RAMP_SHADER = None
         _GAMMA_RAMP_SHADER_GAIN_LOC = -1
         return None, -1
@@ -162,12 +165,12 @@ class GameLoopView:
         self._front_stack: list[FrontView] = []
         self._active: View = self._boot
         self._demo_trial_overlay = DemoTrialOverlayUi(state.assets_dir)
-        self._demo_trial_info = None
+        self._demo_trial_info: DemoTrialOverlayInfo | None = None
         self._demo_active = False
         self._menu_active = False
         self._quit_after_demo = False
         self._screenshot_requested = False
-        self._gameplay_views = frozenset(
+        self._gameplay_views: frozenset[FrontView] = frozenset(
             {
                 self._front_views["start_survival"],
                 self._front_views["start_rush"],
@@ -178,10 +181,10 @@ class GameLoopView:
         )
 
     def _pending_session(self):
-        pending = getattr(self.state, "pending_net_session", None)
+        pending = self.state.pending_net_session
         if pending is not None:
             return pending
-        return getattr(self.state, "pending_lan_session", None)
+        return self.state.pending_lan_session
 
     def _ensure_lan_debug_log_started(self) -> None:
         if lan_debug_log_path() is not None:
@@ -190,8 +193,8 @@ class GameLoopView:
         if pending is None:
             return
         cfg = pending.config
-        host = str(getattr(cfg, "relay_host", "") or cfg.host_ip or cfg.bind_host)
-        port = int(getattr(cfg, "relay_port", cfg.port))
+        host = str(cfg.relay_host or cfg.host_ip or cfg.bind_host)
+        port = int(cfg.relay_port)
         from ..net.protocol import current_build_id
 
         log_path = init_lan_debug_log(
@@ -268,9 +271,9 @@ class GameLoopView:
                 # Starting gameplay from the LAN lobby uses the normal mode start actions
                 # (`start_survival`, `start_rush`, etc) but must keep the LAN runtime alive.
                 pending = self._pending_session()
-                runtime = getattr(self.state, "net_runtime", None)
+                runtime = self.state.net_runtime
                 if runtime is None:
-                    runtime = getattr(self.state, "lan_runtime", None)
+                    runtime = self.state.lan_runtime
                 if bool(self.state.lan_in_lobby) and pending is not None and runtime is not None:
                     return action
 
@@ -322,13 +325,13 @@ class GameLoopView:
         self.state.net_resync_failure_count = 0
         self.state.config.game_mode = int(mode_id)
 
-        runtime = getattr(self.state, "net_runtime", None)
+        runtime = self.state.net_runtime
         if runtime is None:
-            runtime = getattr(self.state, "lan_runtime", None)
+            runtime = self.state.lan_runtime
         if runtime is not None:
             runtime.close()
 
-        netcode_mode = str(getattr(cfg, "netcode_mode", "rollback") or "rollback").strip().lower()
+        netcode_mode = str(cfg.netcode_mode).strip().lower()
         if netcode_mode in {"lockstep", "lockstep_legacy"}:
             from ..net.runtime import LanRuntime, LanRuntimeConfig
         else:
@@ -347,12 +350,12 @@ class GameLoopView:
                     mode_id=int(mode_id),
                     player_count=int(player_count),
                     bind_host=str(cfg.bind_host),
-                    host_ip=str(getattr(cfg, "resolved_relay_host", lambda: str(cfg.host_ip))()),
-                    port=int(getattr(cfg, "resolved_relay_port", lambda: int(cfg.port))()),
+                    host_ip=str(cfg.resolved_relay_host()),
+                    port=int(cfg.resolved_relay_port()),
                     quest_level=str(cfg.quest_level),
                     # Legacy lockstep fallback is rewrite-only and keeps preserve_bugs disabled.
                     preserve_bugs=False,
-                    input_delay_ticks=max(0, int(getattr(cfg, "input_delay_ticks", 1))),
+                    input_delay_ticks=max(0, int(cfg.input_delay_ticks)),
                     sim_status_snapshot=sim_status_snapshot,
                 ),
             )
@@ -362,15 +365,15 @@ class GameLoopView:
                     role=str(pending.role),
                     mode_id=int(mode_id),
                     player_count=int(player_count),
-                    relay_host=str(getattr(cfg, "resolved_relay_host", lambda: "127.0.0.1")()),
-                    relay_port=int(getattr(cfg, "resolved_relay_port", lambda: 31993)()),
-                    room_code=str(getattr(cfg, "room_code", "")).strip().upper(),
+                    relay_host=str(cfg.resolved_relay_host()),
+                    relay_port=int(cfg.resolved_relay_port()),
+                    room_code=str(cfg.room_code).strip().upper(),
                     quest_level=str(cfg.quest_level),
                     preserve_bugs=False,
                     netcode_mode="rollback",
-                    input_delay_ticks=max(0, int(getattr(cfg, "input_delay_ticks", 1))),
-                    rollback_max_ticks=max(1, int(getattr(cfg, "rollback_max_ticks", 8))),
-                    reconnect_timeout_ms=max(1000, int(getattr(cfg, "reconnect_timeout_ms", 15_000))),
+                    input_delay_ticks=max(0, int(cfg.input_delay_ticks)),
+                    rollback_max_ticks=max(1, int(cfg.rollback_max_ticks)),
+                    reconnect_timeout_ms=max(1000, int(cfg.reconnect_timeout_ms)),
                     sim_status_snapshot=sim_status_snapshot,
                 ),
             )
@@ -411,9 +414,9 @@ class GameLoopView:
 
     def _tick_lan_runtime(self) -> None:
         pending = self._pending_session()
-        runtime = getattr(self.state, "net_runtime", None)
+        runtime = self.state.net_runtime
         if runtime is None:
-            runtime = getattr(self.state, "lan_runtime", None)
+            runtime = self.state.lan_runtime
         if pending is None or runtime is None:
             return
         try:
@@ -427,7 +430,7 @@ class GameLoopView:
             lan_debug_log("net_open_error", role=str(pending.role), error=str(exc))
             return
         runtime.update()
-        self.state.lan_desync_count = int(getattr(runtime, "desync_count", 0) or 0)
+        self.state.lan_desync_count = int(runtime.desync_count)
         self.state.net_desync_count = int(self.state.lan_desync_count)
         lobby_state = runtime.lobby_state()
         if lobby_state is not None:
@@ -437,9 +440,9 @@ class GameLoopView:
             self.state.net_expected_players = int(expected)
             self.state.lan_connected_players = max(0, min(int(expected), int(connected)))
             self.state.net_connected_players = int(self.state.lan_connected_players)
-            self.state.lan_waiting_for_players = not bool(getattr(lobby_state, "started", False))
+            self.state.lan_waiting_for_players = not bool(lobby_state.started)
             self.state.net_waiting_for_players = bool(self.state.lan_waiting_for_players)
-        error = str(getattr(runtime, "error", "") or "")
+        error = str(runtime.error)
         if error and not self.state.lan_last_error:
             self.state.lan_last_error = error
             self.state.net_last_error = error
@@ -492,9 +495,8 @@ class GameLoopView:
                     if self._front_active in self._gameplay_views:
                         self.state.pause_background = None
                     else:
-                        reopen_from_child = getattr(self._front_active, "reopen_from_child", None)
-                        if callable(reopen_from_child):
-                            reopen_from_child()
+                        if isinstance(self._front_active, StatisticsMenuView):
+                            self._front_active.reopen_from_child()
                     self._active = self._front_active
                     return
                 self._front_active.close()
@@ -661,11 +663,10 @@ class GameLoopView:
         if self._front_stack:
             views.extend(reversed(self._front_stack))
         for view in views:
-            getter = getattr(view, "console_elapsed_ms", None)
-            if not callable(getter):
-                continue
-            self.state.survival_elapsed_ms = max(0.0, float(getter()))
-            return
+            gameplay = self._as_gameplay_view(view)
+            if gameplay is not None:
+                self.state.survival_elapsed_ms = max(0.0, float(gameplay.console_elapsed_ms()))
+                return
 
     def _handle_console_requests(self) -> None:
         if self.state.terrain_regenerate_requested:
@@ -680,9 +681,9 @@ class GameLoopView:
         if self._front_stack:
             views.extend(reversed(self._front_stack))
         for view in views:
-            regenerate = getattr(view, "regenerate_terrain_for_console", None)
-            if callable(regenerate):
-                regenerate()
+            gameplay = self._as_gameplay_view(view)
+            if gameplay is not None:
+                gameplay.regenerate_terrain_for_console()
                 return
 
     def _update_demo_trial_overlay(self, dt: float) -> bool:
@@ -765,26 +766,25 @@ class GameLoopView:
         # but entering a fresh gameplay run must regenerate terrain instead of
         # reusing the captured menu render target.
 
-    @staticmethod
-    def _steal_ground_from_view(view: FrontView | None) -> GroundRenderer | None:
-        if view is None:
+    def _as_gameplay_view(self, view: FrontView | None) -> _GameplayView | None:
+        if view is None or view not in self._gameplay_views:
             return None
-        steal = getattr(view, "steal_ground_for_menu", None)
-        if not callable(steal):
+        return cast(_GameplayView, view)
+
+    def _steal_ground_from_view(self, view: FrontView | None) -> GroundRenderer | None:
+        gameplay = self._as_gameplay_view(view)
+        if gameplay is None:
             return None
-        ground = steal()
+        ground = gameplay.steal_ground_for_menu()
         if isinstance(ground, GroundRenderer):
             return ground
         return None
 
-    @staticmethod
-    def _menu_ground_camera_from_view(view: FrontView | None) -> Vec2 | None:
-        if view is None:
+    def _menu_ground_camera_from_view(self, view: FrontView | None) -> Vec2 | None:
+        gameplay = self._as_gameplay_view(view)
+        if gameplay is None:
             return None
-        camera_getter = getattr(view, "menu_ground_camera", None)
-        if not callable(camera_getter):
-            return None
-        camera = camera_getter()
+        camera = gameplay.menu_ground_camera()
         if isinstance(camera, Vec2):
             return camera
         return None
@@ -825,7 +825,7 @@ class GameLoopView:
     def _draw_scene_layers(self) -> None:
         self._active.draw()
         info = self._demo_trial_info
-        if info is not None and getattr(info, "visible", False):
+        if info is not None and bool(info.visible):
             self._demo_trial_overlay.bind_cache(self.state.texture_cache)
             self._demo_trial_overlay.draw(info)
         self.state.console.draw()

@@ -54,7 +54,7 @@ class HostLobby:
             return Welcome(accepted=False, reason="protocol_mismatch")
         if not builds_compatible(str(hello.build_id), str(self.build_id)):
             return Welcome(accepted=False, reason="build_mismatch")
-        if bool(getattr(hello, "host", False)):
+        if bool(hello.host):
             return Welcome(accepted=False, reason="hello_host_flag")
 
         peer = self.peers_by_addr.get(addr)

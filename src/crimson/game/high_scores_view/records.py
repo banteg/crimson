@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import datetime as dt
+from typing import TYPE_CHECKING
 
 from ..types import GameState, HighScoresRequest
 from .shared import parse_quest_level
+
+if TYPE_CHECKING:
+    from ...persistence.highscores import HighScoreRecord
 
 
 def resolve_request(state: GameState) -> HighScoresRequest:
@@ -32,7 +36,7 @@ def resolve_request(state: GameState) -> HighScoresRequest:
     return request
 
 
-def _passes_date_filter(entry: object, *, date_mode: int, now: dt.date) -> bool:
+def _passes_date_filter(entry: "HighScoreRecord", *, date_mode: int, now: dt.date) -> bool:
     # Native `config_highscore_date_mode` values (see highscore_screen_update):
     #   0 = Best of all time (no filter)
     #   1 = Best of month
@@ -42,12 +46,9 @@ def _passes_date_filter(entry: object, *, date_mode: int, now: dt.date) -> bool:
     if mode <= 0:
         return True
 
-    try:
-        day = int(getattr(entry, "day", 0) or 0)
-        month = int(getattr(entry, "month", 0) or 0)
-        year_off = int(getattr(entry, "year_offset", 0) or 0)
-    except (TypeError, ValueError):
-        return False
+    day = int(entry.day)
+    month = int(entry.month)
+    year_off = int(entry.year_offset)
     if day <= 0 or month <= 0:
         return False
     year = 2000 + year_off
@@ -59,16 +60,13 @@ def _passes_date_filter(entry: object, *, date_mode: int, now: dt.date) -> bool:
         # Week-of-year checksum stored at record byte 0x41.
         from ...persistence.highscores import highscore_date_checksum
 
-        try:
-            stored = int(getattr(entry, "data")[0x41])
-        except (AttributeError, IndexError, TypeError, ValueError):
-            return False
+        stored = int(entry.data[0x41])
         checksum = int(highscore_date_checksum(now.year, now.month, now.day))
         return int(stored) == int(checksum) and int(year) == int(now.year)
     return True
 
 
-def load_records(state: GameState, request: HighScoresRequest) -> list:
+def load_records(state: GameState, request: HighScoresRequest) -> list[HighScoreRecord]:
     from ...persistence.highscores import read_highscore_table, scores_path_for_mode
 
     path = scores_path_for_mode(

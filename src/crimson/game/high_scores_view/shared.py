@@ -1,6 +1,11 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from ...quests.types import parse_level
+
+if TYPE_CHECKING:
+    from ...persistence.highscores import HighScoreRecord
 
 
 def ordinal(value: int) -> str:
@@ -17,13 +22,10 @@ def format_elapsed_mm_ss(value_ms: int) -> str:
     return f"{minutes}:{seconds:02d}"
 
 
-def format_score_date(entry: object) -> str:
-    try:
-        day = int(getattr(entry, "day", 0) or 0)
-        month = int(getattr(entry, "month", 0) or 0)
-        year_off = int(getattr(entry, "year_offset", 0) or 0)
-    except (TypeError, ValueError):
-        return ""
+def format_score_date(entry: "HighScoreRecord") -> str:
+    day = int(entry.day)
+    month = int(entry.month)
+    year_off = int(entry.year_offset)
     if day <= 0 or month <= 0:
         return ""
     months = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")

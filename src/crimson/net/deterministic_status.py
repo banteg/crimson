@@ -35,7 +35,7 @@ def status_snapshot_from_status(status: GameStatus | None) -> StatusSnapshot:
             out.extend([0] * (int(size) - len(out)))
         return out
 
-    data = getattr(status, "data", {}) or {}
+    data = status.data
     tail = data.get("unknown_tail", b"")
     if not isinstance(tail, (bytes, bytearray)):
         tail = b""

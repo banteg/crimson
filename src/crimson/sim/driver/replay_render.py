@@ -124,7 +124,7 @@ def run_replay_render_video(
     total_ticks = int(len(replay.inputs))
     if max_ticks is not None:
         total_ticks = min(int(total_ticks), max(0, int(max_ticks)))
-    config_flags = int(getattr(rl, "FLAG_WINDOW_HIDDEN", 0))
+    config_flags = rl.ConfigFlags.FLAG_WINDOW_HIDDEN
     if int(config_flags) != 0:
         rl.set_config_flags(int(config_flags))
 
@@ -413,14 +413,10 @@ def _capture_replay_audio_track(
                 raise ReplayRenderError("audio capture aborted: replay playback requested close")
             # Gameplay clears decal queues during draw(); audio-only rendering has no draw pass,
             # so clear here to avoid queue saturation changing deterministic outcomes.
-            world = getattr(mode, "_world", None)
+            world = mode._world
             if world is not None:
-                fx_queue = getattr(world, "fx_queue", None)
-                if fx_queue is not None:
-                    fx_queue.clear()
-                fx_queue_rotated = getattr(world, "fx_queue_rotated", None)
-                if fx_queue_rotated is not None:
-                    fx_queue_rotated.clear()
+                world.fx_queue.clear()
+                world.fx_queue_rotated.clear()
             capture.flush_pending()
             if progress is not None and int(total_ticks) > 0:
                 progress("audio", 0, int(mode.tick_index), int(total_ticks))

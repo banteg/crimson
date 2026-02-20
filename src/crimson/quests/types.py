@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Protocol
 
 from grim.geom import Vec2
 
@@ -25,7 +25,11 @@ class SpawnEntry:
     count: int
 
 
-QuestBuilder = Callable[..., list[SpawnEntry]]
+class QuestBuilder(Protocol):
+    __name__: str
+
+    def __call__(self, ctx: QuestContext) -> list[SpawnEntry]:
+        ...
 
 
 def parse_level(level: str) -> tuple[int, int]:

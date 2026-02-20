@@ -77,7 +77,7 @@ def configure_component_logging(
 
     console_formatter = structlog.stdlib.ProcessorFormatter(
         foreign_pre_chain=list(processors),
-        processor=structlog.dev.ConsoleRenderer(colors=bool(getattr(sys.stdout, "isatty", lambda: False)())),
+        processor=structlog.dev.ConsoleRenderer(colors=bool(sys.stdout.isatty())),
     )
     file_formatter = structlog.stdlib.ProcessorFormatter(
         foreign_pre_chain=list(processors),

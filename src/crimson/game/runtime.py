@@ -9,7 +9,7 @@ import webbrowser
 from pathlib import Path
 
 from grim import music
-from grim.app import run_view
+from grim.app import RunViewHooks, run_view
 from grim.assets import PaqTextureCache, load_paq_entries_from_path
 from grim.config import ensure_crimson_cfg
 from grim.console import (
@@ -302,9 +302,9 @@ def run_game(config: GameConfig) -> None:
             config=cfg,
             status=status,
             console=console,
-            demo_enabled=bool(config.demo_enabled),
-            preserve_bugs=bool(config.preserve_bugs),
-            skip_intro=bool(config.no_intro),
+            demo_enabled=config.demo_enabled,
+            preserve_bugs=config.preserve_bugs,
+            skip_intro=config.no_intro,
             logos=None,
             texture_cache=None,
             audio=None,
@@ -319,12 +319,8 @@ def run_game(config: GameConfig) -> None:
         if pending is not None:
             from ..net.protocol import current_build_id
 
-            host = str(
-                getattr(pending.config, "relay_host", "")
-                or pending.config.host_ip
-                or pending.config.bind_host,
-            )
-            port = int(getattr(pending.config, "relay_port", pending.config.port))
+            host = pending.config.resolved_relay_host()
+            port = pending.config.resolved_relay_port()
             log_path = init_lan_debug_log(
                 base_dir=base_dir,
                 role=str(pending.role),
@@ -333,15 +329,15 @@ def run_game(config: GameConfig) -> None:
                 host=host,
                 port=int(port),
                 player_count=pending.config.player_count,
-                auto_start=bool(pending.auto_start),
-                debug_enabled=bool(config.debug),
+                auto_start=pending.auto_start,
+                debug_enabled=config.debug,
             )
             lan_debug_log(
                 "run_game_session",
                 width=int(width),
                 height=int(height),
                 fps=int(config.fps),
-                preserve_bugs=bool(config.preserve_bugs),
+                preserve_bugs=config.preserve_bugs,
             )
             console.log.log(f"lan debug log: {log_path}")
             print(f"[lan-debug] role={pending.role} log={log_path}")
@@ -370,6 +366,10 @@ def run_game(config: GameConfig) -> None:
             fps=config.fps,
             config_flags=config_flags,
             exit_key=rl.KeyboardKey.KEY_NULL,
+            hooks=RunViewHooks(
+                should_close=view.should_close,
+                consume_screenshot_request=view.consume_screenshot_request,
+            ),
         )
         if state is not None:
             state.status.save_if_dirty()

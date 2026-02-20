@@ -236,7 +236,7 @@ def _update_music_stream_safe(music: rl.Music) -> bool:
 
 def _is_music_stream_playing_safe(music: rl.Music) -> bool:
     try:
-        return bool(rl.is_music_stream_playing(music))
+        return rl.is_music_stream_playing(music)
     except _MUSIC_RUNTIME_EXCEPTIONS:
         return False
 

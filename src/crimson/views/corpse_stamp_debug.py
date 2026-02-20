@@ -83,7 +83,7 @@ class CorpseStampDebugView:
             log_dir = Path("artifacts")
 
         step = _STEPS[self._step_index]
-        alpha_test = "a1" if bool(getattr(ground, "alpha_test", True)) else "a0"
+        alpha_test = "a1" if ground.alpha_test else "a0"
         filename = f"corpse_stamp_rt_{self._dump_index:03d}_step{self._step_index + 1:02d}_{step.name}_{alpha_test}.png"
         out_path = log_dir / filename
 
@@ -275,7 +275,7 @@ class CorpseStampDebugView:
         y = 20.0
         line = float(ui_line_height(self._small))
         step = _STEPS[self._step_index]
-        alpha_test = bool(getattr(ground, "alpha_test", True))
+        alpha_test = ground.alpha_test
         draw_ui_text(self._small, "Corpse stamp debug (SPIDER)", Vec2(x, y), color=UI_TEXT)
         y += line
         draw_ui_text(

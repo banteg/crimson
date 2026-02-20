@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import shutil
+from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 
 from grim.raylib_api import rl
@@ -9,6 +11,16 @@ from .view import View
 
 SCREENSHOT_DIR = Path("screenshots")
 SCREENSHOT_KEY = rl.KeyboardKey.KEY_F12
+
+
+def _false_hook() -> bool:
+    return False
+
+
+@dataclass(frozen=True, slots=True)
+class RunViewHooks:
+    should_close: Callable[[], bool] = _false_hook
+    consume_screenshot_request: Callable[[], bool] = _false_hook
 
 
 def _next_screenshot_index(directory: Path) -> int:
@@ -22,13 +34,6 @@ def _next_screenshot_index(directory: Path) -> int:
     return max_index + 1
 
 
-def _view_should_close(view: View) -> bool:
-    should_close = getattr(view, "should_close", None)
-    if callable(should_close):
-        return bool(should_close())
-    return bool(getattr(view, "close_requested", False))
-
-
 def run_view(
     view: View,
     *,
@@ -38,6 +43,7 @@ def run_view(
     fps: int = 60,
     config_flags: int = 0,
     exit_key: int | None = None,
+    hooks: RunViewHooks | None = None,
 ) -> None:
     """Run a Raylib window with a pluggable debug view."""
     if config_flags:
@@ -46,22 +52,20 @@ def run_view(
     if exit_key is not None:
         rl.set_exit_key(exit_key)
     rl.set_target_fps(fps)
-    open_fn = getattr(view, "open", None)
-    if callable(open_fn):
-        open_fn()
+    run_hooks = hooks if hooks is not None else RunViewHooks()
+    view.open()
     screenshot_dir = SCREENSHOT_DIR if SCREENSHOT_DIR.is_absolute() else Path.cwd() / SCREENSHOT_DIR
     screenshot_index = _next_screenshot_index(screenshot_dir)
     while not rl.window_should_close():
         dt = rl.get_frame_time()
         view.update(dt)
         take_screenshot = rl.is_key_pressed(SCREENSHOT_KEY)
-        consume_screenshot = getattr(view, "consume_screenshot_request", None)
-        if callable(consume_screenshot) and consume_screenshot():
+        if run_hooks.consume_screenshot_request():
             take_screenshot = True
         rl.begin_drawing()
         view.draw()
         rl.end_drawing()
-        if _view_should_close(view):
+        if run_hooks.should_close():
             break
         if take_screenshot:
             screenshot_dir.mkdir(parents=True, exist_ok=True)
@@ -71,9 +75,7 @@ def run_view(
             if src.exists():
                 shutil.move(str(src), str(screenshot_dir / filename))
             screenshot_index += 1
-    close_fn = getattr(view, "close", None)
-    if callable(close_fn):
-        close_fn()
+    view.close()
     rl.close_window()
 
 
@@ -86,10 +88,16 @@ def run_window(
     """Open a minimal Raylib window for the reference implementation."""
 
     class _EmptyView:
+        def open(self) -> None:
+            return None
+
         def update(self, dt: float) -> None:
             return None
 
         def draw(self) -> None:
             rl.clear_background(rl.BLACK)
+
+        def close(self) -> None:
+            return None
 
     run_view(_EmptyView(), width=width, height=height, title=title, fps=fps)

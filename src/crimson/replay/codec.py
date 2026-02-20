@@ -367,7 +367,7 @@ def load_replay(data: bytes) -> Replay:
     events = [_event_from_wire(event) for event in wire.events]
     input_len = len(inputs)
     for event in events:
-        tick_index = int(getattr(event, "tick_index", 0))
+        tick_index = event.tick_index
         if tick_index < 0:
             raise ReplayCodecError(f"replay event tick_index must be non-negative, got {tick_index}")
         if tick_index > input_len:

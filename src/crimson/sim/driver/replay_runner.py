@@ -450,7 +450,7 @@ def run_rush_replay(
 
 
 def _resolve_quest_level(replay: Replay) -> str:
-    quest_level = str(getattr(replay.header, "quest_level", "") or "")
+    quest_level = str(replay.header.quest_level)
     if quest_level:
         return str(quest_level)
 
@@ -525,7 +525,7 @@ def run_quest_replay(
         if quest_stage_major is None or quest_stage_minor is None:
             world.state.quest_stage_major, world.state.quest_stage_minor = quest.level_key
         if start_weapon_id is None:
-            start_weapon_id = int(getattr(quest, "start_weapon_id", 1) or 1)
+            start_weapon_id = int(quest.start_weapon_id)
 
         ctx = QuestContext(
             width=int(world_size),
