@@ -5,7 +5,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-import pyray as rl
+from grim.raylib_api import rl
 
 from . import music, sfx
 from .config import CrimsonConfig

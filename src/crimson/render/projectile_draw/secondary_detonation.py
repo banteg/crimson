@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import pyray as rl
-
 from grim.color import RGBA
 from grim.math import clamp
+from grim.raylib_api import rl
 
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from .types import SecondaryProjectileDrawCtx

@@ -3,11 +3,10 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-import pyray as rl
-
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.rand import Crand
+from grim.raylib_api import rl
 from grim.view import View, ViewContext
 
 from ..creatures.spawn import (

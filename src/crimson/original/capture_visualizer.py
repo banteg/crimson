@@ -6,9 +6,6 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
-import pyray as rl
-from raylib import defines as rd
-
 from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusEntry, bonus_label_for_entry
 from crimson.game_modes import GameMode
@@ -56,6 +53,7 @@ from grim.app import run_view
 from grim.assets import find_paq_path
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
+from grim.raylib_api import rd, rl
 
 _CAPTURE_TRACE_COLOR = rl.Color(74, 205, 255, 220)
 _REWRITE_TRACE_COLOR = rl.Color(255, 143, 70, 220)

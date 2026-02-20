@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
-import pyray as rl
+from grim.raylib_api import rl
 
 from . import paq, sfx_map
 from .console import ConsoleState

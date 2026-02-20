@@ -2,10 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import pyray as rl
-
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
+from grim.raylib_api import rl
 
 from ...frontend.high_scores_layout import (
     HS_BACK_BUTTON_X,

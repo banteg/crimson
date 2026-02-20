@@ -41,9 +41,9 @@ def _install_minimal_sim_session(mode: SurvivalMode, monkeypatch) -> None:
     monkeypatch.setattr(GameWorld, "apply_step_result", lambda *_args, **_kwargs: None)
 
 
-def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_menu_transition(monkeypatch) -> None:
+def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_menu_transition(monkeypatch, mocker) -> None:
     mode = _make_survival_mode()
-    monkeypatch.setattr("crimson.ui.game_over.GameOverUi.open", lambda self: None)
+    mocker.patch("crimson.ui.game_over.GameOverUi.open", return_value=None)
     _install_minimal_sim_session(mode, monkeypatch)
 
     assert mode.player.health > 0.0
@@ -57,10 +57,10 @@ def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_
 
     monkeypatch.setattr(mode._perk_menu, "handle_input", _apply_grim_deal_and_close)
 
-    monkeypatch.setattr("crimson.modes.base_gameplay_mode.rl.get_mouse_position", lambda: rl.Vector2(0.0, 0.0))
-    monkeypatch.setattr("crimson.modes.base_gameplay_mode.rl.get_screen_width", lambda: 640)
-    monkeypatch.setattr("crimson.modes.base_gameplay_mode.rl.get_screen_height", lambda: 480)
-    monkeypatch.setattr("crimson.modes.survival_mode.rl.is_key_pressed", lambda _key: False)
+    mocker.patch("crimson.modes.base_gameplay_mode.rl.get_mouse_position", side_effect=lambda: rl.Vector2(0.0, 0.0))
+    mocker.patch("crimson.modes.base_gameplay_mode.rl.get_screen_width", side_effect=lambda: 640)
+    mocker.patch("crimson.modes.base_gameplay_mode.rl.get_screen_height", side_effect=lambda: 480)
+    mocker.patch("crimson.modes.survival_mode.rl.is_key_pressed", side_effect=lambda _key: False)
 
     mode.update(1.0 / 60.0)
 

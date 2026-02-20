@@ -3,10 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-import pyray as rl
-
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.geom import Vec2
+from grim.raylib_api import rl
 
 from ..menu import (
     MENU_PANEL_WIDTH,

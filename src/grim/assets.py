@@ -5,8 +5,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol, cast
 
-import pyray as rl
 from PIL import Image
+
+from grim.raylib_api import rl
 
 from . import jaz, paq
 

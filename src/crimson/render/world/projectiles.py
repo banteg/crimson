@@ -3,11 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
-import pyray as rl
-from raylib import defines as rd
-
 from grim.geom import Vec2
 from grim.math import clamp
+from grim.raylib_api import rd, rl
 
 from ...perks import PerkId
 from ...perks.helpers import perk_active

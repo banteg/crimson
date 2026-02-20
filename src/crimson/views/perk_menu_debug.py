@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import pyray as rl
-
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.math import clamp
+from grim.raylib_api import rl
 from grim.view import View, ViewContext
 
 from ..perks import PERK_BY_ID, PerkId, perk_display_description, perk_display_name

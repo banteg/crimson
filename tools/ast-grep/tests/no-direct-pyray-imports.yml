@@ -1,0 +1,17 @@
+id: no-direct-pyray-imports
+valid:
+  - |
+    from grim.raylib_api import rl, rd
+  - |
+    from grim.raylib_api import rl
+  - |
+    from grim.raylib_api import rd
+invalid:
+  - |
+    import pyray as rl
+  - |
+    import pyray
+  - |
+    from raylib import defines as rd
+  - |
+    from raylib import defines

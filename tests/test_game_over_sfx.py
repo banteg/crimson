@@ -67,7 +67,7 @@ class _PauseBackgroundStub:
         self._sink.append(float(entity_alpha))
 
 
-def test_game_over_panel_open_plays_panel_click(monkeypatch, tmp_path: Path) -> None:
+def test_game_over_panel_open_plays_panel_click(monkeypatch, tmp_path: Path, mocker) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=ensure_crimson_cfg(tmp_path))
     ui.assets = _game_over_assets_stub()
     ui.phase = 1
@@ -79,13 +79,13 @@ def test_game_over_panel_open_plays_panel_click(monkeypatch, tmp_path: Path) -> 
     def _play_sfx(key: str) -> None:
         played.append(key)
 
-    monkeypatch.setattr("crimson.ui.game_over.button_update", lambda *args, **kwargs: False)
-    monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_width", lambda: 640)
-    monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_height", lambda: 480)
-    monkeypatch.setattr("crimson.ui.game_over.rl.get_mouse_position", lambda: rl.Vector2(0.0, 0.0))
-    monkeypatch.setattr("crimson.ui.game_over.rl.is_mouse_button_pressed", lambda _button: False)
-    monkeypatch.setattr("crimson.ui.game_over.rl.check_collision_point_rec", lambda _pos, _rect: False)
-    monkeypatch.setattr("crimson.ui.game_over.rl.is_key_pressed", lambda _key: False)
+    mocker.patch("crimson.ui.game_over.button_update", side_effect=lambda *args, **kwargs: False)
+    mocker.patch("crimson.ui.game_over.rl.get_screen_width", side_effect=lambda: 640)
+    mocker.patch("crimson.ui.game_over.rl.get_screen_height", side_effect=lambda: 480)
+    mocker.patch("crimson.ui.game_over.rl.get_mouse_position", side_effect=lambda: rl.Vector2(0.0, 0.0))
+    mocker.patch("crimson.ui.game_over.rl.is_mouse_button_pressed", side_effect=lambda _button: False)
+    mocker.patch("crimson.ui.game_over.rl.check_collision_point_rec", side_effect=lambda _pos, _rect: False)
+    mocker.patch("crimson.ui.game_over.rl.is_key_pressed", side_effect=lambda _key: False)
 
     ui.update(
         0.1,
@@ -99,7 +99,7 @@ def test_game_over_panel_open_plays_panel_click(monkeypatch, tmp_path: Path) -> 
     assert played == ["sfx_ui_panelclick"]
 
 
-def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(monkeypatch, tmp_path: Path) -> None:
+def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(monkeypatch, tmp_path: Path, mocker) -> None:
     # Unit test: avoid depending on proprietary assets / PAQ archives.
     assets_dir = tmp_path
 
@@ -130,9 +130,9 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
         def get_or_load(self, *_args, **_kwargs):
             return SimpleNamespace(texture=None)
 
-    monkeypatch.setattr("crimson.game.high_scores_view.view.update_audio", lambda _audio, _dt: None)
-    monkeypatch.setattr("crimson.game.high_scores_view.view.play_sfx", _play_sfx)
-    monkeypatch.setattr("crimson.game.high_scores_view.view._ensure_texture_cache", lambda _state: _DummyCache())
+    mocker.patch("crimson.game.high_scores_view.view.update_audio", side_effect=lambda _audio, _dt: None)
+    mocker.patch("crimson.game.high_scores_view.view.play_sfx", side_effect=_play_sfx)
+    mocker.patch("crimson.game.high_scores_view.view._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
     monkeypatch.setattr(
         "crimson.game.high_scores_view.view.load_menu_assets",
         lambda _state: _menu_assets_stub(),
@@ -147,10 +147,10 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
         return int(key) == int(rl.KeyboardKey.KEY_ESCAPE)
 
     # High scores view animates in; advance its timeline before pressing escape.
-    monkeypatch.setattr("crimson.game.high_scores_view.view.rl.is_key_pressed", lambda _key: False)
+    mocker.patch("crimson.game.high_scores_view.view.rl.is_key_pressed", side_effect=lambda _key: False)
     view.update(0.1)
     view.update(0.1)
-    monkeypatch.setattr("crimson.game.high_scores_view.view.rl.is_key_pressed", _is_key_pressed)
+    mocker.patch("crimson.game.high_scores_view.view.rl.is_key_pressed", side_effect=_is_key_pressed)
 
     view.update(0.1)
 
@@ -165,7 +165,7 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
     assert action == "back_to_previous"
 
 
-def test_high_scores_view_draw_fades_pause_background_during_close(monkeypatch, tmp_path: Path) -> None:
+def test_high_scores_view_draw_fades_pause_background_during_close(monkeypatch, tmp_path: Path, mocker) -> None:
     assets_dir = tmp_path
     cfg = ensure_crimson_cfg(tmp_path)
     state = GameState(
@@ -192,18 +192,18 @@ def test_high_scores_view_draw_fades_pause_background_during_close(monkeypatch, 
             return SimpleNamespace(texture=None)
 
     dummy_tex = _texture_stub()
-    monkeypatch.setattr("crimson.game.high_scores_view.view.update_audio", lambda _audio, _dt: None)
-    monkeypatch.setattr("crimson.game.high_scores_view.view._ensure_texture_cache", lambda _state: _DummyCache())
+    mocker.patch("crimson.game.high_scores_view.view.update_audio", side_effect=lambda _audio, _dt: None)
+    mocker.patch("crimson.game.high_scores_view.view._ensure_texture_cache", side_effect=lambda _state: _DummyCache())
     monkeypatch.setattr(
         "crimson.game.high_scores_view.view.load_menu_assets",
         lambda _state: _menu_assets_stub(tex=dummy_tex),
     )
-    monkeypatch.setattr("crimson.game.high_scores_view.view.rl.clear_background", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.game.high_scores_view.view._draw_screen_fade", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.game.high_scores_view.view.draw_classic_menu_panel", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.game.high_scores_view.view.draw_main_panel", lambda *_args, **_kwargs: 0)
-    monkeypatch.setattr("crimson.game.high_scores_view.view.draw_right_panel", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.game.high_scores_view.view._draw_menu_cursor", lambda *_args, **_kwargs: None)
+    mocker.patch("crimson.game.high_scores_view.view.rl.clear_background", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch("crimson.game.high_scores_view.view._draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch("crimson.game.high_scores_view.view.draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch("crimson.game.high_scores_view.view.draw_main_panel", side_effect=lambda *_args, **_kwargs: 0)
+    mocker.patch("crimson.game.high_scores_view.view.draw_right_panel", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch("crimson.game.high_scores_view.view._draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
     monkeypatch.setattr(HighScoresView, "_ensure_small_font", lambda _self: SimpleNamespace(texture=dummy_tex))
     monkeypatch.setattr(HighScoresView, "_draw_sign", lambda _self, _assets: None)
 

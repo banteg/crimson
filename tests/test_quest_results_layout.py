@@ -82,47 +82,54 @@ def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
 
 
 def _patch_draw_environment(
-    monkeypatch,
+    mocker,
     captured_text: list[str],
     texture_draws: list[object],
     *,
     captured_draws: list[tuple[str, float, float, rl.Color]] | None = None,
     line_draws: list[tuple[int, int, int, int, object]] | None = None,
 ) -> None:
-    monkeypatch.setattr("crimson.ui.quest_results.rl.get_screen_width", lambda: 640)
-    monkeypatch.setattr("crimson.ui.quest_results.rl.get_screen_height", lambda: 480)
-    monkeypatch.setattr("crimson.ui.quest_results.rl.get_time", lambda: 0.0)
-    monkeypatch.setattr("crimson.ui.quest_results.rl.draw_rectangle_lines", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.ui.quest_results.rl.draw_rectangle", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(
+    mocker.patch("crimson.ui.quest_results.rl.get_screen_width", side_effect=lambda: 640)
+    mocker.patch("crimson.ui.quest_results.rl.get_screen_height", side_effect=lambda: 480)
+    mocker.patch("crimson.ui.quest_results.rl.get_time", side_effect=lambda: 0.0)
+    mocker.patch("crimson.ui.quest_results.rl.draw_rectangle_lines", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch("crimson.ui.quest_results.rl.draw_rectangle", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch(
         "crimson.ui.quest_results.rl.draw_line",
-        lambda x1, y1, x2, y2, color: (
+        side_effect=lambda x1, y1, x2, y2, color: (
             line_draws.append((int(x1), int(y1), int(x2), int(y2), color)) if line_draws is not None else None
         ),
     )
-    monkeypatch.setattr("crimson.ui.quest_results.button_draw", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.ui.quest_results.button_width", lambda *_args, **_kwargs: 82.0)
-    monkeypatch.setattr("crimson.ui.quest_results.draw_ui_text", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.ui.quest_results.draw_menu_cursor", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.ui.quest_results.QuestResultsUi._text_width", lambda _self, text, _scale: float(len(text) * 8))
-    monkeypatch.setattr(
-        "crimson.ui.quest_results.QuestResultsUi._draw_small",
-        lambda _self, text, pos, _scale, color: (
+    mocker.patch("crimson.ui.quest_results.button_draw", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch("crimson.ui.quest_results.button_width", side_effect=lambda *_args, **_kwargs: 82.0)
+    mocker.patch("crimson.ui.quest_results.draw_ui_text", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch("crimson.ui.quest_results.draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(
+        QuestResultsUi,
+        "_text_width",
+        autospec=True,
+        side_effect=lambda _self, text, _scale: float(len(text) * 8),
+    )
+    mocker.patch.object(
+        QuestResultsUi,
+        "_draw_small",
+        autospec=True,
+        side_effect=lambda _self, text, pos, _scale, color: (
             captured_text.append(str(text)),
             captured_draws.append((str(text), float(pos.x), float(pos.y), color)) if captured_draws is not None else None,
         ),
     )
-    monkeypatch.setattr(
+    mocker.patch(
         "crimson.ui.quest_results.rl.draw_texture_pro",
-        lambda texture, _src, _dst, _origin, _rotation, _tint: texture_draws.append(texture),
+        side_effect=lambda texture, _src, _dst, _origin, _rotation, _tint: texture_draws.append(texture),
     )
 
 
-def test_quest_results_name_entry_draws_stats_card(monkeypatch, tmp_path: Path) -> None:
+def test_quest_results_name_entry_draws_stats_card(tmp_path: Path, mocker) -> None:
     ui = _build_ui(tmp_path, phase=1)
     captured_text: list[str] = []
     texture_draws: list[object] = []
-    _patch_draw_environment(monkeypatch, captured_text, texture_draws)
+    _patch_draw_environment(mocker, captured_text, texture_draws)
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
@@ -136,12 +143,12 @@ def test_quest_results_name_entry_draws_stats_card(monkeypatch, tmp_path: Path) 
     assert len(texture_draws) == 1
 
 
-def test_quest_results_name_prompt_preserve_bugs(monkeypatch, tmp_path: Path) -> None:
+def test_quest_results_name_prompt_preserve_bugs(tmp_path: Path, mocker) -> None:
     ui = _build_ui(tmp_path, phase=1)
     ui.preserve_bugs = True
     captured_text: list[str] = []
     texture_draws: list[object] = []
-    _patch_draw_environment(monkeypatch, captured_text, texture_draws)
+    _patch_draw_environment(mocker, captured_text, texture_draws)
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
@@ -149,14 +156,14 @@ def test_quest_results_name_prompt_preserve_bugs(monkeypatch, tmp_path: Path) ->
     assert "State your name, trooper!" not in captured_text
 
 
-def test_quest_results_name_entry_uses_native_offsets_and_colors(monkeypatch, tmp_path: Path) -> None:
+def test_quest_results_name_entry_uses_native_offsets_and_colors(tmp_path: Path, mocker) -> None:
     ui = _build_ui(tmp_path, phase=1)
     captured_text: list[str] = []
     texture_draws: list[object] = []
     captured_draws: list[tuple[str, float, float, rl.Color]] = []
     line_draws: list[tuple[int, int, int, int, object]] = []
     _patch_draw_environment(
-        monkeypatch,
+        mocker,
         captured_text,
         texture_draws,
         captured_draws=captured_draws,
@@ -186,11 +193,11 @@ def test_quest_results_name_entry_uses_native_offsets_and_colors(monkeypatch, tm
     assert (222, 225, 222, 273) in [(x1, y1, x2, y2) for x1, y1, x2, y2, _c in line_draws]
 
 
-def test_quest_results_buttons_phase_keeps_weapon_stats_hidden(monkeypatch, tmp_path: Path) -> None:
+def test_quest_results_buttons_phase_keeps_weapon_stats_hidden(tmp_path: Path, mocker) -> None:
     ui = _build_ui(tmp_path, phase=2)
     captured_text: list[str] = []
     texture_draws: list[object] = []
-    _patch_draw_environment(monkeypatch, captured_text, texture_draws)
+    _patch_draw_environment(mocker, captured_text, texture_draws)
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 

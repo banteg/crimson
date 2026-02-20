@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import pyray as rl
-
 from grim.math import clamp
+from grim.raylib_api import rl
 
 from .common import RAD_TO_DEG, proj_origin
 from .types import ProjectileDrawCtx

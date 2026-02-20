@@ -14,7 +14,7 @@ def _make_quest_mode() -> QuestMode:
     return QuestMode(ctx)
 
 
-def test_quest_mode_closes_run_when_player_dies_during_perk_menu_transition(monkeypatch) -> None:
+def test_quest_mode_closes_run_when_player_dies_during_perk_menu_transition(monkeypatch, mocker) -> None:
     mode = _make_quest_mode()
 
     # Simulate Fatal Lottery killing the player while the perk menu is closing.
@@ -25,10 +25,10 @@ def test_quest_mode_closes_run_when_player_dies_during_perk_menu_transition(monk
     mode._perk_menu.open = False
     mode._perk_menu.timeline_ms = 100.0
 
-    monkeypatch.setattr("crimson.modes.base_gameplay_mode.rl.get_mouse_position", lambda: rl.Vector2(0.0, 0.0))
-    monkeypatch.setattr("crimson.modes.base_gameplay_mode.rl.get_screen_width", lambda: 640)
-    monkeypatch.setattr("crimson.modes.base_gameplay_mode.rl.get_screen_height", lambda: 480)
-    monkeypatch.setattr("crimson.modes.quest_mode.rl.is_key_pressed", lambda _key: False)
+    mocker.patch("crimson.modes.base_gameplay_mode.rl.get_mouse_position", side_effect=lambda: rl.Vector2(0.0, 0.0))
+    mocker.patch("crimson.modes.base_gameplay_mode.rl.get_screen_width", side_effect=lambda: 640)
+    mocker.patch("crimson.modes.base_gameplay_mode.rl.get_screen_height", side_effect=lambda: 480)
+    mocker.patch("crimson.modes.quest_mode.rl.is_key_pressed", side_effect=lambda _key: False)
 
     mode.update(1.0 / 60.0)
 

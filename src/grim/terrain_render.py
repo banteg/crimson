@@ -5,8 +5,7 @@ from collections.abc import Iterable, Iterator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 
-import pyray as rl
-from raylib import defines as rd
+from grim.raylib_api import rd, rl
 
 from .geom import Vec2
 from .rand import CrtRand

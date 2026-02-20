@@ -1,0 +1,14 @@
+id: no-direct-pyray-imports
+language: python
+severity: error
+message: Import Raylib via grim.raylib_api instead of direct pyray/raylib imports.
+files:
+  - src/**/*.py
+ignores:
+  - src/grim/raylib_api.py
+rule:
+  any:
+    - pattern: import pyray as $ALIAS
+    - pattern: import pyray
+    - pattern: from raylib import defines as $ALIAS
+    - pattern: from raylib import defines

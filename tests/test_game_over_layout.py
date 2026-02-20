@@ -89,7 +89,7 @@ def test_game_over_panel_layout_uses_native_panel_anchor(tmp_path: Path) -> None
     assert layout_1024.panel.y == 119.0
 
 
-def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, patch_raylib_module, tmp_path: Path) -> None:
+def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, patch_raylib_module, tmp_path: Path, mocker) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config())
     _set_assets(ui, _game_over_assets())
     ui.phase = 1
@@ -102,7 +102,7 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, patch_
         captured_x.append(float(pos.x))
         return False
 
-    monkeypatch.setattr("crimson.ui.game_over.button_update", _button_update)
+    mocker.patch("crimson.ui.game_over.button_update", side_effect=_button_update)
     patch_raylib_module("crimson.ui.game_over")
 
     ui.update(
@@ -117,7 +117,7 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, patch_
     assert captured_x[0] == 242.0
 
 
-def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, patch_raylib_module, tmp_path: Path) -> None:
+def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, patch_raylib_module, tmp_path: Path, mocker) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config(game_mode=1))
     _set_assets(ui, _game_over_assets())
     ui.phase = -1
@@ -139,13 +139,13 @@ def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, patch_ray
             return int(key_events.pop(0))
         return 0
 
-    monkeypatch.setattr("crimson.ui.game_over.read_highscore_table", lambda *_args, **_kwargs: [])
-    monkeypatch.setattr("crimson.ui.game_over.rank_index", lambda _records, _candidate: 0)
-    monkeypatch.setattr("crimson.ui.game_over.scores_path_for_config", lambda *_args, **_kwargs: tmp_path / "scores.hi")
-    monkeypatch.setattr("crimson.ui.game_over.button_update", lambda *args, **kwargs: False)
+    mocker.patch("crimson.ui.game_over.read_highscore_table", side_effect=lambda *_args, **_kwargs: [])
+    mocker.patch("crimson.ui.game_over.rank_index", side_effect=lambda _records, _candidate: 0)
+    mocker.patch("crimson.ui.game_over.scores_path_for_config", side_effect=lambda *_args, **_kwargs: tmp_path / "scores.hi")
+    mocker.patch("crimson.ui.game_over.button_update", side_effect=lambda *args, **kwargs: False)
     patch_raylib_module("crimson.ui.game_over")
-    monkeypatch.setattr("crimson.ui.game_over.rl.get_char_pressed", _get_char_pressed)
-    monkeypatch.setattr("crimson.ui.game_over.rl.get_key_pressed", _get_key_pressed)
+    mocker.patch("crimson.ui.game_over.rl.get_char_pressed", side_effect=_get_char_pressed)
+    mocker.patch("crimson.ui.game_over.rl.get_key_pressed", side_effect=_get_key_pressed)
 
     ui.update(
         0.0,
@@ -159,7 +159,7 @@ def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, patch_ray
     assert ui.input_caret == len("player")
 
 
-def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module, tmp_path: Path) -> None:
+def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module, tmp_path: Path, mocker) -> None:
     ui = GameOverUi(
         assets_root=tmp_path,
         base_dir=tmp_path,
@@ -175,11 +175,11 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module
     def _draw_classic_menu_panel(_texture, *, dst, tint, shadow):
         captured_panel.append((dst, bool(shadow)))
 
-    monkeypatch.setattr("crimson.ui.game_over.draw_classic_menu_panel", _draw_classic_menu_panel)
-    monkeypatch.setattr("crimson.ui.game_over.draw_menu_cursor", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.ui.game_over.button_draw", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.ui.game_over.button_width", lambda *_args, **_kwargs: 82.0)
-    monkeypatch.setattr("crimson.ui.game_over.GameOverUi._draw_score_card", lambda _self, **_kwargs: None)
+    mocker.patch("crimson.ui.game_over.draw_classic_menu_panel", side_effect=_draw_classic_menu_panel)
+    mocker.patch("crimson.ui.game_over.draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch("crimson.ui.game_over.button_draw", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch("crimson.ui.game_over.button_width", side_effect=lambda *_args, **_kwargs: 82.0)
+    mocker.patch("crimson.ui.game_over.GameOverUi._draw_score_card", return_value=None)
     patch_raylib_module("crimson.ui.game_over")
 
     ui.draw(
@@ -221,7 +221,7 @@ def test_game_over_world_entity_alpha_tracks_close_timeline(tmp_path: Path) -> N
     ],
 )
 def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
-    monkeypatch, tmp_path: Path, preserve_bugs: bool, expected_tooltip: str,
+    monkeypatch, tmp_path: Path, preserve_bugs: bool, expected_tooltip: str, mocker,
 ) -> None:
     ui = GameOverUi(
         assets_root=tmp_path,
@@ -245,11 +245,12 @@ def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
     record.most_used_weapon_id = 1
 
     captured_text: list[str] = []
-    monkeypatch.setattr("crimson.ui.game_over.rl.measure_text", lambda text, _size: len(str(text)) * 8)
-    monkeypatch.setattr("crimson.ui.game_over.rl.draw_line", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.ui.game_over.rl.draw_texture_pro", lambda *_args, **_kwargs: None)
+    mocker.patch("crimson.ui.game_over.rl.measure_text", side_effect=lambda text, _size: len(str(text)) * 8)
+    mocker.patch("crimson.ui.game_over.rl.draw_line", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch("crimson.ui.game_over.rl.draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
-        "crimson.ui.game_over.GameOverUi._draw_small",
+        GameOverUi,
+        "_draw_small",
         lambda _self, text, _pos, _scale, _color: captured_text.append(str(text)),
     )
 

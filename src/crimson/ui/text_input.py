@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import pyray as rl
+from grim.raylib_api import rl
 
 
 def poll_text_input(max_len: int, *, allow_space: bool = True) -> str:

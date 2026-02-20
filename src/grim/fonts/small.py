@@ -3,10 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-import pyray as rl
-
 from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
 from grim.geom import Vec2
+from grim.raylib_api import rl
 
 
 @dataclass(frozen=True, slots=True)

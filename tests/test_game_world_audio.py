@@ -12,6 +12,7 @@ from grim.audio import AudioState
 from grim.geom import Vec2
 from grim.music import init_music_state
 from grim.sfx import init_sfx_state
+from tests.helpers import assert_float_close
 
 
 def _audio_state_stub() -> AudioState:
@@ -22,16 +23,10 @@ def _audio_state_stub() -> AudioState:
     )
 
 
-def test_reload_finish_and_immediate_shot_plays_fire_sfx(monkeypatch) -> None:
+def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
-
-    played: list[str | None] = []
-
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True, reflex_boost_timer=0.0) -> None:
-        played.append(key)
-
-    monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
+    play_sfx = mocker.patch("crimson.audio_router.play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
     world.audio_router.audio = world.audio
@@ -65,19 +60,13 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(monkeypatch) -> None:
         prev_reload_timer=prev_reload_timer,
     )
 
-    assert played == ["sfx_pistol_fire"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_pistol_fire"]
 
 
-def test_fire_bullets_suppresses_weapon_fire_sfx(monkeypatch) -> None:
+def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
-
-    played: list[str | None] = []
-
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True, reflex_boost_timer=0.0) -> None:
-        played.append(key)
-
-    monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
+    play_sfx = mocker.patch("crimson.audio_router.play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
     world.audio_router.audio = world.audio
@@ -111,19 +100,13 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(monkeypatch) -> None:
         prev_reload_timer=prev_reload_timer,
     )
 
-    assert played == ["sfx_autorifle_fire", "sfx_plasmaminigun_fire"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_autorifle_fire", "sfx_plasmaminigun_fire"]
 
 
-def test_pending_perk_increase_plays_levelup_sfx(monkeypatch) -> None:
+def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
-
-    played: list[str | None] = []
-
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True, reflex_boost_timer=0.0) -> None:
-        played.append(key)
-
-    monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
+    play_sfx = mocker.patch("crimson.audio_router.play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
 
@@ -137,19 +120,13 @@ def test_pending_perk_increase_plays_levelup_sfx(monkeypatch) -> None:
         perk_progression_enabled=True,
     )
 
-    assert played == ["sfx_ui_levelup"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_levelup"]
 
 
-def test_bonus_pickup_plays_bonus_sfx(monkeypatch) -> None:
+def test_bonus_pickup_plays_bonus_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
-
-    played: list[str | None] = []
-
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True, reflex_boost_timer=0.0) -> None:
-        played.append(key)
-
-    monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
+    play_sfx = mocker.patch("crimson.audio_router.play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
 
@@ -160,19 +137,13 @@ def test_bonus_pickup_plays_bonus_sfx(monkeypatch) -> None:
     world.update(0.016, perk_progression_enabled=False)
 
     assert entry.picked
-    assert played == ["sfx_ui_bonus"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_bonus"]
 
 
-def test_fireblast_pickup_plays_explosion_medium_sfx(monkeypatch) -> None:
+def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
-
-    played: list[str | None] = []
-
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True, reflex_boost_timer=0.0) -> None:
-        played.append(key)
-
-    monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
+    play_sfx = mocker.patch("crimson.audio_router.play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
 
@@ -183,40 +154,34 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(monkeypatch) -> None:
     world.update(0.016, perk_progression_enabled=False)
 
     assert entry.picked
-    assert played == ["sfx_ui_bonus", "sfx_explosion_medium"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_bonus", "sfx_explosion_medium"]
 
 
-def test_perk_bursts_play_explosion_small_sfx(monkeypatch) -> None:
+def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
-
-    played: list[str | None] = []
-
-    def _play_sfx(_state, key, *, rng=None, allow_variants=True, reflex_boost_timer=0.0) -> None:
-        played.append(key)
-
-    monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
+    play_sfx = mocker.patch("crimson.audio_router.play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
 
     player = world.players[0]
     aim = PlayerInput(aim=Vec2(player.pos.x + 1.0, player.pos.y))
 
-    played.clear()
+    play_sfx.reset_mock()
     player.perk_counts[int(PerkId.MAN_BOMB)] = 1
     player.man_bomb_timer = 3.9
     world.update(0.2, inputs=[aim], perk_progression_enabled=False)
-    assert played == ["sfx_explosion_small"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_explosion_small"]
 
-    played.clear()
+    play_sfx.reset_mock()
     player.perk_counts[int(PerkId.MAN_BOMB)] = 0
     player.man_bomb_timer = 0.0
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
     player.hot_tempered_timer = 1.95
     world.update(0.1, inputs=[aim], perk_progression_enabled=False)
-    assert played == ["sfx_explosion_small"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_explosion_small"]
 
-    played.clear()
+    play_sfx.reset_mock()
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 0
     player.hot_tempered_timer = 0.0
     player.perk_counts[int(PerkId.ANGRY_RELOADER)] = 1
@@ -226,20 +191,13 @@ def test_perk_bursts_play_explosion_small_sfx(monkeypatch) -> None:
     player.clip_size = 10
     player.ammo = 0
     world.update(0.2, inputs=[aim], perk_progression_enabled=False)
-    assert played == ["sfx_explosion_small"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_explosion_small"]
 
 
-def test_audio_router_forwards_live_reflex_timer(monkeypatch) -> None:
+def test_audio_router_forwards_live_reflex_timer(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
-
-    reflex_seen: list[float] = []
-
-    def _play_sfx(_state, _key, *, rng=None, allow_variants=True, reflex_boost_timer=0.0) -> None:
-        del rng, allow_variants
-        reflex_seen.append(float(reflex_boost_timer))
-
-    monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
+    play_sfx = mocker.patch("crimson.audio_router.play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
     world.audio_router.audio = world.audio
@@ -248,4 +206,6 @@ def test_audio_router_forwards_live_reflex_timer(monkeypatch) -> None:
     world.state.bonuses.reflex_boost = 0.75
     world.audio_router.play_sfx("sfx_pistol_fire")
 
-    assert reflex_seen == [0.75]
+    play_sfx.assert_called_once()
+    assert play_sfx.call_args.args[1] == "sfx_pistol_fire"
+    assert_float_close(float(play_sfx.call_args.kwargs["reflex_boost_timer"]), 0.75)

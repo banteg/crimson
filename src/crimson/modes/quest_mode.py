@@ -7,8 +7,6 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Protocol, cast
 
-import pyray as rl
-
 from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState, play_music
 from grim.config import (
@@ -18,6 +16,7 @@ from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.geom import Vec2
 from grim.math import clamp
+from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ..debug import debug_enabled

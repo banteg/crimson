@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import pyray as rl
-
 from grim.geom import Vec2
 from grim.math import clamp
+from grim.raylib_api import rl
 
 from ...creatures.anim import creature_anim_select_frame
 from ...creatures.spawn import CreatureFlags, CreatureTypeId

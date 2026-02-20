@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Protocol
 from .math import clamp
 
 if TYPE_CHECKING:
-    import pyray as rl
+    from grim.raylib_api import rl
 
 
 class SupportsXY(Protocol):
@@ -112,7 +112,7 @@ class Vec2:
         return Vec2(self.y, -self.x)
 
     def to_rl(self) -> rl.Vector2:
-        import pyray as rl
+        from grim.raylib_api import rl
 
         return rl.Vector2(self.x, self.y)
 
@@ -250,6 +250,6 @@ class Rect:
         return self.x <= px <= self.right and self.y <= py <= self.bottom
 
     def to_rl(self) -> rl.Rectangle:
-        import pyray as rl
+        from grim.raylib_api import rl
 
         return rl.Rectangle(self.x, self.y, self.w, self.h)

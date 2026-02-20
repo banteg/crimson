@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import pyray as rl
-
 from grim.fonts.grim_mono import GrimMonoFont
 from grim.math import clamp
+from grim.raylib_api import rl
 
 from .quest_title_overlay import draw_quest_title_overlay
 

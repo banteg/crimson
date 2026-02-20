@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 
 from crimson.game_modes import GameMode
-from crimson.original.schema import CAPTURE_FORMAT_VERSION
 from crimson.replay.checkpoints import (
     ReplayCheckpoint,
     ReplayEventSummary,
@@ -12,6 +11,7 @@ from crimson.replay.checkpoints import (
     ReplayPlayerCheckpoint,
 )
 from grim.geom import Vec2
+from tests.builders.capture import build_capture_file, capture_file_to_dict
 
 
 def _load_report_module():
@@ -509,19 +509,10 @@ def _capture_tick(
 
 
 def _capture_obj(*, ticks: list[dict[str, object]]) -> dict[str, object]:
-    return {
-        "capture_format_version": int(CAPTURE_FORMAT_VERSION),
-        "script": "gameplay_diff_capture",
-        "session_id": "s",
-        "out_path": "capture.json",
-        "config": _base_config(),
-        "session_fingerprint": {"session_id": "s", "module_hash": "a", "ptrs_hash": "b"},
-        "process": {"pid": 1, "platform": "windows", "arch": "x86", "frida_version": "16", "runtime": "v8"},
-        "exe": {"base": "0x400000", "size": 1, "path": "crimsonland.exe"},
-        "grim": None,
-        "pointers_resolved": {},
-        "ticks": ticks,
-    }
+    capture = build_capture_file(ticks=[], session_id="s")
+    payload = capture_file_to_dict(capture)
+    payload["ticks"] = ticks
+    return payload
 
 
 def _write_capture_stream(path: Path, capture: dict[str, object]) -> None:

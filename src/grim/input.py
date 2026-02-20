@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-import pyray as rl
+from grim.raylib_api import rl
 
 
 @dataclass(slots=True)

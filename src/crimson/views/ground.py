@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import pyray as rl
-
 from crimson.creatures.anim import creature_corpse_frame_for_type
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.effects_atlas import EffectId
@@ -14,6 +12,7 @@ from grim.config import ensure_crimson_cfg
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
+from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 from grim.view import View, ViewContext
 

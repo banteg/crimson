@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pyray as rl
-
 from grim.assets import PaqTextureCache
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.geom import Vec2
 from grim.math import clamp
+from grim.raylib_api import rl
 
 from ..demo_trial import DemoTrialOverlayInfo
 from .perk_menu import (

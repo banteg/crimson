@@ -1,0 +1,32 @@
+# serializer version: 1
+# name: test_projectile_pool_snapshot
+  dict({
+    'creature_hp': 44.532258,
+    'hits': list([
+      dict({
+        'hit': list([
+          60.0,
+          0.0,
+        ]),
+        'origin': list([
+          0.0,
+          0.0,
+        ]),
+        'target': list([
+          71.142857,
+          0.0,
+        ]),
+        'type_id': 4,
+      }),
+    ]),
+    'projectile': dict({
+      'active': True,
+      'damage_pool': 0.0,
+      'life_timer': 0.25,
+      'pos': list([
+        62.0,
+        0.0,
+      ]),
+    }),
+  })
+# ---

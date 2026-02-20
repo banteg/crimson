@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import pyray as rl
-from raylib import defines as rd
+from grim.raylib_api import rd, rl
 
 # ui_element_render (0x446c40): shadow pass uses offset (7, 7), tint 0x44444444, and
 # blend factors (src=ZERO, dst=ONE_MINUS_SRC_ALPHA).

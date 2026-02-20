@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import math
 
-import pyray as rl
-from raylib import defines as rd
-
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
+from grim.raylib_api import rd, rl
 
 from ...projectiles import ProjectileTypeId
 from ...sim.world_defs import KNOWN_PROJ_FRAMES

@@ -4,12 +4,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol
 
-import pyray as rl
-
 from grim.assets import TextureLoader
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.math import clamp
+from grim.raylib_api import rl
 
 from .layout import menu_widescreen_y_shift
 

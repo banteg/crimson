@@ -3,10 +3,9 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
-import pyray as rl
-
 from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.math import clamp
+from grim.raylib_api import rl
 
 from ...gameplay import GameplayState
 from ...perks import PerkId, perk_display_description, perk_display_name

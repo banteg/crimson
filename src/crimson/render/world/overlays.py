@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import pyray as rl
-
 from grim.geom import Vec2
 from grim.math import clamp
+from grim.raylib_api import rl
 
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx

@@ -46,6 +46,7 @@ from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from tests.builders.capture import build_capture_file, capture_file_to_dict
 
 
 def _crt_rand_outputs(seed: int, calls: int) -> list[int]:
@@ -711,33 +712,10 @@ def _sample_bonus(*, index: int = 2) -> dict[str, object]:
 
 
 def _capture_obj(*, ticks: list[dict[str, object]]) -> dict[str, object]:
-    return {
-        "capture_format_version": int(CAPTURE_FORMAT_VERSION),
-        "script": "gameplay_diff_capture",
-        "session_id": "session-1",
-        "out_path": "capture.json",
-        "config": _base_config(),
-        "session_fingerprint": {
-            "session_id": "session-1",
-            "module_hash": "deadbeef",
-            "ptrs_hash": "feedface",
-        },
-        "process": {
-            "pid": 123,
-            "platform": "windows",
-            "arch": "x86",
-            "frida_version": "16.0.0",
-            "runtime": "v8",
-        },
-        "exe": {
-            "base": "0x00400000",
-            "size": 1,
-            "path": "crimsonland.exe",
-        },
-        "grim": None,
-        "pointers_resolved": {},
-        "ticks": ticks,
-    }
+    capture = build_capture_file(ticks=[], session_id="session-1")
+    payload = capture_file_to_dict(capture)
+    payload["ticks"] = ticks
+    return payload
 
 
 def _normalize_rng_head_rows(rows: list[object]) -> list[object]:

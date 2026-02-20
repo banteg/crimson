@@ -6,12 +6,11 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import pyray as rl
-
 from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
+from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from .audio_router import AudioRouter

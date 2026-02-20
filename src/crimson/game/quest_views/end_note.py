@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import pyray as rl
-
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.geom import Vec2
+from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from ...frontend.assets import _ensure_texture_cache

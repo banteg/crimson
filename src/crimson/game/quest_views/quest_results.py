@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import Any, cast
 
-import pyray as rl
-
 from grim.audio import play_sfx, update_audio
+from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from ...frontend.menu import ensure_menu_ground, menu_ground_camera

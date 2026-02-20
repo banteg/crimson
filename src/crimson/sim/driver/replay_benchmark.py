@@ -87,10 +87,9 @@ def run_replay_render_benchmark(
     profile_out: Path | None = None,
     mute_audio: bool = True,
 ) -> ReplayBenchmarkResult:
-    import pyray as rl
-
     from grim.config import ensure_crimson_cfg
     from grim.console import create_console
+    from grim.raylib_api import rl
     from grim.view import ViewContext
 
     from ...assets_fetch import download_missing_paqs
@@ -332,7 +331,7 @@ def _run_render_once(
     strict_events: bool,
     trace_rng: bool,
 ) -> RunResult:
-    import pyray as rl
+    from grim.raylib_api import rl
 
     from ...modes.replay_playback_mode import ReplayPlaybackMode
 

@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import math
 
-import pyray as rl
-
 from grim.geom import Vec2
+from grim.raylib_api import rl
 
 from ..effects_atlas import EffectId, effect_src_rect
 

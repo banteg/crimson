@@ -5,12 +5,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
-import pyray as rl
-
 from grim.assets import TextureLoader
 from grim.color import RGBA
 from grim.fonts.small import SmallFontData, draw_small_text
 from grim.geom import Vec2
+from grim.raylib_api import rl
 
 from ..bonuses.hud import BonusHudState
 from ..game_modes import GameMode

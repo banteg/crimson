@@ -1,0 +1,30 @@
+id: no-direct-pyray-imports
+snapshots:
+  ? |
+    from raylib import defines
+  : labels:
+    - source: from raylib import defines
+      style: primary
+      start: 0
+      end: 26
+  ? |
+    from raylib import defines as rd
+  : labels:
+    - source: from raylib import defines as rd
+      style: primary
+      start: 0
+      end: 32
+  ? |
+    import pyray
+  : labels:
+    - source: import pyray
+      style: primary
+      start: 0
+      end: 12
+  ? |
+    import pyray as rl
+  : labels:
+    - source: import pyray as rl
+      style: primary
+      start: 0
+      end: 18

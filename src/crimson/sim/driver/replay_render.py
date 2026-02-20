@@ -71,10 +71,9 @@ def run_replay_render_video(
     mute_audio: bool = True,
     progress: Callable[[ReplayRenderPhase, int, int, int], None] | None = None,
 ) -> ReplayRenderResult:
-    import pyray as rl
-
     from grim.config import ensure_crimson_cfg
     from grim.console import create_console
+    from grim.raylib_api import rl
     from grim.view import ViewContext
 
     from ...assets_fetch import download_missing_paqs

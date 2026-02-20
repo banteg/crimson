@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import pyray as rl
-
 from grim.color import RGBA
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
+from grim.raylib_api import rl
 from grim.view import View, ViewContext
 
 from ..creatures.anim import creature_anim_advance_phase, creature_anim_select_frame

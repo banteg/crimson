@@ -5,8 +5,6 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import pyray as rl
-
 from grim.color import RGBA
 from grim.fonts.grim_mono import (
     GrimMonoFont,
@@ -21,6 +19,7 @@ from grim.fonts.small import (
 )
 from grim.geom import Vec2
 from grim.math import clamp
+from grim.raylib_api import rl
 
 from . import paq
 

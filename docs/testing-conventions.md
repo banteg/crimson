@@ -1,0 +1,46 @@
+---
+tags:
+  - contributor
+  - testing
+---
+
+# Testing Conventions
+
+This project prioritizes deterministic parity with the original executable. The test suite should favor stable behavior checks while keeping tests maintainable.
+
+## Mocking and Patching
+
+- Use `pytest-mock` (`mocker`) as the default mechanism for spies and patches.
+- Prefer `mocker.patch(...)` / `mocker.patch.object(...)` over ad-hoc closures plus mutable lists.
+- Avoid string-target `monkeypatch.setattr("...rl...")` for Raylib calls; use `mocker`-based patches instead.
+- Reserve `monkeypatch` for environment variables, filesystem/path mutation, or object-target overrides where `mocker` is not a fit.
+
+## Raylib Access
+
+- Runtime code under `src/` must import Raylib through `grim.raylib_api`:
+  - `from grim.raylib_api import rl`
+  - `from grim.raylib_api import rd`
+- Do not import `pyray` or `raylib.defines` directly from `src/` modules.
+
+## Float Assertions
+
+- Use `tests.helpers.assert_float_close(actual, expected)` for scalar float parity checks.
+- The canonical absolute tolerance is `1e-6`.
+
+## Snapshot-First Testing
+
+- Prefer syrupy snapshots for high-structure payloads and broad regressions.
+- Keep explicit assertions for critical invariants (for example deterministic RNG state/hash or exact event semantics).
+
+## Capture Test Data
+
+- Prefer typed capture builders from `tests.builders.capture` for creating capture fixtures.
+- Keep serialization to dict/JSON at API/file boundaries.
+- For negative validation tests, it is acceptable to inject malformed raw rows directly at the boundary layer.
+
+## Guardrails
+
+Ast-grep rules enforce key constraints:
+
+- no direct `pyray` imports in `src/`
+- no string-target Raylib `monkeypatch.setattr("...rl...")` in tests

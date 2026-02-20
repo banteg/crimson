@@ -5,10 +5,9 @@ import os
 from dataclasses import dataclass
 from typing import Protocol
 
-import pyray as rl
-
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.geom import Rect, Vec2
+from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id

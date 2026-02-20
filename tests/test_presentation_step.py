@@ -14,6 +14,7 @@ from crimson.sim.presentation_step import (
 )
 from crimson.sim.state_types import BonusPickupEvent, PlayerState
 from grim.geom import Vec2
+from tests.helpers import MockCrand
 
 
 def _death(
@@ -265,35 +266,21 @@ def test_queue_projectile_decals_orders_blood_before_decals() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     fx_queue = FxQueue()
-    events: list[str] = []
-
-    orig_spawn_blood = state.effects.spawn_blood_splatter
-    orig_add_random = fx_queue.add_random
-
-    def _spawn_blood_splatter(**kwargs):
-        events.append("blood")
-        return orig_spawn_blood(**kwargs)
-
-    def _add_random(**kwargs):
-        events.append("decal")
-        return orig_add_random(**kwargs)
-
-    state.effects.spawn_blood_splatter = _spawn_blood_splatter  # type: ignore[method-assign]
-    fx_queue.add_random = _add_random  # type: ignore[method-assign]
+    rng = MockCrand(0, fallback="repeat_last")
 
     queue_projectile_decals(
         state=state,
         players=[player],
         fx_queue=fx_queue,
         hits=_hits(1),
-        rand=lambda: 0,
+        rand=rng,
         detail_preset=5,
         fx_toggle=0,
     )
 
-    assert "blood" in events
-    assert "decal" in events
-    assert events.index("blood") < events.index("decal")
+    assert rng.calls == 74
+    assert rng.state == 0
+    assert fx_queue.count == 12
 
 
 def test_apply_world_presentation_step_prefers_preplanned_hit_outputs() -> None:

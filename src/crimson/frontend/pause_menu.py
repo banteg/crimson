@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import math
 
-import pyray as rl
-
 from grim.audio import play_sfx, update_audio
 from grim.geom import Rect, Vec2
+from grim.raylib_api import rl
 
 from .assets import MenuAssets, load_menu_assets
 from .menu import (

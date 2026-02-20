@@ -19,10 +19,10 @@ def _texture(width: int, height: int) -> rl.Texture:
     return cast("rl.Texture", _TextureStub(width, height))
 
 
-def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch) -> None:
+def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch, mocker) -> None:
     # Force HUD scale = 1.0 for easy coordinate assertions.
-    monkeypatch.setattr("crimson.ui.hud.rl.get_screen_width", lambda: 1024)
-    monkeypatch.setattr("crimson.ui.hud.rl.get_screen_height", lambda: 768)
+    mocker.patch("crimson.ui.hud.rl.get_screen_width", side_effect=lambda: 1024)
+    mocker.patch("crimson.ui.hud.rl.get_screen_height", side_effect=lambda: 768)
 
     textures: dict[str, rl.Texture] = {
         "game_top": _texture(512, 64),
@@ -61,8 +61,8 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch) -> Non
     def _draw_texture_pro(texture, _src, dst, _origin, _rotation, _tint) -> None:
         draws.append((texture, float(dst.x), float(dst.y), float(dst.width), float(dst.height)))
 
-    monkeypatch.setattr("crimson.ui.hud.rl.draw_texture_pro", _draw_texture_pro)
-    monkeypatch.setattr("crimson.ui.hud.rl.draw_text", lambda *args, **kwargs: None)
+    mocker.patch("crimson.ui.hud.rl.draw_texture_pro", side_effect=_draw_texture_pro)
+    mocker.patch("crimson.ui.hud.rl.draw_text", side_effect=lambda *args, **kwargs: None)
 
     draw_hud_overlay(
         assets,
@@ -98,10 +98,10 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch) -> Non
     assert (64.0, 22.0, 60.0, 9.0) in health_bars
 
 
-def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeypatch) -> None:
-    monkeypatch.setattr("crimson.ui.hud.rl.get_screen_width", lambda: 1024)
-    monkeypatch.setattr("crimson.ui.hud.rl.get_screen_height", lambda: 768)
-    monkeypatch.setattr("crimson.ui.hud.rl.draw_text", lambda *args, **kwargs: None)
+def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeypatch, mocker) -> None:
+    mocker.patch("crimson.ui.hud.rl.get_screen_width", side_effect=lambda: 1024)
+    mocker.patch("crimson.ui.hud.rl.get_screen_height", side_effect=lambda: 768)
+    mocker.patch("crimson.ui.hud.rl.draw_text", side_effect=lambda *args, **kwargs: None)
 
     life_heart = _texture(32, 32)
     assets = HudAssets(
@@ -127,7 +127,7 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeyp
     def _draw_texture_pro(texture, _src, dst, _origin, _rotation, _tint) -> None:
         draws.append((texture, float(dst.x), float(dst.y), float(dst.width), float(dst.height)))
 
-    monkeypatch.setattr("crimson.ui.hud.rl.draw_texture_pro", _draw_texture_pro)
+    mocker.patch("crimson.ui.hud.rl.draw_texture_pro", side_effect=_draw_texture_pro)
 
     draws.clear()
     draw_hud_overlay(

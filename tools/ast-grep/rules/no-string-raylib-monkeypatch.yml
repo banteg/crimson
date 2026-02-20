@@ -1,0 +1,10 @@
+id: no-string-raylib-monkeypatch
+language: python
+severity: error
+message: Prefer object patching or pytest-mock; avoid string-target monkeypatch.setattr for raylib targets.
+files:
+  - tests/**/*.py
+rule:
+  all:
+    - kind: call
+    - regex: 'monkeypatch\.setattr\(".*(?:\.rl\.|pyray).*",'

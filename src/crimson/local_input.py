@@ -5,10 +5,9 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Protocol
 
-import pyray as rl
-
 from grim.config import CrimsonConfig, default_player_keybind_block
 from grim.geom import Vec2
+from grim.raylib_api import rl
 
 from .aim_schemes import AimScheme
 from .frontend.panels.controls_labels import controls_method_values
