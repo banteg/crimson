@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 from collections.abc import Sequence
-from typing import Any, Literal
+from typing import Any, Literal, Protocol
 
 import pytest
 
@@ -65,12 +65,20 @@ class MockCrand:
         return hashlib.sha1(payload.encode("utf-8")).hexdigest()[:16]
 
 
+class SupportsRngProgression(Protocol):
+    calls: int
+
+    @property
+    def state(self) -> int:
+        ...
+
+
 def assert_float_close(actual: Any, expected: Any) -> None:
     assert float(actual) == pytest.approx(float(expected), abs=1e-6)
 
 
 def assert_rng_progression(
-    rng: MockCrand,
+    rng: SupportsRngProgression,
     *,
     before_calls: int,
     before_state: int,
@@ -92,4 +100,6 @@ def assert_rng_progression(
     elif draws == 0:
         assert after_state == int(before_state)
     if expected_hash is not None:
-        assert rng.draw_hash(start_call=int(before_calls)) == str(expected_hash)
+        draw_hash = getattr(rng, "draw_hash", None)
+        assert callable(draw_hash), "expected_hash requires rng.draw_hash(...) support"
+        assert draw_hash(start_call=int(before_calls)) == str(expected_hash)

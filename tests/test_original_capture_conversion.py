@@ -4,7 +4,7 @@ import copy
 import gzip
 import json
 from pathlib import Path
-from typing import Any, TypeVar, cast
+from typing import Any, cast
 
 import msgspec
 import pytest
@@ -119,9 +119,6 @@ def _crt_rand_outputs(seed: int, calls: int) -> list[int]:
     return out
 
 
-_T = TypeVar("_T")
-
-
 _DEFAULT_CAPTURE_FILE = build_capture_file(
     ticks=[build_capture_tick(tick_index=0, elapsed_ms=0)],
     session_id="defaults",
@@ -133,13 +130,6 @@ _DEFAULT_CAPTURE_PROJECTILE_SAMPLE = build_capture_projectile_sample()
 _DEFAULT_CAPTURE_SECONDARY_PROJECTILE_SAMPLE = build_capture_secondary_projectile_sample()
 _DEFAULT_CAPTURE_BONUS_SAMPLE = build_capture_bonus_sample()
 _DEFAULT_CAPTURE_RNG_HEAD_ENTRY = build_capture_rng_head_entry()
-
-
-def _copy_with_struct(template: _T, **kwargs: object) -> _T:
-    value = copy.deepcopy(template)
-    for key, override in kwargs.items():
-        setattr(value, key, override)
-    return value
 
 
 def _as_builtins_dict(value: object) -> dict[str, object]:
@@ -154,27 +144,27 @@ def _capture_meta_dict(capture: CaptureFile) -> dict[str, object]:
 def _base_input_approx(**kwargs: object) -> CaptureInputApprox:
     updates: dict[str, object] = {"aim_x": 512.0, "aim_y": 512.0}
     updates.update(kwargs)
-    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.input_approx[0], **updates)
+    return msgspec.structs.replace(_DEFAULT_CAPTURE_TICK.input_approx[0], **updates)
 
 
 def _base_input_player_keys(**kwargs: object) -> CaptureInputPlayerKeys:
-    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.input_player_keys[0], **kwargs)
+    return msgspec.structs.replace(_DEFAULT_CAPTURE_TICK.input_player_keys[0], **kwargs)
 
 
 def _base_event_counts(**kwargs: object) -> CaptureEventCounts:
-    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.event_counts, **kwargs)
+    return msgspec.structs.replace(_DEFAULT_CAPTURE_TICK.event_counts, **kwargs)
 
 
 def _base_rng_head_entry(**kwargs: object) -> CaptureRngHeadEntry:
-    return _copy_with_struct(_DEFAULT_CAPTURE_RNG_HEAD_ENTRY, **kwargs)
+    return msgspec.structs.replace(_DEFAULT_CAPTURE_RNG_HEAD_ENTRY, **kwargs)
 
 
 def _base_rng_summary(**kwargs: object) -> CaptureRngSummary:
-    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.rng, **kwargs)
+    return msgspec.structs.replace(_DEFAULT_CAPTURE_TICK.rng, **kwargs)
 
 
 def _base_config(**kwargs: object) -> CaptureConfig:
-    return _copy_with_struct(_DEFAULT_CAPTURE_FILE.config, **kwargs)
+    return msgspec.structs.replace(_DEFAULT_CAPTURE_FILE.config, **kwargs)
 
 
 def _base_player() -> CapturePlayerCheckpoint:
@@ -220,35 +210,35 @@ def _base_snapshot_globals(**kwargs: object) -> CaptureSnapshotGlobals:
         "bonus_double_xp_timer",
     ):
         setattr(row, key, None)
-    return _copy_with_struct(row, **kwargs)
+    return msgspec.structs.replace(row, **kwargs)
 
 
 def _base_snapshot_status(**kwargs: object) -> CaptureSnapshotStatus:
-    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.before.status, **kwargs)
+    return msgspec.structs.replace(_DEFAULT_CAPTURE_TICK.before.status, **kwargs)
 
 
 def _base_snapshot_input(**kwargs: object) -> CaptureSnapshotInput:
-    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.before.input, **kwargs)
+    return msgspec.structs.replace(_DEFAULT_CAPTURE_TICK.before.input, **kwargs)
 
 
 def _base_snapshot_input_bindings(**kwargs: object) -> CaptureSnapshotInputBindings:
-    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.before.input_bindings, **kwargs)
+    return msgspec.structs.replace(_DEFAULT_CAPTURE_TICK.before.input_bindings, **kwargs)
 
 
 def _base_snapshot_player_perk_timers(**kwargs: object) -> CaptureSnapshotPlayerPerkTimers:
-    return _copy_with_struct(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER.perk_timers, **kwargs)
+    return msgspec.structs.replace(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER.perk_timers, **kwargs)
 
 
 def _base_snapshot_player_bonus_timers(**kwargs: object) -> CaptureSnapshotPlayerBonusTimers:
-    return _copy_with_struct(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER.bonus_timers, **kwargs)
+    return msgspec.structs.replace(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER.bonus_timers, **kwargs)
 
 
 def _base_snapshot_player_alt_weapon(**kwargs: object) -> CaptureSnapshotPlayerAltWeapon:
-    return _copy_with_struct(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER.alt_weapon, **kwargs)
+    return msgspec.structs.replace(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER.alt_weapon, **kwargs)
 
 
 def _base_snapshot_player(**kwargs: object) -> CaptureSnapshotPlayer:
-    return _copy_with_struct(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER, **kwargs)
+    return msgspec.structs.replace(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER, **kwargs)
 
 
 def _base_snapshot(**kwargs: object) -> CaptureSnapshot:
@@ -259,23 +249,25 @@ def _base_snapshot(**kwargs: object) -> CaptureSnapshot:
     snapshot.players = []
     snapshot.input = _base_snapshot_input()
     snapshot.input_bindings = _base_snapshot_input_bindings()
-    return _copy_with_struct(snapshot, **kwargs)
+    return msgspec.structs.replace(snapshot, **kwargs)
 
 
 def _base_timing_diagnostics(**kwargs: object) -> CaptureTimingDiagnostics:
-    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.checkpoint.debug.timing, **kwargs)
+    return msgspec.structs.replace(_DEFAULT_CAPTURE_TICK.checkpoint.debug.timing, **kwargs)
 
 
 def _base_spawn_diagnostics(**kwargs: object) -> CaptureSpawnDiagnostics:
-    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.checkpoint.debug.spawn, **kwargs)
+    return msgspec.structs.replace(_DEFAULT_CAPTURE_TICK.checkpoint.debug.spawn, **kwargs)
 
 
 def _base_rng_diagnostics(**kwargs: object) -> CaptureRngDiagnostics:
-    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.checkpoint.debug.rng, **kwargs)
+    return msgspec.structs.replace(_DEFAULT_CAPTURE_TICK.checkpoint.debug.rng, **kwargs)
 
 
-def _base_player_fire_diagnostics(**kwargs: object) -> CapturePlayerFireDiagnostics | None:
-    return _copy_with_struct(_DEFAULT_CAPTURE_TICK.checkpoint.debug.player_fire, **kwargs)
+def _base_player_fire_diagnostics(**kwargs: object) -> CapturePlayerFireDiagnostics:
+    template = _DEFAULT_CAPTURE_TICK.checkpoint.debug.player_fire
+    assert template is not None
+    return msgspec.structs.replace(template, **kwargs)
 
 
 def _base_checkpoint(
@@ -744,7 +736,7 @@ def test_summarize_capture_health_counts_micro_and_lifecycle_lineage(tmp_path: P
     tick.input_player_keys = [
         _base_input_player_keys(player_index=0, move_forward_pressed=True),
     ]
-    lifecycle_added = _copy_with_struct(
+    lifecycle_added = msgspec.structs.replace(
         build_capture_creature_lifecycle_entry(index=3),
         ai_mode=7,
         link_index=12,
@@ -1717,7 +1709,7 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0.mode_hint = "quest_mode_update"
     tick0.game_mode_id = int(GameMode.QUESTS)
-    lifecycle_added = _copy_with_struct(
+    lifecycle_added = msgspec.structs.replace(
         build_capture_creature_lifecycle_entry(index=18),
         heading=1.1278764009475708,
         target_heading=0.621416449546814,
@@ -1784,7 +1776,7 @@ def test_convert_capture_to_replay_emits_quest_added_head_without_spawn_rows(tmp
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0.mode_hint = "quest_mode_update"
     tick0.game_mode_id = int(GameMode.QUESTS)
-    lifecycle_added = _copy_with_struct(
+    lifecycle_added = msgspec.structs.replace(
         build_capture_creature_lifecycle_entry(index=7),
         heading=0.28999999165534973,
         target_heading=0.521416425704956,

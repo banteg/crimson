@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import copy
 from dataclasses import replace
-from typing import cast
 
 import pytest
 
@@ -379,9 +378,15 @@ def test_verify_capture_quest_uses_capture_inter_tick_rand_draw_overrides(
 
     def _fake_run_quest_replay(*_args: object, **kwargs: object):
         nonlocal seen_inter_tick_rand_draws, seen_inter_tick_rand_draws_by_tick
-        inter_tick_draws_obj = kwargs.get("inter_tick_rand_draws", -1)
+        inter_tick_draws_obj = kwargs["inter_tick_rand_draws"] if "inter_tick_rand_draws" in kwargs else -1
         seen_inter_tick_rand_draws = int(inter_tick_draws_obj) if isinstance(inter_tick_draws_obj, int) else -1
-        seen_inter_tick_rand_draws_by_tick = cast("dict[int, int]", kwargs.get("inter_tick_rand_draws_by_tick", {}))
+        draws_by_tick_obj = kwargs["inter_tick_rand_draws_by_tick"] if "inter_tick_rand_draws_by_tick" in kwargs else {}
+        assert isinstance(draws_by_tick_obj, dict)
+        seen_inter_tick_rand_draws_by_tick = {}
+        for key, value in draws_by_tick_obj.items():
+            assert isinstance(key, int)
+            assert isinstance(value, int)
+            seen_inter_tick_rand_draws_by_tick[key] = value
         raise _Stop("stop after capturing kwargs")
 
     mocker.patch.object(

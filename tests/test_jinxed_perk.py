@@ -7,7 +7,7 @@ from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.helpers import MockCrand, assert_float_close
+from tests.helpers import MockCrand, assert_float_close, assert_rng_progression
 
 
 def test_perks_update_effects_jinxed_kills_creature_and_awards_base_reward() -> None:
@@ -212,6 +212,8 @@ def test_perks_update_effects_jinxed_timer_uses_f32_underflow_threshold() -> Non
     state.jinxed_timer = 0.034000836312770844
     rng = MockCrand([3, 0, 7, 9], fallback="repeat_last")
     state.rng = rng
+    before_calls = rng.calls
+    before_state = rng.state
 
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=50.0)
     player.perk_counts[int(PerkId.JINXED)] = 1
@@ -220,4 +222,11 @@ def test_perks_update_effects_jinxed_timer_uses_f32_underflow_threshold() -> Non
 
     assert_float_close(state.jinxed_timer, 8.344650268554688e-07)
     assert_float_close(player.health, 50.0)
-    assert rng.calls == 0
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=0,
+        expected_after_state=before_state,
+        expected_hash="da39a3ee5e6b4b0d",
+    )

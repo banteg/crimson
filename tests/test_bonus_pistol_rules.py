@@ -6,7 +6,7 @@ from crimson.gameplay import GameplayState
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from tests.helpers import MockCrand
+from tests.helpers import MockCrand, assert_rng_progression
 
 
 def test_pistol_safety_net_forces_weapon_drop() -> None:
@@ -92,10 +92,18 @@ def test_pistol_safety_net_consumes_weapon_rng_when_spawn_pos_is_blocked() -> No
     state.bonus_pool = BonusPool()
 
     player = PlayerState(index=0, pos=Vec2(), weapon_id=int(WeaponId.PISTOL))
+    before_calls = rng.calls
+    before_state = rng.state
 
     entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(16.0, 100.0), state=state, players=[player])
     assert entry is None
-    assert rng.calls == 3
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=3,
+        expected_after_state=2,
+    )
     assert not any(slot.bonus_id != 0 for slot in state.bonus_pool.entries)
 
 
@@ -108,10 +116,18 @@ def test_spawn_gate_consumes_pick_rng_when_spacing_rejects_slot() -> None:
     player = PlayerState(index=0, pos=Vec2(), weapon_id=int(WeaponId.ASSAULT_RIFLE))
     seeded = state.bonus_pool.spawn_at(pos=Vec2(100.0, 100.0), bonus_id=int(BonusId.POINTS), state=state)
     assert seeded is not None
+    before_calls = rng.calls
+    before_state = rng.state
 
     entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(110.0, 100.0), state=state, players=[player])
     assert entry is None
-    assert rng.calls == 3
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=3,
+        expected_after_state=0,
+    )
     active = [slot for slot in state.bonus_pool.entries if slot.bonus_id != 0]
     assert len(active) == 1
 
