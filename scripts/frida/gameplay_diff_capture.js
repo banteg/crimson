@@ -3,7 +3,7 @@
 // Differential gameplay capture:
 // - per-gameplay tick records with stable checkpoint payloads
 // - deterministic command/event summaries for first-divergence debugging
-// - compact before/after snapshots and optional entity samples
+// - compact before/after snapshots and entity samples on every tick
 // - JSONL stream output (`capture_meta` + `tick` rows)
 //
 // Attach only:
@@ -21,7 +21,7 @@ const DEFAULT_QUEST_OUT_PREFIX = "gameplay_diff_capture.quest_";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 4;
+const CAPTURE_FORMAT_VERSION = 5;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
@@ -104,14 +104,12 @@ const CONFIG_ENV_KEYS = [
   "CRIMSON_FRIDA_CONSOLE_EVENTS",
   "CRIMSON_FRIDA_INCLUDE_CALLER",
   "CRIMSON_FRIDA_INCLUDE_BT",
-  "CRIMSON_FRIDA_INCLUDE_TICK_SNAPSHOTS",
   "CRIMSON_FRIDA_INCLUDE_RAW_EVENTS",
   "CRIMSON_FRIDA_ALL_STATES",
   "CRIMSON_FRIDA_STATES",
   "CRIMSON_FRIDA_PLAYER_COUNT",
   "CRIMSON_FRIDA_FOCUS_TICK",
   "CRIMSON_FRIDA_FOCUS_RADIUS",
-  "CRIMSON_FRIDA_TICK_DETAILS_EVERY",
   "CRIMSON_FRIDA_HEARTBEAT_MS",
   "CRIMSON_FRIDA_FLUSH_CAPTURE_WRITES",
   "CRIMSON_FRIDA_MAX_HEAD",
@@ -184,14 +182,12 @@ const CONFIG = {
   consoleEvents: parseStringSet(getEnv("CRIMSON_FRIDA_CONSOLE_EVENTS"), DEFAULT_CONSOLE_EVENTS),
   includeCaller: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_CALLER", true),
   includeBacktrace: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_BT", false),
-  includeTickSnapshots: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_TICK_SNAPSHOTS", true),
   includeRawEvents: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_RAW_EVENTS", false),
   emitTicksOutsideTrackedStates: parseBoolEnv("CRIMSON_FRIDA_ALL_STATES", false),
   trackedStates: parseStateSet(getEnv("CRIMSON_FRIDA_STATES"), DEFAULT_TRACKED_STATES),
   playerCountOverride: parseIntEnv("CRIMSON_FRIDA_PLAYER_COUNT", 0),
   focusTick: parseIntEnv("CRIMSON_FRIDA_FOCUS_TICK", -1),
   focusRadius: Math.max(0, parseIntEnv("CRIMSON_FRIDA_FOCUS_RADIUS", 0)),
-  tickDetailsEvery: Math.max(1, parseIntEnv("CRIMSON_FRIDA_TICK_DETAILS_EVERY", 1)),
   heartbeatMs: Math.max(100, parseIntEnv("CRIMSON_FRIDA_HEARTBEAT_MS", 1000)),
   flushCaptureWrites: parseBoolEnv("CRIMSON_FRIDA_FLUSH_CAPTURE_WRITES", true),
   maxHeadPerKind: parseLimitEnv("CRIMSON_FRIDA_MAX_HEAD", -1, 0),
@@ -2802,11 +2798,6 @@ function buildInputApprox(afterPlayers, tick) {
   return out;
 }
 
-function maybeDetailedSamples(tickIndex) {
-  if (CONFIG.tickDetailsEvery <= 1) return true;
-  return (tickIndex % CONFIG.tickDetailsEvery) === 0;
-}
-
 function finalizeTick() {
   const tick = outState.currentTick;
   if (!tick) return;
@@ -3162,23 +3153,17 @@ function finalizeTick() {
     input_approx: buildInputApprox(afterPlayers, tick),
     frame_dt_ms: frameDtMs,
     frame_dt_ms_i32: frameDtMsI32,
-  };
-  if (creatureLifecycleDiagnostics) {
-    out.creature_lifecycle = creatureLifecycleDiagnostics;
-  }
-
-  if (CONFIG.includeTickSnapshots) {
-    out.before = tick.before;
-    out.after = after;
-  }
-
-  if (maybeDetailedSamples(tick.tick_index)) {
-    out.samples = {
+    before: tick.before,
+    after: after,
+    samples: {
       creatures: readActiveCreatureSample(CONFIG.creatureSampleLimit),
       projectiles: readActiveProjectileSample(CONFIG.projectileSampleLimit),
       secondary_projectiles: readActiveSecondaryProjectileSample(CONFIG.secondaryProjectileSampleLimit),
       bonuses: readActiveBonusSample(CONFIG.bonusSampleLimit),
-    };
+    },
+  };
+  if (creatureLifecycleDiagnostics) {
+    out.creature_lifecycle = creatureLifecycleDiagnostics;
   }
 
   writeCaptureTick(out);
@@ -4648,13 +4633,11 @@ function main() {
     console_events: Array.from(CONFIG.consoleEvents.values()),
     include_caller: CONFIG.includeCaller,
     include_backtrace: CONFIG.includeBacktrace,
-    include_tick_snapshots: CONFIG.includeTickSnapshots,
     emit_ticks_outside_tracked_states: CONFIG.emitTicksOutsideTrackedStates,
     tracked_states: Array.from(CONFIG.trackedStates.values()),
     player_count_override: CONFIG.playerCountOverride,
     focus_tick: CONFIG.focusTick,
     focus_radius: CONFIG.focusRadius,
-    tick_details_every: CONFIG.tickDetailsEvery,
     heartbeat_ms: CONFIG.heartbeatMs,
     max_head_per_kind: CONFIG.maxHeadPerKind,
     max_events_per_tick: CONFIG.maxEventsPerTick,

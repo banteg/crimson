@@ -4,7 +4,7 @@ from typing import Literal, TypeAlias
 
 import msgspec
 
-CAPTURE_FORMAT_VERSION = 4
+CAPTURE_FORMAT_VERSION = 5
 
 
 class CaptureConfig(msgspec.Struct, forbid_unknown_fields=True):
@@ -19,13 +19,11 @@ class CaptureConfig(msgspec.Struct, forbid_unknown_fields=True):
     console_events: list[str] = msgspec.field(default_factory=list)
     include_caller: bool = True
     include_backtrace: bool = False
-    include_tick_snapshots: bool = True
     emit_ticks_outside_tracked_states: bool = False
     tracked_states: list[int] = msgspec.field(default_factory=list)
     player_count_override: int = 0
     focus_tick: int = -1
     focus_radius: int = 0
-    tick_details_every: int = 1
     heartbeat_ms: int = 1000
     max_head_per_kind: int = -1
     max_events_per_tick: int = -1
@@ -670,6 +668,9 @@ def _default_module_info() -> ModuleInfo:
 class CaptureTick(msgspec.Struct, forbid_unknown_fields=True):
     tick_index: int
     gameplay_frame: int
+    before: CaptureSnapshot
+    after: CaptureSnapshot
+    samples: CaptureSamples
     focus_tick: bool = False
     state_id_enter: int | None = None
     state_id_leave: int | None = None
@@ -698,9 +699,6 @@ class CaptureTick(msgspec.Struct, forbid_unknown_fields=True):
     input_approx: list[CaptureInputApprox] = msgspec.field(default_factory=list)
     frame_dt_ms: float | None = None
     frame_dt_ms_i32: int | None = None
-    before: CaptureSnapshot | None = None
-    after: CaptureSnapshot | None = None
-    samples: CaptureSamples | None = None
     creature_lifecycle: dict[str, object] | None = None
 
 

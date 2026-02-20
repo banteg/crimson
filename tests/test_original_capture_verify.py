@@ -16,6 +16,8 @@ from crimson.original.schema import (
     CapturePerkSnapshot,
     CapturePlayerCheckpoint,
     CaptureRngMarks,
+    CaptureSamples,
+    CaptureSnapshot,
     CaptureStatusSnapshot,
     CaptureTick,
     CaptureVec2,
@@ -152,6 +154,9 @@ def _capture_from_checkpoint(
     tick = CaptureTick(
         tick_index=int(ckpt.tick_index),
         gameplay_frame=int(ckpt.tick_index) + 1,
+        before=CaptureSnapshot(),
+        after=CaptureSnapshot(),
+        samples=CaptureSamples(),
         mode_hint=str(mode_hint),
         game_mode_id=int(game_mode_id),
         quest_stage_major=int(quest_stage_major),

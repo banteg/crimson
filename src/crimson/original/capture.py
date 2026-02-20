@@ -3059,7 +3059,7 @@ def _decode_capture_stream(raw: bytes, path: Path) -> CaptureFile | None:
         try:
             row_obj = msgspec.json.decode(line)
             row_obj = _decode_f32_tokens(row_obj)
-            row = msgspec.convert(row_obj, type=_CaptureStreamRow, strict=False)
+            row = msgspec.convert(row_obj, type=_CaptureStreamRow, strict=True)
         except (msgspec.DecodeError, msgspec.ValidationError) as exc:
             raise CaptureError(f"invalid capture file: {path}") from exc
 

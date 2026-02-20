@@ -18,7 +18,7 @@ from crimson.original.focus_trace import (
     FocusTraceReport,
     RngAlignmentSummary,
 )
-from crimson.original.schema import CAPTURE_FORMAT_VERSION, CaptureFile, CaptureTick
+from crimson.original.schema import CAPTURE_FORMAT_VERSION, CaptureFile, CaptureSamples, CaptureSnapshot, CaptureTick
 from crimson.replay import ReplayHeader, ReplayRecorder
 from crimson.sim.input import PlayerInput
 from grim.geom import Vec2
@@ -141,6 +141,8 @@ def _capture_tick(
         "rng": {"calls": 0, "last_value": None, "head": [{"state_before_u32": 0}]},
         "input_player_keys": [{"player_index": 0}],
         "input_approx": [{"player_index": 0, "aim_x": 0.0, "aim_y": 0.0}],
+        "before": {},
+        "after": {},
     }
 
 
@@ -372,6 +374,9 @@ def test_focus_runtime_traces_quest_tick() -> None:
             CaptureTick(
                 tick_index=0,
                 gameplay_frame=1,
+                before=CaptureSnapshot(),
+                after=CaptureSnapshot(),
+                samples=CaptureSamples(),
                 mode_hint="quest_mode_update",
                 game_mode_id=int(GameMode.QUESTS),
                 quest_stage_major=1,

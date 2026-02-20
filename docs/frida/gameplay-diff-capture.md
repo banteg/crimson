@@ -59,7 +59,7 @@ The capture file is newline-delimited JSON rows:
 - `{"event":"capture_meta","capture":{...}}` exactly once at start
 - `{"event":"tick","tick":{...}}` once per captured gameplay tick
 - `capture_meta.capture_format_version` is required and must match the current
-  loader version (`4`).
+  loader version (`5`).
 
 `uv run crimson original ...` commands load this stream and normalize it to the
 typed `CaptureFile` schema in Python (`msgspec`).
@@ -73,6 +73,8 @@ Notes:
 - Loader behavior is strict: truncated trailing JSON rows are rejected.
 - Loader behavior is strict: only captures with the current
   `capture_format_version` are accepted.
+- Loader behavior is strict per row: each JSONL line must decode as either a
+  typed `capture_meta` or typed `tick` row with no unknown/missing fields.
 - Loader accepts only stream rows (`capture_meta` + `tick`), not legacy
   monolithic JSON captures.
 - `capture_meta.config` now carries routing + provenance markers
@@ -101,9 +103,7 @@ Notes:
   tagged float32 bit tokens (`"f32:XXXXXXXX"`). Tooling decodes these tokens at
   load time and treats decoded float32 values as authoritative.
 - Input metadata contract: `input_approx` rows include per-player `move_mode`
-  and `aim_scheme` sampled from config globals. Legacy captures may contain
-  `null` for these fields; use CLI `--aim-scheme-player <PLAYER=SCHEME>`
-  overrides when replay synthesis needs known config values.
+  and `aim_scheme` sampled from config globals.
 - Quest tick rows include `quest_stage_major` / `quest_stage_minor` so tooling
   can map each file/tick back to a specific quest.
 
@@ -201,7 +201,6 @@ Creature micro hooks stay enabled by default for differential parity sessions.
 - `CRIMSON_FRIDA_QUEST_OUT_PREFIX=gameplay_diff_capture.quest_`
 - `CRIMSON_FRIDA_CONSOLE_ALL_EVENTS=1`
 - `CRIMSON_FRIDA_CONSOLE_EVENTS=start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event`
-- `CRIMSON_FRIDA_TICK_DETAILS_EVERY=30`
 - `CRIMSON_FRIDA_CREATURE_SAMPLE_LIMIT=24`
 - `CRIMSON_FRIDA_PROJECTILE_SAMPLE_LIMIT=32`
 - `CRIMSON_FRIDA_SECONDARY_PROJECTILE_SAMPLE_LIMIT=32`

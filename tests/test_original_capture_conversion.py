@@ -165,6 +165,14 @@ def _base_tick(
         },
         "input_player_keys": [{"player_index": 0}],
         "input_approx": [{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0}],
+        "before": {},
+        "after": {},
+        "samples": {
+            "creatures": [],
+            "projectiles": [],
+            "secondary_projectiles": [],
+            "bonuses": [],
+        },
     }
 
 

@@ -513,6 +513,8 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
             },
             {"kind": "projectile_find_hit", "data": {"creature_index": 19, "caller_static": "0x00420e52"}},
         ],
+        "before": {},
+        "after": {},
         "samples": {
             "creatures": [
                 {

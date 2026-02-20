@@ -116,6 +116,14 @@ def _capture_tick(
         },
         "input_player_keys": [{"player_index": 0}],
         "input_approx": [{"player_index": 0, "aim_x": 0.0, "aim_y": 0.0}],
+        "before": {},
+        "after": {},
+        "samples": {
+            "creatures": [],
+            "projectiles": [],
+            "secondary_projectiles": [],
+            "bonuses": [],
+        },
     }
 
 
