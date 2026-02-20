@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 from typer.testing import CliRunner
 
@@ -10,12 +9,7 @@ from crimson.cli import app
 
 
 def test_lan_host_command_builds_pending_session_and_runs_game(mocker, tmp_path: Path) -> None:
-    captured: dict[str, Any] = {}
-
-    def _fake_run_game(config):
-        captured["config"] = config
-
-    mocker.patch.object(game, "run_game", side_effect=_fake_run_game)
+    run_game = mocker.patch.object(game, "run_game")
 
     runner = CliRunner()
     result = runner.invoke(
@@ -37,7 +31,8 @@ def test_lan_host_command_builds_pending_session_and_runs_game(mocker, tmp_path:
     )
 
     assert result.exit_code == 0, result.output
-    config = captured["config"]
+    run_game.assert_called_once()
+    config = run_game.call_args.args[0]
     pending = config.pending_lan_session
     assert pending is not None
     assert pending.role == "host"
@@ -70,12 +65,7 @@ def test_lan_host_quests_requires_quest_level(mocker, tmp_path: Path) -> None:
 
 
 def test_lan_join_command_builds_pending_join_session(mocker, tmp_path: Path) -> None:
-    captured: dict[str, Any] = {}
-
-    def _fake_run_game(config):
-        captured["config"] = config
-
-    mocker.patch.object(game, "run_game", side_effect=_fake_run_game)
+    run_game = mocker.patch.object(game, "run_game")
 
     runner = CliRunner()
     result = runner.invoke(
@@ -93,7 +83,8 @@ def test_lan_join_command_builds_pending_join_session(mocker, tmp_path: Path) ->
     )
 
     assert result.exit_code == 0, result.output
-    config = captured["config"]
+    run_game.assert_called_once()
+    config = run_game.call_args.args[0]
     pending = config.pending_lan_session
     assert pending is not None
     assert pending.role == "join"
@@ -104,12 +95,7 @@ def test_lan_join_command_builds_pending_join_session(mocker, tmp_path: Path) ->
 
 
 def test_lan_join_loopback_host_autostarts_session(mocker, tmp_path: Path) -> None:
-    captured: dict[str, Any] = {}
-
-    def _fake_run_game(config):
-        captured["config"] = config
-
-    mocker.patch.object(game, "run_game", side_effect=_fake_run_game)
+    run_game = mocker.patch.object(game, "run_game")
 
     runner = CliRunner()
     result = runner.invoke(
@@ -125,7 +111,8 @@ def test_lan_join_loopback_host_autostarts_session(mocker, tmp_path: Path) -> No
     )
 
     assert result.exit_code == 0, result.output
-    config = captured["config"]
+    run_game.assert_called_once()
+    config = run_game.call_args.args[0]
     pending = config.pending_lan_session
     assert pending is not None
     assert pending.role == "join"

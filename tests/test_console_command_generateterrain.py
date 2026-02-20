@@ -36,13 +36,10 @@ def test_game_loop_consumes_terrain_regenerate_request(monkeypatch, make_game_st
         def regenerate_terrain_for_console(self) -> None:
             self.called += 1
 
-    calls: list[bool] = []
+    from unittest.mock import Mock
 
-    def _fake_ensure_menu_ground(*_args, regenerate: bool = False, **_kwargs):
-        calls.append(bool(regenerate))
-        return None
-
-    monkeypatch.setattr(loop_view, "ensure_menu_ground", _fake_ensure_menu_ground)
+    ensure_menu_ground_mock = Mock(return_value=None)
+    monkeypatch.setattr(loop_view, "ensure_menu_ground", ensure_menu_ground_mock)
 
     state = make_game_state()
     view = GameLoopView(state)
@@ -53,5 +50,6 @@ def test_game_loop_consumes_terrain_regenerate_request(monkeypatch, make_game_st
     view._handle_console_requests()
 
     assert state.terrain_regenerate_requested is False
-    assert calls == [True]
+    ensure_menu_ground_mock.assert_called_once()
+    assert bool(ensure_menu_ground_mock.call_args.kwargs["regenerate"]) is True
     assert fake.called == 1

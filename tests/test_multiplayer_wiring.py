@@ -60,7 +60,16 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     mode = QuestMode(ctx, config=cfg)
 
     inputs = [PlayerInput(move=Vec2(float(idx), 0.0)) for idx in range(len(mode.world.players))]
-    captured: dict[str, object] = {}
+    step_result = SimpleNamespace(
+        step=SimpleNamespace(),
+        spawn_timeline_ms=0.0,
+        no_creatures_timer_ms=0.0,
+        completion_transition_ms=-1.0,
+        play_hit_sfx=False,
+        play_completion_music=False,
+        completed=False,
+    )
+    step_tick = mocker.Mock(return_value=step_result)
 
     class _FakeSession:
         def __init__(self) -> None:
@@ -72,17 +81,7 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
             self.completion_transition_ms = -1.0
 
         def step_tick(self, *, dt_frame, inputs, trace_rng=False):
-            del dt_frame, trace_rng
-            captured["inputs"] = inputs
-            return SimpleNamespace(
-                step=SimpleNamespace(),
-                spawn_timeline_ms=0.0,
-                no_creatures_timer_ms=0.0,
-                completion_transition_ms=-1.0,
-                play_hit_sfx=False,
-                play_completion_music=False,
-                completed=False,
-            )
+            return step_tick(dt_frame=dt_frame, inputs=inputs, trace_rng=trace_rng)
 
     mode._sim_session = _FakeSession()
     mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)
@@ -94,7 +93,8 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
 
     mode.update(0.02)
 
-    assert captured["inputs"] is inputs
+    step_tick.assert_called_once()
+    assert step_tick.call_args.kwargs["inputs"] is inputs
     assert len(inputs) == 3
 
 
@@ -105,32 +105,17 @@ def test_base_gameplay_build_local_inputs_passes_creatures(mocker, tmp_path: Pat
     cfg = ensure_crimson_cfg(tmp_path)
     ctx = ViewContext(assets_dir=assets_dir)
     mode = SurvivalMode(ctx, config=cfg)
-
-    captured: dict[str, object] = {}
-
-    def _fake_build_frame_inputs(
-        *,
-        players,
-        config,
-        mouse_screen,
-        screen_to_world,
-        dt_frame,
-        creatures,
-    ):
-        captured["players"] = players
-        captured["config"] = config
-        captured["mouse_screen"] = mouse_screen
-        captured["screen_to_world"] = screen_to_world
-        captured["dt_frame"] = dt_frame
-        captured["creatures"] = creatures
-        return [PlayerInput() for _ in players]
-
-    mocker.patch.object(mode._local_input, "build_frame_inputs", side_effect=_fake_build_frame_inputs)
+    build_frame_inputs = mocker.patch.object(
+        mode._local_input,
+        "build_frame_inputs",
+        side_effect=lambda *, players, **_kwargs: [PlayerInput() for _ in players],
+    )
 
     frame = mode._build_local_inputs(dt_frame=0.016)
 
     assert len(frame) == len(mode.world.players)
-    assert captured["creatures"] is mode.creatures.entries
+    build_frame_inputs.assert_called_once()
+    assert build_frame_inputs.call_args.kwargs["creatures"] is mode.creatures.entries
     assert bool(mode._local_input._preserve_bugs) == bool(mode.state.preserve_bugs)
 
 

@@ -65,16 +65,16 @@ def test_perk_menu_pick_plays_button_click(mocker) -> None:
     mocker.patch.object(perk_menu_controller_module, "perk_selection_pick", side_effect=lambda *args, **kwargs: object())
 
     mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: False)
-    mocker.patch.object(perk_menu_controller_module.rl, "get_screen_width", side_effect=lambda: 640)
-    mocker.patch.object(perk_menu_controller_module.rl, "get_screen_height", side_effect=lambda: 480)
-    mocker.patch.object(perk_menu_controller_module.rl, "is_mouse_button_pressed", side_effect=lambda _button: False)
-    mocker.patch.object(perk_menu_controller_module.rl, "check_collision_point_rec", side_effect=lambda _pos, _rect: False)
-    mocker.patch.object(perk_menu_controller_module.rl, "measure_text", side_effect=lambda _text, _size: 10)
+    mocker.patch.object(rl, "get_screen_width", side_effect=lambda: 640)
+    mocker.patch.object(rl, "get_screen_height", side_effect=lambda: 480)
+    mocker.patch.object(rl, "is_mouse_button_pressed", side_effect=lambda _button: False)
+    mocker.patch.object(rl, "check_collision_point_rec", side_effect=lambda _pos, _rect: False)
+    mocker.patch.object(rl, "measure_text", side_effect=lambda _text, _size: 10)
 
     def _is_key_pressed(key: int) -> bool:
         return int(key) == int(rl.KeyboardKey.KEY_ENTER)
 
-    mocker.patch.object(perk_menu_controller_module.rl, "is_key_pressed", side_effect=_is_key_pressed)
+    mocker.patch.object(rl, "is_key_pressed", side_effect=_is_key_pressed)
 
     ctx = PerkMenuContext(
         state=GameplayState(),
@@ -106,16 +106,16 @@ def test_perk_menu_pick_invokes_on_pick(mocker) -> None:
     mocker.patch.object(perk_menu_controller_module, "perk_selection_pick", side_effect=lambda *args, **kwargs: object())
 
     mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: False)
-    mocker.patch.object(perk_menu_controller_module.rl, "get_screen_width", side_effect=lambda: 640)
-    mocker.patch.object(perk_menu_controller_module.rl, "get_screen_height", side_effect=lambda: 480)
-    mocker.patch.object(perk_menu_controller_module.rl, "is_mouse_button_pressed", side_effect=lambda _button: False)
-    mocker.patch.object(perk_menu_controller_module.rl, "check_collision_point_rec", side_effect=lambda _pos, _rect: False)
-    mocker.patch.object(perk_menu_controller_module.rl, "measure_text", side_effect=lambda _text, _size: 10)
+    mocker.patch.object(rl, "get_screen_width", side_effect=lambda: 640)
+    mocker.patch.object(rl, "get_screen_height", side_effect=lambda: 480)
+    mocker.patch.object(rl, "is_mouse_button_pressed", side_effect=lambda _button: False)
+    mocker.patch.object(rl, "check_collision_point_rec", side_effect=lambda _pos, _rect: False)
+    mocker.patch.object(rl, "measure_text", side_effect=lambda _text, _size: 10)
 
     def _is_key_pressed(key: int) -> bool:
         return int(key) == int(rl.KeyboardKey.KEY_ENTER)
 
-    mocker.patch.object(perk_menu_controller_module.rl, "is_key_pressed", side_effect=_is_key_pressed)
+    mocker.patch.object(rl, "is_key_pressed", side_effect=_is_key_pressed)
 
     ctx = PerkMenuContext(
         state=GameplayState(),
@@ -145,12 +145,12 @@ def test_perk_menu_cancel_plays_button_click(mocker) -> None:
     mocker.patch.object(perk_menu_controller_module, "perk_selection_current_choices", side_effect=lambda *args, **kwargs: [1])
 
     mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: True)
-    mocker.patch.object(perk_menu_controller_module.rl, "get_screen_width", side_effect=lambda: 640)
-    mocker.patch.object(perk_menu_controller_module.rl, "get_screen_height", side_effect=lambda: 480)
-    mocker.patch.object(perk_menu_controller_module.rl, "is_mouse_button_pressed", side_effect=lambda _button: False)
-    mocker.patch.object(perk_menu_controller_module.rl, "check_collision_point_rec", side_effect=lambda _pos, _rect: False)
-    mocker.patch.object(perk_menu_controller_module.rl, "measure_text", side_effect=lambda _text, _size: 10)
-    mocker.patch.object(perk_menu_controller_module.rl, "is_key_pressed", side_effect=lambda _key: False)
+    mocker.patch.object(rl, "get_screen_width", side_effect=lambda: 640)
+    mocker.patch.object(rl, "get_screen_height", side_effect=lambda: 480)
+    mocker.patch.object(rl, "is_mouse_button_pressed", side_effect=lambda _button: False)
+    mocker.patch.object(rl, "check_collision_point_rec", side_effect=lambda _pos, _rect: False)
+    mocker.patch.object(rl, "measure_text", side_effect=lambda _text, _size: 10)
+    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda _key: False)
 
     ctx = PerkMenuContext(
         state=GameplayState(),
@@ -186,13 +186,11 @@ def test_wrap_small_text_native_inserts_newline_at_previous_space(mocker) -> Non
 
 def test_prewrapped_perk_desc_uses_cache(mocker) -> None:
     menu = PerkMenuController()
-    calls = {"count": 0}
-
-    def _fake_measure(_font, text: str, _scale: float) -> float:
-        calls["count"] += 1
-        return float(len(text))
-
-    mocker.patch.object(perk_menu_controller_module, "measure_small_text_width", side_effect=_fake_measure)
+    measure_small_text_width = mocker.patch.object(
+        perk_menu_controller_module,
+        "measure_small_text_width",
+        side_effect=lambda _font, text, _scale: float(len(text)),
+    )
     mocker.patch.object(
         perk_menu_controller_module,
         "perk_display_description",
@@ -200,8 +198,8 @@ def test_prewrapped_perk_desc_uses_cache(mocker) -> None:
     )
 
     first = menu._prewrapped_perk_desc(5, object(), fx_toggle=0, preserve_bugs=False)  # type: ignore[arg-type]
-    count_after_first = calls["count"]
+    count_after_first = measure_small_text_width.call_count
     second = menu._prewrapped_perk_desc(5, object(), fx_toggle=0, preserve_bugs=False)  # type: ignore[arg-type]
 
     assert first == second
-    assert calls["count"] == count_after_first
+    assert measure_small_text_width.call_count == count_after_first

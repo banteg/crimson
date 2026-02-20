@@ -44,7 +44,6 @@ def test_view_autotune_and_dump_flags_are_mutually_exclusive() -> None:
 
 
 def test_view_autotune_sets_env_and_invokes_run_view(mocker) -> None:
-    captured: dict[str, object] = {}
     view_def = SimpleNamespace(
         name="lighting-debug",
         title="Lighting Debug",
@@ -54,14 +53,7 @@ def test_view_autotune_sets_env_and_invokes_run_view(mocker) -> None:
     mocker.patch.object(views, "view_by_name", side_effect=lambda name: view_def if name == "lighting-debug" else None)
     mocker.patch.object(views, "all_views", side_effect=lambda: [view_def])
 
-    def _fake_run_view(view, *, width, height, title, fps):
-        captured["view"] = view
-        captured["width"] = width
-        captured["height"] = height
-        captured["title"] = title
-        captured["fps"] = fps
-
-    mocker.patch.object(grim_app, "run_view", side_effect=_fake_run_view)
+    run_view = mocker.patch.object(grim_app, "run_view")
     os.environ.pop("CRIMSON_LIGHTING_DEBUG_AUTO_TUNE", None)
 
     runner = CliRunner()
@@ -83,9 +75,11 @@ def test_view_autotune_sets_env_and_invokes_run_view(mocker) -> None:
     )
 
     assert result.exit_code == 0, result.output
+    run_view.assert_called_once()
+    kwargs = run_view.call_args.kwargs
     assert os.environ.get("CRIMSON_LIGHTING_DEBUG_AUTO_TUNE") == "55"
-    assert captured["width"] == 900
-    assert captured["height"] == 600
-    assert captured["fps"] == 75
-    assert str(captured["title"]).startswith("Lighting Debug")
+    assert kwargs["width"] == 900
+    assert kwargs["height"] == 600
+    assert kwargs["fps"] == 75
+    assert str(kwargs["title"]).startswith("Lighting Debug")
     os.environ.pop("CRIMSON_LIGHTING_DEBUG_AUTO_TUNE", None)

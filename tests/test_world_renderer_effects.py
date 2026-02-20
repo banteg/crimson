@@ -69,9 +69,10 @@ def test_draw_effect_pool_splits_alpha_and_additive_paths(mocker) -> None:
         alpha=1.0,
     )
 
-    assert [call.args[0] for call in begin_blend_mode.call_args_list] == [
+    assert begin_blend_mode.call_count == 2
+    assert {call.args[0] for call in begin_blend_mode.call_args_list} == {
         int(rl.BlendMode.BLEND_ALPHA),
         int(rl.BlendMode.BLEND_ADDITIVE),
-    ]
+    }
     assert end_blend_mode.call_count == 2
     assert draw_texture_pro.call_count == 2

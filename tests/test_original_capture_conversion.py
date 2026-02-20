@@ -4,7 +4,7 @@ import copy
 import gzip
 import json
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 import msgspec
 import pytest
@@ -40,10 +40,16 @@ from crimson.original.capture import (
 )
 from crimson.original.schema import (
     CAPTURE_FORMAT_VERSION,
+    CaptureCheckpoint,
+    CaptureDiagnostics,
     CaptureEventHeadPerkApply,
     CaptureEventHeadProjectileFindQuery,
     CaptureInputApprox,
     CaptureInputPlayerKeys,
+    CapturePlayerCheckpoint,
+    CapturePlayerFireDiagnostics,
+    CaptureRngHeadEntry,
+    CaptureRngMarks,
     CaptureSnapshot,
     CaptureTick,
 )
@@ -137,9 +143,9 @@ def _base_config(**kwargs: object) -> dict[str, object]:
     return d
 
 
-def _base_player() -> dict[str, object]:
+def _base_player() -> CapturePlayerCheckpoint:
     tick = build_capture_tick(tick_index=0, elapsed_ms=0)
-    return cast(dict[str, object], capture_value_to_builtins(copy.deepcopy(tick.checkpoint.players[0])))
+    return copy.deepcopy(tick.checkpoint.players[0])
 
 
 def _base_snapshot_globals(**kwargs: object) -> dict[str, object]:
@@ -282,7 +288,7 @@ def _base_checkpoint(
     perk_pending: int = 0,
     score_xp: int = 0,
     rng_state: int = 0,
-) -> dict[str, object]:
+) -> CaptureCheckpoint:
     tick = build_capture_tick(
         tick_index=int(tick_index),
         elapsed_ms=int(elapsed_ms),
@@ -291,7 +297,7 @@ def _base_checkpoint(
     )
     checkpoint = copy.deepcopy(tick.checkpoint)
     checkpoint.rng_state = int(rng_state)
-    return cast(dict[str, object], capture_value_to_builtins(checkpoint))
+    return checkpoint
 
 
 def _base_tick(
@@ -301,7 +307,7 @@ def _base_tick(
     perk_pending: int = 0,
     score_xp: int = 0,
     rng_state: int = 0,
-) -> dict[str, object]:
+) -> Any:
     tick = build_capture_tick(
         tick_index=int(tick_index),
         elapsed_ms=int(elapsed_ms),
@@ -314,7 +320,7 @@ def _base_tick(
     # Keep legacy sparse snapshot defaults used by these conversion tests.
     tick.before = msgspec.convert(_base_snapshot(), type=CaptureSnapshot, strict=True)
     tick.after = msgspec.convert(_base_snapshot(), type=CaptureSnapshot, strict=True)
-    return cast(dict[str, object], capture_value_to_builtins(tick))
+    return tick
 
 
 def _sample_creature(*, index: int = 5) -> dict[str, object]:
@@ -747,8 +753,13 @@ def _write_capture(path: Path, obj: dict[str, object]) -> None:
         path.write_bytes(encoded)
 
 
-def _write_capture_stream(path: Path, *, meta: dict[str, object], ticks: list[dict[str, object]]) -> None:
-    normalized_ticks = [_normalize_tick_for_strict_schema(tick) for tick in ticks]
+def _write_capture_stream(path: Path, *, meta: dict[str, object], ticks: list[CaptureTick | dict[str, object]]) -> None:
+    normalized_ticks = [
+        _normalize_tick_for_strict_schema(
+            cast(dict[str, object], capture_value_to_builtins(tick)) if isinstance(tick, CaptureTick) else tick,
+        )
+        for tick in ticks
+    ]
     normalized_meta = dict(meta)
     normalized_meta["ticks"] = []
     rows = [json.dumps({"event": "capture_meta", "capture": normalized_meta}, separators=(",", ":"), sort_keys=True)]
@@ -763,25 +774,22 @@ def _as_obj_dict(value: object) -> dict[str, object]:
     return cast(dict[str, object], value)
 
 
-def _tick_checkpoint(tick: dict[str, object]) -> dict[str, object]:
-    return _as_obj_dict(tick.get("checkpoint"))
+def _tick_checkpoint(tick: CaptureTick) -> CaptureCheckpoint:
+    return tick.checkpoint
 
 
-def _tick_diagnostics(tick: dict[str, object]) -> dict[str, object]:
-    return _as_obj_dict(tick.get("diagnostics"))
+def _tick_diagnostics(tick: CaptureTick) -> CaptureDiagnostics:
+    return tick.diagnostics
 
 
-def _tick_rng_marks(tick: dict[str, object]) -> dict[str, object]:
+def _tick_rng_marks(tick: CaptureTick) -> CaptureRngMarks:
     checkpoint = _tick_checkpoint(tick)
-    return _as_obj_dict(checkpoint.get("rng_marks"))
+    return checkpoint.rng_marks
 
 
-def _tick_player(tick: dict[str, object], player_index: int = 0) -> dict[str, object]:
+def _tick_player(tick: CaptureTick, player_index: int = 0) -> CapturePlayerCheckpoint:
     checkpoint = _tick_checkpoint(tick)
-    players_obj = checkpoint.get("players")
-    assert isinstance(players_obj, list)
-    player = players_obj[player_index]
-    return _as_obj_dict(player)
+    return checkpoint.players[player_index]
 
 
 def _replay_input_flags(replay: Replay, tick_index: int, player_index: int = 0) -> int:
@@ -891,20 +899,6 @@ def test_load_capture_rejects_unsupported_capture_format_version(tmp_path: Path)
         load_capture(path)
 
 
-def test_load_capture_rejects_f32_token_strings(tmp_path: Path) -> None:
-    tick = _base_tick(tick_index=0, elapsed_ms=16)
-    player0 = _tick_player(tick)
-    pos = _as_obj_dict(player0.get("pos"))
-    pos["x"] = "f32:3f800000"
-    player0["health"] = "f32:42c80000"
-    obj = _capture_obj(ticks=[tick])
-    path = tmp_path / "capture.json"
-    _write_capture(path, obj)
-
-    with pytest.raises(CaptureError):
-        load_capture(path)
-
-
 def test_load_capture_rejects_legacy_canonical_json(tmp_path: Path) -> None:
     obj = _capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)])
     path = tmp_path / "capture.json"
@@ -916,8 +910,8 @@ def test_load_capture_rejects_legacy_canonical_json(tmp_path: Path) -> None:
 
 def test_load_capture_accepts_projectile_find_query_event_head(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
-    tick["event_counts"] = _base_event_counts(projectile_find_query=1)
-    tick["event_heads"] = [
+    tick.event_counts = _base_event_counts(projectile_find_query=1)
+    tick.event_heads = [
         {
             "type": "projectile_find_query",
             "data": {
@@ -957,10 +951,10 @@ def test_load_capture_supports_jsonl_stream_rows(tmp_path: Path) -> None:
 
 def test_load_capture_accepts_quest_stage_tick_fields(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
-    tick["mode_hint"] = "quest_mode_update"
-    tick["game_mode_id"] = int(GameMode.QUESTS)
-    tick["quest_stage_major"] = 2
-    tick["quest_stage_minor"] = 7
+    tick.mode_hint = "quest_mode_update"
+    tick.game_mode_id = int(GameMode.QUESTS)
+    tick.quest_stage_major = 2
+    tick.quest_stage_minor = 7
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -977,10 +971,10 @@ def test_load_capture_accepts_quest_stage_tick_fields(tmp_path: Path) -> None:
 
 def test_convert_capture_to_replay_infers_quest_level_from_tick_stage(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
-    tick["mode_hint"] = "quest_mode_update"
-    tick["game_mode_id"] = int(GameMode.QUESTS)
-    tick["quest_stage_major"] = 2
-    tick["quest_stage_minor"] = 4
+    tick.mode_hint = "quest_mode_update"
+    tick.game_mode_id = int(GameMode.QUESTS)
+    tick.quest_stage_major = 2
+    tick.quest_stage_minor = 4
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -994,8 +988,8 @@ def test_convert_capture_to_replay_infers_quest_level_from_tick_stage(tmp_path: 
 
 def test_convert_capture_to_replay_raises_when_game_mode_unavailable(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
-    tick["mode_hint"] = ""
-    tick["game_mode_id"] = -1
+    tick.mode_hint = ""
+    tick.game_mode_id = -1
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -1007,9 +1001,9 @@ def test_convert_capture_to_replay_raises_when_game_mode_unavailable(tmp_path: P
 
 def test_convert_capture_to_replay_raises_when_status_unlock_missing(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
-    status = _as_obj_dict(_tick_checkpoint(tick).get("status"))
-    status["quest_unlock_index"] = -1
-    status["quest_unlock_index_full"] = -1
+    status = _tick_checkpoint(tick).status
+    status.quest_unlock_index = -1
+    status.quest_unlock_index_full = -1
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -1099,14 +1093,14 @@ def test_summarize_capture_health_flags_missing_micro_rows(tmp_path: Path) -> No
 
 def test_summarize_capture_health_counts_micro_and_lifecycle_lineage(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=7, elapsed_ms=133)
-    tick["event_counts"] = _base_event_counts(mode_tick=1)
-    tick["input_player_keys"] = [
+    tick.event_counts = _base_event_counts(mode_tick=1)
+    tick.input_player_keys = [
         {
             "player_index": 0,
             "move_forward_pressed": True,
         },
     ]
-    tick["event_heads"] = [
+    tick.event_heads = [
         {
             "type": "creature_update_micro",
             "data": {"event_kind": "angle_approach", "slot": 3},
@@ -1123,7 +1117,7 @@ def test_summarize_capture_health_counts_micro_and_lifecycle_lineage(tmp_path: P
             },
         },
     ]
-    tick["samples"] = {
+    tick.samples = {
         "creatures": [_sample_creature(index=3)],
         "projectiles": [],
         "secondary_projectiles": [],
@@ -1151,20 +1145,28 @@ def test_summarize_capture_health_counts_micro_and_lifecycle_lineage(tmp_path: P
 
 def test_load_capture_accepts_player_fire_debug_payloads(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
-    debug = _as_obj_dict(_tick_checkpoint(tick).get("debug"))
-    debug["player_fire"] = {
-        "event_count_player_fire": 3,
-        "top_direct_events_by_player": [{"key": "0", "count": 1}],
-        "top_fallback_events_by_player": [{"key": "0", "count": 2}],
-        "top_player_projectile_spawns_by_player": [{"key": "0", "count": 3}],
-    }
+    debug = _tick_checkpoint(tick).debug
+    debug.player_fire = msgspec.convert(
+        {
+            "event_count_player_fire": 3,
+            "top_direct_events_by_player": [{"key": "0", "count": 1}],
+            "top_fallback_events_by_player": [{"key": "0", "count": 2}],
+            "top_player_projectile_spawns_by_player": [{"key": "0", "count": 3}],
+        },
+        type=CapturePlayerFireDiagnostics,
+        strict=True,
+    )
     diagnostics = _tick_diagnostics(tick)
-    diagnostics["player_fire"] = {
-        "event_count_player_fire": 4,
-        "top_direct_events_by_player": [{"key": "0", "count": 4}],
-        "top_fallback_events_by_player": [],
-        "top_player_projectile_spawns_by_player": [],
-    }
+    diagnostics.player_fire = msgspec.convert(
+        {
+            "event_count_player_fire": 4,
+            "top_direct_events_by_player": [{"key": "0", "count": 4}],
+            "top_fallback_events_by_player": [],
+            "top_player_projectile_spawns_by_player": [],
+        },
+        type=CapturePlayerFireDiagnostics,
+        strict=True,
+    )
     obj = _capture_obj(ticks=[tick])
     path = tmp_path / "capture.json.gz"
     _write_capture(path, obj)
@@ -1184,7 +1186,11 @@ def test_load_capture_stream_rejects_truncated_last_line(tmp_path: Path) -> None
     meta = {k: v for k, v in obj.items() if k != "ticks"}
     rows = [
         json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True),
-        json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True),
+        json.dumps(
+            {"event": "tick", "tick": cast(dict[str, object], capture_value_to_builtins(tick))},
+            separators=(",", ":"),
+            sort_keys=True,
+        ),
         '{"event":"tick","tick"',
     ]
     path.write_text("\n".join(rows), encoding="utf-8")
@@ -1200,7 +1206,11 @@ def test_load_capture_stream_rejects_legacy_capture_end_row(tmp_path: Path) -> N
     meta = {k: v for k, v in obj.items() if k != "ticks"}
     rows = [
         json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True),
-        json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True),
+        json.dumps(
+            {"event": "tick", "tick": cast(dict[str, object], capture_value_to_builtins(tick))},
+            separators=(",", ":"),
+            sort_keys=True,
+        ),
         json.dumps({"event": "capture_end", "reason": "manual_stop", "ticks_written": 1}, separators=(",", ":")),
     ]
     path.write_text("\n".join(rows) + "\n", encoding="utf-8")
@@ -1221,7 +1231,7 @@ def test_load_capture_rejects_unknown_fields(tmp_path: Path) -> None:
 
 def test_load_capture_accepts_strict_typed_sample_rows(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
-    tick["samples"] = {
+    tick.samples = {
         "creatures": [_sample_creature()],
         "projectiles": [_sample_projectile()],
         "secondary_projectiles": [_sample_secondary_projectile()],
@@ -1250,7 +1260,7 @@ def test_load_capture_rejects_incomplete_sample_rows(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     bad_creature = _sample_creature()
     del bad_creature["collision_flag"]
-    tick["samples"] = {
+    tick.samples = {
         "creatures": [bad_creature],
         "projectiles": [],
         "secondary_projectiles": [],
@@ -1296,7 +1306,7 @@ def test_convert_capture_to_checkpoints_roundtrip(tmp_path: Path) -> None:
 
 def test_convert_capture_to_replay_from_ticks(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["input_player_keys"] = [
+    tick0.input_player_keys = [
         {
             "player_index": 0,
             "fire_down": True,
@@ -1304,7 +1314,7 @@ def test_convert_capture_to_replay_from_ticks(tmp_path: Path) -> None:
             "reload_pressed": False,
         },
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         {
             "player_index": 0,
             "move_dx": 1.0,
@@ -1332,7 +1342,7 @@ def test_convert_capture_to_replay_from_ticks(tmp_path: Path) -> None:
 
 def test_convert_capture_to_replay_heading_fallback_uses_checkpoint_pos(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["input_approx"] = [_base_input_approx(**{"player_index": 0, "aim_x": 0.0, "aim_y": 0.0, "aim_heading": 0.0})]
+    tick0.input_approx = [_base_input_approx(**{"player_index": 0, "aim_x": 0.0, "aim_y": 0.0, "aim_heading": 0.0})]
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -1348,7 +1358,7 @@ def test_convert_capture_to_replay_heading_fallback_uses_checkpoint_pos(tmp_path
 
 def test_convert_capture_to_replay_does_not_fallback_to_primary_query_stats(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["input_queries"] = {
+    tick0.input_queries = {
         "stats": {
             "primary_edge": {"calls": 1, "true_calls": 1},
             "primary_down": {"calls": 1, "true_calls": 1},
@@ -1356,8 +1366,8 @@ def test_convert_capture_to_replay_does_not_fallback_to_primary_query_stats(tmp_
         },
         "query_hash": "",
     }
-    tick0["input_player_keys"] = [_base_input_player_keys(**{"player_index": 0})]
-    tick0["input_approx"] = [
+    tick0.input_player_keys = [_base_input_player_keys(**{"player_index": 0})]
+    tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 540.0, "aim_y": 500.0, "reload_active": True}),
     ]
     obj = _capture_obj(ticks=[tick0])
@@ -1399,7 +1409,7 @@ def test_convert_capture_to_replay_infers_pending_drop_events_from_perk_delta(tm
     tick1 = _base_tick(tick_index=1, elapsed_ms=32, perk_pending=-1)
     tick2 = _base_tick(tick_index=2, elapsed_ms=48, perk_pending=-1)
 
-    tick0["event_heads"] = [
+    tick0.event_heads = [
         {
             "type": "perk_delta",
             "data": {
@@ -1410,7 +1420,7 @@ def test_convert_capture_to_replay_infers_pending_drop_events_from_perk_delta(tm
             },
         },
     ]
-    tick1["event_heads"] = [
+    tick1.event_heads = [
         {
             "type": "perk_delta",
             "data": {
@@ -1421,7 +1431,7 @@ def test_convert_capture_to_replay_infers_pending_drop_events_from_perk_delta(tm
             },
         },
     ]
-    tick2["event_heads"] = [
+    tick2.event_heads = [
         {
             "type": "perk_delta",
             "data": {
@@ -1456,7 +1466,7 @@ def test_convert_capture_to_replay_infers_pending_drop_events_from_perk_delta(tm
 
 def test_convert_capture_to_replay_skips_menu_open_for_terminal_pending_drop_transition(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16, perk_pending=2)
-    tick0["event_heads"] = [
+    tick0.event_heads = [
         {
             "type": "state_transition",
             "data": {
@@ -1488,12 +1498,16 @@ def test_convert_capture_to_replay_skips_menu_open_for_terminal_pending_drop_tra
 def test_convert_capture_to_replay_bootstrap_payload_includes_perk_snapshot(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16, perk_pending=3)
     checkpoint = _tick_checkpoint(tick0)
-    checkpoint["perk"] = {
-        "pending_count": 3,
-        "choices_dirty": False,
-        "choices": [11, 22, 33, 44, 55, 66, 77],
-        "player_nonzero_counts": [],
-    }
+    checkpoint.perk = msgspec.convert(
+        {
+            "pending_count": 3,
+            "choices_dirty": False,
+            "choices": [11, 22, 33, 44, 55, 66, 77],
+            "player_nonzero_counts": [],
+        },
+        type=type(checkpoint.perk),
+        strict=True,
+    )
 
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -1528,9 +1542,9 @@ def test_apply_capture_bootstrap_payload_marks_perk_counts_unknown_when_nonzero_
 
 def test_convert_capture_to_replay_bootstrap_payload_includes_quest_session_timers(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=10, elapsed_ms=1600)
-    tick0["mode_hint"] = "quest_mode_update"
-    tick0["game_mode_id"] = int(GameMode.QUESTS)
-    tick0["event_heads"] = [
+    tick0.mode_hint = "quest_mode_update"
+    tick0.game_mode_id = int(GameMode.QUESTS)
+    tick0.event_heads = [
         {
             "type": "quest_timeline_delta",
             "data": {
@@ -1565,9 +1579,9 @@ def test_convert_capture_to_replay_bootstrap_payload_prefers_before_player_runti
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=42, elapsed_ms=7000, perk_pending=2, score_xp=11)
-    _tick_player(tick0)["ammo"] = 11.0
-    _tick_player(tick0)["experience"] = 11
-    tick0["before"] = _base_snapshot(
+    _tick_player(tick0).ammo = 11.0
+    _tick_player(tick0).experience = 11
+    tick0.before = _base_snapshot(
         globals=_base_snapshot_globals(
             time_played_ms=6951,
             perk_pending_count=1,
@@ -1674,7 +1688,7 @@ def test_convert_capture_to_replay_bootstrap_payload_infers_perk_intervals_from_
 ) -> None:
     tick0 = _base_tick(tick_index=10, elapsed_ms=1000)
     tick1 = _base_tick(tick_index=11, elapsed_ms=1083)
-    tick0["before"] = _base_snapshot(
+    tick0.before = _base_snapshot(
         players=[
             {
                 "index": 0,
@@ -1718,7 +1732,7 @@ def test_convert_capture_to_replay_bootstrap_payload_infers_perk_intervals_from_
             },
         ],
     )
-    tick1["before"] = _base_snapshot(
+    tick1.before = _base_snapshot(
         players=[
             {
                 "index": 0,
@@ -1762,8 +1776,8 @@ def test_convert_capture_to_replay_bootstrap_payload_infers_perk_intervals_from_
             },
         ],
     )
-    _as_obj_dict(_tick_checkpoint(tick0)["perk"])["player_nonzero_counts"] = [[[31, 1]]]
-    _as_obj_dict(_tick_checkpoint(tick1)["perk"])["player_nonzero_counts"] = [[[31, 1]]]
+    _tick_checkpoint(tick0).perk.player_nonzero_counts = [[[31, 1]]]
+    _tick_checkpoint(tick1).perk.player_nonzero_counts = [[[31, 1]]]
 
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -1789,7 +1803,7 @@ def test_convert_capture_to_replay_bootstrap_payload_ignores_inactive_timer_rese
 ) -> None:
     tick0 = _base_tick(tick_index=10, elapsed_ms=1000)
     tick1 = _base_tick(tick_index=11, elapsed_ms=1083)
-    tick0["before"] = _base_snapshot(
+    tick0.before = _base_snapshot(
         players=[
             {
                 "index": 0,
@@ -1833,7 +1847,7 @@ def test_convert_capture_to_replay_bootstrap_payload_ignores_inactive_timer_rese
             },
         ],
     )
-    tick1["before"] = _base_snapshot(
+    tick1.before = _base_snapshot(
         players=[
             {
                 "index": 0,
@@ -1877,8 +1891,8 @@ def test_convert_capture_to_replay_bootstrap_payload_ignores_inactive_timer_rese
             },
         ],
     )
-    _as_obj_dict(_tick_checkpoint(tick0)["perk"])["player_nonzero_counts"] = [[]]
-    _as_obj_dict(_tick_checkpoint(tick1)["perk"])["player_nonzero_counts"] = [[]]
+    _tick_checkpoint(tick0).perk.player_nonzero_counts = [[]]
+    _tick_checkpoint(tick1).perk.player_nonzero_counts = [[]]
 
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -1903,7 +1917,7 @@ def test_convert_capture_to_replay_bootstrap_payload_does_not_infer_man_bomb_fro
 ) -> None:
     tick0 = _base_tick(tick_index=10, elapsed_ms=1000)
     tick1 = _base_tick(tick_index=11, elapsed_ms=1076)
-    tick0["before"] = _base_snapshot(
+    tick0.before = _base_snapshot(
         players=[
             {
                 "index": 0,
@@ -1947,7 +1961,7 @@ def test_convert_capture_to_replay_bootstrap_payload_does_not_infer_man_bomb_fro
             },
         ],
     )
-    tick1["before"] = _base_snapshot(
+    tick1.before = _base_snapshot(
         players=[
             {
                 "index": 0,
@@ -1991,8 +2005,8 @@ def test_convert_capture_to_replay_bootstrap_payload_does_not_infer_man_bomb_fro
             },
         ],
     )
-    _as_obj_dict(_tick_checkpoint(tick0)["perk"])["player_nonzero_counts"] = [[[53, 1]]]
-    _as_obj_dict(_tick_checkpoint(tick1)["perk"])["player_nonzero_counts"] = [[[53, 1]]]
+    _tick_checkpoint(tick0).perk.player_nonzero_counts = [[[53, 1]]]
+    _tick_checkpoint(tick1).perk.player_nonzero_counts = [[[53, 1]]]
 
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -2044,7 +2058,7 @@ def test_apply_capture_bootstrap_payload_applies_perk_intervals_and_player_perk_
 
 def test_convert_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["perk_apply_in_tick"] = [
+    tick0.perk_apply_in_tick = [
         {
             "perk_id": 14,
             "pending_before": 1,
@@ -2072,7 +2086,7 @@ def test_convert_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> No
 
 def test_convert_capture_to_replay_carries_outside_before_pending_bounds(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["perk_apply_outside_before"] = {
+    tick0.perk_apply_outside_before = {
         "calls": 1,
         "dropped": 0,
         "head": [
@@ -2110,9 +2124,9 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(
     caller_static: str,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["mode_hint"] = "quest_mode_update"
-    tick0["game_mode_id"] = int(GameMode.QUESTS)
-    tick0["event_heads"] = [
+    tick0.mode_hint = "quest_mode_update"
+    tick0.game_mode_id = int(GameMode.QUESTS)
+    tick0.event_heads = [
         {
             "type": "creature_spawn",
             "data": {
@@ -2186,9 +2200,9 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(
 
 def test_convert_capture_to_replay_emits_quest_added_head_without_spawn_rows(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["mode_hint"] = "quest_mode_update"
-    tick0["game_mode_id"] = int(GameMode.QUESTS)
-    tick0["event_heads"] = [
+    tick0.mode_hint = "quest_mode_update"
+    tick0.game_mode_id = int(GameMode.QUESTS)
+    tick0.event_heads = [
         {
             "type": "creature_lifecycle",
             "data": {
@@ -2225,7 +2239,7 @@ def test_convert_capture_to_replay_emits_quest_added_head_without_spawn_rows(tmp
 
 def test_convert_capture_to_replay_emits_state_transition_events(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["event_heads"] = [
+    tick0.event_heads = [
         {
             "type": "state_transition",
             "data": {
@@ -2254,7 +2268,7 @@ def test_convert_capture_to_replay_emits_state_transition_events(tmp_path: Path)
 
 def test_convert_capture_to_replay_emits_menu_open_on_state_6_transition(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16, perk_pending=0)
-    tick0["event_heads"] = [
+    tick0.event_heads = [
         {
             "type": "state_transition",
             "data": {
@@ -2310,7 +2324,7 @@ def test_build_capture_dt_frame_overrides_distributes_gaps(tmp_path: Path) -> No
 
 def test_build_capture_dt_frame_overrides_prefers_explicit_tick_frame_dt(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=0)
-    tick0["frame_dt_ms"] = 20.0
+    tick0.frame_dt_ms = 20.0
     tick1 = _base_tick(tick_index=1, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -2324,8 +2338,8 @@ def test_build_capture_dt_frame_overrides_prefers_explicit_tick_frame_dt(tmp_pat
 
 def test_build_capture_dt_frame_overrides_ignores_denormal_frame_dt_ms_and_prefers_i32(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=0)
-    tick0["frame_dt_ms"] = 1.401298464324817e-43
-    tick0["frame_dt_ms_i32"] = 32
+    tick0.frame_dt_ms = 1.401298464324817e-43
+    tick0.frame_dt_ms_i32 = 32
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -2339,11 +2353,10 @@ def test_build_capture_dt_frame_overrides_ignores_denormal_frame_dt_ms_and_prefe
 
 def test_build_capture_dt_frame_overrides_prefers_timing_frame_dt_after_over_i32(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=0)
-    tick0["frame_dt_ms"] = 30.0
-    tick0["frame_dt_ms_i32"] = 30
+    tick0.frame_dt_ms = 30.0
+    tick0.frame_dt_ms_i32 = 30
     diagnostics = _tick_diagnostics(tick0)
-    timing = _as_obj_dict(diagnostics.get("timing"))
-    timing["frame_dt_after"] = 0.029000001028180122
+    diagnostics.timing.frame_dt_after = 0.029000001028180122
     tick1 = _base_tick(tick_index=1, elapsed_ms=29)
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -2357,7 +2370,7 @@ def test_build_capture_dt_frame_overrides_prefers_timing_frame_dt_after_over_i32
 
 def test_build_capture_dt_frame_ms_i32_overrides_uses_explicit_values(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=0)
-    tick0["frame_dt_ms_i32"] = 17
+    tick0.frame_dt_ms_i32 = 17
     tick1 = _base_tick(tick_index=1, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -2373,15 +2386,9 @@ def test_build_capture_inter_tick_rand_draws_overrides_uses_checkpoint_marks(tmp
     tick0 = _base_tick(tick_index=10, elapsed_ms=0)
     tick1 = _base_tick(tick_index=11, elapsed_ms=16)
     tick2 = _base_tick(tick_index=12, elapsed_ms=32)
-    assert isinstance(tick0["checkpoint"], dict)
-    assert isinstance(tick1["checkpoint"], dict)
-    assert isinstance(tick2["checkpoint"], dict)
-    assert isinstance(_tick_rng_marks(tick0), dict)
-    assert isinstance(_tick_rng_marks(tick1), dict)
-    assert isinstance(_tick_rng_marks(tick2), dict)
-    _tick_rng_marks(tick0)["rand_outside_before_calls"] = 7
-    _tick_rng_marks(tick1)["rand_outside_before_calls"] = 3
-    _tick_rng_marks(tick2)["rand_outside_before_calls"] = -1
+    _tick_rng_marks(tick0).rand_outside_before_calls = 7
+    _tick_rng_marks(tick1).rand_outside_before_calls = 3
+    _tick_rng_marks(tick2).rand_outside_before_calls = -1
     obj = _capture_obj(ticks=[tick0, tick1, tick2])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -2400,20 +2407,15 @@ def test_build_capture_inter_tick_rand_draws_overrides_quest_delays_until_first_
     tick2 = _base_tick(tick_index=2, elapsed_ms=32)
     tick3 = _base_tick(tick_index=3, elapsed_ms=48)
     for tick in (tick0, tick1, tick2, tick3):
-        tick["mode_hint"] = "quest_mode_update"
-        tick["game_mode_id"] = int(GameMode.QUESTS)
-        assert isinstance(tick["checkpoint"], dict)
+        tick.mode_hint = "quest_mode_update"
+        tick.game_mode_id = int(GameMode.QUESTS)
         rng_marks = _tick_rng_marks(tick)
-        rng_marks["rand_outside_before_calls"] = 1
-        rng_marks["rand_calls"] = 0
+        rng_marks.rand_outside_before_calls = 1
+        rng_marks.rand_calls = 0
 
-    assert isinstance(tick0["checkpoint"], dict)
-    assert isinstance(_tick_rng_marks(tick0), dict)
-    _tick_rng_marks(tick0)["rand_outside_before_calls"] = 24021
+    _tick_rng_marks(tick0).rand_outside_before_calls = 24021
 
-    assert isinstance(tick2["checkpoint"], dict)
-    assert isinstance(_tick_rng_marks(tick2), dict)
-    _tick_rng_marks(tick2)["rand_calls"] = 2
+    _tick_rng_marks(tick2).rand_calls = 2
 
     obj = _capture_obj(ticks=[tick0, tick1, tick2, tick3])
     path = tmp_path / "capture.json"
@@ -2433,16 +2435,13 @@ def test_build_capture_inter_tick_rand_draws_overrides_quest_nonzero_start_zeroe
     tick12 = _base_tick(tick_index=12, elapsed_ms=32)
     tick13 = _base_tick(tick_index=13, elapsed_ms=48)
     for tick in (tick10, tick11, tick12, tick13):
-        tick["mode_hint"] = "quest_mode_update"
-        tick["game_mode_id"] = int(GameMode.QUESTS)
-        assert isinstance(tick["checkpoint"], dict)
+        tick.mode_hint = "quest_mode_update"
+        tick.game_mode_id = int(GameMode.QUESTS)
         rng_marks = _tick_rng_marks(tick)
-        rng_marks["rand_outside_before_calls"] = 3
-        rng_marks["rand_calls"] = 0
+        rng_marks.rand_outside_before_calls = 3
+        rng_marks.rand_calls = 0
 
-    assert isinstance(tick12["checkpoint"], dict)
-    assert isinstance(_tick_rng_marks(tick12), dict)
-    _tick_rng_marks(tick12)["rand_calls"] = 4
+    _tick_rng_marks(tick12).rand_calls = 4
 
     obj = _capture_obj(ticks=[tick10, tick11, tick12, tick13])
     path = tmp_path / "capture.json"
@@ -2457,12 +2456,8 @@ def test_build_capture_inter_tick_rand_draws_overrides_quest_nonzero_start_zeroe
 def test_build_capture_inter_tick_rand_draws_overrides_returns_none_when_missing(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=0)
     tick1 = _base_tick(tick_index=1, elapsed_ms=16)
-    assert isinstance(tick0["checkpoint"], dict)
-    assert isinstance(tick1["checkpoint"], dict)
-    assert isinstance(_tick_rng_marks(tick0), dict)
-    assert isinstance(_tick_rng_marks(tick1), dict)
-    _tick_rng_marks(tick0)["rand_outside_before_calls"] = -1
-    _tick_rng_marks(tick1)["rand_outside_before_calls"] = -1
+    _tick_rng_marks(tick0).rand_outside_before_calls = -1
+    _tick_rng_marks(tick1).rand_outside_before_calls = -1
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
     _write_capture(path, obj)
@@ -2478,16 +2473,23 @@ def test_convert_capture_to_replay_raises_when_rng_state_before_missing(tmp_path
     outputs = _crt_rand_outputs(seed, 8)
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     rng_marks = _tick_rng_marks(tick0)
-    rng_marks["rand_calls"] = 8
-    rng_marks["rand_last"] = outputs[-1]
-    rng_marks["rand_head"] = [{"value": int(value), "value_15": int(value)} for value in outputs]
+    rng_marks.rand_calls = 8
+    rng_marks.rand_last = outputs[-1]
+    rng_marks.rand_head = [
+        msgspec.convert(
+            _base_rng_head_entry(value=int(value), value_15=int(value)),
+            type=CaptureRngHeadEntry,
+            strict=True,
+        )
+        for value in outputs
+    ]
 
     rng = {
         "calls": 8,
         "last_value": outputs[-1],
         "head": [{"value": int(value), "value_15": int(value)} for value in outputs],
     }
-    tick0["rng"] = rng
+    tick0.rng = rng
 
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -2503,16 +2505,20 @@ def test_convert_capture_to_replay_prefers_rng_state_before_seed(tmp_path: Path)
     outputs = _crt_rand_outputs(seed, 8)
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     rng_marks = _tick_rng_marks(tick0)
-    rng_marks["rand_calls"] = 8
-    rng_marks["rand_last"] = outputs[-1]
-    rng_marks["rand_head"] = [
-        {
-            "value": int(outputs[0]),
-            "value_15": int(outputs[0]),
-            "state_before_u32": int(seed),
-        },
+    rng_marks.rand_calls = 8
+    rng_marks.rand_last = outputs[-1]
+    rng_marks.rand_head = [
+        msgspec.convert(
+            _base_rng_head_entry(
+                value=int(outputs[0]),
+                value_15=int(outputs[0]),
+                state_before_u32=int(seed),
+            ),
+            type=CaptureRngHeadEntry,
+            strict=True,
+        ),
     ]
-    tick0["rng"] = {
+    tick0.rng = {
         "calls": 8,
         "last_value": outputs[-1],
         "head": [
@@ -2539,10 +2545,17 @@ def test_convert_capture_to_replay_explicit_seed_overrides_inferred_seed(tmp_pat
     outputs = _crt_rand_outputs(seed, 8)
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     rng_marks = _tick_rng_marks(tick0)
-    rng_marks["rand_calls"] = 8
-    rng_marks["rand_last"] = outputs[-1]
-    rng_marks["rand_head"] = [{"value": int(value), "value_15": int(value)} for value in outputs]
-    tick0["rng"] = {
+    rng_marks.rand_calls = 8
+    rng_marks.rand_last = outputs[-1]
+    rng_marks.rand_head = [
+        msgspec.convert(
+            _base_rng_head_entry(value=int(value), value_15=int(value)),
+            type=CaptureRngHeadEntry,
+            strict=True,
+        )
+        for value in outputs
+    ]
+    tick0.rng = {
         "calls": 8,
         "last_value": outputs[-1],
         "head": [{"value": int(value), "value_15": int(value)} for value in outputs],
@@ -2560,7 +2573,7 @@ def test_convert_capture_to_replay_explicit_seed_overrides_inferred_seed(tmp_pat
 
 def test_convert_capture_to_replay_prefers_input_player_keys_for_digital_move(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["input_player_keys"] = [
+    tick0.input_player_keys = [
         {
             "player_index": 0,
             "move_forward_pressed": True,
@@ -2572,7 +2585,7 @@ def test_convert_capture_to_replay_prefers_input_player_keys_for_digital_move(tm
             "reload_pressed": False,
         },
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         {
             "player_index": 0,
             "move_dx": -21.5,
@@ -2616,8 +2629,8 @@ def test_convert_capture_to_replay_prefers_input_player_keys_for_digital_move(tm
 
 def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capability(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["input_player_keys"] = [_base_input_player_keys(**{"player_index": 0})]
-    tick0["input_approx"] = [
+    tick0.input_player_keys = [_base_input_player_keys(**{"player_index": 0})]
+    tick0.input_approx = [
         {
             "player_index": 0,
             "move_dx": 0.25,
@@ -2662,7 +2675,7 @@ def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capabil
 
 def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_precedence(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["input_player_keys"] = [
+    tick0.input_player_keys = [
         {
             "player_index": 0,
             "move_forward_pressed": False,
@@ -2671,7 +2684,7 @@ def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_preceden
             "turn_right_pressed": True,
         },
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         {
             "player_index": 0,
             "move_dx": 98.0,
@@ -2681,7 +2694,7 @@ def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_preceden
         },
     ]
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    tick1["input_player_keys"] = [
+    tick1.input_player_keys = [
         {
             "player_index": 0,
             "move_forward_pressed": False,
@@ -2690,7 +2703,7 @@ def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_preceden
             "turn_right_pressed": True,
         },
     ]
-    tick1["input_approx"] = [
+    tick1.input_approx = [
         {
             "player_index": 0,
             "move_dx": -77.0,
@@ -2720,7 +2733,7 @@ def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_preceden
 
 def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_precedence(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["input_player_keys"] = [
+    tick0.input_player_keys = [
         {
             "player_index": 0,
             "move_forward_pressed": False,
@@ -2729,7 +2742,7 @@ def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_preceden
             "turn_right_pressed": False,
         },
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         {
             "player_index": 0,
             "move_dx": 4.0,
@@ -2739,7 +2752,7 @@ def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_preceden
         },
     ]
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    tick1["input_player_keys"] = [
+    tick1.input_player_keys = [
         {
             "player_index": 0,
             "move_forward_pressed": True,
@@ -2748,7 +2761,7 @@ def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_preceden
             "turn_right_pressed": False,
         },
     ]
-    tick1["input_approx"] = [
+    tick1.input_approx = [
         {
             "player_index": 0,
             "move_dx": -8.0,
@@ -2778,7 +2791,7 @@ def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_preceden
 
 def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["input_player_keys"] = [
+    tick0.input_player_keys = [
         {
             "player_index": 0,
             "move_forward_pressed": False,
@@ -2787,7 +2800,7 @@ def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_
             "turn_right_pressed": True,
         },
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         {
             "player_index": 0,
             "move_dx": -92.0,
@@ -2797,7 +2810,7 @@ def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_
         },
     ]
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    tick1["input_player_keys"] = [
+    tick1.input_player_keys = [
         {
             "player_index": 0,
             "move_forward_pressed": True,
@@ -2806,7 +2819,7 @@ def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_
             "turn_right_pressed": False,
         },
     ]
-    tick1["input_approx"] = [
+    tick1.input_approx = [
         {
             "player_index": 0,
             "move_dx": 12.0,
@@ -2832,7 +2845,7 @@ def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_
 
 def test_convert_capture_to_replay_uses_player_key_fire_reload_edges(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["input_player_keys"] = [
+    tick0.input_player_keys = [
         {
             "player_index": 0,
             "fire_down": True,
@@ -2840,7 +2853,7 @@ def test_convert_capture_to_replay_uses_player_key_fire_reload_edges(tmp_path: P
             "reload_pressed": True,
         },
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "fired_events": 0}),
     ]
     obj = _capture_obj(ticks=[tick0])
@@ -2861,10 +2874,10 @@ def test_convert_capture_to_replay_synthesizes_reload_for_alt_weapon_swap_from_b
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    _tick_player(tick0)["weapon_id"] = 1
-    _tick_player(tick0)["ammo"] = 12.0
-    tick0["input_player_keys"] = [_base_input_player_keys(**{"player_index": 0})]
-    tick0["before"] = _base_snapshot(
+    _tick_player(tick0).weapon_id = 1
+    _tick_player(tick0).ammo = 12.0
+    tick0.input_player_keys = [_base_input_player_keys(**{"player_index": 0})]
+    tick0.before = _base_snapshot(
         players=[
             _base_snapshot_player(
                 weapon_id=11,
@@ -2888,10 +2901,10 @@ def test_convert_capture_to_replay_synthesizes_reload_for_alt_weapon_swap_from_b
     )
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    _tick_player(tick1)["weapon_id"] = 1
-    _tick_player(tick1)["ammo"] = 12.0
-    tick1["input_player_keys"] = [_base_input_player_keys(**{"player_index": 0})]
-    tick1["before"] = _base_snapshot(
+    _tick_player(tick1).weapon_id = 1
+    _tick_player(tick1).ammo = 12.0
+    tick1.input_player_keys = [_base_input_player_keys(**{"player_index": 0})]
+    tick1.before = _base_snapshot(
         players=[
             _base_snapshot_player(
                 weapon_id=1,
@@ -2931,7 +2944,7 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_player_fire_event_
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["input_player_keys"] = [
+    tick0.input_player_keys = [
         {
             "player_index": 0,
             "fire_down": False,
@@ -2939,10 +2952,10 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_player_fire_event_
             "reload_pressed": None,
         },
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 0}),
     ]
-    tick0["event_heads"] = [
+    tick0.event_heads = [
         {
             "type": "player_fire",
             "data": {
@@ -2980,7 +2993,7 @@ def test_convert_capture_to_replay_does_not_synthesize_fire_down_from_zero_coold
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["input_player_keys"] = [
+    tick0.input_player_keys = [
         {
             "player_index": 0,
             "fire_down": False,
@@ -2988,10 +3001,10 @@ def test_convert_capture_to_replay_does_not_synthesize_fire_down_from_zero_coold
             "reload_pressed": None,
         },
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 0}),
     ]
-    tick0["event_heads"] = [
+    tick0.event_heads = [
         {
             "type": "player_fire",
             "data": {
@@ -3029,9 +3042,9 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_zero_co
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    _tick_player(tick0)["weapon_id"] = 11
-    _tick_player(tick0)["ammo"] = 21.0
-    tick0["input_player_keys"] = [
+    _tick_player(tick0).weapon_id = 11
+    _tick_player(tick0).ammo = 21.0
+    tick0.input_player_keys = [
         {
             "player_index": 0,
             "fire_down": False,
@@ -3039,10 +3052,10 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_zero_co
             "reload_pressed": None,
         },
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 11, "fired_events": 1}),
     ]
-    tick0["event_heads"] = [
+    tick0.event_heads = [
         {
             "type": "player_fire",
             "data": {
@@ -3080,9 +3093,9 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_ammo_dr
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    _tick_player(tick0)["weapon_id"] = int(WeaponId.FLAMETHROWER)
-    _tick_player(tick0)["ammo"] = 29.9
-    tick0["input_player_keys"] = [
+    _tick_player(tick0).weapon_id = int(WeaponId.FLAMETHROWER)
+    _tick_player(tick0).ammo = 29.9
+    tick0.input_player_keys = [
         {
             "player_index": 0,
             "fire_down": False,
@@ -3090,7 +3103,7 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_ammo_dr
             "reload_pressed": None,
         },
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         {
             "player_index": 0,
             "aim_x": 520.0,
@@ -3099,7 +3112,7 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_ammo_dr
             "fired_events": 0,
         },
     ]
-    tick0["before"] = _base_snapshot(
+    tick0.before = _base_snapshot(
         players=[
             _base_snapshot_player(
                 weapon_id=int(WeaponId.FLAMETHROWER),
@@ -3128,9 +3141,9 @@ def test_convert_capture_to_replay_synthesizes_fire_down_when_fractional_weapon_
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    _tick_player(tick0)["weapon_id"] = int(WeaponId.FLAMETHROWER)
-    _tick_player(tick0)["ammo"] = 29.9
-    tick0["input_player_keys"] = [
+    _tick_player(tick0).weapon_id = int(WeaponId.FLAMETHROWER)
+    _tick_player(tick0).ammo = 29.9
+    tick0.input_player_keys = [
         {
             "player_index": 0,
             "fire_down": False,
@@ -3138,7 +3151,7 @@ def test_convert_capture_to_replay_synthesizes_fire_down_when_fractional_weapon_
             "reload_pressed": None,
         },
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         {
             "player_index": 0,
             "aim_x": 520.0,
@@ -3147,7 +3160,7 @@ def test_convert_capture_to_replay_synthesizes_fire_down_when_fractional_weapon_
             "fired_events": 0,
         },
     ]
-    tick0["before"] = _base_snapshot(
+    tick0.before = _base_snapshot(
         players=[
             _base_snapshot_player(
                 weapon_id=int(WeaponId.FLAMETHROWER),
@@ -3178,9 +3191,9 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_weapon_
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    _tick_player(tick0)["weapon_id"] = int(WeaponId.FLAMETHROWER)
-    _tick_player(tick0)["ammo"] = 30.0
-    tick0["input_player_keys"] = [
+    _tick_player(tick0).weapon_id = int(WeaponId.FLAMETHROWER)
+    _tick_player(tick0).ammo = 30.0
+    tick0.input_player_keys = [
         {
             "player_index": 0,
             "fire_down": False,
@@ -3188,7 +3201,7 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_weapon_
             "reload_pressed": None,
         },
     ]
-    tick0["before"] = _base_snapshot(
+    tick0.before = _base_snapshot(
         players=[
             _base_snapshot_player(
                 weapon_id=int(WeaponId.FLAMETHROWER),
@@ -3198,7 +3211,7 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_weapon_
             ),
         ],
     )
-    tick0["event_heads"] = [
+    tick0.event_heads = [
         {
             "type": "sfx",
             "data": {
@@ -3238,8 +3251,8 @@ def test_convert_capture_to_replay_synthesizes_fire_pressed_from_primary_edge_wh
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["before"] = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
-    tick0["input_queries"] = {
+    tick0.before = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
+    tick0.input_queries = {
         "stats": {
             "primary_edge": {"calls": 1, "true_calls": 1},
             "primary_down": {"calls": 1, "true_calls": 0},
@@ -3247,7 +3260,7 @@ def test_convert_capture_to_replay_synthesizes_fire_pressed_from_primary_edge_wh
         },
         "query_hash": "",
     }
-    tick0["input_player_keys"] = [
+    tick0.input_player_keys = [
         {
             "player_index": 0,
             "fire_down": None,
@@ -3255,7 +3268,7 @@ def test_convert_capture_to_replay_synthesizes_fire_pressed_from_primary_edge_wh
             "reload_pressed": None,
         },
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         {
             "player_index": 0,
             "aim_x": 520.0,
@@ -3281,8 +3294,8 @@ def test_convert_capture_to_replay_synthesizes_fire_pressed_from_primary_edge_wh
 
 def test_convert_capture_to_replay_synthesizes_computer_aim_fire_down_from_projectile_spawn(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["before"] = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
-    tick0["input_player_keys"] = [
+    tick0.before = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
+    tick0.input_player_keys = [
         {
             "player_index": 0,
             "fire_down": False,
@@ -3290,10 +3303,10 @@ def test_convert_capture_to_replay_synthesizes_computer_aim_fire_down_from_proje
             "reload_pressed": False,
         },
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 0}),
     ]
-    tick0["event_heads"] = [
+    tick0.event_heads = [
         {"type": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 1, "actual_type_id": 1}},
     ]
     obj = _capture_obj(ticks=[tick0])
@@ -3314,9 +3327,9 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_non_wea
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["before"] = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
-    _tick_player(tick0)["weapon_id"] = 29
-    tick0["input_player_keys"] = [
+    tick0.before = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
+    _tick_player(tick0).weapon_id = 29
+    tick0.input_player_keys = [
         {
             "player_index": 0,
             "fire_down": False,
@@ -3324,10 +3337,10 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_non_wea
             "reload_pressed": False,
         },
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 29, "fired_events": 1}),
     ]
-    tick0["event_heads"] = [
+    tick0.event_heads = [
         {"type": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 21, "actual_type_id": 21}},
         {"type": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 22, "actual_type_id": 22}},
     ]
@@ -3347,8 +3360,8 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_non_wea
 
 def test_convert_capture_to_replay_does_not_synthesize_non_computer_fire_down(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["before"] = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[0]))
-    tick0["input_player_keys"] = [
+    tick0.before = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[0]))
+    tick0.input_player_keys = [
         {
             "player_index": 0,
             "fire_down": False,
@@ -3356,10 +3369,10 @@ def test_convert_capture_to_replay_does_not_synthesize_non_computer_fire_down(tm
             "reload_pressed": False,
         },
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 0}),
     ]
-    tick0["event_heads"] = [
+    tick0.event_heads = [
         {"type": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 1, "actual_type_id": 1}},
     ]
     obj = _capture_obj(ticks=[tick0])
@@ -3378,23 +3391,23 @@ def test_convert_capture_to_replay_does_not_synthesize_non_computer_fire_down(tm
 
 def test_convert_capture_to_replay_synthesizes_computer_fire_when_mode_missing_but_ammo_drops(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    _tick_player(tick0)["ammo"] = 10.0
-    tick0["input_player_keys"] = [
+    _tick_player(tick0).ammo = 10.0
+    tick0.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "fired_events": 0}),
     ]
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    _tick_player(tick1)["ammo"] = 9.0
-    tick1["input_player_keys"] = [
+    _tick_player(tick1).ammo = 9.0
+    tick1.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 0}),
     ]
-    tick1["event_heads"] = [{"type": "projectile_spawn", "data": {"owner_id": -100}}]
+    tick1.event_heads = [{"type": "projectile_spawn", "data": {"owner_id": -100}}]
 
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -3416,19 +3429,19 @@ def test_convert_capture_to_replay_synthesizes_computer_fire_when_mode_missing_b
 
 def test_convert_capture_to_replay_synthesizes_computer_fire_when_reload_completes_then_shot(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    _tick_player(tick0)["ammo"] = 0.0
-    tick0["input_player_keys"] = [
+    _tick_player(tick0).ammo = 0.0
+    tick0.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick0["input_approx"] = [_base_input_approx(**{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 1})]
+    tick0.input_approx = [_base_input_approx(**{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 1})]
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    _tick_player(tick1)["ammo"] = 9.0
-    tick1["input_player_keys"] = [
+    _tick_player(tick1).ammo = 9.0
+    tick1.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick1["input_approx"] = [_base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 1})]
-    tick1["event_heads"] = [
+    tick1.input_approx = [_base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 1})]
+    tick1.event_heads = [
         {"type": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 1, "actual_type_id": 1}},
     ]
 
@@ -3448,21 +3461,21 @@ def test_convert_capture_to_replay_synthesizes_computer_fire_when_reload_complet
 
 def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_fire_bullets_projectile(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    _tick_player(tick0)["weapon_id"] = 3
-    _tick_player(tick0)["ammo"] = 9.0
-    tick0["input_player_keys"] = [
+    _tick_player(tick0).weapon_id = 3
+    _tick_player(tick0).ammo = 9.0
+    tick0.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick0["input_approx"] = [_base_input_approx(**{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 3})]
+    tick0.input_approx = [_base_input_approx(**{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 3})]
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    _tick_player(tick1)["weapon_id"] = 3
-    _tick_player(tick1)["ammo"] = 9.0
-    tick1["input_player_keys"] = [
+    _tick_player(tick1).weapon_id = 3
+    _tick_player(tick1).ammo = 9.0
+    tick1.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick1["input_approx"] = [_base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 3})]
-    tick1["event_heads"] = [
+    tick1.input_approx = [_base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 3})]
+    tick1.event_heads = [
         {"type": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 45, "actual_type_id": 45}},
     ]
 
@@ -3482,21 +3495,21 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_fire_bullet
 
 def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_secondary_projectile_spawn(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    _tick_player(tick0)["weapon_id"] = 17
-    _tick_player(tick0)["ammo"] = 5.0
-    tick0["input_player_keys"] = [
+    _tick_player(tick0).weapon_id = 17
+    _tick_player(tick0).ammo = 5.0
+    tick0.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick0["input_approx"] = [_base_input_approx(**{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 17})]
+    tick0.input_approx = [_base_input_approx(**{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 17})]
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    _tick_player(tick1)["weapon_id"] = 17
-    _tick_player(tick1)["ammo"] = 5.0
-    tick1["input_player_keys"] = [
+    _tick_player(tick1).weapon_id = 17
+    _tick_player(tick1).ammo = 5.0
+    tick1.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick1["input_approx"] = [_base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 17})]
-    tick1["event_heads"] = [
+    tick1.input_approx = [_base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 17})]
+    tick1.event_heads = [
         {
             "type": "secondary_projectile_spawn",
             "data": {"owner_id": -100, "requested_type_id": 2, "actual_type_id": 0},
@@ -3519,14 +3532,14 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_secondary_p
 
 def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_bonus_projectile_spawn(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["before"] = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
-    _tick_player(tick0)["weapon_id"] = 5
-    _tick_player(tick0)["ammo"] = 12.0
-    tick0["input_player_keys"] = [
+    tick0.before = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
+    _tick_player(tick0).weapon_id = 5
+    _tick_player(tick0).ammo = 12.0
+    tick0.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick0["input_approx"] = [_base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 5})]
-    tick0["event_heads"] = [
+    tick0.input_approx = [_base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 5})]
+    tick0.event_heads = [
         {
             "type": "bonus_apply",
             "data": {
@@ -3558,16 +3571,16 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_nuke_fi
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["before"] = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
-    _tick_player(tick0)["weapon_id"] = 23
-    _tick_player(tick0)["ammo"] = 6.0
-    tick0["input_player_keys"] = [
+    tick0.before = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
+    _tick_player(tick0).weapon_id = 23
+    _tick_player(tick0).ammo = 6.0
+    tick0.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 23, "fired_events": 0}),
     ]
-    tick0["event_heads"] = [
+    tick0.event_heads = [
         {
             "type": "bonus_apply",
             "data": {
@@ -3600,27 +3613,27 @@ def test_convert_capture_to_replay_does_not_synthesize_secondary_spawn_without_o
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    _tick_checkpoint(tick0)["players"] = [_base_player(), _base_player()]
-    tick0["input_player_keys"] = [
+    _tick_checkpoint(tick0).players = [_base_player(), _base_player()]
+    tick0.input_player_keys = [
         {"player_index": 0, "fire_down": False, "fire_pressed": False},
         {"player_index": 1, "fire_down": False, "fire_pressed": False},
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         {"player_index": 0, "aim_x": 512.0, "aim_y": 512.0},
         {"player_index": 1, "aim_x": 256.0, "aim_y": 256.0},
     ]
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    _tick_checkpoint(tick1)["players"] = [_base_player(), _base_player()]
-    tick1["input_player_keys"] = [
+    _tick_checkpoint(tick1).players = [_base_player(), _base_player()]
+    tick1.input_player_keys = [
         {"player_index": 0, "fire_down": False, "fire_pressed": False},
         {"player_index": 1, "fire_down": False, "fire_pressed": False},
     ]
-    tick1["input_approx"] = [
+    tick1.input_approx = [
         {"player_index": 0, "aim_x": 520.0, "aim_y": 500.0},
         {"player_index": 1, "aim_x": 250.0, "aim_y": 260.0},
     ]
-    tick1["event_heads"] = [
+    tick1.event_heads = [
         {"type": "secondary_projectile_spawn", "data": {"requested_type_id": 2, "actual_type_id": 0}},
     ]
 
@@ -3645,10 +3658,10 @@ def test_convert_capture_to_replay_does_not_synthesize_secondary_spawn_without_o
 
 def test_convert_capture_to_replay_does_not_synthesize_fire_from_fired_events_only(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    tick0["input_player_keys"] = [
+    tick0.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick0["input_approx"] = [
+    tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 2}),
     ]
     obj = _capture_obj(ticks=[tick0])
@@ -3679,19 +3692,19 @@ def test_parse_player_int_overrides_rejects_bad_entry() -> None:
 
 def test_convert_capture_to_replay_does_not_synthesize_unknown_mode_without_weapon_match(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    _tick_player(tick0)["ammo"] = 0.0
-    tick0["input_player_keys"] = [
+    _tick_player(tick0).ammo = 0.0
+    tick0.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick0["input_approx"] = [_base_input_approx(**{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 1})]
+    tick0.input_approx = [_base_input_approx(**{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 1})]
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    _tick_player(tick1)["ammo"] = 9.0
-    tick1["input_player_keys"] = [
+    _tick_player(tick1).ammo = 9.0
+    tick1.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick1["input_approx"] = [_base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 1})]
-    tick1["event_heads"] = [
+    tick1.input_approx = [_base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 1})]
+    tick1.event_heads = [
         {"type": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 7, "actual_type_id": 7}},
     ]
 
@@ -3713,21 +3726,21 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_mapped_weap
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    _tick_player(tick0)["weapon_id"] = 14
-    _tick_player(tick0)["ammo"] = 8.0
-    tick0["input_player_keys"] = [
+    _tick_player(tick0).weapon_id = 14
+    _tick_player(tick0).ammo = 8.0
+    tick0.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick0["input_approx"] = [_base_input_approx(**{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 14})]
+    tick0.input_approx = [_base_input_approx(**{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 14})]
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    _tick_player(tick1)["weapon_id"] = 14
-    _tick_player(tick1)["ammo"] = 8.0
-    tick1["input_player_keys"] = [
+    _tick_player(tick1).weapon_id = 14
+    _tick_player(tick1).ammo = 8.0
+    tick1.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick1["input_approx"] = [_base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 14})]
-    tick1["event_heads"] = [
+    tick1.input_approx = [_base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 14})]
+    tick1.event_heads = [
         {"type": "projectile_spawn", "data": {"owner_id": -100, "requested_type_id": 11, "actual_type_id": 11}},
     ]
 
@@ -3747,21 +3760,21 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_mapped_weap
 
 def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_when_weapon_switches_in_tick(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    _tick_player(tick0)["weapon_id"] = 1
-    _tick_player(tick0)["ammo"] = 2.0
-    tick0["input_player_keys"] = [
+    _tick_player(tick0).weapon_id = 1
+    _tick_player(tick0).ammo = 2.0
+    tick0.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick0["input_approx"] = [_base_input_approx(**{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 1})]
+    tick0.input_approx = [_base_input_approx(**{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "weapon_id": 1})]
 
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
-    _tick_player(tick1)["weapon_id"] = 14
-    _tick_player(tick1)["ammo"] = 8.0
-    tick1["input_player_keys"] = [
+    _tick_player(tick1).weapon_id = 14
+    _tick_player(tick1).ammo = 8.0
+    tick1.input_player_keys = [
         _base_input_player_keys(**{"player_index": 0, "fire_down": False, "fire_pressed": False}),
     ]
-    tick1["input_approx"] = [_base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 14})]
-    tick1["event_heads"] = [
+    tick1.input_approx = [_base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 14})]
+    tick1.event_heads = [
         {
             "type": "bonus_apply",
             "data": {

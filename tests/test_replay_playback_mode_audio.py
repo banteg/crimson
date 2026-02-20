@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import call
 
 import pytest
 
@@ -21,49 +22,37 @@ def _set_private(view: replay_playback_mode.ReplayPlaybackMode, name: str, value
     setattr(view, name, value)
 
 
-def test_replay_playback_registers_snd_add_game_tune_command(monkeypatch, replay_playback_view) -> None:
+def test_replay_playback_registers_snd_add_game_tune_command(mocker, replay_playback_view) -> None:
     view, console = replay_playback_view
     music_state = object()
     _set_private(view, "_audio", SimpleNamespace(music=music_state))
-
-    loaded: list[tuple[object, Path, str]] = []
-    queued: list[tuple[object, str]] = []
-
-    def fake_load_music_track(_music, assets_dir: Path, rel_path: str, *, console: ConsoleState):
-        loaded.append((_music, assets_dir, rel_path))
-        return "gt1_ingame", 7
-
-    def fake_queue_track(_music, track_key: str) -> None:
-        queued.append((_music, track_key))
-
-    monkeypatch.setattr(replay_playback_mode.grim_music, "load_music_track", fake_load_music_track)
-    monkeypatch.setattr(replay_playback_mode.grim_music, "queue_track", fake_queue_track)
+    load_music_track = mocker.patch.object(
+        replay_playback_mode.grim_music,
+        "load_music_track",
+        return_value=("gt1_ingame", 7),
+    )
+    queue_track = mocker.patch.object(replay_playback_mode.grim_music, "queue_track")
 
     view._register_replay_audio_commands()
     handler = console.commands.get("snd_addGameTune")
     assert handler is not None
     handler(["gt1_ingame.ogg"])
 
-    assert loaded == [(music_state, Path("."), "music/gt1_ingame.ogg")]
-    assert queued == [(music_state, "gt1_ingame")]
+    load_music_track.assert_called_once_with(music_state, Path("."), "music/gt1_ingame.ogg", console=console)
+    queue_track.assert_called_once_with(music_state, "gt1_ingame")
 
 
-def test_replay_playback_load_game_tune_queue_execs_script(monkeypatch, replay_playback_view) -> None:
+def test_replay_playback_load_game_tune_queue_execs_script(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
     _set_private(view, "_audio", object())
-    calls: list[str] = []
-
-    def fake_exec_line(_self: ConsoleState, line: str) -> None:
-        calls.append(line)
-
-    monkeypatch.setattr(ConsoleState, "exec_line", fake_exec_line)
+    exec_line = mocker.patch.object(ConsoleState, "exec_line")
 
     view._load_game_tune_queue()
-    assert calls == ["exec music/game_tunes.txt"]
+    assert exec_line.call_args_list == [call("exec music/game_tunes.txt")]
 
     _set_private(view, "_audio", None)
     view._load_game_tune_queue()
-    assert calls == ["exec music/game_tunes.txt"]
+    assert exec_line.call_args_list == [call("exec music/game_tunes.txt")]
 
 
 def test_replay_playback_progress_ratio_and_time_formatting(replay_playback_view) -> None:
@@ -90,17 +79,21 @@ def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
     view._finished = False
     view._dt_accum = 1.0
 
-    sfx_enabled_during_tick: list[bool] = []
+    observe_sfx_enabled = SimpleNamespace(mock=None)
+    # Keep this as an autospecced call recorder instead of a list spy.
+    from unittest.mock import Mock
+
+    observe_sfx_enabled.mock = Mock()
 
     def fake_tick_one() -> None:
-        sfx_enabled_during_tick.append(bool(world.audio_router.sfx_enabled))
+        observe_sfx_enabled.mock(bool(world.audio_router.sfx_enabled))
         view._tick_index += 1
 
     _set_private(view, "_tick_one", fake_tick_one)
 
     view._skip_forward_seconds(2.0 / 60.0)
 
-    assert sfx_enabled_during_tick == [False, False]
+    assert observe_sfx_enabled.mock.call_args_list == [call(False), call(False)]
     assert bool(world.audio_router.sfx_enabled)
     assert view._dt_accum == 0.0
 
@@ -114,10 +107,12 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -
     view._tick_index = 0
     view._finished = False
 
-    sfx_enabled_during_tick: list[bool] = []
+    from unittest.mock import Mock
+
+    observe_sfx_enabled = Mock()
 
     def fake_tick_one() -> None:
-        sfx_enabled_during_tick.append(bool(world.audio_router.sfx_enabled))
+        observe_sfx_enabled(bool(world.audio_router.sfx_enabled))
         raise RuntimeError("skip test boom")
 
     _set_private(view, "_tick_one", fake_tick_one)
@@ -125,7 +120,7 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -
     with pytest.raises(RuntimeError, match="skip test boom"):
         view._skip_forward_seconds(1.0 / 60.0)
 
-    assert sfx_enabled_during_tick == [False]
+    assert observe_sfx_enabled.call_args_list == [call(False)]
     assert bool(world.audio_router.sfx_enabled)
 
 
@@ -167,7 +162,7 @@ def test_skip_forward_clears_fx_queues_each_tick(replay_playback_view) -> None:
     assert fx_queue_rotated.clear_calls == 3
 
 
-def test_draw_quest_title_uses_shared_overlay_helper(monkeypatch, replay_playback_view) -> None:
+def test_draw_quest_title_uses_shared_overlay_helper(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
     _set_private(
         view,
@@ -179,19 +174,14 @@ def test_draw_quest_title_uses_shared_overlay_helper(monkeypatch, replay_playbac
     _set_private(view, "_quest_level", "4.7")
     view._quest_name_timer_ms = 123.0
 
-    calls: list[tuple[object, str, str, float]] = []
-
-    def fake_draw(font, title: str, number: str, *, timer_ms: float) -> None:
-        calls.append((font, title, number, timer_ms))
-
-    monkeypatch.setattr(replay_playback_mode, "draw_quest_title_timer_overlay", fake_draw)
+    draw_overlay = mocker.patch.object(replay_playback_mode, "draw_quest_title_timer_overlay")
 
     view._draw_quest_title()
 
-    assert calls == [(view._grim_mono, "Castle Keep", "4.7", 123.0)]
+    draw_overlay.assert_called_once_with(view._grim_mono, "Castle Keep", "4.7", timer_ms=123.0)
 
 
-def test_draw_quest_complete_banner_uses_shared_overlay_helper(monkeypatch, replay_playback_view) -> None:
+def test_draw_quest_complete_banner_uses_shared_overlay_helper(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
     _set_private(
         view,
@@ -202,13 +192,8 @@ def test_draw_quest_complete_banner_uses_shared_overlay_helper(monkeypatch, repl
     _set_private(view, "_quest_complete_texture", texture)
     view._quest_completion_transition_ms = 777.0
 
-    calls: list[tuple[object, float]] = []
-
-    def fake_draw(tex, *, timer_ms: float) -> None:
-        calls.append((tex, timer_ms))
-
-    monkeypatch.setattr(replay_playback_mode, "draw_quest_complete_banner_overlay", fake_draw)
+    draw_overlay = mocker.patch.object(replay_playback_mode, "draw_quest_complete_banner_overlay")
 
     view._draw_quest_complete_banner()
 
-    assert calls == [(texture, 777.0)]
+    draw_overlay.assert_called_once_with(texture, timer_ms=777.0)

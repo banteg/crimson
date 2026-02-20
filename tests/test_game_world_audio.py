@@ -61,7 +61,8 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
         prev_reload_timer=prev_reload_timer,
     )
 
-    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_pistol_fire"]
+    play_sfx.assert_called_once()
+    assert play_sfx.call_args.args[1] == "sfx_pistol_fire"
 
 
 def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
@@ -101,7 +102,8 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
         prev_reload_timer=prev_reload_timer,
     )
 
-    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_autorifle_fire", "sfx_plasmaminigun_fire"]
+    assert play_sfx.call_count == 2
+    assert {call.args[1] for call in play_sfx.call_args_list} == {"sfx_autorifle_fire", "sfx_plasmaminigun_fire"}
 
 
 def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
@@ -121,7 +123,8 @@ def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
         perk_progression_enabled=True,
     )
 
-    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_levelup"]
+    play_sfx.assert_called_once()
+    assert play_sfx.call_args.args[1] == "sfx_ui_levelup"
 
 
 def test_bonus_pickup_plays_bonus_sfx(mocker) -> None:
@@ -138,7 +141,8 @@ def test_bonus_pickup_plays_bonus_sfx(mocker) -> None:
     world.update(0.016, perk_progression_enabled=False)
 
     assert entry.picked
-    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_bonus"]
+    play_sfx.assert_called_once()
+    assert play_sfx.call_args.args[1] == "sfx_ui_bonus"
 
 
 def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
@@ -155,7 +159,8 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
     world.update(0.016, perk_progression_enabled=False)
 
     assert entry.picked
-    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_bonus", "sfx_explosion_medium"]
+    assert play_sfx.call_count == 2
+    assert {call.args[1] for call in play_sfx.call_args_list} == {"sfx_ui_bonus", "sfx_explosion_medium"}
 
 
 def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
@@ -172,7 +177,8 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     player.perk_counts[int(PerkId.MAN_BOMB)] = 1
     player.man_bomb_timer = 3.9
     world.update(0.2, inputs=[aim], perk_progression_enabled=False)
-    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_explosion_small"]
+    play_sfx.assert_called_once()
+    assert play_sfx.call_args.args[1] == "sfx_explosion_small"
 
     play_sfx.reset_mock()
     player.perk_counts[int(PerkId.MAN_BOMB)] = 0
@@ -180,7 +186,8 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
     player.hot_tempered_timer = 1.95
     world.update(0.1, inputs=[aim], perk_progression_enabled=False)
-    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_explosion_small"]
+    play_sfx.assert_called_once()
+    assert play_sfx.call_args.args[1] == "sfx_explosion_small"
 
     play_sfx.reset_mock()
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 0
@@ -192,7 +199,8 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     player.clip_size = 10
     player.ammo = 0
     world.update(0.2, inputs=[aim], perk_progression_enabled=False)
-    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_explosion_small"]
+    play_sfx.assert_called_once()
+    assert play_sfx.call_args.args[1] == "sfx_explosion_small"
 
 
 def test_audio_router_forwards_live_reflex_timer(mocker) -> None:

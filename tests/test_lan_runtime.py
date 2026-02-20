@@ -176,7 +176,7 @@ def test_host_waiting_input_pause_uses_extended_timeout() -> None:
     runtime.close()
 
 
-def test_client_waiting_input_sends_idle_heartbeat(monkeypatch) -> None:
+def test_client_waiting_input_sends_idle_heartbeat(mocker) -> None:
     runtime = LanRuntime(
         LanRuntimeConfig(
             role="join",
@@ -198,18 +198,13 @@ def test_client_waiting_input_sends_idle_heartbeat(monkeypatch) -> None:
     assert lobby is not None
     lobby.ingest_welcome(Welcome(accepted=True, slot_index=1, session_id="s"))
 
-    sent: list[object] = []
-
-    def _capture_send(_self: UdpTransport, _addr: tuple[str, int], packet: object) -> None:
-        sent.append(packet)
-
-    monkeypatch.setattr(UdpTransport, "send_packet", _capture_send)
+    send_packet = mocker.patch.object(UdpTransport, "send_packet", autospec=True)
 
     runtime.update(now_ms=int(now))
 
     heartbeats = [
         packet
-        for packet in sent
+        for packet in [call.args[2] for call in send_packet.call_args_list]
         if isinstance(getattr(packet, "message", None), InputBatch)
         and not bool(getattr(packet, "reliable", False))
         and int(len(getattr(getattr(packet, "message"), "samples", []) or [])) == 0

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 from typer.testing import CliRunner
 
@@ -12,12 +11,7 @@ from crimson.cli import app
 
 
 def test_net_host_command_builds_pending_network_session(mocker, tmp_path: Path) -> None:
-    captured: dict[str, Any] = {}
-
-    def _fake_run_game(config):
-        captured["config"] = config
-
-    mocker.patch.object(game, "run_game", side_effect=_fake_run_game)
+    run_game = mocker.patch.object(game, "run_game")
 
     runner = CliRunner()
     result = runner.invoke(
@@ -41,7 +35,8 @@ def test_net_host_command_builds_pending_network_session(mocker, tmp_path: Path)
     )
 
     assert result.exit_code == 0, result.output
-    config = captured["config"]
+    run_game.assert_called_once()
+    config = run_game.call_args.args[0]
     pending = config.pending_net_session
     assert pending is not None
     assert config.pending_lan_session is pending
@@ -76,12 +71,7 @@ def test_net_host_quests_requires_quest_level(mocker, tmp_path: Path) -> None:
 
 
 def test_net_join_command_builds_pending_join_session_with_legacy_fallback(mocker, tmp_path: Path) -> None:
-    captured: dict[str, Any] = {}
-
-    def _fake_run_game(config):
-        captured["config"] = config
-
-    mocker.patch.object(game, "run_game", side_effect=_fake_run_game)
+    run_game = mocker.patch.object(game, "run_game")
 
     runner = CliRunner()
     result = runner.invoke(
@@ -103,7 +93,8 @@ def test_net_join_command_builds_pending_join_session_with_legacy_fallback(mocke
     )
 
     assert result.exit_code == 0, result.output
-    config = captured["config"]
+    run_game.assert_called_once()
+    config = run_game.call_args.args[0]
     pending = config.pending_net_session
     assert pending is not None
     assert config.pending_lan_session is pending
@@ -116,35 +107,18 @@ def test_net_join_command_builds_pending_join_session_with_legacy_fallback(mocke
 
 
 def test_relay_serve_command_constructs_relay_server(mocker, tmp_path: Path) -> None:
-    captured: dict[str, Any] = {}
-
-    class _FakeRelayServer:
-        def __init__(self, cfg) -> None:
-            captured["cfg"] = cfg
-
-        def serve_forever(self, *, tick_ms: int) -> None:
-            captured["tick_ms"] = int(tick_ms)
-
     default_log = tmp_path / "logs" / "relay" / "auto.log"
     explicit_log = tmp_path / "logs" / "relay" / "relay.log"
 
     mocker.patch.object(game_logging, "default_component_log_path", side_effect=lambda **_kwargs: default_log)
-
-    def _fake_configure_component_logging(
-        *,
-        logger_name: str,
-        component: str,
-        log_file: Path,
-        level: str,
-    ) -> Path:
-        captured["logger_name"] = str(logger_name)
-        captured["component"] = str(component)
-        captured["configured_log_file"] = Path(log_file)
-        captured["log_level"] = str(level)
-        return Path(log_file)
-
-    mocker.patch.object(game_logging, "configure_component_logging", side_effect=_fake_configure_component_logging)
-    mocker.patch.object(relay_service, "RelayServer", _FakeRelayServer)
+    configure_component_logging = mocker.patch.object(
+        game_logging,
+        "configure_component_logging",
+        side_effect=lambda *, logger_name, component, log_file, level: Path(log_file),
+    )
+    relay_server = mocker.Mock()
+    relay_server_cls = mocker.Mock(return_value=relay_server)
+    mocker.patch.object(relay_service, "RelayServer", relay_server_cls)
 
     runner = CliRunner()
     result = runner.invoke(
@@ -166,14 +140,17 @@ def test_relay_serve_command_constructs_relay_server(mocker, tmp_path: Path) -> 
     )
 
     assert result.exit_code == 0, result.output
-    cfg = captured["cfg"]
+    relay_server_cls.assert_called_once()
+    cfg = relay_server_cls.call_args.args[0]
     assert cfg.bind_host == "127.0.0.1"
     assert cfg.bind_port == 32021
-    assert captured["tick_ms"] == 11
-    assert captured["logger_name"] == "crimson.relay"
-    assert captured["component"] == "relay"
-    assert captured["configured_log_file"] == explicit_log
-    assert captured["log_level"] == "info"
+    relay_server.serve_forever.assert_called_once_with(tick_ms=11)
+    configure_component_logging.assert_called_once_with(
+        logger_name="crimson.relay",
+        component="relay",
+        log_file=explicit_log,
+        level="info",
+    )
     assert str(explicit_log) in result.output
 
 
