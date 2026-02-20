@@ -920,6 +920,14 @@ function decodeCapturedF32(v) {
   return u32ToF32(bits >>> 0);
 }
 
+function frameDtSource(globalsObj) {
+  if (!globalsObj || typeof globalsObj !== "object") return "none";
+  if (globalsObj.frame_dt_ms_i32 != null) return "frame_dt_ms_i32";
+  if (globalsObj.frame_dt_ms_f32 != null) return "frame_dt_ms_f32";
+  if (decodeCapturedF32(globalsObj.frame_dt) != null) return "frame_dt_f32";
+  return "none";
+}
+
 function captureNumber(v) {
   if (v == null) return null;
   if (typeof v === "string" && v.startsWith("f32:")) return v;
@@ -2167,6 +2175,24 @@ function topCounterPairs(mapObj, limit) {
   return entries.slice(0, Math.max(1, limit | 0));
 }
 
+function modeFnHead(samples, limit) {
+  const out = [];
+  const seen = {};
+  const rows = Array.isArray(samples) ? samples : [];
+  const cap = Math.max(1, limit | 0);
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row || typeof row !== "object") continue;
+    const modeFn = row.mode_fn == null ? null : String(row.mode_fn);
+    if (!modeFn) continue;
+    if (seen[modeFn]) continue;
+    seen[modeFn] = true;
+    out.push(modeFn);
+    if (out.length >= cap) break;
+  }
+  return out;
+}
+
 function feedCommandToken(tick, token) {
   if (!tick || !token) return;
   tick.command_hash_state = fnvMixString(tick.command_hash_state, token);
@@ -2849,6 +2875,12 @@ function finalizeTick() {
     frame_dt_ms_after_i32: globals.frame_dt_ms_i32 == null ? null : globals.frame_dt_ms_i32,
     frame_dt_ms_before_f32: beforeGlobals.frame_dt_ms_f32 == null ? null : captureNumber(beforeGlobals.frame_dt_ms_f32),
     frame_dt_ms_after_f32: globals.frame_dt_ms_f32 == null ? null : captureNumber(globals.frame_dt_ms_f32),
+    frame_dt_source_before: frameDtSource(beforeGlobals),
+    frame_dt_source_after: frameDtSource(globals),
+    mode_tick_event_count: tick.event_counts.mode_tick || 0,
+    mode_tick_sample_count: tick.mode_samples.length,
+    mode_tick_mode_fn_head: modeFnHead(tick.mode_samples, 4),
+    mode_tick_present: (tick.event_counts.mode_tick || 0) > 0,
   };
   const spawnDiagnostics = {
     before_creature_count: beforeCreatureCount,
@@ -3181,7 +3213,7 @@ function installHooks() {
               ? sample.after.time_played_ms - sample.before.time_played_ms
               : null,
         };
-        if (tick.mode_samples.length < CONFIG.maxHeadPerKind) {
+        if (CONFIG.maxHeadPerKind < 0 || tick.mode_samples.length < CONFIG.maxHeadPerKind) {
           tick.mode_samples.push(sample);
         }
       },

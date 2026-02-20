@@ -87,6 +87,10 @@ Notes:
 - `creature_update_micro` event heads provide slot-level movement internals
   (`creature_update_window` pre/post snapshots + `angle_approach` call traces)
   and are enabled in default captures.
+- Per-tick timing diagnostics now include mode-step presence and dt provenance
+  (`mode_tick_event_count`, `mode_tick_present`, `mode_tick_mode_fn_head`,
+  `frame_dt_source_before`, `frame_dt_source_after`) to debug timing-path
+  parity without replay-side inference.
 - No top-level raw event stream is written; diagnostics stay in per-tick aggregates.
 - Float precision contract: capture script emits memory-sourced float values as
   tagged float32 bit tokens (`"f32:XXXXXXXX"`). Tooling decodes these tokens at
@@ -168,6 +172,8 @@ Without extra env vars, the script captures full per-tick detail:
 - RNG per-draw stream rows (`value/state_before/state_after/branch_id`), caller diagnostics, mirror tracking, outside-tick carry
 - blood-splatter effect diagnostics (`effect_spawn_blood_splatter`) with per-tick caller and RNG-draw attribution
 - perk-apply diagnostics and input query/key snapshots
+- mode-step timing-path diagnostics (mode tick counts/presence + frame dt source
+  before/after each tick)
 - creature movement micro telemetry (`creature_update_window` +
   `angle_approach`) with per-kind per-tick head cap (`256`) and no slot/window
   filtering
