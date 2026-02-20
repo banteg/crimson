@@ -17,7 +17,24 @@ This runbook is based on repeated patterns from Codex session logs under
 
 ## 1) Identify the capture artifact
 
-Run:
+Run (preferred):
+
+```bash
+uv run crimson original capture-health \
+  artifacts/frida/share/gameplay_diff_capture.json.gz \
+  --json-out analysis/frida/reports/capture_<sha8>_health.json
+```
+
+Optional for focused ancestry windows:
+
+```bash
+uv run crimson original capture-health \
+  artifacts/frida/share/gameplay_diff_capture.json.gz \
+  --tick-start <tick_start> \
+  --tick-end <tick_end>
+```
+
+Legacy/manual equivalent:
 
 ```bash
 ls -lh artifacts/frida/share/gameplay_diff_capture.json
@@ -40,6 +57,8 @@ p = Path("artifacts/frida/share/gameplay_diff_capture.json")
 print("sha256", hashlib.sha256(p.read_bytes()).hexdigest())
 cap = load_capture(p)
 print("capture_format_version", int(cap.capture_format_version))
+print("capture_profile", str(cap.config.capture_profile))
+print("config_env_overrides", list(cap.config.config_env_overrides))
 ticks = cap.ticks
 print("ticks", len(ticks))
 if ticks:
@@ -231,7 +250,41 @@ telemetry saturation and track the divergence by category/signature:
 - projectile-hit shortfall profile (`capture_hits` vs `rewrite_hits`)
 - dominant native caller clusters in investigation leads
 
-## 6) Common mismatch classes
+## 6) Apply recent dead-end guardrails before patching runtime
+
+When a capture stays stuck at the same frontier after multiple probes
+(for example `quest_1_8` at `tick 7756`), force this checkpoint before another
+round of arithmetic/constant edits:
+
+- Find the first decisive branch split tick before focus (not just the first
+  focus mismatch tick). For movement drift runs, use `creature_update_micro`
+  rows to compare capture vs rewrite lineage state in the lead-up window.
+- Normalize projectile-hit shortfall leads before classification. Compare rewrite
+  hit events against effective capture hits
+  (`projectile_find_hit_count - owner_collision_queries`, clamped at `>= 0`).
+- If constant/rounding probes do not move the first decisive split tick, treat
+  them as dead ends, revert, and log them in `docs/frida/differential-sessions.md`.
+- When a stable pre-threshold distance bias persists (for example `~+0.13` in
+  rewrite link distance before a `< 40.0` branch), switch to timing-path
+  verification instead of more local math tweaks by validating `dt_frame`,
+  `dt_frame_ms_i32`, and `apply_world_dt_steps`, then instrumenting pre-AI and
+  post-move slot traces in the edge window.
+
+## 7) Use refactored decompiled hotspot sources first
+
+Static/native references for differential probes should now prefer the refactored
+hotspot packs under `analysis/ghidra/derived/hotspots/`:
+
+- Start from `analysis/ghidra/derived/hotspots/<target>/README.md` for target
+  scope, extracted function list, and direct callgraph.
+- Use `analysis/ghidra/derived/hotspots/<target>/functions/*.c` as the immutable
+  extracted baseline for citations.
+- Use `analysis/ghidra/derived/hotspots/<target>/work/*.work.c` for local
+  renames and annotations while preserving address/branch labels.
+- Fall back to `analysis/ghidra/raw/crimsonland.exe_decompiled.c` only when a
+  needed function is not yet covered by a hotspot pack.
+
+## 8) Common mismatch classes
 
 - Early position drift (`players[0].pos.*`): usually input reconstruction quality.
 - XP/score-only one-tick blips: often timing/bridge artifacts; verify whether it
@@ -239,7 +292,7 @@ telemetry saturation and track the divergence by category/signature:
 - RNG shortfall lead near focus tick: investigate missing branch/caller path
   before tuning downstream gameplay behavior.
 
-## 7) Completion checklist
+## 9) Completion checklist
 
 1. Add targeted tests for every replay/conversion behavior change.
 2. Run `just check`.

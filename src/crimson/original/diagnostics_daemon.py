@@ -68,7 +68,7 @@ def _wait_for_daemon_ready(*, timeout_seconds: float) -> bool:
                 probe = DaemonRequest(tool="_ping")
                 _send_request_once(probe, timeout_seconds=0.25)
                 return True
-            except Exception:
+            except (ConnectionError, OSError, TimeoutError, msgspec.MsgspecError):
                 pass
         time.sleep(0.05)
     return False
@@ -78,7 +78,8 @@ def _start_daemon_background() -> None:
     sock_path = socket_path()
     sock_path.parent.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ)
-    env.setdefault("CRIMSON_ORIGINAL_CACHE", "1")
+    if "CRIMSON_ORIGINAL_CACHE" not in env:
+        env["CRIMSON_ORIGINAL_CACHE"] = "1"
     subprocess.Popen(
         [sys.executable, "-m", "crimson.original.diagnostics_daemon", "--serve"],
         stdin=subprocess.DEVNULL,
@@ -99,7 +100,7 @@ def run_tool_request(
     request = DaemonRequest(tool=str(tool), args=[str(arg) for arg in args], cwd=str(cwd))
     try:
         return _send_request_once(request, timeout_seconds=_CLIENT_TIMEOUT_SECONDS)
-    except Exception as err:
+    except (ConnectionError, OSError, TimeoutError, msgspec.MsgspecError) as err:
         _start_daemon_background()
         if not _wait_for_daemon_ready(timeout_seconds=_DAEMON_BOOT_TIMEOUT_SECONDS):
             raise RuntimeError("diagnostics daemon failed to start") from err
@@ -126,13 +127,11 @@ def _parse_capture_path(tool: str, args: list[str]) -> Path | None:
             return None
         parser.exit_on_error = False
         parsed = parser.parse_args(list(args))
-        capture = getattr(parsed, "capture", None)
-        if capture is None:
-            return None
+        capture = parsed.capture
         return Path(capture).expanduser().resolve()
     except SystemExit:
         return None
-    except Exception:
+    except (argparse.ArgumentError, ValueError, ImportError, RuntimeError):
         return None
 
 
@@ -207,7 +206,16 @@ def _run_tool(
                     exit_code = 0
                 else:
                     exit_code = 1
-            except Exception:
+            except (
+                AttributeError,
+                ImportError,
+                LookupError,
+                OSError,
+                RuntimeError,
+                TypeError,
+                ValueError,
+                msgspec.MsgspecError,
+            ):
                 traceback.print_exc()
                 exit_code = 1
 
@@ -272,7 +280,13 @@ def serve_forever() -> int:
                         registry=registry,
                         cwd=cwd,
                     )
-                except Exception:
+                except (
+                    ConnectionError,
+                    OSError,
+                    TimeoutError,
+                    ValueError,
+                    msgspec.MsgspecError,
+                ):
                     response = DaemonResponse(
                         exit_code=1,
                         stdout="",

@@ -235,9 +235,12 @@ def _load_capture_events(replay: Replay) -> tuple[dict[int, list[object]], bool]
         if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
             original_capture_replay = True
             payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
-            if not isinstance(payload, dict):
+            if payload is None:
                 continue
-        events_by_tick.setdefault(int(event.tick_index), []).append(event)
+        tick_key = int(event.tick_index)
+        if tick_key not in events_by_tick:
+            events_by_tick[tick_key] = []
+        events_by_tick[tick_key].append(event)
     return events_by_tick, original_capture_replay
 
 
@@ -455,7 +458,7 @@ class CaptureVisualizerView:
         for layer in self._trace_layers():
             rt = layer.rt
             layer.fade_accum = 0.0
-            if rt is None or int(getattr(rt, "id", 0)) <= 0:
+            if rt is None or int(rt.id) <= 0:
                 continue
             rl.begin_texture_mode(rt)
             rl.clear_background(rl.Color(0, 0, 0, 0))
@@ -464,7 +467,7 @@ class CaptureVisualizerView:
     def _unload_trace_layers(self) -> None:
         for layer in self._trace_layers():
             rt = layer.rt
-            if rt is not None and int(getattr(rt, "id", 0)) > 0:
+            if rt is not None and int(rt.id) > 0:
                 rl.unload_render_texture(rt)
             layer.rt = None
             layer.fade_accum = 0.0
@@ -479,12 +482,12 @@ class CaptureVisualizerView:
             rt = layer.rt
             if (
                 rt is not None
-                and int(getattr(rt, "id", 0)) > 0
-                and int(getattr(getattr(rt, "texture", None), "width", 0)) == int(width)
-                and int(getattr(getattr(rt, "texture", None), "height", 0)) == int(height)
+                and int(rt.id) > 0
+                and int(rt.texture.width) == int(width)
+                and int(rt.texture.height) == int(height)
             ):
                 continue
-            if rt is not None and int(getattr(rt, "id", 0)) > 0:
+            if rt is not None and int(rt.id) > 0:
                 rl.unload_render_texture(rt)
             layer.rt = rl.load_render_texture(int(width), int(height))
             rl.begin_texture_mode(layer.rt)
@@ -570,7 +573,8 @@ class CaptureVisualizerView:
             dt_frame_ms_i32_overrides=self._dt_frame_ms_i32_overrides,
         )
 
-        tick_events = self._events_by_tick.get(int(tick_index), [])
+        tick_key = int(tick_index)
+        tick_events = self._events_by_tick[tick_key] if tick_key in self._events_by_tick else []
         pre_step_events, post_step_events = partition_tick_events(
             tick_events,
             defer_menu_open=bool(self._original_capture_replay),
@@ -707,7 +711,7 @@ class CaptureVisualizerView:
                 str(
                     perk_label(
                         int(perk_id),
-                        preserve_bugs=bool(getattr(self._replay.header, "preserve_bugs", False)),
+                        preserve_bugs=bool(self._replay.header.preserve_bugs),
                     ),
                 ),
                 max_len=18,
@@ -725,7 +729,7 @@ class CaptureVisualizerView:
                 str(
                     perk_label(
                         int(perk_id),
-                        preserve_bugs=bool(getattr(self._replay.header, "preserve_bugs", False)),
+                        preserve_bugs=bool(self._replay.header.preserve_bugs),
                     ),
                 ),
                 max_len=14,
@@ -1082,10 +1086,10 @@ class CaptureVisualizerView:
             return str(
                 bonus_label_for_entry(
                     entry,
-                    preserve_bugs=bool(getattr(self._replay.header, "preserve_bugs", False)),
+                    preserve_bugs=bool(self._replay.header.preserve_bugs),
                 ),
             )
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             return "Bonus"
 
     def _bonus_label_from_capture_sample(self, *, bonus_id: int, amount_i32: int) -> str:
@@ -1119,8 +1123,8 @@ class CaptureVisualizerView:
         amount = int(max(0, min(255, int(amount))))
         if amount <= 0:
             return
-        width = int(max(1, getattr(rt.texture, "width", 1)))
-        height = int(max(1, getattr(rt.texture, "height", 1)))
+        width = int(max(1, int(rt.texture.width)))
+        height = int(max(1, int(rt.texture.height)))
         fade_color = rl.Color(int(amount), int(amount), int(amount), int(amount))
         rl.begin_texture_mode(rt)
         rl.rl_set_blend_factors_separate(
@@ -1149,7 +1153,7 @@ class CaptureVisualizerView:
             return
         for layer in self._trace_layers():
             rt = layer.rt
-            if rt is None or int(getattr(rt, "id", 0)) <= 0:
+            if rt is None or int(rt.id) <= 0:
                 continue
             duration = max(float(self._step_interval), float(layer.lifetime_ticks) * float(self._step_interval))
             # Linear decay over the configured trail lifetime.
@@ -1167,13 +1171,13 @@ class CaptureVisualizerView:
         # Draw in this order so player trails remain easiest to read.
         for layer in (self._creature_traces, self._projectile_traces, self._player_traces):
             rt = layer.rt
-            if rt is None or int(getattr(rt, "id", 0)) <= 0:
+            if rt is None or int(rt.id) <= 0:
                 continue
             src = rl.Rectangle(
                 0.0,
                 0.0,
-                float(getattr(rt.texture, "width", width)),
-                -float(getattr(rt.texture, "height", height)),
+                float(rt.texture.width),
+                -float(rt.texture.height),
             )
             rl.draw_texture_pro(rt.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
@@ -1195,7 +1199,7 @@ class CaptureVisualizerView:
         color: rl.Color,
     ) -> None:
         rt = layer.rt
-        if rt is None or int(getattr(rt, "id", 0)) <= 0:
+        if rt is None or int(rt.id) <= 0:
             return
         sx0, sy0 = self._world_to_screen(x=float(x0), y=float(y0), width=width, height=height)
         sx1, sy1 = self._world_to_screen(x=float(x1), y=float(y1), width=width, height=height)
@@ -1815,7 +1819,7 @@ def main(argv: list[str] | None = None) -> int:
             seed=(None if args.seed is None else int(args.seed)),
             aim_scheme_overrides_by_player=aim_scheme_overrides,
         )
-    except Exception as exc:
+    except (FileNotFoundError, OSError, ValueError, RuntimeError) as exc:
         print(f"capture visualize failed: {exc}")
         return 1
 

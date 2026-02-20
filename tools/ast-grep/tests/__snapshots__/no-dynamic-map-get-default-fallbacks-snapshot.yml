@@ -1,0 +1,16 @@
+id: no-dynamic-map-get-default-fallbacks
+snapshots:
+  ? |
+    calls = int(rng_row.get("calls", 0))
+  : labels:
+    - source: rng_row.get("calls", 0)
+      style: primary
+      start: 12
+      end: 35
+  ? |
+    world_size = float(payload.get("world_size", 1024.0))
+  : labels:
+    - source: payload.get("world_size", 1024.0)
+      style: primary
+      start: 19
+      end: 52

@@ -3,7 +3,7 @@
 // Differential gameplay capture:
 // - per-gameplay tick records with stable checkpoint payloads
 // - deterministic command/event summaries for first-divergence debugging
-// - compact before/after snapshots and optional entity samples
+// - compact before/after snapshots and entity samples on every tick
 // - JSONL stream output (`capture_meta` + `tick` rows)
 //
 // Attach only:
@@ -21,7 +21,7 @@ const DEFAULT_QUEST_OUT_PREFIX = "gameplay_diff_capture.quest_";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 4;
+const CAPTURE_FORMAT_VERSION = 5;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
@@ -33,6 +33,11 @@ function getEnv(key) {
   } catch (_) {
     return null;
   }
+}
+
+function hasNonEmptyEnv(key) {
+  const raw = getEnv(key);
+  return raw != null && String(raw).trim().length > 0;
 }
 
 function parseIntEnv(key, fallback) {
@@ -89,6 +94,60 @@ function parseStringSet(raw, fallbackCsv) {
   return out;
 }
 
+const CONFIG_ENV_KEYS = [
+  "CRIMSON_FRIDA_DIR",
+  "CRIMSON_FRIDA_OUT_PATH",
+  "CRIMSON_FRIDA_QUEST_OUT_DIR",
+  "CRIMSON_FRIDA_QUEST_OUT_PREFIX",
+  "CRIMSON_FRIDA_APPEND",
+  "CRIMSON_FRIDA_CONSOLE_ALL_EVENTS",
+  "CRIMSON_FRIDA_CONSOLE_EVENTS",
+  "CRIMSON_FRIDA_INCLUDE_CALLER",
+  "CRIMSON_FRIDA_INCLUDE_BT",
+  "CRIMSON_FRIDA_INCLUDE_RAW_EVENTS",
+  "CRIMSON_FRIDA_ALL_STATES",
+  "CRIMSON_FRIDA_STATES",
+  "CRIMSON_FRIDA_PLAYER_COUNT",
+  "CRIMSON_FRIDA_FOCUS_TICK",
+  "CRIMSON_FRIDA_FOCUS_RADIUS",
+  "CRIMSON_FRIDA_HEARTBEAT_MS",
+  "CRIMSON_FRIDA_FLUSH_CAPTURE_WRITES",
+  "CRIMSON_FRIDA_MAX_HEAD",
+  "CRIMSON_FRIDA_MAX_EVENTS_PER_TICK",
+  "CRIMSON_FRIDA_RNG_HEAD",
+  "CRIMSON_FRIDA_RNG_CALLERS",
+  "CRIMSON_FRIDA_RNG_ROLL_LOG",
+  "CRIMSON_FRIDA_MAX_RNG_ROLL_LOG_EVENTS",
+  "CRIMSON_FRIDA_RNG_OUTSIDE_TICK_HEAD",
+  "CRIMSON_FRIDA_RNG_STATE_MIRROR",
+  "CRIMSON_FRIDA_CREATURE_DELTA_IDS",
+  "CRIMSON_FRIDA_CREATURE_SAMPLE_LIMIT",
+  "CRIMSON_FRIDA_PROJECTILE_SAMPLE_LIMIT",
+  "CRIMSON_FRIDA_SECONDARY_PROJECTILE_SAMPLE_LIMIT",
+  "CRIMSON_FRIDA_BONUS_SAMPLE_LIMIT",
+  "CRIMSON_FRIDA_INPUT_HOOKS",
+  "CRIMSON_FRIDA_RNG_HOOKS",
+  "CRIMSON_FRIDA_SFX",
+  "CRIMSON_FRIDA_DAMAGE",
+  "CRIMSON_FRIDA_EFFECTS",
+  "CRIMSON_FRIDA_DAMAGE_PROJECTILE_ONLY",
+  "CRIMSON_FRIDA_SPAWNS",
+  "CRIMSON_FRIDA_CREATURE_SPAWN_HOOK",
+  "CRIMSON_FRIDA_CREATURE_DEATH_HOOK",
+  "CRIMSON_FRIDA_BONUS_SPAWN_HOOK",
+  "CRIMSON_FRIDA_CREATURE_LIFECYCLE",
+];
+
+function collectConfigEnvOverrides() {
+  const overrides = [];
+  for (let i = 0; i < CONFIG_ENV_KEYS.length; i++) {
+    const key = CONFIG_ENV_KEYS[i];
+    if (hasNonEmptyEnv(key)) overrides.push(key);
+  }
+  overrides.sort();
+  return overrides;
+}
+
 function joinPath(base, leaf) {
   if (!base) return leaf;
   const sep = base.endsWith("\\") || base.endsWith("/") ? "" : "\\";
@@ -114,56 +173,41 @@ const LOG_DIR = getEnv("CRIMSON_FRIDA_DIR") || DEFAULT_LOG_DIR;
 
 const CONFIG = {
   outPath: getEnv("CRIMSON_FRIDA_OUT_PATH") || joinPath(LOG_DIR, DEFAULT_OUT_NAME),
-  // Quest-mode captures are split to one file per quest stage by default.
   splitQuestFiles: true,
   questOutDir: getEnv("CRIMSON_FRIDA_QUEST_OUT_DIR") || LOG_DIR,
   questOutPrefix: getEnv("CRIMSON_FRIDA_QUEST_OUT_PREFIX") || DEFAULT_QUEST_OUT_PREFIX,
   logMode: getEnv("CRIMSON_FRIDA_APPEND") === "1" ? "append" : "truncate",
-  consoleAllEvents: parseBoolEnv("CRIMSON_FRIDA_CONSOLE_ALL_EVENTS", false),
+  consoleAllEvents: false,
   consoleEvents: parseStringSet(getEnv("CRIMSON_FRIDA_CONSOLE_EVENTS"), DEFAULT_CONSOLE_EVENTS),
-  includeCaller: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_CALLER", true),
-  includeBacktrace: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_BT", false),
-  includeTickSnapshots: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_TICK_SNAPSHOTS", true),
-  includeRawEvents: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_RAW_EVENTS", false),
-  emitTicksOutsideTrackedStates: parseBoolEnv("CRIMSON_FRIDA_ALL_STATES", false),
+  includeCaller: true,
+  includeBacktrace: true,
+  includeRawEvents: false,
+  emitTicksOutsideTrackedStates: false,
   trackedStates: parseStateSet(getEnv("CRIMSON_FRIDA_STATES"), DEFAULT_TRACKED_STATES),
-  playerCountOverride: parseIntEnv("CRIMSON_FRIDA_PLAYER_COUNT", 0),
-  focusTick: parseIntEnv("CRIMSON_FRIDA_FOCUS_TICK", -1),
-  focusRadius: Math.max(0, parseIntEnv("CRIMSON_FRIDA_FOCUS_RADIUS", 0)),
-  tickDetailsEvery: Math.max(1, parseIntEnv("CRIMSON_FRIDA_TICK_DETAILS_EVERY", 1)),
-  heartbeatMs: Math.max(100, parseIntEnv("CRIMSON_FRIDA_HEARTBEAT_MS", 1000)),
-  flushCaptureWrites: parseBoolEnv("CRIMSON_FRIDA_FLUSH_CAPTURE_WRITES", true),
-  maxHeadPerKind: parseLimitEnv("CRIMSON_FRIDA_MAX_HEAD", -1, 0),
-  maxEventsPerTick: parseLimitEnv("CRIMSON_FRIDA_MAX_EVENTS_PER_TICK", -1, 0),
-  maxRngHeadPerTick: parseLimitEnv("CRIMSON_FRIDA_RNG_HEAD", -1, 0),
-  maxRngCallerKinds: parseLimitEnv("CRIMSON_FRIDA_RNG_CALLERS", -1, 1),
-  enableRngRollLog: parseBoolEnv("CRIMSON_FRIDA_RNG_ROLL_LOG", true),
-  maxRngRollLogEvents: parseLimitEnv("CRIMSON_FRIDA_MAX_RNG_ROLL_LOG_EVENTS", -1, 0),
-  maxRngOutsideTickHead: parseLimitEnv("CRIMSON_FRIDA_RNG_OUTSIDE_TICK_HEAD", -1, 0),
-  enableRngStateMirror: parseBoolEnv("CRIMSON_FRIDA_RNG_STATE_MIRROR", true),
-  maxCreatureDeltaIds: Math.max(1, parseIntEnv("CRIMSON_FRIDA_CREATURE_DELTA_IDS", 32)),
-  creatureSampleLimit: parseIntEnv("CRIMSON_FRIDA_CREATURE_SAMPLE_LIMIT", -1),
-  projectileSampleLimit: parseIntEnv("CRIMSON_FRIDA_PROJECTILE_SAMPLE_LIMIT", -1),
-  secondaryProjectileSampleLimit: parseIntEnv("CRIMSON_FRIDA_SECONDARY_PROJECTILE_SAMPLE_LIMIT", -1),
-  bonusSampleLimit: parseIntEnv("CRIMSON_FRIDA_BONUS_SAMPLE_LIMIT", -1),
-  enableInputHooks: parseBoolEnv("CRIMSON_FRIDA_INPUT_HOOKS", true),
-  enableRngHooks: parseBoolEnv("CRIMSON_FRIDA_RNG_HOOKS", true),
-  enableSfxHooks: parseBoolEnv("CRIMSON_FRIDA_SFX", true),
-  enableDamageHooks: parseBoolEnv("CRIMSON_FRIDA_DAMAGE", true),
-  enableEffectHooks: parseBoolEnv("CRIMSON_FRIDA_EFFECTS", true),
-  creatureDamageProjectileOnly: parseBoolEnv("CRIMSON_FRIDA_DAMAGE_PROJECTILE_ONLY", true),
-  enableSpawnHooks: parseBoolEnv("CRIMSON_FRIDA_SPAWNS", true),
-  enableCreatureSpawnHook: parseBoolEnv("CRIMSON_FRIDA_CREATURE_SPAWN_HOOK", true),
-  enableCreatureDeathHook: parseBoolEnv("CRIMSON_FRIDA_CREATURE_DEATH_HOOK", true),
-  enableBonusSpawnHook: parseBoolEnv("CRIMSON_FRIDA_BONUS_SPAWN_HOOK", true),
-  enableCreatureLifecycleDigest: parseBoolEnv("CRIMSON_FRIDA_CREATURE_LIFECYCLE", true),
-  // Always-on by default for parity sessions; no extra env config required.
+  playerCountOverride: 0,
+  focusTick: -1,
+  focusRadius: 0,
+  heartbeatMs: 1000,
+  flushCaptureWrites: true,
+  maxHeadPerKind: -1,
+  maxEventsPerTick: -1,
+  maxRngHeadPerTick: -1,
+  maxRngCallerKinds: -1,
+  enableRngRollLog: true,
+  maxRngRollLogEvents: -1,
+  maxRngOutsideTickHead: -1,
+  enableRngStateMirror: true,
+  maxCreatureDeltaIds: 256,
+  creatureSampleLimit: -1,
+  projectileSampleLimit: -1,
+  secondaryProjectileSampleLimit: -1,
+  maxPlayerSpawnsByPlayerLimit: -1,
+  enableCreatureLifecycleDigest: true,
   enableCreatureMicroHooks: true,
-  creatureMicroSlots: new Set(),
+  creatureMicroSlots: parseStateSet(getEnv("CRIMSON_FRIDA_CREATURE_MICRO"), ""),
   creatureMicroTickStart: -1,
   creatureMicroTickEnd: -1,
-  // Wider default net for parity recaptures while keeping bounded per-tick cost.
-  creatureMicroMaxHeadPerTick: 256,
+  creatureMicroMaxHeadPerTick: -1,
 };
 
 const FN = {
@@ -903,26 +947,26 @@ function maybeBacktrace(context) {
 
 function captureF32Bits(bits) {
   if (bits == null) return null;
-  const hex = toHex(bits >>> 0, 8);
-  return "f32:" + (hex == null ? "" : String(hex).replace(/^0x/i, ""));
+  return u32ToF32(bits >>> 0);
 }
 
 function decodeCapturedF32(v) {
   if (v == null) return null;
-  if (typeof v === "number") return Number.isFinite(v) ? Number(v) : null;
-  if (typeof v !== "string") return null;
-  if (!v.startsWith("f32:")) return null;
-  let hex = v.slice(4);
-  if (hex.toLowerCase().startsWith("0x")) hex = hex.slice(2);
-  if (hex.length !== 8) return null;
-  const bits = parseInt(hex, 16);
-  if (!Number.isFinite(bits)) return null;
-  return u32ToF32(bits >>> 0);
+  if (typeof v !== "number") return null;
+  if (!Number.isFinite(v)) return null;
+  return Number(v);
+}
+
+function frameDtSource(globalsObj) {
+  if (!globalsObj || typeof globalsObj !== "object") return "none";
+  if (globalsObj.frame_dt_ms_i32 != null) return "frame_dt_ms_i32";
+  if (globalsObj.frame_dt_ms_f32 != null) return "frame_dt_ms_f32";
+  if (decodeCapturedF32(globalsObj.frame_dt) != null) return "frame_dt_f32";
+  return "none";
 }
 
 function captureNumber(v) {
   if (v == null) return null;
-  if (typeof v === "string" && v.startsWith("f32:")) return v;
   if (!Number.isFinite(v)) return null;
   return captureF32Bits(f32ToU32(v));
 }
@@ -1412,6 +1456,11 @@ function _readCreatureMicroState(index) {
 
   const activeFlag = safeReadU8(base);
   const stateFlag = safeReadU8(base.add(0x08));
+  const flags = safeReadS32(base.add(0x8c));
+  const linkIndex = safeReadS32(base.add(0x78));
+  const targetPlayer = safeReadS32(base.add(0x70));
+  const hitboxSize = safeReadF32(base.add(0x10));
+  const hp = safeReadF32(base.add(0x24));
   const posX = safeReadF32(base.add(0x14));
   const posY = safeReadF32(base.add(0x18));
   const velX = safeReadF32(base.add(0x1c));
@@ -1423,6 +1472,8 @@ function _readCreatureMicroState(index) {
   const targetY = safeReadF32(base.add(0x54));
   const moveSpeed = safeReadF32(base.add(0x5c));
   const aiMode = safeReadS32(base.add(0x90));
+  const orbitAngle = safeReadF32(base.add(0x84));
+  const orbitRadius = safeReadF32(base.add(0x88));
   const frameDt = dataPtrs.frame_dt ? safeReadF32(dataPtrs.frame_dt) : null;
 
   let distToTarget = null;
@@ -1445,15 +1496,45 @@ function _readCreatureMicroState(index) {
     moveScaleEstimate = speedAbs / (Math.abs(moveSpeed) * 11.0 * Math.abs(frameDt));
   }
 
+  let linkActiveFlag = null;
+  let linkPosX = null;
+  let linkPosY = null;
+  let distToLink = null;
+  const normalizedLinkIndex = linkIndex == null ? null : linkIndex | 0;
+  if (normalizedLinkIndex != null && normalizedLinkIndex >= 0 && normalizedLinkIndex < COUNTS.creatures) {
+    const linkBase = pool.add(normalizedLinkIndex * STRIDES.creature);
+    linkActiveFlag = safeReadU8(linkBase);
+    if (linkActiveFlag) {
+      linkPosX = safeReadF32(linkBase.add(0x14));
+      linkPosY = safeReadF32(linkBase.add(0x18));
+      if (_isFiniteNumber(posX) && _isFiniteNumber(posY) && _isFiniteNumber(linkPosX) && _isFiniteNumber(linkPosY)) {
+        const linkDx = linkPosX - posX;
+        const linkDy = linkPosY - posY;
+        distToLink = Math.sqrt(linkDx * linkDx + linkDy * linkDy);
+      }
+    }
+  }
+
+  const ai7TimerMs =
+    flags != null && linkIndex != null && (flags & CREATURE_FLAG_AI7_LINK_TIMER) !== 0 ? linkIndex : null;
+
   return {
     index: index,
     active: activeFlag == null ? !!stateFlag : !!activeFlag,
     active_flag: activeFlag == null ? null : activeFlag,
     state_flag: stateFlag == null ? null : stateFlag,
     ai_mode: aiMode,
+    flags: flags,
+    link_index: linkIndex,
+    target_player: targetPlayer,
+    hitbox_size: captureNumber(hitboxSize),
+    hp: captureNumber(hp),
     force_target: forceTarget,
+    ai7_timer_ms: ai7TimerMs,
     heading: captureNumber(heading),
     target_heading: captureNumber(targetHeading),
+    orbit_angle: captureNumber(orbitAngle),
+    orbit_radius: captureNumber(orbitRadius),
     target_x: captureNumber(targetX),
     target_y: captureNumber(targetY),
     pos: {
@@ -1468,6 +1549,13 @@ function _readCreatureMicroState(index) {
     dt_frame: captureNumber(frameDt),
     dist_to_target: captureNumber(distToTarget),
     dist_bucket: _distanceBucket(distToTarget),
+    link_active_flag: linkActiveFlag,
+    link_pos: {
+      x: captureNumber(linkPosX),
+      y: captureNumber(linkPosY),
+    },
+    dist_to_link: captureNumber(distToLink),
+    link_dist_bucket: _distanceBucket(distToLink),
     move_scale_estimate: captureNumber(moveScaleEstimate),
   };
 }
@@ -2167,6 +2255,24 @@ function topCounterPairs(mapObj, limit) {
   return entries.slice(0, Math.max(1, limit | 0));
 }
 
+function modeFnHead(samples, limit) {
+  const out = [];
+  const seen = {};
+  const rows = Array.isArray(samples) ? samples : [];
+  const cap = Math.max(1, limit | 0);
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row || typeof row !== "object") continue;
+    const modeFn = row.mode_fn == null ? null : String(row.mode_fn);
+    if (!modeFn) continue;
+    if (seen[modeFn]) continue;
+    seen[modeFn] = true;
+    out.push(modeFn);
+    if (out.length >= cap) break;
+  }
+  return out;
+}
+
 function feedCommandToken(tick, token) {
   if (!tick || !token) return;
   tick.command_hash_state = fnvMixString(tick.command_hash_state, token);
@@ -2179,7 +2285,7 @@ function addTickEvent(kind, payload, commandToken) {
     if (shouldEmitRawEvent()) {
       writeLine({
         event: "tickless_event",
-        kind: kind,
+        type: kind,
         payload: payload,
       });
     }
@@ -2265,14 +2371,14 @@ function buildCaptureEventHeads(eventHeadsByKind) {
         out.push(
           Object.assign(
             {
-              kind: "perk_apply",
+              type: "perk_apply",
             },
             toPerkApplyEntry(payload)
           )
         );
       } else {
         out.push({
-          kind: kind,
+          type: kind,
           data: payload,
         });
       }
@@ -2300,7 +2406,7 @@ function buildCapturePhaseMarkers(markers) {
     if (!kind) continue;
     if (kind === "state_enter") {
       out.push({
-        kind: "state_enter",
+        type: "state_enter",
         state_id: marker.state_id == null ? null : marker.state_id,
         state_pending: marker.state_pending == null ? null : marker.state_pending,
       });
@@ -2311,7 +2417,7 @@ function buildCapturePhaseMarkers(markers) {
       if (key === "kind") continue;
       data[key] = marker[key];
     }
-    out.push({ kind: kind, data: data });
+    out.push({ type: kind, data: data });
   }
   return out;
 }
@@ -2671,11 +2777,6 @@ function buildInputApprox(afterPlayers, tick) {
   return out;
 }
 
-function maybeDetailedSamples(tickIndex) {
-  if (CONFIG.tickDetailsEvery <= 1) return true;
-  return (tickIndex % CONFIG.tickDetailsEvery) === 0;
-}
-
 function finalizeTick() {
   const tick = outState.currentTick;
   if (!tick) return;
@@ -2849,6 +2950,12 @@ function finalizeTick() {
     frame_dt_ms_after_i32: globals.frame_dt_ms_i32 == null ? null : globals.frame_dt_ms_i32,
     frame_dt_ms_before_f32: beforeGlobals.frame_dt_ms_f32 == null ? null : captureNumber(beforeGlobals.frame_dt_ms_f32),
     frame_dt_ms_after_f32: globals.frame_dt_ms_f32 == null ? null : captureNumber(globals.frame_dt_ms_f32),
+    frame_dt_source_before: frameDtSource(beforeGlobals),
+    frame_dt_source_after: frameDtSource(globals),
+    mode_tick_event_count: tick.event_counts.mode_tick || 0,
+    mode_tick_sample_count: tick.mode_samples.length,
+    mode_tick_mode_fn_head: modeFnHead(tick.mode_samples, 4),
+    mode_tick_present: (tick.event_counts.mode_tick || 0) > 0,
   };
   const spawnDiagnostics = {
     before_creature_count: beforeCreatureCount,
@@ -3025,23 +3132,17 @@ function finalizeTick() {
     input_approx: buildInputApprox(afterPlayers, tick),
     frame_dt_ms: frameDtMs,
     frame_dt_ms_i32: frameDtMsI32,
-  };
-  if (creatureLifecycleDiagnostics) {
-    out.creature_lifecycle = creatureLifecycleDiagnostics;
-  }
-
-  if (CONFIG.includeTickSnapshots) {
-    out.before = tick.before;
-    out.after = after;
-  }
-
-  if (maybeDetailedSamples(tick.tick_index)) {
-    out.samples = {
+    before: tick.before,
+    after: after,
+    samples: {
       creatures: readActiveCreatureSample(CONFIG.creatureSampleLimit),
       projectiles: readActiveProjectileSample(CONFIG.projectileSampleLimit),
       secondary_projectiles: readActiveSecondaryProjectileSample(CONFIG.secondaryProjectileSampleLimit),
       bonuses: readActiveBonusSample(CONFIG.bonusSampleLimit),
-    };
+    },
+  };
+  if (creatureLifecycleDiagnostics) {
+    out.creature_lifecycle = creatureLifecycleDiagnostics;
   }
 
   writeCaptureTick(out);
@@ -3181,7 +3282,7 @@ function installHooks() {
               ? sample.after.time_played_ms - sample.before.time_played_ms
               : null,
         };
-        if (tick.mode_samples.length < CONFIG.maxHeadPerKind) {
+        if (CONFIG.maxHeadPerKind < 0 || tick.mode_samples.length < CONFIG.maxHeadPerKind) {
           tick.mode_samples.push(sample);
         }
       },
@@ -4504,18 +4605,18 @@ function main() {
     split_quest_files: CONFIG.splitQuestFiles,
     quest_out_dir: CONFIG.questOutDir,
     quest_out_prefix: CONFIG.questOutPrefix,
+    capture_profile: "exhaustive_default",
+    config_env_overrides: collectConfigEnvOverrides(),
     log_mode: CONFIG.logMode,
     console_all_events: CONFIG.consoleAllEvents,
     console_events: Array.from(CONFIG.consoleEvents.values()),
     include_caller: CONFIG.includeCaller,
     include_backtrace: CONFIG.includeBacktrace,
-    include_tick_snapshots: CONFIG.includeTickSnapshots,
     emit_ticks_outside_tracked_states: CONFIG.emitTicksOutsideTrackedStates,
     tracked_states: Array.from(CONFIG.trackedStates.values()),
     player_count_override: CONFIG.playerCountOverride,
     focus_tick: CONFIG.focusTick,
     focus_radius: CONFIG.focusRadius,
-    tick_details_every: CONFIG.tickDetailsEvery,
     heartbeat_ms: CONFIG.heartbeatMs,
     max_head_per_kind: CONFIG.maxHeadPerKind,
     max_events_per_tick: CONFIG.maxEventsPerTick,

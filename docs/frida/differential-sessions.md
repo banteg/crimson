@@ -1804,3 +1804,63 @@ When the capture SHA is unchanged, append updates to the same session.
 
 - No linked captures are clear in this pass, so there are no new capture unlinks.
 - Earliest unresolved frontier remains `quest_1_8 tick 7756`; next probe should continue from movement-drift ancestry and the remaining RNG tail shortfall branch in the `7753-7756` window.
+
+## Session 18 (continued: `quest_1_8` follow-link threshold dead-end probe pack)
+
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture.quest_1_8.json.gz`
+- **Capture family:** post-master-rebase quest split set (`session18_alt_leads`)
+- **Baseline verifier command (start/end of pass):**
+  `uv run crimson original divergence-report artifacts/frida/share/gameplay_diff_capture.quest_1_8.json.gz --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-focus-context --run-summary-focus-before 8 --run-summary-focus-after 4 --run-summary-short-max-rows 30 --no-cache`
+- **First mismatch progression:**
+  - pass start baseline: `tick 7756` (`rng_stream_mismatch`, `rng.tail_shortfall`, missing tail `2`)
+  - pass end baseline: unchanged at `tick 7756` (same category/signature)
+
+### Key Findings
+
+- The first decisive branch split in this ancestry is earlier than focus:
+  - at `tick 7647`, capture keeps slot `3` on player-force (`force_target(after)=1`), while rewrite flips to link-target (`force_target(after)=0`).
+- Extracted raw `creature_update_micro` rows from capture (`event_heads`) and compared against rewrite trajectory at the same window.
+- In the edge window (`7638..7650`), rewrite link-distance-before is consistently biased relative to capture:
+  - rewrite minus capture bias stays around `+0.126 .. +0.133` through `tick 7647`,
+  - crossing behavior at `tick 7647` maps directly to the `< 40.0` force-target threshold branch.
+- This indicates cumulative upstream movement ancestry drift; no local constant tweak below isolated the root cause without collateral regressions.
+
+### Dead-End Probes (all reverted)
+
+- `src/crimson/creatures/runtime.py`: `_angle_approach(...)` float-store-boundary variant.
+  - result: no `7647` force-target correction; slot drift worsened on control path.
+- `src/crimson/creatures/ai.py`: target-heading delta path without pre-rounding dx/dy to `f32`.
+  - result: no change in first force-target mismatch tick (`7647` remained).
+- `src/crimson/creatures/runtime.py`: turn-rate expression variant (`move_speed * 0.33333334 * 4.0` form).
+  - result: no material change in ancestry/frontier.
+- `src/crimson/math_parity.py`: `heading_from_delta_f32` using `+1.5707964` literal.
+  - result: slight drift changes but no branch/focus improvement.
+- `src/crimson/math_parity.py`: disable left-axis tie-break branch.
+  - result: no measurable impact in this window.
+- `src/crimson/creatures/runtime.py`: movement direction from `heading_to_direction_f32(...)` pre-rounded components.
+  - result: no measurable impact in this window.
+- `src/crimson/creatures/runtime.py`: movement radians with `-1.5707964` literal.
+  - result: severe run-level regression (`run_score_xp=9833`, extra RNG-state-change ticks at `7759/7763/7767`) while still diverged at `7756`.
+
+### Validation
+
+- Baseline no-cache (start): `analysis/frida/reports/session18_continue/quest_1_8_baseline_resume_nocache.json`
+- Baseline no-cache (end): `analysis/frida/reports/session18_continue/quest_1_8_baseline_end_of_pass_nocache.json`
+- Regression canary (movement half-pi literal probe): `analysis/frida/reports/session18_continue/quest_1_8_after_move_halfpi_constant_probe_nocache.json`
+- Edge-window evidence artifact:
+  - `analysis/frida/reports/session18_continue/quest_1_8_slot3_force_target_edge_7638_7650.tsv`
+- Supplementary trajectory probes generated in this pass:
+  - `analysis/frida/reports/session18_continue/_tmp_cre3_7506_7708_angle_store_probe.json`
+  - `analysis/frida/reports/session18_continue/_tmp_cre3_7506_7708_target_heading_probe.json`
+  - `analysis/frida/reports/session18_continue/_tmp_cre3_7506_7708_turnrate_probe.json`
+  - `analysis/frida/reports/session18_continue/_tmp_cre3_7506_7708_halfpi_probe.json`
+  - `analysis/frida/reports/session18_continue/_tmp_cre3_7506_7708_no_left_axis_probe.json`
+  - `analysis/frida/reports/session18_continue/_tmp_cre3_7506_7708_f32_direction_probe.json`
+  - `analysis/frida/reports/session18_continue/_tmp_cre3_7506_7708_move_halfpi_probe.json`
+
+### Outcome / Next Probe
+
+- No gameplay/runtime patch landed from this pass; all probe edits were reverted.
+- To avoid repeating dead-end arithmetic tweaks, next run should switch to a different axis:
+  - verify replay tick-timing application in the `7638..7650` window (`dt_frame`, `dt_frame_ms_i32`, and `apply_world_dt_steps` behavior) against capture micro `dt_frame` rows,
+  - instrument rewrite world-step per-tick/per-slot (`slot 0` and `slot 3`) around pre-AI and post-move boundaries to confirm whether the persistent `~+0.13` link-distance bias is timing-path driven rather than local movement constants.

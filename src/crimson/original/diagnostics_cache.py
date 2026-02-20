@@ -62,6 +62,7 @@ from .focus_trace import (
     FocusTraceReport,
     _build_fire_bullets_loop_parity,
     _build_native_caller_gaps,
+    _capture_rng_head_entry_to_row,
     _CaptureReplayEvents,
     _collect_creature_presence_diffs,
     _collect_projectile_presence_diffs,
@@ -75,23 +76,14 @@ from .focus_trace import (
 )
 from .schema import (
     CaptureEventHeadBonusApply,
-    CaptureEventHeadBonusSpawn,
-    CaptureEventHeadCreatureDamage,
-    CaptureEventHeadCreatureDeath,
-    CaptureEventHeadCreatureUpdateMicro,
-    CaptureEventHeadProjectileFindHit,
-    CaptureEventHeadProjectileFindQuery,
-    CaptureEventHeadProjectileSpawn,
-    CaptureEventHeadSecondaryProjectileSpawn,
     CaptureEventHeadStateTransition,
     CaptureEventHeadWeaponAssign,
     CaptureFile,
     CaptureTick,
 )
 
-_CACHE_SCHEMA_VERSION = 1
+_CACHE_SCHEMA_VERSION = 2
 _CAPTURE_BLOB_NAME = "capture.msgpack.gz"
-_TICK_LITE_BLOB_NAME = "tick_index.msgpack.gz"
 _META_NAME = "meta.json"
 _DEFAULT_IDLE_TIMEOUT_SECONDS = 15 * 60
 _FOCUS_NEAR_TICK_WINDOW = 256
@@ -133,11 +125,6 @@ class DaemonResponse(msgspec.Struct, forbid_unknown_fields=True):
     stderr: str = ""
 
 
-class TickLite(msgspec.Struct, forbid_unknown_fields=True):
-    tick_index: int
-    row: dict[str, object] = msgspec.field(default_factory=dict)
-
-
 class RunSummaryEventLite(msgspec.Struct, forbid_unknown_fields=True):
     tick_index: int
     kind: str
@@ -147,10 +134,6 @@ class RunSummaryEventLite(msgspec.Struct, forbid_unknown_fields=True):
 class _CaptureMeta(msgspec.Struct, forbid_unknown_fields=True):
     schema_version: int
     fingerprint: CaptureFingerprint
-
-
-class _TickLiteBlob(msgspec.Struct, forbid_unknown_fields=True):
-    rows: list[TickLite] = msgspec.field(default_factory=list)
 
 
 class _RunSummaryBlob(msgspec.Struct, forbid_unknown_fields=True):
@@ -285,7 +268,7 @@ class _FocusRuntime:
             raise ValueError(f"focus trace unsupported quest replay: unknown quest_level={quest_level!r}")
 
         world.state.quest_stage_major, world.state.quest_stage_minor = quest.level_key
-        weapon_id = max(1, int(getattr(quest, "start_weapon_id", 1) or 1))
+        weapon_id = max(1, int(quest.start_weapon_id or 1))
         for player in world.players:
             weapon_assign_player(player, int(weapon_id))
         self.quest_start_weapon_id = int(weapon_id)
@@ -345,33 +328,34 @@ class _FocusRuntime:
         if not isinstance(self.session, QuestDeterministicSession):
             return
 
+        bootstrap_tick = int(self.bootstrap_start_tick)
         bootstrap_dt = resolve_dt_frame(
-            tick_index=int(self.bootstrap_start_tick),
+            tick_index=bootstrap_tick,
             default_dt_frame=float(self.default_dt_frame),
             dt_frame_overrides=self.dt_frame_overrides,
         )
         bootstrap_dt_ms = float(bootstrap_dt) * 1000.0
-        for event in self.events_by_tick.get(int(self.bootstrap_start_tick), []):
+        if bootstrap_tick not in self.events_by_tick:
+            return
+        for event in self.events_by_tick[bootstrap_tick]:
             if not (isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND):
                 continue
             payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
             if payload is None:
                 break
-            quest_session = payload.get("quest_session")
-            if isinstance(quest_session, dict):
-                quest_session_obj = cast("dict[str, object]", quest_session)
-                timeline_ms = quest_session_obj.get("spawn_timeline_ms")
-                if isinstance(timeline_ms, (int, float)):
-                    self.session.spawn_timeline_ms = max(0.0, float(timeline_ms) - float(bootstrap_dt_ms))
-                no_creatures_timer_ms = quest_session_obj.get("no_creatures_timer_ms")
-                if isinstance(no_creatures_timer_ms, (int, float)):
-                    self.session.no_creatures_timer_ms = max(0.0, float(no_creatures_timer_ms) - float(bootstrap_dt_ms))
-                completion_transition_ms = quest_session_obj.get("completion_transition_ms")
-                if isinstance(completion_transition_ms, (int, float)):
-                    completion_value = float(completion_transition_ms)
-                    if completion_value >= 0.0:
-                        completion_value = max(0.0, float(completion_value) - float(bootstrap_dt_ms))
-                    self.session.completion_transition_ms = float(completion_value)
+            if payload.quest_session is not None:
+                self.session.spawn_timeline_ms = max(
+                    0.0,
+                    float(payload.quest_session.spawn_timeline_ms) - float(bootstrap_dt_ms),
+                )
+                self.session.no_creatures_timer_ms = max(
+                    0.0,
+                    float(payload.quest_session.no_creatures_timer_ms) - float(bootstrap_dt_ms),
+                )
+                completion_value = float(payload.quest_session.completion_transition_ms)
+                if completion_value >= 0.0:
+                    completion_value = max(0.0, float(completion_value) - float(bootstrap_dt_ms))
+                self.session.completion_transition_ms = float(completion_value)
             break
 
     def _apply_capture_state_reset(self) -> None:
@@ -512,7 +496,7 @@ class _FocusRuntime:
                     },
                 )
 
-        capture_rng_head = [_rng_head_entry_to_row(entry) for entry in tick.rng.head]
+        capture_rng_head = [_capture_rng_head_entry_to_row(entry) for entry in tick.rng.head]
         capture_rng_calls = int(tick.rng.calls)
         if capture_rng_calls < len(capture_rng_head):
             capture_rng_calls = len(capture_rng_head)
@@ -523,6 +507,7 @@ class _FocusRuntime:
         tick_index: int,
         trace: _FocusStepTraceContext | None,
     ) -> None:
+        tick_key = int(tick_index)
         if self.mode == int(GameMode.QUESTS) and self.pending_capture_state_reset:
             self._apply_capture_state_reset()
 
@@ -530,22 +515,28 @@ class _FocusRuntime:
         self.world.state.demo_mode_active = False
 
         if self.use_outside_draws:
-            draws = self.outside_draws_by_tick.get(int(tick_index), self.inter_tick_rand_draws)
+            if tick_key in self.outside_draws_by_tick:
+                draws = self.outside_draws_by_tick[tick_key]
+            else:
+                draws = self.inter_tick_rand_draws
             for _ in range(max(0, int(draws))):
                 self.world.state.rng.rand()
 
         dt_tick = resolve_dt_frame(
-            tick_index=int(tick_index),
+            tick_index=tick_key,
             default_dt_frame=float(self.default_dt_frame),
             dt_frame_overrides=self.dt_frame_overrides,
         )
         dt_tick_ms_i32 = resolve_dt_frame_ms_i32(
-            tick_index=int(tick_index),
+            tick_index=tick_key,
             dt_frame=float(dt_tick),
             dt_frame_ms_i32_overrides=self.dt_frame_ms_i32_overrides,
         )
 
-        tick_events = self.events_by_tick.get(int(tick_index), [])
+        if tick_key in self.events_by_tick:
+            tick_events = self.events_by_tick[tick_key]
+        else:
+            tick_events = []
         pre_step_events, post_step_events = partition_tick_events(
             tick_events,
             defer_menu_open=bool(self.original_capture_replay),
@@ -553,7 +544,7 @@ class _FocusRuntime:
 
         apply_replay_tick_events(
             pre_step_events,
-            tick_index=int(tick_index),
+            tick_index=tick_key,
             dt_frame=float(dt_tick),
             world=self.world,
             game_mode_id=int(self.mode),
@@ -564,7 +555,7 @@ class _FocusRuntime:
         )
         if self.mode == int(GameMode.QUESTS) and self.pending_capture_state_reset:
             self._apply_capture_state_reset()
-        player_inputs = _decode_inputs_for_tick(self.replay, int(tick_index))
+        player_inputs = _decode_inputs_for_tick(self.replay, tick_key)
 
         orig_rand = self.world.state.rng.rand
         orig_particles_rand = self.world.state.particles._rand
@@ -641,9 +632,10 @@ class _FocusRuntime:
                         proj = frame.f_locals.get("proj")
                         if proj is not None:
                             try:
-                                proj_type = int(getattr(proj, "type_id"))
-                                proj_life = float(getattr(proj, "life_timer"))
-                            except (TypeError, ValueError):
+                                proj_ref = cast("Any", proj)
+                                proj_type = int(proj_ref.type_id)
+                                proj_life = float(proj_ref.life_timer)
+                            except (AttributeError, TypeError, ValueError):
                                 proj_type = None
                                 proj_life = None
 
@@ -686,7 +678,8 @@ class _FocusRuntime:
                     hook_index += 1
                     return bool(handled)
 
-                setattr(self.world.state.rng, "rand", traced_rand)
+                rng_ref = cast("Any", self.world.state.rng)
+                rng_ref.rand = traced_rand
                 self.world.state.particles._rand = traced_rand
                 self.world.state.sprite_effects._rand = traced_rand
                 projectiles_mod._within_native_find_radius = traced_within_native_find_radius  # type: ignore[assignment]
@@ -734,7 +727,8 @@ class _FocusRuntime:
             if self.mode == int(GameMode.QUESTS):
                 self.world.creatures.finalize_post_render_lifecycle()
         finally:
-            setattr(self.world.state.rng, "rand", orig_rand)
+            rng_ref = cast("Any", self.world.state.rng)
+            rng_ref.rand = orig_rand
             self.world.state.particles._rand = orig_particles_rand
             self.world.state.sprite_effects._rand = orig_sprite_effects_rand
             projectiles_mod._within_native_find_radius = orig_within
@@ -837,7 +831,11 @@ class _FocusRuntime:
 
 
 def cache_enabled() -> bool:
-    raw = str(os.environ.get("CRIMSON_ORIGINAL_CACHE", "1")).strip().lower()
+    if "CRIMSON_ORIGINAL_CACHE" in os.environ:
+        raw_value = os.environ["CRIMSON_ORIGINAL_CACHE"]
+    else:
+        raw_value = "1"
+    raw = str(raw_value).strip().lower()
     return raw not in {"0", "false", "off", "no"}
 
 
@@ -906,15 +904,6 @@ def build_focus_key(
     )
 
 
-def _int_or(value: object, default: int = -1) -> int:
-    try:
-        if value is None:
-            return int(default)
-        return int(value)  # ty:ignore[invalid-argument-type]
-    except (TypeError, ValueError):
-        return int(default)
-
-
 def _optional_int(value: object) -> int | None:
     if value is None:
         return None
@@ -922,15 +911,6 @@ def _optional_int(value: object) -> int | None:
         return int(cast(Any, value))
     except (TypeError, ValueError):
         return None
-
-
-def _float_or(value: object, default: float = 0.0) -> float:
-    try:
-        if value is None:
-            return float(default)
-        return float(value)  # ty:ignore[invalid-argument-type]
-    except (TypeError, ValueError):
-        return float(default)
 
 
 def _cache_id_for_fingerprint(fingerprint: CaptureFingerprint) -> str:
@@ -949,7 +929,7 @@ def _meta_matches(path: Path, fingerprint: CaptureFingerprint) -> bool:
         return False
     try:
         meta_obj = json.loads(path.read_text(encoding="utf-8"))
-        meta = msgspec.convert(meta_obj, type=_CaptureMeta, strict=False)
+        meta = msgspec.convert(meta_obj, type=_CaptureMeta, strict=True)
     except (TypeError, ValueError):
         return False
     if int(meta.schema_version) != int(_CACHE_SCHEMA_VERSION):
@@ -1008,315 +988,6 @@ def capture_fingerprint(path: Path, *, include_sha256: bool = False) -> CaptureF
     )
 
 
-def _rng_head_entry_to_row(entry: Any) -> dict[str, object]:
-    out: dict[str, object] = {}
-    value_15 = _int_or(getattr(entry, "value_15", None), -1)
-    if 0 <= value_15 <= 0x7FFF:
-        out["value_15"] = int(value_15)
-        out["value"] = int(value_15)
-    state_before_u32 = _int_or(getattr(entry, "state_before_u32", None), -1)
-    if state_before_u32 >= 0:
-        out["state_before_u32"] = int(state_before_u32) & 0xFFFFFFFF
-    state_after_u32 = _int_or(getattr(entry, "state_after_u32", None), -1)
-    if state_after_u32 >= 0:
-        out["state_after_u32"] = int(state_after_u32) & 0xFFFFFFFF
-    seq = _int_or(getattr(entry, "seq", None), -1)
-    if seq >= 0:
-        out["seq"] = int(seq)
-    tick_call_index = _int_or(getattr(entry, "tick_call_index", None), -1)
-    if tick_call_index >= 0:
-        out["tick_call_index"] = int(tick_call_index)
-    caller_static = str(getattr(entry, "caller_static", "") or "")
-    branch_id = str(getattr(entry, "branch_id", "") or "")
-    caller = str(getattr(entry, "caller", "") or "")
-    if caller_static:
-        out["caller_static"] = caller_static
-    if branch_id:
-        out["branch_id"] = branch_id
-    elif caller_static:
-        out["branch_id"] = caller_static
-    if caller:
-        out["caller"] = caller
-    return out
-
-
-def _event_head_payload(head: Any) -> dict[str, object]:
-    data = getattr(head, "data", None)
-    if isinstance(data, dict):
-        return {str(key): value for key, value in data.items()}
-    return {}
-
-
-def _build_event_heads_by_kind(tick: CaptureTick) -> dict[str, list[dict[str, object]]]:
-    out: dict[str, list[dict[str, object]]] = {}
-    for head in tick.event_heads:
-        kind = ""
-        if isinstance(head, CaptureEventHeadBonusApply):
-            kind = "bonus_apply"
-        elif isinstance(head, CaptureEventHeadWeaponAssign):
-            kind = "weapon_assign"
-        elif isinstance(head, CaptureEventHeadStateTransition):
-            kind = "state_transition"
-        elif isinstance(head, CaptureEventHeadCreatureDamage):
-            kind = "creature_damage"
-        elif isinstance(head, CaptureEventHeadProjectileSpawn):
-            kind = "projectile_spawn"
-        elif isinstance(head, CaptureEventHeadSecondaryProjectileSpawn):
-            kind = "secondary_projectile_spawn"
-        elif isinstance(head, CaptureEventHeadCreatureDeath):
-            kind = "creature_death"
-        elif isinstance(head, CaptureEventHeadBonusSpawn):
-            kind = "bonus_spawn"
-        elif isinstance(head, CaptureEventHeadProjectileFindQuery):
-            kind = "projectile_find_query"
-        elif isinstance(head, CaptureEventHeadProjectileFindHit):
-            kind = "projectile_find_hit"
-        elif isinstance(head, CaptureEventHeadCreatureUpdateMicro):
-            kind = "creature_update_micro"
-        if not kind:
-            continue
-        out.setdefault(kind, []).append(_event_head_payload(head))
-    return out
-
-
-def _build_sample_creatures_head(tick: CaptureTick) -> list[dict[str, object]]:
-    out: list[dict[str, object]] = []
-    if tick.samples is None:
-        return out
-    for item in tick.samples.creatures[:6]:
-        row: dict[str, object] = {
-            "index": int(item.index),
-            "type_id": int(item.type_id),
-            "hp": float(item.hp),
-            "hitbox_size": float(item.hitbox_size),
-            "pos": {"x": float(item.pos.x), "y": float(item.pos.y)},
-        }
-        if item.ai_mode is not None:
-            row["ai_mode"] = int(item.ai_mode)
-        if item.link_index is not None:
-            row["link_index"] = int(item.link_index)
-        if item.ai7_timer_ms is not None:
-            row["ai7_timer_ms"] = int(item.ai7_timer_ms)
-        if item.orbit_angle is not None:
-            row["orbit_angle"] = float(item.orbit_angle)
-        if item.orbit_radius is not None:
-            row["orbit_radius"] = float(item.orbit_radius)
-        out.append(row)
-    return out
-
-
-def _build_sample_secondary_head(tick: CaptureTick) -> list[dict[str, object]]:
-    out: list[dict[str, object]] = []
-    if tick.samples is None:
-        return out
-    for item in tick.samples.secondary_projectiles[:6]:
-        out.append(
-            {
-                "index": int(item.index),
-                "type_id": int(item.type_id),
-                "target_id": int(item.target_id),
-                "life_timer": float(item.life_timer),
-                "pos": {"x": float(item.pos.x), "y": float(item.pos.y)},
-            },
-        )
-    return out
-
-
-def _build_tick_lite_row(tick: CaptureTick) -> dict[str, object]:
-    checkpoint = tick.checkpoint
-    debug = checkpoint.debug
-    spawn_obj = debug.spawn if isinstance(debug.spawn, dict) else {}
-    lifecycle_obj = debug.creature_lifecycle if isinstance(debug.creature_lifecycle, dict) else {}
-    event_heads_obj = _build_event_heads_by_kind(tick)
-
-    rng_marks = checkpoint.rng_marks
-    rng_top = tick.rng
-    rng_rand_calls = int(rng_marks.rand_calls)
-    if rng_rand_calls < 0:
-        rng_rand_calls = int(rng_top.calls)
-    rng_rand_last = rng_marks.rand_last if rng_marks.rand_last is not None else rng_top.last_value
-    rng_seq_first = int(rng_marks.rand_seq_first) if rng_marks.rand_seq_first is not None else -1
-    if rng_seq_first < 0 and rng_top.seq_first is not None:
-        rng_seq_first = int(rng_top.seq_first)
-    rng_seq_last = int(rng_marks.rand_seq_last) if rng_marks.rand_seq_last is not None else -1
-    if rng_seq_last < 0 and rng_top.seq_last is not None:
-        rng_seq_last = int(rng_top.seq_last)
-    rng_seed_epoch_enter = int(rng_marks.rand_seed_epoch_enter) if rng_marks.rand_seed_epoch_enter is not None else -1
-    if rng_seed_epoch_enter < 0 and rng_top.seed_epoch_enter is not None:
-        rng_seed_epoch_enter = int(rng_top.seed_epoch_enter)
-    rng_seed_epoch_last = int(rng_marks.rand_seed_epoch_last) if rng_marks.rand_seed_epoch_last is not None else -1
-    if rng_seed_epoch_last < 0 and rng_top.seed_epoch_last is not None:
-        rng_seed_epoch_last = int(rng_top.seed_epoch_last)
-    rng_outside_before_calls = int(rng_marks.rand_outside_before_calls)
-    if rng_outside_before_calls < 0:
-        rng_outside_before_calls = int(rng_top.outside_before_calls)
-    rng_mirror_mismatch_total = int(rng_marks.rand_mirror_mismatch_total)
-    if rng_mirror_mismatch_total < 0:
-        rng_mirror_mismatch_total = int(rng_top.mirror_mismatch_total)
-
-    rng_callers = [
-        {"caller_static": str(item.caller_static), "calls": int(item.calls)} for item in rng_marks.rand_callers
-    ]
-    if not rng_callers:
-        rng_callers = [
-            {"caller_static": str(item.caller_static), "calls": int(item.calls)} for item in rng_top.callers
-        ]
-
-    rng_head_rows = [_rng_head_entry_to_row(item) for item in rng_marks.rand_head]
-    if not rng_head_rows:
-        rng_head_rows = [_rng_head_entry_to_row(item) for item in rng_top.head]
-    rng_head_values = [_int_or(item.get("value_15"), -1) for item in rng_head_rows if _int_or(item.get("value_15"), -1) >= 0]
-
-    creature_damage_head_obj = list(event_heads_obj.get("creature_damage", []))
-    projectile_spawn_head_obj = list(event_heads_obj.get("projectile_spawn", []))
-    secondary_projectile_spawn_head_obj = list(event_heads_obj.get("secondary_projectile_spawn", []))
-    creature_death_head_obj = list(event_heads_obj.get("creature_death", []))
-    bonus_spawn_head_obj = list(event_heads_obj.get("bonus_spawn", []))
-    projectile_find_query_head_obj = list(event_heads_obj.get("projectile_find_query", []))
-    projectile_find_hit_head_obj = list(event_heads_obj.get("projectile_find_hit", []))
-    creature_update_micro_head_obj = list(event_heads_obj.get("creature_update_micro", []))
-
-    projectile_find_query_miss_count = _int_or(
-        spawn_obj.get("event_count_projectile_find_query_miss"),
-        sum(
-            1
-            for item in projectile_find_query_head_obj
-            if isinstance(item, dict)
-            and (
-                str(item.get("result_kind")) == "miss"
-                or _int_or(item.get("result_creature_index"), -1) < 0
-            )
-        ),
-    )
-    projectile_find_query_owner_collision_count = _int_or(
-        spawn_obj.get("event_count_projectile_find_query_owner_collision"),
-        sum(
-            1
-            for item in projectile_find_query_head_obj
-            if isinstance(item, dict)
-            and (
-                bool(item.get("owner_collision"))
-                or str(item.get("result_kind")) == "owner_collision"
-            )
-        ),
-    )
-
-    sample_counts = {
-        "creatures": (len(tick.samples.creatures) if tick.samples is not None else -1),
-        "projectiles": (len(tick.samples.projectiles) if tick.samples is not None else -1),
-        "secondary_projectiles": (len(tick.samples.secondary_projectiles) if tick.samples is not None else -1),
-        "bonuses": (len(tick.samples.bonuses) if tick.samples is not None else -1),
-    }
-
-    before_player0: dict[str, object] | None = None
-    before_players = debug.before_players
-    if before_players:
-        player = before_players[0]
-        before_player0 = {
-            "pos": {"x": float(player.pos.x), "y": float(player.pos.y)},
-            "health": float(player.health),
-            "weapon_id": int(player.weapon_id),
-            "ammo": float(player.ammo),
-            "experience": int(player.experience),
-            "level": int(player.level),
-            "bonus_timers": {str(key): int(value) for key, value in player.bonus_timers.items()},
-        }
-    elif tick.before is not None and tick.before.players:
-        top_player = tick.before.players[0]
-        if isinstance(top_player, dict):
-            before_player0 = {str(key): value for key, value in top_player.items()}
-
-    input_player_keys = [
-        {
-            "player_index": int(row.player_index),
-            "move_forward_pressed": row.move_forward_pressed,
-            "move_backward_pressed": row.move_backward_pressed,
-            "turn_left_pressed": row.turn_left_pressed,
-            "turn_right_pressed": row.turn_right_pressed,
-            "fire_down": row.fire_down,
-            "fire_pressed": row.fire_pressed,
-            "reload_pressed": row.reload_pressed,
-        }
-        for row in tick.input_player_keys
-    ]
-
-    top_bonus_spawn_callers_obj = spawn_obj.get("top_bonus_spawn_callers")
-    top_bonus_spawn_callers = list(top_bonus_spawn_callers_obj) if isinstance(top_bonus_spawn_callers_obj, list) else []
-    top_creature_damage_callers_obj = spawn_obj.get("top_creature_damage_callers")
-    top_creature_damage_callers = (
-        list(top_creature_damage_callers_obj) if isinstance(top_creature_damage_callers_obj, list) else []
-    )
-    top_projectile_find_hit_callers_obj = spawn_obj.get("top_projectile_find_hit_callers")
-    top_projectile_find_hit_callers = (
-        list(top_projectile_find_hit_callers_obj) if isinstance(top_projectile_find_hit_callers_obj, list) else []
-    )
-    top_projectile_find_query_callers_obj = spawn_obj.get("top_projectile_find_query_callers")
-    top_projectile_find_query_callers = (
-        list(top_projectile_find_query_callers_obj) if isinstance(top_projectile_find_query_callers_obj, list) else []
-    )
-
-    row: dict[str, object] = {
-        "rng_rand_calls": int(rng_rand_calls),
-        "rng_head_len": len(rng_head_rows),
-        "rng_stream_rows": rng_head_rows,
-        "rng_head_values": rng_head_values,
-        "rng_rand_last": rng_rand_last,
-        "rng_seq_first": int(rng_seq_first),
-        "rng_seq_last": int(rng_seq_last),
-        "rng_seed_epoch_enter": int(rng_seed_epoch_enter),
-        "rng_seed_epoch_last": int(rng_seed_epoch_last),
-        "rng_outside_before_calls": int(rng_outside_before_calls),
-        "rng_mirror_mismatch_total": int(rng_mirror_mismatch_total),
-        "rng_callers": rng_callers,
-        "spawn_bonus_count": _int_or(spawn_obj.get("event_count_bonus_spawn")),
-        "spawn_death_count": _int_or(spawn_obj.get("event_count_death")),
-        "spawn_top_bonus_callers": top_bonus_spawn_callers,
-        "creature_damage_count": _int_or(
-            int(tick.event_counts.creature_damage),
-            _int_or(spawn_obj.get("event_count_creature_damage"), 0),
-        ),
-        "creature_damage_head": creature_damage_head_obj,
-        "projectile_spawn_head": projectile_spawn_head_obj,
-        "secondary_projectile_spawn_count": int(tick.event_counts.secondary_projectile_spawn),
-        "secondary_projectile_spawn_head": secondary_projectile_spawn_head_obj,
-        "creature_death_head": creature_death_head_obj,
-        "bonus_spawn_head": bonus_spawn_head_obj,
-        "projectile_find_hit_count": _int_or(int(tick.event_counts.projectile_find_hit), len(projectile_find_hit_head_obj)),
-        "projectile_find_query_count": _int_or(
-            int(tick.event_counts.projectile_find_query),
-            _int_or(spawn_obj.get("event_count_projectile_find_query"), len(projectile_find_query_head_obj)),
-        ),
-        "projectile_find_query_head": projectile_find_query_head_obj,
-        "projectile_find_query_miss_count": int(projectile_find_query_miss_count),
-        "projectile_find_query_owner_collision_count": int(projectile_find_query_owner_collision_count),
-        "projectile_find_hit_head": projectile_find_hit_head_obj,
-        "projectile_find_hit_corpse_count": sum(
-            1
-            for item in projectile_find_hit_head_obj
-            if isinstance(item, dict) and bool(item.get("corpse_hit"))
-        ),
-        "creature_update_micro_count": _int_or(
-            int(tick.event_counts.creature_update_micro),
-            len(creature_update_micro_head_obj),
-        ),
-        "creature_update_micro_head": creature_update_micro_head_obj,
-        "spawn_top_creature_damage_callers": top_creature_damage_callers,
-        "spawn_top_projectile_find_hit_callers": top_projectile_find_hit_callers,
-        "spawn_top_projectile_find_query_callers": top_projectile_find_query_callers,
-        "lifecycle_before_hash": lifecycle_obj.get("before_hash"),
-        "lifecycle_after_hash": lifecycle_obj.get("after_hash"),
-        "lifecycle_before_count": _int_or(lifecycle_obj.get("before_count")),
-        "lifecycle_after_count": _int_or(lifecycle_obj.get("after_count")),
-        "before_player0": before_player0,
-        "input_player_keys": input_player_keys,
-        "sample_streams_present": bool(tick.samples is not None),
-        "sample_counts": sample_counts,
-        "sample_creatures_head": _build_sample_creatures_head(tick),
-        "sample_secondary_head": _build_sample_secondary_head(tick),
-    }
-    return row
-
-
 def _weapon_name(weapon_id: int) -> str:
     entry = WEAPON_BY_ID.get(int(weapon_id))
     name = entry.name if entry is not None else None
@@ -1357,10 +1028,10 @@ def _parse_player_perk_counts(tick: CaptureTick) -> dict[int, Counter[int]]:
     for player_idx, player_counts in enumerate(tick.checkpoint.perk.player_nonzero_counts):
         counts = Counter()
         for pair in player_counts:
-            if not isinstance(pair, (list, tuple)) or len(pair) != 2:
+            if len(pair) != 2:
                 continue
-            perk_id = _int_or(pair[0], -1)
-            perk_count = _int_or(pair[1], 0)
+            perk_id = int(pair[0])
+            perk_count = int(pair[1])
             if perk_id < 0 or perk_count <= 0:
                 continue
             counts[int(perk_id)] = int(perk_count)
@@ -1377,62 +1048,58 @@ def _build_run_summary_events_from_capture(capture: CaptureFile) -> list[RunSumm
 
     for tick in capture.ticks:
         tick_index = int(tick.tick_index)
-        event_heads = _build_event_heads_by_kind(tick)
+        for head in tick.event_heads:
+            if isinstance(head, CaptureEventHeadBonusApply):
+                player_index = int(head.data.player_index) if head.data.player_index is not None else 0
+                bonus_id = int(head.data.bonus_id) if head.data.bonus_id is not None else -1
+                detail = f"p{player_index} picked {_bonus_name(int(bonus_id))}"
+                if int(bonus_id) == 3:
+                    weapon_id = int(head.data.amount_i32) if head.data.amount_i32 is not None else -1
+                    if weapon_id >= 0:
+                        detail += f" -> {_weapon_name(int(weapon_id))}"
+                _append_run_summary_event(
+                    events,
+                    seen=seen,
+                    tick=int(tick_index),
+                    kind="bonus_pickup",
+                    detail=detail,
+                )
+                continue
 
-        bonus_apply = event_heads.get("bonus_apply", [])
-        for item in bonus_apply:
-            player_index = _int_or(item.get("player_index"), 0)
-            bonus_id = _int_or(item.get("bonus_id"), -1)
-            detail = f"p{player_index} picked {_bonus_name(int(bonus_id))}"
-            if int(bonus_id) == 3:
-                weapon_id = _int_or(item.get("amount_i32"), -1)
-                if weapon_id >= 0:
-                    detail += f" -> {_weapon_name(int(weapon_id))}"
-            _append_run_summary_event(
-                events,
-                seen=seen,
-                tick=int(tick_index),
-                kind="bonus_pickup",
-                detail=detail,
-            )
+            if isinstance(head, CaptureEventHeadWeaponAssign):
+                player_index = int(head.data.player_index) if head.data.player_index is not None else 0
+                weapon_before = int(head.data.weapon_before) if head.data.weapon_before is not None else -1
+                if head.data.weapon_after is not None:
+                    weapon_after = int(head.data.weapon_after)
+                elif head.data.weapon_id is not None:
+                    weapon_after = int(head.data.weapon_id)
+                else:
+                    weapon_after = -1
+                _append_run_summary_event(
+                    events,
+                    seen=seen,
+                    tick=int(tick_index),
+                    kind="weapon_assign",
+                    detail=(
+                        f"p{player_index} weapon "
+                        f"{_weapon_name(int(weapon_before))} -> {_weapon_name(int(weapon_after))}"
+                    ),
+                )
+                continue
 
-        weapon_assign = event_heads.get("weapon_assign", [])
-        for item in weapon_assign:
-            player_index = _int_or(item.get("player_index"), 0)
-            weapon_before = _int_or(item.get("weapon_before"), -1)
-            weapon_after = _int_or(item.get("weapon_after"), _int_or(item.get("weapon_id"), -1))
-            _append_run_summary_event(
-                events,
-                seen=seen,
-                tick=int(tick_index),
-                kind="weapon_assign",
-                detail=(
-                    f"p{player_index} weapon "
-                    f"{_weapon_name(int(weapon_before))} -> {_weapon_name(int(weapon_after))}"
-                ),
-            )
-
-        state_transition = event_heads.get("state_transition", [])
-        for item in state_transition:
-            before_obj = item.get("before")
-            before = cast(dict[str, object], before_obj) if isinstance(before_obj, dict) else None
-            after_obj = item.get("after")
-            after = cast(dict[str, object], after_obj) if isinstance(after_obj, dict) else None
-            before_state = _int_or(
-                before.get("id") if before is not None else None,
-                -1,
-            )
-            after_state = _int_or(
-                after.get("id") if after is not None else item.get("target_state"),
-                _int_or(item.get("target_state"), -1),
-            )
-            _append_run_summary_event(
-                events,
-                seen=seen,
-                tick=int(tick_index),
-                kind="state_transition",
-                detail=f"state {before_state} -> {after_state}",
-            )
+            if isinstance(head, CaptureEventHeadStateTransition):
+                before_state = int(head.data.before.id) if head.data.before.id is not None else -1
+                if head.data.after.id is not None:
+                    after_state = int(head.data.after.id)
+                else:
+                    after_state = int(head.data.target_state)
+                _append_run_summary_event(
+                    events,
+                    seen=seen,
+                    tick=int(tick_index),
+                    kind="state_transition",
+                    detail=f"state {before_state} -> {after_state}",
+                )
 
         for player_index, player in enumerate(tick.checkpoint.players):
             level = int(player.level)
@@ -1449,9 +1116,17 @@ def _build_run_summary_events_from_capture(capture: CaptureFile) -> list[RunSumm
 
         perk_counts = _parse_player_perk_counts(tick)
         for player_index, player_counts in perk_counts.items():
-            previous = prev_perk_counts.get(int(player_index), Counter())
+            player_key = int(player_index)
+            if player_key in prev_perk_counts:
+                previous = prev_perk_counts[player_key]
+            else:
+                previous = Counter()
             for perk_id, perk_count in sorted(player_counts.items()):
-                previous_count = int(previous.get(int(perk_id), 0))
+                perk_key = int(perk_id)
+                if perk_key in previous:
+                    previous_count = int(previous[perk_key])
+                else:
+                    previous_count = 0
                 if int(perk_count) <= int(previous_count):
                     continue
                 _append_run_summary_event(
@@ -1464,7 +1139,7 @@ def _build_run_summary_events_from_capture(capture: CaptureFile) -> list[RunSumm
                         f"x{int(perk_count)}"
                     ),
                 )
-            prev_perk_counts[int(player_index)] = Counter(player_counts)
+            prev_perk_counts[player_key] = Counter(player_counts)
 
     events.sort(key=lambda item: (int(item.tick_index), str(item.kind), str(item.detail)))
     return events
@@ -1491,19 +1166,11 @@ class CaptureSession:
 
         self.capture = self._load_or_build_capture()
         self.sample_rate = _capture_sample_rate(self.capture)
-
-        self.tick_lite_by_tick = self._load_or_build_tick_lite()
-        sample_creature_counts: dict[int, int] = {}
-        for tick, row in self.tick_lite_by_tick.items():
-            sample_counts_obj = row.get("sample_counts")
-            if not isinstance(sample_counts_obj, dict):
-                continue
-            sample_counts = cast(dict[str, object], sample_counts_obj)
-            creature_count = _int_or(sample_counts.get("creatures"), -1)
-            if int(creature_count) < 0:
-                continue
-            sample_creature_counts[int(tick)] = int(creature_count)
-        self.sample_creature_counts = sample_creature_counts
+        self.ticks_by_index = {int(tick.tick_index): tick for tick in self.capture.ticks}
+        self.sample_creature_counts = {
+            int(tick_index): int(len(tick.samples.creatures))
+            for tick_index, tick in self.ticks_by_index.items()
+        }
         self.run_summary_events = _build_run_summary_events_from_capture(self.capture)
 
         self._replay_cache: OrderedDict[ReplayKey, tuple[list[ReplayCheckpoint], list[ReplayCheckpoint], object, object]] = (
@@ -1539,23 +1206,6 @@ class CaptureSession:
         _atomic_write_text(meta_path, json.dumps(msgspec.to_builtins(meta), indent=2, sort_keys=True))
         return capture
 
-    def _load_or_build_tick_lite(self) -> dict[int, dict[str, object]]:
-        tick_blob_path = self.cache_dir / _TICK_LITE_BLOB_NAME
-        meta_path = self.cache_dir / _META_NAME
-        if _meta_matches(meta_path, self.fingerprint) and tick_blob_path.exists():
-            try:
-                blob = _read_msgpack_gz(tick_blob_path, type=_TickLiteBlob)
-                return {int(row.tick_index): dict(row.row) for row in blob.rows}
-            except (TypeError, ValueError):
-                pass
-
-        rows: list[TickLite] = []
-        for tick in self.capture.ticks:
-            rows.append(TickLite(tick_index=int(tick.tick_index), row=_build_tick_lite_row(tick)))
-        blob = _TickLiteBlob(rows=rows)
-        _write_msgpack_gz(tick_blob_path, blob)
-        return {int(row.tick_index): dict(row.row) for row in rows}
-
     def get_capture(self) -> CaptureFile:
         return self.capture
 
@@ -1565,12 +1215,12 @@ class CaptureSession:
     def get_sample_creature_counts(self) -> dict[int, int]:
         return dict(self.sample_creature_counts)
 
-    def get_raw_debug_by_tick(self, tick_indices: set[int] | None = None) -> dict[int, dict[str, object]]:
+    def get_raw_debug_by_tick(self, tick_indices: set[int] | None = None) -> dict[int, CaptureTick]:
         if tick_indices is None:
-            return {int(tick): dict(row) for tick, row in self.tick_lite_by_tick.items()}
+            return dict(self.ticks_by_index)
         return {
-            int(tick): dict(row)
-            for tick, row in self.tick_lite_by_tick.items()
+            int(tick): row
+            for tick, row in self.ticks_by_index.items()
             if int(tick) in tick_indices
         }
 

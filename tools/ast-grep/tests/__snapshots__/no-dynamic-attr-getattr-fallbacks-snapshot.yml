@@ -1,0 +1,16 @@
+id: no-dynamic-attr-getattr-fallbacks
+snapshots:
+  ? |
+    quest_level = getattr(replay.header, "quest_level", "")
+  : labels:
+    - source: getattr(replay.header, "quest_level", "")
+      style: primary
+      start: 14
+      end: 55
+  ? |
+    weapon_id = int(getattr(quest, "start_weapon_id", 1) or 1)
+  : labels:
+    - source: getattr(quest, "start_weapon_id", 1)
+      style: primary
+      start: 16
+      end: 52

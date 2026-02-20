@@ -82,33 +82,33 @@ def _int_is_unknown(value: object) -> bool:
 
 def normalize_unknown_fields(exp: dict[str, object], act: dict[str, object]) -> None:
     for key in ("elapsed_ms", "score_xp", "kills", "creature_count", "perk_pending"):
-        if _int_is_unknown(exp.get(key)):
-            exp[key] = act.get(key)
+        if _int_is_unknown((exp[key] if key in exp else None)):
+            exp[key] = (act[key] if key in act else None)
 
-    exp_bonus = exp.get("bonus_timers")
-    act_bonus = act.get("bonus_timers")
+    exp_bonus = (exp["bonus_timers"] if "bonus_timers" in exp else None)
+    act_bonus = (act["bonus_timers"] if "bonus_timers" in act else None)
     if isinstance(exp_bonus, dict) and isinstance(act_bonus, dict):
         for key, value in list(exp_bonus.items()):
             if _int_is_unknown(value):
-                exp_bonus[key] = act_bonus.get(key)
+                exp_bonus[key] = (act_bonus[key] if key in act_bonus else None)
 
-    exp_perk = exp.get("perk")
-    act_perk = act.get("perk")
+    exp_perk = (exp["perk"] if "perk" in exp else None)
+    act_perk = (act["perk"] if "perk" in act else None)
     if isinstance(exp_perk, dict) and isinstance(act_perk, dict):
-        if _int_is_unknown(exp_perk.get("pending_count")):
+        if _int_is_unknown((exp_perk["pending_count"] if "pending_count" in exp_perk else None)):
             exp["perk"] = act_perk
 
-    exp_deaths = exp.get("deaths")
+    exp_deaths = (exp["deaths"] if "deaths" in exp else None)
     if isinstance(exp_deaths, list) and len(exp_deaths) == 1:
         row = exp_deaths[0]
         if isinstance(row, dict):
             is_unknown_death = (
-                _int_is_unknown(row.get("creature_index"))
-                and _int_is_unknown(row.get("type_id"))
-                and _int_is_unknown(row.get("xp_awarded"))
+                _int_is_unknown((row["creature_index"] if "creature_index" in row else None))
+                and _int_is_unknown((row["type_id"] if "type_id" in row else None))
+                and _int_is_unknown((row["xp_awarded"] if "xp_awarded" in row else None))
             )
             if is_unknown_death:
-                exp["deaths"] = act.get("deaths")
+                exp["deaths"] = (act["deaths"] if "deaths" in act else None)
 
 
 def _path_join(path: str, suffix: str) -> str:
@@ -142,10 +142,20 @@ def _collect_field_diffs(
         keys = sorted({*expected.keys(), *actual.keys()})
         for key in keys:
             key_str = str(key)
-            exp_value = expected.get(key_str, expected.get(key))
-            act_value = actual.get(key_str, actual.get(key))
             has_exp = key in expected or key_str in expected
             has_act = key in actual or key_str in actual
+            if key_str in expected:
+                exp_value = expected[key_str]
+            elif key in expected:
+                exp_value = expected[key]
+            else:
+                exp_value = None
+            if key_str in actual:
+                act_value = actual[key_str]
+            elif key in actual:
+                act_value = actual[key]
+            else:
+                act_value = None
             if not has_exp or not has_act:
                 out.append(
                     ReplayFieldDiff(
@@ -237,8 +247,8 @@ def checkpoint_field_diffs(
 
     if elapsed_baseline is not None:
         exp_base, act_base = elapsed_baseline
-        exp_elapsed = exp_obj.get("elapsed_ms")
-        act_elapsed = act_obj.get("elapsed_ms")
+        exp_elapsed = (exp_obj["elapsed_ms"] if "elapsed_ms" in exp_obj else None)
+        act_elapsed = (act_obj["elapsed_ms"] if "elapsed_ms" in act_obj else None)
         if isinstance(exp_elapsed, int) and isinstance(act_elapsed, int):
             if int(exp_elapsed) >= 0 and int(act_elapsed) >= 0:
                 exp_obj["elapsed_ms"] = int(exp_elapsed) - int(exp_base)
@@ -249,7 +259,7 @@ def checkpoint_field_diffs(
 
     # Legacy sidecars (without `events`) store unknown sentinel values.
     if unknown_events_wildcard and int(expected.events.hit_count) < 0:
-        exp_obj["events"] = act_obj.get("events")
+        exp_obj["events"] = (act_obj["events"] if "events" in act_obj else None)
 
     diffs: list[ReplayFieldDiff] = []
     _collect_field_diffs(
@@ -276,7 +286,7 @@ def compare_checkpoints(
     for exp in expected:
         checked_count += 1
         tick = int(exp.tick_index)
-        act = actual_by_tick.get(tick)
+        act = (actual_by_tick[tick] if tick in actual_by_tick else None)
         if act is None:
             return ReplayDiffResult(
                 ok=False,
@@ -311,7 +321,7 @@ def compare_checkpoints(
         normalize_unknown_fields(exp_no_rng, act_no_rng)
         # Legacy sidecars (without `events`) store unknown sentinel values.
         if int(exp.events.hit_count) < 0:
-            exp_no_rng["events"] = act_no_rng.get("events")
+            exp_no_rng["events"] = (act_no_rng["events"] if "events" in act_no_rng else None)
 
         if exp_no_rng == act_no_rng:
             if first_rng_only_tick is None:
@@ -319,7 +329,18 @@ def compare_checkpoints(
             continue
 
         mark_keys = sorted({*exp.rng_marks.keys(), *act.rng_marks.keys()})
-        mark_mismatch = [key for key in mark_keys if int(exp.rng_marks.get(key, -1)) != int(act.rng_marks.get(key, -1))]
+        mark_mismatch: list[str] = []
+        for key in mark_keys:
+            if key in exp.rng_marks:
+                exp_mark = int(exp.rng_marks[key])
+            else:
+                exp_mark = -1
+            if key in act.rng_marks:
+                act_mark = int(act.rng_marks[key])
+            else:
+                act_mark = -1
+            if exp_mark != act_mark:
+                mark_mismatch.append(key)
         first_mark = next((key for key in rng_mark_order if key in mark_mismatch), mark_mismatch[0] if mark_mismatch else None)
         return ReplayDiffResult(
             ok=False,

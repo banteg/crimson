@@ -4,8 +4,21 @@ import argparse
 import json
 from collections.abc import Callable
 from pathlib import Path
-from typing import TypedDict
+from typing import Any, TypedDict, cast
 
+import msgspec
+
+from crimson.original.schema import (
+    CaptureEventHeadBonusSpawn,
+    CaptureEventHeadCreatureDamage,
+    CaptureEventHeadCreatureDeath,
+    CaptureEventHeadProjectileFindHit,
+    CaptureEventHeadProjectileFindQuery,
+    CaptureEventHeadProjectileSpawn,
+    CaptureEventHeadSecondaryProjectileSpawn,
+    CaptureRngHeadEntry,
+    CaptureTick,
+)
 from crimson.replay.checkpoints import ReplayCheckpoint
 
 from .capture import load_capture, parse_player_int_overrides
@@ -14,11 +27,14 @@ from .divergence_report import (
     RngStreamAlignment,
     _actual_rng_stream_rows_for_checkpoint,
     _build_window_rows,
+    _capture_rng_rand_calls,
+    _capture_rng_seq_first,
+    _capture_rng_seq_last,
     _compute_rng_stream_alignment,
     _find_first_divergence,
     _load_capture_sample_creature_counts,
     _load_raw_tick_debug,
-    _rng_stream_rows_for_raw_row,
+    _rng_stream_rows_for_tick,
     _run_actual_checkpoints,
 )
 
@@ -108,14 +124,12 @@ def _build_repro_tick_row(
     tick: int,
     expected: ReplayCheckpoint,
     actual: ReplayCheckpoint,
-    raw: dict[str, object],
+    raw: CaptureTick | None,
     rng_row_limit: int,
     branch_event_limit: int,
 ) -> ReproTickRow:
-    capture_stream_rows = _rng_stream_rows_for_raw_row(raw)
-    capture_head_len = _int_or(raw.get("rng_head_len"), len(capture_stream_rows))
-    if capture_head_len < 0:
-        capture_head_len = len(capture_stream_rows)
+    capture_stream_rows = [] if raw is None else _rng_stream_rows_for_tick(raw)
+    capture_head_len = len(capture_stream_rows)
     row_limit = max(1, int(rng_row_limit))
     rewrite_stream_rows, rewrite_total_calls = _actual_rng_stream_rows_for_checkpoint(
         actual,
@@ -129,17 +143,40 @@ def _build_repro_tick_row(
 
     branch_limit = max(1, int(branch_event_limit))
 
-    def _head(name: str) -> list[object]:
-        rows_obj = raw.get(name)
-        rows = list(rows_obj) if isinstance(rows_obj, list) else []
-        return rows[:branch_limit]
+    def _head(kind: type[object]) -> list[object]:
+        if raw is None:
+            return []
+        rows: list[object] = []
+        for head in raw.event_heads:
+            if isinstance(head, kind):
+                rows.append(cast(Any, head).data)
+        return [msgspec.to_builtins(item) for item in rows[:branch_limit]]
+
+    def _capture_rng_row_to_dict(entry: CaptureRngHeadEntry) -> dict[str, object]:
+        value_15: int | None
+        if entry.value_15 is not None:
+            value_15 = int(entry.value_15) & 0x7FFF
+        elif entry.value is not None:
+            value_15 = int(entry.value) & 0x7FFF
+        else:
+            value_15 = None
+        return {
+            "seq": entry.seq,
+            "tick_call_index": entry.tick_call_index,
+            "value_15": value_15,
+            "state_before_u32": entry.state_before_u32,
+            "state_after_u32": entry.state_after_u32,
+            "caller_static": entry.caller_static,
+            "branch_id": entry.branch_id if entry.branch_id else entry.caller_static,
+            "caller": entry.caller,
+        }
 
     return {
         "tick": int(tick),
         "expected": {
             "score_xp": int(expected.score_xp),
             "creature_count": int(expected.creature_count),
-            "rand_calls": int(expected.rng_marks.get("rand_calls", -1)),
+            "rand_calls": (int(expected.rng_marks["rand_calls"]) if "rand_calls" in expected.rng_marks else -1),
         },
         "actual": {
             "score_xp": int(actual.score_xp),
@@ -152,22 +189,22 @@ def _build_repro_tick_row(
             },
         },
         "rng_stream_alignment": stream_alignment,
-        "capture_rng_stream_rows": capture_stream_rows[:row_limit],
+        "capture_rng_stream_rows": [_capture_rng_row_to_dict(row) for row in capture_stream_rows[:row_limit]],
         "rewrite_rng_stream_rows": rewrite_stream_rows[:row_limit],
         "rewrite_rng_total_calls": rewrite_total_calls,
-        "capture_rng_total_calls": _int_or(raw.get("rng_rand_calls"), -1),
+        "capture_rng_total_calls": (-1 if raw is None else _capture_rng_rand_calls(raw)),
         "capture_rng_seq_range": {
-            "first": _int_or(raw.get("rng_seq_first"), -1),
-            "last": _int_or(raw.get("rng_seq_last"), -1),
+            "first": (-1 if raw is None else _capture_rng_seq_first(raw)),
+            "last": (-1 if raw is None else _capture_rng_seq_last(raw)),
         },
         "capture_branch_events": {
-            "creature_damage_head": _head("creature_damage_head"),
-            "creature_death_head": _head("creature_death_head"),
-            "projectile_find_query_head": _head("projectile_find_query_head"),
-            "projectile_find_hit_head": _head("projectile_find_hit_head"),
-            "projectile_spawn_head": _head("projectile_spawn_head"),
-            "secondary_projectile_spawn_head": _head("secondary_projectile_spawn_head"),
-            "bonus_spawn_head": _head("bonus_spawn_head"),
+            "creature_damage_head": _head(CaptureEventHeadCreatureDamage),
+            "creature_death_head": _head(CaptureEventHeadCreatureDeath),
+            "projectile_find_query_head": _head(CaptureEventHeadProjectileFindQuery),
+            "projectile_find_hit_head": _head(CaptureEventHeadProjectileFindHit),
+            "projectile_spawn_head": _head(CaptureEventHeadProjectileSpawn),
+            "secondary_projectile_spawn_head": _head(CaptureEventHeadSecondaryProjectileSpawn),
+            "bonus_spawn_head": _head(CaptureEventHeadBonusSpawn),
         },
     }
 
@@ -346,7 +383,11 @@ def main(argv: list[str] | None = None) -> int:
         actual_ckpt = actual_by_tick.get(int(tick))
         if expected_ckpt is None or actual_ckpt is None:
             continue
-        raw = raw_debug_window.get(int(tick), {})
+        tick_key = int(tick)
+        if tick_key in raw_debug_window:
+            raw = raw_debug_window[tick_key]
+        else:
+            raw = None
         repro_rows.append(
             _build_repro_tick_row(
                 tick=int(tick),
