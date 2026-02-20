@@ -126,7 +126,7 @@ def alpha_test_enabled(render_ctx: WorldRenderCtx) -> bool:
     ground = render_ctx.ground
     if ground is None:
         return True
-    return bool(getattr(ground, "alpha_test", True))
+    return ground.alpha_test
 
 
 def effect_src_rect(texture: rl.Texture, effect_id: EffectId) -> rl.Rectangle | None:

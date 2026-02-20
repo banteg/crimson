@@ -77,7 +77,7 @@ void main() {{
 def _get_alpha_test_shader() -> rl.Shader | None:
     global _ALPHA_TEST_SHADER, _ALPHA_TEST_SHADER_TRIED
     if _ALPHA_TEST_SHADER_TRIED:
-        if _ALPHA_TEST_SHADER is not None and int(getattr(_ALPHA_TEST_SHADER, "id", 0)) > 0:
+        if _ALPHA_TEST_SHADER is not None and _ALPHA_TEST_SHADER.id > 0:
             return _ALPHA_TEST_SHADER
         return None
 
@@ -88,7 +88,7 @@ def _get_alpha_test_shader() -> rl.Shader | None:
         _ALPHA_TEST_SHADER = None
         return None
 
-    if int(getattr(shader, "id", 0)) <= 0:
+    if shader.id <= 0:
         _ALPHA_TEST_SHADER = None
         return None
 
@@ -283,11 +283,11 @@ class GroundRenderer:
 
     def schedule_generate(self, seed: int | None = None, *, layers: int = 3) -> None:
         self._pending_generate_seed = seed
-        self._pending_generate_layers = max(0, min(int(layers), 3))
+        self._pending_generate_layers = max(0, min(layers, 3))
         self._pending_generate = True
 
     def generate_partial(self, seed: int | None = None, *, layers: int) -> None:
-        layers = max(0, min(int(layers), 3))
+        layers = max(0, min(layers, 3))
         # Always keep a deterministic fallback representation of the terrain.
         # When the render target is unavailable (or not ready yet), we can render
         # patches + baked decals directly to the screen, matching the exe's
@@ -468,7 +468,7 @@ class GroundRenderer:
 
         def draw_decal(decal: GroundDecal) -> None:
             texture = decal.texture
-            if int(getattr(texture, "id", 0)) <= 0:
+            if texture.id <= 0:
                 return
             w = float(decal.width)
             h = float(decal.height)
@@ -744,13 +744,13 @@ class GroundRenderer:
         except (RuntimeError, OSError, ValueError):
             return False
 
-        if not getattr(candidate, "id", 0) or not rl.is_render_texture_valid(candidate):
-            if getattr(candidate, "id", 0):
+        if candidate.id == 0 or not rl.is_render_texture_valid(candidate):
+            if candidate.id:
                 rl.unload_render_texture(candidate)
             return False
         if (
-            getattr(getattr(candidate, "texture", None), "width", 0) <= 0
-            or getattr(getattr(candidate, "texture", None), "height", 0) <= 0
+            candidate.texture.width <= 0
+            or candidate.texture.height <= 0
         ):
             rl.unload_render_texture(candidate)
             return False
@@ -797,7 +797,7 @@ class GroundRenderer:
         unique: list[rl.Texture] = []
         seen: set[int] = set()
         for texture in textures:
-            texture_id = int(getattr(texture, "id", 0))
+            texture_id = texture.id
             if texture_id <= 0 or texture_id in seen:
                 continue
             seen.add(texture_id)
@@ -810,7 +810,7 @@ class GroundRenderer:
         for texture in textures:
             if texture is None:
                 continue
-            if int(getattr(texture, "id", 0)) <= 0:
+            if texture.id <= 0:
                 continue
             rl.set_texture_filter(texture, mode)
 
