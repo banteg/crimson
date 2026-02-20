@@ -455,7 +455,7 @@ class CaptureVisualizerView:
         for layer in self._trace_layers():
             rt = layer.rt
             layer.fade_accum = 0.0
-            if rt is None or int(getattr(rt, "id", 0)) <= 0:
+            if rt is None or int(rt.id) <= 0:
                 continue
             rl.begin_texture_mode(rt)
             rl.clear_background(rl.Color(0, 0, 0, 0))
@@ -464,7 +464,7 @@ class CaptureVisualizerView:
     def _unload_trace_layers(self) -> None:
         for layer in self._trace_layers():
             rt = layer.rt
-            if rt is not None and int(getattr(rt, "id", 0)) > 0:
+            if rt is not None and int(rt.id) > 0:
                 rl.unload_render_texture(rt)
             layer.rt = None
             layer.fade_accum = 0.0
@@ -479,12 +479,12 @@ class CaptureVisualizerView:
             rt = layer.rt
             if (
                 rt is not None
-                and int(getattr(rt, "id", 0)) > 0
-                and int(getattr(getattr(rt, "texture", None), "width", 0)) == int(width)
-                and int(getattr(getattr(rt, "texture", None), "height", 0)) == int(height)
+                and int(rt.id) > 0
+                and int(rt.texture.width) == int(width)
+                and int(rt.texture.height) == int(height)
             ):
                 continue
-            if rt is not None and int(getattr(rt, "id", 0)) > 0:
+            if rt is not None and int(rt.id) > 0:
                 rl.unload_render_texture(rt)
             layer.rt = rl.load_render_texture(int(width), int(height))
             rl.begin_texture_mode(layer.rt)
@@ -707,7 +707,7 @@ class CaptureVisualizerView:
                 str(
                     perk_label(
                         int(perk_id),
-                        preserve_bugs=bool(getattr(self._replay.header, "preserve_bugs", False)),
+                        preserve_bugs=bool(self._replay.header.preserve_bugs),
                     ),
                 ),
                 max_len=18,
@@ -725,7 +725,7 @@ class CaptureVisualizerView:
                 str(
                     perk_label(
                         int(perk_id),
-                        preserve_bugs=bool(getattr(self._replay.header, "preserve_bugs", False)),
+                        preserve_bugs=bool(self._replay.header.preserve_bugs),
                     ),
                 ),
                 max_len=14,
@@ -1082,7 +1082,7 @@ class CaptureVisualizerView:
             return str(
                 bonus_label_for_entry(
                     entry,
-                    preserve_bugs=bool(getattr(self._replay.header, "preserve_bugs", False)),
+                    preserve_bugs=bool(self._replay.header.preserve_bugs),
                 ),
             )
         except Exception:
@@ -1119,8 +1119,8 @@ class CaptureVisualizerView:
         amount = int(max(0, min(255, int(amount))))
         if amount <= 0:
             return
-        width = int(max(1, getattr(rt.texture, "width", 1)))
-        height = int(max(1, getattr(rt.texture, "height", 1)))
+        width = int(max(1, int(rt.texture.width)))
+        height = int(max(1, int(rt.texture.height)))
         fade_color = rl.Color(int(amount), int(amount), int(amount), int(amount))
         rl.begin_texture_mode(rt)
         rl.rl_set_blend_factors_separate(
@@ -1149,7 +1149,7 @@ class CaptureVisualizerView:
             return
         for layer in self._trace_layers():
             rt = layer.rt
-            if rt is None or int(getattr(rt, "id", 0)) <= 0:
+            if rt is None or int(rt.id) <= 0:
                 continue
             duration = max(float(self._step_interval), float(layer.lifetime_ticks) * float(self._step_interval))
             # Linear decay over the configured trail lifetime.
@@ -1167,13 +1167,13 @@ class CaptureVisualizerView:
         # Draw in this order so player trails remain easiest to read.
         for layer in (self._creature_traces, self._projectile_traces, self._player_traces):
             rt = layer.rt
-            if rt is None or int(getattr(rt, "id", 0)) <= 0:
+            if rt is None or int(rt.id) <= 0:
                 continue
             src = rl.Rectangle(
                 0.0,
                 0.0,
-                float(getattr(rt.texture, "width", width)),
-                -float(getattr(rt.texture, "height", height)),
+                float(rt.texture.width),
+                -float(rt.texture.height),
             )
             rl.draw_texture_pro(rt.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
@@ -1195,7 +1195,7 @@ class CaptureVisualizerView:
         color: rl.Color,
     ) -> None:
         rt = layer.rt
-        if rt is None or int(getattr(rt, "id", 0)) <= 0:
+        if rt is None or int(rt.id) <= 0:
             return
         sx0, sy0 = self._world_to_screen(x=float(x0), y=float(y0), width=width, height=height)
         sx1, sy1 = self._world_to_screen(x=float(x1), y=float(y1), width=width, height=height)
