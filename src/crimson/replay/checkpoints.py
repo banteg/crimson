@@ -8,12 +8,27 @@ import os
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
+from typing import Protocol, cast
 
 from grim.geom import Vec2
 
 from ..bonuses import BonusId
 from ..sim.state_types import PlayerState
 from ..sim.world_state import WorldState
+
+
+class _DeathLike(Protocol):
+    index: int
+    type_id: int
+    reward_value: float
+    xp_awarded: int
+    owner_id: int
+
+
+class _EventsLike(Protocol):
+    hits: Sequence[object]
+    pickups: list[object]
+    sfx: list[str]
 
 FORMAT_VERSION = 1
 _DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES = 64 * 1024 * 1024
@@ -205,13 +220,14 @@ def build_checkpoint(
 
     death_entries: list[ReplayDeathLedgerEntry] = []
     for death in deaths or ():
+        death_view = cast(_DeathLike, death)
         death_entries.append(
             ReplayDeathLedgerEntry(
-                creature_index=int(getattr(death, "index", -1)),
-                type_id=int(getattr(death, "type_id", 0)),
-                reward_value=float(getattr(death, "reward_value", 0.0)),
-                xp_awarded=int(getattr(death, "xp_awarded", 0)),
-                owner_id=int(getattr(death, "owner_id", -100)),
+                creature_index=int(death_view.index),
+                type_id=int(death_view.type_id),
+                reward_value=float(death_view.reward_value),
+                xp_awarded=int(death_view.xp_awarded),
+                owner_id=int(death_view.owner_id),
             ),
         )
 
@@ -220,9 +236,10 @@ def build_checkpoint(
         for key, value in rng_marks.items():
             marks[str(key)] = int(value)
 
-    hits = list(getattr(events, "hits", ()) or ())
-    pickups = list(getattr(events, "pickups", ()) or ())
-    sfx = list(getattr(events, "sfx", ()) or ())
+    events_view = cast(_EventsLike | None, events)
+    hits = list(events_view.hits) if events_view is not None else []
+    pickups = list(events_view.pickups) if events_view is not None else []
+    sfx = list(events_view.sfx) if events_view is not None else []
     event_summary = ReplayEventSummary(
         hit_count=int(len(hits)),
         pickup_count=int(len(pickups)),

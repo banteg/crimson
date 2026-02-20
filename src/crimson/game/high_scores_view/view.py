@@ -60,6 +60,7 @@ from ...frontend.menu import (
 from ...frontend.panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ...frontend.panels.hit_test import mouse_inside_rect_with_padding
 from ...frontend.transitions import _draw_screen_fade
+from ...persistence.highscores import HighScoreRecord
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_update, button_width
 from ..types import GameState, HighScoresRequest
@@ -107,7 +108,7 @@ class HighScoresView:
         self._back_button = UiButtonState("Back", force_wide=False)
 
         self._request: HighScoresRequest | None = None
-        self._records: list = []
+        self._records: list[HighScoreRecord] = []
         self._scroll_index = 0
         self._dirty = False
 

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Any, cast
-
 from grim.audio import play_sfx, update_audio
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -14,17 +12,8 @@ from ..types import GameState, HighScoresRequest
 from .shared import _next_quest_level, _player_name_default
 
 
-def _parse_level_pair(level: object) -> tuple[int, int]:
-    return parse_level(str(level or ""))
-
-
-def _int_or_zero(value: object) -> int:
-    if value is None:
-        return 0
-    try:
-        return int(cast(Any, value))
-    except (TypeError, ValueError):
-        return 0
+def _parse_level_pair(level: str) -> tuple[int, int]:
+    return parse_level(str(level))
 
 
 class QuestResultsView:
@@ -61,7 +50,7 @@ class QuestResultsView:
             return
         self._quest_level = str(outcome.level or "")
 
-        major, minor = _parse_level_pair(outcome.level)
+        major, minor = _parse_level_pair(str(outcome.level))
         self._quest_stage_major = int(major)
         self._quest_stage_minor = int(minor)
 
@@ -73,9 +62,9 @@ class QuestResultsView:
         else:
             quest = quest_by_level(str(outcome.level or ""))
 
-        self._quest_title = quest.title if quest is not None else ""
+        self._quest_title = str(quest.title or "") if quest is not None else ""
         if quest is not None:
-            weapon_id_native = _int_or_zero(quest.unlock_weapon_id)
+            weapon_id_native = int(quest.unlock_weapon_id) if quest.unlock_weapon_id is not None else 0
             if weapon_id_native > 0:
                 from ...weapons import WEAPON_BY_ID, weapon_display_name
 
@@ -88,7 +77,7 @@ class QuestResultsView:
 
             from ...perks import PERK_BY_ID, PerkId, perk_display_name
 
-            perk_id = _int_or_zero(quest.unlock_perk_id)
+            perk_id = int(quest.unlock_perk_id) if quest.unlock_perk_id is not None else 0
             if perk_id != int(PerkId.ANTIPERK):
                 perk_entry = PERK_BY_ID.get(perk_id)
                 if perk_entry is not None and perk_entry.name:
@@ -113,7 +102,7 @@ class QuestResultsView:
         record.shots_fired = fired
         record.shots_hit = hit
 
-        player_health_values = tuple(float(v) for v in getattr(outcome, "player_health_values", ()) or ())
+        player_health_values = tuple(float(v) for v in outcome.player_health_values)
         if len(player_health_values) == 0:
             player_health_values = (float(outcome.player_health),)
             if outcome.player2_health is not None:
