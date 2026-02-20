@@ -347,7 +347,9 @@ def _player_fire_diagnostics(**kwargs: object) -> dict[str, object]:
     return row
 
 
-def _checkpoint_tick(tick: int, *, level: int, weapon_id: int, experience: int, perk_pairs: list[list[int]]) -> dict[str, object]:
+def _checkpoint_tick(
+    tick: int, *, level: int, weapon_id: int, experience: int, perk_pairs: list[list[int]],
+) -> dict[str, object]:
     return {
         "tick_index": int(tick),
         "state_hash": f"s{tick}",
@@ -528,9 +530,7 @@ def _write_capture_stream(path: Path, capture: dict[str, object]) -> None:
     ticks_obj = capture.get("ticks")
     ticks = ticks_obj if isinstance(ticks_obj, list) else []
     rows = [json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True)]
-    rows.extend(
-        json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True) for tick in ticks
-    )
+    rows.extend(json.dumps({"event": "tick", "tick": tick}, separators=(",", ":"), sort_keys=True) for tick in ticks)
     path.write_text("\n".join(rows) + "\n", encoding="utf-8")
 
 
@@ -546,9 +546,28 @@ def test_run_summary_events_from_raw_capture(tmp_path: Path) -> None:
                 experience=0,
                 perk_pairs=[],
                 event_heads=[
-                    {"kind": "bonus_apply", "data": {"player_index": 0, "bonus_id": 3, "amount_i32": 12}},
-                    {"kind": "weapon_assign", "data": {"player_index": 0, "weapon_before": 1, "weapon_after": 12}},
-                    {"kind": "state_transition", "data": {"before": {"id": 9}, "after": {"id": 6}}},
+                    {
+                        "type": "bonus_apply",
+                        "data": {
+                            "player_index": 0,
+                            "bonus_id": 3,
+                            "entry_state": None,
+                            "amount_i32": 12,
+                            "amount_f32": 12.0,
+                            "caller": None,
+                        },
+                    },
+                    {
+                        "type": "weapon_assign",
+                        "data": {
+                            "player_index": 0,
+                            "weapon_id": 12,
+                            "weapon_before": 1,
+                            "weapon_after": 12,
+                            "caller": None,
+                        },
+                    },
+                    {"type": "state_transition", "data": {"before": {"id": 9}, "after": {"id": 6}}},
                 ],
             ),
             _capture_tick(

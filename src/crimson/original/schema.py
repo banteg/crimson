@@ -399,21 +399,23 @@ class _CaptureEventHeadData(msgspec.Struct, forbid_unknown_fields=True):
     data: dict[str, object]
 
 
+class CaptureEventHeadModeTickData(msgspec.Struct, forbid_unknown_fields=True):
+    mode_fn: str | None
+
+
 class CaptureEventHeadStateTransition(
     _CaptureEventHeadData,
-    tag_field="kind",
     tag="state_transition",
 ):
     pass
 
 
-class CaptureEventHeadModeTick(_CaptureEventHeadData, tag_field="kind", tag="mode_tick"):
-    pass
+class CaptureEventHeadModeTick(msgspec.Struct, tag="mode_tick", forbid_unknown_fields=True):
+    data: CaptureEventHeadModeTickData
 
 
 class CaptureEventHeadInputPrimaryEdge(
     _CaptureEventHeadData,
-    tag_field="kind",
     tag="input_primary_edge",
 ):
     pass
@@ -421,7 +423,6 @@ class CaptureEventHeadInputPrimaryEdge(
 
 class CaptureEventHeadInputPrimaryDown(
     _CaptureEventHeadData,
-    tag_field="kind",
     tag="input_primary_down",
 ):
     pass
@@ -429,31 +430,83 @@ class CaptureEventHeadInputPrimaryDown(
 
 class CaptureEventHeadInputAnyKey(
     _CaptureEventHeadData,
-    tag_field="kind",
     tag="input_any_key",
 ):
     pass
 
 
-class CaptureEventHeadPlayerFire(_CaptureEventHeadData, tag_field="kind", tag="player_fire"):
-    pass
+class CaptureEventHeadPlayerFireData(msgspec.Struct, forbid_unknown_fields=True):
+    player_index: int | None
+    weapon_before: int | None
+    weapon_after: int | None
+    ammo_before: float | None
+    ammo_after: float | None
+    shot_cooldown_after: float | None
+    owner_id: int | None
+    requested_type_id: int | None
+    actual_type_id: int | None
+    source: str | None
+    caller: str | None
+    caller_static: str | None
 
 
-class CaptureEventHeadWeaponAssign(_CaptureEventHeadData, tag_field="kind", tag="weapon_assign"):
-    pass
+class CaptureEventHeadPlayerFire(msgspec.Struct, tag="player_fire", forbid_unknown_fields=True):
+    data: CaptureEventHeadPlayerFireData
 
 
-class CaptureEventHeadBonusApply(_CaptureEventHeadData, tag_field="kind", tag="bonus_apply"):
-    pass
+class CaptureEventHeadWeaponAssignData(msgspec.Struct, forbid_unknown_fields=True):
+    player_index: int | None
+    weapon_id: int | None
+    weapon_before: int | None
+    weapon_after: int | None
+    caller: str | None
 
 
-class CaptureEventHeadBonusSpawn(_CaptureEventHeadData, tag_field="kind", tag="bonus_spawn"):
-    pass
+class CaptureEventHeadWeaponAssign(msgspec.Struct, tag="weapon_assign", forbid_unknown_fields=True):
+    data: CaptureEventHeadWeaponAssignData
+
+
+class CaptureEventHeadBonusApplyData(msgspec.Struct, forbid_unknown_fields=True):
+    player_index: int | None
+    bonus_id: int | None
+    entry_state: int | None
+    amount_i32: int | None
+    amount_f32: float | None
+    caller: str | None
+
+
+class CaptureEventHeadBonusApply(msgspec.Struct, tag="bonus_apply", forbid_unknown_fields=True):
+    data: CaptureEventHeadBonusApplyData
+
+
+class CaptureEventHeadBonusSpawnData(msgspec.Struct, forbid_unknown_fields=True):
+    pos: CaptureVec2 | None
+    caller: str | None
+    caller_static: str | None
+    backtrace: list[str] | None
+    before_active_count: int | None
+    after_active_count: int | None
+    active_delta: int | None
+    changed_slots_total: int | None
+    changed_slots_head: list[dict[str, object]]
+    changed_slots_overflow: int | None
+    spawned_slots_total: int | None
+    spawned_slots: list[dict[str, object]]
+    spawned_slots_overflow: int | None
+    removed_slots_total: int | None
+    removed_slots: list[dict[str, object]]
+    removed_slots_overflow: int | None
+    before_live_head: list[dict[str, object]]
+    after_live_head: list[dict[str, object]]
+    spawned_head: list[dict[str, object]]
+
+
+class CaptureEventHeadBonusSpawn(msgspec.Struct, tag="bonus_spawn", forbid_unknown_fields=True):
+    data: CaptureEventHeadBonusSpawnData
 
 
 class CaptureEventHeadSecondaryProjectileSpawn(
     _CaptureEventHeadData,
-    tag_field="kind",
     tag="secondary_projectile_spawn",
 ):
     pass
@@ -461,7 +514,6 @@ class CaptureEventHeadSecondaryProjectileSpawn(
 
 class CaptureEventHeadProjectileSpawn(
     _CaptureEventHeadData,
-    tag_field="kind",
     tag="projectile_spawn",
 ):
     pass
@@ -469,7 +521,6 @@ class CaptureEventHeadProjectileSpawn(
 
 class CaptureEventHeadProjectileFindQuery(
     _CaptureEventHeadData,
-    tag_field="kind",
     tag="projectile_find_query",
 ):
     pass
@@ -477,7 +528,6 @@ class CaptureEventHeadProjectileFindQuery(
 
 class CaptureEventHeadProjectileFindHit(
     _CaptureEventHeadData,
-    tag_field="kind",
     tag="projectile_find_hit",
 ):
     pass
@@ -485,7 +535,6 @@ class CaptureEventHeadProjectileFindHit(
 
 class CaptureEventHeadCreatureDamage(
     _CaptureEventHeadData,
-    tag_field="kind",
     tag="creature_damage",
 ):
     pass
@@ -493,7 +542,6 @@ class CaptureEventHeadCreatureDamage(
 
 class CaptureEventHeadPlayerDamage(
     _CaptureEventHeadData,
-    tag_field="kind",
     tag="player_damage",
 ):
     pass
@@ -501,7 +549,6 @@ class CaptureEventHeadPlayerDamage(
 
 class CaptureEventHeadCreatureDeath(
     _CaptureEventHeadData,
-    tag_field="kind",
     tag="creature_death",
 ):
     pass
@@ -509,7 +556,6 @@ class CaptureEventHeadCreatureDeath(
 
 class CaptureEventHeadCreatureSpawn(
     _CaptureEventHeadData,
-    tag_field="kind",
     tag="creature_spawn",
 ):
     pass
@@ -517,31 +563,42 @@ class CaptureEventHeadCreatureSpawn(
 
 class CaptureEventHeadCreatureSpawnLow(
     _CaptureEventHeadData,
-    tag_field="kind",
     tag="creature_spawn_low",
 ):
     pass
 
 
-class CaptureEventHeadPerkDelta(_CaptureEventHeadData, tag_field="kind", tag="perk_delta"):
-    pass
+class CaptureEventHeadPerkDeltaData(msgspec.Struct, forbid_unknown_fields=True):
+    perk_jinxed_proc_timer_s: float | None
+    perk_lean_mean_exp_tick_timer_s: float | None
+    perk_doctor_target_creature_id: int | None
+    perk_pending_count: int | None
+
+
+class CaptureEventHeadPerkDelta(msgspec.Struct, tag="perk_delta", forbid_unknown_fields=True):
+    data: CaptureEventHeadPerkDeltaData
 
 
 class CaptureEventHeadQuestTimelineDelta(
     _CaptureEventHeadData,
-    tag_field="kind",
     tag="quest_timeline_delta",
 ):
     pass
 
 
-class CaptureEventHeadSfx(_CaptureEventHeadData, tag_field="kind", tag="sfx"):
-    pass
+class CaptureEventHeadSfxData(msgspec.Struct, forbid_unknown_fields=True):
+    kind: str | None
+    id_i32: int | None
+    caller: str | None
+    backtrace: list[str] | None
+
+
+class CaptureEventHeadSfx(msgspec.Struct, tag="sfx", forbid_unknown_fields=True):
+    data: CaptureEventHeadSfxData
 
 
 class CaptureEventHeadCreatureLifecycle(
     _CaptureEventHeadData,
-    tag_field="kind",
     tag="creature_lifecycle",
 ):
     pass
@@ -549,7 +606,6 @@ class CaptureEventHeadCreatureLifecycle(
 
 class CaptureEventHeadCreatureUpdateMicro(
     _CaptureEventHeadData,
-    tag_field="kind",
     tag="creature_update_micro",
 ):
     pass
@@ -557,7 +613,6 @@ class CaptureEventHeadCreatureUpdateMicro(
 
 class CaptureEventHeadPerkApply(
     msgspec.Struct,
-    tag_field="kind",
     tag="perk_apply",
     forbid_unknown_fields=True,
 ):
@@ -603,7 +658,6 @@ class _CapturePhaseMarkerData(msgspec.Struct, forbid_unknown_fields=True):
 
 class CapturePhaseMarkerStateEnter(
     msgspec.Struct,
-    tag_field="kind",
     tag="state_enter",
     forbid_unknown_fields=True,
 ):
@@ -613,19 +667,17 @@ class CapturePhaseMarkerStateEnter(
 
 class CapturePhaseMarkerStateLeave(
     _CapturePhaseMarkerData,
-    tag_field="kind",
     tag="state_leave",
 ):
     pass
 
 
-class CapturePhaseMarkerModeHint(_CapturePhaseMarkerData, tag_field="kind", tag="mode_hint"):
+class CapturePhaseMarkerModeHint(_CapturePhaseMarkerData, tag="mode_hint"):
     pass
 
 
 class CapturePhaseMarkerInputPrimaryEdge(
     _CapturePhaseMarkerData,
-    tag_field="kind",
     tag="input_primary_edge",
 ):
     pass
@@ -633,7 +685,6 @@ class CapturePhaseMarkerInputPrimaryEdge(
 
 class CapturePhaseMarkerRngActivity(
     _CapturePhaseMarkerData,
-    tag_field="kind",
     tag="rng_activity",
 ):
     pass
@@ -641,7 +692,6 @@ class CapturePhaseMarkerRngActivity(
 
 class CapturePhaseMarkerStateSetCall(
     _CapturePhaseMarkerData,
-    tag_field="kind",
     tag="state_set_call",
 ):
     pass
@@ -649,7 +699,6 @@ class CapturePhaseMarkerStateSetCall(
 
 class CapturePhaseMarkerModeEnter(
     _CapturePhaseMarkerData,
-    tag_field="kind",
     tag="mode_enter",
 ):
     pass
@@ -657,7 +706,6 @@ class CapturePhaseMarkerModeEnter(
 
 class CapturePhaseMarkerCreatureCountIncreaseWithoutSpawnHook(
     _CapturePhaseMarkerData,
-    tag_field="kind",
     tag="creature_count_increase_without_spawn_hook",
 ):
     pass
@@ -665,7 +713,6 @@ class CapturePhaseMarkerCreatureCountIncreaseWithoutSpawnHook(
 
 class CapturePhaseMarkerCreatureCountDropWithoutDeathHook(
     _CapturePhaseMarkerData,
-    tag_field="kind",
     tag="creature_count_drop_without_death_hook",
 ):
     pass
@@ -673,7 +720,6 @@ class CapturePhaseMarkerCreatureCountDropWithoutDeathHook(
 
 class CapturePhaseMarkerCreatureLifecycleDeltaMismatch(
     _CapturePhaseMarkerData,
-    tag_field="kind",
     tag="creature_lifecycle_delta_mismatch",
 ):
     pass

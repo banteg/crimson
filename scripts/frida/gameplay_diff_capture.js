@@ -2293,7 +2293,7 @@ function addTickEvent(kind, payload, commandToken) {
     if (shouldEmitRawEvent()) {
       writeLine({
         event: "tickless_event",
-        kind: kind,
+        type: kind,
         payload: payload,
       });
     }
@@ -2379,14 +2379,14 @@ function buildCaptureEventHeads(eventHeadsByKind) {
         out.push(
           Object.assign(
             {
-              kind: "perk_apply",
+              type: "perk_apply",
             },
             toPerkApplyEntry(payload)
           )
         );
       } else {
         out.push({
-          kind: kind,
+          type: kind,
           data: payload,
         });
       }
@@ -2414,7 +2414,7 @@ function buildCapturePhaseMarkers(markers) {
     if (!kind) continue;
     if (kind === "state_enter") {
       out.push({
-        kind: "state_enter",
+        type: "state_enter",
         state_id: marker.state_id == null ? null : marker.state_id,
         state_pending: marker.state_pending == null ? null : marker.state_pending,
       });
@@ -2425,7 +2425,7 @@ function buildCapturePhaseMarkers(markers) {
       if (key === "kind") continue;
       data[key] = marker[key];
     }
-    out.push({ kind: kind, data: data });
+    out.push({ type: kind, data: data });
   }
   return out;
 }

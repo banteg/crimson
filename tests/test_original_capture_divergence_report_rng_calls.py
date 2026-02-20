@@ -771,7 +771,7 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
         "event_overflow": False,
         "event_heads": [
             {
-                "kind": "projectile_find_query",
+                "type": "projectile_find_query",
                 "data": {
                     "result_creature_index": None,
                     "result_kind": "miss",
@@ -779,7 +779,7 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
                 },
             },
             {
-                "kind": "projectile_find_query",
+                "type": "projectile_find_query",
                 "data": {
                     "result_creature_index": 19,
                     "result_kind": "owner_collision",
@@ -787,7 +787,7 @@ def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
                     "caller_static": "0x00420e52",
                 },
             },
-                {"kind": "projectile_find_hit", "data": {"creature_index": 19, "caller_static": "0x00420e52"}},
+            {"type": "projectile_find_hit", "data": {"creature_index": 19, "caller_static": "0x00420e52"}},
         ],
         "phase_markers": [],
         "input_queries": {
@@ -1123,9 +1123,7 @@ def test_divergence_category_marks_player_motion_precision_drift() -> None:
     divergence = report.Divergence(
         tick_index=12,
         kind="state_mismatch",
-        field_diffs=(
-            report.ReplayFieldDiff(field="players[0].pos.x", expected=10.0, actual=10.125),
-        ),
+        field_diffs=(report.ReplayFieldDiff(field="players[0].pos.x", expected=10.0, actual=10.125),),
         expected=expected_ckpt,
         actual=actual_ckpt,
     )
@@ -1280,12 +1278,13 @@ def test_investigation_leads_include_rng_head_shortfall() -> None:
                 "sample_counts": {"creatures": 1, "projectiles": 1, "secondary_projectiles": 0, "bonuses": 0},
             },
         },
-        native_ranges=(
-            report.NativeFunctionRange(name="projectile_update", start=0x00420B90, end=0x00422C70),
-        ),
+        native_ranges=(report.NativeFunctionRange(name="projectile_update", start=0x00420B90, end=0x00422C70),),
     )
 
-    lead = next((item for item in leads if item.title == "Pre-focus RNG-head shortfall indicates missing RNG-consuming branch"), None)
+    lead = next(
+        (item for item in leads if item.title == "Pre-focus RNG-head shortfall indicates missing RNG-consuming branch"),
+        None,
+    )
     assert lead is not None
     assert "projectile_update" in lead.native_functions
 
@@ -1351,12 +1350,12 @@ def test_investigation_leads_include_rng_stream_mismatch() -> None:
                 "sample_counts": {"creatures": 1, "projectiles": 1, "secondary_projectiles": 0, "bonuses": 0},
             },
         },
-        native_ranges=(
-            report.NativeFunctionRange(name="projectile_update", start=0x00420B90, end=0x00422C70),
-        ),
+        native_ranges=(report.NativeFunctionRange(name="projectile_update", start=0x00420B90, end=0x00422C70),),
     )
 
-    lead = next((item for item in leads if item.title == "Pre-focus RNG stream mismatch indicates branch divergence"), None)
+    lead = next(
+        (item for item in leads if item.title == "Pre-focus RNG stream mismatch indicates branch divergence"), None,
+    )
     assert lead is not None
     assert "projectile_update" in lead.native_functions
 
@@ -1471,11 +1470,11 @@ def test_investigation_leads_include_projectile_hit_shortfall() -> None:
                 "sample_counts": {"creatures": 1, "projectiles": 1, "secondary_projectiles": 0, "bonuses": 0},
             },
         },
-        native_ranges=(
-            report.NativeFunctionRange(name="projectile_update", start=0x00420B90, end=0x00422C70),
-        ),
+        native_ranges=(report.NativeFunctionRange(name="projectile_update", start=0x00420B90, end=0x00422C70),),
     )
 
-    lead = next((item for item in leads if item.title == "Native projectile hit resolves exceed rewrite hit events"), None)
+    lead = next(
+        (item for item in leads if item.title == "Native projectile hit resolves exceed rewrite hit events"), None,
+    )
     assert lead is not None
     assert "projectile_update" in lead.native_functions

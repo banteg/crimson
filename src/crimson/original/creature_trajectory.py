@@ -7,8 +7,6 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any, cast
 
-import msgspec
-
 from crimson.game_modes import GameMode
 from crimson.gameplay import build_gameplay_state
 from crimson.original.capture import (
@@ -54,6 +52,8 @@ from grim.geom import Vec2
 
 _JSON_OUT_AUTO = "__AUTO__"
 _DEFAULT_JSON_OUT_DIR = Path("artifacts/frida/reports")
+
+
 @dataclass(slots=True)
 class CreatureTrajectoryRow:
     tick: int
@@ -105,9 +105,7 @@ def _resolve_json_out_path(
     if value is None:
         return None
     if str(value) == _JSON_OUT_AUTO:
-        return _DEFAULT_JSON_OUT_DIR / (
-            f"creature{int(creature_index)}_{int(start_tick)}_{int(end_tick)}_latest.json"
-        )
+        return _DEFAULT_JSON_OUT_DIR / (f"creature{int(creature_index)}_{int(start_tick)}_{int(end_tick)}_latest.json")
     return Path(value)
 
 
@@ -123,13 +121,22 @@ def _read_capture_creature_samples(
         tick = int(tick_row.tick_index)
         if tick < int(start_tick) or tick > int(end_tick):
             continue
-        samples = tick_row.samples
-        if samples is None:
-            continue
-        for row in samples.creatures:
+        for row in tick_row.samples.creatures:
             if int(row.index) != int(creature_index):
                 continue
-            out[int(tick)] = cast("dict[str, Any]", msgspec.to_builtins(row))
+            out[int(tick)] = {
+                "type_id": int(row.type_id),
+                "flags": int(row.flags),
+                "active": int(row.active),
+                "target_player": int(row.target_player),
+                "hp": float(row.hp),
+                "hitbox_size": float(row.hitbox_size),
+                "collision_flag": int(row.collision_flag),
+                "state_flag": int(row.state_flag),
+                "heading": (0.0 if row.heading is None else float(row.heading)),
+                "target_heading": (0.0 if row.target_heading is None else float(row.target_heading)),
+                "pos": {"x": float(row.pos.x), "y": float(row.pos.y)},
+            }
             break
     return out
 
@@ -221,8 +228,7 @@ def trace_creature_trajectory(
     mode = int(replay.header.game_mode_id)
     if mode not in {int(GameMode.SURVIVAL), int(GameMode.QUESTS)}:
         raise ValueError(
-            "trajectory trace currently supports survival/quests only "
-            f"(got mode={mode})",
+            f"trajectory trace currently supports survival/quests only (got mode={mode})",
         )
 
     world_size = float(replay.header.world_size)
@@ -245,8 +251,10 @@ def trace_creature_trajectory(
     session_survival: SurvivalDeterministicSession | None = None
     session_quest: QuestDeterministicSession | None = None
 
-    events_by_tick, original_capture_replay, bootstrap_start_tick, has_capture_creature_spawn_events = _load_capture_events(
-        replay,
+    events_by_tick, original_capture_replay, bootstrap_start_tick, has_capture_creature_spawn_events = (
+        _load_capture_events(
+            replay,
+        )
     )
     dt_frame_overrides = build_capture_dt_frame_overrides(capture, tick_rate=int(replay.header.tick_rate))
     dt_frame_ms_i32_overrides = build_capture_dt_frame_ms_i32_overrides(capture)
@@ -424,22 +432,29 @@ def trace_creature_trajectory(
                 payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
                 if payload is None:
                     break
-                quest_session = (payload["quest_session"] if "quest_session" in payload else None)
+                quest_session = payload["quest_session"] if "quest_session" in payload else None
                 if isinstance(quest_session, dict):
-                    quest_session_obj = msgspec.to_builtins(quest_session)
-                    if not isinstance(quest_session_obj, dict):
-                        continue
-                    quest_session_data = cast(dict[str, object], quest_session_obj)
-                    timeline_ms = (quest_session_data["spawn_timeline_ms"] if "spawn_timeline_ms" in quest_session_data else None)
+                    quest_session_data = cast(dict[str, object], quest_session)
+                    timeline_ms = (
+                        quest_session_data["spawn_timeline_ms"] if "spawn_timeline_ms" in quest_session_data else None
+                    )
                     if isinstance(timeline_ms, (int, float)):
                         session_quest.spawn_timeline_ms = max(0.0, float(timeline_ms) - float(bootstrap_dt_ms))
-                    no_creatures_timer_ms = (quest_session_data["no_creatures_timer_ms"] if "no_creatures_timer_ms" in quest_session_data else None)
+                    no_creatures_timer_ms = (
+                        quest_session_data["no_creatures_timer_ms"]
+                        if "no_creatures_timer_ms" in quest_session_data
+                        else None
+                    )
                     if isinstance(no_creatures_timer_ms, (int, float)):
                         session_quest.no_creatures_timer_ms = max(
                             0.0,
                             float(no_creatures_timer_ms) - float(bootstrap_dt_ms),
                         )
-                    completion_transition_ms = (quest_session_data["completion_transition_ms"] if "completion_transition_ms" in quest_session_data else None)
+                    completion_transition_ms = (
+                        quest_session_data["completion_transition_ms"]
+                        if "completion_transition_ms" in quest_session_data
+                        else None
+                    )
                     if isinstance(completion_transition_ms, (int, float)):
                         completion_value = float(completion_transition_ms)
                         if completion_value >= 0.0:
@@ -457,7 +472,11 @@ def trace_creature_trajectory(
         state.game_mode = int(mode)
         state.demo_mode_active = False
         if inter_tick_rand_draws_by_tick is not None:
-            draws = (inter_tick_rand_draws_by_tick[int(tick_index)] if int(tick_index) in inter_tick_rand_draws_by_tick else None)
+            draws = (
+                inter_tick_rand_draws_by_tick[int(tick_index)]
+                if int(tick_index) in inter_tick_rand_draws_by_tick
+                else None
+            )
             if draws is None:
                 draws = int(inter_tick_rand_draws)
             for _ in range(max(0, int(draws))):
@@ -524,64 +543,25 @@ def trace_creature_trajectory(
         if mode == int(GameMode.QUESTS):
             world.creatures.finalize_post_render_lifecycle()
 
-        sample = (capture_rows[tick_key] if tick_key in capture_rows else None)
+        sample = capture_rows[tick_key] if tick_key in capture_rows else None
         if sample is not None and int(tick_index) >= int(start_tick):
             if not (0 <= int(creature_index) < len(world.creatures.entries)):
                 break
             creature = world.creatures.entries[int(creature_index)]
-            cap_pos_obj = (sample["pos"] if "pos" in sample else None)
-            if isinstance(cap_pos_obj, dict):
-                cap_pos = cast("dict[str, object]", cap_pos_obj)
-            else:
-                cap_pos = {}
-            if "x" in cap_pos:
-                cap_x = float(cast("Any", cap_pos["x"]))
-            else:
-                cap_x = 0.0
-            if "y" in cap_pos:
-                cap_y = float(cast("Any", cap_pos["y"]))
-            else:
-                cap_y = 0.0
-            if "type_id" in sample:
-                cap_type_id = int(sample["type_id"])
-            else:
-                cap_type_id = -1
-            if "flags" in sample:
-                cap_flags = int(sample["flags"])
-            else:
-                cap_flags = 0
-            if "active" in sample:
-                cap_active = bool(int(sample["active"]) != 0)
-            else:
-                cap_active = False
-            if "target_player" in sample:
-                cap_target_player = int(sample["target_player"])
-            else:
-                cap_target_player = -1
-            if "hp" in sample:
-                cap_hp = float(sample["hp"])
-            else:
-                cap_hp = 0.0
-            if "hitbox_size" in sample:
-                cap_hitbox = float(sample["hitbox_size"])
-            else:
-                cap_hitbox = 0.0
-            if "collision_flag" in sample:
-                cap_collision_flag = int(sample["collision_flag"])
-            else:
-                cap_collision_flag = 0
-            if "state_flag" in sample:
-                cap_state_flag = int(sample["state_flag"])
-            else:
-                cap_state_flag = 0
-            if "heading" in sample:
-                cap_heading = float(sample["heading"])
-            else:
-                cap_heading = 0.0
-            if "target_heading" in sample:
-                cap_target_heading = float(sample["target_heading"])
-            else:
-                cap_target_heading = 0.0
+            cap_pos_obj = sample["pos"]
+            cap_pos = cast("dict[str, object]", cap_pos_obj)
+            cap_x = float(cast("Any", cap_pos["x"]))
+            cap_y = float(cast("Any", cap_pos["y"]))
+            cap_type_id = int(sample["type_id"])
+            cap_flags = int(sample["flags"])
+            cap_active = bool(int(sample["active"]) != 0)
+            cap_target_player = int(sample["target_player"])
+            cap_hp = float(sample["hp"])
+            cap_hitbox = float(sample["hitbox_size"])
+            cap_collision_flag = int(sample["collision_flag"])
+            cap_state_flag = int(sample["state_flag"])
+            cap_heading = float(sample["heading"])
+            cap_target_heading = float(sample["target_heading"])
             rw_x = float(creature.pos.x)
             rw_y = float(creature.pos.y)
             dx = rw_x - cap_x
@@ -653,9 +633,7 @@ def _print_summary(rows: list[CreatureTrajectoryRow], *, print_every: int) -> No
 
     max_row = max(rows, key=lambda row: row.drift_mag)
     print(
-        "max_drift="
-        f"{max_row.drift_mag:.6f} tick={max_row.tick} "
-        f"dx={max_row.dx:.6f} dy={max_row.dy:.6f}",
+        f"max_drift={max_row.drift_mag:.6f} tick={max_row.tick} dx={max_row.dx:.6f} dy={max_row.dy:.6f}",
     )
 
     transitions = 0

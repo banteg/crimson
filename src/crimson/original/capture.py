@@ -844,10 +844,10 @@ def _tick_player_projectile_bonus_apply(
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadBonusApply):
             continue
-        bonus_id = _coerce_int_like(head.data.get("bonus_id"))
+        bonus_id = head.data.bonus_id
         if bonus_id is None or int(bonus_id) not in _PROJECTILE_SPAWNING_BONUS_IDS:
             continue
-        applied_player_index = _coerce_int_like(head.data.get("player_index"))
+        applied_player_index = head.data.player_index
         if applied_player_index is None:
             continue
         if int(applied_player_index) == int(player_index):
@@ -1019,10 +1019,10 @@ def _should_synthesize_fire_down_from_fractional_weapon_fire_sfx(
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadSfx):
             continue
-        kind = head.data.get("kind")
-        if isinstance(kind, str) and kind.strip().lower() != "sfx_play_panned":
+        kind = head.data.kind
+        if kind is not None and kind.strip().lower() != "sfx_play_panned":
             continue
-        if _is_fractional_weapon_fire_sfx_caller(head.data.get("caller")):
+        if _is_fractional_weapon_fire_sfx_caller(head.data.caller):
             return True
     return False
 
@@ -1046,7 +1046,7 @@ def _should_synthesize_fire_down_from_player_fire_event(
             player_count=int(player_count),
         ):
             continue
-        shot_cooldown_after = _finite_float_or_none(head.data.get("shot_cooldown_after"))
+        shot_cooldown_after = _finite_float_or_none(head.data.shot_cooldown_after)
         if shot_cooldown_after is not None and float(shot_cooldown_after) <= 0.0:
             # Perk/proc-driven projectile bursts can emit `player_fire` debug rows
             # without a real trigger pull (`shot_cooldown_after` stays 0).
@@ -1061,10 +1061,10 @@ def _player_fire_head_matches_player(
     player_index: int,
     player_count: int,
 ) -> bool:
-    fired_player_index = _coerce_int_like(head.data.get("player_index"))
+    fired_player_index = head.data.player_index
     if fired_player_index is not None:
         return int(fired_player_index) == int(player_index)
-    owner_id = _coerce_int_like(head.data.get("owner_id"))
+    owner_id = head.data.owner_id
     if owner_id is None:
         return False
     owner_player_index = _owner_id_to_player_index(int(owner_id), player_count=int(player_count))
@@ -1088,7 +1088,7 @@ def _tick_player_has_only_zero_cooldown_player_fire_events(
         ):
             continue
         matched = True
-        shot_cooldown_after = _finite_float_or_none(head.data.get("shot_cooldown_after"))
+        shot_cooldown_after = _finite_float_or_none(head.data.shot_cooldown_after)
         if shot_cooldown_after is None:
             return False
         if float(shot_cooldown_after) > 0.0:
@@ -2410,7 +2410,7 @@ def _tick_perk_pending_count(tick: CaptureTick) -> int | None:
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadPerkDelta):
             continue
-        pending_value = _coerce_int_like(head.data.get("perk_pending_count"))
+        pending_value = head.data.perk_pending_count
         if pending_value is not None and int(pending_value) >= 0:
             return int(pending_value)
     return None

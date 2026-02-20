@@ -10,8 +10,6 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any, cast
 
-import msgspec
-
 import crimson.projectiles.runtime.collision as projectiles_mod
 import crimson.projectiles.runtime.projectile_pool as projectile_pool_mod
 import crimson.projectiles.runtime.secondary_pool as secondary_pool_mod
@@ -29,7 +27,7 @@ from crimson.original.capture import (
     load_capture,
     parse_player_int_overrides,
 )
-from crimson.original.schema import CaptureFile, CaptureTick
+from crimson.original.schema import CaptureFile, CaptureRngHeadEntry, CaptureTick
 from crimson.quests import quest_by_level
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
@@ -213,6 +211,58 @@ def _read_capture_tick(capture: CaptureFile, tick: int) -> CaptureTick | None:
     return None
 
 
+def _capture_rng_head_entry_to_row(entry: CaptureRngHeadEntry) -> dict[str, Any]:
+    if entry.value_15 is not None:
+        value_15 = int(entry.value_15)
+    elif entry.value is not None:
+        value_15 = int(entry.value) & 0x7FFF
+    else:
+        value_15 = 0
+    return {
+        "value": int(value_15),
+        "value_15": int(value_15),
+        "caller_static": (None if entry.caller_static is None else str(entry.caller_static)),
+        "caller": (None if entry.caller is None else str(entry.caller)),
+        "branch_id": (None if entry.branch_id is None else str(entry.branch_id)),
+        "seq": (None if entry.seq is None else int(entry.seq)),
+        "tick_call_index": (None if entry.tick_call_index is None else int(entry.tick_call_index)),
+        "state_before_u32": (None if entry.state_before_u32 is None else int(entry.state_before_u32)),
+        "state_after_u32": (None if entry.state_after_u32 is None else int(entry.state_after_u32)),
+    }
+
+
+def _build_capture_tick_payload(
+    tick: CaptureTick,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], int]:
+    capture_creatures: list[dict[str, Any]] = []
+    capture_projectiles: list[dict[str, Any]] = []
+    for item in tick.samples.creatures:
+        capture_creatures.append(
+            {
+                "index": int(item.index),
+                "active": int(item.active),
+                "type_id": int(item.type_id),
+                "hp": float(item.hp),
+                "hitbox_size": float(item.hitbox_size),
+                "pos": {"x": float(item.pos.x), "y": float(item.pos.y)},
+            },
+        )
+    for item in tick.samples.projectiles:
+        capture_projectiles.append(
+            {
+                "index": int(item.index),
+                "active": int(item.active),
+                "type_id": int(item.type_id),
+                "life_timer": float(item.life_timer),
+                "damage_pool": float(item.damage_pool),
+                "pos": {"x": float(item.pos.x), "y": float(item.pos.y)},
+            },
+        )
+    capture_rng_head = [_capture_rng_head_entry_to_row(entry) for entry in tick.rng.head]
+    capture_rng_calls = max(int(tick.rng.calls), len(capture_rng_head))
+    return capture_creatures, capture_projectiles, capture_rng_head, capture_rng_calls
+
+
 def _projectile_snapshot(world: WorldState) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     for idx, proj in enumerate(world.state.projectiles.entries):
@@ -325,9 +375,7 @@ def _str_field_or(row: Mapping[str, Any], key: str, fallback: str) -> str:
 
 
 def _summarize_creature_diffs(capture_creatures: list[dict[str, Any]], world: WorldState) -> list[dict[str, Any]]:
-    cap_by_idx: dict[int, dict[str, Any]] = {
-        int(row["index"]): row for row in capture_creatures
-    }
+    cap_by_idx: dict[int, dict[str, Any]] = {int(row["index"]): row for row in capture_creatures}
     rows: list[dict[str, Any]] = []
     for idx, cap_row in cap_by_idx.items():
         if not (0 <= int(idx) < len(world.creatures.entries)):
@@ -364,9 +412,7 @@ def _summarize_creature_diffs(capture_creatures: list[dict[str, Any]], world: Wo
 
 
 def _summarize_projectile_diffs(capture_projectiles: list[dict[str, Any]], world: WorldState) -> list[dict[str, Any]]:
-    cap_by_idx: dict[int, dict[str, Any]] = {
-        int(row["index"]): row for row in capture_projectiles
-    }
+    cap_by_idx: dict[int, dict[str, Any]] = {int(row["index"]): row for row in capture_projectiles}
     rows: list[dict[str, Any]] = []
     for idx, cap_row in cap_by_idx.items():
         if not (0 <= int(idx) < len(world.state.projectiles.entries)):
@@ -406,9 +452,7 @@ def _collect_creature_presence_diffs(
     capture_creatures: list[dict[str, Any]],
     world: WorldState,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    cap_by_idx: dict[int, dict[str, Any]] = {
-        int(row["index"]): row for row in capture_creatures
-    }
+    cap_by_idx: dict[int, dict[str, Any]] = {int(row["index"]): row for row in capture_creatures}
     cap_indices = {idx for idx, row in cap_by_idx.items() if bool(_int_field_or(row, "active", 0) != 0)}
     rewrite_indices = {idx for idx, creature in enumerate(world.creatures.entries) if bool(creature.active)}
 
@@ -449,9 +493,7 @@ def _collect_projectile_presence_diffs(
     capture_projectiles: list[dict[str, Any]],
     world: WorldState,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    cap_by_idx: dict[int, dict[str, Any]] = {
-        int(row["index"]): row for row in capture_projectiles
-    }
+    cap_by_idx: dict[int, dict[str, Any]] = {int(row["index"]): row for row in capture_projectiles}
     cap_indices = {idx for idx, row in cap_by_idx.items() if bool(_int_field_or(row, "active", 0) != 0)}
     rewrite_indices = {idx for idx, proj in enumerate(world.state.projectiles.entries) if bool(proj.active)}
 
@@ -619,11 +661,7 @@ def _build_native_caller_gaps(
         for caller_static, rewrite_callsite in rng_alignment.caller_static_to_rewrite_callsite
     }
     rewrite_counts = Counter(
-        {
-            str(callsite): int(count)
-            for callsite, count in rng_alignment.rewrite_callsite_counts
-            if str(callsite)
-        },
+        {str(callsite): int(count) for callsite, count in rng_alignment.rewrite_callsite_counts if str(callsite)},
     )
     rows: list[NativeCallerGapRow] = []
     for caller_static, capture_count in rng_alignment.capture_caller_counts:
@@ -678,11 +716,7 @@ def _build_fire_bullets_loop_parity(rng_alignment: RngAlignmentSummary) -> FireB
         },
     )
     rewrite_counts = Counter(
-        {
-            str(callsite): int(count)
-            for callsite, count in rng_alignment.rewrite_callsite_counts
-            if str(callsite)
-        },
+        {str(callsite): int(count) for callsite, count in rng_alignment.rewrite_callsite_counts if str(callsite)},
     )
 
     if _FIRE_BULLETS_SEED_CALLER in caller_map:
@@ -800,22 +834,9 @@ def trace_focus_tick(
     capture_tick = _read_capture_tick(capture, int(tick))
     if capture_tick is None:
         raise ValueError(f"capture tick {tick} not found in {capture_path}")
-    capture_creatures: list[dict[str, Any]] = []
-    capture_projectiles: list[dict[str, Any]] = []
-    samples = capture_tick.samples
-    if samples is not None:
-        for row in samples.creatures:
-            capture_creatures.append(cast("dict[str, Any]", msgspec.to_builtins(row)))
-        for row in samples.projectiles:
-            capture_projectiles.append(cast("dict[str, Any]", msgspec.to_builtins(row)))
-    capture_rng_obj = msgspec.to_builtins(capture_tick.rng)
-    capture_rng = cast("dict[str, Any]", capture_rng_obj) if isinstance(capture_rng_obj, dict) else {}
-    capture_rng_head_obj = capture_rng.get("head")
-    if isinstance(capture_rng_head_obj, list):
-        capture_rng_head = list(capture_rng_head_obj)
-    else:
-        capture_rng_head = []
-    capture_rng_calls = _int_field_or(capture_rng, "calls", len(capture_rng_head))
+    capture_creatures, capture_projectiles, capture_rng_head, capture_rng_calls = _build_capture_tick_payload(
+        capture_tick,
+    )
 
     world_size = float(replay.header.world_size)
     world = WorldState.build(
@@ -1175,15 +1196,20 @@ def trace_focus_tick(
                     creature_idx: int | None = None
                     if frame is not None:
                         try:
-                            step = int(frame.f_locals.get("step")) if "step" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
+                            step_value = frame.f_locals.get("step") if "step" in frame.f_locals else None
+                            step = None if step_value is None else int(step_value)
                         except (TypeError, ValueError):
                             step = None
                         try:
-                            creature_idx = int(frame.f_locals.get("idx")) if "idx" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
+                            creature_idx_value = frame.f_locals.get("idx") if "idx" in frame.f_locals else None
+                            creature_idx = None if creature_idx_value is None else int(creature_idx_value)
                         except (TypeError, ValueError):
                             creature_idx = None
                         try:
-                            proj_index = int(frame.f_locals.get("proj_index")) if "proj_index" in frame.f_locals else None  # ty:ignore[invalid-argument-type]
+                            proj_index_value = (
+                                frame.f_locals.get("proj_index") if "proj_index" in frame.f_locals else None
+                            )
+                            proj_index = None if proj_index_value is None else int(proj_index_value)
                         except (TypeError, ValueError):
                             proj_index = None
                         proj = frame.f_locals.get("proj")

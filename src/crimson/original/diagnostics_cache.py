@@ -1059,7 +1059,10 @@ def _rng_head_entry_to_row(entry: CaptureRngHeadEntry) -> dict[str, object]:
 
 
 def _event_head_payload(head: Any) -> dict[str, object]:
-    data = cast("dict[str, object]", head.data)
+    data_obj = msgspec.to_builtins(head.data)
+    if not isinstance(data_obj, dict):
+        return {}
+    data = cast("dict[str, object]", data_obj)
     return {str(key): value for key, value in data.items()}
 
 
