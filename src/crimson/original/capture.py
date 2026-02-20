@@ -3091,8 +3091,10 @@ def dump_capture(path: Path, capture: CaptureFile) -> None:
     capture_obj = msgspec.to_builtins(capture)
     if not isinstance(capture_obj, dict):
         raise CaptureError("invalid capture object during serialization")
-    ticks_obj = capture_obj.get("ticks")
-    ticks = ticks_obj if isinstance(ticks_obj, list) else []
+    ticks_obj = capture_obj["ticks"]
+    if not isinstance(ticks_obj, list):
+        raise CaptureError("invalid capture object during serialization")
+    ticks = ticks_obj
     meta = dict(capture_obj)
     meta["ticks"] = []
     rows: list[bytes] = [msgspec.json.encode({"event": "capture_meta", "capture": meta})]

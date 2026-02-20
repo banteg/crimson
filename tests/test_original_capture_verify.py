@@ -10,18 +10,111 @@ from crimson.original.capture import convert_capture_to_replay
 from crimson.original.diff import ReplayFieldDiff
 from crimson.original.schema import (
     CaptureCheckpoint,
+    CaptureCheckpointDebug,
+    CaptureCheckpointDebugStatus,
+    CaptureConfig,
     CaptureDeath,
+    CaptureDiagnostics,
+    CaptureEventCounts,
     CaptureEventSummary,
     CaptureFile,
+    CaptureInputQueries,
+    CaptureInputQueryCounter,
+    CaptureInputQueryStats,
+    CapturePerkApplyOutsideBefore,
     CapturePerkSnapshot,
     CapturePlayerCheckpoint,
     CaptureRngMarks,
+    CaptureRngSummary,
     CaptureSamples,
     CaptureSnapshot,
     CaptureStatusSnapshot,
     CaptureTick,
     CaptureVec2,
+    ModuleInfo,
+    ProcessInfo,
+    SessionFingerprint,
 )
+
+
+def _empty_snapshot() -> CaptureSnapshot:
+    return CaptureSnapshot(globals={}, status={}, player_count=1, players=[], input={}, input_bindings={})
+
+def _empty_samples() -> CaptureSamples:
+    return CaptureSamples(creatures=[], projectiles=[], secondary_projectiles=[], bonuses=[])
+
+def _empty_debug() -> CaptureCheckpointDebug:
+    return CaptureCheckpointDebug(
+        sampling_phase="",
+        timing={},
+        spawn={},
+        rng={},
+        perk_apply_outside_before=CapturePerkApplyOutsideBefore(calls=0, dropped=0, head=[]),
+        creature_lifecycle=None,
+        player_fire=None,
+        before_players=[],
+        before_status=CaptureCheckpointDebugStatus(quest_unlock_index=0, quest_unlock_index_full=0),
+    )
+
+def _empty_event_counts() -> CaptureEventCounts:
+    return CaptureEventCounts(
+        state_transition=0, player_fire=0, weapon_assign=0, bonus_apply=0, bonus_spawn=0,
+        projectile_spawn=0, projectile_find_query=0, projectile_find_hit=0, secondary_projectile_spawn=0,
+        player_damage=0, creature_damage=0, creature_spawn=0, creature_spawn_low=0, creature_death=0,
+        creature_lifecycle=0, creature_update_micro=0, perk_apply=0, sfx=0, perk_delta=0,
+        quest_timeline_delta=0, mode_tick=0, input_primary_edge=0, input_primary_down=0, input_any_key=0,
+    )
+
+def _empty_input_queries() -> CaptureInputQueries:
+    return CaptureInputQueries(
+        stats=CaptureInputQueryStats(
+            primary_edge=CaptureInputQueryCounter(0,0),
+            primary_down=CaptureInputQueryCounter(0,0),
+            any_key=CaptureInputQueryCounter(0,0),
+        ),
+        query_hash="",
+    )
+
+def _empty_rng_summary() -> CaptureRngSummary:
+    return CaptureRngSummary(
+        calls=0, last_value=None, hash="", head=[], callers=[], caller_overflow=0,
+        seq_first=None, seq_last=None, seed_epoch_enter=None, seed_epoch_last=None,
+        outside_before_calls=0, outside_before_dropped=0, outside_before_head=[],
+        mirror_mismatch_total=0, mirror_unknown_total=0,
+    )
+
+def _empty_diagnostics() -> CaptureDiagnostics:
+    return CaptureDiagnostics(
+        sampling_phase="", timing={}, spawn={}, rng={},
+        perk_apply_outside_before=CapturePerkApplyOutsideBefore(calls=0, dropped=0, head=[]),
+        creature_lifecycle=None, player_fire=None,
+    )
+
+def _empty_config() -> CaptureConfig:
+    return CaptureConfig(
+        out_path="", split_quest_files=True, quest_out_dir="", quest_out_prefix="", capture_profile="",
+        config_env_overrides=[], log_mode="truncate", console_all_events=False, console_events=[],
+        include_caller=True, include_backtrace=False, emit_ticks_outside_tracked_states=False, tracked_states=[],
+        player_count_override=0, focus_tick=-1, focus_radius=0, heartbeat_ms=1000, max_head_per_kind=-1,
+        max_events_per_tick=-1, max_rng_head_per_tick=-1, max_rng_caller_kinds=-1, enable_rng_state_mirror=True,
+        max_creature_delta_ids=32, creature_sample_limit=-1, projectile_sample_limit=-1,
+        secondary_projectile_sample_limit=-1, bonus_sample_limit=-1, enable_input_hooks=True,
+        enable_rng_hooks=True, enable_sfx_hooks=True, enable_damage_hooks=True, enable_effect_hooks=True,
+        creature_damage_projectile_only=True, enable_spawn_hooks=True, enable_creature_spawn_hook=True,
+        enable_creature_death_hook=True, enable_bonus_spawn_hook=True, enable_creature_lifecycle_digest=True,
+        enable_creature_micro_hooks=True, creature_micro_slots=[], creature_micro_tick_start=-1,
+        creature_micro_tick_end=-1, creature_micro_max_head_per_tick=256,
+    )
+
+def _empty_session_fingerprint() -> SessionFingerprint:
+    return SessionFingerprint(session_id="", module_hash=None, ptrs_hash=None)
+
+def _empty_process_info() -> ProcessInfo:
+    return ProcessInfo(pid=0, platform="", arch="", frida_version="", runtime="")
+
+def _empty_module_info() -> ModuleInfo:
+    return ModuleInfo(base="", size=0, path="")
+
 from crimson.original.verify import _allow_capture_sample_creature_count, _allow_one_tick_kills_lag, verify_capture
 from crimson.replay import ReplayHeader, ReplayRecorder
 from crimson.replay.checkpoints import ReplayCheckpoint
@@ -97,6 +190,7 @@ def _capture_from_checkpoint(
             ammo=float(player.ammo),
             experience=int(player.experience),
             level=int(player.level),
+            bonus_timers={},
         )
         for player in ckpt.players
     ]
@@ -124,10 +218,17 @@ def _capture_from_checkpoint(
         pickup_count=int(ckpt.events.pickup_count),
         sfx_count=int(ckpt.events.sfx_count),
         sfx_head=[str(value) for value in ckpt.events.sfx_head],
+        rng_call_count=0,
+        input_true_count=0,
     )
     rng_marks = CaptureRngMarks(
         rand_calls=int(ckpt.rng_marks.get("rand_calls", 0)),
+        rand_hash="",
         rand_last=int(ckpt.rng_marks.get("rand_last", 0)) if "rand_last" in ckpt.rng_marks else None,
+        rand_head=[], rand_callers=[], rand_caller_overflow=0, rand_seq_first=None, rand_seq_last=None,
+        rand_seed_epoch_enter=None, rand_seed_epoch_last=None, rand_outside_before_calls=0,
+        rand_outside_before_dropped=0, rand_outside_before_head=[], rand_mirror_mismatch_total=0,
+        rand_mirror_unknown_total=0,
     )
     capture_checkpoint = CaptureCheckpoint(
         tick_index=int(ckpt.tick_index),
@@ -150,23 +251,53 @@ def _capture_from_checkpoint(
         deaths=capture_deaths,
         perk=capture_perk,
         events=capture_events,
+        debug=_empty_debug(),
     )
     tick = CaptureTick(
         tick_index=int(ckpt.tick_index),
         gameplay_frame=int(ckpt.tick_index) + 1,
-        before=CaptureSnapshot(),
-        after=CaptureSnapshot(),
-        samples=CaptureSamples(),
+        before=_empty_snapshot(),
+        after=_empty_snapshot(),
+        samples=_empty_samples(),
         mode_hint=str(mode_hint),
         game_mode_id=int(game_mode_id),
         quest_stage_major=int(quest_stage_major),
         quest_stage_minor=int(quest_stage_minor),
         checkpoint=capture_checkpoint,
+        focus_tick=False,
+        state_id_enter=None,
+        state_id_leave=None,
+        state_pending_enter=None,
+        state_pending_leave=None,
+        ts_enter_ms=0,
+        ts_leave_ms=0,
+        duration_ms=0,
+        event_counts=_empty_event_counts(),
+        event_overflow=False,
+        event_heads=[],
+        phase_markers=[],
+        input_queries=_empty_input_queries(),
+        input_player_keys=[],
+        perk_apply_outside_before=CapturePerkApplyOutsideBefore(calls=0, dropped=0, head=[]),
+        perk_apply_in_tick=[],
+        rng=_empty_rng_summary(),
+        diagnostics=_empty_diagnostics(),
+        input_approx=[],
+        frame_dt_ms=None,
+        frame_dt_ms_i32=None,
+        creature_lifecycle=None,
     )
     return CaptureFile(
         script="gameplay_diff_capture",
         session_id="test-session",
         out_path="capture.json",
+        capture_format_version=5,
+        config=_empty_config(),
+        session_fingerprint=_empty_session_fingerprint(),
+        process=_empty_process_info(),
+        exe=_empty_module_info(),
+        grim=None,
+        pointers_resolved={},
         ticks=[tick],
     )
 

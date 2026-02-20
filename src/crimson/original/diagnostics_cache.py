@@ -967,7 +967,7 @@ def _meta_matches(path: Path, fingerprint: CaptureFingerprint) -> bool:
         return False
     try:
         meta_obj = json.loads(path.read_text(encoding="utf-8"))
-        meta = msgspec.convert(meta_obj, type=_CaptureMeta, strict=False)
+        meta = msgspec.convert(meta_obj, type=_CaptureMeta, strict=True)
     except (TypeError, ValueError):
         return False
     if int(meta.schema_version) != int(_CACHE_SCHEMA_VERSION):
@@ -1099,8 +1099,6 @@ def _build_event_heads_by_kind(tick: CaptureTick) -> dict[str, list[dict[str, ob
 
 def _build_sample_creatures_head(tick: CaptureTick) -> list[dict[str, object]]:
     out: list[dict[str, object]] = []
-    if tick.samples is None:
-        return out
     for item in tick.samples.creatures[:6]:
         row: dict[str, object] = {
             "index": int(item.index),
@@ -1125,8 +1123,6 @@ def _build_sample_creatures_head(tick: CaptureTick) -> list[dict[str, object]]:
 
 def _build_sample_secondary_head(tick: CaptureTick) -> list[dict[str, object]]:
     out: list[dict[str, object]] = []
-    if tick.samples is None:
-        return out
     for item in tick.samples.secondary_projectiles[:6]:
         out.append(
             {

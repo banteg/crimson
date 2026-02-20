@@ -19,6 +19,150 @@ def _load_report_module():
     return divergence_report
 
 
+def _base_config(**kwargs: object) -> dict[str, object]:
+    row = {
+        "out_path": "",
+        "split_quest_files": True,
+        "quest_out_dir": "",
+        "quest_out_prefix": "",
+        "capture_profile": "",
+        "config_env_overrides": [],
+        "log_mode": "truncate",
+        "console_all_events": False,
+        "console_events": [],
+        "include_caller": True,
+        "include_backtrace": False,
+        "emit_ticks_outside_tracked_states": False,
+        "tracked_states": [],
+        "player_count_override": 0,
+        "focus_tick": -1,
+        "focus_radius": 0,
+        "heartbeat_ms": 1000,
+        "max_head_per_kind": -1,
+        "max_events_per_tick": -1,
+        "max_rng_head_per_tick": -1,
+        "max_rng_caller_kinds": -1,
+        "enable_rng_state_mirror": True,
+        "max_creature_delta_ids": 32,
+        "creature_sample_limit": -1,
+        "projectile_sample_limit": -1,
+        "secondary_projectile_sample_limit": -1,
+        "bonus_sample_limit": -1,
+        "enable_input_hooks": True,
+        "enable_rng_hooks": True,
+        "enable_sfx_hooks": True,
+        "enable_damage_hooks": True,
+        "enable_effect_hooks": True,
+        "creature_damage_projectile_only": True,
+        "enable_spawn_hooks": True,
+        "enable_creature_spawn_hook": True,
+        "enable_creature_death_hook": True,
+        "enable_bonus_spawn_hook": True,
+        "enable_creature_lifecycle_digest": True,
+        "enable_creature_micro_hooks": True,
+        "creature_micro_slots": [],
+        "creature_micro_tick_start": -1,
+        "creature_micro_tick_end": -1,
+        "creature_micro_max_head_per_tick": 256,
+    }
+    row.update(kwargs)
+    return row
+
+
+def _event_counts_dict(**kwargs: object) -> dict[str, object]:
+    row = {
+        "state_transition": 0,
+        "player_fire": 0,
+        "weapon_assign": 0,
+        "bonus_apply": 0,
+        "bonus_spawn": 0,
+        "projectile_spawn": 0,
+        "projectile_find_query": 0,
+        "projectile_find_hit": 0,
+        "secondary_projectile_spawn": 0,
+        "player_damage": 0,
+        "creature_damage": 0,
+        "creature_spawn": 0,
+        "creature_spawn_low": 0,
+        "creature_death": 0,
+        "creature_lifecycle": 0,
+        "creature_update_micro": 0,
+        "perk_apply": 0,
+        "sfx": 0,
+        "perk_delta": 0,
+        "quest_timeline_delta": 0,
+        "mode_tick": 0,
+        "input_primary_edge": 0,
+        "input_primary_down": 0,
+        "input_any_key": 0,
+    }
+    row.update(kwargs)
+    return row
+
+
+def _rng_summary_dict(**kwargs: object) -> dict[str, object]:
+    row = {
+        "calls": 0,
+        "last_value": None,
+        "hash": "",
+        "head": [],
+        "callers": [],
+        "caller_overflow": 0,
+        "seq_first": None,
+        "seq_last": None,
+        "seed_epoch_enter": None,
+        "seed_epoch_last": None,
+        "outside_before_calls": 0,
+        "outside_before_dropped": 0,
+        "outside_before_head": [],
+        "mirror_mismatch_total": 0,
+        "mirror_unknown_total": 0,
+    }
+    row.update(kwargs)
+    return row
+
+
+def _input_player_keys(**kwargs: object) -> dict[str, object]:
+    row = {
+        "player_index": 0,
+        "move_forward_pressed": None,
+        "move_backward_pressed": None,
+        "turn_left_pressed": None,
+        "turn_right_pressed": None,
+        "fire_down": None,
+        "fire_pressed": None,
+        "reload_pressed": None,
+    }
+    row.update(kwargs)
+    return row
+
+
+def _input_approx(**kwargs: object) -> dict[str, object]:
+    row = {
+        "player_index": 0,
+        "move_dx": 0.0,
+        "move_dy": 0.0,
+        "aim_x": 0.0,
+        "aim_y": 0.0,
+        "aim_heading": None,
+        "move_mode": None,
+        "aim_scheme": None,
+        "fired_events": 0,
+        "moving": None,
+        "reload_active": None,
+        "weapon_id": None,
+        "move_forward_pressed": None,
+        "move_backward_pressed": None,
+        "turn_left_pressed": None,
+        "turn_right_pressed": None,
+        "fire_down": None,
+        "fire_pressed": None,
+        "reload_pressed": None,
+    }
+    row.update(kwargs)
+    return row
+
+
 def _checkpoint_tick(tick: int, *, level: int, weapon_id: int, experience: int, perk_pairs: list[list[int]]) -> dict[str, object]:
     return {
         "tick_index": int(tick),
@@ -38,6 +182,7 @@ def _checkpoint_tick(tick: int, *, level: int, weapon_id: int, experience: int, 
                 "ammo": 12.0,
                 "experience": int(experience),
                 "level": int(level),
+                "bonus_timers": {},
             },
         ],
         "status": {
@@ -70,7 +215,14 @@ def _checkpoint_tick(tick: int, *, level: int, weapon_id: int, experience: int, 
             "choices": [],
             "player_nonzero_counts": [perk_pairs],
         },
-        "events": {"hit_count": -1, "pickup_count": -1, "sfx_count": -1, "sfx_head": []},
+        "events": {
+            "hit_count": -1,
+            "pickup_count": -1,
+            "sfx_count": -1,
+            "sfx_head": [],
+            "rng_call_count": 0,
+            "input_true_count": 0,
+        },
         "debug": {
             "sampling_phase": "",
             "timing": {},
@@ -78,6 +230,7 @@ def _checkpoint_tick(tick: int, *, level: int, weapon_id: int, experience: int, 
             "rng": {},
             "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
             "creature_lifecycle": None,
+            "player_fire": None,
             "before_players": [],
             "before_status": {"quest_unlock_index": 0, "quest_unlock_index_full": 0},
         },
@@ -98,6 +251,16 @@ def _capture_tick(
         "gameplay_frame": int(tick) + 1,
         "mode_hint": "survival_update",
         "game_mode_id": 6,
+        "quest_stage_major": -1,
+        "quest_stage_minor": -1,
+        "focus_tick": False,
+        "state_id_enter": None,
+        "state_id_leave": None,
+        "state_pending_enter": None,
+        "state_pending_leave": None,
+        "ts_enter_ms": 0,
+        "ts_leave_ms": 0,
+        "duration_ms": 0,
         "checkpoint": _checkpoint_tick(
             tick,
             level=int(level),
@@ -105,7 +268,10 @@ def _capture_tick(
             experience=int(experience),
             perk_pairs=perk_pairs,
         ),
+        "event_counts": _event_counts_dict(),
+        "event_overflow": False,
         "event_heads": list(event_heads),
+        "phase_markers": [],
         "input_queries": {
             "stats": {
                 "primary_edge": {"calls": 0, "true_calls": 0},
@@ -114,10 +280,25 @@ def _capture_tick(
             },
             "query_hash": "",
         },
-        "input_player_keys": [{"player_index": 0}],
-        "input_approx": [{"player_index": 0, "aim_x": 0.0, "aim_y": 0.0}],
-        "before": {},
-        "after": {},
+        "input_player_keys": [_input_player_keys(player_index=0)],
+        "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
+        "perk_apply_in_tick": [],
+        "rng": _rng_summary_dict(),
+        "diagnostics": {
+            "sampling_phase": "",
+            "timing": {},
+            "spawn": {},
+            "rng": {},
+            "perk_apply_outside_before": {"calls": 0, "dropped": 0, "head": []},
+            "creature_lifecycle": None,
+            "player_fire": None,
+        },
+        "input_approx": [_input_approx(player_index=0, aim_x=0.0, aim_y=0.0)],
+        "before": {"globals": {}, "status": {}, "player_count": 1, "players": [], "input": {}, "input_bindings": {}},
+        "after": {"globals": {}, "status": {}, "player_count": 1, "players": [], "input": {}, "input_bindings": {}},
+        "frame_dt_ms": None,
+        "frame_dt_ms_i32": None,
+        "creature_lifecycle": None,
         "samples": {
             "creatures": [],
             "projectiles": [],
@@ -133,7 +314,7 @@ def _capture_obj(*, ticks: list[dict[str, object]]) -> dict[str, object]:
         "script": "gameplay_diff_capture",
         "session_id": "s",
         "out_path": "capture.json",
-        "config": {},
+        "config": _base_config(),
         "session_fingerprint": {"session_id": "s", "module_hash": "a", "ptrs_hash": "b"},
         "process": {"pid": 1, "platform": "windows", "arch": "x86", "frida_version": "16", "runtime": "v8"},
         "exe": {"base": "0x400000", "size": 1, "path": "crimsonland.exe"},
@@ -145,6 +326,7 @@ def _capture_obj(*, ticks: list[dict[str, object]]) -> dict[str, object]:
 
 def _write_capture_stream(path: Path, capture: dict[str, object]) -> None:
     meta = {k: v for k, v in capture.items() if k != "ticks"}
+    meta["ticks"] = []
     ticks_obj = capture.get("ticks")
     ticks = ticks_obj if isinstance(ticks_obj, list) else []
     rows = [json.dumps({"event": "capture_meta", "capture": meta}, separators=(",", ":"), sort_keys=True)]
