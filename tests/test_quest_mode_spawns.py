@@ -19,9 +19,9 @@ def test_tick_quest_mode_spawns_advances_timeline_when_creatures_active() -> Non
     )
 
     assert updated == ()
-    assert_float_close(timeline_ms, 1016.0, abs_tol=1e-9)
+    assert_float_close(timeline_ms, 1016.0)
     assert creatures_none_active is False
-    assert_float_close(idle_ms, 0.0, abs_tol=1e-9)
+    assert_float_close(idle_ms, 0.0)
     assert spawns == ()
 
 
@@ -45,9 +45,9 @@ def test_tick_quest_mode_spawns_advances_timeline_when_table_not_empty() -> None
     )
 
     assert updated == entries
-    assert_float_close(timeline_ms, 1016.0, abs_tol=1e-9)
+    assert_float_close(timeline_ms, 1016.0)
     assert creatures_none_active is True
-    assert_float_close(idle_ms, 16.0, abs_tol=1e-9)
+    assert_float_close(idle_ms, 16.0)
     assert spawns == ()
 
 
@@ -63,9 +63,9 @@ def test_tick_quest_mode_spawns_freezes_timeline_when_idle_complete() -> None:
     )
 
     assert updated == ()
-    assert_float_close(timeline_ms, 1000.0, abs_tol=1e-9)
+    assert_float_close(timeline_ms, 1000.0)
     assert creatures_none_active is True
-    assert_float_close(idle_ms, 16.0, abs_tol=1e-9)
+    assert_float_close(idle_ms, 16.0)
     assert spawns == ()
 
 
@@ -88,9 +88,9 @@ def test_tick_quest_mode_spawns_can_fire_entries_after_timeline_advance() -> Non
         no_creatures_timer_ms=0.0,
     )
 
-    assert_float_close(timeline_ms, 1001.0, abs_tol=1e-9)
+    assert_float_close(timeline_ms, 1001.0)
     assert updated[0].count == 0
     assert creatures_none_active is False
-    assert_float_close(idle_ms, 2.0, abs_tol=1e-9)
+    assert_float_close(idle_ms, 2.0)
     assert len(spawns) == 1
     assert spawns[0].template_id == SpawnId.FORMATION_RING_ALIEN_8_12

@@ -56,8 +56,8 @@ def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
 
     pool.update(dt, state=state, players=[player])
 
-    assert_float_close(creature.collision_timer, 0.4, abs_tol=1e-9)
-    assert_float_close(creature.hp, 85.0, abs_tol=1e-9)
+    assert_float_close(creature.collision_timer, 0.4)
+    assert_float_close(creature.hp, 85.0)
 
 
 def test_plaguebearer_spreads_between_nearby_creatures() -> None:

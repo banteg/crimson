@@ -213,7 +213,7 @@ def test_game_over_world_entity_alpha_tracks_close_timeline(tmp_path: Path) -> N
     ],
 )
 def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
-    monkeypatch, tmp_path: Path, preserve_bugs: bool, expected_tooltip: str, mocker,
+    tmp_path: Path, preserve_bugs: bool, expected_tooltip: str, mocker,
 ) -> None:
     ui = GameOverUi(
         assets_root=tmp_path,
@@ -236,14 +236,13 @@ def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
     record.shots_hit = 25
     record.most_used_weapon_id = 1
 
-    captured_text: list[str] = []
     mocker.patch.object(game_over_module.rl, "measure_text", side_effect=lambda text, _size: len(str(text)) * 8)
     mocker.patch.object(game_over_module.rl, "draw_line", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(game_over_module.rl, "draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(
+    draw_small = mocker.patch.object(
         GameOverUi,
         "_draw_small",
-        lambda _self, text, _pos, _scale, _color: captured_text.append(str(text)),
+        autospec=True,
     )
 
     ui._draw_score_card(
@@ -256,4 +255,5 @@ def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
         mouse=rl.Vector2(-1000.0, -1000.0),
     )
 
+    captured_text = [str(call.args[1]) for call in draw_small.call_args_list]
     assert expected_tooltip in captured_text

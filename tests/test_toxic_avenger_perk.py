@@ -45,7 +45,7 @@ def test_toxic_avenger_strong_tick_overrides_weak_tick() -> None:
 
     pool.update(dt, state=state, players=[player])
 
-    assert_float_close(creature.hp, 100.0 - dt * 180.0, abs_tol=1e-9)
+    assert_float_close(creature.hp, 100.0 - dt * 180.0)
 
 
 def test_toxic_avenger_skips_when_player_shielded() -> None:

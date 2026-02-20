@@ -125,7 +125,7 @@ def test_world_camera_screen_size_uses_frame_snapshot_when_provided(monkeypatch)
     assert_float_close(size.y, 576.0)
 
 
-def test_ground_draw_uses_explicit_output_dimensions(monkeypatch) -> None:
+def test_ground_draw_uses_explicit_output_dimensions(monkeypatch, mocker) -> None:
     texture = _TextureStub()
     ground = GroundRenderer(texture=_as_texture(texture), width=1024, height=1024)
     ground.render_target = _as_render_texture(_RenderTextureStub())
@@ -135,14 +135,13 @@ def test_ground_draw_uses_explicit_output_dimensions(monkeypatch) -> None:
     def _noop_blend(*_args, **_kwargs):
         yield
 
-    calls: list[tuple[float, float]] = []
     monkeypatch.setattr(terrain_render.rl, "get_screen_width", lambda: 1024)
     monkeypatch.setattr(terrain_render.rl, "get_screen_height", lambda: 768)
     monkeypatch.setattr(terrain_render, "_blend_custom", _noop_blend)
-    monkeypatch.setattr(
+    draw_texture_pro = mocker.patch.object(
         terrain_render.rl,
         "draw_texture_pro",
-        lambda _texture, _src, dst, _origin, _rotation, _tint: calls.append((float(dst.width), float(dst.height))),
+        autospec=True,
     )
 
     ground.draw(
@@ -153,10 +152,11 @@ def test_ground_draw_uses_explicit_output_dimensions(monkeypatch) -> None:
         out_h=720.0,
     )
 
+    calls = [(float(call.args[2].width), float(call.args[2].height)) for call in draw_texture_pro.call_args_list]
     assert calls == [(1280.0, 720.0)]
 
 
-def test_ground_draw_prefers_runtime_dimensions_over_stale_cached_size(monkeypatch) -> None:
+def test_ground_draw_prefers_runtime_dimensions_over_stale_cached_size(monkeypatch, mocker) -> None:
     texture = _TextureStub()
     ground = GroundRenderer(
         texture=_as_texture(texture),
@@ -172,8 +172,6 @@ def test_ground_draw_prefers_runtime_dimensions_over_stale_cached_size(monkeypat
     def _noop_blend(*_args, **_kwargs):
         yield
 
-    fit_inputs: list[tuple[float, float]] = []
-
     monkeypatch.setattr(terrain_render.rl, "get_screen_width", lambda: 1280)
     monkeypatch.setattr(terrain_render.rl, "get_screen_height", lambda: 720)
     monkeypatch.setattr(terrain_render, "_blend_custom", _noop_blend)
@@ -182,14 +180,14 @@ def test_ground_draw_prefers_runtime_dimensions_over_stale_cached_size(monkeypat
         "draw_texture_pro",
         lambda *_args, **_kwargs: None,
     )
-    monkeypatch.setattr(
+    fit_view_window = mocker.patch.object(
         terrain_render.GroundRenderer,
         "_fit_view_window",
-        lambda _self, screen_w, screen_h: (
-            fit_inputs.append((float(screen_w), float(screen_h))) or (1024.0, 576.0)
-        ),
+        autospec=True,
+        return_value=(1024.0, 576.0),
     )
 
     ground.draw(Vec2(-1.0, -1.0))
 
+    fit_inputs = [(float(call.args[1]), float(call.args[2])) for call in fit_view_window.call_args_list]
     assert fit_inputs == [(1280.0, 720.0)]

@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import math
 
-import pytest
-
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.perks import PerkId
@@ -64,4 +62,8 @@ def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
 def test_barrel_greaser_doubles_projectile_speed_steps() -> None:
     base_x = _step_pistol_projectile(barrel_greaser_active=False)
     greased_x = _step_pistol_projectile(barrel_greaser_active=True)
-    assert greased_x == pytest.approx(base_x * 2.0, rel=0.05)
+    # Movement is flushed from an accumulator in chunks, so doubling internal
+    # step count does not map to an exact x2 world-space displacement.
+    assert_float_close(base_x, 18.239999771118164)
+    assert_float_close(greased_x, 35.519996643066406)
+    assert greased_x > base_x

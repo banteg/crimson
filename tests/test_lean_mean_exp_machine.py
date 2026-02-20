@@ -20,7 +20,7 @@ def test_perks_update_effects_lean_mean_exp_machine_ticks_xp_without_double_xp()
 
     perks_update_effects(state, [player], 0.1)
     assert player.experience == 20
-    assert_float_close(state.lean_mean_exp_timer, 0.25, abs_tol=1e-9)
+    assert_float_close(state.lean_mean_exp_timer, 0.25)
 
 
 def test_lean_mean_exp_machine_tick_awards_only_player0_in_multiplayer() -> None:

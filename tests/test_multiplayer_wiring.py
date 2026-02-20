@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+import crimson.modes.base_gameplay_mode as base_gameplay_mode
 from crimson.game_world import GameWorld
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.rush_mode import RushMode
@@ -49,7 +50,7 @@ def test_survival_mode_uses_config_player_count(tmp_path: Path) -> None:
     assert len(mode.world.players) == 2  # intentional: wiring smoke test
 
 
-def test_quest_mode_update_uses_per_player_input_frame(monkeypatch, tmp_path: Path) -> None:
+def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     assets_dir = repo_root / "artifacts" / "assets"
 
@@ -84,12 +85,12 @@ def test_quest_mode_update_uses_per_player_input_frame(monkeypatch, tmp_path: Pa
             )
 
     mode._sim_session = _FakeSession()
-    monkeypatch.setattr(mode, "_update_audio", lambda _dt: None)
-    monkeypatch.setattr(mode, "_tick_frame", lambda _dt: (0.02, 20.0))
-    monkeypatch.setattr(mode, "_handle_input", lambda: None)
-    monkeypatch.setattr(mode, "_build_local_inputs", lambda *, dt_frame: inputs)
-    monkeypatch.setattr(mode, "_death_transition_ready", lambda: False)
-    monkeypatch.setattr("crimson.game_world.GameWorld.apply_step_result", lambda *_args, **_kwargs: None)
+    mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)
+    mocker.patch.object(mode, "_tick_frame", side_effect=lambda _dt: (0.02, 20.0))
+    mocker.patch.object(mode, "_handle_input", side_effect=lambda: None)
+    mocker.patch.object(mode, "_build_local_inputs", side_effect=lambda *, dt_frame: inputs)
+    mocker.patch.object(mode, "_death_transition_ready", side_effect=lambda: False)
+    mocker.patch.object(GameWorld, "apply_step_result", side_effect=lambda *_args, **_kwargs: None)
 
     mode.update(0.02)
 
@@ -97,7 +98,7 @@ def test_quest_mode_update_uses_per_player_input_frame(monkeypatch, tmp_path: Pa
     assert len(inputs) == 3
 
 
-def test_base_gameplay_build_local_inputs_passes_creatures(monkeypatch, tmp_path: Path) -> None:
+def test_base_gameplay_build_local_inputs_passes_creatures(mocker, tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     assets_dir = repo_root / "artifacts" / "assets"
 
@@ -124,7 +125,7 @@ def test_base_gameplay_build_local_inputs_passes_creatures(monkeypatch, tmp_path
         captured["creatures"] = creatures
         return [PlayerInput() for _ in players]
 
-    monkeypatch.setattr(mode._local_input, "build_frame_inputs", _fake_build_frame_inputs)
+    mocker.patch.object(mode._local_input, "build_frame_inputs", side_effect=_fake_build_frame_inputs)
 
     frame = mode._build_local_inputs(dt_frame=0.016)
 
@@ -133,7 +134,7 @@ def test_base_gameplay_build_local_inputs_passes_creatures(monkeypatch, tmp_path
     assert bool(mode._local_input._preserve_bugs) == bool(mode.state.preserve_bugs)
 
 
-def test_rush_mode_pauses_sim_while_lan_wait_gate_is_active(monkeypatch, tmp_path: Path) -> None:
+def test_rush_mode_pauses_sim_while_lan_wait_gate_is_active(mocker, tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     assets_dir = repo_root / "artifacts" / "assets"
 
@@ -164,9 +165,9 @@ def test_rush_mode_pauses_sim_while_lan_wait_gate_is_active(monkeypatch, tmp_pat
     clock = _FakeClock()
     mode._sim_clock = clock
 
-    monkeypatch.setattr(mode, "_update_audio", lambda _dt: None)
-    monkeypatch.setattr(mode, "_tick_frame", lambda _dt: (0.02, 20.0))
-    monkeypatch.setattr(mode, "_handle_input", lambda: None)
+    mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)
+    mocker.patch.object(mode, "_tick_frame", side_effect=lambda _dt: (0.02, 20.0))
+    mocker.patch.object(mode, "_handle_input", side_effect=lambda: None)
 
     mode.update(0.02)
 
@@ -174,7 +175,7 @@ def test_rush_mode_pauses_sim_while_lan_wait_gate_is_active(monkeypatch, tmp_pat
     assert clock.advance_calls == 0
 
 
-def test_rush_mode_debug_f10_releases_lan_wait_gate(monkeypatch, tmp_path: Path) -> None:
+def test_rush_mode_debug_f10_releases_lan_wait_gate(mocker, tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     assets_dir = repo_root / "artifacts" / "assets"
 
@@ -205,13 +206,14 @@ def test_rush_mode_debug_f10_releases_lan_wait_gate(monkeypatch, tmp_path: Path)
     clock = _FakeClock()
     mode._sim_clock = clock
 
-    monkeypatch.setattr(mode, "_update_audio", lambda _dt: None)
-    monkeypatch.setattr(mode, "_tick_frame", lambda _dt: (0.02, 20.0))
-    monkeypatch.setattr(mode, "_handle_input", lambda: None)
-    monkeypatch.setattr("crimson.modes.base_gameplay_mode.debug_enabled", lambda: True)
-    monkeypatch.setattr(
-        "crimson.modes.base_gameplay_mode.rl.is_key_pressed",
-        lambda key: key == rl.KeyboardKey.KEY_F10,
+    mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)
+    mocker.patch.object(mode, "_tick_frame", side_effect=lambda _dt: (0.02, 20.0))
+    mocker.patch.object(mode, "_handle_input", side_effect=lambda: None)
+    mocker.patch.object(base_gameplay_mode, "debug_enabled", side_effect=lambda: True)
+    mocker.patch.object(
+        base_gameplay_mode.rl,
+        "is_key_pressed",
+        side_effect=lambda key: key == rl.KeyboardKey.KEY_F10,
     )
 
     mode.update(0.02)

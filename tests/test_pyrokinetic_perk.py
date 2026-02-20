@@ -28,14 +28,14 @@ def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps
 
     perks_update_effects(state, [player], dt, creatures=[creature], fx_queue=fx_queue)
 
-    assert_float_close(creature.collision_timer, 0.5, abs_tol=1e-9)
+    assert_float_close(creature.collision_timer, 0.5)
     assert fx_queue.count == 1
 
     particles = [entry for entry in state.particles.entries if entry.active]
     assert len(particles) == 5
     intensities = [entry.intensity for entry in particles]
     for actual, expected in zip(intensities, (0.8, 0.6, 0.4, 0.3, 0.2)):
-        assert_float_close(actual, expected, abs_tol=1e-9)
+        assert_float_close(actual, expected)
 
 
 def test_perks_update_effects_pyrokinetic_uses_f32_timer_threshold_before_wrapping() -> None:
@@ -73,7 +73,7 @@ def test_perks_update_effects_pyrokinetic_uses_f32_timer_threshold_before_wrappi
         creatures=[creature],
         fx_queue=fx_queue,
     )
-    assert_float_close(creature.collision_timer, 0.5, abs_tol=1e-9)
+    assert_float_close(creature.collision_timer, 0.5)
     assert fx_queue.count == 1
     particles = [entry for entry in state.particles.entries if entry.active]
     assert len(particles) == 5
@@ -97,7 +97,7 @@ def test_perks_update_effects_pyrokinetic_defaults_to_first_alive_player_aim() -
 
     perks_update_effects(state, [player0, player1], 0.2, creatures=[creature], fx_queue=fx_queue)
 
-    assert_float_close(creature.collision_timer, 0.5, abs_tol=1e-9)
+    assert_float_close(creature.collision_timer, 0.5)
     assert fx_queue.count == 1
 
 
@@ -119,7 +119,7 @@ def test_perks_update_effects_pyrokinetic_preserve_bugs_keeps_player0_only_targe
 
     perks_update_effects(state, [player0, player1], 0.2, creatures=[creature], fx_queue=fx_queue)
 
-    assert_float_close(creature.collision_timer, 0.1, abs_tol=1e-9)
+    assert_float_close(creature.collision_timer, 0.1)
     assert fx_queue.count == 0
 
 
@@ -150,6 +150,6 @@ def test_perks_update_effects_pyrokinetic_default_targets_all_alive_players() ->
 
     perks_update_effects(state, [player0, player1], dt, creatures=[creature0, creature1], fx_queue=fx_queue)
 
-    assert_float_close(creature0.collision_timer, 0.5, abs_tol=1e-9)
-    assert_float_close(creature1.collision_timer, 0.5, abs_tol=1e-9)
+    assert_float_close(creature0.collision_timer, 0.5)
+    assert_float_close(creature1.collision_timer, 0.5)
     assert fx_queue.count == 2

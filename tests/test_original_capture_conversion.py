@@ -48,7 +48,18 @@ from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from tests.builders.capture import build_capture_file, build_capture_tick, capture_file_to_dict
+from tests.builders.capture import (
+    build_capture_bonus_sample,
+    build_capture_creature_sample,
+    build_capture_file,
+    build_capture_projectile_sample,
+    build_capture_rng_head_entry,
+    build_capture_secondary_projectile_sample,
+    build_capture_snapshot_player,
+    build_capture_tick,
+    capture_file_to_dict,
+    capture_value_to_builtins,
+)
 from tests.helpers import assert_float_close
 
 
@@ -68,6 +79,15 @@ _DEFAULT_CAPTURE_FILE = capture_file_to_dict(
     ),
 )
 _DEFAULT_CAPTURE_TICK = cast(dict[str, object], cast(list[object], _DEFAULT_CAPTURE_FILE["ticks"])[0])
+_DEFAULT_CAPTURE_SNAPSHOT_PLAYER = cast(dict[str, object], capture_value_to_builtins(build_capture_snapshot_player()))
+_DEFAULT_CAPTURE_CREATURE_SAMPLE = cast(dict[str, object], capture_value_to_builtins(build_capture_creature_sample()))
+_DEFAULT_CAPTURE_PROJECTILE_SAMPLE = cast(dict[str, object], capture_value_to_builtins(build_capture_projectile_sample()))
+_DEFAULT_CAPTURE_SECONDARY_PROJECTILE_SAMPLE = cast(
+    dict[str, object],
+    capture_value_to_builtins(build_capture_secondary_projectile_sample()),
+)
+_DEFAULT_CAPTURE_BONUS_SAMPLE = cast(dict[str, object], capture_value_to_builtins(build_capture_bonus_sample()))
+_DEFAULT_CAPTURE_RNG_HEAD_ENTRY = cast(dict[str, object], capture_value_to_builtins(build_capture_rng_head_entry()))
 
 
 def _clone_dict(value: object) -> dict[str, object]:
@@ -95,25 +115,7 @@ def _base_event_counts(**kwargs: object) -> dict[str, object]:
 
 
 def _base_rng_head_entry(**kwargs: object) -> dict[str, object]:
-    d = {
-        "seq": None,
-        "seed_epoch": None,
-        "tick_index": None,
-        "tick_call_index": None,
-        "outside_tick": None,
-        "value": None,
-        "value_u32": None,
-        "value_15": None,
-        "branch_id": None,
-        "caller": None,
-        "caller_static": None,
-        "state_before_u32": None,
-        "state_after_u32": None,
-        "state_before_hex": None,
-        "state_after_hex": None,
-        "expected_value_15": None,
-        "mirror_match": None,
-    }
+    d = _clone_dict(_DEFAULT_CAPTURE_RNG_HEAD_ENTRY)
     d.update(kwargs)
     return d
 
@@ -136,162 +138,89 @@ def _base_player() -> dict[str, object]:
 
 
 def _base_snapshot_globals(**kwargs: object) -> dict[str, object]:
-    d: dict[str, object] = {
-        "config_game_mode": None,
-        "config_player_mode_flags": [0],
-        "config_aim_scheme": [None],
-        "game_state_prev": None,
-        "game_state_id": None,
-        "game_state_pending": None,
-        "frame_dt": None,
-        "frame_dt_ms_i32": None,
-        "frame_dt_ms_f32": None,
-        "time_played_ms": None,
-        "creature_active_count": None,
-        "creature_kill_count": None,
-        "perk_pending_count": None,
-        "perk_choices_dirty": None,
-        "shock_chain_links_left": None,
-        "shock_chain_projectile_id": None,
-        "quest_spawn_timeline": None,
-        "quest_stage_major": None,
-        "quest_stage_minor": None,
-        "quest_spawn_stall_timer_ms": None,
-        "quest_transition_timer_ms": None,
-        "quest_stage_banner_timer_ms": None,
-        "ui_elements_timeline": None,
-        "ui_transition_direction": None,
-        "ui_transition_alpha": None,
-        "pause_keybind_help_alpha_ms": None,
-        "player_alt_weapon_swap_cooldown_ms": None,
-        "perk_jinxed_proc_timer_s": None,
-        "perk_lean_mean_exp_tick_timer_s": None,
-        "perk_doctor_target_creature_id": None,
-        "bonus_reflex_boost_timer": None,
-        "bonus_freeze_timer": None,
-        "bonus_weapon_power_up_timer": None,
-        "bonus_energizer_timer": None,
-        "bonus_double_xp_timer": None,
-    }
+    before = _clone_dict(_DEFAULT_CAPTURE_TICK["before"])
+    d = _clone_dict(before["globals"])
+    for key in (
+        "config_game_mode",
+        "game_state_prev",
+        "game_state_id",
+        "game_state_pending",
+        "frame_dt",
+        "frame_dt_ms_i32",
+        "frame_dt_ms_f32",
+        "time_played_ms",
+        "creature_active_count",
+        "creature_kill_count",
+        "perk_pending_count",
+        "perk_choices_dirty",
+        "shock_chain_links_left",
+        "shock_chain_projectile_id",
+        "quest_spawn_timeline",
+        "quest_stage_major",
+        "quest_stage_minor",
+        "quest_spawn_stall_timer_ms",
+        "quest_transition_timer_ms",
+        "quest_stage_banner_timer_ms",
+        "ui_elements_timeline",
+        "ui_transition_direction",
+        "ui_transition_alpha",
+        "pause_keybind_help_alpha_ms",
+        "player_alt_weapon_swap_cooldown_ms",
+        "perk_jinxed_proc_timer_s",
+        "perk_lean_mean_exp_tick_timer_s",
+        "perk_doctor_target_creature_id",
+        "bonus_reflex_boost_timer",
+        "bonus_freeze_timer",
+        "bonus_weapon_power_up_timer",
+        "bonus_energizer_timer",
+        "bonus_double_xp_timer",
+    ):
+        d[key] = None
     d.update(kwargs)
     return d
 
 
 def _base_snapshot_status(**kwargs: object) -> dict[str, object]:
-    d: dict[str, object] = {
-        "quest_unlock_index": 0,
-        "quest_unlock_index_full": 0,
-        "weapon_usage_counts": [],
-    }
+    before = _clone_dict(_DEFAULT_CAPTURE_TICK["before"])
+    d = _clone_dict(before["status"])
     d.update(kwargs)
     return d
 
 
 def _base_snapshot_input(**kwargs: object) -> dict[str, object]:
-    d: dict[str, object] = {
-        "console_open": 0,
-        "primary_latch": 0,
-        "mouse_x": 0.0,
-        "mouse_y": 0.0,
-        "aim_screen": [{"player_index": 0, "x": 0.0, "y": 0.0}],
-    }
+    before = _clone_dict(_DEFAULT_CAPTURE_TICK["before"])
+    d = _clone_dict(before["input"])
     d.update(kwargs)
     return d
 
 
 def _base_snapshot_input_bindings(**kwargs: object) -> dict[str, object]:
-    d: dict[str, object] = {
-        "players": [
-            {
-                "player_index": 0,
-                "move_forward": 0,
-                "move_backward": 0,
-                "turn_left": 0,
-                "turn_right": 0,
-                "fire": 0,
-                "aim_left": 0,
-                "aim_right": 0,
-                "axis_aim_x": 0,
-                "axis_aim_y": 0,
-                "axis_move_x": 0,
-                "axis_move_y": 0,
-            },
-        ],
-        "alternate_single": {
-            "move_forward": 0,
-            "move_backward": 0,
-            "turn_left": 0,
-            "turn_right": 0,
-            "fire": 0,
-        },
-    }
+    before = _clone_dict(_DEFAULT_CAPTURE_TICK["before"])
+    d = _clone_dict(before["input_bindings"])
     d.update(kwargs)
     return d
 
 
 def _base_snapshot_player_perk_timers(**kwargs: object) -> dict[str, object]:
-    d: dict[str, object] = {
-        "hot_tempered": None,
-        "man_bomb": None,
-        "living_fortress": None,
-        "fire_cough": None,
-    }
+    d = _clone_dict(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER["perk_timers"])
     d.update(kwargs)
     return d
 
 
 def _base_snapshot_player_bonus_timers(**kwargs: object) -> dict[str, object]:
-    d: dict[str, object] = {
-        "speed_bonus": None,
-        "shield": None,
-        "fire_bullets": None,
-    }
+    d = _clone_dict(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER["bonus_timers"])
     d.update(kwargs)
     return d
 
 
 def _base_snapshot_player_alt_weapon(**kwargs: object) -> dict[str, object]:
-    d: dict[str, object] = {
-        "weapon_id": None,
-        "clip_size_i32": None,
-        "reload_active_i32": None,
-        "ammo_i32": None,
-        "reload_timer": None,
-        "shot_cooldown": None,
-        "reload_timer_max": None,
-    }
+    d = _clone_dict(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER["alt_weapon"])
     d.update(kwargs)
     return d
 
 
 def _base_snapshot_player(**kwargs: object) -> dict[str, object]:
-    d: dict[str, object] = {
-        "index": 0,
-        "pos_x": None,
-        "pos_y": None,
-        "move_dx": None,
-        "move_dy": None,
-        "health": None,
-        "aim_x": None,
-        "aim_y": None,
-        "aim_heading": None,
-        "weapon_id": None,
-        "clip_size_i32": None,
-        "clip_size_f32": None,
-        "ammo_i32": None,
-        "ammo_f32": None,
-        "reload_active_i32": None,
-        "reload_active_f32": None,
-        "reload_timer": None,
-        "reload_timer_max": None,
-        "shot_cooldown": None,
-        "spread_heat": None,
-        "experience": None,
-        "level": None,
-        "perk_timers": _base_snapshot_player_perk_timers(),
-        "bonus_timers": _base_snapshot_player_bonus_timers(),
-        "alt_weapon": _base_snapshot_player_alt_weapon(),
-    }
+    d = _clone_dict(_DEFAULT_CAPTURE_SNAPSHOT_PLAYER)
     d.update(kwargs)
     return d
 
@@ -310,90 +239,33 @@ def _base_snapshot(**kwargs: object) -> dict[str, object]:
 
 
 def _base_timing_diagnostics(**kwargs: object) -> dict[str, object]:
-    d: dict[str, object] = {
-        "gameplay_frame": 0,
-        "gameplay_frame_delta_prev_tick": None,
-        "elapsed_ms_before": 0,
-        "elapsed_ms_after": 0,
-        "elapsed_delta_in_tick_ms": 0,
-        "elapsed_delta_prev_tick_ms": None,
-        "frame_dt_before": None,
-        "frame_dt_after": None,
-        "frame_dt_ms_before_i32": None,
-        "frame_dt_ms_after_i32": None,
-        "frame_dt_ms_before_f32": None,
-        "frame_dt_ms_after_f32": None,
-        "frame_dt_source_before": "none",
-        "frame_dt_source_after": "none",
-        "mode_tick_event_count": 0,
-        "mode_tick_sample_count": 0,
-        "mode_tick_mode_fn_head": [],
-        "mode_tick_present": False,
-    }
+    checkpoint = _clone_dict(_DEFAULT_CAPTURE_TICK["checkpoint"])
+    debug = _clone_dict(checkpoint["debug"])
+    d = _clone_dict(debug["timing"])
     d.update(kwargs)
     return d
 
 
 def _base_spawn_diagnostics(**kwargs: object) -> dict[str, object]:
-    d: dict[str, object] = {
-        "before_creature_count": 0,
-        "after_creature_count": 0,
-        "creature_count_delta": 0,
-        "event_count_template": 0,
-        "event_count_low_level": 0,
-        "event_count_creature_damage": 0,
-        "event_count_projectile_find_query": 0,
-        "event_count_projectile_find_hit": 0,
-        "event_count_projectile_find_query_miss": 0,
-        "event_count_projectile_find_query_owner_collision": 0,
-        "event_count_death": 0,
-        "top_template_callers": [],
-        "top_low_level_callers": [],
-        "top_low_level_sources": [],
-        "top_creature_damage_callers": [],
-        "top_projectile_find_query_callers": [],
-        "top_projectile_find_hit_callers": [],
-        "top_death_callers": [],
-        "event_count_blood_splatter": 0,
-        "blood_splatter_rng_draws": 0,
-        "blood_splatter_projectile_update_calls": 0,
-        "top_blood_splatter_callers": [],
-        "top_blood_splatter_rng_draw_callers": [],
-        "event_count_bonus_spawn": 0,
-        "top_bonus_spawn_callers": [],
-        "mode_samples": [],
-    }
+    checkpoint = _clone_dict(_DEFAULT_CAPTURE_TICK["checkpoint"])
+    debug = _clone_dict(checkpoint["debug"])
+    d = _clone_dict(debug["spawn"])
     d.update(kwargs)
     return d
 
 
 def _base_rng_diagnostics(**kwargs: object) -> dict[str, object]:
-    d: dict[str, object] = {
-        "seq_first": None,
-        "seq_last": None,
-        "seed_epoch_enter": None,
-        "seed_epoch_last": None,
-        "outside_before_calls": 0,
-        "outside_before_dropped": 0,
-        "outside_before_head": [],
-        "mirror_mismatch_total_enter": 0,
-        "mirror_mismatch_total_leave": 0,
-        "mirror_unknown_total_enter": 0,
-        "mirror_unknown_total_leave": 0,
-        "roll_log_emitted_total": 0,
-        "roll_log_dropped_total": 0,
-    }
+    checkpoint = _clone_dict(_DEFAULT_CAPTURE_TICK["checkpoint"])
+    debug = _clone_dict(checkpoint["debug"])
+    d = _clone_dict(debug["rng"])
     d.update(kwargs)
     return d
 
 
 def _base_player_fire_diagnostics(**kwargs: object) -> dict[str, object]:
-    d: dict[str, object] = {
-        "event_count_player_fire": 0,
-        "top_direct_events_by_player": [],
-        "top_fallback_events_by_player": [],
-        "top_player_projectile_spawns_by_player": [],
-    }
+    checkpoint = _clone_dict(_DEFAULT_CAPTURE_TICK["checkpoint"])
+    debug = _clone_dict(checkpoint["debug"])
+    d = _clone_dict(debug["player_fire"])
     d.update(kwargs)
     return d
 
@@ -444,69 +316,73 @@ def _base_tick(
 
 
 def _sample_creature(*, index: int = 5) -> dict[str, object]:
-    return {
-        "index": int(index),
-        "active": 1,
-        "state_flag": 1,
-        "collision_flag": 1,
-        "hitbox_size": 16.0,
-        "pos": {"x": 10.0, "y": 20.0},
-        "hp": 100.0,
-        "type_id": 2,
-        "target_player": 0,
-        "flags": 0,
-        "link_index": -733,
-        "ai_mode": 7,
-        "heading": 1.5,
-        "target_heading": 1.6,
-        "orbit_angle": 0.25,
-        "orbit_radius": 10.0,
-        "ai7_timer_ms": -733,
-    }
+    row = _clone_dict(_DEFAULT_CAPTURE_CREATURE_SAMPLE)
+    row.update(
+        {
+            "index": int(index),
+            "pos": {"x": 10.0, "y": 20.0},
+            "link_index": -733,
+            "ai_mode": 7,
+            "heading": 1.5,
+            "target_heading": 1.6,
+            "orbit_angle": 0.25,
+            "orbit_radius": 10.0,
+            "ai7_timer_ms": -733,
+        },
+    )
+    return row
 
 
 def _sample_projectile(*, index: int = 7) -> dict[str, object]:
-    return {
-        "index": int(index),
-        "active": 1,
-        "angle": 0.5,
-        "pos": {"x": 15.0, "y": 25.0},
-        "vel": {"x": 3.0, "y": -2.0},
-        "type_id": 1,
-        "life_timer": 0.9,
-        "speed_scale": 1.0,
-        "damage_pool": 12.0,
-        "hit_radius": 9.0,
-        "base_damage": 5.0,
-        "owner_id": 0,
-    }
+    row = _clone_dict(_DEFAULT_CAPTURE_PROJECTILE_SAMPLE)
+    row.update(
+        {
+            "index": int(index),
+            "angle": 0.5,
+            "pos": {"x": 15.0, "y": 25.0},
+            "vel": {"x": 3.0, "y": -2.0},
+            "type_id": 1,
+            "life_timer": 0.9,
+            "damage_pool": 12.0,
+            "hit_radius": 9.0,
+            "base_damage": 5.0,
+        },
+    )
+    return row
 
 
 def _sample_secondary_projectile(*, index: int = 9) -> dict[str, object]:
-    return {
-        "index": int(index),
-        "active": 1,
-        "pos": {"x": 17.0, "y": 27.0},
-        "life_timer": 0.8,
-        "angle": 0.2,
-        "vel": {"x": 1.0, "y": -1.0},
-        "trail_timer": 0.1,
-        "type_id": 3,
-        "target_id": -1,
-    }
+    row = _clone_dict(_DEFAULT_CAPTURE_SECONDARY_PROJECTILE_SAMPLE)
+    row.update(
+        {
+            "index": int(index),
+            "pos": {"x": 17.0, "y": 27.0},
+            "life_timer": 0.8,
+            "angle": 0.2,
+            "vel": {"x": 1.0, "y": -1.0},
+            "trail_timer": 0.1,
+            "type_id": 3,
+            "target_id": -1,
+        },
+    )
+    return row
 
 
 def _sample_bonus(*, index: int = 2) -> dict[str, object]:
-    return {
-        "index": int(index),
-        "bonus_id": 6,
-        "state": 0,
-        "time_left": 10.0,
-        "time_max": 10.0,
-        "pos": {"x": 30.0, "y": 40.0},
-        "amount_f32": 0.0,
-        "amount_i32": 0,
-    }
+    row = _clone_dict(_DEFAULT_CAPTURE_BONUS_SAMPLE)
+    row.update(
+        {
+            "index": int(index),
+            "bonus_id": 6,
+            "state": 0,
+            "time_left": 10.0,
+            "time_max": 10.0,
+            "pos": {"x": 30.0, "y": 40.0},
+            "amount_f32": 0.0,
+            "amount_i32": 0,
+        },
+    )
+    return row
 
 
 def _capture_obj(*, ticks: list[dict[str, object]]) -> dict[str, object]:
@@ -1695,9 +1571,9 @@ def test_convert_capture_to_replay_bootstrap_payload_includes_quest_session_time
     payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
     assert payload is not None
     assert payload.quest_session is not None
-    assert_float_close(payload.quest_session.spawn_timeline_ms, 1718.0, abs_tol=1e-6)
-    assert_float_close(payload.quest_session.no_creatures_timer_ms, 4745.0, abs_tol=1e-6)
-    assert_float_close(payload.quest_session.completion_transition_ms, -1.0, abs_tol=1e-6)
+    assert_float_close(payload.quest_session.spawn_timeline_ms, 1718.0)
+    assert_float_close(payload.quest_session.no_creatures_timer_ms, 4745.0)
+    assert_float_close(payload.quest_session.completion_transition_ms, -1.0)
 
 
 def test_convert_capture_to_replay_bootstrap_payload_prefers_before_player_runtime_snapshot(
@@ -1783,29 +1659,29 @@ def test_convert_capture_to_replay_bootstrap_payload_prefers_before_player_runti
     assert player.level == 2
     assert player.clip_size == 12
     assert player.reload_active is True
-    assert_float_close(player.reload_timer, 0.5, abs_tol=1e-6)
-    assert_float_close(player.reload_timer_max, 1.0, abs_tol=1e-6)
-    assert_float_close(player.shot_cooldown, 0.25, abs_tol=1e-6)
-    assert_float_close(player.spread_heat, 0.0, abs_tol=1e-6)
+    assert_float_close(player.reload_timer, 0.5)
+    assert_float_close(player.reload_timer_max, 1.0)
+    assert_float_close(player.shot_cooldown, 0.25)
+    assert_float_close(player.spread_heat, 0.0)
     assert player.bonus_timers_ms == {"speed_bonus": 1200, "shield": 500, "fire_bullets": 0}
     assert player.aim is not None
-    assert_float_close(player.aim.x, 300.0, abs_tol=1e-6)
-    assert_float_close(player.aim.y, 320.0, abs_tol=1e-6)
-    assert_float_close(player.aim.heading, 1.2, abs_tol=1e-6)
+    assert_float_close(player.aim.x, 300.0)
+    assert_float_close(player.aim.y, 320.0)
+    assert_float_close(player.aim.heading, 1.2)
     assert player.alt_weapon is not None
     assert player.alt_weapon.weapon_id == 4
     assert player.alt_weapon.clip_size == 10
-    assert_float_close(player.alt_weapon.ammo, 7.0, abs_tol=1e-6)
+    assert_float_close(player.alt_weapon.ammo, 7.0)
     assert player.alt_weapon.reload_active is True
-    assert_float_close(player.alt_weapon.reload_timer, 0.2, abs_tol=1e-6)
-    assert_float_close(player.alt_weapon.shot_cooldown, 0.1, abs_tol=1e-6)
-    assert_float_close(player.alt_weapon.reload_timer_max, 1.2, abs_tol=1e-6)
+    assert_float_close(player.alt_weapon.reload_timer, 0.2)
+    assert_float_close(player.alt_weapon.shot_cooldown, 0.1)
+    assert_float_close(player.alt_weapon.reload_timer_max, 1.2)
     assert player.perk_timers is not None
     assert set(player.perk_timers.keys()) == {"hot_tempered", "man_bomb", "living_fortress", "fire_cough"}
-    assert_float_close(player.perk_timers["hot_tempered"], 1.36, abs_tol=1e-6)
-    assert_float_close(player.perk_timers["man_bomb"], 0.0, abs_tol=1e-6)
-    assert_float_close(player.perk_timers["living_fortress"], 0.0, abs_tol=1e-6)
-    assert_float_close(player.perk_timers["fire_cough"], 0.0, abs_tol=1e-6)
+    assert_float_close(player.perk_timers["hot_tempered"], 1.36)
+    assert_float_close(player.perk_timers["man_bomb"], 0.0)
+    assert_float_close(player.perk_timers["living_fortress"], 0.0)
+    assert_float_close(player.perk_timers["fire_cough"], 0.0)
 
 
 def test_convert_capture_to_replay_bootstrap_payload_infers_perk_intervals_from_timer_wrap(
@@ -1920,7 +1796,7 @@ def test_convert_capture_to_replay_bootstrap_payload_infers_perk_intervals_from_
 
     assert payload.perk_intervals is not None
     perk_intervals = payload.perk_intervals
-    assert_float_close(perk_intervals["hot_tempered"], 1.4, abs_tol=1e-3)
+    assert_float_close(perk_intervals["hot_tempered"], 1.4)
 
 
 def test_convert_capture_to_replay_bootstrap_payload_ignores_inactive_timer_reset_interval_inference(
@@ -2172,13 +2048,13 @@ def test_apply_capture_bootstrap_payload_applies_perk_intervals_and_player_perk_
 
     elapsed = apply_capture_bootstrap_payload(payload, state=state, players=[player])
     assert elapsed is None
-    assert_float_close(player.hot_tempered_timer, 1.36, abs_tol=1e-6)
-    assert_float_close(player.man_bomb_timer, 0.5, abs_tol=1e-6)
-    assert_float_close(player.living_fortress_timer, 0.25, abs_tol=1e-6)
-    assert_float_close(player.fire_cough_timer, 0.75, abs_tol=1e-6)
-    assert_float_close(state.perk_intervals.hot_tempered, 1.4, abs_tol=1e-6)
-    assert_float_close(state.perk_intervals.man_bomb, 6.0, abs_tol=1e-6)
-    assert_float_close(state.perk_intervals.fire_cough, 3.0, abs_tol=1e-6)
+    assert_float_close(player.hot_tempered_timer, 1.36)
+    assert_float_close(player.man_bomb_timer, 0.5)
+    assert_float_close(player.living_fortress_timer, 0.25)
+    assert_float_close(player.fire_cough_timer, 0.75)
+    assert_float_close(state.perk_intervals.hot_tempered, 1.4)
+    assert_float_close(state.perk_intervals.man_bomb, 6.0)
+    assert_float_close(state.perk_intervals.fire_cough, 3.0)
 
 
 def test_convert_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> None:
@@ -2308,19 +2184,19 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(
     assert len(rows) == 1
     row = rows[0]
     assert row.index == 18
-    assert_float_close(row.heading, 1.1278764009475708, abs_tol=1e-6)
-    assert_float_close(row.target_heading, 0.621416449546814, abs_tol=1e-6)
+    assert_float_close(row.heading, 1.1278764009475708)
+    assert_float_close(row.target_heading, 0.621416449546814)
     assert row.ai_mode == 3
     assert row.link_index == 0
-    assert_float_close(row.hp, 200.0, abs_tol=1e-6)
-    assert_float_close(row.hitbox_size, 16.0, abs_tol=1e-6)
-    assert_float_close(row.orbit_angle, 0.25, abs_tol=1e-6)
-    assert_float_close(row.orbit_radius, 0.5, abs_tol=1e-6)
+    assert_float_close(row.hp, 200.0)
+    assert_float_close(row.hitbox_size, 16.0)
+    assert_float_close(row.orbit_angle, 0.25)
+    assert_float_close(row.orbit_radius, 0.5)
     assert row.flags == 12
     assert row.type_id == 2
     assert row.pos is not None
-    assert_float_close(row.pos.x, -256.0, abs_tol=1e-6)
-    assert_float_close(row.pos.y, 256.0, abs_tol=1e-6)
+    assert_float_close(row.pos.x, -256.0)
+    assert_float_close(row.pos.y, 256.0)
 
 
 def test_convert_capture_to_replay_emits_quest_added_head_without_spawn_rows(tmp_path: Path) -> None:
@@ -2781,8 +2657,8 @@ def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capabil
 
     move_x, move_y, _aim, _flags = replay.inputs[0][0]
     flags = _replay_input_flags(replay, 0, 0)
-    assert_float_close(move_x, 0.25, abs_tol=1e-6)
-    assert_float_close(move_y, 0.5, abs_tol=1e-6)
+    assert_float_close(move_x, 0.25)
+    assert_float_close(move_y, 0.5)
     move_forward, move_backward, turn_left, turn_right = unpack_input_move_key_flags(flags)
     assert move_forward is None
     assert move_backward is None
@@ -2849,10 +2725,10 @@ def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_preceden
     move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
     flags0 = _replay_input_flags(replay, 0, 0)
     flags1 = _replay_input_flags(replay, 1, 0)
-    assert_float_close(move_x0, 1.0, abs_tol=1e-6)
-    assert_float_close(move_y0, 0.0, abs_tol=1e-6)
-    assert_float_close(move_x1, -1.0, abs_tol=1e-6)
-    assert_float_close(move_y1, 1.0, abs_tol=1e-6)
+    assert_float_close(move_x0, 1.0)
+    assert_float_close(move_y0, 0.0)
+    assert_float_close(move_x1, -1.0)
+    assert_float_close(move_y1, 1.0)
     assert unpack_input_move_key_flags(flags0) == (False, False, False, True)
     assert unpack_input_move_key_flags(flags1) == (False, True, True, True)
 
@@ -2907,10 +2783,10 @@ def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_preceden
     move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
     flags0 = _replay_input_flags(replay, 0, 0)
     flags1 = _replay_input_flags(replay, 1, 0)
-    assert_float_close(move_x0, 0.0, abs_tol=1e-6)
-    assert_float_close(move_y0, 1.0, abs_tol=1e-6)
-    assert_float_close(move_x1, -1.0, abs_tol=1e-6)
-    assert_float_close(move_y1, -1.0, abs_tol=1e-6)
+    assert_float_close(move_x0, 0.0)
+    assert_float_close(move_y0, 1.0)
+    assert_float_close(move_x1, -1.0)
+    assert_float_close(move_y1, -1.0)
     assert unpack_input_move_key_flags(flags0) == (False, True, False, False)
     assert unpack_input_move_key_flags(flags1) == (True, True, True, False)
 
@@ -2963,10 +2839,10 @@ def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_
 
     move_x0, move_y0, _aim0, _flags0 = replay.inputs[0][0]
     move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
-    assert_float_close(move_x0, 1.0, abs_tol=1e-6)
-    assert_float_close(move_y0, 0.0, abs_tol=1e-6)
-    assert_float_close(move_x1, 0.0, abs_tol=1e-6)
-    assert_float_close(move_y1, 1.0, abs_tol=1e-6)
+    assert_float_close(move_x0, 1.0)
+    assert_float_close(move_y0, 0.0)
+    assert_float_close(move_x1, 0.0)
+    assert_float_close(move_y1, 1.0)
 
 
 def test_convert_capture_to_replay_uses_player_key_fire_reload_edges(tmp_path: Path) -> None:

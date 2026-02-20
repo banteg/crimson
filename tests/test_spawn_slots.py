@@ -15,7 +15,7 @@ def test_tick_spawn_slot_no_trigger() -> None:
     )
 
     assert tick_spawn_slot(slot, 0.3) is None
-    assert_float_close(slot.timer, 0.7, abs_tol=1e-6)
+    assert_float_close(slot.timer, 0.7)
     assert slot.count == 0
 
 
@@ -30,7 +30,7 @@ def test_tick_spawn_slot_triggers_and_increments_count() -> None:
     )
 
     assert tick_spawn_slot(slot, 0.3) == 0x41
-    assert_float_close(slot.timer, 0.5, abs_tol=1e-6)
+    assert_float_close(slot.timer, 0.5)
     assert slot.count == 1
 
 
@@ -45,7 +45,7 @@ def test_tick_spawn_slot_resets_timer_even_when_at_limit() -> None:
     )
 
     assert tick_spawn_slot(slot, 0.3) is None
-    assert_float_close(slot.timer, 0.5, abs_tol=1e-6)
+    assert_float_close(slot.timer, 0.5)
     assert slot.count == 10
 
 
@@ -60,7 +60,7 @@ def test_tick_spawn_slot_does_not_loop_when_dt_is_large() -> None:
     )
 
     assert tick_spawn_slot(slot, 2.0) == 0x41
-    assert_float_close(slot.timer, -1.2, abs_tol=1e-6)
+    assert_float_close(slot.timer, -1.2)
     assert slot.count == 1
 
 

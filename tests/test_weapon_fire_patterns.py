@@ -44,7 +44,7 @@ def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
     )
     for proj, (angle, type_id) in zip(spawned, expected, strict=True):
         assert int(getattr(proj, "type_id", -1)) == type_id
-        assert_float_close(float(getattr(proj, "angle", 0.0)), angle, abs_tol=1e-9)
+        assert_float_close(float(getattr(proj, "angle", 0.0)), angle)
 
 
 def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
@@ -67,8 +67,8 @@ def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
     expected_speed_scale = 1.0 + 55.0 * 0.01
     for proj in spawned:
         assert int(getattr(proj, "type_id", -1)) == int(ProjectileTypeId.PLASMA_MINIGUN)
-        assert_float_close(float(getattr(proj, "angle", 0.0)), expected_angle, abs_tol=1e-9)
-        assert_float_close(float(getattr(proj, "speed_scale", 0.0)), expected_speed_scale, abs_tol=1e-9)
+        assert_float_close(float(getattr(proj, "angle", 0.0)), expected_angle)
+        assert_float_close(float(getattr(proj, "speed_scale", 0.0)), expected_speed_scale)
 
 
 def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
@@ -81,7 +81,7 @@ def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
     start_ammo = float(player.ammo)
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
-    assert_float_close(float(player.ammo), start_ammo - 1.0, abs_tol=1e-9)
+    assert_float_close(float(player.ammo), start_ammo - 1.0)
 
 
 def test_jackhammer_spawns_4_shotgun_pellets_with_jitter_and_speed_scale() -> None:
@@ -100,8 +100,8 @@ def test_jackhammer_spawns_4_shotgun_pellets_with_jitter_and_speed_scale() -> No
     expected_angle = math.pi / 2.0 + (-100.0 * 0.0013)
     for proj in spawned:
         assert int(getattr(proj, "type_id", -1)) == int(ProjectileTypeId.SHOTGUN)
-        assert_float_close(float(getattr(proj, "angle", 0.0)), expected_angle, abs_tol=1e-9)
-        assert_float_close(float(getattr(proj, "speed_scale", 0.0)), 1.0, abs_tol=1e-9)
+        assert_float_close(float(getattr(proj, "angle", 0.0)), expected_angle)
+        assert_float_close(float(getattr(proj, "speed_scale", 0.0)), 1.0)
 
 
 def test_gauss_shotgun_fires_6_gauss_pellets() -> None:
@@ -120,8 +120,8 @@ def test_gauss_shotgun_fires_6_gauss_pellets() -> None:
     expected_angle = math.pi / 2.0 + (-100.0 * 0.002)
     for proj in spawned:
         assert int(getattr(proj, "type_id", -1)) == int(ProjectileTypeId.GAUSS_GUN)
-        assert_float_close(float(getattr(proj, "angle", 0.0)), expected_angle, abs_tol=1e-9)
-        assert_float_close(float(getattr(proj, "speed_scale", 0.0)), 1.4, abs_tol=1e-9)
+        assert_float_close(float(getattr(proj, "angle", 0.0)), expected_angle)
+        assert_float_close(float(getattr(proj, "speed_scale", 0.0)), 1.4)
 
 
 def test_ion_shotgun_fires_8_ion_minigun_pellets() -> None:
@@ -140,5 +140,5 @@ def test_ion_shotgun_fires_8_ion_minigun_pellets() -> None:
     expected_angle = math.pi / 2.0 + (-100.0 * 0.0026)
     for proj in spawned:
         assert int(getattr(proj, "type_id", -1)) == int(ProjectileTypeId.ION_MINIGUN)
-        assert_float_close(float(getattr(proj, "angle", 0.0)), expected_angle, abs_tol=1e-9)
-        assert_float_close(float(getattr(proj, "speed_scale", 0.0)), 1.4, abs_tol=1e-9)
+        assert_float_close(float(getattr(proj, "angle", 0.0)), expected_angle)
+        assert_float_close(float(getattr(proj, "speed_scale", 0.0)), 1.4)

@@ -53,8 +53,8 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
     assert events
 
     after = (float(creature.pos.x), float(creature.pos.y))
-    assert_float_close(after[0], before[0], abs_tol=1e-6)
-    assert_float_close(after[1], before[1], abs_tol=1e-6)
+    assert_float_close(after[0], before[0])
+    assert_float_close(after[1], before[1])
 
 
 def test_perks_update_effects_evil_eyes_defaults_to_alive_player_target_slot() -> None:

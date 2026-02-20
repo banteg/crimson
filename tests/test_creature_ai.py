@@ -56,7 +56,7 @@ def test_ai_mode_5_scales_down_near_link() -> None:
     assert c.force_target == 0
     assert_float_close(c.target.x, 100.0)
     assert_float_close(c.target.y, 100.0)
-    assert_float_close(ai.move_scale, 50.0 * 0.015625, abs_tol=1e-6)
+    assert_float_close(ai.move_scale, 50.0 * 0.015625)
 
 
 def test_ai_mode_4_link_dead_self_damage() -> None:
@@ -83,12 +83,12 @@ def test_ai_mode_7_orbit_radius_timer_counts_down() -> None:
     ai = creature_ai_update_target(c, player_pos=Vec2(100.0, 0.0), creatures=[c], dt=0.5)
     assert ai.self_damage is None
     assert c.ai_mode == 7
-    assert_float_close(c.orbit_radius, 1.0, abs_tol=1e-6)
+    assert_float_close(c.orbit_radius, 1.0)
 
 
 def test_ai_targets_and_heading_are_float32_quantized() -> None:
     c = StubCreature(pos=Vec2(0.125, -0.25), ai_mode=0, phase_seed=13.0)
     creature_ai_update_target(c, player_pos=Vec2(123.5, 456.25), creatures=[c], dt=1.0 / 60.0)
-    assert_float_close(c.target.x, f32(c.target.x), abs_tol=0.0)
-    assert_float_close(c.target.y, f32(c.target.y), abs_tol=0.0)
-    assert_float_close(c.target_heading, f32(c.target_heading), abs_tol=0.0)
+    assert_float_close(c.target.x, f32(c.target.x))
+    assert_float_close(c.target.y, f32(c.target.y))
+    assert_float_close(c.target_heading, f32(c.target_heading))

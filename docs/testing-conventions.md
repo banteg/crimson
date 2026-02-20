@@ -46,3 +46,4 @@ Ast-grep rules enforce key constraints:
 - no direct `pyray` imports in `src/`
 - no string-target `mocker.patch("...")` in tests
 - no string-target Raylib `monkeypatch.setattr("...rl...")` in tests
+- no list-append side-effect spies inside patch hooks

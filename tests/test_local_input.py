@@ -67,8 +67,8 @@ def test_local_input_computer_aim_auto_fires_without_fire_pressed(monkeypatch: p
 
     assert out.fire_down is True
     assert out.fire_pressed is False
-    assert_float_close(float(out.aim.x), 591.2, abs_tol=1e-4)
-    assert_float_close(float(out.aim.y), 512.0, abs_tol=1e-4)
+    assert_float_close(float(out.aim.x), 591.2)
+    assert_float_close(float(out.aim.y), 512.0)
 
 
 def test_local_input_computer_aim_without_target_points_away_from_center(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -95,8 +95,8 @@ def test_local_input_computer_aim_without_target_points_away_from_center(monkeyp
 
     assert out.fire_down is False
     assert out.fire_pressed is False
-    assert_float_close(float(out.aim.x), 512.0, abs_tol=1e-6)
-    assert_float_close(float(out.aim.y), 452.0, abs_tol=1e-6)
+    assert_float_close(float(out.aim.x), 512.0)
+    assert_float_close(float(out.aim.y), 452.0)
 
 
 def test_local_input_computer_target_state_tracks_player_identity_not_call_slot(
@@ -141,8 +141,8 @@ def test_local_input_computer_target_state_tracks_player_identity_not_call_slot(
     )
 
     # Must track toward player0's nearest creature (x=100) not player1's target (x=130).
-    assert_float_close(float(out.aim.x), 60.0, abs_tol=1e-6)
-    assert_float_close(float(out.aim.y), 0.0, abs_tol=1e-6)
+    assert_float_close(float(out.aim.x), 60.0)
+    assert_float_close(float(out.aim.y), 0.0)
 
 
 @pytest.mark.parametrize(
@@ -373,8 +373,8 @@ def test_local_input_mouse_point_click_marks_move_to_cursor_press(
     assert out.move_to_cursor_pressed is True
     assert interpreter._states[0].move_target == mouse_world
     expected = (mouse_world - player.pos).normalized()
-    assert_float_close(float(out.move.x), float(expected.x), abs_tol=1e-6)
-    assert_float_close(float(out.move.y), float(expected.y), abs_tol=1e-6)
+    assert_float_close(float(out.move.x), float(expected.x))
+    assert_float_close(float(out.move.y), float(expected.y))
 
 
 def test_local_input_computer_move_mode_near_center_heads_toward_target(
@@ -402,8 +402,8 @@ def test_local_input_computer_move_mode_near_center_heads_toward_target(
         creatures=creatures,
     )
 
-    assert_float_close(float(out.move.x), 1.0, abs_tol=1e-6)
-    assert_float_close(float(out.move.y), 0.0, abs_tol=1e-6)
+    assert_float_close(float(out.move.x), 1.0)
+    assert_float_close(float(out.move.y), 0.0)
 
 
 def test_local_input_computer_move_mode_far_from_center_heads_toward_center(
@@ -432,8 +432,8 @@ def test_local_input_computer_move_mode_far_from_center_heads_toward_center(
     )
 
     expected = (Vec2(512.0, 512.0) - player.pos).normalized()
-    assert_float_close(float(out.move.x), float(expected.x), abs_tol=1e-6)
-    assert_float_close(float(out.move.y), float(expected.y), abs_tol=1e-6)
+    assert_float_close(float(out.move.x), float(expected.x))
+    assert_float_close(float(out.move.y), float(expected.y))
 
 
 def test_local_input_computer_aim_scheme_forces_computer_movement(
@@ -461,8 +461,8 @@ def test_local_input_computer_aim_scheme_forces_computer_movement(
         creatures=creatures,
     )
 
-    assert_float_close(float(out.move.x), 1.0, abs_tol=1e-6)
-    assert_float_close(float(out.move.y), 0.0, abs_tol=1e-6)
+    assert_float_close(float(out.move.x), 1.0)
+    assert_float_close(float(out.move.y), 0.0)
 
 
 def test_local_input_joystick_aim_uses_pov_not_aim_keybinds(
@@ -495,8 +495,8 @@ def test_local_input_joystick_aim_uses_pov_not_aim_keybinds(
     )
 
     # Bound aim key 8 should not affect joystick aim scheme; only POV should.
-    assert_float_close(float(out.aim.x), 100.0, abs_tol=1e-6)
-    assert_float_close(float(out.aim.y), 40.0, abs_tol=1e-6)
+    assert_float_close(float(out.aim.x), 100.0)
+    assert_float_close(float(out.aim.y), 40.0)
 
 
 def test_local_input_joystick_aim_turns_with_pov_input(
@@ -529,8 +529,8 @@ def test_local_input_joystick_aim_turns_with_pov_input(
     )
 
     expected = player.pos + Vec2.from_heading(0.4) * 60.0
-    assert_float_close(float(out.aim.x), float(expected.x), abs_tol=1e-6)
-    assert_float_close(float(out.aim.y), float(expected.y), abs_tol=1e-6)
+    assert_float_close(float(out.aim.x), float(expected.x))
+    assert_float_close(float(out.aim.y), float(expected.y))
 
 
 def test_local_input_joystick_aim_reads_player_pov_by_default(
@@ -569,8 +569,8 @@ def test_local_input_joystick_aim_reads_player_pov_by_default(
     )
 
     expected = player.pos + Vec2.from_heading(0.4) * 60.0
-    assert_float_close(float(out.aim.x), float(expected.x), abs_tol=1e-6)
-    assert_float_close(float(out.aim.y), float(expected.y), abs_tol=1e-6)
+    assert_float_close(float(out.aim.x), float(expected.x))
+    assert_float_close(float(out.aim.y), float(expected.y))
 
 
 def test_local_input_joystick_aim_preserve_bugs_uses_player1_pov_slot(
@@ -610,8 +610,8 @@ def test_local_input_joystick_aim_preserve_bugs_uses_player1_pov_slot(
     )
 
     expected = player.pos + Vec2.from_heading(0.4) * 60.0
-    assert_float_close(float(out.aim.x), float(expected.x), abs_tol=1e-6)
-    assert_float_close(float(out.aim.y), float(expected.y), abs_tol=1e-6)
+    assert_float_close(float(out.aim.x), float(expected.x))
+    assert_float_close(float(out.aim.y), float(expected.y))
 
 
 def test_local_input_dual_action_pad_aim_uses_native_radius_scale(
@@ -650,8 +650,8 @@ def test_local_input_dual_action_pad_aim_uses_native_radius_scale(
     )
 
     # Native radius: 42 + mag * cv_padAimDistMul (default 96).
-    assert_float_close(float(out.aim.x), 238.0, abs_tol=1e-6)
-    assert_float_close(float(out.aim.y), 100.0, abs_tol=1e-6)
+    assert_float_close(float(out.aim.x), 238.0)
+    assert_float_close(float(out.aim.y), 100.0)
 
 
 def test_local_input_keyboard_aim_in_static_mode_reanchors_to_heading(
@@ -683,8 +683,8 @@ def test_local_input_keyboard_aim_in_static_mode_reanchors_to_heading(
         creatures=[],
     )
 
-    assert_float_close(float(out.aim.x), 100.0, abs_tol=1e-6)
-    assert_float_close(float(out.aim.y), 40.0, abs_tol=1e-6)
+    assert_float_close(float(out.aim.x), 100.0)
+    assert_float_close(float(out.aim.y), 40.0)
 
 
 def test_local_input_keyboard_aim_with_non_relative_move_mode_keeps_world_aim(
@@ -716,10 +716,10 @@ def test_local_input_keyboard_aim_with_non_relative_move_mode_keeps_world_aim(
         creatures=[],
     )
 
-    assert_float_close(float(out.aim.x), 180.0, abs_tol=1e-6)
-    assert_float_close(float(out.aim.y), 130.0, abs_tol=1e-6)
+    assert_float_close(float(out.aim.x), 180.0)
+    assert_float_close(float(out.aim.y), 130.0)
     expected_heading = (player.aim - player.pos).to_heading()
-    assert_float_close(float(interpreter._states[0].aim_heading), float(expected_heading), abs_tol=1e-6)
+    assert_float_close(float(interpreter._states[0].aim_heading), float(expected_heading))
 
 
 def test_local_input_relative_mouse_aim_centered_keeps_world_aim(
@@ -752,7 +752,7 @@ def test_local_input_relative_mouse_aim_centered_keeps_world_aim(
         creatures=[],
     )
 
-    assert_float_close(float(out.aim.x), 180.0, abs_tol=1e-6)
-    assert_float_close(float(out.aim.y), 130.0, abs_tol=1e-6)
+    assert_float_close(float(out.aim.x), 180.0)
+    assert_float_close(float(out.aim.y), 130.0)
     expected_heading = (player.aim - player.pos).to_heading()
-    assert_float_close(float(interpreter._states[0].aim_heading), float(expected_heading), abs_tol=1e-6)
+    assert_float_close(float(interpreter._states[0].aim_heading), float(expected_heading))

@@ -18,16 +18,14 @@ class _WorldStub:
 
 
 def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker) -> None:
-    vertices: list[tuple[float, float]] = []
-
-    mocker.patch.object(world_projectiles.rl, "begin_blend_mode", side_effect=lambda _mode: None)
-    mocker.patch.object(world_projectiles.rl, "rl_set_texture", side_effect=lambda _tex_id: None)
-    mocker.patch.object(world_projectiles.rl, "rl_begin", side_effect=lambda _mode: None)
-    mocker.patch.object(world_projectiles.rl, "rl_color4ub", side_effect=lambda _r, _g, _b, _a: None)
-    mocker.patch.object(world_projectiles.rl, "rl_tex_coord2f", side_effect=lambda _u, _v: None)
-    mocker.patch.object(world_projectiles.rl, "rl_vertex2f", side_effect=lambda x, y: vertices.append((float(x), float(y))))
-    mocker.patch.object(world_projectiles.rl, "rl_end", side_effect=lambda: None)
-    mocker.patch.object(world_projectiles.rl, "end_blend_mode", side_effect=lambda: None)
+    mocker.patch.object(world_projectiles.rl, "begin_blend_mode")
+    mocker.patch.object(world_projectiles.rl, "rl_set_texture")
+    mocker.patch.object(world_projectiles.rl, "rl_begin")
+    mocker.patch.object(world_projectiles.rl, "rl_color4ub")
+    mocker.patch.object(world_projectiles.rl, "rl_tex_coord2f")
+    vertex_mock = mocker.patch.object(world_projectiles.rl, "rl_vertex2f")
+    mocker.patch.object(world_projectiles.rl, "rl_end")
+    mocker.patch.object(world_projectiles.rl, "end_blend_mode")
 
     renderer = WorldRenderer(_world=_WorldStub())  # type: ignore[arg-type]
     render_ctx = build_world_render_ctx(renderer)
@@ -43,4 +41,5 @@ def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker) -> None:
     )
 
     assert drawn is True
+    vertices = [(float(call.args[0]), float(call.args[1])) for call in vertex_mock.call_args_list]
     assert len(vertices) == 4

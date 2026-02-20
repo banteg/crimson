@@ -28,7 +28,7 @@ def test_tick_quest_spawn_timeline_no_trigger_resets_idle_timer_when_creatures_a
 
     assert updated == entries
     assert creatures_none_active is False
-    assert_float_close(idle_ms, 0.0, abs_tol=1e-9)
+    assert_float_close(idle_ms, 0.0)
     assert spawns == ()
 
 
@@ -53,13 +53,13 @@ def test_tick_quest_spawn_timeline_triggers_horizontal_spread_when_on_screen() -
 
     assert updated[0].count == 0
     assert creatures_none_active is False
-    assert_float_close(idle_ms, 16.0, abs_tol=1e-9)
+    assert_float_close(idle_ms, 16.0)
     assert len(spawns) == 3
     for spawn, (expected_x, expected_y) in zip(spawns, ((512.0, 512.0), (472.0, 512.0), (592.0, 512.0))):
-        assert_float_close(spawn.pos.x, expected_x, abs_tol=1e-9)
-        assert_float_close(spawn.pos.y, expected_y, abs_tol=1e-9)
+        assert_float_close(spawn.pos.x, expected_x)
+        assert_float_close(spawn.pos.y, expected_y)
     for spawn in spawns:
-        assert_float_close(spawn.heading, 1.25, abs_tol=1e-9)
+        assert_float_close(spawn.heading, 1.25)
 
 
 def test_tick_quest_spawn_timeline_triggers_vertical_spread_when_offscreen_x() -> None:
@@ -82,8 +82,8 @@ def test_tick_quest_spawn_timeline_triggers_vertical_spread_when_offscreen_x() -
     )
 
     for spawn, (expected_x, expected_y) in zip(spawns, ((-50.0, 512.0), (-50.0, 472.0), (-50.0, 592.0))):
-        assert_float_close(spawn.pos.x, expected_x, abs_tol=1e-9)
-        assert_float_close(spawn.pos.y, expected_y, abs_tol=1e-9)
+        assert_float_close(spawn.pos.x, expected_x)
+        assert_float_close(spawn.pos.y, expected_y)
 
 
 def test_tick_quest_spawn_timeline_fires_only_one_trigger_group_per_tick() -> None:
@@ -144,5 +144,5 @@ def test_tick_quest_spawn_timeline_force_fires_after_idle_timeout() -> None:
 
     assert updated[0].count == 0
     assert creatures_none_active is False
-    assert_float_close(idle_ms, 3001.0, abs_tol=1e-9)
+    assert_float_close(idle_ms, 3001.0)
     assert len(spawns) == 1

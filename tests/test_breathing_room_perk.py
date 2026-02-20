@@ -27,9 +27,9 @@ def test_perk_apply_breathing_room_reduces_health_and_starts_creature_death_stag
 
     perk_apply(state, [player], PerkId.BREATHING_ROOM, dt=dt, creatures=creatures)
 
-    assert_float_close(player.health, 30.0, abs_tol=1e-9)
-    assert_float_close(creatures[0].hitbox_size, CREATURE_HITBOX_ALIVE - dt, abs_tol=1e-9)
-    assert_float_close(creatures[1].hitbox_size, 123.0, abs_tol=1e-9)
-    assert_float_close(creatures[2].hitbox_size, -5.0 - dt, abs_tol=1e-9)
+    assert_float_close(player.health, 30.0)
+    assert_float_close(creatures[0].hitbox_size, CREATURE_HITBOX_ALIVE - dt)
+    assert_float_close(creatures[1].hitbox_size, 123.0)
+    assert_float_close(creatures[2].hitbox_size, -5.0 - dt)
     assert state.bonus_spawn_guard is False
     assert player.perk_counts[int(PerkId.BREATHING_ROOM)] == 1

@@ -130,6 +130,6 @@ def test_alternate_weapon_swap_allows_same_tick_fire_with_swapped_reload_timer()
 
     assert player.weapon_id == 11
     assert player.reload_timer > 0.0
-    assert_float_close(player.reload_timer, player.reload_timer_max, abs_tol=1e-6)
+    assert_float_close(player.reload_timer, player.reload_timer_max)
     assert player.ammo < 0.0
     assert player.shot_seq >= 1

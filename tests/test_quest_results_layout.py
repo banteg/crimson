@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import crimson.ui.quest_results as quest_results_module
 from crimson.persistence.highscores import HighScoreRecord
@@ -83,24 +84,13 @@ def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
 
 def _patch_draw_environment(
     mocker,
-    captured_text: list[str],
-    texture_draws: list[object],
-    *,
-    captured_draws: list[tuple[str, float, float, rl.Color]] | None = None,
-    line_draws: list[tuple[int, int, int, int, object]] | None = None,
-) -> None:
+) -> tuple[MagicMock, MagicMock, MagicMock]:
     mocker.patch.object(quest_results_module.rl, "get_screen_width", side_effect=lambda: 640)
     mocker.patch.object(quest_results_module.rl, "get_screen_height", side_effect=lambda: 480)
     mocker.patch.object(quest_results_module.rl, "get_time", side_effect=lambda: 0.0)
     mocker.patch.object(quest_results_module.rl, "draw_rectangle_lines", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_results_module.rl, "draw_rectangle", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(
-        quest_results_module.rl,
-        "draw_line",
-        side_effect=lambda x1, y1, x2, y2, color: (
-            line_draws.append((int(x1), int(y1), int(x2), int(y2), color)) if line_draws is not None else None
-        ),
-    )
+    draw_line = mocker.patch.object(quest_results_module.rl, "draw_line")
     mocker.patch.object(quest_results_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_results_module, "button_width", side_effect=lambda *_args, **_kwargs: 82.0)
     mocker.patch.object(quest_results_module, "draw_ui_text", side_effect=lambda *_args, **_kwargs: None)
@@ -111,30 +101,22 @@ def _patch_draw_environment(
         autospec=True,
         side_effect=lambda _self, text, _scale: float(len(text) * 8),
     )
-    mocker.patch.object(
+    draw_small = mocker.patch.object(
         QuestResultsUi,
         "_draw_small",
         autospec=True,
-        side_effect=lambda _self, text, pos, _scale, color: (
-            captured_text.append(str(text)),
-            captured_draws.append((str(text), float(pos.x), float(pos.y), color)) if captured_draws is not None else None,
-        ),
     )
-    mocker.patch.object(
-        quest_results_module.rl,
-        "draw_texture_pro",
-        side_effect=lambda texture, _src, _dst, _origin, _rotation, _tint: texture_draws.append(texture),
-    )
+    draw_texture_pro = mocker.patch.object(quest_results_module.rl, "draw_texture_pro")
+    return draw_small, draw_texture_pro, draw_line
 
 
 def test_quest_results_name_entry_draws_stats_card(tmp_path: Path, mocker) -> None:
     ui = _build_ui(tmp_path, phase=1)
-    captured_text: list[str] = []
-    texture_draws: list[object] = []
-    _patch_draw_environment(mocker, captured_text, texture_draws)
+    draw_small, draw_texture_pro, _draw_line = _patch_draw_environment(mocker)
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
+    captured_text = [str(call.args[1]) for call in draw_small.call_args_list]
     assert "State your name, trooper!" in captured_text
     assert "Score" in captured_text
     assert "Experience" in captured_text
@@ -142,39 +124,31 @@ def test_quest_results_name_entry_draws_stats_card(tmp_path: Path, mocker) -> No
     assert "Shotgun" in captured_text
     assert "Frags: 10" in captured_text
     assert "Hit %: 23%" in captured_text
-    assert len(texture_draws) == 1
+    assert len(draw_texture_pro.call_args_list) == 1
 
 
 def test_quest_results_name_prompt_preserve_bugs(tmp_path: Path, mocker) -> None:
     ui = _build_ui(tmp_path, phase=1)
     ui.preserve_bugs = True
-    captured_text: list[str] = []
-    texture_draws: list[object] = []
-    _patch_draw_environment(mocker, captured_text, texture_draws)
+    draw_small, _draw_texture_pro, _draw_line = _patch_draw_environment(mocker)
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
+    captured_text = [str(call.args[1]) for call in draw_small.call_args_list]
     assert "State your name trooper!" in captured_text
     assert "State your name, trooper!" not in captured_text
 
 
 def test_quest_results_name_entry_uses_native_offsets_and_colors(tmp_path: Path, mocker) -> None:
     ui = _build_ui(tmp_path, phase=1)
-    captured_text: list[str] = []
-    texture_draws: list[object] = []
-    captured_draws: list[tuple[str, float, float, rl.Color]] = []
-    line_draws: list[tuple[int, int, int, int, object]] = []
-    _patch_draw_environment(
-        mocker,
-        captured_text,
-        texture_draws,
-        captured_draws=captured_draws,
-        line_draws=line_draws,
-    )
+    draw_small, _draw_texture_pro, draw_line = _patch_draw_environment(mocker)
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
-    draw_map = {text: (x, y, color) for text, x, y, color in captured_draws}
+    draw_map = {
+        str(call.args[1]): (float(call.args[2].x), float(call.args[2].y), call.args[4])
+        for call in draw_small.call_args_list
+    }
 
     state_x, state_y, state_color = draw_map["State your name, trooper!"]
     assert (state_x, state_y) == (154.0, 147.0)
@@ -190,6 +164,10 @@ def test_quest_results_name_entry_uses_native_offsets_and_colors(tmp_path: Path,
     hit_x, hit_y, _hit_color = draw_map["Hit %: 23%"]
     assert (hit_x, hit_y) == (252.0, 292.0)
 
+    line_draws = [
+        (int(call.args[0]), int(call.args[1]), int(call.args[2]), int(call.args[3]), call.args[4])
+        for call in draw_line.call_args_list
+    ]
     assert (126, 277, 318, 277) in [(x1, y1, x2, y2) for x1, y1, x2, y2, _c in line_draws]
     assert (126, 325, 318, 325) in [(x1, y1, x2, y2) for x1, y1, x2, y2, _c in line_draws]
     assert (222, 225, 222, 273) in [(x1, y1, x2, y2) for x1, y1, x2, y2, _c in line_draws]
@@ -197,18 +175,17 @@ def test_quest_results_name_entry_uses_native_offsets_and_colors(tmp_path: Path,
 
 def test_quest_results_buttons_phase_keeps_weapon_stats_hidden(tmp_path: Path, mocker) -> None:
     ui = _build_ui(tmp_path, phase=2)
-    captured_text: list[str] = []
-    texture_draws: list[object] = []
-    _patch_draw_environment(mocker, captured_text, texture_draws)
+    draw_small, draw_texture_pro, _draw_line = _patch_draw_environment(mocker)
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
+    captured_text = [str(call.args[1]) for call in draw_small.call_args_list]
     assert "Score" in captured_text
     assert "Experience" in captured_text
     assert "Frags: 10" not in captured_text
     assert "Hit %: 23%" not in captured_text
     assert "Shotgun" not in captured_text
-    assert texture_draws == []
+    assert draw_texture_pro.call_args_list == []
 
 
 def test_quest_results_world_entity_alpha_tracks_close_timeline(tmp_path: Path) -> None:

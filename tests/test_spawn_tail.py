@@ -63,10 +63,10 @@ def test_spawn_plan_tail_applies_difficulty_scaling(
     plan = build_spawn_plan(1, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
     c = plan.creatures[0]
-    assert_float_close(c.reward_value, 1000.0 * reward_scale, abs_tol=1e-9)
-    assert_float_close(c.move_speed or 0.0, 2.0 * speed_scale, abs_tol=1e-9)
-    assert_float_close(c.contact_damage or 0.0, 17.0 * contact_scale, abs_tol=1e-9)
-    assert_float_close(c.health or 0.0, 400.0 * health_scale, abs_tol=1e-9)
+    assert_float_close(c.reward_value, 1000.0 * reward_scale)
+    assert_float_close(c.move_speed or 0.0, 2.0 * speed_scale)
+    assert_float_close(c.contact_damage or 0.0, 17.0 * contact_scale)
+    assert_float_close(c.health or 0.0, 400.0 * health_scale)
     assert c.max_health == 400.0
 
 
@@ -82,9 +82,9 @@ def test_spawn_plan_tail_applies_hardcore_scaling_and_ignores_difficulty() -> No
 
     c = plan.creatures[0]
     assert c.reward_value == 1000.0
-    assert_float_close(c.move_speed or 0.0, 2.0 * 1.05, abs_tol=1e-9)
-    assert_float_close(c.contact_damage or 0.0, 17.0 * 1.4, abs_tol=1e-9)
-    assert_float_close(c.health or 0.0, 400.0 * 1.2, abs_tol=1e-9)
+    assert_float_close(c.move_speed or 0.0, 2.0 * 1.05)
+    assert_float_close(c.contact_damage or 0.0, 17.0 * 1.4)
+    assert_float_close(c.health or 0.0, 400.0 * 1.2)
     assert c.max_health == 400.0
 
 
@@ -106,7 +106,7 @@ def test_spawn_plan_tail_spawn_slot_interval_scales_with_difficulty(difficulty: 
     plan = build_spawn_plan(0x07, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
     assert len(plan.spawn_slots) == 1
-    assert_float_close(plan.spawn_slots[0].interval, 2.2 + 0.2 + expected_extra, abs_tol=1e-9)
+    assert_float_close(plan.spawn_slots[0].interval, 2.2 + 0.2 + expected_extra)
 
 
 def test_spawn_plan_tail_spawn_slot_interval_hardcore_decrease() -> None:
@@ -120,4 +120,4 @@ def test_spawn_plan_tail_spawn_slot_interval_hardcore_decrease() -> None:
     plan = build_spawn_plan(0x07, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
     assert len(plan.spawn_slots) == 1
-    assert_float_close(plan.spawn_slots[0].interval, 2.2 - 0.2, abs_tol=1e-9)
+    assert_float_close(plan.spawn_slots[0].interval, 2.2 - 0.2)

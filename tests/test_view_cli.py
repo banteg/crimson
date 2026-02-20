@@ -5,6 +5,8 @@ from types import SimpleNamespace
 
 from typer.testing import CliRunner
 
+import crimson.views as views
+import grim.app as grim_app
 from crimson.cli import app
 
 
@@ -41,7 +43,7 @@ def test_view_autotune_and_dump_flags_are_mutually_exclusive() -> None:
     assert "--dump-shader-debug-views and --autotune-shadow-defaults cannot be used together" in result.output
 
 
-def test_view_autotune_sets_env_and_invokes_run_view(monkeypatch) -> None:
+def test_view_autotune_sets_env_and_invokes_run_view(mocker) -> None:
     captured: dict[str, object] = {}
     view_def = SimpleNamespace(
         name="lighting-debug",
@@ -49,8 +51,8 @@ def test_view_autotune_sets_env_and_invokes_run_view(monkeypatch) -> None:
         factory=lambda ctx: SimpleNamespace(),
     )
 
-    monkeypatch.setattr("crimson.views.view_by_name", lambda name: view_def if name == "lighting-debug" else None)
-    monkeypatch.setattr("crimson.views.all_views", lambda: [view_def])
+    mocker.patch.object(views, "view_by_name", side_effect=lambda name: view_def if name == "lighting-debug" else None)
+    mocker.patch.object(views, "all_views", side_effect=lambda: [view_def])
 
     def _fake_run_view(view, *, width, height, title, fps):
         captured["view"] = view
@@ -59,7 +61,7 @@ def test_view_autotune_sets_env_and_invokes_run_view(monkeypatch) -> None:
         captured["title"] = title
         captured["fps"] = fps
 
-    monkeypatch.setattr("grim.app.run_view", _fake_run_view)
+    mocker.patch.object(grim_app, "run_view", side_effect=_fake_run_view)
     os.environ.pop("CRIMSON_LIGHTING_DEBUG_AUTO_TUNE", None)
 
     runner = CliRunner()

@@ -1,0 +1,18 @@
+id: no-list-spy-patch
+snapshots:
+  ? |
+    calls: list[object] = []
+    monkeypatch.setattr(view, "_draw_scene_layers", lambda: calls.append("scene"))
+  : labels:
+    - source: 'monkeypatch.setattr(view, "_draw_scene_layers", lambda: calls.append("scene"))'
+      style: primary
+      start: 25
+      end: 103
+  ? |
+    pitches: list[float] = []
+    mocker.patch.object(grim_sfx.rl, "set_sound_pitch", side_effect=lambda _voice, pitch: pitches.append(float(pitch)))
+  : labels:
+    - source: 'mocker.patch.object(grim_sfx.rl, "set_sound_pitch", side_effect=lambda _voice, pitch: pitches.append(float(pitch)))'
+      style: primary
+      start: 26
+      end: 141

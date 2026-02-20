@@ -7,10 +7,12 @@ import msgspec
 from crimson.game_modes import GameMode
 from crimson.original.schema import (
     CAPTURE_FORMAT_VERSION,
+    CaptureBonusSample,
     CaptureCheckpoint,
     CaptureCheckpointDebug,
     CaptureCheckpointDebugStatus,
     CaptureConfig,
+    CaptureCreatureSample,
     CaptureDiagnostics,
     CaptureEventCounts,
     CaptureEventHead,
@@ -26,10 +28,13 @@ from crimson.original.schema import (
     CapturePhaseMarker,
     CapturePlayerCheckpoint,
     CapturePlayerFireDiagnostics,
+    CaptureProjectileSample,
     CaptureRngDiagnostics,
+    CaptureRngHeadEntry,
     CaptureRngMarks,
     CaptureRngSummary,
     CaptureSamples,
+    CaptureSecondaryProjectileSample,
     CaptureSnapshot,
     CaptureSnapshotGlobals,
     CaptureSnapshotInput,
@@ -37,6 +42,10 @@ from crimson.original.schema import (
     CaptureSnapshotInputBindingAlternateSingle,
     CaptureSnapshotInputBindingPlayer,
     CaptureSnapshotInputBindings,
+    CaptureSnapshotPlayer,
+    CaptureSnapshotPlayerAltWeapon,
+    CaptureSnapshotPlayerBonusTimers,
+    CaptureSnapshotPlayerPerkTimers,
     CaptureSnapshotStatus,
     CaptureSpawnDiagnostics,
     CaptureStatusSnapshot,
@@ -175,6 +184,141 @@ def build_capture_snapshot() -> CaptureSnapshot:
                 fire=0,
             ),
         ),
+    )
+
+
+def build_capture_rng_head_entry() -> CaptureRngHeadEntry:
+    return CaptureRngHeadEntry(
+        seq=None,
+        seed_epoch=None,
+        tick_index=None,
+        tick_call_index=None,
+        outside_tick=None,
+        value=None,
+        value_u32=None,
+        value_15=None,
+        branch_id=None,
+        caller=None,
+        caller_static=None,
+        state_before_u32=None,
+        state_after_u32=None,
+        state_before_hex=None,
+        state_after_hex=None,
+        expected_value_15=None,
+        mirror_match=None,
+    )
+
+
+def build_capture_snapshot_player(*, index: int = 0) -> CaptureSnapshotPlayer:
+    return CaptureSnapshotPlayer(
+        index=int(index),
+        pos_x=None,
+        pos_y=None,
+        move_dx=None,
+        move_dy=None,
+        health=None,
+        aim_x=None,
+        aim_y=None,
+        aim_heading=None,
+        weapon_id=None,
+        clip_size_i32=None,
+        clip_size_f32=None,
+        ammo_i32=None,
+        ammo_f32=None,
+        reload_active_i32=None,
+        reload_active_f32=None,
+        reload_timer=None,
+        reload_timer_max=None,
+        shot_cooldown=None,
+        spread_heat=None,
+        experience=None,
+        level=None,
+        perk_timers=CaptureSnapshotPlayerPerkTimers(
+            hot_tempered=None,
+            man_bomb=None,
+            living_fortress=None,
+            fire_cough=None,
+        ),
+        bonus_timers=CaptureSnapshotPlayerBonusTimers(
+            speed_bonus=None,
+            shield=None,
+            fire_bullets=None,
+        ),
+        alt_weapon=CaptureSnapshotPlayerAltWeapon(
+            weapon_id=None,
+            clip_size_i32=None,
+            reload_active_i32=None,
+            ammo_i32=None,
+            reload_timer=None,
+            shot_cooldown=None,
+            reload_timer_max=None,
+        ),
+    )
+
+
+def build_capture_creature_sample(*, index: int = 5) -> CaptureCreatureSample:
+    return CaptureCreatureSample(
+        index=int(index),
+        active=1,
+        state_flag=1,
+        collision_flag=1,
+        hitbox_size=16.0,
+        pos=CaptureVec2(x=256.0, y=128.0),
+        hp=100.0,
+        type_id=2,
+        target_player=0,
+        flags=0,
+        link_index=None,
+        ai_mode=None,
+        heading=None,
+        target_heading=None,
+        orbit_angle=None,
+        orbit_radius=None,
+        ai7_timer_ms=None,
+    )
+
+
+def build_capture_projectile_sample(*, index: int = 7) -> CaptureProjectileSample:
+    return CaptureProjectileSample(
+        index=int(index),
+        active=1,
+        angle=0.0,
+        pos=CaptureVec2(x=10.0, y=20.0),
+        vel=CaptureVec2(x=1.0, y=0.5),
+        type_id=4,
+        life_timer=1.5,
+        speed_scale=1.0,
+        damage_pool=22.0,
+        hit_radius=8.0,
+        base_damage=15.0,
+        owner_id=0,
+    )
+
+
+def build_capture_secondary_projectile_sample(*, index: int = 9) -> CaptureSecondaryProjectileSample:
+    return CaptureSecondaryProjectileSample(
+        index=int(index),
+        active=1,
+        pos=CaptureVec2(x=30.0, y=40.0),
+        life_timer=0.5,
+        angle=0.0,
+        vel=CaptureVec2(x=0.2, y=0.3),
+        trail_timer=0.0,
+        type_id=3,
+        target_id=1,
+    )
+
+
+def build_capture_bonus_sample(*, index: int = 2) -> CaptureBonusSample:
+    return CaptureBonusSample(
+        index=int(index),
+        bonus_id=3,
+        state=1,
+        time_left=4.0,
+        time_max=5.0,
+        pos=CaptureVec2(x=300.0, y=310.0),
+        amount_f32=1.0,
+        amount_i32=1,
     )
 
 
@@ -463,6 +607,10 @@ def build_capture_file(*, ticks: list[CaptureTick], session_id: str = "session-1
 
 def capture_file_to_dict(capture: CaptureFile) -> dict[str, object]:
     return msgspec.json.decode(msgspec.json.encode(capture))
+
+
+def capture_value_to_builtins(value: object) -> object:
+    return msgspec.json.decode(msgspec.json.encode(value))
 
 
 def write_capture_json(path: Path, capture: CaptureFile) -> None:

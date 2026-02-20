@@ -35,7 +35,7 @@ def test_camera_shake_update_decays_timer_without_pulse() -> None:
 
     camera_shake_update(state, 0.1)
 
-    assert_float_close(state.camera_shake_timer, 0.7, abs_tol=1e-9)
+    assert_float_close(state.camera_shake_timer, 0.7)
     assert state.camera_shake_pulses == 10
     assert state.camera_shake_offset == Vec2(7.0, -9.0)
 
@@ -49,7 +49,7 @@ def test_camera_shake_update_matches_decompile_first_pulse() -> None:
     camera_shake_update(state, 0.1)
 
     assert state.camera_shake_pulses == 0x13
-    assert_float_close(state.camera_shake_timer, 0.1, abs_tol=1e-9)
+    assert_float_close(state.camera_shake_timer, 0.1)
     assert state.camera_shake_offset == Vec2(28.0, -32.0)
 
 
@@ -62,7 +62,7 @@ def test_camera_shake_update_reflex_boost_uses_shorter_interval() -> None:
     camera_shake_update(state, 0.1)
 
     assert state.camera_shake_pulses == 4
-    assert_float_close(state.camera_shake_timer, 0.06, abs_tol=1e-9)
+    assert_float_close(state.camera_shake_timer, 0.06)
 
 
 def test_camera_shake_update_clears_offsets_one_frame_after_last_pulse() -> None:
@@ -74,7 +74,7 @@ def test_camera_shake_update_clears_offsets_one_frame_after_last_pulse() -> None
     camera_shake_update(state, 0.1)
 
     assert state.camera_shake_pulses == 0
-    assert_float_close(state.camera_shake_timer, 0.0, abs_tol=1e-9)
+    assert_float_close(state.camera_shake_timer, 0.0)
     assert state.camera_shake_offset == Vec2(11.0, -13.0)
 
     camera_shake_update(state, 0.1)
@@ -90,7 +90,7 @@ def test_bonus_apply_nuke_starts_camera_shake_and_damages_creatures() -> None:
     bonus_apply(state, player, BonusId.NUKE, origin=player, creatures=creatures)
 
     assert state.camera_shake_pulses == 0x14
-    assert_float_close(state.camera_shake_timer, 0.2, abs_tol=1e-9)
+    assert_float_close(state.camera_shake_timer, 0.2)
     assert creatures[0].hp <= 0.0
     assert creatures[1].hp == 100.0
 
@@ -107,7 +107,7 @@ def test_game_world_nuke_pickup_defers_shake_decay_to_next_frame() -> None:
 
     assert entry.picked
     assert world.state.camera_shake_pulses == 0x14
-    assert_float_close(world.state.camera_shake_timer, 0.2, abs_tol=1e-9)
+    assert_float_close(world.state.camera_shake_timer, 0.2)
 
 
 def _spawn_nuke_pickup_on_player(world: WorldState) -> object:
@@ -154,7 +154,7 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
 
     assert bool(getattr(entry, "picked", False))
     assert world.state.camera_shake_pulses == 0x14
-    assert_float_close(world.state.camera_shake_timer, 0.2, abs_tol=1e-9)
+    assert_float_close(world.state.camera_shake_timer, 0.2)
     assert tick.rng_marks["after_camera_update"] == tick.rng_marks["after_wave_spawns"]
 
 
@@ -178,5 +178,5 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
 
     assert bool(getattr(entry, "picked", False))
     assert world.state.camera_shake_pulses == 0x14
-    assert_float_close(world.state.camera_shake_timer, 0.2, abs_tol=1e-9)
+    assert_float_close(world.state.camera_shake_timer, 0.2)
     assert tick.rng_marks["after_camera_update"] == tick.rng_marks["after_rush_spawns"]

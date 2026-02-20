@@ -32,7 +32,7 @@ def test_damage_type1_heading_jitter_uses_rand_without_player_attacker() -> None
 
     assert killed is False
     assert rand_calls == 1
-    assert_float_close(creature.heading, -0.1024, abs_tol=1e-6)
+    assert_float_close(creature.heading, -0.1024)
 
 
 def test_damage_type1_heading_jitter_skips_ping_pong_creatures() -> None:
@@ -85,4 +85,4 @@ def test_damage_type1_global_perks_apply_with_non_player_owner() -> None:
     )
 
     assert killed is True
-    assert_float_close(creature.hp, -131.92474, abs_tol=1e-4)
+    assert_float_close(creature.hp, -131.92474)

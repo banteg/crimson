@@ -22,8 +22,8 @@ def test_player_take_damage_applies_heading_jitter_and_spread_heat_without_unsto
 
     assert applied == 10.0
     assert player.health == 90.0
-    assert_float_close(player.heading, -1.0, abs_tol=1e-9)  # (0 % 100 - 50) * 0.04 == -2.0
-    assert_float_close(player.spread_heat, 0.2, abs_tol=1e-9)
+    assert_float_close(player.heading, -1.0)  # (0 % 100 - 50) * 0.04 == -2.0
+    assert_float_close(player.spread_heat, 0.2)
 
 
 def test_player_take_damage_suppresses_heading_jitter_and_spread_heat_with_unstoppable() -> None:
@@ -35,8 +35,8 @@ def test_player_take_damage_suppresses_heading_jitter_and_spread_heat_with_unsto
 
     assert applied == 10.0
     assert player.health == 90.0
-    assert_float_close(player.heading, 1.0, abs_tol=1e-9)
-    assert_float_close(player.spread_heat, 0.1, abs_tol=1e-9)
+    assert_float_close(player.heading, 1.0)
+    assert_float_close(player.spread_heat, 0.1)
 
 
 def test_player_take_damage_heading_jitter_is_not_snapped_by_player_update() -> None:

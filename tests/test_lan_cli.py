@@ -5,16 +5,17 @@ from typing import Any
 
 from typer.testing import CliRunner
 
+import crimson.game as game
 from crimson.cli import app
 
 
-def test_lan_host_command_builds_pending_session_and_runs_game(monkeypatch, tmp_path: Path) -> None:
+def test_lan_host_command_builds_pending_session_and_runs_game(mocker, tmp_path: Path) -> None:
     captured: dict[str, Any] = {}
 
     def _fake_run_game(config):
         captured["config"] = config
 
-    monkeypatch.setattr("crimson.game.run_game", _fake_run_game)
+    mocker.patch.object(game, "run_game", side_effect=_fake_run_game)
 
     runner = CliRunner()
     result = runner.invoke(
@@ -48,8 +49,8 @@ def test_lan_host_command_builds_pending_session_and_runs_game(monkeypatch, tmp_
     assert pending.config.preserve_bugs is False
 
 
-def test_lan_host_quests_requires_quest_level(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setattr("crimson.game.run_game", lambda _config: None)
+def test_lan_host_quests_requires_quest_level(mocker, tmp_path: Path) -> None:
+    mocker.patch.object(game, "run_game", side_effect=lambda _config: None)
     runner = CliRunner()
     result = runner.invoke(
         app,
@@ -68,13 +69,13 @@ def test_lan_host_quests_requires_quest_level(monkeypatch, tmp_path: Path) -> No
     assert "quest level is required" in result.output
 
 
-def test_lan_join_command_builds_pending_join_session(monkeypatch, tmp_path: Path) -> None:
+def test_lan_join_command_builds_pending_join_session(mocker, tmp_path: Path) -> None:
     captured: dict[str, Any] = {}
 
     def _fake_run_game(config):
         captured["config"] = config
 
-    monkeypatch.setattr("crimson.game.run_game", _fake_run_game)
+    mocker.patch.object(game, "run_game", side_effect=_fake_run_game)
 
     runner = CliRunner()
     result = runner.invoke(
@@ -102,13 +103,13 @@ def test_lan_join_command_builds_pending_join_session(monkeypatch, tmp_path: Pat
     assert pending.config.port == 31993
 
 
-def test_lan_join_loopback_host_autostarts_session(monkeypatch, tmp_path: Path) -> None:
+def test_lan_join_loopback_host_autostarts_session(mocker, tmp_path: Path) -> None:
     captured: dict[str, Any] = {}
 
     def _fake_run_game(config):
         captured["config"] = config
 
-    monkeypatch.setattr("crimson.game.run_game", _fake_run_game)
+    mocker.patch.object(game, "run_game", side_effect=_fake_run_game)
 
     runner = CliRunner()
     result = runner.invoke(

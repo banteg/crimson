@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 import grim.sfx as grim_sfx
 from tests.helpers import assert_float_close
 
@@ -14,34 +12,33 @@ class _FakeSample:
         return self._voice
 
 
-def test_play_sfx_applies_native_reflex_rate_scaling(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_play_sfx_applies_native_reflex_rate_scaling(mocker) -> None:
     state = grim_sfx.init_sfx_state(ready=True, enabled=True, volume=1.0)
     state.key_to_entry["sfx_test"] = "test.ogg"
 
     voice = object()
     sample = _FakeSample(voice)
-    monkeypatch.setattr(grim_sfx, "_load_sample", lambda _state, _key: sample)
+    mocker.patch.object(grim_sfx, "_load_sample", side_effect=lambda _state, _key: sample)
 
-    pitches: list[float] = []
-    monkeypatch.setattr(grim_sfx.rl, "set_sound_pitch", lambda _voice, pitch: pitches.append(float(pitch)), raising=False)
-    monkeypatch.setattr(grim_sfx.rl, "play_sound", lambda _voice: None)
+    set_sound_pitch = mocker.patch.object(grim_sfx.rl, "set_sound_pitch", create=True)
+    mocker.patch.object(grim_sfx.rl, "play_sound")
 
     grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=0.0)
     assert state.rate_scale_hz == 44100
-    assert_float_close(pitches[-1], 1.0, abs_tol=1e-6)
+    assert_float_close(float(set_sound_pitch.call_args_list[-1].args[1]), 1.0)
 
     grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=2.0)
     assert state.rate_scale_hz == 22050
-    assert_float_close(pitches[-1], 0.5, abs_tol=1e-6)
+    assert_float_close(float(set_sound_pitch.call_args_list[-1].args[1]), 0.5)
 
     grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=1.0)
     assert state.rate_scale_hz == 22050
-    assert_float_close(pitches[-1], 0.5, abs_tol=1e-6)
+    assert_float_close(float(set_sound_pitch.call_args_list[-1].args[1]), 0.5)
 
     grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=0.25)
     assert state.rate_scale_hz == 38588
-    assert_float_close(pitches[-1], 38588 / 44100, abs_tol=1e-6)
+    assert_float_close(float(set_sound_pitch.call_args_list[-1].args[1]), 38588 / 44100)
 
     grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=-0.1)
     assert state.rate_scale_hz == 44100
-    assert_float_close(pitches[-1], 1.0, abs_tol=1e-6)
+    assert_float_close(float(set_sound_pitch.call_args_list[-1].args[1]), 1.0)

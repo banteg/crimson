@@ -18,7 +18,17 @@ from crimson.replay.checkpoints import (
     ReplayPlayerCheckpoint,
 )
 from grim.geom import Vec2
-from tests.builders.capture import build_capture_file, build_capture_tick, capture_file_to_dict
+from tests.builders.capture import (
+    build_capture_bonus_sample,
+    build_capture_creature_sample,
+    build_capture_file,
+    build_capture_projectile_sample,
+    build_capture_rng_head_entry,
+    build_capture_secondary_projectile_sample,
+    build_capture_tick,
+    capture_file_to_dict,
+    capture_value_to_builtins,
+)
 
 
 def _load_report_module():
@@ -34,6 +44,14 @@ _DEFAULT_CAPTURE_FILE = capture_file_to_dict(
     ),
 )
 _DEFAULT_CAPTURE_TICK = cast(dict[str, object], cast(list[object], _DEFAULT_CAPTURE_FILE["ticks"])[0])
+_DEFAULT_CAPTURE_RNG_HEAD_ENTRY = cast(dict[str, object], capture_value_to_builtins(build_capture_rng_head_entry()))
+_DEFAULT_CAPTURE_CREATURE_SAMPLE = cast(dict[str, object], capture_value_to_builtins(build_capture_creature_sample()))
+_DEFAULT_CAPTURE_PROJECTILE_SAMPLE = cast(dict[str, object], capture_value_to_builtins(build_capture_projectile_sample()))
+_DEFAULT_CAPTURE_SECONDARY_PROJECTILE_SAMPLE = cast(
+    dict[str, object],
+    capture_value_to_builtins(build_capture_secondary_projectile_sample()),
+)
+_DEFAULT_CAPTURE_BONUS_SAMPLE = cast(dict[str, object], capture_value_to_builtins(build_capture_bonus_sample()))
 
 
 def _clone_dict(value: object) -> dict[str, object]:
@@ -117,25 +135,7 @@ def _event_counts_dict(**kwargs: object) -> dict[str, object]:
 
 
 def _rng_head_entry(**kwargs: object) -> dict[str, object]:
-    row: dict[str, object] = {
-        "seq": None,
-        "seed_epoch": None,
-        "tick_index": None,
-        "tick_call_index": None,
-        "outside_tick": None,
-        "value": None,
-        "value_u32": None,
-        "value_15": None,
-        "branch_id": None,
-        "caller": None,
-        "caller_static": None,
-        "state_before_u32": None,
-        "state_after_u32": None,
-        "state_before_hex": None,
-        "state_after_hex": None,
-        "expected_value_15": None,
-        "mirror_match": None,
-    }
+    row = _clone_dict(_DEFAULT_CAPTURE_RNG_HEAD_ENTRY)
     row.update(kwargs)
     return row
 
@@ -154,75 +154,29 @@ def _input_player_keys(player_index: int, **kwargs: object) -> dict[str, object]
 
 
 def _sample_creature(index: int, **kwargs: object) -> dict[str, object]:
-    row: dict[str, object] = {
-        "index": int(index),
-        "active": 1,
-        "state_flag": 1,
-        "collision_flag": 1,
-        "hitbox_size": 16.0,
-        "pos": {"x": 10.0, "y": 20.0},
-        "hp": 100.0,
-        "type_id": 2,
-        "target_player": 0,
-        "flags": 0,
-        "link_index": None,
-        "ai_mode": None,
-        "heading": None,
-        "target_heading": None,
-        "orbit_angle": None,
-        "orbit_radius": None,
-        "ai7_timer_ms": None,
-    }
+    row = _clone_dict(_DEFAULT_CAPTURE_CREATURE_SAMPLE)
+    row["index"] = int(index)
     row.update(kwargs)
     return row
 
 
 def _sample_projectile(index: int, **kwargs: object) -> dict[str, object]:
-    row: dict[str, object] = {
-        "index": int(index),
-        "active": 1,
-        "angle": 0.0,
-        "pos": {"x": 0.0, "y": 0.0},
-        "vel": {"x": 0.0, "y": 0.0},
-        "type_id": 1,
-        "life_timer": 1.0,
-        "speed_scale": 1.0,
-        "damage_pool": 1.0,
-        "hit_radius": 2.0,
-        "base_damage": 1.0,
-        "owner_id": 0,
-    }
+    row = _clone_dict(_DEFAULT_CAPTURE_PROJECTILE_SAMPLE)
+    row["index"] = int(index)
     row.update(kwargs)
     return row
 
 
 def _sample_secondary_projectile(index: int, **kwargs: object) -> dict[str, object]:
-    row: dict[str, object] = {
-        "index": int(index),
-        "active": 1,
-        "pos": {"x": 15.0, "y": 25.0},
-        "life_timer": 0.9,
-        "angle": 0.0,
-        "vel": {"x": 0.0, "y": 0.0},
-        "trail_timer": 0.0,
-        "type_id": 1,
-        "target_id": -1,
-    }
+    row = _clone_dict(_DEFAULT_CAPTURE_SECONDARY_PROJECTILE_SAMPLE)
+    row["index"] = int(index)
     row.update(kwargs)
     return row
 
 
 def _sample_bonus(index: int, **kwargs: object) -> dict[str, object]:
-    row: dict[str, object] = {
-        "index": int(index),
-        "bonus_id": 0,
-        "state": 0,
-        "time_left": 0.0,
-        "time_max": 0.0,
-        "pos": {"x": 0.0, "y": 0.0},
-        "amount_f32": 0.0,
-        "amount_i32": 0,
-    }
+    row = _clone_dict(_DEFAULT_CAPTURE_BONUS_SAMPLE)
+    row["index"] = int(index)
     row.update(kwargs)
     return row
 

@@ -82,4 +82,4 @@ def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> N
         perk_progression_enabled=False,
     )
 
-    assert_float_close(world.state.bonuses.reflex_boost, expected_reflex, abs_tol=1e-9)
+    assert_float_close(world.state.bonuses.reflex_boost, expected_reflex)

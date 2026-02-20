@@ -33,8 +33,8 @@ def test_radioactive_tick_deals_damage_and_spawns_fx() -> None:
     # Radioactive pulse evaluates after movement/clamp in the live-creature body.
     dist_after_move = (creature.pos - player.pos).length()
     expected_damage = (100.0 - dist_after_move) * 0.3
-    assert_float_close(creature.collision_timer, 0.5, abs_tol=1e-9)
-    assert_float_close(creature.hp, 50.0 - expected_damage, abs_tol=1e-6)
+    assert_float_close(creature.collision_timer, 0.5)
+    assert_float_close(creature.hp, 50.0 - expected_damage)
     assert fx_queue.count == 1
 
 
@@ -63,7 +63,7 @@ def test_radioactive_kill_awards_base_xp_and_bypasses_death_multipliers() -> Non
     assert player.experience == 112
     assert not result.deaths
     assert creature.hp < 0.0
-    assert_float_close(creature.hitbox_size, CREATURE_HITBOX_ALIVE - dt, abs_tol=1e-9)
+    assert_float_close(creature.hitbox_size, CREATURE_HITBOX_ALIVE - dt)
     assert fx_queue.count == 1
 
 
@@ -90,7 +90,7 @@ def test_radioactive_sets_hp_to_one_for_type_id_one_creatures() -> None:
 
     assert player.experience == 100
     assert not result.deaths
-    assert_float_close(creature.hp, 1.0, abs_tol=1e-9)
-    assert_float_close(creature.hitbox_size, CREATURE_HITBOX_ALIVE, abs_tol=1e-9)
-    assert_float_close(creature.collision_timer, 0.5, abs_tol=1e-9)
+    assert_float_close(creature.hp, 1.0)
+    assert_float_close(creature.hitbox_size, CREATURE_HITBOX_ALIVE)
+    assert_float_close(creature.collision_timer, 0.5)
     assert fx_queue.count == 1

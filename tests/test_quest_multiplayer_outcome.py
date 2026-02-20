@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from crimson.game_world import GameWorld
 from crimson.modes.quest_mode import QuestMode
 from crimson.quests import quest_by_level
 from crimson.weapon_sfx import resolve_weapon_sfx_ref
@@ -10,7 +11,7 @@ from grim.config import ensure_crimson_cfg
 from grim.view import ViewContext
 
 
-def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, monkeypatch) -> None:
+def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     assets_dir = repo_root / "artifacts" / "assets"
 
@@ -18,7 +19,7 @@ def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, 
     cfg.data["player_count"] = 4
     ctx = ViewContext(assets_dir=assets_dir)
 
-    monkeypatch.setattr("crimson.game_world.GameWorld.set_terrain", lambda self, **_kwargs: None)
+    mocker.patch.object(GameWorld, "set_terrain", return_value=None)
     mode = QuestMode(ctx, config=cfg)
     mode.prepare_new_run("1.1", status=None)
     health_values = (91.2, 50.6, 10.4, 0.49)
@@ -32,7 +33,7 @@ def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, 
     assert outcome.player2_health == health_values[1]
 
 
-def test_prepare_new_run_queues_start_weapon_assign_sfx(tmp_path: Path, monkeypatch) -> None:
+def test_prepare_new_run_queues_start_weapon_assign_sfx(tmp_path: Path, mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     assets_dir = repo_root / "artifacts" / "assets"
 
@@ -40,7 +41,7 @@ def test_prepare_new_run_queues_start_weapon_assign_sfx(tmp_path: Path, monkeypa
     cfg.data["player_count"] = 2
     ctx = ViewContext(assets_dir=assets_dir)
 
-    monkeypatch.setattr("crimson.game_world.GameWorld.set_terrain", lambda self, **_kwargs: None)
+    mocker.patch.object(GameWorld, "set_terrain", return_value=None)
     mode = QuestMode(ctx, config=cfg)
     mode.prepare_new_run("1.1", status=None)
 

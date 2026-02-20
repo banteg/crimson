@@ -10,9 +10,11 @@ from crimson.bonuses.hud import bonus_hud_update
 from crimson.gameplay import (
     _RELATIVE_MOVE_HEADING_LEFT,
     GameplayState,
+    _player_aim_point_from_heading,
     _player_heading_approach_target_with_delta,
     player_update,
 )
+from crimson.math_parity import f32
 from crimson.movement_controls import MovementControlType
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
@@ -41,7 +43,7 @@ def test_player_update_weapon_power_up_scales_shot_cooldown_decay() -> None:
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), shot_cooldown=1.0)
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.5, state)
 
-    assert_float_close(player.shot_cooldown, 0.25, abs_tol=1e-9)
+    assert_float_close(player.shot_cooldown, 0.25)
 
 
 def test_player_update_shot_cooldown_decay_snaps_tiny_residual_to_zero() -> None:
@@ -74,15 +76,15 @@ def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer() -> No
 
     expected_angle = float(aim_heading_before)
     expected_bleed_dir_angle = float(aim_heading_before) + (1.5707964 - 0.5)
-    expected_x = math.cos(expected_bleed_dir_angle) * -6.0 + 100.0
-    expected_y = math.sin(expected_bleed_dir_angle) * -6.0 + 200.0
+    expected_x = f32(math.cos(expected_bleed_dir_angle) * -6.0 + 100.0)
+    expected_y = f32(math.sin(expected_bleed_dir_angle) * -6.0 + 200.0)
 
     assert len(blood_calls) == 3
     for call in blood_calls:
         pos = call["pos"]
         assert isinstance(pos, Vec2)
-        assert_float_close(pos.x, expected_x, abs_tol=1e-5)
-        assert_float_close(pos.y, expected_y, abs_tol=1e-5)
+        assert_float_close(pos.x, expected_x)
+        assert_float_close(pos.y, expected_y)
         assert call["angle"] == expected_angle
         assert call["age"] == 0.0
         assert call["detail_preset"] == 5
@@ -121,7 +123,7 @@ def test_player_update_spread_damping_scalar_recovers_toward_one_when_gate_non_p
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.5, state)
 
-    assert_float_close(state.player_spread_damping_scalar, 0.9, abs_tol=1e-6)
+    assert_float_close(state.player_spread_damping_scalar, 0.9)
 
 
 def test_player_update_spread_damping_scalar_decays_to_floor_when_gate_positive() -> None:
@@ -130,7 +132,7 @@ def test_player_update_spread_damping_scalar_decays_to_floor_when_gate_positive(
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state)
 
-    assert_float_close(state.player_spread_damping_scalar, 0.3, abs_tol=1e-6)
+    assert_float_close(state.player_spread_damping_scalar, 0.3)
 
 
 def test_player_update_stationary_reloader_tripples_reload_decay() -> None:
@@ -148,7 +150,7 @@ def test_player_update_stationary_reloader_tripples_reload_decay() -> None:
 
     player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.1, state)
 
-    assert_float_close(player.reload_timer, 0.7, abs_tol=2e-8)
+    assert_float_close(player.reload_timer, 0.7)
 
 
 def test_player_update_preloads_ammo_only_before_reload_underflow() -> None:
@@ -167,7 +169,7 @@ def test_player_update_preloads_ammo_only_before_reload_underflow() -> None:
 
     player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.016, state)
 
-    assert_float_close(player.ammo, 6.0, abs_tol=1e-9)
+    assert_float_close(player.ammo, 6.0)
 
 
 def test_player_update_does_not_preload_ammo_when_reload_timer_is_zero() -> None:
@@ -186,7 +188,7 @@ def test_player_update_does_not_preload_ammo_when_reload_timer_is_zero() -> None
 
     player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.016, state)
 
-    assert_float_close(player.ammo, -1.0, abs_tol=1e-9)
+    assert_float_close(player.ammo, -1.0)
 
 
 def test_player_update_does_not_preload_ammo_on_tiny_underflow() -> None:
@@ -205,7 +207,7 @@ def test_player_update_does_not_preload_ammo_on_tiny_underflow() -> None:
 
     player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.03200000151991844, state)
 
-    assert_float_close(player.ammo, -1.0, abs_tol=1e-9)
+    assert_float_close(player.ammo, -1.0)
 
 
 def test_player_update_empty_reload_fire_tick_keeps_underflow_and_restarts_reload() -> None:
@@ -229,10 +231,10 @@ def test_player_update_empty_reload_fire_tick_keeps_underflow_and_restarts_reloa
         state,
     )
 
-    assert_float_close(player.ammo, -1.0, abs_tol=1e-9)
+    assert_float_close(player.ammo, -1.0)
     assert player.reload_active is True
     assert player.reload_timer > 0.0
-    assert_float_close(player.reload_timer, player.reload_timer_max, abs_tol=1e-9)
+    assert_float_close(player.reload_timer, player.reload_timer_max)
 
 
 def test_player_update_fire_held_at_reload_boundary_preloads_clip_before_shot() -> None:
@@ -256,9 +258,9 @@ def test_player_update_fire_held_at_reload_boundary_preloads_clip_before_shot() 
         state,
     )
 
-    assert_float_close(player.reload_timer, 0.0, abs_tol=1e-9)
+    assert_float_close(player.reload_timer, 0.0)
     assert player.reload_active is False
-    assert_float_close(player.ammo, 29.0, abs_tol=1e-6)
+    assert_float_close(player.ammo, 29.0)
 
 
 def test_player_update_tops_up_when_stationary_reload_finishes_same_tick() -> None:
@@ -283,8 +285,8 @@ def test_player_update_tops_up_when_stationary_reload_finishes_same_tick() -> No
         state,
     )
 
-    assert_float_close(player.reload_timer, 0.0, abs_tol=1e-9)
-    assert_float_close(player.ammo, 6.0, abs_tol=1e-9)
+    assert_float_close(player.reload_timer, 0.0)
+    assert_float_close(player.ammo, 6.0)
     assert player.reload_active is True
 
 
@@ -310,8 +312,8 @@ def test_player_update_preserve_bugs_keeps_empty_reload_loop() -> None:
         state,
     )
 
-    assert_float_close(player.reload_timer, 0.0, abs_tol=1e-9)
-    assert_float_close(player.ammo, 0.0, abs_tol=1e-9)
+    assert_float_close(player.reload_timer, 0.0)
+    assert_float_close(player.ammo, 0.0)
     assert player.reload_active is True
 
 
@@ -390,8 +392,8 @@ def test_player_update_speed_bonus_expires_before_player_update_step() -> None:
     no_bonus_delta = (no_bonus.pos - Vec2(100.0, 100.0)).length()
     with_bonus_delta = (with_bonus.pos - Vec2(100.0, 100.0)).length()
 
-    assert_float_close(with_bonus_delta, no_bonus_delta, abs_tol=1e-9)
-    assert_float_close(with_bonus.speed_bonus_timer, 0.0, abs_tol=1e-9)
+    assert_float_close(with_bonus_delta, no_bonus_delta)
+    assert_float_close(with_bonus.speed_bonus_timer, 0.0)
 
 
 def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
@@ -488,8 +490,8 @@ def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
     assert int(entry.type_id) == int(ProjectileTypeId.FIRE_BULLETS)
 
     expected = before_pos + Vec2.from_heading(0.0).rotated(-0.150915) * 16.0
-    assert_float_close(float(entry.pos.x), float(expected.x), abs_tol=1e-5)
-    assert_float_close(float(entry.pos.y), float(expected.y), abs_tol=1e-5)
+    assert_float_close(float(entry.pos.x), float(expected.x))
+    assert_float_close(float(entry.pos.y), float(expected.y))
 
 
 def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
@@ -559,7 +561,7 @@ def test_player_fire_weapon_fire_bullets_does_not_consume_ammo() -> None:
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
 
-    assert_float_close(player.ammo, 10.0, abs_tol=1e-9)
+    assert_float_close(player.ammo, 10.0)
 
 
 def test_player_fire_weapon_fire_bullets_can_fire_at_zero_ammo_and_then_reload() -> None:
@@ -602,9 +604,9 @@ def test_player_fire_weapon_can_fire_with_negative_ammo_then_reloads() -> None:
 
     type_ids = _active_type_ids(pool)
     assert type_ids == [int(ProjectileTypeId.ION_CANNON)]
-    assert_float_close(player.ammo, -2.0, abs_tol=1e-9)
+    assert_float_close(player.ammo, -2.0)
     assert player.reload_active
-    assert_float_close(player.reload_timer, 3.0, abs_tol=1e-9)
+    assert_float_close(player.reload_timer, 3.0)
 
 
 def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_pellet_weapons() -> None:
@@ -631,7 +633,7 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_p
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
 
-    assert_float_close(player.spread_heat, expected, abs_tol=1e-9)
+    assert_float_close(player.spread_heat, expected)
 
 
 def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_single_pellet_weapons() -> None:
@@ -659,7 +661,7 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_s
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
 
-    assert_float_close(player.spread_heat, expected, abs_tol=1e-9)
+    assert_float_close(player.spread_heat, expected)
 
 
 def test_player_fire_weapon_shotgun_spawns_pellets() -> None:
@@ -702,9 +704,9 @@ def test_player_update_turns_toward_move_heading_with_turn_slowdown() -> None:
     player_update(player, input_state, 0.1, state)
 
     # Movement now mirrors native float32 velocity/delta store boundaries.
-    assert_float_close(player.pos.x, 103.53553771972656, abs_tol=1e-6)
-    assert_float_close(player.pos.y, 96.46446228027344, abs_tol=1e-6)
-    assert_float_close(player.heading, 0.7853981852531433, abs_tol=1e-9)
+    assert_float_close(player.pos.x, 103.53553771972656)
+    assert_float_close(player.pos.y, 96.46446228027344)
+    assert_float_close(player.heading, 0.7853981852531433)
 
 
 def test_player_update_w_then_up_left_converges_to_diagonal_heading() -> None:
@@ -765,7 +767,7 @@ def test_player_update_digital_turn_only_rotates_and_accelerates() -> None:
 
     assert player.heading > 0.0
     assert player.aim_heading > 0.0
-    assert_float_close(player.turn_speed, 1.0, abs_tol=1e-9)
+    assert_float_close(player.turn_speed, 1.0)
     assert player.move_speed > 0.0
     assert player.pos.x > 100.0
     assert player.pos.y < 100.0
@@ -786,8 +788,8 @@ def test_player_update_digital_forward_turn_moves_in_heading_direction() -> None
     player_update(player, input_state, 0.1, state)
 
     assert player.heading < 0.0
-    assert_float_close(player.aim_heading, (player.aim - player.pos).to_heading(), abs_tol=1e-9)
-    assert_float_close(player.turn_speed, 1.0, abs_tol=1e-9)
+    assert_float_close(player.aim_heading, (player.aim - player.pos).to_heading())
+    assert_float_close(player.turn_speed, 1.0)
     assert player.move_speed > 0.0
     assert player.pos.x < 100.0
     assert player.pos.y < 100.0
@@ -809,7 +811,7 @@ def test_player_update_digital_turn_conflict_prefers_right() -> None:
 
     assert player.heading > 0.0
     assert player.aim_heading > math.pi / 2.0
-    assert_float_close(player.turn_speed, 1.0, abs_tol=1e-9)
+    assert_float_close(player.turn_speed, 1.0)
     assert player.pos.x > 100.0
     assert player.pos.y < 100.0
 
@@ -829,8 +831,8 @@ def test_player_update_digital_move_conflict_prefers_backward() -> None:
     player_update(player, input_state, 0.1, state)
 
     assert player.move_speed > 0.0
-    assert_float_close(player.pos.x, 100.0, abs_tol=1e-9)
-    assert_float_close(player.pos.y, 100.0, abs_tol=1e-9)
+    assert_float_close(player.pos.x, 100.0)
+    assert_float_close(player.pos.y, 100.0)
     assert player.heading > 0.0
 
 
@@ -851,7 +853,9 @@ def test_player_update_keyboard_aim_scheme_uses_heading_dispatch() -> None:
     player_update(player, input_state, 0.1, state)
 
     assert player.aim != Vec2(500.0, 500.0)
-    assert_float_close((player.aim - player.pos).length(), 60.0, abs_tol=1e-5)
+    expected_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
+    assert player.aim == expected_aim
+    assert_float_close((player.aim - player.pos).length(), (expected_aim - player.pos).length())
 
 
 def test_player_update_wraps_negative_target_heading_before_turning() -> None:
@@ -934,7 +938,7 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
 
     projectiles = pool.iter_active()
     assert len(projectiles) == 1
-    assert_float_close(projectiles[0].angle, expected_angle, abs_tol=1e-9)
+    assert_float_close(projectiles[0].angle, expected_angle)
 
 
 def test_player_update_hot_tempered_spawns_ring() -> None:
@@ -1037,4 +1041,4 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     assert sum(1 for entry in pool.entries if entry.active) >= 2
     chained = pool.entries[int(state.shock_chain_projectile_id)]
     expected_angle = math.atan2(far_y, 50.0) + math.pi / 2.0
-    assert_float_close(chained.angle, expected_angle, abs_tol=1e-9)
+    assert_float_close(chained.angle, expected_angle)

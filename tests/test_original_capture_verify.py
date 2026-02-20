@@ -5,6 +5,7 @@ from typing import cast
 
 import pytest
 
+import crimson.original.verify as original_verify
 from crimson.game_modes import GameMode
 from crimson.original.capture import convert_capture_to_replay
 from crimson.original.diff import ReplayFieldDiff
@@ -556,7 +557,7 @@ def test_verify_capture_quest_nonzero_start_tick_bootstraps_perk_choices() -> No
 
 
 def test_verify_capture_quest_uses_capture_inter_tick_rand_draw_overrides(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker,
 ) -> None:
     checkpoint = _single_tick_quest_checkpoint(quest_level="1.1", seed=0xCAFE)
     capture = _capture_from_checkpoint(
@@ -580,11 +581,12 @@ def test_verify_capture_quest_uses_capture_inter_tick_rand_draw_overrides(
         seen_inter_tick_rand_draws_by_tick = cast("dict[int, int]", kwargs.get("inter_tick_rand_draws_by_tick", {}))
         raise _Stop("stop after capturing kwargs")
 
-    monkeypatch.setattr(
-        "crimson.original.verify.build_capture_inter_tick_rand_draws_overrides",
-        lambda _capture: {0: 0, 1: 1},
+    mocker.patch.object(
+        original_verify,
+        "build_capture_inter_tick_rand_draws_overrides",
+        side_effect=lambda _capture: {0: 0, 1: 1},
     )
-    monkeypatch.setattr("crimson.original.verify.run_quest_replay", _fake_run_quest_replay)
+    mocker.patch.object(original_verify, "run_quest_replay", side_effect=_fake_run_quest_replay)
 
     with pytest.raises(_Stop):
         verify_capture(

@@ -3,17 +3,18 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.modes.survival_mode import SurvivalMode
+from crimson.ui.game_over import GameOverUi
 from grim.config import CrimsonConfig
 from grim.view import ViewContext
 
 
-def test_survival_high_score_record_uses_player0_stats_in_multiplayer(monkeypatch) -> None:
+def test_survival_high_score_record_uses_player0_stats_in_multiplayer(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
     config = CrimsonConfig(path=repo_root / "crimson.cfg", data={"player_count": 2, "game_mode": 1})
 
     mode = SurvivalMode(ctx, config=config)
-    monkeypatch.setattr("crimson.ui.game_over.GameOverUi.open", lambda self: None)
+    mocker.patch.object(GameOverUi, "open", return_value=None)
 
     player0, player1 = mode.world.players[:2]
     player0.experience = 1234

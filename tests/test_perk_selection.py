@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import pytest
-
+import crimson.perks.selection as perk_selection_module
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
@@ -69,7 +68,7 @@ def test_perk_generate_choices_tutorial_returns_fixed_list() -> None:
     ]
 
 
-def test_perk_selection_current_choices_keeps_hidden_internal_entries(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_perk_selection_current_choices_keeps_hidden_internal_entries(mocker) -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
     perk_state = PerkSelectionState(pending_count=1, choices=[], choices_dirty=True)
@@ -85,7 +84,7 @@ def test_perk_selection_current_choices_keeps_hidden_internal_entries(monkeypatc
             PerkId.INSTANT_WINNER,
         ]
 
-    monkeypatch.setattr("crimson.perks.selection.perk_generate_choices", _fake_perk_generate_choices)
+    mocker.patch.object(perk_selection_module, "perk_generate_choices", side_effect=_fake_perk_generate_choices)
 
     visible = perk_selection_current_choices(
         state,

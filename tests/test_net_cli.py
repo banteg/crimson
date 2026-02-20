@@ -5,16 +5,19 @@ from typing import Any
 
 from typer.testing import CliRunner
 
+import crimson.game as game
+import crimson.logging as game_logging
+import crimson.net.relay_service as relay_service
 from crimson.cli import app
 
 
-def test_net_host_command_builds_pending_network_session(monkeypatch, tmp_path: Path) -> None:
+def test_net_host_command_builds_pending_network_session(mocker, tmp_path: Path) -> None:
     captured: dict[str, Any] = {}
 
     def _fake_run_game(config):
         captured["config"] = config
 
-    monkeypatch.setattr("crimson.game.run_game", _fake_run_game)
+    mocker.patch.object(game, "run_game", side_effect=_fake_run_game)
 
     runner = CliRunner()
     result = runner.invoke(
@@ -52,8 +55,8 @@ def test_net_host_command_builds_pending_network_session(monkeypatch, tmp_path: 
     assert pending.config.netcode_mode == "rollback"
 
 
-def test_net_host_quests_requires_quest_level(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setattr("crimson.game.run_game", lambda _config: None)
+def test_net_host_quests_requires_quest_level(mocker, tmp_path: Path) -> None:
+    mocker.patch.object(game, "run_game", side_effect=lambda _config: None)
     runner = CliRunner()
     result = runner.invoke(
         app,
@@ -72,13 +75,13 @@ def test_net_host_quests_requires_quest_level(monkeypatch, tmp_path: Path) -> No
     assert "quest level is required" in result.output
 
 
-def test_net_join_command_builds_pending_join_session_with_legacy_fallback(monkeypatch, tmp_path: Path) -> None:
+def test_net_join_command_builds_pending_join_session_with_legacy_fallback(mocker, tmp_path: Path) -> None:
     captured: dict[str, Any] = {}
 
     def _fake_run_game(config):
         captured["config"] = config
 
-    monkeypatch.setattr("crimson.game.run_game", _fake_run_game)
+    mocker.patch.object(game, "run_game", side_effect=_fake_run_game)
 
     runner = CliRunner()
     result = runner.invoke(
@@ -112,7 +115,7 @@ def test_net_join_command_builds_pending_join_session_with_legacy_fallback(monke
     assert pending.config.netcode_mode == "lockstep_legacy"
 
 
-def test_relay_serve_command_constructs_relay_server(monkeypatch, tmp_path: Path) -> None:
+def test_relay_serve_command_constructs_relay_server(mocker, tmp_path: Path) -> None:
     captured: dict[str, Any] = {}
 
     class _FakeRelayServer:
@@ -125,7 +128,7 @@ def test_relay_serve_command_constructs_relay_server(monkeypatch, tmp_path: Path
     default_log = tmp_path / "logs" / "relay" / "auto.log"
     explicit_log = tmp_path / "logs" / "relay" / "relay.log"
 
-    monkeypatch.setattr("crimson.logging.default_component_log_path", lambda **_kwargs: default_log)
+    mocker.patch.object(game_logging, "default_component_log_path", side_effect=lambda **_kwargs: default_log)
 
     def _fake_configure_component_logging(
         *,
@@ -140,8 +143,8 @@ def test_relay_serve_command_constructs_relay_server(monkeypatch, tmp_path: Path
         captured["log_level"] = str(level)
         return Path(log_file)
 
-    monkeypatch.setattr("crimson.logging.configure_component_logging", _fake_configure_component_logging)
-    monkeypatch.setattr("crimson.net.relay_service.RelayServer", _FakeRelayServer)
+    mocker.patch.object(game_logging, "configure_component_logging", side_effect=_fake_configure_component_logging)
+    mocker.patch.object(relay_service, "RelayServer", _FakeRelayServer)
 
     runner = CliRunner()
     result = runner.invoke(
@@ -174,7 +177,7 @@ def test_relay_serve_command_constructs_relay_server(monkeypatch, tmp_path: Path
     assert str(explicit_log) in result.output
 
 
-def test_relay_serve_command_rejects_invalid_log_level(monkeypatch, tmp_path: Path) -> None:
+def test_relay_serve_command_rejects_invalid_log_level(mocker, tmp_path: Path) -> None:
     class _FakeRelayServer:
         def __init__(self, _cfg) -> None:
             pass
@@ -182,7 +185,7 @@ def test_relay_serve_command_rejects_invalid_log_level(monkeypatch, tmp_path: Pa
         def serve_forever(self, *, tick_ms: int) -> None:
             _ = tick_ms
 
-    monkeypatch.setattr("crimson.net.relay_service.RelayServer", _FakeRelayServer)
+    mocker.patch.object(relay_service, "RelayServer", _FakeRelayServer)
 
     runner = CliRunner()
     result = runner.invoke(
