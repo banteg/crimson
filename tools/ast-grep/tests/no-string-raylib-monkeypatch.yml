@@ -1,0 +1,13 @@
+id: no-string-raylib-monkeypatch
+valid:
+  - |
+    monkeypatch.setattr(module.rl, "get_screen_width", lambda: 640)
+  - |
+    monkeypatch.setattr("crimson.game.run_game", lambda _config: None)
+  - |
+    mocker.patch("crimson.ui.game_over.rl.get_screen_width", side_effect=lambda: 640)
+invalid:
+  - |
+    monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_width", lambda: 640)
+  - |
+    monkeypatch.setattr("crimson.render.world.effects.rl.draw_texture_pro", _draw_texture_pro)

@@ -107,14 +107,14 @@ def test_rng_alignment_reports_native_caller_gap_and_fire_bullets_loop_parity() 
     assert int(parity.rewrite_pre_freeze_rolls) == 2
 
 
-def test_trace_focus_tick_accepts_quest_mode_before_tick_lookup(monkeypatch, tmp_path) -> None:
+def test_trace_focus_tick_accepts_quest_mode_before_tick_lookup(mocker, tmp_path) -> None:
     focus = _load_focus_trace_module()
     capture = object()
     replay = SimpleNamespace(header=SimpleNamespace(game_mode_id=int(GameMode.QUESTS)))
 
-    monkeypatch.setattr(focus, "load_capture", lambda _path: capture)
-    monkeypatch.setattr(focus, "convert_capture_to_replay", lambda *_args, **_kwargs: replay)
-    monkeypatch.setattr(focus, "_read_capture_tick", lambda *_args, **_kwargs: None)
+    mocker.patch.object(focus, "load_capture", side_effect=lambda _path: capture)
+    mocker.patch.object(focus, "convert_capture_to_replay", side_effect=lambda *_args, **_kwargs: replay)
+    mocker.patch.object(focus, "_read_capture_tick", side_effect=lambda *_args, **_kwargs: None)
 
     with pytest.raises(ValueError, match=r"capture tick 0 not found"):
         focus.trace_focus_tick(

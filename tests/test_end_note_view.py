@@ -1,22 +1,14 @@
 from __future__ import annotations
 
-import pyray as rl
-
+import crimson.game.quest_views.end_note as end_note_module
 from crimson.frontend.panels.base import PANEL_TIMELINE_START_MS
 from crimson.game.quest_views import EndNoteView
+from grim.raylib_api import rl
 
 
-class _PauseBackgroundStub:
-    def __init__(self, sink: list[float]) -> None:
-        self._sink = sink
-
-    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
-        self._sink.append(float(entity_alpha))
-
-
-def test_end_note_escape_waits_for_close_transition(monkeypatch, make_game_state, tmp_path) -> None:
+def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, mocker) -> None:
     state = make_game_state(assets_root=tmp_path, audio=object())
-    played: list[str] = []
+    play_sfx = mocker.patch.object(end_note_module, "play_sfx")
 
     class _DummyCache:
         def get_or_load(self, *_args, **_kwargs):
@@ -25,13 +17,9 @@ def test_end_note_escape_waits_for_close_transition(monkeypatch, make_game_state
 
             return _StubAsset()
 
-    def _play_sfx(_audio, key, *, rng=None, allow_variants=True) -> None:
-        played.append(key)
-
-    monkeypatch.setattr("crimson.game.quest_views.end_note.update_audio", lambda _audio, _dt: None)
-    monkeypatch.setattr("crimson.game.quest_views.end_note._ensure_texture_cache", lambda _state: _DummyCache())
-    monkeypatch.setattr("crimson.game.quest_views.end_note.play_sfx", _play_sfx)
-    monkeypatch.setattr("crimson.game.quest_views.end_note.rl.is_key_pressed", lambda _key: False)
+    mocker.patch.object(end_note_module, "update_audio", side_effect=lambda _audio, _dt: None)
+    mocker.patch.object(end_note_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyCache())
+    mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda _key: False)
 
     view = EndNoteView(state)
     view.open()
@@ -39,16 +27,13 @@ def test_end_note_escape_waits_for_close_transition(monkeypatch, make_game_state
     view.update(0.1)
     view.update(0.1)
 
-    monkeypatch.setattr(
-        "crimson.game.quest_views.end_note.rl.is_key_pressed",
-        lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE),
-    )
+    mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE))
     view.update(0.1)
 
-    assert played == ["sfx_ui_buttonclick"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_buttonclick"]
     assert view.take_action() is None
 
-    monkeypatch.setattr("crimson.game.quest_views.end_note.rl.is_key_pressed", lambda _key: False)
+    mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda _key: False)
     action = None
     for _ in range(30):
         view.update(1.0 / 60.0)
@@ -58,10 +43,10 @@ def test_end_note_escape_waits_for_close_transition(monkeypatch, make_game_state
     assert action == "back_to_menu"
 
 
-def test_end_note_draw_fades_pause_background_during_close(monkeypatch, make_game_state, tmp_path) -> None:
+def test_end_note_draw_fades_pause_background_during_close(make_game_state, tmp_path, mocker) -> None:
     state = make_game_state(assets_root=tmp_path, audio=None)
-    captured_alpha: list[float] = []
-    state.pause_background = _PauseBackgroundStub(captured_alpha)
+    pause_background = mocker.Mock()
+    state.pause_background = pause_background
 
     class _DummyCache:
         def get_or_load(self, *_args, **_kwargs):
@@ -70,10 +55,10 @@ def test_end_note_draw_fades_pause_background_during_close(monkeypatch, make_gam
 
             return _StubAsset()
 
-    monkeypatch.setattr("crimson.game.quest_views.end_note.update_audio", lambda _audio, _dt: None)
-    monkeypatch.setattr("crimson.game.quest_views.end_note._ensure_texture_cache", lambda _state: _DummyCache())
-    monkeypatch.setattr("crimson.game.quest_views.end_note.rl.clear_background", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.game.quest_views.end_note._draw_screen_fade", lambda *_args, **_kwargs: None)
+    mocker.patch.object(end_note_module, "update_audio", side_effect=lambda _audio, _dt: None)
+    mocker.patch.object(end_note_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyCache())
+    mocker.patch.object(end_note_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(end_note_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
 
     view = EndNoteView(state)
     view.open()
@@ -82,5 +67,4 @@ def test_end_note_draw_fades_pause_background_during_close(monkeypatch, make_gam
     view._panel_tex = None
     view.draw()
 
-    assert captured_alpha
-    assert captured_alpha[-1] == 0.5
+    pause_background.draw_pause_background.assert_called_once_with(entity_alpha=0.5)

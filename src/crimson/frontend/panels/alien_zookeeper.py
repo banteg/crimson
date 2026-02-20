@@ -3,8 +3,6 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-import pyray as rl
-
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import (
     SmallFontData,
@@ -12,6 +10,7 @@ from grim.fonts.small import (
     load_small_font,
 )
 from grim.geom import Vec2
+from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from ...ui.menu_panel import draw_classic_menu_panel

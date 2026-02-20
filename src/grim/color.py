@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Protocol, SupportsFloat
 from .math import clamp
 
 if TYPE_CHECKING:
-    import pyray as rl
+    from grim.raylib_api import rl
 
 
 class SupportsRGBA(Protocol):
@@ -105,7 +105,7 @@ class RGBA:
         return self.with_alpha(self.a * float(factor))
 
     def to_rl(self) -> rl.Color:
-        import pyray as rl
+        from grim.raylib_api import rl
 
         c = self.clamped()
         return rl.Color(

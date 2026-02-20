@@ -7,12 +7,11 @@ import time
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING
 
-import pyray as rl
-
 from grim.audio import AudioState, shutdown_audio, update_audio
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
+from grim.raylib_api import rl
 from grim.view import View, ViewContext
 
 from ..creatures.spawn import SpawnId

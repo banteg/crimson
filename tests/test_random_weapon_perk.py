@@ -6,7 +6,7 @@ from crimson.perks.runtime.apply import perk_apply
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from tests.helpers import MockCrand
+from tests.helpers import MockCrand, assert_rng_progression
 
 
 def test_random_weapon_assigns_a_non_pistol_weapon() -> None:
@@ -35,9 +35,17 @@ def test_random_weapon_uses_last_roll_after_100_retries() -> None:
     state = GameplayState(rng=rng)
     player = PlayerState(index=0, pos=Vec2())
     player.weapon_id = int(WeaponId.PISTOL)
+    before_calls = rng.calls
+    before_state = rng.state
 
     perk_apply(state, [player], PerkId.RANDOM_WEAPON)
 
     # Native behavior: capped retries still apply the last candidate.
-    assert rng.calls == 100
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=100,
+        expected_after_state=0,
+    )
     assert player.weapon_id == int(WeaponId.PISTOL)

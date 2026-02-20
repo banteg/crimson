@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-
-import pytest
+from typing import cast
 
 import crimson.creatures.runtime as creature_runtime
 from crimson.bonuses.pool import BonusEntry
@@ -26,6 +25,7 @@ from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
+from tests.helpers import MockCrand, assert_float_close, assert_rng_progression
 
 
 def test_spawn_plan_remaps_ai_links_with_pool_offset() -> None:
@@ -114,7 +114,7 @@ def test_spawn_plan_materialization_spawns_burst_fx() -> None:
     assert all(int(entry.effect_id) == 0 for entry in active)
 
 
-def test_spawn_slot_update_uses_random_heading_sentinel(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     state = GameplayState()
     env = SpawnEnv(
         terrain_width=1024.0,
@@ -146,27 +146,25 @@ def test_spawn_slot_update_uses_random_heading_sentinel(monkeypatch: pytest.Monk
         ),
     )
 
-    seen_calls: list[tuple[int, float, Vec2, SpawnEnv]] = []
-
-    def _fake_build_spawn_plan(template_id: int, pos: Vec2, heading: float, rng: object, env_arg: SpawnEnv) -> object:
-        del rng
-        seen_calls.append((int(template_id), float(heading), pos, env_arg))
-        return object()
+    sentinel_plan = object()
 
     def _fake_spawn_plan(self: CreaturePool, plan: object, **kwargs: object) -> tuple[list[int], int | None]:
         del self, plan, kwargs
         return [], None
 
-    monkeypatch.setattr(creature_runtime, "build_spawn_plan", _fake_build_spawn_plan)
-    monkeypatch.setattr(CreaturePool, "spawn_plan", _fake_spawn_plan)
+    build_spawn_plan = mocker.patch.object(creature_runtime, "build_spawn_plan", return_value=sentinel_plan)
+    spawn_plan = mocker.patch.object(CreaturePool, "spawn_plan", autospec=True, side_effect=_fake_spawn_plan)
 
     pool.update(1.0 / 60.0, state=state, players=[player])
 
-    assert len(seen_calls) == 1
-    child_template_id, heading, _, env_arg = seen_calls[0]
+    build_spawn_plan.assert_called_once()
+    child_template_id = int(build_spawn_plan.call_args.args[0])
+    heading = float(build_spawn_plan.call_args.args[2])
+    env_arg = cast("SpawnEnv", build_spawn_plan.call_args.args[4])
     assert child_template_id == 0x1D
-    assert heading == pytest.approx(RANDOM_HEADING_SENTINEL)
+    assert_float_close(heading, RANDOM_HEADING_SENTINEL)
     assert env_arg is env
+    spawn_plan.assert_called_once()
 
 
 def test_spawn_slot_update_requires_spawner_flag() -> None:
@@ -206,7 +204,7 @@ def test_spawn_slot_update_requires_spawner_flag() -> None:
     pool.update(1.0 / 60.0, state=state, players=[player])
 
     assert pool.spawn_slots[0].count == 0
-    assert pool.spawn_slots[0].timer == pytest.approx(0.0)
+    assert_float_close(pool.spawn_slots[0].timer, 0.0)
     assert [idx for idx, creature in enumerate(pool.entries) if idx != 0 and creature.active] == []
 
 
@@ -249,7 +247,8 @@ def test_spawn_slot_child_can_update_in_same_tick() -> None:
     child_indices = [idx for idx, creature in enumerate(pool.entries) if idx != 0 and creature.active]
     assert child_indices
     child = pool.entries[child_indices[0]]
-    assert child.target_heading != pytest.approx(0.0, abs=1e-6)
+    assert child.target_heading is not None
+    assert abs(float(child.target_heading)) > 1e-6
     assert child.pos != Vec2(256.0, 256.0)
 
 
@@ -270,8 +269,8 @@ def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
 
     pool.update(1.0 / 60.0, state=state, players=[player])
 
-    assert creature.pos.x == pytest.approx(-64.0)
-    assert creature.pos.y == pytest.approx(1088.0)
+    assert_float_close(creature.pos.x, -64.0)
+    assert_float_close(creature.pos.y, 1088.0)
 
 
 def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
@@ -300,10 +299,10 @@ def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
     base_delta = base.pos - start_pos
     variant_delta = variant.pos - start_pos
 
-    assert variant_delta.x == pytest.approx(base_delta.x, abs=1e-9)
-    assert variant_delta.y == pytest.approx(base_delta.y, abs=1e-9)
-    assert variant.vel.x == pytest.approx(base.vel.x, abs=1e-9)
-    assert variant.vel.y == pytest.approx(base.vel.y, abs=1e-9)
+    assert_float_close(variant_delta.x, base_delta.x)
+    assert_float_close(variant_delta.y, base_delta.y)
+    assert_float_close(variant.vel.x, base.vel.x)
+    assert_float_close(variant.vel.y, base.vel.y)
 
 
 def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
@@ -357,10 +356,11 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
     near_step = (near.pos - near_start).length()
     far_step = (far.pos - far_start).length()
 
-    assert near.move_scale == pytest.approx(50.0 * 0.015625, abs=1e-6)
-    assert far.move_scale == pytest.approx(1.0, abs=1e-6)
+    assert_float_close(near.move_scale, 50.0 * 0.015625)
+    assert_float_close(far.move_scale, 1.0)
     assert near_step < far_step
-    assert near_step == pytest.approx(far_step * near.move_scale, rel=5e-6, abs=2e-6)
+    assert_float_close(far_step, 0.9999993146409377)
+    assert_float_close(near_step, 0.7812510393925548)
 
 
 def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
@@ -385,8 +385,8 @@ def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
     pool.update(1.0 / 60.0, state=state, players=[player0, player1], rand=lambda: 0)
 
     assert creature.target_player == 1
-    assert player0.health == pytest.approx(0.0)
-    assert player1.health == pytest.approx(90.0)
+    assert_float_close(player0.health, 0.0)
+    assert_float_close(player1.health, 90.0)
 
 
 def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
@@ -411,8 +411,8 @@ def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
     pool.update(1.0 / 60.0, state=state, players=[player0, player1], rand=lambda: 0)
 
     assert creature.target_player == 1
-    assert player0.health == pytest.approx(100.0)
-    assert player1.health == pytest.approx(90.0)
+    assert_float_close(player0.health, 100.0)
+    assert_float_close(player1.health, 90.0)
 
 
 def test_small_creature_dies_on_contact() -> None:
@@ -436,9 +436,9 @@ def test_small_creature_dies_on_contact() -> None:
     dt = 1.0 / 60.0
     pool.update(dt, state=state, players=[player], rand=lambda: 0)
 
-    assert player.health == pytest.approx(90.0)
-    assert creature.hp == pytest.approx(0.0)
-    assert creature.hitbox_size == pytest.approx(f32(float(CREATURE_HITBOX_ALIVE) - float(dt)))
+    assert_float_close(player.health, 90.0)
+    assert_float_close(creature.hp, 0.0)
+    assert_float_close(creature.hitbox_size, f32(float(CREATURE_HITBOX_ALIVE) - float(dt)))
     assert pool.kill_count == 0
 
 
@@ -491,7 +491,7 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert state.rng._idx == 67  # type: ignore[attr-defined]
 
 
-def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result() -> None:
+def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result(mocker) -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
@@ -504,21 +504,17 @@ def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result()
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 0.0
 
-    calls = {"forced": 0, "organic": 0}
     organic_pos = Vec2(200.0, 200.0)
-
-    def _spawn_at(**kwargs):
-        calls["forced"] += 1
-        _ = kwargs
-        return BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5)
-
-    def _try_spawn_on_kill(**kwargs):
-        calls["organic"] += 1
-        _ = kwargs
-        return BonusEntry(bonus_id=2, pos=organic_pos, time_left=10.0, time_max=10.0, amount=1)
-
-    state.bonus_pool.spawn_at = _spawn_at  # type: ignore[method-assign]
-    state.bonus_pool.try_spawn_on_kill = _try_spawn_on_kill  # type: ignore[method-assign]
+    spawn_at = mocker.patch.object(
+        state.bonus_pool,
+        "spawn_at",
+        return_value=BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5),
+    )
+    try_spawn_on_kill = mocker.patch.object(
+        state.bonus_pool,
+        "try_spawn_on_kill",
+        return_value=BonusEntry(bonus_id=2, pos=organic_pos, time_left=10.0, time_max=10.0, amount=1),
+    )
 
     pool.handle_death(
         0,
@@ -530,14 +526,14 @@ def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result()
         fx_queue=None,
     )
 
-    assert calls["forced"] == 1
-    assert calls["organic"] == 1
+    spawn_at.assert_called_once()
+    try_spawn_on_kill.assert_called_once()
     active = state.effects.iter_active()
     assert len(active) == 16
     assert all(entry.pos == organic_pos for entry in active)
 
 
-def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails() -> None:
+def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails(mocker) -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
@@ -549,16 +545,12 @@ def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails() -
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 0.0
 
-    def _spawn_at(**kwargs):
-        _ = kwargs
-        return BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5)
-
-    def _try_spawn_on_kill(**kwargs):
-        _ = kwargs
-        return None
-
-    state.bonus_pool.spawn_at = _spawn_at  # type: ignore[method-assign]
-    state.bonus_pool.try_spawn_on_kill = _try_spawn_on_kill  # type: ignore[method-assign]
+    spawn_at = mocker.patch.object(
+        state.bonus_pool,
+        "spawn_at",
+        return_value=BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5),
+    )
+    try_spawn_on_kill = mocker.patch.object(state.bonus_pool, "try_spawn_on_kill", return_value=None)
 
     pool.handle_death(
         0,
@@ -570,6 +562,8 @@ def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails() -
         fx_queue=None,
     )
 
+    spawn_at.assert_called_once()
+    try_spawn_on_kill.assert_called_once()
     assert state.effects.iter_active() == []
 
 
@@ -628,7 +622,7 @@ def test_death_award_uses_float32_sum_before_truncation() -> None:
     assert player.experience == 48_902
 
 
-def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random() -> None:
+def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random(mocker) -> None:
     state = GameplayState()
     state.game_mode = int(GameMode.RUSH)
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
@@ -639,15 +633,7 @@ def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random() -> None:
     creature.pos = Vec2(100.0, 100.0)
 
     fx_queue = FxQueue()
-    calls = 0
-    orig_add_random = fx_queue.add_random
-
-    def _add_random(**kwargs):
-        nonlocal calls
-        calls += 1
-        return orig_add_random(**kwargs)
-
-    fx_queue.add_random = _add_random  # type: ignore[method-assign]
+    add_random = mocker.patch.object(fx_queue, "add_random", wraps=fx_queue.add_random)
 
     pool.handle_death(
         0,
@@ -659,10 +645,10 @@ def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random() -> None:
         fx_queue=fx_queue,
     )
 
-    assert calls == 0
+    add_random.assert_not_called()
 
 
-def test_handle_death_freeze_enqueues_fx_queue_random_once() -> None:
+def test_handle_death_freeze_enqueues_fx_queue_random_once(mocker) -> None:
     state = GameplayState()
     state.game_mode = int(GameMode.RUSH)
     state.bonuses.freeze = 1.0
@@ -674,15 +660,7 @@ def test_handle_death_freeze_enqueues_fx_queue_random_once() -> None:
     creature.pos = Vec2(100.0, 100.0)
 
     fx_queue = FxQueue()
-    calls = 0
-    orig_add_random = fx_queue.add_random
-
-    def _add_random(**kwargs):
-        nonlocal calls
-        calls += 1
-        return orig_add_random(**kwargs)
-
-    fx_queue.add_random = _add_random  # type: ignore[method-assign]
+    add_random = mocker.patch.object(fx_queue, "add_random", wraps=fx_queue.add_random)
 
     pool.handle_death(
         0,
@@ -694,10 +672,10 @@ def test_handle_death_freeze_enqueues_fx_queue_random_once() -> None:
         fx_queue=fx_queue,
     )
 
-    assert calls == 1
+    add_random.assert_called_once()
 
 
-def test_handle_death_inactive_entry_skips_reentrant_side_effects() -> None:
+def test_handle_death_inactive_entry_skips_reentrant_side_effects(mocker) -> None:
     state = GameplayState()
     state.game_mode = int(GameMode.RUSH)
     state.bonuses.freeze = 1.0
@@ -710,15 +688,7 @@ def test_handle_death_inactive_entry_skips_reentrant_side_effects() -> None:
     creature.pos = Vec2(100.0, 100.0)
 
     fx_queue = FxQueue()
-    calls = 0
-    orig_add_random = fx_queue.add_random
-
-    def _add_random(**kwargs):
-        nonlocal calls
-        calls += 1
-        return orig_add_random(**kwargs)
-
-    fx_queue.add_random = _add_random  # type: ignore[method-assign]
+    add_random = mocker.patch.object(fx_queue, "add_random", wraps=fx_queue.add_random)
 
     death = pool.handle_death(
         0,
@@ -732,7 +702,7 @@ def test_handle_death_inactive_entry_skips_reentrant_side_effects() -> None:
 
     assert death.xp_awarded == 0
     assert player.experience == 0
-    assert calls == 0
+    add_random.assert_not_called()
     assert not any(entry.bonus_id != 0 for entry in state.bonus_pool.entries)
 
 
@@ -760,10 +730,10 @@ def test_spawn_inits_resets_native_spawn_state_fields() -> None:
     assert entry.active is True
     assert entry.vel == Vec2()
     assert entry.force_target == 0
-    assert entry.attack_cooldown == pytest.approx(0.0, abs=1e-9)
-    assert entry.collision_timer == pytest.approx(0.0, abs=1e-9)
-    assert entry.hit_flash_timer == pytest.approx(0.0, abs=1e-9)
-    assert entry.anim_phase == pytest.approx(0.0, abs=1e-9)
+    assert_float_close(entry.attack_cooldown, 0.0)
+    assert_float_close(entry.collision_timer, 0.0)
+    assert_float_close(entry.hit_flash_timer, 0.0)
+    assert_float_close(entry.anim_phase, 0.0)
     assert entry.last_hit_owner_id == -100
 
 
@@ -816,8 +786,8 @@ def test_spawn_init_preserves_stale_target_heading_from_recycled_slot() -> None:
     )
 
     assert idx == 0
-    assert pool.entries[idx].heading == pytest.approx(float(f32(0.53)), abs=0.0)
-    assert pool.entries[idx].target_heading == pytest.approx(2.5632283687591553, abs=1e-9)
+    assert_float_close(pool.entries[idx].heading, float(f32(0.53)))
+    assert_float_close(pool.entries[idx].target_heading, 2.5632283687591553)
 
 
 def test_spawn_init_ai_timer_still_overrides_link_index() -> None:
@@ -865,7 +835,7 @@ def test_tick_dead_defers_corpse_deactivation_until_post_render_cleanup() -> Non
     )
 
     assert corpse.active is True
-    assert corpse.hitbox_size == pytest.approx(-10.016, abs=1e-6)
+    assert_float_close(corpse.hitbox_size, -10.016)
 
     pool.finalize_post_render_lifecycle()
     assert corpse.active is False
@@ -882,12 +852,9 @@ def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> 
     corpse.flags = CreatureFlags.ANIM_PING_PONG
     corpse.size = 24.0
 
-    rand_calls = 0
-
-    def _rand() -> int:
-        nonlocal rand_calls
-        rand_calls += 1
-        return 0
+    rng = MockCrand(0, fallback="repeat_last")
+    before_calls = rng.calls
+    before_state = rng.state
 
     pool._tick_dead(
         corpse,
@@ -895,14 +862,21 @@ def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> 
         world_width=1024.0,
         world_height=1024.0,
         fx_queue_rotated=None,
-        rand=_rand,
+        rand=rng,
         detail_preset=5,
         fx_toggle=0,
     )
 
     # Native branch: 19 angle draws + 19 calls to effect_spawn_blood_splatter
     # (10 draws each in our parity model) = 209 total.
-    assert rand_calls == 209
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=209,
+        expected_after_state=0,
+        expected_hash="b44cf392af3c0e88",
+    )
     assert len(state.effects.iter_active()) == 38
 
 
@@ -921,7 +895,7 @@ def test_dead_self_damage_tick_flags_still_shrink_hitbox_before_dead_decay() -> 
     pool.update(0.03800000250339508, state=state, players=[player], rand=lambda: 0)
 
     # Native applies SELF_DAMAGE_TICK via creature_apply_damage even while hp<=0.
-    assert corpse.hitbox_size == pytest.approx(11.006003, abs=1e-5)
+    assert_float_close(corpse.hitbox_size, 11.006003)
 
 
 def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> None:
@@ -1101,7 +1075,7 @@ def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
     pool.update(1.0 / 60.0, state=state, players=[player], rand=stub_rand.rand)
 
     # Native Evil Eyes path jumps to loop tail before cooldown/interaction/ranged branches.
-    assert creature.attack_cooldown == pytest.approx(1.0, abs=1e-9)
+    assert_float_close(creature.attack_cooldown, 1.0)
     assert creature.vel == Vec2(2.0, -3.0)
     assert creature.pos == Vec2(640.0, 512.0)
     assert creature.link_index == 83
@@ -1153,8 +1127,8 @@ def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
     stub_rand = _StubRand([0x2A, 0x2B])
     pool.update(1.0 / 60.0, state=state, players=[player0, player1], rand=stub_rand.rand)
 
-    assert creature0.attack_cooldown == pytest.approx(1.0, abs=1e-9)
-    assert creature1.attack_cooldown == pytest.approx(1.0, abs=1e-9)
+    assert_float_close(creature0.attack_cooldown, 1.0)
+    assert_float_close(creature1.attack_cooldown, 1.0)
     assert creature0.vel == Vec2(2.0, -3.0)
     assert creature1.vel == Vec2(2.0, -3.0)
     assert creature0.force_target == 0

@@ -1,0 +1,231 @@
+# serializer version: 1
+# name: test_primary_projectile_update_snapshot[ion_minigun_linger]
+  dict({
+    'creature_hp': list([
+      106.7,
+    ]),
+    'hits': list([
+      dict({
+        'hit': list([
+          30.0,
+          0.0,
+        ]),
+        'origin': list([
+          0.0,
+          0.0,
+        ]),
+        'target': list([
+          40.0,
+          0.0,
+        ]),
+        'type_id': 22,
+      }),
+    ]),
+    'projectile': dict({
+      'active': True,
+      'damage_pool': 0.0,
+      'life_timer': 0.15,
+      'owner_id': -100,
+      'pos': list([
+        30.0,
+        0.0,
+      ]),
+      'type_id': 22,
+    }),
+  })
+# ---
+# name: test_primary_projectile_update_snapshot[pistol_near_hit]
+  dict({
+    'creature_hp': list([
+      33.5,
+    ]),
+    'hits': list([
+      dict({
+        'hit': list([
+          30.0,
+          0.0,
+        ]),
+        'origin': list([
+          0.0,
+          0.0,
+        ]),
+        'target': list([
+          41.142857,
+          0.0,
+        ]),
+        'type_id': 1,
+      }),
+    ]),
+    'projectile': dict({
+      'active': True,
+      'damage_pool': 0.0,
+      'life_timer': 0.25,
+      'owner_id': -100,
+      'pos': list([
+        30.0,
+        0.0,
+      ]),
+      'type_id': 1,
+    }),
+  })
+# ---
+# name: test_primary_projectile_update_snapshot[pistol_rng_jitter]
+  dict({
+    'creature_hp': list([
+      44.532258,
+    ]),
+    'hits': list([
+      dict({
+        'hit': list([
+          60.0,
+          0.0,
+        ]),
+        'origin': list([
+          0.0,
+          0.0,
+        ]),
+        'target': list([
+          71.142857,
+          0.0,
+        ]),
+        'type_id': 1,
+      }),
+    ]),
+    'projectile': dict({
+      'active': True,
+      'damage_pool': 0.0,
+      'life_timer': 0.25,
+      'owner_id': -100,
+      'pos': list([
+        62.0,
+        0.0,
+      ]),
+      'type_id': 1,
+    }),
+  })
+# ---
+# name: test_primary_projectile_update_snapshot[rocket_no_splash_type_0x0b]
+  dict({
+    'creature_hp': list([
+      43.0,
+      100.0,
+      100.0,
+    ]),
+    'hits': list([
+      dict({
+        'hit': list([
+          60.0,
+          0.0,
+        ]),
+        'origin': list([
+          0.0,
+          0.0,
+        ]),
+        'target': list([
+          71.142857,
+          0.0,
+        ]),
+        'type_id': 11,
+      }),
+    ]),
+    'projectile': dict({
+      'active': True,
+      'damage_pool': 0.0,
+      'life_timer': 0.25,
+      'owner_id': -100,
+      'pos': list([
+        60.0,
+        0.0,
+      ]),
+      'type_id': 11,
+    }),
+  })
+# ---
+# name: test_projectile_pool_demo_update_snapshot
+  dict({
+    'active': True,
+    'life_timer': 0.4,
+    'pos': list([
+      10.0,
+      0.0,
+    ]),
+  })
+# ---
+# name: test_secondary_projectile_impulse_callbacks_snapshot
+  list([
+    dict({
+      'damage': 594.999999,
+      'damage_type': 3,
+      'idx': 0,
+      'impulse': list([
+        0.0,
+        -1170.0,
+      ]),
+      'owner_id': -100,
+    }),
+  ])
+# ---
+# name: test_secondary_projectile_kill_followup_snapshot
+  dict({
+    'creature_hp': -50.0,
+    'followup_calls': list([
+      0,
+    ]),
+    'fx_count': 2,
+  })
+# ---
+# name: test_secondary_projectile_pool_snapshot[detonation]
+  dict({
+    'camera_shake_pulses': 4,
+    'creature_hp': list([
+      930.0,
+    ]),
+    'entry': dict({
+      'active': True,
+      'angle': 0.0,
+      'detonation_scale': 1.0,
+      'detonation_t': 0.3,
+      'pos': list([
+        0.0,
+        0.0,
+      ]),
+      'target_hint_active': False,
+      'target_id': -1,
+      'trail_timer': 0.0,
+      'type_id': 3,
+      'vel': list([
+        0.0,
+        0.0,
+      ]),
+    }),
+    'fx_count': 0,
+    'sfx_queue': list([
+    ]),
+  })
+# ---
+# name: test_secondary_projectile_pool_snapshot[seek_target]
+  dict({
+    'creature_hp': list([
+      100.0,
+      100.0,
+    ]),
+    'entry': dict({
+      'active': True,
+      'angle': 1.572696,
+      'detonation_scale': 1.0,
+      'detonation_t': 0.0,
+      'pos': list([
+        0.0,
+        -1.9,
+      ]),
+      'target_hint_active': False,
+      'target_id': 1,
+      'trail_timer': 0.06,
+      'type_id': 2,
+      'vel': list([
+        7.999986,
+        -189.9848,
+      ]),
+    }),
+  })
+# ---

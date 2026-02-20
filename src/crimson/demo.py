@@ -6,9 +6,6 @@ import webbrowser
 from pathlib import Path
 from typing import Protocol
 
-import pyray as rl
-from raylib import defines as rd
-
 from grim.assets import PaqTextureCache, load_paq_entries
 from grim.audio import AudioState, update_audio
 from grim.config import CrimsonConfig
@@ -17,6 +14,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.rand import Crand
+from grim.raylib_api import rd, rl
 
 from .creatures.spawn import RANDOM_HEADING_SENTINEL
 from .game_modes import GameMode

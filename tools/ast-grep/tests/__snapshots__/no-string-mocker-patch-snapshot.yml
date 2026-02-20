@@ -1,0 +1,16 @@
+id: no-string-mocker-patch
+snapshots:
+  ? |
+    mocker.patch("crimson.audio_router.play_sfx")
+  : labels:
+    - source: 'mocker.patch("crimson.audio_router.play_sfx")'
+      style: primary
+      start: 0
+      end: 45
+  ? |
+    mocker.patch("crimson.ui.game_over.button_update", side_effect=lambda *_args, **_kwargs: False)
+  : labels:
+    - source: 'mocker.patch("crimson.ui.game_over.button_update", side_effect=lambda *_args, **_kwargs: False)'
+      style: primary
+      start: 0
+      end: 95

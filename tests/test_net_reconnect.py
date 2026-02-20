@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from unittest.mock import MagicMock
 
 from crimson.net.net_runtime import NetRuntime, NetRuntimeConfig
 from crimson.net.relay_protocol import (
@@ -14,7 +14,11 @@ from crimson.net.relay_protocol import (
 )
 
 
-def _started_runtime(monkeypatch) -> tuple[NetRuntime, list[tuple[tuple[str, int], Any]]]:
+def _sent_messages(send_packet: MagicMock) -> list[object]:
+    return [call.args[-1].message for call in send_packet.call_args_list]
+
+
+def _started_runtime(mocker) -> tuple[NetRuntime, MagicMock]:
     runtime = NetRuntime(
         NetRuntimeConfig(
             role="host",
@@ -27,13 +31,8 @@ def _started_runtime(monkeypatch) -> tuple[NetRuntime, list[tuple[tuple[str, int
             reconnect_timeout_ms=500,
         ),
     )
-    sent: list[tuple[tuple[str, int], Any]] = []
-    monkeypatch.setattr(
-        type(runtime.transport),
-        "send_packet",
-        lambda _self, addr, packet: sent.append((addr, packet)),
-    )
-    monkeypatch.setattr(type(runtime.transport), "recv_packets", lambda _self, **_kwargs: [])
+    send_packet = mocker.patch.object(type(runtime.transport), "send_packet")
+    mocker.patch.object(type(runtime.transport), "recv_packets", return_value=[])
     runtime._server_addr = ("127.0.0.1", 31993)
     runtime._accepted = True
     runtime._joined_room = True
@@ -52,11 +51,11 @@ def _started_runtime(monkeypatch) -> tuple[NetRuntime, list[tuple[tuple[str, int
         ),
         now_ms=1000,
     )
-    return runtime, sent
+    return runtime, send_packet
 
 
-def test_peer_disconnect_pauses_and_timeout_aborts(monkeypatch) -> None:
-    runtime, _sent = _started_runtime(monkeypatch)
+def test_peer_disconnect_pauses_and_timeout_aborts(mocker) -> None:
+    runtime, _sent = _started_runtime(mocker)
 
     runtime._handle_message(message=PeerDisconnect(slot_index=1, reason="timeout"), now_ms=1200)
     assert runtime.reconnect_count == 1
@@ -66,8 +65,8 @@ def test_peer_disconnect_pauses_and_timeout_aborts(monkeypatch) -> None:
     assert runtime.error == "reconnect_timeout"
 
 
-def test_reconnect_room_state_clears_pause_and_resumes(monkeypatch) -> None:
-    runtime, _sent = _started_runtime(monkeypatch)
+def test_reconnect_room_state_clears_pause_and_resumes(mocker) -> None:
+    runtime, _sent = _started_runtime(mocker)
 
     runtime._handle_message(message=PeerDisconnect(slot_index=1, reason="network_drop"), now_ms=2200)
     assert runtime.pop_tick_frame() is None
@@ -97,19 +96,19 @@ def test_reconnect_room_state_clears_pause_and_resumes(monkeypatch) -> None:
     assert runtime.error == ""
 
 
-def test_link_timeout_starts_self_reconnect_join_with_token(monkeypatch) -> None:
-    runtime, sent = _started_runtime(monkeypatch)
+def test_link_timeout_starts_self_reconnect_join_with_token(mocker) -> None:
+    runtime, send_packet = _started_runtime(mocker)
     runtime._last_seen_ms = 1000
 
     runtime.update(now_ms=6201)
     assert runtime._reconnect_state == "self_reconnecting"
 
     runtime.update(now_ms=6202)
-    messages = [packet.message for _addr, packet in sent]
+    messages = _sent_messages(send_packet)
     assert any(isinstance(message, ClientHello) for message in messages)
 
-    sent.clear()
+    send_packet.reset_mock()
     runtime._handle_message(message=ClientWelcome(accepted=True, peer_id="p1"), now_ms=6203)
     runtime.update(now_ms=6204)
-    join_messages = [packet.message for _addr, packet in sent]
+    join_messages = _sent_messages(send_packet)
     assert any(isinstance(message, RoomJoin) and message.reconnect_token == "tok123" for message in join_messages)

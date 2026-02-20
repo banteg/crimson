@@ -2,33 +2,24 @@ from __future__ import annotations
 
 from typing import cast
 
-import pyray as rl
-
+import crimson.frontend.pause_menu as pause_menu_module
 from crimson.frontend.assets import MenuAssets
 from crimson.frontend.pause_menu import PAUSE_MENU_TO_MAIN_MENU_FADE_MS, PauseMenuView
+from grim.raylib_api import rl
 
 
 def _texture_stub() -> rl.Texture:
     return cast("rl.Texture", type("_TextureStub", (), {"width": 1, "height": 1})())
 
-
-class _PauseBackgroundStub:
-    def __init__(self, sink: list[float]) -> None:
-        self._sink = sink
-
-    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
-        self._sink.append(float(entity_alpha))
-
-
-def test_pause_menu_draw_fades_pause_background_on_main_menu_close(monkeypatch, make_game_state) -> None:
-    captured_alpha: list[float] = []
+def test_pause_menu_draw_fades_pause_background_on_main_menu_close(make_game_state, mocker) -> None:
     state = make_game_state(
         config_updates={"screen_width": 640},
         menu_sign_locked=False,
         screen_fade_alpha=0.0,
         screen_fade_ramp=False,
     )
-    state.pause_background = _PauseBackgroundStub(captured_alpha)
+    pause_background = mocker.Mock()
+    state.pause_background = pause_background
     view = PauseMenuView(state)
     view._is_open = True
     dummy_tex = _texture_stub()
@@ -37,27 +28,26 @@ def test_pause_menu_draw_fades_pause_background_on_main_menu_close(monkeypatch, 
     view._close_action = "back_to_menu"
     view._timeline_ms = PAUSE_MENU_TO_MAIN_MENU_FADE_MS // 2
 
-    monkeypatch.setattr("crimson.frontend.pause_menu.rl.clear_background", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.frontend.pause_menu._draw_screen_fade", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(PauseMenuView, "_draw_menu_items", lambda _self: None)
-    monkeypatch.setattr(PauseMenuView, "_draw_menu_sign", lambda _self: None)
-    monkeypatch.setattr("crimson.frontend.pause_menu._draw_menu_cursor", lambda *_args, **_kwargs: None)
+    mocker.patch.object(pause_menu_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(pause_menu_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(PauseMenuView, "_draw_menu_items", side_effect=lambda: None)
+    mocker.patch.object(PauseMenuView, "_draw_menu_sign", side_effect=lambda: None)
+    mocker.patch.object(pause_menu_module, "_draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
 
     view.draw()
 
-    assert captured_alpha
-    assert captured_alpha[-1] == 0.5
+    pause_background.draw_pause_background.assert_called_once_with(entity_alpha=0.5)
 
 
-def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(monkeypatch, make_game_state) -> None:
-    captured_alpha: list[float] = []
+def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(make_game_state, mocker) -> None:
     state = make_game_state(
         config_updates={"screen_width": 640},
         menu_sign_locked=False,
         screen_fade_alpha=0.0,
         screen_fade_ramp=False,
     )
-    state.pause_background = _PauseBackgroundStub(captured_alpha)
+    pause_background = mocker.Mock()
+    state.pause_background = pause_background
     view = PauseMenuView(state)
     view._is_open = True
     dummy_tex = _texture_stub()
@@ -66,13 +56,12 @@ def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(monkeyp
     view._close_action = "back_to_previous"
     view._timeline_ms = 0
 
-    monkeypatch.setattr("crimson.frontend.pause_menu.rl.clear_background", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.frontend.pause_menu._draw_screen_fade", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(PauseMenuView, "_draw_menu_items", lambda _self: None)
-    monkeypatch.setattr(PauseMenuView, "_draw_menu_sign", lambda _self: None)
-    monkeypatch.setattr("crimson.frontend.pause_menu._draw_menu_cursor", lambda *_args, **_kwargs: None)
+    mocker.patch.object(pause_menu_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(pause_menu_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(PauseMenuView, "_draw_menu_items", side_effect=lambda: None)
+    mocker.patch.object(PauseMenuView, "_draw_menu_sign", side_effect=lambda: None)
+    mocker.patch.object(pause_menu_module, "_draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
 
     view.draw()
 
-    assert captured_alpha
-    assert captured_alpha[-1] == 1.0
+    pause_background.draw_pause_background.assert_called_once_with(entity_alpha=1.0)

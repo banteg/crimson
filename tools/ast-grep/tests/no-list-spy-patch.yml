@@ -1,0 +1,17 @@
+id: no-list-spy-patch
+valid:
+  - |
+    pitch_mock = mocker.patch.object(grim_sfx.rl, "set_sound_pitch", create=True)
+    assert float(pitch_mock.call_args_list[-1].args[1]) == 1.0
+  - |
+    mocker.patch.object(grim_sfx.rl, "play_sound")
+  - |
+    calls: list[str] = []
+    calls.append("scene")
+invalid:
+  - |
+    calls: list[object] = []
+    monkeypatch.setattr(view, "_draw_scene_layers", lambda: calls.append("scene"))
+  - |
+    pitches: list[float] = []
+    mocker.patch.object(grim_sfx.rl, "set_sound_pitch", side_effect=lambda _voice, pitch: pitches.append(float(pitch)))

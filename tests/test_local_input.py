@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from pytest_mock import MockerFixture
 
 from crimson import local_input
 from crimson.aim_schemes import AimScheme
@@ -10,6 +11,7 @@ from crimson.movement_controls import MovementControlType
 from crimson.sim.state_types import PlayerState
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 class _DummyCreature:
@@ -25,25 +27,25 @@ def _test_config(**updates: object) -> CrimsonConfig:
     return CrimsonConfig(path=Path("<memory>"), data=data)
 
 
-def _patch_keys_down(monkeypatch: pytest.MonkeyPatch, *, down_codes: set[int]) -> None:
-    monkeypatch.setattr(
+def _patch_keys_down(mocker: MockerFixture, *, down_codes: set[int]) -> None:
+    mocker.patch.object(
         local_input,
         "input_code_is_down_for_player",
         lambda key, **_kwargs: int(key) in down_codes,
     )
-    monkeypatch.setattr(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
-    monkeypatch.setattr(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
+    mocker.patch.object(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
+    mocker.patch.object(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
 
 
-def _patch_no_user_input(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(local_input, "input_code_is_down_for_player", lambda *_args, **_kwargs: False)
-    monkeypatch.setattr(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
-    monkeypatch.setattr(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
+def _patch_no_user_input(mocker: MockerFixture) -> None:
+    mocker.patch.object(local_input, "input_code_is_down_for_player", lambda *_args, **_kwargs: False)
+    mocker.patch.object(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
+    mocker.patch.object(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
 
 
-def test_local_input_computer_aim_auto_fires_without_fire_pressed(monkeypatch: pytest.MonkeyPatch) -> None:
-    _patch_no_user_input(monkeypatch)
-    monkeypatch.setattr(
+def test_local_input_computer_aim_auto_fires_without_fire_pressed(mocker: MockerFixture) -> None:
+    _patch_no_user_input(mocker)
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.COMPUTER, MovementControlType.STATIC)),
@@ -66,13 +68,13 @@ def test_local_input_computer_aim_auto_fires_without_fire_pressed(monkeypatch: p
 
     assert out.fire_down is True
     assert out.fire_pressed is False
-    assert float(out.aim.x) == pytest.approx(591.2, abs=1e-4)
-    assert float(out.aim.y) == pytest.approx(512.0, abs=1e-4)
+    assert_float_close(float(out.aim.x), 591.2)
+    assert_float_close(float(out.aim.y), 512.0)
 
 
-def test_local_input_computer_aim_without_target_points_away_from_center(monkeypatch: pytest.MonkeyPatch) -> None:
-    _patch_no_user_input(monkeypatch)
-    monkeypatch.setattr(
+def test_local_input_computer_aim_without_target_points_away_from_center(mocker: MockerFixture) -> None:
+    _patch_no_user_input(mocker)
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.COMPUTER, MovementControlType.STATIC)),
@@ -94,15 +96,15 @@ def test_local_input_computer_aim_without_target_points_away_from_center(monkeyp
 
     assert out.fire_down is False
     assert out.fire_pressed is False
-    assert float(out.aim.x) == pytest.approx(512.0, abs=1e-6)
-    assert float(out.aim.y) == pytest.approx(452.0, abs=1e-6)
+    assert_float_close(float(out.aim.x), 512.0)
+    assert_float_close(float(out.aim.y), 452.0)
 
 
 def test_local_input_computer_target_state_tracks_player_identity_not_call_slot(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
-    _patch_no_user_input(monkeypatch)
-    monkeypatch.setattr(
+    _patch_no_user_input(mocker)
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.COMPUTER, MovementControlType.STATIC)),
@@ -140,8 +142,8 @@ def test_local_input_computer_target_state_tracks_player_identity_not_call_slot(
     )
 
     # Must track toward player0's nearest creature (x=100) not player1's target (x=130).
-    assert float(out.aim.x) == pytest.approx(60.0, abs=1e-6)
-    assert float(out.aim.y) == pytest.approx(0.0, abs=1e-6)
+    assert_float_close(float(out.aim.x), 60.0)
+    assert_float_close(float(out.aim.y), 0.0)
 
 
 @pytest.mark.parametrize(
@@ -153,17 +155,17 @@ def test_local_input_computer_target_state_tracks_player_identity_not_call_slot(
     ),
 )
 def test_local_input_static_mode_conflict_precedence_matches_native(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
     down_codes: set[int],
     expected_move: Vec2,
 ) -> None:
-    _patch_keys_down(monkeypatch, down_codes=down_codes)
-    monkeypatch.setattr(
+    _patch_keys_down(mocker, down_codes=down_codes)
+    mocker.patch.object(
         local_input,
         "_load_player_bind_block",
         lambda _config, *, player_index: tuple(range(16)),
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.STATIC)),
@@ -187,15 +189,15 @@ def test_local_input_static_mode_conflict_precedence_matches_native(
 
 
 def test_local_input_relative_mode_single_player_uses_alt_arrow_fallback(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
-    _patch_keys_down(monkeypatch, down_codes={0xC8, 0xCB})
-    monkeypatch.setattr(
+    _patch_keys_down(mocker, down_codes={0xC8, 0xCB})
+    mocker.patch.object(
         local_input,
         "_load_player_bind_block",
         lambda _config, *, player_index: (0x17E,) * 16,
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.RELATIVE)),
@@ -221,15 +223,15 @@ def test_local_input_relative_mode_single_player_uses_alt_arrow_fallback(
 
 
 def test_local_input_relative_mode_multiplayer_does_not_use_alt_arrow_fallback(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
-    _patch_keys_down(monkeypatch, down_codes={0xC8, 0xCB})
-    monkeypatch.setattr(
+    _patch_keys_down(mocker, down_codes={0xC8, 0xCB})
+    mocker.patch.object(
         local_input,
         "_load_player_bind_block",
         lambda _config, *, player_index: (0x17E,) * 16,
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.RELATIVE)),
@@ -256,15 +258,15 @@ def test_local_input_relative_mode_multiplayer_does_not_use_alt_arrow_fallback(
 
 
 def test_local_input_reload_pressed_is_available_in_multiplayer(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
-    _patch_no_user_input(monkeypatch)
-    monkeypatch.setattr(
+    _patch_no_user_input(mocker)
+    mocker.patch.object(
         local_input,
         "input_code_is_pressed_for_player",
         lambda key, **_kwargs: int(key) == 0x102,
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.STATIC)),
@@ -298,15 +300,15 @@ def test_local_input_reload_pressed_is_available_in_multiplayer(
 
 
 def test_local_input_reload_pressed_reads_per_player_input_slot(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
-    _patch_no_user_input(monkeypatch)
-    monkeypatch.setattr(
+    _patch_no_user_input(mocker)
+    mocker.patch.object(
         local_input,
         "input_code_is_pressed_for_player",
         lambda key, **kwargs: int(key) == 0x102 and int(kwargs.get("player_index", -1)) == 1,
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.STATIC)),
@@ -329,26 +331,26 @@ def test_local_input_reload_pressed_reads_per_player_input_slot(
 
 
 def test_local_input_mouse_point_click_marks_move_to_cursor_press(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
     mouse_world = Vec2(160.0, 140.0)
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input,
         "input_code_is_down_for_player",
         lambda key, **_kwargs: int(key) == 0x102,
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input,
         "input_code_is_pressed_for_player",
         lambda key, **_kwargs: int(key) == 0x102,
     )
-    monkeypatch.setattr(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
-    monkeypatch.setattr(
+    mocker.patch.object(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
+    mocker.patch.object(
         local_input,
         "_load_player_bind_block",
         lambda _config, *, player_index: tuple(range(16)),
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.MOUSE_POINT_CLICK)),
@@ -372,15 +374,15 @@ def test_local_input_mouse_point_click_marks_move_to_cursor_press(
     assert out.move_to_cursor_pressed is True
     assert interpreter._states[0].move_target == mouse_world
     expected = (mouse_world - player.pos).normalized()
-    assert float(out.move.x) == pytest.approx(float(expected.x), abs=1e-6)
-    assert float(out.move.y) == pytest.approx(float(expected.y), abs=1e-6)
+    assert_float_close(float(out.move.x), float(expected.x))
+    assert_float_close(float(out.move.y), float(expected.y))
 
 
 def test_local_input_computer_move_mode_near_center_heads_toward_target(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
-    _patch_no_user_input(monkeypatch)
-    monkeypatch.setattr(
+    _patch_no_user_input(mocker)
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.COMPUTER)),
@@ -401,15 +403,15 @@ def test_local_input_computer_move_mode_near_center_heads_toward_target(
         creatures=creatures,
     )
 
-    assert float(out.move.x) == pytest.approx(1.0, abs=1e-6)
-    assert float(out.move.y) == pytest.approx(0.0, abs=1e-6)
+    assert_float_close(float(out.move.x), 1.0)
+    assert_float_close(float(out.move.y), 0.0)
 
 
 def test_local_input_computer_move_mode_far_from_center_heads_toward_center(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
-    _patch_no_user_input(monkeypatch)
-    monkeypatch.setattr(
+    _patch_no_user_input(mocker)
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.COMPUTER)),
@@ -431,15 +433,15 @@ def test_local_input_computer_move_mode_far_from_center_heads_toward_center(
     )
 
     expected = (Vec2(512.0, 512.0) - player.pos).normalized()
-    assert float(out.move.x) == pytest.approx(float(expected.x), abs=1e-6)
-    assert float(out.move.y) == pytest.approx(float(expected.y), abs=1e-6)
+    assert_float_close(float(out.move.x), float(expected.x))
+    assert_float_close(float(out.move.y), float(expected.y))
 
 
 def test_local_input_computer_aim_scheme_forces_computer_movement(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
-    _patch_no_user_input(monkeypatch)
-    monkeypatch.setattr(
+    _patch_no_user_input(mocker)
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.COMPUTER, MovementControlType.STATIC)),
@@ -460,20 +462,20 @@ def test_local_input_computer_aim_scheme_forces_computer_movement(
         creatures=creatures,
     )
 
-    assert float(out.move.x) == pytest.approx(1.0, abs=1e-6)
-    assert float(out.move.y) == pytest.approx(0.0, abs=1e-6)
+    assert_float_close(float(out.move.x), 1.0)
+    assert_float_close(float(out.move.y), 0.0)
 
 
 def test_local_input_joystick_aim_uses_pov_not_aim_keybinds(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
-    _patch_keys_down(monkeypatch, down_codes={8})
-    monkeypatch.setattr(
+    _patch_keys_down(mocker, down_codes={8})
+    mocker.patch.object(
         local_input,
         "_load_player_bind_block",
         lambda _config, *, player_index: tuple(range(16)),
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.JOYSTICK, MovementControlType.STATIC)),
@@ -494,20 +496,20 @@ def test_local_input_joystick_aim_uses_pov_not_aim_keybinds(
     )
 
     # Bound aim key 8 should not affect joystick aim scheme; only POV should.
-    assert float(out.aim.x) == pytest.approx(100.0, abs=1e-6)
-    assert float(out.aim.y) == pytest.approx(40.0, abs=1e-6)
+    assert_float_close(float(out.aim.x), 100.0)
+    assert_float_close(float(out.aim.y), 40.0)
 
 
 def test_local_input_joystick_aim_turns_with_pov_input(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
-    _patch_keys_down(monkeypatch, down_codes={0x134})
-    monkeypatch.setattr(
+    _patch_keys_down(mocker, down_codes={0x134})
+    mocker.patch.object(
         local_input,
         "_load_player_bind_block",
         lambda _config, *, player_index: tuple(range(16)),
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.JOYSTICK, MovementControlType.STATIC)),
@@ -528,26 +530,26 @@ def test_local_input_joystick_aim_turns_with_pov_input(
     )
 
     expected = player.pos + Vec2.from_heading(0.4) * 60.0
-    assert float(out.aim.x) == pytest.approx(float(expected.x), abs=1e-6)
-    assert float(out.aim.y) == pytest.approx(float(expected.y), abs=1e-6)
+    assert_float_close(float(out.aim.x), float(expected.x))
+    assert_float_close(float(out.aim.y), float(expected.y))
 
 
 def test_local_input_joystick_aim_reads_player_pov_by_default(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input,
         "input_code_is_down_for_player",
         lambda key, **kwargs: int(key) == 0x134 and int(kwargs.get("player_index", -1)) == 1,
     )
-    monkeypatch.setattr(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
-    monkeypatch.setattr(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
-    monkeypatch.setattr(
+    mocker.patch.object(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
+    mocker.patch.object(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
+    mocker.patch.object(
         local_input,
         "_load_player_bind_block",
         lambda _config, *, player_index: tuple(range(16)),
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.JOYSTICK, MovementControlType.STATIC)),
@@ -568,26 +570,26 @@ def test_local_input_joystick_aim_reads_player_pov_by_default(
     )
 
     expected = player.pos + Vec2.from_heading(0.4) * 60.0
-    assert float(out.aim.x) == pytest.approx(float(expected.x), abs=1e-6)
-    assert float(out.aim.y) == pytest.approx(float(expected.y), abs=1e-6)
+    assert_float_close(float(out.aim.x), float(expected.x))
+    assert_float_close(float(out.aim.y), float(expected.y))
 
 
 def test_local_input_joystick_aim_preserve_bugs_uses_player1_pov_slot(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input,
         "input_code_is_down_for_player",
         lambda key, **kwargs: int(key) == 0x134 and int(kwargs.get("player_index", -1)) == 0,
     )
-    monkeypatch.setattr(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
-    monkeypatch.setattr(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
-    monkeypatch.setattr(
+    mocker.patch.object(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
+    mocker.patch.object(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
+    mocker.patch.object(
         local_input,
         "_load_player_bind_block",
         lambda _config, *, player_index: tuple(range(16)),
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.JOYSTICK, MovementControlType.STATIC)),
@@ -609,26 +611,26 @@ def test_local_input_joystick_aim_preserve_bugs_uses_player1_pov_slot(
     )
 
     expected = player.pos + Vec2.from_heading(0.4) * 60.0
-    assert float(out.aim.x) == pytest.approx(float(expected.x), abs=1e-6)
-    assert float(out.aim.y) == pytest.approx(float(expected.y), abs=1e-6)
+    assert_float_close(float(out.aim.x), float(expected.x))
+    assert_float_close(float(out.aim.y), float(expected.y))
 
 
 def test_local_input_dual_action_pad_aim_uses_native_radius_scale(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
-    monkeypatch.setattr(local_input, "input_code_is_down_for_player", lambda *_args, **_kwargs: False)
-    monkeypatch.setattr(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
-    monkeypatch.setattr(
+    mocker.patch.object(local_input, "input_code_is_down_for_player", lambda *_args, **_kwargs: False)
+    mocker.patch.object(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
+    mocker.patch.object(
         local_input,
         "input_axis_value_for_player",
         lambda key, **_kwargs: 1.0 if int(key) == 10 else 0.0,
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input,
         "_load_player_bind_block",
         lambda _config, *, player_index: tuple(range(16)),
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.DUAL_ACTION_PAD, MovementControlType.STATIC)),
@@ -649,20 +651,20 @@ def test_local_input_dual_action_pad_aim_uses_native_radius_scale(
     )
 
     # Native radius: 42 + mag * cv_padAimDistMul (default 96).
-    assert float(out.aim.x) == pytest.approx(238.0, abs=1e-6)
-    assert float(out.aim.y) == pytest.approx(100.0, abs=1e-6)
+    assert_float_close(float(out.aim.x), 238.0)
+    assert_float_close(float(out.aim.y), 100.0)
 
 
 def test_local_input_keyboard_aim_in_static_mode_reanchors_to_heading(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
-    _patch_no_user_input(monkeypatch)
-    monkeypatch.setattr(
+    _patch_no_user_input(mocker)
+    mocker.patch.object(
         local_input,
         "_load_player_bind_block",
         lambda _config, *, player_index: tuple(range(16)),
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.KEYBOARD, MovementControlType.STATIC)),
@@ -682,20 +684,20 @@ def test_local_input_keyboard_aim_in_static_mode_reanchors_to_heading(
         creatures=[],
     )
 
-    assert float(out.aim.x) == pytest.approx(100.0, abs=1e-6)
-    assert float(out.aim.y) == pytest.approx(40.0, abs=1e-6)
+    assert_float_close(float(out.aim.x), 100.0)
+    assert_float_close(float(out.aim.y), 40.0)
 
 
 def test_local_input_keyboard_aim_with_non_relative_move_mode_keeps_world_aim(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
-    _patch_no_user_input(monkeypatch)
-    monkeypatch.setattr(
+    _patch_no_user_input(mocker)
+    mocker.patch.object(
         local_input,
         "_load_player_bind_block",
         lambda _config, *, player_index: tuple(range(16)),
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.KEYBOARD, MovementControlType.DUAL_ACTION_PAD)),
@@ -715,22 +717,22 @@ def test_local_input_keyboard_aim_with_non_relative_move_mode_keeps_world_aim(
         creatures=[],
     )
 
-    assert float(out.aim.x) == pytest.approx(180.0, abs=1e-6)
-    assert float(out.aim.y) == pytest.approx(130.0, abs=1e-6)
+    assert_float_close(float(out.aim.x), 180.0)
+    assert_float_close(float(out.aim.y), 130.0)
     expected_heading = (player.aim - player.pos).to_heading()
-    assert float(interpreter._states[0].aim_heading) == pytest.approx(float(expected_heading), abs=1e-6)
+    assert_float_close(float(interpreter._states[0].aim_heading), float(expected_heading))
 
 
 def test_local_input_relative_mouse_aim_centered_keeps_world_aim(
-    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
-    _patch_no_user_input(monkeypatch)
-    monkeypatch.setattr(
+    _patch_no_user_input(mocker)
+    mocker.patch.object(
         local_input,
         "_load_player_bind_block",
         lambda _config, *, player_index: tuple(range(16)),
     )
-    monkeypatch.setattr(
+    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE_RELATIVE, MovementControlType.STATIC)),
@@ -751,7 +753,7 @@ def test_local_input_relative_mouse_aim_centered_keeps_world_aim(
         creatures=[],
     )
 
-    assert float(out.aim.x) == pytest.approx(180.0, abs=1e-6)
-    assert float(out.aim.y) == pytest.approx(130.0, abs=1e-6)
+    assert_float_close(float(out.aim.x), 180.0)
+    assert_float_close(float(out.aim.y), 130.0)
     expected_heading = (player.aim - player.pos).to_heading()
-    assert float(interpreter._states[0].aim_heading) == pytest.approx(float(expected_heading), abs=1e-6)
+    assert_float_close(float(interpreter._states[0].aim_heading), float(expected_heading))

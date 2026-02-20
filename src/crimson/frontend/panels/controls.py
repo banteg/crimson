@@ -3,14 +3,13 @@ from __future__ import annotations
 import struct
 from dataclasses import dataclass
 
-import pyray as rl
-
 from grim.config import (
     KEYBIND_UNBOUND_CODE,
     default_player_keybind_block,
 )
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
+from grim.raylib_api import rl
 
 from ...aim_schemes import AimScheme
 from ...input_codes import INPUT_CODE_UNBOUND, capture_first_pressed_input_code, input_code_name

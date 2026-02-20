@@ -3,10 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-import pyray as rl
-
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
+from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from ..creatures.runtime import CreaturePool

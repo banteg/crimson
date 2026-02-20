@@ -5,12 +5,11 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import pyray as rl
-
 from grim.assets import TextureLoader
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
+from grim.raylib_api import rl
 
 from ..game_modes import GameMode
 from ..persistence.highscores import (

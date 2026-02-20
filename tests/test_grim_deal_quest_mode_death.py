@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pyray as rl
-
+import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
+import crimson.modes.quest_mode as quest_mode_module
 from crimson.modes.quest_mode import QuestMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
+from grim.raylib_api import rl
 from grim.view import ViewContext
 
 
@@ -16,7 +17,7 @@ def _make_quest_mode() -> QuestMode:
     return QuestMode(ctx)
 
 
-def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_transition(monkeypatch) -> None:
+def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_transition(mocker) -> None:
     mode = _make_quest_mode()
 
     # Simulate picking Grim Deal while the perk menu is visible and in transition.
@@ -32,12 +33,12 @@ def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_tran
         perk_apply(mode.state, mode.world.players, PerkId.GRIM_DEAL)
         mode._perk_menu.close()
 
-    monkeypatch.setattr(mode._perk_menu, "handle_input", _apply_grim_deal_and_close)
+    mocker.patch.object(mode._perk_menu, "handle_input", side_effect=_apply_grim_deal_and_close)
 
-    monkeypatch.setattr("crimson.modes.base_gameplay_mode.rl.get_mouse_position", lambda: rl.Vector2(0.0, 0.0))
-    monkeypatch.setattr("crimson.modes.base_gameplay_mode.rl.get_screen_width", lambda: 640)
-    monkeypatch.setattr("crimson.modes.base_gameplay_mode.rl.get_screen_height", lambda: 480)
-    monkeypatch.setattr("crimson.modes.quest_mode.rl.is_key_pressed", lambda _key: False)
+    mocker.patch.object(base_gameplay_mode_module.rl, "get_mouse_position", side_effect=lambda: rl.Vector2(0.0, 0.0))
+    mocker.patch.object(base_gameplay_mode_module.rl, "get_screen_width", side_effect=lambda: 640)
+    mocker.patch.object(base_gameplay_mode_module.rl, "get_screen_height", side_effect=lambda: 480)
+    mocker.patch.object(quest_mode_module.rl, "is_key_pressed", side_effect=lambda _key: False)
 
     mode.update(1.0 / 60.0)
 

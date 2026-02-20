@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Protocol, cast
 
+import crimson.render.world.draw as world_draw_module
 from crimson.render.world import WorldDrawContext, WorldRenderer
 from crimson.render.world.context import build_world_render_ctx
 from crimson.render.world.draw import draw_aim_enhancements, draw_aim_indicators
@@ -56,23 +57,24 @@ def _draw_ctx() -> WorldDrawContext:
     return WorldDrawContext()
 
 
-def test_lan_aim_indicators_draw_local_player_only(monkeypatch) -> None:
+def _x_from_call_arg(call, *, key: str, arg_index: int) -> float:
+    if key in call.kwargs:
+        return float(call.kwargs[key].x)
+    return float(call.args[arg_index].x)
+
+
+def test_lan_aim_indicators_draw_local_player_only(mocker) -> None:
     renderer = _make_renderer(players=_make_players(), local_only=True, local_slot=1)
-    circles: list[float] = []
-    cursors: list[float] = []
     render_ctx = build_world_render_ctx(renderer)
     ctx = _draw_ctx()
-
-    monkeypatch.setattr(
-        "crimson.render.world.draw.draw_aim_cursor",
-        lambda _particles, _aim, pos: cursors.append(float(pos.x)),
-    )
+    draw_aim_cursor = mocker.patch.object(world_draw_module, "draw_aim_cursor")
+    draw_aim_circle = mocker.Mock()
 
     draw_aim_indicators(
         render_ctx,
         ctx=ctx,
         world_to_screen_with=lambda pos, _camera, _view_scale: pos,
-        draw_aim_circle_fn=lambda center, _radius, _alpha: circles.append(float(center.x)),
+        draw_aim_circle_fn=draw_aim_circle,
         draw_clock_gauge_fn=lambda _pos, _ms, _scale, _alpha: None,
     )
     draw_aim_enhancements(
@@ -81,27 +83,24 @@ def test_lan_aim_indicators_draw_local_player_only(monkeypatch) -> None:
         world_to_screen_with=lambda pos, _camera, _view_scale: pos,
     )
 
+    circles = [_x_from_call_arg(call, key="center", arg_index=0) for call in draw_aim_circle.call_args_list]
+    cursors = [_x_from_call_arg(call, key="pos", arg_index=-1) for call in draw_aim_cursor.call_args_list]
     assert circles == [20.0]
     assert cursors == [20.0]
 
 
-def test_non_lan_aim_indicators_draw_all_players(monkeypatch) -> None:
+def test_non_lan_aim_indicators_draw_all_players(mocker) -> None:
     renderer = _make_renderer(players=_make_players(), local_only=False, local_slot=1)
-    circles: list[float] = []
-    cursors: list[float] = []
     render_ctx = build_world_render_ctx(renderer)
     ctx = _draw_ctx()
-
-    monkeypatch.setattr(
-        "crimson.render.world.draw.draw_aim_cursor",
-        lambda _particles, _aim, pos: cursors.append(float(pos.x)),
-    )
+    draw_aim_cursor = mocker.patch.object(world_draw_module, "draw_aim_cursor")
+    draw_aim_circle = mocker.Mock()
 
     draw_aim_indicators(
         render_ctx,
         ctx=ctx,
         world_to_screen_with=lambda pos, _camera, _view_scale: pos,
-        draw_aim_circle_fn=lambda center, _radius, _alpha: circles.append(float(center.x)),
+        draw_aim_circle_fn=draw_aim_circle,
         draw_clock_gauge_fn=lambda _pos, _ms, _scale, _alpha: None,
     )
     draw_aim_enhancements(
@@ -110,5 +109,7 @@ def test_non_lan_aim_indicators_draw_all_players(monkeypatch) -> None:
         world_to_screen_with=lambda pos, _camera, _view_scale: pos,
     )
 
+    circles = [_x_from_call_arg(call, key="center", arg_index=0) for call in draw_aim_circle.call_args_list]
+    cursors = [_x_from_call_arg(call, key="pos", arg_index=-1) for call in draw_aim_cursor.call_args_list]
     assert circles == [10.0, 20.0, 30.0]
     assert cursors == [10.0, 20.0, 30.0]

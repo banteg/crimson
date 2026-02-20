@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import cast
 
-import pyray as rl
-
+import crimson.ui.hud as hud_module
 from crimson.sim.state_types import PlayerState
 from crimson.ui.hud import HudAssets, HudState, draw_hud_overlay
 from grim.geom import Vec2
+from grim.raylib_api import rl
 
 
 class _TextureStub:
@@ -19,10 +19,10 @@ def _texture(width: int, height: int) -> rl.Texture:
     return cast("rl.Texture", _TextureStub(width, height))
 
 
-def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch) -> None:
+def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(mocker) -> None:
     # Force HUD scale = 1.0 for easy coordinate assertions.
-    monkeypatch.setattr("crimson.ui.hud.rl.get_screen_width", lambda: 1024)
-    monkeypatch.setattr("crimson.ui.hud.rl.get_screen_height", lambda: 768)
+    mocker.patch.object(hud_module.rl, "get_screen_width", side_effect=lambda: 1024)
+    mocker.patch.object(hud_module.rl, "get_screen_height", side_effect=lambda: 768)
 
     textures: dict[str, rl.Texture] = {
         "game_top": _texture(512, 64),
@@ -56,13 +56,8 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch) -> Non
     player1.clip_size = 1
     player1.ammo = 1
 
-    draws: list[tuple[object, float, float, float, float]] = []
-
-    def _draw_texture_pro(texture, _src, dst, _origin, _rotation, _tint) -> None:
-        draws.append((texture, float(dst.x), float(dst.y), float(dst.width), float(dst.height)))
-
-    monkeypatch.setattr("crimson.ui.hud.rl.draw_texture_pro", _draw_texture_pro)
-    monkeypatch.setattr("crimson.ui.hud.rl.draw_text", lambda *args, **kwargs: None)
+    draw_texture_pro = mocker.patch.object(hud_module.rl, "draw_texture_pro")
+    mocker.patch.object(hud_module.rl, "draw_text", side_effect=lambda *args, **kwargs: None)
 
     draw_hud_overlay(
         assets,
@@ -79,6 +74,16 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch) -> Non
         show_time=False,
     )
 
+    draws = [
+        (
+            call.args[0],
+            float(call.args[2].x),
+            float(call.args[2].y),
+            float(call.args[2].width),
+            float(call.args[2].height),
+        )
+        for call in draw_texture_pro.call_args_list
+    ]
     weapon_icons = [tuple(dst) for tex, *dst in draws if tex is textures["wicons"]]
     assert weapon_icons == [
         (220.0, 4.0, 32.0, 16.0),
@@ -98,10 +103,10 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch) -> Non
     assert (64.0, 22.0, 60.0, 9.0) in health_bars
 
 
-def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeypatch) -> None:
-    monkeypatch.setattr("crimson.ui.hud.rl.get_screen_width", lambda: 1024)
-    monkeypatch.setattr("crimson.ui.hud.rl.get_screen_height", lambda: 768)
-    monkeypatch.setattr("crimson.ui.hud.rl.draw_text", lambda *args, **kwargs: None)
+def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(mocker) -> None:
+    mocker.patch.object(hud_module.rl, "get_screen_width", side_effect=lambda: 1024)
+    mocker.patch.object(hud_module.rl, "get_screen_height", side_effect=lambda: 768)
+    mocker.patch.object(hud_module.rl, "draw_text", side_effect=lambda *args, **kwargs: None)
 
     life_heart = _texture(32, 32)
     assets = HudAssets(
@@ -122,14 +127,9 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeyp
     player0 = PlayerState(index=0, pos=Vec2(), health=20.0)
     player1 = PlayerState(index=1, pos=Vec2(), health=100.0)
 
-    draws: list[tuple[object, float, float, float, float]] = []
+    draw_texture_pro = mocker.patch.object(hud_module.rl, "draw_texture_pro")
 
-    def _draw_texture_pro(texture, _src, dst, _origin, _rotation, _tint) -> None:
-        draws.append((texture, float(dst.x), float(dst.y), float(dst.width), float(dst.height)))
-
-    monkeypatch.setattr("crimson.ui.hud.rl.draw_texture_pro", _draw_texture_pro)
-
-    draws.clear()
+    draw_texture_pro.reset_mock()
     draw_hud_overlay(
         assets,
         state=HudState(preserve_bugs=False),
@@ -144,9 +144,19 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeyp
         show_xp=False,
         show_time=False,
     )
+    draws = [
+        (
+            call.args[0],
+            float(call.args[2].x),
+            float(call.args[2].y),
+            float(call.args[2].width),
+            float(call.args[2].height),
+        )
+        for call in draw_texture_pro.call_args_list
+    ]
     default_hearts = [tuple(dst) for tex, *dst in draws if tex is life_heart]
 
-    draws.clear()
+    draw_texture_pro.reset_mock()
     draw_hud_overlay(
         assets,
         state=HudState(preserve_bugs=True),
@@ -161,6 +171,16 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(monkeyp
         show_xp=False,
         show_time=False,
     )
+    draws = [
+        (
+            call.args[0],
+            float(call.args[2].x),
+            float(call.args[2].y),
+            float(call.args[2].width),
+            float(call.args[2].height),
+        )
+        for call in draw_texture_pro.call_args_list
+    ]
     preserve_hearts = [tuple(dst) for tex, *dst in draws if tex is life_heart]
 
     assert len(default_hearts) == 2

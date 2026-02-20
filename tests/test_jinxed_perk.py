@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import math
-
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
@@ -9,7 +7,7 @@ from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.helpers import MockCrand
+from tests.helpers import MockCrand, assert_float_close, assert_rng_progression
 
 
 def test_perks_update_effects_jinxed_kills_creature_and_awards_base_reward() -> None:
@@ -35,9 +33,9 @@ def test_perks_update_effects_jinxed_kills_creature_and_awards_base_reward() -> 
 
     perks_update_effects(state, [player], dt, creatures=creatures)
 
-    assert math.isclose(state.jinxed_timer, 1.8, abs_tol=1e-8)
+    assert_float_close(state.jinxed_timer, 1.8)
     assert creatures[2].hp == -1.0
-    assert math.isclose(creatures[2].hitbox_size, 16.0 - dt * 20.0, abs_tol=1e-9)
+    assert_float_close(creatures[2].hitbox_size, 16.0 - dt * 20.0)
     assert player.experience == 112
     assert state.sfx_queue == ["sfx_trooper_inpain_01"]
 
@@ -88,8 +86,8 @@ def test_perks_update_effects_jinxed_accident_damages_player_and_spawns_fx() -> 
 
     perks_update_effects(state, [player], dt, creatures=[], fx_queue=fx_queue)
 
-    assert math.isclose(state.jinxed_timer, 1.8, abs_tol=1e-8)
-    assert math.isclose(player.health, 45.0, abs_tol=1e-9)
+    assert_float_close(state.jinxed_timer, 1.8)
+    assert_float_close(player.health, 45.0)
     assert fx_queue.count == 2
     assert state.sfx_queue == []
 
@@ -116,9 +114,9 @@ def test_perks_update_effects_jinxed_default_accident_can_hit_other_alive_player
 
     perks_update_effects(state, [player0, player1], dt, creatures=[], fx_queue=fx_queue)
 
-    assert math.isclose(state.jinxed_timer, 1.8, abs_tol=1e-8)
-    assert math.isclose(player0.health, 50.0, abs_tol=1e-9)
-    assert math.isclose(player1.health, 65.0, abs_tol=1e-9)
+    assert_float_close(state.jinxed_timer, 1.8)
+    assert_float_close(player0.health, 50.0)
+    assert_float_close(player1.health, 65.0)
     assert fx_queue.count == 2
 
 
@@ -143,9 +141,9 @@ def test_perks_update_effects_jinxed_preserve_bugs_keeps_accident_on_player0() -
 
     perks_update_effects(state, [player0, player1], dt, creatures=[], fx_queue=fx_queue)
 
-    assert math.isclose(state.jinxed_timer, 1.8, abs_tol=1e-8)
-    assert math.isclose(player0.health, 45.0, abs_tol=1e-9)
-    assert math.isclose(player1.health, 70.0, abs_tol=1e-9)
+    assert_float_close(state.jinxed_timer, 1.8)
+    assert_float_close(player0.health, 45.0)
+    assert_float_close(player1.health, 70.0)
     assert fx_queue.count == 2
 
 
@@ -214,12 +212,21 @@ def test_perks_update_effects_jinxed_timer_uses_f32_underflow_threshold() -> Non
     state.jinxed_timer = 0.034000836312770844
     rng = MockCrand([3, 0, 7, 9], fallback="repeat_last")
     state.rng = rng
+    before_calls = rng.calls
+    before_state = rng.state
 
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=50.0)
     player.perk_counts[int(PerkId.JINXED)] = 1
 
     perks_update_effects(state, [player], dt, creatures=[])
 
-    assert math.isclose(state.jinxed_timer, 8.344650268554688e-07, abs_tol=1e-15)
-    assert math.isclose(player.health, 50.0, abs_tol=1e-9)
-    assert rng.calls == 0
+    assert_float_close(state.jinxed_timer, 8.344650268554688e-07)
+    assert_float_close(player.health, 50.0)
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=0,
+        expected_after_state=before_state,
+        expected_hash="da39a3ee5e6b4b0d",
+    )

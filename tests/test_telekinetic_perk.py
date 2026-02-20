@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import math
-
 from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusPool
 from crimson.bonuses.update import bonus_telekinetic_update
@@ -10,6 +8,7 @@ from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_telekinetic_picks_up_bonus_after_hover_time() -> None:
@@ -44,8 +43,9 @@ def test_telekinetic_nuke_origin_is_bonus_position() -> None:
 
     active = [proj for proj in state.projectiles.entries if proj.active]
     assert active
-    assert all(math.isclose(proj.pos.x, 100.0, abs_tol=1e-9) for proj in active)
-    assert all(math.isclose(proj.pos.y, 100.0, abs_tol=1e-9) for proj in active)
+    for proj in active:
+        assert_float_close(proj.pos.x, 100.0)
+        assert_float_close(proj.pos.y, 100.0)
 
 
 def test_telekinetic_shock_chain_origin_is_bonus_position() -> None:
@@ -69,8 +69,8 @@ def test_telekinetic_shock_chain_origin_is_bonus_position() -> None:
     proj_id = int(state.shock_chain_projectile_id)
     assert proj_id != -1
     proj = state.projectiles.entries[proj_id]
-    assert math.isclose(proj.pos.x, 100.0, abs_tol=1e-9)
-    assert math.isclose(proj.pos.y, 100.0, abs_tol=1e-9)
+    assert_float_close(proj.pos.x, 100.0)
+    assert_float_close(proj.pos.y, 100.0)
 
 
 def test_telekinetic_picks_only_one_bonus_per_frame_across_players() -> None:
@@ -114,7 +114,7 @@ def test_telekinetic_hover_timer_carries_across_bonus_switch() -> None:
 
     assert len(pickups) == 1
     assert pickups[0].bonus_id == int(BonusId.POINTS)
-    assert math.isclose(pickups[0].pos.x, 130.0, abs_tol=1e-9)
-    assert math.isclose(pickups[0].pos.y, 100.0, abs_tol=1e-9)
+    assert_float_close(pickups[0].pos.x, 130.0)
+    assert_float_close(pickups[0].pos.y, 100.0)
     assert first.picked is False
     assert second.picked is True

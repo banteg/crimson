@@ -3,12 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-import pyray as rl
-
+import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
+import crimson.modes.survival_mode as survival_mode_module
 from crimson.game_world import GameWorld
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
+from crimson.ui.game_over import GameOverUi
+from grim.raylib_api import rl
 from grim.view import ViewContext
 
 
@@ -18,7 +20,7 @@ def _make_survival_mode() -> SurvivalMode:
     return SurvivalMode(ctx)
 
 
-def _install_minimal_sim_session(mode: SurvivalMode, monkeypatch) -> None:
+def _install_minimal_sim_session(mode: SurvivalMode, mocker) -> None:
     class _FakeSession:
         def __init__(self) -> None:
             self.game_tune_started = False
@@ -38,13 +40,13 @@ def _install_minimal_sim_session(mode: SurvivalMode, monkeypatch) -> None:
             return SimpleNamespace(step=step, rng_marks={})
 
     mode._sim_session = _FakeSession()
-    monkeypatch.setattr(GameWorld, "apply_step_result", lambda *_args, **_kwargs: None)
+    mocker.patch.object(GameWorld, "apply_step_result", side_effect=lambda *_args, **_kwargs: None)
 
 
-def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_menu_transition(monkeypatch) -> None:
+def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_menu_transition(mocker) -> None:
     mode = _make_survival_mode()
-    monkeypatch.setattr("crimson.ui.game_over.GameOverUi.open", lambda self: None)
-    _install_minimal_sim_session(mode, monkeypatch)
+    mocker.patch.object(GameOverUi, "open", return_value=None)
+    _install_minimal_sim_session(mode, mocker)
 
     assert mode.player.health > 0.0
     mode.player.death_timer = 0.3
@@ -55,12 +57,12 @@ def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_
         perk_apply(mode.state, mode.world.players, PerkId.GRIM_DEAL)
         mode._perk_menu.close()
 
-    monkeypatch.setattr(mode._perk_menu, "handle_input", _apply_grim_deal_and_close)
+    mocker.patch.object(mode._perk_menu, "handle_input", side_effect=_apply_grim_deal_and_close)
 
-    monkeypatch.setattr("crimson.modes.base_gameplay_mode.rl.get_mouse_position", lambda: rl.Vector2(0.0, 0.0))
-    monkeypatch.setattr("crimson.modes.base_gameplay_mode.rl.get_screen_width", lambda: 640)
-    monkeypatch.setattr("crimson.modes.base_gameplay_mode.rl.get_screen_height", lambda: 480)
-    monkeypatch.setattr("crimson.modes.survival_mode.rl.is_key_pressed", lambda _key: False)
+    mocker.patch.object(base_gameplay_mode_module.rl, "get_mouse_position", side_effect=lambda: rl.Vector2(0.0, 0.0))
+    mocker.patch.object(base_gameplay_mode_module.rl, "get_screen_width", side_effect=lambda: 640)
+    mocker.patch.object(base_gameplay_mode_module.rl, "get_screen_height", side_effect=lambda: 480)
+    mocker.patch.object(survival_mode_module.rl, "is_key_pressed", side_effect=lambda _key: False)
 
     mode.update(1.0 / 60.0)
 

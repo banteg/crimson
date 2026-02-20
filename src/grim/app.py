@@ -3,7 +3,7 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-import pyray as rl
+from grim.raylib_api import rl
 
 from .view import View
 

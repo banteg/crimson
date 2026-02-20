@@ -8,9 +8,8 @@ from crimson.render.projectile_draw import ProjectileDrawCtx, draw_projectile_fr
 from grim.geom import Vec2
 
 if TYPE_CHECKING:
-    import pyray as rl
-
     from crimson.render.projectile_draw import ProjectileRendererLike
+    from grim.raylib_api import rl
 
 
 class _TextureLike(Protocol):

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import crimson.render.world.projectiles as world_projectiles
 from crimson.projectiles import ProjectileTypeId
 from crimson.render.world import WorldRenderer
 from crimson.render.world.context import build_world_render_ctx
@@ -16,20 +17,15 @@ class _WorldStub:
         self.bullet_trail_texture = _TextureStub()
 
 
-def test_draw_bullet_trail_zero_length_still_counts_as_drawn(monkeypatch) -> None:
-    vertices: list[tuple[float, float]] = []
-
-    monkeypatch.setattr("crimson.render.world.projectiles.rl.begin_blend_mode", lambda _mode: None)
-    monkeypatch.setattr("crimson.render.world.projectiles.rl.rl_set_texture", lambda _tex_id: None)
-    monkeypatch.setattr("crimson.render.world.projectiles.rl.rl_begin", lambda _mode: None)
-    monkeypatch.setattr("crimson.render.world.projectiles.rl.rl_color4ub", lambda _r, _g, _b, _a: None)
-    monkeypatch.setattr("crimson.render.world.projectiles.rl.rl_tex_coord2f", lambda _u, _v: None)
-    monkeypatch.setattr(
-        "crimson.render.world.projectiles.rl.rl_vertex2f",
-        lambda x, y: vertices.append((float(x), float(y))),
-    )
-    monkeypatch.setattr("crimson.render.world.projectiles.rl.rl_end", lambda: None)
-    monkeypatch.setattr("crimson.render.world.projectiles.rl.end_blend_mode", lambda: None)
+def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker) -> None:
+    mocker.patch.object(world_projectiles.rl, "begin_blend_mode")
+    mocker.patch.object(world_projectiles.rl, "rl_set_texture")
+    mocker.patch.object(world_projectiles.rl, "rl_begin")
+    mocker.patch.object(world_projectiles.rl, "rl_color4ub")
+    mocker.patch.object(world_projectiles.rl, "rl_tex_coord2f")
+    vertex_mock = mocker.patch.object(world_projectiles.rl, "rl_vertex2f")
+    mocker.patch.object(world_projectiles.rl, "rl_end")
+    mocker.patch.object(world_projectiles.rl, "end_blend_mode")
 
     renderer = WorldRenderer(_world=_WorldStub())  # type: ignore[arg-type]
     render_ctx = build_world_render_ctx(renderer)
@@ -45,4 +41,5 @@ def test_draw_bullet_trail_zero_length_still_counts_as_drawn(monkeypatch) -> Non
     )
 
     assert drawn is True
+    vertices = [(float(call.args[0]), float(call.args[1])) for call in vertex_mock.call_args_list]
     assert len(vertices) == 4

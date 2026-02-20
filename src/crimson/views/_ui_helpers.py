@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import pyray as rl
-
 from grim.fonts.small import SmallFontData, draw_small_text
 from grim.geom import Vec2
+from grim.raylib_api import rl
 
 
 def ui_line_height(font: SmallFontData | None, *, scale: float = 1.0) -> int:

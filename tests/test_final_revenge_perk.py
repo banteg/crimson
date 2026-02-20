@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
@@ -10,6 +8,7 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_final_revenge_triggers_explosion_damage_on_death() -> None:
@@ -49,6 +48,6 @@ def test_final_revenge_triggers_explosion_damage_on_death() -> None:
     )
 
     assert player.health < 0.0
-    assert creature.hp == pytest.approx(7440.0)  # 10000 - (512 - 0) * 5
+    assert_float_close(creature.hp, 7440.0)  # 10000 - (512 - 0) * 5
     assert "sfx_explosion_large" in events.sfx
     assert "sfx_shockwave" in events.sfx

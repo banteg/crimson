@@ -12,7 +12,7 @@ from crimson.weapon_runtime import (
 )
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from tests.helpers import MockCrand
+from tests.helpers import MockCrand, assert_float_close
 
 
 def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
@@ -38,12 +38,12 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
         assert len(particles) == 1
         assert int(particles[0].style_id) == expected_style
         assert int(particles[0].owner_id) == -1
-        assert math.isclose(float(particles[0].angle), 0.0, abs_tol=1e-9)
+        assert_float_close(float(particles[0].angle), 0.0)
 
         assert state.projectiles.iter_active() == []
         assert state.secondary_projectiles.iter_active() == []
 
-        assert math.isclose(float(player.ammo), start_ammo - ammo_cost, abs_tol=1e-9)
+        assert_float_close(float(player.ammo), start_ammo - ammo_cost)
         assert state.weapon_shots_fired[0][weapon_id] == 1
 
 
@@ -70,8 +70,8 @@ def test_flamethrower_particles_spawn_from_barrel_offset_muzzle() -> None:
     expected_x = float(player.pos.x) + math.cos(muzzle_dir) * 16.0
     expected_y = float(player.pos.y) + math.sin(muzzle_dir) * 16.0
 
-    assert math.isclose(float(particle.pos.x), expected_x, abs_tol=1e-9)
-    assert math.isclose(float(particle.pos.y), expected_y, abs_tol=1e-9)
+    assert_float_close(float(particle.pos.x), expected_x)
+    assert_float_close(float(particle.pos.y), expected_y)
 
 
 def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
@@ -103,7 +103,7 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
     jittered_angle = math.atan2(aim_jitter_y - float(player.pos.y), aim_jitter_x - float(player.pos.x))
 
     assert jittered_angle > 0.1
-    assert math.isclose(float(particle.angle), 0.0, abs_tol=1e-9)
+    assert_float_close(float(particle.angle), 0.0)
     assert abs(float(particle.angle) - jittered_angle) > 0.1
 
 

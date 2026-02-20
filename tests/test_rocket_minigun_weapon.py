@@ -11,7 +11,7 @@ from crimson.weapon_runtime import (
 )
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from tests.helpers import MockCrand
+from tests.helpers import MockCrand, assert_float_close
 
 
 def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
@@ -36,5 +36,5 @@ def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     spread = math.pi * (2.0 / 3.0)
     step = spread / float(player.clip_size - 1)
     expected0 = shot_angle - spread * 0.5
-    assert math.isclose(spawned[0].angle, expected0, abs_tol=1e-9)
-    assert math.isclose(spawned[1].angle - spawned[0].angle, step, abs_tol=1e-9)
+    assert_float_close(spawned[0].angle, expected0)
+    assert_float_close(spawned[1].angle - spawned[0].angle, step)

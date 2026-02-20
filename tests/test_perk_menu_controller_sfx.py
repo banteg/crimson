@@ -1,13 +1,16 @@
 from __future__ import annotations
 
-import pyray as rl
+from collections.abc import Callable
+from types import SimpleNamespace
 
+import crimson.modes.components.perk_menu_controller as perk_menu_controller_module
 from crimson.gameplay import GameplayState
 from crimson.modes.components.perk_menu_controller import PerkMenuContext, PerkMenuController
 from crimson.perks.state import PerkSelectionState
 from crimson.sim.state_types import PlayerState
 from crimson.ui.perk_menu import PerkMenuAssets
 from grim.geom import Vec2
+from grim.raylib_api import rl
 
 
 def _dummy_assets() -> PerkMenuAssets:
@@ -29,15 +32,31 @@ def _dummy_player() -> PlayerState:
     return player
 
 
-def test_open_perk_menu_plays_panel_click(monkeypatch) -> None:
+def _patch_perk_menu_raylib(
+    mocker,
+    *,
+    is_key_pressed: Callable[[int], bool] | None = None,
+) -> SimpleNamespace:
+    key_handler = is_key_pressed if is_key_pressed is not None else (lambda _key: False)
+    stub = SimpleNamespace(
+        KeyboardKey=rl.KeyboardKey,
+        MouseButton=rl.MouseButton,
+        get_screen_width=mocker.Mock(return_value=640),
+        get_screen_height=mocker.Mock(return_value=480),
+        is_mouse_button_pressed=mocker.Mock(side_effect=lambda _button: False),
+        check_collision_point_rec=mocker.Mock(side_effect=lambda _pos, _rect: False),
+        measure_text=mocker.Mock(side_effect=lambda _text, _size: 10),
+        is_key_pressed=mocker.Mock(side_effect=lambda key: bool(key_handler(int(key)))),
+    )
+    mocker.patch.object(perk_menu_controller_module, "rl", stub)
+    return stub
+
+
+def test_open_perk_menu_plays_panel_click(mocker) -> None:
     menu = PerkMenuController()
+    play_sfx = mocker.Mock()
 
-    played: list[str] = []
-
-    def _play_sfx(key: str) -> None:
-        played.append(key)
-
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.perk_selection_current_choices", lambda *args, **kwargs: [1])
+    mocker.patch.object(perk_menu_controller_module, "perk_selection_current_choices", side_effect=lambda *args, **kwargs: [1])
 
     ctx = PerkMenuContext(
         state=GameplayState(),
@@ -51,38 +70,28 @@ def test_open_perk_menu_plays_panel_click(monkeypatch) -> None:
         font=None,
         assets=_dummy_assets(),
         mouse=rl.Vector2(0.0, 0.0),
-        play_sfx=_play_sfx,
+        play_sfx=play_sfx,
     )
 
     assert menu.open is False
     assert menu.open_if_available(ctx) is True
     assert menu.open is True
-    assert played == ["sfx_ui_panelclick"]
+    play_sfx.assert_called_once_with("sfx_ui_panelclick")
 
 
-def test_perk_menu_pick_plays_button_click(monkeypatch) -> None:
+def test_perk_menu_pick_plays_button_click(mocker) -> None:
     menu = PerkMenuController()
     menu.open = True
 
-    played: list[str] = []
+    play_sfx = mocker.Mock()
+    mocker.patch.object(perk_menu_controller_module, "perk_selection_current_choices", side_effect=lambda *args, **kwargs: [1])
+    mocker.patch.object(perk_menu_controller_module, "perk_selection_pick", side_effect=lambda *args, **kwargs: object())
 
-    def _play_sfx(key: str) -> None:
-        played.append(key)
-
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.perk_selection_current_choices", lambda *args, **kwargs: [1])
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.perk_selection_pick", lambda *args, **kwargs: object())
-
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.button_update", lambda *args, **kwargs: False)
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.get_screen_width", lambda: 640)
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.get_screen_height", lambda: 480)
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.is_mouse_button_pressed", lambda _button: False)
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.check_collision_point_rec", lambda _pos, _rect: False)
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.measure_text", lambda _text, _size: 10)
-
-    def _is_key_pressed(key: int) -> bool:
-        return int(key) == int(rl.KeyboardKey.KEY_ENTER)
-
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.is_key_pressed", _is_key_pressed)
+    mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: False)
+    _patch_perk_menu_raylib(
+        mocker,
+        is_key_pressed=lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER),
+    )
 
     ctx = PerkMenuContext(
         state=GameplayState(),
@@ -96,38 +105,28 @@ def test_perk_menu_pick_plays_button_click(monkeypatch) -> None:
         font=None,
         assets=_dummy_assets(),
         mouse=rl.Vector2(0.0, 0.0),
-        play_sfx=_play_sfx,
+        play_sfx=play_sfx,
     )
 
     menu.handle_input(ctx, dt_frame=0.0, dt_ui_ms=0.0)
 
-    assert played == ["sfx_ui_buttonclick", "sfx_ui_bonus"]
+    assert [call.args[0] for call in play_sfx.call_args_list] == ["sfx_ui_buttonclick", "sfx_ui_bonus"]
     assert menu.open is False
 
 
-def test_perk_menu_pick_invokes_on_pick(monkeypatch) -> None:
-    picked_indices: list[int] = []
-
-    def _on_pick(choice_index: int) -> None:
-        picked_indices.append(int(choice_index))
-
-    menu = PerkMenuController(on_pick=_on_pick)
+def test_perk_menu_pick_invokes_on_pick(mocker) -> None:
+    on_pick = mocker.Mock()
+    menu = PerkMenuController(on_pick=on_pick)
     menu.open = True
 
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.perk_selection_current_choices", lambda *args, **kwargs: [1])
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.perk_selection_pick", lambda *args, **kwargs: object())
+    mocker.patch.object(perk_menu_controller_module, "perk_selection_current_choices", side_effect=lambda *args, **kwargs: [1])
+    mocker.patch.object(perk_menu_controller_module, "perk_selection_pick", side_effect=lambda *args, **kwargs: object())
 
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.button_update", lambda *args, **kwargs: False)
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.get_screen_width", lambda: 640)
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.get_screen_height", lambda: 480)
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.is_mouse_button_pressed", lambda _button: False)
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.check_collision_point_rec", lambda _pos, _rect: False)
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.measure_text", lambda _text, _size: 10)
-
-    def _is_key_pressed(key: int) -> bool:
-        return int(key) == int(rl.KeyboardKey.KEY_ENTER)
-
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.is_key_pressed", _is_key_pressed)
+    mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: False)
+    _patch_perk_menu_raylib(
+        mocker,
+        is_key_pressed=lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER),
+    )
 
     ctx = PerkMenuContext(
         state=GameplayState(),
@@ -146,27 +145,18 @@ def test_perk_menu_pick_invokes_on_pick(monkeypatch) -> None:
 
     menu.handle_input(ctx, dt_frame=0.0, dt_ui_ms=0.0)
 
-    assert picked_indices == [0]
+    on_pick.assert_called_once_with(0)
 
 
-def test_perk_menu_cancel_plays_button_click(monkeypatch) -> None:
+def test_perk_menu_cancel_plays_button_click(mocker) -> None:
     menu = PerkMenuController()
     menu.open = True
 
-    played: list[str] = []
+    play_sfx = mocker.Mock()
+    mocker.patch.object(perk_menu_controller_module, "perk_selection_current_choices", side_effect=lambda *args, **kwargs: [1])
 
-    def _play_sfx(key: str) -> None:
-        played.append(key)
-
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.perk_selection_current_choices", lambda *args, **kwargs: [1])
-
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.button_update", lambda *args, **kwargs: True)
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.get_screen_width", lambda: 640)
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.get_screen_height", lambda: 480)
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.is_mouse_button_pressed", lambda _button: False)
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.check_collision_point_rec", lambda _pos, _rect: False)
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.measure_text", lambda _text, _size: 10)
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.is_key_pressed", lambda _key: False)
+    mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: True)
+    _patch_perk_menu_raylib(mocker)
 
     ctx = PerkMenuContext(
         state=GameplayState(),
@@ -180,42 +170,42 @@ def test_perk_menu_cancel_plays_button_click(monkeypatch) -> None:
         font=None,
         assets=_dummy_assets(),
         mouse=rl.Vector2(0.0, 0.0),
-        play_sfx=_play_sfx,
+        play_sfx=play_sfx,
     )
 
     menu.handle_input(ctx, dt_frame=0.0, dt_ui_ms=0.0)
 
-    assert played == ["sfx_ui_buttonclick"]
+    play_sfx.assert_called_once_with("sfx_ui_buttonclick")
     assert menu.open is False
 
 
-def test_wrap_small_text_native_inserts_newline_at_previous_space(monkeypatch) -> None:
+def test_wrap_small_text_native_inserts_newline_at_previous_space(mocker) -> None:
     menu = PerkMenuController()
-    monkeypatch.setattr(
-        "crimson.modes.components.perk_menu_controller.measure_small_text_width",
-        lambda _font, text, _scale: float(len(text)),
+    mocker.patch.object(
+        perk_menu_controller_module,
+        "measure_small_text_width",
+        side_effect=lambda _font, text, _scale: float(len(text)),
     )
     wrapped = menu._wrap_small_text_native(object(), "alpha beta", 6.0, scale=1.0)  # type: ignore[arg-type]
     assert wrapped == "alpha\nbeta"
 
 
-def test_prewrapped_perk_desc_uses_cache(monkeypatch) -> None:
+def test_prewrapped_perk_desc_uses_cache(mocker) -> None:
     menu = PerkMenuController()
-    calls = {"count": 0}
-
-    def _fake_measure(_font, text: str, _scale: float) -> float:
-        calls["count"] += 1
-        return float(len(text))
-
-    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.measure_small_text_width", _fake_measure)
-    monkeypatch.setattr(
-        "crimson.modes.components.perk_menu_controller.perk_display_description",
-        lambda _perk_id, *, fx_toggle=0, preserve_bugs=False: "alpha beta gamma",
+    measure_small_text_width = mocker.patch.object(
+        perk_menu_controller_module,
+        "measure_small_text_width",
+        side_effect=lambda _font, text, _scale: float(len(text)),
+    )
+    mocker.patch.object(
+        perk_menu_controller_module,
+        "perk_display_description",
+        side_effect=lambda _perk_id, *, fx_toggle=0, preserve_bugs=False: "alpha beta gamma",
     )
 
     first = menu._prewrapped_perk_desc(5, object(), fx_toggle=0, preserve_bugs=False)  # type: ignore[arg-type]
-    count_after_first = calls["count"]
+    count_after_first = measure_small_text_width.call_count
     second = menu._prewrapped_perk_desc(5, object(), fx_toggle=0, preserve_bugs=False)  # type: ignore[arg-type]
 
     assert first == second
-    assert calls["count"] == count_after_first
+    assert measure_small_text_width.call_count == count_after_first

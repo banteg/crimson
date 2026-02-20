@@ -1,13 +1,17 @@
 from __future__ import annotations
 
-from typing import Any
+from unittest.mock import MagicMock
 
 from crimson.net.net_runtime import NetRuntime, NetRuntimeConfig
-from crimson.net.relay_protocol import RbResyncRequest, RoomStart
+from crimson.net.relay_protocol import RbResyncBegin, RbResyncChunk, RbResyncCommit, RbResyncRequest, RoomStart
 from crimson.net.rollback_resync_v5 import encode_mode_snapshot
 
 
-def _started_runtime(monkeypatch, *, role: str, slot_index: int) -> tuple[NetRuntime, list[tuple[tuple[str, int], Any]]]:
+def _sent_messages(send_packet: MagicMock) -> list[object]:
+    return [call.args[-1].message for call in send_packet.call_args_list]
+
+
+def _started_runtime(mocker, *, role: str, slot_index: int) -> tuple[NetRuntime, MagicMock]:
     runtime = NetRuntime(
         NetRuntimeConfig(
             role=role,
@@ -19,12 +23,7 @@ def _started_runtime(monkeypatch, *, role: str, slot_index: int) -> tuple[NetRun
             input_delay_ticks=0,
         ),
     )
-    sent: list[tuple[tuple[str, int], Any]] = []
-    monkeypatch.setattr(
-        type(runtime.transport),
-        "send_packet",
-        lambda _self, addr, packet: sent.append((addr, packet)),
-    )
+    send_packet = mocker.patch.object(type(runtime.transport), "send_packet")
     runtime._server_addr = ("127.0.0.1", 31993)
     runtime._accepted = True
     runtime._joined_room = True
@@ -44,12 +43,12 @@ def _started_runtime(monkeypatch, *, role: str, slot_index: int) -> tuple[NetRun
         ),
         now_ms=1000,
     )
-    return runtime, sent
+    return runtime, send_packet
 
 
-def test_resync_request_to_stream_to_apply_flow(monkeypatch) -> None:
-    join, _join_sent = _started_runtime(monkeypatch, role="join", slot_index=1)
-    host, host_sent = _started_runtime(monkeypatch, role="host", slot_index=0)
+def test_resync_request_to_stream_to_apply_flow(mocker) -> None:
+    join, _join_sent = _started_runtime(mocker, role="join", slot_index=1)
+    host, host_send_packet = _started_runtime(mocker, role="host", slot_index=0)
 
     payload = encode_mode_snapshot(
         mode="survival",
@@ -64,7 +63,7 @@ def test_resync_request_to_stream_to_apply_flow(monkeypatch) -> None:
         now_ms=1200,
     )
 
-    stream_messages = [packet.message for _addr, packet in host_sent if type(packet.message).__name__.startswith("RbResync")]
+    stream_messages = [message for message in _sent_messages(host_send_packet) if type(message).__name__.startswith("RbResync")]
     for message in stream_messages:
         join._handle_message(message=message, now_ms=1201)
 
@@ -78,9 +77,9 @@ def test_resync_request_to_stream_to_apply_flow(monkeypatch) -> None:
     assert join.pop_tick_frame() is not None
 
 
-def test_resync_checksum_mismatch_sets_error(monkeypatch) -> None:
-    join, _join_sent = _started_runtime(monkeypatch, role="join", slot_index=1)
-    host, host_sent = _started_runtime(monkeypatch, role="host", slot_index=0)
+def test_resync_checksum_mismatch_sets_error(mocker) -> None:
+    join, _join_sent = _started_runtime(mocker, role="join", slot_index=1)
+    host, host_send_packet = _started_runtime(mocker, role="host", slot_index=0)
 
     payload = encode_mode_snapshot(
         mode="rush",
@@ -94,17 +93,15 @@ def test_resync_checksum_mismatch_sets_error(monkeypatch) -> None:
         now_ms=1300,
     )
 
-    begin = None
-    chunks: list[Any] = []
-    commit = None
-    for _addr, packet in host_sent:
-        message = packet.message
-        kind = type(message).__name__
-        if kind == "RbResyncBegin":
+    begin: RbResyncBegin | None = None
+    chunks: list[RbResyncChunk] = []
+    commit: RbResyncCommit | None = None
+    for message in _sent_messages(host_send_packet):
+        if isinstance(message, RbResyncBegin):
             begin = message
-        elif kind == "RbResyncChunk":
+        elif isinstance(message, RbResyncChunk):
             chunks.append(message)
-        elif kind == "RbResyncCommit":
+        elif isinstance(message, RbResyncCommit):
             commit = message
 
     assert begin is not None
@@ -114,7 +111,7 @@ def test_resync_checksum_mismatch_sets_error(monkeypatch) -> None:
     for chunk in chunks:
         join._handle_message(message=chunk, now_ms=1302)
 
-    broken_commit = type(commit)(
+    broken_commit = RbResyncCommit(
         request_id=commit.request_id,
         snapshot_tick=commit.snapshot_tick,
         payload_sha256="0" * 64,

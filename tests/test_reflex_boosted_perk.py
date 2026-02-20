@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.bonuses.update import _REFLEX_TIMER_SUBTRACT_BIAS
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
@@ -12,6 +10,7 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
@@ -42,7 +41,7 @@ def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
         perk_progression_enabled=False,
     )
 
-    assert player.pos.x == pytest.approx(90.0)  # 100.0 * 0.9 (speed_multiplier=2.0, move_speed=2.0)
+    assert_float_close(player.pos.x, 90.0)  # 100.0 * 0.9 (speed_multiplier=2.0, move_speed=2.0)
 
 
 def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> None:
@@ -83,4 +82,4 @@ def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> N
         perk_progression_enabled=False,
     )
 
-    assert world.state.bonuses.reflex_boost == pytest.approx(expected_reflex, abs=1e-9)
+    assert_float_close(world.state.bonuses.reflex_boost, expected_reflex)

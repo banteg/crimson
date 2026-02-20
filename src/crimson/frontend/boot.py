@@ -3,10 +3,9 @@ from __future__ import annotations
 import datetime as dt
 import os
 
-import pyray as rl
-
 from grim.assets import LogoAssets, PaqTextureCache, load_logo_assets
 from grim.audio import init_audio_state, play_music, shutdown_audio, stop_music, update_audio
+from grim.raylib_api import rl
 
 from .assets import _load_resource_entries
 from .types import GameState

@@ -5,12 +5,11 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-import pyray as rl
-
 from grim.assets import resolve_asset_path
 from grim.config import ensure_crimson_cfg
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
+from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 from grim.view import View, ViewContext
 

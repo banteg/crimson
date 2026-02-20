@@ -4,14 +4,13 @@ import math
 import random
 from dataclasses import dataclass
 
-import pyray as rl
-
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.color import RGBA
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
 from grim.geom import Vec2
+from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId

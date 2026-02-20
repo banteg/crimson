@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pyray as rl
-
 from grim.config import CrimsonConfig, default_crimson_cfg_data
+from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ..persistence.highscores import HighScoreRecord, scores_path_for_config, write_highscore_records

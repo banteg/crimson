@@ -6,6 +6,7 @@ from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, build_surviva
 from crimson.math_parity import f32
 from grim.geom import Vec2
 from grim.rand import Crand
+from tests.helpers import assert_float_close
 
 
 def test_survival_spawn_creature_baseline_seed1_xp0() -> None:
@@ -16,15 +17,19 @@ def test_survival_spawn_creature_baseline_seed1_xp0() -> None:
     assert c.flags == CreatureFlags(0)
     assert c.ai_mode == 0
 
-    assert c.size == pytest.approx(44.0, abs=1e-9)
-    assert c.heading == pytest.approx(float(f32(f32(15.0) * f32(0.01))), abs=0.0)
-    assert c.move_speed == pytest.approx(float(f32(0.9)), abs=0.0)
-    assert c.health == pytest.approx(64.0, abs=1e-9)
-    assert c.max_health == pytest.approx(64.0, abs=1e-9)
-    assert c.contact_damage == pytest.approx(4.19047619047619, abs=1e-9)
-    assert c.reward_value == pytest.approx(36.36190466653733, abs=1e-9)
+    assert_float_close(c.size, 44.0)
+    assert_float_close(c.heading, float(f32(f32(15.0) * f32(0.01))))
+    assert_float_close(c.move_speed, float(f32(0.9)))
+    assert_float_close(c.health, 64.0)
+    assert_float_close(c.max_health, 64.0)
+    assert_float_close(c.contact_damage, 4.19047619047619)
+    assert_float_close(c.reward_value, 36.36190466653733)
 
-    assert c.tint == pytest.approx((0.9, 0.88, 0.78, 1.0), abs=1e-9)
+    assert c.tint is not None
+    assert_float_close(c.tint[0], 0.9)
+    assert_float_close(c.tint[1], 0.88)
+    assert_float_close(c.tint[2], 0.78)
+    assert_float_close(c.tint[3], 1.0)
 
     assert rng.state == 0xC1BBB05F
 
@@ -51,9 +56,9 @@ def test_survival_spawn_creature_applies_zombie_speed_floor_and_health_scale() -
 
     assert c.type_id == CreatureTypeId.ZOMBIE
     assert c.flags == CreatureFlags(0)
-    assert c.move_speed == pytest.approx(float(f32(1.3)), abs=0.0)
-    assert c.health == pytest.approx(264.75, abs=1e-9)
-    assert c.max_health == pytest.approx(264.75, abs=1e-9)
+    assert_float_close(c.move_speed, float(f32(1.3)))
+    assert_float_close(c.health, 264.75)
+    assert_float_close(c.max_health, 264.75)
     assert rng.state == 0xC1BBB05F
 
 
@@ -97,12 +102,16 @@ def test_survival_spawn_creature_rare_variants(
     assert c.flags == CreatureFlags(0)
     assert c.ai_mode == 0
 
-    assert c.size == pytest.approx(expected_size, abs=1e-9)
-    assert c.contact_damage == pytest.approx(expected_contact_damage, abs=1e-9)
-    assert c.health == pytest.approx(expected_health, abs=1e-9)
-    assert c.max_health == pytest.approx(expected_health, abs=1e-9)
-    assert c.reward_value == pytest.approx(expected_reward_value, abs=1e-9)
+    assert_float_close(c.size, expected_size)
+    assert_float_close(c.contact_damage, expected_contact_damage)
+    assert_float_close(c.health, expected_health)
+    assert_float_close(c.max_health, expected_health)
+    assert_float_close(c.reward_value, expected_reward_value)
 
-    assert c.tint == pytest.approx((expected_tint_r, expected_tint_g, expected_tint_b, 1.0), abs=1e-9)
+    assert c.tint is not None
+    assert_float_close(c.tint[0], expected_tint_r)
+    assert_float_close(c.tint[1], expected_tint_g)
+    assert_float_close(c.tint[2], expected_tint_b)
+    assert_float_close(c.tint[3], 1.0)
 
     assert rng.state == expected_rng_state

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from types import SimpleNamespace
 
-import pyray as rl
-
+import crimson.render.world.effects as world_effects
 from crimson.effects import EffectEntry
 from crimson.effects_atlas import EffectId
 from crimson.render.world import WorldRenderer
@@ -11,6 +11,7 @@ from crimson.render.world.context import build_world_render_ctx
 from crimson.render.world.effects import draw_effect_pool
 from grim.color import RGBA
 from grim.geom import Vec2
+from grim.raylib_api import rl
 
 
 class _TextureStub:
@@ -50,28 +51,16 @@ def _entry(*, flags: int, pos: Vec2) -> EffectEntry:
     )
 
 
-def test_draw_effect_pool_splits_alpha_and_additive_paths(monkeypatch) -> None:
-    blend_labels: list[str] = []
-    current_mode: dict[str, int | None] = {"value": None}
-
-    def _begin_blend_mode(mode: int) -> None:
-        current_mode["value"] = int(mode)
-
-    def _end_blend_mode() -> None:
-        current_mode["value"] = None
-
-    def _draw_texture_pro(*_args) -> None:
-        mode = current_mode["value"]
-        if mode == int(rl.BlendMode.BLEND_ALPHA):
-            blend_labels.append("alpha")
-        elif mode == int(rl.BlendMode.BLEND_ADDITIVE):
-            blend_labels.append("additive")
-        else:
-            blend_labels.append("unknown")
-
-    monkeypatch.setattr("crimson.render.world.effects.rl.begin_blend_mode", _begin_blend_mode)
-    monkeypatch.setattr("crimson.render.world.effects.rl.end_blend_mode", _end_blend_mode)
-    monkeypatch.setattr("crimson.render.world.effects.rl.draw_texture_pro", _draw_texture_pro)
+def test_draw_effect_pool_splits_alpha_and_additive_paths(mocker) -> None:
+    raylib_stub = SimpleNamespace(
+        BlendMode=rl.BlendMode,
+        Rectangle=rl.Rectangle,
+        Vector2=rl.Vector2,
+        begin_blend_mode=mocker.Mock(),
+        end_blend_mode=mocker.Mock(),
+        draw_texture_pro=mocker.Mock(),
+    )
+    mocker.patch.object(world_effects, "rl", raylib_stub)
 
     entries = [
         _entry(flags=0x40, pos=Vec2(10.0, 20.0)),
@@ -87,5 +76,10 @@ def test_draw_effect_pool_splits_alpha_and_additive_paths(monkeypatch) -> None:
         alpha=1.0,
     )
 
-    assert blend_labels == ["alpha", "additive"]
-
+    assert raylib_stub.begin_blend_mode.call_count == 2
+    assert {call.args[0] for call in raylib_stub.begin_blend_mode.call_args_list} == {
+        int(rl.BlendMode.BLEND_ALPHA),
+        int(rl.BlendMode.BLEND_ADDITIVE),
+    }
+    assert raylib_stub.end_blend_mode.call_count == 2
+    assert raylib_stub.draw_texture_pro.call_count == 2

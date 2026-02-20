@@ -7,6 +7,7 @@ from crimson.creatures.spawn import CreatureFlags, CreatureInit
 from crimson.gameplay import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def _wrap_angle(angle: float) -> float:
@@ -34,7 +35,7 @@ def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
     proj = spawned[0]
     assert proj.hits_players is True
     assert int(proj.type_id) == 9
-    assert math.isclose(proj.angle, creature.heading, abs_tol=1e-9)
+    assert_float_close(proj.angle, creature.heading)
 
     direct_aim = math.atan2(player.pos.y - creature.pos.y, player.pos.x - creature.pos.x) + math.pi / 2.0
     assert abs(_wrap_angle(proj.angle - direct_aim)) > 0.1
@@ -85,7 +86,7 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     proj = spawned[0]
     assert proj.hits_players is True
     assert int(proj.type_id) == 26
-    assert math.isclose(creature.attack_cooldown, 0.4, abs_tol=1e-9)
+    assert_float_close(creature.attack_cooldown, 0.4)
     assert result.sfx == ("sfx_plasmaminigun_fire",)
 
 

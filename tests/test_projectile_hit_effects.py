@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import GameplayState
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
@@ -35,7 +34,8 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
 
     rings = [entry for entry in runtime_state.effects.iter_active() if int(entry.effect_id) == 1]
     assert len(rings) == 2
-    assert sorted(float(entry.scale_step) for entry in rings) == pytest.approx([45.0, 67.5])
+    for actual, expected in zip(sorted(float(entry.scale_step) for entry in rings), (45.0, 67.5)):
+        assert_float_close(actual, expected)
 
     spawned = [p for p in pool.entries if p.active and int(p.type_id) == int(ProjectileTypeId.PLASMA_RIFLE)]
     assert len(spawned) == 12
@@ -127,8 +127,8 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
     assert len(bursts) == 4
 
     ring = rings[0]
-    assert float(ring.scale_step) == pytest.approx(-4.0)
-    assert float(ring.lifetime) == pytest.approx(0.3)
-    assert float(ring.half_width) == pytest.approx(36.0)
+    assert_float_close(float(ring.scale_step), -4.0)
+    assert_float_close(float(ring.lifetime), 0.3)
+    assert_float_close(float(ring.half_width), 36.0)
 
-    assert float(creature.size) == pytest.approx(32.5)
+    assert_float_close(float(creature.size), 32.5)

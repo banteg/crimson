@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import math
-
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
@@ -9,6 +7,7 @@ from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_plaguebearer_apply_sets_active_flag_for_all_players() -> None:
@@ -57,8 +56,8 @@ def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
 
     pool.update(dt, state=state, players=[player])
 
-    assert math.isclose(creature.collision_timer, 0.4, abs_tol=1e-9)
-    assert math.isclose(creature.hp, 85.0, abs_tol=1e-9)
+    assert_float_close(creature.collision_timer, 0.4)
+    assert_float_close(creature.hp, 85.0)
 
 
 def test_plaguebearer_spreads_between_nearby_creatures() -> None:

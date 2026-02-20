@@ -2,10 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import pyray as rl
-
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
+from grim.raylib_api import rl
 from grim.view import View, ViewContext
 
 from ..bonuses import BONUS_TABLE, BonusMeta, bonus_display_description, bonus_display_name

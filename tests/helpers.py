@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Sequence
-from typing import Literal
+from typing import Any, Literal, Protocol
+
+import pytest
 
 MockCrandFallback = Literal["repeat_last", "zero", "cycle"]
 
@@ -22,6 +25,7 @@ class MockCrand:
         self._index = 0
         self._state = 0
         self.calls = 0
+        self._history: list[int] = []
 
     @property
     def state(self) -> int:
@@ -31,6 +35,7 @@ class MockCrand:
         self._state = int(seed) & 0xFFFFFFFF
         self._index = 0
         self.calls = 0
+        self._history.clear()
 
     def rand(self) -> int:
         value: int
@@ -46,8 +51,55 @@ class MockCrand:
             value = 0
 
         self.calls += 1
+        self._history.append(int(value))
         self._state = int(value) & 0xFFFFFFFF
         return int(value)
 
     def __call__(self) -> int:
         return self.rand()
+
+    def draw_hash(self, *, start_call: int = 0) -> str:
+        start = max(0, int(start_call))
+        values = self._history[start:]
+        payload = ",".join(str(int(value) & 0xFFFFFFFF) for value in values)
+        return hashlib.sha1(payload.encode("utf-8")).hexdigest()[:16]
+
+
+class SupportsRngProgression(Protocol):
+    calls: int
+
+    @property
+    def state(self) -> int:
+        ...
+
+
+def assert_float_close(actual: Any, expected: Any) -> None:
+    assert float(actual) == pytest.approx(float(expected), abs=1e-6)
+
+
+def assert_rng_progression(
+    rng: SupportsRngProgression,
+    *,
+    before_calls: int,
+    before_state: int,
+    expected_draws: int | None = None,
+    min_draws: int | None = None,
+    expected_after_state: int | None = None,
+    expected_hash: str | None = None,
+) -> None:
+    assert rng.calls >= int(before_calls)
+    draws = int(rng.calls) - int(before_calls)
+    after_state = int(rng.state)
+
+    if expected_draws is not None:
+        assert draws == int(expected_draws)
+    if min_draws is not None:
+        assert draws >= int(min_draws)
+    if expected_after_state is not None:
+        assert after_state == int(expected_after_state)
+    elif draws == 0:
+        assert after_state == int(before_state)
+    if expected_hash is not None:
+        draw_hash = getattr(rng, "draw_hash", None)
+        assert callable(draw_hash), "expected_hash requires rng.draw_hash(...) support"
+        assert draw_hash(start_call=int(before_calls)) == str(expected_hash)

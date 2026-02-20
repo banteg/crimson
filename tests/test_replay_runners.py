@@ -24,6 +24,7 @@ from crimson.sim.driver.setup import ReplayRunnerError, reset_players
 from crimson.sim.input import PlayerInput
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def _blank_survival_replay(*, ticks: int, seed: int = 0xBEEF, game_version: str = "0.0.0") -> tuple[ReplayHeader, ReplayRecorder]:
@@ -356,18 +357,18 @@ def test_capture_creature_spawn_event_applies_added_head_overrides() -> None:
     )
     creature = world.creatures.entries[1]
     assert creature.active
-    assert float(creature.heading) == pytest.approx(1.1278764009475708, abs=1e-6)
-    assert float(creature.target_heading) == pytest.approx(0.621416449546814, abs=1e-6)
+    assert_float_close(float(creature.heading), 1.1278764009475708)
+    assert_float_close(float(creature.target_heading), 0.621416449546814)
     assert int(creature.ai_mode) == 3
     assert int(creature.link_index) == 0
-    assert float(creature.hp) == pytest.approx(123.5, abs=1e-6)
-    assert float(creature.hitbox_size) == pytest.approx(9.5, abs=1e-6)
-    assert float(creature.orbit_angle) == pytest.approx(0.25, abs=1e-6)
-    assert float(creature.orbit_radius) == pytest.approx(0.75, abs=1e-6)
+    assert_float_close(float(creature.hp), 123.5)
+    assert_float_close(float(creature.hitbox_size), 9.5)
+    assert_float_close(float(creature.orbit_angle), 0.25)
+    assert_float_close(float(creature.orbit_radius), 0.75)
     assert int(creature.flags) == 17
     assert int(creature.type_id) == 7
-    assert float(creature.pos.x) == pytest.approx(12.25, abs=1e-6)
-    assert float(creature.pos.y) == pytest.approx(34.5, abs=1e-6)
+    assert_float_close(float(creature.pos.x), 12.25)
+    assert_float_close(float(creature.pos.y), 34.5)
 
 
 def test_capture_creature_spawn_event_applies_added_head_without_spawn_rows() -> None:
@@ -418,11 +419,11 @@ def test_capture_creature_spawn_event_applies_added_head_without_spawn_rows() ->
     )
     creature = world.creatures.entries[idx]
     assert creature.active
-    assert float(creature.heading) == pytest.approx(0.28999999165534973, abs=1e-6)
-    assert float(creature.target_heading) == pytest.approx(0.521416425704956, abs=1e-6)
+    assert_float_close(float(creature.heading), 0.28999999165534973)
+    assert_float_close(float(creature.target_heading), 0.521416425704956)
     assert int(creature.ai_mode) == 0
     assert int(creature.link_index) == 1
-    assert float(creature.orbit_radius) == pytest.approx(1.25, abs=1e-6)
+    assert_float_close(float(creature.orbit_radius), 1.25)
     assert int(creature.flags) == 5
 
 
@@ -530,13 +531,13 @@ def test_quest_runner_disables_world_dt_steps_for_original_capture_dt_overrides(
 
     no_override_without_perk = _run(include_reflex_boosted=False, dt_overrides=None)
     no_override_with_perk = _run(include_reflex_boosted=True, dt_overrides=None)
-    assert no_override_with_perk[0] != pytest.approx(no_override_without_perk[0], abs=1e-4)
+    assert abs(no_override_with_perk[0] - no_override_without_perk[0]) > 1e-6
 
     dt_overrides = {0: 0.1}
     override_without_perk = _run(include_reflex_boosted=False, dt_overrides=dt_overrides)
     override_with_perk = _run(include_reflex_boosted=True, dt_overrides=dt_overrides)
-    assert override_with_perk[0] == pytest.approx(override_without_perk[0], abs=1e-6)
-    assert override_with_perk[1] == pytest.approx(override_without_perk[1], abs=1e-6)
+    assert_float_close(override_with_perk[0], override_without_perk[0])
+    assert_float_close(override_with_perk[1], override_without_perk[1])
 
 
 def test_quest_runner_resets_run_on_capture_state_transition_to_12() -> None:
@@ -589,7 +590,7 @@ def test_quest_runner_resets_run_on_capture_state_transition_to_12() -> None:
     checkpoint = checkpoints[0]
     player = checkpoint.players[0]
     assert int(player.weapon_id) == 1
-    assert float(player.ammo) == pytest.approx(11.0, abs=1e-6)
+    assert_float_close(float(player.ammo), 11.0)
     assert int(player.experience) == 0
     assert int(player.level) == 1
     assert int(checkpoint.score_xp) == 0
@@ -821,7 +822,7 @@ def test_survival_runner_bootstrap_player_shot_cooldown_blocks_first_tick_fire()
     ammo_without_shot_cooldown = _run(include_shot_cooldown=False)
     ammo_with_shot_cooldown = _run(include_shot_cooldown=True)
     assert ammo_without_shot_cooldown < ammo_with_shot_cooldown
-    assert ammo_with_shot_cooldown == pytest.approx(12.0, abs=1e-6)
+    assert_float_close(ammo_with_shot_cooldown, 12.0)
 
 
 def test_survival_runner_bootstrap_perk_counts_enable_alternate_weapon_swap() -> None:
@@ -886,9 +887,9 @@ def test_survival_runner_bootstrap_perk_counts_enable_alternate_weapon_swap() ->
     weapon_without_perk, ammo_without_perk = _run(include_perk_counts=False)
     weapon_with_perk, ammo_with_perk = _run(include_perk_counts=True)
     assert weapon_without_perk == 11
-    assert ammo_without_perk == pytest.approx(0.0, abs=1e-6)
+    assert_float_close(ammo_without_perk, 0.0)
     assert weapon_with_perk == 1
-    assert ammo_with_perk == pytest.approx(12.0, abs=1e-6)
+    assert_float_close(ammo_with_perk, 12.0)
 
 
 def test_survival_runner_does_not_stop_early_on_death_for_original_capture_replay() -> None:

@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_player_take_damage_ninja_dodges_1_in_3() -> None:
@@ -94,8 +93,8 @@ def test_player_take_damage_thick_skinned_uses_native_damage_scale_constant() ->
 
     applied = player_take_damage(state, player, 5.238095283508301, rand=lambda: 0)
 
-    assert applied == pytest.approx(3.4885711669921875, abs=1e-6)
-    assert player.health == pytest.approx(47.41618728637695, abs=1e-6)
+    assert_float_close(applied, 3.4885711669921875)
+    assert_float_close(player.health, 47.41618728637695)
 
 
 def test_player_take_damage_sets_survival_damage_seen_even_when_shielded() -> None:

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import Any
+from unittest.mock import MagicMock
 
 from crimson.net.net_runtime import NetRuntime, NetRuntimeConfig
 from crimson.net.relay_protocol import Ping, RoomStart
 
 
-def _runtime(monkeypatch) -> tuple[NetRuntime, list[tuple[tuple[str, int], Any]]]:
+def _runtime(mocker) -> tuple[NetRuntime, MagicMock]:
     runtime = NetRuntime(
         NetRuntimeConfig(
             role="host",
@@ -18,13 +18,8 @@ def _runtime(monkeypatch) -> tuple[NetRuntime, list[tuple[tuple[str, int], Any]]
             input_delay_ticks=0,
         ),
     )
-    sent: list[tuple[tuple[str, int], Any]] = []
-    monkeypatch.setattr(
-        type(runtime.transport),
-        "send_packet",
-        lambda _self, addr, packet: sent.append((addr, packet)),
-    )
-    monkeypatch.setattr(type(runtime.transport), "recv_packets", lambda _self, **_kwargs: [])
+    send_packet = mocker.patch.object(type(runtime.transport), "send_packet")
+    mocker.patch.object(type(runtime.transport), "recv_packets", return_value=[])
     runtime._server_addr = ("127.0.0.1", 31993)
     runtime._accepted = True
     runtime._joined_room = True
@@ -44,23 +39,23 @@ def _runtime(monkeypatch) -> tuple[NetRuntime, list[tuple[tuple[str, int], Any]]
         ),
         now_ms=1000,
     )
-    return runtime, sent
+    return runtime, send_packet
 
 
-def test_continuous_outbound_inputs_still_emit_periodic_pings(monkeypatch) -> None:
-    runtime, sent = _runtime(monkeypatch)
+def test_continuous_outbound_inputs_still_emit_periodic_pings(mocker) -> None:
+    runtime, send_packet = _runtime(mocker)
 
     for i in range(20):
         now = 1000 + i * 50
         runtime.queue_local_input([0.0, 0.0, [0.0, 0.0], i], now_ms=now)
         runtime.update(now_ms=now)
 
-    pings = [packet.message for _addr, packet in sent if isinstance(packet.message, Ping)]
+    pings = [call.args[-1].message for call in send_packet.call_args_list if isinstance(call.args[-1].message, Ping)]
     assert len(pings) >= 3
 
 
-def test_no_false_timeout_before_five_seconds_while_paused(monkeypatch) -> None:
-    runtime, _sent = _runtime(monkeypatch)
+def test_no_false_timeout_before_five_seconds_while_paused(mocker) -> None:
+    runtime, _sent = _runtime(mocker)
     runtime._last_seen_ms = 1000
     runtime._paused_for_reconnect = True
 

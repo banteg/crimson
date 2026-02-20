@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.creatures.spawn import CreatureTypeId, tick_survival_wave_spawns
 from grim.rand import Crand
+from tests.helpers import assert_float_close
 
 
 def test_tick_survival_wave_spawns_no_trigger() -> None:
@@ -19,7 +18,7 @@ def test_tick_survival_wave_spawns_no_trigger() -> None:
         terrain_height=1024,
     )
 
-    assert cooldown == pytest.approx(68.0, abs=1e-9)
+    assert_float_close(cooldown, 68.0)
     assert spawns == ()
     assert rng.state == 123
 
@@ -37,15 +36,15 @@ def test_tick_survival_wave_spawns_triggers_single_spawn() -> None:
         terrain_height=1024,
     )
 
-    assert cooldown == pytest.approx(499.0, abs=1e-9)
+    assert_float_close(cooldown, 499.0)
     assert len(spawns) == 1
     c = spawns[0]
 
-    assert c.pos.x == pytest.approx(35.0, abs=1e-9)
-    assert c.pos.y == pytest.approx(1064.0, abs=1e-9)
+    assert_float_close(c.pos.x, 35.0)
+    assert_float_close(c.pos.y, 1064.0)
     assert c.type_id == CreatureTypeId.ALIEN
-    assert c.health == pytest.approx(85.0, abs=1e-9)
-    assert c.reward_value == pytest.approx(336.0, abs=1e-9)
+    assert_float_close(c.health, 85.0)
+    assert_float_close(c.reward_value, 336.0)
     assert rng.state == 0xA6E9C9A6
 
 
@@ -62,13 +61,11 @@ def test_tick_survival_wave_spawns_extra_spawns_when_interval_is_negative() -> N
         terrain_height=1024,
     )
 
-    assert cooldown == pytest.approx(0.0, abs=1e-9)
+    assert_float_close(cooldown, 0.0)
     assert len(spawns) == 3
-    assert [(c.pos.x, c.pos.y) for c in spawns] == [
-        (pytest.approx(35.0, abs=1e-9), pytest.approx(1064.0, abs=1e-9)),
-        (pytest.approx(1064.0, abs=1e-9), pytest.approx(947.0, abs=1e-9)),
-        (pytest.approx(-40.0, abs=1e-9), pytest.approx(435.0, abs=1e-9)),
-    ]
+    for spawn, (expected_x, expected_y) in zip(spawns, ((35.0, 1064.0), (1064.0, 947.0), (-40.0, 435.0))):
+        assert_float_close(spawn.pos.x, expected_x)
+        assert_float_close(spawn.pos.y, expected_y)
     assert [c.type_id for c in spawns] == [
         CreatureTypeId.ALIEN,
         CreatureTypeId.ALIEN,

@@ -1,23 +1,25 @@
 from __future__ import annotations
 
+import importlib
 import random
 import sys
 import time
 from collections.abc import Callable, Mapping
+from dataclasses import replace
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
+from pytest_mock import MockerFixture
 
 if TYPE_CHECKING:
-    import pyray as rl
-
     import crimson.modes.replay_playback_mode as replay_playback_mode
     from crimson.game.types import GameState
     from crimson.persistence.save_status import GameStatus
     from crimson.sim.world_state import WorldState
     from grim.audio import AudioState
     from grim.console import ConsoleState
+    from grim.raylib_api import rl
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -168,8 +170,29 @@ def base_world(make_world_state: Callable[..., "WorldState"]) -> "WorldState":
 
 
 @pytest.fixture
-def patch_raylib_module(monkeypatch: pytest.MonkeyPatch) -> Callable[..., None]:
-    import pyray as rl
+def default_spawn_env():
+    from crimson.creatures.spawn import SpawnEnv
+
+    return SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,
+        hardcore=False,
+        difficulty_level=0,
+    )
+
+
+@pytest.fixture
+def make_spawn_env(default_spawn_env):
+    def _make(**overrides: object):
+        return replace(default_spawn_env, **overrides)
+
+    return _make
+
+
+@pytest.fixture
+def patch_raylib_module(mocker: MockerFixture) -> Callable[..., None]:
+    from grim.raylib_api import rl
 
     def _patch(
         module: str,
@@ -179,14 +202,22 @@ def patch_raylib_module(monkeypatch: pytest.MonkeyPatch) -> Callable[..., None]:
         mouse_pos: "rl.Vector2 | None" = None,
         is_key_pressed: Callable[[object], bool] | None = None,
     ) -> None:
+        target_module = importlib.import_module(module)
+        raylib_module = getattr(target_module, "rl")
         default_mouse = mouse_pos if mouse_pos is not None else rl.Vector2(0.0, 0.0)
         key_handler = is_key_pressed if is_key_pressed is not None else (lambda _key: False)
 
-        monkeypatch.setattr(f"{module}.rl.get_screen_width", lambda: int(screen_width), raising=False)
-        monkeypatch.setattr(f"{module}.rl.get_screen_height", lambda: int(screen_height), raising=False)
-        monkeypatch.setattr(f"{module}.rl.get_mouse_position", lambda: default_mouse, raising=False)
-        monkeypatch.setattr(f"{module}.rl.is_mouse_button_pressed", lambda _button: False, raising=False)
-        monkeypatch.setattr(f"{module}.rl.check_collision_point_rec", lambda _pos, _rect: False, raising=False)
-        monkeypatch.setattr(f"{module}.rl.is_key_pressed", key_handler, raising=False)
+        if hasattr(raylib_module, "get_screen_width"):
+            mocker.patch.object(raylib_module, "get_screen_width", side_effect=lambda: int(screen_width))
+        if hasattr(raylib_module, "get_screen_height"):
+            mocker.patch.object(raylib_module, "get_screen_height", side_effect=lambda: int(screen_height))
+        if hasattr(raylib_module, "get_mouse_position"):
+            mocker.patch.object(raylib_module, "get_mouse_position", side_effect=lambda: default_mouse)
+        if hasattr(raylib_module, "is_mouse_button_pressed"):
+            mocker.patch.object(raylib_module, "is_mouse_button_pressed", side_effect=lambda _button: False)
+        if hasattr(raylib_module, "check_collision_point_rec"):
+            mocker.patch.object(raylib_module, "check_collision_point_rec", side_effect=lambda _pos, _rect: False)
+        if hasattr(raylib_module, "is_key_pressed"):
+            mocker.patch.object(raylib_module, "is_key_pressed", side_effect=key_handler)
 
     return _patch

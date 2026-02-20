@@ -8,8 +8,6 @@ import traceback
 import webbrowser
 from pathlib import Path
 
-import pyray as rl
-
 from grim import music
 from grim.app import run_view
 from grim.assets import PaqTextureCache, load_paq_entries_from_path
@@ -21,6 +19,7 @@ from grim.console import (
     register_boot_commands,
     register_core_cvars,
 )
+from grim.raylib_api import rl
 from grim.view import View
 
 from ..assets_fetch import download_missing_paqs

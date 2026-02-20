@@ -5,11 +5,10 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-import pyray as rl
-
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
+from grim.raylib_api import rl
 from grim.terrain_render import _maybe_alpha_test
 
 from ...creatures.spawn import CreatureFlags, CreatureTypeId

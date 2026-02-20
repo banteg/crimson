@@ -3,9 +3,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 
-import pyray as rl
-
 from grim.config import CrimsonConfig, default_player_keybind_block, player_keybind_block
+from grim.raylib_api import rl
 
 INPUT_CODE_UNBOUND = 0x17E
 _AXIS_DEADZONE = 0.2

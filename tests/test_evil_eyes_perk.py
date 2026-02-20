@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import math
-
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
@@ -12,6 +10,7 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_evil_eyes_freezes_creature_under_aim() -> None:
@@ -54,8 +53,8 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
     assert events
 
     after = (float(creature.pos.x), float(creature.pos.y))
-    assert math.isclose(after[0], before[0], abs_tol=1e-6)
-    assert math.isclose(after[1], before[1], abs_tol=1e-6)
+    assert_float_close(after[0], before[0])
+    assert_float_close(after[1], before[1])
 
 
 def test_perks_update_effects_evil_eyes_defaults_to_alive_player_target_slot() -> None:

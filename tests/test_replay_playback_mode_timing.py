@@ -16,14 +16,14 @@ def _set_private(view, name: str, value: object) -> None:
     setattr(view, name, value)
 
 
-def test_replay_playback_mode_tick_loop_decrements_accum(monkeypatch, replay_playback_view) -> None:
+def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback_view) -> None:
     # Regression test: a missing `dt_accum -= dt_frame` inside the playback loop
     # can cause the entire replay to run in a single frame (or an infinite loop).
     import crimson.modes.replay_playback_mode as replay_playback_mode
     view, _console = replay_playback_view
 
     # Prevent key handlers from running.
-    monkeypatch.setattr(replay_playback_mode.rl, "is_key_pressed", lambda _key: False)
+    mocker.patch.object(replay_playback_mode.rl, "is_key_pressed", return_value=False)
 
     calls = 0
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+from unittest.mock import MagicMock
 
 from crimson.net.relay_protocol import (
     PROTOCOL_VERSION,
@@ -21,14 +22,18 @@ from crimson.net.relay_protocol import (
 from crimson.net.relay_service import RelayServer, RelayServerConfig
 
 
-def _patch_send_capture(monkeypatch, server: RelayServer) -> list[tuple[tuple[str, int], Any]]:
-    sent: list[tuple[tuple[str, int], Any]] = []
-    monkeypatch.setattr(
-        type(server.transport),
-        "send_packet",
-        lambda _self, addr, packet: sent.append((addr, packet)),
-    )
-    return sent
+def _packet_calls(send_packet: MagicMock) -> list[tuple[tuple[str, int], Any]]:
+    packets: list[tuple[tuple[str, int], Any]] = []
+    for call in send_packet.call_args_list:
+        if len(call.args) == 3:
+            packets.append((call.args[1], call.args[2]))
+            continue
+        packets.append((call.args[0], call.args[1]))
+    return packets
+
+
+def _patch_send_capture(mocker, server: RelayServer) -> MagicMock:
+    return mocker.patch.object(type(server.transport), "send_packet")
 
 
 def _hello_peer(server: RelayServer, *, addr: tuple[str, int], build_id: str, now_ms: int) -> Any:
@@ -75,16 +80,17 @@ def _start_two_peer_room(server: RelayServer, *, now_ms: int) -> tuple[Any, Any,
     return host_peer, join_peer, room_code
 
 
-def test_room_create_join_ready_start_flow(monkeypatch) -> None:
+def test_room_create_join_ready_start_flow(mocker) -> None:
     server = RelayServer(RelayServerConfig(bind_host="127.0.0.1", bind_port=0))
-    sent = _patch_send_capture(monkeypatch, server)
+    send_packet = _patch_send_capture(mocker, server)
 
     host_addr = ("127.0.0.1", 40101)
     join_addr = ("127.0.0.1", 40102)
 
     host_peer = _hello_peer(server, addr=host_addr, build_id="0.1.0", now_ms=1000)
+    sent = _packet_calls(send_packet)
     assert any(addr == host_addr and isinstance(packet.message, ClientWelcome) for addr, packet in sent)
-    sent.clear()
+    send_packet.reset_mock()
 
     server._handle_message(
         peer=host_peer,
@@ -102,8 +108,9 @@ def test_room_create_join_ready_start_flow(monkeypatch) -> None:
     assert len(room_code) == int(ROOM_CODE_LENGTH)
     assert room_code.isalnum()
     assert room_code in server._rooms
+    sent = _packet_calls(send_packet)
     assert any(isinstance(packet.message, RoomState) for _addr, packet in sent)
-    sent.clear()
+    send_packet.reset_mock()
 
     join_peer = _hello_peer(server, addr=join_addr, build_id="0.1.0", now_ms=1002)
     server._handle_message(
@@ -113,8 +120,9 @@ def test_room_create_join_ready_start_flow(monkeypatch) -> None:
     )
     assert int(join_peer.slot_index) == 1
     assert str(join_peer.room_code) == room_code
+    sent = _packet_calls(send_packet)
     assert any(isinstance(packet.message, RoomState) for _addr, packet in sent)
-    sent.clear()
+    send_packet.reset_mock()
 
     server._handle_message(
         peer=join_peer,
@@ -123,13 +131,14 @@ def test_room_create_join_ready_start_flow(monkeypatch) -> None:
     )
     room = server._rooms[room_code]
     assert room.started is True
+    sent = _packet_calls(send_packet)
     room_start_addrs = {addr for addr, packet in sent if isinstance(packet.message, RoomStart)}
     assert room_start_addrs == {host_addr, join_addr}
 
 
-def test_reconnect_token_reclaims_slot_and_receives_room_start(monkeypatch) -> None:
+def test_reconnect_token_reclaims_slot_and_receives_room_start(mocker) -> None:
     server = RelayServer(RelayServerConfig(bind_host="127.0.0.1", bind_port=0))
-    sent = _patch_send_capture(monkeypatch, server)
+    send_packet = _patch_send_capture(mocker, server)
     host_peer, join_peer, room_code = _start_two_peer_room(server, now_ms=2000)
     room = server._rooms[room_code]
     reconnect_token = str(room.slots[1].reconnect_token)
@@ -139,7 +148,7 @@ def test_reconnect_token_reclaims_slot_and_receives_room_start(monkeypatch) -> N
     assert room.slots[1].connected is False
     assert server._room_by_reconnect[reconnect_token] == (room_code, 1)
 
-    sent.clear()
+    send_packet.reset_mock()
     new_addr = ("127.0.0.1", 40003)
     new_peer = _hello_peer(server, addr=new_addr, build_id="0.1.0", now_ms=2201)
     server._handle_message(
@@ -151,13 +160,14 @@ def test_reconnect_token_reclaims_slot_and_receives_room_start(monkeypatch) -> N
     assert str(new_peer.room_code) == room_code
     assert int(new_peer.slot_index) == 1
     assert str(room.slots[1].peer_id) == str(new_peer.peer_id)
+    sent = _packet_calls(send_packet)
     assert any(addr == new_addr and isinstance(packet.message, RoomStart) for addr, packet in sent)
     assert str(room.slots[0].peer_id) == str(host_peer.peer_id)
 
 
-def test_protocol_mismatch_requires_v5(monkeypatch) -> None:
+def test_protocol_mismatch_requires_v5(mocker) -> None:
     server = RelayServer(RelayServerConfig(bind_host="127.0.0.1", bind_port=0))
-    sent = _patch_send_capture(monkeypatch, server)
+    send_packet = _patch_send_capture(mocker, server)
 
     server._handle_client_hello(
         addr=("127.0.0.1", 50901),
@@ -165,6 +175,7 @@ def test_protocol_mismatch_requires_v5(monkeypatch) -> None:
         now_ms=1000,
     )
 
+    sent = _packet_calls(send_packet)
     assert any(
         isinstance(packet.message, ClientWelcome)
         and packet.message.accepted is False
@@ -173,23 +184,24 @@ def test_protocol_mismatch_requires_v5(monkeypatch) -> None:
     )
 
 
-def test_resync_sender_role_validation(monkeypatch) -> None:
+def test_resync_sender_role_validation(mocker) -> None:
     server = RelayServer(RelayServerConfig(bind_host="127.0.0.1", bind_port=0))
-    sent = _patch_send_capture(monkeypatch, server)
+    send_packet = _patch_send_capture(mocker, server)
     host_peer, join_peer, _room_code = _start_two_peer_room(server, now_ms=6000)
 
-    sent.clear()
+    send_packet.reset_mock()
     server._handle_message(
         peer=host_peer,
         message=RbResyncRequest(request_id="rq1", from_tick=10, reason="overflow", requested_by_slot=0),
         now_ms=6005,
     )
+    sent = _packet_calls(send_packet)
     assert any(
         addr == host_peer.addr and isinstance(packet.message, RelayError) and packet.message.reason == "invalid_resync_sender"
         for addr, packet in sent
     )
 
-    sent.clear()
+    send_packet.reset_mock()
     server._handle_message(
         peer=join_peer,
         message=RbResyncBegin(
@@ -203,29 +215,31 @@ def test_resync_sender_role_validation(monkeypatch) -> None:
         ),
         now_ms=6006,
     )
+    sent = _packet_calls(send_packet)
     assert any(
         addr == join_peer.addr and isinstance(packet.message, RelayError) and packet.message.reason == "invalid_resync_sender"
         for addr, packet in sent
     )
 
 
-def test_host_resync_stream_is_forwarded(monkeypatch) -> None:
+def test_host_resync_stream_is_forwarded(mocker) -> None:
     server = RelayServer(RelayServerConfig(bind_host="127.0.0.1", bind_port=0))
-    sent = _patch_send_capture(monkeypatch, server)
+    send_packet = _patch_send_capture(mocker, server)
     host_peer, join_peer, _room_code = _start_two_peer_room(server, now_ms=7000)
 
-    sent.clear()
+    send_packet.reset_mock()
     server._handle_message(
         peer=join_peer,
         message=RbResyncRequest(request_id="rq3", from_tick=20, reason="overflow", requested_by_slot=1),
         now_ms=7001,
     )
+    sent = _packet_calls(send_packet)
     assert any(
         addr == host_peer.addr and isinstance(packet.message, RbResyncRequest) and packet.message.request_id == "rq3"
         for addr, packet in sent
     )
 
-    sent.clear()
+    send_packet.reset_mock()
     server._handle_message(
         peer=host_peer,
         message=RbResyncChunk(request_id="rq3", chunk_index=0, payload=b"abc"),
@@ -237,6 +251,7 @@ def test_host_resync_stream_is_forwarded(monkeypatch) -> None:
         now_ms=7003,
     )
 
+    sent = _packet_calls(send_packet)
     assert any(
         addr == join_peer.addr and isinstance(packet.message, RbResyncChunk) and packet.message.request_id == "rq3"
         for addr, packet in sent

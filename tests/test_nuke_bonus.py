@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import math
-
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.creatures.runtime import CreaturePool
@@ -9,7 +7,7 @@ from crimson.gameplay import GameplayState
 from crimson.projectiles import ProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.helpers import MockCrand
+from tests.helpers import MockCrand, assert_float_close
 
 
 def test_nuke_damage_is_limited_to_radius() -> None:
@@ -53,10 +51,12 @@ def test_nuke_spawns_projectiles_with_weapon_meta_speed() -> None:
 
     pistol = [entry for entry in active if entry.type_id == int(ProjectileTypeId.PISTOL)]
     assert len(pistol) == 4
-    assert all(math.isclose(entry.base_damage, 55.0, abs_tol=1e-9) for entry in pistol)
-    assert all(math.isclose(entry.speed_scale, 0.5, abs_tol=1e-9) for entry in pistol)
+    for entry in pistol:
+        assert_float_close(entry.base_damage, 55.0)
+        assert_float_close(entry.speed_scale, 0.5)
 
     gauss = [entry for entry in active if entry.type_id == int(ProjectileTypeId.GAUSS_GUN)]
     assert len(gauss) == 2
-    assert all(math.isclose(entry.base_damage, 215.0, abs_tol=1e-9) for entry in gauss)
-    assert all(math.isclose(entry.speed_scale, 1.0, abs_tol=1e-9) for entry in gauss)
+    for entry in gauss:
+        assert_float_close(entry.base_damage, 215.0)
+        assert_float_close(entry.speed_scale, 1.0)

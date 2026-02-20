@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from unittest.mock import call
+
 import crimson.game.loop_view as loop_view
 from crimson.game.loop_view import GameLoopView
 from crimson.game.runtime import _boot_command_handlers
@@ -27,41 +29,48 @@ def test_setgammaramp_prints_usage_on_bad_arity(make_game_state) -> None:
     ]
 
 
-def test_game_loop_draw_applies_gamma_shader_when_gain_non_default(monkeypatch, make_game_state) -> None:
-    calls: list[object] = []
+def test_game_loop_draw_applies_gamma_shader_when_gain_non_default(mocker, make_game_state) -> None:
     state = make_game_state()
     state.gamma_ramp = 1.4
     view = GameLoopView(state)
-    monkeypatch.setattr(view, "_draw_scene_layers", lambda: calls.append("scene"))
+    draw_scene = mocker.patch.object(view, "_draw_scene_layers")
 
     sentinel_shader = object()
 
-    monkeypatch.setattr(loop_view, "_get_gamma_ramp_shader", lambda: (sentinel_shader, 7))
-    monkeypatch.setattr(
+    mocker.patch.object(loop_view, "_get_gamma_ramp_shader", return_value=(sentinel_shader, 7))
+    set_gain = mocker.patch.object(
         loop_view,
         "_set_gamma_ramp_gain",
-        lambda shader, gain_loc, gain: calls.append(("gain", shader, gain_loc, gain)),
     )
-    monkeypatch.setattr(loop_view.rl, "begin_shader_mode", lambda shader: calls.append(("begin", shader)))
-    monkeypatch.setattr(loop_view.rl, "end_shader_mode", lambda: calls.append("end"))
+    begin_shader = mocker.patch.object(loop_view.rl, "begin_shader_mode")
+    end_shader = mocker.patch.object(loop_view.rl, "end_shader_mode")
+    ordered = mocker.Mock()
+    ordered.attach_mock(set_gain, "gain")
+    ordered.attach_mock(begin_shader, "begin")
+    ordered.attach_mock(draw_scene, "scene")
+    ordered.attach_mock(end_shader, "end")
 
     view.draw()
 
-    assert calls == [("gain", sentinel_shader, 7, 1.4), ("begin", sentinel_shader), "scene", "end"]
+    assert ordered.mock_calls == [
+        call.gain(sentinel_shader, 7, 1.4),
+        call.begin(sentinel_shader),
+        call.scene(),
+        call.end(),
+    ]
 
 
-def test_game_loop_draw_skips_gamma_shader_for_default_gain(monkeypatch, make_game_state) -> None:
-    calls: list[object] = []
+def test_game_loop_draw_skips_gamma_shader_for_default_gain(mocker, make_game_state) -> None:
     state = make_game_state()
     state.gamma_ramp = 1.0
     view = GameLoopView(state)
-    monkeypatch.setattr(view, "_draw_scene_layers", lambda: calls.append("scene"))
-
-    def _unexpected_shader_lookup() -> tuple[object, int]:
-        raise AssertionError("gamma shader lookup should not happen for gain=1")
-
-    monkeypatch.setattr(loop_view, "_get_gamma_ramp_shader", _unexpected_shader_lookup)
+    draw_scene = mocker.patch.object(view, "_draw_scene_layers")
+    shader_lookup = mocker.patch.object(
+        loop_view,
+        "_get_gamma_ramp_shader",
+    )
 
     view.draw()
 
-    assert calls == ["scene"]
+    shader_lookup.assert_not_called()
+    draw_scene.assert_called_once_with()

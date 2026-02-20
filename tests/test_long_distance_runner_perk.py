@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.gameplay import (
     GameplayState,
     player_update,
@@ -10,6 +8,7 @@ from crimson.perks import PerkId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_long_distance_runner_ramps_speed_above_base_cap() -> None:
@@ -29,12 +28,12 @@ def test_long_distance_runner_ramps_speed_above_base_cap() -> None:
     for _ in range(steps):
         player_update(perk_player, input_state, dt, perk_state)
 
-    assert base_player.move_speed == pytest.approx(2.0)
-    assert perk_player.move_speed == pytest.approx(2.8)
+    assert_float_close(base_player.move_speed, 2.0)
+    assert_float_close(perk_player.move_speed, 2.8)
     assert perk_player.pos.x > base_player.pos.x
 
     # With no movement input, the player coasts while decelerating.
     prev_x = perk_player.pos.x
     player_update(perk_player, PlayerInput(aim=Vec2(perk_player.pos.x + 1.0, perk_player.pos.y)), dt, perk_state)
-    assert perk_player.move_speed == pytest.approx(1.3)  # 2.8 - (dt * 15.0)
+    assert_float_close(perk_player.move_speed, 1.3)  # 2.8 - (dt * 15.0)
     assert perk_player.pos.x > prev_x

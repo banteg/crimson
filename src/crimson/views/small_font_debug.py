@@ -2,10 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pyray as rl
-
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
+from grim.raylib_api import rl
 from grim.view import View, ViewContext
 
 from ..ui.perk_menu import MENU_ITEM_ALPHA_IDLE, MENU_ITEM_RGB, draw_menu_item

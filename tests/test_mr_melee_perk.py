@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_mr_melee_hits_attacking_creature_on_contact_damage_tick() -> None:
@@ -25,7 +24,7 @@ def test_mr_melee_hits_attacking_creature_on_contact_damage_tick() -> None:
 
     pool.update(0.2, state=state, players=[player])
 
-    assert creature.hp == pytest.approx(75.0)
+    assert_float_close(creature.hp, 75.0)
 
 
 def test_mr_melee_does_not_prevent_player_damage_when_killing_attacker() -> None:
@@ -44,7 +43,7 @@ def test_mr_melee_does_not_prevent_player_damage_when_killing_attacker() -> None
 
     pool.update(0.2, state=state, players=[player])
 
-    assert player.health == pytest.approx(90.0)
+    assert_float_close(player.health, 90.0)
 
 
 def test_mr_melee_is_inert_when_not_active() -> None:
@@ -62,4 +61,4 @@ def test_mr_melee_is_inert_when_not_active() -> None:
 
     pool.update(0.2, state=state, players=[player])
 
-    assert creature.hp == pytest.approx(100.0)
+    assert_float_close(creature.hp, 100.0)

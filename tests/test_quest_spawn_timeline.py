@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.creatures.spawn import SpawnId
 from crimson.quests.timeline import tick_quest_spawn_timeline
 from crimson.quests.types import SpawnEntry
 from grim.geom import Vec2
+from tests.helpers import assert_float_close
 
 
 def test_tick_quest_spawn_timeline_no_trigger_resets_idle_timer_when_creatures_active() -> None:
@@ -29,7 +28,7 @@ def test_tick_quest_spawn_timeline_no_trigger_resets_idle_timer_when_creatures_a
 
     assert updated == entries
     assert creatures_none_active is False
-    assert idle_ms == pytest.approx(0.0, abs=1e-9)
+    assert_float_close(idle_ms, 0.0)
     assert spawns == ()
 
 
@@ -54,15 +53,13 @@ def test_tick_quest_spawn_timeline_triggers_horizontal_spread_when_on_screen() -
 
     assert updated[0].count == 0
     assert creatures_none_active is False
-    assert idle_ms == pytest.approx(16.0, abs=1e-9)
+    assert_float_close(idle_ms, 16.0)
     assert len(spawns) == 3
-    assert [(s.pos.x, s.pos.y) for s in spawns] == [
-        (pytest.approx(512.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
-        (pytest.approx(472.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
-        (pytest.approx(592.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
-    ]
+    for spawn, (expected_x, expected_y) in zip(spawns, ((512.0, 512.0), (472.0, 512.0), (592.0, 512.0))):
+        assert_float_close(spawn.pos.x, expected_x)
+        assert_float_close(spawn.pos.y, expected_y)
     for spawn in spawns:
-        assert spawn.heading == pytest.approx(1.25, abs=1e-9)
+        assert_float_close(spawn.heading, 1.25)
 
 
 def test_tick_quest_spawn_timeline_triggers_vertical_spread_when_offscreen_x() -> None:
@@ -84,11 +81,9 @@ def test_tick_quest_spawn_timeline_triggers_vertical_spread_when_offscreen_x() -
         no_creatures_timer_ms=0.0,
     )
 
-    assert [(s.pos.x, s.pos.y) for s in spawns] == [
-        (pytest.approx(-50.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
-        (pytest.approx(-50.0, abs=1e-9), pytest.approx(472.0, abs=1e-9)),
-        (pytest.approx(-50.0, abs=1e-9), pytest.approx(592.0, abs=1e-9)),
-    ]
+    for spawn, (expected_x, expected_y) in zip(spawns, ((-50.0, 512.0), (-50.0, 472.0), (-50.0, 592.0))):
+        assert_float_close(spawn.pos.x, expected_x)
+        assert_float_close(spawn.pos.y, expected_y)
 
 
 def test_tick_quest_spawn_timeline_fires_only_one_trigger_group_per_tick() -> None:
@@ -149,5 +144,5 @@ def test_tick_quest_spawn_timeline_force_fires_after_idle_timeout() -> None:
 
     assert updated[0].count == 0
     assert creatures_none_active is False
-    assert idle_ms == pytest.approx(3001.0, abs=1e-9)
+    assert_float_close(idle_ms, 3001.0)
     assert len(spawns) == 1

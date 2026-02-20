@@ -3,8 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import pytest
-
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
@@ -14,6 +12,7 @@ from crimson.persistence import save_status
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from tests.helpers import assert_rng_progression
 
 
 class _SeqRng:
@@ -203,6 +202,10 @@ def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -
             self._state = int(seed) & 0x7FFFFFFF
             self.calls = 0
 
+        @property
+        def state(self) -> int:
+            return int(self._state)
+
         def rand(self) -> int:
             self.calls += 1
             self._state = (1103515245 * self._state + 12345) & 0x7FFFFFFF
@@ -221,6 +224,8 @@ def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -
     for idx in range(len(player.perk_counts)):
         player.perk_counts[idx] = 1
 
+    before_calls = rng.calls
+    before_state = rng.state
     choices = perk_generate_choices(state, player, game_mode=int(GameMode.QUESTS), player_count=1, count=7)
     assert choices == [
         PerkId.RANDOM_WEAPON,
@@ -231,10 +236,16 @@ def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -
         PerkId.RANDOM_WEAPON,
         PerkId.RANDOM_WEAPON,
     ]
-    assert rng.calls == 65860
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=65860,
+        expected_after_state=790131735,
+    )
 
 
-def test_perk_generate_choices_caches_offerability_checks(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_perk_generate_choices_caches_offerability_checks(mocker) -> None:
     import crimson.perks.selection as selection_mod
 
     status = _status_default()
@@ -257,7 +268,7 @@ def test_perk_generate_choices_caches_offerability_checks(monkeypatch: pytest.Mo
         calls += 1
         return original(*args, **kwargs)
 
-    monkeypatch.setattr(selection_mod, "perk_can_offer", _counting_perk_can_offer)
+    mocker.patch.object(selection_mod, "perk_can_offer", side_effect=_counting_perk_can_offer)
     choices = selection_mod.perk_generate_choices(state, player, game_mode=int(GameMode.QUESTS), player_count=1, count=7)
     assert choices == [
         PerkId.INSTANT_WINNER,

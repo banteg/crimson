@@ -5,7 +5,7 @@ from pathlib import Path
 from crimson.game_world import GameWorld
 from crimson.modes.rush_mode import RushMode
 from crimson.persistence.highscores import HighScoreRecord
-from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS
+from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
 from grim.config import CrimsonConfig
 from grim.view import ViewContext
 
@@ -20,13 +20,13 @@ def _make_mode() -> RushMode:
     return mode
 
 
-def test_update_game_over_ui_routes_high_scores(monkeypatch) -> None:
+def test_update_game_over_ui_routes_high_scores(mocker) -> None:
     mode = _make_mode()
 
     def _update(*_args, **_kwargs):
         return "high_scores"
 
-    monkeypatch.setattr("crimson.ui.game_over.GameOverUi.update", _update)
+    mocker.patch.object(GameOverUi, "update", side_effect=_update)
 
     mode._update_game_over_ui(0.1)
 
@@ -34,13 +34,13 @@ def test_update_game_over_ui_routes_high_scores(monkeypatch) -> None:
     assert mode.close_requested is False
 
 
-def test_update_game_over_ui_routes_main_menu(monkeypatch) -> None:
+def test_update_game_over_ui_routes_main_menu(mocker) -> None:
     mode = _make_mode()
 
     def _update(*_args, **_kwargs):
         return "main_menu"
 
-    monkeypatch.setattr("crimson.ui.game_over.GameOverUi.update", _update)
+    mocker.patch.object(GameOverUi, "update", side_effect=_update)
 
     mode._update_game_over_ui(0.1)
 
@@ -48,41 +48,30 @@ def test_update_game_over_ui_routes_main_menu(monkeypatch) -> None:
     assert mode.close_requested is True
 
 
-def test_update_game_over_ui_calls_open_on_play_again(monkeypatch) -> None:
+def test_update_game_over_ui_calls_open_on_play_again(mocker) -> None:
     mode = _make_mode()
-
-    opened: list[bool] = []
-
-    def _open() -> None:
-        opened.append(True)
-
-    monkeypatch.setattr(mode, "open", _open)
+    open_mode = mocker.patch.object(mode, "open")
 
     def _update(*_args, **_kwargs):
         return "play_again"
 
-    monkeypatch.setattr("crimson.ui.game_over.GameOverUi.update", _update)
+    mocker.patch.object(GameOverUi, "update", side_effect=_update)
 
     mode._update_game_over_ui(0.1)
 
-    assert opened == [True]
+    open_mode.assert_called_once_with()
     assert mode.take_action() is None
 
 
-def test_draw_pause_background_fades_entities_during_game_over_close(monkeypatch) -> None:
+def test_draw_pause_background_fades_entities_during_game_over_close(mocker) -> None:
     mode = _make_mode()
     mode._game_over_ui._closing = True
     mode._game_over_ui._intro_ms = PANEL_SLIDE_DURATION_MS * 0.5
 
-    captured: dict[str, object] = {}
-
-    def _draw(*, draw_aim_indicators: bool, entity_alpha: float = 1.0) -> None:
-        captured["draw_aim_indicators"] = draw_aim_indicators
-        captured["entity_alpha"] = entity_alpha
-
-    monkeypatch.setattr(GameWorld, "draw", lambda *_args, **kwargs: _draw(**kwargs))
+    world_draw = mocker.patch.object(GameWorld, "draw")
 
     mode.draw_pause_background()
 
-    assert captured["draw_aim_indicators"] is False
-    assert captured["entity_alpha"] == 0.5
+    world_draw.assert_called_once()
+    assert world_draw.call_args.kwargs["draw_aim_indicators"] is False
+    assert world_draw.call_args.kwargs["entity_alpha"] == 0.5

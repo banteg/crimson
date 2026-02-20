@@ -3,9 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
 
-import pyray as rl
-
 from grim.geom import Vec2
+from grim.raylib_api import rl
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

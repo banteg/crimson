@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+from typing import cast
+from unittest.mock import call
 
 import pytest
 
@@ -43,7 +45,7 @@ def test_infer_effective_capture_sample_rate_rejects_out_of_range() -> None:
         _infer_effective_capture_sample_rate(captured_frames=10_000_000, captured_ticks=1, replay_tick_rate=60)
 
 
-def test_capture_audio_track_clears_fx_queues_and_reports_progress(monkeypatch, tmp_path: Path) -> None:
+def test_capture_audio_track_clears_fx_queues_and_reports_progress(mocker, tmp_path: Path) -> None:
     import crimson.modes.replay_playback_mode as replay_playback_mode_mod
     import crimson.sim.driver.replay_render as replay_render_mod
 
@@ -75,7 +77,7 @@ def test_capture_audio_track_clears_fx_queues_and_reports_progress(monkeypatch, 
         def close(self) -> None:
             return
 
-    monkeypatch.setattr(replay_playback_mode_mod, "ReplayPlaybackMode", _FakeMode)
+    mocker.patch.object(replay_playback_mode_mod, "ReplayPlaybackMode", _FakeMode)
 
     class _FakeCapture:
         def __init__(self, *, rl, output_path: Path, sample_rate: int, channels: int) -> None:
@@ -95,8 +97,8 @@ def test_capture_audio_track_clears_fx_queues_and_reports_progress(monkeypatch, 
         def close(self) -> None:
             return
 
-    monkeypatch.setattr(replay_render_mod, "_MixedAudioCapture", _FakeCapture)
-    monkeypatch.setattr(replay_render_mod.time, "sleep", lambda _seconds: None)
+    mocker.patch.object(replay_render_mod, "_MixedAudioCapture", _FakeCapture)
+    mocker.patch.object(replay_render_mod.time, "sleep", side_effect=lambda _seconds: None)
 
     class _FakeRl:
         def __init__(self) -> None:
@@ -112,10 +114,9 @@ def test_capture_audio_track_clears_fx_queues_and_reports_progress(monkeypatch, 
         def set_bool_value(self, _key: str, _value: bool) -> None:
             return
 
-    progress_calls: list[tuple[str, int, int, int]] = []
+    from unittest.mock import Mock
 
-    def _progress(phase: str, frame_count: int, tick_index: int, total_ticks: int) -> None:
-        progress_calls.append((str(phase), int(frame_count), int(tick_index), int(total_ticks)))
+    progress = Mock()
 
     captured = replay_render_mod._capture_replay_audio_track(
         rl=_FakeRl(),
@@ -128,7 +129,7 @@ def test_capture_audio_track_clears_fx_queues_and_reports_progress(monkeypatch, 
         trace_rng=False,
         output_path=tmp_path / "audio.raw",
         replay_tick_rate=60,
-        progress=_progress,
+        progress=progress,
         total_ticks=120,
     )
 
@@ -139,17 +140,14 @@ def test_capture_audio_track_clears_fx_queues_and_reports_progress(monkeypatch, 
     assert captured.captured_ticks == 3
     assert fx_queue.clear_calls == 3
     assert fx_queue_rotated.clear_calls == 3
-    assert progress_calls == [
-        ("audio", 0, 1, 120),
-        ("audio", 0, 2, 120),
-        ("audio", 0, 3, 120),
+    assert progress.call_args_list == [
+        call("audio", 0, 1, 120),
+        call("audio", 0, 2, 120),
+        call("audio", 0, 3, 120),
     ]
 
 
-def test_mux_raw_audio_with_video_uses_output_safety_and_sync_filter_without_time_warp(
-    monkeypatch,
-    tmp_path: Path,
-) -> None:
+def test_mux_raw_audio_with_video_uses_output_safety_and_sync_filter_without_time_warp(mocker, tmp_path: Path) -> None:
     import crimson.sim.driver.replay_render as replay_render_mod
 
     video_path = tmp_path / "video.mp4"
@@ -159,13 +157,11 @@ def test_mux_raw_audio_with_video_uses_output_safety_and_sync_filter_without_tim
     video_path.write_bytes(b"video")
     audio_path.write_bytes(b"audio")
     ffmpeg_path.write_text("", encoding="utf-8")
-    captured_cmd: list[str] = []
-
-    def _fake_run(cmd: list[str], **_kwargs: object) -> object:
-        captured_cmd[:] = list(cmd)
-        return SimpleNamespace(returncode=0, stderr=b"")
-
-    monkeypatch.setattr(replay_render_mod.subprocess, "run", _fake_run)
+    run = mocker.patch.object(
+        replay_render_mod.subprocess,
+        "run",
+        return_value=SimpleNamespace(returncode=0, stderr=b""),
+    )
 
     replay_render_mod._mux_raw_audio_with_video(
         ffmpeg_path=ffmpeg_path,
@@ -179,7 +175,8 @@ def test_mux_raw_audio_with_video_uses_output_safety_and_sync_filter_without_tim
         target_audio_frames=90_000,
     )
 
-    assert captured_cmd
+    run.assert_called_once()
+    captured_cmd = cast("list[str]", run.call_args.args[0])
     af_index = captured_cmd.index("-af")
     audio_filter = captured_cmd[af_index + 1]
     assert (

@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import pyray as rl
-
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
+from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from ...frontend.assets import MenuAssets, _ensure_texture_cache, load_menu_assets

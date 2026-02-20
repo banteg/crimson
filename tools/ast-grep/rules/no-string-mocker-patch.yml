@@ -1,0 +1,10 @@
+id: no-string-mocker-patch
+language: python
+severity: error
+message: Prefer `mocker.patch.object(...)` over string-target `mocker.patch(...)`.
+files:
+  - tests/**/*.py
+rule:
+  all:
+    - kind: call
+    - regex: 'mocker\.patch\("'

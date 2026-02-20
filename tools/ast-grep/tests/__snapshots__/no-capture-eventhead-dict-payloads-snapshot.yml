@@ -1,0 +1,19 @@
+id: no-capture-eventhead-dict-payloads
+snapshots:
+  ? |
+    tick.event_heads = [{"type": "projectile_spawn", "data": {"owner_id": -100}}]
+  : labels:
+    - source: 'tick.event_heads = [{"type": "projectile_spawn", "data": {"owner_id": -100}}]'
+      style: primary
+      start: 0
+      end: 77
+  ? |
+    def _capture_tick(event_heads: list[dict[str, object]]) -> None:
+      tick_obj.event_heads = event_heads
+  : labels:
+    - source: |-
+        def _capture_tick(event_heads: list[dict[str, object]]) -> None:
+          tick_obj.event_heads = event_heads
+      style: primary
+      start: 0
+      end: 101

@@ -74,16 +74,16 @@ def test_credits_unlock_secret_lines_sets_flags_and_text() -> None:
         assert (line.flags & _FLAG_CLICKED) != 0
 
 
-def test_credits_secret_button_visible_in_debug_or_after_unlock(monkeypatch) -> None:
+def test_credits_secret_button_visible_in_debug_or_after_unlock(mocker) -> None:
     view = CreditsView(SimpleNamespace())
 
     view._secret_unlock = False
-    monkeypatch.setattr(credits_panel, "debug_enabled", lambda: False)
+    mocker.patch.object(credits_panel, "debug_enabled", side_effect=lambda: False)
     assert view._secret_button_visible() is False
 
-    monkeypatch.setattr(credits_panel, "debug_enabled", lambda: True)
+    mocker.patch.object(credits_panel, "debug_enabled", side_effect=lambda: True)
     assert view._secret_button_visible() is True
 
     view._secret_unlock = True
-    monkeypatch.setattr(credits_panel, "debug_enabled", lambda: False)
+    mocker.patch.object(credits_panel, "debug_enabled", side_effect=lambda: False)
     assert view._secret_button_visible() is True

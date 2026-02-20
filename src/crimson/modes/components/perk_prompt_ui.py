@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-import pyray as rl
-
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData
 from grim.geom import Rect, Vec2
+from grim.raylib_api import rl
 
 from ...ui.perk_menu import PerkMenuAssets, draw_ui_text
 

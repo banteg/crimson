@@ -23,6 +23,7 @@ from crimson.sim.presentation_step import apply_world_presentation_step, queue_p
 from crimson.sim.state_types import BonusPickupEvent
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from tests.helpers import MockCrand, assert_rng_progression
 
 
 def test_perk_hook_registries_are_explicit_and_ordered() -> None:
@@ -89,11 +90,9 @@ def test_bonus_pickup_feature_hooks_emit_expected_fx() -> None:
 def test_fire_bullets_projectile_decals_flow_through_feature_hooks() -> None:
     state = GameplayState()
     fx_queue = FxQueue()
-    draws = {"count": 0}
-
-    def rand() -> int:
-        draws["count"] += 1
-        return 0
+    rng = MockCrand(0, fallback="repeat_last")
+    before_calls = rng.calls
+    before_state = rng.state
 
     queue_projectile_decals(
         state=state,
@@ -107,12 +106,19 @@ def test_fire_bullets_projectile_decals_flow_through_feature_hooks() -> None:
                 target=Vec2(1.0, 1.0),
             ),
         ],
-        rand=rand,
+        rand=rng,
         detail_preset=5,
         fx_toggle=0,
     )
 
-    assert draws["count"] > 0
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=59,
+        expected_after_state=0,
+        expected_hash="68646aeb6b9170bc",
+    )
     assert fx_queue.count > 0
 
 

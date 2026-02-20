@@ -4,8 +4,6 @@ import random
 from dataclasses import replace
 from pathlib import Path
 
-import pyray as rl
-
 from grim import music as grim_music
 from grim.assets import TextureLoader
 from grim.audio import AudioState, init_audio_state, play_music, shutdown_audio, update_audio
@@ -14,6 +12,7 @@ from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
+from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ..game_modes import GameMode

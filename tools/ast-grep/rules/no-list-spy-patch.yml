@@ -1,0 +1,11 @@
+id: no-list-spy-patch
+language: python
+severity: error
+message: Prefer mock call assertions over list-append side-effect spies in patch hooks.
+files:
+  - tests/**/*.py
+rule:
+  all:
+    - kind: call
+    - regex: '(?:monkeypatch\.setattr|mocker\.patch(?:\.object)?)\('
+    - regex: 'append\('

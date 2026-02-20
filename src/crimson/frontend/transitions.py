@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import pyray as rl
+from grim.raylib_api import rl
 
 from .types import GameState
 

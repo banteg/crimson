@@ -183,6 +183,7 @@ nav = [
     { "Setup" = "contributor/setup.md" },
     { "Workflows" = [
       { "Overview" = "contributor/workflows/index.md" },
+      { "Testing conventions" = "testing-conventions.md" },
     ]},
     { "Project tracking" = [
       { "Overview" = "contributor/project-tracking/index.md" },
