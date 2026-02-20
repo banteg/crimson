@@ -3,6 +3,7 @@ from __future__ import annotations
 import gzip
 import math
 import struct
+from collections import Counter
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import cast
@@ -503,6 +504,148 @@ def _tick_frame_dt_ms_i32(tick: CaptureTick) -> int | None:
             return int(value)
 
     return None
+
+
+def summarize_capture_health(
+    capture: CaptureFile,
+    *,
+    tick_start: int | None = None,
+    tick_end: int | None = None,
+) -> dict[str, object]:
+    """Summarize capture telemetry coverage for differential/parity workflows."""
+    ticks_sorted = sorted(capture.ticks, key=lambda item: int(item.tick_index))
+    window_start = int(tick_start) if tick_start is not None else None
+    window_end = int(tick_end) if tick_end is not None else None
+    if window_start is not None and window_end is not None and int(window_start) > int(window_end):
+        raise ValueError("tick_start must be <= tick_end")
+
+    ticks: list[CaptureTick] = []
+    for tick in ticks_sorted:
+        tick_index = int(tick.tick_index)
+        if window_start is not None and tick_index < int(window_start):
+            continue
+        if window_end is not None and tick_index > int(window_end):
+            continue
+        ticks.append(tick)
+
+    key_rows = 0
+    key_rows_with_any_signal = 0
+    perk_apply_in_tick_entries = 0
+    perk_apply_outside_calls = 0
+    sample_creature_rows = 0
+    sample_creature_rows_with_ai_lineage = 0
+    creature_lifecycle_rows = 0
+    creature_lifecycle_rows_with_ai_lineage = 0
+    creature_update_micro_rows = 0
+    creature_update_micro_angle_rows = 0
+    creature_update_micro_window_rows = 0
+    mode_tick_event_count_total = 0
+    frame_dt_source_after_counts: Counter[str] = Counter()
+
+    for tick in ticks:
+        mode_tick_event_count_total += int(tick.event_counts.mode_tick)
+        timing = tick.diagnostics.timing
+        if isinstance(timing, dict):
+            source_obj = timing.get("frame_dt_source_after")
+            source = str(source_obj).strip() if source_obj is not None else ""
+            if source:
+                frame_dt_source_after_counts[source] += 1
+
+        for row in tick.input_player_keys:
+            key_rows += 1
+            if any(
+                value is not None
+                for value in (
+                    row.move_forward_pressed,
+                    row.move_backward_pressed,
+                    row.turn_left_pressed,
+                    row.turn_right_pressed,
+                    row.fire_down,
+                    row.fire_pressed,
+                    row.reload_pressed,
+                )
+            ):
+                key_rows_with_any_signal += 1
+
+        perk_apply_in_tick_entries += sum(1 for item in tick.perk_apply_in_tick if item.perk_id is not None)
+        perk_apply_outside_calls += int(tick.perk_apply_outside_before.calls)
+
+        if tick.samples is not None:
+            for creature in tick.samples.creatures:
+                sample_creature_rows += 1
+                if creature.ai_mode is not None or creature.link_index is not None:
+                    sample_creature_rows_with_ai_lineage += 1
+
+        for head in msgspec.to_builtins(tick.event_heads):
+            if not isinstance(head, dict):
+                continue
+            kind = str(head.get("kind") or "")
+            if kind == "creature_update_micro":
+                creature_update_micro_rows += 1
+                data = head.get("data")
+                data_obj = data if isinstance(data, dict) else {}
+                event_kind = str(data_obj.get("event_kind") or "")
+                if event_kind == "angle_approach":
+                    creature_update_micro_angle_rows += 1
+                elif event_kind == "creature_update_window":
+                    creature_update_micro_window_rows += 1
+                continue
+            if kind != "creature_lifecycle":
+                continue
+
+            data = head.get("data")
+            data_obj = data if isinstance(data, dict) else {}
+            for key in ("added_head", "removed_head"):
+                rows_obj = data_obj.get(key)
+                rows = rows_obj if isinstance(rows_obj, list) else []
+                for row in rows:
+                    if not isinstance(row, dict):
+                        continue
+                    creature_lifecycle_rows += 1
+                    if row.get("ai_mode") is not None or row.get("link_index") is not None:
+                        creature_lifecycle_rows_with_ai_lineage += 1
+
+    issues: list[str] = []
+    if creature_update_micro_rows <= 0:
+        issues.append("creature_update_micro_rows == 0")
+    if creature_update_micro_angle_rows <= 0:
+        issues.append("creature_update_micro_angle_rows == 0")
+    if creature_update_micro_window_rows <= 0:
+        issues.append("creature_update_micro_window_rows == 0")
+    if mode_tick_event_count_total <= 0:
+        issues.append("mode_tick_event_count_total == 0")
+
+    first_tick = int(ticks[0].tick_index) if ticks else None
+    last_tick = int(ticks[-1].tick_index) if ticks else None
+    metrics: dict[str, object] = {
+        "key_rows": int(key_rows),
+        "key_rows_with_any_signal": int(key_rows_with_any_signal),
+        "perk_apply_in_tick_entries": int(perk_apply_in_tick_entries),
+        "perk_apply_outside_calls": int(perk_apply_outside_calls),
+        "sample_creature_rows": int(sample_creature_rows),
+        "sample_creature_rows_with_ai_lineage": int(sample_creature_rows_with_ai_lineage),
+        "creature_lifecycle_rows": int(creature_lifecycle_rows),
+        "creature_lifecycle_rows_with_ai_lineage": int(creature_lifecycle_rows_with_ai_lineage),
+        "creature_update_micro_rows": int(creature_update_micro_rows),
+        "creature_update_micro_angle_rows": int(creature_update_micro_angle_rows),
+        "creature_update_micro_window_rows": int(creature_update_micro_window_rows),
+        "mode_tick_event_count_total": int(mode_tick_event_count_total),
+        "frame_dt_source_after_counts": dict(sorted(frame_dt_source_after_counts.items())),
+    }
+    return {
+        "capture_format_version": int(capture.capture_format_version),
+        "tick_window": {
+            "requested_start": window_start,
+            "requested_end": window_end,
+            "actual_start": first_tick,
+            "actual_end": last_tick,
+            "ticks_total": int(len(capture.ticks)),
+            "ticks_in_window": int(len(ticks)),
+        },
+        "metrics": metrics,
+        "ok_for_movement_root_cause": not issues,
+        "issues": issues,
+    }
 
 
 def _infer_game_mode_id(capture: CaptureFile) -> int:

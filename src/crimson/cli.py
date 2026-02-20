@@ -1759,6 +1759,113 @@ def cmd_replay_verify_capture(
     typer.echo(message)
 
 
+@original_app.command("capture-health")
+def cmd_original_capture_health(
+    capture_file: Path = typer.Argument(
+        ...,
+        help="capture file (.json/.json.gz)",
+    ),
+    tick_start: int | None = typer.Option(
+        None,
+        "--tick-start",
+        help="optional inclusive lower tick bound",
+    ),
+    tick_end: int | None = typer.Option(
+        None,
+        "--tick-end",
+        help="optional inclusive upper tick bound",
+    ),
+    strict: bool = typer.Option(
+        False,
+        "--strict",
+        help="exit non-zero when movement-root-cause telemetry requirements are not met",
+    ),
+    json_out: Path | None = typer.Option(
+        None,
+        "--json-out",
+        help="optional JSON output path for telemetry summary",
+    ),
+) -> None:
+    """Summarize capture telemetry coverage before gameplay parity patches."""
+    from .original.capture import load_capture, summarize_capture_health
+
+    capture = load_capture(Path(capture_file))
+    try:
+        summary = summarize_capture_health(
+            capture,
+            tick_start=tick_start,
+            tick_end=tick_end,
+        )
+    except ValueError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=2) from exc
+
+    tick_window_obj = summary.get("tick_window")
+    tick_window = cast("dict[str, object]", tick_window_obj) if isinstance(tick_window_obj, dict) else {}
+    metrics_obj = summary.get("metrics")
+    metrics = cast("dict[str, object]", metrics_obj) if isinstance(metrics_obj, dict) else {}
+    issues_obj = summary.get("issues")
+    issues = [str(item) for item in issues_obj] if isinstance(issues_obj, list) else []
+    ok_for_movement_root_cause = bool(summary.get("ok_for_movement_root_cause"))
+    frame_dt_source_after_counts_obj = metrics.get("frame_dt_source_after_counts")
+    frame_dt_source_after_counts = (
+        cast("dict[str, object]", frame_dt_source_after_counts_obj)
+        if isinstance(frame_dt_source_after_counts_obj, dict)
+        else {}
+    )
+
+    typer.echo(f"capture={capture_file}")
+    typer.echo(f"capture_format_version={summary.get('capture_format_version')}")
+    typer.echo(
+        "tick_window "
+        f"requested_start={tick_window.get('requested_start')} "
+        f"requested_end={tick_window.get('requested_end')} "
+        f"actual_start={tick_window.get('actual_start')} "
+        f"actual_end={tick_window.get('actual_end')} "
+        f"ticks_total={tick_window.get('ticks_total')} "
+        f"ticks_in_window={tick_window.get('ticks_in_window')}",
+    )
+    metric_keys = (
+        "key_rows",
+        "key_rows_with_any_signal",
+        "perk_apply_in_tick_entries",
+        "perk_apply_outside_calls",
+        "sample_creature_rows",
+        "sample_creature_rows_with_ai_lineage",
+        "creature_lifecycle_rows",
+        "creature_lifecycle_rows_with_ai_lineage",
+        "creature_update_micro_rows",
+        "creature_update_micro_angle_rows",
+        "creature_update_micro_window_rows",
+        "mode_tick_event_count_total",
+    )
+    for key in metric_keys:
+        typer.echo(f"{key}={metrics.get(key)}")
+    typer.echo(
+        "frame_dt_source_after_counts="
+        + (
+            ",".join(
+                f"{str(key)}:{int(value)}"
+                for key, value in sorted(frame_dt_source_after_counts.items(), key=lambda item: str(item[0]))
+            )
+            if frame_dt_source_after_counts
+            else "(none)"
+        ),
+    )
+    typer.echo(f"movement_root_cause_ready={ok_for_movement_root_cause}")
+    if issues:
+        for issue in issues:
+            typer.echo(f"issue={issue}")
+
+    if json_out is not None:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+        typer.echo(f"json_report={json_out}")
+
+    if strict and not ok_for_movement_root_cause:
+        raise typer.Exit(code=1)
+
+
 @original_app.command("convert-capture")
 def cmd_replay_convert_capture(
     capture_file: Path = typer.Argument(

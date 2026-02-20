@@ -17,7 +17,24 @@ This runbook is based on repeated patterns from Codex session logs under
 
 ## 1) Identify the capture artifact
 
-Run:
+Run (preferred):
+
+```bash
+uv run crimson original capture-health \
+  artifacts/frida/share/gameplay_diff_capture.json.gz \
+  --json-out analysis/frida/reports/capture_<sha8>_health.json
+```
+
+Optional for focused ancestry windows:
+
+```bash
+uv run crimson original capture-health \
+  artifacts/frida/share/gameplay_diff_capture.json.gz \
+  --tick-start <tick_start> \
+  --tick-end <tick_end>
+```
+
+Legacy/manual equivalent:
 
 ```bash
 ls -lh artifacts/frida/share/gameplay_diff_capture.json

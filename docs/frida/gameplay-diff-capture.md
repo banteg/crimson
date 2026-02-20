@@ -121,6 +121,13 @@ uv run crimson original verify-capture \
   artifacts/frida/share/gameplay_diff_capture.json
 ```
 
+## Capture telemetry health
+
+```text
+uv run crimson original capture-health \
+  artifacts/frida/share/gameplay_diff_capture.json
+```
+
 ## Divergence report
 
 ```text

@@ -34,6 +34,7 @@ from crimson.original.capture import (
     default_capture_replay_path,
     load_capture,
     parse_player_int_overrides,
+    summarize_capture_health,
 )
 from crimson.original.schema import CAPTURE_FORMAT_VERSION, CaptureEventHeadPerkApply
 from crimson.replay import PerkMenuOpenEvent, Replay, UnknownEvent, unpack_input_flags, unpack_input_move_key_flags
@@ -566,6 +567,74 @@ def test_load_capture_stream_accepts_forward_compatible_config_fields(tmp_path: 
     assert capture.config.console_events == ["start", "ready", "capture_shutdown"]
     assert capture.config.include_caller is False
     assert len(capture.ticks) == 1
+
+
+def test_summarize_capture_health_flags_missing_micro_rows(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    summary = summarize_capture_health(capture)
+
+    assert summary["ok_for_movement_root_cause"] is False
+    issues = cast("list[str]", summary["issues"])
+    assert "creature_update_micro_rows == 0" in issues
+    assert "creature_update_micro_angle_rows == 0" in issues
+    assert "creature_update_micro_window_rows == 0" in issues
+
+
+def test_summarize_capture_health_counts_micro_and_lifecycle_lineage(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=7, elapsed_ms=133)
+    tick["event_counts"] = {"mode_tick": 1}
+    tick["input_player_keys"] = [
+        {
+            "player_index": 0,
+            "move_forward_pressed": True,
+        },
+    ]
+    tick["event_heads"] = [
+        {
+            "kind": "creature_update_micro",
+            "data": {"event_kind": "angle_approach", "slot": 3},
+        },
+        {
+            "kind": "creature_update_micro",
+            "data": {"event_kind": "creature_update_window", "slot": 3},
+        },
+        {
+            "kind": "creature_lifecycle",
+            "data": {
+                "added_head": [{"index": 3, "ai_mode": 7, "link_index": 12}],
+                "removed_head": [],
+            },
+        },
+    ]
+    tick["samples"] = {
+        "creatures": [_sample_creature(index=3)],
+        "projectiles": [],
+        "secondary_projectiles": [],
+        "bonuses": [],
+    }
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    summary = summarize_capture_health(capture)
+    metrics = cast("dict[str, object]", summary["metrics"])
+
+    assert summary["ok_for_movement_root_cause"] is True
+    assert metrics["key_rows_with_any_signal"] == 1
+    assert metrics["sample_creature_rows"] == 1
+    assert metrics["sample_creature_rows_with_ai_lineage"] == 1
+    assert metrics["creature_lifecycle_rows"] == 1
+    assert metrics["creature_lifecycle_rows_with_ai_lineage"] == 1
+    assert metrics["creature_update_micro_rows"] == 2
+    assert metrics["creature_update_micro_angle_rows"] == 1
+    assert metrics["creature_update_micro_window_rows"] == 1
+    assert metrics["mode_tick_event_count_total"] == 1
 
 
 def test_load_capture_accepts_player_fire_debug_payloads(tmp_path: Path) -> None:
