@@ -44,9 +44,9 @@ Trust the type hints. If a variable is annotated as `int`, do not wrap it in `in
 
 ## 2. TRUST VALIDATION BOUNDARIES (CRASH ON INVALID DATA)
 Once data passes through our parsers (e.g., `msgspec`), treat it as perfectly valid. 
-*   **NEVER** write custom coercion helpers (e.g., `_int_or_zero`, `_coerce_blob`).
-*   **NEVER** use `try...except ValueError` to return a default value like `0` or `""`. Let the exception bubble up and crash the program.
-*   **NEVER** use `isinstance()` or `hasattr()` to check if a domain object has a field. 
+*   **AVOID** write custom coercion helpers (e.g., `_int_or_zero`, `_coerce_blob`).
+*   **AVOID** use `try...except ValueError` to return a default value like `0` or `""`. Let the exception bubble up and crash the program.
+*   **AVOID** use `isinstance()` or `hasattr()` to check if a domain object has a field. 
 
 ## 3. BAN `getattr()` AND `.get()` ON DOMAIN OBJECTS
 Structured data must be accessed via direct dot notation.
@@ -57,10 +57,10 @@ Structured data must be accessed via direct dot notation.
 
 ## 4. NO DICTIONARY DEGRADATION
 Keep typed objects typed. Never degrade a `dataclass` or `msgspec.Struct` into a dictionary just to serialize or manipulate it.
-*   **NEVER** use `asdict()`, `msgspec.to_builtins()`, or reflection (`fields(obj)`) to repack data into dictionaries.
-*   **NEVER** type hint a field as `dict[str, Any]` or `dict[str, object]`. Define a strict `Struct` or `dataclass` for the nested shape.
+*   **AVOID** use `asdict()`, `msgspec.to_builtins()`, or reflection (`fields(obj)`) to repack data into dictionaries.
+*   **AVOID** type hint a field as `dict[str, Any]` or `dict[str, object]`. Define a strict `Struct` or `dataclass` for the nested shape.
 
 ## 5. NO SHIMS OR LEGACY WRAPPERS
 If a schema or interface changes, update the downstream consumers directly. 
-*   **NEVER** create `legacy_*` files.
-*   **NEVER** use `import *` to re-export old modules to satisfy old code.
+*   **AVOID** create `legacy_*` files.
+*   **AVOID** use `import *` to re-export old modules to satisfy old code.
