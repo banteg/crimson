@@ -6,10 +6,11 @@ import json
 import math
 from collections import Counter
 from collections.abc import Mapping
-from dataclasses import asdict, dataclass, replace
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, cast
 
+import msgspec
 import crimson.projectiles.runtime.collision as projectiles_mod
 import crimson.projectiles.runtime.projectile_pool as projectile_pool_mod
 import crimson.projectiles.runtime.secondary_pool as secondary_pool_mod
@@ -1623,8 +1624,8 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
             "rand_calls_total": int(report.rand_calls_total),
             "rng_callsites_top": [[key, int(count)] for key, count in report.rng_callsites_top],
             "rng_callsites_head": list(report.rng_callsites_head),
-            "collision_hits": [asdict(row) for row in report.collision_hits],
-            "collision_near_misses": [asdict(row) for row in report.collision_near_misses],
+            "collision_hits": list(report.collision_hits),
+            "collision_near_misses": list(report.collision_near_misses),
             "pre_projectiles": list(report.pre_projectiles),
             "post_projectiles": list(report.post_projectiles),
             "capture_projectiles": list(report.capture_projectiles),
@@ -1635,16 +1636,14 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
             "projectile_diffs_top": list(report.projectile_diffs_top),
             "projectile_capture_only": list(report.projectile_capture_only),
             "projectile_rewrite_only": list(report.projectile_rewrite_only),
-            "decal_hook_rows": [asdict(row) for row in report.decal_hook_rows],
-            "rng_alignment": asdict(report.rng_alignment),
-            "native_caller_gaps_top": [asdict(row) for row in report.native_caller_gaps_top],
-            "fire_bullets_loop_parity": (
-                asdict(report.fire_bullets_loop_parity) if report.fire_bullets_loop_parity is not None else None
-            ),
+            "decal_hook_rows": list(report.decal_hook_rows),
+            "rng_alignment": report.rng_alignment,
+            "native_caller_gaps_top": list(report.native_caller_gaps_top),
+            "fire_bullets_loop_parity": report.fire_bullets_loop_parity,
         }
         out_path = json_out_path
         out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+        out_path.write_text(msgspec.json.encode(payload).decode("utf-8"), encoding="utf-8")
         print(f"\njson_report={out_path}")
 
     return 0

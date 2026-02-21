@@ -7,7 +7,7 @@ import json
 import re
 from collections import Counter
 from collections.abc import Mapping
-from dataclasses import asdict, dataclass, replace
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, TypedDict, cast
 
@@ -3191,18 +3191,18 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
                 "tick_rate": int(replay.header.tick_rate),
                 "player_count": int(replay.header.player_count),
                 "seed": int(replay.header.seed),
-                "status": asdict(replay.header.status),
+                "status": replay.header.status,
             },
             "divergence": {
                 "kind": divergence.kind,
                 "tick_index": int(divergence.tick_index),
                 "focus_tick": int(focus_tick),
-                "field_diffs": [asdict(diff) for diff in divergence.field_diffs],
+                "field_diffs": list(divergence.field_diffs),
             },
-            "divergence_category": asdict(divergence_category),
+            "divergence_category": divergence_category,
             "window_rows": rows,
-            "investigation_leads": [asdict(lead) for lead in leads],
-            "focus_capture_debug": (None if focus_raw is None else msgspec.to_builtins(focus_raw)),
+            "investigation_leads": list(leads),
+            "focus_capture_debug": focus_raw,
             "focus_rewrite_debug": (
                 {
                     "rand_calls": _actual_rand_calls_for_checkpoint(focus_actual_ckpt),
@@ -3227,11 +3227,11 @@ def main(argv: list[str] | None = None, *, session: Any | None = None) -> int:
             ),
         }
         if bool(args.run_summary) or bool(args.run_summary_short) or bool(args.run_summary_focus_context):
-            payload["run_summary_events"] = [asdict(event) for event in run_summary_events]
-            payload["run_summary_short_events"] = [asdict(event) for event in run_summary_short_events]
-            payload["run_summary_focus_context_events"] = [asdict(event) for event in run_summary_focus_events]
+            payload["run_summary_events"] = list(run_summary_events)
+            payload["run_summary_short_events"] = list(run_summary_short_events)
+            payload["run_summary_focus_context_events"] = list(run_summary_focus_events)
         json_out_path.parent.mkdir(parents=True, exist_ok=True)
-        json_out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        json_out_path.write_text(msgspec.json.encode(payload).decode("utf-8"), encoding="utf-8")
         print()
         print(f"json_report={json_out_path}")
 
