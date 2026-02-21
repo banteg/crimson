@@ -691,27 +691,6 @@ class CreaturePool:
         if float(dist_new) < float(dist_current):
             player.auto_target = int(creature_index)
 
-        return idx
-
-    def spawn_inits(self, inits: Sequence[CreatureInit], *, rand: Callable[[], int] | None = None) -> list[int]:
-        return [self.spawn_init(init, rand=rand) for init in inits]
-
-    def spawn_plan(
-        self,
-        plan: SpawnPlan,
-        *,
-        rand: Callable[[], int] | None = None,
-        detail_preset: int = 5,
-        effects: _EffectsForCreatureSpawns | None = None,
-    ) -> tuple[list[int], int | None]:
-        """Materialize a pure `SpawnPlan` into the runtime pool.
-
-        Returns:
-          (plan_index_to_pool_index, primary_pool_index_or_none)
-        """
-
-        mapping: list[int] = []
-        pending_ai_links: list[int | None] = []
     def spawn_init(self, init: CreatureInit, *, rand: Callable[[], int] | None = None) -> int:
         """Materialize a single `CreatureInit` into the runtime pool."""
 
@@ -754,6 +733,27 @@ class CreaturePool:
         slot_mapping: list[int] = []
         for slot in plan.spawn_slots:
             owner_plan = int(slot.owner_creature)
+        return idx
+
+    def spawn_inits(self, inits: Sequence[CreatureInit], *, rand: Callable[[], int] | None = None) -> list[int]:
+        return [self.spawn_init(init, rand=rand) for init in inits]
+
+    def spawn_plan(
+        self,
+        plan: SpawnPlan,
+        *,
+        rand: Callable[[], int] | None = None,
+        detail_preset: int = 5,
+        effects: _EffectsForCreatureSpawns | None = None,
+    ) -> tuple[list[int], int | None]:
+        """Materialize a pure `SpawnPlan` into the runtime pool.
+
+        Returns:
+          (plan_index_to_pool_index, primary_pool_index_or_none)
+        """
+
+        mapping: list[int] = []
+        pending_ai_links: list[int | None] = []
             owner_pool = mapping[owner_plan] if 0 <= owner_plan < len(mapping) else -1
             self.spawn_slots.append(
                 SpawnSlotInit(
