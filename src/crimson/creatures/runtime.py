@@ -662,27 +662,6 @@ class CreaturePool:
         creature.target_player = int(target_player)
         return int(target_player)
 
-    def spawn_init(self, init: CreatureInit, *, rand: Callable[[], int] | None = None) -> int:
-        """Materialize a single `CreatureInit` into the runtime pool."""
-
-        idx = self._alloc_slot(rand=rand)
-        # Reuse the allocated slot so fields that native spawn paths do not touch
-        # (e.g. link_index for survival AI7 spiders) retain stale values.
-        entry = self._entries[idx]
-        self._apply_init(entry, init)
-
-        # Direct init does not have plan-local indices; preserve any raw linkage.
-        if init.ai_timer is not None:
-            entry.link_index = int(init.ai_timer)
-        elif init.ai_link_parent is not None:
-            entry.link_index = int(init.ai_link_parent)
-        if init.spawn_slot is not None:
-            # Plan-local slot ids must be remapped by `spawn_plan`; keep explicit.
-            entry.spawn_slot_index = int(init.spawn_slot)
-            entry.link_index = int(init.spawn_slot)
-
-        self._entries[idx] = entry
-        self.spawned_count += 1
     def _update_player_auto_target(
         self,
         *,
@@ -733,6 +712,27 @@ class CreaturePool:
 
         mapping: list[int] = []
         pending_ai_links: list[int | None] = []
+    def spawn_init(self, init: CreatureInit, *, rand: Callable[[], int] | None = None) -> int:
+        """Materialize a single `CreatureInit` into the runtime pool."""
+
+        idx = self._alloc_slot(rand=rand)
+        # Reuse the allocated slot so fields that native spawn paths do not touch
+        # (e.g. link_index for survival AI7 spiders) retain stale values.
+        entry = self._entries[idx]
+        self._apply_init(entry, init)
+
+        # Direct init does not have plan-local indices; preserve any raw linkage.
+        if init.ai_timer is not None:
+            entry.link_index = int(init.ai_timer)
+        elif init.ai_link_parent is not None:
+            entry.link_index = int(init.ai_link_parent)
+        if init.spawn_slot is not None:
+            # Plan-local slot ids must be remapped by `spawn_plan`; keep explicit.
+            entry.spawn_slot_index = int(init.spawn_slot)
+            entry.link_index = int(init.spawn_slot)
+
+        self._entries[idx] = entry
+        self.spawned_count += 1
         pending_ai_timers: list[int | None] = []
         pending_spawn_slots: list[int | None] = []
 
