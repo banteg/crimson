@@ -660,7 +660,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Trace one capture creature slot across ticks and compare capture vs rewrite trajectory.",
     )
-    parser.add_argument("capture", type=Path, help="capture file (.json/.json.gz)")
+    parser.add_argument("capture", type=Path, help="capture file (.json/.json.gz/.msgpack.zst)")
     parser.add_argument("--creature-index", type=int, required=True, help="capture creature slot index to trace")
     parser.add_argument("--start-tick", type=int, default=0, help="first tick to include in output")
     parser.add_argument("--end-tick", type=int, required=True, help="last tick to simulate/included output")

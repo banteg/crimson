@@ -188,7 +188,7 @@ It reports first divergence tick with command/state/rng context.
 For original-game capture comparison, use capture-native verification first:
 
 ```bash
-uv run crimson original verify-capture capture.json
+uv run crimson original verify-capture capture.msgpack.zst
 ```
 
 This compares checkpoint state fields at captured ticks and reports first
@@ -198,11 +198,11 @@ domains from the original executable and rewrite RNG mark/state domains.
 Original-capture sidecars now have a dedicated schema + converter:
 
 ```bash
-uv run crimson original convert-capture capture.json.gz expected.crd.chk
+uv run crimson original convert-capture capture.msgpack.zst expected.crd.chk
 ```
 
-`convert-capture` accepts canonical gameplay-diff capture files only (`.json` /
-`.json.gz`).
+`convert-capture` accepts canonical gameplay-diff capture files only (`.msgpack.zst`,
+`.json`, or `.json.gz`).
 
 The same command now also writes a replay file next to the checkpoints
 (default: `expected.crd`, override with `--replay`).

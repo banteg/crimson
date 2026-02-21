@@ -2738,7 +2738,7 @@ def build_parser(*, prog: str = "crimson") -> argparse.ArgumentParser:
     parser.add_argument(
         "capture",
         type=Path,
-        help="capture file (.json/.json.gz)",
+        help="capture file (.json/.json.gz/.msgpack.zst)",
     )
     parser.add_argument("--window", type=int, default=20, help="ticks before/after focus tick to display")
     parser.add_argument("--max-ticks", type=int, default=None, help="optional replay tick cap")

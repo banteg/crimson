@@ -51,6 +51,7 @@ class CaptureConfig(msgspec.Struct, forbid_unknown_fields=True):
     creature_micro_tick_start: int
     creature_micro_tick_end: int
     creature_micro_max_head_per_tick: int
+    capture_sink: str | None = None
 
 
 class SessionFingerprint(msgspec.Struct, forbid_unknown_fields=True):

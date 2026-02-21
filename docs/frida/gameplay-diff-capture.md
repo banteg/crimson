@@ -7,21 +7,27 @@ tags:
 
 # Gameplay Differential Capture
 
-`scripts/frida/gameplay_diff_capture.js` captures deterministic gameplay ticks into a
-JSONL event stream designed for robust incremental writes.
+`scripts/frida/gameplay_diff_capture.js` captures deterministic gameplay ticks and
+emits stream rows to a Python host controller.
+
+Use `scripts/frida/gameplay_diff_capture_host.py` to attach, consume rows, and write
+framed msgpack compressed with zstd.
 
 If you are starting from only a fresh capture artifact, follow
 `docs/frida/differential-playbook.md` first.
 
 Primary outputs:
 
-- default / non-quest fallback: `C:\share\frida\gameplay_diff_capture.json`
-- quest mode: one file per stage, e.g. `C:\share\frida\gameplay_diff_capture.quest_1_1.json`
+- default / non-quest fallback: `C:\share\frida\gameplay_diff_capture.msgpack.zst`
+- quest mode: one file per stage, e.g. `C:\share\frida\gameplay_diff_capture.quest_1_1.msgpack.zst`
 
 Attach:
 
 ```text
-frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
+uv run scripts/frida/gameplay_diff_capture_host.py \
+  --process crimsonland.exe \
+  --script scripts\frida\gameplay_diff_capture.js \
+  --output-dir C:\share\frida
 ```
 
 Optional sidecar for unattended recordings:
@@ -44,20 +50,23 @@ capture isolated.
 
 Examples:
 
-- `gameplay_diff_capture.quest_1_1.json`
-- `gameplay_diff_capture.quest_1_2.json`
-- `gameplay_diff_capture.quest_5_10.json`
+- `gameplay_diff_capture.quest_1_1.msgpack.zst`
+- `gameplay_diff_capture.quest_1_2.msgpack.zst`
+- `gameplay_diff_capture.quest_5_10.msgpack.zst`
 
 If the same quest stage is recorded multiple times in one attach session, the
 script appends a run suffix to avoid overwriting earlier runs
-(`...quest_1_1.run2.json`, `...quest_1_1.run3.json`, etc.).
+(`...quest_1_1.run2.msgpack.zst`, `...quest_1_1.run3.msgpack.zst`, etc.).
 
 ## Capture format
 
-The capture file is newline-delimited JSON rows:
+The host writes zstd-compressed framed msgpack rows:
 
-- `{"event":"capture_meta","capture":{...}}` exactly once at start
-- `{"event":"tick","tick":{...}}` once per captured gameplay tick
+- raw stream magic: `crimson_capture_msgpack_v1\n`
+- per-row frame: `<u32 little-endian payload len><msgpack row payload>`
+- row payload shape matches stream rows:
+  - `{"event":"capture_meta","capture":{...}}` exactly once at start
+  - `{"event":"tick","tick":{...}}` once per captured gameplay tick
 - `capture_meta.capture_format_version` is required and must match the current
   loader version (`5`).
 
@@ -66,14 +75,13 @@ typed `CaptureFile` schema in Python (`msgspec`).
 
 Notes:
 
-- The file is streamed incrementally and flushed on each write.
+- The host streams rows incrementally and flushes the compressed stream on each write by default.
 - Console output is filtered by default to high-signal lifecycle/errors only.
-- Before detaching from a live Frida session, call `crimsonCaptureStop("manual_stop")`
-  in the REPL and wait for the `capture_shutdown` log line.
-- Loader behavior is strict: truncated trailing JSON rows are rejected.
+- Before detaching, stop the host cleanly (`Ctrl+C`) so it can call capture stop and finalize frames.
+- Loader behavior is strict: truncated trailing stream rows are rejected.
 - Loader behavior is strict: only captures with the current
   `capture_format_version` are accepted.
-- Loader behavior is strict per row: each JSONL line must decode as either a
+- Loader behavior is strict per row: each stream row must decode as either a
   typed `capture_meta` or typed `tick` row with no unknown/missing fields.
 - Loader accepts only stream rows (`capture_meta` + `tick`), not legacy
   monolithic JSON captures.
@@ -111,7 +119,7 @@ Notes:
 
 ```text
 uv run crimson original convert-capture \
-  artifacts/frida/share/gameplay_diff_capture.json \
+  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
   analysis/frida/gameplay_diff_capture.crd.chk
 ```
 
@@ -122,21 +130,21 @@ This also writes `analysis/frida/gameplay_diff_capture.crd` by default
 
 ```text
 uv run crimson original verify-capture \
-  artifacts/frida/share/gameplay_diff_capture.json
+  artifacts/frida/share/gameplay_diff_capture.msgpack.zst
 ```
 
 ## Capture telemetry health
 
 ```text
 uv run crimson original capture-health \
-  artifacts/frida/share/gameplay_diff_capture.json
+  artifacts/frida/share/gameplay_diff_capture.msgpack.zst
 ```
 
 ## Divergence report
 
 ```text
 uv run crimson original divergence-report \
-  artifacts/frida/share/gameplay_diff_capture.json \
+  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
   --float-abs-tol 2e-3 \
   --window 24 \
   --lead-lookback 1024 \
@@ -149,7 +157,7 @@ Use `--run-summary-short` for a shorter narrative.
 
 ```text
 uv run crimson original bisect-divergence \
-  artifacts/frida/share/gameplay_diff_capture.json \
+  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
   --window-before 12 \
   --window-after 6 \
   --json-out
@@ -159,7 +167,7 @@ uv run crimson original bisect-divergence \
 
 ```text
 uv run crimson original focus-trace \
-  artifacts/frida/share/gameplay_diff_capture.json \
+  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
   --tick 3453 \
   --near-miss-threshold 0.35 \
   --json-out
@@ -169,7 +177,7 @@ uv run crimson original focus-trace \
 
 ```text
 uv run crimson original creature-trajectory \
-  artifacts/frida/share/gameplay_diff_capture.json \
+  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
   --creature-index 120 \
   --json-out
 ```
@@ -196,7 +204,8 @@ Creature micro hooks stay enabled by default for differential parity sessions.
 
 - `CRIMSON_FRIDA_STATES=6,9,10`
 - `CRIMSON_FRIDA_ALL_STATES=1`
-- `CRIMSON_FRIDA_OUT_PATH=C:\share\frida\gameplay_diff_capture.json`
+- `CRIMSON_FRIDA_OUT_PATH=C:\share\frida\gameplay_diff_capture.msgpack.zst`
+- `CRIMSON_FRIDA_CAPTURE_SINK=host` (`host` default; set `file` only for legacy direct-file capture)
 - `CRIMSON_FRIDA_QUEST_OUT_DIR=C:\share\frida`
 - `CRIMSON_FRIDA_QUEST_OUT_PREFIX=gameplay_diff_capture.quest_`
 - `CRIMSON_FRIDA_CONSOLE_ALL_EVENTS=1`
@@ -227,5 +236,4 @@ For dynamic-gameplay investigations, prioritize divergence category/signatures
 (`divergence_category`, dominant caller sets, hit shortfall profile) over
 absolute tick alignment across captures.
 
-Capture loading in Python accepts `.json` and `.json.gz` only, with JSONL
-row-stream capture rows as the canonical format.
+Capture loading in Python accepts `.msgpack.zst`, `.json`, and `.json.gz`.
