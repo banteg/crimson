@@ -74,6 +74,8 @@ def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
     _set_private(view, "_replay", _replay_with_ticks(5))
     world = SimpleNamespace(
         audio_router=SimpleNamespace(sfx_enabled=True),
+        ground=None,
+        fx_textures=None,
         fx_queue=[],
         fx_queue_rotated=[],
     )
@@ -107,6 +109,8 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -
     _set_private(view, "_replay", _replay_with_ticks(3))
     world = SimpleNamespace(
         audio_router=SimpleNamespace(sfx_enabled=True),
+        ground=None,
+        fx_textures=None,
         fx_queue=[],
         fx_queue_rotated=[],
     )
@@ -132,7 +136,57 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -
     assert bool(world.audio_router.sfx_enabled)
 
 
-def test_skip_forward_clears_fx_queues_each_tick(replay_playback_view) -> None:
+def test_skip_forward_bakes_fx_queues_each_tick_when_render_ready(replay_playback_view) -> None:
+    view, _console = replay_playback_view
+    replay_inputs = [0, 0, 0, 0]
+
+    class _BakedQueue:
+        def __init__(self) -> None:
+            self.clear_calls = 0
+
+        def clear(self) -> None:
+            self.clear_calls += 1
+
+    fx_queue = _BakedQueue()
+    fx_queue_rotated = _BakedQueue()
+    bake_calls = 0
+
+    def _bake_fx_queues() -> None:
+        nonlocal bake_calls
+        bake_calls += 1
+        fx_queue.clear()
+        fx_queue_rotated.clear()
+
+    _set_private(view, "_replay", _replay_with_ticks(len(replay_inputs)))
+    _set_private(
+        view,
+        "_world",
+        SimpleNamespace(
+            audio_router=SimpleNamespace(sfx_enabled=True),
+            ground=object(),
+            fx_textures=object(),
+            fx_queue=fx_queue,
+            fx_queue_rotated=fx_queue_rotated,
+            _bake_fx_queues=_bake_fx_queues,
+        ),
+    )
+    view._tick_rate = 60
+    view._tick_index = 0
+    view._finished = False
+
+    def fake_tick_one() -> None:
+        view._tick_index += 1
+
+    _set_private(view, "_tick_one", fake_tick_one)
+
+    view._skip_forward_seconds(3.0 / 60.0)
+
+    assert bake_calls == 3
+    assert fx_queue.clear_calls == 3
+    assert fx_queue_rotated.clear_calls == 3
+
+
+def test_skip_forward_clears_fx_queues_each_tick_when_render_not_ready(replay_playback_view) -> None:
     view, _console = replay_playback_view
     replay_inputs = [0, 0, 0, 0]
 
@@ -150,9 +204,11 @@ def test_skip_forward_clears_fx_queues_each_tick(replay_playback_view) -> None:
         view,
         "_world",
         SimpleNamespace(
-        audio_router=SimpleNamespace(sfx_enabled=True),
-        fx_queue=fx_queue,
-        fx_queue_rotated=fx_queue_rotated,
+            audio_router=SimpleNamespace(sfx_enabled=True),
+            ground=None,
+            fx_textures=None,
+            fx_queue=fx_queue,
+            fx_queue_rotated=fx_queue_rotated,
         ),
     )
     view._tick_rate = 60
