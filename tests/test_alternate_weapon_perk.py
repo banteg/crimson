@@ -133,3 +133,85 @@ def test_alternate_weapon_swap_allows_same_tick_fire_with_swapped_reload_timer()
     assert_float_close(player.reload_timer, player.reload_timer_max)
     assert player.ammo < 0.0
     assert player.shot_seq >= 1
+
+
+def test_alternate_weapon_swap_held_reload_uses_native_cooldown_gate() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    weapon_assign_player(player, 1)
+    player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+    bonus_apply(state, player, BonusId.WEAPON, amount=2)
+
+    assert player.weapon_id == 2
+    player_update(player, PlayerInput(reload_pressed=True), dt=0.05, state=state)
+    assert player.weapon_id == 1
+    assert state.player_alt_weapon_swap_cooldown_ms == 200
+
+    for _ in range(3):
+        player_update(player, PlayerInput(reload_pressed=True), dt=0.05, state=state)
+        assert player.weapon_id == 1
+
+    player_update(player, PlayerInput(reload_pressed=True), dt=0.05, state=state)
+    assert player.weapon_id == 2
+    assert state.player_alt_weapon_swap_cooldown_ms == 200
+
+
+def test_alternate_weapon_swap_release_resets_cooldown_gate() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    weapon_assign_player(player, 1)
+    player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+    bonus_apply(state, player, BonusId.WEAPON, amount=2)
+
+    player_update(player, PlayerInput(reload_pressed=True), dt=0.05, state=state)
+    assert player.weapon_id == 1
+    assert state.player_alt_weapon_swap_cooldown_ms == 200
+
+    player_update(player, PlayerInput(reload_pressed=False), dt=0.05, state=state)
+    assert state.player_alt_weapon_swap_cooldown_ms == 0
+
+    player_update(player, PlayerInput(reload_pressed=True), dt=0.05, state=state)
+    assert player.weapon_id == 2
+
+
+def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None:
+    state = GameplayState()
+    player0 = PlayerState(index=0, pos=Vec2())
+    player1 = PlayerState(index=1, pos=Vec2())
+
+    for player in (player0, player1):
+        weapon_assign_player(player, 1)
+        player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+        bonus_apply(state, player, BonusId.WEAPON, amount=2)
+
+    players = [player0, player1]
+    player_update(
+        player0,
+        PlayerInput(reload_pressed=True, reload_down=True),
+        dt=0.05,
+        state=state,
+        players=players,
+        reload_active_any=True,
+    )
+    assert player0.weapon_id == 1
+    assert state.player_alt_weapon_swap_cooldown_ms == 200
+
+    player_update(
+        player1,
+        PlayerInput(reload_pressed=False),
+        dt=0.05,
+        state=state,
+        players=players,
+        reload_active_any=True,
+    )
+    assert state.player_alt_weapon_swap_cooldown_ms > 0
+
+    player_update(
+        player0,
+        PlayerInput(reload_pressed=False, reload_down=True),
+        dt=0.05,
+        state=state,
+        players=players,
+        reload_active_any=True,
+    )
+    assert player0.weapon_id == 1

@@ -491,8 +491,29 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
         elif perk_active(ctx.player, PerkId.VEINS_OF_POISON):
             creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
+    def _on_player_lethal_final_revenge() -> None:
+        from ..perks.impl.final_revenge import apply_final_revenge_on_player_death
+
+        apply_final_revenge_on_player_death(
+            state=ctx.state,
+            creatures=ctx.pool,
+            players=ctx.players,
+            player=ctx.player,
+            dt=float(ctx.dt),
+            world_size=float(max(float(ctx.world_width), float(ctx.world_height))),
+            detail_preset=int(ctx.detail_preset),
+            fx_queue=ctx.fx_queue,
+            deaths=ctx.deaths,
+        )
+
     player_take_damage(
-        ctx.state, ctx.player, float(creature.contact_damage), dt=ctx.dt, rand=ctx.rand, players=ctx.players,
+        ctx.state,
+        ctx.player,
+        float(creature.contact_damage),
+        dt=ctx.dt,
+        rand=ctx.rand,
+        players=ctx.players,
+        on_lethal=_on_player_lethal_final_revenge,
     )
 
     if ctx.fx_queue is not None:
@@ -661,6 +682,35 @@ class CreaturePool:
 
         creature.target_player = int(target_player)
         return int(target_player)
+
+    def _update_player_auto_target(
+        self,
+        *,
+        players: list[PlayerState],
+        player_index: int,
+        creature_index: int,
+        creature: CreatureState,
+    ) -> None:
+        if not (0 <= int(player_index) < len(players)):
+            return
+        player = players[int(player_index)]
+        if float(player.health) <= 0.0:
+            return
+
+        auto_target = int(player.auto_target)
+        if not (0 <= auto_target < len(self._entries)):
+            player.auto_target = int(creature_index)
+            return
+
+        current = self._entries[int(auto_target)]
+        if not current.active or float(current.hp) <= 0.0:
+            player.auto_target = int(creature_index)
+            return
+
+        dist_new = Vec2.distance_sq(player.pos, creature.pos)
+        dist_current = Vec2.distance_sq(player.pos, current.pos)
+        if float(dist_new) < float(dist_current):
+            player.auto_target = int(creature_index)
 
     def spawn_init(self, init: CreatureInit, *, rand: Callable[[], int] | None = None) -> int:
         """Materialize a single `CreatureInit` into the runtime pool."""
@@ -1007,6 +1057,15 @@ class CreaturePool:
                         pass
 
             target_player = self._resolve_target_player_index(creature, players)
+            # Native only updates player auto-target feedback inside the
+            # `creature_update_tick % 0x46 != 0` retarget cadence block.
+            if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
+                self._update_player_auto_target(
+                    players=players,
+                    player_index=int(target_player),
+                    creature_index=int(idx),
+                    creature=creature,
+                )
             player = players[target_player]
             player_pos = player.pos
             if single_player_dead_target_pos is not None and float(players[0].health) <= 0.0:

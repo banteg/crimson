@@ -34,9 +34,6 @@ def tick_man_bomb(ctx: PlayerPerkTickCtx) -> None:
         ctx.player.man_bomb_timer -= ctx.state.perk_intervals.man_bomb
         ctx.state.perk_intervals.man_bomb = 4.0
 
-    if not ctx.stationary:
-        ctx.player.man_bomb_timer = 0.0
-
 
 HOOKS = PerkHooks(
     perk_id=PerkId.MAN_BOMB,

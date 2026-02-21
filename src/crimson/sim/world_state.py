@@ -118,6 +118,7 @@ class WorldState:
                 return
             rng_marks[str(name)] = int(self.state.rng.state)
         dt = float(dt)
+        self.state.player_death_hook_skip_indices.clear()
         if apply_world_dt_steps:
             for step in _WORLD_DT_STEPS:
                 dt = float(step(dt=dt, players=self.players))
@@ -280,25 +281,14 @@ class WorldState:
             on_detonation_kill=_on_secondary_detonation_kill,
         )
         _mark("ws_after_secondary_projectiles")
-        for idx, player in enumerate(self.players):
-            if idx >= len(prev_health):
-                continue
-            if float(prev_health[idx]) < 0.0:
-                continue
-            if float(player.health) >= 0.0:
-                continue
-            for hook in _PLAYER_DEATH_HOOKS:
-                hook(
-                    state=self.state,
-                    creatures=self.creatures,
-                    players=self.players,
-                    player=player,
-                    dt=float(dt),
-                    world_size=float(world_size),
-                    detail_preset=int(detail_preset),
-                    fx_queue=fx_queue,
-                    deaths=deaths,
-                )
+        self._run_post_damage_player_death_hooks(
+            prev_health=prev_health,
+            dt=float(dt),
+            world_size=float(world_size),
+            detail_preset=int(detail_preset),
+            fx_queue=fx_queue,
+            deaths=deaths,
+        )
         def _kill_creature_no_corpse(creature_index: int, owner_id: int) -> None:
             idx = int(creature_index)
             if not (0 <= idx < len(self.creatures.entries)):
@@ -332,7 +322,7 @@ class WorldState:
         _mark("ws_after_sprite_effects")
         _mark("ws_after_particles")
         _mark("ws_after_death_sfx")
-
+        reload_active_any = any(bool(entry.reload_down) or bool(entry.reload_pressed) for entry in inputs)
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
             player_update(
@@ -343,6 +333,15 @@ class WorldState:
                 detail_preset=int(detail_preset),
                 world_size=float(world_size),
                 players=self.players, creatures=self.creatures.entries, spawn_slots=self.creatures.spawn_slots,
+                on_player_lethal=lambda dead_player, dt_value=float(dt): self._run_player_death_hooks(
+                    player=dead_player,
+                    dt=float(dt_value),
+                    world_size=float(world_size),
+                    detail_preset=int(detail_preset),
+                    fx_queue=fx_queue,
+                    deaths=deaths,
+                ),
+                reload_active_any=bool(reload_active_any),
             )
             dt = player_frame_dt_after_roundtrip(dt=dt, time_scale_active=bool(self.state.time_scale_active), reflex_boost_timer=float(self.state.bonuses.reflex_boost))
             if idx == 0:
@@ -401,6 +400,7 @@ class WorldState:
         # ordering parity (VO draw before heading-jitter draw).
         _mark("ws_after_player_damage_sfx")
         _mark("ws_after_sfx")
+        self.state.player_death_hook_skip_indices.clear()
 
         return WorldEvents(
             hits=hits,
@@ -411,6 +411,59 @@ class WorldState:
             hit_sfx=hit_sfx,
             death_sfx_preplanned=True,
         )
+
+    def _run_player_death_hooks(
+        self,
+        *,
+        player: PlayerState,
+        dt: float,
+        world_size: float,
+        detail_preset: int,
+        fx_queue: FxQueue,
+        deaths: list[CreatureDeath],
+    ) -> None:
+        for hook in _PLAYER_DEATH_HOOKS:
+            hook(
+                state=self.state,
+                creatures=self.creatures,
+                players=self.players,
+                player=player,
+                dt=float(dt),
+                world_size=float(world_size),
+                detail_preset=int(detail_preset),
+                fx_queue=fx_queue,
+                deaths=deaths,
+            )
+
+    def _run_post_damage_player_death_hooks(
+        self,
+        *,
+        prev_health: list[float],
+        dt: float,
+        world_size: float,
+        detail_preset: int,
+        fx_queue: FxQueue,
+        deaths: list[CreatureDeath],
+    ) -> None:
+        for idx, player in enumerate(self.players):
+            if idx >= len(prev_health):
+                continue
+            if float(prev_health[idx]) < 0.0:
+                continue
+            if float(player.health) >= 0.0:
+                continue
+            player_idx = int(player.index)
+            if player_idx in self.state.player_death_hook_skip_indices:
+                self.state.player_death_hook_skip_indices.discard(player_idx)
+                continue
+            self._run_player_death_hooks(
+                player=player,
+                dt=float(dt),
+                world_size=float(world_size),
+                detail_preset=int(detail_preset),
+                fx_queue=fx_queue,
+                deaths=deaths,
+            )
 
     def _record_creature_death(
         self,

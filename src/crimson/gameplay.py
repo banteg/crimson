@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Protocol
 
@@ -127,9 +127,11 @@ class GameplayState:
     _weapon_available_unlock_index_full: int = -1
     friendly_fire_enabled: bool = False
     bonus_spawn_guard: bool = False
+    player_alt_weapon_swap_cooldown_ms: int = 0
     bonus_hud: BonusHudState = field(default_factory=BonusHudState)
     bonus_pool: BonusPool = field(default_factory=BonusPool)
     deferred_freeze_corpse_fx: list[DeferredFreezeCorpseFx] = field(default_factory=list)
+    player_death_hook_skip_indices: set[int] = field(default_factory=set)
     shock_chain_links_left: int = 0
     shock_chain_projectile_id: int = -1
     survival_reward_weapon_guard_id: int = int(WeaponId.PISTOL)
@@ -536,6 +538,8 @@ def player_update(
     players: list[PlayerState] | None = None,
     creatures: Sequence[CreatureState] | None = None,
     spawn_slots: Sequence[_SpawnSlotLike] | None = None,
+    on_player_lethal: Callable[[PlayerState], None] | None = None,
+    reload_active_any: bool | None = None,
 ) -> None:
     """Port of `player_update` (0x004136b0) for the rewrite runtime."""
 
@@ -615,6 +619,19 @@ def player_update(
             # Native computes `frame_dt = (0.6 / _time_scale_factor) * frame_dt`
             # and stores back to float before movement/heading logic.
             movement_dt = float(f32((0.6 / float(time_scale_factor)) * float(movement_dt)))
+
+    perk_tick_stationary = abs(float(player.move_speed)) <= 1e-9
+    apply_player_perk_ticks(
+        player=player,
+        player_pos_before_move=prev_pos,
+        dt=dt,
+        state=state,
+        players=players,
+        stationary=perk_tick_stationary,
+        owner_id_for_player=_owner_id_for_player,
+        owner_id_for_player_projectiles=_owner_id_for_player_projectiles,
+        projectile_spawn=_projectile_spawn,
+    )
 
     # Movement.
     raw_move = input_state.move
@@ -824,22 +841,14 @@ def player_update(
     player.move_phase += phase_sign * movement_dt * player.move_speed * 19.0
 
     move_delta = player.pos - prev_pos
-    stationary = abs(move_delta.x) <= 1e-9 and abs(move_delta.y) <= 1e-9
+    reload_stationary = abs(move_delta.x) <= 1e-9 and abs(move_delta.y) <= 1e-9
+    if not reload_stationary:
+        # Native clears these post-perk-tick timers after movement when position changed.
+        player.man_bomb_timer = 0.0
+        player.living_fortress_timer = 0.0
     reload_scale = 1.0
-    if stationary and perk_active(player, PerkId.STATIONARY_RELOADER):
+    if reload_stationary and perk_active(player, PerkId.STATIONARY_RELOADER):
         reload_scale = 3.0
-
-    apply_player_perk_ticks(
-        player=player,
-        player_pos_before_move=prev_pos,
-        dt=dt,
-        state=state,
-        players=players,
-        stationary=stationary,
-        owner_id_for_player=_owner_id_for_player,
-        owner_id_for_player_projectiles=_owner_id_for_player_projectiles,
-        projectile_spawn=_projectile_spawn,
-    )
 
     # Reload + reload perks.
     if perk_active(player, PerkId.ANXIOUS_LOADER) and input_state.fire_pressed and player.reload_timer > 0.0:
@@ -937,17 +946,34 @@ def player_update(
         player.reload_active = False
 
     swapped_alt_weapon = False
-    if input_state.reload_pressed and has_alt_weapon_perk:
-        if _player_swap_alt_weapon(player):
-            swapped_alt_weapon = True
-            weapon = _weapon_entry(player.weapon_id)
-            if weapon is not None and weapon.reload_sound is not None:
-                from .weapon_sfx import resolve_weapon_sfx_ref
+    reload_key_active = bool(input_state.reload_down or input_state.reload_pressed)
+    reload_key_released = (not bool(reload_active_any)) if reload_active_any is not None else (not reload_key_active)
+    if has_alt_weapon_perk:
+        cooldown_ms = int(state.player_alt_weapon_swap_cooldown_ms)
+        dt_ms = int(round(float(dt) * 1000.0)) if float(dt) > 0.0 else 0
+        if cooldown_ms < 1:
+            cooldown_ms = 0
+        else:
+            cooldown_ms -= dt_ms
 
-                key = resolve_weapon_sfx_ref(weapon.reload_sound)
-                if key is not None:
-                    state.sfx_queue.append(key)
-            player.shot_cooldown = float(player.shot_cooldown) + 0.1
+        if cooldown_ms < 1 and reload_key_active:
+            if _player_swap_alt_weapon(player):
+                swapped_alt_weapon = True
+                weapon = _weapon_entry(player.weapon_id)
+                if weapon is not None and weapon.reload_sound is not None:
+                    from .weapon_sfx import resolve_weapon_sfx_ref
+
+                    key = resolve_weapon_sfx_ref(weapon.reload_sound)
+                    if key is not None:
+                        state.sfx_queue.append(key)
+                player.shot_cooldown = float(player.shot_cooldown) + 0.1
+                state.player_alt_weapon_swap_cooldown_ms = 200
+            else:
+                state.player_alt_weapon_swap_cooldown_ms = 0
+        else:
+            state.player_alt_weapon_swap_cooldown_ms = max(0, int(cooldown_ms))
+            if reload_key_released:
+                state.player_alt_weapon_swap_cooldown_ms = 0
 
     # Native computes the fire gate (`shot_cooldown <= 0 && reload_timer == 0`)
     # before alt-weapon swap mutates cooldown; preserve same-tick fire eligibility.
@@ -967,6 +993,7 @@ def player_update(
         creatures=creatures,
         players=players,
         force_pre_swap_fire_gate=bool(force_pre_swap_fire_gate),
+        on_player_lethal=on_player_lethal,
     )
 
     while player.move_phase > 14.0:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING
 
 from grim.color import RGBA
@@ -80,6 +80,7 @@ def player_fire_weapon(
     creatures: Sequence[CreatureState] | None = None,
     players: Sequence[PlayerState] | None = None,
     force_pre_swap_fire_gate: bool = False,
+    on_player_lethal: Callable[[PlayerState], None] | None = None,
 ) -> None:
     dt = float(dt)
 
@@ -112,7 +113,15 @@ def player_fire_weapon(
             from ..player_damage import player_take_damage
 
             cost = 0.15 if ammo_class == 1 else 1.0
-            player_take_damage(state, player, cost, dt=dt, rand=state.rng.rand, players=players)
+            player_take_damage(
+                state,
+                player,
+                cost,
+                dt=dt,
+                rand=state.rng.rand,
+                players=players,
+                on_lethal=(lambda: on_player_lethal(player)) if on_player_lethal is not None else None,
+            )
         else:
             return
 

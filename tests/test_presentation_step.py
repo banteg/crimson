@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from itertools import count
+
 from crimson.creatures.runtime import CreatureDeath
 from crimson.creatures.spawn import CreatureTypeId
 from crimson.effects import FxQueue
@@ -14,7 +16,7 @@ from crimson.sim.presentation_step import (
 )
 from crimson.sim.state_types import BonusPickupEvent, PlayerState
 from grim.geom import Vec2
-from tests.helpers import MockCrand, assert_rng_progression
+from tests.helpers import MockCrand, assert_float_close, assert_rng_progression
 
 
 def _death(
@@ -218,6 +220,46 @@ def test_queue_projectile_decals_native_default_draw_count() -> None:
         expected_hash="c4a960b5d558f47f",
     )
     assert fx_queue.count == 12
+
+
+def test_queue_projectile_decals_blade_gun_spawns_native_pre_branch_splatter(mocker) -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    fx_queue = FxQueue()
+    splatter_angles: list[float] = []
+
+    def _record_blood_splatter(
+        *,
+        pos: Vec2,
+        angle: float,
+        age: float,
+        rand,
+        detail_preset: int,
+        fx_toggle: int,
+    ) -> None:
+        _ = pos, age, rand, detail_preset, fx_toggle
+        splatter_angles.append(float(angle))
+
+    mocker.patch.object(
+        state.effects,
+        "spawn_blood_splatter",
+        side_effect=_record_blood_splatter,
+    )
+    rng_values = count(0)
+
+    queue_projectile_decals(
+        state=state,
+        players=[player],
+        fx_queue=fx_queue,
+        hits=_hits(1, type_id=int(ProjectileTypeId.BLADE_GUN)),
+        rand=lambda: int(next(rng_values)),
+        detail_preset=5,
+        fx_toggle=0,
+    )
+
+    assert len(splatter_angles) >= 8
+    for idx in range(8):
+        assert_float_close(splatter_angles[idx], float(idx) * 0.024543693)
 
 
 def test_queue_projectile_decals_fire_bullets_freeze_runs_six_shard_iterations(mocker) -> None:

@@ -31,6 +31,7 @@ def player_take_damage(
     dt: float | None = None,
     rand: Callable[[], int] | None = None,
     players: Sequence[PlayerState] | None = None,
+    on_lethal: Callable[[], None] | None = None,
 ) -> float:
     """Apply damage to a player, returning the actual damage applied."""
 
@@ -91,6 +92,9 @@ def player_take_damage(
             return max(0.0, health_before - float(player.health))
         if not perk_active(player, PerkId.FINAL_REVENGE):
             state.sfx_queue.append(_PLAYER_DEATH_SFX[int(rng()) & 1])
+        elif on_lethal is not None:
+            on_lethal()
+            state.player_death_hook_skip_indices.add(int(player.index))
 
     if not dodged:
         if not perk_active(player, PerkId.UNSTOPPABLE):

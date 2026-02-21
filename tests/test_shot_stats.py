@@ -146,6 +146,25 @@ def test_projectile_spawn_increments_shots_fired_for_owner_minus_2() -> None:
     assert state.shots_fired[1] == 1
 
 
+def test_projectile_spawn_fire_bullets_conversion_increments_shots_fired_twice() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(), fire_bullets_timer=1.0)
+
+    proj_id = projectile_spawn(
+        state,
+        players=[player],
+        pos=Vec2(),
+        angle=0.0,
+        type_id=int(ProjectileTypeId.PISTOL),
+        owner_id=-100,
+        owner_player_index=0,
+    )
+
+    assert proj_id >= 0
+    assert state.shots_fired[0] == 2
+    assert int(state.projectiles.entries[proj_id].type_id) == int(ProjectileTypeId.FIRE_BULLETS)
+
+
 def test_projectile_spawn_does_not_increment_shots_fired_when_bonus_guard_is_on() -> None:
     state = GameplayState()
     state.bonus_spawn_guard = True

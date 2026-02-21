@@ -14,7 +14,7 @@ from ..features.presentation import ProjectileDecalCtx, run_projectile_decal_hoo
 from ..game_modes import GameMode
 from ..perks import PerkId
 from ..perks.helpers import perk_active
-from ..projectiles import ProjectileHit
+from ..projectiles import ProjectileHit, ProjectileTypeId
 from ..weapon_sfx import resolve_weapon_sfx_ref
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .state_types import BonusPickupEvent, GameplayState, PlayerState
@@ -256,6 +256,17 @@ def queue_projectile_decals_pre_hit(
     type_id = int(hit.type_id)
 
     base_angle = (hit.hit - hit.origin).to_angle()
+
+    if type_id == int(ProjectileTypeId.BLADE_GUN):
+        for _ in range(8):
+            state.effects.spawn_blood_splatter(
+                pos=hit.hit,
+                angle=float(int(rand()) & 0xFF) * 0.024543693,
+                age=0.0,
+                rand=rand,
+                detail_preset=detail_preset,
+                fx_toggle=fx_toggle,
+            )
 
     # Native `projectile_update` spawns blood splatter before terrain decals.
     if bloody:
