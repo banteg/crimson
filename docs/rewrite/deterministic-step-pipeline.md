@@ -108,6 +108,36 @@ By default (`--score-metric auto`), claim comparison is mode-aware:
 - Survival -> `score_xp`
 - Rush / Quests -> `elapsed_ms`
 
+## Replay info (timeline extraction for analysis/infographics)
+
+`replay info` runs the same deterministic replay simulation and emits a chronological event timeline.
+
+Default output includes core events (`bonus_pickup`, `weapon_change`, `perk_pick`,
+`level_up`, `health_damage`, `health_heal`, `player_death`). Use `--verbose` to
+also include extra context events (`perk_menu_open`, `state_transition`,
+`creature_deaths`).
+
+Default human output is compact line-oriented text:
+
+```bash
+uv run crimson replay info replay.crd
+```
+
+Machine-readable output:
+
+```bash
+uv run crimson replay info replay.crd --format json --json-out analysis/replay/info.json
+```
+
+Current JSON payload schema (`schema_version=1`) is a single document:
+
+- top-level: `schema_version`, `status`, `replay`, `replay_sha256`, `summary`, `timeline`
+- `summary`: `game_mode_id`, `tick_rate`, `ticks_simulated`, `elapsed_ms`, `player_count`, `event_count`, `event_counts_by_kind`
+- `timeline[]`: `tick_index`, `elapsed_ms`, `elapsed_s`, `kind`, `player_index`, `detail`, `data`
+
+This payload is intended for downstream replay analytics/visualization pipelines
+(for example timeline charts and aggregate infographic generation on the website).
+
 ## Replay benchmark (headless/render throughput + optional hotspots)
 
 `replay benchmark` runs replay simulation multiple times and reports wall-time

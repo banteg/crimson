@@ -11,7 +11,9 @@ from typer.testing import CliRunner
 
 from crimson.cli import app
 from crimson.game_modes import GameMode
-from crimson.replay import Replay, ReplayHeader, ReplayRecorder, UnknownEvent, dump_replay
+from crimson.original.capture import CAPTURE_PERK_APPLY_EVENT_KIND
+from crimson.perks import PerkId
+from crimson.replay import PerkMenuOpenEvent, Replay, ReplayHeader, ReplayRecorder, UnknownEvent, dump_replay
 from crimson.replay.checkpoints import (
     FORMAT_VERSION,
     ReplayCheckpoints,
@@ -27,16 +29,29 @@ from crimson.sim.input import PlayerInput
 from grim.geom import Vec2
 
 
-def _build_replay(*, mode: GameMode, ticks: int, seed: int = 0xBEEF) -> Replay:
+def _build_replay(
+    *,
+    mode: GameMode,
+    ticks: int,
+    seed: int = 0xBEEF,
+    player_count: int = 1,
+    quest_level: str = "",
+) -> Replay:
     header = ReplayHeader(
         game_mode_id=int(mode),
         seed=int(seed),
         tick_rate=60,
-        player_count=1,
+        player_count=int(player_count),
+        quest_level=str(quest_level),
     )
     recorder = ReplayRecorder(header)
     for _ in range(int(ticks)):
-        recorder.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
+        recorder.record_tick(
+            [
+                PlayerInput(aim=Vec2(512.0, 512.0))
+                for _ in range(int(player_count))
+            ],
+        )
     return recorder.finish()
 
 
@@ -276,6 +291,269 @@ def test_replay_verify_json_out_works_for_human_and_json_output(tmp_path: Path) 
     file_payload = json.loads(json_out.read_text(encoding="utf-8"))
     assert stdout_payload["status"] == "ok"
     assert file_payload == stdout_payload
+
+
+def test_replay_info_human_success_outputs_timeline_header(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["replay", "info", str(replay_path)])
+
+    assert result.exit_code == 0, result.output
+    assert "ok:" in result.output
+    assert f"replay={replay_path}" in result.output
+    assert "mode=survival" in result.output
+    assert "ticks=3" in result.output
+    assert "events=" in result.output
+
+
+def test_replay_info_json_output_payload_ok_schema_v1(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["replay", "info", str(replay_path), "--format", "json"])
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["schema_version"] == 1
+    assert payload["status"] == "ok"
+    assert payload["replay"] == str(replay_path)
+    assert isinstance(payload["replay_sha256"], str)
+    assert payload["summary"]["game_mode_id"] == int(GameMode.SURVIVAL)
+    assert payload["summary"]["tick_rate"] == 60
+    assert payload["summary"]["ticks_simulated"] == 2
+    assert payload["summary"]["elapsed_ms"] >= 0
+    assert payload["summary"]["player_count"] == 1
+    assert payload["summary"]["event_count"] >= 0
+    assert isinstance(payload["summary"]["event_counts_by_kind"], dict)
+    assert isinstance(payload["timeline"], list)
+
+
+def test_replay_info_json_out_works_for_human_and_json(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+    human_out = tmp_path / "replay-info-human.json"
+    json_out = tmp_path / "replay-info-json.json"
+
+    human_result = runner.invoke(
+        app,
+        [
+            "replay",
+            "info",
+            str(replay_path),
+            "--json-out",
+            str(human_out),
+        ],
+    )
+    assert human_result.exit_code == 0, human_result.output
+    assert "json_report=" in human_result.output
+    assert json.loads(human_out.read_text(encoding="utf-8"))["status"] == "ok"
+
+    json_result = runner.invoke(
+        app,
+        [
+            "replay",
+            "info",
+            str(replay_path),
+            "--format",
+            "json",
+            "--json-out",
+            str(json_out),
+        ],
+    )
+    assert json_result.exit_code == 0, json_result.output
+    stdout_payload = json.loads(json_result.output)
+    file_payload = json.loads(json_out.read_text(encoding="utf-8"))
+    assert stdout_payload["status"] == "ok"
+    assert file_payload == stdout_payload
+
+
+def test_replay_info_is_strict_by_default(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay.events.append(UnknownEvent(tick_index=0, kind="unknown_event", payload=[]))
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["replay", "info", str(replay_path)])
+
+    assert result.exit_code == 1
+    assert "unsupported replay event kind" in result.output
+
+
+def test_replay_info_can_run_lenient_event_mode(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay.events.append(UnknownEvent(tick_index=0, kind="unknown_event", payload=[]))
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["replay", "info", str(replay_path), "--lenient-events"])
+
+    assert result.exit_code == 0, result.output
+    assert "ok:" in result.output
+
+
+def test_replay_info_supports_survival_rush_quest_modes(tmp_path: Path) -> None:
+    survival = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    rush = _build_replay(mode=GameMode.RUSH, ticks=2)
+    quest = _build_replay(mode=GameMode.QUESTS, ticks=2, seed=101, quest_level="1.1")
+    runner = CliRunner()
+
+    cases = [
+        ("survival.crd", survival, int(GameMode.SURVIVAL)),
+        ("rush.crd", rush, int(GameMode.RUSH)),
+        ("quest.crd", quest, int(GameMode.QUESTS)),
+    ]
+    for filename, replay, mode_id in cases:
+        replay_path = _write_replay(tmp_path, replay=replay, name=filename)
+        result = runner.invoke(app, ["replay", "info", str(replay_path), "--format", "json"])
+        assert result.exit_code == 0, result.output
+        payload = json.loads(result.output)
+        assert payload["status"] == "ok"
+        assert payload["summary"]["game_mode_id"] == mode_id
+        assert payload["summary"]["ticks_simulated"] == 2
+
+
+def test_replay_info_player_index_filter_limits_events(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1, player_count=2)
+    replay.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=CAPTURE_PERK_APPLY_EVENT_KIND,
+            payload=[{"perk_id": int(PerkId.BREATHING_ROOM)}],
+        ),
+    )
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival-2p.crd")
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "info",
+            str(replay_path),
+            "--format",
+            "json",
+            "--player-index",
+            "1",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    player_events = [event for event in payload["timeline"] if event["player_index"] is not None]
+    assert player_events
+    assert all(int(event["player_index"]) == 1 for event in player_events)
+
+
+def test_replay_info_default_excludes_extra_kinds_and_verbose_includes(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay.events.append(PerkMenuOpenEvent(tick_index=0, player_index=0))
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+
+    default_result = runner.invoke(
+        app,
+        [
+            "replay",
+            "info",
+            str(replay_path),
+            "--format",
+            "json",
+        ],
+    )
+    assert default_result.exit_code == 0, default_result.output
+    default_payload = json.loads(default_result.output)
+    default_kinds = {event["kind"] for event in default_payload["timeline"]}
+    assert "perk_menu_open" not in default_kinds
+
+    verbose_result = runner.invoke(
+        app,
+        [
+            "replay",
+            "info",
+            str(replay_path),
+            "--format",
+            "json",
+            "--verbose",
+        ],
+    )
+    assert verbose_result.exit_code == 0, verbose_result.output
+    verbose_payload = json.loads(verbose_result.output)
+    verbose_kinds = {event["kind"] for event in verbose_payload["timeline"]}
+    assert "perk_menu_open" in verbose_kinds
+
+
+def test_replay_info_emits_net_health_damage_from_tick_delta(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=CAPTURE_PERK_APPLY_EVENT_KIND,
+            payload=[{"perk_id": int(PerkId.BREATHING_ROOM)}],
+        ),
+    )
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival-health.crd")
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "info",
+            str(replay_path),
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    damage_events = [
+        event
+        for event in payload["timeline"]
+        if event["kind"] == "health_damage" and int(event["player_index"]) == 0
+    ]
+    assert len(damage_events) == 1
+    data = damage_events[0]["data"]
+    assert abs(float(data["health_before"]) - 100.0) < 1e-6
+    assert abs(float(data["health_after"]) - 33.33333333333333) < 0.05
+    assert abs(float(data["amount"]) - 66.66666666666667) < 0.05
+
+
+def test_replay_info_player_death_is_core_event(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=CAPTURE_PERK_APPLY_EVENT_KIND,
+            payload=[{"perk_id": int(PerkId.GRIM_DEAL)}],
+        ),
+    )
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival-player-death.crd")
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "info",
+            str(replay_path),
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    death_events = [
+        event
+        for event in payload["timeline"]
+        if event["kind"] == "player_death" and int(event["player_index"]) == 0
+    ]
+    assert len(death_events) == 1
 
 
 def test_replay_benchmark_human_success_outputs_throughput_stats(tmp_path: Path) -> None:
