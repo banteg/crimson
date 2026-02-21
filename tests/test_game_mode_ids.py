@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.perks import PERK_BY_ID, PerkFlags, PerkId
@@ -26,73 +28,91 @@ def _record_xp(*, mode: int, xp: int) -> HighScoreRecord:
     return record
 
 
-def test_scores_path_for_config_quest_mode_uses_quest_filename(tmp_path: Path) -> None:
-    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data={"game_mode": int(GameMode.QUESTS)})
+@pytest.mark.parametrize(
+    ("hardcore_flag", "expected_name"),
+    [
+        (0, "questhc1_2.hi"),
+        (1, "quest1_2.hi"),
+    ],
+    ids=["default", "hardcore"],
+)
+def test_scores_path_for_config_quest_mode_explicit_stage_filename(
+    tmp_path: Path,
+    hardcore_flag: int,
+    expected_name: str,
+) -> None:
+    data: dict[str, int] = {"game_mode": int(GameMode.QUESTS)}
+    if hardcore_flag:
+        data["hardcore_flag"] = hardcore_flag
+    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data=data)
     path = scores_path_for_config(tmp_path, config, quest_stage_major=1, quest_stage_minor=2)
-    assert path == tmp_path / "scores5" / "questhc1_2.hi"
+    assert path == tmp_path / "scores5" / expected_name
 
 
-def test_scores_path_for_config_quest_mode_uses_quest_filename_when_hardcore(tmp_path: Path) -> None:
-    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data={"game_mode": int(GameMode.QUESTS), "hardcore_flag": 1})
-    path = scores_path_for_config(tmp_path, config, quest_stage_major=1, quest_stage_minor=2)
-    assert path == tmp_path / "scores5" / "quest1_2.hi"
-
-
-def test_scores_path_for_config_survival_mode_uses_survival_filename(tmp_path: Path) -> None:
-    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data={"game_mode": int(GameMode.SURVIVAL)})
+@pytest.mark.parametrize(
+    ("game_mode", "expected_name"),
+    [
+        (GameMode.SURVIVAL, "survival.hi"),
+        (GameMode.RUSH, "rush.hi"),
+        (GameMode.TYPO, "typo.hi"),
+    ],
+    ids=["survival", "rush", "typo"],
+)
+def test_scores_path_for_config_mode_uses_base_filename(
+    tmp_path: Path,
+    game_mode: GameMode,
+    expected_name: str,
+) -> None:
+    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data={"game_mode": int(game_mode)})
     path = scores_path_for_config(tmp_path, config)
-    assert path == tmp_path / "scores5" / "survival.hi"
+    assert path == tmp_path / "scores5" / expected_name
 
 
-def test_scores_path_for_config_survival_mode_uses_player_count_suffix(tmp_path: Path) -> None:
-    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data={"game_mode": int(GameMode.SURVIVAL), "player_count": 3})
-    path = scores_path_for_config(tmp_path, config)
-    assert path == tmp_path / "scores5" / "survival_3.hi"
-
-
-def test_scores_path_for_config_rush_mode_uses_rush_filename(tmp_path: Path) -> None:
-    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data={"game_mode": int(GameMode.RUSH)})
-    path = scores_path_for_config(tmp_path, config)
-    assert path == tmp_path / "scores5" / "rush.hi"
-
-
-def test_scores_path_for_config_rush_mode_uses_player_count_suffix(tmp_path: Path) -> None:
-    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data={"game_mode": int(GameMode.RUSH), "player_count": 4})
-    path = scores_path_for_config(tmp_path, config)
-    assert path == tmp_path / "scores5" / "rush_4.hi"
-
-
-def test_scores_path_for_config_quest_mode_uses_config_stage_fields_when_missing_args(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    ("game_mode", "player_count", "expected_name"),
+    [
+        (GameMode.SURVIVAL, 3, "survival_3.hi"),
+        (GameMode.RUSH, 4, "rush_4.hi"),
+    ],
+    ids=["survival", "rush"],
+)
+def test_scores_path_for_config_mode_uses_player_count_suffix(
+    tmp_path: Path,
+    game_mode: GameMode,
+    player_count: int,
+    expected_name: str,
+) -> None:
     config = CrimsonConfig(
         path=tmp_path / "crimson.cfg",
-        data={
-            "game_mode": int(GameMode.QUESTS),
-            "quest_stage_major": 4,
-            "quest_stage_minor": 7,
-        },
+        data={"game_mode": int(game_mode), "player_count": player_count},
     )
     path = scores_path_for_config(tmp_path, config)
-    assert path == tmp_path / "scores5" / "questhc4_7.hi"
+    assert path == tmp_path / "scores5" / expected_name
 
 
-def test_scores_path_for_config_quest_mode_uses_player_count_suffix(tmp_path: Path) -> None:
-    config = CrimsonConfig(
-        path=tmp_path / "crimson.cfg",
-        data={
-            "game_mode": int(GameMode.QUESTS),
-            "quest_stage_major": 4,
-            "quest_stage_minor": 7,
-            "player_count": 2,
-        },
-    )
+@pytest.mark.parametrize(
+    ("player_count", "expected_name"),
+    [
+        (None, "questhc4_7.hi"),
+        (2, "questhc4_7_2.hi"),
+    ],
+    ids=["no-player-count", "with-player-count"],
+)
+def test_scores_path_for_config_quest_mode_uses_config_stage_fields(
+    tmp_path: Path,
+    player_count: int | None,
+    expected_name: str,
+) -> None:
+    data: dict[str, int] = {
+        "game_mode": int(GameMode.QUESTS),
+        "quest_stage_major": 4,
+        "quest_stage_minor": 7,
+    }
+    if player_count is not None:
+        data["player_count"] = player_count
+    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data=data)
     path = scores_path_for_config(tmp_path, config)
-    assert path == tmp_path / "scores5" / "questhc4_7_2.hi"
-
-
-def test_scores_path_for_config_typo_mode_uses_typo_filename(tmp_path: Path) -> None:
-    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data={"game_mode": int(GameMode.TYPO)})
-    path = scores_path_for_config(tmp_path, config)
-    assert path == tmp_path / "scores5" / "typo.hi"
+    assert path == tmp_path / "scores5" / expected_name
 
 
 def test_quest_highscores_sort_by_time_ascending_with_zero_last() -> None:
@@ -143,51 +163,29 @@ def test_rush_rank_index_inserts_larger_time_higher() -> None:
     assert rank_index(records_sorted, record) == 2
 
 
-def test_survival_highscores_sort_by_xp_descending() -> None:
+@pytest.mark.parametrize("game_mode", [GameMode.SURVIVAL, GameMode.TYPO], ids=["survival", "typo"])
+def test_xp_highscores_sort_by_xp_descending(game_mode: GameMode) -> None:
     records = [
-        _record_xp(mode=GameMode.SURVIVAL, xp=2500),
-        _record_xp(mode=GameMode.SURVIVAL, xp=100),
-        _record_xp(mode=GameMode.SURVIVAL, xp=5000),
-        _record_xp(mode=GameMode.SURVIVAL, xp=0),
+        _record_xp(mode=game_mode, xp=2500),
+        _record_xp(mode=game_mode, xp=100),
+        _record_xp(mode=game_mode, xp=5000),
+        _record_xp(mode=game_mode, xp=0),
     ]
-    sorted_records = sort_highscores(records, game_mode_id=int(GameMode.SURVIVAL))
+    sorted_records = sort_highscores(records, game_mode_id=int(game_mode))
     assert [int(r.score_xp) for r in sorted_records] == [5000, 2500, 100, 0]
 
 
-def test_survival_rank_index_inserts_larger_xp_higher() -> None:
+@pytest.mark.parametrize("game_mode", [GameMode.SURVIVAL, GameMode.TYPO], ids=["survival", "typo"])
+def test_xp_rank_index_inserts_larger_xp_higher(game_mode: GameMode) -> None:
     records_sorted = sort_highscores(
         [
-            _record_xp(mode=GameMode.SURVIVAL, xp=5000),
-            _record_xp(mode=GameMode.SURVIVAL, xp=2000),
-            _record_xp(mode=GameMode.SURVIVAL, xp=1000),
+            _record_xp(mode=game_mode, xp=5000),
+            _record_xp(mode=game_mode, xp=2000),
+            _record_xp(mode=game_mode, xp=1000),
         ],
-        game_mode_id=int(GameMode.SURVIVAL),
+        game_mode_id=int(game_mode),
     )
-    record = _record_xp(mode=GameMode.SURVIVAL, xp=1500)
-    assert rank_index(records_sorted, record) == 2
-
-
-def test_typo_highscores_sort_by_xp_descending() -> None:
-    records = [
-        _record_xp(mode=GameMode.TYPO, xp=2500),
-        _record_xp(mode=GameMode.TYPO, xp=100),
-        _record_xp(mode=GameMode.TYPO, xp=5000),
-        _record_xp(mode=GameMode.TYPO, xp=0),
-    ]
-    sorted_records = sort_highscores(records, game_mode_id=int(GameMode.TYPO))
-    assert [int(r.score_xp) for r in sorted_records] == [5000, 2500, 100, 0]
-
-
-def test_typo_rank_index_inserts_larger_xp_higher() -> None:
-    records_sorted = sort_highscores(
-        [
-            _record_xp(mode=GameMode.TYPO, xp=5000),
-            _record_xp(mode=GameMode.TYPO, xp=2000),
-            _record_xp(mode=GameMode.TYPO, xp=1000),
-        ],
-        game_mode_id=int(GameMode.TYPO),
-    )
-    record = _record_xp(mode=GameMode.TYPO, xp=1500)
+    record = _record_xp(mode=game_mode, xp=1500)
     assert rank_index(records_sorted, record) == 2
 
 
@@ -213,22 +211,25 @@ def test_perk_without_mode_3_flag_is_rejected_in_quest_mode() -> None:
     assert perk_can_offer(state, player, PerkId.GRIM_DEAL, game_mode=int(GameMode.QUESTS), player_count=1) is False
 
 
-def test_random_weapon_mode_flags_match_native_allowlist_behavior() -> None:
+@pytest.mark.parametrize(
+    ("perk_id", "expected"),
+    [
+        (PerkId.RANDOM_WEAPON, (True, True, False, False)),
+        (PerkId.BREATHING_ROOM, (True, False, True, False)),
+    ],
+    ids=["random-weapon", "breathing-room"],
+)
+def test_mode_flags_match_native_allowlist_behavior(
+    perk_id: PerkId,
+    expected: tuple[bool, bool, bool, bool],
+) -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    assert perk_can_offer(state, player, PerkId.RANDOM_WEAPON, game_mode=int(GameMode.SURVIVAL), player_count=1) is True
-    assert perk_can_offer(state, player, PerkId.RANDOM_WEAPON, game_mode=int(GameMode.QUESTS), player_count=1) is True
-    assert perk_can_offer(state, player, PerkId.RANDOM_WEAPON, game_mode=int(GameMode.SURVIVAL), player_count=2) is False
-    assert perk_can_offer(state, player, PerkId.RANDOM_WEAPON, game_mode=int(GameMode.QUESTS), player_count=2) is False
-
-
-def test_breathing_room_mode_flags_match_native_allowlist_behavior() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2())
-    assert perk_can_offer(state, player, PerkId.BREATHING_ROOM, game_mode=int(GameMode.SURVIVAL), player_count=1) is True
-    assert perk_can_offer(state, player, PerkId.BREATHING_ROOM, game_mode=int(GameMode.SURVIVAL), player_count=2) is True
-    assert perk_can_offer(state, player, PerkId.BREATHING_ROOM, game_mode=int(GameMode.QUESTS), player_count=1) is False
-    assert perk_can_offer(state, player, PerkId.BREATHING_ROOM, game_mode=int(GameMode.QUESTS), player_count=2) is False
+    expected_survival_1p, expected_quest_1p, expected_survival_2p, expected_quest_2p = expected
+    assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.SURVIVAL), player_count=1) is expected_survival_1p
+    assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.QUESTS), player_count=1) is expected_quest_1p
+    assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.SURVIVAL), player_count=2) is expected_survival_2p
+    assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.QUESTS), player_count=2) is expected_quest_2p
 
 
 def test_mode_flag_gated_perks_reject_quest_and_two_player() -> None:

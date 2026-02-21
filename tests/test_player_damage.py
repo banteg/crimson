@@ -42,26 +42,27 @@ def test_player_take_damage_dodge_perks(
     assert player.health == expected_health
 
 
-def test_player_take_damage_resets_low_health_timer_on_hit() -> None:
+@pytest.mark.parametrize(
+    ("start_health", "expected_health", "expected_low_health_timer"),
+    [
+        (25.0, 15.0, 0.0),
+        (50.0, 40.0, 100.0),
+    ],
+    ids=["resets-low-health-timer-on-hit", "does-not-reset-low-health-timer-above-threshold"],
+)
+def test_player_take_damage_low_health_timer_behavior(
+    start_health: float,
+    expected_health: float,
+    expected_low_health_timer: float,
+) -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(), health=25.0)
+    player = PlayerState(index=0, pos=Vec2(), health=start_health)
 
     applied = player_take_damage(state, player, 10.0, rand=lambda: 3)
 
     assert applied == 10.0
-    assert player.health == 15.0
-    assert player.low_health_timer == 0.0
-
-
-def test_player_take_damage_does_not_reset_low_health_timer_above_threshold() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(), health=50.0)
-
-    applied = player_take_damage(state, player, 10.0, rand=lambda: 3)
-
-    assert applied == 10.0
-    assert player.health == 40.0
-    assert player.low_health_timer == 100.0
+    assert player.health == expected_health
+    assert player.low_health_timer == expected_low_health_timer
 
 
 def test_player_take_damage_decrements_death_timer_on_death_hit() -> None:

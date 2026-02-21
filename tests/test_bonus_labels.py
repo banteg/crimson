@@ -1,19 +1,24 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusEntry, bonus_label_for_entry
 
 
-def test_bonus_label_for_entry_formats_points() -> None:
-    entry = BonusEntry(bonus_id=int(BonusId.POINTS), amount=1000)
-    assert bonus_label_for_entry(entry) == "Points: 1000"
-
-
-def test_bonus_label_for_entry_uses_weapon_name() -> None:
-    entry = BonusEntry(bonus_id=int(BonusId.WEAPON), amount=1)
-    assert bonus_label_for_entry(entry) == "Pistol"
-
-
-def test_bonus_label_for_entry_uses_meta_name_for_other_types() -> None:
-    entry = BonusEntry(bonus_id=int(BonusId.FREEZE), amount=0)
-    assert bonus_label_for_entry(entry) == "Freeze"
+@pytest.mark.parametrize(
+    ("bonus_id", "amount", "expected_label"),
+    [
+        (BonusId.POINTS, 1000, "Points: 1000"),
+        (BonusId.WEAPON, 1, "Pistol"),
+        (BonusId.FREEZE, 0, "Freeze"),
+    ],
+    ids=["points", "weapon", "meta-name"],
+)
+def test_bonus_label_for_entry_formats_expected_labels(
+    bonus_id: BonusId,
+    amount: int,
+    expected_label: str,
+) -> None:
+    entry = BonusEntry(bonus_id=int(bonus_id), amount=amount)
+    assert bonus_label_for_entry(entry) == expected_label
