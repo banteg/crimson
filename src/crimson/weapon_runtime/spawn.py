@@ -116,27 +116,25 @@ def projectile_spawn(
     type_id = int(type_id)
     owner_id = int(owner_id)
     if (not state.bonus_spawn_guard) and owner_id in (-100, -1, -2, -3):
-        player_index = _shots_fired_player_index(
-            state=state,
-            players=players,
-            owner_id=owner_id,
-            owner_player_index=owner_player_index,
-        )
-        if player_index is not None:
-            state.shots_fired[player_index] += 1
-
-    if (
-        (not state.bonus_spawn_guard)
-        and owner_id in (-100, -1, -2, -3)
-        and type_id != int(ProjectileTypeId.FIRE_BULLETS)
-        and _fire_bullets_active(
-            players,
-            state=state,
-            owner_id=owner_id,
-            owner_player_index=owner_player_index,
-        )
-    ):
-        type_id = int(ProjectileTypeId.FIRE_BULLETS)
+        while True:
+            player_index = _shots_fired_player_index(
+                state=state,
+                players=players,
+                owner_id=owner_id,
+                owner_player_index=owner_player_index,
+            )
+            if player_index is not None:
+                state.shots_fired[player_index] += 1
+            if type_id == int(ProjectileTypeId.FIRE_BULLETS):
+                break
+            if not _fire_bullets_active(
+                players,
+                state=state,
+                owner_id=owner_id,
+                owner_player_index=owner_player_index,
+            ):
+                break
+            type_id = int(ProjectileTypeId.FIRE_BULLETS)
 
     meta = projectile_meta_for_type_id(type_id)
     return state.projectiles.spawn(
