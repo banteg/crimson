@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import inspect
-import json
 import math
 from collections import Counter
 from collections.abc import Mapping
@@ -11,6 +10,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import msgspec
+
 import crimson.projectiles.runtime.collision as projectiles_mod
 import crimson.projectiles.runtime.projectile_pool as projectile_pool_mod
 import crimson.projectiles.runtime.secondary_pool as secondary_pool_mod

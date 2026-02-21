@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import bisect
 import functools
-import json
 import re
 from collections import Counter
 from collections.abc import Mapping
