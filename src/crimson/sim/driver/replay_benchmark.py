@@ -6,6 +6,7 @@ import math
 import pstats
 import statistics
 import time
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Literal, cast
@@ -154,6 +155,8 @@ def run_replay_render_benchmark(
     render_telemetry: bool = False,
     render_telemetry_out: Path | None = None,
     render_charts_out_dir: Path | None = None,
+    show_progress: bool = False,
+    tqdm_factory: Callable[..., object] | None = None,
 ) -> ReplayBenchmarkResult:
     from grim.config import ensure_crimson_cfg
     from grim.console import create_console
@@ -162,6 +165,11 @@ def run_replay_render_benchmark(
     from ...assets_fetch import download_missing_paqs
 
     _validate_args(runs=int(runs), warmup_runs=int(warmup_runs), top=int(top))
+    telemetry_requested = bool(
+        render_telemetry
+        or render_telemetry_out is not None
+        or render_charts_out_dir is not None,
+    )
 
     baseline_result = run_replay(
         replay,
@@ -197,7 +205,23 @@ def run_replay_render_benchmark(
     except RuntimeError as exc:
         raise ReplayBenchmarkError(f"render benchmark could not initialize window: {exc}") from exc
 
+    progress: Any | None = None
     try:
+        planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0) + (1 if telemetry_requested else 0)
+        if bool(show_progress) and int(planned_steps) > 0:
+            from tqdm import tqdm
+
+            factory = tqdm if tqdm_factory is None else tqdm_factory
+            progress = cast(
+                Any,
+                factory(
+                    total=int(planned_steps),
+                    unit="run",
+                    desc="render benchmark",
+                    leave=False,
+                ),
+            )
+
         for _ in range(int(warmup_runs)):
             _run_render_once(
                 ctx=ctx,
@@ -208,6 +232,9 @@ def run_replay_render_benchmark(
                 strict_events=bool(strict_events),
                 trace_rng=bool(trace_rng),
             )
+            if progress is not None:
+                progress.update(1)
+                progress.set_postfix_str("phase=warmup", refresh=False)
 
         samples: list[BenchmarkSample] = []
         for sample_idx in range(int(runs)):
@@ -238,6 +265,9 @@ def run_replay_render_benchmark(
                 measured.run_result,
                 where=f"render run {sample_idx + 1}",
             )
+            if progress is not None:
+                progress.update(1)
+                progress.set_postfix_str(f"phase=measure sample={sample_idx + 1}/{int(runs)}", refresh=False)
 
         profile_result: ReplayProfileResult | None = None
         if bool(profile):
@@ -271,12 +301,10 @@ def run_replay_render_benchmark(
                 source=source,
                 hotspots=tuple(hotspots),
             )
+            if progress is not None:
+                progress.update(1)
+                progress.set_postfix_str("phase=profile", refresh=False)
 
-        telemetry_requested = bool(
-            render_telemetry
-            or render_telemetry_out is not None
-            or render_charts_out_dir is not None,
-        )
         telemetry_result: ReplayRenderTelemetryResult | None = None
         if telemetry_requested:
             telemetry_session = RenderTelemetrySession()
@@ -343,7 +371,12 @@ def run_replay_render_benchmark(
                 artifacts=artifacts,
                 preview=tuple(frames[:10]),
             )
+            if progress is not None:
+                progress.update(1)
+                progress.set_postfix_str("phase=telemetry", refresh=False)
     finally:
+        if progress is not None:
+            progress.close()
         rl.close_window()
 
     wall_values = [sample.wall_ms for sample in samples]

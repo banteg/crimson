@@ -799,8 +799,18 @@ def cmd_replay_benchmark(
         ...,
         help="replay file path (.crd); if a filename is provided, also search base-dir/replays",
     ),
-    runs: int = typer.Option(5, "--runs", min=1, help="number of measured benchmark runs"),
-    warmup_runs: int = typer.Option(1, "--warmup-runs", min=0, help="warmup runs before measured timing"),
+    runs: int | None = typer.Option(
+        None,
+        "--runs",
+        min=1,
+        help="number of measured benchmark runs (default: headless=5, render=1)",
+    ),
+    warmup_runs: int | None = typer.Option(
+        None,
+        "--warmup-runs",
+        min=0,
+        help="warmup runs before measured timing (default: headless=1, render=0)",
+    ),
     mode: Literal["headless", "render"] = typer.Option(
         "headless",
         "--mode",
@@ -882,6 +892,8 @@ def cmd_replay_benchmark(
 
     replay_bytes = Path(replay_path).read_bytes()
     replay_sha256 = hashlib.sha256(replay_bytes).hexdigest()
+    resolved_runs = int(runs) if runs is not None else (1 if str(mode) == "render" else 5)
+    resolved_warmup_runs = int(warmup_runs) if warmup_runs is not None else (0 if str(mode) == "render" else 1)
     if str(mode) != "render":
         if bool(render_telemetry):
             typer.echo("replay benchmark failed: --render-telemetry is supported only with --mode render", err=True)
@@ -900,8 +912,8 @@ def cmd_replay_benchmark(
                 replay,
                 replay_path=Path(replay_path),
                 base_dir=Path(base_dir),
-                runs=int(runs),
-                warmup_runs=int(warmup_runs),
+                runs=int(resolved_runs),
+                warmup_runs=int(resolved_warmup_runs),
                 max_ticks=max_ticks,
                 strict_events=bool(strict_events),
                 trace_rng=bool(trace_rng),
@@ -912,12 +924,13 @@ def cmd_replay_benchmark(
                 render_telemetry=bool(render_telemetry),
                 render_telemetry_out=render_telemetry_out,
                 render_charts_out_dir=render_charts_out_dir,
+                show_progress=(str(output_format) == "human"),
             )
         else:
             benchmark = run_replay_benchmark(
                 replay,
-                runs=int(runs),
-                warmup_runs=int(warmup_runs),
+                runs=int(resolved_runs),
+                warmup_runs=int(resolved_warmup_runs),
                 max_ticks=max_ticks,
                 strict_events=bool(strict_events),
                 trace_rng=bool(trace_rng),
@@ -994,8 +1007,8 @@ def cmd_replay_benchmark(
         replay_sha256=str(replay_sha256),
         settings=_ReplayBenchmarkSettingsPayload(
             mode=str(mode),
-            runs=int(runs),
-            warmup_runs=int(warmup_runs),
+            runs=int(resolved_runs),
+            warmup_runs=int(resolved_warmup_runs),
             max_ticks=(int(max_ticks) if max_ticks is not None else None),
             strict_events=bool(strict_events),
             trace_rng=bool(trace_rng),
@@ -1040,7 +1053,7 @@ def cmd_replay_benchmark(
     typer.echo(
         "ok: "
         f"mode={mode} "
-        f"runs={len(benchmark.samples)} warmup_runs={int(warmup_runs)} "
+        f"runs={len(benchmark.samples)} warmup_runs={int(resolved_warmup_runs)} "
         f"ticks={int(benchmark.run_result.ticks)} "
         f"wall_ms_p50={float(benchmark.wall_ms.p50):.3f} "
         f"tps_p50={float(benchmark.ticks_per_second.p50):.2f} "
