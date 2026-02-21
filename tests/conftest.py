@@ -39,9 +39,23 @@ def pytest_configure(config: pytest.Config) -> None:
     if src_str not in sys.path:
         sys.path.insert(0, src_str)
     config.addinivalue_line("markers", "terrain: terrain generation/rendering tests (slow, opt-in)")
+    config.addinivalue_line("markers", "slow: long-running test")
+    config.addinivalue_line("markers", "original_capture: tests for original-capture conversion/replay/parity")
+    config.addinivalue_line("markers", "network: network/lan/relay integration tests")
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    for item in items:
+        file_name = item.path.name
+        if file_name.startswith("test_original_capture_"):
+            item.add_marker(pytest.mark.original_capture)
+            item.add_marker(pytest.mark.slow)
+        if file_name.startswith(("test_lan_", "test_net_", "test_relay_")):
+            item.add_marker(pytest.mark.network)
+            item.add_marker(pytest.mark.slow)
+        if "terrain" in item.keywords:
+            item.add_marker(pytest.mark.slow)
+
     if config.getoption("--run-terrain"):
         return
     skip_terrain = pytest.mark.skip(reason="use --run-terrain to run terrain generation/rendering tests")
