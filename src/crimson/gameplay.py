@@ -619,6 +619,19 @@ def player_update(
             # and stores back to float before movement/heading logic.
             movement_dt = float(f32((0.6 / float(time_scale_factor)) * float(movement_dt)))
 
+    perk_tick_stationary = abs(float(player.move_speed)) <= 1e-9
+    apply_player_perk_ticks(
+        player=player,
+        player_pos_before_move=prev_pos,
+        dt=dt,
+        state=state,
+        players=players,
+        stationary=perk_tick_stationary,
+        owner_id_for_player=_owner_id_for_player,
+        owner_id_for_player_projectiles=_owner_id_for_player_projectiles,
+        projectile_spawn=_projectile_spawn,
+    )
+
     # Movement.
     raw_move = input_state.move
     raw_mag = raw_move.length()
@@ -827,22 +840,14 @@ def player_update(
     player.move_phase += phase_sign * movement_dt * player.move_speed * 19.0
 
     move_delta = player.pos - prev_pos
-    stationary = abs(move_delta.x) <= 1e-9 and abs(move_delta.y) <= 1e-9
+    reload_stationary = abs(move_delta.x) <= 1e-9 and abs(move_delta.y) <= 1e-9
+    if not reload_stationary:
+        # Native clears these post-perk-tick timers after movement when position changed.
+        player.man_bomb_timer = 0.0
+        player.living_fortress_timer = 0.0
     reload_scale = 1.0
-    if stationary and perk_active(player, PerkId.STATIONARY_RELOADER):
+    if reload_stationary and perk_active(player, PerkId.STATIONARY_RELOADER):
         reload_scale = 3.0
-
-    apply_player_perk_ticks(
-        player=player,
-        player_pos_before_move=prev_pos,
-        dt=dt,
-        state=state,
-        players=players,
-        stationary=stationary,
-        owner_id_for_player=_owner_id_for_player,
-        owner_id_for_player_projectiles=_owner_id_for_player_projectiles,
-        projectile_spawn=_projectile_spawn,
-    )
 
     # Reload + reload perks.
     if perk_active(player, PerkId.ANXIOUS_LOADER) and input_state.fire_pressed and player.reload_timer > 0.0:
@@ -986,12 +991,12 @@ def player_update(
         creatures=creatures,
         players=players,
         force_pre_swap_fire_gate=bool(force_pre_swap_fire_gate),
+        on_player_lethal=on_player_lethal,
     )
 
     while player.move_phase > 14.0:
         player.move_phase -= 14.0
     while player.move_phase < 0.0:
-        on_player_lethal=on_player_lethal,
         player.move_phase += 14.0
 
     half_size = max(0.0, float(player.size) * 0.5)
