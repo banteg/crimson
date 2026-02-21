@@ -538,6 +538,46 @@ def test_creature_update_auto_target_falls_back_when_previous_target_is_dead() -
     assert player.auto_target == 1
 
 
+def test_creature_update_auto_target_skips_refresh_on_0x46_boundary_tick() -> None:
+    state = GameplayState()
+    pool = CreaturePool()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+
+    far = pool.entries[0]
+    far.active = True
+    far.hp = 50.0
+    far.hitbox_size = CREATURE_HITBOX_ALIVE
+    far.flags = CreatureFlags(0)
+    far.ai_mode = 0
+    far.move_speed = 0.0
+    far.size = 45.0
+    far.contact_damage = 0.0
+    far.target_player = 0
+    far.pos = Vec2(220.0, 100.0)
+
+    near = pool.entries[1]
+    near.active = True
+    near.hp = 50.0
+    near.hitbox_size = CREATURE_HITBOX_ALIVE
+    near.flags = CreatureFlags(0)
+    near.ai_mode = 0
+    near.move_speed = 0.0
+    near.size = 45.0
+    near.contact_damage = 0.0
+    near.target_player = 0
+    near.pos = Vec2(120.0, 100.0)
+
+    player.auto_target = 0
+    pool._update_tick = creature_runtime._TARGET_REEVAL_PERIOD - 1
+
+    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0))
+    assert pool._update_tick == creature_runtime._TARGET_REEVAL_PERIOD
+    assert player.auto_target == 0
+
+    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0))
+    assert player.auto_target == 1
+
+
 def test_small_creature_dies_on_contact() -> None:
     state = GameplayState()
     pool = CreaturePool()

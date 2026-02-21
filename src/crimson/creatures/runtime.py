@@ -1057,12 +1057,15 @@ class CreaturePool:
                         pass
 
             target_player = self._resolve_target_player_index(creature, players)
-            self._update_player_auto_target(
-                players=players,
-                player_index=int(target_player),
-                creature_index=int(idx),
-                creature=creature,
-            )
+            # Native only updates player auto-target feedback inside the
+            # `creature_update_tick % 0x46 != 0` retarget cadence block.
+            if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
+                self._update_player_auto_target(
+                    players=players,
+                    player_index=int(target_player),
+                    creature_index=int(idx),
+                    creature=creature,
+                )
             player = players[target_player]
             player_pos = player.pos
             if single_player_dead_target_pos is not None and float(players[0].health) <= 0.0:
