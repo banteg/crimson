@@ -435,7 +435,7 @@ def test_single_player_dead_player_contact_path_keeps_dead_player_undamaged() ->
     creature.target_player = 0
     creature.pos = Vec2(400.0, 400.0)
 
-    pool.update(1.0 / 60.0, state=state, players=[dead_player], rand=lambda: 0)
+    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[dead_player], rand=lambda: 0))
 
     expected_dead_target = Vec2(1024.0 * (27.0 / 64.0), 1024.0 * (27.0 / 64.0))
     assert creature.target_player == 1
