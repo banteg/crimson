@@ -698,12 +698,15 @@ class ReplayPlaybackMode:
         try:
             while self._tick_index < target and not self._finished:
                 self._tick_one()
-                # Gameplay clears decal queues during render (`draw()` -> `_bake_fx_queues`).
-                # Fast-seek runs many ticks without drawing, so clear explicitly to avoid
-                # queue saturation changing simulation-side corpse/death flow.
                 if world is not None:
-                    world.fx_queue.clear()
-                    world.fx_queue_rotated.clear()
+                    # Gameplay drains decal queues during render (`draw()` -> `_bake_fx_queues`).
+                    # Fast-seek runs many ticks without drawing, so mirror that behavior per tick:
+                    # bake when render targets are ready, otherwise clear to avoid queue saturation.
+                    if world.ground is not None and world.fx_textures is not None:
+                        world._bake_fx_queues()
+                    else:
+                        world.fx_queue.clear()
+                        world.fx_queue_rotated.clear()
         finally:
             if prev_sfx_enabled is not None and world is not None and world.audio_router is not None:
                 world.audio_router.sfx_enabled = bool(prev_sfx_enabled)
