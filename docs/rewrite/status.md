@@ -24,6 +24,7 @@ Last reviewed: **2026-02-17**
 - Replay tooling:
   - `uv run crimson replay play <replay.crd>`
   - `uv run crimson replay verify <replay.crd>`
+  - `uv run crimson replay info <replay.crd>` (core timeline by default; `--verbose` adds extra context events; `--format json` emits schema-versioned timeline payload)
   - `uv run crimson replay benchmark <replay.crd>` (default `--mode headless`, optional `--mode render`)
   - `uv run crimson replay render <replay.crd>` (ffmpeg-backed 60fps MP4 export, quality via `--crf/--preset`)
   - `uv run crimson replay verify-checkpoints <replay.crd>`
@@ -111,6 +112,9 @@ Last reviewed: **2026-02-17**
 - Replay-side checkpoint differential comparison is reusable via CLI and library helpers.
   - Code: `src/crimson/original/diff.py`
   - Command: `uv run crimson replay diff-checkpoints <expected> <actual>`
+- Replay timeline extraction now has a versioned JSON surface for analytics/web infographics.
+  - Code: `src/crimson/sim/driver/replay_info.py`, `src/crimson/cli/replay.py`
+  - Command: `uv run crimson replay info <replay.crd> --format json --json-out <path>`
 - Original-capture conversion and capture-native verification are implemented.
   - Code: `src/crimson/original/capture.py`, `src/crimson/original/verify.py`
   - Tests: `tests/test_original_capture_conversion.py`, `tests/test_original_capture_verify.py`

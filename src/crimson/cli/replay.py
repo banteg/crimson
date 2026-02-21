@@ -13,6 +13,7 @@ from ..paths import default_runtime_dir
 
 _REPLAY_VERIFY_SCHEMA_VERSION = 1
 _REPLAY_BENCHMARK_SCHEMA_VERSION = 1
+_REPLAY_INFO_SCHEMA_VERSION = 1
 _REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE = 3
 
 
@@ -199,6 +200,16 @@ def _resolve_replay_verify_metric(
     return "score_xp"
 
 
+def _replay_mode_label(game_mode_id: int) -> str:
+    if int(game_mode_id) == int(GameMode.SURVIVAL):
+        return "survival"
+    if int(game_mode_id) == int(GameMode.RUSH):
+        return "rush"
+    if int(game_mode_id) == int(GameMode.QUESTS):
+        return "quests"
+    return f"mode_{int(game_mode_id)}"
+
+
 class _RunResultPayload(msgspec.Struct, forbid_unknown_fields=True):
     game_mode_id: int
     tick_rate: int
@@ -226,6 +237,35 @@ class _ReplayVerifyPayload(msgspec.Struct, forbid_unknown_fields=True):
     replay_sha256: str
     run_result: _RunResultPayload
     score_claim: _ReplayVerifyScoreClaimPayload | None
+
+
+class _ReplayInfoSummaryPayload(msgspec.Struct, forbid_unknown_fields=True):
+    game_mode_id: int
+    tick_rate: int
+    ticks_simulated: int
+    elapsed_ms: int
+    player_count: int
+    event_count: int
+    event_counts_by_kind: dict[str, int]
+
+
+class _ReplayInfoEventPayload(msgspec.Struct, forbid_unknown_fields=True):
+    tick_index: int
+    elapsed_ms: int
+    elapsed_s: float
+    kind: str
+    player_index: int | None
+    detail: str
+    data: dict[str, object]
+
+
+class _ReplayInfoPayload(msgspec.Struct, forbid_unknown_fields=True):
+    schema_version: int
+    status: str
+    replay: str
+    replay_sha256: str
+    summary: _ReplayInfoSummaryPayload
+    timeline: list[_ReplayInfoEventPayload]
 
 
 class _BenchmarkAggregatePayload(msgspec.Struct, forbid_unknown_fields=True):
@@ -548,6 +588,135 @@ def cmd_replay_verify(
 
     if not claim_matches:
         raise typer.Exit(code=int(_REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE))
+
+
+@replay_app.command("info")
+def cmd_replay_info(
+    replay_file: Path = typer.Argument(
+        ...,
+        help="replay file path (.crd); if a filename is provided, also search base-dir/replays",
+    ),
+    output_format: Literal["human", "json"] = typer.Option(
+        "human",
+        "--format",
+        help="output format",
+    ),
+    json_out: Path | None = typer.Option(
+        None,
+        "--json-out",
+        help="optional JSON output path for replay info payload",
+    ),
+    max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
+    strict_events: bool = typer.Option(
+        True,
+        "--strict-events/--lenient-events",
+        help="fail on unsupported replay events/perk picks (default: strict)",
+    ),
+    verbose: bool = typer.Option(
+        False,
+        "--verbose",
+        help="include extra context events in addition to core gameplay events",
+    ),
+    player_index: int | None = typer.Option(
+        None,
+        "--player-index",
+        help="optional player index filter (applies to player-specific events)",
+    ),
+    base_dir: Path = typer.Option(
+        default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
+        help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
+    ),
+) -> None:
+    """Simulate a replay and emit a timeline of gameplay events."""
+    import hashlib
+
+    from ..replay import ReplayCodecError, load_replay
+    from ..sim.driver.replay_info import event_counts_by_kind, run_replay_info
+    from ..sim.driver.replay_runner import ReplayRunnerError
+
+    replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
+    if not replay_path.is_file():
+        message = f"replay file not found: {tried[0]}"
+        if len(tried) > 1:
+            message += f" (also tried: {tried[1]})"
+        typer.echo(message, err=True)
+        raise typer.Exit(code=1)
+
+    replay_bytes = Path(replay_path).read_bytes()
+    replay_sha256 = hashlib.sha256(replay_bytes).hexdigest()
+    try:
+        replay = load_replay(replay_bytes)
+        result = run_replay_info(
+            replay,
+            max_ticks=max_ticks,
+            strict_events=bool(strict_events),
+            player_index=player_index,
+            include_extra_events=bool(verbose),
+        )
+    except (ReplayCodecError, ReplayRunnerError) as exc:
+        typer.echo(f"replay info failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    timeline_payload = [
+        _ReplayInfoEventPayload(
+            tick_index=int(event.tick_index),
+            elapsed_ms=int(event.elapsed_ms),
+            elapsed_s=float(event.elapsed_ms) / 1000.0,
+            kind=str(event.kind),
+            player_index=(None if event.player_index is None else int(event.player_index)),
+            detail=str(event.detail),
+            data=dict(event.data),
+        )
+        for event in result.timeline
+    ]
+    summary_payload = _ReplayInfoSummaryPayload(
+        game_mode_id=int(result.game_mode_id),
+        tick_rate=int(result.tick_rate),
+        ticks_simulated=int(result.ticks_simulated),
+        elapsed_ms=int(result.elapsed_ms),
+        player_count=int(result.player_count),
+        event_count=int(len(timeline_payload)),
+        event_counts_by_kind=event_counts_by_kind(result.timeline),
+    )
+    payload = _ReplayInfoPayload(
+        schema_version=int(_REPLAY_INFO_SCHEMA_VERSION),
+        status="ok",
+        replay=str(replay_path),
+        replay_sha256=str(replay_sha256),
+        summary=summary_payload,
+        timeline=timeline_payload,
+    )
+    payload_json = msgspec.json.encode(payload)
+
+    if json_out is not None:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_bytes(payload_json)
+
+    if str(output_format) == "json":
+        typer.echo(payload_json.decode("utf-8"))
+        return
+
+    typer.echo(
+        "ok: "
+        f"replay={replay_path} "
+        f"mode={_replay_mode_label(int(summary_payload.game_mode_id))} "
+        f"ticks={int(summary_payload.ticks_simulated)} "
+        f"elapsed_ms={int(summary_payload.elapsed_ms)} "
+        f"events={int(summary_payload.event_count)}",
+    )
+    for event in timeline_payload:
+        player_tag = f" [p{int(event.player_index)}]" if event.player_index is not None else ""
+        typer.echo(
+            f"t={float(event.elapsed_s):.3f} tick={int(event.tick_index)}{player_tag} "
+            f"{event.kind} {event.detail}",
+        )
+
+    tail = f"events={int(summary_payload.event_count)}"
+    if json_out is not None:
+        tail += f" json_report={json_out}"
+    typer.echo(tail)
 
 
 @replay_app.command("benchmark")
