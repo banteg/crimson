@@ -356,9 +356,6 @@ class GroundRenderer:
             )
 
         inv_scale = 1.0 / self._normalized_texture_scale()
-        textures = self._unique_textures([decal.texture for decal in decals])
-        self._set_texture_filters(textures, point=True)
-
         rl.begin_texture_mode(self.render_target)
         with _blend_custom_separate(
             rd.RL_SRC_ALPHA,
@@ -393,7 +390,6 @@ class GroundRenderer:
                 )
         rl.end_texture_mode()
 
-        self._set_texture_filters(textures, point=False)
         self._render_target_ready = True
         return True
 
@@ -429,8 +425,6 @@ class GroundRenderer:
         scale = self._normalized_texture_scale()
         inv_scale = 1.0 / scale
         offset = 2.0 * scale / float(self.width)
-        self._set_texture_filters((bodyset_texture,), point=True)
-
         rl.begin_texture_mode(self.render_target)
         with _maybe_alpha_test(self.alpha_test):
             if shadow:
@@ -442,7 +436,6 @@ class GroundRenderer:
             self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
         rl.end_texture_mode()
 
-        self._set_texture_filters((bodyset_texture,), point=False)
         self._render_target_ready = True
         return True
 
@@ -791,18 +784,6 @@ class GroundRenderer:
             (self.texture, self.overlay, self.overlay_detail),
             point=point,
         )
-
-    @staticmethod
-    def _unique_textures(textures: Iterable[rl.Texture]) -> list[rl.Texture]:
-        unique: list[rl.Texture] = []
-        seen: set[int] = set()
-        for texture in textures:
-            texture_id = texture.id
-            if texture_id <= 0 or texture_id in seen:
-                continue
-            seen.add(texture_id)
-            unique.append(texture)
-        return unique
 
     @staticmethod
     def _set_texture_filters(textures: Iterable[rl.Texture | None], *, point: bool) -> None:
