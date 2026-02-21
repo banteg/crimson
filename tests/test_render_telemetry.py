@@ -1,37 +1,14 @@
 from __future__ import annotations
 
-import os
-from pathlib import Path
 from typing import Any, cast
-
-import pytest
 
 from crimson.render.world.profile_hooks import profile_pass
 from crimson.sim.driver.render_telemetry import RenderTelemetrySession
 from crimson.sim.driver.replay_benchmark import (
     BenchmarkAggregate,
-    ReplayBenchmarkError,
     ReplayRenderTelemetryFrame,
-    _RenderOnceResult,
-    _run_with_pyspy,
     _summarize_render_telemetry,
 )
-from crimson.sim.driver.setup import RunResult
-
-
-def _dummy_run_result() -> RunResult:
-    return RunResult(
-        game_mode_id=9,
-        tick_rate=60,
-        ticks=1,
-        elapsed_ms=16,
-        score_xp=0,
-        creature_kill_count=0,
-        most_used_weapon_id=1,
-        shots_fired=0,
-        shots_hit=0,
-        rng_state=1,
-    )
 
 
 def test_render_telemetry_session_counts_calls_and_restores(monkeypatch) -> None:
@@ -110,90 +87,3 @@ def test_render_telemetry_summary_orders_top_ticks() -> None:
     assert summary.top_draw_ms_ticks[0].tick_index == 2
     assert summary.top_frame_ms_ticks[0].tick_index == 2
     assert summary.top_draw_calls_ticks[0].tick_index == 2
-
-
-def test_run_with_pyspy_invokes_recorder_and_writes_output(monkeypatch, tmp_path: Path) -> None:
-    flame_out = tmp_path / "flame.speedscope.json"
-    seen_cmd: list[str] = []
-
-    class _FakeProc:
-        def __init__(self, cmd: list[str]) -> None:
-            self._cmd = cmd
-            self.returncode: int | None = None
-
-        def poll(self) -> int | None:
-            return self.returncode
-
-        def send_signal(self, _sig: int) -> None:
-            flame_out.write_text("{}", encoding="utf-8")
-            self.returncode = 0
-
-        def terminate(self) -> None:
-            self.send_signal(0)
-
-        def communicate(self, timeout: float | None = None) -> tuple[str, str]:
-            _ = timeout
-            if self.returncode is None:
-                self.returncode = 0
-            return "", ""
-
-    def _fake_popen(cmd: list[str], **_kwargs):
-        seen_cmd[:] = cmd
-        return _FakeProc(cmd)
-
-    monkeypatch.setattr("crimson.sim.driver.replay_benchmark.subprocess.Popen", _fake_popen)
-
-    def _run() -> _RenderOnceResult:
-        return _RenderOnceResult(run_result=_dummy_run_result())
-
-    result = _run_with_pyspy(
-        run_fn=_run,
-        flame_out=flame_out,
-        flame_format="speedscope",
-        pyspy_rate=77,
-        pyspy_bin=Path("/tmp/py-spy"),
-    )
-
-    assert result.run_result.ticks == 1
-    assert flame_out.is_file()
-    assert seen_cmd[:2] == ["/tmp/py-spy", "record"]
-    assert "--pid" in seen_cmd
-    assert str(os.getpid()) in seen_cmd
-    assert "--rate" in seen_cmd
-    assert "77" in seen_cmd
-
-
-def test_run_with_pyspy_raises_when_output_missing(monkeypatch, tmp_path: Path) -> None:
-    flame_out = tmp_path / "missing.speedscope.json"
-
-    class _FakeProc:
-        returncode = None
-
-        def poll(self) -> int | None:
-            return self.returncode
-
-        def send_signal(self, _sig: int) -> None:
-            self.returncode = 0
-
-        def terminate(self) -> None:
-            self.returncode = 0
-
-        def communicate(self, timeout: float | None = None) -> tuple[str, str]:
-            _ = timeout
-            if self.returncode is None:
-                self.returncode = 0
-            return "", ""
-
-    monkeypatch.setattr(
-        "crimson.sim.driver.replay_benchmark.subprocess.Popen",
-        lambda *args, **kwargs: _FakeProc(),
-    )
-
-    with pytest.raises(ReplayBenchmarkError, match="did not produce flame artifact"):
-        _run_with_pyspy(
-            run_fn=lambda: _RenderOnceResult(run_result=_dummy_run_result()),
-            flame_out=flame_out,
-            flame_format="speedscope",
-            pyspy_rate=100,
-            pyspy_bin=None,
-        )

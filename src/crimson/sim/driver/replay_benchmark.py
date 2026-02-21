@@ -3,11 +3,8 @@ from __future__ import annotations
 import cProfile
 import json
 import math
-import os
 import pstats
-import signal
 import statistics
-import subprocess
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -27,7 +24,6 @@ from .setup import RunResult, player0_most_used_weapon_id, player0_shots
 
 ProfileSortKey = Literal["cumtime", "tottime"]
 HotspotSource = Literal["project", "all"]
-FlameFormat = Literal["speedscope", "flamegraph"]
 
 
 class ReplayBenchmarkError(ValueError):
@@ -110,8 +106,6 @@ class ReplayRenderTelemetryArtifacts:
     draw_calls_svg: str | None = None
     pass_timing_stacked_svg: str | None = None
     report_md: str | None = None
-    flamegraph_path: str | None = None
-    flame_format: FlameFormat | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -160,10 +154,6 @@ def run_replay_render_benchmark(
     render_telemetry: bool = False,
     render_telemetry_out: Path | None = None,
     render_charts_out_dir: Path | None = None,
-    flame_out: Path | None = None,
-    flame_format: FlameFormat = "speedscope",
-    pyspy_rate: int = 100,
-    pyspy_bin: Path | None = None,
 ) -> ReplayBenchmarkResult:
     from grim.config import ensure_crimson_cfg
     from grim.console import create_console
@@ -171,7 +161,7 @@ def run_replay_render_benchmark(
 
     from ...assets_fetch import download_missing_paqs
 
-    _validate_args(runs=int(runs), warmup_runs=int(warmup_runs), top=int(top), pyspy_rate=int(pyspy_rate))
+    _validate_args(runs=int(runs), warmup_runs=int(warmup_runs), top=int(top))
 
     baseline_result = run_replay(
         replay,
@@ -285,8 +275,7 @@ def run_replay_render_benchmark(
         telemetry_requested = bool(
             render_telemetry
             or render_telemetry_out is not None
-            or render_charts_out_dir is not None
-            or flame_out is not None,
+            or render_charts_out_dir is not None,
         )
         telemetry_result: ReplayRenderTelemetryResult | None = None
         if telemetry_requested:
@@ -305,20 +294,7 @@ def run_replay_render_benchmark(
                         telemetry_session=telemetry_session,
                     )
 
-            def _telemetry_run() -> _RenderOnceResult:
-                return _run_with_telemetry()
-
-            if flame_out is not None:
-                def _telemetry_run() -> _RenderOnceResult:
-                    return _run_with_pyspy(
-                        run_fn=_run_with_telemetry,
-                        flame_out=Path(flame_out),
-                        flame_format=flame_format,
-                        pyspy_rate=int(pyspy_rate),
-                        pyspy_bin=pyspy_bin,
-                    )
-
-            collected = _telemetry_run()
+            collected = _run_with_telemetry()
             _assert_consistent_run_result(
                 baseline_result,
                 collected.run_result,
@@ -360,8 +336,6 @@ def run_replay_render_benchmark(
                     else None
                 ),
                 report_md=(str(chart_paths.get("report_md")) if chart_paths.get("report_md") else None),
-                flamegraph_path=(str(Path(flame_out)) if flame_out is not None else None),
-                flame_format=(flame_format if flame_out is not None else None),
             )
             telemetry_result = ReplayRenderTelemetryResult(
                 frames=frames,
@@ -400,7 +374,7 @@ def run_replay_benchmark(
     top: int = 20,
     profile_out: Path | None = None,
 ) -> ReplayBenchmarkResult:
-    _validate_args(runs=int(runs), warmup_runs=int(warmup_runs), top=int(top), pyspy_rate=1)
+    _validate_args(runs=int(runs), warmup_runs=int(warmup_runs), top=int(top))
 
     for _ in range(int(warmup_runs)):
         run_replay(
@@ -478,15 +452,13 @@ def run_replay_benchmark(
     )
 
 
-def _validate_args(*, runs: int, warmup_runs: int, top: int, pyspy_rate: int) -> None:
+def _validate_args(*, runs: int, warmup_runs: int, top: int) -> None:
     if int(runs) < 1:
         raise ReplayBenchmarkError("runs must be >= 1")
     if int(warmup_runs) < 0:
         raise ReplayBenchmarkError("warmup_runs must be >= 0")
     if int(top) < 1:
         raise ReplayBenchmarkError("top must be >= 1")
-    if int(pyspy_rate) < 1:
-        raise ReplayBenchmarkError("pyspy_rate must be >= 1")
 
 
 def _run_render_once(
@@ -743,83 +715,3 @@ def _summarize_render_telemetry(*, frames: tuple[ReplayRenderTelemetryFrame, ...
         top_frame_ms_ticks=_top_ticks(frames=frames, top_n=5, key_fn=lambda row: float(row.frame_ms)),
         top_draw_calls_ticks=_top_ticks(frames=frames, top_n=5, key_fn=lambda row: float(row.draw_calls_total)),
     )
-
-
-def _run_with_pyspy(
-    *,
-    run_fn: Any,
-    flame_out: Path,
-    flame_format: FlameFormat,
-    pyspy_rate: int,
-    pyspy_bin: Path | None,
-) -> _RenderOnceResult:
-    out_path = Path(flame_out)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    bin_path = str(pyspy_bin) if pyspy_bin is not None else "py-spy"
-    cmd = [
-        str(bin_path),
-        "record",
-        "--pid",
-        str(os.getpid()),
-        "--rate",
-        str(int(pyspy_rate)),
-        "--format",
-        str(flame_format),
-        "--output",
-        str(out_path),
-        "--nonblocking",
-    ]
-
-    try:
-        proc = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-    except FileNotFoundError as exc:
-        raise ReplayBenchmarkError(
-            "py-spy executable not found; install py-spy or pass --pyspy-bin <path>",
-        ) from exc
-    except PermissionError as exc:
-        raise ReplayBenchmarkError(
-            "py-spy could not start due to permission error; check ptrace/system profiler permissions",
-        ) from exc
-    except OSError as exc:
-        raise ReplayBenchmarkError(f"py-spy failed to start: {exc}") from exc
-
-    time.sleep(0.05)
-    run_exc: BaseException | None = None
-    result: _RenderOnceResult | None = None
-    try:
-        result = cast(_RenderOnceResult, run_fn())
-    except BaseException as exc:  # pragma: no cover
-        run_exc = exc
-    finally:
-        if proc.poll() is None:
-            try:
-                proc.send_signal(signal.SIGINT)
-            except OSError:
-                proc.terminate()
-        try:
-            _stdout, stderr = proc.communicate(timeout=15.0)
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            _stdout, stderr = proc.communicate(timeout=5.0)
-
-    if run_exc is not None:
-        raise run_exc
-
-    if proc.returncode not in (0, 130):
-        raise ReplayBenchmarkError(
-            "py-spy recording failed "
-            f"(exit={proc.returncode}); stderr={stderr.strip()!r}. "
-            "Try lower --pyspy-rate or verify profiler permissions.",
-        )
-    if not out_path.is_file() or out_path.stat().st_size <= 0:
-        raise ReplayBenchmarkError(
-            f"py-spy did not produce flame artifact at {out_path}; stderr={stderr.strip()!r}",
-        )
-
-    assert result is not None
-    return result

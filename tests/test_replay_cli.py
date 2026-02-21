@@ -713,50 +713,6 @@ def test_replay_benchmark_headless_rejects_render_telemetry_flag(tmp_path: Path)
     assert "--render-telemetry is supported only with --mode render" in result.output
 
 
-def test_replay_benchmark_headless_rejects_flame_out_flag(tmp_path: Path) -> None:
-    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
-    runner = CliRunner()
-
-    result = runner.invoke(
-        app,
-        [
-            "replay",
-            "benchmark",
-            str(replay_path),
-            "--mode",
-            "headless",
-            "--flame-out",
-            str(tmp_path / "flame.json"),
-        ],
-    )
-
-    assert result.exit_code == 1
-    assert "--flame-out is supported only with --mode render" in result.output
-
-
-def test_replay_benchmark_rejects_invalid_flame_format(tmp_path: Path) -> None:
-    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
-    runner = CliRunner()
-
-    result = runner.invoke(
-        app,
-        [
-            "replay",
-            "benchmark",
-            str(replay_path),
-            "--mode",
-            "render",
-            "--flame-format",
-            "not-a-format",
-        ],
-    )
-
-    assert result.exit_code != 0
-    assert "Invalid value for '--flame-format'" in result.output
-
-
 def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path: Path, mocker) -> None:
     import crimson.sim.driver.replay_benchmark as replay_benchmark_mod
 
@@ -805,8 +761,6 @@ def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path:
         draw_calls_svg=str(tmp_path / "charts" / "draw_calls.svg"),
         pass_timing_stacked_svg=str(tmp_path / "charts" / "pass_timing_stacked.svg"),
         report_md=str(tmp_path / "charts" / "report.md"),
-        flamegraph_path=str(tmp_path / "flame.speedscope.json"),
-        flame_format="speedscope",
     )
     run_replay_render_benchmark = mocker.patch.object(
         replay_benchmark_mod,
@@ -848,14 +802,6 @@ def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path:
             str(tmp_path / "telemetry.json"),
             "--render-charts-out-dir",
             str(tmp_path / "charts"),
-            "--flame-out",
-            str(tmp_path / "flame.speedscope.json"),
-            "--flame-format",
-            "speedscope",
-            "--pyspy-rate",
-            "77",
-            "--pyspy-bin",
-            str(tmp_path / "py-spy"),
         ],
     )
 
@@ -864,17 +810,12 @@ def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path:
     assert payload["schema_version"] == 2
     assert payload["render_telemetry"] is not None
     assert payload["render_telemetry"]["summary"]["top_draw_ms_ticks"][0]["tick_index"] == 1
-    assert payload["render_telemetry"]["artifacts"]["flamegraph_path"].endswith("flame.speedscope.json")
 
     run_replay_render_benchmark.assert_called_once()
     kwargs = run_replay_render_benchmark.call_args.kwargs
     assert kwargs["render_telemetry"] is True
     assert kwargs["render_telemetry_out"] == (tmp_path / "telemetry.json")
     assert kwargs["render_charts_out_dir"] == (tmp_path / "charts")
-    assert kwargs["flame_out"] == (tmp_path / "flame.speedscope.json")
-    assert kwargs["flame_format"] == "speedscope"
-    assert kwargs["pyspy_rate"] == 77
-    assert kwargs["pyspy_bin"] == (tmp_path / "py-spy")
 
 
 def test_replay_render_uses_render_video_runner(tmp_path: Path, mocker) -> None:

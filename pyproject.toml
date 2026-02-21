@@ -40,7 +40,6 @@ module-name = ["crimson", "grim"]
 dev = [
     "import-linter>=2.9",
     "mkdocstrings>=1.0.3",
-    "py-spy>=0.4.1",
     "pylint>=4.0.4",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",

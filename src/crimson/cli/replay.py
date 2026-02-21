@@ -308,10 +308,6 @@ class _ReplayBenchmarkSettingsPayload(msgspec.Struct, forbid_unknown_fields=True
     render_telemetry: bool
     render_telemetry_out: str | None
     render_charts_out_dir: str | None
-    flame_out: str | None
-    flame_format: str
-    pyspy_rate: int
-    pyspy_bin: str | None
 
 
 class _ReplayBenchmarkSamplePayload(msgspec.Struct, forbid_unknown_fields=True):
@@ -364,8 +360,6 @@ class _ReplayRenderTelemetryArtifactsPayload(msgspec.Struct, forbid_unknown_fiel
     draw_calls_svg: str | None
     pass_timing_stacked_svg: str | None
     report_md: str | None
-    flamegraph_path: str | None
-    flame_format: str | None
 
 
 class _ReplayRenderTelemetryPayload(msgspec.Struct, forbid_unknown_fields=True):
@@ -850,27 +844,6 @@ def cmd_replay_benchmark(
         "--render-charts-out-dir",
         help="optional output directory for render telemetry SVG charts (render mode only)",
     ),
-    flame_out: Path | None = typer.Option(
-        None,
-        "--flame-out",
-        help="optional py-spy flame artifact output path (render mode only)",
-    ),
-    flame_format: Literal["speedscope", "flamegraph"] = typer.Option(
-        "speedscope",
-        "--flame-format",
-        help="py-spy flame output format",
-    ),
-    pyspy_rate: int = typer.Option(
-        100,
-        "--pyspy-rate",
-        min=1,
-        help="py-spy sampling rate in Hz",
-    ),
-    pyspy_bin: Path | None = typer.Option(
-        None,
-        "--pyspy-bin",
-        help="optional py-spy executable path",
-    ),
     output_format: Literal["human", "json"] = typer.Option(
         "human",
         "--format",
@@ -919,9 +892,6 @@ def cmd_replay_benchmark(
         if render_charts_out_dir is not None:
             typer.echo("replay benchmark failed: --render-charts-out-dir is supported only with --mode render", err=True)
             raise typer.Exit(code=1)
-        if flame_out is not None:
-            typer.echo("replay benchmark failed: --flame-out is supported only with --mode render", err=True)
-            raise typer.Exit(code=1)
 
     try:
         replay = load_replay(replay_bytes)
@@ -942,10 +912,6 @@ def cmd_replay_benchmark(
                 render_telemetry=bool(render_telemetry),
                 render_telemetry_out=render_telemetry_out,
                 render_charts_out_dir=render_charts_out_dir,
-                flame_out=flame_out,
-                flame_format=flame_format,
-                pyspy_rate=int(pyspy_rate),
-                pyspy_bin=pyspy_bin,
             )
         else:
             benchmark = run_replay_benchmark(
@@ -999,8 +965,6 @@ def cmd_replay_benchmark(
                     str(artifacts.pass_timing_stacked_svg) if artifacts.pass_timing_stacked_svg else None
                 ),
                 report_md=(str(artifacts.report_md) if artifacts.report_md else None),
-                flamegraph_path=(str(artifacts.flamegraph_path) if artifacts.flamegraph_path else None),
-                flame_format=(str(artifacts.flame_format) if artifacts.flame_format else None),
             )
         render_telemetry_payload = _ReplayRenderTelemetryPayload(
             summary=_ReplayRenderTelemetrySummaryPayload(
@@ -1042,10 +1006,6 @@ def cmd_replay_benchmark(
             render_telemetry=bool(render_telemetry),
             render_telemetry_out=(str(render_telemetry_out) if render_telemetry_out is not None else None),
             render_charts_out_dir=(str(render_charts_out_dir) if render_charts_out_dir is not None else None),
-            flame_out=(str(flame_out) if flame_out is not None else None),
-            flame_format=str(flame_format),
-            pyspy_rate=int(pyspy_rate),
-            pyspy_bin=(str(pyspy_bin) if pyspy_bin is not None else None),
         ),
         run_result=_run_result_payload(benchmark.run_result),
         benchmark=_ReplayBenchmarkSummaryPayload(
@@ -1123,8 +1083,6 @@ def cmd_replay_benchmark(
                 typer.echo(f"  pass_timing_stacked_svg={artifacts.pass_timing_stacked_svg}")
             if artifacts.report_md:
                 typer.echo(f"  report_md={artifacts.report_md}")
-            if artifacts.flamegraph_path:
-                typer.echo(f"  flamegraph={artifacts.flamegraph_path} format={artifacts.flame_format}")
     if benchmark.profile is None:
         return
     typer.echo(

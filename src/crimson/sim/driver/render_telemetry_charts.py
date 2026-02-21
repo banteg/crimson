@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import importlib
 import json
 import math
 from collections.abc import Sequence
@@ -305,7 +306,7 @@ def _build_binned_pass_rows(
 
 def _load_altair() -> Any:
     try:
-        import altair as alt
+        alt = importlib.import_module("altair")
     except ModuleNotFoundError as exc:  # pragma: no cover
         raise RuntimeError(
             "render telemetry chart generation requires optional dependency group `charts`; "
