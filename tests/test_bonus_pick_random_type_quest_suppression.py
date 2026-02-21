@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.bonuses import BonusId
 from crimson.bonuses.selection import bonus_pick_random_type
 from crimson.game_modes import GameMode
@@ -21,59 +23,36 @@ class _SeqRng:
         return value
 
 
-def test_bonus_pick_random_type_quest_2_10_suppresses_nuke() -> None:
-    # roll=35 => Nuke; roll=95 => Freeze
-    state = GameplayState(rng=_SeqRng([34, 94]))  # type: ignore[arg-type]
+@pytest.mark.parametrize(
+    ("rng_values", "hardcore", "quest_stage_major", "quest_stage_minor", "expected_bonus_id"),
+    [
+        ([34, 94], False, 2, 10, BonusId.FREEZE),
+        ([34, 94, 0], True, 2, 10, BonusId.POINTS),
+        ([34, 94, 0], False, 4, 10, BonusId.POINTS),
+        ([34, 94], False, 5, 10, BonusId.FREEZE),
+        ([34, 94], True, 3, 10, BonusId.FREEZE),
+    ],
+    ids=[
+        "quest-2-10-suppresses-nuke",
+        "hardcore-quest-2-10-suppresses-nuke-and-freeze",
+        "quest-4-10-suppresses-nuke-and-freeze",
+        "quest-5-10-suppresses-nuke",
+        "hardcore-quest-3-10-suppresses-nuke",
+    ],
+)
+def test_bonus_pick_random_type_quest_suppression(
+    rng_values: list[int],
+    hardcore: bool,
+    quest_stage_major: int,
+    quest_stage_minor: int,
+    expected_bonus_id: BonusId,
+) -> None:
+    state = GameplayState(rng=_SeqRng(rng_values))  # type: ignore[arg-type]
     state.game_mode = int(GameMode.QUESTS)
-    state.quest_stage_major = 2
-    state.quest_stage_minor = 10
+    state.hardcore = hardcore
+    state.quest_stage_major = quest_stage_major
+    state.quest_stage_minor = quest_stage_minor
     players = [PlayerState(index=0, pos=Vec2())]
 
     bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)
-    assert bonus_id == int(BonusId.FREEZE)
-
-
-def test_bonus_pick_random_type_hardcore_quest_2_10_suppresses_nuke_and_freeze() -> None:
-    state = GameplayState(rng=_SeqRng([34, 94, 0]))  # type: ignore[arg-type]
-    state.game_mode = int(GameMode.QUESTS)
-    state.hardcore = True
-    state.quest_stage_major = 2
-    state.quest_stage_minor = 10
-    players = [PlayerState(index=0, pos=Vec2())]
-
-    bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)
-    assert bonus_id == int(BonusId.POINTS)
-
-
-def test_bonus_pick_random_type_quest_4_10_suppresses_nuke_and_freeze() -> None:
-    state = GameplayState(rng=_SeqRng([34, 94, 0]))  # type: ignore[arg-type]
-    state.game_mode = int(GameMode.QUESTS)
-    state.quest_stage_major = 4
-    state.quest_stage_minor = 10
-    players = [PlayerState(index=0, pos=Vec2())]
-
-    bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)
-    assert bonus_id == int(BonusId.POINTS)
-
-
-def test_bonus_pick_random_type_quest_5_10_suppresses_nuke() -> None:
-    state = GameplayState(rng=_SeqRng([34, 94]))  # type: ignore[arg-type]
-    state.game_mode = int(GameMode.QUESTS)
-    state.quest_stage_major = 5
-    state.quest_stage_minor = 10
-    players = [PlayerState(index=0, pos=Vec2())]
-
-    bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)
-    assert bonus_id == int(BonusId.FREEZE)
-
-
-def test_bonus_pick_random_type_hardcore_quest_3_10_suppresses_nuke() -> None:
-    state = GameplayState(rng=_SeqRng([34, 94]))  # type: ignore[arg-type]
-    state.game_mode = int(GameMode.QUESTS)
-    state.hardcore = True
-    state.quest_stage_major = 3
-    state.quest_stage_minor = 10
-    players = [PlayerState(index=0, pos=Vec2())]
-
-    bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)
-    assert bonus_id == int(BonusId.FREEZE)
+    assert bonus_id == int(expected_bonus_id)

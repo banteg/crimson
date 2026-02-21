@@ -1,67 +1,41 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.creatures.spawn import SpawnSlotInit, tick_spawn_slot
 from tests.helpers import assert_float_close
 
 
-def test_tick_spawn_slot_no_trigger() -> None:
+@pytest.mark.parametrize(
+    ("timer", "count", "dt", "expected_spawn", "expected_timer", "expected_count"),
+    [
+        (1.0, 0, 0.3, None, 0.7, 0),
+        (0.1, 0, 0.3, 0x41, 0.5, 1),
+        (0.1, 10, 0.3, None, 0.5, 10),
+        (0.1, 0, 2.0, 0x41, -1.2, 1),
+    ],
+    ids=["no-trigger", "triggers-and-increments", "resets-at-limit", "does-not-loop-large-dt"],
+)
+def test_tick_spawn_slot_behavior(
+    timer: float,
+    count: int,
+    dt: float,
+    expected_spawn: int | None,
+    expected_timer: float,
+    expected_count: int,
+) -> None:
     slot = SpawnSlotInit(
         owner_creature=0,
-        timer=1.0,
-        count=0,
+        timer=timer,
+        count=count,
         limit=10,
         interval=0.7,
         child_template_id=0x41,
     )
 
-    assert tick_spawn_slot(slot, 0.3) is None
-    assert_float_close(slot.timer, 0.7)
-    assert slot.count == 0
-
-
-def test_tick_spawn_slot_triggers_and_increments_count() -> None:
-    slot = SpawnSlotInit(
-        owner_creature=0,
-        timer=0.1,
-        count=0,
-        limit=10,
-        interval=0.7,
-        child_template_id=0x41,
-    )
-
-    assert tick_spawn_slot(slot, 0.3) == 0x41
-    assert_float_close(slot.timer, 0.5)
-    assert slot.count == 1
-
-
-def test_tick_spawn_slot_resets_timer_even_when_at_limit() -> None:
-    slot = SpawnSlotInit(
-        owner_creature=0,
-        timer=0.1,
-        count=10,
-        limit=10,
-        interval=0.7,
-        child_template_id=0x41,
-    )
-
-    assert tick_spawn_slot(slot, 0.3) is None
-    assert_float_close(slot.timer, 0.5)
-    assert slot.count == 10
-
-
-def test_tick_spawn_slot_does_not_loop_when_dt_is_large() -> None:
-    slot = SpawnSlotInit(
-        owner_creature=0,
-        timer=0.1,
-        count=0,
-        limit=10,
-        interval=0.7,
-        child_template_id=0x41,
-    )
-
-    assert tick_spawn_slot(slot, 2.0) == 0x41
-    assert_float_close(slot.timer, -1.2)
-    assert slot.count == 1
+    assert tick_spawn_slot(slot, dt) == expected_spawn
+    assert_float_close(slot.timer, expected_timer)
+    assert slot.count == expected_count
 
 
 def test_tick_spawn_slot_uses_float32_cadence_at_boundary() -> None:

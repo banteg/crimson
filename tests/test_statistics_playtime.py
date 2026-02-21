@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.frontend.panels.stats import _format_playtime_text
 from crimson.game.loop_view import GameLoopView
 
@@ -24,34 +26,32 @@ def test_format_playtime_text_preserve_bugs_keeps_native_plural_form() -> None:
     )
 
 
-def test_tick_statistics_playtime_accumulates_for_non_demo_gameplay(make_game_state) -> None:
-    state = make_game_state(demo_enabled=False)
+@pytest.mark.parametrize(
+    ("demo_enabled", "front_view_key", "dt", "start_value", "expected_value"),
+    [
+        (False, "start_survival", 0.0169, 10, 26),
+        (False, "open_statistics", 0.5, 123, 123),
+        (True, "start_survival", 0.5, 123, 123),
+    ],
+    ids=[
+        "accumulates-for-non-demo-gameplay",
+        "skips-non-gameplay-views",
+        "skips-demo-builds",
+    ],
+)
+def test_tick_statistics_playtime_behavior(
+    make_game_state,
+    demo_enabled: bool,
+    front_view_key: str,
+    dt: float,
+    start_value: int,
+    expected_value: int,
+) -> None:
+    state = make_game_state(demo_enabled=demo_enabled)
     loop = GameLoopView(state)
-    loop._front_active = loop._front_views["start_survival"]
-    state.status.game_sequence_id = 10
+    loop._front_active = loop._front_views[front_view_key]
+    state.status.game_sequence_id = start_value
 
-    loop._tick_statistics_playtime(0.0169)
+    loop._tick_statistics_playtime(dt)
 
-    assert state.status.game_sequence_id == 26
-
-
-def test_tick_statistics_playtime_skips_non_gameplay_views(make_game_state) -> None:
-    state = make_game_state(demo_enabled=False)
-    loop = GameLoopView(state)
-    loop._front_active = loop._front_views["open_statistics"]
-    state.status.game_sequence_id = 123
-
-    loop._tick_statistics_playtime(0.5)
-
-    assert state.status.game_sequence_id == 123
-
-
-def test_tick_statistics_playtime_skips_demo_builds(make_game_state) -> None:
-    state = make_game_state(demo_enabled=True)
-    loop = GameLoopView(state)
-    loop._front_active = loop._front_views["start_survival"]
-    state.status.game_sequence_id = 123
-
-    loop._tick_statistics_playtime(0.5)
-
-    assert state.status.game_sequence_id == 123
+    assert state.status.game_sequence_id == expected_value
