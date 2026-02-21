@@ -127,6 +127,7 @@ class GameplayState:
     _weapon_available_unlock_index_full: int = -1
     friendly_fire_enabled: bool = False
     bonus_spawn_guard: bool = False
+    player_alt_weapon_swap_cooldown_ms: int = 0
     bonus_hud: BonusHudState = field(default_factory=BonusHudState)
     bonus_pool: BonusPool = field(default_factory=BonusPool)
     deferred_freeze_corpse_fx: list[DeferredFreezeCorpseFx] = field(default_factory=list)
@@ -937,17 +938,33 @@ def player_update(
         player.reload_active = False
 
     swapped_alt_weapon = False
-    if input_state.reload_pressed and has_alt_weapon_perk:
-        if _player_swap_alt_weapon(player):
-            swapped_alt_weapon = True
-            weapon = _weapon_entry(player.weapon_id)
-            if weapon is not None and weapon.reload_sound is not None:
-                from .weapon_sfx import resolve_weapon_sfx_ref
+    reload_key_active = bool(input_state.reload_pressed)
+    if has_alt_weapon_perk:
+        cooldown_ms = int(state.player_alt_weapon_swap_cooldown_ms)
+        dt_ms = int(round(float(dt) * 1000.0)) if float(dt) > 0.0 else 0
+        if cooldown_ms < 1:
+            cooldown_ms = 0
+        else:
+            cooldown_ms -= dt_ms
 
-                key = resolve_weapon_sfx_ref(weapon.reload_sound)
-                if key is not None:
-                    state.sfx_queue.append(key)
-            player.shot_cooldown = float(player.shot_cooldown) + 0.1
+        if cooldown_ms < 1 and reload_key_active:
+            if _player_swap_alt_weapon(player):
+                swapped_alt_weapon = True
+                weapon = _weapon_entry(player.weapon_id)
+                if weapon is not None and weapon.reload_sound is not None:
+                    from .weapon_sfx import resolve_weapon_sfx_ref
+
+                    key = resolve_weapon_sfx_ref(weapon.reload_sound)
+                    if key is not None:
+                        state.sfx_queue.append(key)
+                player.shot_cooldown = float(player.shot_cooldown) + 0.1
+                state.player_alt_weapon_swap_cooldown_ms = 200
+            else:
+                state.player_alt_weapon_swap_cooldown_ms = 0
+        else:
+            state.player_alt_weapon_swap_cooldown_ms = max(0, int(cooldown_ms))
+            if not reload_key_active:
+                state.player_alt_weapon_swap_cooldown_ms = 0
 
     # Native computes the fire gate (`shot_cooldown <= 0 && reload_timer == 0`)
     # before alt-weapon swap mutates cooldown; preserve same-tick fire eligibility.
