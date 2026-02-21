@@ -813,12 +813,11 @@ class CreaturePool:
         spawned: list[int] = []
         sfx: list[str] = []
         self._update_tick = int(self._update_tick) + 1
-        single_player_dead_target: PlayerState | None = None
+        single_player_dead_target_pos: Vec2 | None = None
         if len(players) == 1:
-            single_player_dead_target = PlayerState(
-                index=1,
-                pos=Vec2(float(world_width) * (27.0 / 64.0), float(world_height) * (27.0 / 64.0)),
-                health=100.0,
+            single_player_dead_target_pos = Vec2(
+                float(world_width) * (27.0 / 64.0),
+                float(world_height) * (27.0 / 64.0),
             )
 
         evil_targets: set[int] = set()
@@ -991,9 +990,10 @@ class CreaturePool:
 
             target_player = self._resolve_target_player_index(creature, players)
             player = players[target_player]
-            if single_player_dead_target is not None and float(players[0].health) <= 0.0:
+            player_pos = player.pos
+            if single_player_dead_target_pos is not None and float(players[0].health) <= 0.0:
                 creature.target_player = 1
-                player = single_player_dead_target
+                player_pos = single_player_dead_target_pos
 
             frozen_by_evil_eyes = idx in evil_targets
             if frozen_by_evil_eyes:
@@ -1005,7 +1005,7 @@ class CreaturePool:
 
             ai = creature_ai_update_target(
                 creature,
-                player_pos=player.pos,
+                player_pos=player_pos,
                 creatures=self._entries,
                 dt=dt,
             )

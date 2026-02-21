@@ -389,6 +389,33 @@ def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
     assert_float_close(player1.health, 90.0)
 
 
+def test_single_player_dead_player_uses_dead_target_position() -> None:
+    state = GameplayState()
+    pool = CreaturePool()
+
+    dead_player = PlayerState(index=0, pos=Vec2(900.0, 900.0), health=0.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 50.0
+    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.flags = CreatureFlags(0)
+    creature.ai_mode = 0
+    creature.move_speed = 2.0
+    creature.size = 45.0
+    creature.contact_damage = 0.0
+    creature.target_player = 0
+    creature.pos = Vec2(500.0, 500.0)
+
+    start_pos = creature.pos
+    pool.update(1.0 / 60.0, state=state, players=[dead_player], rand=lambda: 0)
+
+    expected_dead_target = Vec2(1024.0 * (27.0 / 64.0), 1024.0 * (27.0 / 64.0))
+    assert creature.target_player == 1
+    assert Vec2.distance_sq(creature.target, expected_dead_target) < Vec2.distance_sq(creature.target, dead_player.pos)
+    assert creature.pos.y < start_pos.y
+
+
 def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
     state = GameplayState()
     pool = CreaturePool()
