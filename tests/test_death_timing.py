@@ -120,6 +120,70 @@ def test_detonation_followup_does_not_double_plan_death_sfx(mocker) -> None:
     assert events.sfx == ["death"]
 
 
+def test_projectile_lethal_hit_plans_death_sfx_before_particles_update(mocker) -> None:
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=True,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
+
+    creature = world.creatures.entries[0]
+    creature.active = True
+    creature.type_id = 2
+    creature.pos = Vec2(256.0, 256.0)
+    creature.flags = CreatureFlags(0)
+    creature.hp = 25.0
+    creature.max_hp = 25.0
+    creature.size = 50.0
+    creature.reward_value = 0.0
+    creature.hitbox_size = 16.0
+
+    death_planned = {"value": False}
+
+    def _fake_plan(
+        deaths: Sequence[CreatureDeath] | tuple[object, ...],
+        *,
+        rand: Callable[[], int],
+    ) -> list[str]:
+        _ = rand
+        death_planned["value"] = bool(deaths)
+        return ["death"] if deaths else []
+
+    plan_death_sfx = mocker.patch.object(world_state_mod, "plan_death_sfx_keys", side_effect=_fake_plan)
+
+    def _fake_projectile_update(*_args: object, options: ProjectileUpdateOptions, **_kwargs: object) -> list[ProjectileHit]:
+        apply_creature_damage = options.apply_creature_damage
+        assert apply_creature_damage is not None
+        apply_creature_damage(0, 1000.0, int(ProjectileTypeId.PISTOL), Vec2(), -1)
+        return []
+
+    def _fake_particles_update(*_args: object, **_kwargs: object) -> None:
+        assert death_planned["value"] is True
+
+    mocker.patch.object(world.state.projectiles, "update", side_effect=_fake_projectile_update)
+    mocker.patch.object(world.state.particles, "update", side_effect=_fake_particles_update)
+    events = world.step(
+        0.1,
+        inputs=None,
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        auto_pick_perks=False,
+        game_mode=int(GameMode.SURVIVAL),
+        perk_progression_enabled=False,
+    )
+
+    assert plan_death_sfx.call_count == 1
+    called_deaths = cast("Sequence[CreatureDeath]", plan_death_sfx.call_args.args[0])
+    assert [death.index for death in called_deaths] == [0]
+    assert events.sfx == ["death"]
+
+
 def test_plague_kill_death_event_skips_world_death_sfx_planning(mocker) -> None:
     world_size = 1024.0
     world = WorldState.build(

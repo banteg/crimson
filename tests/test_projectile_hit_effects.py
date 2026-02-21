@@ -140,3 +140,36 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
     assert_float_close(float(ring.half_width), 36.0)
 
     assert_float_close(float(creature.size), 32.5)
+
+
+def test_non_gauss_freeze_hit_spawns_single_freeze_shard(mocker) -> None:
+    pool = ProjectilePool(size=64)
+    creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0)
+    runtime_state = GameplayState()
+    runtime_state.bonuses.freeze = 1.0
+    spawn_freeze_shard = mocker.patch.object(
+        runtime_state.effects,
+        "spawn_freeze_shard",
+        wraps=runtime_state.effects.spawn_freeze_shard,
+    )
+
+    pool.spawn(
+        pos=Vec2(),
+        angle=0.0,
+        type_id=ProjectileTypeId.PISTOL,
+        owner_id=-100,
+        base_damage=10.0,
+    )
+
+    pool.update(
+        0.016,
+        [creature],
+        options=ProjectileUpdateOptions(
+            world_size=4096.0,
+            detail_preset=5,
+            rng=lambda: 0,
+            runtime_state=runtime_state,
+        ),
+    )
+
+    assert spawn_freeze_shard.call_count == 1
