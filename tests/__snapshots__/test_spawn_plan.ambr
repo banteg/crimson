@@ -1,5 +1,5 @@
 # serializer version: 1
-# name: test_spawn_plan_templates_snapshot[default_template_00]
+# name: test_spawn_plan_templates_snapshot[default_template_00][default_template_00]
   dict({
     'creatures': list([
       dict({
@@ -55,7 +55,7 @@
     'template_id': 0,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_01]
+# name: test_spawn_plan_templates_snapshot[default_template_01][default_template_01]
   dict({
     'creatures': list([
       dict({
@@ -103,7 +103,7 @@
     'template_id': 1,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_03]
+# name: test_spawn_plan_templates_snapshot[default_template_03][default_template_03]
   dict({
     'creatures': list([
       dict({
@@ -151,7 +151,7 @@
     'template_id': 3,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_04]
+# name: test_spawn_plan_templates_snapshot[default_template_04][default_template_04]
   dict({
     'creatures': list([
       dict({
@@ -199,7 +199,7 @@
     'template_id': 4,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_05]
+# name: test_spawn_plan_templates_snapshot[default_template_05][default_template_05]
   dict({
     'creatures': list([
       dict({
@@ -247,7 +247,7 @@
     'template_id': 5,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_06]
+# name: test_spawn_plan_templates_snapshot[default_template_06][default_template_06]
   dict({
     'creatures': list([
       dict({
@@ -295,7 +295,7 @@
     'template_id': 6,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_07]
+# name: test_spawn_plan_templates_snapshot[default_template_07][default_template_07]
   dict({
     'creatures': list([
       dict({
@@ -351,7 +351,7 @@
     'template_id': 7,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_08]
+# name: test_spawn_plan_templates_snapshot[default_template_08][default_template_08]
   dict({
     'creatures': list([
       dict({
@@ -407,7 +407,7 @@
     'template_id': 8,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_09]
+# name: test_spawn_plan_templates_snapshot[default_template_09][default_template_09]
   dict({
     'creatures': list([
       dict({
@@ -463,7 +463,7 @@
     'template_id': 9,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_0a]
+# name: test_spawn_plan_templates_snapshot[default_template_0a][default_template_0a]
   dict({
     'creatures': list([
       dict({
@@ -519,7 +519,7 @@
     'template_id': 10,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_0b]
+# name: test_spawn_plan_templates_snapshot[default_template_0b][default_template_0b]
   dict({
     'creatures': list([
       dict({
@@ -575,7 +575,7 @@
     'template_id': 11,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_0c]
+# name: test_spawn_plan_templates_snapshot[default_template_0c][default_template_0c]
   dict({
     'creatures': list([
       dict({
@@ -631,7 +631,7 @@
     'template_id': 12,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_0d]
+# name: test_spawn_plan_templates_snapshot[default_template_0d][default_template_0d]
   dict({
     'creatures': list([
       dict({
@@ -687,7 +687,7 @@
     'template_id': 13,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_0e]
+# name: test_spawn_plan_templates_snapshot[default_template_0e][default_template_0e]
   dict({
     'creatures': list([
       dict({
@@ -1607,7 +1607,7 @@
     'template_id': 14,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_0f]
+# name: test_spawn_plan_templates_snapshot[default_template_0f][default_template_0f]
   dict({
     'creatures': list([
       dict({
@@ -1655,7 +1655,7 @@
     'template_id': 15,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_10]
+# name: test_spawn_plan_templates_snapshot[default_template_10][default_template_10]
   dict({
     'creatures': list([
       dict({
@@ -1711,7 +1711,7 @@
     'template_id': 16,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_11]
+# name: test_spawn_plan_templates_snapshot[default_template_11][default_template_11]
   dict({
     'creatures': list([
       dict({
@@ -1903,7 +1903,7 @@
     'template_id': 17,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_12]
+# name: test_spawn_plan_templates_snapshot[default_template_12][default_template_12]
   dict({
     'creatures': list([
       dict({
@@ -2239,7 +2239,7 @@
     'template_id': 18,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_13]
+# name: test_spawn_plan_templates_snapshot[default_template_13][default_template_13]
   dict({
     'creatures': list([
       dict({
@@ -2617,7 +2617,7 @@
     'template_id': 19,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_14]
+# name: test_spawn_plan_templates_snapshot[default_template_14][default_template_14]
   dict({
     'creatures': list([
       dict({
@@ -5581,7 +5581,7 @@
     'template_id': 20,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_15]
+# name: test_spawn_plan_templates_snapshot[default_template_15][default_template_15]
   dict({
     'creatures': list([
       dict({
@@ -8545,7 +8545,7 @@
     'template_id': 21,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_16]
+# name: test_spawn_plan_templates_snapshot[default_template_16][default_template_16]
   dict({
     'creatures': list([
       dict({
@@ -11509,7 +11509,7 @@
     'template_id': 22,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_17]
+# name: test_spawn_plan_templates_snapshot[default_template_17][default_template_17]
   dict({
     'creatures': list([
       dict({
@@ -14473,7 +14473,7 @@
     'template_id': 23,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_18]
+# name: test_spawn_plan_templates_snapshot[default_template_18][default_template_18]
   dict({
     'creatures': list([
       dict({
@@ -17437,7 +17437,7 @@
     'template_id': 24,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_19]
+# name: test_spawn_plan_templates_snapshot[default_template_19][default_template_19]
   dict({
     'creatures': list([
       dict({
@@ -17665,7 +17665,7 @@
     'template_id': 25,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_1a]
+# name: test_spawn_plan_templates_snapshot[default_template_1a][default_template_1a]
   dict({
     'creatures': list([
       dict({
@@ -17713,7 +17713,7 @@
     'template_id': 26,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_1b]
+# name: test_spawn_plan_templates_snapshot[default_template_1b][default_template_1b]
   dict({
     'creatures': list([
       dict({
@@ -17761,7 +17761,7 @@
     'template_id': 27,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_1c]
+# name: test_spawn_plan_templates_snapshot[default_template_1c][default_template_1c]
   dict({
     'creatures': list([
       dict({
@@ -17809,7 +17809,7 @@
     'template_id': 28,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_1d]
+# name: test_spawn_plan_templates_snapshot[default_template_1d][default_template_1d]
   dict({
     'creatures': list([
       dict({
@@ -17857,7 +17857,7 @@
     'template_id': 29,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_1e]
+# name: test_spawn_plan_templates_snapshot[default_template_1e][default_template_1e]
   dict({
     'creatures': list([
       dict({
@@ -17905,7 +17905,7 @@
     'template_id': 30,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_1f]
+# name: test_spawn_plan_templates_snapshot[default_template_1f][default_template_1f]
   dict({
     'creatures': list([
       dict({
@@ -17953,7 +17953,7 @@
     'template_id': 31,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_20]
+# name: test_spawn_plan_templates_snapshot[default_template_20][default_template_20]
   dict({
     'creatures': list([
       dict({
@@ -18001,7 +18001,7 @@
     'template_id': 32,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_21]
+# name: test_spawn_plan_templates_snapshot[default_template_21][default_template_21]
   dict({
     'creatures': list([
       dict({
@@ -18049,7 +18049,7 @@
     'template_id': 33,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_22]
+# name: test_spawn_plan_templates_snapshot[default_template_22][default_template_22]
   dict({
     'creatures': list([
       dict({
@@ -18097,7 +18097,7 @@
     'template_id': 34,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_23]
+# name: test_spawn_plan_templates_snapshot[default_template_23][default_template_23]
   dict({
     'creatures': list([
       dict({
@@ -18145,7 +18145,7 @@
     'template_id': 35,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_24]
+# name: test_spawn_plan_templates_snapshot[default_template_24][default_template_24]
   dict({
     'creatures': list([
       dict({
@@ -18193,7 +18193,7 @@
     'template_id': 36,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_25]
+# name: test_spawn_plan_templates_snapshot[default_template_25][default_template_25]
   dict({
     'creatures': list([
       dict({
@@ -18241,7 +18241,7 @@
     'template_id': 37,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_26]
+# name: test_spawn_plan_templates_snapshot[default_template_26][default_template_26]
   dict({
     'creatures': list([
       dict({
@@ -18289,7 +18289,7 @@
     'template_id': 38,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_27]
+# name: test_spawn_plan_templates_snapshot[default_template_27][default_template_27]
   dict({
     'creatures': list([
       dict({
@@ -18337,7 +18337,7 @@
     'template_id': 39,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_28]
+# name: test_spawn_plan_templates_snapshot[default_template_28][default_template_28]
   dict({
     'creatures': list([
       dict({
@@ -18385,7 +18385,7 @@
     'template_id': 40,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_29]
+# name: test_spawn_plan_templates_snapshot[default_template_29][default_template_29]
   dict({
     'creatures': list([
       dict({
@@ -18433,7 +18433,7 @@
     'template_id': 41,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_2a]
+# name: test_spawn_plan_templates_snapshot[default_template_2a][default_template_2a]
   dict({
     'creatures': list([
       dict({
@@ -18481,7 +18481,7 @@
     'template_id': 42,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_2b]
+# name: test_spawn_plan_templates_snapshot[default_template_2b][default_template_2b]
   dict({
     'creatures': list([
       dict({
@@ -18529,7 +18529,7 @@
     'template_id': 43,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_2c]
+# name: test_spawn_plan_templates_snapshot[default_template_2c][default_template_2c]
   dict({
     'creatures': list([
       dict({
@@ -18577,7 +18577,7 @@
     'template_id': 44,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_2d]
+# name: test_spawn_plan_templates_snapshot[default_template_2d][default_template_2d]
   dict({
     'creatures': list([
       dict({
@@ -18625,7 +18625,7 @@
     'template_id': 45,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_2e]
+# name: test_spawn_plan_templates_snapshot[default_template_2e][default_template_2e]
   dict({
     'creatures': list([
       dict({
@@ -18673,7 +18673,7 @@
     'template_id': 46,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_2f]
+# name: test_spawn_plan_templates_snapshot[default_template_2f][default_template_2f]
   dict({
     'creatures': list([
       dict({
@@ -18721,7 +18721,7 @@
     'template_id': 47,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_30]
+# name: test_spawn_plan_templates_snapshot[default_template_30][default_template_30]
   dict({
     'creatures': list([
       dict({
@@ -18769,7 +18769,7 @@
     'template_id': 48,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_31]
+# name: test_spawn_plan_templates_snapshot[default_template_31][default_template_31]
   dict({
     'creatures': list([
       dict({
@@ -18817,7 +18817,7 @@
     'template_id': 49,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_32]
+# name: test_spawn_plan_templates_snapshot[default_template_32][default_template_32]
   dict({
     'creatures': list([
       dict({
@@ -18865,7 +18865,7 @@
     'template_id': 50,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_33]
+# name: test_spawn_plan_templates_snapshot[default_template_33][default_template_33]
   dict({
     'creatures': list([
       dict({
@@ -18913,7 +18913,7 @@
     'template_id': 51,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_34]
+# name: test_spawn_plan_templates_snapshot[default_template_34][default_template_34]
   dict({
     'creatures': list([
       dict({
@@ -18961,7 +18961,7 @@
     'template_id': 52,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_35]
+# name: test_spawn_plan_templates_snapshot[default_template_35][default_template_35]
   dict({
     'creatures': list([
       dict({
@@ -19009,7 +19009,7 @@
     'template_id': 53,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_36]
+# name: test_spawn_plan_templates_snapshot[default_template_36][default_template_36]
   dict({
     'creatures': list([
       dict({
@@ -19057,7 +19057,7 @@
     'template_id': 54,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_37]
+# name: test_spawn_plan_templates_snapshot[default_template_37][default_template_37]
   dict({
     'creatures': list([
       dict({
@@ -19105,7 +19105,7 @@
     'template_id': 55,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_38]
+# name: test_spawn_plan_templates_snapshot[default_template_38][default_template_38]
   dict({
     'creatures': list([
       dict({
@@ -19153,7 +19153,7 @@
     'template_id': 56,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_39]
+# name: test_spawn_plan_templates_snapshot[default_template_39][default_template_39]
   dict({
     'creatures': list([
       dict({
@@ -19201,7 +19201,7 @@
     'template_id': 57,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_3a]
+# name: test_spawn_plan_templates_snapshot[default_template_3a][default_template_3a]
   dict({
     'creatures': list([
       dict({
@@ -19249,7 +19249,7 @@
     'template_id': 58,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_3b]
+# name: test_spawn_plan_templates_snapshot[default_template_3b][default_template_3b]
   dict({
     'creatures': list([
       dict({
@@ -19297,7 +19297,7 @@
     'template_id': 59,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_3c]
+# name: test_spawn_plan_templates_snapshot[default_template_3c][default_template_3c]
   dict({
     'creatures': list([
       dict({
@@ -19345,7 +19345,7 @@
     'template_id': 60,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_3d]
+# name: test_spawn_plan_templates_snapshot[default_template_3d][default_template_3d]
   dict({
     'creatures': list([
       dict({
@@ -19393,7 +19393,7 @@
     'template_id': 61,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_3e]
+# name: test_spawn_plan_templates_snapshot[default_template_3e][default_template_3e]
   dict({
     'creatures': list([
       dict({
@@ -19441,7 +19441,7 @@
     'template_id': 62,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_3f]
+# name: test_spawn_plan_templates_snapshot[default_template_3f][default_template_3f]
   dict({
     'creatures': list([
       dict({
@@ -19489,7 +19489,7 @@
     'template_id': 63,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_40]
+# name: test_spawn_plan_templates_snapshot[default_template_40][default_template_40]
   dict({
     'creatures': list([
       dict({
@@ -19537,7 +19537,7 @@
     'template_id': 64,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_41]
+# name: test_spawn_plan_templates_snapshot[default_template_41][default_template_41]
   dict({
     'creatures': list([
       dict({
@@ -19585,7 +19585,7 @@
     'template_id': 65,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_42]
+# name: test_spawn_plan_templates_snapshot[default_template_42][default_template_42]
   dict({
     'creatures': list([
       dict({
@@ -19633,7 +19633,7 @@
     'template_id': 66,
   })
 # ---
-# name: test_spawn_plan_templates_snapshot[default_template_43]
+# name: test_spawn_plan_templates_snapshot[default_template_43][default_template_43]
   dict({
     'creatures': list([
       dict({
@@ -19681,7 +19681,7 @@
     'template_id': 67,
   })
 # ---
-# name: test_spawn_plan_variant_snapshot[alt_difficulty-21845--100.0-env_overrides2-template_ids2][alt_difficulty_template_03]
+# name: test_spawn_plan_variant_snapshot[alt_difficulty_template_03][alt_difficulty_template_03]
   dict({
     'creatures': list([
       dict({
@@ -19729,7 +19729,7 @@
     'template_id': 3,
   })
 # ---
-# name: test_spawn_plan_variant_snapshot[alt_difficulty-21845--100.0-env_overrides2-template_ids2][alt_difficulty_template_04]
+# name: test_spawn_plan_variant_snapshot[alt_difficulty_template_04][alt_difficulty_template_04]
   dict({
     'creatures': list([
       dict({
@@ -19777,7 +19777,7 @@
     'template_id': 4,
   })
 # ---
-# name: test_spawn_plan_variant_snapshot[alt_difficulty-21845--100.0-env_overrides2-template_ids2][alt_difficulty_template_05]
+# name: test_spawn_plan_variant_snapshot[alt_difficulty_template_05][alt_difficulty_template_05]
   dict({
     'creatures': list([
       dict({
@@ -19825,7 +19825,7 @@
     'template_id': 5,
   })
 # ---
-# name: test_spawn_plan_variant_snapshot[demo_disabled-48879-0.0-env_overrides0-template_ids0][demo_disabled_template_00]
+# name: test_spawn_plan_variant_snapshot[demo_disabled_template_00][demo_disabled_template_00]
   dict({
     'creatures': list([
       dict({
@@ -19886,7 +19886,7 @@
     'template_id': 0,
   })
 # ---
-# name: test_spawn_plan_variant_snapshot[demo_disabled-48879-0.0-env_overrides0-template_ids0][demo_disabled_template_03]
+# name: test_spawn_plan_variant_snapshot[demo_disabled_template_03][demo_disabled_template_03]
   dict({
     'creatures': list([
       dict({
@@ -19939,7 +19939,7 @@
     'template_id': 3,
   })
 # ---
-# name: test_spawn_plan_variant_snapshot[demo_disabled-48879-0.0-env_overrides0-template_ids0][demo_disabled_template_1f]
+# name: test_spawn_plan_variant_snapshot[demo_disabled_template_1f][demo_disabled_template_1f]
   dict({
     'creatures': list([
       dict({
@@ -19992,7 +19992,7 @@
     'template_id': 31,
   })
 # ---
-# name: test_spawn_plan_variant_snapshot[hardcore-4660-0.0-env_overrides1-template_ids1][hardcore_template_00]
+# name: test_spawn_plan_variant_snapshot[hardcore_template_00][hardcore_template_00]
   dict({
     'creatures': list([
       dict({
@@ -20048,7 +20048,7 @@
     'template_id': 0,
   })
 # ---
-# name: test_spawn_plan_variant_snapshot[hardcore-4660-0.0-env_overrides1-template_ids1][hardcore_template_15]
+# name: test_spawn_plan_variant_snapshot[hardcore_template_15][hardcore_template_15]
   dict({
     'creatures': list([
       dict({
@@ -23012,7 +23012,7 @@
     'template_id': 21,
   })
 # ---
-# name: test_spawn_plan_variant_snapshot[hardcore-4660-0.0-env_overrides1-template_ids1][hardcore_template_41]
+# name: test_spawn_plan_variant_snapshot[hardcore_template_41][hardcore_template_41]
   dict({
     'creatures': list([
       dict({

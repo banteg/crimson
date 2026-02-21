@@ -54,121 +54,77 @@ _DEFAULT_CAPTURE_PROJECTILE_SAMPLE = build_capture_projectile_sample()
 _DEFAULT_CAPTURE_SECONDARY_PROJECTILE_SAMPLE = build_capture_secondary_projectile_sample()
 _DEFAULT_CAPTURE_BONUS_SAMPLE = build_capture_bonus_sample()
 
+
+def _replace_capture_struct[T: msgspec.Struct](row: T, **kwargs: object) -> T:
+    return msgspec.structs.replace(row, **kwargs)
+
+
 def _snapshot_globals(**kwargs: object):
-    row = copy.deepcopy(_DEFAULT_CAPTURE_TICK.before.globals)
-    for key, override in kwargs.items():
-        setattr(row, key, override)
-    return row
+    return _replace_capture_struct(_DEFAULT_CAPTURE_TICK.before.globals, **kwargs)
 
 
 def _snapshot_status(**kwargs: object):
-    row = copy.deepcopy(_DEFAULT_CAPTURE_TICK.before.status)
-    for key, override in kwargs.items():
-        setattr(row, key, override)
-    return row
+    return _replace_capture_struct(_DEFAULT_CAPTURE_TICK.before.status, **kwargs)
 
 
 def _snapshot_input(**kwargs: object):
-    row = copy.deepcopy(_DEFAULT_CAPTURE_TICK.before.input)
-    for key, override in kwargs.items():
-        setattr(row, key, override)
-    return row
+    return _replace_capture_struct(_DEFAULT_CAPTURE_TICK.before.input, **kwargs)
 
 
 def _snapshot_input_bindings(**kwargs: object):
-    row = copy.deepcopy(_DEFAULT_CAPTURE_TICK.before.input_bindings)
-    for key, override in kwargs.items():
-        setattr(row, key, override)
-    return row
+    return _replace_capture_struct(_DEFAULT_CAPTURE_TICK.before.input_bindings, **kwargs)
 
 
 def _timing_diagnostics(**kwargs: object):
-    row = copy.deepcopy(_DEFAULT_CAPTURE_TICK.checkpoint.debug.timing)
-    for key, override in kwargs.items():
-        setattr(row, key, override)
-    return row
+    return _replace_capture_struct(_DEFAULT_CAPTURE_TICK.checkpoint.debug.timing, **kwargs)
 
 
 def _spawn_diagnostics(**kwargs: object):
-    row = copy.deepcopy(_DEFAULT_CAPTURE_TICK.checkpoint.debug.spawn)
-    for key, override in kwargs.items():
-        setattr(row, key, override)
-    return row
+    return _replace_capture_struct(_DEFAULT_CAPTURE_TICK.checkpoint.debug.spawn, **kwargs)
 
 
 def _rng_diagnostics(**kwargs: object):
-    row = copy.deepcopy(_DEFAULT_CAPTURE_TICK.checkpoint.debug.rng)
-    for key, override in kwargs.items():
-        setattr(row, key, override)
-    return row
+    return _replace_capture_struct(_DEFAULT_CAPTURE_TICK.checkpoint.debug.rng, **kwargs)
 
 
 def _player_fire_diagnostics(**kwargs: object):
-    row = copy.deepcopy(_DEFAULT_CAPTURE_TICK.checkpoint.debug.player_fire)
-    for key, override in kwargs.items():
-        setattr(row, key, override)
-    return row
+    row = _DEFAULT_CAPTURE_TICK.checkpoint.debug.player_fire
+    if row is None:
+        assert not kwargs
+        return None
+    return _replace_capture_struct(row, **kwargs)
 
 
 def _event_counts_dict(**kwargs: object):
-    row = copy.deepcopy(_DEFAULT_CAPTURE_TICK.event_counts)
-    for key, override in kwargs.items():
-        setattr(row, key, override)
-    return row
+    return _replace_capture_struct(_DEFAULT_CAPTURE_TICK.event_counts, **kwargs)
 
 
 def _rng_head_entry(**kwargs: object):
-    row = copy.deepcopy(_DEFAULT_CAPTURE_RNG_HEAD_ENTRY)
-    for key, override in kwargs.items():
-        setattr(row, key, override)
-    return row
+    return _replace_capture_struct(_DEFAULT_CAPTURE_RNG_HEAD_ENTRY, **kwargs)
 
 
 def _rng_summary_dict(**kwargs: object):
-    row = copy.deepcopy(_DEFAULT_CAPTURE_TICK.rng)
-    for key, override in kwargs.items():
-        setattr(row, key, override)
-    return row
+    return _replace_capture_struct(_DEFAULT_CAPTURE_TICK.rng, **kwargs)
 
 
 def _input_player_keys(player_index: int, **kwargs: object):
-    row = copy.deepcopy(_DEFAULT_CAPTURE_TICK.input_player_keys[0])
-    for key, override in kwargs.items():
-        setattr(row, key, override)
-    row.player_index = int(player_index)
-    return row
+    return _replace_capture_struct(_DEFAULT_CAPTURE_TICK.input_player_keys[0], player_index=int(player_index), **kwargs)
 
 
 def _sample_creature(index: int, **kwargs: object):
-    row = copy.deepcopy(_DEFAULT_CAPTURE_CREATURE_SAMPLE)
-    for key, override in kwargs.items():
-        setattr(row, key, override)
-    row.index = int(index)
-    return row
+    return _replace_capture_struct(_DEFAULT_CAPTURE_CREATURE_SAMPLE, index=int(index), **kwargs)
 
 
 def _sample_projectile(index: int, **kwargs: object):
-    row = copy.deepcopy(_DEFAULT_CAPTURE_PROJECTILE_SAMPLE)
-    for key, override in kwargs.items():
-        setattr(row, key, override)
-    row.index = int(index)
-    return row
+    return _replace_capture_struct(_DEFAULT_CAPTURE_PROJECTILE_SAMPLE, index=int(index), **kwargs)
 
 
 def _sample_secondary_projectile(index: int, **kwargs: object):
-    row = copy.deepcopy(_DEFAULT_CAPTURE_SECONDARY_PROJECTILE_SAMPLE)
-    for key, override in kwargs.items():
-        setattr(row, key, override)
-    row.index = int(index)
-    return row
+    return _replace_capture_struct(_DEFAULT_CAPTURE_SECONDARY_PROJECTILE_SAMPLE, index=int(index), **kwargs)
 
 
 def _sample_bonus(index: int, **kwargs: object):
-    row = copy.deepcopy(_DEFAULT_CAPTURE_BONUS_SAMPLE)
-    for key, override in kwargs.items():
-        setattr(row, key, override)
-    row.index = int(index)
-    return row
+    return _replace_capture_struct(_DEFAULT_CAPTURE_BONUS_SAMPLE, index=int(index), **kwargs)
 
 
 def _rng_caller_count(*, caller_static: str, calls: int) -> CaptureRngCallerCount:
