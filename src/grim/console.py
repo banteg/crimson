@@ -38,6 +38,12 @@ CONSOLE_TEXT_X = 10.0
 CONSOLE_INPUT_X_MONO = 26.0
 CONSOLE_VERSION_OFFSET_X = 210.0
 CONSOLE_VERSION_OFFSET_Y = 18.0
+FPS_COUNTER_X_SHORT = 45.0
+FPS_COUNTER_X_LONG = 51.0
+FPS_COUNTER_Y = 24.0
+FPS_COUNTER_CAP = 400
+FPS_COUNTER_CAP_TEXT = "400+"
+FPS_COUNTER_ALPHA = 0.6
 CONSOLE_BORDER_HEIGHT = 4.0
 CONSOLE_BG_COLOR = (0.140625, 0.1875, 0.2890625)
 CONSOLE_BORDER_COLOR = (0.21875, 0.265625, 0.3671875)
@@ -354,6 +360,20 @@ class ConsoleState:
         else:
             caret_x = self._small_caret_x()
             self._draw_small_text(CONSOLE_CARET_TEXT, Vec2(caret_x, caret_y), caret_color)
+
+    def draw_fps_counter(self) -> None:
+        cvar = self.cvars.get("cv_showFPS")
+        if cvar is None or cvar.value_f == 0.0:
+            return
+        fps = max(0, int(rl.get_fps()))
+        if fps < FPS_COUNTER_CAP:
+            text = str(fps)
+            pos_x = float(rl.get_screen_width()) - FPS_COUNTER_X_SHORT
+        else:
+            text = FPS_COUNTER_CAP_TEXT
+            pos_x = float(rl.get_screen_width()) - FPS_COUNTER_X_LONG
+        pos_y = float(rl.get_screen_height()) - FPS_COUNTER_Y
+        self._draw_small_text(text, Vec2(pos_x, pos_y), _rgba(1.0, 1.0, 1.0, FPS_COUNTER_ALPHA))
 
     def close(self) -> None:
         if self._mono_font is not None:

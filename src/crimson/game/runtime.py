@@ -78,6 +78,12 @@ def _parse_float_arg(value: str) -> float:
         return 0.0
 
 
+def _apply_debug_console_defaults(console: ConsoleState, *, debug: bool) -> None:
+    if not bool(debug):
+        return
+    console.register_cvar("cv_showFPS", "1")
+
+
 def _cvar_float(console: ConsoleState, name: str, default: float = 0.0) -> float:
     cvar = console.cvars.get(name)
     if cvar is None:
@@ -343,6 +349,7 @@ def run_game(config: GameConfig) -> None:
             print(f"[lan-debug] role={pending.role} log={log_path}")
         register_boot_commands(console, _boot_command_handlers(state))
         register_core_cvars(console, width, height)
+        _apply_debug_console_defaults(console, debug=config.debug)
         console.log.log("crimson: boot start")
         console.log.log(f"config: {cfg.screen_width}x{cfg.screen_height} windowed={cfg.windowed_flag}")
         console.log.log(f"status: {status.path.name} loaded")

@@ -829,6 +829,7 @@ class GameLoopView:
             self._demo_trial_overlay.bind_cache(self.state.texture_cache)
             self._demo_trial_overlay.draw(info)
         self.state.console.draw()
+        self.state.console.draw_fps_counter()
 
     def draw(self) -> None:
         gamma_gain = max(0.0, float(self.state.gamma_ramp))
