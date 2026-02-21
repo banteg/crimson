@@ -8,8 +8,8 @@ tags:
 # Differential Playbook
 
 Use this when an agent is only given a new capture file (typically
-`artifacts/frida/share/gameplay_diff_capture.json` or a quest-split file like
-`artifacts/frida/share/gameplay_diff_capture.quest_1_1.json`) and needs to
+`artifacts/frida/share/gameplay_diff_capture.msgpack.zst` or a quest-split file like
+`artifacts/frida/share/gameplay_diff_capture.quest_1_1.msgpack.zst`) and needs to
 continue original-vs-rewrite investigation.
 
 This runbook is based on repeated patterns from Codex session logs under
@@ -21,7 +21,7 @@ Run (preferred):
 
 ```bash
 uv run crimson original capture-health \
-  artifacts/frida/share/gameplay_diff_capture.json.gz \
+  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
   --json-out analysis/frida/reports/capture_<sha8>_health.json
 ```
 
@@ -29,7 +29,7 @@ Optional for focused ancestry windows:
 
 ```bash
 uv run crimson original capture-health \
-  artifacts/frida/share/gameplay_diff_capture.json.gz \
+  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
   --tick-start <tick_start> \
   --tick-end <tick_end>
 ```
@@ -37,8 +37,8 @@ uv run crimson original capture-health \
 Legacy/manual equivalent:
 
 ```bash
-ls -lh artifacts/frida/share/gameplay_diff_capture.json
-shasum -a 256 artifacts/frida/share/gameplay_diff_capture.json
+ls -lh artifacts/frida/share/gameplay_diff_capture.msgpack.zst
+shasum -a 256 artifacts/frida/share/gameplay_diff_capture.msgpack.zst
 ```
 
 Record the SHA256 first. Session tracking is by capture SHA family.
@@ -53,7 +53,7 @@ from pathlib import Path
 import hashlib
 from crimson.original.capture import load_capture
 
-p = Path("artifacts/frida/share/gameplay_diff_capture.json")
+p = Path("artifacts/frida/share/gameplay_diff_capture.msgpack.zst")
 print("sha256", hashlib.sha256(p.read_bytes()).hexdigest())
 cap = load_capture(p)
 print("capture_format_version", int(cap.capture_format_version))
@@ -97,7 +97,7 @@ Run in this order:
 
 ```bash
 uv run crimson original divergence-report \
-  artifacts/frida/share/gameplay_diff_capture.json \
+  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
   --float-abs-tol 1e-3 \
   --window 24 \
   --lead-lookback 1024 \
@@ -109,7 +109,7 @@ uv run crimson original divergence-report \
   --json-out analysis/frida/reports/capture_<sha8>_baseline.json
 
 uv run crimson original bisect-divergence \
-  artifacts/frida/share/gameplay_diff_capture.json \
+  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
   --window-before 12 \
   --window-after 6 \
   --json-out analysis/frida/reports/capture_<sha8>_bisect.json
@@ -128,14 +128,14 @@ first mismatch.
 
 ```bash
 uv run crimson original verify-capture \
-  artifacts/frida/share/gameplay_diff_capture.json \
+  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
   --float-abs-tol 1e-3 \
   --max-field-diffs 32
 ```
 
 ```bash
 uv run crimson original focus-trace \
-  artifacts/frida/share/gameplay_diff_capture.json \
+  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
   --tick <focus_tick> \
   --near-miss-threshold 0.35 \
   --json-out analysis/frida/reports/capture_<sha8>_focus_<focus_tick>.json
@@ -157,7 +157,7 @@ from pathlib import Path
 import msgspec
 from crimson.original.capture import load_capture
 
-cap = load_capture(Path("artifacts/frida/share/gameplay_diff_capture.json.gz"))
+cap = load_capture(Path("artifacts/frida/share/gameplay_diff_capture.msgpack.zst"))
 
 key_rows = 0
 key_rows_with_move = 0

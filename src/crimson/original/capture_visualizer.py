@@ -1736,7 +1736,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "(replay-packed sim inputs with capture overlays)."
         ),
     )
-    parser.add_argument("capture", type=Path, help="capture file (.json/.json.gz)")
+    parser.add_argument("capture", type=Path, help="capture file (.json/.json.gz/.msgpack.zst)")
     parser.add_argument("--start-tick", type=int, default=0, help="first tick to display")
     parser.add_argument("--end-tick", type=int, default=None, help="last tick to display (default: capture end)")
     parser.add_argument("--seed", type=int, default=None, help="override inferred seed")

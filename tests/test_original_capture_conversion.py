@@ -32,6 +32,7 @@ from crimson.original.capture import (
     convert_capture_to_checkpoints,
     convert_capture_to_replay,
     default_capture_replay_path,
+    dump_capture,
     load_capture,
     parse_player_int_overrides,
     summarize_capture_health,
@@ -457,6 +458,18 @@ def test_load_capture_supports_plain_json_and_gz(tmp_path: Path) -> None:
     assert capture_zipped.script == "gameplay_diff_capture"
     assert len(capture_plain.ticks) == 1
     assert len(capture_zipped.ticks) == 1
+
+
+def test_dump_and_load_capture_msgpack_zstd(tmp_path: Path) -> None:
+    obj = _capture_obj(ticks=[_base_tick(tick_index=0, elapsed_ms=16)])
+    path = tmp_path / "capture.msgpack.zst"
+
+    dump_capture(path, obj)
+    capture = load_capture(path)
+
+    assert capture.script == "gameplay_diff_capture"
+    assert len(capture.ticks) == 1
+    assert int(capture.ticks[0].tick_index) == 0
 
 
 def test_load_capture_accepts_projectile_find_query_event_head(tmp_path: Path) -> None:
@@ -1649,6 +1662,12 @@ def test_default_capture_replay_path_accepts_legacy_sidecar_name() -> None:
     checkpoints = Path("/tmp/gameplay_diff_capture.checkpoints.json.gz")
     replay = default_capture_replay_path(checkpoints)
     assert replay.name == "gameplay_diff_capture.crd"
+
+
+def test_default_capture_replay_path_accepts_msgpack_zstd_name() -> None:
+    checkpoints = Path("/tmp/gameplay_diff_capture.quest_1_1.msgpack.zst")
+    replay = default_capture_replay_path(checkpoints)
+    assert replay.name == "gameplay_diff_capture.quest_1_1.crd"
 
 
 def test_build_capture_dt_frame_overrides_distributes_gaps(tmp_path: Path) -> None:

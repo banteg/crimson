@@ -216,7 +216,7 @@ def build_parser() -> argparse.ArgumentParser:
             "(window rows + RNG stream rows + branch event heads)."
         ),
     )
-    parser.add_argument("capture", type=Path, help="capture file (.json/.json.gz)")
+    parser.add_argument("capture", type=Path, help="capture file (.json/.json.gz/.msgpack.zst)")
     parser.add_argument("--seed", type=int, default=None, help="optional fixed replay seed override")
     parser.add_argument(
         "--aim-scheme-player",

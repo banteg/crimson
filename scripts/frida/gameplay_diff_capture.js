@@ -4,16 +4,16 @@
 // - per-gameplay tick records with stable checkpoint payloads
 // - deterministic command/event summaries for first-divergence debugging
 // - compact before/after snapshots and entity samples on every tick
-// - JSONL stream output (`capture_meta` + `tick` rows)
+// - emits capture stream rows (`capture_meta` + `tick`) to host by default
 //
 // Attach only:
-//   frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
+//   via scripts/frida/gameplay_diff_capture_host.py
 //
 // Output:
-//   C:\share\frida\gameplay_diff_capture.json (non-quest fallback)
-//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.json (quests)
-//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.run<k>.json (repeat attempts)
-//   (or CRIMSON_FRIDA_DIR / CRIMSON_FRIDA_OUT_PATH overrides)
+//   C:\share\frida\gameplay_diff_capture.msgpack.zst (non-quest fallback)
+//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.msgpack.zst (quests)
+//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.run<k>.msgpack.zst (repeat attempts)
+//   Set CRIMSON_FRIDA_CAPTURE_SINK=file to keep legacy direct JSON stream writes.
 
 const DEFAULT_LOG_DIR = "C:\\share\\frida";
 const DEFAULT_OUT_NAME = "gameplay_diff_capture.json";
@@ -95,6 +95,7 @@ function parseStringSet(raw, fallbackCsv) {
 }
 
 const CONFIG_ENV_KEYS = [
+  "CRIMSON_FRIDA_CAPTURE_SINK",
   "CRIMSON_FRIDA_DIR",
   "CRIMSON_FRIDA_OUT_PATH",
   "CRIMSON_FRIDA_QUEST_OUT_DIR",
@@ -172,6 +173,7 @@ function toHex(value, width) {
 const LOG_DIR = getEnv("CRIMSON_FRIDA_DIR") || DEFAULT_LOG_DIR;
 
 const CONFIG = {
+  captureSink: String(getEnv("CRIMSON_FRIDA_CAPTURE_SINK") || "host").trim().toLowerCase() === "file" ? "file" : "host",
   outPath: getEnv("CRIMSON_FRIDA_OUT_PATH") || joinPath(LOG_DIR, DEFAULT_OUT_NAME),
   splitQuestFiles: true,
   questOutDir: getEnv("CRIMSON_FRIDA_QUEST_OUT_DIR") || LOG_DIR,
@@ -579,6 +581,14 @@ function _captureWrite(text, flushNow) {
 
 function _captureWriteJsonLine(obj, flushNow) {
   if (!obj) return false;
+  if (CONFIG.captureSink === "host") {
+    try {
+      send({ kind: "capture_row", row: obj });
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
   return _captureWrite(JSON.stringify(obj) + "\n", flushNow);
 }
 
@@ -4601,6 +4611,7 @@ function main() {
   outState.sessionId = outState.sessionFingerprint.session_id;
 
   const captureConfig = {
+    capture_sink: CONFIG.captureSink,
     out_path: CONFIG.outPath,
     split_quest_files: CONFIG.splitQuestFiles,
     quest_out_dir: CONFIG.questOutDir,
@@ -4695,6 +4706,20 @@ function main() {
   globalThis.crimsonCaptureStop = function (reason) {
     shutdownCapture(reason || "manual_stop");
     return outState.captureTickCount | 0;
+  };
+  rpc.exports = {
+    stop: function (reason) {
+      return globalThis.crimsonCaptureStop(reason || "rpc_stop");
+    },
+    stats: function () {
+      return {
+        capture_started: !!outState.captureStarted,
+        capture_closed: !!outState.captureClosed,
+        capture_sink: CONFIG.captureSink,
+        ticks_written: outState.captureTickCount | 0,
+        out_path: outState.currentOutPath || CONFIG.outPath,
+      };
+    },
   };
 
   installShutdownHooks();

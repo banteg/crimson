@@ -8,6 +8,7 @@ from typing import cast
 
 import msgspec
 import pytest
+import zstandard as zstd
 
 from crimson.original.capture import CaptureError, load_capture
 from crimson.original.schema import CAPTURE_FORMAT_VERSION, CaptureConfig, CaptureFile
@@ -203,6 +204,14 @@ def test_load_capture_rejects_incomplete_sample_rows(tmp_path: Path) -> None:
     tick0["samples"] = samples
     path = tmp_path / "capture.json"
     _write_capture_malformed(path, obj)
+
+    with pytest.raises(CaptureError):
+        load_capture(path)
+
+
+def test_load_capture_rejects_invalid_msgpack_zstd_payload(tmp_path: Path) -> None:
+    path = tmp_path / "capture.msgpack.zst"
+    path.write_bytes(zstd.compress(b"not-a-valid-capture-stream"))
 
     with pytest.raises(CaptureError):
         load_capture(path)

@@ -12,6 +12,7 @@ dependencies = [
     "structlog>=25.1.0",
     "tqdm>=4.67.3",
     "typer>=0.21.1",
+    "zstandard>=0.25.0",
 ]
 
 [project.urls]

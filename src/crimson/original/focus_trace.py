@@ -1546,7 +1546,7 @@ def _build_arg_parser(*, prog: str = "crimson") -> argparse.ArgumentParser:
         prog=str(prog),
         description="Trace a single original-capture tick with rewrite RNG callsites and collision near-miss diagnostics.",
     )
-    parser.add_argument("capture", type=Path, help="capture file (.json/.json.gz)")
+    parser.add_argument("capture", type=Path, help="capture file (.json/.json.gz/.msgpack.zst)")
     parser.add_argument("--tick", type=int, required=True, help="tick index to trace")
     parser.add_argument(
         "--near-miss-threshold",

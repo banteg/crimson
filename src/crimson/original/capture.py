@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Protocol, cast
 
 import msgspec
+import zstandard as zstd
 
 from grim.geom import Vec2
 
@@ -69,6 +70,8 @@ CAPTURE_PERK_PENDING_EVENT_KIND = "orig_capture_perk_pending"
 CAPTURE_PERK_APPLY_EVENT_KIND = "orig_capture_perk_apply"
 CAPTURE_CREATURE_SPAWN_EVENT_KIND = "orig_capture_creature_spawn"
 CAPTURE_STATE_TRANSITION_EVENT_KIND = "orig_capture_state_transition"
+_CAPTURE_MSGPACK_STREAM_MAGIC = b"crimson_capture_msgpack_v1\n"
+_CAPTURE_MSGPACK_LEN_BYTES = 4
 
 _CRT_RAND_MULT = 214013
 _CRT_RAND_INC = 2531011
@@ -290,6 +293,15 @@ class _CaptureStreamTickRow(msgspec.Struct, tag="tick", tag_field="event", forbi
 
 
 _CaptureStreamRow = _CaptureStreamMetaRow | _CaptureStreamTickRow
+
+
+def _zstd_decompress(raw: bytes, *, path: Path) -> bytes:
+    try:
+        dctx = zstd.ZstdDecompressor()
+        with dctx.stream_reader(raw) as reader:
+            return bytes(reader.read())
+    except zstd.ZstdError as exc:
+        raise CaptureError(f"invalid capture file: {path}") from exc
 
 
 def _coerce_int_like(value: object) -> int | None:
@@ -2740,6 +2752,8 @@ def default_capture_replay_path(checkpoints_path: Path) -> Path:
         stem = name[: -len(".json.gz")]
     elif name.endswith(".json"):
         stem = name[: -len(".json")]
+    elif name.endswith(".msgpack.zst"):
+        stem = name[: -len(".msgpack.zst")]
     elif name.endswith(".crd"):
         stem = name[: -len(".crd")]
     else:
@@ -2749,9 +2763,9 @@ def default_capture_replay_path(checkpoints_path: Path) -> Path:
 
 def _validate_capture_path(path: Path) -> None:
     lower = str(path).lower()
-    if lower.endswith(".json") or lower.endswith(".json.gz"):
+    if lower.endswith(".json") or lower.endswith(".json.gz") or lower.endswith(".msgpack.zst"):
         return
-    raise CaptureError(f"capture path must end with .json or .json.gz: {path}")
+    raise CaptureError(f"capture path must end with .json, .json.gz, or .msgpack.zst: {path}")
 
 
 def _validate_capture_format_version(capture: CaptureFile, path: Path) -> None:
@@ -2800,13 +2814,94 @@ def _decode_capture_stream(raw: bytes, path: Path) -> CaptureFile | None:
     return meta
 
 
+def _decode_capture_stream_msgpack(raw: bytes, path: Path) -> CaptureFile | None:
+    if not raw.startswith(_CAPTURE_MSGPACK_STREAM_MAGIC):
+        return None
+
+    total = len(raw)
+    offset = len(_CAPTURE_MSGPACK_STREAM_MAGIC)
+    meta: CaptureFile | None = None
+    ticks: list[CaptureTick] = []
+    saw_stream_row = False
+
+    while offset < total:
+        if total - offset < _CAPTURE_MSGPACK_LEN_BYTES:
+            raise CaptureError(f"invalid capture file: {path}")
+        frame_len = int.from_bytes(
+            raw[offset : offset + _CAPTURE_MSGPACK_LEN_BYTES],
+            "little",
+            signed=False,
+        )
+        offset += _CAPTURE_MSGPACK_LEN_BYTES
+        if frame_len <= 0 or offset + frame_len > total:
+            raise CaptureError(f"invalid capture file: {path}")
+        payload = raw[offset : offset + frame_len]
+        offset += frame_len
+        try:
+            row = msgspec.msgpack.decode(payload, type=_CaptureStreamRow)
+        except (msgspec.DecodeError, msgspec.ValidationError) as exc:
+            raise CaptureError(f"invalid capture file: {path}") from exc
+
+        if isinstance(row, _CaptureStreamMetaRow):
+            meta = row.capture
+            saw_stream_row = True
+            continue
+
+        if isinstance(row, _CaptureStreamTickRow):
+            ticks.append(row.tick)
+            saw_stream_row = True
+            continue
+
+    if not saw_stream_row or meta is None:
+        return None
+
+    meta.ticks = ticks
+    return meta
+
+
+def _encode_capture_stream_msgpack(capture: CaptureFile) -> bytes:
+    capture_obj = msgspec.to_builtins(capture)
+    if not isinstance(capture_obj, dict):
+        raise CaptureError("invalid capture object during serialization")
+    ticks_obj = capture_obj["ticks"]
+    if not isinstance(ticks_obj, list):
+        raise CaptureError("invalid capture object during serialization")
+    ticks = ticks_obj
+    meta = dict(capture_obj)
+    meta["ticks"] = []
+
+    out = bytearray()
+    out.extend(_CAPTURE_MSGPACK_STREAM_MAGIC)
+    meta_payload = msgspec.msgpack.encode({"event": "capture_meta", "capture": meta})
+    out.extend(len(meta_payload).to_bytes(_CAPTURE_MSGPACK_LEN_BYTES, "little", signed=False))
+    out.extend(meta_payload)
+    for tick in ticks:
+        tick_payload = msgspec.msgpack.encode({"event": "tick", "tick": tick})
+        out.extend(len(tick_payload).to_bytes(_CAPTURE_MSGPACK_LEN_BYTES, "little", signed=False))
+        out.extend(tick_payload)
+    return bytes(out)
+
+
 def load_capture(path: Path) -> CaptureFile:
     path = Path(path)
     _validate_capture_path(path)
 
     raw = path.read_bytes()
-    if raw.startswith(b"\x1f\x8b"):
-        raw = gzip.decompress(raw)
+    lower = str(path).lower()
+    try:
+        if lower.endswith(".msgpack.zst") or raw.startswith(b"\x28\xb5\x2f\xfd"):
+            raw = _zstd_decompress(raw, path=path)
+        elif raw.startswith(b"\x1f\x8b"):
+            raw = gzip.decompress(raw)
+    except (OSError, ValueError) as exc:
+        raise CaptureError(f"invalid capture file: {path}") from exc
+
+    if lower.endswith(".msgpack.zst") or raw.startswith(_CAPTURE_MSGPACK_STREAM_MAGIC):
+        stream = _decode_capture_stream_msgpack(raw, path)
+        if stream is not None:
+            _validate_capture_format_version(stream, path)
+            return stream
+        raise CaptureError(f"invalid capture file: {path}")
 
     stream = _decode_capture_stream(raw, path)
     if stream is not None:
@@ -2820,6 +2915,10 @@ def dump_capture(path: Path, capture: CaptureFile) -> None:
     path = Path(path)
     _validate_capture_path(path)
     _validate_capture_format_version(capture, path)
+    lower = str(path).lower()
+    if lower.endswith(".msgpack.zst"):
+        path.write_bytes(zstd.compress(_encode_capture_stream_msgpack(capture)))
+        return
     capture_obj = msgspec.to_builtins(capture)
     if not isinstance(capture_obj, dict):
         raise CaptureError("invalid capture object during serialization")
@@ -2832,7 +2931,7 @@ def dump_capture(path: Path, capture: CaptureFile) -> None:
     rows: list[bytes] = [msgspec.json.encode({"event": "capture_meta", "capture": meta})]
     rows.extend(msgspec.json.encode({"event": "tick", "tick": tick}) for tick in ticks)
     encoded = b"\n".join(rows) + b"\n"
-    if str(path).lower().endswith(".gz"):
+    if lower.endswith(".gz"):
         path.write_bytes(gzip.compress(encoded))
     else:
         path.write_bytes(encoded)
