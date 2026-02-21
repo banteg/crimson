@@ -74,3 +74,24 @@ def test_game_loop_draw_skips_gamma_shader_for_default_gain(mocker, make_game_st
 
     shader_lookup.assert_not_called()
     draw_scene.assert_called_once_with()
+
+
+def test_game_loop_draw_scene_layers_draws_fps_counter_after_console(mocker, make_game_state) -> None:
+    state = make_game_state()
+    view = GameLoopView(state)
+    console = mocker.Mock()
+    view.state.console = console
+
+    active_draw = mocker.patch.object(view._active, "draw")
+    ordered = mocker.Mock()
+    ordered.attach_mock(active_draw, "active")
+    ordered.attach_mock(console.draw, "console")
+    ordered.attach_mock(console.draw_fps_counter, "fps")
+
+    view._draw_scene_layers()
+
+    assert ordered.mock_calls == [
+        call.active(),
+        call.console(),
+        call.fps(),
+    ]
