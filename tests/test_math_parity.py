@@ -5,6 +5,7 @@ import math
 from crimson.math_parity import (
     NATIVE_HALF_PI,
     NATIVE_PI,
+    NATIVE_TAU,
     f32,
     heading_add_pi_f32,
     heading_from_delta_f32,
@@ -22,14 +23,18 @@ def test_heading_from_delta_uses_native_half_pi_constant() -> None:
 def test_heading_from_delta_left_axis_prefers_negative_half_pi_representation() -> None:
     heading = heading_from_delta_f32(dx=-1.0, dy=0.0)
     assert heading < 0.0
-    assert_float_close(heading, -NATIVE_HALF_PI)
+    expected = f32(f32(math.atan2(0.0, -1.0) + NATIVE_HALF_PI) - NATIVE_TAU)
+    assert_float_close(heading, expected)
     assert heading == f32(heading)
 
 
 def test_heading_from_delta_remaps_near_axis_tiny_dy_to_negative_branch() -> None:
-    heading = heading_from_delta_f32(dx=-696.0988159179688, dy=0.000457763671875)
+    dx = -696.0988159179688
+    dy = 0.000457763671875
+    heading = heading_from_delta_f32(dx=dx, dy=dy)
     assert heading < 0.0
-    assert_float_close(heading, -NATIVE_HALF_PI)
+    expected = f32(f32(math.atan2(dy, dx) + NATIVE_HALF_PI) - NATIVE_TAU)
+    assert_float_close(heading, expected)
     assert heading == f32(heading)
 
 

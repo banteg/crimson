@@ -3,16 +3,17 @@ from __future__ import annotations
 import pytest
 
 from crimson.creatures.spawn import SpawnSlotInit, tick_spawn_slot
+from crimson.math_parity import f32
 from tests.helpers import assert_float_close
 
 
 @pytest.mark.parametrize(
-    ("timer", "count", "dt", "expected_spawn", "expected_timer", "expected_count"),
+    ("timer", "count", "dt", "expected_spawn", "expected_count"),
     [
-        (1.0, 0, 0.3, None, 0.7, 0),
-        (0.1, 0, 0.3, 0x41, 0.5, 1),
-        (0.1, 10, 0.3, None, 0.5, 10),
-        (0.1, 0, 2.0, 0x41, -1.2, 1),
+        (1.0, 0, 0.3, None, 0),
+        (0.1, 0, 0.3, 0x41, 1),
+        (0.1, 10, 0.3, None, 10),
+        (0.1, 0, 2.0, 0x41, 1),
     ],
     ids=["no-trigger", "triggers-and-increments", "resets-at-limit", "does-not-loop-large-dt"],
 )
@@ -21,7 +22,6 @@ def test_tick_spawn_slot_behavior(
     count: int,
     dt: float,
     expected_spawn: int | None,
-    expected_timer: float,
     expected_count: int,
 ) -> None:
     slot = SpawnSlotInit(
@@ -34,6 +34,9 @@ def test_tick_spawn_slot_behavior(
     )
 
     assert tick_spawn_slot(slot, dt) == expected_spawn
+    expected_timer = float(f32(float(f32(timer)) - float(f32(dt))))
+    if expected_timer < 0.0:
+        expected_timer = float(f32(float(expected_timer) + float(f32(slot.interval))))
     assert_float_close(slot.timer, expected_timer)
     assert slot.count == expected_count
 

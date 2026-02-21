@@ -74,7 +74,7 @@ class SupportsRngProgression(Protocol):
 
 
 def assert_float_close(actual: Any, expected: Any) -> None:
-    assert float(actual) == pytest.approx(float(expected), abs=1e-6)
+    assert float(actual) == pytest.approx(float(expected), abs=1e-9)
 
 
 def assert_rng_progression(

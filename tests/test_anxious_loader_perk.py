@@ -4,6 +4,7 @@ from crimson.gameplay import (
     GameplayState,
     player_update,
 )
+from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
@@ -29,5 +30,7 @@ def test_anxious_loader_reduces_reload_timer_on_fire_press() -> None:
     player_update(base_player, input_state, dt=0.1, state=state)
     player_update(perk_player, input_state, dt=0.1, state=state)
 
-    assert_float_close(base_player.reload_timer, 0.9)
-    assert_float_close(perk_player.reload_timer, 0.85)
+    expected_base_timer = f32(f32(1.0) - f32(0.1))
+    expected_perk_timer = f32(f32(f32(1.0) - 0.05) - f32(0.1))
+    assert_float_close(base_player.reload_timer, expected_base_timer)
+    assert_float_close(perk_player.reload_timer, expected_perk_timer)

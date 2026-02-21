@@ -81,7 +81,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     p0.render_flag = False
     pool.update(1.0)
     assert p0.active
-    assert_float_close(p0.intensity, 0.1)
+    assert_float_close(p0.intensity, f32(0.1))
 
     # Style 1 expires once intensity <= 0.8.
     idx1 = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
@@ -97,7 +97,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     p2.render_flag = False
     pool.update(1.0)
     assert p2.active
-    assert_float_close(p2.intensity, 0.89)
+    assert_float_close(p2.intensity, f32(0.89))
 
 
 def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
@@ -130,7 +130,7 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     assert sprite_effects.entries[0].active
     assert_float_close(sprite_effects.entries[0].color.a, 0.7)
 
-    deflect_step = math.tau * 0.2
+    deflect_step = f32(math.tau * 0.2)
     assert_float_close(float(particle.angle), deflect_step)
 
     speed_scale = f32(0.7)
@@ -140,8 +140,9 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     assert_float_close(float(particle.vel.x), expected_vel_x)
     assert_float_close(float(particle.vel.y), expected_vel_y)
 
-    assert_float_close(float(creature.pos.x), f32(float(expected_vel_x) * float(dt)))
-    assert_float_close(float(creature.pos.y), f32(float(expected_vel_y) * float(dt)))
+    dt_f32 = f32(dt)
+    assert_float_close(float(creature.pos.x), f32(float(expected_vel_x) * float(dt_f32)))
+    assert_float_close(float(creature.pos.y), f32(float(expected_vel_y) * float(dt_f32)))
 
 
 def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:

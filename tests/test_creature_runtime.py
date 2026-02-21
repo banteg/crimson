@@ -862,7 +862,7 @@ def test_tick_dead_defers_corpse_deactivation_until_post_render_cleanup() -> Non
     )
 
     assert corpse.active is True
-    assert_float_close(corpse.hitbox_size, -10.016)
+    assert_float_close(corpse.hitbox_size, f32(-10.016))
 
     pool.finalize_post_render_lifecycle()
     assert corpse.active is False
@@ -922,7 +922,7 @@ def test_dead_self_damage_tick_flags_still_shrink_hitbox_before_dead_decay() -> 
     pool.update(0.03800000250339508, state=state, players=[player], rand=lambda: 0)
 
     # Native applies SELF_DAMAGE_TICK via creature_apply_damage even while hp<=0.
-    assert_float_close(corpse.hitbox_size, 11.006003)
+    assert_float_close(corpse.hitbox_size, f32(11.006003))
 
 
 def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> None:
