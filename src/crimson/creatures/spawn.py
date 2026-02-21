@@ -865,6 +865,8 @@ def spawn_ring_children(
         child.ai_mode = ai_mode
         child.ai_link_parent = link_parent
         angle = float(i) * angle_step
+        # Keep template authoring math simple here; runtime init quantizes
+        # `target_offset`/`pos` through float32 (`CreaturePool._apply_init`).
         child.target_offset = Vec2.from_angle(angle) * radius
         if set_position:
             child.pos = pos + (child.target_offset or Vec2())
