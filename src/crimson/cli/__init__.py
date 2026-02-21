@@ -1,0 +1,38 @@
+from __future__ import annotations
+
+from tqdm import tqdm
+
+from . import lan as _lan
+from . import net as _net
+from . import original as _original
+from . import relay as _relay
+from . import replay as _replay
+from . import root as _root
+
+app = _root.app
+replay_app = _replay.replay_app
+original_app = _original.original_app
+lan_app = _lan.lan_app
+net_app = _net.net_app
+relay_app = _relay.relay_app
+
+app.add_typer(replay_app, name="replay")
+app.add_typer(original_app, name="original")
+app.add_typer(lan_app, name="lan")
+app.add_typer(net_app, name="net")
+app.add_typer(relay_app, name="relay")
+
+# Test compatibility: keep helper entrypoints importable from `crimson.cli`.
+_strip_no_cache_flag = _original._strip_no_cache_flag
+
+
+def _replay_render_progress_callback(*, total_ticks: int, render_audio: bool):
+    return _replay._replay_render_progress_callback(
+        total_ticks=total_ticks,
+        render_audio=render_audio,
+        tqdm_factory=tqdm,
+    )
+
+
+def main(argv: list[str] | None = None) -> None:
+    app(prog_name="crimson", args=argv)
