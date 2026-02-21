@@ -3,9 +3,10 @@ from __future__ import annotations
 """Bonus ids extracted from bonus_metadata_init (bonus_meta_label)."""
 
 from dataclasses import dataclass
-from enum import IntEnum
+from enum import IntEnum, unique
 
 
+@unique
 class BonusId(IntEnum):
     UNUSED = 0
     POINTS = 1

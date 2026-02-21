@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Protocol
 from grim.geom import Vec2
 from grim.rand import Crand, CrandLike
 
+from .aim_constants import _AIM_JOYSTICK_TURN_RATE, _AIM_KEYBOARD_TURN_RATE
 from .aim_schemes import AimScheme
 from .bonuses.freeze import DeferredFreezeCorpseFx
 from .bonuses.hud import BonusHudState
@@ -87,8 +88,6 @@ _RELATIVE_MOVE_HEADING_LEFT = float(f32(4.712389))
 _RELATIVE_MOVE_HEADING_FORWARD_LEFT = float(f32(5.4977875))
 _RELATIVE_MOVE_TURN_ALIGN_SCALE = float(f32(7.957747))
 _AIM_POINT_RADIUS = 60.0
-_AIM_KEYBOARD_TURN_RATE = 3.0
-_AIM_JOYSTICK_TURN_RATE = 4.0
 _LOW_HEALTH_BLEED_DIR_OFFSET = 1.5707964 - 0.5
 _LOW_HEALTH_BLOODSPILL_SFX: tuple[str, str] = ("sfx_bloodspill_01", "sfx_bloodspill_02")
 
@@ -408,7 +407,9 @@ def _player_apply_move_with_spawn_avoidance(
 
 
 def _direction_from_heading_native(heading: float) -> Vec2:
-    # Native uses `fcos/fsin(heading - 1.5707964f)` (float32 half-pi literal).
+    # Native uses `fcos/fsin(heading - 1.5707964f)` (float32 half-pi literal),
+    # but this path keeps x87-style precision for trig and rounds at downstream
+    # float32 storage boundaries (delta/aim writes), not inside this helper.
     radians = float(heading) - float(NATIVE_HALF_PI)
     return Vec2(math.cos(radians), math.sin(radians))
 

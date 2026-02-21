@@ -34,13 +34,17 @@ class CreatureFlags(IntFlag):
     SELF_DAMAGE_TICK = 0x01  # periodic self-damage tick (dt * 60)
     SELF_DAMAGE_TICK_STRONG = 0x02  # stronger periodic self-damage tick (dt * 180)
     ANIM_PING_PONG = 0x04  # short ping-pong strip
-    HAS_SPAWN_SLOT = 0x04  # alias: link_index interpreted as spawn slot index
     SPLIT_ON_DEATH = 0x08  # split-on-death behavior
     RANGED_ATTACK_SHOCK = 0x10  # ranged attack using projectile type 9
     ANIM_LONG_STRIP = 0x40  # force long animation strip
     AI7_LINK_TIMER = 0x80  # uses link index as timer for AI mode 7
     RANGED_ATTACK_VARIANT = 0x100  # ranged attack using orbit_radius as projectile type
     BONUS_ON_DEATH = 0x400  # spawns bonus on death
+
+
+# Same bit as `ANIM_PING_PONG`; spawn logic reuses it to mean that `link_index`
+# is interpreted as a spawn slot index in template/runtime paths.
+HAS_SPAWN_SLOT_FLAG = CreatureFlags.ANIM_PING_PONG
 
 
 class SpawnId(IntEnum):

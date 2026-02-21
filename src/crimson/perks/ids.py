@@ -3,7 +3,7 @@ from __future__ import annotations
 """Perk ids and runtime metadata extracted from `perks_init_database` (FUN_0042fd90)."""
 
 from dataclasses import dataclass
-from enum import IntEnum, IntFlag
+from enum import IntEnum, IntFlag, unique
 
 
 class PerkFlags(IntFlag):
@@ -20,6 +20,7 @@ class PerkFlags(IntFlag):
 PERK_DEFAULT_FLAGS = PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.TWO_PLAYER_ALLOWED
 
 
+@unique
 class PerkId(IntEnum):
     ANTIPERK = 0
     BLOODY_MESS_QUICK_LEARNER = 1

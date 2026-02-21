@@ -9,6 +9,7 @@ from grim.config import CrimsonConfig, default_player_keybind_block
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
+from .aim_constants import _AIM_JOYSTICK_TURN_RATE, _AIM_KEYBOARD_TURN_RATE
 from .aim_schemes import AimScheme
 from .frontend.panels.controls_labels import controls_method_values
 from .input_codes import (
@@ -26,8 +27,6 @@ _AIM_RADIUS_PAD_BASE = 42.0
 # Native uses `cv_padAimDistMul` (default 96).
 _AIM_RADIUS_PAD_SCALE = 96.0
 _POINT_CLICK_STOP_RADIUS = 20.0
-_AIM_KEYBOARD_TURN_RATE = 3.0
-_AIM_JOYSTICK_TURN_RATE = 4.0
 _COMPUTER_TARGET_SWITCH_HYSTERESIS = 64.0
 _COMPUTER_ARENA_CENTER = Vec2(512.0, 512.0)
 _COMPUTER_MOVE_TARGET_RADIUS = 300.0

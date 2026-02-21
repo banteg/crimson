@@ -45,6 +45,7 @@ from ..weapons import weapon_entry_for_projectile_type_id
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .damage_types import CreatureDamageType
 from .spawn import (
+    HAS_SPAWN_SLOT_FLAG,
     RANDOM_HEADING_SENTINEL,
     CreatureAiMode,
     CreatureFlags,
@@ -1180,7 +1181,7 @@ class CreaturePool:
                 and float(state.bonuses.freeze) <= 0.0
                 and spawn_env is not None
                 and not bool(self.capture_spawn_events_authoritative)
-                and (creature.flags & CreatureFlags.HAS_SPAWN_SLOT) != 0
+                and (creature.flags & HAS_SPAWN_SLOT_FLAG) != 0
             ):
                 slot_index = creature.spawn_slot_index
                 if slot_index is not None and 0 <= int(slot_index) < len(self.spawn_slots):
