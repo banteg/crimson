@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Protocol
 
@@ -131,6 +131,7 @@ class GameplayState:
     bonus_hud: BonusHudState = field(default_factory=BonusHudState)
     bonus_pool: BonusPool = field(default_factory=BonusPool)
     deferred_freeze_corpse_fx: list[DeferredFreezeCorpseFx] = field(default_factory=list)
+    player_death_hook_skip_indices: set[int] = field(default_factory=set)
     shock_chain_links_left: int = 0
     shock_chain_projectile_id: int = -1
     survival_reward_weapon_guard_id: int = int(WeaponId.PISTOL)
@@ -537,6 +538,7 @@ def player_update(
     players: list[PlayerState] | None = None,
     creatures: Sequence[CreatureState] | None = None,
     spawn_slots: Sequence[_SpawnSlotLike] | None = None,
+    on_player_lethal: Callable[[PlayerState], None] | None = None,
 ) -> None:
     """Port of `player_update` (0x004136b0) for the rewrite runtime."""
 
@@ -989,6 +991,7 @@ def player_update(
     while player.move_phase > 14.0:
         player.move_phase -= 14.0
     while player.move_phase < 0.0:
+        on_player_lethal=on_player_lethal,
         player.move_phase += 14.0
 
     half_size = max(0.0, float(player.size) * 0.5)

@@ -491,8 +491,29 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
         elif perk_active(ctx.player, PerkId.VEINS_OF_POISON):
             creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
+    def _on_player_lethal_final_revenge() -> None:
+        from ..perks.impl.final_revenge import apply_final_revenge_on_player_death
+
+        apply_final_revenge_on_player_death(
+            state=ctx.state,
+            creatures=ctx.pool,
+            players=ctx.players,
+            player=ctx.player,
+            dt=float(ctx.dt),
+            world_size=float(max(float(ctx.world_width), float(ctx.world_height))),
+            detail_preset=int(ctx.detail_preset),
+            fx_queue=ctx.fx_queue,
+            deaths=ctx.deaths,
+        )
+
     player_take_damage(
-        ctx.state, ctx.player, float(creature.contact_damage), dt=ctx.dt, rand=ctx.rand, players=ctx.players,
+        ctx.state,
+        ctx.player,
+        float(creature.contact_damage),
+        dt=ctx.dt,
+        rand=ctx.rand,
+        players=ctx.players,
+        on_lethal=_on_player_lethal_final_revenge,
     )
 
     if ctx.fx_queue is not None:
@@ -712,27 +733,6 @@ class CreaturePool:
 
         self._entries[idx] = entry
         self.spawned_count += 1
-        pending_ai_timers: list[int | None] = []
-        pending_spawn_slots: list[int | None] = []
-
-        # 1) Allocate pool slots for every creature.
-        for init in plan.creatures:
-            pool_idx = self._alloc_slot(rand=rand)
-            # Reuse the allocated slot so untouched fields keep native-like stale state.
-            entry = self._entries[pool_idx]
-            self._apply_init(entry, init)
-            self._entries[pool_idx] = entry
-            self.spawned_count += 1
-
-            mapping.append(pool_idx)
-            pending_ai_links.append(init.ai_link_parent)
-            pending_ai_timers.append(init.ai_timer)
-            pending_spawn_slots.append(init.spawn_slot)
-
-        # 2) Allocate and remap spawn slots.
-        slot_mapping: list[int] = []
-        for slot in plan.spawn_slots:
-            owner_plan = int(slot.owner_creature)
         return idx
 
     def spawn_inits(self, inits: Sequence[CreatureInit], *, rand: Callable[[], int] | None = None) -> list[int]:
@@ -754,6 +754,27 @@ class CreaturePool:
 
         mapping: list[int] = []
         pending_ai_links: list[int | None] = []
+        pending_ai_timers: list[int | None] = []
+        pending_spawn_slots: list[int | None] = []
+
+        # 1) Allocate pool slots for every creature.
+        for init in plan.creatures:
+            pool_idx = self._alloc_slot(rand=rand)
+            # Reuse the allocated slot so untouched fields keep native-like stale state.
+            entry = self._entries[pool_idx]
+            self._apply_init(entry, init)
+            self._entries[pool_idx] = entry
+            self.spawned_count += 1
+
+            mapping.append(pool_idx)
+            pending_ai_links.append(init.ai_link_parent)
+            pending_ai_timers.append(init.ai_timer)
+            pending_spawn_slots.append(init.spawn_slot)
+
+        # 2) Allocate and remap spawn slots.
+        slot_mapping: list[int] = []
+        for slot in plan.spawn_slots:
+            owner_plan = int(slot.owner_creature)
             owner_pool = mapping[owner_plan] if 0 <= owner_plan < len(mapping) else -1
             self.spawn_slots.append(
                 SpawnSlotInit(
@@ -1036,6 +1057,12 @@ class CreaturePool:
                         pass
 
             target_player = self._resolve_target_player_index(creature, players)
+            self._update_player_auto_target(
+                players=players,
+                player_index=int(target_player),
+                creature_index=int(idx),
+                creature=creature,
+            )
             player = players[target_player]
             player_pos = player.pos
             if single_player_dead_target_pos is not None and float(players[0].health) <= 0.0:
@@ -1057,12 +1084,6 @@ class CreaturePool:
                 dt=dt,
             )
             creature.move_scale = float(ai.move_scale)
-            self._update_player_auto_target(
-                players=players,
-                player_index=int(target_player),
-                creature_index=int(idx),
-                creature=creature,
-            )
             if ai.self_damage is not None and ai.self_damage > 0.0:
                 creature.hp -= float(ai.self_damage)
                 if creature.hp <= 0.0:

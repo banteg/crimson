@@ -25,7 +25,7 @@ def apply_final_revenge_on_player_death(
     dt: float,
     world_size: float,
     detail_preset: int,
-    fx_queue: FxQueue,
+    fx_queue: FxQueue | None,
     deaths: list[CreatureDeath],
 ) -> None:
     """Apply Final Revenge perk behavior when a player dies."""
