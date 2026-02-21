@@ -8,10 +8,10 @@ import os
 import random
 import re
 import sys
-from dataclasses import fields, is_dataclass
 from pathlib import Path
 from typing import Any, Literal, Protocol, cast
 
+import msgspec
 import typer
 from PIL import Image
 from tqdm import tqdm
@@ -304,32 +304,125 @@ def _resolve_replay_verify_metric(
     return "score_xp"
 
 
-def _run_result_payload(run_result: object) -> dict[str, int]:
+class _RunResultPayload(msgspec.Struct, forbid_unknown_fields=True):
+    game_mode_id: int
+    tick_rate: int
+    ticks: int
+    elapsed_ms: int
+    score_xp: int
+    creature_kill_count: int
+    most_used_weapon_id: int
+    shots_fired: int
+    shots_hit: int
+    rng_state: int
+
+
+class _ReplayVerifyScoreClaimPayload(msgspec.Struct, forbid_unknown_fields=True):
+    metric: str
+    submitted_score: int
+    simulated_value: int
+    match: bool
+
+
+class _ReplayVerifyPayload(msgspec.Struct, forbid_unknown_fields=True):
+    schema_version: int
+    status: str
+    replay: str
+    replay_sha256: str
+    run_result: _RunResultPayload
+    score_claim: _ReplayVerifyScoreClaimPayload | None
+
+
+class _BenchmarkAggregatePayload(msgspec.Struct, forbid_unknown_fields=True):
+    min: float
+    p50: float
+    mean: float
+    p95: float
+    max: float
+    stdev: float
+
+
+class _ReplayBenchmarkProfileHotspotPayload(msgspec.Struct, forbid_unknown_fields=True):
+    file: str
+    line: int
+    function: str
+    primitive_calls: int
+    total_calls: int
+    tottime: float
+    cumtime: float
+
+
+class _ReplayBenchmarkProfilePayload(msgspec.Struct, forbid_unknown_fields=True):
+    sort: str
+    top: int
+    source: str
+    hotspots: list[_ReplayBenchmarkProfileHotspotPayload]
+
+
+class _ReplayBenchmarkSettingsPayload(msgspec.Struct, forbid_unknown_fields=True):
+    mode: str
+    runs: int
+    warmup_runs: int
+    max_ticks: int | None
+    strict_events: bool
+    trace_rng: bool
+    profile: bool
+    profile_sort: str
+    top: int
+    profile_out: str | None
+
+
+class _ReplayBenchmarkSamplePayload(msgspec.Struct, forbid_unknown_fields=True):
+    wall_ms: float
+    ticks_per_second: float
+    realtime_x: float
+
+
+class _ReplayBenchmarkSummaryPayload(msgspec.Struct, forbid_unknown_fields=True):
+    sample_count: int
+    samples: list[_ReplayBenchmarkSamplePayload]
+    wall_ms: _BenchmarkAggregatePayload
+    ticks_per_second: _BenchmarkAggregatePayload
+    realtime_x: _BenchmarkAggregatePayload
+
+
+class _ReplayBenchmarkPayload(msgspec.Struct, forbid_unknown_fields=True):
+    schema_version: int
+    status: str
+    replay: str
+    replay_sha256: str
+    settings: _ReplayBenchmarkSettingsPayload
+    run_result: _RunResultPayload
+    benchmark: _ReplayBenchmarkSummaryPayload
+    profile: _ReplayBenchmarkProfilePayload | None
+
+
+def _run_result_payload(run_result: object) -> _RunResultPayload:
     result = cast("Any", run_result)
-    return {
-        "game_mode_id": int(result.game_mode_id),
-        "tick_rate": int(result.tick_rate),
-        "ticks": int(result.ticks),
-        "elapsed_ms": int(result.elapsed_ms),
-        "score_xp": int(result.score_xp),
-        "creature_kill_count": int(result.creature_kill_count),
-        "most_used_weapon_id": int(result.most_used_weapon_id),
-        "shots_fired": int(result.shots_fired),
-        "shots_hit": int(result.shots_hit),
-        "rng_state": int(result.rng_state),
-    }
+    return _RunResultPayload(
+        game_mode_id=int(result.game_mode_id),
+        tick_rate=int(result.tick_rate),
+        ticks=int(result.ticks),
+        elapsed_ms=int(result.elapsed_ms),
+        score_xp=int(result.score_xp),
+        creature_kill_count=int(result.creature_kill_count),
+        most_used_weapon_id=int(result.most_used_weapon_id),
+        shots_fired=int(result.shots_fired),
+        shots_hit=int(result.shots_hit),
+        rng_state=int(result.rng_state),
+    )
 
 
-def _benchmark_aggregate_payload(aggregate: object) -> dict[str, float]:
+def _benchmark_aggregate_payload(aggregate: object) -> _BenchmarkAggregatePayload:
     entry = cast("Any", aggregate)
-    return {
-        "min": float(entry.min),
-        "p50": float(entry.p50),
-        "mean": float(entry.mean),
-        "p95": float(entry.p95),
-        "max": float(entry.max),
-        "stdev": float(entry.stdev),
-    }
+    return _BenchmarkAggregatePayload(
+        min=float(entry.min),
+        p50=float(entry.p50),
+        mean=float(entry.mean),
+        p95=float(entry.p95),
+        max=float(entry.max),
+        stdev=float(entry.stdev),
+    )
 
 
 def _fmt_metric_agg(name: str, aggregate: object, *, digits: int) -> str:
@@ -1065,7 +1158,7 @@ def cmd_replay_verify(
         game_mode_id=int(result.game_mode_id),
         score_metric=score_metric,
     )
-    score_claim_payload: dict[str, object] | None = None
+    score_claim_payload: _ReplayVerifyScoreClaimPayload | None = None
     status = "ok"
     claim_matches = True
     if submitted_score is not None:
@@ -1073,30 +1166,31 @@ def cmd_replay_verify(
         claim_matches = int(submitted_score) == int(simulated_value)
         if not claim_matches:
             status = "score_mismatch"
-        score_claim_payload = {
-            "metric": str(resolved_metric),
-            "submitted_score": int(submitted_score),
-            "simulated_value": int(simulated_value),
-            "match": bool(claim_matches),
-        }
+        score_claim_payload = _ReplayVerifyScoreClaimPayload(
+            metric=str(resolved_metric),
+            submitted_score=int(submitted_score),
+            simulated_value=int(simulated_value),
+            match=bool(claim_matches),
+        )
 
-    payload: dict[str, object] = {
-        "schema_version": int(_REPLAY_VERIFY_SCHEMA_VERSION),
-        "status": str(status),
-        "replay": str(replay_path),
-        "replay_sha256": str(replay_sha256),
-        "run_result": _run_result_payload(result),
-        "score_claim": score_claim_payload,
-    }
+    payload = _ReplayVerifyPayload(
+        schema_version=int(_REPLAY_VERIFY_SCHEMA_VERSION),
+        status=str(status),
+        replay=str(replay_path),
+        replay_sha256=str(replay_sha256),
+        run_result=_run_result_payload(result),
+        score_claim=score_claim_payload,
+    )
+    payload_json = msgspec.json.encode(payload)
 
     if json_out is not None:
         json_out.parent.mkdir(parents=True, exist_ok=True)
-        json_out.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+        json_out.write_bytes(payload_json)
         if str(output_format) == "human":
             typer.echo(f"json_report={json_out}")
 
     if str(output_format) == "json":
-        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        typer.echo(payload_json.decode("utf-8"))
     else:
         message = (
             f"{'ok' if status == 'ok' else 'score_mismatch'}: "
@@ -1106,10 +1200,10 @@ def cmd_replay_verify(
         )
         if score_claim_payload is not None:
             message += (
-                f"; score_claim metric={score_claim_payload['metric']} "
-                f"submitted={score_claim_payload['submitted_score']} "
-                f"simulated={score_claim_payload['simulated_value']} "
-                f"match={score_claim_payload['match']}"
+                f"; score_claim metric={score_claim_payload.metric} "
+                f"submitted={score_claim_payload.submitted_score} "
+                f"simulated={score_claim_payload.simulated_value} "
+                f"match={score_claim_payload.match}"
             )
         typer.echo(message)
 
@@ -1226,69 +1320,70 @@ def cmd_replay_benchmark(
         typer.echo(f"replay benchmark failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    profile_payload: dict[str, object] | None = None
+    profile_payload: _ReplayBenchmarkProfilePayload | None = None
     if benchmark.profile is not None:
-        profile_payload = {
-            "sort": str(benchmark.profile.sort),
-            "top": int(benchmark.profile.top),
-            "source": str(benchmark.profile.source),
-            "hotspots": [
-                {
-                    "file": str(row.file),
-                    "line": int(row.line),
-                    "function": str(row.function),
-                    "primitive_calls": int(row.primitive_calls),
-                    "total_calls": int(row.total_calls),
-                    "tottime": float(row.tottime),
-                    "cumtime": float(row.cumtime),
-                }
+        profile_payload = _ReplayBenchmarkProfilePayload(
+            sort=str(benchmark.profile.sort),
+            top=int(benchmark.profile.top),
+            source=str(benchmark.profile.source),
+            hotspots=[
+                _ReplayBenchmarkProfileHotspotPayload(
+                    file=str(row.file),
+                    line=int(row.line),
+                    function=str(row.function),
+                    primitive_calls=int(row.primitive_calls),
+                    total_calls=int(row.total_calls),
+                    tottime=float(row.tottime),
+                    cumtime=float(row.cumtime),
+                )
                 for row in benchmark.profile.hotspots
             ],
-        }
+        )
 
-    payload: dict[str, object] = {
-        "schema_version": int(_REPLAY_BENCHMARK_SCHEMA_VERSION),
-        "status": "ok",
-        "replay": str(replay_path),
-        "replay_sha256": str(replay_sha256),
-        "settings": {
-            "mode": str(mode),
-            "runs": int(runs),
-            "warmup_runs": int(warmup_runs),
-            "max_ticks": (int(max_ticks) if max_ticks is not None else None),
-            "strict_events": bool(strict_events),
-            "trace_rng": bool(trace_rng),
-            "profile": bool(profile),
-            "profile_sort": str(profile_sort),
-            "top": int(top),
-            "profile_out": (str(profile_out) if profile_out is not None else None),
-        },
-        "run_result": _run_result_payload(benchmark.run_result),
-        "benchmark": {
-            "sample_count": len(benchmark.samples),
-            "samples": [
-                {
-                    "wall_ms": float(sample.wall_ms),
-                    "ticks_per_second": float(sample.ticks_per_second),
-                    "realtime_x": float(sample.realtime_x),
-                }
+    payload = _ReplayBenchmarkPayload(
+        schema_version=int(_REPLAY_BENCHMARK_SCHEMA_VERSION),
+        status="ok",
+        replay=str(replay_path),
+        replay_sha256=str(replay_sha256),
+        settings=_ReplayBenchmarkSettingsPayload(
+            mode=str(mode),
+            runs=int(runs),
+            warmup_runs=int(warmup_runs),
+            max_ticks=(int(max_ticks) if max_ticks is not None else None),
+            strict_events=bool(strict_events),
+            trace_rng=bool(trace_rng),
+            profile=bool(profile),
+            profile_sort=str(profile_sort),
+            top=int(top),
+            profile_out=(str(profile_out) if profile_out is not None else None),
+        ),
+        run_result=_run_result_payload(benchmark.run_result),
+        benchmark=_ReplayBenchmarkSummaryPayload(
+            sample_count=int(len(benchmark.samples)),
+            samples=[
+                _ReplayBenchmarkSamplePayload(
+                    wall_ms=float(sample.wall_ms),
+                    ticks_per_second=float(sample.ticks_per_second),
+                    realtime_x=float(sample.realtime_x),
+                )
                 for sample in benchmark.samples
             ],
-            "wall_ms": _benchmark_aggregate_payload(benchmark.wall_ms),
-            "ticks_per_second": _benchmark_aggregate_payload(benchmark.ticks_per_second),
-            "realtime_x": _benchmark_aggregate_payload(benchmark.realtime_x),
-        },
-        "profile": profile_payload,
-    }
+            wall_ms=_benchmark_aggregate_payload(benchmark.wall_ms),
+            ticks_per_second=_benchmark_aggregate_payload(benchmark.ticks_per_second),
+            realtime_x=_benchmark_aggregate_payload(benchmark.realtime_x),
+        ),
+        profile=profile_payload,
+    )
+    payload_json = msgspec.json.encode(payload)
 
     if json_out is not None:
         json_out.parent.mkdir(parents=True, exist_ok=True)
-        json_out.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+        json_out.write_bytes(payload_json)
         if str(output_format) == "human":
             typer.echo(f"json_report={json_out}")
 
     if str(output_format) == "json":
-        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        typer.echo(payload_json.decode("utf-8"))
         return
 
     typer.echo(
@@ -2212,13 +2307,6 @@ def _parse_vec2(text: str) -> Vec2:
         raise typer.BadParameter(f"invalid vec2: {text!r}") from exc
 
 
-def _dc_to_dict(obj: object) -> dict[str, object]:
-    if not is_dataclass(obj):
-        raise TypeError(f"expected dataclass instance, got {type(obj).__name__}")
-    dc_obj = cast(Any, obj)
-    return {f.name: getattr(dc_obj, f.name) for f in fields(dc_obj)}
-
-
 @app.command("spawn-plan")
 def cmd_spawn_plan(
     template: str = typer.Argument(..., help="spawn id (e.g. 0x12)"),
@@ -2245,6 +2333,9 @@ def cmd_spawn_plan(
     )
     plan = build_spawn_plan(template_id, spawn_pos, heading, rng, env)
     if as_json:
+        creatures = msgspec.to_builtins(plan.creatures)
+        spawn_slots = msgspec.to_builtins(plan.spawn_slots)
+        effects = msgspec.to_builtins(plan.effects)
         payload: dict[str, object] = {
             "template_id": template_id,
             "pos": [spawn_pos.x, spawn_pos.y],
@@ -2258,9 +2349,9 @@ def cmd_spawn_plan(
                 "difficulty_level": difficulty,
             },
             "primary": plan.primary,
-            "creatures": [_dc_to_dict(c) for c in plan.creatures],
-            "spawn_slots": [_dc_to_dict(s) for s in plan.spawn_slots],
-            "effects": [_dc_to_dict(e) for e in plan.effects],
+            "creatures": creatures,
+            "spawn_slots": spawn_slots,
+            "effects": effects,
             "rng_state": rng.state,
         }
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))

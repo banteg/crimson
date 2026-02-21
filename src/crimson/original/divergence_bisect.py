@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, TypedDict, cast
@@ -150,7 +149,7 @@ def _build_repro_tick_row(
         for head in raw.event_heads:
             if isinstance(head, kind):
                 rows.append(cast(Any, head).data)
-        return [msgspec.to_builtins(item) for item in rows[:branch_limit]]
+        return [msgspec.json.decode(msgspec.json.encode(item)) for item in rows[:branch_limit]]
 
     def _capture_rng_row_to_dict(entry: CaptureRngHeadEntry) -> dict[str, object]:
         value_15: int | None
@@ -335,7 +334,7 @@ def main(argv: list[str] | None = None) -> int:
                 "probes": probes,
             }
             json_out_path.parent.mkdir(parents=True, exist_ok=True)
-            json_out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+            json_out_path.write_text(msgspec.json.encode(payload).decode("utf-8"), encoding="utf-8")
             print(f"json_report={json_out_path}")
         return 0
 
@@ -422,7 +421,7 @@ def main(argv: list[str] | None = None) -> int:
             "probes": probes,
         }
         json_out_path.parent.mkdir(parents=True, exist_ok=True)
-        json_out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        json_out_path.write_text(msgspec.json.encode(payload).decode("utf-8"), encoding="utf-8")
         print(f"json_report={json_out_path}")
 
     return 1

@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import msgspec
+
 
 @dataclass(frozen=True)
 class BuildEvent:
@@ -20,6 +22,37 @@ class BuildEvent:
     entry_count: int | None
     entries: list[dict[str, Any]] | None
     ts: str | None
+
+
+class QuestBuildRow(msgspec.Struct, forbid_unknown_fields=True):
+    key: str
+    title: str
+    ts: str | None
+    builder_name: Any
+    builder_va: Any
+    entry_count: int | None
+    entries_truncated: Any
+    time_limit_ms: Any
+    terrain_id: Any
+    start_weapon_id: Any
+    unlock_perk_id: Any
+    unlock_weapon_id: Any
+    full_version: Any
+    player_count: Any
+    spawn_ids: list[str] | None
+    spawn_id_counts: dict[str, int] | None
+    min_trigger_ms: int | None
+    max_trigger_ms: int | None
+
+
+class QuestBuildSummary(msgspec.Struct, forbid_unknown_fields=True):
+    source_logs: list[str]
+    event_count: int
+    unique_keys: int
+    missing_levels: list[str]
+    duplicates: dict[str, int]
+    runs: list[QuestBuildRow]
+    expected: dict[str, dict[str, Any]]
 
 
 def iter_jsonl(paths: Iterable[Path]) -> Iterable[dict[str, Any]]:
@@ -167,8 +200,8 @@ def load_expected_levels() -> dict[str, dict[str, Any]]:
     return expected
 
 
-def build_rows(events: list[BuildEvent]) -> list[dict[str, Any]]:
-    rows: list[dict[str, Any]] = []
+def build_rows(events: list[BuildEvent]) -> list[QuestBuildRow]:
+    rows: list[QuestBuildRow] = []
     for event in events:
         key = stage_key(event) or event.builder.get("name") or "unknown"
         title = stage_title(event) or "unknown"
@@ -177,36 +210,36 @@ def build_rows(events: list[BuildEvent]) -> list[dict[str, Any]]:
         config = event.config or {}
         summary = summarize_entries(event.entries)
         rows.append(
-            {
-                "key": key,
-                "title": title,
-                "ts": event.ts,
-                "builder_name": builder.get("name"),
-                "builder_va": builder.get("va"),
-                "entry_count": event.entry_count,
-                "entries_truncated": event.raw.get("entries_truncated"),
-                "time_limit_ms": meta.get("time_limit_ms"),
-                "terrain_id": meta.get("terrain_id"),
-                "start_weapon_id": meta.get("start_weapon_id"),
-                "unlock_perk_id": meta.get("unlock_perk_id"),
-                "unlock_weapon_id": meta.get("unlock_weapon_id"),
-                "full_version": config.get("full_version"),
-                "player_count": config.get("player_count"),
-                "spawn_ids": summary.get("spawn_ids") if summary else None,
-                "spawn_id_counts": summary.get("spawn_id_counts") if summary else None,
-                "min_trigger_ms": summary.get("min_trigger_ms") if summary else None,
-                "max_trigger_ms": summary.get("max_trigger_ms") if summary else None,
-            },
+            QuestBuildRow(
+                key=str(key),
+                title=str(title),
+                ts=event.ts,
+                builder_name=builder.get("name"),
+                builder_va=builder.get("va"),
+                entry_count=event.entry_count,
+                entries_truncated=event.raw.get("entries_truncated"),
+                time_limit_ms=meta.get("time_limit_ms"),
+                terrain_id=meta.get("terrain_id"),
+                start_weapon_id=meta.get("start_weapon_id"),
+                unlock_perk_id=meta.get("unlock_perk_id"),
+                unlock_weapon_id=meta.get("unlock_weapon_id"),
+                full_version=config.get("full_version"),
+                player_count=config.get("player_count"),
+                spawn_ids=(None if summary is None else summary.get("spawn_ids")),
+                spawn_id_counts=(None if summary is None else summary.get("spawn_id_counts")),
+                min_trigger_ms=(None if summary is None else summary.get("min_trigger_ms")),
+                max_trigger_ms=(None if summary is None else summary.get("max_trigger_ms")),
+            ),
         )
     return rows
 
 
-def write_json(path: Path, payload: dict[str, Any]) -> None:
+def write_json(path: Path, payload: QuestBuildSummary) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+    path.write_bytes(msgspec.json.encode(payload))
 
 
-def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
+def write_csv(path: Path, rows: list[QuestBuildRow]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     fields = [
         "key",
@@ -231,11 +264,28 @@ def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         writer = csv.DictWriter(handle, fieldnames=fields)
         writer.writeheader()
         for row in rows:
-            out = dict(row)
-            spawn_ids = out.get("spawn_ids")
-            if isinstance(spawn_ids, list):
-                out["spawn_ids"] = ";".join(spawn_ids)
-            writer.writerow({key: out.get(key) for key in fields})
+            spawn_ids = None if row.spawn_ids is None else ";".join(row.spawn_ids)
+            writer.writerow(
+                {
+                    "key": row.key,
+                    "title": row.title,
+                    "ts": row.ts,
+                    "builder_name": row.builder_name,
+                    "builder_va": row.builder_va,
+                    "entry_count": row.entry_count,
+                    "entries_truncated": row.entries_truncated,
+                    "time_limit_ms": row.time_limit_ms,
+                    "terrain_id": row.terrain_id,
+                    "start_weapon_id": row.start_weapon_id,
+                    "unlock_perk_id": row.unlock_perk_id,
+                    "unlock_weapon_id": row.unlock_weapon_id,
+                    "full_version": row.full_version,
+                    "player_count": row.player_count,
+                    "spawn_ids": spawn_ids,
+                    "min_trigger_ms": row.min_trigger_ms,
+                    "max_trigger_ms": row.max_trigger_ms,
+                },
+            )
 
 
 def main() -> None:
@@ -259,23 +309,23 @@ def main() -> None:
     events = parse_build_events(logs)
     rows = build_rows(events)
 
-    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    grouped: dict[str, list[QuestBuildRow]] = defaultdict(list)
     for row in rows:
-        grouped[row["key"]].append(row)
+        grouped[row.key].append(row)
 
     expected = load_expected_levels()
     missing = [level for level in sorted(expected) if level not in grouped]
     duplicates = {key: len(values) for key, values in grouped.items() if len(values) > 1}
 
-    summary = {
-        "source_logs": [str(path) for path in logs],
-        "event_count": len(events),
-        "unique_keys": len(grouped),
-        "missing_levels": missing,
-        "duplicates": duplicates,
-        "runs": rows,
-        "expected": expected,
-    }
+    summary = QuestBuildSummary(
+        source_logs=[str(path) for path in logs],
+        event_count=int(len(events)),
+        unique_keys=int(len(grouped)),
+        missing_levels=list(missing),
+        duplicates={str(key): int(value) for key, value in duplicates.items()},
+        runs=rows,
+        expected=expected,
+    )
 
     out_dir: Path = args.out_dir
     write_json(out_dir / "quest_builds_summary.json", summary)

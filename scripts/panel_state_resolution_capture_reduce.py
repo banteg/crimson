@@ -14,9 +14,10 @@ import argparse
 import json
 import re
 from collections import Counter, defaultdict
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+import msgspec
 
 RESOLUTION_RE = re.compile(r"_(\d+)x(\d+)_")
 DEFAULT_INPUT_GLOB = "artifacts/frida/share/panel_state_resolution_capture_*.jsonl"
@@ -83,15 +84,25 @@ def _line_count(path: Path) -> int:
     return n
 
 
-@dataclass
-class FileSummary:
+class StateResult(msgspec.Struct, forbid_unknown_fields=True):
+    target_state: int | None
+    target_label: str | None
+    result: str
+    frames: int
+    unique_panel_count: int
+    unique_text_count: int
+    panel_duplicates: int
+    text_duplicates: int
+
+
+class FileSummary(msgspec.Struct, forbid_unknown_fields=True):
     path: str
     size_bytes: int
     line_count: int
     run_id: str | None
     resolution: str | None
     event_counts: dict[str, int]
-    state_results: list[dict[str, Any]]
+    state_results: list[StateResult]
     has_sweep_done: bool
     output_files: dict[str, str]
     config_max_unique_texts: int | None
@@ -100,44 +111,70 @@ class FileSummary:
     status: str
     notes: list[str]
 
-    def to_json(self) -> dict[str, Any]:
-        return {
-            "path": self.path,
-            "size_bytes": self.size_bytes,
-            "line_count": self.line_count,
-            "run_id": self.run_id,
-            "resolution": self.resolution,
-            "event_counts": self.event_counts,
-            "state_results": self.state_results,
-            "has_sweep_done": self.has_sweep_done,
-            "output_files": self.output_files,
-            "config_max_unique_texts": self.config_max_unique_texts,
-            "text_rows": self.text_rows,
-            "text_rows_with_replacement_char": self.text_rows_with_replacement_char,
-            "status": self.status,
-            "notes": self.notes,
-        }
+class StateResultOverview(msgspec.Struct, forbid_unknown_fields=True):
+    states_total: int
+    result_counts: dict[str, int]
+    non_captured_states: list[str]
+    zero_signal_captured_states: list[str]
+    max_unique_text_count_seen: int
 
 
-def _normalize_state_result(obj: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "target_state": _as_int(obj.get("target_state")),
-        "target_label": obj.get("target_label") if isinstance(obj.get("target_label"), str) else None,
-        "result": str(obj.get("result") or ""),
-        "frames": _as_int(obj.get("frames")) or 0,
-        "unique_panel_count": _as_int(obj.get("unique_panel_count")) or 0,
-        "unique_text_count": _as_int(obj.get("unique_text_count")) or 0,
-        "panel_duplicates": _as_int(obj.get("panel_duplicates")) or 0,
-        "text_duplicates": _as_int(obj.get("text_duplicates")) or 0,
-    }
+class PrimaryResolutionSummary(msgspec.Struct, forbid_unknown_fields=True):
+    path: str
+    status: str
+    line_count: int
+    size_bytes: int
+    state_overview: StateResultOverview
+    notes: list[str]
+
+
+class RunSummary(msgspec.Struct, forbid_unknown_fields=True):
+    run_id: str
+    status: str
+    files: list[FileSummary]
+    expected_output_files: dict[str, str]
+    resolutions: list[str]
+    primary_by_resolution: dict[str, PrimaryResolutionSummary]
+
+
+class BestResolutionSummary(msgspec.Struct, forbid_unknown_fields=True):
+    run_id: str
+    status: str
+    path: str | None
+    line_count: int
+    size_bytes: int
+    state_overview: StateResultOverview | None
+
+
+class PanelStateResolutionSummary(msgspec.Struct, forbid_unknown_fields=True):
+    generated_at: str
+    input_glob: str
+    files_scanned: int
+    runs_detected: int
+    file_status_counts: dict[str, int]
+    runs: list[RunSummary]
+    best_by_resolution: dict[str, BestResolutionSummary]
+
+
+def _normalize_state_result(obj: dict[str, Any]) -> StateResult:
+    return StateResult(
+        target_state=_as_int(obj.get("target_state")),
+        target_label=(obj.get("target_label") if isinstance(obj.get("target_label"), str) else None),
+        result=str(obj.get("result") or ""),
+        frames=(_as_int(obj.get("frames")) or 0),
+        unique_panel_count=(_as_int(obj.get("unique_panel_count")) or 0),
+        unique_text_count=(_as_int(obj.get("unique_text_count")) or 0),
+        panel_duplicates=(_as_int(obj.get("panel_duplicates")) or 0),
+        text_duplicates=(_as_int(obj.get("text_duplicates")) or 0),
+    )
 
 
 def _parse_file(path: Path) -> FileSummary:
     event_counts: Counter[str] = Counter()
     run_id_counts: Counter[str] = Counter()
     resolution_counts: Counter[str] = Counter()
-    state_results: list[dict[str, Any]] = []
-    sweep_done_results: list[dict[str, Any]] = []
+    state_results: list[StateResult] = []
+    sweep_done_results: list[StateResult] = []
     has_sweep_done = False
     output_files: dict[str, str] = {}
     config_max_unique_texts: int | None = None
@@ -211,22 +248,22 @@ def _parse_file(path: Path) -> FileSummary:
     if resolution is None and resolution_counts:
         resolution = resolution_counts.most_common(1)[0][0]
 
-    result_counts = Counter(row.get("result") for row in state_results)
+    result_counts = Counter(row.result for row in state_results)
     captured_count = int(result_counts.get("captured", 0))
-    non_captured = [row for row in state_results if row.get("result") != "captured"]
+    non_captured = [row for row in state_results if row.result != "captured"]
     zero_signal_states = [
         row
         for row in state_results
-        if row.get("result") == "captured"
-        and int(row.get("frames") or 0) == 0
-        and int(row.get("unique_panel_count") or 0) == 0
-        and int(row.get("unique_text_count") or 0) == 0
+        if row.result == "captured"
+        and int(row.frames) == 0
+        and int(row.unique_panel_count) == 0
+        and int(row.unique_text_count) == 0
     ]
     max_unique_text = config_max_unique_texts if config_max_unique_texts is not None else 1800
     maxed_text_states = [
         row
         for row in state_results
-        if int(row.get("unique_text_count") or 0) >= max_unique_text
+        if int(row.unique_text_count) >= max_unique_text
     ]
 
     notes: list[str] = []
@@ -256,7 +293,7 @@ def _parse_file(path: Path) -> FileSummary:
 
     return FileSummary(
         path=str(path),
-        size_bytes=path.stat().st_size,
+        size_bytes=int(path.stat().st_size),
         line_count=_line_count(path),
         run_id=run_id,
         resolution=resolution,
@@ -297,32 +334,32 @@ def _primary_file_for_resolution(files: list[FileSummary], resolution: str) -> F
     return candidates[0]
 
 
-def _state_result_overview(state_results: list[dict[str, Any]]) -> dict[str, Any]:
-    result_counts = Counter(str(row.get("result") or "") for row in state_results)
+def _state_result_overview(state_results: list[StateResult]) -> StateResultOverview:
+    result_counts = Counter(str(row.result) for row in state_results)
     non_captured = [
-        _state_label_key(row.get("target_state"), row.get("target_label"))
+        _state_label_key(row.target_state, row.target_label)
         for row in state_results
-        if row.get("result") != "captured"
+        if row.result != "captured"
     ]
     zero_signal = [
-        _state_label_key(row.get("target_state"), row.get("target_label"))
+        _state_label_key(row.target_state, row.target_label)
         for row in state_results
-        if row.get("result") == "captured"
-        and int(row.get("frames") or 0) == 0
-        and int(row.get("unique_panel_count") or 0) == 0
-        and int(row.get("unique_text_count") or 0) == 0
+        if row.result == "captured"
+        and int(row.frames) == 0
+        and int(row.unique_panel_count) == 0
+        and int(row.unique_text_count) == 0
     ]
-    max_unique_text = max((int(row.get("unique_text_count") or 0) for row in state_results), default=0)
-    return {
-        "states_total": len(state_results),
-        "result_counts": {k: int(v) for k, v in sorted(result_counts.items(), key=lambda kv: kv[0])},
-        "non_captured_states": non_captured,
-        "zero_signal_captured_states": zero_signal,
-        "max_unique_text_count_seen": max_unique_text,
-    }
+    max_unique_text = max((int(row.unique_text_count) for row in state_results), default=0)
+    return StateResultOverview(
+        states_total=int(len(state_results)),
+        result_counts={k: int(v) for k, v in sorted(result_counts.items(), key=lambda kv: kv[0])},
+        non_captured_states=non_captured,
+        zero_signal_captured_states=zero_signal,
+        max_unique_text_count_seen=int(max_unique_text),
+    )
 
 
-def _run_summary(run_id: str, files: list[FileSummary]) -> dict[str, Any]:
+def _run_summary(run_id: str, files: list[FileSummary]) -> RunSummary:
     output_files: dict[str, str] = {}
     for f in files:
         for res_key, out_path in f.output_files.items():
@@ -344,24 +381,24 @@ def _run_summary(run_id: str, files: list[FileSummary]) -> dict[str, Any]:
     else:
         run_status = "partial"
 
-    return {
-        "run_id": run_id,
-        "status": run_status,
-        "files": [f.to_json() for f in sorted(files, key=lambda x: x.path)],
-        "expected_output_files": output_files,
-        "resolutions": resolutions,
-        "primary_by_resolution": {
-            res: {
-                "path": primary_file.path,
-                "status": primary_file.status,
-                "line_count": primary_file.line_count,
-                "size_bytes": primary_file.size_bytes,
-                "state_overview": _state_result_overview(primary_file.state_results),
-                "notes": primary_file.notes,
-            }
+    return RunSummary(
+        run_id=str(run_id),
+        status=str(run_status),
+        files=list(sorted(files, key=lambda x: x.path)),
+        expected_output_files=output_files,
+        resolutions=resolutions,
+        primary_by_resolution={
+            res: PrimaryResolutionSummary(
+                path=primary_file.path,
+                status=primary_file.status,
+                line_count=int(primary_file.line_count),
+                size_bytes=int(primary_file.size_bytes),
+                state_overview=_state_result_overview(primary_file.state_results),
+                notes=list(primary_file.notes),
+            )
             for res, primary_file in sorted(primary.items(), key=lambda kv: _resolution_sort_key(kv[0]))
         },
-    }
+    )
 
 
 def _resolution_sort_key(res: str) -> tuple[int, int]:
@@ -374,136 +411,94 @@ def _resolution_sort_key(res: str) -> tuple[int, int]:
         return (1 << 30, 1 << 30)
 
 
-def _best_by_resolution(run_summaries: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
-    out: dict[str, dict[str, Any]] = {}
+def _best_by_resolution(run_summaries: list[RunSummary]) -> dict[str, BestResolutionSummary]:
+    out: dict[str, BestResolutionSummary] = {}
     for run in run_summaries:
-        run_id = str(run.get("run_id") or "")
-        primary = run.get("primary_by_resolution")
-        if not isinstance(primary, dict):
-            continue
-        for res, item in primary.items():
-            if not isinstance(res, str) or not isinstance(item, dict):
-                continue
-            candidate = {
-                "run_id": run_id,
-                "status": str(item.get("status") or "partial"),
-                "path": item.get("path"),
-                "line_count": _as_int(item.get("line_count")) or 0,
-                "size_bytes": _as_int(item.get("size_bytes")) or 0,
-                "state_overview": item.get("state_overview"),
-            }
+        for res, item in run.primary_by_resolution.items():
+            candidate = BestResolutionSummary(
+                run_id=str(run.run_id),
+                status=str(item.status),
+                path=item.path,
+                line_count=int(item.line_count),
+                size_bytes=int(item.size_bytes),
+                state_overview=item.state_overview,
+            )
             cur = out.get(res)
             if cur is None:
                 out[res] = candidate
                 continue
             cand_key = (
-                _status_rank(candidate["status"]),
-                int(candidate["line_count"]),
-                int(candidate["size_bytes"]),
+                _status_rank(candidate.status),
+                int(candidate.line_count),
+                int(candidate.size_bytes),
             )
             cur_key = (
-                _status_rank(str(cur.get("status") or "partial")),
-                _as_int(cur.get("line_count")) or 0,
-                _as_int(cur.get("size_bytes")) or 0,
+                _status_rank(str(cur.status)),
+                int(cur.line_count),
+                int(cur.size_bytes),
             )
             if cand_key > cur_key:
                 out[res] = candidate
     return {res: out[res] for res in sorted(out, key=_resolution_sort_key)}
 
 
-def _render_markdown(summary: dict[str, Any]) -> str:
+def _render_markdown(summary: PanelStateResolutionSummary) -> str:
     lines: list[str] = []
     lines.append("# Panel state resolution capture report")
     lines.append("")
     lines.append("- issue: `#165` (support all resolutions)")
-    lines.append(f"- input_glob: `{summary.get('input_glob')}`")
-    lines.append(f"- files_scanned: `{summary.get('files_scanned')}`")
-    lines.append(f"- runs_detected: `{summary.get('runs_detected')}`")
+    lines.append(f"- input_glob: `{summary.input_glob}`")
+    lines.append(f"- files_scanned: `{summary.files_scanned}`")
+    lines.append(f"- runs_detected: `{summary.runs_detected}`")
     lines.append("")
 
-    file_status_counts = summary.get("file_status_counts") or {}
+    file_status_counts = summary.file_status_counts
     lines.append("## File triage")
     lines.append(f"- complete: `{int(file_status_counts.get('complete', 0))}`")
     lines.append(f"- degraded: `{int(file_status_counts.get('degraded', 0))}`")
     lines.append(f"- partial: `{int(file_status_counts.get('partial', 0))}`")
     lines.append("")
 
-    run_summaries = summary.get("runs") or []
     lines.append("## Runs")
-    for run in run_summaries:
-        if not isinstance(run, dict):
-            continue
-        run_id = str(run.get("run_id") or "?")
-        status = str(run.get("status") or "partial")
+    for run in summary.runs:
+        run_id = str(run.run_id)
+        status = str(run.status)
         lines.append(f"### `{run_id}` ({status})")
-        files = run.get("files") or []
-        if isinstance(files, list):
-            for file_obj in sorted(
-                (f for f in files if isinstance(f, dict)),
-                key=lambda f: str(f.get("path") or ""),
-            ):
-                p = str(file_obj.get("path") or "")
-                f_status = str(file_obj.get("status") or "partial")
-                line_count = _as_int(file_obj.get("line_count")) or 0
-                notes = file_obj.get("notes") or []
-                note_suffix = ""
-                if isinstance(notes, list) and notes:
-                    note_suffix = f" ({', '.join(str(n) for n in notes)})"
-                lines.append(f"- `{p}`: {f_status}, lines={line_count}{note_suffix}")
+        for file_obj in sorted(run.files, key=lambda f: str(f.path)):
+            note_suffix = f" ({', '.join(str(n) for n in file_obj.notes)})" if file_obj.notes else ""
+            lines.append(f"- `{file_obj.path}`: {file_obj.status}, lines={file_obj.line_count}{note_suffix}")
 
-        primary = run.get("primary_by_resolution") or {}
-        if isinstance(primary, dict) and primary:
+        primary = run.primary_by_resolution
+        if primary:
             lines.append("- primary by resolution:")
             for res in sorted(primary, key=_resolution_sort_key):
-                item = primary.get(res)
-                if not isinstance(item, dict):
-                    continue
-                st = str(item.get("status") or "partial")
-                ov = item.get("state_overview") or {}
-                if not isinstance(ov, dict):
-                    ov = {}
-                states_total = _as_int(ov.get("states_total")) or 0
-                rc = ov.get("result_counts") or {}
-                captured = 0
-                if isinstance(rc, dict):
-                    captured = _as_int(rc.get("captured")) or 0
-                non_captured = ov.get("non_captured_states") or []
-                zero_signal = ov.get("zero_signal_captured_states") or []
-                non_captured_count = len(non_captured) if isinstance(non_captured, list) else 0
-                zero_signal_count = len(zero_signal) if isinstance(zero_signal, list) else 0
+                item = primary[res]
+                ov = item.state_overview
+                states_total = int(ov.states_total)
+                captured = int(ov.result_counts.get("captured", 0))
+                non_captured_count = len(ov.non_captured_states)
+                zero_signal_count = len(ov.zero_signal_captured_states)
                 lines.append(
-                    f"  - `{res}`: {st}, captured={captured}/{states_total}, "
+                    f"  - `{res}`: {item.status}, captured={captured}/{states_total}, "
                     f"non_captured={non_captured_count}, zero_signal={zero_signal_count}",
                 )
         lines.append("")
 
     lines.append("## Best Coverage By Resolution")
-    best = summary.get("best_by_resolution") or {}
-    if isinstance(best, dict) and best:
+    best = summary.best_by_resolution
+    if best:
         lines.append("| resolution | status | run_id | captured/total | non-captured | zero-signal | file |")
         lines.append("| --- | --- | --- | --- | --- | --- | --- |")
         for res in sorted(best, key=_resolution_sort_key):
-            item = best.get(res)
-            if not isinstance(item, dict):
-                continue
-            status = str(item.get("status") or "partial")
-            run_id = str(item.get("run_id") or "")
-            path = str(item.get("path") or "")
-            ov = item.get("state_overview") or {}
-            if not isinstance(ov, dict):
-                ov = {}
-            states_total = _as_int(ov.get("states_total")) or 0
-            rc = ov.get("result_counts") or {}
-            captured = 0
-            if isinstance(rc, dict):
-                captured = _as_int(rc.get("captured")) or 0
-            non_captured = ov.get("non_captured_states") or []
-            zero_signal = ov.get("zero_signal_captured_states") or []
-            non_captured_count = len(non_captured) if isinstance(non_captured, list) else 0
-            zero_signal_count = len(zero_signal) if isinstance(zero_signal, list) else 0
+            item = best[res]
+            ov = item.state_overview
+            states_total = 0 if ov is None else int(ov.states_total)
+            captured = 0 if ov is None else int(ov.result_counts.get("captured", 0))
+            non_captured_count = 0 if ov is None else len(ov.non_captured_states)
+            zero_signal_count = 0 if ov is None else len(ov.zero_signal_captured_states)
             lines.append(
-                f"| `{res}` | `{status}` | `{run_id}` | `{captured}/{states_total}` | "
-                f"`{non_captured_count}` | `{zero_signal_count}` | `{path}` |",
+                f"| `{res}` | `{item.status}` | `{item.run_id}` | `{captured}/{states_total}` | "
+                f"`{non_captured_count}` | `{zero_signal_count}` | `{item.path or ''}` |",
             )
     else:
         lines.append("- none")
@@ -555,18 +550,18 @@ def main(argv: list[str] | None = None) -> int:
     file_status_counts = Counter(s.status for s in summaries)
     best_by_resolution = _best_by_resolution(run_summaries)
 
-    summary = {
-        "generated_at": _now_iso(),
-        "input_glob": args.glob,
-        "files_scanned": len(summaries),
-        "runs_detected": len(run_summaries),
-        "file_status_counts": {k: int(v) for k, v in sorted(file_status_counts.items(), key=lambda kv: kv[0])},
-        "runs": run_summaries,
-        "best_by_resolution": best_by_resolution,
-    }
+    summary = PanelStateResolutionSummary(
+        generated_at=_now_iso(),
+        input_glob=str(args.glob),
+        files_scanned=int(len(summaries)),
+        runs_detected=int(len(run_summaries)),
+        file_status_counts={k: int(v) for k, v in sorted(file_status_counts.items(), key=lambda kv: kv[0])},
+        runs=run_summaries,
+        best_by_resolution=best_by_resolution,
+    )
 
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
-    args.out_json.write_text(json.dumps(summary, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+    args.out_json.write_bytes(msgspec.json.encode(summary))
 
     md = _render_markdown(summary)
     args.out_md.parent.mkdir(parents=True, exist_ok=True)

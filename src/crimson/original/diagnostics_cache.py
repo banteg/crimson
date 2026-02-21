@@ -1203,7 +1203,7 @@ class CaptureSession:
         capture = _read_capture(self.capture_path)
         _write_msgpack_gz(capture_blob_path, capture)
         meta = _CaptureMeta(schema_version=int(_CACHE_SCHEMA_VERSION), fingerprint=self.fingerprint)
-        _atomic_write_text(meta_path, json.dumps(msgspec.to_builtins(meta), indent=2, sort_keys=True))
+        _atomic_write_text(meta_path, msgspec.json.encode(meta).decode("utf-8"))
         return capture
 
     def get_capture(self) -> CaptureFile:

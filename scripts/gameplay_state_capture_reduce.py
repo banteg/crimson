@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import msgspec
+
 LINK_BASE_EXE = 0x00400000
 _HEX_NO_PREFIX_RE = re.compile(r"^[0-9a-fA-F]{8}$")
 
@@ -63,6 +65,111 @@ class ExeInfo:
 class FunctionEntry:
     start: int
     name: str
+
+
+class TopCountRow(msgspec.Struct, forbid_unknown_fields=True):
+    key: str
+    count: int
+
+
+class SfxIdCandidate(msgspec.Struct, forbid_unknown_fields=True):
+    event: str
+    function: str
+    id: int | None
+    count: int
+    total: int
+    share: float
+
+
+class TimelineSummary(msgspec.Struct, forbid_unknown_fields=True):
+    ts_min: int | None
+    ts_max: int | None
+    duration_s: float | None
+
+
+class StateSummary(msgspec.Struct, forbid_unknown_fields=True):
+    game_state_set_target_counts: dict[str, int]
+    game_state_set_transition_counts: dict[str, int]
+    snapshot_state_counts: dict[str, int]
+    mode_tick_counts: dict[str, int]
+    mode_state_counts: dict[str, int]
+
+
+class BonusSummary(msgspec.Struct, forbid_unknown_fields=True):
+    bonus_apply_id_counts: dict[str, int]
+    bonus_hud_label_counts: dict[str, int]
+    bonus_hud_icon_counts: dict[str, int]
+    bonus_hud_timer_ptr_counts: dict[str, int]
+
+
+class WeaponProjectileSummary(msgspec.Struct, forbid_unknown_fields=True):
+    weapon_assign_counts: dict[str, int]
+    projectile_type_pairs: dict[str, int]
+    projectile_owner_counts: dict[str, int]
+    projectile_override_true: int
+    projectile_override_false: int
+
+
+class QuestResultsSummary(msgspec.Struct, forbid_unknown_fields=True):
+    samples: int
+    last: dict[str, Any] | None
+    unlock_weapon_counts: dict[str, int]
+    unlock_perk_counts: dict[str, int]
+    final_time_ms_min: int | None
+    final_time_ms_max: int | None
+
+
+class PerkTimersSummary(msgspec.Struct, forbid_unknown_fields=True):
+    samples: int
+    jinxed_min: float | None
+    jinxed_max: float | None
+    lean_mean_min: float | None
+    lean_mean_max: float | None
+    doctor_target_counts: dict[str, int]
+
+
+class UiSubtemplateSummary(msgspec.Struct, forbid_unknown_fields=True):
+    delta_state_counts: dict[str, int]
+    top_offset_changes: list[TopCountRow]
+    top_field_changes: list[TopCountRow]
+    top_block_changes: list[TopCountRow]
+    top_ui_elements: list[TopCountRow]
+
+
+class MemWatchSummary(msgspec.Struct, forbid_unknown_fields=True):
+    access_count: int
+    range_counts: dict[str, int]
+
+
+class SfxSummary(msgspec.Struct, forbid_unknown_fields=True):
+    by_function: dict[str, int]
+    by_function_and_id: dict[str, int]
+    top_by_function: list[TopCountRow]
+    top_by_function_and_id: list[TopCountRow]
+    high_confidence_function_ids: list[SfxIdCandidate]
+
+
+class TypingArtifactsSummary(msgspec.Struct, forbid_unknown_fields=True):
+    clip_samples: int
+    clip_bitpattern_samples: int
+    ammo_samples: int
+    ammo_bitpattern_samples: int
+
+
+class GameplayStateSummary(msgspec.Struct, forbid_unknown_fields=True):
+    source_log: str
+    source_log_size_bytes: int
+    timeline: TimelineSummary
+    event_counts: dict[str, int]
+    state: StateSummary
+    bonus: BonusSummary
+    weapon_and_projectile: WeaponProjectileSummary
+    quest_results: QuestResultsSummary
+    perk_timers: PerkTimersSummary
+    ui_subtemplate: UiSubtemplateSummary
+    mem_watch: MemWatchSummary
+    sfx: SfxSummary
+    typing_artifacts: TypingArtifactsSummary
 
 
 class FunctionIndex:
@@ -164,8 +271,12 @@ def caller_to_static(caller: Any) -> int | None:
         return None
 
 
-def top_counter(counter: Counter[Any], limit: int) -> list[dict[str, Any]]:
-    return [{"key": key, "count": count} for key, count in counter.most_common(limit)]
+def _counter_to_str_dict(counter: Counter[Any]) -> dict[str, int]:
+    return {str(key): int(count) for key, count in counter.items()}
+
+
+def top_counter(counter: Counter[Any], limit: int) -> list[TopCountRow]:
+    return [TopCountRow(key=str(key), count=int(count)) for key, count in counter.most_common(limit)]
 
 
 def parse_sfx_function_and_id(key: str) -> tuple[str, str, int | None]:
@@ -175,8 +286,8 @@ def parse_sfx_function_and_id(key: str) -> tuple[str, str, int | None]:
 
 def extract_sfx_id_candidates(
     by_function: Counter[str], by_function_and_id: Counter[str], min_total: int = 20, min_share: float = 0.9,
-) -> list[dict[str, Any]]:
-    out: list[dict[str, Any]] = []
+) -> list[SfxIdCandidate]:
+    out: list[SfxIdCandidate] = []
     for fn_key, total in by_function.items():
         if total < min_total:
             continue
@@ -194,20 +305,20 @@ def extract_sfx_id_candidates(
             continue
         event, fn_name = (fn_key.split("|", 1) + [""])[:2]
         out.append(
-            {
-                "event": event,
-                "function": fn_name,
-                "id": top_id,
-                "count": top_count,
-                "total": total,
-                "share": round(share, 4),
-            },
+            SfxIdCandidate(
+                event=str(event),
+                function=str(fn_name),
+                id=top_id,
+                count=int(top_count),
+                total=int(total),
+                share=round(float(share), 4),
+            ),
         )
-    out.sort(key=lambda row: (row["total"], row["count"]), reverse=True)
+    out.sort(key=lambda row: (int(row.total), int(row.count)), reverse=True)
     return out
 
 
-def summarize(log_path: Path, symbols: SymbolIndex, functions: FunctionIndex, top_n: int) -> dict[str, Any]:
+def summarize(log_path: Path, symbols: SymbolIndex, functions: FunctionIndex, top_n: int) -> GameplayStateSummary:
     exe = ExeInfo()
 
     event_counts: Counter[str] = Counter()
@@ -461,99 +572,95 @@ def summarize(log_path: Path, symbols: SymbolIndex, functions: FunctionIndex, to
     quest_final_max = max(quest_results_final_time_values) if quest_results_final_time_values else None
     sfx_id_candidates = extract_sfx_id_candidates(sfx_func_counts, sfx_func_id_counts, min_total=20, min_share=0.9)
 
-    return {
-        "source_log": str(log_path),
-        "source_log_size_bytes": log_path.stat().st_size,
-        "timeline": {
-            "ts_min": ts_min,
-            "ts_max": ts_max,
-            "duration_s": duration_s,
-        },
-        "event_counts": dict(event_counts),
-        "state": {
-            "game_state_set_target_counts": dict(state_target_counts),
-            "game_state_set_transition_counts": dict(state_transition_counts),
-            "snapshot_state_counts": dict(snapshot_state_counts),
-            "mode_tick_counts": dict(mode_counts),
-            "mode_state_counts": dict(mode_state_counts),
-        },
-        "bonus": {
-            "bonus_apply_id_counts": dict(bonus_id_counts),
-            "bonus_hud_label_counts": dict(bonus_label_counts),
-            "bonus_hud_icon_counts": dict(bonus_icon_counts),
-            "bonus_hud_timer_ptr_counts": dict(bonus_timer_ptr_counts),
-        },
-        "weapon_and_projectile": {
-            "weapon_assign_counts": dict(weapon_assign_counts),
-            "projectile_type_pairs": dict(projectile_type_pairs),
-            "projectile_owner_counts": dict(projectile_owner_counts),
-            "projectile_override_true": projectile_override_true,
-            "projectile_override_false": projectile_override_false,
-        },
-        "quest_results": {
-            "samples": quest_results_seen,
-            "last": quest_results_last,
-            "unlock_weapon_counts": dict(quest_results_unlock_weapon_counts),
-            "unlock_perk_counts": dict(quest_results_unlock_perk_counts),
-            "final_time_ms_min": quest_final_min,
-            "final_time_ms_max": quest_final_max,
-        },
-        "perk_timers": {
-            "samples": len(jinxed_vals),
-            "jinxed_min": min(jinxed_vals) if jinxed_vals else None,
-            "jinxed_max": max(jinxed_vals) if jinxed_vals else None,
-            "lean_mean_min": min(lean_mean_vals) if lean_mean_vals else None,
-            "lean_mean_max": max(lean_mean_vals) if lean_mean_vals else None,
-            "doctor_target_counts": dict(doctor_target_counts),
-        },
-        "ui_subtemplate": {
-            "delta_state_counts": dict(ui_delta_state_counts),
-            "top_offset_changes": top_counter(ui_delta_offset_counts, top_n),
-            "top_field_changes": top_counter(ui_delta_field_counts, top_n),
-            "top_block_changes": top_counter(ui_delta_block_counts, top_n),
-            "top_ui_elements": top_counter(ui_element_state_counts, top_n),
-        },
-        "mem_watch": {
-            "access_count": mem_watch_access_count,
-            "range_counts": dict(mem_watch_range_counts),
-        },
-        "sfx": {
-            "by_function": dict(sfx_func_counts),
-            "by_function_and_id": dict(sfx_func_id_counts),
-            "top_by_function": top_counter(sfx_func_counts, top_n),
-            "top_by_function_and_id": top_counter(sfx_func_id_counts, top_n),
-            "high_confidence_function_ids": sfx_id_candidates,
-        },
-        "typing_artifacts": {
-            "clip_samples": clip_samples,
-            "clip_bitpattern_samples": clip_bitpattern_samples,
-            "ammo_samples": ammo_samples,
-            "ammo_bitpattern_samples": ammo_bitpattern_samples,
-        },
-    }
+    return GameplayStateSummary(
+        source_log=str(log_path),
+        source_log_size_bytes=int(log_path.stat().st_size),
+        timeline=TimelineSummary(ts_min=ts_min, ts_max=ts_max, duration_s=duration_s),
+        event_counts=_counter_to_str_dict(event_counts),
+        state=StateSummary(
+            game_state_set_target_counts=_counter_to_str_dict(state_target_counts),
+            game_state_set_transition_counts=_counter_to_str_dict(state_transition_counts),
+            snapshot_state_counts=_counter_to_str_dict(snapshot_state_counts),
+            mode_tick_counts=_counter_to_str_dict(mode_counts),
+            mode_state_counts=_counter_to_str_dict(mode_state_counts),
+        ),
+        bonus=BonusSummary(
+            bonus_apply_id_counts=_counter_to_str_dict(bonus_id_counts),
+            bonus_hud_label_counts=_counter_to_str_dict(bonus_label_counts),
+            bonus_hud_icon_counts=_counter_to_str_dict(bonus_icon_counts),
+            bonus_hud_timer_ptr_counts=_counter_to_str_dict(bonus_timer_ptr_counts),
+        ),
+        weapon_and_projectile=WeaponProjectileSummary(
+            weapon_assign_counts=_counter_to_str_dict(weapon_assign_counts),
+            projectile_type_pairs=_counter_to_str_dict(projectile_type_pairs),
+            projectile_owner_counts=_counter_to_str_dict(projectile_owner_counts),
+            projectile_override_true=int(projectile_override_true),
+            projectile_override_false=int(projectile_override_false),
+        ),
+        quest_results=QuestResultsSummary(
+            samples=int(quest_results_seen),
+            last=quest_results_last,
+            unlock_weapon_counts=_counter_to_str_dict(quest_results_unlock_weapon_counts),
+            unlock_perk_counts=_counter_to_str_dict(quest_results_unlock_perk_counts),
+            final_time_ms_min=quest_final_min,
+            final_time_ms_max=quest_final_max,
+        ),
+        perk_timers=PerkTimersSummary(
+            samples=int(len(jinxed_vals)),
+            jinxed_min=(min(jinxed_vals) if jinxed_vals else None),
+            jinxed_max=(max(jinxed_vals) if jinxed_vals else None),
+            lean_mean_min=(min(lean_mean_vals) if lean_mean_vals else None),
+            lean_mean_max=(max(lean_mean_vals) if lean_mean_vals else None),
+            doctor_target_counts=_counter_to_str_dict(doctor_target_counts),
+        ),
+        ui_subtemplate=UiSubtemplateSummary(
+            delta_state_counts=_counter_to_str_dict(ui_delta_state_counts),
+            top_offset_changes=top_counter(ui_delta_offset_counts, top_n),
+            top_field_changes=top_counter(ui_delta_field_counts, top_n),
+            top_block_changes=top_counter(ui_delta_block_counts, top_n),
+            top_ui_elements=top_counter(ui_element_state_counts, top_n),
+        ),
+        mem_watch=MemWatchSummary(
+            access_count=int(mem_watch_access_count),
+            range_counts=_counter_to_str_dict(mem_watch_range_counts),
+        ),
+        sfx=SfxSummary(
+            by_function=_counter_to_str_dict(sfx_func_counts),
+            by_function_and_id=_counter_to_str_dict(sfx_func_id_counts),
+            top_by_function=top_counter(sfx_func_counts, top_n),
+            top_by_function_and_id=top_counter(sfx_func_id_counts, top_n),
+            high_confidence_function_ids=sfx_id_candidates,
+        ),
+        typing_artifacts=TypingArtifactsSummary(
+            clip_samples=int(clip_samples),
+            clip_bitpattern_samples=int(clip_bitpattern_samples),
+            ammo_samples=int(ammo_samples),
+            ammo_bitpattern_samples=int(ammo_bitpattern_samples),
+        ),
+    )
 
 
-def build_report(summary: dict[str, Any], top_n: int) -> str:
+def build_report(summary: GameplayStateSummary, top_n: int) -> str:
     lines: list[str] = []
 
-    duration = summary.get("timeline", {}).get("duration_s")
+    duration = summary.timeline.duration_s
     lines.append("# Gameplay state capture report")
     lines.append("")
-    lines.append(f"- log: `{summary.get('source_log')}`")
-    lines.append(f"- size: `{summary.get('source_log_size_bytes')}` bytes")
+    lines.append(f"- log: `{summary.source_log}`")
+    lines.append(f"- size: `{summary.source_log_size_bytes}` bytes")
     lines.append(f"- duration: `{duration:.2f}` s" if isinstance(duration, (int, float)) else "- duration: unknown")
     lines.append("")
 
-    event_counts = Counter(summary.get("event_counts") or {})
+    event_counts = Counter(summary.event_counts)
     lines.append("## Event volume")
     for key, count in event_counts.most_common(top_n):
         lines.append(f"- `{key}`: {count}")
     lines.append("")
 
-    state = summary.get("state") or {}
-    target_counts = Counter(state.get("game_state_set_target_counts") or {})
-    transition_counts = Counter(state.get("game_state_set_transition_counts") or {})
-    snapshot_counts = Counter(state.get("snapshot_state_counts") or {})
+    state = summary.state
+    target_counts = Counter(state.game_state_set_target_counts)
+    transition_counts = Counter(state.game_state_set_transition_counts)
+    snapshot_counts = Counter(state.snapshot_state_counts)
     lines.append("## State coverage")
     lines.append("- game_state_set targets:")
     for key, count in target_counts.most_common(top_n):
@@ -566,78 +673,77 @@ def build_report(summary: dict[str, Any], top_n: int) -> str:
         lines.append(f"  - state `{key}`: {count}")
     lines.append("")
 
-    bonus = summary.get("bonus") or {}
+    bonus = summary.bonus
     lines.append("## Bonus/HUD")
-    for key, count in Counter(bonus.get("bonus_apply_id_counts") or {}).most_common(top_n):
+    for key, count in Counter(bonus.bonus_apply_id_counts).most_common(top_n):
         lines.append(f"- bonus id `{key}`: {count}")
-    for key, count in Counter(bonus.get("bonus_hud_timer_ptr_counts") or {}).most_common(top_n):
+    for key, count in Counter(bonus.bonus_hud_timer_ptr_counts).most_common(top_n):
         lines.append(f"- timer ptr: `{key}` x{count}")
     lines.append("")
 
-    wp = summary.get("weapon_and_projectile") or {}
+    wp = summary.weapon_and_projectile
     lines.append("## Weapon/projectile")
-    for key, count in Counter(wp.get("weapon_assign_counts") or {}).most_common(top_n):
+    for key, count in Counter(wp.weapon_assign_counts).most_common(top_n):
         lines.append(f"- weapon assign `{key}`: {count}")
     lines.append(
-        f"- projectile overrides: true={wp.get('projectile_override_true', 0)} false={wp.get('projectile_override_false', 0)}",
+        f"- projectile overrides: true={wp.projectile_override_true} false={wp.projectile_override_false}",
     )
-    for key, count in Counter(wp.get("projectile_type_pairs") or {}).most_common(top_n):
+    for key, count in Counter(wp.projectile_type_pairs).most_common(top_n):
         lines.append(f"- projectile type pair `{key}`: {count}")
     lines.append("")
 
-    qr = summary.get("quest_results") or {}
+    qr = summary.quest_results
     lines.append("## Quest results reveal")
-    lines.append(f"- samples: {qr.get('samples', 0)}")
-    lines.append(f"- final_time_ms min/max: {qr.get('final_time_ms_min')} / {qr.get('final_time_ms_max')}")
-    for key, count in Counter(qr.get("unlock_weapon_counts") or {}).most_common(top_n):
+    lines.append(f"- samples: {qr.samples}")
+    lines.append(f"- final_time_ms min/max: {qr.final_time_ms_min} / {qr.final_time_ms_max}")
+    for key, count in Counter(qr.unlock_weapon_counts).most_common(top_n):
         lines.append(f"- unlock weapon id `{key}`: {count}")
-    for key, count in Counter(qr.get("unlock_perk_counts") or {}).most_common(top_n):
+    for key, count in Counter(qr.unlock_perk_counts).most_common(top_n):
         lines.append(f"- unlock perk id `{key}`: {count}")
     lines.append("")
 
-    ui = summary.get("ui_subtemplate") or {}
+    ui = summary.ui_subtemplate
     lines.append("## UI subtemplate deltas")
     lines.append("- top offset writes:")
-    for row in ui.get("top_offset_changes") or []:
-        lines.append(f"  - {row.get('key')}: {row.get('count')}")
+    for row in ui.top_offset_changes:
+        lines.append(f"  - {row.key}: {row.count}")
     lines.append("- decoded field changes:")
-    for row in ui.get("top_field_changes") or []:
-        lines.append(f"  - {row.get('key')}: {row.get('count')}")
+    for row in ui.top_field_changes:
+        lines.append(f"  - {row.key}: {row.count}")
     lines.append("")
 
-    sfx = summary.get("sfx") or {}
+    sfx = summary.sfx
     lines.append("## SFX by function")
-    for row in sfx.get("top_by_function") or []:
-        lines.append(f"- {row.get('key')}: {row.get('count')}")
+    for row in sfx.top_by_function:
+        lines.append(f"- {row.key}: {row.count}")
     lines.append("- top function+id pairs:")
-    for row in sfx.get("top_by_function_and_id") or []:
-        lines.append(f"  - {row.get('key')}: {row.get('count')}")
+    for row in sfx.top_by_function_and_id:
+        lines.append(f"  - {row.key}: {row.count}")
     lines.append("- high-confidence function->id:")
-    for row in sfx.get("high_confidence_function_ids") or []:
-        sid = row.get("id")
+    for row in sfx.high_confidence_function_ids:
+        sid = row.id
         sid_text = "None" if sid is None else str(sid)
-        share = row.get("share")
-        share_text = f"{float(share) * 100:.1f}%" if isinstance(share, (int, float)) else str(share)
+        share_text = f"{float(row.share) * 100:.1f}%"
         lines.append(
-            f"  - {row.get('event')}|{row.get('function')} -> id {sid_text} "
-            f"({row.get('count')}/{row.get('total')}, {share_text})",
+            f"  - {row.event}|{row.function} -> id {sid_text} "
+            f"({row.count}/{row.total}, {share_text})",
         )
     lines.append("")
 
-    mem_watch = summary.get("mem_watch") or {}
+    mem_watch = summary.mem_watch
     lines.append("## Memory watch")
-    lines.append(f"- mem_watch_access events: {mem_watch.get('access_count', 0)}")
-    for key, count in Counter(mem_watch.get("range_counts") or {}).most_common(top_n):
+    lines.append(f"- mem_watch_access events: {mem_watch.access_count}")
+    for key, count in Counter(mem_watch.range_counts).most_common(top_n):
         lines.append(f"- range `{key}`: {count}")
     lines.append("")
 
-    typing = summary.get("typing_artifacts") or {}
+    typing = summary.typing_artifacts
     lines.append("## Type artifact checks")
     lines.append(
-        f"- clip_size bit-pattern samples: {typing.get('clip_bitpattern_samples', 0)} / {typing.get('clip_samples', 0)}",
+        f"- clip_size bit-pattern samples: {typing.clip_bitpattern_samples} / {typing.clip_samples}",
     )
     lines.append(
-        f"- ammo bit-pattern samples: {typing.get('ammo_bitpattern_samples', 0)} / {typing.get('ammo_samples', 0)}",
+        f"- ammo bit-pattern samples: {typing.ammo_bitpattern_samples} / {typing.ammo_samples}",
     )
 
     return "\n".join(lines) + "\n"
@@ -698,10 +804,10 @@ def main() -> int:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.sfx_candidates.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    args.out.write_bytes(msgspec.json.encode(summary))
     args.report.write_text(build_report(summary, args.top), encoding="utf-8")
-    sfx_candidates = (summary.get("sfx") or {}).get("high_confidence_function_ids") or []
-    args.sfx_candidates.write_text(json.dumps(sfx_candidates, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    sfx_candidates = summary.sfx.high_confidence_function_ids
+    args.sfx_candidates.write_bytes(msgspec.json.encode(sfx_candidates))
 
     print(f"wrote {args.out}")
     print(f"wrote {args.report}")
