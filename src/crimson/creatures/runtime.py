@@ -1581,3 +1581,38 @@ class CreaturePool:
             owner_id=int(creature.last_hit_owner_id),
             suppress_death_sfx=bool(armored_death),
         )
+    def _update_player_auto_target(
+        self,
+        *,
+        players: list[PlayerState],
+        player_index: int,
+        creature_index: int,
+        creature: CreatureState,
+    ) -> None:
+        if not (0 <= int(player_index) < len(players)):
+            return
+        player = players[int(player_index)]
+        if float(player.health) <= 0.0:
+            return
+
+        auto_target = int(player.auto_target)
+        if not (0 <= auto_target < len(self._entries)):
+            player.auto_target = int(creature_index)
+            return
+
+        current = self._entries[int(auto_target)]
+        if not current.active or float(current.hp) <= 0.0:
+            player.auto_target = int(creature_index)
+            return
+
+        dist_new = Vec2.distance_sq(player.pos, creature.pos)
+        dist_current = Vec2.distance_sq(player.pos, current.pos)
+        if float(dist_new) < float(dist_current):
+            player.auto_target = int(creature_index)
+
+            self._update_player_auto_target(
+                players=players,
+                player_index=int(target_player),
+                creature_index=int(idx),
+                creature=creature,
+            )

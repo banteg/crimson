@@ -27,6 +27,7 @@ class PlayerState:
     aim_heading: float = 0.0
     aim_dir: Vec2 = field(default_factory=lambda: Vec2(1.0, 0.0))
     evil_eyes_target_creature: int = -1
+    auto_target: int = -1
 
     bonus_aim_hover_index: int = -1
     bonus_aim_hover_timer_ms: float = 0.0
