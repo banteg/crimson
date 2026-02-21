@@ -8,6 +8,7 @@ See: `docs/crimsonland-exe/player-damage.md`.
 
 from collections.abc import Callable, Sequence
 
+from .math_parity import f32
 from .perks import PerkId
 from .perks.helpers import perk_active
 from .sim.state_types import GameplayState, PlayerState
@@ -62,7 +63,7 @@ def player_take_damage(
 
     if perk_active(player, PerkId.THICK_SKINNED):
         # Native uses an f32 constant (`~0.666`) here, not exact 2/3.
-        damage_scaled *= _THICK_SKINNED_DAMAGE_SCALE_F32
+        damage_scaled = float(f32(float(damage_scaled) * float(_THICK_SKINNED_DAMAGE_SCALE_F32)))
 
     dodged = False
     if perk_active(player, PerkId.NINJA):
@@ -76,7 +77,7 @@ def player_take_damage(
             if (int(rng()) % 10) == 0:
                 player.health = 0.0
         else:
-            player.health -= float(damage_scaled)
+            player.health = float(f32(float(player.health) - float(damage_scaled)))
             if player.health < 0.0 and dt is not None and float(dt) > 0.0:
                 player.death_timer -= float(dt) * 28.0
 

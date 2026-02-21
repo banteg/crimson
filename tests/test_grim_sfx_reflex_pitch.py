@@ -37,7 +37,10 @@ def test_play_sfx_applies_native_reflex_rate_scaling(mocker) -> None:
 
     grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=0.25)
     assert state.rate_scale_hz == 38588
-    assert_float_close(float(set_sound_pitch.call_args_list[-1].args[1]), 38588 / 44100)
+    assert_float_close(
+        float(set_sound_pitch.call_args_list[-1].args[1]),
+        grim_sfx._pitch_scale_from_rate_hz(38588),
+    )
 
     grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=-0.1)
     assert state.rate_scale_hz == 44100

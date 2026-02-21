@@ -115,7 +115,7 @@ def test_player_update_spread_damping_scalar_recovers_toward_one_when_gate_non_p
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.5, state)
 
-    assert_float_close(state.player_spread_damping_scalar, 0.9)
+    assert_float_close(state.player_spread_damping_scalar, f32(0.9))
 
 
 def test_player_update_spread_damping_scalar_decays_to_floor_when_gate_positive() -> None:
@@ -142,7 +142,7 @@ def test_player_update_stationary_reloader_tripples_reload_decay() -> None:
 
     player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.1, state)
 
-    assert_float_close(player.reload_timer, 0.7)
+    assert_float_close(player.reload_timer, f32(0.7))
 
 
 def test_player_update_preloads_ammo_only_before_reload_underflow() -> None:

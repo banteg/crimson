@@ -26,7 +26,7 @@ This project prioritizes deterministic parity with the original executable. The 
 ## Float Assertions
 
 - Use `tests.helpers.assert_float_close(actual, expected)` for scalar float parity checks.
-- The canonical absolute tolerance is `1e-6`.
+- The canonical absolute tolerance is `1e-9`.
 
 ## RNG Assertions
 

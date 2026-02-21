@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
@@ -70,7 +71,7 @@ def test_ammunition_within_fire_ammo_class_costs_less_health() -> None:
 
     player_fire_weapon(player, PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), 0.016, state)
 
-    assert_float_close(player.health, 9.85)
+    assert_float_close(player.health, f32(9.85))
     assert any(entry.active for entry in state.particles.entries)
 
 
@@ -85,6 +86,6 @@ def test_ammunition_within_fire_weapon_fires_during_manual_reload_and_spends_amm
 
     player_fire_weapon(player, PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), 0.016, state)
 
-    assert_float_close(player.health, 9.85)
+    assert_float_close(player.health, f32(9.85))
     assert any(entry.active for entry in state.particles.entries)
     assert_float_close(player.ammo, 4.9)

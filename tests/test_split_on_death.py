@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import math
-
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
+from crimson.math_parity import NATIVE_HALF_PI
 from grim.geom import Vec2
 from tests.helpers import MockCrand, assert_float_close
 
@@ -43,8 +42,8 @@ def test_split_on_death_spawns_two_smaller_children() -> None:
     assert child2.hitbox_size == CREATURE_HITBOX_ALIVE
     assert child1.phase_seed == float(0x123 & 0xFF)
     assert child2.phase_seed == float(0x456 & 0xFF)
-    assert_float_close(child1.heading, -math.pi / 2.0)
-    assert_float_close(child2.heading, math.pi / 2.0)
+    assert_float_close(child1.heading, -NATIVE_HALF_PI)
+    assert_float_close(child2.heading, NATIVE_HALF_PI)
     assert child1.hp == parent.max_hp * 0.25
     assert child2.hp == parent.max_hp * 0.25
     assert child1.size == parent.size - 8.0
