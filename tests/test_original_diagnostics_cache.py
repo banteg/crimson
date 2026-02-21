@@ -804,6 +804,9 @@ def test_capture_session_builds_sidecars_and_indexes(tmp_path: Path, monkeypatch
     cache_meta_files = list((tmp_path / "cache").glob("*/meta.json"))
     assert cache_capture_blobs
     assert cache_meta_files
+    meta_payload = json.loads(cache_meta_files[0].read_text(encoding="utf-8"))
+    assert "schema_version" in meta_payload
+    assert "v" not in meta_payload
 
     sample_counts = session.get_sample_creature_counts()
     assert sample_counts[0] == 1
