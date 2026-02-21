@@ -322,7 +322,7 @@ class WorldState:
         _mark("ws_after_sprite_effects")
         _mark("ws_after_particles")
         _mark("ws_after_death_sfx")
-
+        reload_active_any = any(bool(entry.reload_down) or bool(entry.reload_pressed) for entry in inputs)
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
             player_update(
@@ -341,7 +341,7 @@ class WorldState:
                     fx_queue=fx_queue,
                     deaths=deaths,
                 ),
-                reload_pressed_any=any(bool(entry.reload_pressed) for entry in inputs),
+                reload_active_any=bool(reload_active_any),
             )
             dt = player_frame_dt_after_roundtrip(dt=dt, time_scale_active=bool(self.state.time_scale_active), reflex_boost_timer=float(self.state.bonuses.reflex_boost))
             if idx == 0:

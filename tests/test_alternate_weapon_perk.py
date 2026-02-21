@@ -187,11 +187,11 @@ def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None
     players = [player0, player1]
     player_update(
         player0,
-        PlayerInput(reload_pressed=True),
+        PlayerInput(reload_pressed=True, reload_down=True),
         dt=0.05,
         state=state,
         players=players,
-        reload_pressed_any=True,
+        reload_active_any=True,
     )
     assert player0.weapon_id == 1
     assert state.player_alt_weapon_swap_cooldown_ms == 200
@@ -202,16 +202,16 @@ def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None
         dt=0.05,
         state=state,
         players=players,
-        reload_pressed_any=True,
+        reload_active_any=True,
     )
     assert state.player_alt_weapon_swap_cooldown_ms > 0
 
     player_update(
         player0,
-        PlayerInput(reload_pressed=True),
+        PlayerInput(reload_pressed=False, reload_down=True),
         dt=0.05,
         state=state,
         players=players,
-        reload_pressed_any=True,
+        reload_active_any=True,
     )
     assert player0.weapon_id == 1

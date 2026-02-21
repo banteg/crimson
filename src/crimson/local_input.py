@@ -510,6 +510,7 @@ class LocalInputInterpreter:
         if aim_scheme is AimScheme.COMPUTER and computer_auto_fire:
             fire_down = True
         reload_pressed = input_code_is_pressed_for_player(reload_key, player_index=idx)
+        reload_down = input_code_is_down_for_player(reload_key, player_index=idx)
 
         return PlayerInput(
             move=move_vec,
@@ -519,6 +520,7 @@ class LocalInputInterpreter:
             fire_down=fire_down,
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,
+            reload_down=reload_down,
             move_to_cursor_pressed=move_to_cursor_pressed,
             move_forward_pressed=move_forward_pressed,
             move_backward_pressed=move_backward_pressed,

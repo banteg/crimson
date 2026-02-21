@@ -14,6 +14,7 @@ class PlayerInput:
     fire_down: bool = False
     fire_pressed: bool = False
     reload_pressed: bool = False
+    reload_down: bool = False
     move_to_cursor_pressed: bool = False
     move_forward_pressed: bool | None = None
     move_backward_pressed: bool | None = None

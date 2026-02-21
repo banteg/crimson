@@ -539,7 +539,7 @@ def player_update(
     creatures: Sequence[CreatureState] | None = None,
     spawn_slots: Sequence[_SpawnSlotLike] | None = None,
     on_player_lethal: Callable[[PlayerState], None] | None = None,
-    reload_pressed_any: bool | None = None,
+    reload_active_any: bool | None = None,
 ) -> None:
     """Port of `player_update` (0x004136b0) for the rewrite runtime."""
 
@@ -946,8 +946,8 @@ def player_update(
         player.reload_active = False
 
     swapped_alt_weapon = False
-    reload_key_active = bool(input_state.reload_pressed)
-    reload_key_released = (not bool(reload_pressed_any)) if reload_pressed_any is not None else (not reload_key_active)
+    reload_key_active = bool(input_state.reload_down or input_state.reload_pressed)
+    reload_key_released = (not bool(reload_active_any)) if reload_active_any is not None else (not reload_key_active)
     if has_alt_weapon_perk:
         cooldown_ms = int(state.player_alt_weapon_swap_cooldown_ms)
         dt_ms = int(round(float(dt) * 1000.0)) if float(dt) > 0.0 else 0
