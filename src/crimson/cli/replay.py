@@ -12,8 +12,8 @@ from ..game_modes import GameMode
 from ..paths import default_runtime_dir
 
 _REPLAY_VERIFY_SCHEMA_VERSION = 1
-_REPLAY_BENCHMARK_SCHEMA_VERSION = 1
 _REPLAY_INFO_SCHEMA_VERSION = 1
+_REPLAY_BENCHMARK_SCHEMA_VERSION = 2
 _REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE = 3
 
 
@@ -305,6 +305,9 @@ class _ReplayBenchmarkSettingsPayload(msgspec.Struct, forbid_unknown_fields=True
     profile_sort: str
     top: int
     profile_out: str | None
+    render_telemetry: bool
+    render_telemetry_out: str | None
+    render_charts_out_dir: str | None
 
 
 class _ReplayBenchmarkSamplePayload(msgspec.Struct, forbid_unknown_fields=True):
@@ -321,6 +324,51 @@ class _ReplayBenchmarkSummaryPayload(msgspec.Struct, forbid_unknown_fields=True)
     realtime_x: _BenchmarkAggregatePayload
 
 
+class _ReplayRenderTelemetryTopTickPayload(msgspec.Struct, forbid_unknown_fields=True):
+    tick_index: int
+    frame_index: int
+    value: float
+
+
+class _ReplayRenderTelemetryFramePayload(msgspec.Struct, forbid_unknown_fields=True):
+    frame_index: int
+    tick_index_before_update: int
+    tick_index_after_update: int
+    update_ms: float
+    draw_ms: float
+    frame_ms: float
+    draw_calls_total: int
+    draw_calls_by_api: dict[str, int]
+    draw_calls_by_pass: dict[str, int]
+    pass_ms: dict[str, float]
+
+
+class _ReplayRenderTelemetrySummaryPayload(msgspec.Struct, forbid_unknown_fields=True):
+    frame_ms: _BenchmarkAggregatePayload
+    update_ms: _BenchmarkAggregatePayload
+    draw_ms: _BenchmarkAggregatePayload
+    draw_calls_total: _BenchmarkAggregatePayload
+    top_draw_ms_ticks: list[_ReplayRenderTelemetryTopTickPayload]
+    top_frame_ms_ticks: list[_ReplayRenderTelemetryTopTickPayload]
+    top_draw_calls_ticks: list[_ReplayRenderTelemetryTopTickPayload]
+
+
+class _ReplayRenderTelemetryArtifactsPayload(msgspec.Struct, forbid_unknown_fields=True):
+    telemetry_json_path: str | None
+    charts_dir: str | None
+    frame_timing_svg: str | None
+    draw_calls_svg: str | None
+    pass_timing_stacked_svg: str | None
+    report_md: str | None
+
+
+class _ReplayRenderTelemetryPayload(msgspec.Struct, forbid_unknown_fields=True):
+    summary: _ReplayRenderTelemetrySummaryPayload
+    frames: list[_ReplayRenderTelemetryFramePayload]
+    preview: list[_ReplayRenderTelemetryFramePayload]
+    artifacts: _ReplayRenderTelemetryArtifactsPayload | None
+
+
 class _ReplayBenchmarkPayload(msgspec.Struct, forbid_unknown_fields=True):
     schema_version: int
     status: str
@@ -330,6 +378,7 @@ class _ReplayBenchmarkPayload(msgspec.Struct, forbid_unknown_fields=True):
     run_result: _RunResultPayload
     benchmark: _ReplayBenchmarkSummaryPayload
     profile: _ReplayBenchmarkProfilePayload | None
+    render_telemetry: _ReplayRenderTelemetryPayload | None
 
 
 def _run_result_payload(run_result: object) -> _RunResultPayload:
@@ -357,6 +406,31 @@ def _benchmark_aggregate_payload(aggregate: object) -> _BenchmarkAggregatePayloa
         p95=float(entry.p95),
         max=float(entry.max),
         stdev=float(entry.stdev),
+    )
+
+
+def _render_telemetry_top_tick_payload(entry: object) -> _ReplayRenderTelemetryTopTickPayload:
+    item = cast("Any", entry)
+    return _ReplayRenderTelemetryTopTickPayload(
+        tick_index=int(item.tick_index),
+        frame_index=int(item.frame_index),
+        value=float(item.value),
+    )
+
+
+def _render_telemetry_frame_payload(entry: object) -> _ReplayRenderTelemetryFramePayload:
+    item = cast("Any", entry)
+    return _ReplayRenderTelemetryFramePayload(
+        frame_index=int(item.frame_index),
+        tick_index_before_update=int(item.tick_index_before_update),
+        tick_index_after_update=int(item.tick_index_after_update),
+        update_ms=float(item.update_ms),
+        draw_ms=float(item.draw_ms),
+        frame_ms=float(item.frame_ms),
+        draw_calls_total=int(item.draw_calls_total),
+        draw_calls_by_api={str(key): int(value) for key, value in dict(item.draw_calls_by_api).items()},
+        draw_calls_by_pass={str(key): int(value) for key, value in dict(item.draw_calls_by_pass).items()},
+        pass_ms={str(key): float(value) for key, value in dict(item.pass_ms).items()},
     )
 
 
@@ -725,8 +799,18 @@ def cmd_replay_benchmark(
         ...,
         help="replay file path (.crd); if a filename is provided, also search base-dir/replays",
     ),
-    runs: int = typer.Option(5, "--runs", min=1, help="number of measured benchmark runs"),
-    warmup_runs: int = typer.Option(1, "--warmup-runs", min=0, help="warmup runs before measured timing"),
+    runs: int | None = typer.Option(
+        None,
+        "--runs",
+        min=1,
+        help="number of measured benchmark runs (default: headless=5, render=1)",
+    ),
+    warmup_runs: int | None = typer.Option(
+        None,
+        "--warmup-runs",
+        min=0,
+        help="warmup runs before measured timing (default: headless=1, render=0)",
+    ),
     mode: Literal["headless", "render"] = typer.Option(
         "headless",
         "--mode",
@@ -754,6 +838,21 @@ def cmd_replay_benchmark(
         None,
         "--profile-out",
         help="optional cProfile .pstats output path (used only with --profile)",
+    ),
+    render_telemetry: bool = typer.Option(
+        False,
+        "--render-telemetry",
+        help="collect per-tick render telemetry (render mode only)",
+    ),
+    render_telemetry_out: Path | None = typer.Option(
+        None,
+        "--render-telemetry-out",
+        help="optional output path for full render telemetry JSON (render mode only)",
+    ),
+    render_charts_out_dir: Path | None = typer.Option(
+        None,
+        "--render-charts-out-dir",
+        help="optional output directory for render telemetry SVG charts (render mode only)",
     ),
     output_format: Literal["human", "json"] = typer.Option(
         "human",
@@ -793,6 +892,18 @@ def cmd_replay_benchmark(
 
     replay_bytes = Path(replay_path).read_bytes()
     replay_sha256 = hashlib.sha256(replay_bytes).hexdigest()
+    resolved_runs = int(runs) if runs is not None else (1 if str(mode) == "render" else 5)
+    resolved_warmup_runs = int(warmup_runs) if warmup_runs is not None else (0 if str(mode) == "render" else 1)
+    if str(mode) != "render":
+        if bool(render_telemetry):
+            typer.echo("replay benchmark failed: --render-telemetry is supported only with --mode render", err=True)
+            raise typer.Exit(code=1)
+        if render_telemetry_out is not None:
+            typer.echo("replay benchmark failed: --render-telemetry-out is supported only with --mode render", err=True)
+            raise typer.Exit(code=1)
+        if render_charts_out_dir is not None:
+            typer.echo("replay benchmark failed: --render-charts-out-dir is supported only with --mode render", err=True)
+            raise typer.Exit(code=1)
 
     try:
         replay = load_replay(replay_bytes)
@@ -801,8 +912,8 @@ def cmd_replay_benchmark(
                 replay,
                 replay_path=Path(replay_path),
                 base_dir=Path(base_dir),
-                runs=int(runs),
-                warmup_runs=int(warmup_runs),
+                runs=int(resolved_runs),
+                warmup_runs=int(resolved_warmup_runs),
                 max_ticks=max_ticks,
                 strict_events=bool(strict_events),
                 trace_rng=bool(trace_rng),
@@ -810,12 +921,16 @@ def cmd_replay_benchmark(
                 profile_sort=profile_sort,
                 top=int(top),
                 profile_out=profile_out,
+                render_telemetry=bool(render_telemetry),
+                render_telemetry_out=render_telemetry_out,
+                render_charts_out_dir=render_charts_out_dir,
+                show_progress=(str(output_format) == "human"),
             )
         else:
             benchmark = run_replay_benchmark(
                 replay,
-                runs=int(runs),
-                warmup_runs=int(warmup_runs),
+                runs=int(resolved_runs),
+                warmup_runs=int(resolved_warmup_runs),
                 max_ticks=max_ticks,
                 strict_events=bool(strict_events),
                 trace_rng=bool(trace_rng),
@@ -848,6 +963,43 @@ def cmd_replay_benchmark(
             ],
         )
 
+    render_telemetry_payload: _ReplayRenderTelemetryPayload | None = None
+    if benchmark.render_telemetry is not None:
+        telemetry_summary = benchmark.render_telemetry.summary
+        artifacts_payload: _ReplayRenderTelemetryArtifactsPayload | None = None
+        if benchmark.render_telemetry.artifacts is not None:
+            artifacts = benchmark.render_telemetry.artifacts
+            artifacts_payload = _ReplayRenderTelemetryArtifactsPayload(
+                telemetry_json_path=(str(artifacts.telemetry_json_path) if artifacts.telemetry_json_path else None),
+                charts_dir=(str(artifacts.charts_dir) if artifacts.charts_dir else None),
+                frame_timing_svg=(str(artifacts.frame_timing_svg) if artifacts.frame_timing_svg else None),
+                draw_calls_svg=(str(artifacts.draw_calls_svg) if artifacts.draw_calls_svg else None),
+                pass_timing_stacked_svg=(
+                    str(artifacts.pass_timing_stacked_svg) if artifacts.pass_timing_stacked_svg else None
+                ),
+                report_md=(str(artifacts.report_md) if artifacts.report_md else None),
+            )
+        render_telemetry_payload = _ReplayRenderTelemetryPayload(
+            summary=_ReplayRenderTelemetrySummaryPayload(
+                frame_ms=_benchmark_aggregate_payload(telemetry_summary.frame_ms),
+                update_ms=_benchmark_aggregate_payload(telemetry_summary.update_ms),
+                draw_ms=_benchmark_aggregate_payload(telemetry_summary.draw_ms),
+                draw_calls_total=_benchmark_aggregate_payload(telemetry_summary.draw_calls_total),
+                top_draw_ms_ticks=[
+                    _render_telemetry_top_tick_payload(entry) for entry in telemetry_summary.top_draw_ms_ticks
+                ],
+                top_frame_ms_ticks=[
+                    _render_telemetry_top_tick_payload(entry) for entry in telemetry_summary.top_frame_ms_ticks
+                ],
+                top_draw_calls_ticks=[
+                    _render_telemetry_top_tick_payload(entry) for entry in telemetry_summary.top_draw_calls_ticks
+                ],
+            ),
+            frames=[_render_telemetry_frame_payload(entry) for entry in benchmark.render_telemetry.frames],
+            preview=[_render_telemetry_frame_payload(entry) for entry in benchmark.render_telemetry.preview],
+            artifacts=artifacts_payload,
+        )
+
     payload = _ReplayBenchmarkPayload(
         schema_version=int(_REPLAY_BENCHMARK_SCHEMA_VERSION),
         status="ok",
@@ -855,8 +1007,8 @@ def cmd_replay_benchmark(
         replay_sha256=str(replay_sha256),
         settings=_ReplayBenchmarkSettingsPayload(
             mode=str(mode),
-            runs=int(runs),
-            warmup_runs=int(warmup_runs),
+            runs=int(resolved_runs),
+            warmup_runs=int(resolved_warmup_runs),
             max_ticks=(int(max_ticks) if max_ticks is not None else None),
             strict_events=bool(strict_events),
             trace_rng=bool(trace_rng),
@@ -864,6 +1016,9 @@ def cmd_replay_benchmark(
             profile_sort=str(profile_sort),
             top=int(top),
             profile_out=(str(profile_out) if profile_out is not None else None),
+            render_telemetry=bool(render_telemetry),
+            render_telemetry_out=(str(render_telemetry_out) if render_telemetry_out is not None else None),
+            render_charts_out_dir=(str(render_charts_out_dir) if render_charts_out_dir is not None else None),
         ),
         run_result=_run_result_payload(benchmark.run_result),
         benchmark=_ReplayBenchmarkSummaryPayload(
@@ -881,6 +1036,7 @@ def cmd_replay_benchmark(
             realtime_x=_benchmark_aggregate_payload(benchmark.realtime_x),
         ),
         profile=profile_payload,
+        render_telemetry=render_telemetry_payload,
     )
     payload_json = msgspec.json.encode(payload)
 
@@ -897,7 +1053,7 @@ def cmd_replay_benchmark(
     typer.echo(
         "ok: "
         f"mode={mode} "
-        f"runs={len(benchmark.samples)} warmup_runs={int(warmup_runs)} "
+        f"runs={len(benchmark.samples)} warmup_runs={int(resolved_warmup_runs)} "
         f"ticks={int(benchmark.run_result.ticks)} "
         f"wall_ms_p50={float(benchmark.wall_ms.p50):.3f} "
         f"tps_p50={float(benchmark.ticks_per_second.p50):.2f} "
@@ -909,6 +1065,37 @@ def cmd_replay_benchmark(
         + " | "
         + _fmt_metric_agg("realtime_x", benchmark.realtime_x, digits=2),
     )
+    if benchmark.render_telemetry is not None:
+        telemetry = benchmark.render_telemetry
+        typer.echo(
+            "render_telemetry: "
+            + _fmt_metric_agg("frame_ms", telemetry.summary.frame_ms, digits=3)
+            + " | "
+            + _fmt_metric_agg("update_ms", telemetry.summary.update_ms, digits=3)
+            + " | "
+            + _fmt_metric_agg("draw_ms", telemetry.summary.draw_ms, digits=3),
+        )
+        typer.echo(_fmt_metric_agg("draw_calls_total", telemetry.summary.draw_calls_total, digits=2))
+        typer.echo("render_telemetry top_draw_ms_ticks:")
+        if not telemetry.summary.top_draw_ms_ticks:
+            typer.echo("  (none)")
+        for row in telemetry.summary.top_draw_ms_ticks:
+            typer.echo(f"  tick={int(row.tick_index)} frame={int(row.frame_index)} draw_ms={float(row.value):.3f}")
+        artifacts = telemetry.artifacts
+        if artifacts is not None:
+            typer.echo("render_telemetry artifacts:")
+            if artifacts.telemetry_json_path:
+                typer.echo(f"  telemetry_json={artifacts.telemetry_json_path}")
+            if artifacts.charts_dir:
+                typer.echo(f"  charts_dir={artifacts.charts_dir}")
+            if artifacts.frame_timing_svg:
+                typer.echo(f"  frame_timing_svg={artifacts.frame_timing_svg}")
+            if artifacts.draw_calls_svg:
+                typer.echo(f"  draw_calls_svg={artifacts.draw_calls_svg}")
+            if artifacts.pass_timing_stacked_svg:
+                typer.echo(f"  pass_timing_stacked_svg={artifacts.pass_timing_stacked_svg}")
+            if artifacts.report_md:
+                typer.echo(f"  report_md={artifacts.report_md}")
     if benchmark.profile is None:
         return
     typer.echo(

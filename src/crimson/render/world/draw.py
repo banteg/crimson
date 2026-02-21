@@ -23,6 +23,7 @@ from .context import WorldRenderCtx
 from .creatures import draw_creature_sprite
 from .effects import draw_effect_pool, draw_particle_pool, draw_sprite_effect_pool
 from .overlays import draw_aim_circle, draw_clock_gauge, draw_direction_arrows
+from .profile_hooks import profile_pass
 from .projectiles import draw_projectile, draw_secondary_projectile, draw_sharpshooter_laser_sight
 from .trooper import draw_player_trooper_sprite
 
@@ -56,7 +57,8 @@ def draw_world(
 ) -> None:
     entity_alpha = clamp(float(entity_alpha), 0.0, 1.0)
     camera, view_scale, scale, screen_size, out_size = compute_view_transform(render_ctx)
-    draw_background(render_ctx, camera=camera, screen_size=screen_size, out_size=out_size, view_scale=view_scale)
+    with profile_pass("background"):
+        draw_background(render_ctx, camera=camera, screen_size=screen_size, out_size=out_size, view_scale=view_scale)
     if entity_alpha <= 1e-3:
         return
 
@@ -68,12 +70,18 @@ def draw_world(
             scale=scale,
             entity_alpha=entity_alpha,
         )
-        draw_players(render_ctx, ctx=draw_ctx, alive=False)
-        draw_creatures(render_ctx, ctx=draw_ctx)
-        draw_freeze_overlay(render_ctx, ctx=draw_ctx)
-        draw_players(render_ctx, ctx=draw_ctx, alive=True)
-        draw_projectiles_and_effects(render_ctx, ctx=draw_ctx)
-        draw_bonus_and_ui(render_ctx, ctx=draw_ctx, draw_aim_indicators_enabled=draw_aim_indicators)
+        with profile_pass("players_dead"):
+            draw_players(render_ctx, ctx=draw_ctx, alive=False)
+        with profile_pass("creatures"):
+            draw_creatures(render_ctx, ctx=draw_ctx)
+        with profile_pass("freeze_overlay"):
+            draw_freeze_overlay(render_ctx, ctx=draw_ctx)
+        with profile_pass("players_alive"):
+            draw_players(render_ctx, ctx=draw_ctx, alive=True)
+        with profile_pass("projectiles_effects"):
+            draw_projectiles_and_effects(render_ctx, ctx=draw_ctx)
+        with profile_pass("bonus_ui"):
+            draw_bonus_and_ui(render_ctx, ctx=draw_ctx, draw_aim_indicators_enabled=draw_aim_indicators)
 
 
 def compute_view_transform(render_ctx: WorldRenderCtx) -> tuple[Vec2, Vec2, float, Vec2, Vec2]:
@@ -399,54 +407,60 @@ def draw_freeze_overlay(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) ->
 
 
 def draw_projectiles_and_effects(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
-    draw_sharpshooter_laser_sight(
-        render_ctx,
-        camera=ctx.camera,
-        view_scale=ctx.view_scale,
-        scale=ctx.scale,
-        alpha=ctx.entity_alpha,
-    )
-
-    for proj_index, proj in enumerate(render_ctx.state.projectiles.entries):
-        if not proj.active:
-            continue
-        draw_projectile(
+    with profile_pass("laser_sight"):
+        draw_sharpshooter_laser_sight(
             render_ctx,
-            proj,
-            proj_index=proj_index,
+            camera=ctx.camera,
+            view_scale=ctx.view_scale,
             scale=ctx.scale,
             alpha=ctx.entity_alpha,
         )
 
-    draw_particle_pool(
-        render_ctx,
-        camera=ctx.camera,
-        view_scale=ctx.view_scale,
-        alpha=ctx.entity_alpha,
-    )
+    with profile_pass("primary_projectiles"):
+        for proj_index, proj in enumerate(render_ctx.state.projectiles.entries):
+            if not proj.active:
+                continue
+            draw_projectile(
+                render_ctx,
+                proj,
+                proj_index=proj_index,
+                scale=ctx.scale,
+                alpha=ctx.entity_alpha,
+            )
 
-    for proj in render_ctx.state.secondary_projectiles.entries:
-        if not proj.active:
-            continue
-        draw_secondary_projectile(
+    with profile_pass("particle_pool"):
+        draw_particle_pool(
             render_ctx,
-            proj,
-            scale=ctx.scale,
+            camera=ctx.camera,
+            view_scale=ctx.view_scale,
             alpha=ctx.entity_alpha,
         )
 
-    draw_sprite_effect_pool(
-        render_ctx,
-        camera=ctx.camera,
-        view_scale=ctx.view_scale,
-        alpha=ctx.entity_alpha,
-    )
-    draw_effect_pool(
-        render_ctx,
-        camera=ctx.camera,
-        view_scale=ctx.view_scale,
-        alpha=ctx.entity_alpha,
-    )
+    with profile_pass("secondary_projectiles"):
+        for proj in render_ctx.state.secondary_projectiles.entries:
+            if not proj.active:
+                continue
+            draw_secondary_projectile(
+                render_ctx,
+                proj,
+                scale=ctx.scale,
+                alpha=ctx.entity_alpha,
+            )
+
+    with profile_pass("sprite_effect_pool"):
+        draw_sprite_effect_pool(
+            render_ctx,
+            camera=ctx.camera,
+            view_scale=ctx.view_scale,
+            alpha=ctx.entity_alpha,
+        )
+    with profile_pass("effect_pool"):
+        draw_effect_pool(
+            render_ctx,
+            camera=ctx.camera,
+            view_scale=ctx.view_scale,
+            alpha=ctx.entity_alpha,
+        )
 
 
 def iter_visible_aim_players(render_ctx: WorldRenderCtx) -> tuple[PlayerState, ...]:
@@ -543,34 +557,39 @@ def draw_bonus_and_ui(
     ctx: WorldDrawContext,
     draw_aim_indicators_enabled: bool,
 ) -> None:
-    draw_bonus_pickups(
-        render_ctx,
-        camera=ctx.camera,
-        view_scale=ctx.view_scale,
-        scale=ctx.scale,
-        alpha=ctx.entity_alpha,
-    )
-    draw_bonus_hover_labels(
-        render_ctx,
-        camera=ctx.camera,
-        view_scale=ctx.view_scale,
-        alpha=ctx.entity_alpha,
-    )
+    with profile_pass("bonus_pickups"):
+        draw_bonus_pickups(
+            render_ctx,
+            camera=ctx.camera,
+            view_scale=ctx.view_scale,
+            scale=ctx.scale,
+            alpha=ctx.entity_alpha,
+        )
+    with profile_pass("bonus_labels"):
+        draw_bonus_hover_labels(
+            render_ctx,
+            camera=ctx.camera,
+            view_scale=ctx.view_scale,
+            alpha=ctx.entity_alpha,
+        )
 
     draw_world_aim = draw_aim_indicators_enabled and (not render_ctx.demo_mode_active)
     if draw_world_aim:
-        draw_aim_indicators(render_ctx, ctx=ctx)
+        with profile_pass("aim_indicators"):
+            draw_aim_indicators(render_ctx, ctx=ctx)
 
-    draw_direction_arrows(
-        render_ctx,
-        camera=ctx.camera,
-        view_scale=ctx.view_scale,
-        scale=ctx.scale,
-        alpha=ctx.entity_alpha,
-    )
+    with profile_pass("direction_arrows"):
+        draw_direction_arrows(
+            render_ctx,
+            camera=ctx.camera,
+            view_scale=ctx.view_scale,
+            scale=ctx.scale,
+            alpha=ctx.entity_alpha,
+        )
 
     if draw_world_aim:
-        draw_aim_enhancements(render_ctx, ctx=ctx)
+        with profile_pass("aim_enhancements"):
+            draw_aim_enhancements(render_ctx, ctx=ctx)
 
 
 __all__ = [

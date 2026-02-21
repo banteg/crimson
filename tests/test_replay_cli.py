@@ -21,7 +21,16 @@ from crimson.replay.checkpoints import (
     dump_checkpoints_file,
     load_checkpoints_file,
 )
-from crimson.sim.driver.replay_benchmark import BenchmarkAggregate, BenchmarkSample, ReplayBenchmarkResult
+from crimson.sim.driver.replay_benchmark import (
+    BenchmarkAggregate,
+    BenchmarkSample,
+    ReplayBenchmarkResult,
+    ReplayRenderTelemetryArtifacts,
+    ReplayRenderTelemetryFrame,
+    ReplayRenderTelemetryResult,
+    ReplayRenderTelemetrySummary,
+    ReplayRenderTelemetryTopTick,
+)
 from crimson.sim.driver.replay_render import ReplayRenderResult
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.driver.setup import RunResult
@@ -603,7 +612,7 @@ def test_replay_benchmark_json_output_payload_ok(tmp_path: Path) -> None:
 
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
-    assert payload["schema_version"] == 1
+    assert payload["schema_version"] == 2
     assert payload["status"] == "ok"
     assert payload["replay"] == str(replay_path)
     assert isinstance(payload["replay_sha256"], str)
@@ -613,6 +622,7 @@ def test_replay_benchmark_json_output_payload_ok(tmp_path: Path) -> None:
     assert payload["benchmark"]["sample_count"] == 2
     assert len(payload["benchmark"]["samples"]) == 2
     assert payload["profile"] is None
+    assert payload["render_telemetry"] is None
     assert payload["run_result"]["ticks"] == 2
 
 
@@ -678,8 +688,242 @@ def test_replay_benchmark_render_mode_uses_render_runner(tmp_path: Path, mocker)
     assert kwargs["strict_events"] is False
     assert kwargs["runs"] == 1
     assert kwargs["warmup_runs"] == 0
+    assert kwargs["show_progress"] is False
     assert kwargs["replay_path"] == replay_path
     assert kwargs["base_dir"] == tmp_path
+
+
+def test_replay_benchmark_render_mode_defaults_to_single_run_no_warmup(tmp_path: Path, mocker) -> None:
+    import crimson.sim.driver.replay_benchmark as replay_benchmark_mod
+
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+    run_result = RunResult(
+        game_mode_id=int(GameMode.SURVIVAL),
+        tick_rate=60,
+        ticks=3,
+        elapsed_ms=50,
+        score_xp=42,
+        creature_kill_count=1,
+        most_used_weapon_id=1,
+        shots_fired=2,
+        shots_hit=1,
+        rng_state=123,
+    )
+    sample = BenchmarkSample(wall_ms=1.5, ticks_per_second=2000.0, realtime_x=33.3)
+    aggregate = BenchmarkAggregate(min=1.5, p50=1.5, mean=1.5, p95=1.5, max=1.5, stdev=0.0)
+    run_replay_render_benchmark = mocker.patch.object(
+        replay_benchmark_mod,
+        "run_replay_render_benchmark",
+        return_value=ReplayBenchmarkResult(
+            run_result=run_result,
+            samples=(sample,),
+            wall_ms=aggregate,
+            ticks_per_second=aggregate,
+            realtime_x=aggregate,
+            profile=None,
+        ),
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "benchmark",
+            str(replay_path),
+            "--mode",
+            "render",
+            "--base-dir",
+            str(tmp_path),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    run_replay_render_benchmark.assert_called_once()
+    kwargs = run_replay_render_benchmark.call_args.kwargs
+    assert kwargs["runs"] == 1
+    assert kwargs["warmup_runs"] == 0
+    assert kwargs["show_progress"] is True
+
+
+def test_replay_benchmark_headless_defaults_remain_five_and_one(tmp_path: Path, mocker) -> None:
+    import crimson.sim.driver.replay_benchmark as replay_benchmark_mod
+
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+    run_result = RunResult(
+        game_mode_id=int(GameMode.SURVIVAL),
+        tick_rate=60,
+        ticks=3,
+        elapsed_ms=50,
+        score_xp=42,
+        creature_kill_count=1,
+        most_used_weapon_id=1,
+        shots_fired=2,
+        shots_hit=1,
+        rng_state=123,
+    )
+    sample = BenchmarkSample(wall_ms=1.5, ticks_per_second=2000.0, realtime_x=33.3)
+    aggregate = BenchmarkAggregate(min=1.5, p50=1.5, mean=1.5, p95=1.5, max=1.5, stdev=0.0)
+    run_replay_benchmark = mocker.patch.object(
+        replay_benchmark_mod,
+        "run_replay_benchmark",
+        return_value=ReplayBenchmarkResult(
+            run_result=run_result,
+            samples=(sample,),
+            wall_ms=aggregate,
+            ticks_per_second=aggregate,
+            realtime_x=aggregate,
+            profile=None,
+        ),
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "benchmark",
+            str(replay_path),
+            "--mode",
+            "headless",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    run_replay_benchmark.assert_called_once()
+    kwargs = run_replay_benchmark.call_args.kwargs
+    assert kwargs["runs"] == 5
+    assert kwargs["warmup_runs"] == 1
+
+
+def test_replay_benchmark_headless_rejects_render_telemetry_flag(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "benchmark",
+            str(replay_path),
+            "--mode",
+            "headless",
+            "--render-telemetry",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "--render-telemetry is supported only with --mode render" in result.output
+
+
+def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path: Path, mocker) -> None:
+    import crimson.sim.driver.replay_benchmark as replay_benchmark_mod
+
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+    run_result = RunResult(
+        game_mode_id=int(GameMode.SURVIVAL),
+        tick_rate=60,
+        ticks=3,
+        elapsed_ms=50,
+        score_xp=42,
+        creature_kill_count=1,
+        most_used_weapon_id=1,
+        shots_fired=2,
+        shots_hit=1,
+        rng_state=123,
+    )
+    sample = BenchmarkSample(wall_ms=1.5, ticks_per_second=2000.0, realtime_x=33.3)
+    aggregate = BenchmarkAggregate(min=1.5, p50=1.5, mean=1.5, p95=1.5, max=1.5, stdev=0.0)
+    telemetry_frame = ReplayRenderTelemetryFrame(
+        frame_index=0,
+        tick_index_before_update=0,
+        tick_index_after_update=1,
+        update_ms=0.2,
+        draw_ms=0.6,
+        frame_ms=0.8,
+        draw_calls_total=12,
+        draw_calls_by_api={"draw_texture_pro": 8},
+        draw_calls_by_pass={"projectiles_effects": 8},
+        pass_ms={"projectiles_effects": 0.6},
+    )
+    telemetry_summary = ReplayRenderTelemetrySummary(
+        frame_ms=aggregate,
+        update_ms=aggregate,
+        draw_ms=aggregate,
+        draw_calls_total=aggregate,
+        top_draw_ms_ticks=(ReplayRenderTelemetryTopTick(tick_index=1, frame_index=0, value=0.6),),
+        top_frame_ms_ticks=(ReplayRenderTelemetryTopTick(tick_index=1, frame_index=0, value=0.8),),
+        top_draw_calls_ticks=(ReplayRenderTelemetryTopTick(tick_index=1, frame_index=0, value=12.0),),
+    )
+    telemetry_artifacts = ReplayRenderTelemetryArtifacts(
+        telemetry_json_path=str(tmp_path / "telemetry.json"),
+        charts_dir=str(tmp_path / "charts"),
+        frame_timing_svg=str(tmp_path / "charts" / "frame_timing.svg"),
+        draw_calls_svg=str(tmp_path / "charts" / "draw_calls.svg"),
+        pass_timing_stacked_svg=str(tmp_path / "charts" / "pass_timing_stacked.svg"),
+        report_md=str(tmp_path / "charts" / "report.md"),
+    )
+    run_replay_render_benchmark = mocker.patch.object(
+        replay_benchmark_mod,
+        "run_replay_render_benchmark",
+        return_value=ReplayBenchmarkResult(
+            run_result=run_result,
+            samples=(sample,),
+            wall_ms=aggregate,
+            ticks_per_second=aggregate,
+            realtime_x=aggregate,
+            profile=None,
+            render_telemetry=ReplayRenderTelemetryResult(
+                frames=(telemetry_frame,),
+                summary=telemetry_summary,
+                artifacts=telemetry_artifacts,
+                preview=(telemetry_frame,),
+            ),
+        ),
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "benchmark",
+            str(replay_path),
+            "--mode",
+            "render",
+            "--base-dir",
+            str(tmp_path),
+            "--runs",
+            "1",
+            "--warmup-runs",
+            "0",
+            "--format",
+            "json",
+            "--render-telemetry",
+            "--render-telemetry-out",
+            str(tmp_path / "telemetry.json"),
+            "--render-charts-out-dir",
+            str(tmp_path / "charts"),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["schema_version"] == 2
+    assert payload["render_telemetry"] is not None
+    assert payload["render_telemetry"]["summary"]["top_draw_ms_ticks"][0]["tick_index"] == 1
+
+    run_replay_render_benchmark.assert_called_once()
+    kwargs = run_replay_render_benchmark.call_args.kwargs
+    assert kwargs["render_telemetry"] is True
+    assert kwargs["render_telemetry_out"] == (tmp_path / "telemetry.json")
+    assert kwargs["render_charts_out_dir"] == (tmp_path / "charts")
 
 
 def test_replay_render_uses_render_video_runner(tmp_path: Path, mocker) -> None:

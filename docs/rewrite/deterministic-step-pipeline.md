@@ -171,6 +171,12 @@ Include one `cProfile` pass and hotspot summary:
 uv run crimson replay benchmark replay.crd --profile --profile-sort cumtime --top 20 --profile-out artifacts/profiling/replay.pstats
 ```
 
+Collect per-tick render telemetry + SVG timelines (render mode):
+
+```bash
+uv run crimson replay benchmark replay.crd --mode render --render-telemetry --render-telemetry-out artifacts/profiling/replay_telemetry.json --render-charts-out-dir artifacts/profiling/replay_charts
+```
+
 ## Replay render (ffmpeg video export)
 
 `replay render` plays back a replay offscreen, captures each frame, and encodes

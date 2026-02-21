@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import cProfile
+import json
 import math
 import pstats
 import statistics
 import time
-from dataclasses import dataclass
+from collections.abc import Callable
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Literal, cast
 
@@ -16,6 +18,8 @@ from grim.view import ViewContext
 from ...game_modes import GameMode
 from ...modes.replay_playback_mode import ReplayPlaybackMode
 from ...replay import Replay
+from .render_telemetry import RenderTelemetryFrameSnapshot, RenderTelemetrySession
+from .render_telemetry_charts import write_render_telemetry_charts
 from .replay_runner import run_replay
 from .setup import RunResult, player0_most_used_weapon_id, player0_shots
 
@@ -64,6 +68,56 @@ class ReplayProfileResult:
 
 
 @dataclass(frozen=True, slots=True)
+class ReplayRenderTelemetryTopTick:
+    tick_index: int
+    frame_index: int
+    value: float
+
+
+@dataclass(frozen=True, slots=True)
+class ReplayRenderTelemetryFrame:
+    frame_index: int
+    tick_index_before_update: int
+    tick_index_after_update: int
+    update_ms: float
+    draw_ms: float
+    frame_ms: float
+    draw_calls_total: int
+    draw_calls_by_api: dict[str, int]
+    draw_calls_by_pass: dict[str, int]
+    pass_ms: dict[str, float]
+
+
+@dataclass(frozen=True, slots=True)
+class ReplayRenderTelemetrySummary:
+    frame_ms: BenchmarkAggregate
+    update_ms: BenchmarkAggregate
+    draw_ms: BenchmarkAggregate
+    draw_calls_total: BenchmarkAggregate
+    top_draw_ms_ticks: tuple[ReplayRenderTelemetryTopTick, ...]
+    top_frame_ms_ticks: tuple[ReplayRenderTelemetryTopTick, ...]
+    top_draw_calls_ticks: tuple[ReplayRenderTelemetryTopTick, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class ReplayRenderTelemetryArtifacts:
+    telemetry_json_path: str | None = None
+    charts_dir: str | None = None
+    frame_timing_svg: str | None = None
+    draw_calls_svg: str | None = None
+    pass_timing_stacked_svg: str | None = None
+    report_md: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ReplayRenderTelemetryResult:
+    frames: tuple[ReplayRenderTelemetryFrame, ...]
+    summary: ReplayRenderTelemetrySummary
+    artifacts: ReplayRenderTelemetryArtifacts | None = None
+    preview: tuple[ReplayRenderTelemetryFrame, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
 class ReplayBenchmarkResult:
     run_result: RunResult
     samples: tuple[BenchmarkSample, ...]
@@ -71,6 +125,13 @@ class ReplayBenchmarkResult:
     ticks_per_second: BenchmarkAggregate
     realtime_x: BenchmarkAggregate
     profile: ReplayProfileResult | None
+    render_telemetry: ReplayRenderTelemetryResult | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class _RenderOnceResult:
+    run_result: RunResult
+    telemetry_frames: tuple[RenderTelemetryFrameSnapshot, ...] = ()
 
 
 def run_replay_render_benchmark(
@@ -91,15 +152,24 @@ def run_replay_render_benchmark(
     top: int = 20,
     profile_out: Path | None = None,
     mute_audio: bool = True,
+    render_telemetry: bool = False,
+    render_telemetry_out: Path | None = None,
+    render_charts_out_dir: Path | None = None,
+    show_progress: bool = False,
+    tqdm_factory: Callable[..., object] | None = None,
 ) -> ReplayBenchmarkResult:
     from grim.config import ensure_crimson_cfg
     from grim.console import create_console
     from grim.raylib_api import rl
-    from grim.view import ViewContext
 
     from ...assets_fetch import download_missing_paqs
 
     _validate_args(runs=int(runs), warmup_runs=int(warmup_runs), top=int(top))
+    telemetry_requested = bool(
+        render_telemetry
+        or render_telemetry_out is not None
+        or render_charts_out_dir is not None,
+    )
 
     baseline_result = run_replay(
         replay,
@@ -135,7 +205,23 @@ def run_replay_render_benchmark(
     except RuntimeError as exc:
         raise ReplayBenchmarkError(f"render benchmark could not initialize window: {exc}") from exc
 
+    progress: Any | None = None
     try:
+        planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0) + (1 if telemetry_requested else 0)
+        if bool(show_progress) and int(planned_steps) > 0:
+            from tqdm import tqdm
+
+            factory = tqdm if tqdm_factory is None else tqdm_factory
+            progress = cast(
+                Any,
+                factory(
+                    total=int(planned_steps),
+                    unit="run",
+                    desc="render benchmark",
+                    leave=False,
+                ),
+            )
+
         for _ in range(int(warmup_runs)):
             _run_render_once(
                 ctx=ctx,
@@ -146,11 +232,14 @@ def run_replay_render_benchmark(
                 strict_events=bool(strict_events),
                 trace_rng=bool(trace_rng),
             )
+            if progress is not None:
+                progress.update(1)
+                progress.set_postfix_str("phase=warmup", refresh=False)
 
         samples: list[BenchmarkSample] = []
         for sample_idx in range(int(runs)):
             start_ns = time.perf_counter_ns()
-            render_result = _run_render_once(
+            measured = _run_render_once(
                 ctx=ctx,
                 replay_path=Path(replay_path),
                 cfg=cfg,
@@ -162,8 +251,8 @@ def run_replay_render_benchmark(
             elapsed_ns = max(1, int(time.perf_counter_ns()) - int(start_ns))
             wall_ms = float(elapsed_ns) / 1_000_000.0
             wall_s = float(elapsed_ns) / 1_000_000_000.0
-            ticks_per_second = float(render_result.ticks) / wall_s
-            realtime_x = float(render_result.elapsed_ms) / wall_ms
+            ticks_per_second = float(measured.run_result.ticks) / wall_s
+            realtime_x = float(measured.run_result.elapsed_ms) / wall_ms
             samples.append(
                 BenchmarkSample(
                     wall_ms=float(wall_ms),
@@ -173,15 +262,18 @@ def run_replay_render_benchmark(
             )
             _assert_consistent_run_result(
                 baseline_result,
-                render_result,
+                measured.run_result,
                 where=f"render run {sample_idx + 1}",
             )
+            if progress is not None:
+                progress.update(1)
+                progress.set_postfix_str(f"phase=measure sample={sample_idx + 1}/{int(runs)}", refresh=False)
 
         profile_result: ReplayProfileResult | None = None
         if bool(profile):
             prof = cProfile.Profile()
             prof.enable()
-            profiled_render_result = _run_render_once(
+            profiled = _run_render_once(
                 ctx=ctx,
                 replay_path=Path(replay_path),
                 cfg=cfg,
@@ -193,7 +285,7 @@ def run_replay_render_benchmark(
             prof.disable()
             _assert_consistent_run_result(
                 baseline_result,
-                profiled_render_result,
+                profiled.run_result,
                 where="render profiled run",
             )
 
@@ -209,7 +301,82 @@ def run_replay_render_benchmark(
                 source=source,
                 hotspots=tuple(hotspots),
             )
+            if progress is not None:
+                progress.update(1)
+                progress.set_postfix_str("phase=profile", refresh=False)
+
+        telemetry_result: ReplayRenderTelemetryResult | None = None
+        if telemetry_requested:
+            telemetry_session = RenderTelemetrySession()
+
+            def _run_with_telemetry() -> _RenderOnceResult:
+                with telemetry_session:
+                    return _run_render_once(
+                        ctx=ctx,
+                        replay_path=Path(replay_path),
+                        cfg=cfg,
+                        console=console,
+                        max_ticks=max_ticks,
+                        strict_events=bool(strict_events),
+                        trace_rng=bool(trace_rng),
+                        telemetry_session=telemetry_session,
+                    )
+
+            collected = _run_with_telemetry()
+            _assert_consistent_run_result(
+                baseline_result,
+                collected.run_result,
+                where="render telemetry run",
+            )
+
+            frames = tuple(_convert_telemetry_frame(frame) for frame in collected.telemetry_frames)
+            summary = _summarize_render_telemetry(frames=frames)
+
+            telemetry_json_path: Path | None = None
+            if render_telemetry_out is not None:
+                telemetry_json_path = Path(render_telemetry_out)
+                telemetry_json_path.parent.mkdir(parents=True, exist_ok=True)
+                payload = {
+                    "frames": [asdict(frame) for frame in frames],
+                    "summary": asdict(summary),
+                }
+                telemetry_json_path.write_text(
+                    json.dumps(payload, indent=2, sort_keys=True) + "\n",
+                    encoding="utf-8",
+                )
+
+            chart_paths: dict[str, Path] = {}
+            if render_charts_out_dir is not None:
+                chart_paths = write_render_telemetry_charts(
+                    frames=list(frames),
+                    out_dir=Path(render_charts_out_dir),
+                    telemetry_json_path=telemetry_json_path,
+                )
+
+            artifacts = ReplayRenderTelemetryArtifacts(
+                telemetry_json_path=(str(telemetry_json_path) if telemetry_json_path is not None else None),
+                charts_dir=(str(Path(render_charts_out_dir)) if render_charts_out_dir is not None else None),
+                frame_timing_svg=(str(chart_paths.get("frame_timing_svg")) if chart_paths.get("frame_timing_svg") else None),
+                draw_calls_svg=(str(chart_paths.get("draw_calls_svg")) if chart_paths.get("draw_calls_svg") else None),
+                pass_timing_stacked_svg=(
+                    str(chart_paths.get("pass_timing_stacked_svg"))
+                    if chart_paths.get("pass_timing_stacked_svg")
+                    else None
+                ),
+                report_md=(str(chart_paths.get("report_md")) if chart_paths.get("report_md") else None),
+            )
+            telemetry_result = ReplayRenderTelemetryResult(
+                frames=frames,
+                summary=summary,
+                artifacts=artifacts,
+                preview=tuple(frames[:10]),
+            )
+            if progress is not None:
+                progress.update(1)
+                progress.set_postfix_str("phase=telemetry", refresh=False)
     finally:
+        if progress is not None:
+            progress.close()
         rl.close_window()
 
     wall_values = [sample.wall_ms for sample in samples]
@@ -223,6 +390,7 @@ def run_replay_render_benchmark(
         ticks_per_second=_aggregate(tps_values),
         realtime_x=_aggregate(realtime_values),
         profile=profile_result,
+        render_telemetry=telemetry_result,
     )
 
 
@@ -335,7 +503,8 @@ def _run_render_once(
     max_ticks: int | None,
     strict_events: bool,
     trace_rng: bool,
-) -> RunResult:
+    telemetry_session: RenderTelemetrySession | None = None,
+) -> _RenderOnceResult:
     from grim.raylib_api import rl
 
     mode = ReplayPlaybackMode(
@@ -357,15 +526,45 @@ def _run_render_once(
         if step_dt <= 0.0:
             step_dt = 1.0 / 60.0
 
+        frame_index = 0
         while not bool(mode.finished):
+            tick_before = int(mode.tick_index)
+            if telemetry_session is not None:
+                telemetry_session.begin_frame(
+                    frame_index=int(frame_index),
+                    tick_index_before_update=int(tick_before),
+                )
+
+            frame_start_ns = time.perf_counter_ns()
+            update_start_ns = time.perf_counter_ns()
             mode.update(float(step_dt))
+            update_ns = max(0, int(time.perf_counter_ns()) - int(update_start_ns))
+
+            draw_start_ns = time.perf_counter_ns()
             rl.begin_drawing()
             mode.draw()
             rl.end_drawing()
+            draw_ns = max(0, int(time.perf_counter_ns()) - int(draw_start_ns))
+            frame_ns = max(0, int(time.perf_counter_ns()) - int(frame_start_ns))
+
+            tick_after = int(mode.tick_index)
+            if telemetry_session is not None:
+                telemetry_session.end_frame(
+                    tick_index_after_update=int(tick_after),
+                    update_ms=float(update_ns) / 1_000_000.0,
+                    draw_ms=float(draw_ns) / 1_000_000.0,
+                    frame_ms=float(frame_ns) / 1_000_000.0,
+                )
+
             if bool(mode.close_requested):
                 raise ReplayBenchmarkError("render benchmark aborted: replay playback requested close")
 
-        return _run_result_from_replay_mode(mode=mode, replay=replay)
+            frame_index += 1
+
+        return _RenderOnceResult(
+            run_result=_run_result_from_replay_mode(mode=mode, replay=replay),
+            telemetry_frames=(telemetry_session.frames if telemetry_session is not None else ()),
+        )
     finally:
         mode.close()
 
@@ -434,6 +633,12 @@ def _aggregate(values: list[float]) -> BenchmarkAggregate:
     )
 
 
+def _aggregate_or_zero(values: list[float]) -> BenchmarkAggregate:
+    if not values:
+        return BenchmarkAggregate(min=0.0, p50=0.0, mean=0.0, p95=0.0, max=0.0, stdev=0.0)
+    return _aggregate(values)
+
+
 def _percentile(sorted_values: list[float], ratio: float) -> float:
     if not sorted_values:
         raise ReplayBenchmarkError("cannot compute percentile of empty values")
@@ -492,4 +697,54 @@ def _is_project_hotspot_path(path: str) -> bool:
         or text.startswith("grim/")
         or "/src/crimson/" in text
         or "/src/grim/" in text
+    )
+
+
+def _convert_telemetry_frame(frame: RenderTelemetryFrameSnapshot) -> ReplayRenderTelemetryFrame:
+    return ReplayRenderTelemetryFrame(
+        frame_index=int(frame.frame_index),
+        tick_index_before_update=int(frame.tick_index_before_update),
+        tick_index_after_update=int(frame.tick_index_after_update),
+        update_ms=float(frame.update_ms),
+        draw_ms=float(frame.draw_ms),
+        frame_ms=float(frame.frame_ms),
+        draw_calls_total=int(frame.draw_calls_total),
+        draw_calls_by_api={str(key): int(value) for key, value in frame.draw_calls_by_api.items()},
+        draw_calls_by_pass={str(key): int(value) for key, value in frame.draw_calls_by_pass.items()},
+        pass_ms={str(key): float(value) for key, value in frame.pass_ms.items()},
+    )
+
+
+def _top_ticks(
+    *,
+    frames: tuple[ReplayRenderTelemetryFrame, ...],
+    top_n: int,
+    key_fn: Any,
+) -> tuple[ReplayRenderTelemetryTopTick, ...]:
+    ordered = sorted(frames, key=key_fn, reverse=True)
+    selected = ordered[: max(0, int(top_n))]
+    return tuple(
+        ReplayRenderTelemetryTopTick(
+            tick_index=int(frame.tick_index_after_update),
+            frame_index=int(frame.frame_index),
+            value=float(key_fn(frame)),
+        )
+        for frame in selected
+    )
+
+
+def _summarize_render_telemetry(*, frames: tuple[ReplayRenderTelemetryFrame, ...]) -> ReplayRenderTelemetrySummary:
+    frame_ms_values = [float(frame.frame_ms) for frame in frames]
+    update_ms_values = [float(frame.update_ms) for frame in frames]
+    draw_ms_values = [float(frame.draw_ms) for frame in frames]
+    draw_calls_values = [float(frame.draw_calls_total) for frame in frames]
+
+    return ReplayRenderTelemetrySummary(
+        frame_ms=_aggregate_or_zero(frame_ms_values),
+        update_ms=_aggregate_or_zero(update_ms_values),
+        draw_ms=_aggregate_or_zero(draw_ms_values),
+        draw_calls_total=_aggregate_or_zero(draw_calls_values),
+        top_draw_ms_ticks=_top_ticks(frames=frames, top_n=5, key_fn=lambda row: float(row.draw_ms)),
+        top_frame_ms_ticks=_top_ticks(frames=frames, top_n=5, key_fn=lambda row: float(row.frame_ms)),
+        top_draw_calls_ticks=_top_ticks(frames=frames, top_n=5, key_fn=lambda row: float(row.draw_calls_total)),
     )
