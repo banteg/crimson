@@ -53,6 +53,7 @@ Principles > rules. Don’t make code longer/uglier just to satisfy a guideline.
 - `getattr()` / `.get()` on typed models to dodge typing (ok for real dynamic dicts, or narrow tooling).
 - Hand-written field-by-field converters/mappers to comply with style—use serializers or small DTOs.
 - Thin duck typing protocols
+- Do not add legacy wrappers, do all changes cutover style.
 
 ## Schema changes
 Update callers directly. Keep schemas versioned, only support the latest version.

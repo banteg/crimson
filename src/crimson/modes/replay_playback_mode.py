@@ -37,6 +37,7 @@ from ..ui.hud import (
     HUD_AMMO_BASE_POS,
     HUD_AMMO_TEXT_OFFSET,
     HudAssets,
+    HudRenderContext,
     HudState,
     draw_hud_overlay,
     hud_flags_for_game_mode,
@@ -787,8 +788,17 @@ class ReplayPlaybackMode:
                 kills = int(world.creatures.kill_count)
                 quest_progress_ratio = float(kills) / float(total) if total > 0 else None
             draw_hud_overlay(
-                self._hud_assets,
-                state=self._hud_state,
+                HudRenderContext(
+                    assets=self._hud_assets,
+                    state=self._hud_state,
+                    font=self._small,
+                    show_health=bool(hud_flags.show_health),
+                    show_weapon=bool(hud_flags.show_weapon),
+                    show_xp=bool(hud_flags.show_xp),
+                    show_time=bool(hud_flags.show_time),
+                    show_quest_hud=bool(hud_flags.show_quest_hud),
+                    small_indicators=False,
+                ),
                 player=world.players[0],
                 players=world.players,
                 bonus_hud=world.state.bonus_hud,
@@ -797,15 +807,8 @@ class ReplayPlaybackMode:
                     if int(replay.header.game_mode_id) == int(GameMode.QUESTS)
                     else world._elapsed_ms,
                 ),
-                font=self._small,
                 frame_dt_ms=float(max(0.0, rl.get_frame_time()) * 1000.0),
-                show_health=bool(hud_flags.show_health),
-                show_weapon=bool(hud_flags.show_weapon),
-                show_xp=bool(hud_flags.show_xp),
-                show_time=bool(hud_flags.show_time),
-                show_quest_hud=bool(hud_flags.show_quest_hud),
                 quest_progress_ratio=quest_progress_ratio,
-                small_indicators=False,
             )
 
         self._draw_quest_title()

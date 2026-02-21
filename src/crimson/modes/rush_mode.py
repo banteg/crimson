@@ -36,7 +36,7 @@ from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSessionTick, RushDeterministicSession
 from ..ui.cursor import draw_menu_cursor
-from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
+from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
@@ -575,20 +575,22 @@ class RushMode(BaseGameplayMode):
             hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             self._draw_target_health_bar()
             hud_bottom = draw_hud_overlay(
-                self._hud_assets,
-                state=self._hud_state,
+                HudRenderContext(
+                    assets=self._hud_assets,
+                    state=self._hud_state,
+                    font=self._small,
+                    show_health=hud_flags.show_health,
+                    show_weapon=hud_flags.show_weapon,
+                    show_xp=hud_flags.show_xp,
+                    show_time=hud_flags.show_time,
+                    show_quest_hud=hud_flags.show_quest_hud,
+                    small_indicators=self._hud_small_indicators(),
+                ),
                 player=self.player,
                 players=self.world.players,
                 bonus_hud=self.state.bonus_hud,
                 elapsed_ms=self._rush.elapsed_ms,
-                font=self._small,
                 frame_dt_ms=self._last_dt_ms,
-                show_health=hud_flags.show_health,
-                show_weapon=hud_flags.show_weapon,
-                show_xp=hud_flags.show_xp,
-                show_time=hud_flags.show_time,
-                show_quest_hud=hud_flags.show_quest_hud,
-                small_indicators=self._hud_small_indicators(),
             )
 
         if not self._game_over_active:

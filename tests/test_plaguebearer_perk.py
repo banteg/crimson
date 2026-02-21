@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
+from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool, CreatureUpdateOptions
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
@@ -34,7 +34,7 @@ def test_plaguebearer_infects_weak_creatures_near_player() -> None:
     creature.hp = 100.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
 
-    pool.update(0.016, state=state, players=[player])
+    pool.update(0.016, options=CreatureUpdateOptions(state=state, players=[player]))
 
     assert creature.plague_infected
 
@@ -54,7 +54,7 @@ def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
     creature.hp = 100.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
 
-    pool.update(dt, state=state, players=[player])
+    pool.update(dt, options=CreatureUpdateOptions(state=state, players=[player]))
 
     assert_float_close(creature.collision_timer, 0.4)
     assert_float_close(creature.hp, 85.0)
@@ -82,7 +82,7 @@ def test_plaguebearer_spreads_between_nearby_creatures() -> None:
     other.hp = 100.0
     other.hitbox_size = CREATURE_HITBOX_ALIVE
 
-    pool.update(0.016, state=state, players=[player])
+    pool.update(0.016, options=CreatureUpdateOptions(state=state, players=[player]))
 
     assert other.plague_infected
 
@@ -104,7 +104,7 @@ def test_plaguebearer_infection_kill_increments_global_count() -> None:
     creature.reward_value = 10.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
 
-    result = pool.update(dt, state=state, players=[player])
+    result = pool.update(dt, options=CreatureUpdateOptions(state=state, players=[player]))
 
     assert state.plaguebearer_infection_count == 1
     assert len(result.deaths) == 1
@@ -128,7 +128,7 @@ def test_plaguebearer_infection_kill_does_not_apply_immediate_dead_decay() -> No
     creature.reward_value = 10.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
 
-    result = pool.update(dt, state=state, players=[player])
+    result = pool.update(dt, options=CreatureUpdateOptions(state=state, players=[player]))
 
     assert len(result.deaths) == 1
     # Native plague timer kills call creature_handle_death, then continue the

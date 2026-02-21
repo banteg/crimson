@@ -65,6 +65,7 @@ __all__ = [
     "CreatureDeath",
     "CreaturePool",
     "CreatureState",
+    "CreatureUpdateOptions",
     "CreatureUpdateResult",
 ]
 
@@ -307,6 +308,21 @@ class CreatureUpdateResult:
     deaths: tuple[CreatureDeath, ...] = ()
     spawned: tuple[int, ...] = ()
     sfx: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class CreatureUpdateOptions:
+    state: GameplayState
+    players: list[PlayerState]
+    dt_ms_i32: int | None = None
+    rand: Callable[[], int] | None = None
+    detail_preset: int = 5
+    fx_toggle: int = 0
+    env: SpawnEnv | None = None
+    world_width: float = 1024.0
+    world_height: float = 1024.0
+    fx_queue: FxQueue | None = None
+    fx_queue_rotated: FxQueueRotated | None = None
 
 
 @dataclass(slots=True)
@@ -787,17 +803,7 @@ class CreaturePool:
         self,
         dt: float,
         *,
-        dt_ms_i32: int | None = None,
-        state: GameplayState,
-        players: list[PlayerState],
-        rand: Callable[[], int] | None = None,
-        detail_preset: int = 5,
-        fx_toggle: int = 0,
-        env: SpawnEnv | None = None,
-        world_width: float = 1024.0,
-        world_height: float = 1024.0,
-        fx_queue: FxQueue | None = None,
-        fx_queue_rotated: FxQueueRotated | None = None,
+        options: CreatureUpdateOptions,
     ) -> CreatureUpdateResult:
         """Advance the creature runtime pool by `dt` seconds.
 
@@ -805,6 +811,17 @@ class CreaturePool:
         - Death side effects should be initiated by damage call sites.
         - This is not a full port of `creature_update_all`; it targets the Survival subset.
         """
+        state = options.state
+        players = options.players
+        dt_ms_i32 = options.dt_ms_i32
+        rand = options.rand
+        detail_preset = int(options.detail_preset)
+        fx_toggle = int(options.fx_toggle)
+        env = options.env
+        world_width = float(options.world_width)
+        world_height = float(options.world_height)
+        fx_queue = options.fx_queue
+        fx_queue_rotated = options.fx_queue_rotated
 
         if rand is None:
             rand = state.rng.rand
@@ -976,9 +993,9 @@ class CreaturePool:
                         except ValueError:
                             creature_type = None
                         if creature_type is not None:
-                            options = _CREATURE_CONTACT_SFX.get(creature_type)
-                            if options is not None:
-                                sfx.append(options[int(rand()) & 1])
+                            contact_sfx_options = _CREATURE_CONTACT_SFX.get(creature_type)
+                            if contact_sfx_options is not None:
+                                sfx.append(contact_sfx_options[int(rand()) & 1])
                         plague_killed = True
 
                     if fx_queue is not None:

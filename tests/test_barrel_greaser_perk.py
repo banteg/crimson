@@ -5,7 +5,7 @@ import math
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.perks import PerkId
-from crimson.projectiles import ProjectilePool, ProjectileTypeId
+from crimson.projectiles import ProjectilePool, ProjectileTypeId, ProjectileUpdateOptions
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WEAPON_BY_ID
 from grim.geom import Vec2
@@ -51,9 +51,11 @@ def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
     pool.update(
         0.016,
         [],
-        world_size=10000.0,
-        rng=lambda: 0,
-        players=players,
+        options=ProjectileUpdateOptions(
+            world_size=10000.0,
+            rng=lambda: 0,
+            players=players,
+        ),
     )
 
     return float(pool.entries[0].pos.x)

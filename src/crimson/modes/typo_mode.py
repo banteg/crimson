@@ -20,7 +20,7 @@ from ..typo.player import build_typo_player_input, enforce_typo_player_frame
 from ..typo.spawns import tick_typo_spawns
 from ..typo.typing import TypingBuffer
 from ..ui.cursor import draw_menu_cursor
-from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
+from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
@@ -403,20 +403,22 @@ class TypoShooterMode(BaseGameplayMode):
             hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             self._draw_target_health_bar()
             draw_hud_overlay(
-                self._hud_assets,
-                state=self._hud_state,
+                HudRenderContext(
+                    assets=self._hud_assets,
+                    state=self._hud_state,
+                    font=self._small,
+                    show_health=hud_flags.show_health,
+                    show_weapon=hud_flags.show_weapon,
+                    show_xp=hud_flags.show_xp,
+                    show_time=hud_flags.show_time,
+                    show_quest_hud=hud_flags.show_quest_hud,
+                    small_indicators=self._hud_small_indicators(),
+                ),
                 player=self.player,
                 players=self.world.players,
                 bonus_hud=self.state.bonus_hud,
                 elapsed_ms=float(self._typo.elapsed_ms),
-                font=self._small,
                 frame_dt_ms=self._last_dt_ms,
-                show_health=hud_flags.show_health,
-                show_weapon=hud_flags.show_weapon,
-                show_xp=hud_flags.show_xp,
-                show_time=hud_flags.show_time,
-                show_quest_hud=hud_flags.show_quest_hud,
-                small_indicators=self._hud_small_indicators(),
             )
 
         if show_gameplay_ui:

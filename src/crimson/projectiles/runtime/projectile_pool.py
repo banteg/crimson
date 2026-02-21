@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, MutableSequence, Sequence
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
@@ -35,6 +36,22 @@ from .spatial_hash import CreatureSpatialHash
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
     from ...sim.state_types import PlayerState
+
+
+@dataclass(frozen=True, slots=True)
+class ProjectileUpdateOptions:
+    world_size: float
+    damage_scale_by_type: dict[int, float] | None = None
+    damage_scale_default: float = 1.0
+    ion_aoe_scale: float = 1.0
+    detail_preset: int = 5
+    rng: Callable[[], int] | None = None
+    runtime_state: ProjectileRuntimeState | None = None
+    players: Sequence[PlayerState] | None = None
+    apply_player_damage: Callable[[int, float], None] | None = None
+    apply_creature_damage: CreatureDamageApplier | None = None
+    on_hit: Callable[[ProjectileHit], object | None] | None = None
+    on_hit_post: Callable[[ProjectileHit, object | None], None] | None = None
 
 
 class ProjectilePool:
@@ -115,23 +132,24 @@ class ProjectilePool:
         dt: float,
         creatures: Sequence[CreatureState],
         *,
-        world_size: float,
-        damage_scale_by_type: dict[int, float] | None = None,
-        damage_scale_default: float = 1.0,
-        ion_aoe_scale: float = 1.0,
-        detail_preset: int = 5,
-        rng: Callable[[], int] | None = None,
-        runtime_state: ProjectileRuntimeState | None = None,
-        players: Sequence[PlayerState] | None = None,
-        apply_player_damage: Callable[[int, float], None] | None = None,
-        apply_creature_damage: CreatureDamageApplier | None = None,
-        on_hit: Callable[[ProjectileHit], object | None] | None = None,
-        on_hit_post: Callable[[ProjectileHit, object | None], None] | None = None,
+        options: ProjectileUpdateOptions,
     ) -> list[ProjectileHit]:
         """Update the main projectile pool.
 
         Modeled after `projectile_update` (0x00420b90) for the subset used by demo/state-9 work.
         """
+        world_size = float(options.world_size)
+        damage_scale_by_type = options.damage_scale_by_type
+        damage_scale_default = float(options.damage_scale_default)
+        ion_aoe_scale = float(options.ion_aoe_scale)
+        detail_preset = int(options.detail_preset)
+        rng = options.rng
+        runtime_state = options.runtime_state
+        players = options.players
+        apply_player_damage = options.apply_player_damage
+        apply_creature_damage = options.apply_creature_damage
+        on_hit = options.on_hit
+        on_hit_post = options.on_hit_post
 
         if dt <= 0.0:
             return []

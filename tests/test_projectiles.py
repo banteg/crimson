@@ -8,7 +8,13 @@ from syrupy import SnapshotAssertion
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
-from crimson.projectiles import ProjectileHit, ProjectilePool, ProjectileTypeId, SecondaryProjectilePool
+from crimson.projectiles import (
+    ProjectileHit,
+    ProjectilePool,
+    ProjectileTypeId,
+    ProjectileUpdateOptions,
+    SecondaryProjectilePool,
+)
 from crimson.projectiles.runtime.collision import _within_native_find_radius
 from grim.geom import Vec2
 from tests.factories import make_creature_state as _creature
@@ -167,17 +173,21 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         hits = pool.update(
             0.1,
             creatures,
-            world_size=1024.0,
-            damage_scale_by_type=damage_scale_by_type,
-            rng=case.get("rng"),
+            options=ProjectileUpdateOptions(
+                world_size=1024.0,
+                damage_scale_by_type=damage_scale_by_type,
+                rng=case.get("rng"),
+            ),
         )
         if case.get("double_update", False):
             more_hits = pool.update(
                 0.1,
                 creatures,
-                world_size=1024.0,
-                damage_scale_by_type=damage_scale_by_type,
-                rng=case.get("rng"),
+                options=ProjectileUpdateOptions(
+                    world_size=1024.0,
+                    damage_scale_by_type=damage_scale_by_type,
+                    rng=case.get("rng"),
+                ),
             )
             hits = [*hits, *more_hits]
 

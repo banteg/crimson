@@ -18,7 +18,7 @@ from crimson.math_parity import f32
 from crimson.movement_controls import MovementControlType
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
-from crimson.projectiles import ProjectilePool, ProjectileTypeId
+from crimson.projectiles import ProjectilePool, ProjectileTypeId, ProjectileUpdateOptions
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (
@@ -1029,13 +1029,29 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     first_proj = state.shock_chain_projectile_id
     assert first_proj >= 0
 
-    pool.update(0.1, creatures, world_size=1024.0, rng=lambda: 0, runtime_state=state)
+    pool.update(
+        0.1,
+        creatures,
+        options=ProjectileUpdateOptions(
+            world_size=1024.0,
+            rng=lambda: 0,
+            runtime_state=state,
+        ),
+    )
 
     assert state.shock_chain_links_left == 0x20
     assert state.shock_chain_projectile_id == first_proj
     assert sum(1 for entry in pool.entries if entry.active) == 1
 
-    pool.update(0.1, creatures, world_size=1024.0, rng=lambda: 0, runtime_state=state)
+    pool.update(
+        0.1,
+        creatures,
+        options=ProjectileUpdateOptions(
+            world_size=1024.0,
+            rng=lambda: 0,
+            runtime_state=state,
+        ),
+    )
 
     assert state.shock_chain_links_left == 0x1F
     assert state.shock_chain_projectile_id != first_proj

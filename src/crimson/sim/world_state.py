@@ -11,7 +11,7 @@ from ..bonuses.update import bonus_update, bonus_update_pre_pickup_timers
 from ..camera import camera_shake_update
 from ..creatures.anim import creature_anim_advance_phase
 from ..creatures.damage import creature_apply_damage_with_lethal_followup
-from ..creatures.runtime import CreatureDeath, CreaturePool
+from ..creatures.runtime import CreatureDeath, CreaturePool, CreatureUpdateOptions
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import (
@@ -25,7 +25,7 @@ from ..perks.runtime.effects import perks_update_effects
 from ..perks.runtime.manifest import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from ..perks.state import CreatureForPerks
 from ..player_damage import player_take_projectile_damage
-from ..projectiles import ProjectileHit
+from ..projectiles import ProjectileHit, ProjectileUpdateOptions
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .presentation_step import (
@@ -144,15 +144,15 @@ class WorldState:
             player_take_projectile_damage(self.state, self.players[idx], float(damage))
         creature_result = self.creatures.update(
             dt,
-            dt_ms_i32=(int(dt_ms_i32) if dt_ms_i32 is not None else None),
-            state=self.state,
-            players=self.players,
-            detail_preset=detail_preset,
-            fx_toggle=int(fx_toggle),
-            world_width=float(world_size),
-            world_height=float(world_size),
-            fx_queue=fx_queue,
-            fx_queue_rotated=fx_queue_rotated,
+            options=CreatureUpdateOptions(
+                dt_ms_i32=(int(dt_ms_i32) if dt_ms_i32 is not None else None),
+                state=self.state,
+                players=self.players,
+                detail_preset=int(detail_preset),
+                fx_toggle=int(fx_toggle),
+                world_width=float(world_size), world_height=float(world_size),
+                fx_queue=fx_queue, fx_queue_rotated=fx_queue_rotated,
+            ),
         )
         _mark("ws_after_creatures")
         deaths = list(creature_result.deaths)
@@ -256,16 +256,17 @@ class WorldState:
         hits = self.state.projectiles.update(
             dt,
             self.creatures.entries,
-            world_size=float(world_size),
-            damage_scale_by_type=damage_scale_by_type,
-            detail_preset=int(detail_preset),
-            rng=self.state.rng.rand,
-            runtime_state=self.state,
-            players=self.players,
-            apply_player_damage=_apply_projectile_damage_to_player,
-            apply_creature_damage=_apply_projectile_damage_to_creature,
-            on_hit=_on_projectile_hit_pre,
-            on_hit_post=_on_projectile_hit_post,
+            options=ProjectileUpdateOptions(
+                world_size=float(world_size),
+                damage_scale_by_type=damage_scale_by_type,
+                detail_preset=int(detail_preset),
+                rng=self.state.rng.rand,
+                runtime_state=self.state, players=self.players,
+                apply_player_damage=_apply_projectile_damage_to_player,
+                apply_creature_damage=_apply_projectile_damage_to_creature,
+                on_hit=_on_projectile_hit_pre,
+                on_hit_post=_on_projectile_hit_post,
+            ),
         )
         _mark("ws_after_projectiles")
         _mark("ws_after_hit_sfx")
@@ -318,7 +319,6 @@ class WorldState:
                 plan_death_sfx_now=_plan_death_sfx_now,
                 keep_corpse=False,
             )
-
         self.state.particles.update(
             dt,
             creatures=self.creatures.entries,

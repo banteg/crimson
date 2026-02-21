@@ -30,6 +30,19 @@ class DeterministicStepResult:
     presentation_rng_trace: PresentationRngTrace
 
 
+@dataclass(frozen=True, slots=True)
+class StepPipelineOptions:
+    world_size: float
+    damage_scale_by_type: dict[int, float]
+    detail_preset: int
+    fx_toggle: int
+    auto_pick_perks: bool
+    game_mode: int
+    demo_mode_active: bool
+    perk_progression_enabled: bool
+    game_tune_started: bool
+
+
 def time_scale_reflex_boost_bonus(
     *,
     reflex_boost_timer: float,
@@ -68,20 +81,12 @@ def run_deterministic_step(
     *,
     world: WorldState,
     dt_frame: float,
+    options: StepPipelineOptions,
     dt_frame_ms_i32: int | None = None,
     apply_world_dt_steps: bool = True,
     inputs: list[PlayerInput] | None,
-    world_size: float,
-    damage_scale_by_type: dict[int, float],
-    detail_preset: int,
-    fx_toggle: int,
     fx_queue: FxQueue,
     fx_queue_rotated: FxQueueRotated,
-    auto_pick_perks: bool,
-    game_mode: int,
-    demo_mode_active: bool,
-    perk_progression_enabled: bool,
-    game_tune_started: bool,
     defer_camera_shake_update: bool = False,
     defer_freeze_corpse_fx: bool = False,
     mid_step_hook: Callable[[], None] | None = None,
@@ -99,8 +104,8 @@ def run_deterministic_step(
     inputs = normalize_input_frame(inputs, player_count=len(world.players)).as_list()
 
     _mark("gw_begin")
-    state.game_mode = int(game_mode)
-    state.demo_mode_active = demo_mode_active
+    state.game_mode = int(options.game_mode)
+    state.demo_mode_active = bool(options.demo_mode_active)
 
     weapon_refresh_available(state)
     _mark("gw_after_weapon_refresh")
@@ -135,16 +140,16 @@ def run_deterministic_step(
         defer_freeze_corpse_fx=defer_freeze_corpse_fx,
         mid_step_hook=mid_step_hook,
         inputs=inputs,
-        world_size=float(world_size),
-        damage_scale_by_type=damage_scale_by_type,
-        detail_preset=int(detail_preset),
-        fx_toggle=int(fx_toggle),
+        world_size=float(options.world_size),
+        damage_scale_by_type=options.damage_scale_by_type,
+        detail_preset=int(options.detail_preset),
+        fx_toggle=int(options.fx_toggle),
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
-        auto_pick_perks=auto_pick_perks,
-        game_mode=int(game_mode),
-        perk_progression_enabled=perk_progression_enabled,
-        game_tune_started=game_tune_started,
+        auto_pick_perks=bool(options.auto_pick_perks),
+        game_mode=int(options.game_mode),
+        perk_progression_enabled=bool(options.perk_progression_enabled),
+        game_tune_started=bool(options.game_tune_started),
         rng_marks=rng_marks_out,
     )
 
@@ -172,14 +177,14 @@ def run_deterministic_step(
         event_sfx=events.sfx,
         prev_audio=prev_audio,
         prev_perk_pending=int(prev_perk_pending),
-        game_mode=int(game_mode),
-        demo_mode_active=demo_mode_active,
-        perk_progression_enabled=perk_progression_enabled,
+        game_mode=int(options.game_mode),
+        demo_mode_active=bool(options.demo_mode_active),
+        perk_progression_enabled=bool(options.perk_progression_enabled),
         rand=rand,
         rand_for=_rand_for if trace_presentation_rng else None,
-        detail_preset=int(detail_preset),
-        fx_toggle=int(fx_toggle),
-        game_tune_started=game_tune_started,
+        detail_preset=int(options.detail_preset),
+        fx_toggle=int(options.fx_toggle),
+        game_tune_started=bool(options.game_tune_started),
         trigger_game_tune=events.trigger_game_tune,
         hit_sfx=events.hit_sfx,
         death_sfx_preplanned=events.death_sfx_preplanned,

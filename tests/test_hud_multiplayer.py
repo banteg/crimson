@@ -4,7 +4,7 @@ from typing import cast
 
 import crimson.ui.hud as hud_module
 from crimson.sim.state_types import PlayerState
-from crimson.ui.hud import HudAssets, HudState, draw_hud_overlay
+from crimson.ui.hud import HudAssets, HudRenderContext, HudState, draw_hud_overlay
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -60,18 +60,19 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(mocker) -> None:
     mocker.patch.object(hud_module.rl, "draw_text", side_effect=lambda *args, **kwargs: None)
 
     draw_hud_overlay(
-        assets,
-        state=HudState(),
+        HudRenderContext(
+            assets=assets,
+            state=HudState(),
+            alpha=1.0,
+            show_weapon=True,
+            show_xp=False,
+            show_time=False,
+        ),
         player=player0,
         players=[player0, player1],
         bonus_hud=None,
         elapsed_ms=0.0,
         score=0,
-        font=None,
-        alpha=1.0,
-        show_weapon=True,
-        show_xp=False,
-        show_time=False,
     )
 
     draws = [
@@ -131,18 +132,19 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(mocker)
 
     draw_texture_pro.reset_mock()
     draw_hud_overlay(
-        assets,
-        state=HudState(preserve_bugs=False),
+        HudRenderContext(
+            assets=assets,
+            state=HudState(preserve_bugs=False),
+            alpha=1.0,
+            show_weapon=False,
+            show_xp=False,
+            show_time=False,
+        ),
         player=player0,
         players=[player0, player1],
         bonus_hud=None,
         elapsed_ms=300.0,
         score=0,
-        font=None,
-        alpha=1.0,
-        show_weapon=False,
-        show_xp=False,
-        show_time=False,
     )
     draws = [
         (
@@ -158,18 +160,19 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(mocker)
 
     draw_texture_pro.reset_mock()
     draw_hud_overlay(
-        assets,
-        state=HudState(preserve_bugs=True),
+        HudRenderContext(
+            assets=assets,
+            state=HudState(preserve_bugs=True),
+            alpha=1.0,
+            show_weapon=False,
+            show_xp=False,
+            show_time=False,
+        ),
         player=player0,
         players=[player0, player1],
         bonus_hud=None,
         elapsed_ms=300.0,
         score=0,
-        font=None,
-        alpha=1.0,
-        show_weapon=False,
-        show_xp=False,
-        show_time=False,
     )
     draws = [
         (
