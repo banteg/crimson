@@ -7,6 +7,7 @@ import crimson.creatures.runtime as creature_runtime
 from crimson.bonuses.pool import BonusEntry
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import (
+    HAS_SPAWN_SLOT_FLAG,
     RANDOM_HEADING_SENTINEL,
     CreatureFlags,
     CreatureInit,
@@ -129,7 +130,7 @@ def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     owner.active = True
     owner.hp = 100.0
     owner.hitbox_size = CREATURE_HITBOX_ALIVE
-    owner.flags = CreatureFlags.HAS_SPAWN_SLOT
+    owner.flags = HAS_SPAWN_SLOT_FLAG
     owner.heading = 1.234
     owner.pos = Vec2(200.0, 300.0)
     owner.spawn_slot_index = 0
@@ -225,7 +226,7 @@ def test_spawn_slot_child_can_update_in_same_tick() -> None:
     owner.hp = 100.0
     owner.hitbox_size = CREATURE_HITBOX_ALIVE
     owner.pos = Vec2(256.0, 256.0)
-    owner.flags = CreatureFlags.HAS_SPAWN_SLOT
+    owner.flags = HAS_SPAWN_SLOT_FLAG
     owner.ai_mode = 0
     owner.move_speed = 0.0
     owner.size = 45.0

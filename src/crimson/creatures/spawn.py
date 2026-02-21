@@ -25,6 +25,7 @@ from grim.rand import CrandLike
 from ..bonuses import BonusId
 from ..math_parity import f32
 from .spawn_ids import (
+    HAS_SPAWN_SLOT_FLAG,
     RANDOM_HEADING_SENTINEL,
     CreatureAiMode,
     CreatureFlags,
@@ -41,6 +42,7 @@ __all__ = [
     "CreatureFlags",
     "CreatureInit",
     "CreatureTypeId",
+    "HAS_SPAWN_SLOT_FLAG",
     "RANDOM_HEADING_SENTINEL",
     "SpawnId",
     "SPAWN_ID_TO_TEMPLATE",
@@ -711,7 +713,7 @@ class CreatureInit:
 
     target_offset: Vec2 | None = None
 
-    # Spawn slot reference (stored in link_index in the original when flags include HAS_SPAWN_SLOT).
+    # Spawn slot reference (stored in link_index when flags include HAS_SPAWN_SLOT_FLAG).
     spawn_slot: int | None = None
 
     # BONUS_ON_DEATH uses link_index low/high 16-bit fields for bonus spawn args.
@@ -1686,7 +1688,7 @@ def apply_tail(
     if not env.hardcore:
         # This is written as a short-circuit expression in the original:
         # for flag 0x4 creatures, always bump their spawn-slot interval by +0.2 in non-hardcore.
-        if (c.flags & CreatureFlags.HAS_SPAWN_SLOT) and has_spawn_slot and slot_idx is not None:
+        if (c.flags & HAS_SPAWN_SLOT_FLAG) and has_spawn_slot and slot_idx is not None:
             plan_spawn_slots[slot_idx].interval += 0.2
 
         if env.difficulty_level > 0:
@@ -1723,7 +1725,7 @@ def apply_tail(
                     c.contact_damage *= 0.5
                     c.health *= 0.5
 
-            if has_spawn_slot and (c.flags & CreatureFlags.HAS_SPAWN_SLOT) and slot_idx is not None:
+            if has_spawn_slot and (c.flags & HAS_SPAWN_SLOT_FLAG) and slot_idx is not None:
                 plan_spawn_slots[slot_idx].interval += min(3.0, float(d) * 0.35)
     else:
         # In hardcore: difficulty level is forcibly cleared (global), and creature stats are buffed.
@@ -1734,7 +1736,7 @@ def apply_tail(
         if c.health is not None:
             c.health *= 1.2
 
-        if has_spawn_slot and (c.flags & CreatureFlags.HAS_SPAWN_SLOT) and slot_idx is not None:
+        if has_spawn_slot and (c.flags & HAS_SPAWN_SLOT_FLAG) and slot_idx is not None:
             plan_spawn_slots[slot_idx].interval = max(
                 0.1,
                 plan_spawn_slots[slot_idx].interval - 0.2,

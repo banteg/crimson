@@ -70,7 +70,7 @@ class WeaponId(IntEnum):
     UNKNOWN_38 = 38
     UNKNOWN_39 = 39
     UNKNOWN_40 = 40
-    PLAGUE_SPHREADER_GUN = 41
+    PLAGUE_SPREADER_GUN = 41
     BUBBLEGUN = 42
     RAINBOW_GUN = 43
     GRIM_WEAPON = 44
@@ -81,7 +81,7 @@ class WeaponId(IntEnum):
     UNKNOWN_49 = 49
     TRANSMUTATOR = 50
     BLASTER_R_300 = 51
-    LIGHTING_RIFLE = 52
+    LIGHTNING_RIFLE = 52
     NUKE_LAUNCHER = 53
 
 
@@ -783,8 +783,8 @@ WEAPON_BY_ID = {
 }
 
 _WEAPON_FIXED_NAMES = {
-    int(WeaponId.PLAGUE_SPHREADER_GUN): "Plague Spreader Gun",
-    int(WeaponId.LIGHTING_RIFLE): "Lightning Rifle",
+    int(WeaponId.PLAGUE_SPREADER_GUN): "Plague Spreader Gun",
+    int(WeaponId.LIGHTNING_RIFLE): "Lightning Rifle",
     int(WeaponId.FIRE_BULLETS): "Fire Bullets",
 }
 
