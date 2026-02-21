@@ -4,6 +4,7 @@ from .runtime import (
     PROJECTILE_BEHAVIOR_BY_TYPE_ID,
     ProjectileBehavior,
     ProjectilePool,
+    ProjectileUpdateOptions,
     SecondaryProjectilePool,
     _within_native_find_radius,
 )
@@ -30,6 +31,7 @@ __all__ = [
     "ProjectileBehavior",
     "ProjectileHit",
     "ProjectilePool",
+    "ProjectileUpdateOptions",
     "ProjectileRuntimeState",
     "ProjectileTypeId",
     "SECONDARY_PROJECTILE_POOL_SIZE",

@@ -29,7 +29,7 @@ from .sim.presentation_step import (
     queue_projectile_decals,
 )
 from .sim.state_types import PlayerState
-from .sim.step_pipeline import DeterministicStepResult, run_deterministic_step
+from .sim.step_pipeline import DeterministicStepResult, StepPipelineOptions, run_deterministic_step
 from .sim.world_defs import CREATURE_ASSET
 from .sim.world_state import ProjectileHit, WorldEvents, WorldState
 from .terrain_assets import TerrainTextureId, terrain_texture_by_id
@@ -475,18 +475,20 @@ class GameWorld:
         step = run_deterministic_step(
             world=self.world_state,
             dt_frame=float(dt),
+            options=StepPipelineOptions(
+                world_size=float(self.world_size),
+                damage_scale_by_type=self._damage_scale_by_type,
+                detail_preset=int(detail_preset),
+                fx_toggle=int(fx_toggle),
+                auto_pick_perks=bool(auto_pick_perks),
+                game_mode=int(game_mode),
+                demo_mode_active=bool(self.demo_mode_active),
+                perk_progression_enabled=bool(perk_progression_enabled),
+                game_tune_started=bool(self._game_tune_started),
+            ),
             inputs=inputs,
-            world_size=float(self.world_size),
-            damage_scale_by_type=self._damage_scale_by_type,
-            detail_preset=int(detail_preset),
-            fx_toggle=int(fx_toggle),
             fx_queue=self.fx_queue,
             fx_queue_rotated=self.fx_queue_rotated,
-            auto_pick_perks=auto_pick_perks,
-            game_mode=int(game_mode),
-            demo_mode_active=self.demo_mode_active,
-            perk_progression_enabled=perk_progression_enabled,
-            game_tune_started=self._game_tune_started,
             defer_camera_shake_update=defer_camera_shake_update,
             rng_marks_out=rng_marks_out,
         )

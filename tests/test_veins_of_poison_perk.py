@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
+from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool, CreatureUpdateOptions
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
@@ -23,7 +23,7 @@ def test_veins_of_poison_sets_self_damage_flag_on_contact_hit() -> None:
     creature.contact_damage = 10.0
     creature.collision_timer = 0.1
 
-    pool.update(0.2, state=state, players=[player])
+    pool.update(0.2, options=CreatureUpdateOptions(state=state, players=[player]))
 
     assert creature.flags & CreatureFlags.SELF_DAMAGE_TICK
 
@@ -43,6 +43,6 @@ def test_veins_of_poison_skips_when_player_shielded() -> None:
     creature.contact_damage = 10.0
     creature.collision_timer = 0.1
 
-    pool.update(0.2, state=state, players=[player])
+    pool.update(0.2, options=CreatureUpdateOptions(state=state, players=[player]))
 
     assert not (creature.flags & CreatureFlags.SELF_DAMAGE_TICK)

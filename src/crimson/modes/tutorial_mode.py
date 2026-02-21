@@ -21,7 +21,7 @@ from ..perks.state import CreatureForPerks
 from ..sim.input import PlayerInput
 from ..tutorial.timeline import TutorialFrameActions, TutorialState, tick_tutorial_timeline
 from ..ui.cursor import draw_menu_cursor
-from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
+from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import (
     PerkMenuAssets,
     UiButtonState,
@@ -360,22 +360,24 @@ class TutorialMode(BaseGameplayMode):
             hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             self._draw_target_health_bar()
             hud_bottom = draw_hud_overlay(
-                self._hud_assets,
-                state=self._hud_state,
+                HudRenderContext(
+                    assets=self._hud_assets,
+                    state=self._hud_state,
+                    font=self._small,
+                    alpha=1.0,
+                    show_health=hud_flags.show_health,
+                    show_weapon=hud_flags.show_weapon,
+                    show_xp=hud_flags.show_xp,
+                    show_time=hud_flags.show_time,
+                    show_quest_hud=hud_flags.show_quest_hud,
+                    small_indicators=self._hud_small_indicators(),
+                ),
                 player=self.player,
                 players=self.world.players,
                 bonus_hud=self.state.bonus_hud,
                 elapsed_ms=float(self._tutorial.stage_timer_ms),
                 score=int(self.player.experience),
-                font=self._small,
-                alpha=1.0,
                 frame_dt_ms=self._last_dt_ms,
-                show_health=hud_flags.show_health,
-                show_weapon=hud_flags.show_weapon,
-                show_xp=hud_flags.show_xp,
-                show_time=hud_flags.show_time,
-                show_quest_hud=hud_flags.show_quest_hud,
-                small_indicators=self._hud_small_indicators(),
             )
 
         self._draw_tutorial_prompts(hud_bottom=hud_bottom)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
+from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool, CreatureUpdateOptions
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
@@ -22,7 +22,7 @@ def test_mr_melee_hits_attacking_creature_on_contact_damage_tick() -> None:
     creature.contact_damage = 10.0
     creature.collision_timer = 0.1
 
-    pool.update(0.2, state=state, players=[player])
+    pool.update(0.2, options=CreatureUpdateOptions(state=state, players=[player]))
 
     assert_float_close(creature.hp, 75.0)
 
@@ -41,7 +41,7 @@ def test_mr_melee_does_not_prevent_player_damage_when_killing_attacker() -> None
     creature.contact_damage = 10.0
     creature.collision_timer = 0.1
 
-    pool.update(0.2, state=state, players=[player])
+    pool.update(0.2, options=CreatureUpdateOptions(state=state, players=[player]))
 
     assert_float_close(player.health, 90.0)
 
@@ -59,6 +59,6 @@ def test_mr_melee_is_inert_when_not_active() -> None:
     creature.contact_damage = 10.0
     creature.collision_timer = 0.1
 
-    pool.update(0.2, state=state, players=[player])
+    pool.update(0.2, options=CreatureUpdateOptions(state=state, players=[player]))
 
     assert_float_close(creature.hp, 100.0)

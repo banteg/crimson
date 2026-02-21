@@ -92,6 +92,20 @@ class HudRenderFlags:
     show_quest_hud: bool
 
 
+@dataclass(frozen=True, slots=True)
+class HudRenderContext:
+    assets: HudAssets
+    state: HudState
+    font: SmallFontData | None = None
+    alpha: float = 1.0
+    show_health: bool = True
+    show_weapon: bool = True
+    show_xp: bool = True
+    show_time: bool = False
+    show_quest_hud: bool = False
+    small_indicators: bool = False
+
+
 @dataclass(slots=True)
 class HudState:
     survival_xp_smoothed: int = 0
@@ -318,28 +332,29 @@ def _bonus_icon_src(texture: rl.Texture, icon_id: int) -> rl.Rectangle:
 
 
 def draw_hud_overlay(
-    assets: HudAssets,
+    context: HudRenderContext,
     *,
-    state: HudState,
     player: PlayerState,
     players: list[PlayerState] | None = None,
     bonus_hud: BonusHudState | None = None,
     elapsed_ms: float = 0.0,
     score: int | None = None,
-    font: SmallFontData | None = None,
-    alpha: float = 1.0,
     frame_dt_ms: float | None = None,
-    show_health: bool = True,
-    show_weapon: bool = True,
-    show_xp: bool = True,
-    show_time: bool = False,
-    show_quest_hud: bool = False,
     quest_progress_ratio: float | None = None,
-    small_indicators: bool = False,
 ) -> float:
+    assets = context.assets
+    state = context.state
+    font = context.font
+    alpha = float(context.alpha)
+    show_health = bool(context.show_health)
+    show_weapon = bool(context.show_weapon)
+    show_xp = bool(context.show_xp)
+    show_time = bool(context.show_time)
+    show_quest_hud = bool(context.show_quest_hud)
+    small_indicators = bool(context.small_indicators)
+
     if frame_dt_ms is None:
         frame_dt_ms = max(0.0, float(rl.get_frame_time()) * 1000.0)
-    state = state or HudState()
     hud_players = list(players) if players is not None else [player]
     if not hud_players:
         hud_players = [player]

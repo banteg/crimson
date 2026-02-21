@@ -8,7 +8,7 @@ from crimson.creatures.runtime import CreatureDeath, CreatureUpdateResult
 from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
-from crimson.projectiles import ProjectileHit, ProjectileTypeId, SecondaryProjectileTypeId
+from crimson.projectiles import ProjectileHit, ProjectileTypeId, ProjectileUpdateOptions, SecondaryProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
@@ -209,7 +209,8 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
 
     def _fake_projectile_update(*args: object, **kwargs: object) -> list[ProjectileHit]:
         _ = args
-        apply_creature_damage = cast(Callable[[int, float, int, Vec2, int], None] | None, kwargs.get("apply_creature_damage"))
+        options = cast("ProjectileUpdateOptions", kwargs.get("options"))
+        apply_creature_damage = options.apply_creature_damage if options is not None else None
         if apply_creature_damage is not None:
             apply_creature_damage(0, 1000.0, int(ProjectileTypeId.PISTOL), Vec2(), -1)
         return []
@@ -320,10 +321,13 @@ def test_freeze_hit_path_still_plans_hit_sfx(mocker) -> None:
 
     def _fake_projectile_update(
         *_args: object,
-        on_hit: Callable[[ProjectileHit], object | None],
-        on_hit_post: Callable[[ProjectileHit, object | None], None],
+        options: ProjectileUpdateOptions,
         **_kwargs: object,
     ) -> list[ProjectileHit]:
+        on_hit = options.on_hit
+        on_hit_post = options.on_hit_post
+        if on_hit is None or on_hit_post is None:
+            return []
         hit = ProjectileHit(
             type_id=int(ProjectileTypeId.PISTOL),
             origin=Vec2(0.0, 0.0),

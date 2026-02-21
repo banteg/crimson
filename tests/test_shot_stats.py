@@ -3,7 +3,7 @@ from __future__ import annotations
 from functools import partial
 
 from crimson.gameplay import GameplayState
-from crimson.projectiles import ProjectileTypeId, SecondaryProjectileTypeId
+from crimson.projectiles import ProjectileTypeId, ProjectileUpdateOptions, SecondaryProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (
@@ -38,10 +38,12 @@ def test_shots_fired_and_hit_increment() -> None:
     hits = state.projectiles.update(
         0.1,
         [creature],
-        world_size=1024.0,
-        damage_scale_by_type={},
-        rng=state.rng.rand,
-        runtime_state=state,
+        options=ProjectileUpdateOptions(
+            world_size=1024.0,
+            damage_scale_by_type={},
+            rng=state.rng.rand,
+            runtime_state=state,
+        ),
     )
     assert hits
     assert state.shots_hit[0] == 1
@@ -65,10 +67,12 @@ def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None
     hits = state.projectiles.update(
         0.1,
         [corpse],
-        world_size=1024.0,
-        damage_scale_by_type={},
-        rng=state.rng.rand,
-        runtime_state=state,
+        options=ProjectileUpdateOptions(
+            world_size=1024.0,
+            damage_scale_by_type={},
+            rng=state.rng.rand,
+            runtime_state=state,
+        ),
     )
 
     assert hits
