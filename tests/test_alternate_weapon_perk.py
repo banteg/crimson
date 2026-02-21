@@ -172,3 +172,46 @@ def test_alternate_weapon_swap_release_resets_cooldown_gate() -> None:
 
     player_update(player, PlayerInput(reload_pressed=True), dt=0.05, state=state)
     assert player.weapon_id == 2
+
+
+def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None:
+    state = GameplayState()
+    player0 = PlayerState(index=0, pos=Vec2())
+    player1 = PlayerState(index=1, pos=Vec2())
+
+    for player in (player0, player1):
+        weapon_assign_player(player, 1)
+        player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+        bonus_apply(state, player, BonusId.WEAPON, amount=2)
+
+    players = [player0, player1]
+    player_update(
+        player0,
+        PlayerInput(reload_pressed=True),
+        dt=0.05,
+        state=state,
+        players=players,
+        reload_pressed_any=True,
+    )
+    assert player0.weapon_id == 1
+    assert state.player_alt_weapon_swap_cooldown_ms == 200
+
+    player_update(
+        player1,
+        PlayerInput(reload_pressed=False),
+        dt=0.05,
+        state=state,
+        players=players,
+        reload_pressed_any=True,
+    )
+    assert state.player_alt_weapon_swap_cooldown_ms > 0
+
+    player_update(
+        player0,
+        PlayerInput(reload_pressed=True),
+        dt=0.05,
+        state=state,
+        players=players,
+        reload_pressed_any=True,
+    )
+    assert player0.weapon_id == 1

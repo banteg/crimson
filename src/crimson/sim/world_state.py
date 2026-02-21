@@ -341,6 +341,7 @@ class WorldState:
                     fx_queue=fx_queue,
                     deaths=deaths,
                 ),
+                reload_pressed_any=any(bool(entry.reload_pressed) for entry in inputs),
             )
             dt = player_frame_dt_after_roundtrip(dt=dt, time_scale_active=bool(self.state.time_scale_active), reflex_boost_timer=float(self.state.bonuses.reflex_boost))
             if idx == 0:

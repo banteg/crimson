@@ -539,6 +539,7 @@ def player_update(
     creatures: Sequence[CreatureState] | None = None,
     spawn_slots: Sequence[_SpawnSlotLike] | None = None,
     on_player_lethal: Callable[[PlayerState], None] | None = None,
+    reload_pressed_any: bool | None = None,
 ) -> None:
     """Port of `player_update` (0x004136b0) for the rewrite runtime."""
 
@@ -946,6 +947,7 @@ def player_update(
 
     swapped_alt_weapon = False
     reload_key_active = bool(input_state.reload_pressed)
+    reload_key_released = (not bool(reload_pressed_any)) if reload_pressed_any is not None else (not reload_key_active)
     if has_alt_weapon_perk:
         cooldown_ms = int(state.player_alt_weapon_swap_cooldown_ms)
         dt_ms = int(round(float(dt) * 1000.0)) if float(dt) > 0.0 else 0
@@ -970,7 +972,7 @@ def player_update(
                 state.player_alt_weapon_swap_cooldown_ms = 0
         else:
             state.player_alt_weapon_swap_cooldown_ms = max(0, int(cooldown_ms))
-            if not reload_key_active:
+            if reload_key_released:
                 state.player_alt_weapon_swap_cooldown_ms = 0
 
     # Native computes the fire gate (`shot_cooldown <= 0 && reload_timer == 0`)
