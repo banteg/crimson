@@ -34,6 +34,27 @@ _DRAW_CALLS_COLOR = "#59A14F"
 _PASS_SCHEME = "tableau20"
 _PASS_TOP_N = 8
 _PASS_STACK_MAX_POINTS = 1800
+_PASS_CHILDREN_BY_PARENT: dict[str, frozenset[str]] = {
+    "projectiles_effects": frozenset(
+        {
+            "laser_sight",
+            "primary_projectiles",
+            "particle_pool",
+            "secondary_projectiles",
+            "sprite_effect_pool",
+            "effect_pool",
+        },
+    ),
+    "bonus_ui": frozenset(
+        {
+            "bonus_pickups",
+            "bonus_labels",
+            "aim_indicators",
+            "direction_arrows",
+            "aim_enhancements",
+        },
+    ),
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -191,12 +212,13 @@ def _write_draw_calls_svg(path: Path, frames: list[dict[str, Any]]) -> None:
 
 def _write_pass_timing_svg(path: Path, frames: list[dict[str, Any]]) -> _PassChartMeta:
     if not frames:
-        _write_empty_svg(path, title="Per-tick pass timing (stacked ms)")
+        _write_empty_svg(path, title="Per-tick pass timing (stacked exclusive ms)")
         return _PassChartMeta(pass_names=[], source_frames=0, binned_points=0, bin_size=1)
 
     pass_totals: dict[str, float] = {}
     for frame in frames:
-        for pass_name, pass_ms in cast(dict[str, float], frame["pass_ms"]).items():
+        exclusive_pass_ms = _exclusive_pass_ms(cast(dict[str, float], frame["pass_ms"]))
+        for pass_name, pass_ms in exclusive_pass_ms.items():
             pass_totals[str(pass_name)] = pass_totals.get(str(pass_name), 0.0) + float(pass_ms)
 
     ordered_passes = [name for name, _total in sorted(pass_totals.items(), key=lambda item: item[1], reverse=True)]
@@ -212,7 +234,7 @@ def _write_pass_timing_svg(path: Path, frames: list[dict[str, Any]]) -> _PassCha
         include_other=include_other,
     )
     if not rows:
-        _write_empty_svg(path, title="Per-tick pass timing (stacked ms)")
+        _write_empty_svg(path, title="Per-tick pass timing (stacked exclusive ms)")
         return _PassChartMeta(
             pass_names=selected_passes,
             source_frames=len(frames),
@@ -242,7 +264,7 @@ def _write_pass_timing_svg(path: Path, frames: list[dict[str, Any]]) -> _PassCha
                 alt.Tooltip("pass_ms:Q", title="ms", format=".3f"),
             ],
         )
-        .properties(width=1180, height=360, title="Per-tick pass timing (stacked ms)")
+        .properties(width=1180, height=360, title="Per-tick pass timing (stacked exclusive ms)")
     )
     _save_svg(path=path, chart=chart)
     return _PassChartMeta(
@@ -275,7 +297,7 @@ def _build_binned_pass_rows(
         tick_index = (float(tick_start) + float(tick_end)) / 2.0
         sums: dict[str, float] = {name: 0.0 for name in selected_passes}
         for frame in chunk:
-            pass_ms = cast(dict[str, float], frame["pass_ms"])
+            pass_ms = _exclusive_pass_ms(cast(dict[str, float], frame["pass_ms"]))
             other_total = 0.0
             for pass_name, value in pass_ms.items():
                 numeric_value = float(value)
@@ -302,6 +324,22 @@ def _build_binned_pass_rows(
 
     binned_points = int(math.ceil(float(frame_count) / float(bin_size)))
     return rows, binned_points, int(bin_size)
+
+
+def _exclusive_pass_ms(pass_ms: dict[str, float]) -> dict[str, float]:
+    if not pass_ms:
+        return {}
+
+    exclusive = {str(name): float(value) for name, value in pass_ms.items()}
+    for parent, children in _PASS_CHILDREN_BY_PARENT.items():
+        parent_value = exclusive.get(parent)
+        if parent_value is None:
+            continue
+        child_total = 0.0
+        for child in children:
+            child_total += float(exclusive.get(child, 0.0))
+        exclusive[parent] = max(0.0, float(parent_value) - float(child_total))
+    return exclusive
 
 
 def _load_altair() -> Any:
@@ -356,7 +394,7 @@ def _write_report_md(
         "## Artifacts",
         f"- Frame timing: `{frame_timing.name}`",
         f"- Draw calls: `{draw_calls.name}`",
-        f"- Pass timing (stacked): `{pass_timing.name}`",
+        f"- Pass timing (stacked, exclusive): `{pass_timing.name}`",
         f"- Frame count: `{int(frame_count)}`",
         f"- Passes shown in stack: `{', '.join(pass_names) if pass_names else 'none'}`",
         (
