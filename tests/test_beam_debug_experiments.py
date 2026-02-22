@@ -19,7 +19,7 @@ from grim.view import ViewContext
 def test_cycle_beam_render_mode_order_is_stable() -> None:
     mode = BeamRenderMode.BASELINE_SPRITE
     mode = cycle_beam_render_mode(mode)
-    assert mode == BeamRenderMode.SHADER_GEMINI
+    assert mode == BeamRenderMode.SHADER_GEMINI_2
     mode = cycle_beam_render_mode(mode)
     assert mode == BeamRenderMode.BASELINE_SPRITE
 
@@ -62,7 +62,7 @@ def test_reset_experiment_stats_clears_accumulators_only() -> None:
         beam_draw_ms=1.0,
         frame_ms=2.0,
     )
-    view._rolling_stats(BeamRenderMode.SHADER_GEMINI, BeamScenarioPreset.CROWD_STRESS).add(stats)
+    view._rolling_stats(BeamRenderMode.SHADER_GEMINI_2, BeamScenarioPreset.CROWD_STRESS).add(stats)
     assert view._rolling_by_mode_preset
 
     view.reset_experiment_stats()
@@ -91,15 +91,15 @@ def test_baseline_call_accounting_matches_segment_head_overlay_counts() -> None:
     assert counts.total_calls == expected_visible + 2
 
 
-def test_shader_gemini_mode_body_call_accounting_is_bounded() -> None:
+def test_shader_gemini_2_mode_body_call_accounting_is_bounded() -> None:
     plan = build_beam_sample_plan(dist=1024.0, step=2.48, max_span=256.0)
     assert plan is not None
 
     item = BeamCountInput(plan=plan, life=0.4, screen_length_px=520.0)
     baseline = estimate_beam_frame_counts([item], mode=BeamRenderMode.BASELINE_SPRITE, is_fire=True)
-    shader_gemini = estimate_beam_frame_counts([item], mode=BeamRenderMode.SHADER_GEMINI, is_fire=True)
-    assert shader_gemini.body_calls <= baseline.body_calls
-    assert shader_gemini.body_calls <= 3
+    shader_gemini_2 = estimate_beam_frame_counts([item], mode=BeamRenderMode.SHADER_GEMINI_2, is_fire=True)
+    assert shader_gemini_2.body_calls <= baseline.body_calls
+    assert shader_gemini_2.body_calls <= 2
 
 
 def test_estimate_counts_handles_degenerate_inputs() -> None:
@@ -118,7 +118,7 @@ def test_life_below_threshold_keeps_head_and_disables_overlay_across_modes() -> 
 
     for mode in (
         BeamRenderMode.BASELINE_SPRITE,
-        BeamRenderMode.SHADER_GEMINI,
+        BeamRenderMode.SHADER_GEMINI_2,
     ):
         counts = estimate_beam_frame_counts([item], mode=mode, is_fire=True)
         assert counts.head_calls == 1
@@ -139,7 +139,7 @@ def test_benchmark_mode_cycles_and_completes() -> None:
     assert view.render_mode == BeamRenderMode.BASELINE_SPRITE
 
     view._advance_benchmark_after_frame()
-    assert view.render_mode == BeamRenderMode.SHADER_GEMINI
+    assert view.render_mode == BeamRenderMode.SHADER_GEMINI_2
 
     view._advance_benchmark_after_frame()
     view._advance_benchmark_after_frame()

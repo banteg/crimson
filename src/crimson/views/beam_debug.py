@@ -43,7 +43,8 @@ ORIGIN_MARK = rl.Color(100, 220, 180, 255)
 
 ROLLING_WINDOW_SIZE = 240
 HEAD_REGION_T_MIN = 0.65
-SHADER_GEMINI_RADIUS_SCALE = 16.0
+SHADER_GEMINI_2_RADIUS_SCALE = 16.0
+SHADER_GEMINI_2_RADIUS_EXPAND = 1.25
 BENCH_FRAMES_PER_MODE = 240
 BATCH_PROBE_QUADS_DEFAULT = 4096
 BATCH_PROBE_QUADS_STEP = 256
@@ -69,7 +70,7 @@ void main() {
 }
 """
 
-_BEAM_GEMINI_FS_330 = """
+_BEAM_GEMINI_2_FS_330 = """
 #version 330
 
 in vec2 fragTexCoord;
@@ -85,26 +86,25 @@ void main() {
         discard;
     }
 
-    float profile = exp(-d * d * 6.0) * max(0.0, 1.0 - d);
-    float overlap_accumulation = 4.5;
-    float intensity = profile * fragColor.a * overlap_accumulation;
+    float profile = pow(1.0 - d, 2.5);
+    float intensity = profile * fragColor.a * 2.5;
     vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
     finalColor = vec4(rgb, 1.0);
 }
 """
 
-_BEAM_GEMINI_SHADER_TRIED = False
-_BEAM_GEMINI_SHADER: rl.Shader | None = None
+_BEAM_GEMINI_2_SHADER_TRIED = False
+_BEAM_GEMINI_2_SHADER: rl.Shader | None = None
 
 
 class BeamRenderMode(str, Enum):
     BASELINE_SPRITE = "baseline_sprite"
-    SHADER_GEMINI = "shader_gemini"
+    SHADER_GEMINI_2 = "shader_gemini_2"
 
 
 _RENDER_MODE_ORDER: tuple[BeamRenderMode, ...] = (
     BeamRenderMode.BASELINE_SPRITE,
-    BeamRenderMode.SHADER_GEMINI,
+    BeamRenderMode.SHADER_GEMINI_2,
 )
 
 
@@ -290,32 +290,32 @@ def _mean(values: Sequence[float]) -> float:
     return float(sum(float(v) for v in values) / float(len(values)))
 
 
-def _get_beam_gemini_shader() -> rl.Shader | None:
-    global _BEAM_GEMINI_SHADER_TRIED, _BEAM_GEMINI_SHADER
-    if _BEAM_GEMINI_SHADER_TRIED:
-        if _BEAM_GEMINI_SHADER is not None and int(_BEAM_GEMINI_SHADER.id) > 0:
-            return _BEAM_GEMINI_SHADER
+def _get_beam_gemini_2_shader() -> rl.Shader | None:
+    global _BEAM_GEMINI_2_SHADER_TRIED, _BEAM_GEMINI_2_SHADER
+    if _BEAM_GEMINI_2_SHADER_TRIED:
+        if _BEAM_GEMINI_2_SHADER is not None and int(_BEAM_GEMINI_2_SHADER.id) > 0:
+            return _BEAM_GEMINI_2_SHADER
         return None
 
-    _BEAM_GEMINI_SHADER_TRIED = True
+    _BEAM_GEMINI_2_SHADER_TRIED = True
     try:
-        shader = rl.load_shader_from_memory(_BEAM_SHADER_VS_330, _BEAM_GEMINI_FS_330)
+        shader = rl.load_shader_from_memory(_BEAM_SHADER_VS_330, _BEAM_GEMINI_2_FS_330)
     except (RuntimeError, OSError, ValueError):
-        _BEAM_GEMINI_SHADER = None
+        _BEAM_GEMINI_2_SHADER = None
         return None
 
     if int(shader.id) <= 0:
-        _BEAM_GEMINI_SHADER = None
+        _BEAM_GEMINI_2_SHADER = None
         return None
 
-    _BEAM_GEMINI_SHADER = shader
-    return _BEAM_GEMINI_SHADER
+    _BEAM_GEMINI_2_SHADER = shader
+    return _BEAM_GEMINI_2_SHADER
 
 
 def _mode_label(mode: BeamRenderMode) -> str:
     if mode == BeamRenderMode.BASELINE_SPRITE:
         return "baseline"
-    return "shader-gemini"
+    return "shader-gemini-2"
 
 
 def _preset_label(preset: BeamScenarioPreset) -> str:
@@ -444,8 +444,8 @@ def estimate_beam_frame_counts(
         elif segment_count >= 1:
             shader_beam_calls += 1
 
-    if mode == BeamRenderMode.SHADER_GEMINI:
-        body_calls = int(shader_beam_calls * 3)
+    if mode == BeamRenderMode.SHADER_GEMINI_2:
+        body_calls = int(shader_beam_calls * 2)
 
     return BeamDrawCounts(
         body_calls=int(body_calls),
@@ -1105,20 +1105,23 @@ class BeamDebugView:
                 body_calls += 1
         return int(body_calls)
 
-    def _draw_projectile_body_shader_gemini(
+    def _draw_projectile_body_shader_gemini_2(
         self,
         preps: Sequence[_RenderPrep],
         *,
         streak_rgb: tuple[float, float, float],
     ) -> tuple[int, bool]:
-        shader = _get_beam_gemini_shader()
+        shader = _get_beam_gemini_2_shader()
         if shader is None:
             return self._draw_projectile_body_sprites(preps, streak_rgb=streak_rgb), True
 
         r = int(clamp(streak_rgb[0] * 255.0, 0.0, 255.0) + 0.5)
         g = int(clamp(streak_rgb[1] * 255.0, 0.0, 255.0) + 0.5)
         b = int(clamp(streak_rgb[2] * 255.0, 0.0, 255.0) + 0.5)
-        radius = max(0.001, float(SHADER_GEMINI_RADIUS_SCALE) * float(self._effect_scale))
+        radius = max(
+            0.001,
+            float(SHADER_GEMINI_2_RADIUS_SCALE) * float(self._effect_scale) * float(SHADER_GEMINI_2_RADIUS_EXPAND),
+        )
 
         quad_count = 0
         rl.begin_shader_mode(shader)
@@ -1147,7 +1150,6 @@ class BeamDebugView:
             tail_alpha = 0
 
             side = direction.perp_left() * radius
-            tail_back = p0 - direction * radius
             head_front = p1 + direction * radius
 
             def push(pos: Vec2, *, uv_x: float, uv_y: float, alpha: int) -> None:
@@ -1155,21 +1157,14 @@ class BeamDebugView:
                 rl.rl_tex_coord2f(float(uv_x), float(uv_y))
                 rl.rl_vertex2f(float(pos.x), float(pos.y))
 
-            # Tail cap: UV x in [-1, 0]
-            push(tail_back - side, uv_x=-1.0, uv_y=-1.0, alpha=tail_alpha)
-            push(tail_back + side, uv_x=-1.0, uv_y=1.0, alpha=tail_alpha)
-            push(p0 + side, uv_x=0.0, uv_y=1.0, alpha=tail_alpha)
-            push(p0 - side, uv_x=0.0, uv_y=-1.0, alpha=tail_alpha)
-            quad_count += 1
-
-            # Body: UV x fixed at 0 so profile depends only on cross-beam distance.
+            # Body only: tail fades out by alpha ramp, no separate tail-cap quad.
             push(p0 - side, uv_x=0.0, uv_y=-1.0, alpha=tail_alpha)
             push(p0 + side, uv_x=0.0, uv_y=1.0, alpha=tail_alpha)
             push(p1 + side, uv_x=0.0, uv_y=1.0, alpha=head_alpha)
             push(p1 - side, uv_x=0.0, uv_y=-1.0, alpha=head_alpha)
             quad_count += 1
 
-            # Head cap: UV x in [0, 1]
+            # Head cap: dedicated semi-cap for smoother bullet tip.
             push(p1 - side, uv_x=0.0, uv_y=-1.0, alpha=head_alpha)
             push(p1 + side, uv_x=0.0, uv_y=1.0, alpha=head_alpha)
             push(head_front + side, uv_x=1.0, uv_y=1.0, alpha=head_alpha)
@@ -1267,7 +1262,7 @@ class BeamDebugView:
         if mode == BeamRenderMode.BASELINE_SPRITE:
             body_calls = self._draw_projectile_body_sprites(preps, streak_rgb=streak_rgb)
         else:
-            body_calls, fallback = self._draw_projectile_body_shader_gemini(preps, streak_rgb=streak_rgb)
+            body_calls, fallback = self._draw_projectile_body_shader_gemini_2(preps, streak_rgb=streak_rgb)
             shader_fallback = bool(fallback)
 
         head_calls, overlay_calls = self._draw_projectile_heads(
