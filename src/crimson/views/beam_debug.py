@@ -48,21 +48,25 @@ SHADER_GEMINI_2_RADIUS_SCALE = 16.0
 SHADER_GEMINI_2_RADIUS_EXPAND = 1.25
 SHADER_GEMINI_2_HEAD_RADIUS_MULTIPLIER = 1.05
 SHADER_GEMINI_2_HEAD_FIRE_RADIUS_MULTIPLIER = 1.35
-SHADER_GEMINI_2_PROFILE_EXP_DEFAULT = 3.4
-SHADER_GEMINI_2_HALO_MIX_DEFAULT = 0.125
-SHADER_GEMINI_2_HALO_FALLOFF_DEFAULT = 10.0
+SHADER_GEMINI_2_APPROX_A_DEFAULT = 1.0607
+SHADER_GEMINI_2_APPROX_B_DEFAULT = -4.8256
+SHADER_GEMINI_2_APPROX_C_DEFAULT = 0.0125
 SHADER_GEMINI_2_INTENSITY_GAIN_DEFAULT = 2.5
-SHADER_GEMINI_2_PROFILE_EXP_MIN = 1.2
-SHADER_GEMINI_2_PROFILE_EXP_MAX = 4.0
-SHADER_GEMINI_2_HALO_MIX_MIN = 0.0
-SHADER_GEMINI_2_HALO_MIX_MAX = 0.9
-SHADER_GEMINI_2_HALO_FALLOFF_MIN = 0.5
-SHADER_GEMINI_2_HALO_FALLOFF_MAX = 16.0
+
+# Research reference values from decompiled texture analysis.
+# Raw texture: alpha(r) ~ 0.88 * exp(-0.3 * r), UV-space: exp(-4.5 * r) - 0.011, scaled by 0.89.
+SHADER_GEMINI_2_RESEARCH_PARAMS = (0.89, -4.5, 0.011, 2.5)
+SHADER_GEMINI_2_APPROX_A_MIN = 0.1
+SHADER_GEMINI_2_APPROX_A_MAX = 5.0
+SHADER_GEMINI_2_APPROX_B_MIN = -20.0
+SHADER_GEMINI_2_APPROX_B_MAX = -0.1
+SHADER_GEMINI_2_APPROX_C_MIN = -1.0
+SHADER_GEMINI_2_APPROX_C_MAX = 1.0
 SHADER_GEMINI_2_INTENSITY_GAIN_MIN = 0.5
 SHADER_GEMINI_2_INTENSITY_GAIN_MAX = 6.0
-SHADER_GEMINI_2_PROFILE_EXP_STEP = 0.05
-SHADER_GEMINI_2_HALO_MIX_STEP = 0.02
-SHADER_GEMINI_2_HALO_FALLOFF_STEP = 0.25
+SHADER_GEMINI_2_APPROX_A_STEP = 0.05
+SHADER_GEMINI_2_APPROX_B_STEP = 0.1
+SHADER_GEMINI_2_APPROX_C_STEP = 0.05
 SHADER_GEMINI_2_INTENSITY_GAIN_STEP = 0.05
 SHADER_GEMINI_2_PROFILE_SAMPLE_COUNT = 96
 SHADER_GEMINI_2_PROFILE_RING_SAMPLES = 96
@@ -101,6 +105,9 @@ in vec2 fragTexCoord;
 in vec4 fragColor;
 
 uniform vec4 colDiffuse;
+uniform float u_approx_a;
+uniform float u_approx_b;
+uniform float u_approx_c;
 uniform float u_intensity_gain;
 
 out vec4 finalColor;
@@ -111,7 +118,7 @@ void main() {
         discard;
     }
 
-    float profile = clamp(1.0607 * exp(-4.8256 * d) - 0.0125, 0.0, 1.0);
+    float profile = clamp(u_approx_a * exp(u_approx_b * d) - u_approx_c, 0.0, 1.0);
     float intensity = profile * fragColor.a * max(u_intensity_gain, 0.0);
     vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
     finalColor = vec4(rgb, 1.0);
@@ -120,9 +127,9 @@ void main() {
 
 _BEAM_GEMINI_2_SHADER_TRIED = False
 _BEAM_GEMINI_2_SHADER: rl.Shader | None = None
-_BEAM_GEMINI_2_PROFILE_EXP_LOC = -1
-_BEAM_GEMINI_2_HALO_MIX_LOC = -1
-_BEAM_GEMINI_2_HALO_FALLOFF_LOC = -1
+_BEAM_GEMINI_2_APPROX_A_LOC = -1
+_BEAM_GEMINI_2_APPROX_B_LOC = -1
+_BEAM_GEMINI_2_APPROX_C_LOC = -1
 _BEAM_GEMINI_2_INTENSITY_GAIN_LOC = -1
 _BEAM_GEMINI_2_COLOR_LOC = -1
 
@@ -224,9 +231,9 @@ class BeamStatsSummary:
 
 @dataclass(frozen=True, slots=True)
 class BeamShaderGemini2Params:
-    profile_exp: float = SHADER_GEMINI_2_PROFILE_EXP_DEFAULT
-    halo_mix: float = SHADER_GEMINI_2_HALO_MIX_DEFAULT
-    halo_falloff: float = SHADER_GEMINI_2_HALO_FALLOFF_DEFAULT
+    approx_a: float = SHADER_GEMINI_2_APPROX_A_DEFAULT
+    approx_b: float = SHADER_GEMINI_2_APPROX_B_DEFAULT
+    approx_c: float = SHADER_GEMINI_2_APPROX_C_DEFAULT
     intensity_gain: float = SHADER_GEMINI_2_INTENSITY_GAIN_DEFAULT
 
 
@@ -327,11 +334,9 @@ class BatchProbeResult:
 
 def _clamp_shader_params(params: BeamShaderGemini2Params) -> BeamShaderGemini2Params:
     return BeamShaderGemini2Params(
-        profile_exp=float(clamp(params.profile_exp, SHADER_GEMINI_2_PROFILE_EXP_MIN, SHADER_GEMINI_2_PROFILE_EXP_MAX)),
-        halo_mix=float(clamp(params.halo_mix, SHADER_GEMINI_2_HALO_MIX_MIN, SHADER_GEMINI_2_HALO_MIX_MAX)),
-        halo_falloff=float(
-            clamp(params.halo_falloff, SHADER_GEMINI_2_HALO_FALLOFF_MIN, SHADER_GEMINI_2_HALO_FALLOFF_MAX),
-        ),
+        approx_a=float(clamp(params.approx_a, SHADER_GEMINI_2_APPROX_A_MIN, SHADER_GEMINI_2_APPROX_A_MAX)),
+        approx_b=float(clamp(params.approx_b, SHADER_GEMINI_2_APPROX_B_MIN, SHADER_GEMINI_2_APPROX_B_MAX)),
+        approx_c=float(clamp(params.approx_c, SHADER_GEMINI_2_APPROX_C_MIN, SHADER_GEMINI_2_APPROX_C_MAX)),
         intensity_gain=float(
             clamp(params.intensity_gain, SHADER_GEMINI_2_INTENSITY_GAIN_MIN, SHADER_GEMINI_2_INTENSITY_GAIN_MAX),
         ),
@@ -340,11 +345,8 @@ def _clamp_shader_params(params: BeamShaderGemini2Params) -> BeamShaderGemini2Pa
 
 def _shader_profile_value(distance_norm: float, params: BeamShaderGemini2Params) -> float:
     d = float(clamp(distance_norm, 0.0, 1.0))
-    inv = max(0.0, 1.0 - d)
-    core = inv ** max(0.001, float(params.profile_exp))
-    halo = math.exp(-(d * d) * max(0.001, float(params.halo_falloff)))
-    mixed = core * (1.0 - float(params.halo_mix)) + halo * float(params.halo_mix)
-    return float(mixed * float(params.intensity_gain))
+    profile = float(clamp(params.approx_a * math.exp(params.approx_b * d) - params.approx_c, 0.0, 1.0))
+    return float(profile * max(0.0, float(params.intensity_gain)))
 
 
 def _normalize_profile(values: Sequence[float]) -> tuple[float, ...]:
@@ -436,17 +438,17 @@ def _fit_shader_profile_to_reference(
         params=current,
     )
 
-    exp_values = tuple(1.6 + 0.1 * float(i) for i in range(19))
-    halo_mix_values = tuple(0.0 + 0.025 * float(i) for i in range(17))
-    halo_falloff_values = tuple(2.0 + 0.5 * float(i) for i in range(17))
+    a_values = tuple(0.5 + 0.1 * float(i) for i in range(16))
+    b_values = tuple(-10.0 + 0.5 * float(i) for i in range(20))
+    c_values = tuple(-0.05 + 0.01 * float(i) for i in range(16))
 
-    for exp in exp_values:
-        for halo_mix in halo_mix_values:
-            for halo_falloff in halo_falloff_values:
+    for a in a_values:
+        for b in b_values:
+            for c in c_values:
                 candidate = BeamShaderGemini2Params(
-                    profile_exp=float(exp),
-                    halo_mix=float(halo_mix),
-                    halo_falloff=float(halo_falloff),
+                    approx_a=float(a),
+                    approx_b=float(b),
+                    approx_c=float(c),
                     intensity_gain=float(current.intensity_gain),
                 )
                 metrics = _profile_match_metrics(
@@ -484,8 +486,8 @@ def _mean(values: Sequence[float]) -> float:
 
 def _get_beam_gemini_2_shader() -> rl.Shader | None:
     global _BEAM_GEMINI_2_SHADER_TRIED, _BEAM_GEMINI_2_SHADER
-    global _BEAM_GEMINI_2_PROFILE_EXP_LOC, _BEAM_GEMINI_2_HALO_MIX_LOC
-    global _BEAM_GEMINI_2_HALO_FALLOFF_LOC, _BEAM_GEMINI_2_INTENSITY_GAIN_LOC, _BEAM_GEMINI_2_COLOR_LOC
+    global _BEAM_GEMINI_2_APPROX_A_LOC, _BEAM_GEMINI_2_APPROX_B_LOC
+    global _BEAM_GEMINI_2_APPROX_C_LOC, _BEAM_GEMINI_2_INTENSITY_GAIN_LOC, _BEAM_GEMINI_2_COLOR_LOC
     if _BEAM_GEMINI_2_SHADER_TRIED:
         if _BEAM_GEMINI_2_SHADER is not None and int(_BEAM_GEMINI_2_SHADER.id) > 0:
             return _BEAM_GEMINI_2_SHADER
@@ -503,9 +505,9 @@ def _get_beam_gemini_2_shader() -> rl.Shader | None:
         return None
 
     _BEAM_GEMINI_2_SHADER = shader
-    _BEAM_GEMINI_2_PROFILE_EXP_LOC = int(rl.get_shader_location(shader, "u_profile_exp"))
-    _BEAM_GEMINI_2_HALO_MIX_LOC = int(rl.get_shader_location(shader, "u_halo_mix"))
-    _BEAM_GEMINI_2_HALO_FALLOFF_LOC = int(rl.get_shader_location(shader, "u_halo_falloff"))
+    _BEAM_GEMINI_2_APPROX_A_LOC = int(rl.get_shader_location(shader, "u_approx_a"))
+    _BEAM_GEMINI_2_APPROX_B_LOC = int(rl.get_shader_location(shader, "u_approx_b"))
+    _BEAM_GEMINI_2_APPROX_C_LOC = int(rl.get_shader_location(shader, "u_approx_c"))
     _BEAM_GEMINI_2_INTENSITY_GAIN_LOC = int(rl.get_shader_location(shader, "u_intensity_gain"))
     _BEAM_GEMINI_2_COLOR_LOC = int(rl.get_shader_location(shader, "colDiffuse"))
     return _BEAM_GEMINI_2_SHADER
@@ -995,17 +997,17 @@ class BeamDebugView:
     def _apply_shader_param_delta(
         self,
         *,
-        profile_exp: float = 0.0,
-        halo_mix: float = 0.0,
-        halo_falloff: float = 0.0,
+        approx_a: float = 0.0,
+        approx_b: float = 0.0,
+        approx_c: float = 0.0,
         intensity_gain: float = 0.0,
     ) -> None:
         params = self._shader_gemini_2_params
         self._shader_gemini_2_params = _clamp_shader_params(
             BeamShaderGemini2Params(
-                profile_exp=float(params.profile_exp + profile_exp),
-                halo_mix=float(params.halo_mix + halo_mix),
-                halo_falloff=float(params.halo_falloff + halo_falloff),
+                approx_a=float(params.approx_a + approx_a),
+                approx_b=float(params.approx_b + approx_b),
+                approx_c=float(params.approx_c + approx_c),
                 intensity_gain=float(params.intensity_gain + intensity_gain),
             ),
         )
@@ -1016,6 +1018,23 @@ class BeamDebugView:
         self._shader_gemini_2_params = _clamp_shader_params(BeamShaderGemini2Params())
         self._update_shader_profile_metrics()
         self._shader_fit_status = "params reset"
+
+    def _toggle_research_params(self) -> None:
+        a_r, b_r, c_r, g_r = SHADER_GEMINI_2_RESEARCH_PARAMS
+        current = self._shader_gemini_2_params
+        research = BeamShaderGemini2Params(approx_a=a_r, approx_b=b_r, approx_c=c_r, intensity_gain=g_r)
+        is_research = (
+            abs(current.approx_a - a_r) < 1e-4
+            and abs(current.approx_b - b_r) < 1e-4
+            and abs(current.approx_c - c_r) < 1e-4
+        )
+        if is_research:
+            self._shader_gemini_2_params = _clamp_shader_params(BeamShaderGemini2Params())
+            self._shader_fit_status = "fitted (default)"
+        else:
+            self._shader_gemini_2_params = _clamp_shader_params(research)
+            self._shader_fit_status = "research ref"
+        self._update_shader_profile_metrics()
 
     def _run_shader_profile_autofit(self) -> None:
         reference = self._shader_reference_profile
@@ -1035,9 +1054,9 @@ class BeamDebugView:
         # Preserve user-tuned gain while fitting cross-section softness/shape.
         self._shader_gemini_2_params = _clamp_shader_params(
             BeamShaderGemini2Params(
-                profile_exp=float(fitted.profile_exp),
-                halo_mix=float(fitted.halo_mix),
-                halo_falloff=float(fitted.halo_falloff),
+                approx_a=float(fitted.approx_a),
+                approx_b=float(fitted.approx_b),
+                approx_c=float(fitted.approx_c),
                 intensity_gain=float(base.intensity_gain),
             ),
         )
@@ -1255,6 +1274,8 @@ class BeamDebugView:
             self._shader_fit_requested = True
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ZERO):
             self._reset_shader_params()
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_Q):
+            self._toggle_research_params()
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_B):
             self.apply_scenario_preset(BeamScenarioPreset.PLASMA_LIKE)
@@ -1571,9 +1592,9 @@ class BeamDebugView:
 
         quad_count = 0
         rl.begin_shader_mode(shader)
-        self._set_shader_float(shader, _BEAM_GEMINI_2_PROFILE_EXP_LOC, float(params.profile_exp))
-        self._set_shader_float(shader, _BEAM_GEMINI_2_HALO_MIX_LOC, float(params.halo_mix))
-        self._set_shader_float(shader, _BEAM_GEMINI_2_HALO_FALLOFF_LOC, float(params.halo_falloff))
+        self._set_shader_float(shader, _BEAM_GEMINI_2_APPROX_A_LOC, float(params.approx_a))
+        self._set_shader_float(shader, _BEAM_GEMINI_2_APPROX_B_LOC, float(params.approx_b))
+        self._set_shader_float(shader, _BEAM_GEMINI_2_APPROX_C_LOC, float(params.approx_c))
         self._set_shader_float(shader, _BEAM_GEMINI_2_INTENSITY_GAIN_LOC, float(params.intensity_gain))
         self._set_shader_vec4(shader, _BEAM_GEMINI_2_COLOR_LOC, 1.0, 1.0, 1.0, 1.0)
         rl.rl_set_texture(0)
@@ -1637,16 +1658,20 @@ class BeamDebugView:
         b = int(clamp(streak_rgb[2] * 255.0, 0.0, 255.0) + 0.5)
 
         params = self._shader_gemini_2_params
-        profile_exp = clamp(float(params.profile_exp) - 0.2, SHADER_GEMINI_2_PROFILE_EXP_MIN, SHADER_GEMINI_2_PROFILE_EXP_MAX)
-        halo_mix = clamp(
-            float(params.halo_mix) + (0.14 if bool(is_fire) else 0.08),
-            SHADER_GEMINI_2_HALO_MIX_MIN,
-            SHADER_GEMINI_2_HALO_MIX_MAX,
+        approx_a = clamp(
+            float(params.approx_a) * (1.1 if bool(is_fire) else 1.05),
+            SHADER_GEMINI_2_APPROX_A_MIN,
+            SHADER_GEMINI_2_APPROX_A_MAX,
         )
-        halo_falloff = clamp(
-            float(params.halo_falloff) * (0.78 if bool(is_fire) else 0.88),
-            SHADER_GEMINI_2_HALO_FALLOFF_MIN,
-            SHADER_GEMINI_2_HALO_FALLOFF_MAX,
+        approx_b = clamp(
+            float(params.approx_b) * (0.8 if bool(is_fire) else 0.85),
+            SHADER_GEMINI_2_APPROX_B_MIN,
+            SHADER_GEMINI_2_APPROX_B_MAX,
+        )
+        approx_c = clamp(
+            float(params.approx_c) * 1.0,
+            SHADER_GEMINI_2_APPROX_C_MIN,
+            SHADER_GEMINI_2_APPROX_C_MAX,
         )
         intensity_gain = clamp(
             float(params.intensity_gain) * (1.22 if bool(is_fire) else 1.08),
@@ -1669,9 +1694,9 @@ class BeamDebugView:
 
         quad_count = 0
         rl.begin_shader_mode(shader)
-        self._set_shader_float(shader, _BEAM_GEMINI_2_PROFILE_EXP_LOC, float(profile_exp))
-        self._set_shader_float(shader, _BEAM_GEMINI_2_HALO_MIX_LOC, float(halo_mix))
-        self._set_shader_float(shader, _BEAM_GEMINI_2_HALO_FALLOFF_LOC, float(halo_falloff))
+        self._set_shader_float(shader, _BEAM_GEMINI_2_APPROX_A_LOC, float(approx_a))
+        self._set_shader_float(shader, _BEAM_GEMINI_2_APPROX_B_LOC, float(approx_b))
+        self._set_shader_float(shader, _BEAM_GEMINI_2_APPROX_C_LOC, float(approx_c))
         self._set_shader_float(shader, _BEAM_GEMINI_2_INTENSITY_GAIN_LOC, float(intensity_gain))
         self._set_shader_vec4(shader, _BEAM_GEMINI_2_COLOR_LOC, 1.0, 1.0, 1.0, 1.0)
         rl.rl_set_texture(0)
@@ -1891,7 +1916,7 @@ class BeamDebugView:
             (
                 "Space pause/resume  Right step(when paused)  Esc close  P screenshot  "
                 "F fire/ion  C cap256  G force life>=0.4  H toggle heads  M all markers  V geometry  "
-                "X run batch-probe  Z auto-probe  J/U probe quads  N autofit-profile  0 reset shader"
+                "X run batch-probe  Z auto-probe  J/U probe quads  N autofit-profile  0 reset shader  Q research/fitted"
             ),
             Vec2(margin, y),
             color=UI_HINT,
@@ -1930,7 +1955,7 @@ class BeamDebugView:
         draw_ui_text(
             self._small,
             (
-                "shader profile=clamp(1.0607*exp(-4.8256*d)-0.0125,0,1) "
+                f"shader profile=clamp({shader_params.approx_a:.4f}*exp({shader_params.approx_b:.4f}*d)-{shader_params.approx_c:.4f},0,1) "
                 f"gain={shader_params.intensity_gain:.3f}"
             ),
             Vec2(margin, y),
