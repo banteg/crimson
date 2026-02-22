@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE
+from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
+from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
+from crimson.perks.impl.final_revenge import apply_final_revenge_on_player_death
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
@@ -90,3 +92,50 @@ def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
     assert player.health < 0.0
     assert events.sfx.count("sfx_explosion_large") == 1
     assert events.sfx.count("sfx_shockwave") == 1
+
+
+def test_final_revenge_aoe_includes_active_non_positive_hp_entries(mocker) -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    player.perk_counts[int(PerkId.FINAL_REVENGE)] = 1
+
+    pool = CreaturePool(size=4)
+    active_dead = pool.entries[0]
+    active_dead.active = True
+    active_dead.hp = 0.0
+    active_dead.pos = Vec2(100.0, 100.0)
+
+    active_alive = pool.entries[1]
+    active_alive.active = True
+    active_alive.hp = 10.0
+    active_alive.pos = Vec2(100.0, 100.0)
+
+    active_far = pool.entries[2]
+    active_far.active = True
+    active_far.hp = 10.0
+    active_far.pos = Vec2(2000.0, 2000.0)
+
+    touched: list[int] = []
+
+    def _record_apply(creature, **_kwargs):
+        touched.append(pool.entries.index(creature))
+        return False
+
+    mocker.patch(
+        "crimson.creatures.damage.creature_apply_damage_with_lethal_followup",
+        side_effect=_record_apply,
+    )
+
+    apply_final_revenge_on_player_death(
+        state=state,
+        creatures=pool,
+        players=[player],
+        player=player,
+        dt=0.1,
+        world_size=1024.0,
+        detail_preset=5,
+        fx_queue=None,
+        deaths=[],
+    )
+
+    assert touched == [0, 1]
