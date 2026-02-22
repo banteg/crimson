@@ -17,3 +17,14 @@ def test_tough_reloader_halves_damage_while_reloading() -> None:
 
     assert_float_close(applied, 5.0)
     assert_float_close(player.health, 95.0)
+
+
+def test_tough_reloader_sets_spread_heat_from_post_reload_damage_before_thick_skinned() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(), health=100.0, reload_active=True, spread_heat=0.1)
+    player.perk_counts[int(PerkId.TOUGH_RELOADER)] = 1
+    player.perk_counts[int(PerkId.THICK_SKINNED)] = 1
+
+    _ = player_take_damage(state, player, 10.0, dt=0.1, rand=lambda: 0)
+
+    assert_float_close(player.spread_heat, 0.15)

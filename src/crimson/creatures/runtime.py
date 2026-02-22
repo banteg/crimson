@@ -20,7 +20,6 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 
 from ..effects import FxQueue, FxQueueRotated
-from ..effects_atlas import EffectId
 from ..gameplay import (
     award_experience,
     award_experience_from_reward,
@@ -891,11 +890,15 @@ class CreaturePool:
         evil_targets: set[int] = set()
         if players:
             if bool(state.preserve_bugs):
+                # Native `creature_update_all` reads one global
+                # `evil_eyes_target_creature` slot (player-0 storage), even in
+                # multiplayer runs.
                 if perk_active(players[0], PerkId.EVIL_EYES):
                     evil_target = int(players[0].evil_eyes_target_creature)
                     if evil_target >= 0:
                         evil_targets.add(int(evil_target))
             else:
+                # Bug-fixed path: apply all alive Evil Eyes owners.
                 for player in players:
                     if float(player.health) <= 0.0:
                         continue
@@ -1300,6 +1303,18 @@ class CreaturePool:
 
         creature = self._entries[int(idx)]
         survival_record_recent_death(state, pos=creature.pos)
+        if (creature.flags & CreatureFlags.BONUS_ON_DEATH) and creature.bonus_id is not None:
+            state.bonus_pool.spawn_at(
+                pos=creature.pos,
+                bonus_id=int(creature.bonus_id),
+                duration_override=int(creature.bonus_duration_override) if creature.bonus_duration_override is not None else -1,
+                state=state,
+                world_width=world_width,
+                world_height=world_height,
+            )
+            if not bool(state.preserve_bugs):
+                creature.bonus_id = None
+                creature.bonus_duration_override = None
         if not creature.active:
             # Native `creature_handle_death` gates its XP/bonus/freeze body under
             # `if (active != 0)`. Re-entrant callers (notably secondary
@@ -1581,17 +1596,6 @@ class CreaturePool:
                 xp_awarded = award_experience_from_reward(state, killer, float(creature.reward_value))
 
         if players:
-            if (creature.flags & CreatureFlags.BONUS_ON_DEATH) and creature.bonus_id is not None:
-                state.bonus_pool.spawn_at(
-                    pos=creature.pos,
-                    bonus_id=int(creature.bonus_id),
-                    duration_override=int(creature.bonus_duration_override)
-                    if creature.bonus_duration_override is not None
-                    else -1,
-                    state=state,
-                    world_width=world_width,
-                    world_height=world_height,
-                )
             spawned_bonus = state.bonus_pool.try_spawn_on_kill(
                 pos=creature.pos,
                 state=state,
@@ -1608,28 +1612,6 @@ class CreaturePool:
                 )
 
         armored_death = bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK)
-        if armored_death:
-            for _ in range(5):
-                rotation = float(int(rand()) & 0x7F) * 0.049087387
-                vel_x = float((int(rand()) & 0x7F) - 0x40)
-                vel_y = float((int(rand()) & 0x7F) - 0x40)
-                scale_step = float(int(rand()) % 0x8C) * 0.01 + 0.3
-                state.effects.spawn(
-                    effect_id=int(EffectId.BURST),
-                    pos=creature.pos,
-                    vel=Vec2(vel_x, vel_y),
-                    rotation=float(rotation),
-                    scale=1.0,
-                    half_width=36.0,
-                    half_height=36.0,
-                    age=0.0,
-                    lifetime=0.699999988079071,
-                    flags=0x1D,
-                    color=RGBA(0.800000011920929, 0.800000011920929, 0.30000001192092896, 0.5),
-                    rotation_step=0.0,
-                    scale_step=float(scale_step),
-                    detail_preset=int(detail_preset),
-                )
 
         return CreatureDeath(
             index=int(idx),

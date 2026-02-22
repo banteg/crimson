@@ -3,6 +3,8 @@ from __future__ import annotations
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.creatures.spawn import CreatureFlags
+from crimson.effects_atlas import EffectId
+from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
@@ -94,3 +96,54 @@ def test_damage_type1_global_perks_apply_with_non_player_owner() -> None:
 
     assert killed is True
     assert_float_close(creature.hp, -131.92474)
+
+
+def test_nonlethal_damage_does_not_reset_non_alive_hitbox_size() -> None:
+    creature = CreatureState(active=True, hp=100.0, hitbox_size=12.0, size=50.0, flags=CreatureFlags(0))
+
+    killed = creature_apply_damage(
+        creature,
+        damage_amount=10.0,
+        damage_type=3,
+        impulse=Vec2(),
+        owner_id=0,
+        dt=0.016,
+        players=[],
+        rand=lambda: 0,
+    )
+
+    assert killed is False
+    assert_float_close(creature.hitbox_size, 12.0)
+
+
+def test_lethal_shock_damage_spawns_armored_debris_in_damage_path() -> None:
+    state = GameplayState()
+    creature = CreatureState(
+        active=True,
+        hp=5.0,
+        hitbox_size=16.0,
+        size=50.0,
+        flags=CreatureFlags.RANGED_ATTACK_SHOCK,
+        pos=Vec2(10.0, 20.0),
+    )
+    rng = MockCrand(0, fallback="repeat_last")
+    before_calls = rng.calls
+
+    killed = creature_apply_damage(
+        creature,
+        damage_amount=10.0,
+        damage_type=3,
+        impulse=Vec2(),
+        owner_id=0,
+        dt=0.016,
+        players=[],
+        rand=rng,
+        effects=state.effects,
+        detail_preset=5,
+    )
+
+    assert killed is True
+    active = state.effects.iter_active()
+    assert len(active) == 5
+    assert all(int(entry.effect_id) == int(EffectId.BURST) for entry in active)
+    assert rng.calls - before_calls == 20

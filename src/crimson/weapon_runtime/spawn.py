@@ -123,6 +123,7 @@ def projectile_spawn(
                 owner_id=owner_id,
                 owner_player_index=owner_player_index,
             )
+            state.shots_fired_total += 1
             if player_index is not None:
                 state.shots_fired[player_index] += 1
             if type_id == int(ProjectileTypeId.FIRE_BULLETS):

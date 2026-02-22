@@ -234,9 +234,6 @@ def creature_apply_damage(
         )
         return True
 
-    if creature.hitbox_size != CREATURE_HITBOX_ALIVE and dt > 0.0:
-        creature.hitbox_size = CREATURE_HITBOX_ALIVE
-
     return False
 
 

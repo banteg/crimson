@@ -49,6 +49,7 @@ def player_take_damage(
     damage_scaled = float(raw_damage)
     if perk_active(player, PerkId.TOUGH_RELOADER) and player.reload_active:
         damage_scaled *= 0.5
+    spread_heat_damage = float(damage_scaled)
 
     state.survival_reward_damage_seen = True
 
@@ -99,8 +100,8 @@ def player_take_damage(
     if not dodged:
         if not perk_active(player, PerkId.UNSTOPPABLE):
             player.heading += float((int(rng()) % 100) - 50) * 0.04
-            # Native uses the raw incoming damage for spread heat growth.
-            player.spread_heat = min(0.48, float(player.spread_heat) + raw_damage * 0.01)
+            # Native uses post-Tough-Reloader damage (before Thick Skinned) for spread heat growth.
+            player.spread_heat = min(0.48, float(player.spread_heat) + spread_heat_damage * 0.01)
 
         if player.health <= 20.0 and (int(rng()) & 7) == 3:
             player.low_health_timer = 0.0

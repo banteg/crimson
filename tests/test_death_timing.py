@@ -304,9 +304,9 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
         rng,
         before_calls=before_calls,
         before_state=before_state,
-        expected_draws=41,
+        expected_draws=21,
         expected_after_state=0,
-        expected_hash="3ba5b0d89c1cec5a",
+        expected_hash="e6c537e095f1bfbe",
     )
 
 
@@ -366,7 +366,7 @@ def test_death_sfx_rand_consumes_past_cap(mocker) -> None:
     )
 
 
-def test_freeze_hit_path_still_plans_hit_sfx(mocker) -> None:
+def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
     world_size = 1024.0
     world = WorldState.build(
         world_size=world_size,
@@ -425,11 +425,11 @@ def test_freeze_hit_path_still_plans_hit_sfx(mocker) -> None:
         rng,
         before_calls=before_calls,
         before_state=before_state,
-        expected_draws=2,
+        expected_draws=1,
         expected_after_state=0,
-        expected_hash="e499ce7a21cd46c8",
+        expected_hash="b6589fc6ab0dc82c",
     )
-    assert events.hit_sfx == ["sfx_bullet_hit_01"]
+    assert events.hit_sfx == []
     assert events.trigger_game_tune is True
 
 

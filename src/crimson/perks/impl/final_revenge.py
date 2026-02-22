@@ -48,8 +48,6 @@ def apply_final_revenge_on_player_death(
     for creature_idx, creature in enumerate(creatures.entries):
         if not creature.active:
             continue
-        if float(creature.hp) <= 0.0:
-            continue
 
         delta = creature.pos - player_pos
         if abs(delta.x) > 512.0 or abs(delta.y) > 512.0:

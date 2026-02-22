@@ -36,7 +36,7 @@ def test_game_tune_triggers_in_typo_mode(mocker) -> None:
 
     assert trigger_game_tune.call_count == 1
     assert trigger_game_tune.call_args.kwargs["rand"] is rand
-    assert play_sfx.call_args_list == [call(router, "sfx_bullet_hit_01"), call(router, "sfx_bullet_hit_01")]
+    assert play_sfx.call_args_list == [call(router, "sfx_bullet_hit_01")]
 
 
 def test_game_tune_not_triggered_in_rush_mode(mocker) -> None:

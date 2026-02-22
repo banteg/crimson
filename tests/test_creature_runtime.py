@@ -17,7 +17,6 @@ from crimson.creatures.spawn import (
     build_spawn_plan,
 )
 from crimson.effects import FxQueue
-from crimson.effects_atlas import EffectId
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
@@ -730,7 +729,7 @@ def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails(moc
     assert state.effects.iter_active() == []
 
 
-def test_handle_death_shock_flag_spawns_armored_debris_and_suppresses_death_sfx() -> None:
+def test_handle_death_shock_flag_suppresses_death_sfx_without_spawning_debris() -> None:
     state = GameplayState()
     state.rng = _StubRand([0] * 20)  # type: ignore[assignment]
     pool = CreaturePool()
@@ -752,10 +751,8 @@ def test_handle_death_shock_flag_spawns_armored_debris_and_suppresses_death_sfx(
     )
 
     assert death.suppress_death_sfx is True
-    active = state.effects.iter_active()
-    assert len(active) == 5
-    assert all(int(entry.effect_id) == int(EffectId.BURST) for entry in active)
-    assert state.rng._idx == 20  # type: ignore[attr-defined]
+    assert state.effects.iter_active() == []
+    assert state.rng._idx == 0  # type: ignore[attr-defined]
 
 
 def test_death_award_uses_float32_sum_before_truncation() -> None:
@@ -867,6 +864,87 @@ def test_handle_death_inactive_entry_skips_reentrant_side_effects(mocker) -> Non
     assert player.experience == 0
     add_random.assert_not_called()
     assert not any(entry.bonus_id != 0 for entry in state.bonus_pool.entries)
+
+
+def test_handle_death_inactive_entry_forced_bonus_on_death_is_one_shot_by_default(mocker) -> None:
+    state = GameplayState()
+    pool = CreaturePool()
+    creature = pool.entries[0]
+    creature.active = False
+    creature.flags = CreatureFlags.BONUS_ON_DEATH
+    creature.bonus_id = 1
+    creature.bonus_duration_override = 5
+    creature.hp = -1.0
+    creature.pos = Vec2(100.0, 100.0)
+
+    spawn_at = mocker.patch.object(
+        state.bonus_pool,
+        "spawn_at",
+        return_value=BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5),
+    )
+
+    death = pool.handle_death(
+        0,
+        state=state,
+        players=[],
+        rand=state.rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=None,
+    )
+    pool.handle_death(
+        0,
+        state=state,
+        players=[],
+        rand=state.rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=None,
+    )
+
+    spawn_at.assert_called_once()
+    assert death.xp_awarded == 0
+    assert creature.bonus_id is None
+    assert creature.bonus_duration_override is None
+
+
+def test_handle_death_inactive_entry_forced_bonus_on_death_repeats_with_preserve_bugs(mocker) -> None:
+    state = GameplayState(preserve_bugs=True)
+    pool = CreaturePool()
+    creature = pool.entries[0]
+    creature.active = False
+    creature.flags = CreatureFlags.BONUS_ON_DEATH
+    creature.bonus_id = 1
+    creature.bonus_duration_override = 5
+    creature.hp = -1.0
+    creature.pos = Vec2(100.0, 100.0)
+
+    spawn_at = mocker.patch.object(
+        state.bonus_pool,
+        "spawn_at",
+        return_value=BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5),
+    )
+
+    pool.handle_death(
+        0,
+        state=state,
+        players=[],
+        rand=state.rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=None,
+    )
+    pool.handle_death(
+        0,
+        state=state,
+        players=[],
+        rand=state.rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=None,
+    )
+
+    assert spawn_at.call_count == 2
 
 
 def test_spawn_inits_resets_native_spawn_state_fields() -> None:

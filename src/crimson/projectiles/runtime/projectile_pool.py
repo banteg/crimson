@@ -89,6 +89,7 @@ class ProjectilePool:
         entry.angle = angle
         entry.pos = pos
         entry.origin = pos
+        entry.vel = Vec2(math.cos(float(angle)) * 1.5, math.sin(float(angle)) * 1.5)
         entry.type_id = int(type_id)
         entry.life_timer = 0.4
         entry.reserved = 0.0
