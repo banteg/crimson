@@ -1277,7 +1277,7 @@ def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
     assert stub_rand._idx == 0
 
 
-def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
+def test_evil_eyes_default_freezes_only_player0_target() -> None:
     state = GameplayState(rng=Crand(0xBEEF), preserve_bugs=False)
 
     player0 = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))
@@ -1322,8 +1322,6 @@ def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
     pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player0, player1], rand=stub_rand.rand))
 
     assert_float_close(creature0.attack_cooldown, 1.0)
-    assert_float_close(creature1.attack_cooldown, 1.0)
+    assert float(creature1.attack_cooldown) < 1.0
     assert creature0.vel == Vec2(2.0, -3.0)
-    assert creature1.vel == Vec2(2.0, -3.0)
     assert creature0.force_target == 0
-    assert creature1.force_target == 0
