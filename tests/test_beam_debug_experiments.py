@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from crimson.projectiles import ProjectileTypeId
 from crimson.render.projectile_draw.beam_sampling import build_beam_sample_plan, iter_beam_sample_offsets
 from crimson.views.beam_debug import (
     BeamCountInput,
@@ -148,6 +149,21 @@ def test_disable_head_rendering_removes_head_and_overlay_calls() -> None:
         assert counts.overlay_calls == 0
 
 
+def test_shader_mode_uses_no_texture_overlay_calls() -> None:
+    plan = build_beam_sample_plan(dist=220.0, step=2.48, max_span=256.0)
+    assert plan is not None
+    item = BeamCountInput(plan=plan, life=0.4, screen_length_px=220.0)
+
+    counts = estimate_beam_frame_counts(
+        [item],
+        mode=BeamRenderMode.SHADER_GEMINI_2,
+        is_fire=True,
+    )
+    assert counts.body_calls == 1
+    assert counts.head_calls == 1
+    assert counts.overlay_calls == 0
+
+
 def test_benchmark_mode_cycles_and_completes() -> None:
     view = BeamDebugView(ViewContext(assets_dir=Path("artifacts") / "assets"))
     view._side_by_side_enabled = True
@@ -178,6 +194,29 @@ def test_batch_probe_defaults_and_flush_label_formatting() -> None:
     assert view._batch_probe_run_once is False
     assert view._format_flush_quad(None) == "none"
     assert view._format_flush_quad(128) == "128"
+
+
+def test_beam_distance_uses_fixed_life_window_and_projectile_speed() -> None:
+    view = BeamDebugView(ViewContext(assets_dir=Path("artifacts") / "assets"))
+    view._phase = 0.0
+    view._distance_jitter_units = 0.0
+    view._base_distance_units = 220.0
+
+    view._use_fire_profile = True
+    view._sync_effect_scale()
+    fire_speed = view._projectile_speed_units_per_second_for_type(int(ProjectileTypeId.FIRE_BULLETS))
+    fire_dist_low_life = view._beam_dist_units(0)
+
+    view._use_fire_profile = False
+    view._sync_effect_scale()
+    ion_speed = view._projectile_speed_units_per_second_for_type(int(ProjectileTypeId.ION_RIFLE))
+    ion_dist_low_life = view._beam_dist_units(0)
+
+    assert fire_speed == 1200.0
+    assert ion_speed == 300.0
+    assert abs(float(fire_dist_low_life) - 480.0) <= 1e-6
+    assert abs(float(ion_dist_low_life) - 120.0) <= 1e-6
+    assert float(fire_dist_low_life) > float(ion_dist_low_life)
 
 
 def test_shader_profile_value_is_monotonic_outward() -> None:

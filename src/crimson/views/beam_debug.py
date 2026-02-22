@@ -22,6 +22,7 @@ from ..projectiles import ProjectileTypeId
 from ..render.projectile_draw.beam_sampling import BeamSamplePlan, build_beam_sample_plan, iter_beam_sample_offsets
 from ..render.projectile_draw.common import RAD_TO_DEG
 from ..render.projectile_render_registry import beam_effect_scale
+from ..weapons import weapon_entry_for_projectile_type_id
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 
@@ -45,6 +46,8 @@ ROLLING_WINDOW_SIZE = 240
 HEAD_REGION_T_MIN = 0.65
 SHADER_GEMINI_2_RADIUS_SCALE = 16.0
 SHADER_GEMINI_2_RADIUS_EXPAND = 1.25
+SHADER_GEMINI_2_HEAD_RADIUS_MULTIPLIER = 1.05
+SHADER_GEMINI_2_HEAD_FIRE_RADIUS_MULTIPLIER = 1.35
 SHADER_GEMINI_2_PROFILE_EXP_DEFAULT = 3.4
 SHADER_GEMINI_2_HALO_MIX_DEFAULT = 0.125
 SHADER_GEMINI_2_HALO_FALLOFF_DEFAULT = 10.0
@@ -68,6 +71,9 @@ BATCH_PROBE_QUADS_DEFAULT = 4096
 BATCH_PROBE_QUADS_STEP = 256
 BATCH_PROBE_QUADS_MIN = 256
 BATCH_PROBE_QUADS_MAX = 32768
+DISTANCE_SCALE_REFERENCE_UNITS = 220.0
+NATIVE_BEAM_ACTIVE_LIFE_SECONDS = 0.4
+PROJECTILE_SPEED_UNITS_PER_META = 20.0
 
 _BEAM_SHADER_VS_330 = """
 #version 330
@@ -95,9 +101,6 @@ in vec2 fragTexCoord;
 in vec4 fragColor;
 
 uniform vec4 colDiffuse;
-uniform float u_profile_exp;
-uniform float u_halo_mix;
-uniform float u_halo_falloff;
 uniform float u_intensity_gain;
 
 out vec4 finalColor;
@@ -108,9 +111,7 @@ void main() {
         discard;
     }
 
-    float core = pow(max(1.0 - d, 0.0), max(u_profile_exp, 0.001));
-    float halo = exp(-(d * d) * max(u_halo_falloff, 0.001));
-    float profile = mix(core, halo, clamp(u_halo_mix, 0.0, 1.0));
+    float profile = clamp(1.0607 * exp(-4.8256 * d) - 0.0125, 0.0, 1.0);
     float intensity = profile * fragColor.a * max(u_intensity_gain, 0.0);
     vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
     finalColor = vec4(rgb, 1.0);
@@ -634,18 +635,20 @@ def estimate_beam_frame_counts(
         visible_segments += int(segment_count)
         head_region_segments += _head_region_segment_count(offsets, plan=plan)
 
-        if bool(draw_heads_enabled):
-            head_calls += 1
-            if bool(is_fire) and float(item.life) >= 0.4:
-                overlay_calls += 1
-
         if mode == BeamRenderMode.BASELINE_SPRITE:
+            if bool(draw_heads_enabled):
+                head_calls += 1
+                if bool(is_fire) and float(item.life) >= 0.4:
+                    overlay_calls += 1
             body_calls += int(segment_count)
         elif segment_count >= 1:
             shader_beam_calls += 1
+            if bool(draw_heads_enabled):
+                head_calls += 1
 
     if mode == BeamRenderMode.SHADER_GEMINI_2:
-        body_calls = int(shader_beam_calls * 2)
+        body_calls = int(shader_beam_calls)
+        overlay_calls = 0
 
     return BeamDrawCounts(
         body_calls=int(body_calls),
@@ -810,8 +813,24 @@ class BeamDebugView:
             return
         self._render_mode = _RENDER_MODE_ORDER[self._benchmark_mode_index()]
 
+    def _active_projectile_type_id(self) -> int:
+        return int(ProjectileTypeId.FIRE_BULLETS) if self._use_fire_profile else int(ProjectileTypeId.ION_RIFLE)
+
+    @staticmethod
+    def _projectile_speed_units_per_second_for_type(type_id: int) -> float:
+        entry = weapon_entry_for_projectile_type_id(int(type_id))
+        meta = int(entry.projectile_meta) if entry is not None and entry.projectile_meta is not None else 45
+        steps = max(1, int(meta))
+        return float(steps) * float(PROJECTILE_SPEED_UNITS_PER_META)
+
+    def _projectile_speed_units_per_second(self) -> float:
+        return self._projectile_speed_units_per_second_for_type(self._active_projectile_type_id())
+
+    def _distance_scale_from_base(self) -> float:
+        return max(0.01, float(self._base_distance_units) / float(DISTANCE_SCALE_REFERENCE_UNITS))
+
     def _sync_effect_scale(self) -> None:
-        type_id = int(ProjectileTypeId.FIRE_BULLETS) if self._use_fire_profile else int(ProjectileTypeId.ION_RIFLE)
+        type_id = self._active_projectile_type_id()
         self._effect_scale = float(beam_effect_scale(type_id))
 
     def _iter_asset_roots_for_open(self) -> tuple[Path, ...]:
@@ -1086,14 +1105,19 @@ class BeamDebugView:
         self._phase += max(0.0, float(dt)) * max(0.0, float(self._sim_speed))
 
     def _beam_dist_units(self, index: int) -> float:
+        speed_units_per_second = self._projectile_speed_units_per_second()
+        trail_window_seconds = float(NATIVE_BEAM_ACTIVE_LIFE_SECONDS)
+        travel_units = speed_units_per_second * trail_window_seconds
+        distance_scale = self._distance_scale_from_base()
+
         idx = float(index)
         wave_a = math.sin(float(self._phase) * 1.6 + idx * 0.37)
         wave_b = math.sin(float(self._phase) * 0.45 + idx * 0.09)
-        dist = (
-            float(self._base_distance_units)
-            + wave_a * float(self._distance_jitter_units)
+        jitter_units = (
+            wave_a * float(self._distance_jitter_units)
             + wave_b * float(self._distance_jitter_units) * 0.25
         )
+        dist = (travel_units + jitter_units) * distance_scale
         return max(2.0, float(dist))
 
     def _beam_life(self, index: int) -> float:
@@ -1119,9 +1143,9 @@ class BeamDebugView:
             theta = float(self._phase) * 0.3 + (float(index) / float(count)) * math.tau
             direction = Vec2.from_angle(theta)
             origin_screen = center + direction * origin_radius
+            life = self._beam_life(index)
             dist_units = self._beam_dist_units(index)
             head_screen = origin_screen + direction * (dist_units * float(self._distance_to_screen_scale))
-            life = self._beam_life(index)
             max_span = 256.0 if self._cap_enabled else dist_units
             plan = build_beam_sample_plan(dist=dist_units, step=step_units, max_span=max_span)
 
@@ -1176,22 +1200,10 @@ class BeamDebugView:
             self._effect_scale = max(0.1, float(self._effect_scale) - 0.05)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_L):
             self._effect_scale = min(5.0, float(self._effect_scale) + 0.05)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_Q):
-            self._apply_shader_param_delta(profile_exp=-SHADER_GEMINI_2_PROFILE_EXP_STEP)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_A):
-            self._apply_shader_param_delta(profile_exp=SHADER_GEMINI_2_PROFILE_EXP_STEP)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_W):
             self._apply_shader_param_delta(intensity_gain=-SHADER_GEMINI_2_INTENSITY_GAIN_STEP)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_S):
             self._apply_shader_param_delta(intensity_gain=SHADER_GEMINI_2_INTENSITY_GAIN_STEP)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_E):
-            self._apply_shader_param_delta(halo_mix=-SHADER_GEMINI_2_HALO_MIX_STEP)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_D):
-            self._apply_shader_param_delta(halo_mix=SHADER_GEMINI_2_HALO_MIX_STEP)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_I):
-            self._apply_shader_param_delta(halo_falloff=-SHADER_GEMINI_2_HALO_FALLOFF_STEP)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_O):
-            self._apply_shader_param_delta(halo_falloff=SHADER_GEMINI_2_HALO_FALLOFF_STEP)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_MINUS):
             self._sim_speed = max(0.1, float(self._sim_speed) - 0.1)
@@ -1589,7 +1601,6 @@ class BeamDebugView:
             tail_alpha = 0
 
             side = direction.perp_left() * radius
-            head_front = p1 + direction * radius
 
             def push(pos: Vec2, *, uv_x: float, uv_y: float, alpha: int) -> None:
                 rl.rl_color4ub(r, g, b, int(alpha))
@@ -1602,17 +1613,93 @@ class BeamDebugView:
             push(p1 + side, uv_x=0.0, uv_y=1.0, alpha=head_alpha)
             push(p1 - side, uv_x=0.0, uv_y=-1.0, alpha=head_alpha)
             quad_count += 1
-
-            # Head cap: dedicated semi-cap for smoother bullet tip.
-            push(p1 - side, uv_x=0.0, uv_y=-1.0, alpha=head_alpha)
-            push(p1 + side, uv_x=0.0, uv_y=1.0, alpha=head_alpha)
-            push(head_front + side, uv_x=1.0, uv_y=1.0, alpha=head_alpha)
-            push(head_front - side, uv_x=1.0, uv_y=-1.0, alpha=head_alpha)
-            quad_count += 1
         rl.rl_end()
         rl.rl_set_texture(0)
         rl.end_shader_mode()
         return int(quad_count), False
+
+    def _draw_projectile_head_shader_gemini_2(
+        self,
+        preps: Sequence[_RenderPrep],
+        *,
+        streak_rgb: tuple[float, float, float],
+        is_fire: bool,
+    ) -> int:
+        if not bool(self._head_render_enabled):
+            return 0
+
+        shader = _get_beam_gemini_2_shader()
+        if shader is None:
+            return 0
+
+        r = int(clamp(streak_rgb[0] * 255.0, 0.0, 255.0) + 0.5)
+        g = int(clamp(streak_rgb[1] * 255.0, 0.0, 255.0) + 0.5)
+        b = int(clamp(streak_rgb[2] * 255.0, 0.0, 255.0) + 0.5)
+
+        params = self._shader_gemini_2_params
+        profile_exp = clamp(float(params.profile_exp) - 0.2, SHADER_GEMINI_2_PROFILE_EXP_MIN, SHADER_GEMINI_2_PROFILE_EXP_MAX)
+        halo_mix = clamp(
+            float(params.halo_mix) + (0.14 if bool(is_fire) else 0.08),
+            SHADER_GEMINI_2_HALO_MIX_MIN,
+            SHADER_GEMINI_2_HALO_MIX_MAX,
+        )
+        halo_falloff = clamp(
+            float(params.halo_falloff) * (0.78 if bool(is_fire) else 0.88),
+            SHADER_GEMINI_2_HALO_FALLOFF_MIN,
+            SHADER_GEMINI_2_HALO_FALLOFF_MAX,
+        )
+        intensity_gain = clamp(
+            float(params.intensity_gain) * (1.22 if bool(is_fire) else 1.08),
+            SHADER_GEMINI_2_INTENSITY_GAIN_MIN,
+            SHADER_GEMINI_2_INTENSITY_GAIN_MAX,
+        )
+
+        head_radius_multiplier = (
+            float(SHADER_GEMINI_2_HEAD_FIRE_RADIUS_MULTIPLIER)
+            if bool(is_fire)
+            else float(SHADER_GEMINI_2_HEAD_RADIUS_MULTIPLIER)
+        )
+        radius = max(
+            0.001,
+            float(SHADER_GEMINI_2_RADIUS_SCALE)
+            * float(self._effect_scale)
+            * float(SHADER_GEMINI_2_RADIUS_EXPAND)
+            * head_radius_multiplier,
+        )
+
+        quad_count = 0
+        rl.begin_shader_mode(shader)
+        self._set_shader_float(shader, _BEAM_GEMINI_2_PROFILE_EXP_LOC, float(profile_exp))
+        self._set_shader_float(shader, _BEAM_GEMINI_2_HALO_MIX_LOC, float(halo_mix))
+        self._set_shader_float(shader, _BEAM_GEMINI_2_HALO_FALLOFF_LOC, float(halo_falloff))
+        self._set_shader_float(shader, _BEAM_GEMINI_2_INTENSITY_GAIN_LOC, float(intensity_gain))
+        self._set_shader_vec4(shader, _BEAM_GEMINI_2_COLOR_LOC, 1.0, 1.0, 1.0, 1.0)
+        rl.rl_set_texture(0)
+        rl.rl_begin(rd.RL_QUADS)
+        for prep in preps:
+            head_alpha = self._u8(prep.base_alpha)
+            if head_alpha <= 0:
+                continue
+
+            direction = Vec2.from_angle(prep.rotation_rad)
+            side = direction.perp_left() * radius
+            forward = direction * radius
+            center = prep.preview.head_screen
+
+            def push(pos: Vec2, *, uv_x: float, uv_y: float, alpha_u8: int = head_alpha) -> None:
+                rl.rl_color4ub(r, g, b, int(alpha_u8))
+                rl.rl_tex_coord2f(float(uv_x), float(uv_y))
+                rl.rl_vertex2f(float(pos.x), float(pos.y))
+
+            push(center - forward - side, uv_x=-1.0, uv_y=-1.0)
+            push(center - forward + side, uv_x=-1.0, uv_y=1.0)
+            push(center + forward + side, uv_x=1.0, uv_y=1.0)
+            push(center + forward - side, uv_x=1.0, uv_y=-1.0)
+            quad_count += 1
+        rl.rl_end()
+        rl.rl_set_texture(0)
+        rl.end_shader_mode()
+        return int(quad_count)
 
     def _draw_projectile_heads(
         self,
@@ -1669,7 +1756,6 @@ class BeamDebugView:
         *,
         mode: BeamRenderMode,
     ) -> tuple[BeamRenderFrameResult, bool]:
-        texture = self._projs_texture
         is_fire = bool(self._use_fire_profile)
 
         inputs: list[BeamCountInput] = []
@@ -1690,7 +1776,8 @@ class BeamDebugView:
             draw_heads_enabled=bool(self._head_render_enabled),
         )
 
-        if texture is None:
+        texture = self._projs_texture
+        if mode == BeamRenderMode.BASELINE_SPRITE and texture is None:
             empty = BeamDrawCounts(0, 0, 0, 0, 0)
             return BeamRenderFrameResult(current_counts=empty, baseline_counts=baseline_counts), False
 
@@ -1708,14 +1795,19 @@ class BeamDebugView:
         rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
         if mode == BeamRenderMode.BASELINE_SPRITE:
             body_calls = self._draw_projectile_body_sprites(preps, streak_rgb=streak_rgb)
-        else:
+            head_calls, overlay_calls = self._draw_projectile_heads(
+                preps,
+                is_fire=is_fire,
+            )
+        elif mode == BeamRenderMode.SHADER_GEMINI_2:
             body_calls, fallback = self._draw_projectile_body_shader_gemini_2(preps, streak_rgb=streak_rgb)
             shader_fallback = bool(fallback)
-
-        head_calls, overlay_calls = self._draw_projectile_heads(
-            preps,
-            is_fire=is_fire,
-        )
+            head_calls = self._draw_projectile_head_shader_gemini_2(preps, streak_rgb=streak_rgb, is_fire=is_fire)
+            overlay_calls = 0
+        else:
+            body_calls = 0
+            head_calls = 0
+            overlay_calls = 0
         rl.end_blend_mode()
 
         current_counts = BeamDrawCounts(
@@ -1811,7 +1903,7 @@ class BeamDebugView:
             (
                 "R cycle mode  Tab side-by-side  Y benchmark-run  1/2/3 presets  T reset stats  [ ] projectile count  , . select projectile  "
                 "Up/Down base dist  PgUp/PgDn jitter  K/L effect_scale  -/= sim speed  Backspace reset  "
-                "Q-/A+ exp  W-/S+ gain  E-/D+ halo_mix  I-/O+ halo_falloff"
+                "W-/S+ gain (exp profile locked)"
             ),
             Vec2(margin, y),
             color=UI_HINT,
@@ -1826,7 +1918,8 @@ class BeamDebugView:
             self._small,
             (
                 f"projectiles={len(previews)} step={self._beam_step_units():.3f} effect_scale={self._effect_scale:.3f} "
-                f"dist_base={self._base_distance_units:.1f} jitter={self._distance_jitter_units:.1f} cap={cap_name}"
+                f"speed={self._projectile_speed_units_per_second():.1f}u/s "
+                f"dist_scale={self._distance_scale_from_base():.3f} jitter={self._distance_jitter_units:.1f} cap={cap_name}"
             ),
             Vec2(margin, y),
             color=UI_TEXT,
@@ -1834,18 +1927,11 @@ class BeamDebugView:
         )
         y += line_h
         shader_params = self._shader_gemini_2_params
-        metrics = self._shader_profile_metrics
-        metrics_suffix = "fit=n/a"
-        if metrics is not None:
-            metrics_suffix = (
-                f"fit_score={metrics.score:.5f} w_mse={metrics.weighted_mse:.5f} "
-                f"r80_delta={metrics.r80_delta:+.4f} r50_delta={metrics.r50_delta:+.4f}"
-            )
         draw_ui_text(
             self._small,
             (
-                f"shader exp={shader_params.profile_exp:.3f} gain={shader_params.intensity_gain:.3f} "
-                f"halo_mix={shader_params.halo_mix:.3f} halo_fall={shader_params.halo_falloff:.3f} {metrics_suffix}"
+                "shader profile=clamp(1.0607*exp(-4.8256*d)-0.0125,0,1) "
+                f"gain={shader_params.intensity_gain:.3f}"
             ),
             Vec2(margin, y),
             color=UI_HINT,
