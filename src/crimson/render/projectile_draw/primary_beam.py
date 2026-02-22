@@ -83,7 +83,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                 frame=frame,
                 pos=pos_screen,
                 scale=sprite_scale,
-                rotation_rad=ctx.angle,
+                rotation_rad=0.0,
                 tint=tint,
             )
         s += step
