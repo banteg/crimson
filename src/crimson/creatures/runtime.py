@@ -1312,6 +1312,9 @@ class CreaturePool:
                 world_width=world_width,
                 world_height=world_height,
             )
+            if not bool(state.preserve_bugs):
+                creature.bonus_id = None
+                creature.bonus_duration_override = None
         if not creature.active:
             # Native `creature_handle_death` gates its XP/bonus/freeze body under
             # `if (active != 0)`. Re-entrant callers (notably secondary
