@@ -215,6 +215,20 @@ def test_projectile_pool_demo_update_snapshot(snapshot: SnapshotAssertion) -> No
     )
 
 
+def test_primary_spawn_persists_velocity_vector() -> None:
+    pool = ProjectilePool(size=1)
+    idx = pool.spawn(
+        pos=Vec2(12.0, 34.0),
+        angle=math.pi / 3.0,
+        type_id=int(ProjectileTypeId.PISTOL),
+        owner_id=-100,
+    )
+
+    entry = pool.entries[idx]
+    assert_float_close(float(entry.vel.x), math.cos(math.pi / 3.0) * 1.5)
+    assert_float_close(float(entry.vel.y), math.sin(math.pi / 3.0) * 1.5)
+
+
 def test_secondary_projectile_pool_snapshot(snapshot: SnapshotAssertion) -> None:
     # Type 2: targeting pass
     pool = SecondaryProjectilePool(size=1)

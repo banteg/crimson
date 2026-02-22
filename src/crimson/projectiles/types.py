@@ -153,6 +153,7 @@ class Projectile:
     angle: float = 0.0
     pos: Vec2 = field(default_factory=Vec2)
     origin: Vec2 = field(default_factory=Vec2)
+    vel: Vec2 = field(default_factory=Vec2)
     type_id: int = 0
     life_timer: float = 0.0
     reserved: float = 0.0
