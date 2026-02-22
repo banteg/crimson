@@ -888,13 +888,25 @@ class CreaturePool:
             )
 
         evil_targets: set[int] = set()
-        if players and perk_active(players[0], PerkId.EVIL_EYES):
-            # Native `creature_update_all` reads one global
-            # `evil_eyes_target_creature` slot (player-0 storage), even in
-            # multiplayer runs.
-            evil_target = int(players[0].evil_eyes_target_creature)
-            if evil_target >= 0:
-                evil_targets.add(int(evil_target))
+        if players:
+            if bool(state.preserve_bugs):
+                # Native `creature_update_all` reads one global
+                # `evil_eyes_target_creature` slot (player-0 storage), even in
+                # multiplayer runs.
+                if perk_active(players[0], PerkId.EVIL_EYES):
+                    evil_target = int(players[0].evil_eyes_target_creature)
+                    if evil_target >= 0:
+                        evil_targets.add(int(evil_target))
+            else:
+                # Bug-fixed path: apply all alive Evil Eyes owners.
+                for player in players:
+                    if float(player.health) <= 0.0:
+                        continue
+                    if not perk_active(player, PerkId.EVIL_EYES):
+                        continue
+                    evil_target = int(player.evil_eyes_target_creature)
+                    if evil_target >= 0:
+                        evil_targets.add(int(evil_target))
 
         # Movement + AI. Dead creatures keep updating (death slide + corpse decals)
         # even when `players` is empty so debug views remain deterministic.
