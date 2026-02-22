@@ -153,12 +153,17 @@ def plan_hit_sfx_keys(
         return False, []
 
     trigger_game_tune = False
-    if (not demo_mode_active) and int(game_mode) != int(GameMode.RUSH) and (not game_tune_started):
-        trigger_game_tune = True
-
+    local_game_tune_started = bool(game_tune_started)
     end = min(len(hits), _MAX_HIT_SFX_PER_FRAME)
     keys: list[str] = []
     for idx in range(0, end):
+        if (not demo_mode_active) and int(game_mode) != int(GameMode.RUSH) and (not local_game_tune_started):
+            # Mirrors `projectile_update`: first eligible hit calls
+            # `sfx_play_exclusive(music_track_extra_0)` and skips the panned
+            # bullet/shock hit sound for that same hit.
+            trigger_game_tune = True
+            local_game_tune_started = True
+            continue
         type_id = int(hits[idx].type_id)
         key = _hit_sfx_for_type(type_id, beam_types=beam_types, rand=rand)
         if key is not None:
