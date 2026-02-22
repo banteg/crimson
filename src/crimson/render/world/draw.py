@@ -424,6 +424,8 @@ def draw_projectiles_and_effects(render_ctx: WorldRenderCtx, *, ctx: WorldDrawCo
                 render_ctx,
                 proj,
                 proj_index=proj_index,
+                camera=ctx.camera,
+                view_scale=ctx.view_scale,
                 scale=ctx.scale,
                 alpha=ctx.entity_alpha,
             )
@@ -443,6 +445,8 @@ def draw_projectiles_and_effects(render_ctx: WorldRenderCtx, *, ctx: WorldDrawCo
             draw_secondary_projectile(
                 render_ctx,
                 proj,
+                camera=ctx.camera,
+                view_scale=ctx.view_scale,
                 scale=ctx.scale,
                 alpha=ctx.entity_alpha,
             )

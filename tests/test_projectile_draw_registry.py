@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Protocol, cast
 
@@ -75,6 +76,34 @@ class _RendererStub:
     @staticmethod
     def _is_bullet_trail_type(type_id: int) -> bool:
         return 0 <= int(type_id) < 8 or int(type_id) == int(ProjectileTypeId.SPLITTER_GUN)
+
+
+@dataclass(slots=True)
+class _AtlasCall:
+    rotation_rad: float
+
+
+@dataclass(slots=True)
+class _BeamRendererStub(_RendererStub):
+    atlas_calls: list[_AtlasCall] = field(default_factory=list)
+
+    @staticmethod
+    def world_to_screen(pos: Vec2) -> Vec2:
+        return pos
+
+    def _draw_atlas_sprite(
+        self,
+        texture: _TextureLike,
+        *,
+        grid: int,
+        frame: int,
+        pos: Vec2,
+        scale: float,
+        rotation_rad: float = 0.0,
+        tint: object | None = None,
+    ) -> None:
+        del texture, grid, frame, pos, scale, tint
+        self.atlas_calls.append(_AtlasCall(rotation_rad=float(rotation_rad)))
 
 
 def test_draw_registry_returns_false_for_bullet_when_nothing_drawn() -> None:
@@ -212,3 +241,40 @@ def test_draw_registry_returns_true_for_plague_spreader_branch() -> None:
         alpha=1.0,
     )
     assert draw_projectile_from_registry(ctx) is True
+
+
+def test_draw_registry_fire_bullets_streak_unrotated_head_rotated(mocker) -> None:
+    import crimson.render.projectile_draw.primary_beam as primary_beam_mod
+
+    mocker.patch.object(primary_beam_mod.rl, "begin_blend_mode")
+    mocker.patch.object(primary_beam_mod.rl, "end_blend_mode")
+
+    renderer = _BeamRendererStub()
+    angle = 0.8
+    proj = _projectile(
+        type_id=int(ProjectileTypeId.FIRE_BULLETS),
+        pos=Vec2(300.0, 140.0),
+        origin=Vec2(0.0, 140.0),
+        life_timer=1.0,
+        angle=angle,
+    )
+    ctx = ProjectileDrawCtx(
+        renderer=_as_renderer(renderer),
+        proj=proj,
+        proj_index=0,
+        texture=_as_texture(_TextureStub()),
+        type_id=int(ProjectileTypeId.FIRE_BULLETS),
+        pos=proj.pos,
+        screen_pos=proj.pos,
+        life=1.0,
+        angle=angle,
+        scale=1.0,
+        alpha=1.0,
+    )
+
+    assert draw_projectile_from_registry(ctx) is True
+    assert len(renderer.atlas_calls) > 1
+    streak_rotations = [entry.rotation_rad for entry in renderer.atlas_calls[:-1]]
+    head_rotation = renderer.atlas_calls[-1].rotation_rad
+    assert all(math.isclose(rotation, 0.0, abs_tol=1e-9) for rotation in streak_rotations)
+    assert math.isclose(head_rotation, angle, abs_tol=1e-9)

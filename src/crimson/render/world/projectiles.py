@@ -28,6 +28,8 @@ if TYPE_CHECKING:
 @dataclass(slots=True)
 class _ProjectileRendererAdapter:
     render_ctx: WorldRenderCtx
+    camera: Vec2
+    view_scale: Vec2
 
     @property
     def bullet_trail_texture(self) -> rl.Texture | None:
@@ -66,7 +68,7 @@ class _ProjectileRendererAdapter:
         return is_bullet_trail_type(type_id)
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
-        return self.render_ctx.world_to_screen(pos)
+        return self.render_ctx._world_to_screen_with(pos, camera=self.camera, view_scale=self.view_scale)
 
     def _draw_bullet_trail(
         self,
@@ -119,6 +121,8 @@ def draw_projectile(
     proj: Projectile,
     *,
     proj_index: int = 0,
+    camera: Vec2,
+    view_scale: Vec2,
     scale: float,
     alpha: float = 1.0,
 ) -> None:
@@ -129,11 +133,11 @@ def draw_projectile(
     texture = render_ctx.projs_texture
     type_id = int(proj.type_id)
     proj_pos = proj.pos
-    screen = render_ctx.world_to_screen(proj_pos)
+    screen = render_ctx._world_to_screen_with(proj_pos, camera=camera, view_scale=view_scale)
     life = float(proj.life_timer)
     angle = float(proj.angle)
 
-    adapter = _ProjectileRendererAdapter(render_ctx)
+    adapter = _ProjectileRendererAdapter(render_ctx, camera=camera, view_scale=view_scale)
     registry_ctx = ProjectileDrawCtx(
         renderer=cast("ProjectileRendererLike", adapter),
         proj=proj,
@@ -341,6 +345,8 @@ def draw_secondary_projectile(
     render_ctx: WorldRenderCtx,
     proj: SecondaryProjectile,
     *,
+    camera: Vec2,
+    view_scale: Vec2,
     scale: float,
     alpha: float = 1.0,
 ) -> None:
@@ -349,11 +355,11 @@ def draw_secondary_projectile(
         return
 
     proj_pos = proj.pos
-    screen = render_ctx.world_to_screen(proj_pos)
+    screen = render_ctx._world_to_screen_with(proj_pos, camera=camera, view_scale=view_scale)
     proj_type = int(proj.type_id)
     angle = float(proj.angle)
 
-    adapter = _ProjectileRendererAdapter(render_ctx)
+    adapter = _ProjectileRendererAdapter(render_ctx, camera=camera, view_scale=view_scale)
     registry_ctx = SecondaryProjectileDrawCtx(
         renderer=cast("ProjectileRendererLike", adapter),
         proj=proj,
