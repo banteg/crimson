@@ -1300,6 +1300,15 @@ class CreaturePool:
 
         creature = self._entries[int(idx)]
         survival_record_recent_death(state, pos=creature.pos)
+        if (creature.flags & CreatureFlags.BONUS_ON_DEATH) and creature.bonus_id is not None:
+            state.bonus_pool.spawn_at(
+                pos=creature.pos,
+                bonus_id=int(creature.bonus_id),
+                duration_override=int(creature.bonus_duration_override) if creature.bonus_duration_override is not None else -1,
+                state=state,
+                world_width=world_width,
+                world_height=world_height,
+            )
         if not creature.active:
             # Native `creature_handle_death` gates its XP/bonus/freeze body under
             # `if (active != 0)`. Re-entrant callers (notably secondary
@@ -1581,17 +1590,6 @@ class CreaturePool:
                 xp_awarded = award_experience_from_reward(state, killer, float(creature.reward_value))
 
         if players:
-            if (creature.flags & CreatureFlags.BONUS_ON_DEATH) and creature.bonus_id is not None:
-                state.bonus_pool.spawn_at(
-                    pos=creature.pos,
-                    bonus_id=int(creature.bonus_id),
-                    duration_override=int(creature.bonus_duration_override)
-                    if creature.bonus_duration_override is not None
-                    else -1,
-                    state=state,
-                    world_width=world_width,
-                    world_height=world_height,
-                )
             spawned_bonus = state.bonus_pool.try_spawn_on_kill(
                 pos=creature.pos,
                 state=state,

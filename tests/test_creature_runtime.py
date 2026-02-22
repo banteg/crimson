@@ -869,6 +869,37 @@ def test_handle_death_inactive_entry_skips_reentrant_side_effects(mocker) -> Non
     assert not any(entry.bonus_id != 0 for entry in state.bonus_pool.entries)
 
 
+def test_handle_death_inactive_entry_still_runs_forced_bonus_on_death(mocker) -> None:
+    state = GameplayState()
+    pool = CreaturePool()
+    creature = pool.entries[0]
+    creature.active = False
+    creature.flags = CreatureFlags.BONUS_ON_DEATH
+    creature.bonus_id = 1
+    creature.bonus_duration_override = 5
+    creature.hp = -1.0
+    creature.pos = Vec2(100.0, 100.0)
+
+    spawn_at = mocker.patch.object(
+        state.bonus_pool,
+        "spawn_at",
+        return_value=BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5),
+    )
+
+    death = pool.handle_death(
+        0,
+        state=state,
+        players=[],
+        rand=state.rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=None,
+    )
+
+    spawn_at.assert_called_once()
+    assert death.xp_awarded == 0
+
+
 def test_spawn_inits_resets_native_spawn_state_fields() -> None:
     pool = CreaturePool()
     (idx,) = pool.spawn_inits(
