@@ -45,6 +45,24 @@ ROLLING_WINDOW_SIZE = 240
 HEAD_REGION_T_MIN = 0.65
 SHADER_GEMINI_2_RADIUS_SCALE = 16.0
 SHADER_GEMINI_2_RADIUS_EXPAND = 1.25
+SHADER_GEMINI_2_PROFILE_EXP_DEFAULT = 3.4
+SHADER_GEMINI_2_HALO_MIX_DEFAULT = 0.125
+SHADER_GEMINI_2_HALO_FALLOFF_DEFAULT = 10.0
+SHADER_GEMINI_2_INTENSITY_GAIN_DEFAULT = 2.5
+SHADER_GEMINI_2_PROFILE_EXP_MIN = 1.2
+SHADER_GEMINI_2_PROFILE_EXP_MAX = 4.0
+SHADER_GEMINI_2_HALO_MIX_MIN = 0.0
+SHADER_GEMINI_2_HALO_MIX_MAX = 0.9
+SHADER_GEMINI_2_HALO_FALLOFF_MIN = 0.5
+SHADER_GEMINI_2_HALO_FALLOFF_MAX = 16.0
+SHADER_GEMINI_2_INTENSITY_GAIN_MIN = 0.5
+SHADER_GEMINI_2_INTENSITY_GAIN_MAX = 6.0
+SHADER_GEMINI_2_PROFILE_EXP_STEP = 0.05
+SHADER_GEMINI_2_HALO_MIX_STEP = 0.02
+SHADER_GEMINI_2_HALO_FALLOFF_STEP = 0.25
+SHADER_GEMINI_2_INTENSITY_GAIN_STEP = 0.05
+SHADER_GEMINI_2_PROFILE_SAMPLE_COUNT = 96
+SHADER_GEMINI_2_PROFILE_RING_SAMPLES = 96
 BENCH_FRAMES_PER_MODE = 240
 BATCH_PROBE_QUADS_DEFAULT = 4096
 BATCH_PROBE_QUADS_STEP = 256
@@ -77,6 +95,10 @@ in vec2 fragTexCoord;
 in vec4 fragColor;
 
 uniform vec4 colDiffuse;
+uniform float u_profile_exp;
+uniform float u_halo_mix;
+uniform float u_halo_falloff;
+uniform float u_intensity_gain;
 
 out vec4 finalColor;
 
@@ -86,8 +108,10 @@ void main() {
         discard;
     }
 
-    float profile = pow(1.0 - d, 2.5);
-    float intensity = profile * fragColor.a * 2.5;
+    float core = pow(max(1.0 - d, 0.0), max(u_profile_exp, 0.001));
+    float halo = exp(-(d * d) * max(u_halo_falloff, 0.001));
+    float profile = mix(core, halo, clamp(u_halo_mix, 0.0, 1.0));
+    float intensity = profile * fragColor.a * max(u_intensity_gain, 0.0);
     vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
     finalColor = vec4(rgb, 1.0);
 }
@@ -95,6 +119,11 @@ void main() {
 
 _BEAM_GEMINI_2_SHADER_TRIED = False
 _BEAM_GEMINI_2_SHADER: rl.Shader | None = None
+_BEAM_GEMINI_2_PROFILE_EXP_LOC = -1
+_BEAM_GEMINI_2_HALO_MIX_LOC = -1
+_BEAM_GEMINI_2_HALO_FALLOFF_LOC = -1
+_BEAM_GEMINI_2_INTENSITY_GAIN_LOC = -1
+_BEAM_GEMINI_2_COLOR_LOC = -1
 
 
 class BeamRenderMode(str, Enum):
@@ -192,6 +221,33 @@ class BeamStatsSummary:
     p95_frame_ms: float
 
 
+@dataclass(frozen=True, slots=True)
+class BeamShaderGemini2Params:
+    profile_exp: float = SHADER_GEMINI_2_PROFILE_EXP_DEFAULT
+    halo_mix: float = SHADER_GEMINI_2_HALO_MIX_DEFAULT
+    halo_falloff: float = SHADER_GEMINI_2_HALO_FALLOFF_DEFAULT
+    intensity_gain: float = SHADER_GEMINI_2_INTENSITY_GAIN_DEFAULT
+
+
+@dataclass(frozen=True, slots=True)
+class BeamSpriteReferenceProfile:
+    distances_norm: tuple[float, ...]
+    alpha_profile: tuple[float, ...]
+    radius_px: float
+    centroid_x: float
+    centroid_y: float
+    source: str
+
+
+@dataclass(frozen=True, slots=True)
+class BeamProfileMatchMetrics:
+    weighted_mse: float
+    mse: float
+    r80_delta: float
+    r50_delta: float
+    score: float
+
+
 @dataclass(slots=True)
 class BeamModeRollingStats:
     window_size: int = ROLLING_WINDOW_SIZE
@@ -268,6 +324,141 @@ class BatchProbeResult:
     elapsed_ms: float
 
 
+def _clamp_shader_params(params: BeamShaderGemini2Params) -> BeamShaderGemini2Params:
+    return BeamShaderGemini2Params(
+        profile_exp=float(clamp(params.profile_exp, SHADER_GEMINI_2_PROFILE_EXP_MIN, SHADER_GEMINI_2_PROFILE_EXP_MAX)),
+        halo_mix=float(clamp(params.halo_mix, SHADER_GEMINI_2_HALO_MIX_MIN, SHADER_GEMINI_2_HALO_MIX_MAX)),
+        halo_falloff=float(
+            clamp(params.halo_falloff, SHADER_GEMINI_2_HALO_FALLOFF_MIN, SHADER_GEMINI_2_HALO_FALLOFF_MAX),
+        ),
+        intensity_gain=float(
+            clamp(params.intensity_gain, SHADER_GEMINI_2_INTENSITY_GAIN_MIN, SHADER_GEMINI_2_INTENSITY_GAIN_MAX),
+        ),
+    )
+
+
+def _shader_profile_value(distance_norm: float, params: BeamShaderGemini2Params) -> float:
+    d = float(clamp(distance_norm, 0.0, 1.0))
+    inv = max(0.0, 1.0 - d)
+    core = inv ** max(0.001, float(params.profile_exp))
+    halo = math.exp(-(d * d) * max(0.001, float(params.halo_falloff)))
+    mixed = core * (1.0 - float(params.halo_mix)) + halo * float(params.halo_mix)
+    return float(mixed * float(params.intensity_gain))
+
+
+def _normalize_profile(values: Sequence[float]) -> tuple[float, ...]:
+    if not values:
+        return ()
+    peak = max(float(v) for v in values)
+    if peak <= 1e-9:
+        return tuple(0.0 for _ in values)
+    return tuple(float(v) / float(peak) for v in values)
+
+
+def _radius_at_level(distances_norm: Sequence[float], values_norm: Sequence[float], *, level: float) -> float:
+    if not distances_norm or not values_norm:
+        return 0.0
+    level = float(clamp(level, 0.0, 1.0))
+    prev_d = float(distances_norm[0])
+    prev_v = float(values_norm[0])
+    if prev_v <= level:
+        return float(prev_d)
+    for i in range(1, min(len(distances_norm), len(values_norm))):
+        curr_d = float(distances_norm[i])
+        curr_v = float(values_norm[i])
+        if curr_v <= level:
+            span = curr_v - prev_v
+            if abs(span) <= 1e-9:
+                return float(curr_d)
+            t = (level - prev_v) / span
+            return float(prev_d * (1.0 - t) + curr_d * t)
+        prev_d = curr_d
+        prev_v = curr_v
+    return float(distances_norm[min(len(distances_norm), len(values_norm)) - 1])
+
+
+def _profile_match_metrics(
+    *,
+    reference_distances: Sequence[float],
+    reference_profile: Sequence[float],
+    params: BeamShaderGemini2Params,
+) -> BeamProfileMatchMetrics:
+    count = min(len(reference_distances), len(reference_profile))
+    if count <= 0:
+        return BeamProfileMatchMetrics(weighted_mse=0.0, mse=0.0, r80_delta=0.0, r50_delta=0.0, score=0.0)
+
+    distances = tuple(float(reference_distances[i]) for i in range(count))
+    ref_values = tuple(float(reference_profile[i]) for i in range(count))
+    ref_norm = _normalize_profile(ref_values)
+    model_values = tuple(_shader_profile_value(d, params) for d in distances)
+    model_norm = _normalize_profile(model_values)
+
+    mse_sum = 0.0
+    weighted_sum = 0.0
+    weight_total = 0.0
+    for d, ref, model in zip(distances, ref_norm, model_norm, strict=False):
+        err = float(model - ref)
+        mse_sum += err * err
+        weight = 1.0 + 1.75 * max(0.0, 1.0 - d * 2.0)
+        weighted_sum += (err * err) * weight
+        weight_total += weight
+    mse = mse_sum / float(count)
+    weighted_mse = weighted_sum / max(1e-9, weight_total)
+
+    ref_r80 = _radius_at_level(distances, ref_norm, level=0.8)
+    model_r80 = _radius_at_level(distances, model_norm, level=0.8)
+    ref_r50 = _radius_at_level(distances, ref_norm, level=0.5)
+    model_r50 = _radius_at_level(distances, model_norm, level=0.5)
+    r80_delta = float(model_r80 - ref_r80)
+    r50_delta = float(model_r50 - ref_r50)
+    score = float(weighted_mse + abs(r80_delta) * 0.10 + abs(r50_delta) * 0.05)
+    return BeamProfileMatchMetrics(
+        weighted_mse=float(weighted_mse),
+        mse=float(mse),
+        r80_delta=float(r80_delta),
+        r50_delta=float(r50_delta),
+        score=float(score),
+    )
+
+
+def _fit_shader_profile_to_reference(
+    *,
+    reference_distances: Sequence[float],
+    reference_profile: Sequence[float],
+    base_params: BeamShaderGemini2Params,
+) -> tuple[BeamShaderGemini2Params, BeamProfileMatchMetrics]:
+    current = _clamp_shader_params(base_params)
+    best_params = current
+    best_metrics = _profile_match_metrics(
+        reference_distances=reference_distances,
+        reference_profile=reference_profile,
+        params=current,
+    )
+
+    exp_values = tuple(1.6 + 0.1 * float(i) for i in range(19))
+    halo_mix_values = tuple(0.0 + 0.025 * float(i) for i in range(17))
+    halo_falloff_values = tuple(2.0 + 0.5 * float(i) for i in range(17))
+
+    for exp in exp_values:
+        for halo_mix in halo_mix_values:
+            for halo_falloff in halo_falloff_values:
+                candidate = BeamShaderGemini2Params(
+                    profile_exp=float(exp),
+                    halo_mix=float(halo_mix),
+                    halo_falloff=float(halo_falloff),
+                    intensity_gain=float(current.intensity_gain),
+                )
+                metrics = _profile_match_metrics(
+                    reference_distances=reference_distances,
+                    reference_profile=reference_profile,
+                    params=candidate,
+                )
+                if metrics.score < best_metrics.score:
+                    best_params = candidate
+                    best_metrics = metrics
+    return best_params, best_metrics
+
+
 def _percentile(values: Sequence[float], q: float) -> float:
     if not values:
         return 0.0
@@ -292,6 +483,8 @@ def _mean(values: Sequence[float]) -> float:
 
 def _get_beam_gemini_2_shader() -> rl.Shader | None:
     global _BEAM_GEMINI_2_SHADER_TRIED, _BEAM_GEMINI_2_SHADER
+    global _BEAM_GEMINI_2_PROFILE_EXP_LOC, _BEAM_GEMINI_2_HALO_MIX_LOC
+    global _BEAM_GEMINI_2_HALO_FALLOFF_LOC, _BEAM_GEMINI_2_INTENSITY_GAIN_LOC, _BEAM_GEMINI_2_COLOR_LOC
     if _BEAM_GEMINI_2_SHADER_TRIED:
         if _BEAM_GEMINI_2_SHADER is not None and int(_BEAM_GEMINI_2_SHADER.id) > 0:
             return _BEAM_GEMINI_2_SHADER
@@ -309,6 +502,11 @@ def _get_beam_gemini_2_shader() -> rl.Shader | None:
         return None
 
     _BEAM_GEMINI_2_SHADER = shader
+    _BEAM_GEMINI_2_PROFILE_EXP_LOC = int(rl.get_shader_location(shader, "u_profile_exp"))
+    _BEAM_GEMINI_2_HALO_MIX_LOC = int(rl.get_shader_location(shader, "u_halo_mix"))
+    _BEAM_GEMINI_2_HALO_FALLOFF_LOC = int(rl.get_shader_location(shader, "u_halo_falloff"))
+    _BEAM_GEMINI_2_INTENSITY_GAIN_LOC = int(rl.get_shader_location(shader, "u_intensity_gain"))
+    _BEAM_GEMINI_2_COLOR_LOC = int(rl.get_shader_location(shader, "colDiffuse"))
     return _BEAM_GEMINI_2_SHADER
 
 
@@ -408,6 +606,7 @@ def estimate_beam_frame_counts(
     *,
     mode: BeamRenderMode,
     is_fire: bool,
+    draw_heads_enabled: bool = True,
 ) -> BeamDrawCounts:
     body_calls = 0
     head_calls = 0
@@ -435,9 +634,10 @@ def estimate_beam_frame_counts(
         visible_segments += int(segment_count)
         head_region_segments += _head_region_segment_count(offsets, plan=plan)
 
-        head_calls += 1
-        if bool(is_fire) and float(item.life) >= 0.4:
-            overlay_calls += 1
+        if bool(draw_heads_enabled):
+            head_calls += 1
+            if bool(is_fire) and float(item.life) >= 0.4:
+                overlay_calls += 1
 
         if mode == BeamRenderMode.BASELINE_SPRITE:
             body_calls += int(segment_count)
@@ -502,6 +702,7 @@ class BeamDebugView:
         self._distance_to_screen_scale = 1.0
 
         self._cap_enabled = True
+        self._head_render_enabled = True
         self._show_all_segment_markers = False
         self._show_geometry_overlay = False
         self._force_life_high = True
@@ -527,6 +728,13 @@ class BeamDebugView:
         self._batch_probe_run_once = False
         self._batch_probe_quads = BATCH_PROBE_QUADS_DEFAULT
         self._batch_probe_last: BatchProbeResult | None = None
+
+        self._shader_gemini_2_params = BeamShaderGemini2Params()
+        self._shader_reference_profile: BeamSpriteReferenceProfile | None = None
+        self._shader_profile_metrics: BeamProfileMatchMetrics | None = None
+        self._shader_fit_status = "pending"
+        self._shader_fit_elapsed_ms = 0.0
+        self._shader_fit_requested = False
 
         self.apply_scenario_preset(BeamScenarioPreset.PLASMA_LIKE)
 
@@ -644,6 +852,183 @@ class BeamDebugView:
             max(0.0, cell_h - 2.0),
         )
 
+    @staticmethod
+    def _sample_bilinear_alpha(alpha_rows: Sequence[Sequence[float]], *, x: float, y: float) -> float:
+        height = len(alpha_rows)
+        if height <= 0:
+            return 0.0
+        width = len(alpha_rows[0])
+        if width <= 0:
+            return 0.0
+
+        x0 = int(math.floor(float(x)))
+        y0 = int(math.floor(float(y)))
+        x1 = x0 + 1
+        y1 = y0 + 1
+        fx = float(x) - float(x0)
+        fy = float(y) - float(y0)
+
+        def pick(px: int, py: int) -> float:
+            if px < 0 or py < 0 or px >= width or py >= height:
+                return 0.0
+            return float(alpha_rows[py][px])
+
+        c00 = pick(x0, y0)
+        c10 = pick(x1, y0)
+        c01 = pick(x0, y1)
+        c11 = pick(x1, y1)
+        tx0 = c00 * (1.0 - fx) + c10 * fx
+        tx1 = c01 * (1.0 - fx) + c11 * fx
+        return float(tx0 * (1.0 - fy) + tx1 * fy)
+
+    def _analyze_sprite_reference_profile(self, texture: rl.Texture) -> BeamSpriteReferenceProfile | None:
+        image = rl.load_image_from_texture(texture)
+        try:
+            image_width = max(1, int(image.width))
+            image_height = max(1, int(image.height))
+            grid = 4
+            frame = 2
+            cell_w = max(1, image_width // grid)
+            cell_h = max(1, image_height // grid)
+            col = frame % grid
+            row = frame // grid
+            x0 = int(col * cell_w)
+            y0 = int(row * cell_h)
+
+            alpha_rows: list[list[float]] = []
+            total = 0.0
+            weighted_x = 0.0
+            weighted_y = 0.0
+            for py in range(cell_h):
+                row_values: list[float] = []
+                for px in range(cell_w):
+                    src_x = min(image_width - 1, x0 + px)
+                    src_y = min(image_height - 1, y0 + py)
+                    a = float(rl.get_image_color(image, src_x, src_y).a) / 255.0
+                    row_values.append(a)
+                    total += a
+                    weighted_x += float(px) * a
+                    weighted_y += float(py) * a
+                alpha_rows.append(row_values)
+
+            if total <= 1e-9:
+                return None
+
+            centroid_x = weighted_x / total
+            centroid_y = weighted_y / total
+            radius_px = max(1.0, 0.5 * min(float(cell_w), float(cell_h)))
+
+            distances: list[float] = []
+            profile: list[float] = []
+            ring_samples = max(8, int(SHADER_GEMINI_2_PROFILE_RING_SAMPLES))
+            sample_count = max(8, int(SHADER_GEMINI_2_PROFILE_SAMPLE_COUNT))
+            for i in range(sample_count):
+                d_norm = float(i) / float(sample_count - 1)
+                radius = d_norm * radius_px
+                acc = 0.0
+                for j in range(ring_samples):
+                    theta = (float(j) / float(ring_samples)) * math.tau
+                    sx = centroid_x + math.cos(theta) * radius
+                    sy = centroid_y + math.sin(theta) * radius
+                    acc += self._sample_bilinear_alpha(alpha_rows, x=sx, y=sy)
+                distances.append(d_norm)
+                profile.append(acc / float(ring_samples))
+
+            return BeamSpriteReferenceProfile(
+                distances_norm=tuple(distances),
+                alpha_profile=tuple(profile),
+                radius_px=float(radius_px),
+                centroid_x=float(centroid_x),
+                centroid_y=float(centroid_y),
+                source="projs frame2 alpha + bilinear ring sampling",
+            )
+        finally:
+            rl.unload_image(image)
+
+    def _refresh_shader_reference_profile(self) -> None:
+        texture = self._projs_texture
+        if texture is None:
+            self._shader_reference_profile = None
+            self._shader_profile_metrics = None
+            self._shader_fit_status = "ref unavailable: missing projs texture"
+            return
+        reference = self._analyze_sprite_reference_profile(texture)
+        if reference is None:
+            self._shader_reference_profile = None
+            self._shader_profile_metrics = None
+            self._shader_fit_status = "ref unavailable: empty alpha profile"
+            return
+        self._shader_reference_profile = reference
+        self._update_shader_profile_metrics()
+        self._shader_fit_status = "ref ready"
+
+    def _update_shader_profile_metrics(self) -> None:
+        reference = self._shader_reference_profile
+        if reference is None:
+            self._shader_profile_metrics = None
+            return
+        self._shader_profile_metrics = _profile_match_metrics(
+            reference_distances=reference.distances_norm,
+            reference_profile=reference.alpha_profile,
+            params=self._shader_gemini_2_params,
+        )
+
+    def _apply_shader_param_delta(
+        self,
+        *,
+        profile_exp: float = 0.0,
+        halo_mix: float = 0.0,
+        halo_falloff: float = 0.0,
+        intensity_gain: float = 0.0,
+    ) -> None:
+        params = self._shader_gemini_2_params
+        self._shader_gemini_2_params = _clamp_shader_params(
+            BeamShaderGemini2Params(
+                profile_exp=float(params.profile_exp + profile_exp),
+                halo_mix=float(params.halo_mix + halo_mix),
+                halo_falloff=float(params.halo_falloff + halo_falloff),
+                intensity_gain=float(params.intensity_gain + intensity_gain),
+            ),
+        )
+        self._update_shader_profile_metrics()
+        self._shader_fit_status = "manual tune"
+
+    def _reset_shader_params(self) -> None:
+        self._shader_gemini_2_params = _clamp_shader_params(BeamShaderGemini2Params())
+        self._update_shader_profile_metrics()
+        self._shader_fit_status = "params reset"
+
+    def _run_shader_profile_autofit(self) -> None:
+        reference = self._shader_reference_profile
+        if reference is None:
+            self._shader_fit_status = "fit failed: no reference profile"
+            self._shader_fit_elapsed_ms = 0.0
+            self._shader_fit_requested = False
+            return
+        started = time.perf_counter()
+        base = self._shader_gemini_2_params
+        fitted, metrics = _fit_shader_profile_to_reference(
+            reference_distances=reference.distances_norm,
+            reference_profile=reference.alpha_profile,
+            base_params=base,
+        )
+        elapsed_ms = (time.perf_counter() - started) * 1000.0
+        # Preserve user-tuned gain while fitting cross-section softness/shape.
+        self._shader_gemini_2_params = _clamp_shader_params(
+            BeamShaderGemini2Params(
+                profile_exp=float(fitted.profile_exp),
+                halo_mix=float(fitted.halo_mix),
+                halo_falloff=float(fitted.halo_falloff),
+                intensity_gain=float(base.intensity_gain),
+            ),
+        )
+        self._shader_profile_metrics = metrics
+        self._shader_fit_elapsed_ms = float(elapsed_ms)
+        self._shader_fit_status = (
+            f"autofit ok: score={metrics.score:.5f} r80_delta={metrics.r80_delta:+.4f} ({elapsed_ms:.1f} ms)"
+        )
+        self._shader_fit_requested = False
+
     def _rolling_stats(self, mode: BeamRenderMode, preset: BeamScenarioPreset) -> BeamModeRollingStats:
         key = (mode, preset)
         stats = self._rolling_by_mode_preset.get(key)
@@ -672,6 +1057,7 @@ class BeamDebugView:
             self._projs_texture = self._load_optional_texture(name="projs", cache_path="game/projs.jaz")
             self._particles_texture = self._load_optional_texture(name="particles", cache_path="game/particles.jaz")
             self._fire_glow_src = self._compute_fire_glow_src(self._particles_texture)
+            self._refresh_shader_reference_profile()
             return
 
         if last_error is not None:
@@ -686,6 +1072,9 @@ class BeamDebugView:
         self._projs_texture = None
         self._particles_texture = None
         self._fire_glow_src = None
+        self._shader_reference_profile = None
+        self._shader_profile_metrics = None
+        self._shader_fit_status = "pending"
         self._missing_assets.clear()
 
     def consume_screenshot_request(self) -> bool:
@@ -787,6 +1176,22 @@ class BeamDebugView:
             self._effect_scale = max(0.1, float(self._effect_scale) - 0.05)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_L):
             self._effect_scale = min(5.0, float(self._effect_scale) + 0.05)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_Q):
+            self._apply_shader_param_delta(profile_exp=-SHADER_GEMINI_2_PROFILE_EXP_STEP)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_A):
+            self._apply_shader_param_delta(profile_exp=SHADER_GEMINI_2_PROFILE_EXP_STEP)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_W):
+            self._apply_shader_param_delta(intensity_gain=-SHADER_GEMINI_2_INTENSITY_GAIN_STEP)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_S):
+            self._apply_shader_param_delta(intensity_gain=SHADER_GEMINI_2_INTENSITY_GAIN_STEP)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_E):
+            self._apply_shader_param_delta(halo_mix=-SHADER_GEMINI_2_HALO_MIX_STEP)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_D):
+            self._apply_shader_param_delta(halo_mix=SHADER_GEMINI_2_HALO_MIX_STEP)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_I):
+            self._apply_shader_param_delta(halo_falloff=-SHADER_GEMINI_2_HALO_FALLOFF_STEP)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_O):
+            self._apply_shader_param_delta(halo_falloff=SHADER_GEMINI_2_HALO_FALLOFF_STEP)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_MINUS):
             self._sim_speed = max(0.1, float(self._sim_speed) - 0.1)
@@ -800,6 +1205,8 @@ class BeamDebugView:
             self._cap_enabled = not bool(self._cap_enabled)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_G):
             self._force_life_high = not bool(self._force_life_high)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_H):
+            self._head_render_enabled = not bool(self._head_render_enabled)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_M):
             self._show_all_segment_markers = not bool(self._show_all_segment_markers)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_V):
@@ -832,6 +1239,10 @@ class BeamDebugView:
             self._batch_probe_quads = max(BATCH_PROBE_QUADS_MIN, int(self._batch_probe_quads) - BATCH_PROBE_QUADS_STEP)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_U):
             self._batch_probe_quads = min(BATCH_PROBE_QUADS_MAX, int(self._batch_probe_quads) + BATCH_PROBE_QUADS_STEP)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_N):
+            self._shader_fit_requested = True
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ZERO):
+            self._reset_shader_params()
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_B):
             self.apply_scenario_preset(BeamScenarioPreset.PLASMA_LIKE)
@@ -1005,6 +1416,28 @@ class BeamDebugView:
         return int(clamp(float(alpha) * 255.0, 0.0, 255.0) + 0.5)
 
     @staticmethod
+    def _set_shader_float(shader: rl.Shader, location: int, value: float) -> None:
+        if int(location) < 0:
+            return
+        rl.set_shader_value(
+            shader,
+            int(location),
+            rl.ffi.new("float *", float(value)),
+            rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT,
+        )
+
+    @staticmethod
+    def _set_shader_vec4(shader: rl.Shader, location: int, x: float, y: float, z: float, w: float) -> None:
+        if int(location) < 0:
+            return
+        rl.set_shader_value(
+            shader,
+            int(location),
+            rl.ffi.new("float[4]", [float(x), float(y), float(z), float(w)]),
+            rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4,
+        )
+
+    @staticmethod
     def _emit_probe_quad(*, x: float, y: float) -> None:
         x0 = float(x)
         y0 = float(y)
@@ -1118,6 +1551,7 @@ class BeamDebugView:
         r = int(clamp(streak_rgb[0] * 255.0, 0.0, 255.0) + 0.5)
         g = int(clamp(streak_rgb[1] * 255.0, 0.0, 255.0) + 0.5)
         b = int(clamp(streak_rgb[2] * 255.0, 0.0, 255.0) + 0.5)
+        params = self._shader_gemini_2_params
         radius = max(
             0.001,
             float(SHADER_GEMINI_2_RADIUS_SCALE) * float(self._effect_scale) * float(SHADER_GEMINI_2_RADIUS_EXPAND),
@@ -1125,6 +1559,11 @@ class BeamDebugView:
 
         quad_count = 0
         rl.begin_shader_mode(shader)
+        self._set_shader_float(shader, _BEAM_GEMINI_2_PROFILE_EXP_LOC, float(params.profile_exp))
+        self._set_shader_float(shader, _BEAM_GEMINI_2_HALO_MIX_LOC, float(params.halo_mix))
+        self._set_shader_float(shader, _BEAM_GEMINI_2_HALO_FALLOFF_LOC, float(params.halo_falloff))
+        self._set_shader_float(shader, _BEAM_GEMINI_2_INTENSITY_GAIN_LOC, float(params.intensity_gain))
+        self._set_shader_vec4(shader, _BEAM_GEMINI_2_COLOR_LOC, 1.0, 1.0, 1.0, 1.0)
         rl.rl_set_texture(0)
         rl.rl_begin(rd.RL_QUADS)
         for prep in preps:
@@ -1181,6 +1620,8 @@ class BeamDebugView:
         *,
         is_fire: bool,
     ) -> tuple[int, int]:
+        if not bool(self._head_render_enabled):
+            return 0, 0
         texture = self._projs_texture
         if texture is None:
             return 0, 0
@@ -1246,6 +1687,7 @@ class BeamDebugView:
             inputs,
             mode=BeamRenderMode.BASELINE_SPRITE,
             is_fire=is_fire,
+            draw_heads_enabled=bool(self._head_render_enabled),
         )
 
         if texture is None:
@@ -1253,7 +1695,12 @@ class BeamDebugView:
             return BeamRenderFrameResult(current_counts=empty, baseline_counts=baseline_counts), False
 
         preps = self._build_render_preps(previews, mode=mode)
-        current_estimated = estimate_beam_frame_counts(inputs, mode=mode, is_fire=is_fire)
+        current_estimated = estimate_beam_frame_counts(
+            inputs,
+            mode=mode,
+            is_fire=is_fire,
+            draw_heads_enabled=bool(self._head_render_enabled),
+        )
 
         streak_rgb = (1.0, 0.6, 0.1) if is_fire else (0.5, 0.6, 1.0)
 
@@ -1337,6 +1784,7 @@ class BeamDebugView:
             self._small,
             (
                 f"flags cap={'on' if self._cap_enabled else 'off'} "
+                f"head={'on' if self._head_render_enabled else 'off'} "
                 f"life_hi={'on' if self._force_life_high else 'off'} "
                 f"markers={'all' if self._show_all_segment_markers else 'selected'} "
                 f"geometry={'on' if self._show_geometry_overlay else 'off'}"
@@ -1350,8 +1798,8 @@ class BeamDebugView:
             self._small,
             (
                 "Space pause/resume  Right step(when paused)  Esc close  P screenshot  "
-                "F fire/ion  C cap256  G force life>=0.4  M all markers  V geometry  "
-                "X run batch-probe  Z auto-probe  J/U probe quads"
+                "F fire/ion  C cap256  G force life>=0.4  H toggle heads  M all markers  V geometry  "
+                "X run batch-probe  Z auto-probe  J/U probe quads  N autofit-profile  0 reset shader"
             ),
             Vec2(margin, y),
             color=UI_HINT,
@@ -1362,7 +1810,8 @@ class BeamDebugView:
             self._small,
             (
                 "R cycle mode  Tab side-by-side  Y benchmark-run  1/2/3 presets  T reset stats  [ ] projectile count  , . select projectile  "
-                "Up/Down base dist  PgUp/PgDn jitter  K/L effect_scale  -/= sim speed  Backspace reset"
+                "Up/Down base dist  PgUp/PgDn jitter  K/L effect_scale  -/= sim speed  Backspace reset  "
+                "Q-/A+ exp  W-/S+ gain  E-/D+ halo_mix  I-/O+ halo_falloff"
             ),
             Vec2(margin, y),
             color=UI_HINT,
@@ -1384,6 +1833,47 @@ class BeamDebugView:
             scale=0.8,
         )
         y += line_h
+        shader_params = self._shader_gemini_2_params
+        metrics = self._shader_profile_metrics
+        metrics_suffix = "fit=n/a"
+        if metrics is not None:
+            metrics_suffix = (
+                f"fit_score={metrics.score:.5f} w_mse={metrics.weighted_mse:.5f} "
+                f"r80_delta={metrics.r80_delta:+.4f} r50_delta={metrics.r50_delta:+.4f}"
+            )
+        draw_ui_text(
+            self._small,
+            (
+                f"shader exp={shader_params.profile_exp:.3f} gain={shader_params.intensity_gain:.3f} "
+                f"halo_mix={shader_params.halo_mix:.3f} halo_fall={shader_params.halo_falloff:.3f} {metrics_suffix}"
+            ),
+            Vec2(margin, y),
+            color=UI_HINT,
+            scale=0.8,
+        )
+        y += line_h
+        draw_ui_text(
+            self._small,
+            f"shader status: {self._shader_fit_status}",
+            Vec2(margin, y),
+            color=UI_HINT if "failed" not in self._shader_fit_status else UI_WARN,
+            scale=0.8,
+        )
+        y += line_h
+        reference = self._shader_reference_profile
+        if reference is not None:
+            draw_ui_text(
+                self._small,
+                (
+                    f"shader reference: {reference.source} "
+                    f"radius={reference.radius_px:.2f} centroid=({reference.centroid_x:.2f},{reference.centroid_y:.2f}) "
+                    f"fit_elapsed_ms={self._shader_fit_elapsed_ms:.2f}"
+                ),
+                Vec2(margin, y),
+                color=UI_HINT,
+                scale=0.8,
+            )
+            y += line_h
 
         if baseline_panel_result is None:
             draw_ui_text(
@@ -1552,6 +2042,9 @@ class BeamDebugView:
 
     def draw(self) -> None:
         frame_start = time.perf_counter()
+
+        if self._shader_fit_requested:
+            self._run_shader_profile_autofit()
 
         rl.clear_background(BG)
         self._draw_grid()

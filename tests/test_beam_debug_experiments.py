@@ -9,6 +9,10 @@ from crimson.views.beam_debug import (
     BeamFrameStats,
     BeamRenderMode,
     BeamScenarioPreset,
+    BeamShaderGemini2Params,
+    _fit_shader_profile_to_reference,
+    _profile_match_metrics,
+    _shader_profile_value,
     beam_scenario_config,
     cycle_beam_render_mode,
     estimate_beam_frame_counts,
@@ -125,6 +129,25 @@ def test_life_below_threshold_keeps_head_and_disables_overlay_across_modes() -> 
         assert counts.overlay_calls == 0
 
 
+def test_disable_head_rendering_removes_head_and_overlay_calls() -> None:
+    plan = build_beam_sample_plan(dist=220.0, step=2.48, max_span=256.0)
+    assert plan is not None
+    item = BeamCountInput(plan=plan, life=0.4, screen_length_px=220.0)
+
+    for mode in (
+        BeamRenderMode.BASELINE_SPRITE,
+        BeamRenderMode.SHADER_GEMINI_2,
+    ):
+        counts = estimate_beam_frame_counts(
+            [item],
+            mode=mode,
+            is_fire=True,
+            draw_heads_enabled=False,
+        )
+        assert counts.head_calls == 0
+        assert counts.overlay_calls == 0
+
+
 def test_benchmark_mode_cycles_and_completes() -> None:
     view = BeamDebugView(ViewContext(assets_dir=Path("artifacts") / "assets"))
     view._side_by_side_enabled = True
@@ -155,3 +178,34 @@ def test_batch_probe_defaults_and_flush_label_formatting() -> None:
     assert view._batch_probe_run_once is False
     assert view._format_flush_quad(None) == "none"
     assert view._format_flush_quad(128) == "128"
+
+
+def test_shader_profile_value_is_monotonic_outward() -> None:
+    params = BeamShaderGemini2Params(profile_exp=2.2, halo_mix=0.2, halo_falloff=5.0, intensity_gain=2.5)
+    values = [_shader_profile_value(float(i) / 96.0, params) for i in range(97)]
+    assert values[0] > values[-1]
+    for prev, curr in zip(values, values[1:], strict=False):
+        assert float(curr) <= float(prev) + 1e-8
+
+
+def test_shader_profile_autofit_reduces_reference_error() -> None:
+    distances = tuple(float(i) / 95.0 for i in range(96))
+    target = BeamShaderGemini2Params(profile_exp=2.2, halo_mix=0.2, halo_falloff=5.5, intensity_gain=2.5)
+    reference = tuple(_shader_profile_value(d, target) for d in distances)
+    base = BeamShaderGemini2Params()
+
+    baseline_metrics = _profile_match_metrics(
+        reference_distances=distances,
+        reference_profile=reference,
+        params=base,
+    )
+    fitted, fitted_metrics = _fit_shader_profile_to_reference(
+        reference_distances=distances,
+        reference_profile=reference,
+        base_params=base,
+    )
+
+    assert fitted_metrics.score <= baseline_metrics.score
+    assert abs(float(fitted.profile_exp) - float(target.profile_exp)) <= 0.15
+    assert abs(float(fitted.halo_mix) - float(target.halo_mix)) <= 0.05
+    assert abs(float(fitted.halo_falloff) - float(target.halo_falloff)) <= 0.5
