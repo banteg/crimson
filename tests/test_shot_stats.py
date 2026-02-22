@@ -126,6 +126,7 @@ def test_projectile_spawn_increments_shots_fired_for_owner_minus_100_with_owner_
 
     assert state.shots_fired[0] == 0
     assert state.shots_fired[1] == 1
+    assert state.shots_fired_total == 1
 
 
 def test_projectile_spawn_increments_shots_fired_for_owner_minus_2() -> None:
@@ -144,6 +145,7 @@ def test_projectile_spawn_increments_shots_fired_for_owner_minus_2() -> None:
 
     assert state.shots_fired[0] == 0
     assert state.shots_fired[1] == 1
+    assert state.shots_fired_total == 1
 
 
 def test_projectile_spawn_fire_bullets_conversion_increments_shots_fired_twice() -> None:
@@ -162,6 +164,7 @@ def test_projectile_spawn_fire_bullets_conversion_increments_shots_fired_twice()
 
     assert proj_id >= 0
     assert state.shots_fired[0] == 2
+    assert state.shots_fired_total == 2
     assert int(state.projectiles.entries[proj_id].type_id) == int(ProjectileTypeId.FIRE_BULLETS)
 
 
@@ -181,3 +184,4 @@ def test_projectile_spawn_does_not_increment_shots_fired_when_bonus_guard_is_on(
     )
 
     assert state.shots_fired[0] == 0
+    assert state.shots_fired_total == 0
