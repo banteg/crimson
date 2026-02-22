@@ -94,3 +94,21 @@ def test_damage_type1_global_perks_apply_with_non_player_owner() -> None:
 
     assert killed is True
     assert_float_close(creature.hp, -131.92474)
+
+
+def test_nonlethal_damage_does_not_reset_non_alive_hitbox_size() -> None:
+    creature = CreatureState(active=True, hp=100.0, hitbox_size=12.0, size=50.0, flags=CreatureFlags(0))
+
+    killed = creature_apply_damage(
+        creature,
+        damage_amount=10.0,
+        damage_type=3,
+        impulse=Vec2(),
+        owner_id=0,
+        dt=0.016,
+        players=[],
+        rand=lambda: 0,
+    )
+
+    assert killed is False
+    assert_float_close(creature.hitbox_size, 12.0)
