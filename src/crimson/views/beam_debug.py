@@ -1634,6 +1634,14 @@ class BeamDebugView:
             push(p1 + side, uv_x=0.0, uv_y=1.0, alpha=head_alpha)
             push(p1 - side, uv_x=0.0, uv_y=-1.0, alpha=head_alpha)
             quad_count += 1
+
+            # Cap quad: semicircular falloff at head
+            cap_end = p1 + direction * radius
+            push(p1 - side, uv_x=0.0, uv_y=-1.0, alpha=head_alpha)
+            push(p1 + side, uv_x=0.0, uv_y=1.0, alpha=head_alpha)
+            push(cap_end + side, uv_x=1.0, uv_y=1.0, alpha=head_alpha)
+            push(cap_end - side, uv_x=1.0, uv_y=-1.0, alpha=head_alpha)
+            quad_count += 1
         rl.rl_end()
         rl.rl_set_texture(0)
         rl.end_shader_mode()
