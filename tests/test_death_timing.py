@@ -304,9 +304,9 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
         rng,
         before_calls=before_calls,
         before_state=before_state,
-        expected_draws=41,
+        expected_draws=21,
         expected_after_state=0,
-        expected_hash="3ba5b0d89c1cec5a",
+        expected_hash="e6c537e095f1bfbe",
     )
 
 

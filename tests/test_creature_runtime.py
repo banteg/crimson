@@ -17,7 +17,6 @@ from crimson.creatures.spawn import (
     build_spawn_plan,
 )
 from crimson.effects import FxQueue
-from crimson.effects_atlas import EffectId
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
@@ -730,7 +729,7 @@ def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails(moc
     assert state.effects.iter_active() == []
 
 
-def test_handle_death_shock_flag_spawns_armored_debris_and_suppresses_death_sfx() -> None:
+def test_handle_death_shock_flag_suppresses_death_sfx_without_spawning_debris() -> None:
     state = GameplayState()
     state.rng = _StubRand([0] * 20)  # type: ignore[assignment]
     pool = CreaturePool()
@@ -752,10 +751,8 @@ def test_handle_death_shock_flag_spawns_armored_debris_and_suppresses_death_sfx(
     )
 
     assert death.suppress_death_sfx is True
-    active = state.effects.iter_active()
-    assert len(active) == 5
-    assert all(int(entry.effect_id) == int(EffectId.BURST) for entry in active)
-    assert state.rng._idx == 20  # type: ignore[attr-defined]
+    assert state.effects.iter_active() == []
+    assert state.rng._idx == 0  # type: ignore[attr-defined]
 
 
 def test_death_award_uses_float32_sum_before_truncation() -> None:
