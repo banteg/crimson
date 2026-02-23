@@ -938,6 +938,7 @@ def cmd_replay_benchmark(
                 profile_sort=profile_sort,
                 top=int(top),
                 profile_out=profile_out,
+                show_progress=(str(output_format) == "human"),
             )
     except (ReplayCodecError, ReplayBenchmarkError, ReplayRunnerError) as exc:
         typer.echo(f"replay benchmark failed: {exc}", err=True)

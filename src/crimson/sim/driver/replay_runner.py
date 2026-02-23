@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import replace
 from typing import cast
 
@@ -57,6 +58,7 @@ def run_survival_replay(
     dt_frame_ms_i32_overrides: dict[int, int] | None = None,
     inter_tick_rand_draws: int = 0,
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
+    tick_progress_callback: Callable[[int], None] | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.SURVIVAL):
         raise ReplayRunnerError(
@@ -216,6 +218,8 @@ def run_survival_replay(
             draws = max(0, int(inter_tick_rand_draws))
             for _ in range(draws):
                 world.state.rng.rand()
+        if tick_progress_callback is not None:
+            tick_progress_callback(int(tick_index) + 1)
     else:
         tick_index = tick_limit
 
@@ -278,6 +282,7 @@ def run_rush_replay(
     dt_frame_overrides: dict[int, float] | None = None,
     inter_tick_rand_draws: int = 0,
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
+    tick_progress_callback: Callable[[int], None] | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.RUSH):
         raise ReplayRunnerError(
@@ -404,6 +409,8 @@ def run_rush_replay(
             draws = max(0, int(inter_tick_rand_draws))
             for _ in range(draws):
                 world.state.rng.rand()
+        if tick_progress_callback is not None:
+            tick_progress_callback(int(tick_index) + 1)
     else:
         tick_index = tick_limit
 
@@ -482,6 +489,7 @@ def run_quest_replay(
     dt_frame_ms_i32_overrides: dict[int, int] | None = None,
     inter_tick_rand_draws: int = 0,
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
+    tick_progress_callback: Callable[[int], None] | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.QUESTS):
         raise ReplayRunnerError(
@@ -803,6 +811,8 @@ def run_quest_replay(
             draws = max(0, int(inter_tick_rand_draws))
             for _ in range(draws):
                 world.state.rng.rand()
+        if tick_progress_callback is not None:
+            tick_progress_callback(int(tick_index) + 1)
 
     else:
         tick_index = tick_limit
@@ -865,6 +875,7 @@ def run_replay(
     checkpoint_use_world_step_creature_count: bool = False,
     checkpoints_out: list[ReplayCheckpoint] | None = None,
     checkpoint_ticks: set[int] | None = None,
+    tick_progress_callback: Callable[[int], None] | None = None,
 ) -> RunResult:
     mode = int(replay.header.game_mode_id)
     if mode == int(GameMode.SURVIVAL):
@@ -877,6 +888,7 @@ def run_replay(
             checkpoint_use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
             checkpoints_out=checkpoints_out,
             checkpoint_ticks=checkpoint_ticks,
+            tick_progress_callback=tick_progress_callback,
         )
     if mode == int(GameMode.RUSH):
         return run_rush_replay(
@@ -887,6 +899,7 @@ def run_replay(
             checkpoint_use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
             checkpoints_out=checkpoints_out,
             checkpoint_ticks=checkpoint_ticks,
+            tick_progress_callback=tick_progress_callback,
         )
     if mode == int(GameMode.QUESTS):
         return run_quest_replay(
@@ -898,5 +911,6 @@ def run_replay(
             checkpoint_use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
             checkpoints_out=checkpoints_out,
             checkpoint_ticks=checkpoint_ticks,
+            tick_progress_callback=tick_progress_callback,
         )
     raise ReplayRunnerError(f"unsupported replay game_mode_id={mode}")
