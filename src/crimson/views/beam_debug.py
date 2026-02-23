@@ -70,11 +70,11 @@ SHADER_GEMINI_2_APPROX_C_STEP = 0.05
 SHADER_GEMINI_2_INTENSITY_GAIN_STEP = 0.05
 SHADER_GEMINI_2_PROFILE_SAMPLE_COUNT = 96
 SHADER_GEMINI_2_PROFILE_RING_SAMPLES = 96
-SHADER_EXT_CLAUDE_LONGITUDINAL_GAMMA_DEFAULT = 1.45
-SHADER_EXT_CLAUDE_RADIUS_TAPER_DEFAULT = 1.15
-SHADER_EXT_CLAUDE_CORE_WEIGHT_DEFAULT = 0.7
-SHADER_EXT_CLAUDE_HALO_DECAY_DEFAULT = -1.2
-SHADER_EXT_CLAUDE_CAP_SOFTNESS_DEFAULT = 0.75
+SHADER_EXT_CLAUDE_LONGITUDINAL_GAMMA_DEFAULT = 1.35
+SHADER_EXT_CLAUDE_RADIUS_TAPER_DEFAULT = 1.0
+SHADER_EXT_CLAUDE_CORE_WEIGHT_DEFAULT = 0.72
+SHADER_EXT_CLAUDE_HALO_DECAY_DEFAULT = -1.8
+SHADER_EXT_CLAUDE_CAP_SOFTNESS_DEFAULT = 1.0
 SHADER_EXT_GEMINI_CORE_A_DEFAULT = 1.5
 SHADER_EXT_GEMINI_CORE_B_DEFAULT = -12.0
 SHADER_EXT_GEMINI_TAIL_WIDTH_DEFAULT = 0.6
@@ -139,62 +139,30 @@ uniform float u_approx_a;
 uniform float u_approx_b;
 uniform float u_approx_c;
 uniform float u_intensity_gain;
-uniform float u_step_uv;
-uniform float u_cover_len;
-uniform float u_halo_w;
-uniform float u_cap_scale;
 
 out vec4 finalColor;
 
 void main() {
-    float gain = max(u_intensity_gain, 0.0);
-    float halo_w = max(u_halo_w, 0.0);
-    float cap_scale = max(u_cap_scale, 0.0);
     float u_len = fragLen;
     if (u_len < 0.0) {
         float d = length(fragTexCoord);
-        float e = exp(u_approx_b * d);
-        float core = clamp(u_approx_a * e - u_approx_c, 0.0, 1.0);
-        float halo = clamp(u_approx_a * sqrt(max(e, 0.0)) - u_approx_c, 0.0, 1.0);
-        float shell = max(0.0, halo - core);
-        float profile = clamp(core + halo_w * shell, 0.0, 1.0);
-        float intensity = profile * fragColor.a * gain;
+        float profile = clamp(u_approx_a * exp(u_approx_b * d) - u_approx_c, 0.0, 1.0);
+        float intensity = profile * fragColor.a * max(u_intensity_gain, 0.0);
         vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
         finalColor = vec4(rgb, 1.0);
         return;
     }
 
-    float step_uv = max(1e-4, u_step_uv);
-    float x0 = min(step_uv, max(0.0, u_len));
-    float residual = mod(max(0.0, u_len), step_uv);
-    float end_gap = residual;
-    if (end_gap <= step_uv * 1e-4) {
-        end_gap = step_uv;
-    }
-    float x1 = max(x0, u_len - end_gap);
-
-    float dx = max(0.0, max(x0 - fragTexCoord.x, fragTexCoord.x - x1));
-    dx *= cap_scale;
+    float dx = max(0.0, max(-fragTexCoord.x, fragTexCoord.x - u_len));
     float d = length(vec2(dx, fragTexCoord.y));
+    
+    float trans_profile = clamp(u_approx_a * exp(u_approx_b * d) - u_approx_c, 0.0, 1.0);
+    
+    float closest_x = clamp(fragTexCoord.x, 0.0, u_len);
+    float t = clamp(closest_x / max(1.0, u_len), 0.0, 1.0);
+    float structural_alpha = t * fragColor.a;
 
-    float e = exp(u_approx_b * d);
-    float core = clamp(u_approx_a * e - u_approx_c, 0.0, 1.0);
-    float halo = clamp(u_approx_a * sqrt(max(e, 0.0)) - u_approx_c, 0.0, 1.0);
-    float shell = max(0.0, halo - core);
-    float trans_profile = clamp(core + halo_w * shell, 0.0, 1.0);
-
-    float closest_x = clamp(fragTexCoord.x, x0, x1);
-    float t = clamp(closest_x / max(u_len, 1e-6), 0.0, 1.0);
-
-    float seg_len = max(0.0, x1 - x0);
-    float w = min(max(0.0, u_cover_len), 0.5 * seg_len);
-    w = max(w, 1e-4);
-    float left = min(max(0.0, fragTexCoord.x - x0), w);
-    float right = min(max(0.0, x1 - fragTexCoord.x), w);
-    float cover = clamp((left + right) / (2.0 * w), 0.0, 1.0);
-
-    float structural_alpha = t * cover * fragColor.a;
-    float intensity = trans_profile * structural_alpha * gain;
+    float intensity = trans_profile * structural_alpha * max(u_intensity_gain, 0.0);
     vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
     finalColor = vec4(rgb, 1.0);
 }
@@ -342,11 +310,9 @@ void main() {
     float t = clamp(closest_x / max(1.0, u_len), 0.0, 1.0);
     float t_shaped = pow(t, gamma);
 
-    float r_scale_t = 1.0 + (u_radius_taper - 1.0) * t_shaped;
-    float d_body = length(vec2(dx, fragTexCoord.y / max(1e-4, r_scale_t)));
-
-    float core = clamp(u_approx_a * exp(u_approx_b * d_body) - u_approx_c, 0.0, 1.0);
-    float halo = clamp(exp(halo_decay * d_body), 0.0, 1.0);
+    float d_body = length(vec2(dx, fragTexCoord.y));
+    float core = clamp(u_approx_a * exp(u_approx_b * d_body * cap_soft) - u_approx_c, 0.0, 1.0);
+    float halo = clamp(exp(halo_decay * d_body * cap_soft), 0.0, 1.0);
     float trans_profile = mix(halo, core, core_w);
 
     float structural_alpha = t_shaped * fragColor.a;
@@ -434,11 +400,9 @@ void main() {
 
     if (u_len < 0.0) {
         float d = length(fragTexCoord);
-        float e = exp(u_approx_b * d);
-        float core = clamp(u_approx_a * e - u_approx_c, 0.0, 1.0);
-        float halo = clamp(u_approx_a * sqrt(max(e, 0.0)) - u_approx_c, 0.0, 1.0);
-        float shell = max(0.0, halo - core);
-        float profile = clamp(core + halo_w * shell, 0.0, 1.0);
+        float halo = clamp(u_approx_a * exp(u_approx_b * d) - u_approx_c, 0.0, 1.0);
+        float core = clamp(u_approx_a * exp((u_approx_b * 2.1) * d) - u_approx_c, 0.0, 1.0);
+        float profile = clamp(halo + halo_w * core, 0.0, 1.0);
         float intensity = profile * fragColor.a * gain;
         vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
         finalColor = vec4(rgb, 1.0);
@@ -457,11 +421,9 @@ void main() {
     float dx = max(0.0, max(x0 - fragTexCoord.x, fragTexCoord.x - x1));
     float d = length(vec2(dx, fragTexCoord.y));
 
-    float e = exp(u_approx_b * d);
-    float core = clamp(u_approx_a * e - u_approx_c, 0.0, 1.0);
-    float halo = clamp(u_approx_a * sqrt(max(e, 0.0)) - u_approx_c, 0.0, 1.0);
-    float shell = max(0.0, halo - core);
-    float profile = clamp(core + halo_w * shell, 0.0, 1.0);
+    float halo = clamp(u_approx_a * exp(u_approx_b * d) - u_approx_c, 0.0, 1.0);
+    float core = clamp(u_approx_a * exp((u_approx_b * 2.1) * d) - u_approx_c, 0.0, 1.0);
+    float profile = clamp(halo + halo_w * core, 0.0, 1.0);
 
     float xc = clamp(fragTexCoord.x, x0, x1);
     float t = clamp(xc / max(u_len, 1e-6), 0.0, 1.0);
@@ -473,7 +435,8 @@ void main() {
     float right = min(max(0.0, x1 - fragTexCoord.x), w);
     float cover = clamp((left + right) / (2.0 * w), 0.0, 1.0);
 
-    float structural = t * cover * fragColor.a;
+    float cover_soft = sqrt(max(cover, 0.0));
+    float structural = t * cover_soft * fragColor.a;
     float intensity = profile * structural * gain;
     vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
     finalColor = vec4(rgb, 1.0);
@@ -2574,7 +2537,9 @@ class BeamDebugView:
             if head_alpha <= 0:
                 continue
 
-            side = direction.perp_left() * radius
+            cap_softness = max(0.05, float(params.cap_softness))
+            support_pad = max(1.0, float(params.radius_taper), 1.0 / cap_softness)
+            side = direction.perp_left() * (radius * support_pad)
 
             def push(pos: Vec2, *, uv_x: float, uv_y: float, alpha: int, u_len: float) -> None:
                 rl.rl_color4ub(r, g, b, int(alpha))
@@ -2583,13 +2548,14 @@ class BeamDebugView:
 
             # Single analytic quad encompassing body + tail cap + head cap.
             u_len = length / radius
-            tail_end = p0 - direction * radius
-            head_end = p1 + direction * radius
+            pad_forward = direction * (radius * support_pad)
+            tail_end = p0 - pad_forward
+            head_end = p1 + pad_forward
 
-            push(tail_end - side, uv_x=-1.0, uv_y=-1.0, alpha=head_alpha, u_len=u_len)
-            push(tail_end + side, uv_x=-1.0, uv_y=1.0, alpha=head_alpha, u_len=u_len)
-            push(head_end + side, uv_x=u_len + 1.0, uv_y=1.0, alpha=head_alpha, u_len=u_len)
-            push(head_end - side, uv_x=u_len + 1.0, uv_y=-1.0, alpha=head_alpha, u_len=u_len)
+            push(tail_end - side, uv_x=-support_pad, uv_y=-support_pad, alpha=head_alpha, u_len=u_len)
+            push(tail_end + side, uv_x=-support_pad, uv_y=support_pad, alpha=head_alpha, u_len=u_len)
+            push(head_end + side, uv_x=u_len + support_pad, uv_y=support_pad, alpha=head_alpha, u_len=u_len)
+            push(head_end - side, uv_x=u_len + support_pad, uv_y=-support_pad, alpha=head_alpha, u_len=u_len)
             quad_count += 1
         rl.rl_end()
         rl.rl_set_texture(0)
@@ -2674,8 +2640,9 @@ class BeamDebugView:
                 continue
 
             direction = Vec2.from_angle(prep.rotation_rad)
-            side = direction.perp_left() * radius
-            forward = direction * radius
+            support_pad = max(1.0, float(params.radius_taper), 1.0 / cap_softness)
+            side = direction.perp_left() * (radius * support_pad)
+            forward = direction * (radius * support_pad)
             center = prep.preview.head_screen
 
             def push(pos: Vec2, *, uv_x: float, uv_y: float, alpha_u8: int = head_alpha) -> None:
@@ -2683,10 +2650,10 @@ class BeamDebugView:
                 rl.rl_tex_coord2f(float(uv_x), float(uv_y))
                 rl.rl_vertex3f(float(pos.x), float(pos.y), -1.0)
 
-            push(center - forward - side, uv_x=-1.0, uv_y=-1.0)
-            push(center - forward + side, uv_x=-1.0, uv_y=1.0)
-            push(center + forward + side, uv_x=1.0, uv_y=1.0)
-            push(center + forward - side, uv_x=1.0, uv_y=-1.0)
+            push(center - forward - side, uv_x=-support_pad, uv_y=-support_pad)
+            push(center - forward + side, uv_x=-support_pad, uv_y=support_pad)
+            push(center + forward + side, uv_x=support_pad, uv_y=support_pad)
+            push(center + forward - side, uv_x=support_pad, uv_y=-support_pad)
             quad_count += 1
         rl.rl_end()
         rl.rl_set_texture(0)
