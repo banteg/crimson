@@ -5,6 +5,7 @@ from pathlib import Path
 from crimson.projectiles import ProjectileTypeId
 from crimson.render.projectile_draw.beam_sampling import build_beam_sample_plan, iter_beam_sample_offsets
 from crimson.views.beam_debug import (
+    _BEAM_GEMINI_2_FS_330,
     _BEAM_STAMPED_VIRTUAL_FS_330,
     _ION_PRESET_ORDER,
     _RENDER_MODE_ORDER,
@@ -267,6 +268,17 @@ def test_stamped_virtual_kernel_uses_negative_quadratic_falloff() -> None:
     body_needle = "exp(-u_stamp_decay * d_eff - u_stamp_quad * d_eff * d_eff)"
     assert _BEAM_STAMPED_VIRTUAL_FS_330.count(head_needle) >= 1
     assert _BEAM_STAMPED_VIRTUAL_FS_330.count(body_needle) >= 1
+
+
+def test_gemini_2_shader_uses_inset_coverage_profile() -> None:
+    assert "uniform float u_step_uv;" in _BEAM_GEMINI_2_FS_330
+    assert "uniform float u_cover_len;" in _BEAM_GEMINI_2_FS_330
+    assert "uniform float u_halo_w;" in _BEAM_GEMINI_2_FS_330
+    assert "uniform float u_cap_scale;" in _BEAM_GEMINI_2_FS_330
+    assert "float residual = mod(max(0.0, u_len), step_uv);" in _BEAM_GEMINI_2_FS_330
+    assert "if (end_gap <= step_uv * 1e-4)" in _BEAM_GEMINI_2_FS_330
+    assert "float cover = clamp((left + right) / (2.0 * w), 0.0, 1.0);" in _BEAM_GEMINI_2_FS_330
+    assert "float structural_alpha = t * cover * fragColor.a;" in _BEAM_GEMINI_2_FS_330
 
 
 def test_shader_profile_value_is_monotonic_outward() -> None:
