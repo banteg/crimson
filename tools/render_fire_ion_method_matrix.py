@@ -178,6 +178,9 @@ def _build_preview(
 
 
 def _rows() -> tuple[MatrixRow, ...]:
+    unique_presets = list(_unique_ion_presets_by_type(_ION_PRESET_ORDER))
+    preferred_order = {"ion_minigun": 0, "ion_rifle": 1}
+    unique_presets.sort(key=lambda preset: (preferred_order.get(str(preset.key), 2), str(preset.key)))
     ion_rows = tuple(
         MatrixRow(
             key=f"ion_{preset.key}",
@@ -185,7 +188,7 @@ def _rows() -> tuple[MatrixRow, ...]:
             note=preset.note,
             ion_preset_key=preset.key,
         )
-        for preset in _unique_ion_presets_by_type(_ION_PRESET_ORDER)
+        for preset in unique_presets
     )
     return (
         MatrixRow(
