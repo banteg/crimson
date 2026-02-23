@@ -279,7 +279,8 @@ def test_gemini_2_shader_uses_separable_radial_cap_profile() -> None:
     assert "uniform float u_cap_b_scale;" in _BEAM_GEMINI_2_FS_330
     assert "float r_eff = sqrt(y_sq + softness * softness) - softness;" in _BEAM_GEMINI_2_FS_330
     assert "float cap_mask = 0.5 - sign(x) * 0.5 * (1.0 - exp2(b_cap * abs(x)));" in _BEAM_GEMINI_2_FS_330
-    assert "float intensity = u_approx_a * t * d_rad * cap_mask * fragColor.a * gain;" in _BEAM_GEMINI_2_FS_330
+    assert "float t_struct = mix(0.20, 1.0, t);" in _BEAM_GEMINI_2_FS_330
+    assert "float intensity = u_approx_a * t_struct * d_rad * cap_mask * fragColor.a * gain;" in _BEAM_GEMINI_2_FS_330
 
 
 def test_shader_profile_value_is_monotonic_outward() -> None:
