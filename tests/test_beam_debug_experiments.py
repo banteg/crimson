@@ -24,6 +24,8 @@ from grim.view import ViewContext
 def test_cycle_beam_render_mode_order_is_stable() -> None:
     mode = BeamRenderMode.BASELINE_SPRITE
     mode = cycle_beam_render_mode(mode)
+    assert mode == BeamRenderMode.SHADER_STAMPED_ANALYTIC
+    mode = cycle_beam_render_mode(mode)
     assert mode == BeamRenderMode.SHADER_GEMINI_2
     mode = cycle_beam_render_mode(mode)
     assert mode == BeamRenderMode.BASELINE_SPRITE
@@ -123,6 +125,7 @@ def test_life_below_threshold_keeps_head_and_disables_overlay_across_modes() -> 
 
     for mode in (
         BeamRenderMode.BASELINE_SPRITE,
+        BeamRenderMode.SHADER_STAMPED_ANALYTIC,
         BeamRenderMode.SHADER_GEMINI_2,
     ):
         counts = estimate_beam_frame_counts([item], mode=mode, is_fire=True)
@@ -137,6 +140,7 @@ def test_disable_head_rendering_removes_head_and_overlay_calls() -> None:
 
     for mode in (
         BeamRenderMode.BASELINE_SPRITE,
+        BeamRenderMode.SHADER_STAMPED_ANALYTIC,
         BeamRenderMode.SHADER_GEMINI_2,
     ):
         counts = estimate_beam_frame_counts(
@@ -172,10 +176,16 @@ def test_benchmark_mode_cycles_and_completes() -> None:
     assert view._bench_active is True
     assert view._side_by_side_enabled is False
     assert view.render_mode == BeamRenderMode.BASELINE_SPRITE
-    assert view._bench_total_frames == 4
+    assert view._bench_total_frames == 6
 
     view._advance_benchmark_after_frame()
     assert view.render_mode == BeamRenderMode.BASELINE_SPRITE
+
+    view._advance_benchmark_after_frame()
+    assert view.render_mode == BeamRenderMode.SHADER_STAMPED_ANALYTIC
+
+    view._advance_benchmark_after_frame()
+    assert view.render_mode == BeamRenderMode.SHADER_STAMPED_ANALYTIC
 
     view._advance_benchmark_after_frame()
     assert view.render_mode == BeamRenderMode.SHADER_GEMINI_2

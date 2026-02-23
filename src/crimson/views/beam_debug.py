@@ -78,6 +78,9 @@ BATCH_PROBE_QUADS_MAX = 32768
 DISTANCE_SCALE_REFERENCE_UNITS = 220.0
 NATIVE_BEAM_ACTIVE_LIFE_SECONDS = 0.4
 PROJECTILE_SPEED_UNITS_PER_META = 20.0
+SHADER_STAMP_ANALYTIC_ALPHA_SCALE = 0.88
+SHADER_STAMP_ANALYTIC_ALPHA_DECAY_PER_PX = 0.3
+SHADER_STAMP_ANALYTIC_RADIUS_SCALE = 16.0
 
 _BEAM_SHADER_VS_330 = """
 #version 330
@@ -140,6 +143,26 @@ void main() {
 }
 """
 
+_BEAM_STAMPED_ANALYTIC_FS_330 = f"""
+#version 330
+
+in vec2 fragTexCoord;
+in vec4 fragColor;
+in float fragLen;
+
+uniform vec4 colDiffuse;
+
+out vec4 finalColor;
+
+void main() {{
+    float d = length(fragTexCoord);
+    float profile = {SHADER_STAMP_ANALYTIC_ALPHA_SCALE:.8f} * exp(-{SHADER_STAMP_ANALYTIC_ALPHA_DECAY_PER_PX * SHADER_STAMP_ANALYTIC_RADIUS_SCALE:.8f} * d);
+    float intensity = profile * fragColor.a;
+    vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
+    finalColor = vec4(rgb, 1.0);
+}}
+"""
+
 _BEAM_GEMINI_2_SHADER_TRIED = False
 _BEAM_GEMINI_2_SHADER: rl.Shader | None = None
 _BEAM_GEMINI_2_APPROX_A_LOC = -1
@@ -147,15 +170,20 @@ _BEAM_GEMINI_2_APPROX_B_LOC = -1
 _BEAM_GEMINI_2_APPROX_C_LOC = -1
 _BEAM_GEMINI_2_INTENSITY_GAIN_LOC = -1
 _BEAM_GEMINI_2_COLOR_LOC = -1
+_BEAM_STAMPED_ANALYTIC_SHADER_TRIED = False
+_BEAM_STAMPED_ANALYTIC_SHADER: rl.Shader | None = None
+_BEAM_STAMPED_ANALYTIC_COLOR_LOC = -1
 
 
 class BeamRenderMode(str, Enum):
     BASELINE_SPRITE = "baseline_sprite"
+    SHADER_STAMPED_ANALYTIC = "shader_stamped_analytic"
     SHADER_GEMINI_2 = "shader_gemini_2"
 
 
 _RENDER_MODE_ORDER: tuple[BeamRenderMode, ...] = (
     BeamRenderMode.BASELINE_SPRITE,
+    BeamRenderMode.SHADER_STAMPED_ANALYTIC,
     BeamRenderMode.SHADER_GEMINI_2,
 )
 
@@ -539,9 +567,34 @@ def _get_beam_gemini_2_shader() -> rl.Shader | None:
     return _BEAM_GEMINI_2_SHADER
 
 
+def _get_beam_stamped_analytic_shader() -> rl.Shader | None:
+    global _BEAM_STAMPED_ANALYTIC_SHADER_TRIED, _BEAM_STAMPED_ANALYTIC_SHADER, _BEAM_STAMPED_ANALYTIC_COLOR_LOC
+    if _BEAM_STAMPED_ANALYTIC_SHADER_TRIED:
+        if _BEAM_STAMPED_ANALYTIC_SHADER is not None and int(_BEAM_STAMPED_ANALYTIC_SHADER.id) > 0:
+            return _BEAM_STAMPED_ANALYTIC_SHADER
+        return None
+
+    _BEAM_STAMPED_ANALYTIC_SHADER_TRIED = True
+    try:
+        shader = rl.load_shader_from_memory(_BEAM_SHADER_VS_330, _BEAM_STAMPED_ANALYTIC_FS_330)
+    except (RuntimeError, OSError, ValueError):
+        _BEAM_STAMPED_ANALYTIC_SHADER = None
+        return None
+
+    if int(shader.id) <= 0:
+        _BEAM_STAMPED_ANALYTIC_SHADER = None
+        return None
+
+    _BEAM_STAMPED_ANALYTIC_SHADER = shader
+    _BEAM_STAMPED_ANALYTIC_COLOR_LOC = int(rl.get_shader_location(shader, "colDiffuse"))
+    return _BEAM_STAMPED_ANALYTIC_SHADER
+
+
 def _mode_label(mode: BeamRenderMode) -> str:
     if mode == BeamRenderMode.BASELINE_SPRITE:
         return "baseline"
+    if mode == BeamRenderMode.SHADER_STAMPED_ANALYTIC:
+        return "shader-stamped-analytic"
     return "shader-gemini-2"
 
 
@@ -668,6 +721,10 @@ def estimate_beam_frame_counts(
                 head_calls += 1
                 if bool(is_fire) and float(item.life) >= 0.4:
                     overlay_calls += 1
+            body_calls += int(segment_count)
+        elif mode == BeamRenderMode.SHADER_STAMPED_ANALYTIC:
+            if bool(draw_heads_enabled):
+                head_calls += 1
             body_calls += int(segment_count)
         elif segment_count >= 1:
             shader_beam_calls += 1
@@ -1615,7 +1672,6 @@ class BeamDebugView:
         g = int(clamp(streak_rgb[1] * 255.0, 0.0, 255.0) + 0.5)
         b = int(clamp(streak_rgb[2] * 255.0, 0.0, 255.0) + 0.5)
         params = self._shader_gemini_2_params
-        variant = self._head_cap_variant
 
         radius = max(
             0.001,
@@ -1651,7 +1707,6 @@ class BeamDebugView:
             head_alpha = self._u8(prep.base_alpha)
             if head_alpha <= 0:
                 continue
-            tail_alpha = 0
 
             side = direction.perp_left() * radius
 
@@ -1674,6 +1729,120 @@ class BeamDebugView:
         rl.rl_set_texture(0)
         rl.end_shader_mode()
         return int(quad_count), False
+
+    def _draw_projectile_body_shader_stamped_analytic(
+        self,
+        preps: Sequence[_RenderPrep],
+        *,
+        streak_rgb: tuple[float, float, float],
+    ) -> tuple[int, bool]:
+        shader = _get_beam_stamped_analytic_shader()
+        if shader is None:
+            return self._draw_projectile_body_sprites(preps, streak_rgb=streak_rgb), True
+
+        r = int(clamp(streak_rgb[0] * 255.0, 0.0, 255.0) + 0.5)
+        g = int(clamp(streak_rgb[1] * 255.0, 0.0, 255.0) + 0.5)
+        b = int(clamp(streak_rgb[2] * 255.0, 0.0, 255.0) + 0.5)
+        radius = max(0.001, float(SHADER_STAMP_ANALYTIC_RADIUS_SCALE) * float(self._effect_scale))
+
+        body_calls = 0
+        rl.begin_shader_mode(shader)
+        self._set_shader_vec4(shader, _BEAM_STAMPED_ANALYTIC_COLOR_LOC, 1.0, 1.0, 1.0, 1.0)
+        rl.rl_set_texture(0)
+        rl.rl_begin(rd.RL_QUADS)
+        for prep in preps:
+            direction = Vec2.from_angle(prep.rotation_rad)
+            side = direction.perp_left() * radius
+            forward = direction * radius
+            for offset in prep.offsets:
+                seg_alpha = self._segment_alpha(offset=float(offset), plan=prep.plan, base_alpha=prep.base_alpha)
+                alpha_u8 = self._u8(seg_alpha)
+                if alpha_u8 <= 0:
+                    continue
+                sample_t = float(offset) / prep.dist_units
+                center = prep.preview.origin_screen + prep.ray * sample_t
+
+                p0 = center - forward - side
+                p1 = center - forward + side
+                p2 = center + forward + side
+                p3 = center + forward - side
+
+                rl.rl_color4ub(r, g, b, int(alpha_u8))
+                rl.rl_tex_coord2f(-1.0, -1.0)
+                rl.rl_vertex3f(float(p0.x), float(p0.y), -1.0)
+                rl.rl_color4ub(r, g, b, int(alpha_u8))
+                rl.rl_tex_coord2f(-1.0, 1.0)
+                rl.rl_vertex3f(float(p1.x), float(p1.y), -1.0)
+                rl.rl_color4ub(r, g, b, int(alpha_u8))
+                rl.rl_tex_coord2f(1.0, 1.0)
+                rl.rl_vertex3f(float(p2.x), float(p2.y), -1.0)
+                rl.rl_color4ub(r, g, b, int(alpha_u8))
+                rl.rl_tex_coord2f(1.0, -1.0)
+                rl.rl_vertex3f(float(p3.x), float(p3.y), -1.0)
+                body_calls += 1
+        rl.rl_end()
+        rl.rl_set_texture(0)
+        rl.end_shader_mode()
+        return int(body_calls), False
+
+    def _draw_projectile_head_shader_stamped_analytic(self, preps: Sequence[_RenderPrep], *, is_fire: bool) -> int:
+        del is_fire
+        if not bool(self._head_render_enabled):
+            return 0
+
+        shader = _get_beam_stamped_analytic_shader()
+        if shader is None:
+            return 0
+
+        head_calls = 0
+        radius_high = max(0.001, float(SHADER_STAMP_ANALYTIC_RADIUS_SCALE) * float(self._effect_scale))
+        radius_low = float(SHADER_STAMP_ANALYTIC_RADIUS_SCALE)
+        rl.begin_shader_mode(shader)
+        self._set_shader_vec4(shader, _BEAM_STAMPED_ANALYTIC_COLOR_LOC, 1.0, 1.0, 1.0, 1.0)
+        rl.rl_set_texture(0)
+        rl.rl_begin(rd.RL_QUADS)
+        for prep in preps:
+            life = float(prep.preview.life)
+            if life >= 0.4:
+                rgb = (1.0, 1.0, 0.7)
+                radius = radius_high
+            else:
+                rgb = (0.5, 0.6, 1.0)
+                radius = radius_low
+
+            alpha_u8 = self._u8(prep.base_alpha)
+            if alpha_u8 <= 0:
+                continue
+
+            r = int(clamp(rgb[0] * 255.0, 0.0, 255.0) + 0.5)
+            g = int(clamp(rgb[1] * 255.0, 0.0, 255.0) + 0.5)
+            b = int(clamp(rgb[2] * 255.0, 0.0, 255.0) + 0.5)
+            direction = Vec2.from_angle(prep.rotation_rad)
+            side = direction.perp_left() * radius
+            forward = direction * radius
+            center = prep.preview.head_screen
+
+            p0 = center - forward - side
+            p1 = center - forward + side
+            p2 = center + forward + side
+            p3 = center + forward - side
+            rl.rl_color4ub(r, g, b, int(alpha_u8))
+            rl.rl_tex_coord2f(-1.0, -1.0)
+            rl.rl_vertex3f(float(p0.x), float(p0.y), -1.0)
+            rl.rl_color4ub(r, g, b, int(alpha_u8))
+            rl.rl_tex_coord2f(-1.0, 1.0)
+            rl.rl_vertex3f(float(p1.x), float(p1.y), -1.0)
+            rl.rl_color4ub(r, g, b, int(alpha_u8))
+            rl.rl_tex_coord2f(1.0, 1.0)
+            rl.rl_vertex3f(float(p2.x), float(p2.y), -1.0)
+            rl.rl_color4ub(r, g, b, int(alpha_u8))
+            rl.rl_tex_coord2f(1.0, -1.0)
+            rl.rl_vertex3f(float(p3.x), float(p3.y), -1.0)
+            head_calls += 1
+        rl.rl_end()
+        rl.rl_set_texture(0)
+        rl.end_shader_mode()
+        return int(head_calls)
 
     def _draw_projectile_head_shader_gemini_2(
         self,
@@ -1860,6 +2029,14 @@ class BeamDebugView:
                 preps,
                 is_fire=is_fire,
             )
+        elif mode == BeamRenderMode.SHADER_STAMPED_ANALYTIC:
+            body_calls, fallback = self._draw_projectile_body_shader_stamped_analytic(preps, streak_rgb=streak_rgb)
+            shader_fallback = bool(fallback)
+            if fallback:
+                head_calls, overlay_calls = self._draw_projectile_heads(preps, is_fire=is_fire)
+            else:
+                head_calls = self._draw_projectile_head_shader_stamped_analytic(preps, is_fire=is_fire)
+                overlay_calls = 0
         elif mode == BeamRenderMode.SHADER_GEMINI_2:
             body_calls, fallback = self._draw_projectile_body_shader_gemini_2(preps, streak_rgb=streak_rgb)
             shader_fallback = bool(fallback)
