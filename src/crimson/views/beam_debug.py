@@ -139,30 +139,62 @@ uniform float u_approx_a;
 uniform float u_approx_b;
 uniform float u_approx_c;
 uniform float u_intensity_gain;
+uniform float u_step_uv;
+uniform float u_cover_len;
+uniform float u_halo_w;
+uniform float u_cap_scale;
 
 out vec4 finalColor;
 
 void main() {
+    float gain = max(u_intensity_gain, 0.0);
+    float halo_w = max(u_halo_w, 0.0);
+    float cap_scale = max(u_cap_scale, 0.0);
     float u_len = fragLen;
     if (u_len < 0.0) {
         float d = length(fragTexCoord);
-        float profile = clamp(u_approx_a * exp(u_approx_b * d) - u_approx_c, 0.0, 1.0);
-        float intensity = profile * fragColor.a * max(u_intensity_gain, 0.0);
+        float e = exp(u_approx_b * d);
+        float core = clamp(u_approx_a * e - u_approx_c, 0.0, 1.0);
+        float halo = clamp(u_approx_a * sqrt(max(e, 0.0)) - u_approx_c, 0.0, 1.0);
+        float shell = max(0.0, halo - core);
+        float profile = clamp(core + halo_w * shell, 0.0, 1.0);
+        float intensity = profile * fragColor.a * gain;
         vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
         finalColor = vec4(rgb, 1.0);
         return;
     }
 
-    float dx = max(0.0, max(-fragTexCoord.x, fragTexCoord.x - u_len));
-    float d = length(vec2(dx, fragTexCoord.y));
-    
-    float trans_profile = clamp(u_approx_a * exp(u_approx_b * d) - u_approx_c, 0.0, 1.0);
-    
-    float closest_x = clamp(fragTexCoord.x, 0.0, u_len);
-    float t = clamp(closest_x / max(1.0, u_len), 0.0, 1.0);
-    float structural_alpha = t * fragColor.a;
+    float step_uv = max(1e-4, u_step_uv);
+    float x0 = min(step_uv, max(0.0, u_len));
+    float residual = mod(max(0.0, u_len), step_uv);
+    float end_gap = residual;
+    if (end_gap <= step_uv * 1e-4) {
+        end_gap = step_uv;
+    }
+    float x1 = max(x0, u_len - end_gap);
 
-    float intensity = trans_profile * structural_alpha * max(u_intensity_gain, 0.0);
+    float dx = max(0.0, max(x0 - fragTexCoord.x, fragTexCoord.x - x1));
+    dx *= cap_scale;
+    float d = length(vec2(dx, fragTexCoord.y));
+
+    float e = exp(u_approx_b * d);
+    float core = clamp(u_approx_a * e - u_approx_c, 0.0, 1.0);
+    float halo = clamp(u_approx_a * sqrt(max(e, 0.0)) - u_approx_c, 0.0, 1.0);
+    float shell = max(0.0, halo - core);
+    float trans_profile = clamp(core + halo_w * shell, 0.0, 1.0);
+
+    float closest_x = clamp(fragTexCoord.x, x0, x1);
+    float t = clamp(closest_x / max(u_len, 1e-6), 0.0, 1.0);
+
+    float seg_len = max(0.0, x1 - x0);
+    float w = min(max(0.0, u_cover_len), 0.5 * seg_len);
+    w = max(w, 1e-4);
+    float left = min(max(0.0, fragTexCoord.x - x0), w);
+    float right = min(max(0.0, x1 - fragTexCoord.x), w);
+    float cover = clamp((left + right) / (2.0 * w), 0.0, 1.0);
+
+    float structural_alpha = t * cover * fragColor.a;
+    float intensity = trans_profile * structural_alpha * gain;
     vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
     finalColor = vec4(rgb, 1.0);
 }
