@@ -34,24 +34,24 @@ def _draw_beam_body_sprites(
     sprite_scale: float,
 ) -> None:
     renderer = ctx.renderer
-    s = float(start)
-    while s < float(dist):
-        t = (s - float(start)) / float(span) if float(span) > 1e-6 else 1.0
-        seg_alpha = float(t) * float(base_alpha)
+    s = start
+    while s < dist:
+        t = (s - start) / span if span > 1e-6 else 1.0
+        seg_alpha = t * base_alpha
         if seg_alpha > 1e-3:
             pos = origin + direction * s
             pos_screen = renderer.world_to_screen(pos)
             tint = RGBA(streak_rgb[0], streak_rgb[1], streak_rgb[2], seg_alpha).to_rl()
             renderer._draw_atlas_sprite(
                 texture,
-                grid=int(grid),
-                frame=int(frame),
+                grid=grid,
+                frame=frame,
                 pos=pos_screen,
-                scale=float(sprite_scale),
+                scale=sprite_scale,
                 rotation_rad=0.0,
                 tint=tint,
             )
-        s += float(step)
+        s += step
 
 
 def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
@@ -113,12 +113,12 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
         draw_beam_fast_stamped_body(
             origin_screen=renderer.world_to_screen(origin),
             head_screen=ctx.screen_pos,
-            start_dist_units=float(start),
-            span_dist_units=float(span),
-            step_units=float(step),
-            effect_scale=float(effect_scale),
-            scale=float(ctx.scale),
-            base_alpha=float(base_alpha),
+            start_dist_units=start,
+            span_dist_units=span,
+            step_units=step,
+            effect_scale=effect_scale,
+            scale=ctx.scale,
+            base_alpha=base_alpha,
             streak_rgb=streak_rgb,
         )
     else:
@@ -126,16 +126,16 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             ctx=ctx,
             origin=origin,
             direction=direction,
-            dist=float(dist),
-            start=float(start),
-            span=float(span),
-            step=float(step),
-            base_alpha=float(base_alpha),
+            dist=dist,
+            start=start,
+            span=span,
+            step=step,
+            base_alpha=base_alpha,
             streak_rgb=streak_rgb,
             texture=texture,
-            grid=int(grid),
-            frame=int(frame),
-            sprite_scale=float(sprite_scale),
+            grid=grid,
+            frame=frame,
+            sprite_scale=sprite_scale,
         )
 
     if life >= 0.4:
@@ -143,11 +143,11 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             draw_beam_fast_stamped_head(
                 center_screen=ctx.screen_pos,
                 rotation_rad=ctx.angle,
-                effect_scale=float(effect_scale),
-                scale=float(ctx.scale),
-                base_alpha=float(base_alpha),
+                effect_scale=effect_scale,
+                scale=ctx.scale,
+                base_alpha=base_alpha,
                 head_rgb=head_rgb,
-                is_fire=bool(is_fire_bullets),
+                is_fire=is_fire_bullets,
             )
         else:
             head_tint = RGBA(head_rgb[0], head_rgb[1], head_rgb[2], base_alpha).to_rl()
@@ -191,11 +191,11 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             draw_beam_fast_stamped_head(
                 center_screen=ctx.screen_pos,
                 rotation_rad=ctx.angle,
-                effect_scale=float(effect_scale),
-                scale=float(ctx.scale),
-                base_alpha=float(base_alpha),
+                effect_scale=effect_scale,
+                scale=ctx.scale,
+                base_alpha=base_alpha,
                 head_rgb=core_rgb,
-                is_fire=bool(is_fire_bullets),
+                is_fire=is_fire_bullets,
             )
         else:
             core_tint = RGBA(core_rgb[0], core_rgb[1], core_rgb[2], base_alpha).to_rl()
@@ -204,7 +204,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                 grid=grid,
                 frame=frame,
                 pos=ctx.screen_pos,
-                scale=1.0 * ctx.scale,
+                scale=ctx.scale,
                 rotation_rad=ctx.angle,
                 tint=core_tint,
             )

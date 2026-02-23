@@ -18,7 +18,7 @@ def parse_rtx_render_mode(raw: str) -> RtxRenderMode:
 
 
 def mode_from_rtx_flag(enabled: bool) -> RtxRenderMode:
-    if bool(enabled):
+    if enabled:
         return RtxRenderMode.RTX
     return RtxRenderMode.CLASSIC
 
