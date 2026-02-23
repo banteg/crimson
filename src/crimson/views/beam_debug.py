@@ -515,6 +515,48 @@ class BeamScenarioPreset(str, Enum):
 
 
 @dataclass(frozen=True, slots=True)
+class BeamIonPreset:
+    key: str
+    label: str
+    projectile_type_id: int
+    note: str
+
+
+_ION_PRESET_ORDER: tuple[BeamIonPreset, ...] = (
+    BeamIonPreset(
+        key="ion_rifle",
+        label="ion rifle",
+        projectile_type_id=int(ProjectileTypeId.ION_RIFLE),
+        note="type=0x15",
+    ),
+    BeamIonPreset(
+        key="ion_minigun",
+        label="ion minigun",
+        projectile_type_id=int(ProjectileTypeId.ION_MINIGUN),
+        note="type=0x16",
+    ),
+    BeamIonPreset(
+        key="ion_shotgun",
+        label="ion shotgun",
+        projectile_type_id=int(ProjectileTypeId.ION_MINIGUN),
+        note="weapon uses 0x16 pellets",
+    ),
+    BeamIonPreset(
+        key="ion_cannon",
+        label="ion cannon",
+        projectile_type_id=int(ProjectileTypeId.ION_CANNON),
+        note="type=0x17",
+    ),
+    BeamIonPreset(
+        key="shock_chain",
+        label="shock chain",
+        projectile_type_id=int(ProjectileTypeId.ION_RIFLE),
+        note="bonus spawns 0x15",
+    ),
+)
+
+
+@dataclass(frozen=True, slots=True)
 class BeamScenarioConfig:
     projectile_count: int
     base_distance_units: float
@@ -1287,6 +1329,7 @@ class BeamDebugView:
         self._force_life_high = True
 
         self._use_fire_profile = True
+        self._ion_preset_index = 0
         self._sync_effect_scale()
 
         self._render_mode = BeamRenderMode.BASELINE_SPRITE
@@ -1393,7 +1436,18 @@ class BeamDebugView:
         self._render_mode = _RENDER_MODE_ORDER[self._benchmark_mode_index()]
 
     def _active_projectile_type_id(self) -> int:
-        return int(ProjectileTypeId.FIRE_BULLETS) if self._use_fire_profile else int(ProjectileTypeId.ION_RIFLE)
+        if self._use_fire_profile:
+            return int(ProjectileTypeId.FIRE_BULLETS)
+        return int(self._active_ion_preset().projectile_type_id)
+
+    def _active_ion_preset(self) -> BeamIonPreset:
+        idx = int(self._ion_preset_index) % len(_ION_PRESET_ORDER)
+        return _ION_PRESET_ORDER[idx]
+
+    def cycle_ion_preset(self) -> None:
+        idx = int(self._ion_preset_index) + 1
+        self._ion_preset_index = int(idx % len(_ION_PRESET_ORDER))
+        self._sync_effect_scale()
 
     @staticmethod
     def _projectile_speed_units_per_second_for_type(type_id: int) -> float:
@@ -1809,6 +1863,8 @@ class BeamDebugView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_F):
             self._use_fire_profile = not bool(self._use_fire_profile)
             self._sync_effect_scale()
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_I):
+            self.cycle_ion_preset()
         if rl.is_key_pressed(rl.KeyboardKey.KEY_C):
             self._cap_enabled = not bool(self._cap_enabled)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_G):
@@ -3211,13 +3267,15 @@ class BeamDebugView:
         y = margin
 
         style_name = "fire" if self._use_fire_profile else "ion"
+        ion_preset = self._active_ion_preset()
         cap_name = "256" if self._cap_enabled else "off"
         compare_label = "compare=side-by-side" if self._side_by_side_enabled and not self._bench_active else "compare=off"
         draw_ui_text(
             self._small,
             (
                 f"beam-debug mode={_mode_label(self._render_mode)} preset={_preset_label(self._scenario_preset)} "
-                f"style={style_name} {compare_label} paused={'yes' if self._paused else 'no'} sim_speed={self._sim_speed:.2f}x"
+                f"style={style_name} ion_preset={ion_preset.key} {compare_label} "
+                f"paused={'yes' if self._paused else 'no'} sim_speed={self._sim_speed:.2f}x"
             ),
             Vec2(margin, y),
             color=UI_TEXT,
@@ -3251,7 +3309,7 @@ class BeamDebugView:
             self._small,
             (
                 "Space pause/resume  Right step(when paused)  Esc close  P screenshot  "
-                "F fire/ion  C cap256  G force life>=0.4  H toggle heads  D cycle head-cap  M all markers  V geometry  "
+                "F fire/ion  I cycle ion preset  C cap256  G force life>=0.4  H toggle heads  D cycle head-cap  M all markers  V geometry  "
                 "X run batch-probe  Z auto-probe  J/U probe quads  N autofit-profile  0 reset shader  Q research/fitted"
             ),
             Vec2(margin, y),
@@ -3280,7 +3338,8 @@ class BeamDebugView:
             (
                 f"projectiles={len(previews)} step={self._beam_step_units():.3f} effect_scale={self._effect_scale:.3f} "
                 f"speed={self._projectile_speed_units_per_second():.1f}u/s "
-                f"dist_scale={self._distance_scale_from_base():.3f} jitter={self._distance_jitter_units:.1f} cap={cap_name}"
+                f"dist_scale={self._distance_scale_from_base():.3f} jitter={self._distance_jitter_units:.1f} cap={cap_name} "
+                f"ion={ion_preset.label} ({ion_preset.note})"
             ),
             Vec2(margin, y),
             color=UI_TEXT,

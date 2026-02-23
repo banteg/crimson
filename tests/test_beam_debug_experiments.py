@@ -229,6 +229,39 @@ def test_beam_distance_uses_fixed_life_window_and_projectile_speed() -> None:
     assert float(fire_dist_low_life) > float(ion_dist_low_life)
 
 
+def test_cycle_ion_preset_updates_ion_projectile_type_and_effect_scale() -> None:
+    view = BeamDebugView(ViewContext(assets_dir=Path("artifacts") / "assets"))
+    view._use_fire_profile = False
+    view._sync_effect_scale()
+
+    assert view._active_ion_preset().key == "ion_rifle"
+    assert view._active_projectile_type_id() == int(ProjectileTypeId.ION_RIFLE)
+    assert abs(float(view._effect_scale) - 2.2) <= 1e-6
+
+    view.cycle_ion_preset()
+    assert view._active_ion_preset().key == "ion_minigun"
+    assert view._active_projectile_type_id() == int(ProjectileTypeId.ION_MINIGUN)
+    assert abs(float(view._effect_scale) - 1.05) <= 1e-6
+
+    view.cycle_ion_preset()
+    assert view._active_ion_preset().key == "ion_shotgun"
+    assert view._active_projectile_type_id() == int(ProjectileTypeId.ION_MINIGUN)
+    assert abs(float(view._effect_scale) - 1.05) <= 1e-6
+
+    view.cycle_ion_preset()
+    assert view._active_ion_preset().key == "ion_cannon"
+    assert view._active_projectile_type_id() == int(ProjectileTypeId.ION_CANNON)
+    assert abs(float(view._effect_scale) - 3.5) <= 1e-6
+
+    view.cycle_ion_preset()
+    assert view._active_ion_preset().key == "shock_chain"
+    assert view._active_projectile_type_id() == int(ProjectileTypeId.ION_RIFLE)
+    assert abs(float(view._effect_scale) - 2.2) <= 1e-6
+
+    view.cycle_ion_preset()
+    assert view._active_ion_preset().key == "ion_rifle"
+
+
 def test_shader_profile_value_is_monotonic_outward() -> None:
     params = BeamShaderGemini2Params(approx_a=1.06, approx_b=-4.8, approx_c=0.01, intensity_gain=2.5)
     values = [_shader_profile_value(float(i) / 96.0, params) for i in range(97)]
