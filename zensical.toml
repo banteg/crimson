@@ -194,6 +194,7 @@ nav = [
       { "Frida GumJS" = "cheatsheets/frida.md" },
       { "raylib (Python)" = "cheatsheets/raylib.md" },
       { "DirectX 8" = "cheatsheets/directx8.md" },
+      { "Zig 0.15" = "cheatsheets/zig.md" },
     ]},
   ]},
 ]
