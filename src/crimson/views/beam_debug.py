@@ -93,10 +93,12 @@ SHADER_STAMP_ANALYTIC_ALPHA_SCALE = 0.88
 SHADER_STAMP_ANALYTIC_ALPHA_DECAY_PER_PX = 0.3
 SHADER_STAMP_ANALYTIC_RADIUS_SCALE = 16.0
 SHADER_STAMP_VIRTUAL_PROFILE_A_DEFAULT = 1.3
-SHADER_STAMP_VIRTUAL_PROFILE_LINEAR_DEFAULT = -5.2
-SHADER_STAMP_VIRTUAL_PROFILE_QUAD_DEFAULT = 1.6
-SHADER_STAMP_VIRTUAL_PROFILE_OFFSET_DEFAULT = 0.04
+SHADER_STAMP_VIRTUAL_PROFILE_LINEAR_DEFAULT = -4.6
+SHADER_STAMP_VIRTUAL_PROFILE_QUAD_DEFAULT = 1.0
+SHADER_STAMP_VIRTUAL_PROFILE_OFFSET_DEFAULT = 0.02
 SHADER_STAMP_VIRTUAL_INTENSITY_GAIN_DEFAULT = 1.0
+SHADER_STAMP_VIRTUAL_CORE_FLAT_STEP_FRACTION_DEFAULT = 0.0
+SHADER_STAMP_VIRTUAL_CORE_SUPPORT_WEIGHT_DEFAULT = 0.0
 SHADER_STAMP_VIRTUAL_MAX_STAMPS = 128
 
 _BEAM_SHADER_VS_330 = """
@@ -194,6 +196,8 @@ uniform float u_stamp_decay;
 uniform float u_stamp_quad;
 uniform float u_stamp_offset;
 uniform float u_intensity_gain;
+uniform float u_core_flat_step_fraction;
+uniform float u_core_support_weight;
 
 out vec4 finalColor;
 
@@ -215,6 +219,7 @@ void main() {{
     float len_uv = max(0.0, u_len);
     float stamp_count = floor(len_uv / step_uv) + 1.0;
     stamp_count = clamp(stamp_count, 0.0, float({SHADER_STAMP_VIRTUAL_MAX_STAMPS:d}));
+    float core_flat_radius = max(0.0, u_core_flat_step_fraction) * step_uv;
 
     float accum = 0.0;
     const int MAX_STAMPS = {SHADER_STAMP_VIRTUAL_MAX_STAMPS:d};
@@ -229,8 +234,23 @@ void main() {{
         }}
         float t = clamp(sx / max(1e-6, len_uv), 0.0, 1.0);
         float d = length(vec2(fragTexCoord.x - sx, fragTexCoord.y));
-        float profile = clamp(u_stamp_scale * exp(-u_stamp_decay * d - u_stamp_quad * d * d) - u_stamp_offset, 0.0, 1.0);
+        float d_eff = max(0.0, d - core_flat_radius);
+        float profile = clamp(u_stamp_scale * exp(-u_stamp_decay * d_eff - u_stamp_quad * d_eff * d_eff) - u_stamp_offset, 0.0, 1.0);
         accum += t * profile;
+    }}
+
+    // Continuous centerline support to suppress visible stamp striping in the tail.
+    float core_support = max(0.0, u_core_support_weight);
+    if (core_support > 0.0) {{
+        float t_frag = clamp(fragTexCoord.x / max(1e-6, len_uv), 0.0, 1.0);
+        float inside_body = step(0.0, fragTexCoord.x) * step(fragTexCoord.x, len_uv);
+        float center_d = max(0.0, abs(fragTexCoord.y) - core_flat_radius);
+        float center_profile = clamp(
+            u_stamp_scale * exp(-u_stamp_decay * center_d - u_stamp_quad * center_d * center_d) - u_stamp_offset,
+            0.0,
+            1.0
+        );
+        accum = max(accum, inside_body * (core_support * t_frag * center_profile));
     }}
 
     float intensity = accum * fragColor.a * gain;
@@ -437,6 +457,8 @@ _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC = -1
 _BEAM_STAMPED_VIRTUAL_STAMP_QUAD_LOC = -1
 _BEAM_STAMPED_VIRTUAL_STAMP_OFFSET_LOC = -1
 _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC = -1
+_BEAM_STAMPED_VIRTUAL_CORE_FLAT_STEP_FRACTION_LOC = -1
+_BEAM_STAMPED_VIRTUAL_CORE_SUPPORT_WEIGHT_LOC = -1
 _BEAM_EXT_CLAUDE_SHADER_TRIED = False
 _BEAM_EXT_CLAUDE_SHADER: rl.Shader | None = None
 _BEAM_EXT_CLAUDE_COLOR_LOC = -1
@@ -964,6 +986,7 @@ def _get_beam_stamped_virtual_shader() -> rl.Shader | None:
     global _BEAM_STAMPED_VIRTUAL_STAMP_SCALE_LOC, _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC
     global _BEAM_STAMPED_VIRTUAL_STAMP_QUAD_LOC, _BEAM_STAMPED_VIRTUAL_STAMP_OFFSET_LOC
     global _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC
+    global _BEAM_STAMPED_VIRTUAL_CORE_FLAT_STEP_FRACTION_LOC, _BEAM_STAMPED_VIRTUAL_CORE_SUPPORT_WEIGHT_LOC
     if _BEAM_STAMPED_VIRTUAL_SHADER_TRIED:
         if _BEAM_STAMPED_VIRTUAL_SHADER is not None and int(_BEAM_STAMPED_VIRTUAL_SHADER.id) > 0:
             return _BEAM_STAMPED_VIRTUAL_SHADER
@@ -988,6 +1011,10 @@ def _get_beam_stamped_virtual_shader() -> rl.Shader | None:
     _BEAM_STAMPED_VIRTUAL_STAMP_QUAD_LOC = int(rl.get_shader_location(shader, "u_stamp_quad"))
     _BEAM_STAMPED_VIRTUAL_STAMP_OFFSET_LOC = int(rl.get_shader_location(shader, "u_stamp_offset"))
     _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC = int(rl.get_shader_location(shader, "u_intensity_gain"))
+    _BEAM_STAMPED_VIRTUAL_CORE_FLAT_STEP_FRACTION_LOC = int(
+        rl.get_shader_location(shader, "u_core_flat_step_fraction"),
+    )
+    _BEAM_STAMPED_VIRTUAL_CORE_SUPPORT_WEIGHT_LOC = int(rl.get_shader_location(shader, "u_core_support_weight"))
     return _BEAM_STAMPED_VIRTUAL_SHADER
 
 
@@ -2332,6 +2359,8 @@ class BeamDebugView:
         stamp_decay = float(-SHADER_STAMP_VIRTUAL_PROFILE_LINEAR_DEFAULT)
         stamp_quad = float(SHADER_STAMP_VIRTUAL_PROFILE_QUAD_DEFAULT)
         stamp_offset = float(SHADER_STAMP_VIRTUAL_PROFILE_OFFSET_DEFAULT)
+        core_flat_step_fraction = float(SHADER_STAMP_VIRTUAL_CORE_FLAT_STEP_FRACTION_DEFAULT)
+        core_support_weight = float(SHADER_STAMP_VIRTUAL_CORE_SUPPORT_WEIGHT_DEFAULT)
 
         quad_count = 0
         rl.begin_shader_mode(shader)
@@ -2341,6 +2370,16 @@ class BeamDebugView:
         self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC, float(stamp_decay))
         self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_QUAD_LOC, float(stamp_quad))
         self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_OFFSET_LOC, float(stamp_offset))
+        self._set_shader_float(
+            shader,
+            _BEAM_STAMPED_VIRTUAL_CORE_FLAT_STEP_FRACTION_LOC,
+            float(core_flat_step_fraction),
+        )
+        self._set_shader_float(
+            shader,
+            _BEAM_STAMPED_VIRTUAL_CORE_SUPPORT_WEIGHT_LOC,
+            float(core_support_weight),
+        )
         self._set_shader_float(
             shader,
             _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC,
