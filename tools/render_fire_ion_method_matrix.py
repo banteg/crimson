@@ -15,10 +15,10 @@ from crimson.render.projectile_draw.beam_sampling import build_beam_sample_plan
 from crimson.views._ui_helpers import draw_ui_text
 from crimson.views.beam_debug import (
     _ION_PRESET_ORDER,
-    _RENDER_MODE_ORDER,
     BeamDebugView,
     BeamIonPreset,
     BeamRenderMode,
+    StampedVirtualHeadPass,
     _PreviewProjectile,
 )
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
@@ -65,6 +65,14 @@ class MatrixLayout:
     row_label_w: int
     cell_w: int
     cell_gap: int
+
+
+@dataclass(frozen=True, slots=True)
+class MatrixColumn:
+    label: str
+    mode: BeamRenderMode
+    stamped_virtual_head_pass: StampedVirtualHeadPass | None = None
+    stamped_virtual_head_isolation: bool = False
 
 
 def _clamp01(value: float) -> float:
@@ -188,6 +196,32 @@ def _rows() -> tuple[MatrixRow, ...]:
     )
 
 
+def _columns() -> tuple[MatrixColumn, ...]:
+    return (
+        MatrixColumn(label=BeamRenderMode.BASELINE_SPRITE.value.upper(), mode=BeamRenderMode.BASELINE_SPRITE),
+        MatrixColumn(
+            label="SV+HEAD_ANALYTIC",
+            mode=BeamRenderMode.SHADER_STAMPED_VIRTUAL,
+            stamped_virtual_head_pass=StampedVirtualHeadPass.ANALYTIC,
+            stamped_virtual_head_isolation=False,
+        ),
+        MatrixColumn(
+            label="SV+HEAD_VIRTUAL",
+            mode=BeamRenderMode.SHADER_STAMPED_VIRTUAL,
+            stamped_virtual_head_pass=StampedVirtualHeadPass.VIRTUAL,
+            stamped_virtual_head_isolation=False,
+        ),
+        MatrixColumn(
+            label="SV+HEAD_VIRTUAL_ISO",
+            mode=BeamRenderMode.SHADER_STAMPED_VIRTUAL,
+            stamped_virtual_head_pass=StampedVirtualHeadPass.VIRTUAL,
+            stamped_virtual_head_isolation=True,
+        ),
+        MatrixColumn(label=BeamRenderMode.SHADER_EXT_GPT_PRO.value.upper(), mode=BeamRenderMode.SHADER_EXT_GPT_PRO),
+        MatrixColumn(label=BeamRenderMode.SHADER_GEMINI_2.value.upper(), mode=BeamRenderMode.SHADER_GEMINI_2),
+    )
+
+
 def _signed_diff_map(
     *,
     baseline: Image.Image,
@@ -300,13 +334,13 @@ def _export_signed_diff_vstacks(
     *,
     matrix_path: Path,
     rows: tuple[MatrixRow, ...],
-    modes: tuple[BeamRenderMode, ...],
+    columns: tuple[MatrixColumn, ...],
     layout: MatrixLayout,
     out_dir: Path,
     signed_clip: float,
     neutral_band: float,
 ) -> None:
-    if len(modes) < 2:
+    if len(columns) < 2:
         return
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -323,7 +357,7 @@ def _export_signed_diff_vstacks(
             ),
         )
         panels: list[tuple[str, Image.Image, float, float, float, float]] = []
-        for col_idx, mode in enumerate(modes):
+        for col_idx, column in enumerate(columns):
             if col_idx == 0:
                 continue
             x0 = int(first_cell_x + col_idx * (layout.cell_w + layout.cell_gap))
@@ -336,7 +370,7 @@ def _export_signed_diff_vstacks(
             )
             panels.append(
                 (
-                    mode.value.upper(),
+                    column.label,
                     signed_map,
                     float(mae),
                     float(wmae),
@@ -363,6 +397,18 @@ def main() -> int:
         "--head-pass",
         action="store_true",
         help="enable head pass (default: off)",
+    )
+    parser.add_argument(
+        "--sv-head-gain-scale",
+        type=float,
+        default=1.0,
+        help="stamped-virtual head gain scale for virtual-head columns (default: 1.0)",
+    )
+    parser.add_argument(
+        "--sv-head-radius-scale",
+        type=float,
+        default=1.0,
+        help="stamped-virtual head radius scale for virtual-head columns (default: 1.0)",
     )
     parser.add_argument(
         "--life",
@@ -398,10 +444,10 @@ def main() -> int:
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     rows = _rows()
-    modes = tuple(_RENDER_MODE_ORDER)
+    columns = _columns()
     if not rows:
         raise ValueError("no rows to render")
-    if not modes:
+    if not columns:
         raise ValueError("no render modes to render")
 
     heading_scale = 0.68
@@ -421,8 +467,8 @@ def main() -> int:
     width = (
         layout.margin * 2
         + layout.row_label_w
-        + len(modes) * layout.cell_w
-        + max(0, len(modes) - 1) * layout.cell_gap
+        + len(columns) * layout.cell_w
+        + max(0, len(columns) - 1) * layout.cell_gap
     )
     height = layout.margin * 2 + layout.header_h + len(rows) * layout.row_h
 
@@ -435,6 +481,8 @@ def main() -> int:
             view._head_render_enabled = bool(args.head_pass)
             view._show_geometry_overlay = False
             view._show_all_segment_markers = False
+            view._stamped_virtual_head_gain_scale = float(args.sv_head_gain_scale)
+            view._stamped_virtual_head_radius_scale = float(args.sv_head_radius_scale)
 
             mono_font: GrimMonoFont | None
             try:
@@ -459,7 +507,10 @@ def main() -> int:
                     rl.Color(235, 245, 255, 255),
                 )
                 status = "HEAD PASS ON" if bool(args.head_pass) else "HEAD PASS OFF"
-                subtitle = f"{HEADER_LINES[1]}  [{status}]"
+                subtitle = (
+                    f"{HEADER_LINES[1]}  [{status}]  "
+                    f"[sv_head_gain={float(args.sv_head_gain_scale):.2f} sv_head_radius={float(args.sv_head_radius_scale):.2f}]"
+                )
                 _draw_ui(
                     font,
                     subtitle,
@@ -471,11 +522,11 @@ def main() -> int:
 
                 first_cell_x = layout.margin + layout.row_label_w
                 col_header_y = layout.margin + layout.header_h - 22
-                for col_idx, mode in enumerate(modes):
+                for col_idx, column in enumerate(columns):
                     x = first_cell_x + col_idx * (layout.cell_w + layout.cell_gap)
                     _draw_ui_centered(
                         font,
-                        mode.value.upper(),
+                        column.label,
                         x + layout.cell_w * 0.5,
                         col_header_y,
                         pixel_scale,
@@ -517,8 +568,15 @@ def main() -> int:
                     )
 
                     step_units = float(view._beam_step_units())
-                    for col_idx, mode in enumerate(modes):
+                    for col_idx, column in enumerate(columns):
                         x = first_cell_x + col_idx * (layout.cell_w + layout.cell_gap)
+                        if column.mode == BeamRenderMode.SHADER_STAMPED_VIRTUAL:
+                            if column.stamped_virtual_head_pass is not None:
+                                view._stamped_virtual_head_pass = column.stamped_virtual_head_pass
+                            view._stamped_virtual_head_isolation = bool(column.stamped_virtual_head_isolation)
+                        else:
+                            view._stamped_virtual_head_pass = StampedVirtualHeadPass.ANALYTIC
+                            view._stamped_virtual_head_isolation = False
                         preview = _build_preview(
                             index=draw_index,
                             origin=Vec2(float(x) + beam_origin_x, y_mid),
@@ -528,7 +586,7 @@ def main() -> int:
                             cap_enabled=bool(view._cap_enabled),
                         )
                         draw_index += 1
-                        view._draw_projectiles([preview], mode=BeamRenderMode(mode))
+                        view._draw_projectiles([preview], mode=BeamRenderMode(column.mode))
 
                     if row_idx + 1 < len(rows):
                         sep_y = int(y_top + layout.row_h - 4)
@@ -549,7 +607,7 @@ def main() -> int:
                 _export_signed_diff_vstacks(
                     matrix_path=out_path,
                     rows=rows,
-                    modes=modes,
+                    columns=columns,
                     layout=layout,
                     out_dir=Path(str(args.signed_diff_vstack_dir)),
                     signed_clip=float(args.signed_diff_clip),

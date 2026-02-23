@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import Final
 
 sys.path.insert(0, str(Path("src").resolve()))
 
@@ -14,16 +13,12 @@ from crimson.views.beam_debug import (
     BeamDebugView,
     BeamIonPreset,
     BeamRenderMode,
+    StampedVirtualHeadPass,
     _PreviewProjectile,
 )
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.view import ViewContext
-
-HEADER_LINES: Final[tuple[str, str]] = (
-    "ION PROJECTILE TYPE COMPARISON (HEAD PASS OFF)",
-    "left: BASELINE_SPRITE    right: selected shader mode",
-)
 
 
 def _unique_presets_by_type(presets: tuple[BeamIonPreset, ...]) -> tuple[BeamIonPreset, ...]:
@@ -68,6 +63,14 @@ def _parse_mode(name: str) -> BeamRenderMode:
     raise ValueError(f"unknown render mode '{name}', expected one of: {available}")
 
 
+def _parse_stamped_virtual_head_pass(name: str) -> StampedVirtualHeadPass:
+    for head_pass in StampedVirtualHeadPass:
+        if head_pass.value == name:
+            return head_pass
+    available = ", ".join(sorted(v.value for v in StampedVirtualHeadPass))
+    raise ValueError(f"unknown stamped-virtual head pass '{name}', expected one of: {available}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Render ion type comparison sheet with duplicate type ids removed.")
     parser.add_argument(
@@ -80,9 +83,37 @@ def main() -> int:
         default="artifacts/beam/ion_types_comparison_all_no_head_overlay.png",
         help="output PNG path",
     )
+    parser.add_argument(
+        "--head-pass",
+        action="store_true",
+        help="enable head pass (default: off)",
+    )
+    parser.add_argument(
+        "--sv-head-pass",
+        default=StampedVirtualHeadPass.ANALYTIC.value,
+        help="stamped-virtual head pass when --mode=shader_stamped_virtual (analytic|virtual)",
+    )
+    parser.add_argument(
+        "--sv-head-isolation",
+        action="store_true",
+        help="head-only isolation when --mode=shader_stamped_virtual",
+    )
+    parser.add_argument(
+        "--sv-head-gain-scale",
+        type=float,
+        default=1.0,
+        help="stamped-virtual head gain scale (default: 1.0)",
+    )
+    parser.add_argument(
+        "--sv-head-radius-scale",
+        type=float,
+        default=1.0,
+        help="stamped-virtual head radius scale (default: 1.0)",
+    )
     args = parser.parse_args()
 
     mode = _parse_mode(str(args.mode))
+    sv_head_pass = _parse_stamped_virtual_head_pass(str(args.sv_head_pass))
     out_path = Path(str(args.out))
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -110,9 +141,13 @@ def main() -> int:
         try:
             view.open()
             view._use_fire_profile = False
-            view._head_render_enabled = False
+            view._head_render_enabled = bool(args.head_pass)
             view._show_geometry_overlay = False
             view._show_all_segment_markers = False
+            view._stamped_virtual_head_pass = sv_head_pass
+            view._stamped_virtual_head_isolation = bool(args.sv_head_isolation)
+            view._stamped_virtual_head_gain_scale = float(args.sv_head_gain_scale)
+            view._stamped_virtual_head_radius_scale = float(args.sv_head_radius_scale)
 
             preset_index_by_key = {preset.key: idx for idx, preset in enumerate(_ION_PRESET_ORDER)}
 
@@ -120,8 +155,18 @@ def main() -> int:
             rl.begin_texture_mode(target)
             rl.clear_background(rl.BLACK)
 
-            _draw_text(HEADER_LINES[0], margin, margin, 34, rl.Color(235, 245, 255, 255))
-            _draw_text(HEADER_LINES[1], margin, margin + 38, 24, rl.Color(150, 175, 210, 255))
+            head_status = "HEAD PASS ON" if bool(args.head_pass) else "HEAD PASS OFF"
+            line_0 = f"ION PROJECTILE TYPE COMPARISON ({head_status})"
+            line_1 = "left: BASELINE_SPRITE    right: selected shader mode"
+            line_2 = (
+                f"sv_head={sv_head_pass.value}  "
+                f"sv_iso={'on' if bool(args.sv_head_isolation) else 'off'}  "
+                f"sv_gain={float(args.sv_head_gain_scale):.2f}  "
+                f"sv_radius={float(args.sv_head_radius_scale):.2f}"
+            )
+            _draw_text(line_0, margin, margin, 34, rl.Color(235, 245, 255, 255))
+            _draw_text(line_1, margin, margin + 30, 24, rl.Color(150, 175, 210, 255))
+            _draw_text(line_2, margin, margin + 54, 20, rl.Color(120, 150, 190, 255))
 
             left_panel_x = margin + left_label_w
             right_panel_x = left_panel_x + panel_w + panel_gap

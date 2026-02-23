@@ -103,6 +103,14 @@ SHADER_STAMP_VIRTUAL_INTENSITY_GAIN_DEFAULT = 0.92
 SHADER_STAMP_VIRTUAL_CORE_FLAT_STEP_FRACTION_DEFAULT = 0.0
 SHADER_STAMP_VIRTUAL_CORE_SUPPORT_WEIGHT_DEFAULT = 0.0
 SHADER_STAMP_VIRTUAL_MAX_STAMPS = 128
+SHADER_STAMP_VIRTUAL_HEAD_GAIN_SCALE_DEFAULT = 1.0
+SHADER_STAMP_VIRTUAL_HEAD_GAIN_SCALE_MIN = 0.25
+SHADER_STAMP_VIRTUAL_HEAD_GAIN_SCALE_MAX = 3.0
+SHADER_STAMP_VIRTUAL_HEAD_GAIN_SCALE_STEP = 0.05
+SHADER_STAMP_VIRTUAL_HEAD_RADIUS_SCALE_DEFAULT = 1.0
+SHADER_STAMP_VIRTUAL_HEAD_RADIUS_SCALE_MIN = 0.5
+SHADER_STAMP_VIRTUAL_HEAD_RADIUS_SCALE_MAX = 2.0
+SHADER_STAMP_VIRTUAL_HEAD_RADIUS_SCALE_STEP = 0.05
 
 _BEAM_SHADER_VS_330 = """
 #version 330
@@ -419,6 +427,17 @@ class HeadCapVariant(str, Enum):
 _HEAD_CAP_VARIANT_ORDER: tuple[HeadCapVariant, ...] = (
     HeadCapVariant.ORIGINAL,
     HeadCapVariant.BODY_CAP,
+)
+
+
+class StampedVirtualHeadPass(str, Enum):
+    ANALYTIC = "analytic"
+    VIRTUAL = "virtual"
+
+
+_STAMPED_VIRTUAL_HEAD_PASS_ORDER: tuple[StampedVirtualHeadPass, ...] = (
+    StampedVirtualHeadPass.ANALYTIC,
+    StampedVirtualHeadPass.VIRTUAL,
 )
 
 
@@ -1125,6 +1144,10 @@ class BeamDebugView:
         self._cap_enabled = True
         self._head_render_enabled = True
         self._head_cap_variant = HeadCapVariant.BODY_CAP
+        self._stamped_virtual_head_pass = StampedVirtualHeadPass.ANALYTIC
+        self._stamped_virtual_head_isolation = False
+        self._stamped_virtual_head_gain_scale = SHADER_STAMP_VIRTUAL_HEAD_GAIN_SCALE_DEFAULT
+        self._stamped_virtual_head_radius_scale = SHADER_STAMP_VIRTUAL_HEAD_RADIUS_SCALE_DEFAULT
         self._show_all_segment_markers = False
         self._show_geometry_overlay = False
         self._force_life_high = True
@@ -1247,6 +1270,30 @@ class BeamDebugView:
         idx = int(self._ion_preset_index) + 1
         self._ion_preset_index = int(idx % len(_ION_PRESET_ORDER))
         self._sync_effect_scale()
+
+    def cycle_stamped_virtual_head_pass(self) -> None:
+        idx = _STAMPED_VIRTUAL_HEAD_PASS_ORDER.index(self._stamped_virtual_head_pass)
+        self._stamped_virtual_head_pass = _STAMPED_VIRTUAL_HEAD_PASS_ORDER[(idx + 1) % len(_STAMPED_VIRTUAL_HEAD_PASS_ORDER)]
+
+    def _apply_stamped_virtual_head_param_delta(self, *, gain_scale: float = 0.0, radius_scale: float = 0.0) -> None:
+        self._stamped_virtual_head_gain_scale = float(
+            clamp(
+                float(self._stamped_virtual_head_gain_scale) + float(gain_scale),
+                SHADER_STAMP_VIRTUAL_HEAD_GAIN_SCALE_MIN,
+                SHADER_STAMP_VIRTUAL_HEAD_GAIN_SCALE_MAX,
+            ),
+        )
+        self._stamped_virtual_head_radius_scale = float(
+            clamp(
+                float(self._stamped_virtual_head_radius_scale) + float(radius_scale),
+                SHADER_STAMP_VIRTUAL_HEAD_RADIUS_SCALE_MIN,
+                SHADER_STAMP_VIRTUAL_HEAD_RADIUS_SCALE_MAX,
+            ),
+        )
+
+    def _reset_stamped_virtual_head_params(self) -> None:
+        self._stamped_virtual_head_gain_scale = float(SHADER_STAMP_VIRTUAL_HEAD_GAIN_SCALE_DEFAULT)
+        self._stamped_virtual_head_radius_scale = float(SHADER_STAMP_VIRTUAL_HEAD_RADIUS_SCALE_DEFAULT)
 
     @staticmethod
     def _projectile_speed_units_per_second_for_type(type_id: int) -> float:
@@ -1753,6 +1800,20 @@ class BeamDebugView:
             self._reset_shader_params()
         if rl.is_key_pressed(rl.KeyboardKey.KEY_Q):
             self._toggle_research_params()
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_O):
+            self.cycle_stamped_virtual_head_pass()
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_E):
+            self._stamped_virtual_head_isolation = not bool(self._stamped_virtual_head_isolation)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_FOUR):
+            self._apply_stamped_virtual_head_param_delta(gain_scale=-SHADER_STAMP_VIRTUAL_HEAD_GAIN_SCALE_STEP)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_FIVE):
+            self._apply_stamped_virtual_head_param_delta(gain_scale=SHADER_STAMP_VIRTUAL_HEAD_GAIN_SCALE_STEP)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_SIX):
+            self._apply_stamped_virtual_head_param_delta(radius_scale=-SHADER_STAMP_VIRTUAL_HEAD_RADIUS_SCALE_STEP)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_SEVEN):
+            self._apply_stamped_virtual_head_param_delta(radius_scale=SHADER_STAMP_VIRTUAL_HEAD_RADIUS_SCALE_STEP)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_EIGHT):
+            self._reset_stamped_virtual_head_params()
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_B):
             self.apply_scenario_preset(BeamScenarioPreset.PLASMA_LIKE)
@@ -2434,8 +2495,17 @@ class BeamDebugView:
             forward = direction * radius
             center = prep.preview.head_screen
 
-            def push(pos: Vec2, *, uv_x: float, uv_y: float, alpha: int = alpha_u8) -> None:
-                rl.rl_color4ub(r, g, b, int(alpha))
+            def push(
+                pos: Vec2,
+                *,
+                uv_x: float,
+                uv_y: float,
+                alpha: int = alpha_u8,
+                r_u8: int = r,
+                g_u8: int = g,
+                b_u8: int = b,
+            ) -> None:
+                rl.rl_color4ub(r_u8, g_u8, b_u8, int(alpha))
                 rl.rl_tex_coord2f(float(uv_x), float(uv_y))
                 rl.rl_vertex3f(float(pos.x), float(pos.y), -1.0)
 
@@ -2507,6 +2577,101 @@ class BeamDebugView:
         rl.rl_set_texture(0)
         rl.end_shader_mode()
         return int(head_calls)
+
+    def _draw_projectile_head_shader_stamped_virtual(self, preps: Sequence[_RenderPrep], *, is_fire: bool) -> tuple[int, bool]:
+        if not bool(self._head_render_enabled):
+            return 0, False
+
+        shader = _get_beam_stamped_virtual_shader()
+        if shader is None:
+            return 0, True
+
+        head_radius_multiplier = (
+            float(SHADER_GEMINI_2_HEAD_FIRE_RADIUS_MULTIPLIER)
+            if bool(is_fire)
+            else float(SHADER_GEMINI_2_HEAD_RADIUS_MULTIPLIER)
+        )
+        radius = max(
+            0.001,
+            float(SHADER_STAMP_ANALYTIC_RADIUS_SCALE)
+            * float(self._effect_scale)
+            * float(head_radius_multiplier)
+            * float(self._stamped_virtual_head_radius_scale),
+        )
+        step_screen = max(1e-6, float(self._beam_step_units()) * float(self._distance_to_screen_scale))
+        step_uv = max(1e-4, float(step_screen) / float(radius))
+
+        stamp_scale = float(SHADER_STAMP_VIRTUAL_PROFILE_A_DEFAULT)
+        stamp_decay = float(-SHADER_STAMP_VIRTUAL_PROFILE_LINEAR_DEFAULT)
+        stamp_quad = float(SHADER_STAMP_VIRTUAL_PROFILE_QUAD_DEFAULT)
+        stamp_offset = float(SHADER_STAMP_VIRTUAL_PROFILE_OFFSET_DEFAULT)
+        core_flat_step_fraction = float(SHADER_STAMP_VIRTUAL_CORE_FLAT_STEP_FRACTION_DEFAULT)
+        core_support_weight = float(SHADER_STAMP_VIRTUAL_CORE_SUPPORT_WEIGHT_DEFAULT)
+        intensity_gain = float(SHADER_STAMP_VIRTUAL_INTENSITY_GAIN_DEFAULT) * float(self._stamped_virtual_head_gain_scale)
+
+        quad_count = 0
+        rl.begin_shader_mode(shader)
+        self._set_shader_vec4(shader, _BEAM_STAMPED_VIRTUAL_COLOR_LOC, 1.0, 1.0, 1.0, 1.0)
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STEP_UV_LOC, float(step_uv))
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_SCALE_LOC, float(stamp_scale))
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC, float(stamp_decay))
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_QUAD_LOC, float(stamp_quad))
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_OFFSET_LOC, float(stamp_offset))
+        self._set_shader_float(
+            shader,
+            _BEAM_STAMPED_VIRTUAL_CORE_FLAT_STEP_FRACTION_LOC,
+            float(core_flat_step_fraction),
+        )
+        self._set_shader_float(
+            shader,
+            _BEAM_STAMPED_VIRTUAL_CORE_SUPPORT_WEIGHT_LOC,
+            float(core_support_weight),
+        )
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC, float(intensity_gain))
+        rl.rl_set_texture(0)
+        rl.rl_begin(rd.RL_QUADS)
+        for prep in preps:
+            life = float(prep.preview.life)
+            if life >= 0.4:
+                rgb = (1.0, 1.0, 0.7)
+            else:
+                rgb = (0.5, 0.6, 1.0)
+            r = int(clamp(rgb[0] * 255.0, 0.0, 255.0) + 0.5)
+            g = int(clamp(rgb[1] * 255.0, 0.0, 255.0) + 0.5)
+            b = int(clamp(rgb[2] * 255.0, 0.0, 255.0) + 0.5)
+
+            alpha_u8 = self._u8(prep.base_alpha)
+            if alpha_u8 <= 0:
+                continue
+
+            direction = Vec2.from_angle(prep.rotation_rad)
+            side = direction.perp_left() * radius
+            forward = direction * radius
+            center = prep.preview.head_screen
+
+            def push(
+                pos: Vec2,
+                *,
+                uv_x: float,
+                uv_y: float,
+                alpha: int = alpha_u8,
+                r_u8: int = r,
+                g_u8: int = g,
+                b_u8: int = b,
+            ) -> None:
+                rl.rl_color4ub(r_u8, g_u8, b_u8, int(alpha))
+                rl.rl_tex_coord2f(float(uv_x), float(uv_y))
+                rl.rl_vertex3f(float(pos.x), float(pos.y), -1.0)
+
+            push(center - forward - side, uv_x=-1.0, uv_y=-1.0)
+            push(center - forward + side, uv_x=-1.0, uv_y=1.0)
+            push(center + forward + side, uv_x=1.0, uv_y=1.0)
+            push(center + forward - side, uv_x=1.0, uv_y=-1.0)
+            quad_count += 1
+        rl.rl_end()
+        rl.rl_set_texture(0)
+        rl.end_shader_mode()
+        return int(quad_count), False
 
     def _draw_projectile_head_shader_gemini_2(
         self,
@@ -2699,13 +2864,25 @@ class BeamDebugView:
                 is_fire=is_fire,
             )
         elif mode == BeamRenderMode.SHADER_STAMPED_VIRTUAL:
-            body_calls, fallback = self._draw_projectile_body_shader_stamped_virtual(preps, streak_rgb=streak_rgb)
+            if self._stamped_virtual_head_isolation:
+                body_calls = 0
+                fallback = False
+            else:
+                body_calls, fallback = self._draw_projectile_body_shader_stamped_virtual(preps, streak_rgb=streak_rgb)
             shader_fallback = bool(fallback)
             if fallback:
                 head_calls, overlay_calls = self._draw_projectile_heads(preps, is_fire=is_fire)
             else:
-                head_calls = self._draw_projectile_head_shader_stamped_analytic(preps, is_fire=is_fire)
-                overlay_calls = 0
+                if self._stamped_virtual_head_pass == StampedVirtualHeadPass.ANALYTIC:
+                    head_calls = self._draw_projectile_head_shader_stamped_analytic(preps, is_fire=is_fire)
+                    overlay_calls = 0
+                else:
+                    head_calls, head_fallback = self._draw_projectile_head_shader_stamped_virtual(preps, is_fire=is_fire)
+                    if head_fallback:
+                        shader_fallback = True
+                        head_calls, overlay_calls = self._draw_projectile_heads(preps, is_fire=is_fire)
+                    else:
+                        overlay_calls = 0
         elif mode == BeamRenderMode.SHADER_EXT_GPT_PRO:
             body_calls, fallback = self._draw_projectile_body_shader_ext_gpt_pro(preps, streak_rgb=streak_rgb)
             shader_fallback = bool(fallback)
@@ -2799,6 +2976,10 @@ class BeamDebugView:
                 f"flags cap={'on' if self._cap_enabled else 'off'} "
                 f"head={'on' if self._head_render_enabled else 'off'} "
                 f"head_cap={self._head_cap_variant.value} "
+                f"sv_head={self._stamped_virtual_head_pass.value} "
+                f"sv_iso={'on' if self._stamped_virtual_head_isolation else 'off'} "
+                f"sv_gain={self._stamped_virtual_head_gain_scale:.2f} "
+                f"sv_radius={self._stamped_virtual_head_radius_scale:.2f} "
                 f"life_hi={'on' if self._force_life_high else 'off'} "
                 f"markers={'all' if self._show_all_segment_markers else 'selected'} "
                 f"geometry={'on' if self._show_geometry_overlay else 'off'}"
@@ -2813,7 +2994,8 @@ class BeamDebugView:
             (
                 "Space pause/resume  Right step(when paused)  Esc close  P screenshot  "
                 "F fire/ion  I cycle ion preset  C cap256  G force life>=0.4  H toggle heads  D cycle head-cap  M all markers  V geometry  "
-                "X run batch-probe  Z auto-probe  J/U probe quads  N autofit-profile  0 reset shader  Q research/fitted"
+                "X run batch-probe  Z auto-probe  J/U probe quads  N autofit-profile  0 reset shader  Q research/fitted  "
+                "O cycle sv-head-pass  E sv-head-isolation  4/5 sv-head gain  6/7 sv-head radius  8 reset sv-head"
             ),
             Vec2(margin, y),
             color=UI_HINT,
