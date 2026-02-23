@@ -81,6 +81,10 @@ PROJECTILE_SPEED_UNITS_PER_META = 20.0
 SHADER_STAMP_ANALYTIC_ALPHA_SCALE = 0.88
 SHADER_STAMP_ANALYTIC_ALPHA_DECAY_PER_PX = 0.3
 SHADER_STAMP_ANALYTIC_RADIUS_SCALE = 16.0
+SHADER_STAMP_VIRTUAL_PROFILE_A_DEFAULT = 1.3
+SHADER_STAMP_VIRTUAL_PROFILE_LINEAR_DEFAULT = -5.2
+SHADER_STAMP_VIRTUAL_PROFILE_QUAD_DEFAULT = 1.6
+SHADER_STAMP_VIRTUAL_PROFILE_OFFSET_DEFAULT = 0.04
 SHADER_STAMP_VIRTUAL_INTENSITY_GAIN_DEFAULT = 1.0
 SHADER_STAMP_VIRTUAL_MAX_STAMPS = 128
 
@@ -176,6 +180,8 @@ uniform vec4 colDiffuse;
 uniform float u_step_uv;
 uniform float u_stamp_scale;
 uniform float u_stamp_decay;
+uniform float u_stamp_quad;
+uniform float u_stamp_offset;
 uniform float u_intensity_gain;
 
 out vec4 finalColor;
@@ -187,7 +193,7 @@ void main() {{
     // Head pass (fragLen < 0): radial analytic cap profile.
     if (u_len < 0.0) {{
         float d = length(fragTexCoord);
-        float profile = u_stamp_scale * exp(-u_stamp_decay * d);
+        float profile = clamp(u_stamp_scale * exp(-u_stamp_decay * d + u_stamp_quad * d * d) - u_stamp_offset, 0.0, 1.0);
         float intensity = profile * fragColor.a * gain;
         vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
         finalColor = vec4(rgb, 1.0);
@@ -212,7 +218,7 @@ void main() {{
         }}
         float t = clamp(sx / max(1e-6, len_uv), 0.0, 1.0);
         float d = length(vec2(fragTexCoord.x - sx, fragTexCoord.y));
-        float profile = u_stamp_scale * exp(-u_stamp_decay * d);
+        float profile = clamp(u_stamp_scale * exp(-u_stamp_decay * d + u_stamp_quad * d * d) - u_stamp_offset, 0.0, 1.0);
         accum += t * profile;
     }}
 
@@ -238,6 +244,8 @@ _BEAM_STAMPED_VIRTUAL_COLOR_LOC = -1
 _BEAM_STAMPED_VIRTUAL_STEP_UV_LOC = -1
 _BEAM_STAMPED_VIRTUAL_STAMP_SCALE_LOC = -1
 _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC = -1
+_BEAM_STAMPED_VIRTUAL_STAMP_QUAD_LOC = -1
+_BEAM_STAMPED_VIRTUAL_STAMP_OFFSET_LOC = -1
 _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC = -1
 
 
@@ -661,6 +669,7 @@ def _get_beam_stamped_virtual_shader() -> rl.Shader | None:
     global _BEAM_STAMPED_VIRTUAL_SHADER_TRIED, _BEAM_STAMPED_VIRTUAL_SHADER
     global _BEAM_STAMPED_VIRTUAL_COLOR_LOC, _BEAM_STAMPED_VIRTUAL_STEP_UV_LOC
     global _BEAM_STAMPED_VIRTUAL_STAMP_SCALE_LOC, _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC
+    global _BEAM_STAMPED_VIRTUAL_STAMP_QUAD_LOC, _BEAM_STAMPED_VIRTUAL_STAMP_OFFSET_LOC
     global _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC
     if _BEAM_STAMPED_VIRTUAL_SHADER_TRIED:
         if _BEAM_STAMPED_VIRTUAL_SHADER is not None and int(_BEAM_STAMPED_VIRTUAL_SHADER.id) > 0:
@@ -683,6 +692,8 @@ def _get_beam_stamped_virtual_shader() -> rl.Shader | None:
     _BEAM_STAMPED_VIRTUAL_STEP_UV_LOC = int(rl.get_shader_location(shader, "u_step_uv"))
     _BEAM_STAMPED_VIRTUAL_STAMP_SCALE_LOC = int(rl.get_shader_location(shader, "u_stamp_scale"))
     _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC = int(rl.get_shader_location(shader, "u_stamp_decay"))
+    _BEAM_STAMPED_VIRTUAL_STAMP_QUAD_LOC = int(rl.get_shader_location(shader, "u_stamp_quad"))
+    _BEAM_STAMPED_VIRTUAL_STAMP_OFFSET_LOC = int(rl.get_shader_location(shader, "u_stamp_offset"))
     _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC = int(rl.get_shader_location(shader, "u_intensity_gain"))
     return _BEAM_STAMPED_VIRTUAL_SHADER
 
@@ -1900,14 +1911,19 @@ class BeamDebugView:
         radius = max(0.001, float(SHADER_STAMP_ANALYTIC_RADIUS_SCALE) * float(self._effect_scale))
         step_screen = max(1e-6, float(self._beam_step_units()) * float(self._distance_to_screen_scale))
         step_uv = max(1e-4, float(step_screen) / float(radius))
-        stamp_decay = float(SHADER_STAMP_ANALYTIC_ALPHA_DECAY_PER_PX) * float(SHADER_STAMP_ANALYTIC_RADIUS_SCALE)
+        stamp_scale = float(SHADER_STAMP_VIRTUAL_PROFILE_A_DEFAULT)
+        stamp_decay = float(-SHADER_STAMP_VIRTUAL_PROFILE_LINEAR_DEFAULT)
+        stamp_quad = float(SHADER_STAMP_VIRTUAL_PROFILE_QUAD_DEFAULT)
+        stamp_offset = float(SHADER_STAMP_VIRTUAL_PROFILE_OFFSET_DEFAULT)
 
         quad_count = 0
         rl.begin_shader_mode(shader)
         self._set_shader_vec4(shader, _BEAM_STAMPED_VIRTUAL_COLOR_LOC, 1.0, 1.0, 1.0, 1.0)
         self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STEP_UV_LOC, float(step_uv))
-        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_SCALE_LOC, float(SHADER_STAMP_ANALYTIC_ALPHA_SCALE))
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_SCALE_LOC, float(stamp_scale))
         self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC, float(stamp_decay))
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_QUAD_LOC, float(stamp_quad))
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_OFFSET_LOC, float(stamp_offset))
         self._set_shader_float(
             shader,
             _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC,
