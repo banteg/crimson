@@ -74,12 +74,12 @@ SHADER_EXT_GPT_PRO_COVER_LEN_DEFAULT = 1.0
 SHADER_EXT_GPT_PRO_HALO_W_DEFAULT = 0.25
 SHADER_EXT_GPT_PRO_TAIL_WIDTH_DEFAULT = 0.6
 SHADER_EXT_GPT_PRO_CAP_SCALE_DEFAULT = 1.2
-SHADER_GEMINI_2_COVER_LEN_DEFAULT = 1.0
-SHADER_GEMINI_2_HALO_W_DEFAULT = 0.0
-SHADER_GEMINI_2_CAP_SCALE_DEFAULT = 1.0
-SHADER_GEMINI_2_COVER_LEN_ION_CANNON = 1.1
-SHADER_GEMINI_2_HALO_W_ION_RIFLE = 0.08
-SHADER_GEMINI_2_HALO_W_ION_CANNON = 0.30
+SHADER_GEMINI_2_CORE_SOFTNESS_DEFAULT = 0.04
+SHADER_GEMINI_2_CORE_SOFTNESS_ION_RIFLE = 0.18
+SHADER_GEMINI_2_CORE_SOFTNESS_ION_CANNON = 0.62
+SHADER_GEMINI_2_CAP_B_SCALE_DEFAULT = 1.0
+SHADER_GEMINI_2_CAP_B_SCALE_FIRE = 1.10
+SHADER_GEMINI_2_CAP_B_SCALE_ION_MINIGUN = 1.55
 BENCH_FRAMES_PER_MODE = 240
 BATCH_PROBE_QUADS_DEFAULT = 4096
 BATCH_PROBE_QUADS_STEP = 256
@@ -132,31 +132,43 @@ uniform float u_approx_a;
 uniform float u_approx_b;
 uniform float u_approx_c;
 uniform float u_intensity_gain;
+uniform float u_core_softness;
+uniform float u_cap_b_scale;
 
 out vec4 finalColor;
 
 void main() {
+    // Keep CPU-side b tuning in natural-exp space, then convert for fast exp2.
+    const float LOG2E = 1.44269504089;
+    float b_rad = min(u_approx_b * LOG2E, -1e-4);
+    float b_cap = min(b_rad * max(u_cap_b_scale, 0.05), -1e-4);
+    float gain = max(u_intensity_gain, 0.0);
+    float softness = max(u_core_softness, 0.0);
+
     float u_len = fragLen;
     if (u_len < 0.0) {
         float d = length(fragTexCoord);
-        float profile = clamp(u_approx_a * exp(u_approx_b * d) - u_approx_c, 0.0, 1.0);
-        float intensity = profile * fragColor.a * max(u_intensity_gain, 0.0);
-        vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
+        float r_eff = sqrt(d * d + softness * softness) - softness;
+        float d_rad = exp2(b_rad * r_eff);
+        float alpha = clamp((u_approx_a * d_rad * fragColor.a * gain) - u_approx_c, 0.0, 1.0);
+        vec3 rgb = fragColor.rgb * colDiffuse.rgb * alpha;
         finalColor = vec4(rgb, 1.0);
         return;
     }
 
-    float dx = max(0.0, max(-fragTexCoord.x, fragTexCoord.x - u_len));
-    float d = length(vec2(dx, fragTexCoord.y));
-    
-    float trans_profile = clamp(u_approx_a * exp(u_approx_b * d) - u_approx_c, 0.0, 1.0);
-    
+    float y_sq = fragTexCoord.y * fragTexCoord.y;
+    float r_eff = sqrt(y_sq + softness * softness) - softness;
+    float d_rad = exp2(b_rad * r_eff);
+
     float closest_x = clamp(fragTexCoord.x, 0.0, u_len);
     float t = clamp(closest_x / max(1.0, u_len), 0.0, 1.0);
-    float structural_alpha = t * fragColor.a;
+    float x = max(-fragTexCoord.x, fragTexCoord.x - u_len);
+    float cap_mask = 0.5 - sign(x) * 0.5 * (1.0 - exp2(b_cap * abs(x)));
 
-    float intensity = trans_profile * structural_alpha * max(u_intensity_gain, 0.0);
-    vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
+    // Multiply before subtract+clamp so dense tails can stay saturated.
+    float intensity = u_approx_a * t * d_rad * cap_mask * fragColor.a * gain;
+    float alpha = clamp(intensity - u_approx_c, 0.0, 1.0);
+    vec3 rgb = fragColor.rgb * colDiffuse.rgb * alpha;
     finalColor = vec4(rgb, 1.0);
 }
 """
@@ -341,10 +353,8 @@ _BEAM_GEMINI_2_APPROX_B_LOC = -1
 _BEAM_GEMINI_2_APPROX_C_LOC = -1
 _BEAM_GEMINI_2_INTENSITY_GAIN_LOC = -1
 _BEAM_GEMINI_2_COLOR_LOC = -1
-_BEAM_GEMINI_2_STEP_UV_LOC = -1
-_BEAM_GEMINI_2_COVER_LEN_LOC = -1
-_BEAM_GEMINI_2_HALO_W_LOC = -1
-_BEAM_GEMINI_2_CAP_SCALE_LOC = -1
+_BEAM_GEMINI_2_CORE_SOFTNESS_LOC = -1
+_BEAM_GEMINI_2_CAP_B_SCALE_LOC = -1
 _BEAM_STAMPED_ANALYTIC_SHADER_TRIED = False
 _BEAM_STAMPED_ANALYTIC_SHADER: rl.Shader | None = None
 _BEAM_STAMPED_ANALYTIC_COLOR_LOC = -1
@@ -784,8 +794,7 @@ def _get_beam_gemini_2_shader() -> rl.Shader | None:
     global _BEAM_GEMINI_2_SHADER_TRIED, _BEAM_GEMINI_2_SHADER
     global _BEAM_GEMINI_2_APPROX_A_LOC, _BEAM_GEMINI_2_APPROX_B_LOC
     global _BEAM_GEMINI_2_APPROX_C_LOC, _BEAM_GEMINI_2_INTENSITY_GAIN_LOC, _BEAM_GEMINI_2_COLOR_LOC
-    global _BEAM_GEMINI_2_STEP_UV_LOC, _BEAM_GEMINI_2_COVER_LEN_LOC
-    global _BEAM_GEMINI_2_HALO_W_LOC, _BEAM_GEMINI_2_CAP_SCALE_LOC
+    global _BEAM_GEMINI_2_CORE_SOFTNESS_LOC, _BEAM_GEMINI_2_CAP_B_SCALE_LOC
     if _BEAM_GEMINI_2_SHADER_TRIED:
         if _BEAM_GEMINI_2_SHADER is not None and int(_BEAM_GEMINI_2_SHADER.id) > 0:
             return _BEAM_GEMINI_2_SHADER
@@ -807,10 +816,8 @@ def _get_beam_gemini_2_shader() -> rl.Shader | None:
     _BEAM_GEMINI_2_APPROX_B_LOC = int(rl.get_shader_location(shader, "u_approx_b"))
     _BEAM_GEMINI_2_APPROX_C_LOC = int(rl.get_shader_location(shader, "u_approx_c"))
     _BEAM_GEMINI_2_INTENSITY_GAIN_LOC = int(rl.get_shader_location(shader, "u_intensity_gain"))
-    _BEAM_GEMINI_2_STEP_UV_LOC = int(rl.get_shader_location(shader, "u_step_uv"))
-    _BEAM_GEMINI_2_COVER_LEN_LOC = int(rl.get_shader_location(shader, "u_cover_len"))
-    _BEAM_GEMINI_2_HALO_W_LOC = int(rl.get_shader_location(shader, "u_halo_w"))
-    _BEAM_GEMINI_2_CAP_SCALE_LOC = int(rl.get_shader_location(shader, "u_cap_scale"))
+    _BEAM_GEMINI_2_CORE_SOFTNESS_LOC = int(rl.get_shader_location(shader, "u_core_softness"))
+    _BEAM_GEMINI_2_CAP_B_SCALE_LOC = int(rl.get_shader_location(shader, "u_cap_b_scale"))
     _BEAM_GEMINI_2_COLOR_LOC = int(rl.get_shader_location(shader, "colDiffuse"))
     return _BEAM_GEMINI_2_SHADER
 
@@ -1254,32 +1261,33 @@ class BeamDebugView:
         self._effect_scale = float(beam_effect_scale(type_id))
 
     @staticmethod
-    def _gemini_2_body_shape_params_for_type(type_id: int) -> tuple[float, float, float]:
+    def _gemini_2_body_shape_params_for_type(type_id: int) -> tuple[float, float]:
         if int(type_id) == int(ProjectileTypeId.ION_CANNON):
             return (
-                float(SHADER_GEMINI_2_COVER_LEN_ION_CANNON),
-                float(SHADER_GEMINI_2_HALO_W_ION_CANNON),
-                float(SHADER_GEMINI_2_CAP_SCALE_DEFAULT),
+                float(SHADER_GEMINI_2_CORE_SOFTNESS_ION_CANNON),
+                float(SHADER_GEMINI_2_CAP_B_SCALE_DEFAULT),
             )
         if int(type_id) == int(ProjectileTypeId.ION_RIFLE):
             return (
-                float(SHADER_GEMINI_2_COVER_LEN_DEFAULT),
-                float(SHADER_GEMINI_2_HALO_W_ION_RIFLE),
-                float(SHADER_GEMINI_2_CAP_SCALE_DEFAULT),
+                float(SHADER_GEMINI_2_CORE_SOFTNESS_ION_RIFLE),
+                float(SHADER_GEMINI_2_CAP_B_SCALE_DEFAULT),
             )
         if int(type_id) == int(ProjectileTypeId.ION_MINIGUN):
             return (
-                float(SHADER_GEMINI_2_COVER_LEN_DEFAULT),
-                float(SHADER_GEMINI_2_HALO_W_DEFAULT),
-                float(SHADER_GEMINI_2_CAP_SCALE_DEFAULT),
+                float(SHADER_GEMINI_2_CORE_SOFTNESS_DEFAULT),
+                float(SHADER_GEMINI_2_CAP_B_SCALE_ION_MINIGUN),
+            )
+        if int(type_id) == int(ProjectileTypeId.FIRE_BULLETS):
+            return (
+                float(SHADER_GEMINI_2_CORE_SOFTNESS_DEFAULT),
+                float(SHADER_GEMINI_2_CAP_B_SCALE_FIRE),
             )
         return (
-            float(SHADER_GEMINI_2_COVER_LEN_DEFAULT),
-            float(SHADER_GEMINI_2_HALO_W_DEFAULT),
-            float(SHADER_GEMINI_2_CAP_SCALE_DEFAULT),
+            float(SHADER_GEMINI_2_CORE_SOFTNESS_DEFAULT),
+            float(SHADER_GEMINI_2_CAP_B_SCALE_DEFAULT),
         )
 
-    def _gemini_2_body_shape_params(self) -> tuple[float, float, float]:
+    def _gemini_2_body_shape_params(self) -> tuple[float, float]:
         return self._gemini_2_body_shape_params_for_type(self._active_projectile_type_id())
 
     def _iter_asset_roots_for_open(self) -> tuple[Path, ...]:
@@ -2042,9 +2050,7 @@ class BeamDebugView:
             0.001,
             float(SHADER_GEMINI_2_RADIUS_SCALE) * float(self._effect_scale) * float(SHADER_GEMINI_2_RADIUS_EXPAND),
         )
-        step_screen = max(1e-6, float(self._beam_step_units()) * float(self._distance_to_screen_scale))
-        step_uv = max(1e-4, float(step_screen) / float(radius))
-        cover_len, halo_w, cap_scale = self._gemini_2_body_shape_params()
+        core_softness, cap_b_scale = self._gemini_2_body_shape_params()
 
         quad_count = 0
         rl.begin_shader_mode(shader)
@@ -2052,10 +2058,8 @@ class BeamDebugView:
         self._set_shader_float(shader, _BEAM_GEMINI_2_APPROX_B_LOC, float(params.approx_b))
         self._set_shader_float(shader, _BEAM_GEMINI_2_APPROX_C_LOC, float(params.approx_c))
         self._set_shader_float(shader, _BEAM_GEMINI_2_INTENSITY_GAIN_LOC, float(params.intensity_gain))
-        self._set_shader_float(shader, _BEAM_GEMINI_2_STEP_UV_LOC, float(step_uv))
-        self._set_shader_float(shader, _BEAM_GEMINI_2_COVER_LEN_LOC, float(cover_len))
-        self._set_shader_float(shader, _BEAM_GEMINI_2_HALO_W_LOC, float(halo_w))
-        self._set_shader_float(shader, _BEAM_GEMINI_2_CAP_SCALE_LOC, float(cap_scale))
+        self._set_shader_float(shader, _BEAM_GEMINI_2_CORE_SOFTNESS_LOC, float(core_softness))
+        self._set_shader_float(shader, _BEAM_GEMINI_2_CAP_B_SCALE_LOC, float(cap_b_scale))
         self._set_shader_vec4(shader, _BEAM_GEMINI_2_COLOR_LOC, 1.0, 1.0, 1.0, 1.0)
         rl.rl_set_texture(0)
         rl.rl_begin(rd.RL_QUADS)
@@ -2494,7 +2498,7 @@ class BeamDebugView:
         b = int(clamp(streak_rgb[2] * 255.0, 0.0, 255.0) + 0.5)
 
         params = self._shader_gemini_2_params
-        _, halo_w_body, _ = self._gemini_2_body_shape_params()
+        core_softness_body, cap_b_scale_body = self._gemini_2_body_shape_params()
         approx_a = clamp(
             float(params.approx_a) * (1.1 if bool(is_fire) else 1.05),
             SHADER_GEMINI_2_APPROX_A_MIN,
@@ -2535,10 +2539,8 @@ class BeamDebugView:
         self._set_shader_float(shader, _BEAM_GEMINI_2_APPROX_B_LOC, float(approx_b))
         self._set_shader_float(shader, _BEAM_GEMINI_2_APPROX_C_LOC, float(approx_c))
         self._set_shader_float(shader, _BEAM_GEMINI_2_INTENSITY_GAIN_LOC, float(intensity_gain))
-        self._set_shader_float(shader, _BEAM_GEMINI_2_STEP_UV_LOC, 1.0)
-        self._set_shader_float(shader, _BEAM_GEMINI_2_COVER_LEN_LOC, float(SHADER_GEMINI_2_COVER_LEN_DEFAULT))
-        self._set_shader_float(shader, _BEAM_GEMINI_2_HALO_W_LOC, float(halo_w_body))
-        self._set_shader_float(shader, _BEAM_GEMINI_2_CAP_SCALE_LOC, float(SHADER_GEMINI_2_CAP_SCALE_DEFAULT))
+        self._set_shader_float(shader, _BEAM_GEMINI_2_CORE_SOFTNESS_LOC, float(core_softness_body) * 0.65)
+        self._set_shader_float(shader, _BEAM_GEMINI_2_CAP_B_SCALE_LOC, float(cap_b_scale_body))
         self._set_shader_vec4(shader, _BEAM_GEMINI_2_COLOR_LOC, 1.0, 1.0, 1.0, 1.0)
         rl.rl_set_texture(0)
         rl.rl_begin(rd.RL_QUADS)
@@ -2817,13 +2819,13 @@ class BeamDebugView:
         )
         y += line_h
         shader_params = self._shader_gemini_2_params
-        body_cover_len, body_halo_w, body_cap_scale = self._gemini_2_body_shape_params()
+        body_core_softness, body_cap_b_scale = self._gemini_2_body_shape_params()
         draw_ui_text(
             self._small,
             (
                 f"shader profile=clamp({shader_params.approx_a:.4f}*exp({shader_params.approx_b:.4f}*d)-{shader_params.approx_c:.4f},0,1) "
                 f"gain={shader_params.intensity_gain:.3f} "
-                f"cover={body_cover_len:.2f} halo_w={body_halo_w:.2f} cap_scale={body_cap_scale:.2f}"
+                f"core_soft={body_core_softness:.2f} cap_b_scale={body_cap_b_scale:.2f}"
             ),
             Vec2(margin, y),
             color=UI_HINT,

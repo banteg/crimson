@@ -254,13 +254,13 @@ def test_ion_preset_order_is_unique_by_projectile_type_id() -> None:
 def test_gemini_2_body_shape_params_vary_by_projectile_type() -> None:
     view = BeamDebugView(ViewContext(assets_dir=Path("artifacts") / "assets"))
 
-    cannon_cover, cannon_halo, cannon_cap = view._gemini_2_body_shape_params_for_type(int(ProjectileTypeId.ION_CANNON))
-    rifle_cover, rifle_halo, rifle_cap = view._gemini_2_body_shape_params_for_type(int(ProjectileTypeId.ION_RIFLE))
-    mini_cover, mini_halo, mini_cap = view._gemini_2_body_shape_params_for_type(int(ProjectileTypeId.ION_MINIGUN))
+    cannon_soft, cannon_cap_b = view._gemini_2_body_shape_params_for_type(int(ProjectileTypeId.ION_CANNON))
+    rifle_soft, rifle_cap_b = view._gemini_2_body_shape_params_for_type(int(ProjectileTypeId.ION_RIFLE))
+    mini_soft, mini_cap_b = view._gemini_2_body_shape_params_for_type(int(ProjectileTypeId.ION_MINIGUN))
 
-    assert cannon_cover >= rifle_cover >= mini_cover
-    assert cannon_halo > rifle_halo >= mini_halo
-    assert cannon_cap == rifle_cap == mini_cap == 1.0
+    assert cannon_soft > rifle_soft > mini_soft
+    assert mini_cap_b > rifle_cap_b
+    assert cannon_cap_b == rifle_cap_b == 1.0
 
 
 def test_stamped_virtual_kernel_uses_negative_quadratic_falloff() -> None:
@@ -270,13 +270,16 @@ def test_stamped_virtual_kernel_uses_negative_quadratic_falloff() -> None:
     assert _BEAM_STAMPED_VIRTUAL_FS_330.count(body_needle) >= 1
 
 
-def test_gemini_2_shader_uses_single_pass_capsule_profile() -> None:
+def test_gemini_2_shader_uses_separable_radial_cap_profile() -> None:
     assert "uniform float u_step_uv;" not in _BEAM_GEMINI_2_FS_330
     assert "uniform float u_cover_len;" not in _BEAM_GEMINI_2_FS_330
     assert "uniform float u_halo_w;" not in _BEAM_GEMINI_2_FS_330
     assert "uniform float u_cap_scale;" not in _BEAM_GEMINI_2_FS_330
-    assert "float dx = max(0.0, max(-fragTexCoord.x, fragTexCoord.x - u_len));" in _BEAM_GEMINI_2_FS_330
-    assert "float structural_alpha = t * fragColor.a;" in _BEAM_GEMINI_2_FS_330
+    assert "uniform float u_core_softness;" in _BEAM_GEMINI_2_FS_330
+    assert "uniform float u_cap_b_scale;" in _BEAM_GEMINI_2_FS_330
+    assert "float r_eff = sqrt(y_sq + softness * softness) - softness;" in _BEAM_GEMINI_2_FS_330
+    assert "float cap_mask = 0.5 - sign(x) * 0.5 * (1.0 - exp2(b_cap * abs(x)));" in _BEAM_GEMINI_2_FS_330
+    assert "float intensity = u_approx_a * t * d_rad * cap_mask * fragColor.a * gain;" in _BEAM_GEMINI_2_FS_330
 
 
 def test_shader_profile_value_is_monotonic_outward() -> None:
