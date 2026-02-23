@@ -426,7 +426,8 @@ void main() {
     float xc = clamp(fragTexCoord.x, x0, x1);
     float t = clamp(xc / max(u_len, 1e-6), 0.0, 1.0);
 
-    float width_scale = mix(max(0.01, u_tail_width), 1.0, t);
+    float taper_t = smoothstep(0.0, 1.0, t);
+    float width_scale = mix(max(0.01, u_tail_width), 1.0, taper_t);
     float dy = fragTexCoord.y / width_scale;
 
     float dx = max(0.0, max(x0 - fragTexCoord.x, fragTexCoord.x - x1));
