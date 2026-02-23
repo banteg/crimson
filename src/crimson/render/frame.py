@@ -11,6 +11,7 @@ from grim.terrain_render import GroundRenderer
 from ..creatures.runtime import CreaturePool
 from ..gameplay import GameplayState
 from ..sim.state_types import PlayerState
+from .rtx.mode import RtxRenderMode
 
 
 @dataclass(frozen=True, slots=True)
@@ -52,3 +53,4 @@ class RenderFrame:
     lan_player_rings_enabled: bool
     lan_local_aim_indicators_only: bool
     lan_local_player_slot_index: int
+    rtx_mode: RtxRenderMode

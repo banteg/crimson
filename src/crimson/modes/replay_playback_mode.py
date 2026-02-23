@@ -21,6 +21,7 @@ from ..original.capture import CAPTURE_BOOTSTRAP_EVENT_KIND
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table
 from ..quests.types import QuestContext
+from ..render.rtx.mode import mode_from_rtx_flag
 from ..replay import (
     Replay,
     UnknownEvent,
@@ -84,6 +85,7 @@ class ReplayPlaybackMode:
         max_ticks: int | None = None,
         strict_events: bool = True,
         trace_rng: bool = False,
+        rtx: bool = False,
         show_replay_widget: bool = True,
     ) -> None:
         self._ctx = ctx
@@ -93,6 +95,7 @@ class ReplayPlaybackMode:
         self._max_ticks = (max(0, int(max_ticks)) if max_ticks is not None else None)
         self._strict_events = bool(strict_events)
         self._trace_rng = bool(trace_rng)
+        self._rtx = bool(rtx)
         self._show_replay_widget = bool(show_replay_widget)
 
         self.close_requested = False
@@ -338,6 +341,7 @@ class ReplayPlaybackMode:
             config=self._config,
             audio=audio,
             audio_rng=audio_rng,
+            rtx_mode=mode_from_rtx_flag(self._rtx),
         )
         seed_for_reset = int(replay.header.seed)
         if str(replay.header.bootstrap_kind) != "none":

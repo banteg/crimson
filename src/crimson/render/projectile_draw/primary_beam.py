@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from grim.color import RGBA
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl
 
@@ -8,10 +9,49 @@ from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, Effect
 from ...perks import PerkId
 from ...perks.helpers import perk_active
 from ...projectiles import ProjectileTypeId
+from ...render.rtx.beam import draw_beam_fast_stamped_body
+from ...render.rtx.mode import RtxRenderMode
 from ...sim.world_defs import BEAM_TYPES, ION_TYPES
 from ..projectile_render_registry import beam_effect_scale
 from .common import RAD_TO_DEG, proj_origin
 from .types import ProjectileDrawCtx
+
+
+def _draw_beam_body_sprites(
+    *,
+    ctx: ProjectileDrawCtx,
+    origin: Vec2,
+    direction: Vec2,
+    dist: float,
+    start: float,
+    span: float,
+    step: float,
+    base_alpha: float,
+    streak_rgb: tuple[float, float, float],
+    texture: rl.Texture,
+    grid: int,
+    frame: int,
+    sprite_scale: float,
+) -> None:
+    renderer = ctx.renderer
+    s = float(start)
+    while s < float(dist):
+        t = (s - float(start)) / float(span) if float(span) > 1e-6 else 1.0
+        seg_alpha = float(t) * float(base_alpha)
+        if seg_alpha > 1e-3:
+            pos = origin + direction * s
+            pos_screen = renderer.world_to_screen(pos)
+            tint = RGBA(streak_rgb[0], streak_rgb[1], streak_rgb[2], seg_alpha).to_rl()
+            renderer._draw_atlas_sprite(
+                texture,
+                grid=int(grid),
+                frame=int(frame),
+                pos=pos_screen,
+                scale=float(sprite_scale),
+                rotation_rad=0.0,
+                tint=tint,
+            )
+        s += float(step)
 
 
 def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
@@ -69,24 +109,35 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
 
-    s = start
-    while s < dist:
-        t = (s - start) / span if span > 1e-6 else 1.0
-        seg_alpha = t * base_alpha
-        if seg_alpha > 1e-3:
-            pos = origin + direction * s
-            pos_screen = renderer.world_to_screen(pos)
-            tint = RGBA(streak_rgb[0], streak_rgb[1], streak_rgb[2], seg_alpha).to_rl()
-            renderer._draw_atlas_sprite(
-                texture,
-                grid=grid,
-                frame=frame,
-                pos=pos_screen,
-                scale=sprite_scale,
-                rotation_rad=0.0,
-                tint=tint,
-            )
-        s += step
+    body_drawn_by_rtx = False
+    if renderer.rtx_mode is RtxRenderMode.RTX:
+        body_drawn_by_rtx = draw_beam_fast_stamped_body(
+            origin_screen=renderer.world_to_screen(origin),
+            head_screen=ctx.screen_pos,
+            start_dist_units=float(start),
+            span_dist_units=float(span),
+            step_units=float(step),
+            effect_scale=float(effect_scale),
+            scale=float(ctx.scale),
+            base_alpha=float(base_alpha),
+            streak_rgb=streak_rgb,
+        )
+    if not body_drawn_by_rtx:
+        _draw_beam_body_sprites(
+            ctx=ctx,
+            origin=origin,
+            direction=direction,
+            dist=float(dist),
+            start=float(start),
+            span=float(span),
+            step=float(step),
+            base_alpha=float(base_alpha),
+            streak_rgb=streak_rgb,
+            texture=texture,
+            grid=int(grid),
+            frame=int(frame),
+            sprite_scale=float(sprite_scale),
+        )
 
     if life >= 0.4:
         head_tint = RGBA(head_rgb[0], head_rgb[1], head_rgb[2], base_alpha).to_rl()

@@ -34,6 +34,7 @@ from ..frontend.assets import _ensure_texture_cache
 from ..net.debug_log import close_lan_debug_log, init_lan_debug_log, lan_debug_log
 from ..persistence.save_status import ensure_game_status
 from ..quests.types import parse_level
+from ..render.rtx.mode import cycle_rtx_render_mode, mode_from_rtx_flag, parse_rtx_render_mode
 from .loop_view import GameLoopView
 from .types import GameConfig, GameState
 
@@ -261,6 +262,28 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
             f"remaining={remaining}",
         )
 
+    def cmd_render_mode(args: list[str]) -> None:
+        if len(args) > 1:
+            console.log.log("rendermode <classic|rtx>")
+            return
+        if not args:
+            console.log.log(f"Render mode is '{state.rtx_mode.value}'.")
+            return
+        try:
+            mode = parse_rtx_render_mode(args[0])
+        except ValueError:
+            console.log.log("rendermode <classic|rtx>")
+            return
+        state.rtx_mode = mode
+        console.log.log(f"Render mode set to '{state.rtx_mode.value}'.")
+
+    def cmd_toggle_rtx(args: list[str]) -> None:
+        if args:
+            console.log.log("togglertx")
+            return
+        state.rtx_mode = cycle_rtx_render_mode(state.rtx_mode)
+        console.log.log(f"Render mode set to '{state.rtx_mode.value}'.")
+
     return {
         "setGammaRamp": cmd_set_gamma_ramp,
         "snd_addGameTune": cmd_snd_add_game_tune,
@@ -274,6 +297,8 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         "demoTrialSetGrace": cmd_demo_trial_set_grace,
         "demoTrialReset": cmd_demo_trial_reset,
         "demoTrialInfo": cmd_demo_trial_info,
+        "rendermode": cmd_render_mode,
+        "togglertx": cmd_toggle_rtx,
     }
 
 
@@ -316,6 +341,7 @@ def run_game(config: GameConfig) -> None:
             audio=None,
             resource_paq=assets_dir / CRIMSON_PAQ_NAME,
             session_start=time.monotonic(),
+            rtx_mode=mode_from_rtx_flag(bool(config.rtx)),
             pending_net_session=config.pending_net_session,
             pending_lan_session=config.pending_lan_session,
         )

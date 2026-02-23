@@ -27,6 +27,7 @@ from ..perks import PerkId
 from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects import _creature_find_in_radius
 from ..persistence.highscores import HighScoreRecord
+from ..render.rtx.mode import RtxRenderMode
 from ..replay.types import PackedPlayerInput
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSessionTick
@@ -340,6 +341,9 @@ class BaseGameplayMode:
     def bind_audio(self, audio: AudioState | None, audio_rng: random.Random | None) -> None:
         self.world.audio = audio
         self.world.audio_rng = audio_rng
+
+    def set_rtx_mode(self, mode: RtxRenderMode) -> None:
+        self.world.rtx_mode = mode
 
     def _update_audio(self, dt: float) -> None:
         if self.world.audio is not None:

@@ -29,6 +29,7 @@ from ..frontend.transitions import _update_screen_fade
 from ..input_codes import input_begin_frame
 from ..net.debug_log import init_lan_debug_log, lan_debug_log, lan_debug_log_path
 from ..quests.types import parse_level
+from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode
 from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayInfo, DemoTrialOverlayUi
 from .high_scores_view import HighScoresView
 from .mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
@@ -454,8 +455,11 @@ class GameLoopView:
         console.update(dt)
         self._sync_console_elapsed_ms()
         self._handle_console_requests()
+        self._sync_rtx_mode()
         _update_screen_fade(self.state, dt)
         self._tick_lan_runtime()
+        if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_F4):
+            self._set_rtx_mode(cycle_rtx_render_mode(self.state.rtx_mode), source="debug hotkey F4")
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_P):
             self._screenshot_requested = True
         if console.open_flag:
@@ -770,6 +774,24 @@ class GameLoopView:
         if view is None or view not in self._gameplay_views:
             return None
         return cast(_GameplayView, view)
+
+    def _set_rtx_mode(self, mode: RtxRenderMode, *, source: str) -> None:
+        if mode is self.state.rtx_mode:
+            return
+        self.state.rtx_mode = mode
+        self._sync_rtx_mode()
+        self.state.console.log.log(f"render mode: {mode.value} ({source})")
+
+    def _sync_rtx_mode(self) -> None:
+        views: list[FrontView] = []
+        if self._front_active is not None:
+            views.append(self._front_active)
+        if self._front_stack:
+            views.extend(self._front_stack)
+        for view in views:
+            gameplay = self._as_gameplay_view(view)
+            if gameplay is not None:
+                gameplay.set_rtx_mode(self.state.rtx_mode)
 
     def _steal_ground_from_view(self, view: FrontView | None) -> GroundRenderer | None:
         gameplay = self._as_gameplay_view(view)

@@ -6,6 +6,7 @@ from grim.audio import stop_music
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
+from ..render.rtx.mode import RtxRenderMode
 from .types import GameState, HighScoresRequest
 
 if TYPE_CHECKING:
@@ -37,6 +38,8 @@ class _ModeRuntime(Protocol):
     def bind_status(self, status: object) -> None: ...
 
     def bind_audio(self, audio: object | None, rng: object) -> None: ...
+
+    def set_rtx_mode(self, mode: RtxRenderMode) -> None: ...
 
     def bind_screen_fade(self, state: GameState) -> None: ...
 
@@ -99,6 +102,7 @@ class _BaseModeGameView:
         self._configure_lan_runtime()
         self._mode.bind_status(self.state.status)
         self._mode.bind_audio(self.state.audio, self.state.rng)
+        self._mode.set_rtx_mode(self.state.rtx_mode)
         self._mode.bind_screen_fade(self.state)
         self._mode.open()
         self._on_open_end()
@@ -209,6 +213,9 @@ class _BaseModeGameView:
 
     def regenerate_terrain_for_console(self) -> None:
         self._mode.regenerate_terrain_for_console()
+
+    def set_rtx_mode(self, mode: RtxRenderMode) -> None:
+        self._mode.set_rtx_mode(mode)
 
     def take_action(self) -> str | None:
         action = self._action

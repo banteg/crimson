@@ -118,3 +118,28 @@ def test_lan_join_loopback_host_autostarts_session(mocker, tmp_path: Path) -> No
     assert pending.role == "join"
     assert pending.auto_start is True
     assert pending.config.host_ip == "127.0.0.1"
+
+
+def test_lan_host_rtx_flag_enables_rtx_mode(mocker, tmp_path: Path) -> None:
+    run_game = mocker.patch.object(game, "run_game")
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "lan",
+            "host",
+            "--mode",
+            "survival",
+            "--players",
+            "1",
+            "--rtx",
+            "--base-dir",
+            str(tmp_path),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    run_game.assert_called_once()
+    config = run_game.call_args.args[0]
+    assert config.rtx is True

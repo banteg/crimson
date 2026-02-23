@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Protocol, cast
 
 from crimson.projectiles import Projectile, ProjectileTypeId
 from crimson.render.projectile_draw import ProjectileDrawCtx, draw_projectile_from_registry
+from crimson.render.rtx.mode import RtxRenderMode
 from grim.geom import Vec2
 
 if TYPE_CHECKING:
@@ -25,6 +26,7 @@ class _RendererLike(Protocol):
     particles_texture: _TextureLike | None
     config: object | None
     players: list[object]
+    rtx_mode: RtxRenderMode
 
     def _is_bullet_trail_type(self, type_id: int) -> bool: ...
 
@@ -72,6 +74,7 @@ class _RendererStub:
     particles_texture: _TextureLike | None = None
     config: object | None = None
     players: list[object] = field(default_factory=list)
+    rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC
 
     @staticmethod
     def _is_bullet_trail_type(type_id: int) -> bool:

@@ -106,6 +106,31 @@ def test_net_join_command_builds_pending_join_session_with_legacy_fallback(mocke
     assert pending.config.netcode_mode == "lockstep_legacy"
 
 
+def test_net_host_rtx_flag_enables_rtx_mode(mocker, tmp_path: Path) -> None:
+    run_game = mocker.patch.object(game, "run_game")
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "net",
+            "host",
+            "--mode",
+            "survival",
+            "--players",
+            "1",
+            "--rtx",
+            "--base-dir",
+            str(tmp_path),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    run_game.assert_called_once()
+    config = run_game.call_args.args[0]
+    assert config.rtx is True
+
+
 def test_relay_serve_command_constructs_relay_server(mocker, tmp_path: Path) -> None:
     default_log = tmp_path / "logs" / "relay" / "auto.log"
     explicit_log = tmp_path / "logs" / "relay" / "relay.log"

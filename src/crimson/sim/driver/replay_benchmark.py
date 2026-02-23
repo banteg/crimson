@@ -157,6 +157,7 @@ def run_replay_render_benchmark(
     render_telemetry: bool = False,
     render_telemetry_out: Path | None = None,
     render_charts_out_dir: Path | None = None,
+    rtx: bool = False,
     show_progress: bool = False,
 ) -> ReplayBenchmarkResult:
     from grim.config import ensure_crimson_cfg
@@ -221,7 +222,12 @@ def run_replay_render_benchmark(
                 leave=False,
             )
 
-        def _run_once_with_tick_progress(*, tick_desc: str, telemetry_session: RenderTelemetrySession | None = None) -> _RenderOnceResult:
+        def _run_once_with_tick_progress(
+            *,
+            tick_desc: str,
+            rtx: bool,
+            telemetry_session: RenderTelemetrySession | None = None,
+        ) -> _RenderOnceResult:
             tick_progress: Any | None = None
             completed_ticks = 0
             tick_callback: Callable[[int], None] | None = None
@@ -253,6 +259,7 @@ def run_replay_render_benchmark(
                     max_ticks=max_ticks,
                     strict_events=bool(strict_events),
                     trace_rng=bool(trace_rng),
+                    rtx=bool(rtx),
                     telemetry_session=telemetry_session,
                     tick_progress_callback=tick_callback,
                 )
@@ -267,6 +274,7 @@ def run_replay_render_benchmark(
         for _ in range(int(warmup_runs)):
             _run_once_with_tick_progress(
                 tick_desc="render ticks warmup",
+                rtx=bool(rtx),
             )
             if progress is not None:
                 progress.update(1)
@@ -277,6 +285,7 @@ def run_replay_render_benchmark(
             start_ns = time.perf_counter_ns()
             measured = _run_once_with_tick_progress(
                 tick_desc=f"render ticks sample {sample_idx + 1}/{int(runs)}",
+                rtx=bool(rtx),
             )
             elapsed_ns = max(1, int(time.perf_counter_ns()) - int(start_ns))
             wall_ms = float(elapsed_ns) / 1_000_000.0
@@ -305,6 +314,7 @@ def run_replay_render_benchmark(
             prof.enable()
             profiled = _run_once_with_tick_progress(
                 tick_desc="render ticks profile",
+                rtx=bool(rtx),
             )
             prof.disable()
             _assert_consistent_run_result(
@@ -335,6 +345,7 @@ def run_replay_render_benchmark(
             with telemetry_session:
                 collected = _run_once_with_tick_progress(
                     tick_desc="render ticks telemetry",
+                    rtx=bool(rtx),
                     telemetry_session=telemetry_session,
                 )
             _assert_consistent_run_result(
@@ -571,6 +582,7 @@ def _run_render_once(
     max_ticks: int | None,
     strict_events: bool,
     trace_rng: bool,
+    rtx: bool,
     telemetry_session: RenderTelemetrySession | None = None,
     tick_progress_callback: Callable[[int], None] | None = None,
 ) -> _RenderOnceResult:
@@ -584,6 +596,7 @@ def _run_render_once(
         max_ticks=max_ticks,
         strict_events=bool(strict_events),
         trace_rng=bool(trace_rng),
+        rtx=bool(rtx),
     )
     mode.open()
     try:

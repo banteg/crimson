@@ -688,6 +688,7 @@ def test_replay_benchmark_render_mode_uses_render_runner(tmp_path: Path, mocker)
     assert kwargs["strict_events"] is False
     assert kwargs["runs"] == 1
     assert kwargs["warmup_runs"] == 0
+    assert kwargs["rtx"] is False
     assert kwargs["show_progress"] is False
     assert kwargs["replay_path"] == replay_path
     assert kwargs["base_dir"] == tmp_path
@@ -744,7 +745,61 @@ def test_replay_benchmark_render_mode_defaults_to_single_run_no_warmup(tmp_path:
     kwargs = run_replay_render_benchmark.call_args.kwargs
     assert kwargs["runs"] == 1
     assert kwargs["warmup_runs"] == 0
+    assert kwargs["rtx"] is False
     assert kwargs["show_progress"] is True
+
+
+def test_replay_benchmark_render_mode_passes_rtx_flag(tmp_path: Path, mocker) -> None:
+    import crimson.sim.driver.replay_benchmark as replay_benchmark_mod
+
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+    run_result = RunResult(
+        game_mode_id=int(GameMode.SURVIVAL),
+        tick_rate=60,
+        ticks=3,
+        elapsed_ms=50,
+        score_xp=42,
+        creature_kill_count=1,
+        most_used_weapon_id=1,
+        shots_fired=2,
+        shots_hit=1,
+        rng_state=123,
+    )
+    sample = BenchmarkSample(wall_ms=1.5, ticks_per_second=2000.0, realtime_x=33.3)
+    aggregate = BenchmarkAggregate(min=1.5, p50=1.5, mean=1.5, p95=1.5, max=1.5, stdev=0.0)
+    run_replay_render_benchmark = mocker.patch.object(
+        replay_benchmark_mod,
+        "run_replay_render_benchmark",
+        return_value=ReplayBenchmarkResult(
+            run_result=run_result,
+            samples=(sample,),
+            wall_ms=aggregate,
+            ticks_per_second=aggregate,
+            realtime_x=aggregate,
+            profile=None,
+        ),
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "benchmark",
+            str(replay_path),
+            "--mode",
+            "render",
+            "--rtx",
+            "--base-dir",
+            str(tmp_path),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    run_replay_render_benchmark.assert_called_once()
+    kwargs = run_replay_render_benchmark.call_args.kwargs
+    assert kwargs["rtx"] is True
 
 
 def test_replay_benchmark_headless_defaults_remain_five_and_one(tmp_path: Path, mocker) -> None:
@@ -870,6 +925,28 @@ def test_replay_benchmark_headless_rejects_render_telemetry_flag(tmp_path: Path)
 
     assert result.exit_code == 1
     assert "--render-telemetry is supported only with --mode render" in result.output
+
+
+def test_replay_benchmark_headless_rejects_rtx_flag(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "benchmark",
+            str(replay_path),
+            "--mode",
+            "headless",
+            "--rtx",
+            "--base-dir",
+            str(tmp_path),
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "--rtx is supported only with --mode render" in result.output
 
 
 def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path: Path, mocker) -> None:

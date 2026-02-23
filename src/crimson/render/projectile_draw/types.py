@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Protocol
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
+from ..rtx.mode import RtxRenderMode
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
@@ -42,6 +44,9 @@ class ProjectileRendererLike(Protocol):
 
     @property
     def elapsed_ms(self) -> float: ...
+
+    @property
+    def rtx_mode(self) -> RtxRenderMode: ...
 
     def _is_bullet_trail_type(self, type_id: int) -> bool: ...
 

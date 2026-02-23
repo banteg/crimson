@@ -44,6 +44,7 @@ def _run_game_with_pending_session(
     height: int | None,
     fps: int,
     debug: bool,
+    rtx: bool,
 ) -> None:
     from ..game import GameConfig, run_game
 
@@ -55,6 +56,7 @@ def _run_game_with_pending_session(
             height=height,
             fps=fps,
             debug=bool(debug),
+            rtx=bool(rtx),
             preserve_bugs=False,
             pending_net_session=pending,
             pending_lan_session=pending,

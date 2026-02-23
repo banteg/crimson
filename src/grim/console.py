@@ -644,6 +644,8 @@ def register_boot_commands(
         "loadtexture",
         "openurl",
         "sndfreqadjustment",
+        "rendermode",
+        "togglertx",
     )
     for name in commands:
         handler = resolved.get(name)

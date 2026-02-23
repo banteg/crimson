@@ -23,6 +23,7 @@ from .context import WorldRenderCtx
 if TYPE_CHECKING:
     from ...projectiles import Projectile, SecondaryProjectile
     from ..projectile_draw import ProjectileRendererLike
+    from ..rtx.mode import RtxRenderMode
 
 
 @dataclass(slots=True)
@@ -62,6 +63,10 @@ class _ProjectileRendererAdapter:
     @property
     def elapsed_ms(self) -> float:
         return self.render_ctx.elapsed_ms
+
+    @property
+    def rtx_mode(self) -> "RtxRenderMode":
+        return self.render_ctx.rtx_mode
 
     @staticmethod
     def _is_bullet_trail_type(type_id: int) -> bool:

@@ -816,6 +816,11 @@ def cmd_replay_benchmark(
         "--mode",
         help="benchmark mode: headless|render",
     ),
+    rtx: bool = typer.Option(
+        False,
+        "--rtx",
+        help="enable non-canonical RTX render mode (render mode only)",
+    ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
     strict_events: bool = typer.Option(
         True,
@@ -895,6 +900,9 @@ def cmd_replay_benchmark(
     resolved_runs = int(runs) if runs is not None else (1 if str(mode) == "render" else 5)
     resolved_warmup_runs = int(warmup_runs) if warmup_runs is not None else (0 if str(mode) == "render" else 1)
     if str(mode) != "render":
+        if bool(rtx):
+            typer.echo("replay benchmark failed: --rtx is supported only with --mode render", err=True)
+            raise typer.Exit(code=1)
         if bool(render_telemetry):
             typer.echo("replay benchmark failed: --render-telemetry is supported only with --mode render", err=True)
             raise typer.Exit(code=1)
@@ -924,6 +932,7 @@ def cmd_replay_benchmark(
                 render_telemetry=bool(render_telemetry),
                 render_telemetry_out=render_telemetry_out,
                 render_charts_out_dir=render_charts_out_dir,
+                rtx=bool(rtx),
                 show_progress=(str(output_format) == "human"),
             )
         else:
