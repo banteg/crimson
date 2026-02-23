@@ -79,6 +79,8 @@ SHADER_EXT_GEMINI_CORE_A_DEFAULT = 1.5
 SHADER_EXT_GEMINI_CORE_B_DEFAULT = -12.0
 SHADER_EXT_GEMINI_TAIL_WIDTH_DEFAULT = 0.6
 SHADER_EXT_GEMINI_CAP_SCALE_DEFAULT = 1.25
+SHADER_EXT_GPT_PRO_COVER_LEN_DEFAULT = 1.0
+SHADER_EXT_GPT_PRO_HALO_W_DEFAULT = 0.25
 BENCH_FRAMES_PER_MODE = 240
 BATCH_PROBE_QUADS_DEFAULT = 4096
 BATCH_PROBE_QUADS_STEP = 256
@@ -349,6 +351,73 @@ void main() {
 }
 """
 
+_BEAM_EXT_GPT_PRO_FS_330 = """
+#version 330
+
+in vec2 fragTexCoord;
+in vec4 fragColor;
+in float fragLen;
+
+uniform vec4 colDiffuse;
+uniform float u_approx_a;
+uniform float u_approx_b;
+uniform float u_approx_c;
+uniform float u_intensity_gain;
+uniform float u_step_uv;
+uniform float u_cover_len;
+uniform float u_halo_w;
+
+out vec4 finalColor;
+
+void main() {
+    float gain = max(u_intensity_gain, 0.0);
+    float halo_w = max(u_halo_w, 0.0);
+    float u_len = fragLen;
+
+    if (u_len < 0.0) {
+        float d = length(fragTexCoord);
+        float e = exp(u_approx_b * d);
+        float core = clamp(u_approx_a * e - u_approx_c, 0.0, 1.0);
+        float halo = clamp(u_approx_a * sqrt(max(e, 0.0)) - u_approx_c, 0.0, 1.0);
+        float shell = max(0.0, halo - core);
+        float profile = clamp(core + halo_w * shell, 0.0, 1.0);
+        float intensity = profile * fragColor.a * gain;
+        vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
+        finalColor = vec4(rgb, 1.0);
+        return;
+    }
+
+    float step_uv = max(1e-4, u_step_uv);
+    float x0 = min(step_uv, max(0.0, u_len));
+    float residual = mod(max(0.0, u_len), step_uv);
+    float x1 = max(x0, u_len - residual);
+
+    float dx = max(0.0, max(x0 - fragTexCoord.x, fragTexCoord.x - x1));
+    float d = length(vec2(dx, fragTexCoord.y));
+
+    float e = exp(u_approx_b * d);
+    float core = clamp(u_approx_a * e - u_approx_c, 0.0, 1.0);
+    float halo = clamp(u_approx_a * sqrt(max(e, 0.0)) - u_approx_c, 0.0, 1.0);
+    float shell = max(0.0, halo - core);
+    float profile = clamp(core + halo_w * shell, 0.0, 1.0);
+
+    float xc = clamp(fragTexCoord.x, x0, x1);
+    float t = clamp(xc / max(u_len, 1e-6), 0.0, 1.0);
+
+    float seg_len = max(0.0, x1 - x0);
+    float w = min(max(0.0, u_cover_len), 0.5 * seg_len);
+    w = max(w, 1e-4);
+    float left = min(max(0.0, fragTexCoord.x - x0), w);
+    float right = min(max(0.0, x1 - fragTexCoord.x), w);
+    float cover = clamp((left + right) / (2.0 * w), 0.0, 1.0);
+
+    float structural = t * cover * fragColor.a;
+    float intensity = profile * structural * gain;
+    vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
+    finalColor = vec4(rgb, 1.0);
+}
+"""
+
 _BEAM_GEMINI_2_SHADER_TRIED = False
 _BEAM_GEMINI_2_SHADER: rl.Shader | None = None
 _BEAM_GEMINI_2_APPROX_A_LOC = -1
@@ -391,6 +460,16 @@ _BEAM_EXT_GEMINI_APPROX_C_LOC = -1
 _BEAM_EXT_GEMINI_INTENSITY_GAIN_LOC = -1
 _BEAM_EXT_GEMINI_TAIL_WIDTH_LOC = -1
 _BEAM_EXT_GEMINI_CAP_SCALE_LOC = -1
+_BEAM_EXT_GPT_PRO_SHADER_TRIED = False
+_BEAM_EXT_GPT_PRO_SHADER: rl.Shader | None = None
+_BEAM_EXT_GPT_PRO_COLOR_LOC = -1
+_BEAM_EXT_GPT_PRO_APPROX_A_LOC = -1
+_BEAM_EXT_GPT_PRO_APPROX_B_LOC = -1
+_BEAM_EXT_GPT_PRO_APPROX_C_LOC = -1
+_BEAM_EXT_GPT_PRO_INTENSITY_GAIN_LOC = -1
+_BEAM_EXT_GPT_PRO_STEP_UV_LOC = -1
+_BEAM_EXT_GPT_PRO_COVER_LEN_LOC = -1
+_BEAM_EXT_GPT_PRO_HALO_W_LOC = -1
 
 
 class BeamRenderMode(str, Enum):
@@ -399,6 +478,7 @@ class BeamRenderMode(str, Enum):
     SHADER_STAMPED_VIRTUAL = "shader_stamped_virtual"
     SHADER_EXT_CLAUDE = "shader_ext_claude"
     SHADER_EXT_GEMINI = "shader_ext_gemini"
+    SHADER_EXT_GPT_PRO = "shader_ext_gpt_pro"
     SHADER_GEMINI_2 = "shader_gemini_2"
 
 
@@ -535,6 +615,16 @@ class BeamShaderExtGeminiParams:
     intensity_gain: float = SHADER_GEMINI_2_INTENSITY_GAIN_DEFAULT
     tail_width: float = SHADER_EXT_GEMINI_TAIL_WIDTH_DEFAULT
     cap_scale: float = SHADER_EXT_GEMINI_CAP_SCALE_DEFAULT
+
+
+@dataclass(frozen=True, slots=True)
+class BeamShaderExtGptProParams:
+    approx_a: float = SHADER_GEMINI_2_APPROX_A_DEFAULT
+    approx_b: float = SHADER_GEMINI_2_APPROX_B_DEFAULT
+    approx_c: float = SHADER_GEMINI_2_APPROX_C_DEFAULT
+    intensity_gain: float = SHADER_GEMINI_2_INTENSITY_GAIN_DEFAULT
+    cover_len: float = SHADER_EXT_GPT_PRO_COVER_LEN_DEFAULT
+    halo_w: float = SHADER_EXT_GPT_PRO_HALO_W_DEFAULT
 
 
 @dataclass(frozen=True, slots=True)
@@ -942,6 +1032,40 @@ def _get_beam_ext_gemini_shader() -> rl.Shader | None:
     return _BEAM_EXT_GEMINI_SHADER
 
 
+def _get_beam_ext_gpt_pro_shader() -> rl.Shader | None:
+    global _BEAM_EXT_GPT_PRO_SHADER_TRIED, _BEAM_EXT_GPT_PRO_SHADER
+    global _BEAM_EXT_GPT_PRO_COLOR_LOC, _BEAM_EXT_GPT_PRO_APPROX_A_LOC
+    global _BEAM_EXT_GPT_PRO_APPROX_B_LOC, _BEAM_EXT_GPT_PRO_APPROX_C_LOC
+    global _BEAM_EXT_GPT_PRO_INTENSITY_GAIN_LOC, _BEAM_EXT_GPT_PRO_STEP_UV_LOC
+    global _BEAM_EXT_GPT_PRO_COVER_LEN_LOC, _BEAM_EXT_GPT_PRO_HALO_W_LOC
+    if _BEAM_EXT_GPT_PRO_SHADER_TRIED:
+        if _BEAM_EXT_GPT_PRO_SHADER is not None and int(_BEAM_EXT_GPT_PRO_SHADER.id) > 0:
+            return _BEAM_EXT_GPT_PRO_SHADER
+        return None
+
+    _BEAM_EXT_GPT_PRO_SHADER_TRIED = True
+    try:
+        shader = rl.load_shader_from_memory(_BEAM_SHADER_VS_330, _BEAM_EXT_GPT_PRO_FS_330)
+    except (RuntimeError, OSError, ValueError):
+        _BEAM_EXT_GPT_PRO_SHADER = None
+        return None
+
+    if int(shader.id) <= 0:
+        _BEAM_EXT_GPT_PRO_SHADER = None
+        return None
+
+    _BEAM_EXT_GPT_PRO_SHADER = shader
+    _BEAM_EXT_GPT_PRO_COLOR_LOC = int(rl.get_shader_location(shader, "colDiffuse"))
+    _BEAM_EXT_GPT_PRO_APPROX_A_LOC = int(rl.get_shader_location(shader, "u_approx_a"))
+    _BEAM_EXT_GPT_PRO_APPROX_B_LOC = int(rl.get_shader_location(shader, "u_approx_b"))
+    _BEAM_EXT_GPT_PRO_APPROX_C_LOC = int(rl.get_shader_location(shader, "u_approx_c"))
+    _BEAM_EXT_GPT_PRO_INTENSITY_GAIN_LOC = int(rl.get_shader_location(shader, "u_intensity_gain"))
+    _BEAM_EXT_GPT_PRO_STEP_UV_LOC = int(rl.get_shader_location(shader, "u_step_uv"))
+    _BEAM_EXT_GPT_PRO_COVER_LEN_LOC = int(rl.get_shader_location(shader, "u_cover_len"))
+    _BEAM_EXT_GPT_PRO_HALO_W_LOC = int(rl.get_shader_location(shader, "u_halo_w"))
+    return _BEAM_EXT_GPT_PRO_SHADER
+
+
 def _mode_label(mode: BeamRenderMode) -> str:
     if mode == BeamRenderMode.BASELINE_SPRITE:
         return "baseline"
@@ -953,6 +1077,8 @@ def _mode_label(mode: BeamRenderMode) -> str:
         return "shader-ext-claude"
     if mode == BeamRenderMode.SHADER_EXT_GEMINI:
         return "shader-ext-gemini"
+    if mode == BeamRenderMode.SHADER_EXT_GPT_PRO:
+        return "shader-ext-gpt-pro"
     return "shader-gemini-2"
 
 
@@ -1094,6 +1220,7 @@ def estimate_beam_frame_counts(
         or mode == BeamRenderMode.SHADER_STAMPED_VIRTUAL
         or mode == BeamRenderMode.SHADER_EXT_CLAUDE
         or mode == BeamRenderMode.SHADER_EXT_GEMINI
+        or mode == BeamRenderMode.SHADER_EXT_GPT_PRO
     ):
         body_calls = int(shader_beam_calls)
         overlay_calls = 0
@@ -1184,6 +1311,7 @@ class BeamDebugView:
         self._shader_gemini_2_params = BeamShaderGemini2Params()
         self._shader_ext_claude_params = BeamShaderExtClaudeParams()
         self._shader_ext_gemini_params = BeamShaderExtGeminiParams()
+        self._shader_ext_gpt_pro_params = BeamShaderExtGptProParams()
         self._shader_reference_profile: BeamSpriteReferenceProfile | None = None
         self._shader_profile_metrics: BeamProfileMatchMetrics | None = None
         self._shader_fit_status = "pending"
@@ -2569,6 +2697,172 @@ class BeamDebugView:
         rl.end_shader_mode()
         return int(quad_count)
 
+    def _draw_projectile_body_shader_ext_gpt_pro(
+        self,
+        preps: Sequence[_RenderPrep],
+        *,
+        streak_rgb: tuple[float, float, float],
+    ) -> tuple[int, bool]:
+        shader = _get_beam_ext_gpt_pro_shader()
+        if shader is None:
+            return self._draw_projectile_body_sprites(preps, streak_rgb=streak_rgb), True
+
+        r = int(clamp(streak_rgb[0] * 255.0, 0.0, 255.0) + 0.5)
+        g = int(clamp(streak_rgb[1] * 255.0, 0.0, 255.0) + 0.5)
+        b = int(clamp(streak_rgb[2] * 255.0, 0.0, 255.0) + 0.5)
+        params = self._shader_ext_gpt_pro_params
+
+        radius = max(
+            0.001,
+            float(SHADER_GEMINI_2_RADIUS_SCALE) * float(self._effect_scale) * float(SHADER_GEMINI_2_RADIUS_EXPAND),
+        )
+        step_screen = max(1e-6, float(self._beam_step_units()) * float(self._distance_to_screen_scale))
+        step_uv = max(1e-4, float(step_screen) / float(radius))
+
+        quad_count = 0
+        rl.begin_shader_mode(shader)
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_APPROX_A_LOC, float(params.approx_a))
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_APPROX_B_LOC, float(params.approx_b))
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_APPROX_C_LOC, float(params.approx_c))
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_INTENSITY_GAIN_LOC, float(params.intensity_gain))
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_STEP_UV_LOC, float(step_uv))
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_COVER_LEN_LOC, float(params.cover_len))
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_HALO_W_LOC, float(params.halo_w))
+        self._set_shader_vec4(shader, _BEAM_EXT_GPT_PRO_COLOR_LOC, 1.0, 1.0, 1.0, 1.0)
+        rl.rl_set_texture(0)
+        rl.rl_begin(rd.RL_QUADS)
+        for prep in preps:
+            if not prep.offsets:
+                continue
+
+            s0 = float(prep.plan.start)
+            s1 = float(prep.dist_units)
+            if s1 - s0 <= 1e-6:
+                continue
+
+            t0 = s0 / prep.dist_units
+            p0 = prep.preview.origin_screen + prep.ray * t0
+            p1 = prep.preview.head_screen
+            direction, length = (p1 - p0).normalized_with_length()
+            if length <= 1e-6:
+                continue
+
+            alpha_u8 = self._u8(prep.base_alpha)
+            if alpha_u8 <= 0:
+                continue
+
+            side = direction.perp_left() * radius
+            u_len = float(length) / float(radius)
+            tail_end = p0 - direction * radius
+            head_end = p1 + direction * radius
+
+            def push(pos: Vec2, *, uv_x: float, uv_y: float, alpha: int = alpha_u8, u_len_value: float = u_len) -> None:
+                rl.rl_color4ub(r, g, b, int(alpha))
+                rl.rl_tex_coord2f(float(uv_x), float(uv_y))
+                rl.rl_vertex3f(float(pos.x), float(pos.y), float(u_len_value))
+
+            push(tail_end - side, uv_x=-1.0, uv_y=-1.0)
+            push(tail_end + side, uv_x=-1.0, uv_y=1.0)
+            push(head_end + side, uv_x=u_len + 1.0, uv_y=1.0)
+            push(head_end - side, uv_x=u_len + 1.0, uv_y=-1.0)
+            quad_count += 1
+        rl.rl_end()
+        rl.rl_set_texture(0)
+        rl.end_shader_mode()
+        return int(quad_count), False
+
+    def _draw_projectile_head_shader_ext_gpt_pro(
+        self,
+        preps: Sequence[_RenderPrep],
+        *,
+        streak_rgb: tuple[float, float, float],
+        is_fire: bool,
+    ) -> int:
+        if not bool(self._head_render_enabled):
+            return 0
+
+        shader = _get_beam_ext_gpt_pro_shader()
+        if shader is None:
+            return 0
+
+        r = int(clamp(streak_rgb[0] * 255.0, 0.0, 255.0) + 0.5)
+        g = int(clamp(streak_rgb[1] * 255.0, 0.0, 255.0) + 0.5)
+        b = int(clamp(streak_rgb[2] * 255.0, 0.0, 255.0) + 0.5)
+
+        params = self._shader_ext_gpt_pro_params
+        approx_a = clamp(
+            float(params.approx_a) * (1.1 if bool(is_fire) else 1.05),
+            SHADER_GEMINI_2_APPROX_A_MIN,
+            SHADER_GEMINI_2_APPROX_A_MAX,
+        )
+        approx_b = clamp(
+            float(params.approx_b) * (0.8 if bool(is_fire) else 0.85),
+            SHADER_GEMINI_2_APPROX_B_MIN,
+            SHADER_GEMINI_2_APPROX_B_MAX,
+        )
+        approx_c = clamp(
+            float(params.approx_c),
+            SHADER_GEMINI_2_APPROX_C_MIN,
+            SHADER_GEMINI_2_APPROX_C_MAX,
+        )
+        intensity_gain = clamp(
+            float(params.intensity_gain) * (1.22 if bool(is_fire) else 1.08),
+            SHADER_GEMINI_2_INTENSITY_GAIN_MIN,
+            SHADER_GEMINI_2_INTENSITY_GAIN_MAX,
+        )
+
+        head_radius_multiplier = (
+            float(SHADER_GEMINI_2_HEAD_FIRE_RADIUS_MULTIPLIER)
+            if bool(is_fire)
+            else float(SHADER_GEMINI_2_HEAD_RADIUS_MULTIPLIER)
+        )
+        radius = max(
+            0.001,
+            float(SHADER_GEMINI_2_RADIUS_SCALE)
+            * float(self._effect_scale)
+            * float(SHADER_GEMINI_2_RADIUS_EXPAND)
+            * head_radius_multiplier,
+        )
+        step_screen = max(1e-6, float(self._beam_step_units()) * float(self._distance_to_screen_scale))
+        step_uv = max(1e-4, float(step_screen) / float(radius))
+
+        quad_count = 0
+        rl.begin_shader_mode(shader)
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_APPROX_A_LOC, float(approx_a))
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_APPROX_B_LOC, float(approx_b))
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_APPROX_C_LOC, float(approx_c))
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_INTENSITY_GAIN_LOC, float(intensity_gain))
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_STEP_UV_LOC, float(step_uv))
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_COVER_LEN_LOC, float(params.cover_len))
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_HALO_W_LOC, float(params.halo_w))
+        self._set_shader_vec4(shader, _BEAM_EXT_GPT_PRO_COLOR_LOC, 1.0, 1.0, 1.0, 1.0)
+        rl.rl_set_texture(0)
+        rl.rl_begin(rd.RL_QUADS)
+        for prep in preps:
+            alpha_u8 = self._u8(prep.base_alpha)
+            if alpha_u8 <= 0:
+                continue
+
+            direction = Vec2.from_angle(prep.rotation_rad)
+            side = direction.perp_left() * radius
+            forward = direction * radius
+            center = prep.preview.head_screen
+
+            def push(pos: Vec2, *, uv_x: float, uv_y: float, alpha: int = alpha_u8) -> None:
+                rl.rl_color4ub(r, g, b, int(alpha))
+                rl.rl_tex_coord2f(float(uv_x), float(uv_y))
+                rl.rl_vertex3f(float(pos.x), float(pos.y), -1.0)
+
+            push(center - forward - side, uv_x=-1.0, uv_y=-1.0)
+            push(center - forward + side, uv_x=-1.0, uv_y=1.0)
+            push(center + forward + side, uv_x=1.0, uv_y=1.0)
+            push(center + forward - side, uv_x=1.0, uv_y=-1.0)
+            quad_count += 1
+        rl.rl_end()
+        rl.rl_set_texture(0)
+        rl.end_shader_mode()
+        return int(quad_count)
+
     def _draw_projectile_head_shader_stamped_analytic(self, preps: Sequence[_RenderPrep], *, is_fire: bool) -> int:
         del is_fire
         if not bool(self._head_render_enabled):
@@ -2848,6 +3142,18 @@ class BeamDebugView:
                 head_calls, overlay_calls = self._draw_projectile_heads(preps, is_fire=is_fire)
             else:
                 head_calls = self._draw_projectile_head_shader_ext_gemini(
+                    preps,
+                    streak_rgb=streak_rgb,
+                    is_fire=is_fire,
+                )
+                overlay_calls = 0
+        elif mode == BeamRenderMode.SHADER_EXT_GPT_PRO:
+            body_calls, fallback = self._draw_projectile_body_shader_ext_gpt_pro(preps, streak_rgb=streak_rgb)
+            shader_fallback = bool(fallback)
+            if fallback:
+                head_calls, overlay_calls = self._draw_projectile_heads(preps, is_fire=is_fire)
+            else:
+                head_calls = self._draw_projectile_head_shader_ext_gpt_pro(
                     preps,
                     streak_rgb=streak_rgb,
                     is_fire=is_fire,
