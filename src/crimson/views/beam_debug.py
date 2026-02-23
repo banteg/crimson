@@ -431,12 +431,10 @@ _HEAD_CAP_VARIANT_ORDER: tuple[HeadCapVariant, ...] = (
 
 
 class StampedVirtualHeadPass(str, Enum):
-    ANALYTIC = "analytic"
     VIRTUAL = "virtual"
 
 
 _STAMPED_VIRTUAL_HEAD_PASS_ORDER: tuple[StampedVirtualHeadPass, ...] = (
-    StampedVirtualHeadPass.ANALYTIC,
     StampedVirtualHeadPass.VIRTUAL,
 )
 
@@ -1144,7 +1142,7 @@ class BeamDebugView:
         self._cap_enabled = True
         self._head_render_enabled = True
         self._head_cap_variant = HeadCapVariant.BODY_CAP
-        self._stamped_virtual_head_pass = StampedVirtualHeadPass.ANALYTIC
+        self._stamped_virtual_head_pass = StampedVirtualHeadPass.VIRTUAL
         self._stamped_virtual_head_isolation = False
         self._stamped_virtual_head_gain_scale = SHADER_STAMP_VIRTUAL_HEAD_GAIN_SCALE_DEFAULT
         self._stamped_virtual_head_radius_scale = SHADER_STAMP_VIRTUAL_HEAD_RADIUS_SCALE_DEFAULT
@@ -1272,8 +1270,7 @@ class BeamDebugView:
         self._sync_effect_scale()
 
     def cycle_stamped_virtual_head_pass(self) -> None:
-        idx = _STAMPED_VIRTUAL_HEAD_PASS_ORDER.index(self._stamped_virtual_head_pass)
-        self._stamped_virtual_head_pass = _STAMPED_VIRTUAL_HEAD_PASS_ORDER[(idx + 1) % len(_STAMPED_VIRTUAL_HEAD_PASS_ORDER)]
+        self._stamped_virtual_head_pass = StampedVirtualHeadPass.VIRTUAL
 
     def _apply_stamped_virtual_head_param_delta(self, *, gain_scale: float = 0.0, radius_scale: float = 0.0) -> None:
         self._stamped_virtual_head_gain_scale = float(
@@ -1800,8 +1797,6 @@ class BeamDebugView:
             self._reset_shader_params()
         if rl.is_key_pressed(rl.KeyboardKey.KEY_Q):
             self._toggle_research_params()
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_O):
-            self.cycle_stamped_virtual_head_pass()
         if rl.is_key_pressed(rl.KeyboardKey.KEY_E):
             self._stamped_virtual_head_isolation = not bool(self._stamped_virtual_head_isolation)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_FOUR):
@@ -2873,16 +2868,12 @@ class BeamDebugView:
             if fallback:
                 head_calls, overlay_calls = self._draw_projectile_heads(preps, is_fire=is_fire)
             else:
-                if self._stamped_virtual_head_pass == StampedVirtualHeadPass.ANALYTIC:
-                    head_calls = self._draw_projectile_head_shader_stamped_analytic(preps, is_fire=is_fire)
-                    overlay_calls = 0
+                head_calls, head_fallback = self._draw_projectile_head_shader_stamped_virtual(preps, is_fire=is_fire)
+                if head_fallback:
+                    shader_fallback = True
+                    head_calls, overlay_calls = self._draw_projectile_heads(preps, is_fire=is_fire)
                 else:
-                    head_calls, head_fallback = self._draw_projectile_head_shader_stamped_virtual(preps, is_fire=is_fire)
-                    if head_fallback:
-                        shader_fallback = True
-                        head_calls, overlay_calls = self._draw_projectile_heads(preps, is_fire=is_fire)
-                    else:
-                        overlay_calls = 0
+                    overlay_calls = 0
         elif mode == BeamRenderMode.SHADER_EXT_GPT_PRO:
             body_calls, fallback = self._draw_projectile_body_shader_ext_gpt_pro(preps, streak_rgb=streak_rgb)
             shader_fallback = bool(fallback)
@@ -2995,7 +2986,7 @@ class BeamDebugView:
                 "Space pause/resume  Right step(when paused)  Esc close  P screenshot  "
                 "F fire/ion  I cycle ion preset  C cap256  G force life>=0.4  H toggle heads  D cycle head-cap  M all markers  V geometry  "
                 "X run batch-probe  Z auto-probe  J/U probe quads  N autofit-profile  0 reset shader  Q research/fitted  "
-                "O cycle sv-head-pass  E sv-head-isolation  4/5 sv-head gain  6/7 sv-head radius  8 reset sv-head"
+                "E sv-head-isolation  4/5 sv-head gain  6/7 sv-head radius  8 reset sv-head"
             ),
             Vec2(margin, y),
             color=UI_HINT,

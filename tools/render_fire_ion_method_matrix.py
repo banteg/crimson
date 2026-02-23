@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import argparse
+import csv
+import json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -200,12 +202,6 @@ def _columns() -> tuple[MatrixColumn, ...]:
     return (
         MatrixColumn(label=BeamRenderMode.BASELINE_SPRITE.value.upper(), mode=BeamRenderMode.BASELINE_SPRITE),
         MatrixColumn(
-            label="SV+HEAD_ANALYTIC",
-            mode=BeamRenderMode.SHADER_STAMPED_VIRTUAL,
-            stamped_virtual_head_pass=StampedVirtualHeadPass.ANALYTIC,
-            stamped_virtual_head_isolation=False,
-        ),
-        MatrixColumn(
             label="SV+HEAD_VIRTUAL",
             mode=BeamRenderMode.SHADER_STAMPED_VIRTUAL,
             stamped_virtual_head_pass=StampedVirtualHeadPass.VIRTUAL,
@@ -339,10 +335,13 @@ def _export_signed_diff_vstacks(
     out_dir: Path,
     signed_clip: float,
     neutral_band: float,
+    metrics_json_path: Path | None,
+    metrics_csv_path: Path | None,
 ) -> None:
     if len(columns) < 2:
         return
 
+    metrics_rows: list[dict[str, object]] = []
     out_dir.mkdir(parents=True, exist_ok=True)
     matrix = Image.open(matrix_path).convert("RGB")
     first_cell_x = int(layout.margin + layout.row_label_w)
@@ -378,10 +377,62 @@ def _export_signed_diff_vstacks(
                     float(over),
                 ),
             )
+            metrics_rows.append(
+                {
+                    "row_index": int(row_idx),
+                    "row_key": row.key,
+                    "row_label": row.label,
+                    "row_note": row.note,
+                    "column_index": int(col_idx),
+                    "mode_label": column.label,
+                    "mode": column.mode.value,
+                    "mae": float(mae),
+                    "wmae": float(wmae),
+                    "under": float(under),
+                    "over": float(over),
+                    "net_bias": float(over - under),
+                    "signed_clip": float(signed_clip),
+                    "neutral_band": float(neutral_band),
+                },
+            )
 
         sheet = _build_signed_diff_vstack(row=row, panels=panels)
         out_path = out_dir / f"{row_idx:02d}_{row.key}_signed_diff_vstack.png"
         sheet.save(out_path)
+
+    if metrics_json_path is not None:
+        metrics_json_path.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "matrix_path": str(matrix_path),
+            "signed_diff_vstack_dir": str(out_dir),
+            "signed_clip": float(signed_clip),
+            "neutral_band": float(neutral_band),
+            "rows": metrics_rows,
+        }
+        metrics_json_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    if metrics_csv_path is not None:
+        metrics_csv_path.parent.mkdir(parents=True, exist_ok=True)
+        fieldnames = [
+            "row_index",
+            "row_key",
+            "row_label",
+            "row_note",
+            "column_index",
+            "mode_label",
+            "mode",
+            "mae",
+            "wmae",
+            "under",
+            "over",
+            "net_bias",
+            "signed_clip",
+            "neutral_band",
+        ]
+        with metrics_csv_path.open("w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(metrics_rows)
 
 
 def main() -> int:
@@ -437,6 +488,16 @@ def main() -> int:
         type=float,
         default=0.01,
         help="signed diff deadband near zero (0..1, default: 0.01)",
+    )
+    parser.add_argument(
+        "--signed-diff-metrics-json",
+        default="",
+        help="optional JSON path for signed-diff metrics table",
+    )
+    parser.add_argument(
+        "--signed-diff-metrics-csv",
+        default="",
+        help="optional CSV path for signed-diff metrics table",
     )
     args = parser.parse_args()
 
@@ -575,7 +636,7 @@ def main() -> int:
                                 view._stamped_virtual_head_pass = column.stamped_virtual_head_pass
                             view._stamped_virtual_head_isolation = bool(column.stamped_virtual_head_isolation)
                         else:
-                            view._stamped_virtual_head_pass = StampedVirtualHeadPass.ANALYTIC
+                            view._stamped_virtual_head_pass = StampedVirtualHeadPass.VIRTUAL
                             view._stamped_virtual_head_isolation = False
                         preview = _build_preview(
                             index=draw_index,
@@ -612,6 +673,16 @@ def main() -> int:
                     out_dir=Path(str(args.signed_diff_vstack_dir)),
                     signed_clip=float(args.signed_diff_clip),
                     neutral_band=float(args.signed_diff_neutral_band),
+                    metrics_json_path=(
+                        None
+                        if str(args.signed_diff_metrics_json).strip() == ""
+                        else Path(str(args.signed_diff_metrics_json))
+                    ),
+                    metrics_csv_path=(
+                        None
+                        if str(args.signed_diff_metrics_csv).strip() == ""
+                        else Path(str(args.signed_diff_metrics_csv))
+                    ),
                 )
         finally:
             view.close()

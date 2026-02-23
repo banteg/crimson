@@ -30,7 +30,7 @@ def main():
     parser = argparse.ArgumentParser(description="Render side-by-side beam comparison screenshot.")
     parser.add_argument("--mode", default=BeamRenderMode.SHADER_GEMINI_2.value)
     parser.add_argument("--head-pass", action="store_true", help="enable head pass (default: off)")
-    parser.add_argument("--sv-head-pass", default=StampedVirtualHeadPass.ANALYTIC.value)
+    parser.add_argument("--sv-head-pass", default=StampedVirtualHeadPass.VIRTUAL.value)
     parser.add_argument("--sv-head-isolation", action="store_true")
     parser.add_argument("--sv-head-gain-scale", type=float, default=1.0)
     parser.add_argument("--sv-head-radius-scale", type=float, default=1.0)

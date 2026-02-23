@@ -90,8 +90,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--sv-head-pass",
-        default=StampedVirtualHeadPass.ANALYTIC.value,
-        help="stamped-virtual head pass when --mode=shader_stamped_virtual (analytic|virtual)",
+        default=StampedVirtualHeadPass.VIRTUAL.value,
+        help="stamped-virtual head pass when --mode=shader_stamped_virtual (virtual)",
     )
     parser.add_argument(
         "--sv-head-isolation",
