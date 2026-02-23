@@ -81,6 +81,8 @@ PROJECTILE_SPEED_UNITS_PER_META = 20.0
 SHADER_STAMP_ANALYTIC_ALPHA_SCALE = 0.88
 SHADER_STAMP_ANALYTIC_ALPHA_DECAY_PER_PX = 0.3
 SHADER_STAMP_ANALYTIC_RADIUS_SCALE = 16.0
+SHADER_STAMP_VIRTUAL_INTENSITY_GAIN_DEFAULT = 1.0
+SHADER_STAMP_VIRTUAL_MAX_STAMPS = 128
 
 _BEAM_SHADER_VS_330 = """
 #version 330
@@ -163,6 +165,63 @@ void main() {{
 }}
 """
 
+_BEAM_STAMPED_VIRTUAL_FS_330 = f"""
+#version 330
+
+in vec2 fragTexCoord;
+in vec4 fragColor;
+in float fragLen;
+
+uniform vec4 colDiffuse;
+uniform float u_step_uv;
+uniform float u_stamp_scale;
+uniform float u_stamp_decay;
+uniform float u_intensity_gain;
+
+out vec4 finalColor;
+
+void main() {{
+    float u_len = fragLen;
+    float gain = max(u_intensity_gain, 0.0);
+
+    // Head pass (fragLen < 0): radial analytic cap profile.
+    if (u_len < 0.0) {{
+        float d = length(fragTexCoord);
+        float profile = u_stamp_scale * exp(-u_stamp_decay * d);
+        float intensity = profile * fragColor.a * gain;
+        vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
+        finalColor = vec4(rgb, 1.0);
+        return;
+    }}
+
+    float step_uv = max(0.001, u_step_uv);
+    float len_uv = max(0.0, u_len);
+    float stamp_count = floor(len_uv / step_uv) + 1.0;
+    stamp_count = clamp(stamp_count, 0.0, float({SHADER_STAMP_VIRTUAL_MAX_STAMPS:d}));
+
+    float accum = 0.0;
+    const int MAX_STAMPS = {SHADER_STAMP_VIRTUAL_MAX_STAMPS:d};
+    for (int i = 0; i < MAX_STAMPS; i++) {{
+        float fi = float(i);
+        if (fi >= stamp_count) {{
+            break;
+        }}
+        float sx = fi * step_uv;
+        if (sx >= len_uv) {{
+            break;
+        }}
+        float t = clamp(sx / max(1e-6, len_uv), 0.0, 1.0);
+        float d = length(vec2(fragTexCoord.x - sx, fragTexCoord.y));
+        float profile = u_stamp_scale * exp(-u_stamp_decay * d);
+        accum += t * profile;
+    }}
+
+    float intensity = accum * fragColor.a * gain;
+    vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
+    finalColor = vec4(rgb, 1.0);
+}}
+"""
+
 _BEAM_GEMINI_2_SHADER_TRIED = False
 _BEAM_GEMINI_2_SHADER: rl.Shader | None = None
 _BEAM_GEMINI_2_APPROX_A_LOC = -1
@@ -173,11 +232,19 @@ _BEAM_GEMINI_2_COLOR_LOC = -1
 _BEAM_STAMPED_ANALYTIC_SHADER_TRIED = False
 _BEAM_STAMPED_ANALYTIC_SHADER: rl.Shader | None = None
 _BEAM_STAMPED_ANALYTIC_COLOR_LOC = -1
+_BEAM_STAMPED_VIRTUAL_SHADER_TRIED = False
+_BEAM_STAMPED_VIRTUAL_SHADER: rl.Shader | None = None
+_BEAM_STAMPED_VIRTUAL_COLOR_LOC = -1
+_BEAM_STAMPED_VIRTUAL_STEP_UV_LOC = -1
+_BEAM_STAMPED_VIRTUAL_STAMP_SCALE_LOC = -1
+_BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC = -1
+_BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC = -1
 
 
 class BeamRenderMode(str, Enum):
     BASELINE_SPRITE = "baseline_sprite"
     SHADER_STAMPED_ANALYTIC = "shader_stamped_analytic"
+    SHADER_STAMPED_VIRTUAL = "shader_stamped_virtual"
     SHADER_GEMINI_2 = "shader_gemini_2"
 
 
@@ -590,11 +657,43 @@ def _get_beam_stamped_analytic_shader() -> rl.Shader | None:
     return _BEAM_STAMPED_ANALYTIC_SHADER
 
 
+def _get_beam_stamped_virtual_shader() -> rl.Shader | None:
+    global _BEAM_STAMPED_VIRTUAL_SHADER_TRIED, _BEAM_STAMPED_VIRTUAL_SHADER
+    global _BEAM_STAMPED_VIRTUAL_COLOR_LOC, _BEAM_STAMPED_VIRTUAL_STEP_UV_LOC
+    global _BEAM_STAMPED_VIRTUAL_STAMP_SCALE_LOC, _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC
+    global _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC
+    if _BEAM_STAMPED_VIRTUAL_SHADER_TRIED:
+        if _BEAM_STAMPED_VIRTUAL_SHADER is not None and int(_BEAM_STAMPED_VIRTUAL_SHADER.id) > 0:
+            return _BEAM_STAMPED_VIRTUAL_SHADER
+        return None
+
+    _BEAM_STAMPED_VIRTUAL_SHADER_TRIED = True
+    try:
+        shader = rl.load_shader_from_memory(_BEAM_SHADER_VS_330, _BEAM_STAMPED_VIRTUAL_FS_330)
+    except (RuntimeError, OSError, ValueError):
+        _BEAM_STAMPED_VIRTUAL_SHADER = None
+        return None
+
+    if int(shader.id) <= 0:
+        _BEAM_STAMPED_VIRTUAL_SHADER = None
+        return None
+
+    _BEAM_STAMPED_VIRTUAL_SHADER = shader
+    _BEAM_STAMPED_VIRTUAL_COLOR_LOC = int(rl.get_shader_location(shader, "colDiffuse"))
+    _BEAM_STAMPED_VIRTUAL_STEP_UV_LOC = int(rl.get_shader_location(shader, "u_step_uv"))
+    _BEAM_STAMPED_VIRTUAL_STAMP_SCALE_LOC = int(rl.get_shader_location(shader, "u_stamp_scale"))
+    _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC = int(rl.get_shader_location(shader, "u_stamp_decay"))
+    _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC = int(rl.get_shader_location(shader, "u_intensity_gain"))
+    return _BEAM_STAMPED_VIRTUAL_SHADER
+
+
 def _mode_label(mode: BeamRenderMode) -> str:
     if mode == BeamRenderMode.BASELINE_SPRITE:
         return "baseline"
     if mode == BeamRenderMode.SHADER_STAMPED_ANALYTIC:
         return "shader-stamped-analytic"
+    if mode == BeamRenderMode.SHADER_STAMPED_VIRTUAL:
+        return "shader-stamped-virtual"
     return "shader-gemini-2"
 
 
@@ -731,7 +830,7 @@ def estimate_beam_frame_counts(
             if bool(draw_heads_enabled):
                 head_calls += 1
 
-    if mode == BeamRenderMode.SHADER_GEMINI_2:
+    if mode == BeamRenderMode.SHADER_GEMINI_2 or mode == BeamRenderMode.SHADER_STAMPED_VIRTUAL:
         body_calls = int(shader_beam_calls)
         overlay_calls = 0
 
@@ -1785,6 +1884,78 @@ class BeamDebugView:
         rl.end_shader_mode()
         return int(body_calls), False
 
+    def _draw_projectile_body_shader_stamped_virtual(
+        self,
+        preps: Sequence[_RenderPrep],
+        *,
+        streak_rgb: tuple[float, float, float],
+    ) -> tuple[int, bool]:
+        shader = _get_beam_stamped_virtual_shader()
+        if shader is None:
+            return self._draw_projectile_body_sprites(preps, streak_rgb=streak_rgb), True
+
+        r = int(clamp(streak_rgb[0] * 255.0, 0.0, 255.0) + 0.5)
+        g = int(clamp(streak_rgb[1] * 255.0, 0.0, 255.0) + 0.5)
+        b = int(clamp(streak_rgb[2] * 255.0, 0.0, 255.0) + 0.5)
+        radius = max(0.001, float(SHADER_STAMP_ANALYTIC_RADIUS_SCALE) * float(self._effect_scale))
+        step_screen = max(1e-6, float(self._beam_step_units()) * float(self._distance_to_screen_scale))
+        step_uv = max(1e-4, float(step_screen) / float(radius))
+        stamp_decay = float(SHADER_STAMP_ANALYTIC_ALPHA_DECAY_PER_PX) * float(SHADER_STAMP_ANALYTIC_RADIUS_SCALE)
+
+        quad_count = 0
+        rl.begin_shader_mode(shader)
+        self._set_shader_vec4(shader, _BEAM_STAMPED_VIRTUAL_COLOR_LOC, 1.0, 1.0, 1.0, 1.0)
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STEP_UV_LOC, float(step_uv))
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_SCALE_LOC, float(SHADER_STAMP_ANALYTIC_ALPHA_SCALE))
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC, float(stamp_decay))
+        self._set_shader_float(
+            shader,
+            _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC,
+            float(SHADER_STAMP_VIRTUAL_INTENSITY_GAIN_DEFAULT),
+        )
+        rl.rl_set_texture(0)
+        rl.rl_begin(rd.RL_QUADS)
+        for prep in preps:
+            if not prep.offsets:
+                continue
+
+            s0 = float(prep.plan.start)
+            s1 = float(prep.dist_units)
+            if s1 - s0 <= 1e-6:
+                continue
+
+            t0 = s0 / prep.dist_units
+            t1 = 1.0
+            p0 = prep.preview.origin_screen + prep.ray * t0
+            p1 = prep.preview.origin_screen + prep.ray * t1
+            direction, length = (p1 - p0).normalized_with_length()
+            if length <= 1e-6:
+                continue
+
+            alpha_u8 = self._u8(prep.base_alpha)
+            if alpha_u8 <= 0:
+                continue
+
+            side = direction.perp_left() * radius
+            u_len = float(length) / float(radius)
+            tail_end = p0 - direction * radius
+            head_end = p1 + direction * radius
+
+            def push(pos: Vec2, *, uv_x: float, uv_y: float, alpha: int, u_len_value: float) -> None:
+                rl.rl_color4ub(r, g, b, int(alpha))
+                rl.rl_tex_coord2f(float(uv_x), float(uv_y))
+                rl.rl_vertex3f(float(pos.x), float(pos.y), float(u_len_value))
+
+            push(tail_end - side, uv_x=-1.0, uv_y=-1.0, alpha=alpha_u8, u_len_value=u_len)
+            push(tail_end + side, uv_x=-1.0, uv_y=1.0, alpha=alpha_u8, u_len_value=u_len)
+            push(head_end + side, uv_x=u_len + 1.0, uv_y=1.0, alpha=alpha_u8, u_len_value=u_len)
+            push(head_end - side, uv_x=u_len + 1.0, uv_y=-1.0, alpha=alpha_u8, u_len_value=u_len)
+            quad_count += 1
+        rl.rl_end()
+        rl.rl_set_texture(0)
+        rl.end_shader_mode()
+        return int(quad_count), False
+
     def _draw_projectile_head_shader_stamped_analytic(self, preps: Sequence[_RenderPrep], *, is_fire: bool) -> int:
         del is_fire
         if not bool(self._head_render_enabled):
@@ -2031,6 +2202,14 @@ class BeamDebugView:
             )
         elif mode == BeamRenderMode.SHADER_STAMPED_ANALYTIC:
             body_calls, fallback = self._draw_projectile_body_shader_stamped_analytic(preps, streak_rgb=streak_rgb)
+            shader_fallback = bool(fallback)
+            if fallback:
+                head_calls, overlay_calls = self._draw_projectile_heads(preps, is_fire=is_fire)
+            else:
+                head_calls = self._draw_projectile_head_shader_stamped_analytic(preps, is_fire=is_fire)
+                overlay_calls = 0
+        elif mode == BeamRenderMode.SHADER_STAMPED_VIRTUAL:
+            body_calls, fallback = self._draw_projectile_body_shader_stamped_virtual(preps, streak_rgb=streak_rgb)
             shader_fallback = bool(fallback)
             if fallback:
                 head_calls, overlay_calls = self._draw_projectile_heads(preps, is_fire=is_fire)
