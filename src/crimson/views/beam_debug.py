@@ -81,6 +81,8 @@ SHADER_EXT_GEMINI_TAIL_WIDTH_DEFAULT = 0.6
 SHADER_EXT_GEMINI_CAP_SCALE_DEFAULT = 1.25
 SHADER_EXT_GPT_PRO_COVER_LEN_DEFAULT = 1.0
 SHADER_EXT_GPT_PRO_HALO_W_DEFAULT = 0.25
+SHADER_EXT_GPT_PRO_TAIL_WIDTH_DEFAULT = 0.6
+SHADER_EXT_GPT_PRO_CAP_SCALE_DEFAULT = 1.2
 SHADER_GEMINI_2_COVER_LEN_DEFAULT = 1.0
 SHADER_GEMINI_2_HALO_W_DEFAULT = 0.0
 SHADER_GEMINI_2_CAP_SCALE_DEFAULT = 1.0
@@ -390,19 +392,22 @@ uniform float u_intensity_gain;
 uniform float u_step_uv;
 uniform float u_cover_len;
 uniform float u_halo_w;
+uniform float u_tail_width;
+uniform float u_cap_scale;
 
 out vec4 finalColor;
 
 void main() {
     float gain = max(u_intensity_gain, 0.0);
     float halo_w = max(u_halo_w, 0.0);
+    float core_b = u_approx_b * 2.1;
     float u_len = fragLen;
 
     if (u_len < 0.0) {
         float d = length(fragTexCoord);
-        float halo = clamp(u_approx_a * exp(u_approx_b * d) - u_approx_c, 0.0, 1.0);
-        float core = clamp(u_approx_a * exp((u_approx_b * 2.1) * d) - u_approx_c, 0.0, 1.0);
-        float profile = clamp(halo + halo_w * core, 0.0, 1.0);
+        float halo = u_approx_a * exp(u_approx_b * d);
+        float core = u_approx_a * exp(core_b * d);
+        float profile = clamp(halo + halo_w * core - u_approx_c, 0.0, 1.0);
         float intensity = profile * fragColor.a * gain;
         vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
         finalColor = vec4(rgb, 1.0);
@@ -418,25 +423,29 @@ void main() {
     }
     float x1 = max(x0, u_len - end_gap);
 
-    float dx = max(0.0, max(x0 - fragTexCoord.x, fragTexCoord.x - x1));
-    float d = length(vec2(dx, fragTexCoord.y));
-
-    float halo = clamp(u_approx_a * exp(u_approx_b * d) - u_approx_c, 0.0, 1.0);
-    float core = clamp(u_approx_a * exp((u_approx_b * 2.1) * d) - u_approx_c, 0.0, 1.0);
-    float profile = clamp(halo + halo_w * core, 0.0, 1.0);
-
     float xc = clamp(fragTexCoord.x, x0, x1);
     float t = clamp(xc / max(u_len, 1e-6), 0.0, 1.0);
+
+    float width_scale = mix(max(0.01, u_tail_width), 1.0, t);
+    float dy = fragTexCoord.y / width_scale;
+
+    float dx = max(0.0, max(x0 - fragTexCoord.x, fragTexCoord.x - x1));
+    dx *= max(u_cap_scale, 0.01);
+    float d = length(vec2(dx, dy));
+
+    float halo = u_approx_a * exp(u_approx_b * d);
+    float core = u_approx_a * exp(core_b * d);
+    float profile = clamp(halo + halo_w * core - u_approx_c, 0.0, 1.0);
 
     float seg_len = max(0.0, x1 - x0);
     float w = min(max(0.0, u_cover_len), 0.5 * seg_len);
     w = max(w, 1e-4);
     float left = min(max(0.0, fragTexCoord.x - x0), w);
     float right = min(max(0.0, x1 - fragTexCoord.x), w);
-    float cover = clamp((left + right) / (2.0 * w), 0.0, 1.0);
+    float cover01 = clamp((left + right) / (2.0 * w), 0.0, 1.0);
+    float cover = mix(0.75, 1.0, cover01);
 
-    float cover_soft = sqrt(max(cover, 0.0));
-    float structural = t * cover_soft * fragColor.a;
+    float structural = t * cover * fragColor.a;
     float intensity = profile * structural * gain;
     vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
     finalColor = vec4(rgb, 1.0);
@@ -501,6 +510,8 @@ _BEAM_EXT_GPT_PRO_INTENSITY_GAIN_LOC = -1
 _BEAM_EXT_GPT_PRO_STEP_UV_LOC = -1
 _BEAM_EXT_GPT_PRO_COVER_LEN_LOC = -1
 _BEAM_EXT_GPT_PRO_HALO_W_LOC = -1
+_BEAM_EXT_GPT_PRO_TAIL_WIDTH_LOC = -1
+_BEAM_EXT_GPT_PRO_CAP_SCALE_LOC = -1
 
 
 class BeamRenderMode(str, Enum):
@@ -688,6 +699,8 @@ class BeamShaderExtGptProParams:
     intensity_gain: float = SHADER_GEMINI_2_INTENSITY_GAIN_DEFAULT
     cover_len: float = SHADER_EXT_GPT_PRO_COVER_LEN_DEFAULT
     halo_w: float = SHADER_EXT_GPT_PRO_HALO_W_DEFAULT
+    tail_width: float = SHADER_EXT_GPT_PRO_TAIL_WIDTH_DEFAULT
+    cap_scale: float = SHADER_EXT_GPT_PRO_CAP_SCALE_DEFAULT
 
 
 @dataclass(frozen=True, slots=True)
@@ -1112,6 +1125,7 @@ def _get_beam_ext_gpt_pro_shader() -> rl.Shader | None:
     global _BEAM_EXT_GPT_PRO_APPROX_B_LOC, _BEAM_EXT_GPT_PRO_APPROX_C_LOC
     global _BEAM_EXT_GPT_PRO_INTENSITY_GAIN_LOC, _BEAM_EXT_GPT_PRO_STEP_UV_LOC
     global _BEAM_EXT_GPT_PRO_COVER_LEN_LOC, _BEAM_EXT_GPT_PRO_HALO_W_LOC
+    global _BEAM_EXT_GPT_PRO_TAIL_WIDTH_LOC, _BEAM_EXT_GPT_PRO_CAP_SCALE_LOC
     if _BEAM_EXT_GPT_PRO_SHADER_TRIED:
         if _BEAM_EXT_GPT_PRO_SHADER is not None and int(_BEAM_EXT_GPT_PRO_SHADER.id) > 0:
             return _BEAM_EXT_GPT_PRO_SHADER
@@ -1137,6 +1151,8 @@ def _get_beam_ext_gpt_pro_shader() -> rl.Shader | None:
     _BEAM_EXT_GPT_PRO_STEP_UV_LOC = int(rl.get_shader_location(shader, "u_step_uv"))
     _BEAM_EXT_GPT_PRO_COVER_LEN_LOC = int(rl.get_shader_location(shader, "u_cover_len"))
     _BEAM_EXT_GPT_PRO_HALO_W_LOC = int(rl.get_shader_location(shader, "u_halo_w"))
+    _BEAM_EXT_GPT_PRO_TAIL_WIDTH_LOC = int(rl.get_shader_location(shader, "u_tail_width"))
+    _BEAM_EXT_GPT_PRO_CAP_SCALE_LOC = int(rl.get_shader_location(shader, "u_cap_scale"))
     return _BEAM_EXT_GPT_PRO_SHADER
 
 
@@ -2856,6 +2872,8 @@ class BeamDebugView:
         self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_STEP_UV_LOC, float(step_uv))
         self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_COVER_LEN_LOC, float(params.cover_len))
         self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_HALO_W_LOC, float(params.halo_w))
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_TAIL_WIDTH_LOC, float(params.tail_width))
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_CAP_SCALE_LOC, float(params.cap_scale))
         self._set_shader_vec4(shader, _BEAM_EXT_GPT_PRO_COLOR_LOC, 1.0, 1.0, 1.0, 1.0)
         rl.rl_set_texture(0)
         rl.rl_begin(rd.RL_QUADS)
@@ -2963,6 +2981,8 @@ class BeamDebugView:
         self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_STEP_UV_LOC, float(step_uv))
         self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_COVER_LEN_LOC, float(params.cover_len))
         self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_HALO_W_LOC, float(params.halo_w))
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_TAIL_WIDTH_LOC, float(params.tail_width))
+        self._set_shader_float(shader, _BEAM_EXT_GPT_PRO_CAP_SCALE_LOC, float(params.cap_scale))
         self._set_shader_vec4(shader, _BEAM_EXT_GPT_PRO_COLOR_LOC, 1.0, 1.0, 1.0, 1.0)
         rl.rl_set_texture(0)
         rl.rl_begin(rd.RL_QUADS)
