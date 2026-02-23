@@ -5,6 +5,9 @@ from pathlib import Path
 from crimson.projectiles import ProjectileTypeId
 from crimson.render.projectile_draw.beam_sampling import build_beam_sample_plan, iter_beam_sample_offsets
 from crimson.views.beam_debug import (
+    _BEAM_STAMPED_VIRTUAL_FS_330,
+    _ION_PRESET_ORDER,
+    _RENDER_MODE_ORDER,
     BeamCountInput,
     BeamDebugView,
     BeamFrameStats,
@@ -22,13 +25,13 @@ from grim.view import ViewContext
 
 
 def test_cycle_beam_render_mode_order_is_stable() -> None:
+    expected = list(_RENDER_MODE_ORDER[1:]) + [BeamRenderMode.BASELINE_SPRITE]
     mode = BeamRenderMode.BASELINE_SPRITE
-    mode = cycle_beam_render_mode(mode)
-    assert mode == BeamRenderMode.SHADER_STAMPED_ANALYTIC
-    mode = cycle_beam_render_mode(mode)
-    assert mode == BeamRenderMode.SHADER_GEMINI_2
-    mode = cycle_beam_render_mode(mode)
-    assert mode == BeamRenderMode.BASELINE_SPRITE
+    actual: list[BeamRenderMode] = []
+    for _ in range(len(_RENDER_MODE_ORDER)):
+        mode = cycle_beam_render_mode(mode)
+        actual.append(mode)
+    assert actual == expected
 
 
 def test_beam_scenario_presets_match_spec() -> None:
@@ -176,22 +179,13 @@ def test_benchmark_mode_cycles_and_completes() -> None:
     assert view._bench_active is True
     assert view._side_by_side_enabled is False
     assert view.render_mode == BeamRenderMode.BASELINE_SPRITE
-    assert view._bench_total_frames == 6
+    assert view._bench_total_frames == len(_RENDER_MODE_ORDER) * view._bench_frames_per_mode
 
-    view._advance_benchmark_after_frame()
-    assert view.render_mode == BeamRenderMode.BASELINE_SPRITE
-
-    view._advance_benchmark_after_frame()
-    assert view.render_mode == BeamRenderMode.SHADER_STAMPED_ANALYTIC
-
-    view._advance_benchmark_after_frame()
-    assert view.render_mode == BeamRenderMode.SHADER_STAMPED_ANALYTIC
-
-    view._advance_benchmark_after_frame()
-    assert view.render_mode == BeamRenderMode.SHADER_GEMINI_2
-
-    view._advance_benchmark_after_frame()
-    view._advance_benchmark_after_frame()
+    for mode in _RENDER_MODE_ORDER:
+        assert view.render_mode == mode
+        view._advance_benchmark_after_frame()
+        assert view.render_mode == mode
+        view._advance_benchmark_after_frame()
     assert view._bench_active is False
     assert view._bench_completed is True
     assert view.render_mode == BeamRenderMode.BASELINE_SPRITE
@@ -244,22 +238,23 @@ def test_cycle_ion_preset_updates_ion_projectile_type_and_effect_scale() -> None
     assert abs(float(view._effect_scale) - 1.05) <= 1e-6
 
     view.cycle_ion_preset()
-    assert view._active_ion_preset().key == "ion_shotgun"
-    assert view._active_projectile_type_id() == int(ProjectileTypeId.ION_MINIGUN)
-    assert abs(float(view._effect_scale) - 1.05) <= 1e-6
-
-    view.cycle_ion_preset()
     assert view._active_ion_preset().key == "ion_cannon"
     assert view._active_projectile_type_id() == int(ProjectileTypeId.ION_CANNON)
     assert abs(float(view._effect_scale) - 3.5) <= 1e-6
 
     view.cycle_ion_preset()
-    assert view._active_ion_preset().key == "shock_chain"
-    assert view._active_projectile_type_id() == int(ProjectileTypeId.ION_RIFLE)
-    assert abs(float(view._effect_scale) - 2.2) <= 1e-6
-
-    view.cycle_ion_preset()
     assert view._active_ion_preset().key == "ion_rifle"
+
+
+def test_ion_preset_order_is_unique_by_projectile_type_id() -> None:
+    type_ids = [int(preset.projectile_type_id) for preset in _ION_PRESET_ORDER]
+    assert len(type_ids) > 0
+    assert len(type_ids) == len(set(type_ids))
+
+
+def test_stamped_virtual_kernel_uses_negative_quadratic_falloff() -> None:
+    needle = "exp(-u_stamp_decay * d - u_stamp_quad * d * d)"
+    assert _BEAM_STAMPED_VIRTUAL_FS_330.count(needle) >= 2
 
 
 def test_shader_profile_value_is_monotonic_outward() -> None:

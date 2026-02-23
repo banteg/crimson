@@ -204,7 +204,7 @@ void main() {{
     // Head pass (fragLen < 0): radial analytic cap profile.
     if (u_len < 0.0) {{
         float d = length(fragTexCoord);
-        float profile = clamp(u_stamp_scale * exp(-u_stamp_decay * d + u_stamp_quad * d * d) - u_stamp_offset, 0.0, 1.0);
+        float profile = clamp(u_stamp_scale * exp(-u_stamp_decay * d - u_stamp_quad * d * d) - u_stamp_offset, 0.0, 1.0);
         float intensity = profile * fragColor.a * gain;
         vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
         finalColor = vec4(rgb, 1.0);
@@ -229,7 +229,7 @@ void main() {{
         }}
         float t = clamp(sx / max(1e-6, len_uv), 0.0, 1.0);
         float d = length(vec2(fragTexCoord.x - sx, fragTexCoord.y));
-        float profile = clamp(u_stamp_scale * exp(-u_stamp_decay * d + u_stamp_quad * d * d) - u_stamp_offset, 0.0, 1.0);
+        float profile = clamp(u_stamp_scale * exp(-u_stamp_decay * d - u_stamp_quad * d * d) - u_stamp_offset, 0.0, 1.0);
         accum += t * profile;
     }}
 
@@ -485,6 +485,10 @@ class BeamRenderMode(str, Enum):
 _RENDER_MODE_ORDER: tuple[BeamRenderMode, ...] = (
     BeamRenderMode.BASELINE_SPRITE,
     BeamRenderMode.SHADER_STAMPED_ANALYTIC,
+    BeamRenderMode.SHADER_STAMPED_VIRTUAL,
+    BeamRenderMode.SHADER_EXT_CLAUDE,
+    BeamRenderMode.SHADER_EXT_GEMINI,
+    BeamRenderMode.SHADER_EXT_GPT_PRO,
     BeamRenderMode.SHADER_GEMINI_2,
 )
 
@@ -527,31 +531,19 @@ _ION_PRESET_ORDER: tuple[BeamIonPreset, ...] = (
         key="ion_rifle",
         label="ion rifle",
         projectile_type_id=int(ProjectileTypeId.ION_RIFLE),
-        note="type=0x15",
+        note="type=0x15 (shock chain)",
     ),
     BeamIonPreset(
         key="ion_minigun",
         label="ion minigun",
         projectile_type_id=int(ProjectileTypeId.ION_MINIGUN),
-        note="type=0x16",
-    ),
-    BeamIonPreset(
-        key="ion_shotgun",
-        label="ion shotgun",
-        projectile_type_id=int(ProjectileTypeId.ION_MINIGUN),
-        note="weapon uses 0x16 pellets",
+        note="type=0x16 (ion shotgun pellets)",
     ),
     BeamIonPreset(
         key="ion_cannon",
         label="ion cannon",
         projectile_type_id=int(ProjectileTypeId.ION_CANNON),
         note="type=0x17",
-    ),
-    BeamIonPreset(
-        key="shock_chain",
-        label="shock chain",
-        projectile_type_id=int(ProjectileTypeId.ION_RIFLE),
-        note="bonus spawns 0x15",
     ),
 )
 
