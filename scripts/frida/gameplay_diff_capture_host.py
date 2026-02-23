@@ -2,6 +2,7 @@
 # requires-python = ">=3.13"
 # dependencies = [
 #   "frida>=16.5.0",
+#   "msgspec>=0.20.0",
 #   "zstandard>=0.25.0",
 # ]
 # ///
