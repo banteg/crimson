@@ -9,6 +9,8 @@ from typing import Final
 
 sys.path.insert(0, str(Path("src").resolve()))
 
+from PIL import Image, ImageDraw
+
 from crimson.render.projectile_draw.beam_sampling import build_beam_sample_plan
 from crimson.views._ui_helpers import draw_ui_text
 from crimson.views.beam_debug import (
@@ -30,6 +32,20 @@ HEADER_LINES: Final[tuple[str, str]] = (
     "rows: fire bullets + ion type ids (dedup)   cols: render methods",
 )
 
+SIGNED_NEGATIVE_STOPS: Final[tuple[tuple[float, tuple[int, int, int]], ...]] = (
+    (0.0, (0, 0, 0)),
+    (0.35, (20, 40, 120)),
+    (0.70, (20, 140, 240)),
+    (1.0, (200, 255, 255)),
+)
+
+SIGNED_POSITIVE_STOPS: Final[tuple[tuple[float, tuple[int, int, int]], ...]] = (
+    (0.0, (0, 0, 0)),
+    (0.35, (120, 35, 10)),
+    (0.70, (255, 140, 20)),
+    (1.0, (255, 245, 140)),
+)
+
 
 @dataclass(frozen=True, slots=True)
 class MatrixRow:
@@ -37,6 +53,53 @@ class MatrixRow:
     label: str
     note: str
     ion_preset_key: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class MatrixLayout:
+    margin: int
+    header_h: int
+    row_h: int
+    row_label_w: int
+    cell_w: int
+    cell_gap: int
+
+
+def _clamp01(value: float) -> float:
+    if value <= 0.0:
+        return 0.0
+    if value >= 1.0:
+        return 1.0
+    return value
+
+
+def _lerp_u8(a: int, b: int, t: float) -> int:
+    out = float(a) * (1.0 - t) + float(b) * t
+    return max(0, min(255, int(round(out))))
+
+
+def _sample_stops(stops: tuple[tuple[float, tuple[int, int, int]], ...], t: float) -> tuple[int, int, int]:
+    t = _clamp01(t)
+    if t <= float(stops[0][0]):
+        return stops[0][1]
+    if t >= float(stops[-1][0]):
+        return stops[-1][1]
+    for idx in range(1, len(stops)):
+        left_pos, left_color = stops[idx - 1]
+        right_pos, right_color = stops[idx]
+        if t <= float(right_pos):
+            span = max(1e-9, float(right_pos) - float(left_pos))
+            local_t = (float(t) - float(left_pos)) / span
+            return (
+                _lerp_u8(left_color[0], right_color[0], local_t),
+                _lerp_u8(left_color[1], right_color[1], local_t),
+                _lerp_u8(left_color[2], right_color[2], local_t),
+            )
+    return stops[-1][1]
+
+
+def _beam_luma(px: tuple[int, int, int]) -> int:
+    return max(int(px[0]), int(px[1]), int(px[2]))
 
 
 def _text_width(font: SmallFontData | None, text: str, scale: float) -> float:
@@ -123,6 +186,153 @@ def _rows() -> tuple[MatrixRow, ...]:
     )
 
 
+def _signed_diff_map(
+    *,
+    baseline: Image.Image,
+    candidate: Image.Image,
+    signed_clip: float,
+    neutral_band: float,
+) -> tuple[Image.Image, float, float, float]:
+    width, height = baseline.size
+    if candidate.size != baseline.size:
+        raise ValueError("baseline/candidate image sizes differ for signed diff")
+
+    baseline_bytes = baseline.tobytes()
+    candidate_bytes = candidate.tobytes()
+    signed_pixels: list[tuple[int, int, int]] = []
+
+    signed_den = max(1e-6, float(signed_clip) * 255.0)
+    neutral = max(0.0, float(neutral_band) * 255.0)
+
+    abs_sum = 0.0
+    under_sum = 0.0
+    over_sum = 0.0
+    pixel_count = width * height
+    for pixel_idx in range(pixel_count):
+        offset = pixel_idx * 3
+        base_l = _beam_luma(
+            (
+                int(baseline_bytes[offset + 0]),
+                int(baseline_bytes[offset + 1]),
+                int(baseline_bytes[offset + 2]),
+            ),
+        )
+        cand_l = _beam_luma(
+            (
+                int(candidate_bytes[offset + 0]),
+                int(candidate_bytes[offset + 1]),
+                int(candidate_bytes[offset + 2]),
+            ),
+        )
+        diff = int(cand_l) - int(base_l)
+        abs_diff = abs(diff)
+        abs_sum += float(abs_diff)
+        if diff < 0:
+            under_sum += float(-diff)
+        elif diff > 0:
+            over_sum += float(diff)
+
+        if float(abs_diff) <= neutral:
+            signed_pixels.append((0, 0, 0))
+            continue
+        t = _clamp01(float(abs_diff) / signed_den)
+        if diff > 0:
+            signed_pixels.append(_sample_stops(SIGNED_POSITIVE_STOPS, t))
+        else:
+            signed_pixels.append(_sample_stops(SIGNED_NEGATIVE_STOPS, t))
+
+    signed = Image.new("RGB", baseline.size)
+    signed.putdata(signed_pixels)
+
+    total = max(1.0, float(width * height * 255))
+    return (
+        signed,
+        float(abs_sum / total),
+        float(under_sum / total),
+        float(over_sum / total),
+    )
+
+
+def _build_signed_diff_vstack(
+    *,
+    row: MatrixRow,
+    panels: list[tuple[str, Image.Image, float, float, float]],
+) -> Image.Image:
+    if not panels:
+        raise ValueError("no panels for signed diff vstack")
+    panel_w = panels[0][1].width
+    panel_h = panels[0][1].height
+    margin = 16
+    left_w = 380
+    title_h = 44
+    row_gap = 12
+    item_h = panel_h + 22
+    width = margin * 2 + left_w + panel_w
+    height = margin * 2 + title_h + len(panels) * item_h + max(0, len(panels) - 1) * row_gap
+    canvas = Image.new("RGB", (width, height), (0, 0, 0))
+    draw = ImageDraw.Draw(canvas)
+    title = f"{row.label}  ({row.note})"
+    draw.text((margin, margin), title, fill=(235, 245, 255))
+    draw.text((margin, margin + 16), "signed diff: cyan=baseline brighter, orange=candidate brighter", fill=(155, 180, 215))
+
+    y = margin + title_h
+    for mode_label, panel, mae, under, over in panels:
+        draw.text((margin, y + 3), mode_label, fill=(215, 225, 240))
+        draw.text(
+            (margin, y + 15),
+            f"mae={mae:.4f} under={under:.4f} over={over:.4f}",
+            fill=(135, 165, 205),
+        )
+        canvas.paste(panel, (margin + left_w, y))
+        y += item_h + row_gap
+    return canvas
+
+
+def _export_signed_diff_vstacks(
+    *,
+    matrix_path: Path,
+    rows: tuple[MatrixRow, ...],
+    modes: tuple[BeamRenderMode, ...],
+    layout: MatrixLayout,
+    out_dir: Path,
+    signed_clip: float,
+    neutral_band: float,
+) -> None:
+    if len(modes) < 2:
+        return
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    matrix = Image.open(matrix_path).convert("RGB")
+    first_cell_x = int(layout.margin + layout.row_label_w)
+    for row_idx, row in enumerate(rows):
+        y0 = int(layout.margin + layout.header_h + row_idx * layout.row_h)
+        baseline_cell = matrix.crop(
+            (
+                first_cell_x,
+                y0,
+                first_cell_x + int(layout.cell_w),
+                y0 + int(layout.row_h),
+            ),
+        )
+        panels: list[tuple[str, Image.Image, float, float, float]] = []
+        for col_idx, mode in enumerate(modes):
+            if col_idx == 0:
+                continue
+            x0 = int(first_cell_x + col_idx * (layout.cell_w + layout.cell_gap))
+            candidate_cell = matrix.crop((x0, y0, x0 + int(layout.cell_w), y0 + int(layout.row_h)))
+            signed_map, mae, under, over = _signed_diff_map(
+                baseline=baseline_cell,
+                candidate=candidate_cell,
+                signed_clip=float(signed_clip),
+                neutral_band=float(neutral_band),
+            )
+            panels.append((mode.value.upper(), signed_map, float(mae), float(under), float(over)))
+
+        sheet = _build_signed_diff_vstack(row=row, panels=panels)
+        out_path = out_dir / f"{row_idx:02d}_{row.key}_signed_diff_vstack.png"
+        sheet.save(out_path)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Render a comparison matrix: fire + ion projectile rows versus all beam render methods.",
@@ -143,6 +353,28 @@ def main() -> int:
         default=0.40,
         help="beam life used for all preview rows (default: 0.40)",
     )
+    parser.add_argument(
+        "--signed-diff-vstack-dir",
+        default="artifacts/beam/fire_ion_all_methods_signed_diff_vstack",
+        help="output dir for per-row vertical signed-diff sheets",
+    )
+    parser.add_argument(
+        "--skip-signed-diff-vstack",
+        action="store_true",
+        help="skip exporting per-row signed-diff vstack images",
+    )
+    parser.add_argument(
+        "--signed-diff-clip",
+        type=float,
+        default=0.35,
+        help="signed diff saturation (0..1, default: 0.35)",
+    )
+    parser.add_argument(
+        "--signed-diff-neutral-band",
+        type=float,
+        default=0.01,
+        help="signed diff deadband near zero (0..1, default: 0.01)",
+    )
     args = parser.parse_args()
 
     out_path = Path(str(args.out))
@@ -158,17 +390,24 @@ def main() -> int:
     heading_scale = 0.68
     pixel_scale = 1.0
 
-    margin = 16
-    header_h = 94
-    row_h = 132
-    row_label_w = 380
-    cell_w = 280
-    cell_gap = 18
+    layout = MatrixLayout(
+        margin=16,
+        header_h=94,
+        row_h=132,
+        row_label_w=380,
+        cell_w=280,
+        cell_gap=18,
+    )
     beam_origin_x = 34.0
     beam_len = 220.0
 
-    width = margin * 2 + row_label_w + len(modes) * cell_w + max(0, len(modes) - 1) * cell_gap
-    height = margin * 2 + header_h + len(rows) * row_h
+    width = (
+        layout.margin * 2
+        + layout.row_label_w
+        + len(modes) * layout.cell_w
+        + max(0, len(modes) - 1) * layout.cell_gap
+    )
+    height = layout.margin * 2 + layout.header_h + len(rows) * layout.row_h
 
     rl.set_trace_log_level(rl.TraceLogLevel.LOG_WARNING)
     rl.init_window(int(width), int(height), b"fire_ion_method_matrix")
@@ -197,8 +436,8 @@ def main() -> int:
                 _draw_heading(
                     mono_font,
                     HEADER_LINES[0],
-                    margin - 2.0,
-                    margin - 4.0,
+                    layout.margin - 2.0,
+                    layout.margin - 4.0,
                     heading_scale,
                     rl.Color(235, 245, 255, 255),
                 )
@@ -207,20 +446,20 @@ def main() -> int:
                 _draw_ui(
                     font,
                     subtitle,
-                    margin,
-                    margin + 28.0,
+                    layout.margin,
+                    layout.margin + 28.0,
                     pixel_scale,
                     rl.Color(155, 180, 215, 255),
                 )
 
-                first_cell_x = margin + row_label_w
-                col_header_y = margin + header_h - 22
+                first_cell_x = layout.margin + layout.row_label_w
+                col_header_y = layout.margin + layout.header_h - 22
                 for col_idx, mode in enumerate(modes):
-                    x = first_cell_x + col_idx * (cell_w + cell_gap)
+                    x = first_cell_x + col_idx * (layout.cell_w + layout.cell_gap)
                     _draw_ui_centered(
                         font,
                         mode.value.upper(),
-                        x + cell_w * 0.5,
+                        x + layout.cell_w * 0.5,
                         col_header_y,
                         pixel_scale,
                         rl.Color(200, 220, 255, 255),
@@ -237,8 +476,8 @@ def main() -> int:
                             view._ion_preset_index = int(preset_idx)
                     view._sync_effect_scale()
 
-                    y_top = margin + header_h + row_idx * row_h
-                    y_mid = float(y_top + row_h // 2)
+                    y_top = layout.margin + layout.header_h + row_idx * layout.row_h
+                    y_mid = float(y_top + layout.row_h // 2)
 
                     row_label_y = y_mid - 18.0
                     row_meta_y = row_label_y + 18.0
@@ -246,7 +485,7 @@ def main() -> int:
                     _draw_ui(
                         font,
                         row.label,
-                        margin,
+                        layout.margin,
                         row_label_y,
                         pixel_scale,
                         rl.Color(230, 235, 245, 255),
@@ -254,7 +493,7 @@ def main() -> int:
                     _draw_ui(
                         font,
                         row_meta,
-                        margin,
+                        layout.margin,
                         row_meta_y,
                         pixel_scale,
                         rl.Color(155, 180, 215, 255),
@@ -262,7 +501,7 @@ def main() -> int:
 
                     step_units = float(view._beam_step_units())
                     for col_idx, mode in enumerate(modes):
-                        x = first_cell_x + col_idx * (cell_w + cell_gap)
+                        x = first_cell_x + col_idx * (layout.cell_w + layout.cell_gap)
                         preview = _build_preview(
                             index=draw_index,
                             origin=Vec2(float(x) + beam_origin_x, y_mid),
@@ -275,8 +514,8 @@ def main() -> int:
                         view._draw_projectiles([preview], mode=BeamRenderMode(mode))
 
                     if row_idx + 1 < len(rows):
-                        sep_y = int(y_top + row_h - 4)
-                        rl.draw_line(margin, sep_y, width - margin, sep_y, rl.Color(30, 55, 85, 255))
+                        sep_y = int(y_top + layout.row_h - 4)
+                        rl.draw_line(layout.margin, sep_y, width - layout.margin, sep_y, rl.Color(30, 55, 85, 255))
 
                 rl.end_texture_mode()
 
@@ -288,6 +527,17 @@ def main() -> int:
                 rl.unload_render_texture(target)
                 if mono_font is not None:
                     rl.unload_texture(mono_font.texture)
+
+            if not bool(args.skip_signed_diff_vstack):
+                _export_signed_diff_vstacks(
+                    matrix_path=out_path,
+                    rows=rows,
+                    modes=modes,
+                    layout=layout,
+                    out_dir=Path(str(args.signed_diff_vstack_dir)),
+                    signed_clip=float(args.signed_diff_clip),
+                    neutral_band=float(args.signed_diff_neutral_band),
+                )
         finally:
             view.close()
     finally:

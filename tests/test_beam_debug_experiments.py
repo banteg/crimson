@@ -128,7 +128,6 @@ def test_life_below_threshold_keeps_head_and_disables_overlay_across_modes() -> 
 
     for mode in (
         BeamRenderMode.BASELINE_SPRITE,
-        BeamRenderMode.SHADER_STAMPED_ANALYTIC,
         BeamRenderMode.SHADER_GEMINI_2,
     ):
         counts = estimate_beam_frame_counts([item], mode=mode, is_fire=True)
@@ -143,7 +142,6 @@ def test_disable_head_rendering_removes_head_and_overlay_calls() -> None:
 
     for mode in (
         BeamRenderMode.BASELINE_SPRITE,
-        BeamRenderMode.SHADER_STAMPED_ANALYTIC,
         BeamRenderMode.SHADER_GEMINI_2,
     ):
         counts = estimate_beam_frame_counts(

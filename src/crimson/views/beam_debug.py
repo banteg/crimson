@@ -474,7 +474,6 @@ _BEAM_EXT_GPT_PRO_HALO_W_LOC = -1
 
 class BeamRenderMode(str, Enum):
     BASELINE_SPRITE = "baseline_sprite"
-    SHADER_STAMPED_ANALYTIC = "shader_stamped_analytic"
     SHADER_STAMPED_VIRTUAL = "shader_stamped_virtual"
     SHADER_EXT_CLAUDE = "shader_ext_claude"
     SHADER_EXT_GEMINI = "shader_ext_gemini"
@@ -484,7 +483,6 @@ class BeamRenderMode(str, Enum):
 
 _RENDER_MODE_ORDER: tuple[BeamRenderMode, ...] = (
     BeamRenderMode.BASELINE_SPRITE,
-    BeamRenderMode.SHADER_STAMPED_ANALYTIC,
     BeamRenderMode.SHADER_STAMPED_VIRTUAL,
     BeamRenderMode.SHADER_EXT_CLAUDE,
     BeamRenderMode.SHADER_EXT_GEMINI,
@@ -1103,8 +1101,6 @@ def _get_beam_ext_gpt_pro_shader() -> rl.Shader | None:
 def _mode_label(mode: BeamRenderMode) -> str:
     if mode == BeamRenderMode.BASELINE_SPRITE:
         return "baseline"
-    if mode == BeamRenderMode.SHADER_STAMPED_ANALYTIC:
-        return "shader-stamped-analytic"
     if mode == BeamRenderMode.SHADER_STAMPED_VIRTUAL:
         return "shader-stamped-virtual"
     if mode == BeamRenderMode.SHADER_EXT_CLAUDE:
@@ -1240,22 +1236,12 @@ def estimate_beam_frame_counts(
                 if bool(is_fire) and float(item.life) >= 0.4:
                     overlay_calls += 1
             body_calls += int(segment_count)
-        elif mode == BeamRenderMode.SHADER_STAMPED_ANALYTIC:
-            if bool(draw_heads_enabled):
-                head_calls += 1
-            body_calls += int(segment_count)
         elif segment_count >= 1:
             shader_beam_calls += 1
             if bool(draw_heads_enabled):
                 head_calls += 1
 
-    if (
-        mode == BeamRenderMode.SHADER_GEMINI_2
-        or mode == BeamRenderMode.SHADER_STAMPED_VIRTUAL
-        or mode == BeamRenderMode.SHADER_EXT_CLAUDE
-        or mode == BeamRenderMode.SHADER_EXT_GEMINI
-        or mode == BeamRenderMode.SHADER_EXT_GPT_PRO
-    ):
+    if mode != BeamRenderMode.BASELINE_SPRITE:
         body_calls = int(shader_beam_calls)
         overlay_calls = 0
 
@@ -3155,14 +3141,6 @@ class BeamDebugView:
                 preps,
                 is_fire=is_fire,
             )
-        elif mode == BeamRenderMode.SHADER_STAMPED_ANALYTIC:
-            body_calls, fallback = self._draw_projectile_body_shader_stamped_analytic(preps, streak_rgb=streak_rgb)
-            shader_fallback = bool(fallback)
-            if fallback:
-                head_calls, overlay_calls = self._draw_projectile_heads(preps, is_fire=is_fire)
-            else:
-                head_calls = self._draw_projectile_head_shader_stamped_analytic(preps, is_fire=is_fire)
-                overlay_calls = 0
         elif mode == BeamRenderMode.SHADER_STAMPED_VIRTUAL:
             body_calls, fallback = self._draw_projectile_body_shader_stamped_virtual(preps, streak_rgb=streak_rgb)
             shader_fallback = bool(fallback)

@@ -73,7 +73,7 @@ def main() -> int:
     parser.add_argument(
         "--mode",
         default=BeamRenderMode.SHADER_GEMINI_2.value,
-        help="right-panel render mode value (e.g. shader_gemini_2, shader_stamped_analytic)",
+        help="right-panel render mode value (e.g. shader_gemini_2, shader_stamped_virtual)",
     )
     parser.add_argument(
         "--out",
