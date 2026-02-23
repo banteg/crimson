@@ -80,17 +80,41 @@ Benchmark controls:
   - `uv run crimson replay benchmark <replay.crd> --mode render --rtx`
 - telemetry/charts flow: [`docs/rewrite/deterministic-step-pipeline.md`](deterministic-step-pipeline.md)
 
-## Observed perf shape (single-run example)
+## Observed benchmark results (single-run sample)
 
-For the comparison run against
-`survival_20260223_165511_score7046201.crd` (`runs=1`, `warmup_runs=0`), the
-RTX beam path produced:
+Replay benchmark run:
 
-- strong draw-call reduction (median and tail)
-- better mean/p95 frame and draw timing
-- occasional larger worst-case spikes on isolated ticks
+- replay: `survival_20260223_165511_score7046201.crd`
+- sampling: `runs=1`, `warmup_runs=0`
+- artifacts: `bench/render_cmp_20260223_170207/`
 
-Treat this as directional evidence; final claims should use multi-run samples.
+Primary p50 metrics from `summary.txt`:
+
+| Metric | Classic | RTX | Delta (RTX - Classic) |
+| --- | ---: | ---: | ---: |
+| `wall_ms_p50` | `2387199.955` | `1778650.386` | `-608549.569` |
+| `tps_p50` | `33.16` | `44.51` | `+11.35` |
+| `realtime_x_p50` | `0.39` | `0.53` | `+0.14` |
+| `frame_ms_p50` | `21.284` | `20.089` | `-1.195` |
+| `draw_ms_p50` | `17.974` | `18.174` | `+0.201` |
+| `draw_calls_p50` | `1280.00` | `524.00` | `-756.00` |
+
+Additional telemetry from run stdout:
+
+- draw calls:
+  - mean: `2130.22 -> 789.21`
+  - p95: `5386.95 -> 1959.00`
+  - max: `8275 -> 3480`
+- frame timing:
+  - p95: `62.003 ms -> 49.429 ms`
+  - max: `96.519 ms -> 160.531 ms`
+- draw timing:
+  - p95: `58.900 ms -> 43.120 ms`
+  - max: `93.920 ms -> 156.601 ms`
+
+Interpretation for this sample: RTX materially reduces draw calls and improves
+overall throughput/frame distribution, while showing larger rare worst-case
+spikes. For release-facing claims, re-run as a multi-sample benchmark.
 
 ## Future direction
 
