@@ -100,6 +100,7 @@ SHADER_STAMP_VIRTUAL_PROFILE_LINEAR_DEFAULT = -4.8
 SHADER_STAMP_VIRTUAL_PROFILE_QUAD_DEFAULT = 1.0
 SHADER_STAMP_VIRTUAL_PROFILE_OFFSET_DEFAULT = 0.01
 SHADER_STAMP_VIRTUAL_INTENSITY_GAIN_DEFAULT = 0.92
+SHADER_STAMP_VIRTUAL_PROFILE_POW_DEFAULT = 1.0
 SHADER_STAMP_VIRTUAL_CORE_FLAT_STEP_FRACTION_DEFAULT = 0.0
 SHADER_STAMP_VIRTUAL_CORE_SUPPORT_WEIGHT_DEFAULT = 0.0
 SHADER_STAMP_VIRTUAL_MAX_STAMPS = 128
@@ -111,6 +112,16 @@ SHADER_STAMP_VIRTUAL_HEAD_RADIUS_SCALE_DEFAULT = 1.0
 SHADER_STAMP_VIRTUAL_HEAD_RADIUS_SCALE_MIN = 0.5
 SHADER_STAMP_VIRTUAL_HEAD_RADIUS_SCALE_MAX = 2.0
 SHADER_STAMP_VIRTUAL_HEAD_RADIUS_SCALE_STEP = 0.05
+SHADER_STAMP_VIRTUAL_FIRE_GLOW_FIT_A = 1.22
+SHADER_STAMP_VIRTUAL_FIRE_GLOW_FIT_B = -4.7
+SHADER_STAMP_VIRTUAL_FIRE_GLOW_FIT_P = 1.1
+SHADER_STAMP_VIRTUAL_FIRE_GLOW_FIT_C = 0.015
+SHADER_STAMP_VIRTUAL_FIRE_GLOW_RADIUS_PX = 32.0
+SHADER_STAMP_VIRTUAL_FIRE_GLOW_RGB = (1.0, 233.0 / 255.0, 131.0 / 255.0)
+SHADER_STAMP_VIRTUAL_FIRE_GLOW_GAIN = 2.0
+SHADER_STAMP_VIRTUAL_FIRE_GLOW_INNER_RGB = (1.0, 233.0 / 255.0, 131.0 / 255.0)
+SHADER_STAMP_VIRTUAL_FIRE_GLOW_OUTER_RGB = (0.2555, 0.1813, 0.0893)
+SHADER_STAMP_VIRTUAL_FIRE_GLOW_COLOR_MIX_POW = 0.9
 
 _BEAM_SHADER_VS_330 = """
 #version 330
@@ -379,9 +390,13 @@ _BEAM_STAMPED_VIRTUAL_STAMP_SCALE_LOC = -1
 _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC = -1
 _BEAM_STAMPED_VIRTUAL_STAMP_QUAD_LOC = -1
 _BEAM_STAMPED_VIRTUAL_STAMP_OFFSET_LOC = -1
+_BEAM_STAMPED_VIRTUAL_STAMP_POW_LOC = -1
 _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC = -1
 _BEAM_STAMPED_VIRTUAL_CORE_FLAT_STEP_FRACTION_LOC = -1
 _BEAM_STAMPED_VIRTUAL_CORE_SUPPORT_WEIGHT_LOC = -1
+_BEAM_STAMPED_VIRTUAL_HEAD_INNER_RGB_LOC = -1
+_BEAM_STAMPED_VIRTUAL_HEAD_OUTER_RGB_LOC = -1
+_BEAM_STAMPED_VIRTUAL_HEAD_COLOR_MIX_POW_LOC = -1
 _BEAM_EXT_GPT_PRO_SHADER_TRIED = False
 _BEAM_EXT_GPT_PRO_SHADER: rl.Shader | None = None
 _BEAM_EXT_GPT_PRO_COLOR_LOC = -1
@@ -872,8 +887,11 @@ def _get_beam_stamped_virtual_shader() -> rl.Shader | None:
     global _BEAM_STAMPED_VIRTUAL_COLOR_LOC, _BEAM_STAMPED_VIRTUAL_STEP_UV_LOC
     global _BEAM_STAMPED_VIRTUAL_STAMP_SCALE_LOC, _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC
     global _BEAM_STAMPED_VIRTUAL_STAMP_QUAD_LOC, _BEAM_STAMPED_VIRTUAL_STAMP_OFFSET_LOC
+    global _BEAM_STAMPED_VIRTUAL_STAMP_POW_LOC
     global _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC
     global _BEAM_STAMPED_VIRTUAL_CORE_FLAT_STEP_FRACTION_LOC, _BEAM_STAMPED_VIRTUAL_CORE_SUPPORT_WEIGHT_LOC
+    global _BEAM_STAMPED_VIRTUAL_HEAD_INNER_RGB_LOC, _BEAM_STAMPED_VIRTUAL_HEAD_OUTER_RGB_LOC
+    global _BEAM_STAMPED_VIRTUAL_HEAD_COLOR_MIX_POW_LOC
     if _BEAM_STAMPED_VIRTUAL_SHADER_TRIED:
         if _BEAM_STAMPED_VIRTUAL_SHADER is not None and int(_BEAM_STAMPED_VIRTUAL_SHADER.id) > 0:
             return _BEAM_STAMPED_VIRTUAL_SHADER
@@ -897,11 +915,15 @@ def _get_beam_stamped_virtual_shader() -> rl.Shader | None:
     _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC = int(rl.get_shader_location(shader, "u_stamp_decay"))
     _BEAM_STAMPED_VIRTUAL_STAMP_QUAD_LOC = int(rl.get_shader_location(shader, "u_stamp_quad"))
     _BEAM_STAMPED_VIRTUAL_STAMP_OFFSET_LOC = int(rl.get_shader_location(shader, "u_stamp_offset"))
+    _BEAM_STAMPED_VIRTUAL_STAMP_POW_LOC = int(rl.get_shader_location(shader, "u_stamp_pow"))
     _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC = int(rl.get_shader_location(shader, "u_intensity_gain"))
     _BEAM_STAMPED_VIRTUAL_CORE_FLAT_STEP_FRACTION_LOC = int(
         rl.get_shader_location(shader, "u_core_flat_step_fraction"),
     )
     _BEAM_STAMPED_VIRTUAL_CORE_SUPPORT_WEIGHT_LOC = int(rl.get_shader_location(shader, "u_core_support_weight"))
+    _BEAM_STAMPED_VIRTUAL_HEAD_INNER_RGB_LOC = int(rl.get_shader_location(shader, "u_head_inner_rgb"))
+    _BEAM_STAMPED_VIRTUAL_HEAD_OUTER_RGB_LOC = int(rl.get_shader_location(shader, "u_head_outer_rgb"))
+    _BEAM_STAMPED_VIRTUAL_HEAD_COLOR_MIX_POW_LOC = int(rl.get_shader_location(shader, "u_head_color_mix_pow"))
     return _BEAM_STAMPED_VIRTUAL_SHADER
 
 
@@ -2004,6 +2026,17 @@ class BeamDebugView:
         )
 
     @staticmethod
+    def _set_shader_vec3(shader: rl.Shader, location: int, x: float, y: float, z: float) -> None:
+        if int(location) < 0:
+            return
+        rl.set_shader_value(
+            shader,
+            int(location),
+            rl.ffi.new("float[3]", [float(x), float(y), float(z)]),
+            rl.ShaderUniformDataType.SHADER_UNIFORM_VEC3,
+        )
+
+    @staticmethod
     def _emit_probe_quad(*, x: float, y: float) -> None:
         x0 = float(x)
         y0 = float(y)
@@ -2266,6 +2299,7 @@ class BeamDebugView:
         stamp_decay = float(-SHADER_STAMP_VIRTUAL_PROFILE_LINEAR_DEFAULT)
         stamp_quad = float(SHADER_STAMP_VIRTUAL_PROFILE_QUAD_DEFAULT)
         stamp_offset = float(SHADER_STAMP_VIRTUAL_PROFILE_OFFSET_DEFAULT)
+        stamp_pow = float(SHADER_STAMP_VIRTUAL_PROFILE_POW_DEFAULT)
         core_flat_step_fraction = float(SHADER_STAMP_VIRTUAL_CORE_FLAT_STEP_FRACTION_DEFAULT)
         core_support_weight = float(SHADER_STAMP_VIRTUAL_CORE_SUPPORT_WEIGHT_DEFAULT)
 
@@ -2277,6 +2311,7 @@ class BeamDebugView:
         self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC, float(stamp_decay))
         self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_QUAD_LOC, float(stamp_quad))
         self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_OFFSET_LOC, float(stamp_offset))
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_POW_LOC, float(stamp_pow))
         self._set_shader_float(
             shader,
             _BEAM_STAMPED_VIRTUAL_CORE_FLAT_STEP_FRACTION_LOC,
@@ -2292,6 +2327,9 @@ class BeamDebugView:
             _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC,
             float(SHADER_STAMP_VIRTUAL_INTENSITY_GAIN_DEFAULT),
         )
+        self._set_shader_vec3(shader, _BEAM_STAMPED_VIRTUAL_HEAD_INNER_RGB_LOC, 1.0, 1.0, 1.0)
+        self._set_shader_vec3(shader, _BEAM_STAMPED_VIRTUAL_HEAD_OUTER_RGB_LOC, 1.0, 1.0, 1.0)
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_HEAD_COLOR_MIX_POW_LOC, 1.0)
         rl.rl_set_texture(0)
         rl.rl_begin(rd.RL_QUADS)
         for prep in preps:
@@ -2600,6 +2638,7 @@ class BeamDebugView:
         stamp_decay = float(-SHADER_STAMP_VIRTUAL_PROFILE_LINEAR_DEFAULT)
         stamp_quad = float(SHADER_STAMP_VIRTUAL_PROFILE_QUAD_DEFAULT)
         stamp_offset = float(SHADER_STAMP_VIRTUAL_PROFILE_OFFSET_DEFAULT)
+        stamp_pow = float(SHADER_STAMP_VIRTUAL_PROFILE_POW_DEFAULT)
         core_flat_step_fraction = float(SHADER_STAMP_VIRTUAL_CORE_FLAT_STEP_FRACTION_DEFAULT)
         core_support_weight = float(SHADER_STAMP_VIRTUAL_CORE_SUPPORT_WEIGHT_DEFAULT)
         intensity_gain = float(SHADER_STAMP_VIRTUAL_INTENSITY_GAIN_DEFAULT) * float(self._stamped_virtual_head_gain_scale)
@@ -2612,6 +2651,7 @@ class BeamDebugView:
         self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC, float(stamp_decay))
         self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_QUAD_LOC, float(stamp_quad))
         self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_OFFSET_LOC, float(stamp_offset))
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_POW_LOC, float(stamp_pow))
         self._set_shader_float(
             shader,
             _BEAM_STAMPED_VIRTUAL_CORE_FLAT_STEP_FRACTION_LOC,
@@ -2623,6 +2663,9 @@ class BeamDebugView:
             float(core_support_weight),
         )
         self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC, float(intensity_gain))
+        self._set_shader_vec3(shader, _BEAM_STAMPED_VIRTUAL_HEAD_INNER_RGB_LOC, 1.0, 1.0, 1.0)
+        self._set_shader_vec3(shader, _BEAM_STAMPED_VIRTUAL_HEAD_OUTER_RGB_LOC, 1.0, 1.0, 1.0)
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_HEAD_COLOR_MIX_POW_LOC, 1.0)
         rl.rl_set_texture(0)
         rl.rl_begin(rd.RL_QUADS)
         for prep in preps:
@@ -2809,6 +2852,79 @@ class BeamDebugView:
 
         return int(head_calls), int(overlay_calls)
 
+    def _draw_projectile_fire_head_overlays(self, preps: Sequence[_RenderPrep]) -> int:
+        shader = _get_beam_stamped_virtual_shader()
+        if shader is None:
+            overlay_calls = 0
+            for prep in preps:
+                if float(prep.preview.life) < 0.4:
+                    continue
+                if self._draw_fire_overlay(prep.preview, alpha=1.0, rotation_rad=prep.rotation_rad):
+                    overlay_calls += 1
+            return int(overlay_calls)
+
+        radius = float(SHADER_STAMP_VIRTUAL_FIRE_GLOW_RADIUS_PX)
+        glow_rgb = SHADER_STAMP_VIRTUAL_FIRE_GLOW_RGB
+        glow_r = int(clamp(float(glow_rgb[0]) * 255.0, 0.0, 255.0) + 0.5)
+        glow_g = int(clamp(float(glow_rgb[1]) * 255.0, 0.0, 255.0) + 0.5)
+        glow_b = int(clamp(float(glow_rgb[2]) * 255.0, 0.0, 255.0) + 0.5)
+        overlay_calls = 0
+        rl.begin_shader_mode(shader)
+        self._set_shader_vec4(shader, _BEAM_STAMPED_VIRTUAL_COLOR_LOC, 1.0, 1.0, 1.0, 1.0)
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STEP_UV_LOC, 0.5)
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_SCALE_LOC, float(SHADER_STAMP_VIRTUAL_FIRE_GLOW_FIT_A))
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_DECAY_LOC, float(-SHADER_STAMP_VIRTUAL_FIRE_GLOW_FIT_B))
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_QUAD_LOC, 0.0)
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_OFFSET_LOC, float(SHADER_STAMP_VIRTUAL_FIRE_GLOW_FIT_C))
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_STAMP_POW_LOC, float(SHADER_STAMP_VIRTUAL_FIRE_GLOW_FIT_P))
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_CORE_FLAT_STEP_FRACTION_LOC, 0.0)
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_CORE_SUPPORT_WEIGHT_LOC, 0.0)
+        self._set_shader_float(shader, _BEAM_STAMPED_VIRTUAL_INTENSITY_GAIN_LOC, float(SHADER_STAMP_VIRTUAL_FIRE_GLOW_GAIN))
+        self._set_shader_vec3(
+            shader,
+            _BEAM_STAMPED_VIRTUAL_HEAD_INNER_RGB_LOC,
+            1.0,
+            1.0,
+            1.0,
+        )
+        self._set_shader_vec3(
+            shader,
+            _BEAM_STAMPED_VIRTUAL_HEAD_OUTER_RGB_LOC,
+            1.0,
+            1.0,
+            1.0,
+        )
+        self._set_shader_float(
+            shader,
+            _BEAM_STAMPED_VIRTUAL_HEAD_COLOR_MIX_POW_LOC,
+            1.0,
+        )
+        rl.rl_set_texture(0)
+        rl.rl_begin(rd.RL_QUADS)
+        for prep in preps:
+            if float(prep.preview.life) < 0.4:
+                continue
+            direction = Vec2.from_angle(prep.rotation_rad)
+            side = direction.perp_left() * radius
+            forward = direction * radius
+            center = prep.preview.head_screen
+
+            def push(pos: Vec2, *, uv_x: float, uv_y: float) -> None:
+                rl.rl_color4ub(glow_r, glow_g, glow_b, 255)
+                rl.rl_tex_coord2f(float(uv_x), float(uv_y))
+                rl.rl_vertex3f(float(pos.x), float(pos.y), -1.0)
+
+            push(center - forward - side, uv_x=-1.0, uv_y=-1.0)
+            push(center - forward + side, uv_x=-1.0, uv_y=1.0)
+            push(center + forward + side, uv_x=1.0, uv_y=1.0)
+            push(center + forward - side, uv_x=1.0, uv_y=-1.0)
+            overlay_calls += 1
+        rl.rl_end()
+        rl.rl_set_texture(0)
+        rl.end_shader_mode()
+        return int(overlay_calls)
+
+
     def _draw_projectiles(
         self,
         previews: Sequence[_PreviewProjectile],
@@ -2873,7 +2989,7 @@ class BeamDebugView:
                     shader_fallback = True
                     head_calls, overlay_calls = self._draw_projectile_heads(preps, is_fire=is_fire)
                 else:
-                    overlay_calls = 0
+                    overlay_calls = self._draw_projectile_fire_head_overlays(preps) if is_fire else 0
         elif mode == BeamRenderMode.SHADER_EXT_GPT_PRO:
             body_calls, fallback = self._draw_projectile_body_shader_ext_gpt_pro(preps, streak_rgb=streak_rgb)
             shader_fallback = bool(fallback)
