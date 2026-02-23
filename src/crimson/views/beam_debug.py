@@ -153,6 +153,17 @@ def cycle_beam_render_mode(mode: BeamRenderMode) -> BeamRenderMode:
     return _RENDER_MODE_ORDER[(idx + 1) % len(_RENDER_MODE_ORDER)]
 
 
+class HeadCapVariant(str, Enum):
+    ORIGINAL = "original"
+    BODY_CAP = "body_cap"
+
+
+_HEAD_CAP_VARIANT_ORDER: tuple[HeadCapVariant, ...] = (
+    HeadCapVariant.ORIGINAL,
+    HeadCapVariant.BODY_CAP,
+)
+
+
 class BeamScenarioPreset(str, Enum):
     PLASMA_LIKE = "plasma_like"
     CROWD_STRESS = "crowd_stress"
@@ -708,6 +719,7 @@ class BeamDebugView:
 
         self._cap_enabled = True
         self._head_render_enabled = True
+        self._head_cap_variant = HeadCapVariant.BODY_CAP
         self._show_all_segment_markers = False
         self._show_geometry_overlay = False
         self._force_life_high = True
@@ -1238,6 +1250,9 @@ class BeamDebugView:
             self._force_life_high = not bool(self._force_life_high)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_H):
             self._head_render_enabled = not bool(self._head_render_enabled)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_D):
+            idx = _HEAD_CAP_VARIANT_ORDER.index(self._head_cap_variant)
+            self._head_cap_variant = _HEAD_CAP_VARIANT_ORDER[(idx + 1) % len(_HEAD_CAP_VARIANT_ORDER)]
         if rl.is_key_pressed(rl.KeyboardKey.KEY_M):
             self._show_all_segment_markers = not bool(self._show_all_segment_markers)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_V):
@@ -1585,6 +1600,8 @@ class BeamDebugView:
         g = int(clamp(streak_rgb[1] * 255.0, 0.0, 255.0) + 0.5)
         b = int(clamp(streak_rgb[2] * 255.0, 0.0, 255.0) + 0.5)
         params = self._shader_gemini_2_params
+        variant = self._head_cap_variant
+
         radius = max(
             0.001,
             float(SHADER_GEMINI_2_RADIUS_SCALE) * float(self._effect_scale) * float(SHADER_GEMINI_2_RADIUS_EXPAND),
@@ -1628,20 +1645,21 @@ class BeamDebugView:
                 rl.rl_tex_coord2f(float(uv_x), float(uv_y))
                 rl.rl_vertex2f(float(pos.x), float(pos.y))
 
-            # Body only: tail fades out by alpha ramp, no separate tail-cap quad.
+            # Body quad
             push(p0 - side, uv_x=0.0, uv_y=-1.0, alpha=tail_alpha)
             push(p0 + side, uv_x=0.0, uv_y=1.0, alpha=tail_alpha)
             push(p1 + side, uv_x=0.0, uv_y=1.0, alpha=head_alpha)
             push(p1 - side, uv_x=0.0, uv_y=-1.0, alpha=head_alpha)
             quad_count += 1
 
-            # Cap quad: semicircular falloff at head
-            cap_end = p1 + direction * radius
-            push(p1 - side, uv_x=0.0, uv_y=-1.0, alpha=head_alpha)
-            push(p1 + side, uv_x=0.0, uv_y=1.0, alpha=head_alpha)
-            push(cap_end + side, uv_x=1.0, uv_y=1.0, alpha=head_alpha)
-            push(cap_end - side, uv_x=1.0, uv_y=-1.0, alpha=head_alpha)
-            quad_count += 1
+            # Body-cap variant: semicircular falloff quad at head
+            if variant == HeadCapVariant.BODY_CAP and self._head_render_enabled:
+                cap_end = p1 + direction * radius
+                push(p1 - side, uv_x=0.0, uv_y=-1.0, alpha=head_alpha)
+                push(p1 + side, uv_x=0.0, uv_y=1.0, alpha=head_alpha)
+                push(cap_end + side, uv_x=1.0, uv_y=1.0, alpha=head_alpha)
+                push(cap_end - side, uv_x=1.0, uv_y=-1.0, alpha=head_alpha)
+                quad_count += 1
         rl.rl_end()
         rl.rl_set_texture(0)
         rl.end_shader_mode()
@@ -1910,6 +1928,7 @@ class BeamDebugView:
             (
                 f"flags cap={'on' if self._cap_enabled else 'off'} "
                 f"head={'on' if self._head_render_enabled else 'off'} "
+                f"head_cap={self._head_cap_variant.value} "
                 f"life_hi={'on' if self._force_life_high else 'off'} "
                 f"markers={'all' if self._show_all_segment_markers else 'selected'} "
                 f"geometry={'on' if self._show_geometry_overlay else 'off'}"
@@ -1923,7 +1942,7 @@ class BeamDebugView:
             self._small,
             (
                 "Space pause/resume  Right step(when paused)  Esc close  P screenshot  "
-                "F fire/ion  C cap256  G force life>=0.4  H toggle heads  M all markers  V geometry  "
+                "F fire/ion  C cap256  G force life>=0.4  H toggle heads  D cycle head-cap  M all markers  V geometry  "
                 "X run batch-probe  Z auto-probe  J/U probe quads  N autofit-profile  0 reset shader  Q research/fitted"
             ),
             Vec2(margin, y),
