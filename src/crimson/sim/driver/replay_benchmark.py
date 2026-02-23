@@ -11,6 +11,8 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Literal, cast
 
+from tqdm import tqdm
+
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
 from grim.view import ViewContext
@@ -156,7 +158,6 @@ def run_replay_render_benchmark(
     render_telemetry_out: Path | None = None,
     render_charts_out_dir: Path | None = None,
     show_progress: bool = False,
-    tqdm_factory: Callable[..., object] | None = None,
 ) -> ReplayBenchmarkResult:
     from grim.config import ensure_crimson_cfg
     from grim.console import create_console
@@ -164,7 +165,7 @@ def run_replay_render_benchmark(
 
     from ...assets_fetch import download_missing_paqs
 
-    _validate_args(runs=int(runs), warmup_runs=int(warmup_runs), top=int(top))
+    _validate_args(runs=runs, warmup_runs=warmup_runs, top=top)
     telemetry_requested = bool(
         render_telemetry
         or render_telemetry_out is not None
@@ -205,32 +206,67 @@ def run_replay_render_benchmark(
     except RuntimeError as exc:
         raise ReplayBenchmarkError(f"render benchmark could not initialize window: {exc}") from exc
 
+    tick_total = len(replay.inputs)
+    if max_ticks is not None:
+        tick_total = min(tick_total, max(0, int(max_ticks)))
+
     progress: Any | None = None
     try:
         planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0) + (1 if telemetry_requested else 0)
-        if bool(show_progress) and int(planned_steps) > 0:
-            from tqdm import tqdm
-
-            factory = tqdm if tqdm_factory is None else tqdm_factory
-            progress = cast(
-                Any,
-                factory(
-                    total=int(planned_steps),
-                    unit="run",
-                    desc="render benchmark",
-                    leave=False,
-                ),
+        if bool(show_progress) and planned_steps > 0:
+            progress = tqdm(
+                total=planned_steps,
+                unit="run",
+                desc="render benchmark",
+                leave=False,
             )
 
+        def _run_once_with_tick_progress(*, tick_desc: str, telemetry_session: RenderTelemetrySession | None = None) -> _RenderOnceResult:
+            tick_progress: Any | None = None
+            completed_ticks = 0
+            tick_callback: Callable[[int], None] | None = None
+            completed_run = False
+            if bool(show_progress) and tick_total > 0:
+                tick_progress = tqdm(
+                    total=tick_total,
+                    unit="tick",
+                    desc=str(tick_desc),
+                    leave=False,
+                )
+
+                def _on_tick(tick_index: int) -> None:
+                    nonlocal completed_ticks
+                    target_tick = max(0, min(tick_total, int(tick_index)))
+                    if target_tick <= completed_ticks:
+                        return
+                    tick_progress.update(target_tick - completed_ticks)
+                    completed_ticks = target_tick
+
+                tick_callback = _on_tick
+
+            try:
+                result = _run_render_once(
+                    ctx=ctx,
+                    replay_path=replay_path,
+                    cfg=cfg,
+                    console=console,
+                    max_ticks=max_ticks,
+                    strict_events=bool(strict_events),
+                    trace_rng=bool(trace_rng),
+                    telemetry_session=telemetry_session,
+                    tick_progress_callback=tick_callback,
+                )
+                completed_run = True
+                return result
+            finally:
+                if tick_progress is not None:
+                    if completed_run and completed_ticks < tick_total:
+                        tick_progress.update(tick_total - completed_ticks)
+                    tick_progress.close()
+
         for _ in range(int(warmup_runs)):
-            _run_render_once(
-                ctx=ctx,
-                replay_path=Path(replay_path),
-                cfg=cfg,
-                console=console,
-                max_ticks=max_ticks,
-                strict_events=bool(strict_events),
-                trace_rng=bool(trace_rng),
+            _run_once_with_tick_progress(
+                tick_desc="render ticks warmup",
             )
             if progress is not None:
                 progress.update(1)
@@ -239,14 +275,8 @@ def run_replay_render_benchmark(
         samples: list[BenchmarkSample] = []
         for sample_idx in range(int(runs)):
             start_ns = time.perf_counter_ns()
-            measured = _run_render_once(
-                ctx=ctx,
-                replay_path=Path(replay_path),
-                cfg=cfg,
-                console=console,
-                max_ticks=max_ticks,
-                strict_events=bool(strict_events),
-                trace_rng=bool(trace_rng),
+            measured = _run_once_with_tick_progress(
+                tick_desc=f"render ticks sample {sample_idx + 1}/{int(runs)}",
             )
             elapsed_ns = max(1, int(time.perf_counter_ns()) - int(start_ns))
             wall_ms = float(elapsed_ns) / 1_000_000.0
@@ -273,14 +303,8 @@ def run_replay_render_benchmark(
         if bool(profile):
             prof = cProfile.Profile()
             prof.enable()
-            profiled = _run_render_once(
-                ctx=ctx,
-                replay_path=Path(replay_path),
-                cfg=cfg,
-                console=console,
-                max_ticks=max_ticks,
-                strict_events=bool(strict_events),
-                trace_rng=bool(trace_rng),
+            profiled = _run_once_with_tick_progress(
+                tick_desc="render ticks profile",
             )
             prof.disable()
             _assert_consistent_run_result(
@@ -308,21 +332,11 @@ def run_replay_render_benchmark(
         telemetry_result: ReplayRenderTelemetryResult | None = None
         if telemetry_requested:
             telemetry_session = RenderTelemetrySession()
-
-            def _run_with_telemetry() -> _RenderOnceResult:
-                with telemetry_session:
-                    return _run_render_once(
-                        ctx=ctx,
-                        replay_path=Path(replay_path),
-                        cfg=cfg,
-                        console=console,
-                        max_ticks=max_ticks,
-                        strict_events=bool(strict_events),
-                        trace_rng=bool(trace_rng),
-                        telemetry_session=telemetry_session,
-                    )
-
-            collected = _run_with_telemetry()
+            with telemetry_session:
+                collected = _run_once_with_tick_progress(
+                    tick_desc="render ticks telemetry",
+                    telemetry_session=telemetry_session,
+                )
             _assert_consistent_run_result(
                 baseline_result,
                 collected.run_result,
@@ -406,70 +420,124 @@ def run_replay_benchmark(
     profile_sort: ProfileSortKey = "cumtime",
     top: int = 20,
     profile_out: Path | None = None,
+    show_progress: bool = False,
 ) -> ReplayBenchmarkResult:
-    _validate_args(runs=int(runs), warmup_runs=int(warmup_runs), top=int(top))
+    _validate_args(runs=runs, warmup_runs=warmup_runs, top=top)
 
-    for _ in range(int(warmup_runs)):
-        run_replay(
-            replay,
-            max_ticks=max_ticks,
-            strict_events=bool(strict_events),
-            trace_rng=bool(trace_rng),
-        )
+    tick_total = len(replay.inputs)
+    if max_ticks is not None:
+        tick_total = min(tick_total, max(0, int(max_ticks)))
 
-    baseline_result: RunResult | None = None
-    samples: list[BenchmarkSample] = []
-    for sample_idx in range(int(runs)):
-        start_ns = time.perf_counter_ns()
-        result = run_replay(
-            replay,
-            max_ticks=max_ticks,
-            strict_events=bool(strict_events),
-            trace_rng=bool(trace_rng),
-        )
-        elapsed_ns = max(1, int(time.perf_counter_ns()) - int(start_ns))
-        wall_ms = float(elapsed_ns) / 1_000_000.0
-        wall_s = float(elapsed_ns) / 1_000_000_000.0
-        ticks_per_second = float(result.ticks) / wall_s
-        realtime_x = float(result.elapsed_ms) / wall_ms
-        samples.append(
-            BenchmarkSample(
-                wall_ms=float(wall_ms),
-                ticks_per_second=float(ticks_per_second),
-                realtime_x=float(realtime_x),
-            ),
-        )
-        if baseline_result is None:
-            baseline_result = result
-        else:
-            _assert_consistent_run_result(baseline_result, result, where=f"measured run {sample_idx + 1}")
+    progress: Any | None = None
+    try:
+        planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0)
+        if bool(show_progress) and planned_steps > 0:
+            progress = tqdm(
+                total=planned_steps,
+                unit="run",
+                desc="headless benchmark",
+                leave=False,
+            )
 
-    assert baseline_result is not None
-    profile_result: ReplayProfileResult | None = None
-    if bool(profile):
-        prof = cProfile.Profile()
-        prof.enable()
-        prof_result = run_replay(
-            replay,
-            max_ticks=max_ticks,
-            strict_events=bool(strict_events),
-            trace_rng=bool(trace_rng),
-        )
-        prof.disable()
-        _assert_consistent_run_result(baseline_result, prof_result, where="profiled run")
+        def _run_once_with_tick_progress(*, tick_desc: str) -> RunResult:
+            tick_progress: Any | None = None
+            completed_ticks = 0
+            tick_callback: Callable[[int], None] | None = None
+            completed_run = False
+            if bool(show_progress) and tick_total > 0:
+                tick_progress = tqdm(
+                    total=tick_total,
+                    unit="tick",
+                    desc=str(tick_desc),
+                    leave=False,
+                )
 
-        if profile_out is not None:
-            out_path = Path(profile_out)
-            out_path.parent.mkdir(parents=True, exist_ok=True)
-            prof.dump_stats(str(out_path))
+                def _on_tick(tick_index: int) -> None:
+                    nonlocal completed_ticks
+                    target_tick = max(0, min(tick_total, int(tick_index)))
+                    if target_tick <= completed_ticks:
+                        return
+                    tick_progress.update(target_tick - completed_ticks)
+                    completed_ticks = target_tick
 
-        source, hotspots = _extract_hotspots(prof, sort_key=profile_sort, top=int(top))
-        profile_result = ReplayProfileResult(
-            sort=profile_sort,
-            top=int(top),
-            source=source,
-            hotspots=tuple(hotspots),
-        )
+                tick_callback = _on_tick
+
+            try:
+                result = run_replay(
+                    replay,
+                    max_ticks=max_ticks,
+                    strict_events=bool(strict_events),
+                    trace_rng=bool(trace_rng),
+                    tick_progress_callback=tick_callback,
+                )
+                completed_run = True
+                return result
+            finally:
+                if tick_progress is not None:
+                    if completed_run and completed_ticks < tick_total:
+                        tick_progress.update(tick_total - completed_ticks)
+                    tick_progress.close()
+
+        for _ in range(int(warmup_runs)):
+            _run_once_with_tick_progress(tick_desc="headless ticks warmup")
+            if progress is not None:
+                progress.update(1)
+                progress.set_postfix_str("phase=warmup", refresh=False)
+
+        baseline_result: RunResult | None = None
+        samples: list[BenchmarkSample] = []
+        for sample_idx in range(int(runs)):
+            start_ns = time.perf_counter_ns()
+            result = _run_once_with_tick_progress(
+                tick_desc=f"headless ticks sample {sample_idx + 1}/{int(runs)}",
+            )
+            elapsed_ns = max(1, int(time.perf_counter_ns()) - int(start_ns))
+            wall_ms = float(elapsed_ns) / 1_000_000.0
+            wall_s = float(elapsed_ns) / 1_000_000_000.0
+            ticks_per_second = float(result.ticks) / wall_s
+            realtime_x = float(result.elapsed_ms) / wall_ms
+            samples.append(
+                BenchmarkSample(
+                    wall_ms=float(wall_ms),
+                    ticks_per_second=float(ticks_per_second),
+                    realtime_x=float(realtime_x),
+                ),
+            )
+            if baseline_result is None:
+                baseline_result = result
+            else:
+                _assert_consistent_run_result(baseline_result, result, where=f"measured run {sample_idx + 1}")
+            if progress is not None:
+                progress.update(1)
+                progress.set_postfix_str(f"phase=measure sample={sample_idx + 1}/{int(runs)}", refresh=False)
+
+        assert baseline_result is not None
+        profile_result: ReplayProfileResult | None = None
+        if bool(profile):
+            prof = cProfile.Profile()
+            prof.enable()
+            prof_result = _run_once_with_tick_progress(tick_desc="headless ticks profile")
+            prof.disable()
+            _assert_consistent_run_result(baseline_result, prof_result, where="profiled run")
+
+            if profile_out is not None:
+                out_path = Path(profile_out)
+                out_path.parent.mkdir(parents=True, exist_ok=True)
+                prof.dump_stats(str(out_path))
+
+            source, hotspots = _extract_hotspots(prof, sort_key=profile_sort, top=int(top))
+            profile_result = ReplayProfileResult(
+                sort=profile_sort,
+                top=int(top),
+                source=source,
+                hotspots=tuple(hotspots),
+            )
+            if progress is not None:
+                progress.update(1)
+                progress.set_postfix_str("phase=profile", refresh=False)
+    finally:
+        if progress is not None:
+            progress.close()
 
     wall_values = [sample.wall_ms for sample in samples]
     tps_values = [sample.ticks_per_second for sample in samples]
@@ -504,6 +572,7 @@ def _run_render_once(
     strict_events: bool,
     trace_rng: bool,
     telemetry_session: RenderTelemetrySession | None = None,
+    tick_progress_callback: Callable[[int], None] | None = None,
 ) -> _RenderOnceResult:
     from grim.raylib_api import rl
 
@@ -548,6 +617,8 @@ def _run_render_once(
             frame_ns = max(0, int(time.perf_counter_ns()) - int(frame_start_ns))
 
             tick_after = int(mode.tick_index)
+            if tick_progress_callback is not None:
+                tick_progress_callback(int(tick_after))
             if telemetry_session is not None:
                 telemetry_session.end_frame(
                     tick_index_after_update=int(tick_after),

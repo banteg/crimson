@@ -798,6 +798,57 @@ def test_replay_benchmark_headless_defaults_remain_five_and_one(tmp_path: Path, 
     kwargs = run_replay_benchmark.call_args.kwargs
     assert kwargs["runs"] == 5
     assert kwargs["warmup_runs"] == 1
+    assert kwargs["show_progress"] is False
+
+
+def test_replay_benchmark_headless_human_format_enables_progress(tmp_path: Path, mocker) -> None:
+    import crimson.sim.driver.replay_benchmark as replay_benchmark_mod
+
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+    run_result = RunResult(
+        game_mode_id=int(GameMode.SURVIVAL),
+        tick_rate=60,
+        ticks=3,
+        elapsed_ms=50,
+        score_xp=42,
+        creature_kill_count=1,
+        most_used_weapon_id=1,
+        shots_fired=2,
+        shots_hit=1,
+        rng_state=123,
+    )
+    sample = BenchmarkSample(wall_ms=1.5, ticks_per_second=2000.0, realtime_x=33.3)
+    aggregate = BenchmarkAggregate(min=1.5, p50=1.5, mean=1.5, p95=1.5, max=1.5, stdev=0.0)
+    run_replay_benchmark = mocker.patch.object(
+        replay_benchmark_mod,
+        "run_replay_benchmark",
+        return_value=ReplayBenchmarkResult(
+            run_result=run_result,
+            samples=(sample,),
+            wall_ms=aggregate,
+            ticks_per_second=aggregate,
+            realtime_x=aggregate,
+            profile=None,
+        ),
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "benchmark",
+            str(replay_path),
+            "--mode",
+            "headless",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    run_replay_benchmark.assert_called_once()
+    kwargs = run_replay_benchmark.call_args.kwargs
+    assert kwargs["show_progress"] is True
 
 
 def test_replay_benchmark_headless_rejects_render_telemetry_flag(tmp_path: Path) -> None:
