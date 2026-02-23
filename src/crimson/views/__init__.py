@@ -5,7 +5,6 @@ from .registry import all_views, view_by_name
 
 def _register_builtin_views() -> None:
     from . import arsenal_debug as _arsenal_debug  # noqa: F401
-    from . import beam_debug as _beam_debug  # noqa: F401
     from . import fonts as _fonts  # noqa: F401
     from . import game_over as _game_over  # noqa: F401
     from . import lighting_debug as _lighting_debug  # noqa: F401
