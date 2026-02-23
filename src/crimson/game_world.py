@@ -21,6 +21,7 @@ from .effects import FxQueue, FxQueueRotated
 from .game_modes import GameMode
 from .gameplay import GameplayState
 from .render.frame import RenderFrame
+from .render.rtx.mode import RtxRenderMode
 from .render.terrain_fx import FxQueueTextures, bake_fx_queues
 from .render.world import WorldRenderer
 from .sim.input import PlayerInput
@@ -49,6 +50,7 @@ class GameWorld:
     config: CrimsonConfig | None = None
     audio: AudioState | None = None
     audio_rng: random.Random | None = None
+    rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC
     audio_router: AudioRouter = field(init=False)
     renderer: WorldRenderer = field(init=False)
     world_state: WorldState = field(init=False)
@@ -599,6 +601,7 @@ class GameWorld:
             lan_player_rings_enabled=self.lan_player_rings_enabled,
             lan_local_aim_indicators_only=self.lan_local_aim_indicators_only,
             lan_local_player_slot_index=int(self.lan_local_player_slot_index),
+            rtx_mode=self.rtx_mode,
         )
 
     def update_camera(self, _dt: float) -> None:

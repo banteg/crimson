@@ -6,6 +6,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Protocol
 
 from ..paths import default_runtime_dir
+from ..render.rtx.mode import RtxRenderMode
+
+
+def _default_rtx_render_mode() -> RtxRenderMode:
+    return RtxRenderMode.CLASSIC
 
 if TYPE_CHECKING:
     from grim.assets import LogoAssets, PaqTextureCache
@@ -32,6 +37,7 @@ class GameConfig:
     demo_enabled: bool = False
     no_intro: bool = False
     debug: bool = False
+    rtx: bool = False
     preserve_bugs: bool = False
     pending_net_session: "PendingNetSession | None" = None
     pending_lan_session: "PendingLanSession | None" = None
@@ -129,6 +135,7 @@ class GameState:
     audio: AudioState | None
     resource_paq: Path
     session_start: float
+    rtx_mode: RtxRenderMode = field(default_factory=_default_rtx_render_mode)
     skip_intro: bool = False
     gamma_ramp: float = 1.0
     snd_freq_adjustment_enabled: bool = True

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from grim.color import RGBA
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl
 
@@ -8,10 +9,49 @@ from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, Effect
 from ...perks import PerkId
 from ...perks.helpers import perk_active
 from ...projectiles import ProjectileTypeId
+from ...render.rtx.beam import draw_beam_fast_stamped_body, draw_beam_fast_stamped_head
+from ...render.rtx.mode import RtxRenderMode
 from ...sim.world_defs import BEAM_TYPES, ION_TYPES
 from ..projectile_render_registry import beam_effect_scale
 from .common import RAD_TO_DEG, proj_origin
 from .types import ProjectileDrawCtx
+
+
+def _draw_beam_body_sprites(
+    *,
+    ctx: ProjectileDrawCtx,
+    origin: Vec2,
+    direction: Vec2,
+    dist: float,
+    start: float,
+    span: float,
+    step: float,
+    base_alpha: float,
+    streak_rgb: tuple[float, float, float],
+    texture: rl.Texture,
+    grid: int,
+    frame: int,
+    sprite_scale: float,
+) -> None:
+    renderer = ctx.renderer
+    s = start
+    while s < dist:
+        t = (s - start) / span if span > 1e-6 else 1.0
+        seg_alpha = t * base_alpha
+        if seg_alpha > 1e-3:
+            pos = origin + direction * s
+            pos_screen = renderer.world_to_screen(pos)
+            tint = RGBA(streak_rgb[0], streak_rgb[1], streak_rgb[2], seg_alpha).to_rl()
+            renderer._draw_atlas_sprite(
+                texture,
+                grid=grid,
+                frame=frame,
+                pos=pos_screen,
+                scale=sprite_scale,
+                rotation_rad=0.0,
+                tint=tint,
+            )
+        s += step
 
 
 def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
@@ -69,36 +109,57 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
 
-    s = start
-    while s < dist:
-        t = (s - start) / span if span > 1e-6 else 1.0
-        seg_alpha = t * base_alpha
-        if seg_alpha > 1e-3:
-            pos = origin + direction * s
-            pos_screen = renderer.world_to_screen(pos)
-            tint = RGBA(streak_rgb[0], streak_rgb[1], streak_rgb[2], seg_alpha).to_rl()
+    if renderer.rtx_mode is RtxRenderMode.RTX:
+        draw_beam_fast_stamped_body(
+            origin_screen=renderer.world_to_screen(origin),
+            head_screen=ctx.screen_pos,
+            start_dist_units=start,
+            span_dist_units=span,
+            step_units=step,
+            effect_scale=effect_scale,
+            scale=ctx.scale,
+            base_alpha=base_alpha,
+            streak_rgb=streak_rgb,
+        )
+    else:
+        _draw_beam_body_sprites(
+            ctx=ctx,
+            origin=origin,
+            direction=direction,
+            dist=dist,
+            start=start,
+            span=span,
+            step=step,
+            base_alpha=base_alpha,
+            streak_rgb=streak_rgb,
+            texture=texture,
+            grid=grid,
+            frame=frame,
+            sprite_scale=sprite_scale,
+        )
+
+    if life >= 0.4:
+        if renderer.rtx_mode is RtxRenderMode.RTX:
+            draw_beam_fast_stamped_head(
+                center_screen=ctx.screen_pos,
+                rotation_rad=ctx.angle,
+                effect_scale=effect_scale,
+                scale=ctx.scale,
+                base_alpha=base_alpha,
+                head_rgb=head_rgb,
+                is_fire=is_fire_bullets,
+            )
+        else:
+            head_tint = RGBA(head_rgb[0], head_rgb[1], head_rgb[2], base_alpha).to_rl()
             renderer._draw_atlas_sprite(
                 texture,
                 grid=grid,
                 frame=frame,
-                pos=pos_screen,
+                pos=ctx.screen_pos,
                 scale=sprite_scale,
-                rotation_rad=0.0,
-                tint=tint,
+                rotation_rad=ctx.angle,
+                tint=head_tint,
             )
-        s += step
-
-    if life >= 0.4:
-        head_tint = RGBA(head_rgb[0], head_rgb[1], head_rgb[2], base_alpha).to_rl()
-        renderer._draw_atlas_sprite(
-            texture,
-            grid=grid,
-            frame=frame,
-            pos=ctx.screen_pos,
-            scale=sprite_scale,
-            rotation_rad=ctx.angle,
-            tint=head_tint,
-        )
 
         # Fire Bullets renders an extra particles.png overlay in a later pass.
         if is_fire_bullets and renderer.particles_texture is not None:
@@ -125,16 +186,28 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                     rl.draw_texture_pro(particles_texture, src, dst, origin, ctx.angle * RAD_TO_DEG, tint)
     else:
         # Native draws a small blue "core" at the head during the fade stage (life_timer < 0.4).
-        core_tint = RGBA(0.5, 0.6, 1.0, base_alpha).to_rl()
-        renderer._draw_atlas_sprite(
-            texture,
-            grid=grid,
-            frame=frame,
-            pos=ctx.screen_pos,
-            scale=1.0 * ctx.scale,
-            rotation_rad=ctx.angle,
-            tint=core_tint,
-        )
+        core_rgb = (0.5, 0.6, 1.0)
+        if renderer.rtx_mode is RtxRenderMode.RTX:
+            draw_beam_fast_stamped_head(
+                center_screen=ctx.screen_pos,
+                rotation_rad=ctx.angle,
+                effect_scale=effect_scale,
+                scale=ctx.scale,
+                base_alpha=base_alpha,
+                head_rgb=core_rgb,
+                is_fire=is_fire_bullets,
+            )
+        else:
+            core_tint = RGBA(core_rgb[0], core_rgb[1], core_rgb[2], base_alpha).to_rl()
+            renderer._draw_atlas_sprite(
+                texture,
+                grid=grid,
+                frame=frame,
+                pos=ctx.screen_pos,
+                scale=ctx.scale,
+                rotation_rad=ctx.angle,
+                tint=core_tint,
+            )
 
         if is_ion:
             # Native: chain reach is derived from the streak scale (`fVar29 * perk_scale * 40.0`).

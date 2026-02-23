@@ -16,6 +16,7 @@ def cmd_lan_host(
     bind: str = typer.Option("0.0.0.0", "--bind", help="host bind address"),
     port: int = typer.Option(31993, "--port", min=1, max=65535, help="host UDP port"),
     debug: bool = typer.Option(False, "--debug", help="enable debug cheats and overlays"),
+    rtx: bool = typer.Option(False, "--rtx", help="enable non-canonical RTX render mode"),
     width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
     height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, help="target fps"),
@@ -72,6 +73,7 @@ def cmd_lan_host(
         height=height,
         fps=fps,
         debug=bool(debug),
+        rtx=bool(rtx),
     )
 
 
@@ -80,6 +82,7 @@ def cmd_lan_join(
     host: str = typer.Option(..., "--host", help="host IP address"),
     port: int = typer.Option(31993, "--port", min=1, max=65535, help="host UDP port"),
     debug: bool = typer.Option(False, "--debug", help="enable debug cheats and overlays"),
+    rtx: bool = typer.Option(False, "--rtx", help="enable non-canonical RTX render mode"),
     width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
     height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, help="target fps"),
@@ -129,6 +132,6 @@ def cmd_lan_join(
         height=height,
         fps=fps,
         debug=bool(debug),
+        rtx=bool(rtx),
     )
-
 

@@ -7,6 +7,7 @@ from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
+from ..rtx.mode import RtxRenderMode
 from .constants import _RAD_TO_DEG
 
 if TYPE_CHECKING:
@@ -188,6 +189,12 @@ class WorldRenderCtx:
         if self.frame is not None:
             return int(self.frame.lan_local_player_slot_index)
         return int(self.renderer._world.lan_local_player_slot_index)
+
+    @property
+    def rtx_mode(self) -> RtxRenderMode:
+        if self.frame is not None:
+            return self.frame.rtx_mode
+        return self.renderer._world.rtx_mode
 
     def _ensure_small_font(self) -> SmallFontData | None:
         if self.renderer._small_font is not None:

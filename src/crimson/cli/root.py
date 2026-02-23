@@ -285,6 +285,7 @@ def cmd_game(
     demo: bool = typer.Option(False, "--demo", help="enable shareware demo mode"),
     no_intro: bool = typer.Option(False, "--no-intro", help="skip company splashes and intro music"),
     debug: bool = typer.Option(False, "--debug", help="enable debug cheats and overlays"),
+    rtx: bool = typer.Option(False, "--rtx", help="enable non-canonical RTX render mode"),
     preserve_bugs: bool = typer.Option(False, "--preserve-bugs", help="preserve known original exe bugs/quirks"),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
@@ -312,6 +313,7 @@ def cmd_game(
         demo_enabled=demo,
         no_intro=no_intro,
         debug=debug,
+        rtx=bool(rtx),
         preserve_bugs=bool(preserve_bugs),
     )
     run_game(config)

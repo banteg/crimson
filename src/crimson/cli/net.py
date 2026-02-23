@@ -28,6 +28,7 @@ def cmd_net_host(
     ),
     input_delay_ticks: int = typer.Option(1, "--input-delay-ticks", min=0, max=8, help="local input delay"),
     debug: bool = typer.Option(False, "--debug", help="enable debug cheats and overlays"),
+    rtx: bool = typer.Option(False, "--rtx", help="enable non-canonical RTX render mode"),
     width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
     height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, help="target fps"),
@@ -83,6 +84,7 @@ def cmd_net_host(
         height=height,
         fps=fps,
         debug=bool(debug),
+        rtx=bool(rtx),
     )
 
 
@@ -104,6 +106,7 @@ def cmd_net_join(
     ),
     input_delay_ticks: int = typer.Option(1, "--input-delay-ticks", min=0, max=8, help="local input delay"),
     debug: bool = typer.Option(False, "--debug", help="enable debug cheats and overlays"),
+    rtx: bool = typer.Option(False, "--rtx", help="enable non-canonical RTX render mode"),
     width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
     height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, help="target fps"),
@@ -152,6 +155,6 @@ def cmd_net_join(
         height=height,
         fps=fps,
         debug=bool(debug),
+        rtx=bool(rtx),
     )
-
 
