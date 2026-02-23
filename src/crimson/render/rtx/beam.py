@@ -186,6 +186,13 @@ def _get_beam_fast_stamped_shader() -> _BeamFastStampedShader | None:
     return _BEAM_FAST_STAMPED_SHADER
 
 
+def _require_beam_fast_stamped_shader() -> _BeamFastStampedShader:
+    shader_data = _get_beam_fast_stamped_shader()
+    if shader_data is None:
+        raise RuntimeError("rtx mode requires beam virtual shader, but it failed to load/compile")
+    return shader_data
+
+
 def _apply_virtual_beam_uniforms(*, shader_data: _BeamFastStampedShader, step_uv: float, intensity_gain: float) -> None:
     shader = shader_data.shader
     _set_shader_vec4(shader, shader_data.color_loc, 1.0, 1.0, 1.0, 1.0)
@@ -219,9 +226,7 @@ def draw_beam_fast_stamped_body(
     base_alpha: float,
     streak_rgb: tuple[float, float, float],
 ) -> bool:
-    shader_data = _get_beam_fast_stamped_shader()
-    if shader_data is None:
-        return False
+    shader_data = _require_beam_fast_stamped_shader()
 
     span_units = max(0.0, float(span_dist_units))
     if span_units <= 1e-6:
@@ -294,9 +299,7 @@ def draw_beam_fast_stamped_head(
     head_rgb: tuple[float, float, float],
     is_fire: bool,
 ) -> bool:
-    shader_data = _get_beam_fast_stamped_shader()
-    if shader_data is None:
-        return False
+    shader_data = _require_beam_fast_stamped_shader()
 
     alpha_u8 = int(clamp(float(base_alpha) * 255.0, 0.0, 255.0) + 0.5)
     if alpha_u8 <= 0:

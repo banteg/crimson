@@ -109,9 +109,8 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
 
-    body_drawn_by_rtx = False
     if renderer.rtx_mode is RtxRenderMode.RTX:
-        body_drawn_by_rtx = draw_beam_fast_stamped_body(
+        draw_beam_fast_stamped_body(
             origin_screen=renderer.world_to_screen(origin),
             head_screen=ctx.screen_pos,
             start_dist_units=float(start),
@@ -122,7 +121,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             base_alpha=float(base_alpha),
             streak_rgb=streak_rgb,
         )
-    if not body_drawn_by_rtx:
+    else:
         _draw_beam_body_sprites(
             ctx=ctx,
             origin=origin,
@@ -140,9 +139,8 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
         )
 
     if life >= 0.4:
-        head_drawn_by_rtx = False
         if renderer.rtx_mode is RtxRenderMode.RTX:
-            head_drawn_by_rtx = draw_beam_fast_stamped_head(
+            draw_beam_fast_stamped_head(
                 center_screen=ctx.screen_pos,
                 rotation_rad=ctx.angle,
                 effect_scale=float(effect_scale),
@@ -151,7 +149,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                 head_rgb=head_rgb,
                 is_fire=bool(is_fire_bullets),
             )
-        if not head_drawn_by_rtx:
+        else:
             head_tint = RGBA(head_rgb[0], head_rgb[1], head_rgb[2], base_alpha).to_rl()
             renderer._draw_atlas_sprite(
                 texture,
@@ -189,9 +187,8 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
     else:
         # Native draws a small blue "core" at the head during the fade stage (life_timer < 0.4).
         core_rgb = (0.5, 0.6, 1.0)
-        core_drawn_by_rtx = False
         if renderer.rtx_mode is RtxRenderMode.RTX:
-            core_drawn_by_rtx = draw_beam_fast_stamped_head(
+            draw_beam_fast_stamped_head(
                 center_screen=ctx.screen_pos,
                 rotation_rad=ctx.angle,
                 effect_scale=float(effect_scale),
@@ -200,7 +197,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                 head_rgb=core_rgb,
                 is_fire=bool(is_fire_bullets),
             )
-        if not core_drawn_by_rtx:
+        else:
             core_tint = RGBA(core_rgb[0], core_rgb[1], core_rgb[2], base_alpha).to_rl()
             renderer._draw_atlas_sprite(
                 texture,
