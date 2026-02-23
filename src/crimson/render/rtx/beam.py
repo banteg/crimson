@@ -71,13 +71,40 @@ void main() {{
     float stamp_count = floor(len_uv / step_uv) + 1.0;
     stamp_count = clamp(stamp_count, 0.0, float({SHADER_STAMP_VIRTUAL_MAX_STAMPS:d}));
 
-    float accum = 0.0;
-    const int MAX_STAMPS = {SHADER_STAMP_VIRTUAL_MAX_STAMPS:d};
-    for (int i = 0; i < MAX_STAMPS; i++) {{
-        float fi = float(i);
-        if (fi >= stamp_count) {{
-            break;
+    int start_i = 0;
+    int end_i = int(stamp_count);
+
+    // Profile support radius in UV-space where profile falls to zero.
+    // For current params (offset > 0), this makes the loop O(local overlap).
+    float reach_uv = 0.0;
+    bool has_reach_uv = false;
+    if (u_stamp_scale <= 0.0 || u_stamp_offset >= u_stamp_scale) {{
+        has_reach_uv = true;
+    }} else if (u_stamp_offset > 0.0) {{
+        float target = -log(u_stamp_offset / max(u_stamp_scale, 1e-6));
+        float b = max(u_stamp_decay, 0.0);
+        float q = max(u_stamp_quad, 0.0);
+        if (q > 1e-6) {{
+            float disc = max(0.0, b * b + 4.0 * q * target);
+            reach_uv = (-b + sqrt(disc)) / (2.0 * q);
+            has_reach_uv = true;
+        }} else if (b > 1e-6) {{
+            reach_uv = target / b;
+            has_reach_uv = true;
         }}
+    }}
+
+    if (has_reach_uv) {{
+        reach_uv = max(reach_uv, 0.0);
+        float center_index = floor(fragTexCoord.x / step_uv);
+        float index_reach = ceil(reach_uv / step_uv);
+        start_i = max(0, int(center_index - index_reach));
+        end_i = min(int(stamp_count), int(center_index + index_reach + 1.0));
+    }}
+
+    float accum = 0.0;
+    for (int i = start_i; i < end_i; i++) {{
+        float fi = float(i);
         float sx = fi * step_uv;
         if (sx >= len_uv) {{
             break;
