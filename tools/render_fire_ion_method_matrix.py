@@ -46,6 +46,8 @@ SIGNED_POSITIVE_STOPS: Final[tuple[tuple[float, tuple[int, int, int]], ...]] = (
     (1.0, (255, 245, 140)),
 )
 
+LUMA_WEIGHT_K: Final[float] = 2.0
+
 
 @dataclass(frozen=True, slots=True)
 class MatrixRow:
@@ -192,7 +194,7 @@ def _signed_diff_map(
     candidate: Image.Image,
     signed_clip: float,
     neutral_band: float,
-) -> tuple[Image.Image, float, float, float]:
+) -> tuple[Image.Image, float, float, float, float]:
     width, height = baseline.size
     if candidate.size != baseline.size:
         raise ValueError("baseline/candidate image sizes differ for signed diff")
@@ -205,6 +207,8 @@ def _signed_diff_map(
     neutral = max(0.0, float(neutral_band) * 255.0)
 
     abs_sum = 0.0
+    weighted_abs_sum = 0.0
+    weighted_total = 0.0
     under_sum = 0.0
     over_sum = 0.0
     pixel_count = width * height
@@ -227,6 +231,9 @@ def _signed_diff_map(
         diff = int(cand_l) - int(base_l)
         abs_diff = abs(diff)
         abs_sum += float(abs_diff)
+        weight = 1.0 + float(LUMA_WEIGHT_K) * (float(base_l) / 255.0)
+        weighted_abs_sum += float(abs_diff) * weight
+        weighted_total += weight
         if diff < 0:
             under_sum += float(-diff)
         elif diff > 0:
@@ -248,6 +255,7 @@ def _signed_diff_map(
     return (
         signed,
         float(abs_sum / total),
+        float(weighted_abs_sum / max(1e-9, weighted_total * 255.0)),
         float(under_sum / total),
         float(over_sum / total),
     )
@@ -256,7 +264,7 @@ def _signed_diff_map(
 def _build_signed_diff_vstack(
     *,
     row: MatrixRow,
-    panels: list[tuple[str, Image.Image, float, float, float]],
+    panels: list[tuple[str, Image.Image, float, float, float, float]],
 ) -> Image.Image:
     if not panels:
         raise ValueError("no panels for signed diff vstack")
@@ -276,11 +284,11 @@ def _build_signed_diff_vstack(
     draw.text((margin, margin + 16), "signed diff: cyan=baseline brighter, orange=candidate brighter", fill=(155, 180, 215))
 
     y = margin + title_h
-    for mode_label, panel, mae, under, over in panels:
+    for mode_label, panel, mae, wmae, under, over in panels:
         draw.text((margin, y + 3), mode_label, fill=(215, 225, 240))
         draw.text(
             (margin, y + 15),
-            f"mae={mae:.4f} under={under:.4f} over={over:.4f}",
+            f"mae={mae:.4f} wmae={wmae:.4f} under={under:.4f} over={over:.4f}",
             fill=(135, 165, 205),
         )
         canvas.paste(panel, (margin + left_w, y))
@@ -314,19 +322,28 @@ def _export_signed_diff_vstacks(
                 y0 + int(layout.row_h),
             ),
         )
-        panels: list[tuple[str, Image.Image, float, float, float]] = []
+        panels: list[tuple[str, Image.Image, float, float, float, float]] = []
         for col_idx, mode in enumerate(modes):
             if col_idx == 0:
                 continue
             x0 = int(first_cell_x + col_idx * (layout.cell_w + layout.cell_gap))
             candidate_cell = matrix.crop((x0, y0, x0 + int(layout.cell_w), y0 + int(layout.row_h)))
-            signed_map, mae, under, over = _signed_diff_map(
+            signed_map, mae, wmae, under, over = _signed_diff_map(
                 baseline=baseline_cell,
                 candidate=candidate_cell,
                 signed_clip=float(signed_clip),
                 neutral_band=float(neutral_band),
             )
-            panels.append((mode.value.upper(), signed_map, float(mae), float(under), float(over)))
+            panels.append(
+                (
+                    mode.value.upper(),
+                    signed_map,
+                    float(mae),
+                    float(wmae),
+                    float(under),
+                    float(over),
+                ),
+            )
 
         sheet = _build_signed_diff_vstack(row=row, panels=panels)
         out_path = out_dir / f"{row_idx:02d}_{row.key}_signed_diff_vstack.png"

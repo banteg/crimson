@@ -250,9 +250,23 @@ def test_ion_preset_order_is_unique_by_projectile_type_id() -> None:
     assert len(type_ids) == len(set(type_ids))
 
 
+def test_gemini_2_body_shape_params_vary_by_projectile_type() -> None:
+    view = BeamDebugView(ViewContext(assets_dir=Path("artifacts") / "assets"))
+
+    cannon_cover, cannon_halo, cannon_cap = view._gemini_2_body_shape_params_for_type(int(ProjectileTypeId.ION_CANNON))
+    rifle_cover, rifle_halo, rifle_cap = view._gemini_2_body_shape_params_for_type(int(ProjectileTypeId.ION_RIFLE))
+    mini_cover, mini_halo, mini_cap = view._gemini_2_body_shape_params_for_type(int(ProjectileTypeId.ION_MINIGUN))
+
+    assert cannon_cover >= rifle_cover >= mini_cover
+    assert cannon_halo > rifle_halo >= mini_halo
+    assert cannon_cap == rifle_cap == mini_cap == 1.0
+
+
 def test_stamped_virtual_kernel_uses_negative_quadratic_falloff() -> None:
-    needle = "exp(-u_stamp_decay * d - u_stamp_quad * d * d)"
-    assert _BEAM_STAMPED_VIRTUAL_FS_330.count(needle) >= 2
+    head_needle = "exp(-u_stamp_decay * d - u_stamp_quad * d * d)"
+    body_needle = "exp(-u_stamp_decay * d_eff - u_stamp_quad * d_eff * d_eff)"
+    assert _BEAM_STAMPED_VIRTUAL_FS_330.count(head_needle) >= 1
+    assert _BEAM_STAMPED_VIRTUAL_FS_330.count(body_needle) >= 1
 
 
 def test_shader_profile_value_is_monotonic_outward() -> None:
