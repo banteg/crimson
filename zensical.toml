@@ -52,6 +52,7 @@ nav = [
     { "Modules" = [
       { "Overview" = "rewrite/modules/index.md" },
       { "Terrain" = "rewrite/terrain.md" },
+      { "Beam rendering (classic + RTX)" = "rewrite/beam-rendering.md" },
     ]},
     { "Parity" = [
       { "Overview" = "rewrite/parity/index.md" },

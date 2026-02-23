@@ -109,6 +109,7 @@ See also:
 - [LAN lockstep (legacy fallback)](lan-lockstep.md)
 - [Local multiplayer rewrite notes](local-multiplayer.md)
 - [Float parity policy](float-parity-policy.md)
+- [Beam rendering (classic + RTX)](beam-rendering.md)
 - [Terrain (rewrite)](terrain.md)
 - [Perks architecture (rewrite)](perks-architecture.md)
 - [Original bugs (and rewrite fixes)](original-bugs.md)

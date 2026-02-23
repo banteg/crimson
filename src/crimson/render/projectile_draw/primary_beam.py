@@ -9,7 +9,7 @@ from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, Effect
 from ...perks import PerkId
 from ...perks.helpers import perk_active
 from ...projectiles import ProjectileTypeId
-from ...render.rtx.beam import draw_beam_fast_stamped_body
+from ...render.rtx.beam import draw_beam_fast_stamped_body, draw_beam_fast_stamped_head
 from ...render.rtx.mode import RtxRenderMode
 from ...sim.world_defs import BEAM_TYPES, ION_TYPES
 from ..projectile_render_registry import beam_effect_scale
@@ -140,16 +140,28 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
         )
 
     if life >= 0.4:
-        head_tint = RGBA(head_rgb[0], head_rgb[1], head_rgb[2], base_alpha).to_rl()
-        renderer._draw_atlas_sprite(
-            texture,
-            grid=grid,
-            frame=frame,
-            pos=ctx.screen_pos,
-            scale=sprite_scale,
-            rotation_rad=ctx.angle,
-            tint=head_tint,
-        )
+        head_drawn_by_rtx = False
+        if renderer.rtx_mode is RtxRenderMode.RTX:
+            head_drawn_by_rtx = draw_beam_fast_stamped_head(
+                center_screen=ctx.screen_pos,
+                rotation_rad=ctx.angle,
+                effect_scale=float(effect_scale),
+                scale=float(ctx.scale),
+                base_alpha=float(base_alpha),
+                head_rgb=head_rgb,
+                is_fire=bool(is_fire_bullets),
+            )
+        if not head_drawn_by_rtx:
+            head_tint = RGBA(head_rgb[0], head_rgb[1], head_rgb[2], base_alpha).to_rl()
+            renderer._draw_atlas_sprite(
+                texture,
+                grid=grid,
+                frame=frame,
+                pos=ctx.screen_pos,
+                scale=sprite_scale,
+                rotation_rad=ctx.angle,
+                tint=head_tint,
+            )
 
         # Fire Bullets renders an extra particles.png overlay in a later pass.
         if is_fire_bullets and renderer.particles_texture is not None:
@@ -176,16 +188,29 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                     rl.draw_texture_pro(particles_texture, src, dst, origin, ctx.angle * RAD_TO_DEG, tint)
     else:
         # Native draws a small blue "core" at the head during the fade stage (life_timer < 0.4).
-        core_tint = RGBA(0.5, 0.6, 1.0, base_alpha).to_rl()
-        renderer._draw_atlas_sprite(
-            texture,
-            grid=grid,
-            frame=frame,
-            pos=ctx.screen_pos,
-            scale=1.0 * ctx.scale,
-            rotation_rad=ctx.angle,
-            tint=core_tint,
-        )
+        core_rgb = (0.5, 0.6, 1.0)
+        core_drawn_by_rtx = False
+        if renderer.rtx_mode is RtxRenderMode.RTX:
+            core_drawn_by_rtx = draw_beam_fast_stamped_head(
+                center_screen=ctx.screen_pos,
+                rotation_rad=ctx.angle,
+                effect_scale=float(effect_scale),
+                scale=float(ctx.scale),
+                base_alpha=float(base_alpha),
+                head_rgb=core_rgb,
+                is_fire=bool(is_fire_bullets),
+            )
+        if not core_drawn_by_rtx:
+            core_tint = RGBA(core_rgb[0], core_rgb[1], core_rgb[2], base_alpha).to_rl()
+            renderer._draw_atlas_sprite(
+                texture,
+                grid=grid,
+                frame=frame,
+                pos=ctx.screen_pos,
+                scale=1.0 * ctx.scale,
+                rotation_rad=ctx.angle,
+                tint=core_tint,
+            )
 
         if is_ion:
             # Native: chain reach is derived from the streak scale (`fVar29 * perk_scale * 40.0`).

@@ -15,6 +15,8 @@ SHADER_STAMP_VIRTUAL_INTENSITY_GAIN = 0.92
 SHADER_STAMP_VIRTUAL_CORE_FLAT_STEP_FRACTION = 0.0
 SHADER_STAMP_VIRTUAL_CORE_SUPPORT_WEIGHT = 0.0
 SHADER_STAMP_VIRTUAL_MAX_STAMPS = 128
+SHADER_STAMP_VIRTUAL_HEAD_RADIUS_MULTIPLIER = 1.05
+SHADER_STAMP_VIRTUAL_HEAD_FIRE_RADIUS_MULTIPLIER = 1.35
 
 _BEAM_SHADER_VS_330 = """
 #version 330
@@ -184,6 +186,27 @@ def _get_beam_fast_stamped_shader() -> _BeamFastStampedShader | None:
     return _BEAM_FAST_STAMPED_SHADER
 
 
+def _apply_virtual_beam_uniforms(*, shader_data: _BeamFastStampedShader, step_uv: float, intensity_gain: float) -> None:
+    shader = shader_data.shader
+    _set_shader_vec4(shader, shader_data.color_loc, 1.0, 1.0, 1.0, 1.0)
+    _set_shader_float(shader, shader_data.step_uv_loc, float(step_uv))
+    _set_shader_float(shader, shader_data.stamp_scale_loc, float(SHADER_STAMP_VIRTUAL_PROFILE_A))
+    _set_shader_float(shader, shader_data.stamp_decay_loc, float(-SHADER_STAMP_VIRTUAL_PROFILE_LINEAR))
+    _set_shader_float(shader, shader_data.stamp_quad_loc, float(SHADER_STAMP_VIRTUAL_PROFILE_QUAD))
+    _set_shader_float(shader, shader_data.stamp_offset_loc, float(SHADER_STAMP_VIRTUAL_PROFILE_OFFSET))
+    _set_shader_float(shader, shader_data.intensity_gain_loc, float(intensity_gain))
+    _set_shader_float(
+        shader,
+        shader_data.core_flat_step_fraction_loc,
+        float(SHADER_STAMP_VIRTUAL_CORE_FLAT_STEP_FRACTION),
+    )
+    _set_shader_float(
+        shader,
+        shader_data.core_support_weight_loc,
+        float(SHADER_STAMP_VIRTUAL_CORE_SUPPORT_WEIGHT),
+    )
+
+
 def draw_beam_fast_stamped_body(
     *,
     origin_screen: Vec2,
@@ -237,22 +260,10 @@ def draw_beam_fast_stamped_body(
 
     shader = shader_data.shader
     rl.begin_shader_mode(shader)
-    _set_shader_vec4(shader, shader_data.color_loc, 1.0, 1.0, 1.0, 1.0)
-    _set_shader_float(shader, shader_data.step_uv_loc, float(step_uv))
-    _set_shader_float(shader, shader_data.stamp_scale_loc, float(SHADER_STAMP_VIRTUAL_PROFILE_A))
-    _set_shader_float(shader, shader_data.stamp_decay_loc, float(-SHADER_STAMP_VIRTUAL_PROFILE_LINEAR))
-    _set_shader_float(shader, shader_data.stamp_quad_loc, float(SHADER_STAMP_VIRTUAL_PROFILE_QUAD))
-    _set_shader_float(shader, shader_data.stamp_offset_loc, float(SHADER_STAMP_VIRTUAL_PROFILE_OFFSET))
-    _set_shader_float(shader, shader_data.intensity_gain_loc, float(SHADER_STAMP_VIRTUAL_INTENSITY_GAIN))
-    _set_shader_float(
-        shader,
-        shader_data.core_flat_step_fraction_loc,
-        float(SHADER_STAMP_VIRTUAL_CORE_FLAT_STEP_FRACTION),
-    )
-    _set_shader_float(
-        shader,
-        shader_data.core_support_weight_loc,
-        float(SHADER_STAMP_VIRTUAL_CORE_SUPPORT_WEIGHT),
+    _apply_virtual_beam_uniforms(
+        shader_data=shader_data,
+        step_uv=float(step_uv),
+        intensity_gain=float(SHADER_STAMP_VIRTUAL_INTENSITY_GAIN),
     )
     rl.rl_set_texture(0)
     rl.rl_begin(rd.RL_QUADS)
@@ -273,4 +284,65 @@ def draw_beam_fast_stamped_body(
     return True
 
 
-__all__ = ["draw_beam_fast_stamped_body"]
+def draw_beam_fast_stamped_head(
+    *,
+    center_screen: Vec2,
+    rotation_rad: float,
+    effect_scale: float,
+    scale: float,
+    base_alpha: float,
+    head_rgb: tuple[float, float, float],
+    is_fire: bool,
+) -> bool:
+    shader_data = _get_beam_fast_stamped_shader()
+    if shader_data is None:
+        return False
+
+    alpha_u8 = int(clamp(float(base_alpha) * 255.0, 0.0, 255.0) + 0.5)
+    if alpha_u8 <= 0:
+        return True
+
+    radius_multiplier = (
+        float(SHADER_STAMP_VIRTUAL_HEAD_FIRE_RADIUS_MULTIPLIER)
+        if bool(is_fire)
+        else float(SHADER_STAMP_VIRTUAL_HEAD_RADIUS_MULTIPLIER)
+    )
+    radius = max(
+        0.001,
+        float(SHADER_STAMP_ANALYTIC_RADIUS_SCALE) * float(effect_scale) * float(scale) * float(radius_multiplier),
+    )
+    direction = Vec2.from_angle(float(rotation_rad))
+    side = direction.perp_left() * radius
+    forward = direction * radius
+
+    r = int(clamp(float(head_rgb[0]) * 255.0, 0.0, 255.0) + 0.5)
+    g = int(clamp(float(head_rgb[1]) * 255.0, 0.0, 255.0) + 0.5)
+    b = int(clamp(float(head_rgb[2]) * 255.0, 0.0, 255.0) + 0.5)
+
+    shader = shader_data.shader
+    rl.begin_shader_mode(shader)
+    _apply_virtual_beam_uniforms(
+        shader_data=shader_data,
+        step_uv=1.0,
+        intensity_gain=float(SHADER_STAMP_VIRTUAL_INTENSITY_GAIN),
+    )
+    rl.rl_set_texture(0)
+    rl.rl_begin(rd.RL_QUADS)
+
+    def push(pos: Vec2, *, uv_x: float, uv_y: float) -> None:
+        rl.rl_color4ub(int(r), int(g), int(b), int(alpha_u8))
+        rl.rl_tex_coord2f(float(uv_x), float(uv_y))
+        rl.rl_vertex3f(float(pos.x), float(pos.y), -1.0)
+
+    push(center_screen - forward - side, uv_x=-1.0, uv_y=-1.0)
+    push(center_screen - forward + side, uv_x=-1.0, uv_y=1.0)
+    push(center_screen + forward + side, uv_x=1.0, uv_y=1.0)
+    push(center_screen + forward - side, uv_x=1.0, uv_y=-1.0)
+
+    rl.rl_end()
+    rl.rl_set_texture(0)
+    rl.end_shader_mode()
+    return True
+
+
+__all__ = ["draw_beam_fast_stamped_body", "draw_beam_fast_stamped_head"]
