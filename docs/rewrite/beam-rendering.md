@@ -54,9 +54,9 @@ The promoted RTX implementation lives in `src/crimson/render/rtx/beam.py`:
 
 Integration behavior:
 
-- when render mode is `rtx`, beam body and head first attempt shader paths
-- if shader compilation/load is unavailable, rendering falls back to classic
-  texture body/head drawing
+- when render mode is `rtx`, beam body and head use the promoted shader paths
+- if shader compilation/load is unavailable, rendering fails fast (runtime
+  error) instead of silently falling back to classic
 - Fire Bullets overlays and Ion chain behavior remain on the shared existing
   path
 

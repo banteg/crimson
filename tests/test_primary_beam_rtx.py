@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, cast
 
+import pytest
+
 import crimson.render.projectile_draw.primary_beam as primary_beam
 from crimson.projectiles import Projectile, ProjectileTypeId
 from crimson.render.projectile_draw.types import ProjectileDrawCtx
@@ -90,18 +92,43 @@ def test_rtx_beam_path_uses_virtual_head_when_available(mocker) -> None:
     assert renderer.atlas_calls == 0
 
 
-def test_rtx_beam_path_falls_back_to_texture_head_when_virtual_head_unavailable(mocker) -> None:
+def test_rtx_beam_path_raises_when_virtual_head_unavailable(mocker) -> None:
     mocker.patch.object(primary_beam.rl, "begin_blend_mode", side_effect=lambda *_a, **_k: None)
     mocker.patch.object(primary_beam.rl, "end_blend_mode", side_effect=lambda *_a, **_k: None)
     mocker.patch.object(primary_beam, "draw_beam_fast_stamped_body", return_value=True)
-    head_mock = mocker.patch.object(primary_beam, "draw_beam_fast_stamped_head", return_value=False)
+    head_mock = mocker.patch.object(
+        primary_beam,
+        "draw_beam_fast_stamped_head",
+        side_effect=RuntimeError("rtx head shader unavailable"),
+    )
 
     renderer = _RendererStub(rtx_mode=RtxRenderMode.RTX)
     ctx = _beam_ctx(renderer, life=1.0)
 
-    assert primary_beam.draw_beam_effect(ctx) is True
+    with pytest.raises(RuntimeError, match="rtx head shader unavailable"):
+        primary_beam.draw_beam_effect(ctx)
     head_mock.assert_called_once()
-    assert renderer.atlas_calls == 1
+    assert renderer.atlas_calls == 0
+
+
+def test_rtx_beam_path_raises_when_virtual_body_unavailable(mocker) -> None:
+    mocker.patch.object(primary_beam.rl, "begin_blend_mode", side_effect=lambda *_a, **_k: None)
+    mocker.patch.object(primary_beam.rl, "end_blend_mode", side_effect=lambda *_a, **_k: None)
+    body_mock = mocker.patch.object(
+        primary_beam,
+        "draw_beam_fast_stamped_body",
+        side_effect=RuntimeError("rtx body shader unavailable"),
+    )
+    head_mock = mocker.patch.object(primary_beam, "draw_beam_fast_stamped_head", return_value=True)
+
+    renderer = _RendererStub(rtx_mode=RtxRenderMode.RTX)
+    ctx = _beam_ctx(renderer, life=1.0)
+
+    with pytest.raises(RuntimeError, match="rtx body shader unavailable"):
+        primary_beam.draw_beam_effect(ctx)
+    body_mock.assert_called_once()
+    head_mock.assert_not_called()
+    assert renderer.atlas_calls == 0
 
 
 def test_classic_beam_path_does_not_call_rtx_virtual_helpers(mocker) -> None:
