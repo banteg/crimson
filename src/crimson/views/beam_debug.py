@@ -85,16 +85,17 @@ _BEAM_SHADER_VS_330 = """
 in vec3 vertexPosition;
 in vec2 vertexTexCoord;
 in vec4 vertexColor;
-
 out vec2 fragTexCoord;
 out vec4 fragColor;
+out float fragLen;
 
 uniform mat4 mvp;
 
 void main() {
     fragTexCoord = vertexTexCoord;
     fragColor = vertexColor;
-    gl_Position = mvp * vec4(vertexPosition, 1.0);
+    fragLen = vertexPosition.z;
+    gl_Position = mvp * vec4(vertexPosition.x, vertexPosition.y, 0.0, 1.0);
 }
 """
 
@@ -103,6 +104,7 @@ _BEAM_GEMINI_2_FS_330 = """
 
 in vec2 fragTexCoord;
 in vec4 fragColor;
+in float fragLen;
 
 uniform vec4 colDiffuse;
 uniform float u_approx_a;
@@ -113,13 +115,26 @@ uniform float u_intensity_gain;
 out vec4 finalColor;
 
 void main() {
-    float d = length(fragTexCoord);
-    if (d >= 1.0) {
-        discard;
+    float u_len = fragLen;
+    if (u_len < 0.0) {
+        float d = length(fragTexCoord);
+        float profile = clamp(u_approx_a * exp(u_approx_b * d) - u_approx_c, 0.0, 1.0);
+        float intensity = profile * fragColor.a * max(u_intensity_gain, 0.0);
+        vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
+        finalColor = vec4(rgb, 1.0);
+        return;
     }
 
-    float profile = clamp(u_approx_a * exp(u_approx_b * d) - u_approx_c, 0.0, 1.0);
-    float intensity = profile * fragColor.a * max(u_intensity_gain, 0.0);
+    float dx = max(0.0, max(-fragTexCoord.x, fragTexCoord.x - u_len));
+    float d = length(vec2(dx, fragTexCoord.y));
+    
+    float trans_profile = clamp(u_approx_a * exp(u_approx_b * d) - u_approx_c, 0.0, 1.0);
+    
+    float closest_x = clamp(fragTexCoord.x, 0.0, u_len);
+    float t = clamp(closest_x / max(1.0, u_len), 0.0, 1.0);
+    float structural_alpha = t * fragColor.a;
+
+    float intensity = trans_profile * structural_alpha * max(u_intensity_gain, 0.0);
     vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
     finalColor = vec4(rgb, 1.0);
 }
@@ -1640,26 +1655,21 @@ class BeamDebugView:
 
             side = direction.perp_left() * radius
 
-            def push(pos: Vec2, *, uv_x: float, uv_y: float, alpha: int) -> None:
+            def push(pos: Vec2, *, uv_x: float, uv_y: float, alpha: int, u_len: float) -> None:
                 rl.rl_color4ub(r, g, b, int(alpha))
                 rl.rl_tex_coord2f(float(uv_x), float(uv_y))
-                rl.rl_vertex2f(float(pos.x), float(pos.y))
+                rl.rl_vertex3f(float(pos.x), float(pos.y), float(u_len))
 
-            # Body quad
-            push(p0 - side, uv_x=0.0, uv_y=-1.0, alpha=tail_alpha)
-            push(p0 + side, uv_x=0.0, uv_y=1.0, alpha=tail_alpha)
-            push(p1 + side, uv_x=0.0, uv_y=1.0, alpha=head_alpha)
-            push(p1 - side, uv_x=0.0, uv_y=-1.0, alpha=head_alpha)
+            # Single analytic quad encompassing body + tail cap + head cap
+            u_len = length / radius
+            tail_end = p0 - direction * radius
+            head_end = p1 + direction * radius
+
+            push(tail_end - side, uv_x=-1.0, uv_y=-1.0, alpha=head_alpha, u_len=u_len)
+            push(tail_end + side, uv_x=-1.0, uv_y=1.0, alpha=head_alpha, u_len=u_len)
+            push(head_end + side, uv_x=u_len + 1.0, uv_y=1.0, alpha=head_alpha, u_len=u_len)
+            push(head_end - side, uv_x=u_len + 1.0, uv_y=-1.0, alpha=head_alpha, u_len=u_len)
             quad_count += 1
-
-            # Body-cap variant: semicircular falloff quad at head
-            if variant == HeadCapVariant.BODY_CAP and self._head_render_enabled:
-                cap_end = p1 + direction * radius
-                push(p1 - side, uv_x=0.0, uv_y=-1.0, alpha=head_alpha)
-                push(p1 + side, uv_x=0.0, uv_y=1.0, alpha=head_alpha)
-                push(cap_end + side, uv_x=1.0, uv_y=1.0, alpha=head_alpha)
-                push(cap_end - side, uv_x=1.0, uv_y=-1.0, alpha=head_alpha)
-                quad_count += 1
         rl.rl_end()
         rl.rl_set_texture(0)
         rl.end_shader_mode()
@@ -1740,7 +1750,7 @@ class BeamDebugView:
             def push(pos: Vec2, *, uv_x: float, uv_y: float, alpha_u8: int = head_alpha) -> None:
                 rl.rl_color4ub(r, g, b, int(alpha_u8))
                 rl.rl_tex_coord2f(float(uv_x), float(uv_y))
-                rl.rl_vertex2f(float(pos.x), float(pos.y))
+                rl.rl_vertex3f(float(pos.x), float(pos.y), -1.0)
 
             push(center - forward - side, uv_x=-1.0, uv_y=-1.0)
             push(center - forward + side, uv_x=-1.0, uv_y=1.0)

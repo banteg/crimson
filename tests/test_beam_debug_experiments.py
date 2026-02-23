@@ -220,7 +220,7 @@ def test_beam_distance_uses_fixed_life_window_and_projectile_speed() -> None:
 
 
 def test_shader_profile_value_is_monotonic_outward() -> None:
-    params = BeamShaderGemini2Params(profile_exp=2.2, halo_mix=0.2, halo_falloff=5.0, intensity_gain=2.5)
+    params = BeamShaderGemini2Params(approx_a=1.06, approx_b=-4.8, approx_c=0.01, intensity_gain=2.5)
     values = [_shader_profile_value(float(i) / 96.0, params) for i in range(97)]
     assert values[0] > values[-1]
     for prev, curr in zip(values, values[1:], strict=False):
@@ -229,7 +229,7 @@ def test_shader_profile_value_is_monotonic_outward() -> None:
 
 def test_shader_profile_autofit_reduces_reference_error() -> None:
     distances = tuple(float(i) / 95.0 for i in range(96))
-    target = BeamShaderGemini2Params(profile_exp=2.2, halo_mix=0.2, halo_falloff=5.5, intensity_gain=2.5)
+    target = BeamShaderGemini2Params(approx_a=1.5, approx_b=-6.0, approx_c=0.05, intensity_gain=2.5)
     reference = tuple(_shader_profile_value(d, target) for d in distances)
     base = BeamShaderGemini2Params()
 
@@ -245,6 +245,5 @@ def test_shader_profile_autofit_reduces_reference_error() -> None:
     )
 
     assert fitted_metrics.score <= baseline_metrics.score
-    assert abs(float(fitted.profile_exp) - float(target.profile_exp)) <= 0.15
-    assert abs(float(fitted.halo_mix) - float(target.halo_mix)) <= 0.05
-    assert abs(float(fitted.halo_falloff) - float(target.halo_falloff)) <= 0.5
+    assert abs(float(fitted.approx_a) - float(target.approx_a)) <= 0.15
+    assert abs(float(fitted.approx_b) - float(target.approx_b)) <= 0.5
