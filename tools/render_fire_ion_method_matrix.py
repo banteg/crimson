@@ -5,6 +5,7 @@ import argparse
 import csv
 import json
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
@@ -20,6 +21,7 @@ from crimson.views.beam_debug import (
     BeamDebugView,
     BeamIonPreset,
     BeamRenderMode,
+    BeamScenarioPreset,
     StampedVirtualHeadPass,
     _PreviewProjectile,
 )
@@ -75,6 +77,14 @@ class MatrixColumn:
     mode: BeamRenderMode
     stamped_virtual_head_pass: StampedVirtualHeadPass | None = None
     stamped_virtual_head_isolation: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class BenchSummary:
+    avg_beam_ms: float
+    p50_beam_ms: float
+    p95_beam_ms: float
+    avg_draw_calls: float
 
 
 def _clamp01(value: float) -> float:
@@ -210,14 +220,89 @@ def _columns() -> tuple[MatrixColumn, ...]:
             stamped_virtual_head_pass=StampedVirtualHeadPass.VIRTUAL,
             stamped_virtual_head_isolation=False,
         ),
-        MatrixColumn(
-            label="SV+HEAD_VIRTUAL_ISO",
-            mode=BeamRenderMode.SHADER_STAMPED_VIRTUAL,
-            stamped_virtual_head_pass=StampedVirtualHeadPass.VIRTUAL,
-            stamped_virtual_head_isolation=True,
-        ),
-        MatrixColumn(label=BeamRenderMode.SHADER_EXT_GPT_PRO.value.upper(), mode=BeamRenderMode.SHADER_EXT_GPT_PRO),
-        MatrixColumn(label=BeamRenderMode.SHADER_GEMINI_2.value.upper(), mode=BeamRenderMode.SHADER_GEMINI_2),
+    )
+
+
+def _bench_column(
+    *,
+    view: BeamDebugView,
+    rows: tuple[MatrixRow, ...],
+    column: MatrixColumn,
+    bench_projectiles: int,
+    warmup_repeats: int,
+    measured_repeats: int,
+) -> BenchSummary:
+    preset_index_by_key = {preset.key: idx for idx, preset in enumerate(_ION_PRESET_ORDER)}
+    mode = BeamRenderMode(column.mode)
+    view._head_render_enabled = True
+    if mode == BeamRenderMode.SHADER_STAMPED_VIRTUAL:
+        if column.stamped_virtual_head_pass is not None:
+            view._stamped_virtual_head_pass = column.stamped_virtual_head_pass
+        view._stamped_virtual_head_isolation = bool(column.stamped_virtual_head_isolation)
+    else:
+        view._stamped_virtual_head_pass = StampedVirtualHeadPass.VIRTUAL
+        view._stamped_virtual_head_isolation = False
+
+    draw_index = 10000
+
+    def run_pass() -> float:
+        nonlocal draw_index
+        draw_calls_local = 0.0
+        started = time.perf_counter()
+        for _row_idx, row in enumerate(rows):
+            if row.ion_preset_key is None:
+                view._use_fire_profile = True
+            else:
+                view._use_fire_profile = False
+                preset_idx = preset_index_by_key.get(row.ion_preset_key)
+                if preset_idx is not None:
+                    view._ion_preset_index = int(preset_idx)
+            view._sync_effect_scale()
+            # Match beam_debug bench workload shape: many projectiles per row per pass.
+            view._projectile_count = max(1, int(bench_projectiles))
+            previews = view._build_previews()
+            if not previews:
+                continue
+            for i, preview in enumerate(previews):
+                previews[i] = _PreviewProjectile(
+                    index=int(draw_index + i),
+                    origin_screen=preview.origin_screen,
+                    head_screen=preview.head_screen,
+                    dist_units=preview.dist_units,
+                    life=0.4,
+                    plan=preview.plan,
+                )
+            draw_index += len(previews)
+            result, _ = view._draw_projectiles(previews, mode=mode)
+            draw_calls_local += float(result.current_counts.total_calls)
+            view._step_sim(1.0 / 60.0)
+        elapsed_ms = (time.perf_counter() - started) * 1000.0
+        measured_draw_calls.append(draw_calls_local / max(1.0, float(len(rows))))
+        return elapsed_ms
+
+    warmup_repeats = max(0, int(warmup_repeats))
+    measured_repeats = max(1, int(measured_repeats))
+    measured_ms: list[float] = []
+    measured_draw_calls: list[float] = []
+
+    view.apply_scenario_preset(BeamScenarioPreset.CROWD_STRESS)
+    view._force_life_high = True
+    for _ in range(warmup_repeats):
+        _ = run_pass()
+        measured_ms.clear()
+        measured_draw_calls.clear()
+
+    for _ in range(measured_repeats):
+        measured_ms.append(run_pass())
+
+    sorted_ms = sorted(measured_ms)
+    p50_idx = int(round((len(sorted_ms) - 1) * 0.50))
+    p95_idx = int(round((len(sorted_ms) - 1) * 0.95))
+    return BenchSummary(
+        avg_beam_ms=float(sum(measured_ms) / max(1.0, float(len(measured_ms)))),
+        p50_beam_ms=float(sorted_ms[p50_idx]),
+        p95_beam_ms=float(sorted_ms[p95_idx]),
+        avg_draw_calls=float(sum(measured_draw_calls) / max(1.0, float(len(measured_draw_calls)))),
     )
 
 
@@ -502,6 +587,24 @@ def main() -> int:
         default="",
         help="optional CSV path for signed-diff metrics table",
     )
+    parser.add_argument(
+        "--bench-warmup",
+        type=int,
+        default=240,
+        help="benchmark warmup repeats per column before measuring (default: 240)",
+    )
+    parser.add_argument(
+        "--bench-repeats",
+        type=int,
+        default=1200,
+        help="measured benchmark repeats per column (default: 1200)",
+    )
+    parser.add_argument(
+        "--bench-projectiles",
+        type=int,
+        default=64,
+        help="projectiles per row in benchmark pass (default: 64, like crowd stress)",
+    )
     args = parser.parse_args()
 
     out_path = Path(str(args.out))
@@ -519,7 +622,7 @@ def main() -> int:
 
     layout = MatrixLayout(
         margin=16,
-        header_h=94,
+        header_h=118,
         row_h=132,
         row_label_w=380,
         cell_w=280,
@@ -585,6 +688,18 @@ def main() -> int:
                 )
 
                 first_cell_x = layout.margin + layout.row_label_w
+                bench_by_column: dict[str, BenchSummary] = {}
+                for column in columns:
+                    bench_by_column[column.label] = _bench_column(
+                        view=view,
+                        rows=rows,
+                        column=column,
+                        bench_projectiles=int(args.bench_projectiles),
+                        warmup_repeats=int(args.bench_warmup),
+                        measured_repeats=int(args.bench_repeats),
+                    )
+
+                rl.clear_background(rl.BLACK)
                 col_header_y = layout.margin + layout.header_h - 22
                 for col_idx, column in enumerate(columns):
                     x = first_cell_x + col_idx * (layout.cell_w + layout.cell_gap)
@@ -596,6 +711,24 @@ def main() -> int:
                         pixel_scale,
                         rl.Color(200, 220, 255, 255),
                     )
+                    bench = bench_by_column.get(column.label)
+                    if bench is not None:
+                        _draw_ui_centered(
+                            font,
+                            f"bench avg={bench.avg_beam_ms:.3f}ms p50={bench.p50_beam_ms:.3f} p95={bench.p95_beam_ms:.3f}",
+                            x + layout.cell_w * 0.5,
+                            col_header_y + 16.0,
+                            pixel_scale,
+                            rl.Color(150, 185, 220, 255),
+                        )
+                        _draw_ui_centered(
+                            font,
+                            f"calls {bench.avg_draw_calls:.1f}",
+                            x + layout.cell_w * 0.5,
+                            col_header_y + 32.0,
+                            pixel_scale,
+                            rl.Color(130, 165, 200, 255),
+                        )
 
                 draw_index = 0
                 for row_idx, row in enumerate(rows):
