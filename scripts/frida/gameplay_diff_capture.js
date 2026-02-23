@@ -4,16 +4,23 @@
 // - per-gameplay tick records with stable checkpoint payloads
 // - deterministic command/event summaries for first-divergence debugging
 // - compact before/after snapshots and entity samples on every tick
-// - emits capture stream rows (`capture_meta` + `tick`) to host by default
+// - emits capture stream rows (`capture_meta` + `tick`) either to JSON files
+//   (default) or to host messaging when sink=host
 //
-// Attach only:
-//   via scripts/frida/gameplay_diff_capture_host.py
+// Attach:
+//   frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
+//   or via scripts/frida/gameplay_diff_capture_host.py for msgpack output
 //
 // Output:
+//   C:\share\frida\gameplay_diff_capture.json (default non-quest fallback)
+//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.json (default quests)
+//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.run<k>.json (repeat attempts)
+//   Host launcher writes:
 //   C:\share\frida\gameplay_diff_capture.msgpack.zst (non-quest fallback)
 //   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.msgpack.zst (quests)
 //   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.run<k>.msgpack.zst (repeat attempts)
-//   Set CRIMSON_FRIDA_CAPTURE_SINK=file to keep legacy direct JSON stream writes.
+//   Default sink is direct JSON file writes.
+//   Set CRIMSON_FRIDA_CAPTURE_SINK=host to force Frida message streaming.
 
 const DEFAULT_LOG_DIR = "C:\\share\\frida";
 const DEFAULT_OUT_NAME = "gameplay_diff_capture.json";
@@ -92,6 +99,25 @@ function parseStringSet(raw, fallbackCsv) {
     out.add(String(parts[i]).toLowerCase());
   }
   return out;
+}
+
+function parseCaptureSink(raw, fallback) {
+  const value = raw == null ? "" : String(raw).trim().toLowerCase();
+  if (value === "file" || value === "host") return value;
+  return fallback;
+}
+
+function resolveCaptureSink() {
+  let injectedSink = null;
+  try {
+    injectedSink = parseCaptureSink(globalThis.__CRIMSON_FRIDA_CAPTURE_SINK, null);
+  } catch (_) {
+    injectedSink = null;
+  }
+  if (injectedSink != null) return injectedSink;
+  const envSink = parseCaptureSink(getEnv("CRIMSON_FRIDA_CAPTURE_SINK"), null);
+  if (envSink != null) return envSink;
+  return "file";
 }
 
 const CONFIG_ENV_KEYS = [
@@ -173,7 +199,7 @@ function toHex(value, width) {
 const LOG_DIR = getEnv("CRIMSON_FRIDA_DIR") || DEFAULT_LOG_DIR;
 
 const CONFIG = {
-  captureSink: String(getEnv("CRIMSON_FRIDA_CAPTURE_SINK") || "host").trim().toLowerCase() === "file" ? "file" : "host",
+  captureSink: resolveCaptureSink(),
   outPath: getEnv("CRIMSON_FRIDA_OUT_PATH") || joinPath(LOG_DIR, DEFAULT_OUT_NAME),
   splitQuestFiles: true,
   questOutDir: getEnv("CRIMSON_FRIDA_QUEST_OUT_DIR") || LOG_DIR,

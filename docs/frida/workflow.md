@@ -90,7 +90,7 @@ Differential gameplay capture (tick-aligned checkpoints + event summaries; write
 frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
 ```
 
-Shortcut: `just frida-gameplay-diff-capture`
+Shortcut: `just frida-gameplay-diff-capture` (host-mode msgpack capture)
 
 Survival autoplay sidecar (manual-run helper that pins control scheme config only;
 default is static movement + computer aim, JSONL to `survival_autoplay.jsonl`):

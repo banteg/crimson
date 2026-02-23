@@ -297,7 +297,9 @@ def main(argv: list[str] | None = None) -> int:
     target = int(args.pid) if args.pid is not None else str(args.process)
     print(f"[capture-host] attaching target={target}", flush=True)
     session = device.attach(target)
-    script = session.create_script(script_path.read_text(encoding="utf-8"))
+    script_source = script_path.read_text(encoding="utf-8")
+    script_prelude = 'globalThis.__CRIMSON_FRIDA_CAPTURE_SINK = "host";\n'
+    script = session.create_script(script_prelude + script_source)
 
     def on_message(message: dict[str, object], data: bytes | None) -> None:
         message_type = message.get("type")
