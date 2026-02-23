@@ -76,10 +76,17 @@ Notes:
 
 ## 3) Decide session bookkeeping
 
-Search for the SHA in `docs/frida/differential-sessions.md`.
+Search for the SHA in the differential sessions index and session files:
+`docs/frida/differential-sessions.md` and `docs/frida/differential-sessions/session-*.md`.
 
-- If SHA exists: append to that session entry.
-- If SHA is new: create a new session entry.
+Quick lookup:
+
+```bash
+rg "<sha256>" docs/frida/differential-sessions.md docs/frida/differential-sessions/session-*.md
+```
+
+- If SHA exists: append to that session file.
+- If SHA is new: create a new session file and add it to the index.
 
 Do not assume you can re-record the same gameplay timeline. Use event and RNG
 anchors, not exact absolute tick equality across different recordings.
@@ -263,7 +270,8 @@ round of arithmetic/constant edits:
   hit events against effective capture hits
   (`projectile_find_hit_count - owner_collision_queries`, clamped at `>= 0`).
 - If constant/rounding probes do not move the first decisive split tick, treat
-  them as dead ends, revert, and log them in `docs/frida/differential-sessions.md`.
+  them as dead ends, revert, and log them in the relevant
+  `docs/frida/differential-sessions/session-*.md` file.
 - When a stable pre-threshold distance bias persists (for example `~+0.13` in
   rewrite link distance before a `< 40.0` branch), switch to timing-path
   verification instead of more local math tweaks by validating `dt_frame`,
@@ -296,7 +304,8 @@ hotspot packs under `analysis/ghidra/derived/hotspots/`:
 
 1. Add targeted tests for every replay/conversion behavior change.
 2. Run `just check`.
-3. Update `docs/frida/differential-sessions.md` with:
+3. Update differential session docs (`docs/frida/differential-sessions.md` index
+   plus the relevant `docs/frida/differential-sessions/session-*.md` file) with:
    - SHA
    - exact baseline commands
    - first mismatch progression

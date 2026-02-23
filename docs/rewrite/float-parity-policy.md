@@ -34,4 +34,6 @@ If any condition is missing, keep the native-looking float behavior.
 
 - Use float32 helpers and explicit store-boundary mirrors in parity-sensitive code.
 - Prefer parity captures and focused traces over intuitive “cleanup”.
-- Document any intentional float deviation in `docs/frida/differential-sessions.md`.
+- Document any intentional float deviation in the differential session docs:
+  `docs/frida/differential-sessions.md` and the relevant
+  `docs/frida/differential-sessions/session-*.md`.
