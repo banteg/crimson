@@ -62,5 +62,6 @@ When the capture SHA is unchanged, append updates to the same session.
 - [Session 16 (2026-02-15)](differential-sessions/session-16.md)
 - [Session 17 (2026-02-18)](differential-sessions/session-17.md)
 - [Session 18 (2026-02-19)](differential-sessions/session-18.md)
+- [Session 19 (2026-02-24)](differential-sessions/session-19.md)
 
 Session 18 includes continued entries in the same file.
