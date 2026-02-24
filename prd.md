@@ -13,6 +13,14 @@ I’m going to define a debugger that:
 
 # PRD: Crimson Debugger
 
+## Implementation Progress
+
+- [x] Chunk 1: CDT container/schema + `crimson dbg import-capture` + `crimson dbg health`
+- [ ] Chunk 2: `crimson dbg record` (Python runner profiles + CDT writer integration)
+- [ ] Chunk 3: `crimson dbg diff` + `crimson dbg bisect` + parity policy + JSON reports
+- [ ] Chunk 4: `crimson dbg tick` + `crimson dbg entity` + `crimson dbg query` + `crimson dbg focus`
+- [ ] Chunk 5: `crimson dbg viz` + final workflow wiring + documentation/tests cleanup
+
 ## 1) Background
 
 Crimson already has strong deterministic simulation and differential tooling:
