@@ -27,8 +27,8 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Target scope is 1-player Survival headless verification on latest ruleset
   (`preserve_bugs=false`) with native + wasm builds.
 - Current state is in-progress parity, not universal replay acceptance yet.
-  See [Rewrite status / parity gaps](status.md) for the detailed ported/not-ported list
-  and known divergences.
+  See [Zig replay verifier status](zig-verifier.md) for the detailed
+  ported/not-ported list and known divergences.
 
 ## What exists now
 

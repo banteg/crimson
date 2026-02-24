@@ -57,6 +57,7 @@ nav = [
     { "Parity" = [
       { "Overview" = "rewrite/parity/index.md" },
       { "Status" = "rewrite/status.md" },
+      { "Zig replay verifier" = "rewrite/zig-verifier.md" },
       { "Original bugs" = "rewrite/original-bugs.md" },
       { "Typ-o-Shooter text input" = "rewrite/parity/typo-mode-text-input.md" },
     ]},
