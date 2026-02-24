@@ -3,6 +3,7 @@
 pub mod bootstrap;
 pub mod rand;
 pub mod replay;
+pub mod tables;
 pub mod verify;
 
 pub use verify::{

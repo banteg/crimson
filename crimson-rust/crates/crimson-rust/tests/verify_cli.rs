@@ -48,14 +48,19 @@ fn build_minimal_replay_bytes(game_mode_id: i64) -> Vec<u8> {
 
 #[test]
 fn verify_json_success_for_acceptance_replay() {
-    let replay_path = acceptance_replay_fixture();
+    let fixture_path = acceptance_replay_fixture();
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock should be after unix epoch")
+        .as_nanos();
+    let replay_path = std::env::temp_dir().join(format!("crimson_rust_acceptance_{unique}.crd"));
+    fs::copy(&fixture_path, &replay_path).expect("fixture replay should copy to temp path");
+
     let output = Command::new(cli_bin())
         .arg("verify")
         .arg(&replay_path)
         .arg("--format")
         .arg("json")
-        .arg("--submitted-score")
-        .arg("0")
         .output()
         .expect("cli invocation should succeed");
 
