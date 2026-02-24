@@ -4,6 +4,7 @@ const std = @import("std");
 const backend_python = @import("backend_python.zig");
 const hash = @import("hash.zig");
 const replay_codec = @import("replay_codec.zig");
+const survival_sim = @import("survival_sim.zig");
 const verify_contract = @import("verify_contract.zig");
 
 const max_checkpoints_payload_bytes: usize = 64 * 1024 * 1024;
@@ -171,11 +172,12 @@ fn runNativeVerify(
         break :blk inflated;
     } else replay_bytes;
 
-    var replay_summary = replay_codec.parseReplaySummary(allocator, replay_payload) catch |err| {
+    var replay = replay_codec.parseReplay(allocator, replay_payload) catch |err| {
         return buildNotPortedOutputForReplayCodecError(allocator, err);
     };
-    defer replay_summary.deinit(allocator);
-    const header = replay_summary.header;
+    defer replay.deinit(allocator);
+    const header = replay.header;
+    const replay_events = replay.summarizeEvents();
 
     if (header.game_mode_id != 1) {
         return buildNotPortedOutput(allocator, "only survival replays are currently ported");
@@ -189,10 +191,10 @@ fn runNativeVerify(
     if (!std.mem.eql(u8, header.input_quantization, "raw")) {
         return buildNotPortedOutput(allocator, "only raw input quantization is currently ported");
     }
-    if (replay_summary.events.total_count != replay_summary.events.perk_menu_open_count + replay_summary.events.perk_pick_count) {
+    if (replay_events.total_count != replay_events.perk_menu_open_count + replay_events.perk_pick_count) {
         return buildNotPortedOutput(allocator, "replay events include unsupported kinds");
     }
-    if (replay_summary.tick_count > std.math.maxInt(i32)) {
+    if (replay.tickCount() > std.math.maxInt(i32)) {
         return buildNotPortedOutput(allocator, "replay has too many ticks for current native verifier");
     }
     replay_codec.validateReplayBootstrap(header) catch |err| {
@@ -201,6 +203,9 @@ fn runNativeVerify(
     if (!std.mem.startsWith(u8, header.game_version, "0.7.")) {
         return buildNotPortedOutput(allocator, "only latest ruleset replays are currently ported");
     }
+    _ = survival_sim.runSurvivalReplayScaffold(replay) catch |err| {
+        return buildNotPortedOutputForSurvivalSimError(allocator, err);
+    };
 
     var replay_sha256: [64]u8 = undefined;
     hash.sha256HexLower(replay_bytes, &replay_sha256);
@@ -209,7 +214,7 @@ fn runNativeVerify(
         allocator,
         resolution.resolved_path,
         replay_sha256[0..],
-        replay_summary.tick_count,
+        replay.tickCount(),
     ) catch |err| {
         return buildNotPortedOutputForDataError(allocator, err);
     };
@@ -227,7 +232,7 @@ fn runNativeVerify(
     const run_result = RunResult{
         .game_mode_id = 1,
         .tick_rate = header.tick_rate,
-        .ticks = @intCast(replay_summary.tick_count),
+        .ticks = @intCast(replay.tickCount()),
         .elapsed_ms = highscore_stats.elapsed_ms,
         .score_xp = checkpoint_summary.score_xp,
         .creature_kill_count = checkpoint_summary.kills,
@@ -721,10 +726,26 @@ fn buildNotPortedOutputForReplayCodecError(
         error.UnsupportedEventShape => "replay events are not in the canonical wire shape",
         error.UnsupportedEventKind => "replay events include kinds not yet ported",
         error.UnsupportedBootstrapKind => "replay bootstrap kind is not supported",
+        error.UnsupportedInputQuantization => "replay input quantization is not supported",
         error.BootstrapSeedMismatch => "replay bootstrap seed does not match canonical terrain bootstrap draws",
         error.InvalidGzipPayload => "unable to inflate replay gzip payload",
         error.PayloadTooLarge => "replay payload exceeds max decompressed size",
         error.OutOfMemory => "native replay msgpack decode ran out of memory",
+    };
+    return buildNotPortedOutput(allocator, detail);
+}
+
+fn buildNotPortedOutputForSurvivalSimError(
+    allocator: std.mem.Allocator,
+    err: survival_sim.SurvivalSimError,
+) !backend_python.CommandOutput {
+    const detail = switch (err) {
+        error.UnsupportedGameMode => "survival simulation scaffold only supports survival mode",
+        error.UnsupportedPlayerCount => "survival simulation scaffold only supports single-player replays",
+        error.UnsupportedInputQuantization => "survival simulation scaffold only supports raw/f32 quantization",
+        error.UnsupportedPreserveBugs => "survival simulation scaffold does not support preserve_bugs=true",
+        error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
+        error.UnsupportedEventPlayerIndex => "survival simulation scaffold only supports player_index=0 events",
     };
     return buildNotPortedOutput(allocator, detail);
 }
