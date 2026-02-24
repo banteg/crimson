@@ -2,14 +2,16 @@ from __future__ import annotations
 
 from crimson.game_modes import GameMode
 from crimson.original.capture import (
+    CAPTURE_CREATURE_SPAWN_EVENT_KIND,
     CAPTURE_PERK_APPLY_EVENT_KIND,
     CAPTURE_PERK_PENDING_EVENT_KIND,
+    CAPTURE_STATE_TRANSITION_EVENT_KIND,
 )
 from crimson.perks import PerkId
 from crimson.perks.availability import perks_rebuild_available
 from crimson.perks.helpers import perk_count_get
 from crimson.replay import PerkMenuOpenEvent, PerkPickEvent, UnknownEvent
-from crimson.sim.driver.replay_events import apply_replay_tick_events
+from crimson.sim.driver.replay_events import apply_replay_tick_events, partition_tick_events
 from crimson.sim.driver.setup import reset_players
 from crimson.sim.world_state import WorldState
 from crimson.weapon_runtime import weapon_refresh_available
@@ -44,6 +46,33 @@ def test_perk_menu_open_event_consumes_rng_for_choices() -> None:
     assert int(state.rng.state) != before
     assert not bool(state.perk_selection.choices_dirty)
     assert state.perk_selection.choices
+
+
+def test_partition_tick_events_orders_capture_spawn_before_deferred_menu_open() -> None:
+    pre_step, post_step = partition_tick_events(
+        [
+            PerkMenuOpenEvent(tick_index=0, player_index=0),
+            UnknownEvent(
+                tick_index=0,
+                kind=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
+                payload=[{"spawns": []}],
+            ),
+            UnknownEvent(
+                tick_index=0,
+                kind=CAPTURE_STATE_TRANSITION_EVENT_KIND,
+                payload=[{"transitions": [{"target_state": 6}]}],
+            ),
+        ],
+        defer_menu_open=True,
+    )
+
+    assert pre_step == []
+    assert len(post_step) == 3
+    assert isinstance(post_step[0], UnknownEvent)
+    assert str(post_step[0].kind) == CAPTURE_STATE_TRANSITION_EVENT_KIND
+    assert isinstance(post_step[1], UnknownEvent)
+    assert str(post_step[1].kind) == CAPTURE_CREATURE_SPAWN_EVENT_KIND
+    assert isinstance(post_step[2], PerkMenuOpenEvent)
 
 
 def test_perk_pick_event_refreshes_choices_for_ui_transition_parity() -> None:

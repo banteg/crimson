@@ -275,6 +275,7 @@ class QuestDeterministicSession:
     spawn_entries: tuple[SpawnEntry, ...] = ()
     detail_preset: int = 5
     fx_toggle: int = 0
+    game_tune_started: bool = False
     apply_world_dt_steps: bool = True
     clear_fx_queues_each_tick: bool = False
     finalize_post_render_lifecycle_each_tick: bool = True
@@ -313,7 +314,7 @@ class QuestDeterministicSession:
                 game_mode=int(GameMode.QUESTS),
                 demo_mode_active=bool(state.demo_mode_active),
                 perk_progression_enabled=True,
-                game_tune_started=False,
+                game_tune_started=bool(self.game_tune_started),
             ),
             dt_frame_ms_i32=(int(dt_frame_ms_i32) if dt_frame_ms_i32 is not None else None),
             apply_world_dt_steps=bool(self.apply_world_dt_steps),
@@ -324,6 +325,8 @@ class QuestDeterministicSession:
             rng_marks_out=rng_marks,
             trace_presentation_rng=bool(trace_rng),
         )
+        if step.presentation.trigger_game_tune:
+            self.game_tune_started = True
 
         # Native `creatures_none_active` checks slot `active` flags only; corpses
         # still count as active until lifecycle finalization clears the slot.

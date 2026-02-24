@@ -139,18 +139,20 @@ def _angle_approach(current: float, target: float, rate: float, dt: float) -> fl
     - step by `frame_dt * arc_scale * rate`
     """
 
-    angle = float(current)
-    target_f = float(target)
-    rate_f = float(rate)
-    dt_f = float(dt)
-    tau = 6.2831855
+    # Native keeps these values in float locals (`fVar*`) across the function.
+    # Preserve that spill behavior to avoid branch flips near the `tau` boundary.
+    angle = float(f32(current))
+    target_f = float(f32(target))
+    rate_f = float(f32(rate))
+    dt_f = float(f32(dt))
+    tau = float(NATIVE_TAU)
 
     while angle < 0.0:
-        angle = angle + tau
+        angle = float(f32(angle + tau))
     while tau < angle:
-        angle = angle - tau
+        angle = float(f32(angle - tau))
 
-    direct = abs(target_f - angle)
+    direct = float(f32(abs(float(f32(target_f - angle)))))
 
     hi = angle
     if angle < target_f:
@@ -158,23 +160,24 @@ def _angle_approach(current: float, target: float, rate: float, dt: float) -> fl
     lo = angle
     if target_f < angle:
         lo = target_f
-    wrapped = abs((tau - hi) + lo)
+    wrapped = float(f32(abs(float(f32(float(f32(tau - hi)) + lo)))))
 
     step_scale = wrapped
     if direct < wrapped:
         step_scale = direct
     if 1.0 < step_scale:
         step_scale = 1.0
+    step_scale = float(f32(step_scale))
 
-    step_delta = dt_f * step_scale * rate_f
+    step_delta = float(f32(float(f32(dt_f * step_scale)) * rate_f))
 
     if direct <= wrapped:
         if angle < target_f:
-            return angle + step_delta
+            return float(f32(angle + step_delta))
     else:
         if target_f < angle:
-            return angle + step_delta
-    return angle - step_delta
+            return float(f32(angle + step_delta))
+    return float(f32(angle - step_delta))
 
 
 def _movement_delta_from_heading_f32(

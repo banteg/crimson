@@ -293,20 +293,23 @@ def partition_tick_events(
         return list(events), []
 
     pre_step: list[object] = []
-    post_step: list[object] = []
+    post_state_transition: list[object] = []
+    post_spawn_hooks: list[object] = []
+    post_menu_open: list[object] = []
     for event in events:
         if isinstance(event, PerkMenuOpenEvent):
             # Original-capture traces call perk selection RNG on the transition to
             # menu state at the tail of the gameplay tick, after survival_update.
-            post_step.append(event)
+            post_menu_open.append(event)
             continue
         if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_CREATURE_SPAWN_EVENT_KIND:
-            # Original capture spawn hooks fire during quest_mode_update tail.
-            post_step.append(event)
+            # Original capture spawn hooks fire during quest_mode_update tail
+            # before deferred perk-menu RNG.
+            post_spawn_hooks.append(event)
             continue
         if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_STATE_TRANSITION_EVENT_KIND:
             # Native state transitions are processed after the gameplay mode tick.
-            post_step.append(event)
+            post_state_transition.append(event)
             continue
         pre_step.append(event)
-    return pre_step, post_step
+    return pre_step, [*post_state_transition, *post_spawn_hooks, *post_menu_open]
