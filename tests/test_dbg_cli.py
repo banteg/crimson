@@ -5,7 +5,12 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from crimson.cli import app
+from crimson.dbg.trace import TraceReader
+from crimson.game_modes import GameMode
 from crimson.original.capture import dump_capture
+from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay
+from crimson.sim.input import PlayerInput
+from grim.geom import Vec2
 from tests.builders.capture import (
     build_capture_creature_sample,
     build_capture_event_head_creature_update_micro_window,
@@ -55,3 +60,40 @@ def test_dbg_import_capture_and_health(tmp_path: Path) -> None:
     )
     assert health_result.exit_code == 0, health_result.output
     assert "movement_root_cause_ready=True" in health_result.output
+
+
+def _write_replay(path: Path, *, ticks: int = 3) -> Path:
+    header = ReplayHeader(
+        game_mode_id=int(GameMode.SURVIVAL),
+        seed=0xBEEF,
+        tick_rate=60,
+        player_count=1,
+    )
+    recorder = ReplayRecorder(header)
+    for _ in range(int(ticks)):
+        recorder.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
+    path.write_bytes(dump_replay(recorder.finish()))
+    return path
+
+
+def test_dbg_record_standard_profile(tmp_path: Path) -> None:
+    replay_path = _write_replay(tmp_path / "sample.crd")
+    trace_path = tmp_path / "sample.cdt"
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["dbg", "record", str(replay_path), "--out", str(trace_path), "--profile", "standard"],
+    )
+    assert result.exit_code == 0, result.output
+    assert "channels=" in result.output
+    assert "checkpoint" in result.output
+    assert "rng_marks" in result.output
+    assert "entity_samples" in result.output
+
+    with TraceReader(trace_path) as trace:
+        tick0 = trace.tick(0)
+        assert tick0 is not None
+        assert "checkpoint" in tick0.channels
+        assert "rng_marks" in tick0.channels
+        assert "entity_samples" in tick0.channels

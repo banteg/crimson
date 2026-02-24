@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import cast
+from typing import Literal, cast
 
 import typer
 
@@ -38,6 +38,56 @@ def cmd_dbg_import_capture(
 
     tick_range = summary.meta.tick_range
     typer.echo(f"trace={out}")
+    typer.echo(
+        "ticks "
+        f"start={tick_range.get('start_tick')} "
+        f"end={tick_range.get('end_tick')} "
+        f"count={tick_range.get('tick_count')}",
+    )
+    typer.echo("channels=" + ",".join(summary.meta.channels))
+
+
+@dbg_app.command("record")
+def cmd_dbg_record(
+    replay_file: Path = typer.Argument(..., help="replay file (.crd)"),
+    out: Path = typer.Option(..., "--out", help="output trace path (.cdt)"),
+    impl: str = typer.Option("python", "--impl", help="trace producer implementation id (v1 supports: python)"),
+    profile: Literal["minimal", "standard", "full"] = typer.Option("standard", "--profile", help="minimal|standard|full"),
+    max_ticks: int | None = typer.Option(None, "--max-ticks", min=0, help="optional replay tick cap"),
+    strict_events: bool = typer.Option(
+        True,
+        "--strict-events/--lenient-events",
+        help="fail on unsupported replay events/perk picks (default: strict)",
+    ),
+    chunk_ticks: int = typer.Option(256, "--chunk-ticks", min=1, help="ticks per compressed CDT block"),
+) -> None:
+    """Run replay simulation and record a CDT trace."""
+    from ..dbg.record import record_replay_to_trace
+    from ..dbg.trace import TraceError
+
+    impl_name = str(impl).strip().lower()
+    if impl_name != "python":
+        typer.echo("dbg record currently supports --impl python only", err=True)
+        raise typer.Exit(code=2)
+
+    profile_name = str(profile).strip().lower()
+
+    try:
+        summary = record_replay_to_trace(
+            replay_path=Path(replay_file),
+            out_path=Path(out),
+            profile=profile,
+            max_ticks=max_ticks,
+            strict_events=bool(strict_events),
+            chunk_ticks=int(chunk_ticks),
+        )
+    except (TraceError, ValueError) as exc:
+        typer.echo(f"dbg record failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    tick_range = summary.meta.tick_range
+    typer.echo(f"trace={out}")
+    typer.echo(f"profile={profile_name}")
     typer.echo(
         "ticks "
         f"start={tick_range.get('start_tick')} "
