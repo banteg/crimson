@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal, Protocol, cast
 
@@ -447,6 +449,142 @@ def _fmt_metric_agg(name: str, aggregate: object, *, digits: int) -> str:
     )
 
 
+class _ReplayListRow(msgspec.Struct, forbid_unknown_fields=True):
+    replay: str
+    mode: str
+    game_version: str
+    ticks: str
+    duration: str
+    seed: str
+    modified: str
+    modified_ts: float
+    old_version: bool
+
+
+def _fmt_replay_list_duration(*, ticks: int, tick_rate: int) -> str:
+    if int(tick_rate) <= 0:
+        return "n/a"
+    total_seconds = float(ticks) / float(tick_rate)
+    if total_seconds >= 3600.0:
+        hours = int(total_seconds // 3600.0)
+        minutes = int((total_seconds % 3600.0) // 60.0)
+        seconds = int(total_seconds % 60.0)
+        return f"{hours:d}:{minutes:02d}:{seconds:02d}"
+    if total_seconds >= 60.0:
+        minutes = int(total_seconds // 60.0)
+        seconds = int(total_seconds % 60.0)
+        return f"{minutes:d}:{seconds:02d}"
+    return f"{total_seconds:.1f}s"
+
+
+def _fmt_replay_list_modified(timestamp: float) -> str:
+    return datetime.fromtimestamp(float(timestamp)).strftime("%Y-%m-%d %H:%M")
+
+
+def _version_tuple(value: str) -> tuple[int, ...]:
+    return tuple(int(part) for part in re.findall(r"\d+", str(value)))
+
+
+def _is_version_older(*, replay_version: str, current_version: str) -> bool:
+    replay_parts = _version_tuple(replay_version)
+    current_parts = _version_tuple(current_version)
+    if not replay_parts or not current_parts:
+        return False
+    width = max(len(replay_parts), len(current_parts))
+    replay_norm = replay_parts + (0,) * (width - len(replay_parts))
+    current_norm = current_parts + (0,) * (width - len(current_parts))
+    return replay_norm < current_norm
+
+
+def _replay_list_mode_label(*, game_mode_id: int, player_count: int, quest_level: str) -> str:
+    if int(game_mode_id) == int(GameMode.QUESTS):
+        label = "quest"
+        level = str(quest_level).strip()
+        if level:
+            label = f"{label} {level}"
+    else:
+        label = _replay_mode_label(int(game_mode_id))
+    if int(player_count) > 1:
+        label = f"{label} {int(player_count)}p"
+    return label
+
+
+def _build_replay_list_row(
+    replay_path: Path,
+    *,
+    replays_dir: Path,
+    load_replay_fn: Callable[[bytes], object],
+    current_version: str,
+) -> tuple[_ReplayListRow, str | None]:
+    rel = str(replay_path.relative_to(replays_dir))
+    modified_text = "?"
+    modified_ts = 0.0
+    try:
+        stat = replay_path.stat()
+        modified_ts = float(stat.st_mtime)
+        modified_text = _fmt_replay_list_modified(modified_ts)
+    except OSError as exc:
+        return (
+            _ReplayListRow(
+                replay=rel,
+                mode="error",
+                game_version="-",
+                ticks="-",
+                duration="-",
+                seed="-",
+                modified=modified_text,
+                modified_ts=float(modified_ts),
+                old_version=False,
+            ),
+            str(exc).replace("\n", " ").strip(),
+        )
+
+    try:
+        replay = cast("Any", load_replay_fn(replay_path.read_bytes()))
+    except Exception as exc:
+        return (
+            _ReplayListRow(
+                replay=rel,
+                mode="invalid",
+                game_version="-",
+                ticks="-",
+                duration="-",
+                seed="-",
+                modified=modified_text,
+                modified_ts=float(modified_ts),
+                old_version=False,
+            ),
+            str(exc).replace("\n", " ").strip(),
+        )
+
+    header = cast("Any", replay.header)
+    tick_rate = int(header.tick_rate)
+    ticks = int(len(replay.inputs))
+    game_version = str(header.game_version).strip() or "-"
+    player_count = int(header.player_count)
+    quest_level = str(header.quest_level)
+    mode_label = _replay_list_mode_label(
+        game_mode_id=int(header.game_mode_id),
+        player_count=player_count,
+        quest_level=quest_level,
+    )
+    is_old = _is_version_older(replay_version=game_version, current_version=current_version)
+    return (
+        _ReplayListRow(
+            replay=rel,
+            mode=mode_label,
+            game_version=game_version,
+            ticks=str(ticks),
+            duration=_fmt_replay_list_duration(ticks=ticks, tick_rate=tick_rate),
+            seed=str(int(header.seed)),
+            modified=modified_text,
+            modified_ts=float(modified_ts),
+            old_version=bool(is_old),
+        ),
+        None,
+    )
+
+
 replay_app = typer.Typer(add_completion=False)
 @replay_app.command("play")
 def cmd_replay_play(
@@ -519,8 +657,20 @@ def cmd_replay_list(
         "--runtime-dir",
         help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
     ),
+    color: bool = typer.Option(
+        True,
+        "--color/--no-color",
+        help="enable ANSI colors in table output (default: on)",
+    ),
 ) -> None:
     """List replay files under base-dir/replays."""
+    from rich import box
+    from rich.console import Console
+    from rich.table import Table
+
+    from .. import __version__
+    from ..replay import load_replay
+
     replays_dir = Path(base_dir) / "replays"
     replay_files = sorted(
         (path for path in replays_dir.rglob("*.crd") if path.is_file()),
@@ -529,10 +679,58 @@ def cmd_replay_list(
     if not replay_files:
         typer.echo(f"no replay files found under {replays_dir}")
         return
+
+    rows: list[_ReplayListRow] = []
+    parse_errors: list[str] = []
     for replay_path in replay_files:
-        rel = replay_path.relative_to(replays_dir)
-        typer.echo(str(rel))
-    typer.echo(f"count={len(replay_files)}")
+        row, parse_error = _build_replay_list_row(
+            replay_path,
+            replays_dir=replays_dir,
+            load_replay_fn=load_replay,
+            current_version=str(__version__),
+        )
+        rows.append(row)
+        if parse_error:
+            parse_errors.append(f"{row.replay}: {parse_error}")
+
+    rows.sort(key=lambda row: (-float(row.modified_ts), str(row.replay)))
+
+    table = Table(box=box.SIMPLE, header_style="bold")
+    table.add_column("replay")
+    table.add_column("mode", style="cyan")
+    table.add_column("version")
+    table.add_column("ticks", justify="right")
+    table.add_column("duration", justify="right")
+    table.add_column("seed", justify="right")
+    table.add_column("modified", style="dim")
+    for row in rows:
+        version_cell = row.game_version
+        row_style = ""
+        if row.mode in {"invalid", "error"}:
+            row_style = "red"
+            version_cell = f"[red]{version_cell}[/red]"
+        elif bool(row.old_version):
+            row_style = "yellow"
+            version_cell = f"[yellow]{version_cell}[/yellow]"
+        else:
+            version_cell = f"[green]{version_cell}[/green]"
+        table.add_row(
+            row.replay,
+            row.mode,
+            version_cell,
+            row.ticks,
+            row.duration,
+            row.seed,
+            row.modified,
+            style=row_style,
+        )
+
+    console = Console(force_terminal=bool(color), no_color=not bool(color), width=200)
+    console.print(table)
+    parsed_count = len(rows) - len(parse_errors)
+    typer.echo(f"count={len(rows)} parsed={parsed_count} errors={len(parse_errors)}")
+    for parse_error in parse_errors:
+        typer.echo(f"warning: {parse_error}")
 
 
 @replay_app.command("verify")
