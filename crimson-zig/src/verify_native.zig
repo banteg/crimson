@@ -151,7 +151,7 @@ fn runNativeVerify(
     defer tick_trace.deinit(allocator);
 
     const trace_out = if (request.debug_trace_jsonl != null) &tick_trace else null;
-    _ = survival_sim.runSurvivalReplayScaffoldWithTrace(
+    const scaffold = survival_sim.runSurvivalReplayScaffoldWithTrace(
         replay,
         trace_out,
         allocator,
@@ -165,10 +165,93 @@ fn runNativeVerify(
         writeSurvivalTickTraceJsonl(trace_path, tick_trace.items) catch {};
     }
 
-    return buildNotPortedOutput(
+    const replay_sha256 = try sha256HexAlloc(allocator, replay_bytes);
+    defer allocator.free(replay_sha256);
+
+    const run_result = RunResult{
+        .game_mode_id = header.game_mode_id,
+        .tick_rate = header.tick_rate,
+        .ticks = @as(i32, @intCast(scaffold.ticks)),
+        .elapsed_ms = scaffold.elapsed_ms_sim,
+        .score_xp = scaffold.player_experience,
+        .creature_kill_count = scaffold.creature_kill_count,
+        .most_used_weapon_id = scaffold.most_used_weapon_id,
+        .shots_fired = scaffold.shots_fired,
+        .shots_hit = scaffold.shots_hit,
+        .rng_state = scaffold.wave_spawn_rng_state,
+    };
+    const resolved_metric = verify_contract.resolveScoreMetric(request.score_metric, run_result.game_mode_id);
+    const payload = try buildVerifyPayload(
         allocator,
-        "full deterministic survival run-result simulation from .crd bytes is still in progress; sidecar/highscore shortcuts are disabled",
+        resolution.resolved_path,
+        replay_sha256,
+        run_result,
+        resolved_metric,
+        request.submitted_score,
     );
+    defer allocator.free(payload);
+
+    if (request.json_out) |json_out_path| {
+        writeFileWithParents(json_out_path, payload) catch |err| {
+            return buildVerifyFailedOutput(allocator, err);
+        };
+    }
+
+    const simulated_value: i64 = if (std.mem.eql(u8, resolved_metric, "elapsed_ms"))
+        run_result.elapsed_ms
+    else
+        run_result.score_xp;
+    const claim_matches = if (request.submitted_score) |submitted|
+        submitted == simulated_value
+    else
+        true;
+    const status = if (claim_matches) "ok" else "score_mismatch";
+
+    var stdout_buf: std.ArrayList(u8) = .empty;
+    defer stdout_buf.deinit(allocator);
+    var writer = stdout_buf.writer(allocator);
+
+    if (request.json_out != null and request.output_format == .human) {
+        try writer.print("json_report={s}\n", .{request.json_out.?});
+    }
+
+    if (request.output_format == .json) {
+        try writer.writeAll(payload);
+        try writer.writeByte('\n');
+    } else {
+        try writer.print(
+            "{s}: ticks={d} elapsed_ms={d} score_xp={d} kills={d} most_used_weapon_id={d} shots_fired={d} shots_hit={d} rng_state={d}",
+            .{
+                status,
+                run_result.ticks,
+                run_result.elapsed_ms,
+                run_result.score_xp,
+                run_result.creature_kill_count,
+                run_result.most_used_weapon_id,
+                run_result.shots_fired,
+                run_result.shots_hit,
+                run_result.rng_state,
+            },
+        );
+        if (request.submitted_score) |submitted| {
+            try writer.print(
+                "; score_claim metric={s} submitted={d} simulated={d} match={s}",
+                .{
+                    resolved_metric,
+                    submitted,
+                    simulated_value,
+                    if (claim_matches) "true" else "false",
+                },
+            );
+        }
+        try writer.writeByte('\n');
+    }
+
+    return .{
+        .stdout = try stdout_buf.toOwnedSlice(allocator),
+        .stderr = try allocator.dupe(u8, ""),
+        .exit_code = if (claim_matches) 0 else 3,
+    };
 }
 
 fn writeSurvivalTickTraceJsonl(
@@ -185,7 +268,7 @@ fn writeSurvivalTickTraceJsonl(
     const out = &writer.interface;
     for (trace) |entry| {
         try out.print(
-            "{{\"tick\":{d},\"rng_state\":{d},\"elapsed_ms\":{d},\"score_xp\":{d},\"kills\":{d},\"creature_count\":{d},\"perk_pending\":{d},\"player_weapon_id\":{d},\"player_ammo_q4\":{d},\"player_health_q4\":{d},\"player_pos_x_q4\":{d},\"player_pos_y_q4\":{d},\"player_aim_x_q4\":{d},\"player_aim_y_q4\":{d},\"player_level\":{d},\"player_experience\":{d},\"bonus_weapon_power_up_ms\":{d},\"bonus_reflex_boost_ms\":{d},\"bonus_energizer_ms\":{d},\"bonus_double_experience_ms\":{d},\"bonus_freeze_ms\":{d},\"projectile_count\":{d},\"projectile0_pos_x_q4\":{d},\"projectile0_pos_y_q4\":{d},\"projectile0_origin_x_q4\":{d},\"projectile0_origin_y_q4\":{d},\"projectile0_life_timer_q4\":{d},\"projectile0_type_id\":{d},\"projectile0_angle_q6\":{d},\"projectile0_speed_scale_q4\":{d}",
+            "{{\"tick\":{d},\"rng_state\":{d},\"elapsed_ms\":{d},\"score_xp\":{d},\"kills\":{d},\"creature_count\":{d},\"creature_active_index_sum\":{d},\"creature_active_index_xor\":{d},\"perk_pending\":{d},\"player_weapon_id\":{d},\"player_ammo_q4\":{d},\"player_health_q4\":{d},\"player_pos_x_q4\":{d},\"player_pos_y_q4\":{d},\"player_aim_x_q4\":{d},\"player_aim_y_q4\":{d},\"player_level\":{d},\"player_experience\":{d},\"bonus_weapon_power_up_ms\":{d},\"bonus_reflex_boost_ms\":{d},\"bonus_energizer_ms\":{d},\"bonus_double_experience_ms\":{d},\"bonus_freeze_ms\":{d},\"projectile_count\":{d},\"projectile0_pos_x_q4\":{d},\"projectile0_pos_y_q4\":{d},\"projectile0_origin_x_q4\":{d},\"projectile0_origin_y_q4\":{d},\"projectile0_life_timer_q4\":{d},\"projectile0_type_id\":{d},\"projectile0_angle_q6\":{d},\"projectile0_speed_scale_q4\":{d}",
             .{
                 entry.tick,
                 entry.rng_state,
@@ -193,6 +276,8 @@ fn writeSurvivalTickTraceJsonl(
                 entry.score_xp,
                 entry.kills,
                 entry.creature_count,
+                entry.creature_active_index_sum,
+                entry.creature_active_index_xor,
                 entry.perk_pending,
                 entry.player_weapon_id,
                 entry.player_ammo_q4,
@@ -217,6 +302,104 @@ fn writeSurvivalTickTraceJsonl(
                 entry.projectile0_type_id,
                 entry.projectile0_angle_q6,
                 entry.projectile0_speed_scale_q4,
+            },
+        );
+        try out.print(
+            ",\"projectile_state_hash\":{d}",
+            .{entry.projectile_state_hash},
+        );
+        try out.print(
+            ",\"creature_state_hash\":{d}",
+            .{entry.creature_state_hash},
+        );
+        try out.print(
+            ",\"projectile_active_index_sum\":{d},\"projectile_active_index_xor\":{d},\"projectile_type45_count\":{d}",
+            .{
+                entry.projectile_active_index_sum,
+                entry.projectile_active_index_xor,
+                entry.projectile_type45_count,
+            },
+        );
+        try out.print(
+            ",\"rng_after_perk_effects\":{d},\"rng_after_creatures\":{d},\"rng_after_projectiles\":{d}",
+            .{
+                entry.rng_after_perk_effects,
+                entry.rng_after_creatures,
+                entry.rng_after_projectiles,
+            },
+        );
+        try out.print(
+            ",\"rng_after_secondary_projectiles\":{d},\"rng_after_particles\":{d},\"rng_after_player_update\":{d},\"rng_after_stage_spawns\":{d},\"rng_after_wave_spawns\":{d},\"rng_after_spawns\":{d},\"rng_after_bonus_update\":{d}",
+            .{
+                entry.rng_after_secondary_projectiles,
+                entry.rng_after_particles,
+                entry.rng_after_player_update,
+                entry.rng_after_stage_spawns,
+                entry.rng_after_wave_spawns,
+                entry.rng_after_spawns,
+                entry.rng_after_bonus_update,
+            },
+        );
+        try out.print(
+            ",\"projectile1_active\":{s},\"projectile1_pos_x_q4\":{d},\"projectile1_pos_y_q4\":{d},\"projectile1_origin_x_q4\":{d},\"projectile1_origin_y_q4\":{d},\"projectile1_life_timer_q4\":{d},\"projectile1_type_id\":{d},\"projectile1_angle_q6\":{d},\"projectile1_damage_pool_q4\":{d}",
+            .{
+                if (entry.projectile1_active) "true" else "false",
+                entry.projectile1_pos_x_q4,
+                entry.projectile1_pos_y_q4,
+                entry.projectile1_origin_x_q4,
+                entry.projectile1_origin_y_q4,
+                entry.projectile1_life_timer_q4,
+                entry.projectile1_type_id,
+                entry.projectile1_angle_q6,
+                entry.projectile1_damage_pool_q4,
+            },
+        );
+        try out.print(
+            ",\"projectile6_active\":{s},\"projectile6_type_id\":{d},\"projectile6_pos_x_q4\":{d},\"projectile6_pos_y_q4\":{d},\"projectile6_origin_x_q4\":{d},\"projectile6_origin_y_q4\":{d},\"projectile6_life_timer_q4\":{d},\"projectile6_damage_pool_q4\":{d},\"projectile6_angle_q6\":{d}",
+            .{
+                if (entry.projectile6_active) "true" else "false",
+                entry.projectile6_type_id,
+                entry.projectile6_pos_x_q4,
+                entry.projectile6_pos_y_q4,
+                entry.projectile6_origin_x_q4,
+                entry.projectile6_origin_y_q4,
+                entry.projectile6_life_timer_q4,
+                entry.projectile6_damage_pool_q4,
+                entry.projectile6_angle_q6,
+            },
+        );
+        try out.print(
+            ",\"player_heading_q6\":{d},\"player_aim_heading_q6\":{d},\"player_move_speed_q4\":{d},\"player_turn_speed_q4\":{d}",
+            .{
+                entry.player_heading_q6,
+                entry.player_aim_heading_q6,
+                entry.player_move_speed_q4,
+                entry.player_turn_speed_q4,
+            },
+        );
+        try out.print(
+            ",\"player_reload_active\":{s},\"player_reload_timer_q4\":{d},\"player_shot_cooldown_q4\":{d},\"player_shot_seq\":{d}",
+            .{
+                if (entry.player_reload_active) "true" else "false",
+                entry.player_reload_timer_q4,
+                entry.player_shot_cooldown_q4,
+                entry.player_shot_seq,
+            },
+        );
+        try out.print(
+            ",\"player_perk31_count\":{d},\"player_perk53_count\":{d},\"player_perk54_count\":{d},\"player_perk55_count\":{d},\"player_hot_tempered_timer_q6\":{d},\"player_man_bomb_timer_q6\":{d},\"player_fire_cough_timer_q6\":{d},\"player_living_fortress_timer_q6\":{d},\"perk_interval_hot_tempered_q6\":{d},\"perk_interval_man_bomb_q6\":{d},\"perk_interval_fire_cough_q6\":{d}",
+            .{
+                entry.player_perk31_count,
+                entry.player_perk53_count,
+                entry.player_perk54_count,
+                entry.player_perk55_count,
+                entry.player_hot_tempered_timer_q6,
+                entry.player_man_bomb_timer_q6,
+                entry.player_fire_cough_timer_q6,
+                entry.player_living_fortress_timer_q6,
+                entry.perk_interval_hot_tempered_q6,
+                entry.perk_interval_man_bomb_q6,
+                entry.perk_interval_fire_cough_q6,
             },
         );
         try out.print(
@@ -253,18 +436,30 @@ fn writeSurvivalTickTraceJsonl(
             },
         );
         try out.print(
-            ",\"creature0_active\":{s},\"creature0_pos_x_q4\":{d},\"creature0_pos_y_q4\":{d},\"creature0_hp_q4\":{d},\"creature0_hitbox_q4\":{d},\"creature1_active\":{s},\"creature1_pos_x_q4\":{d},\"creature1_pos_y_q4\":{d},\"creature1_hp_q4\":{d},\"creature1_hitbox_q4\":{d}",
+            ",\"projectile_type21_count\":{d},\"projectile_type21_pos_x_q4\":{d},\"projectile_type21_pos_y_q4\":{d},\"projectile_type21_origin_x_q4\":{d},\"projectile_type21_origin_y_q4\":{d},\"projectile_type21_life_timer_q4\":{d},\"projectile_type21_angle_q6\":{d}",
+            .{
+                entry.projectile_type21_count,
+                entry.projectile_type21_pos_x_q4,
+                entry.projectile_type21_pos_y_q4,
+                entry.projectile_type21_origin_x_q4,
+                entry.projectile_type21_origin_y_q4,
+                entry.projectile_type21_life_timer_q4,
+                entry.projectile_type21_angle_q6,
+            },
+        );
+        try out.print(
+            ",\"creature0_active\":{s},\"creature0_pos_x_q4\":{d},\"creature0_pos_y_q4\":{d},\"creature0_hp_q4\":{d},\"creature0_lifecycle_stage_q4\":{d},\"creature1_active\":{s},\"creature1_pos_x_q4\":{d},\"creature1_pos_y_q4\":{d},\"creature1_hp_q4\":{d},\"creature1_lifecycle_stage_q4\":{d}",
             .{
                 if (entry.creature0_active) "true" else "false",
                 entry.creature0_pos_x_q4,
                 entry.creature0_pos_y_q4,
                 entry.creature0_hp_q4,
-                entry.creature0_hitbox_q4,
+                entry.creature0_lifecycle_stage_q4,
                 if (entry.creature1_active) "true" else "false",
                 entry.creature1_pos_x_q4,
                 entry.creature1_pos_y_q4,
                 entry.creature1_hp_q4,
-                entry.creature1_hitbox_q4,
+                entry.creature1_lifecycle_stage_q4,
             },
         );
         try out.print(
@@ -279,45 +474,106 @@ fn writeSurvivalTickTraceJsonl(
             },
         );
         try out.print(
-            ",\"creature2_active\":{s},\"creature2_pos_x_q4\":{d},\"creature2_pos_y_q4\":{d},\"creature2_hp_q4\":{d},\"creature2_hitbox_q4\":{d},\"creature10_active\":{s},\"creature10_pos_x_q4\":{d},\"creature10_pos_y_q4\":{d},\"creature10_hp_q4\":{d},\"creature10_hitbox_q4\":{d},\"creature12_active\":{s},\"creature12_pos_x_q4\":{d},\"creature12_pos_y_q4\":{d},\"creature12_hp_q4\":{d},\"creature12_hitbox_q4\":{d},\"creature14_active\":{s},\"creature14_pos_x_q4\":{d},\"creature14_pos_y_q4\":{d},\"creature14_hp_q4\":{d},\"creature14_hitbox_q4\":{d},\"creature14_size_q4\":{d},\"creature14_target_x_q4\":{d},\"creature14_target_y_q4\":{d},\"creature14_heading_q6\":{d},\"creature14_target_heading_q6\":{d}",
+            ",\"creature2_active\":{s},\"creature2_pos_x_q4\":{d},\"creature2_pos_y_q4\":{d},\"creature2_hp_q4\":{d},\"creature2_lifecycle_stage_q4\":{d},\"creature10_active\":{s},\"creature10_pos_x_q4\":{d},\"creature10_pos_y_q4\":{d},\"creature10_hp_q4\":{d},\"creature10_lifecycle_stage_q4\":{d},\"creature12_active\":{s},\"creature12_pos_x_q4\":{d},\"creature12_pos_y_q4\":{d},\"creature12_hp_q4\":{d},\"creature12_lifecycle_stage_q4\":{d},\"creature14_active\":{s},\"creature14_pos_x_q4\":{d},\"creature14_pos_y_q4\":{d},\"creature14_hp_q4\":{d},\"creature14_lifecycle_stage_q4\":{d},\"creature14_size_q4\":{d},\"creature14_target_x_q4\":{d},\"creature14_target_y_q4\":{d},\"creature14_heading_q6\":{d},\"creature14_target_heading_q6\":{d},\"creature18_active\":{s},\"creature18_pos_x_q4\":{d},\"creature18_pos_y_q4\":{d},\"creature18_hp_q4\":{d},\"creature18_lifecycle_stage_q4\":{d}",
             .{
                 if (entry.creature2_active) "true" else "false",
                 entry.creature2_pos_x_q4,
                 entry.creature2_pos_y_q4,
                 entry.creature2_hp_q4,
-                entry.creature2_hitbox_q4,
+                entry.creature2_lifecycle_stage_q4,
                 if (entry.creature10_active) "true" else "false",
                 entry.creature10_pos_x_q4,
                 entry.creature10_pos_y_q4,
                 entry.creature10_hp_q4,
-                entry.creature10_hitbox_q4,
+                entry.creature10_lifecycle_stage_q4,
                 if (entry.creature12_active) "true" else "false",
                 entry.creature12_pos_x_q4,
                 entry.creature12_pos_y_q4,
                 entry.creature12_hp_q4,
-                entry.creature12_hitbox_q4,
+                entry.creature12_lifecycle_stage_q4,
                 if (entry.creature14_active) "true" else "false",
                 entry.creature14_pos_x_q4,
                 entry.creature14_pos_y_q4,
                 entry.creature14_hp_q4,
-                entry.creature14_hitbox_q4,
+                entry.creature14_lifecycle_stage_q4,
                 entry.creature14_size_q4,
                 entry.creature14_target_x_q4,
                 entry.creature14_target_y_q4,
                 entry.creature14_heading_q6,
                 entry.creature14_target_heading_q6,
+                if (entry.creature18_active) "true" else "false",
+                entry.creature18_pos_x_q4,
+                entry.creature18_pos_y_q4,
+                entry.creature18_hp_q4,
+                entry.creature18_lifecycle_stage_q4,
             },
         );
         try out.print(
-            ",\"creature26_active\":{s},\"creature26_hp_q4\":{d},\"creature26_hitbox_q4\":{d},\"creature26_type_id\":{d},\"creature26_flags\":{d},\"creature26_link_index\":{d},\"creature26_ai_mode\":{d},\"debug_pending_nuke\":{d},\"debug_nuke_kills_last\":{d},\"debug_nuke_tick_last\":{d},\"debug_nuke_kill_index_sum\":{d},\"debug_last_picked_bonus_id\":{d},\"debug_last_picked_bonus_amount\":{d}}}\n",
+            ",\"creature18_target_x_q4\":{d},\"creature18_target_y_q4\":{d},\"creature18_heading_q6\":{d},\"creature18_target_heading_q6\":{d},\"creature18_type_id\":{d},\"creature18_flags\":{d},\"creature18_link_index\":{d},\"creature18_ai_mode\":{d}",
+            .{
+                entry.creature18_target_x_q4,
+                entry.creature18_target_y_q4,
+                entry.creature18_heading_q6,
+                entry.creature18_target_heading_q6,
+                entry.creature18_type_id,
+                entry.creature18_flags,
+                entry.creature18_link_index,
+                entry.creature18_ai_mode,
+            },
+        );
+        try out.print(
+            ",\"creature15_active\":{s},\"creature15_pos_x_q4\":{d},\"creature15_pos_y_q4\":{d},\"creature15_hp_q4\":{d},\"creature15_lifecycle_stage_q4\":{d}",
+            .{
+                if (entry.creature15_active) "true" else "false",
+                entry.creature15_pos_x_q4,
+                entry.creature15_pos_y_q4,
+                entry.creature15_hp_q4,
+                entry.creature15_lifecycle_stage_q4,
+            },
+        );
+        try out.print(
+            ",\"creature26_active\":{s},\"creature26_hp_q4\":{d},\"creature26_lifecycle_stage_q4\":{d},\"creature26_type_id\":{d},\"creature26_flags\":{d},\"creature26_link_index\":{d},\"creature26_ai_mode\":{d},\"creature31_active\":{s},\"creature31_hp_q4\":{d},\"creature31_lifecycle_stage_q4\":{d},\"creature32_active\":{s},\"creature32_pos_x_q4\":{d},\"creature32_pos_y_q4\":{d},\"creature32_hp_q4\":{d},\"creature32_lifecycle_stage_q4\":{d},\"creature32_type_id\":{d},\"creature32_flags\":{d},\"creature32_heading_q6\":{d},\"creature32_target_heading_q6\":{d},\"creature32_target_x_q4\":{d},\"creature32_target_y_q4\":{d},\"creature32_link_index\":{d},\"creature32_ai_mode\":{d}",
             .{
                 if (entry.creature26_active) "true" else "false",
                 entry.creature26_hp_q4,
-                entry.creature26_hitbox_q4,
+                entry.creature26_lifecycle_stage_q4,
                 entry.creature26_type_id,
                 entry.creature26_flags,
                 entry.creature26_link_index,
                 entry.creature26_ai_mode,
+                if (entry.creature31_active) "true" else "false",
+                entry.creature31_hp_q4,
+                entry.creature31_lifecycle_stage_q4,
+                if (entry.creature32_active) "true" else "false",
+                entry.creature32_pos_x_q4,
+                entry.creature32_pos_y_q4,
+                entry.creature32_hp_q4,
+                entry.creature32_lifecycle_stage_q4,
+                entry.creature32_type_id,
+                entry.creature32_flags,
+                entry.creature32_heading_q6,
+                entry.creature32_target_heading_q6,
+                entry.creature32_target_x_q4,
+                entry.creature32_target_y_q4,
+                entry.creature32_link_index,
+                entry.creature32_ai_mode,
+            },
+        );
+        try out.print(
+            ",\"creature39_active\":{s},\"creature39_hp_q4\":{d},\"creature39_lifecycle_stage_q4\":{d},\"creature39_type_id\":{d},\"creature39_flags\":{d},\"creature39_link_index\":{d},\"creature39_ai_mode\":{d},\"creature45_active\":{s},\"creature45_pos_x_q4\":{d},\"creature45_pos_y_q4\":{d},\"creature45_hp_q4\":{d},\"creature45_lifecycle_stage_q4\":{d},\"debug_pending_nuke\":{d},\"debug_nuke_kills_last\":{d},\"debug_nuke_tick_last\":{d},\"debug_nuke_kill_index_sum\":{d},\"debug_last_picked_bonus_id\":{d},\"debug_last_picked_bonus_amount\":{d}}}\n",
+            .{
+                if (entry.creature39_active) "true" else "false",
+                entry.creature39_hp_q4,
+                entry.creature39_lifecycle_stage_q4,
+                entry.creature39_type_id,
+                entry.creature39_flags,
+                entry.creature39_link_index,
+                entry.creature39_ai_mode,
+                if (entry.creature45_active) "true" else "false",
+                entry.creature45_pos_x_q4,
+                entry.creature45_pos_y_q4,
+                entry.creature45_hp_q4,
+                entry.creature45_lifecycle_stage_q4,
                 entry.debug_pending_nuke,
                 entry.debug_nuke_kills_last,
                 entry.debug_nuke_tick_last,
@@ -424,6 +680,28 @@ fn writeJsonString(writer: anytype, value: []const u8) !void {
         }
     }
     try writer.writeByte('"');
+}
+
+fn sha256HexAlloc(allocator: std.mem.Allocator, bytes: []const u8) ![]u8 {
+    var digest: [32]u8 = undefined;
+    std.crypto.hash.sha2.Sha256.hash(bytes, &digest, .{});
+
+    const out = try allocator.alloc(u8, 64);
+    for (digest, 0..) |byte, idx| {
+        out[idx * 2] = hex[(byte >> 4) & 0x0f];
+        out[idx * 2 + 1] = hex[byte & 0x0f];
+    }
+    return out;
+}
+
+fn writeFileWithParents(path: []const u8, bytes: []const u8) !void {
+    if (std.fs.path.dirname(path)) |dir| {
+        if (dir.len > 0) try std.fs.cwd().makePath(dir);
+    }
+    try std.fs.cwd().writeFile(.{
+        .sub_path = path,
+        .data = bytes,
+    });
 }
 
 fn buildReplayNotFoundOutput(
