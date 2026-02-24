@@ -120,7 +120,7 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     creature.hp = 100.0
     creature.pos = Vec2()
     creature.size = 50.0
-    creature.hitbox_size = 16.0
+    creature.lifecycle_stage = 16.0
 
     dt = 0.016
     pool.update(dt, creatures=[creature], fx_queue=fx_queue, sprite_effects=sprite_effects)

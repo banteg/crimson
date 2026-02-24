@@ -15,7 +15,7 @@ def test_perks_update_effects_jinxed_kills_creature_and_awards_base_reward() -> 
     creatures = [CreatureState() for _ in range(0x17F)]
     creatures[2].active = True
     creatures[2].hp = 100.0
-    creatures[2].hitbox_size = 16.0
+    creatures[2].lifecycle_stage = 16.0
     creatures[2].reward_value = 12.7
 
     state = GameplayState()
@@ -35,7 +35,7 @@ def test_perks_update_effects_jinxed_kills_creature_and_awards_base_reward() -> 
 
     assert_float_close(state.jinxed_timer, 1.8)
     assert creatures[2].hp == -1.0
-    assert_float_close(creatures[2].hitbox_size, 16.0 - dt * 20.0)
+    assert_float_close(creatures[2].lifecycle_stage, 16.0 - dt * 20.0)
     assert player.experience == 112
     assert state.sfx_queue == ["sfx_trooper_inpain_01"]
 
@@ -45,7 +45,7 @@ def test_perks_update_effects_jinxed_award_uses_float32_sum_before_truncation() 
     creatures = [CreatureState() for _ in range(0x17F)]
     creatures[2].active = True
     creatures[2].hp = 100.0
-    creatures[2].hitbox_size = 16.0
+    creatures[2].lifecycle_stage = 16.0
     creatures[2].reward_value = 97.99636190476191
 
     state = GameplayState()
@@ -152,7 +152,7 @@ def test_perks_update_effects_jinxed_default_uses_full_384_slot_pool() -> None:
     creatures = [CreatureState() for _ in range(0x180)]
     creatures[0x17F].active = True
     creatures[0x17F].hp = 100.0
-    creatures[0x17F].hitbox_size = 16.0
+    creatures[0x17F].lifecycle_stage = 16.0
     creatures[0x17F].reward_value = 12.7
 
     state = GameplayState(preserve_bugs=False)
@@ -180,7 +180,7 @@ def test_perks_update_effects_jinxed_preserve_bugs_keeps_383_slot_rolls() -> Non
     creatures = [CreatureState() for _ in range(0x180)]
     creatures[0x17F].active = True
     creatures[0x17F].hp = 100.0
-    creatures[0x17F].hitbox_size = 16.0
+    creatures[0x17F].lifecycle_stage = 16.0
     creatures[0x17F].reward_value = 12.7
 
     state = GameplayState(preserve_bugs=True)

@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from grim.geom import Vec2
 
 from ...creatures.damage_types import CreatureDamageType
+from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...creatures.spawn import CreatureFlags
 from ...math_parity import f32
 from ...weapons import weapon_entry_for_projectile_type_id
@@ -105,7 +106,7 @@ def _linger_ion_minigun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
     for creature_idx, creature in enumerate(ctx.creatures):
         if not creature.active:
             continue
-        if creature.hitbox_size <= 5.0:
+        if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
             continue
         creature_radius = _hit_radius_for(creature)
         hit_r = radius + creature_radius
@@ -128,7 +129,7 @@ def _linger_ion_rifle(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
     for creature_idx, creature in enumerate(ctx.creatures):
         if not creature.active:
             continue
-        if creature.hitbox_size <= 5.0:
+        if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
             continue
         creature_radius = _hit_radius_for(creature)
         hit_r = radius + creature_radius
@@ -151,7 +152,7 @@ def _linger_ion_cannon(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
     for creature_idx, creature in enumerate(ctx.creatures):
         if not creature.active:
             continue
-        if creature.hitbox_size <= 5.0:
+        if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
             continue
         creature_radius = _hit_radius_for(creature)
         hit_r = radius + creature_radius

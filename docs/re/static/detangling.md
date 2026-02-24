@@ -1277,7 +1277,7 @@ See [Creature pool struct](../../creatures/struct.md) for the expanded field map
     `particle_pool` (`DAT_00493eb8`, `0x38` stride).
 
 - `FUN_00420600` -> `creatures_apply_radius_damage`
-  - Evidence: loops active creatures with `hitbox_size > 5.0`, checks distance vs radius + size, and calls creature_apply_damage (`FUN_004207c0`) (no health gate).
+  - Evidence: loops active creatures with `lifecycle_stage > 5.0`, checks distance vs radius + size, and calls creature_apply_damage (`FUN_004207c0`) (no health gate).
 - `FUN_004206a0` -> `creature_find_in_radius`
   - Evidence: returns the first creature index within `radius` starting at `start_index` (or `-1`).
 - `FUN_00420730` -> `player_find_in_radius`

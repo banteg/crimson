@@ -5,6 +5,7 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl
 
+from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...perks import PerkId
 from ...perks.helpers import perk_active
@@ -218,7 +219,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             for creature in renderer.creatures.entries[1:]:
                 if not creature.active:
                     continue
-                if float(creature.hitbox_size) <= 5.0:
+                if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
                     continue
                 d = ctx.pos.distance_to(creature.pos)
                 threshold = float(creature.size) * 0.14285715 + 3.0

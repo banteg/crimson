@@ -97,7 +97,7 @@ def _allow_capture_sample_creature_count(
 
     # Some captures sample creature slots before render-time corpse culling.
     # In those ticks, sampled active count can exceed replay by exactly one when a
-    # corpse is already below the native despawn threshold (< -10.0 hitbox_size).
+    # corpse is already below the native despawn threshold (< -10.0 lifecycle_stage).
     if (
         expected_count == int(sample_count)
         and actual_count == int(sample_count) - 1
@@ -185,7 +185,7 @@ def _capture_active_corpse_below_despawn_ticks(capture: CaptureFile) -> set[int]
                 continue
             if float(creature.hp) > 0.0:
                 continue
-            if float(creature.hitbox_size) < -10.0:
+            if float(creature.lifecycle_stage) < -10.0:
                 out.add(int(tick_index))
                 break
     return out

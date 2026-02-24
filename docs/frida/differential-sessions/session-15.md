@@ -30,7 +30,7 @@ tags:
 ### Landed Changes
 
 - `src/crimson/bonuses/freeze.py`
-  - added corpse hard-despawn gate (`_CORPSE_DESPAWN_HITBOX = -10.0`) to stop replay-only freeze FX work on already-despawned corpses.
+  - added corpse hard-despawn gate (`_CORPSE_DESPAWN_LIFECYCLE = -10.0`) to stop replay-only freeze FX work on already-despawned corpses.
 - `src/crimson/projectiles/runtime/collision.py`
   - added `_NATIVE_FIND_RADIUS_MARGIN_EPS = 0.001` to stabilize native-style find-radius branch parity under tiny float drift.
 - `src/crimson/original/focus_trace.py`

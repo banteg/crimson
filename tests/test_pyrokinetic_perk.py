@@ -21,7 +21,7 @@ def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps
     creature = CreatureState()
     creature.active = True
     creature.pos = Vec2(100.0, 200.0)
-    creature.hitbox_size = 16.0
+    creature.lifecycle_stage = 16.0
     creature.collision_timer = 0.1
 
     fx_queue = FxQueue(capacity=8, max_count=8)
@@ -50,7 +50,7 @@ def test_perks_update_effects_pyrokinetic_uses_f32_timer_threshold_before_wrappi
     creature = CreatureState()
     creature.active = True
     creature.pos = Vec2(100.0, 200.0)
-    creature.hitbox_size = 16.0
+    creature.lifecycle_stage = 16.0
     creature.collision_timer = 0.034000009298324585
 
     fx_queue = FxQueue(capacity=8, max_count=8)
@@ -90,7 +90,7 @@ def test_perks_update_effects_pyrokinetic_defaults_to_first_alive_player_aim() -
     creature = CreatureState()
     creature.active = True
     creature.pos = Vec2(100.0, 200.0)
-    creature.hitbox_size = 16.0
+    creature.lifecycle_stage = 16.0
     creature.collision_timer = 0.1
 
     fx_queue = FxQueue(capacity=8, max_count=8)
@@ -112,7 +112,7 @@ def test_perks_update_effects_pyrokinetic_preserve_bugs_keeps_player0_only_targe
     creature = CreatureState()
     creature.active = True
     creature.pos = Vec2(100.0, 200.0)
-    creature.hitbox_size = 16.0
+    creature.lifecycle_stage = 16.0
     creature.collision_timer = 0.1
 
     fx_queue = FxQueue(capacity=8, max_count=8)
@@ -137,13 +137,13 @@ def test_perks_update_effects_pyrokinetic_default_targets_all_alive_players() ->
     creature0 = CreatureState()
     creature0.active = True
     creature0.pos = Vec2(100.0, 200.0)
-    creature0.hitbox_size = 16.0
+    creature0.lifecycle_stage = 16.0
     creature0.collision_timer = 0.1
 
     creature1 = CreatureState()
     creature1.active = True
     creature1.pos = Vec2(140.0, 200.0)
-    creature1.hitbox_size = 16.0
+    creature1.lifecycle_stage = 16.0
     creature1.collision_timer = 0.1
 
     fx_queue = FxQueue(capacity=16, max_count=16)

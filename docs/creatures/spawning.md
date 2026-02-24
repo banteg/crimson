@@ -43,7 +43,7 @@ For the pure, unit-testable model we use while porting templates, see: [`spawn_p
   - `ai_mode = 0`, `pos_xy`, `vel_xy = 0`
   - `active = 1`, `state_flag = 1`
   - collision defaults (`collision_flag = 0`, `collision_timer = 0`)
-  - `hitbox_size = 16`, `attack_cooldown = 0`
+  - `lifecycle_stage = 16`, `attack_cooldown = 0`
 - Seeds a transient random heading early: `crt_rand() % 0x13a * 0.01`.
 - If `heading == -100.0`, randomizes the final heading: `crt_rand() % 0x274 * 0.01`.
 - `creature_alloc_slot()` itself consumes RNG to seed per-creature defaults (notably `phase_seed`).

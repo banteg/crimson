@@ -8,10 +8,10 @@ from grim.color import RGBA
 from grim.geom import Vec2
 
 from ...creatures.damage_types import CreatureDamageType
+from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...effects_atlas import EffectId
 from ...math_parity import f32
 from ..types import (
-    _CREATURE_HITBOX_ALIVE,
     SECONDARY_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
     FxQueueLike,
@@ -156,7 +156,7 @@ class SecondaryProjectilePool:
         def _creature_is_collidable(creature: CreatureState) -> bool:
             if not creature.active:
                 return False
-            return float(creature.hitbox_size) > 5.0
+            return creature_lifecycle_is_collidable(creature.lifecycle_stage)
 
         creature_spatial = CreatureSpatialHash(creatures=creatures, is_collidable=_creature_is_collidable)
 
@@ -295,7 +295,7 @@ class SecondaryProjectilePool:
             if hit_idx is not None:
                 if runtime_state is not None:
                     owner_id = int(entry.owner_id)
-                    if owner_id < 0 and float(creatures[int(hit_idx)].hitbox_size) == _CREATURE_HITBOX_ALIVE:
+                    if owner_id < 0 and creature_lifecycle_is_alive(creatures[int(hit_idx)].lifecycle_stage):
                         shots_hit = runtime_state.shots_hit
                         player_index = 0 if owner_id == -100 else (-1 - owner_id)
                         if 0 <= player_index < len(shots_hit):

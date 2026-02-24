@@ -43,6 +43,12 @@ from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import weapon_entry_for_projectile_type_id
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .damage_types import CreatureDamageType
+from .lifecycle import (
+    CREATURE_LIFECYCLE_ALIVE,
+    CreatureLifecyclePhase,
+    classify_creature_lifecycle,
+    creature_lifecycle_is_alive,
+)
 from .spawn import (
     HAS_SPAWN_SLOT_FLAG,
     RANDOM_HEADING_SENTINEL,
@@ -79,15 +85,13 @@ CREATURE_SPEED_SCALE = 30.0
 # Base heading turn rate multiplier (angle_approach clamps by frame_dt internally).
 CREATURE_TURN_RATE_SCALE = NATIVE_TURN_RATE_SCALE
 
-# Native uses hitbox_size as a lifecycle sentinel:
+# Native uses lifecycle_stage as a lifecycle sentinel:
 # - 16.0 means "alive" (normal AI/movement/anim update)
 # - once HP <= 0 it ramps down quickly and drives death slide + corpse decal timing.
-# - final deactivation (`hitbox_size < -10.0`) happens during render (creature_render_type),
+# - final deactivation (`lifecycle_stage < -10.0`) happens during render (creature_render_type),
 #   not during creature_update_all.
-CREATURE_HITBOX_ALIVE = 16.0
 CREATURE_DEATH_TIMER_DECAY = 28.0
 CREATURE_CORPSE_FADE_DECAY = 20.0
-CREATURE_CORPSE_DESPAWN_HITBOX = -10.0
 CREATURE_DEATH_SLIDE_SCALE = 9.0
 _TARGET_REEVAL_PERIOD = 0x46
 _FLAG_SELF_DAMAGE_TICK = int(CreatureFlags.SELF_DAMAGE_TICK)
@@ -276,7 +280,7 @@ class CreatureState:
     # Plaguebearer infection state (native: `collision_flag` byte).
     plague_infected: bool = False
     collision_timer: float = CONTACT_DAMAGE_PERIOD
-    hitbox_size: float = CREATURE_HITBOX_ALIVE
+    lifecycle_stage: float = CREATURE_LIFECYCLE_ALIVE
 
     # Presentation.
     size: float = 50.0
@@ -416,7 +420,7 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
 def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     creature = ctx.creature
     ctx.contact_dist_sq = Vec2.distance_sq(creature.pos, ctx.player.pos)
-    if creature.hitbox_size != CREATURE_HITBOX_ALIVE:
+    if not creature_lifecycle_is_alive(creature.lifecycle_stage):
         return
     if float(creature.size) <= 16.0:
         return
@@ -549,7 +553,7 @@ def _creature_interaction_contact_kill_small(ctx: _CreatureInteractionCtx) -> No
     """Kill small creatures that make contact, matching native `creature_update_all`.
 
     Native logic (see decompile around 0x004276d6) sets `health = 0.0` and
-    decrements hitbox_size by frame_dt whenever:
+    decrements lifecycle_stage by frame_dt whenever:
     - distance to the target player is < 30.0, and
     - creature `size` is <= 30.0.
 
@@ -558,7 +562,7 @@ def _creature_interaction_contact_kill_small(ctx: _CreatureInteractionCtx) -> No
     """
 
     creature = ctx.creature
-    if creature.hitbox_size != CREATURE_HITBOX_ALIVE:
+    if not creature_lifecycle_is_alive(creature.lifecycle_stage):
         return
     if ctx.contact_dist_sq >= 30.0 * 30.0:
         return
@@ -566,7 +570,7 @@ def _creature_interaction_contact_kill_small(ctx: _CreatureInteractionCtx) -> No
         return
 
     creature.hp = 0.0
-    creature.hitbox_size = f32(float(creature.hitbox_size) - float(ctx.dt))
+    creature.lifecycle_stage = f32(float(creature.lifecycle_stage) - float(ctx.dt))
     ctx.skip_creature = True
 
 
@@ -974,7 +978,7 @@ class CreaturePool:
             if float(state.bonuses.freeze) > 0.0:
                 continue
 
-            if creature.hitbox_size != CREATURE_HITBOX_ALIVE or creature.hp <= 0.0:
+            if not creature_lifecycle_is_alive(creature.lifecycle_stage) or creature.hp <= 0.0:
                 _apply_self_damage_tick(idx, creature)
                 # Native still ticks AI7 link-timer state (and its RNG draws) for
                 # dead creatures inside `creature_update_all`.
@@ -984,8 +988,8 @@ class CreaturePool:
                     and (int(creature.flags) & _FLAG_AI7_LINK_TIMER) != 0
                 ):
                     creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
-                if creature.hitbox_size == CREATURE_HITBOX_ALIVE:
-                    creature.hitbox_size = f32(float(creature.hitbox_size) - float(dt))
+                if creature_lifecycle_is_alive(creature.lifecycle_stage):
+                    creature.lifecycle_stage = f32(float(creature.lifecycle_stage) - float(dt))
                 if dt > 0.0:
                     self._tick_dead(
                         creature,
@@ -1194,7 +1198,7 @@ class CreaturePool:
                                 radioactive_player.experience = int(
                                     float(radioactive_player.experience) + float(creature.reward_value),
                                 )
-                                creature.hitbox_size -= float(dt)
+                                creature.lifecycle_stage -= float(dt)
 
             if (not frozen_by_evil_eyes) and (
                 creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)
@@ -1345,9 +1349,9 @@ class CreaturePool:
         )
 
         if keep_corpse:
-            # Native `creature_handle_death` always decrements hitbox_size by
+            # Native `creature_handle_death` always decrements lifecycle_stage by
             # frame_dt for corpse-keeping deaths, independent of current value.
-            creature.hitbox_size = float(creature.hitbox_size) - float(dt)
+            creature.lifecycle_stage = float(creature.lifecycle_stage) - float(dt)
         else:
             creature.active = False
 
@@ -1430,7 +1434,7 @@ class CreaturePool:
 
         entry.plague_infected = False
         entry.collision_timer = 0.0
-        entry.hitbox_size = CREATURE_HITBOX_ALIVE
+        entry.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
         entry.hit_flash_timer = 0.0
         entry.anim_phase = 0.0
         entry.last_hit_owner_id = -100
@@ -1454,19 +1458,19 @@ class CreaturePool:
         detail_preset: int = 5,
         fx_toggle: int = 0,
     ) -> None:
-        """Advance the post-death hitbox_size ramp and queue corpse decals.
+        """Advance the post-death lifecycle_stage ramp and queue corpse decals.
 
-        This matches the `hitbox_size` death staging inside `creature_update_all`:
-        - while hitbox_size > 0: decrement quickly and slide backwards
-        - once hitbox_size <= 0: queue a corpse decal and fade out until < -10, then deactivate.
+        This matches the `lifecycle_stage` death staging inside `creature_update_all`:
+        - while lifecycle_stage > 0: decrement quickly and slide backwards
+        - once lifecycle_stage <= 0: queue a corpse decal and fade out until < -10, then deactivate.
         """
 
         if dt <= 0.0:
             return
 
-        hitbox = f32(float(creature.hitbox_size))
+        hitbox = f32(float(creature.lifecycle_stage))
         if hitbox <= 0.0:
-            creature.hitbox_size = f32(hitbox - f32(float(dt) * CREATURE_CORPSE_FADE_DECAY))
+            creature.lifecycle_stage = f32(hitbox - f32(float(dt) * CREATURE_CORPSE_FADE_DECAY))
             return
 
         long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (
@@ -1474,7 +1478,7 @@ class CreaturePool:
         ) != 0
 
         new_hitbox = f32(hitbox - f32(float(dt) * CREATURE_DEATH_TIMER_DECAY))
-        creature.hitbox_size = f32(new_hitbox)
+        creature.lifecycle_stage = f32(new_hitbox)
         if new_hitbox > 0.0:
             if long_strip:
                 slide = f32(new_hitbox * f32(float(dt)) * f32(CREATURE_DEATH_SLIDE_SCALE))
@@ -1491,7 +1495,7 @@ class CreaturePool:
                 creature.vel = Vec2()
             return
 
-        # hitbox_size just crossed <= 0: bake a persistent corpse decal into the ground.
+        # lifecycle_stage just crossed <= 0: bake a persistent corpse decal into the ground.
         if fx_queue_rotated is not None:
             corpse_size = max(1.0, float(creature.size))
             # Native uses a special fallback corpse id for ping-pong strip creatures.
@@ -1504,7 +1508,7 @@ class CreaturePool:
                 creature_type_id=corpse_type_id,
             )
             if not ok:
-                creature.hitbox_size = 0.001
+                creature.lifecycle_stage = 0.001
                 return
 
         self.kill_count += 1
@@ -1532,7 +1536,7 @@ class CreaturePool:
     def finalize_post_render_lifecycle(self) -> None:
         """Mirror render-time corpse culling from native `creature_render_type`.
 
-        Native deactivates entries only after draw once `hitbox_size < -10.0`. Keeping
+        Native deactivates entries only after draw once `lifecycle_stage < -10.0`. Keeping
         this outside `creature_update_all` preserves slot-allocation timing for same-tick
         survival/rush spawns.
         """
@@ -1540,7 +1544,7 @@ class CreaturePool:
         for creature in self._entries:
             if not creature.active:
                 continue
-            if float(creature.hitbox_size) >= CREATURE_CORPSE_DESPAWN_HITBOX:
+            if classify_creature_lifecycle(creature.lifecycle_stage) != CreatureLifecyclePhase.DESPAWNED:
                 continue
             if creature.spawn_slot_index is not None:
                 self._disable_spawn_slot(int(creature.spawn_slot_index))
@@ -1573,7 +1577,7 @@ class CreaturePool:
                 child.size = float(child.size) - 8.0
                 child.move_speed = float(child.move_speed) + 0.1
                 child.contact_damage = float(child.contact_damage) * 0.7
-                child.hitbox_size = CREATURE_HITBOX_ALIVE
+                child.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
                 self._entries[child_idx] = child
                 self.spawned_count += 1
 

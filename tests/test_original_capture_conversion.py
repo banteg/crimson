@@ -1516,7 +1516,7 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(
         ai_mode=3,
         link_index=0,
         hp=200.0,
-        hitbox_size=16.0,
+        lifecycle_stage=16.0,
         orbit_angle=0.25,
         orbit_radius=0.5,
         flags=12,
@@ -1562,7 +1562,7 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(
     assert row.ai_mode == 3
     assert row.link_index == 0
     assert_float_close(row.hp, 200.0)
-    assert_float_close(row.hitbox_size, 16.0)
+    assert_float_close(row.lifecycle_stage, 16.0)
     assert_float_close(row.orbit_angle, 0.25)
     assert_float_close(row.orbit_radius, 0.5)
     assert row.flags == 12

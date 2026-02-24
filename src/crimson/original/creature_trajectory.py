@@ -130,7 +130,7 @@ def _read_capture_creature_samples(
                 "active": int(row.active),
                 "target_player": int(row.target_player),
                 "hp": float(row.hp),
-                "hitbox_size": float(row.hitbox_size),
+                "lifecycle_stage": float(row.lifecycle_stage),
                 "collision_flag": int(row.collision_flag),
                 "state_flag": int(row.state_flag),
                 "heading": (0.0 if row.heading is None else float(row.heading)),
@@ -542,7 +542,7 @@ def trace_creature_trajectory(
             cap_active = bool(int(sample["active"]) != 0)
             cap_target_player = int(sample["target_player"])
             cap_hp = float(sample["hp"])
-            cap_hitbox = float(sample["hitbox_size"])
+            cap_hitbox = float(sample["lifecycle_stage"])
             cap_collision_flag = int(sample["collision_flag"])
             cap_state_flag = int(sample["state_flag"])
             cap_heading = float(sample["heading"])
@@ -567,8 +567,8 @@ def trace_creature_trajectory(
                     rw_hp=float(creature.hp),
                     hp_delta=float(creature.hp) - cap_hp,
                     cap_hitbox=cap_hitbox,
-                    rw_hitbox=float(creature.hitbox_size),
-                    hitbox_delta=float(creature.hitbox_size) - cap_hitbox,
+                    rw_hitbox=float(creature.lifecycle_stage),
+                    hitbox_delta=float(creature.lifecycle_stage) - cap_hitbox,
                     cap_collision_flag=cap_collision_flag,
                     cap_state_flag=cap_state_flag,
                     rw_plague_infected=bool(creature.plague_infected),

@@ -63,7 +63,7 @@ def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None
         state=state,
     )
 
-    corpse = _creature(pos=Vec2(22.0, 0.0), hitbox_size=8.0)
+    corpse = _creature(pos=Vec2(22.0, 0.0), lifecycle_stage=8.0)
     hits = state.projectiles.update(
         0.1,
         [corpse],
@@ -87,7 +87,7 @@ def test_secondary_projectile_direct_hit_increments_shots_hit_for_alive_targets(
         type_id=int(SecondaryProjectileTypeId.ROCKET),
         owner_id=-100,
     )
-    creatures = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0, hitbox_size=16.0)]
+    creatures = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=16.0)]
 
     state.secondary_projectiles.update_pulse_gun(0.1, creatures, runtime_state=state)
 
@@ -102,7 +102,7 @@ def test_secondary_projectile_direct_hit_on_corpse_does_not_increment_shots_hit(
         type_id=int(SecondaryProjectileTypeId.ROCKET),
         owner_id=-100,
     )
-    creatures = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0, hitbox_size=12.0)]
+    creatures = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=12.0)]
 
     state.secondary_projectiles.update_pulse_gun(0.1, creatures, runtime_state=state)
 

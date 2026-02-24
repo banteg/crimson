@@ -4,8 +4,8 @@
 // mapping back to a creature pool index.
 //
 // This is useful for validating death staging visuals:
-//   - frame selection while hitbox_size ramps down (16..0)
-//   - shadow-pass alpha vs main-pass alpha when hitbox_size goes negative
+//   - frame selection while lifecycle_stage ramps down (16..0)
+//   - shadow-pass alpha vs main-pass alpha when lifecycle_stage goes negative
 //
 // Usage (attach, VM):
 //   frida -n crimsonland.exe -l C:\share\frida\creature_render_trace.js
@@ -15,7 +15,7 @@
 //
 // Env overrides:
 //   CRIMSON_RENDER_TYPE_ID=2            # only log when creature_render_type(type_id) == 2
-//   CRIMSON_RENDER_ONLY_DYING=1         # default true: only hitbox_size < 16.0
+//   CRIMSON_RENDER_ONLY_DYING=1         # default true: only lifecycle_stage < 16.0
 //   CRIMSON_RENDER_MAX_EVENTS=0         # 0 = unlimited
 //   CRIMSON_RENDER_MATCH_EPS=0.75       # max per-field abs diff for draw->creature matching
 
@@ -301,7 +301,7 @@ function predictFrameAndAlpha({ passId, creature, typeInfo }) {
   }
 
   if (passId === 5 && hitbox != null && hitbox < 0.0 && alpha != null) {
-    // Main-pass corpse fade always uses hitbox_size * 0.1 (for both strip modes).
+    // Main-pass corpse fade always uses lifecycle_stage * 0.1 (for both strip modes).
     // Long-strip corpse uses 0.5 only in the shadow pass.
     alpha = (tintA != null ? tintA : alpha) + hitbox * 0.1;
     if (alpha < 0.0) alpha = 0.0;

@@ -8,11 +8,11 @@ from typing import TYPE_CHECKING
 from grim.geom import Vec2
 
 from ...creatures.damage_types import CreatureDamageType
+from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...math_parity import NATIVE_HALF_PI, f32
 from ...perks import PerkId
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..types import (
-    _CREATURE_HITBOX_ALIVE,
     MAIN_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
     Projectile,
@@ -207,7 +207,7 @@ class ProjectilePool:
         def _creature_is_collidable(creature: CreatureState) -> bool:
             if not creature.active:
                 return False
-            if creature.hitbox_size <= 5.0:
+            if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
                 return False
             return True
 
@@ -380,7 +380,7 @@ class ProjectilePool:
 
                     if runtime_state is not None:
                         owner_id = int(proj.owner_id)
-                        if owner_id < 0 and float(creature.hitbox_size) == _CREATURE_HITBOX_ALIVE:
+                        if owner_id < 0 and creature_lifecycle_is_alive(creature.lifecycle_stage):
                             shots_hit = runtime_state.shots_hit
                             player_index = 0 if owner_id == -100 else (-1 - owner_id)
                             if 0 <= player_index < len(shots_hit):

@@ -327,7 +327,7 @@ class TypoShooterMode(BaseGameplayMode):
                 continue
 
             label_alpha = 1.0
-            hitbox = float(creature.hitbox_size)
+            hitbox = float(creature.lifecycle_stage)
             if hitbox < 0.0:
                 label_alpha = max(0.0, min(1.0, (hitbox + 10.0) * 0.1))
             if label_alpha <= 1e-3:

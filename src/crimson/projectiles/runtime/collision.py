@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
 
-from ..types import _CREATURE_HITBOX_ALIVE, CreatureDamageApplier
+from ...creatures.lifecycle import creature_lifecycle_is_alive
+from ..types import CreatureDamageApplier
 
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
@@ -57,7 +58,7 @@ def _creature_find_nearest_for_secondary(*, creatures: Sequence[CreatureState], 
         creature = creatures[idx]
         if not creature.active:
             continue
-        if float(creature.hitbox_size) != _CREATURE_HITBOX_ALIVE:
+        if not creature_lifecycle_is_alive(creature.lifecycle_stage):
             continue
         dist_sq = Vec2.distance_sq(origin, creature.pos)
         if dist_sq < best_dist_sq:

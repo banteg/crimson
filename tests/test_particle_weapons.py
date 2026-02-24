@@ -121,7 +121,7 @@ def test_particle_hits_damage_creatures() -> None:
     creature.hp = 100.0
     creature.pos = Vec2(16.0, 0.0)
     creature.size = 50.0
-    creature.hitbox_size = 16.0
+    creature.lifecycle_stage = 16.0
 
     state.particles.update(0.016, creatures=[creature])
     assert creature.hp < 100.0
@@ -145,7 +145,7 @@ def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
     creature.hp = 100.0
     creature.pos = Vec2(16.0, 0.0)
     creature.size = 50.0
-    creature.hitbox_size = 16.0
+    creature.lifecycle_stage = 16.0
 
     killed: list[tuple[int, int]] = []
 

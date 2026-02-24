@@ -185,7 +185,7 @@ tags:
 - `src/crimson/original/capture.py`
   - added `capture_creature_spawn_added_head_rows_from_event_payload(...)` to preserve full row objects,
   - retained tuple parser compatibility via `capture_creature_spawn_added_head_from_event_payload(...)`,
-  - expanded emitted quest `added_head` payload rows to carry optional `pos/hp/hitbox_size/orbit_angle/orbit_radius/flags/type_id`.
+  - expanded emitted quest `added_head` payload rows to carry optional `pos/hp/lifecycle_stage/orbit_angle/orbit_radius/flags/type_id`.
 - `src/crimson/sim/driver/replay_events.py`
   - switched quest `creature_spawn` replay handling to full-row parser,
   - applied full optional `added_head` overrides to active creature entries (`pos/heading/target_heading/ai_mode/link_index/hp/hitbox/orbit/flags/type_id`).

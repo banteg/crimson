@@ -1420,7 +1420,7 @@ function readCreatureEntry(index) {
     active: activeFlag,
     state_flag: stateFlag,
     collision_flag: safeReadU8(base.add(0x09)),
-    hitbox_size: captureNumber(safeReadF32(base.add(0x10))),
+    lifecycle_stage: captureNumber(safeReadF32(base.add(0x10))),
     pos: {
       x: captureNumber(safeReadF32(base.add(0x14))),
       y: captureNumber(safeReadF32(base.add(0x18))),
@@ -1471,7 +1471,7 @@ function readCreatureLifecycleEntry(index) {
     state_flag: stateFlag == null ? null : stateFlag,
     type_id: safeReadS32(base.add(0x6c)),
     hp: captureNumber(safeReadF32(base.add(0x24))),
-    hitbox_size: captureNumber(safeReadF32(base.add(0x10))),
+    lifecycle_stage: captureNumber(safeReadF32(base.add(0x10))),
     pos: {
       x: captureNumber(safeReadF32(base.add(0x14))),
       y: captureNumber(safeReadF32(base.add(0x18))),
@@ -1579,7 +1579,7 @@ function _readCreatureMicroState(index) {
     flags: flags,
     link_index: linkIndex,
     target_player: targetPlayer,
-    hitbox_size: captureNumber(hitboxSize),
+    lifecycle_stage: captureNumber(hitboxSize),
     hp: captureNumber(hp),
     force_target: forceTarget,
     ai7_timer_ms: ai7TimerMs,

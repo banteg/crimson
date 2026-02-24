@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
@@ -32,7 +32,7 @@ def test_final_revenge_triggers_explosion_damage_on_death() -> None:
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 10000.0
     creature.max_hp = 10000.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.move_speed = 0.0
     creature.contact_damage = 1.0
     creature.collision_timer = 0.1

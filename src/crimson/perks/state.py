@@ -13,7 +13,7 @@ class CreatureForPerks(Protocol):
     pos: Vec2
     hp: float
     flags: CreatureFlags
-    hitbox_size: float
+    lifecycle_stage: float
     collision_timer: float
     reward_value: float
     size: float

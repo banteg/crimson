@@ -480,7 +480,7 @@ class _FocusRuntime:
                         "active": int(item.active),
                         "type_id": int(item.type_id),
                         "hp": float(item.hp),
-                        "hitbox_size": float(item.hitbox_size),
+                        "lifecycle_stage": float(item.lifecycle_stage),
                         "pos": {"x": float(item.pos.x), "y": float(item.pos.y)},
                     },
                 )

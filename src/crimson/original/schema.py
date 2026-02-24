@@ -292,7 +292,7 @@ class CaptureCreatureLifecycleEntry(msgspec.Struct, forbid_unknown_fields=True):
     state_flag: int | None
     type_id: int | None
     hp: float | None
-    hitbox_size: float | None
+    lifecycle_stage: float | None
     pos: CaptureVec2
     flags: int | None
     link_index: int | None
@@ -781,7 +781,7 @@ class CaptureEventHeadCreatureUpdateMicroState(msgspec.Struct, forbid_unknown_fi
     flags: int | None
     link_index: int | None
     target_player: int | None
-    hitbox_size: float | None
+    lifecycle_stage: float | None
     hp: float | None
     force_target: int | None
     ai7_timer_ms: int | None
@@ -1152,7 +1152,7 @@ class CaptureCreatureSample(msgspec.Struct, forbid_unknown_fields=True):
     active: int
     state_flag: int
     collision_flag: int
-    hitbox_size: float
+    lifecycle_stage: float
     pos: CaptureVec2
     hp: float
     type_id: int

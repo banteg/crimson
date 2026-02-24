@@ -8,7 +8,7 @@ from tests.factories import make_creature_state as _creature
 
 
 def _is_collidable(creature: CreatureState) -> bool:
-    return bool(creature.active) and float(creature.hitbox_size) > 5.0
+    return bool(creature.active) and float(creature.lifecycle_stage) > 5.0
 
 
 def test_creature_spatial_hash_returns_sorted_candidates_across_cells() -> None:

@@ -197,7 +197,7 @@ def main() -> int:
     per_type_pass: dict[str, Any] = {}
     for (type_id, pass_id), stats in sorted(hitbox_stats.items()):
         key = f"type_{type_id}_pass_{pass_id}"
-        per_type_pass[key] = {"hitbox_size": stats.as_dict()}
+        per_type_pass[key] = {"lifecycle_stage": stats.as_dict()}
 
     summary: dict[str, Any] = {
         "events_total": events_total,
