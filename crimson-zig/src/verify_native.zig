@@ -305,6 +305,20 @@ fn writeSurvivalTickTraceJsonl(
             },
         );
         try out.print(
+            ",\"shots_fired_p0\":{d}",
+            .{entry.shots_fired_p0},
+        );
+        try out.print(
+            ",\"bonus_active_count\":{d},\"bonus0_id\":{d},\"bonus0_amount\":{d},\"bonus1_id\":{d},\"bonus1_amount\":{d}",
+            .{
+                entry.bonus_active_count,
+                entry.bonus0_id,
+                entry.bonus0_amount,
+                entry.bonus1_id,
+                entry.bonus1_amount,
+            },
+        );
+        try out.print(
             ",\"projectile_state_hash\":{d}",
             .{entry.projectile_state_hash},
         );
@@ -387,13 +401,14 @@ fn writeSurvivalTickTraceJsonl(
             },
         );
         try out.print(
-            ",\"player_perk31_count\":{d},\"player_perk53_count\":{d},\"player_perk54_count\":{d},\"player_perk55_count\":{d},\"player_hot_tempered_timer_q6\":{d},\"player_man_bomb_timer_q6\":{d},\"player_fire_cough_timer_q6\":{d},\"player_living_fortress_timer_q6\":{d},\"perk_interval_hot_tempered_q6\":{d},\"perk_interval_man_bomb_q6\":{d},\"perk_interval_fire_cough_q6\":{d}",
+            ",\"player_perk31_count\":{d},\"player_perk53_count\":{d},\"player_perk54_count\":{d},\"player_perk55_count\":{d},\"player_hot_tempered_timer_q6\":{d},\"player_shield_timer_q4\":{d},\"player_man_bomb_timer_q6\":{d},\"player_fire_cough_timer_q6\":{d},\"player_living_fortress_timer_q6\":{d},\"perk_interval_hot_tempered_q6\":{d},\"perk_interval_man_bomb_q6\":{d},\"perk_interval_fire_cough_q6\":{d}",
             .{
                 entry.player_perk31_count,
                 entry.player_perk53_count,
                 entry.player_perk54_count,
                 entry.player_perk55_count,
                 entry.player_hot_tempered_timer_q6,
+                entry.player_shield_timer_q4,
                 entry.player_man_bomb_timer_q6,
                 entry.player_fire_cough_timer_q6,
                 entry.player_living_fortress_timer_q6,

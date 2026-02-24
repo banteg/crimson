@@ -12,6 +12,7 @@ const creature_lifecycle_stage_alive: f64 = 16.0;
 const creature_speed_scale: f64 = 30.0;
 const creature_turn_rate_scale: f64 = 1.3333333730697632;
 const contact_damage_cooldown: f64 = 1.0;
+const plague_collision_period: f64 = 0.5;
 const owner_id_player_0: i32 = -100;
 const native_half_pi: f64 = 1.5707963705062866;
 const native_pi: f64 = 3.1415927410125732;
@@ -47,6 +48,8 @@ pub const CreatureState = struct {
     reward_value: f64 = 0.0,
     size: f64 = 0.0,
     contact_damage: f64 = 0.0,
+    plague_infected: bool = false,
+    collision_timer: f64 = plague_collision_period,
     lifecycle_stage: f64 = creature_lifecycle_stage_alive,
     attack_cooldown: f64 = 0.0,
     last_hit_owner_id: i32 = owner_id_player_0,
@@ -122,6 +125,8 @@ pub const CreaturePool = struct {
             .reward_value = asF32F64(init.reward_value),
             .size = asF32F64(init.size),
             .contact_damage = asF32F64(init.contact_damage),
+            .plague_infected = false,
+            .collision_timer = 0.0,
             .lifecycle_stage = creature_lifecycle_stage_alive,
             .attack_cooldown = 0.0,
             .last_hit_owner_id = owner_id_player_0,
@@ -253,7 +258,7 @@ pub const CreaturePool = struct {
                 });
             },
             survival_spawn.SpawnId.spider_sp1_ai7_timer_38 => {
-                _ = self.spawnFromStatsWithFlags(
+                const idx = self.spawnFromStatsWithFlags(
                     rng,
                     .{ .x = call.pos.x, .y = call.pos.y },
                     call.heading,
@@ -268,6 +273,7 @@ pub const CreaturePool = struct {
                     survival_spawn.CreatureFlags.ai7_link_timer,
                     true,
                 );
+                self.entries[idx].link_index = 0;
                 _ = rng.rand() % 314;
             },
             else => return error.UnsupportedSpawnTemplate,
@@ -303,7 +309,29 @@ pub const CreaturePool = struct {
 
             tickAi7LinkTimer(creature, dt_ms, &state.rng);
             creatureAiUpdateTarget(creature, player.pos, self.entries[0..], dt);
-            if (state.bonuses.energizer > 0.0 and creature.max_hp < 500.0) {
+            if (creature.plague_infected) {
+                creature.collision_timer -= dt;
+                if (creature.collision_timer < 0.0) {
+                    creature.collision_timer += plague_collision_period;
+                    creature.hp = asF32F64(creature.hp - 15.0);
+                    if (creature.hp < 0.0) {
+                        state.plaguebearer_infection_count += 1;
+                        consumeDeathSideEffectsRng(
+                            state,
+                            players,
+                            bonus_pool,
+                            creature.pos,
+                            world_size,
+                            false,
+                        );
+                        _ = awardExperienceFromReward(state, player, creature.reward_value);
+                        creature.lifecycle_stage = asF32F64(creature.lifecycle_stage - dt);
+                        consumeContactSfxRng(state, creature.type_id);
+                    }
+                    consumeAddRandomRng(state);
+                }
+            }
+            if ((state.bonuses.energizer > 0.0 and creature.max_hp < 500.0) or creature.plague_infected) {
                 creature.target_heading = asF32F64(creature.target_heading + native_pi);
             }
             const turn_rate = asF32F64(creature.move_speed * creature_turn_rate_scale);
@@ -359,12 +387,16 @@ pub const CreaturePool = struct {
                         bonus_pool,
                         creature.pos,
                         world_size,
+                        true,
                     );
                     state.bonus_spawn_guard = prev_spawn_guard;
                     _ = awardExperienceFromReward(state, player, creature.reward_value);
                     creature.active = false;
                     continue;
                 }
+            }
+            if (perkActive(player, perk_id_plaguebearer) and state.plaguebearer_infection_count < 0x3c) {
+                spreadPlagueInfection(self.entries[0..], creature);
             }
 
             if (creature.attack_cooldown <= 0.0) {
@@ -387,6 +419,14 @@ pub const CreaturePool = struct {
                 creature.attack_cooldown = asF32F64(creature.attack_cooldown + contact_damage_cooldown);
             }
 
+            if (state.bonuses.energizer <= 0.0 and
+                player.plaguebearer_active and
+                creature.hp < 150.0 and
+                state.plaguebearer_infection_count < 0x32 and
+                contact_sq < 30.0 * 30.0)
+            {
+                creature.plague_infected = true;
+            }
             if (creature.lifecycle_stage == creature_lifecycle_stage_alive and
                 contact_sq < 30.0 * 30.0 and
                 creature.size <= 30.0)
@@ -611,6 +651,7 @@ pub const CreaturePool = struct {
             bonus_pool,
             creature.pos,
             world_size,
+            true,
         );
         if (dt > 0.0) {
             creature.lifecycle_stage -= dt;
@@ -654,6 +695,7 @@ pub const CreaturePool = struct {
             bonus_pool,
             creature.pos,
             world_size,
+            true,
         );
 
         const owner_player_idx = ownerIdToPlayerIndex(owner_id) orelse 0;
@@ -807,6 +849,7 @@ pub const CreaturePool = struct {
             bonus_pool,
             creature.pos,
             world_size,
+            true,
         );
         if (dt > 0.0) {
             creature.lifecycle_stage -= dt;
@@ -1238,6 +1281,24 @@ fn consumeAddRandomRng(state: *survival_state.GameplayState) void {
     _ = state.rng.rand();
 }
 
+fn spreadPlagueInfection(
+    creatures: []CreatureState,
+    origin: *CreatureState,
+) void {
+    for (creatures) |*target| {
+        if (!target.active) continue;
+        const dist_sq = survival_state.Vec2.sub(target.pos, origin.pos).lengthSq();
+        if (dist_sq >= 45.0 * 45.0) continue;
+        if (target.plague_infected and origin.hp < 150.0) {
+            origin.plague_infected = true;
+        }
+        if (origin.plague_infected and target.hp < 150.0) {
+            target.plague_infected = true;
+        }
+        return;
+    }
+}
+
 fn tickAi7LinkTimer(
     creature: *CreatureState,
     dt_ms: i32,
@@ -1285,6 +1346,7 @@ fn consumeDeathSideEffectsRng(
     bonus_pool: *survival_bonuses.BonusPool,
     death_pos: survival_state.Vec2,
     world_size: f64,
+    plan_death_sfx: bool,
 ) void {
     const spawned_bonus = bonus_pool.trySpawnOnKill(
         .{
@@ -1324,8 +1386,10 @@ fn consumeDeathSideEffectsRng(
         }
         consumeAddRandomRng(state);
     }
-    // plan_death_sfx_keys chooses one death sample per death.
-    _ = state.rng.rand();
+    if (plan_death_sfx) {
+        // plan_death_sfx_keys chooses one death sample per death.
+        _ = state.rng.rand();
+    }
 }
 
 fn tickDead(
@@ -1431,6 +1495,7 @@ fn asF32F64(value: f64) f64 {
 
 const perk_id_bloody_mess_quick_learner: i32 = 1;
 const perk_id_poison_bullets: i32 = 25;
+const perk_id_plaguebearer: i32 = survival_perks.PerkId.plaguebearer;
 const perk_id_uranium_filled_bullets: i32 = survival_perks.PerkId.uranium_filled_bullets;
 const perk_id_doctor: i32 = survival_perks.PerkId.doctor;
 const perk_id_barrel_greaser: i32 = survival_perks.PerkId.barrel_greaser;

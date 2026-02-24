@@ -196,6 +196,7 @@ pub const GameplayState = struct {
     rng: survival_spawn.Crand,
     fx_toggle: i32 = 0,
     bonuses: BonusTimers = .{},
+    plaguebearer_infection_count: i32 = 0,
     time_scale_active: bool = false,
     perk_selection: PerkSelectionState = .{},
     demo_mode_active: bool = false,

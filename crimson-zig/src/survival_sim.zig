@@ -90,6 +90,7 @@ pub const SurvivalTickTrace = struct {
     elapsed_ms: i64,
     score_xp: i32,
     kills: i32,
+    shots_fired_p0: i32,
     creature_count: usize,
     creature_active_index_sum: i32,
     creature_active_index_xor: i32,
@@ -117,6 +118,7 @@ pub const SurvivalTickTrace = struct {
     player_perk54_count: i32,
     player_perk55_count: i32,
     player_hot_tempered_timer_q6: i32,
+    player_shield_timer_q4: i32,
     player_man_bomb_timer_q6: i32,
     player_fire_cough_timer_q6: i32,
     player_living_fortress_timer_q6: i32,
@@ -128,6 +130,11 @@ pub const SurvivalTickTrace = struct {
     bonus_energizer_ms: i32,
     bonus_double_experience_ms: i32,
     bonus_freeze_ms: i32,
+    bonus_active_count: usize,
+    bonus0_id: i32,
+    bonus0_amount: i32,
+    bonus1_id: i32,
+    bonus1_amount: i32,
     projectile_state_hash: u64,
     projectile_count: usize,
     projectile_active_index_sum: i32,
@@ -438,13 +445,13 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             &projectiles,
             dt_sim,
         );
+        const move_mode_for_tick = resolveMoveModeForUpdate(flags, &state);
         updatePlayerFromReplayInput(
             &players[0],
             input,
             flags,
             &state,
             dt_sim,
-            @floatCast(header.world_size),
         );
         survival_weapon_runtime.stepPlayerForTick(
             &state,
@@ -457,11 +464,13 @@ pub fn runSurvivalReplayScaffoldWithTrace(
                 .fire_down = flags.fire_down,
                 .fire_pressed = flags.fire_pressed,
                 .reload_pressed = flags.reload_pressed,
+                .move_mode = move_mode_for_tick,
             },
             dt_sim,
         ) catch |err| switch (err) {
             error.UnsupportedWeaponFirePath => return error.UnsupportedWeaponFirePath,
         };
+        finalizePlayerPostUpdate(&players[0], @floatCast(header.world_size));
         const rng_after_player_update = state.rng.state;
 
         survival_state.survivalUpdateWeaponHandouts(
@@ -543,6 +552,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
                     &state,
                     players[0],
                     &creatures,
+                    &bonuses,
                     &projectiles,
                     projectile_tick_stats,
                     rng_after_perk_effects,
@@ -625,6 +635,7 @@ fn buildTickTrace(
     state: *const survival_state.GameplayState,
     player: survival_state.PlayerState,
     creatures: *const survival_creatures.CreaturePool,
+    bonuses: *const survival_bonuses.BonusPool,
     projectiles: *const survival_projectiles.ProjectilePool,
     projectile_tick_stats: survival_projectiles.ProjectileTickStats,
     rng_after_perk_effects: u32,
@@ -766,6 +777,23 @@ fn buildTickTrace(
         creature_state_hash = hashMix(creature_state_hash, creature.flags);
     }
 
+    var bonus_active_count: usize = 0;
+    var bonus0_id: i32 = 0;
+    var bonus0_amount: i32 = 0;
+    var bonus1_id: i32 = 0;
+    var bonus1_amount: i32 = 0;
+    for (bonuses.entries) |entry| {
+        if (entry.bonus_id == 0) continue;
+        if (bonus_active_count == 0) {
+            bonus0_id = entry.bonus_id;
+            bonus0_amount = entry.amount;
+        } else if (bonus_active_count == 1) {
+            bonus1_id = entry.bonus_id;
+            bonus1_amount = entry.amount;
+        }
+        bonus_active_count += 1;
+    }
+
     return .{
         .tick = tick_index,
         .rng_state = state.rng.state,
@@ -782,6 +810,7 @@ fn buildTickTrace(
         .elapsed_ms = @intFromFloat(@round(elapsed_ms_sim)),
         .score_xp = player.experience,
         .kills = creatures.kill_count,
+        .shots_fired_p0 = if (state.shots_fired.len > 0) state.shots_fired[0] else 0,
         .creature_count = creatures.activeCount(),
         .creature_active_index_sum = creature_active_index_sum,
         .creature_active_index_xor = creature_active_index_xor,
@@ -809,6 +838,7 @@ fn buildTickTrace(
         .player_perk54_count = player.perk_counts[@intCast(survival_perks.PerkId.fire_caugh)],
         .player_perk55_count = player.perk_counts[@intCast(survival_perks.PerkId.living_fortress)],
         .player_hot_tempered_timer_q6 = quantizeQ6(player.hot_tempered_timer),
+        .player_shield_timer_q4 = quantizeQ4(player.shield_timer),
         .player_man_bomb_timer_q6 = quantizeQ6(player.man_bomb_timer),
         .player_fire_cough_timer_q6 = quantizeQ6(player.fire_cough_timer),
         .player_living_fortress_timer_q6 = quantizeQ6(player.living_fortress_timer),
@@ -820,6 +850,11 @@ fn buildTickTrace(
         .bonus_energizer_ms = bonusTimerMs(state.bonuses.energizer),
         .bonus_double_experience_ms = bonusTimerMs(state.bonuses.double_experience),
         .bonus_freeze_ms = bonusTimerMs(state.bonuses.freeze),
+        .bonus_active_count = bonus_active_count,
+        .bonus0_id = bonus0_id,
+        .bonus0_amount = bonus0_amount,
+        .bonus1_id = bonus1_id,
+        .bonus1_amount = bonus1_amount,
         .projectile_state_hash = projectile_state_hash,
         .projectile_count = projectile_count,
         .projectile_active_index_sum = projectile_active_index_sum,
@@ -1265,8 +1300,6 @@ fn applyPlayerProjectileSpawnRules(
     if (state.bonus_spawn_guard) return;
     if (owner_id != -100 and owner_id != -1 and owner_id != -2 and owner_id != -3) return;
 
-    state.shots_fired_total += 1;
-
     var player_index: ?usize = null;
     if (owner_id == -100 and players.len == 1) {
         player_index = 0;
@@ -1280,16 +1313,19 @@ fn applyPlayerProjectileSpawnRules(
         }
     }
 
+    var shot_credit: i32 = 1;
     if (player_index) |idx| {
-        if (idx < state.shots_fired.len) {
-            state.shots_fired[idx] += 1;
-        }
         if (type_id.* != survival_state.ProjectileTypeId.fire_bullets and
             players[idx].fire_bullets_timer > 0.0)
         {
             type_id.* = survival_state.ProjectileTypeId.fire_bullets;
+            shot_credit = 2;
+        }
+        if (idx < state.shots_fired.len) {
+            state.shots_fired[idx] += shot_credit;
         }
     }
+    state.shots_fired_total += shot_credit;
 }
 
 fn consumeExplosionBurstRng(
@@ -1449,8 +1485,8 @@ fn updatePlayerFromReplayInput(
     flags: replay_codec.InputFlags,
     state: *const survival_state.GameplayState,
     dt: f64,
-    world_size: f64,
 ) void {
+    const prev_pos = player.pos;
     const dt_f32 = asF32F64(dt);
     var movement_dt = dt_f32;
     if (state.time_scale_active and movement_dt > 0.0) {
@@ -1480,6 +1516,7 @@ fn updatePlayerFromReplayInput(
     }
 
     var speed: f64 = 0.0;
+    var phase_sign: f64 = 1.0;
     var move_delta_override: ?survival_state.Vec2 = null;
     const player_controlled_movement =
         !state.demo_mode_active and
@@ -1517,6 +1554,7 @@ fn updatePlayerFromReplayInput(
                 move_delta_override = playerMoveDeltaFromHeading(player, movement_dt, 25.0);
             } else if (moving_backward) {
                 playerAccelerateMoveSpeed(player, movement_dt);
+                phase_sign = -1.0;
                 move_delta_override = playerMoveDeltaFromHeading(player, movement_dt, -25.0);
             } else {
                 if (!turned) {
@@ -1632,19 +1670,62 @@ fn updatePlayerFromReplayInput(
         }
     }
 
-    const delta = if (move_delta_override) |override|
+    var delta = if (move_delta_override) |override|
         override
     else survival_state.Vec2{
         .x = asF32F64(move.x * asF32F64(speed * movement_dt)),
         .y = asF32F64(move.y * asF32F64(speed * movement_dt)),
     };
+    if (perkActive(player.*, survival_perks.PerkId.alternate_weapon)) {
+        delta = .{
+            .x = asF32F64(delta.x * 0.8),
+            .y = asF32F64(delta.y * 0.8),
+        };
+    }
     const pos_after_move = survival_state.Vec2{
         .x = asF32F64(player.pos.x + delta.x),
         .y = asF32F64(player.pos.y + delta.y),
     };
+    player.pos = .{
+        .x = asF32F64(pos_after_move.x),
+        .y = asF32F64(pos_after_move.y),
+    };
+
+    const move_delta = survival_state.Vec2.sub(player.pos, prev_pos);
+    const reload_stationary = @abs(move_delta.x) <= 1e-9 and @abs(move_delta.y) <= 1e-9;
+    if (!reload_stationary) {
+        // Native clears these post-perk-tick timers after movement when position changed.
+        player.man_bomb_timer = 0.0;
+        player.living_fortress_timer = 0.0;
+    }
+    player.move_phase = asF32F64(player.move_phase + asF32F64(phase_sign * movement_dt * player.move_speed * 19.0));
+
+    player.aim = .{
+        .x = input.aim_x,
+        .y = input.aim_y,
+    };
+    var aim_dir = survival_state.Vec2.sub(player.aim, player.pos);
+    const aim_len_sq = aim_dir.lengthSq();
+    if (aim_len_sq > 0.0) {
+        aim_dir = aim_dir.mul(1.0 / std.math.sqrt(aim_len_sq));
+        player.aim_dir = aim_dir;
+        player.aim_heading = player.aim_dir.toHeading();
+    }
+}
+
+fn finalizePlayerPostUpdate(
+    player: *survival_state.PlayerState,
+    world_size: f64,
+) void {
+    while (player.move_phase > 14.0) {
+        player.move_phase = asF32F64(player.move_phase - 14.0);
+    }
+    while (player.move_phase < 0.0) {
+        player.move_phase = asF32F64(player.move_phase + 14.0);
+    }
 
     const half_size = @max(0.0, player.size * 0.5);
-    const clamped_pos = pos_after_move.clampRect(
+    const clamped_pos = player.pos.clampRect(
         half_size,
         half_size,
         world_size - half_size,
@@ -1654,17 +1735,8 @@ fn updatePlayerFromReplayInput(
         .x = asF32F64(clamped_pos.x),
         .y = asF32F64(clamped_pos.y),
     };
-
-    player.aim = .{
-        .x = input.aim_x,
-        .y = input.aim_y,
-    };
-    var aim_dir = survival_state.Vec2.sub(player.aim, player.pos);
-    const aim_len_sq = aim_dir.lengthSq();
-    if (aim_len_sq > 1e-9) {
-        aim_dir = aim_dir.mul(1.0 / std.math.sqrt(aim_len_sq));
-        player.aim_dir = aim_dir;
-        player.aim_heading = player.aim_dir.toHeading();
+    if (player.muzzle_flash_alpha > 0.8) {
+        player.muzzle_flash_alpha = 0.8;
     }
 }
 

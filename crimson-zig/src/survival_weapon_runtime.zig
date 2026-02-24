@@ -15,16 +15,19 @@ const perk_id_sharpshooter: i32 = 2;
 const perk_id_fastshot: i32 = 14;
 const perk_id_regression_bullets: i32 = 23;
 const perk_id_ammunition_within: i32 = 35;
+const perk_id_alternate_weapon: i32 = 9;
 const perk_id_hot_tempered: i32 = 31;
 const perk_id_man_bomb: i32 = 53;
 const perk_id_fire_caugh: i32 = 54;
 const perk_id_living_fortress: i32 = 55;
 const reload_preload_underflow_eps: f64 = 1e-7;
+const movement_control_mouse_point_click: i32 = 4;
 
 pub const TickInputFlags = struct {
     fire_down: bool = false,
     fire_pressed: bool = false,
     reload_pressed: bool = false,
+    move_mode: i32 = 0,
 };
 
 pub fn stepPlayerForTick(
@@ -81,7 +84,13 @@ pub fn stepPlayerForTick(
         }
     }
 
-    if (input_flags.reload_pressed and !state.demo_mode_active and player.reload_timer == 0.0) {
+    const manual_reload_allowed =
+        input_flags.reload_pressed and
+        !state.demo_mode_active and
+        !perkActive(player.*, perk_id_alternate_weapon) and
+        input_flags.move_mode != movement_control_mouse_point_click and
+        player.reload_timer == 0.0;
+    if (manual_reload_allowed) {
         const clip_size_f64: f64 = @floatFromInt(@max(0, player.clip_size));
         if (player.ammo < clip_size_f64) {
             survival_state.playerStartReload(player, state);
