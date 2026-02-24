@@ -176,6 +176,18 @@ pub const weapon_reload_times = [_]f64{
     0.0, 0.0, 0.0, 0.0,  0.0, 1.2, 1.2,  1.2, 1.2, 1.2, 0.0, 0.0, 0.0, 0.0, 5.0, 2.0, 8.0, 8.0,
 };
 
+pub const weapon_shot_cooldowns = [_]f64{
+    0.0,  0.7117, 0.117, 0.85, 0.87, 0.088117, 0.6,    0.09, 0.008113, 0.2908117, 0.6208117, 0.11, 0.7408117, 0.3108117, 0.48, 0.006113, 0.0085, 1.8,
+    0.12, 0.1,    0.14,  0.4,  0.1,  1.0,      0.21,   0.35, 0.2,      1.0,       0.9,       0.7,  1.05,      0.85,      0.02, 0.7,      0.0,    0.0,
+    0.0,  0.0,    0.0,   0.0,  0.0,  0.2,      0.1613, 0.2,  0.5,      0.14,      0.0,       0.0,  0.0,       0.0,       0.04, 0.08,     4.0,    4.0,
+};
+
+pub const weapon_pellet_counts = [_]i32{
+    0, 1, 1, 12, 12, 1, 1, 1, 1, 1, 3, 1, 1, 1, 14, 1, 1, 1,
+    1, 1, 4, 1,  1,  1, 1, 1, 1, 1, 1, 1, 1, 8, 1,  1, 0, 0,
+    0, 0, 0, 0,  0,  1, 1, 1, 1, 1, 0, 0, 0, 0, 1,  1, 1, 1,
+};
+
 pub fn weaponClipSize(weapon_id: i32) i32 {
     if (weapon_id < 0 or weapon_id >= weapon_clip_sizes.len) return 0;
     return weapon_clip_sizes[@intCast(weapon_id)];
@@ -184,6 +196,16 @@ pub fn weaponClipSize(weapon_id: i32) i32 {
 pub fn weaponReloadTime(weapon_id: i32) f64 {
     if (weapon_id < 0 or weapon_id >= weapon_reload_times.len) return 0.0;
     return weapon_reload_times[@intCast(weapon_id)];
+}
+
+pub fn weaponShotCooldown(weapon_id: i32) f64 {
+    if (weapon_id < 0 or weapon_id >= weapon_shot_cooldowns.len) return 0.0;
+    return weapon_shot_cooldowns[@intCast(weapon_id)];
+}
+
+pub fn weaponPelletCount(weapon_id: i32) i32 {
+    if (weapon_id < 0 or weapon_id >= weapon_pellet_counts.len) return 0;
+    return weapon_pellet_counts[@intCast(weapon_id)];
 }
 
 pub fn weaponAssignPlayer(

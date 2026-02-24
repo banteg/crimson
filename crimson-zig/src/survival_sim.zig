@@ -3,6 +3,7 @@ const std = @import("std");
 const replay_codec = @import("replay_codec.zig");
 const survival_spawn = @import("survival_spawn.zig");
 const survival_state = @import("survival_state.zig");
+const survival_weapon_runtime = @import("survival_weapon_runtime.zig");
 
 pub const SurvivalSimError = error{
     UnsupportedGameMode,
@@ -27,6 +28,9 @@ pub const SurvivalReplayScaffoldResult = struct {
     player_level: i32,
     player_experience: i32,
     player_weapon_id: i32,
+    most_used_weapon_id: i32,
+    shots_fired: i32,
+    shots_hit: i32,
     perk_pending_count: i32,
     survival_reward_handout_enabled: bool,
     survival_reward_fire_seen: bool,
@@ -94,6 +98,17 @@ pub fn runSurvivalReplayScaffold(
         const dt_sim_ms = dt_sim * 1000.0;
         const elapsed_before_ms = elapsed_ms_sim;
 
+        survival_weapon_runtime.stepPlayerForTick(
+            &state,
+            &players[0],
+            .{
+                .fire_down = flags.fire_down,
+                .fire_pressed = flags.fire_pressed,
+                .reload_pressed = flags.reload_pressed,
+            },
+            dt_sim,
+        );
+
         survival_state.survivalUpdateWeaponHandouts(
             &state,
             players[0..],
@@ -143,6 +158,12 @@ pub fn runSurvivalReplayScaffold(
     const ticks_f64: f64 = @floatFromInt(replay.tickCount());
     const elapsed_ms_nominal: i64 = @intFromFloat(@round(ticks_f64 * (1000.0 / tick_rate_f64)));
     const elapsed_ms_sim_i64: i64 = @intFromFloat(elapsed_ms_sim);
+    const shots = survival_state.player0Shots(state);
+    const most_used_weapon_id = survival_state.mostUsedWeaponIdForPlayer(
+        state,
+        0,
+        players[0].weapon_id,
+    );
 
     return .{
         .ticks = replay.tickCount(),
@@ -158,6 +179,9 @@ pub fn runSurvivalReplayScaffold(
         .player_level = players[0].level,
         .player_experience = players[0].experience,
         .player_weapon_id = players[0].weapon_id,
+        .most_used_weapon_id = most_used_weapon_id,
+        .shots_fired = shots.fired,
+        .shots_hit = shots.hit,
         .perk_pending_count = state.perk_selection.pending_count,
         .survival_reward_handout_enabled = state.survival_reward_handout_enabled,
         .survival_reward_fire_seen = state.survival_reward_fire_seen,
@@ -211,6 +235,9 @@ test "survival scaffold tracks event and input counters" {
     try std.testing.expectEqual(@as(usize, 0), result.stage_spawn_count);
     try std.testing.expectEqual(@as(usize, 1), result.wave_spawn_count);
     try std.testing.expectEqual(survival_state.WeaponId.pistol, result.player_weapon_id);
+    try std.testing.expectEqual(survival_state.WeaponId.pistol, result.most_used_weapon_id);
+    try std.testing.expectEqual(@as(i32, 0), result.shots_fired);
+    try std.testing.expectEqual(@as(i32, 0), result.shots_hit);
     try std.testing.expectEqual(@as(i32, 1), result.player_level);
     try std.testing.expectEqual(@as(i32, 0), result.perk_pending_count);
     try std.testing.expect(result.survival_reward_fire_seen);
@@ -232,6 +259,25 @@ test "survival scaffold rejects unsupported event player index" {
         error.UnsupportedEventPlayerIndex,
         runSurvivalReplayScaffold(replay),
     );
+}
+
+test "survival scaffold tracks weapon runtime counters" {
+    const allocator = std.testing.allocator;
+
+    const replay = try buildTestReplay(allocator, .{
+        .tick_rate = 60,
+        .inputs = &.{
+            replay_codec.fire_down_flag,
+            replay_codec.fire_down_flag,
+        },
+        .events = &.{},
+    });
+    defer replay.deinit(allocator);
+
+    const result = try runSurvivalReplayScaffold(replay);
+    try std.testing.expectEqual(@as(i32, 1), result.shots_fired);
+    try std.testing.expectEqual(@as(i32, 0), result.shots_hit);
+    try std.testing.expectEqual(survival_state.WeaponId.pistol, result.most_used_weapon_id);
 }
 
 const TestReplayConfig = struct {
