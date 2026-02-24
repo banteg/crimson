@@ -80,7 +80,7 @@ def test_detonation_followup_does_not_double_plan_death_sfx(mocker) -> None:
     creature.max_hp = 25.0
     creature.size = 50.0
     creature.reward_value = 0.0
-    creature.hitbox_size = 16.0
+    creature.lifecycle_stage = 16.0
 
     world.state.secondary_projectiles.spawn(
         pos=Vec2(float(creature.pos.x), float(creature.pos.y)),
@@ -139,7 +139,7 @@ def test_projectile_lethal_hit_plans_death_sfx_before_particles_update(mocker) -
     creature.max_hp = 25.0
     creature.size = 50.0
     creature.reward_value = 0.0
-    creature.hitbox_size = 16.0
+    creature.lifecycle_stage = 16.0
 
     death_planned = {"value": False}
 
@@ -262,7 +262,7 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
     creature.flags = CreatureFlags.RANGED_ATTACK_SHOCK
     creature.hp = 25.0
     creature.max_hp = 25.0
-    creature.hitbox_size = 16.0
+    creature.lifecycle_stage = 16.0
     creature.reward_value = 0.0
 
     plan_death_sfx = mocker.patch.object(

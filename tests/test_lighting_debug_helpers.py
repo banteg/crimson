@@ -71,12 +71,12 @@ def _secondary(
 def test_collect_shadow_occluders_filters_invalid_entities_and_clamps_count() -> None:
     player = _player(pos=Vec2(512.0, 512.0), health=100.0, size=48.0)
     creatures = [
-        _creature(active=False, pos=Vec2(540.0, 512.0), hp=30.0, hitbox_size=16.0, size=40.0),
-        _creature(active=True, pos=Vec2(560.0, 512.0), hp=30.0, hitbox_size=16.0, size=40.0),
-        _creature(active=True, pos=Vec2(580.0, 512.0), hp=0.0, hitbox_size=16.0, size=40.0),
-        _creature(active=True, pos=Vec2(float("nan"), 520.0), hp=30.0, hitbox_size=16.0, size=40.0),
-        _creature(active=True, pos=Vec2(620.0, 512.0), hp=30.0, hitbox_size=0.0, size=40.0),
-        _creature(active=True, pos=Vec2(640.0, 512.0), hp=30.0, hitbox_size=16.0, size=40.0),
+        _creature(active=False, pos=Vec2(540.0, 512.0), hp=30.0, lifecycle_stage=16.0, size=40.0),
+        _creature(active=True, pos=Vec2(560.0, 512.0), hp=30.0, lifecycle_stage=16.0, size=40.0),
+        _creature(active=True, pos=Vec2(580.0, 512.0), hp=0.0, lifecycle_stage=16.0, size=40.0),
+        _creature(active=True, pos=Vec2(float("nan"), 520.0), hp=30.0, lifecycle_stage=16.0, size=40.0),
+        _creature(active=True, pos=Vec2(620.0, 512.0), hp=30.0, lifecycle_stage=0.0, size=40.0),
+        _creature(active=True, pos=Vec2(640.0, 512.0), hp=30.0, lifecycle_stage=16.0, size=40.0),
     ]
 
     occluders = collect_shadow_occluders(player, creatures, max_occluders=2)

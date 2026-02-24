@@ -6,6 +6,7 @@ from typing import Protocol
 
 from grim.geom import Vec2
 
+from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects import FxQueue
 from ...sim.state_types import GameplayState, PlayerState
 
@@ -14,7 +15,7 @@ class CreatureForPerks(Protocol):
     active: bool
     pos: Vec2
     hp: float
-    hitbox_size: float
+    lifecycle_stage: float
     collision_timer: float
     reward_value: float
     size: float
@@ -42,7 +43,7 @@ def creature_find_in_radius(creatures: Sequence[CreatureForPerks], *, pos: Vec2,
         threshold = float(creature.size) * 0.14285715 + 3.0
         if threshold < dist:
             continue
-        if float(creature.hitbox_size) < 5.0:
+        if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
             continue
         return idx
     return -1

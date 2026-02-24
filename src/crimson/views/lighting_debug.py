@@ -919,8 +919,8 @@ def _build_static_occluders() -> list[CircleOccluder]:
     return occluders
 
 
-def _shadow_occluder_radius(size: float, hitbox_size: float) -> float:
-    blended = max(float(hitbox_size), float(size) * 0.35)
+def _shadow_occluder_radius(size: float, lifecycle_stage: float) -> float:
+    blended = max(float(lifecycle_stage), float(size) * 0.35)
     return max(6.0, min(128.0, float(blended)))
 
 
@@ -956,11 +956,11 @@ def collect_shadow_occluders(
             continue
         if float(creature.hp) <= 0.0:
             continue
-        hitbox_size = float(creature.hitbox_size)
-        if hitbox_size <= 0.0:
+        lifecycle_stage = float(creature.lifecycle_stage)
+        if lifecycle_stage <= 0.0:
             continue
         size = float(creature.size)
-        _append(creature.pos, _shadow_occluder_radius(size, hitbox_size))
+        _append(creature.pos, _shadow_occluder_radius(size, lifecycle_stage))
 
     return occluders
 

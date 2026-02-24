@@ -14,7 +14,7 @@ def apply_breathing_room(ctx: PerkApplyCtx) -> None:
     if creatures is not None:
         for creature in creatures:
             if creature.active:
-                creature.hitbox_size = float(creature.hitbox_size) - frame_dt
+                creature.lifecycle_stage = float(creature.lifecycle_stage) - frame_dt
 
     ctx.state.bonus_spawn_guard = False
 

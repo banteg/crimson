@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
 from crimson.math_parity import NATIVE_HALF_PI
@@ -38,8 +38,8 @@ def test_split_on_death_spawns_two_smaller_children() -> None:
     child1 = pool.entries[1]
     child2 = pool.entries[2]
     assert child1.active and child2.active
-    assert child1.hitbox_size == CREATURE_HITBOX_ALIVE
-    assert child2.hitbox_size == CREATURE_HITBOX_ALIVE
+    assert child1.lifecycle_stage == CREATURE_LIFECYCLE_ALIVE
+    assert child2.lifecycle_stage == CREATURE_LIFECYCLE_ALIVE
     assert child1.phase_seed == float(0x123 & 0xFF)
     assert child2.phase_seed == float(0x456 & 0xFF)
     assert_float_close(child1.heading, -NATIVE_HALF_PI)

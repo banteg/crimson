@@ -99,7 +99,7 @@ def test_damage_type1_global_perks_apply_with_non_player_owner() -> None:
 
 
 def test_nonlethal_damage_does_not_reset_non_alive_hitbox_size() -> None:
-    creature = CreatureState(active=True, hp=100.0, hitbox_size=12.0, size=50.0, flags=CreatureFlags(0))
+    creature = CreatureState(active=True, hp=100.0, lifecycle_stage=12.0, size=50.0, flags=CreatureFlags(0))
 
     killed = creature_apply_damage(
         creature,
@@ -113,7 +113,7 @@ def test_nonlethal_damage_does_not_reset_non_alive_hitbox_size() -> None:
     )
 
     assert killed is False
-    assert_float_close(creature.hitbox_size, 12.0)
+    assert_float_close(creature.lifecycle_stage, 12.0)
 
 
 def test_lethal_shock_damage_spawns_armored_debris_in_damage_path() -> None:
@@ -121,7 +121,7 @@ def test_lethal_shock_damage_spawns_armored_debris_in_damage_path() -> None:
     creature = CreatureState(
         active=True,
         hp=5.0,
-        hitbox_size=16.0,
+        lifecycle_stage=16.0,
         size=50.0,
         flags=CreatureFlags.RANGED_ATTACK_SHOCK,
         pos=Vec2(10.0, 20.0),

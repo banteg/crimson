@@ -261,7 +261,7 @@ class _CaptureCreatureSpawnAddedHeadRow(msgspec.Struct, forbid_unknown_fields=Tr
     ai_mode: int | None = None
     link_index: int | None = None
     hp: float | None = None
-    hitbox_size: float | None = None
+    lifecycle_stage: float | None = None
     orbit_angle: float | None = None
     orbit_radius: float | None = None
     flags: int | None = None
@@ -2230,7 +2230,7 @@ def _tick_creature_spawn_added_rows(tick: CaptureTick) -> tuple[dict[str, object
             ai_mode = row.ai_mode
             link_index = row.link_index
             hp = _finite_float_or_none(row.hp)
-            hitbox_size = _finite_float_or_none(row.hitbox_size)
+            lifecycle_stage = _finite_float_or_none(row.lifecycle_stage)
             orbit_angle = _finite_float_or_none(row.orbit_angle)
             orbit_radius = _finite_float_or_none(row.orbit_radius)
             flags = row.flags
@@ -2246,8 +2246,8 @@ def _tick_creature_spawn_added_rows(tick: CaptureTick) -> tuple[dict[str, object
                 row_out["link_index"] = int(link_index)
             if hp is not None:
                 row_out["hp"] = float(hp)
-            if hitbox_size is not None:
-                row_out["hitbox_size"] = float(hitbox_size)
+            if lifecycle_stage is not None:
+                row_out["lifecycle_stage"] = float(lifecycle_stage)
             if orbit_angle is not None:
                 row_out["orbit_angle"] = float(orbit_angle)
             if orbit_radius is not None:

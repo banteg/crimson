@@ -21,7 +21,7 @@ tags:
   - capture shows `hp=0` at tick `4803` and corpse hitbox ramp crossing `<=0` at tick `4810`,
   - no `creature_damage` or `creature_death` events were present at tick `4803`.
 - Ghidra decompile of `creature_update_all` shows a direct-contact kill path for small creatures:
-  - when `dist_to_target < 30.0` and `size <= 30.0`, native sets `health = 0.0` and `hitbox_size -= frame_dt`,
+  - when `dist_to_target < 30.0` and `size <= 30.0`, native sets `health = 0.0` and `lifecycle_stage -= frame_dt`,
   - this path does not call `creature_handle_death`, so it intentionally skips XP/bonus logic and avoids capture death hooks.
 
 ### Landed Changes

@@ -8,6 +8,8 @@ from typing import Protocol
 from grim.color import RGBA
 from grim.geom import Vec2
 
+from ..creatures.lifecycle import CREATURE_LIFECYCLE_ALIVE
+
 
 class _RngLike(Protocol):
     def rand(self) -> int: ...
@@ -128,7 +130,7 @@ class SecondaryProjectileTypeId(IntEnum):
     ROCKET_MINIGUN = 4
 
 
-_CREATURE_HITBOX_ALIVE = 16.0
+_CREATURE_LIFECYCLE_ALIVE = CREATURE_LIFECYCLE_ALIVE
 
 
 def _rng_zero() -> int:
@@ -195,7 +197,7 @@ __all__ = [
     "SECONDARY_PROJECTILE_POOL_SIZE",
     "SecondaryProjectile",
     "SecondaryProjectileTypeId",
-    "_CREATURE_HITBOX_ALIVE",
+    "_CREATURE_LIFECYCLE_ALIVE",
     "_EffectsLike",
     "_rng_zero",
     "_SpriteEffectsLike",

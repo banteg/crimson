@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool, CreatureUpdateOptions
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool, CreatureUpdateOptions
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
@@ -18,7 +18,7 @@ def test_mr_melee_hits_attacking_creature_on_contact_damage_tick() -> None:
     creature.active = True
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 100.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.contact_damage = 10.0
     creature.collision_timer = 0.1
 
@@ -37,7 +37,7 @@ def test_mr_melee_does_not_prevent_player_damage_when_killing_attacker() -> None
     creature.active = True
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 10.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.contact_damage = 10.0
     creature.collision_timer = 0.1
 
@@ -55,7 +55,7 @@ def test_mr_melee_is_inert_when_not_active() -> None:
     creature.active = True
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 100.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.contact_damage = 10.0
     creature.collision_timer = 0.1
 

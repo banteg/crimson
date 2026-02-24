@@ -965,7 +965,7 @@ class CaptureVisualizerView:
         samples = row.samples
         if samples is not None:
             for sample in samples.creatures:
-                hitbox_radius = float(sample.hitbox_size) * 0.5
+                hitbox_radius = float(sample.lifecycle_stage) * 0.5
                 capture_creatures[int(sample.index)] = _EntityDraw(
                     x=_finite(sample.pos.x),
                     y=_finite(sample.pos.y),
@@ -1010,7 +1010,7 @@ class CaptureVisualizerView:
         for idx, creature in enumerate(self._world.creatures.entries):
             if not bool(creature.active):
                 continue
-            hitbox_radius = float(creature.hitbox_size) * 0.5
+            hitbox_radius = float(creature.lifecycle_stage) * 0.5
             rewrite_creatures[int(idx)] = _EntityDraw(
                 x=_finite(creature.pos.x),
                 y=_finite(creature.pos.y),

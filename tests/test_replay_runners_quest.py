@@ -234,7 +234,7 @@ def test_capture_creature_spawn_event_applies_added_head_overrides() -> None:
                         "ai_mode": 3,
                         "link_index": 0,
                         "hp": 123.5,
-                        "hitbox_size": 9.5,
+                        "lifecycle_stage": 9.5,
                         "orbit_angle": 0.25,
                         "orbit_radius": 0.75,
                         "flags": 17,
@@ -260,7 +260,7 @@ def test_capture_creature_spawn_event_applies_added_head_overrides() -> None:
     assert int(creature.ai_mode) == 3
     assert int(creature.link_index) == 0
     assert_float_close(float(creature.hp), 123.5)
-    assert_float_close(float(creature.hitbox_size), 9.5)
+    assert_float_close(float(creature.lifecycle_stage), 9.5)
     assert_float_close(float(creature.orbit_angle), 0.25)
     assert_float_close(float(creature.orbit_radius), 0.75)
     assert int(creature.flags) == 17

@@ -13,7 +13,7 @@ from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..sim.state_types import PlayerState
 from .damage_types import CreatureDamageType
-from .runtime import CREATURE_HITBOX_ALIVE, CreatureState
+from .runtime import CREATURE_LIFECYCLE_ALIVE, CreatureState
 from .spawn import CreatureFlags
 
 
@@ -211,7 +211,7 @@ def creature_apply_damage(
 
     if creature.hp <= 0.0:
         if dt > 0.0:
-            creature.hitbox_size -= float(dt) * 15.0
+            creature.lifecycle_stage -= float(dt) * 15.0
         return True
 
     for step in _CREATURE_DAMAGE_ALIVE_STEPS.get(ctx.damage_type, ()):
@@ -222,9 +222,9 @@ def creature_apply_damage(
 
     if creature.hp <= 0.0:
         if dt > 0.0:
-            creature.hitbox_size = float(creature.hitbox_size) - float(dt)
+            creature.lifecycle_stage = float(creature.lifecycle_stage) - float(dt)
         else:
-            creature.hitbox_size = float(creature.hitbox_size) - 0.001
+            creature.lifecycle_stage = float(creature.lifecycle_stage) - 0.001
         creature.vel = creature.vel - impulse * 2.0
         _damage_lethal_ranged_shock_burst(
             creature=creature,
@@ -257,7 +257,7 @@ def creature_apply_damage_with_lethal_followup(
     call sites cannot accidentally skip death handling side effects.
     """
 
-    death_start_needed = float(creature.hp) > 0.0 and float(creature.hitbox_size) == CREATURE_HITBOX_ALIVE
+    death_start_needed = float(creature.hp) > 0.0 and float(creature.lifecycle_stage) == CREATURE_LIFECYCLE_ALIVE
     killed = creature_apply_damage(
         creature,
         damage_amount=float(damage_amount),

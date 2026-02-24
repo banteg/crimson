@@ -465,7 +465,7 @@ def _sample_creature_dict(**kwargs: object) -> dict[str, object]:
         "active": 1,
         "state_flag": 0,
         "collision_flag": 0,
-        "hitbox_size": 16.0,
+        "lifecycle_stage": 16.0,
         "pos": {"x": 100.0, "y": 100.0},
         "hp": 20.0,
         "type_id": 7,

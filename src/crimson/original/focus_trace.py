@@ -244,7 +244,7 @@ def _build_capture_tick_payload(
                 "active": int(item.active),
                 "type_id": int(item.type_id),
                 "hp": float(item.hp),
-                "hitbox_size": float(item.hitbox_size),
+                "lifecycle_stage": float(item.lifecycle_stage),
                 "pos": {"x": float(item.pos.x), "y": float(item.pos.y)},
             },
         )
@@ -386,12 +386,12 @@ def _summarize_creature_diffs(capture_creatures: list[dict[str, Any]], world: Wo
         cap_x = _float_field_or(cap_pos, "x", 0.0)
         cap_y = _float_field_or(cap_pos, "y", 0.0)
         cap_hp = _float_field_or(cap_row, "hp", 0.0)
-        cap_hitbox = _float_field_or(cap_row, "hitbox_size", 0.0)
+        cap_hitbox = _float_field_or(cap_row, "lifecycle_stage", 0.0)
         rows.append(
             {
                 "index": int(idx),
                 "hp_delta": float(creature.hp) - cap_hp,
-                "hitbox_delta": float(creature.hitbox_size) - cap_hitbox,
+                "hitbox_delta": float(creature.lifecycle_stage) - cap_hitbox,
                 "x_delta": float(creature.pos.x) - cap_x,
                 "y_delta": float(creature.pos.y) - cap_y,
                 "active_capture": bool(_int_field_or(cap_row, "active", 0) != 0),
@@ -466,7 +466,7 @@ def _collect_creature_presence_diffs(
                 "index": int(idx),
                 "type_id": _int_field_or(row, "type_id", 0),
                 "hp": _float_field_or(row, "hp", 0.0),
-                "hitbox_size": _float_field_or(row, "hitbox_size", 0.0),
+                "lifecycle_stage": _float_field_or(row, "lifecycle_stage", 0.0),
                 "pos": {
                     "x": _float_field_or(pos, "x", 0.0),
                     "y": _float_field_or(pos, "y", 0.0),
@@ -482,7 +482,7 @@ def _collect_creature_presence_diffs(
                 "index": int(idx),
                 "type_id": int(creature.type_id),
                 "hp": float(creature.hp),
-                "hitbox_size": float(creature.hitbox_size),
+                "lifecycle_stage": float(creature.lifecycle_stage),
                 "pos": {"x": float(creature.pos.x), "y": float(creature.pos.y)},
             },
         )
@@ -1478,7 +1478,7 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
         for row in report.creature_capture_only[: max(1, int(diff_limit))]:
             print(
                 f"    idx={int(row['index']):3d} type={int(row['type_id'])} "
-                f"hp={float(row['hp']):.6f} hitbox={float(row['hitbox_size']):.6f} "
+                f"hp={float(row['hp']):.6f} hitbox={float(row['lifecycle_stage']):.6f} "
                 f"pos=({float(row['pos']['x']):.4f},{float(row['pos']['y']):.4f})",
             )
         if len(report.creature_capture_only) > int(diff_limit):
@@ -1488,7 +1488,7 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
         for row in report.creature_rewrite_only[: max(1, int(diff_limit))]:
             print(
                 f"    idx={int(row['index']):3d} type={int(row['type_id'])} "
-                f"hp={float(row['hp']):.6f} hitbox={float(row['hitbox_size']):.6f} "
+                f"hp={float(row['hp']):.6f} hitbox={float(row['lifecycle_stage']):.6f} "
                 f"pos=({float(row['pos']['x']):.4f},{float(row['pos']['y']):.4f})",
             )
         if len(report.creature_rewrite_only) > int(diff_limit):

@@ -5,7 +5,7 @@ from typing import cast
 
 import crimson.creatures.runtime as creature_runtime
 from crimson.bonuses.pool import BonusEntry
-from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool, CreatureUpdateOptions
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool, CreatureUpdateOptions
 from crimson.creatures.spawn import (
     HAS_SPAWN_SLOT_FLAG,
     RANDOM_HEADING_SENTINEL,
@@ -147,7 +147,7 @@ def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     owner = pool.entries[0]
     owner.active = True
     owner.hp = 100.0
-    owner.hitbox_size = CREATURE_HITBOX_ALIVE
+    owner.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     owner.flags = HAS_SPAWN_SLOT_FLAG
     owner.heading = 1.234
     owner.pos = Vec2(200.0, 300.0)
@@ -201,7 +201,7 @@ def test_spawn_slot_update_requires_spawner_flag() -> None:
     owner = pool.entries[0]
     owner.active = True
     owner.hp = 100.0
-    owner.hitbox_size = CREATURE_HITBOX_ALIVE
+    owner.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     owner.flags = CreatureFlags(0)
     owner.ai_mode = 0
     owner.move_speed = 0.0
@@ -242,7 +242,7 @@ def test_spawn_slot_child_can_update_in_same_tick() -> None:
     owner = pool.entries[0]
     owner.active = True
     owner.hp = 100.0
-    owner.hitbox_size = CREATURE_HITBOX_ALIVE
+    owner.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     owner.pos = Vec2(256.0, 256.0)
     owner.flags = HAS_SPAWN_SLOT_FLAG
     owner.ai_mode = 0
@@ -279,7 +279,7 @@ def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
     creature.ai_mode = 0
     creature.move_speed = 0.0
@@ -303,7 +303,7 @@ def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
         creature.active = True
         creature.type_id = int(type_id)
         creature.hp = 50.0
-        creature.hitbox_size = CREATURE_HITBOX_ALIVE
+        creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
         creature.flags = CreatureFlags(0)
         creature.ai_mode = 0
         creature.move_speed = 2.0
@@ -333,7 +333,7 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
     link.active = True
     link.type_id = int(CreatureTypeId.ZOMBIE)
     link.hp = 100.0
-    link.hitbox_size = CREATURE_HITBOX_ALIVE
+    link.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     link.flags = CreatureFlags(0)
     link.ai_mode = 0
     link.move_speed = 0.0
@@ -344,7 +344,7 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
     near.active = True
     near.type_id = int(CreatureTypeId.ZOMBIE)
     near.hp = 100.0
-    near.hitbox_size = CREATURE_HITBOX_ALIVE
+    near.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     near.flags = CreatureFlags(0)
     near.ai_mode = 5
     near.link_index = 0
@@ -358,7 +358,7 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
     far.active = True
     far.type_id = int(CreatureTypeId.ZOMBIE)
     far.hp = 100.0
-    far.hitbox_size = CREATURE_HITBOX_ALIVE
+    far.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     far.flags = CreatureFlags(0)
     far.ai_mode = 5
     far.link_index = 0
@@ -392,7 +392,7 @@ def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
     creature.ai_mode = 0
     creature.move_speed = 0.0
@@ -417,7 +417,7 @@ def test_single_player_dead_player_uses_dead_target_position() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
     creature.ai_mode = 0
     creature.move_speed = 2.0
@@ -444,7 +444,7 @@ def test_single_player_dead_player_contact_path_keeps_dead_player_undamaged() ->
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
     creature.ai_mode = 0
     creature.move_speed = 0.0
@@ -471,7 +471,7 @@ def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
     creature.ai_mode = 0
     creature.move_speed = 0.0
@@ -495,7 +495,7 @@ def test_creature_update_tracks_nearest_auto_target_for_target_player() -> None:
     far = pool.entries[0]
     far.active = True
     far.hp = 50.0
-    far.hitbox_size = CREATURE_HITBOX_ALIVE
+    far.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     far.flags = CreatureFlags(0)
     far.ai_mode = 0
     far.move_speed = 0.0
@@ -507,7 +507,7 @@ def test_creature_update_tracks_nearest_auto_target_for_target_player() -> None:
     near = pool.entries[1]
     near.active = True
     near.hp = 50.0
-    near.hitbox_size = CREATURE_HITBOX_ALIVE
+    near.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     near.flags = CreatureFlags(0)
     near.ai_mode = 0
     near.move_speed = 0.0
@@ -529,7 +529,7 @@ def test_creature_update_auto_target_falls_back_when_previous_target_is_dead() -
     dead_target = pool.entries[0]
     dead_target.active = True
     dead_target.hp = 0.0
-    dead_target.hitbox_size = CREATURE_HITBOX_ALIVE
+    dead_target.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     dead_target.flags = CreatureFlags(0)
     dead_target.ai_mode = 0
     dead_target.move_speed = 0.0
@@ -541,7 +541,7 @@ def test_creature_update_auto_target_falls_back_when_previous_target_is_dead() -
     live_target = pool.entries[1]
     live_target.active = True
     live_target.hp = 50.0
-    live_target.hitbox_size = CREATURE_HITBOX_ALIVE
+    live_target.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     live_target.flags = CreatureFlags(0)
     live_target.ai_mode = 0
     live_target.move_speed = 0.0
@@ -564,7 +564,7 @@ def test_creature_update_auto_target_skips_refresh_on_0x46_boundary_tick() -> No
     far = pool.entries[0]
     far.active = True
     far.hp = 50.0
-    far.hitbox_size = CREATURE_HITBOX_ALIVE
+    far.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     far.flags = CreatureFlags(0)
     far.ai_mode = 0
     far.move_speed = 0.0
@@ -576,7 +576,7 @@ def test_creature_update_auto_target_skips_refresh_on_0x46_boundary_tick() -> No
     near = pool.entries[1]
     near.active = True
     near.hp = 50.0
-    near.hitbox_size = CREATURE_HITBOX_ALIVE
+    near.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     near.flags = CreatureFlags(0)
     near.ai_mode = 0
     near.move_speed = 0.0
@@ -605,7 +605,7 @@ def test_small_creature_dies_on_contact() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
     creature.ai_mode = 0
     creature.move_speed = 0.0
@@ -619,7 +619,7 @@ def test_small_creature_dies_on_contact() -> None:
 
     assert_float_close(player.health, 90.0)
     assert_float_close(creature.hp, 0.0)
-    assert_float_close(creature.hitbox_size, f32(float(CREATURE_HITBOX_ALIVE) - float(dt)))
+    assert_float_close(creature.lifecycle_stage, f32(float(CREATURE_LIFECYCLE_ALIVE) - float(dt)))
     assert pool.kill_count == 0
 
 
@@ -1082,7 +1082,7 @@ def test_tick_dead_defers_corpse_deactivation_until_post_render_cleanup() -> Non
     corpse = pool.entries[6]
     corpse.active = True
     corpse.hp = -231.675
-    corpse.hitbox_size = -9.656
+    corpse.lifecycle_stage = -9.656
     corpse.pos = Vec2(588.6516, 379.7685)
     corpse.flags = CreatureFlags.AI7_LINK_TIMER
 
@@ -1095,7 +1095,7 @@ def test_tick_dead_defers_corpse_deactivation_until_post_render_cleanup() -> Non
     )
 
     assert corpse.active is True
-    assert_float_close(corpse.hitbox_size, f32(-10.016))
+    assert_float_close(corpse.lifecycle_stage, f32(-10.016))
 
     pool.finalize_post_render_lifecycle()
     assert corpse.active is False
@@ -1107,7 +1107,7 @@ def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> 
     corpse = pool.entries[0]
     corpse.active = True
     corpse.hp = -5.0
-    corpse.hitbox_size = 1.0
+    corpse.lifecycle_stage = 1.0
     corpse.pos = Vec2(320.0, 240.0)
     corpse.flags = CreatureFlags.ANIM_PING_PONG
     corpse.size = 24.0
@@ -1148,14 +1148,14 @@ def test_dead_self_damage_tick_flags_still_shrink_hitbox_before_dead_decay() -> 
     corpse = pool.entries[42]
     corpse.active = True
     corpse.hp = -0.08500146865844727
-    corpse.hitbox_size = 12.640003204345703
+    corpse.lifecycle_stage = 12.640003204345703
     corpse.flags = CreatureFlags.SELF_DAMAGE_TICK
 
     # 38 ms frame from gameplay_diff_capture tick 3636.
     pool.update(0.03800000250339508, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0))
 
     # Native applies SELF_DAMAGE_TICK via creature_apply_damage even while hp<=0.
-    assert_float_close(corpse.hitbox_size, f32(11.006003))
+    assert_float_close(corpse.lifecycle_stage, f32(11.006003))
 
 
 def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> None:
@@ -1164,17 +1164,17 @@ def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> 
         entry = pool.entries[idx]
         entry.active = True
         entry.hp = 1.0
-        entry.hitbox_size = CREATURE_HITBOX_ALIVE
+        entry.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
         entry.pos = Vec2(float(idx), 0.0)
 
     corpse = pool.entries[6]
     corpse.hp = -231.675
-    corpse.hitbox_size = -9.656
+    corpse.lifecycle_stage = -9.656
     corpse.pos = Vec2(588.6516, 379.7685)
     corpse.flags = CreatureFlags.AI7_LINK_TIMER
 
     pool.entries[22].active = False
-    pool.entries[22].hitbox_size = -10.21
+    pool.entries[22].lifecycle_stage = -10.21
     pool.entries[22].hp = -45.9623
 
     pool._tick_dead(
@@ -1212,7 +1212,7 @@ def test_ai7_link_timer_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags.AI7_LINK_TIMER
     creature.ai_mode = 0
     creature.link_index = -33
@@ -1243,7 +1243,7 @@ def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags.AI7_LINK_TIMER
     creature.ai_mode = 7
     creature.link_index = 1
@@ -1268,7 +1268,7 @@ def test_ai7_link_timer_still_ticks_when_live_self_damage_kills_creature() -> No
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 1.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags.AI7_LINK_TIMER | CreatureFlags.SELF_DAMAGE_TICK_STRONG
     creature.ai_mode = 0
     creature.link_index = -10
@@ -1292,7 +1292,7 @@ def test_ai7_non_spawner_idle_keeps_previous_velocity() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags.AI7_LINK_TIMER
     creature.ai_mode = 7
     creature.link_index = 400
@@ -1320,7 +1320,7 @@ def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags.AI7_LINK_TIMER
     creature.ai_mode = 7
     creature.link_index = 100
@@ -1359,7 +1359,7 @@ def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
     creature0 = pool.entries[0]
     creature0.active = True
     creature0.hp = 50.0
-    creature0.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature0.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature0.flags = CreatureFlags.AI7_LINK_TIMER
     creature0.ai_mode = 7
     creature0.link_index = 100
@@ -1373,7 +1373,7 @@ def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
     creature1 = pool.entries[1]
     creature1.active = True
     creature1.hp = 50.0
-    creature1.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature1.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature1.flags = CreatureFlags.AI7_LINK_TIMER
     creature1.ai_mode = 7
     creature1.link_index = 100

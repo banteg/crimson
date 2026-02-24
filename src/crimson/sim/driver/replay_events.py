@@ -216,7 +216,7 @@ def apply_replay_tick_events(
                     ai_mode = row.ai_mode
                     link_index = row.link_index
                     hp = row.hp
-                    hitbox_size = row.hitbox_size
+                    lifecycle_stage = row.lifecycle_stage
                     orbit_angle = row.orbit_angle
                     orbit_radius = row.orbit_radius
                     flags = row.flags
@@ -251,8 +251,8 @@ def apply_replay_tick_events(
                         entry.link_index = int(link_index)
                     if hp is not None:
                         entry.hp = float(f32(float(hp)))
-                    if hitbox_size is not None:
-                        entry.hitbox_size = float(f32(float(hitbox_size)))
+                    if lifecycle_stage is not None:
+                        entry.lifecycle_stage = float(f32(float(lifecycle_stage)))
                     if orbit_angle is not None:
                         entry.orbit_angle = float(f32(float(orbit_angle)))
                     if orbit_radius is not None:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureState
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreatureState
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
@@ -19,17 +19,17 @@ def test_perk_apply_breathing_room_reduces_health_and_starts_creature_death_stag
 
     creatures: list[CreatureState] = [CreatureState() for _ in range(3)]
     creatures[0].active = True
-    creatures[0].hitbox_size = CREATURE_HITBOX_ALIVE
+    creatures[0].lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creatures[1].active = False
-    creatures[1].hitbox_size = 123.0
+    creatures[1].lifecycle_stage = 123.0
     creatures[2].active = True
-    creatures[2].hitbox_size = -5.0
+    creatures[2].lifecycle_stage = -5.0
 
     perk_apply(state, [player], PerkId.BREATHING_ROOM, dt=dt, creatures=creatures)
 
     assert_float_close(player.health, 30.0)
-    assert_float_close(creatures[0].hitbox_size, CREATURE_HITBOX_ALIVE - dt)
-    assert_float_close(creatures[1].hitbox_size, 123.0)
-    assert_float_close(creatures[2].hitbox_size, -5.0 - dt)
+    assert_float_close(creatures[0].lifecycle_stage, CREATURE_LIFECYCLE_ALIVE - dt)
+    assert_float_close(creatures[1].lifecycle_stage, 123.0)
+    assert_float_close(creatures[2].lifecycle_stage, -5.0 - dt)
     assert state.bonus_spawn_guard is False
     assert player.perk_counts[int(PerkId.BREATHING_ROOM)] == 1

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool, CreatureUpdateOptions
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool, CreatureUpdateOptions
 from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
@@ -23,7 +23,7 @@ def test_radioactive_tick_deals_damage_and_spawns_fx() -> None:
     creature.flags = CreatureFlags.ANIM_PING_PONG
     creature.pos = Vec2(46.0, 0.0)
     creature.hp = 50.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.collision_timer = 0.1
 
     fx_queue = FxQueue(capacity=8, max_count=8)
@@ -53,7 +53,7 @@ def test_radioactive_kill_awards_base_xp_and_bypasses_death_multipliers() -> Non
     creature.flags = CreatureFlags.ANIM_PING_PONG
     creature.pos = Vec2(46.0, 0.0)
     creature.hp = 5.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.reward_value = 12.7
     creature.collision_timer = 0.1
 
@@ -63,7 +63,7 @@ def test_radioactive_kill_awards_base_xp_and_bypasses_death_multipliers() -> Non
     assert player.experience == 112
     assert not result.deaths
     assert creature.hp < 0.0
-    assert_float_close(creature.hitbox_size, CREATURE_HITBOX_ALIVE - dt)
+    assert_float_close(creature.lifecycle_stage, CREATURE_LIFECYCLE_ALIVE - dt)
     assert fx_queue.count == 1
 
 
@@ -81,7 +81,7 @@ def test_radioactive_sets_hp_to_one_for_type_id_one_creatures() -> None:
     creature.flags = CreatureFlags.ANIM_PING_PONG
     creature.pos = Vec2(46.0, 0.0)
     creature.hp = 5.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.reward_value = 12.7
     creature.collision_timer = 0.1
 
@@ -91,6 +91,6 @@ def test_radioactive_sets_hp_to_one_for_type_id_one_creatures() -> None:
     assert player.experience == 100
     assert not result.deaths
     assert_float_close(creature.hp, 1.0)
-    assert_float_close(creature.hitbox_size, CREATURE_HITBOX_ALIVE)
+    assert_float_close(creature.lifecycle_stage, CREATURE_LIFECYCLE_ALIVE)
     assert_float_close(creature.collision_timer, 0.5)
     assert fx_queue.count == 1

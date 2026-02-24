@@ -18715,7 +18715,7 @@ void effect_uv_tables_init(void)
 
 /* creature_find_nearest @ 00420040 */
 
-/* returns nearest creature index; uses hitbox-size sentinel when exclude_id == -1 */
+/* returns nearest creature index; uses lifecycle-stage sentinel when exclude_id == -1 */
 
 int __cdecl creature_find_nearest(float *pos,int exclude_id,float min_dist)
 

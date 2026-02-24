@@ -10,6 +10,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
 
+from .creatures.lifecycle import creature_lifecycle_is_collidable
 from .effects_atlas import EffectId
 from .math_parity import f32
 
@@ -61,7 +62,7 @@ class _CreatureForParticles(Protocol):
     pos: Vec2
     hp: float
     size: float
-    hitbox_size: float
+    lifecycle_stage: float
     tint: RGBA
 
 
@@ -203,7 +204,7 @@ class ParticlePool:
                 # Native particle `creature_find_in_radius` is hitbox-gated, not
                 # HP-gated: freshly killed creatures (hp<=0, hitbox>5) can still
                 # receive same-tick style-0 damage callbacks.
-                if creature.hitbox_size < 5.0:
+                if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
                     continue
 
                 size = f32(float(creature.size))

@@ -68,7 +68,7 @@ def test_perks_update_effects_evil_eyes_defaults_to_alive_player_target_slot() -
     creature = CreatureState()
     creature.active = True
     creature.pos = Vec2(100.0, 200.0)
-    creature.hitbox_size = 16.0
+    creature.lifecycle_stage = 16.0
     creature.size = 50.0
 
     perks_update_effects(state, [player0, player1], 0.1, creatures=[creature])
@@ -88,7 +88,7 @@ def test_perks_update_effects_evil_eyes_preserve_bugs_keeps_player0_only_targeti
     creature = CreatureState()
     creature.active = True
     creature.pos = Vec2(100.0, 200.0)
-    creature.hitbox_size = 16.0
+    creature.lifecycle_stage = 16.0
     creature.size = 50.0
 
     perks_update_effects(state, [player0, player1], 0.1, creatures=[creature])
@@ -109,13 +109,13 @@ def test_perks_update_effects_evil_eyes_default_targets_each_alive_player() -> N
     creature0 = CreatureState()
     creature0.active = True
     creature0.pos = Vec2(100.0, 200.0)
-    creature0.hitbox_size = 16.0
+    creature0.lifecycle_stage = 16.0
     creature0.size = 50.0
 
     creature1 = CreatureState()
     creature1.active = True
     creature1.pos = Vec2(140.0, 200.0)
-    creature1.hitbox_size = 16.0
+    creature1.lifecycle_stage = 16.0
     creature1.size = 50.0
 
     perks_update_effects(state, [player0, player1], 0.1, creatures=[creature0, creature1])

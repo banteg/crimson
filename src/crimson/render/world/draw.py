@@ -240,10 +240,10 @@ def draw_creature_overlays(
     creature: CreatureState,
     *,
     screen: Vec2,
-    hitbox_size: float,
+    lifecycle_stage: float,
     ctx: WorldDrawContext,
 ) -> None:
-    fade = monster_vision_fade_alpha(hitbox_size)
+    fade = monster_vision_fade_alpha(lifecycle_stage)
     if ctx.monster_vision and ctx.particles_texture is not None and ctx.monster_vision_src is not None:
         mv_alpha = fade * ctx.entity_alpha
         if mv_alpha > 1e-3:
@@ -280,7 +280,7 @@ def draw_creature_overlays(
 def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
     for _idx, creature in sorted_active_creatures(render_ctx):
         screen = render_ctx._world_to_screen_with(creature.pos, camera=ctx.camera, view_scale=ctx.view_scale)
-        hitbox_size = float(creature.hitbox_size)
+        lifecycle_stage = float(creature.lifecycle_stage)
 
         try:
             type_id = CreatureTypeId(int(creature.type_id))
@@ -290,7 +290,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
         asset = CREATURE_ASSET.get(type_id) if type_id is not None else None
         texture = render_ctx.creature_textures.get(asset) if asset is not None else None
 
-        draw_creature_overlays(render_ctx, creature, screen=screen, hitbox_size=hitbox_size, ctx=ctx)
+        draw_creature_overlays(render_ctx, creature, screen=screen, lifecycle_stage=lifecycle_stage, ctx=ctx)
 
         if texture is None:
             tint = rl.Color(220, 90, 90, int(255 * ctx.entity_alpha + 0.5))
@@ -317,9 +317,9 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
                 t = 0.0
             tint_rgba = RGBA.lerp(tint_rgba, RGBA(0.5, 0.5, 1.0, 1.0), t)
 
-        if hitbox_size < 0.0:
-            # Mirrors the main-pass alpha fade when hitbox_size ramps negative.
-            tint_rgba = tint_rgba.with_alpha(max(0.0, tint_rgba.a + hitbox_size * 0.1))
+        if lifecycle_stage < 0.0:
+            # Mirrors the main-pass alpha fade when lifecycle_stage ramps negative.
+            tint_rgba = tint_rgba.with_alpha(max(0.0, tint_rgba.a + lifecycle_stage * 0.1))
 
         tint = tint_rgba.scaled_alpha(ctx.entity_alpha).clamped().to_rl()
 
@@ -334,20 +334,20 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
 
         phase = float(creature.anim_phase)
         if long_strip:
-            if hitbox_size < 0.0:
+            if lifecycle_stage < 0.0:
                 # Negative phase selects the fallback "corpse" frame in creature_render_type.
                 phase = -1.0
-            elif hitbox_size < 16.0:
-                # Death staging: while hitbox_size ramps down (16..0), creature_render_type
-                # selects frames via `__ftol((base_frame + 15) - hitbox_size)`.
-                phase = float(info.base + 0x0F) - hitbox_size - 0.5
+            elif lifecycle_stage < 16.0:
+                # Death staging: while lifecycle_stage ramps down (16..0), creature_render_type
+                # selects frames via `__ftol((base_frame + 15) - lifecycle_stage)`.
+                phase = float(info.base + 0x0F) - lifecycle_stage - 0.5
 
         shadow_alpha = None
         if shadow:
-            # Shadow pass uses tint_a * 0.4 and fades much faster for corpses (hitbox_size < 0).
+            # Shadow pass uses tint_a * 0.4 and fades much faster for corpses (lifecycle_stage < 0).
             shadow_a = float(creature.tint.a) * 0.4
-            if hitbox_size < 0.0:
-                shadow_a += hitbox_size * (0.5 if long_strip else 0.1)
+            if lifecycle_stage < 0.0:
+                shadow_a += lifecycle_stage * (0.5 if long_strip else 0.1)
                 shadow_a = max(0.0, shadow_a)
             shadow_alpha = int(clamp(shadow_a * ctx.entity_alpha * 255.0, 0.0, 255.0) + 0.5)
 
@@ -357,7 +357,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
             type_id=type_id or CreatureTypeId.ZOMBIE,
             flags=creature.flags,
             phase=phase,
-            mirror_long=bool(info.mirror) and hitbox_size >= 16.0,
+            mirror_long=bool(info.mirror) and lifecycle_stage >= 16.0,
             shadow_alpha=shadow_alpha,
             pos=creature.pos,
             screen_pos=screen,

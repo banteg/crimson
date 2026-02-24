@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool, CreatureUpdateOptions
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool, CreatureUpdateOptions
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
@@ -32,7 +32,7 @@ def test_plaguebearer_infects_weak_creatures_near_player() -> None:
     creature.flags = CreatureFlags.ANIM_PING_PONG
     creature.pos = Vec2(120.0, 100.0)
     creature.hp = 100.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
 
     pool.update(0.016, options=CreatureUpdateOptions(state=state, players=[player]))
 
@@ -52,7 +52,7 @@ def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
     creature.collision_timer = 0.1
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 100.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
 
     pool.update(dt, options=CreatureUpdateOptions(state=state, players=[player]))
 
@@ -72,7 +72,7 @@ def test_plaguebearer_spreads_between_nearby_creatures() -> None:
     infected.plague_infected = True
     infected.pos = Vec2(100.0, 100.0)
     infected.hp = 100.0
-    infected.hitbox_size = CREATURE_HITBOX_ALIVE
+    infected.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
 
     other = pool.entries[1]
     other.active = True
@@ -80,7 +80,7 @@ def test_plaguebearer_spreads_between_nearby_creatures() -> None:
     other.plague_infected = False
     other.pos = Vec2(130.0, 100.0)
     other.hp = 100.0
-    other.hitbox_size = CREATURE_HITBOX_ALIVE
+    other.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
 
     pool.update(0.016, options=CreatureUpdateOptions(state=state, players=[player]))
 
@@ -102,7 +102,7 @@ def test_plaguebearer_infection_kill_increments_global_count() -> None:
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 10.0
     creature.reward_value = 10.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
 
     result = pool.update(dt, options=CreatureUpdateOptions(state=state, players=[player]))
 
@@ -126,11 +126,11 @@ def test_plaguebearer_infection_kill_does_not_apply_immediate_dead_decay() -> No
     creature.pos = Vec2(120.0, 370.0)
     creature.hp = 10.0
     creature.reward_value = 10.0
-    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
 
     result = pool.update(dt, options=CreatureUpdateOptions(state=state, players=[player]))
 
     assert len(result.deaths) == 1
     # Native plague timer kills call creature_handle_death, then continue the
     # live branch without an immediate `_tick_dead` pass.
-    assert creature.hitbox_size == CREATURE_HITBOX_ALIVE - dt
+    assert creature.lifecycle_stage == CREATURE_LIFECYCLE_ALIVE - dt
