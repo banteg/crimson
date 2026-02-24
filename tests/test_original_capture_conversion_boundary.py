@@ -143,6 +143,44 @@ def test_load_capture_stream_rejects_unknown_config_fields(tmp_path: Path) -> No
         load_capture(path)
 
 
+def test_load_capture_stream_accepts_missing_hook_config_fields_with_defaults(tmp_path: Path) -> None:
+    tick = _base_tick(tick_index=0, elapsed_ms=16)
+    obj = _capture_obj(ticks=[tick])
+    path = tmp_path / "capture.json"
+    meta = _capture_meta_dict(obj)
+    config = _as_builtins_dict(_base_config(out_path="capture.json", log_mode="truncate"))
+    for key in (
+        "bonus_sample_limit",
+        "enable_input_hooks",
+        "enable_rng_hooks",
+        "enable_sfx_hooks",
+        "enable_damage_hooks",
+        "enable_effect_hooks",
+        "creature_damage_projectile_only",
+        "enable_spawn_hooks",
+        "enable_creature_spawn_hook",
+        "enable_creature_death_hook",
+        "enable_bonus_spawn_hook",
+    ):
+        config.pop(key, None)
+    meta["config"] = config
+    _write_capture_stream_malformed(path, meta=meta, ticks=[_as_builtins_dict(tick)])
+
+    capture = load_capture(path)
+
+    assert capture.config.bonus_sample_limit == -1
+    assert capture.config.enable_input_hooks is True
+    assert capture.config.enable_rng_hooks is True
+    assert capture.config.enable_sfx_hooks is True
+    assert capture.config.enable_damage_hooks is True
+    assert capture.config.enable_effect_hooks is True
+    assert capture.config.creature_damage_projectile_only is True
+    assert capture.config.enable_spawn_hooks is True
+    assert capture.config.enable_creature_spawn_hook is True
+    assert capture.config.enable_creature_death_hook is True
+    assert capture.config.enable_bonus_spawn_hook is True
+
+
 def test_load_capture_stream_rejects_truncated_last_line(tmp_path: Path) -> None:
     tick = _base_tick(tick_index=0, elapsed_ms=16)
     obj = _capture_obj(ticks=[tick])
