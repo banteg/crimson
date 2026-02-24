@@ -585,3 +585,55 @@ def cmd_dbg_focus(
         + " candidate_count="
         + str(event_heads.get("candidate_count")),
     )
+
+
+@dbg_app.command("viz")
+def cmd_dbg_viz(
+    golden_trace: Path = typer.Argument(..., help="golden trace (.cdt)"),
+    candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
+    tick: int | None = typer.Option(None, "--tick", help="focus tick (auto when omitted)"),
+    policy: str = typer.Option("original_vs_python_default", "--policy", help="parity policy name"),
+    window_before: int = typer.Option(64, "--window-before", min=0, help="ticks before focus tick"),
+    window_after: int = typer.Option(64, "--window-after", min=0, help="ticks after focus tick"),
+    out: Path | None = typer.Option(None, "--out", help="output HTML path"),
+    json_out: Path | None = typer.Option(None, "--json-out", help="optional JSON summary output path"),
+) -> None:
+    """Render a static HTML divergence timeline around a focus tick."""
+    from ..dbg.policy import resolve_parity_policy
+    from ..dbg.viz import write_viz_html
+
+    try:
+        parity_policy = resolve_parity_policy(str(policy))
+    except ValueError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=2) from exc
+
+    html_out = Path(out) if out is not None else Path(candidate_trace).with_suffix(".viz.html")
+
+    try:
+        payload = write_viz_html(
+            golden_trace=Path(golden_trace),
+            candidate_trace=Path(candidate_trace),
+            policy=parity_policy,
+            tick=tick,
+            window_before=int(window_before),
+            window_after=int(window_after),
+            out_path=html_out,
+        )
+    except ValueError as exc:
+        typer.echo(f"dbg viz failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    if json_out is not None:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        typer.echo(f"json_report={json_out}")
+
+    typer.echo(
+        "viz_html="
+        + str(payload.get("html_path"))
+        + " focus_tick="
+        + str(payload.get("focus_tick"))
+        + " rows="
+        + str(payload.get("row_count")),
+    )

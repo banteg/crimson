@@ -19,7 +19,7 @@ I’m going to define a debugger that:
 - [x] Chunk 2: `crimson dbg record` (Python runner profiles + CDT writer integration)
 - [x] Chunk 3: `crimson dbg diff` + `crimson dbg bisect` + parity policy + JSON reports
 - [x] Chunk 4: `crimson dbg tick` + `crimson dbg entity` + `crimson dbg query` + `crimson dbg focus`
-- [ ] Chunk 5: `crimson dbg viz` + final workflow wiring + documentation/tests cleanup
+- [x] Chunk 5: `crimson dbg viz` + final workflow wiring + documentation/tests cleanup
 
 ## 1) Background
 

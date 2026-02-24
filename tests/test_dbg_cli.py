@@ -214,3 +214,36 @@ def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
     assert focus_result.exit_code == 0, focus_result.output
     assert "result=diverged" in focus_result.output
     assert "checkpoint_field_count=" in focus_result.output
+
+
+def test_dbg_viz(tmp_path: Path) -> None:
+    capture_path = _write_capture(tmp_path / "capture.json")
+    golden_trace = tmp_path / "golden.cdt"
+    candidate_trace = tmp_path / "candidate.cdt"
+    html_out = tmp_path / "viz.html"
+    runner = CliRunner()
+
+    import_result = runner.invoke(
+        app,
+        ["dbg", "import-capture", str(capture_path), "--out", str(golden_trace)],
+    )
+    assert import_result.exit_code == 0, import_result.output
+
+    meta, ticks, _footer = load_trace(golden_trace)
+    tick1 = next(row for row in ticks if int(row.tick_index) == 1)
+    checkpoint = cast(dict[str, object], tick1.channels["checkpoint"])
+    score_xp_obj = checkpoint.get("score_xp")
+    assert isinstance(score_xp_obj, int)
+    checkpoint["score_xp"] = score_xp_obj + 1
+    write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
+
+    result = runner.invoke(
+        app,
+        ["dbg", "viz", str(golden_trace), str(candidate_trace), "--tick", "1", "--out", str(html_out)],
+    )
+    assert result.exit_code == 0, result.output
+    assert "viz_html=" in result.output
+    assert html_out.exists()
+    html_text = html_out.read_text(encoding="utf-8")
+    assert "Crimson Debug Viz" in html_text
+    assert "Focus tick: 1" in html_text
