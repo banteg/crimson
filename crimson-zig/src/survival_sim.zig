@@ -1,6 +1,7 @@
 const std = @import("std");
 
 const replay_codec = @import("replay_codec.zig");
+const survival_spawn = @import("survival_spawn.zig");
 
 pub const SurvivalSimError = error{
     UnsupportedGameMode,
@@ -18,6 +19,8 @@ pub const SurvivalReplayScaffoldResult = struct {
     perk_pick_count: usize,
     fire_pressed_count: usize,
     reload_pressed_count: usize,
+    wave_spawn_count: usize,
+    wave_spawn_rng_state: u32,
 };
 
 pub fn runSurvivalReplayScaffold(
@@ -37,6 +40,13 @@ pub fn runSurvivalReplayScaffold(
     var perk_pick_count: usize = 0;
     var fire_pressed_count: usize = 0;
     var reload_pressed_count: usize = 0;
+    var wave_spawn_count: usize = 0;
+    var spawn_cooldown: f64 = 0.0;
+    var spawn_rng = survival_spawn.Crand.init(header.seed);
+    var player_experience: i32 = 0;
+    _ = &player_experience;
+    const terrain_size: i32 = @max(@as(i32, 1), @as(i32, @intFromFloat(header.world_size)));
+    const dt_nominal_ms: f64 = 1000.0 / @as(f64, @floatFromInt(header.tick_rate));
 
     for (0..replay.tickCount()) |tick_index| {
         if (event_index < events.len and events[event_index].tickIndex() < tick_index) {
@@ -54,6 +64,20 @@ pub fn runSurvivalReplayScaffold(
         const flags = replay_codec.unpackInputFlags(input.flags);
         if (flags.fire_pressed) fire_pressed_count += 1;
         if (flags.reload_pressed) reload_pressed_count += 1;
+
+        const elapsed_before_ms: f64 = @as(f64, @floatFromInt(tick_index)) * dt_nominal_ms;
+        const wave_result = survival_spawn.tickSurvivalWaveSpawnsCount(
+            spawn_cooldown,
+            dt_nominal_ms,
+            &spawn_rng,
+            1,
+            elapsed_before_ms,
+            player_experience,
+            terrain_size,
+            terrain_size,
+        );
+        spawn_cooldown = wave_result.cooldown;
+        wave_spawn_count += wave_result.spawn_count;
     }
 
     const terminal_tick = replay.tickCount();
@@ -80,6 +104,8 @@ pub fn runSurvivalReplayScaffold(
         .perk_pick_count = perk_pick_count,
         .fire_pressed_count = fire_pressed_count,
         .reload_pressed_count = reload_pressed_count,
+        .wave_spawn_count = wave_spawn_count,
+        .wave_spawn_rng_state = spawn_rng.state,
     };
 }
 
@@ -123,6 +149,7 @@ test "survival scaffold tracks event and input counters" {
     try std.testing.expectEqual(@as(usize, 1), result.perk_pick_count);
     try std.testing.expectEqual(@as(usize, 1), result.fire_pressed_count);
     try std.testing.expectEqual(@as(usize, 1), result.reload_pressed_count);
+    try std.testing.expectEqual(@as(usize, 1), result.wave_spawn_count);
 }
 
 test "survival scaffold rejects unsupported event player index" {
