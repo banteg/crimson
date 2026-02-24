@@ -229,6 +229,7 @@ const CONFIG = {
   creatureSampleLimit: -1,
   projectileSampleLimit: -1,
   secondaryProjectileSampleLimit: -1,
+  bonusSampleLimit: -1,
   maxPlayerSpawnsByPlayerLimit: -1,
   enableCreatureLifecycleDigest: true,
   enableCreatureMicroHooks: true,

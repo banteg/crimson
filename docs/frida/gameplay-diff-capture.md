@@ -35,6 +35,15 @@ uv run scripts/frida/gameplay_diff_capture_host.py \
   --output-dir C:\share\frida
 ```
 
+File-sink capture with post-run msgpack conversion:
+
+```text
+uv run scripts/frida/gameplay_diff_capture_postpack.py \
+  --process crimsonland.exe \
+  --script scripts\frida\gameplay_diff_capture.js \
+  --output-dir C:\share\frida
+```
+
 Optional sidecar for unattended recordings:
 
 ```text
@@ -45,6 +54,7 @@ Just shortcut (Windows VM):
 
 ```text
 just frida-gameplay-diff-capture
+just frida-gameplay-diff-capture-postpack
 ```
 
 ## Quest campaign captures
