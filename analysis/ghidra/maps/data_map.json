@@ -6323,8 +6323,8 @@
     },
     {
       "address": "0x0049bf48",
-      "comment": "Creature hitbox size sentinel (creature_pool + 0x10).",
-      "name": "creature_hitbox_size",
+      "comment": "Creature lifecycle stage sentinel (creature_pool + 0x10).",
+      "name": "creature_lifecycle_stage",
       "program": "crimsonland.exe"
     },
     {

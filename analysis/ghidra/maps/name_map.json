@@ -1461,7 +1461,7 @@
     "address": "0x00420040",
     "name": "creature_find_nearest",
     "signature": "int creature_find_nearest(float *pos, int exclude_id, float min_dist)",
-    "comment": "returns nearest creature index; uses hitbox-size sentinel when exclude_id == -1"
+    "comment": "returns nearest creature index; uses lifecycle-stage sentinel when exclude_id == -1"
   },
   {
     "program": "crimsonland.exe",
