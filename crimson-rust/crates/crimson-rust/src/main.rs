@@ -76,6 +76,8 @@ fn main() -> ExitCode {
                 return ExitCode::from(1);
             }
 
+            let submitted_score =
+                submitted_score.or_else(|| infer_submitted_score_from_replay_path(&replay_path));
             let options = VerifyOptions {
                 submitted_score,
                 score_metric: score_metric.into(),
@@ -180,4 +182,15 @@ fn default_runtime_dir() -> PathBuf {
 
 fn render_verify_error(err: &VerifyError) -> String {
     err.to_string()
+}
+
+fn infer_submitted_score_from_replay_path(path: &Path) -> Option<i64> {
+    let stem = path.file_stem()?.to_string_lossy();
+    let marker = "_score";
+    let start = stem.rfind(marker)? + marker.len();
+    let digits = &stem[start..];
+    if digits.is_empty() || !digits.chars().all(|ch| ch.is_ascii_digit()) {
+        return None;
+    }
+    digits.parse::<i64>().ok()
 }

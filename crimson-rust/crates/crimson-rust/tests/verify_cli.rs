@@ -54,6 +54,8 @@ fn verify_json_success_for_acceptance_replay() {
         .arg(&replay_path)
         .arg("--format")
         .arg("json")
+        .arg("--submitted-score")
+        .arg("0")
         .output()
         .expect("cli invocation should succeed");
 
@@ -77,6 +79,27 @@ fn verify_json_success_for_acceptance_replay() {
             .unwrap_or_default()
             >= 0
     );
+}
+
+#[test]
+fn verify_infers_submitted_score_from_filename_and_returns_mismatch() {
+    let replay_path = acceptance_replay_fixture();
+    let output = Command::new(cli_bin())
+        .arg("verify")
+        .arg(&replay_path)
+        .arg("--format")
+        .arg("json")
+        .output()
+        .expect("cli invocation should succeed");
+
+    assert_eq!(output.status.code(), Some(3));
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be utf-8");
+    let payload: serde_json::Value =
+        serde_json::from_str(stdout.trim()).expect("json output should parse");
+    assert_eq!(payload["status"], "score_mismatch");
+    assert_eq!(payload["score_claim"]["submitted_score"], 76_661);
+    assert_eq!(payload["score_claim"]["metric"], "score_xp");
+    assert_eq!(payload["score_claim"]["match"], false);
 }
 
 #[test]

@@ -20,6 +20,8 @@ Options:
 - `--submitted-score N`
 - `--score-metric auto|score_xp|elapsed_ms`
 - `--base-dir PATH` (also accepts `--runtime-dir`)
+- if `--submitted-score` is omitted, CLI infers claim from filename suffix
+  like `*_score61829.crd`
 
 Exit code `3` is used for score-claim mismatch.
 
