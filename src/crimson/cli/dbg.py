@@ -176,3 +176,139 @@ def cmd_dbg_health(
 
     if bool(strict) and not bool(ok):
         raise typer.Exit(code=1)
+
+
+@dbg_app.command("diff")
+def cmd_dbg_diff(
+    golden_trace: Path = typer.Argument(..., help="golden trace (.cdt)"),
+    candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
+    policy: str = typer.Option("original_vs_python_default", "--policy", help="parity policy name"),
+    float_abs_tol: float | None = typer.Option(None, "--float-abs-tol", min=0.0, help="override float abs tolerance"),
+    max_field_diffs: int | None = typer.Option(
+        None,
+        "--max-field-diffs",
+        min=1,
+        help="override max field-level diffs in mismatch payloads",
+    ),
+    tick_start: int | None = typer.Option(None, "--tick-start", help="optional inclusive lower tick bound"),
+    tick_end: int | None = typer.Option(None, "--tick-end", help="optional inclusive upper tick bound"),
+    json_out: Path | None = typer.Option(None, "--json-out", help="optional JSON output path"),
+) -> None:
+    """Compare two traces and report the first mismatch using parity policy rules."""
+    from ..dbg.diff import diff_report_to_json, diff_traces
+    from ..dbg.policy import resolve_parity_policy
+
+    try:
+        parity_policy = resolve_parity_policy(
+            str(policy),
+            float_abs_tol=float_abs_tol,
+            max_field_diffs=max_field_diffs,
+        )
+    except ValueError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=2) from exc
+
+    try:
+        report = diff_traces(
+            expected_trace_path=Path(golden_trace),
+            actual_trace_path=Path(candidate_trace),
+            policy=parity_policy,
+            tick_start=tick_start,
+            tick_end=tick_end,
+        )
+    except ValueError as exc:
+        typer.echo(f"dbg diff failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    payload = diff_report_to_json(report)
+    if json_out is not None:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        typer.echo(f"json_report={json_out}")
+
+    if report.ok:
+        typer.echo(f"result=ok checked={report.checked_count} policy={report.policy}")
+        return
+
+    mismatch = report.mismatch
+    assert mismatch is not None
+    typer.echo(
+        f"result=diverged kind={mismatch.kind} tick={mismatch.tick_index} "
+        f"checked={report.checked_count} policy={report.policy}",
+        err=True,
+    )
+    if mismatch.first_rng_mark is not None:
+        typer.echo(f"first_rng_mark={mismatch.first_rng_mark}", err=True)
+    for diff in mismatch.field_diffs:
+        typer.echo(f"field_diff {diff.field}: expected={diff.expected!r} actual={diff.actual!r}", err=True)
+    if mismatch.detail is not None:
+        typer.echo("detail=" + json.dumps(mismatch.detail, sort_keys=True), err=True)
+    raise typer.Exit(code=1)
+
+
+@dbg_app.command("bisect")
+def cmd_dbg_bisect(
+    golden_trace: Path = typer.Argument(..., help="golden trace (.cdt)"),
+    candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
+    policy: str = typer.Option("original_vs_python_default", "--policy", help="parity policy name"),
+    float_abs_tol: float | None = typer.Option(None, "--float-abs-tol", min=0.0, help="override float abs tolerance"),
+    max_field_diffs: int | None = typer.Option(
+        None,
+        "--max-field-diffs",
+        min=1,
+        help="override max field-level diffs in mismatch payloads",
+    ),
+    tick_start: int | None = typer.Option(None, "--tick-start", help="optional inclusive lower tick bound"),
+    tick_end: int | None = typer.Option(None, "--tick-end", help="optional inclusive upper tick bound"),
+    window_before: int = typer.Option(12, "--window-before", min=0, help="ticks before first bad tick in repro trace"),
+    window_after: int = typer.Option(6, "--window-after", min=0, help="ticks after first bad tick in repro trace"),
+    out: Path | None = typer.Option(None, "--out", help="optional repro trace output path (.cdt)"),
+    json_out: Path | None = typer.Option(None, "--json-out", help="optional JSON output path"),
+) -> None:
+    """Bisect divergence and optionally emit a compact repro trace window."""
+    from ..dbg.diff import bisect_report_to_json, bisect_traces
+    from ..dbg.policy import resolve_parity_policy
+
+    try:
+        parity_policy = resolve_parity_policy(
+            str(policy),
+            float_abs_tol=float_abs_tol,
+            max_field_diffs=max_field_diffs,
+        )
+    except ValueError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=2) from exc
+
+    try:
+        report = bisect_traces(
+            expected_trace_path=Path(golden_trace),
+            actual_trace_path=Path(candidate_trace),
+            policy=parity_policy,
+            tick_start=tick_start,
+            tick_end=tick_end,
+            window_before=int(window_before),
+            window_after=int(window_after),
+            repro_out=(None if out is None else Path(out)),
+        )
+    except ValueError as exc:
+        typer.echo(f"dbg bisect failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    payload = bisect_report_to_json(report)
+    if json_out is not None:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        typer.echo(f"json_report={json_out}")
+
+    if report.ok:
+        typer.echo(f"result=ok checked={report.checked_count} policy={report.policy}")
+        return
+
+    mismatch = report.mismatch
+    assert mismatch is not None
+    typer.echo(
+        f"result=diverged first_bad_tick={report.first_bad_tick} "
+        f"kind={mismatch.kind} checked={report.checked_count} policy={report.policy}",
+    )
+    if report.repro_trace_path is not None:
+        typer.echo(f"repro_trace={report.repro_trace_path}")

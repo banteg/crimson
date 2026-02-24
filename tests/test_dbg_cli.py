@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import cast
 
 from typer.testing import CliRunner
 
 from crimson.cli import app
-from crimson.dbg.trace import TraceReader
+from crimson.dbg.trace import TraceReader, load_trace, write_trace
 from crimson.game_modes import GameMode
 from crimson.original.capture import dump_capture
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay
@@ -97,3 +98,42 @@ def test_dbg_record_standard_profile(tmp_path: Path) -> None:
         assert "checkpoint" in tick0.channels
         assert "rng_marks" in tick0.channels
         assert "entity_samples" in tick0.channels
+
+
+def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
+    replay_path = _write_replay(tmp_path / "sample.crd")
+    golden_trace = tmp_path / "golden.cdt"
+    candidate_trace = tmp_path / "candidate.cdt"
+    repro_trace = tmp_path / "repro.cdt"
+    runner = CliRunner()
+
+    record_result = runner.invoke(
+        app,
+        ["dbg", "record", str(replay_path), "--out", str(golden_trace), "--profile", "standard"],
+    )
+    assert record_result.exit_code == 0, record_result.output
+
+    meta, ticks, _footer = load_trace(golden_trace)
+    tick1 = next(row for row in ticks if int(row.tick_index) == 1)
+    checkpoint = cast(dict[str, object], tick1.channels["checkpoint"])
+    score_xp_obj = checkpoint.get("score_xp")
+    assert isinstance(score_xp_obj, int)
+    checkpoint["score_xp"] = score_xp_obj + 1
+    write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
+
+    diff_result = runner.invoke(
+        app,
+        ["dbg", "diff", str(golden_trace), str(candidate_trace)],
+    )
+    assert diff_result.exit_code == 1, diff_result.output
+    assert "result=diverged" in diff_result.output
+    assert "checkpoint_field_mismatch" in diff_result.output
+
+    bisect_result = runner.invoke(
+        app,
+        ["dbg", "bisect", str(golden_trace), str(candidate_trace), "--out", str(repro_trace)],
+    )
+    assert bisect_result.exit_code == 0, bisect_result.output
+    assert "result=diverged" in bisect_result.output
+    assert "first_bad_tick=1" in bisect_result.output
+    assert repro_trace.exists()
