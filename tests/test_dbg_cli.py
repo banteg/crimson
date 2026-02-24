@@ -77,6 +77,15 @@ def _write_replay(path: Path, *, ticks: int = 3) -> Path:
     return path
 
 
+def _as_dict(value: object) -> dict[str, object]:
+    assert isinstance(value, dict)
+    out: dict[str, object] = {}
+    for key, item in value.items():
+        assert isinstance(key, str)
+        out[key] = item
+    return out
+
+
 def test_dbg_record_standard_profile(tmp_path: Path) -> None:
     replay_path = _write_replay(tmp_path / "sample.crd")
     trace_path = tmp_path / "sample.cdt"
@@ -137,3 +146,71 @@ def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
     assert "result=diverged" in bisect_result.output
     assert "first_bad_tick=1" in bisect_result.output
     assert repro_trace.exists()
+
+
+def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
+    capture_path = _write_capture(tmp_path / "capture.json")
+    golden_trace = tmp_path / "golden.cdt"
+    candidate_trace = tmp_path / "candidate.cdt"
+    runner = CliRunner()
+
+    import_result = runner.invoke(
+        app,
+        ["dbg", "import-capture", str(capture_path), "--out", str(golden_trace)],
+    )
+    assert import_result.exit_code == 0, import_result.output
+
+    meta, ticks, _footer = load_trace(golden_trace)
+    tick1 = next(row for row in ticks if int(row.tick_index) == 1)
+    checkpoint = cast(dict[str, object], tick1.channels["checkpoint"])
+    score_xp_obj = checkpoint.get("score_xp")
+    assert isinstance(score_xp_obj, int)
+    checkpoint["score_xp"] = score_xp_obj + 1
+    write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
+
+    entity_samples = _as_dict(tick1.channels["entity_samples"])
+    creatures_obj = entity_samples.get("creatures")
+    assert isinstance(creatures_obj, list)
+    first_creature = _as_dict(creatures_obj[0])
+    uid_obj = first_creature.get("uid")
+    assert isinstance(uid_obj, int)
+    entity_uid = int(uid_obj)
+
+    tick_result = runner.invoke(
+        app,
+        ["dbg", "tick", str(golden_trace), "1"],
+    )
+    assert tick_result.exit_code == 0, tick_result.output
+    assert "tick=1" in tick_result.output
+    assert "entity_counts" in tick_result.output
+
+    entity_result = runner.invoke(
+        app,
+        ["dbg", "entity", str(golden_trace), str(entity_uid)],
+    )
+    assert entity_result.exit_code == 0, entity_result.output
+    assert f"uid={entity_uid}" in entity_result.output
+    assert "spawn_tick=0" in entity_result.output
+
+    query_ticks_result = runner.invoke(
+        app,
+        ["dbg", "query", str(golden_trace), "ticks where checkpoint.score_xp >= 0"],
+    )
+    assert query_ticks_result.exit_code == 0, query_ticks_result.output
+    assert "scope=ticks" in query_ticks_result.output
+    assert "match_count=2" in query_ticks_result.output
+
+    query_entities_result = runner.invoke(
+        app,
+        ["dbg", "query", str(golden_trace), "entities where pool_kind == 'creature'"],
+    )
+    assert query_entities_result.exit_code == 0, query_entities_result.output
+    assert "scope=entities" in query_entities_result.output
+
+    focus_result = runner.invoke(
+        app,
+        ["dbg", "focus", str(golden_trace), str(candidate_trace), "--tick", "1"],
+    )
+    assert focus_result.exit_code == 0, focus_result.output
+    assert "result=diverged" in focus_result.output
+    assert "checkpoint_field_count=" in focus_result.output

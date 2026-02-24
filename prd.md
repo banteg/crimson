@@ -18,7 +18,7 @@ I’m going to define a debugger that:
 - [x] Chunk 1: CDT container/schema + `crimson dbg import-capture` + `crimson dbg health`
 - [x] Chunk 2: `crimson dbg record` (Python runner profiles + CDT writer integration)
 - [x] Chunk 3: `crimson dbg diff` + `crimson dbg bisect` + parity policy + JSON reports
-- [ ] Chunk 4: `crimson dbg tick` + `crimson dbg entity` + `crimson dbg query` + `crimson dbg focus`
+- [x] Chunk 4: `crimson dbg tick` + `crimson dbg entity` + `crimson dbg query` + `crimson dbg focus`
 - [ ] Chunk 5: `crimson dbg viz` + final workflow wiring + documentation/tests cleanup
 
 ## 1) Background
