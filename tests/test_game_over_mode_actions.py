@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
+import crimson.modes.base_gameplay_mode as base_gameplay_mode
 from crimson.game_world import GameWorld
 from crimson.modes.rush_mode import RushMode
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
+from grim.audio import AudioState
 from grim.config import CrimsonConfig
+from grim.music import init_music_state
+from grim.sfx import init_sfx_state
 from grim.view import ViewContext
 
 
@@ -61,6 +66,30 @@ def test_update_game_over_ui_calls_open_on_play_again(mocker) -> None:
 
     open_mode.assert_called_once_with()
     assert mode.take_action() is None
+
+
+def test_open_stops_music_before_run_restart(mocker) -> None:
+    mode = _make_mode()
+    mode.world.audio = AudioState(
+        ready=False,
+        music=init_music_state(ready=False, enabled=True, volume=1.0),
+        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0),
+    )
+    stop_music = mocker.patch.object(base_gameplay_mode, "stop_music")
+    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=SimpleNamespace(texture=None))
+    mocker.patch.object(base_gameplay_mode, "load_hud_assets", return_value=SimpleNamespace())
+    mocker.patch.object(base_gameplay_mode, "lan_debug_log", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(base_gameplay_mode.rl, "get_screen_width", return_value=1024)
+    mocker.patch.object(base_gameplay_mode.rl, "get_screen_height", return_value=768)
+    mocker.patch.object(base_gameplay_mode.rl, "get_render_width", return_value=1024)
+    mocker.patch.object(base_gameplay_mode.rl, "get_render_height", return_value=768)
+    mocker.patch.object(GameWorld, "reset", side_effect=lambda **_kwargs: None)
+    mocker.patch.object(GameWorld, "open", side_effect=lambda: None)
+    mocker.patch.object(mode._local_input, "reset", side_effect=lambda **_kwargs: None)
+
+    base_gameplay_mode.BaseGameplayMode.open(mode)
+
+    stop_music.assert_called_once_with(mode.world.audio)
 
 
 def test_draw_pause_background_fades_entities_during_game_over_close(mocker) -> None:

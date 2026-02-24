@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, Protocol, runtime_checkable
 
 from grim.assets import PaqTextureCache
-from grim.audio import AudioState, update_audio
+from grim.audio import AudioState, stop_music, update_audio
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
@@ -718,6 +718,10 @@ class BaseGameplayMode:
         self._game_over_record = None
         self._game_over_banner = "reaper"
         self._game_over_ui.close()
+
+        # Native game_over/victory transitions call `sfx_mute_all` on menu + extra
+        # tracks before restarting gameplay ("Play Again"), resetting first-hit tune gate.
+        stop_music(self.world.audio)
 
         player_count = self.config.player_count
         seed_source = "lan_override" if self._lan_seed_override is not None else "random"
