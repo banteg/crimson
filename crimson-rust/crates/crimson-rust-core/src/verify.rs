@@ -12,8 +12,15 @@ use crate::replay::{load_replay, Replay, ReplayCodecError, ReplayEvent};
 
 pub const REPLAY_VERIFY_SCHEMA_VERSION: i64 = 1;
 pub const REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE: i32 = 3;
-pub const ACCEPTANCE_REPLAY_SHA256: &str =
-    "1cb9ec12b25b0a5b3529689751ef1f5a5707cbd90b5657e0e74837e55a1bf790";
+
+const FIRE_DOWN_FLAG: i64 = 1 << 0;
+const FIRE_PRESSED_FLAG: i64 = 1 << 1;
+const RELOAD_PRESSED_FLAG: i64 = 1 << 2;
+
+const PISTOL_WEAPON_ID: i64 = 1;
+const PISTOL_CLIP_SIZE: i64 = 10;
+const PISTOL_SHOT_COOLDOWN_S: f32 = 0.7117;
+const PISTOL_RELOAD_TIME_S: f32 = 1.2;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct RunResult {
@@ -84,6 +91,92 @@ pub enum VerifyError {
     UnsupportedScope(String),
 }
 
+#[derive(Debug, Clone, Copy)]
+struct SurvivalSubsetPlayer {
+    ammo: f32,
+    clip_size: i64,
+    shot_cooldown_s: f32,
+    reload_timer_s: f32,
+    reload_active: bool,
+}
+
+impl SurvivalSubsetPlayer {
+    fn new() -> Self {
+        Self {
+            ammo: PISTOL_CLIP_SIZE as f32,
+            clip_size: PISTOL_CLIP_SIZE,
+            shot_cooldown_s: 0.0,
+            reload_timer_s: 0.0,
+            reload_active: false,
+        }
+    }
+
+    fn step(
+        &mut self,
+        dt_s: f32,
+        fire_down: bool,
+        fire_pressed: bool,
+        reload_pressed: bool,
+        rng: &mut CrtRand,
+    ) -> i64 {
+        self.advance_timers(dt_s);
+
+        if reload_pressed {
+            self.start_reload_if_needed();
+        }
+
+        // In the native loop, fire_down is the gate for continuous fire, and
+        // fire_pressed helps the first-shot edge. The subset keeps both.
+        let wants_fire = fire_down || fire_pressed;
+        if !wants_fire {
+            return 0;
+        }
+
+        if self.reload_active || self.shot_cooldown_s > 0.0 || self.ammo < 1.0 {
+            return 0;
+        }
+
+        self.ammo -= 1.0;
+        self.shot_cooldown_s = PISTOL_SHOT_COOLDOWN_S;
+
+        // Pistol fire path consumes several RNG draws in native gameplay
+        // (spread/audio and related per-shot side effects).
+        for _ in 0..3 {
+            rng.rand();
+        }
+
+        if self.ammo < 1.0 {
+            self.start_reload_if_needed();
+        }
+
+        1
+    }
+
+    fn advance_timers(&mut self, dt_s: f32) {
+        if self.shot_cooldown_s > 0.0 {
+            self.shot_cooldown_s = (self.shot_cooldown_s - dt_s).max(0.0);
+        }
+        if self.reload_active {
+            self.reload_timer_s = (self.reload_timer_s - dt_s).max(0.0);
+            if self.reload_timer_s <= 0.0 {
+                self.reload_active = false;
+                self.ammo = self.clip_size as f32;
+            }
+        }
+    }
+
+    fn start_reload_if_needed(&mut self) {
+        if self.reload_active {
+            return;
+        }
+        if self.ammo >= self.clip_size as f32 {
+            return;
+        }
+        self.reload_active = true;
+        self.reload_timer_s = PISTOL_RELOAD_TIME_S;
+    }
+}
+
 pub fn verify_replay_file(
     path: &Path,
     options: VerifyOptions,
@@ -103,9 +196,8 @@ pub fn verify_replay_bytes(
     let replay_sha256 = sha256_hex(bytes);
     let replay = load_replay(bytes)?;
     enforce_phase1_scope(&replay)?;
-    validate_bootstrap(&replay)?;
 
-    let run_result = simulate_phase1(&replay, &replay_sha256)?;
+    let run_result = simulate_phase1(&replay)?;
     let metric = resolve_score_metric(run_result.game_mode_id, options.score_metric);
     let mut status = "ok".to_string();
     let mut score_claim = None;
@@ -168,31 +260,137 @@ fn enforce_phase1_scope(replay: &Replay) -> Result<(), VerifyError> {
     Ok(())
 }
 
-fn validate_bootstrap(replay: &Replay) -> Result<(), VerifyError> {
+fn simulate_phase1(replay: &Replay) -> Result<RunResult, VerifyError> {
+    let tick_rate = replay.header.tick_rate;
+    if tick_rate <= 0 {
+        return Err(VerifyError::UnsupportedScope(format!(
+            "invalid replay tick_rate={} (must be > 0)",
+            tick_rate
+        )));
+    }
+
     let mut rng = CrtRand::new(0);
     let _ = apply_replay_bootstrap(&replay.header, &mut rng, replay.header.world_size, true)?;
+
+    let ticks_total = replay.inputs.len();
+    let mut events_by_tick: Vec<Vec<&ReplayEvent>> = vec![Vec::new(); ticks_total + 1];
+    for event in &replay.events {
+        let tick = usize::try_from(event.tick_index()).map_err(|_| {
+            VerifyError::UnsupportedScope("replay event tick_index conversion failed".to_string())
+        })?;
+        if tick > ticks_total {
+            return Err(VerifyError::UnsupportedScope(format!(
+                "replay event tick_index out of bounds: tick={} max={}",
+                tick, ticks_total
+            )));
+        }
+        events_by_tick[tick].push(event);
+    }
+
+    let mut player = SurvivalSubsetPlayer::new();
+    let dt_s = (1.0_f32 / tick_rate as f32).max(0.0);
+
+    let mut elapsed_ms: f64 = 0.0;
+    let mut shots_fired: i64 = 0;
+    let mut shot_counts_by_weapon: [i64; 54] = [0; 54];
+
+    for tick in 0..ticks_total {
+        apply_phase1_events(&events_by_tick[tick], &mut rng)?;
+
+        let packed = replay
+            .inputs
+            .get(tick)
+            .and_then(|row| row.first())
+            .ok_or_else(|| {
+                VerifyError::UnsupportedScope(format!(
+                    "replay tick {} missing player-0 input",
+                    tick
+                ))
+            })?;
+
+        let (fire_down, fire_pressed, reload_pressed) = unpack_input_flags(packed.flags);
+        let fired = player.step(dt_s, fire_down, fire_pressed, reload_pressed, &mut rng);
+        shots_fired += fired;
+        if fired > 0 {
+            let idx = usize::try_from(PISTOL_WEAPON_ID).unwrap_or(1);
+            if idx < shot_counts_by_weapon.len() {
+                shot_counts_by_weapon[idx] += fired;
+            }
+        }
+        elapsed_ms += f64::from(dt_s) * 1000.0;
+    }
+
+    // Replay-side terminal events may exist at tick == len(inputs).
+    apply_phase1_events(&events_by_tick[ticks_total], &mut rng)?;
+
+    let most_used_weapon_id = most_used_weapon_id(PISTOL_WEAPON_ID, &shot_counts_by_weapon);
+
+    Ok(RunResult {
+        game_mode_id: replay.header.game_mode_id,
+        tick_rate,
+        ticks: i64::try_from(ticks_total).unwrap_or(i64::MAX),
+        elapsed_ms: elapsed_ms as i64,
+        score_xp: 0,
+        creature_kill_count: 0,
+        most_used_weapon_id,
+        shots_fired,
+        shots_hit: 0,
+        rng_state: u64::from(rng.state()),
+    })
+}
+
+fn apply_phase1_events(events: &[&ReplayEvent], rng: &mut CrtRand) -> Result<(), VerifyError> {
+    for event in events {
+        match event {
+            ReplayEvent::PerkMenuOpen(_) => {
+                // Choice regeneration in Python consumes RNG. Phase-1 subset only
+                // tracks deterministic draw count for event ordering parity.
+                for _ in 0..3 {
+                    rng.rand();
+                }
+            }
+            ReplayEvent::PerkPick(_) => {
+                // Perk apply side effects are not yet ported; consume one draw to
+                // keep stream movement deterministic under recorded picks.
+                rng.rand();
+            }
+            ReplayEvent::Unknown(ev) => {
+                return Err(VerifyError::UnsupportedScope(format!(
+                    "phase-1 does not support replay event kind {:?}",
+                    ev.kind
+                )));
+            }
+        }
+    }
     Ok(())
 }
 
-fn simulate_phase1(replay: &Replay, replay_sha256: &str) -> Result<RunResult, VerifyError> {
-    if replay_sha256 != ACCEPTANCE_REPLAY_SHA256 {
-        return Err(VerifyError::UnsupportedScope(format!(
-            "phase-1 simulation is currently locked to acceptance replay sha256={}",
-            ACCEPTANCE_REPLAY_SHA256
-        )));
+fn unpack_input_flags(flags: i64) -> (bool, bool, bool) {
+    (
+        (flags & FIRE_DOWN_FLAG) != 0,
+        (flags & FIRE_PRESSED_FLAG) != 0,
+        (flags & RELOAD_PRESSED_FLAG) != 0,
+    )
+}
+
+fn most_used_weapon_id(fallback_weapon_id: i64, shot_counts_by_weapon: &[i64]) -> i64 {
+    if shot_counts_by_weapon.len() <= 1 {
+        return fallback_weapon_id;
     }
-    Ok(RunResult {
-        game_mode_id: replay.header.game_mode_id,
-        tick_rate: replay.header.tick_rate,
-        ticks: 25_803,
-        elapsed_ms: 398_030,
-        score_xp: 76_661,
-        creature_kill_count: 951,
-        most_used_weapon_id: 14,
-        shots_fired: 4_566,
-        shots_hit: 1_467,
-        rng_state: 2_889_720_653,
-    })
+
+    let mut best_idx: usize = 1;
+    let mut best_count: i64 = 0;
+    for (idx, count) in shot_counts_by_weapon.iter().enumerate().skip(1) {
+        if *count > best_count {
+            best_count = *count;
+            best_idx = idx;
+        }
+    }
+
+    if best_count > 0 {
+        return i64::try_from(best_idx).unwrap_or(fallback_weapon_id);
+    }
+    fallback_weapon_id
 }
 
 fn resolve_score_metric(game_mode_id: i64, score_metric: ScoreMetric) -> &'static str {

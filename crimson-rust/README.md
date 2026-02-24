@@ -28,5 +28,12 @@ Exit code `3` is used for score-claim mismatch.
 - Survival only (`game_mode_id=1`)
 - Single player only (`player_count=1`)
 - `preserve_bugs=false` only
-- Locked to the acceptance replay hash:
-  `1cb9ec12b25b0a5b3529689751ef1f5a5707cbd90b5657e0e74837e55a1bf790`
+
+## Current Backend
+
+- Replay decode/bootstrap/guards and replay tick loop are implemented in Rust.
+- No Python delegation is used in `crimson-rust-core`; this is an isolated
+  Rust-native verifier path intended for parity comparison against Python.
+- Gameplay parity is still in progress: the current simulation models input,
+  timing, replay events, and a minimal firing/reload subset while creature,
+  projectile, bonus, and perk-effect runtime is being ported.
