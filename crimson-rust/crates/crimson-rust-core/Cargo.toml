@@ -1,0 +1,18 @@
+[package]
+name = "crimson-rust-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "crimson_rust_core"
+path = "src/lib.rs"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+sha2.workspace = true
+flate2.workspace = true
+rmp-serde.workspace = true
+rmpv.workspace = true

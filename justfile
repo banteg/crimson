@@ -26,6 +26,7 @@ check *args:
     uv run scripts/check_docs.py
     sg scan
     sg test
+    just rust-check
     uv run pytest {{args}}
 
 ty:
@@ -33,6 +34,18 @@ ty:
 
 ty-tests:
     uv run ty check tests
+
+# Rust
+rust-check:
+    cargo fmt --all --manifest-path crimson-rust/Cargo.toml --check
+    cargo check --workspace --manifest-path crimson-rust/Cargo.toml
+
+rust-test:
+    cargo test --workspace --manifest-path crimson-rust/Cargo.toml
+
+rust-wasm:
+    rustup target add wasm32-unknown-unknown
+    cargo build -p crimson-rust-wasm --release --target wasm32-unknown-unknown --manifest-path crimson-rust/Cargo.toml
 
 # Lint
 lint-imports:

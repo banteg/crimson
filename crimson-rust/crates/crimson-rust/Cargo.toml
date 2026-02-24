@@ -1,0 +1,19 @@
+[package]
+name = "crimson-rust"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "crimson-rust"
+path = "src/main.rs"
+
+[dependencies]
+clap.workspace = true
+directories.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+crimson-rust-core = { path = "../crimson-rust-core" }
+
+[dev-dependencies]
+rmp-serde.workspace = true

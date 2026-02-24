@@ -96,3 +96,27 @@ jobs:
             echo ""
             uv run --no-sync python -m coverage report || true
           } >> "$GITHUB_STEP_SUMMARY"
+
+  rust:
+    name: rust
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Rust fmt check
+        run: cargo fmt --all --manifest-path crimson-rust/Cargo.toml --check
+
+      - name: Rust check
+        run: cargo check --workspace --manifest-path crimson-rust/Cargo.toml
+
+      - name: Rust test
+        run: cargo test --workspace --manifest-path crimson-rust/Cargo.toml
+
+      - name: Rust wasm build
+        run: cargo build -p crimson-rust-wasm --release --target wasm32-unknown-unknown --manifest-path crimson-rust/Cargo.toml
