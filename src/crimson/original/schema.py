@@ -34,7 +34,11 @@ class CaptureConfig(msgspec.Struct, forbid_unknown_fields=True):
     creature_sample_limit: int
     projectile_sample_limit: int
     secondary_projectile_sample_limit: int
+    flush_capture_writes: bool = True
     bonus_sample_limit: int = -1
+    enable_rng_roll_log: bool = True
+    max_rng_roll_log_events: int = -1
+    max_rng_outside_tick_head: int = -1
     enable_input_hooks: bool = True
     enable_rng_hooks: bool = True
     enable_sfx_hooks: bool = True

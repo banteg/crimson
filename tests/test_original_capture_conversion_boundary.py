@@ -150,7 +150,11 @@ def test_load_capture_stream_accepts_missing_hook_config_fields_with_defaults(tm
     meta = _capture_meta_dict(obj)
     config = _as_builtins_dict(_base_config(out_path="capture.json", log_mode="truncate"))
     for key in (
+        "flush_capture_writes",
         "bonus_sample_limit",
+        "enable_rng_roll_log",
+        "max_rng_roll_log_events",
+        "max_rng_outside_tick_head",
         "enable_input_hooks",
         "enable_rng_hooks",
         "enable_sfx_hooks",
@@ -168,7 +172,11 @@ def test_load_capture_stream_accepts_missing_hook_config_fields_with_defaults(tm
 
     capture = load_capture(path)
 
+    assert capture.config.flush_capture_writes is True
     assert capture.config.bonus_sample_limit == -1
+    assert capture.config.enable_rng_roll_log is True
+    assert capture.config.max_rng_roll_log_events == -1
+    assert capture.config.max_rng_outside_tick_head == -1
     assert capture.config.enable_input_hooks is True
     assert capture.config.enable_rng_hooks is True
     assert capture.config.enable_sfx_hooks is True
