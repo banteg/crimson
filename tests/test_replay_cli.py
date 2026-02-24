@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 from dataclasses import replace
 from pathlib import Path
 from typing import cast
@@ -118,6 +119,8 @@ def test_replay_list_shows_replays_under_base_dir(tmp_path: Path) -> None:
     assert "replay" in result.output
     assert "mode" in result.output
     assert "version" in result.output
+    assert "score" in result.output
+    assert "kills" in result.output
     assert "alpha.crd" in result.output
     assert "nested/nested.crd" in result.output
     assert "zeta.crd" in result.output
@@ -179,6 +182,29 @@ def test_replay_list_mode_collapses_quest_level_and_players(tmp_path: Path) -> N
 
     assert result.exit_code == 0, result.output
     assert "quest 3.10 2p" in unstyle(result.output)
+
+
+def test_replay_list_uses_latest_checkpoint_score_and_kills(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    replay_path = _write_replay(tmp_path / "replays", replay=replay, name="stats.crd")
+    sidecar_path = _write_checkpoint_sidecar(replay_path, replay)
+    payload = load_checkpoints_file(sidecar_path)
+    assert payload.checkpoints
+    payload = replace(
+        payload,
+        checkpoints=[replace(payload.checkpoints[0], tick_index=99, score_xp=42, kills=7)],
+    )
+    dump_checkpoints_file(sidecar_path, payload)
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["replay", "list", "--base-dir", str(tmp_path), "--no-color"],
+    )
+
+    assert result.exit_code == 0, result.output
+    output = unstyle(result.output)
+    assert re.search(r"stats\.crd\s+survival\s+\S+\s+2\s+0\.0s\s+42\s+7\s+", output) is not None
 
 
 def test_replay_list_reports_when_no_replays_found(tmp_path: Path) -> None:

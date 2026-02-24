@@ -452,10 +452,12 @@ def _fmt_metric_agg(name: str, aggregate: object, *, digits: int) -> str:
 class _ReplayListRow(msgspec.Struct, forbid_unknown_fields=True):
     replay: str
     mode: str
+    game_mode_id: int
     game_version: str
     ticks: str
     duration: str
-    seed: str
+    score_xp: str
+    kills: str
     modified: str
     modified_ts: float
     old_version: bool
@@ -509,11 +511,54 @@ def _replay_list_mode_label(*, game_mode_id: int, player_count: int, quest_level
     return label
 
 
+def _replay_list_mode_style(game_mode_id: int) -> str:
+    if int(game_mode_id) == int(GameMode.SURVIVAL):
+        return "green"
+    if int(game_mode_id) == int(GameMode.RUSH):
+        return "magenta"
+    if int(game_mode_id) == int(GameMode.QUESTS):
+        return "cyan"
+    if int(game_mode_id) == int(GameMode.TYPO):
+        return "blue"
+    if int(game_mode_id) == int(GameMode.TUTORIAL):
+        return "white"
+    return "white"
+
+
+def _replay_list_score_kills(
+    replay_path: Path,
+    *,
+    default_checkpoints_path_fn: Callable[[Path], Path],
+    legacy_checkpoints_path_fn: Callable[[Path], Path],
+    load_checkpoints_file_fn: Callable[[Path], object],
+) -> tuple[str, str]:
+    checkpoints_path = default_checkpoints_path_fn(replay_path)
+    if not checkpoints_path.is_file():
+        legacy_path = legacy_checkpoints_path_fn(replay_path)
+        if legacy_path.is_file():
+            checkpoints_path = legacy_path
+    if not checkpoints_path.is_file():
+        return "-", "-"
+
+    try:
+        checkpoints = cast("Any", load_checkpoints_file_fn(checkpoints_path))
+    except Exception:
+        return "-", "-"
+
+    if not checkpoints.checkpoints:
+        return "-", "-"
+    latest = max(checkpoints.checkpoints, key=lambda item: int(item.tick_index))
+    return str(int(latest.score_xp)), str(int(latest.kills))
+
+
 def _build_replay_list_row(
     replay_path: Path,
     *,
     replays_dir: Path,
     load_replay_fn: Callable[[bytes], object],
+    default_checkpoints_path_fn: Callable[[Path], Path],
+    legacy_checkpoints_path_fn: Callable[[Path], Path],
+    load_checkpoints_file_fn: Callable[[Path], object],
     current_version: str,
 ) -> tuple[_ReplayListRow, str | None]:
     rel = str(replay_path.relative_to(replays_dir))
@@ -528,10 +573,12 @@ def _build_replay_list_row(
             _ReplayListRow(
                 replay=rel,
                 mode="error",
+                game_mode_id=-1,
                 game_version="-",
                 ticks="-",
                 duration="-",
-                seed="-",
+                score_xp="-",
+                kills="-",
                 modified=modified_text,
                 modified_ts=float(modified_ts),
                 old_version=False,
@@ -546,10 +593,12 @@ def _build_replay_list_row(
             _ReplayListRow(
                 replay=rel,
                 mode="invalid",
+                game_mode_id=-1,
                 game_version="-",
                 ticks="-",
                 duration="-",
-                seed="-",
+                score_xp="-",
+                kills="-",
                 modified=modified_text,
                 modified_ts=float(modified_ts),
                 old_version=False,
@@ -568,15 +617,23 @@ def _build_replay_list_row(
         player_count=player_count,
         quest_level=quest_level,
     )
+    score_xp, kills = _replay_list_score_kills(
+        replay_path,
+        default_checkpoints_path_fn=default_checkpoints_path_fn,
+        legacy_checkpoints_path_fn=legacy_checkpoints_path_fn,
+        load_checkpoints_file_fn=load_checkpoints_file_fn,
+    )
     is_old = _is_version_older(replay_version=game_version, current_version=current_version)
     return (
         _ReplayListRow(
             replay=rel,
             mode=mode_label,
+            game_mode_id=int(header.game_mode_id),
             game_version=game_version,
             ticks=str(ticks),
             duration=_fmt_replay_list_duration(ticks=ticks, tick_rate=tick_rate),
-            seed=str(int(header.seed)),
+            score_xp=score_xp,
+            kills=kills,
             modified=modified_text,
             modified_ts=float(modified_ts),
             old_version=bool(is_old),
@@ -670,6 +727,7 @@ def cmd_replay_list(
 
     from .. import __version__
     from ..replay import load_replay
+    from ..replay.checkpoints import default_checkpoints_path, legacy_checkpoints_path, load_checkpoints_file
 
     replays_dir = Path(base_dir) / "replays"
     replay_files = sorted(
@@ -687,6 +745,9 @@ def cmd_replay_list(
             replay_path,
             replays_dir=replays_dir,
             load_replay_fn=load_replay,
+            default_checkpoints_path_fn=default_checkpoints_path,
+            legacy_checkpoints_path_fn=legacy_checkpoints_path,
+            load_checkpoints_file_fn=load_checkpoints_file,
             current_version=str(__version__),
         )
         rows.append(row)
@@ -697,32 +758,34 @@ def cmd_replay_list(
 
     table = Table(box=box.SIMPLE, header_style="bold")
     table.add_column("replay")
-    table.add_column("mode", style="cyan")
+    table.add_column("mode")
     table.add_column("version")
     table.add_column("ticks", justify="right")
     table.add_column("duration", justify="right")
-    table.add_column("seed", justify="right")
+    table.add_column("score", justify="right")
+    table.add_column("kills", justify="right")
     table.add_column("modified", style="dim")
     for row in rows:
+        mode_style = _replay_list_mode_style(int(row.game_mode_id))
+        mode_cell = f"[{mode_style}]{row.mode}[/{mode_style}]"
         version_cell = row.game_version
-        row_style = ""
         if row.mode in {"invalid", "error"}:
-            row_style = "red"
+            mode_cell = f"[red]{row.mode}[/red]"
             version_cell = f"[red]{version_cell}[/red]"
         elif bool(row.old_version):
-            row_style = "yellow"
             version_cell = f"[yellow]{version_cell}[/yellow]"
         else:
             version_cell = f"[green]{version_cell}[/green]"
         table.add_row(
             row.replay,
-            row.mode,
+            mode_cell,
             version_cell,
             row.ticks,
             row.duration,
-            row.seed,
+            row.score_xp,
+            row.kills,
             row.modified,
-            style=row_style,
+            style="dim" if bool(row.old_version) else "",
         )
 
     console = Console(force_terminal=bool(color), no_color=not bool(color), width=200)
