@@ -233,10 +233,10 @@ const SURVIVAL_RUNTIME_CREATURE_MARGIN: f32 = 96.0;
 const SURVIVAL_RUNTIME_CREATURE_SPEED_SCALE: f32 = 30.0;
 const SURVIVAL_RUNTIME_MAX_ENTITIES: usize = 0x180;
 const MAIN_PROJECTILE_POOL_SIZE: usize = 0x60;
-const CREATURE_HITBOX_ALIVE: f32 = 16.0;
+const CREATURE_LIFECYCLE_ALIVE: f32 = 16.0;
 const CREATURE_DEATH_TIMER_DECAY: f32 = 28.0;
 const CREATURE_CORPSE_FADE_DECAY: f32 = 20.0;
-const CREATURE_CORPSE_DESPAWN_HITBOX: f32 = -10.0;
+const CREATURE_CORPSE_DESPAWN_LIFECYCLE: f32 = -10.0;
 const CREATURE_DEATH_SLIDE_SCALE: f32 = 9.0;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -529,7 +529,7 @@ struct SurvivalSpawnCreature {
     reward_value: f32,
     size: f32,
     contact_damage: f32,
-    hitbox_size: f32,
+    lifecycle_stage: f32,
     tint: [f32; 4],
 }
 
@@ -558,7 +558,7 @@ struct RuntimeCreature {
     size: f32,
     contact_damage: f32,
     attack_cooldown: f32,
-    hitbox_size: f32,
+    lifecycle_stage: f32,
     tint: [f32; 4],
 }
 
@@ -588,7 +588,7 @@ impl RuntimeCreature {
             size: creature.size,
             contact_damage: creature.contact_damage,
             attack_cooldown: 0.0,
-            hitbox_size: creature.hitbox_size,
+            lifecycle_stage: creature.lifecycle_stage,
             tint: creature.tint,
         }
     }
@@ -620,7 +620,7 @@ impl Default for RuntimeCreature {
             size: 0.0,
             contact_damage: 0.0,
             attack_cooldown: 0.0,
-            hitbox_size: 0.0,
+            lifecycle_stage: 0.0,
             tint: [1.0, 1.0, 1.0, 1.0],
         }
     }
@@ -2443,7 +2443,7 @@ fn runtime_spawn_template_creature(
         size,
         contact_damage,
         attack_cooldown: 0.0,
-        hitbox_size: CREATURE_HITBOX_ALIVE,
+        lifecycle_stage: CREATURE_LIFECYCLE_ALIVE,
         tint,
     };
     i32::try_from(slot_idx).unwrap_or(-1)
@@ -2541,7 +2541,7 @@ fn spawn_survival_template_runtime_creatures(state: &mut SimState, call: SpawnTe
                     size: 50.0,
                     contact_damage: 4.0,
                     attack_cooldown: 0.0,
-                    hitbox_size: CREATURE_HITBOX_ALIVE,
+                    lifecycle_stage: CREATURE_LIFECYCLE_ALIVE,
                     tint: [0.32, 0.588, 0.426, 1.0],
                 };
             }
@@ -2847,7 +2847,7 @@ fn alloc_survival_spawn_creature(pos: Vec2f, rng: &mut CrtRand) -> SurvivalSpawn
         reward_value: 0.0,
         size: 0.0,
         contact_damage: 0.0,
-        hitbox_size: CREATURE_HITBOX_ALIVE,
+        lifecycle_stage: CREATURE_LIFECYCLE_ALIVE,
         tint: [1.0, 1.0, 1.0, 1.0],
     }
 }
@@ -3857,7 +3857,7 @@ fn bonus_apply(state: &mut SimState, bonus_id: i32, amount: i32, origin: Vec2f, 
                 if state.creatures[idx].health > 0.0 {
                     continue;
                 }
-                if state.creatures[idx].hitbox_size < CREATURE_CORPSE_DESPAWN_HITBOX {
+                if state.creatures[idx].lifecycle_stage < CREATURE_CORPSE_DESPAWN_LIFECYCLE {
                     state.creatures[idx].active = false;
                     continue;
                 }
@@ -4003,19 +4003,23 @@ fn bonus_apply(state: &mut SimState, bonus_id: i32, amount: i32, origin: Vec2f, 
                     let creature = &mut state.creatures[idx];
                     if creature.health <= 0.0 {
                         if dt > 0.0 {
-                            creature.hitbox_size = (creature.hitbox_size - dt * 15.0) as f32;
+                            creature.lifecycle_stage =
+                                (creature.lifecycle_stage - dt * 15.0) as f32;
                         }
                         continue;
                     }
                     creature.health -= damage;
-                    if creature.health <= 0.0 && creature.hitbox_size == CREATURE_HITBOX_ALIVE {
-                        creature.hitbox_size = if dt > 0.0 {
+                    if creature.health <= 0.0
+                        && creature.lifecycle_stage == CREATURE_LIFECYCLE_ALIVE
+                    {
+                        creature.lifecycle_stage = if dt > 0.0 {
                             // Native death transition decrements hitbox in both
                             // `creature_apply_damage` and subsequent `creature_handle_death`.
-                            let first = (f64::from(creature.hitbox_size) - f64::from(dt)) as f32;
+                            let first =
+                                (f64::from(creature.lifecycle_stage) - f64::from(dt)) as f32;
                             (f64::from(first) - f64::from(dt)) as f32
                         } else {
-                            (f64::from(creature.hitbox_size) - 0.001_f64) as f32
+                            (f64::from(creature.lifecycle_stage) - 0.001_f64) as f32
                         };
                         reward_value = Some(creature.reward_value);
                         death_pos = Some(creature.pos);
@@ -4060,7 +4064,7 @@ fn shock_chain_initial_target(state: &SimState, origin: Vec2f) -> Option<(usize,
         if !creature.active {
             continue;
         }
-        if creature.hitbox_size != CREATURE_HITBOX_ALIVE {
+        if creature.lifecycle_stage != CREATURE_LIFECYCLE_ALIVE {
             continue;
         }
         let dx = f64::from(creature.pos.x) - f64::from(origin.x);
@@ -4378,7 +4382,7 @@ fn finalize_post_render_creature_lifecycle(state: &mut SimState) {
         if !state.creatures[idx].active {
             continue;
         }
-        if state.creatures[idx].hitbox_size < CREATURE_CORPSE_DESPAWN_HITBOX {
+        if state.creatures[idx].lifecycle_stage < CREATURE_CORPSE_DESPAWN_LIFECYCLE {
             state.creatures[idx].active = false;
         }
     }
@@ -4608,7 +4612,7 @@ fn creature_ai_update_target(
 }
 
 fn runtime_creature_is_collidable(creature: &RuntimeCreature) -> bool {
-    creature.active && creature.hitbox_size > 5.0
+    creature.active && creature.lifecycle_stage > 5.0
 }
 
 fn runtime_tick_dead_creature(creature: &mut RuntimeCreature, dt: f32) -> bool {
@@ -4616,14 +4620,14 @@ fn runtime_tick_dead_creature(creature: &mut RuntimeCreature, dt: f32) -> bool {
         return false;
     }
 
-    let hitbox = creature.hitbox_size as f32;
+    let hitbox = creature.lifecycle_stage as f32;
     if hitbox <= 0.0 {
-        creature.hitbox_size = (hitbox - dt * CREATURE_CORPSE_FADE_DECAY) as f32;
+        creature.lifecycle_stage = (hitbox - dt * CREATURE_CORPSE_FADE_DECAY) as f32;
         return false;
     }
 
     let new_hitbox = (hitbox - dt * CREATURE_DEATH_TIMER_DECAY) as f32;
-    creature.hitbox_size = new_hitbox;
+    creature.lifecycle_stage = new_hitbox;
     if new_hitbox > 0.0 {
         let long_strip = (creature.flags & CREATURE_FLAG_ANIM_PING_PONG) == 0
             || (creature.flags & CREATURE_FLAG_ANIM_LONG_STRIP) != 0;
@@ -4816,20 +4820,20 @@ fn creature_apply_self_damage_tick(state: &mut SimState, creature_idx: usize, dt
     {
         let creature = &mut state.creatures[creature_idx];
         if creature.health <= 0.0 {
-            creature.hitbox_size =
-                (f64::from(creature.hitbox_size) - f64::from(dt_s) * 15.0) as f32;
+            creature.lifecycle_stage =
+                (f64::from(creature.lifecycle_stage) - f64::from(dt_s) * 15.0) as f32;
             return false;
         }
 
         creature.health -= damage_amount;
-        if creature.health <= 0.0 && creature.hitbox_size == CREATURE_HITBOX_ALIVE {
-            creature.hitbox_size = if dt_s > 0.0 {
+        if creature.health <= 0.0 && creature.lifecycle_stage == CREATURE_LIFECYCLE_ALIVE {
+            creature.lifecycle_stage = if dt_s > 0.0 {
                 // `creature_apply_damage` and `creature_handle_death` each decrement
                 // by frame dt when transitioning into corpse state.
-                let first = (f64::from(creature.hitbox_size) - f64::from(dt_s)) as f32;
+                let first = (f64::from(creature.lifecycle_stage) - f64::from(dt_s)) as f32;
                 (f64::from(first) - f64::from(dt_s)) as f32
             } else {
-                (f64::from(creature.hitbox_size) - 0.001_f64) as f32
+                (f64::from(creature.lifecycle_stage) - 0.001_f64) as f32
             };
             reward_value = creature.reward_value;
             death_pos = creature.pos;
@@ -4892,12 +4896,12 @@ fn survival_runtime_update_creatures(state: &mut SimState, dt_s: f32) {
                 state.rng.state()
             );
         }
-        if state.creatures[idx].hitbox_size != CREATURE_HITBOX_ALIVE
+        if state.creatures[idx].lifecycle_stage != CREATURE_LIFECYCLE_ALIVE
             || state.creatures[idx].health <= 0.0
         {
-            if state.creatures[idx].hitbox_size == CREATURE_HITBOX_ALIVE {
-                state.creatures[idx].hitbox_size =
-                    (f64::from(state.creatures[idx].hitbox_size) - f64::from(dt_s)) as f32;
+            if state.creatures[idx].lifecycle_stage == CREATURE_LIFECYCLE_ALIVE {
+                state.creatures[idx].lifecycle_stage =
+                    (f64::from(state.creatures[idx].lifecycle_stage) - f64::from(dt_s)) as f32;
             }
             if runtime_tick_dead_creature(&mut state.creatures[idx], dt_s) {
                 state.creature_kill_count = state.creature_kill_count.saturating_add(1);
@@ -5021,7 +5025,7 @@ fn survival_runtime_update_creatures(state: &mut SimState, dt_s: f32) {
             }
         }
 
-        let can_contact_damage = state.creatures[idx].hitbox_size == CREATURE_HITBOX_ALIVE
+        let can_contact_damage = state.creatures[idx].lifecycle_stage == CREATURE_LIFECYCLE_ALIVE
             && state.creatures[idx].size > 16.0
             && state.bonuses.energizer <= 0.0
             && contact_dist_sq < 30.0 * 30.0
@@ -5047,13 +5051,13 @@ fn survival_runtime_update_creatures(state: &mut SimState, dt_s: f32) {
             }
         }
 
-        if state.creatures[idx].hitbox_size == CREATURE_HITBOX_ALIVE
+        if state.creatures[idx].lifecycle_stage == CREATURE_LIFECYCLE_ALIVE
             && contact_dist_sq < 30.0 * 30.0
             && state.creatures[idx].size <= 30.0
         {
             state.creatures[idx].health = 0.0;
-            state.creatures[idx].hitbox_size =
-                (f64::from(state.creatures[idx].hitbox_size) - f64::from(dt_s)) as f32;
+            state.creatures[idx].lifecycle_stage =
+                (f64::from(state.creatures[idx].lifecycle_stage) - f64::from(dt_s)) as f32;
             creatures_snapshot[idx] = state.creatures[idx];
             continue;
         }
@@ -5120,8 +5124,8 @@ fn apply_ion_linger_damage(state: &mut SimState, creature_idx: usize, damage: f3
 
     if state.creatures[creature_idx].health <= 0.0 {
         if dt_s > 0.0 {
-            state.creatures[creature_idx].hitbox_size =
-                (f64::from(state.creatures[creature_idx].hitbox_size) - f64::from(dt_s * 15.0))
+            state.creatures[creature_idx].lifecycle_stage =
+                (f64::from(state.creatures[creature_idx].lifecycle_stage) - f64::from(dt_s * 15.0))
                     as f32;
         }
         return;
@@ -5137,12 +5141,12 @@ fn apply_ion_linger_damage(state: &mut SimState, creature_idx: usize, damage: f3
     {
         let creature = &mut state.creatures[creature_idx];
         creature.health -= damage;
-        if creature.health <= 0.0 && creature.hitbox_size == CREATURE_HITBOX_ALIVE {
-            creature.hitbox_size = if dt_s > 0.0 {
-                let first = (f64::from(creature.hitbox_size) - f64::from(dt_s)) as f32;
+        if creature.health <= 0.0 && creature.lifecycle_stage == CREATURE_LIFECYCLE_ALIVE {
+            creature.lifecycle_stage = if dt_s > 0.0 {
+                let first = (f64::from(creature.lifecycle_stage) - f64::from(dt_s)) as f32;
                 (f64::from(first) - f64::from(dt_s)) as f32
             } else {
-                (f64::from(creature.hitbox_size) - 0.001_f64) as f32
+                (f64::from(creature.lifecycle_stage) - 0.001_f64) as f32
             };
             reward_value = Some(creature.reward_value);
             death_pos = Some(creature.pos);
@@ -5217,7 +5221,7 @@ fn survival_runtime_update_projectiles(state: &mut SimState, dt_s: f32) {
                     if !state.creatures[creature_idx].active {
                         continue;
                     }
-                    if state.creatures[creature_idx].hitbox_size <= 5.0 {
+                    if state.creatures[creature_idx].lifecycle_stage <= 5.0 {
                         continue;
                     }
                     let creature_radius =
@@ -5364,7 +5368,7 @@ fn survival_runtime_update_projectiles(state: &mut SimState, dt_s: f32) {
                         state.creatures[creature_idx].pos.x,
                         state.creatures[creature_idx].pos.y,
                         state.creatures[creature_idx].size,
-                        state.creatures[creature_idx].hitbox_size
+                        state.creatures[creature_idx].lifecycle_stage
                     );
                 }
 
@@ -5386,7 +5390,7 @@ fn survival_runtime_update_projectiles(state: &mut SimState, dt_s: f32) {
                 }
                 let owner_id = state.projectiles[proj_idx].owner_id;
                 if owner_id < 0
-                    && state.creatures[creature_idx].hitbox_size == CREATURE_HITBOX_ALIVE
+                    && state.creatures[creature_idx].lifecycle_stage == CREATURE_LIFECYCLE_ALIVE
                 {
                     state.shots_hit = state.shots_hit.saturating_add(1);
                 }
@@ -5546,17 +5550,17 @@ fn survival_runtime_update_projectiles(state: &mut SimState, dt_s: f32) {
                                 creature.vel = creature.vel.sub(projectile_impulse);
                                 creature.health -= scaled_damage_amount;
                                 if creature.health <= 0.0
-                                    && creature.hitbox_size == CREATURE_HITBOX_ALIVE
+                                    && creature.lifecycle_stage == CREATURE_LIFECYCLE_ALIVE
                                 {
-                                    creature.hitbox_size = if dt_s > 0.0 {
+                                    creature.lifecycle_stage = if dt_s > 0.0 {
                                         // Native death transition decrements hitbox in both
                                         // `creature_apply_damage` and subsequent `creature_handle_death`.
-                                        let first = (f64::from(creature.hitbox_size)
+                                        let first = (f64::from(creature.lifecycle_stage)
                                             - f64::from(dt_s))
                                             as f32;
                                         (f64::from(first) - f64::from(dt_s)) as f32
                                     } else {
-                                        (f64::from(creature.hitbox_size) - 0.001_f64) as f32
+                                        (f64::from(creature.lifecycle_stage) - 0.001_f64) as f32
                                     };
                                     creature.vel = creature.vel.sub(projectile_impulse.scale(2.0));
                                     reward_value = Some(creature.reward_value);
@@ -5601,17 +5605,17 @@ fn survival_runtime_update_projectiles(state: &mut SimState, dt_s: f32) {
                                 creature.health -= scaled_remaining;
                                 creature_hp_after = creature.health;
                                 if creature.health <= 0.0
-                                    && creature.hitbox_size == CREATURE_HITBOX_ALIVE
+                                    && creature.lifecycle_stage == CREATURE_LIFECYCLE_ALIVE
                                 {
-                                    creature.hitbox_size = if dt_s > 0.0 {
+                                    creature.lifecycle_stage = if dt_s > 0.0 {
                                         // Native death transition decrements hitbox in both
                                         // `creature_apply_damage` and subsequent `creature_handle_death`.
-                                        let first = (f64::from(creature.hitbox_size)
+                                        let first = (f64::from(creature.lifecycle_stage)
                                             - f64::from(dt_s))
                                             as f32;
                                         (f64::from(first) - f64::from(dt_s)) as f32
                                     } else {
-                                        (f64::from(creature.hitbox_size) - 0.001_f64) as f32
+                                        (f64::from(creature.lifecycle_stage) - 0.001_f64) as f32
                                     };
                                     creature.vel = creature.vel.sub(projectile_impulse.scale(2.0));
                                     reward_value = Some(creature.reward_value);
@@ -6315,7 +6319,7 @@ fn write_trace_row(
                 },
                 "type_id": creature.type_id,
                 "hp": round4(creature.health),
-                "hitbox_size": round4(creature.hitbox_size),
+                "lifecycle_stage": round4(creature.lifecycle_stage),
                 "heading": round4(creature.heading as f32),
                 "target_heading": round4(creature.target_heading as f32),
                 "ai_mode": creature.ai_mode,
@@ -6352,7 +6356,7 @@ fn write_trace_row(
                 "index": i64::try_from(idx).unwrap_or(i64::MAX),
                 "type_id": creature.type_id,
                 "hp": round4(creature.health),
-                "hitbox_size": round4(creature.hitbox_size),
+                "lifecycle_stage": round4(creature.lifecycle_stage),
                 "heading": round4(creature.heading as f32),
                 "target_heading": round4(creature.target_heading as f32),
                 "ai_mode": creature.ai_mode,
@@ -6472,7 +6476,7 @@ fn write_trace_row(
                     "distance": round4(dist_sq.sqrt()),
                     "type_id": creature.type_id,
                     "hp": round4(creature.health),
-                    "hitbox_size": round4(creature.hitbox_size),
+                    "lifecycle_stage": round4(creature.lifecycle_stage),
                     "pos": {
                         "x": round4(creature.pos.x),
                         "y": round4(creature.pos.y),
