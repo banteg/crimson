@@ -226,8 +226,10 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                 if d - radius < threshold:
                     targets.append(creature)
 
-            inner_half = 10.0 * perk_scale * ctx.scale
-            outer_half = 14.0 * perk_scale * ctx.scale
+            # Native uses beam effect scale for strip thickness (10x inner, 14x outer),
+            # independent of Ion Gun Master. Perk scaling only affects chain reach.
+            inner_half = 10.0 * effect_scale * ctx.scale
+            outer_half = 14.0 * effect_scale * ctx.scale
             u = 0.625
             v0 = 0.0
             v1 = 0.25
