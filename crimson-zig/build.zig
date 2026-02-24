@@ -3,10 +3,17 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const msgpack_dep = b.dependency("msgpack", .{
+        .target = target,
+        .optimize = optimize,
+    });
 
     const mod = b.addModule("crimson_zig", .{
         .root_source_file = b.path("src/root.zig"),
         .target = target,
+        .imports = &.{
+            .{ .name = "msgpack", .module = msgpack_dep.module("msgpack") },
+        },
     });
 
     const exe = b.addExecutable(.{

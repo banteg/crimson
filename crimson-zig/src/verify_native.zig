@@ -171,9 +171,10 @@ fn runNativeVerify(
         break :blk inflated;
     } else replay_bytes;
 
-    const replay_summary = replay_codec.parseReplaySummary(replay_payload) catch |err| {
+    var replay_summary = replay_codec.parseReplaySummary(allocator, replay_payload) catch |err| {
         return buildNotPortedOutputForReplayCodecError(allocator, err);
     };
+    defer replay_summary.deinit(allocator);
     const header = replay_summary.header;
 
     if (header.game_mode_id != 1) {
@@ -712,12 +713,8 @@ fn buildNotPortedOutputForReplayCodecError(
     err: replay_codec.ReplayCodecError,
 ) !backend_python.CommandOutput {
     const detail = switch (err) {
-        error.UnexpectedEof => "replay msgpack payload ended unexpectedly",
         error.InvalidMsgpack => "replay payload is not valid msgpack wire format",
-        error.InvalidType => "replay msgpack field type is unsupported",
         error.InvalidHeaderValue => "replay header contains invalid values",
-        error.MissingHeader => "replay payload missing header block",
-        error.MissingInputs => "replay payload missing inputs block",
         error.MissingHeaderField => "replay header missing required fields",
         error.UnsupportedReplayFormatVersion => "replay format version is not supported",
         error.UnsupportedInputShape => "replay input rows are not in the canonical wire shape",
@@ -727,6 +724,7 @@ fn buildNotPortedOutputForReplayCodecError(
         error.BootstrapSeedMismatch => "replay bootstrap seed does not match canonical terrain bootstrap draws",
         error.InvalidGzipPayload => "unable to inflate replay gzip payload",
         error.PayloadTooLarge => "replay payload exceeds max decompressed size",
+        error.OutOfMemory => "native replay msgpack decode ran out of memory",
     };
     return buildNotPortedOutput(allocator, detail);
 }

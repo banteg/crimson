@@ -11,7 +11,7 @@ Standalone Zig replay verifier workspace.
 ## Current backend behavior
 
 - Native CLI currently verifies **latest-ruleset single-player survival** replays using:
-  - replay msgpack+gzip decoding in Zig (header/inputs/events),
+  - replay msgpack+gzip decoding in Zig (via `msgpack.zig`, header/inputs/events),
   - canonical terrain bootstrap RNG validation,
   - checkpoint sidecar (`.crd.chk`) for score/kills/rng,
   - survival highscore table (`scores5/survival.hi`) for shots/weapon stats.
