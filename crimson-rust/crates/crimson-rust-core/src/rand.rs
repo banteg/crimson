@@ -6,11 +6,15 @@ pub const CRT_RAND_INC: u32 = 2_531_011;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CrtRand {
     state: u32,
+    draw_count: u64,
 }
 
 impl CrtRand {
     pub fn new(seed: u32) -> Self {
-        Self { state: seed }
+        Self {
+            state: seed,
+            draw_count: 0,
+        }
     }
 
     pub fn state(&self) -> u32 {
@@ -19,9 +23,15 @@ impl CrtRand {
 
     pub fn srand(&mut self, seed: u32) {
         self.state = seed;
+        self.draw_count = 0;
+    }
+
+    pub fn draw_count(&self) -> u64 {
+        self.draw_count
     }
 
     pub fn rand(&mut self) -> u32 {
+        self.draw_count = self.draw_count.saturating_add(1);
         self.state = self
             .state
             .wrapping_mul(CRT_RAND_MULT)
