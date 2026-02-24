@@ -242,7 +242,7 @@ pub fn applyPerk(
         },
         PerkId.ammo_maniac => {
             for (players) |*player| {
-                survival_state.weaponAssignPlayer(player, player.weapon_id);
+                survival_state.weaponAssignPlayerWithState(player, player.weapon_id, state);
             }
         },
         PerkId.fatal_lottery => {
@@ -297,6 +297,28 @@ pub fn updatePerkEffects(
     players: []survival_state.PlayerState,
     dt: f64,
 ) void {
+    if (dt > 0.0) {
+        for (players) |*player| {
+            if (player.shield_timer <= 0.0) {
+                player.shield_timer = 0.0;
+            } else {
+                player.shield_timer -= dt;
+            }
+
+            if (player.fire_bullets_timer <= 0.0) {
+                player.fire_bullets_timer = 0.0;
+            } else {
+                player.fire_bullets_timer -= dt;
+            }
+
+            if (player.speed_bonus_timer <= 0.0) {
+                player.speed_bonus_timer = 0.0;
+            } else {
+                player.speed_bonus_timer -= dt;
+            }
+        }
+    }
+
     if (players.len == 0) return;
     if (!perkActive(&players[0], PerkId.death_clock)) return;
 

@@ -10,10 +10,53 @@ pub const WeaponId = struct {
     pub const none: i32 = 0;
     pub const pistol: i32 = 1;
     pub const assault_rifle: i32 = 2;
+    pub const shotgun: i32 = 3;
+    pub const submachine_gun: i32 = 5;
+    pub const ion_cannon: i32 = 23;
+    pub const splitter_gun: i32 = 29;
     pub const flamethrower: i32 = 8;
     pub const mean_minigun: i32 = 7;
     pub const shrinkifier_5k: i32 = 24;
     pub const blade_gun: i32 = 25;
+};
+
+pub const ProjectileTypeId = struct {
+    pub const pistol: i32 = 0x01;
+    pub const assault_rifle: i32 = 0x02;
+    pub const shotgun: i32 = 0x03;
+    pub const submachine_gun: i32 = 0x05;
+    pub const gauss_gun: i32 = 0x06;
+    pub const plasma_rifle: i32 = 0x09;
+    pub const plasma_minigun: i32 = 0x0B;
+    pub const pulse_gun: i32 = 0x13;
+    pub const ion_rifle: i32 = 0x15;
+    pub const ion_minigun: i32 = 0x16;
+    pub const ion_cannon: i32 = 0x17;
+    pub const shrinkifier: i32 = 0x18;
+    pub const blade_gun: i32 = 0x19;
+    pub const plasma_cannon: i32 = 0x1C;
+    pub const splitter_gun: i32 = 0x1D;
+    pub const plague_spreader: i32 = 0x29;
+    pub const rainbow_gun: i32 = 0x2B;
+    pub const fire_bullets: i32 = 0x2D;
+};
+
+pub const BonusId = struct {
+    pub const unused: i32 = 0;
+    pub const points: i32 = 1;
+    pub const energizer: i32 = 2;
+    pub const weapon: i32 = 3;
+    pub const weapon_power_up: i32 = 4;
+    pub const nuke: i32 = 5;
+    pub const double_experience: i32 = 6;
+    pub const shock_chain: i32 = 7;
+    pub const fireblast: i32 = 8;
+    pub const reflex_boost: i32 = 9;
+    pub const shield: i32 = 10;
+    pub const freeze: i32 = 11;
+    pub const medikit: i32 = 12;
+    pub const speed: i32 = 13;
+    pub const fire_bullets: i32 = 14;
 };
 
 pub const Vec2 = struct {
@@ -68,6 +111,14 @@ pub const Vec2 = struct {
             .y = std.math.sin(angle),
         };
     }
+
+    pub fn toAngle(self: Vec2) f64 {
+        return std.math.atan2(self.y, self.x);
+    }
+
+    pub fn toHeading(self: Vec2) f64 {
+        return self.toAngle() + std.math.pi / 2.0;
+    }
 };
 
 pub const PlayerState = struct {
@@ -117,6 +168,8 @@ pub const PlayerState = struct {
     speed_bonus_timer: f64 = 0.0,
     shield_timer: f64 = 0.0,
     fire_bullets_timer: f64 = 0.0,
+    bonus_aim_hover_index: i32 = -1,
+    bonus_aim_hover_timer_ms: f64 = 0.0,
 };
 
 pub const PerkSelectionState = struct {
@@ -140,11 +193,19 @@ pub const GameplayState = struct {
     time_scale_active: bool = false,
     perk_selection: PerkSelectionState = .{},
     demo_mode_active: bool = false,
+    game_tune_started: bool = false,
     hardcore: bool = false,
     preserve_bugs: bool = false,
     game_mode: i32 = 1,
     quest_stage_major: i32 = 0,
     quest_stage_minor: i32 = 0,
+    status_quest_unlock_index: i32 = 0,
+    status_quest_unlock_index_full: i32 = 0,
+    status_weapon_usage_counts: [weapon_count_size]u32 = [_]u32{0} ** weapon_count_size,
+    weapon_available: [weapon_count_size]bool = [_]bool{false} ** weapon_count_size,
+    weapon_available_game_mode: i32 = -1,
+    weapon_available_unlock_index: i32 = -1,
+    weapon_available_unlock_index_full: i32 = -1,
     perk_available: [perk_count_size]bool = [_]bool{false} ** perk_count_size,
     perk_available_unlock_index: i32 = -1,
 
@@ -160,7 +221,17 @@ pub const GameplayState = struct {
     shots_hit: [max_players]i32 = [_]i32{0} ** max_players,
     weapon_shots_fired: [max_players][weapon_count_size]i32 = [_][weapon_count_size]i32{[_]i32{0} ** weapon_count_size} ** max_players,
     bonus_spawn_guard: bool = false,
+    camera_shake_pulses: i32 = 0,
+    camera_shake_timer: f64 = 0.0,
+    camera_shake_offset: Vec2 = .{},
     shock_chain_links_left: i32 = 0,
+    pending_nuke_count: i32 = 0,
+    pending_nuke_origins: [8]Vec2 = [_]Vec2{.{}} ** 8,
+    debug_nuke_kills_last: i32 = 0,
+    debug_nuke_tick_last: i32 = -1,
+    debug_nuke_kill_index_sum: i32 = 0,
+    debug_last_picked_bonus_id: i32 = 0,
+    debug_last_picked_bonus_amount: i32 = 0,
     player_alt_weapon_swap_cooldown_ms: i32 = 0,
     player_spread_damping_scalar: f64 = 1.0,
     player_spread_damping_gate: f64 = 0.0,
@@ -219,6 +290,12 @@ pub const weapon_flags = [_]u32{
     0, 0, 0, 0, 0, 8, 8, 8, 0, 1, 0, 0, 0, 0, 9, 9, 8, 8,
 };
 
+pub const weapon_spread_heat_inc = [_]f64{
+    0.0, 0.22, 0.09, 0.27, 0.13, 0.082, 0.42, 0.062, 0.015, 0.182, 0.32, 0.097, 0.42, 0.32, 0.11, 0.01, 0.01, 0.12,
+    0.12, 0.0, 0.16, 0.112, 0.09, 0.68, 0.04, 0.04, 0.04, 0.68, 0.6, 0.28, 0.27, 0.27, 0.18, 0.38, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.04, 0.05, 0.09, 0.4, 0.22, 0.0, 0.0, 0.0, 0.0, 0.04, 0.05, 1.0, 1.0,
+};
+
 pub fn weaponClipSize(weapon_id: i32) i32 {
     if (weapon_id < 0 or weapon_id >= weapon_clip_sizes.len) return 0;
     return weapon_clip_sizes[@intCast(weapon_id)];
@@ -254,6 +331,50 @@ pub fn weaponFlags(weapon_id: i32) u32 {
     return weapon_flags[@intCast(weapon_id)];
 }
 
+pub fn weaponSpreadHeatInc(weapon_id: i32) f64 {
+    if (weapon_id < 0 or weapon_id >= weapon_spread_heat_inc.len) return 0.0;
+    return weapon_spread_heat_inc[@intCast(weapon_id)];
+}
+
+pub fn projectileTypeIdFromWeaponId(weapon_id: i32) ?i32 {
+    return switch (weapon_id) {
+        1 => ProjectileTypeId.pistol,
+        2 => ProjectileTypeId.assault_rifle,
+        3 => ProjectileTypeId.shotgun,
+        4 => ProjectileTypeId.shotgun,
+        5 => ProjectileTypeId.submachine_gun,
+        6 => ProjectileTypeId.gauss_gun,
+        7 => ProjectileTypeId.pistol,
+        8 => null,
+        9 => ProjectileTypeId.plasma_rifle,
+        10 => ProjectileTypeId.plasma_rifle,
+        11 => ProjectileTypeId.plasma_minigun,
+        12 => null,
+        13 => null,
+        14 => ProjectileTypeId.plasma_minigun,
+        15 => null,
+        16 => null,
+        17 => null,
+        18 => null,
+        19 => ProjectileTypeId.pulse_gun,
+        20 => ProjectileTypeId.shotgun,
+        21 => ProjectileTypeId.ion_rifle,
+        22 => ProjectileTypeId.ion_minigun,
+        23 => ProjectileTypeId.ion_cannon,
+        24 => ProjectileTypeId.shrinkifier,
+        25 => ProjectileTypeId.blade_gun,
+        28 => ProjectileTypeId.plasma_cannon,
+        29 => ProjectileTypeId.splitter_gun,
+        30 => ProjectileTypeId.gauss_gun,
+        31 => ProjectileTypeId.ion_minigun,
+        41 => ProjectileTypeId.plague_spreader,
+        42 => null,
+        43 => ProjectileTypeId.rainbow_gun,
+        45 => ProjectileTypeId.fire_bullets,
+        else => if (weapon_id >= 0 and weapon_id < weapon_count_size) weapon_id else null,
+    };
+}
+
 pub fn weaponAssignPlayer(
     player: *PlayerState,
     weapon_id: i32,
@@ -269,6 +390,25 @@ pub fn weaponAssignPlayer(
     player.reload_timer_max = 0.0;
     player.shot_cooldown = 0.0;
     player.aux_timer = 2.0;
+}
+
+pub fn incrementWeaponUsage(
+    state: *GameplayState,
+    weapon_id: i32,
+) void {
+    if (state.demo_mode_active) return;
+    if (weapon_id < 0 or weapon_id >= state.status_weapon_usage_counts.len) return;
+    const idx: usize = @intCast(weapon_id);
+    state.status_weapon_usage_counts[idx] +%= 1;
+}
+
+pub fn weaponAssignPlayerWithState(
+    player: *PlayerState,
+    weapon_id: i32,
+    state: *GameplayState,
+) void {
+    incrementWeaponUsage(state, weapon_id);
+    weaponAssignPlayer(player, weapon_id);
 }
 
 pub fn playerStartReload(player: *PlayerState, state: *GameplayState) void {
@@ -438,7 +578,7 @@ pub fn survivalUpdateWeaponHandouts(
         state.survival_reward_handout_enabled)
     {
         if (player.weapon_id == WeaponId.pistol) {
-            weaponAssignPlayer(player, WeaponId.shrinkifier_5k);
+            weaponAssignPlayerWithState(player, WeaponId.shrinkifier_5k, state);
             state.survival_reward_weapon_guard_id = WeaponId.shrinkifier_5k;
         }
         state.survival_reward_handout_enabled = false;
@@ -459,7 +599,7 @@ pub fn survivalUpdateWeaponHandouts(
         const dy = player.pos.y - centroid_y;
         const distance = std.math.sqrt(dx * dx + dy * dy);
         if (distance < 16.0 and player.health < 15.0) {
-            weaponAssignPlayer(player, WeaponId.blade_gun);
+            weaponAssignPlayerWithState(player, WeaponId.blade_gun, state);
             state.survival_reward_weapon_guard_id = WeaponId.blade_gun;
             state.survival_reward_fire_seen = true;
             state.survival_reward_handout_enabled = false;

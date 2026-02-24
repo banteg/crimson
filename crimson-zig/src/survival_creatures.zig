@@ -1,5 +1,7 @@
 const std = @import("std");
 
+const survival_bonuses = @import("survival_bonuses.zig");
+const survival_perks = @import("survival_perks.zig");
 const survival_spawn = @import("survival_spawn.zig");
 const survival_state = @import("survival_state.zig");
 
@@ -7,8 +9,15 @@ pub const max_creatures: usize = 0x180;
 
 const creature_hitbox_alive: f64 = 16.0;
 const creature_speed_scale: f64 = 30.0;
-const contact_damage_period: f64 = 0.5;
+const creature_turn_rate_scale: f64 = 1.3333333730697632;
+const contact_damage_cooldown: f64 = 1.0;
 const owner_id_player_0: i32 = -100;
+const native_half_pi: f64 = 1.5707963705062866;
+const native_pi: f64 = 3.1415927410125732;
+const native_tau: f64 = 6.2831854820251465;
+const native_left_axis_heading_pos: f64 = 4.71238899230957;
+const native_left_axis_heading_eps: f64 = 1e-6;
+const native_left_axis_dy_eps: f64 = 5e-4;
 
 pub const CreatureRuntimeError = error{
     UnsupportedSpawnTemplate,
@@ -18,7 +27,13 @@ pub const CreatureState = struct {
     active: bool = false,
     type_id: i32 = 0,
     pos: survival_state.Vec2 = .{},
+    target: survival_state.Vec2 = .{},
     heading: f64 = 0.0,
+    target_heading: f64 = 0.0,
+    phase_seed: f64 = 0.0,
+    vel: survival_state.Vec2 = .{},
+    move_scale: f64 = 1.0,
+    force_target: i32 = 0,
     ai_mode: i32 = survival_spawn.CreatureAiMode.orbit_player,
     // Native keeps this stale across slot reuse for some spawn paths.
     link_index: i32 = -1,
@@ -75,6 +90,7 @@ pub const CreaturePool = struct {
             }
         }
         const stale_link_index = self.entries[slot].link_index;
+        const stale_target_heading = self.entries[slot].target_heading;
 
         self.entries[slot] = .{
             .active = true,
@@ -83,7 +99,16 @@ pub const CreaturePool = struct {
                 .x = asF32F64(init.pos.x),
                 .y = asF32F64(init.pos.y),
             },
+            .target = .{
+                .x = asF32F64(init.pos.x),
+                .y = asF32F64(init.pos.y),
+            },
             .heading = asF32F64(init.heading),
+            .target_heading = stale_target_heading,
+            .phase_seed = asF32F64(init.phase_seed),
+            .vel = .{},
+            .move_scale = 1.0,
+            .force_target = 0,
             .ai_mode = init.ai_mode,
             .link_index = stale_link_index,
             .hp = asF32F64(init.health),
@@ -215,55 +240,112 @@ pub const CreaturePool = struct {
         players: []survival_state.PlayerState,
         dt: f64,
         world_size: f64,
+        bonus_pool: *survival_bonuses.BonusPool,
     ) void {
         if (players.len == 0) return;
         if (!(dt > 0.0)) return;
 
         const dt_ms = @max(@as(i32, 0), @as(i32, @intFromFloat(@round(dt * 1000.0))));
-        const min_bound = -64.0;
-        const max_bound = world_size + 64.0;
-        var player = &players[0];
+        const player = &players[0];
 
         for (&self.entries) |*creature| {
             if (!creature.active) continue;
             if (!(creature.hp > 0.0)) {
-                creature.active = false;
+                tickAi7LinkTimer(creature, dt_ms, &state.rng);
+                tickDead(creature, dt, &self.kill_count);
                 continue;
             }
 
             creature.attack_cooldown = @max(0.0, asF32F64(creature.attack_cooldown - dt));
             tickAi7LinkTimer(creature, dt_ms, &state.rng);
-
-            const to_player = survival_state.Vec2.sub(player.pos, creature.pos);
-            const distance_sq = to_player.lengthSq();
-            if (distance_sq > 1e-9) {
-                const distance = std.math.sqrt(distance_sq);
-                const inv_distance = 1.0 / distance;
-                const dir = to_player.mul(inv_distance);
-                const speed_step = asF32F64(creature.move_speed * creature_speed_scale * dt);
-                const delta = dir.mul(speed_step);
-                const next_pos = survival_state.Vec2.add(creature.pos, delta).clampRect(
-                    min_bound,
-                    min_bound,
-                    max_bound,
-                    max_bound,
+            creatureAiUpdateTarget(creature, player.pos, dt);
+            if (state.bonuses.energizer > 0.0 and creature.max_hp < 500.0) {
+                creature.target_heading = asF32F64(creature.target_heading + native_pi);
+            }
+            const turn_rate = asF32F64(creature.move_speed * creature_turn_rate_scale);
+            if (creature.ai_mode != survival_spawn.CreatureAiMode.hold_timer) {
+                creature.heading = angleApproach(
+                    creature.heading,
+                    creature.target_heading,
+                    turn_rate,
+                    dt,
                 );
+                const move_delta = movementDeltaFromHeadingF32(
+                    creature.heading,
+                    dt,
+                    creature.move_scale,
+                    creature.move_speed,
+                );
+                creature.vel = move_delta;
+                creature.pos = advancePosByDeltaF32(creature.pos, move_delta);
+            }
+
+            const eat_sq = survival_state.Vec2.sub(player.pos, creature.pos).lengthSq();
+            if (eat_sq < 20.0 * 20.0) {
                 creature.pos = .{
-                    .x = asF32F64(next_pos.x),
-                    .y = asF32F64(next_pos.y),
+                    .x = asF32F64(creature.pos.x - creature.vel.x),
+                    .y = asF32F64(creature.pos.y - creature.vel.y),
                 };
-                creature.heading = asF32F64(std.math.atan2(dir.y, dir.x) + std.math.pi / 2.0);
+
+                if (state.bonuses.energizer > 0.0 and creature.max_hp < 380.0) {
+                    for (0..6) |_| {
+                        _ = state.rng.rand();
+                        _ = state.rng.rand();
+                        _ = state.rng.rand();
+                        _ = state.rng.rand();
+                    }
+                    creature.last_hit_owner_id = -1 - player.index;
+                    creature.hp = 0.0;
+                    if (dt > 0.0) {
+                        creature.hitbox_size = asF32F64(creature.hitbox_size - dt);
+                    } else {
+                        creature.hitbox_size = asF32F64(creature.hitbox_size - 0.001);
+                    }
+                    const prev_spawn_guard = state.bonus_spawn_guard;
+                    state.bonus_spawn_guard = true;
+                    consumeDeathSideEffectsRng(
+                        state,
+                        players,
+                        bonus_pool,
+                        creature.pos,
+                        world_size,
+                    );
+                    state.bonus_spawn_guard = prev_spawn_guard;
+                    _ = awardExperienceFromReward(state, player, creature.reward_value);
+                    continue;
+                }
             }
 
             const contact_sq = survival_state.Vec2.sub(player.pos, creature.pos).lengthSq();
-            if (contact_sq < 30.0 * 30.0 and
+            if (creature.hitbox_size == creature_hitbox_alive and
+                creature.size > 16.0 and
+                contact_sq < 30.0 * 30.0 and
                 creature.attack_cooldown <= 0.0 and
                 player.health > 0.0 and
                 state.bonuses.energizer <= 0.0)
             {
-                player.health = asF32F64(player.health - creature.contact_damage);
-                state.survival_reward_damage_seen = true;
-                creature.attack_cooldown = contact_damage_period;
+                consumeContactSfxRng(state, creature.type_id);
+                applyPlayerContactDamage(state, player, creature.contact_damage, dt);
+                consumeAddRandomRng(state);
+                creature.attack_cooldown = asF32F64(creature.attack_cooldown + contact_damage_cooldown);
+            }
+
+            if (creature.hitbox_size == creature_hitbox_alive and
+                contact_sq < 30.0 * 30.0 and
+                creature.size <= 30.0)
+            {
+                creature.hp = 0.0;
+                creature.hitbox_size = asF32F64(creature.hitbox_size - dt);
+                continue;
+            }
+        }
+    }
+
+    pub fn finalizePostRenderLifecycle(self: *CreaturePool) void {
+        for (&self.entries) |*creature| {
+            if (!creature.active) continue;
+            if (creature.hitbox_size < -10.0) {
+                creature.active = false;
             }
         }
     }
@@ -272,10 +354,12 @@ pub const CreaturePool = struct {
         self: *CreaturePool,
         state: *survival_state.GameplayState,
         players: []survival_state.PlayerState,
+        bonus_pool: *survival_bonuses.BonusPool,
         player_index: usize,
         aim_target: survival_state.Vec2,
         shot_count: i32,
         weapon_id: i32,
+        world_size: f64,
     ) ShotResolutionResult {
         if (players.len == 0) return .{};
         if (player_index >= players.len) return .{};
@@ -296,18 +380,24 @@ pub const CreaturePool = struct {
         }
 
         var result = ShotResolutionResult{};
-        const base_damage = weaponDamagePerShot(weapon_id);
+        const projectile_type_id = survival_state.projectileTypeIdFromWeaponId(weapon_id) orelse weapon_id;
+        const damage_scale = survival_state.weaponDamageScale(weapon_id);
         const owner_id: i32 = -1 - player.index;
+        var hit_audio_game_tune_started = state.game_tune_started;
 
         var shot_idx: i32 = 0;
         while (shot_idx < shot_count) : (shot_idx += 1) {
             const hit_idx = self.findRayHitCreature(player.pos, aim_dir) orelse {
-                _ = state.rng.rand();
                 continue;
             };
 
-            const rand_scale = 0.85 + @as(f64, @floatFromInt(state.rng.rand() & 7)) * 0.05;
-            const damage = asF32F64(base_damage * rand_scale);
+            if (perkActive(player, perk_id_poison_bullets)) {
+                _ = state.rng.rand();
+            }
+            consumeProjectileHitPresentationPreRng(state, player, projectile_type_id);
+
+            const hit_pos = self.entries[hit_idx].pos;
+            const damage = projectileHitDamage(player.pos, hit_pos, damage_scale);
 
             result.hits += 1;
             if (player.index >= 0 and player.index < state.shots_hit.len) {
@@ -317,17 +407,111 @@ pub const CreaturePool = struct {
             const xp_gained = self.applyDamage(
                 state,
                 players,
+                bonus_pool,
                 hit_idx,
                 damage,
                 owner_id,
+                1.0 / 60.0,
+                world_size,
             );
+            consumeProjectileHitPresentationPostRng(state, projectile_type_id);
+            consumeHitSfxRng(state, &hit_audio_game_tune_started);
             if (xp_gained > 0) {
                 result.deaths += 1;
                 result.xp_awarded += xp_gained;
             }
         }
+        state.game_tune_started = hit_audio_game_tune_started;
 
         return result;
+    }
+
+    pub fn applyProjectileDamage(
+        self: *CreaturePool,
+        state: *survival_state.GameplayState,
+        players: []survival_state.PlayerState,
+        bonus_pool: *survival_bonuses.BonusPool,
+        creature_index: usize,
+        damage: f64,
+        owner_id: i32,
+        dt: f64,
+        world_size: f64,
+    ) i32 {
+        const jitter_rand = state.rng.rand();
+        if (creature_index < self.entries.len) {
+            var creature = &self.entries[creature_index];
+            if ((creature.flags & survival_spawn.CreatureFlags.anim_ping_pong) == 0) {
+                const jitter_i32: i32 = @as(i32, @intCast(jitter_rand & 0x7f)) - 0x40;
+                const jitter = asF32F64(@as(f64, @floatFromInt(jitter_i32)) * 0.002);
+                const size = @max(1e-6, creature.size);
+                var turn = asF32F64(jitter / asF32F64(size * 0.025));
+                const half_pi = std.math.pi / 2.0;
+                if (turn > half_pi) turn = half_pi;
+                creature.heading += turn;
+            }
+        }
+        return self.applyDamage(
+            state,
+            players,
+            bonus_pool,
+            creature_index,
+            damage,
+            owner_id,
+            dt,
+            world_size,
+        );
+    }
+
+    pub fn applyExplosionDamage(
+        self: *CreaturePool,
+        state: *survival_state.GameplayState,
+        players: []survival_state.PlayerState,
+        bonus_pool: *survival_bonuses.BonusPool,
+        creature_index: usize,
+        damage: f64,
+        owner_id: i32,
+        dt: f64,
+        world_size: f64,
+    ) i32 {
+        if (creature_index >= self.entries.len) return 0;
+        if (players.len == 0) return 0;
+
+        var creature = &self.entries[creature_index];
+        if (!creature.active) return 0;
+        creature.last_hit_owner_id = owner_id;
+
+        // Native nuke path applies damage to active corpse entries as well.
+        if (!(creature.hp > 0.0)) {
+            if (dt > 0.0) {
+                creature.hitbox_size -= dt * 15.0;
+            }
+            return 0;
+        }
+
+        creature.hp -= damage;
+        if (creature.hp > 0.0) return 0;
+
+        creature.hp = 0.0;
+        if (dt > 0.0) {
+            creature.hitbox_size -= dt;
+        } else {
+            creature.hitbox_size -= 0.001;
+        }
+
+        consumeDeathSideEffectsRng(
+            state,
+            players,
+            bonus_pool,
+            creature.pos,
+            world_size,
+        );
+
+        const owner_player_idx = ownerIdToPlayerIndex(owner_id) orelse 0;
+        const slot: usize = if (owner_player_idx >= 0 and owner_player_idx < players.len)
+            @intCast(owner_player_idx)
+        else
+            0;
+        return awardExperienceFromReward(state, &players[slot], creature.reward_value);
     }
 
     fn spawnFromStats(
@@ -403,9 +587,12 @@ pub const CreaturePool = struct {
         self: *CreaturePool,
         state: *survival_state.GameplayState,
         players: []survival_state.PlayerState,
+        bonus_pool: *survival_bonuses.BonusPool,
         creature_index: usize,
         damage: f64,
         owner_id: i32,
+        dt: f64,
+        world_size: f64,
     ) i32 {
         if (creature_index >= self.entries.len) return 0;
         if (players.len == 0) return 0;
@@ -418,10 +605,18 @@ pub const CreaturePool = struct {
         creature.last_hit_owner_id = owner_id;
         if (creature.hp > 0.0) return 0;
 
-        creature.hp = 0.0;
-        creature.hitbox_size = -20.0;
-        creature.active = false;
-        self.kill_count += 1;
+        if (dt > 0.0) {
+            creature.hitbox_size = asF32F64(creature.hitbox_size - dt);
+        } else {
+            creature.hitbox_size = asF32F64(creature.hitbox_size - 0.001);
+        }
+        consumeDeathSideEffectsRng(
+            state,
+            players,
+            bonus_pool,
+            creature.pos,
+            world_size,
+        );
 
         const owner_player_idx = ownerIdToPlayerIndex(owner_id) orelse 0;
         const slot: usize = if (owner_player_idx >= 0 and owner_player_idx < players.len)
@@ -431,6 +626,172 @@ pub const CreaturePool = struct {
         return awardExperienceFromReward(state, &players[slot], creature.reward_value);
     }
 };
+
+fn creatureAiUpdateTarget(
+    creature: *CreatureState,
+    player_pos: survival_state.Vec2,
+    dt: f64,
+) void {
+    _ = dt;
+    const dist_to_player = distanceF32(creature.pos, player_pos);
+    const phase_int: i32 = @intFromFloat(creature.phase_seed);
+    const orbit_phase = asF32F64(asF32F64(@as(f64, @floatFromInt(phase_int)) * 3.7) * native_pi);
+
+    creature.force_target = 0;
+    if (creature.ai_mode == survival_spawn.CreatureAiMode.orbit_player) {
+        if (dist_to_player > 800.0) {
+            creature.target = .{
+                .x = asF32F64(player_pos.x),
+                .y = asF32F64(player_pos.y),
+            };
+        } else {
+            creature.target = orbitTargetF32(
+                player_pos,
+                orbit_phase,
+                dist_to_player,
+                0.85,
+            );
+        }
+    } else if (creature.ai_mode == survival_spawn.CreatureAiMode.hold_timer) {
+        if (creature.link_index > 0) {
+            creature.target = .{
+                .x = asF32F64(creature.pos.x),
+                .y = asF32F64(creature.pos.y),
+            };
+        } else {
+            creature.ai_mode = survival_spawn.CreatureAiMode.orbit_player;
+        }
+    }
+
+    const dist_to_target = distanceF32(creature.pos, creature.target);
+    if (dist_to_target < 40.0 or dist_to_target > 400.0) {
+        creature.force_target = 1;
+    }
+    if (creature.force_target != 0) {
+        creature.target = .{
+            .x = asF32F64(player_pos.x),
+            .y = asF32F64(player_pos.y),
+        };
+    }
+
+    const dx = asF32F64(creature.target.x - creature.pos.x);
+    const dy = asF32F64(creature.target.y - creature.pos.y);
+    creature.target_heading = headingFromDeltaF32(dx, dy);
+    creature.move_scale = 1.0;
+}
+
+fn distanceF32(a: survival_state.Vec2, b: survival_state.Vec2) f64 {
+    const dx = asF32F64(b.x - a.x);
+    const dy = asF32F64(b.y - a.y);
+    const dist_sq = dx * dx + dy * dy;
+    return asF32F64(std.math.sqrt(dist_sq));
+}
+
+fn orbitTargetF32(
+    player_pos: survival_state.Vec2,
+    orbit_phase: f64,
+    dist: f64,
+    scale: f64,
+) survival_state.Vec2 {
+    const orbit_dist = asF32F64(asF32F64(dist) * asF32F64(scale));
+    const phase = asF32F64(orbit_phase);
+    const px = asF32F64(player_pos.x);
+    const py = asF32F64(player_pos.y);
+    const orbit_x = asF32F64(std.math.cos(phase));
+    const orbit_y = asF32F64(std.math.sin(phase));
+    return .{
+        .x = asF32F64(asF32F64(orbit_x * orbit_dist) + px),
+        .y = asF32F64(asF32F64(orbit_y * orbit_dist) + py),
+    };
+}
+
+fn headingFromDeltaF32(dx: f64, dy: f64) f64 {
+    var heading = asF32F64(std.math.atan2(dy, dx) + native_half_pi);
+    if (dx < 0.0 and
+        @abs(heading - native_left_axis_heading_pos) <= native_left_axis_heading_eps and
+        @abs(dy) <= native_left_axis_dy_eps)
+    {
+        heading = asF32F64(heading - native_tau);
+    }
+    return heading;
+}
+
+fn angleApproach(
+    current: f64,
+    target: f64,
+    rate: f64,
+    dt: f64,
+) f64 {
+    var angle = current;
+    const target_f = target;
+    const rate_f = rate;
+    const dt_f = dt;
+    const tau = 6.2831855;
+
+    while (angle < 0.0) {
+        angle += tau;
+    }
+    while (tau < angle) {
+        angle -= tau;
+    }
+
+    const direct = @abs(target_f - angle);
+    const hi = if (angle < target_f) target_f else angle;
+    const lo = if (target_f < angle) target_f else angle;
+    const wrapped = @abs((tau - hi) + lo);
+
+    var step_scale = wrapped;
+    if (direct < wrapped) {
+        step_scale = direct;
+    }
+    if (step_scale > 1.0) {
+        step_scale = 1.0;
+    }
+
+    const step_delta = dt_f * step_scale * rate_f;
+    if (direct <= wrapped) {
+        if (angle < target_f) return angle + step_delta;
+    } else {
+        if (target_f < angle) return angle + step_delta;
+    }
+    return angle - step_delta;
+}
+
+fn movementDeltaFromHeadingF32(
+    heading: f64,
+    dt: f64,
+    move_scale: f64,
+    move_speed: f64,
+) survival_state.Vec2 {
+    const radians = asF32F64(heading) - native_half_pi;
+
+    var vx = std.math.cos(radians);
+    vx *= dt;
+    vx *= move_scale;
+    vx *= move_speed;
+    vx *= creature_speed_scale;
+
+    var vy = std.math.sin(radians);
+    vy *= dt;
+    vy *= move_scale;
+    vy *= move_speed;
+    vy *= creature_speed_scale;
+
+    return .{
+        .x = asF32F64(vx),
+        .y = asF32F64(vy),
+    };
+}
+
+fn advancePosByDeltaF32(
+    pos: survival_state.Vec2,
+    delta: survival_state.Vec2,
+) survival_state.Vec2 {
+    return .{
+        .x = asF32F64(pos.x + delta.x),
+        .y = asF32F64(pos.y + delta.y),
+    };
+}
 
 const SpawnStats = struct {
     type_id: i32,
@@ -449,10 +810,140 @@ fn hitRadiusFor(creature: CreatureState) f64 {
     return @max(0.0, creature.size * 0.14285715 + 3.0);
 }
 
-fn weaponDamagePerShot(weapon_id: i32) f64 {
-    const projectile_meta = survival_state.weaponProjectileMeta(weapon_id);
-    const damage_scale = survival_state.weaponDamageScale(weapon_id);
-    return @max(0.1, asF32F64(projectile_meta * damage_scale * 0.1));
+fn projectileHitDamage(origin: survival_state.Vec2, hit: survival_state.Vec2, damage_scale: f64) f64 {
+    var dist = survival_state.Vec2.sub(hit, origin).length();
+    if (dist < 50.0) dist = 50.0;
+    const scaled = asF32F64((100.0 / dist) * damage_scale * 30.0 + 10.0);
+    return asF32F64(scaled * 0.95);
+}
+
+fn perkActive(player: *const survival_state.PlayerState, perk_id: i32) bool {
+    if (perk_id < 0 or perk_id >= player.perk_counts.len) return false;
+    return player.perk_counts[@intCast(perk_id)] > 0;
+}
+
+pub fn consumeProjectileHitPresentationPreRng(
+    state: *survival_state.GameplayState,
+    player: *const survival_state.PlayerState,
+    projectile_type_id: i32,
+) void {
+    const freeze_active = state.bonuses.freeze > 0.0;
+
+    if (projectile_type_id == survival_state.ProjectileTypeId.blade_gun) {
+        for (0..8) |_| {
+            consumeSpawnBloodSplatterRng(state);
+        }
+    }
+
+    if (perkActive(player, perk_id_bloody_mess_quick_learner)) {
+        for (0..8) |_| {
+            consumeSpawnBloodSplatterRng(state);
+        }
+        consumeSpawnBloodSplatterRng(state);
+
+        var lo: i32 = -30;
+        var hi: i32 = 30;
+        while (lo > -60) {
+            const span: u32 = @intCast(hi - lo);
+            for (0..2) |_| {
+                _ = state.rng.rand() % span;
+                _ = state.rng.rand() % span;
+                consumeAddRandomRng(state);
+            }
+            lo -= 10;
+            hi += 10;
+        }
+    } else if (!freeze_active) {
+        for (0..2) |_| {
+            consumeSpawnBloodSplatterRng(state);
+            if ((state.rng.rand() & 7) == 2) {
+                consumeSpawnBloodSplatterRng(state);
+            }
+        }
+    }
+
+}
+
+pub fn consumeProjectileHitPresentationPostRng(
+    state: *survival_state.GameplayState,
+    projectile_type_id: i32,
+) void {
+    const freeze_active = state.bonuses.freeze > 0.0;
+
+    // Native consumes one draw before post-hit decal branching.
+    _ = state.rng.rand();
+
+    if (projectile_type_id == survival_state.ProjectileTypeId.gauss_gun or
+        projectile_type_id == survival_state.ProjectileTypeId.fire_bullets)
+    {
+        consumeLargeHitStreakRng(state, freeze_active);
+        return;
+    }
+    if (freeze_active) return;
+
+    for (0..3) |_| {
+        _ = state.rng.rand();
+        consumeAddRandomRng(state);
+        consumeAddRandomRng(state);
+        consumeAddRandomRng(state);
+        consumeAddRandomRng(state);
+    }
+}
+
+fn consumeLargeHitStreakRng(
+    state: *survival_state.GameplayState,
+    freeze_active: bool,
+) void {
+    for (0..6) |_| {
+        var dist = @as(i32, @intCast(state.rng.rand() % 100));
+        if (dist > 40) {
+            dist = @as(i32, @intCast(state.rng.rand() % 0x5A + 10));
+        }
+        if (dist > 70) {
+            dist = @as(i32, @intCast(state.rng.rand() % 0x50 + 0x14));
+        }
+        _ = state.rng.rand();
+        if (freeze_active) {
+            _ = state.rng.rand();
+            // freeze shard spawn RNG
+            _ = state.rng.rand();
+            _ = state.rng.rand();
+            _ = state.rng.rand();
+            _ = state.rng.rand();
+            _ = state.rng.rand();
+            _ = state.rng.rand();
+        }
+        consumeAddRandomRng(state);
+    }
+}
+
+pub fn consumeHitSfxRng(
+    state: *survival_state.GameplayState,
+    game_tune_started: *bool,
+) void {
+    // Mirrors plan_hit_sfx_keys: first eligible hit starts tune and skips rand-choice.
+    if (!state.demo_mode_active and state.game_mode != game_mode_rush and !game_tune_started.*) {
+        game_tune_started.* = true;
+        return;
+    }
+    _ = state.rng.rand();
+}
+
+fn consumeSpawnBloodSplatterRng(state: *survival_state.GameplayState) void {
+    for (0..2) |_| {
+        _ = state.rng.rand();
+        _ = state.rng.rand();
+        _ = state.rng.rand();
+        _ = state.rng.rand();
+        _ = state.rng.rand();
+    }
+}
+
+fn consumeAddRandomRng(state: *survival_state.GameplayState) void {
+    _ = state.rng.rand();
+    _ = state.rng.rand();
+    _ = state.rng.rand();
+    _ = state.rng.rand();
 }
 
 fn tickAi7LinkTimer(
@@ -496,6 +987,92 @@ fn awardExperienceFromReward(
     return gained;
 }
 
+fn consumeDeathSideEffectsRng(
+    state: *survival_state.GameplayState,
+    players: []survival_state.PlayerState,
+    bonus_pool: *survival_bonuses.BonusPool,
+    death_pos: survival_state.Vec2,
+    world_size: f64,
+) void {
+    const spawned_bonus = bonus_pool.trySpawnOnKill(
+        .{
+            .x = asF32F64(death_pos.x),
+            .y = asF32F64(death_pos.y),
+        },
+        state,
+        players,
+        world_size,
+    );
+    if (spawned_bonus) |_| {
+        // effects.spawn_burst(count=16) -> 4 random draws per burst element.
+        for (0..16) |_| {
+            _ = state.rng.rand();
+            _ = state.rng.rand();
+            _ = state.rng.rand();
+            _ = state.rng.rand();
+        }
+    }
+    if (state.bonuses.freeze > 0.0) {
+        for (0..8) |_| {
+            _ = state.rng.rand() % 0x264;
+            for (0..6) |_| {
+                _ = state.rng.rand();
+            }
+        }
+        _ = state.rng.rand() % 0x264;
+        for (0..4) |_| {
+            _ = state.rng.rand();
+            _ = state.rng.rand();
+        }
+        for (0..4) |_| {
+            _ = state.rng.rand() % 0x264;
+            for (0..6) |_| {
+                _ = state.rng.rand();
+            }
+        }
+        consumeAddRandomRng(state);
+    }
+    // plan_death_sfx_keys chooses one death sample per death.
+    _ = state.rng.rand();
+}
+
+fn tickDead(
+    creature: *CreatureState,
+    dt: f64,
+    kill_count: *i32,
+) void {
+    if (!(dt > 0.0)) return;
+    if (creature.hitbox_size <= 0.0) {
+        creature.hitbox_size = asF32F64(creature.hitbox_size - dt * 20.0);
+        return;
+    }
+    const next_hitbox = asF32F64(creature.hitbox_size - dt * 28.0);
+    if (next_hitbox > 0.0) {
+        const long_strip =
+            (creature.flags & survival_spawn.CreatureFlags.anim_ping_pong) == 0 or
+            (creature.flags & survival_spawn.CreatureFlags.anim_long_strip) != 0;
+        if (long_strip) {
+            const slide = asF32F64(next_hitbox * dt * 9.0);
+            const direction = headingDirectionF32(creature.heading);
+            creature.pos = .{
+                .x = asF32F64(creature.pos.x - direction.x * slide),
+                .y = asF32F64(creature.pos.y - direction.y * slide),
+            };
+        }
+    } else {
+        kill_count.* += 1;
+    }
+    creature.hitbox_size = next_hitbox;
+}
+
+fn headingDirectionF32(heading: f64) survival_state.Vec2 {
+    const radians = asF32F64(heading) - native_half_pi;
+    return .{
+        .x = asF32F64(std.math.cos(radians)),
+        .y = asF32F64(std.math.sin(radians)),
+    };
+}
+
 fn awardExperienceOnceFromReward(
     player: *survival_state.PlayerState,
     reward_value: f64,
@@ -520,6 +1097,95 @@ fn asF32F64(value: f64) f64 {
     return @floatCast(rounded);
 }
 
+const perk_id_bloody_mess_quick_learner: i32 = 1;
+const perk_id_poison_bullets: i32 = 25;
+const perk_id_final_revenge: i32 = survival_perks.PerkId.final_revenge;
+const perk_id_unstoppable: i32 = survival_perks.PerkId.unstoppable;
+const perk_id_tough_reloader: i32 = survival_perks.PerkId.tough_reloader;
+const perk_id_thick_skinned: i32 = survival_perks.PerkId.thick_skinned;
+const perk_id_ninja: i32 = survival_perks.PerkId.ninja;
+const perk_id_dodger: i32 = survival_perks.PerkId.dodger;
+const perk_id_highlander: i32 = survival_perks.PerkId.highlander;
+const perk_id_death_clock: i32 = survival_perks.PerkId.death_clock;
+const game_mode_rush: i32 = 2;
+const thick_skinned_damage_scale_f32: f64 = 0.6660000085830688;
+
+fn creatureTypeHasContactSfx(type_id: i32) bool {
+    return type_id == @intFromEnum(survival_spawn.CreatureTypeId.zombie) or
+        type_id == @intFromEnum(survival_spawn.CreatureTypeId.lizard) or
+        type_id == @intFromEnum(survival_spawn.CreatureTypeId.alien) or
+        type_id == @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1) or
+        type_id == @intFromEnum(survival_spawn.CreatureTypeId.spider_sp2);
+}
+
+fn consumeContactSfxRng(state: *survival_state.GameplayState, creature_type_id: i32) void {
+    if (!creatureTypeHasContactSfx(creature_type_id)) return;
+    _ = state.rng.rand() & 1;
+}
+
+fn applyPlayerContactDamage(
+    state: *survival_state.GameplayState,
+    player: *survival_state.PlayerState,
+    damage: f64,
+    dt: f64,
+) void {
+    if (!(damage > 0.0)) return;
+    if (perkActive(player, perk_id_death_clock)) return;
+
+    var damage_scaled = damage;
+    if (perkActive(player, perk_id_tough_reloader) and player.reload_active) {
+        damage_scaled = asF32F64(damage_scaled * 0.5);
+    }
+    const spread_heat_damage = damage_scaled;
+
+    state.survival_reward_damage_seen = true;
+    if (player.shield_timer > 0.0) return;
+
+    var dodged = false;
+    if (perkActive(player, perk_id_ninja)) {
+        dodged = (state.rng.rand() % 3) == 0;
+    } else if (perkActive(player, perk_id_dodger)) {
+        dodged = (state.rng.rand() % 5) == 0;
+    }
+
+    if (perkActive(player, perk_id_thick_skinned)) {
+        damage_scaled = asF32F64(damage_scaled * thick_skinned_damage_scale_f32);
+    }
+
+    if (!dodged) {
+        if (perkActive(player, perk_id_highlander)) {
+            if ((state.rng.rand() % 10) == 0) {
+                player.health = 0.0;
+            }
+        } else {
+            player.health = asF32F64(player.health - damage_scaled);
+            if (player.health < 0.0 and dt > 0.0) {
+                player.death_timer = asF32F64(player.death_timer - dt * 28.0);
+            }
+        }
+    }
+
+    if (player.health >= 0.0) {
+        _ = state.rng.rand() % 3;
+    } else if (!perkActive(player, perk_id_final_revenge)) {
+        _ = state.rng.rand() & 1;
+    }
+
+    if (!dodged) {
+        if (!perkActive(player, perk_id_unstoppable)) {
+            const jitter_i32: i32 = @as(i32, @intCast(state.rng.rand() % 100)) - 50;
+            player.heading = asF32F64(player.heading + @as(f64, @floatFromInt(jitter_i32)) * 0.04);
+            player.spread_heat = asF32F64(@min(
+                0.48,
+                asF32F64(player.spread_heat + spread_heat_damage * 0.01),
+            ));
+        }
+        if (player.health <= 20.0 and (state.rng.rand() & 7) == 3) {
+            player.low_health_timer = 0.0;
+        }
+    }
+}
+
 fn expectFloatClose(expected: f64, actual: f64) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
 }
@@ -527,6 +1193,7 @@ fn expectFloatClose(expected: f64, actual: f64) !void {
 test "spawn init and shot resolution award xp on kill" {
     var pool = CreaturePool{};
     var state = survival_state.GameplayState.init(1234);
+    var bonuses = survival_bonuses.BonusPool{};
     var players = [_]survival_state.PlayerState{
         .{
             .index = 0,
@@ -552,10 +1219,12 @@ test "spawn init and shot resolution award xp on kill" {
     const result = pool.resolvePlayerShots(
         &state,
         players[0..],
+        &bonuses,
         0,
         .{ .x = 300.0, .y = 100.0 },
         1,
         survival_state.WeaponId.pistol,
+        1024.0,
     );
     try std.testing.expectEqual(@as(i32, 1), result.hits);
     try std.testing.expectEqual(@as(i32, 1), result.deaths);
@@ -601,6 +1270,7 @@ test "template spawn rejects unsupported template ids" {
 test "creature update applies contact damage and movement" {
     var pool = CreaturePool{};
     var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
     var players = [_]survival_state.PlayerState{
         .{
             .index = 0,
@@ -622,7 +1292,7 @@ test "creature update applies contact damage and movement" {
         .contact_damage = 7.0,
     });
 
-    pool.update(&state, players[0..], 1.0 / 60.0, 1024.0);
+    pool.update(&state, players[0..], 1.0 / 60.0, 1024.0, &bonuses);
     try std.testing.expect(players[0].health < 100.0);
     try std.testing.expect(state.survival_reward_damage_seen);
     try expectFloatClose(@as(f64, 0.5), pool.entries[0].attack_cooldown);
@@ -631,6 +1301,7 @@ test "creature update applies contact damage and movement" {
 test "ai7 link timer consumes rng when timer crosses zero" {
     var pool = CreaturePool{};
     var state = survival_state.GameplayState.init(99);
+    var bonuses = survival_bonuses.BonusPool{};
     var players = [_]survival_state.PlayerState{
         .{
             .index = 0,
@@ -658,7 +1329,7 @@ test "ai7 link timer consumes rng when timer crosses zero" {
     var expected_rng = state.rng;
     _ = expected_rng.rand();
 
-    pool.update(&state, players[0..], 0.017, 1024.0);
+    pool.update(&state, players[0..], 0.017, 1024.0, &bonuses);
 
     try std.testing.expectEqual(expected_rng.state, state.rng.state);
     try std.testing.expectEqual(survival_spawn.CreatureAiMode.hold_timer, pool.entries[0].ai_mode);

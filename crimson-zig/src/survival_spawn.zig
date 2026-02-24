@@ -18,6 +18,8 @@ pub const CreatureAiMode = struct {
 };
 
 pub const CreatureFlags = struct {
+    pub const anim_ping_pong: u32 = 0x04;
+    pub const anim_long_strip: u32 = 0x40;
     pub const ai7_link_timer: u32 = 0x80;
 };
 

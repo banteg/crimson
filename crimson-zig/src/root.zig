@@ -8,6 +8,8 @@ pub const survival_creatures = @import("survival_creatures.zig");
 pub const survival_perks = @import("survival_perks.zig");
 pub const survival_state = @import("survival_state.zig");
 pub const survival_weapon_runtime = @import("survival_weapon_runtime.zig");
+pub const survival_projectiles = @import("survival_projectiles.zig");
+pub const survival_bonuses = @import("survival_bonuses.zig");
 pub const verify_contract = @import("verify_contract.zig");
 
 pub const version = "0.1.0-dev";
