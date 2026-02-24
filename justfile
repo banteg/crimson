@@ -203,6 +203,9 @@ zig-acceptance replay="survival_20260224_041009_score76661.crd":
 zig-perf-gate replay="survival_20260224_041009_score76661.crd" runs="5":
     cd crimson-zig && replay_arg="{{replay}}" && runs_arg="{{runs}}" && if [[ "$replay_arg" == runs=* ]]; then runs_arg="${replay_arg#runs=}"; replay_arg="survival_20260224_041009_score76661.crd"; fi && replay_arg="${replay_arg#replay=}" && runs_arg="${runs_arg#runs=}" && ./scripts/perf_gate.sh "$replay_arg" "$runs_arg"
 
+zig-diff replay="survival_20260224_041009_score76661.crd":
+    replay_arg="{{replay}}" && replay_arg="${replay_arg#replay=}" && uv run python crimson-zig/scripts/diff_survival_verifiers.py "$replay_arg"
+
 # WinDbg
 windbg-server:
     cdb.exe -server tcp:port=5005,password=secret -logo C:\games\crimsonland_1.9.93\windbg.log -pn crimsonland.exe -noio

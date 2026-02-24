@@ -10,6 +10,7 @@ pub const WeaponId = struct {
     pub const none: i32 = 0;
     pub const pistol: i32 = 1;
     pub const assault_rifle: i32 = 2;
+    pub const flamethrower: i32 = 8;
     pub const mean_minigun: i32 = 7;
     pub const shrinkifier_5k: i32 = 24;
     pub const blade_gun: i32 = 25;
@@ -112,6 +113,7 @@ pub const PlayerState = struct {
     level: i32 = 1,
 
     perk_counts: [perk_count_size]i32 = [_]i32{0} ** perk_count_size,
+    plaguebearer_active: bool = false,
     speed_bonus_timer: f64 = 0.0,
     shield_timer: f64 = 0.0,
     fire_bullets_timer: f64 = 0.0,
@@ -119,7 +121,9 @@ pub const PlayerState = struct {
 
 pub const PerkSelectionState = struct {
     pending_count: i32 = 0,
-    choices_dirty: bool = false,
+    choices: [7]i32 = [_]i32{0} ** 7,
+    choice_count: usize = 0,
+    choices_dirty: bool = true,
 };
 
 pub const BonusTimers = struct {
@@ -136,6 +140,13 @@ pub const GameplayState = struct {
     time_scale_active: bool = false,
     perk_selection: PerkSelectionState = .{},
     demo_mode_active: bool = false,
+    hardcore: bool = false,
+    preserve_bugs: bool = false,
+    game_mode: i32 = 1,
+    quest_stage_major: i32 = 0,
+    quest_stage_minor: i32 = 0,
+    perk_available: [perk_count_size]bool = [_]bool{false} ** perk_count_size,
+    perk_available_unlock_index: i32 = -1,
 
     survival_reward_weapon_guard_id: i32 = WeaponId.pistol,
     survival_reward_handout_enabled: bool = true,
@@ -148,6 +159,8 @@ pub const GameplayState = struct {
     shots_fired_total: i32 = 0,
     shots_hit: [max_players]i32 = [_]i32{0} ** max_players,
     weapon_shots_fired: [max_players][weapon_count_size]i32 = [_][weapon_count_size]i32{[_]i32{0} ** weapon_count_size} ** max_players,
+    bonus_spawn_guard: bool = false,
+    shock_chain_links_left: i32 = 0,
     player_alt_weapon_swap_cooldown_ms: i32 = 0,
     player_spread_damping_scalar: f64 = 1.0,
     player_spread_damping_gate: f64 = 0.0,
@@ -188,6 +201,24 @@ pub const weapon_pellet_counts = [_]i32{
     0, 0, 0, 0,  0,  1, 1, 1, 1, 1, 0, 0, 0, 0, 1,  1, 1, 1,
 };
 
+pub const weapon_projectile_meta = [_]f64{
+    0.0,  55.0, 50.0, 60.0, 45.0, 45.0, 215.0, 45.0, 45.0, 30.0, 45.0, 35.0, 45.0, 45.0, 45.0, 45.0, 45.0, 45.0,
+    45.0, 20.0, 45.0, 15.0, 20.0, 10.0, 45.0,  20.0, 10.0, 45.0, 10.0, 30.0, 45.0, 45.0, 45.0, 45.0, 0.0,  0.0,
+    0.0,  0.0,  0.0,  0.0,  0.0,  15.0, 45.0,  10.0, 45.0, 60.0, 0.0,  0.0,  0.0,  0.0,  45.0, 45.0, 45.0, 45.0,
+};
+
+pub const weapon_damage_scales = [_]f64{
+    0.0, 4.1, 1.0, 1.2, 1.0, 1.0,  1.0, 1.0,  1.0, 5.0,  1.0,  2.1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 3.0, 1.4, 16.7, 1.0, 11.0, 0.5, 1.0,  28.0, 6.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 1.0,  1.0, 1.0,  1.0, 0.25, 0.0,  0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,
+};
+
+pub const weapon_flags = [_]u32{
+    0, 5, 1, 1, 1, 5, 1, 3, 8, 0, 0, 0, 8, 8, 0, 8, 8, 8,
+    8, 8, 1, 8, 8, 0, 8, 8, 8, 0, 0, 0, 1, 1, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 8, 8, 8, 0, 1, 0, 0, 0, 0, 9, 9, 8, 8,
+};
+
 pub fn weaponClipSize(weapon_id: i32) i32 {
     if (weapon_id < 0 or weapon_id >= weapon_clip_sizes.len) return 0;
     return weapon_clip_sizes[@intCast(weapon_id)];
@@ -206,6 +237,21 @@ pub fn weaponShotCooldown(weapon_id: i32) f64 {
 pub fn weaponPelletCount(weapon_id: i32) i32 {
     if (weapon_id < 0 or weapon_id >= weapon_pellet_counts.len) return 0;
     return weapon_pellet_counts[@intCast(weapon_id)];
+}
+
+pub fn weaponProjectileMeta(weapon_id: i32) f64 {
+    if (weapon_id < 0 or weapon_id >= weapon_projectile_meta.len) return 45.0;
+    return weapon_projectile_meta[@intCast(weapon_id)];
+}
+
+pub fn weaponDamageScale(weapon_id: i32) f64 {
+    if (weapon_id < 0 or weapon_id >= weapon_damage_scales.len) return 1.0;
+    return weapon_damage_scales[@intCast(weapon_id)];
+}
+
+pub fn weaponFlags(weapon_id: i32) u32 {
+    if (weapon_id < 0 or weapon_id >= weapon_flags.len) return 0;
+    return weapon_flags[@intCast(weapon_id)];
 }
 
 pub fn weaponAssignPlayer(

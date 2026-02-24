@@ -14,6 +14,7 @@ pub const CreatureTypeId = enum(i32) {
 
 pub const CreatureAiMode = struct {
     pub const orbit_player: i32 = 0;
+    pub const hold_timer: i32 = 7;
 };
 
 pub const CreatureFlags = struct {
@@ -82,6 +83,22 @@ pub const WaveSpawnResult = struct {
 pub const WaveSpawnCountResult = struct {
     cooldown: f64,
     spawn_count: usize,
+};
+
+pub const max_wave_spawn_batch: usize = 128;
+
+const empty_creature_init = CreatureInit{
+    .pos = .{ .x = 0.0, .y = 0.0 },
+};
+
+pub const WaveSpawnBatchResult = struct {
+    cooldown: f64,
+    count: usize,
+    spawns: [max_wave_spawn_batch]CreatureInit = [_]CreatureInit{empty_creature_init} ** max_wave_spawn_batch,
+
+    pub fn slice(self: *const WaveSpawnBatchResult) []const CreatureInit {
+        return self.spawns[0..self.count];
+    }
 };
 
 pub const SpawnTemplateCall = struct {
@@ -362,6 +379,49 @@ pub fn tickSurvivalWaveSpawnsCount(
         .cooldown = cooldown,
         .spawn_count = count,
     };
+}
+
+pub fn tickSurvivalWaveSpawnsBatch(
+    spawn_cooldown: f64,
+    frame_dt_ms: f64,
+    rng: *Crand,
+    player_count: i32,
+    survival_elapsed_ms: f64,
+    player_experience: i32,
+    terrain_width: i32,
+    terrain_height: i32,
+) WaveSpawnBatchResult {
+    var result = WaveSpawnBatchResult{
+        .cooldown = spawn_cooldown - @as(f64, @floatFromInt(player_count)) * frame_dt_ms,
+        .count = 0,
+    };
+
+    if (result.cooldown > -1.0) {
+        return result;
+    }
+
+    var interval_ms: i32 = 500 - @divTrunc(@as(i32, @intFromFloat(survival_elapsed_ms)), 1800);
+    if (interval_ms < 0) {
+        const extra: i32 = @divTrunc(1 - interval_ms, 2);
+        interval_ms += extra * 2;
+        for (0..@as(usize, @intCast(extra))) |_| {
+            if (result.count >= result.spawns.len) break;
+            const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
+            result.spawns[result.count] = buildSurvivalSpawnCreature(pos, rng, player_experience);
+            result.count += 1;
+        }
+    }
+
+    if (interval_ms < 1) interval_ms = 1;
+    result.cooldown += @floatFromInt(interval_ms);
+
+    if (result.count < result.spawns.len) {
+        const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
+        result.spawns[result.count] = buildSurvivalSpawnCreature(pos, rng, player_experience);
+        result.count += 1;
+    }
+
+    return result;
 }
 
 pub fn advanceSurvivalSpawnStage(

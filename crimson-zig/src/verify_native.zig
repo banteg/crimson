@@ -20,6 +20,7 @@ const VerifyRequest = struct {
     submitted_score: ?i64 = null,
     score_metric: verify_contract.ScoreMetric = .auto,
     base_dir: ?[]const u8 = null,
+    debug_trace_jsonl: ?[]const u8 = null,
 };
 
 const ParseOutcome = union(enum) {
@@ -146,14 +147,67 @@ fn runNativeVerify(
     if (!std.mem.startsWith(u8, header.game_version, "0.7.")) {
         return buildNotPortedOutput(allocator, "only latest ruleset replays are currently ported");
     }
-    _ = survival_sim.runSurvivalReplayScaffold(replay) catch |err| {
+    var tick_trace: std.ArrayList(survival_sim.SurvivalTickTrace) = .empty;
+    defer tick_trace.deinit(allocator);
+
+    const trace_out = if (request.debug_trace_jsonl != null) &tick_trace else null;
+    _ = survival_sim.runSurvivalReplayScaffoldWithTrace(
+        replay,
+        trace_out,
+        allocator,
+    ) catch |err| {
+        if (request.debug_trace_jsonl) |trace_path| {
+            writeSurvivalTickTraceJsonl(trace_path, tick_trace.items) catch {};
+        }
         return buildNotPortedOutputForSurvivalSimError(allocator, err);
     };
+    if (request.debug_trace_jsonl) |trace_path| {
+        writeSurvivalTickTraceJsonl(trace_path, tick_trace.items) catch {};
+    }
 
     return buildNotPortedOutput(
         allocator,
         "full deterministic survival run-result simulation from .crd bytes is still in progress; sidecar/highscore shortcuts are disabled",
     );
+}
+
+fn writeSurvivalTickTraceJsonl(
+    trace_path: []const u8,
+    trace: []const survival_sim.SurvivalTickTrace,
+) !void {
+    const file = try std.fs.cwd().createFile(trace_path, .{
+        .truncate = true,
+    });
+    defer file.close();
+
+    var buffer: [4096]u8 = undefined;
+    var writer = file.writer(&buffer);
+    const out = &writer.interface;
+    for (trace) |entry| {
+        try out.print(
+            "{{\"tick\":{d},\"rng_state\":{d},\"elapsed_ms\":{d},\"score_xp\":{d},\"kills\":{d},\"creature_count\":{d},\"perk_pending\":{d},\"player_weapon_id\":{d},\"player_ammo_q4\":{d},\"player_health_q4\":{d},\"player_level\":{d},\"player_experience\":{d},\"bonus_weapon_power_up_ms\":{d},\"bonus_reflex_boost_ms\":{d},\"bonus_energizer_ms\":{d},\"bonus_double_experience_ms\":{d},\"bonus_freeze_ms\":{d}}}\n",
+            .{
+                entry.tick,
+                entry.rng_state,
+                entry.elapsed_ms,
+                entry.score_xp,
+                entry.kills,
+                entry.creature_count,
+                entry.perk_pending,
+                entry.player_weapon_id,
+                entry.player_ammo_q4,
+                entry.player_health_q4,
+                entry.player_level,
+                entry.player_experience,
+                entry.bonus_weapon_power_up_ms,
+                entry.bonus_reflex_boost_ms,
+                entry.bonus_energizer_ms,
+                entry.bonus_double_experience_ms,
+                entry.bonus_freeze_ms,
+            },
+        );
+    }
+    try out.flush();
 }
 
 fn buildVerifyPayload(
@@ -351,12 +405,16 @@ fn buildNotPortedOutputForSurvivalSimError(
     err: survival_sim.SurvivalSimError,
 ) !backend_python.CommandOutput {
     const detail = switch (err) {
+        error.OutOfMemory => "survival simulation scaffold ran out of memory",
         error.UnsupportedGameMode => "survival simulation scaffold only supports survival mode",
         error.UnsupportedPlayerCount => "survival simulation scaffold only supports single-player replays",
         error.UnsupportedInputQuantization => "survival simulation scaffold only supports raw/f32 quantization",
         error.UnsupportedPreserveBugs => "survival simulation scaffold does not support preserve_bugs=true",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
         error.UnsupportedEventPlayerIndex => "survival simulation scaffold only supports player_index=0 events",
+        error.InvalidPerkPickEvent => "replay perk_pick event could not be applied in current perk state",
+        error.UnsupportedPerkApplyHandler => "replay selected a perk with apply/effect behavior not yet ported",
+        error.UnsupportedSpawnTemplate => "replay triggered survival template spawns not yet ported in native creature runtime",
     };
     return buildNotPortedOutput(allocator, detail);
 }
@@ -383,6 +441,16 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
         }
         if (std.mem.eql(u8, arg, "--max-ticks") or std.mem.startsWith(u8, arg, "--max-ticks=")) {
             return .{ .unsupported = "--max-ticks" };
+        }
+        if (std.mem.eql(u8, arg, "--debug-trace-jsonl")) {
+            if (idx + 1 >= args.len) return .{ .invalid = "missing value for --debug-trace-jsonl" };
+            idx += 1;
+            request.debug_trace_jsonl = args[idx];
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--debug-trace-jsonl=")) {
+            request.debug_trace_jsonl = arg["--debug-trace-jsonl=".len..];
+            continue;
         }
 
         if (std.mem.eql(u8, arg, "--format")) {

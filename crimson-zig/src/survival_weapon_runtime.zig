@@ -73,6 +73,7 @@ pub fn tryFireWeapon(
         }
     }
     state.shots_fired_total += shot_count;
+    consumeFireRng(state, player);
 
     const ammo_cost = computeAmmoCost(player.weapon_id, shot_count);
     if (state.bonuses.reflex_boost <= 0.0) {
@@ -86,6 +87,31 @@ pub fn tryFireWeapon(
     }
 
     return true;
+}
+
+fn consumeFireRng(
+    state: *survival_state.GameplayState,
+    player: *const survival_state.PlayerState,
+) void {
+    // Keep RNG cadence aligned with native player_fire_weapon for non-projectile
+    // systems we have not ported yet (casing, spread jitter, fire SFX variant).
+    const weapon_flags = survival_state.weaponFlags(player.weapon_id);
+    if ((weapon_flags & 0x1) != 0) {
+        for (0..4) |_| {
+            _ = state.rng.rand();
+        }
+    }
+
+    _ = state.rng.rand();
+    _ = state.rng.rand();
+
+    const fire_bullets_active = player.fire_bullets_timer > 0.0;
+    if (!fire_bullets_active) {
+        _ = state.rng.rand();
+    }
+
+    // Keep cadence aligned until full projectile spawn parity lands.
+    _ = state.rng.rand();
 }
 
 fn computeShotCount(
@@ -194,4 +220,21 @@ test "multi plasma and mini rocket use special shot counts" {
     try std.testing.expect(tryFireWeapon(&state, &player));
     try std.testing.expectEqual(@as(i32, 9), state.shots_fired[0]);
     try std.testing.expect(player.reload_active);
+}
+
+test "pistol fire consumes native casing+jitter+sfx rng draws" {
+    var state = survival_state.GameplayState.init(123);
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+    };
+    survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.pistol);
+
+    var expected_rng = state.rng;
+    for (0..8) |_| {
+        _ = expected_rng.rand();
+    }
+
+    try std.testing.expect(tryFireWeapon(&state, &player));
+    try std.testing.expectEqual(expected_rng.state, state.rng.state);
 }
