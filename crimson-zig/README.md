@@ -10,10 +10,13 @@ Standalone Zig replay verifier workspace.
 
 ## Current backend behavior
 
-- Native CLI verifies the accepted reference replay fully in Zig via deterministic hash-gated run-result output.
-- CLI hard-fails for unported paths (unsupported verify options or non-reference replay hashes).
-- WASM exports provide deterministic payload support for the same reference replay SHA:
-  - `1cb9ec12b25b0a5b3529689751ef1f5a5707cbd90b5657e0e74837e55a1bf790`
+- Native CLI currently verifies **latest-ruleset single-player survival** replays using:
+  - replay msgpack+gzip decoding in Zig (header/inputs/events),
+  - canonical terrain bootstrap RNG validation,
+  - checkpoint sidecar (`.crd.chk`) for score/kills/rng,
+  - survival highscore table (`scores5/survival.hi`) for shots/weapon stats.
+- CLI hard-fails for unported paths (unsupported options, non-survival mode, non-latest ruleset, missing sidecar/highscore matches).
+- WASM exports keep ABI shape but currently hard-fail verification with a `not yet ported` error.
 
 This gives immediate CLI/ABI parity scaffolding while deeper gameplay porting proceeds.
 
