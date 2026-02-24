@@ -2,6 +2,7 @@ const std = @import("std");
 
 const replay_codec = @import("replay_codec.zig");
 const survival_spawn = @import("survival_spawn.zig");
+const survival_state = @import("survival_state.zig");
 
 pub const SurvivalSimError = error{
     UnsupportedGameMode,
@@ -15,12 +16,23 @@ pub const SurvivalSimError = error{
 pub const SurvivalReplayScaffoldResult = struct {
     ticks: usize,
     elapsed_ms_nominal: i64,
+    elapsed_ms_sim: i64,
     perk_menu_open_count: usize,
     perk_pick_count: usize,
     fire_pressed_count: usize,
     reload_pressed_count: usize,
+    stage_spawn_count: usize,
     wave_spawn_count: usize,
     wave_spawn_rng_state: u32,
+    player_level: i32,
+    player_experience: i32,
+    player_weapon_id: i32,
+    perk_pending_count: i32,
+    survival_reward_handout_enabled: bool,
+    survival_reward_fire_seen: bool,
+    survival_reward_damage_seen: bool,
+    spawn_stage: i32,
+    spawn_cooldown_ms: f64,
 };
 
 pub fn runSurvivalReplayScaffold(
@@ -40,13 +52,19 @@ pub fn runSurvivalReplayScaffold(
     var perk_pick_count: usize = 0;
     var fire_pressed_count: usize = 0;
     var reload_pressed_count: usize = 0;
+    var stage_spawn_count: usize = 0;
     var wave_spawn_count: usize = 0;
     var spawn_cooldown: f64 = 0.0;
-    var spawn_rng = survival_spawn.Crand.init(header.seed);
-    var player_experience: i32 = 0;
-    _ = &player_experience;
+    var spawn_stage: i32 = 0;
+    var state = survival_state.GameplayState.init(header.seed);
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+    survival_state.resetPlayers(players[0..], @floatCast(header.world_size), null);
+
+    var elapsed_ms_sim: f64 = 0.0;
     const terrain_size: i32 = @max(@as(i32, 1), @as(i32, @intFromFloat(header.world_size)));
-    const dt_nominal_ms: f64 = 1000.0 / @as(f64, @floatFromInt(header.tick_rate));
+    const dt_nominal: f64 = 1.0 / @as(f64, @floatFromInt(header.tick_rate));
 
     for (0..replay.tickCount()) |tick_index| {
         if (event_index < events.len and events[event_index].tickIndex() < tick_index) {
@@ -62,22 +80,50 @@ pub fn runSurvivalReplayScaffold(
 
         const input = replay.inputs[tick_index][0];
         const flags = replay_codec.unpackInputFlags(input.flags);
+        if (flags.fire_down) {
+            state.survival_reward_fire_seen = true;
+        }
         if (flags.fire_pressed) fire_pressed_count += 1;
         if (flags.reload_pressed) reload_pressed_count += 1;
 
-        const elapsed_before_ms: f64 = @as(f64, @floatFromInt(tick_index)) * dt_nominal_ms;
+        const dt_sim = survival_state.timeScaleReflexBoostBonus(
+            state.bonuses.reflex_boost,
+            state.time_scale_active,
+            dt_nominal,
+        );
+        const dt_sim_ms = dt_sim * 1000.0;
+        const elapsed_before_ms = elapsed_ms_sim;
+
+        survival_state.survivalUpdateWeaponHandouts(
+            &state,
+            players[0..],
+            elapsed_before_ms,
+        );
+
+        const stage_result = survival_spawn.advanceSurvivalSpawnStage(
+            spawn_stage,
+            players[0].level,
+        );
+        spawn_stage = stage_result.stage;
+        stage_spawn_count += stage_result.count;
+
         const wave_result = survival_spawn.tickSurvivalWaveSpawnsCount(
             spawn_cooldown,
-            dt_nominal_ms,
-            &spawn_rng,
+            dt_sim_ms,
+            &state.rng,
             1,
             elapsed_before_ms,
-            player_experience,
+            players[0].experience,
             terrain_size,
             terrain_size,
         );
         spawn_cooldown = wave_result.cooldown;
         wave_spawn_count += wave_result.spawn_count;
+
+        _ = survival_state.survivalProgressionUpdate(&state, players[0..]);
+        survival_state.survivalEnforceRewardWeaponGuard(state, players[0..]);
+        state.time_scale_active = state.bonuses.reflex_boost > 0.0;
+        elapsed_ms_sim += dt_sim_ms;
     }
 
     const terminal_tick = replay.tickCount();
@@ -96,16 +142,28 @@ pub fn runSurvivalReplayScaffold(
     const tick_rate_f64: f64 = @floatFromInt(header.tick_rate);
     const ticks_f64: f64 = @floatFromInt(replay.tickCount());
     const elapsed_ms_nominal: i64 = @intFromFloat(@round(ticks_f64 * (1000.0 / tick_rate_f64)));
+    const elapsed_ms_sim_i64: i64 = @intFromFloat(elapsed_ms_sim);
 
     return .{
         .ticks = replay.tickCount(),
         .elapsed_ms_nominal = elapsed_ms_nominal,
+        .elapsed_ms_sim = elapsed_ms_sim_i64,
         .perk_menu_open_count = perk_menu_open_count,
         .perk_pick_count = perk_pick_count,
         .fire_pressed_count = fire_pressed_count,
         .reload_pressed_count = reload_pressed_count,
+        .stage_spawn_count = stage_spawn_count,
         .wave_spawn_count = wave_spawn_count,
-        .wave_spawn_rng_state = spawn_rng.state,
+        .wave_spawn_rng_state = state.rng.state,
+        .player_level = players[0].level,
+        .player_experience = players[0].experience,
+        .player_weapon_id = players[0].weapon_id,
+        .perk_pending_count = state.perk_selection.pending_count,
+        .survival_reward_handout_enabled = state.survival_reward_handout_enabled,
+        .survival_reward_fire_seen = state.survival_reward_fire_seen,
+        .survival_reward_damage_seen = state.survival_reward_damage_seen,
+        .spawn_stage = spawn_stage,
+        .spawn_cooldown_ms = spawn_cooldown,
     };
 }
 
@@ -145,11 +203,17 @@ test "survival scaffold tracks event and input counters" {
     const result = try runSurvivalReplayScaffold(replay);
     try std.testing.expectEqual(@as(usize, 2), result.ticks);
     try std.testing.expectEqual(@as(i64, 33), result.elapsed_ms_nominal);
+    try std.testing.expectEqual(@as(i64, 33), result.elapsed_ms_sim);
     try std.testing.expectEqual(@as(usize, 1), result.perk_menu_open_count);
     try std.testing.expectEqual(@as(usize, 1), result.perk_pick_count);
     try std.testing.expectEqual(@as(usize, 1), result.fire_pressed_count);
     try std.testing.expectEqual(@as(usize, 1), result.reload_pressed_count);
+    try std.testing.expectEqual(@as(usize, 0), result.stage_spawn_count);
     try std.testing.expectEqual(@as(usize, 1), result.wave_spawn_count);
+    try std.testing.expectEqual(survival_state.WeaponId.pistol, result.player_weapon_id);
+    try std.testing.expectEqual(@as(i32, 1), result.player_level);
+    try std.testing.expectEqual(@as(i32, 0), result.perk_pending_count);
+    try std.testing.expect(result.survival_reward_fire_seen);
 }
 
 test "survival scaffold rejects unsupported event player index" {
