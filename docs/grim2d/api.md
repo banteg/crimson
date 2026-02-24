@@ -351,7 +351,7 @@ These offsets appear with keycodes or input-related values:
 | `0x148` | `draw_text_small_fmt` | `void draw_text_small_fmt(float x, float y, const char *fmt, ...)` | high | formatted small-font text (wrapper around `0x144`) |
 | `0x14c` | `measure_text_width` | `int measure_text_width(const char *text)` | high | width metric for small font (handles newlines) |
 
-The working vtable skeleton lives in the Zig rewrite under `rewrite/` once a
+The working vtable skeleton lives in the Zig workspace under `crimson-zig/` once a
 signature is confirmed. Until then, the authoritative source is the vtable map
 JSON in `analysis/ghidra/derived/`.
 
@@ -359,5 +359,5 @@ JSON in `analysis/ghidra/derived/`.
 ## Next steps
 
 1. Validate the high-callsite entries in the table above with runtime evidence.
-2. Port confirmed signatures into the Zig rewrite under `rewrite/`.
+2. Port confirmed signatures into the Zig workspace under `crimson-zig/`.
 3. Validate behavior with runtime toggles (config, input, draw calls).

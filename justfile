@@ -182,10 +182,26 @@ pe-imports target="crimsonland.exe":
 
 # Zig
 zig-build:
-    cd rewrite && zig build
+    cd crimson-zig && zig build
 
 zig-run:
-    cd rewrite && zig build run
+    cd crimson-zig && zig build run
+
+zig-test:
+    cd crimson-zig && zig build test
+
+zig-wasm:
+    cd crimson-zig && zig build wasm
+
+zig-smoke replay="survival_20260224_041009_score76661.crd":
+    cd crimson-zig && replay_arg="{{replay}}" && replay_arg="${replay_arg#replay=}" && ./scripts/smoke_native.sh "$replay_arg"
+    cd crimson-zig && ./scripts/smoke_wasm.sh
+
+zig-acceptance replay="survival_20260224_041009_score76661.crd":
+    cd crimson-zig && replay_arg="{{replay}}" && replay_arg="${replay_arg#replay=}" && ./scripts/reference_acceptance.sh "$replay_arg"
+
+zig-perf-gate replay="survival_20260224_041009_score76661.crd" runs="5":
+    cd crimson-zig && replay_arg="{{replay}}" && runs_arg="{{runs}}" && if [[ "$replay_arg" == runs=* ]]; then runs_arg="${replay_arg#runs=}"; replay_arg="survival_20260224_041009_score76661.crd"; fi && replay_arg="${replay_arg#replay=}" && runs_arg="${runs_arg#runs=}" && ./scripts/perf_gate.sh "$replay_arg" "$runs_arg"
 
 # WinDbg
 windbg-server:
