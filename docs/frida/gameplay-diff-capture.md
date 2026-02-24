@@ -7,16 +7,21 @@ tags:
 
 # Gameplay Differential Capture
 
-`scripts/frida/gameplay_diff_capture.js` captures deterministic gameplay ticks and
-emits stream rows to a Python host controller.
+`scripts/frida/gameplay_diff_capture.js` captures deterministic gameplay ticks.
+By default it writes JSON stream rows directly to disk.
 
-Use `scripts/frida/gameplay_diff_capture_host.py` to attach, consume rows, and write
-framed msgpack compressed with zstd.
+Use `scripts/frida/gameplay_diff_capture_host.py` to attach, force host row sink,
+consume rows, and write framed msgpack compressed with zstd.
 
 If you are starting from only a fresh capture artifact, follow
 `docs/frida/differential-playbook.md` first.
 
-Primary outputs:
+Default direct-attach outputs (`frida -n ... -l gameplay_diff_capture.js`):
+
+- non-quest fallback: `C:\share\frida\gameplay_diff_capture.json`
+- quest mode: `C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.json`
+
+Primary host outputs:
 
 - default / non-quest fallback: `C:\share\frida\gameplay_diff_capture.msgpack.zst`
 - quest mode: one file per stage, e.g. `C:\share\frida\gameplay_diff_capture.quest_1_1.msgpack.zst`
@@ -30,6 +35,18 @@ uv run scripts/frida/gameplay_diff_capture_host.py \
   --output-dir C:\share\frida
 ```
 
+File-sink capture with post-run msgpack conversion:
+
+```text
+uv run scripts/frida/gameplay_diff_capture_postpack.py \
+  --process crimsonland.exe \
+  --script scripts\frida\gameplay_diff_capture.js \
+  --output-dir C:\share\frida
+```
+
+When postpack conversion succeeds, source `gameplay_diff_capture*.json/.json.gz`
+files are deleted and only `*.msgpack.zst` outputs remain.
+
 Optional sidecar for unattended recordings:
 
 ```text
@@ -40,6 +57,7 @@ Just shortcut (Windows VM):
 
 ```text
 just frida-gameplay-diff-capture
+just frida-gameplay-diff-capture-postpack
 ```
 
 ## Quest campaign captures
@@ -205,7 +223,7 @@ Creature micro hooks stay enabled by default for differential parity sessions.
 - `CRIMSON_FRIDA_STATES=6,9,10`
 - `CRIMSON_FRIDA_ALL_STATES=1`
 - `CRIMSON_FRIDA_OUT_PATH=C:\share\frida\gameplay_diff_capture.msgpack.zst`
-- `CRIMSON_FRIDA_CAPTURE_SINK=host` (`host` default; set `file` only for legacy direct-file capture)
+- `CRIMSON_FRIDA_CAPTURE_SINK=host` (`file` default; host launcher forces `host`)
 - `CRIMSON_FRIDA_QUEST_OUT_DIR=C:\share\frida`
 - `CRIMSON_FRIDA_QUEST_OUT_PREFIX=gameplay_diff_capture.quest_`
 - `CRIMSON_FRIDA_CONSOLE_ALL_EVENTS=1`

@@ -34,23 +34,27 @@ class CaptureConfig(msgspec.Struct, forbid_unknown_fields=True):
     creature_sample_limit: int
     projectile_sample_limit: int
     secondary_projectile_sample_limit: int
-    bonus_sample_limit: int
-    enable_input_hooks: bool
-    enable_rng_hooks: bool
-    enable_sfx_hooks: bool
-    enable_damage_hooks: bool
-    enable_effect_hooks: bool
-    creature_damage_projectile_only: bool
-    enable_spawn_hooks: bool
-    enable_creature_spawn_hook: bool
-    enable_creature_death_hook: bool
-    enable_bonus_spawn_hook: bool
-    enable_creature_lifecycle_digest: bool
-    enable_creature_micro_hooks: bool
-    creature_micro_slots: list[int]
-    creature_micro_tick_start: int
-    creature_micro_tick_end: int
-    creature_micro_max_head_per_tick: int
+    flush_capture_writes: bool = True
+    bonus_sample_limit: int = -1
+    enable_rng_roll_log: bool = True
+    max_rng_roll_log_events: int = -1
+    max_rng_outside_tick_head: int = -1
+    enable_input_hooks: bool = True
+    enable_rng_hooks: bool = True
+    enable_sfx_hooks: bool = True
+    enable_damage_hooks: bool = True
+    enable_effect_hooks: bool = True
+    creature_damage_projectile_only: bool = True
+    enable_spawn_hooks: bool = True
+    enable_creature_spawn_hook: bool = True
+    enable_creature_death_hook: bool = True
+    enable_bonus_spawn_hook: bool = True
+    enable_creature_lifecycle_digest: bool = True
+    enable_creature_micro_hooks: bool = True
+    creature_micro_slots: list[int] = msgspec.field(default_factory=list)
+    creature_micro_tick_start: int = -1
+    creature_micro_tick_end: int = -1
+    creature_micro_max_head_per_tick: int = -1
     capture_sink: str | None = None
 
 
@@ -1281,4 +1285,4 @@ class CaptureFile(msgspec.Struct, forbid_unknown_fields=True):
     exe: ModuleInfo
     grim: ModuleInfo | None
     pointers_resolved: dict[str, bool]
-    ticks: list[CaptureTick]
+    ticks: list[CaptureTick] = msgspec.field(default_factory=list)

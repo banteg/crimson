@@ -114,6 +114,25 @@ def test_spawn_plan_materialization_spawns_burst_fx() -> None:
     assert all(int(entry.effect_id) == 0 for entry in active)
 
 
+def test_angle_approach_wraps_tau_boundary_like_native_capture() -> None:
+    # Regression for Session 19 creature slot 32 drift at ticks 91->92.
+    angle = -0.3199998736381531
+    angle = creature_runtime._angle_approach(
+        angle,
+        -1.532211422920227,
+        3.2,
+        0.1,
+    )
+    assert_float_close(angle, 6.283185958862305)
+    angle = creature_runtime._angle_approach(
+        angle,
+        -1.5394508838653564,
+        3.2,
+        0.1,
+    )
+    assert_float_close(angle, -0.3199995458126068)
+
+
 def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     state = GameplayState()
     env = SpawnEnv(

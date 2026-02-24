@@ -79,6 +79,7 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
             self.spawn_timeline_ms = 0.0
             self.no_creatures_timer_ms = 0.0
             self.completion_transition_ms = -1.0
+            self.game_tune_started = False
 
         def step_tick(self, *, dt_frame, inputs, trace_rng=False):
             return step_tick(dt_frame=dt_frame, inputs=inputs, trace_rng=trace_rng)

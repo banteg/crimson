@@ -62,7 +62,9 @@ def play_music(state: AudioState, track_name: str) -> None:
     music.play_music(state.music, track_name)
 
 
-def stop_music(state: AudioState) -> None:
+def stop_music(state: AudioState | None) -> None:
+    if state is None:
+        return
     music.stop_music(state.music)
 
 

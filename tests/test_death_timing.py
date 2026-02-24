@@ -425,9 +425,9 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
         rng,
         before_calls=before_calls,
         before_state=before_state,
-        expected_draws=1,
+        expected_draws=2,
         expected_after_state=0,
-        expected_hash="b6589fc6ab0dc82c",
+        expected_hash="e499ce7a21cd46c8",
     )
     assert events.hit_sfx == []
     assert events.trigger_game_tune is True

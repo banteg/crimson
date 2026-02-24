@@ -150,6 +150,7 @@ nav = [
           { "Session 16 (2026-02-15)" = "frida/differential-sessions/session-16.md" },
           { "Session 17 (2026-02-18)" = "frida/differential-sessions/session-17.md" },
           { "Session 18 (2026-02-19)" = "frida/differential-sessions/session-18.md" },
+          { "Session 19 (2026-02-24)" = "frida/differential-sessions/session-19.md" },
         ]},
         { "Creature update static audit triage" = "frida/creature-update-static-audit-triage.md" },
         { "Gameplay/state capture" = "frida/gameplay-state-capture.md" },

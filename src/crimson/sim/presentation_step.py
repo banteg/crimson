@@ -160,9 +160,12 @@ def plan_hit_sfx_keys(
         if (not demo_mode_active) and int(game_mode) != int(GameMode.RUSH) and (not local_game_tune_started):
             # Mirrors `projectile_update`: first eligible hit calls
             # `sfx_play_exclusive(music_track_extra_0)` and skips the panned
-            # bullet/shock hit sound for that same hit.
+            # bullet/shock hit sound for that same hit. Native
+            # `sfx_play_exclusive` also performs one RNG draw to pick the
+            # playlist entry, so consume one draw here for stream parity.
             trigger_game_tune = True
             local_game_tune_started = True
+            _ = int(rand())
             continue
         type_id = int(hits[idx].type_id)
         key = _hit_sfx_for_type(type_id, beam_types=beam_types, rand=rand)

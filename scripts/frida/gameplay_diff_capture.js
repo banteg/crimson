@@ -4,16 +4,23 @@
 // - per-gameplay tick records with stable checkpoint payloads
 // - deterministic command/event summaries for first-divergence debugging
 // - compact before/after snapshots and entity samples on every tick
-// - emits capture stream rows (`capture_meta` + `tick`) to host by default
+// - emits capture stream rows (`capture_meta` + `tick`) either to JSON files
+//   (default) or to host messaging when sink=host
 //
-// Attach only:
-//   via scripts/frida/gameplay_diff_capture_host.py
+// Attach:
+//   frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
+//   or via scripts/frida/gameplay_diff_capture_host.py for msgpack output
 //
 // Output:
+//   C:\share\frida\gameplay_diff_capture.json (default non-quest fallback)
+//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.json (default quests)
+//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.run<k>.json (repeat attempts)
+//   Host launcher writes:
 //   C:\share\frida\gameplay_diff_capture.msgpack.zst (non-quest fallback)
 //   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.msgpack.zst (quests)
 //   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.run<k>.msgpack.zst (repeat attempts)
-//   Set CRIMSON_FRIDA_CAPTURE_SINK=file to keep legacy direct JSON stream writes.
+//   Default sink is direct JSON file writes.
+//   Set CRIMSON_FRIDA_CAPTURE_SINK=host to force Frida message streaming.
 
 const DEFAULT_LOG_DIR = "C:\\share\\frida";
 const DEFAULT_OUT_NAME = "gameplay_diff_capture.json";
@@ -94,6 +101,25 @@ function parseStringSet(raw, fallbackCsv) {
   return out;
 }
 
+function parseCaptureSink(raw, fallback) {
+  const value = raw == null ? "" : String(raw).trim().toLowerCase();
+  if (value === "file" || value === "host") return value;
+  return fallback;
+}
+
+function resolveCaptureSink() {
+  let injectedSink = null;
+  try {
+    injectedSink = parseCaptureSink(globalThis.__CRIMSON_FRIDA_CAPTURE_SINK, null);
+  } catch (_) {
+    injectedSink = null;
+  }
+  if (injectedSink != null) return injectedSink;
+  const envSink = parseCaptureSink(getEnv("CRIMSON_FRIDA_CAPTURE_SINK"), null);
+  if (envSink != null) return envSink;
+  return "file";
+}
+
 const CONFIG_ENV_KEYS = [
   "CRIMSON_FRIDA_CAPTURE_SINK",
   "CRIMSON_FRIDA_DIR",
@@ -137,6 +163,11 @@ const CONFIG_ENV_KEYS = [
   "CRIMSON_FRIDA_CREATURE_DEATH_HOOK",
   "CRIMSON_FRIDA_BONUS_SPAWN_HOOK",
   "CRIMSON_FRIDA_CREATURE_LIFECYCLE",
+  "CRIMSON_FRIDA_CREATURE_MICRO_HOOKS",
+  "CRIMSON_FRIDA_CREATURE_MICRO",
+  "CRIMSON_FRIDA_CREATURE_MICRO_TICK_START",
+  "CRIMSON_FRIDA_CREATURE_MICRO_TICK_END",
+  "CRIMSON_FRIDA_CREATURE_MICRO_MAX_HEAD_PER_TICK",
 ];
 
 function collectConfigEnvOverrides() {
@@ -173,43 +204,54 @@ function toHex(value, width) {
 const LOG_DIR = getEnv("CRIMSON_FRIDA_DIR") || DEFAULT_LOG_DIR;
 
 const CONFIG = {
-  captureSink: String(getEnv("CRIMSON_FRIDA_CAPTURE_SINK") || "host").trim().toLowerCase() === "file" ? "file" : "host",
+  captureSink: resolveCaptureSink(),
   outPath: getEnv("CRIMSON_FRIDA_OUT_PATH") || joinPath(LOG_DIR, DEFAULT_OUT_NAME),
   splitQuestFiles: true,
   questOutDir: getEnv("CRIMSON_FRIDA_QUEST_OUT_DIR") || LOG_DIR,
   questOutPrefix: getEnv("CRIMSON_FRIDA_QUEST_OUT_PREFIX") || DEFAULT_QUEST_OUT_PREFIX,
   logMode: getEnv("CRIMSON_FRIDA_APPEND") === "1" ? "append" : "truncate",
-  consoleAllEvents: false,
+  consoleAllEvents: parseBoolEnv("CRIMSON_FRIDA_CONSOLE_ALL_EVENTS", false),
   consoleEvents: parseStringSet(getEnv("CRIMSON_FRIDA_CONSOLE_EVENTS"), DEFAULT_CONSOLE_EVENTS),
-  includeCaller: true,
-  includeBacktrace: true,
-  includeRawEvents: false,
-  emitTicksOutsideTrackedStates: false,
+  includeCaller: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_CALLER", true),
+  includeBacktrace: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_BT", false),
+  includeRawEvents: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_RAW_EVENTS", false),
+  emitTicksOutsideTrackedStates: parseBoolEnv("CRIMSON_FRIDA_ALL_STATES", false),
   trackedStates: parseStateSet(getEnv("CRIMSON_FRIDA_STATES"), DEFAULT_TRACKED_STATES),
-  playerCountOverride: 0,
-  focusTick: -1,
-  focusRadius: 0,
-  heartbeatMs: 1000,
-  flushCaptureWrites: true,
-  maxHeadPerKind: -1,
-  maxEventsPerTick: -1,
-  maxRngHeadPerTick: -1,
-  maxRngCallerKinds: -1,
-  enableRngRollLog: true,
-  maxRngRollLogEvents: -1,
-  maxRngOutsideTickHead: -1,
-  enableRngStateMirror: true,
-  maxCreatureDeltaIds: 256,
-  creatureSampleLimit: -1,
-  projectileSampleLimit: -1,
-  secondaryProjectileSampleLimit: -1,
+  playerCountOverride: Math.max(0, parseIntEnv("CRIMSON_FRIDA_PLAYER_COUNT", 0)),
+  focusTick: parseIntEnv("CRIMSON_FRIDA_FOCUS_TICK", -1),
+  focusRadius: Math.max(0, parseIntEnv("CRIMSON_FRIDA_FOCUS_RADIUS", 0)),
+  heartbeatMs: Math.max(100, parseIntEnv("CRIMSON_FRIDA_HEARTBEAT_MS", 1000)),
+  flushCaptureWrites: parseBoolEnv("CRIMSON_FRIDA_FLUSH_CAPTURE_WRITES", false),
+  maxHeadPerKind: parseLimitEnv("CRIMSON_FRIDA_MAX_HEAD", -1, 0),
+  maxEventsPerTick: parseLimitEnv("CRIMSON_FRIDA_MAX_EVENTS_PER_TICK", -1, 0),
+  maxRngHeadPerTick: parseLimitEnv("CRIMSON_FRIDA_RNG_HEAD", -1, 0),
+  maxRngCallerKinds: parseLimitEnv("CRIMSON_FRIDA_RNG_CALLERS", -1, 0),
+  enableRngRollLog: parseBoolEnv("CRIMSON_FRIDA_RNG_ROLL_LOG", true),
+  maxRngRollLogEvents: parseLimitEnv("CRIMSON_FRIDA_MAX_RNG_ROLL_LOG_EVENTS", -1, 0),
+  maxRngOutsideTickHead: parseLimitEnv("CRIMSON_FRIDA_RNG_OUTSIDE_TICK_HEAD", 256, 0),
+  enableRngStateMirror: parseBoolEnv("CRIMSON_FRIDA_RNG_STATE_MIRROR", true),
+  maxCreatureDeltaIds: parseLimitEnv("CRIMSON_FRIDA_CREATURE_DELTA_IDS", 256, 1),
+  creatureSampleLimit: parseLimitEnv("CRIMSON_FRIDA_CREATURE_SAMPLE_LIMIT", -1, 0),
+  projectileSampleLimit: parseLimitEnv("CRIMSON_FRIDA_PROJECTILE_SAMPLE_LIMIT", -1, 0),
+  secondaryProjectileSampleLimit: parseLimitEnv("CRIMSON_FRIDA_SECONDARY_PROJECTILE_SAMPLE_LIMIT", -1, 0),
+  bonusSampleLimit: parseLimitEnv("CRIMSON_FRIDA_BONUS_SAMPLE_LIMIT", -1, 0),
+  enableInputHooks: parseBoolEnv("CRIMSON_FRIDA_INPUT_HOOKS", true),
+  enableRngHooks: parseBoolEnv("CRIMSON_FRIDA_RNG_HOOKS", true),
+  enableSfxHooks: parseBoolEnv("CRIMSON_FRIDA_SFX", true),
+  enableDamageHooks: parseBoolEnv("CRIMSON_FRIDA_DAMAGE", true),
+  enableEffectHooks: parseBoolEnv("CRIMSON_FRIDA_EFFECTS", true),
+  creatureDamageProjectileOnly: parseBoolEnv("CRIMSON_FRIDA_DAMAGE_PROJECTILE_ONLY", true),
+  enableSpawnHooks: parseBoolEnv("CRIMSON_FRIDA_SPAWNS", true),
+  enableCreatureSpawnHook: parseBoolEnv("CRIMSON_FRIDA_CREATURE_SPAWN_HOOK", true),
+  enableCreatureDeathHook: parseBoolEnv("CRIMSON_FRIDA_CREATURE_DEATH_HOOK", true),
+  enableBonusSpawnHook: parseBoolEnv("CRIMSON_FRIDA_BONUS_SPAWN_HOOK", true),
   maxPlayerSpawnsByPlayerLimit: -1,
-  enableCreatureLifecycleDigest: true,
-  enableCreatureMicroHooks: true,
+  enableCreatureLifecycleDigest: parseBoolEnv("CRIMSON_FRIDA_CREATURE_LIFECYCLE", true),
+  enableCreatureMicroHooks: parseBoolEnv("CRIMSON_FRIDA_CREATURE_MICRO_HOOKS", true),
   creatureMicroSlots: parseStateSet(getEnv("CRIMSON_FRIDA_CREATURE_MICRO"), ""),
-  creatureMicroTickStart: -1,
-  creatureMicroTickEnd: -1,
-  creatureMicroMaxHeadPerTick: -1,
+  creatureMicroTickStart: parseIntEnv("CRIMSON_FRIDA_CREATURE_MICRO_TICK_START", -1),
+  creatureMicroTickEnd: parseIntEnv("CRIMSON_FRIDA_CREATURE_MICRO_TICK_END", -1),
+  creatureMicroMaxHeadPerTick: parseLimitEnv("CRIMSON_FRIDA_CREATURE_MICRO_MAX_HEAD_PER_TICK", -1, 0),
 };
 
 const FN = {
@@ -4629,10 +4671,14 @@ function main() {
     focus_tick: CONFIG.focusTick,
     focus_radius: CONFIG.focusRadius,
     heartbeat_ms: CONFIG.heartbeatMs,
+    flush_capture_writes: CONFIG.flushCaptureWrites,
     max_head_per_kind: CONFIG.maxHeadPerKind,
     max_events_per_tick: CONFIG.maxEventsPerTick,
     max_rng_head_per_tick: CONFIG.maxRngHeadPerTick,
     max_rng_caller_kinds: CONFIG.maxRngCallerKinds,
+    enable_rng_roll_log: CONFIG.enableRngRollLog,
+    max_rng_roll_log_events: CONFIG.maxRngRollLogEvents,
+    max_rng_outside_tick_head: CONFIG.maxRngOutsideTickHead,
     enable_rng_state_mirror: CONFIG.enableRngStateMirror,
     max_creature_delta_ids: CONFIG.maxCreatureDeltaIds,
     creature_sample_limit: CONFIG.creatureSampleLimit,

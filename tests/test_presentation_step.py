@@ -50,29 +50,45 @@ def _hits(count: int, *, type_id: int = int(ProjectileTypeId.PISTOL)) -> list[Pr
 
 
 def test_plan_hit_sfx_skips_first_hit_when_tune_not_started() -> None:
+    draws = 0
+
+    def _rand() -> int:
+        nonlocal draws
+        draws += 1
+        return 0
+
     trigger_game_tune, keys = plan_hit_sfx_keys(
         _hits(2),
         game_mode=int(GameMode.SURVIVAL),
         demo_mode_active=False,
         game_tune_started=False,
-        rand=lambda: 0,
+        rand=_rand,
     )
 
     assert trigger_game_tune is True
     assert keys == ["sfx_bullet_hit_01"]
+    assert draws == 2
 
 
 def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
+    draws = 0
+
+    def _rand() -> int:
+        nonlocal draws
+        draws += 1
+        return 0
+
     trigger_game_tune, keys = plan_hit_sfx_keys(
         _hits(2),
         game_mode=int(GameMode.SURVIVAL),
         demo_mode_active=False,
         game_tune_started=True,
-        rand=lambda: 0,
+        rand=_rand,
     )
 
     assert trigger_game_tune is False
     assert keys == ["sfx_bullet_hit_01", "sfx_bullet_hit_01"]
+    assert draws == 2
 
 
 def test_plan_death_sfx_allows_five_randomized_deaths() -> None:

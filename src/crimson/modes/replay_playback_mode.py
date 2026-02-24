@@ -621,7 +621,7 @@ class ReplayPlaybackMode:
         )
         world.apply_step_result(
             tick.step,
-            game_tune_started=False,
+            game_tune_started=bool(session.game_tune_started),
             apply_audio=True,
             update_camera=False,
         )

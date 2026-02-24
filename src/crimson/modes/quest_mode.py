@@ -97,6 +97,7 @@ class QuestSessionLike(Protocol):
     spawn_timeline_ms: float
     no_creatures_timer_ms: float
     completion_transition_ms: float
+    game_tune_started: bool
 
     def step_tick(
         self,
@@ -754,7 +755,7 @@ class QuestMode(BaseGameplayMode):
             )
             self.world.apply_step_result(
                 tick.step,
-                game_tune_started=False,
+                game_tune_started=bool(session.game_tune_started),
                 apply_audio=True,
                 update_camera=True,
             )
@@ -929,7 +930,7 @@ class QuestMode(BaseGameplayMode):
                         )
                 self.world.apply_step_result(
                     tick.step,
-                    game_tune_started=False,
+                    game_tune_started=bool(session.game_tune_started),
                     apply_audio=True,
                     update_camera=True,
                 )
