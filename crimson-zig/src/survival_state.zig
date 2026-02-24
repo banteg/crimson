@@ -1,4 +1,5 @@
 const std = @import("std");
+const survival_math = @import("survival_math.zig");
 
 const survival_spawn = @import("survival_spawn.zig");
 
@@ -107,13 +108,13 @@ pub const Vec2 = struct {
 
     pub fn fromAngle(angle: f64) Vec2 {
         return .{
-            .x = std.math.cos(angle),
-            .y = std.math.sin(angle),
+            .x = survival_math.cos(angle),
+            .y = survival_math.sin(angle),
         };
     }
 
     pub fn toAngle(self: Vec2) f64 {
-        return std.math.atan2(self.y, self.x);
+        return survival_math.atan2(self.y, self.x);
     }
 
     pub fn toHeading(self: Vec2) f64 {
@@ -165,6 +166,10 @@ pub const PlayerState = struct {
 
     perk_counts: [perk_count_size]i32 = [_]i32{0} ** perk_count_size,
     plaguebearer_active: bool = false,
+    hot_tempered_timer: f64 = 0.0,
+    man_bomb_timer: f64 = 0.0,
+    living_fortress_timer: f64 = 0.0,
+    fire_cough_timer: f64 = 0.0,
     speed_bonus_timer: f64 = 0.0,
     shield_timer: f64 = 0.0,
     fire_bullets_timer: f64 = 0.0,
@@ -189,6 +194,7 @@ pub const BonusTimers = struct {
 
 pub const GameplayState = struct {
     rng: survival_spawn.Crand,
+    fx_toggle: i32 = 0,
     bonuses: BonusTimers = .{},
     time_scale_active: bool = false,
     perk_selection: PerkSelectionState = .{},
@@ -197,6 +203,10 @@ pub const GameplayState = struct {
     hardcore: bool = false,
     preserve_bugs: bool = false,
     game_mode: i32 = 1,
+    friendly_fire_enabled: bool = false,
+    perk_interval_man_bomb: f64 = 4.0,
+    perk_interval_fire_cough: f64 = 2.0,
+    perk_interval_hot_tempered: f64 = 2.0,
     quest_stage_major: i32 = 0,
     quest_stage_minor: i32 = 0,
     status_quest_unlock_index: i32 = 0,
@@ -225,8 +235,13 @@ pub const GameplayState = struct {
     camera_shake_timer: f64 = 0.0,
     camera_shake_offset: Vec2 = .{},
     shock_chain_links_left: i32 = 0,
+    shock_chain_projectile_id: i32 = -1,
     pending_nuke_count: i32 = 0,
     pending_nuke_origins: [8]Vec2 = [_]Vec2{.{}} ** 8,
+    pending_fireblast_count: i32 = 0,
+    pending_fireblast_origins: [8]Vec2 = [_]Vec2{.{}} ** 8,
+    pending_shock_chain_count: i32 = 0,
+    pending_shock_chain_origins: [8]Vec2 = [_]Vec2{.{}} ** 8,
     debug_nuke_kills_last: i32 = 0,
     debug_nuke_tick_last: i32 = -1,
     debug_nuke_kill_index_sum: i32 = 0,
@@ -412,13 +427,26 @@ pub fn weaponAssignPlayerWithState(
 }
 
 pub fn playerStartReload(player: *PlayerState, state: *GameplayState) void {
-    _ = state;
-    const reload_time = weaponReloadTime(player.weapon_id);
+    var reload_time = weaponReloadTime(player.weapon_id);
+    if (player.reload_active and (playerPerkActive(player, 35) or playerPerkActive(player, 23))) {
+        return;
+    }
     if (!player.reload_active) {
         player.reload_active = true;
     }
+    if (playerPerkActive(player, 3)) {
+        reload_time = asF32F64(reload_time * 0.7);
+    }
+    if (state.bonuses.weapon_power_up > 0.0) {
+        reload_time = asF32F64(reload_time * 0.6);
+    }
     player.reload_timer = @max(0.0, reload_time);
     player.reload_timer_max = player.reload_timer;
+}
+
+fn playerPerkActive(player: *const PlayerState, perk_id: i32) bool {
+    if (perk_id < 0 or perk_id >= player.perk_counts.len) return false;
+    return player.perk_counts[@intCast(perk_id)] > 0;
 }
 
 pub fn resetPlayers(

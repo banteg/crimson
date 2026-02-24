@@ -1,5 +1,6 @@
 const std = @import("std");
 
+const survival_bonuses = @import("survival_bonuses.zig");
 const survival_state = @import("survival_state.zig");
 
 pub const PerkApplyError = error{
@@ -285,11 +286,56 @@ pub fn applyPerk(
                 player.clip_size += 2;
             }
         },
-        PerkId.random_weapon, PerkId.breathing_room, PerkId.bandage, PerkId.lifeline_50_50 => {
-            return error.UnsupportedPerkApplyHandler;
+        PerkId.random_weapon => {
+            const current = players[0].weapon_id;
+            var selected = current;
+            for (0..100) |_| {
+                const candidate = survival_bonuses.weaponPickRandomAvailable(state);
+                selected = candidate;
+                if (candidate != survival_state.WeaponId.pistol and candidate != current) break;
+            }
+            survival_state.weaponAssignPlayerWithState(&players[0], selected, state);
         },
+        PerkId.breathing_room => {
+            for (players) |*player| {
+                const reduction = asF32F64(player.health * (2.0 / 3.0));
+                player.health = asF32F64(player.health - reduction);
+            }
+            state.bonus_spawn_guard = false;
+        },
+        PerkId.bandage => {
+            for (players) |*player| {
+                if (player.health > 0.0) {
+                    const amount: f64 = @floatFromInt(state.rng.rand() % 50 + 1);
+                    if (state.preserve_bugs) {
+                        player.health = @min(100.0, asF32F64(player.health * amount));
+                    } else {
+                        player.health = @min(100.0, asF32F64(player.health + amount));
+                    }
+                    consumeSpawnBurstRng(state, 8);
+                }
+            }
+        },
+        PerkId.lifeline_50_50 => {},
         else => {},
     }
+}
+
+fn consumeSpawnBurstRng(
+    state: *survival_state.GameplayState,
+    count: usize,
+) void {
+    for (0..count) |_| {
+        _ = state.rng.rand();
+        _ = state.rng.rand();
+        _ = state.rng.rand();
+        _ = state.rng.rand();
+    }
+}
+
+fn asF32F64(value: f64) f64 {
+    const rounded: f32 = @floatCast(value);
+    return @floatCast(rounded);
 }
 
 pub fn updatePerkEffects(

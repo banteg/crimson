@@ -4,12 +4,33 @@ const replay_codec = @import("replay_codec.zig");
 const survival_bonuses = @import("survival_bonuses.zig");
 const survival_creatures = @import("survival_creatures.zig");
 const survival_perks = @import("survival_perks.zig");
+const survival_particles = @import("survival_particles.zig");
 const survival_projectiles = @import("survival_projectiles.zig");
+const survival_secondary_projectiles = @import("survival_secondary_projectiles.zig");
 const survival_spawn = @import("survival_spawn.zig");
 const survival_state = @import("survival_state.zig");
 const survival_weapon_runtime = @import("survival_weapon_runtime.zig");
+const survival_math = @import("survival_math.zig");
+const creature_lifecycle_stage_alive: f64 = 16.0;
 const native_half_pi: f64 = 1.5707963705062866;
+const native_pi: f64 = 3.1415927410125732;
 const native_tau: f64 = 6.2831854820251465;
+const relative_move_heading_none: f64 = -1.0;
+const relative_move_heading_forward: f64 = 0.0;
+const relative_move_heading_forward_right: f64 = 0.7853981852531433;
+const relative_move_heading_right: f64 = 1.5707963705062866;
+const relative_move_heading_backward_right: f64 = 2.356194496154785;
+const relative_move_heading_backward: f64 = std.math.pi;
+const relative_move_heading_backward_left: f64 = 3.9269909858703613;
+const relative_move_heading_left: f64 = 4.71238899230957;
+const relative_move_heading_forward_left: f64 = 5.4977874755859375;
+const relative_move_turn_align_scale: f64 = 7.957746982574463;
+const movement_control_relative: i32 = 1;
+const movement_control_static: i32 = 2;
+const movement_control_dual_action_pad: i32 = 3;
+const movement_control_computer: i32 = 5;
+const aim_scheme_mouse: i32 = 0;
+const aim_scheme_computer: i32 = 5;
 
 pub const SurvivalSimError = error{
     OutOfMemory,
@@ -56,10 +77,23 @@ pub const SurvivalReplayScaffoldResult = struct {
 pub const SurvivalTickTrace = struct {
     tick: usize,
     rng_state: u32,
+    rng_after_perk_effects: u32,
+    rng_after_creatures: u32,
+    rng_after_projectiles: u32,
+    rng_after_secondary_projectiles: u32,
+    rng_after_particles: u32,
+    rng_after_player_update: u32,
+    rng_after_stage_spawns: u32,
+    rng_after_wave_spawns: u32,
+    rng_after_spawns: u32,
+    rng_after_bonus_update: u32,
     elapsed_ms: i64,
     score_xp: i32,
     kills: i32,
     creature_count: usize,
+    creature_active_index_sum: i32,
+    creature_active_index_xor: i32,
+    creature_state_hash: u64,
     perk_pending: i32,
     player_weapon_id: i32,
     player_ammo_q4: i32,
@@ -68,14 +102,37 @@ pub const SurvivalTickTrace = struct {
     player_pos_y_q4: i32,
     player_aim_x_q4: i32,
     player_aim_y_q4: i32,
+    player_heading_q6: i32,
+    player_aim_heading_q6: i32,
+    player_move_speed_q4: i32,
+    player_turn_speed_q4: i32,
     player_level: i32,
     player_experience: i32,
+    player_reload_active: bool,
+    player_reload_timer_q4: i32,
+    player_shot_cooldown_q4: i32,
+    player_shot_seq: i32,
+    player_perk31_count: i32,
+    player_perk53_count: i32,
+    player_perk54_count: i32,
+    player_perk55_count: i32,
+    player_hot_tempered_timer_q6: i32,
+    player_man_bomb_timer_q6: i32,
+    player_fire_cough_timer_q6: i32,
+    player_living_fortress_timer_q6: i32,
+    perk_interval_hot_tempered_q6: i32,
+    perk_interval_man_bomb_q6: i32,
+    perk_interval_fire_cough_q6: i32,
     bonus_weapon_power_up_ms: i32,
     bonus_reflex_boost_ms: i32,
     bonus_energizer_ms: i32,
     bonus_double_experience_ms: i32,
     bonus_freeze_ms: i32,
+    projectile_state_hash: u64,
     projectile_count: usize,
+    projectile_active_index_sum: i32,
+    projectile_active_index_xor: i32,
+    projectile_type45_count: usize,
     projectile0_pos_x_q4: i32,
     projectile0_pos_y_q4: i32,
     projectile0_origin_x_q4: i32,
@@ -84,6 +141,24 @@ pub const SurvivalTickTrace = struct {
     projectile0_type_id: i32,
     projectile0_angle_q6: i32,
     projectile0_speed_scale_q4: i32,
+    projectile1_active: bool,
+    projectile1_pos_x_q4: i32,
+    projectile1_pos_y_q4: i32,
+    projectile1_origin_x_q4: i32,
+    projectile1_origin_y_q4: i32,
+    projectile1_life_timer_q4: i32,
+    projectile1_type_id: i32,
+    projectile1_angle_q6: i32,
+    projectile1_damage_pool_q4: i32,
+    projectile6_active: bool,
+    projectile6_type_id: i32,
+    projectile6_pos_x_q4: i32,
+    projectile6_pos_y_q4: i32,
+    projectile6_origin_x_q4: i32,
+    projectile6_origin_y_q4: i32,
+    projectile6_life_timer_q4: i32,
+    projectile6_damage_pool_q4: i32,
+    projectile6_angle_q6: i32,
     projectile_hit_count: i32,
     projectile_type1_count: usize,
     projectile_type6_count: usize,
@@ -108,6 +183,13 @@ pub const SurvivalTickTrace = struct {
     projectile_type11_closest_to_c2_pos_y_q4: i32,
     projectile_type11_closest_to_c2_origin_x_q4: i32,
     projectile_type11_closest_to_c2_origin_y_q4: i32,
+    projectile_type21_count: usize,
+    projectile_type21_pos_x_q4: i32,
+    projectile_type21_pos_y_q4: i32,
+    projectile_type21_origin_x_q4: i32,
+    projectile_type21_origin_y_q4: i32,
+    projectile_type21_life_timer_q4: i32,
+    projectile_type21_angle_q6: i32,
     projectile_first_hit_creature_index: i32,
     projectile_first_hit_projectile_index: i32,
     projectile_first_hit_type_id: i32,
@@ -122,44 +204,90 @@ pub const SurvivalTickTrace = struct {
     creature0_pos_x_q4: i32,
     creature0_pos_y_q4: i32,
     creature0_hp_q4: i32,
-    creature0_hitbox_q4: i32,
+    creature0_lifecycle_stage_q4: i32,
     creature1_active: bool,
     creature1_pos_x_q4: i32,
     creature1_pos_y_q4: i32,
     creature1_hp_q4: i32,
-    creature1_hitbox_q4: i32,
+    creature1_lifecycle_stage_q4: i32,
     creature2_active: bool,
     creature2_pos_x_q4: i32,
     creature2_pos_y_q4: i32,
     creature2_hp_q4: i32,
-    creature2_hitbox_q4: i32,
+    creature2_lifecycle_stage_q4: i32,
     creature10_active: bool,
     creature10_pos_x_q4: i32,
     creature10_pos_y_q4: i32,
     creature10_hp_q4: i32,
-    creature10_hitbox_q4: i32,
+    creature10_lifecycle_stage_q4: i32,
     creature12_active: bool,
     creature12_pos_x_q4: i32,
     creature12_pos_y_q4: i32,
     creature12_hp_q4: i32,
-    creature12_hitbox_q4: i32,
+    creature12_lifecycle_stage_q4: i32,
     creature14_active: bool,
     creature14_pos_x_q4: i32,
     creature14_pos_y_q4: i32,
     creature14_hp_q4: i32,
-    creature14_hitbox_q4: i32,
+    creature14_lifecycle_stage_q4: i32,
     creature14_size_q4: i32,
     creature14_target_x_q4: i32,
     creature14_target_y_q4: i32,
     creature14_heading_q6: i32,
     creature14_target_heading_q6: i32,
+    creature15_active: bool,
+    creature15_pos_x_q4: i32,
+    creature15_pos_y_q4: i32,
+    creature15_hp_q4: i32,
+    creature15_lifecycle_stage_q4: i32,
+    creature18_active: bool,
+    creature18_pos_x_q4: i32,
+    creature18_pos_y_q4: i32,
+    creature18_hp_q4: i32,
+    creature18_lifecycle_stage_q4: i32,
+    creature18_target_x_q4: i32,
+    creature18_target_y_q4: i32,
+    creature18_heading_q6: i32,
+    creature18_target_heading_q6: i32,
+    creature18_type_id: i32,
+    creature18_flags: i32,
+    creature18_link_index: i32,
+    creature18_ai_mode: i32,
     creature26_active: bool,
     creature26_hp_q4: i32,
-    creature26_hitbox_q4: i32,
+    creature26_lifecycle_stage_q4: i32,
     creature26_type_id: i32,
     creature26_flags: i32,
     creature26_link_index: i32,
     creature26_ai_mode: i32,
+    creature31_active: bool,
+    creature31_hp_q4: i32,
+    creature31_lifecycle_stage_q4: i32,
+    creature32_active: bool,
+    creature32_pos_x_q4: i32,
+    creature32_pos_y_q4: i32,
+    creature32_hp_q4: i32,
+    creature32_lifecycle_stage_q4: i32,
+    creature32_type_id: i32,
+    creature32_flags: i32,
+    creature32_heading_q6: i32,
+    creature32_target_heading_q6: i32,
+    creature32_target_x_q4: i32,
+    creature32_target_y_q4: i32,
+    creature32_link_index: i32,
+    creature32_ai_mode: i32,
+    creature39_active: bool,
+    creature39_hp_q4: i32,
+    creature39_lifecycle_stage_q4: i32,
+    creature39_type_id: i32,
+    creature39_flags: i32,
+    creature39_link_index: i32,
+    creature39_ai_mode: i32,
+    creature45_active: bool,
+    creature45_pos_x_q4: i32,
+    creature45_pos_y_q4: i32,
+    creature45_hp_q4: i32,
+    creature45_lifecycle_stage_q4: i32,
     debug_pending_nuke: i32,
     debug_nuke_kills_last: i32,
     debug_nuke_tick_last: i32,
@@ -202,11 +330,14 @@ pub fn runSurvivalReplayScaffoldWithTrace(
     var spawn_cooldown: f64 = 0.0;
     var spawn_stage: i32 = 0;
     var state = survival_state.GameplayState.init(header.seed);
+    state.fx_toggle = header.fx_toggle;
     var players = [_]survival_state.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
     var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
     var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
     var bonuses = survival_bonuses.BonusPool{};
     survival_state.resetPlayers(players[0..], @floatCast(header.world_size), null);
     state.status_quest_unlock_index = header.status.quest_unlock_index;
@@ -232,6 +363,8 @@ pub fn runSurvivalReplayScaffoldWithTrace(
                 events[event_index],
                 &state,
                 players[0..],
+                &creatures,
+                dt_nominal,
                 game_mode,
                 player_count,
                 quest_unlock_index,
@@ -257,6 +390,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
         const elapsed_before_ms = elapsed_ms_sim;
 
         survival_perks.updatePerkEffects(&state, players[0..], dt_sim);
+        const rng_after_perk_effects = state.rng.state;
 
         creatures.update(
             &state,
@@ -265,6 +399,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             @floatCast(header.world_size),
             &bonuses,
         );
+        const rng_after_creatures = state.rng.state;
 
         const projectile_tick_stats = projectiles.update(
             &state,
@@ -274,19 +409,50 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             dt_sim,
             @floatCast(header.world_size),
         );
+        const rng_after_projectiles = state.rng.state;
 
+        secondary_projectiles.updatePulseGun(
+            &state,
+            players[0..],
+            &creatures,
+            &bonuses,
+            dt_sim,
+            @floatCast(header.world_size),
+            header.detail_preset,
+        );
+        const rng_after_secondary_projectiles = state.rng.state;
+
+        particles.update(
+            &state,
+            players[0..],
+            &creatures,
+            &bonuses,
+            dt_sim,
+            @floatCast(header.world_size),
+        );
+        const rng_after_particles = state.rng.state;
+
+        survival_weapon_runtime.applyPlayerPerkTicks(
+            &state,
+            &players[0],
+            &projectiles,
+            dt_sim,
+        );
         updatePlayerFromReplayInput(
             &players[0],
             input,
+            flags,
             &state,
             dt_sim,
             @floatCast(header.world_size),
         );
-
         survival_weapon_runtime.stepPlayerForTick(
             &state,
             &players[0],
             &projectiles,
+            &secondary_projectiles,
+            &creatures,
+            &particles,
             .{
                 .fire_down = flags.fire_down,
                 .fire_pressed = flags.fire_pressed,
@@ -296,6 +462,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
         ) catch |err| switch (err) {
             error.UnsupportedWeaponFirePath => return error.UnsupportedWeaponFirePath,
         };
+        const rng_after_player_update = state.rng.state;
 
         survival_state.survivalUpdateWeaponHandouts(
             &state,
@@ -314,6 +481,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
                 error.UnsupportedSpawnTemplate => return error.UnsupportedSpawnTemplate,
             };
         }
+        const rng_after_stage_spawns = state.rng.state;
 
         const wave_result = survival_spawn.tickSurvivalWaveSpawnsBatch(
             spawn_cooldown,
@@ -328,29 +496,40 @@ pub fn runSurvivalReplayScaffoldWithTrace(
         spawn_cooldown = wave_result.cooldown;
         wave_spawn_count += wave_result.count;
         creatures.spawnInits(wave_result.slice());
+        const rng_after_wave_spawns = state.rng.state;
+        const rng_after_spawns = state.rng.state;
 
-        cameraShakeUpdate(&state, dt_sim);
+        const dt_after_player = playerFrameDtAfterRoundtrip(
+            dt_sim,
+            state.time_scale_active,
+            state.bonuses.reflex_boost,
+        );
+        cameraShakeUpdate(&state, dt_after_player);
         _ = survival_state.survivalProgressionUpdate(&state, players[0..]);
         state.time_scale_active = state.bonuses.reflex_boost > 0.0;
-        survival_bonuses.updatePrePickupTimers(&state, dt_sim);
+        survival_bonuses.updatePrePickupTimers(&state, dt_after_player);
         survival_bonuses.bonusUpdate(
             &bonuses,
             &state,
             players[0..],
-            dt_sim,
+            dt_after_player,
         ) catch |err| switch (err) {
             error.UnsupportedBonusApplyPath => return error.UnsupportedBonusApplyPath,
         };
+        if (state.debug_last_picked_bonus_id == survival_state.BonusId.freeze) {
+            applyFreezePickupCorpseCleanupRng(&state, &creatures);
+        }
         applyPendingBonusEffects(
             &state,
             players[0..],
             &projectiles,
             &creatures,
             &bonuses,
-            dt_sim,
+            dt_after_player,
             @floatCast(header.world_size),
             tick_index,
         );
+        const rng_after_bonus_update = state.rng.state;
         survival_state.survivalEnforceRewardWeaponGuard(state, players[0..]);
         creatures.finalizePostRenderLifecycle();
         elapsed_ms_sim += dt_sim_ms;
@@ -366,6 +545,16 @@ pub fn runSurvivalReplayScaffoldWithTrace(
                     &creatures,
                     &projectiles,
                     projectile_tick_stats,
+                    rng_after_perk_effects,
+                    rng_after_creatures,
+                    rng_after_projectiles,
+                    rng_after_secondary_projectiles,
+                    rng_after_particles,
+                    rng_after_player_update,
+                    rng_after_stage_spawns,
+                    rng_after_wave_spawns,
+                    rng_after_spawns,
+                    rng_after_bonus_update,
                 ),
             );
         }
@@ -380,6 +569,8 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             events[event_index],
             &state,
             players[0..],
+            &creatures,
+            dt_nominal,
             game_mode,
             player_count,
             quest_unlock_index,
@@ -436,8 +627,19 @@ fn buildTickTrace(
     creatures: *const survival_creatures.CreaturePool,
     projectiles: *const survival_projectiles.ProjectilePool,
     projectile_tick_stats: survival_projectiles.ProjectileTickStats,
+    rng_after_perk_effects: u32,
+    rng_after_creatures: u32,
+    rng_after_projectiles: u32,
+    rng_after_secondary_projectiles: u32,
+    rng_after_particles: u32,
+    rng_after_player_update: u32,
+    rng_after_stage_spawns: u32,
+    rng_after_wave_spawns: u32,
+    rng_after_spawns: u32,
+    rng_after_bonus_update: u32,
 ) SurvivalTickTrace {
     var projectile_count: usize = 0;
+    var projectile_state_hash: u64 = 1469598103934665603;
     var projectile0 = survival_projectiles.Projectile{};
     var projectile0_found = false;
     var projectile_type1_count: usize = 0;
@@ -452,9 +654,33 @@ fn buildTickTrace(
     var projectile_type11_closest = survival_projectiles.Projectile{};
     var projectile_type11_closest_found = false;
     var projectile_type11_closest_dist = std.math.inf(f64);
+    const projectile1 = projectiles.entries[1];
+    var projectile_type21_count: usize = 0;
+    var projectile_type21 = survival_projectiles.Projectile{};
+    var projectile_type21_found = false;
+    const projectile6 = projectiles.entries[6];
+    var projectile_type45_count: usize = 0;
+    var projectile_active_index_sum: i32 = 0;
+    var projectile_active_index_xor: i32 = 0;
     const creature2_pos = creatures.entries[2].pos;
-    for (projectiles.entries) |entry| {
+    for (projectiles.entries, 0..) |entry, idx| {
+        projectile_state_hash = hashMix(projectile_state_hash, @intCast(idx));
+        projectile_state_hash = hashMix(projectile_state_hash, if (entry.active) 1 else 0);
         if (!entry.active) continue;
+        const idx_i32: i32 = @intCast(idx);
+        projectile_active_index_sum += idx_i32;
+        projectile_active_index_xor ^= idx_i32;
+        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, entry.type_id)));
+        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.pos.x))));
+        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.pos.y))));
+        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.origin.x))));
+        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.origin.y))));
+        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.life_timer))));
+        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.damage_pool))));
+        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ6(entry.angle))));
+        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.speed_scale))));
+        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, entry.owner_id)));
+        projectile_state_hash = hashMix(projectile_state_hash, if (entry.hits_players) 1 else 0);
         projectile_count += 1;
         if (!projectile0_found) {
             projectile0_found = true;
@@ -488,15 +714,78 @@ fn buildTickTrace(
                 projectile_type11_closest = entry;
             }
         }
+        if (entry.type_id == 21) {
+            projectile_type21_count += 1;
+            if (!projectile_type21_found) {
+                projectile_type21_found = true;
+                projectile_type21 = entry;
+            }
+        }
+        if (entry.type_id == 45) {
+            projectile_type45_count += 1;
+        }
+    }
+
+    var creature_active_index_sum: i32 = 0;
+    var creature_active_index_xor: i32 = 0;
+    var creature_state_hash: u64 = 1469598103934665603;
+    for (creatures.entries, 0..) |creature, idx| {
+        creature_state_hash = hashMix(creature_state_hash, @intCast(idx));
+        creature_state_hash = hashMix(creature_state_hash, if (creature.active) 1 else 0);
+        if (!creature.active) continue;
+
+        const idx_i32: i32 = @intCast(idx);
+        creature_active_index_sum += idx_i32;
+        creature_active_index_xor ^= idx_i32;
+
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.type_id)));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.pos.x))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.pos.y))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.target.x))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.target.y))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ6(creature.heading))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ6(creature.target_heading))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.phase_seed))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.vel.x))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.vel.y))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.move_scale))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.force_target)));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.ai_mode)));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.link_index)));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ6(creature.orbit_angle))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.orbit_radius))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.hp))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.max_hp))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.move_speed))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.reward_value))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.size))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.contact_damage))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.lifecycle_stage))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.attack_cooldown))));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.last_hit_owner_id)));
+        creature_state_hash = hashMix(creature_state_hash, creature.flags);
     }
 
     return .{
         .tick = tick_index,
         .rng_state = state.rng.state,
+        .rng_after_perk_effects = rng_after_perk_effects,
+        .rng_after_creatures = rng_after_creatures,
+        .rng_after_projectiles = rng_after_projectiles,
+        .rng_after_secondary_projectiles = rng_after_secondary_projectiles,
+        .rng_after_particles = rng_after_particles,
+        .rng_after_player_update = rng_after_player_update,
+        .rng_after_stage_spawns = rng_after_stage_spawns,
+        .rng_after_wave_spawns = rng_after_wave_spawns,
+        .rng_after_spawns = rng_after_spawns,
+        .rng_after_bonus_update = rng_after_bonus_update,
         .elapsed_ms = @intFromFloat(@round(elapsed_ms_sim)),
         .score_xp = player.experience,
         .kills = creatures.kill_count,
         .creature_count = creatures.activeCount(),
+        .creature_active_index_sum = creature_active_index_sum,
+        .creature_active_index_xor = creature_active_index_xor,
+        .creature_state_hash = creature_state_hash,
         .perk_pending = state.perk_selection.pending_count,
         .player_weapon_id = player.weapon_id,
         .player_ammo_q4 = quantizeQ4(player.ammo),
@@ -505,14 +794,37 @@ fn buildTickTrace(
         .player_pos_y_q4 = quantizeQ4(player.pos.y),
         .player_aim_x_q4 = quantizeQ4(player.aim.x),
         .player_aim_y_q4 = quantizeQ4(player.aim.y),
+        .player_heading_q6 = quantizeQ6(player.heading),
+        .player_aim_heading_q6 = quantizeQ6(player.aim_heading),
+        .player_move_speed_q4 = quantizeQ4(player.move_speed),
+        .player_turn_speed_q4 = quantizeQ4(player.turn_speed),
         .player_level = player.level,
         .player_experience = player.experience,
+        .player_reload_active = player.reload_active,
+        .player_reload_timer_q4 = quantizeQ4(player.reload_timer),
+        .player_shot_cooldown_q4 = quantizeQ4(player.shot_cooldown),
+        .player_shot_seq = player.shot_seq,
+        .player_perk31_count = player.perk_counts[@intCast(survival_perks.PerkId.hot_tempered)],
+        .player_perk53_count = player.perk_counts[@intCast(survival_perks.PerkId.man_bomb)],
+        .player_perk54_count = player.perk_counts[@intCast(survival_perks.PerkId.fire_caugh)],
+        .player_perk55_count = player.perk_counts[@intCast(survival_perks.PerkId.living_fortress)],
+        .player_hot_tempered_timer_q6 = quantizeQ6(player.hot_tempered_timer),
+        .player_man_bomb_timer_q6 = quantizeQ6(player.man_bomb_timer),
+        .player_fire_cough_timer_q6 = quantizeQ6(player.fire_cough_timer),
+        .player_living_fortress_timer_q6 = quantizeQ6(player.living_fortress_timer),
+        .perk_interval_hot_tempered_q6 = quantizeQ6(state.perk_interval_hot_tempered),
+        .perk_interval_man_bomb_q6 = quantizeQ6(state.perk_interval_man_bomb),
+        .perk_interval_fire_cough_q6 = quantizeQ6(state.perk_interval_fire_cough),
         .bonus_weapon_power_up_ms = bonusTimerMs(state.bonuses.weapon_power_up),
         .bonus_reflex_boost_ms = bonusTimerMs(state.bonuses.reflex_boost),
         .bonus_energizer_ms = bonusTimerMs(state.bonuses.energizer),
         .bonus_double_experience_ms = bonusTimerMs(state.bonuses.double_experience),
         .bonus_freeze_ms = bonusTimerMs(state.bonuses.freeze),
+        .projectile_state_hash = projectile_state_hash,
         .projectile_count = projectile_count,
+        .projectile_active_index_sum = projectile_active_index_sum,
+        .projectile_active_index_xor = projectile_active_index_xor,
+        .projectile_type45_count = projectile_type45_count,
         .projectile0_pos_x_q4 = if (projectile0_found) quantizeQ4(projectile0.pos.x) else 0,
         .projectile0_pos_y_q4 = if (projectile0_found) quantizeQ4(projectile0.pos.y) else 0,
         .projectile0_origin_x_q4 = if (projectile0_found) quantizeQ4(projectile0.origin.x) else 0,
@@ -521,6 +833,24 @@ fn buildTickTrace(
         .projectile0_type_id = if (projectile0_found) projectile0.type_id else 0,
         .projectile0_angle_q6 = if (projectile0_found) quantizeQ6(projectile0.angle) else 0,
         .projectile0_speed_scale_q4 = if (projectile0_found) quantizeQ4(projectile0.speed_scale) else 0,
+        .projectile1_active = projectile1.active,
+        .projectile1_pos_x_q4 = quantizeQ4(projectile1.pos.x),
+        .projectile1_pos_y_q4 = quantizeQ4(projectile1.pos.y),
+        .projectile1_origin_x_q4 = quantizeQ4(projectile1.origin.x),
+        .projectile1_origin_y_q4 = quantizeQ4(projectile1.origin.y),
+        .projectile1_life_timer_q4 = quantizeQ4(projectile1.life_timer),
+        .projectile1_type_id = projectile1.type_id,
+        .projectile1_angle_q6 = quantizeQ6(projectile1.angle),
+        .projectile1_damage_pool_q4 = quantizeQ4(projectile1.damage_pool),
+        .projectile6_active = projectile6.active,
+        .projectile6_type_id = projectile6.type_id,
+        .projectile6_pos_x_q4 = quantizeQ4(projectile6.pos.x),
+        .projectile6_pos_y_q4 = quantizeQ4(projectile6.pos.y),
+        .projectile6_origin_x_q4 = quantizeQ4(projectile6.origin.x),
+        .projectile6_origin_y_q4 = quantizeQ4(projectile6.origin.y),
+        .projectile6_life_timer_q4 = quantizeQ4(projectile6.life_timer),
+        .projectile6_damage_pool_q4 = quantizeQ4(projectile6.damage_pool),
+        .projectile6_angle_q6 = quantizeQ6(projectile6.angle),
         .projectile_hit_count = projectile_tick_stats.hit_count,
         .projectile_type1_count = projectile_type1_count,
         .projectile_type6_count = projectile_type6_count,
@@ -545,6 +875,13 @@ fn buildTickTrace(
         .projectile_type11_closest_to_c2_pos_y_q4 = if (projectile_type11_closest_found) quantizeQ4(projectile_type11_closest.pos.y) else 0,
         .projectile_type11_closest_to_c2_origin_x_q4 = if (projectile_type11_closest_found) quantizeQ4(projectile_type11_closest.origin.x) else 0,
         .projectile_type11_closest_to_c2_origin_y_q4 = if (projectile_type11_closest_found) quantizeQ4(projectile_type11_closest.origin.y) else 0,
+        .projectile_type21_count = projectile_type21_count,
+        .projectile_type21_pos_x_q4 = if (projectile_type21_found) quantizeQ4(projectile_type21.pos.x) else 0,
+        .projectile_type21_pos_y_q4 = if (projectile_type21_found) quantizeQ4(projectile_type21.pos.y) else 0,
+        .projectile_type21_origin_x_q4 = if (projectile_type21_found) quantizeQ4(projectile_type21.origin.x) else 0,
+        .projectile_type21_origin_y_q4 = if (projectile_type21_found) quantizeQ4(projectile_type21.origin.y) else 0,
+        .projectile_type21_life_timer_q4 = if (projectile_type21_found) quantizeQ4(projectile_type21.life_timer) else 0,
+        .projectile_type21_angle_q6 = if (projectile_type21_found) quantizeQ6(projectile_type21.angle) else 0,
         .projectile_first_hit_creature_index = projectile_tick_stats.first_hit_creature_index,
         .projectile_first_hit_projectile_index = projectile_tick_stats.first_hit_projectile_index,
         .projectile_first_hit_type_id = projectile_tick_stats.first_hit_type_id,
@@ -559,44 +896,90 @@ fn buildTickTrace(
         .creature0_pos_x_q4 = quantizeQ4(creatures.entries[0].pos.x),
         .creature0_pos_y_q4 = quantizeQ4(creatures.entries[0].pos.y),
         .creature0_hp_q4 = quantizeQ4(creatures.entries[0].hp),
-        .creature0_hitbox_q4 = quantizeQ4(creatures.entries[0].hitbox_size),
+        .creature0_lifecycle_stage_q4 = quantizeQ4(creatures.entries[0].lifecycle_stage),
         .creature1_active = creatures.entries[1].active,
         .creature1_pos_x_q4 = quantizeQ4(creatures.entries[1].pos.x),
         .creature1_pos_y_q4 = quantizeQ4(creatures.entries[1].pos.y),
         .creature1_hp_q4 = quantizeQ4(creatures.entries[1].hp),
-        .creature1_hitbox_q4 = quantizeQ4(creatures.entries[1].hitbox_size),
+        .creature1_lifecycle_stage_q4 = quantizeQ4(creatures.entries[1].lifecycle_stage),
         .creature2_active = creatures.entries[2].active,
         .creature2_pos_x_q4 = quantizeQ4(creatures.entries[2].pos.x),
         .creature2_pos_y_q4 = quantizeQ4(creatures.entries[2].pos.y),
         .creature2_hp_q4 = quantizeQ4(creatures.entries[2].hp),
-        .creature2_hitbox_q4 = quantizeQ4(creatures.entries[2].hitbox_size),
+        .creature2_lifecycle_stage_q4 = quantizeQ4(creatures.entries[2].lifecycle_stage),
         .creature10_active = creatures.entries[10].active,
         .creature10_pos_x_q4 = quantizeQ4(creatures.entries[10].pos.x),
         .creature10_pos_y_q4 = quantizeQ4(creatures.entries[10].pos.y),
         .creature10_hp_q4 = quantizeQ4(creatures.entries[10].hp),
-        .creature10_hitbox_q4 = quantizeQ4(creatures.entries[10].hitbox_size),
+        .creature10_lifecycle_stage_q4 = quantizeQ4(creatures.entries[10].lifecycle_stage),
         .creature12_active = creatures.entries[12].active,
         .creature12_pos_x_q4 = quantizeQ4(creatures.entries[12].pos.x),
         .creature12_pos_y_q4 = quantizeQ4(creatures.entries[12].pos.y),
         .creature12_hp_q4 = quantizeQ4(creatures.entries[12].hp),
-        .creature12_hitbox_q4 = quantizeQ4(creatures.entries[12].hitbox_size),
+        .creature12_lifecycle_stage_q4 = quantizeQ4(creatures.entries[12].lifecycle_stage),
         .creature14_active = creatures.entries[14].active,
         .creature14_pos_x_q4 = quantizeQ4(creatures.entries[14].pos.x),
         .creature14_pos_y_q4 = quantizeQ4(creatures.entries[14].pos.y),
         .creature14_hp_q4 = quantizeQ4(creatures.entries[14].hp),
-        .creature14_hitbox_q4 = quantizeQ4(creatures.entries[14].hitbox_size),
+        .creature14_lifecycle_stage_q4 = quantizeQ4(creatures.entries[14].lifecycle_stage),
         .creature14_size_q4 = quantizeQ4(creatures.entries[14].size),
         .creature14_target_x_q4 = quantizeQ4(creatures.entries[14].target.x),
         .creature14_target_y_q4 = quantizeQ4(creatures.entries[14].target.y),
         .creature14_heading_q6 = quantizeQ6(creatures.entries[14].heading),
         .creature14_target_heading_q6 = quantizeQ6(creatures.entries[14].target_heading),
+        .creature15_active = creatures.entries[15].active,
+        .creature15_pos_x_q4 = quantizeQ4(creatures.entries[15].pos.x),
+        .creature15_pos_y_q4 = quantizeQ4(creatures.entries[15].pos.y),
+        .creature15_hp_q4 = quantizeQ4(creatures.entries[15].hp),
+        .creature15_lifecycle_stage_q4 = quantizeQ4(creatures.entries[15].lifecycle_stage),
+        .creature18_active = creatures.entries[18].active,
+        .creature18_pos_x_q4 = quantizeQ4(creatures.entries[18].pos.x),
+        .creature18_pos_y_q4 = quantizeQ4(creatures.entries[18].pos.y),
+        .creature18_hp_q4 = quantizeQ4(creatures.entries[18].hp),
+        .creature18_lifecycle_stage_q4 = quantizeQ4(creatures.entries[18].lifecycle_stage),
+        .creature18_target_x_q4 = quantizeQ4(creatures.entries[18].target.x),
+        .creature18_target_y_q4 = quantizeQ4(creatures.entries[18].target.y),
+        .creature18_heading_q6 = quantizeQ6(creatures.entries[18].heading),
+        .creature18_target_heading_q6 = quantizeQ6(creatures.entries[18].target_heading),
+        .creature18_type_id = creatures.entries[18].type_id,
+        .creature18_flags = @bitCast(creatures.entries[18].flags),
+        .creature18_link_index = creatures.entries[18].link_index,
+        .creature18_ai_mode = creatures.entries[18].ai_mode,
         .creature26_active = creatures.entries[26].active,
         .creature26_hp_q4 = quantizeQ4(creatures.entries[26].hp),
-        .creature26_hitbox_q4 = quantizeQ4(creatures.entries[26].hitbox_size),
+        .creature26_lifecycle_stage_q4 = quantizeQ4(creatures.entries[26].lifecycle_stage),
         .creature26_type_id = creatures.entries[26].type_id,
         .creature26_flags = @bitCast(creatures.entries[26].flags),
         .creature26_link_index = creatures.entries[26].link_index,
         .creature26_ai_mode = creatures.entries[26].ai_mode,
+        .creature31_active = creatures.entries[31].active,
+        .creature31_hp_q4 = quantizeQ4(creatures.entries[31].hp),
+        .creature31_lifecycle_stage_q4 = quantizeQ4(creatures.entries[31].lifecycle_stage),
+        .creature32_active = creatures.entries[32].active,
+        .creature32_pos_x_q4 = quantizeQ4(creatures.entries[32].pos.x),
+        .creature32_pos_y_q4 = quantizeQ4(creatures.entries[32].pos.y),
+        .creature32_hp_q4 = quantizeQ4(creatures.entries[32].hp),
+        .creature32_lifecycle_stage_q4 = quantizeQ4(creatures.entries[32].lifecycle_stage),
+        .creature32_type_id = creatures.entries[32].type_id,
+        .creature32_flags = @bitCast(creatures.entries[32].flags),
+        .creature32_heading_q6 = quantizeQ6(creatures.entries[32].heading),
+        .creature32_target_heading_q6 = quantizeQ6(creatures.entries[32].target_heading),
+        .creature32_target_x_q4 = quantizeQ4(creatures.entries[32].target.x),
+        .creature32_target_y_q4 = quantizeQ4(creatures.entries[32].target.y),
+        .creature32_link_index = creatures.entries[32].link_index,
+        .creature32_ai_mode = creatures.entries[32].ai_mode,
+        .creature39_active = creatures.entries[39].active,
+        .creature39_hp_q4 = quantizeQ4(creatures.entries[39].hp),
+        .creature39_lifecycle_stage_q4 = quantizeQ4(creatures.entries[39].lifecycle_stage),
+        .creature39_type_id = creatures.entries[39].type_id,
+        .creature39_flags = @bitCast(creatures.entries[39].flags),
+        .creature39_link_index = creatures.entries[39].link_index,
+        .creature39_ai_mode = creatures.entries[39].ai_mode,
+        .creature45_active = creatures.entries[45].active,
+        .creature45_pos_x_q4 = quantizeQ4(creatures.entries[45].pos.x),
+        .creature45_pos_y_q4 = quantizeQ4(creatures.entries[45].pos.y),
+        .creature45_hp_q4 = quantizeQ4(creatures.entries[45].hp),
+        .creature45_lifecycle_stage_q4 = quantizeQ4(creatures.entries[45].lifecycle_stage),
         .debug_pending_nuke = state.pending_nuke_count,
         .debug_nuke_kills_last = state.debug_nuke_kills_last,
         .debug_nuke_tick_last = state.debug_nuke_tick_last,
@@ -626,6 +1009,12 @@ fn bonusTimerMs(seconds: f64) i32 {
     if (ms <= 0.0) return 0;
     if (ms >= @as(f64, @floatFromInt(std.math.maxInt(i32)))) return std.math.maxInt(i32);
     return @intFromFloat(ms);
+}
+
+fn hashMix(seed: u64, value: u64) u64 {
+    var h = seed ^ value;
+    h *%= 1099511628211;
+    return h;
 }
 
 fn cameraShakeUpdate(
@@ -687,6 +1076,32 @@ fn applyPendingBonusEffects(
     state.debug_nuke_kills_last = 0;
     state.debug_nuke_tick_last = -1;
     state.debug_nuke_kill_index_sum = 0;
+
+    const pending_fireblast_count_i32 = @min(state.pending_fireblast_count, @as(i32, @intCast(state.pending_fireblast_origins.len)));
+    var pending_fireblast_idx: i32 = 0;
+    while (pending_fireblast_idx < pending_fireblast_count_i32) : (pending_fireblast_idx += 1) {
+        const origin = state.pending_fireblast_origins[@intCast(pending_fireblast_idx)];
+        applyFireblastBonus(
+            state,
+            projectiles,
+            origin,
+        );
+    }
+    state.pending_fireblast_count = 0;
+
+    const pending_shock_chain_count_i32 = @min(state.pending_shock_chain_count, @as(i32, @intCast(state.pending_shock_chain_origins.len)));
+    var pending_shock_chain_idx: i32 = 0;
+    while (pending_shock_chain_idx < pending_shock_chain_count_i32) : (pending_shock_chain_idx += 1) {
+        const origin = state.pending_shock_chain_origins[@intCast(pending_shock_chain_idx)];
+        applyShockChainBonus(
+            state,
+            projectiles,
+            creatures,
+            origin,
+        );
+    }
+    state.pending_shock_chain_count = 0;
+
     const pending_count_i32 = @min(state.pending_nuke_count, @as(i32, @intCast(state.pending_nuke_origins.len)));
     var pending_idx: i32 = 0;
     while (pending_idx < pending_count_i32) : (pending_idx += 1) {
@@ -704,6 +1119,67 @@ fn applyPendingBonusEffects(
         );
     }
     state.pending_nuke_count = 0;
+}
+
+fn applyFireblastBonus(
+    state: *survival_state.GameplayState,
+    projectiles: *survival_projectiles.ProjectilePool,
+    origin: survival_state.Vec2,
+) void {
+    const projectile_owner_id: i32 = -100;
+    const prev_spawn_guard = state.bonus_spawn_guard;
+    state.bonus_spawn_guard = true;
+    defer state.bonus_spawn_guard = prev_spawn_guard;
+
+    const count: usize = 16;
+    const step = std.math.tau / @as(f64, @floatFromInt(count));
+    for (0..count) |idx| {
+        const angle = @as(f64, @floatFromInt(idx)) * step;
+        const type_id = survival_state.ProjectileTypeId.plasma_rifle;
+        const meta = survival_state.weaponProjectileMeta(type_id);
+        _ = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
+    }
+}
+
+fn applyShockChainBonus(
+    state: *survival_state.GameplayState,
+    projectiles: *survival_projectiles.ProjectilePool,
+    creatures: *survival_creatures.CreaturePool,
+    origin: survival_state.Vec2,
+) void {
+    if (creatures.entries.len == 0) return;
+
+    var best_idx: usize = 0;
+    var best_dist_sq: f64 = 1e12;
+    for (creatures.entries, 0..) |creature, idx| {
+        if (!creature.active) continue;
+        if (creature.lifecycle_stage != creature_lifecycle_stage_alive) continue;
+        const d_sq = distanceSq(origin, creature.pos);
+        if (d_sq < best_dist_sq) {
+            best_dist_sq = d_sq;
+            best_idx = idx;
+        }
+    }
+
+    const target = creatures.entries[best_idx];
+    const angle = survival_state.Vec2.sub(target.pos, origin).toHeading();
+    const projectile_owner_id: i32 = -100;
+    const type_id = survival_state.ProjectileTypeId.ion_rifle;
+    const meta = survival_state.weaponProjectileMeta(type_id);
+
+    const prev_spawn_guard = state.bonus_spawn_guard;
+    state.bonus_spawn_guard = true;
+    defer state.bonus_spawn_guard = prev_spawn_guard;
+
+    state.shock_chain_links_left = 0x20;
+    const proj_idx = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
+    state.shock_chain_projectile_id = @intCast(proj_idx);
+}
+
+fn distanceSq(a: survival_state.Vec2, b: survival_state.Vec2) f64 {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+    return dx * dx + dy * dy;
 }
 
 fn applyNukeBonus(
@@ -729,19 +1205,17 @@ fn applyNukeBonus(
     bullet_count += 4;
     var bullet_idx: i32 = 0;
     while (bullet_idx < bullet_count) : (bullet_idx += 1) {
-        const angle_heading = @as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
-        const angle = angle_heading - native_half_pi;
+        const angle = @as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
         var type_id = survival_state.ProjectileTypeId.pistol;
         applyPlayerProjectileSpawnRules(state, players, projectile_owner_id, &type_id);
         const meta = survival_state.weaponProjectileMeta(type_id);
         const proj_idx = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
-        const speed_scale = asF32F64(@as(f64, @floatFromInt(state.rng.rand() % 0x32)) * 0.01 + 0.5);
-        projectiles.entries[proj_idx].speed_scale = asF32F64(projectiles.entries[proj_idx].speed_scale * speed_scale);
+        const speed_scale = @as(f64, @floatFromInt(state.rng.rand() % 0x32)) * 0.01 + 0.5;
+        projectiles.entries[proj_idx].speed_scale *= speed_scale;
     }
 
     for (0..2) |_| {
-        const angle_heading = @as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
-        const angle = angle_heading - native_half_pi;
+        const angle = @as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
         var type_id = survival_state.ProjectileTypeId.gauss_gun;
         applyPlayerProjectileSpawnRules(state, players, projectile_owner_id, &type_id);
         const meta = survival_state.weaponProjectileMeta(type_id);
@@ -768,6 +1242,7 @@ fn applyNukeBonus(
             bonuses,
             idx,
             damage,
+            .{},
             damage_owner_id,
             dt,
             world_size,
@@ -840,6 +1315,8 @@ fn applyReplayEvent(
     event: replay_codec.ReplayEvent,
     state: *survival_state.GameplayState,
     players: []survival_state.PlayerState,
+    creatures: *survival_creatures.CreaturePool,
+    dt_frame: f64,
     game_mode: i32,
     player_count: i32,
     quest_unlock_index: i32,
@@ -871,16 +1348,105 @@ fn applyReplayEvent(
                 error.UnsupportedPerkApplyHandler => return error.UnsupportedPerkApplyHandler,
             };
             if (applied == null) {
+                if (state.perk_selection.pending_count <= 0) {
+                    return;
+                }
                 return error.InvalidPerkPickEvent;
             }
+            applyReplayPerkCreatureEffects(
+                applied.?,
+                state,
+                creatures,
+                dt_frame,
+            );
             perk_pick_count.* += 1;
         },
+    }
+}
+
+fn applyReplayPerkCreatureEffects(
+    perk_id: i32,
+    state: *survival_state.GameplayState,
+    creatures: *survival_creatures.CreaturePool,
+    dt_frame: f64,
+) void {
+    switch (perk_id) {
+        survival_perks.PerkId.breathing_room => {
+            for (&creatures.entries) |*creature| {
+                if (!creature.active) continue;
+                creature.lifecycle_stage = asF32F64(creature.lifecycle_stage - dt_frame);
+            }
+        },
+        survival_perks.PerkId.lifeline_50_50 => {
+            var kill_toggle = false;
+            for (&creatures.entries) |*creature| {
+                if (kill_toggle and
+                    creature.active and
+                    creature.hp <= 500.0 and
+                    (creature.flags & survival_spawn.CreatureFlags.anim_ping_pong) == 0)
+                {
+                    creature.active = false;
+                    consumeSpawnBurstRng(state, 4);
+                }
+                kill_toggle = !kill_toggle;
+            }
+        },
+        else => {},
+    }
+}
+
+fn consumeSpawnBurstRng(
+    state: *survival_state.GameplayState,
+    count: usize,
+) void {
+    for (0..count) |_| {
+        _ = state.rng.rand();
+        _ = state.rng.rand();
+        _ = state.rng.rand();
+        _ = state.rng.rand();
+    }
+}
+
+fn applyFreezePickupCorpseCleanupRng(
+    state: *survival_state.GameplayState,
+    creatures: *survival_creatures.CreaturePool,
+) void {
+    for (&creatures.entries) |*creature| {
+        if (!creature.active) continue;
+        if (creature.hp > 0.0) continue;
+
+        if (creature.lifecycle_stage < -10.0) {
+            creature.active = false;
+            continue;
+        }
+
+        // bonus freeze corpse pass: 8 freeze shards + 1 freeze shatter.
+        for (0..8) |_| {
+            _ = state.rng.rand() % 0x264;
+            for (0..6) |_| {
+                _ = state.rng.rand();
+            }
+        }
+        _ = state.rng.rand() % 0x264;
+        for (0..4) |_| {
+            _ = state.rng.rand();
+            _ = state.rng.rand();
+        }
+        for (0..4) |_| {
+            _ = state.rng.rand() % 0x264;
+            for (0..6) |_| {
+                _ = state.rng.rand();
+            }
+        }
+
+        creature.active = false;
     }
 }
 
 fn updatePlayerFromReplayInput(
     player: *survival_state.PlayerState,
     input: replay_codec.ReplayPlayerInput,
+    flags: replay_codec.InputFlags,
     state: *const survival_state.GameplayState,
     dt: f64,
     world_size: f64,
@@ -898,6 +1464,9 @@ fn updatePlayerFromReplayInput(
         }
     }
 
+    const move_mode = resolveMoveModeForUpdate(flags, state);
+    const aim_scheme = resolveAimSchemeForUpdate(flags, state);
+
     var raw_move = survival_state.Vec2{
         .x = input.move_x,
         .y = input.move_y,
@@ -910,43 +1479,181 @@ fn updatePlayerFromReplayInput(
         speed_multiplier += 1.0;
     }
 
-    const moving_input = raw_mag > 0.2;
-    var turn_alignment_scale: f64 = 1.0;
-    if (moving_input) {
-        const inv = if (raw_mag > 1e-9) 1.0 / raw_mag else 0.0;
-        raw_move = raw_move.mul(inv);
-        const target_heading = normalizeHeading(raw_move.toHeading());
-        const angle_diff = playerHeadingApproachTarget(player, target_heading, movement_dt);
-        move = directionFromHeadingNative(player.heading);
-        turn_alignment_scale = @max(0.0, (std.math.pi - angle_diff) / std.math.pi);
-        playerAccelerateMoveSpeed(player, movement_dt);
+    var speed: f64 = 0.0;
+    var move_delta_override: ?survival_state.Vec2 = null;
+    const player_controlled_movement =
+        !state.demo_mode_active and
+        move_mode != movement_control_computer and
+        aim_scheme != aim_scheme_computer;
+
+    if (player_controlled_movement) {
+        if (move_mode == movement_control_relative) {
+            const turning_left = flags.turn_left_pressed orelse false;
+            const turning_right = flags.turn_right_pressed orelse false;
+            const moving_forward = flags.move_forward_pressed orelse false;
+            const moving_backward = flags.move_backward_pressed orelse false;
+            var turned = false;
+
+            if (player.turn_speed < 1.0) player.turn_speed = 1.0;
+            if (player.turn_speed > 7.0) player.turn_speed = 7.0;
+
+            if (turning_left) {
+                player.turn_speed = asF32F64(player.turn_speed + movement_dt * 10.0);
+                const turn_step = asF32F64(player.turn_speed * movement_dt * 0.5);
+                player.heading = asF32F64(player.heading - turn_step);
+                player.aim_heading = asF32F64(player.aim_heading - turn_step);
+                turned = true;
+            } else if (turning_right) {
+                player.turn_speed = asF32F64(player.turn_speed + movement_dt * 10.0);
+                const turn_step = asF32F64(player.turn_speed * movement_dt * 0.5);
+                player.heading = asF32F64(player.heading + turn_step);
+                player.aim_heading = asF32F64(player.aim_heading + turn_step);
+                turned = true;
+            }
+
+            if (moving_forward) {
+                playerAccelerateMoveSpeed(player, movement_dt);
+                playerApplyMoveSpeedCaps(player);
+                move_delta_override = playerMoveDeltaFromHeading(player, movement_dt, 25.0);
+            } else if (moving_backward) {
+                playerAccelerateMoveSpeed(player, movement_dt);
+                move_delta_override = playerMoveDeltaFromHeading(player, movement_dt, -25.0);
+            } else {
+                if (!turned) {
+                    player.turn_speed = 1.0;
+                }
+                playerDecelerateMoveSpeed(player, movement_dt);
+                move_delta_override = playerMoveDeltaFromHeading(player, movement_dt, 25.0);
+            }
+        } else if (move_mode == movement_control_static) {
+            const moving_forward = flags.move_forward_pressed orelse (raw_move.y < -0.5);
+            const moving_backward = flags.move_backward_pressed orelse (raw_move.y > 0.5);
+            const turning_left = flags.turn_left_pressed orelse (raw_move.x < -0.5);
+            const turning_right = flags.turn_right_pressed orelse (raw_move.x > 0.5);
+
+            var target_heading = relative_move_heading_none;
+            if (turning_left) target_heading = relative_move_heading_left;
+            if (turning_right) target_heading = relative_move_heading_right;
+
+            if (moving_forward) {
+                if (turning_left) {
+                    target_heading = relative_move_heading_forward_left;
+                } else if (turning_right) {
+                    target_heading = relative_move_heading_forward_right;
+                } else {
+                    target_heading = relative_move_heading_forward;
+                }
+            }
+            if (moving_backward) {
+                if (turning_left) {
+                    target_heading = relative_move_heading_backward_left;
+                } else if (turning_right) {
+                    target_heading = relative_move_heading_backward_right;
+                } else {
+                    target_heading = relative_move_heading_backward;
+                }
+            }
+
+            if (!moving_backward and target_heading == relative_move_heading_none) {
+                playerDecelerateMoveSpeed(player, movement_dt);
+                move = directionFromHeadingNative(player.heading);
+                const move_dx = asF32F64(move.x * player.move_speed * speed_multiplier * 25.0);
+                const move_dy = asF32F64(move.y * player.move_speed * speed_multiplier * 25.0);
+                move_delta_override = .{
+                    .x = asF32F64(movement_dt * move_dx),
+                    .y = asF32F64(movement_dt * move_dy),
+                };
+            } else {
+                const heading_result = playerHeadingApproachTargetWithDelta(
+                    player,
+                    target_heading,
+                    movement_dt,
+                );
+                player.aim_heading = asF32F64(player.aim_heading + heading_result.turn_delta);
+                playerAccelerateMoveSpeed(player, movement_dt);
+                playerApplyMoveSpeedCaps(player);
+                move = directionFromHeadingNative(player.heading);
+                const turn_align =
+                    (native_pi - heading_result.diff) *
+                    speed_multiplier *
+                    relative_move_turn_align_scale;
+                const move_dx = asF32F64(move.x * player.move_speed * turn_align);
+                const move_dy = asF32F64(move.y * player.move_speed * turn_align);
+                move_delta_override = .{
+                    .x = asF32F64(movement_dt * move_dx),
+                    .y = asF32F64(movement_dt * move_dy),
+                };
+            }
+        } else {
+            const moving_input = raw_mag > 0.2;
+            var turn_alignment_scale: f64 = 1.0;
+            if (moving_input) {
+                const inv = if (raw_mag > 1e-9) 1.0 / raw_mag else 0.0;
+                raw_move = raw_move.mul(inv);
+                const target_heading = normalizeHeading(raw_move.toHeading());
+                const angle_diff = playerHeadingApproachTarget(player, target_heading, movement_dt);
+                move = directionFromHeadingNative(player.heading);
+                turn_alignment_scale = @max(0.0, (std.math.pi - angle_diff) / std.math.pi);
+                playerAccelerateMoveSpeed(player, movement_dt);
+            } else {
+                playerDecelerateMoveSpeed(player, movement_dt);
+                move = directionFromHeadingNative(player.heading);
+            }
+
+            playerApplyMoveSpeedCaps(player);
+            speed = player.move_speed * speed_multiplier * 25.0;
+            if (moving_input) {
+                speed *= @min(1.0, raw_mag);
+                speed *= turn_alignment_scale;
+            }
+        }
     } else {
-        playerDecelerateMoveSpeed(player, movement_dt);
-        move = directionFromHeadingNative(player.heading);
+        const move_input_threshold: f64 = if (state.demo_mode_active) 0.0 else 0.2;
+        const moving_input = raw_mag > move_input_threshold;
+        var turn_alignment_scale: f64 = 1.0;
+        if (moving_input) {
+            const inv = if (raw_mag > 1e-9) 1.0 / raw_mag else 0.0;
+            raw_move = raw_move.mul(inv);
+            const target_heading = normalizeHeading(raw_move.toHeading());
+            const angle_diff = playerHeadingApproachTarget(player, target_heading, movement_dt);
+            move = directionFromHeadingNative(player.heading);
+            turn_alignment_scale = @max(0.0, (std.math.pi - angle_diff) / std.math.pi);
+            playerAccelerateMoveSpeed(player, movement_dt);
+        } else {
+            playerDecelerateMoveSpeed(player, movement_dt);
+            move = directionFromHeadingNative(player.heading);
+        }
+
+        playerApplyMoveSpeedCaps(player);
+        speed = player.move_speed * speed_multiplier * 25.0;
+        if (moving_input) {
+            speed *= @min(1.0, raw_mag);
+            speed *= turn_alignment_scale;
+        }
     }
 
-    playerApplyMoveSpeedCaps(player);
-
-    var speed = player.move_speed * speed_multiplier * 25.0;
-    if (moving_input) {
-        speed *= @min(1.0, raw_mag);
-        speed *= turn_alignment_scale;
-    }
-
-    const move_step = asF32F64(speed * movement_dt);
-    const delta = survival_state.Vec2{
-        .x = asF32F64(move.x * move_step),
-        .y = asF32F64(move.y * move_step),
+    const delta = if (move_delta_override) |override|
+        override
+    else survival_state.Vec2{
+        .x = asF32F64(move.x * asF32F64(speed * movement_dt)),
+        .y = asF32F64(move.y * asF32F64(speed * movement_dt)),
     };
-    player.pos = survival_state.Vec2.add(player.pos, delta);
+    const pos_after_move = survival_state.Vec2{
+        .x = asF32F64(player.pos.x + delta.x),
+        .y = asF32F64(player.pos.y + delta.y),
+    };
 
     const half_size = @max(0.0, player.size * 0.5);
-    player.pos = player.pos.clampRect(
+    const clamped_pos = pos_after_move.clampRect(
         half_size,
         half_size,
         world_size - half_size,
         world_size - half_size,
     );
+    player.pos = .{
+        .x = asF32F64(clamped_pos.x),
+        .y = asF32F64(clamped_pos.y),
+    };
 
     player.aim = .{
         .x = input.aim_x,
@@ -956,18 +1663,55 @@ fn updatePlayerFromReplayInput(
     const aim_len_sq = aim_dir.lengthSq();
     if (aim_len_sq > 1e-9) {
         aim_dir = aim_dir.mul(1.0 / std.math.sqrt(aim_len_sq));
-        player.aim_dir = .{
-            .x = asF32F64(aim_dir.x),
-            .y = asF32F64(aim_dir.y),
-        };
+        player.aim_dir = aim_dir;
+        player.aim_heading = player.aim_dir.toHeading();
     }
+}
+
+fn resolveMoveModeForUpdate(
+    flags: replay_codec.InputFlags,
+    state: *const survival_state.GameplayState,
+) i32 {
+    if (flags.move_mode) |mode| return mode;
+    if (state.demo_mode_active) return movement_control_computer;
+    if (flags.move_forward_pressed != null and
+        flags.move_backward_pressed != null and
+        flags.turn_left_pressed != null and
+        flags.turn_right_pressed != null)
+    {
+        return movement_control_static;
+    }
+    return movement_control_dual_action_pad;
+}
+
+fn resolveAimSchemeForUpdate(
+    flags: replay_codec.InputFlags,
+    state: *const survival_state.GameplayState,
+) i32 {
+    if (flags.aim_scheme) |scheme| return scheme;
+    if (state.demo_mode_active) return aim_scheme_computer;
+    return aim_scheme_mouse;
+}
+
+fn playerMoveDeltaFromHeading(
+    player: *const survival_state.PlayerState,
+    movement_dt: f64,
+    speed_scale: f64,
+) survival_state.Vec2 {
+    const move = directionFromHeadingNative(player.heading);
+    const move_dx = asF32F64(move.x * player.move_speed * speed_scale);
+    const move_dy = asF32F64(move.y * player.move_speed * speed_scale);
+    return .{
+        .x = asF32F64(movement_dt * move_dx),
+        .y = asF32F64(movement_dt * move_dy),
+    };
 }
 
 fn directionFromHeadingNative(heading: f64) survival_state.Vec2 {
     const radians = heading - native_half_pi;
     return .{
-        .x = std.math.cos(radians),
-        .y = std.math.sin(radians),
+        .x = survival_math.cos(radians),
+        .y = survival_math.sin(radians),
     };
 }
 
@@ -1005,11 +1749,16 @@ fn playerApplyMoveSpeedCaps(
     }
 }
 
-fn playerHeadingApproachTarget(
+const HeadingApproachResult = struct {
+    diff: f64,
+    turn_delta: f64,
+};
+
+fn playerHeadingApproachTargetWithDelta(
     player: *survival_state.PlayerState,
     target_heading: f64,
     dt: f64,
-) f64 {
+) HeadingApproachResult {
     var heading = asF32F64(normalizeHeading(player.heading));
     player.heading = heading;
     const target = asF32F64(target_heading);
@@ -1041,7 +1790,18 @@ fn playerHeadingApproachTarget(
 
     heading = asF32F64(heading + turn_delta);
     player.heading = heading;
-    return diff;
+    return .{
+        .diff = diff,
+        .turn_delta = turn_delta,
+    };
+}
+
+fn playerHeadingApproachTarget(
+    player: *survival_state.PlayerState,
+    target_heading: f64,
+    dt: f64,
+) f64 {
+    return playerHeadingApproachTargetWithDelta(player, target_heading, dt).diff;
 }
 
 fn normalizeHeading(value: f64) f64 {
@@ -1053,6 +1813,29 @@ fn normalizeHeading(value: f64) f64 {
         angle = asF32F64(angle - native_tau);
     }
     return angle;
+}
+
+fn playerFrameDtAfterRoundtrip(
+    dt: f64,
+    time_scale_active: bool,
+    reflex_boost_timer: f64,
+) f64 {
+    const dt_f32 = asF32F64(dt);
+    if (!time_scale_active or dt_f32 <= 0.0) {
+        return dt_f32;
+    }
+
+    const reflex_f32 = asF32F64(reflex_boost_timer);
+    var time_scale_factor = asF32F64(0.3);
+    if (reflex_f32 < 1.0) {
+        time_scale_factor = asF32F64((1.0 - reflex_f32) * 0.7 + 0.3);
+    }
+    if (time_scale_factor <= 0.0) {
+        return dt_f32;
+    }
+
+    const movement_dt = asF32F64((0.6 / time_scale_factor) * dt_f32);
+    return asF32F64(time_scale_factor * movement_dt * 1.6666666);
 }
 
 fn perkActive(player: survival_state.PlayerState, perk_id: i32) bool {

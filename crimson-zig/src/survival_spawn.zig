@@ -14,13 +14,26 @@ pub const CreatureTypeId = enum(i32) {
 
 pub const CreatureAiMode = struct {
     pub const orbit_player: i32 = 0;
+    pub const orbit_player_tight: i32 = 1;
+    pub const chase_player: i32 = 2;
+    pub const follow_link: i32 = 3;
+    pub const link_guard: i32 = 4;
+    pub const follow_link_tethered: i32 = 5;
+    pub const orbit_link: i32 = 6;
     pub const hold_timer: i32 = 7;
+    pub const orbit_player_wide: i32 = 8;
 };
 
 pub const CreatureFlags = struct {
+    pub const self_damage_tick: u32 = 0x01;
+    pub const self_damage_tick_strong: u32 = 0x02;
     pub const anim_ping_pong: u32 = 0x04;
+    pub const split_on_death: u32 = 0x08;
+    pub const ranged_attack_shock: u32 = 0x10;
     pub const anim_long_strip: u32 = 0x40;
     pub const ai7_link_timer: u32 = 0x80;
+    pub const ranged_attack_variant: u32 = 0x100;
+    pub const bonus_on_death: u32 = 0x400;
 };
 
 pub const SpawnId = struct {
@@ -60,6 +73,7 @@ pub const CreatureInit = struct {
     origin_template_id: i32 = -1,
     pos: Vec2,
     heading: f64 = 0.0,
+    set_heading: bool = true,
     phase_seed: f64 = 0.0,
     type_id: CreatureTypeId = .alien,
     ai_mode: i32 = CreatureAiMode.orbit_player,
@@ -177,19 +191,32 @@ pub fn buildSurvivalSpawnCreature(
         creature.heading = @floatCast(heading_scaled);
     }
 
-    var move_speed: f32 = @floatFromInt(@divTrunc(xp, 4000));
-    move_speed = @as(f32, move_speed * @as(f32, 0.045));
-    move_speed = @as(f32, move_speed + @as(f32, 0.9));
+    const move_speed_xp: f32 = @floatFromInt(@divTrunc(xp, 4000));
+    const move_speed_scaled = @as(f32, move_speed_xp * @as(f32, 0.045));
+    var move_speed: f32 = @as(
+        f32,
+        @floatCast(
+            @as(f64, @floatCast(move_speed_scaled)) +
+                @as(f64, @floatCast(@as(f32, 0.9))),
+        ),
+    );
     if (creature.type_id == .spider_sp1) {
         creature.flags |= CreatureFlags.ai7_link_timer;
         move_speed = @as(f32, move_speed * @as(f32, 1.3));
     }
 
     const r_health = rng.rand();
-    var health: f32 = @floatFromInt(xp);
-    health = @as(f32, health * @as(f32, 0.00125));
-    health = @as(f32, health + @as(f32, @floatFromInt(r_health & 0xF)));
-    health = @as(f32, health + @as(f32, 52.0));
+    const health_xp: f32 = @floatFromInt(xp);
+    const health_scaled = @as(f32, health_xp * @as(f32, 0.00125));
+    const health_rand = @as(f32, @floatFromInt(r_health & 0xF));
+    var health: f32 = @as(
+        f32,
+        @floatCast(
+            @as(f64, @floatCast(health_scaled)) +
+                @as(f64, @floatCast(health_rand)) +
+                @as(f64, @floatCast(@as(f32, 52.0))),
+        ),
+    );
 
     if (creature.type_id == .zombie) {
         move_speed = @as(f32, move_speed * @as(f32, 0.6));

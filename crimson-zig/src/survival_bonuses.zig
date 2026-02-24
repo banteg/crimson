@@ -402,9 +402,20 @@ fn applyBonus(
                 state.pending_nuke_count += 1;
             }
         },
-        survival_state.BonusId.shock_chain,
-        survival_state.BonusId.fireblast,
-        => return error.UnsupportedBonusApplyPath,
+        survival_state.BonusId.shock_chain => {
+            if (state.pending_shock_chain_count < state.pending_shock_chain_origins.len) {
+                const slot: usize = @intCast(state.pending_shock_chain_count);
+                state.pending_shock_chain_origins[slot] = origin_pos orelse player.pos;
+                state.pending_shock_chain_count += 1;
+            }
+        },
+        survival_state.BonusId.fireblast => {
+            if (state.pending_fireblast_count < state.pending_fireblast_origins.len) {
+                const slot: usize = @intCast(state.pending_fireblast_count);
+                state.pending_fireblast_origins[slot] = origin_pos orelse player.pos;
+                state.pending_fireblast_count += 1;
+            }
+        },
         else => {},
     }
 }
@@ -500,7 +511,7 @@ fn weaponRefreshAvailable(state: *survival_state.GameplayState) void {
     state.weapon_available_unlock_index_full = unlock_index_full;
 }
 
-fn weaponPickRandomAvailable(state: *survival_state.GameplayState) i32 {
+pub fn weaponPickRandomAvailable(state: *survival_state.GameplayState) i32 {
     weaponRefreshAvailable(state);
 
     for (0..1000) |_| {

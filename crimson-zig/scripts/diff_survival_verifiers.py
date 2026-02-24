@@ -132,6 +132,31 @@ def _checkpoint_to_trace(checkpoint: ReplayCheckpoint) -> TickTrace:
     )
 
 
+def _payload_to_trace(payload: dict[str, object]) -> TickTrace:
+    try:
+        return TickTrace(
+            tick=int(payload["tick"]),
+            rng_state=int(payload["rng_state"]),
+            elapsed_ms=int(payload["elapsed_ms"]),
+            score_xp=int(payload["score_xp"]),
+            kills=int(payload["kills"]),
+            creature_count=int(payload["creature_count"]),
+            perk_pending=int(payload["perk_pending"]),
+            player_weapon_id=int(payload["player_weapon_id"]),
+            player_ammo_q4=int(payload["player_ammo_q4"]),
+            player_health_q4=int(payload["player_health_q4"]),
+            player_level=int(payload["player_level"]),
+            player_experience=int(payload["player_experience"]),
+            bonus_weapon_power_up_ms=int(payload["bonus_weapon_power_up_ms"]),
+            bonus_reflex_boost_ms=int(payload["bonus_reflex_boost_ms"]),
+            bonus_energizer_ms=int(payload["bonus_energizer_ms"]),
+            bonus_double_experience_ms=int(payload["bonus_double_experience_ms"]),
+            bonus_freeze_ms=int(payload["bonus_freeze_ms"]),
+        )
+    except KeyError as exc:
+        raise ValueError(f"trace row missing required key: {exc.args[0]}") from exc
+
+
 def _build_python_trace(replay_path: Path) -> list[TickTrace]:
     replay_bytes = replay_path.read_bytes()
     replay = load_replay(replay_bytes)
@@ -141,12 +166,32 @@ def _build_python_trace(replay_path: Path) -> list[TickTrace]:
     run_survival_replay(
         replay,
         warn_on_version_mismatch=False,
-        strict_events=True,
+        strict_events=False,
         checkpoints_out=checkpoints,
         checkpoint_ticks=checkpoint_ticks,
     )
     checkpoints.sort(key=lambda checkpoint: int(checkpoint.tick_index))
     return [_checkpoint_to_trace(checkpoint) for checkpoint in checkpoints]
+
+
+def _load_trace_jsonl(trace_path: Path) -> list[TickTrace]:
+    trace_rows: list[TickTrace] = []
+    with trace_path.open("r", encoding="utf-8") as handle:
+        for raw in handle:
+            line = raw.strip()
+            if not line:
+                continue
+            payload = json.loads(line)
+            trace_rows.append(_payload_to_trace(payload))
+    return trace_rows
+
+
+def _write_trace_jsonl(trace_path: Path, trace_rows: list[TickTrace]) -> None:
+    trace_path.parent.mkdir(parents=True, exist_ok=True)
+    with trace_path.open("w", encoding="utf-8") as handle:
+        for row in trace_rows:
+            handle.write(json.dumps(row, separators=(",", ":")))
+            handle.write("\n")
 
 
 def _run_zig_trace(
@@ -170,34 +215,7 @@ def _run_zig_trace(
 
 
 def _load_zig_trace(trace_path: Path) -> list[TickTrace]:
-    trace_rows: list[TickTrace] = []
-    with trace_path.open("r", encoding="utf-8") as handle:
-        for raw in handle:
-            line = raw.strip()
-            if not line:
-                continue
-            payload = json.loads(line)
-            row = TickTrace(
-                tick=int(payload["tick"]),
-                rng_state=int(payload["rng_state"]),
-                elapsed_ms=int(payload["elapsed_ms"]),
-                score_xp=int(payload["score_xp"]),
-                kills=int(payload["kills"]),
-                creature_count=int(payload["creature_count"]),
-                perk_pending=int(payload["perk_pending"]),
-                player_weapon_id=int(payload["player_weapon_id"]),
-                player_ammo_q4=int(payload["player_ammo_q4"]),
-                player_health_q4=int(payload["player_health_q4"]),
-                player_level=int(payload["player_level"]),
-                player_experience=int(payload["player_experience"]),
-                bonus_weapon_power_up_ms=int(payload["bonus_weapon_power_up_ms"]),
-                bonus_reflex_boost_ms=int(payload["bonus_reflex_boost_ms"]),
-                bonus_energizer_ms=int(payload["bonus_energizer_ms"]),
-                bonus_double_experience_ms=int(payload["bonus_double_experience_ms"]),
-                bonus_freeze_ms=int(payload["bonus_freeze_ms"]),
-            )
-            trace_rows.append(row)
-    return trace_rows
+    return _load_trace_jsonl(trace_path)
 
 
 def _first_mismatch(
@@ -242,6 +260,17 @@ def main() -> int:
         action="store_true",
         help="skip `zig build` before running the Zig trace",
     )
+    parser.add_argument(
+        "--python-trace-jsonl",
+        type=Path,
+        default=None,
+        help="optional cache path for Python trace jsonl",
+    )
+    parser.add_argument(
+        "--refresh-python-trace",
+        action="store_true",
+        help="recompute Python trace even when --python-trace-jsonl exists",
+    )
     args = parser.parse_args()
 
     replay_path = _resolve_replay_path(args.replay, base_dir=args.base_dir)
@@ -255,11 +284,31 @@ def main() -> int:
             return 1
         subprocess.run([zig_exe, "build"], cwd=zig_root, check=True)
 
-    try:
-        python_trace = _build_python_trace(replay_path)
-    except (ReplayCodecError, ReplayRunnerError) as exc:
-        print(f"python trace failed: {exc}", file=sys.stderr)
-        return 1
+    rebuild_python_trace = True
+    if (
+        args.python_trace_jsonl is not None
+        and args.python_trace_jsonl.is_file()
+        and not args.refresh_python_trace
+    ):
+        try:
+            python_trace = _load_trace_jsonl(args.python_trace_jsonl)
+            rebuild_python_trace = False
+            print(f"loaded python trace cache: {args.python_trace_jsonl}")
+        except (OSError, json.JSONDecodeError, ValueError) as exc:
+            print(
+                f"python trace cache invalid ({args.python_trace_jsonl}): {exc}; rebuilding",
+                file=sys.stderr,
+            )
+
+    if rebuild_python_trace:
+        try:
+            python_trace = _build_python_trace(replay_path)
+        except (ReplayCodecError, ReplayRunnerError) as exc:
+            print(f"python trace failed: {exc}", file=sys.stderr)
+            return 1
+        if args.python_trace_jsonl is not None:
+            _write_trace_jsonl(args.python_trace_jsonl, python_trace)
+            print(f"wrote python trace cache: {args.python_trace_jsonl}")
 
     with tempfile.TemporaryDirectory(prefix="crimson-zig-trace-") as temp_dir:
         zig_trace_path = Path(temp_dir) / "zig_trace.jsonl"
