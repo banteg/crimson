@@ -44,6 +44,9 @@ uv run scripts/frida/gameplay_diff_capture_postpack.py \
   --output-dir C:\share\frida
 ```
 
+When postpack conversion succeeds, source `gameplay_diff_capture*.json/.json.gz`
+files are deleted and only `*.msgpack.zst` outputs remain.
+
 Optional sidecar for unattended recordings:
 
 ```text

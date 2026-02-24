@@ -310,6 +310,11 @@ def main(argv: list[str] | None = None) -> int:
         except Exception as exc:
             failure.append(f"postpack failed for {json_path}: {exc}")
             continue
+        try:
+            json_path.unlink()
+        except OSError as exc:
+            failure.append(f"postpack succeeded but failed deleting source {json_path}: {exc}")
+            continue
         summaries.append(summary)
         print(
             f"[capture-postpack] converted {summary.input_path} -> {summary.output_path} "
