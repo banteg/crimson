@@ -617,6 +617,21 @@ test "perk menu open consumes rng and caches choices" {
     try std.testing.expect(!state.perk_selection.choices_dirty);
 }
 
+test "antiperk is never offerable" {
+    var state = survival_state.GameplayState.init(1);
+    const player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+    };
+    try std.testing.expect(!perkCanOffer(
+        &state,
+        &player,
+        PerkId.antiperk,
+        1,
+        1,
+    ));
+}
+
 test "perk pick decrements pending and refreshes choices" {
     var state = survival_state.GameplayState.init(0x1234);
     var players = [_]survival_state.PlayerState{

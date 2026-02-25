@@ -3598,6 +3598,37 @@ test "pending creature projectile queue materializes hostile shots before projec
     try std.testing.expectApproxEqAbs(@as(f64, 200.0), projectiles.entries[0].pos.y, 1e-6);
 }
 
+test "lifeline 50-50 replay perk effect deactivates every other eligible creature slot" {
+    var state = survival_state.GameplayState.init(1);
+    const before_rng = state.rng.state;
+    var creatures = survival_creatures.CreaturePool{};
+
+    for (0..8) |idx| {
+        creatures.entries[idx].active = true;
+        creatures.entries[idx].hp = 100.0;
+        creatures.entries[idx].pos = .{
+            .x = @floatFromInt(idx),
+            .y = @as(f64, @floatFromInt(idx)) * 10.0,
+        };
+        creatures.entries[idx].flags = 0;
+    }
+    creatures.entries[3].flags = survival_spawn.CreatureFlags.anim_ping_pong;
+    creatures.entries[5].hp = 600.0;
+
+    applyReplayPerkCreatureEffects(
+        survival_perks.PerkId.lifeline_50_50,
+        &state,
+        &creatures,
+        0.016,
+    );
+
+    const expected = [_]bool{ true, false, true, true, true, true, true, false };
+    for (expected, 0..) |active_expected, idx| {
+        try std.testing.expectEqual(active_expected, creatures.entries[idx].active);
+    }
+    try std.testing.expect(before_rng != state.rng.state);
+}
+
 test "final revenge explosion applies radial damage on death transition" {
     var state = survival_state.GameplayState.init(1);
     var players = [_]survival_state.PlayerState{

@@ -207,6 +207,7 @@ pub const GameplayState = struct {
     preserve_bugs: bool = false,
     game_mode: i32 = 1,
     friendly_fire_enabled: bool = false,
+    jinxed_timer: f64 = 0.0,
     perk_interval_man_bomb: f64 = 4.0,
     perk_interval_fire_cough: f64 = 2.0,
     perk_interval_hot_tempered: f64 = 2.0,
@@ -920,4 +921,49 @@ test "time scale reflex boost bonus mirrors f32 latch" {
     try expectFloatClose(0.01666666753590107, timeScaleReflexBoostBonus(0.0, false, 1.0 / 60.0));
     try expectFloatClose(0.01666666753590107, timeScaleReflexBoostBonus(0.0, true, 1.0 / 60.0));
     try expectFloatClose(0.010833333246409893, timeScaleReflexBoostBonus(0.5, true, 1.0 / 60.0));
+}
+
+test "fastloader scales reload timer" {
+    const weapon_id = WeaponId.assault_rifle;
+    const reload_time = weaponReloadTime(weapon_id);
+    try std.testing.expect(reload_time > 0.0);
+
+    var base_state = GameplayState.init(1);
+    var perk_state = GameplayState.init(1);
+    var base_player = PlayerState{
+        .index = 0,
+        .pos = .{},
+        .weapon_id = weapon_id,
+    };
+    var perk_player = PlayerState{
+        .index = 0,
+        .pos = .{},
+        .weapon_id = weapon_id,
+    };
+    perk_player.perk_counts[3] = 1;
+
+    playerStartReload(&base_player, &base_state);
+    playerStartReload(&perk_player, &perk_state);
+
+    try std.testing.expect(base_player.reload_active);
+    try std.testing.expect(perk_player.reload_active);
+    try expectFloatClose(reload_time, base_player.reload_timer);
+    try expectFloatClose(asF32F64(reload_time * 0.7), perk_player.reload_timer);
+    try expectFloatClose(perk_player.reload_timer, perk_player.reload_timer_max);
+}
+
+test "weapon assign with state resets latch, sets aux timer, and records usage" {
+    var state = GameplayState.init(1);
+    var player = PlayerState{
+        .index = 0,
+        .pos = .{},
+    };
+    player.weapon_reset_latch = 7;
+    player.aux_timer = 0.0;
+
+    weaponAssignPlayerWithState(&player, WeaponId.shotgun, &state);
+
+    try std.testing.expectEqual(@as(i32, 0), player.weapon_reset_latch);
+    try expectFloatClose(2.0, player.aux_timer);
+    try std.testing.expectEqual(@as(u32, 1), state.status_weapon_usage_counts[@intCast(WeaponId.shotgun)]);
 }

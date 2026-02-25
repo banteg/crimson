@@ -24,6 +24,7 @@ const reflex_timer_subtract_bias: f64 = 4e-9;
 const game_mode_survival: i32 = 1;
 const game_mode_rush: i32 = 2;
 const game_mode_quests: i32 = 3;
+const game_mode_typo: i32 = 4;
 const game_mode_tutorial: i32 = 8;
 
 pub const BonusEntry = struct {
@@ -65,7 +66,7 @@ pub const BonusPool = struct {
         world_size: f64,
     ) ?*BonusEntry {
         if (state.demo_mode_active) return null;
-        if (state.game_mode == game_mode_rush or state.game_mode == game_mode_tutorial) return null;
+        if (state.game_mode == game_mode_rush or state.game_mode == game_mode_typo or state.game_mode == game_mode_tutorial) return null;
         if (state.bonus_spawn_guard) return null;
         if (players.len == 0) return null;
 
@@ -769,6 +770,36 @@ test "bonus pool spawn-on-kill can materialize weapon drop" {
         }
     }
     try std.testing.expect(spawned);
+}
+
+test "bonus spawn-on-kill is suppressed in typo rush tutorial and demo modes" {
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{ .x = 256.0, .y = 256.0 } },
+    };
+
+    const cases = [_]struct {
+        game_mode: i32,
+        demo_mode_active: bool,
+    }{
+        .{ .game_mode = game_mode_typo, .demo_mode_active = false },
+        .{ .game_mode = game_mode_rush, .demo_mode_active = false },
+        .{ .game_mode = game_mode_tutorial, .demo_mode_active = false },
+        .{ .game_mode = game_mode_survival, .demo_mode_active = true },
+    };
+
+    for (cases) |case| {
+        var state = survival_state.GameplayState.init(123);
+        state.game_mode = case.game_mode;
+        state.demo_mode_active = case.demo_mode_active;
+        var pool = BonusPool{};
+        const spawned = pool.trySpawnOnKill(
+            .{ .x = 300.0, .y = 300.0 },
+            &state,
+            players[0..],
+            1024.0,
+        );
+        try std.testing.expect(spawned == null);
+    }
 }
 
 test "bonus update pre-pickup decrements timers" {

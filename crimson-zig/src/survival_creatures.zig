@@ -3425,6 +3425,28 @@ fn expectFloatClose(expected: f64, actual: f64) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
 }
 
+fn findSeedForNthRandMod(
+    nth: usize,
+    modulus: u32,
+    target: u32,
+    max_seed: u32,
+) ?u32 {
+    if (nth == 0) return null;
+    if (modulus == 0) return null;
+
+    var seed: u32 = 0;
+    while (seed < max_seed) : (seed += 1) {
+        var rng = survival_spawn.Crand.init(seed);
+        var roll: u32 = 0;
+        var idx: usize = 0;
+        while (idx < nth) : (idx += 1) {
+            roll = rng.rand() % modulus;
+        }
+        if (roll == target) return seed;
+    }
+    return null;
+}
+
 test "spawn init and shot resolution award xp on kill" {
     var pool = CreaturePool{};
     var state = survival_state.GameplayState.init(1234);
@@ -5039,6 +5061,64 @@ test "tough reloader halves damage while reloading" {
     );
 
     try expectFloatClose(95.0, player.health);
+}
+
+test "highlander prevents contact damage except 1-in-10 lethal roll" {
+    const safe_seed = findSeedForNthRandMod(1, 10, 1, 200_000) orelse unreachable;
+    const lethal_seed = findSeedForNthRandMod(1, 10, 0, 200_000) orelse unreachable;
+
+    var safe_state = survival_state.GameplayState.init(safe_seed);
+    var safe_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .health = 100.0,
+    };
+    safe_player.perk_counts[@intCast(perk_id_highlander)] = 1;
+    safe_player.perk_counts[@intCast(perk_id_unstoppable)] = 1;
+    applyPlayerContactDamage(&safe_state, &safe_player, 10.0, 0.1);
+    try expectFloatClose(100.0, safe_player.health);
+
+    var lethal_state = survival_state.GameplayState.init(lethal_seed);
+    var lethal_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .health = 100.0,
+    };
+    lethal_player.perk_counts[@intCast(perk_id_highlander)] = 1;
+    lethal_player.perk_counts[@intCast(perk_id_unstoppable)] = 1;
+    applyPlayerContactDamage(&lethal_state, &lethal_player, 10.0, 0.1);
+    try expectFloatClose(0.0, lethal_player.health);
+}
+
+test "unstoppable suppresses heading jitter and spread heat on damage" {
+    const jitter_seed = findSeedForNthRandMod(2, 100, 0, 200_000) orelse unreachable;
+
+    var base_state = survival_state.GameplayState.init(jitter_seed);
+    var base_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .health = 100.0,
+        .heading = 1.0,
+        .spread_heat = 0.1,
+    };
+    applyPlayerContactDamage(&base_state, &base_player, 10.0, 0.1);
+    try expectFloatClose(90.0, base_player.health);
+    try expectFloatClose(-1.0, base_player.heading);
+    try expectFloatClose(0.2, base_player.spread_heat);
+
+    var perk_state = survival_state.GameplayState.init(jitter_seed);
+    var perk_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .health = 100.0,
+        .heading = 1.0,
+        .spread_heat = 0.1,
+    };
+    perk_player.perk_counts[@intCast(perk_id_unstoppable)] = 1;
+    applyPlayerContactDamage(&perk_state, &perk_player, 10.0, 0.1);
+    try expectFloatClose(90.0, perk_player.health);
+    try expectFloatClose(1.0, perk_player.heading);
+    try expectFloatClose(0.1, perk_player.spread_heat);
 }
 
 test "tough reloader spread heat uses post-reload damage before thick skinned" {
