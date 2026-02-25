@@ -121,7 +121,6 @@ fn runNativeVerify(
     };
     defer replay.deinit(allocator);
     const header = replay.header;
-    const replay_events = replay.summarizeEvents();
 
     if (header.game_mode_id != 1 and header.game_mode_id != 2 and header.game_mode_id != 3) {
         return buildNotPortedOutput(allocator, "only survival/rush/quest replays are currently ported");
@@ -134,9 +133,6 @@ fn runNativeVerify(
     }
     if (!std.mem.eql(u8, header.input_quantization, "raw") and !std.mem.eql(u8, header.input_quantization, "f32")) {
         return buildNotPortedOutput(allocator, "only raw/f32 input quantization is currently ported");
-    }
-    if (replay_events.total_count != replay_events.perk_menu_open_count + replay_events.perk_pick_count) {
-        return buildNotPortedOutput(allocator, "replay events include unsupported kinds");
     }
     if (replay.tickCount() > std.math.maxInt(i32)) {
         return buildNotPortedOutput(allocator, "replay has too many ticks for current native verifier");

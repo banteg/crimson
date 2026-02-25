@@ -65,6 +65,7 @@ pub const ShotResolutionResult = struct {
 pub const CreaturePool = struct {
     entries: [max_creatures]CreatureState = [_]CreatureState{CreatureState{}} ** max_creatures,
     kill_count: i32 = 0,
+    capture_spawn_events_authoritative: bool = false,
     spawn_slots: [max_creatures]survival_spawn.SpawnSlotInit = [_]survival_spawn.SpawnSlotInit{
         .{
             .owner_creature = 0,
@@ -80,6 +81,7 @@ pub const CreaturePool = struct {
     pub fn reset(self: *CreaturePool) void {
         self.entries = [_]CreatureState{CreatureState{}} ** max_creatures;
         self.kill_count = 0;
+        self.capture_spawn_events_authoritative = false;
         self.spawn_slot_count = 0;
     }
 
@@ -1780,26 +1782,28 @@ pub const CreaturePool = struct {
         if (players.len == 0) return;
         if (!(dt > 0.0)) return;
 
-        const slot_count_snapshot = self.spawn_slot_count;
-        var slot_idx: usize = 0;
-        while (slot_idx < slot_count_snapshot) : (slot_idx += 1) {
-            const slot = &self.spawn_slots[slot_idx];
-            if (slot.owner_creature < 0) continue;
-            const owner_idx: usize = @intCast(slot.owner_creature);
-            if (owner_idx >= self.entries.len) continue;
+        if (!self.capture_spawn_events_authoritative) {
+            const slot_count_snapshot = self.spawn_slot_count;
+            var slot_idx: usize = 0;
+            while (slot_idx < slot_count_snapshot) : (slot_idx += 1) {
+                const slot = &self.spawn_slots[slot_idx];
+                if (slot.owner_creature < 0) continue;
+                const owner_idx: usize = @intCast(slot.owner_creature);
+                if (owner_idx >= self.entries.len) continue;
 
-            const owner = self.entries[owner_idx];
-            if (!owner.active) continue;
+                const owner = self.entries[owner_idx];
+                if (!owner.active) continue;
 
-            if (survival_spawn.tickSpawnSlot(slot, dt)) |child_template_id| {
-                self.spawnTemplateCall(
-                    .{
-                        .template_id = child_template_id,
-                        .pos = .{ .x = owner.pos.x, .y = owner.pos.y },
-                        .heading = owner.heading,
-                    },
-                    &state.rng,
-                ) catch {};
+                if (survival_spawn.tickSpawnSlot(slot, dt)) |child_template_id| {
+                    self.spawnTemplateCall(
+                        .{
+                            .template_id = child_template_id,
+                            .pos = .{ .x = owner.pos.x, .y = owner.pos.y },
+                            .heading = owner.heading,
+                        },
+                        &state.rng,
+                    ) catch {};
+                }
             }
         }
 

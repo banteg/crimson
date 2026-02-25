@@ -368,6 +368,18 @@ pub fn runSurvivalReplayScaffoldWithTrace(
     }
 
     const events = replay.events;
+    var original_capture_replay = false;
+    var has_capture_creature_spawn_events = false;
+    for (events) |event| {
+        switch (event) {
+            .capture_bootstrap => original_capture_replay = true,
+            .capture_creature_spawn => has_capture_creature_spawn_events = true,
+            else => {},
+        }
+    }
+    const capture_spawn_events_authoritative = original_capture_replay and has_capture_creature_spawn_events;
+    const apply_world_dt_steps = !(original_capture_replay and options.dt_frame_overrides != null);
+
     var event_index: usize = 0;
     var perk_menu_open_count: usize = 0;
     var perk_pick_count: usize = 0;
@@ -384,6 +396,9 @@ pub fn runSurvivalReplayScaffoldWithTrace(
     var quest_completed: bool = false;
     var quest_play_hit_sfx: bool = false;
     var quest_play_completion_music: bool = false;
+    var pending_capture_state_reset = false;
+    var quest_start_weapon_id_for_reset: i32 = survival_state.WeaponId.pistol;
+    var reset_quest_spawn_entries_len: usize = 0;
     var quest_spawn_entries_storage: [max_test_quest_spawn_entries]survival_spawn.QuestSpawnEntry = undefined;
     var quest_spawn_entries: []survival_spawn.QuestSpawnEntry = &.{};
     var state = survival_state.GameplayState.init(header.seed);
@@ -393,6 +408,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
     const players_len: usize = @intCast(header.player_count);
     var players = players_storage[0..players_len];
     var creatures = survival_creatures.CreaturePool{};
+    creatures.capture_spawn_events_authoritative = capture_spawn_events_authoritative;
     var particles = survival_particles.ParticlePool{};
     var projectiles = survival_projectiles.ProjectilePool{};
     var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
@@ -440,16 +456,39 @@ pub fn runSurvivalReplayScaffoldWithTrace(
                 return error.UnsupportedQuestSpawnTable;
             }
         }
+        reset_quest_spawn_entries_len = quest_spawn_entries.len;
         if (header.hardcore) {
             survival_spawn.applyHardcoreQuestSpawnTableAdjustment(quest_spawn_entries);
         }
+        if (capture_spawn_events_authoritative) {
+            quest_spawn_entries = &.{};
+            reset_quest_spawn_entries_len = 0;
+        }
         const weapon_id = @max(1, quest_start_weapon_id);
+        quest_start_weapon_id_for_reset = weapon_id;
         for (players) |*player| {
             survival_state.weaponAssignPlayer(player, weapon_id);
         }
     }
 
     for (0..replay.tickCount()) |tick_index| {
+        if (pending_capture_state_reset) {
+            applyCaptureStateReset(
+                &state,
+                players[0..],
+                &creatures,
+                @floatCast(header.world_size),
+                quest_start_weapon_id_for_reset,
+                capture_spawn_events_authoritative,
+                quest_spawn_entries_storage[0..],
+                reset_quest_spawn_entries_len,
+                &quest_spawn_entries,
+                &quest_spawn_timeline_ms,
+                &quest_no_creatures_timer_ms,
+                &quest_completion_transition_ms,
+            );
+            pending_capture_state_reset = false;
+        }
         state.game_mode = game_mode;
         for (0..@as(usize, @intCast(@max(options.inter_tick_rand_draws, 0)))) |_| {
             _ = state.rng.rand();
@@ -465,6 +504,10 @@ pub fn runSurvivalReplayScaffoldWithTrace(
                 players[0..],
                 &creatures,
                 dt_tick,
+                &quest_spawn_timeline_ms,
+                &quest_no_creatures_timer_ms,
+                &quest_completion_transition_ms,
+                &pending_capture_state_reset,
                 game_mode,
                 player_count,
                 quest_unlock_index,
@@ -486,7 +529,10 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             if (flags.reload_pressed) reload_active_any = true;
         }
 
-        const dt_world = applyPerkWorldDtSteps(players[0..], dt_tick);
+        const dt_world = if (apply_world_dt_steps)
+            applyPerkWorldDtSteps(players[0..], dt_tick)
+        else
+            dt_tick;
         const dt_sim = survival_state.timeScaleReflexBoostBonus(
             state.bonuses.reflex_boost,
             state.time_scale_active,
@@ -809,6 +855,10 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             players[0..],
             &creatures,
             dt_tick,
+            &quest_spawn_timeline_ms,
+            &quest_no_creatures_timer_ms,
+            &quest_completion_transition_ms,
+            &pending_capture_state_reset,
             game_mode,
             player_count,
             quest_unlock_index,
@@ -1831,6 +1881,10 @@ fn applyReplayEvent(
     players: []survival_state.PlayerState,
     creatures: *survival_creatures.CreaturePool,
     dt_frame: f64,
+    quest_spawn_timeline_ms: *f64,
+    quest_no_creatures_timer_ms: *f64,
+    quest_completion_transition_ms: *f64,
+    pending_capture_state_reset: *bool,
     game_mode: i32,
     player_count: i32,
     quest_unlock_index: i32,
@@ -1838,13 +1892,12 @@ fn applyReplayEvent(
     perk_menu_open_count: *usize,
     perk_pick_count: *usize,
 ) SurvivalSimError!void {
-    if (game_mode == game_mode_rush) {
-        if (strict_events) return error.UnsupportedEventKind;
-        return;
-    }
-
     switch (event) {
         .perk_menu_open => |open| {
+            if (game_mode == game_mode_rush) {
+                if (strict_events) return error.UnsupportedEventKind;
+                return;
+            }
             if (open.player_index < 0 or open.player_index >= @as(i32, @intCast(players.len))) {
                 return error.UnsupportedEventPlayerIndex;
             }
@@ -1858,6 +1911,10 @@ fn applyReplayEvent(
             perk_menu_open_count.* += 1;
         },
         .perk_pick => |pick| {
+            if (game_mode == game_mode_rush) {
+                if (strict_events) return error.UnsupportedEventKind;
+                return;
+            }
             if (pick.player_index < 0 or pick.player_index >= @as(i32, @intCast(players.len))) {
                 return error.UnsupportedEventPlayerIndex;
             }
@@ -1884,6 +1941,77 @@ fn applyReplayEvent(
                 dt_frame,
             );
             perk_pick_count.* += 1;
+        },
+        .capture_bootstrap => |bootstrap| {
+            applyCaptureBootstrapEvent(
+                bootstrap,
+                state,
+                players,
+                quest_spawn_timeline_ms,
+                quest_no_creatures_timer_ms,
+                quest_completion_transition_ms,
+            );
+        },
+        .capture_perk_apply => |capture_perk_apply| {
+            if (game_mode == game_mode_rush) {
+                if (strict_events) return error.UnsupportedEventKind;
+                return;
+            }
+            if (players.len == 0) return;
+            var rng_state_before: ?u32 = null;
+            if (capture_perk_apply.outside_before) {
+                if (capture_perk_apply.pending_before) |pending_before| {
+                    state.perk_selection.pending_count = pending_before;
+                }
+                rng_state_before = state.rng.state;
+            }
+            survival_perks.applyPerk(state, players, capture_perk_apply.perk_id) catch |err| switch (err) {
+                error.UnsupportedPerkApplyHandler => return error.UnsupportedPerkApplyHandler,
+            };
+            applyReplayPerkCreatureEffects(
+                capture_perk_apply.perk_id,
+                state,
+                creatures,
+                dt_frame,
+            );
+            if (capture_perk_apply.outside_before) {
+                if (capture_perk_apply.pending_after) |pending_after| {
+                    state.perk_selection.pending_count = pending_after;
+                }
+                if (state.perk_selection.pending_count > 0) {
+                    state.perk_selection.pending_count -= 1;
+                }
+                if (rng_state_before) |rng_state| {
+                    state.rng.srand(rng_state);
+                }
+            }
+        },
+        .capture_perk_pending => |capture_perk_pending| {
+            if (game_mode == game_mode_rush) {
+                if (strict_events) return error.UnsupportedEventKind;
+                return;
+            }
+            if (capture_perk_pending.perk_pending < 0) {
+                if (strict_events) return error.UnsupportedEventKind;
+                return;
+            }
+            state.perk_selection.pending_count = capture_perk_pending.perk_pending;
+            state.perk_selection.choices_dirty = true;
+        },
+        .capture_creature_spawn => |capture_spawn| {
+            try applyCaptureCreatureSpawnEvent(
+                state,
+                creatures,
+                capture_spawn,
+            );
+        },
+        .capture_state_transition => |capture_state_transition| {
+            for (capture_state_transition.transitions[0..capture_state_transition.transition_count]) |transition| {
+                if (transition.target_state == 12) {
+                    pending_capture_state_reset.* = true;
+                    break;
+                }
+            }
         },
     }
 }
@@ -1917,6 +2045,293 @@ fn applyReplayPerkCreatureEffects(
         },
         else => {},
     }
+}
+
+fn applyCaptureBootstrapEvent(
+    bootstrap: replay_codec.CaptureBootstrapEvent,
+    state: *survival_state.GameplayState,
+    players: []survival_state.PlayerState,
+    quest_spawn_timeline_ms: *f64,
+    quest_no_creatures_timer_ms: *f64,
+    quest_completion_transition_ms: *f64,
+) void {
+    const player_count = @min(players.len, bootstrap.player_count);
+    for (0..player_count) |idx| {
+        const payload = bootstrap.players[idx];
+        if (payload.weapon_id > 0 and players[idx].weapon_id != payload.weapon_id) {
+            survival_state.weaponAssignPlayer(&players[idx], payload.weapon_id);
+        }
+        players[idx].pos.x = asF32F64(payload.pos_x);
+        players[idx].pos.y = asF32F64(payload.pos_y);
+        players[idx].health = asF32F64(payload.health);
+        players[idx].ammo = asF32F64(payload.ammo);
+        players[idx].experience = payload.experience;
+        if (payload.level > 0) {
+            players[idx].level = payload.level;
+        }
+        if (payload.clip_size) |clip_size| {
+            if (clip_size >= 0) players[idx].clip_size = clip_size;
+        }
+        if (payload.reload_active) |reload_active| {
+            players[idx].reload_active = reload_active;
+        }
+        if (payload.reload_timer) |reload_timer| {
+            players[idx].reload_timer = @max(0.0, asF32F64(reload_timer));
+        }
+        if (payload.reload_timer_max) |reload_timer_max| {
+            players[idx].reload_timer_max = @max(0.0, asF32F64(reload_timer_max));
+        }
+        if (payload.shot_cooldown) |shot_cooldown| {
+            players[idx].shot_cooldown = @max(0.0, asF32F64(shot_cooldown));
+        }
+        if (payload.spread_heat) |spread_heat| {
+            players[idx].spread_heat = @max(0.0, asF32F64(spread_heat));
+        }
+        if (payload.aim_x) |aim_x| {
+            players[idx].aim.x = asF32F64(aim_x);
+        }
+        if (payload.aim_y) |aim_y| {
+            players[idx].aim.y = asF32F64(aim_y);
+        }
+        if (payload.aim_heading) |aim_heading| {
+            players[idx].aim_heading = asF32F64(aim_heading);
+            players[idx].aim_dir = survival_state.Vec2.fromAngle(players[idx].aim_heading);
+        }
+        if (payload.alt_weapon_id) |alt_weapon_id| {
+            players[idx].alt_weapon_id = if (alt_weapon_id > 0) alt_weapon_id else null;
+        }
+        if (payload.alt_clip_size) |alt_clip_size| {
+            if (alt_clip_size >= 0) players[idx].alt_clip_size = alt_clip_size;
+        }
+        if (payload.alt_ammo) |alt_ammo| {
+            players[idx].alt_ammo = asF32F64(alt_ammo);
+        }
+        if (payload.alt_reload_active) |alt_reload_active| {
+            players[idx].alt_reload_active = alt_reload_active;
+        }
+        if (payload.alt_reload_timer) |alt_reload_timer| {
+            players[idx].alt_reload_timer = @max(0.0, asF32F64(alt_reload_timer));
+        }
+        if (payload.alt_reload_timer_max) |alt_reload_timer_max| {
+            players[idx].alt_reload_timer_max = @max(0.0, asF32F64(alt_reload_timer_max));
+        }
+        if (payload.alt_shot_cooldown) |alt_shot_cooldown| {
+            players[idx].alt_shot_cooldown = @max(0.0, asF32F64(alt_shot_cooldown));
+        }
+        if (payload.shield_ms) |shield_ms| {
+            players[idx].shield_timer = @max(0.0, @as(f64, @floatFromInt(shield_ms)) / 1000.0);
+        }
+        if (payload.fire_bullets_ms) |fire_bullets_ms| {
+            players[idx].fire_bullets_timer = @max(0.0, @as(f64, @floatFromInt(fire_bullets_ms)) / 1000.0);
+        }
+        if (payload.speed_bonus_ms) |speed_bonus_ms| {
+            players[idx].speed_bonus_timer = @max(0.0, @as(f64, @floatFromInt(speed_bonus_ms)) / 1000.0);
+        }
+        if (payload.hot_tempered_timer) |hot_tempered_timer| {
+            players[idx].hot_tempered_timer = @max(0.0, asF32F64(hot_tempered_timer));
+        }
+        if (payload.man_bomb_timer) |man_bomb_timer| {
+            players[idx].man_bomb_timer = @max(0.0, asF32F64(man_bomb_timer));
+        }
+        if (payload.living_fortress_timer) |living_fortress_timer| {
+            players[idx].living_fortress_timer = @max(0.0, asF32F64(living_fortress_timer));
+        }
+        if (payload.fire_cough_timer) |fire_cough_timer| {
+            players[idx].fire_cough_timer = @max(0.0, asF32F64(fire_cough_timer));
+        }
+    }
+
+    state.perk_selection.pending_count = @max(0, bootstrap.perk_pending_count);
+    state.perk_selection.choice_count = bootstrap.perk_choice_count;
+    state.perk_selection.choices_dirty = bootstrap.perk_choices_dirty;
+    for (0..state.perk_selection.choices.len) |idx| {
+        state.perk_selection.choices[idx] = bootstrap.perk_choices[idx];
+    }
+    for (players, 0..) |*player, player_idx| {
+        for (&player.perk_counts) |*count| {
+            count.* = 0;
+        }
+        const perk_counts = bootstrap.player_perk_counts[player_idx];
+        for (0..perk_counts.pair_count) |pair_idx| {
+            const pair = perk_counts.pairs[pair_idx];
+            if (pair.perk_id < 0 or pair.perk_id >= player.perk_counts.len) continue;
+            player.perk_counts[@intCast(pair.perk_id)] = pair.count;
+        }
+    }
+
+    if (bootstrap.weapon_power_up_ms) |timer_ms| {
+        state.bonuses.weapon_power_up = @max(0.0, @as(f64, @floatFromInt(timer_ms)) / 1000.0);
+    }
+    if (bootstrap.reflex_boost_ms) |timer_ms| {
+        state.bonuses.reflex_boost = @max(0.0, @as(f64, @floatFromInt(timer_ms)) / 1000.0);
+    }
+    if (bootstrap.energizer_ms) |timer_ms| {
+        state.bonuses.energizer = @max(0.0, @as(f64, @floatFromInt(timer_ms)) / 1000.0);
+    }
+    if (bootstrap.double_experience_ms) |timer_ms| {
+        state.bonuses.double_experience = @max(0.0, @as(f64, @floatFromInt(timer_ms)) / 1000.0);
+    }
+    if (bootstrap.freeze_ms) |timer_ms| {
+        state.bonuses.freeze = @max(0.0, @as(f64, @floatFromInt(timer_ms)) / 1000.0);
+    }
+    state.time_scale_active = state.bonuses.reflex_boost > 0.0;
+
+    if (bootstrap.perk_interval_man_bomb) |value| {
+        state.perk_interval_man_bomb = @max(0.0, asF32F64(value));
+    }
+    if (bootstrap.perk_interval_fire_cough) |value| {
+        state.perk_interval_fire_cough = @max(0.0, asF32F64(value));
+    }
+    if (bootstrap.perk_interval_hot_tempered) |value| {
+        state.perk_interval_hot_tempered = @max(0.0, asF32F64(value));
+    }
+
+    if (bootstrap.quest_session) |quest_session| {
+        quest_spawn_timeline_ms.* = @max(0.0, asF32F64(quest_session.spawn_timeline_ms));
+        quest_no_creatures_timer_ms.* = @max(0.0, asF32F64(quest_session.no_creatures_timer_ms));
+        if (quest_session.completion_transition_ms < 0.0) {
+            quest_completion_transition_ms.* = -1.0;
+        } else {
+            quest_completion_transition_ms.* = @max(0.0, asF32F64(quest_session.completion_transition_ms));
+        }
+    }
+}
+
+fn applyCaptureCreatureSpawnEvent(
+    state: *survival_state.GameplayState,
+    creatures: *survival_creatures.CreaturePool,
+    event: replay_codec.CaptureCreatureSpawnEvent,
+) SurvivalSimError!void {
+    var spawned_indices = [_]bool{false} ** survival_creatures.max_creatures;
+    var active_before = [_]bool{false} ** survival_creatures.max_creatures;
+    for (creatures.entries, 0..) |entry, idx| {
+        active_before[idx] = entry.active;
+    }
+
+    for (event.spawns[0..event.spawn_count]) |spawn_row| {
+        creatures.spawnTemplateCall(
+            .{
+                .template_id = spawn_row.template_id,
+                .pos = .{
+                    .x = spawn_row.pos_x,
+                    .y = spawn_row.pos_y,
+                },
+                .heading = spawn_row.heading,
+            },
+            &state.rng,
+        ) catch |err| switch (err) {
+            error.UnsupportedSpawnTemplate => return error.UnsupportedSpawnTemplate,
+        };
+        for (creatures.entries, 0..) |entry, idx| {
+            if (!active_before[idx] and entry.active) {
+                spawned_indices[idx] = true;
+            }
+            active_before[idx] = entry.active;
+        }
+    }
+
+    for (event.added_head[0..event.added_head_count]) |row| {
+        if (row.index < 0 or row.index >= creatures.entries.len) continue;
+        const idx: usize = @intCast(row.index);
+        const entry = &creatures.entries[idx];
+        if (!entry.active) continue;
+
+        const flags_i32 = if (row.has_flags) row.flags else @as(i32, @intCast(entry.flags));
+        if (spawned_indices[idx] and
+            row.has_link_index and
+            row.link_index >= -1723 and
+            row.link_index <= -700 and
+            (flags_i32 & @as(i32, @intCast(survival_spawn.CreatureFlags.ai7_link_timer))) != 0)
+        {
+            _ = state.rng.rand();
+        }
+
+        if (row.has_pos) {
+            entry.pos = .{
+                .x = asF32F64(row.pos_x),
+                .y = asF32F64(row.pos_y),
+            };
+        }
+        if (row.has_heading) entry.heading = asF32F64(row.heading);
+        if (row.has_target_heading) entry.target_heading = asF32F64(row.target_heading);
+        if (row.has_ai_mode) entry.ai_mode = row.ai_mode;
+        if (row.has_link_index) entry.link_index = row.link_index;
+        if (row.has_hp) entry.hp = asF32F64(row.hp);
+        if (row.has_lifecycle_stage) entry.lifecycle_stage = asF32F64(row.lifecycle_stage);
+        if (row.has_orbit_angle) entry.orbit_angle = asF32F64(row.orbit_angle);
+        if (row.has_orbit_radius) entry.orbit_radius = asF32F64(row.orbit_radius);
+        if (row.has_flags) entry.flags = @intCast(@max(0, flags_i32));
+        if (row.has_type_id) entry.type_id = row.type_id;
+    }
+}
+
+fn applyCaptureStateReset(
+    state: *survival_state.GameplayState,
+    players: []survival_state.PlayerState,
+    creatures: *survival_creatures.CreaturePool,
+    world_size: f64,
+    quest_start_weapon_id: i32,
+    capture_spawn_events_authoritative: bool,
+    quest_spawn_entries_storage: []survival_spawn.QuestSpawnEntry,
+    reset_quest_spawn_entries_len: usize,
+    quest_spawn_entries: *[]survival_spawn.QuestSpawnEntry,
+    quest_spawn_timeline_ms: *f64,
+    quest_no_creatures_timer_ms: *f64,
+    quest_completion_transition_ms: *f64,
+) void {
+    const rng_state = state.rng.state;
+    const status_quest_unlock_index = state.status_quest_unlock_index;
+    const status_quest_unlock_index_full = state.status_quest_unlock_index_full;
+    const status_weapon_usage_counts = state.status_weapon_usage_counts;
+    const game_mode = state.game_mode;
+    const demo_mode_active = state.demo_mode_active;
+    const hardcore = state.hardcore;
+    const preserve_bugs = state.preserve_bugs;
+    const quest_stage_major = state.quest_stage_major;
+    const quest_stage_minor = state.quest_stage_minor;
+    const perk_pending_count = state.perk_selection.pending_count;
+    const perk_choice_count = state.perk_selection.choice_count;
+    const perk_choices_dirty = state.perk_selection.choices_dirty;
+    const perk_choices = state.perk_selection.choices;
+    const perk_interval_man_bomb = state.perk_interval_man_bomb;
+    const perk_interval_fire_cough = state.perk_interval_fire_cough;
+    const perk_interval_hot_tempered = state.perk_interval_hot_tempered;
+
+    state.* = survival_state.GameplayState.init(rng_state);
+    state.status_quest_unlock_index = status_quest_unlock_index;
+    state.status_quest_unlock_index_full = status_quest_unlock_index_full;
+    state.status_weapon_usage_counts = status_weapon_usage_counts;
+    state.game_mode = game_mode;
+    state.demo_mode_active = demo_mode_active;
+    state.hardcore = hardcore;
+    state.preserve_bugs = preserve_bugs;
+    state.quest_stage_major = quest_stage_major;
+    state.quest_stage_minor = quest_stage_minor;
+    state.perk_selection.pending_count = perk_pending_count;
+    state.perk_selection.choice_count = perk_choice_count;
+    state.perk_selection.choices_dirty = perk_choices_dirty;
+    state.perk_selection.choices = perk_choices;
+    state.perk_interval_man_bomb = perk_interval_man_bomb;
+    state.perk_interval_fire_cough = perk_interval_fire_cough;
+    state.perk_interval_hot_tempered = perk_interval_hot_tempered;
+
+    survival_state.resetPlayers(players, world_size, null);
+    for (players) |*player| {
+        survival_state.weaponAssignPlayer(player, quest_start_weapon_id);
+        if (quest_start_weapon_id == survival_state.WeaponId.pistol) {
+            player.clip_size = @max(12, player.clip_size);
+            if (player.ammo < 12.0) {
+                player.ammo = 12.0;
+            }
+        }
+    }
+
+    creatures.reset();
+    creatures.capture_spawn_events_authoritative = capture_spawn_events_authoritative;
+    quest_spawn_entries.* = quest_spawn_entries_storage[0..reset_quest_spawn_entries_len];
+    quest_spawn_timeline_ms.* = 0.0;
+    quest_no_creatures_timer_ms.* = 0.0;
+    quest_completion_transition_ms.* = -1.0;
 }
 
 fn applyJinxedEffects(
@@ -3067,6 +3482,449 @@ test "quest scaffold supports player counts 1 through 4 across static and dynami
             try std.testing.expect(result.wave_spawn_count > 0);
         }
     }
+}
+
+test "quest scaffold applies capture bootstrap quest session timers" {
+    const allocator = std.testing.allocator;
+
+    const inputs = [_]u32{0} ** 20;
+    const replay_baseline = try buildTestReplay(allocator, .{
+        .game_mode_id = game_mode_quests,
+        .seed = 101,
+        .tick_rate = 60,
+        .inputs = inputs[0..],
+        .events = &.{},
+    });
+    defer replay_baseline.deinit(allocator);
+
+    const quest_entries = [_]survival_spawn.QuestSpawnEntry{
+        .{
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+            .spawn_id = survival_spawn.SpawnId.formation_ring_alien_8_12,
+            .trigger_ms = 5000,
+            .count = 1,
+        },
+    };
+
+    var dt_overrides: [20]DtFrameOverride = undefined;
+    for (&dt_overrides, 0..) |*entry, idx| {
+        entry.* = .{
+            .tick_index = idx,
+            .dt_frame = 0.1,
+        };
+    }
+
+    var baseline_trace: std.ArrayList(SurvivalTickTrace) = .empty;
+    defer baseline_trace.deinit(allocator);
+    _ = try runSurvivalReplayScaffoldWithTrace(
+        replay_baseline,
+        &baseline_trace,
+        allocator,
+        .{
+            .quest_spawn_entries = quest_entries[0..],
+            .dt_frame_overrides = dt_overrides[0..],
+        },
+    );
+    try std.testing.expectEqual(@as(usize, 20), baseline_trace.items.len);
+    try std.testing.expectEqual(@as(usize, 0), baseline_trace.items[19].creature_count);
+
+    var bootstrap = replay_codec.CaptureBootstrapEvent{
+        .tick_index = 0,
+    };
+    bootstrap.player_count = 1;
+    bootstrap.players[0] = .{
+        .weapon_id = 1,
+        .pos_x = 512.0,
+        .pos_y = 512.0,
+        .health = 100.0,
+        .ammo = 11.0,
+        .experience = 0,
+        .level = 1,
+    };
+    bootstrap.quest_session = .{
+        .spawn_timeline_ms = 1701.0,
+        .no_creatures_timer_ms = 3100.0,
+        .completion_transition_ms = -1.0,
+    };
+    const events = [_]replay_codec.ReplayEvent{
+        .{ .capture_bootstrap = bootstrap },
+    };
+    const replay_bootstrapped = try buildTestReplay(allocator, .{
+        .game_mode_id = game_mode_quests,
+        .seed = 101,
+        .tick_rate = 60,
+        .inputs = inputs[0..],
+        .events = events[0..],
+    });
+    defer replay_bootstrapped.deinit(allocator);
+
+    var bootstrapped_trace: std.ArrayList(SurvivalTickTrace) = .empty;
+    defer bootstrapped_trace.deinit(allocator);
+    _ = try runSurvivalReplayScaffoldWithTrace(
+        replay_bootstrapped,
+        &bootstrapped_trace,
+        allocator,
+        .{
+            .quest_spawn_entries = quest_entries[0..],
+            .dt_frame_overrides = dt_overrides[0..],
+        },
+    );
+    try std.testing.expectEqual(@as(usize, 20), bootstrapped_trace.items.len);
+    try std.testing.expect(bootstrapped_trace.items[19].creature_count > 0);
+}
+
+test "quest scaffold disables runtime spawn slot ticks when capture spawns are authoritative" {
+    const allocator = std.testing.allocator;
+
+    const inputs = [_]u32{0} ** 40;
+    var bootstrap = replay_codec.CaptureBootstrapEvent{
+        .tick_index = 0,
+    };
+    bootstrap.player_count = 1;
+    bootstrap.players[0] = .{
+        .weapon_id = 1,
+        .pos_x = 512.0,
+        .pos_y = 512.0,
+        .health = 100.0,
+        .ammo = 11.0,
+        .experience = 0,
+        .level = 1,
+    };
+    bootstrap.quest_session = .{
+        .spawn_timeline_ms = 0.0,
+        .no_creatures_timer_ms = 0.0,
+        .completion_transition_ms = -1.0,
+    };
+
+    var capture_spawn = replay_codec.CaptureCreatureSpawnEvent{
+        .tick_index = 0,
+    };
+    capture_spawn.spawn_count = 1;
+    capture_spawn.spawns[0] = .{
+        .template_id = 0x0A,
+        .pos_x = 900.0,
+        .pos_y = 900.0,
+        .heading = 0.0,
+    };
+    const events = [_]replay_codec.ReplayEvent{
+        .{ .capture_bootstrap = bootstrap },
+        .{ .capture_creature_spawn = capture_spawn },
+    };
+
+    const replay = try buildTestReplay(allocator, .{
+        .game_mode_id = game_mode_quests,
+        .seed = 101,
+        .tick_rate = 60,
+        .inputs = inputs[0..],
+        .events = events[0..],
+    });
+    defer replay.deinit(allocator);
+
+    var dt_overrides: [40]DtFrameOverride = undefined;
+    for (&dt_overrides, 0..) |*entry, idx| {
+        entry.* = .{
+            .tick_index = idx,
+            .dt_frame = 0.1,
+        };
+    }
+
+    const empty_entries = [_]survival_spawn.QuestSpawnEntry{};
+    var trace: std.ArrayList(SurvivalTickTrace) = .empty;
+    defer trace.deinit(allocator);
+    _ = try runSurvivalReplayScaffoldWithTrace(
+        replay,
+        &trace,
+        allocator,
+        .{
+            .quest_spawn_entries = empty_entries[0..],
+            .dt_frame_overrides = dt_overrides[0..],
+        },
+    );
+    try std.testing.expectEqual(@as(usize, 40), trace.items.len);
+    try std.testing.expectEqual(@as(usize, 1), trace.items[39].creature_count);
+}
+
+test "capture creature spawn event applies added head overrides" {
+    var state = survival_state.GameplayState.init(1);
+    var creatures = survival_creatures.CreaturePool{};
+    creatures.reset();
+
+    var event = replay_codec.CaptureCreatureSpawnEvent{
+        .tick_index = 0,
+    };
+    event.spawn_count = 1;
+    event.spawns[0] = .{
+        .template_id = 0x18,
+        .pos_x = -256.0,
+        .pos_y = 256.0,
+        .heading = -4.083981990814209,
+    };
+    event.added_head_count = 1;
+    event.added_head[0] = .{
+        .index = 1,
+        .has_heading = true,
+        .heading = 1.1278764009475708,
+        .has_target_heading = true,
+        .target_heading = 0.621416449546814,
+        .has_ai_mode = true,
+        .ai_mode = 3,
+        .has_link_index = true,
+        .link_index = 0,
+        .has_hp = true,
+        .hp = 123.5,
+        .has_lifecycle_stage = true,
+        .lifecycle_stage = 9.5,
+        .has_orbit_angle = true,
+        .orbit_angle = 0.25,
+        .has_orbit_radius = true,
+        .orbit_radius = 0.75,
+        .has_flags = true,
+        .flags = 17,
+        .has_type_id = true,
+        .type_id = 7,
+        .has_pos = true,
+        .pos_x = 12.25,
+        .pos_y = 34.5,
+    };
+
+    try applyCaptureCreatureSpawnEvent(&state, &creatures, event);
+    const creature = creatures.entries[1];
+    try std.testing.expect(creature.active);
+    try std.testing.expectApproxEqAbs(@as(f64, 1.1278764009475708), creature.heading, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.621416449546814), creature.target_heading, 1e-6);
+    try std.testing.expectEqual(@as(i32, 3), creature.ai_mode);
+    try std.testing.expectEqual(@as(i32, 0), creature.link_index);
+    try std.testing.expectApproxEqAbs(@as(f64, 123.5), creature.hp, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 9.5), creature.lifecycle_stage, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.25), creature.orbit_angle, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.75), creature.orbit_radius, 1e-6);
+    try std.testing.expectEqual(@as(u32, 17), creature.flags);
+    try std.testing.expectEqual(@as(i32, 7), creature.type_id);
+    try std.testing.expectApproxEqAbs(@as(f64, 12.25), creature.pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 34.5), creature.pos.y, 1e-6);
+}
+
+test "capture creature spawn event backfills ai7 rollover rng draw for spawned rows" {
+    var base_state = survival_state.GameplayState.init(0x1234ABCD);
+    var base_creatures = survival_creatures.CreaturePool{};
+    base_creatures.reset();
+    var base_event = replay_codec.CaptureCreatureSpawnEvent{
+        .tick_index = 0,
+    };
+    base_event.spawn_count = 1;
+    base_event.spawns[0] = .{
+        .template_id = 0x20,
+        .pos_x = 256.0,
+        .pos_y = 256.0,
+        .heading = -100.0,
+    };
+    try applyCaptureCreatureSpawnEvent(&base_state, &base_creatures, base_event);
+    const rng_after_base = base_state.rng.state;
+
+    var rollover_state = survival_state.GameplayState.init(0x1234ABCD);
+    var rollover_creatures = survival_creatures.CreaturePool{};
+    rollover_creatures.reset();
+    var rollover_event = base_event;
+    rollover_event.added_head_count = 1;
+    rollover_event.added_head[0] = .{
+        .index = 0,
+        .has_flags = true,
+        .flags = @intCast(survival_spawn.CreatureFlags.ai7_link_timer),
+        .has_link_index = true,
+        .link_index = -975,
+    };
+    try applyCaptureCreatureSpawnEvent(&rollover_state, &rollover_creatures, rollover_event);
+    const rng_after_rollover = rollover_state.rng.state;
+
+    var probe_rng = survival_spawn.Crand.init(rng_after_base);
+    _ = probe_rng.rand();
+    try std.testing.expectEqual(probe_rng.state, rng_after_rollover);
+    try std.testing.expectEqual(@as(i32, -975), rollover_creatures.entries[0].link_index);
+}
+
+test "quest scaffold resets run state on capture transition to terminal state" {
+    const allocator = std.testing.allocator;
+
+    var replay = try buildTestReplay(allocator, .{
+        .game_mode_id = game_mode_quests,
+        .seed = 101,
+        .tick_rate = 60,
+        .inputs = &.{ 0, replay_codec.fire_down_flag },
+        .events = &.{},
+    });
+    defer replay.deinit(allocator);
+
+    var bootstrap = replay_codec.CaptureBootstrapEvent{
+        .tick_index = 0,
+    };
+    bootstrap.player_count = 1;
+    bootstrap.players[0] = .{
+        .weapon_id = 17,
+        .pos_x = 512.0,
+        .pos_y = 512.0,
+        .health = 0.0,
+        .ammo = 6.0,
+        .experience = 11581,
+        .level = 4,
+    };
+    bootstrap.reflex_boost_ms = 1769;
+    bootstrap.player_perk_counts[0].pair_count = 1;
+    bootstrap.player_perk_counts[0].pairs[0] = .{
+        .perk_id = 54,
+        .count = 1,
+    };
+
+    var transition = replay_codec.CaptureStateTransitionEvent{
+        .tick_index = 0,
+    };
+    transition.transition_count = 1;
+    transition.transitions[0] = .{
+        .target_state = 12,
+        .has_before_state = true,
+        .before_state = 9,
+        .has_after_state = true,
+        .after_state = 12,
+    };
+
+    replay.events = blk: {
+        const events = try allocator.alloc(replay_codec.ReplayEvent, 2);
+        events[0] = .{ .capture_bootstrap = bootstrap };
+        events[1] = .{ .capture_state_transition = transition };
+        allocator.free(replay.events);
+        break :blk events;
+    };
+
+    var trace: std.ArrayList(SurvivalTickTrace) = .empty;
+    defer trace.deinit(allocator);
+    const result = try runSurvivalReplayScaffoldWithTrace(
+        replay,
+        &trace,
+        allocator,
+        .{
+            .dt_frame_overrides = &.{
+                .{ .tick_index = 0, .dt_frame = 0.1 },
+                .{ .tick_index = 1, .dt_frame = 0.1 },
+            },
+            .quest_spawn_entries = &.{},
+        },
+    );
+
+    try std.testing.expectEqual(@as(i32, 1), result.player_weapon_id);
+    try std.testing.expectEqual(@as(i32, 0), result.player_experience);
+    try std.testing.expectEqual(@as(i32, 1), result.player_level);
+    try std.testing.expectEqual(@as(usize, 0), result.creature_active_count);
+    try std.testing.expectEqual(@as(usize, 2), trace.items.len);
+    try std.testing.expectEqual(@as(i32, 0), trace.items[1].bonus_reflex_boost_ms);
+    try std.testing.expectEqual(@as(i32, 0), trace.items[1].player_perk54_count);
+}
+
+test "quest scaffold disables world dt perk steps for original capture dt overrides" {
+    const allocator = std.testing.allocator;
+
+    const bootstrap_event = replay_codec.ReplayEvent{
+        .capture_bootstrap = blk: {
+            var bootstrap = replay_codec.CaptureBootstrapEvent{
+                .tick_index = 0,
+            };
+            bootstrap.player_count = 1;
+            bootstrap.players[0] = .{
+                .weapon_id = 1,
+                .pos_x = 512.0,
+                .pos_y = 512.0,
+                .health = 100.0,
+                .ammo = 11.0,
+                .experience = 0,
+                .level = 1,
+            };
+            break :blk bootstrap;
+        },
+    };
+    const reflex_apply_event = replay_codec.ReplayEvent{
+        .capture_perk_apply = .{
+            .tick_index = 0,
+            .perk_id = survival_perks.PerkId.reflex_boosted,
+            .outside_before = true,
+        },
+    };
+
+    const run = struct {
+        fn runCase(
+            allocator_inner: std.mem.Allocator,
+            bootstrap: replay_codec.ReplayEvent,
+            reflex_apply: replay_codec.ReplayEvent,
+            include_reflex_boosted: bool,
+            dt_overrides: ?[]const DtFrameOverride,
+        ) !struct { x_q4: i32, y_q4: i32 } {
+            const events = [_]replay_codec.ReplayEvent{ bootstrap, reflex_apply };
+            var replay = try buildTestReplay(allocator_inner, .{
+                .game_mode_id = game_mode_quests,
+                .seed = 101,
+                .tick_rate = 60,
+                .inputs = &.{0},
+                .events = if (include_reflex_boosted) events[0..2] else events[0..1],
+            });
+            defer replay.deinit(allocator_inner);
+
+            replay.inputs[0][0].move_x = 1.0;
+            replay.inputs[0][0].move_y = 0.0;
+            replay.inputs[0][0].aim_x = 700.0;
+            replay.inputs[0][0].aim_y = 512.0;
+
+            var trace: std.ArrayList(SurvivalTickTrace) = .empty;
+            defer trace.deinit(allocator_inner);
+            _ = try runSurvivalReplayScaffoldWithTrace(
+                replay,
+                &trace,
+                allocator_inner,
+                .{
+                    .quest_spawn_entries = &.{},
+                    .dt_frame_overrides = dt_overrides,
+                },
+            );
+            try std.testing.expectEqual(@as(usize, 1), trace.items.len);
+            return .{
+                .x_q4 = trace.items[0].player_pos_x_q4,
+                .y_q4 = trace.items[0].player_pos_y_q4,
+            };
+        }
+    }.runCase;
+
+    const no_override_without_perk = try run(
+        allocator,
+        bootstrap_event,
+        reflex_apply_event,
+        false,
+        null,
+    );
+    const no_override_with_perk = try run(
+        allocator,
+        bootstrap_event,
+        reflex_apply_event,
+        true,
+        null,
+    );
+    try std.testing.expect(no_override_with_perk.x_q4 != no_override_without_perk.x_q4);
+
+    const dt_override_rows = [_]DtFrameOverride{
+        .{ .tick_index = 0, .dt_frame = 0.1 },
+    };
+    const override_without_perk = try run(
+        allocator,
+        bootstrap_event,
+        reflex_apply_event,
+        false,
+        dt_override_rows[0..],
+    );
+    const override_with_perk = try run(
+        allocator,
+        bootstrap_event,
+        reflex_apply_event,
+        true,
+        dt_override_rows[0..],
+    );
+    try std.testing.expectEqual(override_without_perk.x_q4, override_with_perk.x_q4);
+    try std.testing.expectEqual(override_without_perk.y_q4, override_with_perk.y_q4);
 }
 
 test "evil eyes targeting defaults to alive player slot in non-preserve mode" {
