@@ -132,6 +132,45 @@ pub const SpawnSlotInit = struct {
     child_template_id: i32,
 };
 
+pub const QuestSpawnEntry = struct {
+    pos: Vec2,
+    heading: f64,
+    spawn_id: i32,
+    trigger_ms: i32,
+    count: i32,
+};
+
+pub const max_quest_spawn_batch: usize = 1024;
+
+const empty_spawn_template_call = SpawnTemplateCall{
+    .template_id = 0,
+    .pos = .{ .x = 0.0, .y = 0.0 },
+    .heading = 0.0,
+};
+
+pub const QuestSpawnTimelineResult = struct {
+    creatures_none_active: bool,
+    no_creatures_timer_ms: f64,
+    spawn_count: usize = 0,
+    spawns: [max_quest_spawn_batch]SpawnTemplateCall = [_]SpawnTemplateCall{empty_spawn_template_call} ** max_quest_spawn_batch,
+
+    pub fn slice(self: *const QuestSpawnTimelineResult) []const SpawnTemplateCall {
+        return self.spawns[0..self.spawn_count];
+    }
+};
+
+pub const QuestModeSpawnsResult = struct {
+    quest_spawn_timeline_ms: f64,
+    creatures_none_active: bool,
+    no_creatures_timer_ms: f64,
+    spawn_count: usize = 0,
+    spawns: [max_quest_spawn_batch]SpawnTemplateCall = [_]SpawnTemplateCall{empty_spawn_template_call} ** max_quest_spawn_batch,
+
+    pub fn slice(self: *const QuestModeSpawnsResult) []const SpawnTemplateCall {
+        return self.spawns[0..self.spawn_count];
+    }
+};
+
 pub fn tickSpawnSlot(slot: *SpawnSlotInit, frame_dt: f64) ?i32 {
     const timer = asF32F64(slot.timer);
     const interval = asF32F64(slot.interval);
@@ -146,6 +185,117 @@ pub fn tickSpawnSlot(slot: *SpawnSlotInit, frame_dt: f64) ?i32 {
         }
     }
     return null;
+}
+
+pub fn questSpawnTableEmpty(entries: []const QuestSpawnEntry) bool {
+    for (entries) |entry| {
+        if (entry.count > 0) return false;
+    }
+    return true;
+}
+
+pub fn tickQuestSpawnTimeline(
+    entries: []QuestSpawnEntry,
+    quest_spawn_timeline_ms: f64,
+    frame_dt_ms: f64,
+    terrain_width: f64,
+    creatures_none_active: bool,
+    no_creatures_timer_ms: f64,
+) QuestSpawnTimelineResult {
+    var result = QuestSpawnTimelineResult{
+        .creatures_none_active = creatures_none_active,
+        .no_creatures_timer_ms = no_creatures_timer_ms,
+    };
+
+    if (!result.creatures_none_active) {
+        result.no_creatures_timer_ms = 0.0;
+    } else {
+        result.no_creatures_timer_ms += frame_dt_ms;
+    }
+
+    const force_spawn = result.creatures_none_active and
+        result.no_creatures_timer_ms > 3000.0 and
+        quest_spawn_timeline_ms > 0x6A4;
+
+    var start_idx: ?usize = null;
+    for (entries, 0..) |entry, idx| {
+        if (entry.count <= 0) continue;
+        if (@as(f64, @floatFromInt(entry.trigger_ms)) < quest_spawn_timeline_ms or force_spawn) {
+            start_idx = idx;
+            break;
+        }
+    }
+
+    if (start_idx == null) {
+        return result;
+    }
+
+    const trigger_ms = entries[start_idx.?].trigger_ms;
+    var idx = start_idx.?;
+    while (idx < entries.len) : (idx += 1) {
+        const entry = entries[idx];
+        if (entry.trigger_ms != trigger_ms) break;
+
+        const offscreen_x = entry.pos.x < 0.0 or terrain_width < entry.pos.x;
+        var spawn_idx: i32 = 0;
+        while (spawn_idx < entry.count) : (spawn_idx += 1) {
+            if (result.spawn_count >= result.spawns.len) break;
+            const magnitude = @as(f64, @floatFromInt(spawn_idx * 0x28));
+            const offset = if ((spawn_idx & 1) == 0) magnitude else -magnitude;
+            var pos = entry.pos;
+            if (offscreen_x) {
+                pos.y += offset;
+            } else {
+                pos.x += offset;
+            }
+            result.spawns[result.spawn_count] = .{
+                .template_id = entry.spawn_id,
+                .pos = pos,
+                .heading = entry.heading,
+            };
+            result.spawn_count += 1;
+        }
+
+        if (entries[idx].count != 0) {
+            entries[idx].count = 0;
+        }
+    }
+
+    result.creatures_none_active = false;
+    return result;
+}
+
+pub fn tickQuestModeSpawns(
+    entries: []QuestSpawnEntry,
+    quest_spawn_timeline_ms: f64,
+    frame_dt_ms: f64,
+    terrain_width: f64,
+    creatures_none_active: bool,
+    no_creatures_timer_ms: f64,
+) QuestModeSpawnsResult {
+    var timeline_ms = quest_spawn_timeline_ms;
+    if (!creatures_none_active or !questSpawnTableEmpty(entries)) {
+        timeline_ms += frame_dt_ms;
+    }
+
+    const timeline_result = tickQuestSpawnTimeline(
+        entries,
+        timeline_ms,
+        frame_dt_ms,
+        terrain_width,
+        creatures_none_active,
+        no_creatures_timer_ms,
+    );
+    var result = QuestModeSpawnsResult{
+        .quest_spawn_timeline_ms = timeline_ms,
+        .creatures_none_active = timeline_result.creatures_none_active,
+        .no_creatures_timer_ms = timeline_result.no_creatures_timer_ms,
+        .spawn_count = timeline_result.spawn_count,
+    };
+    if (timeline_result.spawn_count > 0) {
+        @memcpy(result.spawns[0..timeline_result.spawn_count], timeline_result.slice());
+    }
+    return result;
 }
 
 pub const SpawnStageResult = struct {
@@ -861,6 +1011,249 @@ test "spawn slot tick uses float32 cadence at boundary" {
 
     try std.testing.expectEqual(@as(usize, 1), spawn_count);
     try std.testing.expectEqual(@as(i32, 25), spawn_ticks[0]);
+}
+
+test "tick quest mode spawns advances timeline when creatures active" {
+    var entries = [_]QuestSpawnEntry{};
+    const result = tickQuestModeSpawns(
+        entries[0..],
+        1000.0,
+        16.0,
+        1024.0,
+        false,
+        123.0,
+    );
+
+    try expectFloatClose(1016.0, result.quest_spawn_timeline_ms);
+    try std.testing.expect(!result.creatures_none_active);
+    try expectFloatClose(0.0, result.no_creatures_timer_ms);
+    try std.testing.expectEqual(@as(usize, 0), result.spawn_count);
+}
+
+test "tick quest mode spawns advances timeline when table not empty" {
+    var entries = [_]QuestSpawnEntry{
+        .{
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+            .spawn_id = SpawnId.formation_ring_alien_8_12,
+            .trigger_ms = 10_000,
+            .count = 1,
+        },
+    };
+    const result = tickQuestModeSpawns(
+        entries[0..],
+        1000.0,
+        16.0,
+        1024.0,
+        true,
+        0.0,
+    );
+
+    try expectFloatClose(1016.0, result.quest_spawn_timeline_ms);
+    try std.testing.expect(result.creatures_none_active);
+    try expectFloatClose(16.0, result.no_creatures_timer_ms);
+    try std.testing.expectEqual(@as(i32, 1), entries[0].count);
+    try std.testing.expectEqual(@as(usize, 0), result.spawn_count);
+}
+
+test "tick quest mode spawns freezes timeline when idle complete" {
+    var entries = [_]QuestSpawnEntry{};
+    const result = tickQuestModeSpawns(
+        entries[0..],
+        1000.0,
+        16.0,
+        1024.0,
+        true,
+        0.0,
+    );
+
+    try expectFloatClose(1000.0, result.quest_spawn_timeline_ms);
+    try std.testing.expect(result.creatures_none_active);
+    try expectFloatClose(16.0, result.no_creatures_timer_ms);
+    try std.testing.expectEqual(@as(usize, 0), result.spawn_count);
+}
+
+test "tick quest mode spawns can fire entries after timeline advance" {
+    var entries = [_]QuestSpawnEntry{
+        .{
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.25,
+            .spawn_id = SpawnId.formation_ring_alien_8_12,
+            .trigger_ms = 1000,
+            .count = 1,
+        },
+    };
+    const result = tickQuestModeSpawns(
+        entries[0..],
+        999.0,
+        2.0,
+        1024.0,
+        true,
+        0.0,
+    );
+
+    try expectFloatClose(1001.0, result.quest_spawn_timeline_ms);
+    try std.testing.expectEqual(@as(i32, 0), entries[0].count);
+    try std.testing.expect(!result.creatures_none_active);
+    try expectFloatClose(2.0, result.no_creatures_timer_ms);
+    try std.testing.expectEqual(@as(usize, 1), result.spawn_count);
+    try std.testing.expectEqual(SpawnId.formation_ring_alien_8_12, result.spawns[0].template_id);
+}
+
+test "tick quest spawn timeline no trigger resets idle timer when creatures active" {
+    var entries = [_]QuestSpawnEntry{
+        .{
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+            .spawn_id = SpawnId.formation_ring_alien_8_12,
+            .trigger_ms = 1000,
+            .count = 1,
+        },
+    };
+    const result = tickQuestSpawnTimeline(
+        entries[0..],
+        0.0,
+        16.0,
+        1024.0,
+        false,
+        123.0,
+    );
+
+    try std.testing.expect(!result.creatures_none_active);
+    try expectFloatClose(0.0, result.no_creatures_timer_ms);
+    try std.testing.expectEqual(@as(i32, 1), entries[0].count);
+    try std.testing.expectEqual(@as(usize, 0), result.spawn_count);
+}
+
+test "tick quest spawn timeline triggers horizontal spread when on screen" {
+    var entries = [_]QuestSpawnEntry{
+        .{
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 1.25,
+            .spawn_id = SpawnId.formation_ring_alien_8_12,
+            .trigger_ms = 1000,
+            .count = 3,
+        },
+    };
+    const result = tickQuestSpawnTimeline(
+        entries[0..],
+        1001.0,
+        16.0,
+        1024.0,
+        true,
+        0.0,
+    );
+
+    try std.testing.expectEqual(@as(i32, 0), entries[0].count);
+    try std.testing.expect(!result.creatures_none_active);
+    try expectFloatClose(16.0, result.no_creatures_timer_ms);
+    try std.testing.expectEqual(@as(usize, 3), result.spawn_count);
+    const expected = [_][2]f64{
+        .{ 512.0, 512.0 },
+        .{ 472.0, 512.0 },
+        .{ 592.0, 512.0 },
+    };
+    for (result.slice(), expected) |spawn, expected_pos| {
+        try expectFloatClose(expected_pos[0], spawn.pos.x);
+        try expectFloatClose(expected_pos[1], spawn.pos.y);
+        try expectFloatClose(1.25, spawn.heading);
+    }
+}
+
+test "tick quest spawn timeline triggers vertical spread when offscreen x" {
+    var entries = [_]QuestSpawnEntry{
+        .{
+            .pos = .{ .x = -50.0, .y = 512.0 },
+            .heading = 0.25,
+            .spawn_id = SpawnId.formation_ring_alien_8_12,
+            .trigger_ms = 1000,
+            .count = 3,
+        },
+    };
+    const result = tickQuestSpawnTimeline(
+        entries[0..],
+        1001.0,
+        0.0,
+        1024.0,
+        true,
+        0.0,
+    );
+
+    const expected = [_][2]f64{
+        .{ -50.0, 512.0 },
+        .{ -50.0, 472.0 },
+        .{ -50.0, 592.0 },
+    };
+    for (result.slice(), expected) |spawn, expected_pos| {
+        try expectFloatClose(expected_pos[0], spawn.pos.x);
+        try expectFloatClose(expected_pos[1], spawn.pos.y);
+    }
+}
+
+test "tick quest spawn timeline fires only one trigger group per tick" {
+    var entries = [_]QuestSpawnEntry{
+        .{
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+            .spawn_id = SpawnId.formation_ring_alien_8_12,
+            .trigger_ms = 500,
+            .count = 1,
+        },
+        .{
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+            .spawn_id = SpawnId.alien_const_red_fast_2b,
+            .trigger_ms = 500,
+            .count = 1,
+        },
+        .{
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+            .spawn_id = SpawnId.spider_sp1_const_shock_boss_3a,
+            .trigger_ms = 600,
+            .count = 1,
+        },
+    };
+    const result = tickQuestSpawnTimeline(
+        entries[0..],
+        10_000.0,
+        0.0,
+        1024.0,
+        true,
+        0.0,
+    );
+
+    try std.testing.expectEqual(@as(i32, 0), entries[0].count);
+    try std.testing.expectEqual(@as(i32, 0), entries[1].count);
+    try std.testing.expectEqual(@as(i32, 1), entries[2].count);
+    try std.testing.expectEqual(@as(usize, 2), result.spawn_count);
+    try std.testing.expectEqual(SpawnId.formation_ring_alien_8_12, result.spawns[0].template_id);
+    try std.testing.expectEqual(SpawnId.alien_const_red_fast_2b, result.spawns[1].template_id);
+}
+
+test "tick quest spawn timeline force fires after idle timeout" {
+    var entries = [_]QuestSpawnEntry{
+        .{
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+            .spawn_id = SpawnId.formation_ring_alien_8_12,
+            .trigger_ms = 999_999,
+            .count = 1,
+        },
+    };
+    const result = tickQuestSpawnTimeline(
+        entries[0..],
+        2000.0,
+        0.0,
+        1024.0,
+        true,
+        3001.0,
+    );
+
+    try std.testing.expectEqual(@as(i32, 0), entries[0].count);
+    try std.testing.expect(!result.creatures_none_active);
+    try expectFloatClose(3001.0, result.no_creatures_timer_ms);
+    try std.testing.expectEqual(@as(usize, 1), result.spawn_count);
 }
 
 test "survival wave no trigger" {
