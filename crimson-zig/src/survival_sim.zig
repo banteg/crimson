@@ -80,6 +80,10 @@ pub const SurvivalReplayScaffoldResult = struct {
     survival_reward_damage_seen: bool,
     spawn_stage: i32,
     spawn_cooldown_ms: f64,
+    quest_completion_transition_ms: f64,
+    quest_completed: bool,
+    quest_play_hit_sfx: bool,
+    quest_play_completion_music: bool,
 };
 
 pub const SurvivalTickTrace = struct {
@@ -376,6 +380,10 @@ pub fn runSurvivalReplayScaffoldWithTrace(
     var quest_spawn_timeline_ms: f64 = 0.0;
     var quest_no_creatures_timer_ms: f64 = 0.0;
     var quest_creatures_none_active: bool = false;
+    var quest_completion_transition_ms: f64 = -1.0;
+    var quest_completed: bool = false;
+    var quest_play_hit_sfx: bool = false;
+    var quest_play_completion_music: bool = false;
     var quest_spawn_entries_storage: [max_test_quest_spawn_entries]survival_spawn.QuestSpawnEntry = undefined;
     var quest_spawn_entries: []survival_spawn.QuestSpawnEntry = &.{};
     var state = survival_state.GameplayState.init(header.seed);
@@ -686,6 +694,38 @@ pub fn runSurvivalReplayScaffoldWithTrace(
                     error.UnsupportedSpawnTemplate => return error.UnsupportedSpawnTemplate,
                 };
             }
+
+            const spawn_table_empty_now = survival_spawn.questSpawnTableEmpty(quest_spawn_entries);
+            if (!state.demo_mode_active and quest_creatures_none_active and spawn_table_empty_now) {
+                state.bonuses.reflex_boost = 0.0;
+                state.time_scale_active = false;
+            }
+
+            var any_alive_after = false;
+            for (players) |player| {
+                if (player.health > 0.0) {
+                    any_alive_after = true;
+                    break;
+                }
+            }
+            if (any_alive_after) {
+                const quest_completion = survival_spawn.tickQuestCompletionTransition(
+                    quest_completion_transition_ms,
+                    dt_sim_ms,
+                    quest_creatures_none_active,
+                    spawn_table_empty_now,
+                );
+                quest_completion_transition_ms = quest_completion.completion_transition_ms;
+                quest_completed = quest_completion.completed;
+                quest_play_hit_sfx = quest_completion.play_hit_sfx;
+                quest_play_completion_music = quest_completion.play_completion_music;
+            } else {
+                quest_completion_transition_ms = -1.0;
+                quest_completed = false;
+                quest_play_hit_sfx = false;
+                quest_play_completion_music = false;
+            }
+
             rng_after_stage_spawns = state.rng.state;
             rng_after_wave_spawns = state.rng.state;
         }
@@ -818,6 +858,10 @@ pub fn runSurvivalReplayScaffoldWithTrace(
         .survival_reward_damage_seen = state.survival_reward_damage_seen,
         .spawn_stage = spawn_stage,
         .spawn_cooldown_ms = spawn_cooldown,
+        .quest_completion_transition_ms = quest_completion_transition_ms,
+        .quest_completed = quest_completed,
+        .quest_play_hit_sfx = quest_play_hit_sfx,
+        .quest_play_completion_music = quest_play_completion_music,
     };
 }
 

@@ -171,6 +171,19 @@ pub const QuestModeSpawnsResult = struct {
     }
 };
 
+pub const QuestCompletionTransitionResult = struct {
+    completion_transition_ms: f64,
+    completed: bool,
+    play_hit_sfx: bool,
+    play_completion_music: bool,
+};
+
+pub const quest_completion_hit_sfx_start_ms: f64 = 800.0;
+pub const quest_completion_hit_sfx_end_ms: f64 = 0x353;
+pub const quest_completion_music_start_ms: f64 = 2000.0;
+pub const quest_completion_music_end_ms: f64 = 0x803;
+pub const quest_completion_transition_ms: f64 = 0x9C4;
+
 pub fn tickSpawnSlot(slot: *SpawnSlotInit, frame_dt: f64) ?i32 {
     const timer = asF32F64(slot.timer);
     const interval = asF32F64(slot.interval);
@@ -308,6 +321,56 @@ pub fn tickQuestModeSpawns(
         @memcpy(result.spawns[0..timeline_result.spawn_count], timeline_result.slice());
     }
     return result;
+}
+
+pub fn tickQuestCompletionTransition(
+    completion_transition_ms_value: f64,
+    frame_dt_ms: f64,
+    creatures_none_active: bool,
+    spawn_table_empty: bool,
+) QuestCompletionTransitionResult {
+    if (creatures_none_active and spawn_table_empty) {
+        if (completion_transition_ms_value < 0.0) {
+            return .{
+                .completion_transition_ms = frame_dt_ms,
+                .completed = false,
+                .play_hit_sfx = false,
+                .play_completion_music = false,
+            };
+        }
+        if (completion_transition_ms_value > quest_completion_hit_sfx_start_ms and
+            completion_transition_ms_value < quest_completion_hit_sfx_end_ms)
+        {
+            return .{
+                .completion_transition_ms = quest_completion_hit_sfx_end_ms + frame_dt_ms,
+                .completed = false,
+                .play_hit_sfx = true,
+                .play_completion_music = false,
+            };
+        }
+        if (completion_transition_ms_value > quest_completion_music_start_ms and
+            completion_transition_ms_value < quest_completion_music_end_ms)
+        {
+            return .{
+                .completion_transition_ms = quest_completion_music_end_ms + frame_dt_ms,
+                .completed = false,
+                .play_hit_sfx = false,
+                .play_completion_music = true,
+            };
+        }
+        return .{
+            .completion_transition_ms = completion_transition_ms_value + frame_dt_ms,
+            .completed = completion_transition_ms_value > quest_completion_transition_ms,
+            .play_hit_sfx = false,
+            .play_completion_music = false,
+        };
+    }
+    return .{
+        .completion_transition_ms = -1.0,
+        .completed = false,
+        .play_hit_sfx = false,
+        .play_completion_music = false,
+    };
 }
 
 pub const SpawnStageResult = struct {
@@ -1141,6 +1204,71 @@ test "tick quest mode spawns can fire entries after timeline advance" {
     try expectFloatClose(2.0, result.no_creatures_timer_ms);
     try std.testing.expectEqual(@as(usize, 1), result.spawn_count);
     try std.testing.expectEqual(SpawnId.formation_ring_alien_8_12, result.spawns[0].template_id);
+}
+
+test "tick quest completion transition resets when not idle complete" {
+    const result = tickQuestCompletionTransition(
+        500.0,
+        16.0,
+        false,
+        true,
+    );
+    try expectFloatClose(-1.0, result.completion_transition_ms);
+    try std.testing.expect(!result.completed);
+    try std.testing.expect(!result.play_hit_sfx);
+    try std.testing.expect(!result.play_completion_music);
+}
+
+test "tick quest completion transition completes after delay" {
+    var timer: f64 = -1.0;
+    var frame: usize = 0;
+    while (frame < 26) : (frame += 1) {
+        const result = tickQuestCompletionTransition(
+            timer,
+            100.0,
+            true,
+            true,
+        );
+        timer = result.completion_transition_ms;
+        try std.testing.expect(!result.completed);
+    }
+
+    try expectFloatClose(quest_completion_transition_ms + 100.0, timer);
+
+    const result = tickQuestCompletionTransition(
+        timer,
+        100.0,
+        true,
+        true,
+    );
+    try expectFloatClose(quest_completion_transition_ms + 200.0, result.completion_transition_ms);
+    try std.testing.expect(result.completed);
+}
+
+test "tick quest completion transition triggers hit sfx in native window" {
+    const result = tickQuestCompletionTransition(
+        801.0,
+        16.0,
+        true,
+        true,
+    );
+    try expectFloatClose(851.0 + 16.0, result.completion_transition_ms);
+    try std.testing.expect(!result.completed);
+    try std.testing.expect(result.play_hit_sfx);
+    try std.testing.expect(!result.play_completion_music);
+}
+
+test "tick quest completion transition triggers completion music in native window" {
+    const result = tickQuestCompletionTransition(
+        2001.0,
+        16.0,
+        true,
+        true,
+    );
+    try expectFloatClose(2051.0 + 16.0, result.completion_transition_ms);
+    try std.testing.expect(!result.completed);
+    try std.testing.expect(!result.play_hit_sfx);
+    try std.testing.expect(result.play_completion_music);
 }
 
 test "tick quest spawn timeline no trigger resets idle timer when creatures active" {
