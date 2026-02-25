@@ -35,7 +35,7 @@ from .perk_menu import (
     draw_ui_text,
     load_perk_menu_assets,
 )
-from .text_input import flush_text_input_events, poll_text_input
+from .text_input import flush_text_input_events, gameplay_controls_held, poll_text_input
 
 GAME_OVER_PANEL_X = -45.0
 # `ui_menu_layout_init` sets game-over panel pos to (-45, 110):
@@ -168,6 +168,7 @@ class GameOverUi:
     _main_menu_button: UiButtonState = field(default_factory=lambda: UiButtonState("Main Menu", force_wide=True))
 
     _consume_enter: bool = False
+    _defer_name_input_until_controls_released: bool = False
 
     def open(self) -> None:
         self.close()
@@ -189,6 +190,7 @@ class GameOverUi:
         self.input_text = ""
         self.input_caret = 0
         self._consume_enter = True
+        self._defer_name_input_until_controls_released = False
 
     def close(self) -> None:
         if self.assets is not None:
@@ -309,11 +311,20 @@ class GameOverUi:
                 self.phase = 0
                 self.input_text = player_name_default[:NAME_MAX_EDIT]
                 self.input_caret = len(self.input_text)
+                self._defer_name_input_until_controls_released = True
+                return None
             else:
                 self.phase = 1
 
         # Basic text input behavior for the name-entry phase.
         if self.phase == 0:
+            if self._defer_name_input_until_controls_released:
+                flush_text_input_events()
+                rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
+                rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
+                if not gameplay_controls_held(self.config):
+                    self._defer_name_input_until_controls_released = False
+                return None
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
             typed = poll_text_input(NAME_MAX_EDIT - len(self.input_text), allow_space=True)
             if typed:

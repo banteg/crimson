@@ -36,7 +36,7 @@ from .perk_menu import (
     draw_ui_text,
     load_perk_menu_assets,
 )
-from .text_input import poll_text_input
+from .text_input import flush_text_input_events, gameplay_controls_held, poll_text_input
 
 # `quest_results_screen_update` base layout (Crimsonland classic UI panel).
 # Values are derived from `ui_menu_assets_init` + `ui_menu_layout_init` and how
@@ -169,6 +169,7 @@ class QuestResultsUi:
     _closing: bool = False
     _close_action: str | None = None
     _consume_enter: bool = False
+    _defer_name_input_until_controls_released: bool = False
 
     _ok_button: UiButtonState = field(default_factory=lambda: UiButtonState("OK", force_wide=False))
     _play_next_button: UiButtonState = field(default_factory=lambda: UiButtonState("Play Next", force_wide=True))
@@ -238,6 +239,7 @@ class QuestResultsUi:
         self._closing = False
         self._close_action = None
         self._consume_enter = True
+        self._defer_name_input_until_controls_released = False
         self.phase = 0
 
     def close(self) -> None:
@@ -252,6 +254,12 @@ class QuestResultsUi:
             return
         self._closing = True
         self._close_action = action
+
+    def _arm_name_input_after_control_release(self) -> None:
+        self._defer_name_input_until_controls_released = True
+        flush_text_input_events()
+        rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
+        rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
 
     def world_entity_alpha(self) -> float:
         if not self._closing:
@@ -450,7 +458,11 @@ class QuestResultsUi:
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE) or click:
                 anim.set_final(self.breakdown)
-                self.phase = 1 if qualifies else 2
+                if qualifies:
+                    self.phase = 1
+                    self._arm_name_input_after_control_release()
+                else:
+                    self.phase = 2
                 return None
 
             clinks = tick_quest_results_breakdown_anim(
@@ -461,10 +473,21 @@ class QuestResultsUi:
             if clinks > 0 and play_sfx is not None:
                 play_sfx("sfx_ui_clink_01")
             if anim.done:
-                self.phase = 1 if qualifies else 2
+                if qualifies:
+                    self.phase = 1
+                    self._arm_name_input_after_control_release()
+                else:
+                    self.phase = 2
             return None
 
         if self.phase == 1:
+            if self._defer_name_input_until_controls_released:
+                flush_text_input_events()
+                rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
+                rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
+                if not gameplay_controls_held(self.config):
+                    self._defer_name_input_until_controls_released = False
+                return None
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
             typed = poll_text_input(NAME_MAX_EDIT - len(self.input_text), allow_space=True)
             if typed:

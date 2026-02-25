@@ -155,6 +155,37 @@ def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, patch_ray
     assert ui.input_caret == len("player")
 
 
+def test_game_over_name_entry_waits_for_controls_release(patch_raylib_module, tmp_path: Path, mocker) -> None:
+    ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config(game_mode=1))
+    _set_assets(ui, _game_over_assets())
+    ui.phase = 0
+    ui.rank = 0
+    ui._intro_ms = PANEL_SLIDE_DURATION_MS
+    ui.input_text = "user"
+    ui.input_caret = len(ui.input_text)
+    ui._defer_name_input_until_controls_released = True
+
+    patch_raylib_module("crimson.ui.game_over")
+    mocker.patch.object(game_over_module, "button_update", return_value=False)
+    mocker.patch.object(game_over_module, "gameplay_controls_held", side_effect=[True, False, False])
+    poll_text = mocker.patch.object(game_over_module, "poll_text_input", return_value="ww")
+
+    record = HighScoreRecord.blank()
+    record.game_mode_id = 1
+
+    ui.update(0.0, record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
+    assert ui.input_text == "user"
+    assert ui._defer_name_input_until_controls_released is True
+
+    ui.update(0.0, record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
+    assert ui.input_text == "user"
+    assert ui._defer_name_input_until_controls_released is False
+
+    ui.update(0.0, record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
+    assert ui.input_text == "userww"
+    assert poll_text.call_count == 1
+
+
 def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module, tmp_path: Path, mocker) -> None:
     ui = GameOverUi(
         assets_root=tmp_path,
