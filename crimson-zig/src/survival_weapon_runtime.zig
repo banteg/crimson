@@ -742,6 +742,10 @@ fn perkActive(player: survival_state.PlayerState, perk_id: i32) bool {
     return player.perk_counts[@intCast(perk_id)] > 0;
 }
 
+fn expectFloatClose(expected: f64, actual: f64) !void {
+    try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
+}
+
 test "weapon usage tracks most used weapon" {
     var state = survival_state.GameplayState.init(1);
     var projectiles = survival_projectiles.ProjectilePool{};
@@ -877,4 +881,286 @@ test "pistol fire consumes native casing+jitter+sfx rng draws" {
     survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.pistol);
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
     try std.testing.expect(projectiles.entries[0].active);
+}
+
+test "fastshot scales shot cooldown" {
+    var base_state = survival_state.GameplayState.init(1);
+    var base_projectiles = survival_projectiles.ProjectilePool{};
+    var base_secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var base_creatures = survival_creatures.CreaturePool{};
+    var base_particles = survival_particles.ParticlePool{};
+    var base_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .aim = .{ .x = 10.0, .y = 0.0 },
+    };
+    survival_state.weaponAssignPlayer(&base_player, survival_state.WeaponId.pistol);
+    base_player.ammo = 2.0;
+    try std.testing.expect(try tryFireWeapon(
+        &base_state,
+        &base_player,
+        &base_projectiles,
+        &base_secondary_projectiles,
+        &base_creatures,
+        &base_particles,
+    ));
+    const base_cooldown = base_player.shot_cooldown;
+
+    var perk_state = survival_state.GameplayState.init(1);
+    var perk_projectiles = survival_projectiles.ProjectilePool{};
+    var perk_secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var perk_creatures = survival_creatures.CreaturePool{};
+    var perk_particles = survival_particles.ParticlePool{};
+    var perk_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .aim = .{ .x = 10.0, .y = 0.0 },
+    };
+    survival_state.weaponAssignPlayer(&perk_player, survival_state.WeaponId.pistol);
+    perk_player.ammo = 2.0;
+    perk_player.perk_counts[@intCast(perk_id_fastshot)] = 1;
+    try std.testing.expect(try tryFireWeapon(
+        &perk_state,
+        &perk_player,
+        &perk_projectiles,
+        &perk_secondary_projectiles,
+        &perk_creatures,
+        &perk_particles,
+    ));
+
+    try expectFloatClose(asF32F64(base_cooldown * 0.88), perk_player.shot_cooldown);
+}
+
+test "sharpshooter forces spread heat and slows firing" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .aim = .{ .x = 200.0, .y = 100.0 },
+        .spread_heat = 0.48,
+    };
+    survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.assault_rifle);
+    player.perk_counts[@intCast(perk_id_sharpshooter)] = 1;
+
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{},
+        0.1,
+    );
+    try expectFloatClose(0.02, player.spread_heat);
+
+    player.shot_cooldown = 0.0;
+    try std.testing.expect(try tryFireWeapon(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+    ));
+    try expectFloatClose(
+        asF32F64(survival_state.weaponShotCooldown(survival_state.WeaponId.assault_rifle) * 1.05),
+        player.shot_cooldown,
+    );
+    try expectFloatClose(0.02, player.spread_heat);
+}
+
+test "regression bullets fires during reload and costs experience" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .aim = .{ .x = 10.0, .y = 0.0 },
+        .experience = 1000,
+    };
+    survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.pistol);
+    player.perk_counts[@intCast(perk_id_regression_bullets)] = 1;
+    player.ammo = 0.0;
+    player.reload_active = true;
+    player.reload_timer = 0.5;
+
+    try std.testing.expect(try tryFireWeapon(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+    ));
+
+    try std.testing.expectEqual(@as(i32, 760), player.experience);
+    try std.testing.expect(projectiles.entries[0].active);
+    try expectFloatClose(-1.0, player.ammo);
+}
+
+test "regression bullets blocks fire when experience is zero" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .aim = .{ .x = 10.0, .y = 0.0 },
+        .experience = 0,
+    };
+    survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.pistol);
+    player.perk_counts[@intCast(perk_id_regression_bullets)] = 1;
+    player.ammo = 0.0;
+    player.reload_active = true;
+    player.reload_timer = 0.5;
+
+    try std.testing.expect(!(try tryFireWeapon(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+    )));
+    try std.testing.expect(!projectiles.entries[0].active);
+}
+
+test "regression bullets fire ammo class drains reduced xp and spends fractional ammo" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .aim = .{ .x = 10.0, .y = 0.0 },
+        .experience = 1000,
+    };
+    survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.flamethrower);
+    player.perk_counts[@intCast(perk_id_regression_bullets)] = 1;
+    player.ammo = 5.0;
+    player.reload_active = true;
+    player.reload_timer = 0.5;
+
+    try std.testing.expect(try tryFireWeapon(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+    ));
+
+    try std.testing.expectEqual(@as(i32, 992), player.experience);
+    try std.testing.expect(particles.entries[0].active);
+    try expectFloatClose(4.9, player.ammo);
+}
+
+test "ammunition within fires during reload and costs health" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .aim = .{ .x = 10.0, .y = 0.0 },
+        .health = 10.0,
+        .experience = 1,
+    };
+    survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.pistol);
+    player.perk_counts[@intCast(perk_id_ammunition_within)] = 1;
+    player.ammo = 0.0;
+    player.reload_active = true;
+    player.reload_timer = 0.5;
+
+    try std.testing.expect(try tryFireWeapon(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+    ));
+
+    try expectFloatClose(9.0, player.health);
+    try std.testing.expectEqual(@as(i32, 1), player.experience);
+    try std.testing.expect(projectiles.entries[0].active);
+    try expectFloatClose(-1.0, player.ammo);
+}
+
+test "ammunition within blocks fire when experience is zero" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .aim = .{ .x = 10.0, .y = 0.0 },
+        .health = 10.0,
+        .experience = 0,
+    };
+    survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.pistol);
+    player.perk_counts[@intCast(perk_id_ammunition_within)] = 1;
+    player.ammo = 0.0;
+    player.reload_active = true;
+    player.reload_timer = 0.5;
+
+    try std.testing.expect(!(try tryFireWeapon(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+    )));
+    try expectFloatClose(10.0, player.health);
+    try std.testing.expect(!projectiles.entries[0].active);
+}
+
+test "ammunition within fire ammo class costs less health and spends fractional ammo" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .aim = .{ .x = 10.0, .y = 0.0 },
+        .health = 10.0,
+        .experience = 1,
+    };
+    survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.flamethrower);
+    player.perk_counts[@intCast(perk_id_ammunition_within)] = 1;
+    player.ammo = 5.0;
+    player.reload_active = true;
+    player.reload_timer = 0.5;
+
+    try std.testing.expect(try tryFireWeapon(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+    ));
+
+    try expectFloatClose(asF32F64(9.85), player.health);
+    try std.testing.expect(particles.entries[0].active);
+    try expectFloatClose(4.9, player.ammo);
 }
