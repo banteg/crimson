@@ -274,3 +274,4 @@ def test_dbg_viz(tmp_path: Path) -> None:
     html_text = html_out.read_text(encoding="utf-8")
     assert "Crimson Debug Viz" in html_text
     assert "Focus tick: 1" in html_text
+    assert "tick-slider" in html_text

@@ -144,8 +144,10 @@ def _render_html(*, payload: dict[str, object]) -> str:
         if tick == focus_tick:
             classes.append("focus")
         class_attr = f' class="{" ".join(classes)}"' if classes else ""
+        tick_attr = f' data-tick="{html.escape(str(tick))}"'
         body_rows.append(
             "<tr"
+            + tick_attr
             + class_attr
             + ">"
             + f"<td>{html.escape(str(tick))}</td>"
@@ -178,6 +180,9 @@ def _render_html(*, payload: dict[str, object]) -> str:
         '    body { margin: 0; font-family: "IBM Plex Sans", "Segoe UI", sans-serif; background: var(--bg); color: var(--fg); }\n'
         "    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 40px; }\n"
         "    .meta { display: grid; gap: 6px; margin-bottom: 14px; color: var(--muted); font-size: 14px; }\n"
+        "    .controls { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }\n"
+        "    .controls button { border: 1px solid var(--line); background: #fff; padding: 6px 10px; cursor: pointer; }\n"
+        "    .controls input[type=range] { flex: 1; }\n"
         "    table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); }\n"
         "    th, td { border-bottom: 1px solid var(--line); padding: 8px; text-align: right; font-size: 13px; }\n"
         "    th:first-child, td:first-child { text-align: left; }\n"
@@ -192,6 +197,20 @@ def _render_html(*, payload: dict[str, object]) -> str:
         f"      <div>Golden: {golden_text}</div>\n"
         f"      <div>Candidate: {candidate_text}</div>\n"
         f"      <div>Focus tick: {focus_text} | Window: {start_text}..{end_text}</div>\n"
+        "    </div>\n"
+        '    <div class="controls">\n'
+        '      <button id="tick-prev" type="button">Prev</button>\n'
+        '      <input id="tick-slider" type="range" min="'
+        + start_text
+        + '" max="'
+        + end_text
+        + '" value="'
+        + focus_text
+        + '" />\n'
+        '      <button id="tick-next" type="button">Next</button>\n'
+        '      <span id="tick-label">Tick '
+        + focus_text
+        + "</span>\n"
         "    </div>\n"
         "    <table>\n"
         "      <thead>\n"
@@ -211,6 +230,35 @@ def _render_html(*, payload: dict[str, object]) -> str:
         f"{rows_html}\n"
         "      </tbody>\n"
         "    </table>\n"
+        "    <script>\n"
+        "      (function () {\n"
+        "        const slider = document.getElementById('tick-slider');\n"
+        "        const label = document.getElementById('tick-label');\n"
+        "        const prev = document.getElementById('tick-prev');\n"
+        "        const next = document.getElementById('tick-next');\n"
+        "        const rows = Array.from(document.querySelectorAll('tbody tr'));\n"
+        "        function setTick(tick) {\n"
+        "          const n = Number(tick);\n"
+        "          slider.value = String(n);\n"
+        "          label.textContent = 'Tick ' + String(n);\n"
+        "          let focusRow = null;\n"
+        "          rows.forEach((row) => {\n"
+        "            if (Number(row.getAttribute('data-tick')) === n) {\n"
+        "              row.classList.add('focus');\n"
+        "              focusRow = row;\n"
+        "            } else {\n"
+        "              row.classList.remove('focus');\n"
+        "            }\n"
+        "          });\n"
+        "          if (focusRow) {\n"
+        "            focusRow.scrollIntoView({ block: 'nearest' });\n"
+        "          }\n"
+        "        }\n"
+        "        slider.addEventListener('input', () => setTick(slider.value));\n"
+        "        prev.addEventListener('click', () => setTick(Math.max(Number(slider.min), Number(slider.value) - 1)));\n"
+        "        next.addEventListener('click', () => setTick(Math.min(Number(slider.max), Number(slider.value) + 1)));\n"
+        "      })();\n"
+        "    </script>\n"
         "  </div>\n"
         "</body>\n"
         "</html>\n"
