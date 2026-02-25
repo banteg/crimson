@@ -33,6 +33,7 @@ pub const TickInputFlags = struct {
     reload_pressed: bool = false,
     reload_active_any: bool = false,
     move_mode: i32 = 0,
+    single_player_mode: bool = true,
 };
 
 pub fn stepPlayerForTick(
@@ -137,6 +138,7 @@ pub fn stepPlayerForTick(
         !state.demo_mode_active and
         !has_alt_weapon_perk and
         input_flags.move_mode != movement_control_mouse_point_click and
+        input_flags.single_player_mode and
         player.reload_timer == 0.0;
     if (manual_reload_allowed) {
         survival_state.playerStartReload(player, state);
@@ -264,7 +266,11 @@ fn tryFireWeaponWithForce(
 
     var shot_cooldown = shot_cooldown_base;
 
-    const shot_count = computeShotCount(player.weapon_id, player.ammo);
+    const is_fire_bullets = player.fire_bullets_timer > 0.0;
+    var shot_count = computeShotCount(player.weapon_id, player.ammo);
+    if (is_fire_bullets) {
+        shot_count = pellet_count;
+    }
     if (shot_count <= 0) return false;
 
     const aim_delta = survival_state.Vec2.sub(player.aim, player.pos);
@@ -276,7 +282,6 @@ fn tryFireWeaponWithForce(
     const muzzle = survival_state.Vec2.add(player.pos, muzzle_dir.mul(16.0));
     const projectile_owner_id: i32 = -100;
     const secondary_owner_id: i32 = -1 - player.index;
-    const is_fire_bullets = player.fire_bullets_timer > 0.0;
     if (is_fire_bullets and pellet_count == 1) {
         shot_cooldown = survival_state.weaponShotCooldown(fire_bullets_weapon_id);
     }
@@ -868,6 +873,16 @@ fn activeProjectileTypeCount(
     return count;
 }
 
+fn activeSecondaryProjectileCount(
+    secondary_projectiles: *const survival_secondary_projectiles.SecondaryProjectilePool,
+) usize {
+    var count: usize = 0;
+    for (secondary_projectiles.entries) |entry| {
+        if (entry.active) count += 1;
+    }
+    return count;
+}
+
 fn findSeedForNthRandValue(
     draw_index: usize,
     target: u32,
@@ -984,6 +999,34 @@ test "manual reload starts even when clip is full" {
 
     try std.testing.expect(player.reload_active);
     try std.testing.expect(player.reload_timer > 0.0);
+}
+
+test "manual reload requires single player mode" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+    };
+    survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.pistol);
+    player.ammo = 0.0;
+
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{ .reload_pressed = true, .single_player_mode = false },
+        1.0 / 60.0,
+    );
+
+    try std.testing.expect(!player.reload_active);
+    try expectFloatClose(0.0, player.reload_timer);
 }
 
 test "anxious loader reduces reload timer on fire press" {
@@ -1698,6 +1741,120 @@ test "shotgun family fires expected pellet counts and formulas" {
             try expectFloatClose(expected_speed, proj.speed_scale);
         }
     }
+}
+
+test "fire bullets on shotgun spawns pellet count projectiles and keeps ammo" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .aim = .{ .x = 101.0, .y = 100.0 },
+        .aim_dir = .{ .x = 1.0, .y = 0.0 },
+        .spread_heat = 0.01,
+    };
+    survival_state.weaponAssignPlayer(&player, 3);
+    player.fire_bullets_timer = 1.0;
+    const start_ammo = player.ammo;
+
+    try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
+
+    try std.testing.expectEqual(@as(usize, 12), activeProjectileCount(&projectiles));
+    try std.testing.expectEqual(@as(usize, 0), activeSecondaryProjectileCount(&secondary_projectiles));
+    try expectFloatClose(start_ammo, player.ammo);
+    try expectFloatClose(0.296, player.spread_heat);
+    for (projectiles.entries[0..12]) |proj| {
+        try std.testing.expect(proj.active);
+        try std.testing.expectEqual(survival_state.ProjectileTypeId.fire_bullets, proj.type_id);
+    }
+}
+
+test "fire bullets overrides rocket family into primary projectile pool" {
+    const rocket_weapon_ids = [_]i32{ 12, 13, 17, 18 };
+    for (rocket_weapon_ids) |weapon_id| {
+        var state = survival_state.GameplayState.init(1);
+        var projectiles = survival_projectiles.ProjectilePool{};
+        var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+        var creatures = survival_creatures.CreaturePool{};
+        var particles = survival_particles.ParticlePool{};
+        var player = survival_state.PlayerState{
+            .index = 0,
+            .pos = .{},
+            .aim = .{ .x = 200.0, .y = 0.0 },
+            .aim_dir = .{ .x = 1.0, .y = 0.0 },
+            .spread_heat = 0.0,
+        };
+        survival_state.weaponAssignPlayer(&player, weapon_id);
+        player.fire_bullets_timer = 1.0;
+
+        try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
+
+        const expected_count: usize = @intCast(@max(0, survival_state.weaponPelletCount(weapon_id)));
+        try std.testing.expectEqual(expected_count, activeProjectileCount(&projectiles));
+        try std.testing.expectEqual(@as(usize, 0), activeSecondaryProjectileCount(&secondary_projectiles));
+        var idx: usize = 0;
+        while (idx < expected_count) : (idx += 1) {
+            const proj = projectiles.entries[idx];
+            try std.testing.expect(proj.active);
+            try std.testing.expectEqual(survival_state.ProjectileTypeId.fire_bullets, proj.type_id);
+        }
+    }
+}
+
+test "fire bullets can fire at zero ammo and then trigger reload" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .aim = .{ .x = 101.0, .y = 100.0 },
+        .aim_dir = .{ .x = 1.0, .y = 0.0 },
+    };
+    survival_state.weaponAssignPlayer(&player, 3);
+    player.ammo = 0.0;
+    player.fire_bullets_timer = 1.0;
+
+    try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
+
+    try std.testing.expectEqual(@as(usize, 12), activeProjectileCount(&projectiles));
+    for (projectiles.entries[0..12]) |proj| {
+        try std.testing.expect(proj.active);
+        try std.testing.expectEqual(survival_state.ProjectileTypeId.fire_bullets, proj.type_id);
+    }
+    try std.testing.expect(player.reload_active);
+    try std.testing.expect(player.reload_timer > 0.0);
+}
+
+test "negative ammo still fires then enters reload for non fire bullets" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .aim = .{ .x = 200.0, .y = 100.0 },
+        .aim_dir = .{ .x = 1.0, .y = 0.0 },
+        .reload_active = false,
+        .reload_timer = 0.0,
+    };
+    survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.ion_cannon);
+    player.ammo = -1.0;
+
+    try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
+
+    try std.testing.expect(projectiles.entries[0].active);
+    try std.testing.expectEqual(survival_state.ProjectileTypeId.ion_cannon, projectiles.entries[0].type_id);
+    try expectFloatClose(-2.0, player.ammo);
+    try std.testing.expect(player.reload_active);
+    try expectFloatClose(3.0, player.reload_timer);
 }
 
 test "pistol fire consumes native casing+jitter+sfx rng draws" {

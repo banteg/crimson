@@ -589,6 +589,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
                     .reload_pressed = flags.reload_pressed,
                     .reload_active_any = reload_active_any,
                     .move_mode = move_mode_for_tick,
+                    .single_player_mode = players.len == 1,
                 },
                 dt_sim,
             ) catch |err| switch (err) {
