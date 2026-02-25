@@ -194,6 +194,34 @@ pub const CreaturePool = struct {
                 }
                 self.entries[primary_child_idx].heading = asF32F64(call.heading);
             },
+            0x03 => {
+                self.spawnBasicRandomTemplate(
+                    rng,
+                    call,
+                    survival_spawn.CreatureTypeId.spider_sp1,
+                );
+            },
+            0x04 => {
+                self.spawnBasicRandomTemplate(
+                    rng,
+                    call,
+                    survival_spawn.CreatureTypeId.lizard,
+                );
+            },
+            0x05 => {
+                self.spawnBasicRandomTemplate(
+                    rng,
+                    call,
+                    survival_spawn.CreatureTypeId.spider_sp2,
+                );
+            },
+            0x06 => {
+                self.spawnBasicRandomTemplate(
+                    rng,
+                    call,
+                    survival_spawn.CreatureTypeId.alien,
+                );
+            },
             survival_spawn.SpawnId.alien_const_red_fast_2b => {
                 _ = self.spawnFromStats(
                     rng,
@@ -257,23 +285,305 @@ pub const CreaturePool = struct {
                     .contact_damage = contact_damage,
                 });
             },
+            0x36 => {
+                const idx = self.spawnFromStats(
+                    rng,
+                    .{ .x = call.pos.x, .y = call.pos.y },
+                    call.heading,
+                    .{
+                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .health = 10.0,
+                        .move_speed = 1.8,
+                        .reward_value = 150.0,
+                        .size = 50.0,
+                        .contact_damage = 40.0,
+                    },
+                );
+                _ = rng.rand() % 314;
+                _ = rng.rand() % 5;
+                self.entries[idx].ai_mode = survival_spawn.CreatureAiMode.hold_timer;
+                self.entries[idx].orbit_radius = 1.5;
+            },
+            0x37 => {
+                const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+                _ = rng.rand() % 314;
+                const size = @as(f64, @floatFromInt((rng.rand() & 3) + 41));
+
+                _ = self.spawnInit(.{
+                    .origin_template_id = -1,
+                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .heading = call.heading,
+                    .set_heading = true,
+                    .phase_seed = phase_seed,
+                    .type_id = survival_spawn.CreatureTypeId.spider_sp2,
+                    .ai_mode = survival_spawn.CreatureAiMode.orbit_player,
+                    .flags = survival_spawn.CreatureFlags.ranged_attack_variant,
+                    .size = size,
+                    .move_speed = 3.2,
+                    .health = 50.0,
+                    .max_health = 50.0,
+                    .reward_value = 433.0,
+                    .contact_damage = 10.0,
+                });
+            },
             survival_spawn.SpawnId.spider_sp1_ai7_timer_38 => {
+                const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+                _ = rng.rand() % 314;
+                const size = @as(f64, @floatFromInt((rng.rand() & 3) + 41));
+
+                const idx = self.spawnInit(.{
+                    .origin_template_id = -1,
+                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .heading = call.heading,
+                    .set_heading = true,
+                    .phase_seed = phase_seed,
+                    .type_id = survival_spawn.CreatureTypeId.spider_sp1,
+                    .ai_mode = survival_spawn.CreatureAiMode.orbit_player,
+                    .flags = survival_spawn.CreatureFlags.ai7_link_timer,
+                    .size = size,
+                    .move_speed = 4.8,
+                    .health = 50.0,
+                    .max_health = 50.0,
+                    .reward_value = 433.0,
+                    .contact_damage = 10.0,
+                });
+                self.entries[idx].link_index = 0;
+            },
+            0x39 => {
+                const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+                _ = rng.rand() % 314;
+                const size = @as(f64, @floatFromInt(rng.rand() % 4 + 26));
+
+                const idx = self.spawnInit(.{
+                    .origin_template_id = -1,
+                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .heading = call.heading,
+                    .set_heading = true,
+                    .phase_seed = phase_seed,
+                    .type_id = survival_spawn.CreatureTypeId.spider_sp1,
+                    .ai_mode = survival_spawn.CreatureAiMode.orbit_player,
+                    .flags = survival_spawn.CreatureFlags.ai7_link_timer,
+                    .size = size,
+                    .move_speed = 4.8,
+                    .health = 4.0,
+                    .max_health = 4.0,
+                    .reward_value = 50.0,
+                    .contact_damage = 10.0,
+                });
+                self.entries[idx].link_index = 0;
+            },
+            survival_spawn.SpawnId.spider_sp2_splitter_01 => {
+                _ = self.spawnFromStatsWithFlags(
+                    rng,
+                    .{ .x = call.pos.x, .y = call.pos.y },
+                    call.heading,
+                    .{
+                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp2),
+                        .health = 400.0,
+                        .move_speed = 2.0,
+                        .reward_value = 1000.0,
+                        .size = 80.0,
+                        .contact_damage = 17.0,
+                    },
+                    survival_spawn.CreatureFlags.split_on_death,
+                    true,
+                );
+                _ = rng.rand() % 314;
+            },
+            survival_spawn.SpawnId.spider_sp1_const_shock_boss_3a => {
                 const idx = self.spawnFromStatsWithFlags(
                     rng,
                     .{ .x = call.pos.x, .y = call.pos.y },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
-                        .health = 50.0,
-                        .move_speed = 4.8,
-                        .reward_value = 433.0,
-                        .size = @as(f64, @floatFromInt((rng.rand() & 3) + 41)),
-                        .contact_damage = 10.0,
+                        .health = 4500.0,
+                        .move_speed = 2.0,
+                        .reward_value = 4500.0,
+                        .size = 64.0,
+                        .contact_damage = 50.0,
                     },
-                    survival_spawn.CreatureFlags.ai7_link_timer,
+                    survival_spawn.CreatureFlags.ranged_attack_shock,
                     true,
                 );
+                self.entries[idx].orbit_angle = 0.9;
+                self.entries[idx].orbit_radius = 9.0;
+                _ = rng.rand() % 314;
+            },
+            0x3B => {
+                const idx = self.spawnFromStats(
+                    rng,
+                    .{ .x = call.pos.x, .y = call.pos.y },
+                    call.heading,
+                    .{
+                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
+                        .health = 1200.0,
+                        .move_speed = 2.0,
+                        .reward_value = 4000.0,
+                        .size = 70.0,
+                        .contact_damage = 20.0,
+                    },
+                );
+                _ = rng.rand() % 314;
+                applySpiderSp1Ai7Tail(&self.entries[idx]);
+            },
+            survival_spawn.SpawnId.spider_sp1_const_ranged_variant_3c => {
+                const idx = self.spawnFromStatsWithFlags(
+                    rng,
+                    .{ .x = call.pos.x, .y = call.pos.y },
+                    call.heading,
+                    .{
+                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
+                        .health = 200.0,
+                        .move_speed = 2.4,
+                        .reward_value = 200.0,
+                        .size = 40.0,
+                        .contact_damage = 20.0,
+                    },
+                    survival_spawn.CreatureFlags.ranged_attack_variant | survival_spawn.CreatureFlags.ai7_link_timer,
+                    true,
+                );
+                self.entries[idx].ai_mode = survival_spawn.CreatureAiMode.chase_player;
                 self.entries[idx].link_index = 0;
+                self.entries[idx].orbit_angle = 0.4;
+                self.entries[idx].orbit_radius = 26.0;
+                _ = rng.rand() % 314;
+            },
+            0x3D => {
+                const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+                _ = rng.rand() % 314;
+                _ = rng.rand() % 20;
+                const size = @as(f64, @floatFromInt(rng.rand() % 7 + 45));
+                const contact_damage = asF32F64(size * 0.22);
+
+                const idx = self.spawnInit(.{
+                    .origin_template_id = -1,
+                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .heading = call.heading,
+                    .set_heading = true,
+                    .phase_seed = phase_seed,
+                    .type_id = survival_spawn.CreatureTypeId.spider_sp1,
+                    .ai_mode = survival_spawn.CreatureAiMode.orbit_player,
+                    .flags = 0,
+                    .size = size,
+                    .move_speed = 2.6,
+                    .health = 70.0,
+                    .max_health = 70.0,
+                    .reward_value = 120.0,
+                    .contact_damage = contact_damage,
+                });
+                applySpiderSp1Ai7Tail(&self.entries[idx]);
+            },
+            0x3E => {
+                const idx = self.spawnFromStats(
+                    rng,
+                    .{ .x = call.pos.x, .y = call.pos.y },
+                    call.heading,
+                    .{
+                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
+                        .health = 1000.0,
+                        .move_speed = 2.8,
+                        .reward_value = 500.0,
+                        .size = 64.0,
+                        .contact_damage = 40.0,
+                    },
+                );
+                _ = rng.rand() % 314;
+                applySpiderSp1Ai7Tail(&self.entries[idx]);
+            },
+            0x3F => {
+                const idx = self.spawnFromStats(
+                    rng,
+                    .{ .x = call.pos.x, .y = call.pos.y },
+                    call.heading,
+                    .{
+                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
+                        .health = 200.0,
+                        .move_speed = 2.3,
+                        .reward_value = 210.0,
+                        .size = 35.0,
+                        .contact_damage = 20.0,
+                    },
+                );
+                _ = rng.rand() % 314;
+                applySpiderSp1Ai7Tail(&self.entries[idx]);
+            },
+            0x40 => {
+                const idx = self.spawnFromStats(
+                    rng,
+                    .{ .x = call.pos.x, .y = call.pos.y },
+                    call.heading,
+                    .{
+                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
+                        .health = 70.0,
+                        .move_speed = 2.2,
+                        .reward_value = 160.0,
+                        .size = 45.0,
+                        .contact_damage = 5.0,
+                    },
+                );
+                _ = rng.rand() % 314;
+                applySpiderSp1Ai7Tail(&self.entries[idx]);
+            },
+            0x41 => {
+                const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+                _ = rng.rand() % 314;
+                const size = randf(rng, 30, 1.0, 40.0);
+                const health = asF32F64(size * (8.0 / 7.0) + 10.0);
+                const reward_value = asF32F64(size + size + 50.0);
+                const move_speed = asF32F64(size * 0.0025 + 0.9);
+                _ = randf(rng, 40, 0.01, 0.6);
+                const contact_damage = randf(rng, 10, 1.0, 4.0);
+
+                _ = self.spawnInit(.{
+                    .origin_template_id = -1,
+                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .heading = call.heading,
+                    .set_heading = true,
+                    .phase_seed = phase_seed,
+                    .type_id = survival_spawn.CreatureTypeId.zombie,
+                    .ai_mode = survival_spawn.CreatureAiMode.orbit_player,
+                    .flags = 0,
+                    .size = size,
+                    .move_speed = move_speed,
+                    .health = health,
+                    .max_health = health,
+                    .reward_value = reward_value,
+                    .contact_damage = contact_damage,
+                });
+            },
+            0x42 => {
+                const idx = self.spawnFromStats(
+                    rng,
+                    .{ .x = call.pos.x, .y = call.pos.y },
+                    call.heading,
+                    .{
+                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.zombie),
+                        .health = 200.0,
+                        .move_speed = 1.7,
+                        .reward_value = 160.0,
+                        .size = 45.0,
+                        .contact_damage = 15.0,
+                    },
+                );
+                _ = idx;
+                _ = rng.rand() % 314;
+            },
+            0x43 => {
+                const idx = self.spawnFromStats(
+                    rng,
+                    .{ .x = call.pos.x, .y = call.pos.y },
+                    call.heading,
+                    .{
+                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.zombie),
+                        .health = 2000.0,
+                        .move_speed = 2.1,
+                        .reward_value = 460.0,
+                        .size = 70.0,
+                        .contact_damage = 15.0,
+                    },
+                );
+                _ = idx;
                 _ = rng.rand() % 314;
             },
             else => return error.UnsupportedSpawnTemplate,
@@ -771,6 +1081,52 @@ pub const CreaturePool = struct {
         });
     }
 
+    fn spawnBasicRandomTemplate(
+        self: *CreaturePool,
+        rng: *survival_spawn.Crand,
+        call: survival_spawn.SpawnTemplateCall,
+        creature_type: survival_spawn.CreatureTypeId,
+    ) void {
+        const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+        _ = rng.rand() % 314;
+
+        const size = randf(rng, 15, 1.0, 38.0);
+        const base_move_speed = randf(rng, 18, 0.1, 1.1);
+        if (creature_type != .lizard) {
+            _ = randf(rng, 25, 0.01, 0.8);
+        }
+        const contact_damage = randf(rng, 10, 1.0, 4.0);
+        const health = asF32F64(size * (8.0 / 7.0) + 20.0);
+        const reward_value = asF32F64(size + size + 50.0);
+
+        var flags: u32 = 0;
+        var move_speed = base_move_speed;
+        if (creature_type == .spider_sp1) {
+            flags |= survival_spawn.CreatureFlags.ai7_link_timer;
+            move_speed = asF32F64(move_speed * 1.2);
+        }
+
+        const idx = self.spawnInit(.{
+            .origin_template_id = -1,
+            .pos = .{ .x = call.pos.x, .y = call.pos.y },
+            .heading = call.heading,
+            .set_heading = true,
+            .phase_seed = phase_seed,
+            .type_id = creature_type,
+            .ai_mode = survival_spawn.CreatureAiMode.orbit_player,
+            .flags = flags,
+            .size = size,
+            .move_speed = move_speed,
+            .health = health,
+            .max_health = health,
+            .reward_value = reward_value,
+            .contact_damage = contact_damage,
+        });
+        if (creature_type == .spider_sp1) {
+            self.entries[idx].link_index = 0;
+        }
+    }
+
     fn findRayHitCreature(
         self: *CreaturePool,
         origin: survival_state.Vec2,
@@ -1124,6 +1480,16 @@ const SpawnStats = struct {
 
 fn randf(rng: *survival_spawn.Crand, mod: u32, scale: f64, base: f64) f64 {
     return asF32F64(@as(f64, @floatFromInt(rng.rand() % mod)) * scale + base);
+}
+
+fn applySpiderSp1Ai7Tail(creature: *CreatureState) void {
+    if (creature.type_id != @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)) return;
+    if ((creature.flags & survival_spawn.CreatureFlags.ranged_attack_shock) != 0) return;
+    if ((creature.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0) return;
+
+    creature.flags |= survival_spawn.CreatureFlags.ai7_link_timer;
+    creature.link_index = 0;
+    creature.move_speed = asF32F64(creature.move_speed * 1.2);
 }
 
 fn hitRadiusFor(creature: CreatureState) f64 {
@@ -1649,6 +2015,402 @@ test "template spawn supports survival early-stage templates" {
     try std.testing.expectEqual(@as(usize, 9), pool.activeCount());
 }
 
+test "template spawn supports survival late-stage templates" {
+    var pool = CreaturePool{};
+    var rng = survival_spawn.Crand.init(1);
+
+    try pool.spawnTemplateCall(
+        .{
+            .template_id = survival_spawn.SpawnId.spider_sp2_splitter_01,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .heading = 1.23,
+        },
+        &rng,
+    );
+    const split_entry = pool.entries[0];
+    try std.testing.expect(split_entry.active);
+    try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp2)), split_entry.type_id);
+    try std.testing.expect((split_entry.flags & survival_spawn.CreatureFlags.split_on_death) != 0);
+    try expectFloatClose(400.0, split_entry.hp);
+    try expectFloatClose(2.0, split_entry.move_speed);
+    try expectFloatClose(1000.0, split_entry.reward_value);
+    try expectFloatClose(80.0, split_entry.size);
+    try expectFloatClose(17.0, split_entry.contact_damage);
+
+    try pool.spawnTemplateCall(
+        .{
+            .template_id = survival_spawn.SpawnId.spider_sp1_const_shock_boss_3a,
+            .pos = .{ .x = 30.0, .y = 40.0 },
+            .heading = 2.34,
+        },
+        &rng,
+    );
+    const shock_entry = pool.entries[1];
+    try std.testing.expect(shock_entry.active);
+    try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), shock_entry.type_id);
+    try std.testing.expect((shock_entry.flags & survival_spawn.CreatureFlags.ranged_attack_shock) != 0);
+    try expectFloatClose(4500.0, shock_entry.hp);
+    try expectFloatClose(2.0, shock_entry.move_speed);
+    try expectFloatClose(4500.0, shock_entry.reward_value);
+    try expectFloatClose(64.0, shock_entry.size);
+    try expectFloatClose(50.0, shock_entry.contact_damage);
+    try expectFloatClose(0.9, shock_entry.orbit_angle);
+    try expectFloatClose(9.0, shock_entry.orbit_radius);
+
+    try pool.spawnTemplateCall(
+        .{
+            .template_id = survival_spawn.SpawnId.spider_sp1_const_ranged_variant_3c,
+            .pos = .{ .x = 50.0, .y = 60.0 },
+            .heading = 3.45,
+        },
+        &rng,
+    );
+    const ranged_entry = pool.entries[2];
+    try std.testing.expect(ranged_entry.active);
+    try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), ranged_entry.type_id);
+    try std.testing.expect((ranged_entry.flags & survival_spawn.CreatureFlags.ranged_attack_variant) != 0);
+    try std.testing.expect((ranged_entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+    try std.testing.expectEqual(survival_spawn.CreatureAiMode.chase_player, ranged_entry.ai_mode);
+    try std.testing.expectEqual(@as(i32, 0), ranged_entry.link_index);
+    try expectFloatClose(200.0, ranged_entry.hp);
+    try expectFloatClose(2.4, ranged_entry.move_speed);
+    try expectFloatClose(200.0, ranged_entry.reward_value);
+    try expectFloatClose(40.0, ranged_entry.size);
+    try expectFloatClose(20.0, ranged_entry.contact_damage);
+    try expectFloatClose(0.4, ranged_entry.orbit_angle);
+    try expectFloatClose(26.0, ranged_entry.orbit_radius);
+}
+
+test "template spawn supports quest random and ai7 templates" {
+    {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x03,
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
+        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expectEqual(survival_spawn.CreatureAiMode.orbit_player, entry.ai_mode);
+        try std.testing.expectEqual(@as(i32, 0), entry.link_index);
+        try expectFloatClose(68.0, entry.hp);
+        try expectFloatClose(1.8, entry.move_speed);
+        try expectFloatClose(134.0, entry.reward_value);
+        try expectFloatClose(42.0, entry.size);
+        try expectFloatClose(8.0, entry.contact_damage);
+    }
+
+    {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x04,
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.lizard)), entry.type_id);
+        try std.testing.expectEqual(@as(u32, 0), entry.flags);
+        try expectFloatClose(68.0, entry.hp);
+        try expectFloatClose(1.5, entry.move_speed);
+        try expectFloatClose(134.0, entry.reward_value);
+        try expectFloatClose(42.0, entry.size);
+        try expectFloatClose(13.0, entry.contact_damage);
+    }
+
+    {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x05,
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp2)), entry.type_id);
+        try std.testing.expectEqual(@as(u32, 0), entry.flags);
+        try expectFloatClose(68.0, entry.hp);
+        try expectFloatClose(1.5, entry.move_speed);
+        try expectFloatClose(134.0, entry.reward_value);
+        try expectFloatClose(42.0, entry.size);
+        try expectFloatClose(8.0, entry.contact_damage);
+    }
+
+    {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x06,
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.alien)), entry.type_id);
+        try std.testing.expectEqual(@as(u32, 0), entry.flags);
+        try expectFloatClose(68.0, entry.hp);
+        try expectFloatClose(1.5, entry.move_speed);
+        try expectFloatClose(134.0, entry.reward_value);
+        try expectFloatClose(42.0, entry.size);
+        try expectFloatClose(8.0, entry.contact_damage);
+    }
+
+    {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x36,
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.alien)), entry.type_id);
+        try std.testing.expectEqual(survival_spawn.CreatureAiMode.hold_timer, entry.ai_mode);
+        try std.testing.expectEqual(@as(u32, 0), entry.flags);
+        try expectFloatClose(10.0, entry.hp);
+        try expectFloatClose(1.8, entry.move_speed);
+        try expectFloatClose(150.0, entry.reward_value);
+        try expectFloatClose(50.0, entry.size);
+        try expectFloatClose(40.0, entry.contact_damage);
+        try expectFloatClose(1.5, entry.orbit_radius);
+    }
+}
+
+test "template spawn supports quest spider and zombie late templates" {
+    {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x37,
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp2)), entry.type_id);
+        try std.testing.expectEqual(@as(u32, survival_spawn.CreatureFlags.ranged_attack_variant), entry.flags);
+        try std.testing.expectEqual(survival_spawn.CreatureAiMode.orbit_player, entry.ai_mode);
+        try expectFloatClose(50.0, entry.hp);
+        try expectFloatClose(3.2, entry.move_speed);
+        try expectFloatClose(433.0, entry.reward_value);
+        try expectFloatClose(43.0, entry.size);
+        try expectFloatClose(10.0, entry.contact_damage);
+    }
+
+    {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x39,
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
+        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expectEqual(@as(i32, 0), entry.link_index);
+        try expectFloatClose(4.0, entry.hp);
+        try expectFloatClose(4.8, entry.move_speed);
+        try expectFloatClose(50.0, entry.reward_value);
+        try expectFloatClose(28.0, entry.size);
+        try expectFloatClose(10.0, entry.contact_damage);
+    }
+
+    {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x3B,
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
+        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expectEqual(@as(i32, 0), entry.link_index);
+        try expectFloatClose(1200.0, entry.hp);
+        try expectFloatClose(2.4, entry.move_speed);
+        try expectFloatClose(4000.0, entry.reward_value);
+        try expectFloatClose(70.0, entry.size);
+        try expectFloatClose(20.0, entry.contact_damage);
+    }
+
+    {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x3D,
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
+        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expectEqual(@as(i32, 0), entry.link_index);
+        try expectFloatClose(70.0, entry.hp);
+        try expectFloatClose(3.12, entry.move_speed);
+        try expectFloatClose(120.0, entry.reward_value);
+        try expectFloatClose(50.0, entry.size);
+        try expectFloatClose(11.0, entry.contact_damage);
+    }
+
+    {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x3E,
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
+        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expectEqual(@as(i32, 0), entry.link_index);
+        try expectFloatClose(1000.0, entry.hp);
+        try expectFloatClose(3.36, entry.move_speed);
+        try expectFloatClose(500.0, entry.reward_value);
+        try expectFloatClose(64.0, entry.size);
+        try expectFloatClose(40.0, entry.contact_damage);
+    }
+
+    {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x3F,
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
+        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expectEqual(@as(i32, 0), entry.link_index);
+        try expectFloatClose(200.0, entry.hp);
+        try expectFloatClose(2.76, entry.move_speed);
+        try expectFloatClose(210.0, entry.reward_value);
+        try expectFloatClose(35.0, entry.size);
+        try expectFloatClose(20.0, entry.contact_damage);
+    }
+
+    {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x40,
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
+        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expectEqual(@as(i32, 0), entry.link_index);
+        try expectFloatClose(70.0, entry.hp);
+        try expectFloatClose(2.64, entry.move_speed);
+        try expectFloatClose(160.0, entry.reward_value);
+        try expectFloatClose(45.0, entry.size);
+        try expectFloatClose(5.0, entry.contact_damage);
+    }
+
+    {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x41,
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.zombie)), entry.type_id);
+        try std.testing.expectEqual(@as(u32, 0), entry.flags);
+        try expectFloatClose(60.2857141494751, entry.hp);
+        try expectFloatClose(1.01, entry.move_speed);
+        try expectFloatClose(138.0, entry.reward_value);
+        try expectFloatClose(44.0, entry.size);
+        try expectFloatClose(13.0, entry.contact_damage);
+    }
+
+    {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x42,
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.zombie)), entry.type_id);
+        try std.testing.expectEqual(@as(u32, 0), entry.flags);
+        try expectFloatClose(200.0, entry.hp);
+        try expectFloatClose(1.7, entry.move_speed);
+        try expectFloatClose(160.0, entry.reward_value);
+        try expectFloatClose(45.0, entry.size);
+        try expectFloatClose(15.0, entry.contact_damage);
+    }
+
+    {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x43,
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.zombie)), entry.type_id);
+        try std.testing.expectEqual(@as(u32, 0), entry.flags);
+        try expectFloatClose(2000.0, entry.hp);
+        try expectFloatClose(2.1, entry.move_speed);
+        try expectFloatClose(460.0, entry.reward_value);
+        try expectFloatClose(70.0, entry.size);
+        try expectFloatClose(15.0, entry.contact_damage);
+    }
+}
+
 test "template spawn rejects unsupported template ids" {
     var pool = CreaturePool{};
     var rng = survival_spawn.Crand.init(1);
@@ -1657,7 +2419,7 @@ test "template spawn rejects unsupported template ids" {
         error.UnsupportedSpawnTemplate,
         pool.spawnTemplateCall(
             .{
-                .template_id = survival_spawn.SpawnId.spider_sp1_const_shock_boss_3a,
+                .template_id = 0x44,
                 .pos = .{ .x = 0.0, .y = 0.0 },
                 .heading = 0.0,
             },
