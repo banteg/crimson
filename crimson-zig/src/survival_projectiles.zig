@@ -229,7 +229,44 @@ pub const ProjectilePool = struct {
                     }
                 }
 
-                if (hit_idx == null) continue;
+                if (hit_idx == null) {
+                    var can_hit_players = true;
+                    if (state.shock_chain_projectile_id == @as(i32, @intCast(proj_idx))) {
+                        can_hit_players = false;
+                    }
+
+                    if (proj.hits_players and can_hit_players) {
+                        var hit_player_idx: ?usize = null;
+                        const owner_player_idx: ?usize = if (proj.owner_id < 0 and proj.owner_id != -100)
+                            ownerIdToPlayerIndex(proj.owner_id, players.len)
+                        else
+                            null;
+
+                        for (players, 0..) |player, idx| {
+                            if (owner_player_idx) |owner_idx| {
+                                if (owner_idx == idx) continue;
+                            }
+                            if (!(player.health > 0.0)) continue;
+                            if (withinNativeFindRadius(
+                                proj.pos,
+                                player.pos,
+                                proj.hit_radius,
+                                player.size,
+                            )) {
+                                hit_player_idx = idx;
+                                break;
+                            }
+                        }
+
+                        if (hit_player_idx) |player_idx| {
+                            proj.life_timer = 0.25;
+                            if (players[player_idx].shield_timer <= 0.0) {
+                                players[player_idx].health = asF32F64(players[player_idx].health - 10.0);
+                            }
+                        }
+                    }
+                    continue;
+                }
                 if (proj.owner_id >= 0 and hit_idx.? == @as(usize, @intCast(proj.owner_id))) continue;
                 tick_stats.hit_count += 1;
                 if (tick_stats.first_hit_creature_index < 0) {
@@ -905,4 +942,100 @@ test "ion gun master increases ion rifle linger radius" {
         10_000.0,
     );
     try std.testing.expect(creatures_with.entries[0].hp < 10.0);
+}
+
+test "ranged projectile can damage player when no creature is hit" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 4.0, .y = 0.0 },
+            .health = 100.0,
+        },
+    };
+    var creatures = survival_creatures.CreaturePool{};
+    var bonuses = survival_bonuses.BonusPool{};
+    var pool = ProjectilePool{};
+
+    _ = pool.spawn(
+        .{},
+        native_half_pi,
+        survival_state.ProjectileTypeId.plasma_rifle,
+        0,
+        45.0,
+        true,
+    );
+
+    _ = pool.update(
+        &state,
+        players[0..],
+        &creatures,
+        &bonuses,
+        0.001,
+        1024.0,
+    );
+
+    try std.testing.expect(players[0].health < 100.0);
+}
+
+test "ranged projectile can damage creature before player collision" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 4.0, .y = 0.0 },
+            .health = 100.0,
+        },
+    };
+    var creatures = survival_creatures.CreaturePool{};
+    var bonuses = survival_bonuses.BonusPool{};
+    var pool = ProjectilePool{};
+
+    _ = creatures.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = -200.0, .y = -200.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 50.0,
+        .move_speed = 0.0,
+        .health = 10.0,
+        .max_health = 10.0,
+        .reward_value = 10.0,
+        .contact_damage = 0.0,
+    });
+    _ = creatures.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 4.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 50.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 10.0,
+        .contact_damage = 0.0,
+    });
+
+    _ = pool.spawn(
+        .{},
+        native_half_pi,
+        survival_state.ProjectileTypeId.plasma_rifle,
+        0,
+        45.0,
+        true,
+    );
+
+    _ = pool.update(
+        &state,
+        players[0..],
+        &creatures,
+        &bonuses,
+        0.1,
+        1024.0,
+    );
+
+    try std.testing.expect(creatures.entries[1].hp < 100.0);
+    try expectFloatClose(100.0, players[0].health);
 }

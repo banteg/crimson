@@ -507,6 +507,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             @floatCast(header.world_size),
             &bonuses,
         );
+        applyPendingCreatureProjectiles(&state, &projectiles);
         const rng_after_creatures = state.rng.state;
         for (players, 0..) |_, player_idx| {
             applyFinalRevengeOnDeathTransition(
@@ -1341,6 +1342,34 @@ fn applyPendingBonusEffects(
         );
     }
     state.pending_nuke_count = 0;
+}
+
+fn applyPendingCreatureProjectiles(
+    state: *survival_state.GameplayState,
+    projectiles: *survival_projectiles.ProjectilePool,
+) void {
+    if (state.pending_creature_projectile_count <= 0) {
+        state.pending_creature_projectile_count = 0;
+        return;
+    }
+
+    const pending_count_i32 = @min(
+        state.pending_creature_projectile_count,
+        @as(i32, @intCast(state.pending_creature_projectile_type_ids.len)),
+    );
+
+    var idx_i32: i32 = 0;
+    while (idx_i32 < pending_count_i32) : (idx_i32 += 1) {
+        const idx: usize = @intCast(idx_i32);
+        const type_id = state.pending_creature_projectile_type_ids[idx];
+        if (type_id <= 0) continue;
+        const angle = state.pending_creature_projectile_angles[idx];
+        const pos = state.pending_creature_projectile_positions[idx];
+        const owner_id = state.pending_creature_projectile_owner_ids[idx];
+        const meta = survival_state.weaponProjectileMeta(type_id);
+        _ = projectiles.spawn(pos, angle, type_id, owner_id, meta, true);
+    }
+    state.pending_creature_projectile_count = 0;
 }
 
 fn applyFireblastBonus(
@@ -3423,6 +3452,27 @@ test "pending nuke spawns pistol and gauss projectiles with native meta ranges" 
     try std.testing.expect(pistol_count >= 4);
     try std.testing.expect(pistol_count <= 7);
     try std.testing.expectEqual(@as(i32, 2), gauss_count);
+}
+
+test "pending creature projectile queue materializes hostile shots before projectile step" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+
+    state.pending_creature_projectile_count = 1;
+    state.pending_creature_projectile_type_ids[0] = survival_state.ProjectileTypeId.plasma_rifle;
+    state.pending_creature_projectile_owner_ids[0] = 17;
+    state.pending_creature_projectile_angles[0] = native_half_pi;
+    state.pending_creature_projectile_positions[0] = .{ .x = 100.0, .y = 200.0 };
+
+    applyPendingCreatureProjectiles(&state, &projectiles);
+
+    try std.testing.expectEqual(@as(i32, 0), state.pending_creature_projectile_count);
+    try std.testing.expect(projectiles.entries[0].active);
+    try std.testing.expect(projectiles.entries[0].hits_players);
+    try std.testing.expectEqual(survival_state.ProjectileTypeId.plasma_rifle, projectiles.entries[0].type_id);
+    try std.testing.expectEqual(@as(i32, 17), projectiles.entries[0].owner_id);
+    try std.testing.expectApproxEqAbs(@as(f64, 100.0), projectiles.entries[0].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 200.0), projectiles.entries[0].pos.y, 1e-6);
 }
 
 test "final revenge explosion applies radial damage on death transition" {

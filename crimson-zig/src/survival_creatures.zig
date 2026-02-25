@@ -1963,6 +1963,40 @@ pub const CreaturePool = struct {
                 }
             }
 
+            if ((creature.flags & (survival_spawn.CreatureFlags.ranged_attack_shock | survival_spawn.CreatureFlags.ranged_attack_variant)) != 0) {
+                const dist = survival_state.Vec2.sub(creature.pos, player.pos).length();
+                if (dist > 64.0 and creature.attack_cooldown <= 0.0) {
+                    if ((creature.flags & survival_spawn.CreatureFlags.ranged_attack_shock) != 0) {
+                        queueCreatureProjectile(
+                            state,
+                            creature.pos,
+                            creature.heading,
+                            survival_state.ProjectileTypeId.plasma_rifle,
+                            @intCast(idx),
+                        );
+                        creature.attack_cooldown = asF32F64(creature.attack_cooldown + 1.0);
+                    }
+
+                    if ((creature.flags & survival_spawn.CreatureFlags.ranged_attack_variant) != 0 and
+                        creature.attack_cooldown <= 0.0)
+                    {
+                        const projectile_type: i32 = @intFromFloat(creature.orbit_radius);
+                        queueCreatureProjectile(
+                            state,
+                            creature.pos,
+                            creature.heading,
+                            projectile_type,
+                            @intCast(idx),
+                        );
+                        creature.attack_cooldown = asF32F64(
+                            @as(f64, @floatFromInt(state.rng.rand() & 3)) * 0.1 +
+                                creature.orbit_angle +
+                                creature.attack_cooldown,
+                        );
+                    }
+                }
+            }
+
             const contact_sq = survival_state.Vec2.sub(player.pos, creature.pos).lengthSq();
             if (creature.lifecycle_stage == creature_lifecycle_stage_alive and
                 creature.size > 16.0 and
@@ -2270,6 +2304,7 @@ pub const CreaturePool = struct {
 
         creature.last_hit_owner_id = owner_id;
 
+        spawnSplitChildrenOnDeath(self, state, creature);
         consumeDeathSideEffectsRng(
             state,
             players,
@@ -2492,6 +2527,7 @@ pub const CreaturePool = struct {
             .x = creature.vel.x - impulse.x * 2.0,
             .y = creature.vel.y - impulse.y * 2.0,
         };
+        spawnSplitChildrenOnDeath(self, state, creature);
         consumeDeathSideEffectsRng(
             state,
             players,
@@ -3031,6 +3067,86 @@ fn awardExperienceFromReward(
         gained += awardExperienceOnceFromReward(player, reward_value);
     }
     return gained;
+}
+
+fn wrapAngle(value: f64) f64 {
+    var angle = asF32F64(value);
+    while (angle <= -std.math.pi) {
+        angle = asF32F64(angle + native_tau);
+    }
+    while (angle > std.math.pi) {
+        angle = asF32F64(angle - native_tau);
+    }
+    return angle;
+}
+
+fn queueCreatureProjectile(
+    state: *survival_state.GameplayState,
+    pos: survival_state.Vec2,
+    angle: f64,
+    type_id: i32,
+    owner_id: i32,
+) void {
+    if (type_id <= 0) return;
+    if (state.pending_creature_projectile_count < 0) {
+        state.pending_creature_projectile_count = 0;
+    }
+    const pending_count: usize = @intCast(state.pending_creature_projectile_count);
+    if (pending_count >= state.pending_creature_projectile_type_ids.len) return;
+
+    state.pending_creature_projectile_type_ids[pending_count] = type_id;
+    state.pending_creature_projectile_owner_ids[pending_count] = owner_id;
+    state.pending_creature_projectile_angles[pending_count] = asF32F64(angle);
+    state.pending_creature_projectile_positions[pending_count] = .{
+        .x = asF32F64(pos.x),
+        .y = asF32F64(pos.y),
+    };
+    state.pending_creature_projectile_count += 1;
+}
+
+fn spawnSplitChildrenOnDeath(
+    self: *CreaturePool,
+    state: *survival_state.GameplayState,
+    creature: *const CreatureState,
+) void {
+    if ((creature.flags & survival_spawn.CreatureFlags.split_on_death) == 0) return;
+    if (!(creature.size > 35.0)) return;
+
+    const heading_offsets = [_]f64{ -native_half_pi, native_half_pi };
+    for (heading_offsets) |heading_offset| {
+        const child_idx = allocCreatureSlot(self);
+        var child = creature.*;
+        child.active = true;
+        child.phase_seed = @floatFromInt(state.rng.rand() & 0xff);
+        child.heading = wrapAngle(asF32F64(creature.heading + heading_offset));
+        child.target_heading = child.heading;
+        child.hp = asF32F64(creature.max_hp * 0.25);
+        child.reward_value = asF32F64(creature.reward_value * (2.0 / 3.0));
+        child.size = asF32F64(creature.size - 8.0);
+        child.move_speed = asF32F64(creature.move_speed + 0.1);
+        child.contact_damage = asF32F64(creature.contact_damage * 0.7);
+        child.lifecycle_stage = creature_lifecycle_stage_alive;
+        self.entries[child_idx] = child;
+    }
+
+    // effects.spawn_burst(count=8) -> 4 random draws per burst element.
+    for (0..8) |_| {
+        _ = state.rng.rand();
+        _ = state.rng.rand();
+        _ = state.rng.rand();
+        _ = state.rng.rand();
+    }
+}
+
+fn allocCreatureSlot(self: *CreaturePool) usize {
+    var slot: usize = self.entries.len - 1;
+    for (self.entries, 0..) |entry, idx| {
+        if (!entry.active) {
+            slot = idx;
+            break;
+        }
+    }
+    return slot;
 }
 
 fn consumeDeathSideEffectsRng(
@@ -5047,6 +5163,207 @@ test "ion gun master increases ion damage by 20 percent" {
         10_000.0,
     );
     try expectFloatClose(88.0, pool.entries[0].hp);
+}
+
+test "uranium filled bullets doubles projectile damage" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+    players[0].perk_counts[@intCast(perk_id_uranium_filled_bullets)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 10.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 50.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+
+    _ = pool.applyProjectileDamage(
+        &state,
+        players[0..],
+        &bonuses,
+        0,
+        10.0,
+        .{},
+        -100,
+        0.016,
+        10_000.0,
+    );
+    try expectFloatClose(80.0, pool.entries[0].hp);
+}
+
+test "split on death spawns two smaller children" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(0);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 200.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .spider_sp2,
+        .flags = survival_spawn.CreatureFlags.split_on_death,
+        .size = 40.0,
+        .move_speed = 2.0,
+        .health = 400.0,
+        .max_health = 400.0,
+        .reward_value = 90.0,
+        .contact_damage = 10.0,
+    });
+
+    _ = pool.killNoCorpse(
+        &state,
+        players[0..],
+        &bonuses,
+        0,
+        -100,
+        0.016,
+        10_000.0,
+    );
+
+    const child1 = pool.entries[1];
+    const child2 = pool.entries[2];
+    try std.testing.expect(child1.active and child2.active);
+    try expectFloatClose(creature_lifecycle_stage_alive, child1.lifecycle_stage);
+    try expectFloatClose(creature_lifecycle_stage_alive, child2.lifecycle_stage);
+    try std.testing.expect(child1.phase_seed >= 0.0 and child1.phase_seed <= 255.0);
+    try std.testing.expect(child2.phase_seed >= 0.0 and child2.phase_seed <= 255.0);
+    try expectFloatClose(-native_half_pi, child1.heading);
+    try expectFloatClose(native_half_pi, child2.heading);
+    try expectFloatClose(100.0, child1.hp);
+    try expectFloatClose(100.0, child2.hp);
+    try expectFloatClose(32.0, child1.size);
+    try expectFloatClose(32.0, child2.size);
+    try expectFloatClose(2.1, child1.move_speed);
+    try expectFloatClose(2.1, child2.move_speed);
+    try expectFloatClose(7.0, child1.contact_damage);
+    try expectFloatClose(7.0, child2.contact_damage);
+    try expectFloatClose(60.0, child1.reward_value);
+    try expectFloatClose(60.0, child2.reward_value);
+}
+
+test "ranged shock creature queues projectile along heading not direct aim" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 0.0, .y = 200.0 },
+            .health = 100.0,
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 0.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .ai_mode = survival_spawn.CreatureAiMode.chase_player,
+        .flags = survival_spawn.CreatureFlags.ranged_attack_shock,
+        .size = 50.0,
+        .move_speed = 0.0,
+        .health = 10.0,
+        .max_health = 10.0,
+        .reward_value = 10.0,
+        .contact_damage = 0.0,
+    });
+
+    pool.update(&state, players[0..], 0.001, 1024.0, &bonuses);
+
+    try std.testing.expectEqual(@as(i32, 1), state.pending_creature_projectile_count);
+    try std.testing.expectEqual(survival_state.ProjectileTypeId.plasma_rifle, state.pending_creature_projectile_type_ids[0]);
+    try std.testing.expectEqual(@as(i32, 0), state.pending_creature_projectile_owner_ids[0]);
+    try expectFloatClose(pool.entries[0].heading, state.pending_creature_projectile_angles[0]);
+
+    const direct_aim = asF32F64(survival_math.atan2(
+        players[0].pos.y - pool.entries[0].pos.y,
+        players[0].pos.x - pool.entries[0].pos.x,
+    ) + native_half_pi);
+    try std.testing.expect(@abs(wrapAngle(state.pending_creature_projectile_angles[0] - direct_aim)) > 0.1);
+}
+
+test "ranged shock creature does not fire when too close" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 0.0, .y = 64.0 },
+            .health = 100.0,
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 0.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .ai_mode = survival_spawn.CreatureAiMode.chase_player,
+        .flags = survival_spawn.CreatureFlags.ranged_attack_shock,
+        .size = 50.0,
+        .move_speed = 0.0,
+        .health = 10.0,
+        .max_health = 10.0,
+        .reward_value = 10.0,
+        .contact_damage = 0.0,
+    });
+
+    pool.update(&state, players[0..], 0.001, 1024.0, &bonuses);
+    try std.testing.expectEqual(@as(i32, 0), state.pending_creature_projectile_count);
+}
+
+test "ranged variant uses orbit radius as projectile type and random cooldown" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(3);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 0.0, .y = 200.0 },
+            .health = 100.0,
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 0.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .spider_sp1,
+        .ai_mode = survival_spawn.CreatureAiMode.chase_player,
+        .flags = survival_spawn.CreatureFlags.ranged_attack_variant,
+        .size = 50.0,
+        .move_speed = 0.0,
+        .health = 10.0,
+        .max_health = 10.0,
+        .reward_value = 10.0,
+        .contact_damage = 0.0,
+    });
+    pool.entries[0].orbit_radius = 26.0;
+    pool.entries[0].orbit_angle = 0.4;
+
+    pool.update(&state, players[0..], 0.001, 1024.0, &bonuses);
+    try std.testing.expectEqual(@as(i32, 1), state.pending_creature_projectile_count);
+    try std.testing.expectEqual(@as(i32, 26), state.pending_creature_projectile_type_ids[0]);
+    try expectFloatClose(0.4, pool.entries[0].attack_cooldown);
 }
 
 test "freeze stops creature movement" {
