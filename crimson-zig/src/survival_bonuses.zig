@@ -977,6 +977,66 @@ test "bonus pick random type quest suppression parity" {
     );
 }
 
+test "weapon refresh available includes survival defaults" {
+    var state = survival_state.GameplayState.init(1);
+    state.game_mode = game_mode_survival;
+
+    weaponRefreshAvailable(&state);
+
+    try std.testing.expect(state.weapon_available[@intCast(survival_state.WeaponId.pistol)]);
+    try std.testing.expect(state.weapon_available[@intCast(survival_state.WeaponId.assault_rifle)]);
+    try std.testing.expect(state.weapon_available[@intCast(survival_state.WeaponId.shotgun)]);
+    try std.testing.expect(state.weapon_available[@intCast(survival_state.WeaponId.submachine_gun)]);
+    try std.testing.expect(!state.weapon_available[@intCast(survival_state.WeaponId.flamethrower)]);
+}
+
+test "weapon refresh available unlocks quest weapon ids by unlock index" {
+    var state = survival_state.GameplayState.init(1);
+    state.game_mode = game_mode_quests;
+    state.status_quest_unlock_index = 1;
+    state.status_quest_unlock_index_full = 0;
+
+    weaponRefreshAvailable(&state);
+
+    try std.testing.expect(state.weapon_available[@intCast(survival_state.WeaponId.pistol)]);
+    try std.testing.expect(state.weapon_available[@intCast(survival_state.WeaponId.assault_rifle)]);
+    try std.testing.expect(!state.weapon_available[@intCast(survival_state.WeaponId.shotgun)]);
+}
+
+test "weapon pick random available enforces unlock table in quests" {
+    var state = survival_state.GameplayState.init(1);
+    state.game_mode = game_mode_quests;
+    state.status_quest_unlock_index = 0;
+    state.status_quest_unlock_index_full = 0;
+
+    const picked = weaponPickRandomAvailable(&state);
+    try std.testing.expectEqual(survival_state.WeaponId.pistol, picked);
+}
+
+test "weapon pick random available rerolls used weapons on even gate" {
+    const seed = findSeedForWeaponReroll(2_000_000) orelse unreachable;
+    var state = survival_state.GameplayState.init(seed);
+    state.game_mode = game_mode_quests;
+    state.status_quest_unlock_index = 1;
+    state.status_quest_unlock_index_full = 0;
+    state.status_weapon_usage_counts[@intCast(survival_state.WeaponId.pistol)] = 1;
+
+    const picked = weaponPickRandomAvailable(&state);
+    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, picked);
+}
+
+fn findSeedForWeaponReroll(max_seed: u32) ?u32 {
+    var seed: u32 = 0;
+    while (seed < max_seed) : (seed += 1) {
+        var state = survival_state.GameplayState.init(seed);
+        if ((state.rng.rand() % weapon_drop_id_count) != @as(u32, @intCast(survival_state.WeaponId.pistol))) continue;
+        if ((state.rng.rand() & 1) != 0) continue;
+        if ((state.rng.rand() % weapon_drop_id_count) != @as(u32, @intCast(survival_state.WeaponId.assault_rifle))) continue;
+        return seed;
+    }
+    return null;
+}
+
 fn setTestBonusEntry(
     pool: *BonusPool,
     idx: usize,
