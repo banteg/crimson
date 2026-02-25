@@ -11,6 +11,7 @@ pub const main_projectile_pool_size: usize = 0x60;
 const native_half_pi: f64 = 1.5707963705062866;
 const creature_lifecycle_stage_alive: f64 = 16.0;
 const perk_id_poison_bullets: i32 = 25;
+const perk_id_toxic_avenger: i32 = survival_perks.PerkId.toxic_avenger;
 const perk_id_barrel_greaser: i32 = 34;
 const perk_id_ion_gun_master: i32 = survival_perks.PerkId.ion_gun_master;
 
@@ -638,6 +639,136 @@ test "projectile hit consumes hit-presentation rng" {
     const rng_before = state.rng.state;
     _ = pool.update(&state, players[0..], &creatures, &bonuses, 1.0 / 60.0, 1024.0);
     try std.testing.expect(rng_before != state.rng.state);
+}
+
+test "poison bullets sets weak self-damage flag when rng roll hits" {
+    var state = survival_state.GameplayState.init(1);
+    state.rng.state = 1; // First rand() == 41 => (41 & 7) == 1.
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_poison_bullets)] = 1;
+
+    var creatures = survival_creatures.CreaturePool{};
+    var bonuses = survival_bonuses.BonusPool{};
+    _ = creatures.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 102.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 1000.0,
+        .max_health = 1000.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+
+    var pool = ProjectilePool{};
+    _ = pool.spawn(
+        players[0].pos,
+        0.0,
+        survival_state.ProjectileTypeId.pistol,
+        -100,
+        45.0,
+        false,
+    );
+
+    const tick = pool.update(&state, players[0..], &creatures, &bonuses, 0.016, 1024.0);
+    try std.testing.expect(tick.hit_count > 0);
+    try std.testing.expect((creatures.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick) != 0);
+}
+
+test "poison bullets does not set self-damage flag when rng roll misses" {
+    var state = survival_state.GameplayState.init(1);
+    state.rng.state = 0; // First rand() == 38 => (38 & 7) != 1.
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_poison_bullets)] = 1;
+
+    var creatures = survival_creatures.CreaturePool{};
+    var bonuses = survival_bonuses.BonusPool{};
+    _ = creatures.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 102.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 1000.0,
+        .max_health = 1000.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+
+    var pool = ProjectilePool{};
+    _ = pool.spawn(
+        players[0].pos,
+        0.0,
+        survival_state.ProjectileTypeId.pistol,
+        -100,
+        45.0,
+        false,
+    );
+
+    const tick = pool.update(&state, players[0..], &creatures, &bonuses, 0.016, 1024.0);
+    try std.testing.expect(tick.hit_count > 0);
+    try std.testing.expect((creatures.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick) == 0);
+}
+
+test "poison bullets with toxic avenger still applies weak bullet poison only" {
+    var state = survival_state.GameplayState.init(1);
+    state.rng.state = 1; // First rand() == 41 => (41 & 7) == 1.
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_poison_bullets)] = 1;
+    players[0].perk_counts[@intCast(perk_id_toxic_avenger)] = 1;
+
+    var creatures = survival_creatures.CreaturePool{};
+    var bonuses = survival_bonuses.BonusPool{};
+    _ = creatures.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 300.0, .y = 300.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 1000.0,
+        .max_health = 1000.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+
+    var pool = ProjectilePool{};
+    _ = pool.spawn(
+        creatures.entries[0].pos,
+        0.0,
+        survival_state.ProjectileTypeId.pistol,
+        -100,
+        45.0,
+        false,
+    );
+
+    _ = pool.update(&state, players[0..], &creatures, &bonuses, 0.016, 1024.0);
+    try std.testing.expect((creatures.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick) != 0);
+    try std.testing.expect((creatures.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick_strong) == 0);
 }
 
 test "barrel greaser doubles pistol projectile movement steps" {

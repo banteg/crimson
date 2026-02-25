@@ -2869,6 +2869,49 @@ test "pending nuke damage is limited to radius" {
     try std.testing.expectEqual(@as(i32, 0), state.pending_nuke_count);
 }
 
+test "poison bullets does not trigger on pending nuke radius damage" {
+    var state = survival_state.GameplayState.init(1);
+    state.rng.state = 1; // Mirrors poison-hit seed but nuke path must not set poison flags.
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
+    };
+    players[0].perk_counts[@intCast(survival_perks.PerkId.poison_bullets)] = 1;
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var bonuses = survival_bonuses.BonusPool{};
+
+    _ = creatures.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 612.0, .y = 512.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 2000.0,
+        .max_health = 2000.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+
+    state.pending_nuke_origins[0] = players[0].pos;
+    state.pending_nuke_count = 1;
+
+    applyPendingBonusEffects(
+        &state,
+        players[0..],
+        &projectiles,
+        &creatures,
+        &bonuses,
+        0.016,
+        1024.0,
+        1,
+    );
+
+    try std.testing.expect((creatures.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick) == 0);
+}
+
 test "pending nuke spawns pistol and gauss projectiles with native meta ranges" {
     var state = survival_state.GameplayState.init(1);
     var players = [_]survival_state.PlayerState{
