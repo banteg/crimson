@@ -366,6 +366,35 @@ pub fn updatePerkEffects(
     }
 
     if (players.len == 0) return;
+
+    if (dt > 0.0 and
+        perkActive(&players[0], PerkId.regeneration) and
+        (state.rng.rand() & 1) != 0)
+    {
+        if (state.preserve_bugs) {
+            var repeat: usize = 0;
+            while (repeat < players.len) : (repeat += 1) {
+                if (players[0].health <= 0.0 or players[0].health >= 100.0) continue;
+                players[0].health += dt;
+                if (players[0].health > 100.0) {
+                    players[0].health = 100.0;
+                }
+            }
+        } else {
+            var heal_amount = dt;
+            if (perkActive(&players[0], PerkId.greater_regeneration)) {
+                heal_amount = dt * 2.0;
+            }
+            for (players) |*player| {
+                if (player.health <= 0.0 or player.health >= 100.0) continue;
+                player.health += heal_amount;
+                if (player.health > 100.0) {
+                    player.health = 100.0;
+                }
+            }
+        }
+    }
+
     if (!perkActive(&players[0], PerkId.death_clock)) return;
 
     for (players) |*player| {
@@ -375,7 +404,6 @@ pub fn updatePerkEffects(
             player.health -= dt * 3.3333333;
         }
     }
-    _ = state;
 }
 
 fn perkGenerateChoices(
@@ -605,4 +633,139 @@ test "death clock apply and update mirror runtime hooks" {
 
     updatePerkEffects(&state, players[0..], 1.0 / 60.0);
     try std.testing.expectApproxEqAbs(@as(f64, 99.944444445), players[0].health, 1e-6);
+}
+
+test "regeneration heals when rng allows" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .health = 90.0,
+        },
+    };
+    players[0].perk_counts[@intCast(PerkId.regeneration)] = 1;
+
+    updatePerkEffects(&state, players[0..], 0.2);
+    try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-6);
+}
+
+test "regeneration skips when rng blocks" {
+    var state = survival_state.GameplayState.init(0);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .health = 90.0,
+        },
+    };
+    players[0].perk_counts[@intCast(PerkId.regeneration)] = 1;
+
+    updatePerkEffects(&state, players[0..], 0.2);
+    try std.testing.expectApproxEqAbs(@as(f64, 90.0), players[0].health, 1e-6);
+}
+
+test "greater regeneration doubles heal by default" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .health = 90.0,
+        },
+    };
+    players[0].perk_counts[@intCast(PerkId.regeneration)] = 1;
+    players[0].perk_counts[@intCast(PerkId.greater_regeneration)] = 1;
+
+    updatePerkEffects(&state, players[0..], 0.2);
+    try std.testing.expectApproxEqAbs(@as(f64, 90.4), players[0].health, 1e-6);
+}
+
+test "greater regeneration remains no-op in preserve bugs mode" {
+    var state = survival_state.GameplayState.init(1);
+    state.preserve_bugs = true;
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .health = 90.0,
+        },
+    };
+    players[0].perk_counts[@intCast(PerkId.regeneration)] = 1;
+    players[0].perk_counts[@intCast(PerkId.greater_regeneration)] = 1;
+
+    updatePerkEffects(&state, players[0..], 0.2);
+    try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-6);
+}
+
+test "regeneration multiplayer targets all alive players by default" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .health = 90.0,
+        },
+        .{
+            .index = 1,
+            .pos = .{ .x = 30.0, .y = 40.0 },
+            .health = 80.0,
+        },
+    };
+    players[0].perk_counts[@intCast(PerkId.regeneration)] = 1;
+
+    updatePerkEffects(&state, players[0..], 0.2);
+    try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 80.2), players[1].health, 1e-6);
+}
+
+test "regeneration preserve bugs repeats write to player zero only" {
+    var state = survival_state.GameplayState.init(1);
+    state.preserve_bugs = true;
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .health = 90.0,
+        },
+        .{
+            .index = 1,
+            .pos = .{ .x = 30.0, .y = 40.0 },
+            .health = 80.0,
+        },
+    };
+    players[0].perk_counts[@intCast(PerkId.regeneration)] = 1;
+
+    updatePerkEffects(&state, players[0..], 0.2);
+    try std.testing.expectApproxEqAbs(@as(f64, 90.4), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 80.0), players[1].health, 1e-6);
+}
+
+test "bandage adds random amount and clamps in default mode" {
+    var state = survival_state.GameplayState.init(20_072);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .health = 3.0,
+        },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.bandage);
+    try std.testing.expectApproxEqAbs(@as(f64, 53.0), players[0].health, 1e-6);
+}
+
+test "bandage preserve bugs multiplies instead of adds" {
+    var state = survival_state.GameplayState.init(20_072);
+    state.preserve_bugs = true;
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .health = 3.0,
+        },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.bandage);
+    try std.testing.expectApproxEqAbs(@as(f64, 100.0), players[0].health, 1e-6);
 }

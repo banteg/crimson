@@ -782,3 +782,38 @@ test "bonus spawn-on-kill rng cadence matches observed pistol path" {
     try std.testing.expectEqual(@as(i32, 11), spawned.?.amount);
     try std.testing.expectEqual(@as(u32, 258_047_690), state.rng.state);
 }
+
+test "bonus economist extends double experience timer" {
+    var base_state = survival_state.GameplayState.init(1);
+    var base_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+    };
+    var base_players = [_]survival_state.PlayerState{base_player};
+    try applyBonus(
+        &base_state,
+        &base_player,
+        base_players[0..],
+        survival_state.BonusId.double_experience,
+        10,
+        null,
+    );
+    try std.testing.expectApproxEqAbs(@as(f64, 6.0), base_state.bonuses.double_experience, 1e-6);
+
+    var perk_state = survival_state.GameplayState.init(1);
+    var perk_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+    };
+    perk_player.perk_counts[@intCast(survival_perks.PerkId.bonus_economist)] = 1;
+    var perk_players = [_]survival_state.PlayerState{perk_player};
+    try applyBonus(
+        &perk_state,
+        &perk_player,
+        perk_players[0..],
+        survival_state.BonusId.double_experience,
+        10,
+        null,
+    );
+    try std.testing.expectApproxEqAbs(@as(f64, 9.0), perk_state.bonuses.double_experience, 1e-6);
+}
