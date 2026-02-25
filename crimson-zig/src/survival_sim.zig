@@ -36,6 +36,7 @@ const game_mode_survival: i32 = 1;
 const game_mode_rush: i32 = 2;
 const game_mode_quests: i32 = 3;
 const max_test_quest_spawn_entries: usize = 1024;
+const perk_id_jinxed: i32 = survival_perks.PerkId.jinxed;
 
 pub const SurvivalSimError = error{
     OutOfMemory,
@@ -491,6 +492,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
 
         updateEvilEyesTargets(&state, players[0..], creatures.entries[0..]);
         survival_perks.updatePerkEffects(&state, players[0..], dt_sim);
+        applyJinxedEffects(&state, players[0..], &creatures, dt_sim);
         applyPyrokineticEffects(
             &state,
             players[0..],
@@ -1870,6 +1872,95 @@ fn applyReplayPerkCreatureEffects(
         },
         else => {},
     }
+}
+
+fn applyJinxedEffects(
+    state: *survival_state.GameplayState,
+    players: []survival_state.PlayerState,
+    creatures: *survival_creatures.CreaturePool,
+    dt: f64,
+) void {
+    if (state.jinxed_timer >= 0.0) {
+        state.jinxed_timer = asF32F64(state.jinxed_timer - asF32F64(dt));
+    }
+    if (state.jinxed_timer >= 0.0) return;
+    if (players.len == 0) return;
+    if (!perkActive(players[0], perk_id_jinxed)) return;
+
+    if ((state.rng.rand() % 10) == 3) {
+        const target_idx = selectJinxedAccidentTarget(state, players);
+        players[target_idx].health = asF32F64(players[target_idx].health - 5.0);
+    }
+
+    const timer_roll = @as(f64, @floatFromInt(state.rng.rand() % 0x14));
+    state.jinxed_timer = asF32F64(asF32F64(timer_roll * 0.1) + state.jinxed_timer + 2.0);
+
+    if (state.bonuses.freeze > 0.0) return;
+
+    const pool_limit: usize = if (state.preserve_bugs) 0x17F else 0x180;
+    const pool_mod = @min(pool_limit, creatures.entries.len);
+    if (pool_mod == 0) return;
+
+    var idx: usize = @intCast(state.rng.rand() % @as(u32, @intCast(pool_mod)));
+    var attempts: usize = 0;
+    while (attempts < 10 and !creatures.entries[idx].active) : (attempts += 1) {
+        idx = @intCast(state.rng.rand() % @as(u32, @intCast(pool_mod)));
+    }
+    if (!creatures.entries[idx].active) return;
+
+    creatures.entries[idx].hp = -1.0;
+    creatures.entries[idx].lifecycle_stage = asF32F64(
+        creatures.entries[idx].lifecycle_stage - asF32F64(dt * 20.0),
+    );
+    awardExperienceFromReward(state, &players[0], creatures.entries[idx].reward_value);
+}
+
+fn selectJinxedAccidentTarget(
+    state: *survival_state.GameplayState,
+    players: []const survival_state.PlayerState,
+) usize {
+    if (players.len == 0) return 0;
+    if (state.preserve_bugs) return 0;
+
+    var alive_indices = [_]usize{0} ** survival_state.max_players;
+    var alive_count: usize = 0;
+    for (players, 0..) |player, idx| {
+        if (player.health <= 0.0) continue;
+        if (alive_count >= alive_indices.len) break;
+        alive_indices[alive_count] = idx;
+        alive_count += 1;
+    }
+    if (alive_count == 0) return 0;
+    if (alive_count == 1) return alive_indices[0];
+    const pick = state.rng.rand() % @as(u32, @intCast(alive_count));
+    return alive_indices[@intCast(pick)];
+}
+
+fn awardExperienceFromReward(
+    state: *survival_state.GameplayState,
+    player: *survival_state.PlayerState,
+    reward_value: f64,
+) void {
+    const first_gain = awardExperienceOnceFromReward(player, reward_value);
+    if (first_gain <= 0) return;
+    if (state.bonuses.double_experience > 0.0) {
+        _ = awardExperienceOnceFromReward(player, reward_value);
+    }
+}
+
+fn awardExperienceOnceFromReward(
+    player: *survival_state.PlayerState,
+    reward_value: f64,
+) i32 {
+    const reward_f32 = asF32F64(reward_value);
+    if (reward_f32 <= 0.0) return 0;
+
+    const before = player.experience;
+    const before_f32 = asF32F64(@floatFromInt(before));
+    const total_f32 = asF32F64(before_f32 + reward_f32);
+    const after: i32 = @intFromFloat(total_f32);
+    player.experience = after;
+    return after - before;
 }
 
 fn consumeSpawnBurstRng(
@@ -3627,6 +3718,182 @@ test "lifeline 50-50 replay perk effect deactivates every other eligible creatur
         try std.testing.expectEqual(active_expected, creatures.entries[idx].active);
     }
     try std.testing.expect(before_rng != state.rng.state);
+}
+
+fn findSeedForRandModSequence(
+    moduli: []const u32,
+    targets: []const u32,
+    max_seed: u32,
+) ?u32 {
+    if (moduli.len == 0 or moduli.len != targets.len) return null;
+
+    var seed: u32 = 0;
+    while (seed < max_seed) : (seed += 1) {
+        var rng = survival_spawn.Crand.init(seed);
+        var matches = true;
+        for (moduli, targets) |modulus, target| {
+            if (modulus == 0) return null;
+            if ((rng.rand() % modulus) != target) {
+                matches = false;
+                break;
+            }
+        }
+        if (matches) return seed;
+    }
+    return null;
+}
+
+test "jinxed kills creature and awards base reward" {
+    const seed = findSeedForRandModSequence(
+        &.{ 10, 0x14, 0x180 },
+        &.{ 0, 0, 2 },
+        500_000,
+    ) orelse unreachable;
+    const dt = 0.2;
+
+    var state = survival_state.GameplayState.init(seed);
+    state.jinxed_timer = 0.0;
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .health = 50.0,
+            .experience = 100,
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_jinxed)] = 1;
+    var creatures = survival_creatures.CreaturePool{};
+    creatures.entries[2].active = true;
+    creatures.entries[2].hp = 100.0;
+    creatures.entries[2].lifecycle_stage = 16.0;
+    creatures.entries[2].reward_value = 12.7;
+
+    applyJinxedEffects(&state, players[0..], &creatures, dt);
+
+    try std.testing.expectApproxEqAbs(@as(f64, 1.8), state.jinxed_timer, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, -1.0), creatures.entries[2].hp, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 12.0), creatures.entries[2].lifecycle_stage, 1e-6);
+    try std.testing.expectEqual(@as(i32, 112), players[0].experience);
+}
+
+test "jinxed reward uses float32 sum before truncation" {
+    const seed = findSeedForRandModSequence(
+        &.{ 10, 0x14, 0x180 },
+        &.{ 0, 0, 2 },
+        500_000,
+    ) orelse unreachable;
+    const dt = 0.2;
+
+    var state = survival_state.GameplayState.init(seed);
+    state.jinxed_timer = 0.0;
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .health = 50.0,
+            .experience = 139_451,
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_jinxed)] = 1;
+    var creatures = survival_creatures.CreaturePool{};
+    creatures.entries[2].active = true;
+    creatures.entries[2].hp = 100.0;
+    creatures.entries[2].lifecycle_stage = 16.0;
+    creatures.entries[2].reward_value = 97.99636190476191;
+
+    applyJinxedEffects(&state, players[0..], &creatures, dt);
+
+    try std.testing.expectEqual(@as(i32, 139_549), players[0].experience);
+}
+
+test "jinxed accident can target another alive player outside preserve bugs mode" {
+    const seed = findSeedForRandModSequence(
+        &.{ 10, 2, 0x14 },
+        &.{ 3, 1, 0 },
+        500_000,
+    ) orelse unreachable;
+    const dt = 0.2;
+
+    var state = survival_state.GameplayState.init(seed);
+    state.jinxed_timer = 0.0;
+    state.preserve_bugs = false;
+    state.bonuses.freeze = 1.0;
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .health = 50.0,
+        },
+        .{
+            .index = 1,
+            .pos = .{ .x = 20.0, .y = 20.0 },
+            .health = 70.0,
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_jinxed)] = 1;
+    var creatures = survival_creatures.CreaturePool{};
+
+    applyJinxedEffects(&state, players[0..], &creatures, dt);
+
+    try std.testing.expectApproxEqAbs(@as(f64, 1.8), state.jinxed_timer, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 50.0), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 65.0), players[1].health, 1e-6);
+}
+
+test "jinxed preserve bugs keeps accident damage on player zero" {
+    const seed = findSeedForRandModSequence(
+        &.{ 10, 0x14 },
+        &.{ 3, 0 },
+        500_000,
+    ) orelse unreachable;
+    const dt = 0.2;
+
+    var state = survival_state.GameplayState.init(seed);
+    state.jinxed_timer = 0.0;
+    state.preserve_bugs = true;
+    state.bonuses.freeze = 1.0;
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .health = 50.0,
+        },
+        .{
+            .index = 1,
+            .pos = .{ .x = 20.0, .y = 20.0 },
+            .health = 70.0,
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_jinxed)] = 1;
+    var creatures = survival_creatures.CreaturePool{};
+
+    applyJinxedEffects(&state, players[0..], &creatures, dt);
+
+    try std.testing.expectApproxEqAbs(@as(f64, 1.8), state.jinxed_timer, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 45.0), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 70.0), players[1].health, 1e-6);
+}
+
+test "jinxed timer uses f32 underflow threshold before proc" {
+    const dt = 0.03400000184774399;
+    var state = survival_state.GameplayState.init(7);
+    state.jinxed_timer = 0.034000836312770844;
+    const rng_before = state.rng.state;
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .health = 50.0,
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_jinxed)] = 1;
+    var creatures = survival_creatures.CreaturePool{};
+
+    applyJinxedEffects(&state, players[0..], &creatures, dt);
+
+    try std.testing.expectApproxEqAbs(@as(f64, 8.344650268554688e-07), state.jinxed_timer, 1e-12);
+    try std.testing.expectApproxEqAbs(@as(f64, 50.0), players[0].health, 1e-6);
+    try std.testing.expectEqual(rng_before, state.rng.state);
 }
 
 test "final revenge explosion applies radial damage on death transition" {
