@@ -946,6 +946,209 @@ test "bonus pick random type quest suppression parity" {
     );
 }
 
+fn setTestBonusEntry(
+    pool: *BonusPool,
+    idx: usize,
+    bonus_id: i32,
+    pos: survival_state.Vec2,
+    amount: i32,
+) void {
+    pool.entries[idx] = .{
+        .bonus_id = bonus_id,
+        .picked = false,
+        .time_left = bonus_time_max,
+        .time_max = bonus_time_max,
+        .pos = pos,
+        .amount = amount,
+    };
+}
+
+fn runTelekineticUpdate(
+    pool: *BonusPool,
+    state: *survival_state.GameplayState,
+    players: []survival_state.PlayerState,
+    dt: f64,
+) BonusRuntimeError!void {
+    var pickup_bonus_ids = [_]i32{0} ** bonus_pool_size;
+    var pickup_count: usize = 0;
+    try bonusTelekineticUpdate(
+        pool,
+        state,
+        players,
+        dt,
+        &pickup_bonus_ids,
+        &pickup_count,
+    );
+}
+
+test "telekinetic picks up bonus after hover timer threshold" {
+    var state = survival_state.GameplayState.init(1);
+    var pool = BonusPool{};
+    setTestBonusEntry(
+        &pool,
+        0,
+        survival_state.BonusId.points,
+        .{ .x = 100.0, .y = 100.0 },
+        0,
+    );
+
+    const base_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .health = 100.0,
+        .aim = .{ .x = 100.0, .y = 100.0 },
+    };
+    var base_players = [_]survival_state.PlayerState{base_player};
+    try runTelekineticUpdate(&pool, &state, base_players[0..], 0.7);
+    try std.testing.expect(!pool.entries[0].picked);
+
+    var perk_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .health = 100.0,
+        .aim = .{ .x = 100.0, .y = 100.0 },
+    };
+    perk_player.perk_counts[@intCast(survival_perks.PerkId.telekinetic)] = 1;
+    var perk_players = [_]survival_state.PlayerState{perk_player};
+    try runTelekineticUpdate(&pool, &state, perk_players[0..], 0.7);
+
+    try std.testing.expect(pool.entries[0].picked);
+    try std.testing.expectEqual(@as(i64, 500), perk_players[0].experience);
+}
+
+test "telekinetic nuke stores pending origin from bonus position" {
+    var state = survival_state.GameplayState.init(1);
+    var pool = BonusPool{};
+    setTestBonusEntry(
+        &pool,
+        0,
+        survival_state.BonusId.nuke,
+        .{ .x = 100.0, .y = 100.0 },
+        1,
+    );
+
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .health = 100.0,
+        .aim = .{ .x = 100.0, .y = 100.0 },
+    };
+    player.perk_counts[@intCast(survival_perks.PerkId.telekinetic)] = 1;
+    var players = [_]survival_state.PlayerState{player};
+
+    try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
+    try std.testing.expectEqual(@as(i32, 1), state.pending_nuke_count);
+    try std.testing.expectApproxEqAbs(@as(f64, 100.0), state.pending_nuke_origins[0].x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 100.0), state.pending_nuke_origins[0].y, 1e-6);
+}
+
+test "telekinetic shock chain stores pending origin from bonus position" {
+    var state = survival_state.GameplayState.init(1);
+    var pool = BonusPool{};
+    setTestBonusEntry(
+        &pool,
+        0,
+        survival_state.BonusId.shock_chain,
+        .{ .x = 100.0, .y = 100.0 },
+        1,
+    );
+
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .health = 100.0,
+        .aim = .{ .x = 100.0, .y = 100.0 },
+    };
+    player.perk_counts[@intCast(survival_perks.PerkId.telekinetic)] = 1;
+    var players = [_]survival_state.PlayerState{player};
+
+    try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
+    try std.testing.expectEqual(@as(i32, 1), state.pending_shock_chain_count);
+    try std.testing.expectApproxEqAbs(@as(f64, 100.0), state.pending_shock_chain_origins[0].x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 100.0), state.pending_shock_chain_origins[0].y, 1e-6);
+}
+
+test "telekinetic picks only one bonus per frame across players" {
+    var state = survival_state.GameplayState.init(1);
+    var pool = BonusPool{};
+    setTestBonusEntry(
+        &pool,
+        0,
+        survival_state.BonusId.points,
+        .{ .x = 100.0, .y = 100.0 },
+        500,
+    );
+    setTestBonusEntry(
+        &pool,
+        1,
+        survival_state.BonusId.points,
+        .{ .x = 200.0, .y = 200.0 },
+        500,
+    );
+
+    var player0 = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .health = 100.0,
+        .aim = .{ .x = 100.0, .y = 100.0 },
+    };
+    var player1 = survival_state.PlayerState{
+        .index = 1,
+        .pos = .{},
+        .health = 100.0,
+        .aim = .{ .x = 200.0, .y = 200.0 },
+    };
+    player0.perk_counts[@intCast(survival_perks.PerkId.telekinetic)] = 1;
+    player1.perk_counts[@intCast(survival_perks.PerkId.telekinetic)] = 1;
+    var players = [_]survival_state.PlayerState{ player0, player1 };
+
+    try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
+    try std.testing.expect(pool.entries[0].picked);
+    try std.testing.expect(!pool.entries[1].picked);
+    try std.testing.expectEqual(@as(i64, 500), players[0].experience);
+    try std.testing.expectEqual(@as(i64, 0), players[1].experience);
+}
+
+test "telekinetic hover timer carries across bonus switch" {
+    var state = survival_state.GameplayState.init(1);
+    var pool = BonusPool{};
+    setTestBonusEntry(
+        &pool,
+        0,
+        survival_state.BonusId.points,
+        .{ .x = 100.0, .y = 100.0 },
+        500,
+    );
+    setTestBonusEntry(
+        &pool,
+        1,
+        survival_state.BonusId.points,
+        .{ .x = 130.0, .y = 100.0 },
+        500,
+    );
+
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .health = 100.0,
+        .aim = .{ .x = 100.0, .y = 100.0 },
+    };
+    player.perk_counts[@intCast(survival_perks.PerkId.telekinetic)] = 1;
+    var players = [_]survival_state.PlayerState{player};
+
+    try runTelekineticUpdate(&pool, &state, players[0..], 0.4);
+    try std.testing.expect(!pool.entries[0].picked);
+    try std.testing.expect(!pool.entries[1].picked);
+
+    players[0].aim = .{ .x = 130.0, .y = 100.0 };
+    try runTelekineticUpdate(&pool, &state, players[0..], 0.3);
+
+    try std.testing.expect(!pool.entries[0].picked);
+    try std.testing.expect(pool.entries[1].picked);
+    try std.testing.expectEqual(@as(i32, -1), players[0].bonus_aim_hover_index);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.0), players[0].bonus_aim_hover_timer_ms, 1e-6);
+}
+
 fn runQuestSuppressionCase(
     seed: u32,
     hardcore: bool,

@@ -491,6 +491,13 @@ pub fn runSurvivalReplayScaffoldWithTrace(
 
         updateEvilEyesTargets(&state, players[0..], creatures.entries[0..]);
         survival_perks.updatePerkEffects(&state, players[0..], dt_sim);
+        applyPyrokineticEffects(
+            &state,
+            players[0..],
+            &creatures,
+            &particles,
+            dt_sim,
+        );
         const rng_after_perk_effects = state.rng.state;
 
         creatures.update(
@@ -1395,6 +1402,66 @@ fn distanceSq(a: survival_state.Vec2, b: survival_state.Vec2) f64 {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return dx * dx + dy * dy;
+}
+
+fn applyPyrokineticEffects(
+    state: *survival_state.GameplayState,
+    players: []survival_state.PlayerState,
+    creatures: *survival_creatures.CreaturePool,
+    particles: *survival_particles.ParticlePool,
+    dt: f64,
+) void {
+    if (!(dt > 0.0)) return;
+    if (players.len == 0) return;
+
+    const burn_intensities = [_]f64{ 0.8, 0.6, 0.4, 0.3, 0.2 };
+
+    if (state.preserve_bugs) {
+        const player0 = &players[0];
+        if (!perkActive(player0.*, survival_perks.PerkId.pyrokinetic)) return;
+
+        const target_idx = creatureFindInRadius(creatures.entries[0..], player0.aim, 12.0, 0);
+        if (target_idx == -1) return;
+
+        var creature = &creatures.entries[@intCast(target_idx)];
+        creature.collision_timer = asF32F64(creature.collision_timer - dt);
+        if (creature.collision_timer < 0.0) {
+            creature.collision_timer = 0.5;
+            for (burn_intensities) |intensity| {
+                const angle = asF32F64(@as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01);
+                _ = particles.spawnParticle(state, creature.pos, angle, intensity, -100);
+            }
+            // Consume native fx_queue_add_random RNG even though verifier does not render decals.
+            _ = state.rng.rand();
+            _ = state.rng.rand();
+            _ = state.rng.rand();
+            _ = state.rng.rand();
+        }
+        return;
+    }
+
+    for (players) |*player| {
+        if (player.health <= 0.0) continue;
+        if (!perkActive(player.*, survival_perks.PerkId.pyrokinetic)) continue;
+
+        const target_idx = creatureFindInRadius(creatures.entries[0..], player.aim, 12.0, 0);
+        if (target_idx == -1) continue;
+
+        var creature = &creatures.entries[@intCast(target_idx)];
+        creature.collision_timer = asF32F64(creature.collision_timer - dt);
+        if (creature.collision_timer >= 0.0) continue;
+
+        creature.collision_timer = 0.5;
+        for (burn_intensities) |intensity| {
+            const angle = asF32F64(@as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01);
+            _ = particles.spawnParticle(state, creature.pos, angle, intensity, -100);
+        }
+        // Consume native fx_queue_add_random RNG even though verifier does not render decals.
+        _ = state.rng.rand();
+        _ = state.rng.rand();
+        _ = state.rng.rand();
+        _ = state.rng.rand();
+    }
 }
 
 fn updateEvilEyesTargets(
@@ -2922,6 +2989,199 @@ test "evil eyes targeting assigns each alive owner in non-preserve mode" {
     updateEvilEyesTargets(&state, players[0..], creatures[0..]);
     try std.testing.expectEqual(@as(i32, 0), players[0].evil_eyes_target_creature);
     try std.testing.expectEqual(@as(i32, 1), players[1].evil_eyes_target_creature);
+}
+
+fn activeParticleCount(particles: *const survival_particles.ParticlePool) usize {
+    var count: usize = 0;
+    for (particles.entries) |entry| {
+        if (entry.active) count += 1;
+    }
+    return count;
+}
+
+test "pyrokinetic spawns particle burst when collision timer wraps" {
+    var state = survival_state.GameplayState.init(0);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .health = 100.0,
+            .aim = .{ .x = 100.0, .y = 200.0 },
+        },
+    };
+    players[0].perk_counts[@intCast(survival_perks.PerkId.pyrokinetic)] = 1;
+
+    var creatures = survival_creatures.CreaturePool{};
+    creatures.entries[0] = .{
+        .active = true,
+        .pos = .{ .x = 100.0, .y = 200.0 },
+        .lifecycle_stage = 16.0,
+        .collision_timer = 0.1,
+        .size = 50.0,
+        .hp = 100.0,
+    };
+
+    var particles = survival_particles.ParticlePool{};
+
+    applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.5), creatures.entries[0].collision_timer, 1e-6);
+    try std.testing.expectEqual(@as(usize, 5), activeParticleCount(&particles));
+
+    const expected_intensities = [_]f64{ 0.8, 0.6, 0.4, 0.3, 0.2 };
+    for (expected_intensities, 0..) |expected, idx| {
+        try std.testing.expectApproxEqAbs(expected, particles.entries[idx].intensity, 1e-6);
+    }
+}
+
+test "pyrokinetic uses f32 timer threshold before wrapping" {
+    var state = survival_state.GameplayState.init(0);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .health = 100.0,
+            .aim = .{ .x = 100.0, .y = 200.0 },
+        },
+    };
+    players[0].perk_counts[@intCast(survival_perks.PerkId.pyrokinetic)] = 1;
+
+    var creatures = survival_creatures.CreaturePool{};
+    creatures.entries[0] = .{
+        .active = true,
+        .pos = .{ .x = 100.0, .y = 200.0 },
+        .lifecycle_stage = 16.0,
+        .collision_timer = 0.034000009298324585,
+        .size = 50.0,
+        .hp = 100.0,
+    };
+
+    var particles = survival_particles.ParticlePool{};
+
+    applyPyrokineticEffects(
+        &state,
+        players[0..],
+        &creatures,
+        &particles,
+        0.03400000184774399,
+    );
+    try std.testing.expect(creatures.entries[0].collision_timer > 0.0);
+    try std.testing.expect(creatures.entries[0].collision_timer < 1e-6);
+    try std.testing.expectEqual(@as(usize, 0), activeParticleCount(&particles));
+
+    applyPyrokineticEffects(
+        &state,
+        players[0..],
+        &creatures,
+        &particles,
+        0.03200000151991844,
+    );
+    try std.testing.expectApproxEqAbs(@as(f64, 0.5), creatures.entries[0].collision_timer, 1e-6);
+    try std.testing.expectEqual(@as(usize, 5), activeParticleCount(&particles));
+}
+
+test "pyrokinetic defaults to first alive player slot in non-preserve mode" {
+    var state = survival_state.GameplayState.init(0);
+    state.preserve_bugs = false;
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 0.0 },
+        .{
+            .index = 1,
+            .pos = .{},
+            .health = 100.0,
+            .aim = .{ .x = 100.0, .y = 200.0 },
+        },
+    };
+    players[1].perk_counts[@intCast(survival_perks.PerkId.pyrokinetic)] = 1;
+
+    var creatures = survival_creatures.CreaturePool{};
+    creatures.entries[0] = .{
+        .active = true,
+        .pos = .{ .x = 100.0, .y = 200.0 },
+        .lifecycle_stage = 16.0,
+        .collision_timer = 0.1,
+        .size = 50.0,
+        .hp = 100.0,
+    };
+    var particles = survival_particles.ParticlePool{};
+
+    applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.5), creatures.entries[0].collision_timer, 1e-6);
+    try std.testing.expectEqual(@as(usize, 5), activeParticleCount(&particles));
+}
+
+test "pyrokinetic preserve bugs keeps player zero only targeting" {
+    var state = survival_state.GameplayState.init(0);
+    state.preserve_bugs = true;
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 0.0 },
+        .{
+            .index = 1,
+            .pos = .{},
+            .health = 100.0,
+            .aim = .{ .x = 100.0, .y = 200.0 },
+        },
+    };
+    players[1].perk_counts[@intCast(survival_perks.PerkId.pyrokinetic)] = 1;
+
+    var creatures = survival_creatures.CreaturePool{};
+    creatures.entries[0] = .{
+        .active = true,
+        .pos = .{ .x = 100.0, .y = 200.0 },
+        .lifecycle_stage = 16.0,
+        .collision_timer = 0.1,
+        .size = 50.0,
+        .hp = 100.0,
+    };
+    var particles = survival_particles.ParticlePool{};
+
+    applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.1), creatures.entries[0].collision_timer, 1e-6);
+    try std.testing.expectEqual(@as(usize, 0), activeParticleCount(&particles));
+}
+
+test "pyrokinetic targets all alive owners in default mode" {
+    var state = survival_state.GameplayState.init(0);
+    state.preserve_bugs = false;
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .health = 100.0,
+            .aim = .{ .x = 100.0, .y = 200.0 },
+        },
+        .{
+            .index = 1,
+            .pos = .{},
+            .health = 100.0,
+            .aim = .{ .x = 140.0, .y = 200.0 },
+        },
+    };
+    players[0].perk_counts[@intCast(survival_perks.PerkId.pyrokinetic)] = 1;
+    players[1].perk_counts[@intCast(survival_perks.PerkId.pyrokinetic)] = 1;
+
+    var creatures = survival_creatures.CreaturePool{};
+    creatures.entries[0] = .{
+        .active = true,
+        .pos = .{ .x = 100.0, .y = 200.0 },
+        .lifecycle_stage = 16.0,
+        .collision_timer = 0.1,
+        .size = 50.0,
+        .hp = 100.0,
+    };
+    creatures.entries[1] = .{
+        .active = true,
+        .pos = .{ .x = 140.0, .y = 200.0 },
+        .lifecycle_stage = 16.0,
+        .collision_timer = 0.1,
+        .size = 50.0,
+        .hp = 100.0,
+    };
+    var particles = survival_particles.ParticlePool{};
+
+    applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.5), creatures.entries[0].collision_timer, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.5), creatures.entries[1].collision_timer, 1e-6);
+    try std.testing.expectEqual(@as(usize, 10), activeParticleCount(&particles));
 }
 
 test "long distance runner ramps speed above base cap and coasts on release" {
