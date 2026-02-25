@@ -5,7 +5,9 @@ from typing import cast
 
 from typer.testing import CliRunner
 
+import crimson.dbg.diff as dbg_diff
 from crimson.cli import app
+from crimson.dbg.policy import resolve_parity_policy
 from crimson.dbg.trace import TraceReader, load_trace, write_trace
 from crimson.game_modes import GameMode
 from crimson.original.capture import dump_capture
@@ -173,6 +175,44 @@ def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
     assert "result=diverged" in bisect_result.output
     assert "first_bad_tick=1" in bisect_result.output
     assert repro_trace.exists()
+
+
+def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:
+    replay_path = _write_replay(tmp_path / "sample.crd")
+    golden_trace = tmp_path / "golden.cdt"
+    candidate_trace = tmp_path / "candidate.cdt"
+    runner = CliRunner()
+
+    record_result = runner.invoke(
+        app,
+        ["dbg", "record", str(replay_path), "--out", str(golden_trace), "--profile", "standard"],
+    )
+    assert record_result.exit_code == 0, record_result.output
+
+    meta, ticks, _footer = load_trace(golden_trace)
+    tick1 = next(row for row in ticks if row.tick_index == 1)
+    checkpoint = cast(dict[str, object], tick1.channels["checkpoint"])
+    score_xp_obj = checkpoint.get("score_xp")
+    assert isinstance(score_xp_obj, int)
+    checkpoint["score_xp"] = score_xp_obj + 1
+    write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
+
+    call_count = 0
+    original_first_mismatch = dbg_diff._first_mismatch
+
+    def _counting_first_mismatch(*, pairs, policy, tick_end=None):
+        nonlocal call_count
+        call_count += 1
+        return original_first_mismatch(pairs=pairs, policy=policy, tick_end=tick_end)
+
+    monkeypatch.setattr(dbg_diff, "_first_mismatch", _counting_first_mismatch)
+    report = dbg_diff.bisect_traces(
+        expected_trace_path=golden_trace,
+        actual_trace_path=candidate_trace,
+        policy=resolve_parity_policy("python_vs_rust_strict"),
+    )
+    assert report.first_bad_tick == 1
+    assert call_count == 1
 
 
 def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:

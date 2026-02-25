@@ -363,7 +363,6 @@ def bisect_traces(
                 repro_trace_path=None,
             )
 
-        start_tick = pairs[0].tick_index if tick_start is None else tick_start
         end_tick_bound = pairs[-1].tick_index if tick_end is None else tick_end
         checked_count, mismatch = _first_mismatch(pairs=pairs, policy=policy, tick_end=end_tick_bound)
         if mismatch is None:
@@ -376,20 +375,8 @@ def bisect_traces(
                 repro_trace_path=None,
             )
 
-        lo = start_tick
-        hi = end_tick_bound
         first_bad = mismatch.tick_index
-        while lo <= hi:
-            mid = (lo + hi) // 2
-            _checked_mid, mid_mismatch = _first_mismatch(pairs=pairs, policy=policy, tick_end=mid)
-            if mid_mismatch is not None:
-                first_bad = mid_mismatch.tick_index
-                hi = mid - 1
-            else:
-                lo = mid + 1
-
-        _checked_final, final_mismatch = _first_mismatch(pairs=pairs, policy=policy, tick_end=first_bad)
-        assert final_mismatch is not None
+        final_mismatch = mismatch
 
         repro_path = None
         if repro_out is not None:

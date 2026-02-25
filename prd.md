@@ -24,6 +24,7 @@ I’m going to define a debugger that:
 - [x] Chunk 7: AGENTS guideline cleanup (remove redundant casts/coercions in typed debugger internals; keep validation at boundaries)
 - [x] Chunk 8: Forward-compat schema decode (allow unknown CDT fields in core dbg structs + regression tests)
 - [x] Chunk 9: Shared debugger channel helpers (dedupe `as_object_dict`/`as_object_list`/RNG key extraction across diff/focus/query/viz)
+- [x] Chunk 10: Bisect efficiency fix (single-pass first-mismatch path, plus regression test enforcing one mismatch scan)
 
 ## 1) Background
 
