@@ -22,7 +22,7 @@ CHUNK_FLAG_MSGPACK = 1 << 1
 DEFAULT_CHUNK_FLAGS = int(CHUNK_FLAG_ZSTD | CHUNK_FLAG_MSGPACK)
 
 
-class TraceMeta(msgspec.Struct, forbid_unknown_fields=True):
+class TraceMeta(msgspec.Struct):
     trace_format_version: int
     trace_schema_version: int
     created_utc: str
@@ -34,7 +34,7 @@ class TraceMeta(msgspec.Struct, forbid_unknown_fields=True):
     config: dict[str, object]
 
 
-class TickRecord(msgspec.Struct, forbid_unknown_fields=True):
+class TickRecord(msgspec.Struct):
     tick_index: int
     elapsed_ms: int
     dt_ms_i32: int | None = None
@@ -43,13 +43,13 @@ class TickRecord(msgspec.Struct, forbid_unknown_fields=True):
     channels: dict[str, object] = msgspec.field(default_factory=dict)
 
 
-class TickBlock(msgspec.Struct, forbid_unknown_fields=True):
+class TickBlock(msgspec.Struct):
     start_tick: int
     end_tick: int
     ticks: list[TickRecord] = msgspec.field(default_factory=list)
 
 
-class TickBlockIndexEntry(msgspec.Struct, forbid_unknown_fields=True):
+class TickBlockIndexEntry(msgspec.Struct):
     start_tick: int
     end_tick: int
     file_offset: int
@@ -58,11 +58,10 @@ class TickBlockIndexEntry(msgspec.Struct, forbid_unknown_fields=True):
     checksum: int
 
 
-class TraceFooter(msgspec.Struct, forbid_unknown_fields=True):
+class TraceFooter(msgspec.Struct):
     trace_format_version: int
     tick_blocks: list[TickBlockIndexEntry]
     tick_count: int
     first_tick: int | None
     last_tick: int | None
     channel_counts: dict[str, int]
-

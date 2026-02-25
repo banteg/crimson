@@ -22,6 +22,7 @@ I’m going to define a debugger that:
 - [x] Chunk 5: `crimson dbg viz` + final workflow wiring + documentation/tests cleanup
 - [x] Chunk 6: PRD parity remediation (`rng_stream_head` in record output, full profile `micro_traces` + richer `event_heads`, viz tick stepping controls, regression tests)
 - [x] Chunk 7: AGENTS guideline cleanup (remove redundant casts/coercions in typed debugger internals; keep validation at boundaries)
+- [x] Chunk 8: Forward-compat schema decode (allow unknown CDT fields in core dbg structs + regression tests)
 
 ## 1) Background
 

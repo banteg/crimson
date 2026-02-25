@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import msgspec
+
 from crimson.dbg.schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta
 from crimson.dbg.trace import TraceReader, write_trace
 
@@ -40,3 +42,37 @@ def test_trace_roundtrip_random_access(tmp_path: Path) -> None:
         window = list(reader.iter_ticks(tick_start=1, tick_end=2))
         assert [row.tick_index for row in window] == [1, 2]
 
+
+def test_trace_meta_decodes_with_unknown_fields() -> None:
+    payload = msgspec.msgpack.encode(
+        {
+            "trace_format_version": TRACE_FORMAT_VERSION,
+            "trace_schema_version": TRACE_SCHEMA_VERSION,
+            "created_utc": "2026-02-24T00:00:00+00:00",
+            "producer": {"impl": "python"},
+            "source": {"kind": "unit_test"},
+            "channels": ["checkpoint"],
+            "channel_versions": {"checkpoint": 1},
+            "tick_range": {"start_tick": 0, "end_tick": 0, "tick_count": 1},
+            "config": {},
+            "future_field": {"nested": True},
+        },
+    )
+    meta = msgspec.msgpack.decode(payload, type=TraceMeta)
+    assert meta.trace_schema_version == TRACE_SCHEMA_VERSION
+
+
+def test_tick_record_decodes_with_unknown_fields() -> None:
+    payload = msgspec.msgpack.encode(
+        {
+            "tick_index": 7,
+            "elapsed_ms": 112,
+            "dt_ms_i32": 16,
+            "mode_id": 2,
+            "phase_markers": ["pre", "post"],
+            "channels": {"checkpoint": {"score_xp": 42}},
+            "future_tick_field": "ignored",
+        },
+    )
+    tick = msgspec.msgpack.decode(payload, type=TickRecord)
+    assert tick.tick_index == 7
