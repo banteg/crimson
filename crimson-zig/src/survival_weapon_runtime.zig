@@ -91,10 +91,7 @@ pub fn stepPlayerForTick(
         input_flags.move_mode != movement_control_mouse_point_click and
         player.reload_timer == 0.0;
     if (manual_reload_allowed) {
-        const clip_size_f64: f64 = @floatFromInt(@max(0, player.clip_size));
-        if (player.ammo < clip_size_f64) {
-            survival_state.playerStartReload(player, state);
-        }
+        survival_state.playerStartReload(player, state);
     }
 
     if (perkActive(player.*, perk_id_sharpshooter)) {
@@ -815,6 +812,34 @@ test "weapon runtime starts reload when ammo is depleted" {
     );
     try std.testing.expect(!player.reload_active);
     try std.testing.expectEqual(@as(f64, @floatFromInt(player.clip_size)), player.ammo);
+}
+
+test "manual reload starts even when clip is full" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+    };
+    survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.pistol);
+    player.ammo = @floatFromInt(player.clip_size);
+
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{ .reload_pressed = true },
+        1.0 / 60.0,
+    );
+
+    try std.testing.expect(player.reload_active);
+    try std.testing.expect(player.reload_timer > 0.0);
 }
 
 test "multi plasma and mini rocket use special shot counts" {
