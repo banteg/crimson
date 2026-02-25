@@ -1841,6 +1841,10 @@ pub const CreaturePool = struct {
             }
 
             tickAi7LinkTimer(creature, dt_ms, &state.rng);
+            if (creatureFrozenByEvilEyes(state, players, idx)) {
+                creature.force_target = 0;
+                continue;
+            }
             creatureAiUpdateTarget(creature, player.pos, self.entries[0..], dt);
             if (creature.plague_infected) {
                 creature.collision_timer -= dt;
@@ -2816,6 +2820,28 @@ fn anyPlayerHasPerk(players: []const survival_state.PlayerState, perk_id: i32) b
     return false;
 }
 
+fn creatureFrozenByEvilEyes(
+    state: *const survival_state.GameplayState,
+    players: []const survival_state.PlayerState,
+    creature_index: usize,
+) bool {
+    if (players.len == 0) return false;
+    const creature_index_i32: i32 = @intCast(creature_index);
+
+    if (state.preserve_bugs) {
+        const player0 = players[0];
+        if (!perkActive(&player0, perk_id_evil_eyes)) return false;
+        return player0.evil_eyes_target_creature == creature_index_i32;
+    }
+
+    for (players) |*player| {
+        if (player.health <= 0.0) continue;
+        if (!perkActive(player, perk_id_evil_eyes)) continue;
+        if (player.evil_eyes_target_creature == creature_index_i32) return true;
+    }
+    return false;
+}
+
 pub fn consumeProjectileHitPresentationPreRng(
     state: *survival_state.GameplayState,
     player: *const survival_state.PlayerState,
@@ -3188,6 +3214,7 @@ const perk_id_highlander: i32 = survival_perks.PerkId.highlander;
 const perk_id_death_clock: i32 = survival_perks.PerkId.death_clock;
 const perk_id_mr_melee: i32 = survival_perks.PerkId.mr_melee;
 const perk_id_radioactive: i32 = survival_perks.PerkId.radioactive;
+const perk_id_evil_eyes: i32 = survival_perks.PerkId.evil_eyes;
 const perk_id_veins_of_poison: i32 = survival_perks.PerkId.veins_of_poison;
 const perk_id_toxic_avenger: i32 = survival_perks.PerkId.toxic_avenger;
 const game_mode_rush: i32 = 2;
@@ -4792,6 +4819,42 @@ test "mr melee is inert when perk is not active" {
 
     pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
     try expectFloatClose(100.0, pool.entries[0].hp);
+}
+
+test "evil eyes freezes targeted creature movement" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 300.0, .y = 100.0 },
+            .health = 100.0,
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_evil_eyes)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 50.0,
+        .move_speed = 1.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 60.0,
+        .contact_damage = 0.0,
+    });
+    players[0].evil_eyes_target_creature = 0;
+
+    const before_x = pool.entries[0].pos.x;
+    const before_y = pool.entries[0].pos.y;
+    pool.update(&state, players[0..], 0.5, 1024.0, &bonuses);
+
+    try expectFloatClose(before_x, pool.entries[0].pos.x);
+    try expectFloatClose(before_y, pool.entries[0].pos.y);
 }
 
 test "ai7 link timer consumes rng when timer crosses zero" {

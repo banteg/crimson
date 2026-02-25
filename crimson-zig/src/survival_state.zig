@@ -166,6 +166,7 @@ pub const PlayerState = struct {
     level: i32 = 1,
 
     perk_counts: [perk_count_size]i32 = [_]i32{0} ** perk_count_size,
+    evil_eyes_target_creature: i32 = -1,
     plaguebearer_active: bool = false,
     hot_tempered_timer: f64 = 0.0,
     man_bomb_timer: f64 = 0.0,

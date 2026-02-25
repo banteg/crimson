@@ -489,6 +489,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             health_before_creatures[player_idx] = player.health;
         }
 
+        updateEvilEyesTargets(&state, players[0..], creatures.entries[0..]);
         survival_perks.updatePerkEffects(&state, players[0..], dt_sim);
         const rng_after_perk_effects = state.rng.state;
 
@@ -1394,6 +1395,51 @@ fn distanceSq(a: survival_state.Vec2, b: survival_state.Vec2) f64 {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return dx * dx + dy * dy;
+}
+
+fn updateEvilEyesTargets(
+    state: *const survival_state.GameplayState,
+    players: []survival_state.PlayerState,
+    creatures: []const survival_creatures.CreatureState,
+) void {
+    if (players.len == 0) return;
+    if (state.preserve_bugs) {
+        var player0 = &players[0];
+        if (!perkActive(player0.*, survival_perks.PerkId.evil_eyes)) {
+            player0.evil_eyes_target_creature = -1;
+            return;
+        }
+        player0.evil_eyes_target_creature = creatureFindInRadius(creatures, player0.aim, 12.0, 0);
+        return;
+    }
+
+    for (players) |*player| {
+        if (player.health <= 0.0 or !perkActive(player.*, survival_perks.PerkId.evil_eyes)) {
+            player.evil_eyes_target_creature = -1;
+            continue;
+        }
+        player.evil_eyes_target_creature = creatureFindInRadius(creatures, player.aim, 12.0, 0);
+    }
+}
+
+fn creatureFindInRadius(
+    creatures: []const survival_creatures.CreatureState,
+    pos: survival_state.Vec2,
+    radius: f64,
+    start_index: usize,
+) i32 {
+    var idx = start_index;
+    const max_index = @min(creatures.len, survival_creatures.max_creatures);
+    while (idx < max_index) : (idx += 1) {
+        const creature = creatures[idx];
+        if (!creature.active) continue;
+        if (!(creature.lifecycle_stage > 5.0)) continue;
+        const dist = asF32F64(survival_state.Vec2.sub(creature.pos, pos).length() - radius);
+        const threshold = asF32F64(creature.size * 0.14285715 + 3.0);
+        if (threshold < dist) continue;
+        return @intCast(idx);
+    }
+    return -1;
 }
 
 fn applyNukeBonus(
@@ -2777,6 +2823,105 @@ test "quest scaffold supports player counts 1 through 4 across static and dynami
             try std.testing.expect(result.wave_spawn_count > 0);
         }
     }
+}
+
+test "evil eyes targeting defaults to alive player slot in non-preserve mode" {
+    var state = survival_state.GameplayState.init(1);
+    state.preserve_bugs = false;
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 0.0 },
+        .{
+            .index = 1,
+            .pos = .{},
+            .health = 100.0,
+            .aim = .{ .x = 100.0, .y = 200.0 },
+        },
+    };
+    players[1].perk_counts[@intCast(survival_perks.PerkId.evil_eyes)] = 1;
+
+    var creatures = [_]survival_creatures.CreatureState{
+        .{
+            .active = true,
+            .pos = .{ .x = 100.0, .y = 200.0 },
+            .lifecycle_stage = 16.0,
+            .size = 50.0,
+            .hp = 100.0,
+        },
+    };
+
+    updateEvilEyesTargets(&state, players[0..], creatures[0..]);
+    try std.testing.expectEqual(@as(i32, -1), players[0].evil_eyes_target_creature);
+    try std.testing.expectEqual(@as(i32, 0), players[1].evil_eyes_target_creature);
+}
+
+test "evil eyes targeting preserve bugs keeps player zero ownership" {
+    var state = survival_state.GameplayState.init(1);
+    state.preserve_bugs = true;
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 0.0 },
+        .{
+            .index = 1,
+            .pos = .{},
+            .health = 100.0,
+            .aim = .{ .x = 100.0, .y = 200.0 },
+        },
+    };
+    players[1].perk_counts[@intCast(survival_perks.PerkId.evil_eyes)] = 1;
+
+    var creatures = [_]survival_creatures.CreatureState{
+        .{
+            .active = true,
+            .pos = .{ .x = 100.0, .y = 200.0 },
+            .lifecycle_stage = 16.0,
+            .size = 50.0,
+            .hp = 100.0,
+        },
+    };
+
+    updateEvilEyesTargets(&state, players[0..], creatures[0..]);
+    try std.testing.expectEqual(@as(i32, -1), players[0].evil_eyes_target_creature);
+}
+
+test "evil eyes targeting assigns each alive owner in non-preserve mode" {
+    var state = survival_state.GameplayState.init(1);
+    state.preserve_bugs = false;
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .health = 100.0,
+            .aim = .{ .x = 100.0, .y = 200.0 },
+        },
+        .{
+            .index = 1,
+            .pos = .{},
+            .health = 100.0,
+            .aim = .{ .x = 140.0, .y = 200.0 },
+        },
+    };
+    players[0].perk_counts[@intCast(survival_perks.PerkId.evil_eyes)] = 1;
+    players[1].perk_counts[@intCast(survival_perks.PerkId.evil_eyes)] = 1;
+
+    var creatures = [_]survival_creatures.CreatureState{
+        .{
+            .active = true,
+            .pos = .{ .x = 100.0, .y = 200.0 },
+            .lifecycle_stage = 16.0,
+            .size = 50.0,
+            .hp = 100.0,
+        },
+        .{
+            .active = true,
+            .pos = .{ .x = 140.0, .y = 200.0 },
+            .lifecycle_stage = 16.0,
+            .size = 50.0,
+            .hp = 100.0,
+        },
+    };
+
+    updateEvilEyesTargets(&state, players[0..], creatures[0..]);
+    try std.testing.expectEqual(@as(i32, 0), players[0].evil_eyes_target_creature);
+    try std.testing.expectEqual(@as(i32, 1), players[1].evil_eyes_target_creature);
 }
 
 test "alternate weapon slows movement by 20 percent" {
