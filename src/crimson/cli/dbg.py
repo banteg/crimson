@@ -9,13 +9,6 @@ import typer
 dbg_app = typer.Typer(add_completion=False)
 
 
-def _int_like(value: object) -> int:
-    try:
-        return int(value)  # ty:ignore[invalid-argument-type]
-    except (TypeError, ValueError):
-        return 0
-
-
 def _as_dict(value: object) -> dict[str, object]:
     if not isinstance(value, dict):
         return {}
@@ -40,7 +33,7 @@ def cmd_dbg_import_capture(
         summary = import_capture_to_trace(
             capture_path=Path(capture_file),
             out_path=Path(out),
-            chunk_ticks=int(chunk_ticks),
+            chunk_ticks=chunk_ticks,
         )
     except (TraceError, ValueError) as exc:
         typer.echo(f"dbg import-capture failed: {exc}", err=True)
@@ -75,12 +68,12 @@ def cmd_dbg_record(
     from ..dbg.record import record_replay_to_trace
     from ..dbg.trace import TraceError
 
-    impl_name = str(impl).strip().lower()
+    impl_name = impl.strip().lower()
     if impl_name != "python":
         typer.echo("dbg record currently supports --impl python only", err=True)
         raise typer.Exit(code=2)
 
-    profile_name = str(profile).strip().lower()
+    profile_name = profile.strip().lower()
 
     try:
         summary = record_replay_to_trace(
@@ -89,7 +82,7 @@ def cmd_dbg_record(
             profile=profile,
             max_ticks=max_ticks,
             strict_events=bool(strict_events),
-            chunk_ticks=int(chunk_ticks),
+            chunk_ticks=chunk_ticks,
         )
     except (TraceError, ValueError) as exc:
         typer.echo(f"dbg record failed: {exc}", err=True)
@@ -156,8 +149,8 @@ def cmd_dbg_health(
         "channels="
         + (
             ",".join(
-                f"{str(key)}:{_int_like(value)}"
-                for key, value in sorted(channels.items(), key=lambda item: str(item[0]))
+                f"{str(key)}:{value}"
+                for key, value in sorted(channels.items())
             )
             if channels
             else "(none)"
@@ -210,7 +203,7 @@ def cmd_dbg_diff(
 
     try:
         parity_policy = resolve_parity_policy(
-            str(policy),
+            policy,
             float_abs_tol=float_abs_tol,
             max_field_diffs=max_field_diffs,
         )
@@ -281,7 +274,7 @@ def cmd_dbg_bisect(
 
     try:
         parity_policy = resolve_parity_policy(
-            str(policy),
+            policy,
             float_abs_tol=float_abs_tol,
             max_field_diffs=max_field_diffs,
         )
@@ -296,8 +289,8 @@ def cmd_dbg_bisect(
             policy=parity_policy,
             tick_start=tick_start,
             tick_end=tick_end,
-            window_before=int(window_before),
-            window_after=int(window_after),
+            window_before=window_before,
+            window_after=window_after,
             repro_out=(None if out is None else Path(out)),
         )
     except ValueError as exc:
@@ -526,7 +519,7 @@ def cmd_dbg_focus(
 
     try:
         parity_policy = resolve_parity_policy(
-            str(policy),
+            policy,
             float_abs_tol=float_abs_tol,
             max_field_diffs=max_field_diffs,
         )
@@ -538,7 +531,7 @@ def cmd_dbg_focus(
         payload = focus_tick(
             golden_trace=Path(golden_trace),
             candidate_trace=Path(candidate_trace),
-            tick_index=int(tick),
+            tick_index=tick,
             policy=parity_policy,
         )
     except ValueError as exc:
@@ -603,7 +596,7 @@ def cmd_dbg_viz(
     from ..dbg.viz import write_viz_html
 
     try:
-        parity_policy = resolve_parity_policy(str(policy))
+        parity_policy = resolve_parity_policy(policy)
     except ValueError as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=2) from exc
@@ -616,8 +609,8 @@ def cmd_dbg_viz(
             candidate_trace=Path(candidate_trace),
             policy=parity_policy,
             tick=tick,
-            window_before=int(window_before),
-            window_after=int(window_after),
+            window_before=window_before,
+            window_after=window_after,
             out_path=html_out,
         )
     except ValueError as exc:

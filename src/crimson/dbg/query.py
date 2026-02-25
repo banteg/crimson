@@ -108,21 +108,6 @@ def _to_float(value: object) -> float | None:
     return None
 
 
-def _coerce_int(value: object, *, default: int = 0) -> int:
-    if isinstance(value, bool):
-        return int(value)
-    if isinstance(value, int):
-        return value
-    if isinstance(value, float):
-        return int(value)
-    if isinstance(value, str):
-        try:
-            return int(value)
-        except ValueError:
-            return default
-    return default
-
-
 def _eval_operand(
     operand: _Operand,
     *,
@@ -203,13 +188,10 @@ def _event_type_counts(row: TickRecord) -> dict[str, int]:
                 out[key] = int(value)
             elif isinstance(value, int):
                 out[key] = value
-            elif isinstance(value, float):
+            elif isinstance(value, float) and value.is_integer():
                 out[key] = int(value)
             else:
-                try:
-                    out[key] = int(str(value))
-                except ValueError:
-                    out[key] = 0
+                raise ValueError(f"event_counts[{key!r}] must be an integer value")
         return out
 
     out: dict[str, int] = {}
@@ -220,7 +202,7 @@ def _event_type_counts(row: TickRecord) -> dict[str, int]:
         else:
             type_obj = mapped.get("type")
             name = str(type_obj) if type_obj is not None else str(type(head).__name__)
-        out[name] = int(out.get(name, 0)) + 1
+        out[name] = out.get(name, 0) + 1
     return out
 
 
@@ -235,26 +217,26 @@ def tick_summary_from_row(row: TickRecord) -> dict[str, object]:
 
     event_counts = _event_type_counts(row)
     event_count_total = sum(event_counts.values())
-    event_types_sorted = sorted(event_counts.items(), key=lambda item: (-int(item[1]), str(item[0])))
+    event_types_sorted = sorted(event_counts.items(), key=lambda item: (-item[1], item[0]))
     top_event_types = [f"{name}:{count}" for name, count in event_types_sorted[:8]]
 
     return {
-        "tick_index": int(row.tick_index),
-        "elapsed_ms": int(row.elapsed_ms),
-        "dt_ms_i32": (None if row.dt_ms_i32 is None else int(row.dt_ms_i32)),
-        "mode_id": int(row.mode_id),
+        "tick_index": row.tick_index,
+        "elapsed_ms": row.elapsed_ms,
+        "dt_ms_i32": row.dt_ms_i32,
+        "mode_id": row.mode_id,
         "phase_markers": list(row.phase_markers),
         "checkpoint": checkpoint,
         "rng_marks": rng_marks,
         "entity_counts": entity_counts,
-        "event_count_total": int(event_count_total),
+        "event_count_total": event_count_total,
         "top_event_types": top_event_types,
     }
 
 
 def summarize_tick(*, trace_path: Path, tick_index: int) -> dict[str, object]:
     with TraceReader(Path(trace_path)) as trace:
-        row = trace.tick(int(tick_index))
+        row = trace.tick(tick_index)
         if row is None:
             raise ValueError(f"tick {tick_index} not found")
         return tick_summary_from_row(row)
@@ -285,7 +267,6 @@ def entity_history(
     tick_start: int | None = None,
     tick_end: int | None = None,
 ) -> dict[str, object]:
-    uid = int(entity_uid)
     snapshots: list[dict[str, object]] = []
     with TraceReader(Path(trace_path)) as trace:
         for row in trace.iter_ticks(tick_start=tick_start, tick_end=tick_end):
@@ -293,21 +274,25 @@ def entity_history(
                 uid_value = entity.get("uid")
                 if not isinstance(uid_value, int):
                     continue
-                if int(uid_value) != uid:
+                if uid_value != entity_uid:
                     continue
                 snapshot = dict(entity)
-                snapshot["tick_index"] = int(row.tick_index)
+                snapshot["tick_index"] = row.tick_index
                 snapshots.append(snapshot)
 
     if not snapshots:
-        raise ValueError(f"entity uid {uid} not found in requested range")
+        raise ValueError(f"entity uid {entity_uid} not found in requested range")
 
     first = snapshots[0]
+    spawn_tick = snapshots[0].get("tick_index")
+    despawn_tick = snapshots[-1].get("tick_index")
+    if not isinstance(spawn_tick, int) or not isinstance(despawn_tick, int):
+        raise TypeError("entity snapshot missing integer tick_index")
     return {
-        "entity_uid": uid,
+        "entity_uid": entity_uid,
         "pool_kind": str(first.get("pool_kind", "unknown")),
-        "spawn_tick": _coerce_int(snapshots[0].get("tick_index")),
-        "despawn_tick": _coerce_int(snapshots[-1].get("tick_index")),
+        "spawn_tick": spawn_tick,
+        "despawn_tick": despawn_tick,
         "samples": snapshots,
     }
 
@@ -319,7 +304,7 @@ def query_trace(
     limit: int = 256,
 ) -> dict[str, object]:
     scope, predicate = _parse_expression(expression)
-    limit_value = max(1, int(limit))
+    limit_value = max(1, limit)
 
     rows: list[dict[str, object]] = []
     matched_count = 0
@@ -337,7 +322,7 @@ def query_trace(
                 prev_context = context
         else:
             for row in trace.iter_ticks():
-                tick_index = int(row.tick_index)
+                tick_index = row.tick_index
                 for entity in _entity_rows(row):
                     context = {"tick_index": tick_index, **entity}
                     left = _eval_operand(predicate.left, current=context, previous=None)
@@ -350,8 +335,8 @@ def query_trace(
     return {
         "scope": scope,
         "expression": expression,
-        "limit": int(limit_value),
-        "match_count": int(matched_count),
+        "limit": limit_value,
+        "match_count": matched_count,
         "truncated": bool(matched_count > len(rows)),
         "rows": rows,
     }

@@ -45,14 +45,14 @@ class _EntityUidState:
         self.active_indices = set(self._seen_in_tick)
 
     def next_uid(self, *, kind: str, index: int) -> tuple[int, int]:
-        idx = int(index)
+        idx = index
         if idx not in self.active_indices:
-            self.generation_by_index[idx] = int(self.generation_by_index.get(idx, 0)) + 1
+            self.generation_by_index[idx] = self.generation_by_index.get(idx, 0) + 1
         self._seen_in_tick.add(idx)
-        generation = int(self.generation_by_index.get(idx, 0))
-        kind_code = int(_ENTITY_KIND_CODES[kind]) & 0xFF
+        generation = self.generation_by_index.get(idx, 0)
+        kind_code = _ENTITY_KIND_CODES[kind] & 0xFF
         uid = (kind_code << 56) | ((generation & 0xFFFFFF) << 32) | (idx & 0xFFFFFFFF)
-        return int(uid), int(generation)
+        return uid, generation
 
 
 def _fingerprint(path: Path) -> dict[str, object]:
@@ -61,70 +61,60 @@ def _fingerprint(path: Path) -> dict[str, object]:
     return {
         "path": str(path),
         "sha256": hashlib.sha256(raw).hexdigest(),
-        "size": int(stat.st_size),
-        "mtime_ns": int(stat.st_mtime_ns),
+        "size": stat.st_size,
+        "mtime_ns": stat.st_mtime_ns,
     }
 
 
-def _coerce_int(value: object, *, default: int = -1) -> int:
+def _require_numeric(value: object, *, field: str) -> float:
     if isinstance(value, bool):
-        return int(value)
-    if isinstance(value, int):
-        return value
-    if isinstance(value, float):
-        return int(value)
-    if isinstance(value, str):
-        try:
-            return int(value)
-        except ValueError:
-            return default
-    return default
-
-
-def _coerce_float(value: object, *, default: float = 0.0) -> float:
-    if isinstance(value, bool):
-        return float(int(value))
+        raise TypeError(f"{field} must be numeric, got bool")
     if isinstance(value, int):
         return float(value)
     if isinstance(value, float):
         return value
-    if isinstance(value, str):
-        try:
-            return float(value)
-        except ValueError:
-            return default
-    return default
+    raise TypeError(f"{field} must be numeric, got {type(value).__name__}")
 
 
-def _dict_str_object(value: object) -> dict[str, object] | None:
+def _require_object_dict(value: object, *, field: str) -> dict[str, object]:
     if not isinstance(value, dict):
-        return None
+        raise TypeError(f"{field} must be a mapping")
     out: dict[str, object] = {}
     for key, item in value.items():
         if isinstance(key, str):
             out[key] = item
+        else:
+            raise TypeError(f"{field} contains non-string key")
     return out
 
 
+def _require_int(value: object, *, field: str) -> int:
+    if isinstance(value, bool):
+        raise TypeError(f"{field} must be int, got bool")
+    if isinstance(value, int):
+        return value
+    raise TypeError(f"{field} must be int, got {type(value).__name__}")
+
+
 def _state_mark(marks: dict[str, int], key: str) -> int | None:
-    if key not in marks:
+    value = marks.get(key)
+    if value is None:
         return None
-    value = _coerce_int(marks.get(key), default=-1)
     if value < 0:
         return None
-    return int(value)
+    return value
 
 
 def _infer_rand_calls_between_states(before_state: int, after_state: int, *, max_calls: int) -> int | None:
-    before = int(before_state) & _CRT_RAND_MASK
-    after = int(after_state) & _CRT_RAND_MASK
+    before = before_state & _CRT_RAND_MASK
+    after = after_state & _CRT_RAND_MASK
     if before == after:
         return 0
-    state = int(before)
-    for idx in range(1, max(0, int(max_calls)) + 1):
+    state = before
+    for idx in range(1, max(0, max_calls) + 1):
         state = (state * _CRT_RAND_MULT + _CRT_RAND_INC) & _CRT_RAND_MASK
         if state == after:
-            return int(idx)
+            return idx
     return None
 
 
@@ -142,31 +132,31 @@ def _rng_stream_head_from_checkpoint(checkpoint: ReplayCheckpoint, *, max_rows: 
         return []
 
     total_calls = _infer_rand_calls_between_states(
-        int(before_state),
-        int(after_state),
+        before_state,
+        after_state,
         max_calls=_CRT_RAND_CALL_SEARCH_LIMIT,
     )
     if total_calls is None:
         return []
 
-    limit = min(max(0, int(total_calls)), max(0, int(max_rows)))
-    state = int(before_state) & _CRT_RAND_MASK
+    limit = min(max(0, total_calls), max(0, max_rows))
+    state = before_state & _CRT_RAND_MASK
     rows: list[dict[str, object]] = []
     for call_index in range(limit):
-        state_before_u32 = int(state) & _CRT_RAND_MASK
-        state_after_u32 = (int(state_before_u32) * _CRT_RAND_MULT + _CRT_RAND_INC) & _CRT_RAND_MASK
+        state_before_u32 = state & _CRT_RAND_MASK
+        state_after_u32 = (state_before_u32 * _CRT_RAND_MULT + _CRT_RAND_INC) & _CRT_RAND_MASK
         rows.append(
             {
-                "tick_call_index": int(call_index) + 1,
-                "value_15": int((state_after_u32 >> 16) & 0x7FFF),
-                "state_before_u32": int(state_before_u32),
-                "state_after_u32": int(state_after_u32),
+                "tick_call_index": call_index + 1,
+                "value_15": (state_after_u32 >> 16) & 0x7FFF,
+                "state_before_u32": state_before_u32,
+                "state_after_u32": state_after_u32,
                 "caller_static": None,
                 "branch_id": None,
                 "inferred": True,
             },
         )
-        state = int(state_after_u32)
+        state = state_after_u32
     return rows
 
 
@@ -174,31 +164,31 @@ def _event_heads_from_checkpoint(checkpoint: ReplayCheckpoint) -> list[dict[str,
     heads: list[dict[str, object]] = [
         {
             "type": "event_summary",
-            "hit_count": int(checkpoint.events.hit_count),
-            "pickup_count": int(checkpoint.events.pickup_count),
-            "sfx_count": int(checkpoint.events.sfx_count),
+            "hit_count": checkpoint.events.hit_count,
+            "pickup_count": checkpoint.events.pickup_count,
+            "sfx_count": checkpoint.events.sfx_count,
         },
     ]
     for entry in checkpoint.deaths:
         heads.append(
             {
                 "type": "creature_death",
-                "creature_index": int(entry.creature_index),
-                "type_id": int(entry.type_id),
+                "creature_index": entry.creature_index,
+                "type_id": entry.type_id,
                 "reward_value": float(entry.reward_value),
-                "xp_awarded": int(entry.xp_awarded),
-                "owner_id": int(entry.owner_id),
+                "xp_awarded": entry.xp_awarded,
+                "owner_id": entry.owner_id,
             },
         )
     for sfx_key in checkpoint.events.sfx_head:
         heads.append({"type": "sfx", "key": str(sfx_key)})
-    if int(checkpoint.perk.pending_count) > 0 or bool(checkpoint.perk.choices_dirty):
+    if checkpoint.perk.pending_count > 0 or checkpoint.perk.choices_dirty:
         heads.append(
             {
                 "type": "perk_state",
-                "pending_count": int(checkpoint.perk.pending_count),
+                "pending_count": checkpoint.perk.pending_count,
                 "choices_dirty": bool(checkpoint.perk.choices_dirty),
-                "choices_count": int(len(checkpoint.perk.choices)),
+                "choices_count": len(checkpoint.perk.choices),
             },
         )
     return heads
@@ -212,13 +202,9 @@ def _creature_map(entity_samples: dict[str, object] | None) -> dict[int, dict[st
         return {}
     out: dict[int, dict[str, object]] = {}
     for item in creatures_obj:
-        mapped = _dict_str_object(item)
-        if mapped is None:
-            continue
-        uid = _coerce_int(mapped.get("uid"), default=-1)
-        if uid < 0:
-            continue
-        out[int(uid)] = mapped
+        mapped = _require_object_dict(item, field="entity_samples.creatures[]")
+        uid = _require_int(mapped.get("uid"), field="entity_samples.creatures[].uid")
+        out[uid] = mapped
     return out
 
 
@@ -234,29 +220,29 @@ def _micro_traces_from_entities(
     curr_creatures = _creature_map(current_samples)
     rows: list[dict[str, object]] = []
     for uid in sorted(set(prev_creatures) & set(curr_creatures)):
-        prev_row = prev_creatures[int(uid)]
-        curr_row = curr_creatures[int(uid)]
-        prev_pos = _dict_str_object(prev_row.get("pos")) or {}
-        curr_pos = _dict_str_object(curr_row.get("pos")) or {}
-        px = _coerce_float(prev_pos.get("x"))
-        py = _coerce_float(prev_pos.get("y"))
-        cx = _coerce_float(curr_pos.get("x"))
-        cy = _coerce_float(curr_pos.get("y"))
+        prev_row = prev_creatures[uid]
+        curr_row = curr_creatures[uid]
+        prev_pos = _require_object_dict(prev_row.get("pos"), field="entity_samples.creatures[].pos")
+        curr_pos = _require_object_dict(curr_row.get("pos"), field="entity_samples.creatures[].pos")
+        px = _require_numeric(prev_pos.get("x"), field="entity_samples.creatures[].pos.x")
+        py = _require_numeric(prev_pos.get("y"), field="entity_samples.creatures[].pos.y")
+        cx = _require_numeric(curr_pos.get("x"), field="entity_samples.creatures[].pos.x")
+        cy = _require_numeric(curr_pos.get("y"), field="entity_samples.creatures[].pos.y")
         dx = float(cx - px)
         dy = float(cy - py)
         rows.append(
             {
                 "type": "creature_update_micro_window",
-                "uid": int(uid),
-                "index": _coerce_int(curr_row.get("index"), default=-1),
+                "uid": uid,
+                "index": _require_int(curr_row.get("index"), field="entity_samples.creatures[].index"),
                 "before_pos": {"x": float(px), "y": float(py)},
                 "after_pos": {"x": float(cx), "y": float(cy)},
                 "dx": float(dx),
                 "dy": float(dy),
-                "before_hp": _coerce_float(prev_row.get("hp")),
-                "after_hp": _coerce_float(curr_row.get("hp")),
-                "before_heading": _coerce_float(prev_row.get("heading")),
-                "after_heading": _coerce_float(curr_row.get("heading")),
+                "before_hp": _require_numeric(prev_row.get("hp"), field="entity_samples.creatures[].hp"),
+                "after_hp": _require_numeric(curr_row.get("hp"), field="entity_samples.creatures[].hp"),
+                "before_heading": _require_numeric(prev_row.get("heading"), field="entity_samples.creatures[].heading"),
+                "after_heading": _require_numeric(curr_row.get("heading"), field="entity_samples.creatures[].heading"),
             },
         )
     return rows
@@ -279,13 +265,13 @@ def _entity_samples_for_world(
     for index, creature in enumerate(world.creatures.entries):
         if not creature.active:
             continue
-        uid, generation = creature_state.next_uid(kind="creature", index=int(index))
+        uid, generation = creature_state.next_uid(kind="creature", index=index)
         creatures.append(
             {
-                "uid": int(uid),
-                "generation": int(generation),
+                "uid": uid,
+                "generation": generation,
                 "pool_kind": "creature",
-                "index": int(index),
+                "index": index,
                 "active": True,
                 "type_id": int(creature.type_id),
                 "hp": float(creature.hp),
@@ -305,13 +291,13 @@ def _entity_samples_for_world(
     for index, projectile in enumerate(world.state.projectiles.entries):
         if not projectile.active:
             continue
-        uid, generation = projectile_state.next_uid(kind="projectile", index=int(index))
+        uid, generation = projectile_state.next_uid(kind="projectile", index=index)
         projectiles.append(
             {
-                "uid": int(uid),
-                "generation": int(generation),
+                "uid": uid,
+                "generation": generation,
                 "pool_kind": "projectile",
-                "index": int(index),
+                "index": index,
                 "active": True,
                 "type_id": int(projectile.type_id),
                 "angle": float(projectile.angle),
@@ -330,13 +316,13 @@ def _entity_samples_for_world(
     for index, projectile in enumerate(world.state.secondary_projectiles.entries):
         if not projectile.active:
             continue
-        uid, generation = secondary_state.next_uid(kind="secondary_projectile", index=int(index))
+        uid, generation = secondary_state.next_uid(kind="secondary_projectile", index=index)
         secondary_projectiles.append(
             {
-                "uid": int(uid),
-                "generation": int(generation),
+                "uid": uid,
+                "generation": generation,
                 "pool_kind": "secondary_projectile",
-                "index": int(index),
+                "index": index,
                 "active": True,
                 "type_id": int(projectile.type_id),
                 "angle": float(projectile.angle),
@@ -353,13 +339,13 @@ def _entity_samples_for_world(
     for index, bonus in enumerate(world.state.bonus_pool.entries):
         if int(bonus.bonus_id) == 0:
             continue
-        uid, generation = bonus_state.next_uid(kind="bonus", index=int(index))
+        uid, generation = bonus_state.next_uid(kind="bonus", index=index)
         bonuses.append(
             {
-                "uid": int(uid),
-                "generation": int(generation),
+                "uid": uid,
+                "generation": generation,
                 "pool_kind": "bonus",
-                "index": int(index),
+                "index": index,
                 "bonus_id": int(bonus.bonus_id),
                 "picked": bool(bonus.picked),
                 "time_left": float(bonus.time_left),
@@ -396,7 +382,7 @@ def record_replay_to_trace(
     replay = load_replay_file(replay_path)
 
     replay_tick_count = len(replay.inputs)
-    tick_count = replay_tick_count if max_ticks is None else min(replay_tick_count, max(0, int(max_ticks)))
+    tick_count = replay_tick_count if max_ticks is None else min(replay_tick_count, max(0, max_ticks))
     checkpoint_ticks = set(range(tick_count))
     checkpoints: list[ReplayCheckpoint] = []
 
@@ -414,7 +400,7 @@ def record_replay_to_trace(
     def _tick_observer(tick_index: int, world: WorldState) -> None:
         if not include_entities:
             return
-        entity_samples_by_tick[int(tick_index)] = _entity_samples_for_world(
+        entity_samples_by_tick[tick_index] = _entity_samples_for_world(
             world,
             creature_state=creature_state,
             projectile_state=projectile_state,
@@ -425,7 +411,7 @@ def record_replay_to_trace(
     try:
         run_replay(
             replay,
-            max_ticks=(None if max_ticks is None else int(max_ticks)),
+            max_ticks=max_ticks,
             strict_events=bool(strict_events),
             trace_rng=bool(trace_rng),
             checkpoints_out=checkpoints,
@@ -438,13 +424,13 @@ def record_replay_to_trace(
     tick_rows: list[TickRecord] = []
     channels_seen: set[str] = set()
     previous_entity_samples: dict[str, object] | None = None
-    for checkpoint in sorted(checkpoints, key=lambda row: int(row.tick_index)):
-        tick_index = int(checkpoint.tick_index)
+    for checkpoint in sorted(checkpoints, key=lambda row: row.tick_index):
+        tick_index = checkpoint.tick_index
         channels: dict[str, object] = {
             "checkpoint": checkpoint_to_channel(checkpoint),
         }
         if include_rng:
-            channels["rng_marks"] = {str(key): int(value) for key, value in sorted(checkpoint.rng_marks.items())}
+            channels["rng_marks"] = dict(sorted(checkpoint.rng_marks.items()))
             channels["rng_stream_head"] = _rng_stream_head_from_checkpoint(checkpoint)
 
         entity_samples: dict[str, object] | None = None
@@ -469,10 +455,10 @@ def record_replay_to_trace(
         channels_seen.update(channels.keys())
         tick_rows.append(
             TickRecord(
-                tick_index=int(tick_index),
-                elapsed_ms=int(checkpoint.elapsed_ms),
+                tick_index=tick_index,
+                elapsed_ms=checkpoint.elapsed_ms,
                 dt_ms_i32=None,
-                mode_id=int(replay.header.game_mode_id),
+                mode_id=replay.header.game_mode_id,
                 phase_markers=[],
                 channels=channels,
             ),
@@ -480,17 +466,17 @@ def record_replay_to_trace(
         if entity_samples is not None:
             previous_entity_samples = entity_samples
 
-    tick_start = min((int(row.tick_index) for row in tick_rows), default=-1)
-    tick_end = max((int(row.tick_index) for row in tick_rows), default=-1)
+    tick_start = min((row.tick_index for row in tick_rows), default=-1)
+    tick_end = max((row.tick_index for row in tick_rows), default=-1)
     replay_fingerprint = _fingerprint(replay_path)
-    replay_fingerprint["tick_rate"] = int(replay.header.tick_rate)
-    replay_fingerprint["seed"] = int(replay.header.seed)
-    replay_fingerprint["mode_id"] = int(replay.header.game_mode_id)
+    replay_fingerprint["tick_rate"] = replay.header.tick_rate
+    replay_fingerprint["seed"] = replay.header.seed
+    replay_fingerprint["mode_id"] = replay.header.game_mode_id
     replay_fingerprint["quest_level"] = str(replay.header.quest_level)
 
     meta = TraceMeta(
-        trace_format_version=int(TRACE_FORMAT_VERSION),
-        trace_schema_version=int(TRACE_SCHEMA_VERSION),
+        trace_format_version=TRACE_FORMAT_VERSION,
+        trace_schema_version=TRACE_SCHEMA_VERSION,
         created_utc=datetime.now(tz=UTC).isoformat(),
         producer={
             "impl": "python",
@@ -499,22 +485,22 @@ def record_replay_to_trace(
             "arch": "",
         },
         source=replay_fingerprint,
-        channels=sorted(str(channel) for channel in channels_seen),
-        channel_versions={str(channel): 1 for channel in sorted(channels_seen)},
+        channels=sorted(channels_seen),
+        channel_versions={channel: 1 for channel in sorted(channels_seen)},
         tick_range={
-            "start_tick": int(tick_start),
-            "end_tick": int(tick_end),
-            "tick_count": int(len(tick_rows)),
+            "start_tick": tick_start,
+            "end_tick": tick_end,
+            "tick_count": len(tick_rows),
         },
         config={
-            "profile": str(profile),
+            "profile": profile,
             "strict_events": bool(strict_events),
-            "max_ticks": (None if max_ticks is None else int(max_ticks)),
+            "max_ticks": max_ticks,
         },
     )
     return write_trace(
         out_path,
         meta=meta,
         ticks=tick_rows,
-        chunk_ticks=max(1, int(chunk_ticks)),
+        chunk_ticks=max(1, chunk_ticks),
     )
