@@ -8,7 +8,7 @@ const survival_particles = @import("survival_particles.zig");
 const survival_projectiles = @import("survival_projectiles.zig");
 const survival_secondary_projectiles = @import("survival_secondary_projectiles.zig");
 const survival_spawn = @import("survival_spawn.zig");
-const quest_spawn_tables = @import("quest_spawn_tables.zig");
+const quest_spawn_builder = @import("quest_spawn_builder.zig");
 const survival_state = @import("survival_state.zig");
 const survival_weapon_runtime = @import("survival_weapon_runtime.zig");
 const survival_math = @import("survival_math.zig");
@@ -413,21 +413,26 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             quest_spawn_entries = quest_spawn_entries_storage[0..entries.len];
         } else {
             const level_key = resolveQuestLevelKey(header) orelse return error.UnsupportedQuestSpawnTable;
-            if (header.seed != @as(u32, @intCast(level_key))) {
-                return error.UnsupportedQuestSpawnTable;
-            }
-            const preset = quest_spawn_tables.lookupPreset(level_key, header.player_count) orelse {
-                return error.UnsupportedQuestSpawnTable;
+            const built = quest_spawn_builder.buildQuestSpawnTable(
+                level_key,
+                header.player_count,
+                header.seed,
+                header.world_size,
+                quest_spawn_entries_storage[0..],
+            ) catch |build_err| switch (build_err) {
+                error.UnsupportedQuestSpawnTable => return error.UnsupportedQuestSpawnTable,
+                error.OutOfSpace => return error.UnsupportedQuestSpawnTable,
             };
-            std.debug.assert(preset.entries.len <= quest_spawn_entries_storage.len);
-            @memcpy(quest_spawn_entries_storage[0..preset.entries.len], preset.entries);
-            quest_spawn_entries = quest_spawn_entries_storage[0..preset.entries.len];
-            if (header.hardcore) {
-                survival_spawn.applyHardcoreQuestSpawnTableAdjustment(quest_spawn_entries);
-            }
+            quest_spawn_entries = quest_spawn_entries_storage[0..built.entries.len];
             if (options.quest_start_weapon_id == null) {
-                quest_start_weapon_id = preset.start_weapon_id;
+                quest_start_weapon_id = built.start_weapon_id;
             }
+            if (quest_spawn_entries.len == 0) {
+                return error.UnsupportedQuestSpawnTable;
+            }
+        }
+        if (header.hardcore) {
+            survival_spawn.applyHardcoreQuestSpawnTableAdjustment(quest_spawn_entries);
         }
         const weapon_id = @max(1, quest_start_weapon_id);
         for (players) |*player| {
@@ -2546,7 +2551,7 @@ test "quest scaffold resolves native quest preset and start weapon from replay h
     try std.testing.expect(result.wave_spawn_count > 0);
 }
 
-test "quest scaffold rejects unknown quest seed variant when no spawn entries are provided" {
+test "quest scaffold supports dynamic quest seed variants when no spawn entries are provided" {
     const allocator = std.testing.allocator;
 
     const replay = try buildTestReplay(allocator, .{
@@ -2559,10 +2564,29 @@ test "quest scaffold rejects unknown quest seed variant when no spawn entries ar
     });
     defer replay.deinit(allocator);
 
-    try std.testing.expectError(
-        error.UnsupportedQuestSpawnTable,
-        runSurvivalReplayScaffold(replay),
-    );
+    const result = try runSurvivalReplayScaffoldWithOptions(replay, .{
+        .dt_frame_overrides = &.{
+            .{ .tick_index = 0, .dt_frame = 3.0 },
+        },
+    });
+    try std.testing.expectEqual(@as(i32, 6), result.player_weapon_id);
+    try std.testing.expect(result.wave_spawn_count > 0);
+}
+
+test "quest scaffold rejects unknown quest level when no spawn entries are provided" {
+    const allocator = std.testing.allocator;
+
+    const replay = try buildTestReplay(allocator, .{
+        .game_mode_id = game_mode_quests,
+        .seed = 999,
+        .tick_rate = 60,
+        .quest_level = "9.9",
+        .inputs = &.{0},
+        .events = &.{},
+    });
+    defer replay.deinit(allocator);
+
+    try std.testing.expectError(error.UnsupportedQuestSpawnTable, runSurvivalReplayScaffold(replay));
 }
 
 test "pending nuke damage is limited to radius" {

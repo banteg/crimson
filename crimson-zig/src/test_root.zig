@@ -1,5 +1,6 @@
 test {
     _ = @import("hash.zig");
+    _ = @import("quest_spawn_builder.zig");
     _ = @import("replay_codec.zig");
     _ = @import("survival_bonuses.zig");
     _ = @import("survival_creatures.zig");
