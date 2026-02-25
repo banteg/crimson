@@ -1,0 +1,41 @@
+name: Zig CI
+
+on:
+  push:
+    branches:
+      - "master"
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  zig:
+    runs-on: ubuntu-latest
+    env:
+      ZIG_GLOBAL_CACHE_DIR: ${{ github.workspace }}/crimson-zig/.zig-cache-global
+    defaults:
+      run:
+        working-directory: crimson-zig
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: "0.15.2"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build + test
+        run: |
+          zig build test --summary all
+          zig build -Doptimize=ReleaseFast
+
+      - name: Wasm smoke
+        run: ./scripts/smoke_wasm.sh

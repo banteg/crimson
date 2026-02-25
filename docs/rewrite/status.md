@@ -4,7 +4,7 @@ This page tracks the current code-level state of the rewrite under `src/`, and t
 largest remaining parity gaps vs the classic Windows build (v1.9.93) documented in
 [`docs/crimsonland-exe/`](../crimsonland-exe/).
 
-Last reviewed: **2026-02-17**
+Last reviewed: **2026-02-24**
 
 ## What you can run today
 
@@ -37,6 +37,13 @@ Last reviewed: **2026-02-17**
   - `uv run crimson original focus-trace <capture.msgpack.zst> --tick <n>`
   - `uv run crimson original creature-trajectory <capture.msgpack.zst>`
   - `uv run crimson original visualize-capture <capture.msgpack.zst>`
+
+## Zig replay verifier status
+
+- Zig verifier details now live on a dedicated page:
+  - [`docs/rewrite/zig-verifier.md`](zig-verifier.md)
+- This page remains focused on overall rewrite (Python + raylib) status and
+  major parity gaps.
 
 ## Coverage map (rewrite vs classic)
 

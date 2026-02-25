@@ -1,0 +1,62 @@
+const std = @import("std");
+const verify_native = @import("verify_native.zig");
+
+const usage =
+    \\Usage:
+    \\  crimson-zig replay verify <replay.crd> [verify options]
+    \\  crimson-zig --help
+    \\
+    \\Examples:
+    \\  crimson-zig replay verify survival_20260224_041009_score76661.crd
+    \\  crimson-zig replay verify replay.crd --format json --submitted-score 76661
+    \\
+;
+
+pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
+    if (args.len <= 1) {
+        try printUsage();
+        return 0;
+    }
+
+    if (std.mem.eql(u8, args[1], "--help") or std.mem.eql(u8, args[1], "-h")) {
+        try printUsage();
+        return 0;
+    }
+
+    if (args.len >= 3 and std.mem.eql(u8, args[1], "replay") and std.mem.eql(u8, args[2], "verify")) {
+        const output = try verify_native.runReplayVerify(allocator, args[3..]);
+        defer output.deinit(allocator);
+
+        try writeStdout(output.stdout);
+        try writeStderr(output.stderr);
+        return output.exit_code;
+    }
+
+    try writeStderr("error: unsupported command\n");
+    try printUsage();
+    return 1;
+}
+
+fn printUsage() !void {
+    try writeStdout(usage);
+}
+
+fn writeStdout(bytes: []const u8) !void {
+    var buffer: [4096]u8 = undefined;
+    var writer = std.fs.File.stdout().writer(&buffer);
+    const out = &writer.interface;
+    if (bytes.len > 0) {
+        try out.writeAll(bytes);
+    }
+    try out.flush();
+}
+
+fn writeStderr(bytes: []const u8) !void {
+    var buffer: [4096]u8 = undefined;
+    var writer = std.fs.File.stderr().writer(&buffer);
+    const err = &writer.interface;
+    if (bytes.len > 0) {
+        try err.writeAll(bytes);
+    }
+    try err.flush();
+}
