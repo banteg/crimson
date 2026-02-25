@@ -558,18 +558,40 @@ fn bonusPickRandomType(
         const roll: i32 = @intCast(state.rng.rand() % 162 + 1);
         const bonus_id = bonusIdFromRoll(roll, state);
         if (bonus_id <= 0) continue;
-
-        if (state.shock_chain_links_left > 0 and bonus_id == survival_state.BonusId.shock_chain) continue;
-        if (bonus_id == survival_state.BonusId.freeze and state.bonuses.freeze > 0.0) continue;
-        if (bonus_id == survival_state.BonusId.shield and anyShieldActive(players)) continue;
-        if (bonus_id == survival_state.BonusId.weapon and has_fire_bullets_drop) continue;
-        if (bonus_id == survival_state.BonusId.weapon and anyPerkActive(players, survival_perks.PerkId.my_favourite_weapon)) continue;
-        if (bonus_id == survival_state.BonusId.medikit and anyPerkActive(players, survival_perks.PerkId.death_clock)) continue;
-        if (bonus_id == survival_state.BonusId.unused) continue;
+        if (bonusPickSuppressed(state, players, bonus_id, has_fire_bullets_drop)) continue;
 
         return bonus_id;
     }
     return survival_state.BonusId.points;
+}
+
+fn bonusPickSuppressed(
+    state: *survival_state.GameplayState,
+    players: []const survival_state.PlayerState,
+    bonus_id: i32,
+    has_fire_bullets_drop: bool,
+) bool {
+    if (state.shock_chain_links_left > 0 and bonus_id == survival_state.BonusId.shock_chain) return true;
+
+    if (state.game_mode == game_mode_quests and state.quest_stage_minor == 10) {
+        const major = state.quest_stage_major;
+        if (bonus_id == survival_state.BonusId.nuke) {
+            if (major == 2 or major == 4 or major == 5) return true;
+            if (state.hardcore and major == 3) return true;
+        }
+        if (bonus_id == survival_state.BonusId.freeze) {
+            if (major == 4) return true;
+            if (state.hardcore and major == 2) return true;
+        }
+    }
+
+    if (bonus_id == survival_state.BonusId.freeze and state.bonuses.freeze > 0.0) return true;
+    if (bonus_id == survival_state.BonusId.shield and anyShieldActive(players)) return true;
+    if (bonus_id == survival_state.BonusId.weapon and has_fire_bullets_drop) return true;
+    if (bonus_id == survival_state.BonusId.weapon and anyPerkActive(players, survival_perks.PerkId.my_favourite_weapon)) return true;
+    if (bonus_id == survival_state.BonusId.medikit and anyPerkActive(players, survival_perks.PerkId.death_clock)) return true;
+    if (bonus_id == survival_state.BonusId.unused) return true;
+    return false;
 }
 
 fn anyShieldActive(players: []const survival_state.PlayerState) bool {
@@ -857,4 +879,66 @@ test "bonus magnet allows spawn on secondary roll" {
         1024.0,
     );
     try std.testing.expect(perk_spawned != null);
+}
+
+test "bonus pick random type quest suppression parity" {
+    const suppression_seed: u32 = 282_697;
+
+    try runQuestSuppressionCase(
+        suppression_seed,
+        false,
+        2,
+        10,
+        survival_state.BonusId.freeze,
+    );
+    try runQuestSuppressionCase(
+        suppression_seed,
+        true,
+        2,
+        10,
+        survival_state.BonusId.points,
+    );
+    try runQuestSuppressionCase(
+        suppression_seed,
+        false,
+        4,
+        10,
+        survival_state.BonusId.points,
+    );
+    try runQuestSuppressionCase(
+        suppression_seed,
+        false,
+        5,
+        10,
+        survival_state.BonusId.freeze,
+    );
+    try runQuestSuppressionCase(
+        suppression_seed,
+        true,
+        3,
+        10,
+        survival_state.BonusId.freeze,
+    );
+}
+
+fn runQuestSuppressionCase(
+    seed: u32,
+    hardcore: bool,
+    quest_stage_major: i32,
+    quest_stage_minor: i32,
+    expected_bonus_id: i32,
+) !void {
+    var state = survival_state.GameplayState.init(seed);
+    state.game_mode = game_mode_quests;
+    state.hardcore = hardcore;
+    state.quest_stage_major = quest_stage_major;
+    state.quest_stage_minor = quest_stage_minor;
+
+    var pool = BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+
+    const bonus_id = bonusPickRandomType(&pool, &state, players[0..]);
+    try std.testing.expectEqual(expected_bonus_id, bonus_id);
 }
