@@ -482,6 +482,10 @@ pub fn runSurvivalReplayScaffoldWithTrace(
         );
         const dt_sim_ms = dt_sim * 1000.0;
         const elapsed_before_ms = elapsed_ms_sim;
+        var health_before_creatures: [survival_state.max_players]f64 = undefined;
+        for (players, 0..) |player, player_idx| {
+            health_before_creatures[player_idx] = player.health;
+        }
 
         survival_perks.updatePerkEffects(&state, players[0..], dt_sim);
         const rng_after_perk_effects = state.rng.state;
@@ -494,6 +498,19 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             &bonuses,
         );
         const rng_after_creatures = state.rng.state;
+        for (players, 0..) |_, player_idx| {
+            applyFinalRevengeOnDeathTransition(
+                &state,
+                players[0..],
+                player_idx,
+                health_before_creatures[player_idx],
+                &creatures,
+                &bonuses,
+                dt_sim,
+                @floatCast(header.world_size),
+                header.detail_preset,
+            );
+        }
 
         const projectile_tick_stats = projectiles.update(
             &state,
@@ -537,7 +554,8 @@ pub fn runSurvivalReplayScaffoldWithTrace(
                 dt_sim,
             );
         }
-        for (tick_inputs[0..players.len], players) |input, *player| {
+        for (tick_inputs[0..players.len], players, 0..) |input, *player, player_idx| {
+            const health_before_player_step = player.health;
             const flags = replay_codec.unpackInputFlags(input.flags);
             const move_mode_for_tick = resolveMoveModeForUpdate(flags, &state);
             updatePlayerFromReplayInput(
@@ -564,6 +582,17 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             ) catch |err| switch (err) {
                 error.UnsupportedWeaponFirePath => return error.UnsupportedWeaponFirePath,
             };
+            applyFinalRevengeOnDeathTransition(
+                &state,
+                players[0..],
+                player_idx,
+                health_before_player_step,
+                &creatures,
+                &bonuses,
+                dt_sim,
+                @floatCast(header.world_size),
+                header.detail_preset,
+            );
             finalizePlayerPostUpdate(player, @floatCast(header.world_size));
         }
         if (game_mode == game_mode_rush) {
@@ -1436,6 +1465,51 @@ fn applyNukeBonus(
     }
     state.debug_nuke_kills_last = nuke_kill_count;
     state.debug_nuke_tick_last = @intCast(tick_index);
+}
+
+fn applyFinalRevengeOnDeathTransition(
+    state: *survival_state.GameplayState,
+    players: []survival_state.PlayerState,
+    player_index: usize,
+    health_before: f64,
+    creatures: *survival_creatures.CreaturePool,
+    bonuses: *survival_bonuses.BonusPool,
+    dt: f64,
+    world_size: f64,
+    detail_preset: i32,
+) void {
+    if (player_index >= players.len) return;
+    const player = &players[player_index];
+    if (!(health_before > 0.0) or !(player.health <= 0.0)) return;
+    if (!perkActive(player.*, survival_perks.PerkId.final_revenge)) return;
+
+    consumeExplosionBurstRng(state, detail_preset);
+    const prev_spawn_guard = state.bonus_spawn_guard;
+    state.bonus_spawn_guard = true;
+    defer state.bonus_spawn_guard = prev_spawn_guard;
+
+    const owner_id: i32 = -1 - player.index;
+    for (creatures.entries, 0..) |creature, idx| {
+        if (!creature.active) continue;
+        const dx = asF32F64(creature.pos.x - player.pos.x);
+        const dy = asF32F64(creature.pos.y - player.pos.y);
+        if (@abs(dx) > 512.0 or @abs(dy) > 512.0) continue;
+        const distance = asF32F64(std.math.sqrt(asF32F64(dx * dx + dy * dy)));
+        const remaining = asF32F64(512.0 - distance);
+        if (!(remaining > 0.0)) continue;
+        const damage = asF32F64(remaining * 5.0);
+        _ = creatures.applyExplosionDamage(
+            state,
+            players,
+            bonuses,
+            idx,
+            damage,
+            .{},
+            owner_id,
+            dt,
+            world_size,
+        );
+    }
 }
 
 fn applyPlayerProjectileSpawnRules(
@@ -2798,6 +2872,125 @@ test "pending nuke spawns pistol and gauss projectiles with native meta ranges" 
     try std.testing.expect(pistol_count >= 4);
     try std.testing.expect(pistol_count <= 7);
     try std.testing.expectEqual(@as(i32, 2), gauss_count);
+}
+
+test "final revenge explosion applies radial damage on death transition" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+            .health = -0.5,
+        },
+    };
+    players[0].perk_counts[@intCast(survival_perks.PerkId.final_revenge)] = 1;
+    var creatures = survival_creatures.CreaturePool{};
+    var bonuses = survival_bonuses.BonusPool{};
+
+    _ = creatures.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = 0,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 10000.0,
+        .max_health = 10000.0,
+        .reward_value = 10.0,
+        .contact_damage = 0.0,
+    });
+
+    applyFinalRevengeOnDeathTransition(
+        &state,
+        players[0..],
+        0,
+        0.5,
+        &creatures,
+        &bonuses,
+        0.2,
+        1024.0,
+        5,
+    );
+
+    try std.testing.expectApproxEqAbs(@as(f64, 7440.0), creatures.entries[0].hp, 1e-6);
+}
+
+test "final revenge aoe includes active non-positive hp entries" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+            .health = -1.0,
+        },
+    };
+    players[0].perk_counts[@intCast(survival_perks.PerkId.final_revenge)] = 1;
+    var creatures = survival_creatures.CreaturePool{};
+    var bonuses = survival_bonuses.BonusPool{};
+
+    _ = creatures.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = 0,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 1.0,
+        .max_health = 1.0,
+        .reward_value = 10.0,
+        .contact_damage = 0.0,
+    });
+    creatures.entries[0].hp = 0.0;
+    creatures.entries[0].lifecycle_stage = 16.0;
+
+    _ = creatures.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = 0,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 10.0,
+        .max_health = 10.0,
+        .reward_value = 10.0,
+        .contact_damage = 0.0,
+    });
+    _ = creatures.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 2000.0, .y = 2000.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = 0,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 10.0,
+        .max_health = 10.0,
+        .reward_value = 10.0,
+        .contact_damage = 0.0,
+    });
+
+    applyFinalRevengeOnDeathTransition(
+        &state,
+        players[0..],
+        0,
+        1.0,
+        &creatures,
+        &bonuses,
+        0.1,
+        1024.0,
+        5,
+    );
+
+    try std.testing.expectApproxEqAbs(@as(f64, 14.5), creatures.entries[0].lifecycle_stage, 1e-6);
+    try std.testing.expect(creatures.entries[1].hp < 10.0);
+    try std.testing.expectApproxEqAbs(@as(f64, 10.0), creatures.entries[2].hp, 1e-6);
 }
 
 const TestReplayConfig = struct {
