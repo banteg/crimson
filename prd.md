@@ -20,6 +20,8 @@ I’m going to define a debugger that:
 - [x] Chunk 3: `crimson dbg diff` + `crimson dbg bisect` + parity policy + JSON reports
 - [x] Chunk 4: `crimson dbg tick` + `crimson dbg entity` + `crimson dbg query` + `crimson dbg focus`
 - [x] Chunk 5: `crimson dbg viz` + final workflow wiring + documentation/tests cleanup
+- [x] Chunk 6: PRD parity remediation (`rng_stream_head` in record output, full profile `micro_traces` + richer `event_heads`, viz tick stepping controls, regression tests)
+- [x] Chunk 7: AGENTS guideline cleanup (remove redundant casts/coercions in typed debugger internals; keep validation at boundaries)
 
 ## 1) Background
 
