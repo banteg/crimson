@@ -805,6 +805,22 @@ pub const CreaturePool = struct {
                 );
                 _ = rng.rand() % 314;
             },
+            0x24 => {
+                _ = self.spawnFromStats(
+                    rng,
+                    .{ .x = call.pos.x, .y = call.pos.y },
+                    call.heading,
+                    .{
+                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .health = 20.0,
+                        .move_speed = 2.0,
+                        .reward_value = 110.0,
+                        .size = 50.0,
+                        .contact_damage = 4.0,
+                    },
+                );
+                _ = rng.rand() % 314;
+            },
             0x25 => {
                 _ = self.spawnFromStats(
                     rng,
@@ -855,6 +871,22 @@ pub const CreaturePool = struct {
                 );
                 _ = rng.rand() % 314;
             },
+            0x28 => {
+                _ = self.spawnFromStats(
+                    rng,
+                    .{ .x = call.pos.x, .y = call.pos.y },
+                    call.heading,
+                    .{
+                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .health = 50.0,
+                        .move_speed = 1.7,
+                        .reward_value = 150.0,
+                        .size = 55.0,
+                        .contact_damage = 8.0,
+                    },
+                );
+                _ = rng.rand() % 314;
+            },
             0x29 => {
                 _ = self.spawnFromStats(
                     rng,
@@ -870,6 +902,73 @@ pub const CreaturePool = struct {
                     },
                 );
                 _ = rng.rand() % 314;
+            },
+            0x2A => {
+                _ = self.spawnFromStats(
+                    rng,
+                    .{ .x = call.pos.x, .y = call.pos.y },
+                    call.heading,
+                    .{
+                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .health = 50.0,
+                        .move_speed = 3.1,
+                        .reward_value = 300.0,
+                        .size = 60.0,
+                        .contact_damage = 8.0,
+                    },
+                );
+                _ = rng.rand() % 314;
+            },
+            0x14 => {
+                const parent_idx = self.spawnFromStats(
+                    rng,
+                    .{ .x = call.pos.x, .y = call.pos.y },
+                    call.heading,
+                    .{
+                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .health = 1500.0,
+                        .move_speed = 2.0,
+                        .reward_value = 600.0,
+                        .size = 50.0,
+                        .contact_damage = 40.0,
+                    },
+                );
+                _ = rng.rand() % 314;
+                self.entries[parent_idx].ai_mode = survival_spawn.CreatureAiMode.chase_player;
+
+                var last_idx = parent_idx;
+                for (0..9) |x_idx| {
+                    const x_offset = -64.0 * @as(f64, @floatFromInt(x_idx));
+                    for (0..9) |y_idx| {
+                        const y_offset = 128.0 + 16.0 * @as(f64, @floatFromInt(y_idx));
+                        const child_idx = self.spawnFromStats(
+                            rng,
+                            .{ .x = call.pos.x, .y = call.pos.y },
+                            call.heading,
+                            .{
+                                .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                                .health = 40.0,
+                                .move_speed = 2.0,
+                                .reward_value = 60.0,
+                                .size = 50.0,
+                                .contact_damage = 4.0,
+                            },
+                        );
+                        self.entries[child_idx].ai_mode = survival_spawn.CreatureAiMode.follow_link_tethered;
+                        self.entries[child_idx].link_index = @intCast(parent_idx);
+                        self.entries[child_idx].target_offset = .{
+                            .x = asF32F64(x_offset),
+                            .y = asF32F64(y_offset),
+                        };
+                        self.entries[child_idx].pos = .{
+                            .x = asF32F64(call.pos.x + x_offset),
+                            .y = asF32F64(call.pos.y + y_offset),
+                        };
+                        self.entries[child_idx].target = self.entries[child_idx].pos;
+                        last_idx = child_idx;
+                    }
+                }
+                applyUnhandledCreatureTypeFallback(&self.entries[last_idx]);
             },
             0x15 => {
                 const parent_idx = self.spawnFromStats(
@@ -1150,6 +1249,23 @@ pub const CreaturePool = struct {
                 );
                 _ = rng.rand() % 314;
             },
+            0x2D => {
+                const idx = self.spawnFromStats(
+                    rng,
+                    .{ .x = call.pos.x, .y = call.pos.y },
+                    call.heading,
+                    .{
+                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .health = 45.0,
+                        .move_speed = 3.1,
+                        .reward_value = 200.0,
+                        .size = 38.0,
+                        .contact_damage = 3.0,
+                    },
+                );
+                _ = rng.rand() % 314;
+                self.entries[idx].ai_mode = survival_spawn.CreatureAiMode.chase_player;
+            },
             survival_spawn.SpawnId.spider_sp2_random_35 => {
                 // Match Python/native plan builder ordering:
                 // allocCreature phase seed, transient heading draw, then template randoms.
@@ -1372,6 +1488,38 @@ pub const CreaturePool = struct {
                     .reward_value = reward_value,
                     .contact_damage = contact_damage,
                 });
+            },
+            0x2F => {
+                _ = self.spawnFromStats(
+                    rng,
+                    .{ .x = call.pos.x, .y = call.pos.y },
+                    call.heading,
+                    .{
+                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.lizard),
+                        .health = 20.0,
+                        .move_speed = 2.5,
+                        .reward_value = 150.0,
+                        .size = 45.0,
+                        .contact_damage = 4.0,
+                    },
+                );
+                _ = rng.rand() % 314;
+            },
+            0x30 => {
+                _ = self.spawnFromStats(
+                    rng,
+                    .{ .x = call.pos.x, .y = call.pos.y },
+                    call.heading,
+                    .{
+                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.lizard),
+                        .health = 1000.0,
+                        .move_speed = 2.0,
+                        .reward_value = 400.0,
+                        .size = 65.0,
+                        .contact_damage = 10.0,
+                    },
+                );
+                _ = rng.rand() % 314;
             },
             0x31 => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng);
@@ -3753,13 +3901,27 @@ test "template spawn supports quest mid-tier random templates" {
 }
 
 test "template spawn supports quest constant alien templates" {
-    const template_ids = [_]i32{ 0x0F, 0x21, 0x22, 0x23, 0x25, 0x26, 0x27, 0x29 };
-    const expected_health = [_]f64{ 20.0, 53.0, 25.0, 5.0, 25.0, 50.0, 50.0, 800.0 };
-    const expected_speed = [_]f64{ 2.9, 1.7, 1.7, 1.7, 2.5, 2.2, 2.1, 2.5 };
-    const expected_reward = [_]f64{ 60.0, 120.0, 150.0, 180.0, 125.0, 125.0, 125.0, 450.0 };
-    const expected_size = [_]f64{ 50.0, 55.0, 50.0, 45.0, 30.0, 45.0, 45.0, 70.0 };
-    const expected_contact = [_]f64{ 35.0, 8.0, 8.0, 8.0, 3.0, 10.0, 10.0, 20.0 };
-    const expected_flags = [_]u32{ 0, 0, 0, 0, 0, 0, survival_spawn.CreatureFlags.bonus_on_death, 0 };
+    const template_ids = [_]i32{ 0x0F, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2D };
+    const expected_health = [_]f64{ 20.0, 53.0, 25.0, 5.0, 20.0, 25.0, 50.0, 50.0, 50.0, 800.0, 50.0, 45.0 };
+    const expected_speed = [_]f64{ 2.9, 1.7, 1.7, 1.7, 2.0, 2.5, 2.2, 2.1, 1.7, 2.5, 3.1, 3.1 };
+    const expected_reward = [_]f64{ 60.0, 120.0, 150.0, 180.0, 110.0, 125.0, 125.0, 125.0, 150.0, 450.0, 300.0, 200.0 };
+    const expected_size = [_]f64{ 50.0, 55.0, 50.0, 45.0, 50.0, 30.0, 45.0, 45.0, 55.0, 70.0, 60.0, 38.0 };
+    const expected_contact = [_]f64{ 35.0, 8.0, 8.0, 8.0, 4.0, 3.0, 10.0, 10.0, 8.0, 20.0, 8.0, 3.0 };
+    const expected_flags = [_]u32{ 0, 0, 0, 0, 0, 0, 0, survival_spawn.CreatureFlags.bonus_on_death, 0, 0, 0, 0 };
+    const expected_ai_mode = [_]i32{
+        survival_spawn.CreatureAiMode.orbit_player,
+        survival_spawn.CreatureAiMode.orbit_player,
+        survival_spawn.CreatureAiMode.orbit_player,
+        survival_spawn.CreatureAiMode.orbit_player,
+        survival_spawn.CreatureAiMode.orbit_player,
+        survival_spawn.CreatureAiMode.orbit_player,
+        survival_spawn.CreatureAiMode.orbit_player,
+        survival_spawn.CreatureAiMode.orbit_player,
+        survival_spawn.CreatureAiMode.orbit_player,
+        survival_spawn.CreatureAiMode.orbit_player,
+        survival_spawn.CreatureAiMode.orbit_player,
+        survival_spawn.CreatureAiMode.chase_player,
+    };
 
     for (template_ids, 0..) |template_id, idx| {
         var pool = CreaturePool{};
@@ -3774,6 +3936,7 @@ test "template spawn supports quest constant alien templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.alien)), entry.type_id);
+        try std.testing.expectEqual(expected_ai_mode[idx], entry.ai_mode);
         try std.testing.expectEqual(expected_flags[idx], entry.flags);
         try expectFloatClose(expected_health[idx], entry.hp);
         try expectFloatClose(expected_speed[idx], entry.move_speed);
@@ -3783,7 +3946,57 @@ test "template spawn supports quest constant alien templates" {
     }
 }
 
+test "template spawn supports quest constant lizard templates" {
+    const template_ids = [_]i32{ 0x2F, 0x30 };
+    const expected_health = [_]f64{ 20.0, 1000.0 };
+    const expected_speed = [_]f64{ 2.5, 2.0 };
+    const expected_reward = [_]f64{ 150.0, 400.0 };
+    const expected_size = [_]f64{ 45.0, 65.0 };
+    const expected_contact = [_]f64{ 4.0, 10.0 };
+
+    for (template_ids, 0..) |template_id, idx| {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = template_id,
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.lizard)), entry.type_id);
+        try std.testing.expectEqual(survival_spawn.CreatureAiMode.orbit_player, entry.ai_mode);
+        try std.testing.expectEqual(@as(u32, 0), entry.flags);
+        try expectFloatClose(expected_health[idx], entry.hp);
+        try expectFloatClose(expected_speed[idx], entry.move_speed);
+        try expectFloatClose(expected_reward[idx], entry.reward_value);
+        try expectFloatClose(expected_size[idx], entry.size);
+        try expectFloatClose(expected_contact[idx], entry.contact_damage);
+    }
+}
+
 test "template spawn supports quest formation templates" {
+    {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x14,
+                .pos = .{ .x = 512.0, .y = 512.0 },
+                .heading = std.math.pi,
+            },
+            &rng,
+        );
+        try std.testing.expectEqual(@as(usize, 82), pool.activeCount());
+        try std.testing.expectEqual(survival_spawn.CreatureAiMode.chase_player, pool.entries[0].ai_mode);
+        try std.testing.expectEqual(survival_spawn.CreatureAiMode.follow_link_tethered, pool.entries[1].ai_mode);
+        try std.testing.expectEqual(@as(i32, 0), pool.entries[1].link_index);
+        try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.alien)), pool.entries[81].type_id);
+        try expectFloatClose(20.0, pool.entries[81].hp);
+    }
+
     {
         var pool = CreaturePool{};
         var rng = survival_spawn.Crand.init(1);
@@ -4032,6 +4245,62 @@ test "template spawn rejects unsupported template ids" {
             &rng,
         ),
     );
+}
+
+test "template spawn supports all documented template ids except unused 0x02" {
+    var template_id: i32 = 0;
+    while (template_id < 0x44) : (template_id += 1) {
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(0xBEEF);
+        if (template_id == 0x02) {
+            try std.testing.expectError(
+                error.UnsupportedSpawnTemplate,
+                pool.spawnTemplateCall(
+                    .{
+                        .template_id = template_id,
+                        .pos = .{ .x = 512.0, .y = 512.0 },
+                        .heading = 0.0,
+                    },
+                    &rng,
+                ),
+            );
+            continue;
+        }
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = template_id,
+                .pos = .{ .x = 512.0, .y = 512.0 },
+                .heading = 0.0,
+            },
+            &rng,
+        );
+    }
+}
+
+test "template spawn child references resolve to known template ids" {
+    var template_id: i32 = 0;
+    while (template_id < 0x44) : (template_id += 1) {
+        if (template_id == 0x02) continue;
+        var pool = CreaturePool{};
+        var rng = survival_spawn.Crand.init(0xBEEF);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = template_id,
+                .pos = .{ .x = 512.0, .y = 512.0 },
+                .heading = 0.0,
+            },
+            &rng,
+        );
+        for (pool.spawn_slots[0..pool.spawn_slot_count]) |slot| {
+            try std.testing.expect(isKnownTemplateId(slot.child_template_id));
+        }
+    }
+}
+
+fn isKnownTemplateId(template_id: i32) bool {
+    return template_id == 0x00 or
+        template_id == 0x01 or
+        (template_id >= 0x03 and template_id <= 0x43);
 }
 
 test "creature update applies contact damage and movement" {
