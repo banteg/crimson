@@ -2924,6 +2924,70 @@ test "evil eyes targeting assigns each alive owner in non-preserve mode" {
     try std.testing.expectEqual(@as(i32, 1), players[1].evil_eyes_target_creature);
 }
 
+test "long distance runner ramps speed above base cap and coasts on release" {
+    const dt = 0.1;
+    const steps: usize = 12;
+    var state = survival_state.GameplayState.init(1);
+    var base_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = (survival_state.Vec2{ .x = 1.0, .y = 0.0 }).toHeading(),
+    };
+    var perk_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = (survival_state.Vec2{ .x = 1.0, .y = 0.0 }).toHeading(),
+    };
+    perk_player.perk_counts[@intCast(survival_perks.PerkId.long_distance_runner)] = 1;
+
+    const move_input = replay_codec.ReplayPlayerInput{
+        .move_x = 1.0,
+        .move_y = 0.0,
+        .aim_x = 101.0,
+        .aim_y = 100.0,
+        .flags = 0,
+    };
+    const move_flags = replay_codec.unpackInputFlags(0);
+
+    for (0..steps) |_| {
+        updatePlayerFromReplayInput(&base_player, move_input, move_flags, &state, dt);
+        finalizePlayerPostUpdate(&base_player, 1024.0);
+        updatePlayerFromReplayInput(&perk_player, move_input, move_flags, &state, dt);
+        finalizePlayerPostUpdate(&perk_player, 1024.0);
+    }
+
+    var expected_perk_speed: f64 = 0.0;
+    const dt_f32 = asF32F64(dt);
+    for (0..steps) |_| {
+        if (expected_perk_speed < 2.0) {
+            expected_perk_speed = asF32F64(expected_perk_speed + dt_f32 * 4.0);
+        }
+        expected_perk_speed = asF32F64(expected_perk_speed + dt_f32);
+        if (expected_perk_speed > 2.8) {
+            expected_perk_speed = 2.8;
+        }
+    }
+
+    try std.testing.expectApproxEqAbs(@as(f64, 2.0), base_player.move_speed, 1e-6);
+    try std.testing.expectApproxEqAbs(expected_perk_speed, perk_player.move_speed, 1e-6);
+    try std.testing.expect(perk_player.pos.x > base_player.pos.x);
+
+    const prev_x = perk_player.pos.x;
+    const coast_input = replay_codec.ReplayPlayerInput{
+        .move_x = 0.0,
+        .move_y = 0.0,
+        .aim_x = perk_player.pos.x + 1.0,
+        .aim_y = perk_player.pos.y,
+        .flags = 0,
+    };
+    updatePlayerFromReplayInput(&perk_player, coast_input, move_flags, &state, dt);
+    finalizePlayerPostUpdate(&perk_player, 1024.0);
+
+    const expected_coast_speed = asF32F64(expected_perk_speed - dt_f32 * 15.0);
+    try std.testing.expectApproxEqAbs(expected_coast_speed, perk_player.move_speed, 1e-6);
+    try std.testing.expect(perk_player.pos.x > prev_x);
+}
+
 test "alternate weapon slows movement by 20 percent" {
     var state = survival_state.GameplayState.init(1);
     const move_heading = (survival_state.Vec2{ .x = 1.0, .y = 0.0 }).toHeading();
