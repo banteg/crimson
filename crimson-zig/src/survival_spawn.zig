@@ -123,6 +123,31 @@ pub const SpawnTemplateCall = struct {
     heading: f64,
 };
 
+pub const SpawnSlotInit = struct {
+    owner_creature: i32,
+    timer: f64,
+    count: i32,
+    limit: i32,
+    interval: f64,
+    child_template_id: i32,
+};
+
+pub fn tickSpawnSlot(slot: *SpawnSlotInit, frame_dt: f64) ?i32 {
+    const timer = asF32F64(slot.timer);
+    const interval = asF32F64(slot.interval);
+    const dt = asF32F64(frame_dt);
+
+    slot.timer = asF32F64(timer - dt);
+    if (slot.timer < 0.0) {
+        slot.timer = asF32F64(slot.timer + interval);
+        if (slot.count < slot.limit) {
+            slot.count += 1;
+            return slot.child_template_id;
+        }
+    }
+    return null;
+}
+
 pub const SpawnStageResult = struct {
     stage: i32,
     count: usize = 0,
@@ -319,6 +344,135 @@ pub fn randSurvivalSpawnPos(
         2 => .{ .x = -40.0, .y = @floatFromInt(rng.rand() % height) },
         else => .{ .x = @as(f64, @floatFromInt(terrain_width)) + 40.0, .y = @floatFromInt(rng.rand() % height) },
     };
+}
+
+pub fn buildRushModeSpawnCreature(
+    pos: Vec2,
+    tint_rgba: [4]f64,
+    rng: *Crand,
+    type_id: i32,
+    survival_elapsed_ms: i32,
+) CreatureInit {
+    const elapsed_ms = survival_elapsed_ms;
+
+    var creature = allocCreature(-1, pos, rng);
+    creature.type_id = @enumFromInt(type_id);
+    creature.ai_mode = CreatureAiMode.orbit_player;
+
+    creature.health = @as(f64, @floatFromInt(elapsed_ms)) * 1e-4 + 10.0;
+    {
+        const heading_base: f32 = @floatFromInt(rng.rand() % 314);
+        const heading_scaled: f32 = @as(f32, heading_base * @as(f32, 0.01));
+        creature.heading = @floatCast(heading_scaled);
+    }
+    creature.move_speed = @as(f64, @floatFromInt(elapsed_ms)) * 1e-5 + 2.5;
+    creature.reward_value = @floatFromInt(rng.rand() % 30 + 140);
+
+    creature.tint = tint_rgba;
+    creature.contact_damage = 4.0;
+    creature.max_health = creature.health;
+    creature.size = @as(f64, @floatFromInt(elapsed_ms)) * 1e-5 + 47.0;
+
+    return creature;
+}
+
+pub fn tickRushModeSpawns(
+    allocator: std.mem.Allocator,
+    spawn_cooldown: f64,
+    frame_dt_ms: f64,
+    rng: *Crand,
+    player_count: i32,
+    survival_elapsed_ms: f64,
+    terrain_width: i32,
+    terrain_height: i32,
+) !WaveSpawnResult {
+    const result = tickRushModeSpawnsBatch(
+        spawn_cooldown,
+        frame_dt_ms,
+        rng,
+        player_count,
+        survival_elapsed_ms,
+        terrain_width,
+        terrain_height,
+    );
+    var spawns: std.ArrayList(CreatureInit) = .empty;
+    defer spawns.deinit(allocator);
+    try spawns.appendSlice(allocator, result.slice());
+    return .{
+        .cooldown = result.cooldown,
+        .spawns = try spawns.toOwnedSlice(allocator),
+    };
+}
+
+pub fn tickRushModeSpawnsBatch(
+    spawn_cooldown: f64,
+    frame_dt_ms: f64,
+    rng: *Crand,
+    player_count: i32,
+    survival_elapsed_ms: f64,
+    terrain_width: i32,
+    terrain_height: i32,
+) WaveSpawnBatchResult {
+    var result = WaveSpawnBatchResult{
+        .cooldown = spawn_cooldown - @as(f64, @floatFromInt(player_count)) * frame_dt_ms,
+        .count = 0,
+    };
+
+    while (result.cooldown < 0.0) {
+        result.cooldown += 250.0;
+
+        const t_i32: i32 = @intFromFloat(survival_elapsed_ms + 1.0);
+        const t = @as(f64, @floatFromInt(t_i32));
+        const tint = [4]f64{
+            clamp01(t * (1.0 / 120000.0) + 0.3),
+            clamp01(t * 10000.0 + 0.3),
+            clamp01(std.math.sin(t * 1e-4) + 0.3),
+            1.0,
+        };
+
+        const elapsed_ms: i32 = @intFromFloat(survival_elapsed_ms);
+        const theta = @as(f64, @floatFromInt(elapsed_ms)) * 0.001;
+        const terrain_width_f = @as(f64, @floatFromInt(terrain_width));
+        const terrain_height_f = @as(f64, @floatFromInt(terrain_height));
+        const spawn_right = Vec2{
+            .x = terrain_width_f + 64.0,
+            .y = terrain_height_f * 0.5 + std.math.cos(theta) * 256.0,
+        };
+        const spawn_left = Vec2{
+            .x = -64.0,
+            .y = terrain_height_f * 0.5 + std.math.sin(theta) * 256.0,
+        };
+
+        var alien = buildRushModeSpawnCreature(
+            spawn_right,
+            tint,
+            rng,
+            @intFromEnum(CreatureTypeId.alien),
+            elapsed_ms,
+        );
+        alien.ai_mode = CreatureAiMode.orbit_player_wide;
+        if (result.count < result.spawns.len) {
+            result.spawns[result.count] = alien;
+            result.count += 1;
+        }
+
+        var spider = buildRushModeSpawnCreature(
+            spawn_left,
+            tint,
+            rng,
+            @intFromEnum(CreatureTypeId.spider_sp1),
+            elapsed_ms,
+        );
+        spider.ai_mode = CreatureAiMode.orbit_player_wide;
+        spider.flags |= CreatureFlags.ai7_link_timer;
+        spider.move_speed *= 1.4;
+        if (result.count < result.spawns.len) {
+            result.spawns[result.count] = spider;
+            result.count += 1;
+        }
+    }
+
+    return result;
 }
 
 pub fn tickSurvivalWaveSpawns(
@@ -643,6 +797,72 @@ fn expectFloatClose(expected: f64, actual: f64) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
 }
 
+fn asF32F64(value: f64) f64 {
+    const rounded: f32 = @floatCast(value);
+    return @floatCast(rounded);
+}
+
+test "spawn slot tick behavior parity" {
+    const cases = [_]struct {
+        timer: f64,
+        count: i32,
+        dt: f64,
+        expected_spawn: ?i32,
+        expected_count: i32,
+    }{
+        .{ .timer = 1.0, .count = 0, .dt = 0.3, .expected_spawn = null, .expected_count = 0 },
+        .{ .timer = 0.1, .count = 0, .dt = 0.3, .expected_spawn = 0x41, .expected_count = 1 },
+        .{ .timer = 0.1, .count = 10, .dt = 0.3, .expected_spawn = null, .expected_count = 10 },
+        .{ .timer = 0.1, .count = 0, .dt = 2.0, .expected_spawn = 0x41, .expected_count = 1 },
+    };
+
+    for (cases) |case| {
+        var slot = SpawnSlotInit{
+            .owner_creature = 0,
+            .timer = case.timer,
+            .count = case.count,
+            .limit = 10,
+            .interval = 0.7,
+            .child_template_id = 0x41,
+        };
+
+        const spawned = tickSpawnSlot(&slot, case.dt);
+        try std.testing.expectEqual(case.expected_spawn, spawned);
+
+        var expected_timer = asF32F64(asF32F64(case.timer) - asF32F64(case.dt));
+        if (expected_timer < 0.0) {
+            expected_timer = asF32F64(expected_timer + asF32F64(slot.interval));
+        }
+        try expectFloatClose(expected_timer, slot.timer);
+        try std.testing.expectEqual(case.expected_count, slot.count);
+    }
+}
+
+test "spawn slot tick uses float32 cadence at boundary" {
+    var slot = SpawnSlotInit{
+        .owner_creature = 0,
+        .timer = 2.4,
+        .count = 0,
+        .limit = 10,
+        .interval = 2.4,
+        .child_template_id = 0x41,
+    };
+
+    var spawn_ticks = [_]i32{0} ** 8;
+    var spawn_count: usize = 0;
+
+    var tick: i32 = 1;
+    while (tick <= 25) : (tick += 1) {
+        if (tickSpawnSlot(&slot, 0.1) != null) {
+            spawn_ticks[spawn_count] = tick;
+            spawn_count += 1;
+        }
+    }
+
+    try std.testing.expectEqual(@as(usize, 1), spawn_count);
+    try std.testing.expectEqual(@as(i32, 25), spawn_ticks[0]);
+}
+
 test "survival wave no trigger" {
     var rng = Crand.init(123);
     const allocator = std.testing.allocator;
@@ -722,6 +942,114 @@ test "survival wave extra spawns on negative interval" {
     try std.testing.expect(out.spawns[1].type_id == .alien);
     try std.testing.expect(out.spawns[2].type_id == .spider_sp1);
     try std.testing.expectEqual(@as(u32, 0xBB25E9C6), rng.state);
+}
+
+test "rush wave no trigger" {
+    var rng = Crand.init(1);
+    const allocator = std.testing.allocator;
+    const out = try tickRushModeSpawns(
+        allocator,
+        100.0,
+        16.0,
+        &rng,
+        1,
+        0.0,
+        1024,
+        1024,
+    );
+    defer out.deinit(allocator);
+
+    try expectFloatClose(84.0, out.cooldown);
+    try std.testing.expectEqual(@as(usize, 0), out.spawns.len);
+    try std.testing.expectEqual(@as(u32, 1), rng.state);
+}
+
+test "rush wave triggers two creatures" {
+    var rng = Crand.init(1);
+    const allocator = std.testing.allocator;
+    const out = try tickRushModeSpawns(
+        allocator,
+        -1.0,
+        0.0,
+        &rng,
+        1,
+        0.0,
+        1024,
+        1024,
+    );
+    defer out.deinit(allocator);
+
+    try expectFloatClose(249.0, out.cooldown);
+    try std.testing.expectEqual(@as(usize, 2), out.spawns.len);
+
+    const alien = out.spawns[0];
+    const spider = out.spawns[1];
+    const expected_tint_r = 0.3 + (1.0 / 120000.0);
+    const expected_tint_g = 1.0;
+    const expected_tint_b = 0.3 + std.math.sin(1e-4);
+
+    try std.testing.expect(alien.type_id == .alien);
+    try std.testing.expectEqual(CreatureAiMode.orbit_player_wide, alien.ai_mode);
+    try std.testing.expectEqual(@as(u32, 0), alien.flags);
+    try expectFloatClose(1088.0, alien.pos.x);
+    try expectFloatClose(768.0, alien.pos.y);
+    try expectFloatClose(10.0, alien.health);
+    try expectFloatClose(10.0, alien.max_health);
+    try expectFloatClose(2.5, alien.move_speed);
+    try expectFloatClose(144.0, alien.reward_value);
+    try expectFloatClose(47.0, alien.size);
+    try expectFloatClose(expected_tint_r, alien.tint[0]);
+    try expectFloatClose(expected_tint_g, alien.tint[1]);
+    try expectFloatClose(expected_tint_b, alien.tint[2]);
+    try expectFloatClose(1.0, alien.tint[3]);
+
+    try std.testing.expect(spider.type_id == .spider_sp1);
+    try std.testing.expectEqual(CreatureAiMode.orbit_player_wide, spider.ai_mode);
+    try std.testing.expect((spider.flags & CreatureFlags.ai7_link_timer) != 0);
+    try expectFloatClose(-64.0, spider.pos.x);
+    try expectFloatClose(512.0, spider.pos.y);
+    try expectFloatClose(10.0, spider.health);
+    try expectFloatClose(10.0, spider.max_health);
+    try expectFloatClose(3.5, spider.move_speed);
+    try expectFloatClose(144.0, spider.reward_value);
+    try expectFloatClose(47.0, spider.size);
+    try expectFloatClose(expected_tint_r, spider.tint[0]);
+    try expectFloatClose(expected_tint_g, spider.tint[1]);
+    try expectFloatClose(expected_tint_b, spider.tint[2]);
+    try expectFloatClose(1.0, spider.tint[3]);
+
+    try std.testing.expectEqual(@as(u32, 0x3D6C1037), rng.state);
+}
+
+test "rush wave loops when cooldown is very negative" {
+    var rng = Crand.init(1);
+    const allocator = std.testing.allocator;
+    const out = try tickRushModeSpawns(
+        allocator,
+        -501.0,
+        0.0,
+        &rng,
+        1,
+        0.0,
+        1024,
+        1024,
+    );
+    defer out.deinit(allocator);
+
+    try expectFloatClose(249.0, out.cooldown);
+    try std.testing.expectEqual(@as(usize, 6), out.spawns.len);
+    const expected_types = [_]CreatureTypeId{
+        .alien,
+        .spider_sp1,
+        .alien,
+        .spider_sp1,
+        .alien,
+        .spider_sp1,
+    };
+    for (out.spawns, expected_types) |spawn, expected| {
+        try std.testing.expect(spawn.type_id == expected);
+    }
+    try std.testing.expectEqual(@as(u32, 0xAEA69ED3), rng.state);
 }
 
 test "survival spawn baseline seed1 xp0" {
