@@ -99,6 +99,7 @@ def test_dbg_record_standard_profile(tmp_path: Path) -> None:
     assert "channels=" in result.output
     assert "checkpoint" in result.output
     assert "rng_marks" in result.output
+    assert "rng_stream_head" in result.output
     assert "entity_samples" in result.output
 
     with TraceReader(trace_path) as trace:
@@ -106,7 +107,33 @@ def test_dbg_record_standard_profile(tmp_path: Path) -> None:
         assert tick0 is not None
         assert "checkpoint" in tick0.channels
         assert "rng_marks" in tick0.channels
+        assert "rng_stream_head" in tick0.channels
         assert "entity_samples" in tick0.channels
+
+
+def test_dbg_record_full_profile_includes_event_and_micro_channels(tmp_path: Path) -> None:
+    replay_path = _write_replay(tmp_path / "sample_full.crd")
+    trace_path = tmp_path / "sample_full.cdt"
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["dbg", "record", str(replay_path), "--out", str(trace_path), "--profile", "full"],
+    )
+    assert result.exit_code == 0, result.output
+    assert "rng_stream_head" in result.output
+    assert "event_heads" in result.output
+    assert "micro_traces" in result.output
+
+    with TraceReader(trace_path) as trace:
+        tick0 = trace.tick(0)
+        assert tick0 is not None
+        rng_stream_head = tick0.channels.get("rng_stream_head")
+        assert isinstance(rng_stream_head, list)
+        event_heads = tick0.channels.get("event_heads")
+        assert isinstance(event_heads, list)
+        micro_traces = tick0.channels.get("micro_traces")
+        assert isinstance(micro_traces, list)
 
 
 def test_dbg_diff_and_bisect(tmp_path: Path) -> None:

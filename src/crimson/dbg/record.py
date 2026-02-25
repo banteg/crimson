@@ -26,6 +26,11 @@ _ENTITY_KIND_CODES = {
     "bonus": 4,
 }
 
+_CRT_RAND_MULT = 214013
+_CRT_RAND_INC = 2531011
+_CRT_RAND_MASK = 0xFFFFFFFF
+_CRT_RAND_CALL_SEARCH_LIMIT = 4096
+
 
 @dataclass(slots=True)
 class _EntityUidState:
@@ -59,6 +64,202 @@ def _fingerprint(path: Path) -> dict[str, object]:
         "size": int(stat.st_size),
         "mtime_ns": int(stat.st_mtime_ns),
     }
+
+
+def _coerce_int(value: object, *, default: int = -1) -> int:
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(value)
+    if isinstance(value, str):
+        try:
+            return int(value)
+        except ValueError:
+            return default
+    return default
+
+
+def _coerce_float(value: object, *, default: float = 0.0) -> float:
+    if isinstance(value, bool):
+        return float(int(value))
+    if isinstance(value, int):
+        return float(value)
+    if isinstance(value, float):
+        return value
+    if isinstance(value, str):
+        try:
+            return float(value)
+        except ValueError:
+            return default
+    return default
+
+
+def _dict_str_object(value: object) -> dict[str, object] | None:
+    if not isinstance(value, dict):
+        return None
+    out: dict[str, object] = {}
+    for key, item in value.items():
+        if isinstance(key, str):
+            out[key] = item
+    return out
+
+
+def _state_mark(marks: dict[str, int], key: str) -> int | None:
+    if key not in marks:
+        return None
+    value = _coerce_int(marks.get(key), default=-1)
+    if value < 0:
+        return None
+    return int(value)
+
+
+def _infer_rand_calls_between_states(before_state: int, after_state: int, *, max_calls: int) -> int | None:
+    before = int(before_state) & _CRT_RAND_MASK
+    after = int(after_state) & _CRT_RAND_MASK
+    if before == after:
+        return 0
+    state = int(before)
+    for idx in range(1, max(0, int(max_calls)) + 1):
+        state = (state * _CRT_RAND_MULT + _CRT_RAND_INC) & _CRT_RAND_MASK
+        if state == after:
+            return int(idx)
+    return None
+
+
+def _rng_stream_head_from_checkpoint(checkpoint: ReplayCheckpoint, *, max_rows: int = 128) -> list[dict[str, object]]:
+    marks = checkpoint.rng_marks
+    before_state = _state_mark(marks, "before_events")
+    if before_state is None:
+        before_state = _state_mark(marks, "before_world_step")
+    after_state = _state_mark(marks, "after_post_events")
+    if after_state is None:
+        after_state = _state_mark(marks, "after_events")
+    if after_state is None:
+        after_state = _state_mark(marks, "after_world_step")
+    if before_state is None or after_state is None:
+        return []
+
+    total_calls = _infer_rand_calls_between_states(
+        int(before_state),
+        int(after_state),
+        max_calls=_CRT_RAND_CALL_SEARCH_LIMIT,
+    )
+    if total_calls is None:
+        return []
+
+    limit = min(max(0, int(total_calls)), max(0, int(max_rows)))
+    state = int(before_state) & _CRT_RAND_MASK
+    rows: list[dict[str, object]] = []
+    for call_index in range(limit):
+        state_before_u32 = int(state) & _CRT_RAND_MASK
+        state_after_u32 = (int(state_before_u32) * _CRT_RAND_MULT + _CRT_RAND_INC) & _CRT_RAND_MASK
+        rows.append(
+            {
+                "tick_call_index": int(call_index) + 1,
+                "value_15": int((state_after_u32 >> 16) & 0x7FFF),
+                "state_before_u32": int(state_before_u32),
+                "state_after_u32": int(state_after_u32),
+                "caller_static": None,
+                "branch_id": None,
+                "inferred": True,
+            },
+        )
+        state = int(state_after_u32)
+    return rows
+
+
+def _event_heads_from_checkpoint(checkpoint: ReplayCheckpoint) -> list[dict[str, object]]:
+    heads: list[dict[str, object]] = [
+        {
+            "type": "event_summary",
+            "hit_count": int(checkpoint.events.hit_count),
+            "pickup_count": int(checkpoint.events.pickup_count),
+            "sfx_count": int(checkpoint.events.sfx_count),
+        },
+    ]
+    for entry in checkpoint.deaths:
+        heads.append(
+            {
+                "type": "creature_death",
+                "creature_index": int(entry.creature_index),
+                "type_id": int(entry.type_id),
+                "reward_value": float(entry.reward_value),
+                "xp_awarded": int(entry.xp_awarded),
+                "owner_id": int(entry.owner_id),
+            },
+        )
+    for sfx_key in checkpoint.events.sfx_head:
+        heads.append({"type": "sfx", "key": str(sfx_key)})
+    if int(checkpoint.perk.pending_count) > 0 or bool(checkpoint.perk.choices_dirty):
+        heads.append(
+            {
+                "type": "perk_state",
+                "pending_count": int(checkpoint.perk.pending_count),
+                "choices_dirty": bool(checkpoint.perk.choices_dirty),
+                "choices_count": int(len(checkpoint.perk.choices)),
+            },
+        )
+    return heads
+
+
+def _creature_map(entity_samples: dict[str, object] | None) -> dict[int, dict[str, object]]:
+    if entity_samples is None:
+        return {}
+    creatures_obj = entity_samples.get("creatures")
+    if not isinstance(creatures_obj, list):
+        return {}
+    out: dict[int, dict[str, object]] = {}
+    for item in creatures_obj:
+        mapped = _dict_str_object(item)
+        if mapped is None:
+            continue
+        uid = _coerce_int(mapped.get("uid"), default=-1)
+        if uid < 0:
+            continue
+        out[int(uid)] = mapped
+    return out
+
+
+def _micro_traces_from_entities(
+    *,
+    previous_samples: dict[str, object] | None,
+    current_samples: dict[str, object] | None,
+) -> list[dict[str, object]]:
+    if previous_samples is None or current_samples is None:
+        return []
+
+    prev_creatures = _creature_map(previous_samples)
+    curr_creatures = _creature_map(current_samples)
+    rows: list[dict[str, object]] = []
+    for uid in sorted(set(prev_creatures) & set(curr_creatures)):
+        prev_row = prev_creatures[int(uid)]
+        curr_row = curr_creatures[int(uid)]
+        prev_pos = _dict_str_object(prev_row.get("pos")) or {}
+        curr_pos = _dict_str_object(curr_row.get("pos")) or {}
+        px = _coerce_float(prev_pos.get("x"))
+        py = _coerce_float(prev_pos.get("y"))
+        cx = _coerce_float(curr_pos.get("x"))
+        cy = _coerce_float(curr_pos.get("y"))
+        dx = float(cx - px)
+        dy = float(cy - py)
+        rows.append(
+            {
+                "type": "creature_update_micro_window",
+                "uid": int(uid),
+                "index": _coerce_int(curr_row.get("index"), default=-1),
+                "before_pos": {"x": float(px), "y": float(py)},
+                "after_pos": {"x": float(cx), "y": float(cy)},
+                "dx": float(dx),
+                "dy": float(dy),
+                "before_hp": _coerce_float(prev_row.get("hp")),
+                "after_hp": _coerce_float(curr_row.get("hp")),
+                "before_heading": _coerce_float(prev_row.get("heading")),
+                "after_heading": _coerce_float(curr_row.get("heading")),
+            },
+        )
+    return rows
 
 
 def _entity_samples_for_world(
@@ -236,6 +437,7 @@ def record_replay_to_trace(
 
     tick_rows: list[TickRecord] = []
     channels_seen: set[str] = set()
+    previous_entity_samples: dict[str, object] | None = None
     for checkpoint in sorted(checkpoints, key=lambda row: int(row.tick_index)):
         tick_index = int(checkpoint.tick_index)
         channels: dict[str, object] = {
@@ -243,17 +445,26 @@ def record_replay_to_trace(
         }
         if include_rng:
             channels["rng_marks"] = {str(key): int(value) for key, value in sorted(checkpoint.rng_marks.items())}
+            channels["rng_stream_head"] = _rng_stream_head_from_checkpoint(checkpoint)
+
+        entity_samples: dict[str, object] | None = None
         if include_entities:
-            entity_samples = entity_samples_by_tick.get(tick_index)
+            entity_samples_obj = entity_samples_by_tick.get(tick_index)
+            entity_samples = (
+                dict(entity_samples_obj)
+                if isinstance(entity_samples_obj, dict)
+                else None
+            )
             if entity_samples is not None:
                 channels["entity_samples"] = entity_samples
         if include_full_event_channels:
-            channels["event_heads"] = [
-                {"type": "creature_death", "data": msgspec.to_builtins(item)}
-                for item in checkpoint.deaths
-            ]
+            channels["event_heads"] = _event_heads_from_checkpoint(checkpoint)
             channels["event_summary"] = msgspec.to_builtins(checkpoint.events)
             channels["perk_snapshot"] = msgspec.to_builtins(checkpoint.perk)
+            channels["micro_traces"] = _micro_traces_from_entities(
+                previous_samples=previous_entity_samples,
+                current_samples=entity_samples,
+            )
 
         channels_seen.update(channels.keys())
         tick_rows.append(
@@ -266,6 +477,8 @@ def record_replay_to_trace(
                 channels=channels,
             ),
         )
+        if entity_samples is not None:
+            previous_entity_samples = entity_samples
 
     tick_start = min((int(row.tick_index) for row in tick_rows), default=-1)
     tick_end = max((int(row.tick_index) for row in tick_rows), default=-1)
@@ -305,4 +518,3 @@ def record_replay_to_trace(
         ticks=tick_rows,
         chunk_ticks=max(1, int(chunk_ticks)),
     )
-
