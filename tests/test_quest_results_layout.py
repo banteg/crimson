@@ -207,3 +207,19 @@ def test_quest_results_world_entity_alpha_tracks_close_timeline(tmp_path: Path) 
 
     ui._closing = False
     assert ui.world_entity_alpha() == 1.0
+
+
+def test_quest_results_name_entry_waits_for_controls_release(tmp_path: Path, mocker) -> None:
+    ui = _build_ui(tmp_path, phase=1)
+    ui._defer_name_input_until_controls_released = True
+    poll_text = mocker.patch.object(quest_results_module, "poll_text_input", return_value="ww")
+    mocker.patch.object(quest_results_module, "gameplay_controls_held", side_effect=[True, False])
+
+    ui.update(0.0, mouse=rl.Vector2(0.0, 0.0))
+    assert ui.input_text == "banteg"
+    assert ui._defer_name_input_until_controls_released is True
+
+    ui.update(0.0, mouse=rl.Vector2(0.0, 0.0))
+    assert ui.input_text == "banteg"
+    assert ui._defer_name_input_until_controls_released is False
+    assert poll_text.call_count == 0
