@@ -396,6 +396,15 @@ pub fn updatePerkEffects(
         }
     }
 
+    state.lean_mean_exp_timer = asF32F64(state.lean_mean_exp_timer - dt);
+    if (state.lean_mean_exp_timer < 0.0) {
+        state.lean_mean_exp_timer = 0.25;
+        const perk_count = perkCountGet(&players[0], PerkId.lean_mean_exp_machine);
+        if (perk_count > 0) {
+            players[0].experience += perk_count * 10;
+        }
+    }
+
     if (!perkActive(&players[0], PerkId.death_clock)) return;
 
     for (players) |*player| {
@@ -1139,4 +1148,44 @@ test "plaguebearer apply marks all players active" {
     try applyPerk(&state, players[0..], PerkId.plaguebearer);
     try std.testing.expect(players[0].plaguebearer_active);
     try std.testing.expect(players[1].plaguebearer_active);
+}
+
+test "lean mean exp machine ticks xp and ignores double experience multiplier" {
+    var state = survival_state.GameplayState.init(1);
+    state.bonuses.double_experience = 5.0;
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+        },
+    };
+    players[0].perk_counts[@intCast(PerkId.lean_mean_exp_machine)] = 2;
+
+    updatePerkEffects(&state, players[0..], 0.2);
+    try std.testing.expectEqual(@as(i32, 0), players[0].experience);
+
+    updatePerkEffects(&state, players[0..], 0.1);
+    try std.testing.expectEqual(@as(i32, 20), players[0].experience);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.25), state.lean_mean_exp_timer, 1e-6);
+}
+
+test "lean mean exp machine tick awards player zero only in multiplayer" {
+    var state = survival_state.GameplayState.init(1);
+    state.lean_mean_exp_timer = 0.05;
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+        },
+        .{
+            .index = 1,
+            .pos = .{ .x = 30.0, .y = 40.0 },
+        },
+    };
+    players[0].perk_counts[@intCast(PerkId.lean_mean_exp_machine)] = 2;
+    players[1].perk_counts[@intCast(PerkId.lean_mean_exp_machine)] = 2;
+
+    updatePerkEffects(&state, players[0..], 0.1);
+    try std.testing.expectEqual(@as(i32, 20), players[0].experience);
+    try std.testing.expectEqual(@as(i32, 0), players[1].experience);
 }

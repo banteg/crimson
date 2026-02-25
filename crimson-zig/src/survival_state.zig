@@ -207,6 +207,7 @@ pub const GameplayState = struct {
     preserve_bugs: bool = false,
     game_mode: i32 = 1,
     friendly_fire_enabled: bool = false,
+    lean_mean_exp_timer: f64 = 0.25,
     jinxed_timer: f64 = 0.0,
     perk_interval_man_bomb: f64 = 4.0,
     perk_interval_fire_cough: f64 = 2.0,

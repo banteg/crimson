@@ -478,10 +478,11 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             if (flags.reload_pressed) reload_active_any = true;
         }
 
+        const dt_world = applyPerkWorldDtSteps(players[0..], dt_tick);
         const dt_sim = survival_state.timeScaleReflexBoostBonus(
             state.bonuses.reflex_boost,
             state.time_scale_active,
-            dt_tick,
+            dt_world,
         );
         const dt_sim_ms = dt_sim * 1000.0;
         const elapsed_before_ms = elapsed_ms_sim;
@@ -2420,6 +2421,17 @@ fn normalizeHeading(value: f64) f64 {
     return angle;
 }
 
+fn applyPerkWorldDtSteps(
+    players: []const survival_state.PlayerState,
+    dt: f64,
+) f64 {
+    const dt_f32 = asF32F64(dt);
+    if (!(dt_f32 > 0.0)) return dt_f32;
+    if (players.len == 0) return dt_f32;
+    if (!perkActive(players[0], survival_perks.PerkId.reflex_boosted)) return dt_f32;
+    return asF32F64(dt_f32 * 0.9);
+}
+
 fn playerFrameDtAfterRoundtrip(
     dt: f64,
     time_scale_active: bool,
@@ -3894,6 +3906,75 @@ test "jinxed timer uses f32 underflow threshold before proc" {
     try std.testing.expectApproxEqAbs(@as(f64, 8.344650268554688e-07), state.jinxed_timer, 1e-12);
     try std.testing.expectApproxEqAbs(@as(f64, 50.0), players[0].health, 1e-6);
     try std.testing.expectEqual(rng_before, state.rng.state);
+}
+
+test "jinxed preserve-bugs mode uses 383-slot pool while default uses 384-slot pool" {
+    const seed = findSeedForRandModSequence(
+        &.{ 10, 0x14, 0x180 },
+        &.{ 0, 0, 0x17F },
+        1_000_000,
+    ) orelse unreachable;
+    const dt = 0.2;
+
+    var default_state = survival_state.GameplayState.init(seed);
+    default_state.jinxed_timer = 0.0;
+    default_state.preserve_bugs = false;
+    var default_players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .health = 50.0,
+            .experience = 100,
+        },
+    };
+    default_players[0].perk_counts[@intCast(perk_id_jinxed)] = 1;
+    var default_creatures = survival_creatures.CreaturePool{};
+    default_creatures.entries[0x17F].active = true;
+    default_creatures.entries[0x17F].hp = 100.0;
+    default_creatures.entries[0x17F].lifecycle_stage = 16.0;
+    default_creatures.entries[0x17F].reward_value = 12.7;
+
+    applyJinxedEffects(&default_state, default_players[0..], &default_creatures, dt);
+
+    try std.testing.expectApproxEqAbs(@as(f64, -1.0), default_creatures.entries[0x17F].hp, 1e-6);
+    try std.testing.expectEqual(@as(i32, 112), default_players[0].experience);
+
+    var bug_state = survival_state.GameplayState.init(seed);
+    bug_state.jinxed_timer = 0.0;
+    bug_state.preserve_bugs = true;
+    var bug_players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .health = 50.0,
+            .experience = 100,
+        },
+    };
+    bug_players[0].perk_counts[@intCast(perk_id_jinxed)] = 1;
+    var bug_creatures = survival_creatures.CreaturePool{};
+    bug_creatures.entries[0x17F].active = true;
+    bug_creatures.entries[0x17F].hp = 100.0;
+    bug_creatures.entries[0x17F].lifecycle_stage = 16.0;
+    bug_creatures.entries[0x17F].reward_value = 12.7;
+
+    applyJinxedEffects(&bug_state, bug_players[0..], &bug_creatures, dt);
+
+    try std.testing.expectApproxEqAbs(@as(f64, 100.0), bug_creatures.entries[0x17F].hp, 1e-6);
+    try std.testing.expectEqual(@as(i32, 100), bug_players[0].experience);
+}
+
+test "reflex boosted perk scales world dt by 0.9" {
+    const base_players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+    var perk_players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+    perk_players[0].perk_counts[@intCast(survival_perks.PerkId.reflex_boosted)] = 1;
+
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), applyPerkWorldDtSteps(base_players[0..], 1.0), 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.9), applyPerkWorldDtSteps(perk_players[0..], 1.0), 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.0), applyPerkWorldDtSteps(perk_players[0..], 0.0), 1e-6);
 }
 
 test "final revenge explosion applies radial damage on death transition" {
