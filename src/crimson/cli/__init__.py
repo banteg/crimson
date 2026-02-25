@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from tqdm import tqdm
 
+from . import dbg as _dbg
 from . import lan as _lan
 from . import net as _net
 from . import original as _original
@@ -12,12 +13,14 @@ from . import root as _root
 app = _root.app
 replay_app = _replay.replay_app
 original_app = _original.original_app
+dbg_app = _dbg.dbg_app
 lan_app = _lan.lan_app
 net_app = _net.net_app
 relay_app = _relay.relay_app
 
 app.add_typer(replay_app, name="replay")
 app.add_typer(original_app, name="original")
+app.add_typer(dbg_app, name="dbg")
 app.add_typer(lan_app, name="lan")
 app.add_typer(net_app, name="net")
 app.add_typer(relay_app, name="relay")

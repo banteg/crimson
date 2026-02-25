@@ -59,6 +59,7 @@ def run_survival_replay(
     inter_tick_rand_draws: int = 0,
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
     tick_progress_callback: Callable[[int], None] | None = None,
+    tick_observer: Callable[[int, WorldState], None] | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.SURVIVAL):
         raise ReplayRunnerError(
@@ -213,6 +214,8 @@ def run_survival_replay(
                     command_hash=str(step.command_hash),
                 ),
             )
+        if tick_observer is not None:
+            tick_observer(int(tick_index), world)
 
         if inter_tick_rand_draws_by_tick is None:
             draws = max(0, int(inter_tick_rand_draws))
@@ -283,6 +286,7 @@ def run_rush_replay(
     inter_tick_rand_draws: int = 0,
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
     tick_progress_callback: Callable[[int], None] | None = None,
+    tick_observer: Callable[[int, WorldState], None] | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.RUSH):
         raise ReplayRunnerError(
@@ -404,6 +408,8 @@ def run_rush_replay(
                     command_hash=str(step.command_hash),
                 ),
             )
+        if tick_observer is not None:
+            tick_observer(int(tick_index), world)
 
         if inter_tick_rand_draws_by_tick is None:
             draws = max(0, int(inter_tick_rand_draws))
@@ -490,6 +496,7 @@ def run_quest_replay(
     inter_tick_rand_draws: int = 0,
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
     tick_progress_callback: Callable[[int], None] | None = None,
+    tick_observer: Callable[[int, WorldState], None] | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.QUESTS):
         raise ReplayRunnerError(
@@ -806,6 +813,8 @@ def run_quest_replay(
                     command_hash=str(step.command_hash),
                 ),
             )
+        if tick_observer is not None:
+            tick_observer(int(tick_index), world)
 
         if inter_tick_rand_draws_by_tick is None:
             draws = max(0, int(inter_tick_rand_draws))
@@ -876,6 +885,7 @@ def run_replay(
     checkpoints_out: list[ReplayCheckpoint] | None = None,
     checkpoint_ticks: set[int] | None = None,
     tick_progress_callback: Callable[[int], None] | None = None,
+    tick_observer: Callable[[int, WorldState], None] | None = None,
 ) -> RunResult:
     mode = int(replay.header.game_mode_id)
     if mode == int(GameMode.SURVIVAL):
@@ -889,6 +899,7 @@ def run_replay(
             checkpoints_out=checkpoints_out,
             checkpoint_ticks=checkpoint_ticks,
             tick_progress_callback=tick_progress_callback,
+            tick_observer=tick_observer,
         )
     if mode == int(GameMode.RUSH):
         return run_rush_replay(
@@ -900,6 +911,7 @@ def run_replay(
             checkpoints_out=checkpoints_out,
             checkpoint_ticks=checkpoint_ticks,
             tick_progress_callback=tick_progress_callback,
+            tick_observer=tick_observer,
         )
     if mode == int(GameMode.QUESTS):
         return run_quest_replay(
@@ -912,5 +924,6 @@ def run_replay(
             checkpoints_out=checkpoints_out,
             checkpoint_ticks=checkpoint_ticks,
             tick_progress_callback=tick_progress_callback,
+            tick_observer=tick_observer,
         )
     raise ReplayRunnerError(f"unsupported replay game_mode_id={mode}")
