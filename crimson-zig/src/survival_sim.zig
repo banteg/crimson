@@ -3198,6 +3198,39 @@ test "rush scaffold rejects replay events" {
     try std.testing.expectError(error.UnsupportedEventKind, runSurvivalReplayScaffold(replay));
 }
 
+test "rush scaffold accepts capture bootstrap events" {
+    const allocator = std.testing.allocator;
+
+    var bootstrap = replay_codec.CaptureBootstrapEvent{
+        .tick_index = 0,
+    };
+    bootstrap.player_count = 1;
+    bootstrap.players[0] = .{
+        .weapon_id = 17,
+        .pos_x = 256.0,
+        .pos_y = 256.0,
+        .health = 100.0,
+        .ammo = 6.0,
+        .experience = 123,
+        .level = 2,
+    };
+
+    const replay = try buildTestReplay(allocator, .{
+        .game_mode_id = game_mode_rush,
+        .seed = 42,
+        .tick_rate = 60,
+        .inputs = &.{0},
+        .events = &.{
+            .{ .capture_bootstrap = bootstrap },
+        },
+    });
+    defer replay.deinit(allocator);
+
+    const result = try runSurvivalReplayScaffold(replay);
+    try std.testing.expectEqual(@as(usize, 1), result.ticks);
+    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, result.player_weapon_id);
+}
+
 test "rush scaffold supports multiplayer replays" {
     const allocator = std.testing.allocator;
 
@@ -3741,6 +3774,54 @@ test "capture creature spawn event backfills ai7 rollover rng draw for spawned r
     _ = probe_rng.rand();
     try std.testing.expectEqual(probe_rng.state, rng_after_rollover);
     try std.testing.expectEqual(@as(i32, -975), rollover_creatures.entries[0].link_index);
+}
+
+test "capture creature spawn event applies added head rows without spawn rows" {
+    var state = survival_state.GameplayState.init(1);
+    var creatures = survival_creatures.CreaturePool{};
+    creatures.reset();
+
+    var seed_event = replay_codec.CaptureCreatureSpawnEvent{
+        .tick_index = 0,
+    };
+    seed_event.spawn_count = 1;
+    seed_event.spawns[0] = .{
+        .template_id = 0x24,
+        .pos_x = 256.0,
+        .pos_y = 256.0,
+        .heading = 0.0,
+    };
+    try applyCaptureCreatureSpawnEvent(&state, &creatures, seed_event);
+
+    var update_event = replay_codec.CaptureCreatureSpawnEvent{
+        .tick_index = 0,
+    };
+    update_event.added_head_count = 1;
+    update_event.added_head[0] = .{
+        .index = 0,
+        .has_heading = true,
+        .heading = 0.28999999165534973,
+        .has_target_heading = true,
+        .target_heading = 0.521416425704956,
+        .has_ai_mode = true,
+        .ai_mode = 0,
+        .has_link_index = true,
+        .link_index = 1,
+        .has_orbit_radius = true,
+        .orbit_radius = 1.25,
+        .has_flags = true,
+        .flags = 5,
+    };
+    try applyCaptureCreatureSpawnEvent(&state, &creatures, update_event);
+
+    const creature = creatures.entries[0];
+    try std.testing.expect(creature.active);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.28999999165534973), creature.heading, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.521416425704956), creature.target_heading, 1e-6);
+    try std.testing.expectEqual(@as(i32, 0), creature.ai_mode);
+    try std.testing.expectEqual(@as(i32, 1), creature.link_index);
+    try std.testing.expectApproxEqAbs(@as(f64, 1.25), creature.orbit_radius, 1e-6);
+    try std.testing.expectEqual(@as(u32, 5), creature.flags);
 }
 
 test "quest scaffold resets run state on capture transition to terminal state" {
