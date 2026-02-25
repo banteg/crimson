@@ -398,6 +398,33 @@ pub fn projectileTypeIdFromWeaponId(weapon_id: i32) ?i32 {
     };
 }
 
+pub const ProjectileTypeIds = struct {
+    count: usize = 0,
+    values: [2]i32 = .{ 0, 0 },
+
+    pub fn slice(self: *const ProjectileTypeIds) []const i32 {
+        return self.values[0..self.count];
+    }
+};
+
+pub fn projectileTypeIdsFromWeaponId(weapon_id: i32) ProjectileTypeIds {
+    if (weapon_id == WeaponId.none) {
+        return .{};
+    }
+    if (weapon_id == 10) {
+        return .{
+            .count = 2,
+            .values = .{ ProjectileTypeId.plasma_rifle, ProjectileTypeId.plasma_minigun },
+        };
+    }
+
+    const type_id = projectileTypeIdFromWeaponId(weapon_id) orelse return .{};
+    return .{
+        .count = 1,
+        .values = .{ type_id, 0 },
+    };
+}
+
 pub fn weaponAssignPlayer(
     player: *PlayerState,
     weapon_id: i32,
@@ -699,6 +726,56 @@ fn asF32F64(value: f64) f64 {
 
 fn expectFloatClose(expected: f64, actual: f64) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
+}
+
+test "projectile type id mapping mirrors native fire paths" {
+    const cases = [_]struct {
+        weapon_id: i32,
+        type_id: i32,
+    }{
+        .{ .weapon_id = 1, .type_id = 0x01 },
+        .{ .weapon_id = 2, .type_id = 0x02 },
+        .{ .weapon_id = 3, .type_id = 0x03 },
+        .{ .weapon_id = 4, .type_id = 0x03 },
+        .{ .weapon_id = 5, .type_id = 0x05 },
+        .{ .weapon_id = 6, .type_id = 0x06 },
+        .{ .weapon_id = 7, .type_id = 0x01 },
+        .{ .weapon_id = 9, .type_id = 0x09 },
+        .{ .weapon_id = 10, .type_id = 0x09 },
+        .{ .weapon_id = 11, .type_id = 0x0B },
+        .{ .weapon_id = 14, .type_id = 0x0B },
+        .{ .weapon_id = 19, .type_id = 0x13 },
+        .{ .weapon_id = 20, .type_id = 0x03 },
+        .{ .weapon_id = 21, .type_id = 0x15 },
+        .{ .weapon_id = 22, .type_id = 0x16 },
+        .{ .weapon_id = 23, .type_id = 0x17 },
+        .{ .weapon_id = 24, .type_id = 0x18 },
+        .{ .weapon_id = 25, .type_id = 0x19 },
+        .{ .weapon_id = 28, .type_id = 0x1C },
+        .{ .weapon_id = 29, .type_id = 0x1D },
+        .{ .weapon_id = 30, .type_id = 0x06 },
+        .{ .weapon_id = 31, .type_id = 0x16 },
+        .{ .weapon_id = 41, .type_id = 0x29 },
+        .{ .weapon_id = 43, .type_id = 0x2B },
+        .{ .weapon_id = 45, .type_id = 0x2D },
+    };
+
+    for (cases) |case| {
+        try std.testing.expectEqual(case.type_id, projectileTypeIdFromWeaponId(case.weapon_id).?);
+    }
+
+    const multi_plasma_types = projectileTypeIdsFromWeaponId(10).slice();
+    try std.testing.expectEqual(@as(usize, 2), multi_plasma_types.len);
+    try std.testing.expectEqual(@as(i32, 0x09), multi_plasma_types[0]);
+    try std.testing.expectEqual(@as(i32, 0x0B), multi_plasma_types[1]);
+}
+
+test "non projectile weapons map to empty projectile type ids" {
+    const non_projectile_weapons = [_]i32{ 8, 12, 13, 15, 16, 17, 18, 42 };
+    for (non_projectile_weapons) |weapon_id| {
+        try std.testing.expectEqual(@as(?i32, null), projectileTypeIdFromWeaponId(weapon_id));
+        try std.testing.expectEqual(@as(usize, 0), projectileTypeIdsFromWeaponId(weapon_id).slice().len);
+    }
 }
 
 test "survival level up advances one threshold per tick" {

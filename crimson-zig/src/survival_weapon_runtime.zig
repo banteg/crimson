@@ -5,6 +5,7 @@ const survival_particles = @import("survival_particles.zig");
 const survival_projectiles = @import("survival_projectiles.zig");
 const survival_secondary_projectiles = @import("survival_secondary_projectiles.zig");
 const survival_state = @import("survival_state.zig");
+const survival_spawn = @import("survival_spawn.zig");
 const survival_math = @import("survival_math.zig");
 
 pub const WeaponRuntimeError = error{
@@ -17,6 +18,7 @@ const perk_id_regression_bullets: i32 = 23;
 const perk_id_ammunition_within: i32 = 35;
 const perk_id_alternate_weapon: i32 = 9;
 const perk_id_anxious_loader: i32 = 18;
+const perk_id_angry_reloader: i32 = 50;
 const perk_id_hot_tempered: i32 = 31;
 const perk_id_man_bomb: i32 = 53;
 const perk_id_fire_caugh: i32 = 54;
@@ -96,7 +98,34 @@ pub fn stepPlayerForTick(
     }
 
     if (player.reload_timer > 0.0) {
-        player.reload_timer = asF32F64(player.reload_timer - asF32F64(reload_scale * dt_f32));
+        if (perkActive(player.*, perk_id_angry_reloader) and
+            player.reload_timer_max > 0.5 and
+            player.reload_timer > player.reload_timer_max * 0.5)
+        {
+            const half_reload = asF32F64(player.reload_timer_max * 0.5);
+            const next_timer = asF32F64(player.reload_timer - asF32F64(reload_scale * dt_f32));
+            player.reload_timer = next_timer;
+            if (next_timer <= half_reload) {
+                const count = 7 + @as(i32, @intFromFloat(player.reload_timer_max * 4.0));
+                const prev_spawn_guard = state.bonus_spawn_guard;
+                state.bonus_spawn_guard = true;
+                defer state.bonus_spawn_guard = prev_spawn_guard;
+
+                const owner_id: i32 = if (!state.friendly_fire_enabled) -100 else -1 - player.index;
+                if (count > 0) {
+                    const step = std.math.tau / @as(f64, @floatFromInt(count));
+                    var idx: i32 = 0;
+                    while (idx < count) : (idx += 1) {
+                        const angle = @as(f64, @floatFromInt(idx)) * step + 0.1;
+                        const type_id = survival_state.ProjectileTypeId.plasma_minigun;
+                        const meta = survival_state.weaponProjectileMeta(type_id);
+                        _ = projectiles.spawn(player.pos, angle, type_id, owner_id, meta, false);
+                    }
+                }
+            }
+        } else {
+            player.reload_timer = asF32F64(player.reload_timer - asF32F64(reload_scale * dt_f32));
+        }
         if (player.reload_timer < 0.0) {
             player.reload_timer = 0.0;
         }
@@ -820,6 +849,32 @@ fn expectFloatClose(expected: f64, actual: f64) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
 }
 
+fn activeProjectileCount(projectiles: *const survival_projectiles.ProjectilePool) usize {
+    var count: usize = 0;
+    for (projectiles.entries) |entry| {
+        if (entry.active) count += 1;
+    }
+    return count;
+}
+
+fn findSeedForNthRandValue(
+    draw_index: usize,
+    target: u32,
+    search_limit: u32,
+) ?u32 {
+    var seed: u32 = 0;
+    while (seed < search_limit) : (seed += 1) {
+        var rng = survival_spawn.Crand.init(seed);
+        var value: u32 = 0;
+        var draw: usize = 0;
+        while (draw < draw_index) : (draw += 1) {
+            value = rng.rand();
+        }
+        if (value == target) return seed;
+    }
+    return null;
+}
+
 test "weapon usage tracks most used weapon" {
     var state = survival_state.GameplayState.init(1);
     var projectiles = survival_projectiles.ProjectilePool{};
@@ -968,6 +1023,77 @@ test "anxious loader reduces reload timer on fire press" {
 
     try expectFloatClose(0.9, base_player.reload_timer);
     try expectFloatClose(0.85, perk_player.reload_timer);
+}
+
+test "angry reloader spawns plasma ring at half reload" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .weapon_id = survival_state.WeaponId.pistol,
+        .reload_active = true,
+        .reload_timer = 1.1,
+        .reload_timer_max = 2.0,
+        .clip_size = 10,
+        .ammo = 0.0,
+    };
+    player.perk_counts[@intCast(perk_id_angry_reloader)] = 1;
+
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{},
+        0.2,
+    );
+
+    try expectFloatClose(0.9, player.reload_timer);
+    try std.testing.expectEqual(@as(usize, 15), activeProjectileCount(&projectiles));
+    try std.testing.expect(!state.bonus_spawn_guard);
+    try std.testing.expectEqual(@as(i32, 0), state.shots_fired[0]);
+    for (projectiles.entries[0..15]) |proj| {
+        try std.testing.expect(proj.active);
+        try std.testing.expectEqual(survival_state.ProjectileTypeId.plasma_minigun, proj.type_id);
+        try std.testing.expectEqual(@as(i32, -100), proj.owner_id);
+    }
+}
+
+test "angry reloader does not trigger once reload is below half" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .weapon_id = survival_state.WeaponId.pistol,
+        .reload_active = true,
+        .reload_timer = 0.95,
+        .reload_timer_max = 2.0,
+    };
+    player.perk_counts[@intCast(perk_id_angry_reloader)] = 1;
+
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{},
+        0.1,
+    );
+
+    try expectFloatClose(0.85, player.reload_timer);
+    try std.testing.expectEqual(@as(usize, 0), activeProjectileCount(&projectiles));
 }
 
 test "stationary reloader triples reload speed" {
@@ -1321,6 +1447,202 @@ test "multi plasma and mini rocket use special shot counts" {
     player.shot_cooldown = 0.0;
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
     try std.testing.expectEqual(@as(i32, 9), state.shots_fired[0]);
+}
+
+test "multi plasma fires five projectiles with fixed spread profile" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .aim = .{ .x = 200.0, .y = 0.0 },
+        .aim_dir = .{ .x = 1.0, .y = 0.0 },
+        .spread_heat = 0.0,
+    };
+
+    survival_state.weaponAssignPlayer(&player, 10);
+    try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
+
+    try std.testing.expectEqual(@as(usize, 5), activeProjectileCount(&projectiles));
+    try std.testing.expectEqual(@as(i32, 5), state.weapon_shots_fired[0][10]);
+
+    const shot_angle = std.math.pi / 2.0;
+    const spread_small = std.math.pi / 10.0;
+    const spread_large = std.math.pi / 6.0;
+    const expected = [_]struct {
+        angle: f64,
+        type_id: i32,
+    }{
+        .{ .angle = shot_angle - spread_small, .type_id = survival_state.ProjectileTypeId.plasma_rifle },
+        .{ .angle = shot_angle - spread_large, .type_id = survival_state.ProjectileTypeId.plasma_minigun },
+        .{ .angle = shot_angle, .type_id = survival_state.ProjectileTypeId.plasma_rifle },
+        .{ .angle = shot_angle + spread_large, .type_id = survival_state.ProjectileTypeId.plasma_minigun },
+        .{ .angle = shot_angle + spread_small, .type_id = survival_state.ProjectileTypeId.plasma_rifle },
+    };
+
+    for (expected, 0..) |entry, idx| {
+        const proj = projectiles.entries[idx];
+        try std.testing.expect(proj.active);
+        try std.testing.expectEqual(entry.type_id, proj.type_id);
+        try expectFloatClose(entry.angle, proj.angle);
+    }
+}
+
+test "plasma shotgun uses masked jitter and random speed scale" {
+    const seed = findSeedForNthRandValue(4, 255, 200_000) orelse unreachable;
+
+    var state = survival_state.GameplayState.init(seed);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .aim = .{ .x = 200.0, .y = 0.0 },
+        .aim_dir = .{ .x = 1.0, .y = 0.0 },
+        .spread_heat = 0.0,
+    };
+
+    survival_state.weaponAssignPlayer(&player, 14);
+    try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
+
+    try std.testing.expectEqual(@as(usize, 14), activeProjectileCount(&projectiles));
+    try std.testing.expectEqual(@as(i32, 14), state.weapon_shots_fired[0][14]);
+
+    const shot_angle = std.math.pi / 2.0;
+    const expected_angle_masked = shot_angle + 127.0 * 0.002;
+    const expected_angle_modulo = shot_angle + (@as(f64, @floatFromInt(@as(i32, @intCast(255 % 200)) - 100)) * 0.002);
+    try expectFloatClose(expected_angle_masked, projectiles.entries[0].angle);
+    try std.testing.expect(@abs(projectiles.entries[0].angle - expected_angle_modulo) > 1e-4);
+
+    var rng = survival_spawn.Crand.init(seed);
+    _ = rng.rand();
+    _ = rng.rand();
+    _ = rng.rand();
+    _ = rng.rand();
+    const speed_draw = rng.rand();
+    const expected_speed = 1.0 + @as(f64, @floatFromInt(speed_draw % 100)) * 0.01;
+    try expectFloatClose(expected_speed, projectiles.entries[0].speed_scale);
+
+    for (projectiles.entries[0..14]) |proj| {
+        try std.testing.expectEqual(survival_state.ProjectileTypeId.plasma_minigun, proj.type_id);
+    }
+}
+
+test "plasma shotgun consumes one ammo per shot" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .aim = .{ .x = 200.0, .y = 0.0 },
+        .aim_dir = .{ .x = 1.0, .y = 0.0 },
+        .spread_heat = 0.0,
+    };
+
+    survival_state.weaponAssignPlayer(&player, 14);
+    const start_ammo = player.ammo;
+    try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
+    try expectFloatClose(start_ammo - 1.0, player.ammo);
+}
+
+test "shotgun family fires expected pellet counts and formulas" {
+    const cases = [_]struct {
+        weapon_id: i32,
+        projectile_type_id: i32,
+        expected_count: usize,
+        jitter_scale: f64,
+        speed_base: f64,
+        speed_mod: u32,
+    }{
+        .{
+            .weapon_id = 20,
+            .projectile_type_id = survival_state.ProjectileTypeId.shotgun,
+            .expected_count = 4,
+            .jitter_scale = 0.0013,
+            .speed_base = 1.0,
+            .speed_mod = 100,
+        },
+        .{
+            .weapon_id = 30,
+            .projectile_type_id = survival_state.ProjectileTypeId.gauss_gun,
+            .expected_count = 6,
+            .jitter_scale = 0.002,
+            .speed_base = 1.4,
+            .speed_mod = 0x50,
+        },
+        .{
+            .weapon_id = 31,
+            .projectile_type_id = survival_state.ProjectileTypeId.ion_minigun,
+            .expected_count = 8,
+            .jitter_scale = 0.0026,
+            .speed_base = 1.4,
+            .speed_mod = 0x50,
+        },
+    };
+
+    for (cases) |case| {
+        var state = survival_state.GameplayState.init(0);
+        var projectiles = survival_projectiles.ProjectilePool{};
+        var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+        var creatures = survival_creatures.CreaturePool{};
+        var particles = survival_particles.ParticlePool{};
+        var player = survival_state.PlayerState{
+            .index = 0,
+            .pos = .{},
+            .aim = .{ .x = 200.0, .y = 0.0 },
+            .aim_dir = .{ .x = 1.0, .y = 0.0 },
+            .spread_heat = 0.0,
+        };
+
+        survival_state.weaponAssignPlayer(&player, case.weapon_id);
+        try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
+        try std.testing.expectEqual(case.expected_count, activeProjectileCount(&projectiles));
+        try std.testing.expectEqual(@as(i32, @intCast(case.expected_count)), state.weapon_shots_fired[0][@intCast(case.weapon_id)]);
+
+        var rng = survival_spawn.Crand.init(0);
+        if ((survival_state.weaponFlags(case.weapon_id) & 0x1) != 0) {
+            _ = rng.rand();
+            _ = rng.rand();
+            _ = rng.rand();
+            _ = rng.rand();
+        }
+        _ = rng.rand();
+        _ = rng.rand();
+        _ = rng.rand();
+        const muzzle_rng_count: usize = switch (case.weapon_id) {
+            20 => 1,
+            30 => 2,
+            else => 0,
+        };
+        var muzzle_idx: usize = 0;
+        while (muzzle_idx < muzzle_rng_count) : (muzzle_idx += 1) {
+            _ = rng.rand();
+        }
+
+        const shot_angle = std.math.pi / 2.0;
+        var idx: usize = 0;
+        while (idx < case.expected_count) : (idx += 1) {
+            const jitter_draw = rng.rand();
+            const expected_angle = shot_angle +
+                @as(f64, @floatFromInt(@as(i32, @intCast(jitter_draw % 200)) - 100)) * case.jitter_scale;
+            const speed_draw = rng.rand();
+            const expected_speed = case.speed_base + @as(f64, @floatFromInt(speed_draw % case.speed_mod)) * 0.01;
+
+            const proj = projectiles.entries[idx];
+            try std.testing.expect(proj.active);
+            try std.testing.expectEqual(case.projectile_type_id, proj.type_id);
+            try expectFloatClose(expected_angle, proj.angle);
+            try expectFloatClose(expected_speed, proj.speed_scale);
+        }
+    }
 }
 
 test "pistol fire consumes native casing+jitter+sfx rng draws" {
