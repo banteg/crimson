@@ -1806,7 +1806,7 @@ pub const CreaturePool = struct {
         const dt_ms = @max(@as(i32, 0), @as(i32, @intFromFloat(@round(dt * 1000.0))));
         const player = &players[0];
 
-        for (&self.entries) |*creature| {
+        for (&self.entries, 0..) |*creature, idx| {
             if (!creature.active) continue;
             if (state.bonuses.freeze > 0.0) continue;
             if (!(creature.hp > 0.0)) {
@@ -1817,6 +1817,27 @@ pub const CreaturePool = struct {
                 }
                 tickDead(creature, dt, &self.kill_count, state);
                 continue;
+            }
+
+            const self_tick_damage = selfDamageTickAmount(creature.flags, dt);
+            if (self_tick_damage > 0.0) {
+                _ = self.applyDamage(
+                    state,
+                    players,
+                    bonus_pool,
+                    idx,
+                    self_tick_damage,
+                    .{},
+                    creature.last_hit_owner_id,
+                    dt,
+                    world_size,
+                );
+                if (!(creature.hp > 0.0)) {
+                    if (creature.active) {
+                        tickDead(creature, dt, &self.kill_count, state);
+                    }
+                    continue;
+                }
             }
 
             tickAi7LinkTimer(creature, dt_ms, &state.rng);
@@ -1926,6 +1947,13 @@ pub const CreaturePool = struct {
                 state.bonuses.energizer <= 0.0)
             {
                 consumeContactSfxRng(state, creature.type_id);
+                if (player.shield_timer <= 0.0) {
+                    if (perkActive(player, perk_id_toxic_avenger)) {
+                        creature.flags |= survival_spawn.CreatureFlags.self_damage_tick | survival_spawn.CreatureFlags.self_damage_tick_strong;
+                    } else if (perkActive(player, perk_id_veins_of_poison)) {
+                        creature.flags |= survival_spawn.CreatureFlags.self_damage_tick;
+                    }
+                }
                 applyPlayerContactDamage(state, player, creature.contact_damage, dt);
                 consumeAddRandomRng(state);
                 creature.attack_cooldown = asF32F64(creature.attack_cooldown + contact_damage_cooldown);
@@ -3110,6 +3138,8 @@ const perk_id_ninja: i32 = survival_perks.PerkId.ninja;
 const perk_id_dodger: i32 = survival_perks.PerkId.dodger;
 const perk_id_highlander: i32 = survival_perks.PerkId.highlander;
 const perk_id_death_clock: i32 = survival_perks.PerkId.death_clock;
+const perk_id_veins_of_poison: i32 = survival_perks.PerkId.veins_of_poison;
+const perk_id_toxic_avenger: i32 = survival_perks.PerkId.toxic_avenger;
 const game_mode_rush: i32 = 2;
 const thick_skinned_damage_scale_f32: f64 = 0.6660000085830688;
 
@@ -4332,6 +4362,174 @@ test "creature update applies contact damage and movement" {
     try std.testing.expect(players[0].health < 100.0);
     try std.testing.expect(state.survival_reward_damage_seen);
     try expectFloatClose(@as(f64, 1.0), pool.entries[0].attack_cooldown);
+}
+
+test "veins of poison sets self-damage flag on contact hit" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+            .health = 100.0,
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_veins_of_poison)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 60.0,
+        .contact_damage = 10.0,
+    });
+    pool.entries[0].collision_timer = 0.1;
+
+    pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
+    try std.testing.expect((pool.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick) != 0);
+}
+
+test "veins of poison skips self-damage flag when shielded" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+            .health = 100.0,
+            .shield_timer = 1.0,
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_veins_of_poison)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 60.0,
+        .contact_damage = 10.0,
+    });
+    pool.entries[0].collision_timer = 0.1;
+
+    pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
+    try std.testing.expect((pool.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick) == 0);
+}
+
+test "toxic avenger sets strong self-damage flags on contact hit" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+            .health = 100.0,
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_toxic_avenger)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 60.0,
+        .contact_damage = 10.0,
+    });
+    pool.entries[0].collision_timer = 0.1;
+
+    pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
+    try std.testing.expect((pool.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick) != 0);
+    try std.testing.expect((pool.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick_strong) != 0);
+}
+
+test "toxic avenger strong self-damage tick overrides weak tick" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 500.0, .y = 500.0 },
+            .health = 100.0,
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong |
+            survival_spawn.CreatureFlags.self_damage_tick |
+            survival_spawn.CreatureFlags.self_damage_tick_strong,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 60.0,
+        .contact_damage = 10.0,
+    });
+
+    pool.update(&state, players[0..], 0.1, 1024.0, &bonuses);
+    try expectFloatClose(82.0, pool.entries[0].hp);
+}
+
+test "toxic avenger skips strong self-damage flag when shielded" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+            .health = 100.0,
+            .shield_timer = 1.0,
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_toxic_avenger)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 60.0,
+        .contact_damage = 10.0,
+    });
+    pool.entries[0].collision_timer = 0.1;
+
+    pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
+    try std.testing.expect((pool.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick_strong) == 0);
 }
 
 test "ai7 link timer consumes rng when timer crosses zero" {
