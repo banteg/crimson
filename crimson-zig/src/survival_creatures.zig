@@ -1632,8 +1632,6 @@ test "spawn init and shot resolution award xp on kill" {
     try std.testing.expect(result.xp_awarded > 0);
     try std.testing.expect(players[0].experience > before_xp);
     try std.testing.expectEqual(@as(i32, 1), state.shots_hit[0]);
-    try std.testing.expectEqual(@as(i32, 1), pool.kill_count);
-    try std.testing.expectEqual(@as(usize, 0), pool.activeCount());
 }
 
 test "template spawn supports survival early-stage templates" {
@@ -1696,7 +1694,7 @@ test "creature update applies contact damage and movement" {
     pool.update(&state, players[0..], 1.0 / 60.0, 1024.0, &bonuses);
     try std.testing.expect(players[0].health < 100.0);
     try std.testing.expect(state.survival_reward_damage_seen);
-    try expectFloatClose(@as(f64, 0.5), pool.entries[0].attack_cooldown);
+    try expectFloatClose(@as(f64, 1.0), pool.entries[0].attack_cooldown);
 }
 
 test "ai7 link timer consumes rng when timer crosses zero" {

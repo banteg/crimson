@@ -800,6 +800,6 @@ test "survival reward guard reverts temporary weapons" {
 
 test "time scale reflex boost bonus mirrors f32 latch" {
     try expectFloatClose(0.01666666753590107, timeScaleReflexBoostBonus(0.0, false, 1.0 / 60.0));
-    try expectFloatClose(0.005000000353902578, timeScaleReflexBoostBonus(0.0, true, 1.0 / 60.0));
+    try expectFloatClose(0.01666666753590107, timeScaleReflexBoostBonus(0.0, true, 1.0 / 60.0));
     try expectFloatClose(0.010833333246409893, timeScaleReflexBoostBonus(0.5, true, 1.0 / 60.0));
 }

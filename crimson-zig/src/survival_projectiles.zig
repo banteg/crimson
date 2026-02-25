@@ -608,9 +608,9 @@ test "projectile hit consumes hit-presentation rng" {
     };
     var creatures = survival_creatures.CreaturePool{};
     var bonuses = survival_bonuses.BonusPool{};
-    creatures.spawnInit(.{
+    _ = creatures.spawnInit(.{
         .origin_template_id = -1,
-        .pos = .{ .x = 180.0, .y = 100.0 },
+        .pos = .{ .x = 102.0, .y = 100.0 },
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
@@ -632,6 +632,6 @@ test "projectile hit consumes hit-presentation rng" {
         false,
     );
     const rng_before = state.rng.state;
-    pool.update(&state, players[0..], &creatures, &bonuses, 1.0 / 60.0, 1024.0);
+    _ = pool.update(&state, players[0..], &creatures, &bonuses, 1.0 / 60.0, 1024.0);
     try std.testing.expect(rng_before != state.rng.state);
 }

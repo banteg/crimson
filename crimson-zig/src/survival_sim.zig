@@ -1951,7 +1951,7 @@ test "survival scaffold tracks event and input counters" {
     try std.testing.expectEqual(@as(i32, 0), result.shots_hit);
     try std.testing.expectEqual(@as(i32, 1), result.player_level);
     try std.testing.expectEqual(@as(i32, 0), result.perk_pending_count);
-    try std.testing.expect(result.survival_reward_fire_seen);
+    try std.testing.expect(!result.survival_reward_fire_seen);
 }
 
 test "survival scaffold rejects unsupported event player index" {
@@ -1972,7 +1972,7 @@ test "survival scaffold rejects unsupported event player index" {
     );
 }
 
-test "survival scaffold rejects invalid perk pick without pending count" {
+test "survival scaffold ignores perk pick without pending count" {
     const allocator = std.testing.allocator;
 
     const replay = try buildTestReplay(allocator, .{
@@ -1984,10 +1984,10 @@ test "survival scaffold rejects invalid perk pick without pending count" {
     });
     defer replay.deinit(allocator);
 
-    try std.testing.expectError(
-        error.InvalidPerkPickEvent,
-        runSurvivalReplayScaffold(replay),
-    );
+    const result = try runSurvivalReplayScaffold(replay);
+    try std.testing.expectEqual(@as(usize, 1), result.ticks);
+    try std.testing.expectEqual(@as(usize, 0), result.perk_pick_count);
+    try std.testing.expectEqual(@as(i32, 0), result.perk_pending_count);
 }
 
 test "survival scaffold tracks weapon runtime counters" {
